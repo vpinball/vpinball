@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -159,6 +159,8 @@ namespace Win32xx
 		Subclass(hWnd);		// Set the window's callback to CWnd::StaticWindowProc
 
 		OnAttach();
+		
+		// Post a message to trigger a call of OnInitialUpdate
 		PostMessage(UWM_WINDOWCREATED);
 
 		return TRUE;
@@ -405,7 +407,7 @@ namespace Win32xx
 		// Clear the CWnd pointer from TLS
 		pTLSData->pWnd = NULL;
 
-		// Window creation is complete. Now call OnInitialUpdate
+		// Post a message to trigger a call of OnInitialUpdate
 		PostMessage(UWM_WINDOWCREATED);
 
 		return hWnd;
@@ -977,9 +979,9 @@ namespace Win32xx
 		m_PrevWindowProc = (WNDPROC)::SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)CWnd::StaticWindowProc);
 	}
 #ifndef _WIN32_WCE
-	inline BOOL CWnd::UpdateData(CDataExchange& DX, BOOL bRetrieveAndValidate)
+	inline BOOL CWnd::UpdateData(CDataExchange& DX, BOOL RetrieveAndValidate)
 	//	Dialog Data Exchange support. Call this function to retrieve values from
-	//	(bRetrieveAndValidate is TRUE) or assign values to (bRetrieveAndValidate
+	//	(RetrieveAndValidate is TRUE) or assign values to (RetrieveAndValidate
 	//	is FALSE) a set of controls appearing in DDX/DDV statements in an
 	//	override of the DoDataExchange() member method.
 	//
@@ -999,7 +1001,7 @@ namespace Win32xx
 		CCriticalSection ccs;
 		ccs.Lock();
 
-		DX.Init(*this, bRetrieveAndValidate);
+		DX.Init(*this, RetrieveAndValidate);
 
 		BOOL ok = FALSE;  // Remains FALSE if DoDataExchange throws a CUserException
 		try
@@ -1124,10 +1126,10 @@ namespace Win32xx
 		case WM_ERASEBKGND:
 			{
 				CDC dc((HDC)wParam);
-				BOOL bResult;
+				BOOL PreventErasure;
 
-				bResult = OnEraseBkgnd(dc);
-				if (bResult) return TRUE;
+				PreventErasure = OnEraseBkgnd(dc);
+				if (PreventErasure) return TRUE;
 			}
 			break;
 
@@ -1266,12 +1268,12 @@ namespace Win32xx
 		return ::DrawMenuBar(*this);
 	}
 
-	inline BOOL CWnd::EnableWindow(BOOL bEnable /*= TRUE*/) const
+	inline BOOL CWnd::EnableWindow(BOOL Enable /*= TRUE*/) const
 	// The EnableWindow function enables or disables mouse and
 	// keyboard input to the window.
 	{
 		assert(IsWindow());
-		return ::EnableWindow(*this, bEnable);
+		return ::EnableWindow(*this, Enable);
 	}
 
 	inline BOOL CWnd::EndPaint(PAINTSTRUCT& ps) const
@@ -1298,6 +1300,8 @@ namespace Win32xx
 	inline ULONG_PTR CWnd::GetClassLongPtr(int nIndex) const
 	// The GetClassLongPtr function retrieves the specified value from the
 	// WNDCLASSEX structure associated with the window.
+	// Possible nIndex values: GCL_CBCLSEXTRA, GCL_CBWNDEXTRA, GCLP_ HBRBACKGROUND, GCLP_HCURSOR,
+	// GCLP_HICON, GCLP_HICONSM, GCLP_HMODULE, GCLP_MENUNAME, GCL_STYLE, GCLP_WNDPROC.
 	{
 		assert(IsWindow());
 		return ::GetClassLongPtr(*this, nIndex);
@@ -1353,18 +1357,18 @@ namespace Win32xx
 		return CWnd( ::GetDlgItem(*this, nIDDlgItem) );
 	}
 
-	inline UINT CWnd::GetDlgItemInt(int nIDDlgItem, BOOL& IsTranslated, BOOL bSigned) const
+	inline UINT CWnd::GetDlgItemInt(int nIDDlgItem, BOOL& IsTranslated, BOOL IsSigned) const
 	// The GetDlgItemInt function translates the text of a specified control in a dialog box into an integer value.
 	{
 		assert(IsWindow());
-		return ::GetDlgItemInt(*this, nIDDlgItem, &IsTranslated, bSigned);
+		return ::GetDlgItemInt(*this, nIDDlgItem, &IsTranslated, IsSigned);
 	}
 
-	inline UINT CWnd::GetDlgItemInt(int nIDDlgItem, BOOL bSigned) const
+	inline UINT CWnd::GetDlgItemInt(int nIDDlgItem, BOOL IsSigned) const
 	// The GetDlgItemInt function translates the text of a specified control in a dialog box into an integer value.
 	{
 		assert(IsWindow());
-		return ::GetDlgItemInt(*this, nIDDlgItem, NULL, bSigned);
+		return ::GetDlgItemInt(*this, nIDDlgItem, NULL, IsSigned);
 	}
 
 	inline CWnd CWnd::GetFocus() const
@@ -1382,27 +1386,27 @@ namespace Win32xx
 		return CFont(hFont);
 	}
 
-	inline HICON CWnd::GetIcon(BOOL bBigIcon) const
+	inline HICON CWnd::GetIcon(BOOL IsBigIcon) const
 	// Retrieves a handle to the large or small icon associated with a window.
 	{
 		assert(IsWindow());
-		return reinterpret_cast<HICON>(SendMessage(WM_GETICON, (WPARAM)bBigIcon, 0));
+		return reinterpret_cast<HICON>(SendMessage(WM_GETICON, (WPARAM)IsBigIcon, 0));
 	}
 
-	inline CWnd CWnd::GetNextDlgGroupItem(HWND hCtl, BOOL bPrevious) const
+	inline CWnd CWnd::GetNextDlgGroupItem(HWND hCtl, BOOL IsPrevious) const
 	// The GetNextDlgGroupItem function retrieves the first control in a group of controls that
 	// precedes (or follows) the specified control in a dialog box.
 	{
 		assert(IsWindow());
-		return CWnd(::GetNextDlgGroupItem(*this, hCtl, bPrevious));
+		return CWnd(::GetNextDlgGroupItem(*this, hCtl, IsPrevious));
 	}
 
-	inline CWnd CWnd::GetNextDlgTabItem(HWND hCtl, BOOL bPrevious) const
+	inline CWnd CWnd::GetNextDlgTabItem(HWND hCtl, BOOL IsPrevious) const
 	// The GetNextDlgTabItem function retrieves the first control that has the WS_TABSTOP style
 	// that precedes (or follows) the specified control.
 	{
 		assert(IsWindow());
-		return CWnd(::GetNextDlgTabItem(*this, hCtl, bPrevious));
+		return CWnd(::GetNextDlgTabItem(*this, hCtl, IsPrevious));
 	}
 
 	inline CWnd CWnd::GetParent() const
@@ -1410,13 +1414,6 @@ namespace Win32xx
 	{
 		assert(IsWindow());
 		return CWnd(::GetParent(*this));
-	}
-
-	inline LONG_PTR CWnd::GetWindowLongPtr(int nIndex) const
-	// The GetWindowLongPtr function retrieves information about the window.
-	{
-		assert(IsWindow());
-		return ::GetWindowLongPtr(*this, nIndex);
 	}
 
 	inline BOOL CWnd::GetScrollInfo(int fnBar, SCROLLINFO& si) const
@@ -1428,21 +1425,21 @@ namespace Win32xx
 		return ::GetScrollInfo(*this, fnBar, &si);
 	}
 
-	inline CRect CWnd::GetUpdateRect(BOOL bErase) const
+	inline CRect CWnd::GetUpdateRect(BOOL Erase) const
 	// The GetUpdateRect function retrieves the coordinates of the smallest rectangle that completely
 	// encloses the update region of the specified window.
 	{
 		assert(IsWindow());
 		CRect rc;
-		::GetUpdateRect(*this, &rc, bErase);
+		::GetUpdateRect(*this, &rc, Erase);
 		return rc;
 	}
 
-	inline int CWnd::GetUpdateRgn(HRGN hRgn, BOOL bErase) const
+	inline int CWnd::GetUpdateRgn(HRGN hRgn, BOOL Erase) const
 	// The GetUpdateRgn function retrieves the update region of a window by copying it into the specified region.
 	{
 		assert(IsWindow());
-		return ::GetUpdateRgn(*this, hRgn, bErase);
+		return ::GetUpdateRgn(*this, hRgn, Erase);
 	}
 
 	inline CWnd CWnd::GetWindow(UINT uCmd) const
@@ -1463,6 +1460,16 @@ namespace Win32xx
 		assert(IsWindow());
 		return CWindowDC(*this);
 	}
+	
+	inline LONG_PTR CWnd::GetWindowLongPtr(int nIndex) const
+	// The GetWindowLongPtr function retrieves information about the window.
+	// Possible nIndex values: GWL_EXSTYLE, GWL_STYLE, GWLP_WNDPROC, GWLP_HINSTANCE
+	// GWLP_HWNDPARENT, GWLP_ID, GWLP_USERDATA.
+	// Additional nIndex values for dialogs: DWLP_DLGPROC, DWLP_MSGRESULT, DWLP_USER.
+	{
+		assert(IsWindow());
+		return ::GetWindowLongPtr(*this, nIndex);
+	}	
 
 	inline CRect CWnd::GetWindowRect() const
 	// retrieves the dimensions of the bounding rectangle of the window.
@@ -1483,38 +1490,38 @@ namespace Win32xx
 		return ::GetWindowTextLength(*this);
 	}
 
-	inline void CWnd::Invalidate(BOOL bErase /*= TRUE*/) const
+	inline void CWnd::Invalidate(BOOL Erase /*= TRUE*/) const
 	// The Invalidate function adds the entire client area to the window's update region.
 	// The update region represents the portion of the window's client area that must be redrawn.
 	{
 		assert(IsWindow());
-		::InvalidateRect(*this, NULL, bErase);
+		::InvalidateRect(*this, NULL, Erase);
 	}
 
-	inline BOOL CWnd::InvalidateRect(const RECT& rc, BOOL bErase /*= TRUE*/) const
+	inline BOOL CWnd::InvalidateRect(const RECT& rc, BOOL Erase /*= TRUE*/) const
 	// The InvalidateRect function adds a rectangle to the window's update region.
 	// The update region represents the portion of the window's client area that must be redrawn.
 	{
 		assert(IsWindow());
-		return ::InvalidateRect(*this, &rc, bErase);
+		return ::InvalidateRect(*this, &rc, Erase);
 	}
 
-	inline BOOL CWnd::InvalidateRect(BOOL bErase /*= TRUE*/) const
+	inline BOOL CWnd::InvalidateRect(BOOL Erase /*= TRUE*/) const
 	// The InvalidateRect function adds a rectangle to the window's update region.
 	// The entire window's client area is redrawn when no rectangle is specified.
 	{
 		assert(IsWindow());
-		return ::InvalidateRect(*this, NULL, bErase);
+		return ::InvalidateRect(*this, NULL, Erase);
 	}
 
-	inline BOOL CWnd::InvalidateRgn(HRGN hRgn, BOOL bErase /*= TRUE*/) const
+	inline BOOL CWnd::InvalidateRgn(HRGN hRgn, BOOL Erase /*= TRUE*/) const
 	// The InvalidateRgn function invalidates the client area within the specified region
 	// by adding it to the current update region of a window. The invalidated region,
 	// along with all other areas in the update region, is marked for painting when the
 	// next WM_PAINT message occurs.
 	{
 		assert(IsWindow());
-		return ::InvalidateRgn(*this, hRgn, bErase);
+		return ::InvalidateRgn(*this, hRgn, Erase);
 	}
 
 	inline BOOL CWnd::IsChild(HWND hwndChild) const
@@ -1596,18 +1603,18 @@ namespace Win32xx
 		return ::MessageBox(*this, lpText, lpCaption, uType);
 	}
 
-	inline BOOL CWnd::MoveWindow(int x, int y, int nWidth, int nHeight, BOOL bRepaint /* = TRUE*/) const
+	inline BOOL CWnd::MoveWindow(int x, int y, int nWidth, int nHeight, BOOL Repaint /* = TRUE*/) const
 	// The MoveWindow function changes the position and dimensions of the window.
 	{
 		assert(IsWindow());
-		return ::MoveWindow(*this, x, y, nWidth, nHeight, bRepaint = TRUE);
+		return ::MoveWindow(*this, x, y, nWidth, nHeight, Repaint = TRUE);
 	}
 
-	inline BOOL CWnd::MoveWindow(const RECT& rc, BOOL bRepaint /* = TRUE*/) const
+	inline BOOL CWnd::MoveWindow(const RECT& rc, BOOL Repaint /* = TRUE*/) const
 	// The MoveWindow function changes the position and dimensions of the window.
 	{
 		assert(IsWindow());
-		return ::MoveWindow(*this, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, bRepaint);
+		return ::MoveWindow(*this, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, Repaint);
 	}
 
 	inline BOOL CWnd::PostMessage(UINT uMsg, WPARAM wParam /*= 0L*/, LPARAM lParam /*= 0L*/) const
@@ -1723,10 +1730,33 @@ namespace Win32xx
 	inline ULONG_PTR CWnd::SetClassLongPtr(int nIndex, LONG_PTR dwNewLong) const
 	// The SetClassLongPtr function replaces the specified value at the specified offset in the
 	// extra class memory or the WNDCLASSEX structure for the class to which the window belongs.
+	// Possible nIndex values: GCL_CBCLSEXTRA, GCL_CBWNDEXTRA, GCLP_ HBRBACKGROUND, GCLP_HCURSOR,
+	// GCLP_HICON, GCLP_HICONSM, GCLP_HMODULE, GCLP_MENUNAME, GCL_STYLE, GCLP_WNDPROC.
 	{
 		assert(IsWindow());
 		return ::SetClassLongPtr(*this, nIndex, dwNewLong);
 	}
+	
+	inline LONG_PTR CWnd::SetDlgCtrlID(int idCtrl) const
+	// Assigns an id to the window. Note that only child windows can have an ID assigned
+	{
+		assert(IsWindow());
+		return SetWindowLongPtr(GWLP_ID, idCtrl);
+	}
+
+	inline BOOL CWnd::SetDlgItemInt(int nIDDlgItem, UINT uValue, BOOL IsSigned) const
+	// The SetDlgItemInt function sets the text of a control in a dialog box to the string representation of a specified integer value.
+	{
+		assert(IsWindow());
+		return ::SetDlgItemInt(*this, nIDDlgItem, uValue, IsSigned);
+	}
+
+	inline BOOL CWnd::SetDlgItemText(int nIDDlgItem, LPCTSTR lpString) const
+	// The SetDlgItemText function sets the title or text of a control in a dialog box.
+	{
+		assert(IsWindow());
+		return ::SetDlgItemText(*this, nIDDlgItem, lpString);
+	}	
 
 	inline CWnd CWnd::SetFocus() const
 	// The SetFocus function sets the keyboard focus to the window.
@@ -1735,18 +1765,18 @@ namespace Win32xx
 		return CWnd( ::SetFocus(*this) );
 	}
 
-	inline void CWnd::SetFont(HFONT hFont, BOOL bRedraw /* = TRUE*/) const
+	inline void CWnd::SetFont(HFONT hFont, BOOL Redraw /* = TRUE*/) const
 	// Specifies the font that the window will use when drawing text.
 	{
 		assert(IsWindow());
-		SendMessage(WM_SETFONT, (WPARAM)hFont, (LPARAM)bRedraw);
+		SendMessage(WM_SETFONT, (WPARAM)hFont, (LPARAM)Redraw);
 	}
 
-	inline HICON CWnd::SetIcon(HICON hIcon, BOOL bBigIcon) const
+	inline HICON CWnd::SetIcon(HICON hIcon, BOOL IsBigIcon) const
 	// Associates a new large or small icon with a window.
 	{
 		assert(IsWindow());
-		return reinterpret_cast<HICON>(SendMessage(WM_SETICON, (WPARAM)bBigIcon, (LPARAM)hIcon));
+		return reinterpret_cast<HICON>(SendMessage(WM_SETICON, (WPARAM)IsBigIcon, (LPARAM)hIcon));
 	}
 
 	inline BOOL CWnd::SetForegroundWindow() const
@@ -1764,16 +1794,26 @@ namespace Win32xx
 		return CWnd(::SetParent(*this, hWndParent));
 	}
 
-	inline BOOL CWnd::SetRedraw(BOOL bRedraw /*= TRUE*/) const
+	inline BOOL CWnd::SetRedraw(BOOL Redraw /*= TRUE*/) const
 	// This function allows changes in that window to be redrawn or prevents changes
 	// in that window from being redrawn.
 	{
 		assert(IsWindow());
-		return static_cast<BOOL>(::SendMessage(*this, WM_SETREDRAW, (WPARAM)bRedraw, 0L));
+		return static_cast<BOOL>(::SendMessage(*this, WM_SETREDRAW, (WPARAM)Redraw, 0L));
 	}
+	
+	inline UINT_PTR CWnd::SetTimer(UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc) const
+	// Creates a timer with the specified time-out value.
+	{
+		assert(IsWindow());
+		return ::SetTimer(*this, nIDEvent, uElapse, lpTimerFunc);
+	}	
 
 	inline LONG_PTR CWnd::SetWindowLongPtr(int nIndex, LONG_PTR dwNewLong) const
 	// The SetWindowLongPtr function changes an attribute of the window.
+	// Possible nIndex values: GWL_EXSTYLE, GWL_STYLE, GWLP_WNDPROC, GWLP_HINSTANCE
+	// GWLP_HWNDPARENT, GWLP_ID, GWLP_USERDATA.
+	// Additional nIndex values for dialogs: DWLP_DLGPROC, DWLP_MSGRESULT, DWLP_USER.
 	{
 		assert(IsWindow());
 		return ::SetWindowLongPtr(*this, nIndex, dwNewLong);
@@ -1799,46 +1839,18 @@ namespace Win32xx
 		return ::SetWindowPos(*this, hWndInsertAfter, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, uFlags);
 	}
 
-	inline int CWnd::SetWindowRgn(CRgn& Rgn, BOOL bRedraw /*= TRUE*/) const
+	inline int CWnd::SetWindowRgn(CRgn& Rgn, BOOL Redraw /*= TRUE*/) const
 	// The SetWindowRgn function sets the window region of the window.
 	// The window region determines the area within the window where the system permits drawing.
 	// The window now owns the region so it is detached from Rgn.
 	{
 		assert(IsWindow());
 		HRGN hRgn = (HRGN)Rgn.GetHandle();
-		int iResult = ::SetWindowRgn(*this, hRgn, bRedraw);
+		int iResult = ::SetWindowRgn(*this, hRgn, Redraw);
 		if (iResult && hRgn)
 			Rgn.Detach();	// The system owns the region now
 
 		return iResult;
-	}
-
-	inline LONG_PTR CWnd::SetDlgCtrlID(int idCtrl) const
-	// Assigns an id to the window. Note that only child windows can have an ID assigned
-	{
-		assert(IsWindow());
-		return SetWindowLongPtr(GWLP_ID, idCtrl);
-	}
-
-	inline BOOL CWnd::SetDlgItemInt(int nIDDlgItem, UINT uValue, BOOL bSigned) const
-	// The SetDlgItemInt function sets the text of a control in a dialog box to the string representation of a specified integer value.
-	{
-		assert(IsWindow());
-		return ::SetDlgItemInt(*this, nIDDlgItem, uValue, bSigned);
-	}
-
-	inline BOOL CWnd::SetDlgItemText(int nIDDlgItem, LPCTSTR lpString) const
-	// The SetDlgItemText function sets the title or text of a control in a dialog box.
-	{
-		assert(IsWindow());
-		return ::SetDlgItemText(*this, nIDDlgItem, lpString);
-	}
-
-	inline UINT_PTR CWnd::SetTimer(UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc) const
-	// Creates a timer with the specified time-out value.
-	{
-		assert(IsWindow());
-		return ::SetTimer(*this, nIDEvent, uElapse, lpTimerFunc);
 	}
 
 	inline BOOL CWnd::SetWindowText(LPCTSTR lpString) const
@@ -1964,11 +1976,11 @@ namespace Win32xx
 	}
 
     #ifndef WIN32_LEAN_AND_MEAN
-    inline void CWnd::DragAcceptFiles(BOOL fAccept) const
+    inline void CWnd::DragAcceptFiles(BOOL Accept) const
 	// Registers whether a window accepts dropped files.
 	{
 		assert(IsWindow());
-		::DragAcceptFiles(*this, fAccept);
+		::DragAcceptFiles(*this, Accept);
 	}
     #endif
 
@@ -2024,12 +2036,12 @@ namespace Win32xx
 		return ::GetScrollRange(*this, nBar, &MinPos, &MaxPos );
 	}
 
-	inline CMenu CWnd::GetSystemMenu(BOOL bRevert) const
+	inline CMenu CWnd::GetSystemMenu(BOOL RevertToDefault) const
 	// The GetSystemMenu function allows the application to access the window menu (also known as the system menu
 	// or the control menu) for copying and modifying.
 	{
 		assert(IsWindow());
-		return CMenu( ::GetSystemMenu(*this, bRevert) );
+		return CMenu( ::GetSystemMenu(*this, RevertToDefault) );
 	}
 
 	inline CWnd CWnd::GetTopWindow() const
@@ -2146,28 +2158,28 @@ namespace Win32xx
 		return ::SetMenu(*this, hMenu);
 	}
 
-	inline int CWnd::SetScrollInfo(int fnBar, const SCROLLINFO& si, BOOL fRedraw) const
+	inline int CWnd::SetScrollInfo(int fnBar, const SCROLLINFO& si, BOOL Redraw) const
 	// The SetScrollInfo function sets the parameters of a scroll bar, including
 	// the minimum and maximum scrolling positions, the page size, and the
 	// position of the scroll box (thumb).
 	{
 		assert(IsWindow());
-		return ::SetScrollInfo(*this, fnBar, &si, fRedraw);
+		return ::SetScrollInfo(*this, fnBar, &si, Redraw);
 	}
 
-	inline int CWnd::SetScrollPos(int nBar, int nPos, BOOL bRedraw) const
+	inline int CWnd::SetScrollPos(int nBar, int nPos, BOOL Redraw) const
 	// The SetScrollPos function sets the position of the scroll box (thumb) in
 	// the specified scroll bar.
 	{
 		assert(IsWindow());
-		return ::SetScrollPos(*this, nBar, nPos, bRedraw);
+		return ::SetScrollPos(*this, nBar, nPos, Redraw);
 	}
 
-	inline BOOL CWnd::SetScrollRange(int nBar, int nMinPos, int nMaxPos, BOOL bRedraw) const
+	inline BOOL CWnd::SetScrollRange(int nBar, int nMinPos, int nMaxPos, BOOL Redraw) const
 	// The SetScrollRange function sets the minimum and maximum scroll box positions for the scroll bar.
 	{
 		assert(IsWindow());
-		return ::SetScrollRange(*this, nBar, nMinPos, nMaxPos, bRedraw);
+		return ::SetScrollRange(*this, nBar, nMinPos, nMaxPos, Redraw);
 	}
 
 	inline BOOL CWnd::SetWindowPlacement(const WINDOWPLACEMENT& wndpl) const
@@ -2178,18 +2190,18 @@ namespace Win32xx
 		return ::SetWindowPlacement(*this, &wndpl);
 	}
 
-	inline BOOL CWnd::ShowOwnedPopups(BOOL fShow) const
+	inline BOOL CWnd::ShowOwnedPopups(BOOL Show) const
 	// The ShowOwnedPopups function shows or hides all pop-up windows owned by the specified window.
 	{
 		assert(IsWindow());
-		return ::ShowOwnedPopups(*this, fShow);
+		return ::ShowOwnedPopups(*this, Show);
 	}
 
-	inline BOOL CWnd::ShowScrollBar(int nBar, BOOL bShow) const
+	inline BOOL CWnd::ShowScrollBar(int nBar, BOOL Show) const
 	// The ShowScrollBar function shows or hides the specified scroll bar.
 	{
 		assert(IsWindow());
-		return ::ShowScrollBar(*this, nBar, bShow);
+		return ::ShowScrollBar(*this, nBar, Show);
 	}
 
 	inline BOOL CWnd::ShowWindowAsync(int nCmdShow) const
@@ -2218,7 +2230,7 @@ namespace Win32xx
 
 
 	/////////////////////////////////////////////////////////
-	// Definitions of CString functions that required CWinApp
+	// Definitions of CString functions that require CWinApp
 	//
 
 	template <class T>

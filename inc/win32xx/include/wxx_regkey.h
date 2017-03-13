@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -62,36 +62,36 @@ namespace Win32xx
 			        REGSAM samDesired = KEY_READ | KEY_WRITE, 
 					LPSECURITY_ATTRIBUTES lpSecAttr = NULL, 
 					LPDWORD lpdwDisposition = NULL);
-		LONG DeleteSubKey(LPCTSTR lpszSubKey);
-		LONG DeleteValue(LPCTSTR lpszSubKey);
+		LONG DeleteSubKey(LPCTSTR lpszSubKey) const;
+		LONG DeleteValue(LPCTSTR lpszSubKey) const;
 		HKEY Detach();
-		LONG EnumKey(DWORD iIndex, LPTSTR pszName, LPDWORD pnNameLength, FILETIME* pftLastWriteTime = NULL);
-		LONG Flush();
-		HKEY GetKey() { return m_hKey; }
-		LONG NotifyChangeKeyValue(BOOL bWatchSubtree, DWORD dwNotifyFilter, HANDLE hEvent, BOOL bAsync = TRUE);
+		LONG EnumKey(DWORD iIndex, LPTSTR pszName, LPDWORD pnNameLength, FILETIME* pftLastWriteTime = NULL) const;
+		LONG Flush() const;
+		HKEY GetKey()  const { return m_hKey; }
+		LONG NotifyChangeKeyValue(BOOL WatchSubtree, DWORD dwNotifyFilter, HANDLE hEvent, BOOL IsAsync = TRUE) const;
 		LONG Open(HKEY hKeyParent, LPCTSTR lpszKeyName, REGSAM samDesired = KEY_READ | KEY_WRITE);
-		LONG QueryBinaryValue(LPCTSTR pszValueName, void* pValue, ULONG* pnBytes);
-		LONG QueryDWORDValue(LPCTSTR pszValueName, DWORD& dwValue);
-		LONG QueryGUIDValue(LPCTSTR pszValueName, GUID& guidValue);
-		LONG QueryMultiStringValue(LPCTSTR pszValueName, LPTSTR pszValue, ULONG* pnChars);
-		LONG QueryStringValue(LPCTSTR pszValueName, LPTSTR pszValue, ULONG* pnChars);
-		LONG QueryValue(LPCTSTR pszValueName, DWORD* pdwType, void* pData, ULONG* pnBytes);
-		LONG RecurseDeleteKey(LPCTSTR lpszKey);
-		LONG SetBinaryValue(LPCTSTR pszValueName, const void* pValue, ULONG nBytes);
-		LONG SetDWORDValue(LPCTSTR pszValueName, DWORD dwValue);
-		LONG SetGUIDValue(LPCTSTR pszValueName, REFGUID guidValue);
-		LONG SetKeySecurity(SECURITY_INFORMATION si, PSECURITY_DESCRIPTOR psd);
-		LONG SetMultiStringValue(LPCTSTR pszValueName, LPCTSTR pszValue);
-		LONG SetStringValue(LPCTSTR pszValueName, LPCTSTR pszValue, DWORD dwType = REG_SZ);
-		LONG SetValue(LPCTSTR pszValueName, DWORD dwType, const void* pValue, ULONG nBytes);
+		LONG QueryBinaryValue(LPCTSTR pszValueName, void* pValue, ULONG* pnBytes) const;
+		LONG QueryDWORDValue(LPCTSTR pszValueName, DWORD& dwValue) const;
+		LONG QueryGUIDValue(LPCTSTR pszValueName, GUID& guidValue) const;
+		LONG QueryMultiStringValue(LPCTSTR pszValueName, LPTSTR pszValue, ULONG* pnChars) const;
+		LONG QueryStringValue(LPCTSTR pszValueName, LPTSTR pszValue, ULONG* pnChars) const;
+		LONG QueryValue(LPCTSTR pszValueName, DWORD* pdwType, void* pData, ULONG* pnBytes) const;
+		LONG RecurseDeleteKey(LPCTSTR lpszKey) const;
+		LONG SetBinaryValue(LPCTSTR pszValueName, const void* pValue, ULONG nBytes) const;
+		LONG SetDWORDValue(LPCTSTR pszValueName, DWORD dwValue) const;
+		LONG SetGUIDValue(LPCTSTR pszValueName, REFGUID guidValue) const;
+		LONG SetKeySecurity(SECURITY_INFORMATION si, PSECURITY_DESCRIPTOR psd) const;
+		LONG SetMultiStringValue(LPCTSTR pszValueName, LPCTSTR pszValue) const;
+		LONG SetStringValue(LPCTSTR pszValueName, LPCTSTR pszValue, DWORD dwType = REG_SZ) const;
+		LONG SetValue(LPCTSTR pszValueName, DWORD dwType, const void* pValue, ULONG nBytes) const;
 
 #ifdef REG_QWORD
-		LONG QueryQWORDValue(LPCTSTR pszValueName, ULONGLONG& qwValue);
-		LONG SetQWORDValue(LPCTSTR pszValueName, ULONGLONG qwValue);
+		LONG QueryQWORDValue(LPCTSTR pszValueName, ULONGLONG& qwValue) const;
+		LONG SetQWORDValue(LPCTSTR pszValueName, ULONGLONG qwValue) const;
 #endif
 
 #if (WINVER >= 0x0600)
-		LONG SetKeyValue(LPCTSTR lpszKeyName, LPCTSTR lpszValue, LPCTSTR lpszValueName = NULL);
+		LONG SetKeyValue(LPCTSTR lpszKeyName, LPCTSTR lpszValue, LPCTSTR lpszValueName = NULL) const;
 #endif
 
 	private:
@@ -164,14 +164,14 @@ namespace Win32xx
 		return lRes;
 	}
 
-	inline LONG CRegKey::DeleteSubKey(LPCTSTR lpszSubKey)
+	inline LONG CRegKey::DeleteSubKey(LPCTSTR lpszSubKey) const
 	// Removes the specified key from the registry.
 	{
 		assert(m_hKey);
 		return ::RegDeleteKey(m_hKey, lpszSubKey);
 	}
 
-	inline LONG CRegKey::DeleteValue(LPCTSTR lpszSubKey )
+	inline LONG CRegKey::DeleteValue(LPCTSTR lpszSubKey ) const
 	// Removes a named value from the specified registry key.
 	{
 		assert(m_hKey);
@@ -187,25 +187,25 @@ namespace Win32xx
 		return hKey;
 	}
 
-	inline LONG CRegKey::EnumKey(DWORD iIndex, LPTSTR pszName, LPDWORD pnNameLength, FILETIME* pftLastWriteTime)
+	inline LONG CRegKey::EnumKey(DWORD iIndex, LPTSTR pszName, LPDWORD pnNameLength, FILETIME* pftLastWriteTime) const
 	// Enumerates subkeys of the specified open registry key.
 	{
 		assert(m_hKey);
 		return ::RegEnumKeyEx(m_hKey, iIndex, pszName, pnNameLength, 0, 0, 0, pftLastWriteTime);
 	}
 
-	inline LONG CRegKey::Flush()
+	inline LONG CRegKey::Flush() const
 	// Writes all the attributes of the specified open registry key into the registry.
 	{
 		assert(m_hKey);
 		return ::RegFlushKey(m_hKey);
 	}
 
-	inline LONG CRegKey::NotifyChangeKeyValue(BOOL bWatchSubtree, DWORD dwNotifyFilter, HANDLE hEvent, BOOL bAsync)
+	inline LONG CRegKey::NotifyChangeKeyValue(BOOL WatchSubtree, DWORD dwNotifyFilter, HANDLE hEvent, BOOL IsAsync) const
 	// Notifies the caller about changes to the attributes or contents of the registry key.
 	{
 		assert(m_hKey);
-		return ::RegNotifyChangeKeyValue(m_hKey, bWatchSubtree, dwNotifyFilter, hEvent, bAsync);
+		return ::RegNotifyChangeKeyValue(m_hKey, WatchSubtree, dwNotifyFilter, hEvent, IsAsync);
 	}
 
 	inline LONG CRegKey::Open(HKEY hKeyParent, LPCTSTR lpszKeyName, REGSAM samDesired)
@@ -216,7 +216,7 @@ namespace Win32xx
 		return ::RegOpenKeyEx(hKeyParent, lpszKeyName, 0, samDesired, &m_hKey);
 	}
 
-	inline LONG CRegKey::QueryBinaryValue(LPCTSTR pszValueName, void* pValue, ULONG* pnBytes)
+	inline LONG CRegKey::QueryBinaryValue(LPCTSTR pszValueName, void* pValue, ULONG* pnBytes) const
 	// Retrieves the binary data for the specified value name.
 	{
 		assert(m_hKey);
@@ -224,7 +224,7 @@ namespace Win32xx
 		return ::RegQueryValueEx(m_hKey, pszValueName, 0, &dwType, (LPBYTE)pValue, pnBytes);
 	}
 
-	inline LONG CRegKey::QueryDWORDValue(LPCTSTR pszValueName, DWORD& dwValue)
+	inline LONG CRegKey::QueryDWORDValue(LPCTSTR pszValueName, DWORD& dwValue) const
 	// Retrieves the DWORD data for the specified value name.
 	{
 		assert(m_hKey);
@@ -233,7 +233,7 @@ namespace Win32xx
 		return ::RegQueryValueEx(m_hKey, pszValueName, 0, &dwType, (LPBYTE)&dwValue, &nBytes);
 	}
 
-	inline LONG CRegKey::QueryGUIDValue(LPCTSTR pszValueName, GUID& guidValue)
+	inline LONG CRegKey::QueryGUIDValue(LPCTSTR pszValueName, GUID& guidValue) const
 	// Retrieves the GUID data for the specified value name.
 	{
 		assert(m_hKey);
@@ -254,7 +254,7 @@ namespace Win32xx
 		return lRes;
 	}
 
-	inline LONG CRegKey::QueryMultiStringValue(LPCTSTR pszValueName, LPTSTR pszValue, ULONG* pnChars)
+	inline LONG CRegKey::QueryMultiStringValue(LPCTSTR pszValueName, LPTSTR pszValue, ULONG* pnChars) const
 	// Retrieves the multistring data for the specified value name.
 	{
 		assert(m_hKey);
@@ -262,7 +262,7 @@ namespace Win32xx
 		return ::RegQueryValueEx(m_hKey, pszValueName, 0, &dwType, (LPBYTE)pszValue, pnChars);
 	}
 
-	inline LONG CRegKey::QueryStringValue(LPCTSTR pszValueName, LPTSTR pszValue, ULONG* pnChars)
+	inline LONG CRegKey::QueryStringValue(LPCTSTR pszValueName, LPTSTR pszValue, ULONG* pnChars) const
 	// Retrieves the string data for the specified value name.
 	{
 		assert(m_hKey);
@@ -270,14 +270,14 @@ namespace Win32xx
 		return ::RegQueryValueEx(m_hKey, pszValueName, 0, &dwType, (LPBYTE)pszValue, pnChars);
 	}
 
-	inline LONG CRegKey::QueryValue(LPCTSTR pszValueName, DWORD* pdwType, void* pData, ULONG* pnBytes)
+	inline LONG CRegKey::QueryValue(LPCTSTR pszValueName, DWORD* pdwType, void* pData, ULONG* pnBytes) const
 	// Retrieves the data for the specified value name.
 	{
 		assert(m_hKey);
 		return ::RegQueryValueEx(m_hKey, pszValueName, 0, pdwType, (LPBYTE)pData, pnBytes);
 	}
 
-	inline LONG CRegKey::RecurseDeleteKey(LPCTSTR lpszKey)
+	inline LONG CRegKey::RecurseDeleteKey(LPCTSTR lpszKey) const
 	// Removes the specified key and any subkeys from the registry.
 	{
 		assert(m_hKey);
@@ -303,21 +303,21 @@ namespace Win32xx
 		return DeleteSubKey(lpszKey);
 	}
 
-	inline LONG CRegKey::SetBinaryValue(LPCTSTR pszValueName, const void* pValue, ULONG nBytes)
+	inline LONG CRegKey::SetBinaryValue(LPCTSTR pszValueName, const void* pValue, ULONG nBytes) const
 	// Sets the binary value of the registry key.
 	{
 		assert(m_hKey);
 		return ::RegSetValueEx(m_hKey, pszValueName, 0, REG_BINARY, (LPBYTE)pValue, nBytes);
 	}
 
-	inline LONG CRegKey::SetDWORDValue(LPCTSTR pszValueName, DWORD dwValue)
+	inline LONG CRegKey::SetDWORDValue(LPCTSTR pszValueName, DWORD dwValue) const
 	// Sets the DWORD value of the registry key.
 	{
 		assert(m_hKey);
 		return ::RegSetValueEx(m_hKey, pszValueName, 0, REG_DWORD, (LPBYTE)&dwValue, sizeof(DWORD));
 	}
 
-	inline LONG CRegKey::SetGUIDValue(LPCTSTR pszValueName, REFGUID guidValue)
+	inline LONG CRegKey::SetGUIDValue(LPCTSTR pszValueName, REFGUID guidValue) const
 	// Sets the GUID value of the registry key.
 	{
 		assert(m_hKey);
@@ -328,7 +328,7 @@ namespace Win32xx
 	}
 
 #if (WINVER >= 0x0600)
-	inline LONG CRegKey::SetKeyValue(LPCTSTR lpszKeyName, LPCTSTR lpszValue, LPCTSTR lpszValueName)
+	inline LONG CRegKey::SetKeyValue(LPCTSTR lpszKeyName, LPCTSTR lpszValue, LPCTSTR lpszValueName) const
 	// Stores data in a specified value field of a specified key.
 	{
 		assert(m_hKey);
@@ -336,14 +336,14 @@ namespace Win32xx
 	}
 #endif
 
-	inline LONG CRegKey::SetKeySecurity(SECURITY_INFORMATION si, PSECURITY_DESCRIPTOR psd)
+	inline LONG CRegKey::SetKeySecurity(SECURITY_INFORMATION si, PSECURITY_DESCRIPTOR psd) const
 	// Sets the security of the registry key.
 	{
 		assert(m_hKey);
 		return ::RegSetKeySecurity(m_hKey, si, psd);
 	}
 
-	inline LONG CRegKey::SetMultiStringValue(LPCTSTR pszValueName, LPCTSTR pszValue)
+	inline LONG CRegKey::SetMultiStringValue(LPCTSTR pszValueName, LPCTSTR pszValue) const
 	// Sets the multistring value of the registry key.
 	{
 		assert(m_hKey);
@@ -365,14 +365,14 @@ namespace Win32xx
 		return ::RegSetValueEx(m_hKey, pszValueName, 0, REG_MULTI_SZ, (LPBYTE)pszValue, nBytes);
 	}
 
-	inline LONG CRegKey::SetStringValue(LPCTSTR pszValueName, LPCTSTR pszValue, DWORD dwType)
+	inline LONG CRegKey::SetStringValue(LPCTSTR pszValueName, LPCTSTR pszValue, DWORD dwType) const
 	// Sets the string value of the registry key.
 	{
 		assert(m_hKey);
 		return ::RegSetValueEx(m_hKey, pszValueName, 0, dwType, (LPBYTE)pszValue, lstrlen(pszValue)*sizeof(TCHAR));
 	}
 
-	inline LONG CRegKey::SetValue(LPCTSTR pszValueName, DWORD dwType, const void* pValue, ULONG nBytes)
+	inline LONG CRegKey::SetValue(LPCTSTR pszValueName, DWORD dwType, const void* pValue, ULONG nBytes) const
 	// Sets the value of the registry key.
 	{
 		assert(m_hKey);
@@ -381,7 +381,7 @@ namespace Win32xx
 
 #ifdef REG_QWORD
 
-	inline LONG CRegKey::QueryQWORDValue(LPCTSTR pszValueName, ULONGLONG& qwValue)
+	inline LONG CRegKey::QueryQWORDValue(LPCTSTR pszValueName, ULONGLONG& qwValue) const
 	// Retrieves the QWORD data for a specified value name.
 	{
 		assert(m_hKey);
@@ -390,7 +390,7 @@ namespace Win32xx
 		return ::RegQueryValueEx(m_hKey, pszValueName, 0, &dwType, (LPBYTE)&qwValue, &nBytes);
 	}
 
-	inline LONG CRegKey::SetQWORDValue(LPCTSTR pszValueName, ULONGLONG qwValue)
+	inline LONG CRegKey::SetQWORDValue(LPCTSTR pszValueName, ULONGLONG qwValue) const
 	// Sets the QWORD value of the registry key.
 	{
 		assert(m_hKey);

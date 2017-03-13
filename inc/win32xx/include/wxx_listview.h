@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -61,7 +61,7 @@ namespace Win32xx
 		UINT	GetCallbackMask( ) const;
 		BOOL	GetCheckState( UINT nItem ) const;
 		BOOL	GetColumn( int iCol, LVCOLUMN& Column ) const;
-		BOOL	GetColumnOrderArray( LPINT piArray, int iCount = -1 );
+		BOOL	GetColumnOrderArray( LPINT piArray, int iCount = -1 ) const;
 		int		GetColumnWidth( int iCol ) const;
 		int		GetCountPerPage( ) const;
 		HWND	GetEditControl( ) const;
@@ -94,7 +94,7 @@ namespace Win32xx
 		BOOL	SetBkColor( COLORREF clrBk ) const;
 		BOOL	SetBkImage( LVBKIMAGE& plvbkImage ) const;
 		BOOL	SetCallbackMask( UINT nMask ) const;
-		void	SetCheckState( int iItem, BOOL fCheck = TRUE ) const;
+		void	SetCheckState( int iItem, BOOL Checked = TRUE ) const;
 		BOOL	SetColumn( int iCol, const LVCOLUMN& pColumn ) const;
 		BOOL	SetColumnOrderArray( int iCount, LPINT piArray ) const;
 		BOOL	SetColumnWidth( int iCol, int cx ) const;
@@ -129,7 +129,7 @@ namespace Win32xx
 		BOOL	DeleteColumn( int iCol ) const;
 		BOOL	DeleteItem( int iItem ) const;
 		HWND	EditLabel( int iItem ) const;
-		BOOL	EnsureVisible( int iItem, BOOL fPartialOK ) const;
+		BOOL	EnsureVisible( int iItem, BOOL IsPartialOK ) const;
 		int		FindItem( LVFINDINFO& FindInfo, int iStart = -1 ) const;
 		int		HitTest( LVHITTESTINFO& HitTestInfo ) const;
         int		HitTest( CPoint pt, UINT* pFlags = NULL ) const;
@@ -205,7 +205,7 @@ namespace Win32xx
 		return ListView_GetColumn( *this, iCol, &Column );
 	}
 
-	inline BOOL CListView::GetColumnOrderArray( LPINT piArray, int iCount /*= -1*/ )
+	inline BOOL CListView::GetColumnOrderArray( LPINT piArray, int iCount /*= -1*/ ) const
 	// Retrieves the current left-to-right order of columns in a list-view control.
 	{
 		assert(IsWindow());
@@ -471,12 +471,12 @@ namespace Win32xx
 		return ListView_SetCallbackMask( *this, nMask );
 	}
 
-	inline void CListView::SetCheckState( int iItem, BOOL fCheck /*= TRUE*/ ) const
+	inline void CListView::SetCheckState( int iItem, BOOL Checked /*= TRUE*/ ) const
 	// Used to select or deselect an item in a list-view control.
 	// This macro should only be used for list-view controls with the LVS_EX_CHECKBOXES style.
 	{
 		assert(IsWindow());
-		ListView_SetItemState(*this, iItem, INDEXTOSTATEIMAGEMASK((fCheck!=FALSE)?2:1),LVIS_STATEIMAGEMASK);
+		ListView_SetItemState(*this, iItem, INDEXTOSTATEIMAGEMASK((Checked!=FALSE)?2:1),LVIS_STATEIMAGEMASK);
 	}
 
 	inline BOOL CListView::SetColumn( int iCol, const LVCOLUMN& Column ) const
@@ -742,12 +742,12 @@ namespace Win32xx
 		return ListView_EditLabel( *this, iItem );
 	}
 
-	inline BOOL CListView::EnsureVisible( int iItem, BOOL fPartialOK ) const
+	inline BOOL CListView::EnsureVisible( int iItem, BOOL IsPartialOK ) const
 	// Ensures that a list-view item is either entirely or partially visible,
 	// scrolling the list-view control if necessary.
 	{
 		assert(IsWindow());
-		return static_cast<BOOL>(SendMessage(LVM_ENSUREVISIBLE, (WPARAM)iItem, (LPARAM)fPartialOK ));
+		return static_cast<BOOL>(SendMessage(LVM_ENSUREVISIBLE, (WPARAM)iItem, (LPARAM)IsPartialOK ));
 	}
 
 	inline int CListView::FindItem( LVFINDINFO& FindInfo, int iStart /*= -1*/ ) const

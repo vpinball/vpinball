@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -54,7 +54,7 @@
 
 
 ///////////////////////////////////////////////////////////////////
-// Definitions of the CCommonDialog, CColorDialog, CFileDialog, 
+// Definitions of the CCommonDialog, CColorDialog, CFileDialog,
 // CFindReplaceDialog, and CFontDialog classes.
 //
 // CCommonDialog is the base class for all common dialogs.
@@ -70,6 +70,15 @@
 
 namespace Win32xx
 {
+
+#ifndef _WIN32_WCE
+	// registered message used by common dialogs
+	const UINT UWM_HELPMSGSTRING = ::RegisterWindowMessage(HELPMSGSTRING);		// Used by common dialogs. Sent when the user clicks the Help button.
+	const UINT UWM_FILEOKSTRING  = ::RegisterWindowMessage(FILEOKSTRING);		// Used by common dialogs. Sent when the user specifies a file name and clicks the OK button.
+	const UINT UWM_LBSELCHSTRING = ::RegisterWindowMessage(LBSELCHSTRING);		// Used by the File common dialog. Sent when the selection changes in any of the list boxes or combo boxes.
+	const UINT UWM_SHAREVISTRING = ::RegisterWindowMessage(SHAREVISTRING);		// Used by the File common dialog. Sent if a sharing violation occurs for the selected file when the user clicks the OK button.
+	const UINT UWM_FINDMSGSTRING = ::RegisterWindowMessage(FINDMSGSTRING);		// Used by the Find/Replace common dialog. Sent when the user clicks the Find Next, Replace, or Replace All button, or closes the dialog box.
+#endif
 
 	//============================================================================
 	class CCommonDialog : public CDialog
@@ -102,7 +111,7 @@ namespace Win32xx
 		virtual INT_PTR	DoModal(HWND hWndOwner = 0);
 		COLORREF  GetColor() const				{ return m_CC.rgbResult;}
 		COLORREF* GetCustomColors()				{ return m_rgbCustomColors;}
-		const CHOOSECOLOR& GetParameters() const { return m_CC; }		
+		const CHOOSECOLOR& GetParameters() const { return m_CC; }
 		void 	SetColor(COLORREF clr)			{ m_CC.rgbResult = clr;}
 		void    SetCustomColors(const COLORREF*	rgbCstmColors = NULL);
 		void	SetParameters(CHOOSECOLOR cc);
@@ -128,7 +137,7 @@ namespace Win32xx
 	public:
 
 		// Constructor/destructor
-		CFileDialog (BOOL bOpenFileDialog = TRUE,
+		CFileDialog (BOOL IsOpenFileDialog = TRUE,
 				LPCTSTR pszDefExt = NULL,
 				LPCTSTR pszFileName = NULL,
 				DWORD dwFlags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
@@ -145,10 +154,10 @@ namespace Win32xx
 		CString GetFileTitle() const;
 		CString GetFolderPath() const;
 		CString GetPathName() const;
-		const OPENFILENAME& GetParameters() const { return m_OFN; }		
+		const OPENFILENAME& GetParameters() const { return m_OFN; }
 
 		// methods for setting parameters before DoModal()
-		BOOL	IsOpenFileDialog()					{ return m_bOpenFileDialog; }
+		BOOL	IsOpenFileDialog()	const			{ return m_IsOpenFileDialog; }
 		void    SetDefExt(LPCTSTR szExt);
 		void    SetFileName(LPCTSTR szFileName);
 		void	SetFilter(LPCTSTR szFilter);
@@ -173,7 +182,7 @@ namespace Win32xx
 		INT_PTR DialogProcDefault(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	private:
-		BOOL 			m_bOpenFileDialog;  // TRUE = open, FALSE = save
+		BOOL 			m_IsOpenFileDialog;  // TRUE = open, FALSE = save
 		CString   		m_sFilter;          // File filter string
 		CString			m_sFileName;		// File name string
 		CString			m_sTitle;			// Dialog title
@@ -189,11 +198,11 @@ namespace Win32xx
 	{
 	public:
 		// constructor and destructor
-		CFindReplaceDialog(BOOL bFindDialogOnly = TRUE);
+		CFindReplaceDialog(BOOL IsFindDialogOnly = TRUE);
 		virtual ~CFindReplaceDialog() {}
 
         virtual HWND Create(HWND hWndParent = 0);
-		virtual BOOL Create(BOOL bFindDialogOnly,
+		virtual BOOL Create(BOOL IsFindDialogOnly,
 						LPCTSTR sFindWhat,
 						LPCTSTR sReplaceWith = NULL,
 						DWORD dwFlags = FR_DOWN,
@@ -205,8 +214,8 @@ namespace Win32xx
 		BOOL 	FindNext() const;           // TRUE = find next
 		CString GetFindString() const;      // get find string
 		CString	GetReplaceString() const;   // get replacement string
-		const	FINDREPLACE& GetParameters() const	{ return m_FR; }		
-		BOOL	IsFindDialogOnly() const			{ return m_bFindDialogOnly; }
+		const	FINDREPLACE& GetParameters() const	{ return m_FR; }
+		BOOL	IsFindDialogOnly() const			{ return m_IsFindDialogOnly; }
 		BOOL 	IsTerminating();      	    // TRUE = terminate dialog
 		BOOL 	MatchCase() const;          // TRUE = matching case
 		BOOL 	MatchWholeWord() const;     // TRUE = whole words only
@@ -225,7 +234,7 @@ namespace Win32xx
 
 	private:
 		FINDREPLACE 	m_FR;				// FindReplace parameters
-		BOOL			m_bFindDialogOnly;	// TRUE for a find only dialog
+		BOOL			m_IsFindDialogOnly;	// TRUE for a find only dialog
 		CString 		m_strFindWhat;		// The Find string
 		CString 		m_strReplaceWith;	// The Replace string
 	};
@@ -335,8 +344,8 @@ namespace Win32xx
 
 	//============================================================================
 	inline CColorDialog::CColorDialog(COLORREF clrInit /* = 0 */, DWORD dwFlags /* = 0 */)
-	// Construct a CColorDialog object. The initial color, and flags for the 
-	// CHOOSECOLOR struct can be specified.  Refer to the description of the 
+	// Construct a CColorDialog object. The initial color, and flags for the
+	// CHOOSECOLOR struct can be specified.  Refer to the description of the
 	// CHOOSECOLOR struct in the Windows API documentation.
 	{
 		// set the parameters in the CHOOSECOLOR struct
@@ -418,11 +427,11 @@ namespace Win32xx
 		m_CC.hwndOwner = hWndOwner;
 
 		// invoke the control and save the result on success
-		BOOL ok = ::ChooseColor(&m_CC);
+		BOOL IsValid = ::ChooseColor(&m_CC);
 
 		m_hWnd = 0;
 
-		if (!ok)
+		if (!IsValid)
 		{
 			DWORD dwError = CommDlgExtendedError();
 			if ((dwError != 0) && (dwError != CDERR_DIALOGFAILURE))
@@ -472,20 +481,20 @@ namespace Win32xx
 	//
 
 	//============================================================================
-	inline CFileDialog::CFileDialog(BOOL bOpenFileDialog  /* = TRUE */,
+	inline CFileDialog::CFileDialog(BOOL IsOpenFileDialog  /* = TRUE */,
 		LPCTSTR pszDefExt /* = NULL */,
 		LPCTSTR pszFileName /* = NULL */,
 		DWORD dwFlags /* = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT */,
 		LPCTSTR pszFilter /* = NULL */)
-	// Construct a CFileDialog object. bOpenFileDialog specifies the type of 
+	// Construct a CFileDialog object. IsOpenFileDialog specifies the type of
 	// dialog box, OpenFile or SaveFile. The file's default extent and name can
-	// be specified, along with the flags for the OPENFILENAME struct. 
-	// The pszFilter contains a series of string pairs that specify file filters, 
+	// be specified, along with the flags for the OPENFILENAME struct.
+	// The pszFilter contains a series of string pairs that specify file filters,
 	// separated by '\0' or '|' chars. Refer to the description of the OPENFILENAME
 	// struct in the Windows API documentation.
 	{
 		// set open/saveas toggle
-		m_bOpenFileDialog = bOpenFileDialog;
+		m_IsOpenFileDialog = IsOpenFileDialog;
 
 		// clear out the OPENFILENAME structure
 		ZeroMemory(&m_OFN, sizeof(m_OFN));
@@ -614,7 +623,7 @@ namespace Win32xx
 
 		m_OFN.hwndOwner = hWndOwner;
 		m_OFN.lpstrFile = m_sFileName.GetBuffer(m_OFN.nMaxFile);
-		int ok = (m_bOpenFileDialog ? ::GetOpenFileName(&m_OFN) : ::GetSaveFileName(&m_OFN));
+		int ok = (m_IsOpenFileDialog ? ::GetOpenFileName(&m_OFN) : ::GetSaveFileName(&m_OFN));
 		m_sFileName.ReleaseBuffer();
 		m_OFN.lpstrFile = const_cast<LPTSTR>(m_sFileName.c_str());
 		m_hWnd = 0;
@@ -641,7 +650,7 @@ namespace Win32xx
 	//============================================================================
 	inline CString CFileDialog::GetFileName() const
 	//	Return the name of the file that was entered in the DoModal() operation.
-	//	This name consists of only the file title and extension. If the 
+	//	This name consists of only the file title and extension. If the
 	//  OFN_ALLOWMULTISELECT flag is specified, only the first file path selected
 	//  will be returned. If so, GetNextPathName can be used to retrieve subsequent
 	// 	file names.
@@ -687,22 +696,22 @@ namespace Win32xx
 
 	//============================================================================
 	inline CString CFileDialog::GetNextPathName(int& pos) const
-	//	Return the next file path name from a group of files selected. The 
+	//	Return the next file path name from a group of files selected. The
 	//	OFN_ALLOWMULTISELECT flag allows multiple files to be selected. Use pos = 0
-	//	to retrieve the first file. The pos parameter is updated to point to the 
+	//	to retrieve the first file. The pos parameter is updated to point to the
 	// 	next file name. The pos parameter is set to -1 when the last file is retrieved.
 	{
 		assert(pos >= 0);
 
-		BOOL bExplorer = m_OFN.Flags & OFN_EXPLORER;
-		TCHAR chDelimiter = (bExplorer ? _T('\0') : _T(' '));
-		
+		BOOL IsExplorer = m_OFN.Flags & OFN_EXPLORER;
+		TCHAR chDelimiter = (IsExplorer ? _T('\0') : _T(' '));
+
 		CString strFile(m_OFN.lpstrFile + pos, m_OFN.nMaxFile);	// strFile can contain NULLs
 		int Index = 0;
 		if (pos == 0)
 		{
 			Index = strFile.Find(chDelimiter);
-			
+
 			if ( (Index < 0) || (strFile.GetAt(++Index) == _T('\0')))
 			{
 				// Only one file selected. m_OFN.lpstrFile contains a single string
@@ -714,23 +723,23 @@ namespace Win32xx
 
 		// Multiple files selected. m_OFN.lpstrFile contains a set of substrings separated
 		// by delimiters. The first substring is the path, the following ones are file names.
-		
+
 		// Fill strPath with the path
 		CString strPath = m_OFN.lpstrFile; // strPath is terminated by first NULL
-		if (!bExplorer)
+		if (!IsExplorer)
 		{
 			int nDeliminator = strPath.Find(chDelimiter);
 			strPath = strPath.Left(nDeliminator);
 		}
 
-		// Fill strFileName with the file name 
+		// Fill strFileName with the file name
 		CString strFileName = m_OFN.lpstrFile + pos + Index;
-		if (!bExplorer)
+		if (!IsExplorer)
 		{
 			int nDeliminator = strFileName.Find(chDelimiter);
 			if (nDeliminator > 0)
 				strFileName = strFileName.Left(nDeliminator);
-		} 
+		}
 
 		// Update pos to point to the next file
 		int nFileLen = lstrlen(strFileName);
@@ -739,7 +748,7 @@ namespace Win32xx
 		else
 			pos = pos + Index + nFileLen +1;
 
-		
+
 		if (!strPath.IsEmpty())
 		{
 			// Get the last character from the path
@@ -753,7 +762,7 @@ namespace Win32xx
 			}
 		}
 
-		// Add _T('\\') to the end of the path 
+		// Add _T('\\') to the end of the path
 		return strPath + _T("\\") + strFileName;
 	}
 
@@ -869,7 +878,7 @@ namespace Win32xx
 
 			case CDN_SHAREVIOLATION:
 				return OnShareViolation(pNotify->pszFile);
-	
+
 			case CDN_HELP:
 				OnHelpButton();
 				return TRUE;
@@ -957,7 +966,7 @@ namespace Win32xx
 	inline void CFileDialog::SetFilter(LPCTSTR szFilter)
 	//	Set the file choice dialog file name filter string to pszFilter.
 	//  The string is a pair of strings delimited by NULL or '|'
-	//  The string must be either double terminated, or use '|' instead of '\0' 
+	//  The string must be either double terminated, or use '|' instead of '\0'
 	//  For Example: _T("Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0")
 	//           or: _T("Text Files (*.txt)|*.txt|All Files (*.*)|*.*|")
 	{
@@ -1053,25 +1062,25 @@ namespace Win32xx
 	//
 
 	//============================================================================
-	inline CFindReplaceDialog::CFindReplaceDialog(BOOL bFindDialogOnly /* = TRUE */)
+	inline CFindReplaceDialog::CFindReplaceDialog(BOOL IsFindDialogOnly /* = TRUE */)
 	// Constructor for CCFindReplaceDialog. Refer to the Windows API documentation
 	// for information of the FINDREPLACE structure.
 	{
 		ZeroMemory(&m_FR, sizeof(m_FR));
-		m_bFindDialogOnly = bFindDialogOnly;
+		m_IsFindDialogOnly = IsFindDialogOnly;
 		SetParameters(m_FR);
 	}
 
-	//============================================================================	
-	//	Create and display either a Find or indReplace dialog box. 	
+	//============================================================================
+	//	Create and display either a Find or indReplace dialog box.
 	inline HWND CFindReplaceDialog::Create(HWND hParentWnd /* = 0*/)
 	{
-		Create(m_bFindDialogOnly, m_FR.lpstrFindWhat, m_FR.lpstrReplaceWith, m_FR.Flags, hParentWnd);
+		Create(m_IsFindDialogOnly, m_FR.lpstrFindWhat, m_FR.lpstrReplaceWith, m_FR.Flags, hParentWnd);
 	    return m_hWnd;
 	}
 
 	//============================================================================
-	inline BOOL CFindReplaceDialog::Create(BOOL bFindDialogOnly, LPCTSTR pszFindWhat,
+	inline BOOL CFindReplaceDialog::Create(BOOL IsFindDialogOnly, LPCTSTR pszFindWhat,
 			LPCTSTR pszReplaceWith, DWORD dwFlags, HWND hParentWnd /* = 0*/)
 	//	Create and display either a Find or indReplace dialog box. lpszFindWhat
 	//  is the search string, and lpszReplaceWith is the replace string.
@@ -1082,7 +1091,7 @@ namespace Win32xx
 		assert( &GetApp() );	// Test if Win32++ has been started
 		assert(!IsWindow());	// Only one window per CWnd instance allowed
 
-		m_bFindDialogOnly = bFindDialogOnly;
+		m_IsFindDialogOnly = IsFindDialogOnly;
 
 		// Ensure this thread has the TLS index set
 		TLSData* pTLSData = GetApp().SetTlsData();
@@ -1103,7 +1112,7 @@ namespace Win32xx
 
 		// Display the dialog box
 		HWND hWnd;
-		if (bFindDialogOnly)
+		if (IsFindDialogOnly)
 			hWnd = ::FindText(&m_FR);
 		else
 			hWnd = ::ReplaceText(&m_FR);
@@ -1174,7 +1183,7 @@ namespace Win32xx
 	//============================================================================
 	inline BOOL CFindReplaceDialog::FindNext() const
 	//	Call this function to determine whether the user wants to find the next
-	//  occurrence of the search string. 
+	//  occurrence of the search string.
 	{
 		return ((m_FR.Flags & FR_FINDNEXT )!= 0);
 	}
@@ -1366,7 +1375,7 @@ namespace Win32xx
 	}
 
 	inline CFontDialog::CFontDialog(DWORD dwFlags /* = 0 */, HDC hdcPrinter /* =  0 */)
-	//	Construct a default CFontDialog object. 
+	//	Construct a default CFontDialog object.
 	{
 		// clear out logfont, style name, and choose font structure
 		ZeroMemory(&m_LogFont, sizeof(m_LogFont));
@@ -1376,7 +1385,7 @@ namespace Win32xx
 		m_CF.rgbColors = 0; // black
 		m_CF.lStructSize = sizeof(m_CF);
 		m_CF.Flags	= dwFlags;
-		
+
 		if (hdcPrinter)
 		{
 			m_CF.hDC = hdcPrinter;
@@ -1385,7 +1394,7 @@ namespace Win32xx
 
 		// Enable the hook proc for the help button
 		if (m_CF.Flags & CF_SHOWHELP)
-			m_CF.Flags |= CF_ENABLEHOOK;		
+			m_CF.Flags |= CF_ENABLEHOOK;
 
 		SetParameters(m_CF);
 	}

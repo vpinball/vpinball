@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -94,6 +94,7 @@
   #pragma option -w-8026            // functions with exception specifications are not expanded inline
   #pragma option -w-8027		    // function not expanded inline
   #pragma option -w-8030			// Temporary used for 'rhs'
+  #pragma option -w-8004			// Assigned value is never used
   #define STRICT 1
 #endif
 
@@ -121,17 +122,6 @@
 #ifdef _WIN32_WCE
   #include "wxx_wcestddef.h"
 #endif
-
-// These messages are actually supported on Win98
-#if WINVER >= 0x0410
-  #ifndef WM_UNINITMENUPOPUP
-    #define WM_UNINITMENUPOPUP              0x0125
-  #endif
-
-  #ifndef WM_MENURBUTTONUP
-    #define WM_MENURBUTTONUP                0x0122
-  #endif
-#endif // WINVER == 0x0410
 
 #include "wxx_shared_ptr.h"
 

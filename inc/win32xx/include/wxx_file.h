@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -150,12 +150,12 @@ namespace Win32xx
 	inline BOOL CFile::Close()
 	// Closes the file associated with this object. Closed file can no longer be read or written to.
 	{
-		BOOL bResult = TRUE;
+		BOOL IsClosed = TRUE;
 		if (m_hFile != 0)
-			bResult = CloseHandle(m_hFile);
+			IsClosed = CloseHandle(m_hFile);
 
 		m_hFile = 0;
-		return bResult;
+		return IsClosed;
 	}
 
 	inline BOOL CFile::Flush()

@@ -14,7 +14,9 @@ Win32++ supports the following compilers and development environments:
 * Microsoft Visual C++ 2010 Express Edition
 * Microsoft Visual C++ 2012 Express Edition
 * Microsoft Visual C++ 2013 Express Edition
+* Microsoft Visual Studio Community 2013 
 * Microsoft Visual Studio Community 2015
+* Microsoft Visual Studio Community 2017
 * Microsoft Visual Studio 6.0
 * Microsoft Visual Studio.net 2003
 * Microsoft Visual Studio.net 2005
@@ -23,7 +25,9 @@ Win32++ supports the following compilers and development environments:
 * Microsoft Visual Studio.net 2012
 * Microsoft Visual Studio.net 2013
 * Microsoft Visual Studio.net 2015
+* Microsoft Visual Studio.net 2017
 * MinGW compiler
+* MinGW x64 compiler
 
 Win32++ supports the following operating systems
 * Windows 95
@@ -78,18 +82,20 @@ The file download from Sourceforge includes the following:
 The sample applications include:
  * Browser - An Internet browser application with an event sink.
  * CommonDialogs - a Demo of windows common dialogs, such as File/Save
+ * ContextHelp - Shows how to incorporate context help into an application. 
  * CustomControl - Shows how to put a web browser in a custom control for use in a dialog.
  * DateTime - A demo of a Date/time dialog for displaying and changing the time
  * DDXDemo - Demonstrates Dialog Data Exchange and validation. 
  * Dialog - An example of a simple dialog application.
+ * DialogBars - Demonstrates yhr use of a slider, scrollbar and progressbar control in a dialog.
  * DialogDemo - An interactive dialog application demonstrating slider controls and progress bars.
  * DialogResizing - An example of a resizable dialog.
  * DialogTab - A dialog application with a tab control.
- * DirectX - A simple DirectX application.
+ * DirectX9 - A simple DirectX application.
+ * DirectX11 - A simple DirectX application using DirectX 11.
  * DLL - Shows how to run Win32++ from within a DLL
  * Dock - An example of a simple docking application.
  * DockContainer - An example of a docking application which incorporates containers.
- * DockMDI - Combines docking with a MDI frame.
  * DockTabbedMDI - An example of a docking application with containers and a tabbed MDI.
  * DoubleBuffer - Demonstrates how to implement double buffering for window drawing.
  * Explorer - A Windows Explorer-like application.
@@ -98,19 +104,26 @@ The sample applications include:
  * Frame - A simple frame application that stores settings in the registry.
  * GDIPlus - Demonstrates how to use GDI+ with Win32++.
  * INIFrame - A simple frame application that stores settings in an INI file.
+ * MDIDockFrame - Combines docking with a MDI frame.
  * MDIFrame - A simple MDI frame application.
  * MDIFrameDemo - Demonstrates some additional features of MDI frames.
  * MDIFrameSplitter - Demonstrates how to implement splitter windows in MDI Child windows.
+ * MetaFile  - Demonstrates how to create and display an enhanced metafile.
  * NetClient - Demonstrates a network chat client.
- * NetSimple - Simple client and server network programs.
  * NetServer - Demonstrates a network chat server.
+ * NetSimple - Simple client and server network programs. 
  * Notepad - A simple text editor with printing.
  * Performance - Measures Win32++'s message handling speed.
  * Picture - A simple picture rendering application.
+ * PrintPreview - Extends the Notepad sample by adding a print preview. 
  * PropertySheets - A demonstration of property sheets.
+ * RebarDemo - Demonstrates the how to add a second ReBar to a frame application.
+ * RibbonDockFrame - Demonstrates how to use a ribbon with a Docking Frame.
  * RibbonFrame - Demonstrates how to use the Windows 7 ribbon with a frame.
  * RibbonSimple - Demonstrates how to use the Windows 7 ribbon with a simple window.
+ * RoundWindow - Demonstrates how to use Win32++ to create a round window.
  * Scribble - A simple drawing application.
+ * ScrollTextFile - displays a text file in a scrollable window.
  * Simple - Creates a simple window.
  * Splitter - Demonstrates how to use dockers to create splitter windows.
  * StatusBar - Demonstrates various things which can be done with the status bar.

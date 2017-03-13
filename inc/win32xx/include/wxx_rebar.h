@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -58,18 +58,18 @@ namespace Win32xx
 
 		// Operations
 		BOOL DeleteBand(const int nBand) const;
-		int  HitTest(RBHITTESTINFO& rbht);
-		HWND HitTest(POINT pt);
+		int  HitTest(RBHITTESTINFO& rbht) const;
+		HWND HitTest(POINT pt) const;
 		int  IDToIndex(UINT uBandID) const;
 		BOOL InsertBand(const int nBand, REBARBANDINFO& rbbi) const;
 		BOOL IsBandVisible(int nBand) const;
-		void MaximizeBand(UINT uBand, BOOL fIdeal = FALSE);
-		void MinimizeBand(UINT uBand);
-		BOOL MoveBand(UINT uFrom, UINT uTo);
-		void MoveBandsLeft();
+		void MaximizeBand(UINT uBand, BOOL IsIdeal = FALSE) const;
+		void MinimizeBand(UINT uBand) const;
+		BOOL MoveBand(UINT uFrom, UINT uTo) const;
+		void MoveBandsLeft() const;
 		BOOL ResizeBand(const int nBand, const CSize& sz) const;
-		BOOL ShowGripper(int nBand, BOOL fShow) const;
-		BOOL ShowBand(int nBand, BOOL fShow) const;
+		BOOL ShowGripper(int nBand, BOOL Show) const;
+		BOOL ShowBand(int nBand, BOOL Show) const;
 		BOOL SizeToRect(CRect& rect) const;
 
 		// Attributes
@@ -258,7 +258,7 @@ namespace Win32xx
 		return reinterpret_cast<HWND>(SendMessage(RB_GETTOOLTIPS, 0L, 0L));
 	}
 
-	inline int CReBar::HitTest(RBHITTESTINFO& rbht)
+	inline int CReBar::HitTest(RBHITTESTINFO& rbht) const
 	// Determines which portion of a rebar band is at a given point on the screen,
 	//  if a rebar band exists at that point.
 	{
@@ -266,7 +266,7 @@ namespace Win32xx
 		return static_cast<int>(SendMessage(RB_HITTEST, 0L, (LPARAM)&rbht));
 	}
 
-	inline HWND CReBar::HitTest(POINT pt)
+	inline HWND CReBar::HitTest(POINT pt) const
 	// Return the child HWND at the given point
 	{
 		assert(IsWindow());
@@ -347,28 +347,28 @@ namespace Win32xx
 		wc.lpszClassName =  REBARCLASSNAME;
 	}
 
-	inline void CReBar::MaximizeBand(UINT uBand, BOOL fIdeal /*= FALSE*/)
+	inline void CReBar::MaximizeBand(UINT uBand, BOOL IsIdeal /*= FALSE*/) const
 	// Resizes a band in a rebar control to either its ideal or largest size.
 	{
 		assert(IsWindow());
-		SendMessage(RB_MAXIMIZEBAND, (WPARAM)uBand, (LPARAM)fIdeal);
+		SendMessage(RB_MAXIMIZEBAND, (WPARAM)uBand, (LPARAM)IsIdeal);
 	}
 
-	inline void CReBar::MinimizeBand(UINT uBand)
+	inline void CReBar::MinimizeBand(UINT uBand) const
 	// Resizes a band in a rebar control to its smallest size.
 	{
 		assert(IsWindow());
 		SendMessage(RB_MINIMIZEBAND, (WPARAM)uBand, 0L);
 	}
 
-	inline BOOL CReBar::MoveBand(UINT uFrom, UINT uTo)
+	inline BOOL CReBar::MoveBand(UINT uFrom, UINT uTo) const
 	// Moves a band from one index to another.
 	{
 		assert(IsWindow());
 		return static_cast<BOOL>(SendMessage(RB_MOVEBAND, (WPARAM)uFrom, (LPARAM)uTo));
 	}
 
-	inline void CReBar::MoveBandsLeft()
+	inline void CReBar::MoveBandsLeft() const
 	// Repositions the bands so they are left justified
 	{
 		assert(IsWindow());
@@ -530,14 +530,14 @@ namespace Win32xx
 		return static_cast<BOOL>(SendMessage(RB_SETBARINFO, 0L, (LPARAM)&rbi));
 	}
 
-	inline BOOL CReBar::ShowBand(int nBand, BOOL fShow) const
+	inline BOOL CReBar::ShowBand(int nBand, BOOL Show) const
 	// Show or hide a band
 	{
 		assert(IsWindow());
-		return static_cast<BOOL>(SendMessage(RB_SHOWBAND, (WPARAM)nBand, (LPARAM)fShow));
+		return static_cast<BOOL>(SendMessage(RB_SHOWBAND, (WPARAM)nBand, (LPARAM)Show));
 	}
 
-	inline BOOL CReBar::ShowGripper(int nBand, BOOL fShow) const
+	inline BOOL CReBar::ShowGripper(int nBand, BOOL Show) const
 	// Show or hide the band's gripper
 	{
 		assert(IsWindow());
@@ -547,7 +547,7 @@ namespace Win32xx
 		rbbi.cbSize = GetSizeofRBBI();
 		rbbi.fMask = RBBIM_STYLE;
 		GetBandInfo(nBand, rbbi);
-		if (fShow)
+		if (Show)
 		{
 			rbbi.fStyle |= RBBS_GRIPPERALWAYS;
 			rbbi.fStyle &= ~RBBS_NOGRIPPER;

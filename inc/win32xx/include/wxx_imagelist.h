@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -90,9 +90,9 @@ namespace Win32xx
 #endif
 
 		//Operations
-		int Add(HBITMAP hbmImage, HBITMAP hbmMask) ;
-		int Add(HBITMAP hbmImage, COLORREF crMask);
-		int Add(HICON hIcon);
+		int Add(HBITMAP hbmImage, HBITMAP hbmMask) const;
+		int Add(HBITMAP hbmImage, COLORREF crMask) const;
+		int Add(HICON hIcon) const;
 		void Attach(HIMAGELIST hImageList);
 		BOOL BeginDrag(int nImage, CPoint ptHotSpot) const;
 		void DeleteImageList();
@@ -100,7 +100,7 @@ namespace Win32xx
 		BOOL DragEnter(HWND hWndLock, CPoint point) const;
 		BOOL DragLeave(HWND hWndLock) const;
 		BOOL DragMove(CPoint pt) const;
-		BOOL DragShowNolock(BOOL bShow) const;
+		BOOL DragShowNolock(BOOL Show) const;
 		BOOL Draw(HDC hdc, int nImage, POINT pt, UINT nStyle) const;
 		BOOL DrawEx(HDC hdc, int nImage, POINT pt, SIZE sz, COLORREF clrBk, COLORREF clrFg, UINT nStyle) const;
 		BOOL DrawIndirect(const IMAGELISTDRAWPARAMS& imldp);
@@ -119,9 +119,9 @@ namespace Win32xx
 		operator HIMAGELIST () const;
 
 	private:
-		void AddToMap();
+		void AddToMap() const;
 		void Release();
-		BOOL RemoveFromMap();
+		BOOL RemoveFromMap() const;
 
 		CIml_Data* m_pData;
 	};
@@ -173,7 +173,7 @@ namespace Win32xx
 		Release();
 	}
 
-	inline void CImageList::AddToMap()
+	inline void CImageList::AddToMap() const
 	// Store the HIMAGELIST and CImageList pointer in the HIMAGELIST map
 	{
 		assert( &GetApp() );
@@ -182,7 +182,7 @@ namespace Win32xx
 		GetApp().AddCImlData(m_pData->hImageList, m_pData);
 	}
 
-	inline BOOL CImageList::RemoveFromMap()
+	inline BOOL CImageList::RemoveFromMap() const
 	{
 		BOOL Success = FALSE;
 
@@ -207,7 +207,7 @@ namespace Win32xx
 		return Success;
 	}
 
-	inline int CImageList::Add(HBITMAP hbmImage, HBITMAP hbmMask)
+	inline int CImageList::Add(HBITMAP hbmImage, HBITMAP hbmMask) const
 	// Adds an image or images to an image list, generating a mask from the specified bitmap.
 	// The hbmMask parameter can be NULL.
 	{
@@ -216,7 +216,7 @@ namespace Win32xx
 		return ImageList_Add(m_pData->hImageList, hbmImage, hbmMask );
 	}
 
-	inline int CImageList::Add(HBITMAP hbmImage, COLORREF crMask)
+	inline int CImageList::Add(HBITMAP hbmImage, COLORREF crMask) const
 	// Adds an image or images to an image list, using the specified color as the mask.
 	{
 		assert(m_pData);
@@ -224,7 +224,7 @@ namespace Win32xx
 		return ImageList_AddMasked(m_pData->hImageList, hbmImage, crMask);
 	}
 
-	inline int CImageList::Add(HICON hIcon)
+	inline int CImageList::Add(HICON hIcon) const
 	// Adds an Icon to the image list
 	{
 		assert(m_pData);
@@ -408,10 +408,10 @@ namespace Win32xx
 		return ImageList_DragMove(pt.x, pt.y);
 	}
 
-	inline BOOL CImageList::DragShowNolock(BOOL bShow) const
+	inline BOOL CImageList::DragShowNolock(BOOL Show) const
 	// Shows or hides the drag image during a drag operation, without locking the window.
 	{
-		return ImageList_DragShowNolock(bShow);
+		return ImageList_DragShowNolock(Show);
 	}
 
 	inline BOOL CImageList::Draw(HDC hdc, int nImage, POINT pt, UINT nStyle) const

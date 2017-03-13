@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -68,11 +68,11 @@ namespace Win32xx
 		HICON GetIcon() const;
 		UINT GetState() const;
 		HBITMAP SetBitmap(HBITMAP hBitmap) const;
-		void SetButtonStyle(DWORD dwStyle, BOOL bRedraw) const;
+		void SetButtonStyle(DWORD dwStyle, BOOL Redraw) const;
 		void SetCheck(int nCheckState) const;
 		HCURSOR SetCursor(HCURSOR hCursor) const;
 		HICON SetIcon(HICON hIcon) const;
-		void SetState(BOOL bHighlight) const;
+		void SetState(BOOL IsHighlighted) const;
 
 	protected:
 		// Overridables
@@ -109,23 +109,23 @@ namespace Win32xx
 		void SetHandle(HLOCAL hBuffer) const;
 		void SetLimitText(UINT nMax) const;
 		void SetMargins(UINT nLeft, UINT nRight) const;
-		void SetModify(BOOL bModified = TRUE) const;
+		void SetModify(BOOL IsModified = TRUE) const;
 
 		// Operations
 		void EmptyUndoBuffer() const;
-		BOOL FmtLines(BOOL bAddEOL) const;
+		BOOL FmtLines(BOOL AddEOL) const;
 		void LimitText(int nChars = 0) const;
 		int LineFromChar(int nIndex = -1) const;
 		int LineIndex(int nLine = -1) const;
 		int LineLength(int nLine = -1) const;
 		void LineScroll(int nLines, int nChars = 0) const;
-		void ReplaceSel(LPCTSTR lpszNewText, BOOL bCanUndo) const;
+		void ReplaceSel(LPCTSTR lpszNewText, BOOL CanUndo) const;
 		void SetPasswordChar(TCHAR ch) const;
-		BOOL SetReadOnly(BOOL bReadOnly = TRUE) const;
+		BOOL SetReadOnly(BOOL IsReadOnly = TRUE) const;
 		void SetRect(const RECT& rc) const;
 		void SetRectNP(const RECT& rc) const;
-		void SetSel(DWORD dwSelection, BOOL bNoScroll) const;
-		void SetSel(int nStartChar, int nEndChar, BOOL bNoScroll) const;
+		void SetSel(DWORD dwSelection, BOOL NotScrolled) const;
+		void SetSel(int nStartChar, int nEndChar, BOOL NotScrolled) const;
 		BOOL SetTabStops(int nTabStops, LPINT rgTabStops) const;
 		BOOL SetTabStops() const;
 		BOOL SetTabStops(const int& cxEachStop) const;
@@ -185,10 +185,10 @@ namespace Win32xx
 		int  GetCaretIndex() const;
 		int  GetSelCount() const;
 		int  GetSelItems(int nMaxItems, LPINT rgIndex) const;
-		int  SelItemRange(BOOL bSelect, int nFirstItem, int nLastItem) const;
+		int  SelItemRange(BOOL IsSelected, int nFirstItem, int nLastItem) const;
 		void SetAnchorIndex(int nIndex) const;
-		int  SetCaretIndex(int nIndex, BOOL bScroll) const;
-		int  SetSel(int nIndex, BOOL bSelect) const;
+		int  SetCaretIndex(int nIndex, BOOL PartialScroll) const;
+		int  SetSel(int nIndex, BOOL IsSelected) const;
 
 		// String Operations
 		int  AddString(LPCTSTR lpszItem) const;
@@ -295,11 +295,11 @@ namespace Win32xx
 		return reinterpret_cast<HBITMAP>(SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap));
 	}
 
-	inline void CButton::SetButtonStyle(DWORD dwStyle, BOOL bRedraw) const
+	inline void CButton::SetButtonStyle(DWORD dwStyle, BOOL Redraw) const
 	// sets the button style
 	{
 		assert(IsWindow());
-		SendMessage(BM_SETSTYLE, dwStyle, bRedraw);
+		SendMessage(BM_SETSTYLE, dwStyle, Redraw);
 	}
 
 	inline void CButton::SetCheck(int nCheckState) const
@@ -323,11 +323,11 @@ namespace Win32xx
 		return reinterpret_cast<HICON>(SendMessage( BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon));
 	}
 
-	inline void CButton::SetState(BOOL bHighlight) const
+	inline void CButton::SetState(BOOL IsHighlighted) const
 	// sets the button state
 	{
 		assert(IsWindow());
-		SendMessage(BM_SETSTATE, bHighlight, 0L);
+		SendMessage(BM_SETSTATE, IsHighlighted, 0L);
 	}
 
 	inline void CButton::PreRegisterClass(WNDCLASS& wc)
@@ -470,11 +470,11 @@ namespace Win32xx
 		SendMessage(EM_SETMARGINS, EC_LEFTMARGIN|EC_RIGHTMARGIN, MAKELONG(nLeft, nRight));
 	}
 
-	inline void CEdit::SetModify(BOOL bModified) const
+	inline void CEdit::SetModify(BOOL IsModified) const
 	// Sets or clears the modification flag to indicate whether the edit control has been modified.
 	{
 		assert(IsWindow());
-		SendMessage(EM_SETMODIFY, bModified, 0L);
+		SendMessage(EM_SETMODIFY, IsModified, 0L);
 	}
 
 	inline void CEdit::EmptyUndoBuffer() const
@@ -484,12 +484,12 @@ namespace Win32xx
 		SendMessage(EM_EMPTYUNDOBUFFER, 0L, 0L);
 	}
 
-	inline BOOL CEdit::FmtLines(BOOL bAddEOL) const
+	inline BOOL CEdit::FmtLines(BOOL AddEOL) const
 	// Adds or removes soft line-break characters (two carriage returns and a line feed) to the ends of wrapped lines 
 	//  in a multiline edit control. It is not processed by single-line edit controls.
 	{
 		assert(IsWindow());
-		return static_cast<BOOL>(SendMessage(EM_FMTLINES, bAddEOL, 0L));
+		return static_cast<BOOL>(SendMessage(EM_FMTLINES, AddEOL, 0L));
 	}
 
 	inline void CEdit::LimitText(int nChars) const
@@ -531,12 +531,12 @@ namespace Win32xx
 		SendMessage(EM_LINESCROLL, (WPARAM)nChars, (LPARAM)nLines);
 	}
 
-	inline void CEdit::ReplaceSel(LPCTSTR lpszNewText, BOOL bCanUndo) const
+	inline void CEdit::ReplaceSel(LPCTSTR lpszNewText, BOOL CanUndo) const
 	// Replaces the current selection with the text in an application-supplied buffer, sends the parent window 
 	//  EN_UPDATE and EN_CHANGE messages, and updates the undo buffer.
 	{
 		assert(IsWindow());
-		SendMessage(EM_REPLACESEL, (WPARAM) bCanUndo, (LPARAM)lpszNewText);
+		SendMessage(EM_REPLACESEL, (WPARAM) CanUndo, (LPARAM)lpszNewText);
 	}
 
 	inline void CEdit::SetPasswordChar(TCHAR ch) const
@@ -546,11 +546,11 @@ namespace Win32xx
 		SendMessage(EM_SETPASSWORDCHAR, (WPARAM)ch, 0L);
 	}
 
-	inline BOOL CEdit::SetReadOnly(BOOL bReadOnly) const
+	inline BOOL CEdit::SetReadOnly(BOOL IsReadOnly) const
 	// Sets or removes the read-only style (ES_READONLY) in an edit control.
 	{
 		assert(IsWindow());
-		return static_cast<BOOL>(SendMessage(EM_SETREADONLY, bReadOnly, 0L));
+		return static_cast<BOOL>(SendMessage(EM_SETREADONLY, IsReadOnly, 0L));
 	}
 
 	inline void CEdit::SetRect(const RECT& rc) const
@@ -567,21 +567,21 @@ namespace Win32xx
 		SendMessage(EM_SETRECTNP, 0L, (LPARAM)&rc);
 	}
 
-	inline void CEdit::SetSel(DWORD dwSelection, BOOL bNoScroll) const
+	inline void CEdit::SetSel(DWORD dwSelection, BOOL NotScrolled) const
 	// Selects a range of characters in the edit control by setting the starting and ending positions to be selected.
 	{
 		assert(IsWindow());
 		SendMessage(EM_SETSEL, LOWORD(dwSelection), HIWORD(dwSelection));
-		if (!bNoScroll)
+		if (!NotScrolled)
 			SendMessage(EM_SCROLLCARET, 0L, 0L);
 	}
 
-	inline void CEdit::SetSel(int nStartChar, int nEndChar, BOOL bNoScroll) const
+	inline void CEdit::SetSel(int nStartChar, int nEndChar, BOOL NotScrolled) const
 	// Selects a range of characters in the edit control by setting the starting and ending positions to be selected.
 	{
 		assert(IsWindow());
 		SendMessage(EM_SETSEL, nStartChar, nEndChar);
-		if (!bNoScroll)
+		if (!NotScrolled)
 			SendMessage(EM_SCROLLCARET, 0L, 0L);
 	}
 
@@ -851,11 +851,11 @@ namespace Win32xx
 		return static_cast<int>(SendMessage(LB_GETSELITEMS, (WPARAM)nMaxItems, (LPARAM)rgIndex));
 	}
 
-	inline int CListBox::SelItemRange(BOOL bSelect, int nFirstItem, int nLastItem) const
+	inline int CListBox::SelItemRange(BOOL IsSelected, int nFirstItem, int nLastItem) const
 	// Selects a specified range of items in a list box.
 	{
 		assert(IsWindow());
-		if (bSelect)
+		if (IsSelected)
 			return static_cast<int>(SendMessage(LB_SELITEMRANGEEX, (WPARAM)nFirstItem, (LPARAM)nLastItem));
 		else
 			return static_cast<int>(SendMessage(LB_SELITEMRANGEEX, (WPARAM)nLastItem, (LPARAM)nFirstItem));
@@ -868,18 +868,18 @@ namespace Win32xx
 		SendMessage(LB_SETANCHORINDEX, (WPARAM)nIndex, 0L);
 	}
 
-	inline int CListBox::SetCaretIndex(int nIndex, BOOL bScroll) const
+	inline int CListBox::SetCaretIndex(int nIndex, BOOL PartialScroll) const
 	// Sets the focus rectangle to a specified list box item.
 	{
 		assert(IsWindow());
-		return static_cast<int>(SendMessage(LB_SETCARETINDEX, (WPARAM)nIndex, MAKELONG(bScroll, 0)));
+		return static_cast<int>(SendMessage(LB_SETCARETINDEX, (WPARAM)nIndex, MAKELONG(PartialScroll, 0)));
 	}
 
-	inline int CListBox::SetSel(int nIndex, BOOL bSelect) const
+	inline int CListBox::SetSel(int nIndex, BOOL IsSelected) const
 	// Selects an item in a multiple-selection list box.
 	{
 		assert(IsWindow());
-		return static_cast<int>(SendMessage(LB_SETSEL, bSelect, (LPARAM)nIndex));
+		return static_cast<int>(SendMessage(LB_SETSEL, IsSelected, (LPARAM)nIndex));
 	}
 
 	inline int CListBox::AddString(LPCTSTR lpszItem) const

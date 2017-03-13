@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -99,10 +99,8 @@ namespace Win32xx
 	public:
 		CMDIDockFrame();
 		virtual ~CMDIDockFrame() {}
-		virtual void RecalcViewLayout();
 
 		virtual CWnd& GetMDIClient() const		{ return m_DockMDIClient; }
-		virtual void SetView(CWnd&)				{ CDocker::SetView(GetMDIClient()); }
 		virtual CDocker::CDockClient& GetDockClient() const { return m_DockMDIClient; }
 
 	protected:
@@ -185,12 +183,6 @@ namespace Win32xx
 	{ 
 		// The view window for a CMDIDockFrame is the MDI Client
 		SetView(GetMDIClient());
-	}
-	
-	inline void CMDIDockFrame::RecalcViewLayout()
-	// Re-positions the view window
-	{ 
-		RecalcDockLayout();
 	}
 	
 	inline int CMDIDockFrame::OnCreate(CREATESTRUCT& cs)

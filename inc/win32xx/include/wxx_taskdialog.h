@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -70,9 +70,9 @@ namespace Win32xx
 		void ClickButton(int nButtonID) const;
 		void ClickRadioButton(int nRadioButtonID) const;
 		LRESULT DoModal(HWND hParent = NULL);
-		void ElevateButton(int nButtonID, BOOL bElevated);
-		void EnableButton(int nButtonID, BOOL bEnabled);
-		void EnableRadioButton(int nButtonID, BOOL bEnabled);
+		void ElevateButton(int nButtonID, BOOL IsElevated) const;
+		void EnableButton(int nButtonID, BOOL IsEnabled) const;
+		void EnableRadioButton(int nButtonID, BOOL IsEnabled) const;
 		TASKDIALOGCONFIG GetConfig() const;
 		TASKDIALOG_FLAGS GetOptions() const;
 		int GetSelectedButtonID() const;
@@ -96,15 +96,15 @@ namespace Win32xx
 		void SetMainIcon(LPCTSTR lpszMainIcon);
 		void SetMainInstruction(LPCTSTR pszMainInstruction);
 		void SetOptions(TASKDIALOG_FLAGS dwFlags);
-		void SetProgressBarMarquee(BOOL bEnabled = TRUE, int nMarqueeSpeed = 0);
-		void SetProgressBarPosition(int nProgressPos);
-		void SetProgressBarRange(int nMinRange, int nMaxRange);
-		void SetProgressBarState(int nNewState = PBST_NORMAL);
-		void SetVerificationCheckbox(BOOL bChecked);
+		void SetProgressBarMarquee(BOOL IsEnabled = TRUE, int nMarqueeSpeed = 0) const;
+		void SetProgressBarPosition(int nProgressPos) const;
+		void SetProgressBarRange(int nMinRange, int nMaxRange) const;
+		void SetProgressBarState(int nNewState = PBST_NORMAL) const;
+		void SetVerificationCheckbox(BOOL IsChecked) const;
 		void SetVerificationCheckboxText(LPCTSTR pszVerificationText);
 		void SetWindowTitle(LPCTSTR pszWindowTitle);
 		void StoreText(std::vector<WCHAR>& vWChar, LPCTSTR pFromTChar);
-		void UpdateElementText(TASKDIALOG_ELEMENTS eElement, LPCTSTR pszNewText);
+		void UpdateElementText(TASKDIALOG_ELEMENTS eElement, LPCTSTR pszNewText) const;
 		
 
 	protected:
@@ -113,13 +113,13 @@ namespace Win32xx
 		virtual void OnTDConstructed();
 		virtual void OnTDCreated();
 		virtual void OnTDDestroyed();
-		virtual void OnTDExpandButtonClicked(BOOL bExpanded);
+		virtual void OnTDExpandButtonClicked(BOOL IsExpanded);
 		virtual void OnTDHelp();
 		virtual void OnTDHyperlinkClicked(LPCTSTR pszHref);
 		virtual void OnTDNavigatePage();
 		virtual BOOL OnTDRadioButtonClicked(int nRadioButtonID);
 		virtual BOOL OnTDTimer(DWORD dwTickCount);
-		virtual void OnTDVerificationCheckboxClicked(BOOL bChecked);
+		virtual void OnTDVerificationCheckboxClicked(BOOL IsChecked);
 		virtual LRESULT TaskDialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 		
 		// Not intended to be overwritten
@@ -278,24 +278,24 @@ namespace Win32xx
 		return lr;
 	}
 	
-	inline void CTaskDialog::ElevateButton(int nButtonID, BOOL bElevated)
+	inline void CTaskDialog::ElevateButton(int nButtonID, BOOL IsElevated) const
 	// Adds a shield icon to indicate that the button's action requires elevated privileges. 
 	{
 		assert(GetHwnd());
-		SendMessage(TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE, (WPARAM)nButtonID, (LPARAM)bElevated);
+		SendMessage(TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE, (WPARAM)nButtonID, (LPARAM)IsElevated);
 	}
 	
-	inline void CTaskDialog::EnableButton(int nButtonID, BOOL bEnabled)
+	inline void CTaskDialog::EnableButton(int nButtonID, BOOL IsEnabled) const
 	// Enables or disables a push button in the TaskDialog.
 	{
 		assert(GetHwnd());
-		SendMessage(TDM_ENABLE_BUTTON, (WPARAM)nButtonID, (LPARAM)bEnabled);
+		SendMessage(TDM_ENABLE_BUTTON, (WPARAM)nButtonID, (LPARAM)IsEnabled);
 	}
-	inline void CTaskDialog::EnableRadioButton(int nRadioButtonID, BOOL bEnabled)
+	inline void CTaskDialog::EnableRadioButton(int nRadioButtonID, BOOL IsEnabled) const
 	// Enables or disables a radio button in the TaskDialog.
 	{
 		assert(GetHwnd());
-		SendMessage(TDM_ENABLE_RADIO_BUTTON, (WPARAM)nRadioButtonID, (LPARAM)bEnabled);
+		SendMessage(TDM_ENABLE_RADIO_BUTTON, (WPARAM)nRadioButtonID, (LPARAM)IsEnabled);
 	}
 
 	inline TASKDIALOGCONFIG CTaskDialog::GetConfig() const
@@ -353,10 +353,10 @@ namespace Win32xx
 		HMODULE hModule = LoadLibrary(_T("COMCTL32.DLL"));
 		assert(hModule);
 		
-		BOOL bResult = (BOOL)::GetProcAddress(hModule, "TaskDialogIndirect");
+		BOOL Succeeded = (BOOL)::GetProcAddress(hModule, "TaskDialogIndirect");
 		
 		::FreeLibrary(hModule);
-		return bResult;
+		return Succeeded;
 	}
 
 	inline void CTaskDialog::NavigateTo(CTaskDialog& TaskDialog) const
@@ -389,10 +389,10 @@ namespace Win32xx
 	{
 	}
 	
-	inline void CTaskDialog::OnTDExpandButtonClicked(BOOL bExpanded)
+	inline void CTaskDialog::OnTDExpandButtonClicked(BOOL IsExpanded)
 	// Called when the expand button is clicked.
 	{
-		UNREFERENCED_PARAMETER(bExpanded);
+		UNREFERENCED_PARAMETER(IsExpanded);
 	}
 	
 	inline void CTaskDialog::OnTDHelp()
@@ -425,10 +425,10 @@ namespace Win32xx
 		return FALSE;
 	}
 	
-	inline void CTaskDialog::OnTDVerificationCheckboxClicked(BOOL bChecked)
+	inline void CTaskDialog::OnTDVerificationCheckboxClicked(BOOL IsChecked)
 	// Called when the user clicks the Task Dialog verification check box.
 	{
-		UNREFERENCED_PARAMETER(bChecked);
+		UNREFERENCED_PARAMETER(IsChecked);
 	}
 
 	inline void CTaskDialog::RemoveAllButtons()
@@ -627,28 +627,28 @@ namespace Win32xx
 		m_tc.dwFlags = dwFlags;
 	}
 
-	inline void CTaskDialog::SetProgressBarMarquee(BOOL bEnabled /* = TRUE*/, int nMarqueeSpeed /* = 0*/) 
+	inline void CTaskDialog::SetProgressBarMarquee(BOOL IsEnabled /* = TRUE*/, int nMarqueeSpeed /* = 0*/) const
 	// Starts and stops the marquee display of the progress bar, and sets the speed of the marquee.
 	{
 		assert(GetHwnd());
-		SendMessage(TDM_SET_PROGRESS_BAR_MARQUEE, (WPARAM)bEnabled, (LPARAM)nMarqueeSpeed);
+		SendMessage(TDM_SET_PROGRESS_BAR_MARQUEE, (WPARAM)IsEnabled, (LPARAM)nMarqueeSpeed);
 	}
 
-	inline void CTaskDialog::SetProgressBarPosition(int nProgressPos) 
+	inline void CTaskDialog::SetProgressBarPosition(int nProgressPos) const
 	// Sets the current position for a progress bar.
 	{
 		assert(GetHwnd());
 		SendMessage(TDM_SET_PROGRESS_BAR_POS, (WPARAM)nProgressPos, 0);
 	}
 
-	inline void CTaskDialog::SetProgressBarRange(int nMinRange, int nMaxRange) 
+	inline void CTaskDialog::SetProgressBarRange(int nMinRange, int nMaxRange) const
 	// Sets the minimum and maximum values for the hosted progress bar.
 	{
 		assert(GetHwnd());
 		SendMessage(TDM_SET_PROGRESS_BAR_RANGE, 0, MAKELPARAM(nMinRange, nMaxRange)); 
 	}
 
-	inline void CTaskDialog::SetProgressBarState(int nNewState /* = PBST_NORMAL*/)
+	inline void CTaskDialog::SetProgressBarState(int nNewState /* = PBST_NORMAL*/) const
 	// Sets the current state of the progress bar. Possible states are:
 	//  PBST_NORMAL
 	//  PBST_PAUSE
@@ -658,11 +658,11 @@ namespace Win32xx
 		SendMessage(TDM_SET_PROGRESS_BAR_STATE, (WPARAM)nNewState, 0);
 	} 
 
-	inline void CTaskDialog::SetVerificationCheckbox(BOOL bChecked)
+	inline void CTaskDialog::SetVerificationCheckbox(BOOL IsChecked) const
 	// Simulates a click on the verification checkbox of the Task Dialog, if it exists.
 	{
 		assert(GetHwnd());
-		SendMessage(TDM_CLICK_VERIFICATION, (WPARAM)bChecked, (LPARAM)bChecked);
+		SendMessage(TDM_CLICK_VERIFICATION, (WPARAM)IsChecked, (LPARAM)IsChecked);
 	}
 
 	inline void CTaskDialog::SetVerificationCheckboxText(LPCTSTR pszVerificationText)
@@ -800,7 +800,7 @@ namespace Win32xx
 		return TaskDialogProcDefault(uMsg, wParam, lParam);
 	}
 
-	inline void CTaskDialog::UpdateElementText(TASKDIALOG_ELEMENTS eElement, LPCTSTR pszNewText)
+	inline void CTaskDialog::UpdateElementText(TASKDIALOG_ELEMENTS eElement, LPCTSTR pszNewText) const
 	// Updates a text element on the Task Dialog.
 	{
 		assert(GetHwnd());

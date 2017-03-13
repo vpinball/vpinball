@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -62,6 +62,9 @@
 
 namespace Win32xx
 {
+	//////////////////////////////////////////////
+	// Declaration of the CRibbon class
+	//
 	// Defines the callback entry-point methods for the Ribbon framework.
 	class CRibbon : public IUICommandHandler, public IUIApplication
 	{
@@ -102,6 +105,9 @@ namespace Win32xx
 
 	};
 
+	//////////////////////////////////////////////
+	// Declaration of the CRibbonFrameT class template
+	//
 	template <class T>
 	class CRibbonFrameT : public T, public CRibbon
 	{
@@ -344,7 +350,7 @@ namespace Win32xx
 	
 	
 	//////////////////////////////////////////////
-	// Definitions for the CRibbonFrame class
+	// Definitions for the CRibbonFrameT class template
 	//
 	template <class T>
 	inline CRect CRibbonFrameT<T>::GetViewRect() const
@@ -381,17 +387,21 @@ namespace Win32xx
 		{	
 			if (CreateRibbon(*this))
 			{
-				SetUseReBar(FALSE);			// Don't use a ReBar
-				SetUseToolBar(FALSE);		// Don't use a ToolBar
-
-				T::OnCreate(cs);
-				SetMenu(NULL);
-				ShowStatusBar(TRUE);
-			}		
+				SetUseReBar(FALSE);		// Don't use a ReBar
+				SetUseToolBar(FALSE);	// Don't use a ToolBar
+			}
+			else
+			{
+				TRACE("Failed to create Ribbon\n");
+				DestroyRibbon();
+			}
 		}
-		else 
+
+		T::OnCreate(cs);
+		if (GetRibbonFramework())
 		{
-			T::OnCreate(cs);
+			SetMenu(NULL);				// Disable the window menu
+			SetFrameMenu((HMENU)0);
 		}
 
 		return 0;

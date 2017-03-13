@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -221,7 +221,7 @@ namespace Win32xx
 		// Override these functions as required
 		virtual INT_PTR DialogProc(UINT, WPARAM, LPARAM);
 
-		// Not intended to be overriden
+		// Not intended to be overridden
 		INT_PTR DialogProcDefault(UINT, WPARAM, LPARAM);
 
 	private:
@@ -370,8 +370,8 @@ namespace Win32xx
 					}
 				}
 			}
-			else
-				::GlobalUnlock(m_hDevNames);
+			
+			::GlobalUnlock(m_hDevNames);
 		}
 	}
 

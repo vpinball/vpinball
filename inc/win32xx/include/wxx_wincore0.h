@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -70,10 +70,11 @@
 #define UWM_GETTBTHEME        (WM_APP + 0x3F0F) // Message - returns a pointer to ToolBarTheme
 #define UWM_MDIACTIVATED      (WM_APP + 0x3F10) // Message - sent by MDI child to MDIFrame when it is activated
 #define UWM_MDIDESTROYED      (WM_APP + 0x3F11)	// Message - sent by MDI client when a MDI child is destroyed
-#define UWM_POPUPMENU		  (WM_APP + 0x3F12)	// Message - creates the menubar popup menu
-#define UWM_TBRESIZE          (WM_APP + 0x3F13) // Message - sent by toolbar to parent. Used by the rebar
-#define UWM_TBWINPOSCHANGING  (WM_APP + 0x3F14)	// Message - sent to parent. Toolbar is resizing
-#define UWM_UPDATECOMMAND     (WM_APP + 0x3F15) // Message - sent before a menu is displayed. Used by OnMenuUpdate
+#define UWM_MDIGETACTIVE      (WM_APP + 0x3F12)	// Message - sent by MDI client when the state of a MDI child is queried
+#define UWM_POPUPMENU		  (WM_APP + 0x3F13)	// Message - creates the menubar popup menu
+#define UWM_TBRESIZE          (WM_APP + 0x3F14) // Message - sent by toolbar to parent. Used by the rebar
+#define UWM_TBWINPOSCHANGING  (WM_APP + 0x3F15)	// Message - sent to parent. Toolbar is resizing
+#define UWM_UPDATECOMMAND     (WM_APP + 0x3F16) // Message - sent before a menu is displayed. Used by OnMenuUpdate
 
 #define UWN_BARSTART		  (WM_APP + 0x3F20)	// Notification - docker bar selected for move
 #define UWN_BARMOVE			  (WM_APP + 0x3F21)	// Notification - docker bar moved
@@ -81,7 +82,7 @@
 #define UWN_DOCKSTART		  (WM_APP + 0x3F23)	// Notification - about to start undocking
 #define UWN_DOCKMOVE		  (WM_APP + 0x3F24)	// Notification - undocked docker is being moved
 #define UWN_DOCKEND			  (WM_APP + 0x3F25)	// Notification - docker has been docked
-#define UWN_TABCHANGED        (WM_APP + 0x3F26)	// Notification - tab size or position changed
+#define UMN_TABCHANGED        (WM_APP + 0x3F26)	// Notification - tab size or position changed
 #define UWN_TABDRAGGED        (WM_APP + 0x3F27)	// Notification - tab is being dragged
 #define UWN_TABCLOSE		  (WM_APP + 0x3F28)	// Notification - sent by CTab when a tab is about to be closed
 #define UWN_UNDOCKED		  (WM_APP + 0x3F29)	// Notification - sent by docker when undocked
@@ -93,14 +94,6 @@ namespace Win32xx
 	// Registered messages defined by Win32++
 	const UINT UWM_WINDOWCREATED = ::RegisterWindowMessage(_T("UWM_WINDOWCREATED"));	// Posted when a window is created or attached.
 
-#ifndef _WIN32_WCE
-	// registered message used by common dialogs
-	const UINT UWM_HELPMSGSTRING = ::RegisterWindowMessage(HELPMSGSTRING);		// Used by common dialogs. Sent when the user clicks the Help button.
-	const UINT UWM_FILEOKSTRING  = ::RegisterWindowMessage(FILEOKSTRING);		// Used by common dialogs. Sent when the user specifies a file name and clicks the OK button.
-	const UINT UWM_LBSELCHSTRING = ::RegisterWindowMessage(LBSELCHSTRING);		// Used by the File common dialog. Sent when the selection changes in any of the list boxes or combo boxes.
-	const UINT UWM_SHAREVISTRING = ::RegisterWindowMessage(SHAREVISTRING);		// Used by the File common dialog. Sent if a sharing violation occurs for the selected file when the user clicks the OK button.
-	const UINT UWM_FINDMSGSTRING = ::RegisterWindowMessage(FINDMSGSTRING);		// Used by the Find/Replace common dialog. Sent when the user clicks the Find Next, Replace, or Replace All button, or closes the dialog box.
-#endif
 
 	////////////////////////////////
 	// Declaration of the CWnd class
@@ -138,7 +131,7 @@ namespace Win32xx
 		// For Data Exchange
 	#ifndef _WIN32_WCE
 		virtual void DoDataExchange(CDataExchange& DX);
-		virtual BOOL UpdateData(CDataExchange& DX, BOOL bRetrieveAndValidate);
+		virtual BOOL UpdateData(CDataExchange& DX, BOOL RetrieveAndValidate);
 	#endif
 
 		// Attributes
@@ -159,7 +152,7 @@ namespace Win32xx
 		HDWP  DeferWindowPos(HDWP hWinPosInfo, HWND hWndInsertAfter, int x, int y, int cx, int cy, UINT uFlags) const;
 		HDWP  DeferWindowPos(HDWP hWinPosInfo, HWND hWndInsertAfter, const RECT& rc, UINT uFlags) const;
 		BOOL  DrawMenuBar() const;
-		BOOL  EnableWindow(BOOL bEnable = TRUE) const;
+		BOOL  EnableWindow(BOOL Enable = TRUE) const;
 		BOOL  EndPaint(PAINTSTRUCT& ps) const;
 		CWnd  GetActiveWindow() const;
 		CWnd  GetAncestor(UINT gaFlag = 3 /*= GA_ROOTOWNER*/) const;
@@ -172,28 +165,28 @@ namespace Win32xx
 		CWnd  GetDesktopWindow() const;
 		int	  GetDlgCtrlID() const;
 		CWnd  GetDlgItem(int nIDDlgItem) const;
-		UINT  GetDlgItemInt(int nIDDlgItem, BOOL& IsTranslated, BOOL bSigned) const;
-		UINT  GetDlgItemInt(int nIDDlgItem, BOOL bSigned) const;
+		UINT  GetDlgItemInt(int nIDDlgItem, BOOL& IsTranslated, BOOL IsSigned) const;
+		UINT  GetDlgItemInt(int nIDDlgItem, BOOL IsSigned) const;
 		CString GetDlgItemText(int nIDDlgItem) const;
 		CWnd  GetFocus() const;
 		CFont GetFont() const;
-		HICON GetIcon(BOOL bBigIcon) const;
-		CWnd  GetNextDlgGroupItem(HWND hCtl, BOOL bPrevious) const;
-		CWnd  GetNextDlgTabItem(HWND hCtl, BOOL bPrevious) const;
+		HICON GetIcon(BOOL IsBigIcon) const;
+		CWnd  GetNextDlgGroupItem(HWND hCtl, BOOL IsPrevious) const;
+		CWnd  GetNextDlgTabItem(HWND hCtl, BOOL IsPrevious) const;
 		CWnd  GetParent() const;
 		BOOL  GetScrollInfo(int fnBar, SCROLLINFO& si) const;
-		CRect GetUpdateRect(BOOL bErase) const;
-		int GetUpdateRgn(HRGN hRgn, BOOL bErase) const;
+		CRect GetUpdateRect(BOOL Erase) const;
+		int GetUpdateRgn(HRGN hRgn, BOOL Erase) const;
 		CWnd  GetWindow(UINT uCmd) const;
 		CDC   GetWindowDC() const;
 		LONG_PTR GetWindowLongPtr(int nIndex) const;
 		CRect GetWindowRect() const;
 		CString GetWindowText() const;
 		int   GetWindowTextLength() const;
-		void  Invalidate(BOOL bErase = TRUE) const;
-		BOOL  InvalidateRect(const RECT& rc, BOOL bErase = TRUE) const;
-		BOOL  InvalidateRect(BOOL bErase = TRUE) const;
-		BOOL  InvalidateRgn(HRGN hRgn, BOOL bErase = TRUE) const;
+		void  Invalidate(BOOL Erase = TRUE) const;
+		BOOL  InvalidateRect(const RECT& rc, BOOL Erase = TRUE) const;
+		BOOL  InvalidateRect(BOOL Erase = TRUE) const;
+		BOOL  InvalidateRgn(HRGN hRgn, BOOL Erase = TRUE) const;
 		BOOL  IsChild(HWND hwndChild) const;
 		BOOL  IsDialogMessage(MSG& Msg) const;
 		UINT  IsDlgButtonChecked(int nIDButton) const;
@@ -205,8 +198,8 @@ namespace Win32xx
 		void  MapWindowPoints(HWND hWndTo, POINT& pt) const;
 		void  MapWindowPoints(HWND hWndTo, RECT& rc) const;
 		void  MapWindowPoints(HWND hWndTo, LPPOINT ptArray, UINT nCount) const;
-		BOOL  MoveWindow(int x, int y, int nWidth, int nHeight, BOOL bRepaint = TRUE) const;
-		BOOL  MoveWindow(const RECT& rc, BOOL bRepaint = TRUE) const;
+		BOOL  MoveWindow(int x, int y, int nWidth, int nHeight, BOOL Repaint = TRUE) const;
+		BOOL  MoveWindow(const RECT& rc, BOOL Repaint = TRUE) const;
 		BOOL  PostMessage(UINT uMsg, WPARAM wParam = 0L, LPARAM lParam = 0L) const;
 		BOOL  PostMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const;
 		BOOL  RedrawWindow(const RECT& rcUpdate, UINT flags = RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN) const;
@@ -223,20 +216,20 @@ namespace Win32xx
 		CWnd  SetCapture() const;
 		ULONG_PTR SetClassLongPtr(int nIndex, LONG_PTR dwNewLong) const;
 		LONG_PTR SetDlgCtrlID(int idCtrl) const;
-		BOOL  SetDlgItemInt(int nIDDlgItem, UINT uValue, BOOL bSigned) const;
+		BOOL  SetDlgItemInt(int nIDDlgItem, UINT uValue, BOOL IsSigned) const;
 		BOOL  SetDlgItemText(int nIDDlgItem, LPCTSTR lpString) const;
 		CWnd  SetFocus() const;
-		void  SetFont(HFONT hFont, BOOL bRedraw = TRUE) const;
+		void  SetFont(HFONT hFont, BOOL Redraw = TRUE) const;
 		BOOL  SetForegroundWindow() const;
-		HICON SetIcon(HICON hIcon, BOOL bBigIcon) const;
+		HICON SetIcon(HICON hIcon, BOOL IsBigIcon) const;
 		CWnd  SetParent(HWND hWndParent) const;
-		BOOL  SetRedraw(BOOL bRedraw = TRUE) const;
-		int   SetScrollInfo(int fnBar, const SCROLLINFO& si, BOOL fRedraw) const;
+		BOOL  SetRedraw(BOOL Redraw = TRUE) const;
+		int   SetScrollInfo(int fnBar, const SCROLLINFO& si, BOOL Redraw) const;
 		UINT_PTR SetTimer(UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc) const;
 		LONG_PTR SetWindowLongPtr(int nIndex, LONG_PTR dwNewLong) const;
 		BOOL  SetWindowPos(HWND hWndInsertAfter, int x, int y, int cx, int cy, UINT uFlags) const;
 		BOOL  SetWindowPos(HWND hWndInsertAfter, const RECT& rc, UINT uFlags) const;
-		int   SetWindowRgn(CRgn& Rgn, BOOL bRedraw = TRUE) const;
+		int   SetWindowRgn(CRgn& Rgn, BOOL Redraw = TRUE) const;
 		BOOL  SetWindowText(LPCTSTR lpString) const;
 		HRESULT SetWindowTheme(LPCWSTR pszSubAppName, LPCWSTR pszSubIdList) const;
 		BOOL  ShowWindow(int nCmdShow = SW_SHOWNORMAL) const;
@@ -259,7 +252,7 @@ namespace Win32xx
 		CMenu GetMenu() const;
 		int   GetScrollPos(int nBar) const;
 		BOOL  GetScrollRange(int nBar, int& MinPos, int& MaxPos) const;
-		CMenu GetSystemMenu(BOOL bRevert) const;
+		CMenu GetSystemMenu(BOOL RevertToDefault) const;
 		CWnd  GetTopWindow() const;
 		BOOL  GetWindowPlacement(WINDOWPLACEMENT& pWndpl) const;
 		BOOL  HiliteMenuItem(HMENU hMenu, UINT uItemHilite, UINT uHilite) const;
@@ -272,17 +265,17 @@ namespace Win32xx
 		BOOL  ScrollWindow(int XAmount, int YAmount, const RECT& rcScroll, LPCRECT prcClip = 0) const;
 		BOOL  ScrollWindow(int XAmount, int YAmount, LPCRECT prcClip = 0) const;
 		int   ScrollWindowEx(int dx, int dy, LPCRECT lprcScroll, LPCRECT lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate, UINT flags) const;
-		int   SetScrollPos(int nBar, int nPos, BOOL bRedraw) const;
-		BOOL  SetScrollRange(int nBar, int nMinPos, int nMaxPos, BOOL bRedraw) const;
+		int   SetScrollPos(int nBar, int nPos, BOOL Redraw) const;
+		BOOL  SetScrollRange(int nBar, int nMinPos, int nMaxPos, BOOL Redraw) const;
 		BOOL  SetWindowPlacement(const WINDOWPLACEMENT& wndpl) const;
-		BOOL  ShowOwnedPopups(BOOL fShow) const;
-		BOOL  ShowScrollBar(int nBar, BOOL bShow) const;
+		BOOL  ShowOwnedPopups(BOOL Show) const;
+		BOOL  ShowScrollBar(int nBar, BOOL Show) const;
 		BOOL  ShowWindowAsync(int nCmdShow) const;
 		BOOL  UnLockWindowUpdate() const;
 		CWnd  WindowFromDC(HDC hDC) const;
 
     #ifndef WIN32_LEAN_AND_MEAN
-		void  DragAcceptFiles(BOOL fAccept) const;
+		void  DragAcceptFiles(BOOL Accept) const;
     #endif
   #endif
 
