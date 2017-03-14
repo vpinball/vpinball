@@ -18,11 +18,6 @@ Environment:
 
 #ifndef   __HIDUSAGE_H__
 #define   __HIDUSAGE_H__
-#include <winapifamily.h>
-
-#pragma region Desktop Family
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-
 
 //
 // Usage Pages
@@ -30,88 +25,79 @@ Environment:
 
 typedef USHORT USAGE, *PUSAGE;
 
-#define HID_USAGE_PAGE_UNDEFINED                        ((USAGE) 0x00)
-#define HID_USAGE_PAGE_GENERIC                          ((USAGE) 0x01)
-#define HID_USAGE_PAGE_SIMULATION                       ((USAGE) 0x02)
-#define HID_USAGE_PAGE_VR                               ((USAGE) 0x03)
-#define HID_USAGE_PAGE_SPORT                            ((USAGE) 0x04)
-#define HID_USAGE_PAGE_GAME                             ((USAGE) 0x05)
-#define HID_USAGE_PAGE_KEYBOARD                         ((USAGE) 0x07)
-#define HID_USAGE_PAGE_LED                              ((USAGE) 0x08)
-#define HID_USAGE_PAGE_BUTTON                           ((USAGE) 0x09)
-#define HID_USAGE_PAGE_ORDINAL                          ((USAGE) 0x0A)
-#define HID_USAGE_PAGE_TELEPHONY                        ((USAGE) 0x0B)
-#define HID_USAGE_PAGE_CONSUMER                         ((USAGE) 0x0C)
-#define HID_USAGE_PAGE_DIGITIZER                        ((USAGE) 0x0D)
-#define HID_USAGE_PAGE_HAPTICS                          ((USAGE) 0x0E)
-#define HID_USAGE_PAGE_UNICODE                          ((USAGE) 0x10)
-#define HID_USAGE_PAGE_ALPHANUMERIC                     ((USAGE) 0x14)
-#define HID_USAGE_PAGE_SENSOR                           ((USAGE) 0x20)
-#define HID_USAGE_PAGE_BARCODE_SCANNER                  ((USAGE) 0x8C)
-#define HID_USAGE_PAGE_WEIGHING_DEVICE                  ((USAGE) 0x8D)
-#define HID_USAGE_PAGE_MAGNETIC_STRIPE_READER           ((USAGE) 0x8E)
-#define HID_USAGE_PAGE_CAMERA_CONTROL                   ((USAGE) 0x90)
-#define HID_USAGE_PAGE_MICROSOFT_BLUETOOTH_HANDSFREE    ((USAGE) 0xFFF3)
-#define HID_USAGE_PAGE_VENDOR_DEFINED_BEGIN             ((USAGE) 0xFF00)
-#define HID_USAGE_PAGE_VENDOR_DEFINED_END               ((USAGE) 0xFFFF)
+#define HID_USAGE_PAGE_UNDEFINED      ((USAGE) 0x00)
+#define HID_USAGE_PAGE_GENERIC        ((USAGE) 0x01)
+#define HID_USAGE_PAGE_SIMULATION     ((USAGE) 0x02)
+#define HID_USAGE_PAGE_VR             ((USAGE) 0x03)
+#define HID_USAGE_PAGE_SPORT          ((USAGE) 0x04)
+#define HID_USAGE_PAGE_GAME           ((USAGE) 0x05)
+#define HID_USAGE_PAGE_KEYBOARD       ((USAGE) 0x07)
+#define HID_USAGE_PAGE_LED            ((USAGE) 0x08)
+#define HID_USAGE_PAGE_BUTTON         ((USAGE) 0x09)
+#define HID_USAGE_PAGE_ORDINAL        ((USAGE) 0x0A)
+#define HID_USAGE_PAGE_TELEPHONY      ((USAGE) 0x0B)
+#define HID_USAGE_PAGE_CONSUMER       ((USAGE) 0x0C)
+#define HID_USAGE_PAGE_DIGITIZER      ((USAGE) 0x0D)
+#define HID_USAGE_PAGE_UNICODE        ((USAGE) 0x10)
+#define HID_USAGE_PAGE_ALPHANUMERIC   ((USAGE) 0x14)
 
 //
-// Generic Desktop Page (0x01)
+// Microsoft Vendor Specific Usage Pages
 //
-#define HID_USAGE_GENERIC_POINTER                                       ((USAGE) 0x01)
-#define HID_USAGE_GENERIC_MOUSE                                         ((USAGE) 0x02)
-#define HID_USAGE_GENERIC_JOYSTICK                                      ((USAGE) 0x04)
-#define HID_USAGE_GENERIC_GAMEPAD                                       ((USAGE) 0x05)
-#define HID_USAGE_GENERIC_KEYBOARD                                      ((USAGE) 0x06)
-#define HID_USAGE_GENERIC_KEYPAD                                        ((USAGE) 0x07)
-#define HID_USAGE_GENERIC_PORTABLE_DEVICE_CONTROL                       ((USAGE) 0x0D)
-#define HID_USAGE_GENERIC_INTERACTIVE_CONTROL                           ((USAGE) 0x0E)
-#define HID_USAGE_GENERIC_SYSTEM_CTL                                    ((USAGE) 0x80)
-
-#define HID_USAGE_GENERIC_X                                             ((USAGE) 0x30)
-#define HID_USAGE_GENERIC_Y                                             ((USAGE) 0x31)
-#define HID_USAGE_GENERIC_Z                                             ((USAGE) 0x32)
-#define HID_USAGE_GENERIC_RX                                            ((USAGE) 0x33)
-#define HID_USAGE_GENERIC_RY                                            ((USAGE) 0x34)
-#define HID_USAGE_GENERIC_RZ                                            ((USAGE) 0x35)
-#define HID_USAGE_GENERIC_SLIDER                                        ((USAGE) 0x36)
-#define HID_USAGE_GENERIC_DIAL                                          ((USAGE) 0x37)
-#define HID_USAGE_GENERIC_WHEEL                                         ((USAGE) 0x38)
-#define HID_USAGE_GENERIC_HATSWITCH                                     ((USAGE) 0x39)
-#define HID_USAGE_GENERIC_COUNTED_BUFFER                                ((USAGE) 0x3A)
-#define HID_USAGE_GENERIC_BYTE_COUNT                                    ((USAGE) 0x3B)
-#define HID_USAGE_GENERIC_MOTION_WAKEUP                                 ((USAGE) 0x3C)
-#define HID_USAGE_GENERIC_VX                                            ((USAGE) 0x40)
-#define HID_USAGE_GENERIC_VY                                            ((USAGE) 0x41)
-#define HID_USAGE_GENERIC_VZ                                            ((USAGE) 0x42)
-#define HID_USAGE_GENERIC_VBRX                                          ((USAGE) 0x43)
-#define HID_USAGE_GENERIC_VBRY                                          ((USAGE) 0x44)
-#define HID_USAGE_GENERIC_VBRZ                                          ((USAGE) 0x45)
-#define HID_USAGE_GENERIC_VNO                                           ((USAGE) 0x46)
-#define HID_USAGE_GENERIC_RESOLUTION_MULTIPLIER                         ((USAGE) 0x48)
-#define HID_USAGE_GENERIC_SYSCTL_POWER                                  ((USAGE) 0x81)
-#define HID_USAGE_GENERIC_SYSCTL_SLEEP                                  ((USAGE) 0x82)
-#define HID_USAGE_GENERIC_SYSCTL_WAKE                                   ((USAGE) 0x83)
-#define HID_USAGE_GENERIC_SYSCTL_CONTEXT_MENU                           ((USAGE) 0x84)
-#define HID_USAGE_GENERIC_SYSCTL_MAIN_MENU                              ((USAGE) 0x85)
-#define HID_USAGE_GENERIC_SYSCTL_APP_MENU                               ((USAGE) 0x86)
-#define HID_USAGE_GENERIC_SYSCTL_HELP_MENU                              ((USAGE) 0x87)
-#define HID_USAGE_GENERIC_SYSCTL_MENU_EXIT                              ((USAGE) 0x88)
-#define HID_USAGE_GENERIC_SYSCTL_MENU_SELECT                            ((USAGE) 0x89)
-#define HID_USAGE_GENERIC_SYSCTL_MENU_RIGHT                             ((USAGE) 0x8A)
-#define HID_USAGE_GENERIC_SYSCTL_MENU_LEFT                              ((USAGE) 0x8B)
-#define HID_USAGE_GENERIC_SYSCTL_MENU_UP                                ((USAGE) 0x8C)
-#define HID_USAGE_GENERIC_SYSCTL_MENU_DOWN                              ((USAGE) 0x8D)
-#define HID_USAGE_GENERIC_SYSTEM_DISPLAY_ROTATION_LOCK_BUTTON           ((USAGE) 0xC9)
-#define HID_USAGE_GENERIC_SYSTEM_DISPLAY_ROTATION_LOCK_SLIDER_SWITCH    ((USAGE) 0xCA)
-#define HID_USAGE_GENERIC_CONTROL_ENABLE                                ((USAGE) 0xCB)
+#define HID_USAGE_PAGE_MICROSOFT_BLUETOOTH_HANDSFREE	((USAGE) 0xFFF3)
 
 //
-// Simulation Controls Page (0x02)
+// Usages from Generic Desktop Page (0x01)
 //
+
+#define HID_USAGE_GENERIC_POINTER      ((USAGE) 0x01)
+#define HID_USAGE_GENERIC_MOUSE        ((USAGE) 0x02)
+#define HID_USAGE_GENERIC_JOYSTICK     ((USAGE) 0x04)
+#define HID_USAGE_GENERIC_GAMEPAD      ((USAGE) 0x05)
+#define HID_USAGE_GENERIC_KEYBOARD     ((USAGE) 0x06)
+#define HID_USAGE_GENERIC_KEYPAD       ((USAGE) 0x07)
+#define HID_USAGE_GENERIC_SYSTEM_CTL   ((USAGE) 0x80)
+
+#define HID_USAGE_GENERIC_X                        ((USAGE) 0x30)
+#define HID_USAGE_GENERIC_Y                        ((USAGE) 0x31)
+#define HID_USAGE_GENERIC_Z                        ((USAGE) 0x32)
+#define HID_USAGE_GENERIC_RX                       ((USAGE) 0x33)
+#define HID_USAGE_GENERIC_RY                       ((USAGE) 0x34)
+#define HID_USAGE_GENERIC_RZ                       ((USAGE) 0x35)
+#define HID_USAGE_GENERIC_SLIDER                   ((USAGE) 0x36)
+#define HID_USAGE_GENERIC_DIAL                     ((USAGE) 0x37)
+#define HID_USAGE_GENERIC_WHEEL                    ((USAGE) 0x38)
+#define HID_USAGE_GENERIC_HATSWITCH                ((USAGE) 0x39)
+#define HID_USAGE_GENERIC_COUNTED_BUFFER           ((USAGE) 0x3A)
+#define HID_USAGE_GENERIC_BYTE_COUNT               ((USAGE) 0x3B)
+#define HID_USAGE_GENERIC_MOTION_WAKEUP            ((USAGE) 0x3C)
+#define HID_USAGE_GENERIC_VX                       ((USAGE) 0x40)
+#define HID_USAGE_GENERIC_VY                       ((USAGE) 0x41)
+#define HID_USAGE_GENERIC_VZ                       ((USAGE) 0x42)
+#define HID_USAGE_GENERIC_VBRX                     ((USAGE) 0x43)
+#define HID_USAGE_GENERIC_VBRY                     ((USAGE) 0x44)
+#define HID_USAGE_GENERIC_VBRZ                     ((USAGE) 0x45)
+#define HID_USAGE_GENERIC_VNO                      ((USAGE) 0x46)
+#define HID_USAGE_GENERIC_SYSCTL_POWER             ((USAGE) 0x81)
+#define HID_USAGE_GENERIC_SYSCTL_SLEEP             ((USAGE) 0x82)
+#define HID_USAGE_GENERIC_SYSCTL_WAKE              ((USAGE) 0x83)
+#define HID_USAGE_GENERIC_SYSCTL_CONTEXT_MENU      ((USAGE) 0x84)
+#define HID_USAGE_GENERIC_SYSCTL_MAIN_MENU         ((USAGE) 0x85)
+#define HID_USAGE_GENERIC_SYSCTL_APP_MENU          ((USAGE) 0x86)
+#define HID_USAGE_GENERIC_SYSCTL_HELP_MENU         ((USAGE) 0x87)
+#define HID_USAGE_GENERIC_SYSCTL_MENU_EXIT         ((USAGE) 0x88)
+#define HID_USAGE_GENERIC_SYSCTL_MENU_SELECT       ((USAGE) 0x89)
+#define HID_USAGE_GENERIC_SYSCTL_MENU_RIGHT        ((USAGE) 0x8A)
+#define HID_USAGE_GENERIC_SYSCTL_MENU_LEFT         ((USAGE) 0x8B)
+#define HID_USAGE_GENERIC_SYSCTL_MENU_UP           ((USAGE) 0x8C)
+#define HID_USAGE_GENERIC_SYSCTL_MENU_DOWN         ((USAGE) 0x8D)
+
+//
+// Usages from Simulation Controls Page (0x02)
+//
+
 #define HID_USAGE_SIMULATION_RUDDER                ((USAGE) 0xBA)
 #define HID_USAGE_SIMULATION_THROTTLE              ((USAGE) 0xBB)
-
 
 //
 // Virtual Reality Controls Page (0x03)
@@ -132,21 +118,19 @@ typedef USHORT USAGE, *PUSAGE;
 // Keyboard/Keypad Page (0x07)
 //
 
-// Error "keys"
+        // Error "keys"
 #define HID_USAGE_KEYBOARD_NOEVENT     ((USAGE) 0x00)
 #define HID_USAGE_KEYBOARD_ROLLOVER    ((USAGE) 0x01)
 #define HID_USAGE_KEYBOARD_POSTFAIL    ((USAGE) 0x02)
 #define HID_USAGE_KEYBOARD_UNDEFINED   ((USAGE) 0x03)
 
-// Letters
+        // Letters
 #define HID_USAGE_KEYBOARD_aA          ((USAGE) 0x04)
 #define HID_USAGE_KEYBOARD_zZ          ((USAGE) 0x1D)
-
-// Numbers
+        // Numbers
 #define HID_USAGE_KEYBOARD_ONE         ((USAGE) 0x1E)
 #define HID_USAGE_KEYBOARD_ZERO        ((USAGE) 0x27)
-
-// Modifier Keys
+        // Modifier Keys
 #define HID_USAGE_KEYBOARD_LCTRL       ((USAGE) 0xE0)
 #define HID_USAGE_KEYBOARD_LSHFT       ((USAGE) 0xE1)
 #define HID_USAGE_KEYBOARD_LALT        ((USAGE) 0xE2)
@@ -158,44 +142,22 @@ typedef USHORT USAGE, *PUSAGE;
 #define HID_USAGE_KEYBOARD_SCROLL_LOCK ((USAGE) 0x47)
 #define HID_USAGE_KEYBOARD_NUM_LOCK    ((USAGE) 0x53)
 #define HID_USAGE_KEYBOARD_CAPS_LOCK   ((USAGE) 0x39)
-
-// Function keys
+        // Funtion keys
 #define HID_USAGE_KEYBOARD_F1          ((USAGE) 0x3A)
-#define HID_USAGE_KEYBOARD_F2          ((USAGE) 0x3B)
-#define HID_USAGE_KEYBOARD_F3          ((USAGE) 0x3C)
-#define HID_USAGE_KEYBOARD_F4          ((USAGE) 0x3D)
-#define HID_USAGE_KEYBOARD_F5          ((USAGE) 0x3E)
-#define HID_USAGE_KEYBOARD_F6          ((USAGE) 0x3F)
-#define HID_USAGE_KEYBOARD_F7          ((USAGE) 0x40)
-#define HID_USAGE_KEYBOARD_F8          ((USAGE) 0x41)
-#define HID_USAGE_KEYBOARD_F9          ((USAGE) 0x42)
-#define HID_USAGE_KEYBOARD_F10         ((USAGE) 0x43)
-#define HID_USAGE_KEYBOARD_F11         ((USAGE) 0x44)
 #define HID_USAGE_KEYBOARD_F12         ((USAGE) 0x45)
-#define HID_USAGE_KEYBOARD_F13         ((USAGE) 0x68)
-#define HID_USAGE_KEYBOARD_F14         ((USAGE) 0x69)
-#define HID_USAGE_KEYBOARD_F15         ((USAGE) 0x6A)
-#define HID_USAGE_KEYBOARD_F16         ((USAGE) 0x6B)
-#define HID_USAGE_KEYBOARD_F17         ((USAGE) 0x6C)
-#define HID_USAGE_KEYBOARD_F18         ((USAGE) 0x6D)
-#define HID_USAGE_KEYBOARD_F19         ((USAGE) 0x6E)
-#define HID_USAGE_KEYBOARD_F20         ((USAGE) 0x6F)
-#define HID_USAGE_KEYBOARD_F21         ((USAGE) 0x70)
-#define HID_USAGE_KEYBOARD_F22         ((USAGE) 0x71)
-#define HID_USAGE_KEYBOARD_F23         ((USAGE) 0x72)
-#define HID_USAGE_KEYBOARD_F24         ((USAGE) 0x73)
 
 #define HID_USAGE_KEYBOARD_RETURN      ((USAGE) 0x28)
 #define HID_USAGE_KEYBOARD_ESCAPE      ((USAGE) 0x29)
 #define HID_USAGE_KEYBOARD_DELETE      ((USAGE) 0x2A)
 
-#define HID_USAGE_KEYBOARD_PRINT_SCREEN      ((USAGE) 0x46)
-#define HID_USAGE_KEYBOARD_DELETE_FORWARD    ((USAGE) 0x4C)
+#define HID_USAGE_KEYBOARD_PRINT_SCREEN ((USAGE) 0x46)
 
+// and hundreds more...
 
 //
 // LED Page (0x08)
 //
+
 #define HID_USAGE_LED_NUM_LOCK               ((USAGE) 0x01)
 #define HID_USAGE_LED_CAPS_LOCK              ((USAGE) 0x02)
 #define HID_USAGE_LED_SCROLL_LOCK            ((USAGE) 0x03)
@@ -289,160 +251,42 @@ typedef USHORT USAGE, *PUSAGE;
 //
 //  Telephony Device Page (0x0B)
 //
-#define HID_USAGE_TELEPHONY_PHONE                   ((USAGE) 0x01)
-#define HID_USAGE_TELEPHONY_ANSWERING_MACHINE       ((USAGE) 0x02)
-#define HID_USAGE_TELEPHONY_MESSAGE_CONTROLS        ((USAGE) 0x03)
-#define HID_USAGE_TELEPHONY_HANDSET                 ((USAGE) 0x04)
-#define HID_USAGE_TELEPHONY_HEADSET                 ((USAGE) 0x05)
-#define HID_USAGE_TELEPHONY_KEYPAD                  ((USAGE) 0x06)
-#define HID_USAGE_TELEPHONY_PROGRAMMABLE_BUTTON     ((USAGE) 0x07)
-#define HID_USAGE_TELEPHONY_REDIAL                  ((USAGE) 0x24)
-#define HID_USAGE_TELEPHONY_TRANSFER                ((USAGE) 0x25)
-#define HID_USAGE_TELEPHONY_DROP                    ((USAGE) 0x26)
-#define HID_USAGE_TELEPHONY_LINE                    ((USAGE) 0x2A)
-#define HID_USAGE_TELEPHONY_RING_ENABLE             ((USAGE) 0x2D)
-#define HID_USAGE_TELEPHONY_SEND                    ((USAGE) 0x31)
-#define HID_USAGE_TELEPHONY_KEYPAD_0                ((USAGE) 0xB0)
-#define HID_USAGE_TELEPHONY_KEYPAD_D                ((USAGE) 0xBF)
-#define HID_USAGE_TELEPHONY_HOST_AVAILABLE          ((USAGE) 0xF1)
 
+#define HID_USAGE_TELEPHONY_PHONE                  ((USAGE) 0x01)
+#define HID_USAGE_TELEPHONY_ANSWERING_MACHINE      ((USAGE) 0x02)
+#define HID_USAGE_TELEPHONY_MESSAGE_CONTROLS       ((USAGE) 0x03)
+#define HID_USAGE_TELEPHONY_HANDSET                ((USAGE) 0x04)
+#define HID_USAGE_TELEPHONY_HEADSET                ((USAGE) 0x05)
+#define HID_USAGE_TELEPHONY_KEYPAD                 ((USAGE) 0x06)
+#define HID_USAGE_TELEPHONY_PROGRAMMABLE_BUTTON    ((USAGE) 0x07)
+#define HID_USAGE_TELEPHONY_REDIAL                 ((USAGE) 0x24)
+#define HID_USAGE_TELEPHONY_TRANSFER               ((USAGE) 0x25)
+#define HID_USAGE_TELEPHONY_DROP                   ((USAGE) 0x26)
+#define HID_USAGE_TELEPHONY_LINE                   ((USAGE) 0x2A)
+#define HID_USAGE_TELEPHONY_RING_ENABLE            ((USAGE) 0x2D)
+#define HID_USAGE_TELEPHONY_SEND                   ((USAGE) 0x31)
+#define HID_USAGE_TELEPHONY_KEYPAD_0               ((USAGE) 0xB0)
+#define HID_USAGE_TELEPHONY_KEYPAD_D               ((USAGE) 0xBF)
+#define HID_USAGE_TELEPHONY_HOST_AVAILABLE         ((USAGE) 0xF1)
 
-//
-// Consumer Controls Page (0x0C)
-//
-#define HID_USAGE_CONSUMERCTRL                      ((USAGE) 0x01)
-
-// channel
-#define HID_USAGE_CONSUMER_CHANNEL_INCREMENT        ((USAGE) 0x9C)
-#define HID_USAGE_CONSUMER_CHANNEL_DECREMENT        ((USAGE) 0x9D)
-
-// transport control
-#define HID_USAGE_CONSUMER_PLAY                     ((USAGE) 0xB0)
-#define HID_USAGE_CONSUMER_PAUSE                    ((USAGE) 0xB1)
-#define HID_USAGE_CONSUMER_RECORD                   ((USAGE) 0xB2)
-#define HID_USAGE_CONSUMER_FAST_FORWARD             ((USAGE) 0xB3)
-#define HID_USAGE_CONSUMER_REWIND                   ((USAGE) 0xB4)
-#define HID_USAGE_CONSUMER_SCAN_NEXT_TRACK          ((USAGE) 0xB5)
-#define HID_USAGE_CONSUMER_SCAN_PREV_TRACK          ((USAGE) 0xB6)
-#define HID_USAGE_CONSUMER_STOP                     ((USAGE) 0xB7)
-#define HID_USAGE_CONSUMER_PLAY_PAUSE               ((USAGE) 0xCD)
-
-// GameDVR
-#define HID_USAGE_CONSUMER_GAMEDVR_OPEN_GAMEBAR     ((USAGE) 0xD0)
-#define HID_USAGE_CONSUMER_GAMEDVR_TOGGLE_RECORD    ((USAGE) 0xD1)
-#define HID_USAGE_CONSUMER_GAMEDVR_RECORD_CLIP      ((USAGE) 0xD2)
-#define HID_USAGE_CONSUMER_GAMEDVR_SCREENSHOT       ((USAGE) 0xD3)
-#define HID_USAGE_CONSUMER_GAMEDVR_TOGGLE_INDICATOR ((USAGE) 0xD4)
-#define HID_USAGE_CONSUMER_GAMEDVR_TOGGLE_MICROPHONE ((USAGE) 0xD5)
-#define HID_USAGE_CONSUMER_GAMEDVR_TOGGLE_CAMERA    ((USAGE) 0xD6)
-#define HID_USAGE_CONSUMER_GAMEDVR_TOGGLE_BROADCAST ((USAGE) 0xD7)
-
-// audio
-#define HID_USAGE_CONSUMER_VOLUME                   ((USAGE) 0xE0)
-#define HID_USAGE_CONSUMER_BALANCE                  ((USAGE) 0xE1)
-#define HID_USAGE_CONSUMER_MUTE                     ((USAGE) 0xE2)
-#define HID_USAGE_CONSUMER_BASS                     ((USAGE) 0xE3)
-#define HID_USAGE_CONSUMER_TREBLE                   ((USAGE) 0xE4)
-#define HID_USAGE_CONSUMER_BASS_BOOST               ((USAGE) 0xE5)
-#define HID_USAGE_CONSUMER_SURROUND_MODE            ((USAGE) 0xE6)
-#define HID_USAGE_CONSUMER_LOUDNESS                 ((USAGE) 0xE7)
-#define HID_USAGE_CONSUMER_MPX                      ((USAGE) 0xE8)
-#define HID_USAGE_CONSUMER_VOLUME_INCREMENT         ((USAGE) 0xE9)
-#define HID_USAGE_CONSUMER_VOLUME_DECREMENT         ((USAGE) 0xEA)
-
-// supplementary audio
-#define HID_USAGE_CONSUMER_BASS_INCREMENT           ((USAGE) 0x152)
-#define HID_USAGE_CONSUMER_BASS_DECREMENT           ((USAGE) 0x153)
-#define HID_USAGE_CONSUMER_TREBLE_INCREMENT         ((USAGE) 0x154)
-#define HID_USAGE_CONSUMER_TREBLE_DECREMENT         ((USAGE) 0x155)
-
-// Application Launch
-#define HID_USAGE_CONSUMER_AL_CONFIGURATION         ((USAGE) 0x183)
-#define HID_USAGE_CONSUMER_AL_EMAIL                 ((USAGE) 0x18A)
-#define HID_USAGE_CONSUMER_AL_CALCULATOR            ((USAGE) 0x192)
-#define HID_USAGE_CONSUMER_AL_BROWSER               ((USAGE) 0x194)
-
-// Application Control
-#define HID_USAGE_CONSUMER_AC_SEARCH                ((USAGE) 0x221)
-#define HID_USAGE_CONSUMER_AC_GOTO                  ((USAGE) 0x222)
-#define HID_USAGE_CONSUMER_AC_HOME                  ((USAGE) 0x223)
-#define HID_USAGE_CONSUMER_AC_BACK                  ((USAGE) 0x224)
-#define HID_USAGE_CONSUMER_AC_FORWARD               ((USAGE) 0x225)
-#define HID_USAGE_CONSUMER_AC_STOP                  ((USAGE) 0x226)
-#define HID_USAGE_CONSUMER_AC_REFRESH               ((USAGE) 0x227)
-#define HID_USAGE_CONSUMER_AC_PREVIOUS              ((USAGE) 0x228)
-#define HID_USAGE_CONSUMER_AC_NEXT                  ((USAGE) 0x229)
-#define HID_USAGE_CONSUMER_AC_BOOKMARKS             ((USAGE) 0x22A)
-#define HID_USAGE_CONSUMER_AC_PAN                   ((USAGE) 0x238)
-
-// Keyboard Extended Attributes (defined on consumer page in HUTRR42)
-#define HID_USAGE_CONSUMER_EXTENDED_KEYBOARD_ATTRIBUTES_COLLECTION      ((USAGE) 0x2C0)
-#define HID_USAGE_CONSUMER_KEYBOARD_FORM_FACTOR                         ((USAGE) 0x2C1)
-#define HID_USAGE_CONSUMER_KEYBOARD_KEY_TYPE                            ((USAGE) 0x2C2)
-#define HID_USAGE_CONSUMER_KEYBOARD_PHYSICAL_LAYOUT                     ((USAGE) 0x2C3)
-#define HID_USAGE_CONSUMER_VENDOR_SPECIFIC_KEYBOARD_PHYSICAL_LAYOUT     ((USAGE) 0x2C4)
-#define HID_USAGE_CONSUMER_KEYBOARD_IETF_LANGUAGE_TAG_INDEX             ((USAGE) 0x2C5)
-#define HID_USAGE_CONSUMER_IMPLEMENTED_KEYBOARD_INPUT_ASSIST_CONTROLS   ((USAGE) 0x2C6)
-
-//
-// Digitizer Page (0x0D)
-//
-#define HID_USAGE_DIGITIZER_PEN                     ((USAGE)0x02)
-#define HID_USAGE_DIGITIZER_IN_RANGE                ((USAGE)0x32)
-#define HID_USAGE_DIGITIZER_TIP_SWITCH              ((USAGE)0x42)
-#define HID_USAGE_DIGITIZER_BARREL_SWITCH           ((USAGE)0x44)
-
-//
-// Simple Haptic Controller Page (0x0E)
-//
-#define HID_USAGE_HAPTICS_SIMPLE_CONTROLLER         ((USAGE)0x01)
-
-#define HID_USAGE_HAPTICS_WAVEFORM_LIST             ((USAGE)0x10)
-#define HID_USAGE_HAPTICS_DURATION_LIST             ((USAGE)0x11)
-
-#define HID_USAGE_HAPTICS_AUTO_TRIGGER              ((USAGE)0x20)
-#define HID_USAGE_HAPTICS_MANUAL_TRIGGER            ((USAGE)0x21)
-#define HID_USAGE_HAPTICS_AUTO_ASSOCIATED_CONTROL   ((USAGE)0x22)
-#define HID_USAGE_HAPTICS_INTENSITY                 ((USAGE)0x23)
-#define HID_USAGE_HAPTICS_REPEAT_COUNT              ((USAGE)0x24)
-#define HID_USAGE_HAPTICS_RETRIGGER_PERIOD          ((USAGE)0x25)
-#define HID_USAGE_HAPTICS_WAVEFORM_VENDOR_PAGE      ((USAGE)0x26)
-#define HID_USAGE_HAPTICS_WAVEFORM_VENDOR_ID        ((USAGE)0x27)
-#define HID_USAGE_HAPTICS_WAVEFORM_CUTOFF_TIME      ((USAGE)0x28)
-
-// Waveform types
-#define HID_USAGE_HAPTICS_WAVEFORM_BEGIN            ((USAGE)0x1000)
-#define HID_USAGE_HAPTICS_WAVEFORM_STOP             ((USAGE)0x1001)
-#define HID_USAGE_HAPTICS_WAVEFORM_NULL             ((USAGE)0x1002)
-#define HID_USAGE_HAPTICS_WAVEFORM_CLICK            ((USAGE)0x1003)
-#define HID_USAGE_HAPTICS_WAVEFORM_BUZZ             ((USAGE)0x1004)
-#define HID_USAGE_HAPTICS_WAVEFORM_RUMBLE           ((USAGE)0x1005)
-#define HID_USAGE_HAPTICS_WAVEFORM_PRESS            ((USAGE)0x1006)
-#define HID_USAGE_HAPTICS_WAVEFORM_RELEASE          ((USAGE)0x1007)
-#define HID_USAGE_HAPTICS_WAVEFORM_END              ((USAGE)0x1FFF)
-
-#define HID_USAGE_HAPTICS_WAVEFORM_VENDOR_BEGIN     ((USAGE)0x2000)
-#define HID_USAGE_HAPTICS_WAVEFORM_VENDOR_END       ((USAGE)0x2FFF)
-
-//
-// Sensor Page (0x20)
-//
-
-
-//
-// Camera Control Page (0x90)
-//
-#define HID_USAGE_CAMERA_AUTO_FOCUS                 ((USAGE) 0x20)
-#define HID_USAGE_CAMERA_SHUTTER                    ((USAGE) 0x21)
 
 //
 // Microsoft Bluetooth Handsfree Page (0xFFF3)
 //
-#define HID_USAGE_MS_BTH_HF_DIALNUMBER              ((USAGE) 0x21)
-#define HID_USAGE_MS_BTH_HF_DIALMEMORY              ((USAGE) 0x22)
+#define HID_USAGE_MS_BTH_HF_DIALNUMBER             ((USAGE) 0x21)
+#define HID_USAGE_MS_BTH_HF_DIALMEMORY             ((USAGE) 0x22)
 
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
-#pragma endregion
+//
+// and others...
+//
+
+#define HID_USAGE_CONSUMERCTRL          ((USAGE)0x01)
+#define HID_USAGE_DIGITIZER_PEN         ((USAGE)0x02)
+#define HID_USAGE_DIGITIZER_IN_RANGE    ((USAGE)0x32)
+#define HID_USAGE_DIGITIZER_TIP_SWITCH  ((USAGE)0x42)
+#define HID_USAGE_DIGITIZER_BARREL_SWITCH ((USAGE)0x44)
 
 #endif
+
+
