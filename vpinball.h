@@ -8,6 +8,17 @@
 #include "RenderDevice.h"
 #include "ImageDialog.h"
 #include "SoundDialog.h"
+#include "EditorOptionsDialog.h"
+#include "VideoOptionsDialog.h"
+#include "AudioOptionsDialog.h"
+#include "CollectionManagerDialog.h"
+#include "PhysicsOptionsDialog.h"
+#include "TableInfoDialog.h"
+#include "DimensionDialog.h"
+#include "MaterialDialog.h"
+#include "SoundDialog.h"
+#include "AboutDialog.h"
+#include "DrawingOrderDialog.h"
 
 #define CURRENT_FILE_FORMAT_VERSION 1021
 
@@ -164,14 +175,25 @@ protected:
 #endif 
 
 private:
+   void ShowSubDialog(CDialog &dlg);
    char m_szRecentTableList[LAST_OPENED_TABLE_COUNT + 1][MAX_PATH];
 
    HANDLE m_workerthread;
    unsigned int m_workerthreadid;
 
    HMODULE m_scintillaDll;
+
    ImageDialog m_imageMngDlg;
    SoundDialog m_soundMngDlg;
+   AudioOptionsDialog m_audioOptDialog;
+   VideoOptionsDialog m_videoOptDialog;
+   EditorOptionsDialog m_editorOptDialog;
+   CollectionManagerDialog m_collectionMngDlg;
+   PhysicsOptionsDialog m_physicsOptDialog;
+   TableInfoDialog m_tableInfoDialog;
+   DimensionDialog m_dimensionDialog;
+   MaterialDialog m_materialDialog;
+   AboutDialog m_aboutDialog;
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)
