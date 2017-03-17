@@ -4,7 +4,7 @@
 class AboutDialog : public CDialog
 {
 public:
-   AboutDialog(UINT nResID);
+   AboutDialog();
    virtual ~AboutDialog();
 
 protected:

@@ -5,19 +5,7 @@
 #include "StdAfx.h"
 #include "resource.h"
 #include "vpversion.h"
-#include "AboutDialog.h"
-#include "SoundDialog.h"
-#include "DrawingOrderDialog.h"
-#include "TableInfoDialog.h"
-#include "DimensionDialog.h"
-#include "EditorOptionsDialog.h"
-#include "VideoOptionsDialog.h"
-#include "AudioOptionsDialog.h"
-#include "MaterialDialog.h"
-#include "CollectionManagerDialog.h"
-#include "PhysicsOptionsDialog.h"
 #include "svn_version.h"
-
 
 #if defined(IMSPANISH)
 #define TOOLBAR_WIDTH 152
@@ -181,27 +169,12 @@ static char recentMenuname[MAX_PATH];
 LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-INT_PTR CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 typedef struct _tagSORTDATA
 {
@@ -826,8 +799,17 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       return;
    }
 
+   /* a MDI client window starts with ID 4000 and is incremented by Windows if a new window(table) is loaded 
+      if the user switches a table (multiple tables are loaded) the code is 4000+ support up to 30 loaded tables here */
+   if (code >= 4000 && code < 4030)
+   {
+       /* close all dialogs if the table is changed to prevent further issues */
+       CloseAllDialogs();
+   }
+
    switch (code)
    {
+
    case IDM_NEW:
    {
       CComObject<PinTable> *pt;
@@ -837,9 +819,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       //pt = new PinTable(this);
       m_vtable.AddElement(pt);
       SetEnableToolbar();
+      break;
    }
-   break;
-
    case ID_DELETE:
    {
       ptCur = GetActiveTable();
@@ -850,16 +831,18 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          else
             ptCur->OnDelete();
       }
+      break;
    }
-   break;
-
    case ID_TABLE_CAMERAMODE:
-      DoPlay(true);
-      break;
+   {
+       DoPlay(true);
+       break;
+   }
    case ID_TABLE_PLAY:
-      DoPlay(false);
-      break;
-
+   {
+       DoPlay(false);
+       break;
+   }
    case ID_SCRIPT_SHOWIDE:
    case ID_EDIT_SCRIPT:
    {
@@ -871,9 +854,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          else
             ptCur->m_pcv->SetVisible(fTrue);
       }
+      break;
    }
-   break;
-
    case ID_EDIT_PROPERTIES:
    {
       BOOL fShow = fFalse;
@@ -925,9 +907,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
                m_sb.CreateFromDispatch(m_hwnd, &ptCur->m_vmultisel);
          }
       }
+      break;
    }
-   break;
-
    case ID_EDIT_BACKGLASSVIEW:
    {
       const bool fShow = !m_fBackglassView;
@@ -953,8 +934,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       }
 
       SetEnableToolbar();
+      break;
    }
-   break;
    case ID_EDIT_SEARCH:
    {
       ptCur = GetActiveTable();
@@ -1018,24 +999,30 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_VIEW_SOLID:
    case ID_VIEW_OUTLINE:
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         ptCur->m_renderSolid = (code == ID_VIEW_SOLID);
-         ptCur->SetDirtyDraw();
-         SetRegValueBool("Editor", "RenderSolid", ptCur->m_renderSolid);
-      }
-      break;
+   {
+       ptCur = GetActiveTable();
+       if (ptCur)
+       {
+           ptCur->m_renderSolid = (code == ID_VIEW_SOLID);
+           ptCur->SetDirtyDraw();
+           SetRegValueBool("Editor", "RenderSolid", ptCur->m_renderSolid);
+       }
+       break;
+   }
    case ID_VIEW_GRID:
-      ptCur = GetActiveTable();
-      if (ptCur)
-         ptCur->put_DisplayGrid(!ptCur->m_fGrid);
-      break;
+   {
+       ptCur = GetActiveTable();
+       if (ptCur)
+           ptCur->put_DisplayGrid(!ptCur->m_fGrid);
+       break;
+   }
    case ID_VIEW_BACKDROP:
-      ptCur = GetActiveTable();
-      if (ptCur)
-         ptCur->put_DisplayBackdrop(!ptCur->m_fBackdrop);
-      break;
+   {
+       ptCur = GetActiveTable();
+       if (ptCur)
+           ptCur->put_DisplayBackdrop(!ptCur->m_fBackdrop);
+       break;
+   }
    case IDC_SELECT:
    case ID_TABLE_MAGNIFY:
    {
@@ -1052,7 +1039,6 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       }
       break;
    }
-
    case ID_ADD_CTRL_POINT:
    {
       ptCur = GetActiveTable();
@@ -1095,7 +1081,6 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       }
       break;
    }
-
    case ID_ADD_SMOOTH_CTRL_POINT:
    {
       ptCur = GetActiveTable();
@@ -1137,7 +1122,6 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       }
       break;
    }
-
    case IDM_SAVE:
    {
       ptCur = GetActiveTable();
@@ -1152,9 +1136,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
                UpdateRecentFileList(ptCur->m_szFileName);
          }
       }
+      break;
    }
-   break;
-
    case IDM_SAVEAS:
    {
       ptCur = GetActiveTable();
@@ -1169,9 +1152,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
                UpdateRecentFileList(ptCur->m_szFileName);
          }
       }
+      break;
    }
-   break;
-
    case IDM_SAVEASPROTECTED:
    {
       ptCur = GetActiveTable();
@@ -1201,9 +1183,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
             }
          }
       }
+      break;
    }
-   break;
-
    case IDM_UNLOCKPROTECTED:
    {
       ptCur = GetActiveTable();
@@ -1219,8 +1200,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
             ptCur->SetDirtyDraw();		// redraw the screen (incase hiding elements)
          }
       }
+      break;
    }
-   break;
 
    case RECENT_FIRST_MENU_IDM:
    case RECENT_FIRST_MENU_IDM + 1:
@@ -1237,21 +1218,21 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       // copy it into a temporary string so it can be correctly processed
       memcpy(szFileName, m_szRecentTableList[Index], sizeof(szFileName));
       LoadFileName(szFileName);
+      break;
    }
-   break;
 
    case IDM_OPEN:
-      LoadFile();
-      break;
-
+   {
+       LoadFile();
+       break;
+   }
    case IDM_CLOSE:
    {
       ptCur = GetActiveTable();
       if (ptCur)
          CloseTable(ptCur);
+      break;
    }
-   break;
-
    case IDC_COPY:
    {
       ptCur = GetActiveTable();
@@ -1262,17 +1243,15 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          else
             ptCur->Copy();
       }
+      break;
    }
-   break;
-
    case IDC_PASTE:
    {
       ptCur = GetActiveTable();
       if (ptCur)
          ptCur->Paste(fFalse, 0, 0);
+      break;
    }
-   break;
-
    case IDC_PASTEAT:
    {
       ptCur = GetActiveTable();
@@ -1283,17 +1262,15 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          ::ScreenToClient(ptCur->m_hwnd, &ptCursor);
          ptCur->Paste(fTrue, ptCursor.x, ptCursor.y);
       }
+      break;
    }
-   break;
-
    case ID_EDIT_UNDO:
    {
       ptCur = GetActiveTable();
       if (ptCur)
          ptCur->Undo();
+      break;
    }
-   break;
-
    case ID_FILE_EXPORT_BLUEPRINT:
    {
       ptCur = GetActiveTable();
@@ -1304,8 +1281,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          else
             ptCur->ExportBlueprint();
       }
+      break;
    }
-   break;
    case ID_EXPORT_TABLEMESH:
    {
       ptCur = GetActiveTable();
@@ -1343,30 +1320,23 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
        break;
    }
    case ID_FILE_EXIT:
-      PostMessage(m_hwnd, WM_CLOSE, 0, 0);
-      break;
-
-   case ID_EDIT_AUDIOOPTIONS:
    {
-      AudioOptionsDialog *audioDlg = new AudioOptionsDialog();
-      audioDlg->DoModal();
-      delete audioDlg;
-      break;
-   }
-
-   case ID_EDIT_PHYSICSOPTIONS:
-   {
-       PhysicsOptionsDialog *phyDlg = new PhysicsOptionsDialog();
-       phyDlg->DoModal();
-       delete phyDlg;
+       PostMessage(m_hwnd, WM_CLOSE, 0, 0);
        break;
    }
-
+   case ID_EDIT_AUDIOOPTIONS:
+   {
+       ShowSubDialog(m_editorOptDialog);
+      break;
+   }
+   case ID_EDIT_PHYSICSOPTIONS:
+   {
+       ShowSubDialog(m_physicsOptDialog);
+       break;
+   }
    case ID_EDIT_EDITOROPTIONS:
    {
-      EditorOptionsDialog *editorOptionsDlg = new EditorOptionsDialog();
-      editorOptionsDlg->DoModal();
-      delete editorOptionsDlg;
+       ShowSubDialog(m_editorOptDialog);
 
       // refresh editor options from the registry
       InitRegValues();
@@ -1374,181 +1344,139 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       ptCur = GetActiveTable();
       if (ptCur)
          ptCur->SetDirtyDraw();
+      break;
    }
-   break;
-
    case ID_EDIT_VIDEOOPTIONS:
    {
-      VideoOptionsDialog *videoDlg = new VideoOptionsDialog();
-      videoDlg->DoModal();
-      delete videoDlg;
+       ShowSubDialog(m_videoOptDialog);
+       break;
    }
-   break;
+   case ID_TABLE_TABLEINFO:
+   {
+       ptCur = GetActiveTable();
+       if (ptCur)
+       {
+           ShowSubDialog(m_tableInfoDialog);
+       }
+       break;
+   }
+   case IDM_IMAGE_EDITOR:
+   case ID_TABLE_IMAGEMANAGER:
+   {
+       ptCur = GetActiveTable();
+       if (ptCur)
+       {
+           if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
+               ShowPermissionError();
+           else
+           {
+               ShowSubDialog(m_imageMngDlg);
 
+               m_sb.PopulateDropdowns(); // May need to update list of images
+               m_sb.RefreshProperties();
+           }
+       }
+       break;
+   }
+   case IDM_SOUND_EDITOR:
+   case ID_TABLE_SOUNDMANAGER:
+   {
+       ptCur = GetActiveTable();
+       if (ptCur)
+       {
+           if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
+               ShowPermissionError();
+           else
+           {
+               if (!m_soundMngDlg.IsWindow())
+               {
+                   m_soundMngDlg.Create(m_hwnd);
+                   m_soundMngDlg.ShowWindow();
+               }
+               else
+                   m_soundMngDlg.SetForegroundWindow();
+           }
+       }
+       break;
+   }
+   case IDM_MATERIAL_EDITOR:
+   case ID_TABLE_MATERIALMANAGER:
+   {
+       ptCur = GetActiveTable();
+       if (ptCur)
+       {
+           if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
+               ShowPermissionError();
+           else
+           {
+               ShowSubDialog(m_materialDialog);
+
+               m_sb.PopulateDropdowns(); // May need to update list of images
+               m_sb.RefreshProperties();
+           }
+       }
+       break;
+   }
+   case ID_TABLE_FONTMANAGER:
+   {
+       ptCur = GetActiveTable();
+       if (ptCur)
+       {
+           if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
+               ShowPermissionError();
+           else
+           {
+               /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_FONTDIALOG),
+                   m_hwnd, FontManagerProc, (size_t)ptCur);
+           }
+       }
+       break;
+   }
+   case ID_TABLE_DIMENSIONMANAGER:
+   {
+       ptCur = GetActiveTable();
+       if (ptCur)
+       {
+           if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
+           {
+               ShowPermissionError();
+               break;
+           }
+       }
+       ShowSubDialog(m_dimensionDialog);
+       break;
+   }
+   case IDM_COLLECTION_EDITOR:
+   case ID_TABLE_COLLECTIONMANAGER:
+   {
+       ptCur = GetActiveTable();
+       if (ptCur)
+       {
+           if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
+               ShowPermissionError();
+           else
+           {
+               ShowSubDialog(m_collectionMngDlg);
+
+               m_sb.PopulateDropdowns(); // May need to update list of collections
+               m_sb.RefreshProperties();
+           }
+       }
+       break;
+   }
    case ID_PREFERENCES_SECURITYOPTIONS:
    {
       DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS), m_hwnd, SecurityOptionsProc, 0);
 
       // refresh editor options from the registry
       InitRegValues();
+      break;
    }
-   break;
-
    case ID_EDIT_KEYS:
    {
       DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_KEYS), m_hwnd, KeysProc, 0);
+      break;
    }
-   break;
-
-   case ID_TABLE_TABLEINFO:
-   {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         TableInfoDialog *tableInfoDlg = new TableInfoDialog();
-         tableInfoDlg->DoModal();
-         delete tableInfoDlg;
-      }
-   }
-   break;
-   case IDM_SOUND_EDITOR:
-   case ID_TABLE_SOUNDMANAGER:
-   {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-            ShowPermissionError();
-         else
-         {
-            if (!m_soundMngDlg.IsWindow())
-            {
-               m_soundMngDlg.Create(m_hwnd);
-               m_soundMngDlg.ShowWindow();
-            }
-            else
-               m_soundMngDlg.SetForegroundWindow();
-         }
-      }
-   }
-   break;
-
-   case IDM_IMAGE_EDITOR:
-   case ID_TABLE_IMAGEMANAGER:
-   {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-            ShowPermissionError();
-         else
-         {
-            if (!m_imageMngDlg.IsWindow())
-            {
-               m_imageMngDlg.Create(m_hwnd);
-               m_imageMngDlg.ShowWindow();
-            }
-            else
-               m_imageMngDlg.SetForegroundWindow();
-
-            m_sb.PopulateDropdowns(); // May need to update list of images
-            m_sb.RefreshProperties();
-         }
-      }
-   }
-   break;
-
-   case IDM_MATERIAL_EDITOR:
-   case ID_TABLE_MATERIALMANAGER:
-   {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-            ShowPermissionError();
-         else
-         {
-            MaterialDialog *matDlg = new MaterialDialog();
-            matDlg->DoModal();
-            delete matDlg;
-
-/*            if (ptCur->m_hMaterialManager == NULL)
-            {
-               ptCur->m_hMaterialManager = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_MATERIALDIALOG), m_hwnd, MaterialManagerProc, (size_t)ptCur);
-               if (ptCur->m_hMaterialManager != NULL)
-               {
-                  char windowName[256];
-                  strcpy_s(windowName, "Material Manager - ");
-                  strncat_s(windowName, ptCur->m_szFileName, 255);
-                  SetWindowText(ptCur->m_hMaterialManager, windowName);
-                  ShowWindow(ptCur->m_hMaterialManager, SW_SHOW);
-                  SetForegroundWindow(ptCur->m_hMaterialManager);
-               }
-            }
-            else
-               SetForegroundWindow(ptCur->m_hMaterialManager);
-*/
-            m_sb.PopulateDropdowns(); // May need to update list of images
-            m_sb.RefreshProperties();
-         }
-      }
-   }
-   break;
-
-   case ID_TABLE_FONTMANAGER:
-   {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-            ShowPermissionError();
-         else
-         {
-            /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_FONTDIALOG),
-               m_hwnd, FontManagerProc, (size_t)ptCur);
-         }
-      }
-   }
-   break;
-
-   case ID_TABLE_DIMENSIONMANAGER:
-   {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-         {
-            ShowPermissionError();
-            break;
-         }
-      }
-      DimensionDialog *dimDlg = new DimensionDialog();
-      dimDlg->DoModal();
-      delete dimDlg;
-   }
-   break;
-
-   case IDM_COLLECTION_EDITOR:
-   case ID_TABLE_COLLECTIONMANAGER:
-   {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-            ShowPermissionError();
-         else
-         {
-            /*DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_COLLECTDIALOG), m_hwnd, CollectManagerProc, (size_t)ptCur);*/
-            CollectionManagerDialog *colManDlg = new CollectionManagerDialog();
-            colManDlg->DoModal();
-            delete colManDlg;
-
-            m_sb.PopulateDropdowns(); // May need to update list of collections
-            m_sb.RefreshProperties();
-         }
-      }
-   }
-   break;
    case ID_LAYER_LAYER1:
    {
       setLayerStatus(0);
@@ -1611,9 +1539,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_HELP_ABOUT:
    {
-      AboutDialog *aboutDlg = new AboutDialog(IDD_ABOUT);
-      aboutDlg->DoModal();
-      delete aboutDlg;
+       ShowSubDialog(m_aboutDialog);
       break;
    }
    case ID_WINDOW_CASCADE:
@@ -2287,6 +2213,18 @@ void VPinball::OnClose()
       CWnd::OnClose();
    }
 }
+
+void VPinball::ShowSubDialog( CDialog &dlg )
+{
+    if (!dlg.IsWindow())
+    {
+       dlg.Create(m_hwnd);
+       dlg.ShowWindow();
+    }
+    else
+       dlg.SetForegroundWindow();
+}
+
 #if 0
 int VPinball::OnCreate(CREATESTRUCT& cs)
 {
@@ -4575,4 +4513,22 @@ void VPinball::CloseAllDialogs()
       m_imageMngDlg.Destroy();
    if (m_soundMngDlg.IsWindow())
       m_soundMngDlg.Destroy();
+   if (m_audioOptDialog.IsWindow())
+      m_audioOptDialog.Destroy();
+   if (m_editorOptDialog.IsWindow())
+      m_editorOptDialog.Destroy();
+   if (m_videoOptDialog.IsWindow())
+      m_videoOptDialog.Destroy();
+   if (m_collectionMngDlg.IsWindow())
+      m_collectionMngDlg.Destroy();
+   if (m_physicsOptDialog.IsWindow())
+      m_physicsOptDialog.Destroy();
+   if (m_tableInfoDialog.IsWindow())
+      m_tableInfoDialog.Destroy();
+   if (m_dimensionDialog.IsWindow())
+      m_dimensionDialog.Destroy();
+   if (m_materialDialog.IsWindow())
+      m_materialDialog.Destroy();
+   if (m_aboutDialog.IsWindow())
+      m_aboutDialog.Destroy();
 }

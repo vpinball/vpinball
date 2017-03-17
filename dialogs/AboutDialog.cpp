@@ -5,7 +5,7 @@
 #include <fstream>
 #include <sstream>
 
-AboutDialog::AboutDialog(UINT nResID) : CDialog(nResID)
+AboutDialog::AboutDialog() : CDialog(IDD_ABOUT)
 {
 
 }
