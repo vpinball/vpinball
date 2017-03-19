@@ -886,6 +886,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
+    <ClCompile Include="math\math.cpp" />
+    <ClCompile Include="math\matrix.cpp" />
     <ClCompile Include="objloader.cpp" />
     <ClCompile Include="Pin\ball.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
