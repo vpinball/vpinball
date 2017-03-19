@@ -1,5 +1,7 @@
 VP 10.3.0 Changelog
 ------------------------
+- add NFAA post processing filter to the FXAA dropdown menus (sometimes more blurry, but also keeps more dynamic range of the highlights compared to FXAA, and is pretty fast)
+
 - own colors can now be defined for locked/unlocked selected elements, element fill color and editor table background, in the editor preferences
 
 - sound manager, image manager and script editor save and restore window position and size
