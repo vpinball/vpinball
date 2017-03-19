@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -1033,6 +1033,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
+    <ClCompile Include="math\math.cpp" />
     <ClCompile Include="math\matrix.cpp" />
     <ClCompile Include="objloader.cpp" />
     <ClCompile Include="Pin\ball.cpp">
@@ -3932,6 +3933,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="kdtree.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="math\bbox.h" />
+    <ClInclude Include="math\math.h" />
     <ClInclude Include="math\matrix.h" />
     <ClInclude Include="math\vector.h" />
     <ClInclude Include="media\wavread.h" />
@@ -3940,6 +3942,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="ballex.h" />
     <ClInclude Include="bumper.h" />
     <ClInclude Include="codeview.h" />
+    <ClInclude Include="pin\ballMesh.h" />
     <ClInclude Include="Pin\collide.h" />
     <ClInclude Include="Pin\collideex.h" />
     <ClInclude Include="comcontrol.h" />

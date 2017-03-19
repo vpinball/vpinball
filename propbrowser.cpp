@@ -13,8 +13,8 @@ enum
    eSlider
 };
 
-#define EXPANDO_EXPAND			WM_USER+100
-#define EXPANDO_COLLAPSE		WM_USER+101
+#define EXPANDO_EXPAND                  WM_USER+100
+#define EXPANDO_COLLAPSE                WM_USER+101
 
 #define EXPANDO_X_OFFSET 0 /*3*/
 #define EXPANDO_Y_OFFSET 30
@@ -170,7 +170,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       for (int i=0;i<m_vhwndExpand.Size();i++)
          DestroyWindow(m_vhwndExpand.ElementAt(i));
 
-	  m_vhwndExpand.RemoveAllElements();
+          m_vhwndExpand.RemoveAllElements();
       m_vhwndDialog.RemoveAllElements(); // Dialog windows will have been destroyed along with their parent expando window
    }
 
@@ -281,7 +281,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 
    //expand top last
    for(int i = m_vhwndExpand.Size()-1; i >= 0; --i)
-	   SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0);
+           SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0);
 }
 
 BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
@@ -563,6 +563,27 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
    {
    case eEdit:
       {
+         // If the control has focus, note the selection status.  If all
+         // of the text is currently selected, note this so that we can
+         // re-select the text when we're done.  This is important when
+         // tabbing between controls in a property sheet - making a change
+         // in one control and then tabbing to the next triggers a refresh
+         // of the whole property page, including the next control we're
+         // tabbing into.  The value refresh that we do here cancels the
+         // selection status.  So the effect is that we break the standard
+         // Windows behavior of selecting the text in the new control we're
+         // tabbing into.  We can fix this by explicitly re-selecting the
+         // text when we're done, assuming it was selected to begin with.
+         bool reSel = false;
+         if (GetFocus() == hwndControl)
+         {
+            DWORD a, b;
+            SendMessage(hwndControl, EM_GETSEL, (WPARAM)&a, (WPARAM)&b);
+            LRESULT len = SendMessage(hwndControl, WM_GETTEXTLENGTH, 0, 0);
+            if (a == 0 && b == len)
+               reSel = true;
+         }
+
          if (!fNinch)
          {
             VariantChangeType(&var, &var, 0, VT_BSTR);
@@ -578,6 +599,10 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
          }
          else
             SetWindowText(hwndControl, "");
+
+         // re-select the text if it was selected on entry
+         if (reSel)
+            SendMessage(hwndControl, EM_SETSEL, (WPARAM)0, (LPARAM)-1);
       }
       break;
 
@@ -793,7 +818,7 @@ void SmartBrowser::RelayoutExpandos()
       }
 
       if (indexBest != -1 && cnt > 1) //oldest  only the one we expanded
-      {	
+      {
          RECT rc;
          HWND hwndExpand = m_vhwndExpand.ElementAt(indexBest);
          GetWindowRect(hwndExpand, &rc);
@@ -817,7 +842,7 @@ void SmartBrowser::RelayoutExpandos()
 void SmartBrowser::ResetPriority(int expandoid)
 {
    // base prioritys on the title of the property pane
-   const int titleid = m_vproppane.ElementAt(expandoid)->titlestringid;	
+   const int titleid = m_vproppane.ElementAt(expandoid)->titlestringid;
    m_vproppriority.RemoveElement(titleid); // Remove this element if it currently exists in our current priority chain
    m_vproppriority.AddElement(titleid); // Add it back at the end (top) of the chain
 }
@@ -863,18 +888,18 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
       // a slider has been changed
    case WM_HSCROLL:
       {
-         if (lParam != NULL)									// must be scrollbar message
+         if (lParam != NULL)                                                                    // must be scrollbar message
          {
-            int nScrollCode = (int) LOWORD(wParam);			// scroll bar value
+            int nScrollCode = (int) LOWORD(wParam);                     // scroll bar value
 
-            if ((nScrollCode == SB_PAGELEFT)	  ||
-               (nScrollCode == SB_LINELEFT)	  ||
-               (nScrollCode == SB_LINERIGHT)	  ||
-               (nScrollCode == SB_LEFT)		  ||
-               (nScrollCode == SB_RIGHT)		  ||
-               (nScrollCode == SB_PAGERIGHT)	  ||
-               (nScrollCode == SB_THUMBPOSITION) ||		// updates for mouse scrollwheel
-               (nScrollCode == SB_THUMBTRACK) )			// update as long as button is held down
+            if ((nScrollCode == SB_PAGELEFT)      ||
+               (nScrollCode == SB_LINELEFT)       ||
+               (nScrollCode == SB_LINERIGHT)      ||
+               (nScrollCode == SB_LEFT)           ||
+               (nScrollCode == SB_RIGHT)                  ||
+               (nScrollCode == SB_PAGERIGHT)      ||
+               (nScrollCode == SB_THUMBPOSITION) ||             // updates for mouse scrollwheel
+               (nScrollCode == SB_THUMBTRACK) )                 // update as long as button is held down
             {
                SmartBrowser *psb = (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
                if (psb != NULL)
@@ -982,13 +1007,13 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                }
                else if ( dispid == IDC_IMPORT_PHYSICS_BUTTON )
                {
-				   psb->GetBaseISel()->GetPTable()->ImportPhysics();
-			   }
+                                   psb->GetBaseISel()->GetPTable()->ImportPhysics();
+                           }
                else if ( dispid == IDC_EXPORT_PHYSICS_BUTTON )
                {
-				   psb->GetBaseISel()->GetPTable()->ExportPhysics();
-			   }
-			   else
+                                   psb->GetBaseISel()->GetPTable()->ExportPhysics();
+                           }
+                           else
                {
                   const int state = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0);
 
@@ -1103,7 +1128,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          int colorkey;
          const HRESULT hr = GetRegInt("Editor", "TransparentColorKey", &colorkey);
          if (hr != S_OK)
-			 colorkey = (int)NOTRANSCOLOR; //not set assign no transparent color 	
+                         colorkey = (int)NOTRANSCOLOR; //not set assign no transparent color    
 
          /*const HWND hwndButton =*/ CreateWindow("BUTTON","Color",WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hwnd, NULL, g_hinst, 0);
          SetWindowLongPtr(hwnd, GWLP_USERDATA, colorkey); // get cached colorkey
@@ -1176,7 +1201,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             SelectObject(hdc, hbrushOld);
 
-			DeleteObject(hbrush);
+                        DeleteObject(hbrush);
          }
       }
       break;
@@ -1388,7 +1413,7 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case EXPANDO_EXPAND:
       {
          pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-         pexinfo->m_fExpanded = fTrue;			
+         pexinfo->m_fExpanded = fTrue;
 
          int titleheight;
          if (pexinfo->m_fHasCaption) // Null title means not an expando

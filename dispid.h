@@ -76,6 +76,22 @@
 // Light Sequencer
 #define DISPID_LightSeqEvents_PlayDone 1320
 
+// Plunger
+#define DISPID_PluFrames 431
+#define DISPID_Width 432
+#define DISPID_ZAdjust 433
+
+#define DISPID_RodDiam                  434
+#define DISPID_RingDiam                 435
+#define DISPID_RingThickness            436
+#define DISPID_SpringDiam               437
+#define DISPID_RodDiam2                 438
+#define DISPID_TipShape                 438
+#define DISPID_SpringGauge              439
+#define DISPID_SpringLoops              440
+#define DISPID_RingGap                  441
+#define DISPID_SpringEndLoops           442
+
 // Generic
 #define DISPID_HitEvents_Hit 1400
 #define DISPID_HitEvents_Unhit 1401
@@ -120,23 +136,23 @@
 #define DISPID_TRANSPOSITION_Y          16
 #define DISPID_TRANSPOSITION_Z          17
 */
-#define DISPID_ROTRA1					12
-#define DISPID_ROTRA2					13
-#define DISPID_ROTRA3					14
-#define DISPID_ROTRA4					15
-#define DISPID_ROTRA5					16
-#define DISPID_ROTRA6					17
-#define DISPID_ROTRA7					21
-#define DISPID_ROTRA8					22
-#define DISPID_ROTRA9					23
-#define DISPID_ROT_X 					24
-#define DISPID_ROT_Y 					25
-#define DISPID_ROT_Z 					26
-#define DISPID_TRANS_X 					27
-#define DISPID_TRANS_Y 					28
-#define DISPID_TRANS_Z 					29
-#define DISPID_OBJROT_X 				30
-#define DISPID_OBJROT_Y 				31
-#define DISPID_OBJROT_Z 				32
+#define DISPID_ROTRA1                                   12
+#define DISPID_ROTRA2                                   13
+#define DISPID_ROTRA3                                   14
+#define DISPID_ROTRA4                                   15
+#define DISPID_ROTRA5                                   16
+#define DISPID_ROTRA6                                   17
+#define DISPID_ROTRA7                                   21
+#define DISPID_ROTRA8                                   22
+#define DISPID_ROTRA9                                   23
+#define DISPID_ROT_X                                    24
+#define DISPID_ROT_Y                                    25
+#define DISPID_ROT_Z                                    26
+#define DISPID_TRANS_X                                  27
+#define DISPID_TRANS_Y                                  28
+#define DISPID_TRANS_Z                                  29
+#define DISPID_OBJROT_X                                 30
+#define DISPID_OBJROT_Y                                 31
+#define DISPID_OBJROT_Z                                 32
 
 // Must have a carriage return at end of file for correct resource file parsing

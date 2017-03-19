@@ -501,7 +501,7 @@ STDMETHODIMP ScriptGlobalTable::get_ActiveBall(IBall **pVal)
    BallEx *pballex = g_pplayer->m_pactiveball->m_pballex;
 
    if (!pballex)
-	  return E_POINTER;
+          return E_POINTER;
 
    pballex->QueryInterface(IID_IBall, (void **)pVal);
 
@@ -611,91 +611,91 @@ PinTable::PinTable()
    F32 tiltsens = 0.40f;
    hr = GetRegInt("Player", "TiltSensitivity", &tmp);
    if (hr == S_OK)
-	   tiltsens = (float)tmp*(float)(1.0/1000.0);	
+           tiltsens = (float)tmp*(float)(1.0/1000.0);
    plumb_set_sensitivity( tiltsens );
 
    F32 nudgesens = 0.50f;
    hr = GetRegInt("Player", "NudgeSensitivity", &tmp);
    if (hr == S_OK)
-	   nudgesens = (float)tmp*(float)(1.0/1000.0);	
+           nudgesens = (float)tmp*(float)(1.0/1000.0);
    nudge_set_sensitivity( nudgesens );
 
-   m_globalDifficulty = 0;						// easy by default
+   m_globalDifficulty = 0;                                              // easy by default
    hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
    if (hr == S_OK)
-	   m_globalDifficulty = (float)tmp*(float)(1.0/100.0);
+           m_globalDifficulty = (float)tmp*(float)(1.0/100.0);
 
 #ifdef ULTRAPIN
-   m_timeout = 0;								// easy by default
+   m_timeout = 0;                                                               // easy by default
    hr = GetRegInt("Player", "Timeout", &tmp);
    if (hr == S_OK)
-	   m_timeout = tmp*1000/60;
+           m_timeout = tmp*1000/60;
 #endif
 
-   m_tblAccelerometer = fTrue;							// true if electronic accelerometer enabled
+   m_tblAccelerometer = fTrue;                                                  // true if electronic accelerometer enabled
    hr = GetRegInt("Player", "PBWEnabled", &m_tblAccelerometer);
    m_tblAccelerometer = m_tblAccelerometer != fFalse;
 
-   m_tblAccelNormalMount = fTrue;						// true is normal mounting (left hand coordinates)
+   m_tblAccelNormalMount = fTrue;                                               // true is normal mounting (left hand coordinates)
    hr = GetRegInt("Player", "PBWNormalMount", &m_tblAccelNormalMount);
    m_tblAccelNormalMount = m_tblAccelNormalMount != fFalse;
 
-   m_tblAccelAngle = 0.0f;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
+   m_tblAccelAngle = 0.0f;                      // 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
    hr = GetRegInt("Player", "PBWRotation", &tmp);
    if (hr == S_OK)
-	   m_tblAccelAngle = (float)tmp;
+           m_tblAccelAngle = (float)tmp;
 
-   m_tblAccelAmp = 1.5f;								// Accelerometer gain 
+   m_tblAccelAmp = 1.5f;                                                                // Accelerometer gain 
    hr = GetRegInt("Player", "PBWAccelGain", &tmp);
    if (hr == S_OK)
-	   m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);
+           m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);
 
    // X and Y accelerometer gain implemented as such that if it doesn't exist, use the
    // PBWAccelGain value as default.
    m_tblAccelAmpX = 1.5f; //m_tblAccelAmpX = m_tblAccelAmp;
    hr = GetRegInt("Player", "PBWAccelGainX", &tmp);
    if (hr == S_OK)
-	   m_tblAccelAmpX = (float)tmp*(float)(1.0/100.0);
+           m_tblAccelAmpX = (float)tmp*(float)(1.0/100.0);
 
    m_tblAccelAmpY = 1.5f; //m_tblAccelAmpY = m_tblAccelAmp;
    hr = GetRegInt("Player", "PBWAccelGainY", &tmp);
    if (hr == S_OK)
-	   m_tblAccelAmpY = (float)tmp*(float)(1.0/100.0);
+           m_tblAccelAmpY = (float)tmp*(float)(1.0/100.0);
 
-   m_tblAccelManualAmp = 3.5f;							// manual input gain, generally from joysticks
+   m_tblAccelManualAmp = 3.5f;                                                  // manual input gain, generally from joysticks
    hr = GetRegInt("Player", "JoystickGain", &tmp);
    if (hr == S_OK)
-	   m_tblAccelManualAmp = (float)tmp*(float)(1.0/100.0);
+           m_tblAccelManualAmp = (float)tmp*(float)(1.0/100.0);
 
    m_tblAutoStart = 0;
    hr = GetRegInt("Player", "Autostart", &tmp);
    if( hr == S_OK )
-	   m_tblAutoStart = tmp*10;
+           m_tblAutoStart = tmp*10;
 
    m_tblAutoStartRetry = 0;
    hr = GetRegInt("Player", "AutostartRetry", &tmp);
    if( hr == S_OK )
-	   m_tblAutoStartRetry = tmp*10;
+           m_tblAutoStartRetry = tmp*10;
 
    m_tblAutoStartEnabled = 0;
    hr = GetRegInt("Player", "asenable", &tmp);
    if( hr == S_OK )
-	   m_tblAutoStartEnabled = ( tmp != 0 );
+           m_tblAutoStartEnabled = ( tmp != 0 );
 
    m_tblVolmod = 1.0f;
    hr = GetRegInt("Player", "Volmod", &tmp);
    if( hr == S_OK )
-	   m_tblVolmod = (float)tmp*(float)(1.0/1000.0);
+           m_tblVolmod = (float)tmp*(float)(1.0/1000.0);
 
    m_tblMirrorEnabled = 0;
    hr = GetRegInt("Player", "mirror", &tmp);
    if( hr == S_OK )
-	   m_tblMirrorEnabled = ( tmp != 0 );
+           m_tblMirrorEnabled = ( tmp != 0 );
 
    m_tblExitConfirm = 2000;
    hr = GetRegInt("Player", "Exitconfirm", &tmp);
    if( hr == S_OK )
-	   m_tblExitConfirm = tmp*1000/60;
+           m_tblExitConfirm = tmp*1000/60;
 
    // Write the version of this exe to the registry.  
    // This will be read later by the front end.
@@ -805,7 +805,7 @@ BOOL PinTable::FVerifySaveToClose()
 BOOL PinTable::CheckPermissions(unsigned long flag)
 {
    return ( ((m_protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) ||
-      ((m_protectionData.flags & flag) == flag)	);
+      ((m_protectionData.flags & flag) == flag) );
 }
 
 BOOL PinTable::IsTableProtected()
@@ -824,9 +824,9 @@ void PinTable::ResetProtectionBlock()
 BOOL PinTable::SetupProtectionBlock(unsigned char *pPassword, unsigned long flags)
 {
    int foo;
-   HCRYPTPROV   hcp		= NULL;
-   HCRYPTKEY  	hkey	= NULL;
-   HCRYPTHASH 	hchkey	= NULL;
+   HCRYPTPROV   hcp             = NULL;
+   HCRYPTKEY    hkey    = NULL;
+   HCRYPTHASH   hchkey  = NULL;
 
    _protectionData *pProtectionData = &m_protectionData;
 
@@ -852,15 +852,15 @@ BOOL PinTable::SetupProtectionBlock(unsigned char *pPassword, unsigned long flag
    cryptlen = PROT_PASSWORD_LENGTH;
 
    // encrypt the paraphrase
-   foo = CryptEncrypt( hkey,									// key to use
-      0, 										// not hashing data at the same time
-      TRUE, 									// last block (or only block)
-      0, 										// no flags
-      (BYTE *)pProtectionData->paraphrase,	// buffer to encrypt
-      &cryptlen,								// size of data to encrypt
-      sizeof(pProtectionData->paraphrase));	// maximum size of buffer (includes any padding)
+   foo = CryptEncrypt( hkey,                                                                    // key to use
+      0,                                                                                // not hashing data at the same time
+      TRUE,                                                                     // last block (or only block)
+      0,                                                                                // no flags
+      (BYTE *)pProtectionData->paraphrase,      // buffer to encrypt
+      &cryptlen,                                                                // size of data to encrypt
+      sizeof(pProtectionData->paraphrase));     // maximum size of buffer (includes any padding)
 
-   foo = GetLastError();		// purge any errors
+   foo = GetLastError();                // purge any errors
 
    // set up the flags
    pProtectionData->flags = flags;
@@ -883,10 +883,10 @@ BOOL PinTable::UnlockProtectionBlock(unsigned char *pPassword)
    }
 
    int foo;
-   HCRYPTPROV  	    hcp		= NULL;
-   HCRYPTKEY  		hkey	= NULL;
-   HCRYPTHASH 		hchkey	= NULL;
-   unsigned char	paraphrase[PROT_CIPHER_LENGTH];
+   HCRYPTPROV       hcp         = NULL;
+   HCRYPTKEY            hkey    = NULL;
+   HCRYPTHASH           hchkey  = NULL;
+   unsigned char        paraphrase[PROT_CIPHER_LENGTH];
    _protectionData *pProtectionData = &m_protectionData;
 
    // acquire a crypto context
@@ -911,19 +911,19 @@ BOOL PinTable::UnlockProtectionBlock(unsigned char *pPassword)
    cryptlen = PROT_CIPHER_LENGTH;
 
    // encrypt the paraphrase
-   foo = CryptDecrypt( hkey,									// key to use
-      0, 										// not hashing data at the same time
-      TRUE, 									// last block (or only block)
-      0, 										// no flags
-      (BYTE *)paraphrase,						// buffer to encrypt
-      &cryptlen);								// size of data to decrypt
+   foo = CryptDecrypt( hkey,                                                                    // key to use
+      0,                                                                                // not hashing data at the same time
+      TRUE,                                                                     // last block (or only block)
+      0,                                                                                // no flags
+      (BYTE *)paraphrase,                                               // buffer to encrypt
+      &cryptlen);                                                               // size of data to decrypt
 
    // destroy our cryto
    foo = CryptDestroyHash(hchkey);
    foo = CryptDestroyKey(hkey);
    foo = CryptReleaseContext(hcp, 0);
 
-   //	if the decrypted data matches the original paraphrase then unlock the table
+   //   if the decrypted data matches the original paraphrase then unlock the table
    if ( (cryptlen == PROT_PASSWORD_LENGTH) &&
       (memcmp(paraphrase, PARAPHRASE_KEY, sizeof(PARAPHRASE_KEY)) == 0) )
    {
@@ -1094,7 +1094,7 @@ void PinTable::Init(VPinball *pvp)
 
    IStorage *pis;
    StgOpenStorageOnILockBytes(pilb,NULL,STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE,NULL,0,&pis);
-   pilb->Release();	// free pilb and hcopiedmem
+   pilb->Release();     // free pilb and hcopiedmem
 
    m_glassheight = 210;
    m_tableheight = 0;
@@ -1337,9 +1337,9 @@ void PinTable::Render(Sur * const psur)
       rrb.x = min(rrb.x, frect.right);
       rrb.y = min(rrb.y, frect.bottom);
 
-      psur->SetObject(NULL); 						// Don't hit test edgelines
+      psur->SetObject(NULL);                                            // Don't hit test edgelines
 
-      psur->SetLineColor(RGB(0,0,0), false, 0);		// black outline
+      psur->SetLineColor(RGB(0,0,0), false, 0);         // black outline
 
       psur->Line(rlt.x, rlt.y, rrb.x, rlt.y);
       psur->Line(rrb.x, rlt.y, rrb.x, rrb.y);
@@ -1716,33 +1716,33 @@ void PinTable::Play()
       HRESULT hr = g_pplayer->Init(this, hwndProgressBar, hwndStatusName);
       if (!m_pcv->m_fScriptError) 
       {
-		 float m_fOverrideContactFriction;
-		 float m_fOverrideContactScatterAngle;
-		 
-		 if(m_fOverridePhysics)
-		 {
-			 char tmp[256];
+                 float m_fOverrideContactFriction;
+                 float m_fOverrideContactScatterAngle;
+                 
+                 if(m_fOverridePhysics)
+                 {
+                         char tmp[256];
 
-			 m_fOverrideGravityConstant = DEFAULT_TABLE_GRAVITY;
-		     sprintf_s(tmp,256,"TablePhysicsGravityConstant%d",m_fOverridePhysics-1);
-			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideGravityConstant);
-			 if (hr != S_OK)
-				m_fOverrideGravityConstant = DEFAULT_TABLE_GRAVITY;
-			 m_fOverrideGravityConstant *= GRAVITYCONST;
+                         m_fOverrideGravityConstant = DEFAULT_TABLE_GRAVITY;
+                     sprintf_s(tmp,256,"TablePhysicsGravityConstant%d",m_fOverridePhysics-1);
+                         hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideGravityConstant);
+                         if (hr != S_OK)
+                                m_fOverrideGravityConstant = DEFAULT_TABLE_GRAVITY;
+                         m_fOverrideGravityConstant *= GRAVITYCONST;
 
-			 m_fOverrideContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
-		     sprintf_s(tmp,256,"TablePhysicsContactFriction%d",m_fOverridePhysics-1);
-			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideContactFriction);
-			 if (hr != S_OK)
-				m_fOverrideContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
+                         m_fOverrideContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
+                     sprintf_s(tmp,256,"TablePhysicsContactFriction%d",m_fOverridePhysics-1);
+                         hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideContactFriction);
+                         if (hr != S_OK)
+                                m_fOverrideContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
 
-			 m_fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
-		     sprintf_s(tmp,256,"TablePhysicsContactScatterAngle%d",m_fOverridePhysics-1);
-			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideContactScatterAngle);
-			 if (hr != S_OK)
-				m_fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
-			 m_fOverrideContactScatterAngle = ANGTORAD(m_fOverrideContactScatterAngle);
-		 }
+                         m_fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
+                     sprintf_s(tmp,256,"TablePhysicsContactScatterAngle%d",m_fOverridePhysics-1);
+                         hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideContactScatterAngle);
+                         if (hr != S_OK)
+                                m_fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
+                         m_fOverrideContactScatterAngle = ANGTORAD(m_fOverrideContactScatterAngle);
+                 }
 
          c_hardScatter = (m_fOverridePhysics ? m_fOverrideContactScatterAngle : m_hardScatter);
          c_plungerNormalize = m_plungerNormalize*(float)(1.0/1300.0);
@@ -1755,7 +1755,7 @@ void PinTable::Play()
          m_pcv->SetEnabled(fFalse); // Can't edit script while playing
 
          g_pvp->SetEnableToolbar();
-         g_pvp->SetEnableMenuItems();	//>>> added as part of table protection
+         g_pvp->SetEnableMenuItems();   //>>> added as part of table protection
 
          if (!m_pcv->m_fScriptError && (hr == S_OK))
          {
@@ -1810,7 +1810,7 @@ void PinTable::StopPlaying()
    m_textureMap.clear();
 
    ShowWindow(g_pvp->m_hwndWork, SW_SHOW);
-   //	EnableWindow(g_pvp->m_hwndWork, fTrue); // Disable modal state after game ends
+   //   EnableWindow(g_pvp->m_hwndWork, fTrue); // Disable modal state after game ends
 
 
    // This was causing the application to crash 
@@ -2692,7 +2692,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(AMAM), m_tblAccelManualAmp);
    //////////////////
    bw.WriteInt(FID(JLTA), m_jolt_amount);
-   bw.WriteInt(FID(TLTA), m_tilt_amount);	
+   bw.WriteInt(FID(TLTA), m_tilt_amount);
    bw.WriteInt(FID(JLTT), m_jolt_trigger_time);
    bw.WriteInt(FID(TLTT), m_tilt_trigger_time);
 
@@ -3062,7 +3062,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             {
                // Error
                hr = E_ACCESSDENIED;
-            }				
+            }
          }
          //////// End Authentication block
       }
@@ -3394,20 +3394,20 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if( id == FID(MPGC))
    {
-      pbr->GetInt(&m_plungerNormalize);	
-      /*const HRESULT hr =*/ GetRegInt("Player", "PlungerNormalize", &m_plungerNormalize);	
+      pbr->GetInt(&m_plungerNormalize);
+      /*const HRESULT hr =*/ GetRegInt("Player", "PlungerNormalize", &m_plungerNormalize);
    }
    else if( id == FID(MPDF))
    {
       int tmp;
-      pbr->GetBool(&tmp);	
+      pbr->GetBool(&tmp);
       /*const HRESULT hr =*/ GetRegInt("Player", "PlungerFilter", &tmp);
-      m_plungerFilter = (tmp != 0);		
+      m_plungerFilter = (tmp != 0);
    }
    else if( id == FID(PHML))
    {
       pbr->GetInt(&m_PhysicsMaxLoops);
-	  if(m_PhysicsMaxLoops == 0xFFFFFFFF)
+          if(m_PhysicsMaxLoops == 0xFFFFFFFF)
         /*const HRESULT hr =*/ GetRegInt("Player", "PhysicsMaxLoops", (int*)&m_PhysicsMaxLoops);
    }
    else if (id == FID(DECL))
@@ -3677,7 +3677,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
       pbr->GetBool(&m_fRenderShadows);
    }
    else if (id == FID(ACEL)) //////////////////
-   {		
+   {
       pbr->GetBool(&m_tblAccelerometer);
       GetRegInt("Player", "PBWEnabled", &m_tblAccelerometer);
       m_tblAccelerometer = m_tblAccelerometer != fFalse;
@@ -3687,7 +3687,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
       pbr->GetFloat(&m_globalDifficulty);
       int tmp;
       HRESULT hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
-      if (hr == S_OK) m_globalDifficulty = (float)tmp*(float)(1.0/100.0);		
+      if (hr == S_OK) m_globalDifficulty = (float)tmp*(float)(1.0/100.0);
    }
    else if (id == FID(AORD))
    {
@@ -3700,50 +3700,50 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
       pbr->GetFloat(&m_tblAccelAngle);
       int tmp;
       HRESULT hr = GetRegInt("Player", "PBWRotation", &tmp);
-      if (hr == S_OK) m_tblAccelAngle = (float)tmp;		
+      if (hr == S_OK) m_tblAccelAngle = (float)tmp;
    }
    else if (id == FID(AAMP))
    {
       pbr->GetFloat(&m_tblAccelAmp);
       int tmp;
       HRESULT hr = GetRegInt("Player", "PBWAccelGain", &tmp);
-      if (hr == S_OK) m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);		
+      if (hr == S_OK) m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);
    }
    else if (id == FID(AAMX))
    {
       pbr->GetFloat(&m_tblAccelAmpX);
       int tmp;
       HRESULT hr = GetRegInt("Player", "PBWAccelGainX", &tmp);
-      if (hr == S_OK) m_tblAccelAmpX = (float)tmp*(float)(1.0/100.0);		
+      if (hr == S_OK) m_tblAccelAmpX = (float)tmp*(float)(1.0/100.0);
    }
    else if (id == FID(AAMY))
    {
       pbr->GetFloat(&m_tblAccelAmpY);
       int tmp;
       HRESULT hr = GetRegInt("Player", "PBWAccelGainY", &tmp);
-      if (hr == S_OK) m_tblAccelAmpY = (float)tmp*(float)(1.0/100.0);		
+      if (hr == S_OK) m_tblAccelAmpY = (float)tmp*(float)(1.0/100.0);
    }
    else if (id == FID(AMAM))
    {
       pbr->GetFloat(&m_tblAccelManualAmp);
       int tmp;
       HRESULT hr = GetRegInt("Player", "JoystickGain", &tmp);
-      if (hr == S_OK) m_tblAccelManualAmp = (float)tmp*(float)(1.0/100.0);		
-   }	
+      if (hr == S_OK) m_tblAccelManualAmp = (float)tmp*(float)(1.0/100.0);
+   }
    else if (id == FID(JLTA))
    {
       pbr->GetInt(&m_jolt_amount);
       GetRegInt("Player", "JoltAmount", &m_jolt_amount);
    }
    else if (id == FID(TLTA))
-   {	
+   {
       pbr->GetInt(&m_tilt_amount);
       GetRegInt("Player", "TiltAmount", &m_tilt_amount);
-   }	
+   }
    else if (id == FID(JLTT))
    {
       pbr->GetInt(&m_jolt_trigger_time);
-      GetRegInt("Player", "JoltTriggerTime", &m_jolt_trigger_time);		
+      GetRegInt("Player", "JoltTriggerTime", &m_jolt_trigger_time);
    }
    else if (id == FID(TLTT)) 
    {
@@ -3786,7 +3786,7 @@ bool PinTable::ExportSound(HWND hwndListView, PinSound *pps,char *szfilename)
 {
    MMIOINFO mmio;
    MMCKINFO pck;
-   ZeroMemory( &mmio, sizeof(mmio));	
+   ZeroMemory( &mmio, sizeof(mmio));
    ZeroMemory( &pck, sizeof(pck));
    WAVEFORMATEX wfx;
 
@@ -3801,7 +3801,7 @@ bool PinTable::ExportSound(HWND hwndListView, PinSound *pps,char *szfilename)
       pck.fccType = mmioStringToFOURCC("WAVE", MMIO_TOUPPER);
 
       MMRESULT result = mmioCreateChunk(hmmio, &pck, MMIO_CREATERIFF); //RIFF header
-      mmioWrite(hmmio, "fmt ", 4);			//fmt
+      mmioWrite(hmmio, "fmt ", 4);                      //fmt
 
       pps->m_pDSBuffer->GetFormat(&wfx, sizeof(wfx), NULL); //CORRECTED for support of all savable VP WAV FORMATS - BDS
       // Create the format chunk.
@@ -3812,8 +3812,8 @@ bool PinTable::ExportSound(HWND hwndListView, PinSound *pps,char *szfilename)
       mmioWrite(hmmio, (char *)&i, 4);
       mmioWrite(hmmio, (char*)&wfx, sizeof(wfx)-2); //END OF CORRECTION
 
-      mmioWrite(hmmio, "data", 4);						//data chunk
-      i = pps->m_cdata; mmioWrite(hmmio, (char *)&i, 4);	// data size bytes
+      mmioWrite(hmmio, "data", 4);                                              //data chunk
+      i = pps->m_cdata; mmioWrite(hmmio, (char *)&i, 4);        // data size bytes
 
       const LONG wcch = mmioWrite(hmmio, pps->m_pdata , pps->m_cdata);
       result = mmioClose(hmmio, 0);
@@ -4302,8 +4302,23 @@ void PinTable::DoRButtonDown(int x,int y)
    }
    else
    {
-      //SetSel(HitTest(x,y));
-      AddMultiSel(HitTest(x,y), fFalse, fTrue);
+      // keep the selection if clicking over a selected object, even if
+      // the selected object is hidden behind other objects
+      ISelect *hit = HitTest(x, y);
+      for (int i = 0 ; i < m_vmultisel.Size() ; i++)
+      {
+         if (m_allHitElements.IndexOf(m_vmultisel.ElementAt(i)) != -1)
+         {
+            // found a selected item - keep the current selection set
+            // by re-selecting this item (which will also promote it
+            // to the head of the selection list)
+            hit = m_vmultisel.ElementAt(i);
+            break;
+         }
+      }
+
+      // update the selection
+      AddMultiSel(hit, fFalse, fTrue);
    }
 }
 
@@ -4991,7 +5006,7 @@ void PinTable::ExportBlueprint()
    ZeroMemory(&bmfh, sizeof(bmfh));
    bmfh.bfType = 'M'<<8 | 'B';
    bmfh.bfSize = sizeof(bmfh) + sizeof(BITMAPINFOHEADER) + totallinebytes*bmheight;
-   bmfh.bfOffBits = sizeof(bmfh) + sizeof(BITMAPINFOHEADER);	
+   bmfh.bfOffBits = sizeof(bmfh) + sizeof(BITMAPINFOHEADER);
 
    DWORD foo;
    WriteFile(hfile, &bmfh, sizeof(bmfh), &foo, NULL);
@@ -5981,13 +5996,13 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
    case WM_CLOSE:
       {
          // Scary!!!!
-         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA); 			
+         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          //DefMDIChildProc(hwnd, uMsg, wParam, lParam);
 
          KillTimer(hwnd, TIMER_ID_AUTOSAVE);
-         SetTimer(hwnd, TIMER_ID_CLOSE_TABLE, 100, NULL);	//wait 250 milliseconds
+         SetTimer(hwnd, TIMER_ID_CLOSE_TABLE, 100, NULL);       //wait 250 milliseconds
 
-         return 0;	// destroy the WM_CLOSE message
+         return 0;      // destroy the WM_CLOSE message
       }
 
    case WM_TIMER:
@@ -6303,7 +6318,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       {
          pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          const short zDelta = (short) HIWORD(wParam);    // wheel rotation
-         pt->m_offsety -= zDelta / pt->m_zoom;	// change to orientation to match windows default
+         pt->m_offsety -= zDelta / pt->m_zoom;  // change to orientation to match windows default
          pt->SetDirtyDraw();
          pt->SetMyScrollInfo();
          return 0;
@@ -6421,9 +6436,9 @@ STDMETHODIMP PinTable::put_Layback(float newVal)
 STDMETHODIMP PinTable::get_MaxSeparation(float *pVal)
 {
    if( m_overwriteGlobalStereo3D )
-	   *pVal = m_maxSeparation;
+           *pVal = m_maxSeparation;
    else
-	   *pVal = m_globalMaxSeparation;
+           *pVal = m_globalMaxSeparation;
 
    return S_OK;
 }
@@ -6433,7 +6448,7 @@ STDMETHODIMP PinTable::put_MaxSeparation(float newVal)
    STARTUNDO
 
    if( m_overwriteGlobalStereo3D )
-	   m_maxSeparation = newVal;
+           m_maxSeparation = newVal;
 
    STOPUNDO
 
@@ -6443,9 +6458,9 @@ STDMETHODIMP PinTable::put_MaxSeparation(float newVal)
 STDMETHODIMP PinTable::get_ZPD(float *pVal)
 {
    if( m_overwriteGlobalStereo3D )
-	   *pVal = m_ZPD;
+           *pVal = m_ZPD;
    else
-	   *pVal = m_globalZPD;
+           *pVal = m_globalZPD;
 
    return S_OK;
 }
@@ -6455,7 +6470,7 @@ STDMETHODIMP PinTable::put_ZPD(float newVal)
    STARTUNDO
 
    if( m_overwriteGlobalStereo3D )
-	   m_ZPD = newVal;
+           m_ZPD = newVal;
 
    STOPUNDO
 
@@ -6563,85 +6578,85 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    bool foundsame = false;
    if(usesame)
    {
-	   for (int i=0;i<m_voldsound.Size();i++)
-	   {
-		  if(m_voldsound.ElementAt(i)->m_ppsOriginal->m_pDSBuffer == pdsb)
-		  {
-			  ppsc = m_voldsound.ElementAt(i);
-			  foundsame = true;
-			  break;
-		  }
-	   }
+           for (int i=0;i<m_voldsound.Size();i++)
+           {
+                  if(m_voldsound.ElementAt(i)->m_ppsOriginal->m_pDSBuffer == pdsb)
+                  {
+                          ppsc = m_voldsound.ElementAt(i);
+                          foundsame = true;
+                          break;
+                  }
+           }
    }
 
    if(ppsc == NULL)
    {
        ppsc = new PinSoundCopy();
-	   pDS->m_pDS->DuplicateSoundBuffer(pdsb, &ppsc->m_pDSBuffer/*&pdsbNew*/);
+           pDS->m_pDS->DuplicateSoundBuffer(pdsb, &ppsc->m_pDSBuffer/*&pdsbNew*/);
    }
 
    if (ppsc->m_pDSBuffer)
    {
       ppsc->m_pDSBuffer->SetVolume(decibelvolume);
-	  if(randompitch > 0.f)
-	  {
-		  DWORD freq;
-		  pdsb->GetFrequency(&freq);
-		  freq += pitch;
-		  const float rndh = rand_mt_01();
-		  const float rndl = rand_mt_01();
-		  ppsc->m_pDSBuffer->SetFrequency(freq + (DWORD)((float)freq * randompitch * rndh * rndh) - (DWORD)((float)freq * randompitch * rndl * rndl * 0.5f));
-	  }
-	  else if (pitch != 0)
-	  {
-		  DWORD freq;
-		  pdsb->GetFrequency(&freq);
-		  ppsc->m_pDSBuffer->SetFrequency(freq + pitch);
-	  }
-	  if(pan != 0.f)
-		  ppsc->m_pDSBuffer->SetPan((LONG)(pan*DSBPAN_RIGHT));
+          if(randompitch > 0.f)
+          {
+                  DWORD freq;
+                  pdsb->GetFrequency(&freq);
+                  freq += pitch;
+                  const float rndh = rand_mt_01();
+                  const float rndl = rand_mt_01();
+                  ppsc->m_pDSBuffer->SetFrequency(freq + (DWORD)((float)freq * randompitch * rndh * rndh) - (DWORD)((float)freq * randompitch * rndl * rndl * 0.5f));
+          }
+          else if (pitch != 0)
+          {
+                  DWORD freq;
+                  pdsb->GetFrequency(&freq);
+                  ppsc->m_pDSBuffer->SetFrequency(freq + pitch);
+          }
+          if(pan != 0.f)
+                  ppsc->m_pDSBuffer->SetPan((LONG)(pan*DSBPAN_RIGHT));
 
-	  DWORD status;
-	  ppsc->m_pDSBuffer->GetStatus(&status);
-	  if (!(status & DSBSTATUS_PLAYING))
-	     ppsc->m_pDSBuffer->Play(0,0,flags);
-	  else if(restart)
-		 ppsc->m_pDSBuffer->SetCurrentPosition(0);
-	  if(!foundsame)
-	  {
-		ppsc->m_ppsOriginal = m_vsound.ElementAt(i);
-		m_voldsound.AddElement(ppsc);
-	  }
+          DWORD status;
+          ppsc->m_pDSBuffer->GetStatus(&status);
+          if (!(status & DSBSTATUS_PLAYING))
+             ppsc->m_pDSBuffer->Play(0,0,flags);
+          else if(restart)
+                 ppsc->m_pDSBuffer->SetCurrentPosition(0);
+          if(!foundsame)
+          {
+                ppsc->m_ppsOriginal = m_vsound.ElementAt(i);
+                m_voldsound.AddElement(ppsc);
+          }
    }
    else // Couldn't or didn't want to create a copy - just play the original
    {
       delete ppsc;
 
       pdsb->SetVolume(decibelvolume);
-	  if(randompitch > 0.f)
-	  {
-	     DWORD freq;
-	     pdsb->GetFrequency(&freq); //!! meh, if already randompitched before
-	     freq += pitch;
-	     const float rndh = rand_mt_01();
-	     const float rndl = rand_mt_01();
-	     pdsb->SetFrequency(freq + (DWORD)((float)freq * randompitch * rndh * rndh) - (DWORD)((float)freq * randompitch * rndl * rndl * 0.5f));
-	  }
-	  else if (pitch != 0)
-	  {
-		 DWORD freq;
-		 pdsb->GetFrequency(&freq);
-		 pdsb->SetFrequency(freq + pitch);
-	  }
-	  if(pan != 0.f)
-	     pdsb->SetPan((LONG)(pan*DSBPAN_RIGHT));
+          if(randompitch > 0.f)
+          {
+             DWORD freq;
+             pdsb->GetFrequency(&freq); //!! meh, if already randompitched before
+             freq += pitch;
+             const float rndh = rand_mt_01();
+             const float rndl = rand_mt_01();
+             pdsb->SetFrequency(freq + (DWORD)((float)freq * randompitch * rndh * rndh) - (DWORD)((float)freq * randompitch * rndl * rndl * 0.5f));
+          }
+          else if (pitch != 0)
+          {
+                 DWORD freq;
+                 pdsb->GetFrequency(&freq);
+                 pdsb->SetFrequency(freq + pitch);
+          }
+          if(pan != 0.f)
+             pdsb->SetPan((LONG)(pan*DSBPAN_RIGHT));
     
-	  DWORD status;
-	  pdsb->GetStatus(&status);
-	  if (!(status & DSBSTATUS_PLAYING))
-		 pdsb->Play(0,0,flags);
-	  else if(restart)// Okay, it got played again before it finished.  Well, just start it over.
-		 pdsb->SetCurrentPosition(0);
+          DWORD status;
+          pdsb->GetStatus(&status);
+          if (!(status & DSBSTATUS_PLAYING))
+                 pdsb->Play(0,0,flags);
+          else if(restart)// Okay, it got played again before it finished.  Well, just start it over.
+                 pdsb->SetCurrentPosition(0);
    }
 
    return S_OK;
@@ -6686,7 +6701,7 @@ void PinTable::ReImportImage(HWND hwndListView, Texture *ppi, char *filename)
    char szextension[MAX_PATH];
    ExtensionFromFilename(filename, szextension);
 
-   BOOL fBinary;	
+   BOOL fBinary;
    if (!lstrcmpi(szextension, "bmp"))
    {
       fBinary = fFalse;
@@ -6741,14 +6756,14 @@ bool PinTable::ExportImage(HWND hwndListView, Texture *ppi, char *szfilename)
          ShowError("The graphic file could not be written.");
          return false;
       }
-      const int surfwidth = ppi->m_width;					// texture width 
-      const int surfheight = ppi->m_height;					// and height		
+      const int surfwidth = ppi->m_width;                                       // texture width 
+      const int surfheight = ppi->m_height;                                     // and height           
 
-      int bmplnsize = (surfwidth*4+3) & -4;		// line size ... 4 bytes per pixel + pad to 4 byte boundary		
+      int bmplnsize = (surfwidth*4+3) & -4;             // line size ... 4 bytes per pixel + pad to 4 byte boundary             
 
       //<<<< began bmp file header and info <<<<<<<<<<<<<<<
 
-      BITMAPFILEHEADER bmpf;		// file header
+      BITMAPFILEHEADER bmpf;            // file header
       bmpf.bfType = 'MB';
       bmpf.bfSize = sizeof(BITMAPFILEHEADER)+ sizeof(BITMAPINFOHEADER) + surfheight*bmplnsize;
       bmpf.bfReserved1 = 0; 
@@ -6756,11 +6771,11 @@ bool PinTable::ExportImage(HWND hwndListView, Texture *ppi, char *szfilename)
       bmpf.bfOffBits = sizeof(BITMAPFILEHEADER)+ sizeof(BITMAPINFOHEADER);
 
       DWORD write;
-      // write BMP file header	
+      // write BMP file header
       WriteFile(hFile, &bmpf, sizeof(BITMAPFILEHEADER), &write, NULL);
 
-      BITMAPINFOHEADER bmpi;		// info header		
-      bmpi.biSize = sizeof(BITMAPINFOHEADER);	//only a few fields are used 
+      BITMAPINFOHEADER bmpi;            // info header
+      bmpi.biSize = sizeof(BITMAPINFOHEADER);   //only a few fields are used 
       bmpi.biWidth = surfwidth;
       bmpi.biHeight = surfheight;
       bmpi.biPlanes = 1;
@@ -6783,29 +6798,29 @@ bool PinTable::ExportImage(HWND hwndListView, Texture *ppi, char *szfilename)
       }
 
       unsigned char* info;
-      for (info = sinfo + surfwidth*3; info < sinfo + bmplnsize; *info++ = 0); //fill padding with 0			
+      for (info = sinfo + surfwidth*3; info < sinfo + bmplnsize; *info++ = 0); //fill padding with 0
 
       const int pitch = ppi->m_pdsBuffer->pitch();
-      const BYTE *spch = ppi->m_pdsBuffer->data() + (surfheight * pitch);	// just past the end of the Texture part of DD surface
+      const BYTE *spch = ppi->m_pdsBuffer->data() + (surfheight * pitch);       // just past the end of the Texture part of DD surface
 
       for (int i=0;i<surfheight;i++)
       {
-         info = sinfo; //reset to start	
+         info = sinfo; //reset to start
          const BYTE *pch = (spch -= pitch);  // start on previous previous line
 
          for (int l=0;l<surfwidth;l++)
-         {					
+         {
             *(unsigned int*)info = *(unsigned int*)pch;
             info += 4;
             pch += 4;
          }
 
          WriteFile(hFile, sinfo, bmplnsize, &write, NULL);
-         GetLastError();			
+         GetLastError();
       }
 
       delete [] sinfo; sinfo = NULL;
-      CloseHandle(hFile);	
+      CloseHandle(hFile);
       return true;
    }
    return false;
@@ -6823,7 +6838,7 @@ void PinTable::ImportImage(HWND hwndListView, char *filename)
    int colorkey;
    HRESULT hr = GetRegInt("Editor", "TransparentColorKey", &colorkey);
 
-   if (hr == S_OK)	ppi->m_rgbTransparent = (COLORREF)colorkey; //assign from Registry 		
+   if (hr == S_OK)      ppi->m_rgbTransparent = (COLORREF)colorkey; //assign from Registry              
    else 
    {
       ppi->m_rgbTransparent = colorkey = RGB(255,0,255); //assume common transparent color 
@@ -8091,7 +8106,7 @@ STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal )
         m_userAlphaRampsAccuracy = m_globalAlphaRampsAccuracy;
     }
 
-	STOPUNDO
+        STOPUNDO
 
     return S_OK;
 }
@@ -8110,11 +8125,11 @@ STDMETHODIMP PinTable::put_GlobalStereo3D(VARIANT_BOOL newVal )
     m_overwriteGlobalStereo3D = VBTOF(newVal);
     if ( !m_overwriteGlobalStereo3D )
     {
-		m_maxSeparation = m_globalMaxSeparation;
-		m_ZPD = m_globalZPD;
+                m_maxSeparation = m_globalMaxSeparation;
+                m_ZPD = m_globalZPD;
     }
 
-	STOPUNDO
+        STOPUNDO
 
     return S_OK;
 }
@@ -8222,7 +8237,7 @@ STDMETHODIMP PinTable::put_Gravity(float newVal )
       STARTUNDO
       m_Gravity = newVal*GRAVITYCONST;
       STOPUNDO
-   }	
+   }
    return S_OK;
 }
 
@@ -8234,7 +8249,7 @@ STDMETHODIMP PinTable::get_HardFriction(float *pVal)
 }
 
 STDMETHODIMP PinTable::put_HardFriction(float newVal )
-{	
+{
    STARTUNDO
 
    m_hardFriction = clamp(newVal, 0.0f, 1.0f);
@@ -8624,184 +8639,184 @@ STDMETHODIMP PinTable::put_OverridePhysics(long newVal)
 
 STDMETHODIMP PinTable::ImportPhysics()
 {
-	char szFileName[1024];
-	char szInitialDir[1024];
-	szFileName[0] = '\0';
+        char szFileName[1024];
+        char szInitialDir[1024];
+        szFileName[0] = '\0';
 
-	OPENFILENAME ofn;
-	ZeroMemory(&ofn, sizeof(OPENFILENAME));
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hInstance = g_hinst;
-	ofn.hwndOwner = g_pvp->m_hwnd;
-	// TEXT
-	ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
-	ofn.lpstrFile = szFileName;
-	ofn.nMaxFile = _MAX_PATH;
-	ofn.lpstrDefExt = "vpp";
-	ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+        OPENFILENAME ofn;
+        ZeroMemory(&ofn, sizeof(OPENFILENAME));
+        ofn.lStructSize = sizeof(OPENFILENAME);
+        ofn.hInstance = g_hinst;
+        ofn.hwndOwner = g_pvp->m_hwnd;
+        // TEXT
+        ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
+        ofn.lpstrFile = szFileName;
+        ofn.nMaxFile = _MAX_PATH;
+        ofn.lpstrDefExt = "vpp";
+        ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-	const HRESULT hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);
-	char szFoo[MAX_PATH];
-	if (hr == S_OK)
-	{
-		ofn.lpstrInitialDir = szInitialDir;
-	}
-	else
-	{
-		lstrcpy(szFoo, "c:\\");
-		ofn.lpstrInitialDir = szFoo;
-	}
+        const HRESULT hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);
+        char szFoo[MAX_PATH];
+        if (hr == S_OK)
+        {
+                ofn.lpstrInitialDir = szInitialDir;
+        }
+        else
+        {
+                lstrcpy(szFoo, "c:\\");
+                ofn.lpstrInitialDir = szFoo;
+        }
 
 #ifdef VBA
-	ApcHost->BeginModalDialog();
+        ApcHost->BeginModalDialog();
 #endif
-	const int ret = GetOpenFileName(&ofn);
+        const int ret = GetOpenFileName(&ofn);
 #ifdef VBA
-	ApcHost->EndModalDialog();
+        ApcHost->EndModalDialog();
 #endif
-	if(ret == 0)
-		return S_OK;
+        if(ret == 0)
+                return S_OK;
 
-	FILE *f;
-	fopen_s(&f,ofn.lpstrFile,"r");
-	if( !f )
-		return S_OK;
+        FILE *f;
+        fopen_s(&f,ofn.lpstrFile,"r");
+        if( !f )
+                return S_OK;
 
-	float FlipperPhysicsSpeed,FlipperPhysicsStrength,FlipperPhysicsElasticity,FlipperPhysicsScatter,FlipperPhysicsReturnStrength,FlipperPhysicsRecoil,FlipperPhysicsPowerLaw,FlipperPhysicsOblique;
-	fscanf_s(f,"%f %f %f %f %f %f %f %f\n", &FlipperPhysicsSpeed,&FlipperPhysicsStrength,&FlipperPhysicsElasticity,&FlipperPhysicsScatter,&FlipperPhysicsReturnStrength,&FlipperPhysicsRecoil,&FlipperPhysicsPowerLaw,&FlipperPhysicsOblique);
-	float TablePhysicsGravityConstant,TablePhysicsContactFriction,TablePhysicsContactScatterAngle;
-	fscanf_s(f,"%f %f %f\n", &TablePhysicsGravityConstant,&TablePhysicsContactFriction,&TablePhysicsContactScatterAngle);
-	//char tmp2[256]; // not used here
-	//fscanf_s(f,"%s",tmp2);
-	fclose(f);
+        float FlipperPhysicsSpeed,FlipperPhysicsStrength,FlipperPhysicsElasticity,FlipperPhysicsScatter,FlipperPhysicsReturnStrength,FlipperPhysicsRecoil,FlipperPhysicsPowerLaw,FlipperPhysicsOblique;
+        fscanf_s(f,"%f %f %f %f %f %f %f %f\n", &FlipperPhysicsSpeed,&FlipperPhysicsStrength,&FlipperPhysicsElasticity,&FlipperPhysicsScatter,&FlipperPhysicsReturnStrength,&FlipperPhysicsRecoil,&FlipperPhysicsPowerLaw,&FlipperPhysicsOblique);
+        float TablePhysicsGravityConstant,TablePhysicsContactFriction,TablePhysicsContactScatterAngle;
+        fscanf_s(f,"%f %f %f\n", &TablePhysicsGravityConstant,&TablePhysicsContactFriction,&TablePhysicsContactScatterAngle);
+        //char tmp2[256]; // not used here
+        //fscanf_s(f,"%s",tmp2);
+        fclose(f);
 
-	for (int i=0;i<m_vedit.Size();i++)
-		if (m_vedit.ElementAt(i)->GetItemType() == eItemFlipper)
-		{
-			Flipper * const flipper = (Flipper *)m_vedit.ElementAt(i);
-			flipper->put_Speed(FlipperPhysicsSpeed);
-			flipper->put_Strength(FlipperPhysicsStrength);
-			flipper->put_Elasticity(FlipperPhysicsElasticity);
-			flipper->put_ScatterAngle(FlipperPhysicsScatter);
-			flipper->put_Return(FlipperPhysicsReturnStrength);
-			flipper->put_Recoil(FlipperPhysicsRecoil);
-			flipper->put_PowerLaw(FlipperPhysicsPowerLaw);
-			flipper->put_ObliqueCorrection(FlipperPhysicsOblique);
-		}
+        for (int i=0;i<m_vedit.Size();i++)
+                if (m_vedit.ElementAt(i)->GetItemType() == eItemFlipper)
+                {
+                        Flipper * const flipper = (Flipper *)m_vedit.ElementAt(i);
+                        flipper->put_Speed(FlipperPhysicsSpeed);
+                        flipper->put_Strength(FlipperPhysicsStrength);
+                        flipper->put_Elasticity(FlipperPhysicsElasticity);
+                        flipper->put_ScatterAngle(FlipperPhysicsScatter);
+                        flipper->put_Return(FlipperPhysicsReturnStrength);
+                        flipper->put_Recoil(FlipperPhysicsRecoil);
+                        flipper->put_PowerLaw(FlipperPhysicsPowerLaw);
+                        flipper->put_ObliqueCorrection(FlipperPhysicsOblique);
+                }
 
-	put_Gravity(TablePhysicsGravityConstant);
-	put_HardFriction(TablePhysicsContactFriction);
-	put_HardScatter(TablePhysicsContactScatterAngle);
+        put_Gravity(TablePhysicsGravityConstant);
+        put_HardFriction(TablePhysicsContactFriction);
+        put_HardScatter(TablePhysicsContactScatterAngle);
 
-	return S_OK;
+        return S_OK;
 }
 
 STDMETHODIMP PinTable::ExportPhysics()
 {
-	bool foundflipper = false;
-	int i;
-	for (i=0;i<m_vedit.Size();i++)
-	{
-		if (m_vedit.ElementAt(i)->GetItemType() == eItemFlipper)
-		{
-			foundflipper = true;
-			break;
-		}
-	}
+        bool foundflipper = false;
+        int i;
+        for (i=0;i<m_vedit.Size();i++)
+        {
+                if (m_vedit.ElementAt(i)->GetItemType() == eItemFlipper)
+                {
+                        foundflipper = true;
+                        break;
+                }
+        }
 
-	if(!foundflipper)
-	{
-		ShowError("No Flipper found to copy settings from");
-		return S_OK;
-	}
+        if(!foundflipper)
+        {
+                ShowError("No Flipper found to copy settings from");
+                return S_OK;
+        }
 
-	Flipper * const flipper = (Flipper *)m_vedit.ElementAt(i);
+        Flipper * const flipper = (Flipper *)m_vedit.ElementAt(i);
 
-	char szFileName[1024];
-	char szInitialDir[1024];
-	szFileName[0] = '\0';
+        char szFileName[1024];
+        char szInitialDir[1024];
+        szFileName[0] = '\0';
 
-	OPENFILENAME ofn;
-	ZeroMemory(&ofn, sizeof(OPENFILENAME));
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hInstance = g_hinst;
-	ofn.hwndOwner = g_pvp->m_hwnd;
-	// TEXT
-	ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
-	ofn.lpstrFile = szFileName;
-	ofn.nMaxFile = _MAX_PATH;
-	ofn.lpstrDefExt = "vpp";
-	ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+        OPENFILENAME ofn;
+        ZeroMemory(&ofn, sizeof(OPENFILENAME));
+        ofn.lStructSize = sizeof(OPENFILENAME);
+        ofn.hInstance = g_hinst;
+        ofn.hwndOwner = g_pvp->m_hwnd;
+        // TEXT
+        ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
+        ofn.lpstrFile = szFileName;
+        ofn.nMaxFile = _MAX_PATH;
+        ofn.lpstrDefExt = "vpp";
+        ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-	const HRESULT hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);
-	char szFoo[MAX_PATH];
-	if (hr == S_OK)
-	{
-		ofn.lpstrInitialDir = szInitialDir;
-	}
-	else
-	{
-		lstrcpy(szFoo, "c:\\");
-		ofn.lpstrInitialDir = szFoo;
-	}
+        const HRESULT hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);
+        char szFoo[MAX_PATH];
+        if (hr == S_OK)
+        {
+                ofn.lpstrInitialDir = szInitialDir;
+        }
+        else
+        {
+                lstrcpy(szFoo, "c:\\");
+                ofn.lpstrInitialDir = szFoo;
+        }
 
 #ifdef VBA
-	ApcHost->BeginModalDialog();
+        ApcHost->BeginModalDialog();
 #endif
-	const int ret = GetSaveFileName(&ofn);
+        const int ret = GetSaveFileName(&ofn);
 #ifdef VBA
-	ApcHost->EndModalDialog();
+        ApcHost->EndModalDialog();
 #endif
-	if(ret == 0)
-		return S_OK;
+        if(ret == 0)
+                return S_OK;
 
-	FILE *f;
-	fopen_s(&f,ofn.lpstrFile,"w");
-	if( !f )
-		return S_OK;
+        FILE *f;
+        fopen_s(&f,ofn.lpstrFile,"w");
+        if( !f )
+                return S_OK;
 
-	float val;
+        float val;
 
-	flipper->get_Speed(&val);
-	fprintf_s(f,"%f ",val);
+        flipper->get_Speed(&val);
+        fprintf_s(f,"%f ",val);
 
-	flipper->get_Strength(&val);
-	fprintf_s(f,"%f ",val);
+        flipper->get_Strength(&val);
+        fprintf_s(f,"%f ",val);
 
-	flipper->get_Elasticity(&val);
-	fprintf_s(f,"%f ",val);
+        flipper->get_Elasticity(&val);
+        fprintf_s(f,"%f ",val);
 
-	flipper->get_ScatterAngle(&val);
-	fprintf_s(f,"%f ",val);
+        flipper->get_ScatterAngle(&val);
+        fprintf_s(f,"%f ",val);
 
-	flipper->get_Return(&val);
-	fprintf_s(f,"%f ",val);
+        flipper->get_Return(&val);
+        fprintf_s(f,"%f ",val);
 
-	flipper->get_Recoil(&val);
-	fprintf_s(f,"%f ",val);
+        flipper->get_Recoil(&val);
+        fprintf_s(f,"%f ",val);
 
-	flipper->get_PowerLaw(&val);
-	fprintf_s(f,"%f ",val);
+        flipper->get_PowerLaw(&val);
+        fprintf_s(f,"%f ",val);
 
-	flipper->get_ObliqueCorrection(&val);
-	fprintf_s(f,"%f\n",val);
-
-
-	get_Gravity(&val);
-	fprintf_s(f,"%f ",val);
-
-	get_HardFriction(&val);
-	fprintf_s(f,"%f ",val);
-
-	get_HardScatter(&val);
-	fprintf_s(f,"%f ",val);
+        flipper->get_ObliqueCorrection(&val);
+        fprintf_s(f,"%f\n",val);
 
 
-	fprintf_s(f,"%s",m_szTitle);
+        get_Gravity(&val);
+        fprintf_s(f,"%f ",val);
 
-	fclose(f);
+        get_HardFriction(&val);
+        fprintf_s(f,"%f ",val);
 
-	return S_OK;
+        get_HardScatter(&val);
+        fprintf_s(f,"%f ",val);
+
+
+        fprintf_s(f,"%s",m_szTitle);
+
+        fclose(f);
+
+        return S_OK;
 }
 
 STDMETHODIMP PinTable::get_EnableDecals(VARIANT_BOOL *pVal)
@@ -8839,7 +8854,7 @@ STDMETHODIMP PinTable::put_EnableEMReels(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_GlobalDifficulty(float *pVal)
 {
-   *pVal = m_globalDifficulty;						//VP Editor
+   *pVal = m_globalDifficulty;                                          //VP Editor
 
    return S_OK;
 }
@@ -8847,7 +8862,7 @@ STDMETHODIMP PinTable::get_GlobalDifficulty(float *pVal)
 STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
 {
    if (!g_pplayer)
-   {						//VP Editor
+   {                                            //VP Editor
       int tmp;
       const HRESULT hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
       if (hr == S_OK) m_globalDifficulty = (float)tmp*(float)(1.0/100.0);
@@ -8877,7 +8892,7 @@ STDMETHODIMP PinTable::put_AlternateRender(VARIANT_BOOL newVal)     // TODO: rem
 
 STDMETHODIMP PinTable::get_HardwareRender(VARIANT_BOOL *pVal)
 {
-	//!! deprecated
+        //!! deprecated
     *pVal = (VARIANT_BOOL)FTOVB((g_pvp) ? true : false); //VP Editor
 
     return S_OK;
@@ -8885,8 +8900,8 @@ STDMETHODIMP PinTable::get_HardwareRender(VARIANT_BOOL *pVal)
 
 STDMETHODIMP PinTable::put_HardwareRender(VARIANT_BOOL newVal)
 {
-	//!! deprecated
-	return S_OK;
+        //!! deprecated
+        return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Accelerometer(VARIANT_BOOL *pVal)
@@ -8900,7 +8915,7 @@ STDMETHODIMP PinTable::put_Accelerometer(VARIANT_BOOL newVal)
 {
    if (g_pplayer) g_pplayer->m_fAccelerometer = VBTOF(newVal); //VB Script
    else
-   {														//VP Editor
+   {                                                                                                            //VP Editor
       const HRESULT hr = GetRegInt("Player", "PBWEnabled", &m_tblAccelerometer);
       if (hr == S_OK) m_tblAccelerometer = ((BOOL)m_tblAccelerometer != fFalse);
       else
@@ -8924,7 +8939,7 @@ STDMETHODIMP PinTable::put_AccelNormalMount(VARIANT_BOOL newVal)
 {
    if (g_pplayer) g_pplayer->m_AccelNormalMount = VBTOF(newVal); //VB Script
    else 
-   {			
+   {
       const HRESULT hr = GetRegInt("Player", "PBWNormalMount", &m_tblAccelNormalMount);
       if (hr == S_OK) m_tblAccelNormalMount = ((BOOL)m_tblAccelNormalMount != fFalse);
       else
@@ -8948,12 +8963,12 @@ STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
 {
    if (g_pplayer) g_pplayer->m_AccelAngle = ANGTORAD(newVal); //VB Script conert to radians
    else
-   {	//VP Editor in degrees
+   {    //VP Editor in degrees
       int tmp;
       const HRESULT hr = GetRegInt("Player", "PBWRotation", &tmp);
       if (hr == S_OK) m_tblAccelAngle = (float)tmp;
       else 
-      {		
+      {
          STARTUNDO
          m_tblAccelAngle = newVal;
          STOPUNDO
@@ -8973,7 +8988,7 @@ STDMETHODIMP PinTable::put_AccelerometerAmp(float newVal)
 {
    if (g_pplayer) g_pplayer->m_AccelAmp = newVal; //VB Script
    else
-   {						//VP Editor
+   {                                            //VP Editor
       int tmp;
       const HRESULT hr = GetRegInt("Player", "PBWAccelGain", &tmp);
       if (hr == S_OK) m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);
@@ -8998,7 +9013,7 @@ STDMETHODIMP PinTable::put_AccelerometerAmpX(float newVal)
 {
    if (g_pplayer) g_pplayer->m_AccelAmpX = newVal; //VB Script
    else
-   {						//VP Editor
+   {                                            //VP Editor
       int tmp;
       const HRESULT hr = GetRegInt("Player", "PBWAccelGainX", &tmp);
       if (hr == S_OK) m_tblAccelAmpX = (float)tmp*(float)(1.0/100.0);
@@ -9023,7 +9038,7 @@ STDMETHODIMP PinTable::put_AccelerometerAmpY(float newVal)
 {
    if (g_pplayer) g_pplayer->m_AccelAmpY = newVal; //VB Script
    else
-   {						//VP Editor
+   {                                            //VP Editor
       int tmp;
       const HRESULT hr = GetRegInt("Player", "PBWAccelGainY", &tmp);
       if (hr == S_OK) m_tblAccelAmpY = (float)tmp*(float)(1.0/100.0);
@@ -9049,7 +9064,7 @@ STDMETHODIMP PinTable::put_AccelerManualAmp(float newVal)
 {
    if (g_pplayer) g_pplayer->m_AccelMAmp = newVal; //VB Script
    else
-   {						//VP Editor		
+   {                                            //VP Editor
       int tmp;
       const HRESULT hr = GetRegInt("Player", "JoystickGain", &tmp);
       if (hr == S_OK) m_tblAccelManualAmp = (float)tmp*(float)(1.0/100.0);
@@ -9068,7 +9083,7 @@ STDMETHODIMP PinTable::get_DeadSlider(int *pVal)
 {
    const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
    if (hr != S_OK)
-	   m_DeadZ = 0; // The default
+           m_DeadZ = 0; // The default
    *pVal=m_DeadZ;
 
    return S_OK;
@@ -9083,7 +9098,7 @@ STDMETHODIMP PinTable::put_DeadSlider(int newVal)
    SetRegValue("Player", "DeadZone", REG_DWORD, &m_DeadZ, 4);
    if (g_pplayer) m_DeadZ = (int)newVal; //VB Script
    else
-   {						//VP Editor		
+   {                                            //VP Editor
       const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
       if (hr != S_OK)
       {
@@ -9099,7 +9114,7 @@ STDMETHODIMP PinTable::get_DeadZone(int *pVal)
 {
    const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
    if (hr != S_OK)
-	   m_DeadZ = 0;
+           m_DeadZ = 0;
 
    if (*pVal>100) *pVal=100;
    if (*pVal<0) *pVal=0;
@@ -9117,7 +9132,7 @@ STDMETHODIMP PinTable::put_DeadZone(int newVal)
    SetRegValue("Player", "DeadZone", REG_DWORD, &newVal, 4);
    if (g_pplayer) m_DeadZ = (int)newVal; //VB Script
    else
-   {						//VP Editor		
+   {                                            //VP Editor
       const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
       if (hr != S_OK)
       {
@@ -9131,7 +9146,7 @@ STDMETHODIMP PinTable::put_DeadZone(int newVal)
 
 STDMETHODIMP PinTable::get_JoltAmount(int *pVal)
 {
-   *pVal = (g_pplayer) ? g_pplayer->m_jolt_amount : m_jolt_amount;	//VB Script or VP Editor
+   *pVal = (g_pplayer) ? g_pplayer->m_jolt_amount : m_jolt_amount;      //VB Script or VP Editor
 
    return S_OK;
 }
@@ -9140,7 +9155,7 @@ STDMETHODIMP PinTable::put_JoltAmount(int newVal)
 {
    if (g_pplayer) g_pplayer->m_jolt_amount = (U32)newVal; //VB Script
    else
-   {						//VP Editor				
+   {                                            //VP Editor
       const HRESULT hr = GetRegInt("Player", "JoltAmount", &m_jolt_amount);
       if (hr != S_OK) 
       {
@@ -9163,7 +9178,7 @@ STDMETHODIMP PinTable::put_TiltAmount(int newVal)
 {
    if (g_pplayer) g_pplayer->m_tilt_amount = (U32)newVal; //VB Script
    else
-   {						//VP Editor		
+   {                                            //VP Editor
       const HRESULT hr = GetRegInt("Player", "TiltAmount", &m_tilt_amount);
       if (hr != S_OK) 
       {
@@ -9186,7 +9201,7 @@ STDMETHODIMP PinTable::put_JoltTriggerTime(int newVal)
 {
    if (g_pplayer) g_pplayer->m_jolt_trigger_time = (U32)newVal; //VB Script
    else
-   {						//VP Editor		
+   {                                            //VP Editor
       const HRESULT hr = GetRegInt("Player", "JoltTriggerTime", &m_jolt_trigger_time);
       if (hr != S_OK)
       {
@@ -9209,7 +9224,7 @@ STDMETHODIMP PinTable::put_TiltTriggerTime(int newVal)
 {
    if (g_pplayer) g_pplayer->m_tilt_trigger_time = (U32)newVal; //VB Script
    else
-   {						//VP Editor		
+   {                                            //VP Editor
       const HRESULT hr = GetRegInt("Player", "TiltTriggerTime", &m_tilt_trigger_time);
       if (hr != S_OK)
       {
@@ -9268,16 +9283,16 @@ STDMETHODIMP PinTable::FireKnocker(int Count)
    if (g_pplayer)
    {
       hid_knock( Count );
-   }	
+   }
    return S_OK;
 }
 
 STDMETHODIMP PinTable::QuitPlayer(int CloseType)
 {
    if( g_pplayer )
-   {		
+   {            
       g_pplayer->m_fCloseType = CloseType;
-      ExitApp();		
+      ExitApp();
    }
 
    return S_OK;
@@ -9285,20 +9300,20 @@ STDMETHODIMP PinTable::QuitPlayer(int CloseType)
 
 STDMETHODIMP PinTable::StartShake()
 {
-   m_Shake = true;	
+   m_Shake = true;
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::StopShake()
 {
-   m_Shake = false;	
+   m_Shake = false;
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::Version(int *pVal)
 {
-	*pVal = VP_VERSION_MAJOR*1000 + VP_VERSION_MINOR*100 + VP_VERSION_REV;
-	return S_OK;
+        *pVal = VP_VERSION_MAJOR*1000 + VP_VERSION_MINOR*100 + VP_VERSION_REV;
+        return S_OK;
 }
