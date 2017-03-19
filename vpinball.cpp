@@ -6505,14 +6505,6 @@ void savecurrentphysicssetting(HWND hwndDlg)
     sprintf_s(tmp2,256,"TablePhysicsContactScatterAngle%u",physicsselection);
 	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
-	GetDlgItemTextA(hwndDlg, 1103, tmp, 256);
-    sprintf_s(tmp2,256,"TablePhysicsDampeningSpeed%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
-
-	GetDlgItemTextA(hwndDlg, 1106, tmp, 256);
-    sprintf_s(tmp2,256,"TablePhysicsDampeningFriction%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
-
 	GetDlgItemTextA(hwndDlg, 1110, tmp, 256);
     sprintf_s(tmp2,256,"PhysicsSetName%u",physicsselection);
 	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));
@@ -6668,24 +6660,6 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 		 sprintf_s(tmp,256,"%f",TablePhysicsContactScatterAngle);
  		 SetDlgItemTextA(hwndDlg, 1102, tmp);
 
-		 float TablePhysicsDampeningSpeed = DEFAULT_TABLE_DAMPENINGSPEED;
-		 sprintf_s(tmp,256,"TablePhysicsDampeningSpeed%u",physicsselection);
-         hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsDampeningSpeed);
-         if (hr != S_OK)
-            TablePhysicsDampeningSpeed = DEFAULT_TABLE_DAMPENINGSPEED;
-
-		 sprintf_s(tmp,256,"%f",TablePhysicsDampeningSpeed);
- 		 SetDlgItemTextA(hwndDlg, 1103, tmp);
-
-		 float TablePhysicsDampeningFriction = DEFAULT_TABLE_DAMPENINGFRICTION;
-		 sprintf_s(tmp,256,"TablePhysicsDampeningFriction%u",physicsselection);
-         hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsDampeningFriction);
-         if (hr != S_OK)
-            TablePhysicsDampeningFriction = DEFAULT_TABLE_DAMPENINGFRICTION;
-
-		 sprintf_s(tmp,256,"%f",TablePhysicsDampeningFriction);
- 		 SetDlgItemTextA(hwndDlg, 1106, tmp);
-
  		 SetDlgItemTextA(hwndDlg, 1110, physicsoptions[physicsselection]);
 
 		 return TRUE;
@@ -6761,8 +6735,8 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 
 			   float FlipperPhysicsSpeed,FlipperPhysicsStrength,FlipperPhysicsElasticity,FlipperPhysicsScatter,FlipperPhysicsReturnStrength,FlipperPhysicsRecoil,FlipperPhysicsPowerLaw,FlipperPhysicsOblique;
 			   fscanf_s(f,"%f %f %f %f %f %f %f %f\n", &FlipperPhysicsSpeed,&FlipperPhysicsStrength,&FlipperPhysicsElasticity,&FlipperPhysicsScatter,&FlipperPhysicsReturnStrength,&FlipperPhysicsRecoil,&FlipperPhysicsPowerLaw,&FlipperPhysicsOblique);
-			   float TablePhysicsGravityConstant,TablePhysicsContactFriction,TablePhysicsContactScatterAngle,TablePhysicsDampeningSpeed,TablePhysicsDampeningFriction;
-			   fscanf_s(f,"%f %f %f %f %f\n", &TablePhysicsGravityConstant,&TablePhysicsContactFriction,&TablePhysicsContactScatterAngle,&TablePhysicsDampeningSpeed,&TablePhysicsDampeningFriction);
+			   float TablePhysicsGravityConstant,TablePhysicsContactFriction,TablePhysicsContactScatterAngle;
+			   fscanf_s(f,"%f %f %f\n", &TablePhysicsGravityConstant,&TablePhysicsContactFriction,&TablePhysicsContactScatterAngle);
 			   fscanf_s(f,"%s",tmp2);
 			   fclose(f);
 
@@ -6798,12 +6772,6 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 
 				 sprintf_s(tmp,256,"%f",TablePhysicsContactScatterAngle);
  				 SetDlgItemTextA(hwndDlg, 1102, tmp);
-
-				 sprintf_s(tmp,256,"%f",TablePhysicsDampeningSpeed);
- 				 SetDlgItemTextA(hwndDlg, 1103, tmp);
-
-				 sprintf_s(tmp,256,"%f",TablePhysicsDampeningFriction);
- 				 SetDlgItemTextA(hwndDlg, 1106, tmp);
 
  				 SetDlgItemTextA(hwndDlg, 1110, tmp2);
 			   }

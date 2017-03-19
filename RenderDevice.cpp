@@ -341,6 +341,13 @@ RenderDevice::~RenderDevice()
 
 	//
 
+    m_pD3DDevice->SetStreamSource(0, NULL, 0, 0);
+    m_pD3DDevice->SetIndices(NULL);
+
+    SAFE_RELEASE(m_dynIndexBuffer);
+
+    m_texMan.UnloadAll();
+
 	SAFE_RELEASE(m_pBackBuffer);
     m_pD3DDevice->Release();
     m_pD3D->Release();
@@ -452,6 +459,7 @@ void RenderDevice::CopySurface(D3DTexture* dest, RenderTarget* src)
 	IDirect3DSurface9 *textureSurface;
     CHECKD3D(dest->GetSurfaceLevel(0, &textureSurface));
     CHECKD3D(m_pD3DDevice->StretchRect(src, NULL, textureSurface, NULL, D3DTEXF_NONE));
+    textureSurface->Release();
 }
 
 void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)

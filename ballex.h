@@ -57,8 +57,8 @@ public:
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
 	STDMETHOD(get_Radius)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Radius)(/*[in]*/ float newVal);
-	STDMETHOD(get_CollisionMass)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_CollisionMass)(/*[in]*/ float newVal);
+	STDMETHOD(get_Mass)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Mass)(/*[in]*/ float newVal);
 	STDMETHOD(get_UserValue)(VARIANT *pVal);
 	STDMETHOD(put_UserValue)(VARIANT *newVal);
 	STDMETHOD(DestroyBall)(/*[out, retval]*/ int *pVal);

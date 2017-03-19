@@ -1,7 +1,13 @@
 #pragma once
+
+//#define DEBUG_FLIPPERS
+
 class FlipperAnimObject : public AnimObject
 	{
 public:
+    FlipperAnimObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
+                      float zlow, float zhigh, float strength, float mass, float returnRatio);
+
 	void SetObjects(const float angle);
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
@@ -9,6 +15,17 @@ public:
 	virtual bool FMover() const {return true;}
 
 	virtual void Check3D()                              { }
+
+    void SetSolenoidState(bool s);
+    float GetStrokeRatio() const;
+
+    // rigid body functions
+    Vertex3Ds SurfaceVelocity(const Vertex3Ds& surfP) const;
+    Vertex3Ds SurfaceAcceleration(const Vertex3Ds& surfP) const;
+
+    float GetHitTime() const;
+
+    void ApplyImpulse(const Vertex3Ds& surfP, const Vertex3Ds& impulse);
 
 	Flipper *m_pflipper;
 
@@ -23,25 +40,28 @@ public:
 	Vertex2D m_leftFaceNormal, m_rightFaceNormal, m_leftFaceBase, m_rightFaceBase;
 	Vertex2D m_endRadiusCenter;
 
+    float m_angularMomentum;
+    float m_angularAcceleration;
 	float m_anglespeed;
 	float m_angleCur;
-	float m_angleEnd;
 
 	float m_flipperradius;
 	float m_force;
-	float m_mass;
-	int m_fAcc;				//rotational acceleration  -1, 0, +1
-	float m_elasticity;
+    float m_returnRatio;
 
 	float m_height;
 
-	float m_maxvelocity;
+    int m_dir;
+    bool m_solState;        // is solenoid enabled?
+    bool m_isInContact;
+    float m_curTorque;
+    float m_contactTorque;
+    float m_torqueRampupSpeed;
 
+	float m_angleStart, m_angleEnd;
 	float m_angleMin, m_angleMax;
 
-#if 0
 	float m_inertia;	//moment of inertia
-#endif
 
 	int m_EnableRotateEvent;
 
@@ -51,6 +71,10 @@ public:
    bool m_fVisible;
 	bool m_lastHitFace;
    bool m_fCompatibility;
+
+#ifdef DEBUG_FLIPPERS
+    U32 m_startTime;
+#endif
 	};
 
 class HitFlipper :
@@ -60,27 +84,27 @@ public:
 	Vertex2D v;
 	//float rad1, rad2;
 
-	HitFlipper(const float x, const float y, float baser, float endr, float flipr, const float angle,
-		       const float zlow, const float zhigh, float strength, const float mass);
+	HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
+		       float zlow, float zhigh, float strength, float mass, float returnRatio);
 	~HitFlipper();
 
 	virtual float HitTestFlipperFace(const Ball * pball, const float dtime, CollisionEvent& coll, const bool face1);
 
 	virtual float HitTestFlipperEnd(const Ball * pball, const float dtime, CollisionEvent& coll);
 
+    float GetHitTime() const;
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	
 	virtual int GetType() const {return eFlipper;}
 
 	virtual void Collide(CollisionEvent *coll);
+    void Contact(CollisionEvent& coll, float dtime);
 
 	virtual AnimObject *GetAnimObject() {return &m_flipperanim;}
 
 	virtual void CalcHitRect();
 
 	Flipper *m_pflipper;
-
-	float m_forcemass; // Force of the flipper, treated as the mass of the moving object;
 
 	FlipperAnimObject m_flipperanim;
 	int m_last_hittime;

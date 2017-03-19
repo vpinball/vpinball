@@ -136,23 +136,17 @@ void Ball::RenderSetup()
 void Ball::Init()
 {
    // Only called by real balls, not temporary objects created for physics/rendering
-   collisionMass = 1.0f;
+   m_mass = 1.0f;
+   m_invMass = 1.0f / m_mass;
+
    m_orientation.Identity();
-   m_inversebodyinertiatensor.Identity((float)(5.0/2.0)/(radius*radius));
+   m_inertia = (2 * radius*radius * m_mass) / 5.0f;
    m_angularvelocity.Set(0,0,0);
    m_angularmomentum.Set(0,0,0);
 
    m_ballanim.m_pball = this;
 
    fFrozen = false;
-
-   // world limits on ball displacements
-   //	x_min = g_pplayer->m_ptable->m_left + radius;
-   //	x_max = g_pplayer->m_ptable->m_right - radius;
-   //	y_min = g_pplayer->m_ptable->m_top + radius;
-   //	y_max = g_pplayer->m_ptable->m_bottom - radius;
-   z_min = g_pplayer->m_ptable->m_tableheight + radius;
-   z_max = (g_pplayer->m_ptable->m_glassheight - radius);
 
    m_coll.obj = NULL;
    m_fDynamic = C_DYNAMIC; // assume dynamic
@@ -213,7 +207,7 @@ void Ball::EnsureOMObject()
 	m_pballex->m_pball = this;
 }
  
-void Ball::Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, float antifriction, float scatter_angle)
+void Ball::Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, float friction, float scatter_angle)
 {
     //speed normal to wall
     float dot = vel.Dot(hitNormal);
@@ -241,32 +235,53 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, flo
 	}
 #endif
 
-	dot *= -1.005f - elasticity; //!! some small minimum
-	vel += dot * hitNormal;
+    // magnitude of the impulse which is just sufficient to keep the ball from
+    // penetrating the wall (needed for friction computations)
+    const float reactionImpulse = m_mass * fabs(dot);
 
-	if (antifriction >= 1.0f || antifriction <= 0.0f) 
-		antifriction = c_hardFriction; // use global
+    dot *= -(1.0f + elasticity);
+    vel += dot * hitNormal;     // apply collision impulse (along normal, so no torque)
 
-	//friction all axes
-	vel *= antifriction;
+    // compute friction impulse
 
-	if (scatter_angle <= 0.0f) scatter_angle = c_hardScatter;			// if <= 0 use global value
-	scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;			// apply difficulty weighting
+    const Vertex3Ds surfP = -radius * hitNormal;    // surface contact point relative to center of mass
 
-	if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity 
-	{
-		float scatter = rand_mt_m11();									// -1.0f..1.0f
-		scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
-		const float radsin = sinf(scatter); // Green's transform matrix... rotate angle delta
-		const float radcos = cosf(scatter); // rotational transform from current position to position at time t
-		const float vxt = vel.x; 
-		const float vyt = vel.y;
-		vel.x = vxt *radcos - vyt *radsin;  // rotate to random scatter angle
-		vel.y = vyt *radcos + vxt *radsin; 
-	}
+    Vertex3Ds surfVel = SurfaceVelocity(surfP);            // velocity at impact point
 
-    //calc new rolling dynamics
-    AngularAcceleration(hitNormal);
+    Vertex3Ds tangent = surfVel - surfVel.Dot(hitNormal) * hitNormal;       // calc the tangential velocity
+
+    const float tangentSpSq = tangent.LengthSquared();
+    if (tangent.LengthSquared() > 1e-6f)
+    {
+        tangent /= sqrt(tangentSpSq);            // normalize to get tangent direction
+        const float vt = surfVel.Dot(tangent);   // get speed in tangential direction
+
+        // compute friction impulse
+        const Vertex3Ds cross = CrossProduct(surfP, tangent);
+        const float kt = m_invMass + tangent.Dot( CrossProduct(cross / m_inertia, surfP));
+
+        // friction impulse can't be greather than coefficient of friction times collision impulse (Coulomb friction cone)
+        const float maxFric = friction * reactionImpulse;
+        const float jt = clamp(-vt / kt, -maxFric, maxFric);
+
+        ApplySurfaceImpulse(surfP, jt * tangent);
+    }
+
+    // TODO: reenable scatter if needed
+	//if (scatter_angle <= 0.0f) scatter_angle = c_hardScatter;			// if <= 0 use global value
+	//scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;			// apply difficulty weighting
+
+	//if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity
+	//{
+	//	float scatter = rand_mt_m11();									// -1.0f..1.0f
+	//	scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
+	//	const float radsin = sinf(scatter); // Green's transform matrix... rotate angle delta
+	//	const float radcos = cosf(scatter); // rotational transform from current position to position at time t
+	//	const float vxt = vel.x;
+	//	const float vyt = vel.y;
+	//	vel.x = vxt *radcos - vyt *radsin;  // rotate to random scatter angle
+	//	vel.y = vyt *radcos + vxt *radsin;
+	//}
 }
 
 float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
@@ -291,7 +306,7 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 		pball->vel.z -= dv.z;
 	}
 
-	float b = dv.Dot(d);                    // inner product
+	const float b = dv.Dot(d);              // inner product
 	const float bnv = b/bcdd;				// normal speed of balls toward each other
 
 	if ( bnv > C_LOWNORMVEL) return -1.0f;	// dot of delta velocity and delta displacement, postive if receding no collison
@@ -318,19 +333,12 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
         //   at^2 + bt + c = 0
 		const float a = dv.LengthSquared();         // square of differential velocity
 
-		if (a < 1.0e-8f) return -1.0f;				// ball moving really slow, then wait for contact
+		if (a < 1.0e-8f)
+            return -1.0f;				// ball moving really slow, then wait for contact
 
-		const float c = bcddsq - totalradius*totalradius;	//first contact test: square delta position - square of radii
-		b *= 2.0f;									// two inner products
-		float result = b*b - 4.0f*a*c;				// squareroot term (discriminant) in quadratic equation
-
-		if (result < 0.0f) return -1.0f;			// no collision path exist	
-
-		result = sqrtf(result);
-
-        // compute the two solutions to the quadratic equation
-		      float time1 = (-b + result)/(2.0f * a);
-		const float time2 = (-b - result)/(2.0f * a);
+        float time1, time2;
+        if (!SolveQuadraticEq(a, 2*b, bcddsq - totalradius*totalradius, time1, time2))
+            return -1.0f;
 
         // choose smallest non-negative solution
 		hittime = std::min(time1, time2);
@@ -356,18 +364,18 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 void Ball::Collide(CollisionEvent *coll)
 {
     Ball *pball = coll->ball;
-	const Vertex3Ds vnormal = coll->normal[0];
 
-	if (pball->fFrozen) 
-		return;
-
-	// correct displacements, mostly from low velocity, alternative to true acceleration processing
+    // make sure we process each ball/ball collision only once
+    // (but if we are frozen, there won't be a second collision event, so deal with it now!)
+    if (pball <= this && !this->fFrozen)
+        return;
 
     // target ball to object ball delta velocity
-	const Vertex3Ds impulse = pball->collisionMass * pball->vel - collisionMass * vel;
+    const Vertex3Ds vrel = pball->vel - vel;
+	const Vertex3Ds vnormal = coll->normal[0];
+	float dot = vrel.Dot(vnormal);
 
-	float dot = impulse.Dot(vnormal);
-
+	// correct displacements, mostly from low velocity, alternative to true acceleration processing
 	if (dot >= -C_LOWNORMVEL )								// nearly receding ... make sure of conditions
 	{														// otherwise if clearly approaching .. process the collision
 		if (dot > C_LOWNORMVEL) return;						//is this velocity clearly receding (i.e must > a minimum)		
@@ -377,8 +385,8 @@ void Ball::Collide(CollisionEvent *coll)
 		else return;
 #endif
 	}
-			
-#ifdef C_DISP_GAIN 		
+
+#ifdef C_DISP_GAIN
 	float edist = -C_DISP_GAIN * coll->distance;
 	if (edist > 1.0e-4f)
 	{										
@@ -397,73 +405,103 @@ void Ball::Collide(CollisionEvent *coll)
 		edist *= 0.5f;		
         pos -= edist * vnormal;         // pull along norm, back to free area
 	}
-#endif				
+#endif
 
-	const float averageMass = (collisionMass + pball->collisionMass)*0.5f;
-	const float impulse1 = ((float)(-1.8 * 0.5) * dot) * pball->collisionMass / (averageMass * collisionMass);
-	float impulse2 = ((float)(-1.8 * 0.5) * dot) * collisionMass / (averageMass * pball->collisionMass);
+    const float myInvMass = fFrozen ? 0.0f : m_invMass; // frozen ball has infinite mass
+    const float impulse = -(1.0f + 0.8f) * dot / (myInvMass + pball->m_invMass);    // resitution = 0.8
 
-	if (!fFrozen)
-	{
-        vel -= impulse1 * vnormal;
-		m_fDynamic = C_DYNAMIC;		
-	}
-	else impulse2 += impulse1;
-		
-    pball->vel += impulse2 * vnormal;
-	pball->m_fDynamic = C_DYNAMIC;
+    if (!fFrozen)
+    {
+        vel -= (impulse * myInvMass) * vnormal;
+        m_fDynamic = C_DYNAMIC;
+    }
+    pball->vel += (impulse * pball->m_invMass) * vnormal;
+    pball->m_fDynamic = C_DYNAMIC;
 }
 
-void Ball::AngularAcceleration(const Vertex3Ds& hitnormal)
+void Ball::HandleStaticContact(const Vertex3Ds& normal, float origNormVel, float friction, float dtime)
 {
-	const Vertex3Ds bccpd = -radius * hitnormal;    // vector ball center to contact point displacement
+    const float normVel = vel.Dot(normal);   // this should be zero, but only up to +/- C_CONTACTVEL
 
-	const float bnv = vel.Dot(hitnormal);       // ball normal velocity to hit face
-
-	const Vertex3Ds bvn = bnv * hitnormal;      // project the normal velocity along normal
-
-	const Vertex3Ds bvt = vel - bvn;            // calc the tangent velocity
-
-	Vertex3Ds bvT = bvt;                        // ball tangent velocity Unit Tangent
-	bvT.Normalize();	
-
-	const Vertex3Ds bstv =						// ball surface tangential velocity
-	CrossProduct(m_angularvelocity, bccpd);		// velocity of ball surface at contact point
-
-	const float dot = bstv.Dot(bvT);			// speed ball surface contact point tangential to contact surface point
-	const Vertex3Ds cpvt = dot * bvT;           // contact point velocity tangential to hit face
-
-	const Vertex3Ds slideVel = bstv - cpvt;     // contact point slide velocity with ball center velocity -- slide velocity
-
-	// If the point and the ball are travelling in opposite directions,
-	// and the point's velocity is at least the magnitude of the balls,
-	// then we have a natural roll
-	
-	Vertex3Ds cpctrv = -slideVel;				//contact point co-tangential reverse velocity
-
-    if (vel.LengthSquared() > (float)(0.7*0.7))
+    // If some collision has changed the ball's velocity, we may not have to do anything.
+    if (normVel <= C_CONTACTVEL)
     {
-        // Calculate the maximum amount the point velocity can change this
-        // time segment due to friction
-        Vertex3Ds FrictionForce = cpvt + bvt;
+        const Vertex3Ds fe = m_mass * g_pplayer->m_gravity;      // external forces (only gravity for now)
+        const float dot = fe.Dot(normal);
+        const float normalForce = std::max( 0.0f, -(dot*dtime + origNormVel) ); // normal force is always nonnegative
 
-        // If the point can change fast enough to go directly to a natural roll, then do it.
+        // Add just enough to kill original normal velocity and counteract the external forces.
+        vel += normalForce * normal;
 
-        if (FrictionForce.LengthSquared() > (float)(ANGULARFORCE*ANGULARFORCE))
-            FrictionForce.Normalize(ANGULARFORCE);
-
-        cpctrv -= FrictionForce;
+        ApplyFriction(normal, dtime, friction);
     }
+}
 
-	// Divide by the inertial tensor for a sphere in order to change
-	// linear force into angular momentum
-	cpctrv *= (float)(2.0/5.0); // Inertial tensor for a sphere
+void Ball::ApplyFriction(const Vertex3Ds& hitnormal, float dtime, float fricCoeff)
+{
+    const Vertex3Ds surfP = -radius * hitnormal;    // surface contact point relative to center of mass
 
-	const Vertex3Ds vResult = CrossProduct(bccpd, cpctrv); // ball center contact point displacement X reverse contact point co-tan vel
+    Vertex3Ds surfVel = SurfaceVelocity(surfP);
+    const Vertex3Ds slip = surfVel - surfVel.Dot(hitnormal) * hitnormal;       // calc the tangential slip velocity
 
-	m_angularmomentum *= 0.99f;
-	m_angularmomentum += vResult; // add delta
-	m_angularvelocity = m_inverseworldinertiatensor.MultiplyVector(m_angularmomentum);
+    const float maxFric = fricCoeff * m_mass * -g_pplayer->m_gravity.Dot(hitnormal);
+
+    const float slipspeed = slip.Length();
+    //slintf("Velocity: %.2f Angular velocity: %.2f Surface velocity: %.2f Slippage: %.2f\n", vel.Length(), m_angularvelocity.Length(), surfVel.Length(), slipspeed);
+    //if (slipspeed > 1e-6f)
+    if (slipspeed < C_PRECISION)
+    {
+        // slip speed zero - static friction case
+
+        Vertex3Ds surfAcc = SurfaceAcceleration(surfP);
+        const Vertex3Ds slipAcc = surfAcc - surfAcc.Dot(hitnormal) * hitnormal;       // calc the tangential slip acceleration
+
+        // neither slip velocity nor slip acceleration? nothing to do here
+        if (slipAcc.LengthSquared() < 1e-6f)
+            return;
+
+        Vertex3Ds slipDir = slipAcc;
+        slipDir.Normalize();
+
+        const float numer = - slipDir.Dot( surfAcc );
+        const float denom = m_invMass + slipDir.Dot( CrossProduct( CrossProduct(surfP, slipDir) / m_inertia, surfP ) );
+        const float fric = clamp(numer / denom, -maxFric, maxFric);
+
+        ApplySurfaceImpulse(surfP, (dtime * fric) * slipDir);
+    }
+    else
+    {
+        // nonzero slip speed - dynamic friction case
+
+        Vertex3Ds slipDir = slip / slipspeed;
+
+        const float numer = - slipDir.Dot( surfVel );
+        const float denom = m_invMass + slipDir.Dot( CrossProduct( CrossProduct(surfP, slipDir) / m_inertia, surfP ) );
+        const float fric = clamp(numer / denom, -maxFric, maxFric);
+
+        ApplySurfaceImpulse(surfP, (dtime * fric) * slipDir);
+    }
+}
+
+Vertex3Ds Ball::SurfaceVelocity(const Vertex3Ds& surfP) const
+{
+    return vel + CrossProduct(m_angularvelocity, surfP);      // linear velocity plus tangential velocity due to rotation
+}
+
+Vertex3Ds Ball::SurfaceAcceleration(const Vertex3Ds& surfP) const
+{
+    // if we had any external torque, we would have to add "(deriv. of ang.vel.) x surfP" here
+    return m_invMass * g_pplayer->m_gravity     // linear acceleration
+        + CrossProduct( m_angularvelocity, CrossProduct(m_angularvelocity, surfP) ); // centripetal acceleration
+}
+
+void Ball::ApplySurfaceImpulse(const Vertex3Ds& surfP, const Vertex3Ds& impulse)
+{
+    vel += m_invMass * impulse;
+
+    const Vertex3Ds rotI = CrossProduct(surfP, impulse);
+    m_angularmomentum += rotI;
+    m_angularvelocity = m_angularmomentum / m_inertia;
 }
 
 void Ball::CalcHitRect()
@@ -499,25 +537,6 @@ void Ball::UpdateDisplacements(const float dtime)
 
 		drsq = ds.LengthSquared();                      // used to determine if static ball
 
-		if (vel.z < 0.f && pos.z <= z_min)              //rolling point below the table and velocity driving deeper
-		{
-			pos.z = z_min;								// set rolling point to table surface
-			vel.z *= -0.2f;							    // reflect velocity  ...  dull bounce
-
-			vel.x *= c_hardFriction;
-			vel.y *= c_hardFriction;					//friction other axiz
-			
-			const Vertex3Ds vnormal(0.0f,0.0f,1.0f);
-			AngularAcceleration(vnormal);
-		}
-		else if (vel.z > 0.f && pos.z >= z_max)			//top glass ...contact and going higher
-		{
-			pos.z = z_max;								// set diametric rolling point to top glass
-			vel.z *= -0.2f;								// reflect velocity  ...  dull bounce
-		}
-
-        // side walls are handled via actual collision objects set up in Player::CreateBoundingHitShapes
-
 		CalcHitRect();
 		
 		Matrix3 mat3;
@@ -525,19 +544,12 @@ void Ball::UpdateDisplacements(const float dtime)
 		
 		Matrix3 addedorientation;
 		addedorientation.MultiplyMatrix(&mat3, &m_orientation);
-
 		addedorientation.MultiplyScalar(dtime);
 
 		m_orientation.AddMatrix(&addedorientation, &m_orientation);
-
 		m_orientation.OrthoNormalize();
 
-		Matrix3 matTransposeOrientation;
-		m_orientation.Transpose(&matTransposeOrientation);
-		m_inverseworldinertiatensor.MultiplyMatrix(&m_orientation,&m_inversebodyinertiatensor);
-		m_inverseworldinertiatensor.MultiplyMatrix(&m_inverseworldinertiatensor,&matTransposeOrientation);
-
-        m_angularvelocity = m_inverseworldinertiatensor.MultiplyVector(m_angularmomentum);
+        m_angularvelocity = m_angularmomentum / m_inertia;
 	}
 }
 
@@ -573,22 +585,13 @@ void Ball::UpdateVelocities()
 	} // manual joystick control
 	else if (!fFrozen)  // Gravity	
 	{
-		vel.x += g_pplayer->m_gravity.x;
-		vel.y += g_pplayer->m_gravity.y;
-
-		if (pos.z > z_min + 0.05f || g > 0.f) // off the deck??? or gravity postive Z direction	
-			vel.z += g;
-		else
-			vel.z += g * 0.001f;			  // don't add so much energy if already on the world floor
+		vel += PHYS_FACTOR * g_pplayer->m_gravity;
 
 		vel.x += nx;
 		vel.y += ny;
-	}
 
-	const float mag = vel.LengthSquared(); //speed check 
-	const float antifrict = (mag > c_maxBallSpeedSqr) ? c_dampingFriction : 0.99875f;
-		
-	vel *= antifrict;      // speed damping
+        vel -= g_pplayer->m_tableVelDelta;
+	}
 
 	m_fDynamic = C_DYNAMIC; // always set .. after adding velocity
 

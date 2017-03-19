@@ -88,10 +88,8 @@ public:
 	STDMETHOD(put_HardFriction)(/*[in]*/ float newVal);
 	STDMETHOD(get_HardScatter)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_HardScatter)(/*[in]*/ float newVal);
-	STDMETHOD(get_MaxBallSpeed)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_MaxBallSpeed)(/*[in]*/ float newVal);
-	STDMETHOD(get_DampingFriction)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_DampingFriction)(/*[in]*/ float newVal);
+	STDMETHOD(get_NudgeTime)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_NudgeTime)(/*[in]*/ float newVal);
 	STDMETHOD(get_PlungerNormalize)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_PlungerNormalize)(/*[in]*/ int newVal);
 
@@ -189,7 +187,6 @@ public:
 	STDMETHOD(put_GlassHeight)(/*[in]*/ float newVal);
 	STDMETHOD(get_TableHeight)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_TableHeight)(/*[in]*/ float newVal);
-	STDMETHOD(Nudge)(float Angle, float Force);
 	STDMETHOD(get_DisplayBackdrop)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_DisplayBackdrop)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_DisplayGrid)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -573,8 +570,7 @@ END_CONNECTION_POINT_MAP()
 	float m_Gravity;
 	float m_hardFriction;
 	float m_hardScatter;
-	float m_maxBallSpeed;
-	float m_dampingFriction;
+    float m_nudgeTime;
 	int m_plungerNormalize;
 	BOOL m_plungerFilter;
 	unsigned int m_PhysicsMaxLoops;

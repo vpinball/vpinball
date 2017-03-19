@@ -20,13 +20,12 @@ Pin3D::Pin3D()
 
 Pin3D::~Pin3D()
 {
+    m_pd3dDevice->SetZBuffer(NULL);
+
 	SAFE_RELEASE(m_pdds3DBackBuffer);
 	SAFE_RELEASE(m_pdds3DZBuffer);
-
 	SAFE_RELEASE(m_pddsZBuffer);
-
 	SAFE_RELEASE(m_pddsStatic);
-
 	SAFE_RELEASE(m_pddsStaticZ);
 
     for (std::map<int,MemTexture*>::iterator it = m_xvShadowMap.begin(); it != m_xvShadowMap.end(); ++it)

@@ -83,6 +83,7 @@ public:
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	virtual int GetType() const {return eTriangle;}
 	virtual void Collide(CollisionEvent* coll);
+    virtual void Contact(CollisionEvent& coll, float dtime);
 	virtual void CalcHitRect();
 
     bool IsDegenerate() const       { return normal.IsZero(); }
@@ -91,6 +92,24 @@ public:
 	Vertex3Ds normal;
 	BOOL m_fVisible; // for ball shadows
 };
+
+
+class HitPlane : public HitObject
+{
+public:
+    HitPlane() {}
+    HitPlane(const Vertex3Ds& normal_, float d_);
+
+    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+    virtual int GetType() const { return ePlane; }
+    virtual void Collide(CollisionEvent* coll);
+    virtual void Contact(CollisionEvent& coll, float dtime);
+    virtual void CalcHitRect() {}  // TODO: this is needed if we want to put it in the quadtree
+
+    Vertex3Ds normal;
+    float d;
+};
+
 
 class SpinnerAnimObject : public AnimObject
 {
@@ -109,8 +128,7 @@ public:
 	float m_angleMax;
 	float m_angleMin;
 	float m_elasticity;
-	float m_friction;
-	float m_scatter;
+    float m_damping;
 	BOOL m_fVisible;
 };
 
@@ -176,8 +194,6 @@ public:
 class TriggerLineSeg : public LineSeg
 {
 public:
-	TriggerLineSeg();
-
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	virtual void Collide(CollisionEvent* coll);
 
@@ -189,8 +205,6 @@ public:
 class TriggerHitCircle : public HitCircle
 {
 public:
-	TriggerHitCircle();
-
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	virtual void Collide(CollisionEvent* coll);
 
@@ -199,10 +213,15 @@ public:
 	Trigger *m_ptrigger;
 };
 
-class Hit3DCylinder : public HitCircle
+/*
+ * Arbitrary line segment in 3D space.
+ *
+ * Is implemented by transforming a HitLineZ to the desired orientation.
+ */
+class HitLine3D : public HitLineZ
 {
 public:
-	Hit3DCylinder(const Vertex3Ds * const pv1, const Vertex3Ds * const pv2, const Vertex3Ds * const pvnormal);
+	HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2);
 
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	virtual void Collide(CollisionEvent* coll);
@@ -211,14 +230,10 @@ public:
 
 	virtual int GetType() const {return e3DLine;}
 
-	void CacheHitTransform();
+private:
+	void CacheHitTransform(const Vertex3Ds& v1, const Vertex3Ds& v2);
 
-	Vertex3Ds v1, v2;
-	Vertex3Ds normal;
-
-	Vertex3Ds vtrans[2];
-	Vertex3Ds transaxis;
-	float transangle;
+    Matrix3 matTrans;
 };
 
 

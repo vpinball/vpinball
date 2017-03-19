@@ -260,20 +260,21 @@ STDMETHODIMP BallEx::put_Name(BSTR newVal)
 	return S_OK;
 }
 
-STDMETHODIMP BallEx::get_CollisionMass(float *pVal)
+STDMETHODIMP BallEx::get_Mass(float *pVal)
 {
 	CHECKSTALEBALL
 
-	*pVal = m_pball->collisionMass;
+	*pVal = m_pball->m_mass;
 
 	return S_OK;
 }
 
-STDMETHODIMP BallEx::put_CollisionMass(float newVal)
+STDMETHODIMP BallEx::put_Mass(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->collisionMass = newVal;
+	m_pball->m_mass = newVal;
+    m_pball->m_invMass = 1.0f / newVal;
 
 	return S_OK;
 }

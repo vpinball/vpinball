@@ -36,8 +36,6 @@ BackdropImage(string)
 Gravity(float) - default=0.86543
 HardFriction(float) - default=0.0025
 HardScatter(float) - default=0
-MaxBallSpeed(float) - default=60.0
-DampingFriction(float) - default=0.95
 *OverridePhysics(int) - overrides the table physics settings with pre defined settings defined under Preferences -> Physics Options.
                         You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and
                         by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)

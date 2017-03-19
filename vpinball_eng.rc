@@ -518,8 +518,8 @@ BEGIN
     EDITTEXT        1100,83,161,40,12,ES_AUTOHSCROLL
     EDITTEXT        1101,83,175,40,12,ES_AUTOHSCROLL
     EDITTEXT        1102,83,188,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1103,83,202,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1106,83,216,40,12,ES_AUTOHSCROLL
+    //EDITTEXT        1103,83,202,40,12,ES_AUTOHSCROLL
+    //EDITTEXT        1106,83,216,40,12,ES_AUTOHSCROLL
     EDITTEXT        1110,43,242,80,12,ES_AUTOHSCROLL
     LISTBOX         IDC_PhysicsList,5,260,180,35,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Cancel",IDCANCEL,144,28,50,14
@@ -534,10 +534,10 @@ BEGIN
     LTEXT           "Power-Law",IDC_STATIC,11,111,66,8
     LTEXT           "Oblique Correction",IDC_STATIC,11,124,66,8
     LTEXT           "Gravity Constant",IDC_STATIC,11,163,69,8
-    LTEXT           "Contact Friction",IDC_STATIC,11,177,69,8
+    LTEXT           "Playfield Friction",IDC_STATIC,11,177,69,8
     LTEXT           "Contact Scatter Angle",IDC_STATIC,11,191,69,8
-    LTEXT           "Dampening Speed",IDC_STATIC,11,205,69,8
-    LTEXT           "Dampening Friction",IDC_STATIC,11,219,69,8
+    //LTEXT           "Dampening Speed",IDC_STATIC,11,205,69,8
+    //LTEXT           "Dampening Friction",IDC_STATIC,11,219,69,8
     GROUPBOX        "Flipper Settings",IDC_STATIC,5,10,127,129
     GROUPBOX        "Table Settings",IDC_STATIC,5,148,127,87
     LTEXT           "Set Name",IDC_STATIC,5,245,35,8
@@ -969,21 +969,23 @@ BEGIN
     EDITTEXT        DISPID_Flipper_Speed,76,7,40,12,ES_AUTOHSCROLL
     EDITTEXT        19,76,22,40,12,ES_AUTOHSCROLL
     EDITTEXT        21,76,37,40,12,ES_AUTOHSCROLL
-    EDITTEXT        112,76,52,40,12,ES_AUTOHSCROLL
-    EDITTEXT        23,76,67,40,12,ES_AUTOHSCROLL
-    EDITTEXT        22,76,82,40,12,ES_AUTOHSCROLL
-    EDITTEXT        109,76,97,40,12,ES_AUTOHSCROLL
-    EDITTEXT        110,76,112,40,12,ES_AUTOHSCROLL
+    EDITTEXT        28,76,52,40,12,ES_AUTOHSCROLL
+    EDITTEXT        26,76,67,40,12,ES_AUTOHSCROLL
+    EDITTEXT        23,76,82,40,12,ES_AUTOHSCROLL
+    EDITTEXT        27,76,97,40,12,ES_AUTOHSCROLL
+    //EDITTEXT        109,76,97,40,12,ES_AUTOHSCROLL
+    //EDITTEXT        110,76,112,40,12,ES_AUTOHSCROLL
     EDITTEXT        1044,106,130,10,12,ES_AUTOHSCROLL
     LTEXT           "Override by Global Physics Set",-1,7,132,98,8
-    LTEXT           "S&peed",-1,7,9,66,8
+    LTEXT           "&Mass",-1,7,9,66,8
     LTEXT           "Stre&ngth",-1,7,24,66,8
     LTEXT           "Elast&icity",-1,7,39,66,8
-    LTEXT           "Recoil Velocity",-1,7,84,66,8
-    LTEXT           "Return Strength Ratio",-1,7,69,66,8
-    LTEXT           "Oblique Correction",-1,7,114,66,8
-    LTEXT           "Scatter Angle",-1,7,54,66,8
-    LTEXT           "Power-Law",-1,7,99,66,8
+    LTEXT           "Elasticity Falloff",-1,7,54,66,8
+    LTEXT           "Friction",-1,7,69,66,8
+    LTEXT           "Coil Ramp Up",-1,7,99,66,8
+    LTEXT           "Return Strength Ratio",-1,7,84,66,8
+    //LTEXT           "Oblique Correction",-1,7,114,66,8
+    //LTEXT           "Power-Law",-1,7,99,66,8
 END
 
 IDD_PROPPLUNGER_PHYSICS DIALOGEX 0, 0, 125, 125
@@ -1420,7 +1422,7 @@ BEGIN
     EDITTEXT        1101,80,21,40,12,ES_AUTOHSCROLL
     EDITTEXT        1102,80,34,40,12,ES_AUTOHSCROLL
     EDITTEXT        1103,80,48,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1106,80,62,40,12,ES_AUTOHSCROLL
+    //EDITTEXT        1106,80,62,40,12,ES_AUTOHSCROLL
     EDITTEXT        1105,80,76,40,12,ES_AUTOHSCROLL
     EDITTEXT        1104,80,90,40,12,ES_AUTOHSCROLL
     CONTROL         "Filter Mechanical Plunger",1107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,111,9
@@ -1432,10 +1434,9 @@ BEGIN
     EDITTEXT        1041,80,201,40,12,ES_AUTOHSCROLL
     EDITTEXT        1042,80,215,40,12,ES_AUTOHSCROLL
     LTEXT           "Gravity Constant",IDC_STATIC,7,9,69,8
-    LTEXT           "Contact Friction",IDC_STATIC,7,23,69,8
+    LTEXT           "Playfield Friction",IDC_STATIC,7,23,69,8
     LTEXT           "Contact Scatter Angle",IDC_STATIC,7,37,69,8
-    LTEXT           "Dampening Speed",IDC_STATIC,7,51,69,8
-    LTEXT           "Dampening Friction",IDC_STATIC,7,65,69,8
+    LTEXT           "Nudge Time",IDC_STATIC,7,51,69,8
     LTEXT           "Physics Max. Loops",IDC_STATIC,7,79,70,8
     LTEXT           "Mech-Plunger Adjust",IDC_STATIC,7,92,70,8
     LTEXT           "Override by Global Physics Set",IDC_STATIC,7,118,98,8

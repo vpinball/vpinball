@@ -59,7 +59,7 @@ public:
         m_curIdx = 0;
     }
 
-    ~FrameQueueLimiter()
+    void Shutdown()
     {
         for (unsigned i = 0; i < m_buffers.size(); ++i)
         {
@@ -112,6 +112,8 @@ public:
 #endif
 	void InitKeys();
 	void InitRegValues();
+
+    void Shutdown();
 
 	virtual IEditable *GetIEditable() { return (IEditable*)this; }
 
@@ -182,6 +184,8 @@ public:
 	Ball *m_pactiveballDebug;	// ball the debugger will use as Activeball when firing events
 
     std::vector<Ball*> m_vball;
+    std::vector<HitFlipper*> m_vFlippers;
+
 	Vector<AnimObject> m_vscreenupdate;
 	Vector<HitTimer> m_vht;
 
@@ -207,9 +211,15 @@ public:
 
 	float m_NudgeX;
 	float m_NudgeY;
-	float m_NudgeBackX;
-	float m_NudgeBackY;
 	int m_NudgeManual;			//index of joystick that has manual control
+
+    // new nudging
+    Vertex3Ds m_tableVel;
+    Vertex3Ds m_tableDisplacement;
+    Vertex3Ds m_tableVelOld;
+    Vertex3Ds m_tableVelDelta;
+    float m_nudgeSpring;
+    float m_nudgeDamping;
 
 	EnumAssignKeys m_rgKeys[eCKeys]; //Player's key assignments
 
@@ -222,8 +232,6 @@ public:
 	int m_fCloseType;			// if 0 exit player and close application if started minimized, if 1 close application always, 2 is brute force exit
 
 	int m_sleeptime;			// time to sleep during each frame - can helps side threads like vpinmame
-
-	int m_nudgetime;
 
 	GPINFLOAT m_pixelaspectratio;
 
@@ -267,7 +275,9 @@ public:
 	U32 c_traversed;
 	U32 c_tested;
 	U32 c_deepTested;
+#endif
 
+#ifdef DEBUG_BALL_SPIN
     VertexBuffer * m_ballDebugPoints;
 #endif
 	int m_movedPlunger;			// has plunger moved, must have moved at least three times
@@ -289,6 +299,9 @@ public:
 	
     std::vector< Hitable* > m_triggeredLights;  // lights whose state changed this frame (VP9COMPAT)
 
+    bool m_fRecordContacts;             // flag for DoHitTest()
+    std::vector< CollisionEvent > m_contacts;
+
 private:
 	Vector<HitObject> m_vho;
     std::vector< AnimObject* > m_vmover;    // moving objects for physics simulation
@@ -303,6 +316,9 @@ private:
 
 	Vector<HitObject> m_vho_dynamic;
     HitKD m_hitoctree_dynamic; // should be generated from scratch each time something changes
+
+    HitPlane m_hitPlayfield;
+    HitPlane m_hitTopGlass;
 
 	U64 m_StartTime_usec;
 	U64 m_curPhysicsFrameTime;	// Time when the last frame was drawn

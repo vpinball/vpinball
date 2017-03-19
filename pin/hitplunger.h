@@ -17,8 +17,8 @@ public:
 	LineSeg m_linesegEnd;
 	LineSeg m_linesegSide[2];
 
-	Joint m_jointBase[2];
-	Joint m_jointEnd[2];
+	HitLineZ m_jointBase[2];
+	HitLineZ m_jointEnd[2];
 
 	float m_speed;
 	float m_pos;
@@ -57,6 +57,7 @@ public:
 	virtual int GetType() const {return ePlunger;}
 
 	virtual void Collide(CollisionEvent *coll);
+    virtual void Contact(CollisionEvent& coll, float dtime);
 
 	virtual void CalcHitRect();
 

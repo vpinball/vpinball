@@ -1,20 +1,35 @@
 #pragma once
 
 
-#define PHYSICS_STEPTIME    10000	// usecs to go between each physics update
+//#define PHYSICS_STEPTIME    10000	// usecs to go between each physics update
+#define PHYSICS_STEPTIME    1000	// usecs to go between each physics update
 
-//#define PHYSICS_STEPTIME_S  ((float)(PHYSICS_STEPTIME * 1e-6))     // step time in seconds
-//
-//#define DEFAULT_STEPTIME    0.01f      // default physics rate: 100Hz
-//#define PHYS_FACTOR         (PHYSICS_STEPTIME_S / DEFAULT_STEPTIME)
+#define PHYSICS_STEPTIME_S  ((float)(PHYSICS_STEPTIME * 1e-6))     // step time in seconds
+
+#define DEFAULT_STEPTIME      10000      // default physics rate: 100Hz
+#define DEFAULT_STEPTIME_S    0.01f      // default physics rate: 100Hz
+
+#define PHYS_FACTOR         (PHYSICS_STEPTIME_S / DEFAULT_STEPTIME_S)
 
 #define DEFAULT_TABLE_GRAVITY           1.6774f
-#define DEFAULT_TABLE_CONTACTFRICTION   0.0005f
+#define DEFAULT_TABLE_CONTACTFRICTION   0.10f
 #define DEFAULT_TABLE_SCATTERANGLE      0.5f
-#define DEFAULT_TABLE_DAMPENINGSPEED    65.0f
-#define DEFAULT_TABLE_DAMPENINGFRICTION 0.95f
 
-#define GRAVITYCONST   0.86543f
+
+/*
+ * NOTE ABOUT VP PHYSICAL UNITS:
+ *
+ * By convention, one VP length unit (U) corresponds to
+ *   1 U = .53975 mm = 5.3975E-4 m,   or   1 m = 1852.71 U
+ *
+ * For historical reasons, one VP time unit (T) corresponds to
+ *   1 T = 10 ms = 0.01 s,            or   1 s = 100 T
+ *
+ * Therefore, Earth gravity in VP units can be computed as
+ *   g  =  9.81 m/s^2  =  1.81751 U/T^2
+ */
+
+#define GRAVITYCONST    1.81751f
 
 // Collisions:
 //
@@ -35,9 +50,7 @@
 // Low Normal speed collison is handled as contact process rather than impulse collision
 #define C_LOWNORMVEL 0.0001f
 #define C_CONTACTVEL 0.099f
-// limit ball speed to C_SPEEDLIMIT
-#define C_SPEEDLIMIT 60.0f
-#define C_DAMPFRICTION 0.95f
+
 // low velocity stabilization ... if embedding occurs add some velocity 
 #define C_EMBEDDED 0.0f
 #define C_EMBEDSHOT 0.05f
@@ -53,14 +66,8 @@
 
 
 //Flippers:
-#define C_FLIPPERACCEL   1.25f
-#define C_FLIPPERIMPULSE 1.0f
 #define C_INTERATIONS 20 // Precision level and cycles for interative calculations // acceptable contact time ... near zero time
 
-//Ball:
-#define ANGULARFORCE 1   // Number I pulled out of my butt - this number indicates the maximum angular change 
-					     // per time unit, or the speed at which angluar momentum changes over time, 
-					     // depending on how you interpret it.
 //Ramp:
 #define WALLTILT 0.5f
 

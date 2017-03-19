@@ -47,22 +47,14 @@ HitPlunger::HitPlunger(const float x, const float y, const float x2, const float
 		m_plungeranim.m_linesegEnd.m_rcHitRect.zlow = zheight;
 		m_plungeranim.m_linesegEnd.m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
 
-		m_plungeranim.m_jointBase[0].m_rcHitRect.zlow = zheight;
-		m_plungeranim.m_jointBase[0].m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
-		m_plungeranim.m_jointBase[1].m_rcHitRect.zlow = zheight;
-		m_plungeranim.m_jointBase[1].m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
-		m_plungeranim.m_jointEnd[0].m_rcHitRect.zlow = zheight;
-		m_plungeranim.m_jointEnd[0].m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
-		m_plungeranim.m_jointEnd[1].m_rcHitRect.zlow = zheight;
-		m_plungeranim.m_jointEnd[1].m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
-		m_plungeranim.m_jointBase[0].zlow = zheight;
-		m_plungeranim.m_jointBase[0].zhigh = zheight+PLUNGERHEIGHT;
-		m_plungeranim.m_jointBase[1].zlow = zheight;
-		m_plungeranim.m_jointBase[1].zhigh = zheight+PLUNGERHEIGHT;
-		m_plungeranim.m_jointEnd[0].zlow = zheight;
-		m_plungeranim.m_jointEnd[0].zhigh = zheight+PLUNGERHEIGHT;
-		m_plungeranim.m_jointEnd[1].zlow = zheight;
-		m_plungeranim.m_jointEnd[1].zhigh = zheight+PLUNGERHEIGHT;
+		m_plungeranim.m_jointBase[0].m_zlow = zheight;
+		m_plungeranim.m_jointBase[0].m_zhigh = zheight+PLUNGERHEIGHT;
+		m_plungeranim.m_jointBase[1].m_zlow = zheight;
+		m_plungeranim.m_jointBase[1].m_zhigh = zheight+PLUNGERHEIGHT;
+		m_plungeranim.m_jointEnd[0].m_zlow = zheight;
+		m_plungeranim.m_jointEnd[0].m_zhigh = zheight+PLUNGERHEIGHT;
+		m_plungeranim.m_jointEnd[1].m_zlow = zheight;
+		m_plungeranim.m_jointEnd[1].m_zhigh = zheight+PLUNGERHEIGHT;
 
 		m_plungeranim.SetObjects(m_plungeranim.m_pos);
 		}
@@ -86,10 +78,10 @@ void PlungerAnimObject::SetObjects(const float len)
 	m_linesegBase.v2.x = m_x2;
 	m_linesegBase.v2.y = m_y;// + 0.0001f;
 
-	m_jointBase[0].center.x = m_x;
-	m_jointBase[0].center.y = m_y;
-	m_jointBase[1].center.x = m_x2;
-	m_jointBase[1].center.y = m_y;// + 0.0001f;
+	m_jointBase[0].m_xy.x = m_x;
+	m_jointBase[0].m_xy.y = m_y;
+	m_jointBase[1].m_xy.x = m_x2;
+	m_jointBase[1].m_xy.y = m_y;// + 0.0001f;
 	
 	m_linesegSide[0].v2.x = m_x;
 	m_linesegSide[0].v2.y = m_y;
@@ -106,28 +98,16 @@ void PlungerAnimObject::SetObjects(const float len)
 	m_linesegEnd.v1.x = m_x2;
 	m_linesegEnd.v1.y = len;// + 0.0001f;
 	
-	m_jointEnd[0].center.x = m_x;
-	m_jointEnd[0].center.y = len;
-	m_jointEnd[1].center.x = m_x2;
-	m_jointEnd[1].center.y = len;// + 0.0001f;
+	m_jointEnd[0].m_xy.x = m_x;
+	m_jointEnd[0].m_xy.y = len;
+	m_jointEnd[1].m_xy.x = m_x2;
+	m_jointEnd[1].m_xy.y = len;// + 0.0001f;
 
 	m_linesegBase.CalcNormal();
 	m_linesegEnd.CalcNormal();
 
 	m_linesegSide[0].CalcNormal();
 	m_linesegSide[1].CalcNormal();
-
-	const float deg45 = (float)sin(M_PI/4.0);
-
-	m_jointBase[0].normal.x = -deg45;
-	m_jointBase[0].normal.y =  deg45;
-	m_jointBase[1].normal.x =  deg45;
-	m_jointBase[1].normal.y =  deg45;
-
-	m_jointEnd[0].normal.x = -deg45;
-	m_jointEnd[0].normal.y = -deg45;
-	m_jointEnd[1].normal.x =  deg45;
-	m_jointEnd[1].normal.y = -deg45;
 	}
 
 void PlungerAnimObject::UpdateDisplacements(const float dtime)
@@ -161,9 +141,10 @@ void PlungerAnimObject::UpdateVelocities()
 	{	
 	if (m_fAcc)
 		{
-		m_speed += (m_force/m_mass);
+		m_speed += PHYS_FACTOR * (m_force/m_mass);
 		}
-	else if (!m_plunger->m_d.m_mechPlunger)	m_mechTimeOut = 0;// disallow mechanical plunger control
+	else if (!m_plunger->m_d.m_mechPlunger)
+        m_mechTimeOut = 0;// disallow mechanical plunger control
 	else {	
 		if(m_posdesired == m_frameEnd) // mechanical plunger position ...make sure button control is idle
 			{	
@@ -248,44 +229,36 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 	// We are close enable the plunger light.
 	CollisionEvent hit;
-	const float newtimeb = m_plungeranim.m_linesegBase.HitTest(&BallT, dtime, hit);
-	if (newtimeb >= 0 && newtimeb <= hittime)
+    float newtime;
+
+	newtime = m_plungeranim.m_linesegBase.HitTest(&BallT, dtime, hit);
+	if (newtime >= 0 && newtime <= hittime)
 		{
 		fHit = true;
-		hittime = newtimeb;
-
-		coll.normal[0] = hit.normal[0];
-		coll.distance = hit.distance;
-		coll.hitRigid = true;
+		hittime = newtime;
+        coll = hit;
 		coll.normal[1].x = 0;
 		coll.normal[1].y = 0;
 		}
 
 	for (int i=0;i<2;i++)
 		{
-		const float newtimes = m_plungeranim.m_linesegSide[i].HitTest(&BallT, hittime, hit);
-		if (newtimes >= 0 && newtimes <= hittime)
+		newtime = m_plungeranim.m_linesegSide[i].HitTest(&BallT, hittime, hit);
+		if (newtime >= 0 && newtime <= hittime)
 			{
 			fHit = true;
-			hittime = newtimes;
-
-			coll.normal[0] = hit.normal[0];
-			coll.distance = hit.distance;
-			coll.hitRigid = true;
-
+			hittime = newtime;
+            coll = hit;
 			coll.normal[1].x = 0;
 			coll.normal[1].y = 0;
 			}
 
-		const float newtimej = m_plungeranim.m_jointBase[i].HitTest(&BallT, hittime, hit);
-		if (newtimej >= 0 && newtimej <= hittime)
+		newtime = m_plungeranim.m_jointBase[i].HitTest(&BallT, hittime, hit);
+		if (newtime >= 0 && newtime <= hittime)
 			{
 			fHit = true;
-			hittime = newtimej;
-
-			coll.normal[0] = hit.normal[0];
-			coll.distance = hit.distance;
-			coll.hitRigid = true;
+			hittime = newtime;
+            coll = hit;
 			coll.normal[1].x = 0;
 			coll.normal[1].y = 0;
 			}
@@ -295,35 +268,30 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 	
 	BallT.vel.y -= deltay;
 
-	const float newtimee = m_plungeranim.m_linesegEnd.HitTest(&BallT, hittime, hit);
-	if (newtimee >= 0 && newtimee <= hittime)
+	newtime = m_plungeranim.m_linesegEnd.HitTest(&BallT, hittime, hit);
+	if (newtime >= 0 && newtime <= hittime)
 		{
 		fHit = true;
-		hittime = newtimee;
-
-		coll.normal[0] = hit.normal[0];
-		coll.distance = hit.distance;
-		coll.hitRigid = true;
+		hittime = newtime;
+        coll = hit;
 		coll.normal[1].x = 0;
 		coll.normal[1].y = deltay;	 //m_speed;		//>>> changed by chris
 		}
 
 	for (int i=0;i<2;i++)
 		{
-		const float newtimej = m_plungeranim.m_jointEnd[i].HitTest(&BallT, hittime, hit);
-		if (newtimej >= 0 && newtimej <= hittime)
+		newtime = m_plungeranim.m_jointEnd[i].HitTest(&BallT, hittime, hit);
+		if (newtime >= 0 && newtime <= hittime)
 			{
 			fHit = true;
-			hittime = newtimej;
-
-			coll.normal[0] = hit.normal[0];
-			coll.distance = hit.distance;
-			coll.hitRigid = true;
+			hittime = newtime;
+            coll = hit;
 			coll.normal[1].x = 0;
 			coll.normal[1].y = deltay;	 //m_speed;		//>>> changed by chris
 			}
 		}
 
+    //coll.isContact = false;     // HACK: we get contacts from the LineSegs, but ignore them
 	return fHit ? hittime : -1.0f;
 	}
 
@@ -362,7 +330,7 @@ void HitPlunger::Collide(CollisionEvent *coll)
 	pball->vel.x += impulse *phitnormal->x;  
 	pball->vel.y += impulse *phitnormal->y; 
 
-	pball->vel *= c_hardFriction;           //friction all axiz
+	pball->vel *= 0.999f;           //friction all axiz     // TODO: fix this
 
 	const float scatter_vel = m_plungeranim.m_scatterVelocity * g_pplayer->m_ptable->m_globalDifficulty;// apply dificulty weighting
 
@@ -376,5 +344,8 @@ void HitPlunger::Collide(CollisionEvent *coll)
 	pball->m_fDynamic = C_DYNAMIC;
 
 	const Vertex3Ds vnormal(phitnormal->x, phitnormal->y, 0.0f);
-	pball->AngularAcceleration(vnormal);	
 	}
+
+void HitPlunger::Contact(CollisionEvent& coll, float dtime)
+{
+}

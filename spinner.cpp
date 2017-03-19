@@ -54,7 +54,7 @@ void Spinner::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Spinner","AngleMax", m_d.m_angleMax);
    SetRegValueFloat("DefaultProps\\Spinner","AngleMin", m_d.m_angleMin);
    SetRegValueFloat("DefaultProps\\Spinner","Elasticity", m_d.m_elasticity);
-   SetRegValueFloat("DefaultProps\\Spinner","Friction", m_d.m_friction);
+   //SetRegValueFloat("DefaultProps\\Spinner","Friction", m_d.m_friction);
    SetRegValueFloat("DefaultProps\\Spinner","Scatter", m_d.m_scatter);
    SetRegValue("DefaultProps\\Spinner","Visible",REG_DWORD,&m_d.m_fVisible,4);
    SetRegValue("DefaultProps\\Spinner","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
@@ -133,17 +133,11 @@ void Spinner::SetDefaults(bool fromMouseClick)
    else
       m_d.m_elasticity = 0.3f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Spinner","Friction", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_friction = fTmp;
-   else
-      m_d.m_friction = 0;	//zero uses global value
-
-   hr = GetRegStringAsFloat("DefaultProps\\Spinner","Scatter", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_scatter = fTmp;
-   else
-      m_d.m_scatter = 0;	//zero uses global value
+   //hr = GetRegStringAsFloat("DefaultProps\\Spinner","Friction", &fTmp);
+   //if ((hr == S_OK) && fromMouseClick)
+   //   m_d.m_friction = fTmp;
+   //else
+   //   m_d.m_friction = 0;	//zero uses global value
 
    hr = GetRegInt("DefaultProps\\Spinner","Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -889,16 +883,7 @@ STDMETHODIMP Spinner::put_Friction(float newVal)
 {
    STARTUNDO
 
-      m_d.m_antifriction = 1.0f - newVal*(float)(1.0/100.0);
-
-   if (m_d.m_antifriction < 0)
-   {
-      m_d.m_antifriction = 0;
-   }
-   else if (m_d.m_antifriction > 1.0f)
-   {
-      m_d.m_antifriction = 1.0f;
-   }
+      m_d.m_antifriction = clamp(1.0f - newVal*(float)(1.0/100.0), 0.0f, 1.0f);
 
    STOPUNDO
 

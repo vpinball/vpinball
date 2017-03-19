@@ -38,12 +38,18 @@ public:
 	virtual AnimObject *GetAnimObject() {return &m_ballanim;}
 
     //semi-generic collide methods
-    void CollideWall(const Vertex3Ds& hitNormal, const float elasticity, float antifriction, float scatter_angle)
-      { Collide3DWall( Vertex3Ds(hitNormal.x, hitNormal.y, 0), elasticity, antifriction, scatter_angle); }
+    void CollideWall(const Vertex3Ds& hitNormal, const float elasticity, float friction, float scatter_angle)
+      { Collide3DWall( Vertex3Ds(hitNormal.x, hitNormal.y, 0), elasticity, friction, scatter_angle); }
 
-    void Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, float antifriction, float scatter_angle);
+    void Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, float friction, float scatter_angle);
 
-	void AngularAcceleration(const Vertex3Ds& hitnormal);
+	void ApplyFriction(const Vertex3Ds& hitnormal, float dtime, float fricCoeff);
+    void HandleStaticContact(const Vertex3Ds& normal, float origNormVel, float friction, float dtime);
+
+    Vertex3Ds SurfaceVelocity(const Vertex3Ds& surfP) const;
+    Vertex3Ds SurfaceAcceleration(const Vertex3Ds& surfP) const;
+
+    void ApplySurfaceImpulse(const Vertex3Ds& surfP, const Vertex3Ds& impulse);
 
 	void EnsureOMObject();
 
@@ -92,19 +98,15 @@ public:
 	float drsq;	// square of distance moved
 
 	float radius;
-	float collisionMass;
-
-//	float x_min, x_max;	// world limits on ball displacements
-//	float y_min, y_max;
-	float z_min, z_max;
+    float m_mass;
+    float m_invMass;
 
 	Vertex3Ds m_Event_Pos;
 	
 	Matrix3 m_orientation;
 	Vertex3Ds m_angularmomentum;
 	Vertex3Ds m_angularvelocity;
-	Matrix3 m_inverseworldinertiatensor;
-	Matrix3 m_inversebodyinertiatensor;
+    float m_inertia;
 
 	bool fFrozen;
 

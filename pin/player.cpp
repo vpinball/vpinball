@@ -307,10 +307,25 @@ Player::Player()
 #ifdef DEBUG_FPS
 	ToggleFPS();
 #endif
+
+    m_fRecordContacts = false;
+    m_contacts.reserve(8);
 }
 
 Player::~Player()
 {
+}
+
+void Player::Shutdown()
+{
+    m_pininput.UnInit();
+
+#ifdef _DEBUGPHYSICS
+    SAFE_RELEASE(m_ballDebugPoints);
+#endif
+
+    m_limiter.Shutdown();
+
 	for (unsigned i=0; i < m_vhitables.size(); ++i)
 	{
         m_vhitables[i]->EndPlay();
@@ -479,6 +494,14 @@ void Player::CreateBoundingHitShapes(Vector<HitObject> *pvho)
 	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4); //!!
 
 	pvho->AddElement(ph3dpoly);
+
+    m_hitPlayfield = HitPlane( Vertex3Ds(0,0,1), m_ptable->m_tableheight );
+    m_hitPlayfield.SetFriction(m_ptable->m_hardFriction);
+    m_hitPlayfield.m_elasticity = 0.2f;
+
+    m_hitTopGlass  = HitPlane( Vertex3Ds(0,0,-1), m_ptable->m_glassheight );
+    m_hitTopGlass.SetFriction(0.3f);
+    m_hitTopGlass.m_elasticity = 0.2f;
 }
 
 void Player::InitKeys()
@@ -777,11 +800,39 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	m_NudgeX = 0;
 	m_NudgeY = 0;
-	m_nudgetime = 0;
 	m_movedPlunger = 0;	// has plunger moved, must have moved at least three times
 
 	SendMessage(hwndProgress, PBM_SETPOS, 50, 0);
 	SetWindowText(hwndProgressName, "Initalizing Physics...");
+
+    {
+        // Initialize new nudging.
+        m_tableVel.SetZero();
+        m_tableDisplacement.SetZero();
+        m_tableVelOld.SetZero();
+        m_tableVelDelta.SetZero();
+
+        // Table movement (displacement u) is modeled as a mass-spring-damper system
+        //   u'' = -k u - c u'
+        // with a spring constant k and a damping coefficient c.
+        // See http://en.wikipedia.org/wiki/Damping#Linear_damping
+
+        const float nudgeTime = m_ptable->m_nudgeTime;      // T
+        const float dampingRatio = 0.5f;                    // zeta
+
+        // time for one half period (one swing and swing back):
+        //   T = pi / omega_d,
+        // where
+        //   omega_d = omega_0 * sqrt(1 - zeta^2)       (damped frequency)
+        //   omega_0 = sqrt(k)                          (undamped frequency)
+        // Solving for the spring constant k, we get
+        m_nudgeSpring = (float)(M_PI*M_PI / (nudgeTime*nudgeTime * (1.0 - dampingRatio*dampingRatio)));
+
+        // The formula for the damping ratio is
+        //   zeta = c / (2 sqrt(k)).
+        // Solving for the damping coefficient c, we get
+        m_nudgeDamping = 2.0f * sqrtf(m_nudgeSpring) * dampingRatio;
+    }
 
 	// Need to set timecur here, for init functions that set timers
 	m_time_msec = 0;
@@ -824,6 +875,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
         if (((pho->GetType() == e3DPoly) && ((Hit3DPoly *)pho)->m_fVisible) ||
             ((pho->GetType() == eTriangle) && ((HitTriangle *)pho)->m_fVisible) )
             m_shadowoctree.AddElement(pho);
+        else if (pho->GetType() == eFlipper)
+            m_vFlippers.push_back((HitFlipper*)pho);
 
         AnimObject *pao = pho->GetAnimObject();
         if (pao)
@@ -883,7 +936,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	SendMessage(hwndProgress, PBM_SETPOS, 90, 0);
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUG_BALL_SPIN
     {
         std::vector< Vertex3D_NoLighting > ballDbgVtx;
         for (int j = -1; j <= 1; ++j)
@@ -1504,6 +1557,17 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 #endif
 		hittime = dtime;	//begin time search from now ...  until delta ends
 
+        // find earliest time where a flipper collides with its stop
+        for (unsigned i = 0; i < m_vFlippers.size(); ++i)
+        {
+            const float fliphit = m_vFlippers[i]->GetHitTime();
+            if (fliphit >= 0 && fliphit < hittime)
+                hittime = fliphit;
+        }
+
+        m_fRecordContacts = true;
+        m_contacts.clear();
+
 		for (unsigned i = 0; i < m_vball.size(); i++)
 		{
 			Ball * const pball = m_vball[i];
@@ -1513,6 +1577,9 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 				pball->m_coll.hittime = hittime;		// search upto current hittime
 				pball->m_coll.obj = NULL;
 
+                // always check for playfield and top glass
+                DoHitTest(pball, &m_hitPlayfield, pball->m_coll);
+                DoHitTest(pball, &m_hitTopGlass, pball->m_coll);
                 m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll);  // dynamic objects
 				m_hitoctree.HitTestBall(pball, pball->m_coll);  // find the hit objects and hit times
 
@@ -1543,8 +1610,10 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 						}
 					}
 				}
-			}				
-		}
+			}
+		}   // end loop over all balls
+
+        m_fRecordContacts = false;
 
 		// hittime now set ... or full frame if no hit 
 		// now update displacements to collide-contact or end of physics frame
@@ -1587,9 +1656,6 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 					// is this ball static? .. set static and quench	
 					if (pball->m_coll.hitRigid && pball->m_coll.distance < (float)PHYS_TOUCH) //rigid and close distance contacts
 					{
-#ifdef _DEBUGPHYSICS
-						c_contactcnt++;
-#endif
 						const float mag = pball->vel.x*pball->vel.x + pball->vel.y*pball->vel.y; // values below are taken from simulation
 						if (pball->drsq < 8.0e-5f && mag < 1.0e-3f && fabsf(pball->vel.z) < 0.2f)
 						{
@@ -1606,6 +1672,24 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 				}
 			}
 		}
+
+#ifdef _DEBUGPHYSICS
+        c_contactcnt = m_contacts.size();
+#endif
+        /*
+         * Now handle contacts.
+         *
+         * At this point UpdateDisplacements() was already called, so the state is different
+         * from that at HitTest(). However, contacts have zero relative velocity, so
+         * hopefully nothing catastrophic has happened in the meanwhile.
+         *
+         * Maybe a two-phase setup where we first process only contacts, then only collisions
+         * could also work.
+         */
+        for (unsigned i = 0; i < m_contacts.size(); ++i)
+            m_contacts[i].obj->Contact(m_contacts[i], hittime);
+
+        m_contacts.clear();
 
 		dtime -= hittime;	//new delta .. i.e. time remaining
 
@@ -1718,15 +1802,15 @@ void Player::UpdatePhysics()
 		// If the frame is the next thing to happen, update physics to that
 		// point next update acceleration, and continue loop
 
-		const float physics_diff_time =       (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
-		const float physics_to_graphic_diff_time = (float)((double)(initial_time_usec - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
+		const float physics_diff_time =       (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/DEFAULT_STEPTIME));
+		const float physics_to_graphic_diff_time = (float)((double)(initial_time_usec - m_curPhysicsFrameTime)*(1.0/DEFAULT_STEPTIME));
 
-		if (physics_to_graphic_diff_time < physics_diff_time)		 // is graphic frame time next???
-		{
-			PhysicsSimulateCycle(physics_to_graphic_diff_time);      // advance physics to this time
-			m_curPhysicsFrameTime = initial_time_usec;				 // now current to the wall clock
-			break;	//this is the common exit from the loop			 // exit skipping accelerate
-		}			// some rare cases will exit from while()
+		//if (physics_to_graphic_diff_time < physics_diff_time)		 // is graphic frame time next???
+		//{
+		//	PhysicsSimulateCycle(physics_to_graphic_diff_time);      // advance physics to this time
+		//	m_curPhysicsFrameTime = initial_time_usec;				 // now current to the wall clock
+		//	break;	//this is the common exit from the loop			 // exit skipping accelerate
+		//}			// some rare cases will exit from while()
 
 		const U64 cur_time_usec = usec();
 		if ((cur_time_usec - initial_time_usec > 200000) || (phys_iterations > ((m_ptable->m_PhysicsMaxLoops == 0) ? 0xFFFFFFFFu : m_ptable->m_PhysicsMaxLoops/*2*/))) // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
@@ -1764,21 +1848,19 @@ void Player::UpdatePhysics()
 		UltraNudge_update();		// physics_diff_time is the balance of time to move from the graphic frame position to the next
 		UltraPlunger_update();		// integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
 									// this integral physics frame. Accelerations and inputs are always physics frame aligned
-		if (m_nudgetime)
-		{
-			m_nudgetime--;
+        {
+            // table movement is modeled as a mass-spring-damper system
+            //   u'' = -k u - c u'
+            // with a spring constant k and a damping coefficient c
+            Vertex3Ds force = -m_nudgeSpring * m_tableDisplacement - m_nudgeDamping * m_tableVel;
+            m_tableVel += PHYS_FACTOR * force;
+            m_tableDisplacement += PHYS_FACTOR * m_tableVel;
+            //if (m_tableVel.LengthSquared() >= 1e-5f)
+            //    slintf("Table shake: %.2f  %.2f\n", m_tableDisplacement.x, m_tableVel.x);
 
-			if (m_nudgetime == 5)
-			{
-				m_NudgeX = -m_NudgeBackX * 2.0f;
-				m_NudgeY =  m_NudgeBackY * 2.0f;
-			}
-			else if (m_nudgetime == 0)
-			{
-				m_NudgeX =  m_NudgeBackX;
-				m_NudgeY = -m_NudgeBackY;
-			}
-		}
+            m_tableVelDelta = m_tableVel - m_tableVelOld;
+            m_tableVelOld = m_tableVel;
+        }
 
 		for (unsigned i=0; i<m_vmover.size(); i++)
 			m_vmover[i]->UpdateVelocities();	// always on integral physics frame boundary
@@ -1942,15 +2024,7 @@ void Player::CheckAndUpdateRegions()
 
 void Player::FlipVideoBuffersNormal( const bool vsync )
 {
-	if ( m_nudgetime &&			// Table is being nudged.
-		 m_ptable->m_Shake )	// The "EarthShaker" effect is active. //!! make configurable (cab vs desktop)
-	{
-		// Draw with an offset to shake the display.
-        // TODO: this doesn't work in DX9, have to handle shake some other way.
-		m_pin3d.Flip( /*(int)m_NudgeBackX, (int)m_NudgeBackY,*/ vsync);
-	}
-    else
-        m_pin3d.Flip(vsync);
+    m_pin3d.Flip(vsync);
 }
 
 static const float quadVerts[4*5] =
@@ -2855,7 +2929,7 @@ void Player::DrawBalls()
             }
         }
 
-#ifdef _DEBUGPHYSICS        // draw debug points for visualizing ball rotation
+#ifdef DEBUG_BALL_SPIN        // draw debug points for visualizing ball rotation
         if (m_fShowFPS)
         {
             // set transform
@@ -3159,8 +3233,9 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
 				}
             PinTable * const playedTable = g_pplayer->m_ptable;
+
 			g_pplayer->m_ptable->StopPlaying();
-			g_pplayer->m_pininput.UnInit();
+            g_pplayer->Shutdown();
 
 			delete g_pplayer; // needs to be deleted here, as code below relies on it being NULL
 			g_pplayer = NULL;

@@ -22,7 +22,7 @@ public:
 	float m_angleMax;
 	float m_angleMin;
 	float m_elasticity;
-	float m_friction;
+	//float m_friction;
 	float m_scatter;
 	BOOL m_fVisible;
 	BOOL m_fCastsShadow;		//>>> added by Chris

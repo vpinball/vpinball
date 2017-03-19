@@ -171,6 +171,7 @@ set(SOURCES
   media/lzwreader.cpp
   media/lzwwriter.cpp
   media/wavread.cpp
+  math/math.cpp
   math/matrix.cpp
   )
 
@@ -258,6 +259,7 @@ set(HEADERS
   media/lzwreader.h
   media/lzwwriter.h
   media/wavread.h
+  math/math.h
   math/matrix.h
   math/vector.h
   math/bbox.h

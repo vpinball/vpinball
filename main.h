@@ -20,8 +20,6 @@ using namespace MSAPC;
 
 #include <assert.h>
 
-#include "math.h"
-
 #include "commctrl.h"
 
 #include <activdbg.h>
@@ -56,6 +54,7 @@ using namespace std;
 
 #include "def.h"
 
+#include "math/math.h"
 #include "math/vector.h"
 #include "math/matrix.h"
 #include "math/bbox.h"

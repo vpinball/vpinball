@@ -121,12 +121,15 @@ public:
 	STDMETHOD(put_HitHeight)(/*[in]*/ float newVal);
 };
 
-class KickerHitCircle : public TriggerHitCircle
+class KickerHitCircle : public HitCircle
 	{
 public:
 	KickerHitCircle();
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	void DoCollide(Ball * const pball, Vertex3Ds * const phitnormal);
 	virtual void Collide(CollisionEvent *coll)  { DoCollide(coll->ball, coll->normal); }
+
+	virtual int GetType() const { return eTrigger; }
 
 	Kicker *m_pkicker;
 	Ball *m_pball;  //The ball inside this kicker
