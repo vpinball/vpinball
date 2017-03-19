@@ -6746,7 +6746,7 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 			   fscanf_s(f,"%f %f %f %f %f %f %f %f\n", &FlipperPhysicsSpeed,&FlipperPhysicsStrength,&FlipperPhysicsElasticity,&FlipperPhysicsScatter,&FlipperPhysicsReturnStrength,&FlipperPhysicsRecoil,&FlipperPhysicsPowerLaw,&FlipperPhysicsOblique);
 			   float TablePhysicsGravityConstant,TablePhysicsContactFriction,TablePhysicsContactScatterAngle;
 			   fscanf_s(f,"%f %f %f\n", &TablePhysicsGravityConstant,&TablePhysicsContactFriction,&TablePhysicsContactScatterAngle);
-			   fscanf_s(f,"%s",tmp2);
+			   fscanf_s(f,"%s",tmp2, _countof(tmp2));
 			   fclose(f);
 
    				 sprintf_s(tmp,256,"%f",FlipperPhysicsSpeed);
