@@ -629,8 +629,8 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
       rgv3D[i].y = pv1->y;
       rgv3D[i].z = m_d.m_heighttop;
 
-      const RenderVertex * const pv2 = vvertex.ElementAt((i < count-1) ? (i+1) : 0);
-      const RenderVertex * const pv3 = vvertex.ElementAt((i < count-2) ? (i+2) : (i+2-count));
+	  const RenderVertex * const pv2 = vvertex.ElementAt((i + 1) % count);
+	  const RenderVertex * const pv3 = vvertex.ElementAt((i + 2) % count);
 
       AddLine(pvho, pv2, pv3, pv1, pv2->fSlingshot);
    }
@@ -662,7 +662,7 @@ void Surface::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
         m_vhoDrop.push_back(obj);
 }
 
-void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const bool fSlingshot)
+void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const /*pv3*/, const bool fSlingshot)
 {
    LineSeg *plineseg;
 
@@ -725,12 +725,12 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
        SetupHitObject(pvho, new HitLine3D(v1, v2));
    }
 
-   const Vertex2D vt1 = *pv1 - *pv2;
-   const Vertex2D vt2 = *pv1 - *pv3;
+   //const Vertex2D vt1 = *pv1 - *pv2;
+   //const Vertex2D vt2 = *pv1 - *pv3;
 
-   const float dot = vt1.Dot(vt2);
+   //const float dot = vt1.Dot(vt2);
 
-   if (dot != 0.f) // continuous segments should mathematically never hit
+   //if (dot != 0.f) // continuous segments should mathematically never hit
    {
        SetupHitObject(pvho, new HitLineZ(*pv1, m_d.m_heightbottom, m_d.m_heighttop));
 
