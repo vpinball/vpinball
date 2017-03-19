@@ -619,6 +619,8 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
       wallheightleft = 62.0f;
       wallheightright = (float)(6 + 12.5);
    }
+   else
+      ShowError("Unknown Ramp type");
 
    // Add line segments for right ramp wall.
    if (wallheightright > 0.f)
@@ -818,7 +820,6 @@ void Ramp::AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, const float z
 {
    SetupHitObject(pvho, new HitLineZ(p, zlow, zhigh));
 }
-
 
 void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2)
 {
@@ -1922,16 +1923,15 @@ STDMETHODIMP Ramp::get_Friction(float *pVal)
 
 STDMETHODIMP Ramp::put_Friction(float newVal)
 {
+   newVal = clamp(newVal, 0.f, 1.f);
+
    STARTUNDO
 
-      if (newVal > 1.0f) newVal = 1.0f;
-      else if (newVal < 0.f) newVal = 0.f;
+   m_d.m_friction = newVal;
 
-      m_d.m_friction = newVal;
+   STOPUNDO
 
-      STOPUNDO
-
-         return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Ramp::get_Scatter(float *pVal)
