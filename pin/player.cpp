@@ -3424,7 +3424,7 @@ void Player::Bloom()
    SAFE_RELEASE_NO_RCC(tmpBloomSurface3);
 }
 
-void Player::StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, const bool FXAA3, const bool depth_available) //!! SMAA, luma sharpen, dither?
+void Player::StereoFXAA(const bool stereo, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const bool depth_available) //!! SMAA, luma sharpen, dither?
 {
    if (stereo) // stereo implicitly disables FXAA
    {
@@ -3445,7 +3445,7 @@ void Player::StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, c
       m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
       m_pin3d.m_pd3dDevice->FBShader->End();
    }
-   else if (FXAA1 || FXAA2 || FXAA3)
+   else if (NFAA || FXAA1 || FXAA2 || FXAA3)
    {
       m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
 
@@ -3456,7 +3456,7 @@ void Player::StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, c
       const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), 0.f, depth_available ? 1.f : 0.f);
       m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
 
-      m_pin3d.m_pd3dDevice->FBShader->SetTechnique(FXAA3 ? "FXAA3" : (FXAA2 ? "FXAA2" : "FXAA1"));
+      m_pin3d.m_pd3dDevice->FBShader->SetTechnique(NFAA ? "NFAA" : (FXAA3 ? "FXAA3" : (FXAA2 ? "FXAA2" : "FXAA1")));
 
       m_pin3d.m_pd3dDevice->FBShader->Begin(0);
       m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
@@ -3565,9 +3565,9 @@ void Player::UpdateHUD()
 #endif
 		len = sprintf_s(szFoo, "Left Flipper keypress to rotate: %.1f ms (%d f) to eos: %.1f ms (%d f)",
 			(INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.,
-			(int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame,
+			(int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame),
 			(INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.,
-			(int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame) < 0 ? -1 : m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame);
+			(int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame));
 		DebugPrint(10, 260, szFoo, len);
 	}
 #endif /*FPS*/
@@ -3649,6 +3649,7 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
 {
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const bool stereo = ((m_fStereo3D != 0) && m_fStereo3Denabled);
+   const bool NFAA  = (((m_fFXAA == 4) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 4));
    const bool FXAA1 = (((m_fFXAA == 1) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 1));
    const bool FXAA2 = (((m_fFXAA == 2) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 2));
    const bool FXAA3 = (((m_fFXAA == 3) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 3));
@@ -3674,7 +3675,7 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
    Bloom();
 
    // switch to output buffer
-   if (!(stereo || FXAA1 || FXAA2 || FXAA3))
+   if (!(stereo || NFAA || FXAA1 || FXAA2 || FXAA3))
       m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
    else
    {
@@ -3701,7 +3702,7 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
    m_pin3d.m_pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
    m_pin3d.m_pd3dDevice->FBShader->End();
 
-   StereoFXAA(stereo, FXAA1, FXAA2, FXAA3, false);
+   StereoFXAA(stereo, NFAA, FXAA1, FXAA2, FXAA3, false);
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -3723,6 +3724,7 @@ void Player::FlipVideoBuffersAO(const bool vsync)
 {
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const bool stereo = ((m_fStereo3D != 0) && m_fStereo3Denabled);
+   const bool NFAA  = (((m_fFXAA == 4) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 4));
    const bool FXAA1 = (((m_fFXAA == 1) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 1));
    const bool FXAA2 = (((m_fFXAA == 2) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 2));
    const bool FXAA3 = (((m_fFXAA == 3) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 3));
@@ -3786,7 +3788,7 @@ void Player::FlipVideoBuffersAO(const bool vsync)
    m_pin3d.m_pddsAOBackTmpBuffer = tmpAO;
 
    // switch to output buffer
-   if (!(stereo || FXAA1 || FXAA2 || FXAA3))
+   if (!(stereo || NFAA || FXAA1 || FXAA2 || FXAA3))
       m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
    else
    {
@@ -3822,7 +3824,7 @@ void Player::FlipVideoBuffersAO(const bool vsync)
    m_pin3d.m_pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
    m_pin3d.m_pd3dDevice->FBShader->End();
 
-   StereoFXAA(stereo, FXAA1, FXAA2, FXAA3, true);
+   StereoFXAA(stereo, NFAA, FXAA1, FXAA2, FXAA3, true);
 
    //
 

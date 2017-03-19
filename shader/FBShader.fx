@@ -258,7 +258,9 @@ float4 ps_main_fb_bloom_vert( in VS_OUTPUT_2D IN) : COLOR
 #else
 
 static const float offset[3] = { 0.0, 1.3846153846, 3.2307692308 };
+//13: 0.0,1.411764705882353,3.2941176470588234,5.176470588235294
 static const float weight[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
+//13: 0.1964825501511404,0.2969069646728344,0.09447039785044732,0.010381362401148057
 
 float4 ps_main_fb_bloom_horiz( in VS_OUTPUT_2D IN) : COLOR
 {
@@ -319,6 +321,15 @@ technique stereo
       VertexShader = compile vs_3_0 vs_main_no_trafo();
 	  PixelShader = compile ps_3_0 ps_main_stereo();
    } 
+}
+
+technique NFAA
+{
+	pass P0
+	{
+		VertexShader = compile vs_3_0 vs_main_no_trafo();
+		PixelShader = compile ps_3_0 ps_main_nfaa();
+	}
 }
 
 technique FXAA1

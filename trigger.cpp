@@ -77,6 +77,9 @@ void Trigger::UpdateEditorView()
          faceIndices = triggerStarIndices;
          meshVertices = triggerStar;
       }
+      else
+         ShowError("Unknown Trigger type");
+
       vertices.resize(m_numVertices);
       Matrix3D fullMatrix;
       fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
@@ -723,6 +726,8 @@ void Trigger::GenerateMesh()
          delete[] triggerVertices;
       triggerVertices = new Vertex3D_NoTex2[m_numVertices];
    }
+   else
+      ShowError("Unknown Trigger type");
 
    Matrix3D fullMatrix;
    if (m_d.m_shape == TriggerWireB)
