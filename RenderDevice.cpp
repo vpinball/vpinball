@@ -348,13 +348,6 @@ RenderDevice::~RenderDevice()
 
     m_texMan.UnloadAll();
 
-    m_pD3DDevice->SetStreamSource(0, NULL, 0, 0);
-    m_pD3DDevice->SetIndices(NULL);
-
-    SAFE_RELEASE(m_dynIndexBuffer);
-
-    m_texMan.UnloadAll();
-
 	SAFE_RELEASE(m_pBackBuffer);
     m_pD3DDevice->Release();
     m_pD3D->Release();
