@@ -348,9 +348,23 @@ RenderDevice::~RenderDevice()
 
     m_texMan.UnloadAll();
 
+    m_pD3DDevice->SetStreamSource(0, NULL, 0, 0);
+    m_pD3DDevice->SetIndices(NULL);
+
+    SAFE_RELEASE(m_dynIndexBuffer);
+
+    m_texMan.UnloadAll();
+
 	SAFE_RELEASE(m_pBackBuffer);
     m_pD3DDevice->Release();
     m_pD3D->Release();
+
+    /*
+     * D3D sets the FPU to single precision mode when it's initialized, but doesn't
+     * bother to reset the FPU when it's destroyed. This creates some precision issues
+     * and messes with the RoundToInt function, so we reset it manually here.
+     */
+    _fpreset();
 }
 
 void RenderDevice::BeginScene()

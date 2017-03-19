@@ -184,7 +184,7 @@ private:
 class RenderDevice
 {
 public:
-   typedef enum RenderStates
+   enum RenderStates
    {
       ALPHABLENDENABLE   = D3DRS_ALPHABLENDENABLE,
       ALPHATESTENABLE    = D3DRS_ALPHATESTENABLE,

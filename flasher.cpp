@@ -120,7 +120,7 @@ void Flasher::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
        m_d.m_fDisplayTexture = (iTmp == 0) ? false : true;
    else
-       m_d.m_fDisplayTexture = fFalse;
+       m_d.m_fDisplayTexture = false;
 
 }
 
@@ -134,13 +134,12 @@ void Flasher::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Flasher","RotZ", m_d.m_rotZ);
    SetRegValue("DefaultProps\\Flasher","Color",REG_DWORD,&m_d.m_color,4);
    SetRegValueBool("DefaultProps\\Flasher","TimerEnabled",!!m_d.m_tdr.m_fTimerEnabled);
-   SetRegValue("DefaultProps\\Flasher","TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
+   SetRegValueInt("DefaultProps\\Flasher","TimerInterval",m_d.m_tdr.m_TimerInterval);
    SetRegValue("DefaultProps\\Flasher","Image", REG_SZ, &m_d.m_szImage, strlen(m_d.m_szImage));
-   SetRegValue("DefaultProps\\Flasher","Alpha",REG_DWORD,&m_d.m_fAlpha,4);
+   SetRegValueInt("DefaultProps\\Flasher","Alpha",m_d.m_fAlpha);
    SetRegValueBool("DefaultProps\\Flasher","Visible",m_d.m_IsVisible);
    SetRegValueBool("DefaultProps\\Flasher","AddBlend",m_d.m_fAddBlend);
-   SetRegValueBool("DefaultProps\\Flasher","DisplayTexture",!!m_d.m_fDisplayTexture);
-
+   SetRegValueBool("DefaultProps\\Flasher","DisplayTexture",m_d.m_fDisplayTexture);
 }
 
 void Flasher::PreRender(Sur * const psur)
@@ -470,7 +469,9 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(DSPT))
    {
-       pbr->GetBool(&m_d.m_fDisplayTexture);
+	   BOOL b;
+       pbr->GetBool(&b);
+	   m_d.m_fDisplayTexture = (b==1);
    }
    else if (id == FID(FLDB))
    {

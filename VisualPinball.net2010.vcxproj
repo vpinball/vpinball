@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -912,6 +912,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
+    <ClCompile Include="math\math.cpp" />
     <ClCompile Include="math\matrix.cpp" />
     <ClCompile Include="objloader.cpp" />
     <ClCompile Include="Pin\ball.cpp">

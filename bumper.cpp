@@ -125,15 +125,15 @@ void Bumper::WriteRegDefaults()
    SetRegValue("DefaultProps\\Bumper","Color", REG_DWORD, &m_d.m_color,4);	
    SetRegValue("DefaultProps\\Bumper","SideColor", REG_DWORD, &m_d.m_sidecolor,4);	
    SetRegValue("DefaultProps\\Bumper","Image", REG_SZ, &m_d.m_szImage,lstrlen(m_d.m_szImage));	
-   SetRegValue("DefaultProps\\Bumper","TimerEnabled", REG_DWORD, &m_d.m_tdr.m_fTimerEnabled,4);	
-   SetRegValue("DefaultProps\\Bumper","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval,4);	
-   SetRegValue("DefaultProps\\Bumper","LightState", REG_DWORD, (int *)&m_d.m_state,4);	
+   SetRegValueInt("DefaultProps\\Bumper","TimerEnabled", m_d.m_tdr.m_fTimerEnabled);	
+   SetRegValueInt("DefaultProps\\Bumper","TimerInterval", m_d.m_tdr.m_TimerInterval);	
+   SetRegValue("DefaultProps\\Bumper","LightState", REG_DWORD, &m_d.m_state,4);	
    SetRegValue("DefaultProps\\Bumper","BlinkPattern", REG_SZ, &m_rgblinkpattern,strlen(m_rgblinkpattern));	
-   SetRegValue("DefaultProps\\Bumper","BlinkInterval", REG_DWORD, &m_blinkinterval,4);	
-   SetRegValue("DefaultProps\\Bumper","FlashWhenHit", REG_DWORD, &m_d.m_fFlashWhenHit,4);	
-   SetRegValue("DefaultProps\\Bumper","CastsShadow", REG_DWORD, &m_d.m_fCastsShadow,4);	
-   SetRegValue("DefaultProps\\Bumper","Visible", REG_DWORD, &m_d.m_fVisible,4);	
-   SetRegValue("DefaultProps\\Bumper","SideVisible", REG_DWORD, &m_d.m_fSideVisible,4);	
+   SetRegValueInt("DefaultProps\\Bumper","BlinkInterval", m_blinkinterval);	
+   SetRegValueInt("DefaultProps\\Bumper","FlashWhenHit", m_d.m_fFlashWhenHit);	
+   SetRegValueInt("DefaultProps\\Bumper","CastsShadow", m_d.m_fCastsShadow);	
+   SetRegValueInt("DefaultProps\\Bumper","Visible", m_d.m_fVisible);	
+   SetRegValueInt("DefaultProps\\Bumper","SideVisible", m_d.m_fSideVisible);	
    SetRegValue("DefaultProps\\Bumper","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));	
 }
 

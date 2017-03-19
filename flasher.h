@@ -16,14 +16,13 @@ public:
     float m_height;
     COLORREF m_color;
 	TimerDataRoot m_tdr;
-	char m_szImage[MAXTOKEN];
 	float m_rotX,m_rotY,m_rotZ;
-
-	long m_fAlpha;
+	int m_fAlpha;
+    float m_depthBias;      // for determining depth sorting
+    bool m_fDisplayTexture;
 	bool m_IsVisible;
 	bool m_fAddBlend;
-    BOOL m_fDisplayTexture;
-    float m_depthBias;      // for determining depth sorting
+	char m_szImage[MAXTOKEN];
 };
 
 /////////////////////////////////////////////////////////////////////////////

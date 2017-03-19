@@ -143,9 +143,55 @@ class NudgeFilterY: public NudgeFilter
 
 // end mjr
 
+////////////////////////////////////////////////////////////////////////////////
+
+#ifdef DEBUG_NUDGE
+# define IF_DEBUG_NUDGE(code) code
+#else
+# define IF_DEBUG_NUDGE(code)
+#endif
+
+class NudgeFilter
+{
+public:
+    NudgeFilter();
+
+    // adjust an acceleration sample (m_NudgeX or m_NudgeY)
+    void sample(float &a, const U64 frameTime);
+
+private:
+    // debug output
+    IF_DEBUG_NUDGE(void dbg(const char *fmt, ...);)
+    IF_DEBUG_NUDGE(virtual const char *axis() const = 0;)
+
+    // running total of samples
+    float m_sum;
+
+    // previous sample
+    float m_prv;
+
+    // timestamp of last zero crossing in the raw acceleration data
+    U64 m_tzc;
+
+    // timestamp of last correction inserted into the data
+    U64 m_tCorr;
+
+    // timestamp of last motion == start of rest
+    U64 m_tMotion;
+};
+
+class NudgeFilterX: public NudgeFilter
+   { const char *axis() const { return "x"; } };
+class NudgeFilterY: public NudgeFilter
+   { const char *axis() const { return "y"; } };
 
 ////////////////////////////////////////////////////////////////////////////////
 
+struct TimerOnOff
+{
+   HitTimer* m_timer;
+   bool enabled;
+};
 
 class Player
 {
@@ -225,21 +271,20 @@ public:
 
         Pin3D m_pin3d;
 
-        U32 m_time_msec;
+	U32 m_time_msec;
 
-        int m_DeadZ;
-
-        Ball *m_pactiveball;            // ball the script user can get with ActiveBall
-        Ball *m_pactiveballDebug;       // ball the debugger will use as Activeball when firing events
+	Ball *m_pactiveball;		// ball the script user can get with ActiveBall
+	Ball *m_pactiveballDebug;	// ball the debugger will use as Activeball when firing events
 
     std::vector<Ball*> m_vball;
-    std::vector<HitFlipper*> m_vFlippers;
+std::vector<HitFlipper*> m_vFlippers;
 
-        Vector<AnimObject> m_vscreenupdate;
-        Vector<HitTimer> m_vht;
+	Vector<AnimObject> m_vscreenupdate;
+	Vector<HitTimer> m_vht;
+	std::vector<TimerOnOff> m_changed_vht; // stores all en/disable changes to the m_vht timer list, to avoid problems with timers dis/enabling themselves
 
     BOOL m_fThrowBalls;
-        BOOL m_fAccelerometer;          //true if electronic Accelerometer enabled
+	BOOL m_fAccelerometer;		//true if electronic Accelerometer enabled
         BOOL m_AccelNormalMount;        //true if normal mounting (left hand coordinates)
         float m_AccelAngle;                     // 0 Radians rotated counterclockwise (GUI is lefthand coordinates)
         float m_AccelAmp;                       // Accelerometer gain 
@@ -283,11 +328,13 @@ public:
         BOOL m_fCloseDown;                      // Whether to shut down the player at the end of this frame
         int m_fCloseType;                       // if 0 exit player and close application if started minimized, if 1 close application always, 2 is brute force exit
 
-        int m_sleeptime;                        // time to sleep during each frame - can helps side threads like vpinmame
+	int m_sleeptime;			// time to sleep during each frame - can helps side threads like vpinmame
 
-        GPINFLOAT m_pixelaspectratio;
+	int m_nudgetime;
 
-        int m_fVSync; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
+	GPINFLOAT m_pixelaspectratio;
+
+	int m_fVSync; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
     int m_fMaxPrerenderedFrames;
         int m_fFXAA;
     BOOL m_fAA;

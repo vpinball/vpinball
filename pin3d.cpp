@@ -806,11 +806,11 @@ void PinProjection::Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT
 {
 	Matrix3D matRotateX, matRotateY, matRotateZ;
 
-	matRotateX.RotateXMatrix(x);
+	matRotateX.RotateXMatrix((float)x);
 	m_matWorld.Multiply(matRotateX, m_matWorld);
-	matRotateY.RotateYMatrix(y);
+	matRotateY.RotateYMatrix((float)y);
 	m_matWorld.Multiply(matRotateY, m_matWorld);
-	matRotateZ.RotateZMatrix(z);
+	matRotateZ.RotateZMatrix((float)z);
 	m_matWorld.Multiply(matRotateZ, m_matWorld);        // matWorld = rotZ * rotY * rotX * origMatWorld
 }
 

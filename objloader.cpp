@@ -109,7 +109,7 @@ bool WaveFrontObj_Load( char *filename, bool flipTv, bool convertToLeftHanded )
    while ( 1 )
    {
       char lineHeader[128];
-      int res = fscanf_s(f,"%s", lineHeader );
+      int res = fscanf_s(f,"%s", lineHeader,128 );
       if( res==EOF ) 
       {
          fclose(f);

@@ -140,7 +140,7 @@ void Decal::WriteRegDefaults()
    SetRegValue("DefaultProps\\Decal","Text", REG_SZ, &m_d.m_sztext,strlen(m_d.m_sztext));
    SetRegValue("DefaultProps\\Decal","Sizing",REG_DWORD,&m_d.m_sizingtype,4);
    SetRegValue("DefaultProps\\Decal","Color",REG_DWORD,&m_d.m_color,4);
-   SetRegValue("DefaultProps\\Decal","VerticalText",REG_DWORD,&m_d.m_fVerticalText,4);
+   SetRegValueInt("DefaultProps\\Decal","VerticalText",m_d.m_fVerticalText);
    SetRegValue("DefaultProps\\Decal","Surface", REG_SZ, m_d.m_szSurface, strlen(m_d.m_szSurface)); 
 
    if (m_pIFont)
@@ -162,9 +162,10 @@ void Decal::WriteRegDefaults()
       char strTmp[MAXTOKEN];
       WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, charCnt, strTmp, 2*charCnt, NULL, NULL);
       SetRegValue("DefaultProps\\Decal","FontName", REG_SZ, &strTmp,strlen(strTmp));
-
-      SetRegValue("DefaultProps\\Decal","FontWeight",REG_DWORD,&fd.sWeight,4);
-      SetRegValue("DefaultProps\\Decal","FontCharSet",REG_DWORD,&fd.sCharset,4);
+	  const int weight = fd.sWeight;
+	  const int charset = fd.sCharset;
+      SetRegValueInt("DefaultProps\\Decal","FontWeight",weight);
+      SetRegValueInt("DefaultProps\\Decal","FontCharSet",charset);
       SetRegValue("DefaultProps\\Decal","FontItalic",REG_DWORD,&fd.fItalic,4);
       SetRegValue("DefaultProps\\Decal","FontUnderline",REG_DWORD,&fd.fUnderline,4);
       SetRegValue("DefaultProps\\Decal","FontStrikeThrough",REG_DWORD,&fd.fStrikethrough,4);

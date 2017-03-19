@@ -71,12 +71,13 @@ PinInput::PinInput()
         m_firedautostart = 0;
         m_firedautocoin = 0;
 
-        m_pressed_start = 0;
+	m_pressed_start = 0;
     
-        m_enableMouseInPlayer=true;
+	m_enableMouseInPlayer=true;
+	m_enable_nudge_filter=false;
 
-        HRESULT hr;
-        int tmp;
+	HRESULT hr;
+	int tmp;
 
         hr = GetRegInt("Player", "LRAxis", &tmp);
         if (hr == S_OK) m_lr_axis = tmp;
@@ -199,10 +200,19 @@ PinInput::PinInput()
         if (hr == S_OK) m_joymechtilt = tmp;
 
         hr = GetRegInt("Player", "JoyDebugKey", &tmp);
-        if (hr == S_OK) m_joydebug = tmp;
+	if (hr == S_OK) m_joydebug = tmp;
 
    hr = GetRegInt("Player", "EnableMouseInPlayer", &tmp);
-   if (hr == S_OK) m_enableMouseInPlayer = tmp==fTrue;
+   if (hr == S_OK) m_enableMouseInPlayer = (tmp==fTrue);
+
+   hr = GetRegInt("Player", "EnableNudgeFilter", &tmp);
+   if (hr == S_OK) m_enable_nudge_filter = (tmp==fTrue);
+
+   hr = GetRegInt("Player", "DeadZone", &m_deadz);
+   if (hr != S_OK)
+	   m_deadz = 0;
+   else
+	   m_deadz = m_deadz*JOYRANGEMX/100;
 
    m_exit_stamp = 0;
    m_first_stamp = msec();
@@ -673,8 +683,14 @@ void PinInput::FireKeyEvent( const int dispid, const int key )
                 else if( mkey == DIK_RSHIFT ) {mkey = DIK_LSHIFT;       val |= PININ_LEFT;}
                 else if( mkey == DIK_LEFT   ) {mkey = DIK_RIGHT;        val |= PININ_RIGHT;}
                 else if( mkey == DIK_RIGHT  ) {mkey = DIK_LEFT;         val |= PININ_LEFT;}
+			}
+        else if (!WzSzStrCmp(dstr.wsz, "Pinscape Controller"))
+        {
+            ppinput->uShockDevice = ppinput->e_JoyCnt;  // remember uShock
+            ppinput->uShockType = USHOCKTYPE_GENERIC;   //set type = Generic
+            ppinput->m_linearPlunger = 1;               // use linear plunger calibration
         }
-        else
+		else 
         {
                 // Normal left & right input.
                          if( mkey == g_pplayer->m_rgKeys[eLeftFlipperKey]  ) val |= PININ_LEFT;
@@ -1291,229 +1307,211 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 
                         else
                             FireKeyEvent(updown,input->dwOfs|0x01000000); // unknown button events
-                        }
-                        else //end joy buttons
-                        {
-                                int DeadZ2;
-                                const HRESULT hr = GetRegInt("Player", "DeadZone", &DeadZ2);
-                                if (hr != S_OK)
-                                        DeadZ2 = 0;
-
-                                //debugging: grab value of deadzone from registry
-                                //char myCharString[8];
-                                //itoa( DeadZ2, myCharString, 10 );
-                                //ShowError(myCharString);
-                        
-                                int u = (int)input->dwData;
-
-                                // Axis Deadzone
-                                int deadu = u;
-                                if((deadu<=0) && (deadu>=DeadZ2*(-10))){deadu = 0;}
-                                if((deadu>=0) && (deadu<=DeadZ2*10)){deadu = 0;}
-                                if((deadu<0) && (deadu<DeadZ2*(-10))){deadu = deadu + DeadZ2*10;}
-                                if((deadu>0) && (deadu>DeadZ2*10)){deadu = deadu - DeadZ2*10;}
-                                
-                                switch (input->dwOfs)   // Axis, Sliders and POV
-                                {       // with selectable axes added to menu, giving prioity in this order... X Axis (the Left/Right Axis), Y Axis
+			}
+			else //end joy buttons
+			{
+				// Axis Deadzone
+				int deadu = (int)input->dwData;
+				if(((deadu<=0) && (deadu>=-m_deadz)) || ((deadu>=0) && (deadu<=m_deadz)))
+					deadu = 0;
+				if((deadu<0) && (deadu<-m_deadz))
+					deadu += m_deadz;
+				if((deadu>0) && (deadu>m_deadz))
+					deadu -= m_deadz;
+				
+				switch (input->dwOfs)	// Axis, Sliders and POV
+				{	// with selectable axes added to menu, giving prioity in this order... X Axis (the Left/Right Axis), Y Axis
                                         case DIJOFS_X: 
                                                 if( g_pplayer ) //joyk  rotLeftManual
                                                 {
                                                         if ((m_lr_axis == 1) || (m_ud_axis == 1) || (uShockType != USHOCKTYPE_GENERIC))
-                                                        { // Check if L/R Axis or U/D Axis is selected (in the case of the Generic controller),
-                                                          // or non Generic controllers are being used...
-                                                                // Axis Deadzone
-                                                                u = deadu;
-                                                                if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_lr_axis != 0))
-                                                                        g_pplayer->UltraNudgeX(-u, joyk); //rotate to match Pinball Wizard
-                                                                if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_lr_axis != 0))
-                                                                {
-                                                                        if (rotLeftManual)
-                                                                                g_pplayer->UltraNudgeX(u, joyk);
-                                                                        else
-                                                                                g_pplayer->UltraNudgeY(-u, joyk); //rotate to match joystick
-                                                                }
-                                                                if ((uShockType == USHOCKTYPE_SIDEWINDER) && (m_lr_axis != 0))
-                                                                        g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? u : -u, joyk);
-                                                                if ((m_lr_axis == 1) && (uShockType == USHOCKTYPE_GENERIC))
-                                                                    // giving L/R Axis priority over U/D Axis incase both are assigned to same axis
-                                                                        g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
-                                                                else if ((m_ud_axis == 1) && (uShockType == USHOCKTYPE_GENERIC))
-                                                                        g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
-                                                        }
-                                                        else if (m_plunger_axis == 1)
-                                                        {       // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
-                                                                if (uShockType == USHOCKTYPE_GENERIC)
-                                                                        g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -u : u);
-                                                        }
-                                                }
-                                                break;
+							{ // Check if L/R Axis or U/D Axis is selected (in the case of the Generic controller),
+							  // or non Generic controllers are being used...
+								// Axis Deadzone
+								if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_lr_axis != 0))
+									g_pplayer->NudgeX(-deadu, joyk); //rotate to match Pinball Wizard
+								if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_lr_axis != 0))
+								{
+									if (rotLeftManual)
+										g_pplayer->NudgeX(deadu, joyk);
+									else
+										g_pplayer->NudgeY(-deadu, joyk); //rotate to match joystick
+								}
+								if ((uShockType == USHOCKTYPE_SIDEWINDER) && (m_lr_axis != 0))
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? deadu : -deadu, joyk);
+								if ((m_lr_axis == 1) && (uShockType == USHOCKTYPE_GENERIC))
+								    // giving L/R Axis priority over U/D Axis incase both are assigned to same axis
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
+								else if ((m_ud_axis == 1) && (uShockType == USHOCKTYPE_GENERIC))
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? deadu : -deadu, joyk);
+							}
+							else if (m_plunger_axis == 1)
+							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+							}
+						}
+						break;
 
                                         case DIJOFS_Y: 
                                                 if( g_pplayer )
                                                 {
                                                         if ((m_lr_axis == 2) || (m_ud_axis == 2) || (uShockType != USHOCKTYPE_GENERIC))
-                                                        { // Check if L/R Axis or U/D Axis is selected (in the case of the Generic controller),
-                                                          // or non Generic controllers are being used...
-                                                                // Axis Deadzone
-                                                                u = deadu;
-                                                                if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_ud_axis != 0))
-                                                                        g_pplayer->UltraNudgeY(u, joyk); //rotate to match Pinball Wizard
-                                                                if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_ud_axis != 0))
-                                                                {
-                                                                        if (rotLeftManual)
-                                                                                g_pplayer->UltraNudgeY(u, joyk);
-                                                                        else
-                                                                                g_pplayer->UltraNudgeX(-u, joyk); //rotate to match joystick
-                                                                }
-                                                                if ((uShockType == USHOCKTYPE_SIDEWINDER) && (m_ud_axis != 0))
-                                                                        g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
-                                                                if ((m_lr_axis == 2) && (uShockType == USHOCKTYPE_GENERIC))
-                                                                        g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
-                                                                else if ((m_ud_axis == 2) && (uShockType == USHOCKTYPE_GENERIC))
-                                                                        g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
-                                                        }
-                                                        else if (m_plunger_axis == 2)
-                                                        {       // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
-                                                                if (uShockType == USHOCKTYPE_GENERIC)
-                                                                        g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -u : u);
-                                                        }
-                                                }
-                                                break;
+							{ // Check if L/R Axis or U/D Axis is selected (in the case of the Generic controller),
+							  // or non Generic controllers are being used...
+								// Axis Deadzone
+								if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_ud_axis != 0))
+									g_pplayer->NudgeY(deadu, joyk); //rotate to match Pinball Wizard
+								if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_ud_axis != 0))
+								{
+									if (rotLeftManual)
+										g_pplayer->NudgeY(deadu, joyk);
+									else
+										g_pplayer->NudgeX(-deadu, joyk); //rotate to match joystick
+								}
+								if ((uShockType == USHOCKTYPE_SIDEWINDER) && (m_ud_axis != 0))
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? deadu : -deadu, joyk);
+								if ((m_lr_axis == 2) && (uShockType == USHOCKTYPE_GENERIC))
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
+								else if ((m_ud_axis == 2) && (uShockType == USHOCKTYPE_GENERIC))
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? deadu : -deadu, joyk);
+							}
+							else if (m_plunger_axis == 2)
+							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+							}
+						}
+						break;
 
                                         case DIJOFS_Z:
-                                                if( g_pplayer )
-                                                {
-                                                        if (uShockType == USHOCKTYPE_ULTRACADE)
-                                                                g_pplayer->mechPlungerIn(u);
-                                                        if (((m_plunger_axis != 6) && (m_plunger_axis != 0)) || (m_override_default_buttons == 0))
-                                                        {                                                                                       // with the ability to use rZ for plunger, checks to see if
-                                                                if (uShockType == USHOCKTYPE_PBWIZARD)  // the override is used and if so, if Plunger is set to Rz or
-                                                                {                                                                               // disabled. If override isn't used, uses default assignment
-                                                                        g_pplayer->mechPlungerIn(-u);           // of the Z axis.
-                                                                }
-                                                        }
-                                                        if ((uShockType == USHOCKTYPE_VIRTUAPIN) && (m_plunger_axis != 0))
-                                                                g_pplayer->mechPlungerIn(-u);
-                                                        if (((m_lr_axis == 3) || (m_ud_axis == 3)) && (uShockType == USHOCKTYPE_GENERIC))
-                                                        { // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
-                                                                // Axis Deadzone
-                                                                u = deadu;
-                                                                if (m_lr_axis == 3)
-                                                                        g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
-                                                                else if (m_ud_axis == 3)
-                                                                        g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
-                                                        }
-                                                        else if (m_plunger_axis == 3)
-                                                        {       // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
-                                                                if (uShockType == USHOCKTYPE_GENERIC)
-                                                                        g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -u : u);
-                                                        }
-                                                }
-                                                break;
+						if( g_pplayer )
+						{
+							if (uShockType == USHOCKTYPE_ULTRACADE)
+								g_pplayer->mechPlungerIn((int)input->dwData);
+							if (((m_plunger_axis != 6) && (m_plunger_axis != 0)) || (m_override_default_buttons == 0))
+							{											// with the ability to use rZ for plunger, checks to see if
+								if (uShockType == USHOCKTYPE_PBWIZARD) 	// the override is used and if so, if Plunger is set to Rz or
+								{										// disabled. If override isn't used, uses default assignment
+									g_pplayer->mechPlungerIn(-(int)input->dwData);		// of the Z axis.
+								}
+							}
+							if ((uShockType == USHOCKTYPE_VIRTUAPIN) && (m_plunger_axis != 0))
+								g_pplayer->mechPlungerIn(-(int)input->dwData);
+							if (((m_lr_axis == 3) || (m_ud_axis == 3)) && (uShockType == USHOCKTYPE_GENERIC))
+							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+								// Axis Deadzone
+								if (m_lr_axis == 3)
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
+								else if (m_ud_axis == 3)
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? deadu : -deadu, joyk);
+							}
+							else if (m_plunger_axis == 3)
+							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+							}
+						}
+						break;
 
                                         case DIJOFS_RX:
                                                 if( g_pplayer )
                                                 {
-                                                        if (((m_lr_axis == 4) || (m_ud_axis == 4)) && (uShockType == USHOCKTYPE_GENERIC))
-                                                        { // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
-                                                                // Axis Deadzone
-                                                                u = deadu;
-                                                                if (m_lr_axis == 4)
-                                                                        g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
-                                                                else if (m_ud_axis == 4)
-                                                                        g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
-                                                        }
-                                                        else if (m_plunger_axis == 4)
-                                                        {       // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
-                                                                if (uShockType == USHOCKTYPE_GENERIC)
-                                                                        g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -u : u);
-                                                        }
-                                                }
-                                                break;
+							if (((m_lr_axis == 4) || (m_ud_axis == 4)) && (uShockType == USHOCKTYPE_GENERIC))
+							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+								// Axis Deadzone
+								if (m_lr_axis == 4)
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
+								else if (m_ud_axis == 4)
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? deadu : -deadu, joyk);
+							}
+							else if (m_plunger_axis == 4)
+							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+							}
+						}
+						break;
 
                                         case DIJOFS_RY:
                                                 if ( g_pplayer )
                                                 {
-                                                        if (((m_lr_axis == 5) || (m_ud_axis == 5)) && (uShockType == USHOCKTYPE_GENERIC))
-                                                        { // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
-                                                                // Axis Deadzone
-                                                                u = deadu;
-                                                                if (m_lr_axis == 5)
-                                                                        g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
-                                                                else if (m_ud_axis == 5)
-                                                                        g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
-                                                        }
-                                                        else if (m_plunger_axis == 5)
-                                                        {       // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
-                                                                if (uShockType == USHOCKTYPE_GENERIC)
-                                                                        g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -u : u);
-                                                        }
-                                                }
-                                                break;
+							if (((m_lr_axis == 5) || (m_ud_axis == 5)) && (uShockType == USHOCKTYPE_GENERIC))
+							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+								// Axis Deadzone
+								if (m_lr_axis == 5)
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
+								else if (m_ud_axis == 5)
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? deadu : -deadu, joyk);
+							}
+							else if (m_plunger_axis == 5)
+							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+							}
+						}
+						break;
 
                                         case DIJOFS_RZ:
-                                                if( g_pplayer )
-                                                {
-                                                        if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 1) && (m_plunger_axis == 6))
-                                                                g_pplayer->mechPlungerIn(u);
-                                                        if (((m_lr_axis == 6) || (m_ud_axis == 6)) && (uShockType == USHOCKTYPE_GENERIC))
-                                                        { // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
-                                                                // Axis Deadzone
-                                                                u = deadu;
-                                                                if (m_lr_axis == 6)
-                                                                        g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
-                                                                else if (m_ud_axis == 6)
-                                                                        g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
-                                                        }
-                                                        else if (m_plunger_axis == 6)
-                                                        {
-                                                                if (uShockType == USHOCKTYPE_GENERIC)
-                                                                        g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -u : u);
-                                                        }
-                                                }
-                                                break;
+						if( g_pplayer )
+						{
+							if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 1) && (m_plunger_axis == 6))
+								g_pplayer->mechPlungerIn((int)input->dwData);
+							if (((m_lr_axis == 6) || (m_ud_axis == 6)) && (uShockType == USHOCKTYPE_GENERIC))
+							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+								// Axis Deadzone
+								if (m_lr_axis == 6)
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
+								else if (m_ud_axis == 6)
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? deadu : -deadu, joyk);
+							}
+							else if (m_plunger_axis == 6)
+							{
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+							}
+						}
+						break;
 
                                         case DIJOFS_SLIDER(0):
-                                                if( g_pplayer )
-                                                {
-                                                        if (uShockType == USHOCKTYPE_SIDEWINDER)
-                                                                g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -u : u);
-                                                        if (((m_lr_axis == 7) || (m_ud_axis == 7)) && (uShockType == USHOCKTYPE_GENERIC))
-                                                        { // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
-                                                                // Axis Deadzone
-                                                                u = deadu;
-                                                                if (m_lr_axis == 7)
-                                                                        g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
-                                                                else if (m_ud_axis == 7)
-                                                                        g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
-                                                        }
-                                                        else if (m_plunger_axis == 7)
-                                                        {
-                                                                if (uShockType == USHOCKTYPE_GENERIC)
-                                                                        g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -u : u);
-                                                        }
-                                                }
-                                                break;
+						if( g_pplayer )
+						{
+							if (uShockType == USHOCKTYPE_SIDEWINDER)
+								g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+							if (((m_lr_axis == 7) || (m_ud_axis == 7)) && (uShockType == USHOCKTYPE_GENERIC))
+							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+								// Axis Deadzone
+								if (m_lr_axis == 7)
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
+								else if (m_ud_axis == 7)
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? deadu : -deadu, joyk);
+							}
+							else if (m_plunger_axis == 7)
+							{
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+							}
+						}
+						break;
 
                                         case DIJOFS_SLIDER(1):
                                                 if( g_pplayer )
                                                 {
-                                                        if (((m_lr_axis == 8) || (m_ud_axis == 8)) && (uShockType == USHOCKTYPE_GENERIC))
-                                                        { // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
-                                                                // Axis Deadzone
-                                                                u = deadu;
-                                                                if (m_lr_axis == 8)
-                                                                        g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
-                                                                else if (m_ud_axis == 8)
-                                                                        g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
-                                                        }
-                                                        else if (m_plunger_axis == 8)
-                                                        {
-                                                                if (uShockType == USHOCKTYPE_GENERIC)
-                                                                        g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -u : u);
-                                                        }
-                                                }
-                                                break;
+							if (((m_lr_axis == 8) || (m_ud_axis == 8)) && (uShockType == USHOCKTYPE_GENERIC))
+							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+								// Axis Deadzone
+								if (m_lr_axis == 8)
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
+								else if (m_ud_axis == 8)
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? deadu : -deadu, joyk);
+							}
+							else if (m_plunger_axis == 8)
+							{
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+							}
+						}
+						break;
 
                                         case DIJOFS_POV(0):
                                         default:

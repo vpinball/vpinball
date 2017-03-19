@@ -25,7 +25,6 @@
 **	EndPlay()
 **	RenderStatic()
 **	RenderAnimation()
-**	RenderText()
 **
 **	SetObjectPos()
 **	MoveOffset()
@@ -81,7 +80,6 @@
 **
 **	getBoxWidth()					Private functions
 **	getBoxHeight()
-**	UpdateObjFrame()
 **
 ** REVISION HISTORY:
 ** -----------------
@@ -324,21 +322,21 @@ void DispReel::WriteRegDefaults()
 	SetRegValue("DefaultProps\\EMReel","ReelType",REG_DWORD,&m_d.m_reeltype,4);
 	SetRegValue("DefaultProps\\EMReel","Image", REG_SZ, &m_d.m_szImage,strlen(m_d.m_szImage));
 	SetRegValue("DefaultProps\\EMReel","Sound", REG_SZ, &m_d.m_szSound,strlen(m_d.m_szSound));
-	SetRegValue("DefaultProps\\Decal","UseImageGrid",REG_DWORD,&m_d.m_fUseImageGrid,4);
-	SetRegValue("DefaultProps\\Decal","ImagesPerRow",REG_DWORD,&m_d.m_imagesPerGridRow ,4);
-	SetRegValue("DefaultProps\\Decal","Transparent",REG_DWORD,&m_d.m_fTransparent,4);
-	SetRegValue("DefaultProps\\Decal","ReelCount",REG_DWORD,&m_d.m_reelcount ,4);
+	SetRegValueInt("DefaultProps\\Decal","UseImageGrid",m_d.m_fUseImageGrid);
+	SetRegValueInt("DefaultProps\\Decal","ImagesPerRow",m_d.m_imagesPerGridRow);
+	SetRegValueInt("DefaultProps\\Decal","Transparent",m_d.m_fTransparent);
+	SetRegValueInt("DefaultProps\\Decal","ReelCount",m_d.m_reelcount);
 	SetRegValueFloat("DefaultProps\\EMReel","Width", m_d.m_width);
 	SetRegValueFloat("DefaultProps\\EMReel","Height", m_d.m_height);
 	SetRegValueFloat("DefaultProps\\EMReel","ReelSpacing", m_d.m_reelspacing);
 	SetRegValueFloat("DefaultProps\\EMReel","MotorSteps", m_d.m_motorsteps);
-	SetRegValue("DefaultProps\\Decal","DigitRange",REG_DWORD,&m_d.m_digitrange,4);
-	SetRegValue("DefaultProps\\Decal","UpdateInterval",REG_DWORD,&m_d.m_updateinterval,4);
+	SetRegValueInt("DefaultProps\\Decal","DigitRange",m_d.m_digitrange);
+	SetRegValueInt("DefaultProps\\Decal","UpdateInterval",m_d.m_updateinterval);
 	SetRegValue("DefaultProps\\EMReel","BackColor",REG_DWORD,&m_d.m_backcolor,4);
 	SetRegValue("DefaultProps\\EMReel","FontColor",REG_DWORD,&m_d.m_fontcolor,4);
 	SetRegValue("DefaultProps\\EMReel","ReelColor",REG_DWORD,&m_d.m_reelcolor,4);
-	SetRegValue("DefaultProps\\EMReel","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
-	SetRegValue("DefaultProps\\EMReel","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
+	SetRegValueInt("DefaultProps\\EMReel","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
+	SetRegValueInt("DefaultProps\\EMReel","TimerInterval",m_d.m_tdr.m_TimerInterval);
 
 	if (m_pIFont)
 		{
@@ -358,8 +356,10 @@ void DispReel::WriteRegDefaults()
 		int charCnt = wcslen(fd.lpstrName) +1;
 		WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, charCnt, strTmp, 2*charCnt, NULL, NULL);
 		SetRegValue("DefaultProps\\EMReel","FontName", REG_SZ, &strTmp,strlen(strTmp));
-		SetRegValue("DefaultProps\\EMReel","FontWeight",REG_DWORD,&fd.sWeight,4);
-		SetRegValue("DefaultProps\\EMReel","FontCharSet",REG_DWORD,&fd.sCharset,4);
+		const int weight = fd.sWeight;
+		const int charset = fd.sCharset;
+		SetRegValueInt("DefaultProps\\EMReel","FontWeight",weight);
+		SetRegValueInt("DefaultProps\\EMReel","FontCharSet",charset);
 		SetRegValue("DefaultProps\\EMReel","FontItalic",REG_DWORD,&fd.fItalic,4);
 		SetRegValue("DefaultProps\\EMReel","FontUnderline",REG_DWORD,&fd.fUnderline,4);
 		SetRegValue("DefaultProps\\EMReel","FontStrikeThrough",REG_DWORD,&fd.fStrikethrough,4);
@@ -496,12 +496,6 @@ void DispReel::GetHitShapesDebug(Vector<HitObject> * const pvho)
 //
 void DispReel::EndPlay()
 {
-    // free up reel buffer
-    // Failed Player case
-	for (int i=0; i<m_vreelframe.Size(); i++)
-		delete m_vreelframe.ElementAt(i);
-	m_vreelframe.RemoveAllElements();
-
 	if (m_ptu)
 	{
 		delete m_ptu;
@@ -703,185 +697,11 @@ void DispReel::RenderSetup(const RenderDevice* _pd3dDevice)
 
     m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
     m_fforceupdate = false;
-
-    RenderText();
 }
 
 void DispReel::RenderStatic(const RenderDevice* pd3dDevice)
 {
 }
-
-// This function is called during the redering process // Old comments from RenderStatic
-// (before the game starts, but after play has been pressed)
-//
-// it is designed to generate any static information/graphics for the table
-// to use
-//
-// This function makes up a strip graphic from either the specified bitmap or
-// generates one from the font specification..
-//
-// It then works out the correct scaling of all the items depending on the rendering
-// screen size
-//	
-// This function is called during the redering process
-// (before the game starts, but after play has been pressed)
-//
-// it is designed to generate any 3d animation as the 3D map has been set up
-// to use in the process
-//
-
-#ifdef VPINBALL_DX7_LEFTOVERS
-void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
-{
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-    // set any defaults for the game rendering
-    m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
-    m_fforceupdate = false;
-
-    m_pobjframe = GetPTable()->GetEMReelsEnabled() ? (new ObjFrame()) : NULL;
-
-	if (m_pobjframe == NULL)
-        return;
-
-    // get information about the table player (size sizes, resolution, etc..)
-    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-	// get the render sizes of the objects (reels and frame)
-    m_renderwidth  = max(0, (int)((m_d.m_width * (float)(1.0/EDITOR_BG_WIDTH)) * ppin3d->m_dwRenderWidth));
-    m_renderheight = max(0, (int)((m_d.m_height * (float)(1.0/EDITOR_BG_HEIGHT)) * ppin3d->m_dwRenderHeight));
-    const int m_renderspacingx = max(0, (int)((m_d.m_reelspacing * (float)(1.0/EDITOR_BG_WIDTH)) * ppin3d->m_dwRenderWidth));
-    const int m_renderspacingy = max(0, (int)((m_d.m_reelspacing * (float)(1.0/EDITOR_BG_HEIGHT))  * ppin3d->m_dwRenderHeight));
-
-    // get the size of the object frame (size of entire reel set and border)
-	m_pobjframe->rc.left = (int)((m_d.m_v1.x * (float)(1.0/EDITOR_BG_WIDTH)) * ppin3d->m_dwRenderWidth);
-	m_pobjframe->rc.top = (int)((m_d.m_v1.y * (float)(1.0/EDITOR_BG_HEIGHT)) * ppin3d->m_dwRenderHeight);
-	// i cant use v2 as it really doesn't scale properly.
-	m_pobjframe->rc.right = m_pobjframe->rc.left + m_d.m_reelcount * (m_renderwidth+m_renderspacingx) + m_renderspacingx;
-	m_pobjframe->rc.bottom = m_pobjframe->rc.top + m_renderheight + (2 * m_renderspacingy);
-
-    // set up all the reel positions within the object frame
-    int x1 = m_renderspacingx;
-    
-	for (int i=0; i<m_d.m_reelcount; ++i)
-    {
-        ReelInfo[i].position.left	= x1;
-        ReelInfo[i].position.right	= x1 + m_renderwidth;
-        ReelInfo[i].position.top	= m_renderspacingy;
-        ReelInfo[i].position.bottom	= m_renderspacingy + m_renderheight;
-
-        ReelInfo[i].currentValue	= 0;
-        ReelInfo[i].motorPulses		= 0;
-        ReelInfo[i].motorStepCount	= 0;
-        ReelInfo[i].motorCalcStep	= 0;
-        ReelInfo[i].motorOffset		= 0;
-
-        // move to the next reel
-        x1 += m_renderspacingx+m_renderwidth;
-    }
-
-    // Set up the reel strip (either using bitmaps or fonts)
-    if (m_d.m_reeltype == ReelImage)
-    {
-        // ...removed...
-    }
-    else    /* generate a strip of numbers using font rendering */
-	{
-        // text reels are purely 0-9 and nothing else
-        m_d.m_digitrange = 9;
-
-        // make a clone of the specified font
-        m_pIFont->Clone(&m_pIFontPlay);
-        // scale the font (either up or down) to suit the screen resolution
-        CY size;
-        m_pIFontPlay->get_Size(&size);
-        size.int64 = size.int64 / EDITOR_BG_WIDTH * ppin3d->m_dwRenderWidth;
-        m_pIFontPlay->put_Size(size);
-
-        HFONT   hFont;
-        m_pIFontPlay->get_hFont(&hFont);
-	    HDC hdc = GetDC(NULL);
-        SelectObject(hdc, hFont);
-        SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
-
-        // work out the maximum width and height for the selected font
-        int maxwidth = m_renderwidth;
-        int maxheight = m_renderheight;
-        const int length = lstrlen(REEL_NUMBER_TEXT);
-        for (int i=0; i<length; ++i)
-        {
-	        RECT rcOut;
-            rcOut.left = 0;
-            rcOut.top = 0;
-            rcOut.right = maxwidth;
-            rcOut.bottom = maxwidth;
-            DrawText(hdc, &REEL_NUMBER_TEXT[i], 1, &rcOut, DT_NOCLIP | DT_NOPREFIX | DT_CALCRECT);
-            maxwidth = max(maxwidth, rcOut.right);
-            maxheight = max(maxheight, rcOut.bottom);
-        }
-        ReleaseDC(NULL, hdc);
-
-        // set the size of the individual reel digits
-        m_reeldigitwidth  = (float)maxwidth;
-        m_reeldigitheight = (float)maxheight;
-
-		for (int i=0; i < length; ++i)
-			{
-			ObjFrame * const pobjframe = new ObjFrame();
-			if (pobjframe == NULL)
-				return;
-			pobjframe->pdds	= NULL;
-			m_vreelframe.AddElement(pobjframe);			
-			}
-
-        
-		SetTextColor(hdc, m_d.m_fontcolor);		// set the font colour
-		SetBkMode(hdc, TRANSPARENT);
-		for (int i=0; i < length; ++i)
-      {
-			// allocate some memory for this strip
-         BaseTexture *texel= m_vreelframe.ElementAt(i)->pdds;
-			texel = g_pvp->m_pdd.CreateOffscreenPlain(maxwidth, maxheight);
-			// fill the strip with the reel colour
-			texel->GetDC(&hdc);
-			HBRUSH hbrush = CreateSolidBrush(m_d.m_reelcolor);
-			HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
-			PatBlt(hdc, 0, 0, maxwidth, maxheight, PATCOPY);
-			SelectObject(hdc, hbrushold);
-			DeleteObject(hbrush);
-			
-			// set the font plotting parameters
-			SelectObject(hdc, hFont);
-			SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
-
-	        RECT rcOut;
-            rcOut.left = 0;
-            rcOut.top = 0;//i * maxheight;
-            rcOut.right = maxwidth;
-            rcOut.bottom = rcOut.top + maxheight;
-            DrawText(hdc, &REEL_NUMBER_TEXT[i], 1, &rcOut, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOCLIP | DT_NOPREFIX);
-            texel->ReleaseDC(hdc);
-		}
-		m_pIFontPlay->Release();
-		
-		// For text, try to pick a color that won't be used (hack)
-		m_rgbImageTransparent = 0xff;
-		if ((m_d.m_fontcolor & 0xffffff) == m_rgbImageTransparent)
-			{
-			m_rgbImageTransparent = 0xffff;
-			}
-			
-		if ((m_d.m_reelcolor & 0xffffff) == m_rgbImageTransparent)
-			{
-			m_rgbImageTransparent = 0xff00;
-			}
-			
-		if ((m_d.m_fontcolor & 0xffffff) == m_rgbImageTransparent)
-			{
-			m_rgbImageTransparent = 0xff0000;
-			}
-	}
-}
-#endif
 
 // This function is called during Check3D.  It basically check to see if the update
 // interval has expired and if so handles the rolling of the reels according to the
@@ -972,8 +792,6 @@ bool DispReel::RenderAnimation()
         // if there is a change or we are forced to update, then do so..
         if (rc || m_fforceupdate)
         {
-			// redraw the reels (and boarder) into the objectframe
-			RenderText();
             m_fforceupdate = false;
             rc = true;
 		}
@@ -982,37 +800,6 @@ bool DispReel::RenderAnimation()
 	return rc;
 }
 
-
-// This function gets calls just before the game starts to draw the first instance of
-// the object on the screen.  it is not called after that.  Check3D handles any dynamic updates.
-//
-void DispReel::RenderText()
-{
-#ifdef VPINBALL_DX7_LEFTOVERS
-    // update the object frame (or in this case, draw it for the first time)
-    UpdateObjFrame();
-
-    // copy the object frame onto the back buffer
-	if( GetPTable()->GetEMReelsEnabled() )
-	{
-		if(m_ptu->m_dispreelanim.m_pDispReel && m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe)  //rlc-problem6 end bad pointers, fix needed
-		{
-			RECT rc;
-			rc.left = 0;		
-			rc.top = 0;	
-	
-			rc.right = m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe->rc.right - m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe->rc.left;
-			rc.bottom = m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe->rc.bottom - m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe->rc.top;	
-	
-			g_pplayer->m_pin3d.m_pddsBackBuffer->BltFast(m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe->rc.left,
-														 m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe->rc.top,
-														 m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe->pdds,
-														 &rc,
-														 DDBLTFAST_SRCCOLORKEY);
-		}
-	}
-#endif
-}
 
 
 void DispReel::SetObjectPos()
@@ -1746,87 +1533,6 @@ float DispReel::getBoxHeight() const
 }
 
 
-void DispReel::UpdateObjFrame()
-{
-#ifdef VPINBALL_DX7_LEFTOVERS
-	if( !GetPTable()->GetEMReelsEnabled() ) return;
-
-	// is the background box transparent?
-#if 1
-    if (m_d.m_fTransparent)
-    {
-		Pin3D	* const ppin3d = &g_pplayer->m_pin3d;
-        // yes, then copy the current backgrount into the object frame
-        m_pobjframe->pdds->BltFast(0, 0, ppin3d->m_pddsStatic, &m_pobjframe->rc, DDBLTFAST_WAIT);
-    }
-    else
-    {
-        // nope, fill the box with the background colour
-        HDC hdc;
-        m_pobjframe->pdds->GetDC(&hdc);
-        HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
-        HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
-        PatBlt(hdc, 0, 0, m_pobjframe->rc.right - m_pobjframe->rc.left, m_pobjframe->rc.bottom - m_pobjframe->rc.top, PATCOPY);
-        SelectObject(hdc, hbrushold);
-        DeleteObject(hbrush);
-        m_pobjframe->pdds->ReleaseDC(hdc);
-    }
-#endif
-
-    // render the reels onto the screen (providing the reel generation worked)
-	if (m_pobjframe->pdds && (m_vreelframe.Size() > 0))
-    {
-		DDBLTFX	bltFx;
-		ZeroMemory(&bltFx, sizeof(bltFx));
-		bltFx.dwSize = sizeof(bltFx);
-		DWORD flags = DDBLTFAST_WAIT;
-
-		if (m_d.m_reeltype == ReelImage)
-		{
-			bltFx.ddckSrcColorkey.dwColorSpaceLowValue  = m_rgbImageTransparent;
-			bltFx.ddckSrcColorkey.dwColorSpaceHighValue = m_rgbImageTransparent;
-			flags |= DDBLT_KEYSRCOVERRIDE;
-		}
-
-	    RECT reelstriprc;
-        reelstriprc.left  = 0;
-	    reelstriprc.right = m_renderwidth;//m_reeldigitwidth;
-        for (int i=0; i<m_d.m_reelcount; ++i) if(m_vreelframe.ElementAt(ReelInfo[i].currentValue)->pdds)
-        {
-            reelstriprc.top = /*(ReelInfo[i].currentValue * m_renderheight) +*/ (int)(ReelInfo[i].motorOffset);
-			if (reelstriprc.top < 0)
-			{
-				reelstriprc.top += m_renderheight/*m_reeldigitheight*/ * (m_d.m_digitrange+1);
-			}
-			reelstriprc.bottom = /*reelstriprc.top +*/ m_renderheight/*m_reeldigitheight*/;
-
-    		// Set the color key for this bitmap (black)
-#if 0
-            m_pobjframe->pdds->Blt(&ReelInfo[i].position,   // destination rectangle
-                                   m_preelframe->pdds,      // source image
-                                   &reelstriprc,            // source rectangle
-                                   flags,
-                                   &bltFx);            // no blit effects ;-(
-#else
-			m_pobjframe->pdds->BltFast(ReelInfo[i].position.left, ReelInfo[i].position.top, m_vreelframe.ElementAt(ReelInfo[i].currentValue)->pdds,
-						&reelstriprc, DDBLTFAST_NOCOLORKEY/*DDBLTFAST_SRCCOLORKEY*/);
-#endif
-			if (ReelInfo[i].motorOffset != 0.0f)
-				{
-				const int nextval = (ReelInfo[i].currentValue + 1) % m_vreelframe.Size();
-				const int top = ReelInfo[i].position.top + (reelstriprc.bottom - reelstriprc.top);
-				reelstriprc.top = 0;
-				reelstriprc.bottom = (int)ReelInfo[i].motorOffset;
-				
-				m_pobjframe->pdds->BltFast(ReelInfo[i].position.left, top, m_vreelframe.ElementAt(nextval)->pdds,
-						&reelstriprc, DDBLTFAST_NOCOLORKEY/*DDBLTFAST_SRCCOLORKEY*/);
-				}
-        }
-    }
-    // objframe is now upto date
-#endif
-}
-
 void DispReel::SetVerticesForReel(int reelNum, int digit, Vertex3D_NoTex2 * v)
 {
     v[0].x = v[3].x = (float)ReelInfo[reelNum].position.left;
@@ -1838,11 +1544,19 @@ void DispReel::SetVerticesForReel(int reelNum, int digit, Vertex3D_NoTex2 * v)
     v[0].z = v[1].z = v[2].z = v[3].z = 1.0f;
     v[0].rhw = v[1].rhw = v[2].rhw = v[3].rhw = 1.0f;
 
+	if (digit < (int)m_digitTexCoords.size())
+	{
     v[0].tu = v[3].tu = m_digitTexCoords[digit].u_min;
     v[0].tv = v[1].tv = m_digitTexCoords[digit].v_min;
 
     v[1].tu = v[2].tu = m_digitTexCoords[digit].u_max;
     v[2].tv = v[3].tv = m_digitTexCoords[digit].v_max;
+	}
+	else
+	{
+		v[0].tu = v[1].tu = v[2].tu = v[3].tu = 0;
+		v[0].tv = v[1].tv = v[2].tv = v[3].tv = 0;
+	}
 
     v[0].color = v[1].color = v[2].color = v[3].color = 0xffffffff;
 }

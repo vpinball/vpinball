@@ -22,6 +22,8 @@
 #define DISPID_POSITION_Y               8
 #define DISPID_Decal_SizingType         9
 #define DISPID_AXISSCALE_XY             9
+#define VP_VERSION_MAJOR                9
+#define VP_VERSION_MINOR                9
 #define DISPID_Surface_FaceColor        10
 #define DISPID_Light_BlinkInterval      10
 #define DISPID_AXISSCALE_XZ             10
@@ -733,6 +735,7 @@
 #define IDC_SHADOW_Y                    1703
 #define IDC_BALL_TRAIL                  1704
 #define IDC_TRAIL_EDIT                  1705
+#define IDC_TABLE_FILENAME		1711
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770
@@ -823,7 +826,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        601
 #define _APS_NEXT_COMMAND_VALUE         32895
-#define _APS_NEXT_CONTROL_VALUE         426
+#define _APS_NEXT_CONTROL_VALUE         443
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
