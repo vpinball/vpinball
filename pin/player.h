@@ -109,51 +109,6 @@ private:
 class NudgeFilter
 {
 public:
-        NudgeFilter();
-
-    // adjust an acceleration sample (m_NudgeX or m_NudgeY)
-        void sample(float &a, U64 frameTime);
-
-private:
-    // debug output
-        IF_DEBUG_NUDGE(void dbg(const char *fmt, ...);)
-                IF_DEBUG_NUDGE(virtual const char *axis() const = 0;)
-
-    // running total of samples
-                float sum_;
-
-    // previous sample
-        float prv_;
-
-    // timestamp of last zero crossing in the raw acceleration data
-        U64 tzc_;
-
-    // timestamp of last correction inserted into the data
-        U64 tCorr_;
-
-    // timestamp of last motion == start of rest
-        U64 tMotion_;
-};
-
-class NudgeFilterX: public NudgeFilter
-   { const char *axis() const { return "x"; } };
-class NudgeFilterY: public NudgeFilter
-   { const char *axis() const { return "y"; } };
-
-
-// end mjr
-
-////////////////////////////////////////////////////////////////////////////////
-
-#ifdef DEBUG_NUDGE
-# define IF_DEBUG_NUDGE(code) code
-#else
-# define IF_DEBUG_NUDGE(code)
-#endif
-
-class NudgeFilter
-{
-public:
     NudgeFilter();
 
     // adjust an acceleration sample (m_NudgeX or m_NudgeY)
@@ -184,6 +139,8 @@ class NudgeFilterX: public NudgeFilter
    { const char *axis() const { return "x"; } };
 class NudgeFilterY: public NudgeFilter
    { const char *axis() const { return "y"; } };
+
+// end mjr
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -245,15 +202,15 @@ public:
         void RecomputePauseState();
         void RecomputePseudoPauseState();
 
-        void UltraNudge_update();
-        void UltraNudgeX( const int x, const int j );
-        void UltraNudgeY( const int y, const int j );
+        void NudgeUpdate();
+        void NudgeX( const int x, const int j );
+        void NudgeY( const int y, const int j );
         void FilterNudge();  // MJR
 #if 0
         int  UltraNudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
 #endif
 
-        void UltraPlunger_update();
+        void PlungerUpdate();
         void mechPlungerIn( const int z );
 
     void SetGravity(float slopeDeg, float strength);

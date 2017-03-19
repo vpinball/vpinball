@@ -91,7 +91,6 @@ public:
     bool rightMouseButtonDown;
     bool m_linearPlunger;
 
-	bool m_linearPlunger;
 	bool m_enable_nudge_filter; // enable new nudge filtering code
 
 private:

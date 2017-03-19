@@ -684,12 +684,6 @@ void PinInput::FireKeyEvent( const int dispid, const int key )
                 else if( mkey == DIK_LEFT   ) {mkey = DIK_RIGHT;        val |= PININ_RIGHT;}
                 else if( mkey == DIK_RIGHT  ) {mkey = DIK_LEFT;         val |= PININ_LEFT;}
 			}
-        else if (!WzSzStrCmp(dstr.wsz, "Pinscape Controller"))
-        {
-            ppinput->uShockDevice = ppinput->e_JoyCnt;  // remember uShock
-            ppinput->uShockType = USHOCKTYPE_GENERIC;   //set type = Generic
-            ppinput->m_linearPlunger = 1;               // use linear plunger calibration
-        }
 		else 
         {
                 // Normal left & right input.
