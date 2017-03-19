@@ -255,12 +255,19 @@ Player::Player()
     int detecthang;
         hr = GetRegInt("Player", "DetectHang", &detecthang);
         if (hr != S_OK)
-                detecthang = fFalse; // The default
-        m_fDetectScriptHang = (detecthang == 1);
+		detecthang = fFalse; // The default
+	m_fDetectScriptHang = (detecthang == 1);
 
-        m_fShowFPS = fFalse;
+	int cpuaffinitymask;
+	hr = GetRegInt("Player", "CPUAffinityMask", &cpuaffinitymask);
+	if (hr == S_OK)
+	{
+		::SetThreadAffinityMask(GetCurrentThread(), cpuaffinitymask);
+	}
 
-        m_fCloseDown = fFalse;
+	m_fShowFPS = fFalse;
+
+	m_fCloseDown = fFalse;
         m_fCloseType = 0;
 
         m_DebugBalls = fFalse;
