@@ -2100,9 +2100,6 @@ void Player::UpdatePhysics()
             m_tableVelOld = m_tableVel;
         }
 
-        // Apply our filter to the nudge data // MJR
-        FilterNudge();
-
         // Apply our filter to the nudge data
                 if(m_pininput.m_enable_nudge_filter)
                 FilterNudge();
