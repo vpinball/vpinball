@@ -50,7 +50,8 @@ public:
    }
    Vertex2D operator/ (float s) const
    {
-       return Vertex2D(x/s, y/s);
+       const float invs = 1.0f/s;
+       return Vertex2D(x*invs, y*invs);
    }
 
    Vertex2D& operator*= (float s)
@@ -61,8 +62,9 @@ public:
    }
    Vertex2D& operator/= (float s)
    {
-       x /= s;
-       y /= s;
+       const float invs = 1.0f/s;
+       x *= invs;
+       y *= invs;
        return *this;
    }
 
@@ -96,7 +98,7 @@ public:
 
    bool IsZero() const
    {
-       return x == 0 && y == 0;
+       return x == 0.f && y == 0.f;
    }
 };
 
@@ -105,11 +107,7 @@ public:
 class Vertex3Ds
 {
 public:
-   struct {
-      float x;
-      float y;
-      float z;
-   };
+   float x,y,z;
 
    Vertex3Ds() {}
    Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
@@ -155,7 +153,8 @@ public:
    }
    Vertex3Ds operator/ (float s) const
    {
-       return Vertex3Ds(x/s, y/s, z/s);
+       const float invs = 1.0f/s;
+       return Vertex3Ds(x*invs, y*invs, z*invs);
    }
 
    Vertex3Ds& operator*= (float s)
@@ -167,9 +166,10 @@ public:
    }
    Vertex3Ds& operator/= (float s)
    {
-       x /= s;
-       y /= s;
-       z /= s;
+       const float invs = 1.0f/s;
+       x *= invs;
+       y *= invs;
+       z *= invs;
        return *this;
    }
 
@@ -216,7 +216,7 @@ public:
 
    bool IsZero() const
    {
-       return x == 0 && y == 0 && z == 0;
+       return x == 0.f && y == 0.f && z == 0.f;
    }
 };
 

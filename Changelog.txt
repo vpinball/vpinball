@@ -5,6 +5,15 @@ VP 9.9.0 PM5 Plunger/Accel MOD Changelog
 - backport plunger/accel/nudge changes from main VP
 
 - minor fixes and backports from main VP
+ - disable visual touch/pen feedback to save one frame of input latency/lag
+ - fix timers that dis/enable themselves in the script
+ - fix EMReel crash when image is missing and reel value is nonzero
+ - extend right click behavior for multi-select to hidden items
+ - fixed rendering of overlapping balls
+ - include optional nudge filtering (selectable in the keys dialog)
+   and remove implicit dead zone handling (if you have the dead zone setting at 0% and now experience problems, set it to at least 1%)
+ - native support for the Pinscape Controller
+ - CPU affinity setting
 
 - DirectX 8 port for input handling (currently disabled)
 

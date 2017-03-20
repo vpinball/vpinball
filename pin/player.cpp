@@ -55,6 +55,31 @@ typedef enum _POINTER_BUTTON_CHANGE_TYPE {
   POINTER_CHANGE_FIFTHBUTTON_UP 
 } POINTER_BUTTON_CHANGE_TYPE;
 
+typedef enum tagFEEDBACK_TYPE {
+	FEEDBACK_TOUCH_CONTACTVISUALIZATION = 1,
+	FEEDBACK_PEN_BARRELVISUALIZATION = 2,
+	FEEDBACK_PEN_TAP = 3,
+	FEEDBACK_PEN_DOUBLETAP = 4,
+	FEEDBACK_PEN_PRESSANDHOLD = 5,
+	FEEDBACK_PEN_RIGHTTAP = 6,
+	FEEDBACK_TOUCH_TAP = 7,
+	FEEDBACK_TOUCH_DOUBLETAP = 8,
+	FEEDBACK_TOUCH_PRESSANDHOLD = 9,
+	FEEDBACK_TOUCH_RIGHTTAP = 10,
+	FEEDBACK_GESTURE_PRESSANDTAP = 11,
+	FEEDBACK_MAX = 0xFFFFFFFF
+} FEEDBACK_TYPE;
+
+typedef BOOL(WINAPI *pSWFS)(
+	HWND          hwnd,
+	FEEDBACK_TYPE feedback,
+	DWORD         dwFlags,
+	UINT32        size,
+	const VOID    *configuration
+	);
+
+static pSWFS SetWindowFeedbackSetting = NULL;
+
 typedef struct tagPOINTER_INFO {
   POINTER_INPUT_TYPE         pointerType;
   UINT32                     pointerId;
@@ -153,7 +178,7 @@ Player::Player()
         m_fNoTimeCorrect = fFalse;
         m_firstFrame = true;
 
-    m_fThrowBalls = fFalse;
+        m_fThrowBalls = false;
         m_fAccelerometer = fTrue;       // true if electronic Accelerometer enabled 
         m_AccelNormalMount = fTrue;     // normal mounting (left hand coordinates)
         m_AccelAngle = 0;                       // 0 degrees (GUI is lefthand coordinates)
@@ -1374,6 +1399,29 @@ void Player::InitWindow()
 
         m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
+   // Disable visual feedback for touch, this saves one frame of latency on touchdisplays
+   if (!SetWindowFeedbackSetting)
+	   SetWindowFeedbackSetting = (pSWFS)GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
+	   "SetWindowFeedbackSetting");
+   if (SetWindowFeedbackSetting)
+   {
+	   const BOOL fEnabled = FALSE;
+
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_TAP, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(fEnabled), &fEnabled);
+
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_TAP, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_DOUBLETAP, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_RIGHTTAP, 0, sizeof(fEnabled), &fEnabled);
+
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(fEnabled), &fEnabled);
+   }
+
     mixer_init( m_hwnd );
     hid_init();
 
@@ -1620,7 +1668,7 @@ void NudgeFilter::sample(float &a, const U64 now)
 	else if (now - m_tCorr > 50000 || now - m_tMotion > 50000)
 	{
 		// bring the running total toward neutral
-		const float corr = expf(0.33f*logf(fabsf(m_sum*(float)(1.0 / .02)))) * (m_sum < 0.0f ? -.02f : .02f);
+		const float corr = expf(0.33f*logf(fabsf(m_sum*(float)(1.0/.02)))) * (m_sum < 0.0f ? -.02f : .02f);
 		IF_DEBUG_NUDGE(strcat(notes, "damp ");)
 			a -= corr;
 		m_sum -= corr;
@@ -3935,7 +3983,7 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                            int checked;
                            hwndControl = GetDlgItem(hwndDlg, IDC_BALL_THROWING);
                            checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
-                           g_pplayer->m_fThrowBalls = checked;
+                           g_pplayer->m_fThrowBalls = !!checked;
                            break;
                         }
                                                         }

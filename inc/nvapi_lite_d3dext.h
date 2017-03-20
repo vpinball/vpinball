@@ -62,6 +62,10 @@ typedef enum
 //!                argument (D3D_FEATURE_LEVEL supported by the device) that the function fills in. This argument
 //!                can contain -1 (NVAPI_DEVICE_FEATURE_LEVEL_NULL), if the requested featureLevel is less than DirecX 10.0.
 //!
+//!            NOTE: When NvAPI_D3D11_CreateDevice is called with 10+ feature level we have an issue on few set of
+//!                  tesla hardware (G80/G84/G86/G92/G94/G96) which does not support all feature level 10+ functionality
+//!                  e.g. calling driver with mismatch between RenderTarget and Depth Buffer. App developers should
+//!                  take into consideration such limitation when using NVAPI on such tesla hardwares.
 //! SUPPORTED OS:  Windows Vista and higher
 //!
 //!
@@ -159,18 +163,18 @@ NVAPI_INTERFACE NvAPI_D3D11_CreateDeviceAndSwapChain(IDXGIAdapter* pAdapter,
 //! SUPPORTED OS:  Windows Vista and higher
 //!
 //!
-//! \param [in]        pDev         The device to set depth bounds test
-//! \param [in]        bEnable      Enable(non-zero)/disable(zero) the depth bounds test
-//! \param [in]        fMinDepth    The minimum depth for depth bounds test
-//! \param [in]        fMaxDepth    The maximum depth for depth bounds test
-//!                                 The valid values for fMinDepth and fMaxDepth
-//!                                 are such that 0 <= fMinDepth <= fMaxDepth <= 1
+//! \param [in]        pDeviceOrContext   The device or device context to set depth bounds test
+//! \param [in]        bEnable            Enable(non-zero)/disable(zero) the depth bounds test
+//! \param [in]        fMinDepth          The minimum depth for depth bounds test
+//! \param [in]        fMaxDepth          The maximum depth for depth bounds test
+//!                                       The valid values for fMinDepth and fMaxDepth
+//!                                       are such that 0 <= fMinDepth <= fMaxDepth <= 1
 //!
 //! \return  ::NVAPI_OK if the depth bounds test was correcly enabled or disabled
 //!
 //! \ingroup dx
 ///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_D3D11_SetDepthBoundsTest(ID3D11Device *pDev,
+NVAPI_INTERFACE NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext,
                                                NvU32 bEnable,
                                                float fMinDepth,
                                                float fMaxDepth);

@@ -182,15 +182,15 @@ public:
         _33 = sz;
     }
 
-    void RotateXMatrix(const GPINFLOAT x)
+    inline void RotateXMatrix(const float x)
     {
         SetIdentity();
-        _22 = _33 = (float)cos(x);
-        _23 = (float)sin(x);
+        _22 = _33 = cosf(x);
+        _23 = sinf(x);
         _32 = -_23;
     }
 
-    void RotateYMatrix(const GPINFLOAT y)
+    inline void RotateYMatrix(const float y)
     {
         SetIdentity();
         _11 = _33 = (float)cos(y);
@@ -198,7 +198,7 @@ public:
         _13 = -_31;
     }
 
-    void RotateZMatrix(const GPINFLOAT z)
+    inline void RotateZMatrix(const float z)
     {
         SetIdentity();
         _11 = _22 = (float)cos(z);

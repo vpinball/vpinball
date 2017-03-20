@@ -123,8 +123,10 @@ void Textbox::WriteRegDefaults()
 	int charCnt = wcslen(fd.lpstrName) +1;
 	WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, charCnt, strTmp, 2*charCnt, NULL, NULL);
 	SetRegValue("DefaultProps\\TextBox","FontName", REG_SZ, &strTmp,strlen(strTmp));
-	SetRegValue("DefaultProps\\TextBox","FontWeight",REG_DWORD,&fd.sWeight,4);
-	SetRegValue("DefaultProps\\TextBox","FontCharSet",REG_DWORD,&fd.sCharset,4);
+	int weight = fd.sWeight;
+	int charset = fd.sCharset;
+	SetRegValueInt("DefaultProps\\TextBox","FontWeight",weight);
+	SetRegValueInt("DefaultProps\\TextBox","FontCharSet",charset);
 	SetRegValue("DefaultProps\\TextBox","FontItalic",REG_DWORD,&fd.fItalic,4);
 	SetRegValue("DefaultProps\\TextBox","FontUnderline",REG_DWORD,&fd.fUnderline,4);
 	SetRegValue("DefaultProps\\TextBox","FontStrikeThrough",REG_DWORD,&fd.fStrikethrough,4);
