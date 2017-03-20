@@ -1,5 +1,11 @@
-VP 9.9.1 Changelog
-------------------------
+VP 9.9.0 PM5 Plunger/Accel MOD Changelog
+----------------------------------------
+- all PM5 physics changes
+
+- backport plunger/accel/nudge changes from main VP
+
+- minor fixes and backports from main VP
+
 - DirectX 8 port for input handling (currently disabled)
 
 - texture size limit/downscale now respects aspect ratio (currently disabled)
