@@ -3175,7 +3175,7 @@ void Player::DrawBulbLightBuffer()
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
 
-      for (unsigned int blur = 0; blur < 2; ++blur) //!!! opt.: use larger blur kernel instead?!
+      //for (unsigned int blur = 0; blur < 2; ++blur) // uses larger blur kernel instead now (see below)
       {
          RenderTarget* tmpBloomSurface2;
          {
@@ -3188,7 +3188,7 @@ void Player::DrawBulbLightBuffer()
             m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
             const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0 / (double)m_width), (float)(3.0 / (double)m_height), 1.0f, 1.0f);
             m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
-            m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_horiz");
+            m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_horiz19x19");
 
             m_pin3d.m_pd3dDevice->FBShader->Begin(0);
             m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
@@ -3205,7 +3205,7 @@ void Player::DrawBulbLightBuffer()
             m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture());
             const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0 / (double)m_width), (float)(3.0 / (double)m_height), 1.0f, 1.0f);
             m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
-            m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_vert");
+            m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_vert19x19");
 
             m_pin3d.m_pd3dDevice->FBShader->Begin(0);
             m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
@@ -3395,7 +3395,7 @@ void Player::Bloom()
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
       const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0 / (double)m_width), (float)(3.0 / (double)m_height), 1.0f, 1.0f);
       m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
-      m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_horiz");
+      m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_horiz9x9");
 
       m_pin3d.m_pd3dDevice->FBShader->Begin(0);
       m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
@@ -3412,7 +3412,7 @@ void Player::Bloom()
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture());
       const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0 / (double)m_width), (float)(3.0 / (double)m_height), m_ptable->m_bloom_strength, 1.0f);
       m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
-      m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_vert");
+      m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_vert9x9");
 
       m_pin3d.m_pd3dDevice->FBShader->Begin(0);
       m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();

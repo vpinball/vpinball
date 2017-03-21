@@ -230,57 +230,76 @@ float4 ps_main_fb_tonemap_AO_no_filter_static(in VS_OUTPUT_2D IN) : COLOR
 //
 
 #if 0 // full or abusing lerp
-static const float offset[5] = { 0.0, 1.0, 2.0, 3.0, 4.0 };
-static const float weight[5] = { 0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162 };
+static const float offset9x9[5] = { 0.0, 1.0, 2.0, 3.0, 4.0 };
+static const float weight9x9[5] = { 0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162 };
 
-float4 ps_main_fb_bloom_horiz( in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_bloom_horiz9x9( in VS_OUTPUT_2D IN) : COLOR
 {
-    float3 result = tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy*0.5, 0.,0.)).xyz*weight[0];
+    float3 result = tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy*0.5, 0.,0.)).xyz*weight9x9[0];
     [unroll] for(int i = 1; i < 5; ++i)
     {
-        result += tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy*0.5+float2(w_h_height.x*offset[i],0.0), 0.,0.)).xyz*weight[i];
-        result += tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy*0.5-float2(w_h_height.x*offset[i],0.0), 0.,0.)).xyz*weight[i];
+        result += tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy*0.5+float2(w_h_height.x*offset9x9[i],0.0), 0.,0.)).xyz*weight9x9[i];
+        result += tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy*0.5-float2(w_h_height.x*offset9x9[i],0.0), 0.,0.)).xyz*weight9x9[i];
     }
     return float4(result, 1.0);
 }
 
-float4 ps_main_fb_bloom_vert( in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_bloom_vert9x9(in VS_OUTPUT_2D IN) : COLOR
 {
-    float3 result = tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy*0.5, 0.,0.)).xyz*weight[0];
+    float3 result = tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy*0.5, 0.,0.)).xyz*weight9x9[0];
     [unroll] for(int i = 1; i < 5; ++i)
     {
-        result += tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset[i]), 0.,0.)).xyz*weight[i];
-        result += tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset[i]), 0.,0.)).xyz*weight[i];
+        result += tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset9x9[i]), 0.,0.)).xyz*weight9x9[i];
+        result += tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset9x9[i]), 0.,0.)).xyz*weight9x9[i];
     }
     return float4(result*w_h_height.z, 1.0);
 }
 
 #else
 
-static const float offset[3] = { 0.0, 1.3846153846, 3.2307692308 };
-//13: 0.0,1.411764705882353,3.2941176470588234,5.176470588235294
-static const float weight[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
-//13: 0.1964825501511404,0.2969069646728344,0.09447039785044732,0.010381362401148057
+static const float offset9x9[3] = { 0.0, 1.3846153846, 3.2307692308 };
+static const float weight9x9[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
 
-float4 ps_main_fb_bloom_horiz( in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_bloom_horiz9x9(in VS_OUTPUT_2D IN) : COLOR
 {
-    float3 result = tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5, 0.,0.)).xyz*weight[0];
+    float3 result = tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5, 0.,0.)).xyz*weight9x9[0];
     [unroll] for(int i = 1; i < 3; ++i)
-    {
-        result += tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5+float2(w_h_height.x*offset[i],0.0), 0.,0.)).xyz*weight[i];
-        result += tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5-float2(w_h_height.x*offset[i],0.0), 0.,0.)).xyz*weight[i];
-    }
+        result += (tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5+float2(w_h_height.x*offset9x9[i],0.0), 0.,0.)).xyz
+                  +tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5-float2(w_h_height.x*offset9x9[i],0.0), 0.,0.)).xyz)*weight9x9[i];
+
     return float4(result, 1.0);
 }
 
-float4 ps_main_fb_bloom_vert( in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_bloom_vert9x9(in VS_OUTPUT_2D IN) : COLOR
 {
-    float3 result = tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5, 0.,0.)).xyz*weight[0];
+    float3 result = tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5, 0.,0.)).xyz*weight9x9[0];
     [unroll] for(int i = 1; i < 3; ++i)
-    {
-        result += tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset[i]), 0.,0.)).xyz*weight[i];
-        result += tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset[i]), 0.,0.)).xyz*weight[i];
-    }
+        result += (tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset9x9[i]), 0.,0.)).xyz
+                  +tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset9x9[i]), 0.,0.)).xyz)*weight9x9[i];
+
+    return float4(result*w_h_height.z, 1.0);
+}
+
+static const float offset19x19[5] = { 0.65319, 2.42547, 4.36803, 6.31412, 8.26479 }; //no center!
+static const float weight19x19[5] = { 0.19955, 0.18945, 0.08376, 0.02321, 0.00403 }; //no center!
+
+float4 ps_main_fb_bloom_horiz19x19(in VS_OUTPUT_2D IN) : COLOR
+{
+    float3 result = float3(0.0, 0.0, 0.0);
+    [unroll] for(int i = 0; i < 5; ++i)
+        result += (tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5+float2(w_h_height.x*offset19x19[i],0.0), 0.,0.)).xyz
+                  +tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5-float2(w_h_height.x*offset19x19[i],0.0), 0.,0.)).xyz)*weight19x19[i];
+
+    return float4(result, 1.0);
+}
+
+float4 ps_main_fb_bloom_vert19x19(in VS_OUTPUT_2D IN) : COLOR
+{
+    float3 result = float3(0.0, 0.0, 0.0);
+    [unroll] for(int i = 0; i < 5; ++i)
+        result += (tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset19x19[i]), 0.,0.)).xyz
+                  +tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset19x19[i]), 0.,0.)).xyz)*weight19x19[i];
+
     return float4(result*w_h_height.z, 1.0);
 }
 #endif
@@ -433,23 +452,45 @@ technique fb_tonemap_AO_no_filter_static
 	}
 }
 
-technique fb_bloom_horiz
+// All Bloom variants:
+
+technique fb_bloom_horiz9x9
 { 
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_fb_bloom_horiz();
-   } 
+      PixelShader = compile ps_3_0 ps_main_fb_bloom_horiz9x9();
+   }
 }
 
-technique fb_bloom_vert
+technique fb_bloom_vert9x9
 { 
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_fb_bloom_vert();
-   } 
+      PixelShader = compile ps_3_0 ps_main_fb_bloom_vert9x9();
+   }
 }
+
+technique fb_bloom_horiz19x19
+{
+	pass P0
+	{
+		VertexShader = compile vs_3_0 vs_main_no_trafo();
+		PixelShader = compile ps_3_0 ps_main_fb_bloom_horiz19x19();
+	}
+}
+
+technique fb_bloom_vert19x19
+{
+	pass P0
+	{
+		VertexShader = compile vs_3_0 vs_main_no_trafo();
+		PixelShader = compile ps_3_0 ps_main_fb_bloom_vert19x19();
+	}
+}
+
+//
 
 technique fb_mirror
 {
