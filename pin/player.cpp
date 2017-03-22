@@ -2517,7 +2517,7 @@ void NudgeFilter::sample(float &a, const U64 now)
       // small value -> not a sustained one-way acceleration
       m_tzc = now;
    }
-   else if (fabsf(a) > .05f && now - m_tzc > 500000)
+   /*else if (fabsf(a) > .05f && now - m_tzc > 500000) // disabling this fixes an issue with Mot-Ion / Pinball Wizard controllers that suffer from calibration drift as they warm up
    {
       // More than 500 ms in motion with same sign - we must be
       // experiencing a gravitational acceleration due to a tilt
@@ -2527,7 +2527,7 @@ void NudgeFilter::sample(float &a, const U64 now)
       m_sum = 0;
       IF_DEBUG_NUDGE(dbg("%f >>>\n", a));
       return;
-   }
+   }*/
 
    // if this sample is non-zero, remember it as the previous sample
    if (a != 0.f)
