@@ -13,6 +13,8 @@ VP 10.3.0 Changelog
 - change AntiFriction to Damping for the gate and spinner elements (which also changes the input range from 0..100 to 0..1, and is inverse to before, e.g. Damping="1-AntiFriction/100")
   (old tables will still load/save exactly the same though, as it was always used like this internally anyway)
 
+- slightly tweak bloom filter and light transmission filter to capture a larger radius (for very bright lights)
+
 - remove Visual Studio 2008 support
 - add Visual Studio 2017 support
 
