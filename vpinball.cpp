@@ -6,6 +6,7 @@
 #include "resource.h"
 #include "vpversion.h"
 #include "svn_version.h"
+#include "ProtectTableDialog.h"
 
 #if defined(IMSPANISH)
 #define TOOLBAR_WIDTH 152
@@ -170,8 +171,6 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -1164,10 +1163,11 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
             ShowPermissionError();
          else
          {
-            size_t foo = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_PROTECT_DIALOG),
-               m_hwnd, ProtectTableProc, 0);
+             ProtectTableDialog *protectDlg = new ProtectTableDialog();
+             INT_PTR foo = protectDlg->DoModal();
+
             // if the dialog returned ok then perform a normal save as
-            if (foo)
+            if (foo==1)
             {
                HRESULT foo2 = ptCur->SaveAs();
                if (foo2 == S_OK)
@@ -1190,10 +1190,10 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       ptCur = GetActiveTable();
       if (ptCur)
       {
-         size_t foo = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_UNLOCK_DIALOG),
-            m_hwnd, UnlockTableProc, 0);
+          UnprotectDialog *unprotectDlg = new UnprotectDialog();
+          INT_PTR foo = unprotectDlg->DoModal();
          // if the dialog returned ok then table is unlocked
-         if (foo)
+         if (foo==1)
          {
             // re-enable any disabled menu items
             SetEnableToolbar();			// disable any tool bars
@@ -4249,257 +4249,6 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
    return FALSE;
 }
 
-
-INT_PTR CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-   switch (uMsg)
-   {
-   case WM_INITDIALOG:
-   {
-      HWND hwndParent = GetParent(hwndDlg);
-      RECT rcDlg;
-      RECT rcMain;
-      GetWindowRect(hwndParent, &rcMain);
-      GetWindowRect(hwndDlg, &rcDlg);
-
-      SetWindowPos(hwndDlg, NULL,
-         (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
-         (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
-         0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
-
-      // limit the password fields to 16 characters (or PROT_PASSWORD_LENGTH)
-      HWND hwndPassword = GetDlgItem(hwndDlg, IDC_PROTECT_PASSWORD);
-      SendMessage(hwndPassword, EM_LIMITTEXT, PROT_PASSWORD_LENGTH, 0L);
-      hwndPassword = GetDlgItem(hwndDlg, IDC_PROTECT_PASSWORD2);
-      SendMessage(hwndPassword, EM_LIMITTEXT, PROT_PASSWORD_LENGTH, 0L);
-   }
-   return TRUE;
-   break;
-
-   case WM_COMMAND:
-   {
-      switch (HIWORD(wParam))
-      {
-      case BN_CLICKED:
-         switch (LOWORD(wParam))
-         {
-         case IDC_PROTECT_TOTALLOCK:
-         {
-            // if the total lock check box is checked then disable any other options
-            const size_t checked = SendDlgItemMessage(hwndDlg, IDC_PROTECT_TOTALLOCK, BM_GETCHECK, 0, 0);
-
-            HWND hwndScript = GetDlgItem(hwndDlg, IDC_PROTECT_SCRIPT);
-            HWND hwndSaveAs = GetDlgItem(hwndDlg, IDC_PROTECT_SAVEAS);
-            HWND hwndSaveAsProt = GetDlgItem(hwndDlg, IDC_PROTECT_SAVEASPROT);
-            HWND hwndManagers = GetDlgItem(hwndDlg, IDC_PROTECT_MANAGERS);
-            HWND hwndCopy = GetDlgItem(hwndDlg, IDC_PROTECT_COPY);
-            HWND hwndView = GetDlgItem(hwndDlg, IDC_PROTECT_VIEWTABLE);
-            HWND hwndDebugger = GetDlgItem(hwndDlg, IDC_PROTECT_DEBUGGER);
-
-            const int checkstate = !(checked == BST_CHECKED);
-
-            EnableWindow(hwndScript, checkstate);
-            EnableWindow(hwndSaveAs, checkstate);
-            EnableWindow(hwndSaveAsProt, checkstate);
-            EnableWindow(hwndManagers, checkstate);
-            EnableWindow(hwndCopy, checkstate);
-            EnableWindow(hwndView, checkstate);
-            EnableWindow(hwndDebugger, checkstate);
-         }
-         break;
-
-         case IDD_PROTECT_SHOWPASSWORD:
-         {
-            HWND hwndPassword = GetDlgItem(hwndDlg, IDC_PROTECT_PASSWORD);
-            HWND hwndPassword2 = GetDlgItem(hwndDlg, IDC_PROTECT_PASSWORD2);
-
-            const size_t checked = SendDlgItemMessage(hwndDlg, IDD_PROTECT_SHOWPASSWORD, BM_GETCHECK, 0, 0);
-            if (checked == BST_CHECKED)
-            {
-               SendMessage(hwndPassword, EM_SETPASSWORDCHAR, 0, 0L);
-               SendMessage(hwndPassword2, EM_SETPASSWORDCHAR, 0, 0L);
-            }
-            else
-            {
-               SendMessage(hwndPassword, EM_SETPASSWORDCHAR, '*', 0L);
-               SendMessage(hwndPassword2, EM_SETPASSWORDCHAR, '*', 0L);
-            }
-            InvalidateRect(hwndPassword, NULL, FALSE);
-            InvalidateRect(hwndPassword2, NULL, FALSE);
-         }
-         break;
-
-         case IDOK:
-         {
-            BOOL fail = fFalse;
-
-            // get the check box status(s)
-            unsigned long flags = 0;
-            const size_t checked1 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SAVEAS, BM_GETCHECK, 0, 0);
-            if (checked1 == BST_CHECKED) flags |= DISABLE_TABLE_SAVE;
-            const size_t checked2 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SAVEASPROT, BM_GETCHECK, 0, 0);
-            if (checked2 == BST_CHECKED) flags |= DISABLE_TABLE_SAVEPROT;
-            const size_t checked3 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SCRIPT, BM_GETCHECK, 0, 0);
-            if (checked3 == BST_CHECKED) flags |= DISABLE_SCRIPT_EDITING;
-            const size_t checked4 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_MANAGERS, BM_GETCHECK, 0, 0);
-            if (checked4 == BST_CHECKED) flags |= DISABLE_OPEN_MANAGERS;
-            const size_t checked5 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_COPY, BM_GETCHECK, 0, 0);
-            if (checked5 == BST_CHECKED) flags |= DISABLE_CUTCOPYPASTE;
-            const size_t checked6 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_VIEWTABLE, BM_GETCHECK, 0, 0);
-            if (checked6 == BST_CHECKED) flags |= DISABLE_TABLEVIEW;
-            const size_t checked7 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_DEBUGGER, BM_GETCHECK, 0, 0);
-            if (checked7 == BST_CHECKED) flags |= DISABLE_DEBUGGER;
-            const size_t checked0 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_TOTALLOCK, BM_GETCHECK, 0, 0);
-            if (checked0 == BST_CHECKED) flags |= DISABLE_EVERYTHING;
-
-            // get the passwords
-            char pw[PROT_PASSWORD_LENGTH + 1];
-            ZeroMemory(pw, sizeof(pw));
-            HWND hwndPw = GetDlgItem(hwndDlg, IDC_PROTECT_PASSWORD);
-            GetWindowText(hwndPw, pw, sizeof(pw));
-
-            char pw2[PROT_PASSWORD_LENGTH + 2];
-            ZeroMemory(pw2, sizeof(pw2));
-            HWND hwndPw2 = GetDlgItem(hwndDlg, IDC_PROTECT_PASSWORD2);
-            GetWindowText(hwndPw2, pw2, sizeof(pw2));
-
-            // is there at least one box checked?? (flags must contain at least 1 protection bit)
-            if (flags == 0)
-            {
-               LocalString ls(IDS_PROTECT_ONETICKED);
-               MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
-               fail = fTrue;
-            }
-            else
-            {
-               // if both strings are empty then bomb out
-               if ((pw[0] == '\0') && (pw2[0] == '\0'))
-               {
-                  LocalString ls(IDS_PROTECT_PW_ZEROLEN);
-                  MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
-                  fail = fTrue;
-               }
-               else
-               {
-                  // do both strings match?
-                  if (strcmp(pw, pw2) != 0)
-                  {
-                     LocalString ls(IDS_PROTECT_PW_MISMATCH);
-                     MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
-                     fail = fTrue;
-                  }
-               }
-            }
-
-            // has anything failed the sanity check?
-            if (!fail)
-            {
-               // nope.. lets get started
-               PinTable *pt = g_pvp->GetActiveTable();
-               BOOL rc = pt->SetupProtectionBlock((unsigned char *)pw, flags);
-               EndDialog(hwndDlg, rc);
-            }
-         }
-         break;
-
-         case IDCANCEL:
-            EndDialog(hwndDlg, FALSE);
-            break;
-         }
-      }
-   }
-   break;
-
-   case WM_CLOSE:
-      EndDialog(hwndDlg, FALSE);
-      break;
-   }
-
-   return FALSE;
-}
-
-INT_PTR CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-   switch (uMsg)
-   {
-   case WM_INITDIALOG:
-   {
-      HWND hwndParent = GetParent(hwndDlg);
-      RECT rcDlg;
-      RECT rcMain;
-      GetWindowRect(hwndParent, &rcMain);
-      GetWindowRect(hwndDlg, &rcDlg);
-
-      SetWindowPos(hwndDlg, NULL,
-         (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
-         (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
-         0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
-
-      // limit the password fields to 16 characters (or PROT_PASSWORD_LENGTH)
-      HWND hwndPassword = GetDlgItem(hwndDlg, IDC_UNLOCK_PASSWORD);
-      SendMessage(hwndPassword, EM_LIMITTEXT, PROT_PASSWORD_LENGTH, 0L);
-   }
-   return TRUE;
-   break;
-
-   case WM_COMMAND:
-   {
-      switch (HIWORD(wParam))
-      {
-      case BN_CLICKED:
-         switch (LOWORD(wParam))
-         {
-         case IDOK:
-         {
-            // get the password
-            char pw[PROT_PASSWORD_LENGTH + 1];
-            ZeroMemory(pw, sizeof(pw));
-            HWND hwndPw = GetDlgItem(hwndDlg, IDC_UNLOCK_PASSWORD);
-            GetWindowText(hwndPw, pw, sizeof(pw));
-
-            // if both password is empty bring up a message box
-            if (pw[0] == '\0')
-            {
-               LocalString ls(IDS_PROTECT_PW_ZEROLEN);
-               MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
-            }
-            else
-            {
-               PinTable * const pt = g_pvp->GetActiveTable();
-               if (pt)
-               {
-                  const BOOL rc = pt->UnlockProtectionBlock((unsigned char *)pw);
-                  if (rc)
-                  {
-                     LocalString ls(IDS_UNLOCK_SUCCESS);
-                     MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONINFORMATION);
-                     EndDialog(hwndDlg, TRUE);
-                  }
-                  else
-                  {
-                     LocalString ls(IDS_UNLOCK_FAILED);
-                     MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
-                  }
-               }
-            }
-         }
-         break;
-
-         case IDCANCEL:
-            EndDialog(hwndDlg, FALSE);
-            break;
-         }
-      }
-   }
-   break;
-
-   case WM_CLOSE:
-      EndDialog(hwndDlg, FALSE);
-      break;
-   }
-
-   return FALSE;
-}
 void VPinball::ShowDrawingOrderDialog(bool select)
 {
    DrawingOrderDialog *orderDlg = new DrawingOrderDialog(select);
