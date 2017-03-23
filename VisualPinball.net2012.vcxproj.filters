@@ -96,6 +96,7 @@
     <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
     <ClCompile Include="dialogs\CollectionManagerDialog.cpp" />
     <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
+    <ClCompile Include="dialogs\ProtectTableDialog.cpp">
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -359,12 +360,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\dbghelp.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\dbgprop.h">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="inc\freeimage.h">
       <Filter>inc</Filter>
     </ClInclude>
@@ -375,9 +370,6 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\hidusage.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\msscript.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\nvapi.h">
@@ -898,6 +890,7 @@
     <ClInclude Include="dialogs\VideoOptionsDialog.h" />
     <ClInclude Include="dialogs\CollectionManagerDialog.h" />
     <ClInclude Include="dialogs\PhysicsOptionsDialog.h" />
+    <ClInclude Include="dialogs\ProtectTableDialog.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
