@@ -222,7 +222,7 @@ float4 ps_main_stereo(in VS_OUTPUT_2D IN) : COLOR
 
 float GetLuminance(const float3 l)
 {
-	return 0.25*l.x + 0.5*l.y + 0.25*l.z; // experimental, red and blue should not suffer too much
+	return dot(l, float3(0.25,0.5,0.25)); // experimental, red and blue should not suffer too much
 	//return 0.299*l.x + 0.587*l.y + 0.114*l.z;
 	//return 0.2126*l.x + 0.7152*l.y + 0.0722*l.z; // photometric
 	//return sqrt(0.299 * l.x*l.x + 0.587 * l.y*l.y + 0.114 * l.z*l.z); // hsp
@@ -348,7 +348,7 @@ float4 ps_main_nfaa(in VS_OUTPUT_2D IN) : COLOR
 
 float luma(const float3 l)
 {
-    return 0.25*l.x + 0.5*l.y + 0.25*l.z; // experimental, red and blue should not suffer too much
+    return dot(l, float3(0.25,0.5,0.25)); // experimental, red and blue should not suffer too much
     //return 0.299*l.x + 0.587*l.y + 0.114*l.z;
     //return 0.2126*l.x + 0.7152*l.y + 0.0722*l.z; // photometric
     //return sqrt(0.299 * l.x*l.x + 0.587 * l.y*l.y + 0.114 * l.z*l.z); // hsp
@@ -360,7 +360,7 @@ float4 ps_main_fxaa1(in VS_OUTPUT_2D IN) : COLOR
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 
 	const float3 rMc = tex2Dlod(texSampler5, float4(u, 0.,0.)).xyz;
-	if(w_h_height.w == 1.0) // depth buffer available?
+	[branch] if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
 		[branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
@@ -412,7 +412,7 @@ float4 ps_main_fxaa2(in VS_OUTPUT_2D IN) : COLOR
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 
 	const float3 rgbyM = tex2Dlod(texSampler5, float4(u, 0.,0.)).xyz;
-	if(w_h_height.w == 1.0) // depth buffer available?
+	[branch] if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
 		[branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
@@ -441,7 +441,7 @@ float4 ps_main_fxaa2(in VS_OUTPUT_2D IN) : COLOR
 	const float range = rangeMax - rangeMin;
 	const float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower)
 	const bool earlyExit = range < rangeMaxClamped;
-	if(earlyExit)
+	[branch] if(earlyExit)
 		return float4(rgbyM, 1.0);
 	const float lumaNS = lumaN + lumaS;
 	const float lumaWE = lumaW + lumaE;
@@ -468,7 +468,7 @@ float4 ps_main_fxaa2(in VS_OUTPUT_2D IN) : COLOR
 	if(!horzSpan) lumaN = lumaW;
 	if(!horzSpan) lumaS = lumaE;
 	if(horzSpan) lengthSign = offs.y;
-	const float subpixB = (subpixA * (1.0/12.0)) - lumaM;
+	const float subpixB = subpixA * (1.0/12.0) - lumaM;
 	const float gradientN = lumaN - lumaM;
 	const float gradientS = lumaS - lumaM;
 	float lumaNN = lumaN + lumaM;
@@ -489,7 +489,7 @@ float4 ps_main_fxaa2(in VS_OUTPUT_2D IN) : COLOR
 	const float subpixE = subpixC * subpixC;
 	float lumaEndP = luma(tex2Dlod(texSampler5, float4(posP, 0.f,0.f)).xyz);
 	if(!pairN) lumaNN = lumaSS;
-	const float gradientScaled = gradient * 1.0/4.0;
+	const float gradientScaled = gradient * (1.0/4.0);
 	const float lumaMM = lumaM - lumaNN * 0.5;
 	const float subpixF = subpixD * subpixE;
 	const bool lumaMLTZero = (lumaMM < 0.0);
@@ -559,7 +559,7 @@ float4 ps_main_fxaa3(in VS_OUTPUT_2D IN) : COLOR
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 
 	const float3 rgbyM = tex2Dlod(texSampler5, float4(u, 0.,0.)).xyz;
-	if(w_h_height.w == 1.0) // depth buffer available?
+	[branch] if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
 		[branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
@@ -588,7 +588,7 @@ float4 ps_main_fxaa3(in VS_OUTPUT_2D IN) : COLOR
 	const float range = rangeMax - rangeMin;
 	const float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower)
 	const bool earlyExit = range < rangeMaxClamped;
-	if(earlyExit)
+	[branch] if(earlyExit)
 		return float4(rgbyM, 1.0f);
 	const float lumaNS = lumaN + lumaS;
 	const float lumaWE = lumaW + lumaE;
@@ -615,7 +615,7 @@ float4 ps_main_fxaa3(in VS_OUTPUT_2D IN) : COLOR
 	if(!horzSpan) lumaN = lumaW;
 	if(!horzSpan) lumaS = lumaE;
 	if(horzSpan) lengthSign = offs.y;
-	const float subpixB = (subpixA * (1.0/12.0)) - lumaM;
+	const float subpixB = subpixA * (1.0/12.0) - lumaM;
 	const float gradientN = lumaN - lumaM;
 	const float gradientS = lumaS - lumaM;
 	float lumaNN = lumaN + lumaM;
@@ -636,7 +636,7 @@ float4 ps_main_fxaa3(in VS_OUTPUT_2D IN) : COLOR
 	const float subpixE = subpixC * subpixC;
 	float lumaEndP = luma(tex2Dlod(texSampler5, float4(posP, 0.f,0.f)).xyz);
 	if(!pairN) lumaNN = lumaSS;
-	const float gradientScaled = gradient * 1.0/4.0;
+	const float gradientScaled = gradient * (1.0/4.0);
 	const float lumaMM = lumaM - lumaNN * 0.5;
 	const float subpixF = subpixD * subpixE;
 	const bool lumaMLTZero = (lumaMM < 0.0);
@@ -649,7 +649,7 @@ float4 ps_main_fxaa3(in VS_OUTPUT_2D IN) : COLOR
 	bool doneNP = ((!doneN) || (!doneP));
 	if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P1;
 	if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P1;
-	if(doneNP) {
+	[branch] if(doneNP) {
 		if(!doneN) lumaEndN = luma(tex2Dlod(texSampler5, float4(posN.xy, 0.f,0.f)).xyz);
 		if(!doneP) lumaEndP = luma(tex2Dlod(texSampler5, float4(posP.xy, 0.f,0.f)).xyz);
 		if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
