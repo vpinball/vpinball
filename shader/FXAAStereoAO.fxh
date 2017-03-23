@@ -234,14 +234,14 @@ float2 findContrastByLuminance(const float2 XYCoord, const float filterSpread)
 	const float2 upOffset    = float2(0.0, w_h_height.y * filterSpread);
 	const float2 rightOffset = float2(w_h_height.x * filterSpread, 0.0);
 
-	const float topHeight         = GetLuminance(tex2D(texSampler5, XYCoord +               upOffset).rgb);
-	const float bottomHeight      = GetLuminance(tex2D(texSampler5, XYCoord -               upOffset).rgb);
-	const float rightHeight       = GetLuminance(tex2D(texSampler5, XYCoord + rightOffset           ).rgb);
-	const float leftHeight        = GetLuminance(tex2D(texSampler5, XYCoord - rightOffset           ).rgb);
-	const float leftTopHeight     = GetLuminance(tex2D(texSampler5, XYCoord - rightOffset + upOffset).rgb);
-	const float leftBottomHeight  = GetLuminance(tex2D(texSampler5, XYCoord - rightOffset - upOffset).rgb);
-	const float rightBottomHeight = GetLuminance(tex2D(texSampler5, XYCoord + rightOffset + upOffset).rgb);
-	const float rightTopHeight    = GetLuminance(tex2D(texSampler5, XYCoord + rightOffset - upOffset).rgb);
+	const float topHeight         = GetLuminance(tex2Dlod(texSampler5, float4(XYCoord +               upOffset, 0.,0.)).rgb);
+	const float bottomHeight      = GetLuminance(tex2Dlod(texSampler5, float4(XYCoord -               upOffset, 0.,0.)).rgb);
+	const float rightHeight       = GetLuminance(tex2Dlod(texSampler5, float4(XYCoord + rightOffset           , 0.,0.)).rgb);
+	const float leftHeight        = GetLuminance(tex2Dlod(texSampler5, float4(XYCoord - rightOffset           , 0.,0.)).rgb);
+	const float leftTopHeight     = GetLuminance(tex2Dlod(texSampler5, float4(XYCoord - rightOffset + upOffset, 0.,0.)).rgb);
+	const float leftBottomHeight  = GetLuminance(tex2Dlod(texSampler5, float4(XYCoord - rightOffset - upOffset, 0.,0.)).rgb);
+	const float rightBottomHeight = GetLuminance(tex2Dlod(texSampler5, float4(XYCoord + rightOffset + upOffset, 0.,0.)).rgb);
+	const float rightTopHeight    = GetLuminance(tex2Dlod(texSampler5, float4(XYCoord + rightOffset - upOffset, 0.,0.)).rgb);
 
 #ifdef NFAA_EDGE_DETECTION_VARIANT
 	const float sum0 = rightTopHeight    + bottomHeight + leftTopHeight;
@@ -266,14 +266,14 @@ float2 findContrastByColor(const float2 XYCoord, const float filterSpread)
 	const float2 upOffset    = float2(0.0, w_h_height.y * filterSpread);
 	const float2 rightOffset = float2(w_h_height.x * filterSpread, 0.0);
 
-	const float3 topHeight         = tex2D(texSampler5, XYCoord +               upOffset).rgb;
-	const float3 bottomHeight      = tex2D(texSampler5, XYCoord -               upOffset).rgb;
-	const float3 rightHeight       = tex2D(texSampler5, XYCoord + rightOffset           ).rgb;
-	const float3 leftHeight        = tex2D(texSampler5, XYCoord - rightOffset           ).rgb;
-	const float3 leftTopHeight     = tex2D(texSampler5, XYCoord - rightOffset + upOffset).rgb;
-	const float3 leftBottomHeight  = tex2D(texSampler5, XYCoord - rightOffset - upOffset).rgb;
-	const float3 rightBottomHeight = tex2D(texSampler5, XYCoord + rightOffset + upOffset).rgb;
-	const float3 rightTopHeight    = tex2D(texSampler5, XYCoord + rightOffset - upOffset).rgb;
+	const float3 topHeight         = tex2Dlod(texSampler5, float4(XYCoord +               upOffset, 0.,0.)).rgb;
+	const float3 bottomHeight      = tex2Dlod(texSampler5, float4(XYCoord -               upOffset, 0.,0.)).rgb;
+	const float3 rightHeight       = tex2Dlod(texSampler5, float4(XYCoord + rightOffset           , 0.,0.)).rgb;
+	const float3 leftHeight        = tex2Dlod(texSampler5, float4(XYCoord - rightOffset           , 0.,0.)).rgb;
+	const float3 leftTopHeight     = tex2Dlod(texSampler5, float4(XYCoord - rightOffset + upOffset, 0.,0.)).rgb;
+	const float3 leftBottomHeight  = tex2Dlod(texSampler5, float4(XYCoord - rightOffset - upOffset, 0.,0.)).rgb;
+	const float3 rightBottomHeight = tex2Dlod(texSampler5, float4(XYCoord + rightOffset + upOffset, 0.,0.)).rgb;
+	const float3 rightTopHeight    = tex2Dlod(texSampler5, float4(XYCoord + rightOffset - upOffset, 0.,0.)).rgb;
 
 #ifdef NFAA_EDGE_DETECTION_VARIANT
 	const float sum0 = rightTopHeight    + bottomHeight + leftTopHeight;
@@ -324,15 +324,15 @@ float4 ps_main_nfaa(in VS_OUTPUT_2D IN) : COLOR
 
 	const float2 Normal = Vectors * (w_h_height.xy /* * 2.0*/);
 
-	const float3 Scene0 = tex2D(texSampler5, u).rgb;
-	const float3 Scene1 = tex2D(texSampler5, u + Normal).rgb;
-	const float3 Scene2 = tex2D(texSampler5, u - Normal).rgb;
+	const float3 Scene0 = tex2Dlod(texSampler5, float4(u, 0.,0.)).rgb;
+	const float3 Scene1 = tex2Dlod(texSampler5, float4(u + Normal, 0.,0.)).rgb;
+	const float3 Scene2 = tex2Dlod(texSampler5, float4(u - Normal, 0.,0.)).rgb;
 #if defined(NFAA_VARIANT) || defined(NFAA_VARIANT2)
-	const float3 Scene3 = tex2D(texSampler5, u + float2(Normal.x, -Normal.y)*0.5).rgb;
-	const float3 Scene4 = tex2D(texSampler5, u - float2(Normal.x, -Normal.y)*0.5).rgb;
+	const float3 Scene3 = tex2Dlod(texSampler5, float4(u + float2(Normal.x, -Normal.y)*0.5, 0.,0.)).rgb;
+	const float3 Scene4 = tex2Dlod(texSampler5, float4(u - float2(Normal.x, -Normal.y)*0.5, 0.,0.)).rgb;
 #else
-	const float3 Scene3 = tex2D(texSampler5, u + float2(Normal.x, -Normal.y)).rgb;
-	const float3 Scene4 = tex2D(texSampler5, u - float2(Normal.x, -Normal.y)).rgb;
+	const float3 Scene3 = tex2Dlod(texSampler5, float4(u + float2(Normal.x, -Normal.y), 0.,0.)).rgb;
+	const float3 Scene4 = tex2Dlod(texSampler5, float4(u - float2(Normal.x, -Normal.y), 0.,0.)).rgb;
 #endif
 
 #ifdef NFAA_TEST_MODE // debug
