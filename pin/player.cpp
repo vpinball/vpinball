@@ -3424,7 +3424,7 @@ void Player::Bloom()
    SAFE_RELEASE_NO_RCC(tmpBloomSurface3);
 }
 
-void Player::StereoFXAA(const bool stereo, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const bool depth_available) //!! SMAA, luma sharpen, dither?
+void Player::StereoFXAA(const bool stereo, const bool DLAA, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const bool depth_available) //!! SMAA, luma sharpen, dither?
 {
    if (stereo) // stereo implicitly disables FXAA
    {
@@ -3445,9 +3445,17 @@ void Player::StereoFXAA(const bool stereo, const bool NFAA, const bool FXAA1, co
       m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
       m_pin3d.m_pd3dDevice->FBShader->End();
    }
-   else if (NFAA || FXAA1 || FXAA2 || FXAA3)
+   else if (DLAA || NFAA || FXAA1 || FXAA2 || FXAA3)
    {
-      m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
+      if(DLAA)
+      {
+         RenderTarget* tmpSurface;
+         m_pin3d.m_pd3dDevice->GetBackBufferTexture()->GetSurfaceLevel(0, &tmpSurface);
+         m_pin3d.m_pd3dDevice->SetRenderTarget(tmpSurface);
+         SAFE_RELEASE_NO_RCC(tmpSurface); //!!
+      }
+      else
+         m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
 
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture());
       if (depth_available)
@@ -3456,11 +3464,24 @@ void Player::StereoFXAA(const bool stereo, const bool NFAA, const bool FXAA1, co
       const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), 0.f, depth_available ? 1.f : 0.f);
       m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
 
-      m_pin3d.m_pd3dDevice->FBShader->SetTechnique(NFAA ? "NFAA" : (FXAA3 ? "FXAA3" : (FXAA2 ? "FXAA2" : "FXAA1")));
+      m_pin3d.m_pd3dDevice->FBShader->SetTechnique(DLAA ? "DLAA_edge" : (NFAA ? "NFAA" : (FXAA3 ? "FXAA3" : (FXAA2 ? "FXAA2" : "FXAA1"))));
 
       m_pin3d.m_pd3dDevice->FBShader->Begin(0);
       m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
       m_pin3d.m_pd3dDevice->FBShader->End();
+
+      if (DLAA) // actual DLAA filtering pass, above only edge detection
+      {
+         m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
+
+         m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
+
+         m_pin3d.m_pd3dDevice->FBShader->SetTechnique("DLAA");
+
+         m_pin3d.m_pd3dDevice->FBShader->Begin(0);
+         m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
+         m_pin3d.m_pd3dDevice->FBShader->End();
+      }
    }
 }
 
@@ -3649,7 +3670,8 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
 {
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const bool stereo = ((m_fStereo3D != 0) && m_fStereo3Denabled);
-   const bool NFAA  = (((m_fFXAA == Fast_NFAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
+   const bool DLAA = (((m_fFXAA == Fast_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_DLAA));
+   const bool NFAA = (((m_fFXAA == Fast_NFAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
    const bool FXAA1 = (((m_fFXAA == Fast)      && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast));
    const bool FXAA2 = (((m_fFXAA == Standard)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard));
    const bool FXAA3 = (((m_fFXAA == Quality)   && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality));
@@ -3675,7 +3697,7 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
    Bloom();
 
    // switch to output buffer
-   if (!(stereo || NFAA || FXAA1 || FXAA2 || FXAA3))
+   if (!(stereo || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3))
       m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
    else
    {
@@ -3702,7 +3724,7 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
    m_pin3d.m_pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
    m_pin3d.m_pd3dDevice->FBShader->End();
 
-   StereoFXAA(stereo, NFAA, FXAA1, FXAA2, FXAA3, false);
+   StereoFXAA(stereo, DLAA, NFAA, FXAA1, FXAA2, FXAA3, false);
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -3724,7 +3746,8 @@ void Player::FlipVideoBuffersAO(const bool vsync)
 {
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const bool stereo = ((m_fStereo3D != 0) && m_fStereo3Denabled);
-   const bool NFAA  = (((m_fFXAA == Fast_NFAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
+   const bool DLAA = (((m_fFXAA == Fast_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_DLAA));
+   const bool NFAA = (((m_fFXAA == Fast_NFAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
    const bool FXAA1 = (((m_fFXAA == Fast)      && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast));
    const bool FXAA2 = (((m_fFXAA == Standard)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard));
    const bool FXAA3 = (((m_fFXAA == Quality)   && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality));
@@ -3788,7 +3811,7 @@ void Player::FlipVideoBuffersAO(const bool vsync)
    m_pin3d.m_pddsAOBackTmpBuffer = tmpAO;
 
    // switch to output buffer
-   if (!(stereo || NFAA || FXAA1 || FXAA2 || FXAA3))
+   if (!(stereo || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3))
       m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
    else
    {
@@ -3824,7 +3847,7 @@ void Player::FlipVideoBuffersAO(const bool vsync)
    m_pin3d.m_pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
    m_pin3d.m_pd3dDevice->FBShader->End();
 
-   StereoFXAA(stereo, NFAA, FXAA1, FXAA2, FXAA3, true);
+   StereoFXAA(stereo, DLAA, NFAA, FXAA1, FXAA2, FXAA3, true);
 
    //
 

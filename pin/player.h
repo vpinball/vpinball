@@ -270,7 +270,7 @@ public:
 
    void DrawBulbLightBuffer();
    void Bloom();
-   void StereoFXAA(const bool stereo, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const bool depth_available);
+   void StereoFXAA(const bool stereo, const bool DLAA, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const bool depth_available);
 
    void UpdateHUD();
 
