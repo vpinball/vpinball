@@ -344,6 +344,133 @@ float4 ps_main_nfaa(in VS_OUTPUT_2D IN) : COLOR
 	return float4(o_Color, 1.0);
 }
 
+// DLAA approximation
+
+float3 sampleOffset(const float2 u, const float2 pixelOffset )
+{
+   return tex2Dlod(texSampler5, float4(u + pixelOffset * w_h_height.xy, 0.,0.)).xyz;
+}
+
+float4 sampleOffseta(const float2 u, const float2 pixelOffset )
+{
+   return tex2Dlod(texSampler5, float4(u + pixelOffset * w_h_height.xy, 0.,0.));
+}
+
+float avg(const float3 l)
+{
+   //return dot(l, float3(0.25,0.5,0.25)); // experimental, red and blue should not suffer too much
+   return (l.x+l.y+l.z) * (1.0 / 3.0);
+}
+
+float4 ps_main_dlaa_edge(in VS_OUTPUT_2D IN) : COLOR
+{
+   const float2 u = IN.tex0 + w_h_height.xy*0.5;
+
+   const float3 sCenter    = sampleOffset(u, float2( 0.0,  0.0) );
+   const float3 sUpLeft    = sampleOffset(u, float2(-0.5, -0.5) );
+   const float3 sUpRight   = sampleOffset(u, float2( 0.5, -0.5) );
+   const float3 sDownLeft  = sampleOffset(u, float2(-0.5,  0.5) );
+   const float3 sDownRight = sampleOffset(u, float2( 0.5,  0.5) );
+
+   const float3 diff       = abs( (sUpLeft + sUpRight) + (sDownLeft + sDownRight) - sCenter * 4.0 );
+   const float  edgeMask   = avg(diff) * 4.0; //!! magic
+
+   return /*test: float4(edgeMask,edgeMask,edgeMask,1.0);*/ float4(sCenter, edgeMask);
+}
+
+
+float4 ps_main_dlaa(in VS_OUTPUT_2D IN) : COLOR
+{
+   const float2 u = IN.tex0 + w_h_height.xy*0.5;
+
+   // short edges
+   const float4 sampleCenter     = sampleOffseta(u, float2( 0.0,  0.0) );
+   const float4 sampleHorizNeg0  = sampleOffseta(u, float2(-1.5,  0.0) );
+   const float4 sampleHorizPos0  = sampleOffseta(u, float2( 1.5,  0.0) ); 
+   const float4 sampleVertNeg0   = sampleOffseta(u, float2( 0.0, -1.5) ); 
+   const float4 sampleVertPos0   = sampleOffseta(u, float2( 0.0,  1.5) );
+
+   const float3 sumHoriz         = sampleHorizNeg0.xyz + sampleHorizPos0.xyz;
+   const float3 sumVert          = sampleVertNeg0.xyz  + sampleVertPos0.xyz;
+
+   const float3 sampleLeft       = sampleOffset(u, float2(-1.0,  0.0) );
+   const float3 sampleRight      = sampleOffset(u, float2( 1.0,  0.0) );
+   const float3 sampleTop        = sampleOffset(u, float2( 0.0, -1.0) );
+   const float3 sampleDown       = sampleOffset(u, float2( 0.0,  1.0) );
+
+   const float3 diffToCenterHoriz= abs((sampleLeft+sampleRight) * 0.5 - sampleCenter.xyz); //!! was sumHoriz instead of l&r
+   const float3 diffToCenterVert = abs((sampleTop+sampleDown) * 0.5 - sampleCenter.xyz); //!! was sumVert instead of t&d
+
+   const float valueEdgeHoriz    = avg(diffToCenterHoriz);
+   const float valueEdgeVert     = avg(diffToCenterVert);
+
+   const float edgeDetectHoriz   = 3.0 * valueEdgeHoriz - 0.1; //!! magic params
+   const float edgeDetectVert    = 3.0 * valueEdgeVert  - 0.1;
+
+   const float3 avgHoriz         = (sumHoriz + sampleCenter.xyz) * (1.0/3.0);
+   const float3 avgVert          = (sumVert  + sampleCenter.xyz) * (1.0/3.0);
+
+   const float valueHoriz        = avg(avgHoriz);
+   const float valueVert         = avg(avgVert);
+
+   const float blurAmountHoriz   = saturate(edgeDetectHoriz / valueHoriz);
+   const float blurAmountVert    = saturate(edgeDetectVert  / valueVert);
+
+   float3 aaResult               = lerp( sampleCenter.xyz, avgHoriz, blurAmountVert * 0.5); //!! magic sharpen
+   aaResult                      = lerp( aaResult,         avgVert,  blurAmountHoriz * 0.5); //!! magic sharpen
+
+   // long edges
+   const float4 sampleVertNeg1   = sampleOffseta(u, float2(0.0, -3.5) );
+   const float4 sampleVertNeg15  = sampleOffseta(u, float2(0.0, -5.5) );
+   const float4 sampleVertNeg2   = sampleOffseta(u, float2(0.0, -7.5) );
+   const float4 sampleVertPos1   = sampleOffseta(u, float2(0.0,  3.5) ); 
+   const float4 sampleVertPos15  = sampleOffseta(u, float2(0.0,  5.5) ); 
+   const float4 sampleVertPos2   = sampleOffseta(u, float2(0.0,  7.5) ); 
+
+   const float4 sampleHorizNeg1  = sampleOffseta(u, float2(-3.5, 0.0) ); 
+   const float4 sampleHorizNeg15 = sampleOffseta(u, float2(-5.5, 0.0) ); 
+   const float4 sampleHorizNeg2  = sampleOffseta(u, float2(-7.5, 0.0) );
+   const float4 sampleHorizPos1  = sampleOffseta(u, float2( 3.5, 0.0) ); 
+   const float4 sampleHorizPos15 = sampleOffseta(u, float2( 5.5, 0.0) ); 
+   const float4 sampleHorizPos2  = sampleOffseta(u, float2( 7.5, 0.0) ); 
+
+   const float pass1EdgeAvgHoriz = saturate(( sampleHorizNeg2.a + sampleHorizNeg1.a + sampleHorizNeg15.a + sampleHorizNeg0.a + sampleHorizPos0.a + sampleHorizPos1.a + sampleHorizPos15.a + sampleHorizPos2.a ) * (2.0 / 8.0) - 1.0);
+   const float pass1EdgeAvgVert  = saturate(( sampleVertNeg2.a  + sampleVertNeg1.a + sampleVertNeg15.a  + sampleVertNeg0.a  + sampleVertPos0.a + sampleVertPos1.a + sampleVertPos15.a  + sampleVertPos2.a  ) * (2.0 / 8.0) - 1.0);
+
+   [branch] if(abs(pass1EdgeAvgHoriz - pass1EdgeAvgVert) > 0.2) //!! magic
+   {
+        const float valueHorizLong = avg(sampleHorizNeg2.xyz + sampleHorizNeg1.xyz + sampleHorizNeg15.xyz + sampleHorizNeg0.xyz + sampleHorizPos0.xyz + sampleHorizPos1.xyz + sampleHorizPos15.xyz + sampleHorizPos2.xyz) * (1.0/8.0);
+        const float valueVertLong  = avg(sampleVertNeg2.xyz  + sampleVertNeg1.xyz + sampleVertNeg15.xyz + sampleVertNeg0.xyz  + sampleVertPos0.xyz + sampleVertPos1.xyz + sampleVertPos15.xyz + sampleVertPos2.xyz) * (1.0/8.0);
+
+        const float valueCenter    = avg(sampleCenter.xyz);
+        const float valueLeft      = avg(sampleLeft);
+        const float valueRight     = avg(sampleRight);
+        const float valueTop       = avg(sampleTop);
+        const float valueBottom    = avg(sampleDown);
+
+        const float vx = (valueCenter == valueLeft)   ? 0. : saturate(      ( valueVertLong  - valueLeft   ) / (valueCenter - valueLeft));
+        const float hx = (valueCenter == valueTop)    ? 0. : saturate(      ( valueHorizLong - valueTop    ) / (valueCenter - valueTop));
+        const float vy = (valueCenter == valueRight)  ? 0. : saturate(1.0 + ( valueVertLong  - valueCenter ) / (valueCenter - valueRight));
+        const float hy = (valueCenter == valueBottom) ? 0. : saturate(1.0 + ( valueHorizLong - valueCenter ) / (valueCenter - valueBottom));
+
+        const float3 longBlurVert  = lerp( sampleRight,
+                                           lerp( sampleLeft,  sampleCenter.xyz, vx ),
+                                           vy );
+        const float3 longBlurHoriz = lerp( sampleDown,
+                                           lerp( sampleTop,   sampleCenter.xyz, hx ),
+                                           hy );
+
+        aaResult                   = lerp( aaResult, longBlurVert, pass1EdgeAvgVert * 0.5); //!! magic
+        aaResult                   = lerp( aaResult, longBlurHoriz, pass1EdgeAvgHoriz * 0.5); //!! magic
+
+        //test: return float4(aaResult,1.);
+   }
+   //test: return float4(0,0,0,1);
+
+   return /*test: float4(sampleCenter.a,sampleCenter.a,sampleCenter.a,1.0);*/ float4(aaResult, 1.0);
+}
+
+
 // FXAA
 
 float luma(const float3 l)

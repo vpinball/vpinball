@@ -1163,8 +1163,9 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
             ShowPermissionError();
          else
          {
-             ProtectTableDialog *protectDlg = new ProtectTableDialog();
-             INT_PTR foo = protectDlg->DoModal();
+            ProtectTableDialog *protectDlg = new ProtectTableDialog();
+            INT_PTR foo = protectDlg->DoModal();
+            delete protectDlg;
 
             // if the dialog returned ok then perform a normal save as
             if (foo==1)
@@ -1190,8 +1191,10 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       ptCur = GetActiveTable();
       if (ptCur)
       {
-          UnprotectDialog *unprotectDlg = new UnprotectDialog();
-          INT_PTR foo = unprotectDlg->DoModal();
+         UnprotectDialog *unprotectDlg = new UnprotectDialog();
+         INT_PTR foo = unprotectDlg->DoModal();
+         delete unprotectDlg;
+
          // if the dialog returned ok then table is unlocked
          if (foo==1)
          {

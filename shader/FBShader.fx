@@ -473,6 +473,24 @@ technique NFAA
 	}
 }
 
+technique DLAA_edge
+{
+	pass P0
+	{
+		VertexShader = compile vs_3_0 vs_main_no_trafo();
+		PixelShader = compile ps_3_0 ps_main_dlaa_edge();
+	}
+}
+
+technique DLAA
+{
+	pass P0
+	{
+		VertexShader = compile vs_3_0 vs_main_no_trafo();
+		PixelShader = compile ps_3_0 ps_main_dlaa();
+	}
+}
+
 technique FXAA1
 { 
    pass P0 
