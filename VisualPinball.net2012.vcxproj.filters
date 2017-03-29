@@ -96,7 +96,7 @@
     <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
     <ClCompile Include="dialogs\CollectionManagerDialog.cpp" />
     <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
-    <ClCompile Include="dialogs\ProtectTableDialog.cpp">
+    <ClCompile Include="dialogs\ProtectTableDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
