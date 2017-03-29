@@ -300,7 +300,7 @@ BEGIN
     LISTBOX         IDC_SIZELIST,14,19,129,92,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Use always FS backdrop settings",IDC_BG_SET,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,117,131,10
     LTEXT           "FXAA (post-processed Anti-Aliasing)",IDC_STATIC,14,142,140,9
-    COMBOBOX        IDC_FXAACB,14,153,111,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FXAACB,14,153,111,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Enable brute-force 4x Anti-Aliasing",IDC_AA_ALL_TABLES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,171,133,10
     CONTROL         "Enable ScaleFX for internal DMD",IDC_SCALE_FX_DMD,
@@ -1437,7 +1437,8 @@ BEGIN
     EDITTEXT        IDC_TABLEAVSYNC,101,44,20,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_ALPHA_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,71,107,19
     GROUPBOX        "Elements Detail Level",IDC_STATIC,7,62,114,42
-    CONTROL         "Use this slider instead of default",IDC_GLOBAL_ALPHA_ACC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,92,109,10
+    CONTROL         "Use this slider instead of default",IDC_GLOBAL_ALPHA_ACC,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,92,109,10
     GROUPBOX        "Ball",IDC_STATIC,7,115,114,56
     LTEXT           "Reflection",IDC_STATIC,12,128,85,8
     COMBOBOX        IDC_BALL_REFLECTION,75,126,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -1447,7 +1448,8 @@ BEGIN
     EDITTEXT        IDC_TRAIL_EDIT,95,154,20,12,ES_AUTOHSCROLL
     GROUPBOX        "Night->Day cycle",IDC_STATIC,7,180,114,42
     CONTROL         "",IDC_DAYNIGHT_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,189,107,19
-    CONTROL         "Use this slider instead of default",IDC_GLOBAL_DAYNIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,210,110,10
+    CONTROL         "Use this slider instead of default",IDC_GLOBAL_DAYNIGHT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,210,110,10
     LTEXT           "Gameplay Difficulty (0..100)",IDC_STATIC,7,232,90,8
     EDITTEXT        209,101,230,20,12,ES_AUTOHSCROLL
     LTEXT           "Overwrite Physics by Global Set",IDC_STATIC,7,252,60,16
@@ -2444,10 +2446,6 @@ BEGIN
     IDD_DEBUGGER, DIALOG
     BEGIN
         RIGHTMARGIN, 346
-    END
-
-    IDD_COMLIST, DIALOG
-    BEGIN
     END
 
     IDD_PROPKICKER_STATE, DIALOG
