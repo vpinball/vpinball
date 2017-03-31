@@ -136,6 +136,11 @@ void HitRectSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm,
    Polygon(rgv);
 }
 
+void HitRectSur::PolygonImageRaw(const std::vector<RenderVertex> &rgv, BYTE *hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
+{
+   Polygon(rgv);
+}
+
 void HitRectSur::Polyline(const Vertex2D * const rgv, const int count)
 {
 }
