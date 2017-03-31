@@ -2135,7 +2135,7 @@ void PinTable::Render(Sur * const psur)
    //   psur->DrawText( text,rc.left+10, rc.top, 90,20);
 }
 
-
+// draws the backdrop content
 void PinTable::Render3DProjection(Sur * const psur)
 {
    if (m_vedit.Size() == 0)
@@ -2209,7 +2209,7 @@ BOOL PinTable::GetEMReelsEnabled() const
    return m_fRenderEMReels;
 }
 
-
+// draws the main design screen
 void PinTable::Paint(HDC hdc)
 {
    //HBITMAP hbmOffScreen;
@@ -8440,7 +8440,12 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       const bool fRamps = true;
 
       for (int ivar = 0; ivar < m_vedit.Size(); ivar++)
-         if (m_vedit.ElementAt(ivar)->GetItemType() == eItemSurface || (fRamps && m_vedit.ElementAt(ivar)->GetItemType() == eItemRamp))
+         if (m_vedit.ElementAt(ivar)->GetItemType() == eItemSurface ||
+            (fRamps && m_vedit.ElementAt(ivar)->GetItemType() == eItemRamp) ||
+            // **************** warning **********************
+            // added to render to surface of DMD style lights and emreels
+            // but no checks are being performed at moment
+            m_vedit.ElementAt(ivar)->GetItemType() ==  eItemFlasher)
             cvar++;
 
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
@@ -8458,7 +8463,12 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (int ivar = 0; ivar < m_vedit.Size(); ivar++)
       {
-         if (m_vedit.ElementAt(ivar)->GetItemType() == eItemSurface || (fRamps && m_vedit.ElementAt(ivar)->GetItemType() == eItemRamp))
+         if (m_vedit.ElementAt(ivar)->GetItemType() == eItemSurface ||
+            (fRamps && m_vedit.ElementAt(ivar)->GetItemType() == eItemRamp) ||
+            // **************** warning **********************
+            // added to render to surface of DMD style lights and emreels
+            // but no checks are being performed at moment 
+            m_vedit.ElementAt(ivar)->GetItemType() == eItemFlasher) 
          {
             CComBSTR bstr;
             m_vedit.ElementAt(ivar)->GetScriptable()->get_Name(&bstr);

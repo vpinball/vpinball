@@ -44,6 +44,7 @@ public:
    virtual void Polygon(const Vertex2D * const rgv, const int count) = 0;
    virtual void Polygon(const std::vector<RenderVertex> &rgv) = 0;
    virtual void PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight) = 0;
+   virtual void PolygonImageRaw(const std::vector<RenderVertex> &rgv, BYTE *hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight) = 0;
    virtual void Polyline(const Vertex2D * const rgv, const int count) = 0;
    virtual void Lines(const Vertex2D * const rgv, const int count) = 0;
    virtual void Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y) = 0;

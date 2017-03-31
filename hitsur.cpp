@@ -247,6 +247,11 @@ void HitSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, con
    Polygon(rgv);
 }
 
+void HitSur::PolygonImageRaw(const std::vector<RenderVertex> &rgv, BYTE *hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
+{
+   Polygon(rgv); // draw the frame poly for click reference
+}
+
 void HitSur::Polyline(const Vertex2D * const rgv, const int count)
 {
    if (m_pcur == NULL)

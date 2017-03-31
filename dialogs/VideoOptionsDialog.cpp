@@ -491,23 +491,93 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       case GET_WINDOW_MODES:
       {
          size_t indexcur = -1;
+         size_t indx = -1;
          int widthcur = (int)wParam, heightcur = (int)lParam;
 
          SendMessage(GetHwnd(), RESET_SIZELIST_CONTENT, 0, 0);
          HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
+         //indx = SendMessage(hwndList, LB_GETCURSEL, 0L, 0L);
+         //if (indx == LB_ERR)
+         //  indx = 0;
 
          const size_t csize = sizeof(rgwindowsize) / sizeof(int);
          const int screenwidth = GetSystemMetrics(SM_CXSCREEN);
+         const int screenheight = GetSystemMetrics(SM_CYSCREEN);
+
+         //if (indx != -1)
+         //  indexcur = indx;
 
          allVideoModes.clear();
 
-         for (size_t i = 0; i < csize; ++i)
+         // test video modes first on list
+		 VideoMode mymode;
+         //add portrait play modes
+		 unsigned int cnt = 0;
+         if ((720 <= screenwidth) && (1024 <= screenheight))
+         {
+		  mymode.width = 720;
+		  mymode.height = 1024;
+		  mymode.depth = 0;
+		  mymode.refreshrate = 0;
+
+		  allVideoModes.push_back(mymode);
+
+		  if (heightcur > widthcur)
+			  if ((720 == widthcur) && (1024 == heightcur))
+				  indx = 0;
+		  cnt++;
+         } //end if
+         if ((900 <= screenwidth) && (1440 <= screenheight))
+         {
+		  mymode.width = 900;
+		  mymode.height = 1440;
+		  mymode.depth = 0;
+		  mymode.refreshrate = 0;
+
+		  allVideoModes.push_back(mymode);
+		  if (heightcur > widthcur)
+			  if ((768 == widthcur) && (1440 == heightcur))
+				  indx = 1;
+		  cnt++;
+         }
+         if ((1050 <= screenwidth) && (1600 <= screenheight))
+         {
+		  mymode.width = 1050;
+		  mymode.height = 1600;
+		  mymode.depth = 0;
+		  mymode.refreshrate = 0;
+
+		  allVideoModes.push_back(mymode);
+		  if (heightcur > widthcur)
+			  if ((900 == widthcur) && (1600 == heightcur))
+				  indx = 2;
+		  cnt++;
+         } //end if
+
+         if ((1080 <= screenwidth) && (1920 <= screenheight))
+         {
+		  mymode.width = 1080;
+		  mymode.height = 1920;
+		  mymode.depth = 0;
+		  mymode.refreshrate = 0;
+
+		  allVideoModes.push_back(mymode);
+
+		  if (heightcur > widthcur)
+			  if ((1080 == widthcur) && (1920 == heightcur))
+				  indx = 3;
+		  cnt++;
+         } // end if
+
+         // add landscape play modes
+
+         for (size_t i = 0; i < csize; ++i)  
          {
             const int xsize = rgwindowsize[i];
-            if (xsize <= screenwidth)
+            if ((xsize <= screenwidth) && ((xsize * 3 / 4) <= screenheight))
             {
-               if (xsize == widthcur)
-                  indexcur = i;
+               if ((xsize == widthcur) && ((xsize * 3 / 4) == heightcur))
+                  indx = i + cnt;
 
                VideoMode mode;
                mode.width = xsize;
@@ -531,14 +601,92 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          allVideoModes.push_back(mode);
 
          char szT[128];
-         sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
-         SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
-         if (mode.width == widthcur && mode.height == heightcur)
-            indexcur = SendMessage(hwndList, LB_GETCOUNT, 0, 0) - 1;
+         char szTx[128];
+         //if (indexcur == -1)
+         //  indexcur = indx;
+
+         if (mode.height <  mode.width)
+         {
+		  if ((indx == -1) || (indx >= cnt))
+		  {
+		     sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
+		     SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
+
+		     if (indx == -1)
+			    indexcur = SendMessage(hwndList, LB_GETCOUNT, 0, 0) - 1;
+		     else
+			    indexcur = indx;
+		  }
+		  else {
+		     sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
+		     SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
+		     indexcur = indx;
+		  }
+         }
+         else {
+          if ((indx == -1) || (indx <= 3))
+		  {
+			  indexcur = indx;
+			  if (cnt > 0)
+			  {
+				  SendMessage(hwndList, LB_GETTEXT, cnt - 1, (LPARAM)szTx);
+				  SendMessage(hwndList, LB_DELETESTRING, cnt - 1, 0L);
+
+				  sprintf_s(szT, "%d x %d", mode.width, mode.height);
+
+				  if (cnt == 1)
+				  {
+					  mode.width = 720;
+					  mode.height = 1024;
+
+					  if ((mode.height == screenheight) && (mode.width == screenwidth))
+						  sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
+					  else
+						  sprintf_s(szT, "%d x %d", mode.width, mode.height);
+				  }
+				  else if (cnt == 2)
+				  {
+					  mode.width = 900;
+					  mode.height = 1440;
+
+					  if ((mode.height == screenheight) && (mode.width == screenwidth))
+						  sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
+					  else
+						  sprintf_s(szT, "%d x %d", mode.width, mode.height);
+				  }
+				  else if (cnt == 3)
+				  {
+					  mode.width = 1050;
+					  mode.height = 1600;
+
+					  if ((mode.height == screenheight) && (mode.width == screenwidth))
+						  sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
+					  else
+						  sprintf_s(szT, "%d x %d", mode.width, mode.height);
+				  }
+				  else if (cnt == 4)
+				  {
+					  mode.width = 1080;
+					  mode.height = 1920;
+					  if ((mode.height == screenheight) && (mode.width == screenwidth))
+						  sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
+					  else
+						  sprintf_s(szT, "%d x %d", mode.width, mode.height);
+				  }
+				  else {
+					  memset(&szTx,'\x0', sizeof(szTx));
+					  strcpy(szT, szTx);
+				  }
+
+				  //end else if cnt
+				  SendMessage(hwndList, LB_INSERTSTRING, cnt - 1, (LPARAM)szT);
+			  }// end if cnt > 0
+		  } //end if indx
+         } //end if else mode height < width
 
          SendMessage(hwndList, LB_SETCURSEL, (indexcur != -1) ? indexcur : 0, 0);
          break;
-      }
+      } // end case GET_WINDOW_MODES
       case GET_FULLSCREENMODES:
       {
          HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
