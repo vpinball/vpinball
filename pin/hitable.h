@@ -18,4 +18,5 @@ public:
    virtual unsigned long long GetMaterialID()          { return 0; }
    virtual unsigned long long GetImageID()             { return 0; }
    virtual bool RenderToLightBuffer()                  { return false; }
+   virtual bool IsDMD()                                { return false; }
 };

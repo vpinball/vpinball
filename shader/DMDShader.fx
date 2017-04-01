@@ -3,7 +3,7 @@
 #include "Helpers.fxh"
 
 float4 vColor_Intensity;
-float2 vRes;
+float3 vRes_Alpha;
 
 texture Texture0;
 
@@ -91,7 +91,7 @@ float4 ps_main_DMD_big(in VS_OUTPUT IN) : COLOR
    else
       color *= rgba.b * (255.9 / 100.);
 
-   const float2 xy = IN.tex0 * vRes;
+   const float2 xy = IN.tex0 * vRes_Alpha.xy;
    const float2 dist = frac(xy)*2.2-1.1;
    const float d = dist.x*dist.x+dist.y*dist.y;
 
@@ -116,7 +116,7 @@ float4 ps_main_DMD(in VS_OUTPUT IN) : COLOR
    else
       color *= rgba.b * (255.9 / 100.);
 
-   const float2 xy = IN.tex0 * vRes;
+   const float2 xy = IN.tex0 * vRes_Alpha.xy;
    const float2 dist = frac(xy)*2.-1.;
    const float d = dist.x*dist.x+dist.y*dist.y;
 
@@ -141,7 +141,7 @@ float4 ps_main_DMD_tiny(in VS_OUTPUT IN) : COLOR
    else
       color *= rgba.b * (255.9 / 100.);
 
-   const float2 xy = IN.tex0 * vRes;
+   const float2 xy = IN.tex0 * vRes_Alpha.xy;
    const float2 dist = frac(xy)*1.4142-0.7071;
    const float d = dist.x*dist.x+dist.y*dist.y;
 
@@ -154,33 +154,10 @@ float4 ps_main_DMD_tiny(in VS_OUTPUT IN) : COLOR
 	 //collect glow from neighbors
 	 }*/
 
-   return float4(InvToneMap(InvGamma(min(color,float3(1.5,1.5,1.5))/*+color2*/)), 1.); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
-}
-
-// same as above but with 0.9 alpha set
-float4 ps_main_DMD_tinyalpha(in VS_OUTPUT IN) : COLOR
-{
-   const float4 rgba = tex2Dlod(texSampler0, float4(IN.tex0, 0.,0.));
-   float3 color = vColor_Intensity.xyz * (1.5 * vColor_Intensity.w); //!! create function that resembles LUT from VPM?
-   //float4 clr = { 0.0, 0.0, 0.0, 0.0 };
-
-   //float i = rgba.r + rgba.g + rgba.b;
-
-   if(rgba.a != 0.0)
-      color *= rgba.bgr;
-   else
-      color *= rgba.b * (255.9 / 100.);
-
-   const float2 xy = IN.tex0 * vRes;
-   const float2 dist = frac(xy)*1.4142-0.7071;
-   const float d = dist.x*dist.x+dist.y*dist.y;
-
-   color *= 1.0-pow(d, 0.375);
-
    //if (rgba.b > 200.0)
    //   return float4(InvToneMap(InvGamma(min(color,float3(1.5,1.5,1.5))/*+color2*/)), 0.5f);
-   // else
-   return float4(InvToneMap(InvGamma(min(color,float3(1.5,1.5,1.5))/*+color2*/)), 0.9f); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   //else
+   return float4(InvToneMap(InvGamma(min(color,float3(1.5,1.5,1.5))/*+color2*/)), vRes_Alpha.z); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
 float4 ps_main_noDMD(in VS_OUTPUT IN) : COLOR
@@ -247,14 +224,5 @@ technique basic_DMD_tiny_world
     {
         VertexShader = compile vs_3_0 vs_simple_main();
         PixelShader = compile ps_3_0 ps_main_DMD_tiny();
-    }
-}
-
-technique basic_DMD_tiny_worldalpha
-{
-    pass P0
-    {
-        VertexShader = compile vs_3_0 vs_simple_main();
-        PixelShader = compile ps_3_0 ps_main_DMD_tinyalpha();
     }
 }

@@ -1315,30 +1315,69 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    if (color.x == 0.f && color.y == 0.f && color.z == 0.f)
       return;
 
-   if (dynamicVertexBufferRegenerate)
-   {
-       UpdateMesh();
-       dynamicVertexBufferRegenerate = false;
-   }
+   if (m_d.m_IsDMD && (g_pplayer->m_dmdstate == 0)) // don't draw any DMD, but this case should not happen in the first place
+      return;
 
-   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+   const bool alphadmd = (m_d.m_modulate_vs_add < 1.f);
 
-   if (m_d.m_IsDMD)
+   if (m_d.m_IsDMD &&
+       (((g_pplayer->m_dmdstate == 1) && alphadmd) || // render alpha DMD
+        ((g_pplayer->m_dmdstate == 2) && !alphadmd))) // render normal DMD
    {
+       if (dynamicVertexBufferRegenerate)
+       {
+         UpdateMesh();
+         dynamicVertexBufferRegenerate = false;
+       }
+
+       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+
        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-       g_pplayer->m_pin3d.DisableAlphaBlend();
+       if((g_pplayer->m_dmdstate == 1) && alphadmd)
+          g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend);
+       else
+          g_pplayer->m_pin3d.DisableAlphaBlend();
+
+       /*const unsigned int alphamode = 1; //!! make configurable?
+       // add
+       if (alphamode == 1) {
+         g_pplayer->m_pin3d.EnableAlphaBlend(true);
+       // max
+       } else if (alphamode == 2) {
+         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_MAX);
+         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_SRCALPHA);
+         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCCOLOR);
+       //subtract
+       } else if (alphamode == 3) {
+         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_SUBTRACT);
+         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_ZERO);
+         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCCOLOR);
+       // normal
+       } else if (alphamode == 4) {
+         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
+         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_SRCALPHA);
+         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
+       }
+
+       const int alphatest = 0; //!!
+       if (alphatest)
+         g_pplayer->m_pin3d.EnableAlphaTestReference(0x80);*/
 
        //const float width = g_pplayer->m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width;
        pd3dDevice->DMDShader->SetTechnique("basic_DMD_tiny_world"); //width*DMDwidth / (float)m_dmdx <= 3.74f ? "basic_DMD_tiny" : (width*DMDwidth / (float)m_dmdx <= 7.49f ? "basic_DMD" : "basic_DMD_big")); // use different smoothing functions for LED/Plasma emulation (rule of thumb here: up to quarter width of 1920HD = tiny, up to half width of 1920HD = normal, up to full width of 1920HD = big)
 
        pd3dDevice->DMDShader->SetVector("vColor_Intensity", &color);
+
 #ifdef DMD_UPSCALE
-       const D3DXVECTOR4 r((float)(g_pplayer->m_dmdx*3), (float)(g_pplayer->m_dmdy*3), 1.f, 1.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+       const D3DXVECTOR4 r((float)(g_pplayer->m_dmdx*3), (float)(g_pplayer->m_dmdy*3), m_d.m_modulate_vs_add, 1.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
 #else
-       const D3DXVECTOR4 r((float)g_pplayer->m_dmdx, (float)g_pplayer->m_dmdy, 1.f, 1.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+       const D3DXVECTOR4 r((float)g_pplayer->m_dmdx, (float)g_pplayer->m_dmdy, m_d.m_modulate_vs_add, 1.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
 #endif
-       pd3dDevice->DMDShader->SetVector("vRes", &r);
+       pd3dDevice->DMDShader->SetVector("vRes_Alpha", &r);
 
        pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd));
 
@@ -1346,8 +1385,17 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
        pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys * 3);
        pd3dDevice->DMDShader->End();
    }
-   else
+   else if (g_pplayer->m_dmdstate == 0)
    {
+       if (dynamicVertexBufferRegenerate)
+       {
+          UpdateMesh();
+          dynamicVertexBufferRegenerate = false;
+       }
+
+       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+
        Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
        Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
 
