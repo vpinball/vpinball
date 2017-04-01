@@ -3693,11 +3693,11 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
 {
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const bool stereo = ((m_fStereo3D != 0) && m_fStereo3Denabled);
-   const bool DLAA = (((m_fFXAA == Fast_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_DLAA));
-   const bool NFAA = (((m_fFXAA == Fast_NFAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
-   const bool FXAA1 = (((m_fFXAA == Fast)      && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast));
-   const bool FXAA2 = (((m_fFXAA == Standard)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard));
-   const bool FXAA3 = (((m_fFXAA == Quality)   && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality));
+   const bool DLAA  = (((m_fFXAA == Fast_DLAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_DLAA));
+   const bool NFAA  = (((m_fFXAA == Fast_NFAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
+   const bool FXAA1 = (((m_fFXAA == Fast_FXAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_FXAA));
+   const bool FXAA2 = (((m_fFXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
+   const bool FXAA3 = (((m_fFXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
 
    if (stereo)
       m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
@@ -3769,11 +3769,11 @@ void Player::FlipVideoBuffersAO(const bool vsync)
 {
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const bool stereo = ((m_fStereo3D != 0) && m_fStereo3Denabled);
-   const bool DLAA = (((m_fFXAA == Fast_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_DLAA));
-   const bool NFAA = (((m_fFXAA == Fast_NFAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
-   const bool FXAA1 = (((m_fFXAA == Fast)      && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast));
-   const bool FXAA2 = (((m_fFXAA == Standard)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard));
-   const bool FXAA3 = (((m_fFXAA == Quality)   && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality));
+   const bool DLAA  = (((m_fFXAA == Fast_DLAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_DLAA));
+   const bool NFAA  = (((m_fFXAA == Fast_NFAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
+   const bool FXAA1 = (((m_fFXAA == Fast_FXAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_FXAA));
+   const bool FXAA2 = (((m_fFXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
+   const bool FXAA3 = (((m_fFXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
 
    m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
 

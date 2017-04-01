@@ -651,7 +651,7 @@ void Pin3D::InitLayout(const bool FSS_mode)
    //!! FSS: g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] += camy;
    //!! FSS: camy = 0.0f;
 
-   m_proj.TranslateView(g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set] - m_proj.m_vertexcamera.x, g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] - m_proj.m_vertexcamera.y + m_camy, -m_proj.m_vertexcamera.z + m_camz);
+   m_proj.TranslateView(g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set] - m_proj.m_vertexcamera.x + m_camx, g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] - m_proj.m_vertexcamera.y + m_camy, -m_proj.m_vertexcamera.z + m_camz);
 
    m_proj.RotateView(0, 0, rotation);
    m_proj.RotateView(inclination, 0, 0);
