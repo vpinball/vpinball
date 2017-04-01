@@ -299,9 +299,9 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LISTBOX         IDC_SIZELIST,14,19,129,92,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Use always FS backdrop settings",IDC_BG_SET,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,117,131,10
-    LTEXT           "FXAA (post-processed Anti-Aliasing)",IDC_STATIC,14,142,140,9
+    LTEXT           "Post-processed Anti-Aliasing",IDC_STATIC,14,142,140,9
     COMBOBOX        IDC_FXAACB,14,153,111,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Enable brute-force 4x Anti-Aliasing",IDC_AA_ALL_TABLES,
+    CONTROL         "Enable brute-force 4x Anti-Aliasing SSAA",IDC_AA_ALL_TABLES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,171,133,10
     CONTROL         "Enable ScaleFX for internal DMD",IDC_SCALE_FX_DMD,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,188,121,10
@@ -1427,9 +1427,9 @@ IDD_PROPTABLE_USER DIALOGEX 0, 0, 125, 310
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "4x Anti-Aliasing",IDC_STATIC,7,4,50,8
+    LTEXT           "4x Anti-Aliasing SSAA",IDC_STATIC,7,4,70,8
     COMBOBOX        IDC_ENABLE_AA,81,2,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "FXAA",IDC_STATIC,7,18,19,8
+    LTEXT           "Post-processed AA",IDC_STATIC,7,18,70,8
     COMBOBOX        IDC_ENABLE_FXAA,81,16,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Update in-game AO",IDC_STATIC,7,32,94,8
     COMBOBOX        IDC_ENABLE_AO,81,30,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
