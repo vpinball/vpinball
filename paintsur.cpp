@@ -296,8 +296,7 @@ void PaintSur::PolygonImageRaw(const std::vector<RenderVertex> &rgv, BYTE *hbm, 
 				GetDIBits(hdcB, hbmpB, 0, (iy2 - iy), bmpx, (BITMAPINFO *)&bmix, DIB_RGB_COLORS); 
 				
 				// vflip src bitmap !!!annoying, to-do : only flip clipped area
-				// *** it seems you don't need to do this , a negative height in\
-				biHeight int BMPinfo works ,for how long who knows
+				// *** it seems you don't need to do this, a negative height in biHeight int BMPinfo works, for how long who knows
 				if (0)
 				{
 				BYTE *const flipix = (BYTE *)malloc(4 * (ix2 - ix) * (iy2 - iy));
