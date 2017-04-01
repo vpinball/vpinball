@@ -1244,6 +1244,8 @@ PinTable::PinTable()
       m_BG_xlatez[i] = 0.0f;
    }
 
+   m_BG_enable_FSS = false;
+
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
    m_pcv->AddRef();
    m_pcv->Init((IScriptableHost*)this);
@@ -3320,6 +3322,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(SCLY), m_BG_scaley[0]);
    bw.WriteFloat(FID(SCLZ), m_BG_scalez[0]);
 
+   bw.WriteBool(FID(EFSS), m_BG_enable_FSS);
+
    bw.WriteFloat(FID(ROTF), m_BG_rotation[1]);
    bw.WriteFloat(FID(INCF), m_BG_inclination[1]);
    bw.WriteFloat(FID(LAYF), m_BG_layback[1]);
@@ -3990,6 +3994,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(XLFZ))
    {
       pbr->GetFloat(&m_BG_xlatez[1]);
+   }
+   else if (id == FID(EFSS))
+   {
+      pbr->GetBool(&m_BG_enable_FSS);
    }
 #if 0
    else if (id == FID(VERS))
@@ -9379,11 +9387,29 @@ STDMETHODIMP PinTable::put_BackdropImageApplyNightDay(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_ImageBackdropNightDay = !!newVal;
+   m_ImageBackdropNightDay = !!newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_BackdropFSS(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_BG_enable_FSS);
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_BackdropFSS(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+   m_BG_enable_FSS = !!newVal;
+
+   STOPUNDO
+
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BackdropImage_DT(BSTR *pVal)

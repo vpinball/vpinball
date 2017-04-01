@@ -821,6 +821,7 @@
 #define IDD_PROPHITTARGET_PHYSICS       622
 #define IDD_DBGLIGHTDIALOG              623
 #define IDD_DBGMATERIALDIALOG           624
+#define IDC_BG_FSS                      625
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
