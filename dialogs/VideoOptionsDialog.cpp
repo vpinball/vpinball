@@ -510,9 +510,9 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          allVideoModes.clear();
 
          // test video modes first on list
-		 VideoMode mymode;
+         VideoMode mymode;
          //add portrait play modes
-		 unsigned int cnt = 0;
+         unsigned int cnt = 0;
          if ((720 <= screenwidth) && (1024 <= screenheight))
          {
 		  mymode.width = 720;
