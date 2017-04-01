@@ -1,5 +1,8 @@
 VP 10.3.0 Changelog
 ------------------------
+- using the built-in DMD (via the flasher element) now in addition will respect the 'Additive Blend' and 'Modulate' parameters to steer the blending with the table
+  (this can for example be used to simulate a reflection on the playfield glass, set 'Modulate' to 0.9 and check 'Additive Blend' as an example)
+
 - add NFAA post processing filter to the FXAA dropdown menus (sometimes more blurry, but also keeps more dynamic range of the highlights compared to FXAA, and is pretty fast)
 
 - own colors can now be defined for locked/unlocked selected elements, element fill color and editor table background, in the editor preferences

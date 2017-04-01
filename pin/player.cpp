@@ -198,6 +198,8 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_curPlunger = JOYRANGEMN - 1;
 
    m_current_renderstage = 0;
+   m_dmdstate = 0;
+
    HRESULT hr;
 
    int vsync;
@@ -1958,6 +1960,7 @@ void Player::DestroyBall(Ball *pball)
       m_pactiveball = m_vball.front();
 }
 
+//initalizes the player window , and places it somewhere on the screen, does not manage content
 void Player::InitWindow()
 {
    WNDCLASSEX wcex;
@@ -3064,11 +3067,11 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
       const D3DXVECTOR4 c = convertColor(DMDcolor, intensity);
       m_pin3d.m_pd3dDevice->DMDShader->SetVector("vColor_Intensity", &c);
 #ifdef DMD_UPSCALE
-      const D3DXVECTOR4 r((float)(m_dmdx*3), (float)(m_dmdy*3), 0.f, 0.f);
+      const D3DXVECTOR4 r((float)(m_dmdx*3), (float)(m_dmdy*3), 1.f, 0.f);
 #else
-      const D3DXVECTOR4 r((float)m_dmdx, (float)m_dmdy, 0.f, 0.f);
+      const D3DXVECTOR4 r((float)m_dmdx, (float)m_dmdy, 1.f, 0.f);
 #endif
-      m_pin3d.m_pd3dDevice->DMDShader->SetVector("vRes", &r);
+      m_pin3d.m_pd3dDevice->DMDShader->SetVector("vRes_Alpha", &r);
 
       m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(m_texdmd));
 
@@ -3300,10 +3303,18 @@ void Player::RenderDynamics()
          }
       }
    }
-
-   // Draw non-transparent objects.
+   
+   m_dmdstate = 0;
+   // Draw non-transparent objects. No DMD's
    for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-      m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+      if(!m_vHitNonTrans[i]->IsDMD())
+         m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+   m_dmdstate = 2;
+   // Draw non-transparent DMD's
+   for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
+      if(m_vHitNonTrans[i]->IsDMD())
+         m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
    DrawBalls();
 
@@ -3311,9 +3322,21 @@ void Player::RenderDynamics()
 
    DrawBulbLightBuffer();
 
-   // Draw transparent objects.
+   m_dmdstate = 0;
+   // Draw transparent objects. No DMD's
    for (size_t i = 0; i < m_vHitTrans.size(); ++i)
-      m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+      if(!m_vHitNonTrans[i]->IsDMD())
+         m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+   m_dmdstate = 1;
+   // Draw only transparent DMD's
+   for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
+      if(m_vHitNonTrans[i]->IsDMD())
+         m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+   m_dmdstate = 0;
+
+   //
 
    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture3", (D3DTexture*)NULL); // need to reset the bulb light texture, as its used as render target for bloom again
 

@@ -112,6 +112,7 @@ public:
 			  tex = pinB;
 		  return (unsigned long long)tex;
 	  }
+	  virtual bool IsDMD() { return m_d.m_IsDMD; }
 
       virtual void UpdatePropertyPanes();
 

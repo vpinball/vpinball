@@ -474,6 +474,7 @@ public:
    BaseTexture* m_texdmd;
 
    unsigned int m_current_renderstage; // currently only used for bulb lights
+   unsigned int m_dmdstate; // used to distinguish different flasher/DMD rendering mode states
 
    int m_overall_frames; // amount of rendered frames since start
 
