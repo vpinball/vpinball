@@ -1223,7 +1223,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    //
 
-   m_pin3d.InitLayout();
+   m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
 
    const float slope = ptable->m_angletiltMin
       + (ptable->m_angletiltMax - ptable->m_angletiltMin)
@@ -4076,7 +4076,7 @@ void Player::UpdateCameraModeDisplay()
    }
    }
    DebugPrint(10, 100, szFoo, len);
-   m_pin3d.InitLayout();
+   m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

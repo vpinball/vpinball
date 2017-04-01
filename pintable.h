@@ -155,6 +155,8 @@ public:
    STDMETHOD(put_BackdropImage_FS)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_BackdropImageApplyNightDay)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_BackdropImageApplyNightDay)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_BackdropFSS)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_BackdropFSS)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_BackdropColor)(/*[out, retval]*/ OLE_COLOR *pVal);
    STDMETHOD(put_BackdropColor)(/*[in]*/ OLE_COLOR newVal);
    STDMETHOD(get_PlayfieldMaterial)(/*[out, retval]*/ BSTR *pVal);
@@ -602,6 +604,8 @@ public:
    float m_BG_xlatey[NUM_BG_SETS];
    float m_BG_xlatez[NUM_BG_SETS];
    char  m_BG_szImage[NUM_BG_SETS][MAXTOKEN];
+
+   bool  m_BG_enable_FSS;
 
    float m_angletiltMax;
    float m_angletiltMin;

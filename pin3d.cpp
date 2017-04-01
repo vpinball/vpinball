@@ -554,13 +554,34 @@ void Pin3D::InitLayoutFS()
    InitLights();
 }
 
-void Pin3D::InitLayout()
+// here is where the tables camera / rotation / scale is setup
+// flashers are ignored in the calculation of boundaries to center the
+// table in the view
+void Pin3D::InitLayout(const bool FSS_mode)
 {
    TRACE_FUNCTION();
 
+   // next 4 def values for layout portrait(game vert) in lanscape(screen horz)
+   // for FSS, force an offset to camy which drops the table down 1/3 of the way.
+   // some values to camy have been commented out because I found the default value 
+   // better and just modify the camz and keep the table design inclination 
+   // within 50-60 deg and 40-50 FOV in editor.
+   // these values were tested against all known video modes upto 1920x1080 
+   // in landscape and portrait on the display
+
+   m_camx = 0.0f;
+   m_camy = FSS_mode ? 500.0f : 0.f;
+   m_camz = 0.0f;
+   m_inc  = FSS_mode ? 0.2f : 0.f;
+
    const float rotation = ANGTORAD(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]);
-   const float inclination = ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
+   float inclination = ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
    const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
+
+   //!! FSS: g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set] += inc;
+   //!! FSS: inclination = ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
+   inclination += m_inc; // added this to inclination in radians
+   //!! FSS: inc = 0.0f;
 
    std::vector<Vertex3Ds> vvertex3D;
    for (int i = 0; i < g_pplayer->m_ptable->m_vedit.Size(); ++i)
@@ -570,8 +591,53 @@ void Pin3D::InitLayout()
    m_proj.m_rcviewport.top = 0;
    m_proj.m_rcviewport.right = vp.Width;
    m_proj.m_rcviewport.bottom = vp.Height;
+   //!! FSS: m_proj.m_rcviewport.right = vp.Height;
+   //!! FSS: m_proj.m_rcviewport.bottom = vp.Width;
 
    const float aspect = ((float)vp.Width) / ((float)vp.Height); //(float)(4.0/3.0);
+
+   if(FSS_mode)
+   {
+   const int width = GetSystemMetrics(SM_CXSCREEN);
+   const int height = GetSystemMetrics(SM_CYSCREEN);
+   // layout landscape(game horz) in lanscape(LCD\LED horz)
+   if ((vp.Width > vp.Height) && (height < width))
+   {
+      //inclination += 0.1f; // 0.05-best, 0.1-good, 0.2-bad > (0.2 terrible original)
+      //camy -= 30.0f;       // 70.0f original // 100
+      if (aspect > 1.6f)
+          m_camz -= 1170.0f; // 700
+      else if (aspect > 1.5f)
+          m_camz -= 1070.0f; // 650
+      else if (aspect > 1.4f)
+          m_camz -= 900.0f;  // 580
+      else if (aspect > 1.3f)
+          m_camz -= 820.0f;  // 500 // 600
+      else
+          m_camz -= 800.0f;  // 480
+   }
+   else {
+      // layout potrait(game vert) in portrait(LCD\LED vert)
+      if (height > width)
+      {
+         if (aspect > 0.6f) {
+            m_camz += 10.0f;
+            //m_camy += 50.0f;
+         }
+         else if (aspect > 0.5f) {
+            m_camz += 300.0f;
+            //m_camy += 100.0f;
+         }
+         else {
+            m_camz += 300.0f;
+            //m_camy += 200.0f;
+         }
+      }
+      // layout landscape(game horz) in portrait(LCD\LED vert),who would but the UI allows for it!
+      else {
+      }
+   }
+   }
 
    m_proj.FitCameraToVertices(vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
 
@@ -579,7 +645,14 @@ void Pin3D::InitLayout()
 
    m_proj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
    m_proj.ScaleView(g_pplayer->m_ptable->m_BG_scalex[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_scaley[g_pplayer->m_ptable->m_BG_current_set], 1.0f);
-   m_proj.TranslateView(g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set] - m_proj.m_vertexcamera.x, g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] - m_proj.m_vertexcamera.y, -m_proj.m_vertexcamera.z);
+
+   //!! FSS: added 500.0f to next line on camera y 
+   //!! FSS: m_proj.m_vertexcamera.y += camy;
+   //!! FSS: g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] += camy;
+   //!! FSS: camy = 0.0f;
+
+   m_proj.TranslateView(g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set] - m_proj.m_vertexcamera.x, g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] - m_proj.m_vertexcamera.y + m_camy, -m_proj.m_vertexcamera.z + m_camz);
+
    m_proj.RotateView(0, 0, rotation);
    m_proj.RotateView(inclination, 0, 0);
    m_proj.MultiplyView(ComputeLaybackTransform(g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]));
@@ -967,6 +1040,7 @@ void PinProjection::CacheTransform()
    matT.Multiply(m_matWorld, m_matrixTotal);   // total = matWorld * matView * matProj
 }
 
+// transforms the backdrop
 void PinProjection::TransformVertices(const Vertex3Ds * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const
 {
    const float rClipWidth = (m_rcviewport.right - m_rcviewport.left)*0.5f;

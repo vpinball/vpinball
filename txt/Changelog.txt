@@ -1,5 +1,9 @@
 VP 10.3.0 Changelog
 ------------------------
+- add new FSS setting in the backdrop options to be able to easily add an additional backglass to the table
+
+- add more window resolutions to the video preferences (for new FSS/portrait setups)
+
 - using the built-in DMD (via the flasher element) now in addition will respect the 'Additive Blend' and 'Modulate' parameters to steer the blending with the table
   (this can for example be used to simulate a reflection on the playfield glass, set 'Modulate' to 0.9 and check 'Additive Blend' as an example)
 

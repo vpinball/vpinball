@@ -48,7 +48,7 @@ public:
    HRESULT InitPin3D(const HWND hwnd, const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const bool FXAA, const bool useAO);
 
    void InitLayoutFS();
-   void InitLayout();
+   void InitLayout(const bool FSS_mode);
 
    void TransformVertices(const Vertex3D_NoTex2 * rgv, const WORD * rgi, int count, Vertex2D * rgvout) const;
 
@@ -104,6 +104,12 @@ public:
    BaseTexture* m_envRadianceTexture;
 
    PinProjection m_proj;
+
+   //FSS mode parameters
+   float m_camx;
+   float m_camy;
+   float m_camz;
+   float m_inc;
 
    HWND m_hwnd;
 
