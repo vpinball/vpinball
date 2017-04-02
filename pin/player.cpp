@@ -3325,7 +3325,7 @@ void Player::RenderDynamics()
    m_dmdstate = 0;
    // Draw transparent objects. No DMD's
    for (size_t i = 0; i < m_vHitTrans.size(); ++i)
-      if(!m_vHitNonTrans[i]->IsDMD())
+      if(!m_vHitTrans[i]->IsDMD())
          m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
    m_dmdstate = 1;
