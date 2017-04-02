@@ -155,8 +155,6 @@ public:
    STDMETHOD(put_BackdropImage_FS)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_BackdropImageApplyNightDay)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_BackdropImageApplyNightDay)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(get_BackdropFSS)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_BackdropFSS)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_BackdropColor)(/*[out, retval]*/ OLE_COLOR *pVal);
    STDMETHOD(put_BackdropColor)(/*[in]*/ OLE_COLOR newVal);
    STDMETHOD(get_PlayfieldMaterial)(/*[out, retval]*/ BSTR *pVal);
@@ -243,6 +241,8 @@ public:
    STDMETHOD(put_EnableEMReels)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ShowDT)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ShowDT)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_ShowFSS)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_ShowFSS)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ReflectElementsOnPlayfield)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectElementsOnPlayfield)(/*[in]*/ VARIANT_BOOL newVal);
 
