@@ -7,7 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.3:
-- add MusicVolume to the table element
+- add MusicVolume and ShowFSS to the table element
 - add Damping to the gate element
 - change Friction to Damping (which was actually AntiFriction before, but never mentioned) for the spinner element (which also changes the input range from 0..100 to 0..1, and is inverse to before, e.g. "1-OldFriction/100")
 10.2:
@@ -148,6 +148,7 @@ NudgeTime(float)
 *TableMusicVolume(int) - Scales the global music volume (in percent). default=100
 
 ShowDT(bool) - Desktop mode enabled (true) or Rotated Fullscreen mode enabled (false)
+ShowFSS(bool) - Extended Backglass mode enabled (true) or not (false)
 
 *LightAmbient(OLE_COLOR) - changes the ambient light contribution for each material, please always try to keep this at full Black
 *Light0Emission(OLE_COLOR) - changes the light contribution for each material (currently light0 emission is copied to light1, too)

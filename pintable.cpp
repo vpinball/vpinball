@@ -8453,7 +8453,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
             // **************** warning **********************
             // added to render to surface of DMD style lights and emreels
             // but no checks are being performed at moment
-            m_vedit.ElementAt(ivar)->GetItemType() ==  eItemFlasher)
+            m_vedit.ElementAt(ivar)->GetItemType() == eItemFlasher)
             cvar++;
 
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
@@ -9394,14 +9394,14 @@ STDMETHODIMP PinTable::put_BackdropImageApplyNightDay(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_BackdropFSS(VARIANT_BOOL *pVal)
+STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_BG_enable_FSS);
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_BackdropFSS(VARIANT_BOOL newVal)
+STDMETHODIMP PinTable::put_ShowFSS(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
