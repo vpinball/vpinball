@@ -297,23 +297,22 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Video Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LISTBOX         IDC_SIZELIST,14,19,129,92,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Use always FS backdrop settings",IDC_BG_SET,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,117,131,10
-    LTEXT           "Post-processed Anti-Aliasing",IDC_STATIC,14,142,140,9
-    COMBOBOX        IDC_FXAACB,14,153,111,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Enable brute-force 4x Anti-Aliasing SSAA",IDC_AA_ALL_TABLES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,171,133,10
+    LISTBOX         IDC_SIZELIST,14,17,129,92,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Use always FS backdrop settings",IDC_BG_SET,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,113,131,10
+    LTEXT           "Post-processed Anti-Aliasing",IDC_STATIC,19,147,93,9
+    COMBOBOX        IDC_FXAACB,19,157,111,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Brute-force 4x SSAA",IDC_AA_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,173,133,10
     CONTROL         "Enable ScaleFX for internal DMD",IDC_SCALE_FX_DMD,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,188,121,10
-    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,222,83,10
-    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,233,81,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,185,121,10
+    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,223,83,10
+    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,234,81,10
     CONTROL         "Cabinet anti-stretch the ball",IDC_StretchMonitor,
-                    "Button",BS_AUTORADIOBUTTON,16,244,111,10
-    GROUPBOX        "Aspect Ratio Offset",IDC_STATIC,16,257,123,25
-    LTEXT           "X",IDC_STATIC,21,268,8,8
-    EDITTEXT        IDC_CORRECTION_X,31,266,40,12,ES_AUTOHSCROLL
-    LTEXT           "Y",IDC_STATIC,84,268,8,8
-    EDITTEXT        IDC_CORRECTION_Y,93,266,40,12,ES_AUTOHSCROLL
+                    "Button",BS_AUTORADIOBUTTON,16,245,111,10
+    GROUPBOX        "Aspect Ratio Offset",IDC_STATIC,16,258,123,25
+    LTEXT           "X",IDC_STATIC,21,269,8,8
+    EDITTEXT        IDC_CORRECTION_X,31,267,40,12,ES_AUTOHSCROLL
+    LTEXT           "Y",IDC_STATIC,84,269,8,8
+    EDITTEXT        IDC_CORRECTION_Y,93,267,40,12,ES_AUTOHSCROLL
     COMBOBOX        IDC_3D_STEREO,15,300,118,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Use Y-Axis (Cabinet/Rotated Screen)",IDC_3D_STEREO_Y,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,315,125,10
@@ -373,11 +372,12 @@ BEGIN
     GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,148,193,196
     GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,280,183,25
     LTEXT           "Elements Detail Level (decrease = performance)",IDC_STATIC,163,311,156,8
-    GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,211,132,75
+    GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,212,132,75
     GROUPBOX        "Automatic Night->Day cycle",IDC_STATIC,154,104,193,39
-    LTEXT           "(Cabinet/Rotated Screen usage)",IDC_STATIC,24,127,121,8
-    LTEXT           "(post-processed Anti-Aliasing)",IDC_STATIC,24,198,101,8
+    LTEXT           "(Cabinet/Rotated Screen usage)",IDC_STATIC,24,123,121,8
     GROUPBOX        "Fullscreen",IDC_STATIC,159,232,183,43
+    LTEXT           "(post-processed Anti-Aliasing)",IDC_STATIC,29,195,101,8
+    GROUPBOX        "Anti-Aliasing",IDC_STATIC,12,135,132,74
 END
 
 IDD_FONTDIALOG DIALOG 0, 0, 316, 167
@@ -1423,7 +1423,7 @@ BEGIN
     EDITTEXT        IDC_REFLECTION_PLAYFIELD,101,66,20,12,ES_AUTOHSCROLL
 END
 
-IDD_PROPTABLE_USER DIALOGEX 0, 0, 125, 310
+IDD_PROPTABLE_USER DIALOGEX 0, 0, 125, 288
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1439,25 +1439,25 @@ BEGIN
     GROUPBOX        "Elements Detail Level",IDC_STATIC,7,62,114,42
     CONTROL         "Use this slider instead of default",IDC_GLOBAL_ALPHA_ACC,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,92,109,10
-    GROUPBOX        "Ball",IDC_STATIC,7,115,114,56
-    LTEXT           "Reflection",IDC_STATIC,12,128,85,8
-    COMBOBOX        IDC_BALL_REFLECTION,75,126,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Trail/Motion Blur",IDC_STATIC,12,142,100,8
-    COMBOBOX        IDC_BALL_TRAIL,75,140,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Trail Strength (0..100)",IDC_STATIC,12,156,84,8
-    EDITTEXT        IDC_TRAIL_EDIT,95,154,20,12,ES_AUTOHSCROLL
-    GROUPBOX        "Night->Day cycle",IDC_STATIC,7,180,114,42
-    CONTROL         "",IDC_DAYNIGHT_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,189,107,19
+    GROUPBOX        "Ball",IDC_STATIC,7,109,114,56
+    LTEXT           "Reflection",IDC_STATIC,12,122,61,8
+    COMBOBOX        IDC_BALL_REFLECTION,75,120,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Trail/Motion Blur",IDC_STATIC,12,136,61,8
+    COMBOBOX        IDC_BALL_TRAIL,75,134,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Trail Strength (0..100)",IDC_STATIC,12,150,81,8
+    EDITTEXT        IDC_TRAIL_EDIT,95,148,20,12,ES_AUTOHSCROLL
+    GROUPBOX        "Night->Day cycle",IDC_STATIC,7,170,114,42
+    CONTROL         "",IDC_DAYNIGHT_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,179,107,19
     CONTROL         "Use this slider instead of default",IDC_GLOBAL_DAYNIGHT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,210,110,10
-    LTEXT           "Gameplay Difficulty (0..100)",IDC_STATIC,7,232,90,8
-    EDITTEXT        209,101,230,20,12,ES_AUTOHSCROLL
-    LTEXT           "Overwrite Physics by Global Set",IDC_STATIC,7,252,60,16
-    COMBOBOX        1043,71,255,50,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Sound Effect Volume (0..100)",IDC_STATIC,7,281,94,8
-    EDITTEXT        IDC_TABLESOUNDVOLUME,101,279,20,12,ES_AUTOHSCROLL
-    LTEXT           "Music Volume (0..100)",IDC_STATIC,7,295,94,8
-    EDITTEXT        IDC_TABLEMUSICVOLUME,101,293,20,12,ES_AUTOHSCROLL
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,200,110,10
+    LTEXT           "Gameplay Difficulty (0..100)",IDC_STATIC,7,220,90,8
+    EDITTEXT        209,101,218,20,12,ES_AUTOHSCROLL
+    LTEXT           "Overwrite Physics by Global Set",IDC_STATIC,7,232,60,16
+    COMBOBOX        1043,71,235,50,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Sound Effect Volume (0..100)",IDC_STATIC,7,257,94,8
+    EDITTEXT        IDC_TABLESOUNDVOLUME,101,255,20,12,ES_AUTOHSCROLL
+    LTEXT           "Music Volume (0..100)",IDC_STATIC,7,271,94,8
+    EDITTEXT        IDC_TABLEMUSICVOLUME,101,269,20,12,ES_AUTOHSCROLL
 END
 
 IDD_PROPTABLE_PHYSICS DIALOGEX 0, 0, 125, 95
@@ -2420,6 +2420,7 @@ BEGIN
 
     IDD_PROPTABLE_USER, DIALOG
     BEGIN
+        BOTTOMMARGIN, 281
     END
 
     IDD_PROPTABLE_BALL, DIALOG
