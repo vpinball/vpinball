@@ -307,6 +307,14 @@ float4 ps_main_nfaa(in VS_OUTPUT_2D IN) : COLOR
 
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 
+	const float3 Scene0 = tex2Dlod(texSampler5, float4(u, 0.,0.)).rgb;
+	[branch] if(w_h_height.w == 1.0) // depth buffer available?
+	{
+		const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
+		[branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+			return float4(Scene0, 1.0);
+	}
+
 #ifdef NFAA_USE_COLOR // edges from color
 	float2 Vectors = findContrastByColor(u, filterSpread);
 #else
@@ -324,7 +332,6 @@ float4 ps_main_nfaa(in VS_OUTPUT_2D IN) : COLOR
 
 	const float2 Normal = Vectors * (w_h_height.xy /* * 2.0*/);
 
-	const float3 Scene0 = tex2Dlod(texSampler5, float4(u, 0.,0.)).rgb;
 	const float3 Scene1 = tex2Dlod(texSampler5, float4(u + Normal, 0.,0.)).rgb;
 	const float3 Scene2 = tex2Dlod(texSampler5, float4(u - Normal, 0.,0.)).rgb;
 #if defined(NFAA_VARIANT) || defined(NFAA_VARIANT2)
@@ -383,8 +390,15 @@ float4 ps_main_dlaa(in VS_OUTPUT_2D IN) : COLOR
 {
    const float2 u = IN.tex0 + w_h_height.xy*0.5;
 
+   const float4 sampleCenter = sampleOffseta(u, float2( 0.0,  0.0) );
+   [branch] if(w_h_height.w == 1.0 /*&& sampleCenter.a == 0.0*/) // depth buffer available? /*AND no edge here? -> ignored because of performance*/
+   {
+      const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
+      [branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+         return float4(sampleCenter.xyz, 1.0);
+   }
+
    // short edges
-   const float4 sampleCenter     = sampleOffseta(u, float2( 0.0,  0.0) );
    const float4 sampleHorizNeg0  = sampleOffseta(u, float2(-1.5,  0.0) );
    const float4 sampleHorizPos0  = sampleOffseta(u, float2( 1.5,  0.0) ); 
    const float4 sampleVertNeg0   = sampleOffseta(u, float2( 0.0, -1.5) ); 
