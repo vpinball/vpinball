@@ -1329,7 +1329,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_EDIT_AUDIOOPTIONS:
    {
-       ShowSubDialog(m_editorOptDialog);
+       ShowSubDialog(m_audioOptDialog);
       break;
    }
    case ID_EDIT_PHYSICSOPTIONS:
