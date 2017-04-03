@@ -284,7 +284,7 @@ static pDF mDwmFlush = NULL;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = NULL;
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA, const bool useNvidiaApi, const bool disable_dwm)
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool useNvidiaApi, const bool disable_dwm)
    : m_texMan(*this)
 {
    m_stats_drawn_triangles = 0;
@@ -546,15 +546,29 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
       ReportError("Fatal Error: unable to create blur buffer!", hr, __FILE__, __LINE__);
 
    // alloc temporary buffer for postprocessing
-   if (stereo3D || FXAA)
+   if (stereo3D || (FXAA > 0))
    {
       hr = m_pD3DDevice->CreateTexture(width, height, 1,
-         D3DUSAGE_RENDERTARGET, video10bit ? D3DFMT_A2R10G10B10 : D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTmpTexture, NULL);
+         D3DUSAGE_RENDERTARGET, video10bit ? D3DFMT_A2R10G10B10 : D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTmpTexture, NULL);
       if (FAILED(hr))
-         ReportError("Fatal Error: unable to create stereo3D/FXAA buffer!", hr, __FILE__, __LINE__);
+         ReportError("Fatal Error: unable to create stereo3D/post-processing AA buffer!", hr, __FILE__, __LINE__);
    }
    else
       m_pOffscreenBackBufferTmpTexture = NULL;
+
+   // alloc one more temporary buffer for SMAA
+   if (FXAA == Quality_SMAA)
+   {
+      hr = m_pD3DDevice->CreateTexture(width, height, 1,
+         D3DUSAGE_RENDERTARGET, video10bit ? D3DFMT_A2R10G10B10 : D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTmpTexture2, NULL);
+      if (FAILED(hr))
+         ReportError("Fatal Error: unable to create SMAA buffer!", hr, __FILE__, __LINE__);
+   }
+   else
+      m_pOffscreenBackBufferTmpTexture2 = NULL;
+
+   if (video10bit && (FXAA == Quality_SMAA || FXAA == Standard_DLAA))
+      ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
 
    m_curIndexBuffer = 0;
    m_curVertexBuffer = 0;
@@ -641,6 +655,14 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
    //m_quadDynVertexBuffer = NULL;
    //CreateVertexBuffer(4, USAGE_DYNAMIC, MY_D3DFVF_TEX, &m_quadDynVertexBuffer);
+
+   if(FXAA == Quality_SMAA)
+       UploadAndSetSMAATextures();
+   else
+   {
+       m_SMAAareaTexture = 0;
+       m_SMAAsearchTexture = 0;
+   }
 }
 
 bool RenderDevice::DepthBufferReadBackAvailable()
@@ -679,33 +701,37 @@ void RenderDevice::FreeShader()
 {
    if (basicShader)
    {
-      basicShader->Core()->SetTexture("Texture0", NULL);
-      basicShader->Core()->SetTexture("Texture1", NULL);
-      basicShader->Core()->SetTexture("Texture2", NULL);
-      basicShader->Core()->SetTexture("Texture3", NULL);
-      basicShader->Core()->SetTexture("Texture4", NULL);
+      CHECKD3D(basicShader->Core()->SetTexture("Texture0", NULL));
+      CHECKD3D(basicShader->Core()->SetTexture("Texture1", NULL));
+      CHECKD3D(basicShader->Core()->SetTexture("Texture2", NULL));
+      CHECKD3D(basicShader->Core()->SetTexture("Texture3", NULL));
+      CHECKD3D(basicShader->Core()->SetTexture("Texture4", NULL));
       delete basicShader;
       basicShader = 0;
    }
    if (DMDShader)
    {
-      DMDShader->Core()->SetTexture("Texture0", NULL);
+      CHECKD3D(DMDShader->Core()->SetTexture("Texture0", NULL));
       delete DMDShader;
       DMDShader = 0;
    }
    if (FBShader)
    {
-      FBShader->Core()->SetTexture("Texture0", NULL);
-      FBShader->Core()->SetTexture("Texture1", NULL);
-      FBShader->Core()->SetTexture("Texture3", NULL);
-      FBShader->Core()->SetTexture("Texture4", NULL);
+      CHECKD3D(FBShader->Core()->SetTexture("Texture0", NULL));
+      CHECKD3D(FBShader->Core()->SetTexture("Texture1", NULL));
+      CHECKD3D(FBShader->Core()->SetTexture("Texture3", NULL));
+      CHECKD3D(FBShader->Core()->SetTexture("Texture4", NULL));
+
+      CHECKD3D(FBShader->Core()->SetTexture("areaTex2D", NULL));
+      CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", NULL));
+
       delete FBShader;
       FBShader = 0;
    }
    if (flasherShader)
    {
-      flasherShader->Core()->SetTexture("Texture0", NULL);
-      flasherShader->Core()->SetTexture("Texture1", NULL);
+      CHECKD3D(flasherShader->Core()->SetTexture("Texture0", NULL));
+      CHECKD3D(flasherShader->Core()->SetTexture("Texture1", NULL));
       delete flasherShader;
       flasherShader = 0;
    }
@@ -717,9 +743,9 @@ void RenderDevice::FreeShader()
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    if (classicLightShader)
    {
-      classicLightShader->Core()->SetTexture("Texture0",NULL);
-      classicLightShader->Core()->SetTexture("Texture1",NULL);
-      classicLightShader->Core()->SetTexture("Texture2",NULL);
+      CHECKD3D(classicLightShader->Core()->SetTexture("Texture0",NULL));
+      CHECKD3D(classicLightShader->Core()->SetTexture("Texture1",NULL));
+      CHECKD3D(classicLightShader->Core()->SetTexture("Texture2",NULL));
       delete classicLightShader;
       classicLightShader=0;
    }
@@ -766,6 +792,7 @@ RenderDevice::~RenderDevice()
    m_texMan.UnloadAll();
    SAFE_RELEASE(m_pOffscreenBackBufferTexture);
    SAFE_RELEASE(m_pOffscreenBackBufferTmpTexture);
+   SAFE_RELEASE(m_pOffscreenBackBufferTmpTexture2);
 
    const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
    if (g_pplayer->m_ptable->m_fReflectElementsOnPlayfield || drawBallReflection)
@@ -774,6 +801,9 @@ RenderDevice::~RenderDevice()
    SAFE_RELEASE(m_pBloomBufferTexture);
    SAFE_RELEASE(m_pBloomTmpBufferTexture);
    SAFE_RELEASE(m_pBackBuffer);
+
+   SAFE_RELEASE(m_SMAAareaTexture);
+   SAFE_RELEASE(m_SMAAsearchTexture);
 
 #ifdef _DEBUG
    CheckForD3DLeak(m_pD3DDevice);
@@ -1188,6 +1218,58 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *
       tex->GenerateMipSubLevels(); // tell driver that now is a good time to generate mipmaps
 
    return tex;
+}
+
+#include "shader/AreaTex.h"
+#include "shader/SearchTex.h"
+void RenderDevice::UploadAndSetSMAATextures()
+{
+   {
+   IDirect3DTexture9 *sysTex;
+   HRESULT hr = m_pD3DDevice->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, 0, D3DFMT_L8, D3DPOOL_SYSTEMMEM, &sysTex, NULL);
+   if (FAILED(hr))
+      ReportError("Fatal Error: unable to create texture!", hr, __FILE__, __LINE__);
+   hr = m_pD3DDevice->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 0, 0, D3DFMT_L8, D3DPOOL_DEFAULT, &m_SMAAsearchTexture, NULL);
+   if (FAILED(hr))
+      ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
+
+   //!! use D3DXLoadSurfaceFromMemory
+   D3DLOCKED_RECT locked;
+   CHECKD3D(sysTex->LockRect(0, &locked, NULL, 0));
+   void * const pdest = locked.pBits;
+   const void * const psrc = searchTexBytes;
+   memcpy(pdest,psrc,SEARCHTEX_SIZE);
+   CHECKD3D(sysTex->UnlockRect(0));
+
+   CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, m_SMAAsearchTexture));
+   SAFE_RELEASE(sysTex);
+   }
+   //
+   {
+   IDirect3DTexture9 *sysTex;
+   HRESULT hr = m_pD3DDevice->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, 0, D3DFMT_A8L8, D3DPOOL_SYSTEMMEM, &sysTex, NULL);
+   if (FAILED(hr))
+      ReportError("Fatal Error: unable to create texture!", hr, __FILE__, __LINE__);
+   hr = m_pD3DDevice->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 0, 0, D3DFMT_A8L8, D3DPOOL_DEFAULT, &m_SMAAareaTexture, NULL);
+   if (FAILED(hr))
+      ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
+
+   //!! use D3DXLoadSurfaceFromMemory
+   D3DLOCKED_RECT locked;
+   CHECKD3D(sysTex->LockRect(0, &locked, NULL, 0));
+   void * const pdest = locked.pBits;
+   const void * const psrc = areaTexBytes;
+   memcpy(pdest,psrc,AREATEX_SIZE);
+   CHECKD3D(sysTex->UnlockRect(0));
+
+   CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, m_SMAAareaTexture));
+   SAFE_RELEASE(sysTex);
+   }
+
+   //
+
+   CHECKD3D(FBShader->Core()->SetTexture("areaTex2D", m_SMAAareaTexture));
+   CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", m_SMAAsearchTexture));
 }
 
 void RenderDevice::UpdateTexture(D3DTexture* tex, BaseTexture* surf)

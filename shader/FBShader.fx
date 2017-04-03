@@ -716,3 +716,5 @@ technique fb_mirror
       PixelShader = compile ps_3_0 ps_main_fb_mirror();
    }
 }
+
+#include "SMAA.fxh"
