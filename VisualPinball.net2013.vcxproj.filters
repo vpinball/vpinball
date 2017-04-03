@@ -1022,6 +1022,9 @@
     <ClInclude Include="dialogs\KeysConfigDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="meshes\kickerSimpleHoleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">

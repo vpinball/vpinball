@@ -299,6 +299,7 @@ typedef [uuid(C0E543A2-50B3-4546-85F8-4D35BFBE09A2)]
                 KickerInvisible = 0,
                 KickerHole = 1,
                 KickerCup = 2,
+                KickerHoleSimple = 3,
                 }
                 KickerType;
 
