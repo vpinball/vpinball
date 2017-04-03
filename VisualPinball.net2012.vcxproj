@@ -377,6 +377,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="Dialogs\DrawingOrderDialog.cpp" />
     <ClCompile Include="dialogs\EditorOptionsDialog.cpp" />
     <ClCompile Include="Dialogs\ImageDialog.cpp" />
+    <ClCompile Include="dialogs\KeysConfigDialog.cpp" />
     <ClCompile Include="Dialogs\MaterialDialog.cpp" />
     <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
     <ClCompile Include="dialogs\ProtectTableDialog.cpp" />
@@ -1081,6 +1082,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="Dialogs\DrawingOrderDialog.h" />
     <ClInclude Include="dialogs\EditorOptionsDialog.h" />
     <ClInclude Include="Dialogs\ImageDialog.h" />
+    <ClInclude Include="dialogs\KeysConfigDialog.h" />
     <ClInclude Include="dialogs\MaterialDialog.h" />
     <ClInclude Include="dialogs\PhysicsOptionsDialog.h" />
     <ClInclude Include="dialogs\ProtectTableDialog.h" />

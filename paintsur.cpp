@@ -299,10 +299,10 @@ void PaintSur::PolygonImageRaw(const std::vector<RenderVertex> &rgv, BYTE *hbm, 
 				// *** it seems you don't need to do this, a negative height in biHeight int BMPinfo works, for how long who knows
 				if (0)
 				{
-				BYTE *const flipix = (BYTE *)malloc(4 * (ix2 - ix) * (iy2 - iy));
-				memset(flipix, 0, 4 * (ix2 - ix) * (iy2 - iy));
-				const int width = (ix2 - ix);
-				const int height = (iy2 - iy);
+					BYTE * const flipix = (BYTE *)malloc(4 * (ix2 - ix) * (iy2 - iy));
+					memset(flipix, 0, 4 * (ix2 - ix) * (iy2 - iy));
+					const int width = (ix2 - ix);
+					const int height = (iy2 - iy);
 
 					for (int i = 0; i < width; ++i)
 					{
@@ -316,8 +316,8 @@ void PaintSur::PolygonImageRaw(const std::vector<RenderVertex> &rgv, BYTE *hbm, 
 					} // endfor
 					//copy it back
 					memcpy(bmpx, flipix, 4 * (ix2 - ix) * (iy2 - iy));
-				
-				free(flipix);
+
+					free(flipix);
 				} //endif vflip
 			} // endif 1 pre-vflip
 
@@ -369,28 +369,25 @@ void PaintSur::PolygonImageRaw(const std::vector<RenderVertex> &rgv, BYTE *hbm, 
 				} // end for
 			} // end if 1 clipper
 
+#if 0
 			// set it back, but only the clipped visible area
-			if (0)
-			{
-				SelectObject(hdcB, (HGDIOBJ)hBmpBLast);
-				DeleteObject(hbmpB);
-				hbmpB = CreateCompatibleBitmap(m_hdc, (ix2 - ix), (iy2 - iy));
-				hBmpBLast = (HBITMAP)SelectObject(hdcB, hbmpB);
-				SetDIBits(hdcB, hbmpB, 0, (iy2 - iy), bmpx, (BITMAPINFO *)&bmix, DIB_RGB_COLORS);
+			SelectObject(hdcB, (HGDIOBJ)hBmpBLast);
+			DeleteObject(hbmpB);
+			hbmpB = CreateCompatibleBitmap(m_hdc, (ix2 - ix), (iy2 - iy));
+			hBmpBLast = (HBITMAP)SelectObject(hdcB, hbmpB);
+			SetDIBits(hdcB, hbmpB, 0, (iy2 - iy), bmpx, (BITMAPINFO *)&bmix, DIB_RGB_COLORS);
 
-				// calc left/top offsets into source
-				const int pixxoff = iy > rclip.top ? rclip.top : iy;
-				const int pixyoff = rclip.left > ix ? rclip.left : ix;
+			// calc left/top offsets into source
+			const int pixxoff = iy > rclip.top ? rclip.top : iy;
+			const int pixyoff = rclip.left > ix ? rclip.left : ix;
 
-				// now simply blit it back to the primary DC in the clip area
-				BitBlt(m_hdc, rclip.left, rclip.top, rclip.right, rclip.bottom, hdcB, pixxoff, pixyoff, SRCCOPY);
+			// now simply blit it back to the primary DC in the clip area
+			BitBlt(m_hdc, rclip.left, rclip.top, rclip.right, rclip.bottom, hdcB, pixxoff, pixyoff, SRCCOPY);
 
 			//SetDIBitsToDevice(m_hdc, ix, iy, (ix2 - ix), (iy2 - iy), 0, 0, 0, (iy2 - iy), bmpx, &bmix, DIB_RGB_COLORS);
-			} // end if 1 blit
-
+#elif 1
 			// (please leave in tact for testing purposes) : render memory DC image
-			else if (1)
-			{
+
 			//SelectObject(hdcB, (HGDIOBJ)hBmpBLast);
 			//DeleteObject(hbmpB);
 			//hbmpB = CreateCompatibleBitmap(hdcTop, (ix2 - ix), (iy2 - iy));
@@ -399,20 +396,15 @@ void PaintSur::PolygonImageRaw(const std::vector<RenderVertex> &rgv, BYTE *hbm, 
 			//BitBlt(m_hdc, ix, iy, (ix2 - ix), (iy2 - iy), hdcB, 0, 0, SRCCOPY);
 
 			// now simply blit it back to the primary DC
-			SetDIBitsToDevice(m_hdc, ix, iy, (ix2 - ix), (iy2 - iy), 0, 0, 0, (iy2 - iy), bmpx, &bmix, DIB_RGB_COLORS);	
-			} // end if test 1
-
+			SetDIBitsToDevice(m_hdc, ix, iy, (ix2 - ix), (iy2 - iy), 0, 0, 0, (iy2 - iy), bmpx, &bmix, DIB_RGB_COLORS);
+#elif 0
 			// **** (please leave in tact for testing purposes) : render primary DC image ****
-			else if (0)
-			{
 			SelectObject(hdcB, (HGDIOBJ)hBmpBLast);
 			hBmpBLast = (HBITMAP)SelectObject(hdcB, bmpprim);
 
 			BitBlt(m_hdc, 0, 0, bmiprim.bmiHeader.biWidth, bmiprim.bmiHeader.biHeight, hdcB, 0, 0, SRCCOPY);
-
-			} // end if test 2
-
-			//BOOL bOk =AlphaBlend(m_hdc, ix, iy, ix2 - ix, iy2 - iy, hdcB, 0, 0, (ix2 - ix), (iy2 - iy), blendf);
+#endif
+			//BOOL bOk = AlphaBlend(m_hdc, ix, iy, ix2 - ix, iy2 - iy, hdcB, 0, 0, (ix2 - ix), (iy2 - iy), blendf);
 
 			// clean up
 			SelectObject(hdcA, (HGDIOBJ)hBmpALast);

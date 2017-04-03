@@ -264,6 +264,9 @@
     <ClCompile Include="dialogs\ImageDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\KeysConfigDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="dialogs\MaterialDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -910,6 +913,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\ImageDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\KeysConfigDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\MaterialDialog.h">

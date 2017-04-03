@@ -1479,7 +1479,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
       KeysConfigDialog *keysConfigDlg = new KeysConfigDialog();
       keysConfigDlg->DoModal();
-      delete(keysConfigDlg);
+      delete keysConfigDlg;
       break;
    }
    case ID_LAYER_LAYER1:
