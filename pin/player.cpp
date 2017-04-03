@@ -1960,7 +1960,7 @@ void Player::DestroyBall(Ball *pball)
       m_pactiveball = m_vball.front();
 }
 
-//initalizes the player window , and places it somewhere on the screen, does not manage content
+//initalizes the player window, and places it somewhere on the screen, does not manage content
 void Player::InitWindow()
 {
    WNDCLASSEX wcex;

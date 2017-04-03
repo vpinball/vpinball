@@ -50,10 +50,10 @@ void VideoOptionsDialog::ResetVideoPreferences()
    float ballAspecRatioOffsetY = 0.0f;
    sprintf_s(tmp, 256, "%f", ballAspecRatioOffsetY);
    SetDlgItemTextA(IDC_CORRECTION_Y, tmp);
-   float latitude = 52.52;
+   float latitude = 52.52f;
    sprintf_s(tmp, 256, "%f", latitude);
    SetDlgItemTextA(IDC_DN_LATITUDE, tmp);
-   float longitude = 13.37;
+   float longitude = 13.37f;
    sprintf_s(tmp, 256, "%f", longitude);
    SetDlgItemTextA(IDC_DN_LONGITUDE, tmp);
    float nudgeStrength = 2e-2f;
@@ -244,14 +244,14 @@ BOOL VideoOptionsDialog::OnInitDialog()
    float latitude;
    hr = GetRegStringAsFloat("Player", "Latitude", &latitude);
    if (hr != S_OK)
-      latitude = 52.52;
+      latitude = 52.52f;
    sprintf_s(tmp, 256, "%f", latitude);
    SetDlgItemTextA(IDC_DN_LATITUDE, tmp);
 
    float longitude;
    hr = GetRegStringAsFloat("Player", "Longitude", &longitude);
    if (hr != S_OK)
-      longitude = 13.37;
+      longitude = 13.37f;
    sprintf_s(tmp, 256, "%f", longitude);
    SetDlgItemTextA(IDC_DN_LONGITUDE, tmp);
 
@@ -509,66 +509,31 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          //  indexcur = indx;
 
          allVideoModes.clear();
+         unsigned int cnt = 0;
 
          // test video modes first on list
-         VideoMode mymode;
-         //add portrait play modes
-         unsigned int cnt = 0;
-         if ((720 <= screenwidth) && (1024 <= screenheight))
-         {
-		  mymode.width = 720;
-		  mymode.height = 1024;
-		  mymode.depth = 0;
-		  mymode.refreshrate = 0;
 
-		  allVideoModes.push_back(mymode);
+         // add some (windowed) portrait play modes, up to FullHD (1080x1920)
 
-		  if (heightcur > widthcur)
-			  if ((720 == widthcur) && (1024 == heightcur))
-				  indx = 0;
-		  cnt++;
-         } //end if
-         if ((900 <= screenwidth) && (1440 <= screenheight))
-         {
-		  mymode.width = 900;
-		  mymode.height = 1440;
-		  mymode.depth = 0;
-		  mymode.refreshrate = 0;
+         const unsigned int num_portrait_modes = 4;
+         const int portrait_modes_width[num_portrait_modes]  = { 720, 900,1050,1080};
+         const int portrait_modes_height[num_portrait_modes] = {1024,1440,1600,1920};
 
-		  allVideoModes.push_back(mymode);
-		  if (heightcur > widthcur)
-			  if ((768 == widthcur) && (1440 == heightcur))
-				  indx = 1;
-		  cnt++;
-         }
-         if ((1050 <= screenwidth) && (1600 <= screenheight))
-         {
-		  mymode.width = 1050;
-		  mymode.height = 1600;
-		  mymode.depth = 0;
-		  mymode.refreshrate = 0;
+         for(unsigned int i = 0; i < num_portrait_modes; ++i)
+            if ((portrait_modes_width[i] <= screenwidth) && (portrait_modes_height[i] <= screenheight))
+            {
+              VideoMode mymode;
+              mymode.width = portrait_modes_width[i];
+              mymode.height = portrait_modes_height[i];
+              mymode.depth = 0;
+              mymode.refreshrate = 0;
 
-		  allVideoModes.push_back(mymode);
-		  if (heightcur > widthcur)
-			  if ((900 == widthcur) && (1600 == heightcur))
-				  indx = 2;
-		  cnt++;
-         } //end if
-
-         if ((1080 <= screenwidth) && (1920 <= screenheight))
-         {
-		  mymode.width = 1080;
-		  mymode.height = 1920;
-		  mymode.depth = 0;
-		  mymode.refreshrate = 0;
-
-		  allVideoModes.push_back(mymode);
-
-		  if (heightcur > widthcur)
-			  if ((1080 == widthcur) && (1920 == heightcur))
-				  indx = 3;
-		  cnt++;
-         } // end if
+              allVideoModes.push_back(mymode);
+              if (heightcur > widthcur)
+                if ((portrait_modes_width[i] == widthcur) && (portrait_modes_height[i] == heightcur))
+                  indx = i;
+              cnt++;
+            }
 
          // add landscape play modes
 
@@ -602,87 +567,46 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          allVideoModes.push_back(mode);
 
          char szT[128];
-         char szTx[128];
          //if (indexcur == -1)
          //  indexcur = indx;
 
-         if (mode.height <  mode.width)
+         if (mode.height < mode.width) // landscape
          {
-		  if ((indx == -1) || (indx >= cnt))
-		  {
-		     sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
-		     SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
-
-		     if (indx == -1)
-			    indexcur = SendMessage(hwndList, LB_GETCOUNT, 0, 0) - 1;
-		     else
-			    indexcur = indx;
-		  }
-		  else {
-		     sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
-		     SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
-		     indexcur = indx;
-		  }
+              sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
+              SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
+              if (indx == -1)
+                indexcur = SendMessage(hwndList, LB_GETCOUNT, 0, 0) - 1;
+              else
+                indexcur = indx;
          }
-         else {
-          if ((indx == -1) || (indx <= 3))
-		  {
-			  indexcur = indx;
-			  if (cnt > 0)
-			  {
-				  SendMessage(hwndList, LB_GETTEXT, cnt - 1, (LPARAM)szTx);
-				  SendMessage(hwndList, LB_DELETESTRING, cnt - 1, 0L);
+         else { // portrait
+              if ((indx == -1) || (indx < num_portrait_modes))
+              {
+                  indexcur = indx;
+                  if (cnt > 0)
+                  {
+                      char szTx[128];
+                      SendMessage(hwndList, LB_GETTEXT, cnt - 1, (LPARAM)szTx);
+                      SendMessage(hwndList, LB_DELETESTRING, cnt - 1, 0L);
 
-				  sprintf_s(szT, "%d x %d", mode.width, mode.height);
+                      if (cnt-1 < num_portrait_modes)
+                      {
+                          mode.width = portrait_modes_width[cnt-1];
+                          mode.height = portrait_modes_height[cnt-1];
 
-				  if (cnt == 1)
-				  {
-					  mode.width = 720;
-					  mode.height = 1024;
+                          if ((mode.height == screenheight) && (mode.width == screenwidth))
+                              sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
+                          else
+                              sprintf_s(szT, "%d x %d", mode.width, mode.height);
+                      }
+                      else {
+                          memset(&szTx,'\x0', sizeof(szTx));
+                          strcpy(szT, szTx);
+                      }
 
-					  if ((mode.height == screenheight) && (mode.width == screenwidth))
-						  sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
-					  else
-						  sprintf_s(szT, "%d x %d", mode.width, mode.height);
-				  }
-				  else if (cnt == 2)
-				  {
-					  mode.width = 900;
-					  mode.height = 1440;
-
-					  if ((mode.height == screenheight) && (mode.width == screenwidth))
-						  sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
-					  else
-						  sprintf_s(szT, "%d x %d", mode.width, mode.height);
-				  }
-				  else if (cnt == 3)
-				  {
-					  mode.width = 1050;
-					  mode.height = 1600;
-
-					  if ((mode.height == screenheight) && (mode.width == screenwidth))
-						  sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
-					  else
-						  sprintf_s(szT, "%d x %d", mode.width, mode.height);
-				  }
-				  else if (cnt == 4)
-				  {
-					  mode.width = 1080;
-					  mode.height = 1920;
-					  if ((mode.height == screenheight) && (mode.width == screenwidth))
-						  sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
-					  else
-						  sprintf_s(szT, "%d x %d", mode.width, mode.height);
-				  }
-				  else {
-					  memset(&szTx,'\x0', sizeof(szTx));
-					  strcpy(szT, szTx);
-				  }
-
-				  //end else if cnt
-				  SendMessage(hwndList, LB_INSERTSTRING, cnt - 1, (LPARAM)szT);
-			  }// end if cnt > 0
-		  } //end if indx
+                      SendMessage(hwndList, LB_INSERTSTRING, cnt - 1, (LPARAM)szT);
+                  }// end if cnt > 0
+              } //end if indx
          } //end if else mode height < width
 
          SendMessage(hwndList, LB_SETCURSEL, (indexcur != -1) ? indexcur : 0, 0);

@@ -8303,7 +8303,6 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    if (pcaStringsOut == NULL || pcaCookiesOut == NULL)
       return E_POINTER;
 
-   WCHAR *wzDst;
    int cvar;
    WCHAR **rgstr;
    DWORD *rgdw;
@@ -8323,7 +8322,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
       rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));
 
-      wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
+      WCHAR *wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
       // TEXT
       LocalString ls(IDS_NONE);
       MultiByteToWideChar(CP_ACP, 0, ls.m_szbuffer, -1, wzDst, 7);
@@ -8356,7 +8355,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
       rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));
 
-      wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
+      WCHAR *wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
       // TEXT
       LocalString ls(IDS_NONE);
       MultiByteToWideChar(CP_ACP, 0, ls.m_szbuffer, -1, wzDst, 7);
@@ -8387,7 +8386,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
       rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));
 
-      wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
+      WCHAR *wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
       // TEXT
       MultiByteToWideChar(CP_ACP, 0, "<None>", -1, wzDst, 7);
       rgstr[0] = wzDst;
@@ -8420,7 +8419,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
       rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));
 
-      wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
+      WCHAR *wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
       // TEXT
       MultiByteToWideChar(CP_ACP, 0, "<None>", -1, wzDst, 7);
       rgstr[0] = wzDst;
@@ -8446,14 +8445,15 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       cvar = 0;
 
       const bool fRamps = true;
+      const bool fFlashers = true;
 
       for (int ivar = 0; ivar < m_vedit.Size(); ivar++)
          if (m_vedit.ElementAt(ivar)->GetItemType() == eItemSurface ||
             (fRamps && m_vedit.ElementAt(ivar)->GetItemType() == eItemRamp) ||
             // **************** warning **********************
             // added to render to surface of DMD style lights and emreels
-            // but no checks are being performed at moment
-            m_vedit.ElementAt(ivar)->GetItemType() == eItemFlasher)
+            // but no checks are being performed at moment:
+            (fFlashers && m_vedit.ElementAt(ivar)->GetItemType() == eItemFlasher))
             cvar++;
 
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
@@ -8461,7 +8461,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       cvar = 0;
 
-      wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
+      WCHAR *wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
       //MultiByteToWideChar(CP_ACP, 0, "None", -1, wzDst, 5);
       // TEXT
       WideStrCopy(L"<None>", wzDst);
@@ -8475,8 +8475,8 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
             (fRamps && m_vedit.ElementAt(ivar)->GetItemType() == eItemRamp) ||
             // **************** warning **********************
             // added to render to surface of DMD style lights and emreels
-            // but no checks are being performed at moment 
-            m_vedit.ElementAt(ivar)->GetItemType() == eItemFlasher) 
+            // but no checks are being performed at moment:
+            (fFlashers && m_vedit.ElementAt(ivar)->GetItemType() == eItemFlasher))
          {
             CComBSTR bstr;
             m_vedit.ElementAt(ivar)->GetScriptable()->get_Name(&bstr);
@@ -8507,7 +8507,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar)* sizeof(WCHAR *));
       rgdw = (DWORD *)CoTaskMemAlloc((cvar)* sizeof(DWORD));
 
-      wzDst = (WCHAR *)CoTaskMemAlloc(5 * sizeof(WCHAR));
+      WCHAR *wzDst = (WCHAR *)CoTaskMemAlloc(5 * sizeof(WCHAR));
       MultiByteToWideChar(CP_ACP, 0, "None", -1, wzDst, 5);
       rgstr[0] = wzDst;
       rgdw[0] = ~0u;
