@@ -122,7 +122,8 @@ typedef [uuid(C8D1C791-3B7E-49F7-8F9B-D3BF4ECFB975)]
                 Standard_FXAA = 2,
                 Quality_FXAA = 3,
                 Fast_NFAA = 4,
-                Fast_DLAA = 5,
+                Standard_DLAA = 5,
+                Quality_SMAA = 6,
                 }
                 FXAASettings;
 

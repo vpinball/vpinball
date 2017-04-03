@@ -160,7 +160,7 @@ public:
       TEX_MIRROR = D3DTADDRESS_MIRROR
    };
 
-   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA, const bool useNvidiaApi, const bool disable_dwm);
+   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool useNvidiaApi, const bool disable_dwm);
    ~RenderDevice();
 
    void BeginScene();
@@ -172,7 +172,8 @@ public:
    bool SetMaximumPreRenderedFrames(const DWORD frames);
 
    D3DTexture* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; }
-   D3DTexture* GetBackBufferTmpTexture() const { return m_pOffscreenBackBufferTmpTexture; }
+   D3DTexture* GetBackBufferTmpTexture() const { return m_pOffscreenBackBufferTmpTexture; }   // stereo/FXAA only
+   D3DTexture* GetBackBufferTmpTexture2() const { return m_pOffscreenBackBufferTmpTexture2; } // SMAA only
    D3DTexture* GetMirrorTmpBufferTexture() const { return m_pMirrorTmpBufferTexture; }
    RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; }
 
@@ -266,6 +267,10 @@ public:
 private:
    void DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount);
 
+   void UploadAndSetSMAATextures();
+   D3DTexture* m_SMAAsearchTexture;
+   D3DTexture* m_SMAAareaTexture;
+
 #ifdef USE_D3D9EX
    IDirect3D9Ex* m_pD3DEx;
 
@@ -278,7 +283,8 @@ private:
    IDirect3DSurface9* m_pBackBuffer;
 
    D3DTexture* m_pOffscreenBackBufferTexture;
-   D3DTexture* m_pOffscreenBackBufferTmpTexture;
+   D3DTexture* m_pOffscreenBackBufferTmpTexture; // stereo/FXAA only
+   D3DTexture* m_pOffscreenBackBufferTmpTexture2;// SMAA only
 
    D3DTexture* m_pBloomBufferTexture;
    D3DTexture* m_pBloomTmpBufferTexture;

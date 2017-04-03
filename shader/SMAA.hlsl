@@ -714,7 +714,11 @@ float2 SMAALumaEdgeDetectionPS(float2 texcoord,
 
     // Then discard if there is no edge:
     if (dot(edges, float2(1.0, 1.0)) == 0.0)
+#ifdef SMAA_USE_STENCIL
         discard;
+#else
+        return float2(0.,0.);
+#endif
 
     // Calculate right and bottom deltas:
     float Lright = dot(SMAASamplePoint(colorTex, offset[1].xy).rgb, weights);
@@ -776,7 +780,11 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
 
     // Then discard if there is no edge:
     if (dot(edges, float2(1.0, 1.0)) == 0.0)
+#ifdef SMAA_USE_STENCIL
         discard;
+#else
+        return float2(0.,0.);
+#endif
 
     // Calculate right and bottom deltas:
     float3 Cright = SMAASamplePoint(colorTex, offset[1].xy).rgb;
@@ -820,7 +828,11 @@ float2 SMAADepthEdgeDetectionPS(float2 texcoord,
     float2 edges = step(SMAA_DEPTH_THRESHOLD, delta);
 
     if (dot(edges, float2(1.0, 1.0)) == 0.0)
+#ifdef SMAA_USE_STENCIL
         discard;
+#else
+        return float2(0.,0.);
+#endif
 
     return edges;
 }
