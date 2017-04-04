@@ -506,7 +506,11 @@ void Kicker::PostRenderStatic(RenderDevice* pd3dDevice)
    {
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      if ( m_d.m_kickertype!=KickerHoleSimple)
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      else
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+
 
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
@@ -521,26 +525,21 @@ void Kicker::PostRenderStatic(RenderDevice* pd3dDevice)
 
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_LESSEQUAL);
 
-      //if ( m_d.m_kickertype == KickerHole )
+      if (m_d.m_kickertype != KickerHoleSimple)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
          pd3dDevice->basicShader->SetTexture("Texture0", &texture);
-         g_pplayer->m_pin3d.EnableAlphaBlend(false);
-         pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
-
-         pd3dDevice->basicShader->Begin(0);
-         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, numVertices, indexBuffer, 0, numIndices);
-         pd3dDevice->basicShader->End();
-
-         //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
       }
-      //else
-      //{
-      //   pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
-      //   pd3dDevice->basicShader->Begin(0);
-      //   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexBuffer, 0, numIndices);
-      //   pd3dDevice->basicShader->End();
-      //}
+      else
+         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
+
+      g_pplayer->m_pin3d.EnableAlphaBlend(false);
+      pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
+
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, numVertices, indexBuffer, 0, numIndices);
+      pd3dDevice->basicShader->End();
+
    }
 }
 
