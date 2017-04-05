@@ -34,7 +34,7 @@ void ImageDialog::OnClose()
 }
 
 BOOL ImageDialog::OnInitDialog()
-{
+{    
     return TRUE;
 }
 
@@ -43,13 +43,31 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    HWND hwndDlg = GetHwnd();
    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
 
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+
    switch (uMsg)
    {
       case WM_INITDIALOG:
       {
          LVCOLUMN lvcol;
          HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+         m_resizer.Initialize(*this, CRect(0, 0, 500, 600));
+         m_resizer.AddChild(hListView, topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+         m_resizer.AddChild(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_IMPORT).GetHwnd(), topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_REIMPORT).GetHwnd(), topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_UPDATE_ALL_BUTTON).GetHwnd(), topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_DELETE_IMAGE).GetHwnd(), topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_RENAME).GetHwnd(), topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_EXPORT).GetHwnd(), topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_OK).GetHwnd(), topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_ALPHA_MASK_EDIT).GetHwnd(), topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_STATIC_ALPHA).GetHwnd(), topright, 0);
+
          LoadPosition();
+
+
          ListView_SetExtendedListViewStyle(hListView, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
          lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
@@ -79,6 +97,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          char textBuf[16];
          strcpy_s(textBuf, "128");
          SetDlgItemText(IDC_ALPHA_MASK_EDIT, textBuf);
+
          return TRUE;
       }
       case GET_COLOR_TABLE:
@@ -273,6 +292,41 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    return DialogProcDefault(uMsg, wParam, lParam);
 }
 
+void ImageDialog::UpdateImages()
+{
+    HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+
+    const int count = ListView_GetSelectedCount(hSoundList);
+    if (count > 0)
+    {
+        int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
+        while (sel != -1)
+        {
+            LVITEM lvitem;
+            lvitem.mask = LVIF_PARAM;
+            lvitem.iItem = sel;
+            lvitem.iSubItem = 0;
+            ListView_GetItem(hSoundList, &lvitem);
+            Texture * const ppi = (Texture *)lvitem.lParam;
+            if (ppi != NULL)
+            {
+                CString textStr = GetDlgItemText(IDC_ALPHA_MASK_EDIT);
+                float v = sz2f((char*)textStr.c_str());
+                if (ppi->m_alphaTestValue != v)
+                {
+                    ppi->m_alphaTestValue = v;
+                    pt->SetNonUndoableDirty(eSaveDirty);
+                }
+
+                sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
+            }
+        }
+        SetFocus();
+    }
+
+}
+
 BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
    UNREFERENCED_PARAMETER(lParam);
@@ -303,28 +357,7 @@ BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          const int count = ListView_GetSelectedCount(hSoundList);
          if (count > 0)
          {
-            int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
-            while (sel != -1)
-            {
-               LVITEM lvitem;
-               lvitem.mask = LVIF_PARAM;
-               lvitem.iItem = sel;
-               lvitem.iSubItem = 0;
-               ListView_GetItem(hSoundList, &lvitem);
-               Texture * const ppi = (Texture *)lvitem.lParam;
-               if (ppi != NULL)
-               {
-                  CString textStr = GetDlgItemText(IDC_ALPHA_MASK_EDIT);
-                  float v = sz2f((char*)textStr.c_str());
-                  if (ppi->m_alphaTestValue != v)
-                  {
-                     ppi->m_alphaTestValue = v;
-                     pt->SetNonUndoableDirty(eSaveDirty);
-                  }
-
-                  sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
-               }
-            }
+            UpdateImages();
             SetFocus();
          }
          SavePosition();
@@ -693,7 +726,7 @@ void ImageDialog::ReimportFrom()
 
 void ImageDialog::LoadPosition()
 {
-    int x, y;
+    int x, y, w, h;
     HRESULT hr;
 
     hr = GetRegInt( "Editor", "ImageMngPosX", &x );
@@ -703,13 +736,21 @@ void ImageDialog::LoadPosition()
     if(hr != S_OK)
         y=0;
 
-    SetWindowPos( NULL, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+    w = GetRegIntWithDefault("Editor", "ImageMngWidth", 1000);
+    h = GetRegIntWithDefault("Editor", "ImageMngHeight", 800);
+    SetWindowPos(NULL, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 void ImageDialog::SavePosition()
 {
+    int w, h;
     CRect rect = GetWindowRect();
+
     (void)SetRegValue( "Editor", "ImageMngPosX", REG_DWORD, &rect.left, 4 );
     (void)SetRegValue( "Editor", "ImageMngPosY", REG_DWORD, &rect.top, 4 );
+    w = rect.right - rect.left;
+    (void)SetRegValue("Editor", "ImageMngWidth", REG_DWORD, &w, 4);
+    h = rect.bottom - rect.top;
+    (void)SetRegValue("Editor", "ImageMngHeight", REG_DWORD, &h, 4);
 }
 

@@ -17,6 +17,8 @@ protected:
    virtual void OnCancel();
 
 private:
+   CResizer m_resizer;
+
    void Import();
    void Export();
    void DeleteImage();
@@ -25,5 +27,6 @@ private:
    void ReimportFrom();
    void LoadPosition();
    void SavePosition();
+   void UpdateImages();
 };
 #endif // !H_IMAGE_DIALOG
