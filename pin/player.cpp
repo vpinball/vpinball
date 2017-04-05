@@ -4107,8 +4107,13 @@ void Player::UpdateCameraModeDisplay()
       len = sprintf_s(szFoo, "unknown");
    }
    }
-   DebugPrint(10, 100, szFoo, len);
+   DebugPrint(10, 120, szFoo, len);
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
+   if( m_ptable->m_BG_current_set==0 )
+      len = sprintf_s(szFoo, "Camera at X: %f Y: %f Z: %f", -m_pin3d.m_proj.m_matView._41, m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43);
+   else
+       len = sprintf_s(szFoo, "Camera at X: %f Y: %f Z: %f", -m_pin3d.m_proj.m_matView._41, -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43);
+   DebugPrint(10, 90, szFoo, len);
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -1,5 +1,7 @@
 VP 10.3.0 Changelog
 ------------------------
+- show camera position in camera/light mode
+
 - add simple kicker hole mesh
 
 - add new FSS setting in the backdrop options to be able to easily add an additional backglass to the table
