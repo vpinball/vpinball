@@ -1,5 +1,7 @@
 VP 10.3.0 Changelog
 ------------------------
+- material/image manager dialog is resizeable
+
 - show camera position in camera/light mode
 
 - add simple kicker hole mesh
