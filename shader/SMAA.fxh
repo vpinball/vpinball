@@ -44,7 +44,7 @@ float cornerRounding;
 
 // Use a real macro here for maximum performance!
 #ifndef SMAA_RT_METRICS // This is just for compilation-time syntax checking.
-#define SMAA_RT_METRICS float4(w_h_height.xyz,1.0/w_h_height.y) //!! //float4(1.0 / 1280.0, 1.0 / 720.0, 1280.0, 720.0)
+#define SMAA_RT_METRICS float4(w_h_height.x,w_h_height.y,w_h_height.z,1.0/w_h_height.y) //!! //float4(1.0 / 1280.0, 1.0 / 720.0, 1280.0, 720.0)
 #endif
 
 // Set the HLSL version:
