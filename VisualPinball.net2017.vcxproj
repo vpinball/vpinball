@@ -222,6 +222,9 @@ if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
 copy "$(TargetPath)" "%25VPIN_DIR%25"
 </Command>
     </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
@@ -349,6 +352,9 @@ if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
 copy "$(TargetPath)" "%25VPIN_DIR%25"
 </Command>
     </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BlackBox.cpp" />
@@ -1216,6 +1222,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="meshes\kickerCupMesh.h" />
     <ClInclude Include="meshes\kickerHitMesh.h" />
     <ClInclude Include="meshes\kickerHoleMesh.h" />
+    <ClInclude Include="meshes\kickerSimpleHoleMesh.h" />
     <ClInclude Include="meshes\spinnerBracketMesh.h" />
     <ClInclude Include="meshes\spinnerPlateMesh.h" />
     <ClInclude Include="meshes\triggerSimpleMesh.h" />

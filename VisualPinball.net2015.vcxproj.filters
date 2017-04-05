@@ -1007,9 +1007,14 @@
     <ClInclude Include="dialogs\ProtectTableDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="dialogs\MaterialDialog.h" />
+    <ClInclude Include="dialogs\MaterialDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
     <ClInclude Include="dialogs\KeysConfigDialog.h">
       <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\kickerSimpleHoleMesh.h">
+      <Filter>meshes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -775,6 +775,9 @@
     <ClInclude Include="meshes\kickerHoleMesh.h">
       <Filter>meshes</Filter>
     </ClInclude>
+    <ClInclude Include="meshes\kickerSimpleHoleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
     <ClInclude Include="meshes\spinnerBracketMesh.h">
       <Filter>meshes</Filter>
     </ClInclude>
