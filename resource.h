@@ -896,6 +896,7 @@
 #define IDC_DBG_TRANSMISSION_SCALE      767
 #define IDC_EDIT1                       769
 #define IDC_OK                          770
+#define IDC_STATIC_ALPHA                771
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1042,7 +1043,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        626
 #define _APS_NEXT_COMMAND_VALUE         4012
-#define _APS_NEXT_CONTROL_VALUE         771
+#define _APS_NEXT_CONTROL_VALUE         772
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
