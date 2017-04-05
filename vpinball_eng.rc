@@ -1957,12 +1957,12 @@ BEGIN
 END
 
 IDD_MATERIALDIALOG DIALOGEX 0, 0, 526, 294
-STYLE DS_SETFONT | DS_MODALFRAME | WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "Material Manager"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "List1",IDC_MATERIAL_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | LVS_EDITLABELS | WS_BORDER | WS_TABSTOP,6,5,204,282
+    CONTROL         "List1",IDC_MATERIAL_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | WS_BORDER | WS_TABSTOP,6,5,204,282
     CONTROL         "Metal Material (disables Glossy and has stronger reflectivity)",IDC_DIFFUSE_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,215,5,199,10
     EDITTEXT        IDC_GLOSSY_EDIT,290,115,21,14,ES_AUTOHSCROLL
@@ -1979,29 +1979,29 @@ BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,469,257,50,14
     CONTROL         "Custom2",IDC_COLOR2,"ColorControl",WS_TABSTOP,220,75,40,19
     CONTROL         "Custom2",IDC_COLOR3,"ColorControl",WS_TABSTOP,220,153,40,19
-    GROUPBOX        "Glossy Layer",IDC_STATIC,214,62,192,43
-    LTEXT           "Shininess\n(0..1)",IDC_STATIC,220,115,37,19
-    GROUPBOX        "Clearcoat Layer",IDC_STATIC,214,139,191,40
-    LTEXT           "Edge Brightness\n(0..1)",IDC_STATIC,220,193,56,20
-    GROUPBOX        "Opacity (can be modulated by Image on Object)",IDC_STATIC,214,223,192,64
-    LTEXT           "Amount\n(0..1)",IDC_STATIC,220,235,30,16
-    LTEXT           "Edge Opacity\n(0..1)",IDC_STATIC,220,263,48,18
-    LTEXT           "Increases the opacity on the silhouette (1=natural, 0=no change)",IDC_STATIC,313,258,81,24
-    LTEXT           "Dims the silhouette ""glow"" when using Glossy or Clearcoat Layers (1=natural, 0=dark)",IDC_STATIC,313,183,85,34
-    LTEXT           "Sets from very dull (Shininess low) to perfect/mirror-like (Shininess high) reflections (for glossy layer or metal only)",IDC_STATIC,313,107,92,32
-    LTEXT           "Add subtle reflections on non-metal materials (leave at non-black for most natural behavior)",IDC_STATIC,313,69,85,32
-    LTEXT           "Add an additional thin clearcoat layer on top of the material",IDC_STATIC,313,148,75,26
+    GROUPBOX        "Glossy Layer",IDC_STATIC_GLOSSY_LAYER,214,62,192,43
+    LTEXT           "Shininess\n(0..1)",IDC_STATIC_SHININESS,220,115,37,19
+    GROUPBOX        "Clearcoat Layer",IDC_STATIC_CLEARCOAR_LAYER,214,139,191,40
+    LTEXT           "Edge Brightness\n(0..1)",IDC_STATIC_EDGE_BRIGHTNESS,220,193,56,20
+    GROUPBOX        "Opacity (can be modulated by Image on Object)",IDC_STATIC_OPACITY,214,223,192,64
+    LTEXT           "Amount\n(0..1)",IDC_STATIC_AMOUNT,220,235,30,16
+    LTEXT           "Edge Opacity\n(0..1)",IDC_STATIC_EDGE_OPACITY,220,263,48,18
+    LTEXT           "Increases the opacity on the silhouette (1=natural, 0=no change)",IDC_STATIC_EDGE_OPACITY_TEXT,313,258,81,24
+    LTEXT           "Dims the silhouette ""glow"" when using Glossy or Clearcoat Layers (1=natural, 0=dark)",IDC_STATIC_BRIGHTNESS_TEXT,313,183,85,34
+    LTEXT           "Sets from very dull (Shininess low) to perfect/mirror-like (Shininess high) reflections (for glossy layer or metal only)",IDC_STATIC_SHININESS_TEXT,313,107,92,32
+    LTEXT           "Add subtle reflections on non-metal materials (leave at non-black for most natural behavior)",IDC_STATIC_GLOSSY_TEXT,313,69,85,32
+    LTEXT           "Add an additional thin clearcoat layer on top of the material",IDC_STATIC_CLEARCOAT_TEXT,313,148,75,26
     PUSHBUTTON      "&Cancel",IDCANCEL,469,273,50,14
-    GROUPBOX        "Base Color (can be modulated by Image on Object)",IDC_STATIC,214,19,192,43
-    LTEXT           "Steers the basic Color of an Object. Wrap allows for light even if object is only lit from behind (0=natural)",IDC_STATIC,313,28,85,32
+    GROUPBOX        "Base Color (can be modulated by Image on Object)",IDC_STATIC_BASE_COLOR,214,19,192,43
+    LTEXT           "Steers the basic Color of an Object. Wrap allows for light even if object is only lit from behind (0=natural)",IDC_STATIC_WRAP_TEXT,313,28,85,32
     EDITTEXT        IDC_DIFFUSE_EDIT,290,31,21,14,ES_AUTOHSCROLL
-    LTEXT           "Wrap\n(0..1)",IDC_STATIC,268,33,21,18
+    LTEXT           "Wrap\n(0..1)",IDC_STATIC_WRAP,268,33,21,18
     CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,220,30,40,19
-    GROUPBOX        "Physics",IDC_STATIC,414,19,105,86
-    LTEXT           "Elasticity",IDC_STATIC,441,33,28,8
-    LTEXT           "Friction",IDC_STATIC,445,69,24,8
-    LTEXT           "Scatter Angle",IDC_STATIC,426,88,44,8
-    LTEXT           "Elasticity Falloff",IDC_STATIC,420,51,49,8
+    GROUPBOX        "Physics",IDC_STATIC_PHYSICS,414,19,105,86
+    LTEXT           "Elasticity",IDC_STATIC_PHY_ELASTICITY,441,33,28,8
+    LTEXT           "Friction",IDC_STATIC_PHY_FRICTION,445,69,24,8
+    LTEXT           "Scatter Angle",IDC_STATIC_PHY_SCATTER_ANGLE,426,88,44,8
+    LTEXT           "Elasticity Falloff",IDC_STATIC_PHY_ELASTICITY_FALLOFF,420,51,49,8
     EDITTEXT        IDC_MAT_ELASTICITY,474,29,40,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_MAT_ELASTICITY_FALLOFF,474,48,40,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_MAT_FRICTION,474,66,40,14,ES_AUTOHSCROLL

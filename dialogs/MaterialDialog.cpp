@@ -76,6 +76,52 @@ BOOL MaterialDialog::OnInitDialog()
    m_hMaterialList = GetDlgItem(IDC_MATERIAL_LIST).GetHwnd();
    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
 
+   m_resizer.Initialize(*this, CRect(0, 0, 500, 600));
+   m_resizer.AddChild(m_hMaterialList, topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+   m_resizer.AddChild(GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_BASE_COLOR).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_GLOSSY_LAYER).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_CLEARCOAR_LAYER).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_OPACITY).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_PHYSICS).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_COLOR).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_COLOR2).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_COLOR3).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_WRAP).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_DIFFUSE_EDIT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_WRAP_TEXT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_GLOSSY_TEXT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_SHININESS).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_GLOSSY_EDIT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_SHININESS_TEXT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_CLEARCOAT_TEXT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_EDGE_BRIGHTNESS).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_SPECULAR_EDIT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_BRIGHTNESS_TEXT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_AMOUNT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_OPACITY_EDIT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_EDGE_OPACITY).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_EDGEALPHA_EDIT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_EDGE_OPACITY_TEXT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_PHY_ELASTICITY).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_MAT_ELASTICITY).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_PHY_ELASTICITY_FALLOFF).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_MAT_ELASTICITY_FALLOFF).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_PHY_FRICTION).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_MAT_FRICTION).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_PHY_SCATTER_ANGLE).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_MAT_SCATTER_ANGLE).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_ADD_BUTTON).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_CLONE_BUTTON).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_IMPORT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_EXPORT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_RENAME).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_DELETE_MATERIAL).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDOK).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDCANCEL).GetHwnd(), topright, 0);
+
+   LoadPosition();
    ListView_SetExtendedListViewStyle(m_hMaterialList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
    lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
    LocalString ls(IDS_NAME);
@@ -400,6 +446,8 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    m_resizer.HandleMessage(uMsg, wParam, lParam);
+    
    switch (uMsg)
    {
       case GET_COLOR_TABLE:
@@ -707,6 +755,43 @@ void MaterialDialog::OnOK()
          sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
       }
    }
+   SavePosition();
    CDialog::OnOK();
+}
+
+void MaterialDialog::OnClose()
+{
+    SavePosition();
+    CDialog::OnCancel();
+}
+
+void MaterialDialog::LoadPosition()
+{
+    int x, y, w, h;
+    HRESULT hr;
+
+    hr = GetRegInt("Editor", "MaterialMngPosX", &x);
+    if (hr != S_OK)
+        x = 0;
+    hr = GetRegInt("Editor", "MaterialMngPosY", &y);
+    if (hr != S_OK)
+        y = 0;
+
+    w = GetRegIntWithDefault("Editor", "MaterialMngWidth", 1000);
+    h = GetRegIntWithDefault("Editor", "MaterialMngHeight", 800);
+    SetWindowPos(NULL, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+void MaterialDialog::SavePosition()
+{
+    int w, h;
+    CRect rect = GetWindowRect();
+
+    (void)SetRegValue("Editor", "MaterialMngPosX", REG_DWORD, &rect.left, 4);
+    (void)SetRegValue("Editor", "MaterialMngPosY", REG_DWORD, &rect.top, 4);
+    w = rect.right - rect.left;
+    (void)SetRegValue("Editor", "MaterialMngWidth", REG_DWORD, &w, 4);
+    h = rect.bottom - rect.top;
+    (void)SetRegValue("Editor", "MaterialMngHeight", REG_DWORD, &h, 4);
 }
 

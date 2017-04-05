@@ -897,6 +897,26 @@
 #define IDC_EDIT1                       769
 #define IDC_OK                          770
 #define IDC_STATIC_ALPHA                771
+#define IDC_STATIC_BASE_COLOR           772
+#define IDC_STATIC_GLOSSY_LAYER         773
+#define IDC_STATIC_CLEARCOAR_LAYER      774
+#define IDC_STATIC_OPACITY              775
+#define IDC_STATIC_PHYSICS              776
+#define IDC_STATIC_WRAP                 777
+#define IDC_STATIC_SHININESS            778
+#define IDC_STATIC_EDGE_BRIGHTNESS      779
+#define IDC_STATIC_AMOUNT               780
+#define IDC_STATIC_EDGE_OPACITY         781
+#define IDC_STATIC_WRAP_TEXT            782
+#define IDC_STATIC_GLOSSY_TEXT          783
+#define IDC_STATIC_SHININESS_TEXT       784
+#define IDC_STATIC_CLEARCOAT_TEXT       785
+#define IDC_STATIC_BRIGHTNESS_TEXT      786
+#define IDC_STATIC_EDGE_OPACITY_TEXT    787
+#define IDC_STATIC_PHY_ELASTICITY       788
+#define IDC_STATIC_PHY_ELASTICITY_FALLOFF 789
+#define IDC_STATIC_PHY_FRICTION         790
+#define IDC_STATIC_PHY_SCATTER_ANGLE    791
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1043,7 +1063,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        626
 #define _APS_NEXT_COMMAND_VALUE         4012
-#define _APS_NEXT_CONTROL_VALUE         772
+#define _APS_NEXT_CONTROL_VALUE         792
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
