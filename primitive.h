@@ -61,7 +61,6 @@ public:
    char m_szMaterial[32];
    COLORREF m_SideColor;
    char m_szPhysicsMaterial[32];
-   bool m_fOverwritePhysics;
 
    TimerDataRoot m_tdr;
 
@@ -76,6 +75,8 @@ public:
    float m_edgeFactorUI;   // for drawing the mesh in the editorUI
    float m_collision_reductionFactor; //0=none..1=pow(num_vertices,0.75)
 
+   int  m_FrameAmount;
+
    bool m_use3DMesh;
    bool m_fVisible;
    bool m_DrawTexturesInside;
@@ -88,8 +89,8 @@ public:
    bool m_fSkipRendering;
    bool m_fGroupdRendering;
    bool m_fReflectionEnabled;
+   bool m_fOverwritePhysics;
    bool m_fBackfacesEnabled;
-   int  m_FrameAmount;
 };
 
 class Primitive :
@@ -290,10 +291,10 @@ public:
    Matrix3D fullMatrix;
    int m_numGroupVertices;
    int m_numGroupIndices;
-   bool m_DoAnimation;
-   bool m_Endless;
    float m_currentFrame;
    float m_speed;
+   bool m_DoAnimation;
+   bool m_Endless;
 
 private:        // private member functions
 
