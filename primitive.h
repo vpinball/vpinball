@@ -88,6 +88,7 @@ public:
    bool m_fSkipRendering;
    bool m_fGroupdRendering;
    bool m_fReflectionEnabled;
+   bool m_fBackfacesEnabled;
    int  m_FrameAmount;
 };
 
@@ -195,6 +196,8 @@ public:
    STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_IsToy)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_IsToy)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_BackfacesEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_BackfacesEnabled)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
    STDMETHOD(get_ElasticityFalloff)(/*[out, retval]*/ float *pVal);
