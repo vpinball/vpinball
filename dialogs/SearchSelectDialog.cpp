@@ -75,38 +75,50 @@ BOOL SearchSelectDialog::OnInitDialog()
 {
    hElementList = GetDlgItem(IDC_ELEMENT_LIST).GetHwnd();
    curTable = (CCO(PinTable) *)g_pvp->GetActiveTable();
+
+   m_resizer.Initialize(*this, CRect(0, 0, 650, 400));
+   m_resizer.AddChild(GetDlgItem(IDC_ELEMENT_LIST).GetHwnd(), topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+   m_resizer.AddChild(GetDlgItem(IDOK).GetHwnd(), bottomleft, 0);
+   m_resizer.AddChild(GetDlgItem(IDCANCEL).GetHwnd(), bottomleft, 0);
    Update();
    LoadPosition();
    return TRUE;
 
 }
 
+void SearchSelectDialog::SelectElement()
+{
+    const size_t count = ListView_GetSelectedCount(hElementList);
+
+    curTable->ClearMultiSel();
+    int iItem = -1;
+    LVITEM lv;
+    for (size_t i = 0; i < count; i++)
+    {
+        iItem = ListView_GetNextItem(hElementList, iItem, LVNI_SELECTED);
+        lv.iItem = iItem;
+        lv.mask = LVIF_PARAM;
+        if (ListView_GetItem(hElementList, &lv) == TRUE)
+        {
+            IScriptable *pscript = (IScriptable*)lv.lParam;
+            ISelect *const pisel = pscript->GetISelect();
+            if (pisel)
+                curTable->AddMultiSel(pisel, true);
+        }
+    }
+}
+
 INT_PTR SearchSelectDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+
    switch (uMsg)
    {
       case WM_NOTIFY:
       {
          if (((LPNMHDR)lParam)->code == NM_DBLCLK)
          {
-            const size_t count = ListView_GetSelectedCount(hElementList);
-
-            curTable->ClearMultiSel();
-            int iItem = -1;
-            LVITEM lv;
-            for (size_t i = 0; i < count; i++)
-            {
-               iItem = ListView_GetNextItem(hElementList, iItem, LVNI_SELECTED);
-               lv.iItem = iItem;
-               lv.mask = LVIF_PARAM;
-               if (ListView_GetItem(hElementList, &lv) == TRUE)
-               {
-                  IScriptable *pscript = (IScriptable*)lv.lParam;
-                  ISelect *const pisel = pscript->GetISelect();
-                  if (pisel)
-                     curTable->AddMultiSel(pisel, true);
-               }
-            }
+             SelectElement();
          }
          else if (wParam == IDC_ELEMENT_LIST)
          {
@@ -154,8 +166,7 @@ INT_PTR SearchSelectDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void SearchSelectDialog::OnOK()
 {
-   SavePosition();
-   CDialog::OnOK();
+   SelectElement();
 }
 
 void SearchSelectDialog::OnCancel()
@@ -418,7 +429,7 @@ void SearchSelectDialog::LoadPosition()
 
    x = GetRegIntWithDefault("Editor", "SearchSelectPosX", 0);
    y = GetRegIntWithDefault("Editor", "SearchSelectPosY", 0);
-   w = GetRegIntWithDefault("Editor", "SearchSelectWidth", 600);
+   w = GetRegIntWithDefault("Editor", "SearchSelectWidth", 650);
    h = GetRegIntWithDefault("Editor", "SearchSelectHeight", 400);
 
    SetWindowPos(NULL, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
