@@ -20,7 +20,9 @@ private:
 
    void LoadPosition();
    void SavePosition();
+   void SelectElement();
    HWND hElementList;
+   CResizer m_resizer;
    CCO(PinTable) *curTable;
 };
 
