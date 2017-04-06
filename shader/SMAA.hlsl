@@ -686,6 +686,7 @@ void SMAANeighborhoodBlendingVS(float2 texcoord,
  * IMPORTANT NOTICE: luma edge detection requires gamma-corrected colors, and
  * thus 'colorTex' should be a non-sRGB texture.
  */
+#ifndef SMAA_USE_COLOR
 float2 SMAALumaEdgeDetectionPS(float2 texcoord,
                                float4 offset[3],
                                SMAATexture2D(colorTex)
@@ -742,7 +743,7 @@ float2 SMAALumaEdgeDetectionPS(float2 texcoord,
 
     return edges;
 }
-
+#else
 /**
  * Color Edge Detection
  *
@@ -816,10 +817,12 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
 
     return edges;
 }
+#endif
 
 /**
  * Depth Edge Detection
  */
+#ifdef SMAA_USE_DEPTH
 float2 SMAADepthEdgeDetectionPS(float2 texcoord,
                                 float4 offset[3],
                                 SMAATexture2D(depthTex)) {
@@ -836,6 +839,7 @@ float2 SMAADepthEdgeDetectionPS(float2 texcoord,
 
     return edges;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 // Diagonal Search Functions

@@ -27,15 +27,16 @@
  */
 
 
+#define SMAA_PRESET_HIGH
+//#define SMAA_USE_DEPTH
+//#define SMAA_USE_STENCIL
+#define SMAA_USE_COLOR // otherwise luma
+
+#ifdef SMAA_PRESET_CUSTOM
 /**
  * This can be ignored; its purpose is to support interactive custom parameter
  * tweaking.
  */
-#define SMAA_PRESET_HIGH
-//#define SMAA_USE_DEPTH
-//#define SMAA_USE_STENCIL
-
-#ifdef SMAA_PRESET_CUSTOM
 float threshld;
 float maxSearchSteps;
 float maxSearchStepsDiag;
@@ -161,18 +162,19 @@ void DX9_SMAANeighborhoodBlendingVS(inout float4 position : POSITION,
     SMAANeighborhoodBlendingVS(texcoord, offset);
 }
 
-
+#ifndef SMAA_USE_COLOR
 float4 DX9_SMAALumaEdgeDetectionPS(float4 position : SV_POSITION,
                                    float2 texcoord : TEXCOORD0,
                                    float4 offset[3] : TEXCOORD1) : COLOR {
     return float4(SMAALumaEdgeDetectionPS(texcoord, offset, colorGammaTex), 0.0, 0.0);
 }
-
+#else
 float4 DX9_SMAAColorEdgeDetectionPS(float4 position : SV_POSITION,
                                     float2 texcoord : TEXCOORD0,
                                     float4 offset[3] : TEXCOORD1) : COLOR {
     return float4(SMAAColorEdgeDetectionPS(texcoord, offset, colorGammaTex), 0.0, 0.0);
 }
+#endif
 
 #ifdef SMAA_USE_DEPTH
 float4 DX9_SMAADepthEdgeDetectionPS(float4 position : SV_POSITION,
@@ -199,6 +201,7 @@ float4 DX9_SMAANeighborhoodBlendingPS(float4 position : SV_POSITION,
 /**
  * Time for some techniques!
  */
+#ifndef SMAA_USE_COLOR
 technique SMAA_LumaEdgeDetection {
     pass SMAA_LumaEdgeDetection {
         VertexShader = compile vs_3_0 DX9_SMAAEdgeDetectionVS();
@@ -216,7 +219,7 @@ technique SMAA_LumaEdgeDetection {
 #endif
     }
 }
-
+#else
 technique SMAA_ColorEdgeDetection {
     pass SMAA_ColorEdgeDetection {
         VertexShader = compile vs_3_0 DX9_SMAAEdgeDetectionVS();
@@ -234,6 +237,7 @@ technique SMAA_ColorEdgeDetection {
 #endif
     }
 }
+#endif
 
 #ifdef SMAA_USE_DEPTH
 technique SMAA_DepthEdgeDetection {
