@@ -82,7 +82,7 @@ PinInput::PinInput()
 
    m_cameraModeAltKey = false;
    m_cameraMode = 0;
-   m_ncammode = 0;
+   m_ncameraMode = false;
 
    HRESULT hr;
    int tmp;
@@ -1084,13 +1084,13 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 
 					  if (!g_pplayer->cameraMode)
 					  {
-						  m_ncammode = 0;
+						  m_ncameraMode = false;
 						  m_cameraMode = 1;
 						  g_pplayer->cameraMode = 1;
 					  }
 					  else
 					  {
-						  m_ncammode = 1;
+						  m_ncameraMode = true;
 						  m_cameraMode = 1;
 					  }
 					  break;
@@ -1099,7 +1099,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					  if (m_cameraMode > 0)
 					  {
 						  m_cameraMode = 0;
-						  if (!m_ncammode)
+						  if (!m_ncameraMode)
 						     g_pplayer->cameraMode = 0;
 					  }
 				  }
@@ -1115,13 +1115,13 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 
 					  if (!g_pplayer->cameraMode)
 					  {
-						  m_ncammode = 0;
+						  m_ncameraMode = false;
 						  m_cameraMode = 2;
 						  g_pplayer->cameraMode = 1;
 					  }
 					  else
 					  {
-						  m_ncammode = 1;
+						  m_ncameraMode = true;
 						  m_cameraMode = 2;
 					  }
 					  break;
@@ -1130,7 +1130,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					  if (m_cameraMode > 0)
 					  {
 						  m_cameraMode = 0;
-						  if (!m_ncammode)
+						  if (!m_ncameraMode)
 						     g_pplayer->cameraMode = 0;
 					  }
 				  }
@@ -1146,13 +1146,13 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 
 					  if (!g_pplayer->cameraMode)
 					  {
-						  m_ncammode = 0;
+						  m_ncameraMode = false;
 						  m_cameraMode = 3;
 						  g_pplayer->cameraMode = 1;
 					  }
 					  else
 					  {
-						  m_ncammode = 1;
+						  m_ncameraMode = true;
 						  m_cameraMode = 3;
 					  }
 					  break;
@@ -1161,7 +1161,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					  if (m_cameraMode > 0)
 					  {
 						  m_cameraMode = 0;
-						  if (!m_ncammode)
+						  if (!m_ncameraMode)
 						     g_pplayer->cameraMode = 0;
 					  }
 				  }
@@ -1177,14 +1177,14 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 
 					  if (!g_pplayer->cameraMode)
 					  {
-						  m_ncammode = 0;
+						  m_ncameraMode = false;
 						  m_cameraMode = 4;
 						  g_pplayer->cameraMode = 1;
 
 					  }
 					  else
 					  {
-						  m_ncammode = 1;
+						  m_ncameraMode = true;
 						  m_cameraMode = 4;
 					  }
 					  break;
@@ -1194,7 +1194,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					  if (m_cameraMode > 0)
 					  {
 						  m_cameraMode = 0;
-						  if (!m_ncammode)
+						  if (!m_ncameraMode)
 							g_pplayer->cameraMode = 0;
 					  }
 				  }

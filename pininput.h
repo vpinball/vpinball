@@ -136,8 +136,8 @@ private:
    bool m_enableMouseInPlayer;
 
    bool m_cameraModeAltKey;
+   bool m_ncameraMode;
    int m_cameraMode;
-   int m_ncammode;
 };
 
 #define VK_TO_DIK_SIZE 105
