@@ -134,6 +134,10 @@ private:
    int m_joycustom1, m_joycustom1key, m_joycustom2, m_joycustom2key, m_joycustom3, m_joycustom3key, m_joycustom4, m_joycustom4key;
    int m_deadz;
    bool m_enableMouseInPlayer;
+
+   bool m_cameraModeAltKey;
+   int m_cameraMode;
+   int m_ncammode;
 };
 
 #define VK_TO_DIK_SIZE 105

@@ -105,7 +105,7 @@ public:
 
    PinProjection m_proj;
 
-   //FSS mode parameters
+   // free-camera-mode-fly-around parameters
    float m_camx;
    float m_camy;
    float m_camz;

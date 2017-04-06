@@ -80,6 +80,10 @@ PinInput::PinInput()
    m_enableMouseInPlayer = true;
    m_enable_nudge_filter = false;
 
+   m_cameraModeAltKey = false;
+   m_cameraMode = 0;
+   m_ncammode = 0;
+
    HRESULT hr;
    int tmp;
 
@@ -934,6 +938,42 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 
    GetInputDeviceData(/*curr_time_msec*/);
 
+   // Fly-around parameters
+   if (m_cameraMode > 0)
+   {
+	   if (m_head == m_tail)
+	   {
+		   if(m_cameraMode == 1)
+		   {
+			   if (!m_cameraModeAltKey)
+				   g_pplayer->m_pin3d.m_camy += 1.0f;
+			   else
+				   g_pplayer->m_pin3d.m_camz += 1.0f;
+		   }
+		   else if(m_cameraMode == 2)
+		   {
+			   if (!m_cameraModeAltKey)
+				   g_pplayer->m_pin3d.m_camy -= 1.0f;
+			   else
+				   g_pplayer->m_pin3d.m_camz -= 1.0f;
+		   }
+		   else if(m_cameraMode == 3)
+		   {
+			   if (!m_cameraModeAltKey)
+				   g_pplayer->m_pin3d.m_camx -= 1.0f;
+			   else
+				   g_pplayer->m_pin3d.m_inc -= 0.001f;
+		   }
+		   else if(m_cameraMode == 4)
+		   {
+			   if (!m_cameraModeAltKey)
+				   g_pplayer->m_pin3d.m_camx += 1.0f;
+			   else
+				   g_pplayer->m_pin3d.m_inc += 0.001f;
+		   }
+	   }
+   }
+
    const DIDEVICEOBJECTDATA * __restrict input;
    while (input = GetTail(/*curr_sim_msec*/))
    {
@@ -1030,14 +1070,150 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 
       if (input->dwSequence == APP_KEYBOARD)
       {
+		  // Camera mode fly around:
+		  if (g_pplayer)
+		  {
+			  if (input->dwOfs == DIK_UP) // ARROW UP
+			  {
+				  if ((input->dwData & 0x80) != 0) // key PRESS
+				  {
+					  if (!m_cameraModeAltKey)
+						  g_pplayer->m_pin3d.m_camy += 10.0f;
+					  else
+						  g_pplayer->m_pin3d.m_camz += 10.0f;
+
+					  if (!g_pplayer->cameraMode)
+					  {
+						  m_ncammode = 0;
+						  m_cameraMode = 1;
+						  g_pplayer->cameraMode = 1;
+					  }
+					  else
+					  {
+						  m_ncammode = 1;
+						  m_cameraMode = 1;
+					  }
+					  break;
+				  }
+				  else {
+					  if (m_cameraMode > 0)
+					  {
+						  m_cameraMode = 0;
+						  if (!m_ncammode)
+						     g_pplayer->cameraMode = 0;
+					  }
+				  }
+			  }
+			  else if (input->dwOfs == DIK_DOWN) // ARROW DN
+			  {
+				  if (input->dwData & 0x80)
+				  {
+					  if (!m_cameraModeAltKey)
+						  g_pplayer->m_pin3d.m_camy -= 10.0f;
+					  else
+						  g_pplayer->m_pin3d.m_camz -= 10.0f;
+
+					  if (!g_pplayer->cameraMode)
+					  {
+						  m_ncammode = 0;
+						  m_cameraMode = 2;
+						  g_pplayer->cameraMode = 1;
+					  }
+					  else
+					  {
+						  m_ncammode = 1;
+						  m_cameraMode = 2;
+					  }
+					  break;
+				  }
+				  else {
+					  if (m_cameraMode > 0)
+					  {
+						  m_cameraMode = 0;
+						  if (!m_ncammode)
+						     g_pplayer->cameraMode = 0;
+					  }
+				  }
+			  }
+			  else if (input->dwOfs == DIK_RIGHT)
+			  {
+				  if (input->dwData & 0x80)
+				  {
+					  if (!m_cameraModeAltKey)
+						  g_pplayer->m_pin3d.m_camx -= 10.f;
+					  else
+						  g_pplayer->m_pin3d.m_inc -= 0.01f;
+
+					  if (!g_pplayer->cameraMode)
+					  {
+						  m_ncammode = 0;
+						  m_cameraMode = 3;
+						  g_pplayer->cameraMode = 1;
+					  }
+					  else
+					  {
+						  m_ncammode = 1;
+						  m_cameraMode = 3;
+					  }
+					  break;
+				  }
+				  else {
+					  if (m_cameraMode > 0)
+					  {
+						  m_cameraMode = 0;
+						  if (!m_ncammode)
+						     g_pplayer->cameraMode = 0;
+					  }
+				  }
+			  }
+			  else if (input->dwOfs == DIK_LEFT) // ARROW
+			  {
+				  if (input->dwData & 0x80)
+				  {
+					  if (!m_cameraModeAltKey)
+					      g_pplayer->m_pin3d.m_camx += 10.f;
+					  else
+					      g_pplayer->m_pin3d.m_inc += 0.01f;
+
+					  if (!g_pplayer->cameraMode)
+					  {
+						  m_ncammode = 0;
+						  m_cameraMode = 4;
+						  g_pplayer->cameraMode = 1;
+
+					  }
+					  else
+					  {
+						  m_ncammode = 1;
+						  m_cameraMode = 4;
+					  }
+					  break;
+					  
+				  }
+				  else {
+					  if (m_cameraMode > 0)
+					  {
+						  m_cameraMode = 0;
+						  if (!m_ncammode)
+							g_pplayer->cameraMode = 0;
+					  }
+				  }
+			  }
+			  else if (input->dwOfs == DIK_LALT) // ALT key
+				  m_cameraModeAltKey = ((input->dwData & 0x80) != 0);
+		 }
+
+		 //
+
+		 // Normal game keys:
          if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eFrameCount])
          {
-            if (input->dwData & 0x80)
+            if ((input->dwData & 0x80) != 0)
                g_pplayer->ToggleFPS();
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEnable3D])
          {
-            if (input->dwData & 0x80)
+            if ((input->dwData & 0x80) != 0)
             {
                g_pplayer->m_fStereo3Denabled = !g_pplayer->m_fStereo3Denabled;
                SetRegValueBool("Player", "Stereo3DEnabled", g_pplayer->m_fStereo3Denabled);
@@ -1046,7 +1222,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDBGBalls])
          {
             // Activate on edge only.
-            if (input->dwData & 0x80)
+            if ((input->dwData & 0x80) != 0)
             {
                g_pplayer->m_DebugBalls = !(g_pplayer->m_DebugBalls);
                g_pplayer->m_ToggleDebugBalls = true;
@@ -1056,7 +1232,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
          {
              if(started() || !m_ptable->m_tblAutoStartEnabled)
              {
-                 if(input->dwData & 0x80)
+                 if ((input->dwData & 0x80) != 0)
                  { //on key down only
                      m_first_stamp = curr_time_msec;
                      m_exit_stamp = curr_time_msec;

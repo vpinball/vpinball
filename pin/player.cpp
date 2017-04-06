@@ -4029,8 +4029,9 @@ void Player::UpdateCameraModeDisplay()
 {
    char szFoo[128];
    int len;
+
    len = sprintf_s(szFoo, "Camera & Light Mode");
-   DebugPrint( 10, 30, szFoo, len);
+   DebugPrint(10, 30, szFoo, len);
    len = sprintf_s(szFoo, "Left / Right flipper key = decrease / increase value");
    DebugPrint(10, 50, szFoo, len);
    len = sprintf_s(szFoo, "Left / Right magna save key = previous / next option");
@@ -4112,6 +4113,8 @@ void Player::UpdateCameraModeDisplay()
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
    len = sprintf_s(szFoo, "Camera at X: %f Y: %f Z: %f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43);
    DebugPrint(10, 90, szFoo, len);
+   len = sprintf_s(szFoo, "Navigate around with the Arrow Keys (and Left Alt Key)");
+   DebugPrint(10, 180, szFoo, len);
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

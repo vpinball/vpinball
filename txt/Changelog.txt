@@ -1,5 +1,7 @@
 VP 10.3.0 Changelog
 ------------------------
+- navigating around the table with the arrow keys (and left alt key) is now possible in the Camera and Light mode (start with F6)
+
 - improve display of images with alpha channel in the editor (no more checkerboards)
 
 - add additional parameter to primitives to allow for rendering backface triangles (if the used material features transparency)
