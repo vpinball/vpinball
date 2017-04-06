@@ -247,9 +247,7 @@ void Flasher::PreRender(Sur * const psur)
             if (vvertex[i].y > _maxy) _maxy = vvertex[i].y;
          }
 
-         if (ppi->m_pdsBuffer != NULL && ppi->m_pdsBuffer->data() != NULL)
-            psur->PolygonImageRaw(vvertex, ppi->m_pdsBuffer->data(), _minx, _miny, _minx + (_maxx - _minx), _miny + (_maxy - _miny), ppi->m_width, ppi->m_height);
-         else if (ppi->m_hbmGDIVersion)
+         if (ppi->m_hbmGDIVersion)
             psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, _minx, _miny, _minx + (_maxx - _minx), _miny + (_maxy - _miny), ppi->m_width, ppi->m_height);
       }
       else

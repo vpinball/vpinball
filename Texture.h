@@ -36,7 +36,7 @@ public:
       memcpy(data(), bits, m_data.size());
    }
 
-   void CopyTo_ConvertAlpha(BYTE* const bits) // adds checkerboard pattern where alpha is set to output bits OR converts rgb_fp format to 32bits
+   void CopyTo_ConvertAlpha(BYTE* const bits) // premultiplies alpha (as Win32 AlphaBlend() wants it like that) OR converts rgb_fp format to 32bits
    {
      if(m_format == RGB_FP) // Tonemap for 8bpc-Display
      {
@@ -62,12 +62,19 @@ public:
 			  for (int i = 0; i < m_width; ++i, ++o)
 			  {
 				  const unsigned int alpha = m_data[o * 4 + 3];
-				  if (alpha != 255)
+				  if (alpha == 0) // adds a checkerboard where completely transparent (for the image manager display)
 				  {
-					  const unsigned int c = (((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127) * (255 - alpha);
-					  bits[o * 4    ] = ((unsigned int)m_data[o * 4    ] * alpha + c) >> 8;
-					  bits[o * 4 + 1] = ((unsigned int)m_data[o * 4 + 1] * alpha + c) >> 8;
-					  bits[o * 4 + 2] = ((unsigned int)m_data[o * 4 + 2] * alpha + c) >> 8;
+					  const BYTE c = ((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127;
+					  bits[o * 4    ] = c;
+					  bits[o * 4 + 1] = c;
+					  bits[o * 4 + 2] = c;
+					  bits[o * 4 + 3] = 0;
+				  }
+				  else if (alpha != 255) // premultiply alpha for win32 AlphaBlend()
+				  {
+					  bits[o * 4    ] = ((unsigned int)m_data[o * 4    ] * alpha) >> 8;
+					  bits[o * 4 + 1] = ((unsigned int)m_data[o * 4 + 1] * alpha) >> 8;
+					  bits[o * 4 + 2] = ((unsigned int)m_data[o * 4 + 2] * alpha) >> 8;
 					  bits[o * 4 + 3] = alpha;
 				  }
 				  else
