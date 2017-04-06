@@ -1,5 +1,7 @@
 VP 10.3.0 Changelog
 ------------------------
+- improve display of images with alpha channel in the editor (no more checkerboards)
+
 - add additional parameter to primitives to allow for rendering backface triangles (if the used material features transparency)
 
 - material/image manager dialog is resizeable
@@ -13,7 +15,7 @@ VP 10.3.0 Changelog
 - add more window resolutions to the video preferences (for new FSS/portrait setups)
 
 - using the built-in DMD (via the flasher element) now in addition will respect the 'Additive Blend' and 'Modulate' parameters to steer the blending with the table
-  (this can for example be used to simulate a reflection on the playfield glass, set 'Modulate' to 0.9 and check 'Additive Blend' as an example)
+  (this can for example be used to simulate a reflection on the playfield glass: set 'Modulate' to 0.9 and check 'Additive Blend' as an example)
 
 - add NFAA post processing filter to the post-processing AA dropdown menus (sometimes more blurry, but also keeps more dynamic range of the highlights compared to FXAA, and is pretty fast)
 - add DLAA post processing filter to the post-processing AA dropdown menus (somewhere inbetween FXAA and NFAA, depending on the aliasing-pattern that is smoothed, and more costly than NFAA)
