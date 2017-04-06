@@ -1393,15 +1393,15 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       }
    }
 
-   std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse); // stable, so that em reels (=same depth) will keep user defined order
-   std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableImage); // stable, so that objects with same images will keep depth order
-   // sort by vertexbuffer not useful currently
-   std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial); // stable, so that objects with same materials will keep image order
-
    material_flips = 0;
    unsigned long long m;
    if (m_vHitNonTrans.size() > 0)
    {
+      std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse); // stable, so that em reels (=same depth) will keep user defined order
+      std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableImage); // stable, so that objects with same images will keep depth order
+      // sort by vertexbuffer not useful currently
+      std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial); // stable, so that objects with same materials will keep image order
+
       m = m_vHitNonTrans[0]->GetMaterialID();
       for (unsigned int i = 1; i < m_vHitNonTrans.size(); ++i)
          if (m_vHitNonTrans[i]->GetMaterialID() != m)
@@ -1410,13 +1410,14 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
             m = m_vHitNonTrans[i]->GetMaterialID();
          }
    }
-   std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableImage); // see above
-   // sort by vertexbuffer not useful currently
-   std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableMaterial);
-   std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
 
    if (m_vHitTrans.size() > 0)
    {
+      std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableImage); // see above
+      // sort by vertexbuffer not useful currently
+      std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableMaterial);
+      std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
+
       m = m_vHitTrans[0]->GetMaterialID();
       for (unsigned int i = 1; i < m_vHitTrans.size(); ++i)
          if (m_vHitTrans[i]->GetMaterialID() != m)
@@ -4109,10 +4110,7 @@ void Player::UpdateCameraModeDisplay()
    }
    DebugPrint(10, 120, szFoo, len);
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
-   if( m_ptable->m_BG_current_set==0 )
-      len = sprintf_s(szFoo, "Camera at X: %f Y: %f Z: %f", -m_pin3d.m_proj.m_matView._41, m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43);
-   else
-       len = sprintf_s(szFoo, "Camera at X: %f Y: %f Z: %f", -m_pin3d.m_proj.m_matView._41, -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43);
+   len = sprintf_s(szFoo, "Camera at X: %f Y: %f Z: %f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43);
    DebugPrint(10, 90, szFoo, len);
 }
 

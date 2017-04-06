@@ -917,6 +917,7 @@
 #define IDC_STATIC_PHY_ELASTICITY_FALLOFF 789
 #define IDC_STATIC_PHY_FRICTION         790
 #define IDC_STATIC_PHY_SCATTER_ANGLE    791
+#define IDC_PRIMITIVE_ENABLE_BACKFACES  792
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1063,7 +1064,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        626
 #define _APS_NEXT_COMMAND_VALUE         4012
-#define _APS_NEXT_CONTROL_VALUE         792
+#define _APS_NEXT_CONTROL_VALUE         793
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

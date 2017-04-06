@@ -362,6 +362,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_fToy = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "IsToy", false) : false;
    m_d.m_fDisableLighting = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "DisableLighting", false) : false;
    m_d.m_fReflectionEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
+   m_d.m_fBackfacesEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "BackfacesEnabled", false) : false;
 }
 
 void Primitive::WriteRegDefaults()
@@ -405,6 +406,7 @@ void Primitive::WriteRegDefaults()
    SetRegValueBool(strKeyName, "IsToy", m_d.m_fToy);
    SetRegValueBool(strKeyName, "DisableLighting", m_d.m_fDisableLighting);
    SetRegValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
+   SetRegValueBool(strKeyName, "BackfacesEnabled", m_d.m_fBackfacesEnabled);
 }
 
 void Primitive::GetTimers(Vector<HitTimer> * const pvht)
@@ -1046,11 +1048,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-#ifdef TWOSIDED_TRANSPARENCY
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, mat->m_bOpacityActive ? D3DCULL_CW : D3DCULL_CCW);
-#else
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-#endif
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, m_d.m_fBackfacesEnabled && mat->m_bOpacityActive ? D3DCULL_CW : D3DCULL_CCW);
 
    if (m_d.m_fDisableLighting)
       pd3dDevice->basicShader->SetDisableLighting(m_d.m_fDisableLighting);
@@ -1094,8 +1092,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
    pd3dDevice->basicShader->End();
 
-#ifdef TWOSIDED_TRANSPARENCY
-   if(mat->m_bOpacityActive)
+   if(m_d.m_fBackfacesEnabled && mat->m_bOpacityActive)
    {
        pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
        pd3dDevice->basicShader->Begin(0);
@@ -1105,7 +1102,6 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
           pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
        pd3dDevice->basicShader->End();
    }
-#endif
 
    // reset transform
    if (!m_d.m_fGroupdRendering)
@@ -1238,6 +1234,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteBool(FID(STRE), m_d.m_staticRendering);
    bw.WriteBool(FID(DILI), m_d.m_fDisableLighting);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
+   bw.WriteBool(FID(EBFC), m_d.m_fBackfacesEnabled);
    bw.WriteString( FID( MAPH ), m_d.m_szPhysicsMaterial );
    bw.WriteBool( FID( OVPH ), m_d.m_fOverwritePhysics );
 
@@ -1500,6 +1497,10 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(U3DM))
    {
       pbr->GetBool(&m_d.m_use3DMesh);
+   }
+   else if (id == FID(EBFC))
+   {
+      pbr->GetBool(&m_d.m_fBackfacesEnabled);
    }
    else if (id == FID(M3DN))
    {
@@ -2787,11 +2788,29 @@ STDMETHODIMP Primitive::put_IsToy(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fToy = VBTOF(newVal);
+   m_d.m_fToy = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::get_BackfacesEnabled(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fBackfacesEnabled);
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_BackfacesEnabled(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+   m_d.m_fBackfacesEnabled = VBTOF(newVal);
+
+   STOPUNDO
+
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_DisableLighting(VARIANT_BOOL *pVal)
