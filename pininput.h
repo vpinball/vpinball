@@ -49,8 +49,12 @@ public:
 
    void tilt_update();
 
+   void ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input);
    void ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/, int curr_time_msec);
 
+   void ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec);
+
+   void ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input, PinTable * const ptable);
    int GetNextKey();
 
    void GetInputDeviceData(/*const U32 curr_time_msec*/);
