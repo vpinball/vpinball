@@ -581,7 +581,7 @@ void Pin3D::InitLayout(const bool FSS_mode)
 
    const float aspect = ((float)vp.Width) / ((float)vp.Height); //(float)(4.0/3.0);
 
-   // next 3 def values for layout portrait(game vert) in landscape(screen horz)
+   // next 4 def values for layout portrait(game vert) in landscape(screen horz)
    // for FSS, force an offset to camy which drops the table down 1/3 of the way.
    // some values to camy have been commented out because I found the default value 
    // better and just modify the camz and keep the table design inclination 
@@ -591,22 +591,20 @@ void Pin3D::InitLayout(const bool FSS_mode)
    const float camx = m_camx;
    const float camy = m_camy + (FSS_mode ? 500.0f : 0.f);
          float camz = m_camz;
+   const float inc  = m_inc  + (FSS_mode ? 0.2f : 0.f);
 
    if(FSS_mode)
    {
    //m_proj.m_rcviewport.right = vp.Height;
    //m_proj.m_rcviewport.bottom = vp.Width;
-   //g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set] += inc;
-   //inclination = ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
-   inclination += 0.2f; // added this to inclination in radians
-
    const int width = GetSystemMetrics(SM_CXSCREEN);
    const int height = GetSystemMetrics(SM_CYSCREEN);
+
    // layout landscape(game horz) in lanscape(LCD\LED horz)
    if ((vp.Width > vp.Height) && (height < width))
    {
-      //inclination += 0.1f; // 0.05-best, 0.1-good, 0.2-bad > (0.2 terrible original)
-      //camy -= 30.0f;       // 70.0f original // 100
+      //inc += 0.1f;       // 0.05-best, 0.1-good, 0.2-bad > (0.2 terrible original)
+      //camy -= 30.0f;     // 70.0f original // 100
       if (aspect > 1.6f)
           camz -= 1170.0f; // 700
       else if (aspect > 1.5f)
@@ -640,6 +638,8 @@ void Pin3D::InitLayout(const bool FSS_mode)
       }
    }
    }
+
+   inclination += inc; // added this to inclination in radians
 
    m_proj.FitCameraToVertices(vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
 
