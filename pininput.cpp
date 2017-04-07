@@ -82,7 +82,6 @@ PinInput::PinInput()
 
    m_cameraModeAltKey = false;
    m_cameraMode = 0;
-   m_ncameraMode = false;
 
    HRESULT hr;
    int tmp;
@@ -864,137 +863,74 @@ void PinInput::tilt_update()
 
 void PinInput::ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input)
 {
-        if (input->dwOfs == DIK_UP) // ARROW UP
+    switch(input->dwOfs)
+    {
+    case DIK_UP:
         {
-            if ((input->dwData & 0x80) != 0) // key PRESS
+            if ((input->dwData & 0x80) != 0)
             {
                 if (!m_cameraModeAltKey)
-                    g_pplayer->m_pin3d.m_camy += 10.0f;
+                    g_pplayer->m_pin3d.m_camy += 1.0f;
                 else
-                    g_pplayer->m_pin3d.m_camz += 10.0f;
+                    g_pplayer->m_pin3d.m_camz += 1.0f;
 
-                if (!g_pplayer->cameraMode)
-                {
-                    m_ncameraMode = false;
-                    m_cameraMode = 1;
-                    g_pplayer->cameraMode = 1;
-                }
-                else
-                {
-                    m_ncameraMode = true;
-                    m_cameraMode = 1;
-                }
-                return;
+                m_cameraMode = 1;
             }
-            else 
-            {
-                if (m_cameraMode > 0)
-                {
-                    m_cameraMode = 0;
-                    if (!m_ncameraMode)
-                        g_pplayer->cameraMode = 0;
-                }
-            }
+            else
+                m_cameraMode = 0;
         }
-        else if (input->dwOfs == DIK_DOWN) // ARROW DN
+        break;
+    case DIK_DOWN:
         {
-            if (input->dwData & 0x80)
+            if ((input->dwData & 0x80) != 0)
             {
                 if (!m_cameraModeAltKey)
-                    g_pplayer->m_pin3d.m_camy -= 10.0f;
+                    g_pplayer->m_pin3d.m_camy -= 1.0f;
                 else
-                    g_pplayer->m_pin3d.m_camz -= 10.0f;
+                    g_pplayer->m_pin3d.m_camz -= 1.0f;
 
-                if (!g_pplayer->cameraMode)
-                {
-                    m_ncameraMode = false;
-                    m_cameraMode = 2;
-                    g_pplayer->cameraMode = 1;
-                }
-                else
-                {
-                    m_ncameraMode = true;
-                    m_cameraMode = 2;
-                }
-                return;
+                m_cameraMode = 2;
             }
-            else 
-            {
-                if (m_cameraMode > 0)
-                {
-                    m_cameraMode = 0;
-                    if (!m_ncameraMode)
-                        g_pplayer->cameraMode = 0;
-                }
-            }
+            else
+                m_cameraMode = 0;
         }
-        else if (input->dwOfs == DIK_RIGHT)
+        break;
+    case DIK_RIGHT:
         {
-            if (input->dwData & 0x80)
+            if ((input->dwData & 0x80) != 0)
             {
                 if (!m_cameraModeAltKey)
-                    g_pplayer->m_pin3d.m_camx -= 10.f;
+                    g_pplayer->m_pin3d.m_camx -= 1.f;
                 else
-                    g_pplayer->m_pin3d.m_inc -= 0.01f;
+                    g_pplayer->m_pin3d.m_inc -= 0.001f;
 
-                if (!g_pplayer->cameraMode)
-                {
-                    m_ncameraMode = false;
-                    m_cameraMode = 3;
-                    g_pplayer->cameraMode = 1;
-                }
-                else
-                {
-                    m_ncameraMode = true;
-                    m_cameraMode = 3;
-                }
-                return;
+                m_cameraMode = 3;
             }
-            else 
-            {
-                if (m_cameraMode > 0)
-                {
-                    m_cameraMode = 0;
-                    if (!m_ncameraMode)
-                        g_pplayer->cameraMode = 0;
-                }
-            }
+            else
+                m_cameraMode = 0;
         }
-        else if (input->dwOfs == DIK_LEFT) // ARROW
+        break;
+    case DIK_LEFT:
         {
-            if (input->dwData & 0x80)
+            if ((input->dwData & 0x80) != 0)
             {
                 if (!m_cameraModeAltKey)
-                    g_pplayer->m_pin3d.m_camx += 10.f;
+                    g_pplayer->m_pin3d.m_camx += 1.f;
                 else
-                    g_pplayer->m_pin3d.m_inc += 0.01f;
+                    g_pplayer->m_pin3d.m_inc += 0.001f;
 
-                if (!g_pplayer->cameraMode)
-                {
-                    m_ncameraMode = false;
-                    m_cameraMode = 4;
-                    g_pplayer->cameraMode = 1;
-
-                }
-                else
-                {
-                    m_ncameraMode = true;
-                    m_cameraMode = 4;
-                }
-                return;
-
+                m_cameraMode = 4;
             }
-            else {
-                if (m_cameraMode > 0)
-                {
-                    m_cameraMode = 0;
-                    if (!m_ncameraMode)
-                        g_pplayer->cameraMode = 0;
-                }
-            }
+            else
+                m_cameraMode = 0;
         }
-        else if (input->dwOfs == DIK_LALT) // ALT key
-            m_cameraModeAltKey = ((input->dwData & 0x80) != 0);
+        break;
+    case DIK_LALT:
+        m_cameraModeAltKey = ((input->dwData & 0x80) != 0);
+        break;
+    default:
+        break;
+    }
 }
 
 void PinInput::Joy(const unsigned int n, const int updown, const bool start)
@@ -1574,7 +1510,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
    // Fly-around parameters
    if (m_cameraMode > 0)
    {
-	   if (m_head == m_tail)
+	   if (m_head == m_tail) // key queue empty, so just continue using the old pressed key
 	   {
 		   if(m_cameraMode == 1)
 		   {
@@ -1635,8 +1571,8 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 
       if (input->dwSequence == APP_KEYBOARD)
       {
-		  // Camera mode fly around:
-          if (g_pplayer)
+         // Camera mode fly around:
+         if (g_pplayer && g_pplayer->cameraMode)
               ProcessCameraKeys(input);
 
          // Normal game keys:
