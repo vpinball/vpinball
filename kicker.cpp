@@ -462,12 +462,12 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
    {
       texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
 
-      numIndices = kickerSimpleHoleNumFaces;
+      numIndices = kickerSimpleHoleNumIndices;
       numVertices = kickerSimpleHoleVertices;
 
       if (indexBuffer)
          indexBuffer->release();
-      indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(kickerSimpleHoleNumFaces, kickerSimpleHoleIndices);
+      indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(kickerSimpleHoleNumIndices, kickerSimpleHoleIndices);
 
       if (vertexBuffer)
          vertexBuffer->release();
