@@ -693,6 +693,29 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
          break;
       }
+      case IDC_BROWSE_BALL_DECAL:
+      {
+         char szFileName[1024];
+         szFileName[0] = '\0';
+
+         OPENFILENAME ofn;
+         ZeroMemory(&ofn, sizeof(OPENFILENAME));
+         ofn.lStructSize = sizeof(OPENFILENAME);
+         ofn.hInstance = g_hinst;
+         ofn.hwndOwner = g_pvp->m_hwnd;
+         // TEXT
+         ofn.lpstrFilter = "Bitmap, JPEG, PNG, EXR, HDR Files (.bmp/.jpg/.png/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.exr;*.hdr\0";
+         ofn.lpstrFile = szFileName;
+         ofn.nMaxFile = _MAX_PATH;
+         ofn.lpstrDefExt = "png";
+         ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+         const int ret = GetOpenFileName(&ofn);
+         if (!ret)
+            break;
+         SetDlgItemText(IDC_BALL_DECAL_EDIT, szFileName);
+         break;
+      }
+
       case IDC_FULLSCREEN:
       {
          const size_t checked = SendDlgItemMessage(IDC_FULLSCREEN, BM_GETCHECK, 0, 0);
