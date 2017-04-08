@@ -647,6 +647,9 @@ void PinInput::Init(const HWND hwnd)
    newStickyKeys.dwFlags = 0;
    SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &newStickyKeys, SPIF_SENDCHANGE);
 
+   for (int i = 0; i < 2; i++)
+      m_keyPressedState[i] = false;
+   m_nextKeyPressedTime = 0;
    uShockDevice = -1;
    uShockType = 0;
 #ifdef USE_DINPUT8
@@ -740,10 +743,18 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
 
    if (g_pplayer->cameraMode)
    {
+      m_keyPressedState[eLeftFlipperKey] = false;
+      m_keyPressedState[eRightFlipperKey] = false;
       if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
+      {
          g_pplayer->UpdateBackdropSettings(false);
+         m_keyPressedState[eLeftFlipperKey] = true;
+      }
       else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
+      {
          g_pplayer->UpdateBackdropSettings(true);
+         m_keyPressedState[eRightFlipperKey] = true;
+      }
       else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->backdropSettingActive++;
@@ -1541,6 +1552,21 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 				   g_pplayer->m_pin3d.m_inc += 0.001f;
 		   }
 	   }
+   }
+   if (g_pplayer->cameraMode)
+   {
+      if (m_head == m_tail) // key queue empty, simulate pressed key
+      {
+         if ((GetTickCount() - m_nextKeyPressedTime) > 30) // reduce update rate
+         {
+            m_nextKeyPressedTime = GetTickCount();
+            if (m_keyPressedState[eLeftFlipperKey])
+               g_pplayer->UpdateBackdropSettings(false);
+            if (m_keyPressedState[eRightFlipperKey])
+               g_pplayer->UpdateBackdropSettings(true);
+         }
+         return;
+      }
    }
 
    const DIDEVICEOBJECTDATA * __restrict input;
