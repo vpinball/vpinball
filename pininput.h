@@ -141,6 +141,8 @@ private:
 
    bool m_cameraModeAltKey;
    int m_cameraMode;
+   bool m_keyPressedState[2];
+   DWORD m_nextKeyPressedTime;
 };
 
 #define VK_TO_DIK_SIZE 105

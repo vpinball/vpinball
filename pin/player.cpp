@@ -3932,7 +3932,7 @@ void Player::SetScreenOffset(float x, float y)
 
 void Player::UpdateBackdropSettings(const bool up)
 {
-   const float thesign = !up ? -1.0f : 1.0f;
+   const float thesign = !up ? -0.2f : 0.2f;
 
    switch (backdropSettingActive)
    {
@@ -3986,7 +3986,7 @@ void Player::UpdateBackdropSettings(const bool up)
    }
    case 8:
    {
-      m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set] += thesign;
+      m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set] += thesign*50.0f;
       m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
@@ -4016,7 +4016,7 @@ void Player::UpdateBackdropSettings(const bool up)
    }
    case 12:
    {
-      m_ptable->m_envEmissionScale += thesign;
+      m_ptable->m_envEmissionScale += thesign*0.5f;
       if (m_ptable->m_envEmissionScale < 0.f)
          m_ptable->m_envEmissionScale = 0.f;
       m_ptable->SetNonUndoableDirty(eSaveDirty);
@@ -4041,67 +4041,67 @@ void Player::UpdateCameraModeDisplay()
    {
    case 0:
    {
-      len = sprintf_s(szFoo, "Inclination: %f", m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "Inclination: %.3f", m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]);
       break;
    }
    case 1:
    {
-      len = sprintf_s(szFoo, "Field Of View: %f", m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "Field Of View: %.3f", m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]);
       break;
    }
    case 2:
    {
-      len = sprintf_s(szFoo, "Layback: %f", m_ptable->m_BG_layback[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "Layback: %.3f", m_ptable->m_BG_layback[m_ptable->m_BG_current_set]);
       break;
    }
    case 3:
    {
-      len = sprintf_s(szFoo, "X Scale: %f", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "X Scale: %.3f", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]);
       break;
    }
    case 4:
    {
-      len = sprintf_s(szFoo, "Y Scale: %f", m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "Y Scale: %.3f", m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
       break;
    }
    case 5:
    {
-      len = sprintf_s(szFoo, "Z Scale: %f", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "Z Scale: %.3f", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
       break;
    }
    case 6:
    {
-      len = sprintf_s(szFoo, "X Offset: %f", m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "X Offset: %.3f", m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]);
       break;
    }
    case 7:
    {
-      len = sprintf_s(szFoo, "Y Offset: %f", m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "Y Offset: %.3f", m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]);
       break;
    }
    case 8:
    {
-      len = sprintf_s(szFoo, "Z Offset: %f", m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "Z Offset: %.3f", m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]);
       break;
    }
    case 9:
    {
-      len = sprintf_s(szFoo, "Light Emission Scale: %f", m_ptable->m_lightEmissionScale);
+      len = sprintf_s(szFoo, "Light Emission Scale: %.3f", m_ptable->m_lightEmissionScale);
       break;
    }
    case 10:
    {
-      len = sprintf_s(szFoo, "Light Range: %f", m_ptable->m_lightRange);
+      len = sprintf_s(szFoo, "Light Range: %.3f", m_ptable->m_lightRange);
       break;
    }
    case 11:
    {
-      len = sprintf_s(szFoo, "Light Height: %f", m_ptable->m_lightHeight);
+      len = sprintf_s(szFoo, "Light Height: %.3f", m_ptable->m_lightHeight);
       break;
    }
    case 12:
    {
-      len = sprintf_s(szFoo, "Environment Emission: %f", m_ptable->m_envEmissionScale);
+      len = sprintf_s(szFoo, "Environment Emission: %.3f", m_ptable->m_envEmissionScale);
       break;
    }
    default:
