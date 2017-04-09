@@ -141,7 +141,7 @@ private:
 
    bool m_cameraModeAltKey;
    int m_cameraMode;
-   bool m_keyPressedState[2];
+   bool m_keyPressedState[4];
    DWORD m_nextKeyPressedTime;
 };
 

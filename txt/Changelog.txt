@@ -1,5 +1,7 @@
 VP 10.3.0 Changelog
 ------------------------
+- add camera rotation around Y axis in Camera/Light mode (F6)
+
 - navigating around the table with the arrow keys (and left alt key) is now possible in the Camera and Light mode (start with F6)
 
 - improve display of images with alpha channel in the editor (no more checkerboards)
