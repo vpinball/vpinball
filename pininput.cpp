@@ -647,7 +647,7 @@ void PinInput::Init(const HWND hwnd)
    newStickyKeys.dwFlags = 0;
    SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &newStickyKeys, SPIF_SENDCHANGE);
 
-   for (int i = 0; i < 2; i++)
+   for (int i = 0; i < 4; i++)
       m_keyPressedState[i] = false;
    m_nextKeyPressedTime = 0;
    uShockDevice = -1;
@@ -745,6 +745,8 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
    {
       m_keyPressedState[eLeftFlipperKey] = false;
       m_keyPressedState[eRightFlipperKey] = false;
+      m_keyPressedState[eLeftTiltKey] = false;
+      m_keyPressedState[eRightTiltKey] = false;
       if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->UpdateBackdropSettings(false);
@@ -754,6 +756,16 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
       {
          g_pplayer->UpdateBackdropSettings(true);
          m_keyPressedState[eRightFlipperKey] = true;
+      }
+      else if (mkey == g_pplayer->m_rgKeys[eLeftTiltKey] && dispid == DISPID_GameEvents_KeyDown)
+      {
+         g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] -= 1.0f;
+         m_keyPressedState[eLeftTiltKey] = true;
+      }
+      else if (mkey == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyDown)
+      {
+         g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] += 1.0f;
+         m_keyPressedState[eRightTiltKey] = true;
       }
       else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
       {
@@ -1564,6 +1576,10 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                g_pplayer->UpdateBackdropSettings(false);
             if (m_keyPressedState[eRightFlipperKey])
                g_pplayer->UpdateBackdropSettings(true);
+            if (m_keyPressedState[eLeftTiltKey])
+               g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] -= 1.0f;
+            if (m_keyPressedState[eRightTiltKey])
+               g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] += 1.0f;
          }
          return;
       }
