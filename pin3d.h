@@ -110,7 +110,6 @@ public:
    float m_camy;
    float m_camz;
    float m_inc;
-
    HWND m_hwnd;
 
    //Vertex3Ds m_viewVec;        // direction the camera is facing

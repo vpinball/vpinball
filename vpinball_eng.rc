@@ -2679,7 +2679,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Options",                    ID_EDIT_PROPERTIES
         MENUITEM "&Script",                     ID_EDIT_SCRIPT
-        MENUITEM "&Backglass View",             ID_EDIT_BACKGLASSVIEW
+        MENUITEM "&Backglass View\t Space",     ID_EDIT_BACKGLASSVIEW
     END
     POPUP "&Insert"
     BEGIN
@@ -2890,6 +2890,7 @@ BEGIN
     "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
     VK_F2,          IDM_SOUND_EDITOR,       VIRTKEY, NOINVERT
+    VK_SPACE,       ID_EDIT_BACKGLASSVIEW,  VIRTKEY, NOINVERT
 END
 
 IDR_CODEVIEWACCEL ACCELERATORS

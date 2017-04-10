@@ -2349,6 +2349,21 @@ void PinTable::Play(bool _cameraMode)
    ::SetWindowText(hwndStatusName, "Backing Up Table State...");
    BackupForPlay();
 
+   m_backupLayback = m_BG_layback[m_BG_current_set];
+   m_backupRotation = m_BG_rotation[m_BG_current_set];
+   m_backupInclination = m_BG_inclination[m_BG_current_set];
+   m_backupOffset.x = m_BG_xlatex[m_BG_current_set];
+   m_backupOffset.y = m_BG_xlatey[m_BG_current_set];
+   m_backupOffset.z = m_BG_xlatez[m_BG_current_set];
+   m_backupScale.x = m_BG_scalex[m_BG_current_set];
+   m_backupScale.y = m_BG_scaley[m_BG_current_set];
+   m_backupScale.z = m_BG_scalez[m_BG_current_set];
+   m_backupFOV = m_BG_FOV[m_BG_current_set];
+   m_backupLightHeight = m_lightHeight;
+   m_backupLightRange = m_lightRange;
+   m_backupEmisionScale = m_lightEmissionScale;
+   m_backupEnvEmissionScale = m_envEmissionScale;
+
    g_fKeepUndoRecords = fFalse;
 
    m_pcv->m_fScriptError = fFalse;

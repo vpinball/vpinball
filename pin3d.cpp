@@ -654,8 +654,13 @@ void Pin3D::InitLayout(const bool FSS_mode)
    //!! FSS: camy = 0.0f;
 
    m_proj.TranslateView(g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set] - m_proj.m_vertexcamera.x + camx, g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] - m_proj.m_vertexcamera.y + camy, -m_proj.m_vertexcamera.z + camz);
-
-   m_proj.RotateView(inclination, 0, rotation);
+   if ( g_pplayer->cameraMode && g_pplayer->m_ptable->m_BG_current_set==0)
+      m_proj.RotateView(inclination, 0, rotation);
+   else
+   {
+      m_proj.RotateView(0, 0, rotation);
+      m_proj.RotateView(inclination, 0, 0);
+   }
    m_proj.MultiplyView(ComputeLaybackTransform(g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]));
 
    // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
