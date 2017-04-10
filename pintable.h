@@ -783,6 +783,17 @@ public:
    };
 
    vector<DebugLightData*> dbgChangedLights;
+   float m_backupInclination;
+   float m_backupFOV;
+   float m_backupRotation;
+   Vertex3Ds m_backupScale;
+   Vertex3Ds m_backupOffset;
+   Vertex3Ds m_backupCamera;
+   float m_backupLayback;
+   float m_backupEmisionScale;
+   float m_backupLightRange;
+   float m_backupLightHeight;
+   float m_backupEnvEmissionScale;
 
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
    int   m_jolt_amount;

@@ -1,5 +1,10 @@
 VP 10.3.0 Changelog
 ------------------------
+
+- add hotkey for toggling between table and backdrop view in the editor (space)
+
+- in Camera/Light mode (F6) press the start game key (default is 1) to reset the camera and all backdrop settings (inclination, layback...)
+
 - add camera rotation around Y axis in Camera/Light mode (F6)
 
 - navigating around the table with the arrow keys (and left alt key) is now possible in the Camera and Light mode (start with F6)
