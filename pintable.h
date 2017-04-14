@@ -44,8 +44,8 @@ struct LightSource {
 };
 
 typedef struct {
-   long			fileversion;
-   long			size;
+   long				fileversion;
+   long				size;
    unsigned char	paraphrase[PROT_CIPHER_LENGTH];
    unsigned long	flags;
    int				keyversion;
@@ -143,6 +143,27 @@ public:
    STDMETHOD(get_XlatezFS)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_XlatezFS)(/*[in]*/ float newVal);
 
+   STDMETHOD(get_FieldOfViewFSS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_FieldOfViewFSS)(/*[in]*/ float newVal);
+   STDMETHOD(get_InclinationFSS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_InclinationFSS)(/*[in]*/ float newVal);
+   STDMETHOD(get_LaybackFSS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_LaybackFSS)(/*[in]*/ float newVal);
+   STDMETHOD(get_RotationFSS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RotationFSS)(/*[in]*/ float newVal);
+   STDMETHOD(get_ScalexFSS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ScalexFSS)(/*[in]*/ float newVal);
+   STDMETHOD(get_ScaleyFSS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ScaleyFSS)(/*[in]*/ float newVal);
+   STDMETHOD(get_ScalezFSS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ScalezFSS)(/*[in]*/ float newVal);
+   STDMETHOD(get_XlatexFSS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_XlatexFSS)(/*[in]*/ float newVal);
+   STDMETHOD(get_XlateyFSS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_XlateyFSS)(/*[in]*/ float newVal);
+   STDMETHOD(get_XlatezFSS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_XlatezFSS)(/*[in]*/ float newVal);
+
    STDMETHOD(get_SlopeMax)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_SlopeMax)(/*[in]*/ float newVal);
    STDMETHOD(get_SlopeMin)(/*[out, retval]*/ float *pVal);
@@ -153,6 +174,8 @@ public:
    STDMETHOD(put_BackdropImage_DT)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_BackdropImage_FS)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_BackdropImage_FS)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_BackdropImage_FSS)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_BackdropImage_FSS)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_BackdropImageApplyNightDay)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_BackdropImageApplyNightDay)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_BackdropColor)(/*[out, retval]*/ OLE_COLOR *pVal);

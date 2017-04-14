@@ -918,6 +918,16 @@
 #define IDC_STATIC_PHY_FRICTION         790
 #define IDC_STATIC_PHY_SCATTER_ANGLE    791
 #define IDC_PRIMITIVE_ENABLE_BACKFACES  792
+#define IDC_FSS_INCL                    793
+#define IDC_FSS_FOV                     794
+#define IDC_FSS_LB                      795
+#define IDC_FSS_ROT                     796
+#define IDC_FSS_XS                      797
+#define IDC_FSS_YS                      798
+#define IDC_FSS_ZS                      799
+#define IDC_FSS_XT                      800
+#define IDC_FSS_YT                      801
+#define IDC_FSS_ZT                      802
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -931,6 +941,7 @@
 #define DISPID_Image5                   1509
 #define DISPID_Image6                   1510
 #define DISPID_Image7                   1511
+#define DISPID_Image8                   1512
 #define IDC_MESH_FILENAME_EDIT          1601
 #define IDC_LOAD_MESH_BUTTON            1602
 #define IDC_EXPORT_MESH_BUTTON          1603
@@ -1064,7 +1075,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        626
 #define _APS_NEXT_COMMAND_VALUE         4016
-#define _APS_NEXT_CONTROL_VALUE         793
+#define _APS_NEXT_CONTROL_VALUE         803
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

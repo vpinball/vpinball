@@ -111,6 +111,7 @@
 #define DISPID_Image5 1509
 #define DISPID_Image6 1510
 #define DISPID_Image7 1511
+#define DISPID_Image8 1512
 
 // Primitive DispIDs
 #define DISPID_SIDES                    378

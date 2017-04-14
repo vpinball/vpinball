@@ -530,7 +530,7 @@ void Player::Shutdown()
    if (localvsync > m_refreshrate)
       timeEndPeriod(1); // after last precise uSleep()
 
-   if(m_toogle_DTFS)
+   if(m_toogle_DTFS && m_ptable->m_BG_current_set != 2)
        m_ptable->m_BG_current_set ^= 1;
 
    m_pininput.UnInit();
@@ -1211,7 +1211,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
    // if left flipper or shift hold during load, then swap DT/FS view (for quick testing)
-   if (!m_ptable->m_tblMirrorEnabled &&
+   if (m_ptable->m_BG_current_set != 2 &&
+       !m_ptable->m_tblMirrorEnabled &&
        ((GetAsyncKeyState(VK_LSHIFT) & 0x8000)
        || ((lflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000))))
    {
@@ -4111,7 +4112,7 @@ void Player::UpdateCameraModeDisplay()
    }
    DebugPrint(10, 120, szFoo, len);
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
-   len = sprintf_s(szFoo, "Camera at X: %f Y: %f Z: %f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43);
+   len = sprintf_s(szFoo, "Camera at X: %f Y: %f Z: %f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43); // DT & FSS
    DebugPrint(10, 90, szFoo, len);
    len = sprintf_s(szFoo, "Navigate around with the Arrow Keys (and Left Alt Key)");
    DebugPrint(10, 180, szFoo, len);

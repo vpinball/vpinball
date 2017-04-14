@@ -35,9 +35,9 @@
 
 //
 
-#define NUM_BG_SETS        2
+#define NUM_BG_SETS        3  // different backdrop settings: DT,FS,FSS
 
-#define MAX_BALL_TRAIL_POS 10
+#define MAX_BALL_TRAIL_POS 10 // fake/artistic ball motion trail
 
 #define MAX_REELS          32
 

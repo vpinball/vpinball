@@ -29,4 +29,5 @@ private:
    void SavePosition();
    void UpdateImages();
 };
+
 #endif // !H_IMAGE_DIALOG

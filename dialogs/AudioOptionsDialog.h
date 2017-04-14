@@ -12,7 +12,6 @@ protected:
    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
    virtual void OnOK();
    virtual void OnClose();
-
 };
 
 #endif // !H_AUDIO_OPTIONS_DIALOG
