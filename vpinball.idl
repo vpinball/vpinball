@@ -531,6 +531,27 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(448), helpstring("property XlatezFS")] HRESULT XlatezFS([out, retval] float *pVal);
                 [propput, id(448), helpstring("property XlatezFS")] HRESULT XlatezFS([in] float newVal);
 
+                [propget, id(793), helpstring("property InclinationFSS")] HRESULT InclinationFSS([out, retval] float *pVal);
+                [propput, id(793), helpstring("property InclinationFSS")] HRESULT InclinationFSS([in] float newVal);
+                [propget, id(794), helpstring("property FieldOfViewFSS")] HRESULT FieldOfViewFSS([out, retval] float *pVal);
+                [propput, id(794), helpstring("property FieldOfViewFSS")] HRESULT FieldOfViewFSS([in] float newVal);
+                [propget, id(795), helpstring("property LaybackFSS")] HRESULT LaybackFSS([out, retval] float *pVal);
+                [propput, id(795), helpstring("property LaybackFSS")] HRESULT LaybackFSS([in] float newVal);
+                [propget, id(796), helpstring("property RotationFSS")] HRESULT RotationFSS([out, retval] float *pVal);
+                [propput, id(796), helpstring("property RotationFSS")] HRESULT RotationFSS([in] float newVal);
+                [propget, id(797), helpstring("property ScalexFSS")] HRESULT ScalexFSS([out, retval] float *pVal);
+                [propput, id(797), helpstring("property ScalexFSS")] HRESULT ScalexFSS([in] float newVal);
+                [propget, id(798), helpstring("property ScaleyFSS")] HRESULT ScaleyFSS([out, retval] float *pVal);
+                [propput, id(798), helpstring("property ScaleyFSS")] HRESULT ScaleyFSS([in] float newVal);
+                [propget, id(799), helpstring("property ScalezFSS")] HRESULT ScalezFSS([out, retval] float *pVal);
+                [propput, id(799), helpstring("property ScalezFSS")] HRESULT ScalezFSS([in] float newVal);
+                [propget, id(800), helpstring("property XlatexFSS")] HRESULT XlatexFSS([out, retval] float *pVal);
+                [propput, id(800), helpstring("property XlatexFSS")] HRESULT XlatexFSS([in] float newVal);
+                [propget, id(801), helpstring("property XlateyFSS")] HRESULT XlateyFSS([out, retval] float *pVal);
+                [propput, id(801), helpstring("property XlateyFSS")] HRESULT XlateyFSS([in] float newVal);
+                [propget, id(802), helpstring("property XlatezFSS")] HRESULT XlatezFSS([out, retval] float *pVal);
+                [propput, id(802), helpstring("property XlatezFSS")] HRESULT XlatezFSS([in] float newVal);
+
                 [propget, id(1100), helpstring("property Gravity")] HRESULT Gravity([out, retval] float *pVal);
                 [propput, id(1100), helpstring("property Gravity")] HRESULT Gravity([in] float newVal);
                 [propget, id(1101), helpstring("property Friction")] HRESULT Friction([out, retval] float *pVal);
@@ -561,6 +582,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(DISPID_Image2), helpstring("property BackdropImage_DT")] HRESULT BackdropImage_DT([in] BSTR newVal);
                 [propget, id(DISPID_Image6), helpstring("property BackdropImage_FS")] HRESULT BackdropImage_FS([out, retval] BSTR *pVal);
                 [propput, id(DISPID_Image6), helpstring("property BackdropImage_FS")] HRESULT BackdropImage_FS([in] BSTR newVal);
+                [propget, id(DISPID_Image8), helpstring("property BackdropImage_FSS")] HRESULT BackdropImage_FSS([out, retval] BSTR *pVal);
+                [propput, id(DISPID_Image8), helpstring("property BackdropImage_FSS")] HRESULT BackdropImage_FSS([in] BSTR newVal);
                 [propget, id(459), helpstring("property BackdropImageApplyNightDay")] HRESULT BackdropImageApplyNightDay([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(459), helpstring("property BackdropImageApplyNightDay")] HRESULT BackdropImageApplyNightDay([in] VARIANT_BOOL newVal);
                 [propget, id(DISPID_Image5), helpstring("property ColorGradeImage")] HRESULT ColorGradeImage([out, retval] BSTR *pVal);

@@ -22,6 +22,6 @@ private:
    void SavePosition();
    HWND m_hMaterialList;
    CResizer m_resizer;
-
 };
+
 #endif // !H_MATERIAL_DIALOG
