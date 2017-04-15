@@ -122,48 +122,6 @@ public:
    STDMETHOD(get_Xlatez)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Xlatez)(/*[in]*/ float newVal);
 
-   STDMETHOD(get_FieldOfViewFS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_FieldOfViewFS)(/*[in]*/ float newVal);
-   STDMETHOD(get_InclinationFS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_InclinationFS)(/*[in]*/ float newVal);
-   STDMETHOD(get_LaybackFS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_LaybackFS)(/*[in]*/ float newVal);
-   STDMETHOD(get_RotationFS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_RotationFS)(/*[in]*/ float newVal);
-   STDMETHOD(get_ScalexFS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_ScalexFS)(/*[in]*/ float newVal);
-   STDMETHOD(get_ScaleyFS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_ScaleyFS)(/*[in]*/ float newVal);
-   STDMETHOD(get_ScalezFS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_ScalezFS)(/*[in]*/ float newVal);
-   STDMETHOD(get_XlatexFS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_XlatexFS)(/*[in]*/ float newVal);
-   STDMETHOD(get_XlateyFS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_XlateyFS)(/*[in]*/ float newVal);
-   STDMETHOD(get_XlatezFS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_XlatezFS)(/*[in]*/ float newVal);
-
-   STDMETHOD(get_FieldOfViewFSS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_FieldOfViewFSS)(/*[in]*/ float newVal);
-   STDMETHOD(get_InclinationFSS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_InclinationFSS)(/*[in]*/ float newVal);
-   STDMETHOD(get_LaybackFSS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_LaybackFSS)(/*[in]*/ float newVal);
-   STDMETHOD(get_RotationFSS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_RotationFSS)(/*[in]*/ float newVal);
-   STDMETHOD(get_ScalexFSS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_ScalexFSS)(/*[in]*/ float newVal);
-   STDMETHOD(get_ScaleyFSS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_ScaleyFSS)(/*[in]*/ float newVal);
-   STDMETHOD(get_ScalezFSS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_ScalezFSS)(/*[in]*/ float newVal);
-   STDMETHOD(get_XlatexFSS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_XlatexFSS)(/*[in]*/ float newVal);
-   STDMETHOD(get_XlateyFSS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_XlateyFSS)(/*[in]*/ float newVal);
-   STDMETHOD(get_XlatezFSS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_XlatezFSS)(/*[in]*/ float newVal);
-
    STDMETHOD(get_SlopeMax)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_SlopeMax)(/*[in]*/ float newVal);
    STDMETHOD(get_SlopeMin)(/*[out, retval]*/ float *pVal);
@@ -182,6 +140,8 @@ public:
    STDMETHOD(put_BackdropColor)(/*[in]*/ OLE_COLOR newVal);
    STDMETHOD(get_PlayfieldMaterial)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_PlayfieldMaterial)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_BackglassMode)(/*[out, retval]*/ BackglassIndex *pVal);
+   STDMETHOD(put_BackglassMode)(/*[in]*/ BackglassIndex newVal);
 
    STDMETHOD(get_LightAmbient)(/*[out, retval]*/ OLE_COLOR *pVal);
    STDMETHOD(put_LightAmbient)(/*[in]*/ OLE_COLOR newVal);
@@ -629,6 +589,7 @@ public:
    char  m_BG_szImage[NUM_BG_SETS][MAXTOKEN];
 
    bool  m_BG_enable_FSS;
+   BackglassIndex m_currentBackglassMode;
 
    float m_angletiltMax;
    float m_angletiltMin;
