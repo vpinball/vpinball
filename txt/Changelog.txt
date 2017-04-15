@@ -1,7 +1,8 @@
 VP 10.3.0 Changelog
 ------------------------
+- VP supports three different view modes (DESKTOP, FULLSCREEN and FULL_SINGLE_SCREEN). The UI was changed to select and view the properties via a drop down list.
 
-- add hotkey for toggling between table and backdrop view in the editor (space)
+- add hotkey for toggling between table and backdrop view in the editor (ctrl+space)
 
 - in Camera/Light mode (F6) press the start game key (default is 1) to reset the camera and all backdrop settings (inclination, layback...)
 
