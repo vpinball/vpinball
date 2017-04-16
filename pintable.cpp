@@ -1226,9 +1226,10 @@ PinTable::PinTable()
    m_BG_current_set = DESKTOP;
    /*const HRESULT hr =*/ GetRegInt("Player", "BGSet", (int*)&m_BG_current_set);
    m_currentBackglassMode = (BackglassIndex)m_BG_current_set;
-   
-   if (m_BG_enable_FSS)
-      m_currentBackglassMode = FULL_SINGLE_SCREEN;
+
+   m_BG_enable_FSS = false;
+   //if (m_BG_enable_FSS)
+   //   m_currentBackglassMode = FULL_SINGLE_SCREEN;
 
    for (int i = 0; i < NUM_BG_SETS; ++i)
    {
@@ -1247,8 +1248,6 @@ PinTable::PinTable()
       m_BG_scalez[i] = 1.0f;
       m_BG_xlatez[i] = 0.0f;
    }
-
-   m_BG_enable_FSS = false;
 
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
    m_pcv->AddRef();
