@@ -43,7 +43,7 @@ Insert Trigger              Ctrl + T
 Insert Wall                 Ctrl + W
 Lock Element                Ctrl + Shift + L
 Pan Table View              Middle Mouse Button
-Toggle Table/Backdrop View  Space
+Toggle Table/Backdrop View  Ctrl + Space
 
 Function during Play        Key Combination
 ----------------------------------------------
