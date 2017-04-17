@@ -1886,9 +1886,9 @@ void PinTable::InitPostLoad(VPinball *pvp)
    pvp->m_ptableActive = (CComObject<PinTable> *)this;
 
    for(unsigned int i = 1; i < NUM_BG_SETS; ++i)
-	   if (m_BG_FOV[i] == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
-	   {
-		  m_BG_inclination[i] = m_BG_inclination[BG_DESKTOP];
+      if (m_BG_FOV[i] == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
+      {
+        m_BG_inclination[i] = m_BG_inclination[BG_DESKTOP];
         m_BG_FOV[i] = m_BG_FOV[BG_DESKTOP];
 
         m_BG_rotation[i] = m_BG_rotation[BG_DESKTOP];
@@ -1902,7 +1902,10 @@ void PinTable::InitPostLoad(VPinball *pvp)
 
         m_BG_scalez[i] = m_BG_scalez[BG_DESKTOP];
         m_BG_xlatez[i] = m_BG_xlatez[BG_DESKTOP];
-	   }
+
+        if(m_BG_szImage[i][0] == 0 && i == BG_FSS) // copy image over for FSS mode
+            strcpy_s(m_BG_szImage[i], m_BG_szImage[BG_DESKTOP]);
+      }
 
    m_currentBackglassMode = m_BG_current_set;
    if (m_BG_enable_FSS)
