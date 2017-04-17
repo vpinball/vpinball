@@ -737,8 +737,8 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
             wzT = V_BSTR(&varResult);
 
             WideCharToMultiByte(CP_ACP, 0, wzT, -1, szT, 512, NULL, NULL);
-            VariantClear(&varResult);
          }
+         VariantClear(&varResult);
 
 
          if (style & CBS_DROPDOWNLIST)
@@ -829,9 +829,8 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
             SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 0, 0); //ignored
             SendMessage(hwndControl, TBM_SETPOS, (!fNinch) ? 1 : 0, data);
          }
-         VariantClear(&varResult);
       }
-
+      VariantClear(&varResult);
    }
    break;
    }
