@@ -584,7 +584,7 @@ STDMETHODIMP ScriptGlobalTable::get_NightDay(int *pVal)
 STDMETHODIMP ScriptGlobalTable::get_ShowDT(VARIANT_BOOL *pVal)
 {
    if (g_pplayer)
-      *pVal = (VARIANT_BOOL)FTOVB(g_pplayer->m_ptable->m_BG_current_set == DESKTOP || g_pplayer->m_ptable->m_BG_current_set == FULL_SINGLE_SCREEN); // DT & FSS
+      *pVal = (VARIANT_BOOL)FTOVB(g_pplayer->m_ptable->m_BG_current_set == BG_DESKTOP || g_pplayer->m_ptable->m_BG_current_set == BG_FSS); // DT & FSS
    return S_OK;
 }
 
@@ -1223,9 +1223,9 @@ PinTable::PinTable()
    m_glassheight = 210;
    m_tableheight = 0;
 
-   m_BG_current_set = DESKTOP;
+   m_BG_current_set = BG_DESKTOP;
    /*const HRESULT hr =*/ GetRegInt("Player", "BGSet", (int*)&m_BG_current_set);
-   m_currentBackglassMode = (BackglassIndex)m_BG_current_set;
+   m_currentBackglassMode = m_BG_current_set;
 
    m_BG_enable_FSS = false;
    //if (m_BG_enable_FSS)
@@ -1888,25 +1888,25 @@ void PinTable::InitPostLoad(VPinball *pvp)
    for(unsigned int i = 1; i < NUM_BG_SETS; ++i)
 	   if (m_BG_FOV[i] == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
 	   {
-		  m_BG_inclination[i] = m_BG_inclination[DESKTOP];
-        m_BG_FOV[i] = m_BG_FOV[DESKTOP];
+		  m_BG_inclination[i] = m_BG_inclination[BG_DESKTOP];
+        m_BG_FOV[i] = m_BG_FOV[BG_DESKTOP];
 
-        m_BG_rotation[i] = m_BG_rotation[DESKTOP];
-        m_BG_layback[i] = m_BG_layback[DESKTOP];
+        m_BG_rotation[i] = m_BG_rotation[BG_DESKTOP];
+        m_BG_layback[i] = m_BG_layback[BG_DESKTOP];
 
-        m_BG_scalex[i] = m_BG_scalex[DESKTOP];
-        m_BG_scaley[i] = m_BG_scaley[DESKTOP];
+        m_BG_scalex[i] = m_BG_scalex[BG_DESKTOP];
+        m_BG_scaley[i] = m_BG_scaley[BG_DESKTOP];
 
-        m_BG_xlatex[i] = m_BG_xlatex[DESKTOP];
-        m_BG_xlatey[i] = m_BG_xlatey[DESKTOP];
+        m_BG_xlatex[i] = m_BG_xlatex[BG_DESKTOP];
+        m_BG_xlatey[i] = m_BG_xlatey[BG_DESKTOP];
 
-        m_BG_scalez[i] = m_BG_scalez[DESKTOP];
-        m_BG_xlatez[i] = m_BG_xlatez[DESKTOP];
+        m_BG_scalez[i] = m_BG_scalez[BG_DESKTOP];
+        m_BG_xlatez[i] = m_BG_xlatez[BG_DESKTOP];
 	   }
 
-   m_currentBackglassMode = (BackglassIndex)m_BG_current_set;
+   m_currentBackglassMode = m_BG_current_set;
    if (m_BG_enable_FSS)
-      m_currentBackglassMode = FULL_SINGLE_SCREEN;
+      m_currentBackglassMode = BG_FSS;
 
    m_hbmOffScreen = NULL;
    m_fDirtyDraw = true;
@@ -3952,129 +3952,129 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(ROTA))
    {
-      pbr->GetFloat(&m_BG_rotation[DESKTOP]);
+      pbr->GetFloat(&m_BG_rotation[BG_DESKTOP]);
    }
    else if (id == FID(LAYB))
    {
-      pbr->GetFloat(&m_BG_layback[DESKTOP]);
+      pbr->GetFloat(&m_BG_layback[BG_DESKTOP]);
    }
    else if (id == FID(INCL))
    {
-      pbr->GetFloat(&m_BG_inclination[DESKTOP]);
+      pbr->GetFloat(&m_BG_inclination[BG_DESKTOP]);
    }
    else if (id == FID(FOVX))
    {
-      pbr->GetFloat(&m_BG_FOV[DESKTOP]);
+      pbr->GetFloat(&m_BG_FOV[BG_DESKTOP]);
    }
    else if (id == FID(SCLX))
    {
-      pbr->GetFloat(&m_BG_scalex[DESKTOP]);
+      pbr->GetFloat(&m_BG_scalex[BG_DESKTOP]);
    }
    else if (id == FID(SCLY))
    {
-      pbr->GetFloat(&m_BG_scaley[DESKTOP]);
+      pbr->GetFloat(&m_BG_scaley[BG_DESKTOP]);
    }
    else if (id == FID(SCLZ))
    {
-      pbr->GetFloat(&m_BG_scalez[DESKTOP]);
+      pbr->GetFloat(&m_BG_scalez[BG_DESKTOP]);
    }
    else if (id == FID(XLTX))
    {
-      pbr->GetFloat(&m_BG_xlatex[DESKTOP]);
+      pbr->GetFloat(&m_BG_xlatex[BG_DESKTOP]);
    }
    else if (id == FID(XLTY))
    {
-      pbr->GetFloat(&m_BG_xlatey[DESKTOP]);
+      pbr->GetFloat(&m_BG_xlatey[BG_DESKTOP]);
    }
    else if (id == FID(XLTZ))
    {
-      pbr->GetFloat(&m_BG_xlatez[DESKTOP]);
+      pbr->GetFloat(&m_BG_xlatez[BG_DESKTOP]);
    }
    else if (id == FID(ROTF))
    {
-      pbr->GetFloat(&m_BG_rotation[FULLSCREEN]);
+      pbr->GetFloat(&m_BG_rotation[BG_FULLSCREEN]);
    }
    else if (id == FID(LAYF))
    {
-      pbr->GetFloat(&m_BG_layback[FULLSCREEN]);
+      pbr->GetFloat(&m_BG_layback[BG_FULLSCREEN]);
    }
    else if (id == FID(INCF))
    {
-      pbr->GetFloat(&m_BG_inclination[FULLSCREEN]);
+      pbr->GetFloat(&m_BG_inclination[BG_FULLSCREEN]);
    }
    else if (id == FID(FOVF))
    {
-      pbr->GetFloat(&m_BG_FOV[FULLSCREEN]);
+      pbr->GetFloat(&m_BG_FOV[BG_FULLSCREEN]);
    }
    else if (id == FID(SCFX))
    {
-      pbr->GetFloat(&m_BG_scalex[FULLSCREEN]);
+      pbr->GetFloat(&m_BG_scalex[BG_FULLSCREEN]);
    }
    else if (id == FID(SCFY))
    {
-      pbr->GetFloat(&m_BG_scaley[FULLSCREEN]);
+      pbr->GetFloat(&m_BG_scaley[BG_FULLSCREEN]);
    }
    else if (id == FID(SCFZ))
    {
-      pbr->GetFloat(&m_BG_scalez[FULLSCREEN]);
+      pbr->GetFloat(&m_BG_scalez[BG_FULLSCREEN]);
    }
    else if (id == FID(XLFX))
    {
-      pbr->GetFloat(&m_BG_xlatex[FULLSCREEN]);
+      pbr->GetFloat(&m_BG_xlatex[BG_FULLSCREEN]);
    }
    else if (id == FID(XLFY))
    {
-      pbr->GetFloat(&m_BG_xlatey[FULLSCREEN]);
+      pbr->GetFloat(&m_BG_xlatey[BG_FULLSCREEN]);
    }
    else if (id == FID(XLFZ))
    {
-      pbr->GetFloat(&m_BG_xlatez[FULLSCREEN]);
+      pbr->GetFloat(&m_BG_xlatez[BG_FULLSCREEN]);
    }
    else if (id == FID(ROFS))
    {
-      pbr->GetFloat(&m_BG_rotation[FULL_SINGLE_SCREEN]);
+      pbr->GetFloat(&m_BG_rotation[BG_FSS]);
    }
    else if (id == FID(LAFS))
    {
-      pbr->GetFloat(&m_BG_layback[FULL_SINGLE_SCREEN]);
+      pbr->GetFloat(&m_BG_layback[BG_FSS]);
    }
    else if (id == FID(INFS))
    {
-      pbr->GetFloat(&m_BG_inclination[FULL_SINGLE_SCREEN]);
+      pbr->GetFloat(&m_BG_inclination[BG_FSS]);
    }
    else if (id == FID(FOFS))
    {
-      pbr->GetFloat(&m_BG_FOV[FULL_SINGLE_SCREEN]);
+      pbr->GetFloat(&m_BG_FOV[BG_FSS]);
    }
    else if (id == FID(SCXS))
    {
-      pbr->GetFloat(&m_BG_scalex[FULL_SINGLE_SCREEN]);
+      pbr->GetFloat(&m_BG_scalex[BG_FSS]);
    }
    else if (id == FID(SCYS))
    {
-      pbr->GetFloat(&m_BG_scaley[FULL_SINGLE_SCREEN]);
+      pbr->GetFloat(&m_BG_scaley[BG_FSS]);
    }
    else if (id == FID(SCZS))
    {
-      pbr->GetFloat(&m_BG_scalez[FULL_SINGLE_SCREEN]);
+      pbr->GetFloat(&m_BG_scalez[BG_FSS]);
    }
    else if (id == FID(XLXS))
    {
-      pbr->GetFloat(&m_BG_xlatex[FULL_SINGLE_SCREEN]);
+      pbr->GetFloat(&m_BG_xlatex[BG_FSS]);
    }
    else if (id == FID(XLYS))
    {
-      pbr->GetFloat(&m_BG_xlatey[FULL_SINGLE_SCREEN]);
+      pbr->GetFloat(&m_BG_xlatey[BG_FSS]);
    }
    else if (id == FID(XLZS))
    {
-      pbr->GetFloat(&m_BG_xlatez[FULL_SINGLE_SCREEN]);
+      pbr->GetFloat(&m_BG_xlatez[BG_FSS]);
    }
    else if (id == FID(EFSS))
    {
       pbr->GetBool(&m_BG_enable_FSS);
       if(m_BG_enable_FSS)
-         m_BG_current_set = FULL_SINGLE_SCREEN; //!! FSS
+         m_BG_current_set = BG_FSS; //!! FSS
    }
 #if 0
    else if (id == FID(VERS))
@@ -6207,40 +6207,40 @@ void PinTable::ImportBackdropPOV()
 
         xml_node<> *root = xmlDoc.first_node("POV");
         xml_node<> *desktop = root->first_node("desktop");
-        sscanf_s(desktop->first_node("inclination")->value(), "%f", &m_BG_inclination[DESKTOP]);
-        sscanf_s(desktop->first_node("fov")->value(), "%f", &m_BG_FOV[DESKTOP]);
-        sscanf_s(desktop->first_node("layback")->value(), "%f", &m_BG_layback[DESKTOP]);
-        sscanf_s(desktop->first_node("rotation")->value(), "%f", &m_BG_rotation[DESKTOP]);
-        sscanf_s(desktop->first_node("xscale")->value(), "%f", &m_BG_scalex[DESKTOP]);
-        sscanf_s(desktop->first_node("yscale")->value(), "%f", &m_BG_scaley[DESKTOP]);
-        sscanf_s(desktop->first_node("zscale")->value(), "%f", &m_BG_scalez[DESKTOP]);
-        sscanf_s(desktop->first_node("xoffset")->value(), "%f", &m_BG_xlatex[DESKTOP]);
-        sscanf_s(desktop->first_node("yoffset")->value(), "%f", &m_BG_xlatey[DESKTOP]);
-        sscanf_s(desktop->first_node("zoffset")->value(), "%f", &m_BG_xlatez[DESKTOP]);
+        sscanf_s(desktop->first_node("inclination")->value(), "%f", &m_BG_inclination[BG_DESKTOP]);
+        sscanf_s(desktop->first_node("fov")->value(), "%f", &m_BG_FOV[BG_DESKTOP]);
+        sscanf_s(desktop->first_node("layback")->value(), "%f", &m_BG_layback[BG_DESKTOP]);
+        sscanf_s(desktop->first_node("rotation")->value(), "%f", &m_BG_rotation[BG_DESKTOP]);
+        sscanf_s(desktop->first_node("xscale")->value(), "%f", &m_BG_scalex[BG_DESKTOP]);
+        sscanf_s(desktop->first_node("yscale")->value(), "%f", &m_BG_scaley[BG_DESKTOP]);
+        sscanf_s(desktop->first_node("zscale")->value(), "%f", &m_BG_scalez[BG_DESKTOP]);
+        sscanf_s(desktop->first_node("xoffset")->value(), "%f", &m_BG_xlatex[BG_DESKTOP]);
+        sscanf_s(desktop->first_node("yoffset")->value(), "%f", &m_BG_xlatey[BG_DESKTOP]);
+        sscanf_s(desktop->first_node("zoffset")->value(), "%f", &m_BG_xlatez[BG_DESKTOP]);
 
         xml_node<> *fullscreen = root->first_node("fullscreen");
-        sscanf_s(fullscreen->first_node("inclination")->value(), "%f", &m_BG_inclination[FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("fov")->value(), "%f", &m_BG_FOV[FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("layback")->value(), "%f", &m_BG_layback[FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("rotation")->value(), "%f", &m_BG_rotation[FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("xscale")->value(), "%f", &m_BG_scalex[FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("yscale")->value(), "%f", &m_BG_scaley[FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("zscale")->value(), "%f", &m_BG_scalez[FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("xoffset")->value(), "%f", &m_BG_xlatex[FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("yoffset")->value(), "%f", &m_BG_xlatey[FULLSCREEN]);
-        sscanf_s(fullscreen->first_node("zoffset")->value(), "%f", &m_BG_xlatez[FULLSCREEN]);
+        sscanf_s(fullscreen->first_node("inclination")->value(), "%f", &m_BG_inclination[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->first_node("fov")->value(), "%f", &m_BG_FOV[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->first_node("layback")->value(), "%f", &m_BG_layback[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->first_node("rotation")->value(), "%f", &m_BG_rotation[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->first_node("xscale")->value(), "%f", &m_BG_scalex[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->first_node("yscale")->value(), "%f", &m_BG_scaley[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->first_node("zscale")->value(), "%f", &m_BG_scalez[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->first_node("xoffset")->value(), "%f", &m_BG_xlatex[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->first_node("yoffset")->value(), "%f", &m_BG_xlatey[BG_FULLSCREEN]);
+        sscanf_s(fullscreen->first_node("zoffset")->value(), "%f", &m_BG_xlatez[BG_FULLSCREEN]);
 
         xml_node<> *fullsinglescreen = root->first_node("fullsinglescreen");
-        sscanf_s(fullsinglescreen->first_node("inclination")->value(), "%f", &m_BG_inclination[FULL_SINGLE_SCREEN]);
-        sscanf_s(fullsinglescreen->first_node("fov")->value(), "%f", &m_BG_FOV[FULL_SINGLE_SCREEN]);
-        sscanf_s(fullsinglescreen->first_node("layback")->value(), "%f", &m_BG_layback[FULL_SINGLE_SCREEN]);
-        sscanf_s(fullsinglescreen->first_node("rotation")->value(), "%f", &m_BG_rotation[FULL_SINGLE_SCREEN]);
-        sscanf_s(fullsinglescreen->first_node("xscale")->value(), "%f", &m_BG_scalex[FULL_SINGLE_SCREEN]);
-        sscanf_s(fullsinglescreen->first_node("yscale")->value(), "%f", &m_BG_scaley[FULL_SINGLE_SCREEN]);
-        sscanf_s(fullsinglescreen->first_node("zscale")->value(), "%f", &m_BG_scalez[FULL_SINGLE_SCREEN]);
-        sscanf_s(fullsinglescreen->first_node("xoffset")->value(), "%f", &m_BG_xlatex[FULL_SINGLE_SCREEN]);
-        sscanf_s(fullsinglescreen->first_node("yoffset")->value(), "%f", &m_BG_xlatey[FULL_SINGLE_SCREEN]);
-        sscanf_s(fullsinglescreen->first_node("zoffset")->value(), "%f", &m_BG_xlatez[FULL_SINGLE_SCREEN]);
+        sscanf_s(fullsinglescreen->first_node("inclination")->value(), "%f", &m_BG_inclination[BG_FSS]);
+        sscanf_s(fullsinglescreen->first_node("fov")->value(), "%f", &m_BG_FOV[BG_FSS]);
+        sscanf_s(fullsinglescreen->first_node("layback")->value(), "%f", &m_BG_layback[BG_FSS]);
+        sscanf_s(fullsinglescreen->first_node("rotation")->value(), "%f", &m_BG_rotation[BG_FSS]);
+        sscanf_s(fullsinglescreen->first_node("xscale")->value(), "%f", &m_BG_scalex[BG_FSS]);
+        sscanf_s(fullsinglescreen->first_node("yscale")->value(), "%f", &m_BG_scaley[BG_FSS]);
+        sscanf_s(fullsinglescreen->first_node("zscale")->value(), "%f", &m_BG_scalez[BG_FSS]);
+        sscanf_s(fullsinglescreen->first_node("xoffset")->value(), "%f", &m_BG_xlatex[BG_FSS]);
+        sscanf_s(fullsinglescreen->first_node("yoffset")->value(), "%f", &m_BG_xlatey[BG_FSS]);
+        sscanf_s(fullsinglescreen->first_node("zoffset")->value(), "%f", &m_BG_xlatez[BG_FSS]);
     }
     catch (...)
     {
@@ -6285,34 +6285,34 @@ void PinTable::ExportBackdropPOV()
 
         {
         xml_node<>*desktop = xmlDoc.allocate_node(node_element, "desktop");
-        sprintf_s(strBuf, "%f", m_BG_inclination[DESKTOP]);
+        sprintf_s(strBuf, "%f", m_BG_inclination[BG_DESKTOP]);
         xml_node<>*dtIncl = xmlDoc.allocate_node(node_element, "inclination", (new string(strBuf))->c_str());
         desktop->append_node(dtIncl);
-        sprintf_s(strBuf, "%f", m_BG_FOV[DESKTOP]);
+        sprintf_s(strBuf, "%f", m_BG_FOV[BG_DESKTOP]);
         xml_node<>*dtFov = xmlDoc.allocate_node(node_element, "fov", (new string(strBuf))->c_str());
         desktop->append_node(dtFov);
-        sprintf_s(strBuf, "%f", m_BG_layback[DESKTOP]);
+        sprintf_s(strBuf, "%f", m_BG_layback[BG_DESKTOP]);
         xml_node<>*dtLayback = xmlDoc.allocate_node(node_element, "layback", (new string(strBuf))->c_str());
         desktop->append_node(dtLayback);
-        sprintf_s(strBuf, "%f", m_BG_rotation[DESKTOP]);
+        sprintf_s(strBuf, "%f", m_BG_rotation[BG_DESKTOP]);
         xml_node<>*dtRotation = xmlDoc.allocate_node(node_element, "rotation", (new string(strBuf))->c_str());
         desktop->append_node(dtRotation);
-        sprintf_s(strBuf, "%f", m_BG_scalex[DESKTOP]);
+        sprintf_s(strBuf, "%f", m_BG_scalex[BG_DESKTOP]);
         xml_node<>*dtScalex = xmlDoc.allocate_node(node_element, "xscale", (new string(strBuf))->c_str());
         desktop->append_node(dtScalex);
-        sprintf_s(strBuf, "%f", m_BG_scaley[DESKTOP]);
+        sprintf_s(strBuf, "%f", m_BG_scaley[BG_DESKTOP]);
         xml_node<>*dtScaley = xmlDoc.allocate_node(node_element, "yscale", (new string(strBuf))->c_str());
         desktop->append_node(dtScaley);
-        sprintf_s(strBuf, "%f", m_BG_scalez[DESKTOP]);
+        sprintf_s(strBuf, "%f", m_BG_scalez[BG_DESKTOP]);
         xml_node<>*dtScalez = xmlDoc.allocate_node(node_element, "zscale", (new string(strBuf))->c_str());
         desktop->append_node(dtScalez);
-        sprintf_s(strBuf, "%f", m_BG_xlatex[DESKTOP]);
+        sprintf_s(strBuf, "%f", m_BG_xlatex[BG_DESKTOP]);
         xml_node<>*dtOffsetx = xmlDoc.allocate_node(node_element, "xoffset", (new string(strBuf))->c_str());
         desktop->append_node(dtOffsetx);
-        sprintf_s(strBuf, "%f", m_BG_xlatey[DESKTOP]);
+        sprintf_s(strBuf, "%f", m_BG_xlatey[BG_DESKTOP]);
         xml_node<>*dtOffsety = xmlDoc.allocate_node(node_element, "yoffset", (new string(strBuf))->c_str());
         desktop->append_node(dtOffsety);
-        sprintf_s(strBuf, "%f", m_BG_xlatez[DESKTOP]);
+        sprintf_s(strBuf, "%f", m_BG_xlatez[BG_DESKTOP]);
         xml_node<>*dtOffsetz = xmlDoc.allocate_node(node_element, "zoffset", (new string(strBuf))->c_str());
         desktop->append_node(dtOffsetz);
 
@@ -6320,34 +6320,34 @@ void PinTable::ExportBackdropPOV()
         }
         {
         xml_node<>*fullscreen = xmlDoc.allocate_node(node_element, "fullscreen");
-        sprintf_s(strBuf, "%f", m_BG_inclination[FULLSCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_inclination[BG_FULLSCREEN]);
         xml_node<>*fsIncl = xmlDoc.allocate_node(node_element, "inclination", (new string(strBuf))->c_str());
         fullscreen->append_node(fsIncl);
-        sprintf_s(strBuf, "%f", m_BG_FOV[FULLSCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_FOV[BG_FULLSCREEN]);
         xml_node<>*fsFov = xmlDoc.allocate_node(node_element, "fov", (new string(strBuf))->c_str());
         fullscreen->append_node(fsFov);
-        sprintf_s(strBuf, "%f", m_BG_layback[FULLSCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_layback[BG_FULLSCREEN]);
         xml_node<>*fsLayback = xmlDoc.allocate_node(node_element, "layback", (new string(strBuf))->c_str());
         fullscreen->append_node(fsLayback);
-        sprintf_s(strBuf, "%f", m_BG_rotation[FULLSCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_rotation[BG_FULLSCREEN]);
         xml_node<>*fsRotation = xmlDoc.allocate_node(node_element, "rotation", (new string(strBuf))->c_str());
         fullscreen->append_node(fsRotation);
-        sprintf_s(strBuf, "%f", m_BG_scalex[FULLSCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_scalex[BG_FULLSCREEN]);
         xml_node<>*fsScalex = xmlDoc.allocate_node(node_element, "xscale", (new string(strBuf))->c_str());
         fullscreen->append_node(fsScalex);
-        sprintf_s(strBuf, "%f", m_BG_scaley[FULLSCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_scaley[BG_FULLSCREEN]);
         xml_node<>*fsScaley = xmlDoc.allocate_node(node_element, "yscale", (new string(strBuf))->c_str());
         fullscreen->append_node(fsScaley);
-        sprintf_s(strBuf, "%f", m_BG_scalez[FULLSCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_scalez[BG_FULLSCREEN]);
         xml_node<>*fsScalez = xmlDoc.allocate_node(node_element, "zscale", (new string(strBuf))->c_str());
         fullscreen->append_node(fsScalez);
-        sprintf_s(strBuf, "%f", m_BG_xlatex[FULLSCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_xlatex[BG_FULLSCREEN]);
         xml_node<>*fsOffsetx = xmlDoc.allocate_node(node_element, "xoffset", (new string(strBuf))->c_str());
         fullscreen->append_node(fsOffsetx);
-        sprintf_s(strBuf, "%f", m_BG_xlatey[FULLSCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_xlatey[BG_FULLSCREEN]);
         xml_node<>*fsOffsety = xmlDoc.allocate_node(node_element, "yoffset", (new string(strBuf))->c_str());
         fullscreen->append_node(fsOffsety);
-        sprintf_s(strBuf, "%f", m_BG_xlatez[FULLSCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_xlatez[BG_FULLSCREEN]);
         xml_node<>*fsOffsetz = xmlDoc.allocate_node(node_element, "zoffset", (new string(strBuf))->c_str());
         fullscreen->append_node(fsOffsetz);
 
@@ -6355,34 +6355,34 @@ void PinTable::ExportBackdropPOV()
         }
         {
         xml_node<>*fullsinglescreen = xmlDoc.allocate_node(node_element, "fullsinglescreen");
-        sprintf_s(strBuf, "%f", m_BG_inclination[FULL_SINGLE_SCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_inclination[BG_FSS]);
         xml_node<>*fssIncl = xmlDoc.allocate_node(node_element, "inclination", (new string(strBuf))->c_str());
         fullsinglescreen->append_node(fssIncl);
-        sprintf_s(strBuf, "%f", m_BG_FOV[FULL_SINGLE_SCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_FOV[BG_FSS]);
         xml_node<>*fssFov = xmlDoc.allocate_node(node_element, "fov", (new string(strBuf))->c_str());
         fullsinglescreen->append_node(fssFov);
-        sprintf_s(strBuf, "%f", m_BG_layback[FULL_SINGLE_SCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_layback[BG_FSS]);
         xml_node<>*fssLayback = xmlDoc.allocate_node(node_element, "layback", (new string(strBuf))->c_str());
         fullsinglescreen->append_node(fssLayback);
-        sprintf_s(strBuf, "%f", m_BG_rotation[FULL_SINGLE_SCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_rotation[BG_FSS]);
         xml_node<>*fssRotation = xmlDoc.allocate_node(node_element, "rotation", (new string(strBuf))->c_str());
         fullsinglescreen->append_node(fssRotation);
-        sprintf_s(strBuf, "%f", m_BG_scalex[FULL_SINGLE_SCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_scalex[BG_FSS]);
         xml_node<>*fssScalex = xmlDoc.allocate_node(node_element, "xscale", (new string(strBuf))->c_str());
         fullsinglescreen->append_node(fssScalex);
-        sprintf_s(strBuf, "%f", m_BG_scaley[FULL_SINGLE_SCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_scaley[BG_FSS]);
         xml_node<>*fssScaley = xmlDoc.allocate_node(node_element, "yscale", (new string(strBuf))->c_str());
         fullsinglescreen->append_node(fssScaley);
-        sprintf_s(strBuf, "%f", m_BG_scalez[FULL_SINGLE_SCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_scalez[BG_FSS]);
         xml_node<>*fssScalez = xmlDoc.allocate_node(node_element, "zscale", (new string(strBuf))->c_str());
         fullsinglescreen->append_node(fssScalez);
-        sprintf_s(strBuf, "%f", m_BG_xlatex[FULL_SINGLE_SCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_xlatex[BG_FSS]);
         xml_node<>*fssOffsetx = xmlDoc.allocate_node(node_element, "xoffset", (new string(strBuf))->c_str());
         fullsinglescreen->append_node(fssOffsetx);
-        sprintf_s(strBuf, "%f", m_BG_xlatey[FULL_SINGLE_SCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_xlatey[BG_FSS]);
         xml_node<>*fssOffsety = xmlDoc.allocate_node(node_element, "yoffset", (new string(strBuf))->c_str());
         fullsinglescreen->append_node(fssOffsety);
-        sprintf_s(strBuf, "%f", m_BG_xlatez[FULL_SINGLE_SCREEN]);
+        sprintf_s(strBuf, "%f", m_BG_xlatez[BG_FSS]);
         xml_node<>*fssOffsetz = xmlDoc.allocate_node(node_element, "zoffset", (new string(strBuf))->c_str());
         fullsinglescreen->append_node(fssOffsetz);
 
@@ -9853,13 +9853,13 @@ STDMETHODIMP PinTable::put_PhysicsLoopTime(int newVal)
 
 STDMETHODIMP PinTable::get_BackglassMode(BackglassIndex *pVal)
 {
-   *pVal = m_currentBackglassMode;
+   *pVal = (BackglassIndex)(m_currentBackglassMode+DESKTOP);
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_BackglassMode(BackglassIndex pVal)
 {
-   m_currentBackglassMode = pVal;
+   m_currentBackglassMode = (int)(pVal-DESKTOP);
    g_pvp->m_sb.RefreshProperties();
 
    return S_OK;
@@ -10548,7 +10548,7 @@ STDMETHODIMP PinTable::put_EnableDecals(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_ShowDT(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_BG_current_set == DESKTOP || m_BG_current_set == FULL_SINGLE_SCREEN); // DT & FSS
+   *pVal = (VARIANT_BOOL)FTOVB(m_BG_current_set == BG_DESKTOP || m_BG_current_set == BG_FSS); // DT & FSS
 
    return S_OK;
 }
@@ -10557,7 +10557,7 @@ STDMETHODIMP PinTable::put_ShowDT(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-   m_BG_current_set = (!!newVal) ? (m_BG_enable_FSS ? FULL_SINGLE_SCREEN : DESKTOP) : FULLSCREEN;
+   m_BG_current_set = (!!newVal) ? (m_BG_enable_FSS ? BG_FSS : BG_DESKTOP) : BG_FULLSCREEN;
 
    STOPUNDO
 

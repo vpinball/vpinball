@@ -36,6 +36,9 @@
 //
 
 #define NUM_BG_SETS        3  // different backdrop settings: DT,FS,FSS
+#define BG_DESKTOP         0
+#define BG_FULLSCREEN      1
+#define BG_FSS             2
 
 #define MAX_BALL_TRAIL_POS 10 // fake/artistic ball motion trail
 

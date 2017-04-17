@@ -589,7 +589,7 @@ public:
    char  m_BG_szImage[NUM_BG_SETS][MAXTOKEN];
 
    bool  m_BG_enable_FSS;
-   BackglassIndex m_currentBackglassMode;
+   int   m_currentBackglassMode;
 
    float m_angletiltMax;
    float m_angletiltMin;

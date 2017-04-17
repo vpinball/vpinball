@@ -45,9 +45,9 @@ typedef [uuid(0C49D03B-76F1-47be-A139-B1A4AFB17A37)]
 typedef [uuid(AC2AB9B5-FD04-47D9-ABAE-3BAE8EEBADA1)]
         enum BackglassIndex
                 {
-                DESKTOP = 0,
-                FULLSCREEN = 1,
-                FULL_SINGLE_SCREEN = 2,
+                DESKTOP = 110,
+                FULLSCREEN = 111,
+                FULL_SINGLE_SCREEN = 112,
                 }
                 BackglassIndex;
 
