@@ -27,6 +27,7 @@ enum EnumAssignKeys
    eExitGame,
    eVolumeUp,
    eVolumeDown,
+   eLockbarKey,
    eEnable3D,
    eEscape,
    eCKeys
@@ -50,6 +51,7 @@ static const char* regkey_string[eCKeys] = {
 	"ExitGameKey",
 	"VolumeUp",
 	"VolumeDown",
+	"LockbarKey",
 	"Enable3DKey",
 	"EscapeKey"
 };
@@ -72,6 +74,7 @@ static const int regkey_defdik[eCKeys] = {
 	DIK_Q,
 	DIK_EQUALS,
 	DIK_MINUS,
+	DIK_LALT,
 	DIK_F10,
 	DIK_ESCAPE
 };
@@ -94,6 +97,7 @@ static const int regkey_idc[eCKeys] = {
 	IDC_EXITGAME,
 	IDC_VOLUMEUP,
 	IDC_VOLUMEDN,
+	IDC_LOCKBAR,
 
 	-1, //!! missing in key dialog!
 	-1

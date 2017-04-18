@@ -1,5 +1,7 @@
 VP 10.3.0 Changelog
 ------------------------
+- add new configurable key for a lockbar/fire button (accessible via "LockbarKey" in the script)
+
 - VP supports three different view modes (DESKTOP, FULLSCREEN and FULL_SINGLE_SCREEN). The UI was changed to select and view the properties via a drop down list.
 
 - add hotkey for toggling between table and backdrop view in the editor (ctrl+space)

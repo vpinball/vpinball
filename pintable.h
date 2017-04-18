@@ -850,6 +850,7 @@ public:
    STDMETHOD(get_LeftMagnaSave)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_RightMagnaSave)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_ExitGame)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_LockbarKey)(/*[out, retval]*/ long *pVal);
 
    STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
    STDMETHOD(GetElements)(/*[out, retval]*/ LPSAFEARRAY *pVal);

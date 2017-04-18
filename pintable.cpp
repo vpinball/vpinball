@@ -275,6 +275,13 @@ STDMETHODIMP ScriptGlobalTable::get_ExitGame(long *pVal)
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::get_LockbarKey(long *pVal)
+{
+   *pVal = g_pplayer->m_rgKeys[eLockbarKey];
+
+   return S_OK;
+}
+
 BOOL ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents)
 {
    char *szPath;
