@@ -6178,6 +6178,7 @@ void PinTable::ExportTableMesh()
 void PinTable::ImportBackdropPOV()
 {
     char szFileName[1024];
+    bool oldFormatLoaded = false;
     szFileName[0] = '\0';
 
     OPENFILENAME ofn;
@@ -6232,6 +6233,7 @@ void PinTable::ImportBackdropPOV()
         sscanf_s(fullscreen->first_node("xoffset")->value(), "%f", &m_BG_xlatex[BG_FULLSCREEN]);
         sscanf_s(fullscreen->first_node("yoffset")->value(), "%f", &m_BG_xlatey[BG_FULLSCREEN]);
         sscanf_s(fullscreen->first_node("zoffset")->value(), "%f", &m_BG_xlatez[BG_FULLSCREEN]);
+        oldFormatLoaded = true;
 
         xml_node<> *fullsinglescreen = root->first_node("fullsinglescreen");
         sscanf_s(fullsinglescreen->first_node("inclination")->value(), "%f", &m_BG_inclination[BG_FSS]);
@@ -6247,7 +6249,8 @@ void PinTable::ImportBackdropPOV()
     }
     catch (...)
     {
-        ShowError("Error parsing XML file");
+       if (!oldFormatLoaded)
+         ShowError("Error parsing XML file");
     }
 
     xmlDoc.clear();
