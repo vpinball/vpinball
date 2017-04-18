@@ -928,6 +928,9 @@
 #define IDC_FSS_XT                      800
 #define IDC_FSS_YT                      801
 #define IDC_FSS_ZT                      802
+#define IDC_LOCKBAR                     803
+#define IDC_LOCKBARBUTTON               804
+#define IDC_JOYLOCKBARCOMBO             805
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1076,7 +1079,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        626
 #define _APS_NEXT_COMMAND_VALUE         4016
-#define _APS_NEXT_CONTROL_VALUE         803
+#define _APS_NEXT_CONTROL_VALUE         806
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

@@ -374,7 +374,7 @@ BOOL KeysConfigDialog::OnInitDialog()
         key = fFalse;
     ::SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    for (unsigned int i = 0; i <= 29; ++i)
+    for (unsigned int i = 0; i <= 30; ++i)
     {
         int item;
         switch (i)
@@ -409,6 +409,7 @@ BOOL KeysConfigDialog::OnInitDialog()
             case 27:hr = GetRegInt("Player", "JoyPMDown", &selected); item = IDC_JOYPMDOWN; break;
             case 28:hr = GetRegInt("Player", "JoyPMUp", &selected); item = IDC_JOYPMUP; break;
             case 29:hr = GetRegInt("Player", "JoyPMEnter", &selected); item = IDC_JOYPMENTER; break;
+            case 30:hr = GetRegInt("Player", "JoyLockbarKey", &selected); item = IDC_JOYLOCKBARCOMBO; break;
         }
 
         if (hr != S_OK)
@@ -672,6 +673,10 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
     ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
+    hwndButton = GetDlgItem(IDC_LOCKBARBUTTON).GetHwnd();
+    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
+
     hwndButton = GetDlgItem(IDC_DEBUGBALLSBUTTON).GetHwnd();
     ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
     ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
@@ -831,6 +836,11 @@ BOOL KeysConfigDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 StartTimer(IDC_VOLUMEDN);
                 break;
             }
+            case IDC_LOCKBARBUTTON:
+            {
+                StartTimer(IDC_LOCKBAR);
+                break;
+            }
             case IDC_RMAGSAVEBUTTON:
             {
                 StartTimer(IDC_RMAGSAVE);
@@ -911,6 +921,7 @@ void KeysConfigDialog::OnOK()
     SetValue(IDC_JOYMECHTILTCOMBO, "Player", "JoyMechTiltKey");
     SetValue(IDC_JOYDEBUGCOMBO, "Player", "JoyDebugKey");
     SetValue(IDC_JOYDEBUGGERCOMBO, "Player", "JoyDebuggerKey");
+    SetValue(IDC_JOYLOCKBARCOMBO, "Player", "JoyLockbarKey");
     SetValue(IDC_PLUNGERAXIS, "Player", "PlungerAxis");
     SetValue(IDC_LRAXISCOMBO, "Player", "LRAxis");
     SetValue(IDC_UDAXISCOMBO, "Player", "UDAxis");

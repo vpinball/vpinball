@@ -70,6 +70,7 @@ PinInput::PinInput()
    m_joycustom4 = 0;
    m_joydebugballs = 0;
    m_joydebugger = 0;
+   m_joylockbar = 0;
    m_joymechtilt = 0;
 
    m_firedautostart = 0;
@@ -210,6 +211,9 @@ PinInput::PinInput()
 
    hr = GetRegInt( "Player", "JoyDebuggerKey", &tmp );
    if(hr == S_OK) m_joydebugger = tmp;
+
+   hr = GetRegInt( "Player", "JoyLockbarKey", &tmp );
+   if(hr == S_OK) m_joylockbar = tmp;
 
    hr = GetRegInt( "Player", "EnableMouseInPlayer", &tmp );
    if (hr == S_OK) m_enableMouseInPlayer = (tmp == fTrue);
@@ -1010,6 +1014,7 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    if (m_joymechtilt == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eMechanicalTilt]);
    if (m_joydebugballs == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eDBGBalls]);
    if (m_joydebugger == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eDebugger]);
+   if (m_joylockbar == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eLockbarKey]);
    if (m_joycustom1 == n) FireKeyEvent(updown, m_joycustom1key);
    if (m_joycustom2 == n) FireKeyEvent(updown, m_joycustom2key);
    if (m_joycustom3 == n) FireKeyEvent(updown, m_joycustom3key);
