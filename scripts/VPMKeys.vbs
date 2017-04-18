@@ -106,8 +106,9 @@ keySelfTest      = 8   '(7)
 keyBlack         = 8   '(7)    Sega/Data East/Stern
 keyGreen         = 9   '(8)    Sega/Data East/Stern
 keyRed           = 10  '(9)    Sega/Data East/Stern
+keyFire1         = 29  '(Left CTRL) Stern
 keyKPGame        = 7   '(6)    Bally 6803
-keyKPEnter       = 156
+keyKPEnter       = 156 '(NumpadEnter)
 keyVPMVolume     = 88  '(F12)  Added Control to set VPM Volume
 '
 ' Optional keys
@@ -122,7 +123,6 @@ keyJoyUp         = 200 '(Up arrow)
 keyJoyDown       = 208 '(Down arrow)
 keyJoyLeft       = 203 '(Left arrow)
 keyJoyRight      = 205 '(Right arrow)
-keyFire1         = 29  '(Left CTRL)
 keyFire2         = 184 '(Right Alt)
 keyGameSpecific1 = 16  '(Q)
 keyGameSpecific2 = 17  '(W)
