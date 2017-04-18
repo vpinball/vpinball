@@ -3049,8 +3049,14 @@ Private Sub vpmShowHelp
 	szKeyMsg = szKeyMsg & vbNewLine & "Visual Pinball keys:"     & vbNewLine &_
 		vpmKeyName(LeftFlipperKey)  & vbTab & "Left Flipper"     & vbNewLine &_
 		vpmKeyName(RightFlipperKey) & vbTab & "Right Flipper"    & vbNewLine &_
+		vpmKeyName(LeftMagnaSave)   & vbTab & "Left Magna Save"  & vbNewLine &_
+		vpmKeyName(RightMagnaSave)  & vbTab & "Right Magna Save" & vbNewLine &_
 		vpmKeyName(PlungerKey)      & vbTab & "Launch Ball"      & vbNewLine &_
 		vpmKeyName(StartGameKey)    & vbTab & "Start Button"     & vbNewLine &_
+		vpmKeyName(AddCreditKey)    & vbTab & "Insert Coin 1"    & vbNewLine &_
+		vpmKeyName(AddCreditKey2)   & vbTab & "Insert Coin 2"    & vbNewLine &_
+		vpmKeyName(ExitGame)        & vbTab & "Exit Game"        & vbNewLine &_
+		vpmKeyName(MechanicalTilt)  & vbTab & "Mechanical Tilt"  & vbNewLine &_
 		vpmKeyName(LeftTiltKey)     & vbTab & "Nudge from Left"  & vbNewLine &_
 		vpmKeyName(RightTiltKey)    & vbTab & "Nudge from Right" & vbNewLine &_
 		vpmKeyName(CenterTiltKey)   & vbTab & "Nudge forward"    & vbNewLine
