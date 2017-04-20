@@ -157,6 +157,25 @@ void ISelect::DoCommand(int icmd, int x, int y)
       GetIEditable()->EndUndo();
       GetPTable()->SetDirtyDraw();
       break;
+
+   case IDC_COPY:
+   {
+       if ( GetPTable()->CheckPermissions(DISABLE_CUTCOPYPASTE))
+           g_pvp->ShowPermissionError();
+       else
+           GetPTable()->Copy();
+       break;
+   }
+   case IDC_PASTE:
+   {
+       GetPTable()->Paste(fFalse, 0, 0);
+       break;
+   }
+   case IDC_PASTEAT:
+   {
+       GetPTable()->Paste(fTrue, x, y);
+       break;
+   }
    case ID_ASSIGNTO_LAYER1:
    {
       GetPTable()->AssignToLayer(piedit, 0);

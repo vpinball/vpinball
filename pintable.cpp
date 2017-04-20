@@ -5037,6 +5037,15 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
          colSubMenu = CreatePopupMenu();
       }
       // TEXT
+      LocalString ls17(IDS_COPY_ELEMENT);
+      AppendMenu(hmenu, MF_STRING, IDC_COPY, ls17.m_szbuffer);
+      LocalString ls18(IDS_PASTE_ELEMENT);
+      AppendMenu(hmenu, MF_STRING, IDC_PASTE, ls18.m_szbuffer);
+      LocalString ls19(IDS_PASTE_AT_ELEMENT);
+      AppendMenu(hmenu, MF_STRING, IDC_PASTEAT, ls19.m_szbuffer);
+
+      AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
+
       LocalString ls14(IDS_DRAWING_ORDER_HIT);
       AppendMenu(hmenu, MF_STRING, ID_EDIT_DRAWINGORDER_HIT, ls14.m_szbuffer);
       LocalString ls15(IDS_DRAWING_ORDER_SELECT);
@@ -5282,8 +5291,8 @@ void PinTable::DoCommand(int icmd, int x, int y)
    case ID_LOCK:
    {
       LockElements();
+      break;
    }
-   break;
 
    case ID_WALLMENU_FLIP:
    {
@@ -5292,8 +5301,8 @@ void PinTable::DoCommand(int icmd, int x, int y)
       GetCenter(&vCenter);
 
       FlipY(&vCenter);
+      break;
    }
-   break;
 
    case ID_WALLMENU_MIRROR:
    {
@@ -5302,9 +5311,21 @@ void PinTable::DoCommand(int icmd, int x, int y)
       GetCenter(&vCenter);
 
       FlipX(&vCenter);
+      break;
    }
-   break;
-
+   case IDC_COPY:
+   {
+       if (CheckPermissions(DISABLE_CUTCOPYPASTE))
+           g_pvp->ShowPermissionError();
+       else
+           Copy();
+       break;
+   }
+   case IDC_PASTE:
+   {
+       Paste(fFalse, 0, 0);
+       break;
+   }
    case IDC_PASTEAT:
    {
       Paste(fTrue, x, y);

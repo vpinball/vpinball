@@ -202,6 +202,7 @@
 #define IDS_IMAGESIZE                   179
 #define IDS_LIGHTSEQ_DESC               180
 #define IDR_LIGHT_SEQ                   181
+#define IDS_COPY_ELEMENT                181
 #define IDS_VISUALS                     182
 #define IDS_POSITION                    183
 #define IDS_STATE                       184
@@ -210,6 +211,8 @@
 #define IDS_VISUALS2                    187
 #define IDS_POSITION_TRANSLATION        188
 #define IDC_FLIPPER_EOS_T_D_A           189
+#define IDS_PASTE_ELEMENT               189
+#define IDS_PASTE_AT_ELEMENT            190
 #define IDS_DRAWING_ORDER_SELECT        200
 #define IDR_APPMENU                     201
 #define IDC_SOUNDLIST                   201
@@ -972,6 +975,10 @@
 #define ID_IMPORT_BACKGLASSPOV          4005
 #define ID_IMPORT_BACKDROPPOV           4006
 #define ID_EXPORT_BACKDROPPOV           4007
+#define ID_WALLMENU_COPY                4016
+#define ID_WALLMENU_PASTE               4017
+#define ID_TABLEMENU_COPY               4018
+#define ID_TABLEMENU_PASTE              4019
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770
@@ -1078,7 +1085,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        626
-#define _APS_NEXT_COMMAND_VALUE         4016
+#define _APS_NEXT_COMMAND_VALUE         4020
 #define _APS_NEXT_CONTROL_VALUE         806
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
