@@ -2892,7 +2892,9 @@ IDR_TABLEMENU MENU
 BEGIN
     POPUP "Table Menu"
     BEGIN
-        MENUITEM "Paste &At\tShift+Ctrl+V",     IDC_PASTEAT
+        MENUITEM "Copy\tCtrl+C",                IDC_COPY
+        MENUITEM "Paste\tCtrl+V",               IDC_PASTE
+        MENUITEM "Paste &At\tCtrl+Shift+V",     IDC_PASTEAT
     END
 END
 
@@ -3095,6 +3097,7 @@ BEGIN
     IDS_MISC                "Misc"
     IDS_IMAGESIZE           "Image Size"
     IDS_LIGHTSEQ_DESC       "LightSequencer Class"
+    IDS_COPY_ELEMENT        "Copy\tCtrl+C"
     IDS_VISUALS             "Colors & Formatting"
     IDS_POSITION            "Position"
     IDS_STATE               "State & Physics"
@@ -3102,6 +3105,8 @@ BEGIN
     IDS_TB_PRIMITIVE        "Primitive"
     IDS_VISUALS2            "Graphics & Camera"
     IDS_POSITION_TRANSLATION "Position & Translation"
+    IDS_PASTE_ELEMENT       "Paste\tCtrl+V"
+    IDS_PASTE_AT_ELEMENT    "Paste At\tCtrl+Shift+V"
 END
 
 STRINGTABLE
