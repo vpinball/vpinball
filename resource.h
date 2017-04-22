@@ -213,6 +213,7 @@
 #define IDC_FLIPPER_EOS_T_D_A           189
 #define IDS_PASTE_ELEMENT               189
 #define IDS_PASTE_AT_ELEMENT            190
+#define IDS_DELETE_ELEMENTS             191
 #define IDS_DRAWING_ORDER_SELECT        200
 #define IDR_APPMENU                     201
 #define IDC_SOUNDLIST                   201

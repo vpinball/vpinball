@@ -6885,6 +6885,32 @@ void PinTable::OnDelete()
 
    ClearMultiSel();
 
+   bool inCollection = false;
+   for (int t = 0; t < m_vseldelete.Size() && !inCollection; t++)
+   {
+      ISelect *ptr = m_vseldelete.ElementAt(t);
+      for (int i = 0; i < m_vcollection.size() && !inCollection; i++)
+      {
+         for (int k = 0; k < m_vcollection.ElementAt(i)->m_visel.Size(); k++)
+         {
+            if (ptr == m_vcollection.ElementAt(i)->m_visel.ElementAt(k))
+            {
+               inCollection = true;
+               break;
+            }
+         }
+      }
+   }
+   if (inCollection)
+   {
+      LocalString ls(IDS_DELETE_ELEMENTS);
+      const int ans = MessageBox(m_hwnd, ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
+      if (ans != IDYES)
+      {
+         return;
+      }
+   }
+
    for (int i = 0; i < m_vseldelete.Size(); i++)
    {
       DeleteFromLayer(m_vseldelete.ElementAt(i)->GetIEditable());
@@ -7976,10 +8002,14 @@ int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
    ListView_SetItemText(hwndListView, index, 2, sizeString);
    ListView_SetItemText( hwndListView, index, 3, usedStringNo );
 
+  
    if(    (_stricmp( m_szImage, ppi->m_szName)==0) 
        || (_stricmp( m_szBallImage, ppi->m_szName ) == 0) 
        || (_stricmp( m_szBallImageFront, ppi->m_szName)==0 )
-       || (_stricmp( m_szEnvImage, ppi->m_szName ) == 0))
+       || (_stricmp( m_szEnvImage, ppi->m_szName ) == 0)
+       || (_stricmp( m_BG_szImage[BG_DESKTOP], ppi->m_szName)==0)
+       || (_stricmp(m_BG_szImage[BG_FSS], ppi->m_szName) == 0)
+       || (_stricmp(m_BG_szImage[BG_FULLSCREEN], ppi->m_szName) == 0))
    {
        ListView_SetItemText( hwndListView, index, 3, usedStringYes );
    }

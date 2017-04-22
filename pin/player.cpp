@@ -2943,7 +2943,7 @@ void Player::UpdatePhysics()
       //const U32 sim_msec = (U32)(m_curPhysicsFrameTime / 1000);
       const U32 cur_time_msec = (U32)(cur_time_usec / 1000);
 
-      m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, cur_time_msec);
+      m_pininput.ProcessKeys(cur_time_msec);
 
       mixer_update();
       hid_update(/*sim_msec*/cur_time_msec);
@@ -4124,7 +4124,7 @@ void Player::Render()
 {
    U64 timeforframe = usec();
 
-   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+   m_pininput.ProcessKeys(-(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 
    if (m_overall_frames < 10)
    {
@@ -4139,7 +4139,7 @@ void Player::Render()
    if (m_sleeptime > 0)
       Sleep(m_sleeptime - 1);
 
-   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+   m_pininput.ProcessKeys(-(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 
 #ifdef _DEBUGPHYSICS
    c_hitcnts = 0;
@@ -4180,7 +4180,7 @@ void Player::Render()
    if(!m_fShowFPS || m_staticOnly != 1)
       RenderDynamics();
 
-   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+   m_pininput.ProcessKeys(-(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 
    // Check if we should turn animate the plunger light.
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
@@ -4237,7 +4237,7 @@ void Player::Render()
 
    m_pactiveball = old_pactiveball;
 #else
-   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+   m_pininput.ProcessKeys(-(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 #endif
 
    // Update music stream
