@@ -394,7 +394,6 @@
 #define IDC_DRAW_DRAGPOINTS             318
 #define IDC_DRAW_LIGHTCENTERS           319
 #define IDD_PROTECT_DIALOG              320
-#define IDC_AUTOSAVE                    320
 #define IDM_SAVEASPROTECTED             321
 #define IDC_PROTECT_PASSWORD            321
 #define IDM_UNLOCKPROTECTED             322
@@ -801,6 +800,7 @@
 #define IDC_SOFTWARE_VP                 586
 #define IDC_TEXT_INTENSITY              587
 #define IDC_GLOBAL_DAYNIGHT             588
+#define IDC_AUTOSAVE                    589
 #define IDD_PROPPOINT_POSITION_WITHZ    601
 #define IDD_PROPRUBBER_PHYSICS          602
 #define IDC_RUBBER                      602
