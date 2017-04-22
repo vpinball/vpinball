@@ -22,7 +22,6 @@ PinInput::PinInput()
    middleMouseButtonDown = false;
 
    m_head = m_tail = 0;
-   m_ptable = NULL;
 
    ZeroMemory(m_diq, sizeof(m_diq));
 
@@ -816,7 +815,7 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
       gMixerKeyDown = (mkey == g_pplayer->m_rgKeys[eVolumeDown] && dispid == DISPID_GameEvents_KeyDown);
       gMixerKeyUp   = (mkey == g_pplayer->m_rgKeys[eVolumeUp]   && dispid == DISPID_GameEvents_KeyDown);
 
-      m_ptable->FireKeyEvent(dispid, mkey);
+      g_pplayer->m_ptable->FireKeyEvent(dispid, mkey);
    }
 }
 
@@ -1029,7 +1028,7 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    if (m_joypmenter == n) FireKeyEvent(updown, DIK_0);
 }
 
-void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input, PinTable * const ptable)
+void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 {
     if (input->dwData == 1 || input->dwData == 3)
     {
@@ -1039,9 +1038,9 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input, Pi
 
         float vx = (float)mouseDX*0.1f;
         float vy = (float)mouseDY*0.1f;
-        if (ptable->m_BG_rotation[m_ptable->m_BG_current_set] != 0.f && ptable->m_BG_rotation[m_ptable->m_BG_current_set] != 360.f)
+        if (g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] != 0.f && g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] != 360.f)
         {
-            const float radangle = ANGTORAD(ptable->m_BG_rotation[m_ptable->m_BG_current_set]);
+            const float radangle = ANGTORAD(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]);
             const float sn = sinf(radangle);
             const float cs = cosf(radangle);
 
@@ -1110,7 +1109,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
     if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
     {
         const int updown = (input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
-        const bool start = ((curr_time_msec - m_firedautostart) > m_ptable->m_tblAutoStart) || m_pressed_start || started();
+        const bool start = ((curr_time_msec - m_firedautostart) > g_pplayer->m_ptable->m_tblAutoStart) || m_pressed_start || started();
         if (input->dwOfs == DIJOFS_BUTTON0)
         {
             if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0)) // plunge
@@ -1172,7 +1171,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
         {
             if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0) && (m_disable_esc == 0)) // exit
             {	// Check if we have started a game yet.
-                if (started() || !m_ptable->m_tblAutoStartEnabled)
+                if (started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
                 {
                     if (DISPID_GameEvents_KeyDown == updown)
                     {
@@ -1254,7 +1253,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
         {
             if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // exit
             {
-                if (started() || !m_ptable->m_tblAutoStartEnabled) // Check if we have started a game yet.
+                if (started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled) // Check if we have started a game yet.
                 {
                     if (DISPID_GameEvents_KeyDown == updown)
                     {
@@ -1527,20 +1526,18 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
 }
 
 
-void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/, int curr_time_msec) // last one is negative if only key events should be fired
+void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // last one is negative if only key events should be fired
 {
-   m_ptable = ptable;
-
-   if (!g_pplayer || !m_ptable) return;	//only when player running
+   if (!g_pplayer || !g_pplayer->m_ptable) return; // only if player is running
 
    if (curr_time_msec >= 0)
    {
       // Check if autostart is enabled.
-      if (m_ptable->m_tblAutoStartEnabled)
+      if (g_pplayer->m_ptable->m_tblAutoStartEnabled)
          // Update autostart.
-         autostart(m_ptable->m_tblAutoStart, m_ptable->m_tblAutoStartRetry, curr_time_msec);
+         autostart(g_pplayer->m_ptable->m_tblAutoStart, g_pplayer->m_ptable->m_tblAutoStartRetry, curr_time_msec);
 
-      button_exit(m_ptable->m_tblExitConfirm, curr_time_msec);
+      button_exit(g_pplayer->m_ptable->m_tblExitConfirm, curr_time_msec);
 
       // Update tilt.
       tilt_update();
@@ -1615,7 +1612,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
       {
          if (g_pplayer->m_fThrowBalls)
          {
-             ProcessThrowBalls(input, ptable);
+             ProcessThrowBalls(input);
          }
          else
          {
@@ -1665,7 +1662,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
          }
          else if(input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDebugger])
          {
-             if(started() || !m_ptable->m_tblAutoStartEnabled)
+             if(started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
              {
                  if ((input->dwData & 0x80) != 0)
                  { //on key down only
@@ -1682,7 +1679,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
          else if(((input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEscape]) && (m_disable_esc == 0)) || (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]))
          {
             // Check if we have started a game yet.
-            if (started() || !m_ptable->m_tblAutoStartEnabled)
+            if (started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
             {
                if (input->dwData & 0x80) { //on key down only
                   m_first_stamp = curr_time_msec;
