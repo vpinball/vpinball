@@ -50,11 +50,11 @@ public:
    void tilt_update();
 
    void ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input);
-   void ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/, int curr_time_msec);
+   void ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec);
 
    void ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec);
 
-   void ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input, PinTable * const ptable);
+   void ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input);
    int GetNextKey();
 
    void GetInputDeviceData(/*const U32 curr_time_msec*/);
@@ -128,8 +128,6 @@ private:
    int m_head; // head==tail means empty, (head+1)%MAX_KEYQUEUE_SIZE == tail means full
 
    int m_tail; // These are integer indices into keyq and should be in domain of 0..MAX_KEYQUEUE_SIZE-1
-
-   PinTable *m_ptable;
 
    int m_plunger_axis, m_lr_axis, m_ud_axis, m_plunger_reverse, m_lr_axis_reverse, m_ud_axis_reverse, m_override_default_buttons, m_disable_esc;
    int m_joylflipkey, m_joyrflipkey, m_joylmagnasave, m_joyrmagnasave, m_joyplungerkey, m_joystartgamekey, m_joyexitgamekey, m_joyaddcreditkey;
