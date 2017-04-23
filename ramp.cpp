@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include "forsyth.h"
+//#include "forsyth.h"
 #include "objloader.h"
 
 const float Ramp::HIT_SHAPE_DETAIL_LEVEL = 7.0f;
@@ -22,6 +22,7 @@ Ramp::Ramp()
    memset(m_d.m_szImage, 0, MAXTOKEN);
    memset( m_d.m_szMaterial, 0, 32 );
    memset( m_d.m_szPhysicsMaterial, 0, 32 );
+   m_d.m_fHitEvent = false;
    m_d.m_fOverwritePhysics=true;
    rgheightInit = NULL;
 }
@@ -107,6 +108,8 @@ void Ramp::SetDefaults(bool fromMouseClick)
    m_d.m_leftwallheightvisible = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "LeftWallHeightVisible", 30.0f) : 30.0f;
    m_d.m_rightwallheightvisible = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RightWallHeightVisible", 30.0f) : 30.0f;
 
+   m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
+
    SetDefaultPhysics(fromMouseClick);
 
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
@@ -136,6 +139,8 @@ void Ramp::WriteRegDefaults()
    SetRegValueFloat(strKeyName, "RightWallHeight", m_d.m_rightwallheight);
    SetRegValueFloat(strKeyName, "LeftWallHeightVisible", m_d.m_leftwallheightvisible);
    SetRegValueFloat(strKeyName, "RightWallHeightVisible", m_d.m_rightwallheightvisible);
+   SetRegValueBool(strKeyName, "HitEvent", m_d.m_fHitEvent);
+   SetRegValueFloat(strKeyName, "HitThreshold", m_d.m_threshold);
    SetRegValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);
    SetRegValueFloat(strKeyName, "Friction", m_d.m_friction);
    SetRegValueFloat(strKeyName, "Scatter", m_d.m_scatter);
@@ -311,7 +316,7 @@ void Ramp::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
    for (int i = 0; i < cvertex; i++)
    {
       {
-      const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,rgheight1[i] + 50.0f); // leave room for ball
+      const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,rgheight1[i] + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
       //pvvertex3D.push_back(pv);
 	  bbox_min.x = min(bbox_min.x, pv.x);
 	  bbox_min.y = min(bbox_min.y, pv.y);
@@ -321,7 +326,7 @@ void Ramp::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
 	  bbox_max.z = max(bbox_max.z, pv.z);
 	  }
 
-      const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,rgheight1[i] + 50.0f); // leave room for ball
+      const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,rgheight1[i] + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
       //pvvertex3D.push_back(pv);
 	  bbox_min.x = min(bbox_min.x, pv.x);
 	  bbox_min.y = min(bbox_min.y, pv.y);
@@ -550,6 +555,7 @@ float Ramp::GetSurfaceHeight(float x, float y)
       const float len = sqrtf(dx*dx + dy*dy);
       if (i2 <= iSeg)
          startlength += len;
+
       totallength += len;
    }
 
@@ -833,7 +839,7 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D &pv1, const Ve
 
 void Ramp::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
 {
-   Material *mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
+   const Material * const mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
    if ( mat != NULL && !m_d.m_fOverwritePhysics )
    {
       obj->m_elasticity = mat->m_fElasticity;
@@ -846,10 +852,18 @@ void Ramp::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
       obj->SetFriction( m_d.m_friction );
       obj->m_scatter = ANGTORAD( m_d.m_scatter );
    }
+
+   obj->m_threshold = m_d.m_threshold;
+   // the ramp is of type ePrimitive for triggering the event in HitTriangle::Collide()
+   obj->m_ObjType = ePrimitive;
    obj->m_fEnabled = m_d.m_fCollidable;
+   if (m_d.m_fHitEvent)
+      obj->m_pfe = (IFireEvents *)this;
+   else
+      obj->m_pfe = NULL;
 
    pvho->AddElement(obj);
-   m_vhoCollidable.push_back(obj);
+   m_vhoCollidable.push_back(obj); //remember hit components of primitive
 }
 
 void Ramp::EndPlay()
@@ -1066,7 +1080,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
    const int numRings = splinePoints;
    const int numSegments = accuracy;
    m_numVertices = numRings*numSegments;
-   m_numIndices = 6 * m_numVertices;//m_numVertices*2+2;
+   m_numIndices = 6 * m_numVertices; //m_numVertices*2+2;
 
    if (*meshBuf1 == NULL)
       *meshBuf1 = new Vertex3D_NoTex2[m_numVertices];
@@ -1140,8 +1154,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
 
    if (m_d.m_type != RampType1Wire)
    {
-      Vertex3D_NoTex2 *buf2 = *meshBuf2;
-      memcpy(buf2, m_vertBuffer2, sizeof(Vertex3D_NoTex2)*m_numVertices);
+      memcpy(*meshBuf2, m_vertBuffer2, sizeof(Vertex3D_NoTex2)*m_numVertices);
    }
 
    // not necessary to reorder
@@ -1286,6 +1299,8 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(WLHR), m_d.m_rightwallheight);
    bw.WriteFloat(FID(WVHL), m_d.m_leftwallheightvisible);
    bw.WriteFloat(FID(WVHR), m_d.m_rightwallheightvisible);
+   bw.WriteBool(FID(HTEV), m_d.m_fHitEvent);
+   bw.WriteFloat(FID(THRS), m_d.m_threshold);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
    bw.WriteFloat(FID(RFCT), m_d.m_friction);
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
@@ -1393,6 +1408,14 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_d.m_rightwallheightvisible);
    }
+      else if (id == FID(HTEV))
+   {
+      pbr->GetBool(&m_d.m_fHitEvent);
+   }
+   else if (id == FID(THRS))
+   {
+      pbr->GetFloat(&m_d.m_threshold);
+   }
    else if (id == FID(ELAS))
    {
       pbr->GetFloat(&m_d.m_elasticity);
@@ -1458,7 +1481,7 @@ HRESULT Ramp::InitPostLoad()
 void Ramp::AddPoint(int x, int y, const bool smooth)
 {
    STARTUNDO
-      const Vertex2D v = m_ptable->TransformPoint(x, y);
+   const Vertex2D v = m_ptable->TransformPoint(x, y);
 
    std::vector<RenderVertex3D> vvertex;
    GetCentralCurve(vvertex);
@@ -1586,7 +1609,7 @@ STDMETHODIMP Ramp::put_HeightBottom(float newVal)
    {
       STARTUNDO
 
-         m_d.m_heightbottom = newVal;
+      m_d.m_heightbottom = newVal;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -1608,7 +1631,7 @@ STDMETHODIMP Ramp::put_HeightTop(float newVal)
    {
       STARTUNDO
 
-         m_d.m_heighttop = newVal;
+      m_d.m_heighttop = newVal;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -1630,7 +1653,7 @@ STDMETHODIMP Ramp::put_WidthBottom(float newVal)
    {
       STARTUNDO
 
-         m_d.m_widthbottom = newVal;
+      m_d.m_widthbottom = newVal;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -1652,7 +1675,7 @@ STDMETHODIMP Ramp::put_WidthTop(float newVal)
    {
       STARTUNDO
 
-         m_d.m_widthtop = newVal;
+      m_d.m_widthtop = newVal;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -1675,11 +1698,11 @@ STDMETHODIMP Ramp::put_Material(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Ramp::get_Type(RampType *pVal)
@@ -1693,12 +1716,12 @@ STDMETHODIMP Ramp::put_Type(RampType newVal)
 {
    STARTUNDO
 
-      m_d.m_type = newVal;
+   m_d.m_type = newVal;
    dynamicVertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Ramp::GetDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -1735,6 +1758,8 @@ STDMETHODIMP Ramp::get_Image(BSTR *pVal)
 STDMETHODIMP Ramp::put_Image(BSTR newVal)
 {
    char m_szImage[MAXTOKEN];
+   memset(m_szImage, 0, MAXTOKEN);
+
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, 32, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(m_szImage);
    if(tex && tex->IsHDR())
@@ -1791,7 +1816,7 @@ STDMETHODIMP Ramp::put_HasWallImage(VARIANT_BOOL newVal)
    {
       STARTUNDO
 
-         m_d.m_fImageWalls = VBTOF(newVal);
+      m_d.m_fImageWalls = VBTOF(newVal);
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -1815,7 +1840,7 @@ STDMETHODIMP Ramp::put_LeftWallHeight(float newVal)
    {
       STARTUNDO
 
-         m_d.m_leftwallheight = nv;
+      m_d.m_leftwallheight = nv;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -1839,7 +1864,7 @@ STDMETHODIMP Ramp::put_RightWallHeight(float newVal)
    {
       STARTUNDO
 
-         m_d.m_rightwallheight = nv;
+      m_d.m_rightwallheight = nv;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -1863,7 +1888,7 @@ STDMETHODIMP Ramp::put_VisibleLeftWallHeight(float newVal)
    {
       STARTUNDO
 
-         m_d.m_leftwallheightvisible = nv;
+      m_d.m_leftwallheightvisible = nv;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -1887,7 +1912,7 @@ STDMETHODIMP Ramp::put_VisibleRightWallHeight(float newVal)
    {
       STARTUNDO
 
-         m_d.m_rightwallheightvisible = nv;
+      m_d.m_rightwallheightvisible = nv;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -1907,11 +1932,11 @@ STDMETHODIMP Ramp::put_Elasticity(float newVal)
 {
    STARTUNDO
 
-      m_d.m_elasticity = newVal;
+   m_d.m_elasticity = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Ramp::get_Friction(float *pVal)
@@ -1945,11 +1970,11 @@ STDMETHODIMP Ramp::put_Scatter(float newVal)
 {
    STARTUNDO
 
-      m_d.m_scatter = newVal;
+   m_d.m_scatter = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Ramp::get_Collidable(VARIANT_BOOL *pVal)
@@ -1961,12 +1986,12 @@ STDMETHODIMP Ramp::get_Collidable(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
 {
-   BOOL fNewVal = VBTOF(newVal);
+   const BOOL fNewVal = VBTOF(newVal);
    if (!g_pplayer)
    {
       STARTUNDO
 
-         m_d.m_fCollidable = !!fNewVal;
+      m_d.m_fCollidable = !!fNewVal;
 
       STOPUNDO
    }
@@ -1981,6 +2006,43 @@ STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+STDMETHODIMP Ramp::get_HasHitEvent(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fHitEvent);
+
+   return S_OK;
+}
+
+STDMETHODIMP Ramp::put_HasHitEvent(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+   m_d.m_fHitEvent = VBTOF(newVal);
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Ramp::get_Threshold(float *pVal)
+{
+   *pVal = m_d.m_threshold;
+
+   return S_OK;
+}
+
+STDMETHODIMP Ramp::put_Threshold(float newVal)
+{
+   STARTUNDO
+
+   m_d.m_threshold = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+
 STDMETHODIMP Ramp::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
@@ -1991,10 +2053,10 @@ STDMETHODIMP Ramp::get_Visible(VARIANT_BOOL *pVal)
 STDMETHODIMP Ramp::put_Visible(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_d.m_fVisible = VBTOF(newVal);
+   m_d.m_fVisible = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Ramp::get_ReflectionEnabled(VARIANT_BOOL *pVal)
@@ -2007,10 +2069,12 @@ STDMETHODIMP Ramp::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 STDMETHODIMP Ramp::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_d.m_fReflectionEnabled = VBTOF(newVal);
+
+   m_d.m_fReflectionEnabled = VBTOF(newVal);
+
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Ramp::get_DepthBias(float *pVal)
@@ -2026,7 +2090,7 @@ STDMETHODIMP Ramp::put_DepthBias(float newVal)
    {
       STARTUNDO
 
-         m_d.m_depthBias = newVal;
+      m_d.m_depthBias = newVal;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -2048,7 +2112,7 @@ STDMETHODIMP Ramp::put_WireDiameter(float newVal)
    {
       STARTUNDO
 
-         m_d.m_wireDiameter = newVal;
+      m_d.m_wireDiameter = newVal;
 
       STOPUNDO
    }
@@ -2069,7 +2133,7 @@ STDMETHODIMP Ramp::put_WireDistanceX(float newVal)
    {
       STARTUNDO
 
-         m_d.m_wireDistanceX = newVal;
+      m_d.m_wireDistanceX = newVal;
 
       STOPUNDO
    }
@@ -2090,7 +2154,7 @@ STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
    {
       STARTUNDO
 
-         m_d.m_wireDistanceY = newVal;
+      m_d.m_wireDistanceY = newVal;
 
       STOPUNDO
    }
@@ -2112,11 +2176,11 @@ STDMETHODIMP Ramp::put_PhysicsMaterial( BSTR newVal )
 {
     STARTUNDO
 
-        WideCharToMultiByte( CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL );
+    WideCharToMultiByte( CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL );
 
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP Ramp::get_OverwritePhysics( VARIANT_BOOL *pVal )
@@ -2130,11 +2194,11 @@ STDMETHODIMP Ramp::put_OverwritePhysics( VARIANT_BOOL newVal )
 {
     STARTUNDO
 
-        m_d.m_fOverwritePhysics = VBTOF( newVal );
+    m_d.m_fOverwritePhysics = VBTOF( newVal );
 
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }
 
 

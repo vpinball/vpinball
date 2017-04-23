@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include "forsyth.h"
+//#include "forsyth.h"
 #include "objloader.h"
 
 Rubber::Rubber()
@@ -296,7 +296,7 @@ void Rubber::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
    for (int i = 0; i < cvertex; i++)
    {
       {
-      const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,m_d.m_height + 50.0f); // leave room for ball
+      const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
       //pvvertex3D.push_back(pv);
 	  bbox_min.x = min(bbox_min.x, pv.x);
 	  bbox_min.y = min(bbox_min.y, pv.y);
@@ -306,7 +306,7 @@ void Rubber::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
 	  bbox_max.z = max(bbox_max.z, pv.z);
 	  }
 
-      const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,m_d.m_height + 50.0f); // leave room for ball
+      const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
       //pvvertex3D.push_back(pv);
 	  bbox_min.x = min(bbox_min.x, pv.x);
 	  bbox_min.y = min(bbox_min.y, pv.y);
@@ -1149,10 +1149,9 @@ STDMETHODIMP Rubber::get_Friction(float *pVal)
 
 STDMETHODIMP Rubber::put_Friction(float newVal)
 {
-   STARTUNDO
+   newVal = clamp(newVal, 0.f, 1.f);
 
-   if (newVal > 1.0f) newVal = 1.0f;
-      else if (newVal < 0.f) newVal = 0.f;
+   STARTUNDO
 
    m_d.m_friction = newVal;
 
@@ -1202,7 +1201,7 @@ STDMETHODIMP Rubber::put_Collidable(VARIANT_BOOL newVal)
        const bool b = !!fNewVal;
        if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_fEnabled != b)
            for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
-               m_vhoCollidable[i]->m_fEnabled = b;	//copy to hit checking on enities composing the object
+               m_vhoCollidable[i]->m_fEnabled = b; //copy to hit checking on entities composing the object
    }
 
    return S_OK;
@@ -1360,11 +1359,11 @@ STDMETHODIMP Rubber::put_PhysicsMaterial( BSTR newVal )
 {
     STARTUNDO
 
-        WideCharToMultiByte( CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL );
+    WideCharToMultiByte( CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL );
 
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP Rubber::get_OverwritePhysics( VARIANT_BOOL *pVal )
@@ -1378,11 +1377,11 @@ STDMETHODIMP Rubber::put_OverwritePhysics( VARIANT_BOOL newVal )
 {
     STARTUNDO
 
-        m_d.m_fOverwritePhysics = VBTOF( newVal );
+    m_d.m_fOverwritePhysics = VBTOF( newVal );
 
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }
 
 

@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.3:
+- add HasHitEvent and Threshold to the ramp element
 - add BackfacesEnabled to the primitive element
 - add MusicVolume and ShowFSS to the table element
 - add Damping to the gate element
@@ -115,8 +116,6 @@ BallImage(string)
 BallFrontDecal(string) - image of the ball front decal
 BallDecalMode(bool) - switch between using the ball decal as ball logo or ball 'scratches'
 
-*DisplayGrid(bool) - default=true
-*DisplayBackdrop(bool) - displays backdrop image in editor. default=true
 *Image(string) - playfield image
 
 *EnableAntialiasing(bool) - enables AA for this table if you have set 'Enable AntiAliasing' in the video options. default=false
@@ -600,6 +599,8 @@ UserValue(any) - can store any user defined value for re-use later-on
 VisibleLeftWallHeight(float)
 VisibleRightWallHeight(float)
 Elasticity(float)
+HasHitEvent(bool) - enables the support for a hit event in the script (it's the same as for walls)
+Threshold(float) - hit threshold for firing the hit event
 Collidable(bool)
 Visible(bool)
 Friction(float) - 0..1
