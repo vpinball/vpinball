@@ -608,15 +608,18 @@ void Hit3DPoly::Collide(CollisionEvent& coll)
 
       pball->Collide3DWall(normal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
-      if (m_ObjType == ePrimitive && dot <= -m_threshold)
-         FireHitEvent(pball);
-      if (m_pfe && m_ObjType == eHitTarget && dot <= -m_threshold)
+      if (dot <= -m_threshold)
       {
-            if (m_objHitEvent && (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false))
-            {
-               ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
-               FireHitEvent(pball);
-            }
+          if (m_ObjType == ePrimitive)
+              FireHitEvent(pball);
+          else if (m_pfe && m_ObjType == eHitTarget)
+          {
+              if (m_objHitEvent && (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false))
+              {
+                  ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
+                  FireHitEvent(pball);
+              }
+          }
       }
    }
    else
@@ -780,15 +783,18 @@ void HitTriangle::Collide(CollisionEvent& coll)
 
    pball->Collide3DWall(normal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
-   if (m_ObjType == ePrimitive && dot <= -m_threshold)
-      FireHitEvent(pball);
-   if (m_pfe && m_ObjType == eHitTarget && dot <= -m_threshold)
+   if (dot <= -m_threshold)
    {
-         if (m_objHitEvent && (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false))
-         {
-            ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
-            FireHitEvent(pball);
-         }
+       if (m_ObjType == ePrimitive)
+           FireHitEvent(pball);
+       else if (m_pfe && m_ObjType == eHitTarget)
+       {
+           if (m_objHitEvent && (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false))
+           {
+               ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
+               FireHitEvent(pball);
+           }
+       }
    }
 }
 
@@ -990,15 +996,18 @@ void HitLine3D::Collide(CollisionEvent& coll)
    const float dot = hitnormal.Dot(pball->m_vel);
    pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
-   if (m_ObjType == ePrimitive && dot <= -m_threshold)
-      FireHitEvent(pball);
-   if (m_pfe && m_ObjType == eHitTarget && dot <= -m_threshold)
+   if (dot <= -m_threshold)
    {
-         if (m_objHitEvent && (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false))
-         {
-            ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
-            FireHitEvent(pball);
-         }
+       if (m_ObjType == ePrimitive)
+           FireHitEvent(pball);
+       else if (m_pfe && m_ObjType == eHitTarget)
+       {
+           if (m_objHitEvent && (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false))
+           {
+               ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
+               FireHitEvent(pball);
+           }
+       }
    }
 }
 

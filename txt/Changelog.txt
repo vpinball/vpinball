@@ -1,5 +1,6 @@
 VP 10.3.0 Changelog
 ------------------------
+- add (optional) missing hit event to ramps
 - add missing Timer properties for ramps
 
 - add new configurable key for a lockbar/fire button (accessible via "LockbarKey" in the script)

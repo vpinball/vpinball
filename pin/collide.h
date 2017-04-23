@@ -19,7 +19,7 @@ enum
    eTextbox,
    eDispReel,
    eLightSeq,
-   ePrimitive,
+   ePrimitive,  // also (ab)used for Rubbers and Ramps (as both are made out of triangles, too)
    eHitTarget,
    eTrigger,	// this value and greater are volume set tested, add rigid or non-volume set above
    eKicker,		// this is done to limit to one test

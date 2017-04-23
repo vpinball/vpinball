@@ -24,6 +24,8 @@ public:
    float m_rightwallheight;
    float m_leftwallheightvisible;
    float m_rightwallheightvisible;
+
+   float m_threshold;      // speed at which ball needs to hit to register a hit
    float m_elasticity;
    float m_friction;
    float m_scatter;
@@ -33,6 +35,7 @@ public:
 
    float m_depthBias;      // for determining depth sorting
 
+   bool m_fHitEvent;
    bool m_fCollidable;
    bool m_fVisible;
    bool m_fImageWalls;
@@ -221,6 +224,10 @@ public:
    STDMETHOD(get_HeightBottom)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_HeightBottom)(/*[in]*/ float newVal);
 
+   STDMETHOD(get_HasHitEvent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_HasHitEvent)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_Threshold)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Threshold)(/*[in]*/ float newVal);
    STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
