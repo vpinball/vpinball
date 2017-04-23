@@ -466,7 +466,7 @@ HANDLE VPinball::PostWorkToWorkerThread(int workid, LPARAM lParam)
 ///Sets m_autosavetime
 ///<param name="minutes">int Minutes between autosave</param>
 ///</summary>
-void VPinball::SetAutoSaveMinutes(int minutes)
+void VPinball::SetAutoSaveMinutes(const int minutes)
 {
    m_autosaveTime = (minutes <= 0) ? -1 : minutes * (60 * 1000); // convert to milliseconds
 }

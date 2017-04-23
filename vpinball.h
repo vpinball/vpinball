@@ -98,7 +98,7 @@ public:
    void EnsureWorkerThread();
    HANDLE PostWorkToWorkerThread(int workid, LPARAM lParam);
 
-   void SetAutoSaveMinutes(int minutes);
+   void SetAutoSaveMinutes(const int minutes);
    static void SetOpenMinimized();
    void ShowDrawingOrderDialog(bool select);
 
