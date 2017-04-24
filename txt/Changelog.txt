@@ -1,5 +1,7 @@
 VP 10.3.0 Changelog
 ------------------------
+- fix autosave option if entering/OKing the editor options dialog
+
 - add (optional) missing hit event to ramps
 - add missing Timer properties for ramps
 
