@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.3:
+- document some missing UserValue's and the timer element itself
 - add HasHitEvent and Threshold to the ramp element
 - add BackfacesEnabled to the primitive element
 - add MusicVolume and ShowFSS to the table element
@@ -322,6 +323,7 @@ Variables
 *BaseRadius(float)
 *EndRadius(float)
 *Length(float)
+*Height(float)
 *StartAngle(float)
 *EndAngle(float)
 *FlipperRadiusMin(float)
@@ -352,6 +354,7 @@ TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer 
 *RubberHeight(float)
 *RubberWidth(float)
 *Surface(string)
+UserValue(any) - can store any user defined value for re-use later-on
 
 Methods
 -------
@@ -578,6 +581,7 @@ StopAnim()                              - stop the animation
 ContinueAnim(float speed)               - continue a stopped animation with frame rate 'speed'
 ShowFrame(float frameNr)                - show the mesh at frame 'frameNr', where 'frameNr' can also be a fractional frame number like 1.23. VP will interpolate between subframes.
 
+
 RAMP
 ==============================================================================================================================================
 
@@ -730,6 +734,7 @@ AddBlend(bool) - use additive alpha blending instead of classical alpha blending
 ImageAlignment
 ModulateVsAdd(float) - blends between modulating and additive when bulb is enabled (0..1)
 DMD(bool) - enable DMD image via script connection
+UserValue(any) - can store any user defined value for re-use later-on
 
 
 BALL
@@ -761,6 +766,7 @@ RUBBER
 
 Variables
 ---------
+
 *Name(string)
 TimerEnabled(bool)
 TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
@@ -791,6 +797,7 @@ TARGET
 
 Variables
 ---------
+
 *Name(string)
 *HasHitEvent(bool)           - if set a hit event is fired when the ball hits the drop/hit target without animation. An additional dropped/raised event
                                is fired for drop targets after the mesh animation is over.
@@ -809,3 +816,15 @@ RaiseDelay(int)             - defines a delay in milliseconds after the dropped 
 IsDropped(bool)             - can only be used for drop targets if the drop target is raised or dropped
 TimerEnabled(bool)          - each target has a build-in timer which can be enabled by setting this to 1
 TimerInterval(int)          - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
+
+
+TIMER
+==============================================================================================================================================
+
+Variables
+---------
+
+*Name(string)
+Enabled(bool)
+Interval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
+UserValue(any) - can store any user defined value for re-use later-on
