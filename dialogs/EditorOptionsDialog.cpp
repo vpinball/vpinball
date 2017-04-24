@@ -172,27 +172,31 @@ void EditorOptionsDialog::OnOK()
     SetRegValueBool("Editor", "DrawLightCenters", checked);
 
     // auto save
-    checked = (SendDlgItemMessage(IDC_AUTOSAVE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-    SetRegValueBool("Editor", "AutoSaveOn", checked);
+    const bool autosave = (SendDlgItemMessage(IDC_AUTOSAVE, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    SetRegValueBool("Editor", "AutoSaveOn", autosave);
 
     checked = (SendDlgItemMessage(IDC_PROP_FLOAT_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
     SetRegValueBool("Editor", "PropertiesFloating", checked);
 
-    int autosavetime = GetDlgItemInt(IDC_AUTOSAVE_MINUTES, nothing, FALSE);
+    const int autosavetime = GetDlgItemInt(IDC_AUTOSAVE_MINUTES, nothing, FALSE);
     SetRegValueInt("Editor", "AutoSaveTime", autosavetime);
 
-    int gridsize = GetDlgItemInt(IDC_GRID_SIZE, nothing, FALSE);
+    const int gridsize = GetDlgItemInt(IDC_GRID_SIZE, nothing, FALSE);
     SetRegValueInt("Editor", "GridSize", gridsize);
 
     checked = (SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
     SetRegValueBool("Editor", "ThrowBallsAlwaysOn", checked);
 
-    int ballSize = GetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, nothing, FALSE);
+    const int ballSize = GetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, nothing, FALSE);
     SetRegValueInt("Editor", "ThrowBallSize", ballSize);
 
     // Go through and reset the autosave time on all the tables
-    g_pvp->SetAutoSaveMinutes(autosavetime);
-    for(int i = 0; i < g_pvp->m_vtable.Size(); i++)
+    if (autosave)
+        g_pvp->SetAutoSaveMinutes(autosavetime);
+    else
+        g_pvp->m_autosaveTime = -1;
+
+    for (int i = 0; i < g_pvp->m_vtable.Size(); i++)
         g_pvp->m_vtable.ElementAt(i)->BeginAutoSaveCounter();
 
     SetRegValue("Editor", "DefaultMaterialColor", REG_DWORD, &g_pvp->dummyMaterial.m_cBase, 4);
