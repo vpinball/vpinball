@@ -3093,7 +3093,7 @@ IDC_LIGHTSEQ            CURSOR                  "res\\lightseq.cur"
 IDC_PRIMITIVE           CURSOR                  "res\\primitive.cur"
 IDC_FLASHER             CURSOR                  "res\\flasher.cur"
 IDC_RUBBER              CURSOR                  "res\\rubber.cur"
-IDC_GUIDE               CURSOR                  "res\\ramp1.cur"
+IDC_GUIDE               CURSOR                  "res\\guide.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
