@@ -341,7 +341,6 @@
     <None Include="res\hittarget.rgs">
       <Filter>res</Filter>
     </None>
-    <None Include="res\ramp1.cur" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
@@ -1027,7 +1026,9 @@
     <ClInclude Include="meshes\kickerSimpleHoleMesh.h">
       <Filter>meshes</Filter>
     </ClInclude>
-    <ClInclude Include="guide.h" />
+    <ClInclude Include="guide.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
