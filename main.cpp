@@ -392,6 +392,7 @@ public:
             EditableRegistry::RegisterEditable<Timer>();
             EditableRegistry::RegisterEditable<Trigger>();
             EditableRegistry::RegisterEditable<HitTarget>();
+            EditableRegistry::RegisterEditable<Guide>();
          }
 
          g_pvp = new VPinball();
