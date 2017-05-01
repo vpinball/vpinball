@@ -146,6 +146,8 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                      pMat->m_fWrapLighting = sz2f(value);
                      GetDlgItemText(hwndDlg, IDC_DBG_MATERAIL_SHININESS_EDIT, value, 31);
                      pMat->m_fRoughness = sz2f(value);
+                     GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_GLOSSY_IMGLERP_EDIT, value, 31);
+                     pMat->m_fGlossyImageLerp = sz2f(value);
                      GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_EDGE_EDIT, value, 31);
                      pMat->m_fEdge = sz2f(value);
                      GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_OPACITY_AMOUNT_EDIT, value, 31);
@@ -198,6 +200,8 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                         SetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_BASE_WRAP_EDIT, value);
                         f2sz(pMat->m_fRoughness, value);
                         SetDlgItemText(hwndDlg, IDC_DBG_MATERAIL_SHININESS_EDIT, value);
+                        f2sz(pMat->m_fGlossyImageLerp, value);
+                        SetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_GLOSSY_IMGLERP_EDIT, value);
                         f2sz(pMat->m_fEdge, value);
                         SetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_EDGE_EDIT, value);
                         f2sz(pMat->m_fOpacity, value);
@@ -315,7 +319,7 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                         GetDlgItemText(hwndDlg, IDC_DBG_LIGHT_INTENSITY, value, 31);
                         fv = sz2f(value);
                         plight->put_Intensity(fv);
-                        GetDlgItemText( hwndDlg, IDC_DBG_BULB_MODULATE_VS_ADD, value, 31 );
+                        GetDlgItemText(hwndDlg, IDC_DBG_BULB_MODULATE_VS_ADD, value, 31);
                         fv = sz2f(value);
                         plight->m_d.m_modulate_vs_add=fv;
                         GetDlgItemText(hwndDlg, IDC_DBG_TRANSMISSION_SCALE, value, 31);
@@ -399,10 +403,10 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                         SetDlgItemText(hwndDlg, IDC_DBG_LIGHT_INTENSITY, value);
                         v=plight->m_d.m_modulate_vs_add;
                         f2sz(v, value);
-                        SetDlgItemText( hwndDlg, IDC_DBG_BULB_MODULATE_VS_ADD, value );
+                        SetDlgItemText(hwndDlg, IDC_DBG_BULB_MODULATE_VS_ADD, value);
                         v=plight->m_d.m_transmissionScale;
                         f2sz(v, value);
-                        SetDlgItemText( hwndDlg, IDC_DBG_TRANSMISSION_SCALE, value );
+                        SetDlgItemText(hwndDlg, IDC_DBG_TRANSMISSION_SCALE, value);
                         plight->get_FadeSpeedUp(&v);
                         f2sz(v, value);
                         SetDlgItemText(hwndDlg, IDC_DBG_LIGHT_FADE_UP_EDIT, value);

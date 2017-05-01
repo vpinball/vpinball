@@ -812,6 +812,7 @@
 #define IDB_RINGENVMAP                  609
 #define IDB_BITMAP2                     610
 #define IDB_BUMPERCAP                   610
+#define IDC_GLOSSY_IMGLERP_EDIT         611
 #define IDB_KICKER_HOLE_WOOD            612
 #define IDB_BITMAP3                     613
 #define IDB_KICKER_CUP                  613
@@ -885,6 +886,7 @@
 #define IDC_DBG_LIGHT_FALLOFF           748
 #define IDC_DBG_LIGHT_FALLOFF_POWER     749
 #define IDC_DBG_LIGHT_FADE_DOWN_EDIT    754
+#define IDC_DBG_MATERIAL_GLOSSY_IMGLERP_EDIT 755
 #define IDC_ASPECT_RATIO_GROUP          756
 #define IDC_MATERIALCOMBO               757
 #define IDC_DBG_MATERIALCOMBO           757
@@ -898,6 +900,7 @@
 #define IDC_DBG_MATERIALS_BUTTON        765
 #define IDC_DBG_BULB_MODULATE_VS_ADD    766
 #define IDC_DBG_TRANSMISSION_SCALE      767
+#define IDC_STATIC_GLOSSY_IMGLERP       768
 #define IDC_EDIT1                       769
 #define IDC_OK                          770
 #define IDC_STATIC_ALPHA                771

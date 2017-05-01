@@ -10,7 +10,7 @@ struct SaveMaterial
    float fWrapLighting; // wrap/rim lighting factor (0(off)..1(full))
    bool  bIsMetal; // is a metal material or not
    float fRoughness; // roughness of glossy layer (0(diffuse)..1(specular))
-   bool  bUnused1;
+   unsigned char fGlossyImageLerp; // use image also for the glossy layer (0(no tinting at all)..1(use image)), stupid quantization because of legacy loading/saving
    float fEdge; // edge weight/brightness for glossy and clearcoat (0(dark edges)..1(full fresnel))
    bool  bUnused2;
    float fOpacity; // opacity (0..1)
@@ -34,6 +34,7 @@ public:
    {
       m_fWrapLighting = 0.0f;
       m_fRoughness = 0.0f;
+      m_fGlossyImageLerp = 1.0f;
       m_fEdge = 1.0f;
       m_fEdgeAlpha = 1.0f;
       m_fOpacity = 1.0f;
@@ -93,6 +94,7 @@ public:
    char m_szName[32];
    float m_fWrapLighting;
    float m_fRoughness;
+   float m_fGlossyImageLerp;
    float m_fEdge;
    float m_fEdgeAlpha;
    float m_fOpacity;

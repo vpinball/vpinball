@@ -47,7 +47,7 @@ sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribu
 
 #include "Material.fxh"
 
-float3 cGlossy;
+float3 cGlossy_ImageLerp; // actually doesn't feature image lerp
 float3 cClearcoat_EdgeAlpha; // actually doesn't feature edge-alpha
 //!! No value is under 0.02
 //!! Non-metals value are un-intuitively low: 0.02-0.08
@@ -108,7 +108,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
 	{
         pixel.xyz = saturate(pixel.xyz); // could be HDR
         const float3 diffuse = pixel.xyz*cBase_Alpha.xyz;
-        const float3 glossy = is_metal ? diffuse : pixel.xyz*cGlossy*0.08; //!! use AO for glossy? specular?
+        const float3 glossy = is_metal ? diffuse : pixel.xyz*cGlossy_ImageLerp.xyz*0.08; //!! use AO for glossy? specular?
         const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
         const float edge = is_metal ? 1.0 : Roughness_WrapL_Edge.z;
 
@@ -150,7 +150,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLO
     else
 	{
 	    const float3 diffuse  = lightColor_intensity.xyz*cBase_Alpha.xyz;
-        const float3 glossy   = is_metal ? diffuse : lightColor_intensity.xyz*cGlossy*0.08;
+        const float3 glossy   = is_metal ? diffuse : lightColor_intensity.xyz*cGlossy_ImageLerp.xyz*0.08;
         const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
 	    const float edge = is_metal ? 1.0 : Roughness_WrapL_Edge.z;
 

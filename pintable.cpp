@@ -3466,7 +3466,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(MASI), m_materials.Size());
    if (m_materials.Size() > 0)
    {
-      SaveMaterial *mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_materials.Size());
+      SaveMaterial * const mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_materials.Size());
       for (int i = 0; i < m_materials.Size(); i++)
       {
          const Material* const m = m_materials.ElementAt(i);
@@ -3475,6 +3475,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
          mats[i].cClearcoat = m->m_cClearcoat;
          mats[i].fWrapLighting = m->m_fWrapLighting;
          mats[i].fRoughness = m->m_fRoughness;
+         mats[i].fGlossyImageLerp = 255 - ((unsigned char)(clamp(m->m_fGlossyImageLerp, 0.f, 1.f)*255.f)); // '255 -' to be compatible with previous table versions
          mats[i].fEdge = m->m_fEdge;
          mats[i].fOpacity = m->m_fOpacity;
          mats[i].bIsMetal = m->m_bIsMetal;
@@ -3483,7 +3484,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
          strcpy_s(mats[i].szName, m->m_szName);
       }
       bw.WriteStruct(FID(MATE), mats, (int)sizeof(SaveMaterial)*m_materials.Size());
-      SavePhysicsMaterial *phymats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_materials.Size());
+      SavePhysicsMaterial * const phymats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_materials.Size());
       for ( int i = 0; i < m_materials.Size(); i++ )
       {
           const Material* const m = m_materials.ElementAt( i );
@@ -4422,7 +4423,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(MATE))
    {
-      SaveMaterial *mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_numMaterials);
+      SaveMaterial * const mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_numMaterials);
       pbr->GetStruct(mats, (int)sizeof(SaveMaterial)*m_numMaterials);
 
       for(int i = 0; i < m_materials.size(); ++i)
@@ -4431,12 +4432,13 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 
       for (int i = 0; i < m_numMaterials; i++)
       {
-         Material *pmat = new Material();
+         Material * const pmat = new Material();
          pmat->m_cBase = mats[i].cBase;
          pmat->m_cGlossy = mats[i].cGlossy;
          pmat->m_cClearcoat = mats[i].cClearcoat;
          pmat->m_fWrapLighting = mats[i].fWrapLighting;
          pmat->m_fRoughness = mats[i].fRoughness;
+         pmat->m_fGlossyImageLerp = 1.0f - (float)mats[i].fGlossyImageLerp*(float)(1.0 / 255.0); //!! + rounding offset? //!! '1.0f -' to be compatible with previous table versions
          pmat->m_fEdge = mats[i].fEdge;
          pmat->m_fOpacity = mats[i].fOpacity;
          pmat->m_bIsMetal = mats[i].bIsMetal;
@@ -4449,13 +4451,13 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if(id==FID(PHMA))
    {
-       SavePhysicsMaterial *mats = (SavePhysicsMaterial*)malloc( sizeof( SavePhysicsMaterial )*m_numMaterials );
+       SavePhysicsMaterial * const mats = (SavePhysicsMaterial*)malloc( sizeof( SavePhysicsMaterial )*m_numMaterials );
        pbr->GetStruct( mats, (int)sizeof( SavePhysicsMaterial )*m_numMaterials );
 
        for ( int i = 0; i < m_numMaterials; i++ )
        {
            bool found=true;
-           Material *pmat = GetMaterial(mats[i].szName);
+           Material * pmat = GetMaterial(mats[i].szName);
            if( pmat==NULL )
            {
                pmat = new Material();
@@ -8222,11 +8224,12 @@ void PinTable::AddDbgMaterial(Material *pmat)
       dbgChangedMaterials[i]->m_fEdgeAlpha = pmat->m_fEdgeAlpha;
       dbgChangedMaterials[i]->m_fOpacity = pmat->m_fOpacity;
       dbgChangedMaterials[i]->m_fRoughness = pmat->m_fRoughness;
+      dbgChangedMaterials[i]->m_fGlossyImageLerp = pmat->m_fGlossyImageLerp;
       dbgChangedMaterials[i]->m_fWrapLighting = pmat->m_fWrapLighting;
    }
    else
    {
-      Material *newMat = new Material();
+      Material * const newMat = new Material();
       newMat->m_bIsMetal = pmat->m_bIsMetal;
       newMat->m_bOpacityActive = pmat->m_bOpacityActive;
       newMat->m_cBase = pmat->m_cBase;
@@ -8236,6 +8239,7 @@ void PinTable::AddDbgMaterial(Material *pmat)
       newMat->m_fEdgeAlpha = pmat->m_fEdgeAlpha;
       newMat->m_fOpacity = pmat->m_fOpacity;
       newMat->m_fRoughness = pmat->m_fRoughness;
+      newMat->m_fGlossyImageLerp = pmat->m_fGlossyImageLerp;
       newMat->m_fWrapLighting = pmat->m_fWrapLighting;
       strcpy_s(newMat->m_szName, pmat->m_szName);
       dbgChangedMaterials.push_back(newMat);
@@ -8247,12 +8251,12 @@ void PinTable::UpdateDbgMaterial(void)
    bool somethingChanged = false;
    for (unsigned int i = 0; i < dbgChangedMaterials.size();i++)
    {
-      Material *pmat = dbgChangedMaterials[i];
+      const Material * const pmat = dbgChangedMaterials[i];
       for (int t = 0; t < m_materials.Size(); t++)
       {
          if (strcmp(pmat->m_szName, m_materials.ElementAt(t)->m_szName) == 0)
          {
-            Material *mat = m_materials.ElementAt(t);
+            Material * const mat = m_materials.ElementAt(t);
             mat->m_bIsMetal = pmat->m_bIsMetal;
             mat->m_bOpacityActive = pmat->m_bOpacityActive;
             mat->m_cBase = pmat->m_cBase;
@@ -8262,6 +8266,7 @@ void PinTable::UpdateDbgMaterial(void)
             mat->m_fEdgeAlpha = pmat->m_fEdgeAlpha;
             mat->m_fOpacity = pmat->m_fOpacity;
             mat->m_fRoughness = pmat->m_fRoughness;
+            mat->m_fGlossyImageLerp = pmat->m_fGlossyImageLerp;
             mat->m_fWrapLighting = pmat->m_fWrapLighting;
             somethingChanged = true;
             break;
@@ -8974,13 +8979,13 @@ STDMETHODIMP PinTable::put_DisplayGrid(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_fGrid = !!newVal;
+   m_fGrid = !!newVal;
 
    SetDirtyDraw();
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_DisplayBackdrop(VARIANT_BOOL *pVal)
@@ -8994,13 +8999,13 @@ STDMETHODIMP PinTable::put_DisplayBackdrop(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_fBackdrop = !!newVal;
+   m_fBackdrop = !!newVal;
 
    SetDirtyDraw();
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 INT_PTR CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
