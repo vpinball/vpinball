@@ -26,6 +26,7 @@ void MaterialDialog::DisableAllMaterialDialogItems()
     ::EnableWindow( GetDlgItem( IDC_DIFFUSE_CHECK ).GetHwnd(), FALSE );
     ::EnableWindow(GetDlgItem(IDC_DIFFUSE_EDIT).GetHwnd(), FALSE);
     ::EnableWindow(GetDlgItem(IDC_GLOSSY_EDIT).GetHwnd(), FALSE);
+    ::EnableWindow(GetDlgItem(IDC_GLOSSY_IMGLERP_EDIT).GetHwnd(), FALSE);
     ::EnableWindow(GetDlgItem(IDC_SPECULAR_EDIT).GetHwnd(), FALSE);
     ::EnableWindow(GetDlgItem(IDC_OPACITY_EDIT).GetHwnd(), FALSE);
     ::EnableWindow(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), FALSE);
@@ -40,6 +41,7 @@ void MaterialDialog::EnableAllMaterialDialogItems()
    ::EnableWindow(GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd(), TRUE);
    ::EnableWindow(GetDlgItem(IDC_DIFFUSE_EDIT).GetHwnd(), TRUE);
    ::EnableWindow(GetDlgItem(IDC_GLOSSY_EDIT).GetHwnd(), TRUE);
+   ::EnableWindow(GetDlgItem(IDC_GLOSSY_IMGLERP_EDIT).GetHwnd(), TRUE);
    ::EnableWindow(GetDlgItem(IDC_SPECULAR_EDIT).GetHwnd(), TRUE);
    ::EnableWindow(GetDlgItem(IDC_OPACITY_EDIT).GetHwnd(), TRUE);
    ::EnableWindow(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), TRUE);
@@ -92,7 +94,9 @@ BOOL MaterialDialog::OnInitDialog()
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_WRAP_TEXT).GetHwnd(), topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_GLOSSY_TEXT).GetHwnd(), topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_SHININESS).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC_GLOSSY_IMGLERP).GetHwnd(), topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_GLOSSY_EDIT).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_GLOSSY_IMGLERP_EDIT).GetHwnd(), topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_SHININESS_TEXT).GetHwnd(), topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_CLEARCOAT_TEXT).GetHwnd(), topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_EDGE_BRIGHTNESS).GetHwnd(), topright, 0);
@@ -204,6 +208,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                pNewMat->m_fEdgeAlpha = pmat->m_fEdgeAlpha;
                pNewMat->m_fOpacity = pmat->m_fOpacity;
                pNewMat->m_fRoughness = pmat->m_fRoughness;
+               pNewMat->m_fGlossyImageLerp = pmat->m_fGlossyImageLerp;
                pNewMat->m_fWrapLighting = pmat->m_fWrapLighting;
                memcpy(pNewMat->m_szName, pmat->m_szName, 32);
 
@@ -284,6 +289,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                pmat->m_cClearcoat = mat.cClearcoat;
                pmat->m_fWrapLighting = mat.fWrapLighting;
                pmat->m_fRoughness = mat.fRoughness;
+               pmat->m_fGlossyImageLerp = (float)mat.fGlossyImageLerp*(float)(1.0 / 255.0); //!! + rounding offset?
                pmat->m_fEdge = mat.fEdge;
                pmat->m_bIsMetal = mat.bIsMetal;
                pmat->m_fOpacity = mat.fOpacity;
@@ -374,13 +380,13 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                   mat.cGlossy = pmat->m_cGlossy;
                   mat.cClearcoat = pmat->m_cClearcoat;
                   mat.fRoughness = pmat->m_fRoughness;
+                  mat.fGlossyImageLerp = ((unsigned char)(clamp(pmat->m_fGlossyImageLerp, 0.f, 1.f)*255.f));
                   mat.fEdge = pmat->m_fEdge;
                   mat.fWrapLighting = pmat->m_fWrapLighting;
                   mat.bIsMetal = pmat->m_bIsMetal;
                   mat.fOpacity = pmat->m_fOpacity;
                   mat.bOpacityActive_fEdgeAlpha = pmat->m_bOpacityActive ? 1 : 0;
                   mat.bOpacityActive_fEdgeAlpha |= ((unsigned char)(clamp(pmat->m_fEdgeAlpha, 0.f, 1.f)*127.f)) << 1;
-                  mat.bUnused1 = 0;
                   mat.bUnused2 = 0;
                   memcpy(mat.szName, pmat->m_szName, 32);
                   fwrite(&mat, 1, sizeof(SaveMaterial), f);
@@ -543,6 +549,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                      SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cClearcoat);
                      setItemText(IDC_DIFFUSE_EDIT, pmat->m_fWrapLighting);
                      setItemText(IDC_GLOSSY_EDIT, pmat->m_fRoughness);
+                     setItemText(IDC_GLOSSY_IMGLERP_EDIT, pmat->m_fGlossyImageLerp);
                      setItemText(IDC_SPECULAR_EDIT, pmat->m_fEdge);
                      setItemText(IDC_OPACITY_EDIT, pmat->m_fOpacity);
                      setItemText(IDC_EDGEALPHA_EDIT, pmat->m_fEdgeAlpha);
@@ -591,6 +598,10 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   if (pmat->m_fRoughness != fv)
                      pt->SetNonUndoableDirty(eSaveDirty);
                   pmat->m_fRoughness = fv;
+                  fv = getItemText(IDC_GLOSSY_IMGLERP_EDIT);
+                  if (pmat->m_fGlossyImageLerp != fv)
+                     pt->SetNonUndoableDirty(eSaveDirty);
+                  pmat->m_fGlossyImageLerp = fv;
                   fv = getItemText(IDC_SPECULAR_EDIT);
                   if (pmat->m_fEdge != fv)
                      pt->SetNonUndoableDirty(eSaveDirty);
@@ -639,6 +650,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cClearcoat);
                   setItemText(IDC_DIFFUSE_EDIT, pmat->m_fWrapLighting);
                   setItemText(IDC_GLOSSY_EDIT, pmat->m_fRoughness);
+                  setItemText(IDC_GLOSSY_IMGLERP_EDIT, pmat->m_fGlossyImageLerp);
                   setItemText(IDC_SPECULAR_EDIT, pmat->m_fEdge);
                   setItemText(IDC_OPACITY_EDIT, pmat->m_fOpacity);
 
@@ -705,6 +717,11 @@ void MaterialDialog::OnOK()
          if (pmat->m_fRoughness != fv)
             pt->SetNonUndoableDirty(eSaveDirty);
          pmat->m_fRoughness = fv;
+
+         fv = getItemText(IDC_GLOSSY_IMGLERP_EDIT);
+         if (pmat->m_fGlossyImageLerp != fv)
+            pt->SetNonUndoableDirty(eSaveDirty);
+         pmat->m_fGlossyImageLerp = fv;
 
          fv = getItemText(IDC_SPECULAR_EDIT);
          if (pmat->m_fEdge != fv)

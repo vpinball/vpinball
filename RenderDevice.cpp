@@ -1714,13 +1714,14 @@ void Shader::SetTexture(const D3DXHANDLE texelName, D3DTexture *texel)
 void Shader::SetMaterial(const Material * const mat)
 {
    COLORREF cBase, cGlossy, cClearcoat;
-   float fWrapLighting, fRoughness, fEdge, fEdgeAlpha, fOpacity;
+   float fWrapLighting, fRoughness, fGlossyImageLerp, fEdge, fEdgeAlpha, fOpacity;
    bool bIsMetal, bOpacityActive;
 
    if (mat)
    {
       fWrapLighting = mat->m_fWrapLighting;
       fRoughness = exp2f(10.0f * mat->m_fRoughness + 1.0f); // map from 0..1 to 2..2048
+      fGlossyImageLerp = mat->m_fGlossyImageLerp;
       fEdge = mat->m_fEdge;
       fEdgeAlpha = mat->m_fEdgeAlpha;
       fOpacity = mat->m_fOpacity;
@@ -1734,6 +1735,7 @@ void Shader::SetMaterial(const Material * const mat)
    {
       fWrapLighting = 0.0f;
       fRoughness = exp2f(10.0f * 0.0f + 1.0f); // map from 0..1 to 2..2048
+      fGlossyImageLerp = 1.0f;
       fEdge = 1.0f;
       fEdgeAlpha = 1.0f;
       fOpacity = 1.0f;
@@ -1767,11 +1769,13 @@ void Shader::SetMaterial(const Material * const mat)
    }
 
    if (!bIsMetal) // Metal has no glossy
-      if (cGlossy != currentMaterial.m_cGlossy)
+      if (cGlossy != currentMaterial.m_cGlossy ||
+          fGlossyImageLerp != currentMaterial.m_fGlossyImageLerp)
       {
-         const D3DXVECTOR4 cGlossyF = convertColor(cGlossy);
-         SetVector("cGlossy", &cGlossyF);
+         const D3DXVECTOR4 cGlossyF = convertColor(cGlossy, fGlossyImageLerp);
+         SetVector("cGlossy_ImageLerp", &cGlossyF);
          currentMaterial.m_cGlossy = cGlossy;
+         currentMaterial.m_fGlossyImageLerp = fGlossyImageLerp;
       }
 
    if (cClearcoat != currentMaterial.m_cClearcoat ||
