@@ -2032,6 +2032,66 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
         };
 
         /////////////////////////////////////////////
+        // Guide
+        //////////////////////////////////////////
+
+        [
+                object,
+                uuid(9E875565-C5C1-482A-B05D-273743E1D1C0),
+                dual,
+                helpstring("IGuide Interface"),
+                pointer_default(unique)
+        ]
+        interface IGuide : IDispatch
+        {
+                [propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+                [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
+                [propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
+                [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
+                [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
+                [propget, id(1), helpstring("property HeightBottom")] HRESULT HeightBottom([out, retval] float *pVal);
+                [propput, id(1), helpstring("property HeightBottom")] HRESULT HeightBottom([in] float newVal);
+                [propget, id(2), helpstring("property HeightTop")] HRESULT HeightTop([out, retval] float *pVal);
+                [propput, id(2), helpstring("property HeightTop")] HRESULT HeightTop([in] float newVal);
+                [propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
+                [propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
+                [propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
+                [propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
+                [propget, id(110), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
+                [propput, id(110), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
+
+                [propget, id(111), helpstring("property Collidable")] HRESULT Collidable([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(111), helpstring("property Collidable")] HRESULT Collidable([in] VARIANT_BOOL newVal);
+                [propget, id(34), helpstring("property HasHitEvent")] HRESULT HasHitEvent([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(34), helpstring("property HasHitEvent")] HRESULT HasHitEvent([in] VARIANT_BOOL newVal);
+                [propget, id(33), helpstring("property Threshold")] HRESULT Threshold([out, retval] float *pVal);
+                [propput, id(33), helpstring("property Threshold")] HRESULT Threshold([in] float newVal);
+
+                [propget, id(112), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(112), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
+
+                [propget, id(114), helpstring("property Friction")] HRESULT Friction([out, retval] float *pVal);
+                [propput, id(114), helpstring("property Friction")] HRESULT Friction([in] float newVal);
+                [propget, id(115), helpstring("property Scatter")] HRESULT Scatter([out, retval] float *pVal);
+                [propput, id(115), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
+
+                [propget, id(397), helpstring("property DepthBias")] HRESULT DepthBias([out, retval] float *pVal);
+                [propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);      
+
+                [propget, id(377), helpstring("property WireDiameter")] HRESULT WireDiameter([out, retval] float *pVal);
+                [propput, id(377), helpstring("property WireDiameter")] HRESULT WireDiameter([in] float newVal);        
+
+                [propget, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([in] VARIANT_BOOL newVal);
+                
+                [propget, id(734), helpstring("property PhysicsMaterial")] HRESULT PhysicsMaterial([out, retval] BSTR *pVal);
+                [propput, id(734), helpstring("property PhysicsMaterial")] HRESULT PhysicsMaterial([in] BSTR newVal);
+                [propget, id(432), helpstring("property OverwritePhysics")] HRESULT OverwritePhysics([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(432), helpstring("property OverwritePhysics")] HRESULT OverwritePhysics([in] VARIANT_BOOL newVal);
+        };
+
+        /////////////////////////////////////////////
         // Flasher
         //////////////////////////////////////////
 
@@ -2233,7 +2293,18 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 //[id(DISPID_TimerEvents_Timer)]  void Timer();
         }
 
-   [
+        [
+        uuid(A00CEDD2-714A-46B1-B89C-340E24BF0CF5),
+        ]
+        dispinterface IGuideEvents
+        {
+        properties:
+        methods:
+                [id(DISPID_GameEvents_Init)]  void Init();
+                //[id(DISPID_TimerEvents_Timer)]  void Timer();
+        }
+
+        [
         uuid(AC861BD8-A2BB-4d29-9EC5-A8E9C49D80FB),
         ]
         dispinterface IFlasherEvents
@@ -2513,7 +2584,17 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [default, source]  dispinterface IRampEvents;
         };
 
-   [
+        [
+                uuid(181083A6-1445-4001-9DF0-9349BAD19ADE),
+                helpstring("Guide Class")
+        ]
+        coclass Guide
+        {
+                [default] interface IGuide;
+                [default, source]  dispinterface IGuideEvents;
+        };
+        
+        [
                 uuid(847B5F6C-65DC-4b3a-A721-B8F931C23133),
                 helpstring("Flasher Class")
         ]

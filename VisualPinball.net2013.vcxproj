@@ -277,7 +277,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -386,6 +386,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="Dialogs\TableInfoDialog.cpp" />
     <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
     <ClCompile Include="flasher.cpp" />
+    <ClCompile Include="guide.cpp" />
     <ClCompile Include="hittarget.cpp" />
     <ClCompile Include="inc\miniz.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -1004,6 +1005,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\gate.cur" />
     <None Include="res\flasher.cur" />
     <None Include="res\hittarget.rgs" />
+    <None Include="res\ramp1.cur" />
     <None Include="res\rubber.cur" />
     <None Include="res\kicker.cur" />
     <None Include="res\spinner.cur" />
@@ -1100,6 +1102,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="flasher.h" />
     <ClInclude Include="flipper.h" />
     <ClInclude Include="gate.h" />
+    <ClInclude Include="guide.h" />
     <ClInclude Include="hash.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="hid.h" />

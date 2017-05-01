@@ -132,6 +132,7 @@ class PinBinary;
 #include "mixer.h"
 #include "hid.h"
 #include "plumb.h"
+#include "guide.h"
 
 #include "kdtree.h"
 

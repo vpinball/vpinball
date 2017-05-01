@@ -214,6 +214,7 @@
 #define IDS_PASTE_ELEMENT               189
 #define IDS_PASTE_AT_ELEMENT            190
 #define IDS_DELETE_ELEMENTS             191
+#define IDS_TB_GUIDE                    192
 #define IDS_DRAWING_ORDER_SELECT        200
 #define IDR_APPMENU                     201
 #define IDC_SOUNDLIST                   201
@@ -806,6 +807,7 @@
 #define IDD_PROPRUBBER_PHYSICS          602
 #define IDC_RUBBER                      602
 #define IDD_PROPRUBBER_POSITION         603
+#define IDC_GUIDE                       603
 #define IDD_PROPRUBBER_VISUALS          604
 #define IDD_MATERIALDIALOG              605
 #define IDB_BITMAP1                     608
@@ -827,6 +829,10 @@
 #define IDD_DBGLIGHTDIALOG              623
 #define IDD_DBGMATERIALDIALOG           624
 #define IDC_BG_FSS                      625
+#define IDD_PROPGUIDE_VISUALS           625
+#define IDD_PROPGUIDE_POSITION          626
+#define IDD_PROPRAMP_PHYSICS2           627
+#define IDD_PROPGUIDE_PHYSICS           627
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -984,6 +990,8 @@
 #define ID_WALLMENU_PASTE               4017
 #define ID_TABLEMENU_COPY               4018
 #define ID_TABLEMENU_PASTE              4019
+#define ID_INSERT_GUIDE                 4020
+#define ID_INSERT_GUIDE4022             4022
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770
@@ -1090,7 +1098,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        626
-#define _APS_NEXT_COMMAND_VALUE         4020
+#define _APS_NEXT_COMMAND_VALUE         4023
 #define _APS_NEXT_CONTROL_VALUE         806
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
