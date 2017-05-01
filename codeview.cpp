@@ -3089,7 +3089,9 @@ Collection::Collection()
 {
    m_fFireEvents = fFalse;
    m_fStopSingleEvents = fFalse;
-   m_fGroupElements = fTrue;
+
+   int groupElementsCollection = GetRegIntWithDefault("Editor", "GroupElementsInCollection", 1);
+   m_fGroupElements = groupElementsCollection;
 }
 
 STDMETHODIMP Collection::get_Name(BSTR *pVal)

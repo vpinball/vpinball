@@ -481,9 +481,13 @@ void CollectionDialog::OnOK()
     const size_t fStopSingle = ::SendMessage(hwndStopSingle, BM_GETCHECK, 0, 0);
     pcol->m_fStopSingleEvents = (BOOL)fStopSingle;
 
-    HWND hwndGroupElements = GetDlgItem(IDC_GROUP_CHECK).GetHwnd();
-    const size_t fGroupElements = ::SendMessage(hwndGroupElements, BM_GETCHECK, 0, 0);
-    pcol->m_fGroupElements = (BOOL)fGroupElements;
+    int groupElementsCollection = GetRegIntWithDefault("Editor", "GroupElementsInCollection", 1);
+    if (groupElementsCollection)
+    {
+       HWND hwndGroupElements = GetDlgItem(IDC_GROUP_CHECK).GetHwnd();
+       const size_t fGroupElements = ::SendMessage(hwndGroupElements, BM_GETCHECK, 0, 0);
+       pcol->m_fGroupElements = (BOOL)fGroupElements;
+    }
 
     char szT[1024];
     HWND hwndName = GetDlgItem(IDC_NAME).GetHwnd();
