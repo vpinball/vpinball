@@ -246,7 +246,7 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool d
    }
 
    const float3 diffuse = t*cBase_Alpha.xyz;
-   const float3 glossy = is_metal ? diffuse : (t*cGlossy_ImageLerp.w + (1.f-cGlossy_ImageLerp.w))*cGlossy_ImageLerp.xyz*0.08; //!! use AO for glossy? specular?
+   const float3 glossy = is_metal ? diffuse : (t*cGlossy_ImageLerp.w + (1.0-cGlossy_ImageLerp.w))*cGlossy_ImageLerp.xyz*0.08; //!! use AO for glossy? specular?
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
    const float  edge = is_metal ? 1.0 : Roughness_WrapL_Edge.z;
 
