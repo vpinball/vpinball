@@ -78,6 +78,9 @@ BOOL EditorOptionsDialog::OnInitDialog()
     int throwBallsAlwaysOn = GetRegIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0);
     SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_SETCHECK, throwBallsAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
 
+    int groupElementsCollection = GetRegIntWithDefault("Editor", "GroupElementsInCollection", 1);
+    SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_SETCHECK, groupElementsCollection ? BST_CHECKED : BST_UNCHECKED, 0);
+
     int throwBallSize = GetRegIntWithDefault("Editor", "ThrowBallSize", 50);
     SetDlgItemInt( IDC_THROW_BALLS_SIZE_EDIT, throwBallSize, FALSE);
 
@@ -189,6 +192,9 @@ void EditorOptionsDialog::OnOK()
 
     const int ballSize = GetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, nothing, FALSE);
     SetRegValueInt("Editor", "ThrowBallSize", ballSize);
+
+    checked = (SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
+    SetRegValueBool("Editor", "GroupElementsInCollection", checked);
 
     // Go through and reset the autosave time on all the tables
     if (autosave)

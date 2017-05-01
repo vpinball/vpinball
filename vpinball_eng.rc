@@ -665,7 +665,7 @@ BEGIN
     CTEXT           "Paused",IDC_STATIC,7,7,64,10
 END
 
-IDD_EDITOR_OPTIONS DIALOGEX 0, 0, 191, 232
+IDD_EDITOR_OPTIONS DIALOGEX 0, 0, 191, 246
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Editor Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -674,30 +674,32 @@ BEGIN
     CONTROL         "&Draw Light Center Cross",IDC_DRAW_LIGHTCENTERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,19,102,10
     CONTROL         "Auto-&Save Tables Every",IDC_AUTOSAVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,33,93,10
     EDITTEXT        IDC_AUTOSAVE_MINUTES,102,32,25,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Grid size",IDC_STATIC,117,64,29,8
-    EDITTEXT        IDC_GRID_SIZE,149,62,27,12,ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,79,217,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,131,217,50,14
+    LTEXT           "Grid size",IDC_STATIC,117,79,29,8
+    EDITTEXT        IDC_GRID_SIZE,149,77,27,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,79,231,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,131,231,50,14
     LTEXT           "minutes",IDC_STATIC,132,33,25,8
     CONTROL         "Properties Menu floating (needs restart)",IDC_PROP_FLOAT_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,47,139,10
-    CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,78,61,32,16
-    LTEXT           "Default Material Color",IDC_STATIC,6,65,68,8
-    GROUPBOX        "Throw Balls in Player",IDC_STATIC,3,162,178,31
-    CONTROL         "Always On",IDC_THROW_BALLS_ALWAYS_ON_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,176,49,10
-    LTEXT           "Ball size",IDC_STATIC,117,177,28,8
-    EDITTEXT        IDC_THROW_BALLS_SIZE_EDIT,149,175,27,12,ES_AUTOHSCROLL
+    CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,78,76,32,16
+    LTEXT           "Default Material Color",IDC_STATIC,6,80,68,8
+    GROUPBOX        "Throw Balls in Player",IDC_STATIC,3,177,178,31
+    CONTROL         "Always On",IDC_THROW_BALLS_ALWAYS_ON_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,191,49,10
+    LTEXT           "Ball size",IDC_STATIC,117,192,28,8
+    EDITTEXT        IDC_THROW_BALLS_SIZE_EDIT,149,190,27,12,ES_AUTOHSCROLL
     CONTROL         "Start VP with File Dialog open to directly play",IDC_START_VP_FILE_DIALOG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,198,174,10
-    CONTROL         "Custom2",IDC_COLOR2,"ColorControl",WS_TABSTOP,78,80,32,16
-    LTEXT           "Element Select Color",IDC_STATIC,6,84,66,8
-    CONTROL         "Custom2",IDC_COLOR3,"ColorControl",WS_TABSTOP,78,99,32,16
-    LTEXT           "Element Select Color \n(locked)",IDC_STATIC,6,102,71,16
-    CONTROL         "Custom2",IDC_COLOR4,"ColorControl",WS_TABSTOP,78,119,32,16
-    LTEXT           "Element Fill Color",IDC_STATIC,6,123,54,8
-    CONTROL         "Custom2",IDC_COLOR5,"ColorControl",WS_TABSTOP,78,138,32,16
-    LTEXT           "Table Background",IDC_STATIC,6,142,60,8
-    PUSHBUTTON      "Default Colors",IDC_DEFAULT_COLORS_BUTTON,126,140,50,14
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,213,174,10
+    CONTROL         "Custom2",IDC_COLOR2,"ColorControl",WS_TABSTOP,78,95,32,16
+    LTEXT           "Element Select Color",IDC_STATIC,6,99,66,8
+    CONTROL         "Custom2",IDC_COLOR3,"ColorControl",WS_TABSTOP,78,114,32,16
+    LTEXT           "Element Select Color \n(locked)",IDC_STATIC,6,117,71,16
+    CONTROL         "Custom2",IDC_COLOR4,"ColorControl",WS_TABSTOP,78,134,32,16
+    LTEXT           "Element Fill Color",IDC_STATIC,6,138,54,8
+    CONTROL         "Custom2",IDC_COLOR5,"ColorControl",WS_TABSTOP,78,153,32,16
+    LTEXT           "Table Background",IDC_STATIC,6,157,60,8
+    PUSHBUTTON      "Default Colors",IDC_DEFAULT_COLORS_BUTTON,126,155,50,14
+    CONTROL         "Group elements in collections as default",IDC_DEFAULT_GROUP_COLLECTION_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,59,141,10
 END
 
 IDD_COLLECTDIALOG DIALOGEX 0, 0, 316, 167
@@ -2305,7 +2307,7 @@ BEGIN
     IDD_EDITOR_OPTIONS, DIALOG
     BEGIN
         RIGHTMARGIN, 185
-        BOTTOMMARGIN, 231
+        BOTTOMMARGIN, 245
     END
 
     IDD_COLLECTDIALOG, DIALOG
