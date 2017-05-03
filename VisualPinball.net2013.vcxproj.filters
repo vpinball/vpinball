@@ -136,7 +136,6 @@
     <ClCompile Include="dialogs\KeysConfigDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="guide.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -1025,9 +1024,6 @@
     </ClInclude>
     <ClInclude Include="meshes\kickerSimpleHoleMesh.h">
       <Filter>meshes</Filter>
-    </ClInclude>
-    <ClInclude Include="guide.h">
-      <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

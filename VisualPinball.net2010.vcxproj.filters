@@ -75,9 +75,6 @@
     <ClCompile Include="gate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="guide.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="hid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -694,9 +691,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="guide.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="hash.h">

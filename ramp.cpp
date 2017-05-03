@@ -1009,7 +1009,7 @@ void Ramp::CreateWire(const int numRings, const int numSegments, const Vertex2D 
       const int i2 = (i == (numRings - 1)) ? i : i + 1;
       const float height = rgheightInit[i];
 
-      Vertex3Ds tangent(midPoints[i2].x - midPoints[i].x, midPoints[i2].y - midPoints[i].y, 0.0f);
+      Vertex3Ds tangent(midPoints[i2].x - midPoints[i].x, midPoints[i2].y - midPoints[i].y, rgheightInit[i2]-rgheightInit[i]);
       if (i == numRings - 1)
       {
          // for the last spline point use the previous tangent again, otherwise we won't see the complete wire (it stops one control point too early)

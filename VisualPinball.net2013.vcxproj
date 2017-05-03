@@ -386,7 +386,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="Dialogs\TableInfoDialog.cpp" />
     <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
     <ClCompile Include="flasher.cpp" />
-    <ClCompile Include="guide.cpp" />
     <ClCompile Include="hittarget.cpp" />
     <ClCompile Include="inc\miniz.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -1101,7 +1100,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="flasher.h" />
     <ClInclude Include="flipper.h" />
     <ClInclude Include="gate.h" />
-    <ClInclude Include="guide.h" />
     <ClInclude Include="hash.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="hid.h" />

@@ -89,7 +89,6 @@ static TBBUTTON const g_tbbuttonPalette[] = {
    {22, ID_INSERT_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_PRIMITIVE, 16},
    {35, ID_INSERT_FLASHER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_FLASHER, 17},
    {36, ID_INSERT_RUBBER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_RUBBER, 18},
-   {17, ID_INSERT_GUIDE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_GUIDE, 19},
 };
 
 static TBBUTTON const g_tbbuttonLayers[] = {
@@ -135,7 +134,6 @@ static TBBUTTON const g_tbbuttonPalette[] = {
    { 22, ID_INSERT_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PRIMITIVE, 16 },
    { 35, ID_INSERT_FLASHER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_FLASHER, 17 },
    { 36, ID_INSERT_RUBBER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_RUBBER, 18 },
-   { 17, ID_INSERT_GUIDE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_GUIDE, 19 },
 };
 
 static TBBUTTON const g_tbbuttonLayers[] = {
@@ -1057,12 +1055,6 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
             switch (psel->GetItemType())
             {
-            case eItemGuide:
-            {
-               Guide *pGuide = (Guide*)psel;
-               pGuide->AddPoint(pt.x, pt.y, false);
-               break;
-            }
             case eItemRamp:
             {
                Ramp *pRamp = (Ramp*)psel;
