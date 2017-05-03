@@ -26,7 +26,6 @@ enum ItemTypeEnum
    eItemFlasher,
    eItemRubber,
    eItemHitTarget,
-   eItemGuide,
    //eItemLightSeqCenter,
    eItemTypeCount,
    eItemInvalid = 0xffffffff // Force enum to be 32 bits

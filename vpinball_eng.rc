@@ -2197,51 +2197,6 @@ BEGIN
     EDITTEXT        IDC_DBG_LIGHT_FADE_DOWN_EDIT,90,63,34,14,ES_AUTOHSCROLL
 END
 
-IDD_PROPGUIDE_VISUALS DIALOGEX 0, 0, 125, 67
-STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
-FONT 8, "MS Sans Serif", 0, 0, 0x0
-BEGIN
-    LTEXT           "Material",-1,7,4,26,8
-    COMBOBOX        IDC_MATERIAL_COMBO,7,12,111,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,37,40,10
-    LTEXT           "Depth Bias",-1,83,28,36,8
-    EDITTEXT        IDC_DEPTH_BIAS,83,36,36,12,ES_AUTOHSCROLL
-    CONTROL         "Reflection Enabled",IDC_RAMP_REFLECT_ENABLED_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,76,10
-END
-
-IDD_PROPGUIDE_POSITION DIALOGEX 0, 0, 125, 57
-STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
-FONT 8, "MS Sans Serif", 0, 0, 0x0
-BEGIN
-    EDITTEXT        2,59,7,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1,59,23,40,12,ES_AUTOHSCROLL
-    LTEXT           "To&p Height",-1,7,7,43,8
-    LTEXT           "&Bottom Height",-1,7,23,47,8
-    LTEXT           "Diameter",-1,13,42,29,8
-    EDITTEXT        IDC_WIRE_DIAMETER,59,39,40,12,ES_AUTOHSCROLL
-END
-
-IDD_PROPGUIDE_PHYSICS DIALOGEX 0, 0, 125, 121
-STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
-FONT 8, "MS Sans Serif", 0, 0, 0x0
-BEGIN
-    CONTROL         "Has &Hit Event",34,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,2,60,10
-    EDITTEXT        33,78,12,40,12,ES_AUTOHSCROLL
-    LTEXT           "Hit Threshol&d",-1,7,14,70,8
-    EDITTEXT        110,78,65,40,12,ES_AUTOHSCROLL
-    EDITTEXT        114,78,78,40,12,ES_AUTOHSCROLL
-    EDITTEXT        115,78,91,40,12,ES_AUTOHSCROLL
-    CONTROL         "Collidable",111,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,107,111,10
-    LTEXT           "&Elasticity",-1,7,67,63,8
-    LTEXT           "&Friction",-1,7,80,63,8
-    LTEXT           "&Scatter Angle",-1,7,93,63,8
-    COMBOBOX        IDC_MATERIAL_COMBO4,7,38,111,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Overwrite Material Settings",IDC_OVERWRITE_MATERIAL_SETTINGS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,52,100,10
-    LTEXT           "Physics Material",-1,7,28,52,8
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2659,19 +2614,6 @@ BEGIN
         RIGHTMARGIN, 131
         BOTTOMMARGIN, 196
     END
-
-    IDD_PROPGUIDE_VISUALS, DIALOG
-    BEGIN
-        BOTTOMMARGIN, 66
-    END
-
-    IDD_PROPGUIDE_POSITION, DIALOG
-    BEGIN
-    END
-
-    IDD_PROPGUIDE_PHYSICS, DIALOG
-    BEGIN
-    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2846,7 +2788,6 @@ BEGIN
         MENUITEM "Light Se&quencer\tCtrl+Q",    ID_INSERT_LIGHTSEQ
         MENUITEM "Primitive/Ob&ject\tCtrl+J",   ID_INSERT_PRIMITIVE
         MENUITEM "R&ubber\tCtrl+U",             ID_INSERT_RUBBER
-        MENUITEM "Guide\tCtrl+U",               ID_INSERT_GUIDE
     END
     POPUP "&Table"
     BEGIN
@@ -3012,7 +2953,6 @@ BEGIN
     "H",            ID_INSERT_FLASHER,      VIRTKEY, CONTROL, NOINVERT
     "F",            ID_INSERT_FLIPPER,      VIRTKEY, CONTROL, NOINVERT
     "G",            ID_INSERT_GATE,         VIRTKEY, CONTROL, NOINVERT
-    "U",            ID_INSERT_GUIDE,        VIRTKEY, CONTROL, NOINVERT
     "K",            ID_INSERT_KICKER,       VIRTKEY, CONTROL, NOINVERT
     "L",            ID_INSERT_LIGHT,        VIRTKEY, CONTROL, NOINVERT
     "Q",            ID_INSERT_LIGHTSEQ,     VIRTKEY, CONTROL, NOINVERT
@@ -3093,7 +3033,6 @@ IDC_LIGHTSEQ            CURSOR                  "res\\lightseq.cur"
 IDC_PRIMITIVE           CURSOR                  "res\\primitive.cur"
 IDC_FLASHER             CURSOR                  "res\\flasher.cur"
 IDC_RUBBER              CURSOR                  "res\\rubber.cur"
-IDC_GUIDE               CURSOR                  "res\\guide.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3235,7 +3174,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_TB_GUIDE            "Guide"
     IDS_DRAWING_ORDER_SELECT "D&rawing Order (Select)"
 END
 

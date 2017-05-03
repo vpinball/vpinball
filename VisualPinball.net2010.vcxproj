@@ -1780,7 +1780,6 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
     <ClCompile Include="rubber.cpp" />
-    <ClCompile Include="guide.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
     <ClCompile Include="inc\progmesh.cpp" />
@@ -6950,7 +6949,6 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="flasher.h" />
     <ClInclude Include="flipper.h" />
     <ClInclude Include="gate.h" />
-    <ClInclude Include="guide.h" />
     <ClInclude Include="hash.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="hid.h" />

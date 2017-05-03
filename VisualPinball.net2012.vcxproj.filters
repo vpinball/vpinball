@@ -23,7 +23,6 @@
     <ClCompile Include="Media\fileio.cpp" />
     <ClCompile Include="flipper.cpp" />
     <ClCompile Include="gate.cpp" />
-    <ClCompile Include="guide.cpp" />
     <ClCompile Include="hid.cpp" />
     <ClCompile Include="Pin\hitflipper.cpp" />
     <ClCompile Include="Pin\hitplunger.cpp" />
@@ -501,9 +500,6 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="gate.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="guide.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="hash.h">
