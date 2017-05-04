@@ -20,7 +20,7 @@
 #include "AboutDialog.h"
 #include "DrawingOrderDialog.h"
 
-#define CURRENT_FILE_FORMAT_VERSION 1021
+#define CURRENT_FILE_FORMAT_VERSION 1030
 
 #define DEFAULT_SECURITY_LEVEL 0
 

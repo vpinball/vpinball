@@ -2792,7 +2792,7 @@ BEGIN
     POPUP "&Table"
     BEGIN
         MENUITEM "&Play\tF5",                   ID_TABLE_PLAY
-        MENUITEM "Camera/Light M&ode\tF6",      ID_TABLE_CAMERAMODE
+        MENUITEM "Camera/Light Edit M&ode\tF6", ID_TABLE_CAMERAMODE
         MENUITEM SEPARATOR
         MENUITEM "&Table Info...",              ID_TABLE_TABLEINFO
         MENUITEM "&Sound Manager...\tF2",       ID_TABLE_SOUNDMANAGER

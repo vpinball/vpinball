@@ -3481,6 +3481,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
          mats[i].bIsMetal = m->m_bIsMetal;
          mats[i].bOpacityActive_fEdgeAlpha = m->m_bOpacityActive ? 1 : 0;
          mats[i].bOpacityActive_fEdgeAlpha |= ((unsigned char)(clamp(m->m_fEdgeAlpha, 0.f, 1.f)*127.f)) << 1;
+         mats[i].bUnused2 = 0;
          strcpy_s(mats[i].szName, m->m_szName);
       }
       bw.WriteStruct(FID(MATE), mats, (int)sizeof(SaveMaterial)*m_materials.Size());
@@ -3832,6 +3833,11 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                hr = E_ACCESSDENIED;
             }
          }
+
+         if (version < 1030) // the m_fGlossyImageLerp part was included first with 10.3, so set all previously saved materials to the old default
+             for (int i = 0; i < m_materials.size(); ++i)
+                 m_materials.ElementAt(i)->m_fGlossyImageLerp = 1.f;
+
          //////// End Authentication block
       }
       pstgData->Release();
