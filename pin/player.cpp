@@ -4116,6 +4116,8 @@ void Player::UpdateCameraModeDisplay()
    DebugPrint(10, 90, szFoo, len);
    len = sprintf_s(szFoo, "Navigate around with the Arrow Keys (and Left Alt Key)");
    DebugPrint(10, 180, szFoo, len);
+   len = sprintf_s(szFoo, "Use the Debugger/Interactive Editor to change Lights/Materials");
+   DebugPrint(10, 210, szFoo, len);
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
