@@ -416,7 +416,8 @@ UserValue(any) - can store any user defined value for re-use later-on
 Scatter(float)
 Fall Through(bool) - if checked the ball will fall through the surface assigned to the kicker, only if the surface is higher than the playfield
 *Legacy(bool)      - if checked the kicker will behave as an old VP9 kicker that means no distraction of the ball if it doesn't hit straight the kicker center
-HitAccuracy(float) - defines the accuracy how fast the ball gets caught when rolling over the kicker center (0-1.0)
+HitAccuracy(float) - defines the accuracy how fast the ball gets caught when rolling over the kicker center (0.0-1.0)
+*HitHeight(float)
 *Orientation(float)
 *Radius(float)
 LastCapturedBall   - returns an instance to the last captured ball or the current captured ball. If no ball was captured before or was destroyed before an error message will be displayed.
