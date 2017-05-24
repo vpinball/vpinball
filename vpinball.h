@@ -39,8 +39,8 @@ public:
    void Init();
    void RegisterClasses();
    void CreateSideBar();
-   HWND CreateLayerToolbar(HWND hwndParent);
-   HWND CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent);
+   HWND CreateLayerToolbar(HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight);
+   HWND CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight);
    void CreateMDIClient();
 
    void ParseCommand(size_t code, HWND hwnd, size_t notify);

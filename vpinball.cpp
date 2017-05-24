@@ -599,20 +599,21 @@ void VPinball::CreateSideBar()
 
    m_hwndSideBar = ::CreateWindowEx(/*WS_EX_WINDOWEDGE*/0, "VPStaticChild", "", WS_VISIBLE | WS_CHILD | WS_BORDER,
       0, 0, TOOLBAR_WIDTH + SCROLL_WIDTH, rc.bottom - rc.top, m_hwnd, NULL, g_hinst, 0);
+   unsigned w,h;
+   m_hwndToolbarMain = CreateToolbar((TBBUTTON *)g_tbbuttonMain, TBCOUNTMAIN, m_hwndSideBar, w,h);
 
    m_hwndSideBarLayers = ::CreateWindowEx(0, "VPStaticChild", "", WS_VISIBLE | WS_CHILD,
-      0, 48 * (TBCOUNTMAIN / 2), TOOLBAR_WIDTH + SCROLL_WIDTH, rc.bottom - rc.top, m_hwndSideBar, NULL, g_hinst, 0);
+      0, h * (TBCOUNTMAIN / 2)+10, TOOLBAR_WIDTH /*+ SCROLL_WIDTH*/, rc.bottom - rc.top, m_hwndSideBar, NULL, g_hinst, 0);
+   m_hwndToolbarLayers = CreateLayerToolbar(m_hwndSideBarLayers, w,h);
 
    m_hwndSideBarScroll = ::CreateWindowEx(0, "VPStaticChild", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL,
-      0, 28 * (TBCOUNTLAYERS / 2), TOOLBAR_WIDTH + SCROLL_WIDTH, rc.bottom - rc.top, m_hwndSideBarLayers, NULL, g_hinst, 0);
+      0, h * (TBCOUNTLAYERS / 3)+10, TOOLBAR_WIDTH + SCROLL_WIDTH, rc.bottom - rc.top, m_hwndSideBarLayers, NULL, g_hinst, 0);
+   m_hwndToolbarPalette = CreateToolbar((TBBUTTON *)g_tbbuttonPalette, TBCOUNTPALETTE, m_hwndSideBarScroll, w,h);
 
-   m_hwndToolbarMain = CreateToolbar((TBBUTTON *)g_tbbuttonMain, TBCOUNTMAIN, m_hwndSideBar);
-   m_hwndToolbarLayers = CreateLayerToolbar(m_hwndSideBarLayers);
-   m_hwndToolbarPalette = CreateToolbar((TBBUTTON *)g_tbbuttonPalette, TBCOUNTPALETTE, m_hwndSideBarScroll);
    m_palettescroll = 0;
 }
 
-HWND VPinball::CreateLayerToolbar(HWND hwndParent)
+HWND VPinball::CreateLayerToolbar(HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight)
 {
    HWND hwnd = CreateToolbarEx(hwndParent,
       WS_CHILD | WS_VISIBLE | TBSTYLE_BUTTON | TBSTYLE_WRAPABLE,
@@ -646,6 +647,10 @@ HWND VPinball::CreateLayerToolbar(HWND hwndParent)
 
    SendMessage(hwnd, TB_AUTOSIZE, 0, 0);
 
+   const LRESULT wh = SendMessage(hwnd, TB_GETBUTTONSIZE, 0, 0);
+   buttonwidth = wh&0xFFFF;
+   buttonheight = wh>>16;
+
    return hwnd;
 }
 
@@ -656,7 +661,7 @@ HWND VPinball::CreateLayerToolbar(HWND hwndParent)
 ///<param name="hwndParent">Parentwindow (left Toolbar (top or bottom))</param>
 ///<returns>Handle to Toolbar</returns>
 ///</summary>
-HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
+HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight)
 {
    HWND hwnd = CreateToolbarEx(hwndParent,
       WS_CHILD | WS_VISIBLE | TBSTYLE_FLAT | TBSTYLE_WRAPABLE,
@@ -700,6 +705,10 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
    }
 
    SendMessage(hwnd, TB_AUTOSIZE, 0, 0);
+
+   const LRESULT wh = SendMessage(hwnd, TB_GETBUTTONSIZE, 0, 0);
+   buttonwidth = wh&0xFFFF;
+   buttonheight = wh>>16;
 
    return hwnd;
 }
