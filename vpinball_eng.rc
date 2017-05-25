@@ -246,7 +246,7 @@ BEGIN
     LTEXT           "Fuzzel",IDC_STATIC,13,141,21,8
     LTEXT           "Koadic",IDC_STATIC,150,141,42,9
     CTEXT           "Mukuste",IDC_STATIC,82,151,42,9
-    CTEXT           "Copyright (C) 2000-2016 Randy Davis. All rights reserved",IDC_STATIC,7,174,118,19
+    CTEXT           "Copyright (C) 2000-2017 Randy Davis. All rights reserved",IDC_STATIC,7,174,118,19
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,108,36,115,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,184,32,8,NOT WS_VISIBLE | WS_DISABLED
 END
@@ -1850,7 +1850,7 @@ BEGIN
             VALUE "FileDescription", "Visual Pinball " VP_VERSION_STRING
             VALUE "FileVersion", VP_VERSION_STRING_COMMAS
             VALUE "InternalName", "Visual Pinball"
-            VALUE "LegalCopyright", "Copyright 2000-2016"
+            VALUE "LegalCopyright", "Copyright 2000-2017"
             VALUE "OriginalFilename", "VPinball.exe"
             VALUE "ProductName", "Visual Pinball"
             VALUE "ProductVersion", VP_VERSION_STRING_COMMAS
