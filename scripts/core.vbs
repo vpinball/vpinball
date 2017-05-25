@@ -3,8 +3,8 @@ Const VPinMAMEDriverVer = 3.53
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.53 (Update by )
-' -
+' New in 3.53 (Update by Toxie)
+' - Add more key mappings to help dialog
 '
 ' New in 3.52 (Update by DJRobX & Toxie)
 ' - Change default interval of the PinMAME timer to -1 (frame-sync'ed) if VP10.2 (or newer) is running
