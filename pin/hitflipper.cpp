@@ -51,6 +51,7 @@ FlipperAnimObject::FlipperAnimObject(const Vertex2D& center, float baser, float 
    m_isInContact = false;
    m_curTorque = 0.0f;
    m_torqueRampupSpeed = 1e6f;
+   m_angleSpeedFactor = 1.0f;
 
    m_angleStart = angleStart;
    m_angleEnd = angleEnd;
@@ -312,7 +313,7 @@ void FlipperAnimObject::UpdateVelocities()
    }
 
    m_angularMomentum += (float)PHYS_FACTOR * torque;
-   m_anglespeed = m_angularMomentum / m_inertia;
+   m_anglespeed = (m_angularMomentum*m_angleSpeedFactor) / m_inertia;
    m_angularAcceleration = torque / m_inertia;
 }
 
