@@ -4,8 +4,6 @@
 
 #include "StdAfx.h"
 #include "resource.h"
-#include "vpversion.h"
-#include "svn_version.h"
 #include "ProtectTableDialog.h"
 #include "KeysConfigDialog.h"
 
