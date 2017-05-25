@@ -2652,11 +2652,11 @@ STDMETHODIMP Primitive::put_HasHitEvent(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fHitEvent = VBTOF(newVal);
+   m_d.m_fHitEvent = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Threshold(float *pVal)
@@ -2670,11 +2670,11 @@ STDMETHODIMP Primitive::put_Threshold(float newVal)
 {
    STARTUNDO
 
-      m_d.m_threshold = newVal;
+   m_d.m_threshold = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Elasticity(float *pVal)
@@ -2720,14 +2720,11 @@ STDMETHODIMP Primitive::put_Friction(float newVal)
 {
    STARTUNDO
 
-      if (newVal > 1.0f) newVal = 1.0f;
-      else if (newVal < 0.f) newVal = 0.f;
+   m_d.m_friction = clamp(newVal, 0.f, 1.f);
 
-      m_d.m_friction = newVal;
+   STOPUNDO
 
-      STOPUNDO
-
-         return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Scatter(float *pVal)

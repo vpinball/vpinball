@@ -68,7 +68,7 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Kicker, eItemKicker, KICKER, 1)
 
-      DECLARE_REGISTRY_RESOURCEID(IDR_KICKER)
+   DECLARE_REGISTRY_RESOURCEID(IDR_KICKER)
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 

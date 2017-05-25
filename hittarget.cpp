@@ -1356,10 +1356,7 @@ STDMETHODIMP HitTarget::put_Friction(float newVal)
 {
    STARTUNDO
 
-   if (newVal > 1.0f) newVal = 1.0f;
-      else if (newVal < 0.f) newVal = 0.f;
-
-   m_d.m_friction = newVal;
+   m_d.m_friction = clamp(newVal, 0.f, 1.f);
 
    STOPUNDO
 
