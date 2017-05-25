@@ -1,42 +1,34 @@
 VP 10.3.0 Changelog
 ------------------------
+
 - add new material option for the glossy color: 'Use Image', which allows to configure how much the (optional) image that is attached
   to a scene element is allowed to influence the glossy part of the material (0=no tinting at all from the image, up to 1=same behavior as before/older VPX versions)
 
-- fix autosave option if entering/OKing the editor options dialog
-- fix UI issue with the layer buttons for high desktop resolutions
+- add new configurable in-game key for a lockbar/fire button (accessible via "LockbarKey" in the script)
+
+- in interactive camera/light editing mode (e.g. launch table with F6 or the respective menu entry):
+  - press the start game key (default is 1) to reset the camera and all backdrop settings (inclination, layback...)
+  - add camera rotation around Y axis
+  - navigating around the table with the arrow keys (and left alt key) is now possible
+  - show camera position
+
+- add additional parameter to primitives to allow for rendering backface triangles (if the used material features transparency)
+
+- add simple kicker hole mesh
+
+- change AntiFriction to Damping for the gate and spinner elements (which also changes the input range from 0..100 to 0..1, and is inverse to before, e.g. Damping="1-AntiFriction/100")
+  (old tables will still load/save exactly the same though, as it was always used like this internally anyway)
 
 - add (optional) missing hit event to ramps
 - add missing Timer properties for ramps
 
-- add new configurable key for a lockbar/fire button (accessible via "LockbarKey" in the script)
-
-- VP supports three different view modes (DESKTOP, FULLSCREEN and FULL_SINGLE_SCREEN). The UI was changed to select and view the properties via a drop down list.
-
-- add hotkey for toggling between table and backdrop view in the editor (ctrl+space)
-
-- in Camera/Light mode (F6) press the start game key (default is 1) to reset the camera and all backdrop settings (inclination, layback...)
-
-- add camera rotation around Y axis in Camera/Light mode (F6)
-
-- navigating around the table with the arrow keys (and left alt key) is now possible in the Camera and Light mode (start with F6)
-
-- improve display of images with alpha channel in the editor (no more checkerboards)
-
-- add additional parameter to primitives to allow for rendering backface triangles (if the used material features transparency)
-
-- material/image manager dialog is resizeable
-
-- show camera position in camera/light mode
-
-- add simple kicker hole mesh
-
-- add new FSS setting in the backdrop options to be able to easily add an additional backglass to the table
-
+- VP now supports three different view modes (DESKTOP, FULLSCREEN and FULL_SINGLE_SCREEN (to be able to easily add an additional backglass to the table)). The UI was changed to select, view and change these properties via a drop down list
 - add more window resolutions to the video preferences (for new FSS/portrait setups)
 
 - using the built-in DMD (via the flasher element) now in addition will respect the 'Additive Blend' and 'Modulate' parameters to steer the blending with the table
   (this can for example be used to simulate a reflection on the playfield glass: set 'Modulate' to 0.9 and check 'Additive Blend' as an example)
+
+- slightly tweak bloom filter and light transmission filter to capture a larger radius (for very bright lights)
 
 - add NFAA post processing filter to the post-processing AA dropdown menus (sometimes more blurry, but also keeps more dynamic range of the highlights compared to FXAA, and is pretty fast)
 - add DLAA post processing filter to the post-processing AA dropdown menus (somewhere inbetween FXAA and NFAA, depending on the aliasing-pattern that is smoothed, and more costly than NFAA)
@@ -45,14 +37,18 @@ VP 10.3.0 Changelog
 - own colors can now be defined for locked/unlocked selected elements, element fill color and editor table background, in the editor preferences
 
 - sound manager, image manager and script editor save and restore window position and size
-- Image Manager: new column added to show if an image is in use
+- image Manager: new column added to show if an image is in use
+- material/image manager dialog is resizeable
+
+- improve display of images with alpha channel in the editor (no more checkerboards)
+
+- add hotkey for toggling between table and backdrop view in the editor (ctrl+space)
+
+- fix autosave option if entering/OKing the editor options dialog
+
+- fix UI issue with the layer buttons for high desktop resolutions
 
 - add Win32++ framework to simplify UI handling (more infos under https://sourceforge.net/projects/win32-framework )
-
-- change AntiFriction to Damping for the gate and spinner elements (which also changes the input range from 0..100 to 0..1, and is inverse to before, e.g. Damping="1-AntiFriction/100")
-  (old tables will still load/save exactly the same though, as it was always used like this internally anyway)
-
-- slightly tweak bloom filter and light transmission filter to capture a larger radius (for very bright lights)
 
 - remove Visual Studio 2008 support
 - add Visual Studio 2017 support
