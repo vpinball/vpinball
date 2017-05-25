@@ -333,6 +333,8 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    else
       phf->m_flipperanim.m_torqueRampupSpeed = min(strength / coil_ramp_up, 1e6f);
 
+   phf->m_flipperanim.m_angleSpeedFactor = m_d.m_angleSpeedFactor;
+
    phf->m_flipperanim.m_EnableRotateEvent = 0;
    phf->m_pfe = NULL;
 
@@ -600,6 +602,7 @@ void Flipper::SetDefaultPhysics(bool fromMouseClick)
    m_d.m_elasticityFalloff = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "ElasticityFalloff", 0.43f);
 
    m_d.m_OverridePhysics = 0;
+   m_d.m_angleSpeedFactor = 1.0f;
 
    m_d.m_friction = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "Friction", 0.6f);
    m_d.m_rampUp = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "RampUp", 3.0f);
@@ -1269,6 +1272,33 @@ STDMETHODIMP Flipper::put_EOSTorqueAngle(float newVal)
     }
 
     return S_OK;
+}
+
+STDMETHODIMP Flipper::get_SpeedFactor(float *pVal)
+{
+   if (m_phitflipper)
+      *pVal = m_phitflipper->m_flipperanim.m_angleSpeedFactor;
+   else
+      *pVal = m_d.m_angleSpeedFactor;
+
+   return S_OK;
+}
+
+STDMETHODIMP Flipper::put_SpeedFactor(float newVal)
+{
+   if (m_phitflipper)
+   {
+      m_phitflipper->m_flipperanim.m_angleSpeedFactor = newVal;
+      m_d.m_angleSpeedFactor = newVal;
+   }
+   else
+   {
+      STARTUNDO
+         m_d.m_angleSpeedFactor = newVal;
+      STOPUNDO
+   }
+
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_StartAngle(float *pVal)
