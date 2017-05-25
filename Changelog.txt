@@ -1,3 +1,11 @@
+VP 9.9.4 Changelog
+------------------------
+- fix UI issue with the layer buttons for high desktop resolutions
+
+- fix an issue with Mot-Ion / Pinball Wizard controllers that suffer from calibration drift as they warm up
+
+- backport CPU affinity setting
+
 VP 9.9.3 Changelog
 ------------------------
 - disable visual touch/pen feedback to save one frame of input latency/lag
