@@ -5,6 +5,7 @@ VP 9.9.0 PM5 Plunger/Accel MOD Changelog
 - backport plunger/accel/nudge changes from main VP
 
 - minor fixes and backports from main VP
+ - fix UI issue with the layer buttons for high desktop resolutions
  - disable visual touch/pen feedback to save one frame of input latency/lag
  - fix timers that dis/enable themselves in the script
  - fix EMReel crash when image is missing and reel value is nonzero
