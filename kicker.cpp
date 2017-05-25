@@ -873,11 +873,11 @@ STDMETHODIMP Kicker::put_Y(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vCenter.y = newVal;
+   m_d.m_vCenter.y = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Kicker::get_Surface(BSTR *pVal)
@@ -894,11 +894,11 @@ STDMETHODIMP Kicker::put_Surface(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Kicker::get_Enabled(VARIANT_BOOL *pVal)
@@ -912,16 +912,14 @@ STDMETHODIMP Kicker::put_Enabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fEnabled = VBTOF(newVal);
+   m_d.m_fEnabled = VBTOF(newVal);
 
    if (m_phitkickercircle)
-   {
       m_phitkickercircle->m_fEnabled = m_d.m_fEnabled;
-   }
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Kicker::get_Scatter(float *pVal)
@@ -935,11 +933,11 @@ STDMETHODIMP Kicker::put_Scatter(float newVal)
 {
    STARTUNDO
 
-      m_d.m_scatter = newVal;
+   m_d.m_scatter = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Kicker::get_HitAccuracy(float *pVal)
@@ -953,16 +951,11 @@ STDMETHODIMP Kicker::put_HitAccuracy(float newVal)
 {
    STARTUNDO
 
-      if (newVal > 1.0f)
-         m_d.m_hitAccuracy = 1.0f;
-      else if (newVal > 0.0f)
-         m_d.m_hitAccuracy = newVal;
-      else
-         m_d.m_hitAccuracy = 0.0f;
+   m_d.m_hitAccuracy = clamp(newVal, 0.f, 1.f);
 
-      STOPUNDO
+   STOPUNDO
 
-         return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Kicker::get_HitHeight(float *pVal)
@@ -976,11 +969,11 @@ STDMETHODIMP Kicker::put_HitHeight(float newVal)
 {
    STARTUNDO
 
-      m_d.m_hit_height = newVal;
+   m_d.m_hit_height = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Kicker::get_Orientation(float *pVal)
@@ -994,11 +987,11 @@ STDMETHODIMP Kicker::put_Orientation(float newVal)
 {
    STARTUNDO
 
-      m_d.m_orientation = newVal;
+   m_d.m_orientation = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Kicker::get_Radius(float *pVal)
