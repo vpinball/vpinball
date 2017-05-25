@@ -4,6 +4,7 @@ VP 10.3.0 Changelog
   to a scene element is allowed to influence the glossy part of the material (0=no tinting at all from the image, up to 1=same behavior as before/older VPX versions)
 
 - fix autosave option if entering/OKing the editor options dialog
+- fix UI issue with the layer buttons for high desktop resolutions
 
 - add (optional) missing hit event to ramps
 - add missing Timer properties for ramps
