@@ -416,7 +416,7 @@ BOOL KeysConfigDialog::OnInitDialog()
             selected = 0; // assume no assignment as standard
 
         const HWND hwnd = GetDlgItem(item).GetHwnd();
-        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)" (none)");
+        ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(none)");
         ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 1");
         ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 2");
         ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 3");

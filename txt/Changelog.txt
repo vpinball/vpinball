@@ -1,6 +1,6 @@
 VP 10.3.0 Changelog
 ------------------------
-- add SpeedFactor for flippers. Use it via scripting (e.g. LeftFlipper.SpeedFactor=1.5) to speed up/down the angle speed of the flipper.
+- add SpeedFactor for flippers. Use it via scripting (e.g. LeftFlipper.SpeedFactor=1.5) to speed up/down the angle speed of the flipper
 
 - add new material option for the glossy color: 'Use Image', which allows to configure how much the (optional) image that is attached
   to a scene element is allowed to influence the glossy part of the material (0=no tinting at all from the image, up to 1=same behavior as before/older VPX versions)

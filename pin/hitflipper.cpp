@@ -247,7 +247,7 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
    {
       const float anglespd = fabsf(RADTOANG(m_anglespeed));
       m_angularMomentum *= -0.3f; //!! make configurable?
-      m_anglespeed = m_angularMomentum / m_inertia;
+      m_anglespeed = (m_angularMomentum*m_angleSpeedFactor) / m_inertia;
 
       if (m_EnableRotateEvent > 0)
       {
@@ -320,7 +320,7 @@ void FlipperAnimObject::UpdateVelocities()
 void FlipperAnimObject::ApplyImpulse(const Vertex3Ds& rotI)
 {
    m_angularMomentum += rotI.z;            // only rotation about z axis
-   m_anglespeed = m_angularMomentum / m_inertia;    // TODO: figure out moment of inertia
+   m_anglespeed = (m_angularMomentum*m_angleSpeedFactor) / m_inertia;    // TODO: figure out moment of inertia
 }
 
 
