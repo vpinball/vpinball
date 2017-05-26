@@ -7,7 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.3:
-- add SpeedFactor command to the flippers
+- add SpeedFactor command to the flipper element
 - document some missing UserValue's and the timer element itself
 - add HasHitEvent and Threshold to the ramp element
 - add BackfacesEnabled to the primitive element
