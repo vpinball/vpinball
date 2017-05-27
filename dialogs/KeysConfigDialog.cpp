@@ -1011,9 +1011,6 @@ void KeysConfigDialog::OnOK()
     SetValue(IDC_JOYCUSTOM2, "Player", "JoyCustom2Key");
     SetValue(IDC_JOYCUSTOM3, "Player", "JoyCustom3Key");
     SetValue(IDC_JOYCUSTOM4, "Player", "JoyCustom4Key");
-    SetValue(IDC_ENABLE_MOUSE_PLAYER, "Player", "EnableMouseInPlayer");
-    SetValue(IDC_ENABLE_NUDGE_FILTER, "Player", "EnableNudgeFilter");
-    SetValue(IDC_DOF_FORCEDISABLE, "Controller", "ForceDisableB2S");
     SetValue(IDC_DOF_CONTACTORS, "Controller", "DOFContactors");
     SetValue(IDC_DOF_KNOCKER, "Controller", "DOFKnocker");
     SetValue(IDC_DOF_CHIMES, "Controller", "DOFChimes");
@@ -1023,6 +1020,18 @@ void KeysConfigDialog::OnOK()
     SetValue(IDC_DOF_FLIPPERS, "Controller", "DOFFlippers");
     SetValue(IDC_DOF_TARGETS, "Controller", "DOFTargets");
     SetValue(IDC_DOF_DROPTARGETS, "Controller", "DOFDropTargets");
+
+    hwndControl = GetDlgItem(IDC_ENABLE_NUDGE_FILTER).GetHwnd();
+    key = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    SetRegValue("Player", "EnableNudgeFilter", REG_DWORD, &key, 4);
+
+    hwndControl = GetDlgItem(IDC_ENABLE_MOUSE_PLAYER).GetHwnd();
+    key = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    SetRegValue("Player", "EnableMouseInPlayer", REG_DWORD, &key, 4);
+
+    hwndControl = GetDlgItem(IDC_DOF_FORCEDISABLE).GetHwnd();
+    key = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    SetRegValue("Controller", "ForceDisableB2S", REG_DWORD, &key, 4);
 
     CDialog::OnOK();
 }
