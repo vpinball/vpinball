@@ -57,7 +57,6 @@ public:
    float m_curTorque;
    float m_contactTorque;
    float m_torqueRampupSpeed;
-   float m_angleSpeedFactor;
 
    float m_angleStart, m_angleEnd;
    float m_angleMin, m_angleMax;

@@ -44,7 +44,6 @@ public:
    float m_rampUp;
    float m_torqueDamping;
    float m_torqueDampingAngle;
-   float m_angleSpeedFactor; //!! no UI/script only, also not saved
 
    float m_scatter; // scatter angle on hit
    //float m_angleEOS; // angle at which EOS switch opens, as measured from EOS parked position //!! reenable?
@@ -207,8 +206,6 @@ public:
    STDMETHOD(put_EOSTorque)(/*[in]*/ float newVal);
    STDMETHOD(get_EOSTorqueAngle)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_EOSTorqueAngle)(/*[in]*/ float newVal);
-   STDMETHOD(get_SpeedFactor)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_SpeedFactor)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_)

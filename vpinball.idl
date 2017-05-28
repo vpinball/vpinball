@@ -982,8 +982,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(113), helpstring("property EOSTorque")] HRESULT EOSTorque([in] float newVal);
                 [propget, id(189), helpstring("property EOSTorqueAngle")] HRESULT EOSTorqueAngle([out, retval] float *pVal);
                 [propput, id(189), helpstring("property EOSTorqueAngle")] HRESULT EOSTorqueAngle([in] float newVal);
-                [propget, id(806), helpstring("property SpeedFactor")] HRESULT SpeedFactor([out, retval] float *pVal);
-                [propput, id(806), helpstring("property SpeedFactor")] HRESULT SpeedFactor([in] float newVal);
 
                 [propget, id(111), helpstring("property FlipperRadiusMin")] HRESULT FlipperRadiusMin([out, retval] float *pVal);
                 [propput, id(111), helpstring("property FlipperRadiusMin")] HRESULT FlipperRadiusMin([in] float newVal);
