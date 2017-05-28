@@ -7,7 +7,6 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.3:
-- add SpeedFactor command to the flipper element
 - document some missing UserValue's and the timer element itself
 - add HasHitEvent and Threshold to the ramp element
 - add BackfacesEnabled to the primitive element
@@ -336,7 +335,6 @@ CurrentAngle(float) - only readable
 
 Friction(float) - 0..1
 RampUp(float) - Coil ramp up speed. Set to 0 for fastest flipper response.
-SpeedFactor(float) - can be used from the script to speed up/down the actual speed of the flipper
 Elasticity(float)
 ElasticityFalloff(float)
 Return(float)

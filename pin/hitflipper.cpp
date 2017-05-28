@@ -51,7 +51,6 @@ FlipperAnimObject::FlipperAnimObject(const Vertex2D& center, float baser, float 
    m_isInContact = false;
    m_curTorque = 0.0f;
    m_torqueRampupSpeed = 1e6f;
-   m_angleSpeedFactor = 1.0f;
 
    m_angleStart = angleStart;
    m_angleEnd = angleEnd;
@@ -247,8 +246,7 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
    {
       const float anglespd = fabsf(RADTOANG(m_anglespeed));
       m_angularMomentum *= -0.3f; //!! make configurable?
-      m_anglespeed = (m_angularMomentum*m_angleSpeedFactor) / m_inertia;
-
+      m_anglespeed = (m_angularMomentum) / m_inertia;
       if (m_EnableRotateEvent > 0)
       {
           m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS, anglespd); // send EOS event
@@ -313,14 +311,14 @@ void FlipperAnimObject::UpdateVelocities()
    }
 
    m_angularMomentum += (float)PHYS_FACTOR * torque;
-   m_anglespeed = (m_angularMomentum*m_angleSpeedFactor) / m_inertia;
+   m_anglespeed = m_angularMomentum / m_inertia;
    m_angularAcceleration = torque / m_inertia;
 }
 
 void FlipperAnimObject::ApplyImpulse(const Vertex3Ds& rotI)
 {
    m_angularMomentum += rotI.z;            // only rotation about z axis
-   m_anglespeed = (m_angularMomentum*m_angleSpeedFactor) / m_inertia;    // TODO: figure out moment of inertia
+   m_anglespeed = m_angularMomentum / m_inertia;    // TODO: figure out moment of inertia
 }
 
 
