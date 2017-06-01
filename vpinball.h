@@ -46,8 +46,8 @@ public:
 	void Init();
 	void RegisterClasses();
 	void CreateSideBar();
-    HWND CreateLayerToolbar(HWND hwndParent, unsigned int &buttonheight);
-	HWND CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent, unsigned int &buttonheight);
+	HWND CreateLayerToolbar(HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight);
+	HWND CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight);
 	void CreateMDIClient();
 #ifdef VBA
 	void InitVBA();
