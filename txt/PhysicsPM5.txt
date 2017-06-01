@@ -1,0 +1,87 @@
+VP10 has a completely overhauled physics engine; see details below for more information. Here are some very basic instructions for modifying a VP9 table to work with VP10 physics:
+
+1. Backdrop > Physics & Graphics:  Gravity 1, Playfield Friction 0.08-0.1
+2. Table properties > Slope & Dimensions: set the table slope (around 6 on modern DMD tables, lower for older SS and EM tables)
+3. Select all flippers and adjust the physics parameters: Mass 1, Strength around 1000-3000, Elasticity 0.8-0.9, Friction 0.8, Return Strength Ratio 0.10
+4. Due to the extra energy needed to get the ball rolling, plungers, slingshots, bumpers, etc., typically all need to have their force increased by 20-40%.
+5. Physics scripts like BMPR or light tap scripts should not be used with the new physics engine. Also, many VP9 tables have small helper routines which adjust the velocity of the ball on ramps etc, these often do not work well and should be removed.
+
+
+
+VP 10 has a completely overhauled and much more realistic physics engine. The main new features are the following:
+
+* Physics framerate raised from 100 Hz to 1000 Hz. This increases the smoothness, accuracy and stability of the physics simulation.
+* Physics now always use a fixed timestep. This eliminates all FPS dependence of the physics code and makes smooth gameplay at vsynced framerates possible.
+* Proper simulation of ball spin. All rotational effects are fully simulated: the ball will properly pick up spin from moving over the playfield and other objects, and collisions with playfield objects will take the spin into account to deflect the ball properly.
+* Simulation of friction on contact and collisions. This goes hand in hand with the previous point since friction with the playfield is the main source of ball spin, and frictional effects during collisions cause the ball to deflect according to spin. In particular, the ball will now properly transition from sliding over the playfield to rolling on it. This means that it will first convert some translational kinetic energy into rotational energy until it enters a natural roll, at which point friction doesn't do much anymore and the ball is free to roll. The stored up rotational energy has the effect that the ball needs a bit more force put into it to get it to move or stop it again.
+* Flippers are now simulated as true dynamic rigid bodies which have forces from the solenoid, the return spring and the ball acting on them and accelerate accordingly. They will also properly bounce off their stoppers instead of just moving to maximum extension and then stopping. In practice, this means that flipper/ball interaction is now much more realistic and less binary. Post passes, light taps, cradle separations, drop and live catches are now all possible. Furthermore, the simulation of the friction of the flipper rubbers greatly improves aiming.
+
+
+### Physics parameters
+
+These parameters are found under Backdrop > Physics & Graphics.
+
+##### Gravity
+
+Gravitational acceleration. The parameters in VP10 are tuned in such a way that a value of 1 for this corresponds to the true Earth acceleration as long as the table respects the standard VP units of length, 1 VP unit = .53975 mm.
+
+There should never be a need to change this value to something other than 1 unless the table uses a different length scale.
+
+##### Playfield Friction
+
+The friction of the playfield. The higher this is, the faster the ball transitions from sliding to rolling, and the stronger the effect of spin on the ball trajectory. If this is set very low, the ball feels like it's made of ice, and if it's set high, the ball feels almost "glued" to the playfield.
+
+Decent values seem to be 0.08-0.10.
+
+##### Nudge Time
+
+The time it takes the table to complete a swing plus back swing when digital (keyboard) nudging is applied by means of the `Nudge` script function. One unit here means 10 ms.
+
+The default value is 5 (corresponding to 50 ms).
+
+
+### Flipper parameters
+
+##### Mass
+
+This is the mass of the flipper (where 1 corresponds to standard ball mass, 80g). It basically describes how much the flipper interacts with the ball. A very heavy flipper will barely feel the impact of the ball and keep moving at almost the same velocity as it was before the hit. A very light flipper, on the other hand, will move much slower with the ball on it than it does without the ball, and will be deflected by the impact of the ball significantly.
+
+A good default value for this parameter is 1 - 1.25.
+
+##### Strength
+
+This is the force (actually, torque) with which the solenoid accelerates the flipper. The higher this value, the faster the flipper will move. But be aware that this is directly linked to flipper mass: if the flipper is twice as heavy, it also needs twice the force to get it to move at the same speed.
+
+A reasonable range for this is 1000-3000, obviously depending a lot on the era of flippers being simulated and the desired speed of the game.
+
+##### Elasticity and Elasticity Falloff
+
+This is basically the bounciness of the flipper rubber. Since real rubber is less bouncy when it is hit at a higher velocity, the Falloff parameter allows decreasing the elasticity for faster impacts. A value of 0 for falloff means no falloff, i.e., elasticity does not depend on velocity, and a value of 1.0 means that elasticity is halved at an impact velocity of 1 m/s.
+
+Good defaults for elasticity seem to be 0.8-0.9, with a falloff of 0.3.
+
+##### Friction
+
+This describes how much the rubber "grips" the ball. This value is very important for enabling center shots on the playfield with a moving ball, as well as backhands. In general it affects the aiming on all shots, but also makes a spinning ball deflect off the flipper in the proper direction.
+
+A good default seems to be 0.8.
+
+##### Return Strength Ratio
+
+This is the force of the return spring which pulls the flipper back down, relative to the solenoid force which pulls the flipper forward. For instance, at 0.10, the force of the return spring will be 1/10th of that of the solenoid. Due to how acceleration and velocity work, the time the flipper needs to return to its home position is about three times longer than that for the forward stroke in this example (square root of 10, to be precise).
+
+If you make this smaller, not only will the flipper return slower, but it will also pick up less speed if you briefly release the flipper and then press it again since it has less time to accelerate. A smaller value therefore makes it easier to do flipper tricks which involve light taps, such as cradle separations and flick passes.
+
+Try the range 0.07-0.10 to start with and experiment from there.
+
+##### Coil Ramp Up
+
+This simulates the fact that the magnetic field in the flipper solenoid takes a while to build up when the flipper button is pressed, and to fall off again when the button is released (also known as hysteresis). This means that the flipper will not have its full acceleration immediately as the coil needs some time to ramp up to the full magnetic field.
+
+At a value of 0, there is no ramp up, and the full acceleration takes effect immediately. At a nonzero value, this is the approximate time the solenoid needs to reach its full acceleration. For instance, if set to 3, the flipper coil will take around 30 ms to ramp up to full force.
+
+Gameplay-wise, the effect of this parameter is most strongly felt in situations where the flipper button is pressed only for a very short time, or released for a short time and then pressed again. In other words, it will make light taps much easier and therefore help with moves such as cradle separations and flick passes. Even tap passes can be achieved with the proper setting.
+
+Note that increasing this setting will decrease the speed of the flipper a bit and may need to be compensated with a higher Strength setting. Also, if this parameter is chosen too high, the flipper may feel sluggish and laggy.
+
+The proper choice for this parameter is not known yet, but I recommend 3 as a starting point for experimentation.
