@@ -1,5 +1,6 @@
 VP 10.3.0 Changelog
 ------------------------
+
 - add new material option for the glossy color: 'Use Image', which allows to configure how much the (optional) image that is attached
   to a scene element is allowed to influence the glossy part of the material (0=no tinting at all from the image, up to 1=same behavior as before/older VPX versions)
 
@@ -515,6 +516,24 @@ VP 10.0.0 Changelog
 - script editor updated to use custom extensions within Scintilla (based on 3.6.2)
 
 - technical compile note: make sure to install Microsoft SDK 5.0,7.0A,7.1 or 7.1A, if you compile VP and get missing header errors (optionally set the include path inc\winsdk)
+
+VP 9.9.X PM5 Plunger/Accel MOD Changelog
+----------------------------------------
+- all PM5 physics (and additional) changes
+
+- backport plunger/accel/nudge changes from main VP
+
+- minor fixes and backports from main VP
+ - fix UI issue with the layer buttons for high desktop resolutions
+ - disable visual touch/pen feedback to save one frame of input latency/lag
+ - fix timers that dis/enable themselves in the script
+ - fix EMReel crash when image is missing and reel value is nonzero
+ - extend right click behavior for multi-select to hidden items
+ - fixed rendering of overlapping balls
+ - include optional nudge filtering (selectable in the keys dialog)
+   and remove implicit dead zone handling (if you have the dead zone setting at 0% and now experience problems, set it to at least 1%)
+ - native support for the Pinscape Controller
+ - CPU affinity setting
 
 VP 9.9.4 Changelog
 ------------------------
