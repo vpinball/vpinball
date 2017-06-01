@@ -1,6 +1,6 @@
 VP 9.9.0 PM5 Plunger/Accel MOD Changelog
 ----------------------------------------
-- all PM5 physics changes
+- all PM5 physics (and additional) changes
 
 - backport plunger/accel/nudge changes from main VP
 
