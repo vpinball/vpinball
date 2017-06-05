@@ -259,7 +259,7 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool d
    //return float4((N+1.0)*0.5,1.0); // visualize normals
 
    float4 result;
-   result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, true, is_metal);
+   result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal);
    result.a = pixel.a;
 
    [branch] if (cBase_Alpha.a < 1.0 && result.a < 1.0) {
