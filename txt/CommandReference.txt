@@ -10,7 +10,8 @@ Changelog:
 - document some missing UserValue's and the timer element itself
 - add HasHitEvent and Threshold to the ramp element
 - add BackfacesEnabled to the primitive element
-- add MusicVolume and ShowFSS to the table element
+- add BackglassMode and MusicVolume and ShowFSS to the table element
+- remove *FS variants from the table element (now one can use the normal Inclination,Rotation,etc calls and check the active mode via BackglassMode) 
 - add Damping to the gate element
 - change Friction to Damping (which was actually AntiFriction before, but never mentioned) for the spinner element (which also changes the input range from 0..100 to 0..1, and is inverse to before, e.g. "1-OldFriction/100")
 10.2:
@@ -73,16 +74,7 @@ Variables
 *Layback(float) - Skew of Table (used mainly for FS/Cab tables). default=0
 *FieldOfView(float) - Perspective of Table. default=45
 
-*InclinationFS(float) - Angle of Table (used for Display only). default=43
-*RotationFS(float) - Rotation of Table (used mainly for FS/Cab tables: 270)
-*ScalexFS(float) - X Scale of Table
-*ScaleyFS(float) - Y Scale of Table
-*ScalezFS(float) - Z Scale of Table
-*XlatexFS(float) - X Offset of Table
-*XlateyFS(float) - Y Offset of Table
-*XlatezFS(float) - Z Offset of Table
-*LaybackFS(float) - Skew of Table (used mainly for FS/Cab tables). default=0
-*FieldOfViewFS(float) - Perspective of Table. default=45
+*BackglassMode(int) - Which Backglass mode is active (0=Desktop,1=Fullscreen,2=FullSingleScreen)
 
 *MaxSeparation(float) - Maximum separation/scale effect for Stereo 3D (ranges from 0..1)
 *ZPD(float) - Reads the depth where the Stereo 3D should happen (ranges from 0..1)
