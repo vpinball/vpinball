@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.3:
+- document some missing table element calls (all keys, including the new LockbarKey(), and UserDirectory())
 - document some missing UserValue's and the timer element itself
 - add HasHitEvent and Threshold to the ramp element
 - add BackfacesEnabled to the primitive element
@@ -184,6 +185,21 @@ GetBalls(Ball) - returns all Balls on the table
 GetElements(Editable) - returns all Elements on the table
 GetElementByName(string) - returns a certain Element, based on the name
 MaterialColor(string,OLE_COLOR) - change base color of a material
+
+LeftFlipperKey
+RightFlipperKey
+LeftTiltKey
+RightTiltKey
+CenterTiltKey
+PlungerKey
+StartGameKey
+AddCreditKey
+AddCreditKey2
+LeftMagnaSave
+RightMagnaSave
+LockbarKey
+
+UserDirectory(string)
 
 Callback
 --------
