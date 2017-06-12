@@ -1,8 +1,10 @@
 Option Explicit
-Const VPinMAMEDriverVer = 3.53
+Const VPinMAMEDriverVer = 3.54
 '=======================
 ' VPinMAME driver core.
 '=======================
+' New in 3.54 (Update by X)
+'
 ' New in 3.53 (Update by Toxie)
 ' - Add more key mappings to help dialog
 '

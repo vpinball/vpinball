@@ -1,4 +1,4 @@
-Visual Pinball 10 command Reference v0.93
+Visual Pinball 10 command Reference v0.94
 by Fuzzel
 
 This is a quick overview of all commands/variables VP knows. A lot of them do not have an effect when called from the script because they have an impact on the pre-rendering only.
@@ -6,6 +6,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 
 Changelog:
+10.4:
 10.3:
 - document some missing table element calls (all keys, including the new LockbarKey(), and UserDirectory())
 - document some missing UserValue's and the timer element itself
