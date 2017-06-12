@@ -1,3 +1,11 @@
+VP 10.4.0 Changelog
+------------------------
+
+- see core scripts (header of core.vbs) for the respective changelog
+- see CommandReference.txt for the changelog of all the scripting properties/interface changes
+
+- DirectX 8 port for input handling (currently disabled)
+
 VP 10.3.0 Changelog
 ------------------------
 
@@ -53,8 +61,6 @@ VP 10.3.0 Changelog
 
 - remove Visual Studio 2008 support
 - add Visual Studio 2017 support
-
-- DirectX 8 port for input handling (currently disabled)
 
 VP 10.2.1 Changelog
 ------------------------
