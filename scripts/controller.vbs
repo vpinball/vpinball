@@ -158,7 +158,7 @@ End Sub
 
 Sub LoadVPinMAME
 	Set Controller = CreateObject("VPinMAME.Controller")
-	If Err Then MsgBox "Can't Load VPinMAME." & vbNewLine & Err.Description
+	If Err Then MsgBox "Can't load VPinMAME." & vbNewLine & Err.Description
 	If VPMver > "" Then If Controller.Version < VPMver Or Err Then MsgBox "VPinMAME ver " & VPMver & " required."
 	If VPinMAMEDriverVer < VBSver Or Err Then MsgBox VBSFile & " ver " & VBSver & " or higher required."
 	On Error Goto 0
@@ -183,7 +183,7 @@ Sub LoadController(TableType)
 	Set objShell = CreateObject("WScript.Shell")
 	objShell.RegRead(directory & "ForceDisableB2S")
 	If Err.number <> 0 Then
-		PopupMessage = "This latest version of Controller.vbs stores the values in the registry. To adjust the values, you must use VP 10.2, and go to the Controller Menu on the Preferences Tab of the VP editor"
+		PopupMessage = "This latest version of Controller.vbs stores its settings in the registry. To adjust the values, you must use VP 10.2 (or newer) and setup your configuration in the DOF section of the -Keys, Nudge and DOF- dialog of Visual Pinball."
 		objShell.RegWrite directory & "ForceDisableB2S",0, "REG_DWORD"
 		objShell.RegWrite directory & "DOFContactors",2, "REG_DWORD"
 		objShell.RegWrite directory & "DOFKnocker",2, "REG_DWORD"
