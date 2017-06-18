@@ -57,29 +57,51 @@ public:
       }
 	  else
 	  {
-		  unsigned int o = 0;
-		  for (int j = 0; j < m_height; ++j)
-			  for (int i = 0; i < m_width; ++i, ++o)
-			  {
-				  const unsigned int alpha = m_data[o * 4 + 3];
-				  if (alpha == 0) // adds a checkerboard where completely transparent (for the image manager display)
+		  if (GetWinVersion() >= 2600) // For everything newer than Windows XP: use the alpha in the bitmap, thus RGB needs to be premultiplied with alpha, due to how AlphaBlend() works
+		  {
+			  unsigned int o = 0;
+			  for (int j = 0; j < m_height; ++j)
+				  for (int i = 0; i < m_width; ++i, ++o)
 				  {
-					  const BYTE c = ((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127;
-					  bits[o * 4    ] = c;
-					  bits[o * 4 + 1] = c;
-					  bits[o * 4 + 2] = c;
-					  bits[o * 4 + 3] = 0;
+					  const unsigned int alpha = m_data[o * 4 + 3];
+					  if (alpha == 0) // adds a checkerboard where completely transparent (for the image manager display)
+					  {
+						  const BYTE c = ((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127;
+						  bits[o * 4    ] = c;
+						  bits[o * 4 + 1] = c;
+						  bits[o * 4 + 2] = c;
+						  bits[o * 4 + 3] = 0;
+					  }
+					  else if (alpha != 255) // premultiply alpha for win32 AlphaBlend()
+					  {
+						  bits[o * 4    ] = ((unsigned int)m_data[o * 4    ] * alpha) >> 8;
+						  bits[o * 4 + 1] = ((unsigned int)m_data[o * 4 + 1] * alpha) >> 8;
+						  bits[o * 4 + 2] = ((unsigned int)m_data[o * 4 + 2] * alpha) >> 8;
+						  bits[o * 4 + 3] = alpha;
+					  }
+					  else
+						  ((DWORD*)bits)[o] = ((DWORD*)m_data.data())[o];
 				  }
-				  else if (alpha != 255) // premultiply alpha for win32 AlphaBlend()
+		  }
+		  else // adds a checkerboard pattern where alpha is set to output bits
+		  {
+			  unsigned int o = 0;
+			  for (int j = 0; j < m_height; ++j)
+				  for (int i = 0; i < m_width; ++i, ++o)
 				  {
-					  bits[o * 4    ] = ((unsigned int)m_data[o * 4    ] * alpha) >> 8;
-					  bits[o * 4 + 1] = ((unsigned int)m_data[o * 4 + 1] * alpha) >> 8;
-					  bits[o * 4 + 2] = ((unsigned int)m_data[o * 4 + 2] * alpha) >> 8;
-					  bits[o * 4 + 3] = alpha;
+					  const unsigned int alpha = m_data[o * 4 + 3];
+					  if (alpha != 255)
+					  {
+						  const unsigned int c = (((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127) * (255 - alpha);
+						  bits[o * 4    ] = ((unsigned int)m_data[o * 4    ] * alpha + c) >> 8;
+						  bits[o * 4 + 1] = ((unsigned int)m_data[o * 4 + 1] * alpha + c) >> 8;
+						  bits[o * 4 + 2] = ((unsigned int)m_data[o * 4 + 2] * alpha + c) >> 8;
+						  bits[o * 4 + 3] = alpha;
+					  }
+					  else
+						  ((DWORD*)bits)[o] = ((DWORD*)m_data.data())[o];
 				  }
-				  else
-					  ((DWORD*)bits)[o] = ((DWORD*)m_data.data())[o];
-			  }
+		  }
 	  }
    }
 
