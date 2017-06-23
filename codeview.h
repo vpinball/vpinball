@@ -375,7 +375,7 @@ public:
       CONNECTION_POINT_ENTRY(DIID_ICollectionEvents)
    END_CONNECTION_POINT_MAP()
 
-   Vector<ISelect> m_visel;
+   VectorProtected<ISelect> m_visel;
 
    BOOL m_fFireEvents;
    BOOL m_fStopSingleEvents;

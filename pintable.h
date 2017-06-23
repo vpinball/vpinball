@@ -660,7 +660,7 @@ public:
 
    Vector< PinFont > m_vfont;
 
-   Vector< CComObject<Collection> > m_vcollection;
+   VectorProtected< CComObject<Collection> > m_vcollection;
 
    COLORREF m_rgcolorcustom[16];		// array for the choosecolor in property browser
 
