@@ -15,6 +15,7 @@ extern int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lS
 
 SearchSelectDialog::SearchSelectDialog() : CDialog(IDD_SEARCH_SELECT_ELEMENT)
 {
+    hElementList = NULL;
 }
 
 void SearchSelectDialog::Update()

@@ -674,7 +674,7 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent, u
 
    for (int i = 0; i < count; i++)
    {
-      LoadString(g_hinst, p_tbbutton[i].dwData, szBuf, MAXRESLEN - 1);
+      LoadString(g_hinst, p_tbbutton[i].dwData, szBuf, MAXRESLEN - 2);
       szBuf[lstrlen(szBuf) + 1] = 0;  //Double-null terminate.
       /*const int foo =*/ SendMessage(hwnd, TB_ADDSTRING, 0, (LPARAM)szBuf);
    }

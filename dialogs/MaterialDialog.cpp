@@ -70,6 +70,7 @@ void MaterialDialog::setItemText(int id, float value)
 
 MaterialDialog::MaterialDialog() : CDialog(IDD_MATERIALDIALOG)
 {
+    m_hMaterialList = NULL;
 }
 
 BOOL MaterialDialog::OnInitDialog()

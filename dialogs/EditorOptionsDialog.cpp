@@ -6,6 +6,7 @@
 
 EditorOptionsDialog::EditorOptionsDialog() : CDialog(IDD_EDITOR_OPTIONS)
 {
+    m_toolTip = NULL;
 }
 
 void EditorOptionsDialog::OnClose()
