@@ -2513,7 +2513,6 @@ void PinTable::StopPlaying()
 
    //	EnableWindow(g_pvp->m_hwndWork, fTrue); // Disable modal state after game ends
 
-
    // This was causing the application to crash 
    // if the simulation was run without a save first.
    // But I'm not sure how to fix it... - JEP
@@ -3147,18 +3146,21 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm)
 
    if (FAILED(hr = pstm->Read(pps->m_pdata, pps->m_cdata, &read)))
    {
+      delete [] pps->m_pdata;
       delete pps;
       return hr;
    }
 
    if (FAILED(hr = pstm->Read(&pps->m_bToBackglassOutput, sizeof(bool), &read)))
    {
+      delete [] pps->m_pdata;
       delete pps;
       return hr;
    }
 
    if (FAILED(hr = pps->GetPinDirectSound()->CreateDirectFromNative(pps, &wfx)))
    {
+      delete [] pps->m_pdata;
       delete pps;
       return hr;
    }

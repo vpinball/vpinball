@@ -803,7 +803,7 @@ void HitFlipper::Collide(CollisionEvent& coll)
     */
    const float angImp = -angResp.z;     // minus because impulse will apply in -normal direction
    float flipperResponseScaling = 1.0f;
-   if (m_flipperanim.m_isInContact && m_flipperanim.m_contactTorque * angImp >= 0)
+   if (m_flipperanim.m_isInContact && m_flipperanim.m_contactTorque * angImp >= 0.f)
    {
       // if impulse pushes against stopper, allow no loss of kinetic energy to flipper
       // (still allow flipper recoil, but a diminished amount)
@@ -830,7 +830,7 @@ void HitFlipper::Collide(CollisionEvent& coll)
    Vertex3Ds rotI = CrossProduct(rF, flipperImp);
    if (m_flipperanim.m_isInContact)
    {
-      if (rotI.z * m_flipperanim.m_contactTorque < 0)     // pushing against the solenoid?
+      if (rotI.z * m_flipperanim.m_contactTorque < 0.f)     // pushing against the solenoid?
       {
          // Get a bound on the time the flipper needs to return to static conditions.
          // If it's too short, we treat the flipper as static during the whole collision.
@@ -845,7 +845,7 @@ void HitFlipper::Collide(CollisionEvent& coll)
 #ifdef DEBUG_FLIPPERS
          slintf("  recoil time: %f  norm.vel after: %.2f\n", recoilTime, bnv_after);
 #endif
-         if (recoilTime <= 0.5f || bnv_after > 0)
+         if (recoilTime <= 0.5f || bnv_after > 0.f)
          {
             // treat flipper as static for this impact
             impulse = -(1.0f + epsilon) * bnv / pball->m_invMass;
