@@ -32,7 +32,7 @@ public:
    }
    ~TempBuffer()
    {
-      if (m_pbBuf && m_fAlloc) delete m_pbBuf;
+      if (m_pbBuf && m_fAlloc) delete[] m_pbBuf;
    }
    char *GetBuffer() const
    {
