@@ -727,7 +727,10 @@ void Trigger::GenerateMesh()
       triggerVertices = new Vertex3D_NoTex2[m_numVertices];
    }
    else
-      ShowError("Unknown Trigger type");
+   {
+       ShowError("Unknown Trigger type");
+       return;
+   }
 
    Matrix3D fullMatrix;
    if (m_d.m_shape == TriggerWireB)

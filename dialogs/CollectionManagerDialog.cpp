@@ -17,6 +17,7 @@ static CollectionDialogStruct cds;
 
 CollectionManagerDialog::CollectionManagerDialog() : CDialog(IDD_COLLECTDIALOG)
 {
+    hListHwnd = NULL;
 }
 
 BOOL CollectionManagerDialog::OnInitDialog()

@@ -3092,32 +3092,52 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm)
       return hr;
 
    PinSound * const pps = new PinSound();
-   if (FAILED(hr = pstm->Read(pps->m_szName, len, &read)))
-      return hr;
-
+   if(FAILED(hr = pstm->Read(pps->m_szName, len, &read)))
+   {
+       delete pps;
+       return hr;
+   }
    pps->m_szName[len] = 0;
 
    if (FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
-      return hr;
+   {
+       delete pps;
+       return hr;
+   }
 
    if (FAILED(hr = pstm->Read(pps->m_szPath, len, &read)))
-      return hr;
+   {
+       delete pps;
+       return hr;
+   }
 
    pps->m_szPath[len] = 0;
 
    if (FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
-      return hr;
+   {
+       delete pps;
+       return hr;
+   }
 
    if (FAILED(hr = pstm->Read(pps->m_szInternalName, len, &read)))
-      return hr;
+   {
+       delete pps;
+       return hr;
+   }
 
    pps->m_szInternalName[len] = 0;
 
    if (FAILED(hr = pstm->Read(&wfx, sizeof(wfx), &read)))
-      return hr;
+   {
+       delete pps;
+       return hr;
+   }
 
    if (FAILED(hr = pstm->Read(&pps->m_cdata, sizeof(int), &read)))
-      return hr;
+   {
+       delete pps;
+       return hr;
+   }
 
    pps->m_pdata = new char[pps->m_cdata];
 
