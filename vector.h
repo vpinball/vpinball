@@ -316,7 +316,20 @@ public:
 
     ~VectorProtected()
     {
-        DeleteCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
+       unsigned long counter;
+       //try to enter the critical section. If it's used by another thread try again up to 1 second
+       while ((TryEnterCriticalSection((LPCRITICAL_SECTION)&hCriticalSection) == 0) && (counter<10))
+       {
+          Sleep(100);
+          counter++;
+       }
+       if (counter < 10)
+       {
+          //critical section is now blocked by us leave and delete is
+          //if counter=10 don't do anything
+          LeaveCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
+          DeleteCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
+       }
     }
 
     typedef T value_type;

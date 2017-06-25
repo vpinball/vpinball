@@ -123,7 +123,13 @@ void SmartBrowser::FreePropPanes()
    m_vproppane.RemoveAllElements();
 }
 
-void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
+void SmartBrowser::RemoveSelection(void)
+{
+   if (m_pvsel)
+      delete(m_pvsel);
+}
+
+void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> *pvsel)
 {
    //int resourceid;
    ISelect *pisel = NULL;
