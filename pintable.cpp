@@ -6776,6 +6776,10 @@ void PinTable::ClearMultiSel(ISelect* newSel)
    for (int i = 0; i < m_vmultisel.Size(); i++)
       m_vmultisel.ElementAt(i)->m_selectstate = eNotSelected;
 
+   //remove the clone of the multi selection in the smart browser class
+   //to sync the clone and the actual multi-selection 
+   //it will be updated again on AddMultiSel() call
+   g_pvp->DeletePropSel();
    m_vmultisel.RemoveAllElements();
 
    if (newSel == NULL)
@@ -6934,7 +6938,7 @@ void PinTable::OnDelete()
    if (inCollection)
    {
       LocalString ls(IDS_DELETE_ELEMENTS);
-      const int ans = MessageBox(m_hwnd, ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
+      const int ans = MessageBox(m_hwnd, ls.m_szbuffer/*"Selected elements are part of one or more collections.\nDo you really want to delete them?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
       if (ans != IDYES)
       {
          return;

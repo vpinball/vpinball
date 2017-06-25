@@ -770,9 +770,14 @@ void VPinball::ClearObjectPosCur()
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)"");
 }
 
-void VPinball::SetPropSel(Vector<ISelect> *pvsel)
+void VPinball::SetPropSel(VectorProtected<ISelect> *pvsel)
 {
    m_sb.CreateFromDispatch(m_hwnd, pvsel);
+}
+
+void VPinball::DeletePropSel(void)
+{
+   m_sb.RemoveSelection();
 }
 
 HMENU VPinball::GetMainMenu(int id)

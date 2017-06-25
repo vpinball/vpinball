@@ -557,7 +557,7 @@ public:
    float m_zoom;
 
    //ISelect *m_pselcur;
-   Vector<ISelect> m_vmultisel;
+   VectorProtected<ISelect> m_vmultisel;
 
    float m_left; // always zero for now
    float m_top; // always zero for now
