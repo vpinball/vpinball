@@ -125,8 +125,11 @@ void SmartBrowser::FreePropPanes()
 
 void SmartBrowser::RemoveSelection(void)
 {
-   if (m_pvsel)
-      delete(m_pvsel);
+    if(m_pvsel)
+    {
+        delete(m_pvsel);
+        m_pvsel = NULL;
+    }
 }
 
 void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> *pvsel)
@@ -237,7 +240,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
 
    if (pvsel)
    {
-      m_pvsel = new Vector<ISelect>();
+      m_pvsel = new VectorProtected<ISelect>();
       pvsel->Clone(m_pvsel);
    }
 

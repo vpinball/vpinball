@@ -97,7 +97,7 @@ public:
    char m_szHeader[64];
    char m_szHeaderCollection[64];
 
-   Vector<ISelect> *m_pvsel;
+   VectorProtected<ISelect> *m_pvsel;
 
    int m_maxdialogwidth;
 };
