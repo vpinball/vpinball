@@ -3146,21 +3146,18 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm)
 
    if (FAILED(hr = pstm->Read(pps->m_pdata, pps->m_cdata, &read)))
    {
-      delete [] pps->m_pdata;
       delete pps;
       return hr;
    }
 
    if (FAILED(hr = pstm->Read(&pps->m_bToBackglassOutput, sizeof(bool), &read)))
    {
-      delete [] pps->m_pdata;
       delete pps;
       return hr;
    }
 
    if (FAILED(hr = pps->GetPinDirectSound()->CreateDirectFromNative(pps, &wfx)))
    {
-      delete [] pps->m_pdata;
       delete pps;
       return hr;
    }
