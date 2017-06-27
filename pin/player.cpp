@@ -4114,7 +4114,7 @@ void Player::UpdateCameraModeDisplay()
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
    len = sprintf_s(szFoo, "Camera at X: %f Y: %f Z: %f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43); // DT & FSS
    DebugPrint(10, 90, szFoo, len);
-   len = sprintf_s(szFoo, "Navigate around with the Arrow Keys (and Left Alt Key)");
+   len = sprintf_s(szFoo, "Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
    DebugPrint(10, 180, szFoo, len);
    len = sprintf_s(szFoo, "Use the Debugger/Interactive Editor to change Lights/Materials");
    DebugPrint(10, 210, szFoo, len);

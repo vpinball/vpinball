@@ -40,7 +40,10 @@ SmartBrowser::SmartBrowser()
 SmartBrowser::~SmartBrowser()
 {
    if (m_pvsel)
+   {
       delete m_pvsel;
+      m_pvsel = NULL;
+   }
 
    DestroyWindow(m_hwndFrame);
    DeleteObject(m_hfontHeader);
@@ -125,11 +128,11 @@ void SmartBrowser::FreePropPanes()
 
 void SmartBrowser::RemoveSelection(void)
 {
-    if(m_pvsel)
-    {
-        delete(m_pvsel);
-        m_pvsel = NULL;
-    }
+   if (m_pvsel)
+   {
+      delete m_pvsel;
+      m_pvsel = NULL;
+   }
 }
 
 void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> *pvsel)
