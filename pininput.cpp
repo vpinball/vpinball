@@ -77,6 +77,7 @@ PinInput::PinInput()
    m_pressed_start = 0;
 
    m_enableMouseInPlayer = true;
+   m_enableCameraModeFlyAround = false;
    m_enable_nudge_filter = false;
 
    m_cameraModeAltKey = false;
@@ -216,6 +217,9 @@ PinInput::PinInput()
 
    hr = GetRegInt( "Player", "EnableMouseInPlayer", &tmp );
    if (hr == S_OK) m_enableMouseInPlayer = (tmp == fTrue);
+
+   hr = GetRegInt("Player", "EnableCameraModeFlyAround", &tmp);
+   if (hr == S_OK) m_enableCameraModeFlyAround = (tmp == fTrue);
 
    hr = GetRegInt("Player", "EnableNudgeFilter", &tmp);
    if (hr == S_OK) m_enable_nudge_filter = (tmp == fTrue);
@@ -1634,7 +1638,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
       if (input->dwSequence == APP_KEYBOARD)
       {
          // Camera mode fly around:
-         if (g_pplayer && g_pplayer->cameraMode)
+         if (g_pplayer && g_pplayer->cameraMode && m_enableCameraModeFlyAround)
               ProcessCameraKeys(input);
 
          // Normal game keys:

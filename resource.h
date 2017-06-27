@@ -827,6 +827,7 @@
 #define IDD_DBGLIGHTDIALOG              623
 #define IDD_DBGMATERIALDIALOG           624
 #define IDC_BG_FSS                      625
+#define IDC_ENABLE_CAMERA_FLY_AROUND    626
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -939,7 +940,6 @@
 #define IDC_LOCKBAR                     803
 #define IDC_LOCKBARBUTTON               804
 #define IDC_JOYLOCKBARCOMBO             805
-#define IDC_FLIPPER_SPEED_FACTOR        806
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1090,9 +1090,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        626
+#define _APS_NEXT_RESOURCE_VALUE        627
 #define _APS_NEXT_COMMAND_VALUE         4020
-#define _APS_NEXT_CONTROL_VALUE         807
+#define _APS_NEXT_CONTROL_VALUE         806
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
