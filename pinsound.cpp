@@ -14,7 +14,7 @@ PinSound::~PinSound()
 
    if (m_pdata)
    {
-      delete[] m_pdata;
+      delete [] m_pdata;
    }
 }
 
