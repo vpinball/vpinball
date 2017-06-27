@@ -135,7 +135,7 @@ void Ball::EnsureOMObject()
    m_pballex->m_pball = this;
 }
 
-void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, float elastFalloff, float friction, float scatter_angle)
+void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const float elastFalloff, const float friction, float scatter_angle)
 {
    //speed normal to wall
    float dot = m_vel.Dot(hitNormal);
@@ -174,7 +174,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, float ela
 
    const Vertex3Ds surfP = -m_radius * hitNormal;    // surface contact point relative to center of mass
 
-   Vertex3Ds surfVel = SurfaceVelocity(surfP);       // velocity at impact point
+   const Vertex3Ds surfVel = SurfaceVelocity(surfP);       // velocity at impact point
 
    Vertex3Ds tangent = surfVel - surfVel.Dot(hitNormal) * hitNormal; // calc the tangential velocity
 
