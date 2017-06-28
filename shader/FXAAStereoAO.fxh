@@ -35,7 +35,7 @@ float3 get_nonunit_normal(const float depth0, const float2 u) // use neighboring
 //return float3(cp*r, z, sp*r);
 //}
 
-/*float3 cos_hemisphere_sample(const float2 t) // u,v in [0..1), returns y-up
+float3 cos_hemisphere_sample(const float2 t) // u,v in [0..1), returns y-up
 {
 	const float phi = t.y * (2.0*3.1415926535897932384626433832795);
 	const float cosTheta = sqrt(1.0 - t.x);
@@ -58,10 +58,9 @@ float3 rotate_to_vector_upper(const float3 vec, const float3 normal)
 			vec.y * normal.z - vec.x * hzx + vec.z * (normal.y+h*normal.x*normal.x));
 	}
 	else return -vec;
-}*/
+}
 
-//!!! check distribution, e.g. when inserting a lattice!!
-float3 cos_hemisphere_sample(const float3 normal, float2 uv)
+/*float3 cos_hemisphere_sample(const float3 normal, float2 uv)
 {
 	const float theta = (2.0*3.1415926535897932384626433832795) * uv.x;
 	uv.y = 2.0 * uv.y - 1.0;
@@ -69,7 +68,7 @@ float3 cos_hemisphere_sample(const float3 normal, float2 uv)
 	sincos(theta,st,ct);
 	const float3 spherePoint = float3(sqrt(1.0 - uv.y * uv.y) * float2(ct, st), uv.y);
 	return normalize(normal + spherePoint);
-}
+}*/
 
 /*float3 cos_hemisphere_nonunit_sample(const float3 normal, float2 uv)
 {
@@ -178,8 +177,8 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 	[unroll] for(int i=0; i < samples; ++i) {
 		const float2 r = float2(i*(1.0 / samples), i*(2.0 / samples)); //1,5,2,8,13,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
 		//const float3 ray = sphere_sample(frac(r+ushift.xy)); // shift lattice // uniform variant
-		//!! a bit slower: const float2 ray = rotate_to_vector_upper(cos_hemisphere_sample(frac(r+ushift.xy)), normal).xy; // shift lattice
-		const float2 ray = cos_hemisphere_sample(normal,frac(r+ushift.xy)).xy; // shift lattice
+		const float2 ray = rotate_to_vector_upper(cos_hemisphere_sample(frac(r+ushift.xy)), normal).xy; // shift lattice
+		//!! maybe a bit worse distribution: const float2 ray = cos_hemisphere_sample(normal,frac(r+ushift.xy)).xy; // shift lattice
 		//const float rdotn = dot(ray,normal);
 		const float2 hemi_ray = u + (radius_depth /** sign(rdotn) for uniform*/) * ray.xy;
 		const float occ_depth = tex2Dlod(texSamplerDepth, float4(hemi_ray, 0.,0.)).x;
