@@ -5,6 +5,7 @@
 DrawingOrderDialog::DrawingOrderDialog(bool select) : CDialog(IDD_DRAWING_ORDER)
 {
    m_drawingOrderSelect = select;
+   hOrderList = NULL;
 }
 
 DrawingOrderDialog::~DrawingOrderDialog()

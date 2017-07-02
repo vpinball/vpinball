@@ -60,6 +60,26 @@ float3 rotate_to_vector_upper(const float3 vec, const float3 normal)
 	else return -vec;
 }
 
+/*float3 cos_hemisphere_sample(const float3 normal, float2 uv)
+{
+	const float theta = (2.0*3.1415926535897932384626433832795) * uv.x;
+	uv.y = 2.0 * uv.y - 1.0;
+	float st,ct;
+	sincos(theta,st,ct);
+	const float3 spherePoint = float3(sqrt(1.0 - uv.y * uv.y) * float2(ct, st), uv.y);
+	return normalize(normal + spherePoint);
+}*/
+
+/*float3 cos_hemisphere_nonunit_sample(const float3 normal, float2 uv)
+{
+	const float theta = (2.0*3.1415926535897932384626433832795) * uv.x;
+	uv.y = 2.0 * uv.y - 1.0;
+	float st,ct;
+	sincos(theta,st,ct);
+	const float3 spherePoint = float3(sqrt(1.0 - uv.y * uv.y) * float2(ct, st), uv.y);
+	return normal + spherePoint;
+}*/
+
 /*float4 ps_main_normals(in VS_OUTPUT_2D IN) : COLOR // separate pass to generate normals (should actually reduce bandwidth needed in AO pass, but overall close to no performance difference or even much worse perf, depending on gfxboard)
 {
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
@@ -158,6 +178,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 		const float2 r = float2(i*(1.0 / samples), i*(2.0 / samples)); //1,5,2,8,13,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
 		//const float3 ray = sphere_sample(frac(r+ushift.xy)); // shift lattice // uniform variant
 		const float2 ray = rotate_to_vector_upper(cos_hemisphere_sample(frac(r+ushift.xy)), normal).xy; // shift lattice
+		//!! maybe a bit worse distribution: const float2 ray = cos_hemisphere_sample(normal,frac(r+ushift.xy)).xy; // shift lattice
 		//const float rdotn = dot(ray,normal);
 		const float2 hemi_ray = u + (radius_depth /** sign(rdotn) for uniform*/) * ray.xy;
 		const float occ_depth = tex2Dlod(texSamplerDepth, float4(hemi_ray, 0.,0.)).x;

@@ -60,8 +60,9 @@ public:
    void SetPosCur(float x, float y);
    void SetObjectPosCur(float x, float y);
    void ClearObjectPosCur();
-   void SetPropSel(Vector<ISelect> *pvsel);
+   void SetPropSel(VectorProtected<ISelect> *pvsel);
 
+   void DeletePropSel(void);
    void SetActionCur(char *szaction);
    void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
 

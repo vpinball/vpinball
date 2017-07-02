@@ -557,7 +557,7 @@ public:
    float m_zoom;
 
    //ISelect *m_pselcur;
-   Vector<ISelect> m_vmultisel;
+   VectorProtected<ISelect> m_vmultisel;
 
    float m_left; // always zero for now
    float m_top; // always zero for now
@@ -660,7 +660,7 @@ public:
 
    Vector< PinFont > m_vfont;
 
-   Vector< CComObject<Collection> > m_vcollection;
+   VectorProtected< CComObject<Collection> > m_vcollection;
 
    COLORREF m_rgcolorcustom[16];		// array for the choosecolor in property browser
 

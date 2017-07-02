@@ -40,7 +40,10 @@ SmartBrowser::SmartBrowser()
 SmartBrowser::~SmartBrowser()
 {
    if (m_pvsel)
+   {
       delete m_pvsel;
+      m_pvsel = NULL;
+   }
 
    DestroyWindow(m_hwndFrame);
    DeleteObject(m_hfontHeader);
@@ -123,7 +126,16 @@ void SmartBrowser::FreePropPanes()
    m_vproppane.RemoveAllElements();
 }
 
-void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
+void SmartBrowser::RemoveSelection(void)
+{
+   if (m_pvsel)
+   {
+      delete m_pvsel;
+      m_pvsel = NULL;
+   }
+}
+
+void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> *pvsel)
 {
    //int resourceid;
    ISelect *pisel = NULL;
@@ -231,7 +243,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 
    if (pvsel)
    {
-      m_pvsel = new Vector<ISelect>();
+      m_pvsel = new VectorProtected<ISelect>();
       pvsel->Clone(m_pvsel);
    }
 

@@ -138,6 +138,8 @@ private:
    bool m_enableMouseInPlayer;
 
    bool m_cameraModeAltKey;
+   bool m_enableCameraModeFlyAround;
+
    int m_cameraMode;
    bool m_keyPressedState[4];
    DWORD m_nextKeyPressedTime;

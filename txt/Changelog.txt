@@ -1,3 +1,19 @@
+VP 10.3.1 Changelog
+------------------------
+
+- fix some editor crashes
+- fix UI rendering of alpha images on Windows XP
+
+- in interactive camera/light editing mode (e.g. launch table with F6 or the respective menu entry) navigating around the table with the arrow keys (and left alt key)
+  must now be explicitly enabled in the key preferences dialog
+
+- add Randr's rulers, plus a simple protractor and Rothbauerw's manual ball control script (slightly tweaked) to the default table
+
+- see core scripts (header of core.vbs) for the respective changelog
+- see CommandReference.txt for the changelog of all the scripting properties/interface changes
+
+- DirectX 8 port for input handling (currently disabled)
+
 VP 10.3.0 Changelog
 ------------------------
 
@@ -17,7 +33,7 @@ VP 10.3.0 Changelog
 
 - add simple kicker hole mesh
 
-- change AntiFriction to Damping for the gate and spinner elements (which also changes the input range from 0..100 to 0..1, and is inverse to before, e.g. Damping="1-AntiFriction/100")
+- change "AntiFriction" parameter to "Damping" for the gate and spinner elements (which also changes the input range from 0..100 to 0..1, and is inverse to before, e.g. Damping="1-AntiFriction/100")
   (old tables will still load/save exactly the same though, as it was always used like this internally anyway)
 
 - add (optional) missing hit event to ramps
@@ -28,6 +44,7 @@ VP 10.3.0 Changelog
 
 - using the built-in DMD (via the flasher element) now in addition will respect the 'Additive Blend' and 'Modulate' parameters to steer the blending with the table
   (this can for example be used to simulate a reflection on the playfield glass: set 'Modulate' to 0.9 and check 'Additive Blend' as an example)
+  (note that this unfortunately can break old tables as this setting was still ignored in 10.2.X, so all tables that use a built-in DMD via the flasher element should please be re-released with these two parameters set up correctly)
 
 - slightly tweak bloom filter and light transmission filter to capture a larger radius (for very bright lights)
 

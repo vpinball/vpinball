@@ -549,6 +549,8 @@ BEGIN
     LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,273,168,25
     CONTROL         "Enable Mouse during Play",IDC_ENABLE_MOUSE_PLAYER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,218,100,10
+    CONTROL         "Enable flying around (Arrow Keys + Left Alt Key) during Camera/Light Edit Mode",IDC_ENABLE_CAMERA_FLY_AROUND,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,230,264,10
     GROUPBOX        "DOF Controller Options",IDC_STATIC,500,7,120,191
     CONTROL         "Disable B2S",IDC_DOF_FORCEDISABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,505,202,86,10
     CTEXT           "Contactors",IDC_STATIC,505,17,50,14,0,WS_EX_DLGMODALFRAME

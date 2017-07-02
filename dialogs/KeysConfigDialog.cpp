@@ -368,6 +368,12 @@ BOOL KeysConfigDialog::OnInitDialog()
         key = fTrue;
     ::SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
+    hwndCheck = GetDlgItem(IDC_ENABLE_CAMERA_FLY_AROUND).GetHwnd();
+    hr = GetRegInt("Player", "EnableCameraModeFlyAround", &key);
+    if (hr != S_OK)
+        key = fFalse;
+    ::SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
+
     hwndCheck = GetDlgItem(IDC_ENABLE_NUDGE_FILTER).GetHwnd();
     hr = GetRegInt("Player", "EnableNudgeFilter", &key);
     if (hr != S_OK)
@@ -1028,6 +1034,10 @@ void KeysConfigDialog::OnOK()
     hwndControl = GetDlgItem(IDC_ENABLE_MOUSE_PLAYER).GetHwnd();
     key = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
     SetRegValue("Player", "EnableMouseInPlayer", REG_DWORD, &key, 4);
+
+    hwndControl = GetDlgItem(IDC_ENABLE_CAMERA_FLY_AROUND).GetHwnd();
+    key = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    SetRegValue("Player", "EnableCameraModeFlyAround", REG_DWORD, &key, 4);
 
     hwndControl = GetDlgItem(IDC_DOF_FORCEDISABLE).GetHwnd();
     key = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);

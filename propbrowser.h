@@ -58,7 +58,7 @@ class SmartBrowser
 public:
    SmartBrowser();
    ~SmartBrowser();
-   void CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel);
+   void CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> *pvsel);
    void GetControlValue(HWND hwndControl);
    HWND GetHWnd() { return m_hwndFrame; }
    void Init(HWND hwndParent);
@@ -74,6 +74,7 @@ public:
    void RelayoutExpandos();
 
    void FreePropPanes();
+   void RemoveSelection(void);
    void ResetPriority(int expandoid);
 
    ISelect *GetBaseISel() { if (!m_pvsel || m_pvsel->Size() == 0) { return NULL; } return m_pvsel->ElementAt(0); }
@@ -96,7 +97,7 @@ public:
    char m_szHeader[64];
    char m_szHeaderCollection[64];
 
-   Vector<ISelect> *m_pvsel;
+   VectorProtected<ISelect> *m_pvsel;
 
    int m_maxdialogwidth;
 };

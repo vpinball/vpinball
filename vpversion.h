@@ -2,7 +2,7 @@
 
 #define VP_VERSION_MAJOR    10 // X Digits
 #define VP_VERSION_MINOR    3  // Max 2 Digits
-#define VP_VERSION_REV      0  // Max 1 Digit
+#define VP_VERSION_REV      1  // Max 1 Digit
 
 #define _STR(x)    #x
 #define STR(x)     _STR(x)

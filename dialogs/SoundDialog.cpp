@@ -15,6 +15,7 @@ extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM l
 
 SoundDialog::SoundDialog() : CDialog( IDD_SOUNDDIALOG )
 {
+    hSoundList = NULL;
 }
 
 SoundDialog::~SoundDialog()
@@ -229,7 +230,8 @@ void SoundDialog::Import()
         else
         {
             szInitialDir[ofn.nFileOffset] = 0;
-            pt->ImportSound( hSoundList, szFileName, fTrue );
+            if(pt)
+               pt->ImportSound( hSoundList, szFileName, fTrue );
         }
         SetRegValue( "RecentDir", "SoundDir", REG_SZ, szInitialDir, lstrlen( szInitialDir ) );
         if (pt)
