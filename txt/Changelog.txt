@@ -1,6 +1,14 @@
 VP 10.4.0 Changelog
 ------------------------
 
+- see core scripts (header of core.vbs) for the respective changelog
+- see CommandReference.txt for the changelog of all the scripting properties/interface changes
+
+- DirectX 8 port for input handling (currently disabled)
+
+VP 10.3.1 Changelog
+------------------------
+
 - fix some editor crashes
 - fix UI rendering of alpha images on Windows XP
 
@@ -8,11 +16,6 @@ VP 10.4.0 Changelog
   must now be explicitly enabled in the key preferences dialog
 
 - add Randr's rulers, plus a simple protractor and Rothbauerw's manual ball control script (slightly tweaked) to the default table
-
-- see core scripts (header of core.vbs) for the respective changelog
-- see CommandReference.txt for the changelog of all the scripting properties/interface changes
-
-- DirectX 8 port for input handling (currently disabled)
 
 VP 10.3.0 Changelog
 ------------------------
