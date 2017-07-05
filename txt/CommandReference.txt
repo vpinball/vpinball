@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.4:
+- document missing primitive element call (DisableLighting)
 10.3:
 - document some missing table element calls (all keys, including the new LockbarKey(), and UserDirectory())
 - document some missing UserValue's and the timer element itself
@@ -581,6 +582,7 @@ Scatter(float)
                This option is useful if you have real toys or static primitives which are never hitable at all
                and are just there for the 'looks'.
 *ReflectionEnabled(bool) - default=true
+DisableLighting(bool)
 BackfacesEnabled(bool) - default=false, if enabled will also show/render the backfacing triangles (if a transparent material is used)
 
 The following only applies to mesh primitives with an animation sequence
