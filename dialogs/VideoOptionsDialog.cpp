@@ -513,11 +513,14 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          // test video modes first on list
 
-         // add some (windowed) portrait play modes, up to FullHD (1080x1920)
+         // add some (windowed) portrait play modes
 
-         const unsigned int num_portrait_modes = 4;
-         const int portrait_modes_width[num_portrait_modes]  = { 720, 900,1050,1080};
-         const int portrait_modes_height[num_portrait_modes] = {1024,1440,1600,1920};
+         // 16:10 aspect ratio resolutions: 1280×800, 1440×900, 1680×1050, 1920×1200 and 2560×1600
+         // 16:9 aspect ratio resolutions:  1280×720, 1366×768, 1600×900, 1920×1080, 2560×1440 and 3840×2160
+         // 4:3  aspect ratio resolutions:  1024x1280
+         const unsigned int num_portrait_modes = 14;
+         const int portrait_modes_width[num_portrait_modes] =  { 720, 720, 1024, 768, 800, 900, 900,1050,1050,1080,1200,1440,1600,2160};
+         const int portrait_modes_height[num_portrait_modes] = {1024,1280, 1280,1366,1280,1440,1600,1600,1680,1920,1920,2560,2560,3840};
 
          for(unsigned int i = 0; i < num_portrait_modes; ++i)
             if ((portrait_modes_width[i] <= screenwidth) && (portrait_modes_height[i] <= screenheight))
