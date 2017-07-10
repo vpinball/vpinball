@@ -2330,16 +2330,6 @@ void PinTable::SetDirtyDraw()
    ::InvalidateRect(m_hwnd, NULL, fFalse);
 }
 
-
-/*#include <cmath>
-
-// we want: exp( -1.0 * coeff) == fric
-inline float frictionToCoeff(double fric)
-{
-return (float)(-std::log(fric));
-}*/
-
-
 void PinTable::Play(bool _cameraMode)
 {
    if (g_pplayer)
@@ -3674,7 +3664,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
    ////////////// End MAC
 
-   const int loadfileversion = CURRENT_FILE_FORMAT_VERSION;
+   int loadfileversion = CURRENT_FILE_FORMAT_VERSION;
 
    //load our stuff first
    if (SUCCEEDED(hr = pstgRoot->OpenStorage(L"GameStg", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgData)))
@@ -7734,7 +7724,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    }
 
    ClearOldSounds();
-   const PinSound * const pps = m_vsound.ElementAt(i);
+   PinSound * const pps = m_vsound.ElementAt(i);
 
    volume += (float)pps->m_iVolume / 100.0f;
    pan += (float)pps->m_iBalance / 100.0f;
@@ -7770,7 +7760,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 
    if (ppsc->m_pDSBuffer)
    {
-	  ppsc->Play(volume * m_TableSoundVolume* ((float)g_pplayer->m_SoundVolume), randompitch, pitch, pan, front_rear_fade, flags, restart);
+	  ppsc->Play(volume * m_TableSoundVolume* ((float)g_pplayer->m_SoundVolume), randompitch, pitch, pan, front_rear_fade, flags, !!restart);
       if (!foundsame)
       {
          m_voldsound.AddElement(ppsc);
@@ -7780,7 +7770,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    {
       delete ppsc;
 
-	  pps->Play(volume * m_TableSoundVolume * ((float)g_pplayer->m_SoundVolume), randompitch, pitch, pan, front_rear_fade, flags, restart);
+	  pps->Play(volume * m_TableSoundVolume * ((float)g_pplayer->m_SoundVolume), randompitch, pitch, pan, front_rear_fade, flags, !!restart);
    }
 
    return S_OK;

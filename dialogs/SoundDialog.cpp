@@ -516,10 +516,8 @@ void SoundDialog::SoundPosition()
 		lvitem.iItem = sel;
 		lvitem.iSubItem = 0;
 		ListView_GetItem(hSoundList, &lvitem);
-        {
-		PinSound * const pps = (PinSound *)lvitem.lParam;
+		PinSound *pps = (PinSound *)lvitem.lParam;
 		SoundPositionDialog spd(pps);
-        }
 
 		if (spd.DoModal() == IDOK)
 		{
@@ -529,7 +527,7 @@ void SoundDialog::SoundPosition()
 				lvitem.iItem = sel;
 				lvitem.iSubItem = 0;
 				ListView_GetItem(hSoundList, &lvitem);
-				PinSound * const pps = (PinSound *)lvitem.lParam;
+				pps = (PinSound *)lvitem.lParam;
 				pps->m_iOutputTarget = spd.m_cOutputTarget;
 				pps->m_iBalance = spd.m_iBalance;
 				pps->m_iFade = spd.m_iFade;
@@ -565,7 +563,7 @@ void SoundDialog::DeleteSound()
                 lvitem.iItem = sel;
                 lvitem.iSubItem = 0;
                 ListView_GetItem( hSoundList, &lvitem );
-                PinSound *pps = (PinSound *)lvitem.lParam;
+                PinSound * const pps = (PinSound *)lvitem.lParam;
                 pt->RemoveSound( pps );
                 ListView_DeleteItem( hSoundList, sel );
 
