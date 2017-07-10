@@ -466,7 +466,7 @@ void DispReel::Animate()
             if (m_d.m_szSound[0] != 0)
             {
                MultiByteToWideChar(CP_ACP, 0, m_d.m_szSound, -1, mySound, 32);
-               m_ptable->PlaySound(mySound, 0, 1.0f, 0.f, 0.f, 0, VARIANT_FALSE, VARIANT_TRUE);
+               m_ptable->PlaySound(mySound, 0, 1.0f, 0.f, 0.f, 0, VARIANT_FALSE, VARIANT_TRUE, 0.f);
             }
          }
 

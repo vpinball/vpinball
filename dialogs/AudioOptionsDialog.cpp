@@ -43,6 +43,34 @@ BOOL AudioOptionsDialog::OnInitDialog()
       ::EnableWindow(hwndStaticSound, FALSE);
    }
 
+   hr = GetRegInt("Player", "Sound3D", &fmusic);
+   if (hr != S_OK)
+	   fmusic = 0;
+
+   switch (fmusic)
+   {
+   case SNDCFG_SND3DALLREAR:
+	   hwndControl = GetDlgItem(IDC_RADIO_SND3DALLREAR).GetHwnd();
+	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   break;
+   case SNDCFG_SND3DFRONTISFRONT:
+	   hwndControl = GetDlgItem(IDC_RADIO_SND3DFRONTISFRONT).GetHwnd();
+	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   break;
+   case SNDCFG_SND3DFRONTISREAR:
+	   hwndControl = GetDlgItem(IDC_RADIO_SND3DFRONTISREAR).GetHwnd();
+	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   break;
+   case SNDCFG_SND3D6CH:
+	   hwndControl = GetDlgItem(IDC_RADIO_SND3D6CH).GetHwnd();
+	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   break;
+   default:
+	   hwndControl = GetDlgItem(IDC_RADIO_SND3D2CH).GetHwnd();
+	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   break;
+   }
+
    hr = GetRegInt("Player", "MusicVolume", &fmusic);
    if (hr != S_OK)
       fmusic = 100;
@@ -169,6 +197,33 @@ void AudioOptionsDialog::OnOK()
    fmusic = (checked == BST_CHECKED) ? 1 : 0;
    SetRegValue("Player", "PlaySound", REG_DWORD, &fmusic, 4);
 
+   fmusic = SNDCFG_SND3D2CH;
+   hwndControl = GetDlgItem(IDC_RADIO_SND3DALLREAR).GetHwnd();
+   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   if (checked)
+   {
+	   fmusic = SNDCFG_SND3DALLREAR;
+   }
+   hwndControl = GetDlgItem(IDC_RADIO_SND3DFRONTISFRONT).GetHwnd();
+   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   if (checked)
+   {
+	   fmusic = SNDCFG_SND3DFRONTISFRONT;
+   }
+   hwndControl = GetDlgItem(IDC_RADIO_SND3DFRONTISREAR).GetHwnd();
+   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   if (checked)
+   {
+	   fmusic = SNDCFG_SND3DFRONTISREAR;
+   }
+   hwndControl = GetDlgItem(IDC_RADIO_SND3D6CH).GetHwnd();
+   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   if (checked)
+   {
+	   fmusic = SNDCFG_SND3D6CH;
+   }
+   SetRegValue("Player", "Sound3D", REG_DWORD, &fmusic, 4);
+
    volume = SendMessage(hwndMusicSlider, TBM_GETPOS, 0, 0);
    SetRegValue("Player", "MusicVolume", REG_DWORD, &volume, 4);
 
@@ -183,6 +238,7 @@ void AudioOptionsDialog::OnOK()
    soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
    sd = SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
    SetRegValue("Player", "SoundDeviceBG", REG_DWORD, &sd, 4);
+   g_pvp->ReInitPinDirectSound();
 
    CDialog::OnOK();
 }

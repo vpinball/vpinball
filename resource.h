@@ -335,6 +335,7 @@
 #define IDC_UPDATE_ALL_BUTTON           280
 #define IDC_DBGLIGHTSBUTTON             280
 #define IDC_DEFAULT_COLORS_BUTTON       280
+#define IDC_TEST                        280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
@@ -652,6 +653,7 @@
 #define IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE 431
 #define IDC_USE_NVIDIA_API_CHECK        431
 #define IDC_DBG_MATERIAL_OPACITY_ACTIVE_CHECK 431
+#define IDC_AUDIOOPT_3D_SOUND           431
 #define IDC_OVERWRITE_MATERIAL_SETTINGS 432
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_TARGET_LEGACY_MODE_CHECK    433
@@ -718,6 +720,7 @@
 #define IDC_WALL_REFLECT_ENABLED_CHECK  484
 #define IDC_CHECK5                      488
 #define IDC_DBG_LIGHT_BLINKING_CHECK    488
+#define IDC_SM3DSOUND                   488
 #define IDC_DYNAMIC_DN                  489
 #define IDC_DN_LONGITUDE                490
 #define IDC_DN_LATITUDE                 491
@@ -828,6 +831,8 @@
 #define IDD_DBGMATERIALDIALOG           624
 #define IDC_BG_FSS                      625
 #define IDC_ENABLE_CAMERA_FLY_AROUND    626
+#define IDD_SOUND_POSITION              629
+#define IDD_SOUND_POSITION_DIALOG       629
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -940,6 +945,23 @@
 #define IDC_LOCKBAR                     803
 #define IDC_LOCKBARBUTTON               804
 #define IDC_JOYLOCKBARCOMBO             805
+#define IDC_SNDPOSITION                 806
+#define IDC_SPT_TABLE                   807
+#define IDC_SPT_BACKGLASS               808
+#define IDC_AUD_BALANCE                 809
+#define IDC_AUD_VOLUME                  810
+#define IDC_RADIO_SND3DFRONTISFRONT     810
+#define IDC_SPT_3D                      811
+#define IDC_RADIO_SND3D2CH              811
+#define IDC_EDIT2                       811
+#define IDC_AUD_FADER                   812
+#define IDC_RADIO_SND3DFRONTISREAR      812
+#define IDC_RADIO_SND3DALLREAR          813
+#define IDC_EDIT_BALANCE                813
+#define IDC_RADIO_SND3D6CH              814
+#define IDC_EDIT_FADER                  814
+#define IDC_EDIT5                       815
+#define IDC_EDIT_VOL                    815
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1090,9 +1112,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        627
+#define _APS_NEXT_RESOURCE_VALUE        630
 #define _APS_NEXT_COMMAND_VALUE         4020
-#define _APS_NEXT_CONTROL_VALUE         806
+#define _APS_NEXT_CONTROL_VALUE         816
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
