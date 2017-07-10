@@ -20,7 +20,8 @@
 #include "AboutDialog.h"
 #include "DrawingOrderDialog.h"
 
-#define CURRENT_FILE_FORMAT_VERSION 1030
+#define CURRENT_FILE_FORMAT_VERSION 1031
+#define NEW_SOUND_FORMAT_VERSION 1031 // introduced surround option
 
 #define DEFAULT_SECURITY_LEVEL 0
 
@@ -37,6 +38,7 @@ public:
    void Quit();
 
    void Init();
+   void InitPinDirectSound();
    void RegisterClasses();
    void CreateSideBar();
    HWND CreateLayerToolbar(HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight);
@@ -44,6 +46,7 @@ public:
    void CreateMDIClient();
 
    void ParseCommand(size_t code, HWND hwnd, size_t notify);
+   void ReInitPinDirectSound();
    void setLayerStatus(int layerNumber);
 
    CComObject<PinTable> *GetActiveTable();

@@ -391,20 +391,7 @@ void VPinball::Init()
    ::SendMessage(m_hwnd, WM_SIZE, 0, 0);				// Make our window relay itself out
 
    InitTools();
-   int DSidx1 = 0, DSidx2 = 0;
-   GetRegInt("Player", "SoundDevice", &DSidx1);
-   GetRegInt("Player", "SoundDeviceBG", &DSidx2);
-
-   m_pds.InitDirectSound(m_hwnd, false);						// init Direct Sound (in pinsound.cpp)
-   if (DSidx1 == DSidx2) // If these are the same device, just point the backglass device to the main one. 
-   {
-      m_pbackglassds = &m_pds;
-   }
-   else
-   {
-      m_pbackglassds = new PinDirectSound();
-      m_pbackglassds->InitDirectSound(m_hwnd, true);
-   }
+   InitPinDirectSound();
 
    m_fBackglassView = false;						// we are viewing Pinfield and not the backglass at first
 
@@ -422,6 +409,24 @@ void VPinball::Init()
    slintf_popup_console();
    slintf("Debug output:\n");
 #endif
+}
+
+void VPinball::InitPinDirectSound()
+{
+	int DSidx1 = 0, DSidx2 = 0;
+	GetRegInt("Player", "SoundDevice", &DSidx1);
+	GetRegInt("Player", "SoundDeviceBG", &DSidx2);
+	GetRegInt("Player", "Sound3D", &m_pds.m_i3DSoundMode);
+	m_pds.InitDirectSound(m_hwnd, false);						// init Direct Sound (in pinsound.cpp)
+	if (DSidx1 == DSidx2) // If these are the same device, just point the backglass device to the main one. 
+	{
+		m_pbackglassds = &m_pds;
+	}
+	else
+	{
+		m_pbackglassds = new PinDirectSound();
+		m_pbackglassds->InitDirectSound(m_hwnd, true);
+	}
 }
 
 ///<summary>
@@ -1577,6 +1582,27 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
 }
 
+void VPinball::ReInitPinDirectSound()
+{
+	for (int i = 0; i < m_vtable.Size(); i++)
+	{
+		PinTable * const ptT = m_vtable.ElementAt(i);
+		for (int j = 0; j < ptT->m_vsound.Size(); j++)
+		{
+			ptT->m_vsound.ElementAt(j)->UnInitialize();
+		}
+	}
+	InitPinDirectSound();
+	for (int i = 0; i < m_vtable.Size(); i++)
+	{
+		PinTable * const ptT = m_vtable.ElementAt(i);
+		for (int j = 0; j < ptT->m_vsound.Size(); j++)
+		{
+			ptT->m_vsound.ElementAt(j)->ReInitialize();
+		}
+	}
+}
+
 void VPinball::setLayerStatus(int layerNumber)
 {
    CComObject<PinTable> *ptCur;
@@ -2634,7 +2660,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
 STDMETHODIMP VPinball::PlaySound(BSTR bstr)
 {
-   if (g_pplayer) g_pplayer->m_ptable->PlaySound(bstr, 0, 1.f, 0.f, 0.f, 0, VARIANT_FALSE, VARIANT_TRUE);
+   if (g_pplayer) g_pplayer->m_ptable->PlaySound(bstr, 0, 1.f, 0.f, 0.f, 0, VARIANT_FALSE, VARIANT_TRUE, 0.f);
 
    return S_OK;
 }

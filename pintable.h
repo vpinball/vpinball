@@ -187,7 +187,7 @@ public:
    STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 
-   STDMETHOD(PlaySound)(BSTR bstr, int loopcount, float volume, float pan, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
+   STDMETHOD(PlaySound)(BSTR bstr, int loopcount, float volume, float pan, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade);
    STDMETHOD(FireKnocker)(/*[in]*/ int Count);
    STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
 
@@ -333,7 +333,7 @@ public:
    int AddListSound(HWND hwndListView, PinSound *pps);
    void RemoveSound(PinSound *pps);
    HRESULT SaveSoundToStream(PinSound *pps, IStream *pstm);
-   HRESULT LoadSoundFromStream(IStream *pstm);
+   HRESULT LoadSoundFromStream(IStream *pstm, const int LoadFileVersion);
    void ClearOldSounds();
    bool ExportImage(HWND hwndListView, Texture *ppi, char *filename);
    void ImportImage(HWND hwndListView, char *filename);
@@ -485,6 +485,9 @@ public:
    BOOL FDirty();
 
    BOOL FVerifySaveToClose();
+
+   //void Play2(const LPDIRECTSOUNDBUFFER &pdsb, const int &decibelvolume, float randompitch, int pitch, PinSound * pps, PinDirectSound * pDS, float pan, float front_rear_fade, const int &flags, const VARIANT_BOOL &restart);
+   //void Play(PinSoundCopy * ppsc, const int &decibelvolume, float randompitch, const LPDIRECTSOUNDBUFFER &pdsb, int pitch, PinDirectSound * pDS, float pan, float front_rear_fade, const int &flags, const VARIANT_BOOL &restart);
 
    HRESULT StopSound(BSTR Sound);
 
@@ -759,8 +762,8 @@ public:
        float intensity;
        float bulbModulateVsAdd;
        float transmissionScale;
-       float  fadeSpeedUp;
-       float  fadeSpeedDown;
+       float fadeSpeedUp;
+       float fadeSpeedDown;
        COLORREF color1;
        COLORREF color2;
        LightState lightstate;
@@ -840,7 +843,7 @@ public:
    STDMETHOD(get_ShowDT)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    //STDMETHOD(put_ShowDT)(/*[in]*/ VARIANT_BOOL newVal);
 
-   STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
+   STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade);
    STDMETHOD(FireKnocker)(/*[in]*/ int Count);
    STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
 

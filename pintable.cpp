@@ -68,9 +68,9 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart)
+STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade)
 {
-   if (g_pplayer && g_pplayer->m_fPlaySound) m_pt->PlaySound(bstr, LoopCount, volume, pan, randompitch, pitch, usesame, restart);
+   if (g_pplayer && g_pplayer->m_fPlaySound) m_pt->PlaySound(bstr, LoopCount, volume, pan, randompitch, pitch, usesame, restart, front_rear_fade);
 
    return S_OK;
 }
@@ -3061,10 +3061,7 @@ HRESULT PinTable::SaveSoundToStream(PinSound *pps, IStream *pstm)
    if (FAILED(hr = pstm->Write(pps->m_szInternalName, len, &writ)))
       return hr;
 
-   WAVEFORMATEX wfx;
-   pps->m_pDSBuffer->GetFormat(&wfx, sizeof(wfx), NULL);
-
-   if (FAILED(hr = pstm->Write(&wfx, sizeof(wfx), &writ)))
+   if (FAILED(hr = pstm->Write(&pps->m_wfx, sizeof(pps->m_wfx), &writ)))
       return hr;
 
    if (FAILED(hr = pstm->Write(&pps->m_cdata, sizeof(int), &writ)))
@@ -3073,19 +3070,29 @@ HRESULT PinTable::SaveSoundToStream(PinSound *pps, IStream *pstm)
    if (FAILED(hr = pstm->Write(pps->m_pdata, pps->m_cdata, &writ)))
       return hr;
 
-   if (FAILED(hr = pstm->Write(&pps->m_bToBackglassOutput, sizeof(bool), &writ)))
+   if (FAILED(hr = pstm->Write(&pps->m_iOutputTarget, sizeof(bool), &writ)))
       return hr;
+
+   // Begin NEW_SOUND_VERSION data
+
+   if (FAILED(hr = pstm->Write(&pps->m_iVolume, sizeof(int), &writ)))
+	   return hr;
+   if (FAILED(hr = pstm->Write(&pps->m_iBalance, sizeof(int), &writ)))
+	   return hr;
+   if (FAILED(hr = pstm->Write(&pps->m_iFade, sizeof(int), &writ)))
+	   return hr;
+   if (FAILED(hr = pstm->Write(&pps->m_iVolume, sizeof(int), &writ)))
+	   return hr;
 
    return S_OK;
 }
 
 
-HRESULT PinTable::LoadSoundFromStream(IStream *pstm)
+HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 {
    int len;
    ULONG read = 0;
    HRESULT hr = S_OK;
-   WAVEFORMATEX wfx;
 
    if (FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
       return hr;
@@ -3126,7 +3133,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm)
 
    pps->m_szInternalName[len] = 0;
 
-   if (FAILED(hr = pstm->Read(&wfx, sizeof(wfx), &read)))
+   if (FAILED(hr = pstm->Read(&pps->m_wfx, sizeof(pps->m_wfx), &read)))
    {
        delete pps;
        return hr;
@@ -3150,13 +3157,48 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm)
       return hr;
    }
 
-   if (FAILED(hr = pstm->Read(&pps->m_bToBackglassOutput, sizeof(bool), &read)))
+   if (LoadFileVersion >= NEW_SOUND_FORMAT_VERSION)
    {
-      delete pps;
-      return hr;
+	   if (FAILED(hr = pstm->Read(&pps->m_iOutputTarget, sizeof(char), &read)))
+	   {
+		   delete pps;
+		   return hr;
+	   }
+	   if (FAILED(hr = pstm->Read(&pps->m_iVolume, sizeof(int), &read)))
+	   {
+		   delete pps;
+		   return hr;
+	   }
+	   if (FAILED(hr = pstm->Read(&pps->m_iBalance, sizeof(int), &read)))
+	   {
+		   delete pps;
+		   return hr;
+	   }
+	   if (FAILED(hr = pstm->Read(&pps->m_iFade, sizeof(int), &read)))
+	   {
+		   delete pps;
+		   return hr;
+	   }
+	   if (FAILED(hr = pstm->Read(&pps->m_iVolume, sizeof(int), &read)))
+	   {
+		   delete pps;
+		   return hr;
+	   }
+   }
+   else
+   {
+	   bool bToBackglassOutput;
+
+	   if (FAILED(hr = pstm->Read(&bToBackglassOutput, sizeof(bool), &read)))
+	   {
+		   delete pps;
+		   return hr;
+	   }
+
+	   pps->m_iOutputTarget = bToBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE;	
    }
 
-   if (FAILED(hr = pps->GetPinDirectSound()->CreateDirectFromNative(pps, &wfx)))
+   if (FAILED(hr = pps->GetPinDirectSound()->CreateDirectFromNative(pps)))
    {
       delete pps;
       return hr;
@@ -3632,6 +3674,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
    ////////////// End MAC
 
+   const int loadfileversion = CURRENT_FILE_FORMAT_VERSION;
+
    //load our stuff first
    if (SUCCEEDED(hr = pstgRoot->OpenStorage(L"GameStg", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgData)))
    {
@@ -3642,18 +3686,17 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
          int ctextures = 0;
          int cfonts = 0;
          int ccollection = 0;
-         int version = CURRENT_FILE_FORMAT_VERSION;
 
          if (SUCCEEDED(hr = pstgData->OpenStream(L"Version", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmVersion)))
          {
             ULONG read;
-            hr = pstmVersion->Read(&version, sizeof(int), &read);
-            CryptHashData(hch, (BYTE *)&version, sizeof(int), 0);
+            hr = pstmVersion->Read(&loadfileversion, sizeof(int), &read);
+            CryptHashData(hch, (BYTE *)&loadfileversion, sizeof(int), 0);
             pstmVersion->Release();
-            if (version > CURRENT_FILE_FORMAT_VERSION)
+            if (loadfileversion > CURRENT_FILE_FORMAT_VERSION)
             {
                char errorMsg[MAX_PATH] = { 0 };
-               sprintf_s(errorMsg, "This table was saved with version %i.%02i and is newer than the supported version %i.%02i! You might get problems loading/playing it!", version / 100, version % 100, CURRENT_FILE_FORMAT_VERSION / 100, CURRENT_FILE_FORMAT_VERSION%100);
+               sprintf_s(errorMsg, "This table was saved with version %i.%02i and is newer than the supported version %i.%02i! You might get problems loading/playing it!", loadfileversion / 100, loadfileversion % 100, CURRENT_FILE_FORMAT_VERSION / 100, CURRENT_FILE_FORMAT_VERSION%100);
                ShowError(errorMsg);
 /*
                pstgRoot->Release();
@@ -3666,22 +3709,22 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             }
 
             // Create a block cipher session key based on the hash of the password.
-            CryptDeriveKey(hcp, CALG_RC2, hchkey, (version == 600) ? CRYPT_EXPORTABLE : (CRYPT_EXPORTABLE | 0x00280000), &hkey);
+            CryptDeriveKey(hcp, CALG_RC2, hchkey, (loadfileversion == 600) ? CRYPT_EXPORTABLE : (CRYPT_EXPORTABLE | 0x00280000), &hkey);
          }
 
          if (SUCCEEDED(hr = pstgRoot->OpenStorage(L"TableInfo", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgInfo)))
          {
-            LoadInfo(pstgInfo, hch, version);
+            LoadInfo(pstgInfo, hch, loadfileversion);
             if (SUCCEEDED(hr = pstgData->OpenStream(L"CustomInfoTags", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
             {
-               LoadCustomInfo(pstgInfo, pstmItem, hch, version);
+               LoadCustomInfo(pstgInfo, pstmItem, hch, loadfileversion);
                pstmItem->Release();
                pstmItem = NULL;
             }
             pstgInfo->Release();
          }
 
-         if (SUCCEEDED(hr = LoadData(pstmGame, csubobj, csounds, ctextures, cfonts, ccollection, version, hch, hkey)))
+         if (SUCCEEDED(hr = LoadData(pstmGame, csubobj, csounds, ctextures, cfonts, ccollection, loadfileversion, hch, hkey)))
          {
 
             ctotalitems = csubobj + csounds + ctextures + cfonts;
@@ -3707,7 +3750,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
                   //AddSpriteProjItem();
                   int id = 0; // VBA id for this item
-                  hr = piedit->InitLoad(pstmItem, this, &id, version, (version < 1000) ? hch : NULL, (version < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption
+                  hr = piedit->InitLoad(pstmItem, this, &id, loadfileversion, (loadfileversion < 1000) ? hch : NULL, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption
                   piedit->InitVBA(fFalse, id, NULL);
                   pstmItem->Release();
                   pstmItem = NULL;
@@ -3732,7 +3775,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
-                  LoadSoundFromStream(pstmItem);
+                  LoadSoundFromStream(pstmItem,loadfileversion);
                   pstmItem->Release();
                   pstmItem = NULL;
                }
@@ -3751,7 +3794,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
-                  LoadImageFromStream(pstmItem, version);
+                  LoadImageFromStream(pstmItem, loadfileversion);
                   pstmItem->Release();
                   pstmItem = NULL;
                }
@@ -3772,7 +3815,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                {
                   PinFont *ppf;
                   ppf = new PinFont();
-                  ppf->LoadFromStream(pstmItem, version);
+                  ppf->LoadFromStream(pstmItem, loadfileversion);
                   m_vfont.AddElement(ppf);
                   ppf->Register();
                   pstmItem->Release();
@@ -3796,7 +3839,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   CComObject<Collection> *pcol;
                   CComObject<Collection>::CreateInstance(&pcol);
                   pcol->AddRef();
-                  pcol->LoadData(pstmItem, this, version, hch, hkey);
+                  pcol->LoadData(pstmItem, this, loadfileversion, hch, hkey);
                   m_vcollection.AddElement(pcol);
                   m_pcv->AddItem((IScriptable *)pcol, fFalse);
                   pstmItem->Release();
@@ -3816,7 +3859,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
          // Authentication block
 
-         if (version > 40)
+         if (loadfileversion > 40)
          {
             if (SUCCEEDED(hr = pstgData->OpenStream(L"MAC", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmVersion)))
             {
@@ -3853,7 +3896,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             }
          }
 
-         if (version < 1030) // the m_fGlossyImageLerp part was included first with 10.3, so set all previously saved materials to the old default
+         if (loadfileversion < 1030) // the m_fGlossyImageLerp part was included first with 10.3, so set all previously saved materials to the old default
              for (int i = 0; i < m_materials.size(); ++i)
                  m_materials.ElementAt(i)->m_fGlossyImageLerp = 1.f;
 
@@ -4508,7 +4551,6 @@ bool PinTable::ExportSound(HWND hwndListView, PinSound *pps, char *szfilename)
    MMCKINFO pck;
    ZeroMemory(&mmio, sizeof(mmio));
    ZeroMemory(&pck, sizeof(pck));
-   WAVEFORMATEX wfx;
 
    HMMIO hmmio = mmioOpen(szfilename, &mmio, MMIO_ALLOCBUF | MMIO_CREATE | MMIO_EXCLUSIVE | MMIO_READWRITE);
 
@@ -4523,14 +4565,13 @@ bool PinTable::ExportSound(HWND hwndListView, PinSound *pps, char *szfilename)
       MMRESULT result = mmioCreateChunk(hmmio, &pck, MMIO_CREATERIFF); //RIFF header
       mmioWrite(hmmio, "fmt ", 4);			//fmt
 
-      pps->m_pDSBuffer->GetFormat(&wfx, sizeof(wfx), NULL); //CORRECTED for support of all savable VP WAV FORMATS - BDS
       // Create the format chunk.
       pck.cksize = sizeof(WAVEFORMATEX);
       result = mmioCreateChunk(hmmio, &pck, 4);//0
       // Write the wave format data.
       int i = 16;
       mmioWrite(hmmio, (char *)&i, 4);
-      mmioWrite(hmmio, (char*)&wfx, (LONG)sizeof(wfx) - 2); //END OF CORRECTION
+      mmioWrite(hmmio, (char*)&pps->m_wfx, (LONG)sizeof(pps->m_wfx) - 2); //END OF CORRECTION
 
       mmioWrite(hmmio, "data", 4);						//data chunk
       i = pps->m_cdata; mmioWrite(hmmio, (char *)&i, 4);	// data size bytes
@@ -4600,16 +4641,16 @@ void PinTable::ImportSound(HWND hwndListView, char *szfilename, BOOL fPlay)
 
 void PinTable::ListSounds(HWND hwndListView)
 {
-   for (int i = 0; i < m_vsound.Size(); i++)
-   {
-      AddListSound(hwndListView, m_vsound.ElementAt(i));
-   }
+	ListView_DeleteAllItems(hwndListView);
+	for (int i = 0; i < m_vsound.Size(); i++)
+	{
+		AddListSound(hwndListView, m_vsound.ElementAt(i));
+	}
 }
 
 
 int PinTable::AddListSound(HWND hwndListView, PinSound *pps)
 {
-   char pathName[MAX_PATH];
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
@@ -4619,13 +4660,24 @@ int PinTable::AddListSound(HWND hwndListView, PinSound *pps)
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
-   memset(pathName, 0, MAX_PATH);
-   if (pps->m_bToBackglassOutput)
+   ListView_SetItemText(hwndListView, index, 1, pps->m_szPath);
+
+   switch (pps->m_iOutputTarget)
    {
-      strcpy_s(pathName, "*BG* ");
+   case SNDOUT_BACKGLASS:
+	   ListView_SetItemText(hwndListView, index, 2, "Backglass");
+	   break;
+   default:
+	   ListView_SetItemText(hwndListView, index, 2, "Table");
+	   break;
    }
-   strcat_s(pathName, pps->m_szPath);
-   ListView_SetItemText(hwndListView, index, 1, pathName);
+   char textBuf[40];
+   sprintf_s(textBuf, "%.03f", (float)pps->m_iBalance / 100.0f);
+   ListView_SetItemText(hwndListView, index, 3, textBuf);
+   sprintf_s(textBuf, "%.03f", (float)pps->m_iFade / 100.0f);
+   ListView_SetItemText(hwndListView, index, 4, textBuf);
+   sprintf_s(textBuf, "%.03f", (float)pps->m_iVolume / 100.0f);
+   ListView_SetItemText(hwndListView, index, 5, textBuf);
 
    return index;
 }
@@ -7657,7 +7709,7 @@ HRESULT PinTable::StopSound(BSTR Sound)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float pan, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart)
+STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float pan, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade)
 {
    MAKE_ANSIPTR_FROMWIDE(szName, bstr);
    CharLowerBuff(szName, lstrlen(szName));
@@ -7682,14 +7734,17 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    }
 
    ClearOldSounds();
+   const PinSound * const pps = m_vsound.ElementAt(i);
 
+   volume += (float)pps->m_iVolume / 100.0f;
+   pan += (float)pps->m_iBalance / 100.0f;
+   front_rear_fade += (float)pps->m_iFade / 100.0f;
+   
    const int flags = (loopcount == -1) ? DSBPLAY_LOOPING : 0;
-   const float totalvolume = max(min(((float)g_pplayer->m_SoundVolume)*volume*m_TableSoundVolume, 100.0f), 0.0f);
-   const int decibelvolume = (totalvolume == 0.0f) ? DSBVOLUME_MIN : (int)(logf(totalvolume)*(float)(1000.0 / log(10.0)) - 2000.0f); // 10 volume = -10Db
+   // 10 volume = -10Db
 
-   LPDIRECTSOUNDBUFFER pdsb = m_vsound.ElementAt(i)->m_pDSBuffer;
-   PinDirectSound *pDS = m_vsound.ElementAt(i)->m_pPinDirectSound;
-
+   const LPDIRECTSOUNDBUFFER pdsb = pps->m_pDSBuffer;
+   //PinDirectSound *pDS = pps->m_pPinDirectSound;
    PinSoundCopy * ppsc = NULL;
    bool foundsame = false;
    if (usesame)
@@ -7707,8 +7762,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 
    if (ppsc == NULL)
    {
-      ppsc = new PinSoundCopy();
-      pDS->m_pDS->DuplicateSoundBuffer(pdsb, &ppsc->m_pDSBuffer/*&pdsbNew*/);
+      ppsc = new PinSoundCopy(pps);
    }
 
    if (m_tblMirrorEnabled)
@@ -7716,34 +7770,9 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 
    if (ppsc->m_pDSBuffer)
    {
-      ppsc->m_pDSBuffer->SetVolume(decibelvolume);
-      if (randompitch > 0.f)
-      {
-         DWORD freq;
-         pdsb->GetFrequency(&freq);
-         freq += pitch;
-         const float rndh = rand_mt_01();
-         const float rndl = rand_mt_01();
-         ppsc->m_pDSBuffer->SetFrequency(freq + (DWORD)((float)freq * randompitch * rndh * rndh) - (DWORD)((float)freq * randompitch * rndl * rndl * 0.5f));
-      }
-      else if (pitch != 0)
-      {
-         DWORD freq;
-         pdsb->GetFrequency(&freq);
-         ppsc->m_pDSBuffer->SetFrequency(freq + pitch);
-      }
-      if (pan != 0.f)
-         ppsc->m_pDSBuffer->SetPan((LONG)(pan*DSBPAN_RIGHT));
-
-      DWORD status;
-      ppsc->m_pDSBuffer->GetStatus(&status);
-      if (!(status & DSBSTATUS_PLAYING))
-         ppsc->m_pDSBuffer->Play(0, 0, flags);
-      else if (restart)
-         ppsc->m_pDSBuffer->SetCurrentPosition(0);
+	  ppsc->Play(volume * m_TableSoundVolume* ((float)g_pplayer->m_SoundVolume), randompitch, pitch, pan, front_rear_fade, flags, restart);
       if (!foundsame)
       {
-         ppsc->m_ppsOriginal = m_vsound.ElementAt(i);
          m_voldsound.AddElement(ppsc);
       }
    }
@@ -7751,31 +7780,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    {
       delete ppsc;
 
-      pdsb->SetVolume(decibelvolume);
-      if (randompitch > 0.f)
-      {
-         DWORD freq;
-         pdsb->GetFrequency(&freq); //!! meh, if already randompitched before
-         freq += pitch;
-         const float rndh = rand_mt_01();
-         const float rndl = rand_mt_01();
-         pdsb->SetFrequency(freq + (DWORD)((float)freq * randompitch * rndh * rndh) - (DWORD)((float)freq * randompitch * rndl * rndl * 0.5f));
-      }
-      else if (pitch != 0)
-      {
-         DWORD freq;
-         pdsb->GetFrequency(&freq);
-         pdsb->SetFrequency(freq + pitch);
-      }
-      if (pan != 0.f)
-         pdsb->SetPan((LONG)(pan*DSBPAN_RIGHT));
-
-      DWORD status;
-      pdsb->GetStatus(&status);
-      if (!(status & DSBSTATUS_PLAYING))
-         pdsb->Play(0, 0, flags);
-      else if (restart)// Okay, it got played again before it finished.  Well, just start it over.
-         pdsb->SetCurrentPosition(0);
+	  pps->Play(volume * m_TableSoundVolume * ((float)g_pplayer->m_SoundVolume), randompitch, pitch, pan, front_rear_fade, flags, restart);
    }
 
    return S_OK;

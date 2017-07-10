@@ -1,4 +1,4 @@
-Visual Pinball 10 command Reference v0.94
+Visual Pinball 10 command Reference v0.95
 by Fuzzel
 
 This is a quick overview of all commands/variables VP knows. A lot of them do not have an effect when called from the script because they have an impact on the pre-rendering only.
@@ -7,6 +7,8 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.4:
+- extend PlaySound with front_rear_fade to fade between front and rear speakers
+10.3.1:
 - document missing primitive element call (DisableLighting)
 10.3:
 - document some missing table element calls (all keys, including the new LockbarKey(), and UserDirectory())
@@ -162,7 +164,7 @@ Methods
 -------
 
 Nudge(float Angle, float Force)
-PlaySound(string, int loopcount, float volume, float pan, float randompitch, int pitch, bool useexisting, bool restart)
+PlaySound(string, int loopcount, float volume, float pan, float randompitch, int pitch, bool useexisting, bool restart, float front_rear_fade)
  - also allows to increase/decrease the frequency of an already playing samples, and in general to apply all the settings to an already playing sample, and to choose if to restart this playing sample from the beginning or not
    loopcound chooses the amount of loops
    volume is in 0..1
@@ -171,7 +173,8 @@ PlaySound(string, int loopcount, float volume, float pan, float randompitch, int
    pitch can be positive or negative and directly adds onto the standard sample frequency
    useexisting is 0 or 1 (if no existing/playing copy of the sound is found, then a new one is created)
    restart is 0 or 1 (only useful if useexisting is 1)
- - so f.e. PlaySound "FlipperUp",0,0.5,-1.0,1.0 would play the sound not looped (0), at half the volume (0.5), only on left speaker (-1.0), with varying pitch (1.0)
+   front_rear_fade is similar to pan but fades between the front and rear speakers
+ - so f.e. PlaySound "FlipperUp",0,0.5,-1.0,1.0,1,1,0.0 would play the sound not looped (0), at half the volume (0.5), only on left speaker (-1.0), with varying pitch (1.0), it would reuse the same channel if it is already playing (1), restarts the sample (1), and plays it on the front speakers only (0.0)
 StopSound(string)
 PlayMusic(string, float volume) - volume 0..1
 MusicVolume(float volume) - 0..1
