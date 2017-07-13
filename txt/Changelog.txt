@@ -14,7 +14,8 @@ VP 10.4.0 Changelog
 
  There's also a much revamped sound manager that lets you tweak the positions without touching the table script.
 
-- add tweaked ball rolling/collision PlaySound calls to the default table, that use the new surround/front_rear_fade parameter
+- add tweaked ball rolling/collision PlaySound calls to the default table, to use the new surround/front_rear_fade parameter
+- extend all other PlaySound calls of the default table to use the respective elements X and Y position (on the table) for panning and front/rear fading
 
 - see core scripts (header of core.vbs) for the respective changelog
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
