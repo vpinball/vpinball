@@ -8,7 +8,7 @@ struct ManufacturerDimensions
    float height;
 };
 
-#define DIM_TABLE_SIZE 36
+#define DIM_TABLE_SIZE 37
 ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
 {
    { "Atari (widebody)", 27.0f, 45.0f },
