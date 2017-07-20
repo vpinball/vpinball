@@ -2346,10 +2346,7 @@ HRESULT PinTable::SaveSoundToStream(PinSound *pps, IStream *pstm)
    if(FAILED(hr = pstm->Write(pps->m_szInternalName, len, &writ)))
       return hr;
 
-   WAVEFORMATEX wfx;
-   pps->m_pDSBuffer->GetFormat(&wfx, sizeof(wfx), NULL);
-
-   if(FAILED(hr = pstm->Write(&wfx, sizeof(wfx), &writ)))
+   if(FAILED(hr = pstm->Write(&pps->m_wfx, sizeof(pps->m_wfx), &writ)))
       return hr;
 
    if(FAILED(hr = pstm->Write(&pps->m_cdata, sizeof(int), &writ)))
@@ -2367,7 +2364,6 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm)
    int len;
    ULONG read = 0;
    HRESULT hr = S_OK;
-   WAVEFORMATEX wfx;
 
    if(FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
       return hr;
@@ -2394,7 +2390,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm)
 
    pps->m_szInternalName[len] = 0;
 
-   if(FAILED(hr = pstm->Read(&wfx, sizeof(wfx), &read)))
+   if(FAILED(hr = pstm->Read(&pps->m_wfx, sizeof(pps->m_wfx), &read)))
       return hr;
 
    if(FAILED(hr = pstm->Read(&pps->m_cdata, sizeof(int), &read)))
@@ -2412,7 +2408,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm)
       return hr;
    }
 
-   if (pps->GetPinDirectSound()->CreateDirectFromNative(pps, &wfx) == S_OK)
+   if (pps->GetPinDirectSound()->CreateDirectFromNative(pps) == S_OK)
    {
       m_vsound.AddElement(pps);
    }
@@ -3784,7 +3780,6 @@ bool PinTable::ExportSound(HWND hwndListView, PinSound *pps,char *szfilename)
    MMCKINFO pck;
    ZeroMemory( &mmio, sizeof(mmio));
    ZeroMemory( &pck, sizeof(pck));
-   WAVEFORMATEX wfx;
 
    HMMIO hmmio = mmioOpen( szfilename, &mmio,  MMIO_ALLOCBUF |MMIO_CREATE |MMIO_EXCLUSIVE |MMIO_READWRITE);
 
@@ -3799,14 +3794,13 @@ bool PinTable::ExportSound(HWND hwndListView, PinSound *pps,char *szfilename)
       MMRESULT result = mmioCreateChunk(hmmio, &pck, MMIO_CREATERIFF); //RIFF header
       mmioWrite(hmmio, "fmt ", 4);                      //fmt
 
-      pps->m_pDSBuffer->GetFormat(&wfx, sizeof(wfx), NULL); //CORRECTED for support of all savable VP WAV FORMATS - BDS
       // Create the format chunk.
       pck.cksize = sizeof(WAVEFORMATEX);
       result = mmioCreateChunk(hmmio, &pck, 4);//0
       // Write the wave format data.
       int i=16;
       mmioWrite(hmmio, (char *)&i, 4);
-      mmioWrite(hmmio, (char*)&wfx, sizeof(wfx)-2); //END OF CORRECTION
+      mmioWrite(hmmio, (char*)&pps->m_wfx, sizeof(pps->m_wfx)-2); //END OF CORRECTION
 
       mmioWrite(hmmio, "data", 4);                                              //data chunk
       i = pps->m_cdata; mmioWrite(hmmio, (char *)&i, 4);        // data size bytes
@@ -3874,6 +3868,7 @@ void PinTable::ImportSound(HWND hwndListView, char *szfilename, BOOL fPlay)
 
 void PinTable::ListSounds(HWND hwndListView)
 {
+   ListView_DeleteAllItems(hwndListView);
    for (int i=0;i<m_vsound.Size();i++)
    {
       AddListSound(hwndListView, m_vsound.ElementAt(i));
@@ -6562,13 +6557,14 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    }
 
    ClearOldSounds();
+   PinSound * const pps = m_vsound.ElementAt(i);
 
    const int flags = (loopcount == -1) ? DSBPLAY_LOOPING : 0;
    const float totalvolume = max(min(((float)g_pplayer->m_SoundVolume)*volume*m_TableSoundVolume,100.0f),0.0f);
    const int decibelvolume = (totalvolume == 0.0f) ? DSBVOLUME_MIN : (int)(logf(totalvolume)*(float)(1000.0/log(10.0)) - 2000.0f); // 10 volume = -10Db
 
-   LPDIRECTSOUNDBUFFER pdsb = m_vsound.ElementAt(i)->m_pDSBuffer;
-   PinDirectSound *pDS = m_vsound.ElementAt(i)->m_pPinDirectSound;
+   const LPDIRECTSOUNDBUFFER pdsb = pps->m_pDSBuffer;
+   //PinDirectSound *pDS = pps->m_pPinDirectSound;
 
    PinSoundCopy * ppsc = NULL;
    bool foundsame = false;
@@ -6587,72 +6583,23 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 
    if(ppsc == NULL)
    {
-       ppsc = new PinSoundCopy();
-           pDS->m_pDS->DuplicateSoundBuffer(pdsb, &ppsc->m_pDSBuffer/*&pdsbNew*/);
+       ppsc = new PinSoundCopy(pps);
    }
 
    if (ppsc->m_pDSBuffer)
    {
-      ppsc->m_pDSBuffer->SetVolume(decibelvolume);
-          if(randompitch > 0.f)
-          {
-                  DWORD freq;
-                  pdsb->GetFrequency(&freq);
-                  freq += pitch;
-                  const float rndh = rand_mt_01();
-                  const float rndl = rand_mt_01();
-                  ppsc->m_pDSBuffer->SetFrequency(freq + (DWORD)((float)freq * randompitch * rndh * rndh) - (DWORD)((float)freq * randompitch * rndl * rndl * 0.5f));
-          }
-          else if (pitch != 0)
-          {
-                  DWORD freq;
-                  pdsb->GetFrequency(&freq);
-                  ppsc->m_pDSBuffer->SetFrequency(freq + pitch);
-          }
-          if(pan != 0.f)
-                  ppsc->m_pDSBuffer->SetPan((LONG)(pan*DSBPAN_RIGHT));
+      ppsc->Play(volume * m_TableSoundVolume* ((float)g_pplayer->m_SoundVolume), randompitch, pitch, pan, 0.f/*front_rear_fade*/, flags, !!restart);
 
-          DWORD status;
-          ppsc->m_pDSBuffer->GetStatus(&status);
-          if (!(status & DSBSTATUS_PLAYING))
-             ppsc->m_pDSBuffer->Play(0,0,flags);
-          else if(restart)
-                 ppsc->m_pDSBuffer->SetCurrentPosition(0);
-          if(!foundsame)
-          {
-                ppsc->m_ppsOriginal = m_vsound.ElementAt(i);
-                m_voldsound.AddElement(ppsc);
-          }
+      if (!foundsame)
+	  {
+		m_voldsound.AddElement(ppsc);
+	  }
    }
    else // Couldn't or didn't want to create a copy - just play the original
    {
       delete ppsc;
 
-      pdsb->SetVolume(decibelvolume);
-          if(randompitch > 0.f)
-          {
-             DWORD freq;
-             pdsb->GetFrequency(&freq); //!! meh, if already randompitched before
-             freq += pitch;
-             const float rndh = rand_mt_01();
-             const float rndl = rand_mt_01();
-             pdsb->SetFrequency(freq + (DWORD)((float)freq * randompitch * rndh * rndh) - (DWORD)((float)freq * randompitch * rndl * rndl * 0.5f));
-          }
-          else if (pitch != 0)
-          {
-                 DWORD freq;
-                 pdsb->GetFrequency(&freq);
-                 pdsb->SetFrequency(freq + pitch);
-          }
-          if(pan != 0.f)
-             pdsb->SetPan((LONG)(pan*DSBPAN_RIGHT));
-    
-          DWORD status;
-          pdsb->GetStatus(&status);
-          if (!(status & DSBSTATUS_PLAYING))
-                 pdsb->Play(0,0,flags);
-          else if(restart)// Okay, it got played again before it finished.  Well, just start it over.
-                 pdsb->SetCurrentPosition(0);
+      pps->Play(volume * m_TableSoundVolume * ((float)g_pplayer->m_SoundVolume), randompitch, pitch, pan, 0.f/*front_rear_fade*/, flags, !!restart);
    }
 
    return S_OK;

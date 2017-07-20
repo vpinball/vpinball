@@ -327,6 +327,7 @@
 #define IDC_TRANSLATE_APPLY_BUTTON      280
 #define IDC_DRAWING_ORDER_UP            280
 #define IDC_COL_UP_BUTTON               280
+#define IDC_TEST                        280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
@@ -558,7 +559,6 @@
 #define IDR_REGISTRY4                   395
 #define IDC_CHECK3                      396
 #define IDC_PRIM_ENV_MAP                396
-#define IDC_EDIT2                       397
 #define IDC_SIZE_HEIGHT                 397
 #define IDC_DEPTH_BIAS                  397
 #define IDC_WIRE_DISTX                  398
@@ -722,6 +722,23 @@
 #define IDS_VISUALS_SOUND               581
 #define IDC_TABLEAVSYNC                 585
 #define IDC_SOFTWARE_VP                 586
+#define IDC_SNDPOSITION                 806
+#define IDC_SPT_TABLE                   807
+#define IDC_SPT_BACKGLASS               808
+#define IDC_AUD_BALANCE                 809
+#define IDC_AUD_VOLUME                  810
+#define IDC_RADIO_SND3DFRONTISFRONT     810
+#define IDC_SPT_3D                      811
+#define IDC_RADIO_SND3D2CH              811
+#define IDC_EDIT2                       811
+#define IDC_AUD_FADER                   812
+#define IDC_RADIO_SND3DFRONTISREAR      812
+#define IDC_RADIO_SND3DALLREAR          813
+#define IDC_EDIT_BALANCE                813
+#define IDC_RADIO_SND3D6CH              814
+#define IDC_EDIT_FADER                  814
+#define IDC_EDIT5                       815
+#define IDC_EDIT_VOL                    815
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601
@@ -824,7 +841,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        601
+#define _APS_NEXT_RESOURCE_VALUE        816
 #define _APS_NEXT_COMMAND_VALUE         32895
 #define _APS_NEXT_CONTROL_VALUE         443
 #define _APS_NEXT_SYMED_VALUE           188
