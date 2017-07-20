@@ -1,3 +1,15 @@
+VP 9.9.5 Changelog
+------------------------
+- add surround sound options/configurations:
+ 1) Basic 2CH audio - this should operate exactly as it did before. Forward/rear panning is ignored.
+ 2) All effects to rear - Moves the table sounds to the back audio channels. This allows one to move the sounds into the cab like one was able before, but without needing a second sound card.
+ 3) Surround, front is front - This is the best setting when using a dedicated card for the surround sound table sounds. It makes the front channels the front of the cab (closest to the player). This way if one uses older versions of VP, the old legacy output still works well.
+ 4) Surround, front is rear - This is a pretty "vanilla" surround setup.  If you were to play on a home theater or with virtual 3D headphones, it's the most appropriate. The "front" speakers are in the rear of the cab (furthest from you). If VPinmame also uses the same soundcard, it will share the audio with these front channels. 
+ 5) 7.1 surround (aka 6ch audio) - If one wants to drive the backglass, and 4 channel table sounds all off of one card, this is the setting to use. It shifts all of the table audio to the side and rear channels, leaving the fronts available for VPM and backglass sounds. This might also be a good setting to try if you are using just 2 speakers in the cab and 2 in the backbox, the table sounds will pan partially towards the front in 4 speaker mode, letting the backbox provide some of the surround effect.
+
+ Please note that these modes are used in conjunction with the Windows speaker configurations. You can use any mode on any speaker system.
+ Some sound cards even have virtual surround options that would work with this setup. You could set up a full 7.1 setup and dedicate it to just the playfield if you wanted with option #3 or #4, and use a separate card for VPM.
+
 VP 9.9.4 Changelog
 ------------------------
 - fix UI issue with the layer buttons for high desktop resolutions

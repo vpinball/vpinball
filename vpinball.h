@@ -44,6 +44,7 @@ public:
 	void Quit();
 
 	void Init();
+    void InitPinDirectSound();
 	void RegisterClasses();
 	void CreateSideBar();
     HWND CreateLayerToolbar(HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight);
@@ -55,6 +56,7 @@ public:
 	HRESULT AddMiniBitmaps();
 
 	void ParseCommand(int code, HWND hwnd, int notify);
+    void ReInitPinDirectSound();
     void setLayerStatus( int layerNumber );
 
 	CComObject<PinTable> *GetActiveTable();

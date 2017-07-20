@@ -481,23 +481,33 @@ BEGIN
     LTEXT           "Y",IDC_STATIC,37,28,8,10
 END
 
-IDD_AUDIO_OPTIONS DIALOGEX 0, 0, 354, 200
+IDD_AUDIO_OPTIONS DIALOGEX 0, 0, 457, 159
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Audio Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "&Play Music",IDC_PLAY_MUSIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,50,10
-    CONTROL         "Slider1",IDC_MUSIC_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,9,49,110,18
-    CONTROL         "P&lay Sounds",IDC_PLAY_SOUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,84,55,10
-    CONTROL         "Slider1",IDC_SOUND_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,7,113,110,18
-    LTEXT           "Output Sound Device (Needs restart of Visual Pinball)",IDC_STATIC_SOUNDDEVICE,172,22,170,10
-    LISTBOX         IDC_SoundList,172,35,170,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "OK",IDOK,108,176,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,161,176,50,14
-    LTEXT           "&Music Volume",IDC_STATIC_MUSIC,42,36,45,8
-    LTEXT           "&Sound Volume",IDC_STATIC_SOUND,39,99,47,8
-    LTEXT           "Backglass Sound Device (Needs restart)",IDC_STATIC_SOUNDDEVICE2,171,96,170,10
-    LISTBOX         IDC_SoundListBG,171,109,170,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "P&lay Sound Effects",IDC_PLAY_SOUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,11,85,10
+    LTEXT           "&Sound Effects Volume",IDC_STATIC_SOUND,14,29,87,8
+    CONTROL         "Slider1",IDC_SOUND_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,9,39,110,18
+    CONTROL         "&Play Music",IDC_PLAY_MUSIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,73,50,10
+    LTEXT           "&Music Volume",IDC_STATIC_MUSIC,14,91,45,8
+    CONTROL         "Slider1",IDC_MUSIC_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,9,102,110,18
+    LTEXT           "General output Sound Device",IDC_STATIC_SOUNDDEVICE,124,11,170,10
+    LISTBOX         IDC_SoundList,124,24,170,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Backglass specific Sound Device",IDC_STATIC_SOUNDDEVICE2,123,73,170,10
+    LISTBOX         IDC_SoundListBG,123,86,171,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,190,137,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,243,137,50,14
+    GROUPBOX        "Multi-channel output",IDC_STATIC,303,11,147,89,BS_LEFT
+    CONTROL         "Standard 2 channel",IDC_RADIO_SND3D2CH,"Button",BS_AUTORADIOBUTTON | WS_GROUP,309,24,125,10
+    CONTROL         "Surround (All effects to rear channels)",IDC_RADIO_SND3DALLREAR,
+                    "Button",BS_AUTORADIOBUTTON,309,37,137,10
+    CONTROL         "Surround (Front is front of cab)",IDC_RADIO_SND3DFRONTISFRONT,
+                    "Button",BS_AUTORADIOBUTTON,309,50,123,10
+    CONTROL         "Surround (Front is rear of cab)",IDC_RADIO_SND3DFRONTISREAR,
+                    "Button",BS_AUTORADIOBUTTON,309,63,114,10
+    CONTROL         "7.1 Surround (Front is rear,",IDC_RADIO_SND3D6CH,"Button",BS_AUTORADIOBUTTON,309,76,120,10
+    LTEXT           "back is side, backbox is front)",IDC_STATIC,320,86,101,8
 END
 
 IDD_PHYSICS_OPTIONS DIALOGEX 0, 0, 200, 300

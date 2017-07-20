@@ -337,20 +337,7 @@ void VPinball::Init()
    InitVBA();										// Create APC VBA host
 #endif
 
-   int DSidx1 = 0, DSidx2 =0;
-   GetRegInt("Player", "SoundDevice", &DSidx1);
-   GetRegInt("Player", "SoundDeviceBG", &DSidx2);
-
-   m_pds.InitDirectSound(m_hwnd, false);						// init Direct Sound (in pinsound.cpp)
-   if (DSidx1==DSidx2) // If these are the same device, just point the backglass device to the main one. 
-   {
-	    m_pbackglassds = &m_pds;
-   }
-   else
-   {
-	   m_pbackglassds = new PinDirectSound();
-	   m_pbackglassds->InitDirectSound(m_hwnd, true);
-   }
+   InitPinDirectSound();
 
    m_fBackglassView = fFalse;						// we are viewing Pinfield and not the backglass at first
 
@@ -367,6 +354,24 @@ void VPinball::Init()
    slintf_popup_console();
    slintf("Debug output:\n");
 #endif
+}
+
+void VPinball::InitPinDirectSound()
+{
+	int DSidx1 = 0, DSidx2 = 0;
+	GetRegInt("Player", "SoundDevice", &DSidx1);
+	GetRegInt("Player", "SoundDeviceBG", &DSidx2);
+	GetRegInt("Player", "Sound3D", &m_pds.m_i3DSoundMode);
+	m_pds.InitDirectSound(m_hwnd, false);						// init Direct Sound (in pinsound.cpp)
+	if (DSidx1 == DSidx2) // If these are the same device, just point the backglass device to the main one. 
+	{
+		m_pbackglassds = &m_pds;
+	}
+	else
+	{
+		m_pbackglassds = new PinDirectSound();
+		m_pbackglassds->InitDirectSound(m_hwnd, true);
+	}
 }
 
 ///<summary>
@@ -1388,6 +1393,27 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
       }
       break;
    }
+}
+
+void VPinball::ReInitPinDirectSound()
+{
+	for (int i = 0; i < m_vtable.Size(); i++)
+	{
+		PinTable * const ptT = m_vtable.ElementAt(i);
+		for (int j = 0; j < ptT->m_vsound.Size(); j++)
+		{
+			ptT->m_vsound.ElementAt(j)->UnInitialize();
+		}
+	}
+	InitPinDirectSound();
+	for (int i = 0; i < m_vtable.Size(); i++)
+	{
+		PinTable * const ptT = m_vtable.ElementAt(i);
+		for (int j = 0; j < ptT->m_vsound.Size(); j++)
+		{
+			ptT->m_vsound.ElementAt(j)->ReInitialize();
+		}
+	}
 }
 
 void VPinball::setLayerStatus( int layerNumber )
@@ -6310,6 +6336,34 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             EnableWindow(hwndText, FALSE);
          }
 
+   hr = GetRegInt("Player", "Sound3D", &fmusic);
+   if (hr != S_OK)
+	   fmusic = 0;
+
+   switch (fmusic)
+   {
+   case SNDCFG_SND3DALLREAR:
+	   hwndControl = GetDlgItem(hwndDlg, IDC_RADIO_SND3DALLREAR);
+	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   break;
+   case SNDCFG_SND3DFRONTISFRONT:
+	   hwndControl = GetDlgItem(hwndDlg, IDC_RADIO_SND3DFRONTISFRONT);
+	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   break;
+   case SNDCFG_SND3DFRONTISREAR:
+	   hwndControl = GetDlgItem(hwndDlg, IDC_RADIO_SND3DFRONTISREAR);
+	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   break;
+   case SNDCFG_SND3D6CH:
+	   hwndControl = GetDlgItem(hwndDlg, IDC_RADIO_SND3D6CH);
+	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   break;
+   default:
+	   hwndControl = GetDlgItem(hwndDlg, IDC_RADIO_SND3D2CH);
+	   SendMessage(hwndControl, BM_SETCHECK, BST_CHECKED, 0);
+	   break;
+   }
+
          hr = GetRegInt("Player", "MusicVolume", &fmusic);
          if (hr != S_OK)
             fmusic = 100;
@@ -6371,6 +6425,33 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   fmusic = (checked == BST_CHECKED) ? 1:0;
                   SetRegValue("Player", "PlaySound", REG_DWORD, &fmusic, 4);
 
+   fmusic = SNDCFG_SND3D2CH;
+   hwndControl = GetDlgItem(hwndDlg, IDC_RADIO_SND3DALLREAR);
+   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   if (checked)
+   {
+	   fmusic = SNDCFG_SND3DALLREAR;
+   }
+   hwndControl = GetDlgItem(hwndDlg, IDC_RADIO_SND3DFRONTISFRONT);
+   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   if (checked)
+   {
+	   fmusic = SNDCFG_SND3DFRONTISFRONT;
+   }
+   hwndControl = GetDlgItem(hwndDlg, IDC_RADIO_SND3DFRONTISREAR);
+   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   if (checked)
+   {
+	   fmusic = SNDCFG_SND3DFRONTISREAR;
+   }
+   hwndControl = GetDlgItem(hwndDlg, IDC_RADIO_SND3D6CH);
+   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+   if (checked)
+   {
+	   fmusic = SNDCFG_SND3D6CH;
+   }
+   SetRegValue("Player", "Sound3D", REG_DWORD, &fmusic, 4);
+
                   hwndControl = GetDlgItem(hwndDlg, IDC_MUSIC_SLIDER);
                   volume = SendMessage(hwndControl, TBM_GETPOS, 0, 0);
                   SetRegValue("Player", "MusicVolume", REG_DWORD, &volume, 4);
@@ -6387,6 +6468,7 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
                   sd = (int)SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
                   SetRegValue("Player", "SoundDeviceBG", REG_DWORD, &sd, 4);
+                  g_pvp->ReInitPinDirectSound();
 
                   EndDialog(hwndDlg, TRUE);
                }
