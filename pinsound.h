@@ -94,7 +94,7 @@ public:
    ~PinDirectSound();
 
    void InitDirectSound(HWND hwnd, bool IsBackglass);
-   static float PanTo3D(const float input);
+   static float PanTo3D(float input);
 
    PinSound *LoadWaveFile(TCHAR* strFileName);
    HRESULT CreateStaticBuffer(TCHAR* strFileName, PinSound *pps);
