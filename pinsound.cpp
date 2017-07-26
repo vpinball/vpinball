@@ -385,15 +385,18 @@ HRESULT PinDirectSound::CreateDirectFromNative(PinSound *pps)
 // linear positions, so we'll use that and reverse it.   Also multiplying by 3 since that seems to be the
 // the total distance necessary to fully pan away from one side at the center of the room.
 
-float PinDirectSound::PanTo3D(const float input)
+float PinDirectSound::PanTo3D(float input)
 {
+	// DirectSound's position command does weird things at exactly 0. 
+	if (fabsf(input) < 0.0001f)
+		input = 0.0001f;
 	if (input < 0.0f)
 	{
-		return -pow(-max(input, -1.0f), 1.0f / 10.0f) * 3.0f;
+		return -powf(-max(input, -1.0f), (float)(1.0 / 10.0)) * 3.0f;
 	}
 	else
 	{
-		return pow(min(input, 1.0f), 1.0f / 10.0f) * 3.0f;
+		return powf(min(input, 1.0f), (float)(1.0 / 10.0)) * 3.0f;
 	}
 }
 
