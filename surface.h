@@ -25,6 +25,7 @@ public:
    float m_elasticity;
    float m_friction;
    float m_scatter;
+   float m_fDisableLighting; // was bool, now 0..1
    bool m_fDroppable;
    bool m_fFlipbook;           // if enabled, dropped walls are not rendered
    bool m_fDisplayTexture;     // in editor
@@ -33,7 +34,6 @@ public:
    bool m_fCollidable; //wall must be droppable too!
    bool m_fIsBottomSolid; //is the bottom closed (lower side of the 'cube') or not (legacy behavior has bottom open, e.g. balls can drop into walls from below, or leave them if inside walls (if bottom area is large enough of course))
    bool m_fSlingshotAnimation;
-   unsigned char m_fDisableLighting; // was bool, now 0..255
    bool m_fTopBottomVisible;
    bool m_fHitEvent;
    bool m_fReflectionEnabled;

@@ -77,11 +77,11 @@ public:
 
    int  m_FrameAmount;
 
+   float m_fDisableLighting; // was bool, now 0..1
    bool m_use3DMesh;
    bool m_fVisible;
    bool m_DrawTexturesInside;
    bool m_staticRendering;
-   unsigned char m_fDisableLighting; // was bool, now 0..255
 
    bool m_fHitEvent;
    bool m_fCollidable;

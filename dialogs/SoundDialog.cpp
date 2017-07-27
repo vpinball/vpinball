@@ -702,7 +702,7 @@ void SoundPositionDialog::ReadTextValue(int item, int &oValue)
 	float fval;
 	const int ret = sscanf_s(textStr.c_str(), "%f", &fval);
 	if (ret == 1 && fval >= -1.0f && fval <= 1.0f)
-		oValue = (int)(fval * 100.0f);
+		oValue = quantizeSignedPercent(fval);
 }
 
 void SoundPositionDialog::SetTextValues()
@@ -715,7 +715,7 @@ void SoundPositionDialog::SetTextValues()
 void SoundPositionDialog::SetTextValue(int ctl, int val)
 {
 	char textBuf[32];
-	sprintf_s(textBuf, "%.03f", (float)val / 100.0f);
+	sprintf_s(textBuf, "%.03f", dequantizeSignedPercent(val));
 	const CString textStr(textBuf);
 	SetDlgItemText(ctl, textStr);
 }
@@ -764,9 +764,9 @@ void SoundPositionDialog::TestSound()
 	m_pps->m_iOutputTarget = m_cOutputTarget;
 	m_pps->ReInitialize();
 
-	const float volume = (float)m_iVolume / 100.0f;
-	const float pan = (float)m_iBalance / 100.0f;
-	const float front_rear_fade = (float)m_iFade / 100.0f;
+	const float volume = dequantizeSignedPercent(m_iVolume);
+	const float pan = dequantizeSignedPercent(m_iBalance);
+	const float front_rear_fade = dequantizeSignedPercent(m_iFade);
 
 	m_pps->Play((1.0f + volume) * 100.0f, 0.0f, 0, pan, front_rear_fade, 0, false);
 	m_pps->m_iOutputTarget = iOutputTargetTmp;
@@ -784,10 +784,10 @@ void SoundPositionDialog::OnCancel()
 
 int SoundPositionDialog::SliderToValue(const int Slider)
 {
-	return (int)(pow((float)Slider / 100.0f, 10.0f)*100.0f);
+	return quantizeSignedPercent(powf(dequantizeSignedPercent(Slider), 10.0f));
 }
 
 int SoundPositionDialog::ValueToSlider(const int Value)
 {
-	return (int)(pow((float)Value / 100.0f, (float)(1.0/10.0))*100.0f);
+	return quantizeSignedPercent(powf(dequantizeSignedPercent(Value), (float)(1.0/10.0)));
 }
