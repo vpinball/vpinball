@@ -10,45 +10,45 @@
 #undef max
 #endif
 
-inline float min(const float x, const float y)
+__forceinline float min(const float x, const float y)
 {
    return x < y ? x : y;
 }
-inline float max(const float x, const float y)
+__forceinline float max(const float x, const float y)
 {
    return x < y ? y : x;
 }
-inline double min(const double x, const double y)
+__forceinline double min(const double x, const double y)
 {
    return x < y ? x : y;
 }
-inline double max(const double x, const double y)
+__forceinline double max(const double x, const double y)
 {
    return x < y ? y : x;
 }
-inline int min(const int x, const int y)
+__forceinline int min(const int x, const int y)
 {
    return x < y ? x : y;
 }
-inline int max(const int x, const int y)
+__forceinline int max(const int x, const int y)
 {
    return x < y ? y : x;
 }
-inline unsigned int min(const unsigned int x, const unsigned int y)
+__forceinline unsigned int min(const unsigned int x, const unsigned int y)
 {
    return x < y ? x : y;
 }
-inline unsigned int min(const DWORD x, const DWORD y)
+__forceinline unsigned int min(const DWORD x, const DWORD y)
 {
    return x < y ? x : y;
 }
-inline unsigned int max(const unsigned int x, const unsigned int y)
+__forceinline unsigned int max(const unsigned int x, const unsigned int y)
 {
    return x < y ? y : x;
 }
 
 template <typename T>
-inline T clamp(T x, T min, T max)
+__forceinline T clamp(T x, T min, T max)
 {
    if (x < min)
       return min;
