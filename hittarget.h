@@ -42,8 +42,8 @@ public:
    int   m_RaiseDelay;
 
    float m_depthBias;      // for determining depth sorting
+   float m_fDisableLighting; // was bool, now 0..1
    bool m_fVisible;
-   unsigned char m_fDisableLighting; // was bool, now 0..255
 
    bool m_fUseHitEvent;
    bool m_fCollidable;

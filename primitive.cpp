@@ -360,7 +360,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Collidable", true) : true;
    m_d.m_fToy = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "IsToy", false) : false;
-   m_d.m_fDisableLighting = fromMouseClick ? GetRegIntWithDefault(strKeyName, "DisableLighting", 0) : 0;
+   m_d.m_fDisableLighting = dequantizeUnsigned<8>(fromMouseClick ? GetRegIntWithDefault(strKeyName, "DisableLighting", 0) : 0); // stored as uchar for backward compatibility
    m_d.m_fReflectionEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
    m_d.m_fBackfacesEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "BackfacesEnabled", false) : false;
 }
@@ -404,7 +404,8 @@ void Primitive::WriteRegDefaults()
 
    SetRegValueBool(strKeyName, "Collidable", m_d.m_fCollidable);
    SetRegValueBool(strKeyName, "IsToy", m_d.m_fToy);
-   SetRegValueInt(strKeyName, "DisableLighting", m_d.m_fDisableLighting);
+   const int tmp = quantizeUnsigned<8>(clamp(m_d.m_fDisableLighting, 0.f, 1.f));
+   SetRegValueInt(strKeyName, "DisableLighting", (tmp == 1) ? 0 : tmp); // backwards compatible saving
    SetRegValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
    SetRegValueBool(strKeyName, "BackfacesEnabled", m_d.m_fBackfacesEnabled);
 }
@@ -1050,8 +1051,8 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, m_d.m_fBackfacesEnabled && mat->m_bOpacityActive ? D3DCULL_CW : D3DCULL_CCW);
 
-   if (m_d.m_fDisableLighting != 0)
-      pd3dDevice->basicShader->SetDisableLighting((float)m_d.m_fDisableLighting * (float)(1.0 / 255.0));
+   if (m_d.m_fDisableLighting != 0.f)
+      pd3dDevice->basicShader->SetDisableLighting(m_d.m_fDisableLighting);
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
@@ -1109,7 +1110,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
 
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
-   if (m_d.m_fDisableLighting != 0)
+   if (m_d.m_fDisableLighting != 0.f)
       pd3dDevice->basicShader->SetDisableLighting(0.f);
 
 }
@@ -1232,7 +1233,8 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteBool(FID(ISTO), m_d.m_fToy);
    bw.WriteBool(FID(U3DM), m_d.m_use3DMesh);
    bw.WriteBool(FID(STRE), m_d.m_staticRendering);
-   bw.WriteInt(FID(DILI), m_d.m_fDisableLighting);
+   const int tmp = quantizeUnsigned<8>(clamp(m_d.m_fDisableLighting, 0.f, 1.f));
+   bw.WriteInt(FID(DILI), (tmp == 1) ? 0 : tmp); // backwards compatible saving
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
    bw.WriteBool(FID(EBFC), m_d.m_fBackfacesEnabled);
    bw.WriteString( FID( MAPH ), m_d.m_szPhysicsMaterial );
@@ -1494,7 +1496,7 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    {
       int tmp;
       pbr->GetInt(&tmp);
-      m_d.m_fDisableLighting = (tmp == 1) ? 255 : tmp; // backwards compatible hacky loading!
+      m_d.m_fDisableLighting = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); // backwards compatible hacky loading!
    }
    else if (id == FID(U3DM))
    {
@@ -2814,7 +2816,7 @@ STDMETHODIMP Primitive::put_BackfacesEnabled(VARIANT_BOOL newVal)
 
 STDMETHODIMP Primitive::get_DisableLighting(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisableLighting != 0);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisableLighting != 0.f);
 
    return S_OK;
 }
@@ -2823,7 +2825,7 @@ STDMETHODIMP Primitive::put_DisableLighting(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-   m_d.m_fDisableLighting = VBTOF(newVal) ? 255 : 0;
+   m_d.m_fDisableLighting = VBTOF(newVal) ? 1.f : 0;
 
    STOPUNDO
 
@@ -2832,7 +2834,7 @@ STDMETHODIMP Primitive::put_DisableLighting(VARIANT_BOOL newVal)
 
 STDMETHODIMP Primitive::get_BlendDisableLighting(float *pVal)
 {
-   *pVal = (float)m_d.m_fDisableLighting * (float)(1.0 / 255.0);
+   *pVal = m_d.m_fDisableLighting;
 
    return S_OK;
 }
@@ -2841,9 +2843,7 @@ STDMETHODIMP Primitive::put_BlendDisableLighting(float newVal)
 {
    STARTUNDO
 
-   m_d.m_fDisableLighting = (unsigned char)(newVal * 255.f);
-   if(m_d.m_fDisableLighting == 1) // for backwards compatible loading
-      m_d.m_fDisableLighting = 0;
+   m_d.m_fDisableLighting = newVal;
 
    STOPUNDO
 

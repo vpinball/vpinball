@@ -290,12 +290,12 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                pmat->m_cClearcoat = mat.cClearcoat;
                pmat->m_fWrapLighting = mat.fWrapLighting;
                pmat->m_fRoughness = mat.fRoughness;
-               pmat->m_fGlossyImageLerp = (float)mat.fGlossyImageLerp*(float)(1.0 / 255.0); //!! + rounding offset?
+               pmat->m_fGlossyImageLerp = dequantizeUnsigned<8>(mat.fGlossyImageLerp);
                pmat->m_fEdge = mat.fEdge;
                pmat->m_bIsMetal = mat.bIsMetal;
                pmat->m_fOpacity = mat.fOpacity;
                pmat->m_bOpacityActive = !!(mat.bOpacityActive_fEdgeAlpha & 1);
-               pmat->m_fEdgeAlpha = (float)(mat.bOpacityActive_fEdgeAlpha >> 1)*(float)(1.0 / 127.0); //!! + rounding offset?
+               pmat->m_fEdgeAlpha = dequantizeUnsigned<7>(mat.bOpacityActive_fEdgeAlpha >> 1);
                memcpy(pmat->m_szName, mat.szName, 32);
 
                fread(&physicsValue, 1, sizeof(float), f);
@@ -381,13 +381,13 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                   mat.cGlossy = pmat->m_cGlossy;
                   mat.cClearcoat = pmat->m_cClearcoat;
                   mat.fRoughness = pmat->m_fRoughness;
-                  mat.fGlossyImageLerp = ((unsigned char)(clamp(pmat->m_fGlossyImageLerp, 0.f, 1.f)*255.f));
+                  mat.fGlossyImageLerp = quantizeUnsigned<8>(clamp(pmat->m_fGlossyImageLerp, 0.f, 1.f));
                   mat.fEdge = pmat->m_fEdge;
                   mat.fWrapLighting = pmat->m_fWrapLighting;
                   mat.bIsMetal = pmat->m_bIsMetal;
                   mat.fOpacity = pmat->m_fOpacity;
                   mat.bOpacityActive_fEdgeAlpha = pmat->m_bOpacityActive ? 1 : 0;
-                  mat.bOpacityActive_fEdgeAlpha |= ((unsigned char)(clamp(pmat->m_fEdgeAlpha, 0.f, 1.f)*127.f)) << 1;
+                  mat.bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(pmat->m_fEdgeAlpha, 0.f, 1.f)) << 1;
                   mat.bUnused2 = 0;
                   memcpy(mat.szName, pmat->m_szName, 32);
                   fwrite(&mat, 1, sizeof(SaveMaterial), f);
