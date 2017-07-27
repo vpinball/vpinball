@@ -33,7 +33,7 @@ public:
    bool m_fCollidable; //wall must be droppable too!
    bool m_fIsBottomSolid; //is the bottom closed (lower side of the 'cube') or not (legacy behavior has bottom open, e.g. balls can drop into walls from below, or leave them if inside walls (if bottom area is large enough of course))
    bool m_fSlingshotAnimation;
-   bool m_fDisableLighting;
+   unsigned char m_fDisableLighting; // was bool, now 0..255
    bool m_fTopBottomVisible;
    bool m_fHitEvent;
    bool m_fReflectionEnabled;
@@ -223,6 +223,8 @@ public:
    STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_DisableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_DisableLighting)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_BlendDisableLighting)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_BlendDisableLighting)(/*[in]*/ float newVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
 

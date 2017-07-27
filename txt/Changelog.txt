@@ -1,6 +1,8 @@
 VP 10.4.0 Changelog
 ------------------------
 
+- extend 'Disable Lighting' functionality for HitTarget,Primitive and Wall from simple dis/enable to a blend value 0..1
+
 - add surround sound options/configurations:
  1) Basic 2CH audio - this should operate exactly as it did before. Forward/rear panning is ignored.
  2) All effects to rear - Moves the table sounds to the back audio channels. This allows one to move the sounds into the cab like one was able before, but without needing a second sound card.
