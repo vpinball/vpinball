@@ -6,7 +6,7 @@
 #include "Material.h"
 #include "Texture.h"
 
-#define CHECKD3D(s) { const HRESULT hr = (s); if (FAILED(hr)) ReportFatalError(hr, __FILE__, __LINE__); }
+#define CHECKD3D(s) { const HRESULT hrTmp = (s); if (FAILED(hrTmp)) ReportFatalError(hrTmp, __FILE__, __LINE__); }
 
 void ReportFatalError(const HRESULT hr, const char *file, const int line);
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line);
@@ -383,12 +383,12 @@ public:
    void SetTexture(const D3DXHANDLE texelName, D3DTexture *texel);
    void SetMaterial(const Material * const mat);
 
-   void SetDisableLighting(const bool value)
+   void SetDisableLighting(const float value)
    {
-      if (currentDisableLighting != (unsigned int)value)
+      if (currentDisableLighting != value)
       {
-         currentDisableLighting = (unsigned int)value;
-         SetBool("bDisableLighting", value);
+         currentDisableLighting = value;
+         SetFloat("fDisableLighting", value);
       }
    }
 
@@ -513,7 +513,7 @@ private:
 
    Material currentMaterial;
 
-   unsigned int currentDisableLighting;
+   float currentDisableLighting;
 
    static const DWORD TEXTURESET_STATE_CACHE_SIZE = 5; // current convention: SetTexture gets "TextureX", where X 0..4
    BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];

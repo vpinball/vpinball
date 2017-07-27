@@ -7,6 +7,8 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.4:
+- add BlendDisableLighting to target,primitive and wall elements
+- document missing target and wall element call (DisableLighting)
 - extend PlaySound with front_rear_fade to fade between front and rear speakers
 10.3.1:
 - document missing primitive element call (DisableLighting)
@@ -586,6 +588,7 @@ Scatter(float)
                and are just there for the 'looks'.
 *ReflectionEnabled(bool) - default=true
 DisableLighting(bool)
+BlendDisableLighting(float) - 0..1, same as DisableLighting, but can blend between the two extremes
 BackfacesEnabled(bool) - default=false, if enabled will also show/render the backfacing triangles (if a transparent material is used)
 
 The following only applies to mesh primitives with an animation sequence
@@ -718,6 +721,8 @@ SlingshotThreshold(float)
 Friction(float) - 0..1
 Scatter(float)
 *ReflectionEnabled(bool) - default=true
+DisableLighting(bool)
+BlendDisableLighting(float) - 0..1, same as DisableLighting, but can blend between the two extremes
 
 Methods
 -------
@@ -826,6 +831,8 @@ Friction(float) - 0..1
 Scatter(float)
 *Orientation(float)         - angle to rotate the whole target around the Z axis 
 *ReflectionEnabled(bool)    - default=true
+DisableLighting(bool)
+BlendDisableLighting(float) - 0..1, same as DisableLighting, but can blend between the two extremes
 DropSpeed(float)            - the speed how fast the drop or hit target will move 
 RaiseDelay(int)             - defines a delay in milliseconds after the dropped target will start to raise to it's normal position
 IsDropped(bool)             - can only be used for drop targets if the drop target is raised or dropped

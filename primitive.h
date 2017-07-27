@@ -81,7 +81,7 @@ public:
    bool m_fVisible;
    bool m_DrawTexturesInside;
    bool m_staticRendering;
-   bool m_fDisableLighting;
+   unsigned char m_fDisableLighting; // was bool, now 0..255
 
    bool m_fHitEvent;
    bool m_fCollidable;
@@ -211,6 +211,8 @@ public:
    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
    STDMETHOD(get_DisableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_DisableLighting)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_BlendDisableLighting)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_BlendDisableLighting)(/*[in]*/ float newVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD( get_PhysicsMaterial )(/*[out, retval]*/ BSTR *pVal);

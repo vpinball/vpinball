@@ -43,7 +43,7 @@ public:
 
    float m_depthBias;      // for determining depth sorting
    bool m_fVisible;
-   bool m_fDisableLighting;
+   unsigned char m_fDisableLighting; // was bool, now 0..255
 
    bool m_fUseHitEvent;
    bool m_fCollidable;
@@ -140,6 +140,8 @@ public:
    STDMETHOD(put_DropSpeed)(/*[in]*/ float newVal);
    STDMETHOD(get_DisableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_DisableLighting)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_BlendDisableLighting)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_BlendDisableLighting)(/*[in]*/ float newVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_IsDropped)(/*[out, retval]*/ VARIANT_BOOL *pVal);
