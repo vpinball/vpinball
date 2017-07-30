@@ -250,6 +250,10 @@
 #define IDD_ROTATE                      222
 #define IDR_MULTIMENU                   222
 #define IDD_SCALE                       223
+#define IDC_MATERIAL_COLOR              224
+#define IDC_SYSTEM_TIME                 225
+#define IDC_VP_WINDOW_WIDTH             226
+#define IDC_VP_WINDOW_HEIGHT            227
 #define IDD_PROGRESS                    228
 #define IDD_PROPTABLE                   229
 #define IDD_PROPLIGHT                   231

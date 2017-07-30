@@ -837,11 +837,17 @@ public:
    STDMETHOD(put_DMDPixels)(/*[in]*/ VARIANT pVal);
    STDMETHOD(put_DMDColoredPixels)(/*[in]*/ VARIANT pVal);
 
+   STDMETHOD(get_WindowWidth)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(get_WindowHeight)(/*[out, retval]*/ int *pVal);
+
    STDMETHOD(get_NightDay)(/*[out, retval]*/ int *pVal);
    //STDMETHOD(put_NightDay)(/*[in]*/ int newVal);
 
    STDMETHOD(get_ShowDT)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    //STDMETHOD(put_ShowDT)(/*[in]*/ VARIANT_BOOL newVal);
+
+   STDMETHOD(get_ShowFSS)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   //STDMETHOD(put_ShowFSS)(/*[in]*/ VARIANT_BOOL newVal);
 
    STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade);
    STDMETHOD(FireKnocker)(/*[in]*/ int Count);
