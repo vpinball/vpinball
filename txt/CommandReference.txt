@@ -7,6 +7,9 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.4:
+- add WindowWidth and WindowHeight to globals
+- document missing LoadValue and SaveValue global call
+- correct/move some properties/methods from the table element to globals
 - add BlendDisableLighting to target,primitive and wall elements
 - document missing target and wall element call (DisableLighting)
 - extend PlaySound with front_rear_fade to fade between front and rear speakers
@@ -56,6 +59,67 @@ Variables
 *GameTime(int) - gets the current internal game time in milliseconds
 *SystemTime(int) - gets the current system time in milliseconds
 
+*NightDay(int) - 0..100 value set in the UI (by the user) that defines if its night or day, so that the script can tweak table elements based on that value
+
+*LeftFlipperKey
+*RightFlipperKey
+*LeftTiltKey
+*RightTiltKey
+*CenterTiltKey
+*PlungerKey
+*StartGameKey
+*AddCreditKey
+*AddCreditKey2
+*LeftMagnaSave
+*RightMagnaSave
+*LockbarKey
+
+*ShowDT(bool) - Desktop mode enabled (true) or Rotated Fullscreen mode enabled (false)
+*ShowFSS(bool) - Extended Backglass mode enabled (true) or not (false)
+
+*WindowWidth(int) - get width of rendering window/fullscreen
+*WindowHeight(int) - get height of rendering window/fullscreen
+
+DMDWidth(int) - set width of DMD
+DMDHeight(int) - set height of DMD
+DMDPixels(VARIANT) - set array of (byte-)values (0..100), size needs to match the previously set width and height
+
+Methods
+-------
+
+Nudge(float Angle, float Force)
+PlaySound(string, int loopcount, float volume, float pan, float randompitch, int pitch, bool useexisting, bool restart, float front_rear_fade)
+ - also allows to increase/decrease the frequency of an already playing samples, and in general to apply all the settings to an already playing sample, and to choose if to restart this playing sample from the beginning or not
+   loopcound chooses the amount of loops
+   volume is in 0..1
+   pan ranges from -1.0 (left) over 0.0 (both) to 1.0 (right)
+   randompitch ranges from 0.0 (no randomization) to 1.0 (vary between half speed to double speed)
+   pitch can be positive or negative and directly adds onto the standard sample frequency
+   useexisting is 0 or 1 (if no existing/playing copy of the sound is found, then a new one is created)
+   restart is 0 or 1 (only useful if useexisting is 1)
+   front_rear_fade is similar to pan but fades between the front and rear speakers
+ - so f.e. PlaySound "FlipperUp",0,0.5,-1.0,1.0,1,1,0.0 would play the sound not looped (0), at half the volume (0.5), only on left speaker (-1.0), with varying pitch (1.0), it would reuse the same channel if it is already playing (1), restarts the sample (1), and plays it on the front speakers only (0.0)
+StopSound(string)
+PlayMusic(string, float volume) - volume 0..1
+MusicVolume(float volume) - 0..1
+EndMusic()
+FireKnocker(int Count)
+QuitPlayer(int CloseType)
+Version - returns VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REVISION
+VPBuildVersion - same, deprecated
+VersionMajor - major VP version number
+VersionMinor - minor VP version number
+VersionRevision - VP version revision
+GetBalls(Ball) - returns all Balls on the table
+GetElements(Editable) - returns all Elements on the table
+GetElementByName(string) - returns a certain Element, based on the name
+MaterialColor(string,OLE_COLOR) - change base color of a material
+
+LoadValue(string,string,VARIANT) - load a value for tablename,valuename,value
+SaveValue(string,string,VARIANT) - save a value for tablename,valuename,value
+
+UserDirectory(string)
+
 
 TABLE
 ==============================================================================================================================================
@@ -89,10 +153,6 @@ Variables
 *PlayfieldColor(OLE_COLOR)
 *BackDropColor(OLE_COLOR)
 BackdropImage(string)
-
-DMDWidth(int) - set width of DMD
-DMDHeight(int) - set height of DMD
-DMDPixels(VARIANT) - set array of (byte-)values (0..100), size needs to match the previously set width and height
 
 *SlopeMax(float) - Angle of Playfield within Cabinet (used for Physics only)
 *SlopeMin(float) - Angle of Playfield within Cabinet (used for Physics only)
@@ -147,66 +207,16 @@ NudgeTime(float)
 *TableSoundVolume(int) - Scales the global sound volume (in percent). default=100
 *TableMusicVolume(int) - Scales the global music volume (in percent). default=100
 
-ShowDT(bool) - Desktop mode enabled (true) or Rotated Fullscreen mode enabled (false)
-ShowFSS(bool) - Extended Backglass mode enabled (true) or not (false)
-
 *LightAmbient(OLE_COLOR) - changes the ambient light contribution for each material, please always try to keep this at full Black
 *Light0Emission(OLE_COLOR) - changes the light contribution for each material (currently light0 emission is copied to light1, too)
 LightEmissionScale(float)
 EnvironmentEmissionScale(float)
 AOScale(float) - scaling factor when blending the ambient occlusion
 BloomStrength(float) - scaling factor when blurring the clipped framebuffer contribution (leave at 1 for kinda natural glow)
-NightDay(int) - 0..100 value set in the UI (by the user) that defines if its night or day, so that the script can tweak table elements based on that value
 *LightHeight(float) - height of lights
 *LightRange(float) - range of lights
 
 ColorGradeImage(String) - the 256x16 LUT texture used for the color grading post process
-
-Methods
--------
-
-Nudge(float Angle, float Force)
-PlaySound(string, int loopcount, float volume, float pan, float randompitch, int pitch, bool useexisting, bool restart, float front_rear_fade)
- - also allows to increase/decrease the frequency of an already playing samples, and in general to apply all the settings to an already playing sample, and to choose if to restart this playing sample from the beginning or not
-   loopcound chooses the amount of loops
-   volume is in 0..1
-   pan ranges from -1.0 (left) over 0.0 (both) to 1.0 (right)
-   randompitch ranges from 0.0 (no randomization) to 1.0 (vary between half speed to double speed)
-   pitch can be positive or negative and directly adds onto the standard sample frequency
-   useexisting is 0 or 1 (if no existing/playing copy of the sound is found, then a new one is created)
-   restart is 0 or 1 (only useful if useexisting is 1)
-   front_rear_fade is similar to pan but fades between the front and rear speakers
- - so f.e. PlaySound "FlipperUp",0,0.5,-1.0,1.0,1,1,0.0 would play the sound not looped (0), at half the volume (0.5), only on left speaker (-1.0), with varying pitch (1.0), it would reuse the same channel if it is already playing (1), restarts the sample (1), and plays it on the front speakers only (0.0)
-StopSound(string)
-PlayMusic(string, float volume) - volume 0..1
-MusicVolume(float volume) - 0..1
-EndMusic()
-FireKnocker(int Count)
-QuitPlayer(int CloseType)
-Version - returns VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REVISION
-VPBuildVersion - same, deprecated
-VersionMajor - major VP version number
-VersionMinor - minor VP version number
-VersionRevision - VP version revision
-GetBalls(Ball) - returns all Balls on the table
-GetElements(Editable) - returns all Elements on the table
-GetElementByName(string) - returns a certain Element, based on the name
-MaterialColor(string,OLE_COLOR) - change base color of a material
-
-LeftFlipperKey
-RightFlipperKey
-LeftTiltKey
-RightTiltKey
-CenterTiltKey
-PlungerKey
-StartGameKey
-AddCreditKey
-AddCreditKey2
-LeftMagnaSave
-RightMagnaSave
-LockbarKey
-
-UserDirectory(string)
 
 Callback
 --------

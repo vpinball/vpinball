@@ -584,7 +584,7 @@ STDMETHODIMP ScriptGlobalTable::get_NightDay(int *pVal)
 /*STDMETHODIMP ScriptGlobalTable::put_ShowDT(int pVal)
 {
    if(g_pplayer)
-      g_pplayer->m_BG_current_set = (!!newVal) ? 0 : 1;
+      g_pplayer->m_ptable->m_BG_current_set = (!!newVal) ? 0 : 1;
    return S_OK;
 }*/
 
@@ -594,6 +594,33 @@ STDMETHODIMP ScriptGlobalTable::get_ShowDT(VARIANT_BOOL *pVal)
       *pVal = (VARIANT_BOOL)FTOVB(g_pplayer->m_ptable->m_BG_current_set == BG_DESKTOP || g_pplayer->m_ptable->m_BG_current_set == BG_FSS); // DT & FSS
    return S_OK;
 }
+
+STDMETHODIMP ScriptGlobalTable::get_ShowFSS(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(g_pplayer->m_ptable->m_BG_enable_FSS);
+
+   //*pVal = (VARIANT_BOOL)FTOVB(g_pplayer->m_ptable->m_BG_current_set == 2);
+
+   return S_OK;
+}
+
+/*STDMETHODIMP PinTable::put_ShowFSS(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+   m_BG_enable_FSS = !!newVal;
+
+   if(m_BG_enable_FSS)
+      m_BG_current_set = FULL_SINGLE_SCREEN;
+   else
+      GetRegInt("Player", "BGSet", (int*)&m_BG_current_set);
+
+   STOPUNDO
+
+   SetDirtyDraw();
+
+   return S_OK;
+}*/
 
 STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
 {
@@ -609,6 +636,20 @@ STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
 	tmp->m_cBase = newVal;
 
 	return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_WindowWidth(int *pVal)
+{
+   if (g_pplayer)
+      *pVal = g_pplayer->m_width;
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_WindowHeight(int *pVal)
+{
+   if (g_pplayer)
+      *pVal = g_pplayer->m_height;
+   return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::put_DMDWidth(int pVal)
