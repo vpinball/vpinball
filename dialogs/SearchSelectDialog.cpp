@@ -181,7 +181,7 @@ bool SearchSelectDialog::IsValidString(const char *name)
    if (name[0] == 0)
       return false;
    std::string str(name);
-   if (str.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ._") != std::string::npos)
+   if (str.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ._-") != std::string::npos)
       return false;
 
    return true;
@@ -196,6 +196,9 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    char layerBuf[16];
    IScriptable * const piscript = piedit->GetScriptable();
    memset(layerBuf, 0, 16);
+   textBuf[0] = 0;
+   firstImage[0] = 0;
+   secondImage[0] = 0;
    if (piscript)
    {
       sprintf_s(layerBuf, "%i", piscript->GetISelect()->layerIndex + 1);
