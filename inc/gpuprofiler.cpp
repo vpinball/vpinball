@@ -21,8 +21,8 @@ CGpuProfiler::CGpuProfiler ()
 	memset(m_apQueryTsDisjoint, 0, sizeof(m_apQueryTsDisjoint));
 	memset(m_apQueryTs, 0, sizeof(m_apQueryTs));
 	memset(m_adT, 0, sizeof(m_adT));
-	memset(m_adTAvg, 0, sizeof(m_adT));
-	memset(m_adTTotalAvg, 0, sizeof(m_adT));
+	memset(m_adTAvg, 0, sizeof(m_adTAvg));
+	memset(m_adTTotalAvg, 0, sizeof(m_adTTotalAvg));
 }
 
 CGpuProfiler::~CGpuProfiler()
@@ -120,6 +120,15 @@ void CGpuProfiler::Shutdown ()
 
 	m_init = false;
 	m_device = NULL;
+
+	m_iFrameQuery = 0;
+	m_iFrameCollect = -1;
+	m_frameCountAvg = 0;
+	m_tBeginAvg = 0.0;
+
+	memset(m_adT, 0, sizeof(m_adT));
+	memset(m_adTAvg, 0, sizeof(m_adTAvg));
+	memset(m_adTTotalAvg, 0, sizeof(m_adTTotalAvg));
 }
 
 void CGpuProfiler::BeginFrame(IDirect3DDevice9 * const pDevice)
