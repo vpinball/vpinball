@@ -85,6 +85,7 @@ public:
    virtual void ExportMesh(FILE *f);
 
    virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   virtual ItemTypeEnum HitableGetItemType() { return eItemKicker; }
 
    void WriteRegDefaults();
    void GenerateCupMesh(Vertex3D_NoTex2 *buf);

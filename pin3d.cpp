@@ -25,6 +25,9 @@ Pin3D::Pin3D()
 
 Pin3D::~Pin3D()
 {
+#ifdef FPS
+   m_gpu_profiler.Shutdown();
+#endif
    m_pd3dDevice->SetZBuffer(NULL);
    m_pd3dDevice->FreeShader();
 
@@ -300,6 +303,9 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    // Direct all renders to the "static" buffer.
    SetRenderTarget(m_pddsStatic, m_pddsStaticZ);
 
+//#ifdef FPS
+   //m_gpu_profiler.Init(m_pd3dDevice->GetCoreDevice()); // done by first BeginFrame() call lazily
+//#endif
    return S_OK;
 }
 

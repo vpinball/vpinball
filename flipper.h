@@ -108,16 +108,17 @@ public:
       virtual void SetDefaultPhysics(bool fromMouseClick);
       virtual void ExportMesh(FILE *f);
 
-	  virtual unsigned long long GetMaterialID()
-	  {
+      virtual unsigned long long GetMaterialID()
+      {
 		  const unsigned long long m1 = m_ptable->GetMaterial(m_d.m_szMaterial)->hash();
 		  const unsigned long long m2 = m_ptable->GetMaterial(m_d.m_szRubberMaterial)->hash();
 		  if (m1 == m2 || (m_d.m_rubberthickness <= 0.f))
 			  return m1;
 		  else
 			  return 0;
-	  }
-	  virtual unsigned long long GetImageID() { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+      }
+      virtual unsigned long long GetImageID() { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+      virtual ItemTypeEnum HitableGetItemType() { return eItemFlipper; }
 
       void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
 

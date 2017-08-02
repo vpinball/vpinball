@@ -70,7 +70,7 @@ public:
 
    STANDARD_NOSCRIPT_EDITABLE_DECLARES(Decal, eItemDecal, DECAL, VIEW_PLAYFIELD | VIEW_BACKGLASS)
 
-      virtual void MoveOffset(const float dx, const float dy);
+   virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
    // Multi-object manipulation
    virtual void GetCenter(Vertex2D * const pv) const;
@@ -84,6 +84,8 @@ public:
 
    void WriteRegDefaults();
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+
+   virtual ItemTypeEnum HitableGetItemType() { return eItemDecal; }
 
    void EnsureSize();
    HFONT GetFont();

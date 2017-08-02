@@ -71,7 +71,7 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Spinner, eItemSpinner, SPINNER, 1)
 
-      DECLARE_REGISTRY_RESOURCEID(IDR_SPINNER)
+   DECLARE_REGISTRY_RESOURCEID(IDR_SPINNER)
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
@@ -86,6 +86,7 @@ public:
 
    virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
    virtual unsigned long long GetImageID() { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+   virtual ItemTypeEnum HitableGetItemType() { return eItemSpinner; }
    virtual void ExportMesh(FILE *f);
 
    void WriteRegDefaults();

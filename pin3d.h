@@ -1,4 +1,5 @@
 #pragma once
+#include "inc\gpuprofiler.h"
 #include "RenderDevice.h"
 #include "Texture.h"
 
@@ -89,6 +90,9 @@ public:
 
    D3DTexture* m_pdds3DZBuffer;
 
+#ifdef FPS
+   CGpuProfiler m_gpu_profiler;
+#endif
    void* m_pddsZBuffer; // D3DTexture* or RenderTarget*, depending on HW support
 
    RenderTarget* m_pddsStatic;

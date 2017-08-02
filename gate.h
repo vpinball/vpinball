@@ -94,6 +94,7 @@ public:
    virtual void ExportMesh(FILE *f);
 
    virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   virtual ItemTypeEnum HitableGetItemType() { return eItemGate; }
 
    void WriteRegDefaults();
    void UpdateWire(RenderDevice *pd3dDevice);

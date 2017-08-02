@@ -70,6 +70,7 @@ public:
    // Multi-object manipulation
    virtual void GetCenter(Vertex2D * const pv) const;
    virtual void PutCenter(const Vertex2D * const pv);
+   virtual ItemTypeEnum HitableGetItemType() { return eItemTextbox; }
 
    DECLARE_REGISTRY_RESOURCEID(IDR_TEXTBOX)
    // ISupportsErrorInfo
