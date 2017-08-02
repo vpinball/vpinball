@@ -1,7 +1,12 @@
 VP 10.4.0 Changelog
 ------------------------
 
-- extend 'Disable Lighting' functionality for HitTarget,Primitive and Wall from simple dis/enable to a blend value 0..1
+- add internal/rudimentary GPU & table element profiling functionality (accessed as usual via the F11 statistics/debug display variants)
+  the normal statistics/debug display now features multiple modes, the first mode works as before,
+  the second features additional timings for each main rendering block (like timings for Ambient Occlusion, pure rendering of the table elements, playfield reflection, etc),
+  the third one shows separate timings for each table element type(s), which is only approximate though, as it can not render the table in exactly the same way
+
+- extend 'Disable Lighting' functionality for HitTarget, Primitive and Wall from simple dis/enable to a blend value 0..1
 
 - add surround sound options/configurations:
  1) Basic 2CH audio - this should operate exactly as it did before. Forward/rear panning is ignored.
