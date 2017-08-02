@@ -56,11 +56,11 @@ enum GTS
 static const char * GTS_name_item[GTS_Max] =
 {
 	"Begin Frame",
-	"Primitives Non-Transparent",
-	"Walls Ramps Rubbers Non-Transparent",
+	"Primitives (Non-Transparent)",
+	"Walls/Ramps/Rubbers (Non-Transparent)",
 	"Everything else",
-	"Walls Ramps Rubbers Transparent",
-	"Primitives Transparent",
+	"Walls/Ramps/Rubbers (Transparent)",
+	"Primitives (Transparent)",
 	"Lights",
 	"Flashers",
 	"End Frame"
@@ -69,10 +69,10 @@ static const char * GTS_name_item[GTS_Max] =
 static const char * GTS_name[GTS_Max] =
 {
 	"Begin Frame",
-	"Playfield Graphics",
-	"Non-Transparent",
+	"Playfield Graphics/Reflections",
+	"Non-Transparent Elements",
 	"Light Buffer",
-	"Transparent",
+	"Transparent Elements",
 	"Bloom",
 	"Ambient Occlusion",
 	"Post Processing",
@@ -94,6 +94,8 @@ public:
 
 	// Wait on GPU for last frame's data (not this frame's) to be available
 	void WaitForDataAndUpdate();
+
+	void ResetCounters();
 
 	double Dt(const GTS gts)    { return m_adT[gts]; }
 	double DtAvg(const GTS gts) { return m_adTAvg[gts]; }

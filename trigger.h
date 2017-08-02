@@ -99,6 +99,7 @@ public:
    virtual void PutPointCenter(const Vertex2D * const pv);
    virtual void UpdatePropertyPanes();
    virtual void ExportMesh(FILE *f);
+   virtual ItemTypeEnum HitableGetItemType() { return eItemTrigger; }
 
    void CurvesToShapes(Vector<HitObject> * const pvho);
    void AddLine(Vector<HitObject> * const pvho, const RenderVertex &pv1, const RenderVertex &pv2, const float height);

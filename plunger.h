@@ -142,7 +142,7 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Plunger, eItemPlunger, PLUNGER, 1)
 
-      virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
@@ -150,6 +150,7 @@ public:
    virtual void GetCenter(Vertex2D * const pv) const;
    virtual void PutCenter(const Vertex2D * const pv);
    virtual void SetDefaultPhysics(bool fromMouseClick);
+   virtual ItemTypeEnum HitableGetItemType() { return eItemPlunger; }
 
    void WriteRegDefaults();
 

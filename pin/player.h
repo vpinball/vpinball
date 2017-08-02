@@ -562,7 +562,11 @@ private:
 public:
    void ToggleFPS();
    void InitFPS();
-   void UpdateBasicShaderMatrix( const Matrix3D& objectTrafo = Matrix3D( 1.0f ) );
+   bool ShowFPS();
+   bool RenderStaticOnly();
+   bool RenderAOOnly();
+   unsigned int ProfilingMode();
+   void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D(1.0f));
    void InitShader();
    void UpdateCameraModeDisplay();
    void UpdateBackdropSettings(const bool up);
@@ -579,8 +583,7 @@ public:
    bool m_fStep;
 #endif
 
-   bool m_fShowFPS;
-   unsigned int m_staticOnly;
+   unsigned int m_fShowFPS;
 
    bool m_scaleFX_DMD;
 

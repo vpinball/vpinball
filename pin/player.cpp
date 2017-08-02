@@ -425,8 +425,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_fThrowBalls = (GetRegIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0)==1);
    m_DebugBallSize = GetRegIntWithDefault("Editor", "ThrowBallSize", 50);
 
-   m_fShowFPS = false;
-   m_staticOnly = 0;
+   m_fShowFPS = 0;
 
    m_fCloseDown = false;
    m_fCloseDownDelay = true;
@@ -499,7 +498,6 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_ballDebugPoints = NULL;
    m_ballTrailVertexBuffer = NULL;
    m_pFont = NULL;
-
 }
 
 Player::~Player()
@@ -670,9 +668,37 @@ void Player::InitFPS()
 
 void Player::ToggleFPS()
 {
-   if (m_fShowFPS)
-       m_staticOnly = (m_staticOnly + 1) % 3;
-   m_fShowFPS = !m_fShowFPS;
+   ++m_fShowFPS;
+
+   m_pin3d.m_gpu_profiler.Shutdown(); // Kill it so that it cannot influence standard rendering performance (and otherwise if just switching profile modes to not falsify counters and query info)
+}
+
+unsigned int Player::ProfilingMode()
+{
+   const unsigned int modes = (m_fShowFPS & 7);
+   if (modes == 2)
+      return 1;
+   else if (modes == 3)
+      return 2;
+   else return 0;
+}
+
+bool Player::ShowFPS()
+{
+   const unsigned int modes = (m_fShowFPS & 7);
+   return (modes == 1 || modes == 2 || modes == 3 || modes == 5 || modes == 7);
+}
+
+bool Player::RenderStaticOnly()
+{
+   const unsigned int modes = (m_fShowFPS & 7);
+   return (modes == 5);
+}
+
+bool Player::RenderAOOnly()
+{
+   const unsigned int modes = (m_fShowFPS & 7);
+   return (modes == 7);
 }
 
 void Player::RecomputePauseState()
@@ -1278,8 +1304,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 #ifdef FPS
    InitFPS();
-   m_fShowFPS = false;
-   m_staticOnly = 0;
+   m_fShowFPS = 0;
 #endif
 
    for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
@@ -2864,7 +2889,7 @@ void Player::UpdatePhysics()
 #endif
 
 #ifdef FPS
-   //if (m_fShowFPS)
+   //if (ShowFPS())
    {
       m_lastFrameDuration = (U32)(initial_time_usec - m_lastTime_usec);
       if (m_lastFrameDuration > 1000000)
@@ -2943,7 +2968,7 @@ void Player::UpdatePhysics()
       //const U32 sim_msec = (U32)(m_curPhysicsFrameTime / 1000);
       const U32 cur_time_msec = (U32)(cur_time_usec / 1000);
 
-      m_pininput.ProcessKeys(cur_time_msec);
+      m_pininput.ProcessKeys(/*sim_msec,*/ cur_time_msec);
 
       mixer_update();
       hid_update(/*sim_msec*/cur_time_msec);
@@ -3305,37 +3330,128 @@ void Player::RenderDynamics()
          }
       }
    }
-   
-   m_dmdstate = 0;
-   // Draw non-transparent objects. No DMD's
-   for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-      if(!m_vHitNonTrans[i]->IsDMD())
-         m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
-   m_dmdstate = 2;
-   // Draw non-transparent DMD's
-   for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-      if(m_vHitNonTrans[i]->IsDMD())
-         m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+#ifdef FPS
+   if (ProfilingMode() == 1)
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_PlayfieldGraphics);
 
-   DrawBalls();
+   if (ProfilingMode() != 2) // normal rendering path for standard gameplay
+   {
+#endif
+      m_dmdstate = 0;
+      // Draw non-transparent objects. No DMD's
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
+        if(!m_vHitNonTrans[i]->IsDMD())
+          m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
-   m_limiter.Execute(m_pin3d.m_pd3dDevice); //!! move below other draw calls??
+      m_dmdstate = 2;
+      // Draw non-transparent DMD's
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
+        if(m_vHitNonTrans[i]->IsDMD())
+          m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
-   DrawBulbLightBuffer();
+      DrawBalls();
 
-   m_dmdstate = 0;
-   // Draw transparent objects. No DMD's
-   for (size_t i = 0; i < m_vHitTrans.size(); ++i)
-      if(!m_vHitTrans[i]->IsDMD())
-         m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+#ifdef FPS
+      if (ProfilingMode() == 1)
+         m_pin3d.m_gpu_profiler.Timestamp(GTS_NonTransparent);
+#endif
+      m_limiter.Execute(m_pin3d.m_pd3dDevice); //!! move below other draw calls??
 
-   m_dmdstate = 1;
-   // Draw only transparent DMD's
-   for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-      if(m_vHitNonTrans[i]->IsDMD())
-         m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+      DrawBulbLightBuffer();
 
+#ifdef FPS
+      if (ProfilingMode() == 1)
+         m_pin3d.m_gpu_profiler.Timestamp(GTS_LightBuffer);
+#endif
+      m_dmdstate = 0;
+      // Draw transparent objects. No DMD's
+      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
+        if(!m_vHitTrans[i]->IsDMD())
+          m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+      m_dmdstate = 1;
+      // Draw only transparent DMD's
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i) //!! is NonTrans correct or rather Trans????
+        if(m_vHitNonTrans[i]->IsDMD())
+          m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+#ifdef FPS
+      if (ProfilingMode() == 1)
+         m_pin3d.m_gpu_profiler.Timestamp(GTS_Transparent);
+   }
+   else // special profiling path by doing separate items, will not be accurate, both perf and rendering wise, but better than nothing
+   {
+      m_limiter.Execute(m_pin3d.m_pd3dDevice); //!! move below other draw calls??
+
+      DrawBulbLightBuffer();
+
+      m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dDevice->GetCoreDevice());
+
+      m_dmdstate = 0;
+
+      // Draw non-transparent Primitives.
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
+         if (m_vHitNonTrans[i]->HitableGetItemType() == eItemPrimitive)
+            m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_Primitives_NT);
+
+      // Draw non-transparent Walls, Ramps, Rubbers.
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
+         if (m_vHitNonTrans[i]->HitableGetItemType() == eItemSurface || m_vHitNonTrans[i]->HitableGetItemType() == eItemRamp || m_vHitNonTrans[i]->HitableGetItemType() == eItemRubber)
+            m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_Walls_Ramps_Rubbers_NT);
+
+      // Else.
+      m_dmdstate = 2;
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
+         if (m_vHitNonTrans[i]->IsDMD() && m_vHitNonTrans[i]->HitableGetItemType() == eItemFlasher)
+            m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+      DrawBalls();
+
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
+         if (m_vHitNonTrans[i]->HitableGetItemType() != eItemPrimitive && m_vHitNonTrans[i]->HitableGetItemType() != eItemSurface && m_vHitNonTrans[i]->HitableGetItemType() != eItemRamp && m_vHitNonTrans[i]->HitableGetItemType() != eItemRubber)
+            m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
+         if (m_vHitTrans[i]->HitableGetItemType() != eItemPrimitive && m_vHitTrans[i]->HitableGetItemType() != eItemSurface && m_vHitTrans[i]->HitableGetItemType() != eItemRamp && m_vHitTrans[i]->HitableGetItemType() != eItemRubber && m_vHitTrans[i]->HitableGetItemType() != eItemLight && m_vHitTrans[i]->HitableGetItemType() != eItemFlasher)
+            m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_Else);
+
+      // Draw transparent Walls, Ramps, Rubbers.
+      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
+         if (m_vHitTrans[i]->HitableGetItemType() == eItemSurface || m_vHitTrans[i]->HitableGetItemType() == eItemRamp || m_vHitTrans[i]->HitableGetItemType() == eItemRubber)
+            m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_Walls_Ramps_Rubbers_T);
+
+      // Draw transparent Primitives.
+      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
+         if (m_vHitTrans[i]->HitableGetItemType() == eItemPrimitive)
+            m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_Primitives_T);
+
+      // Draw Lights.
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i) //!! not necessary??!
+         if (m_vHitNonTrans[i]->HitableGetItemType() == eItemLight)
+            m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
+         if (m_vHitTrans[i]->HitableGetItemType() == eItemLight)
+            m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_Lights);
+
+      // Draw Flashers.
+      m_dmdstate = 0;
+      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
+         if (!m_vHitTrans[i]->IsDMD() && m_vHitTrans[i]->HitableGetItemType() == eItemFlasher)
+            m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+      m_dmdstate = 1;
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
+         if (m_vHitNonTrans[i]->IsDMD() && m_vHitNonTrans[i]->HitableGetItemType() == eItemFlasher)
+            m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_Flashers);
+   }
+#endif
    m_dmdstate = 0;
 
    //
@@ -3543,7 +3659,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
 void Player::UpdateHUD()
 {
 #ifdef FPS
-	if (m_fShowFPS && !cameraMode)
+	if (ShowFPS() && !cameraMode)
 	{
 		char szFoo[256];
 
@@ -3554,7 +3670,7 @@ void Player::UpdateHUD()
 
 		// Draw the framerate.
 		const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
-		const int len2 = sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %d%%", m_fps+0.01f, fpsAvg+0.01f, m_staticOnly == 1 ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, quantizeSignedPercent(m_globalEmissionScale));
+		const int len2 = sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %d%%", m_fps+0.01f, fpsAvg+0.01f, RenderStaticOnly() ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, quantizeSignedPercent(m_globalEmissionScale));
 		DebugPrint(10, 10, szFoo, len2);
 
 		const U32 period = m_lastFrameDuration;
@@ -3646,6 +3762,42 @@ void Player::UpdateHUD()
 			(int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame));
 		DebugPrint(10, 260, szFoo, len);
 	}
+
+    // Draw performance readout - at end of CPU frame, so hopefully the previous frame
+    //  (whose data we're getting) will have finished on the GPU by now.
+    if (ProfilingMode() != 0)
+    {
+		char szFoo[256];
+		int len2 = sprintf_s(szFoo, "Detailed (approximate) GPU profiling:");
+		DebugPrint(10, 300, szFoo, len2);
+
+		m_pin3d.m_gpu_profiler.WaitForDataAndUpdate();
+
+		double dTDrawTotal = 0.0;
+		for (GTS gts = GTS_BeginFrame; gts < GTS_EndFrame; gts = GTS(gts + 1))
+			dTDrawTotal += m_pin3d.m_gpu_profiler.DtAvg(gts);
+
+		if (ProfilingMode() == 1)
+		{
+			len2 = sprintf_s(szFoo, " Draw time: %.2f ms", float(1000.0 * dTDrawTotal));
+			DebugPrint(10, 320, szFoo, len2);
+			for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
+			{
+				len2 = sprintf_s(szFoo, "   %s: %.2f ms (%.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
+				DebugPrint(10, 320 + gts * 20, szFoo, len2);
+			}
+			len2 = sprintf_s(szFoo, " Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
+			DebugPrint(10, 320 + GTS_EndFrame * 20, szFoo, len2);
+		}
+		else
+		{
+			for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
+			{
+				len2 = sprintf_s(szFoo, " %s: %.2f ms (%.1f%%)", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
+				DebugPrint(10, 300 + gts * 20, szFoo, len2);
+			}
+		}
+    }
 #endif /*FPS*/
 
 	if (m_fFullScreen && m_fCloseDown) // currently cannot use dialog boxes in fullscreen, so necessary
@@ -3752,6 +3904,10 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
 
    Bloom();
 
+#ifdef FPS
+   if (ProfilingMode() == 1)
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_Bloom);
+#endif
    // switch to output buffer
    if (!(stereo || SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3))
       m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
@@ -3782,6 +3938,10 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
 
    StereoFXAA(stereo, SMAA, DLAA, NFAA, FXAA1, FXAA2, FXAA3, false);
 
+#ifdef FPS
+   if (ProfilingMode() == 1)
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_PostProcess);
+#endif
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
@@ -3820,6 +3980,10 @@ void Player::FlipVideoBuffersAO(const bool vsync)
 
    Bloom();
 
+#ifdef FPS
+   if (ProfilingMode() == 1)
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_Bloom);
+#endif
    // separate normal generation pass, currently roughly same perf or even much worse
    /*RenderTarget* tmpSurface;
    m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()->GetSurfaceLevel(0, &tmpSurface); //!! expects stereo or FXAA enabled
@@ -3862,6 +4026,10 @@ void Player::FlipVideoBuffersAO(const bool vsync)
    m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
    m_pin3d.m_pd3dDevice->FBShader->End();
 
+#ifdef FPS
+   if (ProfilingMode() == 1)
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_AO);
+#endif
    // flip AO buffers (avoids copy)
    D3DTexture *tmpAO = m_pin3d.m_pddsAOBackBuffer;
    m_pin3d.m_pddsAOBackBuffer = m_pin3d.m_pddsAOBackTmpBuffer;
@@ -3897,7 +4065,7 @@ void Player::FlipVideoBuffersAO(const bool vsync)
 
    const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5 / (double)m_width), (float)(0.5 / (double)m_height), 1.0f, 1.0f);
    m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
-   m_pin3d.m_pd3dDevice->FBShader->SetTechnique(m_fShowFPS && (m_staticOnly == 2) ? "fb_AO" :
+   m_pin3d.m_pd3dDevice->FBShader->SetTechnique(RenderAOOnly() ? "fb_AO" :
                                                 (useAA ? "fb_tonemap_AO" : "fb_tonemap_AO_no_filter"));
 
    m_pin3d.m_pd3dDevice->FBShader->Begin(0);
@@ -3905,6 +4073,11 @@ void Player::FlipVideoBuffersAO(const bool vsync)
    m_pin3d.m_pd3dDevice->FBShader->End();
 
    StereoFXAA(stereo, SMAA, DLAA, NFAA, FXAA1, FXAA2, FXAA3, true);
+
+#ifdef FPS
+   if (ProfilingMode() == 1)
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_PostProcess);
+#endif
 
    //
 
@@ -4126,7 +4299,7 @@ void Player::Render()
 {
    U64 timeforframe = usec();
 
-   m_pininput.ProcessKeys(-(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+   m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 
    if (m_overall_frames < 10)
    {
@@ -4141,7 +4314,7 @@ void Player::Render()
    if (m_sleeptime > 0)
       Sleep(m_sleeptime - 1);
 
-   m_pininput.ProcessKeys(-(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+   m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 
 #ifdef _DEBUGPHYSICS
    c_hitcnts = 0;
@@ -4179,10 +4352,14 @@ void Player::Render()
    for (int l = 0; l < m_vanimate.Size(); ++l)
       m_vanimate.ElementAt(l)->Animate();
 
-   if(!m_fShowFPS || m_staticOnly != 1)
+#ifdef FPS
+   if (ProfilingMode() == 1)
+      m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dDevice->GetCoreDevice());
+#endif
+   if (!RenderStaticOnly())
       RenderDynamics();
 
-   m_pininput.ProcessKeys(-(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+   m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 
    // Check if we should turn animate the plunger light.
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
@@ -4208,6 +4385,10 @@ void Player::Render()
    else
       FlipVideoBuffersNormal(vsync);
 
+#ifdef FPS
+   if (ProfilingMode() != 0)
+      m_pin3d.m_gpu_profiler.EndFrame();
+#endif
 #ifndef ACCURATETIMERS
    // do the en/disable changes for the timers that piled up
    for (size_t i = 0; i < m_changed_vht.size(); ++i)
@@ -4239,7 +4420,7 @@ void Player::Render()
 
    m_pactiveball = old_pactiveball;
 #else
-   m_pininput.ProcessKeys(-(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+   m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 #endif
 
    // Update music stream
@@ -4742,7 +4923,7 @@ void Player::DrawBalls()
       }
 
 #ifdef DEBUG_BALL_SPIN        // draw debug points for visualizing ball rotation
-      if (m_fShowFPS)
+      if (ShowFPS())
       {
          // set transform
          Matrix3D matOrig, matNew, matRot;

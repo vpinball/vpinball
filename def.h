@@ -186,25 +186,25 @@ public:
 #define VBTOF(x) ((x) ? fTrue : fFalse)
 #define FTOVB(x) ((x) ? -1 : 0)
 
-inline __m128 rcpps(const __m128 &T) //Newton Raphson
+__forceinline __m128 rcpps(const __m128 &T) //Newton Raphson
 {
    const __m128 TRCP = _mm_rcp_ps(T);
    return _mm_sub_ps(_mm_add_ps(TRCP, TRCP), _mm_mul_ps(_mm_mul_ps(TRCP, T), TRCP));
 }
 
-inline __m128 rsqrtps(const __m128 &T) //Newton Raphson
+__forceinline __m128 rsqrtps(const __m128 &T) //Newton Raphson
 {
    const __m128 TRSQRT = _mm_rsqrt_ps(T);
    return _mm_mul_ps(_mm_mul_ps(_mm_set1_ps(0.5f), TRSQRT), _mm_sub_ps(_mm_set1_ps(3.0f), _mm_mul_ps(_mm_mul_ps(TRSQRT, T), TRSQRT)));
 }
 
-inline __m128 rsqrtss(const __m128 &T) //Newton Raphson
+__forceinline __m128 rsqrtss(const __m128 &T) //Newton Raphson
 {
    const __m128 TRSQRT = _mm_rsqrt_ss(T);
    return _mm_mul_ss(_mm_mul_ss(_mm_set_ss(0.5f), TRSQRT), _mm_sub_ss(_mm_set_ss(3.0f), _mm_mul_ss(_mm_mul_ss(TRSQRT, T), TRSQRT)));
 }
 
-inline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instruction on SSE4
+__forceinline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instruction on SSE4
 {
    const __m128 ftemp = _mm_add_ps(a, _mm_movehl_ps(a, a));
    return _mm_add_ss(ftemp, _mm_shuffle_ps(ftemp, ftemp, 1));
@@ -212,7 +212,7 @@ inline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instruction on S
 
 //
 
-inline int float_as_int(const float x)
+__forceinline int float_as_int(const float x)
 {
    union {
       float f;
@@ -222,7 +222,7 @@ inline int float_as_int(const float x)
    return uc.i;
 }
 
-inline float int_as_float(const int i)
+__forceinline float int_as_float(const int i)
 {
    union {
       int i;
@@ -232,27 +232,27 @@ inline float int_as_float(const int i)
    return iaf.f;
 }
 
-inline bool infNaN(const float a)
+__forceinline bool infNaN(const float a)
 {
    return ((float_as_int(a) & 0x7F800000) == 0x7F800000);
 }
 
-inline bool inf(const float a)
+__forceinline bool inf(const float a)
 {
    return ((float_as_int(a) & 0x7FFFFFFF) == 0x7F800000);
 }
 
-inline bool NaN(const float a)
+__forceinline bool NaN(const float a)
 {
    return (((float_as_int(a) & 0x7F800000) == 0x7F800000) && ((float_as_int(a) & 0x007FFFFF) != 0));
 }
 
-inline bool deNorm(const float a)
+__forceinline bool deNorm(const float a)
 {
    return (((float_as_int(a) & 0x7FFFFFFF) < 0x00800000) && (a != 0.0));
 }
 
-inline bool sign(const float a)
+__forceinline bool sign(const float a)
 {
    return (float_as_int(a) & 0x80000000) == 0x80000000;
 }
@@ -290,13 +290,13 @@ inline unsigned long long tinymtu(unsigned long long state[2]) {
 
 extern unsigned long long tinymt64state[2];
 
-inline float rand_mt_01()  { return int_as_float(0x3F800000u | (unsigned int)(tinymtu(tinymt64state) >> 41)) - 1.0f; }
-inline float rand_mt_m11() { return int_as_float(0x3F800000u | (unsigned int)(tinymtu(tinymt64state) >> 41))*2.0f - 3.0f; }
+__forceinline float rand_mt_01()  { return int_as_float(0x3F800000u | (unsigned int)(tinymtu(tinymt64state) >> 41)) - 1.0f; }
+__forceinline float rand_mt_m11() { return int_as_float(0x3F800000u | (unsigned int)(tinymtu(tinymt64state) >> 41))*2.0f - 3.0f; }
 
 //
 
 // flip bits on decimal point (bit reversal)/van der Corput/radical inverse
-inline float radical_inverse(unsigned int v)
+__forceinline float radical_inverse(unsigned int v)
 {
    v = (v << 16) | (v >> 16);
    v = ((v & 0x55555555u) << 1) | ((v & 0xAAAAAAAAu) >> 1);
@@ -306,7 +306,7 @@ inline float radical_inverse(unsigned int v)
    return (float)v * 0.00000000023283064365386962890625f; // /2^32
 }
 
-inline float sobol(unsigned int i, unsigned int scramble = 0)
+__forceinline float sobol(unsigned int i, unsigned int scramble = 0)
 {
    for (unsigned int v = 1u << 31; (i != 0); i >>= 1, v ^= v >> 1) if (i & 1)
       scramble ^= v;

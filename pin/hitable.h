@@ -12,6 +12,7 @@ public:
    virtual void RenderStatic(RenderDevice* pd3dDevice) = 0;
    virtual void PostRenderStatic(RenderDevice* pd3dDevice) = 0;
    virtual void RenderSetup(RenderDevice* pd3dDevice) = 0;
+   virtual ItemTypeEnum HitableGetItemType() = 0;
 
    virtual bool IsTransparent()                        { return false; }
    virtual float GetDepth(const Vertex3Ds& viewDir)    { return 0.0f; }

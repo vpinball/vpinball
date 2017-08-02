@@ -190,6 +190,7 @@ public:
    virtual float GetDepth(const Vertex3Ds& viewDir);
    virtual unsigned long long GetMaterialID() { return m_surfaceMaterial ? m_surfaceMaterial->hash() : 64-2; } //!! 2 = some constant number
    virtual unsigned long long GetImageID() { return (m_d.m_BulbLight ? 0 : (unsigned long long)(m_ptable->GetImage(m_d.m_szOffImage))); }
+   virtual ItemTypeEnum HitableGetItemType() { return eItemLight; }
    virtual void UpdatePropertyPanes();
    virtual void AddPoint(int x, int y, const bool smooth=true);
 

@@ -108,6 +108,7 @@ public:
    virtual void PutCenter(const Vertex2D * const pv);
 
    virtual void RenderBlueprint(Sur *psur, const bool solid=false);
+   virtual ItemTypeEnum HitableGetItemType() { return eItemLightSeq; }
 
    void WriteRegDefaults();
 

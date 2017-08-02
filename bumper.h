@@ -111,6 +111,8 @@ public:
 			  return NULL;
 	  }
 
+      virtual ItemTypeEnum HitableGetItemType() { return eItemBumper; }
+
       void WriteRegDefaults();
 
       PinTable *m_ptable;

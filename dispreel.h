@@ -81,13 +81,15 @@ public:
 
    STANDARD_EDITABLE_DECLARES(DispReel, eItemDispReel, DISPREEL, 2)
 
-      virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
    // Multi-object manipulation
    virtual void GetCenter(Vertex2D * const pv) const;
    virtual void PutCenter(const Vertex2D * const pv);
+
+   virtual ItemTypeEnum HitableGetItemType() { return eItemDispReel; }
 
    DECLARE_REGISTRY_RESOURCEID(IDR_DISP_REEL)
    // ISupportsErrorInfo

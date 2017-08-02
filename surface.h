@@ -131,6 +131,7 @@ public:
          tex = m_ptable->GetImage(m_d.m_szImage);
       return (unsigned long long)tex;
    }
+   virtual ItemTypeEnum HitableGetItemType() { return eItemSurface; }
    virtual bool IsTransparent();
    virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);

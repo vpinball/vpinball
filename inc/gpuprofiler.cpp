@@ -6,8 +6,11 @@
 #define GET_DATA_RETRIES 10
 
 #define ErrorPrintf(x, ...) { char sz[256]; sprintf_s(sz,x,__VA_ARGS__); ShowError(sz); }
-#define DebugPrintf(x, ...) { char sz[256]; sprintf_s(sz,x,__VA_ARGS__); ShowError(sz); }
-
+#ifdef _DEBUG
+ #define DebugPrintf(x, ...) { char sz[256]; sprintf_s(sz,x,__VA_ARGS__); ShowError(sz); }
+#else
+ #define DebugPrintf(x, ...)
+#endif
 
 CGpuProfiler::CGpuProfiler ()
 :   m_init(false),
@@ -83,6 +86,16 @@ bool CGpuProfiler::Init (IDirect3DDevice9 * const pDevice)
 	return true;
 }
 
+void CGpuProfiler::ResetCounters()
+{
+	m_frameCountAvg = 0;
+	m_tBeginAvg = 0.0;
+
+	memset(m_adT, 0, sizeof(m_adT));
+	memset(m_adTAvg, 0, sizeof(m_adTAvg));
+	memset(m_adTTotalAvg, 0, sizeof(m_adTTotalAvg));
+}
+
 void CGpuProfiler::Shutdown ()
 {
 	if (m_apQueryTsDisjoint[0])
@@ -123,12 +136,8 @@ void CGpuProfiler::Shutdown ()
 
 	m_iFrameQuery = 0;
 	m_iFrameCollect = -1;
-	m_frameCountAvg = 0;
-	m_tBeginAvg = 0.0;
 
-	memset(m_adT, 0, sizeof(m_adT));
-	memset(m_adTAvg, 0, sizeof(m_adTAvg));
-	memset(m_adTTotalAvg, 0, sizeof(m_adTTotalAvg));
+	ResetCounters();
 }
 
 void CGpuProfiler::BeginFrame(IDirect3DDevice9 * const pDevice)
@@ -224,7 +233,10 @@ void CGpuProfiler::WaitForDataAndUpdate ()
 	}
 	if (c >= GET_DATA_RETRIES)
 	{
-		DebugPrintf("GPU Profiler: Couldn't retrieve timestamp query data for GTS %d", GTS_BeginFrame);
+		//DebugPrintf("GPU Profiler: Couldn't retrieve timestamp query data for GTS %d", GTS_BeginFrame); //!! disabled for now as it still gets triggered if rendering with 4xAA on my machine
+
+		ResetCounters();
+
 		return;
 	}
 
@@ -241,8 +253,9 @@ void CGpuProfiler::WaitForDataAndUpdate ()
 			}
 			if (c >= GET_DATA_RETRIES)
 			{
-				//DebugPrintf("GPU Profiler: Couldn't retrieve timestamp query data for GTS %d", gts); // disabled for now as it still gets triggered if rendering is extremely fast/high FPS
+				//DebugPrintf("GPU Profiler: Couldn't retrieve timestamp query data for GTS %d", gts); //!! disabled for now as it still gets triggered if rendering is extremely fast/high FPS
 				//return;
+
 				timestamp = timestampPrev;
 			}
 		}
