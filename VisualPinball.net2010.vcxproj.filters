@@ -225,6 +225,9 @@
     <ClCompile Include="quadtree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="inc\gpuprofiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="inc\progmesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -598,6 +601,9 @@
       <Filter>Header Files\inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\freeimage.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\gpuprofiler.h">
       <Filter>Header Files\inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\hidpi.h">

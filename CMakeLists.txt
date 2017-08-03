@@ -158,7 +158,9 @@ set(SOURCES
   vpinball.cpp
   wintimer.cpp
   worker.cpp
-  xaudplayer.cpp  
+  xaudplayer.cpp
+  inc/gpuprofiler.cpp
+  inc/progmesh.cpp
   pin/ball.cpp
   pin/collide.cpp
   pin/collideex.cpp
@@ -235,6 +237,8 @@ set(HEADERS
   wintimer.h
   worker.h
   xaudplayer.h
+  inc/gpuprofiler.h
+  inc/progmesh.h
   pin/ball.h
   pin/collide.h
   pin/collideex.h

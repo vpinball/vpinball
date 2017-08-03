@@ -380,6 +380,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="hittarget.cpp" />
+    <ClCompile Include="inc\gpuprofiler.cpp" />
     <ClCompile Include="inc\miniz.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -1104,6 +1105,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\bass.h" />
     <ClInclude Include="inc\forsyth.h" />
     <ClInclude Include="inc\freeimage.h" />
+    <ClInclude Include="inc\gpuprofiler.h" />
     <ClInclude Include="inc\hidpi.h" />
     <ClInclude Include="inc\hidsdi.h" />
     <ClInclude Include="inc\hidusage.h" />
