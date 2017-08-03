@@ -75,6 +75,9 @@
     <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
     <ClCompile Include="StackTrace.cpp" />
+    <ClCompile Include="inc\gpuprofiler.cpp">
+      <Filter>inc</Filter>
+    </ClCompile>
     <ClCompile Include="inc\progmesh.cpp">
       <Filter>inc</Filter>
     </ClCompile>
@@ -362,6 +365,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\freeimage.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\gpuprofiler.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\hidpi.h">

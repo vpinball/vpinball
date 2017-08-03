@@ -1783,6 +1783,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
     <ClCompile Include="inc\progmesh.cpp" />
+    <ClCompile Include="inc\gpuprofiler.cpp" />
     <ClCompile Include="math\matrix.cpp" />
     <ClCompile Include="objloader.cpp" />
     <ClCompile Include="Pin\ball.cpp">
@@ -6963,6 +6964,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="inc\dbgprop.h" />
     <ClInclude Include="inc\forsyth.h" />
     <ClInclude Include="inc\freeimage.h" />
+    <ClInclude Include="inc\gpuprofiler.h" />
     <ClInclude Include="inc\hidpi.h" />
     <ClInclude Include="inc\hidsdi.h" />
     <ClInclude Include="inc\hidusage.h" />

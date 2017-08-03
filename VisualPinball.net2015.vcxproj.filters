@@ -128,6 +128,9 @@
     <ClCompile Include="dialogs\KeysConfigDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="inc\gpuprofiler.cpp">
+      <Filter>inc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -1015,6 +1018,9 @@
     </ClInclude>
     <ClInclude Include="meshes\kickerSimpleHoleMesh.h">
       <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\gpuprofiler.h">
+      <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
