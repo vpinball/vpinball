@@ -86,31 +86,70 @@
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="Debugger.cpp" />
-    <ClCompile Include="Dialogs\AboutDialog.cpp" />
-    <ClCompile Include="dialogs\DimensionDialog.cpp" />
-    <ClCompile Include="Dialogs\DrawingOrderDialog.cpp" />
-    <ClCompile Include="Dialogs\ImageDialog.cpp" />
-    <ClCompile Include="Dialogs\KeysConfigDialog.cpp" />
-    <ClCompile Include="Dialogs\MaterialDialog.cpp" />
-    <ClCompile Include="Dialogs\SearchSelectDialog.cpp" />
-    <ClCompile Include="Dialogs\SoundDialog.cpp" />
-    <ClCompile Include="Dialogs\TableInfoDialog.cpp" />
-    <ClCompile Include="dialogs\AudioOptionsDialog.cpp" />
-    <ClCompile Include="dialogs\EditorOptionsDialog.cpp" />
-    <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
-    <ClCompile Include="dialogs\CollectionManagerDialog.cpp" />
-    <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
-    <ClCompile Include="dialogs\ProtectTableDialog.cpp" />
+    <ClCompile Include="Dialogs\AboutDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\AudioOptionsDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\CollectionManagerDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\DimensionDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\DrawingOrderDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\EditorOptionsDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\ImageDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\KeysConfigDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\MaterialDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\PhysicsOptionsDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\ProtectTableDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\SearchSelectDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\TableInfoDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\SoundDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\VideoOptionsDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="vpinball.rc" />
-    <ResourceCompile Include="vpinball_eng.rc" />
-    <ResourceCompile Include="vpinball_fre.rc" />
-    <ResourceCompile Include="vpinball_ger.rc" />
-    <ResourceCompile Include="vpinball_spa.rc" />
+    <ResourceCompile Include="vpinball.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_eng.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_fre.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_ger.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_spa.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\vpinball.ico" />
     <Image Include="res\AOdither.bmp">
       <Filter>res</Filter>
     </Image>
@@ -120,34 +159,10 @@
     <Image Include="res\chevron.bmp">
       <Filter>res</Filter>
     </Image>
-    <Image Include="res\flipper.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\white.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\trigger.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="toolbardebug.bmp">
-      <Filter>res</Filter>
-    </Image>
     <Image Include="res\toolbar.bmp">
       <Filter>res</Filter>
     </Image>
-    <Image Include="res\timer.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="target.bmp">
-      <Filter>res</Filter>
-    </Image>
     <Image Include="res\table.ico">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\sunburst2.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\sunburst.bmp">
       <Filter>res</Filter>
     </Image>
     <Image Include="res\step.ico">
@@ -163,9 +178,6 @@
       <Filter>res</Filter>
     </Image>
     <Image Include="res\logo.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\light.bmp">
       <Filter>res</Filter>
     </Image>
     <Image Include="res\bumperbase.bmp">
@@ -189,25 +201,18 @@
     <Image Include="res\ringenvmap.bmp">
       <Filter>res</Filter>
     </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="vpinball.idl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\vpinball.rgs" />
-    <None Include="res\ball.rgs">
+    <Image Include="res\vpinball.ico">
       <Filter>res</Filter>
-    </None>
-    <None Include="bin00001.bin">
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\ball.rgs">
       <Filter>res</Filter>
     </None>
     <None Include="res\bumper.rgs">
       <Filter>res</Filter>
     </None>
     <None Include="res\bumper.cur">
-      <Filter>res</Filter>
-    </None>
-    <None Include="res\comcontrol.rgs">
       <Filter>res</Filter>
     </None>
     <None Include="res\decal.cur">
@@ -279,9 +284,6 @@
     <None Include="res\rubber.cur">
       <Filter>res</Filter>
     </None>
-    <None Include="registry.bin">
-      <Filter>res</Filter>
-    </None>
     <None Include="res\ramp.rgs">
       <Filter>res</Filter>
     </None>
@@ -339,6 +341,9 @@
     <None Include="res\table.vpx">
       <Filter>res</Filter>
     </None>
+    <None Include="res\vpinball.rgs">
+      <Filter>res</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
@@ -362,12 +367,12 @@
     <Filter Include="inc\Win32xx">
       <UniqueIdentifier>{4a732b2b-cffd-4023-a3ff-69e331d25eb2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="dialogs">
+      <UniqueIdentifier>{f2006325-e30f-466e-8c7e-41b3f1655490}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\freeimage.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\gpuprofiler.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\hidpi.h">
@@ -844,64 +849,183 @@
     <ClInclude Include="meshes\hitTargetT2SlimMesh.h">
       <Filter>meshes</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_appcore.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_appcore0.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_archive.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_commondlg.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_controls.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_cstring.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_ddx.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_dialog.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_dockframe.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_docking.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_exception.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_file.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_frame.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_gdi.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_imagelist.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_listview.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_mdi.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_menu.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_menubar.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_metafile.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_printdialogs.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_propertysheet.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_rebar.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_rect.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_regkey.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_ribbon.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_richedit.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_shared_ptr.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_socket.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_statusbar.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_stdcontrols.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_tab.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_taskdialog.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_textconv.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_themes.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_time.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_toolbar.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_treeview.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_wceframe.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_wcestddef.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_webbrowser.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_wincore.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_wincore0.h" />
-    <ClInclude Include="Dialogs\AboutDialog.h" />
-    <ClInclude Include="dialogs\DimensionDialog.h" />
-    <ClInclude Include="Dialogs\DrawingOrderDialog.h" />
-    <ClInclude Include="Dialogs\ImageDialog.h" />
-    <ClInclude Include="Dialogs\SearchSelectDialog.h" />
-    <ClInclude Include="Dialogs\SoundDialog.h" />
-    <ClInclude Include="Dialogs\TableInfoDialog.h" />
-    <ClInclude Include="dialogs\AudioOptionsDialog.h" />
-    <ClInclude Include="dialogs\EditorOptionsDialog.h" />
-    <ClInclude Include="dialogs\MaterialDialog.h" />
-    <ClInclude Include="dialogs\KeysConfigDialog.h" />
-    <ClInclude Include="dialogs\VideoOptionsDialog.h" />
-    <ClInclude Include="dialogs\CollectionManagerDialog.h" />
-    <ClInclude Include="dialogs\PhysicsOptionsDialog.h" />
-    <ClInclude Include="dialogs\ProtectTableDialog.h" />
+    <ClInclude Include="inc\gpuprofiler.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_appcore.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_appcore0.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_archive.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_commondlg.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_controls.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_cstring.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_ddx.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_dialog.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_dockframe.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_docking.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_exception.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_file.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_frame.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_gdi.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_imagelist.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_listview.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_mdi.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_menu.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_menubar.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_metafile.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_printdialogs.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_propertysheet.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_rebar.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_rect.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_regkey.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_ribbon.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_richedit.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_shared_ptr.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_socket.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_statusbar.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_stdcontrols.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_tab.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_taskdialog.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_textconv.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_themes.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_time.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_toolbar.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_treeview.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_wceframe.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_wcestddef.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_webbrowser.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_wincore.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_wincore0.h">
+      <Filter>inc\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\AboutDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\AudioOptionsDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\CollectionManagerDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\DimensionDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\DrawingOrderDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\EditorOptionsDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\ImageDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\KeysConfigDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\MaterialDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\PhysicsOptionsDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\ProtectTableDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\SearchSelectDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\TableInfoDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\SoundDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\VideoOptionsDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
@@ -925,5 +1049,10 @@
     <FxCompile Include="shader\ClassicLightShader.fx">
       <Filter>shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="vpinball.idl">
+      <Filter>res</Filter>
+    </Midl>
   </ItemGroup>
 </Project>
