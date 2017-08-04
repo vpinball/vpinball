@@ -171,7 +171,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
       controlHwnd = GetDlgItem(IDC_ENABLE_AO).GetHwnd();
       AddToolTip("Activate this to enable Ambient Occlusion.\r\nThis enables contact shadows between objects.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_3D_STEREO).GetHwnd();
-      AddToolTip("Activate this to enable 3D Stereo output using the requested format.\r\nSwitch on/off during play with the F10 key.\r\nThis requires that your TV can display 3D Stereo and respective 3D glasses.", hwndDlg, toolTipHwnd, controlHwnd);
+      AddToolTip("Activate this to enable 3D Stereo output using the requested format.\r\nSwitch on/off during play with the F10 key.\r\nThis requires that your TV can display 3D Stereo, and respective 3D glasses.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_3D_STEREO_Y).GetHwnd();
       AddToolTip("Switches 3D Stereo effect to use the Y Axis.\r\nThis should usually be selected for Cabinets/rotated displays.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_FULLSCREEN).GetHwnd();
