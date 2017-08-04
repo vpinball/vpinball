@@ -133,11 +133,21 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="vpinball.rc" />
-    <ResourceCompile Include="vpinball_eng.rc" />
-    <ResourceCompile Include="vpinball_fre.rc" />
-    <ResourceCompile Include="vpinball_ger.rc" />
-    <ResourceCompile Include="vpinball_spa.rc" />
+    <ResourceCompile Include="vpinball.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_eng.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_fre.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_ger.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_spa.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\AOdither.bmp">
@@ -194,9 +204,6 @@
     <Image Include="res\ringenvmap.bmp">
       <Filter>res</Filter>
     </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="vpinball.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\vpinball.rgs">
@@ -1045,5 +1052,10 @@
     <FxCompile Include="shader\ClassicLightShader.fx">
       <Filter>shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="vpinball.idl">
+      <Filter>res</Filter>
+    </Midl>
   </ItemGroup>
 </Project>
