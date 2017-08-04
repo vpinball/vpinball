@@ -1,6 +1,8 @@
 VP 10.4.0 Changelog
 ------------------------
 
+- add (optional) legacy/VP9-like keyboard nudging code, can be enabled in the 'Keys, Nudge and DOF' preferences dialog
+
 - add internal/rudimentary GPU & table element profiling functionality (accessed as usual via the F11 statistics/debug display variants)
   the normal statistics/debug display now features multiple modes, the first mode works as before,
   the second features additional timings for each main rendering block (like timings for Ambient Occlusion, pure rendering of the table elements, playfield reflection, etc),
