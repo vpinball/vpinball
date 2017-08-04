@@ -65,7 +65,7 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
       {
           g_pplayer->m_legacyNudgeBackX =  sn * Force;
           g_pplayer->m_legacyNudgeBackY = -cs * Force;
-          g_pplayer->m_legacyNudgeTime = 10;
+          g_pplayer->m_legacyNudgeTime = 100;
       }
       else
       {

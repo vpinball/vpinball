@@ -2288,8 +2288,8 @@ int Player::NudgeGetTilt()
    static U32 last_tilt_time;
    static U32 last_jolt_time;
 
-   if( !m_ptable->m_tblAccelerometer || m_NudgeManual >= 0 ||                   //disabled or in joystick test mode
-      m_ptable->m_tilt_amount == 0 || m_ptable->m_jolt_amount == 0) return 0; //disabled
+   if(!m_ptable->m_tblAccelerometer || m_NudgeManual >= 0 ||                 //disabled or in joystick test mode
+       m_ptable->m_tilt_amount == 0 || m_ptable->m_jolt_amount == 0) return 0; //disabled
 
    const U32 ms = msec();
 
@@ -3049,16 +3049,19 @@ void Player::UpdatePhysics()
       {
           --m_legacyNudgeTime;
 
-          if (m_legacyNudgeTime == 5)
+          if (m_legacyNudgeTime == 95)
           {
               m_NudgeX = -m_legacyNudgeBackX * 2.0f;
               m_NudgeY =  m_legacyNudgeBackY * 2.0f;
           }
-          else if (m_legacyNudgeTime == 0)
+          else if (m_legacyNudgeTime == 90)
           {
               m_NudgeX =  m_legacyNudgeBackX;
               m_NudgeY = -m_legacyNudgeBackY;
           }
+
+          if (m_NudgeShake > 0.0f)
+              SetScreenOffset(m_NudgeShake * m_legacyNudgeBackX * sqrf((float)m_legacyNudgeTime*0.01f), -m_NudgeShake * m_legacyNudgeBackY * sqrf((float)m_legacyNudgeTime*0.01f));
       }
 
       // Apply our filter to the nudge data
