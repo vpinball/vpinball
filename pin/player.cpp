@@ -1256,12 +1256,24 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       + (ptable->m_angletiltMax - ptable->m_angletiltMin)
       * ptable->m_globalDifficulty;
 
-   m_gravity.x = 0;
+   m_gravity.x = 0.f;
    m_gravity.y =  sinf(ANGTORAD(slope))*(ptable->m_fOverridePhysics ? ptable->m_fOverrideGravityConstant : ptable->m_Gravity);
    m_gravity.z = -cosf(ANGTORAD(slope))*(ptable->m_fOverridePhysics ? ptable->m_fOverrideGravityConstant : ptable->m_Gravity);
 
-   m_NudgeX = 0;
-   m_NudgeY = 0;
+   m_NudgeX = 0.f;
+   m_NudgeY = 0.f;
+
+   m_legacyNudgeTime = 0;
+
+   int legacyNudge;
+   hr = GetRegInt("Player", "EnableLegacyNudge", &legacyNudge);
+   if (hr != S_OK)
+      legacyNudge = fFalse; // The default
+   m_legacyNudge = !!legacyNudge;
+
+   m_legacyNudgeBackX = 0.f;
+   m_legacyNudgeBackY = 0.f;
+
    m_movedPlunger = 0;
 
    Ball::ballID = 0;
@@ -3031,6 +3043,23 @@ void Player::UpdatePhysics()
       }
       m_tableVelDelta = m_tableVel - m_tableVelOld;
       m_tableVelOld = m_tableVel;
+
+      // legacy/VP9 style keyboard nudging
+      if (m_legacyNudge && m_legacyNudgeTime != 0)
+      {
+          --m_legacyNudgeTime;
+
+          if (m_legacyNudgeTime == 5)
+          {
+              m_NudgeX = -m_legacyNudgeBackX * 2.0f;
+              m_NudgeY =  m_legacyNudgeBackY * 2.0f;
+          }
+          else if (m_legacyNudgeTime == 0)
+          {
+              m_NudgeX =  m_legacyNudgeBackX;
+              m_NudgeY = -m_legacyNudgeBackY;
+          }
+      }
 
       // Apply our filter to the nudge data
       if (m_pininput.m_enable_nudge_filter)

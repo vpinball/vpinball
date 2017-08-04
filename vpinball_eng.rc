@@ -492,6 +492,7 @@ BEGIN
     CTEXT           "",IDC_LOCKBAR,132,227,50,8,SS_CENTERIMAGE
     COMBOBOX        IDC_JOYLOCKBARCOMBO,132,236,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Override Default Layout",IDC_DefaultLayout,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,258,88,10
+    CONTROL         "Disable ESC key",IDC_DisableESC_CB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,113,258,68,10
     GROUPBOX        "PinMAME Buttons",IDC_STATIC,254,7,241,82
     CTEXT           "EB BuyIn (2)",IDC_STATIC,261,17,50,14,0,WS_EX_DLGMODALFRAME
     COMBOBOX        IDC_JOYPMBUYIN,261,32,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
@@ -532,28 +533,28 @@ BEGIN
     CONTROL         "Reverse",IDC_ReversePlunger,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,348,153,40,10
     RTEXT           "Dead Zone",IDC_STATIC,421,153,36,8
     EDITTEXT        IDC_DEADZONEAMT,462,152,18,13,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,482,141,8,8
-    GROUPBOX        "Nudge, Plumb, Plunger (Changes will not affect open tables)",IDC_STATIC,254,95,241,122
-    CONTROL         "Enable Nudge Filter",IDC_ENABLE_NUDGE_FILTER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,175,100,10
-    CONTROL         "Enable Analog Nudge",IDC_GLOBALACCEL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,257,187,83,10
-    CONTROL         "Normal Mounting Orientation",IDC_GLOBALNMOUNT,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,380,187,102,10
-    CONTROL         "Tilt Sensitivity",IDC_CBGLOBALTILT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,199,55,10
-    EDITTEXT        IDC_GLOBALTILT,314,198,20,13,ES_RIGHT | ES_AUTOHSCROLL
-    CONTROL         "Accelerometer Rotation",IDC_CBGLOBALROTATION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,380,199,90,10
-    EDITTEXT        IDC_GLOBALROTATION,470,198,20,13,ES_RIGHT | ES_AUTOHSCROLL
-    PUSHBUTTON      "OK",IDOK,536,246,40,14
-    PUSHBUTTON      "Cancel",IDCANCEL,579,246,40,14
-    CONTROL         "Disable ESC key",IDC_DisableESC_CB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,113,258,68,10
+    LTEXT           "%",IDC_STATIC,482,153,8,8
+    GROUPBOX        "Nudge, Plumb, Plunger (Changes will not affect open tables)",IDC_STATIC,254,95,241,134
+    CONTROL         "Legacy/VP9-style Keyboard Nudge",IDC_ENABLE_LEGACY_NUDGE,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,257,174,130,10
+    CONTROL         "Enable Nudge Filter (mainly for Analog/additional Board setups)",IDC_ENABLE_NUDGE_FILTER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,186,236,10
+    CONTROL         "Enable Analog Nudge",IDC_GLOBALACCEL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,257,198,102,10
+    CONTROL         "Normal Board Mounting Orientation",IDC_GLOBALNMOUNT,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,364,198,130,10
+    CONTROL         "Tilt Sensitivity",IDC_CBGLOBALTILT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,215,55,10
+    EDITTEXT        IDC_GLOBALTILT,314,214,20,13,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Accelerometer Rotation",IDC_CBGLOBALROTATION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,364,215,90,10
+    EDITTEXT        IDC_GLOBALROTATION,460,214,20,13,ES_RIGHT | ES_AUTOHSCROLL
     GROUPBOX        "",IDC_STATIC,262,110,128,21
     GROUPBOX        "",IDC_STATIC,262,128,128,21
     GROUPBOX        "",IDC_STATIC,262,146,128,21
     LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,273,168,25
-    CONTROL         "Enable Mouse during Play",IDC_ENABLE_MOUSE_PLAYER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,218,100,10
+    CONTROL         "Enable Mouse handling during Play",IDC_ENABLE_MOUSE_PLAYER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,233,150,10
     CONTROL         "Enable flying around (Arrow Keys + Left Alt Key) during Camera/Light Edit Mode",IDC_ENABLE_CAMERA_FLY_AROUND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,230,264,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,245,289,10
     GROUPBOX        "DOF Controller Options",IDC_STATIC,500,7,120,191
-    CONTROL         "Disable B2S",IDC_DOF_FORCEDISABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,505,202,86,10
     CTEXT           "Contactors",IDC_STATIC,505,17,50,14,0,WS_EX_DLGMODALFRAME
     COMBOBOX        IDC_DOF_CONTACTORS,505,32,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CTEXT           "Knocker",IDC_STATIC,565,17,50,14,0,WS_EX_DLGMODALFRAME
@@ -573,6 +574,9 @@ BEGIN
     CTEXT           "Drop Targets",IDC_STATIC,505,165,50,14,0,WS_EX_DLGMODALFRAME
     COMBOBOX        IDC_DOF_DROPTARGETS,505,180,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     LTEXT           "* This will only apply to tables that are using the Controller.vbs in their script code",IDC_STATIC,563,156,55,40
+    CONTROL         "Disable B2S",IDC_DOF_FORCEDISABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,505,203,86,10
+    PUSHBUTTON      "OK",IDOK,536,289,40,14
+    PUSHBUTTON      "Cancel",IDCANCEL,579,289,40,14
 END
 
 IDD_TRANSLATE DIALOGEX 0, 0, 186, 97

@@ -442,7 +442,7 @@ float4 ps_main_fb_mirror(in VS_OUTPUT_2D IN) : COLOR
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_normals();
+      PixelShader = compile ps_3_0 ps_main_normals();
    } 
 }*/
 
@@ -451,7 +451,7 @@ technique AO
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_ao();
+      PixelShader = compile ps_3_0 ps_main_ao();
    } 
 }
 
@@ -460,7 +460,7 @@ technique stereo
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_stereo();
+      PixelShader = compile ps_3_0 ps_main_stereo();
    } 
 }
 
