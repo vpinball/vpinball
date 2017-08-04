@@ -265,8 +265,8 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    int stereo3Denabled;
    hr = GetRegInt("Player", "Stereo3DEnabled", &stereo3Denabled);
    if (hr != S_OK)
-      stereo3Denabled = (m_fStereo3D != 0); // The default
-   m_fStereo3Denabled = (stereo3Denabled == 1);
+      stereo3Denabled = ((m_fStereo3D != 0) ? 1 : 0); // The default
+   m_fStereo3Denabled = (stereo3Denabled != 0);
 
    int stereo3DY;
    hr = GetRegInt("Player", "Stereo3DYAxis", &stereo3DY);
@@ -3687,6 +3687,13 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
 
 void Player::UpdateHUD()
 {
+	if (!m_fCloseDown && (m_fStereo3D != 0) && !m_fStereo3Denabled && (usec() < m_StartTime_usec + 4e+6)) // show for max. 4 seconds
+	{
+		char szFoo[256];
+		const int len2 = sprintf_s(szFoo, "3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on");
+		DebugPrint(m_width / 2 - 320, 10, szFoo, (int)strlen(szFoo), true);
+	}
+
 #ifdef FPS
 	if (ShowFPS() && !cameraMode)
 	{
