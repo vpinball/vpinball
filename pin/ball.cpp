@@ -562,7 +562,7 @@ void Ball::UpdateVelocities()
    {
       m_vel += (float)PHYS_FACTOR * g_pplayer->m_gravity;
 
-      m_vel.x += g_pplayer->m_NudgeX;     // TODO: depends on STEPTIME
+      m_vel.x += g_pplayer->m_NudgeX; // TODO: depends on STEPTIME
       m_vel.y += g_pplayer->m_NudgeY;
 
       m_vel -= g_pplayer->m_tableVelDelta;

@@ -56,13 +56,22 @@ STDMETHODIMP ScriptGlobalTable::EndModal()
 
 STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 {
-   if (g_pplayer)
+   if (g_pplayer && (!g_pplayer->m_legacyNudge || g_pplayer->m_legacyNudgeTime == 0))
    {
       const float sn = sinf(ANGTORAD(Angle));
       const float cs = cosf(ANGTORAD(Angle));
 
-      g_pplayer->m_tableVel.x += sn * Force;
-      g_pplayer->m_tableVel.y += -cs * Force;
+      if(g_pplayer->m_legacyNudge)
+      {
+          g_pplayer->m_legacyNudgeBackX =  sn * Force;
+          g_pplayer->m_legacyNudgeBackY = -cs * Force;
+          g_pplayer->m_legacyNudgeTime = 10;
+      }
+      else
+      {
+          g_pplayer->m_tableVel.x +=  sn * Force;
+          g_pplayer->m_tableVel.y += -cs * Force;
+      }
    }
 
    return S_OK;

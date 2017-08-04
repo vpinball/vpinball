@@ -365,6 +365,11 @@ public:
    float m_nudgeSpring;
    float m_nudgeDamping;
 
+   // legacy/VP9 style keyboard nudging
+   bool m_legacyNudge;
+   float m_legacyNudgeBackX,m_legacyNudgeBackY;
+   int m_legacyNudgeTime;
+
    EnumAssignKeys m_rgKeys[eCKeys]; //Player's key assignments
 
    HWND m_hwndDebugOutput;

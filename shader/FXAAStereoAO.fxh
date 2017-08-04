@@ -109,6 +109,28 @@ float3 OctahedronToUnitVector( const float2 Oct )
 	return normalize(N);
 }
 
+/*
+// Pack into hemisphere octahedron
+// Assume normalized input on +Z hemisphere. Output [-1, 1].
+void EncodeHemiOctaNormal( const float3 v, inout float2 encV )
+{
+	// Project the hemisphere onto the hemi-octahedron, and then into the xy plane
+	const float rcp_denom = 1.0 / ( abs( v[0] ) + abs( v[1] ) + v[2] );
+	const float tx = v[0] * rcp_denom;
+	const float ty = v[1] * rcp_denom;
+	encV[0] = tx + ty;
+	encV[1] = tx - ty;
+} 
+
+void DecodeHemiOctaNormal( const float2 encV, inout float3 v ) 
+{
+	//	Rotate and scale the unit square back to the center diamond
+	v[0] = ( encV[0] + encV[1] ) * 0.5;
+	v[1] = ( encV[0] - encV[1] ) * 0.5;
+	v[2] = 1.0 - abs( v[0] ) - abs( v[1] );
+}
+*/
+
 float3 Pack1212To888( const float2 x )
 {
 	// Pack 12:12 to 8:8:8
