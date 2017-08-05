@@ -535,8 +535,8 @@ BEGIN
     EDITTEXT        IDC_DEADZONEAMT,462,152,18,13,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,482,153,8,8
     GROUPBOX        "Nudge, Plumb, Plunger (Changes will not affect open tables)",IDC_STATIC,254,95,241,134
-    CONTROL         "Legacy/VP9-style Keyboard Nudge",IDC_ENABLE_LEGACY_NUDGE,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,257,174,130,10
+    CONTROL         "Legacy/VP9-style non-realistic Keyboard Nudge",IDC_ENABLE_LEGACY_NUDGE,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,257,174,236,10
     CONTROL         "Enable Nudge Filter (mainly for Analog/additional Board setups)",IDC_ENABLE_NUDGE_FILTER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,186,236,10
     CONTROL         "Enable Analog Nudge",IDC_GLOBALACCEL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,257,198,102,10
