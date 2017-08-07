@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 const float HitTarget::DROP_TARGET_LIMIT = 52.0f;
 
+
 HitTarget::HitTarget()
 {
    vertexBuffer = 0;
@@ -232,28 +233,29 @@ void HitTarget::WriteRegDefaults()
 
 const Vertex3Ds dropTargetHitPlaneVertices[16] =
 {
-   Vertex3Ds( 0.525000f, 0.209778f, 0.135199f ),
-   Vertex3Ds( -0.525000f, 0.209778f, 0.135199f ),
-   Vertex3Ds( 0.525000f, 0.209778f, 1.735199f ),
-   Vertex3Ds( -0.525000f, 0.209778f, 1.735199f ),
-   Vertex3Ds( -0.525000f, 0.209778f, 1.735199f ),
-   Vertex3Ds( -0.525000f, 0.124961f, 1.735199f ),
-   Vertex3Ds( 0.525000f, 0.124961f, 1.735199f ),
-   Vertex3Ds( 0.525000f, 0.209778f, 1.735199f ),
-   Vertex3Ds( -0.525000f, 0.124961f, 1.735199f ),
-   Vertex3Ds( -0.525000f, 0.209778f, 0.135199f ),
-   Vertex3Ds( -0.525000f, 0.124961f, 0.135199f ),
-   Vertex3Ds( -0.525000f, 0.209778f, 1.735199f ),
-   Vertex3Ds( 0.525000f, 0.209778f, 1.735199f ),
-   Vertex3Ds( 0.525000f, 0.124961f, 1.735199f ),
-   Vertex3Ds( 0.525000f, 0.209778f, 0.135199f ),
-   Vertex3Ds( 0.525000f, 0.124961f, 0.135199f )
+   Vertex3Ds(-0.300000f, 0.001737f, -0.160074f),
+   Vertex3Ds(-0.300000f, 0.001738f, 0.439926f),
+   Vertex3Ds(0.300000f, 0.001738f, 0.439926f),
+   Vertex3Ds(0.300000f, 0.001737f, -0.160074f),
+   Vertex3Ds(-0.500000f, 0.001738f, 0.439926f),
+   Vertex3Ds(-0.500000f, 0.001738f, 1.789926f),
+   Vertex3Ds(0.500000f, 0.001738f, 1.789926f),
+   Vertex3Ds(0.500000f, 0.001738f, 0.439926f),
+   Vertex3Ds(-0.535355f, 0.001738f, 0.454570f),
+   Vertex3Ds(-0.535355f, 0.001738f, 1.775281f),
+   Vertex3Ds(-0.550000f, 0.001738f, 0.489926f),
+   Vertex3Ds(-0.550000f, 0.001738f, 1.739926f),
+   Vertex3Ds(0.535355f, 0.001738f, 0.454570f),
+   Vertex3Ds(0.535355f, 0.001738f, 1.775281f),
+   Vertex3Ds(0.550000f, 0.001738f, 0.489926f),
+   Vertex3Ds(0.550000f, 0.001738f, 1.739926f)
 };
 
-const WORD dropTargetHitPlaneIndices[24] =
+const WORD dropTargetHitPlaneIndices[42] =
 {
-   0, 1, 2, 1, 3, 2, 4, 5, 6, 6, 7, 4, 8, 9, 10,
-   8, 11, 9, 12, 13, 14, 14, 13, 15
+   0, 1, 2, 2, 3, 0, 1, 4, 5, 6, 7, 2, 5, 6, 1,
+   2, 1, 6, 4, 8, 9, 9, 5, 4, 8, 10, 11, 11, 9, 8,
+   6, 12, 7, 12, 6, 13, 12, 13, 14, 13, 15, 14
 };
 
 void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
@@ -296,10 +298,16 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
        if (!m_d.m_legacy)
        {
           Vertex3Ds rgv3D[16];
+          float hitShapeOffset = 0.18f;
+          if (m_d.m_targetType == DropTargetBeveled)
+             hitShapeOffset = 0.25f;
+          if (m_d.m_targetType == DropTargetFlatSimple)
+             hitShapeOffset = 0.13f;
+
           // now create a special hit shape with hit event enabled to prevent a hit event when hit from behind
           for (unsigned i = 0; i < 16; i++)
           {
-             Vertex3Ds vert(dropTargetHitPlaneVertices[i].x, dropTargetHitPlaneVertices[i].y, dropTargetHitPlaneVertices[i].z);
+             Vertex3Ds vert(dropTargetHitPlaneVertices[i].x, dropTargetHitPlaneVertices[i].y+hitShapeOffset, dropTargetHitPlaneVertices[i].z);
              vert.x *= m_d.m_vSize.x;
              vert.y *= m_d.m_vSize.y;
              vert.z *= m_d.m_vSize.z;
@@ -310,7 +318,7 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
              rgv3D[i].z = vert.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
           }
 
-          for (unsigned int i = 0; i < 24; i += 3)
+          for (unsigned int i = 0; i < 42; i += 3)
           {
              const unsigned int i0 = dropTargetHitPlaneIndices[i];
              const unsigned int i1 = dropTargetHitPlaneIndices[i + 1];
