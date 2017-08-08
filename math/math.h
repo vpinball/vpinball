@@ -44,15 +44,15 @@ template <unsigned char bits> // bits to map to
 __forceinline float dequantizeUnsigned(const unsigned int i)
 {
     enum { N = (1 << bits) - 1 };
-    return min(precise_divide((float)i, (float)((double)N + 0.5)), 1.f); //!! test: optimize div or does this break precision?
+    return min(precise_divide((float)i, (float)N), 1.f); //!! test: optimize div or does this break precision?
 }
 
 template <unsigned char bits> // bits to map to
 __forceinline unsigned int quantizeUnsigned(const float x)
 {
-    enum { N = (1 << bits) - 1 };
+    enum { N = (1 << bits) - 1, Np1 = (1 << bits) };
     assert(x >= 0.f);
-    return (unsigned int)(min(x * (float)((double)N + 0.5) + 0.5f, (float)N));
+    return min((unsigned int)(x * (float)Np1), (unsigned int)N);
 }
 
 
@@ -72,14 +72,14 @@ __forceinline int quantizeSignedPercent(const float x)
 __forceinline float dequantizeUnsignedPercent(const unsigned int i)
 {
     enum { N = 100 };
-    return min(precise_divide((float)i, (float)((double)N + 0.5)), 1.f); //!! test: optimize div or does this break precision?
+    return min(precise_divide((float)i, (float)N), 1.f); //!! test: optimize div or does this break precision?
 }
 
 __forceinline unsigned int quantizeUnsignedPercent(const float x)
 {
-    enum { N = 100 };
+    enum { N = 100, Np1 = 101 };
     assert(x >= 0.f);
-    return (unsigned int)(min(x * (float)((double)N + 0.5) + 0.5f, (float)N));
+    return min((unsigned int)(x * (float)Np1), (unsigned int)N);
 }
 
 
