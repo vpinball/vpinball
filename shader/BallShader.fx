@@ -197,7 +197,7 @@ float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float
    [branch] if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       for(int i = 0; i < iLightPointBallsNum; i++)  
-         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge.x, i, is_metal); // no clearcoat needed as only pointlights so far
+         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
    }
 
    [branch] if(!is_metal && (diffuseMax > 0.0))

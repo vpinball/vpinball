@@ -1,6 +1,8 @@
 VP 10.4.0 Changelog
 ------------------------
 
+- add additional thickness parameter to (transparent) materials, which interacts with the standard amount (and/or alpha channel of the image) and edge opacity to provide a more natural look
+
 - add (optional) legacy/VP9-like keyboard nudging code, can be enabled in the 'Keys, Nudge and DOF' preferences dialog
 
 - add internal/rudimentary GPU & table element profiling functionality (accessed as usual via the F11 statistics/debug display variants)
@@ -26,6 +28,8 @@ VP 10.4.0 Changelog
 - add tweaked ball rolling/collision PlaySound calls to the default table, to use the new surround/front_rear_fade parameter
 - extend all other PlaySound calls of the default table to use the respective elements X and Y position (on the table) for panning and front/rear fading
 - extend some PlaySound calls with DOF/Controller.vbs commands
+
+- fix some uninitialized dialog state
 
 - see core scripts (header of core.vbs) for the respective changelog
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes

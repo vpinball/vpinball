@@ -33,11 +33,22 @@ float  fDisableLighting = 0.;
 
 float4 cBase_Alpha = float4(0.5,0.5,0.5, 1.0); //!! 0.04-0.95 in RGB
 
-float3 Roughness_WrapL_Edge = float3(4.0, 0.5, 1.0); // w in [0..1] for rim/wrap lighting
+float4 Roughness_WrapL_Edge_Thickness = float4(4.0, 0.5, 1.0, 0.05); // wrap in [0..1] for rim/wrap lighting
 
 //
 // Material Helper Functions
 //
+
+float GeometricOpacity(const float NdotV, const float alpha, const float blending, const float t)
+{
+    //old version without thickness
+    //return lerp(alpha, 1.0, blending*pow(1.0-abs(NdotV),5)); // fresnel for falloff towards silhouette
+
+    //new version (COD/IW, t = thickness), t = 0.05 roughly corresponds to above version
+    const float x = abs(NdotV); // flip normal in case of wrong orientation (backside lighting)
+    const float g = blending - blending * ( x / (x * (1.0 - t) + t) ); // Smith-Schlick G
+    return lerp(alpha, 1.0, g); // fake opacity lerp to ‘shadowed’
+}
 
 float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
 {
@@ -58,8 +69,8 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
    float3 Out = float3(0.0,0.0,0.0);
    
    // compute diffuse color (lambert with optional rim/wrap component)
-   if(!is_metal && (NdotL + Roughness_WrapL_Edge.y > 0.0))
-      Out = diffuse * ((NdotL + Roughness_WrapL_Edge.y) / sqr(1.0+Roughness_WrapL_Edge.y));
+   if(!is_metal && (NdotL + Roughness_WrapL_Edge_Thickness.y > 0.0))
+      Out = diffuse * ((NdotL + Roughness_WrapL_Edge_Thickness.y) / sqr(1.0+Roughness_WrapL_Edge_Thickness.y));
     
    // add glossy component (modified ashikhmin/blinn bastard), not fully energy conserving, but good enough
    [branch] if(NdotL > 0.0)
@@ -117,7 +128,7 @@ float3 DoEnvmapGlossy(const float3 N, const float3 V, const float2 Ruv, const fl
 //!! PI?
 float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const float3 N, const float3 V, const float NdotV, const float2 Ruv, const float3 specular)
 {
-   const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge.z); //!! ?
+   const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_Thickness.z); //!! ?
    float3 env = tex2Dlod(texSampler1, float4(Ruv, 0., 0.)).xyz;
    if(!hdrEnvTextures)
        env = InvGamma(env);
@@ -152,7 +163,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    [branch] if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       for(int i = 0; i < iLightPointNum; i++)
-         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge.x, i, is_metal); // no clearcoat needed as only pointlights so far
+         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
    }
 
    [branch] if(!is_metal && (diffuseMax > 0.0))
@@ -168,7 +179,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
 			acos_approx_divPI(R.z));
 
 	   if(glossyMax > 0.0)
-		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge.x);
+		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge_Thickness.x);
 
 	   // 2nd Layer
 	   if(specularMax > 0.0)

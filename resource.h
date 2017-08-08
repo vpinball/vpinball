@@ -905,7 +905,7 @@
 #define IDC_DBG_MATERIALCOMBO           757
 #define IDC_DBG_METAL_MATERIAL_CHECK    758
 #define IDC_DBG_MATERIAL_BASE_WRAP_EDIT 759
-#define IDC_DBG_MATERAIL_SHININESS_EDIT 761
+#define IDC_DBG_MATERIAL_SHININESS_EDIT 761
 #define IDC_DBG_MATERIAL_EDGE_EDIT      762
 #define IDC_DBG_MATERIAL_OPACITY_AMOUNT_EDIT 763
 #define DBG_MATERIAL_OPACITY_EDGE_EDIT  764
@@ -968,6 +968,10 @@
 #define IDC_EDIT_FADER                  814
 #define IDC_EDIT5                       815
 #define IDC_EDIT_VOL                    815
+#define IDC_DBG_MATERIAL_THICKNESS_EDIT 816
+#define IDC_THICKNESS_EDIT              817
+#define IDC_STATIC_THICKNESS            818
+#define IDC_STATIC_THICKNESS_TEXT       819
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1120,7 +1124,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        630
 #define _APS_NEXT_COMMAND_VALUE         4020
-#define _APS_NEXT_CONTROL_VALUE         816
+#define _APS_NEXT_CONTROL_VALUE         820
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

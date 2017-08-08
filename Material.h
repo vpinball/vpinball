@@ -12,7 +12,7 @@ struct SaveMaterial
    float fRoughness; // roughness of glossy layer (0(diffuse)..1(specular))
    unsigned char fGlossyImageLerp; // use image also for the glossy layer (0(no tinting at all)..1(use image)), stupid quantization because of legacy loading/saving
    float fEdge; // edge weight/brightness for glossy and clearcoat (0(dark edges)..1(full fresnel))
-   bool  bUnused2;
+   unsigned char fThickness; // thickness for transparent materials (0(paper thin)..1(maximum)), stupid quantization because of legacy loading/saving
    float fOpacity; // opacity (0..1)
    unsigned char bOpacityActive_fEdgeAlpha; // lowest bit = on/off, upper 7bits = edge weight for fresnel (0(no opacity change)..1(full fresnel)), stupid encoding because of legacy loading/saving
 };
@@ -35,6 +35,7 @@ public:
       m_fWrapLighting = 0.0f;
       m_fRoughness = 0.0f;
       m_fGlossyImageLerp = 1.0f;
+      m_fThickness = 0.05f;
       m_fEdge = 1.0f;
       m_fEdgeAlpha = 1.0f;
       m_fOpacity = 1.0f;
@@ -95,6 +96,7 @@ public:
    float m_fWrapLighting;
    float m_fRoughness;
    float m_fGlossyImageLerp;
+   float m_fThickness;
    float m_fEdge;
    float m_fEdgeAlpha;
    float m_fOpacity;

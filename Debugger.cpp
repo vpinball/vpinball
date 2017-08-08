@@ -144,10 +144,12 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                      char value[256];
                      GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_BASE_WRAP_EDIT, value, 31);
                      pMat->m_fWrapLighting = sz2f(value);
-                     GetDlgItemText(hwndDlg, IDC_DBG_MATERAIL_SHININESS_EDIT, value, 31);
+                     GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_SHININESS_EDIT, value, 31);
                      pMat->m_fRoughness = sz2f(value);
                      GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_GLOSSY_IMGLERP_EDIT, value, 31);
                      pMat->m_fGlossyImageLerp = sz2f(value);
+                     GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_THICKNESS_EDIT, value, 31);
+                     pMat->m_fThickness = sz2f(value);
                      GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_EDGE_EDIT, value, 31);
                      pMat->m_fEdge = sz2f(value);
                      GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_OPACITY_AMOUNT_EDIT, value, 31);
@@ -199,9 +201,11 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                         f2sz(pMat->m_fWrapLighting, value);
                         SetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_BASE_WRAP_EDIT, value);
                         f2sz(pMat->m_fRoughness, value);
-                        SetDlgItemText(hwndDlg, IDC_DBG_MATERAIL_SHININESS_EDIT, value);
+                        SetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_SHININESS_EDIT, value);
                         f2sz(pMat->m_fGlossyImageLerp, value);
                         SetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_GLOSSY_IMGLERP_EDIT, value);
+                        f2sz(pMat->m_fThickness, value);
+                        SetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_THICKNESS_EDIT, value);
                         f2sz(pMat->m_fEdge, value);
                         SetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_EDGE_EDIT, value);
                         f2sz(pMat->m_fOpacity, value);

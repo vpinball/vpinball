@@ -3577,12 +3577,12 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
          mats[i].fWrapLighting = m->m_fWrapLighting;
          mats[i].fRoughness = m->m_fRoughness;
          mats[i].fGlossyImageLerp = 255 - quantizeUnsigned<8>(clamp(m->m_fGlossyImageLerp, 0.f, 1.f)); // '255 -' to be compatible with previous table versions
+         mats[i].fThickness = quantizeUnsigned<8>(clamp(m->m_fThickness, 0.05f, 1.f)); // clamp with 0.05f to be compatible with previous table versions
          mats[i].fEdge = m->m_fEdge;
          mats[i].fOpacity = m->m_fOpacity;
          mats[i].bIsMetal = m->m_bIsMetal;
          mats[i].bOpacityActive_fEdgeAlpha = m->m_bOpacityActive ? 1 : 0;
          mats[i].bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(m->m_fEdgeAlpha, 0.f, 1.f)) << 1;
-         mats[i].bUnused2 = 0;
          strcpy_s(mats[i].szName, m->m_szName);
       }
       bw.WriteStruct(FID(MATE), mats, (int)sizeof(SaveMaterial)*m_materials.Size());
@@ -3939,6 +3939,10 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
          if (loadfileversion < 1030) // the m_fGlossyImageLerp part was included first with 10.3, so set all previously saved materials to the old default
              for (int i = 0; i < m_materials.size(); ++i)
                  m_materials.ElementAt(i)->m_fGlossyImageLerp = 1.f;
+
+         if (loadfileversion < 1040) // the m_fThickness part was included first with 10.4, so set all previously saved materials to the old default
+             for (int i = 0; i < m_materials.size(); ++i)
+                 m_materials.ElementAt(i)->m_fThickness = 0.05f;
 
          //////// End Authentication block
       }
@@ -4547,6 +4551,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
          pmat->m_fWrapLighting = mats[i].fWrapLighting;
          pmat->m_fRoughness = mats[i].fRoughness;
          pmat->m_fGlossyImageLerp = 1.0f - dequantizeUnsigned<8>(mats[i].fGlossyImageLerp); //!! '1.0f -' to be compatible with previous table versions
+         pmat->m_fThickness = (mats[i].fThickness == 0) ? 0.05f : dequantizeUnsigned<8>(mats[i].fThickness); //!! 0 -> 0.05f to be compatible with previous table versions
          pmat->m_fEdge = mats[i].fEdge;
          pmat->m_fOpacity = mats[i].fOpacity;
          pmat->m_bIsMetal = mats[i].bIsMetal;
@@ -8299,6 +8304,7 @@ void PinTable::AddDbgMaterial(Material *pmat)
       dbgChangedMaterials[i]->m_fOpacity = pmat->m_fOpacity;
       dbgChangedMaterials[i]->m_fRoughness = pmat->m_fRoughness;
       dbgChangedMaterials[i]->m_fGlossyImageLerp = pmat->m_fGlossyImageLerp;
+      dbgChangedMaterials[i]->m_fThickness = pmat->m_fThickness;
       dbgChangedMaterials[i]->m_fWrapLighting = pmat->m_fWrapLighting;
    }
    else
@@ -8314,6 +8320,7 @@ void PinTable::AddDbgMaterial(Material *pmat)
       newMat->m_fOpacity = pmat->m_fOpacity;
       newMat->m_fRoughness = pmat->m_fRoughness;
       newMat->m_fGlossyImageLerp = pmat->m_fGlossyImageLerp;
+      newMat->m_fThickness = pmat->m_fThickness;
       newMat->m_fWrapLighting = pmat->m_fWrapLighting;
       strcpy_s(newMat->m_szName, pmat->m_szName);
       dbgChangedMaterials.push_back(newMat);
@@ -8341,6 +8348,7 @@ void PinTable::UpdateDbgMaterial(void)
             mat->m_fOpacity = pmat->m_fOpacity;
             mat->m_fRoughness = pmat->m_fRoughness;
             mat->m_fGlossyImageLerp = pmat->m_fGlossyImageLerp;
+            mat->m_fThickness = pmat->m_fThickness;
             mat->m_fWrapLighting = pmat->m_fWrapLighting;
             somethingChanged = true;
             break;

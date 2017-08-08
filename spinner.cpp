@@ -475,6 +475,7 @@ void Spinner::RenderStatic(RenderDevice* pd3dDevice)
    mat.m_cGlossy = 0x60606060;
    mat.m_fRoughness = 0.4f;
    mat.m_fGlossyImageLerp = 1.0f;
+   mat.m_fThickness = 0.05f;
    mat.m_cClearcoat = 0x20202020;
    mat.m_fEdge = 1.0f;
    mat.m_fEdgeAlpha = 1.0f;
