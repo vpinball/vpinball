@@ -75,6 +75,12 @@ __forceinline float dequantizeUnsignedPercent(const unsigned int i)
     return min(precise_divide((float)i, (float)N), 1.f); //!! test: optimize div or does this break precision?
 }
 
+__forceinline float dequantizeUnsignedPercentNoClamp(const unsigned int i)
+{
+    enum { N = 100 };
+    return precise_divide((float)i, (float)N); //!! test: optimize div or does this break precision?
+}
+
 __forceinline unsigned int quantizeUnsignedPercent(const float x)
 {
     enum { N = 100, Np1 = 101 };

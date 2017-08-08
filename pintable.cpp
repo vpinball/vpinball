@@ -1389,12 +1389,12 @@ PinTable::PinTable()
    m_tblAccelAmpX = 1.5f;
    hr = GetRegInt("Player", "PBWAccelGainX", &tmp);
    if (hr == S_OK)
-      m_tblAccelAmpX = dequantizeSignedPercent(tmp);
+      m_tblAccelAmpX = dequantizeUnsignedPercentNoClamp(tmp);
 
    m_tblAccelAmpY = 1.5f;
    hr = GetRegInt("Player", "PBWAccelGainY", &tmp);
    if (hr == S_OK)
-      m_tblAccelAmpY = dequantizeSignedPercent(tmp);
+      m_tblAccelAmpY = dequantizeUnsignedPercentNoClamp(tmp);
 
    m_tblAccelMaxX = JOYRANGEMX;
    hr = GetRegInt("Player", "PBWAccelMaxX", &tmp);
