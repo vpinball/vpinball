@@ -95,25 +95,25 @@ VS_LIGHT_OUTPUT vs_light_main (float4 vPosition : POSITION0,
 }
 
 float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
-{	
+{
     float4 pixel = tex2D(texSampler0, IN.tex0); //!! IN.tex0 abused in backglass mode
     if(!hdrTexture0)
         pixel.xyz = InvGamma(pixel.xyz);
 
     float4 color;
-	// no lighting if HUD vertices or passthrough mode
-	[branch] if(imageBackglassMode.x != 0. || imageBackglassMode.y != 0.)
+    // no lighting if HUD vertices or passthrough mode
+    [branch] if(imageBackglassMode.x != 0. || imageBackglassMode.y != 0.)
         color = pixel;
     else
-	{
+    {
         pixel.xyz = saturate(pixel.xyz); // could be HDR
-        const float3 diffuse = pixel.xyz*cBase_Alpha.xyz;
-        const float3 glossy = is_metal ? diffuse : pixel.xyz*cGlossy_ImageLerp.xyz*0.08; //!! use AO for glossy? specular?
+        const float3 diffuse  = pixel.xyz*cBase_Alpha.xyz;
+        const float3 glossy   = is_metal ? diffuse : pixel.xyz*cGlossy_ImageLerp.xyz*0.08; //!! use AO for glossy? specular?
         const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
-        const float edge = is_metal ? 1.0 : Roughness_WrapL_Edge.z;
+        const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
-	    color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge, true, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
-		color.a = pixel.a;
+        color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge, true, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+        color.a = pixel.a;
     }
     color.a *= cBase_Alpha.a;
 
@@ -134,7 +134,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
 float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
 {
     float4 result = float4(0.0, 0.0, 0.0, 0.0);
-	[branch] if (lightColor_intensity.w != 0.0)
+    [branch] if (lightColor_intensity.w != 0.0)
     {
         const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? IN.tablePos : float3(IN.tex0,0.0))) * lightCenter_maxRange.w;
         const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
@@ -143,19 +143,19 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLO
         result.a = saturate(atten*lightColor_intensity.w);
     }
 
-	float4 color;
-	// no lighting if HUD vertices or passthrough mode
-	[branch] if(imageBackglassMode.x != 0. || imageBackglassMode.y != 0.)
+    float4 color;
+    // no lighting if HUD vertices or passthrough mode
+    [branch] if(imageBackglassMode.x != 0. || imageBackglassMode.y != 0.)
         color.xyz = lightColor_intensity.xyz;
     else
-	{
-	    const float3 diffuse  = lightColor_intensity.xyz*cBase_Alpha.xyz;
+    {
+        const float3 diffuse  = lightColor_intensity.xyz*cBase_Alpha.xyz;
         const float3 glossy   = is_metal ? diffuse : lightColor_intensity.xyz*cGlossy_ImageLerp.xyz*0.08;
         const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
-	    const float edge = is_metal ? 1.0 : Roughness_WrapL_Edge.z;
+        const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
-	    color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge, true, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
-	}
+        color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge, true, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+    }
     color.a = cBase_Alpha.a;
     
     return color+result;

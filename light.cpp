@@ -560,6 +560,7 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color)
    mat.m_fEdgeAlpha = 1.0f;
    mat.m_fRoughness = 0.9f;
    mat.m_fGlossyImageLerp = 1.0f;
+   mat.m_fThickness = 0.05f;
    mat.m_cClearcoat = 0;
    pd3dDevice->basicShader->SetTechnique(mat.m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    pd3dDevice->basicShader->SetMaterial(&mat);
@@ -578,6 +579,7 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color)
    mat.m_fEdgeAlpha = 1.0f;
    mat.m_fRoughness = 0.9f;
    mat.m_fGlossyImageLerp = 1.0f;
+   mat.m_fThickness = 0.05f;
    mat.m_cClearcoat = 0xFFFFFF;
    pd3dDevice->basicShader->SetTechnique(mat.m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    pd3dDevice->basicShader->SetMaterial(&mat);

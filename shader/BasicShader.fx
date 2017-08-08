@@ -205,7 +205,7 @@ PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN, uniform bool is_metal)
    const float3 diffuse  = cBase_Alpha.xyz;
    const float3 glossy   = is_metal ? cBase_Alpha.xyz : cGlossy_ImageLerp.xyz*0.08;
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
-   const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge.z;
+   const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
    
    const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos_t1x.xyz);
    const float3 N = normalize(IN.normal_t1y.xyz);
@@ -217,7 +217,7 @@ PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN, uniform bool is_metal)
    result.a = cBase_Alpha.a;
 
    [branch] if(cBase_Alpha.a < 1.0) {
-      result.a = lerp(result.a, 1.0, cClearcoat_EdgeAlpha.w*pow(1.0-abs(dot(N,V)),5)); // fresnel for falloff towards silhouette, flip normal in case of wrong orientation (backside lighting)
+      result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 
       // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
       result.xyz += sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.worldPos_t1x.w,-0.5*IN.normal_t1y.w)+0.5, 0.,0.)).xyz*result.a; //!! depend on normal of light (unknown though) vs geom normal, too?
@@ -245,10 +245,10 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool d
       return output;
    }
 
-   const float3 diffuse = t*cBase_Alpha.xyz;
-   const float3 glossy = is_metal ? diffuse : (t*cGlossy_ImageLerp.w + (1.0-cGlossy_ImageLerp.w))*cGlossy_ImageLerp.xyz*0.08; //!! use AO for glossy? specular?
+   const float3 diffuse  = t*cBase_Alpha.xyz;
+   const float3 glossy   = is_metal ? diffuse : (t*cGlossy_ImageLerp.w + (1.0-cGlossy_ImageLerp.w))*cGlossy_ImageLerp.xyz*0.08; //!! use AO for glossy? specular?
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
-   const float  edge = is_metal ? 1.0 : Roughness_WrapL_Edge.z;
+   const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
    const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos);
    float3 N = normalize(IN.normal);
@@ -263,7 +263,7 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool d
    result.a = pixel.a;
 
    [branch] if (cBase_Alpha.a < 1.0 && result.a < 1.0) {
-      result.a = lerp(result.a, 1.0, cClearcoat_EdgeAlpha.w*pow(1.0 - abs(dot(N, V)), 5)); // fresnel for falloff towards silhouette, flip normal in case of wrong orientation (backside lighting)
+      result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 
       // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
       result.xyz += sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.tex01.z, -0.5*IN.tex01.w) + 0.5, 0., 0.)).xyz*result.a; //!! depend on normal of light (unknown though) vs geom normal, too?
