@@ -579,14 +579,14 @@ STDMETHODIMP ScriptGlobalTable::get_SystemTime(long *pVal)
 /*STDMETHODIMP ScriptGlobalTable::put_NightDay(int pVal)
 {
 if(g_pplayer)
-g_pplayer->m_globalEmissionScale = dequantizeSignedPercent(newVal);
+g_pplayer->m_globalEmissionScale = dequantizeUnsignedPercent(newVal);
 return S_OK;
 }*/
 
 STDMETHODIMP ScriptGlobalTable::get_NightDay(int *pVal)
 {
    if (g_pplayer)
-      *pVal = quantizeSignedPercent(g_pplayer->m_globalEmissionScale);
+      *pVal = quantizeUnsignedPercent(g_pplayer->m_globalEmissionScale);
    return S_OK;
 }
 
@@ -1362,7 +1362,7 @@ PinTable::PinTable()
    m_globalDifficulty = 0.2f;			// easy by default
    hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
    if (hr == S_OK)
-      m_globalDifficulty = dequantizeSignedPercent(tmp);
+      m_globalDifficulty = dequantizeUnsignedPercent(tmp);
 
    int accel;
    hr = GetRegInt("Player", "PBWEnabled", &accel); // true if electronic accelerometer enabled
@@ -4478,7 +4478,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
       pbr->GetFloat(&m_globalDifficulty);
       int tmp;
       HRESULT hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
-      if (hr == S_OK) m_globalDifficulty = dequantizeSignedPercent(tmp);
+      if (hr == S_OK) m_globalDifficulty = dequantizeUnsignedPercent(tmp);
    }
    else if (id == FID(CUST))
    {
@@ -9297,7 +9297,7 @@ STDMETHODIMP PinTable::put_LightEmissionScale(float newVal)
 
 STDMETHODIMP PinTable::get_NightDay(int *pVal)
 {
-   *pVal = quantizeSignedPercent(m_globalEmissionScale);
+   *pVal = quantizeUnsignedPercent(m_globalEmissionScale);
 
    return S_OK;
 }
@@ -9306,7 +9306,7 @@ STDMETHODIMP PinTable::put_NightDay(int newVal)
 {
    STARTUNDO
 
-   m_globalEmissionScale = dequantizeSignedPercent(newVal);
+   m_globalEmissionScale = dequantizeUnsignedPercent(newVal);
 
    STOPUNDO
 
@@ -9369,7 +9369,7 @@ STDMETHODIMP PinTable::put_BallReflection(UserDefaultOnOff newVal)
 
 STDMETHODIMP PinTable::get_PlayfieldReflectionStrength(int *pVal)
 {
-   *pVal = quantizeSignedPercent(m_playfieldReflectionStrength);
+   *pVal = quantizeUnsignedPercent(m_playfieldReflectionStrength);
 
    return S_OK;
 }
@@ -9378,7 +9378,7 @@ STDMETHODIMP PinTable::put_PlayfieldReflectionStrength(int newVal)
 {
    STARTUNDO
 
-   m_playfieldReflectionStrength = dequantizeSignedPercent(newVal);
+   m_playfieldReflectionStrength = dequantizeUnsignedPercent(newVal);
 
    STOPUNDO
 
@@ -9405,7 +9405,7 @@ STDMETHODIMP PinTable::put_BallTrail(UserDefaultOnOff newVal)
 
 STDMETHODIMP PinTable::get_TrailStrength(int *pVal)
 {
-   *pVal = quantizeSignedPercent(m_ballTrailStrength);
+   *pVal = quantizeUnsignedPercent(m_ballTrailStrength);
 
    return S_OK;
 }
@@ -9414,7 +9414,7 @@ STDMETHODIMP PinTable::put_TrailStrength(int newVal)
 {
    STARTUNDO
 
-   m_ballTrailStrength = dequantizeSignedPercent(newVal);
+   m_ballTrailStrength = dequantizeUnsignedPercent(newVal);
 
    STOPUNDO
 
@@ -9477,7 +9477,7 @@ STDMETHODIMP PinTable::put_BloomStrength(float newVal)
 
 STDMETHODIMP PinTable::get_TableSoundVolume(int *pVal)
 {
-   *pVal = quantizeSignedPercent(m_TableSoundVolume);
+   *pVal = quantizeUnsignedPercent(m_TableSoundVolume);
 
    return S_OK;
 }
@@ -9486,7 +9486,7 @@ STDMETHODIMP PinTable::put_TableSoundVolume(int newVal)
 {
    STARTUNDO
 
-   m_TableSoundVolume = dequantizeSignedPercent(newVal);
+   m_TableSoundVolume = dequantizeUnsignedPercent(newVal);
 
    STOPUNDO
 
@@ -9599,7 +9599,7 @@ STDMETHODIMP PinTable::put_BallDecalMode(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_TableMusicVolume(int *pVal)
 {
-   *pVal = quantizeSignedPercent(m_TableMusicVolume);
+   *pVal = quantizeUnsignedPercent(m_TableMusicVolume);
 
    return S_OK;
 }
@@ -9608,7 +9608,7 @@ STDMETHODIMP PinTable::put_TableMusicVolume(int newVal)
 {
    STARTUNDO
 
-   m_TableMusicVolume = dequantizeSignedPercent(newVal);
+   m_TableMusicVolume = dequantizeUnsignedPercent(newVal);
 
    STOPUNDO
 

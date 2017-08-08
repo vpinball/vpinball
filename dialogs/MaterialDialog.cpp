@@ -23,7 +23,7 @@ extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM l
 
 void MaterialDialog::DisableAllMaterialDialogItems()
 {
-    ::EnableWindow( GetDlgItem( IDC_DIFFUSE_CHECK ).GetHwnd(), FALSE );
+    ::EnableWindow(GetDlgItem( IDC_DIFFUSE_CHECK ).GetHwnd(), FALSE);
     ::EnableWindow(GetDlgItem(IDC_DIFFUSE_EDIT).GetHwnd(), FALSE);
     ::EnableWindow(GetDlgItem(IDC_GLOSSY_EDIT).GetHwnd(), FALSE);
     ::EnableWindow(GetDlgItem(IDC_GLOSSY_IMGLERP_EDIT).GetHwnd(), FALSE);
