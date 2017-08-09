@@ -1612,7 +1612,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
    const DIDEVICEOBJECTDATA * __restrict input;
    while (input = GetTail(/*curr_sim_msec*/))
    {
-      if (input->dwSequence == APP_MOUSE)
+      if (input->dwSequence == APP_MOUSE && g_pplayer)
       {
          if(g_pplayer->m_fThrowBalls)
          {

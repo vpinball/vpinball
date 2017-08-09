@@ -850,6 +850,9 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 
 void SmartBrowser::SetProperty(int dispid, VARIANT *pvar, BOOL fPutRef)
 {
+   if (m_pvsel == NULL)
+      return;
+
    DISPID mydispid = DISPID_PROPERTYPUT;
    DISPPARAMS disp;
    disp.cNamedArgs = 1;
