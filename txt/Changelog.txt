@@ -1,5 +1,6 @@
 VP 10.4.0 Changelog
 ------------------------
+- a selected element can be added/removed to/from a collection via the context menu
 
 - add additional thickness parameter to (transparent) materials, which interacts with the standard amount (and/or alpha channel of the image) and edge opacity to provide a more natural look
 
