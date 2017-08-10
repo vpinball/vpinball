@@ -3249,7 +3249,7 @@ BEGIN
     IDS_TB_FLASHER          "Flasher"
     IDS_SPINNER_DESC        "Spinner Class"
     IDS_TB_SPINNER          "Spinner"
-    IDS_TO_COLLECTION       "To &Collection"
+    IDS_TO_COLLECTION       "Add/Remove &Collection"
 END
 
 STRINGTABLE

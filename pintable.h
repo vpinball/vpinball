@@ -504,7 +504,7 @@ public:
    void RestoreLayers();
    void BackupLayers();
    void DeleteFromLayer(IEditable *obj);
-   void AddToCollection(int index);
+   void UpdateCollection(int index);
    void MoveCollectionUp(CComObject<Collection> *pcol);
    void MoveCollectionDown(CComObject<Collection> *pcol);
 

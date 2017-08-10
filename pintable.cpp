@@ -5240,7 +5240,8 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
 
       int maxItems = m_vcollection.Size() - 1;
       if (maxItems > 32) maxItems = 32;
-
+      // run through all collections and list up to 32 of them in the context menu
+      // the actual processing is done in ISelect::DoCommand() 
       for (int i = maxItems; i >= 0; i--)
       {
          CComBSTR bstr;
@@ -5266,6 +5267,7 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
 
       AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
       AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
+      /*now list all elements that are stacked at the mouse pointer*/
       for (int i = 0; i < m_allHitElements.Size(); i++)
       {
          if (!m_allHitElements.ElementAt(i)->GetIEditable()->m_isVisible)
@@ -5377,7 +5379,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
 {
    if (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020))
    {
-      AddToCollection(icmd & 0x000000FF);
+      UpdateCollection(icmd & 0x000000FF);
       return;
    }
 
@@ -5571,7 +5573,7 @@ void PinTable::AssignMultiToLayer(int layerNumber, int x, int y)
    }
 }
 
-void PinTable::AddToCollection(int index)
+void PinTable::UpdateCollection(int index)
 {
    if (index < m_vcollection.Size() && index < 32)
    {
@@ -5585,7 +5587,8 @@ void PinTable::AddToCollection(int index)
             {
                if (ptr == m_vcollection.ElementAt(index)->m_visel.ElementAt(k))
                {
-                  //already assigned
+                  //already assigned so remove it
+                  m_vcollection.ElementAt(index)->m_visel.RemoveElement(ptr);
                   alreadyIn = true;
                   break;
                }
