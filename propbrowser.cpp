@@ -573,8 +573,10 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
    char szName[256];
    GetClassName(hwndControl, szName, 256);
    IDispatch * const pdisp = GetBaseIDisp();
-
    int type = eNotControl;
+
+   if (pdisp == NULL)
+      return;
 
    if (!strcmp(szName, "Edit"))
    {
