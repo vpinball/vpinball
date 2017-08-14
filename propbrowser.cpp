@@ -35,6 +35,7 @@ SmartBrowser::SmartBrowser()
    m_pvsel = NULL;
    m_maxdialogwidth = 20;
    m_szHeaderCollection[0] = 0;
+   InitializeCriticalSection(&m_hPropertyLock);
 }
 
 SmartBrowser::~SmartBrowser()
@@ -49,6 +50,7 @@ SmartBrowser::~SmartBrowser()
    DeleteObject(m_hfontHeader);
 
    FreePropPanes();
+   DeleteCriticalSection(&m_hPropertyLock);
 }
 
 void SmartBrowser::Init(HWND hwndParent)
@@ -143,6 +145,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
    char colName[64] = { 0 };
    Collection *col = NULL;
 
+   EnterCriticalSection(&m_hPropertyLock);
    if (pvsel != NULL)
    {
       ItemTypeEnum maintype = pvsel->ElementAt(0)->GetItemType();
@@ -213,7 +216,10 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
          }
       }
       if (fSame)
+      {
+         LeaveCriticalSection(&m_hPropertyLock);
          return;
+      }
    }
 
    m_olddialog = propID;
@@ -251,6 +257,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
    {
       m_szHeader[0] = '\0';
       InvalidateRect(m_hwndFrame, NULL, fTrue);
+      LeaveCriticalSection(&m_hPropertyLock);
       return;
    }
 
@@ -370,6 +377,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
             pisel2->UpdatePropertyPanes();
       }
    }
+   LeaveCriticalSection(&m_hPropertyLock);
 
 }
 
@@ -1154,8 +1162,11 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             psb->SetProperty(dispid, &var, fFalse);
             psb->GetControlValue((HWND)lParam);
          }
+         EnterCriticalSection(&psb->m_hPropertyLock);
          for (int i = 0; i < psb->m_pvsel->Size(); i++)
             psb->m_pvsel->ElementAt(i)->UpdatePropertyPanes();
+         LeaveCriticalSection(&psb->m_hPropertyLock);
+
       }
       break;
 
@@ -1187,8 +1198,11 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
          //SendMessage((HWND)lParam, WM_SETTEXT, 0, (LPARAM)"Foo"/*szT*/);
          psb->GetControlValue((HWND)lParam);
+
+         EnterCriticalSection(&psb->m_hPropertyLock);
          for (int i = 0; i < psb->m_pvsel->Size(); i++)
             psb->m_pvsel->ElementAt(i)->UpdatePropertyPanes();
+         LeaveCriticalSection(&psb->m_hPropertyLock);
       }
       break;
 

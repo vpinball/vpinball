@@ -98,6 +98,6 @@ public:
    char m_szHeaderCollection[64];
 
    VectorProtected<ISelect> *m_pvsel;
-
+   CRITICAL_SECTION m_hPropertyLock;
    int m_maxdialogwidth;
 };
