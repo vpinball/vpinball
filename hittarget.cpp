@@ -231,7 +231,8 @@ void HitTarget::WriteRegDefaults()
 
 }
 
-const Vertex3Ds dropTargetHitPlaneVertices[16] =
+const unsigned int num_dropTargetHitPlaneVertices = 16;
+const Vertex3Ds dropTargetHitPlaneVertices[num_dropTargetHitPlaneVertices] =
 {
    Vertex3Ds(-0.300000f, 0.001737f, -0.160074f),
    Vertex3Ds(-0.300000f, 0.001738f, 0.439926f),
@@ -251,7 +252,8 @@ const Vertex3Ds dropTargetHitPlaneVertices[16] =
    Vertex3Ds(0.550000f, 0.001738f, 1.739926f)
 };
 
-const WORD dropTargetHitPlaneIndices[42] =
+const unsigned int num_dropTargetHitPlaneIndices = 42;
+const WORD dropTargetHitPlaneIndices[num_dropTargetHitPlaneIndices] =
 {
    0, 1, 2, 2, 3, 0, 1, 4, 5, 6, 7, 2, 5, 6, 1,
    2, 1, 6, 4, 8, 9, 9, 5, 4, 8, 10, 11, 11, 9, 8,
@@ -297,7 +299,7 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
 
        if (!m_d.m_legacy)
        {
-          Vertex3Ds rgv3D[16];
+          Vertex3Ds rgv3D[num_dropTargetHitPlaneVertices];
           float hitShapeOffset = 0.18f;
           if (m_d.m_targetType == DropTargetBeveled)
              hitShapeOffset = 0.25f;
@@ -305,7 +307,7 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
              hitShapeOffset = 0.13f;
 
           // now create a special hit shape with hit event enabled to prevent a hit event when hit from behind
-          for (unsigned i = 0; i < 16; i++)
+          for (unsigned i = 0; i < num_dropTargetHitPlaneVertices; i++)
           {
              Vertex3Ds vert(dropTargetHitPlaneVertices[i].x, dropTargetHitPlaneVertices[i].y+hitShapeOffset, dropTargetHitPlaneVertices[i].z);
              vert.x *= m_d.m_vSize.x;
@@ -318,7 +320,7 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
              rgv3D[i].z = vert.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
           }
 
-          for (unsigned int i = 0; i < 42; i += 3)
+          for (unsigned int i = 0; i < num_dropTargetHitPlaneIndices; i += 3)
           {
              const unsigned int i0 = dropTargetHitPlaneIndices[i];
              const unsigned int i1 = dropTargetHitPlaneIndices[i + 1];
@@ -337,7 +339,7 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
           }
 
           // add collision vertices
-          for (unsigned i = 0; i < 16; ++i)
+          for (unsigned i = 0; i < num_dropTargetHitPlaneVertices; ++i)
              SetupHitObject(pvho, new HitPoint(rgv3D[i]));
        }
     }
