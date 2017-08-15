@@ -87,6 +87,16 @@ typedef signed   short   NvS16;
 typedef unsigned short   NvU16;
 typedef unsigned char    NvU8;
 typedef signed   char    NvS8;
+typedef float            NvF32;
+
+/*!
+ * Macro to convert NvU32 to NvF32.
+ */
+#define NvU32TONvF32(_pData) *(NvF32 *)(_pData)
+/*!
+ * Macro to convert NvF32 to NvU32.
+ */
+#define NvF32TONvU32(_pData) *(NvU32 *)(_pData)
 
 /* Boolean type */
 typedef NvU8 NvBool;
@@ -192,9 +202,10 @@ typedef struct
 #define NV_MAX_HEADS                        4   //!< Maximum heads, each with NVAPI_DESKTOP_RES resolution
 #define NVAPI_MAX_HEADS_PER_GPU             32
 
-#define NV_MAX_HEADS        4   //!< Maximum number of heads, each with #NVAPI_DESKTOP_RES resolution
-#define NV_MAX_VID_STREAMS  4   //!< Maximum number of input video streams, each with a #NVAPI_VIDEO_SRC_INFO
-#define NV_MAX_VID_PROFILES 4   //!< Maximum number of output video profiles supported
+#define NV_MAX_HEADS            4   //!< Maximum number of heads, each with #NVAPI_DESKTOP_RES resolution
+#define NV_MAX_VID_STREAMS      4   //!< Maximum number of input video streams, each with a #NVAPI_VIDEO_SRC_INFO
+#define NV_MAX_VID_STREAMS_EX  20   //!< Increasing MAX no. of input video streams, each with a #NVAPI_VIDEO_SRC_INFO
+#define NV_MAX_VID_PROFILES     4   //!< Maximum number of output video profiles supported
 
 #define NVAPI_SYSTEM_MAX_DISPLAYS           NVAPI_MAX_PHYSICAL_GPUS * NV_MAX_HEADS
 
@@ -367,6 +378,7 @@ typedef enum _NvAPI_Status
     NVAPI_UNSUPPORTED_CONFIG_NON_HDCP_HMD       = -214,    //!< The Config is having Non-NVidia GPU with Non-HDCP HMD connected
     NVAPI_MAX_DISPLAY_LIMIT_REACHED             = -215,    //!< GPU's Max Display Limit has Reached
     NVAPI_INVALID_DIRECT_MODE_DISPLAY           = -216,    //!< DirectMode not Enabled on the Display
+    NVAPI_GPU_IN_DEBUG_MODE                     = -217,    //!< GPU is in debug mode, OC is NOT allowed.
 } NvAPI_Status;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -523,8 +535,8 @@ static const NVDX_ObjectHandle NVDX_OBJECT_NONE = 0;
 //
 //!   DESCRIPTION: This API gets a handle to a resource.
 //!
-//! \param [in]  pDev       The ID3D11Device, ID3D10Device or IDirect3DDevice9 to use
-//! \param [in]  pResource  The ID3D10Resource, ID3D10Resource or IDirect3DResource9 from which
+//! \param [in]  pDev       The ID3D11Device, ID3D10Device or IDirect3DDevice9 or ID3D11DeviceContext to use
+//! \param [in]  pResource  The ID3D11Resource, ID3D10Resource or IDirect3DResource9 from which
 //!                         we want the NvAPI handle
 //! \param [out]  pHandle   A handle to the resource
 //!
