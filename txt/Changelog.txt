@@ -2,6 +2,8 @@ VP 10.4.0 Changelog
 ------------------------
 - a selected element can be added/removed to/from a collection via the context menu
 
+- drop target hit event problems fixed
+
 - add additional thickness parameter to (transparent) materials, which interacts with the standard amount (and/or alpha channel of the image) and edge opacity to provide a more natural look
 
 - add (optional) legacy/VP9-like keyboard nudging code, can be enabled in the 'Keys, Nudge and DOF' preferences dialog
@@ -31,6 +33,8 @@ VP 10.4.0 Changelog
 - extend some PlaySound calls with DOF/Controller.vbs commands
 
 - fix some uninitialized dialog state
+
+- fix some more editor crashes
 
 - see core scripts (header of core.vbs) for the respective changelog
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
