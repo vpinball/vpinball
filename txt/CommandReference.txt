@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.4:
+- add BlendDisableLightingFromBelow to the primitive element
 - add WindowWidth and WindowHeight to globals
 - document missing LoadValue and SaveValue global call
 - correct/move some properties/methods from the table element to globals
@@ -599,6 +600,7 @@ Scatter(float)
 *ReflectionEnabled(bool) - default=true
 DisableLighting(bool)
 BlendDisableLighting(float) - 0..1, same as DisableLighting, but can blend between the two extremes
+BlendDisableLightingFromBelow(float) - 0..1, similar to DisableLighting, but will block light coming from below (e.g. from light elements)
 BackfacesEnabled(bool) - default=false, if enabled will also show/render the backfacing triangles (if a transparent material is used)
 
 The following only applies to mesh primitives with an animation sequence

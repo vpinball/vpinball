@@ -1,5 +1,6 @@
 VP 10.4.0 Changelog
 ------------------------
+
 - a selected element can be added/removed to/from a collection via the context menu
 
 - drop target hit event problems fixed
@@ -14,6 +15,7 @@ VP 10.4.0 Changelog
   the third one shows separate timings for each table element type(s), which is only approximate though, as it can not render the table in exactly the same way
 
 - extend 'Disable Lighting' functionality for HitTarget, Primitive and Wall from simple dis/enable to a blend value 0..1
+- add 'Disable Lighting from below' functionality for Primitives (0..1) to optionally disable light coming from below (e.g. from light elements)
 
 - add surround sound options/configurations:
  1) Basic 2CH audio - this should operate exactly as it did before. Forward/rear panning is ignored.

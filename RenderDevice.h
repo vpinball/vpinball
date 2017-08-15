@@ -383,12 +383,23 @@ public:
    void SetTexture(const D3DXHANDLE texelName, D3DTexture *texel);
    void SetMaterial(const Material * const mat);
 
-   void SetDisableLighting(const float value)
+   void SetDisableLighting(const float value) // only set top
    {
-      if (currentDisableLighting != value)
+      if (currentDisableLighting.x != value || currentDisableLighting.y != 0.f)
+      {
+         currentDisableLighting.x = value;
+         currentDisableLighting.y = 0.f;
+         currentDisableLighting.z = 0.f;
+         currentDisableLighting.w = 0.f;
+         SetVector("fDisableLighting_top_below", &currentDisableLighting);
+      }
+   }
+   void SetDisableLighting(const D3DXVECTOR4& value) // set top and below
+   {
+      if (currentDisableLighting.x != value.x || currentDisableLighting.y != value.y)
       {
          currentDisableLighting = value;
-         SetFloat("fDisableLighting", value);
+         SetVector("fDisableLighting_top_below", &value);
       }
    }
 
@@ -513,7 +524,7 @@ private:
 
    Material currentMaterial;
 
-   float currentDisableLighting;
+   D3DXVECTOR4 currentDisableLighting; // x and y: top and below, z and w unused
 
    static const DWORD TEXTURESET_STATE_CACHE_SIZE = 5; // current convention: SetTexture gets "TextureX", where X 0..4
    BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];

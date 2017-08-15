@@ -1601,7 +1601,7 @@ Shader::Shader(RenderDevice *renderDevice)
    for (unsigned int i = 0; i < TEXTURESET_STATE_CACHE_SIZE; ++i)
       currentTexture[i] = 0;
    currentAlphaTestValue = -FLT_MAX;
-   currentDisableLighting = -FLT_MAX;
+   currentDisableLighting =
    currentFlasherData =
    currentFlasherColor =
    currentLightColor =

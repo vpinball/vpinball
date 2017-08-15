@@ -107,11 +107,6 @@ struct VS_DEPTH_ONLY_TEX_OUTPUT
    float2 tex0     : TEXCOORD0;
 };
 
-struct PS_OUTPUT
-{
-   float4 color    : COLOR0;
-};
-
 float3x3 TBN_trafo(const float3 N, const float3 V, const float2 uv)
 {
 	// derivatives: edge vectors for tri-pos and tri-uv
@@ -145,12 +140,11 @@ VS_OUTPUT vs_main (float4 vPosition : POSITION0,
                    float3 vNormal   : NORMAL0,  
                    float2 tc        : TEXCOORD0) 
 { 
-   VS_OUTPUT Out;
-
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    const float3 P = mul(vPosition, matWorldView).xyz;
    const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
 
+   VS_OUTPUT Out;
    Out.pos = mul(vPosition, matWorldViewProj);
    Out.tex01 = float4(tc, /*(cBase_Alpha.a < 1.0) ?*/Out.pos.xy/Out.pos.w);
    Out.worldPos = P;
@@ -162,12 +156,11 @@ VS_NOTEX_OUTPUT vs_notex_main (float4 vPosition : POSITION0,
                                float3 vNormal   : NORMAL0,  
                                float2 tc        : TEXCOORD0)
 { 
-   VS_NOTEX_OUTPUT Out;
-
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    const float3 P = mul(vPosition, matWorldView).xyz;
    const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
 
+   VS_NOTEX_OUTPUT Out;
    Out.pos = mul(vPosition, matWorldViewProj);
    //if(cBase_Alpha.a < 1.0)
    {
@@ -199,9 +192,8 @@ VS_DEPTH_ONLY_TEX_OUTPUT vs_depth_only_main_with_texture(float4 vPosition : POSI
    return Out;
 }
 
-PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN, uniform bool is_metal) 
+float4 ps_main(in VS_NOTEX_OUTPUT IN, uniform bool is_metal) : COLOR
 {
-   PS_OUTPUT output;
    const float3 diffuse  = cBase_Alpha.xyz;
    const float3 glossy   = is_metal ? cBase_Alpha.xyz : cGlossy_ImageLerp.xyz*0.08;
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
@@ -219,17 +211,16 @@ PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN, uniform bool is_metal)
    [branch] if(cBase_Alpha.a < 1.0) {
       result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 
-      // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-      result.xyz += sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.worldPos_t1x.w,-0.5*IN.normal_t1y.w)+0.5, 0.,0.)).xyz*result.a; //!! depend on normal of light (unknown though) vs geom normal, too?
+      if (fDisableLighting_top_below.y < 1.0)
+          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
+          result.xyz += lerp(sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.worldPos_t1x.w,-0.5*IN.normal_t1y.w)+0.5, 0.,0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
-   output.color = result;
-   return output;
+   return result;
 }
 
-PS_OUTPUT ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool doNormalMapping)
+float4 ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool doNormalMapping) : COLOR
 {
-   PS_OUTPUT output;
    float4 pixel = tex2D(texSampler0, IN.tex01.xy);
 
       if (pixel.a <= fAlphaTestValue)
@@ -240,10 +231,7 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool d
 
    // early out if no normal set (e.g. decal vertices)
    if (!any(IN.normal))
-   {
-      output.color = float4(InvToneMap(t*cBase_Alpha.xyz), pixel.a);
-      return output;
-   }
+      return float4(InvToneMap(t*cBase_Alpha.xyz), pixel.a);
 
    const float3 diffuse  = t*cBase_Alpha.xyz;
    const float3 glossy   = is_metal ? diffuse : (t*cGlossy_ImageLerp.w + (1.0-cGlossy_ImageLerp.w))*cGlossy_ImageLerp.xyz*0.08; //!! use AO for glossy? specular?
@@ -265,12 +253,12 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool d
    [branch] if (cBase_Alpha.a < 1.0 && result.a < 1.0) {
       result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 
-      // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-      result.xyz += sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.tex01.z, -0.5*IN.tex01.w) + 0.5, 0., 0.)).xyz*result.a; //!! depend on normal of light (unknown though) vs geom normal, too?
+      if (fDisableLighting_top_below.y < 1.0)
+          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
+          result.xyz += lerp(sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.tex01.z,-0.5*IN.tex01.w)+0.5, 0., 0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
-   output.color = result;
-   return output;
+   return result;
 }
 
 float4 ps_main_depth_only_without_texture(in VS_DEPTH_ONLY_NOTEX_OUTPUT IN) : COLOR
@@ -295,10 +283,10 @@ VS_NOTEX_OUTPUT vs_kicker (float4 vPosition : POSITION0,
                            float3 vNormal   : NORMAL0,  
                            float2 tc        : TEXCOORD0) 
 { 
-    VS_NOTEX_OUTPUT Out;
     const float3 P = mul(vPosition, matWorldView).xyz;
     const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
 
+    VS_NOTEX_OUTPUT Out;
     Out.pos.xyw = mul(vPosition, matWorldViewProj).xyw;
     float4 P2 = vPosition;
     P2.z -= 30.0f*fKickerScale;
