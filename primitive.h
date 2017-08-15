@@ -77,7 +77,8 @@ public:
 
    int  m_FrameAmount;
 
-   float m_fDisableLighting; // was bool, now 0..1
+   float m_fDisableLightingTop; // was bool, now 0..1
+   float m_fDisableLightingBelow; // 0..1
    bool m_use3DMesh;
    bool m_fVisible;
    bool m_DrawTexturesInside;
@@ -213,12 +214,14 @@ public:
    STDMETHOD(put_DisableLighting)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_BlendDisableLighting)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_BlendDisableLighting)(/*[in]*/ float newVal);
+   STDMETHOD(get_BlendDisableLightingFromBelow)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_BlendDisableLightingFromBelow)(/*[in]*/ float newVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD( get_PhysicsMaterial )(/*[out, retval]*/ BSTR *pVal);
-   STDMETHOD( put_PhysicsMaterial )(/*[in]*/ BSTR newVal);
-   STDMETHOD( get_OverwritePhysics )(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD( put_OverwritePhysics )(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_PhysicsMaterial)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_PhysicsMaterial)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_OverwritePhysics)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_OverwritePhysics)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(PlayAnim)(float startFrame, float speed);
    STDMETHOD(PlayAnimEndless)(float speed);
    STDMETHOD(StopAnim)();
@@ -247,7 +250,7 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Primitive, eItemPrimitive, PRIMITIVE, 1)
 
-      DECLARE_REGISTRY_RESOURCEID(IDR_PRIMITIVE)
+   DECLARE_REGISTRY_RESOURCEID(IDR_PRIMITIVE)
 
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();

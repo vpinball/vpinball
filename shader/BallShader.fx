@@ -103,18 +103,11 @@ struct voutTrail
     float3 tex0_alpha  : TEXCOORD0;
 };
 
-struct PS_OUTPUT
-{
-   float4 color:COLOR0;
-};
-
 //------------------------------------
 // VERTEX SHADER
 
 vout vsBall( in vin IN )
 {
-    vout OUT;
-
 	// apply spinning and move the ball to it's actual position
 	float4 pos = IN.position;
 	pos.xyz = mul_w1(pos.xyz, orientation);
@@ -122,9 +115,10 @@ vout vsBall( in vin IN )
 	// apply spinning to the normals too to get the sphere mapping effect
 	const float3 nspin = mul_w0(IN.normal, orientation);
 	const float3 normal = normalize(mul(matWorldViewInverse, nspin).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
-    
+
 	const float3 p = mul_w1(pos.xyz, matWorldView);
 
+	vout OUT;
 	OUT.position = mul(pos, matWorldViewProj);
 	OUT.normal_t0x = float4(normal,IN.tex0.x);
 	OUT.worldPos_t0y = float4(p,IN.tex0.y);
@@ -134,8 +128,6 @@ vout vsBall( in vin IN )
 #if 0
 voutReflection vsBallReflection( in vin IN )
 {
-    voutReflection OUT;
-    
 	// apply spinning and move the ball to it's actual position
 	float4 pos = IN.position;
 	pos.xyz = mul_w1(pos.xyz, orientation);
@@ -144,15 +136,16 @@ voutReflection vsBallReflection( in vin IN )
 	// the ball is moved a bit down and rendered again
 	pos.y += position_radius.w*(2.0*0.35);
 	pos.z = pos.z*0.5 - 10.0;
-	
+
 	const float3 p = mul_w1(pos.xyz, matWorldView);
-	
+
     const float3 nspin = mul_w0(IN.normal, orientation);
 	const float3 normal = normalize(mul(matWorldViewInverse, nspin).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
-    
+
     const float3 r = reflect(normalize(/*camera=0,0,0,1*/-p), normal);
 
-    OUT.position = mul(pos, matWorldViewProj);
+	voutReflection OUT;
+	OUT.position = mul(pos, matWorldViewProj);
 	OUT.tex0	 = pos.xy;
     OUT.r		 = r;
 	return OUT;
@@ -165,6 +158,7 @@ voutTrail vsBallTrail( in vin IN )
     
     OUT.position = mul(IN.position, matWorldViewProj);
 	OUT.tex0_alpha = float3(IN.tex0, IN.normal.x); //!! abuses normal for now
+
 	return OUT;
 }
 
@@ -213,9 +207,8 @@ float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float
 //------------------------------------
 // PIXEL SHADER
 
-PS_OUTPUT psBall( in vout IN, uniform bool cabMode, uniform bool decalMode ) 
+float4 psBall( in vout IN, uniform bool cabMode, uniform bool decalMode ) : COLOR
 {
-    PS_OUTPUT output;
     const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos_t0y.xyz);
     const float3 r = reflect(v, normalize(IN.normal_t0x.xyz));
     // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
@@ -278,8 +271,7 @@ PS_OUTPUT psBall( in vout IN, uniform bool cabMode, uniform bool decalMode )
     float4 result;
 	result.xyz = ballLightLoop(IN.worldPos_t0y.xyz, IN.normal_t0x.xyz, /*camera=0,0,0,1*/-IN.worldPos_t0y.xyz, diffuse, glossy, specular, 1.0, false);
 	result.a = cBase_Alpha.a;
-    output.color = result;
-    return output;
+	return result;
 }
 
 #if 0

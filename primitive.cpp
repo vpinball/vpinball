@@ -360,7 +360,8 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Collidable", true) : true;
    m_d.m_fToy = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "IsToy", false) : false;
-   m_d.m_fDisableLighting = dequantizeUnsigned<8>(fromMouseClick ? GetRegIntWithDefault(strKeyName, "DisableLighting", 0) : 0); // stored as uchar for backward compatibility
+   m_d.m_fDisableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? GetRegIntWithDefault(strKeyName, "DisableLighting", 0) : 0); // stored as uchar for backward compatibility
+   m_d.m_fDisableLightingBelow = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "DisableLightingBelow", 0.f) : 0.f;
    m_d.m_fReflectionEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
    m_d.m_fBackfacesEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "BackfacesEnabled", false) : false;
 }
@@ -404,8 +405,9 @@ void Primitive::WriteRegDefaults()
 
    SetRegValueBool(strKeyName, "Collidable", m_d.m_fCollidable);
    SetRegValueBool(strKeyName, "IsToy", m_d.m_fToy);
-   const int tmp = quantizeUnsigned<8>(clamp(m_d.m_fDisableLighting, 0.f, 1.f));
+   const int tmp = quantizeUnsigned<8>(clamp(m_d.m_fDisableLightingTop, 0.f, 1.f));
    SetRegValueInt(strKeyName, "DisableLighting", (tmp == 1) ? 0 : tmp); // backwards compatible saving
+   SetRegValueFloat(strKeyName, "DisableLightingBelow", m_d.m_fDisableLightingBelow);
    SetRegValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
    SetRegValueBool(strKeyName, "BackfacesEnabled", m_d.m_fBackfacesEnabled);
 }
@@ -1051,8 +1053,11 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, m_d.m_fBackfacesEnabled && mat->m_bOpacityActive ? D3DCULL_CW : D3DCULL_CCW);
 
-   if (m_d.m_fDisableLighting != 0.f)
-      pd3dDevice->basicShader->SetDisableLighting(m_d.m_fDisableLighting);
+   if (m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f)
+   {
+      const D3DXVECTOR4 tmp(m_d.m_fDisableLightingTop,m_d.m_fDisableLightingBelow, 0.f,0.f);
+      pd3dDevice->basicShader->SetDisableLighting(tmp);
+   }
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
@@ -1110,9 +1115,11 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
 
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
-   if (m_d.m_fDisableLighting != 0.f)
-      pd3dDevice->basicShader->SetDisableLighting(0.f);
-
+   if (m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f)
+   {
+      const D3DXVECTOR4 tmp(0.f,0.f, 0.f,0.f);
+      pd3dDevice->basicShader->SetDisableLighting(tmp);
+   }
 }
 
 // Always called each frame to render over everything else (along with alpha ramps)
@@ -1233,8 +1240,9 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteBool(FID(ISTO), m_d.m_fToy);
    bw.WriteBool(FID(U3DM), m_d.m_use3DMesh);
    bw.WriteBool(FID(STRE), m_d.m_staticRendering);
-   const int tmp = quantizeUnsigned<8>(clamp(m_d.m_fDisableLighting, 0.f, 1.f));
+   const int tmp = quantizeUnsigned<8>(clamp(m_d.m_fDisableLightingTop, 0.f, 1.f));
    bw.WriteInt(FID(DILI), (tmp == 1) ? 0 : tmp); // backwards compatible saving
+   bw.WriteFloat(FID(DILB), m_d.m_fDisableLightingBelow);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
    bw.WriteBool(FID(EBFC), m_d.m_fBackfacesEnabled);
    bw.WriteString( FID( MAPH ), m_d.m_szPhysicsMaterial );
@@ -1496,7 +1504,11 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    {
       int tmp;
       pbr->GetInt(&tmp);
-      m_d.m_fDisableLighting = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); // backwards compatible hacky loading!
+      m_d.m_fDisableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); // backwards compatible hacky loading!
+   }
+   else if (id == FID(DILB))
+   {
+      pbr->GetFloat(&m_d.m_fDisableLightingBelow);
    }
    else if (id == FID(U3DM))
    {
@@ -2816,7 +2828,7 @@ STDMETHODIMP Primitive::put_BackfacesEnabled(VARIANT_BOOL newVal)
 
 STDMETHODIMP Primitive::get_DisableLighting(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisableLighting != 0.f);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisableLightingTop != 0.f);
 
    return S_OK;
 }
@@ -2825,7 +2837,7 @@ STDMETHODIMP Primitive::put_DisableLighting(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-   m_d.m_fDisableLighting = VBTOF(newVal) ? 1.f : 0;
+   m_d.m_fDisableLightingTop = VBTOF(newVal) ? 1.f : 0;
 
    STOPUNDO
 
@@ -2834,7 +2846,7 @@ STDMETHODIMP Primitive::put_DisableLighting(VARIANT_BOOL newVal)
 
 STDMETHODIMP Primitive::get_BlendDisableLighting(float *pVal)
 {
-   *pVal = m_d.m_fDisableLighting;
+   *pVal = m_d.m_fDisableLightingTop;
 
    return S_OK;
 }
@@ -2843,7 +2855,25 @@ STDMETHODIMP Primitive::put_BlendDisableLighting(float newVal)
 {
    STARTUNDO
 
-   m_d.m_fDisableLighting = newVal;
+   m_d.m_fDisableLightingTop = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::get_BlendDisableLightingFromBelow(float *pVal)
+{
+   *pVal = m_d.m_fDisableLightingBelow;
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_BlendDisableLightingFromBelow(float newVal)
+{
+   STARTUNDO
+
+   m_d.m_fDisableLightingBelow = newVal;
 
    STOPUNDO
 

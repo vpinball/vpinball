@@ -25,7 +25,7 @@ float4 cAmbient_LightRange = float4(0.0,0.0,0.0, 0.0); //!! remove completely, j
 
 float2 fenvEmissionScale_TexWidth;
 
-float  fDisableLighting = 0.;
+float2 fDisableLighting_top_below = float2(0.,0.);
 
 //
 // Material Params
@@ -60,7 +60,7 @@ float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
 float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const float3 diffuse, const float3 glossy, const float edge, const float glossyPower, const int i, const bool is_metal) 
 { 
    // early out here or maybe we can add more material elements without lighting later?
-   if(fDisableLighting == 1.0)
+   if(fDisableLighting_top_below.x == 1.0)
       return diffuse;
 
    const float3 lightDir = mul_w1(lights[i].vPos, matView) - pos; //!! do in vertex shader?! or completely before?!
@@ -95,8 +95,8 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
        ambient += diffuse;
 
    const float3 result = Out * lights[i].vEmission * fAtten + ambient * cAmbient_LightRange.xyz;
-   if(fDisableLighting != 0.0)
-       return lerp(result,diffuse,fDisableLighting);
+   if(fDisableLighting_top_below.x != 0.0)
+       return lerp(result,diffuse,fDisableLighting_top_below.x);
    else
        return result;
 }
