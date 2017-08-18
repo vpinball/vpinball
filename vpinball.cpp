@@ -2717,6 +2717,32 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
       return(_stricmp(buf1, buf2) * -1);
 }
 
+int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
+{
+    LVFINDINFO lvf;
+    char buf1[MAX_PATH], buf2[MAX_PATH];
+    int value1, value2;
+
+    SORTDATA *lpsd = (SORTDATA *)lSortOption;
+
+    lvf.flags = LVFI_PARAM;
+    lvf.lParam = lSortParam1;
+    const int nItem1 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
+
+    lvf.lParam = lSortParam2;
+    const int nItem2 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
+
+    ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, sizeof(buf1));
+    ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
+    sscanf_s(buf1, "%i", &value1);
+    sscanf_s(buf2, "%i", &value2);
+
+    if(lpsd->sortUpDown == 1)
+        return(value1-value2);
+    else
+        return(value2-value1);
+}
+
 const int rgDlgIDFromSecurityLevel[] = { IDC_ACTIVEX0, IDC_ACTIVEX1, IDC_ACTIVEX2, IDC_ACTIVEX3, IDC_ACTIVEX4 };
 
 INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
