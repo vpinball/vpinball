@@ -8084,10 +8084,12 @@ int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
 
    ListView_SetItemText(hwndListView, index, 1, ppi->m_szPath);
    ListView_SetItemText(hwndListView, index, 2, sizeString);
-   ListView_SetItemText( hwndListView, index, 3, usedStringNo );
+   ListView_SetItemText(hwndListView, index, 3, usedStringNo);
+   
+   _snprintf_s(sizeString, MAXTOKEN, "%i", ppi->m_pdsBuffer->m_data.size());
 
-  
-   if(    (_stricmp( m_szImage, ppi->m_szName)==0) 
+   ListView_SetItemText(hwndListView, index, 4, sizeString);
+   if((_stricmp(m_szImage, ppi->m_szName) == 0)
        || (_stricmp( m_szBallImage, ppi->m_szName ) == 0) 
        || (_stricmp( m_szBallImageFront, ppi->m_szName)==0 )
        || (_stricmp( m_szEnvImage, ppi->m_szName ) == 0)
