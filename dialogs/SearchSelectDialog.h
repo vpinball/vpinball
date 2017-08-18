@@ -21,6 +21,7 @@ private:
    void LoadPosition();
    void SavePosition();
    void SelectElement();
+   void SortItems(const int columnNumber);
    HWND hElementList;
    CResizer m_resizer;
    CCO(PinTable) *curTable;

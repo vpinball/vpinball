@@ -82,6 +82,7 @@ BOOL SearchSelectDialog::OnInitDialog()
    m_resizer.AddChild(GetDlgItem(IDOK).GetHwnd(), bottomleft, 0);
    m_resizer.AddChild(GetDlgItem(IDCANCEL).GetHwnd(), bottomleft, 0);
    Update();
+   SortItems(0);
    LoadPosition();
    return TRUE;
 
@@ -109,6 +110,18 @@ void SearchSelectDialog::SelectElement()
     }
 }
 
+void SearchSelectDialog::SortItems(const int columnNumber)
+{
+    if(columnSortOrder[columnNumber] == 1)
+        columnSortOrder[columnNumber] = 0;
+    else
+        columnSortOrder[columnNumber] = 1;
+    SortData.hwndList = hElementList;
+    SortData.subItemIndex = columnNumber;
+    SortData.sortUpDown = columnSortOrder[columnNumber];
+    ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
+}
+
 INT_PTR SearchSelectDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    m_resizer.HandleMessage(uMsg, wParam, lParam);
@@ -127,14 +140,7 @@ INT_PTR SearchSelectDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
             {
                const int columnNumber = lpnmListView->iSubItem;
-               if (columnSortOrder[columnNumber] == 1)
-                  columnSortOrder[columnNumber] = 0;
-               else
-                  columnSortOrder[columnNumber] = 1;
-               SortData.hwndList = hElementList;
-               SortData.subItemIndex = columnNumber;
-               SortData.sortUpDown = columnSortOrder[columnNumber];
-               ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
+               SortItems(columnNumber);
             }
          }
          break;
