@@ -1,5 +1,8 @@
 VP 10.4.0 Changelog
 ------------------------
+
+- added a new column for the image manager to show the raw size in bytes for each image.
+
 - new table extended by a stripped down version of the default table and an updated example table. (thanks BorgDog and Hauntfreaks)
 
 - a selected element can be added/removed to/from a collection via the context menu
