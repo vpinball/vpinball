@@ -2779,7 +2779,11 @@ IDR_APPMENU MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&New\tCtrl+N",                IDM_NEW
+        POPUP "&New"
+        BEGIN
+            MENUITEM "Blank Table\tCtrl+N",         ID_NEW_BLANKTABLE
+            MENUITEM "Example Table",               ID_NEW_EXAMPLETABLE
+        END
         MENUITEM "&Open...\tCtrl+O",            IDM_OPEN
         MENUITEM "&Close",                      IDM_CLOSE
         MENUITEM SEPARATOR
@@ -3100,7 +3104,8 @@ IDC_RUBBER              CURSOR                  "res\\rubber.cur"
 // TABLE
 //
 
-IDR_TABLE               TABLE                   "res\\table.vpx"
+IDR_BLANK_TABLE         TABLE                   "res\\blankTable.vpx"
+IDR_EXAMPLE_TABLE       TABLE                   "res\\exampleTable.vpx"
 
 /////////////////////////////////////////////////////////////////////////////
 //

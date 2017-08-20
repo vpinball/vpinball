@@ -827,8 +827,19 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
    switch (code)
    {
-
    case IDM_NEW:
+   case ID_NEW_BLANKTABLE:
+   {
+      CComObject<PinTable> *pt;
+      CComObject<PinTable>::CreateInstance(&pt);
+      pt->AddRef();
+      pt->Init(this,true);
+      //pt = new PinTable(this);
+      m_vtable.AddElement(pt);
+      SetEnableToolbar();
+      break;
+   }
+   case ID_NEW_EXAMPLETABLE:
    {
       CComObject<PinTable> *pt;
       CComObject<PinTable>::CreateInstance(&pt);

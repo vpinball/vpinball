@@ -290,7 +290,7 @@ public:
    PinTable();
    virtual ~PinTable();
 
-   void Init(VPinball *pvp);
+   void Init(VPinball *pvp, const bool useBlankTable=false);
    void InitPostLoad(VPinball *pvp);
 
    virtual HRESULT GetTypeName(BSTR *pVal);

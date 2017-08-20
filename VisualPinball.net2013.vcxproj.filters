@@ -343,6 +343,9 @@
     <None Include="res\hittarget.rgs">
       <Filter>res</Filter>
     </None>
+    <None Include="res\table1.bin" />
+    <None Include="res\blankTable.vpx" />
+    <None Include="res\exampleTable.vpx" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
