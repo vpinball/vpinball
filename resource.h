@@ -544,8 +544,10 @@
 #define IDD_PROPPRIMITIVE_VISUALS       381
 #define IDD_PROPRAMP_VISUALS1           382
 #define IDD_PROPPLUNGER_VISUALS         382
-#define IDR_TABLE                       383
+#define IDR_EXAMPLE_TABLE               383
 #define IDC_ARASlider                   384
+#define IDR_TABLE1                      384
+#define IDR_EXAMPLETABLE                384
 #define IDC_PRIMITIVE                   385
 #define IDC_StretchNo                   386
 #define IDR_REGISTRY1                   386
@@ -841,6 +843,7 @@
 #define IDC_ENABLE_CAMERA_FLY_AROUND    626
 #define IDD_SOUND_POSITION              629
 #define IDD_SOUND_POSITION_DIALOG       629
+#define IDR_BLANK_TABLE                 630
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1019,6 +1022,8 @@
 #define ID_WALLMENU_PASTE               4017
 #define ID_TABLEMENU_COPY               4018
 #define ID_TABLEMENU_PASTE              4019
+#define ID_NEW_BLANKTABLE               4020
+#define ID_NEW_EXAMPLETABLE             4021
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770
@@ -1124,8 +1129,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        630
-#define _APS_NEXT_COMMAND_VALUE         4020
+#define _APS_NEXT_RESOURCE_VALUE        631
+#define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         820
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
