@@ -1001,7 +1001,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ball.rgs" />
+    <None Include="res\blankTable.vpx" />
     <None Include="res\bumper.rgs" />
+    <None Include="res\exampleTable.vpx" />
     <None Include="res\gate.cur" />
     <None Include="res\flasher.cur" />
     <None Include="res\hittarget.rgs" />
@@ -1009,6 +1011,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\kicker.cur" />
     <None Include="res\spinner.cur" />
     <None Include="res\dispreel.cur" />
+    <None Include="res\table1.bin" />
     <None Include="res\trigger.cur" />
     <None Include="res\timer.cur" />
     <None Include="res\target.cur" />

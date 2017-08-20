@@ -1821,13 +1821,18 @@ void PinTable::DeleteFromLayer(IEditable *obj)
 
 #define NEWFROMRES 1
 
-void PinTable::Init(VPinball *pvp)
+void PinTable::Init(VPinball *pvp, const bool useBlankTable)
 {
    m_pvp = pvp;
 
 #ifdef NEWFROMRES
+   HRSRC hrsrc;
    // Get our new table resource, get it to be opened as a storage, and open it like a normal file
-   HRSRC hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_TABLE), "TABLE");
+   if (useBlankTable)
+      hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_BLANK_TABLE), "TABLE");
+   else
+      hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_EXAMPLE_TABLE), "TABLE");
+
    HGLOBAL hglobal = LoadResource(NULL, hrsrc);
    char *pchar = (char *)LockResource(hglobal);
    DWORD size = SizeofResource(NULL, hrsrc);
