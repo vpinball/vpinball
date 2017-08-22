@@ -3,8 +3,9 @@ Const VPinMAMEDriverVer = 3.54
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.54 (Update by mfuegemann)
+' New in 3.54 (Update by mfuegemann & nFozzy)
 ' - Added inder_centaur.vbs
+' - Restore basic functionality of cvpmDropTarget.CreateEvents for drop targets with an animation time (e.g. VP10 and newer)
 '
 ' New in 3.53 (Update by Toxie)
 ' - Add more key mappings to help dialog
@@ -486,7 +487,7 @@ Dim vpmShowDips     ' Show DIPs function
 '
 ' cvpmDropTarget (create as many as needed)
 '   (Public)  .InitDrop     - initialise DropTarget bank
-'   (Public)  .CreateEvents - Create Hit events           ' do not use anymore in VP10 and above, as drop targets have an animation time now
+'   (Public)  .CreateEvents - Create Hit events
 '   (Public)  .InitSnd      - sound to use for targets
 '   (Public)  .AnyUpSw      - Set AnyUp switch
 '   (Public)  .AllDownSw    - Set all down switch
@@ -1751,17 +1752,25 @@ Class cvpmDropTarget
 		vpmSetArray mDropObj, aWalls
 	End Sub
 
-	Public Sub CreateEvents(aName) ' do not use anymore in VP10 and above, as drop targets have an animation time now
+	Public Sub CreateEvents(aName)
 		Dim ii, obj1, obj2
 		If Not vpmCheckEvent(aName, Me) Then Exit Sub
 		ii = 1
 		For Each obj1 In mDropObj
 			If vpmIsArray(obj1) Then
 				For Each obj2 In obj1
-					If obj2.HasHitEvent Then vpmBuildEvent obj2, "Hit", aName & ".Hit " & ii
+					if TypeName(obj2) = "HitTarget" Then 	'if object in array is a Target, use .Dropped
+						vpmBuildEvent obj2, "Dropped", aName & ".Hit " & ii	'Droptarget_Dropped : DTbank.Hit 1 : End Sub
+					else
+						If obj2.HasHitEvent Then vpmBuildEvent obj2, "Hit", aName & ".Hit " & ii
+					End If
 				Next
 			Else
-				vpmBuildEvent obj1, "Hit", aName & ".Hit " & ii
+				if TypeName(obj1) = "HitTarget" Then 	'if object in array is a Target, use .Dropped
+					vpmBuildEvent obj1, "Dropped", aName & ".Hit " & ii
+				else
+					vpmBuildEvent obj1, "Hit", aName & ".Hit " & ii
+				End If
 			End If
 			ii = ii + 1
 		Next
