@@ -338,7 +338,10 @@
     <None Include="shader\Material.fxh">
       <Filter>shaders</Filter>
     </None>
-    <None Include="res\table.vpx">
+    <None Include="res\blankTable.vpx">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\exampleTable.vpx">
       <Filter>res</Filter>
     </None>
     <None Include="res\vpinball.rgs">
