@@ -829,22 +829,12 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
    case IDM_NEW:
    case ID_NEW_BLANKTABLE:
-   {
-      CComObject<PinTable> *pt;
-      CComObject<PinTable>::CreateInstance(&pt);
-      pt->AddRef();
-      pt->Init(this,true);
-      //pt = new PinTable(this);
-      m_vtable.AddElement(pt);
-      SetEnableToolbar();
-      break;
-   }
    case ID_NEW_EXAMPLETABLE:
    {
       CComObject<PinTable> *pt;
       CComObject<PinTable>::CreateInstance(&pt);
       pt->AddRef();
-      pt->Init(this);
+      pt->Init(this,code != ID_NEW_EXAMPLETABLE);
       //pt = new PinTable(this);
       m_vtable.AddElement(pt);
       SetEnableToolbar();
@@ -863,13 +853,9 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       break;
    }
    case ID_TABLE_CAMERAMODE:
-   {
-       DoPlay(true);
-       break;
-   }
    case ID_TABLE_PLAY:
    {
-       DoPlay(false);
+       DoPlay(code == ID_TABLE_CAMERAMODE);
        break;
    }
    case ID_SCRIPT_SHOWIDE:
@@ -1087,19 +1073,19 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
             {
             case eItemRamp:
             {
-               Ramp *pRamp = (Ramp*)psel;
+               Ramp * const pRamp = (Ramp*)psel;
                pRamp->AddPoint(pt.x, pt.y, false);
                break;
             }
             case eItemLight:
             {
-               Light *pLight = (Light*)psel;
+               Light * const pLight = (Light*)psel;
                pLight->AddPoint(pt.x, pt.y, false);
                break;
             }
             case eItemSurface:
             {
-               Surface *pSurf = (Surface*)psel;
+               Surface * const pSurf = (Surface*)psel;
                pSurf->AddPoint(pt.x, pt.y, false);
                break;
             }
@@ -1128,19 +1114,19 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
             {
             case eItemRamp:
             {
-               Ramp *pRamp = (Ramp*)psel;
+               Ramp * const pRamp = (Ramp*)psel;
                pRamp->AddPoint(pt.x, pt.y,true);
                break;
             }
             case eItemLight:
             {
-               Light *pLight = (Light*)psel;
+               Light * const pLight = (Light*)psel;
                pLight->AddPoint(pt.x, pt.y,true);
                break;
             }
             case eItemSurface:
             {
-               Surface *pSurf = (Surface*)psel;
+               Surface * const pSurf = (Surface*)psel;
                pSurf->AddPoint(pt.x, pt.y,true);
                break;
             }
@@ -1245,7 +1231,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case RECENT_FIRST_MENU_IDM + 6:
    case RECENT_FIRST_MENU_IDM + 7:
    {
-      char	szFileName[MAX_PATH];
+      char szFileName[MAX_PATH];
       // get the index into the recent list menu
       const size_t Index = code - RECENT_FIRST_MENU_IDM;
       // copy it into a temporary string so it can be correctly processed

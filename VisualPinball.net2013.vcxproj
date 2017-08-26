@@ -1011,7 +1011,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\kicker.cur" />
     <None Include="res\spinner.cur" />
     <None Include="res\dispreel.cur" />
-    <None Include="res\table1.bin" />
     <None Include="res\trigger.cur" />
     <None Include="res\timer.cur" />
     <None Include="res\target.cur" />
@@ -1045,7 +1044,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\trigger.rgs" />
     <None Include="res\vpinball.rgs" />
     <None Include="res\light.cur" />
-    <None Include="res\table.vpx" />
     <None Include="shader\FXAAStereoAO.fxh" />
     <None Include="shader\Helpers.fxh" />
     <None Include="shader\Material.fxh" />

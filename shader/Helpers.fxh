@@ -97,6 +97,14 @@ float3 FilmicToneMap(const float3 hdr, const float whitepoint) //!! test/experim
     return vf.rgb/vf.aaa;
 }
 
+float3 FilmicToneMap2(const float3 texColor) //!! test/experimental
+{
+   const float3 x = max(0.,texColor-0.004); // Filmic Curve
+   return (x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06);
+}
+
+
+
 // RGBM/RGBD
 
 float3 DecodeRGBM(const float4 rgbm)

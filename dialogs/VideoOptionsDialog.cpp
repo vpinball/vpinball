@@ -143,17 +143,17 @@ BOOL VideoOptionsDialog::OnInitDialog()
    {
       SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
       HWND controlHwnd = GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd();
-      AddToolTip("Activate this if you get the corresponding error message on table start", hwndDlg, toolTipHwnd, controlHwnd);
+      AddToolTip("Activate this if you get the corresponding error message on table start, or if you experience rendering problems.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_TEX_COMPRESS).GetHwnd();
-      AddToolTip("This saves memory on your graphics card but harms quality of the textures", hwndDlg, toolTipHwnd, controlHwnd);
+      AddToolTip("This saves memory on your graphics card but harms quality of the textures.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_DISABLE_DWM).GetHwnd();
       AddToolTip("Disable Windows Desktop Composition (only works on Windows Vista and Windows 7 systems).\r\nMay reduce lag and improve performance on some setups.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_SOFTWARE_VP).GetHwnd();
-      AddToolTip("Activate this if you have issues using an Intel graphics chip", hwndDlg, toolTipHwnd, controlHwnd);
+      AddToolTip("Activate this if you have issues using an Intel graphics chip.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_ADAPTIVE_VSYNC).GetHwnd();
       AddToolTip("1-activates VSYNC for every frame (avoids tearing)\r\n2-adaptive VSYNC, waits only for fast frames (e.g. over 60fps)\r\nor set it to e.g. 60 or 120 to limit the fps to that value (energy saving/less heat)", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_MAX_PRE_FRAMES).GetHwnd();
-      AddToolTip("Experiment with 1 or 2 for a chance of lag reduction at the price of a bit of performance", hwndDlg, toolTipHwnd, controlHwnd);
+      AddToolTip("Experiment with 1 or 2 for a chance of lag reduction at the price of a bit of performance.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_StretchMonitor).GetHwnd();
       AddToolTip("If played in cabinet mode and you get an egg shaped ball activate this.\r\nFor screen ratios other than 16:9 you may have to adjust the offsets.\r\nNormally you have to set the Y offset (around 1.5) but you have to experiment.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_NUDGE_STRENGTH).GetHwnd();
