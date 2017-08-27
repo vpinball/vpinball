@@ -339,9 +339,6 @@
     <None Include="res\ball.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="bin00001.bin">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\bumper.rgs">
       <Filter>Resource Files</Filter>
     </None>
@@ -420,18 +417,6 @@
     <None Include="res\vpinball.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\flipper.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\light.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\timer.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\trigger.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\kicker.rgs">
       <Filter>Resource Files</Filter>
     </None>
@@ -462,28 +447,16 @@
     <None Include="res\ramp.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="registry.bin">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\spinner.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\play.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\sunburst.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\sunburst2.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\surface.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\table.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="target.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\textbox.rgs">
@@ -495,9 +468,6 @@
     <None Include="res\toolbar.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="toolbardebug.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\trigger.rgs">
       <Filter>Resource Files</Filter>
     </None>
@@ -507,16 +477,18 @@
     <None Include="res\light.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\white.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\flasher.cur">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\flasher.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\table.vpx" />
+    <None Include="res\blankTable.vpx">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\exampleTable.vpx">
+      <Filter>Resource Files</Filter>
+    </None>
     <None Include="res\rubber.cur">
       <Filter>Resource Files</Filter>
     </None>

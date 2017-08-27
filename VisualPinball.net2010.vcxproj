@@ -6788,7 +6788,6 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <None Include="res\AOdither.bmp" />
     <None Include="res\ball.rgs" />
     <None Include="res\ball.bmp" />
-    <None Include="bin00001.bin" />
     <None Include="res\bumper.rgs" />
     <None Include="res\chevron.bmp" />
     <None Include="res\comcontrol.rgs" />
@@ -6819,10 +6818,6 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <None Include="res\gate.rgs" />
     <None Include="res\script.ico" />
     <None Include="res\vpinball.ico" />
-    <None Include="res\flipper.bmp" />
-    <None Include="res\light.bmp" />
-    <None Include="res\timer.bmp" />
-    <None Include="res\trigger.bmp" />
     <None Include="res\kicker.rgs" />
     <None Include="res\light.rgs" />
     <None Include="res\lightseq.rgs" />
@@ -6833,11 +6828,8 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <None Include="res\plunger.rgs" />
     <None Include="res\primitive.rgs" />
     <None Include="res\ramp.rgs" />
-    <None Include="registry.bin" />
     <None Include="res\spinner.rgs" />
     <None Include="res\play.ico" />
-    <None Include="res\sunburst.bmp" />
-    <None Include="res\sunburst2.bmp" />
     <None Include="res\surface.rgs" />
     <None Include="res\table.ico" />
     <CustomBuild Include="shader\BallShader.fx">
@@ -6906,16 +6898,14 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <None Include="shader\FXAAStereoAO.fxh" />
     <None Include="shader\Helpers.fxh" />
     <None Include="shader\Material.fxh" />
-    <None Include="target.bmp" />
     <None Include="res\textbox.rgs" />
     <None Include="res\timer.rgs" />
     <None Include="res\toolbar.bmp" />
-    <None Include="toolbardebug.bmp" />
     <None Include="res\trigger.rgs" />
     <None Include="res\vpinball.rgs" />
     <None Include="res\light.cur" />
-    <None Include="res\white.bmp" />
-    <None Include="res\table.vpx" />
+    <None Include="res\blankTable.vpx" />
+    <None Include="res\exampleTable.vpx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ballex.h" />
