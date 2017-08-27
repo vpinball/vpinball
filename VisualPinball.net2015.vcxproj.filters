@@ -209,9 +209,6 @@
     <None Include="res\vpinball.rgs">
       <Filter>res</Filter>
     </None>
-    <None Include="res\table.vpx">
-      <Filter>res</Filter>
-    </None>
     <None Include="res\hittarget.rgs">
       <Filter>res</Filter>
     </None>
@@ -343,6 +340,12 @@
     </None>
     <None Include="shader\Helpers.fxh">
       <Filter>shaders</Filter>
+    </None>
+    <None Include="res\blankTable.vpx">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\exampleTable.vpx">
+      <Filter>res</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
