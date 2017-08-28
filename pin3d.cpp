@@ -647,6 +647,7 @@ void Pin3D::InitLayout(const bool FSS_mode)
    }
 
    inclination += inc; // added this to inclination in radians
+   inclination = fmaxf(inclination, 0.00666f); //!! magic clamp, otherwise kicker holes are missing for inclination ~0
 
    m_proj.FitCameraToVertices(vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
 
