@@ -463,7 +463,7 @@ void Pin3D::InitLights()
 //   mat.Multiply( trans, mat );
 //}
 
-Matrix3D ComputeLaybackTransform(float layback)
+Matrix3D ComputeLaybackTransform(const float layback)
 {
    // skew the coordinate system from kartesian to non kartesian.
    Matrix3D matTrans;
@@ -647,7 +647,6 @@ void Pin3D::InitLayout(const bool FSS_mode)
    }
 
    inclination += inc; // added this to inclination in radians
-   inclination = fmaxf(inclination, 0.00666f); //!! magic clamp, otherwise kicker holes are missing for inclination ~0
 
    m_proj.FitCameraToVertices(vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
 
@@ -673,6 +672,8 @@ void Pin3D::InitLayout(const bool FSS_mode)
 
    // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
    m_proj.ComputeNearFarPlane(vvertex3D);
+   if (fabsf(inclination) < 0.0075f) //!! magic threshold, otherwise kicker holes are missing for inclination ~0
+      m_proj.m_rzfar += 10.f;
    D3DXMATRIX proj;
    D3DXMatrixPerspectiveFovLH(&proj, ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
    memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
@@ -923,7 +924,7 @@ void PinProjection::FitCameraToVerticesFS(std::vector<Vertex3Ds>& pvvertex3D, fl
    float maxxintercept = -FLT_MAX;
    float minxintercept = FLT_MAX;
 
-   Matrix3D laybackTrans = ComputeLaybackTransform(layback);
+   const Matrix3D laybackTrans = ComputeLaybackTransform(layback);
 
    for (size_t i = 0; i < pvvertex3D.size(); ++i)
    {
