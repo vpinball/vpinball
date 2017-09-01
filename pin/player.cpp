@@ -105,6 +105,13 @@ static pGPI GetPointerInfo = NULL;
 
 #define GET_POINTERID_WPARAM(wParam) (LOWORD (wParam))
 
+#define SM_MAXIMUMTOUCHES 95
+
+typedef BOOL(WINAPI *pUnregisterTouchWindow)(HWND hWnd);
+static pUnregisterTouchWindow UnregisterTouchWindow = NULL;
+
+//
+
 const RECT touchregion[8] = { //left,top,right,bottom (in % of screen)
 {0,0,50,10},      // ExtraBall
 {0,10,50,50},     // 2nd Left Button
@@ -1349,6 +1356,14 @@ void Player::InitWindow()
 
         m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
+   m_supportsTouch = (GetSystemMetrics(SM_MAXIMUMTOUCHES) != 0);
+
+   // we do not want to handle WM_TOUCH
+   if (!UnregisterTouchWindow)
+      UnregisterTouchWindow = (pUnregisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "UnregisterTouchWindow");
+   if (UnregisterTouchWindow)
+      UnregisterTouchWindow(m_hwnd);
+
    // Disable visual feedback for touch, this saves one frame of latency on touchdisplays
    if (!SetWindowFeedbackSetting)
 	   SetWindowFeedbackSetting = (pSWFS)GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
@@ -2457,6 +2472,19 @@ void Player::Render()
     m_vballDelete.clear();
 
         m_firstFrame = false;
+
+    if (m_supportsTouch && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
+    {
+        HDC hdcNull = GetDC(NULL);
+        char szFoo[256];
+
+        int len2 = sprintf_s(szFoo, "You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger");
+        TextOut(hdcNull, 10, 10, szFoo, len2);
+        len2 = sprintf_s(szFoo, "lower left/right for Flippers, upper left/right for Magna buttons, top left for Extra button and (hold) top right to Exit");
+        TextOut(hdcNull, 10, 30, szFoo, len2);
+
+        //!! visualize with real buttons or at least the areas??
+    }
 
 #ifdef FPS
     if (m_fShowFPS)
