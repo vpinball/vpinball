@@ -406,6 +406,7 @@ private:
 	int m_pauseRefCount;
 
 	bool m_fPseudoPause;		// Nothing is moving, but we're still redrawing
+	bool m_supportsTouch;
 
 #ifdef ULTRAPIN
 	U32 m_LastUpdateTime[LIGHTHACK_MAX];
