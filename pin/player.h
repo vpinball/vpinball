@@ -535,6 +535,8 @@ private:
 
    bool m_fPseudoPause;		// Nothing is moving, but we're still redrawing
 
+   bool m_supportsTouch;    // Display is a touchscreen?
+
 #ifdef LOG
    FILE *m_flog;
    int m_timestamp;
