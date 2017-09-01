@@ -3781,7 +3781,7 @@ void Player::UpdateHUD()
 		DebugPrint(m_width / 2 - 320, 10, szFoo, (int)strlen(szFoo), true);
 	}
 
-	if (m_supportsTouch && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
+	if (!m_fCloseDown && m_supportsTouch && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
 	{
 		char szFoo[256];
 		int len2 = sprintf_s(szFoo, "You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger");
