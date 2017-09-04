@@ -84,7 +84,11 @@ BOOL SearchSelectDialog::OnInitDialog()
    Update();
    SortItems(0);
    LoadPosition();
-   return TRUE;
+   SetFocus();
+   ListView_SetItemState(hElementList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+   ListView_EnsureVisible(hElementList, 0, false);
+   GotoDlgCtrl(hElementList);
+   return FALSE;
 
 }
 

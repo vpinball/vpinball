@@ -103,8 +103,9 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          char textBuf[16];
          strcpy_s(textBuf, "128");
          SetDlgItemText(IDC_ALPHA_MASK_EDIT, textBuf);
-
-         return TRUE;
+         ListView_SetItemState(hListView, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+         GotoDlgCtrl(hListView);
+         return FALSE;
       }
       case GET_COLOR_TABLE:
       {
