@@ -93,7 +93,9 @@ BOOL SoundDialog::OnInitDialog()
 	if (pt)
 		pt->ListSounds(hSoundList);
 
-    return TRUE;
+   ListView_SetItemState(hSoundList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+   GotoDlgCtrl(hSoundList);
+   return FALSE;
 }
 
 INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )

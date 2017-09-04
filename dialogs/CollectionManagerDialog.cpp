@@ -38,8 +38,9 @@ BOOL CollectionManagerDialog::OnInitDialog()
     ListView_InsertColumn(hListHwnd, 0, &lvcol);
     
     pt->ListCollections(hListHwnd);
-
-    return TRUE;
+    ListView_SetItemState(hListHwnd, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+    GotoDlgCtrl(hListHwnd);
+    return FALSE;
 }
 
 
