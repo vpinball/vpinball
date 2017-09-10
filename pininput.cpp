@@ -763,12 +763,12 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
          g_pplayer->UpdateBackdropSettings(true);
          m_keyPressedState[eRightFlipperKey] = true;
       }
-      else if (mkey == g_pplayer->m_rgKeys[eLeftTiltKey] && dispid == DISPID_GameEvents_KeyDown)
+      else if (mkey == g_pplayer->m_rgKeys[eLeftTiltKey] && dispid == DISPID_GameEvents_KeyDown && m_enableCameraModeFlyAround)
       {
          g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] -= 1.0f;
          m_keyPressedState[eLeftTiltKey] = true;
       }
-      else if (mkey == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyDown)
+      else if (mkey == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyDown && m_enableCameraModeFlyAround)
       {
          g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] += 1.0f;
          m_keyPressedState[eRightTiltKey] = true;
@@ -1599,10 +1599,13 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                g_pplayer->UpdateBackdropSettings(false);
            if (m_keyPressedState[eRightFlipperKey])
                g_pplayer->UpdateBackdropSettings(true);
-           if (m_keyPressedState[eLeftTiltKey])
-               g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] -= 1.0f;
-           if (m_keyPressedState[eRightTiltKey])
-               g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] += 1.0f;
+           if (m_enableCameraModeFlyAround)
+           {
+              if (m_keyPressedState[eLeftTiltKey])
+                 g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] -= 1.0f;
+              if (m_keyPressedState[eRightTiltKey])
+                 g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] += 1.0f;
+           }
          }
 
          return;
