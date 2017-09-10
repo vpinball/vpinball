@@ -170,6 +170,7 @@ void Bumper::WriteRegDefaults()
 {
    SetRegValueFloat("DefaultProps\\Bumper", "Radius", m_d.m_radius);
    SetRegValueFloat("DefaultProps\\Bumper", "Force", m_d.m_force);
+   SetRegValueFloat("DefaultProps\\Bumper", "Scatter", m_d.m_scatter);
    SetRegValueFloat("DefaultProps\\Bumper", "HeightScale", m_d.m_heightScale);
    SetRegValueFloat("DefaultProps\\Bumper", "RingSpeed", m_d.m_ringSpeed);
    SetRegValueFloat("DefaultProps\\Bumper", "Orientation", m_d.m_orientation);
@@ -308,6 +309,7 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
    phitcircle->m_pfe = NULL;
    phitcircle->m_bumperanim.m_fHitEvent = m_d.m_fHitEvent;
    phitcircle->m_fEnabled = m_d.m_fCollidable;
+   phitcircle->m_scatter = m_d.m_scatter;
 
    phitcircle->m_pbumper = this;
 
@@ -862,6 +864,7 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteFloat(FID(THRS), m_d.m_threshold);
    bw.WriteFloat(FID(FORC), m_d.m_force);
+   bw.WriteFloat(FID(BSCT), m_d.m_scatter);
    bw.WriteFloat(FID(HISC), m_d.m_heightScale);
    bw.WriteFloat(FID(RISP), m_d.m_ringSpeed);
    bw.WriteFloat(FID(ORIN), m_d.m_orientation);
@@ -945,6 +948,10 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(FORC))
    {
       pbr->GetFloat(&m_d.m_force);
+   }
+   else if (id == FID(BSCT))
+   {
+      pbr->GetFloat(&m_d.m_scatter);
    }
    else if (id == FID(HISC))
    {
@@ -1049,6 +1056,24 @@ STDMETHODIMP Bumper::put_Force(float newVal)
    STARTUNDO
 
       m_d.m_force = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP Bumper::get_Scatter(float *pVal)
+{
+   *pVal = m_d.m_scatter;
+
+   return S_OK;
+}
+
+STDMETHODIMP Bumper::put_Scatter(float newVal)
+{
+   STARTUNDO
+
+      m_d.m_scatter = newVal;
 
    STOPUNDO
 
@@ -1446,4 +1471,6 @@ void Bumper::SetDefaultPhysics(bool fromMouseClick)
    hr = GetRegStringAsFloat("DefaultProps\\Bumper", "Force", &fTmp);
    m_d.m_force = (hr == S_OK) && fromMouseClick ? fTmp : 15;
 
+   hr = GetRegStringAsFloat("DefaultProps\\Bumper", "Scatter", &fTmp);
+   m_d.m_scatter = (hr == S_OK) && fromMouseClick ? fTmp : 0;
 }

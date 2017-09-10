@@ -14,6 +14,7 @@ public:
    float m_radius;
    float m_threshold; // speed at which ball needs to hit to register a hit
    float m_force; // force the bumper kicks back with
+   float m_scatter;
    float m_heightScale;
    float m_orientation;
    float m_ringSpeed;
@@ -199,6 +200,8 @@ public:
    STDMETHOD(put_SkirtVisible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
    STDMETHOD(PlayHit)();
 };
 

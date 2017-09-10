@@ -1268,6 +1268,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(111), helpstring("property Collidable")] HRESULT Collidable([in] VARIANT_BOOL newVal);
                 [propget, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([in] VARIANT_BOOL newVal);
+                [propget, id(112), helpstring("property Scatter")] HRESULT Scatter([out, retval] float *pVal);
+                [propput, id(112), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
                 [id(999), helpstring("method PlayHit")] HRESULT PlayHit();
         };
 

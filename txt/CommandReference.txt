@@ -244,6 +244,7 @@ RingSpeed(float)
 *Surface(string)
 Force(float)
 Threshold(float)
+Scatter(float)
 TimerEnabled(bool)
 TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 UserValue(any) - can store any user defined value for re-use later-on
