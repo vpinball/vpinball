@@ -10,10 +10,10 @@ typedef struct _tagSORTDATA
 }SORTDATA;
 
 extern SORTDATA SortData;
-extern int columnSortOrder[4];
 extern int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption);
 
 static CollectionDialogStruct cds;
+int CollectionManagerDialog::m_columnSortOrder;
 
 CollectionManagerDialog::CollectionManagerDialog() : CDialog(IDD_COLLECTDIALOG)
 {
@@ -26,6 +26,7 @@ BOOL CollectionManagerDialog::OnInitDialog()
 
     hListHwnd = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
+    m_columnSortOrder = 1;
     LoadPosition();
 
     ListView_SetExtendedListViewStyle(hListHwnd, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
@@ -86,13 +87,13 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                 if(lpnmListView->hdr.code == LVN_COLUMNCLICK)
                 {
                     const int columnNumber = lpnmListView->iSubItem;
-                    if(columnSortOrder[columnNumber] == 1)
-                        columnSortOrder[columnNumber] = 0;
+                    if(m_columnSortOrder == 1)
+                       m_columnSortOrder = 0;
                     else
-                        columnSortOrder[columnNumber] = 1;
+                       m_columnSortOrder = 1;
                     SortData.hwndList = hListHwnd;
                     SortData.subItemIndex = columnNumber;
-                    SortData.sortUpDown = columnSortOrder[columnNumber];
+                    SortData.sortUpDown = m_columnSortOrder;
                     ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
                 }
             }

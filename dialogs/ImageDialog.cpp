@@ -11,12 +11,13 @@ typedef struct _tagSORTDATA
 }SORTDATA;
 
 extern SORTDATA SortData;
-extern int columnSortOrder[4];
 extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption );
 extern int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption);
+int ImageDialog::m_columnSortOrder;
 
 ImageDialog::ImageDialog() : CDialog(IDD_IMAGEDIALOG)
 {
+   m_columnSortOrder = 1;
 }
 
 ImageDialog::~ImageDialog()
@@ -36,8 +37,9 @@ void ImageDialog::OnClose()
 }
 
 BOOL ImageDialog::OnInitDialog()
-{    
-    return TRUE;
+{   
+   m_columnSortOrder = 1;
+   return TRUE;
 }
 
 INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -122,13 +124,13 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
             {
                const int columnNumber = lpnmListView->iSubItem;
-               if (columnSortOrder[columnNumber] == 1)
-                  columnSortOrder[columnNumber] = 0;
+               if (m_columnSortOrder == 1)
+                  m_columnSortOrder = 0;
                else
-                  columnSortOrder[columnNumber] = 1;
+                  m_columnSortOrder = 1;
                SortData.hwndList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
                SortData.subItemIndex = columnNumber;
-               SortData.sortUpDown = columnSortOrder[columnNumber];
+               SortData.sortUpDown = m_columnSortOrder;
                if(columnNumber==4)
                    ListView_SortItems(SortData.hwndList, MyCompProcIntValues, &SortData);
                else
