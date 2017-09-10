@@ -10,12 +10,19 @@ typedef struct _tagSORTDATA
 }SORTDATA;
 
 extern SORTDATA SortData;
-extern int columnSortOrder[4];
 extern int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption);
+
+bool SearchSelectDialog::m_switchSortOrder;
+int SearchSelectDialog::m_columnSortOrder;
+int SearchSelectDialog::m_lastSortColumn;
 
 SearchSelectDialog::SearchSelectDialog() : CDialog(IDD_SEARCH_SELECT_ELEMENT)
 {
     hElementList = NULL;
+    
+    m_switchSortOrder = false;
+    m_columnSortOrder = 1;
+    m_lastSortColumn = 0;
 }
 
 void SearchSelectDialog::Update()
@@ -77,6 +84,8 @@ BOOL SearchSelectDialog::OnInitDialog()
    hElementList = GetDlgItem(IDC_ELEMENT_LIST).GetHwnd();
    curTable = (CCO(PinTable) *)g_pvp->GetActiveTable();
 
+   m_switchSortOrder = false;
+
    m_resizer.Initialize(*this, CRect(0, 0, 650, 400));
    m_resizer.AddChild(GetDlgItem(IDC_ELEMENT_LIST).GetHwnd(), topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
    m_resizer.AddChild(GetDlgItem(IDOK).GetHwnd(), bottomleft, 0);
@@ -116,14 +125,20 @@ void SearchSelectDialog::SelectElement()
 
 void SearchSelectDialog::SortItems(const int columnNumber)
 {
-    if(columnSortOrder[columnNumber] == 1)
-        columnSortOrder[columnNumber] = 0;
-    else
-        columnSortOrder[columnNumber] = 1;
-    SortData.hwndList = hElementList;
-    SortData.subItemIndex = columnNumber;
-    SortData.sortUpDown = columnSortOrder[columnNumber];
-    ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
+   if (m_switchSortOrder)
+   {
+      if (m_columnSortOrder == 1)
+         m_columnSortOrder = 0;
+      else
+         m_columnSortOrder = 1;
+   }
+
+   SortData.hwndList = hElementList;
+   SortData.subItemIndex = (m_switchSortOrder==true) ? columnNumber: m_lastSortColumn;
+   m_lastSortColumn = columnNumber;
+   SortData.sortUpDown = m_columnSortOrder;
+   ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
+   m_switchSortOrder = true;
 }
 
 INT_PTR SearchSelectDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)

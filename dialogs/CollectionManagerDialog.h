@@ -27,6 +27,7 @@ private:
     void SavePosition();
 
     HWND hListHwnd;
+    static int m_columnSortOrder;
 };
 
 class CollectionDialog : public CDialog

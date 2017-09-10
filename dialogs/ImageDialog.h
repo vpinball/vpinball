@@ -28,6 +28,7 @@ private:
    void LoadPosition();
    void SavePosition();
    void UpdateImages();
+   static int m_columnSortOrder;
 };
 
 #endif // !H_IMAGE_DIALOG

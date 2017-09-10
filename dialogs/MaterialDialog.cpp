@@ -18,9 +18,9 @@ typedef struct _tagSORTDATA
 }SORTDATA;
 
 extern SORTDATA SortData;
-extern int columnSortOrder[4];
 extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption );
 
+int MaterialDialog::m_columnSortOrder;
 void MaterialDialog::DisableAllMaterialDialogItems()
 {
     ::EnableWindow(GetDlgItem( IDC_DIFFUSE_CHECK ).GetHwnd(), FALSE);
@@ -81,6 +81,7 @@ BOOL MaterialDialog::OnInitDialog()
    m_hMaterialList = GetDlgItem(IDC_MATERIAL_LIST).GetHwnd();
    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
 
+   m_columnSortOrder = 1;
    m_resizer.Initialize(*this, CRect(0, 0, 500, 600));
    m_resizer.AddChild(m_hMaterialList, topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
    m_resizer.AddChild(GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd(), topright, 0);
@@ -480,13 +481,13 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
             {
                const int columnNumber = lpnmListView->iSubItem;
-               if (columnSortOrder[columnNumber] == 1)
-                  columnSortOrder[columnNumber] = 0;
+               if (m_columnSortOrder == 1)
+                  m_columnSortOrder = 0;
                else
-                  columnSortOrder[columnNumber] = 1;
+                  m_columnSortOrder = 1;
                SortData.hwndList = m_hMaterialList;
                SortData.subItemIndex = columnNumber;
-               SortData.sortUpDown = columnSortOrder[columnNumber];
+               SortData.sortUpDown = m_columnSortOrder;
                ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
             }
          }
