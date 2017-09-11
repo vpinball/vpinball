@@ -79,6 +79,8 @@
 
 //
 
+#define _WINSOCKAPI_ // workaround some issue where windows.h is included before winsock2.h in some of the various includes
+
 #if !defined(AFX_STDAFX_H__35BEBBA5_0A4C_4321_A65C_AFFE89589F15__INCLUDED_)
 #define AFX_STDAFX_H__35BEBBA5_0A4C_4321_A65C_AFFE89589F15__INCLUDED_
 
