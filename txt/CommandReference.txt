@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.4:
+- add Scatter to the bumper element
 - add BlendDisableLightingFromBelow to the primitive element
 - add WindowWidth and WindowHeight to globals
 - document missing LoadValue and SaveValue global call
@@ -244,7 +245,7 @@ RingSpeed(float)
 *Surface(string)
 Force(float)
 Threshold(float)
-Scatter(float)
+*Scatter(float)
 TimerEnabled(bool)
 TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 UserValue(any) - can store any user defined value for re-use later-on
@@ -367,7 +368,7 @@ ElasticityFalloff(float)
 Return(float)
 Mass(float)
 Strength(float)
-Scatter(float)
+*Scatter(float)
 OverridePhysics(int) - overrides the flipper physics settings with pre defined settings defined under Preferences -> Physics Options.
                        You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and
                        by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
@@ -593,7 +594,7 @@ Collidable(bool) - enables/disables collision detection, this can be used from w
 Elasticity(float)
 ElasticityFalloff(float)
 Friction(float) - 0..1 
-Scatter(float)
+*Scatter(float)
 *IsToy(bool) - disables collision handling and all physics preprocessing completely.
                It overwrites the Collidable-flag and can't be used from within the script.
                This option is useful if you have real toys or static primitives which are never hitable at all
@@ -639,7 +640,7 @@ Threshold(float) - hit threshold for firing the hit event
 Collidable(bool)
 Visible(bool)
 Friction(float) - 0..1
-Scatter(float)
+*Scatter(float)
 *ReflectionEnabled(bool) - default=true
 
 
@@ -732,7 +733,7 @@ SlingshotThreshold(float)
 *SlingshotAnimation(bool)
 *FlipbookAnimation(bool)
 Friction(float) - 0..1
-Scatter(float)
+*Scatter(float)
 *ReflectionEnabled(bool) - default=true
 DisableLighting(bool)
 BlendDisableLighting(float) - 0..1, same as DisableLighting, but can blend between the two extremes
@@ -815,7 +816,7 @@ Image(string) - texture name
 Elasticity(float)
 ElasticityFalloff(float)
 Friction(float) - 0..1
-Scatter(float)
+*Scatter(float)
 RotX(float)                 - angle to rotate the whole rubber around the X axis 
 RotY(float)                 - angle to rotate the whole rubber around the Y axis 
 RotZ(float)                 - angle to rotate the whole rubber around the Z axis 
@@ -841,7 +842,7 @@ Image(string) - texture name
 Elasticity(float)
 ElasticityFalloff(float)
 Friction(float) - 0..1
-Scatter(float)
+*Scatter(float)
 *Orientation(float)         - angle to rotate the whole target around the Z axis 
 *ReflectionEnabled(bool)    - default=true
 DisableLighting(bool)
