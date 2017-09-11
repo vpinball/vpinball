@@ -1071,14 +1071,14 @@ STDMETHODIMP Bumper::get_Scatter(float *pVal)
 
 STDMETHODIMP Bumper::put_Scatter(float newVal)
 {
-   STARTUNDO
-
-   m_d.m_scatter = newVal;
-
-   if (m_pbumperhitcircle)
+   /*if (m_pbumperhitcircle)
      m_pbumperhitcircle->m_scatter = ANGTORAD(m_d.m_scatter);
-
-   STOPUNDO
+   else*/
+   {
+     STARTUNDO
+     m_d.m_scatter = newVal;
+     STOPUNDO
+   }
 
    return S_OK;
 }
