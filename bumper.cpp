@@ -1073,11 +1073,14 @@ STDMETHODIMP Bumper::put_Scatter(float newVal)
 {
    STARTUNDO
 
-      m_d.m_scatter = newVal;
+   m_d.m_scatter = newVal;
+
+   if (m_pbumperhitcircle)
+     m_pbumperhitcircle->m_scatter = m_d.m_scatter;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_HeightScale(float *pVal)
