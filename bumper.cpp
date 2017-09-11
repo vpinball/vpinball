@@ -309,7 +309,7 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
    phitcircle->m_pfe = NULL;
    phitcircle->m_bumperanim.m_fHitEvent = m_d.m_fHitEvent;
    phitcircle->m_fEnabled = m_d.m_fCollidable;
-   phitcircle->m_scatter = m_d.m_scatter;
+   phitcircle->m_scatter = ANGTORAD(m_d.m_scatter);
 
    phitcircle->m_pbumper = this;
 
@@ -1076,7 +1076,7 @@ STDMETHODIMP Bumper::put_Scatter(float newVal)
    m_d.m_scatter = newVal;
 
    if (m_pbumperhitcircle)
-     m_pbumperhitcircle->m_scatter = m_d.m_scatter;
+     m_pbumperhitcircle->m_scatter = ANGTORAD(m_d.m_scatter);
 
    STOPUNDO
 
