@@ -106,6 +106,10 @@ static pGPI GetPointerInfo = NULL;
 
 #define GET_POINTERID_WPARAM(wParam) (LOWORD (wParam))
 
+#define NID_READY 0x00000080
+#define NID_MULTI_INPUT 0x00000040
+
+#define SM_DIGITIZER 94
 #define SM_MAXIMUMTOUCHES 95
 
 typedef BOOL(WINAPI *pUnregisterTouchWindow)(HWND hWnd);
@@ -2134,7 +2138,9 @@ void Player::InitWindow()
    #pragma message ( "Warning: Missing LockSetForegroundWindow()" )
 #endif
 
-   m_supportsTouch = (GetSystemMetrics(SM_MAXIMUMTOUCHES) != 0);
+   // Check for Touch support
+   m_supportsTouch = ((GetSystemMetrics(SM_DIGITIZER) & NID_READY) != 0) && ((GetSystemMetrics(SM_DIGITIZER) & NID_MULTI_INPUT) != 0)
+                   && (GetSystemMetrics(SM_MAXIMUMTOUCHES) != 0);
 
 #if 1 // we do not want to handle WM_TOUCH
    if (!UnregisterTouchWindow)
@@ -3778,16 +3784,16 @@ void Player::UpdateHUD()
 	{
 		char szFoo[256];
 		const int len2 = sprintf_s(szFoo, "3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on");
-		DebugPrint(m_width / 2 - 320, 10, szFoo, (int)strlen(szFoo), true);
+		DebugPrint(m_width / 2 - 320, 10, szFoo, len2, true);
 	}
 
 	if (!m_fCloseDown && m_supportsTouch && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
 	{
 		char szFoo[256];
 		int len2 = sprintf_s(szFoo, "You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger");
-		DebugPrint(m_width / 2 - 440, 40, szFoo, (int)strlen(szFoo), true);
+		DebugPrint(m_width / 2 - 440, 40, szFoo, len2, true);
 		len2 = sprintf_s(szFoo, "lower left/right for Flippers, upper left/right for Magna buttons, top left for Extra button and (hold) top right to Exit");
-		DebugPrint(m_width / 2 - 440, 70, szFoo, (int)strlen(szFoo), true);
+		DebugPrint(m_width / 2 - 440, 70, szFoo, len2, true);
 
 		//!! visualize with real buttons or at least the areas??
 	}
