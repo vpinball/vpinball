@@ -524,15 +524,17 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create render buffer!", hr, __FILE__, __LINE__);
 
-   const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-   if (g_pplayer->m_ptable->m_fReflectElementsOnPlayfield || drawBallReflection)
+   if(g_pplayer != NULL)
    {
-      hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
-         D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorTmpBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
-      if (FAILED(hr))
-         ReportError("Fatal Error: unable to create reflection map!", hr, __FILE__, __LINE__);
+       const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
+       if(g_pplayer->m_ptable->m_fReflectElementsOnPlayfield || drawBallReflection)
+       {
+           hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
+                                            D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorTmpBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
+           if(FAILED(hr))
+               ReportError("Fatal Error: unable to create reflection map!", hr, __FILE__, __LINE__);
+       }
    }
-
    // alloc bloom tex at 1/3 x 1/3 res (allows for simple HQ downscale of clipped input while saving memory)
    hr = m_pD3DDevice->CreateTexture(width / 3, height / 3, 1,
       D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomBufferTexture, NULL); //!! 8bit enough?
@@ -794,10 +796,12 @@ RenderDevice::~RenderDevice()
    SAFE_RELEASE(m_pOffscreenBackBufferTmpTexture);
    SAFE_RELEASE(m_pOffscreenBackBufferTmpTexture2);
 
-   const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-   if (g_pplayer->m_ptable->m_fReflectElementsOnPlayfield || drawBallReflection)
-      SAFE_RELEASE(m_pMirrorTmpBufferTexture);
-
+   if(g_pplayer)
+   {
+       const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
+       if(g_pplayer->m_ptable->m_fReflectElementsOnPlayfield || drawBallReflection)
+           SAFE_RELEASE(m_pMirrorTmpBufferTexture);
+   }
    SAFE_RELEASE(m_pBloomBufferTexture);
    SAFE_RELEASE(m_pBloomTmpBufferTexture);
    SAFE_RELEASE(m_pBackBuffer);
@@ -1368,7 +1372,7 @@ void RenderDevice::SetRenderState(const RenderStates p1, DWORD p2)
       renderStateCache[p1] = p2;
    }
 
-   if (p1 == CULLMODE && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled))
+   if (p1 == CULLMODE && (g_pplayer && (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->m_ptable->m_fReflectionEnabled)))
    {
       if (p2 == D3DCULL_CCW)
          p2 = D3DCULL_CW;
