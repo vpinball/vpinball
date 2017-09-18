@@ -1993,12 +1993,13 @@ bool CodeViewer::ParseOKLineLength(const int LineLen)
 }
 
 
+static int ParentLevel = 0;
+
 //false is a fail/syntax error
 bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 												const string &UCline, const string &line, const int Lineno)
 {
-	static int ParentLevel = 0;
-	static string CurrentParentKey = "";
+	string CurrentParentKey = "";
 	const int endIdx = SureFind(UCline,"END"); 
 	const int exitIdx = SureFind(UCline,"EXIT"); 
 	RemoveNonVBSChars( ud.KeyName );
@@ -2043,7 +2044,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 			}
 			return false;
 		}
-		//Its something new and structrual and therefore we are now a parent
+		//Its something new and structural and therefore we are now a parent
 		if (ParentLevel == 0)// its a root
 		{
 			ud.UniqueKey = lowerCase(ud.KeyName) + "\0";
@@ -2350,7 +2351,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
   char text[MAX_LINE_LENGTH];
    const int scriptLines = (int)SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
    SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
-	int ParentLevel = 0; //root
+	ParentLevel = 0; //root
 	ParentTreeInvalid = false;
 	for (int linecount = 0; linecount < scriptLines; ++linecount) 
    {
@@ -2465,9 +2466,9 @@ void CodeViewer::ParseVPCore()
 		  }
 	}
 	char text[MAX_LINE_LENGTH] = {};
-	//intalise Parent child
+	//initalise Parent child
 ///////////////////////
-	int ParentLevel = 0; //root
+	ParentLevel = 0; //root
 	StopErrorDisplay = true;/// WIP BRANDREW (was set to false)
 	ParentTreeInvalid = false;
 	int linecount = 0;
