@@ -752,7 +752,7 @@ public:
    bool  m_fReflectElementsOnPlayfield;
    bool  m_fReflectionEnabled;
 
-   vector<Material*> dbgChangedMaterials;
+   vector<Material*> m_dbgChangedMaterials;
 
    struct DebugLightData
    {
@@ -769,7 +769,7 @@ public:
        LightState lightstate;
    };
 
-   vector<DebugLightData*> dbgChangedLights;
+   vector<DebugLightData*> m_dbgChangedLights;
    float m_backupInclination;
    float m_backupFOV;
    float m_backupRotation;
