@@ -16,8 +16,8 @@ VP 10.4.0 Changelog
 
 - add (optional) legacy/VP9-like keyboard nudging code, can be enabled in the 'Keys, Nudge and DOF' preferences dialog
 
-- add internal/rudimentary GPU & table element profiling functionality (accessed as usual via the F11 statistics/debug display variants)
-  the normal statistics/debug display now features multiple modes, the first mode works as before,
+- add internal/rudimentary GPU & table element profiling functionality (accessed as usual via the F11 statistics/debug info display variants)
+  the normal statistics/debug info display now features multiple modes, the first mode works as before,
   the second features additional timings for each main rendering block (like timings for Ambient Occlusion, pure rendering of the table elements, playfield reflection, etc),
   the third one shows separate timings for each table element type(s), which is only approximate though, as it can not render the table in exactly the same way
 
@@ -40,6 +40,8 @@ VP 10.4.0 Changelog
 - add tweaked ball rolling/collision PlaySound calls to the default table, to use the new surround/front_rear_fade parameter
 - extend all other PlaySound calls of the default table to use the respective elements X and Y position (on the table) for panning and front/rear fading
 - extend some PlaySound calls with DOF/Controller.vbs commands
+
+- fix duplicated functions in the script editor dropdown box (which also resulted in a lot of slowdown over time)
 
 - fix some uninitialized dialog state
 
