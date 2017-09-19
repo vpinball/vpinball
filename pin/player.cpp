@@ -3792,7 +3792,7 @@ void Player::UpdateHUD()
 		char szFoo[256];
 		int len2 = sprintf_s(szFoo, "You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger");
 		DebugPrint(m_width / 2 - 440, 40, szFoo, len2, true);
-		len2 = sprintf_s(szFoo, "lower left/right for Flippers, upper left/right for Magna buttons, top left for Coins and (hold) top right to Exit");
+		len2 = sprintf_s(szFoo, "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit");
 		DebugPrint(m_width / 2 - 440, 70, szFoo, len2, true);
 
 		//!! visualize with real buttons or at least the areas??
