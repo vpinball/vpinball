@@ -1459,8 +1459,8 @@ PinTable::PinTable()
    m_3DOffset = 0.0f;
    m_overwriteGlobalStereo3D = false;
 
-   dbgChangedMaterials.clear();
-   dbgChangedLights.clear();
+   m_dbgChangedMaterials.clear();
+   m_dbgChangedLights.clear();
 
 #ifdef UNUSED_TILT
    if ( FAILED(GetRegInt("Player", "JoltAmount", &m_jolt_amount) )
@@ -8293,9 +8293,9 @@ void PinTable::AddDbgMaterial(Material *pmat)
    bool alreadyIn = false;
    unsigned int i;
 
-   for (i = 0; i < dbgChangedMaterials.size(); i++)
+   for (i = 0; i < m_dbgChangedMaterials.size(); i++)
    {
-      if (strcmp(pmat->m_szName, dbgChangedMaterials[i]->m_szName) == 0)
+      if (strcmp(pmat->m_szName, m_dbgChangedMaterials[i]->m_szName) == 0)
       {
          alreadyIn = true;
          break;
@@ -8304,18 +8304,18 @@ void PinTable::AddDbgMaterial(Material *pmat)
       
    if (alreadyIn)
    {
-      dbgChangedMaterials[i]->m_bIsMetal = pmat->m_bIsMetal;
-      dbgChangedMaterials[i]->m_bOpacityActive = pmat->m_bOpacityActive;
-      dbgChangedMaterials[i]->m_cBase = pmat->m_cBase;
-      dbgChangedMaterials[i]->m_cClearcoat = pmat->m_cClearcoat;
-      dbgChangedMaterials[i]->m_cGlossy = pmat->m_cGlossy;
-      dbgChangedMaterials[i]->m_fEdge = pmat->m_fEdge;
-      dbgChangedMaterials[i]->m_fEdgeAlpha = pmat->m_fEdgeAlpha;
-      dbgChangedMaterials[i]->m_fOpacity = pmat->m_fOpacity;
-      dbgChangedMaterials[i]->m_fRoughness = pmat->m_fRoughness;
-      dbgChangedMaterials[i]->m_fGlossyImageLerp = pmat->m_fGlossyImageLerp;
-      dbgChangedMaterials[i]->m_fThickness = pmat->m_fThickness;
-      dbgChangedMaterials[i]->m_fWrapLighting = pmat->m_fWrapLighting;
+      m_dbgChangedMaterials[i]->m_bIsMetal = pmat->m_bIsMetal;
+      m_dbgChangedMaterials[i]->m_bOpacityActive = pmat->m_bOpacityActive;
+      m_dbgChangedMaterials[i]->m_cBase = pmat->m_cBase;
+      m_dbgChangedMaterials[i]->m_cClearcoat = pmat->m_cClearcoat;
+      m_dbgChangedMaterials[i]->m_cGlossy = pmat->m_cGlossy;
+      m_dbgChangedMaterials[i]->m_fEdge = pmat->m_fEdge;
+      m_dbgChangedMaterials[i]->m_fEdgeAlpha = pmat->m_fEdgeAlpha;
+      m_dbgChangedMaterials[i]->m_fOpacity = pmat->m_fOpacity;
+      m_dbgChangedMaterials[i]->m_fRoughness = pmat->m_fRoughness;
+      m_dbgChangedMaterials[i]->m_fGlossyImageLerp = pmat->m_fGlossyImageLerp;
+      m_dbgChangedMaterials[i]->m_fThickness = pmat->m_fThickness;
+      m_dbgChangedMaterials[i]->m_fWrapLighting = pmat->m_fWrapLighting;
    }
    else
    {
@@ -8333,16 +8333,16 @@ void PinTable::AddDbgMaterial(Material *pmat)
       newMat->m_fThickness = pmat->m_fThickness;
       newMat->m_fWrapLighting = pmat->m_fWrapLighting;
       strcpy_s(newMat->m_szName, pmat->m_szName);
-      dbgChangedMaterials.push_back(newMat);
+      m_dbgChangedMaterials.push_back(newMat);
    }
 }
 
 void PinTable::UpdateDbgMaterial(void)
 {
    bool somethingChanged = false;
-   for (unsigned int i = 0; i < dbgChangedMaterials.size();i++)
+   for (unsigned int i = 0; i < m_dbgChangedMaterials.size(); i++)
    {
-      const Material * const pmat = dbgChangedMaterials[i];
+      const Material * const pmat = m_dbgChangedMaterials[i];
       for (int t = 0; t < m_materials.Size(); t++)
       {
          if (strcmp(pmat->m_szName, m_materials.ElementAt(t)->m_szName) == 0)
@@ -8365,7 +8365,7 @@ void PinTable::UpdateDbgMaterial(void)
          }
       }
    }
-   dbgChangedMaterials.clear();
+   m_dbgChangedMaterials.clear();
    if (somethingChanged)
    {
       SetNonUndoableDirty(eSaveDirty);
@@ -8397,9 +8397,9 @@ void PinTable::AddDbgLight( Light *plight )
     unsigned int i;
     char *lightName = GetElementName( plight );
 
-    for(i = 0; i < dbgChangedMaterials.size(); i++)
+    for(i = 0; i < m_dbgChangedMaterials.size(); i++)
     {
-        if(strcmp( lightName, dbgChangedLights[i]->name) == 0)
+        if(strcmp( lightName, m_dbgChangedLights[i]->name) == 0)
         {
             alreadyIn = true;
             break;
@@ -8407,16 +8407,16 @@ void PinTable::AddDbgLight( Light *plight )
     }
     if(alreadyIn)
     {
-        dbgChangedLights[i]->color1 = plight->m_d.m_color;
-        dbgChangedLights[i]->color2 = plight->m_d.m_color2;
-        plight->get_BulbModulateVsAdd( &dbgChangedLights[i]->bulbModulateVsAdd );
-        plight->get_FadeSpeedDown( &dbgChangedLights[i]->fadeSpeedDown );
-        plight->get_FadeSpeedUp( &dbgChangedLights[i]->fadeSpeedUp );
-        plight->get_State( &dbgChangedLights[i]->lightstate );
-        plight->get_Falloff( &dbgChangedLights[i]->falloff );
-        plight->get_FalloffPower( &dbgChangedLights[i]->falloffPower );
-        plight->get_Intensity( &dbgChangedLights[i]->intensity );
-        plight->get_TransmissionScale( &dbgChangedLights[i]->transmissionScale );
+        m_dbgChangedLights[i]->color1 = plight->m_d.m_color;
+        m_dbgChangedLights[i]->color2 = plight->m_d.m_color2;
+        plight->get_BulbModulateVsAdd(&m_dbgChangedLights[i]->bulbModulateVsAdd);
+        plight->get_FadeSpeedDown(&m_dbgChangedLights[i]->fadeSpeedDown);
+        plight->get_FadeSpeedUp(&m_dbgChangedLights[i]->fadeSpeedUp);
+        plight->get_State(&m_dbgChangedLights[i]->lightstate);
+        plight->get_Falloff(&m_dbgChangedLights[i]->falloff);
+        plight->get_FalloffPower(&m_dbgChangedLights[i]->falloffPower);
+        plight->get_Intensity(&m_dbgChangedLights[i]->intensity);
+        plight->get_TransmissionScale(&m_dbgChangedLights[i]->transmissionScale);
     }
     else
     {
@@ -8432,16 +8432,16 @@ void PinTable::AddDbgLight( Light *plight )
         plight->get_Intensity( &data->intensity );
         plight->get_TransmissionScale( &data->transmissionScale );
         strcpy_s( data->name, lightName );
-        dbgChangedLights.push_back( data );
+        m_dbgChangedLights.push_back(data);
     }
 }
 
 void PinTable::UpdateDbgLight( void )
 {
     bool somethingChanged = false;
-    for(unsigned int i = 0; i < dbgChangedLights.size(); i++)
+    for(unsigned int i = 0; i < m_dbgChangedLights.size(); i++)
     {
-        DebugLightData *data = dbgChangedLights[i];
+        DebugLightData *data = m_dbgChangedLights[i];
         for(int t = 0; t < m_vedit.Size(); t++)
         {
             if(m_vedit.ElementAt( t )->GetItemType() == eItemLight)
@@ -8465,7 +8465,7 @@ void PinTable::UpdateDbgLight( void )
             }
         }
     }
-    dbgChangedLights.clear();
+    m_dbgChangedLights.clear();
     if(somethingChanged)
     {
         SetNonUndoableDirty( eSaveDirty );
