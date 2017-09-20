@@ -143,19 +143,19 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                   {
                      char value[256];
                      GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_BASE_WRAP_EDIT, value, 31);
-                     pMat->m_fWrapLighting = sz2f(value);
+                     pMat->m_fWrapLighting = saturate(sz2f(value));
                      GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_SHININESS_EDIT, value, 31);
-                     pMat->m_fRoughness = sz2f(value);
+                     pMat->m_fRoughness = saturate(sz2f(value));
                      GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_GLOSSY_IMGLERP_EDIT, value, 31);
-                     pMat->m_fGlossyImageLerp = sz2f(value);
+                     pMat->m_fGlossyImageLerp = saturate(sz2f(value));
                      GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_THICKNESS_EDIT, value, 31);
-                     pMat->m_fThickness = sz2f(value);
+                     pMat->m_fThickness = saturate(sz2f(value));
                      GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_EDGE_EDIT, value, 31);
-                     pMat->m_fEdge = sz2f(value);
+                     pMat->m_fEdge = saturate(sz2f(value));
                      GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_OPACITY_AMOUNT_EDIT, value, 31);
-                     pMat->m_fOpacity = sz2f(value);
+                     pMat->m_fOpacity = saturate(sz2f(value));
                      GetDlgItemText(hwndDlg, DBG_MATERIAL_OPACITY_EDGE_EDIT, value, 31);
-                     pMat->m_fEdgeAlpha = sz2f(value);
+                     pMat->m_fEdgeAlpha = saturate(sz2f(value));
                      size_t checked = SendDlgItemMessage(hwndDlg, IDC_DBG_METAL_MATERIAL_CHECK, BM_GETCHECK, 0, 0);
                      pMat->m_bIsMetal = (checked == 1);
                      checked = SendDlgItemMessage(hwndDlg, IDC_DBG_MATERIAL_OPACITY_ACTIVE_CHECK, BM_GETCHECK, 0, 0);

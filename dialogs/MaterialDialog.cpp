@@ -600,27 +600,27 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                if ((plistview->uNewState & LVIS_SELECTED) == 0)
                {
                   float fv;
-                  fv = getItemText(IDC_DIFFUSE_EDIT);
+                  fv = saturate(getItemText(IDC_DIFFUSE_EDIT));
                   if (pmat->m_fWrapLighting != fv)
                      pt->SetNonUndoableDirty(eSaveDirty);
                   pmat->m_fWrapLighting = fv;
-                  fv = getItemText(IDC_GLOSSY_EDIT);
+                  fv = saturate(getItemText(IDC_GLOSSY_EDIT));
                   if (pmat->m_fRoughness != fv)
                      pt->SetNonUndoableDirty(eSaveDirty);
                   pmat->m_fRoughness = fv;
-                  fv = getItemText(IDC_GLOSSY_IMGLERP_EDIT);
+                  fv = saturate(getItemText(IDC_GLOSSY_IMGLERP_EDIT));
                   if (pmat->m_fGlossyImageLerp != fv)
                      pt->SetNonUndoableDirty(eSaveDirty);
                   pmat->m_fGlossyImageLerp = fv;
-                  fv = getItemText(IDC_THICKNESS_EDIT);
+                  fv = saturate(getItemText(IDC_THICKNESS_EDIT));
                   if (pmat->m_fThickness != fv)
                      pt->SetNonUndoableDirty(eSaveDirty);
                   pmat->m_fThickness = fv;
-                  fv = getItemText(IDC_SPECULAR_EDIT);
+                  fv = saturate(getItemText(IDC_SPECULAR_EDIT));
                   if (pmat->m_fEdge != fv)
                      pt->SetNonUndoableDirty(eSaveDirty);
                   pmat->m_fEdge = fv;
-                  fv = getItemText(IDC_OPACITY_EDIT);
+                  fv = saturate(getItemText(IDC_OPACITY_EDIT));
                   if (pmat->m_fOpacity != fv)
                      pt->SetNonUndoableDirty(eSaveDirty);
                   pmat->m_fOpacity = fv;
@@ -632,7 +632,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   if (pmat->m_bOpacityActive != (checked == 1))
                      pt->SetNonUndoableDirty(eSaveDirty);
                   pmat->m_bOpacityActive = checked == 1;
-                  fv = getItemText(IDC_EDGEALPHA_EDIT);
+                  fv = saturate(getItemText(IDC_EDGEALPHA_EDIT));
                   if (pmat->m_fEdgeAlpha != fv)
                      pt->SetNonUndoableDirty(eSaveDirty);
                   pmat->m_fEdgeAlpha = fv;

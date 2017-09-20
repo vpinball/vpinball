@@ -48,12 +48,23 @@ __forceinline unsigned int max(const unsigned int x, const unsigned int y)
 }
 
 template <typename T>
-__forceinline T clamp(T x, T min, T max)
+__forceinline T clamp(const T x, const T min, const T max)
 {
    if (x < min)
       return min;
    else if (x > max)
       return max;
+   else
+      return x;
+}
+
+template <typename T>
+__forceinline T saturate(const T x)
+{
+   if (x < T(0))
+      return T(0);
+   else if (x > T(1))
+      return T(1);
    else
       return x;
 }
