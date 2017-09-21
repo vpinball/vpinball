@@ -105,6 +105,10 @@ static pGPI GetPointerInfo = NULL;
 
 #define GET_POINTERID_WPARAM(wParam) (LOWORD (wParam))
 
+#define NID_READY 0x00000080
+#define NID_MULTI_INPUT 0x00000040
+
+#define SM_DIGITIZER 94
 #define SM_MAXIMUMTOUCHES 95
 
 typedef BOOL(WINAPI *pUnregisterTouchWindow)(HWND hWnd);
@@ -1356,7 +1360,9 @@ void Player::InitWindow()
 
         m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
-   m_supportsTouch = (GetSystemMetrics(SM_MAXIMUMTOUCHES) != 0);
+   // Check for Touch support
+   m_supportsTouch = ((GetSystemMetrics(SM_DIGITIZER) & NID_READY) != 0) && ((GetSystemMetrics(SM_DIGITIZER) & NID_MULTI_INPUT) != 0)
+                   && (GetSystemMetrics(SM_MAXIMUMTOUCHES) != 0);
 
    // we do not want to handle WM_TOUCH
    if (!UnregisterTouchWindow)
@@ -2480,7 +2486,7 @@ void Player::Render()
 
         int len2 = sprintf_s(szFoo, "You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger");
         TextOut(hdcNull, 10, 10, szFoo, len2);
-        len2 = sprintf_s(szFoo, "lower left/right for Flippers, upper left/right for Magna buttons, top left for Extra button and (hold) top right to Exit");
+        len2 = sprintf_s(szFoo, "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit");
         TextOut(hdcNull, 10, 30, szFoo, len2);
 
         //!! visualize with real buttons or at least the areas??
