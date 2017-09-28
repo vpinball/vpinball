@@ -1765,6 +1765,9 @@ void LightSeq::SetAllLightsToState(const LightState State)
 
 void LightSeq::SetElementToState(const int index, const LightState State)
 {
+   if (m_pcollection->m_visel.size() == 0)
+      return;
+
    const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(index)->GetIEditable()->GetItemType();
    if (type == eItemLight)
    {
@@ -1776,7 +1779,7 @@ void LightSeq::SetElementToState(const int index, const LightState State)
 bool LightSeq::VerifyAndSetGridElement(const int x, const int y, const LightState State)
 {
    if (((x >= 0) && (x < m_lightSeqGridWidth)) &&
-      ((y >= 0) && (y < m_lightSeqGridHeight)))
+       ((y >= 0) && (y < m_lightSeqGridHeight)))
    {
       const int gridIndex = (y * m_lightSeqGridWidth) + x;
 
@@ -1798,6 +1801,9 @@ LightState LightSeq::GetElementState(const int index)
 {
    // just incase the element isn't a light
    LightState rc = LightStateOff;
+
+   if (m_pcollection->m_visel.size() == 0)
+      return rc;
 
    const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(index)->GetIEditable()->GetItemType();
    if (type == eItemLight)
