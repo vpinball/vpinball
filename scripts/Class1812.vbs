@@ -1,4 +1,5 @@
 'Last Updated in VBS v3.50
+'Similar to gts3.vbs except for some switches
 
 Option Explicit
 LoadCore
@@ -21,26 +22,30 @@ End Sub
 Const swCoin1       = 00
 Const swCoin2       = 01
 Const swCoin3       = 02
-Const swCoin4       = 03
+' Cabinet switches
+Const swStartButton = 03
+Const swLeftAdvance = 04
+Const swRightAdvance = 05
+Const swLRFlip      = 141 '06
+Const swLLFlip      = 143 '07
+
 Const swDiagnostic  = -8
 Const swTilt        = -7
 Const swSlamTilt    = -6
 
-Const swLRFlip = 141
-Const swLLFlip = 143
-
-
 ' Help window
-vpmSystemHelp = "Gottlieb System 3 keys" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
-  vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
-  vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3" & vbNewLine &_
-  vpmKeyName(keyInsertCoin4)  & vbTab & "Insert Coin #4" & vbNewLine &_
+vpmSystemHelp = "Class Of 1812 keys:" & vbNewLine &_
+  vpmKeyName(StartGameKey)  & vbTab & "Start Gane" & vbNewLine &_ 
+  vpmKeyName(keyInsertCoin1)  & vbTab & "Left Coin Chute" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2)  & vbTab & "Right Coin Chute" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3)  & vbTab & "Center Coin Chute" & vbNewLine &_
   vpmKeyName(keySelfTest)     & vbTab & "Diagnostic"     & vbNewLine &_
+  vpmKeyName(keyDown)  & vbTab & "Left Advance Button" & vbNewLine &_
+  vpmKeyName(keyUp)  & vbTab & "Right Advance Button" & vbNewLine &_
   vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
 
 ' Option Menu (No Dips)
-Private Sub gts3ShowDips
+Private Sub Class1812ShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
 		With vpmDips
@@ -50,7 +55,7 @@ Private Sub gts3ShowDips
 	End If
 	vpmDips.ViewDips
 End Sub
-Set vpmShowDips = GetRef("gts3ShowDips")
+Set vpmShowDips = GetRef("Class1812ShowDips")
 Private vpmDips
 
 ' Keyboard handlers
@@ -64,10 +69,11 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
-			Case keyInsertCoin4  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin4'" : Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keySelfTest     .Switch(swDiagnostic)  = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
+			Case keyDown         .Switch(swLeftAdvance) = True
+			Case keyUp           .Switch(swRightAdvance) = True
 			Case keyBangBack     vpmNudge.DoNudge   0,6
 			Case LeftTiltKey     vpmNudge.DoNudge  75,2
 			Case RightTiltKey    vpmNudge.DoNudge 285,2
@@ -86,6 +92,8 @@ Function vpmKeyUp(ByVal keycode)
 		Select Case keycode
 			Case RightFlipperKey .Switch(swLRFlip) = False
 			Case LeftFlipperKey  .Switch(swLLFlip) = False
+			Case keyDown         .Switch(swLeftAdvance) = False
+			Case keyUp           .Switch(swRightAdvance) = False
 			Case StartGameKey    .Switch(swStartButton) = False
 			Case keySelfTest     .Switch(swDiagnostic)  = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = False
