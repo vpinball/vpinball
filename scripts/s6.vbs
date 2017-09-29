@@ -6,7 +6,7 @@ Private Sub LoadCore
 	On Error Resume Next
 	If VPBuildVersion < 0 Or Err Then
 		Dim fso : Set fso = CreateObject("Scripting.FileSystemObject") : Err.Clear
-		ExecuteGlobal fso.OpenTextFile("core.vbs", 1).ReadAll    : If Err Then MsgBox "Can't open ""core.vbs"""    : Exit Sub
+		ExecuteGlobal fso.OpenTextFile("core.vbs", 1).ReadAll    : If Err Then MsgBox "Can't open ""core.vbs""" : Exit Sub
 		ExecuteGlobal fso.OpenTextFile("VPMKeys.vbs", 1).ReadAll : If Err Then MsgBox "Can't open ""vpmkeys.vbs""" : Exit Sub
 	Else
 		ExecuteGlobal GetTextFile("core.vbs")    : If Err Then MsgBox "Can't open ""core.vbs"""    : Exit Sub
@@ -14,9 +14,9 @@ Private Sub LoadCore
 	End If
 End Sub
 
-'-----------------------------------
-' S6 data
-'-----------------------------------
+'-------------------------
+' S6 Data
+'-------------------------
 ' Cabinet switches
 Const swAdvance      = -7
 Const swUpDown       = -6
@@ -72,9 +72,9 @@ Function vpmKeyDown(ByVal keycode)
 	On Error Resume Next
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
-		If keycode = RightFlipperKey Then .Switch(swLRFlip) = True
-		If keycode = LeftFlipperKey  Then .Switch(swLLFlip) = True
 		Select Case keycode
+			Case RightFlipperKey .Switch(swLRFlip) = True
+			Case LeftFlipperKey  .Switch(swLLFlip) = True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
@@ -101,9 +101,9 @@ Function vpmKeyUp(ByVal keycode)
 	On Error Resume Next
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
-		If keycode = RightFlipperKey Then .Switch(swLRFlip) = False
-		If keycode = LeftFlipperKey  Then .Switch(swLLFlip) = False
 		Select Case keycode
+			Case RightFlipperKey .Switch(swLRFlip) = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False
 			Case StartGameKey    .Switch(swStartButton)   = False
 			Case keyAdvance      .Switch(swAdvance)       = False
 			Case keyCPUDiag      .Switch(swCPUDiag)       = False
