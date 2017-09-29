@@ -69,9 +69,9 @@ Function vpmKeyDown(ByVal keycode)
 	On Error Resume Next
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
-		If keycode = RightFlipperKey Then .Switch(swLRFlip) = True
-		If keycode = LeftFlipperKey  Then .Switch(swLLFlip) = True
 		Select Case keycode
+			Case RightFlipperKey .Switch(swLRFlip) = True
+			Case LeftFlipperKey  .Switch(swLLFlip) = True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
@@ -95,9 +95,9 @@ Function vpmKeyUp(ByVal keycode)
 	On Error Resume Next
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
-		If keycode = RightFlipperKey Then .Switch(swLRFlip) = False
-		If keycode = LeftFlipperKey  Then .Switch(swLLFlip) = False
 		Select Case keycode
+			Case RightFlipperKey .Switch(swLRFlip) = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False
 			Case StartGameKey    .Switch(swStartButton) = False
 			Case keySelfTest     .Switch(swSelfTest)    = False
 			Case keyCPUDiag      .Switch(swCPUDiag)     = False
@@ -114,4 +114,3 @@ Function vpmKeyUp(ByVal keycode)
 		End Select
 	End With
 End Function
-
