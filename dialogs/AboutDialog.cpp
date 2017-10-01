@@ -7,7 +7,7 @@
 
 AboutDialog::AboutDialog() : CDialog(IDD_ABOUT)
 {
-
+   memset(urlString, 0, MAX_PATH);
 }
 
 AboutDialog::~AboutDialog()
@@ -93,7 +93,8 @@ BOOL AboutDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             HWND hwndTransURL = GetDlgItem(IDC_TRANSWEBSITE);
             LPCTSTR szSite;
             szSite = GetDlgItem(IDC_TRANSWEBSITE).GetWindowText();
-            hr = OpenURL((char*)szSite);
+            strncpy_s(urlString, szSite, MAX_PATH);
+            hr = OpenURL((char*)urlString);
          }
          return TRUE;
       }

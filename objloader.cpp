@@ -393,8 +393,8 @@ FILE* WaveFrontObj_ExportStart(const char *filename)
    FILE *f;
    char matName[MAX_PATH];
    char nameOnly[MAX_PATH] = { 0 };
-   int len = lstrlen(filename); 
-   int i;
+   unsigned int len = lstrlen(filename); 
+   unsigned int i;
 
    if ( len > MAX_PATH )
        len = MAX_PATH - 1;

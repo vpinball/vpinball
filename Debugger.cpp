@@ -123,8 +123,9 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                      pMat->m_cGlossy = (COLORREF)color;
                   else if (hwndcolor3 == (HWND)lParam)
                      pMat->m_cClearcoat = (COLORREF)color;
+
+                  ptable->AddDbgMaterial(pMat);
                }
-               ptable->AddDbgMaterial(pMat);
                break;
             }
             case BN_CLICKED:

@@ -180,6 +180,11 @@ public:
       m_buffers[m_curIdx]->unlock();
    }
 
+   FrameQueueLimiter()
+   {
+      m_curIdx = 0;
+   }
+
 private:
    std::vector<VertexBuffer*> m_buffers;
    size_t m_curIdx;

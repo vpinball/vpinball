@@ -18,6 +18,9 @@ Rubber::Rubber()
    memset(m_d.m_szMaterial, 0, 32);
    memset(m_d.m_szPhysicsMaterial, 0, 32);
    m_d.m_fOverwritePhysics=true;
+   m_ptable = NULL;
+   m_d.m_tdr.m_fTimerEnabled = false;
+   m_d.m_tdr.m_TimerInterval = 0;
 }
 
 Rubber::~Rubber()

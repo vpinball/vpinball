@@ -12,6 +12,13 @@ Flasher::Flasher()
    m_propVisual = NULL;
    memset(m_d.m_szImageA, 0, MAXTOKEN);
    memset(m_d.m_szImageB, 0, MAXTOKEN);
+   m_ptable = NULL;
+   numVertices = 0;
+   numPolys = 0;
+   minx = FLT_MAX;
+   maxx = FLT_MIN;
+   miny = FLT_MAX;
+   maxy = FLT_MIN;
 }
 
 Flasher::~Flasher()
