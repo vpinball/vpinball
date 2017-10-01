@@ -52,7 +52,6 @@ End Sub
 Set vpmShowDips = GetRef("CapcomShowDips")
 Private vpmDips
 
-
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
 	On Error Resume Next
