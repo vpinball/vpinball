@@ -910,7 +910,7 @@ void SmartBrowser::RelayoutExpandos()
    {
       HWND hwndExpand = m_vhwndExpand[i];
       ExpandoInfo *pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwndExpand, GWLP_USERDATA);
-      if (pexinfo->m_fExpanded)
+      if (pexinfo && pexinfo->m_fExpanded)
          totalheight += pexinfo->m_dialogheight;
       totalheight += EXPANDOHEIGHT;
    }
