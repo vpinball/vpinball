@@ -13,7 +13,7 @@ protected:
    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
    virtual void OnOK();
-
+   char urlString[MAX_PATH];
 };
 
 #endif

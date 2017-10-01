@@ -8,6 +8,7 @@ IEditable::IEditable()
    m_fBackglass = false;
    m_isVisible = true;
    VariantInit(&m_uservalue);
+   m_fSingleEvents = true;
 }
 
 IEditable::~IEditable()

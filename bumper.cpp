@@ -23,6 +23,7 @@ Bumper::Bumper()
    memset(m_d.m_szSkirtMaterial, 0, 32);
    memset(m_d.m_szRingMaterial, 0, 32);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
+   m_ringDown = false;
 }
 
 Bumper::~Bumper()

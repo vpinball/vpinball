@@ -83,7 +83,7 @@ Flipper::Flipper()
    m_phitflipper = NULL;
    vertexBuffer = NULL;
    indexBuffer = NULL;
-
+   m_ptable = NULL;
    memset(m_d.m_szImage, 0, MAXTOKEN);
 }
 

@@ -23,6 +23,7 @@ SearchSelectDialog::SearchSelectDialog() : CDialog(IDD_SEARCH_SELECT_ELEMENT)
     m_switchSortOrder = false;
     m_columnSortOrder = 1;
     m_lastSortColumn = 0;
+    curTable = NULL;
 }
 
 void SearchSelectDialog::Update()

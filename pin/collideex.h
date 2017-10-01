@@ -225,8 +225,11 @@ public:
 class TriggerHitCircle : public HitCircle
 {
 public:
-   TriggerHitCircle(const Vertex2D& c, float r, float zlow, float zhigh)
-     : HitCircle(c,r,zlow,zhigh) {}
+   TriggerHitCircle(const Vertex2D& c, float r, float zlow, float zhigh) : HitCircle(c, r, zlow, zhigh) 
+   {
+      m_ptrigger = NULL;
+   }
+
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
    virtual void Collide(CollisionEvent& coll);
 

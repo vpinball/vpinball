@@ -41,6 +41,8 @@ HitTarget::HitTarget()
    m_moveDown = true;
    m_moveAnimationOffset = 0.0f;
    m_hitEvent = false;
+   m_ptable = NULL;
+   m_timeStamp = 0;
 }
 
 HitTarget::~HitTarget()
