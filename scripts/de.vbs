@@ -100,4 +100,5 @@ Function vpmKeyUp(ByVal keycode)
 			Case Else            vpmKeyUp = False
 		End Select
 	End With
+	On Error Goto 0
 End Function

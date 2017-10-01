@@ -77,9 +77,9 @@ Function vpmKeyDown(ByVal keycode)
 	On Error Resume Next
 	vpmKeyDown = True ' assume we handle the key
 	With Controller
-		If keycode = RightFlipperKey Then .Switch(swLRFlip) = True : If cSingleRFlip Or Err Then .Switch(swURFlip) = True
-		If keycode = LeftFlipperKey  Then .Switch(swLLFlip) = True : If cSingleLFlip Or Err Then .Switch(swULFlip) = True
 		Select Case keycode
+			Case RightFlipperKey .Switch(swLRFlip) = True : If cSingleRFlip Or Err Then .Switch(swURFlip) = True
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : If cSingleLFlip Or Err Then .Switch(swULFlip) = True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
@@ -107,9 +107,9 @@ Function vpmKeyUp(ByVal keycode)
 	On Error Resume Next
 	vpmKeyUp = True ' assume we handle the key
 	With Controller
-		If keycode = RightFlipperKey Then .Switch(swLRFlip) = False : If cSingleRFlip Or Err Then .Switch(swURFlip) = False
-		If keycode = LeftFlipperKey  Then .Switch(swLLFlip) = False : If cSingleLFlip Or Err Then .Switch(swULFlip) = False
 		Select Case keycode
+			Case RightFlipperKey .Switch(swLRFlip) = False : If cSingleRFlip Or Err Then .Switch(swURFlip) = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : If cSingleLFlip Or Err Then .Switch(swULFlip) = False
 			Case keyCancel       swCopy = swCancel :       .Switch(swCopy) = False
 			Case keyDown         swCopy = swDown :         .Switch(swCopy) = False
 			Case keyUp           swCopy = swUp :           .Switch(swCopy) = False
