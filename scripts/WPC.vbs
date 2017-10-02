@@ -26,6 +26,7 @@ Const swCancel = 5
 Const swDown   = 6
 Const swUp     = 7
 Const swEnter  = 8
+
 ' Forgot these in earlier vbs files
 Private swStartButtonX,swCoinDoorX,swSlamTiltX
 On Error Resume Next
@@ -78,8 +79,8 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = True : If cSingleRFlip Or Err Then .Switch(swURFlip) = True
-			Case LeftFlipperKey  .Switch(swLLFlip) = True : If cSingleLFlip Or Err Then .Switch(swULFlip) = True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False : If cSingleRFlip Or Err Then .Switch(swURFlip) = True
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False : If cSingleLFlip Or Err Then .Switch(swULFlip) = True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
@@ -108,8 +109,8 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = False : If cSingleRFlip Or Err Then .Switch(swURFlip) = False
-			Case LeftFlipperKey  .Switch(swLLFlip) = False : If cSingleLFlip Or Err Then .Switch(swULFlip) = False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False : If cSingleRFlip Or Err Then .Switch(swURFlip) = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False : If cSingleLFlip Or Err Then .Switch(swULFlip) = False
 			Case keyCancel       swCopy = swCancel :       .Switch(swCopy) = False
 			Case keyDown         swCopy = swDown :         .Switch(swCopy) = False
 			Case keyUp           swCopy = swUp :           .Switch(swCopy) = False

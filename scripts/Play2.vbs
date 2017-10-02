@@ -21,12 +21,12 @@ End Sub
 '-------------------------
 ' Cabinet switches
 Const swSelfTest            = 6  'enters software-setup
-Const swTilt                     = 7 'playfield tilt switch
+Const swTilt                = 7  'playfield tilt switch
 'Const swSlamTilt           =    'clears all credits and resets machine
-Const swCoin3                = 3 'defaults to 1 coin per credit
-Const swCoin2                = 2 'defaults to 2 coins per credit
-Const swCoin1                = 1 'defaults to 1 coin for 3 credits
-Const swStartButton     = 4  'starts game
+Const swCoin3               = 3  'defaults to 1 coin per credit
+Const swCoin2               = 2  'defaults to 2 coins per credit
+Const swCoin1               = 1  'defaults to 1 coin for 3 credits
+Const swStartButton         = 4  'starts game
 Const swLRFlip              = 102
 Const swLLFlip              = 104
 
@@ -43,8 +43,8 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = True
-			Case LeftFlipperKey  .Switch(swLLFlip) = True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
@@ -70,8 +70,8 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = False
-			Case LeftFlipperKey  .Switch(swLLFlip) = False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False
 			Case StartGameKey    .Switch(swStartButton) = False
 			Case keySelfTest     .Switch(swSelfTest)    = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = False

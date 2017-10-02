@@ -23,9 +23,9 @@ Const swCoin3          = 11
 Const swTilt           = 7
 Const swStartButton    = 6
 Const swSlamTilt       = 16
-Const swSelfTest       = 0'55
-Const swCPUDiag        = 0'56
-Const swSoundDiag      = 0'57
+Const swSelfTest       = 0 '55
+Const swCPUDiag        = 0 '56
+Const swSoundDiag      = 0 '57
 Const swLRFlip         = 82
 Const swLLFlip         = 84
 
@@ -67,8 +67,8 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = True
-			Case LeftFlipperKey  .Switch(swLLFlip) = True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False
 			Case keySlamDoorHit  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swSlamTilt"
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
@@ -93,8 +93,8 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = False
-			Case LeftFlipperKey  .Switch(swLLFlip) = False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False
 			Case StartGameKey    .Switch(swStartButton) = False
 			Case keySelfTest     .Switch(swSelfTest)    = False
 			Case keyCPUDiag      .Switch(swCPUDiag)     = False

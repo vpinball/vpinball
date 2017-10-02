@@ -21,9 +21,9 @@ End Sub
 Const swCoin1          =   0
 Const swStartButton    =  10
 Const swSlamTilt       =  20
-Const swService	     =  40
+Const swService	       =  40
 Const swCoinDoor       =  50
-Const swBoxDoor	     =  60
+Const swBoxDoor	       =  60
 Const swCoin2          =  70
 Const swDiagnostics    =   7
 Const swStatistics     =  17
@@ -49,10 +49,10 @@ vpmSystemHelp = "Taito keys:"& vbNewLine &_
   vpmKeyName(keyHiScoreReset)& vbTab & "Statistics"	     & vbNewLine &_
   vpmKeyName(keySelfTest)    & vbTab & "Service Menu"      & vbNewLine &_
   vpmKeyName(keyDown)        & vbTab & "Adjustments"       & vbNewLine &_
-  vpmKeyName(KeyUp)	     & vbTab & "Diagnostics"       & vbNewLine &_
+  vpmKeyName(KeyUp)	         & vbTab & "Diagnostics"       & vbNewLine &_
   vpmKeyName(keyEnter)	     & vbTab & "Enter"             & vbNewLine &_
-  vpmKeyName(12)             & vbTab & "Configurations"    & vbNewLine &_
-  vpmKeyName(13) 		     & vbTab & "Sound Diagnostics" & vbNewLine &_
+  vpmKeyName(keyConfigurations) & vbTab & "Configurations"    & vbNewLine &_
+  vpmKeyName(keySoundDiag)   & vbTab & "Sound Diagnostics" & vbNewLine &_
   vpmKeyName(keyCoinDoor)    & vbTab & "Coin Door"	     & vbNewLine &_
   vpmKeyName(keymasterenter) & vbTab & "Coin Box Door"
 
@@ -77,21 +77,21 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = True
-			Case LeftFlipperKey  .Switch(swLLFlip) = True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton)   = True
-			Case keyUp		   .Switch(swDiagnostics)   = Not .Switch(swDiagnostics)
+			Case keyUp	         .Switch(swDiagnostics)   = Not .Switch(swDiagnostics)
 			Case keyHiScoreReset .Switch(swStatistics)    = Not .Switch(swStatistics)
 			Case keySelfTest     .Switch(swService)       = Not .Switch(swService)
 			Case keyDown         .Switch(swAdjustments)   = Not .Switch(swAdjustments)
-			Case 12              .Switch(swConfigurations)= True
+			Case keyConfigurations .Switch(swConfigurations) = True
 			Case keyEnter        .Switch(swEnter)         = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)      = True
 			Case keyCoinDoor     If toggleKeyCoinDoor Then .Switch(swCoinDoor) = Not .Switch(swCoinDoor) Else .Switch(swCoinDoor) = Not inverseKeyCoinDoor
-			Case 13		   .Switch(swSoundDiag)     = Not .Switch(swSoundDiag)
+			Case keySoundDiag    .Switch(swSoundDiag)     = Not .Switch(swSoundDiag)
 			Case keyMasterEnter  .Switch(swBoxDoor)       = Not .Switch(swBoxDoor)
 			Case keyBangBack     vpmNudge.DoNudge   0,6
 			Case LeftTiltKey     vpmNudge.DoNudge  75,2
@@ -109,15 +109,15 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = False
-			Case LeftFlipperKey  .Switch(swLLFlip) = False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False
 			Case StartGameKey    .Switch(swStartButton)   = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)      = False
 			Case keyCoinDoor     If toggleKeyCoinDoor = False Then .Switch(swCoinDoor) = inverseKeyCoinDoor
 			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False
-			Case 12              .Switch(swConfigurations)= False
+			Case keyConfigurations .Switch(swConfigurations)= False
 			Case keyEnter        .Switch(swEnter)         = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
 			Case keyReset        .Stop : BeginModal : .Run : vpmTimer.Reset : EndModal

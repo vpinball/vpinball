@@ -109,6 +109,7 @@ keyRed           = 10  '(9)    Sega/Data East/Stern
 keyKPGame        = 7   '(6)    Bally 6803
 keyKPEnter       = 156 '(NumpadEnter)
 keyVPMVolume     = 88  '(F12)  Added Control to set VPM Volume
+keyConfigurations = 12 '(-)    Taito
 '
 ' Optional keys
 ' These are not used nor handled by the vbs files

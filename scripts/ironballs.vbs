@@ -19,16 +19,16 @@ End Sub
 ' Stargame Iron Balls
 '-------------------------
 ' Cabinet switches
-Const swStartButton	  = 7 'ok
-Const swCoin1     		= 1 'ok
-Const swCoin2		      = 2 'ok
-Const swCoin3		      = 3 'ok
-Const swTilt		      = 4 'ok
-Const swBallRollTilt	= 4 'ok
-'Const swSlamTilt	    = -4 'ok
+Const swStartButton	    = 7 'ok
+Const swCoin1     	    = 1 'ok
+Const swCoin2	        = 2 'ok
+Const swCoin3	        = 3 'ok
+Const swTilt	        = 4 'ok
+Const swBallRollTilt    = 4 'ok
+'Const swSlamTilt       = -4 'ok
 
-Const swLRFlip		    = 102'ok
-Const swLLFlip    		= 104'ok
+Const swLRFlip	        = 102'ok
+Const swLLFlip    	    = 104'ok
 
 ' Help Window
 vpmSystemHelp="Iron Balls Keys:"&vbNewLine&_
@@ -43,8 +43,8 @@ Function vpmKeyDown(ByVal KeyCode)
 	vpmKeyDown=True ' Assume we handle the key
 	With Controller
 		Select Case KeyCode
-			Case RightFlipperKey .Switch(swLRFlip) = True
-			Case LeftFlipperKey  .Switch(swLLFlip) = True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'":Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'":Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'":Playsound SCoin
@@ -66,8 +66,8 @@ Function vpmKeyUp(ByVal KeyCode)
 	vpmKeyUp=True ' Assume we handle the key
 	With Controller
 		Select Case KeyCode
-			Case RightFlipperKey .Switch(swLRFlip) = False
-			Case LeftFlipperKey  .Switch(swLLFlip) = False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False
 			Case StartGameKey    .Switch(swStartButton) = False
 '			Case keySlamDoorHit  .Switch(swSlamTilt)    = False
 			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False

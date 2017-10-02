@@ -21,8 +21,8 @@ End Sub
 Const swAdvance      = -7
 Const swUpDown       = -6
 Const swCPUDiag      = -5
-Const swSoundDiag	   = -4 ' Seems to start sounds anyway when activated
-Const swEnter	   = -3 ' Incorrect & Unknown Currently
+Const swSoundDiag    = -4 ' Seems to start sounds anyway when activated
+Const swEnter        = -3 ' Incorrect & Unknown Currently
 Const swTilt         =  1
 Const swBallRollTilt =  2
 Const swStartButton  =  3
@@ -72,8 +72,8 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = True
-			Case LeftFlipperKey  .Switch(swLLFlip) = True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
@@ -83,7 +83,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyCPUDiag      .Switch(swCPUDiag)      = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)     = True
 			Case keyHiscoreReset .Switch(swHiScoreReset) = True
-			Case keyEnter	   .Switch(swEnter)        = True
+			Case keyEnter        .Switch(swEnter)        = True
 			Case keyBangBack     vpmNudge.DoNudge   0, 6
 			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
 			Case RightTiltKey    vpmNudge.DoNudge 285, 2
@@ -100,14 +100,14 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = False
-			Case LeftFlipperKey  .Switch(swLLFlip) = False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False
 			Case StartGameKey    .Switch(swStartButton)  = False
 			Case keyAdvance      .Switch(swAdvance)      = False
 			Case keyCPUDiag      .Switch(swCPUDiag)      = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)     = False
 			Case keyHiscoreReset .Switch(swHiScoreReset) = False
-			Case keyEnter	   .Switch(swEnter)        = False
+			Case keyEnter        .Switch(swEnter)        = False
 			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False

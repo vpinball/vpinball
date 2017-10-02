@@ -8,6 +8,7 @@ Const VPinMAMEDriverVer = 3.54
 ' - Added inder_centaur.vbs
 ' - Restore basic functionality of cvpmDropTarget.CreateEvents for drop targets with an animation time (e.g. VP10 and newer)
 ' - Minor cleanups and code unifications for all machines
+' - Add keyConfigurations to VPMKeys.vbs for Taito and also remap the hardcoded keycode '13' to keySoundDiag
 '
 ' New in 3.53 (Update by Toxie)
 ' - Add more key mappings to help dialog
