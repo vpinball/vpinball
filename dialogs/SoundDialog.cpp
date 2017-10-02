@@ -397,7 +397,7 @@ void SoundDialog::Export()
             ofn.lpstrFilter = "Sound Files (*.wav)\0*.wav\0";
             char pathName[MAX_PATH] ={ 0 };
 
-            unsigned int begin;		//select only file name from pathfilename
+            int begin;		//select only file name from pathfilename
             int len = lstrlen( pps->m_szPath );
             memset( m_filename, 0, MAX_PATH );
             memset( m_initDir, 0, MAX_PATH );
