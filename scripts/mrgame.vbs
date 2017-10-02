@@ -58,13 +58,13 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = True
-			Case LeftFlipperKey  .Switch(swLLFlip) = True
-			Case keyInsertCoin1  .Switch(swCoin1)=True : Playsound SCoin
-			Case keyInsertCoin2  .Switch(swCoin2)=True : Playsound SCoin
-			Case keyInsertCoin3  .Switch(swCoin3)=True : Playsound SCoin
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False
+			Case keyInsertCoin1  .Switch(swCoin1)  = True : Playsound SCoin
+			Case keyInsertCoin2  .Switch(swCoin2)  = True : Playsound SCoin
+			Case keyInsertCoin3  .Switch(swCoin3)  = True : Playsound SCoin
 			Case keyInsertCoin4  vpmTimer.PulseSw swCreditService : Playsound SCoin
-			Case StartGameKey    .Switch(swStartButton)=True
+			Case StartGameKey    .Switch(swStartButton) = True
 			Case keySelfTest     vpmTimer.PulseSw swAdvanceTest
 			Case keyAdvance      vpmTimer.PulseSw swReturnTest
 			Case keyBangBack     vpmNudge.DoNudge   0, 6
@@ -83,12 +83,12 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = False
-			Case LeftFlipperKey  .Switch(swLLFlip) = False
-			Case keyInsertCoin1  .Switch(swCoin1)=False : Playsound SCoin
-			Case keyInsertCoin2  .Switch(swCoin2)=False : Playsound SCoin
-			Case keyInsertCoin3  .Switch(swCoin3)=False : Playsound SCoin
-			Case StartGameKey    .Switch(swStartButton)=False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False
+			Case keyInsertCoin1  .Switch(swCoin1)  = False : Playsound SCoin
+			Case keyInsertCoin2  .Switch(swCoin2)  = False : Playsound SCoin
+			Case keyInsertCoin3  .Switch(swCoin3)  = False : Playsound SCoin
+			Case StartGameKey    .Switch(swStartButton) = False
 			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False

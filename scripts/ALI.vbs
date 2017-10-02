@@ -63,14 +63,14 @@ Function vpmKeyDown(ByVal KeyCode)
 	vpmKeyDown=True ' Assume we handle the key
 	With Controller
 		Select Case KeyCode
-			Case RightFlipperKey .Switch(swLRFlip) = True
-			Case LeftFlipperKey  .Switch(swLLFlip) = True
-			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'":Playsound SCoin
-			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'":Playsound SCoin
-			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'":Playsound SCoin
-			Case StartGameKey    .Switch(swStartButton) =True
-			Case keyCPUDiag      .Switch(swCPUDiag)     =True
-			Case keySlamDoorHit  .Switch(swSlamTilt)    =True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False
+			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
+			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
+			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
+			Case StartGameKey    .Switch(swStartButton) = True
+			Case keyCPUDiag      .Switch(swCPUDiag)     = True
+			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
 			Case keyBangBack     vpmNudge.DoNudge   0,6
 			Case LeftTiltKey     vpmNudge.DoNudge  75,2
 			Case RightTiltKey    vpmNudge.DoNudge 285,2
@@ -87,8 +87,8 @@ Function vpmKeyUp(ByVal KeyCode)
 	vpmKeyUp=True ' Assume we handle the key
 	With Controller
 		Select Case KeyCode
-			Case RightFlipperKey .Switch(swLRFlip) = False
-			Case LeftFlipperKey  .Switch(swLLFlip) = False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False
 			Case StartGameKey    .Switch(swStartButton) = False
 			Case keyCPUDiag      .Switch(swCPUDiag)     = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = False
@@ -99,7 +99,7 @@ Function vpmKeyUp(ByVal KeyCode)
 			Case keyReset        .Stop : BeginModal : .Run : vpmTimer.Reset : EndModal
 			Case keyFrame        .LockDisplay = Not .LockDisplay
 			Case keyDoubleSize   .DoubleSize =  Not .DoubleSize
-			Case Else            vpmKeyUp=False
+			Case Else            vpmKeyUp = False
 		End Select
 	End With
 	On Error Goto 0
