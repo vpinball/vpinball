@@ -5629,9 +5629,14 @@ void PinTable::LockElements()
    for (int i = 0; i < m_vmultisel.Size(); i++)
    {
       ISelect *psel;
+      IEditable *pedit;
       psel = m_vmultisel.ElementAt(i);
-      psel->GetIEditable()->MarkForUndo();
-      psel->m_fLocked = fLock;
+      pedit = psel->GetIEditable();
+      if (psel && pedit)
+      {
+         psel->GetIEditable()->MarkForUndo();
+         psel->m_fLocked = fLock;
+      }
    }
    EndUndo();
    SetDirtyDraw();
