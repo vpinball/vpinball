@@ -491,15 +491,16 @@ void SoundDialog::SoundToBG()
 
             pps->m_iOutputTarget = (pps->m_iOutputTarget != SNDOUT_BACKGLASS) ? SNDOUT_BACKGLASS : SNDOUT_TABLE;
 
-            char pathName[MAX_PATH];
-            memset( pathName, 0, MAX_PATH );
-            if(pps->m_iOutputTarget)
+            switch (pps->m_iOutputTarget)
             {
-                strcpy_s( pathName, "*BG* " );
+               case SNDOUT_BACKGLASS:
+                  ListView_SetItemText(hSoundList, sel, 2, "Backglass");
+                  break;
+               default:
+                  ListView_SetItemText(hSoundList, sel, 2, "Table");
+                  break;
             }
-            strcat_s( pathName, pps->m_szPath );
-            ListView_SetItemText( hSoundList, sel, 1, pathName );
-            pt->SetNonUndoableDirty( eSaveDirty );
+            pt->SetNonUndoableDirty(eSaveDirty);
 
             sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED ); //next selected item
         }
