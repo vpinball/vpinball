@@ -292,7 +292,7 @@ HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_vPosition.x = x;
    m_d.m_vPosition.y = y;
 
-   SetDefaults(false);
+   SetDefaults(fromMouseClick);
 
    InitVBA(fTrue, 0, NULL);
 
