@@ -78,7 +78,7 @@ public:
    virtual float GetDepth(const Vertex3Ds& viewDir);
    virtual bool IsTransparent();
 
-   virtual void Rotate(float ang, Vertex2D *pvCenter);
+   virtual void Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter = false);
 
    STDMETHOD(get_Name)(BSTR *pVal) { return E_FAIL; }
 

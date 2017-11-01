@@ -87,8 +87,8 @@ public:
    // Multi-object manipulation
    virtual void FlipY(Vertex2D * const pvCenter);
    virtual void FlipX(Vertex2D * const pvCenter);
-   virtual void Rotate(float ang, Vertex2D *pvCenter);
-   virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
+   virtual void Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter = false);
+   virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter=false);
    virtual void Translate(Vertex2D *pvOffset);
    virtual void GetCenter(Vertex2D * const pv) const { GetPointCenter(pv); }
    virtual void GetScale(float *sx, float *sy){ *sx = m_d.m_scaleX; *sy = m_d.m_scaleY; }

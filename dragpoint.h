@@ -31,9 +31,9 @@ public:
    void FlipPointY(Vertex2D *pvCenter);
    void FlipPointX(Vertex2D *pvCenter);
    void RotateDialog();
-   void RotatePoints(float ang, Vertex2D *pvCenter);
+   void RotatePoints(float ang, Vertex2D *pvCenter, const bool useElementCenter=false);
    void ScaleDialog();
-   void ScalePoints(float scalex, float scaley, Vertex2D *pvCenter);
+   void ScalePoints(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter=false);
    void TranslateDialog();
    void TranslatePoints(Vertex2D *pvOffset);
    void ReverseOrder();

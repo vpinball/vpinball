@@ -375,8 +375,8 @@ public:
    virtual void PutCenter(const Vertex2D * const pv);
    virtual void FlipY(Vertex2D * const pvCenter);
    virtual void FlipX(Vertex2D * const pvCenter);
-   virtual void Rotate(float ang, Vertex2D *pvCenter);
-   virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
+   virtual void Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter = false);
+   virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter=false);
    virtual void Translate(Vertex2D *pvOffset);
 
    // IEditable (mostly bogus for now)

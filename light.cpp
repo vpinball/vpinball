@@ -1407,14 +1407,14 @@ void Light::FlipX(Vertex2D * const pvCenter)
    IHaveDragPoints::FlipPointX(pvCenter);
 }
 
-void Light::Rotate(float ang, Vertex2D *pvCenter)
+void Light::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
 {
-   IHaveDragPoints::RotatePoints(ang, pvCenter);
+   IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
 }
 
-void Light::Scale(float scalex, float scaley, Vertex2D *pvCenter)
+void Light::Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter)
 {
-   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter);
+   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementsCenter);
 }
 
 void Light::Translate(Vertex2D *pvOffset)
