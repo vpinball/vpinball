@@ -137,10 +137,16 @@ BOOL MaterialDialog::OnInitDialog()
    lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
    LocalString ls(IDS_NAME);
    lvcol.pszText = ls.m_szbuffer;// = "Name";
-   lvcol.cx = 280;
+   lvcol.cx = 230;
    ListView_InsertColumn(m_hMaterialList, 0, &lvcol);
 
+   lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
+   LocalString ls2(IDS_USED_IN_TABLE);
+   lvcol.pszText = ls2.m_szbuffer;// = "Used in Table";
+   lvcol.cx = 50;
+   ListView_InsertColumn(m_hMaterialList, 1, &lvcol);
    pt->ListMaterials(m_hMaterialList);
+
    ListView_SetItemState(m_hMaterialList, 0, LVIS_SELECTED, LVIS_SELECTED)
    
    return TRUE;

@@ -1,5 +1,7 @@
 VP 10.4.0 Changelog
 ------------------------
+- add "In Use" column to the material manager dialog
+
 - let user change the scatter angle for bumpers in the editor
 
 - fix missing kicker holes at inclination values close around 0

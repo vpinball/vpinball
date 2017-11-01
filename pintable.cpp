@@ -5631,11 +5631,14 @@ void PinTable::LockElements()
       ISelect *psel;
       IEditable *pedit;
       psel = m_vmultisel.ElementAt(i);
-      pedit = psel->GetIEditable();
-      if (psel && pedit)
+      if (psel)
       {
-         psel->GetIEditable()->MarkForUndo();
-         psel->m_fLocked = fLock;
+         pedit = psel->GetIEditable();
+         if (pedit)
+         {
+            psel->GetIEditable()->MarkForUndo();
+            psel->m_fLocked = fLock;
+         }
       }
    }
    EndUndo();
@@ -8380,6 +8383,9 @@ void PinTable::UpdateDbgMaterial(void)
 int PinTable::AddListMaterial(HWND hwndListView, Material *pmat)
 {
    LVITEM lvitem;
+   char * const usedStringYes = "X";
+   char * const usedStringNo = " ";
+   
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
@@ -8387,6 +8393,95 @@ int PinTable::AddListMaterial(HWND hwndListView, Material *pmat)
    lvitem.lParam = (size_t)pmat;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
+   ListView_SetItemText(hwndListView, index, 1, usedStringNo);
+   if ((_stricmp(m_szPlayfieldMaterial, pmat->m_szName) == 0))
+   {
+      ListView_SetItemText(hwndListView, index, 1, usedStringYes);
+   }
+   else
+   {
+      for (int i = 0; i < m_vedit.Size(); i++)
+      {
+         bool inUse = false;
+         IEditable *pEdit = m_vedit.ElementAt(i);
+         if (pEdit == NULL)
+            continue;
+
+         switch (pEdit->GetItemType())
+         {
+         case eItemPrimitive:
+         {
+            Primitive *pPrim = (Primitive*)pEdit;
+            if ((_stricmp(pPrim->m_d.m_szMaterial, pmat->m_szName) == 0) || (_stricmp(pPrim->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0))
+               inUse = true;
+            break;
+         }
+         case eItemRamp:
+         {
+            Ramp *pRamp = (Ramp*)pEdit;
+            if ((_stricmp(pRamp->m_d.m_szMaterial, pmat->m_szName) == 0) || (_stricmp(pRamp->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0))
+               inUse = true;
+            break;
+         }
+         case eItemSurface:
+         {
+            Surface *pSurf = (Surface*)pEdit;
+            if ((_stricmp(pSurf->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0) || (_stricmp(pSurf->m_d.m_szSideMaterial, pmat->m_szName) == 0) || (_stricmp(pSurf->m_d.m_szTopMaterial, pmat->m_szName) == 0))
+               inUse = true;
+            break;
+         }
+         case eItemDecal:
+         {
+            Decal *pDecal = (Decal*)pEdit;
+            if ((_stricmp(pDecal->m_d.m_szMaterial, pmat->m_szName) == 0))
+               inUse = true;
+            break;
+         }
+         case eItemFlipper:
+         {
+            Flipper *pFlip = (Flipper*)pEdit;
+            if ((_stricmp(pFlip->m_d.m_szRubberMaterial, pmat->m_szName) == 0) || (_stricmp(pFlip->m_d.m_szMaterial, pmat->m_szName) == 0))
+               inUse = true;
+            break;
+         }
+         case eItemHitTarget:
+         {
+            HitTarget *pHit = (HitTarget*)pEdit;
+            if ((_stricmp(pHit->m_d.m_szMaterial, pmat->m_szName) == 0) || (_stricmp(pHit->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0))
+               inUse = true;
+            break;
+         }
+         case eItemPlunger:
+         {
+            Plunger *pPlung = (Plunger*)pEdit;
+            if (_stricmp(pPlung->m_d.m_szMaterial, pmat->m_szName) == 0)
+               inUse = true;
+            break;
+         }
+         case eItemSpinner:
+         {
+            Spinner *pSpin = (Spinner*)pEdit;
+            if (_stricmp(pSpin->m_d.m_szMaterial, pmat->m_szName) == 0)
+               inUse = true;
+            break;
+         }
+         case eItemRubber:
+         {
+            Rubber *pRub = (Rubber*)pEdit;
+            if ((_stricmp(pRub->m_d.m_szMaterial, pmat->m_szName) == 0) || (_stricmp(pRub->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0))
+               inUse = true;
+            break;
+         }
+         default:
+            break;
+         }
+         if (inUse)
+         {
+            ListView_SetItemText(hwndListView, index, 1, usedStringYes);
+            break;
+         }
+      }//for
+   }
    return index;
 }
 
