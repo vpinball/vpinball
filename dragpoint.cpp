@@ -795,6 +795,42 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
    case WM_COMMAND:
       psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+      switch (LOWORD(wParam))
+      {
+      case IDC_CHECK_ROTATE_CENTER:
+      {
+         switch (HIWORD(wParam))
+         {
+            case BN_CLICKED:
+            {
+               char szT[256];
+               if (!(SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED))
+               {
+                  f2sz(g_pvp->m_mouseCursorPosition.x, szT);
+                  SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
+                  f2sz(g_pvp->m_mouseCursorPosition.y, szT);
+                  SetDlgItemText(hwndDlg, IDC_CENTERY, szT);
+               }
+               else
+               {
+                  Vertex2D v;
+                  psel->GetCenter(&v);
+                  f2sz(v.x, szT);
+                  SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
+                  f2sz(v.y, szT);
+                  SetDlgItemText(hwndDlg, IDC_CENTERY, szT);
+               }
+               break;
+            }
+               default:
+               break;
+          }
+      }
+      default:
+         break;
+      }
+
+
       switch (HIWORD(wParam))
       {
       case BN_CLICKED:
@@ -810,17 +846,10 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
                const float f = sz2f(szT);
 
                useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
-               if (!useElementCenter)
-               {
-                  v = g_pvp->m_mouseCursorPosition;
-               }
-               else
-               {
-                  GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
-                  v.x = sz2f(szT);
-                  GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
-                  v.y = sz2f(szT);
-               }
+               GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
+               v.x = sz2f(szT);
+               GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
+               v.y = sz2f(szT);
 
                psel->Rotate(f, &v, useElementCenter);
             }
@@ -836,17 +865,10 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
             const float f = sz2f(szT);
 
             useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
-            if (!useElementCenter)
-            {
-               v = g_pvp->m_mouseCursorPosition;
-            }
-            else
-            {
-               GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
-               v.x = sz2f(szT);
-               GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
-               v.y = sz2f(szT);
-            }
+            GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
+            v.x = sz2f(szT);
+            GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
+            v.y = sz2f(szT);
 
             psel->Rotate(f, &v, useElementCenter);
             psel->GetPTable()->SetDirtyDraw();
@@ -926,6 +948,41 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
    case WM_COMMAND:
       psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+      switch (LOWORD(wParam))
+      {
+         case IDC_CHECK_SCALE_CENTER:
+         {
+            switch (HIWORD(wParam))
+            {
+            case BN_CLICKED:
+            {
+               char szT[256];
+               if (!(SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED))
+               {
+                  f2sz(g_pvp->m_mouseCursorPosition.x, szT);
+                  SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
+                  f2sz(g_pvp->m_mouseCursorPosition.y, szT);
+                  SetDlgItemText(hwndDlg, IDC_CENTERY, szT);
+               }
+               else
+               {
+                  Vertex2D v;
+                  psel->GetCenter(&v);
+                  f2sz(v.x, szT);
+                  SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
+                  f2sz(v.y, szT);
+                  SetDlgItemText(hwndDlg, IDC_CENTERY, szT);
+               }
+               break;
+            }
+            default:
+               break;
+            }
+         }
+      default:
+         break;
+      }
+
       switch (HIWORD(wParam))
       {
       case BN_CLICKED:
@@ -957,10 +1014,6 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                v.y = sz2f(szT);
 
                useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
-               if (!useElementCenter)
-               {
-                  v = g_pvp->m_mouseCursorPosition;
-               }
                //pihdp->ScalePoints(fx, fy, &v);
                psel->Scale(fx, fy, &v, useElementCenter);
             }
@@ -992,10 +1045,6 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
             v.y = sz2f(szT);
 
             useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
-            if (!useElementCenter)
-            {
-               v = g_pvp->m_mouseCursorPosition;
-            }
 
             //pihdp->ScalePoints(fx, fy, &v);
             psel->Scale(fx, fy, &v, useElementCenter);
