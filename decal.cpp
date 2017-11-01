@@ -636,9 +636,9 @@ void Decal::PutCenter(const Vertex2D * const pv)
    m_ptable->SetDirtyDraw();
 }
 
-void Decal::Rotate(float ang, Vertex2D *pvCenter)
+void Decal::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
 {
-   ISelect::Rotate(ang, pvCenter);
+   ISelect::Rotate(ang, pvCenter, useElementCenter);
 
    m_d.m_rotation += ang;
 }

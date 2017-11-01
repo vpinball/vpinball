@@ -1,5 +1,12 @@
 VP 10.4.0 Changelog
 ------------------------
+- add Rotate/Scale around origin option to the rotate/scale dialog. Simply uncheck "Rotate around origin" or "Scale around origin" to rotate/scale around the mouse position.
+  To use the current mouse position as rotate/scale reference use the following workflow:
+  1) select the element you want to rotate/scale
+  2) place the mouse cursor where the origin should be
+  3) press the context menu key on your keyboard (the one between "Alt Gr" and right "Ctrl") and select "Rotate" or "Scale"
+  4) uncheck the "Rotate/Scale around origin" and start the operation
+
 - add "In Use" column to the material manager dialog
 
 - let user change the scatter angle for bumpers in the editor

@@ -106,7 +106,7 @@ void IHaveDragPoints::TranslateDialog()
       g_pvp->m_hwnd, TranslateProc, (size_t)this->GetIEditable()->GetISelect());
 }
 
-void IHaveDragPoints::RotatePoints(float ang, Vertex2D *pvCenter)
+void IHaveDragPoints::RotatePoints(float ang, Vertex2D *pvCenter, const bool useElementCenter)
 {
    Vertex2D newcenter;
    GetPointCenter(&newcenter);
@@ -114,31 +114,64 @@ void IHaveDragPoints::RotatePoints(float ang, Vertex2D *pvCenter)
    GetIEditable()->BeginUndo();
    GetIEditable()->MarkForUndo();
 
-   /* Don't use the pvCenter anymore! pvCenter is the mouse position when rotating is activated.
-   Because the mouse position (rotation center) isn't shown in the editor use the element's center returned by GetPointCenter() */
-   const float centerx = newcenter.x;
-   const float centery = newcenter.y;
-
-   const float sn = sinf(ANGTORAD(ang));
-   const float cs = cosf(ANGTORAD(ang));
-
-   for (int i = 0; i < m_vdpoint.Size(); i++)
+   if (useElementCenter)
    {
-      DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
-      const float dx = pdp1->m_v.x - centerx;
-      const float dy = pdp1->m_v.y - centery;
-      const float dx2 = cs*dx - sn*dy;
-      const float dy2 = cs*dy + sn*dx;
-      pdp1->m_v.x = centerx + dx2;
-      pdp1->m_v.y = centery + dy2;
-   }
+      /* Don't use the pvCenter anymore! pvCenter is the mouse position when rotating is activated.
+      Because the mouse position (rotation center) isn't shown in the editor use the element's center returned by GetPointCenter() */
+      const float centerx = newcenter.x;
+      const float centery = newcenter.y;
 
+      const float sn = sinf(ANGTORAD(ang));
+      const float cs = cosf(ANGTORAD(ang));
+
+      for (int i = 0; i < m_vdpoint.Size(); i++)
+      {
+         DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
+         const float dx = pdp1->m_v.x - centerx;
+         const float dy = pdp1->m_v.y - centery;
+         const float dx2 = cs*dx - sn*dy;
+         const float dy2 = cs*dy + sn*dx;
+         pdp1->m_v.x = centerx + dx2;
+         pdp1->m_v.y = centery + dy2;
+      }
+   }
+   else
+   {
+      const float centerx = pvCenter->x;
+      const float centery = pvCenter->y;
+
+      const float sn = sinf(ANGTORAD(ang));
+      const float cs = cosf(ANGTORAD(ang));
+
+      for (int i = 0; i < m_vdpoint.Size(); i++)
+      {
+         DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
+         const float dx = pdp1->m_v.x - centerx;
+         const float dy = pdp1->m_v.y - centery;
+         const float dx2 = cs*dx - sn*dy;
+         const float dy2 = cs*dy + sn*dx;
+         pdp1->m_v.x = centerx + dx2;
+         pdp1->m_v.y = centery + dy2;
+      }
+
+      // Move object center as well (if rotating around object center,
+      // this will have no effect)
+      {
+         const float dx = newcenter.x - centerx;
+         const float dy = newcenter.y - centery;
+         const float dx2 = cs*dx - sn*dy;
+         const float dy2 = cs*dy + sn*dx;
+         newcenter.x = centerx + dx2;
+         newcenter.y = centery + dy2;
+         PutPointCenter(&newcenter);
+      }
+   }
    GetIEditable()->EndUndo();
 
    GetPTable()->SetDirtyDraw();
 }
 
-void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter)
+void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter)
 {
    Vertex2D newcenter;
    GetPointCenter(&newcenter);
@@ -146,18 +179,45 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter
    GetIEditable()->BeginUndo();
    GetIEditable()->MarkForUndo();
 
-   /* Don't use the pvCenter anymore! pvCenter is the mouse position when scaling is activated.
-      Because the mouse position (scaling center) isn't shown in the editor use the element's center returned by GetPointCenter() */
-   const float centerx = newcenter.x;
-   const float centery = newcenter.y;
-
-   for (int i = 0; i < m_vdpoint.Size(); i++)
+   if (useElementsCenter)
    {
-      DragPoint *pdp1 = m_vdpoint.ElementAt(i);
-      const float dx = (pdp1->m_v.x - centerx) * scalex;
-      const float dy = (pdp1->m_v.y - centery) * scaley;
-      pdp1->m_v.x = centerx + dx;
-      pdp1->m_v.y = centery + dy;
+      /* Don't use the pvCenter anymore! pvCenter is the mouse position when scaling is activated.
+      Because the mouse position (scaling center) isn't shown in the editor use the element's center returned by GetPointCenter() */
+      const float centerx = newcenter.x;
+      const float centery = newcenter.y;
+
+      for (int i = 0; i < m_vdpoint.Size(); i++)
+      {
+         DragPoint *pdp1 = m_vdpoint.ElementAt(i);
+         const float dx = (pdp1->m_v.x - centerx) * scalex;
+         const float dy = (pdp1->m_v.y - centery) * scaley;
+         pdp1->m_v.x = centerx + dx;
+         pdp1->m_v.y = centery + dy;
+      }
+   }
+   else
+   {
+      const float centerx = pvCenter->x;
+      const float centery = pvCenter->y;
+
+      for (int i = 0; i < m_vdpoint.Size(); i++)
+      {
+         DragPoint *pdp1 = m_vdpoint.ElementAt(i);
+         const float dx = (pdp1->m_v.x - centerx) * scalex;
+         const float dy = (pdp1->m_v.y - centery) * scaley;
+         pdp1->m_v.x = centerx + dx;
+         pdp1->m_v.y = centery + dy;
+      }
+
+      // Move object center as well (if scaling from object center,
+      // this will have no effect)
+      {
+         const float dx = (newcenter.x - centerx) * scalex;
+         const float dy = (newcenter.y - centery) * scaley;
+         newcenter.x = centerx + dx;
+         newcenter.y = centery + dy;
+         PutPointCenter(&newcenter);
+      }
    }
 
    GetIEditable()->EndUndo();
@@ -702,6 +762,7 @@ int rotateApplyCount = 0;
 INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    ISelect *psel;
+   bool useElementCenter = false;
 
    switch (uMsg)
    {
@@ -714,14 +775,16 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
       char szT[256];
       float angle = psel->GetRotate();
       Vertex2D v;
-
+      
+      SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_SETCHECK, BST_CHECKED, 0);
+      
       f2sz(angle, szT);
       SetDlgItemText(hwndDlg, IDC_ROTATEBY, szT);
       psel->GetCenter(&v);
       f2sz(v.x, szT);
       SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
       f2sz(v.y, szT);
-      SetDlgItemText(hwndDlg, IDC_CENTERY, szT);
+      SetDlgItemText(hwndDlg, IDC_CENTERY, szT);      
    }
    return TRUE;
    break;
@@ -741,34 +804,51 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
          {
             if (rotateApplyCount == 0)
             {
+               Vertex2D v;
                char szT[256];
                GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);
-
                const float f = sz2f(szT);
-               GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
-               Vertex2D v;
-               v.x = sz2f(szT);
-               GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
-               v.y = sz2f(szT);
 
-               psel->Rotate(f, &v);
+               useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
+               if (!useElementCenter)
+               {
+                  v = g_pvp->m_mouseCursorPosition;
+               }
+               else
+               {
+                  GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
+                  v.x = sz2f(szT);
+                  GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
+                  v.y = sz2f(szT);
+               }
+
+               psel->Rotate(f, &v, useElementCenter);
             }
             EndDialog(hwndDlg, TRUE);
             break;
          }
          case IDC_ROTATE_APPLY_BUTTON:
          {
+            Vertex2D v;
             rotateApplyCount++;
             char szT[256];
             GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);
             const float f = sz2f(szT);
-            GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
-            Vertex2D v;
-            v.x = sz2f(szT);
-            GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
-            v.y = sz2f(szT);
 
-            psel->Rotate(f, &v);
+            useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
+            if (!useElementCenter)
+            {
+               v = g_pvp->m_mouseCursorPosition;
+            }
+            else
+            {
+               GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
+               v.x = sz2f(szT);
+               GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
+               v.y = sz2f(szT);
+            }
+
+            psel->Rotate(f, &v, useElementCenter);
             psel->GetPTable()->SetDirtyDraw();
             break;
          }
@@ -803,6 +883,7 @@ int scaleApplyCount = 0;
 INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    ISelect *psel;
+      bool useElementCenter = false;
 
    switch (uMsg)
    {
@@ -821,6 +902,8 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
       f2sz(v.y, szT);
       SetDlgItemText(hwndDlg, IDC_SCALEY, szT);
       psel->GetCenter(&v);
+
+      SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_SETCHECK, BST_CHECKED, 0);
 
       f2sz(v.x, szT);
       SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
@@ -873,8 +956,13 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
                v.y = sz2f(szT);
 
+               useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
+               if (!useElementCenter)
+               {
+                  v = g_pvp->m_mouseCursorPosition;
+               }
                //pihdp->ScalePoints(fx, fy, &v);
-               psel->Scale(fx, fy, &v);
+               psel->Scale(fx, fy, &v, useElementCenter);
             }
             EndDialog(hwndDlg, TRUE);
             break;
@@ -903,8 +991,14 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
             GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
             v.y = sz2f(szT);
 
+            useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
+            if (!useElementCenter)
+            {
+               v = g_pvp->m_mouseCursorPosition;
+            }
+
             //pihdp->ScalePoints(fx, fy, &v);
-            psel->Scale(fx, fy, &v);
+            psel->Scale(fx, fy, &v, useElementCenter);
             psel->GetPTable()->SetDirtyDraw();
             break;
          }

@@ -170,6 +170,7 @@ public:
    COLORREF m_elemSelectLockedColor;
    COLORREF m_backgroundColor;
    COLORREF m_fillColor;
+   Vertex2D m_mouseCursorPosition;
 
 protected:
    virtual void OnClose();

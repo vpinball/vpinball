@@ -288,7 +288,7 @@ void ISelect::FlipX(Vertex2D * const pvCenter)
    PutCenter(&vCenter);
 }
 
-void ISelect::Rotate(float ang, Vertex2D *pvCenter)
+void ISelect::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
 {
    GetIEditable()->MarkForUndo();
 
@@ -306,7 +306,7 @@ void ISelect::Rotate(float ang, Vertex2D *pvCenter)
    PutCenter(&vCenter);
 }
 
-void ISelect::Scale(float scalex, float scaley, Vertex2D *pvCenter)
+void ISelect::Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter)
 {
    GetIEditable()->MarkForUndo();
 

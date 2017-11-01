@@ -207,6 +207,8 @@ VPinball::VPinball()
    m_open_minimized = 0;
    memset(m_currentTablePath, 0, MAX_PATH);
 
+   m_mouseCursorPosition.x = 0.0f;
+   m_mouseCursorPosition.y = 0.0f;
    m_pcv = NULL;			// no currently active code window
 }
 
@@ -762,6 +764,8 @@ void VPinball::SetPosCur(float x, float y)
 {
    char szT[256];
    sprintf_s(szT, "%.4f, %.4f", x, y);
+   m_mouseCursorPosition.x = x;
+   m_mouseCursorPosition.y = y;
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (size_t)szT);
 }
 

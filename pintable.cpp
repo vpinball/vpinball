@@ -5992,25 +5992,25 @@ void PinTable::FlipX(Vertex2D * const pvCenter)
    EndUndo();
 }
 
-void PinTable::Rotate(float ang, Vertex2D *pvCenter)
+void PinTable::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
 {
    BeginUndo();
 
    for (int i = 0; i < m_vmultisel.Size(); i++)
    {
-      m_vmultisel.ElementAt(i)->Rotate(ang, pvCenter);
+      m_vmultisel.ElementAt(i)->Rotate(ang, pvCenter, useElementCenter);
    }
 
    EndUndo();
 }
 
-void PinTable::Scale(float scalex, float scaley, Vertex2D *pvCenter)
+void PinTable::Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter)
 {
    BeginUndo();
 
    for (int i = 0; i < m_vmultisel.Size(); i++)
    {
-      m_vmultisel.ElementAt(i)->Scale(scalex, scaley, pvCenter);
+      m_vmultisel.ElementAt(i)->Scale(scalex, scaley, pvCenter, useElementsCenter);
    }
 
    EndUndo();

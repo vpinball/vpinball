@@ -981,10 +981,10 @@ void Trigger::FlipX(Vertex2D * const pvCenter)
       IHaveDragPoints::FlipPointX(pvCenter);
 }
 
-void Trigger::Rotate(float ang, Vertex2D *pvCenter)
+void Trigger::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
 {
    if (m_d.m_shape == TriggerNone)
-      IHaveDragPoints::RotatePoints(ang, pvCenter);
+      IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
    else
    {
       GetIEditable()->BeginUndo();
@@ -996,10 +996,10 @@ void Trigger::Rotate(float ang, Vertex2D *pvCenter)
    }
 }
 
-void Trigger::Scale(float scalex, float scaley, Vertex2D *pvCenter)
+void Trigger::Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter)
 {
    if (m_d.m_shape == TriggerNone)
-      IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter);
+      IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementsCenter);
    else
    {
       GetIEditable()->BeginUndo();
