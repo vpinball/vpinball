@@ -21,6 +21,8 @@ extern SORTDATA SortData;
 extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption );
 
 int MaterialDialog::m_columnSortOrder;
+bool MaterialDialog::m_deletingItem;
+
 void MaterialDialog::DisableAllMaterialDialogItems()
 {
     ::EnableWindow(GetDlgItem( IDC_DIFFUSE_CHECK ).GetHwnd(), FALSE);
@@ -82,6 +84,7 @@ BOOL MaterialDialog::OnInitDialog()
    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
 
    m_columnSortOrder = 1;
+   m_deletingItem = false;
    m_resizer.Initialize(*this, CRect(0, 0, 500, 600));
    m_resizer.AddChild(m_hMaterialList, topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
    m_resizer.AddChild(GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd(), topright, 0);
@@ -427,7 +430,9 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             const int ans = MessageBox(ls.m_szbuffer/*"Are you sure you want to remove this material?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
             if (ans == IDYES)
             {
+               m_deletingItem = true;
                int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
+               int firstSelectedItemIdx = sel;
                while (sel != -1)
                {
                   LVITEM lvitem;
@@ -440,19 +445,21 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
                   pt->RemoveMaterial(pmat);
 
-                  int newCount = ListView_GetItemCount(m_hMaterialList);
-                  int selectedCount = ListView_GetSelectedCount(m_hMaterialList);
-                  if (newCount > 0 && selectedCount == 0)
-                  {
-                     if (sel >= newCount) sel = 0;
-                     // The previous selection is now deleted, so look again from the top of the list
-                     ListView_SetItemState(m_hMaterialList, sel, LVIS_FOCUSED | LVIS_SELECTED, 0x00F);
-                     sel = -1;
-                  }
-                  else
-                  {
-                     sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
-                  }
+                  sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
+               }
+
+               m_deletingItem = false;
+               int newCount = ListView_GetItemCount(m_hMaterialList);
+               int selectedCount = ListView_GetSelectedCount(m_hMaterialList);
+               if(newCount > 0 && selectedCount == 0)
+               {
+                   if(firstSelectedItemIdx >= newCount) firstSelectedItemIdx = 0;
+                   // The previous selection is now deleted, so look again from the top of the list
+                   ListView_SetItemState(m_hMaterialList, firstSelectedItemIdx, LVIS_FOCUSED | LVIS_SELECTED, 0x00F);
+               }
+               else
+               {
+                   ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
                }
             }
             pt->SetNonUndoableDirty(eSaveDirty);
@@ -536,6 +543,9 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             case LVN_ITEMCHANGING:
             {
+               if(m_deletingItem)
+                   break;
+
                const int count = ListView_GetSelectedCount(m_hMaterialList);
                if (count > 1)
                {
@@ -589,6 +599,8 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                const int count = ListView_GetSelectedCount(m_hMaterialList);
 
+               if(m_deletingItem)
+                   break;
                if (count > 1)
                {
                   DisableAllMaterialDialogItems();
