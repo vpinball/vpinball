@@ -399,6 +399,7 @@ public:
    void DoLButtonDown(int x, int y, bool zoomIn = true);
    void DoLButtonUp(int x, int y);
    void DoRButtonDown(int x, int y);
+   void FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect *psel);
    void DoRButtonUp(int x, int y);
    void DoMouseMove(int x, int y);
    void DoLDoubleClick(int x, int y);
