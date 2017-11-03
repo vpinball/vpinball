@@ -1,5 +1,9 @@
 VP 10.4.0 Changelog
 ------------------------
+- change context menu behavior of add/remove to collection: it's possible to add/remove one or multiple elements to other collections. 
+  If you selected multiple elements but they are not part of the same collection/or are not part of any collection the context menu is greyed out and the check marks tell you which collections were found 
+  for these selected elements.
+  
 - add Rotate/Scale around origin option to the rotate/scale dialog. Simply uncheck "Rotate around origin" or "Scale around origin" to rotate/scale around the mouse position.
   To use the current mouse position as rotate/scale reference use the following workflow:
   1) select the element you want to rotate/scale

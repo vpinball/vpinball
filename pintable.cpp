@@ -5131,6 +5131,77 @@ void PinTable::DoRButtonDown(int x, int y)
    }
 }
 
+void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect *psel)
+{
+    LocalString ls16(IDS_TO_COLLECTION);
+    AppendMenu(hmenu, MF_POPUP | MF_STRING, (size_t)colSubMenu, ls16.m_szbuffer);
+
+    int maxItems = m_vcollection.Size() - 1;
+    if(maxItems > 32) maxItems = 32;
+
+    // run through all collections and list up to 32 of them in the context menu
+    // the actual processing is done in ISelect::DoCommand() 
+    for(int i = maxItems; i >= 0; i--)
+    {
+        CComBSTR bstr;
+        m_vcollection.ElementAt(i)->get_Name(&bstr);
+        char szT[64]; // Names can only be 32 characters (plus terminator)
+        WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
+
+        AppendMenu(colSubMenu, MF_POPUP, 0x40000 + i, szT);
+        CheckMenuItem(colSubMenu, 0x40000 + i, MF_UNCHECKED);
+    }
+    if(m_vmultisel.Size() == 1)
+    {
+        for(int i = maxItems; i >= 0; i--)
+        {
+            for(int t = 0; t < m_vcollection.ElementAt(i)->m_visel.Size(); t++)
+            {
+                if(psel == m_vcollection.ElementAt(i)->m_visel.ElementAt(t))
+                {
+                    CheckMenuItem(colSubMenu, 0x40000 + i, MF_CHECKED);
+                }
+            }
+        }
+    }
+    else
+    {
+        vector<int> allIndices;
+
+        for(int t = 0; t < m_vmultisel.Size(); t++)
+        {
+            ISelect *iSel = m_vmultisel.ElementAt(t);
+
+            for(int i = maxItems; i >= 0 ; i--)
+            {
+                for(int t = 0; t < m_vcollection.ElementAt(i)->m_visel.Size(); t++)
+                {
+                    if((iSel == m_vcollection.ElementAt(i)->m_visel.ElementAt(t)))
+                    {
+                        allIndices.push_back(i);
+                    }
+                }
+            }
+        }
+        if(allIndices.size() % m_vmultisel.Size() == 0)
+        {
+            for(int i = 0; i < allIndices.size();i++)
+                CheckMenuItem(colSubMenu, 0x40000 + allIndices[i], MF_CHECKED);
+        }
+        else
+        {
+            // multiple elements where selected but they belong to different collections so grey-out all
+            // collection menu items to tell the user that it's not possible to add/remove them from different collections
+            for(int i = maxItems; i >= 0; i--)
+            {
+                EnableMenuItem(colSubMenu, 0x40000 + i, MF_DISABLED);
+            }
+            for(int i = 0; i < allIndices.size(); i++)
+                CheckMenuItem(colSubMenu, 0x40000 + allIndices[i], MF_CHECKED);
+        }
+    }
+}
+
 void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
 {
    POINT pt;
@@ -5240,33 +5311,8 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
       else
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER8, MF_UNCHECKED);
 
-      LocalString ls16(IDS_TO_COLLECTION);
-      AppendMenu(hmenu, MF_POPUP | MF_STRING, (size_t)colSubMenu, ls16.m_szbuffer);
+      FillCollectionContextMenu(hmenu, colSubMenu, psel);
 
-      int maxItems = m_vcollection.Size() - 1;
-      if (maxItems > 32) maxItems = 32;
-      // run through all collections and list up to 32 of them in the context menu
-      // the actual processing is done in ISelect::DoCommand() 
-      for (int i = maxItems; i >= 0; i--)
-      {
-         CComBSTR bstr;
-         m_vcollection.ElementAt(i)->get_Name(&bstr);
-         char szT[64]; // Names can only be 32 characters (plus terminator)
-         WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
-
-         AppendMenu(colSubMenu, MF_POPUP, 0x40000 + i, szT);
-         CheckMenuItem(colSubMenu, 0x40000 + i, MF_UNCHECKED);
-      }
-      for (int i = maxItems; i >= 0; i--)
-      {
-         for (int t = 0; t < m_vcollection.ElementAt(i)->m_visel.Size(); t++)
-         {
-            if (psel == m_vcollection.ElementAt(i)->m_visel.ElementAt(t))
-            {
-               CheckMenuItem(colSubMenu, 0x40000 + i, MF_CHECKED);
-            }
-         }
-      }
       LocalString ls5(IDS_LOCK);
       AppendMenu(hmenu, MF_STRING, ID_LOCK, ls5.m_szbuffer);
 
