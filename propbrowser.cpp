@@ -1074,6 +1074,11 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          dispid = 0x80010000;
 
       SmartBrowser * const psb = (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+      if (psb==NULL)
+      {
+         return FALSE;
+      }
+
       //IDispatch *pdisp = psb->m_pdisp;
       switch (code)
       {
