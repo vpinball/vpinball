@@ -89,6 +89,7 @@ public:
 
    void WriteRegDefaults();
    void GenerateCupMesh(Vertex3D_NoTex2 *buf);
+   void GenerateGottliebMesh(Vertex3D_NoTex2 *buf);
    void GenerateWilliamsMesh(Vertex3D_NoTex2 *buf);
    void GenerateHoleMesh(Vertex3D_NoTex2 *buf);
    void GenerateSimpleHoleMesh(Vertex3D_NoTex2 *buf);

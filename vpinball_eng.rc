@@ -3001,6 +3001,7 @@ IDB_KICKER_HOLE_WOOD    BITMAP                  "res\\kickerHoleWood.bmp"
 IDB_KICKER_CUP          BITMAP                  "res\\kickerCup.bmp"
 IDB_AO_DITHER           BITMAP                  "res\\AOdither.bmp"
 IDB_KICKER_WILLIAMS     BITMAP                  "res\\kickerWilliams.bmp"
+IDB_KICKER_GOTTLIEB     BITMAP                  "res\\kickerGottlieb.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -204,6 +204,7 @@
     </Image>
     <Image Include="res\bitmap4.bmp" />
     <Image Include="res\kickerWilliams.bmp" />
+    <Image Include="res\kickerGottlieb.bmp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl" />
