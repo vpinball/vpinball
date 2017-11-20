@@ -93,6 +93,7 @@ public:
    void GenerateWilliamsMesh(Vertex3D_NoTex2 *buf);
    void GenerateHoleMesh(Vertex3D_NoTex2 *buf);
    void GenerateSimpleHoleMesh(Vertex3D_NoTex2 *buf);
+   void GenerateT1Mesh(Vertex3D_NoTex2 *buf);
 
    PinTable *m_ptable;
 
