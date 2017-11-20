@@ -1052,6 +1052,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   <ItemGroup>
     <Image Include="res\AOdither.bmp" />
     <Image Include="res\ball.bmp" />
+    <Image Include="res\bitmap4.bmp" />
     <Image Include="res\bumperbase.bmp" />
     <Image Include="res\bumperCap.bmp" />
     <Image Include="res\bumperSocket.bmp" />
@@ -1059,6 +1060,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\envmap.bmp" />
     <Image Include="res\kickerCup.bmp" />
     <Image Include="res\kickerHoleWood.bmp" />
+    <Image Include="res\kickerWilliams.bmp" />
     <Image Include="res\ringenvmap.bmp" />
     <Image Include="res\script.ico" />
     <Image Include="res\vpinball.ico" />
