@@ -1085,15 +1085,6 @@ void Player::InitBallShader()
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
    m_fCabinetMode = (rotation != 0.f);
 
-   if (m_fCabinetMode && !m_ptable->m_BallDecalMode)
-      strcpy_s(m_ballShaderTechnique, MAX_PATH, "RenderBall_CabMode");
-   else if (m_fCabinetMode && m_ptable->m_BallDecalMode)
-      strcpy_s(m_ballShaderTechnique, MAX_PATH, "RenderBall_CabMode_DecalMode");
-   else if (!m_fCabinetMode && m_ptable->m_BallDecalMode)
-      strcpy_s(m_ballShaderTechnique, MAX_PATH, "RenderBall_DecalMode");
-   else
-      strcpy_s(m_ballShaderTechnique, MAX_PATH, "RenderBall");
-
    //ballShader->SetBool("cabMode", rotation != 0.f);
 
    //D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 1 );
@@ -4945,14 +4936,23 @@ void Player::DrawBalls()
 
       const bool lowDetailBall = m_ptable->GetDetailLevel() < 10;
 
-	  // old ball reflection code
+      // old ball reflection code
       //if (drawReflection)
       //   DrawBallReflection(pball, zheight, lowDetailBall);
 
       //ballShader->SetFloat("reflection_ball_playfield", m_ptable->m_playfieldReflectionStrength);
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      ballShader->SetTechnique(m_ballShaderTechnique);
 
+      if (m_fCabinetMode && !pball->m_decalMode)
+          strcpy_s(m_ballShaderTechnique, MAX_PATH, "RenderBall_CabMode");
+      else if (m_fCabinetMode && pball->m_decalMode)
+          strcpy_s(m_ballShaderTechnique, MAX_PATH, "RenderBall_CabMode_DecalMode");
+      else if (!m_fCabinetMode && pball->m_decalMode)
+          strcpy_s(m_ballShaderTechnique, MAX_PATH, "RenderBall_DecalMode");
+      else //if (!m_fCabinetMode && !pball->m_decalMode)
+          strcpy_s(m_ballShaderTechnique, MAX_PATH, "RenderBall");
+
+      ballShader->SetTechnique(m_ballShaderTechnique);
 
       ballShader->Begin(0);
       m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ballVertexBuffer, 0, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, ballIndexBuffer, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
