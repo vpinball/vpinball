@@ -220,6 +220,20 @@ STDMETHODIMP BallEx::put_FrontDecal(BSTR newVal)
    return S_OK;
 }
 
+STDMETHODIMP BallEx::get_DecalMode(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_pball->m_decalMode);
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::put_DecalMode(VARIANT_BOOL newVal)
+{
+   m_pball->m_decalMode = VBTOF(newVal);
+
+   return S_OK;
+}
+
 STDMETHODIMP BallEx::get_Name(BSTR *pVal)
 {
    *pVal = SysAllocString(L"Ball");

@@ -35,6 +35,8 @@ public:
    STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_FrontDecal)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_FrontDecal)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_DecalMode)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_DecalMode)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);

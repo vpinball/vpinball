@@ -101,6 +101,7 @@ public:
    bool m_reflectionEnabled;
    bool m_forceReflection;
    bool m_visible;
+   bool m_decalMode;
 
    static unsigned int ballID; // increased for each ball created to have an unique ID for scripts for each ball
 };

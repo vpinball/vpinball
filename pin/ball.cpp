@@ -34,6 +34,7 @@ Ball::Ball()
    m_reflectionEnabled = true;
    m_forceReflection = false;
    m_visible = true;
+   m_decalMode = g_pplayer ? g_pplayer->m_ptable->m_BallDecalMode : false;
 
    memset(m_szImage, 0, MAXTOKEN);
    memset(m_szImageFront, 0, MAXTOKEN);
@@ -65,6 +66,7 @@ void Ball::Init(const float mass)
    m_reflectionEnabled = true;
    m_forceReflection = false;
    m_visible = true;
+   m_decalMode = g_pplayer->m_ptable->m_BallDecalMode;
 
    m_coll.obj = NULL;
 #ifdef C_DYNAMIC
