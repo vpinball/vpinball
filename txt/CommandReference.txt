@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.4:
+- document missing FrontDecal and UserValue for the ball element
 - add Scatter to the bumper element
 - add BlendDisableLightingFromBelow to the primitive element
 - add WindowWidth and WindowHeight to globals
@@ -787,12 +788,14 @@ VelX(float)
 VelY(float)
 VelZ(float)
 Image(string)
+FrontDecal(string)
 ID(int) - gets a unique ID for each ball created or allows to set an artificial one to distinguish different balls on the table
 BulbIntensityScale(float) - allows to dampen/scale the intensity of (bulb-)light reflections on each ball (e.g. to simulate shadowing in the ball lane, etc)
 ReflectionEnabled(bool) - if playfield reflects objects this can be used to enable/disable the reflection for a specific ball
 PlayfieldReflectionScale(float) - allows to dampen/scale the contribution of the playfield reflections on each ball (see BallPlayfieldReflectionScale() for the Table)
 ForceReflection(bool) - if enabled the ball will be reflection on the playfield even it's on a ramp or an upper playfield. (default=0)
 Visible(bool) - changes if the ball is visible on the playfield or not (e.g. only physics simulated)
+UserValue(any) - can store any user defined value for re-use later-on
 
 
 RUBBER
