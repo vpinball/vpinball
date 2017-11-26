@@ -1,5 +1,7 @@
 VP 10.4.0 Changelog
 ------------------------
+- add new kicker meshes (KickerCup2, KickerWilliams, KickerGottlieb)
+
 - change context menu behavior of add/remove to collection: it's possible to add/remove one or multiple elements to other collections. 
   If you selected multiple elements but they are not part of the same collection/or are not part of any collection the context menu is greyed out and the check marks tell you which collections were found 
   for these selected elements.
