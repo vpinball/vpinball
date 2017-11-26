@@ -1058,7 +1058,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\chevron.bmp" />
     <Image Include="res\envmap.bmp" />
     <Image Include="res\kickerCup.bmp" />
+    <Image Include="res\kickerGottlieb.bmp" />
     <Image Include="res\kickerHoleWood.bmp" />
+    <Image Include="res\kickerT1.bmp" />
+    <Image Include="res\kickerWilliams.bmp" />
     <Image Include="res\ringenvmap.bmp" />
     <Image Include="res\script.ico" />
     <Image Include="res\vpinball.ico" />

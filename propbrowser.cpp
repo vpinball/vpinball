@@ -1101,7 +1101,9 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             hwndEdit = ChildWindowFromPoint((HWND)lParam, pt);
             fChanged = GetWindowLongPtr(hwndEdit, GWLP_USERDATA);
             if (fChanged)
-               SetWindowLongPtr(hwndEdit, GWLP_USERDATA, 0);
+               // set user data to 1 because this is checked also in this function for case CBN_SELENDOK if proptype is 0
+               // if so the the value is requested by PinTable::GetPredefinedValues() (e.g. image name, material name)
+               SetWindowLongPtr(hwndEdit, GWLP_USERDATA, 1); 
          }
 
          if (fChanged)//SendMessage(hwndEdit, EM_GETMODIFY, 0, 0))
@@ -1194,7 +1196,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             psb->GetBaseIDisp()->QueryInterface(IID_IPerPropertyBrowsing, (void **)&pippb);
 
             CComVariant var;
-            pippb->GetPredefinedValue(dispid, (DWORD)cookie, &var);
+            HRESULT res = pippb->GetPredefinedValue(dispid, (DWORD)cookie, &var);
 
             pippb->Release();
 
