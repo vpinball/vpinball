@@ -1349,18 +1349,17 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_EDIT_AUDIOOPTIONS:
    {
-       ShowSubDialog(m_audioOptDialog);
+       m_audioOptDialog.DoModal(m_hwnd);
       break;
    }
    case ID_EDIT_PHYSICSOPTIONS:
    {
-       ShowSubDialog(m_physicsOptDialog);
+       m_physicsOptDialog.DoModal(m_hwnd);
        break;
    }
    case ID_EDIT_EDITOROPTIONS:
    {
-       ShowSubDialog(m_editorOptDialog);
-
+       m_editorOptDialog.DoModal(m_hwnd);
       // refresh editor options from the registry
       InitRegValues();
       // force a screen refresh (it an active table is loaded)
@@ -1371,7 +1370,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_EDIT_VIDEOOPTIONS:
    {
-       ShowSubDialog(m_videoOptDialog);
+       m_videoOptDialog.DoModal(m_hwnd);
        break;
    }
    case ID_TABLE_TABLEINFO:
@@ -1379,7 +1378,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
        ptCur = GetActiveTable();
        if (ptCur)
        {
-           ShowSubDialog(m_tableInfoDialog);
+           m_tableInfoDialog.DoModal(m_hwnd);
        }
        break;
    }
@@ -1480,7 +1479,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
            else
            {
                ShowSubDialog(m_collectionMngDlg);
-
+               
                m_sb.PopulateDropdowns(); // May need to update list of collections
                m_sb.RefreshProperties();
            }
