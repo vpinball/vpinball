@@ -7,6 +7,8 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.4:
+- support reading nudge data from table script, and reading/writing nudge calibration settings:
+  NudgeGetCalibration/NudgeSetCalibration, NudgeSensorStatus, NudgeTiltStatus
 - add DecalMode to the ball element
 - document missing FrontDecal and UserValue for the ball element
 - add Scatter to the bumper element
@@ -92,6 +94,9 @@ Methods
 -------
 
 Nudge(float Angle, float Force)
+NudgeGetCalibration/NudgeSetCalibration(int XMax, int YMax, int XGain, int YGain, int DeadZone, int TiltSensitivty)
+NudgeSensorStatus(VARIANT *XNudge, VARIANT *YNudge)
+NudgeTiltStatus(VARIANT *XPlumb, VARIANT *YPlumb, VARIANT *TiltPercent)
 PlaySound(string, int loopcount, float volume, float pan, float randompitch, int pitch, bool useexisting, bool restart, float front_rear_fade)
  - also allows to increase/decrease the frequency of an already playing samples, and in general to apply all the settings to an already playing sample, and to choose if to restart this playing sample from the beginning or not
    loopcound chooses the amount of loops
