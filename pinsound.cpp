@@ -468,6 +468,11 @@ void PinSoundCopy::Play(const float volume, const float randompitch, const int p
 		m_pDSBuffer->SetCurrentPosition(0);
 }
 
+void PinSoundCopy::Stop()
+{
+	m_pDSBuffer->Stop();
+}
+
 HRESULT PinSoundCopy::Get3DBuffer()
 {
 	HRESULT hr = m_pDSBuffer->QueryInterface(IID_IDirectSound3DBuffer, (void**)&m_pDS3DBuffer);

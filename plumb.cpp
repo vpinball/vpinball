@@ -62,7 +62,9 @@ void plumb_update(const U32 curr_time_msec, const float getx, const float gety) 
 
    // Check if we hit the edge.
    const F32 len2 = x * x + y * y;
-   if (len2 > (1.0f - gPlumb.tiltsens) * (1.0f - gPlumb.tiltsens))
+   const F32 TiltPerc = (len2 * 100.0f) / ((1.0f - gPlumb.tiltsens) * (1.0f - gPlumb.tiltsens));
+
+   if (TiltPerc > 100.0f)
    {
       // Bounce the plumb and scrub velocity.
       const F32 oolen = ((1.0f - gPlumb.tiltsens) / sqrtf(len2)) * 0.90f;
@@ -79,6 +81,19 @@ void plumb_update(const U32 curr_time_msec, const float getx, const float gety) 
       }
    }
 
+   // Update player for diagnostic/table script visibility.  Only update if input value is larger than what's there.
+   // When the table script reads the values, they will reset to 0. 
+   if (TiltPerc > g_pplayer->m_ptable->m_tblNudgeReadTilt)
+      g_pplayer->m_ptable->m_tblNudgeReadTilt = TiltPerc;
+   if (fabsf(getx) > fabsf(g_pplayer->m_ptable->m_tblNudgeReadX))
+      g_pplayer->m_ptable->m_tblNudgeReadX = getx;
+   if (fabsf(gety) > fabsf(g_pplayer->m_ptable->m_tblNudgeReadY))
+      g_pplayer->m_ptable->m_tblNudgeReadY = gety;
+   if (fabsf(x) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumbX))
+      g_pplayer->m_ptable->m_tblNudgePlumbX = x;
+   if (fabsf(y) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumbY))
+      g_pplayer->m_ptable->m_tblNudgePlumbY = y;
+
    // Dampen the velocity.
    vx -= 2.50f * (vx * dt);
    vy -= 2.50f * (vy * dt);
@@ -91,6 +106,8 @@ void plumb_update(const U32 curr_time_msec, const float getx, const float gety) 
       // This reduces annoying jittering when at rest.
       vx = 0.0f;
       vy = 0.0f;
+      x = 0.0f;
+      y = 0.0f;
    }
 
    // Update position.

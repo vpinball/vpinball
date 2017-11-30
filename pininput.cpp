@@ -83,6 +83,24 @@ PinInput::PinInput()
    m_cameraModeAltKey = false;
    m_cameraMode = 0;
 
+   LoadSettings();
+
+   m_exit_stamp = 0;
+   m_first_stamp = msec();
+
+   m_as_down = 0;
+   m_as_didonce = 0;
+
+   m_tilt_updown = DISPID_GameEvents_KeyUp;
+
+   m_linearPlunger = false;
+
+   gMixerKeyDown = false;
+   gMixerKeyUp = false;
+}
+
+void PinInput::LoadSettings()
+{
    HRESULT hr;
    int tmp;
 
@@ -209,13 +227,13 @@ PinInput::PinInput()
    hr = GetRegInt("Player", "JoyDebugKey", &tmp);
    if (hr == S_OK) m_joydebugballs = tmp;
 
-   hr = GetRegInt( "Player", "JoyDebuggerKey", &tmp );
-   if(hr == S_OK) m_joydebugger = tmp;
+   hr = GetRegInt("Player", "JoyDebuggerKey", &tmp);
+   if (hr == S_OK) m_joydebugger = tmp;
 
-   hr = GetRegInt( "Player", "JoyLockbarKey", &tmp );
-   if(hr == S_OK) m_joylockbar = tmp;
+   hr = GetRegInt("Player", "JoyLockbarKey", &tmp);
+   if (hr == S_OK) m_joylockbar = tmp;
 
-   hr = GetRegInt( "Player", "EnableMouseInPlayer", &tmp );
+   hr = GetRegInt("Player", "EnableMouseInPlayer", &tmp);
    if (hr == S_OK) m_enableMouseInPlayer = (tmp == fTrue);
 
    hr = GetRegInt("Player", "EnableCameraModeFlyAround", &tmp);
@@ -229,19 +247,6 @@ PinInput::PinInput()
       m_deadz = 0;
    else
       m_deadz = m_deadz*JOYRANGEMX / 100;
-
-   m_exit_stamp = 0;
-   m_first_stamp = msec();
-
-   m_as_down = 0;
-   m_as_didonce = 0;
-
-   m_tilt_updown = DISPID_GameEvents_KeyUp;
-
-   m_linearPlunger = false;
-
-   gMixerKeyDown = false;
-   gMixerKeyUp = false;
 }
 
 //-----------------------------------------------------------------------------

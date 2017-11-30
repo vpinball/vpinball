@@ -52,6 +52,7 @@ public:
 	PinSoundCopy(class PinSound *pOriginal);
 
 	void Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart);
+	void Stop();
 	HRESULT Get3DBuffer();
 
 	LPDIRECTSOUNDBUFFER m_pDSBuffer;

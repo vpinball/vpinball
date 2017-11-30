@@ -28,6 +28,7 @@ private:
     void SavePosition();
 
     HWND hSoundList;
+    bool m_bPlayedSound;
     char m_filename[MAX_PATH];
     char m_initDir[MAX_PATH];
     static int m_columnSortOrder;
