@@ -433,6 +433,7 @@ public:
    HRESULT LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   void ReadAccelerometerCalibration();
    virtual IEditable *GetIEditable() { return (IEditable *)this; }
    virtual void Delete() {} // Can't delete table itself
    virtual void Uncreate() {}
@@ -491,6 +492,7 @@ public:
    //void Play(PinSoundCopy * ppsc, const int &decibelvolume, float randompitch, const LPDIRECTSOUNDBUFFER &pdsb, int pitch, PinDirectSound * pDS, float pan, float front_rear_fade, const int &flags, const VARIANT_BOOL &restart);
 
    HRESULT StopSound(BSTR Sound);
+   void StopAllSounds();
 
    BOOL CheckPermissions(unsigned long flag);
    BOOL IsTableProtected();
@@ -625,6 +627,12 @@ public:
    float m_tblAccelAmpY;			// Accelerometer gain Y axis
    int   m_tblAccelMaxX;           // Accelerometer max value X axis
    int   m_tblAccelMaxY;			// Accelerometer max value Y axis
+
+   float m_tblNudgeReadX;
+   float m_tblNudgeReadY;
+   float m_tblNudgeReadTilt;
+   float m_tblNudgePlumbX;
+   float m_tblNudgePlumbY;
 
    U32   m_tblAutoStart;           // msecs before trying an autostart if doing once-only method .. 0 is automethod
    U32   m_tblAutoStartRetry;      // msecs before retrying to autostart.
@@ -855,6 +863,11 @@ public:
    STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
 
    STDMETHOD(Nudge)(float Angle, float Force);
+   STDMETHOD(NudgeGetCalibration)(VARIANT *XMax, VARIANT *YMax, VARIANT *XGain, VARIANT *YGain, VARIANT *DeadZone, VARIANT *TiltSensitivty);
+   STDMETHOD(NudgeSetCalibration)(int XMax, int YMax, int XGain, int YGain, int DeadZone, int TiltSensitivty);
+   STDMETHOD(NudgeSensorStatus)(VARIANT *XNudge, VARIANT *YNudge);
+   STDMETHOD(NudgeTiltStatus)(VARIANT *XPlumb, VARIANT *YPlumb, VARIANT *Tilt);
+
    STDMETHOD(get_Name)(BSTR *pVal);
    STDMETHOD(get_MechanicalTilt)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_LeftMagnaSave)(/*[out, retval]*/ long *pVal);

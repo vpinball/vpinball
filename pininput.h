@@ -33,6 +33,7 @@ class PinInput
 {
 public:
    PinInput();
+   void LoadSettings();
    ~PinInput() {}
 
    void Init(const HWND hwnd);
