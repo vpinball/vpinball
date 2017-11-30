@@ -552,6 +552,7 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,262,128,128,21
     GROUPBOX        "",IDC_STATIC,262,146,128,21
     LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,273,168,25
+    LTEXT           "To interactively set, calibrate and test the Nudge parameters, please load the\n'Nudge Test and Calibration.vpx' table and run it",IDC_STATIC,255,273,168,25
     CONTROL         "Enable Mouse handling during Play",IDC_ENABLE_MOUSE_PLAYER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,233,150,10
     CONTROL         "Enable flying around (Arrow Keys + Left Alt Key) during Camera/Light Edit Mode",IDC_ENABLE_CAMERA_FLY_AROUND,
