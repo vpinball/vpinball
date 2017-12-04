@@ -513,12 +513,20 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                {
                   return FALSE;
                }
+               size_t len = strlen(pinfo->item.pszText);
+               if(len > 31)
+               {
+                   ShowError("Material names can only be up to 31 characters long!");
+                   return FALSE;
+               }
+
                LVITEM lvitem;
                lvitem.mask = LVIF_PARAM;
                lvitem.iItem = pinfo->item.iItem;
                lvitem.iSubItem = 0;
                ListView_GetItem(m_hMaterialList, &lvitem);
                Material *pmat = (Material*)lvitem.lParam;
+
                if (pt->IsMaterialNameUnique(pinfo->item.pszText))
                {
                   strncpy_s(pmat->m_szName, pinfo->item.pszText, 31);
