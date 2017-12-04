@@ -188,7 +188,7 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter
 
       for (int i = 0; i < m_vdpoint.Size(); i++)
       {
-         DragPoint *pdp1 = m_vdpoint.ElementAt(i);
+         DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
          const float dx = (pdp1->m_v.x - centerx) * scalex;
          const float dy = (pdp1->m_v.y - centery) * scaley;
          pdp1->m_v.x = centerx + dx;
@@ -202,7 +202,7 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter
 
       for (int i = 0; i < m_vdpoint.Size(); i++)
       {
-         DragPoint *pdp1 = m_vdpoint.ElementAt(i);
+         DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
          const float dx = (pdp1->m_v.x - centerx) * scalex;
          const float dy = (pdp1->m_v.y - centery) * scaley;
          pdp1->m_v.x = centerx + dx;
@@ -772,19 +772,19 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
       SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
       psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-      char szT[256];
-      float angle = psel->GetRotate();
-      Vertex2D v;
-      
+      const float angle = psel->GetRotate();
+
       SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_SETCHECK, BST_CHECKED, 0);
-      
+
+      char szT[256];
       f2sz(angle, szT);
       SetDlgItemText(hwndDlg, IDC_ROTATEBY, szT);
+      Vertex2D v;
       psel->GetCenter(&v);
       f2sz(v.x, szT);
       SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
       f2sz(v.y, szT);
-      SetDlgItemText(hwndDlg, IDC_CENTERY, szT);      
+      SetDlgItemText(hwndDlg, IDC_CENTERY, szT);
    }
    return TRUE;
    break;
@@ -840,13 +840,13 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
          {
             if (rotateApplyCount == 0)
             {
-               Vertex2D v;
                char szT[256];
                GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);
                const float f = sz2f(szT);
 
                useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
                GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
+               Vertex2D v;
                v.x = sz2f(szT);
                GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
                v.y = sz2f(szT);
@@ -858,7 +858,6 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
          }
          case IDC_ROTATE_APPLY_BUTTON:
          {
-            Vertex2D v;
             rotateApplyCount++;
             char szT[256];
             GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);
@@ -866,6 +865,7 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
             useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
             GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
+            Vertex2D v;
             v.x = sz2f(szT);
             GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
             v.y = sz2f(szT);
@@ -905,7 +905,7 @@ int scaleApplyCount = 0;
 INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    ISelect *psel;
-      bool useElementCenter = false;
+   bool useElementCenter = false;
 
    switch (uMsg)
    {
@@ -916,9 +916,9 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
       psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
       Vertex2D v;
-      char szT[256];
       psel->GetScale(&v.x, &v.y);
 
+      char szT[256];
       f2sz(v.x, szT);
       SetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT);
       f2sz(v.y, szT);
@@ -934,8 +934,8 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
       SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_SETCHECK, TRUE, 0);
 
-      HWND hwndEdit = GetDlgItem(hwndDlg, IDC_SCALEY);
-      HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SCALEY);
+      const HWND hwndEdit = GetDlgItem(hwndDlg, IDC_SCALEY);
+      const HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SCALEY);
       EnableWindow(hwndEdit, FALSE);
       EnableWindow(hwndText, FALSE);
    }
@@ -1072,9 +1072,9 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
          case IDC_SQUARE:
          {
-            size_t checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
-            HWND hwndEdit = GetDlgItem(hwndDlg, IDC_SCALEY);
-            HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SCALEY);
+            const size_t checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
+            const HWND hwndEdit = GetDlgItem(hwndDlg, IDC_SCALEY);
+            const HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SCALEY);
 
             EnableWindow(hwndEdit, !(checked == BST_CHECKED));
             EnableWindow(hwndText, !(checked == BST_CHECKED));
