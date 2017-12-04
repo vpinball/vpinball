@@ -5296,7 +5296,7 @@ void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect 
         }
         if(allIndices.size() % m_vmultisel.Size() == 0)
         {
-            for(int i = 0; i < allIndices.size();i++)
+            for(size_t i = 0; i < allIndices.size();i++)
                 CheckMenuItem(colSubMenu, 0x40000 + allIndices[i], MF_CHECKED);
         }
         else
@@ -5307,7 +5307,7 @@ void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect 
             {
                 EnableMenuItem(colSubMenu, 0x40000 + i, MF_DISABLED);
             }
-            for(int i = 0; i < allIndices.size(); i++)
+            for(size_t i = 0; i < allIndices.size(); i++)
                 CheckMenuItem(colSubMenu, 0x40000 + allIndices[i], MF_CHECKED);
         }
     }
@@ -5782,18 +5782,16 @@ bool PinTable::GetCollectionIndex(ISelect *element, int &collectionIndex, int &e
 void PinTable::LockElements()
 {
    BeginUndo();
-   bool fLock = FMutilSelLocked() ? false : true;
+   const bool fLock = !FMutilSelLocked();
    for (int i = 0; i < m_vmultisel.Size(); i++)
    {
-      ISelect *psel;
-      IEditable *pedit;
-      psel = m_vmultisel.ElementAt(i);
+      ISelect * const psel = m_vmultisel.ElementAt(i);
       if (psel)
       {
-         pedit = psel->GetIEditable();
+         IEditable * const pedit = psel->GetIEditable();
          if (pedit)
          {
-            psel->GetIEditable()->MarkForUndo();
+            pedit->MarkForUndo();
             psel->m_fLocked = fLock;
          }
       }
