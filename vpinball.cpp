@@ -1772,8 +1772,30 @@ void VPinball::LoadFileName(char *szFileName)
    else
    {
       ppt->InitPostLoad(this);
-      TitleFromFilename(szFileName, ppt->m_szTitle);
-      ppt->SetCaption(ppt->m_szTitle);
+      
+	  TitleFromFilename(szFileName, ppt->m_szTitle);
+      
+	  ppt->SetCaption(ppt->m_szTitle);
+
+	  // auto-import POV settings if exist...
+
+	  char szFileNameAuto[MAX_PATH];
+	  strcpy_s(szFileNameAuto, m_currentTablePath);
+	  strcat_s(szFileNameAuto, ppt->m_szTitle);
+	  strcat_s(szFileNameAuto, ".xml");
+	  if (Exists(szFileNameAuto)) // We check if there is a table pov settings first
+	  {
+		  ppt->ImportBackdropPOV(szFileNameAuto);
+	  }
+	  else // Otherwise, we seek for autopov settings
+	  {
+		  strcpy_s(szFileNameAuto, m_currentTablePath);
+		  strcat_s(szFileNameAuto, "autopov.xml");
+		  if (Exists(szFileNameAuto))
+		  {
+			  ppt->ImportBackdropPOV(szFileNameAuto);
+		  }
+	  }
 
       // get the load path from the filename
 	  SetRegValue("RecentDir", "LoadDir", REG_SZ, m_currentTablePath, lstrlen(m_currentTablePath));

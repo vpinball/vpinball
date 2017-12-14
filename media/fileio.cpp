@@ -1,5 +1,18 @@
 #include "stdafx.h"
 
+BOOL Exists(char* filePath)
+{
+	//This will get the file attributes bitlist of the file
+	DWORD fileAtt = GetFileAttributesA(filePath);
+
+	//If an error occurred it will equal to INVALID_FILE_ATTRIBUTES
+	if (fileAtt == INVALID_FILE_ATTRIBUTES)
+		return FALSE;
+
+	//If the path referers to a directory it should also not exists.
+	return ((fileAtt & FILE_ATTRIBUTE_DIRECTORY) == 0);
+}
+
 void ExtensionFromFilename(char *szfilename, char *szextension)
 {
    const int len = lstrlen(szfilename);
