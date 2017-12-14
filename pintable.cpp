@@ -6498,27 +6498,34 @@ void PinTable::ExportTableMesh()
 
 }
 
-void PinTable::ImportBackdropPOV()
+void PinTable::ImportBackdropPOV(const char *filename)
 {
     char szFileName[1024];
     bool oldFormatLoaded = false;
     szFileName[0] = '\0';
 
-    OPENFILENAME ofn;
-    ZeroMemory(&ofn, sizeof(OPENFILENAME));
-    ofn.lStructSize = sizeof(OPENFILENAME);
-    ofn.hInstance = g_hinst;
-    ofn.hwndOwner = g_pvp->m_hwnd;
-    // TEXT
-    ofn.lpstrFilter = "XML file (*.xml)\0*.xml\0";
-    ofn.lpstrFile = szFileName;
-    ofn.nMaxFile = _MAX_PATH;
-    ofn.lpstrDefExt = "xml";
-    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+	if (filename == NULL)
+	{
+		OPENFILENAME ofn;
+		ZeroMemory(&ofn, sizeof(OPENFILENAME));
+		ofn.lStructSize = sizeof(OPENFILENAME);
+		ofn.hInstance = g_hinst;
+		ofn.hwndOwner = g_pvp->m_hwnd;
+		// TEXT
+		ofn.lpstrFilter = "XML file (*.xml)\0*.xml\0";
+		ofn.lpstrFile = szFileName;
+		ofn.nMaxFile = _MAX_PATH;
+		ofn.lpstrDefExt = "xml";
+		ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-    const int ret = GetOpenFileName(&ofn);
-    if (ret == 0)
-        return;
+		const int ret = GetOpenFileName(&ofn);
+		if (ret == 0)
+			return;
+	}
+	else
+	{
+		strcpy_s(szFileName, filename);
+	}
 
     xml_document<> xmlDoc;
 
@@ -6581,24 +6588,24 @@ void PinTable::ImportBackdropPOV()
 
 void PinTable::ExportBackdropPOV()
 {
-    OPENFILENAME ofn;
-    memset(m_szObjFileName, 0, MAX_PATH);
-    ZeroMemory(&ofn, sizeof(OPENFILENAME));
-    ofn.lStructSize = sizeof(OPENFILENAME);
-    ofn.hInstance = g_hinst;
-    ofn.hwndOwner = g_pvp->m_hwnd;
-    // TEXT
-    ofn.lpstrFilter = "XML file(*.xml)\0*.xml\0";
-    ofn.lpstrFile = m_szObjFileName;
-    ofn.nMaxFile = _MAX_PATH;
-    ofn.lpstrDefExt = "xml";
-    ofn.Flags = OFN_OVERWRITEPROMPT;
+	OPENFILENAME ofn;
+	memset(m_szObjFileName, 0, MAX_PATH);
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hInstance = g_hinst;
+	ofn.hwndOwner = g_pvp->m_hwnd;
+	// TEXT
+	ofn.lpstrFilter = "XML file(*.xml)\0*.xml\0";
+	ofn.lpstrFile = m_szObjFileName;
+	ofn.nMaxFile = _MAX_PATH;
+	ofn.lpstrDefExt = "xml";
+	ofn.Flags = OFN_OVERWRITEPROMPT;
 
-    int ret = GetSaveFileName(&ofn);
+	int ret = GetSaveFileName(&ofn);
 
-    // user canceled
-    if (ret == 0)
-        return;// S_FALSE;
+	// user canceled
+	if (ret == 0)
+		return;// S_FALSE;
 
     char strBuf[MAX_PATH];
     xml_document<> xmlDoc;

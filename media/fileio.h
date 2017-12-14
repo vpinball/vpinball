@@ -1,6 +1,7 @@
 #pragma once
 #define FID(A) *(int *)#A
 
+BOOL Exists(char* filePath);
 void TitleFromFilename(char *szfilename, char *sztitle);
 void ExtensionFromFilename(char *szfilename, char *szextension);
 BOOL RawReadFromFile(char *szfilename, int *psize, char **pszout);

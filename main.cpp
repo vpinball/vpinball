@@ -186,6 +186,7 @@ private:
    HRESULT hRes;
    bool bRun;
    bool fPlay;
+   bool fPov;
    bool fFile;
    TCHAR szTableFileName[_MAX_PATH];
 
@@ -257,7 +258,7 @@ public:
             || lstrcmpi(szArglist[i], _T("-Help")) == 0 || lstrcmpi(szArglist[i], _T("/Help")) == 0
             || lstrcmpi(szArglist[i], _T("-?")) == 0 || lstrcmpi(szArglist[i], _T("/?")) == 0)
          {
-            ShowError("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n\n-Edit [filename]  load file into VP\n-Play [filename]  load and play file");
+            ShowError("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n\n-Edit [filename]  load file into VP\n-Play [filename]  load and play file\n-Pov [filename]  load, export pov and close");
             bRun = false;
             break;
          }
@@ -281,10 +282,12 @@ public:
 
          const bool editfile = (lstrcmpi(szArglist[i], _T("-Edit")) == 0 || lstrcmpi(szArglist[i], _T("/Edit")) == 0);
          const bool playfile = (lstrcmpi(szArglist[i], _T("-Play")) == 0 || lstrcmpi(szArglist[i], _T("/Play")) == 0);
-         if ((editfile || playfile) && (i + 1 < nArgs))
+		 const bool povfile = (lstrcmpi(szArglist[i], _T("-Pov")) == 0 || lstrcmpi(szArglist[i], _T("/Pov")) == 0);
+		 if ((editfile || playfile || povfile) && (i + 1 < nArgs))
          {
             fFile = true;
             fPlay = playfile;
+			fPov = povfile;
 
             // Remove leading - or /
             char* filename;
@@ -316,7 +319,7 @@ public:
                   SetCurrentDirectory(szLoadDir);
                }
 
-            if (playfile)
+            if (playfile || povfile)
                VPinball::SetOpenMinimized();
 
             break;
@@ -409,6 +412,9 @@ public:
 
             if (fPlay && lf)
                g_pvp->DoPlay();
+
+			if (fPov && lf)
+			   g_pvp->Quit();
          }
 
          // VBA APC handles message loop (bastards)

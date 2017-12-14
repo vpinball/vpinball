@@ -317,7 +317,7 @@ public:
 
    void ExportBlueprint();
    void ExportTableMesh();
-   void ImportBackdropPOV();
+   void ImportBackdropPOV(const char *filename = NULL);
    void ExportBackdropPOV();
 
    //void FireVoidEvent(int dispid);
