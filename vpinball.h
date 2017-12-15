@@ -91,6 +91,7 @@ public:
    HRESULT MainMsgLoop();
    HRESULT ApcHost_OnIdle(BOOL* pfContinue);
    HRESULT ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed);
+   BOOL    processKeyInputForDialogs(MSG *pmsg);
 
    BOOL CloseTable(PinTable *ppt);
 

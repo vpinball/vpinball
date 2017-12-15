@@ -2099,12 +2099,34 @@ void VPinball::UpdateRecentFileList(char *szfilename)
    }
 }
 
+BOOL VPinball::processKeyInputForDialogs(MSG *pmsg)
+{
+    if(g_pvp->m_ptableActive)
+    {
+        if(g_pvp->m_materialDialog.IsWindow())
+            return g_pvp->m_materialDialog.IsDialogMessage(*pmsg);
+        if(g_pvp->m_imageMngDlg.IsWindow())
+            return g_pvp->m_imageMngDlg.IsDialogMessage(*pmsg);
+        if(g_pvp->m_soundMngDlg.IsWindow())
+            return g_pvp->m_soundMngDlg.IsDialogMessage(*pmsg);
+        if(g_pvp->m_collectionMngDlg.IsWindow())
+            return g_pvp->m_collectionMngDlg.IsDialogMessage(*pmsg);
+        if(g_pvp->m_dimensionDialog.IsWindow())
+            return g_pvp->m_dimensionDialog.IsDialogMessage(*pmsg);
+    }
+    return false;
+}
+
 HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
 {
    *pfConsumed = FALSE;
 
    if (!g_pplayer)
    {
+       *pfConsumed = processKeyInputForDialogs(pmsg);
+       if(*pfConsumed)
+           return NOERROR;
+
       for (unsigned i = 0; i < m_sb.m_vhwndDialog.size(); i++)
       {
          if (::IsDialogMessage(m_sb.m_vhwndDialog[i], pmsg))
@@ -2133,8 +2155,7 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
       {
          if (::IsDialogMessage(m_pcv->m_hwndFind, pmsg))
             *pfConsumed = TRUE;
-      }
-
+      }      
       if (!(*pfConsumed))
       {
          const int fTranslated = TranslateAccelerator(m_hwnd, g_haccel, pmsg);
