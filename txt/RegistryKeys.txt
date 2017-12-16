@@ -12,3 +12,4 @@ This is a quick overview of all non-exposed registry keys VP parses.
 "Player" / "Volmod"           sets default sound mixer volume (0..1000)
 "Player" / "PlungerFilter"    overrides plunger filter table setting ("Filter Mechanical Plunger")
 "Player" / "PlungerNormalize" overrides plunger adjust table setting ("Mech-Plunger Adjust")
+"Player" / "MinPhysLoopTime"  artificially lengthen the execution of the physics loop by X usecs, to give more opportunities to read changes from input(s) (mainly useful if vsync is enabled, too) (try values in the multiple 100s up to maximum 1000 range, in general: the more, the faster the CPU is)
