@@ -384,7 +384,8 @@ public:
 
    Vector<CLSID> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
 
-   int m_sleeptime;			// time to sleep during each frame - can helps side threads like vpinmame
+   int m_sleeptime;          // time to sleep during each frame - can helps side threads like vpinmame
+   int m_minphyslooptime;    // minimum physics loop processing time in usec (0-1000), effort to reduce input latency (mainly useful if vsync is enabled, too)
 
    float m_globalEmissionScale;
 
