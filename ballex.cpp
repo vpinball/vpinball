@@ -142,6 +142,126 @@ STDMETHODIMP BallEx::put_VelZ(float newVal)
    return S_OK;
 }
 
+STDMETHODIMP BallEx::get_AngVelX(float *pVal)
+{
+   CHECKSTALEBALL
+
+   *pVal = m_pball->m_angularvelocity.x;
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::put_AngVelX(float newVal)
+{
+   CHECKSTALEBALL
+
+   m_pball->m_angularvelocity.x = newVal;
+
+   m_pball->CalcHitRect();
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::get_AngVelY(float *pVal)
+{
+   CHECKSTALEBALL
+
+   *pVal = m_pball->m_angularvelocity.y;
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::put_AngVelY(float newVal)
+{
+   CHECKSTALEBALL
+
+   m_pball->m_angularvelocity.y = newVal;
+
+   m_pball->CalcHitRect();
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::get_AngVelZ(float *pVal)
+{
+   CHECKSTALEBALL
+
+   *pVal = m_pball->m_angularvelocity.z;
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::put_AngVelZ(float newVal)
+{
+   CHECKSTALEBALL
+
+   m_pball->m_angularvelocity.z = newVal;
+
+   m_pball->CalcHitRect();
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::get_AngMomX(float *pVal)
+{
+   CHECKSTALEBALL
+
+   *pVal = m_pball->m_angularmomentum.x;
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::put_AngMomX(float newVal)
+{
+   CHECKSTALEBALL
+
+   m_pball->m_angularmomentum.x = newVal;
+
+   m_pball->CalcHitRect();
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::get_AngMomY(float *pVal)
+{
+   CHECKSTALEBALL
+
+   *pVal = m_pball->m_angularmomentum.y;
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::put_AngMomY(float newVal)
+{
+   CHECKSTALEBALL
+
+   m_pball->m_angularmomentum.y = newVal;
+
+   m_pball->CalcHitRect();
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::get_AngMomZ(float *pVal)
+{
+   CHECKSTALEBALL
+
+   *pVal = m_pball->m_angularmomentum.z;
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::put_AngMomZ(float newVal)
+{
+   CHECKSTALEBALL
+
+   m_pball->m_angularmomentum.z = newVal;
+
+   m_pball->CalcHitRect();
+
+   return S_OK;
+}
+
 STDMETHODIMP BallEx::get_Color(OLE_COLOR *pVal)
 {
    CHECKSTALEBALL

@@ -49,6 +49,18 @@ public:
    STDMETHOD(put_VelY)(/*[in]*/ float newVal);
    STDMETHOD(get_VelX)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_VelX)(/*[in]*/ float newVal);
+   STDMETHOD(get_AngVelZ)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_AngVelZ)(/*[in]*/ float newVal);
+   STDMETHOD(get_AngVelY)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_AngVelY)(/*[in]*/ float newVal);
+   STDMETHOD(get_AngVelX)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_AngVelX)(/*[in]*/ float newVal);
+   STDMETHOD(get_AngMomZ)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_AngMomZ)(/*[in]*/ float newVal);
+   STDMETHOD(get_AngMomY)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_AngMomY)(/*[in]*/ float newVal);
+   STDMETHOD(get_AngMomX)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_AngMomX)(/*[in]*/ float newVal);
    STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Y)(/*[in]*/ float newVal);
    STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);

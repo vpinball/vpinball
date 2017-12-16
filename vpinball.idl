@@ -2214,6 +2214,19 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(5), helpstring("property Z")] HRESULT Z([in] float newVal);
                 [propget, id(6), helpstring("property VelZ")] HRESULT VelZ([out, retval] float *pVal);
                 [propput, id(6), helpstring("property VelZ")] HRESULT VelZ([in] float newVal);
+                [propget, id(14), helpstring("property AngVelX")] HRESULT AngVelX([out, retval] float *pVal);
+                [propput, id(14), helpstring("property AngVelX")] HRESULT AngVelX([in] float newVal);
+                [propget, id(15), helpstring("property AngVelY")] HRESULT AngVelY([out, retval] float *pVal);
+                [propput, id(15), helpstring("property AngVelY")] HRESULT AngVelY([in] float newVal);
+                [propget, id(16), helpstring("property AngVelZ")] HRESULT AngVelZ([out, retval] float *pVal);
+                [propput, id(16), helpstring("property AngVelZ")] HRESULT AngVelZ([in] float newVal);
+                [propget, id(17), helpstring("property AngMomX")] HRESULT AngMomX([out, retval] float *pVal);
+                [propput, id(17), helpstring("property AngMomX")] HRESULT AngMomX([in] float newVal);
+                [propget, id(18), helpstring("property AngMomY")] HRESULT AngMomY([out, retval] float *pVal);
+                [propput, id(18), helpstring("property AngMomY")] HRESULT AngMomY([in] float newVal);
+                [propget, id(19), helpstring("property AngMomZ")] HRESULT AngMomZ([out, retval] float *pVal);
+                [propput, id(19), helpstring("property AngMomZ")] HRESULT AngMomZ([in] float newVal);
+
                 [propget, id(7), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
                 [propput, id(7), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
                 [propget, id(8), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
