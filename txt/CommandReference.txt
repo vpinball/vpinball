@@ -1,4 +1,4 @@
-Visual Pinball 10 command Reference v0.95
+Visual Pinball 10 command Reference v0.96
 by Fuzzel
 
 This is a quick overview of all commands/variables VP knows. A lot of them do not have an effect when called from the script because they have an impact on the pre-rendering only.
@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.4:
+- add AngVelX/Y/Z and AngMomX/Y/Z to the ball element
 - support reading nudge data from table script, and reading/writing nudge calibration settings:
   NudgeGetCalibration/NudgeSetCalibration, NudgeSensorStatus, NudgeTiltStatus
 - add DecalMode to the ball element
@@ -793,6 +794,12 @@ Z(float)
 VelX(float)
 VelY(float)
 VelZ(float)
+AngVelX(float)
+AngVelY(float)
+AngVelZ(float)
+AngMomX(float)
+AngMomY(float)
+AngMomZ(float)
 Image(string)
 FrontDecal(string) - image of the ball front decal
 DecalMode(bool) - switch between using the ball decal as ball logo or ball 'scratches'
