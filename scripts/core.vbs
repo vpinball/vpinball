@@ -4,6 +4,7 @@ Const VPinMAMEDriverVer = 3.54
 ' VPinMAME driver core.
 '=======================
 ' New in 3.54 (Update by mfuegemann & nFozzy & Ninuzzu/Tom Tower & Toxie)
+' - Added sam.vbs
 ' - Added Class1812.vbs
 ' - Added inder_centaur.vbs
 ' - Restore basic functionality of cvpmDropTarget.CreateEvents for drop targets with an animation time (e.g. VP10 and newer)
