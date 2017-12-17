@@ -733,23 +733,20 @@ void PinInput::UnInit()
    ZeroMemory(m_diq, sizeof(m_diq));
 }
 
-void PinInput::FireKeyEvent(const int dispid, const int key)
+void PinInput::FireKeyEvent(const int dispid, int keycode)
 {
-   // Initialize.
-   int mkey = key;
-
    // Check if we are mirrored.
    if (g_pplayer->m_ptable->m_tblMirrorEnabled)
    {
       // Swap left & right input.
-      if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey]) mkey = g_pplayer->m_rgKeys[eRightFlipperKey];
-      else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey]) mkey = g_pplayer->m_rgKeys[eLeftFlipperKey];
-      else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave]) mkey = g_pplayer->m_rgKeys[eRightMagnaSave];
-      else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave]) mkey = g_pplayer->m_rgKeys[eLeftMagnaSave];
-      else if (mkey == DIK_LSHIFT) mkey = DIK_RSHIFT;
-      else if (mkey == DIK_RSHIFT) mkey = DIK_LSHIFT;
-      else if (mkey == DIK_LEFT)   mkey = DIK_RIGHT;
-      else if (mkey == DIK_RIGHT)  mkey = DIK_LEFT;
+      if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey]) keycode = g_pplayer->m_rgKeys[eRightFlipperKey];
+      else if (keycode == g_pplayer->m_rgKeys[eRightFlipperKey]) keycode = g_pplayer->m_rgKeys[eLeftFlipperKey];
+      else if (keycode == g_pplayer->m_rgKeys[eLeftMagnaSave]) keycode = g_pplayer->m_rgKeys[eRightMagnaSave];
+      else if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave]) keycode = g_pplayer->m_rgKeys[eLeftMagnaSave];
+      else if (keycode == DIK_LSHIFT) keycode = DIK_RSHIFT;
+      else if (keycode == DIK_RSHIFT) keycode = DIK_LSHIFT;
+      else if (keycode == DIK_LEFT)   keycode = DIK_RIGHT;
+      else if (keycode == DIK_RIGHT)  keycode = DIK_LEFT;
    }
 
    if (g_pplayer->cameraMode)
@@ -758,27 +755,27 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
       m_keyPressedState[eRightFlipperKey] = false;
       m_keyPressedState[eLeftTiltKey] = false;
       m_keyPressedState[eRightTiltKey] = false;
-      if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
+      if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->UpdateBackdropSettings(false);
          m_keyPressedState[eLeftFlipperKey] = true;
       }
-      else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
+      else if (keycode == g_pplayer->m_rgKeys[eRightFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->UpdateBackdropSettings(true);
          m_keyPressedState[eRightFlipperKey] = true;
       }
-      else if (mkey == g_pplayer->m_rgKeys[eLeftTiltKey] && dispid == DISPID_GameEvents_KeyDown && m_enableCameraModeFlyAround)
+      else if (keycode == g_pplayer->m_rgKeys[eLeftTiltKey] && dispid == DISPID_GameEvents_KeyDown && m_enableCameraModeFlyAround)
       {
          g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] -= 1.0f;
          m_keyPressedState[eLeftTiltKey] = true;
       }
-      else if (mkey == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyDown && m_enableCameraModeFlyAround)
+      else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && dispid == DISPID_GameEvents_KeyDown && m_enableCameraModeFlyAround)
       {
          g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] += 1.0f;
          m_keyPressedState[eRightTiltKey] = true;
       }
-      else if (mkey == g_pplayer->m_rgKeys[eStartGameKey] && dispid == DISPID_GameEvents_KeyDown)
+      else if (keycode == g_pplayer->m_rgKeys[eStartGameKey] && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set] = g_pplayer->m_ptable->m_backupLayback;
          g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] = g_pplayer->m_ptable->m_backupRotation;
@@ -798,13 +795,13 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
          g_pplayer->m_pin3d.m_camy = 0;
          g_pplayer->m_pin3d.m_camz = 0;
       }
-      else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
+      else if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->backdropSettingActive++;
          if (g_pplayer->backdropSettingActive == 13)
             g_pplayer->backdropSettingActive = 0;
       }
-      else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
+      else if (keycode == g_pplayer->m_rgKeys[eLeftMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->backdropSettingActive--;
          if (g_pplayer->backdropSettingActive == -1)
@@ -814,17 +811,17 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
    else
    {
       // Debug only, for testing parts of the left flipper input lag
-      if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
+      if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
       {
          m_leftkey_down_usec = usec();
          m_leftkey_down_frame = g_pplayer->m_overall_frames;
       }
 
       // Mixer volume only
-      gMixerKeyDown = (mkey == g_pplayer->m_rgKeys[eVolumeDown] && dispid == DISPID_GameEvents_KeyDown);
-      gMixerKeyUp   = (mkey == g_pplayer->m_rgKeys[eVolumeUp]   && dispid == DISPID_GameEvents_KeyDown);
+      gMixerKeyDown = (keycode == g_pplayer->m_rgKeys[eVolumeDown] && dispid == DISPID_GameEvents_KeyDown);
+      gMixerKeyUp   = (keycode == g_pplayer->m_rgKeys[eVolumeUp]   && dispid == DISPID_GameEvents_KeyDown);
 
-      g_pplayer->m_ptable->FireKeyEvent(dispid, mkey);
+      g_pplayer->m_ptable->FireKeyEvent(dispid, keycode);
    }
 }
 
