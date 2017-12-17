@@ -1782,7 +1782,7 @@ void VPinball::LoadFileName(char *szFileName)
 	  char szFileNameAuto[MAX_PATH];
 	  strcpy_s(szFileNameAuto, m_currentTablePath);
 	  strcat_s(szFileNameAuto, ppt->m_szTitle);
-	  strcat_s(szFileNameAuto, ".xml");
+	  strcat_s(szFileNameAuto, ".pov");
 	  if (Exists(szFileNameAuto)) // We check if there is a table pov settings first
 	  {
 		  ppt->ImportBackdropPOV(szFileNameAuto);
@@ -1790,7 +1790,7 @@ void VPinball::LoadFileName(char *szFileName)
 	  else // Otherwise, we seek for autopov settings
 	  {
 		  strcpy_s(szFileNameAuto, m_currentTablePath);
-		  strcat_s(szFileNameAuto, "autopov.xml");
+		  strcat_s(szFileNameAuto, "autopov.pov");
 		  if (Exists(szFileNameAuto))
 		  {
 			  ppt->ImportBackdropPOV(szFileNameAuto);

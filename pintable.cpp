@@ -6512,7 +6512,7 @@ void PinTable::ImportBackdropPOV(const char *filename)
 		ofn.hInstance = g_hinst;
 		ofn.hwndOwner = g_pvp->m_hwnd;
 		// TEXT
-		ofn.lpstrFilter = "XML file (*.xml)\0*.xml\0";
+		ofn.lpstrFilter = "POV file (*.pov)\0*.pov\0";
 		ofn.lpstrFile = szFileName;
 		ofn.nMaxFile = _MAX_PATH;
 		ofn.lpstrDefExt = "xml";
@@ -6595,7 +6595,7 @@ void PinTable::ExportBackdropPOV()
 	ofn.hInstance = g_hinst;
 	ofn.hwndOwner = g_pvp->m_hwnd;
 	// TEXT
-	ofn.lpstrFilter = "XML file(*.xml)\0*.xml\0";
+	ofn.lpstrFilter = "POV file(*.pov)\0*.pov\0";
 	ofn.lpstrFile = m_szObjFileName;
 	ofn.nMaxFile = _MAX_PATH;
 	ofn.lpstrDefExt = "xml";

@@ -1,9 +1,9 @@
 VP 10.4.0 Changelog
 ------------------------
-- add support for loading POV/backdrop settings automatically: One can define an extra POV xml file for each table, named like the VPX file.
-  Example: you have some custom POV settings for the table "QBerts Quest (Gottlieb 1983).vpx". Save the POV settings into the file "QBerts Quest (Gottlieb 1983).xml" and place it 
+- add support for loading POV/backdrop settings automatically: One can define an extra POV(.pov) file for each table, named like the VPX file.
+  Example: you have some custom POV settings for the table "QBerts Quest (Gottlieb 1983).vpx". Save the POV settings into the file "QBerts Quest (Gottlieb 1983).pov" and place it 
            in the same directory as the VPX file. VPX will then also load the POV settings automatically when loading the "QBerts Quest (Gottlieb 1983).vpx" (in the editor/player).
-  Or if you like to have default POV settings that are used for any other tables save it as "autopov.xml".
+  Or if you like to have default POV settings that are used for any other tables save it as "autopov.pov".
 - in addition, there is also -Pov [filename] to load, export POV settings and then close VPX (via the command line)
 
 - stop sounds when exiting sound dialog, or exiting position dialog, and when you pick a different sound
