@@ -6512,10 +6512,10 @@ void PinTable::ImportBackdropPOV(const char *filename)
 		ofn.hInstance = g_hinst;
 		ofn.hwndOwner = g_pvp->m_hwnd;
 		// TEXT
-		ofn.lpstrFilter = "POV file (*.pov)\0*.pov\0";
+		ofn.lpstrFilter = "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0";
 		ofn.lpstrFile = szFileName;
 		ofn.nMaxFile = _MAX_PATH;
-		ofn.lpstrDefExt = "xml";
+		ofn.lpstrDefExt = "pov";
 		ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
 		const int ret = GetOpenFileName(&ofn);
@@ -6580,7 +6580,7 @@ void PinTable::ImportBackdropPOV(const char *filename)
     catch (...)
     {
        if (!oldFormatLoaded)
-         ShowError("Error parsing XML file");
+         ShowError("Error parsing POV XML file");
     }
 
     xmlDoc.clear();
@@ -6598,7 +6598,7 @@ void PinTable::ExportBackdropPOV()
 	ofn.lpstrFilter = "POV file(*.pov)\0*.pov\0";
 	ofn.lpstrFile = m_szObjFileName;
 	ofn.nMaxFile = _MAX_PATH;
-	ofn.lpstrDefExt = "xml";
+	ofn.lpstrDefExt = "pov";
 	ofn.Flags = OFN_OVERWRITEPROMPT;
 
 	int ret = GetSaveFileName(&ofn);
