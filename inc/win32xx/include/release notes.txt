@@ -35,9 +35,9 @@ Win32++ supports the following operating systems
 * Windows ME
 * Windows NT 4
 * Windows 2000
-* Windows XP 	(32bit and 64bit)
+* Windows XP    (32bit and 64bit)
 * Windows 2003 Server (32bit and 64bit)
-* Windows Vista	(32bit and 64bit)
+* Windows Vista (32bit and 64bit)
 * Windows 2008 Server (32bit and 64bit)
 * Windows 7 (32 bit and 64 bit)
 * Windows 8 (32 bit and 64 bit)

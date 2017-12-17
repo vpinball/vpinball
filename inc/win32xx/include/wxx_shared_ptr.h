@@ -68,9 +68,9 @@
 // While we could create a smart pointer for arrays, we don't need to because
 // std::vector already handles this for us. Consider the following example:
 //    int nLength = ::GetWindowTextLength(hWnd);
-//	  pTChar = new TCHAR[nLength+1];
-//	  memset(pTChar, 0, (nLength+1)*sizeof(TCHAR));
-//	  ::GetWindowText(hWnd, m_pTChar, nLength);
+//    pTChar = new TCHAR[nLength+1];
+//    memset(pTChar, 0, (nLength+1)*sizeof(TCHAR));
+//    ::GetWindowText(hWnd, m_pTChar, nLength);
 //    ....
 //    delete[] pTChar;
 //
@@ -108,110 +108,112 @@
 #include <windows.h>        // For InterlockedIncrement and InterlockedDecrement
 
 #ifdef __BORLANDC__
-  #pragma option -w-8027	// function not expanded inline
+  #pragma option -w-8027    // function not expanded inline
 #endif
 
 
 namespace Win32xx
 {
 
-	template <class T1>
-	class Shared_Ptr
-	{
-	public:
-		Shared_Ptr() : m_ptr(0), m_count(0) { }
-		Shared_Ptr(T1 * p) : m_ptr(p), m_count(0)
-		{
-			try
-			{
-				if (m_ptr) m_count = new long(0);
+    // Shared_Ptr is a smart pointer suitable for elements in a vector.
+    // Shared_Ptr behaves much like the shared_ptr introduced in C++11
+    template <class T1>
+    class Shared_Ptr
+    {
+    public:
+        Shared_Ptr() : m_ptr(0), m_count(0) { }
+        Shared_Ptr(T1 * p) : m_ptr(p), m_count(0)
+        {
+            try
+            {
+                if (m_ptr) m_count = new long(0);
                 inc_ref();
-			}
-			// catch the unlikely event of 'new long(0)' throwing an exception
-			catch (const std::bad_alloc&)
-			{
-				delete m_ptr;
-				throw;
-			}
-		}
-		Shared_Ptr(const Shared_Ptr& rhs) : m_ptr(rhs.m_ptr), m_count(rhs.m_count) { inc_ref(); }
-		~Shared_Ptr()
-		{
-			if(m_count && 0 == dec_ref())
-			{
-				// Note: This code doesn't handle a pointer to an array.
-				//  We would need delete[] m_ptr to handle that.
-				delete m_ptr;
-				delete m_count;
-			}
-		}
+            }
+            // catch the unlikely event of 'new long(0)' throwing an exception
+            catch (const std::bad_alloc&)
+            {
+                delete m_ptr;
+                throw;
+            }
+        }
+        Shared_Ptr(const Shared_Ptr& rhs) : m_ptr(rhs.m_ptr), m_count(rhs.m_count) { inc_ref(); }
+        ~Shared_Ptr()
+        {
+            if(m_count && 0 == dec_ref())
+            {
+                // Note: This code doesn't handle a pointer to an array.
+                //  We would need delete[] m_ptr to handle that.
+                delete m_ptr;
+                delete m_count;
+            }
+        }
 
-		T1* get() const { return m_ptr; }
-		long use_count() const { return m_count? *m_count : 0; }
-		bool unique() const { return (m_count && (*m_count == 1)); }
+        T1* get() const { return m_ptr; }
+        long use_count() const { return m_count? *m_count : 0; }
+        bool unique() const { return (m_count && (*m_count == 1)); }
 
-		void swap(Shared_Ptr& rhs)
-		{
-		   std::swap(m_ptr, rhs.m_ptr);
-		   std::swap(m_count, rhs.m_count);
-		}
+        void swap(Shared_Ptr& rhs)
+        {
+           std::swap(m_ptr, rhs.m_ptr);
+           std::swap(m_count, rhs.m_count);
+        }
 
-		Shared_Ptr& operator=(const Shared_Ptr& rhs)
-		{
-			 Shared_Ptr tmp(rhs);
-			 this->swap(tmp);
-			 return *this;
-		}
+        Shared_Ptr& operator=(const Shared_Ptr& rhs)
+        {
+             Shared_Ptr tmp(rhs);
+             this->swap(tmp);
+             return *this;
+        }
 
-		T1* operator->() const
-		{
-			assert(m_ptr);
-			return m_ptr;
-		}
+        T1* operator->() const
+        {
+            assert(m_ptr);
+            return m_ptr;
+        }
 
-		T1& operator*() const
-		{
-			assert (m_ptr);
-			return *m_ptr;
-		}
+        T1& operator*() const
+        {
+            assert (m_ptr);
+            return *m_ptr;
+        }
 
-		bool operator== (const Shared_Ptr& rhs) const
-		{
-			return ( *m_ptr == *rhs.m_ptr);
-		}
+        bool operator== (const Shared_Ptr& rhs) const
+        {
+            return ( *m_ptr == *rhs.m_ptr);
+        }
 
-		bool operator!= (const Shared_Ptr& rhs) const
-		{
-			return ( *m_ptr != *rhs.m_ptr);
-		}
+        bool operator!= (const Shared_Ptr& rhs) const
+        {
+            return ( *m_ptr != *rhs.m_ptr);
+        }
 
-		bool operator< (const Shared_Ptr& rhs) const
-		{
-			return ( *m_ptr < *rhs.m_ptr );
-		}
+        bool operator< (const Shared_Ptr& rhs) const
+        {
+            return ( *m_ptr < *rhs.m_ptr );
+        }
 
-		bool operator> (const Shared_Ptr& rhs) const
-		{
-			return ( *m_ptr > *rhs.m_ptr );
-		}
+        bool operator> (const Shared_Ptr& rhs) const
+        {
+            return ( *m_ptr > *rhs.m_ptr );
+        }
 
-	private:
-		void inc_ref()
-		{
-			if(m_count)
-				InterlockedIncrement(m_count);
-		}
+    private:
+        void inc_ref()
+        {
+            if(m_count)
+                InterlockedIncrement(m_count);
+        }
 
-		int  dec_ref()
-		{
-			assert (m_count);
-			return InterlockedDecrement(m_count);
-		}
+        int  dec_ref()
+        {
+            assert (m_count);
+            return InterlockedDecrement(m_count);
+        }
 
-		T1* m_ptr;
-		long* m_count;
-	};
+        T1* m_ptr;
+        long* m_count;
+    };
 
 }
 
-#endif	// _WIN32XX_SHARED_PTR_
+#endif  // _WIN32XX_SHARED_PTR_

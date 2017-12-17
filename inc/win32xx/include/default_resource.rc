@@ -156,7 +156,7 @@ END
 STRINGTABLE
 BEGIN
     IDW_MAIN                "MDI Frame"
-	IDW_INDICATOR_CAPS      "CAPS"
+    IDW_INDICATOR_CAPS      "CAPS"
     IDW_INDICATOR_NUM       "NUM"
     IDW_INDICATOR_SCRL      "SCRL"
     IDW_READY               "Ready"

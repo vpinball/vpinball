@@ -113,7 +113,7 @@ directory structure. The directory structure will typically look like this:
 .\WCE samples
 
 The files which form the Win32++ library are contained in the include
-subdirectory. 
+folder. 
 
 Help
 ====

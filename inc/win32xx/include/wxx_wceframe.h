@@ -1,5 +1,5 @@
-// Win32++   Version 8.4
-// Release Date: 10th March 2017
+// Win32++   Version 8.5
+// Release Date: 1st December 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -76,333 +76,351 @@
 namespace Win32xx
 {
 
-	////////////////////////////////////
-	// Declaration of the CCmdBar class
-	//
-	class CCmdBar : public CWnd
-	{
-	public:
-		CCmdBar();
-		virtual ~CCmdBar();
-		virtual BOOL AddAdornments(DWORD dwFlags) const;
-		virtual int  AddBitmap(int idBitmap, int iNumImages, int iImageWidth, int iImageHeight) const;
-		virtual BOOL AddButtons(int nButtons, TBBUTTON* pTBButton) const;
-		virtual HWND Create(HWND hwndParent);
-		virtual int  GetHeight() const;
-		virtual HWND InsertComboBox(int iWidth, UINT dwStyle, WORD idComboBox, WORD iButton) const;
-		virtual BOOL IsVisible() const;
-		virtual BOOL Show(BOOL fShow) const;
+    ////////////////////////////////////
+    // The CCmdBar class provides the functionality of a CommandBar
+    class CCmdBar : public CWnd
+    {
+    public:
+        CCmdBar();
+        virtual ~CCmdBar();
+        virtual BOOL AddAdornments(DWORD dwFlags) const;
+        virtual int  AddBitmap(int idBitmap, int iNumImages, int iImageWidth, int iImageHeight) const;
+        virtual BOOL AddButtons(int nButtons, TBBUTTON* pTBButton) const;
+        virtual HWND Create(HWND hwndParent);
+        virtual int  GetHeight() const;
+        virtual HWND InsertComboBox(int iWidth, UINT dwStyle, WORD idComboBox, WORD iButton) const;
+        virtual BOOL IsVisible() const;
+        virtual BOOL Show(BOOL fShow) const;
 
-	private:
+    private:
 
 #ifdef SHELL_AYGSHELL
-		SHMENUBARINFO m_mbi;
+        SHMENUBARINFO m_mbi;
 #endif
 
-	};
+    };
 
 
-	//////////////////////////////////////
-	// Declaration of the CWceFrame class
-	//  A mini frame based on CCmdBar
-	class CWceFrame : public CWnd
-	{
-	public:
-		CWceFrame();
-		virtual ~CWceFrame();
-		virtual void AddToolBarButton(UINT nID);
-		CRect GetViewRect() const;
-		virtual CCmdBar& GetMenuBar() const { return m_MenuBar; }
-		virtual void OnActivate(UINT uMsg, WPARAM wParam, LPARAM lParam);
-		virtual int  OnCreate(CREATESTRUCT& cs);		
-		virtual void PreCreate(CREATESTRUCT& cs);
-		virtual void RecalcLayout();
-		virtual void SetButtons(const std::vector<UINT> ToolBarData);
-		virtual	LRESULT WndProcDefault(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    //////////////////////////////////////
+    // CWceFrame provides a mini frame based on CCmdBar
+    class CWceFrame : public CWnd
+    {
+    public:
+        CWceFrame();
+        virtual ~CWceFrame();
+        virtual void AddToolBarButton(UINT nID);
+        CRect GetViewRect() const;
+        virtual CCmdBar& GetMenuBar() const { return m_MenuBar; }
+        virtual void OnActivate(UINT uMsg, WPARAM wParam, LPARAM lParam);
+        virtual int  OnCreate(CREATESTRUCT& cs);
+        virtual void PreCreate(CREATESTRUCT& cs);
+        virtual void RecalcLayout();
+        virtual void SetButtons(const std::vector<UINT> ToolBarData);
+        virtual LRESULT WndProcDefault(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	protected:
-		std::vector<UINT> m_ToolBarData;
+    protected:
+        std::vector<UINT> m_ToolBarData;
 
-	private:
-		mutable CCmdBar m_MenuBar;
-		CString m_strAppName;
+    private:
+        mutable CCmdBar m_MenuBar;
+        CString m_strAppName;
 
 #ifdef SHELL_AYGSHELL
-		SHACTIVATEINFO m_sai;
+        SHACTIVATEINFO m_sai;
 #endif
 
-	};
+    };
 
-	//////////////////////////////////////////
-	// Definitions for the CCmdBar class
-	//  This class wraps CommandBar_Create which
-	//  creates a CommandBar at the top of the window
-	inline CCmdBar::CCmdBar()
-	{
-	}
+    //////////////////////////////////////////
+    // Definitions for the CCmdBar class
+    //  This class wraps CommandBar_Create which
+    //  creates a CommandBar at the top of the window
 
-	inline CCmdBar::~CCmdBar()
-	{
-		if (IsWindow())
-			::CommandBar_Destroy(*this);
-	}
+    inline CCmdBar::CCmdBar()
+    {
+    }
 
-	inline BOOL CCmdBar::AddAdornments(DWORD dwFlags) const
-	// Adds a button, and optionally, Help and OK buttons, to the command bar.
-	{
-		assert(IsWindow());
-		return CommandBar_AddAdornments(*this, dwFlags, 0);
-	}
 
-	inline int CCmdBar::AddBitmap(int idBitmap, int iNumImages, int iImageWidth, int iImageHeight) const
-	// Adds one or more images to the list of button images available in the command bar.
-	{
-		assert(IsWindow());
-		HINSTANCE hInst = GetApp().GetInstanceHandle();
-		return 	CommandBar_AddBitmap(*this, hInst, idBitmap, iNumImages, iImageWidth, iImageHeight);
-	}
+    inline CCmdBar::~CCmdBar()
+    {
+        if (IsWindow())
+            ::CommandBar_Destroy(*this);
+    }
 
-	inline BOOL CCmdBar::AddButtons(int nButtons, TBBUTTON* pTBButton) const
-	// Adds one or more toolbar buttons to a command bar control.
-	{
-		assert(IsWindow());
-		return CommandBar_AddButtons(*this, nButtons, pTBButton);
-	}
 
-	inline HWND CCmdBar::Create(HWND hParent)
-	// Creates the command bar control.
-	{
+    // Adds a button, and optionally, Help and OK buttons, to the command bar.
+    inline BOOL CCmdBar::AddAdornments(DWORD dwFlags) const
+    {
+        assert(IsWindow());
+        return CommandBar_AddAdornments(*this, dwFlags, 0);
+    }
+
+
+    // Adds one or more images to the list of button images available in the command bar.
+    inline int CCmdBar::AddBitmap(int idBitmap, int iNumImages, int iImageWidth, int iImageHeight) const
+    {
+        assert(IsWindow());
+        HINSTANCE hInst = GetApp().GetInstanceHandle();
+        return  CommandBar_AddBitmap(*this, hInst, idBitmap, iNumImages, iImageWidth, iImageHeight);
+    }
+
+
+    // Adds one or more toolbar buttons to a command bar control.
+    inline BOOL CCmdBar::AddButtons(int nButtons, TBBUTTON* pTBButton) const
+    {
+        assert(IsWindow());
+        return CommandBar_AddButtons(*this, nButtons, pTBButton);
+    }
+
+
+    // Creates the command bar control.
+    inline HWND CCmdBar::Create(HWND hParent)
+    {
 #ifdef SHELL_AYGSHELL
-		SHMENUBARINFO mbi;
+        SHMENUBARINFO mbi;
 
-		memset(&mbi, 0, sizeof(SHMENUBARINFO));
-		mbi.cbSize     = sizeof(SHMENUBARINFO);
-		mbi.hwndParent = hParent;
-		mbi.nToolBarId = IDW_MAIN;
-		mbi.hInstRes   = GetApp().GetInstanceHandle();
-		mbi.nBmpId     = 0;
-		mbi.cBmpImages = 0;
+        memset(&mbi, 0, sizeof(SHMENUBARINFO));
+        mbi.cbSize     = sizeof(SHMENUBARINFO);
+        mbi.hwndParent = hParent;
+        mbi.nToolBarId = IDW_MAIN;
+        mbi.hInstRes   = GetApp().GetInstanceHandle();
+        mbi.nBmpId     = 0;
+        mbi.cBmpImages = 0;
 
-		if (SHCreateMenuBar(&mbi))
-		{
-			Attach(mbi.hwndMB);
-		}
-		
+        if (SHCreateMenuBar(&mbi))
+        {
+            Attach(mbi.hwndMB);
+        }
+
 #else
-		*this = CommandBar_Create(GetApp().GetInstanceHandle(), hParent, IDW_MENUBAR);
-		assert (*this);
+        *this = CommandBar_Create(GetApp().GetInstanceHandle(), hParent, IDW_MENUBAR);
+        assert (*this);
 
-		CommandBar_InsertMenubar(*this, GetApp().GetInstanceHandle(), IDW_MAIN, 0);
+        CommandBar_InsertMenubar(*this, GetApp().GetInstanceHandle(), IDW_MAIN, 0);
 #endif
-		assert(IsWindow());
-		return *this;
-	}
-
-	inline int CCmdBar::GetHeight() const
-	// Retrieves the height of the command bar in pixels.
-	{
-		assert(IsWindow());
-		return CommandBar_Height(*this);
-	}
-
-	inline HWND CCmdBar::InsertComboBox(int iWidth, UINT dwStyle, WORD idComboBox, WORD iButton) const
-	// Inserts a combo box into the command bar.
-	{
-		HINSTANCE hInst = GetApp().GetInstanceHandle();
-		return CommandBar_InsertComboBox(*this, hInst, iWidth, dwStyle, idComboBox, iButton);
-	}
-
-	inline BOOL CCmdBar::IsVisible() const
-	// Retrieves the visibility state of the command bar.
-	{
-		assert(IsWindow());
-		return ::CommandBar_IsVisible(*this);
-	}
-
-	inline BOOL CCmdBar::Show(BOOL fShow) const
-	// Shows or hides the command bar.
-	{
-		assert(IsWindow());
-		return ::CommandBar_Show(*this, fShow);
-	}
+        assert(IsWindow());
+        return *this;
+    }
 
 
-	/////////////////////////////////////////
-	// Definitions for the CWceFrame class
-	//  This class creates a simple frame using CCmdBar
-	inline CWceFrame::CWceFrame()
-	{
+    // Retrieves the height of the command bar in pixels.
+    inline int CCmdBar::GetHeight() const
+    {
+        assert(IsWindow());
+        return CommandBar_Height(*this);
+    }
+
+
+    // Inserts a combo box into the command bar.
+    inline HWND CCmdBar::InsertComboBox(int iWidth, UINT dwStyle, WORD idComboBox, WORD iButton) const
+    {
+        HINSTANCE hInst = GetApp().GetInstanceHandle();
+        return CommandBar_InsertComboBox(*this, hInst, iWidth, dwStyle, idComboBox, iButton);
+    }
+
+
+    // Retrieves the visibility state of the command bar.
+    inline BOOL CCmdBar::IsVisible() const
+    {
+        assert(IsWindow());
+        return ::CommandBar_IsVisible(*this);
+    }
+
+
+    // Shows or hides the command bar.
+    inline BOOL CCmdBar::Show(BOOL fShow) const
+    {
+        assert(IsWindow());
+        return ::CommandBar_Show(*this, fShow);
+    }
+
+
+    /////////////////////////////////////////
+    // Definitions for the CWceFrame class
+    //  This class creates a simple frame using CCmdBar
+
+    inline CWceFrame::CWceFrame()
+    {
 #ifdef SHELL_AYGSHELL
-		// Initialize the shell activate info structure
-		memset (&m_sai, 0, sizeof (m_sai));
-		m_sai.cbSize = sizeof (m_sai);
+        // Initialize the shell activate info structure
+        memset (&m_sai, 0, sizeof (m_sai));
+        m_sai.cbSize = sizeof (m_sai);
 #endif
-	}
+    }
 
-	inline CWceFrame::~CWceFrame()
-	{
-	}
 
-	inline void CWceFrame::AddToolBarButton(UINT nID)
-	// Adds Resource IDs to toolbar buttons.
-	// A resource ID of 0 is a separator
-	{
-		m_ToolBarData.push_back(nID);
-	}
+    inline CWceFrame::~CWceFrame()
+    {
+    }
 
-	inline CRect CWceFrame::GetViewRect() const
-	// Returns a RECT structure which contains the dimensions of the client area of the frame.
-	{
-		CRect r;
-		::GetClientRect(*this, &r);
+
+    // Adds Resource IDs to toolbar buttons.
+    // A resource ID of 0 is a separator.
+    inline void CWceFrame::AddToolBarButton(UINT nID)
+    {
+        m_ToolBarData.push_back(nID);
+    }
+
+
+    // Returns a RECT structure which contains the dimensions of the client area of the frame.
+    inline CRect CWceFrame::GetViewRect() const
+    {
+        CRect r;
+        ::GetClientRect(*this, &r);
 
 #ifndef SHELL_AYGSHELL
-		// Reduce the size of the client rectangle, by the commandbar height
-		r.top += GetMenuBar()->GetHeight();
+        // Reduce the size of the client rectangle, by the commandbar height
+        r.top += GetMenuBar()->GetHeight();
 #endif
 
-		return r;
-	}
+        return r;
+    }
 
-	inline int CWceFrame::OnCreate(CREATESTRUCT& cs)
-	// Called during window creation. Override this function to perform tasks such as
-	//  creating child windows.
-	{
-		// Create the Commandbar
-		GetMenuBar().Create(*this);
 
-		// Set the keyboard accelerators
-		HACCEL hAccel = LoadAccelerators(GetApp().GetResourceHandle(), MAKEINTRESOURCE(IDW_MAIN));
-		GetApp().SetAccelerators(hAccel, *this);
+    // Called during window creation. Override this function to perform tasks such as
+    // creating child windows.
+    inline int CWceFrame::OnCreate(CREATESTRUCT& cs)
+    {
+        // Create the Commandbar
+        GetMenuBar().Create(*this);
 
-		// Add the toolbar buttons
-		if (m_ToolBarData.size() > 0)
-			SetButtons(m_ToolBarData);
+        // Set the keyboard accelerators
+        HACCEL hAccel = LoadAccelerators(GetApp().GetResourceHandle(), MAKEINTRESOURCE(IDW_MAIN));
+        GetApp().SetAccelerators(hAccel, *this);
+
+        // Add the toolbar buttons
+        if (m_ToolBarData.size() > 0)
+            SetButtons(m_ToolBarData);
 
 #ifndef SHELL_AYGSHELL
-		// Add close button
-		GetMenuBar()->AddAdornments(0);
+        // Add close button
+        GetMenuBar()->AddAdornments(0);
 #endif
 
-		return 0;
-	}
+        return 0;
+    }
 
-	inline void CWceFrame::OnActivate(UINT, WPARAM wParam, LPARAM lParam)
-	// Called when the frame is activated.
-	{
+
+    // Called when the frame is activated.
+    inline void CWceFrame::OnActivate(UINT, WPARAM wParam, LPARAM lParam)
+    {
 #ifdef SHELL_AYGSHELL
-		// Notify shell of our activate message
-		SHHandleWMActivate(*this, wParam, lParam, &m_sai, FALSE);
+        // Notify shell of our activate message
+        SHHandleWMActivate(*this, wParam, lParam, &m_sai, FALSE);
 
-		UINT fActive = LOWORD(wParam);
-		if ((fActive == WA_ACTIVE) || (fActive == WA_CLICKACTIVE))
-		{
-			// Reposition the window when it's activated
-			RecalcLayout();
-		}
+        UINT fActive = LOWORD(wParam);
+        if ((fActive == WA_ACTIVE) || (fActive == WA_CLICKACTIVE))
+        {
+            // Reposition the window when it's activated
+            RecalcLayout();
+        }
 #endif
-	}
+    }
 
-	inline void CWceFrame::PreCreate(CREATESTRUCT& cs)
-	// Called before the window is created. Override this function to set the window creation parameters.
-	{
-		cs.style = WS_VISIBLE;
-		m_strAppName = _T("Win32++ Application");
 
-		// Choose a unique class name for this app
-		if (LoadString(IDW_MAIN) != _T(""))
-		{
-			m_strAppName = LoadString(IDW_MAIN);
-		}
-			
-		cs.lpszClass = m_strAppName;
-	}
+    // Called before the window is created. Override this function to set the window creation parameters.
+    inline void CWceFrame::PreCreate(CREATESTRUCT& cs)
+    {
+        cs.style = WS_VISIBLE;
+        m_strAppName = _T("Win32++ Application");
 
-	inline void CWceFrame::RecalcLayout()
-	// Repositions the client area of the frame.
-	{
-		HWND hwndCB = GetMenuBar().GetHwnd();
-		if (hwndCB)
-		{
-			CRect rc;			// Desktop window size
-			CRect rcMenuBar;	// MenuBar window size
+        // Choose a unique class name for this app
+        if (LoadString(IDW_MAIN) != _T(""))
+        {
+            m_strAppName = LoadString(IDW_MAIN);
+        }
 
-			::SystemParametersInfo(SPI_GETWORKAREA, 0, &rc, 0);
-			::GetWindowRect(hwndCB, &rcMenuBar);
-			rc.bottom -= (rcMenuBar.bottom - rcMenuBar.top);
+        cs.lpszClass = m_strAppName;
+    }
 
-			MoveWindow(rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, FALSE);
-		}
 
-		ShowWindow(TRUE);
-		UpdateWindow();
-	}
+    // Repositions the client area of the frame.
+    inline void CWceFrame::RecalcLayout()
+    {
+        HWND hwndCB = GetMenuBar().GetHwnd();
+        if (hwndCB)
+        {
+            CRect rc;           // Desktop window size
+            CRect rcMenuBar;    // MenuBar window size
 
-	inline void CWceFrame::SetButtons(const std::vector<UINT> ToolBarData)
-	// Define the resource IDs for the toolbar like this in the Frame's constructor
-	// m_ToolBarData.push_back ( 0 );				// Separator
-	// m_ToolBarData.clear();
-	// m_ToolBarData.push_back ( IDM_FILE_NEW   );
-	// m_ToolBarData.push_back ( IDM_FILE_OPEN  );
-	// m_ToolBarData.push_back ( IDM_FILE_SAVE  );
+            ::SystemParametersInfo(SPI_GETWORKAREA, 0, &rc, 0);
+            ::GetWindowRect(hwndCB, &rcMenuBar);
+            rc.bottom -= (rcMenuBar.bottom - rcMenuBar.top);
 
-	{
-		int iImages = 0;
-		int iNumButtons = (int)ToolBarData.size();
+            MoveWindow(rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, FALSE);
+        }
 
-		if (iNumButtons > 0)
-		{
-			// Create the TBBUTTON array for each button
-			std::vector<TBBUTTON> vTBB(iNumButtons);
-			TBBUTTON* tbbArray = &vTBB.front();
+        ShowWindow(TRUE);
+        UpdateWindow();
+    }
 
-			for (int j = 0 ; j < iNumButtons; j++)
-			{
-				ZeroMemory(&tbbArray[j], sizeof(TBBUTTON));
 
-				if (ToolBarData[j] == 0)
-				{
-					tbbArray[j].fsStyle = TBSTYLE_SEP;
-				}
-				else
-				{
-					tbbArray[j].iBitmap = iImages++;
-					tbbArray[j].idCommand = ToolBarData[j];
-					tbbArray[j].fsState = TBSTATE_ENABLED;
-					tbbArray[j].fsStyle = TBSTYLE_BUTTON;
-					tbbArray[j].iString = -1;
-				}
-			}
+    // Define the resource IDs for the toolbar like this in the Frame's constructor
+    // m_ToolBarData.push_back ( 0 );               // Separator
+    // m_ToolBarData.clear();
+    // m_ToolBarData.push_back ( IDM_FILE_NEW   );
+    // m_ToolBarData.push_back ( IDM_FILE_OPEN  );
+    // m_ToolBarData.push_back ( IDM_FILE_SAVE  );
+    inline void CWceFrame::SetButtons(const std::vector<UINT> ToolBarData)
+    {
+        int iImages = 0;
+        int iNumButtons = static_cast<int>(ToolBarData.size());
 
-			// Add the bitmap
-			GetMenuBar().AddBitmap(IDW_MAIN, iImages , 16, 16);
+        if (iNumButtons > 0)
+        {
+            // Create the TBBUTTON array for each button
+            std::vector<TBBUTTON> vTBB(iNumButtons);
+            TBBUTTON* tbbArray = &vTBB.front();
 
-			// Add the buttons
-			GetMenuBar().AddButtons(iNumButtons, tbbArray);
-		}
-	}
+            for (int j = 0 ; j < iNumButtons; j++)
+            {
+                ZeroMemory(&tbbArray[j], sizeof(TBBUTTON));
 
-	inline LRESULT CWceFrame::WndProcDefault(UINT uMsg, WPARAM wParam, LPARAM lParam)
-	{
-		switch (uMsg)
-		{
-			case WM_DESTROY:
-				PostQuitMessage(0);
-				break;
-			case WM_ACTIVATE:
-				OnActivate(uMsg, wParam, lParam);
-     			break;
+                if (ToolBarData[j] == 0)
+                {
+                    tbbArray[j].fsStyle = TBSTYLE_SEP;
+                }
+                else
+                {
+                    tbbArray[j].iBitmap = iImages++;
+                    tbbArray[j].idCommand = ToolBarData[j];
+                    tbbArray[j].fsState = TBSTATE_ENABLED;
+                    tbbArray[j].fsStyle = TBSTYLE_BUTTON;
+                    tbbArray[j].iString = -1;
+                }
+            }
+
+            // Add the bitmap
+            GetMenuBar().AddBitmap(IDW_MAIN, iImages , 16, 16);
+
+            // Add the buttons
+            GetMenuBar().AddButtons(iNumButtons, tbbArray);
+        }
+    }
+
+
+    // Provides default processing of the wceframe's messages.
+    inline LRESULT CWceFrame::WndProcDefault(UINT uMsg, WPARAM wParam, LPARAM lParam)
+    {
+        switch (uMsg)
+        {
+            case WM_DESTROY:
+                PostQuitMessage(0);
+                break;
+            case WM_ACTIVATE:
+                OnActivate(uMsg, wParam, lParam);
+                break;
 
 #ifdef SHELL_AYGSHELL
 
-			case WM_SETTINGCHANGE:
-				SHHandleWMSettingChange(*this, wParam, lParam, &m_sai);
-     			break;
+            case WM_SETTINGCHANGE:
+                SHHandleWMSettingChange(*this, wParam, lParam, &m_sai);
+                break;
 #endif
 
-		}
-		return CWnd::WndProcDefault(uMsg, wParam, lParam);
-	}
+        }
+        return CWnd::WndProcDefault(uMsg, wParam, lParam);
+    }
 
 
 } // namespace Win32xx
