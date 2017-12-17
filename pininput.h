@@ -40,7 +40,7 @@ public:
    void UnInit();
 
    // implicitly sync'd with visuals as each keystroke is applied to the sim
-   void FireKeyEvent(const int dispid, const int keycode);
+   void FireKeyEvent(const int dispid, int keycode);
 
    void PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app_data/*, const U32 curr_time_msec*/);
    const DIDEVICEOBJECTDATA *GetTail(/*const U32 curr_sim_msec*/);
