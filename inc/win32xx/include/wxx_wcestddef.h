@@ -45,10 +45,10 @@
       #endif
     #endif
   #endif
-  
+
   #if _WIN32_WCE < 0x500
     #include <altcecrt.h>
-  #endif	
+  #endif
 
 #endif// _MSC_VER >= 1300
 

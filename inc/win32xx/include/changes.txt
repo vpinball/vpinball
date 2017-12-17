@@ -1,3 +1,87 @@
+Version 8.5
+===========
+
+New Features and Enhancements
+-----------------------------
+* Added CFileFind class
+  The CFileFind provides a means of finding one or more files that match
+  a search string. Information can be extracted from each file found.
+  
+* Added CFolderDialog class
+  This class wraps SHBrowseForFolder to display a dialog for choosing a folder.  
+  
+* Updated the CFile class
+  The following function now throw an exception on failure:
+    - Rename
+    - Remove
+    - Flush
+    - Close
+    - SetLength
+    - LockRange
+    - UnlockRange 
+
+* Updated the status bar
+  - A gripper is added if the parent window has the WS_THICKFRAME style.
+
+* Updated docking frames
+  - A CDockContainer can now be used as the view window for docking frames 
+    (inherited from CDockFrame for example). This container can have zero
+    or more tabs. The DockContainer sample now uses a CDockContainer as the
+    frame's view window.
+
+* Updated frames
+  - The sizes of the indicators in the status bar are determined more accurately.
+  - A toolbar bitmap is now optional (icons can be used instead).
+  - A menu for the frame is now optional.
+  - The menu arrow button is now rendered correctly on Windows 10.
+  
+* Updated CComboBox and CListBox
+  - Added a virtual CompareItem function. Override this function to specify
+    the order in which items are added for owner drawn controls.
+
+
+Changes in detail
+-----------------
+Added CEnhMetaFileDC                                 class
+Added CFileFind                                      class
+Added CFolderDialog                                  class
+Added CThreadLock                                    class
+
+Added CComboBox::CompareItem                         member function
+Added CDocker::GetActiveView                         member function
+Added CDocker::SaveContainerRegistrySettings         member function
+Added CDockFrame::OnActivate                         member function
+Added CDockFrame::OnDockActivated                    member function
+Added CDockFrame::OnDockDestroyed                    member function
+Added CDockFrame::OnMouseActivate                    member function
+Added CDockFrame::OnSysColorChange                   member function
+Added CListBox::CompareItem                          member function
+Added CTab::SetBlankPageColor                        member function
+Added CToolBar::GetExtendedStyle                     member function
+Added CWnd::GetExStyle                               member function
+Added CWnd::GetStyle                                 member function
+Added CWnd::SetExStyle                               member function
+Added CWnd::SetStyle                                 member function
+
+Added ::GetNonClientMetrics                          global function
+Added UWM_GETCDIALIOG                                message
+
+Added Direct2D                                       sample
+Added FilePrintPreview                               sample
+Added StatusBarEx                                    sample
+
+Modified CFile::Rename          now throws an exception on failure 
+Modified CFile::Remove          now throws an exception on failure 
+Modified CFile::Flush           now throws an exception on failure 
+Modified CFile::Close           now throws an exception on failure 
+Modified CFile::SetLength       now throws an exception on failure 
+Modified CFile::LockRange       now throws an exception on failure 
+Modified CFile::UnlockRange     now throws an exception on failure
+Modified CTab::AddTabPage       now returns CWnd*
+
+Removed ::GetSizeofNonClientMetrics   Use ::GetNonClientMetrics instead
+
+
 Version 8.4
 ===========
 
@@ -33,18 +117,18 @@ New Features and Enhancements
    Notes:
     1) To compile code using the Ribbon Framework you will need a Microsoft
        compiler. Visual Studio Community 2013 (or later) is recommended, but
-	   older Microsoft compilers can be used with the Windows 7 SDK.
+       older Microsoft compilers can be used with the Windows 7 SDK.
     2) The Ribbon Framework only runs on Windows 7 or later operating systems.
-  	   If the code is run on an earlier operating system, it reverts back to a
-	   menu and toolbar.
-	   
+       If the code is run on an earlier operating system, it reverts back to a
+       menu and toolbar.
+       
 * Added CScrollView
   The CScrollView class adds scrolling to a CWnd used as a view window. To
   use this class, inherit the View window from CScrollView and use the
   SetScrollSizes function to enable scrolling. No change needs to be made
-  to the code in OnDraw to allow it to be scrolled.	CScrollView is used in
+  to the code in OnDraw to allow it to be scrolled. CScrollView is used in
   the FastGDI and Picture samples.  
-	
+    
 * The CMetaFile and CEnhMetaFile classes have been added to the framework.
  - CMetaFile wraps a HMETAFILE. CMetaFile can be used anywhere a HMETAFILE can
    be used. CMetatFile objects are reference counted, so they can be safely
@@ -65,7 +149,7 @@ New Features and Enhancements
 * Added the following samples.
  1) Animation sample.
    This sample demonstrates how to use an animation control in a dialog.
-	
+    
  2) ContextHelp sample.
    Displays help topics from a chm file. The help topics are chosen based on
    the current mouse position.
@@ -129,21 +213,21 @@ Modified CToolTip::GetToolInfo
 Modified CToolTip::SetToolRect
 Modified CToolTip::UpdateTipText
 
-Renamed A2BSTR 	to	AtoBSTR
-Renamed	A2OLE 	to  AtoOLE
-Renamed	A2T		to	AtoT	
-Renamed	A2W		to	AtoW	
-Renamed	OLE2A	to	OLEtoA	
-Renamed	OLE2T	to 	OLEtoT	
-Renamed	OLE2W	to	OLEtoW	
-Renamed	T2A		to	TtoA	
-Renamed	T2BSTR	to	TtoBSTR	
-Renamed	T2OLE	to	TtoOLE  
-Renamed	T2W		to	TtoW	
-Renamed	W2A		to	WtoA	
-Renamed	W2BSTR	to	WtoBSTR	
-Renamed	W2OLE	to	WtoOLE	
-Renamed	W2T		to	WtoT	
+Renamed A2BSTR  to  AtoBSTR
+Renamed A2OLE   to  AtoOLE
+Renamed A2T     to  AtoT    
+Renamed A2W     to  AtoW    
+Renamed OLE2A   to  OLEtoA  
+Renamed OLE2T   to  OLEtoT  
+Renamed OLE2W   to  OLEtoW  
+Renamed T2A     to  TtoA    
+Renamed T2BSTR  to  TtoBSTR 
+Renamed T2OLE   to  TtoOLE  
+Renamed T2W     to  TtoW    
+Renamed W2A     to  WtoA    
+Renamed W2BSTR  to  WtoBSTR 
+Renamed W2OLE   to  WtoOLE  
+Renamed W2T     to  WtoT    
 Renamed CToolTip::SetWindowTheme to CToolTip::SetTTWindowTheme
 
 
@@ -197,8 +281,8 @@ New Features and Enhancements
 * Updated CDC
   - Additional overrides for CDC::SelectObject to allow this function to be used 
     without casting. For example:
-	  CPen Pen(PS_SOLID, 1, RGB(255, 0, 0));
-	  CPen OldPen = dcMem.SelectObject(pen);
+      CPen Pen(PS_SOLID, 1, RGB(255, 0, 0));
+      CPen OldPen = dcMem.SelectObject(pen);
   - GDI resources created by CDC are managed better. Old GDI resources are now
     destroyed immediately, rather than when the CDC is de-constructed.
 
@@ -211,16 +295,16 @@ Changes in detail
 -----------------
 Added CRibbonDockFrame          class
 Added CDateTime::SetTimeNone    member function
-Added CDocker::OnMouseActivate	member function
-Added CDocker::OnSize			member function
-Added CDocker::SetActiveDocker	member function
-Added CFrame::GetMRULimit		member function
-Added CFrame::SetMRULimit		member function
+Added CDocker::OnMouseActivate  member function
+Added CDocker::OnSize           member function
+Added CDocker::SetActiveDocker  member function
+Added CFrame::GetMRULimit       member function
+Added CFrame::SetMRULimit       member function
 Added CFrame::SetupMenuIcons    member function
 Added CFrame::OnUnInitMenuPopup member function
 Added additional overrides for CDC::SelectObject
 Added PrintPreview              sample application
-Added RibbonDockFrame           sample application		
+Added RibbonDockFrame           sample application      
 
 These functions use references instead of pointers:
 Modified CBitmap::CreateBitmapIndirect
@@ -299,16 +383,16 @@ Modified CWnd::DrawAnimatedRects
 Modified CWnd::GetDlgItemInt 
 Modified CWnd::InvalidateRect
 Modified CWnd::RedrawWindow  
-Modified CWnd::ScrollWindow  	
+Modified CWnd::ScrollWindow     
 Modified CWnd::ValidateRect
 
-Modified CWinThread::CreateThread			now returns thread handle.
-Modified CPropertyPage::OnApply				now returns BOOL
-Modified CPropertyPage::OnOK				now returns void
-Modified CPropertyPage::OnSetActive			now returns BOOL
-Modified CPropertyPage::OnWizardBack		now returns BOOL
-Modified CPropertyPage::OnWizardFinish		now returns BOOL
-Modified CPropertyPage::OnWizardNext		now returns BOOL
+Modified CWinThread::CreateThread           now returns thread handle.
+Modified CPropertyPage::OnApply             now returns BOOL
+Modified CPropertyPage::OnOK                now returns void
+Modified CPropertyPage::OnSetActive         now returns BOOL
+Modified CPropertyPage::OnWizardBack        now returns BOOL
+Modified CPropertyPage::OnWizardFinish      now returns BOOL
+Modified CPropertyPage::OnWizardNext        now returns BOOL
 
 Removed CDC::GetClipRgn
 Removed CDocker::GetDockFromPoint
@@ -370,29 +454,29 @@ Use CFiledDialog for these instead.
 
 Changes in detail
 -----------------
-Added CCommonDialog 			class
-Added CColorDialog  			class
-Added CFindReplaceDialog 		class
-Added CFontDialog 				class
-Added CPageSetupDialog 			class
-Added CPrinDialog 				class
+Added CCommonDialog             class
+Added CColorDialog              class
+Added CFindReplaceDialog        class
+Added CFontDialog               class
+Added CPageSetupDialog          class
+Added CPrinDialog               class
 Added GetAppDataPath            function
-Added CFile::GetFileDirectory	member function
-Added CFile::GetFileNameExt		member function
-Added CFile::GetFileNameWOExt	member function
-Added CFrame::GetInitValues		member function
-Added CFrame::SetInitValues		member function
-Added UWM_GETCWND 				window message.
-Added UWM_GETCFRAME 			window message.
-Added UWM_GETCDOCKER 			window message.
-Added UWM_GETCDOCKCONTAINER 	window message.
-Added UWM_GETCTABBEDMDI 		window message.
-Added UWM_GETCTOOLBAR 			window message.
+Added CFile::GetFileDirectory   member function
+Added CFile::GetFileNameExt     member function
+Added CFile::GetFileNameWOExt   member function
+Added CFrame::GetInitValues     member function
+Added CFrame::SetInitValues     member function
+Added UWM_GETCWND               window message.
+Added UWM_GETCFRAME             window message.
+Added UWM_GETCDOCKER            window message.
+Added UWM_GETCDOCKCONTAINER     window message.
+Added UWM_GETCTABBEDMDI         window message.
+Added UWM_GETCTOOLBAR           window message.
 
-Modified CWinThread::GetMainWnd				now returns HWND
-Modified CWinThread::SetMainWnd				now accepts HWND
-Modified CWinThread::GetAcceleratorWindow 	now returns HWND
-Modified CWinThread::SetAccelerators		now accepts HWND
+Modified CWinThread::GetMainWnd             now returns HWND
+Modified CWinThread::SetMainWnd             now accepts HWND
+Modified CWinThread::GetAcceleratorWindow   now returns HWND
+Modified CWinThread::SetAccelerators        now accepts HWND
 
 Renamed CWinThread::GetAccelerators to CWinThread::GetAcceleratorTable
 
@@ -403,12 +487,12 @@ Removed CFrame::SetShowCmd
 Removed CFile::OpenFileDialog
 Removed CFile::SaveFileDialog
 Removed CException::ReportError
-Removed UWM_ISDOCKER		 	window message.
-Removed UWM_ISDOCKCONTAINER	 	window message.
-Removed UWM_ISFRAME			 	window message.
-Removed UWM_ISMDIFRAME		 	window message.
-Removed UWM_ISTABBEDMDI		 	window message.
-Removed UWM_ISTOOLBAR		 	window message.
+Removed UWM_ISDOCKER            window message.
+Removed UWM_ISDOCKCONTAINER     window message.
+Removed UWM_ISFRAME             window message.
+Removed UWM_ISMDIFRAME          window message.
+Removed UWM_ISTABBEDMDI         window message.
+Removed UWM_ISTOOLBAR           window message.
 
 The following functions are now public:
 CWinApp::GetCWndFromMap
@@ -447,7 +531,7 @@ New Features and Enhancements
    - Override DoDataExchange and specify the appropriate DDX and DDV functions.
    - Call UpdateData(FALSE) to initialize the controls and assign their values.
      This is typically done in the dialog's OnInitDialog function.
-   - Call UpdateData(TRUE) to validate and retrieve the control data.	
+   - Call UpdateData(TRUE) to validate and retrieve the control data.   
 
   Refer to the DDXDemo sample for a demonstration of how to use CDataExchange
 
@@ -467,7 +551,7 @@ New Features and Enhancements
    - Added the ability to archive char and wchar character arrays. The abilty
      to archive TCHAR character arrays is retained.
    - Added the ability to archive CStringA and CStringW. The ability to
-     archive CString is retained.	   
+     archive CString is retained.      
    
 * Added CDockFrame.
    Inherit your CMainFrame from CDockFrame to add docking capabilities to normal
@@ -493,60 +577,60 @@ New Features and Enhancements
 
    CFileExceptions are thrown under the following circumstance
     - CArchive fails to create the archive file
-	- CArchive fails to read from or write to the archive file
-	- CFile fails to create the file
-	- CFile fails to read from or write to the file.
+    - CArchive fails to read from or write to the archive file
+    - CFile fails to create the file
+    - CFile fails to read from or write to the file.
    
    CNotSupportedExceptions are thrown under the following circumstances:
     - An attempt is made to run more than one instance of CWinApp.
-	- CWinApp is prevented from starting the framework.
-	- CSocket fails to load the WS2_32.DLL.
-	- CSocket fails to initialize the use of WS2_32.DLL.	
-	
+    - CWinApp is prevented from starting the framework.
+    - CSocket fails to load the WS2_32.DLL.
+    - CSocket fails to initialize the use of WS2_32.DLL.    
+    
    CResourceExceptions are thrown under the following circumstances:
     An attempt to create a GDI resource fails. Applies to:
-	   - device contexts
-	   - bitmaps
-	   - brushes
-	   - fonts
-	   - palettes
-	   - pens
-	   - regions
+       - device contexts
+       - bitmaps
+       - brushes
+       - fonts
+       - palettes
+       - pens
+       - regions
    
    CWinExceptions are now thrown under the following circumstances:
     * A failure to create a thread
     * A failure to create a window, including:
-	   - generic windows
-	   - dialogs
-	   - property sheets
-	   - task dialogs
-	 
+       - generic windows
+       - dialogs
+       - property sheets
+       - task dialogs
+     
    CUserExceptions are thrown under the following circumstances:
     - A CDataExchange DDX or DDV function fails validation
-	- A CUserException is typically the exception thrown in user code. 
+    - A CUserException is typically the exception thrown in user code. 
    
    Notes:
     - Exceptions should be thrown by value, and caught by const reference.   
-	- Catch CExceptions to catch all exceptions inherited from CException.
-	- CException is an abstract class. CExceptions can't be thrown.
+    - Catch CExceptions to catch all exceptions inherited from CException.
+    - CException is an abstract class. CExceptions can't be thrown.
     - A failure to create a GDI resources occurs when too many GDI resources
       are allocated to the process. A GDI resource leak can cause this.  
-	  
+      
 * Updated CWnd
    - Added OnPaint virtual function. OnPaint calls OnDraw for generic windows,
      but not for window controls. Users can now override OnPaint to draw to
-	 window controls as an alternative to custom draw or owner draw.	 
-   - Added DoDataExchange and UpdatedData to support CDataExchange. 	
+     window controls as an alternative to custom draw or owner draw.     
+   - Added DoDataExchange and UpdatedData to support CDataExchange.     
   
 * Updated CCriticalSection
   All critical sections are now guaranteed to be released when the
   CCriticalSection's destructor is called.
   
 * Updated the documentation
-   - Added 'Dialog Data Exchange (DDX and DDV)	to Using Win32++
-   - Added 'Doc View Model'               		to Using Win32++
-   - Added 'Serialization with CArchive'  		to Using Win32++
-   - Extended 'CString'                  	 	in Using Win32++   
+   - Added 'Dialog Data Exchange (DDX and DDV)  to Using Win32++
+   - Added 'Doc View Model'                     to Using Win32++
+   - Added 'Serialization with CArchive'        to Using Win32++
+   - Extended 'CString'                         in Using Win32++   
 
 
 Changes in detail
@@ -580,7 +664,7 @@ Added CWnd::UpdateData
 Added CStringT class template
 Added CStringA typedef
 Added CStringW typedef
-Modified CString. 	Now inherits from CStringT<TCHAR>
+Modified CString.   Now inherits from CStringT<TCHAR>
 Added CStringT::GetWindowText
 
 Added CException
@@ -603,10 +687,10 @@ Added DirectX11 sample
 Renamed the DirectX sample to DirectX9
 Added project files for Visual Studio Community 2015
 
-Modified CDC::CreateCompatibleDC 		returns HDC
-Modified CDC::CreateDC 					returns HDC
-Modified CDC::CreateIC 					returns HDC
-Modified CFile::Open 	throws a CFileException on failure
+Modified CDC::CreateCompatibleDC        returns HDC
+Modified CDC::CreateDC                  returns HDC
+Modified CDC::CreateIC                  returns HDC
+Modified CFile::Open    throws a CFileException on failure
 
 These function no longer use a pointer:
 Modified CMenu::GetMenuInfo
@@ -623,12 +707,12 @@ Modified CWnd::OnCreate
 Modified CWnd::IsDialogMessage
 Modified CWnd::PreTranslateMessage
 
-Modified CDocker::GetAllDockChildren		returns const ref
-Modified CDocker::GetDockChildren			returns const ref
-Modified CDocker::GetAllDockers				returns const ref
-Modified CDockContainer::GetAllContainers	returns const ref
-Modified CMDIFrame::GetAllMDIChildren		returns const ref
-Modified CTab:: GetAllTabs					returns const ref
+Modified CDocker::GetAllDockChildren        returns const ref
+Modified CDocker::GetDockChildren           returns const ref
+Modified CDocker::GetAllDockers             returns const ref
+Modified CDockContainer::GetAllContainers   returns const ref
+Modified CMDIFrame::GetAllMDIChildren       returns const ref
+Modified CTab:: GetAllTabs                  returns const ref
 
 Updated theme colors for Windows 8, Windows 8.1 and Windows 10
 
@@ -686,25 +770,25 @@ New Features and Enhancements
 * Updated CFile
   - The nOpenFlags used in CFile::Open, and CFile's constructor continue to
     support the same file creation modes as before, but now support additional
-	modes as well.
-  	Possible nOpenFlag values: CREATE_NEW, CREATE_ALWAYS, OPEN_EXISTING, 
-	    OPEN_ALWAYS, TRUNCATE_EXISTING
-	 Default value: OPEN_EXISTING | modeReadWrite
-	 The following modes are also supported:
-	- CFile::modeCreate			Same as CREATE_ALWAYS.
-	- CFile::modeNoTruncate		Same as OPEN_ALWAYS.
-	- CFile::modeRead			Requests read access only.
-	- CFile::modeWrite			Requests write access only.
-	- CFile::modeReadWrite		Requests read and write access.
-	- CFile::shareExclusive		Denies read and write access to all others.
-	- CFile::shareDenyWrite		Denies write access to all others.
-	- CFile::shareDenyRead		Denies read access to all others.
-	- CFile::shareDenyNone		No sharing restrictions.
+    modes as well.
+    Possible nOpenFlag values: CREATE_NEW, CREATE_ALWAYS, OPEN_EXISTING, 
+        OPEN_ALWAYS, TRUNCATE_EXISTING
+     Default value: OPEN_EXISTING | modeReadWrite
+     The following modes are also supported:
+    - CFile::modeCreate         Same as CREATE_ALWAYS.
+    - CFile::modeNoTruncate     Same as OPEN_ALWAYS.
+    - CFile::modeRead           Requests read access only.
+    - CFile::modeWrite          Requests write access only.
+    - CFile::modeReadWrite      Requests read and write access.
+    - CFile::shareExclusive     Denies read and write access to all others.
+    - CFile::shareDenyWrite     Denies write access to all others.
+    - CFile::shareDenyRead      Denies read access to all others.
+    - CFile::shareDenyNone      No sharing restrictions.
   - CFile now throws an exception under the following circumstances
     - Failure to read from a file.
     - Failure to write to a file.
     - Failure to open the file in CFile's constructor.
-	
+    
 
 Changes in detail
 -----------------
@@ -728,11 +812,11 @@ Added _WIN32XX_VER macro
 Added INIFrame sample
 Added TimeDemo sample
 
-Modified CFile::CFile   	now throws an exception on fail to open file
-Modified CFile::Read    	now	throws an exception on fail to read file
+Modified CFile::CFile       now throws an exception on fail to open file
+Modified CFile::Read        now throws an exception on fail to read file
 Modified CFile::Write       now throws an exception on fail to write file
 
-Modified ::GetApp                          	now returns a reference
+Modified ::GetApp                           now returns a reference
 Modified CDockContainer::GetView            now returns a reference
 Modified CDockContainer::GetViewPage        now returns a reference
 Modified CDocker::GetView                   now returns a reference
@@ -784,7 +868,7 @@ argument. This has the following advantages:
  - We no longer have to needlessly create temporary CWnds.
 Coding examples: (the Create function now has a HWND argument)
  CWnd MyCWnd;
- MyCWnd.Create(Some_CWnd);	 // Another CWnd called Some_CWnd is the parent window 
+ MyCWnd.Create(Some_CWnd);   // Another CWnd called Some_CWnd is the parent window 
  MyCWnd.Create(*this);       // This CWnd is the parent window. (dereferenced pointer)
  MyCWnd.Create(GetHwnd());   // This CWnd is the parent window.
  MyCwnd.Create(GetParent()); // The parent of this CWnd is the parent window
@@ -837,32 +921,32 @@ New Features and Enhancements
    Dockers can now be added to classic MDI Frames. Code to add dockers to a
    MDI frame might look like this:
    
-	void CMainMDIFrame::OnInitialUpdate()
-	{
-		// Add some dockers
-		DWORD dwStyle = DS_CLIENTEDGE; // The style added to each docker
-		int DockWidth = 150;
-		AddDockedChild(new CDockFiles, DS_DOCKED_LEFT | dwStyle, DockWidth);
-		AddDockedChild(new CDockFiles, DS_DOCKED_RIGHT | dwStyle, DockWidth);
-		
-		// Add some MDI children
-		AddMDIChild(new CSimpleMDIChild);
-		AddMDIChild(new CSimpleMDIChild); 		
-	}
-	
+    void CMainMDIFrame::OnInitialUpdate()
+    {
+        // Add some dockers
+        DWORD dwStyle = DS_CLIENTEDGE; // The style added to each docker
+        int DockWidth = 150;
+        AddDockedChild(new CDockFiles, DS_DOCKED_LEFT | dwStyle, DockWidth);
+        AddDockedChild(new CDockFiles, DS_DOCKED_RIGHT | dwStyle, DockWidth);
+        
+        // Add some MDI children
+        AddMDIChild(new CSimpleMDIChild);
+        AddMDIChild(new CSimpleMDIChild);       
+    }
+    
 * Windows created by CWnd::Create can now be initially created as maximized or
    minimized by specifying the WS_MAXIMIZE or WS_MINIMIZE styles in PreCreate,
    even though this is not supported by the CreateWindowEx Windows API function.
    
 * Frames now load the save state (maximized or normal) from the registry.   
-	
-* Added DockMDI sample.	
+    
+* Added DockMDI sample. 
   This sample demonstrates adding Dockers to MDI Frames.
-	
+    
 * Dockers now default to fixed size resizing instead of proportional size 
    resizing for dock children. The DS_FIXED_RESIZE style has been replaced with
-   DS_NO_FIXED_RESIZE.	
-	
+   DS_NO_FIXED_RESIZE.  
+    
 
 Version 7.6
 ===========
@@ -883,8 +967,8 @@ New Features and Enhancements
 * Updated Frames
    - IDW_INDICATOR_CAPS, IDW_INDICATOR_NUM and IDW_INDICATOR_SCRL string
       resources are used to define the status indicators. These string
-	  resources should be added to the resource script (resource.rc). Refer
-	  to resource.rc in the frame sample for an example.
+      resources should be added to the resource script (resource.rc). Refer
+      to resource.rc in the frame sample for an example.
    
 * Updated Dockers
    - Dock targets invalidated by DS_NO_DOCKCHILD_XXXX are hidden or greyed.
@@ -903,25 +987,25 @@ New Features and Enhancements
    - Added DateTime sample to demonstrate CDateTime and CMonthCalendar. 
    - Added ToolBar sample. It demonstrates customizing ToolBars by dynamically
       adding or removing ToolBar buttons. It also demonstrates an additional
-	  ToolBar which can be positioned at the top, bottom, left or right of the
-	  view window.
+      ToolBar which can be positioned at the top, bottom, left or right of the
+      view window.
    - Added ReBar sample. It demonstrates an additional ReBar which contains 
       a ToolBar and can be positioned at the top, bottom, left or right of the
       view window.
    - Added StatusBar sample. It demonstrates a colored StatusBar with a
-      hyperlink, a progress bar, an icon and an owner drawn part.	  
+      hyperlink, a progress bar, an icon and an owner drawn part.     
    - A window menu has been added to the DockTabbedMDI sample.
    - The Themes sample demonstrates how to save a rebar's band sizes and 
       positions in the registry.
    - The Themes sample demonstrates StatusBar themes.
    - The Dock sample demonstrates various dock styles including:
      - Proportional Resize
-	 - 3D Border
-	 - Disable Undocking
-	 - Disable Resizing
-	 - Disable Dock closing
-	 - Disable docking on the left or right
-	 
+     - 3D Border
+     - Disable Undocking
+     - Disable Resizing
+     - Disable Dock closing
+     - Disable docking on the left or right
+     
 
 Version 7.5
 ===========
@@ -937,36 +1021,36 @@ New Features and Enhancements
    - CWinApp now inherits from CWinThread.
    - GUI threads are now implemented without multiple inheritance. Refer to
      the Threads and DirectX samples for an example of how to create GUI
-	 threads.
+     threads.
    - CWinThread provides a constructor to facilitate worker threads. This 
      constructor allows users to specify the thread's callback function and
      a LPVOID pParams parameter.
    - The thread is now created using the CreateThread member function rather
      than being automatically created in the constructor. This provides more
-	 control over if and when the thread is created.
+     control over if and when the thread is created.
 * Updated CWinApp
    - CWinApp now inherits from CWinThread. Some member functions were moved
      from CWinApp to CWinThread.
    - Added wrapper functions for loading and setting the cursor, and loading 
-	 icons.	   
+     icons.    
 * Updated CFrame
    - A keyboard hook is used to retrieve keyboard indicators (NUM, CAPS, SCRL),
      removing the need for a timer. 
    - If the co-ordinates retrieved from registry would place the frame off
      screen, the frame is repositioned.
-   - Added GetTitle, SetTitle, GetStatusText and SetStatusText functions.	  
+   - Added GetTitle, SetTitle, GetStatusText and SetStatusText functions.     
 * Updated CDocker and CTab
    - CTabs and CDockers now support the WS_EX_LAYOUTRTL extended style. This
      style creates a window whose horizontal origin is on the right edge to 
-	 better suite Arabic and Hebrew languages.
+     better suite Arabic and Hebrew languages.
 * Updated CDialog
    - Added support for OnIdle in modal dialogs. Modeless dialogs already have
-     OnIdle support.  	 
+     OnIdle support.     
 
 
 Version 7.4
 ===========
-	 
+     
 New Features and Enhancements
 -----------------------------
 * Added CImageList. CImageList manages a collection of images (Image List).
@@ -991,7 +1075,7 @@ New Features and Enhancements
       now assumed to be equal to its height or a minimum of 16.
    - The code for ToolBar and MenuBar themes has been moved to CFrame, making it
       easier to customize. Also, the notifications (from WM_NOTIFY) are handled in
-	  virtual functions, making them easier to override.   
+      virtual functions, making them easier to override.   
    - ToolBars for DockContainers automatically use the Frame's ToolBar theme.
    - We can now specify the index of the image in AddToolbarButton.
 * Updated CFile:
@@ -1005,7 +1089,7 @@ New Features and Enhancements
    - AddButton now also allows us to specify the image's index.
 * Updated CDialog
    - Added GetDefID, GotoDlgCtrl, MapDialogRect, NextDlgCtrl, PrevDlgCtrl
-	  and SetDefID.
+      and SetDefID.
    - The constructor no longer sets the dialog's parent. The parent of the dialog 
       (if any) is set when the dialog is created (with DoModal or DoModeless).  
 * Updated CTab.
@@ -1018,12 +1102,12 @@ Version 7.3
 New Features and Enhancements
 -----------------------------
 * Adjusted the frame's appearance
-	- Updated the visual appearance of popup menus on systems using Windows Aero. On 
-	  systems with Aero, popup menus are rendered with Windows Visual Styles. Systems
-	  without Aero continue to use the Win32++ theme for popup menus.
-	- Frames now honour the current window theme's menu and status fonts.
-	- the frame's appearance changes dynamically to reflect changes to the window theme.
-	- minor adjustment to the ReBar theme colours for the "Modern" theme.
+    - Updated the visual appearance of popup menus on systems using Windows Aero. On 
+      systems with Aero, popup menus are rendered with Windows Visual Styles. Systems
+      without Aero continue to use the Win32++ theme for popup menus.
+    - Frames now honour the current window theme's menu and status fonts.
+    - the frame's appearance changes dynamically to reflect changes to the window theme.
+    - minor adjustment to the ReBar theme colours for the "Modern" theme.
 * Added the following controls
    - CDateTime
    - CHeader
@@ -1043,7 +1127,7 @@ New Features and Enhancements
 * Added CMenu
    The CMenu class is intended to provide much of the same functionality
    as the CMenu class provided with MFC. The library now standardises on
-   using pointers to CMenu, instead of HMENU.	
+   using pointers to CMenu, instead of HMENU.   
 * Added CFile
    This class provides a convenient wrapper for functions dealing with files.
 * Added Idle processing.
@@ -1060,21 +1144,21 @@ New Features and Enhancements
    CPen and CRgn. These work in cooperation with the existing CDC class.
 * Added a set of new Text conversion functions based on classes.
    The complete set of functions are:
-	A2BSTR		ANSI  to BSTR
-	A2OLE		ANSI  to OLE
-	A2T			ANSI  to TCHAR
-	A2W			ANSI  to WCHAR
-	OLE2A		OLE   to ANSI
-	OLE2T		OLE   to TCHAR
-	OLE2W		OLE   to WCHAR
-	T2A			TCHAR to ANSI
-	T2BSTR		TCHAR to BSTR
-	T2OLE       TCHAR to OLE
-	T2W			TCHAR to Wide
-	W2A			WCHAR to ANSI
-	W2BSTR		WCHAR to BSTR
-	W2OLE		WCHAR to OLE
-	W2T			WCHAR to TCHAR
+    A2BSTR      ANSI  to BSTR
+    A2OLE       ANSI  to OLE
+    A2T         ANSI  to TCHAR
+    A2W         ANSI  to WCHAR
+    OLE2A       OLE   to ANSI
+    OLE2T       OLE   to TCHAR
+    OLE2W       OLE   to WCHAR
+    T2A         TCHAR to ANSI
+    T2BSTR      TCHAR to BSTR
+    T2OLE       TCHAR to OLE
+    T2W         TCHAR to Wide
+    W2A         WCHAR to ANSI
+    W2BSTR      WCHAR to BSTR
+    W2OLE       WCHAR to OLE
+    W2T         WCHAR to TCHAR
    Refer to the help documentation for instructions on using these functions.
 
 Version 7.0
