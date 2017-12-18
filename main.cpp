@@ -235,6 +235,7 @@ public:
 
       fFile = false;
       fPlay = false;
+      fPov = false;
       bRun = true;
       int nRet = 0;
       memset(szTableFileName, 0, _MAX_PATH);
@@ -247,6 +248,7 @@ public:
       {
          fFile = true;
          fPlay = true;
+         fPov = false;
       }
 
       int nArgs;
@@ -450,6 +452,4 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
       return -1;
    }
-
-
 }
