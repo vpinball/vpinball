@@ -591,49 +591,54 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
    m_curLockCalls = m_frameLockCalls = 0; //!! meh
 
+   bool shaderCompilationOkay = true;
+
    basicShader = new Shader(this);
 #if _MSC_VER >= 1700
-   basicShader->Load(g_basicShaderCode, sizeof(g_basicShaderCode));
+   shaderCompilationOkay = basicShader->Load(g_basicShaderCode, sizeof(g_basicShaderCode)) && shaderCompilationOkay;
 #else
-   basicShader->Load(basicShaderCode, sizeof(basicShaderCode));
+   shaderCompilationOkay = basicShader->Load(basicShaderCode, sizeof(basicShaderCode)) && shaderCompilationOkay;
 #endif
 
    DMDShader = new Shader(this);
 #if _MSC_VER >= 1700
-   DMDShader->Load(g_dmdShaderCode, sizeof(g_dmdShaderCode));
+   shaderCompilationOkay = DMDShader->Load(g_dmdShaderCode, sizeof(g_dmdShaderCode)) && shaderCompilationOkay;
 #else
-   DMDShader->Load(dmdShaderCode, sizeof(dmdShaderCode));
+   shaderCompilationOkay = DMDShader->Load(dmdShaderCode, sizeof(dmdShaderCode)) && shaderCompilationOkay;
 #endif
 
    FBShader = new Shader(this);
 #if _MSC_VER >= 1700
-   FBShader->Load(g_FBShaderCode, sizeof(g_FBShaderCode));
+   shaderCompilationOkay = FBShader->Load(g_FBShaderCode, sizeof(g_FBShaderCode)) && shaderCompilationOkay;
 #else
-   FBShader->Load(FBShaderCode, sizeof(FBShaderCode));
+   shaderCompilationOkay = FBShader->Load(FBShaderCode, sizeof(FBShaderCode)) && shaderCompilationOkay;
 #endif
 
    flasherShader = new Shader(this);
 #if _MSC_VER >= 1700
-   flasherShader->Load(g_flasherShaderCode, sizeof(g_flasherShaderCode));
+   shaderCompilationOkay = flasherShader->Load(g_flasherShaderCode, sizeof(g_flasherShaderCode)) && shaderCompilationOkay;
 #else
-   flasherShader->Load(flasherShaderCode, sizeof(flasherShaderCode));
+   shaderCompilationOkay = flasherShader->Load(flasherShaderCode, sizeof(flasherShaderCode)) && shaderCompilationOkay;
 #endif
 
    lightShader = new Shader(this);
 #if _MSC_VER >= 1700
-   lightShader->Load(g_lightShaderCode, sizeof(g_lightShaderCode));
+   shaderCompilationOkay = lightShader->Load(g_lightShaderCode, sizeof(g_lightShaderCode)) && shaderCompilationOkay;
 #else
-   lightShader->Load(lightShaderCode, sizeof(lightShaderCode));
+   shaderCompilationOkay = lightShader->Load(lightShaderCode, sizeof(lightShaderCode)) && shaderCompilationOkay;
 #endif
 
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    classicLightShader = new Shader(this);
 #if _MSC_VER >= 1700
-   classicLightShader->Load(g_classicLightShaderCode, sizeof(g_classicLightShaderCode));
+   shaderCompilationOkay = classicLightShader->Load(g_classicLightShaderCode, sizeof(g_classicLightShaderCode)) && shaderCompilationOkay;
 #else
-   classicLightShader->Load(classicLightShaderCode, sizeof(classicLightShaderCode));
+   shaderCompilationOkay = classicLightShader->Load(classicLightShaderCode, sizeof(classicLightShaderCode)) && shaderCompilationOkay;
 #endif
 #endif
+
+   if (!shaderCompilationOkay)
+      ReportError("Fatal Error: shader compilation failed!", -1, __FILE__, __LINE__);
 
    // create default vertex declarations for shaders
    CreateVertexDeclaration(VertexTexelElement, &m_pVertexTexelDeclaration);
@@ -1669,6 +1674,9 @@ bool Shader::Load(const BYTE* shaderCodeName, UINT codeSize)
          LPVOID pCompileErrors = pBufferErrors->GetBufferPointer();
          MessageBox(NULL, (const char*)pCompileErrors, "Compile Error", MB_OK | MB_ICONEXCLAMATION);
       }
+      else
+         MessageBox(NULL, "Unknown Error", "Compile Error", MB_OK | MB_ICONEXCLAMATION);
+
       return false;
    }
    return true;
