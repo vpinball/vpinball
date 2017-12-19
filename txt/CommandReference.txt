@@ -7,10 +7,9 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.4:
-- add AngVelX/Y/Z and AngMomX/Y/Z to the ball element
 - support reading nudge data from table script, and reading/writing nudge calibration settings:
   NudgeGetCalibration/NudgeSetCalibration, NudgeSensorStatus, NudgeTiltStatus
-- add DecalMode to the ball element
+- add AngVelX/Y/Z and AngMomX/Y/Z and DecalMode to the ball element
 - document missing FrontDecal and UserValue for the ball element
 - add Scatter to the bumper element
 - add BlendDisableLightingFromBelow to the primitive element
