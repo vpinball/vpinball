@@ -18,6 +18,8 @@ End Sub
 '-------------------------
 ' GTS3 Data
 '-------------------------
+' Flipper Solenoid
+Const GameOnSolenoid = 32
 ' FrontDoor switches
 Const swCoin1       = 00
 Const swCoin2       = 01
@@ -64,8 +66,10 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False
-			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False :  vpmFlips.FlipL True : if keycode = keyStagedFlipperL then vpmFlips.FlipUL True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False :  vpmFlips.FlipR True : if keycode = keyStagedFlipperR then vpmFlips.FlipUR True
+			Case keyStagedFlipperL vpmFlips.FlipUL True
+			Case keyStagedFlipperR vpmFlips.FlipUR True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
@@ -90,8 +94,10 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False
-			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False :  vpmFlips.FlipL False : if keycode = keyStagedFlipperL then vpmFlips.FlipUL False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False :  vpmFlips.FlipR False : if keycode = keyStagedFlipperR then vpmFlips.FlipUR False
+			Case keyStagedFlipperL vpmFlips.FlipUL False
+			Case keyStagedFlipperR vpmFlips.FlipUR False
 			Case keyDown         .Switch(swLeftAdvance) = False
 			Case keyUp           .Switch(swRightAdvance) = False
 			Case StartGameKey    .Switch(swStartButton) = False

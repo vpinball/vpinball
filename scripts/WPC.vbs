@@ -17,6 +17,21 @@ End Sub
 '-------------------------
 ' WPC Data
 '-------------------------
+' Flipper Solenoid	
+Const GameOnSolenoid = 31
+'-----WPC flipper solenoid notes-----
+'***These games will work perfectly:***
+'WPC alphanumerics, T2, Gilligan's Island, Hurricane, Party Zone (pre-Addams Family DMD games)
+
+'***These games use rom-controlled flippers, but still have a usable flipper solenoid:***
+'WPC Fliptronics & WPC Security (Addam's Family through Jack Bot / WHO dunnit)
+'- (YMMV. Beware stuck balls under upper flippers. )
+'- Some of these games may have solenoid jitter with solmodcallbacks enabled. If flippers die randomly, set the vpmFlips.InitDelay option.
+'- STAGED FLIPPER NOTE: Some games (Red & Ted, probably others) use swapped around upper flipper solenoid numbers, some table script modification may be necessary!
+
+'***These games will not work at all:***
+'WPC-95 Machines (Congo / Attack From Mars onwards)
+
 ' Cabinet switches
 Const swCoin1  = 1
 Const swCoin2  = 2
@@ -79,8 +94,12 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False : If cSingleRFlip Or Err Then .Switch(swURFlip) = True
-			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False : If cSingleLFlip Or Err Then .Switch(swULFlip) = True
+			'Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False  :  vpmFlips.FlipR True : If cSingleRFlip Or Err Then .Switch(swURFlip) = True : vpmFlips.FlipUR True
+			'Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False  :  vpmFlips.FlipL True : If cSingleLFlip Or Err Then .Switch(swULFlip) = True : vpmFlips.FlipUL True
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False :  vpmFlips.FlipL True : If keycode = keyStagedFlipperL then vpmFlips.FlipUL True : .Switch(swULFlip) = True
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False :  vpmFlips.FlipR True : If keycode = keyStagedFlipperR then vpmFlips.FlipUR True : .Switch(swURFlip) = True
+			Case keyStagedFlipperL vpmFlips.FlipUL True : .Switch(swULFlip) = True
+			Case keyStagedFlipperR vpmFlips.FlipUR True : .Switch(swURFlip) = True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
@@ -109,8 +128,12 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False : If cSingleRFlip Or Err Then .Switch(swURFlip) = False
-			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False : If cSingleLFlip Or Err Then .Switch(swULFlip) = False
+			'Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False :  vpmFlips.FlipR False  : If cSingleRFlip Or Err Then .Switch(swURFlip) = False :  vpmFlips.FlipUR False
+			'Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False :  vpmFlips.FlipL False  : If cSingleLFlip Or Err Then .Switch(swULFlip) = False :  vpmFlips.FlipUL False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False :  vpmFlips.FlipL False : If keycode = keyStagedFlipperL then vpmFlips.FlipUL False : .Switch(swULFlip) = False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False :  vpmFlips.FlipR False : If keycode = keyStagedFlipperR then vpmFlips.FlipUR False : .Switch(swURFlip) = False
+			Case keyStagedFlipperL vpmFlips.FlipUL False : .Switch(swULFlip) = False
+			Case keyStagedFlipperR vpmFlips.FlipUR False : .Switch(swURFlip) = False
 			Case keyCancel       swCopy = swCancel :       .Switch(swCopy) = False
 			Case keyDown         swCopy = swDown :         .Switch(swCopy) = False
 			Case keyUp           swCopy = swUp :           .Switch(swCopy) = False

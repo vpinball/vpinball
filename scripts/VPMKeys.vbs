@@ -71,9 +71,15 @@ Dim keyCoinDoor,keyCancel,keyDown,keyUp,keyEnter,keyAdvance,keyUpDown,keyCPUDiag
 Dim keyMasterEnter,keyHiScoreReset,keySelfTest,keyBlack,keyGreen,keyRed,keyKPGame,keyKPEnter,keyVPMVolume,keyConfigurations
 Dim keyUpperLeft,keyUpperRight,keyFront,keyRules,keyJoyUp,keyJoyDown,keyJoyLeft,keyJoyRight
 Dim keyFire1,keyFire2,keyGameSpecific1,keyGameSpecific2,keyGameSpecific3,keyGameSpecific4
+
 '
 ' This is a list of standard keys used by *.vbs files
 '
+
+' Double leaf/staged flipper switches: By default these are just set to LeftFlipperKey and RightFlipperKey
+Dim keyStagedFlipperL : keyStagedFlipperL = LeftFlipperKey
+Dim keyStagedFlipperR : keyStagedFlipperR = RightFlipperKey
+
 keyShowOpts     = 59  '(F1)    Show options
 keyShowKeys     = 60  '(F2)    Show Keys
 keyReset        = 61  '(F3)    Reset Emulation
