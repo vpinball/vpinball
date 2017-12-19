@@ -1193,14 +1193,18 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          if (proptype == 0)
          {
             IPerPropertyBrowsing *pippb;
-            psb->GetBaseIDisp()->QueryInterface(IID_IPerPropertyBrowsing, (void **)&pippb);
+            IDispatch *pIdisp = psb->GetBaseIDisp();
+            if (pIdisp)
+            {
+               pIdisp->QueryInterface(IID_IPerPropertyBrowsing, (void **)&pippb);
 
-            CComVariant var;
-            HRESULT res = pippb->GetPredefinedValue(dispid, (DWORD)cookie, &var);
+               CComVariant var;
+               pippb->GetPredefinedValue(dispid, (DWORD)cookie, &var);
 
-            pippb->Release();
+               pippb->Release();
 
-            psb->SetProperty(dispid, &var, fFalse);
+               psb->SetProperty(dispid, &var, fFalse);
+            }
          }
          else
          {
