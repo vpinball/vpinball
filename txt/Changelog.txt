@@ -1,43 +1,34 @@
 VP 10.4.0 Changelog
 ------------------------
+
 - add support for loading POV/backdrop settings automatically: One can define an extra POV(.pov) file for each table, named like the VPX file.
-  Example: you have some custom POV settings for the table "QBerts Quest (Gottlieb 1983).vpx". Save the POV settings into the file "QBerts Quest (Gottlieb 1983).pov" and place it 
-           in the same directory as the VPX file. VPX will then also load the POV settings automatically when loading the "QBerts Quest (Gottlieb 1983).vpx" (in the editor/player).
-  Or if you like to have default POV settings that are used for any other tables save it as "autopov.pov".
+  Example: you have some custom POV settings for the table "QBerts Quest (Gottlieb 1983).vpx". Save the POV settings into the file
+           "QBerts Quest (Gottlieb 1983).pov" and place it in the same directory as the VPX file. VPX will then also load the POV settings
+           automatically when loading the "QBerts Quest (Gottlieb 1983).vpx" (in the editor/player).
+  Or if you like to have default POV settings that are used for any other tables, save it as "autopov.pov".
 - in addition, there is also -Pov [filename] to load, export POV settings and then close VPX (via the command line)
 
-- stop sounds when exiting sound dialog, or exiting position dialog, and when you pick a different sound
-
-- add nudge test and calibration table (by DJRobX, modded by Sir Cheddar) to tables directory
-
-- add new kicker meshes (KickerCup2, KickerWilliams, KickerGottlieb)
-
-- change context menu behavior of add/remove to collection: it's possible to add/remove one or multiple elements to other collections. 
-  If you selected multiple elements but they are not part of the same collection/or are not part of any collection the context menu is greyed out and the check marks tell you which collections were found 
-  for these selected elements.
+- change context menu behavior of add/remove to collection: it's now possible to add/remove one or multiple elements to other collections. 
+  If you selected multiple elements but they are not part of the same collection/or are not part of any collection
+  the context menu is greyed out and the check marks tell you which collections were found for these selected elements.
   
-- add Rotate/Scale around origin option to the rotate/scale dialog. Simply uncheck "Rotate around origin" or "Scale around origin" to rotate/scale around the mouse position.
+- add Rotate/Scale around origin option to the rotate/scale dialog.
+  Simply uncheck "Rotate around origin" or "Scale around origin" to rotate/scale around the mouse position.
   To use the current mouse position as rotate/scale reference use the following workflow:
   1) select the element you want to rotate/scale
   2) place the mouse cursor where the origin should be
   3) press the context menu key on your keyboard (the one between "Alt Gr" and right "Ctrl") and select "Rotate" or "Scale"
   4) uncheck the "Rotate/Scale around origin" and start the operation
 
-- add "In Use" column to the material manager dialog
-
-- let user change the scatter angle for bumpers in the editor
-
-- fix missing kicker holes at inclination values close around 0
-
-- added a new column for the image manager to show the raw size in bytes for each image.
-
-- new table extended by a stripped down version of the default table and an updated example table. (thanks BorgDog and Hauntfreaks)
-
 - a selected element can be added/removed to/from a collection via the context menu
 
-- drop target hit event problems fixed
+- add a new "In Use" column to the material manager dialog
+- add a new column for the image manager to show the raw size in bytes for each image
 
-- add additional thickness parameter to (transparent) materials, which interacts with the standard amount (and/or alpha channel of the image) and edge opacity to provide a more natural look
+- let user change the scatter angle for bumpers in the editor UI
+
+- add additional thickness parameter to (transparent) materials,
+  which interacts with the standard amount (and/or alpha channel of the image) and edge opacity to provide a more natural look
 
 - add (optional) legacy/VP9-like keyboard nudging code, can be enabled in the 'Keys, Nudge and DOF' preferences dialog
 
@@ -49,27 +40,35 @@ VP 10.4.0 Changelog
 - extend 'Disable Lighting' functionality for HitTarget, Primitive and Wall from simple dis/enable to a blend value 0..1
 - add 'Disable Lighting from below' functionality for Primitives (0..1) to optionally disable light coming from below (e.g. from light elements)
 
+- add new kicker meshes (KickerCup2, KickerWilliams, KickerGottlieb)
+
 - add surround sound options/configurations:
- 1) Basic 2CH audio - this should operate exactly as it did before. Forward/rear panning is ignored.
- 2) All effects to rear - Moves the table sounds to the back audio channels. This allows one to move the sounds into the cab like one was able before, but without needing a second sound card.
- 3) Surround, front is front - This is the best setting when using a dedicated card for the surround sound table sounds. It makes the front channels the front of the cab (closest to the player). This way if one uses older versions of VP, the old legacy output still works well.
- 4) Surround, front is rear - This is a pretty "vanilla" surround setup.  If you were to play on a home theater or with virtual 3D headphones, it's the most appropriate. The "front" speakers are in the rear of the cab (furthest from you). If VPinmame also uses the same soundcard, it will share the audio with these front channels. 
- 5) 7.1 surround (aka 6ch audio) - If one wants to drive the backglass, and 4 channel table sounds all off of one card, this is the setting to use. It shifts all of the table audio to the side and rear channels, leaving the fronts available for VPM and backglass sounds. This might also be a good setting to try if you are using just 2 speakers in the cab and 2 in the backbox, the table sounds will pan partially towards the front in 4 speaker mode, letting the backbox provide some of the surround effect.
+  1) Basic 2CH audio - this should operate exactly as it did before. Forward/rear panning is ignored.
+  2) All effects to rear - Moves the table sounds to the back audio channels. This allows one to move the sounds into the cab like one was able before, but without needing a second sound card.
+  3) Surround, front is front - This is the best setting when using a dedicated card for the surround sound table sounds. It makes the front channels the front of the cab (closest to the player). This way if one uses older versions of VP, the old legacy output still works well.
+  4) Surround, front is rear - This is a pretty "vanilla" surround setup.  If you were to play on a home theater or with virtual 3D headphones, it's the most appropriate. The "front" speakers are in the rear of the cab (furthest from you). If VPinmame also uses the same soundcard, it will share the audio with these front channels. 
+  5) 7.1 surround (aka 6ch audio) - If one wants to drive the backglass, and 4 channel table sounds all off of one card, this is the setting to use. It shifts all of the table audio to the side and rear channels, leaving the fronts available for VPM and backglass sounds. This might also be a good setting to try if you are using just 2 speakers in the cab and 2 in the backbox, the table sounds will pan partially towards the front in 4 speaker mode, letting the backbox provide some of the surround effect.
 
- Please note that these modes are used in conjunction with the Windows speaker configurations. You can use any mode on any speaker system.
- Some sound cards even have virtual surround options that would work with this setup. You could set up a full 7.1 setup and dedicate it to just the playfield if you wanted with option #3 or #4, and use a separate card for VPM.
- The 7.1 mode was tested and it works great, but we recommend using the #3 option for now(!) as it is the most backwards compatible when also using VP9.X and VP9.X/PhysMod5.
+  Please note that these modes are used in conjunction with the Windows speaker configurations. You can use any mode on any speaker system.
+  Some sound cards even have virtual surround options that would work with this setup. You could set up a full 7.1 setup and dedicate it to just the playfield if you wanted with option #3 or #4, and use a separate card for VPM.
+  The 7.1 mode was tested and it works great, but we recommend using the #3 option for now(!) as it is the most backwards compatible when also using VP9.X and VP9.X/PhysMod5.
 
- There's also a much revamped sound manager that lets you tweak the positions without touching the table script.
+  There's also a much revamped sound manager that lets you tweak the positions without touching the table script.
 
 - add tweaked ball rolling/collision PlaySound calls to the default table, to use the new surround/front_rear_fade parameter
 - extend all other PlaySound calls of the default table to use the respective elements X and Y position (on the table) for panning and front/rear fading
 - extend some PlaySound calls with DOF/Controller.vbs commands
 
+- new table extended by an additional stripped down version of the default table and an updated example table (Thanks to BorgDog and Hauntfreaks)
+- add nudge test and calibration table (by DJRobX, modded by Sir Cheddar) to tables directory
+
+- stop playing sounds when exiting the sound dialog, or exiting position dialog, or when you pick a different sound
+
+- fix missing kicker holes at inclination values close around 0
+- drop target hit event problems fixed
+
 - fix duplicated functions in the script editor dropdown box (which also resulted in a lot of slowdown over time)
-
 - fix some uninitialized dialog state
-
 - fix some more editor crashes
 
 - see core scripts (header of core.vbs) for the respective changelog
