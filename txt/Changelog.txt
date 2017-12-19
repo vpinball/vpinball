@@ -8,7 +8,7 @@ VP 10.4.0 Changelog
 
 - stop sounds when exiting sound dialog, or exiting position dialog, and when you pick a different sound
 
-- add nudge test and calibration table (by DJRobX) to tables directory
+- add nudge test and calibration table (by DJRobX, modded by Sir Cheddar) to tables directory
 
 - add new kicker meshes (KickerCup2, KickerWilliams, KickerGottlieb)
 
