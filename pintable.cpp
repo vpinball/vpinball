@@ -5301,12 +5301,6 @@ void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect 
         }
         else
         {
-            // multiple elements where selected but they belong to different collections so grey-out all
-            // collection menu items to tell the user that it's not possible to add/remove them from different collections
-            for(int i = maxItems; i >= 0; i--)
-            {
-                EnableMenuItem(colSubMenu, 0x40000 + i, MF_DISABLED);
-            }
             for(size_t i = 0; i < allIndices.size(); i++)
                 CheckMenuItem(colSubMenu, 0x40000 + allIndices[i], MF_CHECKED);
         }
@@ -5741,23 +5735,31 @@ void PinTable::UpdateCollection(int index)
    {
       if (m_vmultisel.Size() > 0)
       {
+         bool removeOnly = false;
+         /* if the selection is part of the selected collection remove only remove these elements*/
          for (int t = 0; t < m_vmultisel.Size(); t++)
          {
-            bool alreadyIn = false;
             ISelect *ptr = m_vmultisel.ElementAt(t);
             for (int k = 0; k < m_vcollection.ElementAt(index)->m_visel.Size(); k++)
             {
                if (ptr == m_vcollection.ElementAt(index)->m_visel.ElementAt(k))
                {
-                  //already assigned so remove it
                   m_vcollection.ElementAt(index)->m_visel.RemoveElement(ptr);
-                  alreadyIn = true;
+                  removeOnly = true;
                   break;
                }
             }
-            if (!alreadyIn)
-               m_vcollection.ElementAt(index)->m_visel.AddElement(ptr);
          }
+
+         if(removeOnly)
+             return;
+
+         /*selected elements are not part of the the selected collection and can be added*/
+         for(int t = 0; t < m_vmultisel.Size(); t++)
+         {
+            ISelect *ptr = m_vmultisel.ElementAt(t);
+            m_vcollection.ElementAt(index)->m_visel.AddElement(ptr);
+        }
       }
    }
 }
