@@ -11,6 +11,7 @@ typedef struct _tagSORTDATA
 
 extern SORTDATA SortData;
 extern int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption);
+extern int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption);
 
 static CollectionDialogStruct cds;
 int CollectionManagerDialog::m_columnSortOrder;
@@ -35,9 +36,16 @@ BOOL CollectionManagerDialog::OnInitDialog()
     lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
     LocalString ls(IDS_NAME);
     lvcol.pszText = ls.m_szbuffer;// = "Name";
-    lvcol.cx = 330;
+    lvcol.cx = 280;
     ListView_InsertColumn(hListHwnd, 0, &lvcol);
-    
+
+    lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
+    lvcol.fmt = LVCFMT_CENTER;
+    LocalString ls2(IDS_SIZE);
+    lvcol.pszText = ls2.m_szbuffer;// = "Size";
+    lvcol.cx = 50;
+    ListView_InsertColumn(hListHwnd, 1, &lvcol);
+
     pt->ListCollections(hListHwnd);
     ListView_SetItemState(hListHwnd, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
     GotoDlgCtrl(hListHwnd);
@@ -94,7 +102,10 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                     SortData.hwndList = hListHwnd;
                     SortData.subItemIndex = columnNumber;
                     SortData.sortUpDown = m_columnSortOrder;
-                    ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
+                    if(columnNumber == 0)
+                        ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
+                    else
+                        ListView_SortItems(SortData.hwndList, MyCompProcIntValues, &SortData);
                 }
             }
             if(pnmhdr->code == LVN_ENDLABELEDIT)

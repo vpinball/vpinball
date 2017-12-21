@@ -4957,6 +4957,9 @@ int PinTable::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
+   char buf[16] = { 0 };
+   sprintf_s(buf, "%i", pcol->m_visel.Size());
+   ListView_SetItemText(hwndListView, index, 1, buf);
    return index;
 }
 
