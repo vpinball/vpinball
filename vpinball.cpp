@@ -2754,7 +2754,9 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
    ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, sizeof(buf1));
 
    ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
-   if (lpsd->sortUpDown == 1)
+   if(nItem2 == -1 || nItem1 == -1)
+       return 0;
+   if(lpsd->sortUpDown == 1)
       return(_stricmp(buf1, buf2));
    else
       return(_stricmp(buf1, buf2) * -1);
