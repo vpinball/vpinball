@@ -64,6 +64,8 @@ VP 10.4.0 Changelog
 
 - stop playing sounds when exiting the sound dialog, or exiting position dialog, or when you pick a different sound
 
+- remove rendering of lower playfield border/quad
+
 - fix missing kicker holes at inclination values close around 0
 - drop target hit event problems fixed
 
