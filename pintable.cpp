@@ -4770,6 +4770,7 @@ void PinTable::ReImportSound(HWND hwndListView, PinSound *pps, char *filename, B
    // make sure sound data doesn't get deleted twice
    psT.m_pdata = NULL;
    psT.m_pDSBuffer = NULL;
+   psT.m_pDS3DBuffer = NULL;
    delete ppsNew;
 
    if (fPlay)
