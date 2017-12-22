@@ -123,7 +123,6 @@ public:
 
 private:
    VertexBuffer *tableVBuffer;
-   IndexBuffer *tableIBuffer;
 };
 
 Matrix3D ComputeLaybackTransform(float layback);

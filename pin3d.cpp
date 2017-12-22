@@ -15,7 +15,6 @@ Pin3D::Pin3D()
    m_pddsStaticZ = NULL;
    m_envRadianceTexture = NULL;
    tableVBuffer = NULL;
-   tableIBuffer = NULL;
 
    m_camx = 0.f;
    m_camy = 0.f;
@@ -46,8 +45,6 @@ Pin3D::~Pin3D()
 
    if (tableVBuffer)
       tableVBuffer->release();
-   if (tableIBuffer)
-      tableIBuffer->release();
 
    SAFE_RELEASE(m_pddsAOBackBuffer);
    SAFE_RELEASE(m_pddsAOBackTmpBuffer);
@@ -699,33 +696,8 @@ void Pin3D::InitLayout(const bool FSS_mode)
 
 void Pin3D::InitPlayfieldGraphics()
 {
-   Vertex3D_NoTex2 rgv[7];
-   rgv[0].x = g_pplayer->m_ptable->m_left;     rgv[0].y = g_pplayer->m_ptable->m_top;      rgv[0].z = g_pplayer->m_ptable->m_tableheight;
-   rgv[1].x = g_pplayer->m_ptable->m_right;    rgv[1].y = g_pplayer->m_ptable->m_top;      rgv[1].z = g_pplayer->m_ptable->m_tableheight;
-   rgv[2].x = g_pplayer->m_ptable->m_right;    rgv[2].y = g_pplayer->m_ptable->m_bottom;   rgv[2].z = g_pplayer->m_ptable->m_tableheight;
-   rgv[3].x = g_pplayer->m_ptable->m_left;     rgv[3].y = g_pplayer->m_ptable->m_bottom;   rgv[3].z = g_pplayer->m_ptable->m_tableheight;
-
-   // These next 4 vertices are used just to set the extents
-   rgv[4].x = g_pplayer->m_ptable->m_left;     rgv[4].y = g_pplayer->m_ptable->m_top;      rgv[4].z = g_pplayer->m_ptable->m_tableheight + 50.0f;
-   rgv[5].x = g_pplayer->m_ptable->m_left;     rgv[5].y = g_pplayer->m_ptable->m_bottom;   rgv[5].z = g_pplayer->m_ptable->m_tableheight + 50.0f;
-   rgv[6].x = g_pplayer->m_ptable->m_right;    rgv[6].y = g_pplayer->m_ptable->m_bottom;   rgv[6].z = g_pplayer->m_ptable->m_tableheight + 50.0f;
-   //rgv[7].x=g_pplayer->m_ptable->m_right;    rgv[7].y=g_pplayer->m_ptable->m_top;      rgv[7].z=50.0f;
-
-   for (int i = 0; i < 4; ++i)
-   {
-      rgv[i].nx = 0;
-      rgv[i].ny = 0;
-      rgv[i].nz = 1.0f;
-
-      rgv[i].tv = (i & 2) ? 1.0f : 0.f;
-      rgv[i].tu = (i == 1 || i == 2) ? 1.0f : 0.f;
-   }
-
-   const WORD playfieldPolyIndices[10] = { 0, 1, 3, 0, 3, 2, 2, 3, 5, 6 };
-   tableIBuffer = m_pd3dDevice->CreateAndFillIndexBuffer(10, playfieldPolyIndices);
-
    assert(tableVBuffer == NULL);
-   m_pd3dDevice->CreateVertexBuffer(4 + 7, 0, MY_D3DFVF_NOTEX2_VERTEX, &tableVBuffer); //+7 verts for second rendering step
+   m_pd3dDevice->CreateVertexBuffer(4, 0, MY_D3DFVF_NOTEX2_VERTEX, &tableVBuffer);
 
    Vertex3D_NoTex2 *buffer;
    tableVBuffer->lock(0, 0, (void**)&buffer, VertexBuffer::WRITEONLY);
@@ -734,21 +706,17 @@ void Pin3D::InitPlayfieldGraphics()
    for (unsigned int y = 0; y <= 1; ++y)
       for (unsigned int x = 0; x <= 1; ++x, ++offs)
       {
-         buffer[offs].x = (x & 1) ? rgv[1].x : rgv[0].x;
-         buffer[offs].y = (y & 1) ? rgv[2].y : rgv[0].y;
-         buffer[offs].z = rgv[0].z;
+         buffer[offs].x = (x & 1) ? g_pplayer->m_ptable->m_right  : g_pplayer->m_ptable->m_left;
+         buffer[offs].y = (y & 1) ? g_pplayer->m_ptable->m_bottom : g_pplayer->m_ptable->m_top;
+         buffer[offs].z = g_pplayer->m_ptable->m_tableheight;
 
-         buffer[offs].tu = (x & 1) ? rgv[1].tu : rgv[0].tu;
-         buffer[offs].tv = (y & 1) ? rgv[2].tv : rgv[0].tv;
+         buffer[offs].tu = (x & 1) ? 1.f : 0.f;
+         buffer[offs].tv = (y & 1) ? 1.f : 0.f;
 
-         buffer[offs].nx = rgv[0].nx;
-         buffer[offs].ny = rgv[0].ny;
-         buffer[offs].nz = rgv[0].nz;
+         buffer[offs].nx = 0.f;
+         buffer[offs].ny = 0.f;
+         buffer[offs].nz = 1.f;
       }
-
-   SetNormal(rgv, playfieldPolyIndices + 6, 4);
-
-   memcpy(buffer + 4, rgv, 7 * sizeof(Vertex3D_NoTex2));
 
    tableVBuffer->unlock();
 }
@@ -790,27 +758,16 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
    }
 
    assert(tableVBuffer != NULL);
-   assert(tableIBuffer != NULL);
    m_pd3dDevice->basicShader->Begin(0);
-   m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 0, 4, tableIBuffer, 0, 6);
+   m_pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 0, 4);
    m_pd3dDevice->basicShader->End();
 
-   if(depth_only && pin)
-   {
-	   SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-	   m_pd3dDevice->basicShader->SetTechnique("basic_depth_only_without_texture");
-   }
-   else if(!depth_only && pin)
+   if(pin)
    {
       //m_pd3dDevice->basicShader->SetTexture("Texture0",(D3DTexture*)NULL);
       //m_pd3dDevice->m_texMan.UnloadTexture(pin->m_pdsBuffer); //!! is used by ball reflection later-on
       SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-      m_pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    }
-
-   m_pd3dDevice->basicShader->Begin(0);
-   m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 4, 7, tableIBuffer, 6, 4);
-   m_pd3dDevice->basicShader->End();
 
    if(depth_only)
        m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0000000Fu); // reenable color writes with default value

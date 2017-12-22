@@ -6,7 +6,6 @@
 #include <rapidxml_print.hpp>
 #include <fstream>
 #include <sstream>
-#include "svn_version.h"
 
 using namespace rapidxml;
 
