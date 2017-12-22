@@ -27,7 +27,7 @@ INT_PTR AboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
          HWND hwndDlg = GetHwnd();
          char versionString[256];
-         sprintf_s(versionString, "Version %i.%i.%i (Revision %i, %ubit)", VP_VERSION_MAJOR,VP_VERSION_MINOR,VP_VERSION_REV, SVN_REVISION,
+         sprintf_s(versionString, "Version %i.%i.%i Final (Revision %i, %ubit)", VP_VERSION_MAJOR,VP_VERSION_MINOR,VP_VERSION_REV, SVN_REVISION,
 #ifdef _WIN64
             64
 #else
