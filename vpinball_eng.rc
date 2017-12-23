@@ -227,7 +227,7 @@ BEGIN
     CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,7,198,150,17
     CONTROL         264,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
     LTEXT           "A Randy Davis Production",IDC_STATIC,13,36,94,23
-    LTEXT           "Version 9.9.0 (Physmod5 AccelMod PlungerMod)",IDC_STATIC,13,47,204,16
+    LTEXT           "Version 9.9.0 (Physmod5 AccelMod PlungerMod SurroundMod)",IDC_STATIC,13,47,204,16
     GROUPBOX        "Credits",IDC_STATIC,7,62,216,103
     LTEXT           "Randy Davis - designer, developer",IDC_STATIC,13,77,115,9
     LTEXT           "Noah Fentz - testing",IDC_STATIC,150,77,66,9
@@ -247,7 +247,7 @@ BEGIN
     LTEXT           "Fuzzel",IDC_STATIC,13,141,21,8
     LTEXT           "Koadic",IDC_STATIC,150,141,42,9
     CTEXT           "Mukuste",IDC_STATIC,82,151,42,9
-    CTEXT           "Copyright (C) 2000-2014 Randy Davis. All rights reserved",IDC_STATIC,7,174,118,19
+    CTEXT           "Copyright (C) 2000-2017 Randy Davis. All rights reserved",IDC_STATIC,7,174,118,19
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,108,36,115,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,184,32,8,NOT WS_VISIBLE | WS_DISABLED
 END
@@ -1845,11 +1845,11 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "Visual Pinball 9.9.0 (Physmod5 AccelMod PlungerMod)"
+            VALUE "FileDescription", "Visual Pinball 9.9.0 (Physmod5 AccelMod PlungerMod SurroundMod)"
             VALUE "FileVersion", "9, 9, 0, 0"
             VALUE "InternalName", "Visual Pinball"
-            VALUE "LegalCopyright", "Copyright 2000-2014"
-            VALUE "OriginalFilename", "vpinball.exe"
+            VALUE "LegalCopyright", "Copyright 2000-2017"
+            VALUE "OriginalFilename", "VPinball99_PhysMod5_Updated.exe"
             VALUE "ProductName", "Visual Pinball"
             VALUE "ProductVersion", "9, 9, 0, 0"
         END
