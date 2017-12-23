@@ -2,7 +2,7 @@
 
 #define VP_VERSION_MAJOR    9
 #define VP_VERSION_MINOR    9
-#define VP_VERSION_REV      4
+#define VP_VERSION_REV      5
 
 #define _STR(x)    #x
 #define STR(x)     _STR(x)
