@@ -8,11 +8,16 @@ Const VPinMAMEDriverVer = 3.55
 ' - Support for double leaf flipper switches
 '   - For now, keybinds for these staged flippers are defined in VPMKeys.vbs. By default they are set to LeftFlipperKey and RightFlipperKey, disabling them.
 '   - Adapting older tables requires vpmFlips: Create upper flipper subs and point SolCallback(sULFlipper) and SolCallback(sURFlipper) to them.
-'   - This may break compatibility with some older WPC tables that use the 'cSingleLFlip' method (More info in WPC.vbs)
+'   - This may break compatibility with some older WPC tables that use the 'cSingleLFlip' method (More info in WPC.vbs), note that close to no 'modern' (e.g. VP8/VP9/VPX) table uses this anyway
 ' - Integrated FastFlips, (new object vpmFlips): Low latency flipper response for games with pre-solid state flippers
-'   - Ensure 'vpmInit me' is called in the table _init section
+'   - Ensure 'vpmInit me' is called in the table init section
 '   - UseSolenoids = 2 enables and auto sets the game-on solenoid (based on GameOnSolenoid in the system .vbs script)
 '   - Important info on supported WPC games is documented in WPC.vbs
+'   - Pre-solid-state flipper games (except Zaccaria and LTD) should work perfectly. This includes Bally/Williams WPCs up to Terminator 2 / Party Zone
+'   - Data East / early Segas will work perfectly, unless they have ROM-controlled flipper effects
+'   - Fliptronics and WPC-S games (Addams Family through Jack Bot / WHO Dunnit) will work with caveats (no ROM controlled flipper effects, beware stuck balls. More info in WPC.vbs)
+'   - Sega Whitestar (Apollo 13 / Goldeneye / etc), WPC95 (Congo / AFM / etc), and Capcom and everything onward will not work
+'   - There's also a debug test command which may be useful if it's not working properly. Open the debug window (Accessible from the VP-escape menu, press the ">" button to bring up the text field) and type in 'vpmFlips.DebugTest'
 '
 ' New in 3.54 (Update by mfuegemann & nFozzy & Ninuzzu/Tom Tower & Toxie)
 ' - Added sam.vbs
@@ -2558,7 +2563,7 @@ Sub InitVpmFlips() 'Called from vpmInit
 	On Error Resume Next
 		if UseSolenoids > 2 then vpmFlips.Solenoid = UseSolenoids else vpmFlips.Solenoid = GameOnSolenoid End If
 	On Error Goto 0
-	vpmFlips.DebugTestInit = True	
+	vpmFlips.DebugTestInit = True
 
 	if not IsEmpty(SolCallback(sLLFlipper)) then vpmFlips.CallBackL = SolCallback(sLLFlipper) 	'Lower Flippers
 	if not IsEmpty(SolCallback(sLRFlipper)) then vpmFlips.CallBackR = SolCallback(sLRFlipper)
@@ -2657,9 +2662,6 @@ Class cvpmFlips
 		End If
 	End Sub
 End Class
-
-
-
 
 
 '---------------------------
@@ -2959,7 +2961,7 @@ End Sub
 '----------------------------
 ' ----- Flippers ------
 Sub vpmSolFlipper(aFlip1, aFlip2, aEnabled)
-	Dim oldStrength, oldSpeed
+	Dim oldStrength, oldSpeed ' only for pre-VP10
 	If aEnabled Then
 		PlaySound SFlipperOn : aFlip1.RotateToEnd : If Not aFlip2 Is Nothing Then aFlip2.RotateToEnd
 	Else
