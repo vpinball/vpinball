@@ -286,6 +286,7 @@ BEGIN
     LTEXT           "Fuzzel",IDC_STATIC,13,141,21,8
     LTEXT           "Koadic",IDC_STATIC,150,141,42,9
     LTEXT           "Mjr",IDC_STATIC,13,151,21,8
+    LTEXT           "DJRobX",IDC_STATIC,46,151,32,8
     CTEXT           "Mukuste",IDC_STATIC,82,151,42,9
     LTEXT           "Brandrew",IDC_STATIC,150,151,42,9
     CTEXT           "Copyright (C) 2000-2017 Randy Davis All rights reserved",IDC_STATIC,7,255,118,19
