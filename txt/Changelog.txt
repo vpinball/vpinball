@@ -73,7 +73,7 @@ VP 10.4.0 Changelog
 - fix some uninitialized dialog state
 - fix some more editor crashes
 
-- see core scripts (header of core.vbs) for the respective changelog
+- see core scripts (header of core.vbs) for the respective changelog (versions 3.54 and 3.55)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
 
 - DirectX 8 port for input handling (currently disabled)
