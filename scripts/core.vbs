@@ -3,7 +3,7 @@ Const VPinMAMEDriverVer = 3.55
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.55 Beta (Update by nFozzy)
+' New in 3.55 (Update by nFozzy)
 ' - Prevent 'object not a collection' errors if vpmNudge.TiltObj isn't set
 ' - Support for double leaf flipper switches
 '   - For now, keybinds for these staged flippers are defined in VPMKeys.vbs. By default they are set to LeftFlipperKey and RightFlipperKey, disabling them.
@@ -20,6 +20,7 @@ Const VPinMAMEDriverVer = 3.55
 '   - There's also a debug test command which may be useful if it's not working properly. Open the debug window (Accessible from the VP-escape menu, press the ">" button to bring up the text field) and type in 'vpmFlips.DebugTest'
 '
 ' New in 3.54 (Update by mfuegemann & nFozzy & Ninuzzu/Tom Tower & Toxie)
+' - Added UltraDMD_Options.vbs to configure Ultra DMD based tables globally (see the file itself for detailed descriptions)
 ' - Added sam.vbs
 ' - Added Class1812.vbs
 ' - Added inder_centaur.vbs
