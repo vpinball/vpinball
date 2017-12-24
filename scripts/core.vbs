@@ -1,8 +1,10 @@
 Option Explicit
-Const VPinMAMEDriverVer = 3.55
+Const VPinMAMEDriverVer = 3.56
 '=======================
 ' VPinMAME driver core.
 '=======================
+' New in 3.56 (Update by )
+'
 ' New in 3.55 (Update by nFozzy)
 ' - Prevent 'object not a collection' errors if vpmNudge.TiltObj isn't set
 ' - Support for double leaf flipper switches
