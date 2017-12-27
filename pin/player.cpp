@@ -528,6 +528,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 
    m_movedPlunger = 0;
    m_LastPlungerHit = 0;
+   m_lastFlipTime = 0;
 
    for (unsigned int i = 0; i < 8; ++i)
       m_touchregion_pressed[i] = false;
@@ -3061,11 +3062,11 @@ void Player::UpdatePhysics()
       //                                        Intended mainly to be used if vsync is enabled (e.g. most idle time is shifted from vsync-waiting to here)
       if (m_minphyslooptime > 0)
       {
-          const U64 targettime = ((U64)m_minphyslooptime * m_phys_iterations) + initial_time_usec;
-          // If we've reached the end of the artificial delay cycle (probably about 40% of the way through), fire a "frame sync" timer event
-          // so VPM can react to input.   This will effectively double the "-1" timer rate, but the goal, when this option is enabled, is to reduce latency
-          // and those "-1" timer calls should be roughly halfway through the cycle, so it results in a pretty nice overall latency decrease.
-          if (m_phys_iterations == m_minphyslooptime / 100)
+          const U64 targettime = ((U64)m_minphyslooptime * m_phys_iterations) + m_lastFlipTime;
+          // If we're 3/4 of the way through the loop fire a "frame sync" timer event so VPM can react to input.
+          // This will effectively double the "-1" timer rate, but the goal, when this option is enabled, is to reduce latency
+          // and those "-1" timer calls should be roughly halfway through the cycle
+          if (m_phys_iterations == 750 / ((int)m_fpsAvg+1))
               first_cycle = true; //!! side effects!?!
           if (cur_time_usec < targettime)
               uSleep(targettime - cur_time_usec);
@@ -4027,7 +4028,7 @@ void Player::UpdateHUD()
 	}
 }
 
-void Player::FlipVideoBuffersNormal(const bool vsync)
+void Player::PrepareVideoBuffersNormal()
 {
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const bool stereo= ((m_fStereo3D != 0) && m_fStereo3Denabled);
@@ -4103,16 +4104,21 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
    UpdateHUD();
 
    m_pin3d.m_pd3dDevice->EndScene();
+}
 
+void Player::FlipVideoBuffers(const bool vsync)
+{
    // display frame
    m_pin3d.Flip(vsync);
 
    // switch to texture output buffer again
    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", (D3DTexture*)NULL);
    m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsBackBuffer);
+
+   m_lastFlipTime = usec();
 }
 
-void Player::FlipVideoBuffersAO(const bool vsync)
+void Player::PrepareVideoBuffersAO()
 {
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const bool stereo= ((m_fStereo3D != 0) && m_fStereo3Denabled);
@@ -4242,13 +4248,6 @@ void Player::FlipVideoBuffersAO(const bool vsync)
    UpdateHUD();
 
    m_pin3d.m_pd3dDevice->EndScene();
-
-   // display frame
-   m_pin3d.Flip(vsync);
-
-   // switch to texture output buffer again
-   m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", (D3DTexture*)NULL);
-   m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsBackBuffer);
 }
 
 void Player::SetScreenOffset(float x, float y)
@@ -4498,6 +4497,7 @@ void Player::Render()
 
    // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM rountrip) and animation triggers
    //if ( !cameraMode )
+   if (m_minphyslooptime == 0) // (vsync) latency reduction code not active? -> Do Physics Updates here
       UpdatePhysics();
 
    m_overall_frames++;
@@ -4535,9 +4535,17 @@ void Player::Render()
 
    const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)) && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f);
    if (useAO && !m_disableAO)
-      FlipVideoBuffersAO(vsync);
+      PrepareVideoBuffersAO();
    else
-      FlipVideoBuffersNormal(vsync);
+      PrepareVideoBuffersNormal();
+
+   // DJRobX's crazy latency-reduction code active? Insert some Physics updates before vsync'ing
+   if (m_minphyslooptime > 0)
+   {
+      UpdatePhysics();
+      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
+   }
+   FlipVideoBuffers(vsync);
 
 #ifdef FPS
    if (ProfilingMode() != 0)

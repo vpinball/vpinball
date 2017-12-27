@@ -283,8 +283,9 @@ public:
 
    void UpdateHUD();
 
-   void FlipVideoBuffersNormal(const bool vsync);
-   void FlipVideoBuffersAO(const bool vsync);
+   void PrepareVideoBuffersNormal();
+   void PrepareVideoBuffersAO();
+   void FlipVideoBuffers(const bool vsync);
 
    void SetScreenOffset(float x, float y);     // set render offset in screen coordinates, e.g., for the nudge shake
 
@@ -513,6 +514,7 @@ private:
    U64 m_StartTime_usec;
    U64 m_curPhysicsFrameTime;	// Time when the last frame was drawn
    U64 m_nextPhysicsFrameTime;	// time at which the next physics update should be
+   U64 m_lastFlipTime;
 
    // all Hitables obtained from the table's list of Editables
    std::vector< Hitable* > m_vhitables;
