@@ -8396,6 +8396,7 @@ int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
                    break;
                }
            }
+
            if(inUse)
            {
                ListView_SetItemText( hwndListView, index, 3, usedStringYes );
@@ -8656,9 +8657,18 @@ int PinTable::AddListMaterial(HWND hwndListView, Material *pmat)
                inUse = true;
             break;
          }
+         case eItemBumper:
+         {
+            Bumper *pBump = (Bumper*)pEdit;
+            if ((_stricmp(pBump->m_d.m_szCapMaterial, pmat->m_szName) == 0) || (_stricmp(pBump->m_d.m_szBaseMaterial, pmat->m_szName) == 0) ||
+                (_stricmp(pBump->m_d.m_szSkirtMaterial, pmat->m_szName) == 0) || (_stricmp(pBump->m_d.m_szRingMaterial, pmat->m_szName) == 0))
+               inUse = true;
+            break;
+         }
          default:
             break;
          }
+
          if (inUse)
          {
             ListView_SetItemText(hwndListView, index, 1, usedStringYes);
