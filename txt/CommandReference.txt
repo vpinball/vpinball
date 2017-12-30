@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.5:
+- extend X and Y of EMReel and textbox elements so that these can be changed by the script
 10.4:
 - support reading nudge data from table script, and reading/writing nudge calibration settings:
   NudgeGetCalibration/NudgeSetCalibration, NudgeSensorStatus, NudgeTiltStatus
@@ -297,15 +298,15 @@ BackColor(OLE_COLOR)
 FontColor(OLE_COLOR)
 Text(string)
 Font
+Name(string)
+X(float)
+Y(float)
 Width(float)
 Height(float)
 Alignment
 IsTransparent
 TimerEnabled
 TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
-X(float)
-Y(float)
-Name(string)
 UserValue(any) - can store any user defined value for re-use later-on
 IntensityScale(float) - scales the color of the textbox
 Visible(bool)
@@ -321,8 +322,8 @@ Variables
 *Name(string)
 Width(float)
 Height(float)
-*X(float)
-*Y(float)
+X(float)
+Y(float)
 Range(float)
 *BackColor(OLE_COLOR)
 *Image(string) - picture name

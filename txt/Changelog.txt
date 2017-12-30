@@ -1,6 +1,10 @@
 VP 10.5.0 Changelog
 ------------------------
 
+- allow reels and textboxes to be moved via the script
+
+- update BASS library to 2.4.13
+
 VP 10.4.0 Changelog
 ------------------------
 
