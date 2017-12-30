@@ -635,11 +635,11 @@ STDMETHODIMP Textbox::put_Width(float newVal)
 {
    STARTUNDO
 
-      m_d.m_v2.x = m_d.m_v1.x + newVal;
+   m_d.m_v2.x = m_d.m_v1.x + newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Textbox::get_Height(float *pVal)
@@ -653,11 +653,11 @@ STDMETHODIMP Textbox::put_Height(float newVal)
 {
    STARTUNDO
 
-      m_d.m_v2.y = m_d.m_v1.y + newVal;
+   m_d.m_v2.y = m_d.m_v1.y + newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Textbox::get_X(float *pVal)
@@ -671,14 +671,23 @@ STDMETHODIMP Textbox::put_X(float newVal)
 {
    STARTUNDO
 
-      float delta = newVal - m_d.m_v1.x;
+   const float delta = newVal - m_d.m_v1.x;
 
    m_d.m_v1.x += delta;
    m_d.m_v2.x += delta;
 
+   if (g_pplayer)
+   {
+      const float left = min(m_d.m_v1.x, m_d.m_v2.x);
+      const float right = max(m_d.m_v1.x, m_d.m_v2.x);
+
+      m_rect.left = (int)left;
+      m_rect.right = (int)right;
+   }
+
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Textbox::get_Y(float *pVal)
@@ -692,14 +701,23 @@ STDMETHODIMP Textbox::put_Y(float newVal)
 {
    STARTUNDO
 
-      float delta = newVal - m_d.m_v1.y;
+   const float delta = newVal - m_d.m_v1.y;
 
    m_d.m_v1.y += delta;
    m_d.m_v2.y += delta;
 
+   if (g_pplayer)
+   {
+      const float top = min(m_d.m_v1.y, m_d.m_v2.y);
+      const float bottom = max(m_d.m_v1.y, m_d.m_v2.y);
+
+      m_rect.top = (int)top;
+      m_rect.bottom = (int)bottom;
+   }
+
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Textbox::get_IntensityScale(float *pVal)
@@ -713,11 +731,11 @@ STDMETHODIMP Textbox::put_IntensityScale(float newVal)
 {
    STARTUNDO
 
-      m_d.m_intensity_scale = newVal;
+   m_d.m_intensity_scale = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Textbox::GetDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -751,11 +769,11 @@ STDMETHODIMP Textbox::put_Alignment(TextAlignment newVal)
 {
    STARTUNDO
 
-      m_d.m_talign = newVal;
+   m_d.m_talign = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Textbox::get_IsTransparent(VARIANT_BOOL *pVal)
