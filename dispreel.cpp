@@ -288,12 +288,15 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->DMDShader->SetTexture("Texture0", pin);
    
    pd3dDevice->DMDShader->Begin(0);
-   for (int r = 0; r < m_d.m_reelcount; ++r) //!! optimize by doing all in one
+
+   // set up all the reel positions within the object frame
+   const float renderspacingx = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_WIDTH);
+   const float renderspacingy = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_HEIGHT);
+         float x1 = m_d.m_v1.x / (float)EDITOR_BG_WIDTH  + renderspacingx;
+   const float y1 = m_d.m_v1.y / (float)EDITOR_BG_HEIGHT + renderspacingy;
+
+   for (int r = 0; r < m_d.m_reelcount; ++r) //!! optimize by doing all draws in a single one
    {
-       const float posx = ReelInfo[r].position.left;
-       const float posy = ReelInfo[r].position.top;
-       const float width = ReelInfo[r].position.right;
-       const float height = ReelInfo[r].position.bottom;
        const float u0 = m_digitTexCoords[ReelInfo[r].currentValue].u_min;
        const float v0 = m_digitTexCoords[ReelInfo[r].currentValue].v_min;
        const float u1 = m_digitTexCoords[ReelInfo[r].currentValue].u_max;
@@ -309,11 +312,14 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
 
        for (unsigned int i = 0; i < 4; ++i)
        {
-           Verts[i * 5] = (Verts[i * 5] * width + posx)*2.0f - 1.0f;
-           Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * height + posy)*2.0f;
+           Verts[i * 5] = (Verts[i * 5] * m_renderwidth + x1)*2.0f - 1.0f;
+           Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * m_renderheight + y1)*2.0f;
        }
 
        pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
+
+       // move to the next reel
+       x1 += renderspacingx + m_renderwidth;
    }
    pd3dDevice->DMDShader->End();
 
@@ -329,30 +335,14 @@ void DispReel::RenderSetup(RenderDevice* pd3dDevice)
    // get the render sizes of the objects (reels and frame)
    m_renderwidth = max(0.0f, m_d.m_width / (float)EDITOR_BG_WIDTH);
    m_renderheight = max(0.0f, m_d.m_height / (float)EDITOR_BG_HEIGHT);
-   const float renderspacingx = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_WIDTH);
-   const float renderspacingy = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_HEIGHT);
-
-   // set up all the reel positions within the object frame
-   const float x0 = m_d.m_v1.x / (float)EDITOR_BG_WIDTH;
-   const float y0 = m_d.m_v1.y / (float)EDITOR_BG_HEIGHT;
-   float x1 = x0 + renderspacingx;
-   const float y1 = y0 + renderspacingy;
 
    for (int i = 0; i < m_d.m_reelcount; ++i)
    {
-      ReelInfo[i].position.left = x1;
-      ReelInfo[i].position.right = m_renderwidth;
-      ReelInfo[i].position.top = y1;
-      ReelInfo[i].position.bottom = m_renderheight;
-
       ReelInfo[i].currentValue = 0;
       ReelInfo[i].motorPulses = 0;
       ReelInfo[i].motorStepCount = 0;
       ReelInfo[i].motorCalcStep = 0;
       ReelInfo[i].motorOffset = 0;
-
-      // move to the next reel
-      x1 += renderspacingx + m_renderwidth;
    }
 
    // get a pointer to the image specified in the object
@@ -453,7 +443,7 @@ void DispReel::Animate()
       // start at the last reel and work forwards (right to left)
       for (int i = m_d.m_reelcount - 1; i >= 0; i--)
       {
-         // if the motor has stoped, and there are still motor steps then start another one
+         // if the motor has stopped, and there are still motor steps then start another one
          if ((ReelInfo[i].motorPulses != 0) && (ReelInfo[i].motorStepCount == 0))
          {
             // get the number of steps (or increments) needed to move the reel
@@ -825,23 +815,6 @@ STDMETHODIMP DispReel::put_X(float newVal)
    m_d.m_v1.x += delta;
    m_d.m_v2.x = m_d.m_v1.x + getBoxWidth();
 
-   if (g_pplayer)
-   {
-      const float renderspacingx = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_WIDTH);
-
-      // set up all the reel positions within the object frame
-      const float x0 = m_d.m_v1.x / (float)EDITOR_BG_WIDTH;
-      float x1 = x0 + renderspacingx;
-
-      for (int i = 0; i < m_d.m_reelcount; ++i)
-      {
-           ReelInfo[i].position.left = x1;
-
-           // move to the next reel
-           x1 += renderspacingx + m_renderwidth;
-      }
-   }
-
    STOPUNDO
 
    return S_OK;
@@ -861,18 +834,6 @@ STDMETHODIMP DispReel::put_Y(float newVal)
    const float delta = newVal - m_d.m_v1.y;
    m_d.m_v1.y += delta;
    m_d.m_v2.y = m_d.m_v1.y + getBoxHeight();
-
-   if (g_pplayer)
-   {
-       const float renderspacingy = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_HEIGHT);
-
-       // set up all the reel positions within the object frame
-       const float y0 = m_d.m_v1.y / (float)EDITOR_BG_HEIGHT;
-       const float y1 = y0 + renderspacingy;
-
-       for (int i = 0; i < m_d.m_reelcount; ++i)
-          ReelInfo[i].position.top = y1;
-   }
 
    STOPUNDO
 

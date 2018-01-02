@@ -85,7 +85,6 @@ private:
 
    TextboxData m_d;
 
-   RECT m_rect;
    BaseTexture *m_texture;
 
    IFont *m_pIFont;
