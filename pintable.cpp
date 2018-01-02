@@ -8290,9 +8290,10 @@ int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
        || (_stricmp( m_szBallImage, ppi->m_szName ) == 0) 
        || (_stricmp( m_szBallImageFront, ppi->m_szName)==0 )
        || (_stricmp( m_szEnvImage, ppi->m_szName ) == 0)
-       || (_stricmp( m_BG_szImage[BG_DESKTOP], ppi->m_szName)==0)
-       || (_stricmp(m_BG_szImage[BG_FSS], ppi->m_szName) == 0)
-       || (_stricmp(m_BG_szImage[BG_FULLSCREEN], ppi->m_szName) == 0))
+       || (_stricmp( m_BG_szImage[BG_DESKTOP], ppi->m_szName )==0)
+       || (_stricmp( m_BG_szImage[BG_FSS], ppi->m_szName ) == 0)
+       || (_stricmp( m_BG_szImage[BG_FULLSCREEN], ppi->m_szName ) == 0)
+       || (_stricmp( m_szImageColorGrade, ppi->m_szName ) == 0))
    {
        ListView_SetItemText( hwndListView, index, 3, usedStringYes );
    }
