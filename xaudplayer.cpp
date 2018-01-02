@@ -303,13 +303,36 @@ XAudPlayer::XAudPlayer()
 
    if (!bass_init)
    {
-      int DSidx = -1;
+      int DSidx;
       const HRESULT hr = GetRegInt("Player", "SoundDeviceBG", &DSidx);
-      if (hr == S_OK && DSidx != -1)
-         DSidx++; // as 0 is nosound //!! mapping is otherwise the same or not?!
-      else
-         DSidx = -1;
-      if (!BASS_Init(DSidx, 44100, 0, g_pvp->m_hwnd, NULL))
+      if (hr != S_OK)
+          DSidx = -1;
+
+      // now match the Direct Sound device with the BASS device (by name)
+      int BASSidx = -1;
+      if (DSidx != -1)
+      {
+          DSAudioDevices DSads;
+          if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
+          {
+              if ((unsigned int)DSidx >= DSads.size() || DSads[DSidx]->guid != NULL) // primary device has guid NULL, so use BASSidx = -1 in that case
+              {
+                  BASS_DEVICEINFO info;
+                  for (int i = 1; BASS_GetDeviceInfo(i, &info); i++) // 0 = no sound/no device
+                      if (info.flags & BASS_DEVICE_ENABLED) // device must be enabled
+                      if (strcmp(info.name, DSads[DSidx]->description.c_str()) == 0)
+                      {
+                          BASSidx = i;
+                          break;
+                      }
+              }
+
+              for (size_t i = 0; i < DSads.size(); i++)
+                  delete DSads[i];
+          }
+      }
+
+      if (!BASS_Init(BASSidx, 44100, 0, g_pvp->m_hwnd, NULL)) // note that sample rate is usually ignored and set depending on the input/file automatically
       {
          char bla[128];
          sprintf_s(bla, "BASS music/sound library initialization error %d", BASS_ErrorGetCode());
