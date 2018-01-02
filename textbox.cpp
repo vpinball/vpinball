@@ -231,10 +231,15 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
    const float mult = (float)(1.0 / EDITOR_BG_WIDTH);
    const float ymult = (float)(1.0 / EDITOR_BG_WIDTH * 4.0 / 3.0);
 
-   const float x = (float)m_rect.left*mult;
-   const float y = (float)m_rect.top*ymult;
-   const float width = (float)(m_rect.right - m_rect.left)*mult;
-   const float height = (float)(m_rect.bottom - m_rect.top)*ymult;
+   const float rect_left = min(m_d.m_v1.x, m_d.m_v2.x);
+   const float rect_top = min(m_d.m_v1.y, m_d.m_v2.y);
+   const float rect_right = max(m_d.m_v1.x, m_d.m_v2.x);
+   const float rect_bottom = max(m_d.m_v1.y, m_d.m_v2.y);
+
+   const float x = rect_left*mult;
+   const float y = rect_top*ymult;
+   const float width = (rect_right - rect_left)*mult;
+   const float height = (rect_bottom - rect_top)*ymult;
 
    if (dmd)
    {
@@ -260,16 +265,6 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void Textbox::RenderSetup(RenderDevice* pd3dDevice)
 {
-   const float left = min(m_d.m_v1.x, m_d.m_v2.x);
-   const float right = max(m_d.m_v1.x, m_d.m_v2.x);
-   const float top = min(m_d.m_v1.y, m_d.m_v2.y);
-   const float bottom = max(m_d.m_v1.y, m_d.m_v2.y);
-
-   m_rect.left = (int)left;
-   m_rect.top = (int)top;
-   m_rect.right = (int)right;
-   m_rect.bottom = (int)bottom;
-
    m_pIFont->Clone(&m_pIFontPlay);
 
    CY size;
@@ -286,8 +281,14 @@ void Textbox::RenderStatic(RenderDevice* pd3dDevice)
 
 void Textbox::RenderText()
 {
-   const int width = m_rect.right - m_rect.left;
-   const int height = m_rect.bottom - m_rect.top;
+   RECT rect;
+   rect.left = (int)min(m_d.m_v1.x, m_d.m_v2.x);
+   rect.top = (int)min(m_d.m_v1.y, m_d.m_v2.y);
+   rect.right = (int)max(m_d.m_v1.x, m_d.m_v2.x);
+   rect.bottom = (int)max(m_d.m_v1.y, m_d.m_v2.y);
+
+   const int width = rect.right - rect.left;
+   const int height = rect.bottom - rect.top;
 
    BITMAPINFO bmi;
    ZeroMemory(&bmi, sizeof(bmi));
@@ -348,7 +349,7 @@ void Textbox::RenderText()
    GdiFlush();     // make sure everything is drawn
 
    if (!m_texture)
-      m_texture = new BaseTexture(m_rect.right - m_rect.left, m_rect.bottom - m_rect.top);
+      m_texture = new BaseTexture(width, height);
    m_texture->CopyFrom_Raw(bits);
 
    // Set alpha for pixels that match transparent color (if transparent enabled), otherwise set to opaque
@@ -676,15 +677,6 @@ STDMETHODIMP Textbox::put_X(float newVal)
    m_d.m_v1.x += delta;
    m_d.m_v2.x += delta;
 
-   if (g_pplayer)
-   {
-      const float left = min(m_d.m_v1.x, m_d.m_v2.x);
-      const float right = max(m_d.m_v1.x, m_d.m_v2.x);
-
-      m_rect.left = (int)left;
-      m_rect.right = (int)right;
-   }
-
    STOPUNDO
 
    return S_OK;
@@ -705,15 +697,6 @@ STDMETHODIMP Textbox::put_Y(float newVal)
 
    m_d.m_v1.y += delta;
    m_d.m_v2.y += delta;
-
-   if (g_pplayer)
-   {
-      const float top = min(m_d.m_v1.y, m_d.m_v2.y);
-      const float bottom = max(m_d.m_v1.y, m_d.m_v2.y);
-
-      m_rect.top = (int)top;
-      m_rect.bottom = (int)bottom;
-   }
 
    STOPUNDO
 

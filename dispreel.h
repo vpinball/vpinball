@@ -14,31 +14,30 @@
 class DispReelData
 {
 public:
-   Vertex2D    m_v1, m_v2;             // position on map (top right corner)
-   char        m_szImage[MAXTOKEN];    // image to use for the decals.
-   int			m_imagesPerGridRow;
-   int			m_reelcount;			// number of individual reel in the set
-   float       m_width, m_height;      // size of each reel
-   float       m_reelspacing;          // spacing between each reel and the boarders
-   float       m_motorsteps;           // steps (or frames) to move each reel each frame
-   int			m_digitrange;			// max number of digits per reel (usually 9)
+   Vertex2D    m_v1, m_v2;          // position on map (top right corner)
+   char        m_szImage[MAXTOKEN]; // image to use for the decals.
+   int         m_imagesPerGridRow;
+   int         m_reelcount;         // number of individual reel in the set
+   float       m_width, m_height;   // size of each reel
+   float       m_reelspacing;       // spacing between each reel and the boarders
+   float       m_motorsteps;        // steps (or frames) to move each reel each frame
+   int         m_digitrange;        // max number of digits per reel (usually 9)
 
-   char        m_szSound[MAXTOKEN];    // sound to play for each turn of a digit
-   int	        m_updateinterval;       // time in ms between each animation update
+   char        m_szSound[MAXTOKEN]; // sound to play for each turn of a digit
+   int         m_updateinterval;    // time in ms between each animation update
 
-   COLORREF    m_backcolor;            // colour of the background
+   COLORREF    m_backcolor;         // colour of the background
 
-   TimerDataRoot m_tdr;                // timer information
-   bool        m_fTransparent;         // is the background transparent
-   bool		m_fUseImageGrid;
-   bool		m_fVisible;
+   TimerDataRoot m_tdr;             // timer information
+   bool        m_fTransparent;      // is the background transparent
+   bool        m_fUseImageGrid;
+   bool        m_fVisible;
 };
 
 typedef struct {
-   FRect   position;           // screen position (includes rendering size)
    int     currentValue;       // current digit value
    int     motorPulses;        // number of motor pulses received for this reel (can be negative)
-   int		motorStepCount;     // when equal to zero then at a whole letter
+   int     motorStepCount;     // when equal to zero then at a whole letter
    float   motorCalcStep;      // calculated steping rate of motor
    float   motorOffset;        // frame value of motor (where to display the reel)
 } _reelInfo;
