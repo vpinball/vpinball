@@ -485,7 +485,8 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
                m_ringAnimate = false;
             }
          }
-         UpdateRing(pd3dDevice);
+         if(m_ringVertexBuffer)
+            UpdateRing(pd3dDevice);
       }
 
       if (m_ringMaterial.m_bIsMetal)
