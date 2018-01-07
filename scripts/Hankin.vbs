@@ -1,4 +1,4 @@
-'Last Updated in VBS v3.36
+'Last Updated in VBS v3.56
 
 Option Explicit
 LoadCore
@@ -17,7 +17,7 @@ End Sub
 ' Hankin Data
 '-------------------------
 ' Flipper Solenoid
-Const GameOnSolenoid = 16
+Const GameOnSolenoid = 19
 ' Cabinet switches
 Const swSelfTest       = -7
 Const swCPUDiag        = -4
