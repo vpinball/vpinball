@@ -95,11 +95,17 @@ Function vpmKeyDown(ByVal keycode)
 	With Controller
 		Select Case keycode
 			Case LeftFlipperKey
-				.Switch(swLLFlip) = True : vpmKeyDown = False :  vpmFlips.FlipL True : If keycode = keyStagedFlipperL then vpmFlips.FlipUL True :
-				 If cSingleLFlip Or Err Then .Switch(swULFlip) = True
+				.Switch(swLLFlip) = True : vpmKeyDown = False : vpmFlips.FlipL True
+				If keycode = keyStagedFlipperL Then ' as vbs will not evaluate the Case keyStagedFlipperL then, also handle it here
+					vpmFlips.FlipUL True
+					If cSingleLFlip Or Err Then .Switch(swULFlip) = True
+				End If
 			Case RightFlipperKey
-				.Switch(swLRFlip) = True : vpmKeyDown = False :  vpmFlips.FlipR True : If keycode = keyStagedFlipperR then vpmFlips.FlipUR True :
-				 If cSingleRFlip Or Err Then .Switch(swURFlip) = True
+				.Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True
+				If keycode = keyStagedFlipperR Then ' as vbs will not evaluate the Case keyStagedFlipperR then, also handle it here
+					vpmFlips.FlipUR True
+					If cSingleRFlip Or Err Then .Switch(swURFlip) = True
+				End If
 			Case keyStagedFlipperL vpmFlips.FlipUL True : If cSingleLFlip Or Err Then .Switch(swULFlip) = True
 			Case keyStagedFlipperR vpmFlips.FlipUR True : If cSingleRFlip Or Err Then .Switch(swURFlip) = True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
@@ -131,11 +137,17 @@ Function vpmKeyUp(ByVal keycode)
 	With Controller
 		Select Case keycode
 			Case LeftFlipperKey
-				.Switch(swLLFlip) = False : vpmKeyUp = False :  vpmFlips.FlipL False : If keycode = keyStagedFlipperL then vpmFlips.FlipUL False :
-				 If cSingleLFlip Or Err Then .Switch(swULFlip) = False
+				.Switch(swLLFlip) = False : vpmKeyUp = False : vpmFlips.FlipL False
+				If keycode = keyStagedFlipperL Then ' as vbs will not evaluate the Case keyStagedFlipperL then, also handle it here
+					vpmFlips.FlipUL False
+					If cSingleLFlip Or Err Then .Switch(swULFlip) = False
+				End If
 			Case RightFlipperKey
-				.Switch(swLRFlip) = False : vpmKeyUp = False :  vpmFlips.FlipR False : If keycode = keyStagedFlipperR then vpmFlips.FlipUR False :
-				 If cSingleRFlip Or Err Then .Switch(swURFlip) = False
+				.Switch(swLRFlip) = False : vpmKeyUp = False : vpmFlips.FlipR False
+				If keycode = keyStagedFlipperR Then ' as vbs will not evaluate the Case keyStagedFlipperR then, also handle it here
+					vpmFlips.FlipUR False
+					If cSingleRFlip Or Err Then .Switch(swURFlip) = False
+				End If
 			Case keyStagedFlipperL vpmFlips.FlipUL False : If cSingleLFlip Or Err Then .Switch(swULFlip) = False
 			Case keyStagedFlipperR vpmFlips.FlipUR False : If cSingleRFlip Or Err Then .Switch(swURFlip) = False
 			Case keyCancel       swCopy = swCancel :       .Switch(swCopy) = False
