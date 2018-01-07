@@ -1,9 +1,18 @@
 VP 10.5.0 Changelog
 ------------------------
 
-- allow reels and textboxes to be moved via the script
+- allow reels and textboxes to be moved via the script (and textboxes can also be placed at floating point precision level)
+
+- fix detection of used materials (bumpers were missing) and used images (color grading LUT was missing)
+
+- fix sound device selection/mapping for music (e.g. usually the backglass device)
 
 - update BASS library to 2.4.13
+
+- see core scripts (header of core.vbs) for the respective changelog (version 3.56)
+- see CommandReference.txt for the changelog of all the scripting properties/interface changes
+
+- DirectX 8 port for input handling (currently disabled)
 
 VP 10.4.0 Changelog
 ------------------------
@@ -82,8 +91,6 @@ VP 10.4.0 Changelog
 
 - see core scripts (header of core.vbs) for the respective changelog (versions 3.54 and 3.55)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
-
-- DirectX 8 port for input handling (currently disabled)
 
 VP 10.3.1 Changelog
 ------------------------
