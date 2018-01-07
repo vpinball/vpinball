@@ -3,7 +3,9 @@ Const VPinMAMEDriverVer = 3.56
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.56 (Update by )
+' New in 3.56 (Update by nFozzy)
+' - Fix WPC tables that use 'cSingleLFlip'
+' - Change GameOnSolenoid from 16 to 19 for Hankin
 '
 ' New in 3.55 (Update by nFozzy)
 ' - Prevent 'object not a collection' errors if vpmNudge.TiltObj isn't set
