@@ -8666,6 +8666,20 @@ int PinTable::AddListMaterial(HWND hwndListView, Material *pmat)
                inUse = true;
             break;
          }
+         case eItemKicker:
+         {
+            Kicker *pKick = (Kicker*)pEdit;
+            if (_stricmp(pKick->m_d.m_szMaterial, pmat->m_szName) == 0)
+               inUse = true;
+            break;
+         }
+         case eItemTrigger:
+         {
+            Trigger *pTrig = (Trigger*)pEdit;
+            if (_stricmp(pTrig->m_d.m_szMaterial, pmat->m_szName) == 0)
+               inUse = true;
+            break;
+         }
          default:
             break;
          }

@@ -3,7 +3,7 @@ VP 10.5.0 Changelog
 
 - allow reels and textboxes to be moved via the script (and textboxes can also be placed at floating point precision level)
 
-- fix detection of used materials (bumpers were missing) and used images (color grading LUT was missing)
+- fix detection of used materials (bumpers, triggers & kickers were missing) and used images (color grading LUT was missing)
 
 - fix sound device selection/mapping for music (e.g. usually the backglass device)
 
