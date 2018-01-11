@@ -11025,11 +11025,11 @@ STDMETHODIMP PinTable::get_ShowDT(VARIANT_BOOL *pVal)
 
 STDMETHODIMP PinTable::put_ShowDT(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   //STARTUNDO // not saved/just a simple toggle, so do not trigger undo
 
    m_BG_current_set = (!!newVal) ? (m_BG_enable_FSS ? BG_FSS : BG_DESKTOP) : BG_FULLSCREEN;
 
-   STOPUNDO
+   //STOPUNDO
 
    SetDirtyDraw();
 
