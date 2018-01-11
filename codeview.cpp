@@ -87,6 +87,8 @@ void CodeViewer::Init(IScriptableHost *psh)
 
    m_pScript = NULL;
 
+   m_visible = false;
+
    const HRESULT res = InitializeScriptEngine();
    if (res != S_OK)
    {
@@ -96,7 +98,7 @@ void CodeViewer::Init(IScriptableHost *psh)
    }
 
    m_sdsDirty = eSaveClean;
-   m_fIgnoreDirty = fFalse;
+   m_fIgnoreDirty = false;
 
    m_findreplaceold.lStructSize = 0; // So we know nothing has been searched for yet
 
@@ -340,8 +342,9 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
    return S_OK;
 }
 
-void CodeViewer::SetVisible(const BOOL fVisible)
+void CodeViewer::SetVisible(const bool fVisible)
 {
+   m_visible = fVisible;
 
    if(!fVisible)
    {
@@ -801,7 +804,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
       return S_OK;
    }
 
-   m_fScriptError = fTrue;
+   m_fScriptError = true;
 
    PinTable * const pt = g_pvp->GetActiveTable();
    if (pt != NULL && !pt->CheckPermissions(DISABLE_TABLEVIEW))
@@ -986,12 +989,12 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
    SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, scinfindflags, 0);
    size_t posFind = SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(pfr->lpstrFindWhat), (LPARAM)pfr->lpstrFindWhat);
 
-   BOOL fWrapped = fFalse;
+   bool fWrapped = false;
 
    if (posFind == -1)
    {
       // Not found, try looping the document
-      fWrapped = fTrue;
+      fWrapped = true;
       if (pfr->Flags & FR_DOWN)
       {
          startChar = 0;
@@ -1136,7 +1139,7 @@ void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash, co
 
 void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
 {
-   m_fIgnoreDirty = fTrue;
+   m_fIgnoreDirty = true;
 
    ULONG read = 0;
    int cchar;
@@ -1183,7 +1186,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
    SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
    delete[] szText;
 
-   m_fIgnoreDirty = fFalse;
+   m_fIgnoreDirty = false;
    m_sdsDirty = eSaveClean;
 }
 

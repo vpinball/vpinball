@@ -2540,7 +2540,7 @@ void PinTable::Play(bool _cameraMode)
 
    g_fKeepUndoRecords = fFalse;
 
-   m_pcv->m_fScriptError = fFalse;
+   m_pcv->m_fScriptError = false;
    m_pcv->Compile();
 
    if (!m_pcv->m_fScriptError)

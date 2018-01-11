@@ -97,7 +97,7 @@ public:
 
    void Create();
    void Destroy();
-   void SetVisible(const BOOL fVisible);
+   void SetVisible(const bool fVisible);
 
    void SetEnabled(const BOOL fEnabled);
 
@@ -206,7 +206,9 @@ public:
 
    VectorSortString<CodeViewDispatch> m_vcvd;
 
-   BOOL m_fScriptError; // Whether a script error has occured - used for polling from the game
+   bool m_fScriptError; // Whether a script error has occured - used for polling from the game
+
+   bool m_visible;
 
 private:
 #define MAX_FIND_LENGTH 81
@@ -328,7 +330,7 @@ public:
 	HWND m_hwndFunctionText;
 
    SaveDirtyState m_sdsDirty;
-   BOOL m_fIgnoreDirty;
+   bool m_fIgnoreDirty;
    HACCEL m_haccel; // Accelerator keys
 
    FINDREPLACE m_findreplaceold; //the last thing found/replaced
