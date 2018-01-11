@@ -61,7 +61,7 @@ static TBBUTTON const g_tbbuttonMain[] = {
    {14, ID_TABLE_MAGNIFY, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_MAGNIFY, 0},
    {0, IDC_SELECT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP | TBSTYLE_DROPDOWN, 0, 0, 0, 0, 0, 0, IDS_TB_SELECT, 1},
    {13, ID_EDIT_PROPERTIES, TBSTATE_ENABLED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, IDS_TB_PROPERTIES, 2},
-   {18, ID_EDIT_SCRIPT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0, 0, 0, IDS_TB_SCRIPT, 3},
+   {18, ID_EDIT_SCRIPT, TBSTATE_ENABLED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, IDS_TB_SCRIPT, 3},
    {19, ID_EDIT_BACKGLASSVIEW, TBSTATE_ENABLED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, IDS_TB_BACKGLASS, 4},
    {2, ID_TABLE_PLAY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0, 0, 0, IDS_TB_PLAY, 5},
 };
@@ -106,7 +106,7 @@ static TBBUTTON const g_tbbuttonMain[] = {
    { 14, ID_TABLE_MAGNIFY, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_MAGNIFY, 0 },
    { 0, IDC_SELECT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP | TBSTYLE_DROPDOWN, 0, 0, IDS_TB_SELECT, 1 },
    { 13, ID_EDIT_PROPERTIES, TBSTATE_ENABLED, TBSTYLE_CHECK, 0, 0, IDS_TB_PROPERTIES, 2 },
-   { 18, ID_EDIT_SCRIPT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, IDS_TB_SCRIPT, 3 },
+   { 18, ID_EDIT_SCRIPT, TBSTATE_ENABLED, TBSTYLE_CHECK, 0, 0, IDS_TB_SCRIPT, 3 },
    { 19, ID_EDIT_BACKGLASSVIEW, TBSTATE_ENABLED, TBSTYLE_CHECK, 0, 0, IDS_TB_BACKGLASS, 4 },
    { 2, ID_TABLE_PLAY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, IDS_TB_PLAY, 5 },
 };
@@ -871,7 +871,11 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          if (ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING))
             ShowPermissionError();
          else
-            ptCur->m_pcv->SetVisible(fTrue);
+         {
+            ptCur->m_pcv->SetVisible(!ptCur->m_pcv->m_visible);
+
+            SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, MAKELONG(ptCur->m_pcv->m_visible, 0));
+         }
       }
       break;
    }
@@ -1772,9 +1776,9 @@ void VPinball::LoadFileName(char *szFileName)
    else
    {
       ppt->InitPostLoad(this);
-      
+
 	  TitleFromFilename(szFileName, ppt->m_szTitle);
-      
+
 	  ppt->SetCaption(ppt->m_szTitle);
 
 	  // auto-import POV settings if exist...
@@ -1901,6 +1905,8 @@ void VPinball::SetEnableMenuItems()
    // is there a valid table??
    if (ptCur)
    {
+      CheckMenuItem(hmenu, ID_EDIT_SCRIPT, MF_BYCOMMAND | (ptCur->m_pcv->m_visible ? MF_CHECKED : MF_UNCHECKED));
+
       EnableMenuItem(hmenu, IDM_CLOSE, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_EDIT_UNDO, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | MF_ENABLED);

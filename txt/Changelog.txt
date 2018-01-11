@@ -7,6 +7,8 @@ VP 10.5.0 Changelog
 
 - fix sound device selection/mapping for music (e.g. usually the backglass device)
 
+- script button can now both open and close the script editor
+
 - update BASS library to 2.4.13
 
 - see core scripts (header of core.vbs) for the respective changelog (version 3.56)
