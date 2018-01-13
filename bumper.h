@@ -128,6 +128,7 @@ private:
    void RenderCap(RenderDevice *pd3dDevice, const Material * const capMaterial);
    void RenderSocket(RenderDevice *pd3dDevice, const Material * const baseMaterial);
    void UpdateRing(RenderDevice *pd3dDevice);
+   void UpdateSkirt(RenderDevice *pd3dDevice, const bool doCalculation);
    void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
    void GenerateSocketMesh(Vertex3D_NoTex2 *buf);
    void GenerateRingMesh(Vertex3D_NoTex2 *buf);
@@ -146,7 +147,6 @@ private:
    IndexBuffer *m_capIndexBuffer;
 
    Matrix3D m_fullMatrix;
-
    Vertex3D_NoTex2 *m_ringVertices;
    Texture m_ringTexture;
    Texture m_capTexture;
@@ -157,6 +157,8 @@ private:
    float   m_baseHeight;
    bool    m_ringDown;
    bool    m_ringAnimate;
+   bool    m_skirtAnimate;
+   float   m_skirtCounter;
 
    // IBumper
 public:

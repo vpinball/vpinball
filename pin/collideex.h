@@ -11,6 +11,7 @@ public:
    bool m_fHitEvent;
    bool m_fDisabled;
    bool m_fVisible;
+   Vertex3Ds m_hitBallPosition;
 };
 
 class BumperHitCircle : public HitCircle

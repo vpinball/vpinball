@@ -24,6 +24,8 @@ Bumper::Bumper()
    memset(m_d.m_szRingMaterial, 0, 32);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
    m_ringDown = false;
+   m_skirtAnimate = false;
+   m_skirtCounter = 0.0f;
 }
 
 Bumper::~Bumper()
@@ -433,6 +435,67 @@ void Bumper::RenderCap(RenderDevice *pd3dDevice, const Material * const capMater
    pd3dDevice->basicShader->End();
 }
 
+void Bumper::UpdateSkirt(RenderDevice *pd3dDevice, const bool doCalculation)
+{
+   Vertex3D_NoTex2 *buf;
+   const float SKIRT_TILT = 5.0f;
+   const float scalexy = m_d.m_radius*2.0f;
+   float rotx=0.0f, roty=0.0f;
+   float hitx, hity;
+   float dy,dx, skirtA;
+
+   if (doCalculation)
+   {
+      hitx = m_pbumperhitcircle->m_bumperanim.m_hitBallPosition.x;
+      hity = m_pbumperhitcircle->m_bumperanim.m_hitBallPosition.y;
+      dy = fabsf(hity - m_d.m_vCenter.y);
+      if (dy == 0.0)
+         dy = 0.000001;
+      dx = fabsf(hitx - m_d.m_vCenter.x);
+      skirtA = atanf(dx / dy);
+      rotx = cosf(skirtA)*SKIRT_TILT;
+      if (m_d.m_vCenter.y < hity)
+         rotx *= -1.0f;
+
+      roty = sinf(skirtA)*SKIRT_TILT;
+      if (m_d.m_vCenter.x > hitx)
+         roty *= -1.0f;
+   }
+
+   Matrix3D tempMatrix, rMatrix;
+   rMatrix.SetIdentity();
+
+   tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
+   tempMatrix.Multiply(rMatrix, rMatrix);
+
+   tempMatrix.RotateYMatrix(ANGTORAD(roty));
+   tempMatrix.Multiply(rMatrix, rMatrix);
+   tempMatrix.RotateXMatrix(ANGTORAD(rotx));
+   tempMatrix.Multiply(rMatrix, rMatrix);
+
+
+   m_socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+   for (int i = 0; i < bumperSocketNumVertices; i++)
+   {
+      Vertex3Ds vert(bumperSocket[i].x, bumperSocket[i].y, bumperSocket[i].z);
+      vert = rMatrix.MultiplyVector(vert);
+      buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
+      buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
+      // scale z by 0.6 to make the skirt a bit more flat
+      buf[i].z = (0.6f*vert.z*m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight + 5.0f;
+
+      vert = Vertex3Ds(bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz);
+      vert = rMatrix.MultiplyVectorNoTranslate(vert);
+      buf[i].nx = vert.x;
+      buf[i].ny = vert.y;
+      buf[i].nz = vert.z;
+      buf[i].tu = bumperSocket[i].tu;
+      buf[i].tv = bumperSocket[i].tv;
+   }
+   m_socketVertexBuffer->unlock();
+
+}
+
 void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
@@ -451,10 +514,10 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
+   const int state = m_pbumperhitcircle->m_bumperanim.m_fHitEvent ? 1 : 0;    // 0 = not hit, 1 = hit
+
    if (m_d.m_fRingVisible)
    {
-      const int state = m_pbumperhitcircle->m_bumperanim.m_fHitEvent ? 1 : 0;    // 0 = not hit, 1 = hit
-
       if (state == 1)
       {
          m_ringAnimate = true;
@@ -503,16 +566,31 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_ringVertexBuffer, 0, bumperRingNumVertices, m_ringIndexBuffer, 0, bumperRingNumFaces);
       pd3dDevice->basicShader->End();
    }
+
    if (m_d.m_fSkirtVisible)
    {
-      const Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
-      if (mat->m_bOpacityActive)
+      if (state == 1)
       {
-         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-         RenderSocket(pd3dDevice, mat);
+         m_skirtAnimate = true;
+         UpdateSkirt(pd3dDevice, true);
+         m_skirtCounter = 0.0f;
       }
+      if (m_skirtAnimate)
+      {
+         m_skirtCounter += 1.0f;
+         if (m_skirtCounter > 160.0f)
+         {
+            m_skirtAnimate = false;
+            UpdateSkirt(pd3dDevice, false);
+         }
+      }
+
+      const Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
+      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+      RenderSocket(pd3dDevice, mat);
    }
+
 
    if (m_d.m_fBaseVisible)
    {
@@ -580,7 +658,7 @@ void Bumper::ExportMesh(FILE *f)
    {
       Vertex3D_NoTex2 *socket = new Vertex3D_NoTex2[bumperSocketNumVertices];
       strcpy_s(subObjName, name);
-      strcat_s(subObjName, "Socket");
+      strcat_s(subObjName, "Skirt");
       WaveFrontObj_WriteObjectName(f, subObjName);
 
       GenerateSocketMesh(socket);
@@ -642,7 +720,7 @@ void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf)
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
       // scale z by 0.6 to make the skirt a bit more flat
-      buf[i].z = (0.6f*vert.z*m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
+      buf[i].z = (0.6f*vert.z*m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight+5.0f;
 
       vert = Vertex3Ds(bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz);
       vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -734,10 +812,6 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
          m_socketVertexBuffer->release();
       pd3dDevice->CreateVertexBuffer(bumperSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_socketVertexBuffer);
 
-      Vertex3D_NoTex2 *buf;
-      m_socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-      GenerateSocketMesh(buf);
-      m_socketVertexBuffer->unlock();
    }
 
    if (m_d.m_fRingVisible)
@@ -807,16 +881,6 @@ void Bumper::RenderStatic(RenderDevice* pd3dDevice)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
          RenderBase(pd3dDevice, mat);
-      }
-   }
-
-   if (m_d.m_fSkirtVisible)
-   {
-      const Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
-      if (!mat->m_bOpacityActive)
-      {
-         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
-         RenderSocket(pd3dDevice, mat);
       }
    }
 
