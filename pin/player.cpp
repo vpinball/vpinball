@@ -2949,7 +2949,17 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
 void Player::UpdatePhysics()
 {
-   const U64 initial_time_usec = usec();
+   U64 initial_time_usec = usec();
+
+   // DJRobX's crazy latency-reduction code
+   U64 delta_frame = 0;
+   if (m_minphyslooptime > 0 && m_lastFlipTime > 0)
+   {
+      // We want the physics loops to sync up to the the frames, not
+      // the post-render period, as that can cause some judder.
+      delta_frame = initial_time_usec - m_lastFlipTime;
+      initial_time_usec -= delta_frame;
+   }
 
    if (m_fNoTimeCorrect) // After debugging script
    {
@@ -3056,22 +3066,26 @@ void Player::UpdatePhysics()
       //      break;  //this is the common exit from the loop          // exit skipping accelerate
       //}                     // some rare cases will exit from while()
 
-      const U64 cur_time_usec = usec(); //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames
 
       // DJRobX's crazy latency-reduction code: Artificially lengthen the execution of the physics loop by X usecs, to give more opportunities to read changes from input(s) (try values in the multiple 100s up to maximum 1000 range, in general: the more, the faster the CPU is)
       //                                        Intended mainly to be used if vsync is enabled (e.g. most idle time is shifted from vsync-waiting to here)
       if (m_minphyslooptime > 0)
       {
+          const U64 basetime = usec(); 
           const U64 targettime = ((U64)m_minphyslooptime * m_phys_iterations) + m_lastFlipTime;
           // If we're 3/4 of the way through the loop fire a "frame sync" timer event so VPM can react to input.
           // This will effectively double the "-1" timer rate, but the goal, when this option is enabled, is to reduce latency
           // and those "-1" timer calls should be roughly halfway through the cycle
-          if (m_phys_iterations == 750 / ((int)m_fpsAvg+1))
+          if (m_phys_iterations == 750 / ((int)m_fps + 1))
+          {
               first_cycle = true; //!! side effects!?!
-          if (cur_time_usec < targettime)
-              uSleep(targettime - cur_time_usec);
+              m_script_period = 0; // !!!! SIDE EFFECTS?!?!?!
+          }
+          if (basetime < targettime)
+              uSleep(targettime - basetime);
       }
       // end DJRobX's crazy code
+      const U64 cur_time_usec = usec()-delta_frame; //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames
 
       // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
       if ((cur_time_usec - initial_time_usec > 200000) || (m_phys_iterations > ((m_ptable->m_PhysicsMaxLoops == 0) || (m_ptable->m_PhysicsMaxLoops == 0xFFFFFFFFu) ? 0xFFFFFFFFu : (m_ptable->m_PhysicsMaxLoops*(10000 / PHYSICS_STEPTIME))/*2*/)))
@@ -3124,7 +3138,7 @@ void Player::UpdatePhysics()
             }
          }
 
-         m_script_period += (unsigned int)(usec() - cur_time_usec);
+         m_script_period += (unsigned int)(usec() - (cur_time_usec+delta_frame));
       }
 
       m_pactiveball = old_pactiveball;
@@ -3199,7 +3213,7 @@ void Player::UpdatePhysics()
    } // end while (m_curPhysicsFrameTime < initial_time_usec)
 
 #ifdef FPS
-   m_phys_period = (U32)(usec() - initial_time_usec);
+   m_phys_period = (U32)((usec() - delta_frame) - initial_time_usec);
 #endif
 }
 
