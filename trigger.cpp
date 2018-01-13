@@ -565,7 +565,7 @@ void Trigger::UpdateAnimation(RenderDevice *pd3dDevice)
    {
       doAnimation = true;
       hitEvent = false;
-      unhitEvent = false;
+      // unhitEvent = false;   // Bugfix: If HitEvent and unhitEvent happen at the same time, you want to favor the unhit, otherwise the switch gets stuck down.
       animHeightOffset = 0.0f;
       moveDown = true;
    }
