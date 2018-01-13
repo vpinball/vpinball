@@ -577,7 +577,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       }
       if (m_skirtAnimate)
       {
-         m_skirtCounter += 1.0f;
+         m_skirtCounter += 1.0f*diff_time_msec;
          if (m_skirtCounter > 160.0f)
          {
             m_skirtAnimate = false;
