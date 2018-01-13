@@ -16,7 +16,7 @@ void BumperHitCircle::Collide(CollisionEvent& coll)
       pball->m_vel += hitnormal * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
 
       m_bumperanim.m_fHitEvent = true;
-
+      m_bumperanim.m_hitBallPosition = coll.ball->m_pos;
       m_pbumper->FireGroupEvent(DISPID_HitEvents_Hit);
    }
 }
