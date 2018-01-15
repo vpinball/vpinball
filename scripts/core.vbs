@@ -8,6 +8,7 @@ Const VPinMAMEDriverVer = 3.56
 '   - Fixed vpmFlips execute script error
 '   - Added extra error check for detecting outdated system vbs files when UseSolenoids = 2
 '   - Change GameOnSolenoid from 16 to 19 for Hankin
+'   - Fixed an execute script issue that was causing dead flippers for some system languages
 ' - Fix WPC tables that use 'cSingleLFlip' (regression from 3.55)
 '
 ' New in 3.55 (Update by nFozzy)
@@ -2638,30 +2639,34 @@ Class cvpmFlips
 	Public Property Get Solenoid : Solenoid = sol : End Property
 	
 	'call callbacks
-	Public Sub FlipL(aEnabled)
+	Public Sub FlipL(ByVal aEnabled)
+		aEnabled = abs(aEnabled) 'True / False is not region safe with execute. Convert to 1 or 0 instead.
 		DebugTestKeys = 1
 		FlipState(0) = aEnabled	'track flipper button states: the game-on sol flips immediately if the button is held down (1.1)
 		If not FlippersEnabled and not DebugOn then Exit Sub
 		execute subL & " " & aEnabled
 	End Sub
 
-	Public Sub FlipR(aEnabled)
+	Public Sub FlipR(ByVal aEnabled)
+		aEnabled = abs(aEnabled) 'True / False is not region safe with execute. Convert to 1 or 0 instead.
 		DebugTestKeys = 1
 		FlipState(1) = aEnabled
 		If not FlippersEnabled and not DebugOn then Exit Sub
 		execute subR & " " & aEnabled
 	End Sub
 
-	Public Sub FlipUL(aEnabled)
+	Public Sub FlipUL(ByVal aEnabled)
+		aEnabled = abs(aEnabled) 'True / False is not region safe with execute. Convert to 1 or 0 instead.
 		FlipState(2) = aEnabled
 		If not FlippersEnabled and not DebugOn then Exit Sub
 		execute subUL & " " & aEnabled
 	End Sub	
 
-	Public Sub FlipUR(aEnabled)
+	Public Sub FlipUR(ByVal aEnabled)
+		aEnabled = abs(aEnabled) 'True / False is not region safe with execute. Convert to 1 or 0 instead.
 		FlipState(3) = aEnabled
 		If not FlippersEnabled and not DebugOn then Exit Sub
-		execute subUR & " " & aEnabled
+		execute subUR & " " & abs(aEnabled)
 	End Sub	
 	
 	Public Sub TiltSol(aEnabled)	'Handle solenoid / Delay (if delayinit)
