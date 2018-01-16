@@ -739,6 +739,22 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
    psur->SetLineColor(RGB(0, 0, 0), false, 1);
    psur->SetObject(this);
 
+   if(solid && m_d.m_use3DMesh)
+   {
+       Vertex2D rv[3];
+       for(unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+       {
+           const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
+           const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
+           const Vertex3Ds * const C = &vertices[m_mesh.m_indices[i + 2]];
+
+           rv[0].x = C->x; rv[0].y = C->y;
+           rv[1].x = B->x; rv[1].y = B->y;
+           rv[2].x = A->x; rv[2].y = A->y;
+           psur->Polygon(rv, 3);
+       }
+       return;
+   }
    if ((m_d.m_edgeFactorUI <= 0.0f) || (m_d.m_edgeFactorUI >= 1.0f) || !m_d.m_use3DMesh)
    {
       if (!m_d.m_use3DMesh || (m_d.m_edgeFactorUI >= 1.0f) || (m_mesh.NumVertices() <= 100)) // small mesh: draw all triangles
