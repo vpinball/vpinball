@@ -85,10 +85,10 @@ typedef [uuid(28F7715B-E800-49B6-B86E-A0C55898297E)]
                 TriggerNone  = 0,
                 TriggerWireA = 1,
                 TriggerStar  = 2,
-				TriggerWireB = 3,
-				TriggerButton = 4,
-				TriggerWireC = 5,
-				TriggerWireD = 6,
+                TriggerWireB = 3,
+                TriggerButton = 4,
+                TriggerWireC = 5,
+                TriggerWireD = 6,
                 }
                 TriggerShape;
 
@@ -156,13 +156,13 @@ typedef [uuid(704231FA-A3F9-47EE-9278-BA21A1E12566)]
                 {
                 DropTargetBeveled = 1,
                 DropTargetSimple = 2,
-				HitTargetRound = 3,
-				HitTargetRectangle = 4,
-				HitFatTargetRectangle = 5,
-				HitFatTargetSquare = 6,
+                HitTargetRound = 3,
+                HitTargetRectangle = 4,
+                HitFatTargetRectangle = 5,
+                HitFatTargetSquare = 6,
                 DropTargetFlatSimple = 7,
-				HitFatTargetSlim = 8,
-				HitTargetSlim = 9,
+                HitFatTargetSlim = 8,
+                HitTargetSlim = 9,
                 }
                 TargetType;
 
@@ -485,7 +485,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
         ]
 
         interface ITable : IDispatch
-                {
+        {
                 //[propget, id(1)]
                 //HRESULT Application([out, retval] IVPinball **Application);
                 //[propget, id(2)]
@@ -673,14 +673,14 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(436), helpstring("property NightDay")] HRESULT NightDay([in] int newVal);
                 [propget, id(398), helpstring("property OverwriteAlphaAcc")] HRESULT GlobalAlphaAcc([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(398), helpstring("property OverwriteAlphaAcc")] HRESULT GlobalAlphaAcc([in] VARIANT_BOOL newVal);
-				[propget, id(588), helpstring("property OverwriteDayNight")] HRESULT GlobalDayNight([out, retval] VARIANT_BOOL *pVal);
-				[propput, id(588), helpstring("property OverwriteDayNight")] HRESULT GlobalDayNight([in] VARIANT_BOOL newVal);
-				[propget, id(219), helpstring("property Version")] HRESULT Version([out, retval] int *pVal);
-				[propget, id(38), helpstring("property VersionMajor")] HRESULT VersionMajor([out, retval] int *pVal);
-				[propget, id(39), helpstring("property VersionMinor")] HRESULT VersionMinor([out, retval] int *pVal);
-				[propget, id(40), helpstring("property VersionRevision")] HRESULT VersionRevision([out, retval] int *pVal);
-				[propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] int *pVal);
-				}
+                [propget, id(588), helpstring("property OverwriteDayNight")] HRESULT GlobalDayNight([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(588), helpstring("property OverwriteDayNight")] HRESULT GlobalDayNight([in] VARIANT_BOOL newVal);
+                [propget, id(219), helpstring("property Version")] HRESULT Version([out, retval] int *pVal);
+                [propget, id(38), helpstring("property VersionMajor")] HRESULT VersionMajor([out, retval] int *pVal);
+                [propget, id(39), helpstring("property VersionMinor")] HRESULT VersionMinor([out, retval] int *pVal);
+                [propget, id(40), helpstring("property VersionRevision")] HRESULT VersionRevision([out, retval] int *pVal);
+                [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] int *pVal);
+        }
 
         // Interface exposed globally to script
         [
@@ -745,19 +745,19 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(44), helpstring("method DMDWidth")] HRESULT DMDWidth([in] int pVal);
                 [propput, id(45), helpstring("method DMDHeight")] HRESULT DMDHeight([in] int pVal);
                 [propput, id(46), helpstring("method DMDPixels")] HRESULT DMDPixels([in] VARIANT pVal);
-				[propput, id(47), helpstring("method DMDColoredPixels")] HRESULT DMDColoredPixels([in] VARIANT pVal);
+                [propput, id(47), helpstring("method DMDColoredPixels")] HRESULT DMDColoredPixels([in] VARIANT pVal);
 
-				[propget, id(219), helpstring("property Version")] HRESULT Version([out, retval] int *pVal);
-				[propget, id(38), helpstring("property VersionMajor")] HRESULT VersionMajor([out, retval] int *pVal);
-				[propget, id(39), helpstring("property VersionMinor")] HRESULT VersionMinor([out, retval] int *pVal);
-				[propget, id(40), helpstring("property VersionRevision")] HRESULT VersionRevision([out, retval] int *pVal);
-				[propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] int *pVal);
+                [propget, id(219), helpstring("property Version")] HRESULT Version([out, retval] int *pVal);
+                [propget, id(38), helpstring("property VersionMajor")] HRESULT VersionMajor([out, retval] int *pVal);
+                [propget, id(39), helpstring("property VersionMinor")] HRESULT VersionMinor([out, retval] int *pVal);
+                [propget, id(40), helpstring("property VersionRevision")] HRESULT VersionRevision([out, retval] int *pVal);
+                [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] int *pVal);
 
-				[id(224), helpstring("method MaterialColor")] HRESULT MaterialColor(BSTR name, OLE_COLOR newVal);
+                [id(224), helpstring("method MaterialColor")] HRESULT MaterialColor(BSTR name, OLE_COLOR newVal);
 
-				[propget, id(226), helpstring("property WindowWidth")] HRESULT WindowWidth([out, retval] int *pVal);
-				[propget, id(227), helpstring("property WindowHeight")] HRESULT WindowHeight([out, retval] int *pVal);
-		}
+                [propget, id(226), helpstring("property WindowWidth")] HRESULT WindowWidth([out, retval] int *pVal);
+                [propget, id(227), helpstring("property WindowHeight")] HRESULT WindowHeight([out, retval] int *pVal);
+        }
 
         [
         uuid(D3AD16E8-633B-47de-A3B8-92507F37CF65),
@@ -860,14 +860,14 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(431), helpstring("property DisableLighting")] HRESULT DisableLighting([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(431), helpstring("property DisableLighting")] HRESULT DisableLighting([in] VARIANT_BOOL newVal);
                 [propget, id(494), helpstring("property BlendDisableLighting")] HRESULT BlendDisableLighting([out, retval] float *pVal);
-				[propput, id(494), helpstring("property BlendDisableLighting")] HRESULT BlendDisableLighting([in] float newVal);
+                [propput, id(494), helpstring("property BlendDisableLighting")] HRESULT BlendDisableLighting([in] float newVal);
                 [propget, id(114), helpstring("property Friction")] HRESULT Friction([out, retval] float *pVal);
                 [propput, id(114), helpstring("property Friction")] HRESULT Friction([in] float newVal);
                 [propget, id(115), helpstring("property Scatter")] HRESULT Scatter([out, retval] float *pVal);
                 [propput, id(115), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
                 [propget, id(484), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(484), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([in] VARIANT_BOOL newVal);
-				[id(999), helpstring("method PlaySlingshotHit")] HRESULT PlaySlingshotHit();
+                [id(999), helpstring("method PlaySlingshotHit")] HRESULT PlaySlingshotHit();
                 [propget, id(734), helpstring("property PhysicsMaterial")] HRESULT PhysicsMaterial([out, retval] BSTR *pVal);
                 [propput, id(734), helpstring("property PhysicsMaterial")] HRESULT PhysicsMaterial([in] BSTR newVal);
                 [propget, id(432), helpstring("property OverwritePhysics")] HRESULT OverwritePhysics([out, retval] VARIANT_BOOL *pVal);
@@ -1183,9 +1183,9 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(11), helpstring("property Alignment")] HRESULT Alignment([in] TextAlignment newVal);
                 [propget, id(12), helpstring("property IsTransparent")] HRESULT IsTransparent([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(12), helpstring("property IsTransparent")] HRESULT IsTransparent([in] VARIANT_BOOL newVal);
-				[propget, id(555), helpstring("property DMD")] HRESULT DMD([out, retval] VARIANT_BOOL *pVal);
-				[propput, id(555), helpstring("property DMD")] HRESULT DMD([in] VARIANT_BOOL newVal);
-				[propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
+                [propget, id(555), helpstring("property DMD")] HRESULT DMD([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(555), helpstring("property DMD")] HRESULT DMD([in] VARIANT_BOOL newVal);
+                [propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
                 [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
                 [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -1500,7 +1500,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(431), helpstring("property Legacy")] HRESULT Legacy([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(431), helpstring("property Legacy")] HRESULT Legacy([in] VARIANT_BOOL newVal);
                 [propget, id(19), helpstring("property LastCapturedBall")] HRESULT LastCapturedBall([out, retval] IBall **pVal);
-		};
+        };
 
         [
         uuid(BA80F24A-78B2-4c5d-A28D-0F1A9E7C555C),
@@ -1613,53 +1613,53 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
                 [propget, id(DISPID_ROTRA1), helpstring("property Rot and Tra 1")] HRESULT RotAndTra0([out, retval] float *pVal);
                 [propput, id(DISPID_ROTRA1), helpstring("property Rot and Tra 1")] HRESULT RotAndTra0([in] float newVal);
-                [propget, id(DISPID_ROT_X), helpstring("property Rotx")] HRESULT RotX([out, retval] float *pVal);
-                [propput, id(DISPID_ROT_X), helpstring("property Rotx")] HRESULT RotX([in] float newVal);
+                [propget, id(DISPID_ROT_X), helpstring("property RotX")] HRESULT RotX([out, retval] float *pVal);
+                [propput, id(DISPID_ROT_X), helpstring("property RotX")] HRESULT RotX([in] float newVal);
 
                 [propget, id(DISPID_ROTRA2), helpstring("property Rot and Tra 2")] HRESULT RotAndTra1([out, retval] float *pVal);
                 [propput, id(DISPID_ROTRA2), helpstring("property Rot and Tra 2")] HRESULT RotAndTra1([in] float newVal);
-                [propget, id(DISPID_ROT_Y), helpstring("property Rot and Tra 2")] HRESULT RotY([out, retval] float *pVal);
-                [propput, id(DISPID_ROT_Y), helpstring("property Rot and Tra 2")] HRESULT RotY([in] float newVal);
+                [propget, id(DISPID_ROT_Y), helpstring("property RotY")] HRESULT RotY([out, retval] float *pVal);
+                [propput, id(DISPID_ROT_Y), helpstring("property RotY")] HRESULT RotY([in] float newVal);
 
                 [propget, id(DISPID_ROTRA3), helpstring("property Rot and Tra 3")] HRESULT RotAndTra2([out, retval] float *pVal);
                 [propput, id(DISPID_ROTRA3), helpstring("property Rot and Tra 3")] HRESULT RotAndTra2([in] float newVal);
-                [propget, id(DISPID_ROT_Z), helpstring("property Rot and Tra 3")] HRESULT RotZ([out, retval] float *pVal);
-                [propput, id(DISPID_ROT_Z), helpstring("property Rot and Tra 3")] HRESULT RotZ([in] float newVal);
+                [propget, id(DISPID_ROT_Z), helpstring("property RotZ")] HRESULT RotZ([out, retval] float *pVal);
+                [propput, id(DISPID_ROT_Z), helpstring("property RotZ")] HRESULT RotZ([in] float newVal);
                 
                 [propget, id(DISPID_ROTRA4), helpstring("property Rot and Tra 4")] HRESULT RotAndTra3([out, retval] float *pVal);
                 [propput, id(DISPID_ROTRA4), helpstring("property Rot and Tra 4")] HRESULT RotAndTra3([in] float newVal);
-                [propget, id(DISPID_TRANS_X), helpstring("property Rot and Tra 4")] HRESULT TransX([out, retval] float *pVal);
-                [propput, id(DISPID_TRANS_X), helpstring("property Rot and Tra 4")] HRESULT TransX([in] float newVal);
+                [propget, id(DISPID_TRANS_X), helpstring("property TransX")] HRESULT TransX([out, retval] float *pVal);
+                [propput, id(DISPID_TRANS_X), helpstring("property TransX")] HRESULT TransX([in] float newVal);
                 
                 [propget, id(DISPID_ROTRA5), helpstring("property Rot and Tra 5")] HRESULT RotAndTra4([out, retval] float *pVal);
                 [propput, id(DISPID_ROTRA5), helpstring("property Rot and Tra 5")] HRESULT RotAndTra4([in] float newVal);
-                [propget, id(DISPID_TRANS_Y), helpstring("property Rot and Tra 5")] HRESULT TransY([out, retval] float *pVal);
-                [propput, id(DISPID_TRANS_Y), helpstring("property Rot and Tra 5")] HRESULT TransY([in] float newVal);
+                [propget, id(DISPID_TRANS_Y), helpstring("property TransY")] HRESULT TransY([out, retval] float *pVal);
+                [propput, id(DISPID_TRANS_Y), helpstring("property TransY")] HRESULT TransY([in] float newVal);
 
                 [propget, id(DISPID_ROTRA6), helpstring("property Rot and Tra 6")] HRESULT RotAndTra5([out, retval] float *pVal);
                 [propput, id(DISPID_ROTRA6), helpstring("property Rot and Tra 6")] HRESULT RotAndTra5([in] float newVal);
-                [propget, id(DISPID_TRANS_Z), helpstring("property Rot and Tra 6")] HRESULT TransZ([out, retval] float *pVal);
-                [propput, id(DISPID_TRANS_Z), helpstring("property Rot and Tra 6")] HRESULT TransZ([in] float newVal);
+                [propget, id(DISPID_TRANS_Z), helpstring("property TransZ")] HRESULT TransZ([out, retval] float *pVal);
+                [propput, id(DISPID_TRANS_Z), helpstring("property TransZ")] HRESULT TransZ([in] float newVal);
 
                 [propget, id(DISPID_ROTRA7), helpstring("property Rot and Tra 7")] HRESULT RotAndTra6([out, retval] float *pVal);
                 [propput, id(DISPID_ROTRA7), helpstring("property Rot and Tra 7")] HRESULT RotAndTra6([in] float newVal);
-                [propget, id(DISPID_OBJROT_X), helpstring("property Rot and Tra 7")] HRESULT ObjRotX([out, retval] float *pVal);
-                [propput, id(DISPID_OBJROT_X), helpstring("property Rot and Tra 7")] HRESULT ObjRotX([in] float newVal);
+                [propget, id(DISPID_OBJROT_X), helpstring("property ObjRotX")] HRESULT ObjRotX([out, retval] float *pVal);
+                [propput, id(DISPID_OBJROT_X), helpstring("property ObjRotX")] HRESULT ObjRotX([in] float newVal);
 
                 [propget, id(DISPID_ROTRA8), helpstring("property Rot and Tra 8")] HRESULT RotAndTra7([out, retval] float *pVal);
                 [propput, id(DISPID_ROTRA8), helpstring("property Rot and Tra 8")] HRESULT RotAndTra7([in] float newVal);
-                [propget, id(DISPID_OBJROT_Y), helpstring("property Rot and Tra 8")] HRESULT ObjRotY([out, retval] float *pVal);
-                [propput, id(DISPID_OBJROT_Y), helpstring("property Rot and Tra 8")] HRESULT ObjRotY([in] float newVal);
+                [propget, id(DISPID_OBJROT_Y), helpstring("property ObjRotY")] HRESULT ObjRotY([out, retval] float *pVal);
+                [propput, id(DISPID_OBJROT_Y), helpstring("property ObjRotY")] HRESULT ObjRotY([in] float newVal);
 
                 [propget, id(DISPID_ROTRA9), helpstring("property Rot and Tra 9")] HRESULT RotAndTra8([out, retval] float *pVal);
                 [propput, id(DISPID_ROTRA9), helpstring("property Rot and Tra 9")] HRESULT RotAndTra8([in] float newVal);
-                [propget, id(DISPID_OBJROT_Z), helpstring("property Rot and Tra 9")] HRESULT ObjRotZ([out, retval] float *pVal);
-                [propput, id(DISPID_OBJROT_Z), helpstring("property Rot and Tra 9")] HRESULT ObjRotZ([in] float newVal);
+                [propget, id(DISPID_OBJROT_Z), helpstring("property ObjRotZ")] HRESULT ObjRotZ([out, retval] float *pVal);
+                [propput, id(DISPID_OBJROT_Z), helpstring("property ObjRotZ")] HRESULT ObjRotZ([in] float newVal);
 
                 [propget, id(454), helpstring("property EdgeFactorUI")] HRESULT EdgeFactorUI([out, retval] float *pVal);
                 [propput, id(454), helpstring("property EdgeFactorUI")] HRESULT EdgeFactorUI([in] float newVal);
-				[propget, id(481), helpstring("property CollisionReductionFactor")] HRESULT CollisionReductionFactor([out, retval] float *pVal);
-				[propput, id(481), helpstring("property CollisionReductionFactor")] HRESULT CollisionReductionFactor([in] float newVal);
+                [propget, id(481), helpstring("property CollisionReductionFactor")] HRESULT CollisionReductionFactor([out, retval] float *pVal);
+                [propput, id(481), helpstring("property CollisionReductionFactor")] HRESULT CollisionReductionFactor([in] float newVal);
 
                 [propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
                 [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
@@ -1714,7 +1714,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 //              [id(DISPID_TimerEvents_Timer)]  void Timer();
                 [id(DISPID_HitEvents_Hit)]  void Hit();
         }
-		
+
         //////////////////////////////
         ////// HitTarget
         ///////////////////////////////
