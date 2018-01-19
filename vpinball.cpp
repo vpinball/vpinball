@@ -377,14 +377,14 @@ void VPinball::Init()
 
    CreateMDIClient();								// Create MDI Child
 
-   int foo[5] = { 120, 240, 400, 600, 800 };
+   int foo[6] = { 120, 240, 400, 600, 800, 1000 };
 
    m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE,
       "",
       m_hwnd,
       1);				// Create Status Line at the bottom
 
-   ::SendMessage(m_hwndStatusBar, SB_SETPARTS, 5, (size_t)foo);	// Initialize Status bar with 5 empty cells
+   ::SendMessage(m_hwndStatusBar, SB_SETPARTS, 6, (size_t)foo);	// Initialize Status bar with 6 empty cells
 
    InitRegValues();									// get default values from registry
 
@@ -565,6 +565,9 @@ void VPinball::InitRegValues()
       m_szRecentTableList[i][0] = 0x00;
       GetRegString("RecentDir", szRegName, m_szRecentTableList[i], MAX_PATH);
    }
+   hr = GetRegValue("Editor", "Units", &type, &g_pvp->m_convertToUnit, 4);
+   if(FAILED(hr))
+       g_pvp->m_convertToUnit = 0;
 }
 
 ///<summary>
@@ -760,6 +763,34 @@ void VPinball::SetStatusBarElementInfo(const char *info)
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 4 | 0, (size_t)info);
 }
 
+void VPinball::SetStatusBarUnitInfo(const char *info)
+{
+    char textBuf[256] = { 0 };
+
+    strcpy_s(textBuf, info);
+    switch(m_convertToUnit)
+    {
+        case 0:
+        {
+            strcat_s(textBuf, " (inch)");
+            break;
+        }
+        case 1:
+        {
+            strcat_s(textBuf, " (mm)");
+            break;
+        }
+        case 2:
+        {
+            strcat_s(textBuf, " (VPUnits)");
+            break;
+        }
+        default:
+        break;
+    }
+    SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf);
+}
+
 void VPinball::SetPosCur(float x, float y)
 {
    char szT[256];
@@ -779,6 +810,22 @@ void VPinball::SetObjectPosCur(float x, float y)
 void VPinball::ClearObjectPosCur()
 {
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)"");
+}
+
+float VPinball::ConvertToUnit(float value)
+{
+    switch (m_convertToUnit)
+    {
+        case 0:
+        return vpUnitsToInches(value);
+
+        case 1:
+        return vpUnitsToMillimeters(value);
+
+        case 2:
+        return value;
+    }
+    return 0;
 }
 
 void VPinball::SetPropSel(VectorProtected<ISelect> *pvsel)

@@ -449,6 +449,7 @@
 #define IDC_LIGHT_TYPE_CHECKBOX         340
 #define IDC_MATERIAL_COMBO              340
 #define IDC_LIGHTSCOMBO                 340
+#define IDC_UNIT_LIST_COMBO             340
 #define IDD_PROPSPINNER_VISUALS         341
 #define IDS_DEBUGNOCONVERT              341
 #define IDC_MATERIAL_COMBO2             341

@@ -96,6 +96,7 @@ public:
 
    char m_szHeader[64];
    char m_szHeaderCollection[64];
+   ISelect *m_prevSelection;
 
    VectorProtected<ISelect> *m_pvsel;
    CRITICAL_SECTION m_hPropertyLock;
