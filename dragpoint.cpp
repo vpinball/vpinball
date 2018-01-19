@@ -643,23 +643,9 @@ void DragPoint::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    m_pihdp->GetPointDialogPanes(pvproppane);
 }
 
-STDMETHODIMP DragPoint::get_XUnit(float *pVal)
-{
-    *pVal = m_vUnit.x;
-    
-    return S_OK;
-}
-STDMETHODIMP DragPoint::get_YUnit(float *pVal)
-{
-    *pVal = m_vUnit.y;
-
-    return S_OK;
-}
-
 STDMETHODIMP DragPoint::get_X(float *pVal)
 {
    *pVal = m_v.x;
-   m_vUnit.x = vpUnitsToMillimeters(m_v.x);
    return S_OK;
 }
 
@@ -668,7 +654,6 @@ STDMETHODIMP DragPoint::put_X(float newVal)
    STARTUNDOSELECT
 
       m_v.x = newVal;
-   m_vUnit.x = vpUnitsToMillimeters(newVal);
    STOPUNDOSELECT
 
       return S_OK;
@@ -677,7 +662,6 @@ STDMETHODIMP DragPoint::put_X(float newVal)
 STDMETHODIMP DragPoint::get_Y(float *pVal)
 {
    *pVal = m_v.y;
-   m_vUnit.y = vpUnitsToMillimeters(m_v.y);
 
    return S_OK;
 }
@@ -687,7 +671,6 @@ STDMETHODIMP DragPoint::put_Y(float newVal)
    STARTUNDOSELECT
 
       m_v.y = newVal;
-      m_vUnit.y = vpUnitsToMillimeters(newVal);
 
    STOPUNDOSELECT
 
@@ -697,7 +680,6 @@ STDMETHODIMP DragPoint::put_Y(float newVal)
 STDMETHODIMP DragPoint::get_Z(float *pVal)
 {
    *pVal = m_v.z;
-   m_vUnit.z = vpUnitsToMillimeters(m_v.z);
 
    return S_OK;
 }
@@ -707,7 +689,6 @@ STDMETHODIMP DragPoint::put_Z(float newVal)
    STARTUNDOSELECT
 
       m_v.z = newVal;
-   m_vUnit.z = vpUnitsToMillimeters(newVal);
 
    STOPUNDOSELECT
 

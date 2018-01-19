@@ -101,6 +101,7 @@ public:
    void RenderObject(RenderDevice* pd3dDevice);
    void GenerateBracketMesh(Vertex3D_NoTex2 *buf);
    void GenerateWireMesh(Vertex3D_NoTex2 *buf);
+   void UpdateUnitsInfo();
 
    PinTable *m_ptable;
 

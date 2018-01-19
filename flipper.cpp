@@ -95,6 +95,14 @@ Flipper::~Flipper()
       indexBuffer->release();
 }
 
+void Flipper::UpdateUnitsInfo()
+{
+   char tbuf[128] = { 0 };
+   sprintf_s(tbuf, "Height: %.3f | Length: %.3f | RubberHeight: %.3f | RubberWidth: %.3f", g_pvp->ConvertToUnit(m_d.m_height), g_pvp->ConvertToUnit(m_d.m_FlipperRadiusMax),
+                                                                                           g_pvp->ConvertToUnit(m_d.m_rubberheight), g_pvp->ConvertToUnit(m_d.m_rubberwidth));
+   g_pvp->SetStatusBarUnitInfo(tbuf);
+}
+
 HRESULT Flipper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
@@ -1202,6 +1210,7 @@ STDMETHODIMP Flipper::put_EndRadius(float newVal)
 STDMETHODIMP Flipper::get_Length(float *pVal)
 {
    *pVal = m_d.m_FlipperRadiusMax;
+   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -1211,6 +1220,7 @@ STDMETHODIMP Flipper::put_Length(float newVal)
    STARTUNDO
 
    m_d.m_FlipperRadiusMax = newVal;
+   UpdateUnitsInfo();
 
    STOPUNDO
 
@@ -1530,6 +1540,7 @@ STDMETHODIMP Flipper::get_RubberThickness(float *pVal)
 STDMETHODIMP Flipper::get_RubberHeight(float *pVal)
 {
    *pVal = m_d.m_rubberheight;
+   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -1537,6 +1548,7 @@ STDMETHODIMP Flipper::get_RubberHeight(float *pVal)
 STDMETHODIMP Flipper::get_RubberWidth(float *pVal)
 {
    *pVal = m_d.m_rubberwidth;
+   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -1560,6 +1572,7 @@ STDMETHODIMP Flipper::put_RubberHeight(float newVal)
       else if (newVal > 1000.f) newVal = 50.f;
 
       m_d.m_rubberheight = newVal;
+      UpdateUnitsInfo();
 
       STOPUNDO
 
@@ -1571,6 +1584,7 @@ STDMETHODIMP Flipper::put_RubberWidth(float newVal)
    STARTUNDO
 
       m_d.m_rubberwidth = newVal;
+   UpdateUnitsInfo();
 
    STOPUNDO
 
@@ -1752,7 +1766,7 @@ STDMETHODIMP Flipper::put_RampUp(float newVal)
 STDMETHODIMP Flipper::get_Height(float *pVal)
 {
    *pVal = m_d.m_height;
-
+   UpdateUnitsInfo();
    return S_OK;
 }
 
@@ -1761,6 +1775,7 @@ STDMETHODIMP Flipper::put_Height(float newVal)
    STARTUNDO
 
    m_d.m_height = newVal;
+   UpdateUnitsInfo();
 
    STOPUNDO
 

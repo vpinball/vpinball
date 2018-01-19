@@ -129,6 +129,7 @@ public:
    virtual void AddPoint(int x, int y, const bool smooth=false);
 
    void WriteRegDefaults();
+   void UpdateUnitsInfo();
 
    // IHaveDragPoints
    virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);

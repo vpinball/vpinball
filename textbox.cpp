@@ -664,6 +664,7 @@ STDMETHODIMP Textbox::put_Height(float newVal)
 STDMETHODIMP Textbox::get_X(float *pVal)
 {
    *pVal = m_d.m_v1.x;
+   g_pvp->SetStatusBarUnitInfo("");
 
    return S_OK;
 }

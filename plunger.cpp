@@ -1646,6 +1646,7 @@ STDMETHODIMP Plunger::CreateBall(IBall **pBallEx)
 STDMETHODIMP Plunger::get_X(float *pVal)
 {
    *pVal = m_d.m_v.x;
+   g_pvp->SetStatusBarUnitInfo("");
 
    return S_OK;
 }

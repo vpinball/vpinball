@@ -1220,6 +1220,7 @@ STDMETHODIMP Trigger::put_Radius(float newVal)
 STDMETHODIMP Trigger::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
+   g_pvp->SetStatusBarUnitInfo("");
 
    return S_OK;
 }

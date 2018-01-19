@@ -40,6 +40,13 @@ Spinner::~Spinner()
    }
 }
 
+void Spinner::UpdateUnitsInfo()
+{
+   char tbuf[128] = { 0 };
+   sprintf_s(tbuf, "Length: %.3f | Height: %.3f", g_pvp->ConvertToUnit(m_d.m_length), g_pvp->ConvertToUnit(m_d.m_height));
+   g_pvp->SetStatusBarUnitInfo(tbuf);
+}
+
 HRESULT Spinner::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
@@ -671,7 +678,7 @@ STDMETHODIMP Spinner::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Spinner::get_Length(float *pVal)
 {
    *pVal = m_d.m_length;
-
+   UpdateUnitsInfo();
    return S_OK;
 }
 
@@ -680,6 +687,7 @@ STDMETHODIMP Spinner::put_Length(float newVal)
    STARTUNDO
 
       m_d.m_length = newVal;
+   UpdateUnitsInfo();
 
    STOPUNDO
 
@@ -707,6 +715,7 @@ STDMETHODIMP Spinner::put_Rotation(float newVal)
 STDMETHODIMP Spinner::get_Height(float *pVal)
 {
    *pVal = m_d.m_height;
+   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -716,6 +725,7 @@ STDMETHODIMP Spinner::put_Height(float newVal)
    STARTUNDO
 
       m_d.m_height = newVal;
+   UpdateUnitsInfo();
 
    STOPUNDO
 
