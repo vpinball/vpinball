@@ -91,6 +91,7 @@ public:
 
    void WriteRegDefaults();
    void UpdatePlate(RenderDevice *pd3dDevice, Vertex3D_NoTex2 *vertBuffer=NULL);
+   void UpdateUnitsInfo();
 
    PinTable *m_ptable;
 

@@ -2217,6 +2217,7 @@ STDMETHODIMP Primitive::put_DrawTexturesInside(VARIANT_BOOL newVal)
 STDMETHODIMP Primitive::get_X(float *pVal)
 {
    *pVal = m_d.m_vPosition.x;
+   g_pvp->SetStatusBarUnitInfo("");
 
    return S_OK;
 }

@@ -9470,6 +9470,7 @@ STDMETHODIMP PinTable::put_TableHeight(float newVal)
 STDMETHODIMP PinTable::get_Width(float *pVal)
 {
    *pVal = m_right;
+   g_pvp->SetStatusBarUnitInfo("");
 
    return S_OK;
 }

@@ -42,6 +42,15 @@ Ramp::~Ramp()
        delete [] rgheightInit;
 }
 
+void Ramp::UpdateUnitsInfo()
+{
+   char tbuf[128] = { 0 };
+   sprintf_s(tbuf, "TopH: %.03f | BottomH: %0.3f | TopW: %.03f | BottomW: %.03f | LeftW: %.03f | RightW: %.3f", g_pvp->ConvertToUnit(m_d.m_heighttop), g_pvp->ConvertToUnit(m_d.m_heightbottom), 
+                                                                                  g_pvp->ConvertToUnit(m_d.m_widthtop), g_pvp->ConvertToUnit(m_d.m_widthbottom),
+                                                                                  g_pvp->ConvertToUnit(m_d.m_leftwallheight), g_pvp->ConvertToUnit(m_d.m_rightwallheight));
+   g_pvp->SetStatusBarUnitInfo(tbuf);
+}
+
 
 bool Ramp::IsTransparent()
 {
@@ -1599,6 +1608,7 @@ STDMETHODIMP Ramp::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Ramp::get_HeightBottom(float *pVal)
 {
    *pVal = m_d.m_heightbottom;
+   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -1611,6 +1621,7 @@ STDMETHODIMP Ramp::put_HeightBottom(float newVal)
 
       m_d.m_heightbottom = newVal;
       dynamicVertexBufferRegenerate = true;
+      UpdateUnitsInfo();
 
       STOPUNDO
    }
@@ -1621,6 +1632,7 @@ STDMETHODIMP Ramp::put_HeightBottom(float newVal)
 STDMETHODIMP Ramp::get_HeightTop(float *pVal)
 {
    *pVal = m_d.m_heighttop;
+   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -1633,6 +1645,7 @@ STDMETHODIMP Ramp::put_HeightTop(float newVal)
 
       m_d.m_heighttop = newVal;
       dynamicVertexBufferRegenerate = true;
+      UpdateUnitsInfo();
 
       STOPUNDO
    }
@@ -1643,7 +1656,7 @@ STDMETHODIMP Ramp::put_HeightTop(float newVal)
 STDMETHODIMP Ramp::get_WidthBottom(float *pVal)
 {
    *pVal = m_d.m_widthbottom;
-
+   UpdateUnitsInfo();
    return S_OK;
 }
 
@@ -1655,6 +1668,7 @@ STDMETHODIMP Ramp::put_WidthBottom(float newVal)
 
       m_d.m_widthbottom = newVal;
       dynamicVertexBufferRegenerate = true;
+      UpdateUnitsInfo();
 
       STOPUNDO
    }
@@ -1665,6 +1679,7 @@ STDMETHODIMP Ramp::put_WidthBottom(float newVal)
 STDMETHODIMP Ramp::get_WidthTop(float *pVal)
 {
    *pVal = m_d.m_widthtop;
+   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -1677,6 +1692,7 @@ STDMETHODIMP Ramp::put_WidthTop(float newVal)
 
       m_d.m_widthtop = newVal;
       dynamicVertexBufferRegenerate = true;
+      UpdateUnitsInfo();
 
       STOPUNDO
    }

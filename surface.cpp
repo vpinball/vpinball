@@ -1527,6 +1527,13 @@ HRESULT Surface::InitPostLoad()
    return S_OK;
 }
 
+void Surface::UpdateUnitsInfo()
+{
+   char tbuf[64] = { 0 };
+   sprintf_s(tbuf, "TopHeight: %.03f | BottomHeight: %0.3f", g_pvp->ConvertToUnit(m_d.m_heighttop), g_pvp->ConvertToUnit(m_d.m_heightbottom));
+   g_pvp->SetStatusBarUnitInfo(tbuf);
+}
+
 STDMETHODIMP Surface::get_HasHitEvent(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fHitEvent);
@@ -1651,6 +1658,7 @@ STDMETHODIMP Surface::put_ImageAlignment(ImageAlignment newVal)
 STDMETHODIMP Surface::get_HeightBottom(float *pVal)
 {
    *pVal = m_d.m_heightbottom;
+   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -1660,6 +1668,7 @@ STDMETHODIMP Surface::put_HeightBottom(float newVal)
    STARTUNDO
 
    m_d.m_heightbottom = newVal;
+   UpdateUnitsInfo();
 
    STOPUNDO
 
@@ -1669,7 +1678,7 @@ STDMETHODIMP Surface::put_HeightBottom(float newVal)
 STDMETHODIMP Surface::get_HeightTop(float *pVal)
 {
    *pVal = m_d.m_heighttop;
-
+   UpdateUnitsInfo();
    return S_OK;
 }
 
@@ -1678,6 +1687,7 @@ STDMETHODIMP Surface::put_HeightTop(float newVal)
    STARTUNDO
 
    m_d.m_heighttop = newVal;
+   UpdateUnitsInfo();
 
    STOPUNDO
 

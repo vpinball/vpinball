@@ -796,6 +796,7 @@ STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Flasher::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
+   g_pvp->SetStatusBarUnitInfo("");
 
    return S_OK;
 }

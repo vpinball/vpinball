@@ -121,6 +121,7 @@ public:
       virtual ItemTypeEnum HitableGetItemType() { return eItemFlipper; }
 
       void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
+      void UpdateUnitsInfo();
 
       void WriteRegDefaults();
 

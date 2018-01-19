@@ -720,12 +720,16 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
           {
               if(m_prevSelection != mainItem)
               {
-                  char tbuf[31];
+                  char tbuf[64];
                   DragPoint *pMainPoint = (DragPoint*)mainItem;
                   DragPoint *mSecondPoint = (DragPoint*)m_prevSelection;
                   float dx = fabsf(pMainPoint->m_v.x - mSecondPoint->m_v.x);
                   float dy = fabsf(pMainPoint->m_v.y - mSecondPoint->m_v.y);
-                  sprintf_s(tbuf, "DX: %.3f | DY: %.3f", g_pvp->ConvertToUnit(dx), g_pvp->ConvertToUnit(dy));
+                  float dz = fabsf(pMainPoint->m_v.z - mSecondPoint->m_v.z);
+                  float dh = fabsf(pMainPoint->m_calcHeight - mSecondPoint->m_calcHeight);
+
+                  sprintf_s(tbuf, "DX: %.3f | DY: %.3f | DZ: %.3f | CalcHeight: %.3f", g_pvp->ConvertToUnit(dx), g_pvp->ConvertToUnit(dy), 
+                                                                                       g_pvp->ConvertToUnit(dz), g_pvp->ConvertToUnit(dh));
                   g_pvp->SetStatusBarUnitInfo(tbuf);
               }
           }

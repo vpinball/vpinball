@@ -175,11 +175,8 @@ public:
    STDMETHOD(get_Z)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Z)(/*[in]*/ float newVal);
    STDMETHOD(get_CalcHeight)(/*[out, retval]*/ float *pVal);
-   STDMETHODIMP get_XUnit(float *pVal);
-   STDMETHODIMP get_YUnit(float *pVal);
 
    Vertex3Ds m_v;
-   Vertex3Ds m_vUnit;
    float m_calcHeight;
    float m_texturecoord;
    IHaveDragPoints *m_pihdp;

@@ -87,6 +87,13 @@ Gate::~Gate()
    }
 }
 
+void Gate::UpdateUnitsInfo()
+{
+   char tbuf[128] = { 0 };
+   sprintf_s(tbuf, "Length: %.3f | Height: %.3f", g_pvp->ConvertToUnit(m_d.m_length), g_pvp->ConvertToUnit(m_d.m_height));
+   g_pvp->SetStatusBarUnitInfo(tbuf);
+}
+
 HRESULT Gate::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    HRESULT hr = S_OK;
@@ -828,6 +835,7 @@ STDMETHODIMP Gate::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Gate::get_Length(float *pVal)
 {
    *pVal = m_d.m_length;
+   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -837,6 +845,7 @@ STDMETHODIMP Gate::put_Length(float newVal)
    STARTUNDO
 
       m_d.m_length = newVal;
+   UpdateUnitsInfo();
 
    STOPUNDO
 
@@ -846,7 +855,7 @@ STDMETHODIMP Gate::put_Length(float newVal)
 STDMETHODIMP Gate::get_Height(float *pVal)
 {
    *pVal = m_d.m_height;
-
+   UpdateUnitsInfo();
    return S_OK;
 }
 
@@ -855,6 +864,7 @@ STDMETHODIMP Gate::put_Height(float newVal)
    STARTUNDO
 
       m_d.m_height = newVal;
+   UpdateUnitsInfo();
 
    STOPUNDO
 
