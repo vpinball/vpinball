@@ -3,6 +3,7 @@
 
 unsigned long long tinymt64state[2] = { 'T', 'M' };
 
+
 float sz2f(char *sz)
 {
    WCHAR wzT[256];

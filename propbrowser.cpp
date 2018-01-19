@@ -642,8 +642,8 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
    for (int i = 1; i < m_pvsel->Size(); i++)
    {
       CComVariant varCheck;
-
-      hr = m_pvsel->ElementAt(i)->GetDispatch()->Invoke(
+      ISelect *ptr = m_pvsel->ElementAt(i);
+      hr = ptr->GetDispatch()->Invoke(
          dispid, IID_NULL,
          LOCALE_USER_DEFAULT,
          DISPATCH_PROPERTYGET,
@@ -660,6 +660,8 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
       {
          hrEqual = VarCmp(&var, &varCheck, 0x409, 0);
       }
+      if(ptr->GetItemType() == eItemDragPoint && m_prevSelection!=ptr)
+          m_prevSelection = ptr;
 
       if (hrEqual != VARCMP_EQ)
       {
@@ -711,6 +713,23 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
       else
          SetWindowText(hwndControl, "");
 
+      if(m_pvsel->Size() > 1)
+      {
+          ISelect *mainItem = m_pvsel->ElementAt(0);
+          if(mainItem->GetItemType() == eItemDragPoint)
+          {
+              if(m_prevSelection != mainItem)
+              {
+                  char tbuf[31];
+                  DragPoint *pMainPoint = (DragPoint*)mainItem;
+                  DragPoint *mSecondPoint = (DragPoint*)m_prevSelection;
+                  float dx = fabsf(pMainPoint->m_v.x - mSecondPoint->m_v.x);
+                  float dy = fabsf(pMainPoint->m_v.y - mSecondPoint->m_v.y);
+                  sprintf_s(tbuf, "DX: %.3f | DY: %.3f", g_pvp->ConvertToUnit(dx), g_pvp->ConvertToUnit(dy));
+                  g_pvp->SetStatusBarUnitInfo(tbuf);
+              }
+          }
+      }
       // re-select the text if it was selected on entry
       if (reSel)
          SendMessage(hwndControl, EM_SETSEL, (WPARAM)0, (LPARAM)-1);

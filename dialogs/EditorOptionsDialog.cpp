@@ -87,6 +87,16 @@ BOOL EditorOptionsDialog::OnInitDialog()
 
     int startVPfileDialog = GetRegIntWithDefault("Editor", "SelectTableOnStart", 1);
     SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, startVPfileDialog ? BST_CHECKED : BST_UNCHECKED, 0);
+
+    int units;
+    HRESULT hr = GetRegInt("Editor", "Units", &units);
+    if(hr != S_OK)
+        units = 0;
+    SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"VPUnits");
+    SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Inches");
+    SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Millimeters");
+    SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_SETCURSEL, units, 0);
+
     return TRUE;
 }
 
@@ -214,6 +224,12 @@ void EditorOptionsDialog::OnOK()
 
     checked = (SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
     SetRegValueBool("Editor", "SelectTableOnStart", checked);
+
+    HWND hwndUnits = GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd();
+    size_t units = SendMessage(hwndUnits, CB_GETCURSEL, 0, 0);
+    if(units == LB_ERR)
+        units = 0;
+    SetRegValue("Editor", "Units", REG_DWORD, &units, 4);
 
     CDialog::OnOK();
 }

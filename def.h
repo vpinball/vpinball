@@ -339,6 +339,25 @@ inline void RemoveSpaces(char* source)
 }
 
 //
+__forceinline float vpUnitsToInches(float value)
+{
+    return value * 0.02125f;
+}
+
+__forceinline float inchesToVPUnits(float value)
+{
+    return value / 0.02125f;
+}
+
+__forceinline float vpUnitsToMillimeters(float value)
+{
+    return value * 0.53976f;
+}
+
+__forceinline float millimetersToVPUnits(float value)
+{
+    return value / 0.53976f;
+}
 
 float sz2f(char *sz);
 void f2sz(const float f, char *sz);
@@ -354,5 +373,6 @@ HRESULT OpenURL(char *szURL);
 
 WCHAR *MakeWide(char *sz);
 char *MakeChar(WCHAR *wz);
+
 
 #endif/* !__DEF_H__ */
