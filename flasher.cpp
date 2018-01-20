@@ -1373,15 +1373,15 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
        if (alphatest)
          g_pplayer->m_pin3d.EnableAlphaTestReference(0x80);*/
 
-       //const float width = g_pplayer->m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width;
-       pd3dDevice->DMDShader->SetTechnique("basic_DMD_tiny_world"); //width*DMDwidth / (float)m_dmdx <= 3.74f ? "basic_DMD_tiny" : (width*DMDwidth / (float)m_dmdx <= 7.49f ? "basic_DMD" : "basic_DMD_big")); // use different smoothing functions for LED/Plasma emulation (rule of thumb here: up to quarter width of 1920HD = tiny, up to half width of 1920HD = normal, up to full width of 1920HD = big)
+       //const float width = g_pplayer->m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
+       pd3dDevice->DMDShader->SetTechnique("basic_DMD_world"); //!! DMD_UPSCALE ?? -> should just work
 
        pd3dDevice->DMDShader->SetVector("vColor_Intensity", &color);
 
 #ifdef DMD_UPSCALE
-       const D3DXVECTOR4 r((float)(g_pplayer->m_dmdx*3), (float)(g_pplayer->m_dmdy*3), m_d.m_modulate_vs_add, 1.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+       const D3DXVECTOR4 r((float)(g_pplayer->m_dmdx*3), (float)(g_pplayer->m_dmdy*3), m_d.m_modulate_vs_add, 0.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
 #else
-       const D3DXVECTOR4 r((float)g_pplayer->m_dmdx, (float)g_pplayer->m_dmdy, m_d.m_modulate_vs_add, 1.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+       const D3DXVECTOR4 r((float)g_pplayer->m_dmdx, (float)g_pplayer->m_dmdy, m_d.m_modulate_vs_add, 0.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
 #endif
        pd3dDevice->DMDShader->SetVector("vRes_Alpha", &r);
 
