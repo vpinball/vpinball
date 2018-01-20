@@ -1,5 +1,8 @@
 VP 10.5.0 Changelog
 ------------------------
+
+- improve quality of internal DMD shader, now it's almost resolution independent, especially when using it via flashers (e.g. FSS tables and the like)
+
 - add units conversion feature from VPUnits -> inches/millimeters in the status bar for control points. 
   If you select two control points of a wall/ramp the status bar shows the distance of X/Y in the selected unit.
   The unit used for the conversion can be set in the editor options dialog.
