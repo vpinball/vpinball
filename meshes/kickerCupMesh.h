@@ -1,6 +1,6 @@
 const unsigned int kickerCupNumVertices=373;
 const unsigned int kickerCupNumIndices=774;
-const Vertex3D_NoTex2 kickerCup[373]=
+const Vertex3D_NoTex2 kickerCupMesh[373]=
 {
 { 0.160498f,-0.969978f,-0.437316f, -0.132000f,0.991300f,-0.000000f, 0.473903f,0.120135f},
 { 0.000000f,-0.991344f,-1.023521f, -0.132000f,0.991300f,-0.000000f, 0.500000f,0.403981f},
