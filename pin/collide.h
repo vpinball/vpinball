@@ -83,7 +83,7 @@ public:
       m_pfe(NULL), m_threshold(0.f), m_pfedebug(NULL), m_pe(NULL), m_objHitEvent(NULL) {}
    virtual ~HitObject() {}
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged
    virtual int GetType() const = 0;
    virtual void Collide(CollisionEvent& coll) = 0;
    virtual void Contact(CollisionEvent& coll, const float dtime)  { }  // apply contact forces for the given time interval
@@ -136,13 +136,13 @@ public:
       CalcNormal();
    }
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eLineSeg; }
    virtual void Collide(CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);
    virtual void CalcHitRect();
 
-   float HitTestBasic(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid);
+   float HitTestBasic(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const;
    void CalcNormal();
    void CalcLength();
 
@@ -161,14 +161,14 @@ public:
       m_rcHitRect.zhigh = zhigh;
    }
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eCircle; }
    virtual void Collide(CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);
    virtual void CalcHitRect();
 
    float HitTestBasicRadius(const Ball * const pball, const float dtime, CollisionEvent& coll,
-                            const bool direction, const bool lateral, const bool rigid);
+                            const bool direction, const bool lateral, const bool rigid) const;
 
    Vertex2D center;
    float radius;
@@ -186,7 +186,7 @@ public:
       m_rcHitRect.zhigh = zhigh;
    }
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eJoint; }
    virtual void Collide(CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);
@@ -202,7 +202,7 @@ public:
    HitPoint(const Vertex3Ds& p) : m_p(p) {}
    HitPoint(const float x, const float y, const float z) : m_p(Vertex3Ds(x,y,z)) {}
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return ePoint; }
    virtual void Collide(CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);

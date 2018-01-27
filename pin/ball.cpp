@@ -214,7 +214,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const flo
    }
 }
 
-float Ball::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll)
+float Ball::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll) const
 {
    Ball * const pball = const_cast<Ball*>(pball_); // HACK; needed below
 

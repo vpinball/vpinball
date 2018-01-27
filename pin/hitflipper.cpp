@@ -382,7 +382,7 @@ float FlipperAnimObject::GetHitTime() const
 #define LeftFace 1
 #define RightFace 0
 
-float HitFlipper::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
+float HitFlipper::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_flipperanim.m_fEnabled) return -1;
 
@@ -401,7 +401,7 @@ float HitFlipper::HitTest(const Ball * const pball, const float dtime, Collision
    hittime = HitTestFlipperFace(pball, dtime, coll, !lastface); //second face
    if (hittime >= 0.f)
    {
-      m_flipperanim.m_lastHitFace = !lastface;	// change this face to check first
+      (const_cast<HitFlipper*>(this))->m_flipperanim.m_lastHitFace = !lastface;	// change this face to check first // HACK
       return hittime;
    }
 
@@ -425,7 +425,7 @@ float HitFlipper::HitTest(const Ball * const pball, const float dtime, Collision
       return -1.0f;	// no hits
 }
 
-float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime, CollisionEvent& coll) // replacement
+float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime, CollisionEvent& coll) const // replacement
 {
    const float angleCur = m_flipperanim.m_angleCur;
    float anglespeed = m_flipperanim.m_anglespeed;		// rotation rate
@@ -575,7 +575,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime,
 }
 
 
-float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool face)
+float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool face) const
 {
    const float angleCur = m_flipperanim.m_angleCur;
    float anglespeed = m_flipperanim.m_anglespeed;				// rotation rate
