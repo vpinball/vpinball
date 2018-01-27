@@ -1,6 +1,8 @@
 VP 10.5.0 Changelog
 ------------------------
 
+- fix kicker export bug
+
 - improve quality of internal DMD shader, now it's almost resolution independent, especially when using it via flashers (e.g. FSS tables and the like)
 
 - add units conversion feature from VPUnits -> inches/millimeters in the status bar for control points. 
