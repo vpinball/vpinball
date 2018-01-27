@@ -34,8 +34,8 @@ Rubber::~Rubber()
 
 void Rubber::UpdateUnitsInfo()
 {
-   char tbuf[128] = { 0 };
-   sprintf_s(tbuf, "Height: %.3f | Thickness: %.3f", g_pvp->ConvertToUnit(m_d.m_height), g_pvp->ConvertToUnit(m_d.m_thickness));
+   char tbuf[128];
+   sprintf_s(tbuf, "Height: %.3f | Thickness: %.3f", g_pvp->ConvertToUnit(m_d.m_height), g_pvp->ConvertToUnit((float)m_d.m_thickness));
    g_pvp->SetStatusBarUnitInfo(tbuf);
 }
 

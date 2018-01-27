@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-BOOL Exists(char* filePath)
+BOOL Exists(const char* const filePath)
 {
 	//This will get the file attributes bitlist of the file
 	DWORD fileAtt = GetFileAttributesA(filePath);
@@ -13,7 +13,7 @@ BOOL Exists(char* filePath)
 	return ((fileAtt & FILE_ATTRIBUTE_DIRECTORY) == 0);
 }
 
-void ExtensionFromFilename(char *szfilename, char *szextension)
+void ExtensionFromFilename(char * const szfilename, char * const szextension)
 {
    const int len = lstrlen(szfilename);
 

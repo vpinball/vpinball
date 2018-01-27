@@ -7,11 +7,11 @@ class BumperAnimObject : public AnimObject
 public:
    virtual void Animate() { }
 
+   Vertex3Ds m_hitBallPosition;
    float m_ringAnimOffset;
    bool m_fHitEvent;
    bool m_fDisabled;
    bool m_fVisible;
-   Vertex3Ds m_hitBallPosition;
 };
 
 class BumperHitCircle : public HitCircle
@@ -84,6 +84,7 @@ public:
    Hit3DPoly(Vertex3Ds * const rgv, const int count);
    Hit3DPoly(const float x, const float y, const float z, const float r, const int sections); // creates a circular hit poly
    virtual ~Hit3DPoly();
+
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return e3DPoly; }
    virtual void Collide(CollisionEvent& coll);
@@ -102,13 +103,14 @@ class HitTriangle : public HitObject
 public:
    HitTriangle(const Vertex3Ds rgv[3]);    // vertices in counterclockwise order
    virtual ~HitTriangle() {}
+
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eTriangle; }
    virtual void Collide(CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);
    virtual void CalcHitRect();
 
-   bool IsDegenerate() const       { return m_normal.IsZero(); }
+   bool IsDegenerate() const { return m_normal.IsZero(); }
 
    Vertex3Ds m_rgv[3];
    Vertex3Ds m_normal;
@@ -160,12 +162,9 @@ class HitSpinner : public HitObject
 public:
    HitSpinner(Spinner * const pspinner, const float height);
 
-   virtual int GetType() const { return eSpinner; }
-
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
-
+   virtual int GetType() const { return eSpinner; }
    virtual void Collide(CollisionEvent& coll);
-
    virtual void CalcHitRect();
 
    virtual AnimObject *GetAnimObject() { return &m_spinneranim; }
@@ -200,10 +199,8 @@ class HitGate : public HitObject
 public:
    HitGate(Gate * const pgate, const float height);
 
-   virtual int GetType() const { return eGate; }
-
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
-
+   virtual int GetType() const { return eGate; }
    virtual void Collide(CollisionEvent& coll);
    virtual void CalcHitRect();
 
@@ -219,9 +216,8 @@ class TriggerLineSeg : public LineSeg
 {
 public:
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
-   virtual void Collide(CollisionEvent& coll);
-
    virtual int GetType() const { return eTrigger; }
+   virtual void Collide(CollisionEvent& coll);
 
    Trigger *m_ptrigger;
 };
@@ -235,29 +231,23 @@ public:
    }
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
-   virtual void Collide(CollisionEvent& coll);
-
    virtual int GetType() const { return eTrigger; }
+   virtual void Collide(CollisionEvent& coll);
 
    Trigger *m_ptrigger;
 };
 
-/*
- * Arbitrary line segment in 3D space.
- *
- * Is implemented by transforming a HitLineZ to the desired orientation.
- */
+// Arbitrary line segment in 3D space.
+// Implemented by transforming a HitLineZ to the desired orientation.
 class HitLine3D : public HitLineZ
 {
 public:
    HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2);
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
-   virtual void Collide(CollisionEvent& coll);
-
-   virtual void CalcHitRect();
-
    virtual int GetType() const { return e3DLine; }
+   virtual void Collide(CollisionEvent& coll);
+   virtual void CalcHitRect();
 
 private:
    Matrix3 matTrans;

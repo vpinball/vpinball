@@ -143,7 +143,7 @@ public:
 	virtual void Delete() {IEditable::Delete();} \
 	virtual void Uncreate() {IEditable::Uncreate();} \
 	virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey); \
-	virtual ItemTypeEnum GetItemType() {return ItemType;} \
+	virtual ItemTypeEnum GetItemType() const { return ItemType; } \
 	virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey); \
 	virtual HRESULT InitPostLoad(); \
 	virtual BOOL LoadToken(int id, BiffReader *pbr); \
@@ -204,7 +204,7 @@ public:
    virtual void SetDefaults(bool fromMouseClick) = 0;
    virtual IScriptable *GetScriptable() = 0;
    virtual IFireEvents *GetIFireEvents() = 0;
-   virtual ItemTypeEnum GetItemType() = 0;
+   virtual ItemTypeEnum GetItemType() const = 0;
 
    virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D) {}
    virtual void WriteRegDefaults() {}

@@ -79,7 +79,7 @@ BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list)
    return fTrue;
 }
 
-void PinDirectSound::InitDirectSound(HWND hwnd, bool IsBackglass)
+void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
 {
 #ifdef DEBUG_NO_SOUND
    return;

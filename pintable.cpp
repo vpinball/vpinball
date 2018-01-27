@@ -6999,11 +6999,6 @@ void PinTable::PreRender(Sur * const psur)
 {
 }
 
-ItemTypeEnum PinTable::GetItemType()
-{
-   return eItemTable;
-}
-
 HRESULT PinTable::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);

@@ -74,7 +74,7 @@ public:
 
    virtual void MoveOffset(const float dx, const float dy);
 
-   virtual ItemTypeEnum GetItemType() { return eItemLightCenter; }
+   virtual ItemTypeEnum GetItemType() const { return eItemLightCenter; }
 
    Light *m_plight;
 };

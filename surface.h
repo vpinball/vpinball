@@ -151,6 +151,8 @@ private:
 
    void FreeBuffers();
 
+   void UpdateUnitsInfo();
+
    PinTable *m_ptable;
    BSTR m_bstrName;
 
@@ -216,7 +218,6 @@ public:
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_Threshold)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Threshold)(/*[in]*/ float newVal);
-   void UpdateUnitsInfo();
    STDMETHOD(get_HasHitEvent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_HasHitEvent)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Disabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);

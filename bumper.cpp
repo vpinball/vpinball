@@ -437,29 +437,26 @@ void Bumper::RenderCap(RenderDevice *pd3dDevice, const Material * const capMater
 
 void Bumper::UpdateSkirt(RenderDevice *pd3dDevice, const bool doCalculation)
 {
-   Vertex3D_NoTex2 *buf;
    const float SKIRT_TILT = 5.0f;
+
    const float scalexy = m_d.m_radius*2.0f;
    float rotx=0.0f, roty=0.0f;
-   float hitx, hity;
-   float dy,dx, skirtA;
 
    if (doCalculation)
    {
-      hitx = m_pbumperhitcircle->m_bumperanim.m_hitBallPosition.x;
-      hity = m_pbumperhitcircle->m_bumperanim.m_hitBallPosition.y;
-      dy = fabsf(hity - m_d.m_vCenter.y);
-      if (dy == 0.0)
-         dy = 0.000001;
-      dx = fabsf(hitx - m_d.m_vCenter.x);
-      skirtA = atanf(dx / dy);
+      const float hitx = m_pbumperhitcircle->m_bumperanim.m_hitBallPosition.x;
+      const float hity = m_pbumperhitcircle->m_bumperanim.m_hitBallPosition.y;
+      float dy = fabsf(hity - m_d.m_vCenter.y);
+      if (dy == 0.0f)
+         dy = 0.000001f;
+      const float dx = fabsf(hitx - m_d.m_vCenter.x);
+      const float skirtA = atanf(dx / dy);
       rotx = cosf(skirtA)*SKIRT_TILT;
-      if (m_d.m_vCenter.y < hity)
-         rotx *= -1.0f;
-
       roty = sinf(skirtA)*SKIRT_TILT;
+      if (m_d.m_vCenter.y < hity)
+         rotx = -rotx;
       if (m_d.m_vCenter.x > hitx)
-         roty *= -1.0f;
+         roty = -roty;
    }
 
    Matrix3D tempMatrix, rMatrix;
@@ -473,7 +470,7 @@ void Bumper::UpdateSkirt(RenderDevice *pd3dDevice, const bool doCalculation)
    tempMatrix.RotateXMatrix(ANGTORAD(rotx));
    tempMatrix.Multiply(rMatrix, rMatrix);
 
-
+   Vertex3D_NoTex2 *buf;
    m_socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    for (int i = 0; i < bumperSocketNumVertices; i++)
    {
@@ -482,7 +479,7 @@ void Bumper::UpdateSkirt(RenderDevice *pd3dDevice, const bool doCalculation)
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
       // scale z by 0.6 to make the skirt a bit more flat
-      buf[i].z = (0.6f*vert.z*m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight + 5.0f;
+      buf[i].z = (0.6f*vert.z*m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (m_baseHeight + 5.0f);
 
       vert = Vertex3Ds(bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz);
       vert = rMatrix.MultiplyVectorNoTranslate(vert);
@@ -493,7 +490,6 @@ void Bumper::UpdateSkirt(RenderDevice *pd3dDevice, const bool doCalculation)
       buf[i].tv = bumperSocket[i].tv;
    }
    m_socketVertexBuffer->unlock();
-
 }
 
 void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
@@ -577,7 +573,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       }
       if (m_skirtAnimate)
       {
-         m_skirtCounter += 1.0f*diff_time_msec;
+         m_skirtCounter += /*1.0f**/diff_time_msec;
          if (m_skirtCounter > 160.0f)
          {
             m_skirtAnimate = false;
