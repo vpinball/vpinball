@@ -1529,7 +1529,7 @@ HRESULT Surface::InitPostLoad()
 
 void Surface::UpdateUnitsInfo()
 {
-   char tbuf[64] = { 0 };
+   char tbuf[64];
    sprintf_s(tbuf, "TopHeight: %.03f | BottomHeight: %0.3f", g_pvp->ConvertToUnit(m_d.m_heighttop), g_pvp->ConvertToUnit(m_d.m_heightbottom));
    g_pvp->SetStatusBarUnitInfo(tbuf);
 }

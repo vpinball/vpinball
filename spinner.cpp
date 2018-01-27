@@ -42,7 +42,7 @@ Spinner::~Spinner()
 
 void Spinner::UpdateUnitsInfo()
 {
-   char tbuf[128] = { 0 };
+   char tbuf[128];
    sprintf_s(tbuf, "Length: %.3f | Height: %.3f", g_pvp->ConvertToUnit(m_d.m_length), g_pvp->ConvertToUnit(m_d.m_height));
    g_pvp->SetStatusBarUnitInfo(tbuf);
 }

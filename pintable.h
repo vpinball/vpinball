@@ -381,7 +381,7 @@ public:
 
    // IEditable (mostly bogus for now)
    virtual void PreRender(Sur * const psur);
-   virtual ItemTypeEnum GetItemType();
+   virtual ItemTypeEnum GetItemType() const { return eItemTable; }
    virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    virtual HRESULT InitPostLoad();
    virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);

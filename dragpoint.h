@@ -125,7 +125,7 @@ public:
    virtual void OnLButtonUp(int x, int y);
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
-   virtual ItemTypeEnum GetItemType() { return eItemDragPoint; }
+   virtual ItemTypeEnum GetItemType() const { return eItemDragPoint; }
 
    // Multi-object manipulation
    virtual void GetCenter(Vertex2D * const pv) const;

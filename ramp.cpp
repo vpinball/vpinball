@@ -44,7 +44,7 @@ Ramp::~Ramp()
 
 void Ramp::UpdateUnitsInfo()
 {
-   char tbuf[128] = { 0 };
+   char tbuf[128];
    sprintf_s(tbuf, "TopH: %.03f | BottomH: %0.3f | TopW: %.03f | BottomW: %.03f | LeftW: %.03f | RightW: %.3f", g_pvp->ConvertToUnit(m_d.m_heighttop), g_pvp->ConvertToUnit(m_d.m_heightbottom), 
                                                                                   g_pvp->ConvertToUnit(m_d.m_widthtop), g_pvp->ConvertToUnit(m_d.m_widthbottom),
                                                                                   g_pvp->ConvertToUnit(m_d.m_leftwallheight), g_pvp->ConvertToUnit(m_d.m_rightwallheight));

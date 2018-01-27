@@ -642,7 +642,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
    for (int i = 1; i < m_pvsel->Size(); i++)
    {
       CComVariant varCheck;
-      ISelect *ptr = m_pvsel->ElementAt(i);
+      ISelect *const ptr = m_pvsel->ElementAt(i);
       hr = ptr->GetDispatch()->Invoke(
          dispid, IID_NULL,
          LOCALE_USER_DEFAULT,
@@ -690,7 +690,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
       {
          DWORD a, b;
          SendMessage(hwndControl, EM_GETSEL, (WPARAM)&a, (WPARAM)&b);
-         LRESULT len = SendMessage(hwndControl, WM_GETTEXTLENGTH, 0, 0);
+         const LRESULT len = SendMessage(hwndControl, WM_GETTEXTLENGTH, 0, 0);
          if (a == 0 && b == len)
             reSel = true;
       }
@@ -703,7 +703,6 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
             wzT = V_BSTR(&varResult);
 
             char szT[512 + 1];
-
             WideCharToMultiByte(CP_ACP, 0, wzT, -1, szT, 512, NULL, NULL);
 
             SetWindowText(hwndControl, szT);
@@ -715,20 +714,20 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 
       if(m_pvsel->Size() > 1)
       {
-          ISelect *mainItem = m_pvsel->ElementAt(0);
+          const ISelect *const mainItem = m_pvsel->ElementAt(0);
           if(mainItem->GetItemType() == eItemDragPoint)
           {
               if(m_prevSelection != mainItem)
               {
-                  char tbuf[64];
-                  DragPoint *pMainPoint = (DragPoint*)mainItem;
-                  DragPoint *mSecondPoint = (DragPoint*)m_prevSelection;
-                  float dx = fabsf(pMainPoint->m_v.x - mSecondPoint->m_v.x);
-                  float dy = fabsf(pMainPoint->m_v.y - mSecondPoint->m_v.y);
-                  float dz = fabsf(pMainPoint->m_v.z - mSecondPoint->m_v.z);
-                  float dh = fabsf(pMainPoint->m_calcHeight - mSecondPoint->m_calcHeight);
+                  const DragPoint *const pMainPoint = (DragPoint*)mainItem;
+                  const DragPoint *const mSecondPoint = (DragPoint*)m_prevSelection;
+                  const float dx = fabsf(pMainPoint->m_v.x - mSecondPoint->m_v.x);
+                  const float dy = fabsf(pMainPoint->m_v.y - mSecondPoint->m_v.y);
+                  const float dz = fabsf(pMainPoint->m_v.z - mSecondPoint->m_v.z);
+                  const float dh = fabsf(pMainPoint->m_calcHeight - mSecondPoint->m_calcHeight);
 
-                  sprintf_s(tbuf, "DX: %.3f | DY: %.3f | DZ: %.3f | CalcHeight: %.3f", g_pvp->ConvertToUnit(dx), g_pvp->ConvertToUnit(dy), 
+                  char tbuf[64];
+                  sprintf_s(tbuf, "DX: %.3f | DY: %.3f | DZ: %.3f | CalcHeight: %.3f", g_pvp->ConvertToUnit(dx), g_pvp->ConvertToUnit(dy),
                                                                                        g_pvp->ConvertToUnit(dz), g_pvp->ConvertToUnit(dh));
                   g_pvp->SetStatusBarUnitInfo(tbuf);
               }

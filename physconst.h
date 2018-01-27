@@ -29,6 +29,21 @@
  * Therefore, Earth gravity in VP units can be computed as
  *   g  =  9.81 m/s^2  =  1.81751 U/T^2
  */
+/*
+ * nFozzy explanation:
+ * The inch conversion is nice because VP units are somewhat based on inches so you can use fractions:
+ * VP units = (inches * 17) / 800
+ * Inches = (VP units * 800) / 17
+ * 
+ * I have to switch between metric and VP units when modeling / rendering and I do that with these scales:
+ * CM to VP units: (50 / 2.69875)
+ * VP units to CM: (2.69875 / 50)
+ * 
+ * I’m trying to move to this sort of thing in the future, modeling in pseudo-inches because Maya’s native inch support is for shits
+ * Working inches Scale: 1
+ * Scale up to CM for rendering: 2.54
+ * Scale way up to VPu for export: (1*800)/17
+ */
 
 #define GRAVITYCONST    1.81751f
 

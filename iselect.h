@@ -81,7 +81,7 @@ public:
 
    virtual IDispatch *GetDispatch() = 0;
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane) = 0;
-   virtual ItemTypeEnum GetItemType() = 0;
+   virtual ItemTypeEnum GetItemType() const = 0;
 
    virtual void Delete() = 0;
    virtual void Uncreate() = 0;

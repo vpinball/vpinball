@@ -97,7 +97,7 @@ Flipper::~Flipper()
 
 void Flipper::UpdateUnitsInfo()
 {
-   char tbuf[128] = { 0 };
+   char tbuf[128];
    sprintf_s(tbuf, "Height: %.3f | Length: %.3f | RubberHeight: %.3f | RubberWidth: %.3f", g_pvp->ConvertToUnit(m_d.m_height), g_pvp->ConvertToUnit(m_d.m_FlipperRadiusMax),
                                                                                            g_pvp->ConvertToUnit(m_d.m_rubberheight), g_pvp->ConvertToUnit(m_d.m_rubberwidth));
    g_pvp->SetStatusBarUnitInfo(tbuf);
@@ -252,9 +252,7 @@ void Flipper::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-   {
       pvht->AddElement(pht);
-   }
 }
 
 void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
@@ -1281,7 +1279,6 @@ STDMETHODIMP Flipper::put_EOSTorqueAngle(float newVal)
     return S_OK;
 }
 
-
 STDMETHODIMP Flipper::get_StartAngle(float *pVal)
 {
    if (m_phitflipper)
@@ -1741,7 +1738,7 @@ STDMETHODIMP Flipper::put_Friction(float newVal)
    else
    {
       STARTUNDO
-         m_d.m_friction = newVal;
+      m_d.m_friction = newVal;
       STOPUNDO
    }
 

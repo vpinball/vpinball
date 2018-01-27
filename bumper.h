@@ -155,10 +155,10 @@ private:
    PropertyPane *m_propVisual;
 
    float   m_baseHeight;
+   float   m_skirtCounter;
+   bool    m_skirtAnimate;
    bool    m_ringDown;
    bool    m_ringAnimate;
-   bool    m_skirtAnimate;
-   float   m_skirtCounter;
 
    // IBumper
 public:
