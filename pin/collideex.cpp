@@ -23,7 +23,7 @@ void BumperHitCircle::Collide(CollisionEvent& coll)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-float LineSegSlingshot::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
+float LineSegSlingshot::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_fEnabled) return -1.0f;
 
@@ -135,7 +135,7 @@ HitGate::HitGate(Gate * const pgate, const float height)
    m_twoWay = false;
 }
 
-float HitGate::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
+float HitGate::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_fEnabled) return -1.0f;
 
@@ -314,7 +314,7 @@ HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
    m_spinneranim.m_fVisible = pspinner->m_d.m_fVisible;
 }
 
-float HitSpinner::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
+float HitSpinner::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_fEnabled) return -1.0f;
 
@@ -483,7 +483,7 @@ Hit3DPoly::~Hit3DPoly()
    delete[] m_rgv;
 }
 
-float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
+float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_fEnabled) return -1.0f;
 
@@ -717,7 +717,7 @@ HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
    m_scatter = 0.f;
 }
 
-float HitTriangle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
+float HitTriangle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_fEnabled) return -1.0f;
 
@@ -984,7 +984,7 @@ HitLine3D::HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2)
    m_rcHitRect.zhigh = max(v1.z, v2.z);
 }
 
-float HitLine3D::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll)
+float HitLine3D::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll) const
 {
    if (!m_fEnabled)
       return -1.0f;
@@ -998,15 +998,15 @@ float HitLine3D::HitTest(const Ball * pball_, const float dtime, CollisionEvent&
    pball->m_vel = matTrans * pball->m_vel;
    // and update z bounds of LineZ with transformed coordinates
    const Vertex2D oldz(m_rcHitRect.zlow, m_rcHitRect.zhigh);
-   m_rcHitRect.zlow = m_zlow;
-   m_rcHitRect.zhigh = m_zhigh;
+   (const_cast<HitLine3D*>(this))->m_rcHitRect.zlow = m_zlow;   // HACK; needed below // evil cast to non-const, should actually change the stupid HitLineZ to have explicit z coordinates!
+   (const_cast<HitLine3D*>(this))->m_rcHitRect.zhigh = m_zhigh; // dto.
 
    const float hittime = HitLineZ::HitTest(pball, dtime, coll);
 
    pball->m_pos = old_pos; // see above
    pball->m_vel = old_vel;
-   m_rcHitRect.zlow = oldz.x;
-   m_rcHitRect.zhigh = oldz.y;
+   (const_cast<HitLine3D*>(this))->m_rcHitRect.zlow = oldz.x;   // HACK
+   (const_cast<HitLine3D*>(this))->m_rcHitRect.zhigh = oldz.y;  // dto.
 
    if (hittime >= 0.f)       // transform hit normal back to world coordinate system
       coll.hitnormal = matTrans.MultiplyVectorT(coll.hitnormal);
@@ -1060,7 +1060,7 @@ void LightSeqAnimObject::Animate()
 }
 
 
-float TriggerLineSeg::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
+float TriggerLineSeg::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_ptrigger->m_hitEnabled) return -1.0f;
 
@@ -1097,7 +1097,7 @@ void TriggerLineSeg::Collide(CollisionEvent& coll)
 }
 
 
-float TriggerHitCircle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
+float TriggerHitCircle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
    return HitTestBasicRadius(pball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
 }

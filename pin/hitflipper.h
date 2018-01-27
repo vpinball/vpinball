@@ -90,14 +90,14 @@ public:
       float zlow, float zhigh, float strength, float mass, float returnRatio);
    ~HitFlipper();
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eFlipper; }
    virtual void Collide(CollisionEvent& coll);
    virtual void CalcHitRect();
    virtual AnimObject *GetAnimObject() { return &m_flipperanim; }
 
-   float HitTestFlipperFace(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool face1);
-   float HitTestFlipperEnd(const Ball * const pball, const float dtime, CollisionEvent& coll);
+   float HitTestFlipperFace(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool face1) const;
+   float HitTestFlipperEnd(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
 
    float GetHitTime() const { return m_flipperanim.GetHitTime(); }
    void Contact(CollisionEvent& coll, const float dtime);

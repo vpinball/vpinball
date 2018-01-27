@@ -241,7 +241,7 @@ public:
       Plunger * const pPlunger);
    ~HitPlunger() {}
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return ePlunger; }
    virtual void Collide(CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);

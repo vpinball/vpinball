@@ -517,7 +517,7 @@ void PlungerAnimObject::UpdateVelocities()
    }
 }
 
-float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll)
+float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll) const
 {
    Ball * const pball = const_cast<Ball*>(pball_);   // HACK; needed below // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)
 
@@ -678,7 +678,7 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
       // non-zero time to the next collision with the plunger.  We'll
       // then catch up again and push it along a little further.
       if (m_plungeranim.m_travelLimit < m_plungeranim.m_pos)
-         m_plungeranim.m_travelLimit = m_plungeranim.m_pos;
+         (const_cast<HitPlunger*>(this))->m_plungeranim.m_travelLimit = m_plungeranim.m_pos; // HACK
 
       // If the distance is negative, it means the objects are
       // overlapping.  Make certain that we give the ball enough

@@ -32,7 +32,7 @@ void LineSeg::CalcHitRect()
    // zlow and zhigh were already set in ctor
 }
 
-float LineSeg::HitTestBasic(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid)
+float LineSeg::HitTestBasic(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const
 {
    if (!m_fEnabled || pball->m_frozen) return -1.0f;
 
@@ -143,7 +143,7 @@ float LineSeg::HitTestBasic(const Ball * const pball, const float dtime, Collisi
    return hittime;
 }
 
-float LineSeg::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
+float LineSeg::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
    return HitTestBasic(pball, dtime, coll, true, true, true); // normal face, lateral, rigid
 }
@@ -176,7 +176,7 @@ void LineSeg::Contact(CollisionEvent& coll, const float dtime)
 ////////////////////////////////////////////////////////////////////////////////
 
 float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime, CollisionEvent& coll,
-   const bool direction, const bool lateral, const bool rigid)
+   const bool direction, const bool lateral, const bool rigid) const
 {
    if (!m_fEnabled || pball->m_frozen) return -1.0f;
 
@@ -319,7 +319,7 @@ void HitCircle::CalcHitRect()
    // zlow & zhigh already set in ctor
 }
 
-float HitCircle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
+float HitCircle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
 	//normal face, lateral, rigid
 	return HitTestBasicRadius(pball, dtime, coll, true, true, true);
@@ -339,7 +339,7 @@ void HitCircle::Contact(CollisionEvent& coll, const float dtime)
 ///////////////////////////////////////////////////////////////////////////////
 
 
-float HitLineZ::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
+float HitLineZ::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_fEnabled)
       return -1.0f;
@@ -441,7 +441,7 @@ void HitLineZ::Contact(CollisionEvent& coll, const float dtime)
 ///////////////////////////////////////////////////////////////////////////////
 
 
-float HitPoint::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
+float HitPoint::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_fEnabled)
       return -1.0f;
