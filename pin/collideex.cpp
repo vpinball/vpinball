@@ -425,31 +425,57 @@ void HitSpinner::CalcHitRect()
    m_rcHitRect = m_lineseg[0].m_rcHitRect;
 }
 
-Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count) : m_rgv(rgv), m_cvertex(count)
+void Hit3DPoly::Init(Vertex3Ds * const rgv, const int count)
 {
-   normal.x = 0.f;
-   normal.y = 0.f;
-   normal.z = 0.f;
+   m_rgv = rgv;
+   m_cvertex = count;
+
+   m_normal.x = 0.f;
+   m_normal.y = 0.f;
+   m_normal.z = 0.f;
 
    // Newell's method for normal computation
    for (int i = 0; i < m_cvertex; ++i)
    {
       const int m = (i < m_cvertex - 1) ? (i + 1) : 0;
 
-      normal.x += (m_rgv[i].y - m_rgv[m].y) * (m_rgv[i].z + m_rgv[m].z);
-      normal.y += (m_rgv[i].z - m_rgv[m].z) * (m_rgv[i].x + m_rgv[m].x);
-      normal.z += (m_rgv[i].x - m_rgv[m].x) * (m_rgv[i].y + m_rgv[m].y);
+      m_normal.x += (m_rgv[i].y - m_rgv[m].y) * (m_rgv[i].z + m_rgv[m].z);
+      m_normal.y += (m_rgv[i].z - m_rgv[m].z) * (m_rgv[i].x + m_rgv[m].x);
+      m_normal.z += (m_rgv[i].x - m_rgv[m].x) * (m_rgv[i].y + m_rgv[m].y);
    }
 
-   const float sqr_len = normal.x * normal.x + normal.y * normal.y + normal.z * normal.z;
+   const float sqr_len = m_normal.x * m_normal.x + m_normal.y * m_normal.y + m_normal.z * m_normal.z;
    const float inv_len = (sqr_len > 0.0f) ? -1.0f / sqrtf(sqr_len) : 0.0f;   // NOTE: normal is flipped! Thus we need vertices in CCW order
-   normal.x *= inv_len;
-   normal.y *= inv_len;
-   normal.z *= inv_len;
+   m_normal.x *= inv_len;
+   m_normal.y *= inv_len;
+   m_normal.z *= inv_len;
 
    m_elasticity = 0.3f;
    SetFriction(0.3f);
    m_scatter = 0.f;
+}
+
+Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count)
+{
+    Init(rgv, count);
+}
+
+Hit3DPoly::Hit3DPoly(const float x, const float y, const float z, const float r, const int sections) // creates a circular hit poly
+{
+   Vertex3Ds * const rgv3d = new Vertex3Ds[sections];
+
+   const float inv_sections = (float)(M_PI*2.0) / (float)sections;
+
+   for (int i = 0; i < sections; ++i)
+   {
+      const float angle = inv_sections * (float)i;
+
+      rgv3d[i].x = x + sinf(angle) * r;
+      rgv3d[i].y = y + cosf(angle) * r;
+      rgv3d[i].z = z;
+   }
+
+   Init(rgv3d, sections);
 }
 
 Hit3DPoly::~Hit3DPoly()
@@ -461,15 +487,15 @@ float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionE
 {
    if (!m_fEnabled) return -1.0f;
 
-   const float bnv = normal.Dot(pball->m_vel);  //speed in Normal-vector direction
+   const float bnv = m_normal.Dot(pball->m_vel);  //speed in Normal-vector direction
 
    if ((m_ObjType != eTrigger) && (bnv > C_LOWNORMVEL)) // return if clearly ball is receding from object
       return -1.0f;
 
    // Point on the ball that will hit the polygon, if it hits at all
-   Vertex3Ds hitPos = pball->m_pos - pball->m_radius * normal; // nearest point on ball ... projected radius along norm
+   Vertex3Ds hitPos = pball->m_pos - pball->m_radius * m_normal; // nearest point on ball ... projected radius along norm
 
-   const float bnd = normal.Dot(hitPos - m_rgv[0]); // distance from plane to ball
+   const float bnd = m_normal.Dot(hitPos - m_rgv[0]); // distance from plane to ball
 
    bool bUnHit = (bnv > C_LOWNORMVEL);
    const bool inside = (bnd <= 0.f);                // in ball inside object volume
@@ -577,7 +603,7 @@ float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionE
 
    if (crosscount & 1)
    {
-      coll.hitnormal = normal;
+      coll.hitnormal = m_normal;
 
       if (!rigid)								// non rigid body collision? return direction
          coll.hitflag = bUnHit;	// UnHit signal	is receding from outside target
@@ -606,7 +632,7 @@ void Hit3DPoly::Collide(CollisionEvent& coll)
    {
       const float dot = hitnormal.Dot(pball->m_vel);
 
-      pball->Collide3DWall(normal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
+      pball->Collide3DWall(m_normal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
       if (dot <= -m_threshold)
       {
@@ -683,8 +709,8 @@ HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
     */
    const Vertex3Ds e0 = m_rgv[2] - m_rgv[0];
    const Vertex3Ds e1 = m_rgv[1] - m_rgv[0];
-   normal = CrossProduct(e0, e1);
-   normal.NormalizeSafe();
+   m_normal = CrossProduct(e0, e1);
+   m_normal.NormalizeSafe();
 
    m_elasticity = 0.3f;
    SetFriction(0.3f);
@@ -695,15 +721,15 @@ float HitTriangle::HitTest(const Ball * const pball, const float dtime, Collisio
 {
    if (!m_fEnabled) return -1.0f;
 
-   const float bnv = normal.Dot(pball->m_vel);     // speed in Normal-vector direction
+   const float bnv = m_normal.Dot(pball->m_vel);     // speed in Normal-vector direction
 
    if (bnv > C_CONTACTVEL)						// return if clearly ball is receding from object
       return -1.0f;
 
    // Point on the ball that will hit the polygon, if it hits at all
-   Vertex3Ds hitPos = pball->m_pos - pball->m_radius * normal; // nearest point on ball ... projected radius along norm
+   Vertex3Ds hitPos = pball->m_pos - pball->m_radius * m_normal; // nearest point on ball ... projected radius along norm
 
-   const float bnd = normal.Dot(hitPos - m_rgv[0]);  // distance from plane to ball
+   const float bnd = m_normal.Dot(hitPos - m_rgv[0]);  // distance from plane to ball
 
    if (bnd < -pball->m_radius/**2.0f*/) //!! *2 necessary?
       return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
@@ -757,7 +783,7 @@ float HitTriangle::HitTest(const Ball * const pball, const float dtime, Collisio
 
    if (pointInTri)
    {
-      coll.hitnormal = normal;
+      coll.hitnormal = m_normal;
 
       coll.hitdistance = bnd;				// 3dhit actual contact distance ... 
       //coll.hitRigid = true;				// collision type
@@ -781,7 +807,7 @@ void HitTriangle::Collide(CollisionEvent& coll)
 
    const float dot = hitnormal.Dot(pball->m_vel);
 
-   pball->Collide3DWall(normal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
+   pball->Collide3DWall(m_normal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
    if (dot <= -m_threshold)
    {
