@@ -82,6 +82,7 @@ class Hit3DPoly : public HitObject
 {
 public:
    Hit3DPoly(Vertex3Ds * const rgv, const int count);
+   Hit3DPoly(const float x, const float y, const float z, const float r, const int sections); // creates a circular hit poly
    virtual ~Hit3DPoly();
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
    virtual int GetType() const { return e3DPoly; }
@@ -89,8 +90,10 @@ public:
    virtual void Contact(CollisionEvent& coll, const float dtime);
    virtual void CalcHitRect();
 
+   void Init(Vertex3Ds * const rgv, const int count);
+
    Vertex3Ds *m_rgv;
-   Vertex3Ds normal;
+   Vertex3Ds m_normal;
    int m_cvertex;
 };
 
@@ -105,10 +108,10 @@ public:
    virtual void Contact(CollisionEvent& coll, const float dtime);
    virtual void CalcHitRect();
 
-   bool IsDegenerate() const       { return normal.IsZero(); }
+   bool IsDegenerate() const       { return m_normal.IsZero(); }
 
    Vertex3Ds m_rgv[3];
-   Vertex3Ds normal;
+   Vertex3Ds m_normal;
 };
 
 

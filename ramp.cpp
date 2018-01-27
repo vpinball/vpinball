@@ -816,7 +816,7 @@ void Ramp::CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const 
 {
    if (ph3d1)   // may be null in case of degenerate triangles
    {
-      const Vertex3Ds vjointnormal = CrossProduct(ph3d1->normal, ph3d2->normal);
+      const Vertex3Ds vjointnormal = CrossProduct(ph3d1->m_normal, ph3d2->m_normal);
       if (vjointnormal.LengthSquared() < 1e-8f)
          return;  // coplanar triangles need no joints
    }

@@ -75,12 +75,9 @@ struct CollisionEvent
 };
 
 
-HitObject *CreateCircularHitPoly(const float x, const float y, const float z, const float r, const int sections);
-
 class HitObject
 {
 public:
-
    HitObject() : m_fEnabled(fTrue), m_ObjType(eNull), m_pObj(NULL),
       m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
       m_pfe(NULL), m_threshold(0.f), m_pfedebug(NULL), m_pe(NULL), m_objHitEvent(NULL) {}

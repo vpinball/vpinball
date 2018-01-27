@@ -3,23 +3,6 @@
 
 float c_hardScatter = 0.0f;
 
-HitObject *CreateCircularHitPoly(const float x, const float y, const float z, const float r, const int sections)
-{
-   Vertex3Ds * const rgv3d = new Vertex3Ds[sections];
-
-   const float inv_sections = (float)(M_PI*2.0) / (float)sections;
-
-   for (int i = 0; i < sections; ++i)
-   {
-      const float angle = inv_sections * (float)i;
-
-      rgv3d[i].x = x + sinf(angle) * r;
-      rgv3d[i].y = y + cosf(angle) * r;
-      rgv3d[i].z = z;
-   }
-
-   return new Hit3DPoly(rgv3d, sections);
-}
 void HitObject::FireHitEvent(Ball * const pball)
 {
    if (m_pfe && m_fEnabled)

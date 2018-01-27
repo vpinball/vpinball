@@ -413,11 +413,11 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
    case TriggerButton:
    case TriggerStar:
    {
-      HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 10, m_d.m_radius, 32);
+      Hit3DPoly * const pcircle = new Hit3DPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 10, m_d.m_radius, 32);
       pho->m_ObjType = eTrigger;
       pho->m_pObj = (void*)this;
 
-      pvho->AddElement(pho);
+      pvho->AddElement(pcircle);
       break;
    }
 
