@@ -1,6 +1,6 @@
 const unsigned int kickerHoleNumVertices=192;
 const unsigned int kickerHoleNumIndices=288;
-const Vertex3D_NoTex2 kickerHole[192]=
+const Vertex3D_NoTex2 kickerHoleMesh[192]=
 {
 { 0.795518f,0.000001f,-0.021814f, -0.235300f,-0.031000f,0.971400f, 0.208334f,0.169846f},
 { 0.941778f,0.252349f,0.021664f, -0.235300f,-0.031000f,0.971400f, 0.166667f,0.000000f},

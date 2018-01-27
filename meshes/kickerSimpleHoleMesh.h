@@ -1,4 +1,4 @@
-const unsigned int kickerSimpleHoleVertices=42;
+const unsigned int kickerSimpleHoleNumVertices=42;
 const unsigned int kickerSimpleHoleNumIndices=126;
 const Vertex3D_NoTex2 kickerSimpleHoleMesh[42]=
 {
