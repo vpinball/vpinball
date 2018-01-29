@@ -3,12 +3,11 @@
 #include "pin/collide.h"
 
 
-class BallAnimObject : public AnimObject
+class BallMoverObject : public MoverObject
 {
 public:
-   virtual bool FMover() const { return false; } // We add ourselves to the mover list.  
-   // If we allow the table to do that, we might get added twice, 
-   // if we get created in Init code
+   virtual bool AddToList() const { return false; } // We add ourselves to the mover list.  
+                                                    // If we allow the table to do that, we might get added twice, if we get created in the player Init code
    virtual void UpdateDisplacements(const float dtime);
    virtual void UpdateVelocities();
 
@@ -32,8 +31,7 @@ public:
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eBall; }
    virtual void Collide(CollisionEvent& coll);
-   virtual void CalcHitRect();
-   virtual AnimObject *GetAnimObject() { return &m_ballanim; }
+   virtual void CalcHitBBox();
 
    void Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const float elastFalloff, const float friction, float scatter_angle);
 
@@ -67,7 +65,7 @@ public:
    float m_drsq;			// square of distance moved
 #endif
 
-   BallAnimObject m_ballanim;
+   BallMoverObject m_ballMover;
 
    Vertex3Ds m_pos;
    float m_defaultZ;   //normal height of the ball //!! remove?

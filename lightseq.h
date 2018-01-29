@@ -160,11 +160,11 @@ public:
    PinTable 		*m_ptable;
    LightSeqData 	m_d;
 
+   LightSeqAnimObject m_lightseqanim;
+
    void		Animate();
 
 private:
-   LightSeqAnimObject m_lightseqanim;
-
    void		SetupTracers(const SequencerState Animation, long TailLength, long Repeat, long Pause);
    bool		ProcessTracer(_tracer * const pTracer, const LightState State);
    void		SetAllLightsToState(const LightState State);

@@ -2,18 +2,16 @@
 
 //#define DEBUG_FLIPPERS
 
-class FlipperAnimObject : public AnimObject
+class FlipperMoverObject : public MoverObject
 {
 public:
-   FlipperAnimObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
+   FlipperMoverObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
       float zlow, float zhigh, float strength, float mass, float returnRatio);
 
    virtual void UpdateDisplacements(const float dtime);
    virtual void UpdateVelocities();
 
-   virtual bool FMover() const { return true; }
-
-   virtual void Animate() { }
+   virtual bool AddToList() const { return true; }
 
    void SetSolenoidState(const bool s);
    float GetStrokeRatio() const;
@@ -93,19 +91,19 @@ public:
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eFlipper; }
    virtual void Collide(CollisionEvent& coll);
-   virtual void CalcHitRect();
-   virtual AnimObject *GetAnimObject() { return &m_flipperanim; }
+   virtual void CalcHitBBox();
+   virtual MoverObject *GetMoverObject() { return &m_flipperMover; }
 
    float HitTestFlipperFace(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool face1) const;
    float HitTestFlipperEnd(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
 
-   float GetHitTime() const { return m_flipperanim.GetHitTime(); }
+   float GetHitTime() const { return m_flipperMover.GetHitTime(); }
    void Contact(CollisionEvent& coll, const float dtime);
 
    Vertex2D v;
 
    Flipper *m_pflipper;
 
-   FlipperAnimObject m_flipperanim;
+   FlipperMoverObject m_flipperMover;
    U32 m_last_hittime;
 };

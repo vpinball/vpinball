@@ -84,7 +84,7 @@ void HitKD::InitSseArrays()
 
    for (unsigned int j = 0; j < m_num_items; ++j)
    {
-      const FRect3D& r = GetItemAt(j)->m_rcHitRect;
+      const FRect3D& r = GetItemAt(j)->m_hitBBox;
       l_r_t_b_zl_zh[j] = r.left;
       l_r_t_b_zl_zh[j + padded] = r.right;
       l_r_t_b_zl_zh[j + padded * 2] = r.top;
@@ -117,8 +117,8 @@ void HitKD::FillFromVector(Vector<HitObject>& vho)
    for (unsigned i = 0; i < m_num_items; ++i)
    {
       HitObject * const pho = vho.ElementAt(i);
-      pho->CalcHitRect(); //!! omit, as already calced?!
-      m_rootNode.m_rectbounds.Extend(pho->m_rcHitRect);
+      pho->CalcHitBBox(); //!! omit, as already calced?!
+      m_rootNode.m_rectbounds.Extend(pho->m_hitBBox);
 
       m_org_idx[i] = i;
    }
@@ -141,8 +141,8 @@ void HitKD::FillFromIndices()
    for (unsigned i = 0; i < m_num_items; ++i)
    {
       HitObject * const pho = GetItemAt(i);
-      pho->CalcHitRect(); //!! omit, as already calced?!
-      m_rootNode.m_rectbounds.Extend(pho->m_rcHitRect);
+      pho->CalcHitBBox(); //!! omit, as already calced?!
+      m_rootNode.m_rectbounds.Extend(pho->m_hitBBox);
    }
 
 #ifdef _DEBUGPHYSICS
@@ -160,7 +160,7 @@ void HitKD::FillFromIndices(const FRect3D& initialBounds)
    m_rootNode.m_start = 0;
    m_rootNode.m_items = m_num_items;
 
-   // assume that CalcHitRect() was already called on the hit objects
+   // assume that CalcHitBBox() was already called on the hit objects
 
 #ifdef _DEBUGPHYSICS
    g_pplayer->c_kDObjects = m_num_items;
@@ -253,8 +253,8 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
       {
          const HitObject * const pho = m_hitoct->GetItemAt(i);
 
-         if (pho->m_rcHitRect.right < vcenter.x)    m_children[0].m_items++;
-         else if (pho->m_rcHitRect.left > vcenter.x)     m_children[1].m_items++;
+         if (pho->m_hitBBox.right < vcenter.x)    m_children[0].m_items++;
+         else if (pho->m_hitBBox.left > vcenter.x)     m_children[1].m_items++;
       }
    }
    else if (axis == 1)
@@ -263,8 +263,8 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
       {
          const HitObject * const pho = m_hitoct->GetItemAt(i);
 
-         if (pho->m_rcHitRect.bottom < vcenter.y)   m_children[0].m_items++;
-         else if (pho->m_rcHitRect.top > vcenter.y)      m_children[1].m_items++;
+         if (pho->m_hitBBox.bottom < vcenter.y)   m_children[0].m_items++;
+         else if (pho->m_hitBBox.top > vcenter.y)      m_children[1].m_items++;
       }
    }
    else // axis == 2
@@ -273,8 +273,8 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
       {
          const HitObject * const pho = m_hitoct->GetItemAt(i);
 
-         if (pho->m_rcHitRect.zhigh < vcenter.z)    m_children[0].m_items++;
-         else if (pho->m_rcHitRect.zlow > vcenter.z)     m_children[1].m_items++;
+         if (pho->m_hitBBox.zhigh < vcenter.z)    m_children[0].m_items++;
+         else if (pho->m_hitBBox.zlow > vcenter.z)     m_children[1].m_items++;
       }
    }
 
@@ -313,9 +313,9 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
       {
          const HitObject * const pho = m_hitoct->GetItemAt(i);
 
-         if (pho->m_rcHitRect.right < vcenter.x)
+         if (pho->m_hitBBox.right < vcenter.x)
             m_hitoct->tmp[m_children[0].m_start + (m_children[0].m_items++)] = m_hitoct->m_org_idx[i];
-         else if (pho->m_rcHitRect.left > vcenter.x)
+         else if (pho->m_hitBBox.left > vcenter.x)
             m_hitoct->tmp[m_children[1].m_start + (m_children[1].m_items++)] = m_hitoct->m_org_idx[i];
          else
             m_hitoct->m_org_idx[m_start + (items++)] = m_hitoct->m_org_idx[i];
@@ -327,9 +327,9 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
       {
          const HitObject * const pho = m_hitoct->GetItemAt(i);
 
-         if (pho->m_rcHitRect.bottom < vcenter.y)
+         if (pho->m_hitBBox.bottom < vcenter.y)
             m_hitoct->tmp[m_children[0].m_start + (m_children[0].m_items++)] = m_hitoct->m_org_idx[i];
-         else if (pho->m_rcHitRect.top > vcenter.y)
+         else if (pho->m_hitBBox.top > vcenter.y)
             m_hitoct->tmp[m_children[1].m_start + (m_children[1].m_items++)] = m_hitoct->m_org_idx[i];
          else
             m_hitoct->m_org_idx[m_start + (items++)] = m_hitoct->m_org_idx[i];
@@ -341,9 +341,9 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
       {
          const HitObject * const pho = m_hitoct->GetItemAt(i);
 
-         if (pho->m_rcHitRect.zhigh < vcenter.z)
+         if (pho->m_hitBBox.zhigh < vcenter.z)
             m_hitoct->tmp[m_children[0].m_start + (m_children[0].m_items++)] = m_hitoct->m_org_idx[i];
-         else if (pho->m_rcHitRect.zlow > vcenter.z)
+         else if (pho->m_hitBBox.zlow > vcenter.z)
             m_hitoct->tmp[m_children[1].m_start + (m_children[1].m_items++)] = m_hitoct->m_org_idx[i];
          else
             m_hitoct->m_org_idx[m_start + (items++)] = m_hitoct->m_org_idx[i];
@@ -406,8 +406,8 @@ void HitKDNode::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 #endif
       HitObject * const pho = m_hitoct->GetItemAt( i );
       if ((pball != pho) // ball can not hit itself
-		  /*&& fRectIntersect3D(pball->m_rcHitRect, pho->m_rcHitRect)*/ //!! do bbox test before to save alu-instructions? or not to save registers? -> currently not, as just sphere vs sphere
-		 && fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, pho->m_rcHitRect))
+		  /*&& fRectIntersect3D(pball->m_hitBBox, pho->m_hitBBox)*/ //!! do bbox test before to save alu-instructions? or not to save registers? -> currently not, as just sphere vs sphere
+		 && fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, pho->m_hitBBox))
       {
          DoHitTest(pball, pho, coll);
       }
@@ -421,27 +421,27 @@ void HitKDNode::HitTestBall(Ball * const pball, CollisionEvent& coll) const
       if(axis == 0)
       {
          const float vcenter = (m_rectbounds.left+m_rectbounds.right)*0.5f;
-         if(pball->m_rcHitRect.left <= vcenter)
+         if(pball->m_hitBBox.left <= vcenter)
             m_children[0].HitTestBall(pball, coll);
-         if(pball->m_rcHitRect.right >= vcenter)
+         if(pball->m_hitBBox.right >= vcenter)
             m_children[1].HitTestBall(pball, coll);
       }
       else
          if(axis == 1)
          {
             const float vcenter = (m_rectbounds.top+m_rectbounds.bottom)*0.5f;
-            if (pball->m_rcHitRect.top <= vcenter)
+            if (pball->m_hitBBox.top <= vcenter)
                m_children[0].HitTestBall(pball, coll);
-            if (pball->m_rcHitRect.bottom >= vcenter)
+            if (pball->m_hitBBox.bottom >= vcenter)
                m_children[1].HitTestBall(pball, coll);
          }
          else
          {
             const float vcenter = (m_rectbounds.zlow+m_rectbounds.zhigh)*0.5f;
 
-            if(pball->m_rcHitRect.zlow <= vcenter)
+            if(pball->m_hitBBox.zlow <= vcenter)
                m_children[0].HitTestBall(pball, coll);
-            if(pball->m_rcHitRect.zhigh >= vcenter)
+            if(pball->m_hitBBox.zhigh >= vcenter)
                m_children[1].HitTestBall(pball, coll);
          }
    }
@@ -467,12 +467,12 @@ void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
    const __m128* __restrict const pZh = (__m128*)(m_hitoct->l_r_t_b_zl_zh + padded * 5);
 
    // init SSE registers with ball bbox
-   /*const __m128 bleft = _mm_set1_ps(pball->m_rcHitRect.left);
-   const __m128 bright = _mm_set1_ps(pball->m_rcHitRect.right);
-   const __m128 btop = _mm_set1_ps(pball->m_rcHitRect.top);
-   const __m128 bbottom = _mm_set1_ps(pball->m_rcHitRect.bottom);
-   const __m128 bzlow = _mm_set1_ps(pball->m_rcHitRect.zlow);
-   const __m128 bzhigh = _mm_set1_ps(pball->m_rcHitRect.zhigh);*/
+   /*const __m128 bleft = _mm_set1_ps(pball->m_hitBBox.left);
+   const __m128 bright = _mm_set1_ps(pball->m_hitBBox.right);
+   const __m128 btop = _mm_set1_ps(pball->m_hitBBox.top);
+   const __m128 bbottom = _mm_set1_ps(pball->m_hitBBox.bottom);
+   const __m128 bzlow = _mm_set1_ps(pball->m_hitBBox.zlow);
+   const __m128 bzhigh = _mm_set1_ps(pball->m_hitBBox.zhigh);*/
 
    const __m128 posx = _mm_set1_ps(pball->m_pos.x);
    const __m128 posy = _mm_set1_ps(pball->m_pos.y);
@@ -575,21 +575,21 @@ void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
          if (axis == 0)
          {
             const float vcenter = (current->m_rectbounds.left + current->m_rectbounds.right)*0.5f;
-            if (pball->m_rcHitRect.left <= vcenter) stack[++stackpos] = current->m_children;
-            if (pball->m_rcHitRect.right >= vcenter) stack[++stackpos] = current->m_children + 1;
+            if (pball->m_hitBBox.left <= vcenter) stack[++stackpos] = current->m_children;
+            if (pball->m_hitBBox.right >= vcenter) stack[++stackpos] = current->m_children + 1;
          }
          else
             if (axis == 1)
             {
                const float vcenter = (current->m_rectbounds.top + current->m_rectbounds.bottom)*0.5f;
-               if (pball->m_rcHitRect.top <= vcenter) stack[++stackpos] = current->m_children;
-               if (pball->m_rcHitRect.bottom >= vcenter) stack[++stackpos] = current->m_children + 1;
+               if (pball->m_hitBBox.top <= vcenter) stack[++stackpos] = current->m_children;
+               if (pball->m_hitBBox.bottom >= vcenter) stack[++stackpos] = current->m_children + 1;
             }
             else
             {
                const float vcenter = (current->m_rectbounds.zlow + current->m_rectbounds.zhigh)*0.5f;
-               if (pball->m_rcHitRect.zlow <= vcenter) stack[++stackpos] = current->m_children;
-               if (pball->m_rcHitRect.zhigh >= vcenter) stack[++stackpos] = current->m_children + 1;
+               if (pball->m_hitBBox.zlow <= vcenter) stack[++stackpos] = current->m_children;
+               if (pball->m_hitBBox.zhigh >= vcenter) stack[++stackpos] = current->m_children + 1;
             }
       }
 
@@ -614,13 +614,13 @@ void HitKDNode::HitTestXRay(const Ball * const pball, Vector<HitObject> * const 
 #endif
       HitObject * const pho = m_hitoct->GetItemAt(i);
       if ((pball != pho) && // ball cannot hit itself
-         /*fRectIntersect3D(pball->m_rcHitRect, pho->m_rcHitRect) &&*/ //!! do bbox test before to save alu-instructions? or not to save registers? -> currently not, as just sphere vs sphere
-		 fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, pho->m_rcHitRect))
+         /*fRectIntersect3D(pball->m_hitBBox, pho->m_hitBBox) &&*/ //!! do bbox test before to save alu-instructions? or not to save registers? -> currently not, as just sphere vs sphere
+		 fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, pho->m_hitBBox))
       {
 #ifdef _DEBUGPHYSICS
          g_pplayer->c_deepTested++;
 #endif
-         const float newtime = pho->HitTest(pball, coll.hittime, coll);
+         const float newtime = pho->HitTest(pball, coll.m_hittime, coll);
          if (newtime >= 0)
             pvhoHit->AddElement(pho);
       }
@@ -634,27 +634,27 @@ void HitKDNode::HitTestXRay(const Ball * const pball, Vector<HitObject> * const 
       if (axis == 0)
       {
          const float vcenter = (m_rectbounds.left + m_rectbounds.right)*0.5f;
-         if (pball->m_rcHitRect.left <= vcenter)
+         if (pball->m_hitBBox.left <= vcenter)
             m_children[0].HitTestXRay(pball, pvhoHit, coll);
-         if (pball->m_rcHitRect.right >= vcenter)
+         if (pball->m_hitBBox.right >= vcenter)
             m_children[1].HitTestXRay(pball, pvhoHit, coll);
       }
       else
          if (axis == 1)
          {
             const float vcenter = (m_rectbounds.top + m_rectbounds.bottom)*0.5f;
-            if (pball->m_rcHitRect.top <= vcenter)
+            if (pball->m_hitBBox.top <= vcenter)
                m_children[0].HitTestXRay(pball, pvhoHit, coll);
-            if (pball->m_rcHitRect.bottom >= vcenter)
+            if (pball->m_hitBBox.bottom >= vcenter)
                m_children[1].HitTestXRay(pball, pvhoHit, coll);
          }
          else
          {
             const float vcenter = (m_rectbounds.zlow + m_rectbounds.zhigh)*0.5f;
 
-            if (pball->m_rcHitRect.zlow <= vcenter)
+            if (pball->m_hitBBox.zlow <= vcenter)
                m_children[0].HitTestXRay(pball, pvhoHit, coll);
-            if (pball->m_rcHitRect.zhigh >= vcenter)
+            if (pball->m_hitBBox.zhigh >= vcenter)
                m_children[1].HitTestXRay(pball, pvhoHit, coll);
          }
    }

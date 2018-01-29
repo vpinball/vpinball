@@ -5,6 +5,7 @@ enum
    eNull,
    ePoint,
    eLineSeg,
+   eLineSegSlingshot,
    eJoint,
    eCircle,
    eFlipper,
@@ -30,7 +31,21 @@ extern float c_hardScatter;
 // forward declarations
 class Ball;
 class HitObject;
-class AnimObject;
+
+
+class MoverObject // Spinner, Gate, Flipper, Plunger and Ball
+{
+public:
+   virtual bool AddToList() const = 0;
+   virtual void UpdateDisplacements(const float dtime) = 0;
+   virtual void UpdateVelocities() = 0;
+};
+
+class AnimObject // DispReel, LightSeq and Slingshot
+{
+public:
+   virtual void Animate() = 0;
+};
 
 
 /*
@@ -49,29 +64,29 @@ inline float ElasticityWithFalloff(const float elasticity, const float falloff, 
 
 struct CollisionEvent
 {
-   CollisionEvent() : ball(0), obj(0), isContact(false), hittime(0.0f), hitdistance(0.0f), /*hitmoment(0.0f)*/ hitmoment_bit(true), hitflag(false) /*, hitRigid(false)*/ {}
+   CollisionEvent() : m_ball(0), m_obj(0), m_isContact(false), m_hittime(0.0f), m_hitdistance(0.0f), /*m_hitmoment(0.0f)*/ m_hitmoment_bit(true), m_hitflag(false) /*, m_hitRigid(false)*/ {}
 
-   Ball* ball;         // the ball that collided with smth
-   HitObject* obj;     // what the ball collided with
+   Ball* m_ball;         // the ball that collided with smth
+   HitObject* m_obj;     // what the ball collided with
 
-   float hittime;      // when the collision happens (relative to current physics state)
-   float hitdistance;  // hit distance 
+   float m_hittime;      // when the collision happens (relative to current physics state)
+   float m_hitdistance;  // hit distance 
 
    // additional collision information
-   Vertex3Ds hitnormal;
-   Vertex2D  hitvel; // only "correctly" used by plunger and flipper
-   float hit_org_normalvelocity; // only set if isContact is true
+   Vertex3Ds m_hitnormal;
+   Vertex2D  m_hitvel; // only "correctly" used by plunger and flipper
+   float m_hit_org_normalvelocity; // only set if isContact is true
 
-   //float hitangularrate; //!! angular rate is only assigned but never used
+   //float m_hitangularrate; //!! angular rate is only assigned but never used
 
-   //float hitmoment; //!! currently only one bit is used (hitmoment == 0 or not)
-   bool hitmoment_bit;
+   //float m_hitmoment; //!! currently only one bit is used (hitmoment == 0 or not)
+   bool m_hitmoment_bit;
 
-   bool hitflag; // UnHit signal/direction of hit/side of hit (spinner/gate)
+   bool m_hitflag; // UnHit signal/direction of hit/side of hit (spinner/gate)
 
-   //bool hitRigid; // rigid body collision? //!! this is almost never ever triggered (as 99.999999% true when actually handled), and if then only once while rolling over a trigger, etc, with a very minimalistic special handling afterwards (if false), so for now removed
+   //bool m_hitRigid; // rigid body collision? //!! this is almost never ever triggered (as 99.999999% true when actually handled), and if then only once while rolling over a trigger, etc, with a very minimalistic special handling afterwards (if false), so for now removed
 
-   bool isContact; // set to true if impact velocity is ~0
+   bool m_isContact; // set to true if impact velocity is ~0
 };
 
 
@@ -87,8 +102,9 @@ public:
    virtual int GetType() const = 0;
    virtual void Collide(CollisionEvent& coll) = 0;
    virtual void Contact(CollisionEvent& coll, const float dtime)  { }  // apply contact forces for the given time interval
-   virtual void CalcHitRect() = 0;
-   virtual AnimObject *GetAnimObject() { return NULL; }
+   virtual void CalcHitBBox() = 0;
+
+   virtual MoverObject *GetMoverObject() { return NULL; }
 
    void SetFriction(const float friction)  { m_friction = friction; }
    void FireHitEvent(Ball * const pball);
@@ -101,7 +117,7 @@ public:
 
    void *m_pe; // currently only used to determine which HitTriangles/HitLines/HitPoints are being part of the same Primitive element
 
-   FRect3D m_rcHitRect;
+   FRect3D m_hitBBox;
 
    int   m_ObjType;
    void* m_pObj;
@@ -113,15 +129,7 @@ public:
    bool  m_fEnabled;
 };
 
-class AnimObject
-{
-public:
-   virtual bool FMover() const { return false; }
-   virtual void UpdateDisplacements(const float dtime) {}
-   virtual void UpdateVelocities() {}
-
-   virtual void Animate() {}
-};
+//
 
 // 2D 'Wall' (a simple 2D line with additional height limitation)
 class LineSeg : public HitObject
@@ -131,8 +139,8 @@ public:
    LineSeg(const Vertex2D& p1, const Vertex2D& p2, const float zlow, const float zhigh)
        : v1(p1), v2(p2)
    {
-      m_rcHitRect.zlow = zlow;
-      m_rcHitRect.zhigh = zhigh;
+      m_hitBBox.zlow = zlow;
+      m_hitBBox.zhigh = zhigh;
       CalcNormal();
    }
 
@@ -140,11 +148,10 @@ public:
    virtual int GetType() const { return eLineSeg; }
    virtual void Collide(CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);
-   virtual void CalcHitRect();
+   virtual void CalcHitBBox();
 
    float HitTestBasic(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const;
-   void CalcNormal();
-   void CalcLength();
+   void CalcNormal(); // and also does update length!
 
    Vertex2D normal;
    Vertex2D v1, v2;
@@ -157,15 +164,15 @@ public:
    HitCircle() { }
    HitCircle(const Vertex2D& c, const float r, const float zlow, const float zhigh) : center(c), radius(r)
    {
-      m_rcHitRect.zlow = zlow;
-      m_rcHitRect.zhigh = zhigh;
+      m_hitBBox.zlow = zlow;
+      m_hitBBox.zhigh = zhigh;
    }
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eCircle; }
    virtual void Collide(CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);
-   virtual void CalcHitRect();
+   virtual void CalcHitBBox();
 
    float HitTestBasicRadius(const Ball * const pball, const float dtime, CollisionEvent& coll,
                             const bool direction, const bool lateral, const bool rigid) const;
@@ -182,15 +189,15 @@ public:
    HitLineZ() { }
    HitLineZ(const Vertex2D& xy, const float zlow, const float zhigh) : m_xy(xy)
    {
-      m_rcHitRect.zlow = zlow;
-      m_rcHitRect.zhigh = zhigh;
+      m_hitBBox.zlow = zlow;
+      m_hitBBox.zhigh = zhigh;
    }
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eJoint; }
    virtual void Collide(CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);
-   virtual void CalcHitRect();
+   virtual void CalcHitBBox();
 
    Vertex2D m_xy;
 };
@@ -206,7 +213,7 @@ public:
    virtual int GetType() const { return ePoint; }
    virtual void Collide(CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);
-   virtual void CalcHitRect();
+   virtual void CalcHitBBox();
 
    Vertex3Ds m_p;
 };

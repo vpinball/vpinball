@@ -310,7 +310,7 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
    BumperHitCircle * const phitcircle = new BumperHitCircle(m_d.m_vCenter,m_d.m_radius,height,height+m_d.m_heightScale);
 
    phitcircle->m_pfe = NULL;
-   phitcircle->m_bumperanim.m_fHitEvent = m_d.m_fHitEvent;
+   phitcircle->m_bumperanim_fHitEvent = m_d.m_fHitEvent;
    phitcircle->m_fEnabled = m_d.m_fCollidable;
    phitcircle->m_scatter = ANGTORAD(m_d.m_scatter);
 
@@ -320,7 +320,7 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
 
    m_pbumperhitcircle = phitcircle;
 
-   phitcircle->m_bumperanim.m_fVisible = m_d.m_fBaseVisible;
+   phitcircle->m_bumperanim_fVisible = m_d.m_fBaseVisible;
 }
 
 void Bumper::GetHitShapesDebug(Vector<HitObject> * const pvho)
@@ -391,7 +391,7 @@ void Bumper::UpdateRing(RenderDevice *pd3dDevice)
    {
       buf[i].x = m_ringVertices[i].x;
       buf[i].y = m_ringVertices[i].y;
-      buf[i].z = m_ringVertices[i].z + m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset;
+      buf[i].z = m_ringVertices[i].z + m_pbumperhitcircle->m_bumperanim_ringAnimOffset;
       buf[i].nx = m_ringVertices[i].nx;
       buf[i].ny = m_ringVertices[i].ny;
       buf[i].nz = m_ringVertices[i].nz;
@@ -444,8 +444,8 @@ void Bumper::UpdateSkirt(RenderDevice *pd3dDevice, const bool doCalculation)
 
    if (doCalculation)
    {
-      const float hitx = m_pbumperhitcircle->m_bumperanim.m_hitBallPosition.x;
-      const float hity = m_pbumperhitcircle->m_bumperanim.m_hitBallPosition.y;
+      const float hitx = m_pbumperhitcircle->m_bumperanim_hitBallPosition.x;
+      const float hity = m_pbumperhitcircle->m_bumperanim_hitBallPosition.y;
       float dy = fabsf(hity - m_d.m_vCenter.y);
       if (dy == 0.0f)
          dy = 0.000001f;
@@ -510,7 +510,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-   const int state = m_pbumperhitcircle->m_bumperanim.m_fHitEvent ? 1 : 0;    // 0 = not hit, 1 = hit
+   const int state = m_pbumperhitcircle->m_bumperanim_fHitEvent ? 1 : 0;    // 0 = not hit, 1 = hit
 
    if (m_d.m_fRingVisible)
    {
@@ -518,7 +518,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       {
          m_ringAnimate = true;
          m_ringDown = true;
-         m_pbumperhitcircle->m_bumperanim.m_fHitEvent = false;
+         m_pbumperhitcircle->m_bumperanim_fHitEvent = false;
       }
 
       if (m_ringAnimate)
@@ -527,20 +527,20 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
          const float limit = 45.f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
          if (m_ringDown)
             step = -step;
-         m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset += step*diff_time_msec;
+         m_pbumperhitcircle->m_bumperanim_ringAnimOffset += step*diff_time_msec;
          if (m_ringDown)
          {
-            if (m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset <= -limit)
+            if (m_pbumperhitcircle->m_bumperanim_ringAnimOffset <= -limit)
             {
-               m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset = -limit;
+               m_pbumperhitcircle->m_bumperanim_ringAnimOffset = -limit;
                m_ringDown = false;
             }
          }
          else
          {
-            if (m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset >= 0.0f)
+            if (m_pbumperhitcircle->m_bumperanim_ringAnimOffset >= 0.0f)
             {
-               m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset = 0.0f;
+               m_pbumperhitcircle->m_bumperanim_ringAnimOffset = 0.0f;
                m_ringAnimate = false;
             }
          }
@@ -1498,7 +1498,7 @@ STDMETHODIMP Bumper::put_ReflectionEnabled(VARIANT_BOOL newVal)
 STDMETHODIMP Bumper::PlayHit()
 {
     if ( m_pbumperhitcircle )
-        m_pbumperhitcircle->m_bumperanim.m_fHitEvent=true;
+        m_pbumperhitcircle->m_bumperanim_fHitEvent=true;
     return S_OK;
 }
 

@@ -17,14 +17,14 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
 
+   m_dispreelanim.m_pDispReel = this;
+
    SetDefaults(fromMouseClick);
 
    m_d.m_v1.x = x;
    m_d.m_v1.y = y;
    m_d.m_v2.x = x + getBoxWidth();
    m_d.m_v2.y = y + getBoxHeight();
-
-   //m_preelframe = NULL;
 
    return InitVBA(fTrue, 0, NULL);
 }
@@ -231,16 +231,8 @@ void DispReel::GetTimers(Vector<HitTimer> * const pvht)
 }
 
 
-// This function is supposed to return the hit shapes for the object but since it is
-// off screen we use it to register the screen updater in the game engine.. this means
-// that Check3d (and Draw3d) are called in the updater class.
-//
 void DispReel::GetHitShapes(Vector<HitObject> * const pvho)
 {
-   m_dispreelanim.m_pDispReel = this;
-
-   // HACK - adding object directly to screen update list.  Someday make hit objects and screenupdaters seperate objects
-   g_pplayer->m_vanimate.AddElement(&m_dispreelanim);
 }
 
 void DispReel::GetHitShapesDebug(Vector<HitObject> * const pvho)
@@ -377,14 +369,14 @@ void DispReel::RenderSetup(RenderDevice* pd3dDevice)
    if (GridCols != 0 && GridRows != 0)
    {
       // get the size of the individual reel digits (if m_digitrange is wrong we can forget the rest)
-      m_reeldigitwidth = (float)pin->m_width / (float)GridCols;
+      m_reeldigitwidth  = (float)pin->m_width  / (float)GridCols;
       m_reeldigitheight = (float)pin->m_height / (float)GridRows;
    }
    else
       ShowError("DispReel: GridCols/GridRows are zero!");
 
-   const float ratiox = (float)m_reeldigitwidth / (float)pin->m_width;
-   const float ratioy = (float)m_reeldigitheight / (float)pin->m_height;
+   const float ratiox = m_reeldigitwidth  / (float)pin->m_width;
+   const float ratioy = m_reeldigitheight / (float)pin->m_height;
 
    int gr = 0;
    int gc = 0;
@@ -423,13 +415,8 @@ void DispReel::RenderStatic(RenderDevice* pd3dDevice)
 // This function is called during Animate().  It basically check to see if the update
 // interval has expired and if so handles the rolling of the reels according to the
 // number of motor steps queued up for each reel
-//
-// if a screen update is required it returns true..
-//
 void DispReel::Animate()
 {
-   OLECHAR mySound[256];
-
    if (g_pplayer->m_time_msec >= m_timenextupdate)
    {
       m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
@@ -438,7 +425,7 @@ void DispReel::Animate()
       const int OverflowValue = m_d.m_digitrange;
       const int AdjustValue = OverflowValue + 1;
 
-      const float step = (float)m_reeldigitheight / m_d.m_motorsteps;
+      const float step = m_reeldigitheight / m_d.m_motorsteps;
 
       // start at the last reel and work forwards (right to left)
       for (int i = m_d.m_reelcount - 1; i >= 0; i--)
@@ -454,6 +441,7 @@ void DispReel::Animate()
             // play the sound (if any) for each click of the reel
             if (m_d.m_szSound[0] != 0)
             {
+               OLECHAR mySound[512];
                MultiByteToWideChar(CP_ACP, 0, m_d.m_szSound, -1, mySound, 32);
                m_ptable->PlaySound(mySound, 0, 1.0f, 0.f, 0.f, 0, VARIANT_FALSE, VARIANT_TRUE, 0.f);
             }

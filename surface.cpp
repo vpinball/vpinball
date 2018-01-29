@@ -1001,7 +1001,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    for (unsigned i = 0; i < m_vlinesling.size(); i++)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
-      if (plinesling->m_slingshotanim.m_iframe == 1 || plinesling->m_doHitEvent)
+      if (plinesling->m_slingshotanim.m_iframe || plinesling->m_doHitEvent)
       {
          nothing_to_draw = false;
          break;
@@ -1023,7 +1023,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    for (unsigned i = 0; i < m_vlinesling.size(); i++)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
-      if (plinesling->m_slingshotanim.m_iframe != 1 && !plinesling->m_doHitEvent)
+      if (!plinesling->m_slingshotanim.m_iframe && !plinesling->m_doHitEvent)
          continue;
       else if (plinesling->m_doHitEvent)
       {

@@ -786,7 +786,7 @@ STDMETHODIMP Kicker::CreateSizedBallWithMass(/*[in]*/float radius, /*[in]*/float
       *pBallEx = pball->m_pballex;
       pball->m_pballex->AddRef();
 
-      pball->m_coll.hitflag = true;           // HACK: avoid capture leaving kicker
+      pball->m_coll.m_hitflag = true;           // HACK: avoid capture leaving kicker
       Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX); // unused due to newBall being true
       m_phitkickercircle->DoCollide(pball, hitnormal, false, true);
    }
@@ -806,7 +806,7 @@ STDMETHODIMP Kicker::CreateSizedBall(/*[in]*/float radius, /*out, retval]*/ IBal
       *pBallEx = pball->m_pballex;
       pball->m_pballex->AddRef();
 
-      pball->m_coll.hitflag = true;           // HACK: avoid capture leaving kicker
+      pball->m_coll.m_hitflag = true;           // HACK: avoid capture leaving kicker
       Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX); // unused due to newBall being true
       m_phitkickercircle->DoCollide(pball, hitnormal, false, true);
    }
@@ -825,7 +825,7 @@ STDMETHODIMP Kicker::CreateBall(IBall **pBallEx)
       *pBallEx = pball->m_pballex;
       pball->m_pballex->AddRef();
 
-      pball->m_coll.hitflag = true;           // HACK: avoid capture leaving kicker
+      pball->m_coll.m_hitflag = true;           // HACK: avoid capture leaving kicker
       Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX); // unused due to newBall being true
       m_phitkickercircle->DoCollide(pball, hitnormal, false, true);
    }
@@ -877,13 +877,13 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 
       m_phitkickercircle->m_pball->m_angularvelocity.SetZero();
       m_phitkickercircle->m_pball->m_angularmomentum.SetZero();
-      m_phitkickercircle->m_pball->m_coll.hitdistance = 0.0f;
-      m_phitkickercircle->m_pball->m_coll.hittime = -1.0f;
-      m_phitkickercircle->m_pball->m_coll.hitnormal.SetZero();
-      m_phitkickercircle->m_pball->m_coll.hitvel.SetZero();
-      m_phitkickercircle->m_pball->m_coll.hitflag = false;
-      m_phitkickercircle->m_pball->m_coll.isContact = false;
-      m_phitkickercircle->m_pball->m_coll.hitmoment_bit = true;
+      m_phitkickercircle->m_pball->m_coll.m_hitdistance = 0.0f;
+      m_phitkickercircle->m_pball->m_coll.m_hittime = -1.0f;
+      m_phitkickercircle->m_pball->m_coll.m_hitnormal.SetZero();
+      m_phitkickercircle->m_pball->m_coll.m_hitvel.SetZero();
+      m_phitkickercircle->m_pball->m_coll.m_hitflag = false;
+      m_phitkickercircle->m_pball->m_coll.m_isContact = false;
+      m_phitkickercircle->m_pball->m_coll.m_hitmoment_bit = true;
       m_phitkickercircle->m_pball->m_pos.x += x; // brian's suggestion
       m_phitkickercircle->m_pball->m_pos.y += y;
       m_phitkickercircle->m_pball->m_pos.z += z;
@@ -1327,7 +1327,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
       if (i < 0)	//entering Kickers volume
       {
          bool hitEvent;
-         const float grabHeight = (m_rcHitRect.zlow + pball->m_radius) * m_pkicker->m_d.m_hitAccuracy;
+         const float grabHeight = (m_hitBBox.zlow + pball->m_radius) * m_pkicker->m_d.m_hitAccuracy;
 
          if (pball->m_pos.z < grabHeight || m_pkicker->m_d.m_legacyMode || newBall)
          {
@@ -1385,12 +1385,12 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
                pball->m_dynamic = 0;
 #endif
                if (m_pkicker->m_d.m_fFallThrough)
-                  pball->m_pos.z = m_rcHitRect.zlow - pball->m_radius - 5.0f;
+                  pball->m_pos.z = m_hitBBox.zlow - pball->m_radius - 5.0f;
                else
-                  pball->m_pos.z = m_rcHitRect.zlow + pball->m_radius/**pball->m_radius/radius*/;
+                  pball->m_pos.z = m_hitBBox.zlow + pball->m_radius/**pball->m_radius/radius*/;
 
             }
-            else m_pball = NULL;		// make sure
+            else m_pball = NULL; // make sure
          }
       }
       else // exiting kickers volume

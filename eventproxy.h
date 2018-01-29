@@ -58,7 +58,7 @@ public:
 
    void FireVoidGroupEvent(int dispid)
    {
-      T* pT = (T*)this;
+      T* const pT = (T*)this;
       for (int i = 0; i < pT->m_vEventCollection.Size(); ++i)
       {
          Collection * const pcollection = pT->m_vEventCollection.ElementAt(i);
@@ -79,7 +79,7 @@ public:
 
    virtual HRESULT FireDispID(DISPID dispid, DISPPARAMS *pdispparams)
    {
-      T* pT = (T*)this;
+      T* const pT = (T*)this;
       pT->Lock();
       IUnknown** pp = m_vec.begin();
       while (pp < m_vec.end())
