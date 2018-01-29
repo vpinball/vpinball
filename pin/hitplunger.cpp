@@ -2,82 +2,82 @@
 
 #define PLUNGERHEIGHT 50.0f
 
-const float PlungerAnimObject::m_mass = 30.0f;
+const float PlungerMoverObject::m_mass = 30.0f;
 
 HitPlunger::HitPlunger(const float x, const float y, const float x2, const float zheight,
    const float frameTop, const float frameBottom,
    Plunger * const pPlunger)
 {
-   m_plungeranim.m_plunger = pPlunger;
-   m_plungeranim.m_x = x;
-   m_plungeranim.m_x2 = x2;
-   m_plungeranim.m_y = y;
+   m_plungerMover.m_plunger = pPlunger;
+   m_plungerMover.m_x = x;
+   m_plungerMover.m_x2 = x2;
+   m_plungerMover.m_y = y;
 
-   m_plungeranim.m_frameEnd = frameTop;
-   m_plungeranim.m_frameStart = frameBottom;
-   const float frameLen = m_plungeranim.m_frameLen = frameBottom - frameTop;
+   m_plungerMover.m_frameEnd = frameTop;
+   m_plungerMover.m_frameStart = frameBottom;
+   const float frameLen = m_plungerMover.m_frameLen = frameBottom - frameTop;
 
-   m_plungeranim.m_pullForce = 0.0f;
-   m_plungeranim.m_reverseImpulse = 0.0f;
-   m_plungeranim.m_fireTimer = 0;
-   m_plungeranim.m_autoFireTimer = 0;
+   m_plungerMover.m_pullForce = 0.0f;
+   m_plungerMover.m_reverseImpulse = 0.0f;
+   m_plungerMover.m_fireTimer = 0;
+   m_plungerMover.m_autoFireTimer = 0;
 
-   m_plungeranim.m_fStrokeEventsArmed = false;
-   m_plungeranim.m_speed = 0.0f;
-   m_plungeranim.m_travelLimit = frameTop;
-   m_plungeranim.m_scatterVelocity = pPlunger->m_d.m_scatterVelocity;
+   m_plungerMover.m_fStrokeEventsArmed = false;
+   m_plungerMover.m_speed = 0.0f;
+   m_plungerMover.m_travelLimit = frameTop;
+   m_plungerMover.m_scatterVelocity = pPlunger->m_d.m_scatterVelocity;
 
    const float restPos = pPlunger->m_d.m_parkPosition; // The rest position is taken from the "park position" property
 
    // start at the rest position
-   m_plungeranim.m_restPos = restPos;
-   m_plungeranim.m_pos = frameTop + (restPos * frameLen);
+   m_plungerMover.m_restPos = restPos;
+   m_plungerMover.m_pos = frameTop + (restPos * frameLen);
 
-   m_plungeranim.m_linesegBase.m_pfe = NULL;
-   m_plungeranim.m_jointBase[0].m_pfe = NULL;
-   m_plungeranim.m_jointBase[1].m_pfe = NULL;
-   m_plungeranim.m_linesegSide[0].m_pfe = NULL;
-   m_plungeranim.m_linesegSide[1].m_pfe = NULL;
-   m_plungeranim.m_linesegEnd.m_pfe = NULL;
-   m_plungeranim.m_jointEnd[0].m_pfe = NULL;
-   m_plungeranim.m_jointEnd[1].m_pfe = NULL;
+   m_plungerMover.m_linesegBase.m_pfe = NULL;
+   m_plungerMover.m_jointBase[0].m_pfe = NULL;
+   m_plungerMover.m_jointBase[1].m_pfe = NULL;
+   m_plungerMover.m_linesegSide[0].m_pfe = NULL;
+   m_plungerMover.m_linesegSide[1].m_pfe = NULL;
+   m_plungerMover.m_linesegEnd.m_pfe = NULL;
+   m_plungerMover.m_jointEnd[0].m_pfe = NULL;
+   m_plungerMover.m_jointEnd[1].m_pfe = NULL;
 
-   m_rcHitRect.zlow = zheight;
-   m_rcHitRect.zhigh = zheight + PLUNGERHEIGHT;
+   m_hitBBox.zlow = zheight;
+   m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
 
-   m_plungeranim.m_linesegBase.m_rcHitRect.zlow = zheight;
-   m_plungeranim.m_linesegBase.m_rcHitRect.zhigh = zheight + PLUNGERHEIGHT;
-   m_plungeranim.m_linesegSide[0].m_rcHitRect.zlow = zheight;
-   m_plungeranim.m_linesegSide[0].m_rcHitRect.zhigh = zheight + PLUNGERHEIGHT;
-   m_plungeranim.m_linesegSide[1].m_rcHitRect.zlow = zheight;
-   m_plungeranim.m_linesegSide[1].m_rcHitRect.zhigh = zheight + PLUNGERHEIGHT;
-   m_plungeranim.m_linesegEnd.m_rcHitRect.zlow = zheight;
-   m_plungeranim.m_linesegEnd.m_rcHitRect.zhigh = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_linesegBase.m_hitBBox.zlow = zheight;
+   m_plungerMover.m_linesegBase.m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_linesegSide[0].m_hitBBox.zlow = zheight;
+   m_plungerMover.m_linesegSide[0].m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_linesegSide[1].m_hitBBox.zlow = zheight;
+   m_plungerMover.m_linesegSide[1].m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_linesegEnd.m_hitBBox.zlow = zheight;
+   m_plungerMover.m_linesegEnd.m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
 
-   m_plungeranim.m_jointBase[0].m_rcHitRect.zlow = zheight;
-   m_plungeranim.m_jointBase[0].m_rcHitRect.zhigh = zheight + PLUNGERHEIGHT;
-   m_plungeranim.m_jointBase[1].m_rcHitRect.zlow = zheight;
-   m_plungeranim.m_jointBase[1].m_rcHitRect.zhigh = zheight + PLUNGERHEIGHT;
-   m_plungeranim.m_jointEnd[0].m_rcHitRect.zlow = zheight;
-   m_plungeranim.m_jointEnd[0].m_rcHitRect.zhigh = zheight + PLUNGERHEIGHT;
-   m_plungeranim.m_jointEnd[1].m_rcHitRect.zlow = zheight;
-   m_plungeranim.m_jointEnd[1].m_rcHitRect.zhigh = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_jointBase[0].m_hitBBox.zlow = zheight;
+   m_plungerMover.m_jointBase[0].m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_jointBase[1].m_hitBBox.zlow = zheight;
+   m_plungerMover.m_jointBase[1].m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_jointEnd[0].m_hitBBox.zlow = zheight;
+   m_plungerMover.m_jointEnd[0].m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_jointEnd[1].m_hitBBox.zlow = zheight;
+   m_plungerMover.m_jointEnd[1].m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
 
-   m_plungeranim.SetObjects(m_plungeranim.m_pos);
+   m_plungerMover.SetObjects(m_plungerMover.m_pos);
 }
 
-void HitPlunger::CalcHitRect()
+void HitPlunger::CalcHitBBox()
 {
    // Allow roundoff
-   m_rcHitRect.left = m_plungeranim.m_x - 0.1f;
-   m_rcHitRect.right = m_plungeranim.m_x2 + 0.1f;
-   m_rcHitRect.top = m_plungeranim.m_frameEnd - 0.1f;
-   m_rcHitRect.bottom = m_plungeranim.m_y + 0.1f;
+   m_hitBBox.left = m_plungerMover.m_x - 0.1f;
+   m_hitBBox.right = m_plungerMover.m_x2 + 0.1f;
+   m_hitBBox.top = m_plungerMover.m_frameEnd - 0.1f;
+   m_hitBBox.bottom = m_plungerMover.m_y + 0.1f;
 
    // zlow & zhigh gets set in constructor
 }
 
-void PlungerAnimObject::SetObjects(const float len)
+void PlungerMoverObject::SetObjects(const float len)
 {
    m_linesegBase.v1.x = m_x;
    m_linesegBase.v1.y = m_y;
@@ -116,7 +116,7 @@ void PlungerAnimObject::SetObjects(const float len)
    m_linesegSide[1].CalcNormal();
 }
 
-void PlungerAnimObject::UpdateDisplacements(const float dtime)
+void PlungerMoverObject::UpdateDisplacements(const float dtime)
 {
    // figure the travel distance
    const float dx = dtime * m_speed;
@@ -194,14 +194,14 @@ void PlungerAnimObject::UpdateDisplacements(const float dtime)
    SetObjects(m_pos);
 }
 
-void PlungerAnimObject::PullBack(float speed)
+void PlungerMoverObject::PullBack(float speed)
 {
    // start the pull by applying the artificial "pull force"
    m_speed = 0.0f;
    m_pullForce = speed;
 }
 
-void PlungerAnimObject::Fire(float startPos)
+void PlungerMoverObject::Fire(float startPos)
 {
    // cancel any pull force
    m_pullForce = 0.0f;
@@ -241,7 +241,7 @@ void PlungerAnimObject::Fire(float startPos)
    m_fireTimer = 200;
 }
 
-void PlungerAnimObject::UpdateVelocities()
+void PlungerMoverObject::UpdateVelocities()
 {
    // figure our current position in relative coordinates (0.0-1.0,
    // where 0.0 is the maximum forward position and 1.0 is the
@@ -537,36 +537,36 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
    // of the plunger.  These are just like hitting a wall.
    // Check all and find the nearest collision.
 
-   newtime = m_plungeranim.m_linesegBase.HitTest(pball, dtime, hit);
+   newtime = m_plungerMover.m_linesegBase.HitTest(pball, dtime, hit);
    if (newtime >= 0.f && newtime <= hittime)
    {
       fHit = true;
       hittime = newtime;
       coll = hit;
-      coll.hitvel.x = 0.f;
-      coll.hitvel.y = 0.f;
+      coll.m_hitvel.x = 0.f;
+      coll.m_hitvel.y = 0.f;
    }
 
    for (int i = 0; i < 2; i++)
    {
-      newtime = m_plungeranim.m_linesegSide[i].HitTest(pball, hittime, hit);
+      newtime = m_plungerMover.m_linesegSide[i].HitTest(pball, hittime, hit);
       if (newtime >= 0.f && newtime <= hittime)
       {
          fHit = true;
          hittime = newtime;
          coll = hit;
-         coll.hitvel.x = 0.f;
-         coll.hitvel.y = 0.f;
+         coll.m_hitvel.x = 0.f;
+         coll.m_hitvel.y = 0.f;
       }
 
-      newtime = m_plungeranim.m_jointBase[i].HitTest(pball, hittime, hit);
+      newtime = m_plungerMover.m_jointBase[i].HitTest(pball, hittime, hit);
       if (newtime >= 0.f && newtime <= hittime)
       {
          fHit = true;
          hittime = newtime;
          coll = hit;
-         coll.hitvel.x = 0.f;
-         coll.hitvel.y = 0.f;
+         coll.m_hitvel.x = 0.f;
+         coll.m_hitvel.y = 0.f;
       }
    }
 
@@ -589,7 +589,7 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
    // (nominally) const Ball instance, save the old value so that we can
    // restore it when we're done.
    const float oldvely = pball->m_vel.y;   // save the old velocity value
-   pball->m_vel.y -= m_plungeranim.m_speed;     // WARNING! EVIL OVERRIDE OF CONST INSTANCE POINTER!!!
+   pball->m_vel.y -= m_plungerMover.m_speed;     // WARNING! EVIL OVERRIDE OF CONST INSTANCE POINTER!!!
 
    // Figure the impulse from hitting the moving end.
    // Calculate this as the product of the plunger speed and the
@@ -618,29 +618,29 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
    // physics.)
    const float ballMass = (pball->m_mass > 0.05f ? pball->m_mass : 0.05f);
    const float xferRatio = m_pplunger->m_d.m_momentumXfer / ballMass;
-   const float deltay = m_plungeranim.m_speed * xferRatio;
+   const float deltay = m_plungerMover.m_speed * xferRatio;
 
    // check the moving bits
-   newtime = m_plungeranim.m_linesegEnd.HitTest(pball, hittime, hit);
+   newtime = m_plungerMover.m_linesegEnd.HitTest(pball, hittime, hit);
    if (newtime >= 0.f && newtime <= hittime)
    {
       fHit = true;
       hittime = newtime;
       coll = hit;
-      coll.hitvel.x = 0.f;
-      coll.hitvel.y = deltay;
+      coll.m_hitvel.x = 0.f;
+      coll.m_hitvel.y = deltay;
    }
 
    for (int i = 0; i < 2; i++)
    {
-      newtime = m_plungeranim.m_jointEnd[i].HitTest(pball, hittime, hit);
+      newtime = m_plungerMover.m_jointEnd[i].HitTest(pball, hittime, hit);
       if (newtime >= 0.f && newtime <= hittime)
       {
          fHit = true;
          hittime = newtime;
          coll = hit;
-         coll.hitvel.x = 0.f;
-         coll.hitvel.y = deltay;
+         coll.m_hitvel.x = 0.f;
+         coll.m_hitvel.y = deltay;
       }
    }
 
@@ -677,16 +677,16 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
       // enough to let the ball move a little bit, so that there's a
       // non-zero time to the next collision with the plunger.  We'll
       // then catch up again and push it along a little further.
-      if (m_plungeranim.m_travelLimit < m_plungeranim.m_pos)
-         (const_cast<HitPlunger*>(this))->m_plungeranim.m_travelLimit = m_plungeranim.m_pos; // HACK
+      if (m_plungerMover.m_travelLimit < m_plungerMover.m_pos)
+         (const_cast<HitPlunger*>(this))->m_plungerMover.m_travelLimit = m_plungerMover.m_pos; // HACK
 
       // If the distance is negative, it means the objects are
       // overlapping.  Make certain that we give the ball enough
       // of an impulse to get it not to overlap.
-      if (coll.hitdistance <= 0.0f
-         && coll.hitvel.y == deltay
-         && fabsf(deltay) < fabsf(coll.hitdistance))
-         coll.hitvel.y = -fabsf(coll.hitdistance);
+      if (coll.m_hitdistance <= 0.0f
+         && coll.m_hitvel.y == deltay
+         && fabsf(deltay) < fabsf(coll.m_hitdistance))
+         coll.m_hitvel.y = -fabsf(coll.m_hitdistance);
 
       // return the collision time delta
       return hittime;
@@ -700,15 +700,15 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
 
 void HitPlunger::Collide(CollisionEvent& coll)
 {
-   Ball * const pball = coll.ball;
+   Ball * const pball = coll.m_ball;
 
-   float dot = (pball->m_vel.x - coll.hitvel.x)* coll.hitnormal.x + (pball->m_vel.y - coll.hitvel.y) * coll.hitnormal.y;
+   float dot = (pball->m_vel.x - coll.m_hitvel.x)* coll.m_hitnormal.x + (pball->m_vel.y - coll.m_hitvel.y) * coll.m_hitnormal.y;
 
-   if (dot >= -C_LOWNORMVEL)                                                              // nearly receding ... make sure of conditions
-   {                                                                                                       // otherwise if clearly approaching .. process the collision
-      if (dot > C_LOWNORMVEL) return;                                         // is this velocity clearly receding (i.e must > a minimum)             
+   if (dot >= -C_LOWNORMVEL)             // nearly receding ... make sure of conditions
+   {                                     // otherwise if clearly approaching .. process the collision
+      if (dot > C_LOWNORMVEL) return;    // is this velocity clearly receding (i.e must > a minimum)
 #ifdef C_EMBEDDED
-      if (coll.hitdistance < -C_EMBEDDED)
+      if (coll.m_hitdistance < -C_EMBEDDED)
          dot = -C_EMBEDSHOT;             // has ball become embedded???, give it a kick
       else
          return;
@@ -717,29 +717,29 @@ void HitPlunger::Collide(CollisionEvent& coll)
 
 #ifdef C_DISP_GAIN 
    // correct displacements, mostly from low velocity blidness, an alternative to true acceleration processing     
-   float hdist = -C_DISP_GAIN * coll.hitdistance;         // distance found in hit detection
+   float hdist = -C_DISP_GAIN * coll.m_hitdistance;         // distance found in hit detection
    if (hdist > 1.0e-4f)
    {                                                                                               // magnitude of jump
       if (hdist > C_DISP_LIMIT)
       {
          hdist = C_DISP_LIMIT;
       }                                         // crossing ramps, delta noise
-      pball->m_pos += hdist * coll.hitnormal;    // push along norm, back to free area (use the norm, but is not correct)
+      pball->m_pos += hdist * coll.m_hitnormal;    // push along norm, back to free area (use the norm, but is not correct)
    }
 #endif
 
    // figure the basic impulse
-   const float impulse = dot * -1.45f / (1.0f + 1.0f / m_plungeranim.m_mass);
+   const float impulse = dot * -1.45f / (1.0f + 1.0f / m_plungerMover.m_mass);
 
    // We hit the ball, so attenuate any plunger bounce we have queued up
    // for a Fire event.  Real plungers bounce quite a bit when fired without
    // hitting anything, but bounce much less when they hit something, since
    // most of the momentum gets transfered out of the plunger and to the ball.
-   m_plungeranim.m_fireBounce *= 0.6f;
+   m_plungerMover.m_fireBounce *= 0.6f;
 
    // Check for a downward collision with the tip.  This is the moving
    // part of the plunger, so it has some special handling.
-   if (coll.hitvel.y != 0.0f)
+   if (coll.m_hitvel.y != 0.0f)
    {
       // The tip hit the ball (or vice versa).
       //
@@ -758,17 +758,17 @@ void HitPlunger::Collide(CollisionEvent& coll)
       // isn't entirely unreasonable physically - you could look at it as
       // accounting for the spring tension and friction.
       const float reverseImpulseFudgeFactor = .22f;
-      m_plungeranim.m_reverseImpulse = pball->m_vel.y * impulse
-         * (pball->m_mass / m_plungeranim.m_mass)
+      m_plungerMover.m_reverseImpulse = pball->m_vel.y * impulse
+         * (pball->m_mass / m_plungerMover.m_mass)
          * reverseImpulseFudgeFactor;
    }
 
    // update the ball speed for the impulse
-   pball->m_vel += impulse * coll.hitnormal;
+   pball->m_vel += impulse * coll.m_hitnormal;
 
    pball->m_vel *= 0.999f;           //friction all axiz     //!! TODO: fix this
 
-   const float scatter_vel = m_plungeranim.m_scatterVelocity * g_pplayer->m_ptable->m_globalDifficulty;// apply dificulty weighting
+   const float scatter_vel = m_plungerMover.m_scatterVelocity * g_pplayer->m_ptable->m_globalDifficulty;// apply dificulty weighting
 
    if (scatter_vel > 0.f && fabsf(pball->m_vel.y) > scatter_vel) //skip if low velocity 
    {
@@ -784,5 +784,5 @@ void HitPlunger::Collide(CollisionEvent& coll)
 
 void HitPlunger::Contact(CollisionEvent& coll, const float dtime)
 {
-   coll.ball->HandleStaticContact(coll, m_friction, dtime);
+   coll.m_ball->HandleStaticContact(coll, m_friction, dtime);
 }

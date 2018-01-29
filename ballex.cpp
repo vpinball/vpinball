@@ -79,7 +79,7 @@ STDMETHODIMP BallEx::put_VelX(float newVal)
 
    m_pball->m_vel.x = newVal;
 
-   m_pball->CalcHitRect();
+   m_pball->CalcHitBBox();
 
    return S_OK;
 }
@@ -99,7 +99,7 @@ STDMETHODIMP BallEx::put_VelY(float newVal)
 
    m_pball->m_vel.y = newVal;
 
-   m_pball->CalcHitRect();
+   m_pball->CalcHitBBox();
 
    return S_OK;
 }
@@ -137,7 +137,7 @@ STDMETHODIMP BallEx::put_VelZ(float newVal)
 
    m_pball->m_vel.z = newVal;
 
-   m_pball->CalcHitRect();
+   m_pball->CalcHitBBox();
 
    return S_OK;
 }
@@ -157,7 +157,7 @@ STDMETHODIMP BallEx::put_AngVelX(float newVal)
 
    m_pball->m_angularvelocity.x = newVal;
 
-   m_pball->CalcHitRect();
+   m_pball->CalcHitBBox();
 
    return S_OK;
 }
@@ -177,7 +177,7 @@ STDMETHODIMP BallEx::put_AngVelY(float newVal)
 
    m_pball->m_angularvelocity.y = newVal;
 
-   m_pball->CalcHitRect();
+   m_pball->CalcHitBBox();
 
    return S_OK;
 }
@@ -197,7 +197,7 @@ STDMETHODIMP BallEx::put_AngVelZ(float newVal)
 
    m_pball->m_angularvelocity.z = newVal;
 
-   m_pball->CalcHitRect();
+   m_pball->CalcHitBBox();
 
    return S_OK;
 }
@@ -217,7 +217,7 @@ STDMETHODIMP BallEx::put_AngMomX(float newVal)
 
    m_pball->m_angularmomentum.x = newVal;
 
-   m_pball->CalcHitRect();
+   m_pball->CalcHitBBox();
 
    return S_OK;
 }
@@ -237,7 +237,7 @@ STDMETHODIMP BallEx::put_AngMomY(float newVal)
 
    m_pball->m_angularmomentum.y = newVal;
 
-   m_pball->CalcHitRect();
+   m_pball->CalcHitBBox();
 
    return S_OK;
 }
@@ -257,7 +257,7 @@ STDMETHODIMP BallEx::put_AngMomZ(float newVal)
 
    m_pball->m_angularmomentum.z = newVal;
 
-   m_pball->CalcHitRect();
+   m_pball->CalcHitBBox();
 
    return S_OK;
 }
@@ -420,7 +420,7 @@ STDMETHODIMP BallEx::put_Radius(float newVal)
    m_pball->m_radius = newVal;
    m_pball->m_inertia = (float)(2.0 / 5.0) * m_pball->m_radius*m_pball->m_radius * m_pball->m_mass;
 
-   m_pball->CalcHitRect();
+   m_pball->CalcHitBBox();
 
    return S_OK;
 }

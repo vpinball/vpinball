@@ -376,7 +376,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 
    _ASSERTE(m_phitplunger);
 
-   const PlungerAnimObject& pa = m_phitplunger->m_plungeranim;
+   const PlungerMoverObject& pa = m_phitplunger->m_plungerMover;
    const int frame0 = (int)((pa.m_pos - pa.m_frameStart) / (pa.m_frameEnd - pa.m_frameStart) * (cframes - 1) + 0.5f);
    const int frame = (frame0 < 0 ? 0 : frame0 >= cframes ? cframes - 1 : frame0);
 
@@ -1218,7 +1218,7 @@ STDMETHODIMP Plunger::PullBack()
 {
    // initiate a pull; the speed is set by our pull speed property
    if (m_phitplunger)
-      m_phitplunger->m_plungeranim.PullBack(m_d.m_speedPull);
+      m_phitplunger->m_plungerMover.PullBack(m_d.m_speedPull);
 
    return S_OK;
 }
@@ -1321,13 +1321,13 @@ STDMETHODIMP Plunger::Fire()
          // is constant (modulo some mechanical randomness).  Simulate
          // this by triggering a release from the maximum retracted
          // position.
-         m_phitplunger->m_plungeranim.Fire(1.0f);
+         m_phitplunger->m_plungerMover.Fire(1.0f);
       }
       else
       {
          // Regular plunger - trigger a release from the current
          // position, using the keyboard firing strength.
-         m_phitplunger->m_plungeranim.Fire();
+         m_phitplunger->m_plungerMover.Fire();
       }
    }
 
@@ -1629,8 +1629,8 @@ STDMETHODIMP Plunger::CreateBall(IBall **pBallEx)
 {
    if (m_phitplunger)
    {
-      const float x = (m_phitplunger->m_plungeranim.m_x + m_phitplunger->m_plungeranim.m_x2) * 0.5f;
-      const float y = m_phitplunger->m_plungeranim.m_pos - (25.0f + 0.01f); //!! assumes ball radius 25
+      const float x = (m_phitplunger->m_plungerMover.m_x + m_phitplunger->m_plungerMover.m_x2) * 0.5f;
+      const float y = m_phitplunger->m_plungerMover.m_pos - (25.0f + 0.01f); //!! assumes ball radius 25
 
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, x, y);
 

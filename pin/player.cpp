@@ -875,7 +875,7 @@ void Player::InitDebugHitStructure()
 
    for (int i = 0; i < m_vdebugho.Size(); ++i)
    {
-      m_vdebugho.ElementAt(i)->CalcHitRect();
+      m_vdebugho.ElementAt(i)->CalcHitBBox();
       m_debugoctree.AddElement(m_vdebugho.ElementAt(i));
    }
 
@@ -1391,6 +1391,18 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
          // build list of hitables
          m_vhitables.push_back(ph);
+
+         // Adding objects to animation update list (slingshot is done below :/)
+         if (pe->GetItemType() == eItemDispReel)
+         {
+             DispReel * const dispReel = (DispReel*)pe;
+             m_vanimate.AddElement(&dispReel->m_dispreelanim);
+         } else
+         if (pe->GetItemType() == eItemLightSeq)
+         {
+             LightSeq * const lightseq = (LightSeq*)pe;
+             m_vanimate.AddElement(&lightseq->m_lightseqanim);
+         }
       }
    }
 
@@ -1401,23 +1413,20 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    for (int i = 0; i < m_vho.Size(); ++i)
    {
-      HitObject *pho = m_vho.ElementAt(i);
+      HitObject * const pho = m_vho.ElementAt(i);
 
-      pho->CalcHitRect();
+      pho->CalcHitBBox();
 
       m_hitoctree.AddElement(pho);
 
       if (pho->GetType() == eFlipper)
          m_vFlippers.push_back((HitFlipper*)pho);
+      else if (pho->GetType() == eLineSegSlingshot) // Adding objects to animation update list, only slingshot! (dispreels and lightseqs are added above :/)
+         m_vanimate.AddElement(&((LineSegSlingshot*)pho)->m_slingshotanim);
 
-      AnimObject *pao = pho->GetAnimObject();
-      if (pao)
-      {
-         if (pho->GetType() == eLineSeg) // only slingshot still uses this
-            m_vanimate.AddElement(pao);
-         if (pao->FMover()) // spinner, gate, flipper, plunger
-            m_vmover.push_back(pao);
-      }
+      MoverObject * const pmo = pho->GetMoverObject();
+      if (pmo && pmo->AddToList()) // Spinner, Gate, Flipper, Plunger (ball is added separately on each create ball)
+         m_vmover.push_back(pmo);
    }
 
    FRect3D tableBounds = m_ptable->GetBoundingBox();
@@ -1985,9 +1994,9 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    pball->m_pfedebug = (IFireEvents *)pball->m_pballex;
 
    m_vball.push_back(pball);
-   m_vmover.push_back(&pball->m_ballanim);
+   m_vmover.push_back(&pball->m_ballMover); // balls are always added separately to this list!
 
-   pball->CalcHitRect();
+   pball->CalcHitBBox();
 
    m_vho_dynamic.AddElement(pball);
    m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
@@ -2029,7 +2038,7 @@ void Player::DestroyBall(Ball *pball)
    }
 
    RemoveFromVector(m_vball, pball);
-   RemoveFromVector<AnimObject*>(m_vmover, &pball->m_ballanim);
+   RemoveFromVector<MoverObject*>(m_vmover, &pball->m_ballMover);
 
    m_vho_dynamic.RemoveElement(pball);
    m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
@@ -2502,7 +2511,7 @@ void Player::mechPlungerUpdate()        // called on every integral physics fram
 // scaling factor that applies on both sides of the park position.  This eliminates the need for
 // separate calibration on each side of the park position, which seems to produce more consistent
 // and linear behavior.  The Pinscape Controller plunger uses this method.
-float PlungerAnimObject::mechPlunger() const
+float PlungerMoverObject::mechPlunger() const
 {
    if (g_pplayer->m_pininput.m_linearPlunger)
    {
@@ -2767,8 +2776,8 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 #endif
             ) // don't play with frozen balls
          {
-            pball->m_coll.hittime = hittime;          // search upto current hittime
-            pball->m_coll.obj = NULL;
+            pball->m_coll.m_hittime = hittime;          // search upto current hittime
+            pball->m_coll.m_obj = NULL;
 
             // always check for playfield and top glass
             DoHitTest(pball, &m_hitPlayfield, pball->m_coll);
@@ -2785,28 +2794,28 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
                m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll);  // dynamic objects
             }
 
-            const float htz = pball->m_coll.hittime; // this ball's hit time
-            if (htz < 0.f) pball->m_coll.obj = NULL; // no negative time allowed
+            const float htz = pball->m_coll.m_hittime; // this ball's hit time
+            if (htz < 0.f) pball->m_coll.m_obj = NULL; // no negative time allowed
 
-            if (pball->m_coll.obj)                                  // hit object
+            if (pball->m_coll.m_obj)                   // hit object
             {
 #ifdef _DEBUGPHYSICS
-               ++c_hitcnts;                                        // stats for display
+               ++c_hitcnts;                            // stats for display
 
-               if (/*pball->m_coll.hitRigid &&*/ pball->m_coll.hitdistance < -0.0875f) //rigid and embedded
+               if (/*pball->m_coll.m_hitRigid &&*/ pball->m_coll.m_hitdistance < -0.0875f) //rigid and embedded
                   ++c_embedcnts;
 #endif
                ///////////////////////////////////////////////////////////////////////////
-               if (htz <= hittime)                         // smaller hit time??
+               if (htz <= hittime)                     // smaller hit time??
                {
-                  hittime = htz;                          // record actual event time
+                  hittime = htz;                       // record actual event time
 
-                  if (htz < STATICTIME)                   // less than static time interval
+                  if (htz < STATICTIME)                // less than static time interval
                   {
-                     /*if (!pball->m_coll.hitRigid) hittime = STATICTIME; // non-rigid ... set Static time
+                     /*if (!pball->m_coll.m_hitRigid) hittime = STATICTIME; // non-rigid ... set Static time
                      else*/ if (--StaticCnts < 0)
                      {
-                        StaticCnts = 0;                 // keep from wrapping
+                        StaticCnts = 0;                // keep from wrapping
                         hittime = STATICTIME;
                      }
                   }
@@ -2836,16 +2845,16 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 #ifdef C_DYNAMIC
              pball->m_dynamic > 0 &&
 #endif
-             pball->m_coll.obj && pball->m_coll.hittime <= hittime) // find balls with hit objects and minimum time
+             pball->m_coll.m_obj && pball->m_coll.m_hittime <= hittime) // find balls with hit objects and minimum time
          {
             // now collision, contact and script reactions on active ball (object)+++++++++
-            HitObject * const pho = pball->m_coll.obj; // object that ball hit in trials
-            m_pactiveball = pball;                     // For script that wants the ball doing the collision
+            HitObject * const pho = pball->m_coll.m_obj; // object that ball hit in trials
+            m_pactiveball = pball;                       // For script that wants the ball doing the collision
 #ifdef _DEBUGPHYSICS
             c_collisioncnt++;
 #endif
-            pho->Collide(pball->m_coll);               //!!!!! 3) collision on active ball
-            pball->m_coll.obj = NULL;                  // remove trial hit object pointer
+            pho->Collide(pball->m_coll);                 //!!!!! 3) collision on active ball
+            pball->m_coll.m_obj = NULL;                  // remove trial hit object pointer
 
             // Collide may have changed the velocity of the ball, 
             // and therefore the bounding box for the next hit cycle
@@ -2857,11 +2866,11 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
             }
             else
             {
-               pball->CalcHitRect(); // do new boundings 
+               pball->CalcHitBBox(); // do new boundings 
 
 #ifdef C_DYNAMIC
                // is this ball static? .. set static and quench        
-               if (/*pball->m_coll.hitRigid &&*/ (pball->m_coll.hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts
+               if (/*pball->m_coll.m_hitRigid &&*/ (pball->m_coll.m_hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts  //!! rather test isContact??
                {
                   const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are taken from simulation
                   if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_ptable->m_Gravity*m_ptable->m_Gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_ptable->m_Gravity / GRAVITYCONST)
@@ -2896,10 +2905,10 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
        */
       if (rand_mt_01() < 0.5f) // swap order of contact handling randomly
          for (size_t i = 0; i < m_contacts.size(); ++i)
-            m_contacts[i].obj->Contact(m_contacts[i], hittime);
+            m_contacts[i].m_obj->Contact(m_contacts[i], hittime);
       else
          for (size_t i = m_contacts.size() - 1; i != -1; --i)
-            m_contacts[i].obj->Contact(m_contacts[i], hittime);
+            m_contacts[i].m_obj->Contact(m_contacts[i], hittime);
 
       m_contacts.clear();
 
@@ -2912,7 +2921,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
          const unsigned int p0 = (pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) + 1) % MAX_BALL_TRAIL_POS;
          const unsigned int p1 = (pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) + 2) % MAX_BALL_TRAIL_POS;
 
-         if (/*pball->m_coll.hitRigid &&*/ (pball->m_coll.hitdistance < (float)PHYS_TOUCH) && (pball->m_oldpos[p0].x != FLT_MAX) && (pball->m_oldpos[p1].x != FLT_MAX)) // only if already initialized
+         if (/*pball->m_coll.m_hitRigid &&*/ (pball->m_coll.m_hitdistance < (float)PHYS_TOUCH) && (pball->m_oldpos[p0].x != FLT_MAX) && (pball->m_oldpos[p1].x != FLT_MAX)) // only if already initialized
          {
             /*const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are copy pasted from above
             if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_ptable->m_Gravity*m_ptable->m_Gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_ptable->m_Gravity / GRAVITYCONST
@@ -5190,8 +5199,8 @@ void Player::DoDebugObjectMenu(int x, int y)
    ballT.m_pos = v3d;
    ballT.m_vel = v3d2 - v3d;
    ballT.m_radius = 0;
-   ballT.m_coll.hittime = 1.0f;
-   ballT.CalcHitRect();
+   ballT.m_coll.m_hittime = 1.0f;
+   ballT.CalcHitBBox();
 
    //const float slope = (v3d2.y - v3d.y)/(v3d2.z - v3d.z);
    //const float yhit = v3d.y - (v3d.z*slope);

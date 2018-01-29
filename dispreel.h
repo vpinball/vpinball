@@ -104,14 +104,14 @@ public:
 
    float       m_renderwidth, m_renderheight;     // size of each reel (rendered)
 
+   DispReelAnimObject m_dispreelanim;
+
 private:
    _reelInfo   ReelInfo[MAX_REELS];
 
    float       m_reeldigitwidth;  // size of the individual reel digits (in bitmap form)
    float       m_reeldigitheight;
    U32         m_timenextupdate;
-
-   DispReelAnimObject m_dispreelanim;
 
    struct TexCoordRect
    {

@@ -335,22 +335,22 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    const float coil_ramp_up = m_d.m_OverridePhysics ? m_d.m_OverrideCoilRampUp : m_d.m_rampUp;
 
    if (coil_ramp_up <= 0.f)
-      phf->m_flipperanim.m_torqueRampupSpeed = 1e6f; // set very high for instant coil response
+      phf->m_flipperMover.m_torqueRampupSpeed = 1e6f; // set very high for instant coil response
    else
-      phf->m_flipperanim.m_torqueRampupSpeed = min(strength / coil_ramp_up, 1e6f);
+      phf->m_flipperMover.m_torqueRampupSpeed = min(strength / coil_ramp_up, 1e6f);
 
-   phf->m_flipperanim.m_EnableRotateEvent = 0;
+   phf->m_flipperMover.m_EnableRotateEvent = 0;
    phf->m_pfe = NULL;
 
-   phf->m_flipperanim.m_torqueDamping = m_d.m_torqueDamping;
-   phf->m_flipperanim.m_torqueDampingAngle = m_d.m_torqueDampingAngle;
+   phf->m_flipperMover.m_torqueDamping = m_d.m_torqueDamping;
+   phf->m_flipperMover.m_torqueDampingAngle = m_d.m_torqueDampingAngle;
 
-   phf->m_flipperanim.m_fEnabled = m_d.m_fEnabled;
-   phf->m_flipperanim.m_fVisible = m_d.m_fVisible;
+   phf->m_flipperMover.m_fEnabled = m_d.m_fEnabled;
+   phf->m_flipperMover.m_fVisible = m_d.m_fVisible;
 
    pvho->AddElement(phf);
    phf->m_pflipper = this;
-   phf->m_flipperanim.m_pflipper = this;
+   phf->m_flipperMover.m_pflipper = this;
    m_phitflipper = phf;
 }
 
@@ -638,8 +638,8 @@ STDMETHODIMP Flipper::RotateToEnd() // power stroke to hit ball, key/button down
       g_pplayer->m_pininput.m_leftkey_down_usec_rotate_to_end = usec(); // debug only
       g_pplayer->m_pininput.m_leftkey_down_frame_rotate_to_end = g_pplayer->m_overall_frames;
 
-      m_phitflipper->m_flipperanim.m_EnableRotateEvent = 1;
-      m_phitflipper->m_flipperanim.SetSolenoidState(true);
+      m_phitflipper->m_flipperMover.m_EnableRotateEvent = 1;
+      m_phitflipper->m_flipperMover.SetSolenoidState(true);
    }
 
    return S_OK;
@@ -649,8 +649,8 @@ STDMETHODIMP Flipper::RotateToStart() // return to park, key/button up/released
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperanim.m_EnableRotateEvent = -1;
-      m_phitflipper->m_flipperanim.SetSolenoidState(false);
+      m_phitflipper->m_flipperMover.m_EnableRotateEvent = -1;
+      m_phitflipper->m_flipperMover.SetSolenoidState(false);
    }
 
    return S_OK;
@@ -659,7 +659,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 
-   if (m_phitflipper && !m_phitflipper->m_flipperanim.m_fVisible)
+   if (m_phitflipper && !m_phitflipper->m_flipperMover.m_fVisible)
       return;
    if (m_phitflipper == NULL && !m_d.m_fVisible)
       return;
@@ -695,7 +695,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
    if (m_phitflipper)
    {
       Matrix3D matTemp;
-      matTemp.RotateZMatrix(m_phitflipper->m_flipperanim.m_angleCur);
+      matTemp.RotateZMatrix(m_phitflipper->m_flipperMover.m_angleCur);
       matTrafo.Multiply(matTemp, matTrafo);
    }
    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
@@ -1228,7 +1228,7 @@ STDMETHODIMP Flipper::put_Length(float newVal)
 STDMETHODIMP Flipper::get_EOSTorque(float *pVal)
 {
     if ( m_phitflipper )
-        *pVal = m_phitflipper->m_flipperanim.m_torqueDamping;
+        *pVal = m_phitflipper->m_flipperMover.m_torqueDamping;
     else
         *pVal = m_d.m_torqueDamping;
 
@@ -1239,7 +1239,7 @@ STDMETHODIMP Flipper::put_EOSTorque(float newVal)
 {
     if ( m_phitflipper )
     {
-        m_phitflipper->m_flipperanim.m_torqueDamping = newVal;
+        m_phitflipper->m_flipperMover.m_torqueDamping = newVal;
         m_d.m_torqueDamping = newVal;    
     }
     else
@@ -1255,7 +1255,7 @@ STDMETHODIMP Flipper::put_EOSTorque(float newVal)
 STDMETHODIMP Flipper::get_EOSTorqueAngle(float *pVal)
 {
     if ( m_phitflipper )
-        *pVal = m_phitflipper->m_flipperanim.m_torqueDampingAngle;
+        *pVal = m_phitflipper->m_flipperMover.m_torqueDampingAngle;
     else
         *pVal = m_d.m_torqueDampingAngle;
 
@@ -1266,7 +1266,7 @@ STDMETHODIMP Flipper::put_EOSTorqueAngle(float newVal)
 {
     if ( m_phitflipper )
     {
-        m_phitflipper->m_flipperanim.m_torqueDampingAngle = newVal;
+        m_phitflipper->m_flipperMover.m_torqueDampingAngle = newVal;
         m_d.m_torqueDampingAngle = newVal;    
     }
     else
@@ -1283,7 +1283,7 @@ STDMETHODIMP Flipper::get_StartAngle(float *pVal)
 {
    if (m_phitflipper)
    {
-      *pVal = RADTOANG(m_phitflipper->m_flipperanim.m_angleStart);
+      *pVal = RADTOANG(m_phitflipper->m_flipperMover.m_angleStart);
    }
    else
       *pVal = m_d.m_StartAngle;
@@ -1295,7 +1295,7 @@ STDMETHODIMP Flipper::put_StartAngle(float newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperanim.SetStartAngle(ANGTORAD(newVal));
+      m_phitflipper->m_flipperMover.SetStartAngle(ANGTORAD(newVal));
    }
    else
    {
@@ -1311,7 +1311,7 @@ STDMETHODIMP Flipper::get_EndAngle(float *pVal)
 {
    if (m_phitflipper)
    {
-      *pVal = RADTOANG(m_phitflipper->m_flipperanim.m_angleEnd);
+      *pVal = RADTOANG(m_phitflipper->m_flipperMover.m_angleEnd);
    }
    else
       *pVal = m_d.m_EndAngle;
@@ -1323,7 +1323,7 @@ STDMETHODIMP Flipper::put_EndAngle(float newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperanim.SetEndAngle(ANGTORAD(newVal));
+      m_phitflipper->m_flipperMover.SetEndAngle(ANGTORAD(newVal));
    }
    else
    {
@@ -1339,7 +1339,7 @@ STDMETHODIMP Flipper::get_CurrentAngle(float *pVal)
 {
    if (m_phitflipper)
    {
-      *pVal = RADTOANG(m_phitflipper->m_flipperanim.m_angleCur);
+      *pVal = RADTOANG(m_phitflipper->m_flipperMover.m_angleCur);
       return S_OK;
    }
    else
@@ -1466,7 +1466,7 @@ STDMETHODIMP Flipper::get_Mass(float *pVal)
 {
     if (m_phitflipper)
     {
-        *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideMass : m_phitflipper->m_flipperanim.GetMass();
+        *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideMass : m_phitflipper->m_flipperMover.GetMass();
     }
     else
         *pVal = m_d.m_mass;
@@ -1478,7 +1478,7 @@ STDMETHODIMP Flipper::put_Mass(float newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperanim.SetMass(m_d.m_OverridePhysics ? m_d.m_OverrideMass : newVal);
+      m_phitflipper->m_flipperMover.SetMass(m_d.m_OverridePhysics ? m_d.m_OverrideMass : newVal);
    }
    else
    {
@@ -1592,7 +1592,7 @@ STDMETHODIMP Flipper::get_Strength(float *pVal)
 {
    if (m_phitflipper)
    {
-       *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_phitflipper->m_flipperanim.GetStrength();
+       *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_phitflipper->m_flipperMover.GetStrength();
    }
    else
 	   *pVal = m_d.m_strength;
@@ -1604,7 +1604,7 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperanim.SetStrength(m_d.m_OverridePhysics ? m_d.m_OverrideStrength : newVal);
+      m_phitflipper->m_flipperMover.SetStrength(m_d.m_OverridePhysics ? m_d.m_OverrideStrength : newVal);
    }
    else
    {
@@ -1620,7 +1620,7 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
 
 STDMETHODIMP Flipper::get_Visible(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_phitflipper ? m_phitflipper->m_flipperanim.m_fVisible : m_d.m_fVisible);
+   *pVal = (VARIANT_BOOL)FTOVB(m_phitflipper ? m_phitflipper->m_flipperMover.m_fVisible : m_d.m_fVisible);
 
    return S_OK;
 }
@@ -1629,7 +1629,7 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperanim.m_fVisible = VBTOF(newVal); //m_d.m_fVisible
+      m_phitflipper->m_flipperMover.m_fVisible = VBTOF(newVal); //m_d.m_fVisible
    }
    else
    {
@@ -1642,7 +1642,7 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
 
 STDMETHODIMP Flipper::get_Enabled(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_phitflipper ? m_phitflipper->m_flipperanim.m_fEnabled : m_d.m_fEnabled);
+   *pVal = (VARIANT_BOOL)FTOVB(m_phitflipper ? m_phitflipper->m_flipperMover.m_fEnabled : m_d.m_fEnabled);
 
    return S_OK;
 }
@@ -1651,7 +1651,7 @@ STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperanim.m_fEnabled = VBTOF(newVal); //m_d.m_fVisible
+      m_phitflipper->m_flipperMover.m_fEnabled = VBTOF(newVal); //m_d.m_fVisible
    }
    else
    {
@@ -1783,7 +1783,7 @@ STDMETHODIMP Flipper::get_Return(float *pVal)
 {
    if (m_phitflipper)
    {
-       *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : m_phitflipper->m_flipperanim.GetReturnRatio();
+       *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : m_phitflipper->m_flipperMover.GetReturnRatio();
    }
    else
        *pVal = m_d.m_return;
@@ -1795,7 +1795,7 @@ STDMETHODIMP Flipper::put_Return(float newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperanim.SetReturnRatio(m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : clamp(newVal, 0.0f, 1.0f));
+      m_phitflipper->m_flipperMover.SetReturnRatio(m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : clamp(newVal, 0.0f, 1.0f));
    }
    else
    {

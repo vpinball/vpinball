@@ -7,8 +7,8 @@ Ball::Ball()
    m_id = ballID;
    ballID++;
 
-   m_coll.ball = this;      // TODO: this needs to move somewhere else
-   m_coll.obj = NULL;
+   m_coll.m_ball = this;      // TODO: this needs to move somewhere else
+   m_coll.m_obj = NULL;
    m_pballex = NULL;
    m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
    m_pinballEnv = NULL;
@@ -58,7 +58,7 @@ void Ball::Init(const float mass)
    m_angularvelocity.SetZero();
    m_angularmomentum.SetZero();
 
-   m_ballanim.m_pball = this;
+   m_ballMover.m_pball = this;
 
    m_frozen = false;
 
@@ -68,7 +68,7 @@ void Ball::Init(const float mass)
    m_visible = true;
    m_decalMode = g_pplayer->m_ptable->m_BallDecalMode;
 
-   m_coll.obj = NULL;
+   m_coll.m_obj = NULL;
 #ifdef C_DYNAMIC
    m_dynamic = C_DYNAMIC; // assume dynamic
 #endif
@@ -146,7 +146,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const flo
    {													// otherwise if clearly approaching .. process the collision
       if (dot > C_LOWNORMVEL) return;					//is this velocity clearly receding (i.e must > a minimum)
 #ifdef C_EMBEDDED
-      if (m_coll.hitdistance < -C_EMBEDDED)
+      if (m_coll.m_hitdistance < -C_EMBEDDED)
          dot = -C_EMBEDSHOT;							// has ball become embedded???, give it a kick
       else return;
 #endif
@@ -154,8 +154,8 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const flo
 
 #ifdef C_DISP_GAIN 
    // correct displacements, mostly from low velocity, alternative to acceleration processing
-   float hdist = -C_DISP_GAIN * m_coll.hitdistance;	// limit delta noise crossing ramps,
-   if (hdist > 1.0e-4f)					// when hit detection checked it what was the displacement
+   float hdist = -C_DISP_GAIN * m_coll.m_hitdistance; // limit delta noise crossing ramps,
+   if (hdist > 1.0e-4f)                               // when hit detection checked it what was the displacement
    {
       if (hdist > C_DISP_LIMIT)
          hdist = C_DISP_LIMIT;	// crossing ramps, delta noise
@@ -298,16 +298,16 @@ float Ball::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll
    if (fabsf(hitnormal.x) <= FLT_MIN && fabsf(hitnormal.y) <= FLT_MIN && fabsf(hitnormal.z) <= FLT_MIN)
       return -1.f;
 
-   coll.hitnormal = hitnormal;
-   coll.hitnormal.Normalize();
+   coll.m_hitnormal = hitnormal;
+   coll.m_hitnormal.Normalize();
 
-   coll.hitdistance = bnd;			// actual contact distance
-   //coll.hitRigid = true;			// rigid collision type
+   coll.m_hitdistance = bnd;			// actual contact distance
+   //coll.m_hitRigid = true;			// rigid collision type
 
 #ifdef BALL_CONTACTS
-   coll.isContact = isContact;
+   coll.m_isContact = isContact;
    if (isContact)
-      coll.hit_org_normalvelocity = bnv;
+      coll.m_hit_org_normalvelocity = bnv;
 #endif
 
    return hittime;
@@ -315,7 +315,7 @@ float Ball::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll
 
 void Ball::Collide(CollisionEvent& coll)
 {
-   Ball * const pball = coll.ball;
+   Ball * const pball = coll.m_ball;
 
    // make sure we process each ball/ball collision only once
    // (but if we are frozen, there won't be a second collision event, so deal with it now!)
@@ -326,7 +326,7 @@ void Ball::Collide(CollisionEvent& coll)
 
    // target ball to object ball delta velocity
    const Vertex3Ds vrel = pball->m_vel - m_vel;
-   const Vertex3Ds vnormal = coll.hitnormal;
+   const Vertex3Ds vnormal = coll.m_hitnormal;
    float dot = vrel.Dot(vnormal);
 
    // correct displacements, mostly from low velocity, alternative to true acceleration processing
@@ -334,7 +334,7 @@ void Ball::Collide(CollisionEvent& coll)
    {														// otherwise if clearly approaching .. process the collision
       if (dot > C_LOWNORMVEL) return;						// is this velocity clearly receding (i.e must > a minimum)		
 #ifdef C_EMBEDDED
-      if (coll.hitdistance < -C_EMBEDDED)
+      if (coll.m_hitdistance < -C_EMBEDDED)
          dot = -C_EMBEDSHOT;		// has ball become embedded???, give it a kick
       else return;
 #endif
@@ -347,7 +347,7 @@ void Ball::Collide(CollisionEvent& coll)
    }
 
 #ifdef C_DISP_GAIN
-   float edist = -C_DISP_GAIN * coll.hitdistance;
+   float edist = -C_DISP_GAIN * coll.m_hitdistance;
    if (edist > 1.0e-4f)
    {
       if (edist > C_DISP_LIMIT)
@@ -357,7 +357,7 @@ void Ball::Collide(CollisionEvent& coll)
       // use the norm, but is not correct, but cheaply handled
    }
 
-   edist = -C_DISP_GAIN * m_coll.hitdistance;	// noisy value .... needs investigation
+   edist = -C_DISP_GAIN * m_coll.m_hitdistance;	// noisy value .... needs investigation
    if (!m_frozen && edist > 1.0e-4f)
    {
       if (edist > C_DISP_LIMIT)
@@ -385,21 +385,21 @@ void Ball::Collide(CollisionEvent& coll)
 
 void Ball::HandleStaticContact(const CollisionEvent& coll, const float friction, const float dtime)
 {
-   const float normVel = m_vel.Dot(coll.hitnormal);   // this should be zero, but only up to +/- C_CONTACTVEL
+   const float normVel = m_vel.Dot(coll.m_hitnormal);   // this should be zero, but only up to +/- C_CONTACTVEL
 
    // If some collision has changed the ball's velocity, we may not have to do anything.
    if (normVel <= C_CONTACTVEL)
    {
       const Vertex3Ds fe = m_mass * g_pplayer->m_gravity;      // external forces (only gravity for now)
-      const float dot = fe.Dot(coll.hitnormal);
-      const float normalForce = std::max(0.0f, -(dot*dtime + coll.hit_org_normalvelocity)); // normal force is always nonnegative
+      const float dot = fe.Dot(coll.m_hitnormal);
+      const float normalForce = std::max(0.0f, -(dot*dtime + coll.m_hit_org_normalvelocity)); // normal force is always nonnegative
 
       // Add just enough to kill original normal velocity and counteract the external forces.
-      m_vel += normalForce * coll.hitnormal;
+      m_vel += normalForce * coll.m_hitnormal;
 
 #ifdef C_EMBEDVELLIMIT
-      if (coll.hitdistance <= (float)PHYS_TOUCH)
-          m_vel += coll.hitnormal*max(min(C_EMBEDVELLIMIT,-coll.hitdistance),(float)PHYS_TOUCH);
+      if (coll.m_hitdistance <= (float)PHYS_TOUCH)
+          m_vel += coll.m_hitnormal*max(min(C_EMBEDVELLIMIT,-coll.m_hitdistance),(float)PHYS_TOUCH);
 #endif
 
 #ifdef C_BALL_SPIN_HACK2 // hacky killing of ball spin
@@ -407,13 +407,13 @@ void Ball::HandleStaticContact(const CollisionEvent& coll, const float friction,
       if (m_vel.Length() < 1.f) //!! 1.f=magic, also see below
       {
          vell = (1.f-vell)*(float)C_BALL_SPIN_HACK2;
-         const float damp = (1.0f - friction * clamp(-coll.hit_org_normalvelocity / C_CONTACTVEL, 0.0f,1.0f)) * vell + (1.0f-vell); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
+         const float damp = (1.0f - friction * clamp(-coll.m_hit_org_normalvelocity / C_CONTACTVEL, 0.0f,1.0f)) * vell + (1.0f-vell); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
          m_angularmomentum *= damp;
          m_angularvelocity *= damp;
       }
 #endif
 
-      ApplyFriction(coll.hitnormal, dtime, friction);
+      ApplyFriction(coll.m_hitnormal, dtime, friction);
    }
 }
 
@@ -493,24 +493,24 @@ void Ball::ApplySurfaceImpulse(const Vertex3Ds& rotI, const Vertex3Ds& impulse)
    m_angularvelocity = m_angularmomentum / m_inertia;
 }
 
-void Ball::CalcHitRect()
+void Ball::CalcHitBBox()
 {
    /* this would be okay if travelling only in vel direction, but the ball could also be reflected by something
-   m_rcHitRect.left   = min(m_pos.x, m_pos.x + m_vel.x) - (m_radius + 0.1f);
-   m_rcHitRect.right  = max(m_pos.x, m_pos.x + m_vel.x) + (m_radius + 0.1f);
-   m_rcHitRect.top    = min(m_pos.y, m_pos.y + m_vel.y) - (m_radius + 0.1f);
-   m_rcHitRect.bottom = max(m_pos.y, m_pos.y + m_vel.y) + (m_radius + 0.1f);
-   m_rcHitRect.zlow   = min(m_pos.z, m_pos.z + m_vel.z) - (m_radius + 0.1f);
-   m_rcHitRect.zhigh  = max(m_pos.z, m_pos.z + m_vel.z) + (m_radius + 0.1f);
+   m_hitBBox.left   = min(m_pos.x, m_pos.x + m_vel.x) - (m_radius + 0.1f);
+   m_hitBBox.right  = max(m_pos.x, m_pos.x + m_vel.x) + (m_radius + 0.1f);
+   m_hitBBox.top    = min(m_pos.y, m_pos.y + m_vel.y) - (m_radius + 0.1f);
+   m_hitBBox.bottom = max(m_pos.y, m_pos.y + m_vel.y) + (m_radius + 0.1f);
+   m_hitBBox.zlow   = min(m_pos.z, m_pos.z + m_vel.z) - (m_radius + 0.1f);
+   m_hitBBox.zhigh  = max(m_pos.z, m_pos.z + m_vel.z) + (m_radius + 0.1f);
    */
 
    const float vl = m_vel.Length() + m_radius + 0.05f; //!! 0.05f = paranoia
-   m_rcHitRect.left = m_pos.x - vl;
-   m_rcHitRect.right = m_pos.x + vl;
-   m_rcHitRect.top = m_pos.y - vl;
-   m_rcHitRect.bottom = m_pos.y + vl;
-   m_rcHitRect.zlow = m_pos.z - vl;
-   m_rcHitRect.zhigh = m_pos.z + vl;
+   m_hitBBox.left = m_pos.x - vl;
+   m_hitBBox.right = m_pos.x + vl;
+   m_hitBBox.top = m_pos.y - vl;
+   m_hitBBox.bottom = m_pos.y + vl;
+   m_hitBBox.zlow = m_pos.z - vl;
+   m_hitBBox.zhigh = m_pos.z + vl;
 
    m_rcHitRadiusSqr = vl*vl;
 
@@ -521,7 +521,7 @@ void Ball::CalcHitRect()
       m_defaultZ = m_pos.z;
 }
 
-void BallAnimObject::UpdateDisplacements(const float dtime)
+void BallMoverObject::UpdateDisplacements(const float dtime)
 {
    m_pball->UpdateDisplacements(dtime);
 }
@@ -537,7 +537,7 @@ void Ball::UpdateDisplacements(const float dtime)
       m_drsq = ds.LengthSquared(); // used to determine if static ball
 #endif
 
-      CalcHitRect();
+      CalcHitBBox();
 
       Matrix3 mat3;
       mat3.CreateSkewSymmetric(m_angularvelocity);
@@ -553,7 +553,7 @@ void Ball::UpdateDisplacements(const float dtime)
    }
 }
 
-void BallAnimObject::UpdateVelocities()
+void BallMoverObject::UpdateVelocities()
 {
    m_pball->UpdateVelocities();
 }
@@ -574,5 +574,5 @@ void Ball::UpdateVelocities()
    m_dynamic = C_DYNAMIC; // always set .. after adding velocity
 #endif
 
-   CalcHitRect();
+   CalcHitBBox();
 }

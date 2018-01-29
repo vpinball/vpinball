@@ -22,15 +22,15 @@
 
 #include "stdafx.h"
 
-FlipperAnimObject::FlipperAnimObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
+FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
    float zlow, float zhigh, float strength, float mass, float returnRatio)
 {
    m_height = zhigh - zlow;
 
    m_hitcircleBase.m_pfe = NULL;
 
-   m_hitcircleBase.m_rcHitRect.zlow = zlow;
-   m_hitcircleBase.m_rcHitRect.zhigh = zhigh;
+   m_hitcircleBase.m_hitBBox.zlow = zlow;
+   m_hitcircleBase.m_hitBBox.zhigh = zhigh;
 
    m_hitcircleBase.center = center;
 
@@ -128,7 +128,7 @@ FlipperAnimObject::FlipperAnimObject(const Vertex2D& center, float baser, float 
 
 HitFlipper::HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
    float zlow, float zhigh, float strength, float mass, float returnRatio)
-   : m_flipperanim(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, strength, mass, returnRatio)
+   : m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, strength, mass, returnRatio)
 {
    m_last_hittime = 0;
 }
@@ -138,18 +138,18 @@ HitFlipper::~HitFlipper()
    //m_pflipper->m_phitflipper = NULL;
 }
 
-void HitFlipper::CalcHitRect()
+void HitFlipper::CalcHitBBox()
 {
    // Allow roundoff
-   m_rcHitRect.left = m_flipperanim.m_hitcircleBase.center.x - m_flipperanim.m_flipperradius - m_flipperanim.m_endradius - 0.1f;
-   m_rcHitRect.right = m_flipperanim.m_hitcircleBase.center.x + m_flipperanim.m_flipperradius + m_flipperanim.m_endradius + 0.1f;
-   m_rcHitRect.top = m_flipperanim.m_hitcircleBase.center.y - m_flipperanim.m_flipperradius - m_flipperanim.m_endradius - 0.1f;
-   m_rcHitRect.bottom = m_flipperanim.m_hitcircleBase.center.y + m_flipperanim.m_flipperradius + m_flipperanim.m_endradius + 0.1f;
-   m_rcHitRect.zlow = m_flipperanim.m_hitcircleBase.m_rcHitRect.zlow;
-   m_rcHitRect.zhigh = m_flipperanim.m_hitcircleBase.m_rcHitRect.zhigh;
+   m_hitBBox.left = m_flipperMover.m_hitcircleBase.center.x - m_flipperMover.m_flipperradius - m_flipperMover.m_endradius - 0.1f;
+   m_hitBBox.right = m_flipperMover.m_hitcircleBase.center.x + m_flipperMover.m_flipperradius + m_flipperMover.m_endradius + 0.1f;
+   m_hitBBox.top = m_flipperMover.m_hitcircleBase.center.y - m_flipperMover.m_flipperradius - m_flipperMover.m_endradius - 0.1f;
+   m_hitBBox.bottom = m_flipperMover.m_hitcircleBase.center.y + m_flipperMover.m_flipperradius + m_flipperMover.m_endradius + 0.1f;
+   m_hitBBox.zlow = m_flipperMover.m_hitcircleBase.m_hitBBox.zlow;
+   m_hitBBox.zhigh = m_flipperMover.m_hitcircleBase.m_hitBBox.zhigh;
 }
 
-void FlipperAnimObject::SetStartAngle(const float r)
+void FlipperMoverObject::SetStartAngle(const float r)
 {
     m_angleStart = r;
     m_angleMin = min(m_angleStart, m_angleEnd);
@@ -161,7 +161,7 @@ void FlipperAnimObject::SetStartAngle(const float r)
         m_angleCur = m_angleMin;
 }
 
-void FlipperAnimObject::SetEndAngle(const float r)
+void FlipperMoverObject::SetEndAngle(const float r)
 {
     m_angleEnd = r;
     m_angleMin = min(m_angleStart, m_angleEnd);
@@ -173,37 +173,37 @@ void FlipperAnimObject::SetEndAngle(const float r)
         m_angleCur = m_angleMin;
 }
 
-float FlipperAnimObject::GetReturnRatio()
+float FlipperMoverObject::GetReturnRatio()
 {
    return m_returnRatio;
 }
 
-void FlipperAnimObject::SetReturnRatio(const float r)
+void FlipperMoverObject::SetReturnRatio(const float r)
 {
    m_returnRatio = r;
 }
 
-float FlipperAnimObject::GetMass()
+float FlipperMoverObject::GetMass()
 {
    return 3.0f * m_inertia / (m_flipperradius*m_flipperradius); //!! also change if wiring of moment of inertia happens (see ctor)
 }
 
-void FlipperAnimObject::SetMass(const float m)
+void FlipperMoverObject::SetMass(const float m)
 {
    m_inertia = (float)(1.0 / 3.0) * m * (m_flipperradius*m_flipperradius); //!! also change if wiring of moment of inertia happens (see ctor)
 }
 
-float FlipperAnimObject::GetStrength()
+float FlipperMoverObject::GetStrength()
 {
    return m_force;
 }
 
-void FlipperAnimObject::SetStrength(const float s)
+void FlipperMoverObject::SetStrength(const float s)
 {
    m_force = s;
 }
 
-void FlipperAnimObject::UpdateDisplacements(const float dtime)
+void FlipperMoverObject::UpdateDisplacements(const float dtime)
 {
    m_angleCur += m_anglespeed*dtime;	// move flipper angle
 
@@ -259,7 +259,7 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
    }
 }
 
-void FlipperAnimObject::UpdateVelocities()
+void FlipperMoverObject::UpdateVelocities()
 {
    //const float springDispl = GetStrokeRatio() * 0.5f + 0.5f; // range: [0.5 .. 1]
    //const float springForce = -0.6f * springDispl * m_force;
@@ -315,14 +315,14 @@ void FlipperAnimObject::UpdateVelocities()
    m_angularAcceleration = torque / m_inertia;
 }
 
-void FlipperAnimObject::ApplyImpulse(const Vertex3Ds& rotI)
+void FlipperMoverObject::ApplyImpulse(const Vertex3Ds& rotI)
 {
    m_angularMomentum += rotI.z;            // only rotation about z axis
    m_anglespeed = m_angularMomentum / m_inertia;    // TODO: figure out moment of inertia
 }
 
 
-void FlipperAnimObject::SetSolenoidState(const bool s) // true = button pressed, false = released
+void FlipperMoverObject::SetSolenoidState(const bool s) // true = button pressed, false = released
 {
    m_solState = s;
 #ifdef DEBUG_FLIPPERS
@@ -331,7 +331,7 @@ void FlipperAnimObject::SetSolenoidState(const bool s) // true = button pressed,
 #endif
 }
 
-float FlipperAnimObject::GetStrokeRatio() const
+float FlipperMoverObject::GetStrokeRatio() const
 {
    return (m_angleCur - m_angleStart) / (m_angleEnd - m_angleStart); //!! End == Start?
 }
@@ -342,7 +342,7 @@ static inline Vertex3Ds CrossZ(float rz, const Vertex3Ds& v)
    return Vertex3Ds(-rz * v.y, rz * v.x, 0.f);
 }
 
-Vertex3Ds FlipperAnimObject::SurfaceVelocity(const Vertex3Ds& surfP) const
+Vertex3Ds FlipperMoverObject::SurfaceVelocity(const Vertex3Ds& surfP) const
 {
    //const Vertex3Ds angularVelocity(0, 0, m_anglespeed);
    //return CrossProduct( angularVelocity, surfP );
@@ -350,7 +350,7 @@ Vertex3Ds FlipperAnimObject::SurfaceVelocity(const Vertex3Ds& surfP) const
    return CrossZ(m_anglespeed, surfP);
 }
 
-Vertex3Ds FlipperAnimObject::SurfaceAcceleration(const Vertex3Ds& surfP) const
+Vertex3Ds FlipperMoverObject::SurfaceAcceleration(const Vertex3Ds& surfP) const
 {
    // tangential acceleration = (0, 0, omega) x surfP
    const Vertex3Ds tangAcc = CrossZ(m_angularAcceleration, surfP);
@@ -362,7 +362,7 @@ Vertex3Ds FlipperAnimObject::SurfaceAcceleration(const Vertex3Ds& surfP) const
    return tangAcc + centrAcc;
 }
 
-float FlipperAnimObject::GetHitTime() const
+float FlipperMoverObject::GetHitTime() const
 {
    if (m_anglespeed == 0.f)
       return -1.0f;
@@ -384,9 +384,9 @@ float FlipperAnimObject::GetHitTime() const
 
 float HitFlipper::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
-   if (!m_flipperanim.m_fEnabled) return -1;
+   if (!m_flipperMover.m_fEnabled) return -1;
 
-   const bool lastface = m_flipperanim.m_lastHitFace;
+   const bool lastface = m_flipperMover.m_lastHitFace;
 
    // for effective computing, adding a last face hit value to speed calculations 
    //  a ball can only hit one face never two
@@ -401,7 +401,7 @@ float HitFlipper::HitTest(const Ball * const pball, const float dtime, Collision
    hittime = HitTestFlipperFace(pball, dtime, coll, !lastface); //second face
    if (hittime >= 0.f)
    {
-      (const_cast<HitFlipper*>(this))->m_flipperanim.m_lastHitFace = !lastface;	// change this face to check first // HACK
+      (const_cast<HitFlipper*>(this))->m_flipperMover.m_lastHitFace = !lastface; // change this face to check first // HACK
       return hittime;
    }
 
@@ -409,15 +409,15 @@ float HitFlipper::HitTest(const Ball * const pball, const float dtime, Collision
    if (hittime >= 0.f)
       return hittime;
 
-   hittime = m_flipperanim.m_hitcircleBase.HitTest(pball, dtime, coll);
+   hittime = m_flipperMover.m_hitcircleBase.HitTest(pball, dtime, coll);
    if (hittime >= 0.f)
    {
-      coll.hitvel.x = 0;		//Tangent velocity of contact point (rotate Normal right)
-      coll.hitvel.y = 0;		//units: rad*d/t (Radians*diameter/time
+      coll.m_hitvel.x = 0;		//Tangent velocity of contact point (rotate Normal right)
+      coll.m_hitvel.y = 0;		//units: rad*d/t (Radians*diameter/time
 
-      //!! unused coll.hitmoment = 0;			//moment is zero ... only friction
-      coll.hitmoment_bit = true;
-      //!! unused coll.hitangularrate = 0;		//radians/time at collison
+      //!! unused coll.m_hitmoment = 0;			//moment is zero ... only friction
+      coll.m_hitmoment_bit = true;
+      //!! unused coll.m_hitangularrate = 0;		//radians/time at collison
 
       return hittime;
    }
@@ -427,16 +427,16 @@ float HitFlipper::HitTest(const Ball * const pball, const float dtime, Collision
 
 float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime, CollisionEvent& coll) const // replacement
 {
-   const float angleCur = m_flipperanim.m_angleCur;
-   float anglespeed = m_flipperanim.m_anglespeed;		// rotation rate
+   const float angleCur = m_flipperMover.m_angleCur;
+   float anglespeed = m_flipperMover.m_anglespeed;		// rotation rate
 
-   const Vertex2D flipperbase = m_flipperanim.m_hitcircleBase.center;
+   const Vertex2D flipperbase = m_flipperMover.m_hitcircleBase.center;
 
-   const float angleMin = m_flipperanim.m_angleMin;
-   const float angleMax = m_flipperanim.m_angleMax;
+   const float angleMin = m_flipperMover.m_angleMin;
+   const float angleMax = m_flipperMover.m_angleMax;
 
    const float ballr = pball->m_radius;
-   const float feRadius = m_flipperanim.m_endradius;
+   const float feRadius = m_flipperMover.m_endradius;
 
    const float ballrEndr = feRadius + ballr;			// magnititude of (ball - flipperEnd)
 
@@ -447,7 +447,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime,
    const float ballvy = pball->m_vel.y;
 
    const Vertex2D vp(0.0f,								//m_flipperradius*sin(0));
-      -m_flipperanim.m_flipperradius);					//m_flipperradius*(-cos(0));
+      -m_flipperMover.m_flipperradius);					//m_flipperradius*(-cos(0));
 
    float ballvtx, ballvty;	// new ball position at time t in flipper face coordinate
    float contactAng;
@@ -523,21 +523,21 @@ float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime,
 
    const float hitz = pball->m_pos.z + pball->m_vel.z*t; // check for a hole, relative to ball rolling point at hittime
 
-   if ((hitz + ballr * 0.5f) < m_rcHitRect.zlow		//check limits of object's height and depth
-      || (hitz - ballr * 0.5f) > m_rcHitRect.zhigh)
+   if ((hitz + ballr * 0.5f) < m_hitBBox.zlow		//check limits of object's height and depth
+      || (hitz - ballr * 0.5f) > m_hitBBox.zhigh)
       return -1.0f;
 
    // ok we have a confirmed contact, calc the stats, remember there are "near" solution, so all
    // parameters need to be calculated from the actual configuration, i.e. contact radius must be calc'ed
 
    const float inv_cbcedist = 1.0f / cbcedist;
-   coll.hitnormal.x = ballvtx*inv_cbcedist;				// normal vector from flipper end to ball
-   coll.hitnormal.y = ballvty*inv_cbcedist;
-   coll.hitnormal.z = 0.0f;
+   coll.m_hitnormal.x = ballvtx*inv_cbcedist;				// normal vector from flipper end to ball
+   coll.m_hitnormal.y = ballvty*inv_cbcedist;
+   coll.m_hitnormal.z = 0.0f;
 
    const Vertex2D dist(
-      pball->m_pos.x + ballvx*t - ballr*coll.hitnormal.x - m_flipperanim.m_hitcircleBase.center.x, // vector from base to flipperEnd plus the projected End radius
-      pball->m_pos.y + ballvy*t - ballr*coll.hitnormal.y - m_flipperanim.m_hitcircleBase.center.y);
+      pball->m_pos.x + ballvx*t - ballr*coll.m_hitnormal.x - m_flipperMover.m_hitcircleBase.center.x, // vector from base to flipperEnd plus the projected End radius
+      pball->m_pos.y + ballvy*t - ballr*coll.m_hitnormal.y - m_flipperMover.m_hitcircleBase.center.y);
 
    const float distance = sqrtf(dist.x*dist.x + dist.y*dist.y);	// distance from base center to contact point
 
@@ -545,31 +545,31 @@ float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime,
       anglespeed = 0.f;							// rotation stopped
 
    const float inv_distance = 1.0f / distance;
-   coll.hitvel.x = -dist.y*inv_distance; //Unit Tangent vector velocity of contact point(rotate normal right)
-   coll.hitvel.y = dist.x*inv_distance;
+   coll.m_hitvel.x = -dist.y*inv_distance; //Unit Tangent vector velocity of contact point(rotate normal right)
+   coll.m_hitvel.y = dist.x*inv_distance;
 
-   //!! unused coll.hitmoment = distance;				//moment arm diameter
-   coll.hitmoment_bit = (distance == 0.f);
-   //!! unused coll.hitangularrate = anglespeed;		//radians/time at collison
+   //!! unused coll.m_hitmoment = distance;				//moment arm diameter
+   coll.m_hitmoment_bit = (distance == 0.f);
+   //!! unused coll.m_hitangularrate = anglespeed;		//radians/time at collison
 
    //recheck using actual contact angle of velocity direction
    const Vertex2D dv(
-      ballvx - coll.hitvel.x *anglespeed*distance,
-      ballvy - coll.hitvel.y *anglespeed*distance); //delta velocity ball to face
+      ballvx - coll.m_hitvel.x *anglespeed*distance,
+      ballvy - coll.m_hitvel.y *anglespeed*distance); //delta velocity ball to face
 
-   const float bnv = dv.x*coll.hitnormal.x + dv.y*coll.hitnormal.y;  //dot Normal to delta v
+   const float bnv = dv.x*coll.m_hitnormal.x + dv.y*coll.m_hitnormal.y;  //dot Normal to delta v
 
    if (bnv >= 0.f)
       return -1.0f; // not hit ... ball is receding from face already, must have been embedded or shallow angled
 
    if (fabsf(bnv) <= C_CONTACTVEL && bfend <= (float)PHYS_TOUCH)
    {
-      coll.isContact = true;
-      coll.hit_org_normalvelocity = bnv;
+      coll.m_isContact = true;
+      coll.m_hit_org_normalvelocity = bnv;
    }
 
-   coll.hitdistance = bfend;			//actual contact distance ..
-   //coll.hitRigid = true;				// collision type
+   coll.m_hitdistance = bfend;			//actual contact distance ..
+   //coll.m_hitRigid = true;				// collision type
 
    return t;
 }
@@ -577,28 +577,28 @@ float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime,
 
 float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool face) const
 {
-   const float angleCur = m_flipperanim.m_angleCur;
-   float anglespeed = m_flipperanim.m_anglespeed;				// rotation rate
+   const float angleCur = m_flipperMover.m_angleCur;
+   float anglespeed = m_flipperMover.m_anglespeed;				// rotation rate
 
-   const Vertex2D flipperbase = m_flipperanim.m_hitcircleBase.center;
-   const float feRadius = m_flipperanim.m_endradius;
+   const Vertex2D flipperbase = m_flipperMover.m_hitcircleBase.center;
+   const float feRadius = m_flipperMover.m_endradius;
 
-   const float angleMin = m_flipperanim.m_angleMin;
-   const float angleMax = m_flipperanim.m_angleMax;
+   const float angleMin = m_flipperMover.m_angleMin;
+   const float angleMax = m_flipperMover.m_angleMax;
 
-   const float ballr = pball->m_radius;
+   const float ballr  = pball->m_radius;
    const float ballvx = pball->m_vel.x;
    const float ballvy = pball->m_vel.y;
 
    // flipper positions at zero degrees rotation
 
-   float ffnx = m_flipperanim.zeroAngNorm.x; // flipper face normal vector //Face2 
+   float ffnx = m_flipperMover.zeroAngNorm.x; // flipper face normal vector //Face2 
    if (face == LeftFace) ffnx = -ffnx;		  // negative for face1
 
-   const float ffny = m_flipperanim.zeroAngNorm.y;	  // norm y component same for either face
+   const float ffny = m_flipperMover.zeroAngNorm.y;	  // norm y component same for either face
    const Vertex2D vp(									  // face segment V1 point
-      m_flipperanim.m_hitcircleBase.radius*ffnx, // face endpoint of line segment on base radius
-      m_flipperanim.m_hitcircleBase.radius*ffny);
+      m_flipperMover.m_hitcircleBase.radius*ffnx, // face endpoint of line segment on base radius
+      m_flipperMover.m_hitcircleBase.radius*ffny);
 
    Vertex2D F;				// flipper face normal
 
@@ -686,59 +686,59 @@ float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime
       T.x = F.y; T.y = -F.x;
    }	// rotate to form Tangent vector
 
-   const float bfftd = ballvtx * T.x + ballvty * T.y;			// ball to flipper face tanget distance	
+   const float bfftd = ballvtx * T.x + ballvty * T.y;			// ball to flipper face tanget distance
 
-   const float len = m_flipperanim.m_faceLength; // face segment length ... i.g same on either face									
+   const float len = m_flipperMover.m_faceLength; // face segment length ... e.g. same on either face
    if (bfftd < -C_TOL_ENDPNTS || bfftd > len + C_TOL_ENDPNTS) return -1.0f;	// not in range of touching
 
    const float hitz = pball->m_pos.z + pball->m_vel.z*t;	// check for a hole, relative to ball rolling point at hittime
 
-   if ((hitz + ballr * 0.5f) < m_rcHitRect.zlow			//check limits of object's height and depth 
-      || (hitz - ballr * 0.5f) > m_rcHitRect.zhigh)
+   if ((hitz + ballr * 0.5f) < m_hitBBox.zlow			//check limits of object's height and depth
+      || (hitz - ballr * 0.5f) > m_hitBBox.zhigh)
       return -1.0f;
 
    // ok we have a confirmed contact, calc the stats, remember there are "near" solution, so all
    // parameters need to be calculated from the actual configuration, i.e contact radius must be calc'ed
 
-   coll.hitnormal.x = F.x;	// hit normal is same as line segment normal
-   coll.hitnormal.y = F.y;
-   coll.hitnormal.z = 0.0f;
+   coll.m_hitnormal.x = F.x;	// hit normal is same as line segment normal
+   coll.m_hitnormal.y = F.y;
+   coll.m_hitnormal.z = 0.0f;
 
    const Vertex2D dist( // calculate moment from flipper base center
-      pball->m_pos.x + ballvx*t - ballr*F.x - m_flipperanim.m_hitcircleBase.center.x,  //center of ball + projected radius to contact point
-      pball->m_pos.y + ballvy*t - ballr*F.y - m_flipperanim.m_hitcircleBase.center.y); // all at time t
+      pball->m_pos.x + ballvx*t - ballr*F.x - m_flipperMover.m_hitcircleBase.center.x,  //center of ball + projected radius to contact point
+      pball->m_pos.y + ballvy*t - ballr*F.y - m_flipperMover.m_hitcircleBase.center.y); // all at time t
 
    const float distance = sqrtf(dist.x*dist.x + dist.y*dist.y);	// distance from base center to contact point
 
    const float inv_dist = 1.0f / distance;
-   coll.hitvel.x = -dist.y*inv_dist;		//Unit Tangent velocity of contact point(rotate Normal clockwise)
-   coll.hitvel.y = dist.x*inv_dist;
+   coll.m_hitvel.x = -dist.y*inv_dist;		//Unit Tangent velocity of contact point(rotate Normal clockwise)
+   coll.m_hitvel.y = dist.x*inv_dist;
 
    //coll.hitvelocity.z = 0.0f; // used as normal velocity so far, only if isContact is set, see below
 
    if (contactAng >= angleMax && anglespeed > 0.f || contactAng <= angleMin && anglespeed < 0.f)	// hit limits ??? 
       anglespeed = 0.0f;							// rotation stopped
 
-   //!! unused coll.hitmoment = distance;				//moment arm diameter
-   coll.hitmoment_bit = (distance == 0.f);
-   //!! unused coll.hitangularrate = anglespeed;		//radians/time at collison
+   //!! unused coll.m_hitmoment = distance;				//moment arm diameter
+   coll.m_hitmoment_bit = (distance == 0.f);
+   //!! unused coll.m_hitangularrate = anglespeed;		//radians/time at collison
 
    const Vertex2D dv(
-      ballvx - coll.hitvel.x *anglespeed*distance,
-      ballvy - coll.hitvel.y *anglespeed*distance); //delta velocity ball to face
+      ballvx - coll.m_hitvel.x *anglespeed*distance,
+      ballvy - coll.m_hitvel.y *anglespeed*distance); //delta velocity ball to face
 
-   const float bnv = dv.x*coll.hitnormal.x + dv.y*coll.hitnormal.y;  //dot Normal to delta v
+   const float bnv = dv.x*coll.m_hitnormal.x + dv.y*coll.m_hitnormal.y;  //dot Normal to delta v
 
    if (fabsf(bnv) <= C_CONTACTVEL && bffnd <= (float)PHYS_TOUCH)
    {
-      coll.isContact = true;
-      coll.hit_org_normalvelocity = bnv;
+      coll.m_isContact = true;
+      coll.m_hit_org_normalvelocity = bnv;
    }
    else if (bnv > C_LOWNORMVEL)
       return -1.0f; // not hit ... ball is receding from endradius already, must have been embedded
 
-   coll.hitdistance = bffnd;			//normal ...actual contact distance ... 
-   //coll.hitRigid = true;				// collision type
+   coll.m_hitdistance = bffnd;			//normal ...actual contact distance ... 
+   //coll.m_hitRigid = true;				// collision type
 
    return t;
 }
@@ -746,21 +746,21 @@ float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime
 
 void HitFlipper::Collide(CollisionEvent& coll)
 {
-   Ball * const pball = coll.ball;
-   const Vertex3Ds normal = coll.hitnormal;
+   Ball * const pball = coll.m_ball;
+   const Vertex3Ds normal = coll.m_hitnormal;
 
    const Vertex3Ds rB = -pball->m_radius * normal;
    const Vertex3Ds hitPos = pball->m_pos + rB;
 
    const Vertex3Ds cF(
-      m_flipperanim.m_hitcircleBase.center.x,
-      m_flipperanim.m_hitcircleBase.center.y,
+      m_flipperMover.m_hitcircleBase.center.x,
+      m_flipperMover.m_hitcircleBase.center.y,
       pball->m_pos.z);     // make sure collision happens in same z plane where ball is
 
    const Vertex3Ds rF = hitPos - cF;       // displacement relative to flipper center
 
    const Vertex3Ds vB = pball->SurfaceVelocity(rB);
-   const Vertex3Ds vF = m_flipperanim.SurfaceVelocity(rF);
+   const Vertex3Ds vF = m_flipperMover.SurfaceVelocity(rF);
    const Vertex3Ds vrel = vB - vF;
    float bnv = normal.Dot(vrel);       // relative normal velocity
 
@@ -768,14 +768,14 @@ void HitFlipper::Collide(CollisionEvent& coll)
    slintf("Collision\n  normal: %.2f %.2f %.2f\n  rel.vel.: %.2f %.2f %.2f\n", normal.x, normal.y, normal.z, vrel.x, vrel.y, vrel.z);
    slintf("  ball vel. %.2f %.2f %.2f\n", pball->m_vel.x, pball->m_vel.y, pball->m_vel.z);
    slintf("  norm.vel.: %.2f\n", bnv);
-   slintf("  flipper: %.2f %.2f\n", m_flipperanim.m_angleCur, m_flipperanim.m_anglespeed);
+   slintf("  flipper: %.2f %.2f\n", m_flipperMover.m_angleCur, m_flipperMover.m_anglespeed);
 #endif
 
    if (bnv >= -C_LOWNORMVEL)							// nearly receding ... make sure of conditions
    {													// otherwise if clearly approaching .. process the collision
       if (bnv > C_LOWNORMVEL) return;					//is this velocity clearly receding (i.e must > a minimum)		
 #ifdef C_EMBEDDED
-      if (coll.hitdistance < -C_EMBEDDED)
+      if (coll.m_hitdistance < -C_EMBEDDED)
          bnv = -C_EMBEDSHOT;							// has ball become embedded???, give it a kick
       else return;
 #endif
@@ -783,12 +783,12 @@ void HitFlipper::Collide(CollisionEvent& coll)
 
 #ifdef C_DISP_GAIN 
    // correct displacements, mostly from low velocity blindness, an alternative to true acceleration processing
-   float hdist = -C_DISP_GAIN * coll.hitdistance;		// distance found in hit detection
+   float hdist = -C_DISP_GAIN * coll.m_hitdistance;		// distance found in hit detection
    if (hdist > 1.0e-4f)
    {
       if (hdist > C_DISP_LIMIT)
          hdist = C_DISP_LIMIT;	// crossing ramps, delta noise
-      pball->m_pos += hdist * coll.hitnormal;	// push along norm, back to free area; use the norm, but is not correct
+      pball->m_pos += hdist * coll.m_hitnormal;	// push along norm, back to free area; use the norm, but is not correct
    }
 #endif
 
@@ -803,7 +803,7 @@ void HitFlipper::Collide(CollisionEvent& coll)
     */
    const float angImp = -angResp.z;     // minus because impulse will apply in -normal direction
    float flipperResponseScaling = 1.0f;
-   if (m_flipperanim.m_isInContact && m_flipperanim.m_contactTorque * angImp >= 0.f)
+   if (m_flipperMover.m_isInContact && m_flipperMover.m_contactTorque * angImp >= 0.f)
    {
       // if impulse pushes against stopper, allow no loss of kinetic energy to flipper
       // (still allow flipper recoil, but a diminished amount)
@@ -820,21 +820,21 @@ void HitFlipper::Collide(CollisionEvent& coll)
    const float epsilon = ElasticityWithFalloff(m_elasticity, falloff, bnv);
 
    float impulse = -(1.0f + epsilon) * bnv
-      / (pball->m_invMass + normal.Dot(CrossProduct(angResp / m_flipperanim.m_inertia, rF)));
+      / (pball->m_invMass + normal.Dot(CrossProduct(angResp / m_flipperMover.m_inertia, rF)));
    Vertex3Ds flipperImp = -(impulse * flipperResponseScaling) * normal;
 
 #ifdef DEBUG_FLIPPERS
-   slintf("  epsilon: %.2f\n  angular response: %.3f\n", epsilon, normal.Dot(CrossProduct(angResp / m_flipperanim.m_inertia, rF)));
+   slintf("  epsilon: %.2f\n  angular response: %.3f\n", epsilon, normal.Dot(CrossProduct(angResp / m_flipperMover.m_inertia, rF)));
 #endif
 
    Vertex3Ds rotI = CrossProduct(rF, flipperImp);
-   if (m_flipperanim.m_isInContact)
+   if (m_flipperMover.m_isInContact)
    {
-      if (rotI.z * m_flipperanim.m_contactTorque < 0.f)     // pushing against the solenoid?
+      if (rotI.z * m_flipperMover.m_contactTorque < 0.f)     // pushing against the solenoid?
       {
          // Get a bound on the time the flipper needs to return to static conditions.
          // If it's too short, we treat the flipper as static during the whole collision.
-         const float recoilTime = -rotI.z / m_flipperanim.m_contactTorque; // time flipper needs to eliminate this impulse, in 10ms
+         const float recoilTime = -rotI.z / m_flipperMover.m_contactTorque; // time flipper needs to eliminate this impulse, in 10ms
 
          // Check ball normal velocity after collision. If the ball rebounded
          // off the flipper, we need to make sure it does so with full
@@ -856,7 +856,7 @@ void HitFlipper::Collide(CollisionEvent& coll)
    }
 
    pball->m_vel += (impulse * pball->m_invMass) * normal;      // new velocity for ball after impact
-   m_flipperanim.ApplyImpulse(rotI);
+   m_flipperMover.ApplyImpulse(rotI);
 
    // apply friction
 
@@ -873,14 +873,14 @@ void HitFlipper::Collide(CollisionEvent& coll)
       float kt = pball->m_invMass + tangent.Dot(CrossProduct(crossB / pball->m_inertia, rB));
 
       const Vertex3Ds crossF = CrossProduct(rF, tangent);
-      kt += tangent.Dot(CrossProduct(crossF / m_flipperanim.m_inertia, rF));    // flipper only has angular response
+      kt += tangent.Dot(CrossProduct(crossF / m_flipperMover.m_inertia, rF));    // flipper only has angular response
 
       // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
       const float maxFric = m_friction * impulse;
       const float jt = clamp(-vt / kt, -maxFric, maxFric);
 
       pball->ApplySurfaceImpulse(jt * crossB, jt * tangent);
-      m_flipperanim.ApplyImpulse(-jt * crossF);
+      m_flipperMover.ApplyImpulse(-jt * crossF);
    }
 
 #ifdef C_DYNAMIC
@@ -889,8 +889,8 @@ void HitFlipper::Collide(CollisionEvent& coll)
 
    if ((bnv < -0.25f) && (g_pplayer->m_time_msec - m_last_hittime) > 250) // limit rate to 250 milliseconds per event
    {
-      //!! unused const float distance = coll.hitmoment;                     // moment .... and the flipper response
-      const float flipperHit = /*(distance == 0.0f)*/ coll.hitmoment_bit ? -1.0f : -bnv; // move event processing to end of collision handler...
+      //!! unused const float distance = coll.m_hitmoment;                     // moment .... and the flipper response
+      const float flipperHit = /*(distance == 0.0f)*/ coll.m_hitmoment_bit ? -1.0f : -bnv; // move event processing to end of collision handler...
       if (flipperHit < 0.f)
          m_pflipper->FireGroupEvent(DISPID_HitEvents_Hit);        // simple hit event
       else
@@ -902,18 +902,18 @@ void HitFlipper::Collide(CollisionEvent& coll)
 #ifdef DEBUG_FLIPPERS
    slintf("   ---- after collision ----\n");
    slintf("  ball vel. %.2f %.2f %.2f\n", pball->m_vel.x, pball->m_vel.y, pball->m_vel.z);
-   slintf("  flipper: %.2f %.2f\n", m_flipperanim.m_angleCur, m_flipperanim.m_anglespeed);
+   slintf("  flipper: %.2f %.2f\n", m_flipperMover.m_angleCur, m_flipperMover.m_anglespeed);
 #endif
 }
 
 void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
 {
-   Ball * const pball = coll.ball;
+   Ball * const pball = coll.m_ball;
 
-   const Vertex3Ds normal = coll.hitnormal;
+   const Vertex3Ds normal = coll.m_hitnormal;
 
 #ifdef C_EMBEDDED
-   if (coll.hitdistance < -C_EMBEDDED)
+   if (coll.m_hitdistance < -C_EMBEDDED)
       pball->m_vel += normal*0.1f; //!! magic to avoid balls being pushed by each other through resting flippers!
 #endif
 
@@ -921,14 +921,14 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
    const Vertex3Ds hitPos = pball->m_pos + rB;
 
    const Vertex3Ds cF(
-      m_flipperanim.m_hitcircleBase.center.x,
-      m_flipperanim.m_hitcircleBase.center.y,
+      m_flipperMover.m_hitcircleBase.center.x,
+      m_flipperMover.m_hitcircleBase.center.y,
       pball->m_pos.z);     // make sure collision happens in same z plane where ball is
 
    const Vertex3Ds rF = hitPos - cF;       // displacement relative to flipper center
 
    const Vertex3Ds vB = pball->SurfaceVelocity(rB);
-   const Vertex3Ds vF = m_flipperanim.SurfaceVelocity(rF);
+   const Vertex3Ds vF = m_flipperMover.SurfaceVelocity(rF);
    const Vertex3Ds vrel = vB - vF;
 
    const float normVel = vrel.Dot(normal);   // this should be zero, but only up to +/- C_CONTACTVEL
@@ -942,11 +942,11 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
    {
       // compute accelerations of point on ball and flipper
       const Vertex3Ds aB = pball->SurfaceAcceleration(rB);
-      const Vertex3Ds aF = m_flipperanim.SurfaceAcceleration(rF);
+      const Vertex3Ds aF = m_flipperMover.SurfaceAcceleration(rF);
       const Vertex3Ds arel = aB - aF;
 
       // time derivative of the normal vector
-      const Vertex3Ds normalDeriv = CrossZ(m_flipperanim.m_anglespeed, normal);
+      const Vertex3Ds normalDeriv = CrossZ(m_flipperMover.m_anglespeed, normal);
 
       // relative acceleration in the normal direction
       const float normAcc = arel.Dot(normal) + 2.0f * normalDeriv.Dot(vrel);
@@ -957,7 +957,7 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
       // hypothetical accelerations arising from a unit contact force in normal direction
       const Vertex3Ds aBc = pball->m_invMass * normal;
       const Vertex3Ds cross = CrossProduct(rF, -normal);
-      const Vertex3Ds aFc = CrossProduct(cross / m_flipperanim.m_inertia, rF);
+      const Vertex3Ds aFc = CrossProduct(cross / m_flipperMover.m_inertia, rF);
       const float contactForceAcc = normal.Dot(aBc - aFc);
 
       assert(contactForceAcc > 0.f);
@@ -966,8 +966,8 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
 
       const float j = -normAcc / contactForceAcc;
 
-      pball->m_vel += ((j * dtime) * pball->m_invMass - coll.hit_org_normalvelocity) * normal; // kill any existing normal velocity
-      m_flipperanim.ApplyImpulse((j * dtime) * cross);
+      pball->m_vel += ((j * dtime) * pball->m_invMass - coll.m_hit_org_normalvelocity) * normal; // kill any existing normal velocity
+      m_flipperMover.ApplyImpulse((j * dtime) * cross);
 
       // apply friction
 
@@ -994,7 +994,7 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
 
          numer = -slipDir.Dot(arel);
          crossF = CrossProduct(rF, slipDir);
-         denomF = slipDir.Dot(CrossProduct(crossF / -m_flipperanim.m_inertia, rF));
+         denomF = slipDir.Dot(CrossProduct(crossF / -m_flipperMover.m_inertia, rF));
       }
       else
       {
@@ -1004,7 +1004,7 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
 
          numer = -slipDir.Dot(vrel);
          crossF = CrossProduct(rF, slipDir);
-         denomF = slipDir.Dot(CrossProduct(crossF / m_flipperanim.m_inertia, rF));
+         denomF = slipDir.Dot(CrossProduct(crossF / m_flipperMover.m_inertia, rF));
       }
 
       const Vertex3Ds crossB = CrossProduct(rB, slipDir);
@@ -1012,6 +1012,6 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
       const float fric = clamp(numer / (denomB + denomF), -maxFric, maxFric);
       
       pball->ApplySurfaceImpulse((dtime * fric) * crossB, (dtime * fric) * slipDir);
-      m_flipperanim.ApplyImpulse(-(dtime * fric) * crossF);
+      m_flipperMover.ApplyImpulse(-(dtime * fric) * crossF);
    }
 }
