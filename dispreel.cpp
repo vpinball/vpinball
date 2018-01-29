@@ -4,6 +4,8 @@ DispReel::DispReel()
 {
    memset(m_d.m_szImage, 0, MAXTOKEN);
    memset(m_d.m_szSound, 0, MAXTOKEN);
+
+   m_dispreelanim.m_pDispReel = this;
 }
 
 DispReel::~DispReel()
@@ -16,8 +18,6 @@ DispReel::~DispReel()
 HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
-
-   m_dispreelanim.m_pDispReel = this;
 
    SetDefaults(fromMouseClick);
 

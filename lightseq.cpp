@@ -2,6 +2,7 @@
 
 LightSeq::LightSeq()
 {
+   m_lightseqanim.m_pLightSeq = this;
 }
 
 LightSeq::~LightSeq()
@@ -14,8 +15,6 @@ HRESULT LightSeq::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    m_d.m_v.x = x;
    m_d.m_v.y = y;
-
-   m_lightseqanim.m_pLightSeq = this;
 
    SetDefaults(fromMouseClick);
 
