@@ -10,10 +10,6 @@ public:
    {
       m_bumperanim_fHitEvent = true;
       m_bumperanim_ringAnimOffset = 0.0f;
-      m_bumperanim_fVisible = true;
-      m_elasticity = 0.3f;
-      SetFriction(0.3f);
-      m_scatter = 0;
       m_pbumper = NULL;
    }
 
@@ -24,8 +20,6 @@ public:
    Vertex3Ds m_bumperanim_hitBallPosition;
    float m_bumperanim_ringAnimOffset;
    bool m_bumperanim_fHitEvent;
-   bool m_bumperanim_fDisabled;
-   bool m_bumperanim_fVisible;
 };
 
 class SlingshotAnimObject : public AnimObject
@@ -46,9 +40,6 @@ public:
    {
       m_slingshotanim.m_iframe = false;
       m_slingshotanim.m_TimeReset = 0; // Reset
-      m_elasticity = 0.3f;
-      SetFriction(0.3f);
-      m_scatter = 0;
       m_doHitEvent = false;
       m_force = 0.f;
       m_EventTimeReset = 0;
@@ -87,6 +78,8 @@ public:
    int m_cvertex;
 };
 
+// Note that HitTriangle ONLY does include the plane and barycentric test, but NOT the edge and vertex test,
+// thus one has to add these separately per mesh
 class HitTriangle : public HitObject
 {
 public:
@@ -113,7 +106,6 @@ public:
    HitPlane(const Vertex3Ds& normal, const float d)
       : m_normal(normal), m_d(d)
    {
-      m_elasticity = 0.2f;
    }
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;

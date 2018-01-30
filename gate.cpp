@@ -386,8 +386,6 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
    {
       m_plineseg = new LineSeg(rgv[0], rgv[1], height, height + (float)(2.0*PHYS_SKIN)); //!! = ball diameter
 
-      m_plineseg->m_pfe = NULL;
-
       m_plineseg->m_elasticity = m_d.m_elasticity;
       m_plineseg->SetFriction(m_d.m_friction);
       m_plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
@@ -404,12 +402,11 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
 
    if (m_d.m_fShowBracket)
    {
-      HitCircle *phitcircle = new HitCircle(m_d.m_vCenter + halflength * tangent, 0.01f, height, height + h);
-      phitcircle->m_pfe = NULL;
+      HitCircle *phitcircle;
+      phitcircle = new HitCircle(m_d.m_vCenter + halflength * tangent, 0.01f, height, height + h);
       pvho->AddElement(phitcircle);
 
       phitcircle = new HitCircle(m_d.m_vCenter - halflength * tangent, 0.01f, height, height + h);
-      phitcircle->m_pfe = NULL;
       pvho->AddElement(phitcircle);
    }
 }

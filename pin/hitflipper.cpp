@@ -27,8 +27,6 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, floa
 {
    m_height = zhigh - zlow;
 
-   m_hitcircleBase.m_pfe = NULL;
-
    m_hitcircleBase.m_hitBBox.zlow = zlow;
    m_hitcircleBase.m_hitBBox.zhigh = zhigh;
 
@@ -246,7 +244,8 @@ void FlipperMoverObject::UpdateDisplacements(const float dtime)
    {
       const float anglespd = fabsf(RADTOANG(m_anglespeed));
       m_angularMomentum *= -0.3f; //!! make configurable?
-      m_anglespeed = (m_angularMomentum) / m_inertia;
+      m_anglespeed = m_angularMomentum / m_inertia;
+
       if (m_EnableRotateEvent > 0)
       {
           m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS, anglespd); // send EOS event

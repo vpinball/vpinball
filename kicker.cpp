@@ -205,8 +205,6 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
                                               : 1.f),
       height, height+m_d.m_hit_height); // height of kicker hit cylinder
 
-   phitcircle->m_pfe = NULL;
-
    if (!m_d.m_legacyMode)
    {
       const float rad = phitcircle->radius * 0.8f;
