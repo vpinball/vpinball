@@ -1101,7 +1101,6 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          return FALSE;
       }
 
-      //IDispatch *pdisp = psb->m_pdisp;
       switch (code)
       {
       case EN_KILLFOCUS:

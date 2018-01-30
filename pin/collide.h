@@ -1,6 +1,6 @@
 #pragma once
 
-enum
+enum eObjType
 {
    eNull,
    ePoint,
@@ -93,7 +93,7 @@ struct CollisionEvent
 class HitObject
 {
 public:
-   HitObject() : m_fEnabled(fTrue), m_ObjType(eNull), m_pObj(NULL),
+   HitObject() : m_fEnabled(true), m_ObjType(eNull), m_pObj(NULL),
       m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
       m_pfe(NULL), m_threshold(0.f), m_pfedebug(NULL), m_pe(NULL), m_objHitEvent(NULL) {}
    virtual ~HitObject() {}
@@ -112,16 +112,15 @@ public:
    IFireEvents *m_pfe;
    float m_threshold;
 
-   //IDispatch *m_pdisp;
    IFireEvents *m_pfedebug;
 
    void *m_pe; // currently only used to determine which HitTriangles/HitLines/HitPoints are being part of the same Primitive element
 
    FRect3D m_hitBBox;
 
-   int   m_ObjType;
-   void* m_pObj;
-   void* m_objHitEvent;
+   eObjType m_ObjType;
+   void* m_pObj; // only used by triggers and maybe kickers?! ('objects volume set')
+   void* m_objHitEvent; // only used for HitTarget!
    float m_elasticity;
    float m_elasticityFalloff;
    float m_friction;
@@ -186,7 +185,7 @@ public:
 class HitLineZ : public HitObject
 {
 public:
-   HitLineZ() { }
+   HitLineZ() {}
    HitLineZ(const Vertex2D& xy, const float zlow, const float zhigh) : m_xy(xy)
    {
       m_hitBBox.zlow = zlow;
