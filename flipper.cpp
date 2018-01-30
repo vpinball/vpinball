@@ -340,7 +340,6 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
       phf->m_flipperMover.m_torqueRampupSpeed = min(strength / coil_ramp_up, 1e6f);
 
    phf->m_flipperMover.m_EnableRotateEvent = 0;
-   phf->m_pfe = NULL;
 
    phf->m_flipperMover.m_torqueDamping = m_d.m_torqueDamping;
    phf->m_flipperMover.m_torqueDampingAngle = m_d.m_torqueDampingAngle;

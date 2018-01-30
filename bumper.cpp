@@ -309,7 +309,6 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
 
    BumperHitCircle * const phitcircle = new BumperHitCircle(m_d.m_vCenter,m_d.m_radius,height,height+m_d.m_heightScale);
 
-   phitcircle->m_pfe = NULL;
    phitcircle->m_bumperanim_fHitEvent = m_d.m_fHitEvent;
    phitcircle->m_fEnabled = m_d.m_fCollidable;
    phitcircle->m_scatter = ANGTORAD(m_d.m_scatter);
@@ -319,8 +318,6 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
    pvho->AddElement(phitcircle);
 
    m_pbumperhitcircle = phitcircle;
-
-   phitcircle->m_bumperanim_fVisible = m_d.m_fBaseVisible;
 }
 
 void Bumper::GetHitShapesDebug(Vector<HitObject> * const pvho)

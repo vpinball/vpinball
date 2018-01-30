@@ -226,11 +226,9 @@ void Spinner::GetHitShapes(Vector<HitObject> * const pvho)
 
       HitCircle *phitcircle;
       phitcircle = new HitCircle(Vertex2D(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength), m_d.m_length*0.075f, height + m_d.m_height, height + h);
-      phitcircle->m_pfe = NULL;
       pvho->AddElement(phitcircle);
 
       phitcircle = new HitCircle(Vertex2D(m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength), m_d.m_length*0.075f, height + m_d.m_height, height + h);
-      phitcircle->m_pfe = NULL;
       pvho->AddElement(phitcircle);
    }
 }

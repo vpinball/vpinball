@@ -394,8 +394,6 @@ void Trigger::GetHitShapes(Vector<HitObject> * const pvho)
       m_ptriggerhitcircle->m_ObjType = eTrigger;
       m_ptriggerhitcircle->m_pObj = (void*) this;
 
-      m_ptriggerhitcircle->m_pfe = NULL;
-
       m_ptriggerhitcircle->m_ptrigger = this;
 
       pvho->AddElement(m_ptriggerhitcircle);

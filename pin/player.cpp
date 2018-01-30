@@ -782,42 +782,53 @@ void Player::RecomputePseudoPauseState()
 
 void Player::CreateBoundingHitShapes(Vector<HitObject> *pvho)
 {
+   // simple outer borders:
    LineSeg *plineseg;
-
    plineseg = new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_top), Vertex2D(m_ptable->m_right, m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassheight);
-   plineseg->m_pfe = NULL;
    pvho->AddElement(plineseg);
 
    plineseg = new LineSeg(Vertex2D(m_ptable->m_left, m_ptable->m_bottom), Vertex2D(m_ptable->m_left, m_ptable->m_top), m_ptable->m_tableheight, m_ptable->m_glassheight);
-   plineseg->m_pfe = NULL;
    pvho->AddElement(plineseg);
 
    plineseg = new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_bottom), Vertex2D(m_ptable->m_left, m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassheight);
-   plineseg->m_pfe = NULL;
    pvho->AddElement(plineseg);
 
    plineseg = new LineSeg(Vertex2D(m_ptable->m_left, m_ptable->m_top), Vertex2D(m_ptable->m_right, m_ptable->m_top), m_ptable->m_tableheight, m_ptable->m_glassheight);
-   plineseg->m_pfe = NULL;
    pvho->AddElement(plineseg);
 
+   // glass:
    Vertex3Ds * const rgv3D = new Vertex3Ds[4];
    rgv3D[0] = Vertex3Ds(m_ptable->m_left, m_ptable->m_top, m_ptable->m_glassheight);
    rgv3D[1] = Vertex3Ds(m_ptable->m_right, m_ptable->m_top, m_ptable->m_glassheight);
    rgv3D[2] = Vertex3Ds(m_ptable->m_right, m_ptable->m_bottom, m_ptable->m_glassheight);
    rgv3D[3] = Vertex3Ds(m_ptable->m_left, m_ptable->m_bottom, m_ptable->m_glassheight);
-
    Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D, 4); //!!
-
    pvho->AddElement(ph3dpoly);
 
+   /*
+   // playfield:
+   Vertex3Ds * const rgv3D = new Vertex3Ds[4];
+   rgv3D[3] = Vertex3Ds(m_ptable->m_left, m_ptable->m_top, m_ptable->m_tableheight);
+   rgv3D[2] = Vertex3Ds(m_ptable->m_right, m_ptable->m_top, m_ptable->m_tableheight);
+   rgv3D[1] = Vertex3Ds(m_ptable->m_right, m_ptable->m_bottom, m_ptable->m_tableheight);
+   rgv3D[0] = Vertex3Ds(m_ptable->m_left, m_ptable->m_bottom, m_ptable->m_tableheight);
+   Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D, 4); //!!
+   ph3dpoly->SetFriction(m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideContactFriction : m_ptable->m_friction);
+   ph3dpoly->m_elasticity = m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideElasticity : m_ptable->m_elasticity;
+   ph3dpoly->m_elasticityFalloff = m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideElasticityFalloff : m_ptable->m_elasticityFalloff;
+   ph3dpoly->m_scatter = ANGTORAD(m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideScatterAngle : m_ptable->m_scatter);
+   pvho->AddElement(ph3dpoly);
+   */
+
+   // playfield:
    m_hitPlayfield = HitPlane(Vertex3Ds(0, 0, 1), m_ptable->m_tableheight);
    m_hitPlayfield.SetFriction(m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideContactFriction : m_ptable->m_friction);
    m_hitPlayfield.m_elasticity = m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideElasticity : m_ptable->m_elasticity;
    m_hitPlayfield.m_elasticityFalloff = m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideElasticityFalloff : m_ptable->m_elasticityFalloff;
    m_hitPlayfield.m_scatter = ANGTORAD(m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideScatterAngle : m_ptable->m_scatter);
 
+   // glass:
    m_hitTopGlass = HitPlane(Vertex3Ds(0, 0, -1), m_ptable->m_glassheight);
-   m_hitTopGlass.SetFriction(0.3f);
    m_hitTopGlass.m_elasticity = 0.2f;
 }
 

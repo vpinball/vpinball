@@ -61,19 +61,19 @@ public:
    CollisionEvent m_coll;  // collision information, may not be a actual hit if something else happens first
 
 #ifdef C_DYNAMIC
-   int m_dynamic;			// used to determine static ball conditions and velocity quenching
-   float m_drsq;			// square of distance moved
+   int m_dynamic;          // used to determine static ball conditions and velocity quenching
+   float m_drsq;           // square of distance moved
 #endif
 
    BallMoverObject m_ballMover;
 
    Vertex3Ds m_pos;
-   float m_defaultZ;   //normal height of the ball //!! remove?
+   float m_defaultZ;       // normal height of the ball //!! remove?
 
    Vertex3Ds m_oldpos[MAX_BALL_TRAIL_POS]; // for the optional ball trails
    unsigned int m_ringcounter_oldpos;
 
-   Vertex3Ds m_vel;      // ball velocity
+   Vertex3Ds m_vel;        // ball velocity
    Vertex3Ds m_oldVel;
 
    float m_radius;
@@ -82,7 +82,7 @@ public:
 
    float m_rcHitRadiusSqr; // extended (by m_vel + magic) squared radius, used in collision detection
 
-   Vertex3Ds m_Event_Pos; // last hit event position (to filter hit 'equal' hit events)
+   Vertex3Ds m_Event_Pos;  // last hit event position (to filter hit 'equal' hit events)
 
    Matrix3 m_orientation;
    Vertex3Ds m_angularmomentum;

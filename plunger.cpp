@@ -259,8 +259,6 @@ void Plunger::GetHitShapes(Vector<HitObject> * const pvho)
       zheight, m_d.m_v.y - m_d.m_stroke, m_d.m_v.y,
       this);
 
-   php->m_pfe = NULL;
-
    pvho->AddElement(php);
    php->m_pplunger = this;
    m_phitplunger = php;
