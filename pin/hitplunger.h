@@ -15,7 +15,7 @@ public:
 
    void SetObjects(const float len);
 
-   float mechPlunger() const; // Returns mechanical plunger position 0 at rest, +1 pulled (fully extended)
+   float MechPlunger() const; // Returns mechanical plunger position 0 at rest, +1 pulled (fully extended)
 
    void PullBack(float speed);
    void Fire(float startPos);
@@ -229,8 +229,7 @@ public:
    float m_scatterVelocity;
 };
 
-class HitPlunger :
-   public HitObject
+class HitPlunger : public HitObject
 {
 public:
    HitPlunger(const float x, const float y, const float x2,
@@ -242,7 +241,6 @@ public:
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return ePlunger; }
    virtual void Collide(CollisionEvent& coll);
-   virtual void Contact(CollisionEvent& coll, const float dtime);
    virtual void CalcHitBBox();
    virtual MoverObject *GetMoverObject() { return &m_plungerMover; }
 

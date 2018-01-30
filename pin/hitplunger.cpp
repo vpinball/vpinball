@@ -250,7 +250,7 @@ void PlungerMoverObject::UpdateVelocities()
 
    // If "mech plunger" is enabled, read the mechanical plunger
    // position; otherwise treat it as fixed at 0.
-   const float mech = m_plunger->m_d.m_mechPlunger ? mechPlunger() : 0.0f;
+   const float mech = m_plunger->m_d.m_mechPlunger ? MechPlunger() : 0.0f;
 
    // calculate the delta from the last reading
    const float dmech = m_mech0 - mech;
@@ -780,9 +780,4 @@ void HitPlunger::Collide(CollisionEvent& coll)
 #ifdef C_DYNAMIC
    pball->m_dynamic = C_DYNAMIC;
 #endif
-}
-
-void HitPlunger::Contact(CollisionEvent& coll, const float dtime)
-{
-   coll.m_ball->HandleStaticContact(coll, m_friction, dtime);
 }

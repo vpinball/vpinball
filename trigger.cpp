@@ -413,7 +413,7 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
    {
       Hit3DPoly * const pcircle = new Hit3DPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 10, m_d.m_radius, 32);
       pcircle->m_ObjType = eTrigger;
-      pcircle->m_pObj = (void*)this;
+      pcircle->m_pObj = (void*) this;
 
       pvho->AddElement(pcircle);
       break;

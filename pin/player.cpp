@@ -2509,7 +2509,7 @@ void Player::mechPlungerUpdate()        // called on every integral physics fram
    m_curMechPlungerPos = y[0];
 }
 
-// mechPlunger NOTE: Normalized position is from 0.0 to +1.0f
+// MechPlunger NOTE: Normalized position is from 0.0 to +1.0f
 // +1.0 is fully retracted, 0.0 is all the way forward.
 //
 // The traditional method requires calibration in control panel game controllers to work right.
@@ -2522,7 +2522,7 @@ void Player::mechPlungerUpdate()        // called on every integral physics fram
 // scaling factor that applies on both sides of the park position.  This eliminates the need for
 // separate calibration on each side of the park position, which seems to produce more consistent
 // and linear behavior.  The Pinscape Controller plunger uses this method.
-float PlungerMoverObject::mechPlunger() const
+float PlungerMoverObject::MechPlunger() const
 {
    if (g_pplayer->m_pininput.m_linearPlunger)
    {

@@ -25,8 +25,6 @@ void BumperHitCircle::Collide(CollisionEvent& coll)
 
 float LineSegSlingshot::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
-   if (!m_fEnabled) return -1.0f;
-
    return HitTestBasic(pball, dtime, coll, true, true, true);
 }
 
@@ -144,7 +142,7 @@ float HitGate::HitTest(const Ball * const pball, const float dtime, CollisionEve
 
    for(unsigned int i = 0; i < 2; ++i)
    {
-      const float hittime = m_lineseg[i].HitTestBasic(pball, dtime, coll, false, true, false);// any face, lateral, non-rigid
+      const float hittime = m_lineseg[i].HitTestBasic(pball, dtime, coll, false, true, false); // any face, lateral, non-rigid
       if (hittime >= 0.f)
       {
          // signal the Collide() function that the hit is on the front or back side
@@ -323,9 +321,10 @@ float HitSpinner::HitTest(const Ball * const pball, const float dtime, Collision
 
    for(unsigned int i = 0; i < 2; ++i)
    {
-      const float hittime = m_lineseg[i].HitTestBasic(pball, dtime, coll, false, true, false);// any face, lateral, non-rigid
+      const float hittime = m_lineseg[i].HitTestBasic(pball, dtime, coll, false, true, false); // any face, lateral, non-rigid
       if (hittime >= 0.f)
       {
+         // signal the Collide() function that the hit is on the front or back side
          coll.m_hitflag = !i;
 
          return hittime;
@@ -675,11 +674,6 @@ void Hit3DPoly::Collide(CollisionEvent& coll)
    }
 }
 
-void Hit3DPoly::Contact(CollisionEvent& coll, const float dtime)
-{
-   coll.m_ball->HandleStaticContact(coll, m_friction, dtime);
-}
-
 void Hit3DPoly::CalcHitBBox()
 {
    m_hitBBox.left = m_rgv[0].x;
@@ -827,11 +821,6 @@ void HitTriangle::Collide(CollisionEvent& coll)
    }
 }
 
-void HitTriangle::Contact(CollisionEvent& coll, const float dtime)
-{
-   coll.m_ball->HandleStaticContact(coll, m_friction, dtime);
-}
-
 void HitTriangle::CalcHitBBox()
 {
    m_hitBBox.left = min(m_rgv[0].x, min(m_rgv[1].x, m_rgv[2].x));
@@ -934,11 +923,6 @@ void HitPlane::Collide(CollisionEvent& coll)
    if (bnd < 0.f)
       coll.m_ball->m_pos -= bnd * m_normal;
 #endif
-}
-
-void HitPlane::Contact(CollisionEvent& coll, const float dtime)
-{
-   coll.m_ball->HandleStaticContact(coll, m_friction, dtime);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

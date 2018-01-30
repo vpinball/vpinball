@@ -3,6 +3,9 @@
 
 float c_hardScatter = 0.0f;
 
+
+void HitObject::Contact(CollisionEvent& coll, const float dtime) { coll.m_ball->HandleStaticContact(coll, m_friction, dtime); }
+
 void HitObject::FireHitEvent(Ball * const pball)
 {
    if (m_pfe && m_fEnabled)
@@ -167,15 +170,9 @@ void LineSeg::CalcNormal()
    normal.y = -vT.x * inv_length;
 }
 
-void LineSeg::Contact(CollisionEvent& coll, const float dtime)
-{
-   coll.m_ball->HandleStaticContact(coll, m_friction, dtime);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
-float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime, CollisionEvent& coll,
-   const bool direction, const bool lateral, const bool rigid) const
+float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const
 {
    if (!m_fEnabled || pball->m_frozen) return -1.0f;
 
@@ -320,18 +317,13 @@ void HitCircle::CalcHitBBox()
 
 float HitCircle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
-	//normal face, lateral, rigid
-	return HitTestBasicRadius(pball, dtime, coll, true, true, true);
+   //normal face, lateral, rigid
+   return HitTestBasicRadius(pball, dtime, coll, true, true, true);
 }
 
 void HitCircle::Collide(CollisionEvent& coll)
 {
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
-}
-
-void HitCircle::Contact(CollisionEvent& coll, const float dtime)
-{
-   coll.m_ball->HandleStaticContact(coll, m_friction, dtime);
 }
 
 
@@ -431,11 +423,6 @@ void HitLineZ::Collide(CollisionEvent& coll)
       FireHitEvent(coll.m_ball);
 }
 
-void HitLineZ::Contact(CollisionEvent& coll, const float dtime)
-{
-   coll.m_ball->HandleStaticContact(coll, m_friction, dtime);
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -520,11 +507,6 @@ void HitPoint::Collide(CollisionEvent& coll)
 
    if (dot <= -m_threshold)
       FireHitEvent(coll.m_ball);
-}
-
-void HitPoint::Contact(CollisionEvent& coll, const float dtime)
-{
-   coll.m_ball->HandleStaticContact(coll, m_friction, dtime);
 }
 
 void DoHitTest(Ball *const pball, HitObject *const pho, CollisionEvent& coll)

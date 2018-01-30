@@ -80,8 +80,7 @@ public:
 #endif
 };
 
-class HitFlipper :
-   public HitObject
+class HitFlipper : public HitObject
 {
 public:
    HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
@@ -91,6 +90,7 @@ public:
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eFlipper; }
    virtual void Collide(CollisionEvent& coll);
+   virtual void Contact(CollisionEvent& coll, const float dtime);
    virtual void CalcHitBBox();
    virtual MoverObject *GetMoverObject() { return &m_flipperMover; }
 
@@ -98,7 +98,6 @@ public:
    float HitTestFlipperEnd(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
 
    float GetHitTime() const { return m_flipperMover.GetHitTime(); }
-   void Contact(CollisionEvent& coll, const float dtime);
 
    Vertex2D v;
 
