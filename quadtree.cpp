@@ -74,7 +74,7 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
       int oct;
       HitObject * const pho = m_vho[i];
 
-      if ((Primitive *)(pho->m_pe) != m_unique) // are all objects in current node unique?
+      if ((Primitive *)(pho->m_pe) != m_unique) // are all objects in current node unique/belong to the same primitive?
          m_unique = NULL;
 
       if (pho->m_hitBBox.right < m_vcenter.x)
@@ -262,7 +262,7 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 
    do
    {
-      if (current->m_unique == NULL || current->m_unique->m_d.m_fCollidable) // early out if only one unique primitive inside all of the subtree/current node that is not collidable
+      if (current->m_unique == NULL || current->m_unique->m_d.m_fCollidable) // early out if only one unique primitive stored inside all of the subtree/current node that is also not collidable (at the moment)
       {
          if (current->lefts != 0) // does node contain hitables?
          {

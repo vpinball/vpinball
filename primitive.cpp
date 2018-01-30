@@ -540,7 +540,7 @@ void Primitive::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigne
 
 void Primitive::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
 {
-   Material *mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
+   const Material * const mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
    if ( mat != NULL && !m_d.m_fOverwritePhysics )
    {
       obj->m_elasticity = mat->m_fElasticity;

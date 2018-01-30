@@ -1370,7 +1370,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
             if (pball->m_frozen || m_pkicker->m_d.m_fFallThrough)	// script may have unfrozen the ball
             {
                // if ball falls through hole, we fake the collision algo by changing the ball height
-               // in HitTestBasicRadius() the z-position of the ball is check if it is >= to the hit cylinder
+               // in HitTestBasicRadius() the z-position of the ball is checked if it is >= to the hit cylinder
                // if we don't change the height of the ball we get a lot of hit events while the ball is falling!!
 
                // Only mess with variables if ball was not kicked during event

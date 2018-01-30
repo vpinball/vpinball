@@ -409,7 +409,7 @@ void HitTarget::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj, const 
    obj->m_threshold = m_d.m_threshold;
    obj->m_fEnabled = m_d.m_fCollidable;
    obj->m_ObjType = eHitTarget;
-   obj->m_objHitEvent = this;
+   obj->m_objHitEvent = (void*) this;
    if (setHitObject)
    {
       if (m_d.m_fUseHitEvent)
