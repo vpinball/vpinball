@@ -835,7 +835,7 @@ void HitTriangle::CalcHitBBox()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-float HitPlane::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
+float HitPlane::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_fEnabled) return -1.0f;
 
