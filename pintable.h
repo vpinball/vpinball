@@ -312,7 +312,7 @@ public:
    BOOL GetDecalsEnabled() const;
    BOOL GetEMReelsEnabled() const;
 
-   void Copy();
+   void Copy(int x, int y);
    void Paste(BOOL fAtLocation, int x, int y);
 
    void ExportBlueprint();

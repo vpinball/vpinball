@@ -5604,12 +5604,12 @@ void PinTable::DoCommand(int icmd, int x, int y)
        if (CheckPermissions(DISABLE_CUTCOPYPASTE))
            g_pvp->ShowPermissionError();
        else
-           Copy();
+           Copy(x,y);
        break;
    }
    case IDC_PASTE:
    {
-       Paste(fFalse, 0, 0);
+       Paste(fFalse, x, y);
        break;
    }
    case IDC_PASTEAT:
@@ -6877,9 +6877,8 @@ void PinTable::RestoreBackup()
    m_undo.Undo();
 }
 
-void PinTable::Copy()
+void PinTable::Copy(int x, int y)
 {
-   Vector<IStream> vstm;
    ULONG writ = 0;
 
    if (MultiSelIsEmpty()) // Can't copy table
@@ -6887,25 +6886,37 @@ void PinTable::Copy()
       return;
    }
 
-   //m_vstmclipboard
-
-   for (int i = 0; i < m_vmultisel.Size(); i++)
+   if(m_vmultisel.Size() == 1)
    {
-      HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, 1);
+       // special check if the user selected a Control Point and wants to copy the coordinates
+       ISelect *pItem = HitTest(x, y);
+       if(pItem->GetItemType() == eItemDragPoint)
+       {
+           DragPoint *pPoint = (DragPoint*)pItem;
+           pPoint->Copy();
+           return;
+       }
+   }
 
-      IStream *pstm;
-      CreateStreamOnHGlobal(hglobal, TRUE, &pstm);
+   Vector<IStream> vstm;
+   //m_vstmclipboard
+   for(int i = 0; i < m_vmultisel.Size(); i++)
+   {
+       HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, 1);
 
-      IEditable *pe = m_vmultisel.ElementAt(i)->GetIEditable();
+       IStream *pstm;
+       CreateStreamOnHGlobal(hglobal, TRUE, &pstm);
 
-      ////////!! BUG!  With multi-select, if you have multiple dragpoints on
-      //////// a surface selected, the surface will get copied multiple times
-      const int type = pe->GetItemType();
-      pstm->Write(&type, sizeof(int), &writ);
+       IEditable *pe = m_vmultisel.ElementAt(i)->GetIEditable();
 
-      pe->SaveData(pstm, NULL, NULL);
+       ////////!! BUG!  With multi-select, if you have multiple dragpoints on
+       //////// a surface selected, the surface will get copied multiple times
+       const int type = pe->GetItemType();
+       pstm->Write(&type, sizeof(int), &writ);
 
-      vstm.AddElement(pstm);
+       pe->SaveData(pstm, NULL, NULL);
+
+       vstm.AddElement(pstm);
    }
 
    g_pvp->SetClipboard(&vstm);
@@ -6920,6 +6931,19 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
    {
       g_pvp->ShowPermissionError();
       return;
+   }
+
+   if(m_vmultisel.Size() == 1)
+   {
+       // User wants to paste the copied coordinates of a Control Point
+       ISelect *pItem = HitTest(x, y);
+       if(pItem->GetItemType() == eItemDragPoint)
+       {
+           DragPoint *pPoint = (DragPoint*)pItem;
+           pPoint->Paste();
+           SetDirtyDraw();
+           return;
+       }
    }
 
    const unsigned viewflag = (g_pvp->m_fBackglassView ? VIEW_BACKGLASS : VIEW_PLAYFIELD);

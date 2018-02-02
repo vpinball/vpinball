@@ -164,12 +164,12 @@ void ISelect::DoCommand(int icmd, int x, int y)
        if ( GetPTable()->CheckPermissions(DISABLE_CUTCOPYPASTE))
            g_pvp->ShowPermissionError();
        else
-           GetPTable()->Copy();
+           GetPTable()->Copy(x,y);
        break;
    }
    case IDC_PASTE:
    {
-       GetPTable()->Paste(fFalse, 0, 0);
+       GetPTable()->Paste(fFalse, x, y);
        break;
    }
    case IDC_PASTEAT:

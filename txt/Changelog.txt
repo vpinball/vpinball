@@ -1,6 +1,9 @@
 VP 10.5.0 Changelog
 ------------------------
-
+- add copy/paste feature for control points. Select a control point press the "Copy" button or CTRL+C to copy the coordinates. 
+  Then select another control point of another element and press the "Paste" button or let the mouse cursor over the control point and press CTRL+V.
+  ATTENTION: you can also copy/paste control points of the same element but that can lead to bad shapes of the selected element
+  
 - fix kicker export bug
 
 - improve quality of internal DMD shader, now it's almost resolution independent, especially when using it via flashers (e.g. FSS tables and the like)
