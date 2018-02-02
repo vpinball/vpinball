@@ -322,6 +322,7 @@ void Kicker::ExportMesh(FILE *f)
            indices = kickerHoleIndices;
        }
        break;
+       default:
        case KickerHoleSimple:
        {
            num_vertices = kickerSimpleHoleNumVertices;
@@ -517,6 +518,7 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
           indices = kickerHoleIndices;
        }
        break;
+       default:
        case KickerHoleSimple:
        {
           texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
