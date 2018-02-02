@@ -1,5 +1,14 @@
 #include "stdafx.h"
 
+Vertex3Ds DragPoint::m_copyPoint;
+bool      DragPoint::m_pointCopied=false;
+
+IHaveDragPoints::IHaveDragPoints()
+{
+    m_propVisuals = NULL;
+    m_propPosition = NULL;
+}
+
 IHaveDragPoints::~IHaveDragPoints()
 {
    for (int i = 0; i < m_vdpoint.Size(); i++)
@@ -281,11 +290,11 @@ void IHaveDragPoints::ReverseOrder()
 
 void IHaveDragPoints::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
 {
-   PropertyPane *pproppane = new PropertyPane(IDD_PROPPOINT_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   m_propVisuals = new PropertyPane(IDD_PROPPOINT_VISUALS, IDS_VISUALS);
+   pvproppane->AddElement(m_propVisuals);
 
-   pproppane = new PropertyPane(IDD_PROPPOINT_POSITION, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
+   m_propPosition = new PropertyPane(IDD_PROPPOINT_POSITION, IDS_POSITION);
+   pvproppane->AddElement(m_propPosition);
 }
 
 void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, float **ppcoords)
@@ -641,6 +650,18 @@ IDispatch *DragPoint::GetDispatch()
 void DragPoint::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 {
    m_pihdp->GetPointDialogPanes(pvproppane);
+}
+
+void DragPoint::Copy()
+{
+    m_copyPoint = m_v;
+    m_pointCopied = true;
+}
+
+void DragPoint::Paste()
+{
+    if(m_pointCopied)
+        m_v = m_copyPoint;
 }
 
 STDMETHODIMP DragPoint::get_X(float *pVal)

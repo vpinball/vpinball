@@ -1318,15 +1318,25 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          if (ptCur->CheckPermissions(DISABLE_CUTCOPYPASTE))
             ShowPermissionError();
          else
-            ptCur->Copy();
+         {
+             POINT ptCursor;
+             GetCursorPos(&ptCursor);
+             ::ScreenToClient(ptCur->m_hwnd, &ptCursor);
+             ptCur->Copy(ptCursor.x, ptCursor.y);
+         }
       }
       break;
    }
    case IDC_PASTE:
    {
       ptCur = GetActiveTable();
-      if (ptCur)
-         ptCur->Paste(fFalse, 0, 0);
+      if(ptCur)
+      {
+          POINT ptCursor;
+          GetCursorPos(&ptCursor);
+          ::ScreenToClient(ptCur->m_hwnd, &ptCursor);
+          ptCur->Paste(fFalse, ptCursor.x, ptCursor.y);
+      }
       break;
    }
    case IDC_PASTEAT:
