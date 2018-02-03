@@ -341,22 +341,22 @@ inline void RemoveSpaces(char* source)
 //
 __forceinline float vpUnitsToInches(float value)
 {
-    return value * 0.02125f;
+    return value * 0.0212765f;
 }
 
 __forceinline float inchesToVPUnits(float value)
 {
-    return value / 0.02125f;
+   return value / 0.0212765f;
 }
 
 __forceinline float vpUnitsToMillimeters(float value)
 {
-    return value * 0.53976f;
+   return value * 0.540425f;
 }
 
 __forceinline float millimetersToVPUnits(float value)
 {
-    return value / 0.53976f;
+   return value / 0.540425f;
 }
 
 float sz2f(char *sz);
