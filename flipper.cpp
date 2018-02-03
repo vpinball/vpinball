@@ -97,10 +97,6 @@ Flipper::~Flipper()
 
 void Flipper::UpdateUnitsInfo()
 {
-   char tbuf[128];
-   sprintf_s(tbuf, "Height: %.3f | Length: %.3f | RubberHeight: %.3f | RubberWidth: %.3f", g_pvp->ConvertToUnit(m_d.m_height), g_pvp->ConvertToUnit(m_d.m_FlipperRadiusMax),
-                                                                                           g_pvp->ConvertToUnit(m_d.m_rubberheight), g_pvp->ConvertToUnit(m_d.m_rubberwidth));
-   g_pvp->SetStatusBarUnitInfo(tbuf);
 }
 
 HRESULT Flipper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
