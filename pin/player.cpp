@@ -1442,7 +1442,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    FRect3D tableBounds = m_ptable->GetBoundingBox();
    m_hitoctree.Initialize(tableBounds);
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(PRINT_DEBUG_COLLISION_TREE)
    m_hitoctree.DumpTree(0);
 #endif
 

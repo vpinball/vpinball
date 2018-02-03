@@ -1,7 +1,7 @@
 #pragma once
 
 
-#define PHYSICS_STEPTIME    1000	// usecs to go between each physics update
+#define PHYSICS_STEPTIME    1000         // usecs to go between each physics update
 
 #define PHYSICS_STEPTIME_S  (PHYSICS_STEPTIME * 1e-6)     // step time in seconds
 
@@ -16,6 +16,8 @@
 #define DEFAULT_TABLE_ELASTICITY        0.25f
 #define DEFAULT_TABLE_ELASTICITY_FALLOFF 0.f
 #define DEFAULT_TABLE_PFSCATTERANGLE    0.f
+
+//#define PRINT_DEBUG_COLLISION_TREE     // print collision acceleration structure info (will slow down debugging startup time if enabled)
 
 /*
  * NOTE ABOUT VP PHYSICAL UNITS:
