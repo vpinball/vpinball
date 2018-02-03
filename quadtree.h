@@ -48,7 +48,7 @@ private:
 
    bool m_fLeaf;
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(PRINT_DEBUG_COLLISION_TREE)
 public:
    void DumpTree(const int indentLevel)
    {
