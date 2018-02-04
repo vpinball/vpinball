@@ -370,12 +370,8 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
 
    if (m_pvsel)
    {
-      for (int i = 0; i < m_pvsel->Size(); i++)
-      {
-         ISelect *pisel2 = m_pvsel->ElementAt(i);
-         if ( pisel2 )
-            pisel2->UpdatePropertyPanes();
-      }
+      if (m_pvsel->Size() >= 1)
+         m_pvsel->ElementAt(0)->UpdatePropertyPanes();
    }
    LeaveCriticalSection(&m_hPropertyLock);
 
@@ -1220,8 +1216,8 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             psb->GetControlValue((HWND)lParam);
          }
          EnterCriticalSection(&psb->m_hPropertyLock);
-         for (int i = 0; i < psb->m_pvsel->Size(); i++)
-            psb->m_pvsel->ElementAt(i)->UpdatePropertyPanes();
+         if (psb->m_pvsel->Size()>=1)
+            psb->m_pvsel->ElementAt(0)->UpdatePropertyPanes();
          LeaveCriticalSection(&psb->m_hPropertyLock);
 
       }
@@ -1261,8 +1257,8 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          psb->GetControlValue((HWND)lParam);
 
          EnterCriticalSection(&psb->m_hPropertyLock);
-         for (int i = 0; i < psb->m_pvsel->Size(); i++)
-            psb->m_pvsel->ElementAt(i)->UpdatePropertyPanes();
+         if (psb->m_pvsel->Size() >= 1)
+            psb->m_pvsel->ElementAt(0)->UpdatePropertyPanes();
          LeaveCriticalSection(&psb->m_hPropertyLock);
       }
       break;
