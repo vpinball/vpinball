@@ -395,7 +395,8 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
 
    m_phitgate = new HitGate(this, height);
    m_phitgate->m_twoWay = m_d.m_twoWay;
-   m_phitgate->m_pfe = (IFireEvents *)this;
+   m_phitgate->m_obj = (IFireEvents*) this;
+   m_phitgate->m_fe = true;
    pvho->AddElement(m_phitgate);
 
    m_phitgate->m_fEnabled = m_d.m_fCollidable;

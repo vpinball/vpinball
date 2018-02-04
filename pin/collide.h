@@ -93,12 +93,12 @@ struct CollisionEvent
 class HitObject
 {
 public:
-   HitObject() : m_fEnabled(true), m_ObjType(eNull), m_pObj(NULL),
+   HitObject() : m_fEnabled(true), m_ObjType(eNull), m_obj(NULL),
       m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
-      m_pfe(NULL), m_threshold(0.f), m_pfedebug(NULL), m_pe(NULL), m_objHitEvent(NULL) {}
+      m_threshold(0.f), m_pfedebug(NULL), m_fe(false), m_e(false) {}
    virtual ~HitObject() {}
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged (all derived classes DO implement this one!)
    virtual int GetType() const = 0;
    virtual void Collide(CollisionEvent& coll) = 0;
    virtual void Contact(CollisionEvent& coll, const float dtime); // apply contact forces for the given time interval. Ball, Spinner and Gate do nothing here, Flipper has a specialized handling
@@ -109,24 +109,25 @@ public:
    void SetFriction(const float friction)  { m_friction = friction; }
    void FireHitEvent(Ball * const pball);
 
-   IFireEvents *m_pfe;
-   float m_threshold;
-
    IFireEvents *m_pfedebug;
 
-   void *m_pe;          // currently only used to determine which HitTriangles/HitLines/HitPoints are being part of the same Primitive element, to be able to early out intersection traversal if primitive is flagged as not collidable
-   void *m_pObj;        // only used by triggers and kickers ('objects volume set')
-   void *m_objHitEvent; // only used for HitTarget!
-
-   FRect3D m_hitBBox;
+   IFireEvents *m_obj; // base object pointer (mainly used as IFireEvents, but also as HitTarget or Primitive or Trigger or Kicker or Gate, see below)
 
    eObjType m_ObjType;
+
+   float m_threshold;  // threshold for firing an event (usually (always??) normal dot ball-velocity)
+
+   FRect3D m_hitBBox;
 
    float m_elasticity;
    float m_elasticityFalloff;
    float m_friction;
    float m_scatter;
+
    bool  m_fEnabled;
+
+   bool  m_fe;  // call a FireEvents for m_obj
+   bool  m_e;   // currently only used to determine which HitTriangles/HitLines/HitPoints are being part of the same Primitive element m_obj, to be able to early out intersection traversal if primitive is flagged as not collidable
 };
 
 //

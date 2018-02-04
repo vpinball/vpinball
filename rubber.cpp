@@ -597,10 +597,11 @@ void Rubber::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
    obj->m_ObjType = ePrimitive;
    // hard coded threshold for now
    obj->m_threshold = 2.0f;
+   obj->m_obj = (IFireEvents *)this;
    if (m_d.m_fHitEvent)
-      obj->m_pfe = (IFireEvents *)this;
+      obj->m_fe = true;
    else
-      obj->m_pfe = NULL;
+      obj->m_fe = false;
 
    pvho->AddElement(obj);
    m_vhoCollidable.push_back(obj);	//remember hit components of primitive

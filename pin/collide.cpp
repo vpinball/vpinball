@@ -8,17 +8,17 @@ void HitObject::Contact(CollisionEvent& coll, const float dtime) { coll.m_ball->
 
 void HitObject::FireHitEvent(Ball * const pball)
 {
-   if (m_pfe && m_fEnabled)
+   if (m_obj && m_fe && m_fEnabled)
    {
       // is this the same place as last event? if same then ignore it
       const float dist_ls = (pball->m_Event_Pos - pball->m_pos).LengthSquared();
       pball->m_Event_Pos = pball->m_pos;    //remember last collide position
-      
-      const float normalDist = (m_ObjType == eHitTarget) ? 0.0f : // hit targets when used with a captured ball have always a too small distance 
-                                                           0.25f;
-      
-      if (dist_ls > normalDist) // must be a new place if only by a little //!! magic distance
-         m_pfe->FireGroupEvent(DISPID_HitEvents_Hit);
+
+      const float normalDist = (m_ObjType == eHitTarget) ? 0.0f   // hit targets when used with a captured ball have always a too small distance
+                                                         : 0.25f; //!! magic distance
+
+      if (dist_ls > normalDist) // must be a new place if only by a little
+         ((IFireEvents *)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
    }
 }
 
@@ -38,10 +38,10 @@ float LineSeg::HitTestBasic(const Ball * const pball, const float dtime, Collisi
 {
    if (!m_fEnabled || pball->m_frozen) return -1.0f;
 
-   const float ballvx = pball->m_vel.x;					// ball velocity
+   const float ballvx = pball->m_vel.x;						// ball velocity
    const float ballvy = pball->m_vel.y;
 
-   const float bnv = ballvx*normal.x + ballvy*normal.y;	// ball velocity normal to segment, positive if receding, zero=parallel
+   const float bnv = ballvx*normal.x + ballvy*normal.y;		// ball velocity normal to segment, positive if receding, zero=parallel
    bool bUnHit = (bnv > C_LOWNORMVEL);
 
    if (direction && (bnv > C_LOWNORMVEL))					// direction true and clearly receding from normal face
@@ -57,10 +57,10 @@ float LineSeg::HitTestBasic(const Ball * const pball, const float dtime, Collisi
    float bnd = bcpd - rollingRadius;
 
    // for a spinner add the ball radius otherwise the ball goes half through the spinner until it moves
-   if (m_ObjType == eSpinner || m_ObjType==eGate)
+   if (m_ObjType == eSpinner || m_ObjType == eGate)
        bnd = bcpd + rollingRadius;
 
-   const bool inside = (bnd <= 0.f);									  // in ball inside object volume
+   const bool inside = (bnd <= 0.f);						// in ball inside object volume
 
    float hittime;
    if (rigid)
@@ -70,16 +70,16 @@ float LineSeg::HitTestBasic(const Ball * const pball, const float dtime, Collisi
 
       if (lateral && (bnd <= (float)PHYS_TOUCH))
       {
-         if (inside || (fabsf(bnv) > C_CONTACTVEL)				// fast velocity, return zero time
-            // zero time for rigid fast bodies				
+         if (inside || (fabsf(bnv) > C_CONTACTVEL)			// fast velocity, return zero time
+            // zero time for rigid fast bodies
             || (bnd <= (float)(-PHYS_TOUCH)))
-            hittime = 0;										// slow moving but embedded
+            hittime = 0;									// slow moving but embedded
          else
             hittime = bnd
 #ifdef NEW_PHYSICS
              / -bnv;
 #else
-             *(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
+             *(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;			// don't compete for fast zero time events
 #endif
       }
       else if (fabsf(bnv) > C_LOWNORMVEL) 					// not velocity low ????
@@ -91,13 +91,14 @@ float LineSeg::HitTestBasic(const Ball * const pball, const float dtime, Collisi
    {
       if (bnv * bnd >= 0.f)									// outside-receding || inside-approaching
       {
-          if ((m_ObjType != eTrigger) ||						// not a trigger
-              (!pball->m_vpVolObjs) ||
-              (fabsf(bnd) >= pball->m_radius*0.5f) ||		    // not too close ... nor too far away
-              (inside != (pball->m_vpVolObjs->IndexOf(m_pObj) < 0))) // ...ball outside and hit set or ball inside and no hit set
-          {
+         if ((m_ObjType != eTrigger) ||						// not a trigger
+             (!pball->m_vpVolObjs) ||
+             // is a trigger, so test:
+             (fabsf(bnd) >= pball->m_radius*0.5f) ||	    // not too close ... nor too far away
+             (inside != (pball->m_vpVolObjs->IndexOf(m_obj) < 0))) // ...ball outside and hit set or ball inside and no hit set
+         {
               return -1.0f;
-          }
+         }
          hittime = 0;
          bUnHit = !inside;	// ball on outside is UnHit, otherwise it's a Hit
       }
@@ -220,12 +221,12 @@ float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime,
    bool bUnhit = false;
    bool isContact = false;
    // Kicker is special.. handle ball stalled on kicker, commonly hit while receding, knocking back into kicker pocket
-   if (m_ObjType == eKicker && bnd <= 0 && bnd >= -radius && a < C_CONTACTVEL*C_CONTACTVEL)
+   if (m_ObjType == eKicker && bnd <= 0.f && bnd >= -radius && a < C_CONTACTVEL*C_CONTACTVEL && pball->m_vpVolObjs)
    {
-      if (pball->m_vpVolObjs) pball->m_vpVolObjs->RemoveElement(m_pObj);	// cause capture
+      pball->m_vpVolObjs->RemoveElement(m_obj); // cause capture
    }
 
-   if (rigid && bnd < (float)PHYS_TOUCH)		// positive: contact possible in future ... Negative: objects in contact now
+   if (rigid && bnd < (float)PHYS_TOUCH)        // positive: contact possible in future ... Negative: objects in contact now
    {
       if (bnd < -pball->m_radius/**2.0f*/) //!! *2 necessary?
          return -1.0f;
@@ -237,14 +238,13 @@ float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime,
          hittime = /*std::max(0.0f,*/ -bnd / bnv /*)*/;   // estimate based on distance and speed along distance
    }
    else if (m_ObjType >= eTrigger // triggers & kickers
-      && pball->m_vpVolObjs && ((bnd < 0.f) == (pball->m_vpVolObjs->IndexOf(m_pObj) < 0)))
+      && pball->m_vpVolObjs && ((bnd < 0.f) == (pball->m_vpVolObjs->IndexOf(m_obj) < 0)))
    { // here if ... ball inside and no hit set .... or ... ball outside and hit set
 
-      if (fabsf(bnd - radius) < 0.05f)	 // if ball appears in center of trigger, then assumed it was gen'ed there
+      if (fabsf(bnd - radius) < 0.05f) // if ball appears in center of trigger, then assumed it was gen'ed there
       {
-         if (pball->m_vpVolObjs)
-            pball->m_vpVolObjs->AddElement(m_pObj);	//special case for trigger overlaying a kicker
-      }												// this will add the ball to the trigger space without a Hit
+         pball->m_vpVolObjs->AddElement(m_obj); // special case for trigger overlaying a kicker
+      }                                         // this will add the ball to the trigger space without a Hit
       else
       {
          bUnhit = (bnd > 0.f);	// ball on outside is UnHit, otherwise it's a Hit
@@ -514,14 +514,11 @@ void DoHitTest(Ball *const pball, HitObject *const pho, CollisionEvent& coll)
 #ifdef _DEBUGPHYSICS
    g_pplayer->c_deepTested++;
 #endif
-   if (pho == NULL || pball==NULL)
+   if (pho == NULL || pball == NULL)
       return;
 
-   if (pho->m_ObjType == eHitTarget)
-   {
-      if ( pho->m_objHitEvent && (((HitTarget*)pho->m_objHitEvent)->m_d.m_isDropped == true) )
-         return;
-   }
+   if (pho->m_ObjType == eHitTarget && (((HitTarget*)pho->m_obj)->m_d.m_isDropped == true) )
+      return;
 
    CollisionEvent newColl;
    const float newtime = pho->HitTest(pball, coll.m_hittime, !g_pplayer->m_fRecordContacts ? coll : newColl);

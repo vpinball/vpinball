@@ -409,14 +409,14 @@ void HitTarget::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj, const 
    obj->m_threshold = m_d.m_threshold;
    obj->m_fEnabled = m_d.m_fCollidable;
    obj->m_ObjType = eHitTarget;
-   obj->m_objHitEvent = (void*) this;
+   obj->m_obj = (IFireEvents*) this;
    if (setHitObject)
    {
       if (m_d.m_fUseHitEvent)
-         obj->m_pfe = (IFireEvents *)this;
+         obj->m_fe = true;
    }
    else
-      obj->m_pfe = NULL;
+      obj->m_fe = false;
 
    pvho->AddElement(obj);
    m_vhoCollidable.push_back(obj);	//remember hit components of primitive

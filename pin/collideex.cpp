@@ -11,7 +11,7 @@ void BumperHitCircle::Collide(CollisionEvent& coll)
 
    pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);	//reflect ball from wall
 
-   if ((m_pbumper->m_d.m_fHitEvent) && (dot <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
+   if (m_pbumper->m_d.m_fHitEvent && (dot <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
    {
       pball->m_vel += hitnormal * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
 
@@ -58,7 +58,7 @@ void LineSegSlingshot::Collide(CollisionEvent& coll)
 
    pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
-   if (m_pfe && !m_psurface->m_fDisabled && threshold)
+   if (m_obj && m_fe && !m_psurface->m_fDisabled && threshold)
    {
       // is this the same place as last event? if same then ignore it
        const float dist_ls = (pball->m_Event_Pos - pball->m_pos).LengthSquared();
@@ -66,7 +66,7 @@ void LineSegSlingshot::Collide(CollisionEvent& coll)
 
        if (dist_ls > 0.25f) // must be a new place if only by a little
        {
-           m_pfe->FireGroupEvent(DISPID_SurfaceEvents_Slingshot);
+           ((IFireEvents *)m_obj)->FireGroupEvent(DISPID_SurfaceEvents_Slingshot);
            m_slingshotanim.m_TimeReset = g_pplayer->m_time_msec + 100;
        }
    }
@@ -102,38 +102,36 @@ HitGate::HitGate(Gate * const pgate, const float height)
     m_lineseg[1].m_hitBBox.zlow = height;
     m_lineseg[1].m_hitBBox.zhigh = height + (float)(2.0*PHYS_SKIN);
 
-    m_lineseg[0].m_pfe = NULL;
-    m_lineseg[1].m_pfe = NULL;
     m_lineseg[0].m_ObjType = eGate;
     m_lineseg[1].m_ObjType = eGate;
 
-   m_lineseg[0].v2.x = pgate->m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN); //oversize by the ball radius
-   m_lineseg[0].v2.y = pgate->m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN); //this will prevent clipping
-   m_lineseg[0].v1.x = pgate->m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN); //through the edge of the
-   m_lineseg[0].v1.y = pgate->m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN); //spinner
+    m_lineseg[0].v2.x = pgate->m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN); //oversize by the ball radius
+    m_lineseg[0].v2.y = pgate->m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN); //this will prevent clipping
+    m_lineseg[0].v1.x = pgate->m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN); //through the edge of the
+    m_lineseg[0].v1.y = pgate->m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN); //spinner
 
-   m_lineseg[1].v1.x = m_lineseg[0].v2.x;
-   m_lineseg[1].v1.y = m_lineseg[0].v2.y;
-   m_lineseg[1].v2.x = m_lineseg[0].v1.x;
-   m_lineseg[1].v2.y = m_lineseg[0].v1.y;
+    m_lineseg[1].v1.x = m_lineseg[0].v2.x;
+    m_lineseg[1].v1.y = m_lineseg[0].v2.y;
+    m_lineseg[1].v2.x = m_lineseg[0].v1.x;
+    m_lineseg[1].v2.y = m_lineseg[0].v1.y;
 
-   m_lineseg[0].CalcNormal();
-   m_lineseg[1].CalcNormal();
+    m_lineseg[0].CalcNormal();
+    m_lineseg[1].CalcNormal();
 
-   m_gateMover.m_angleMin = pgate->m_d.m_angleMin;
-   m_gateMover.m_angleMax = pgate->m_d.m_angleMax;
+    m_gateMover.m_angleMin = pgate->m_d.m_angleMin;
+    m_gateMover.m_angleMax = pgate->m_d.m_angleMax;
 
-   m_gateMover.m_friction = pgate->m_d.m_friction;
-   m_gateMover.m_fVisible = pgate->m_d.m_fVisible;
+    m_gateMover.m_friction = pgate->m_d.m_friction;
+    m_gateMover.m_fVisible = pgate->m_d.m_fVisible;
 
-   m_gateMover.m_angle = m_gateMover.m_angleMin;
-   m_gateMover.m_anglespeed = 0.0f;
-   m_gateMover.m_damping = powf(pgate->m_d.m_damping, (float)PHYS_FACTOR); //0.996f;
+    m_gateMover.m_angle = m_gateMover.m_angleMin;
+    m_gateMover.m_anglespeed = 0.0f;
+    m_gateMover.m_damping = powf(pgate->m_d.m_damping, (float)PHYS_FACTOR); //0.996f;
 
-   m_gateMover.m_pgate = pgate;
-   m_gateMover.m_fOpen = false;
-   m_gateMover.m_forcedMove = false;
-   m_twoWay = false;
+    m_gateMover.m_pgate = pgate;
+    m_gateMover.m_fOpen = false;
+    m_gateMover.m_forcedMove = false;
+    m_twoWay = false;
 }
 
 float HitGate::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
@@ -286,8 +284,6 @@ HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
    m_lineseg[1].m_hitBBox.zlow = height;
    m_lineseg[1].m_hitBBox.zhigh = height + (float)(2.0*PHYS_SKIN);
 
-   m_lineseg[0].m_pfe = NULL;
-   m_lineseg[1].m_pfe = NULL;
    m_lineseg[0].m_ObjType = eSpinner;
    m_lineseg[1].m_ObjType = eSpinner;
 
@@ -524,9 +520,9 @@ float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionE
           else
               hittime = bnd / -bnv;
 #else
-          if (inside || (fabsf(bnv) > C_CONTACTVEL)		// fast velocity, return zero time
-                                                                //zero time for rigid fast bodies
-              || (bnd <= (float)(-PHYS_TOUCH)))				// slow moving but embedded
+          if (inside || (fabsf(bnv) > C_CONTACTVEL) // fast velocity, return zero time
+                                                    //zero time for rigid fast bodies
+              || (bnd <= (float)(-PHYS_TOUCH)))     // slow moving but embedded
               hittime = 0;
           else
               hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
@@ -541,10 +537,11 @@ float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionE
    {
       if (bnv * bnd >= 0.f)                         // outside-receding || inside-approaching
       {
-         if ((m_ObjType != eTrigger) ||				// not a trigger
-            (!pball->m_vpVolObjs) ||					// temporary ball
+         if ((m_ObjType != eTrigger) ||             // not a trigger?
+            (!pball->m_vpVolObjs) ||                // temporary ball
+            // if trigger, then check:
             (fabsf(bnd) >= pball->m_radius*0.5f) ||	// not too close ... nor too far away
-            (inside != (pball->m_vpVolObjs->IndexOf(m_pObj) < 0)))// ...ball outside and hit set or ball inside and no hit set
+            (inside != (pball->m_vpVolObjs->IndexOf(m_obj) < 0))) // ...ball outside and hit set or ball inside and no hit set
             return -1.0f;
 
          hittime = 0;
@@ -640,21 +637,18 @@ void Hit3DPoly::Collide(CollisionEvent& coll)
       {
           if (m_ObjType == ePrimitive)
               FireHitEvent(pball);
-          else if (m_pfe && m_ObjType == eHitTarget)
+          else if (m_ObjType == eHitTarget && m_fe && ((HitTarget*)m_obj)->m_d.m_isDropped == false)
           {
-              if (m_objHitEvent && (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false))
-              {
-                  ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
-                  FireHitEvent(pball);
-              }
+              ((HitTarget*)m_obj)->m_hitEvent = true;
+              FireHitEvent(pball);
           }
       }
    }
-   else
+   else // trigger:
    {
       if (!pball->m_vpVolObjs) return;
 
-      const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
+      const int i = pball->m_vpVolObjs->IndexOf(m_obj); // if -1 then not in objects volume set (i.e not already hit)
 
       if ((!coll.m_hitflag) == (i < 0)) // Hit == NotAlreadyHit
       {
@@ -662,13 +656,13 @@ void Hit3DPoly::Collide(CollisionEvent& coll)
 
          if (i < 0)
          {
-            pball->m_vpVolObjs->AddElement(m_pObj);
-            ((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Hit);
+            pball->m_vpVolObjs->AddElement(m_obj);
+            ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
          }
          else
          {
             pball->m_vpVolObjs->RemoveElementAt(i);
-            ((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Unhit);
+            ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Unhit);
          }
       }
    }
@@ -810,13 +804,10 @@ void HitTriangle::Collide(CollisionEvent& coll)
    {
        if (m_ObjType == ePrimitive)
            FireHitEvent(pball);
-       else if (m_pfe && m_ObjType == eHitTarget)
+       else if (m_ObjType == eHitTarget && m_fe && ((HitTarget*)m_obj)->m_d.m_isDropped == false)
        {
-           if (m_objHitEvent && (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false))
-           {
-               ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
-               FireHitEvent(pball);
-           }
+           ((HitTarget*)m_obj)->m_hitEvent = true;
+           FireHitEvent(pball);
        }
    }
 }
@@ -1013,13 +1004,10 @@ void HitLine3D::Collide(CollisionEvent& coll)
    {
        if (m_ObjType == ePrimitive)
            FireHitEvent(pball);
-       else if (m_pfe && m_ObjType == eHitTarget)
+       else if (m_ObjType == eHitTarget && m_fe && ((HitTarget*)m_obj)->m_d.m_isDropped == false)
        {
-           if (m_objHitEvent && (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false))
-           {
-               ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
-               FireHitEvent(pball);
-           }
+           ((HitTarget*)m_obj)->m_hitEvent = true;
+           FireHitEvent(pball);
        }
    }
 }
@@ -1040,23 +1028,23 @@ void TriggerLineSeg::Collide(CollisionEvent& coll)
    if ((m_ObjType != eTrigger) ||
       (!pball->m_vpVolObjs)) return;
 
-   const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
+   const int i = pball->m_vpVolObjs->IndexOf(m_obj); // if -1 then not in objects volume set (i.e not already hit)
 
-   if ((!coll.m_hitflag) == (i < 0))	   // Hit == NotAlreadyHit
+   if ((!coll.m_hitflag) == (i < 0))                 // Hit == NotAlreadyHit
    {
       pball->m_pos += STATICTIME * pball->m_vel;     // move ball slightly forward
 
       if (i < 0)
       {
-         pball->m_vpVolObjs->AddElement(m_pObj);
-         ((Trigger*)m_pObj)->TriggerAnimationHit();
-         ((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Hit);
+         pball->m_vpVolObjs->AddElement(m_obj);
+         ((Trigger*)m_obj)->TriggerAnimationHit();
+         ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
       }
       else
       {
          pball->m_vpVolObjs->RemoveElementAt(i);
-         ((Trigger*)m_pObj)->TriggerAnimationUnhit();
-         ((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Unhit);
+         ((Trigger*)m_obj)->TriggerAnimationUnhit();
+         ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Unhit);
       }
    }
 }
@@ -1074,23 +1062,23 @@ void TriggerHitCircle::Collide(CollisionEvent& coll)
    if ((m_ObjType < eTrigger) || // triggers and kickers
       (!pball->m_vpVolObjs)) return;
 
-   const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
+   const int i = pball->m_vpVolObjs->IndexOf(m_obj); // if -1 then not in objects volume set (i.e not already hit)
 
-   if ((!coll.m_hitflag) == (i < 0))	   // Hit == NotAlreadyHit
+   if ((!coll.m_hitflag) == (i < 0))                 // Hit == NotAlreadyHit
    {
-      pball->m_pos += STATICTIME * pball->m_vel;	   //move ball slightly forward
+      pball->m_pos += STATICTIME * pball->m_vel;     //move ball slightly forward
 
       if (i < 0)
       {
-         pball->m_vpVolObjs->AddElement(m_pObj);
-         ((Trigger*)m_pObj)->TriggerAnimationHit();
-         ((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Hit);
+         pball->m_vpVolObjs->AddElement(m_obj);
+         ((Trigger*)m_obj)->TriggerAnimationHit();
+         ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
       }
       else
       {
          pball->m_vpVolObjs->RemoveElementAt(i);
-         ((Trigger*)m_pObj)->TriggerAnimationUnhit();
-         ((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Unhit);
+         ((Trigger*)m_obj)->TriggerAnimationUnhit();
+         ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Unhit);
       }
    }
 }

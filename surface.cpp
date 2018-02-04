@@ -444,7 +444,8 @@ void Surface::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
 
    if (m_d.m_fHitEvent)
    {
-      obj->m_pfe = (IFireEvents *)this;
+      obj->m_obj = (IFireEvents*) this;
+      obj->m_fe = true;
       obj->m_threshold = m_d.m_threshold;
    }
 
@@ -479,7 +480,8 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex &pv1, c
 
    if (pv1.fSlingshot)  // slingshots always have hit events
    {
-      plineseg->m_pfe = (IFireEvents *)this;
+      plineseg->m_obj = (IFireEvents*) this;
+      plineseg->m_fe = true;
       plineseg->m_threshold = m_d.m_threshold;
    }
 

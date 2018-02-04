@@ -223,7 +223,7 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
    phitcircle->m_fEnabled = m_d.m_fEnabled;
 
    phitcircle->m_ObjType = eKicker;
-   phitcircle->m_pObj = (void*) this;
+   phitcircle->m_obj = (IFireEvents*) this;
 
    phitcircle->m_pkicker = this;
 
@@ -1188,10 +1188,10 @@ STDMETHODIMP Kicker::BallCntOver(int *pVal)
       {
          Ball * const pball = g_pplayer->m_vball[i];
 
-         if (pball->m_vpVolObjs->IndexOf(this) >= 0)
+         if (pball->m_vpVolObjs && pball->m_vpVolObjs->IndexOf((IFireEvents*)this) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
          {
             ++cnt;
-            g_pplayer->m_pactiveball = pball;	// set active ball for scriptor
+            g_pplayer->m_pactiveball = pball; // set active ball for scriptor
          }
       }
    }
@@ -1315,16 +1315,16 @@ void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& 
 
 void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, const bool hitbit, const bool newBall)
 {
-   if (m_pball) return;								    // a previous ball already in kicker
+   if (m_pball) return;								 // a previous ball already in kicker
 
-   const int i = pball->m_vpVolObjs->IndexOf(m_pObj);	// check if kicker in ball's volume set
+   const int i = pball->m_vpVolObjs->IndexOf(m_obj); // check if kicker in ball's volume set
 
-   if (newBall || ((!hitbit) == (i < 0)))  // New or (Hit && !Vol || UnHit && Vol)
+   if (newBall || ((!hitbit) == (i < 0)))            // New or (Hit && !Vol || UnHit && Vol)
    {
       if (m_pkicker->m_d.m_legacyMode || newBall)
          pball->m_pos += STATICTIME * pball->m_vel;  // move ball slightly forward
 
-      if (i < 0)	//entering Kickers volume
+      if (i < 0) // entering Kickers volume
       {
          bool hitEvent;
          const float grabHeight = (m_hitBBox.zlow + pball->m_radius) * m_pkicker->m_d.m_hitAccuracy;
@@ -1360,7 +1360,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
             else
             {
                pball->m_frozen = true;
-               pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
+               pball->m_vpVolObjs->AddElement(m_obj);		// add kicker to ball's volume set
                m_pball = pball;
                m_lastCapturedBall = pball;
             }
