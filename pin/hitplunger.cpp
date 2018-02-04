@@ -33,15 +33,6 @@ HitPlunger::HitPlunger(const float x, const float y, const float x2, const float
    m_plungerMover.m_restPos = restPos;
    m_plungerMover.m_pos = frameTop + (restPos * frameLen);
 
-   m_plungerMover.m_linesegBase.m_pfe = NULL;
-   m_plungerMover.m_jointBase[0].m_pfe = NULL;
-   m_plungerMover.m_jointBase[1].m_pfe = NULL;
-   m_plungerMover.m_linesegSide[0].m_pfe = NULL;
-   m_plungerMover.m_linesegSide[1].m_pfe = NULL;
-   m_plungerMover.m_linesegEnd.m_pfe = NULL;
-   m_plungerMover.m_jointEnd[0].m_pfe = NULL;
-   m_plungerMover.m_jointEnd[1].m_pfe = NULL;
-
    m_hitBBox.zlow = zheight;
    m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
 

@@ -57,7 +57,7 @@ public:
    Texture *m_pinballEnv;
    Texture *m_pinballDecal;
 
-   VectorVoid* m_vpVolObjs;// vector of triggers we are now inside
+   VectorVoid* m_vpVolObjs;// vector of triggers and kickers we are now inside (stored as IFireEvents* though, as HitObject.m_obj stores it like that!)
 
    CollisionEvent m_coll;  // collision information, may not be a actual hit if something else happens first
 

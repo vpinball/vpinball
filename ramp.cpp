@@ -866,10 +866,11 @@ void Ramp::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
    // the ramp is of type ePrimitive for triggering the event in HitTriangle::Collide()
    obj->m_ObjType = ePrimitive;
    obj->m_fEnabled = m_d.m_fCollidable;
+   obj->m_obj = (IFireEvents*) this;
    if (m_d.m_fHitEvent)
-      obj->m_pfe = (IFireEvents *)this;
+      obj->m_fe = true;
    else
-      obj->m_pfe = NULL;
+      obj->m_fe = false;
 
    pvho->AddElement(obj);
    m_vhoCollidable.push_back(obj); //remember hit components of primitive
