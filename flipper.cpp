@@ -1478,7 +1478,7 @@ STDMETHODIMP Flipper::put_Mass(float newVal)
    else
    {
       STARTUNDO
-         m_d.m_mass = newVal;
+      m_d.m_mass = newVal;
       STOPUNDO
    }
 
@@ -1728,7 +1728,7 @@ STDMETHODIMP Flipper::put_Friction(float newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_friction = newVal;
+      m_phitflipper->SetFriction(newVal);
    }
    else
    {

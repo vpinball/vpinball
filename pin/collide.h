@@ -1,6 +1,6 @@
 #pragma once
 
-enum eObjType
+enum eObjType : unsigned char
 {
    eNull,
    ePoint,
@@ -113,8 +113,6 @@ public:
 
    IFireEvents *m_obj; // base object pointer (mainly used as IFireEvents, but also as HitTarget or Primitive or Trigger or Kicker or Gate, see below)
 
-   eObjType m_ObjType;
-
    float m_threshold;  // threshold for firing an event (usually (always??) normal dot ball-velocity)
 
    FRect3D m_hitBBox;
@@ -124,9 +122,11 @@ public:
    float m_friction;
    float m_scatter;
 
+   eObjType m_ObjType;
+
    bool  m_fEnabled;
 
-   bool  m_fe;  // call a FireEvents for m_obj
+   bool  m_fe;  // FireEvents for m_obj?
    bool  m_e;   // currently only used to determine which HitTriangles/HitLines/HitPoints are being part of the same Primitive element m_obj, to be able to early out intersection traversal if primitive is flagged as not collidable
 };
 
