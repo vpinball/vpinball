@@ -125,7 +125,7 @@ void Kicker::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Kicker", "KickerType", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_kickertype = (enum KickerType)iTmp;
+      m_d.m_kickertype = (KickerType)iTmp;
    else
       m_d.m_kickertype = KickerHole;
 

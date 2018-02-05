@@ -75,7 +75,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Plunger", "PlungerType", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_type = (enum PlungerType)iTmp;
+      m_d.m_type = (PlungerType)iTmp;
    else
       m_d.m_type = PlungerTypeModern;
 
@@ -116,13 +116,13 @@ void Plunger::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_mechPlunger = iTmp == 0 ? false : true;
    else
-      m_d.m_mechPlunger = fFalse;             // plungers require selection for mechanical input
+      m_d.m_mechPlunger = false;             // plungers require selection for mechanical input
 
    hr = GetRegInt("DefaultProps\\Plunger", "AutoPlunger", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_autoPlunger = iTmp == 0 ? false : true;
    else
-      m_d.m_autoPlunger = fFalse;
+      m_d.m_autoPlunger = false;
 
 
    hr = GetRegInt("DefaultProps\\Plunger", "Visible", &iTmp);
@@ -208,8 +208,8 @@ void Plunger::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Plunger", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
    SetRegValue("DefaultProps\\Plunger", "TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValue("DefaultProps\\Plunger", "Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
-   SetRegValue("DefaultProps\\Plunger", "MechPlunger", REG_DWORD, &m_d.m_mechPlunger, 4);
-   SetRegValue("DefaultProps\\Plunger", "AutoPlunger", REG_DWORD, &m_d.m_autoPlunger, 4);
+   SetRegValueBool("DefaultProps\\Plunger", "MechPlunger", m_d.m_mechPlunger);
+   SetRegValueBool("DefaultProps\\Plunger", "AutoPlunger", m_d.m_autoPlunger);
    SetRegValueFloat("DefaultProps\\Plunger", "MechStrength", m_d.m_mechStrength);
    SetRegValueFloat("DefaultProps\\Plunger", "ParkPosition", m_d.m_parkPosition);
    SetRegValueBool("DefaultProps\\Plunger", "Visible", m_d.m_fVisible);

@@ -1216,7 +1216,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             psb->GetControlValue((HWND)lParam);
          }
          EnterCriticalSection(&psb->m_hPropertyLock);
-         if (psb->m_pvsel->Size()>=1)
+         if (psb->m_pvsel->Size() >= 1)
             psb->m_pvsel->ElementAt(0)->UpdatePropertyPanes();
          LeaveCriticalSection(&psb->m_hPropertyLock);
 

@@ -146,6 +146,8 @@ public:
 
    bool m_fBackglassView; // Whether viewing the playfield or screen layout
 
+   bool m_fPropertiesFloating;
+
    bool m_fAlwaysDrawDragPoints;
    bool m_fAlwaysDrawLightCenters;
    int m_gridSize;
@@ -168,7 +170,7 @@ public:
    HMENU GetMainMenu(int id);
    void SetStatusBarElementInfo(const char *info);
    void SetStatusBarUnitInfo(const char *info);
-   bool m_fPropertiesFloating;
+
    Material dummyMaterial;
    COLORREF m_elemSelectColor;
    COLORREF m_elemSelectLockedColor;

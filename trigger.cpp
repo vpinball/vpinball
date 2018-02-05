@@ -227,7 +227,7 @@ void Trigger::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Trigger", "Shape", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_shape = (enum TriggerShape)iTmp;
+      m_d.m_shape = (TriggerShape)iTmp;
    else
       m_d.m_shape = TriggerWireA;
    hr = GetRegString("DefaultProps\\Trigger", "Surface", &m_d.m_szSurface, MAXTOKEN);

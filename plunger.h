@@ -26,8 +26,6 @@ public:
    char m_szImage[MAXTOKEN];
    int m_animFrames;
    TimerDataRoot m_tdr;
-   BOOL m_mechPlunger;
-   BOOL m_autoPlunger;
    float m_parkPosition;
    char m_szSurface[MAXTOKEN];
    float m_scatterVelocity;
@@ -41,6 +39,8 @@ public:
    float m_springGauge;
    float m_springLoops;
    float m_springEndLoops;
+   bool m_mechPlunger;
+   bool m_autoPlunger;
    bool m_fVisible;
    bool m_fReflectionEnabled;
 };
