@@ -74,7 +74,7 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
       int oct;
       HitObject * const pho = m_vho[i];
 
-      if ((m_vho[0]->m_e ? (Primitive *)(m_vho[0]->m_obj) : NULL) != m_unique) // are all objects in current node unique/belong to the same primitive?
+      if ((pho->m_e ? (Primitive *)(pho->m_obj) : NULL) != m_unique) // are all objects in current node unique/belong to the same primitive?
          m_unique = NULL;
 
       if (pho->m_hitBBox.right < m_vcenter.x)
