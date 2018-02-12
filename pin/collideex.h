@@ -168,6 +168,7 @@ public:
    float m_angleMin, m_angleMax;
    float m_friction;
    float m_damping;
+   float m_gravityfactor;
    bool m_fVisible;
    bool m_fOpen;      // True if the table logic is opening the gate, not just the ball passing through
    bool m_forcedMove; // True if the table logic is opening/closing the gate

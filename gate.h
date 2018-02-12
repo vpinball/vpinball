@@ -22,6 +22,7 @@ public:
    float m_elasticity;
    float m_friction;
    float m_damping;
+   float m_gravityfactor;
    float m_scatter;
    char m_szSurface[MAXTOKEN];
    float m_angleMin;
@@ -162,6 +163,8 @@ public:
    STDMETHOD(put_Friction)(/*[in]*/ float newVal);
    STDMETHOD(get_Damping)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Damping)(/*[in]*/ float newVal);
+   STDMETHOD(get_GravityFactor)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_GravityFactor)(/*[in]*/ float newVal);
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_TwoWay)(/*[out, retval]*/ VARIANT_BOOL *pVal);

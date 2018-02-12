@@ -218,6 +218,7 @@ void Gate::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Gate", "Elasticity", m_d.m_elasticity);
    SetRegValueFloat("DefaultProps\\Gate", "Friction", m_d.m_friction);
    SetRegValueFloat("DefaultProps\\Gate", "Scatter", m_d.m_scatter);
+   SetRegValueFloat("DefaultProps\\Gate", "GravityFactor", m_d.m_gravityfactor);
    SetRegValueBool("DefaultProps\\Gate", "TwoWay", m_d.m_twoWay);
    SetRegValueBool("DefaultProps\\Gate", "ReflectionEnabled", m_d.m_fReflectionEnabled);
    SetRegValue("DefaultProps\\Gate", "GateType", REG_DWORD, &m_d.m_type, 4);
@@ -338,6 +339,12 @@ void Gate::SetDefaultPhysics(bool fromMouseClick)
       m_d.m_scatter = fTmp;
    else
       m_d.m_scatter = 0;
+
+   hr = GetRegStringAsFloat("DefaultProps\\Gate", "GravityFactor", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_gravityfactor = fTmp;
+   else
+      m_d.m_gravityfactor = 0.25f;
 }
 
 void Gate::RenderBlueprint(Sur *psur, const bool solid)
@@ -691,6 +698,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(GAMIN), m_d.m_angleMin);
    bw.WriteFloat(FID(GFRCT), m_d.m_friction);
    bw.WriteFloat(FID(AFRC), m_d.m_damping);
+   bw.WriteFloat(FID(GGFCT), m_d.m_gravityfactor);
    bw.WriteBool(FID(GVSBL), m_d.m_fVisible);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteBool(FID(TWWA), m_d.m_twoWay);
@@ -801,6 +809,10 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(AFRC))
    {
       pbr->GetFloat(&m_d.m_damping);
+   }
+   else if (id == FID(GGFCT))
+   {
+      pbr->GetFloat(&m_d.m_gravityfactor);
    }
    else
    {
@@ -1246,6 +1258,32 @@ STDMETHODIMP Gate::put_Damping(float newVal)
 
    return S_OK;
 }
+
+STDMETHODIMP Gate::get_GravityFactor(float *pVal)
+{
+   *pVal = !g_pplayer ? m_d.m_gravityfactor : m_phitgate->m_gateMover.m_gravityfactor;
+
+   return S_OK;
+}
+
+STDMETHODIMP Gate::put_GravityFactor(float newVal)
+{
+   const float tmp = clamp(newVal, 0.0f, 100.0f);
+
+   if (g_pplayer)
+      m_phitgate->m_gateMover.m_gravityfactor = tmp;
+   else
+   {
+      STARTUNDO
+
+      m_d.m_gravityfactor = tmp;
+
+      STOPUNDO
+   }
+
+   return S_OK;
+}
+
 
 STDMETHODIMP Gate::get_Visible(VARIANT_BOOL *pVal)
 {
