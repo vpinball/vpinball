@@ -8,6 +8,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 Changelog:
 10.5:
 - extend X and Y of EMReel and textbox elements so that these can be changed by the script
+- add GravityFactor to the gate element
 10.4:
 - support reading nudge data from table script, and reading/writing nudge calibration settings:
   NudgeGetCalibration/NudgeSetCalibration, NudgeSensorStatus, NudgeTiltStatus
@@ -427,6 +428,7 @@ Damping(float) - 0..1
 *Visible(bool)
 ShowBracket(bool)
 CurrentAngle(float) - only readable, it returns the current open angle
+GravityFactor(float) - usually between 1..3
 
 Methods
 -------
