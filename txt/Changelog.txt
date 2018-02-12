@@ -1,5 +1,18 @@
 VP 10.5.0 Changelog
 ------------------------
+- improve gate swing physics, correct backwards initial swing, and expose new gravity factor parameter.
+  Also add some "bounce back" for 1-way gates. Currently set up to use as-is defaults, but Wrd1972 recommends the following settings:
+   Ideal setting for GATE motion:
+    Elasticity = .4 (default)
+    Friction = .02 (default)
+    Dampening = .85
+    Gravity = 3
+   Ideal for SWITCH ACTUATOR motion:
+    Elasticity = .4 (default)
+    Friction = .02 (default)
+    Dampening = .9
+    Gravity = 1
+
 - add copy/paste feature for control points. Select a control point, press the "Copy" button or CTRL+C to copy the coordinates. 
   Then select another control point of another element and press the "Paste" button or leave the mouse cursor over the control point and press CTRL+V.
   ATTENTION: you can also copy/paste control points of the same element but this can lead to bad shapes of the selected element
