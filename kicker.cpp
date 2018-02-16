@@ -346,11 +346,10 @@ void Kicker::ExportMesh(FILE *f)
 
 void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf)
 {
-   Matrix3D fullMatrix;
-   fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
-
    int num_vertices;
    const Vertex3D_NoTex2 *vertices;
+   float zoffset = 0.f;
+   float zrot = m_d.m_orientation;
    switch (m_d.m_kickertype)
    {
        case KickerInvisible:
@@ -360,12 +359,14 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf)
        {
            num_vertices = kickerCupNumVertices;
            vertices = kickerCupMesh;
+           zoffset = -0.18f;
        }
        break;
        case KickerWilliams:
        {
            num_vertices = kickerWilliamsNumVertices;
            vertices = kickerWilliamsMesh;
+           zrot = m_d.m_orientation + 90.f;
        }
        break;
        case KickerGottlieb:
@@ -384,19 +385,24 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf)
        {
            num_vertices = kickerHoleNumVertices;
            vertices = kickerHoleMesh;
+           zrot = 0.f;
        }
        break;
        case KickerHoleSimple:
        {
            num_vertices = kickerSimpleHoleNumVertices;
            vertices = kickerSimpleHoleMesh;
+           zrot = 0.f;
        }
        break;
    }
 
+   Matrix3D fullMatrix;
+   fullMatrix.RotateZMatrix(ANGTORAD(zrot));
+
    for (int i = 0; i < num_vertices; i++)
    {
-      Vertex3Ds vert(vertices[i].x, vertices[i].y, vertices[i].z - 0.18f);
+      Vertex3Ds vert(vertices[i].x, vertices[i].y, vertices[i].z + zoffset);
       vert = fullMatrix.MultiplyVector(vert);
 
       buf[i].x = vert.x*m_d.m_radius + m_d.m_vCenter.x;
