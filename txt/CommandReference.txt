@@ -9,6 +9,7 @@ Changelog:
 10.5:
 - extend X and Y of EMReel and textbox elements so that these can be changed by the script
 - add GravityFactor to the gate element
+- add UserValue to target and primitive elements
 10.4:
 - support reading nudge data from table script, and reading/writing nudge calibration settings:
   NudgeGetCalibration/NudgeSetCalibration, NudgeSensorStatus, NudgeTiltStatus
@@ -615,6 +616,7 @@ DisableLighting(bool)
 BlendDisableLighting(float) - 0..1, same as DisableLighting, but can blend between the two extremes
 BlendDisableLightingFromBelow(float) - 0..1, similar to DisableLighting, but will block light coming from below (e.g. from light elements)
 BackfacesEnabled(bool) - default=false, if enabled will also show/render the backfacing triangles (if a transparent material is used)
+UserValue(any) - can store any user defined value for re-use later-on
 
 The following only applies to mesh primitives with an animation sequence
 ------------------------------------------------------------------------
@@ -872,6 +874,7 @@ RaiseDelay(int)             - defines a delay in milliseconds after the dropped 
 IsDropped(bool)             - can only be used for drop targets if the drop target is raised or dropped
 TimerEnabled(bool)          - each target has a build-in timer which can be enabled by setting this to 1
 TimerInterval(int)          - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
+UserValue(any)              - can store any user defined value for re-use later-on
 
 
 TIMER
