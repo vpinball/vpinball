@@ -1,5 +1,7 @@
 VP 10.5.0 Changelog
 ------------------------
+- draw also flipper thickness in the editor
+
 - improve gate swing physics, correct backwards initial swing, and expose new gravity factor parameter.
   Also add some "bounce back" for 1-way gates. Currently set up to use as-is defaults, but Wrd1972 recommends the following settings:
    Ideal setting for GATE motion:

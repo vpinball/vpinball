@@ -416,6 +416,8 @@ void Flipper::SetVertices(const float basex, const float basey, const float angl
 
 void Flipper::PreRender(Sur * const psur)
 {
+   const float rubBaseRadius = m_d.m_BaseRadius - m_d.m_rubberthickness;
+   const float rubEndRadius = m_d.m_EndRadius - m_d.m_rubberthickness;
    const float anglerad = ANGTORAD(m_d.m_StartAngle);
    //const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
 
@@ -434,12 +436,24 @@ void Flipper::PreRender(Sur * const psur)
    psur->Polygon(rgv, 4);
    psur->Ellipse(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius);
    psur->Ellipse(vendcenter.x, vendcenter.y, m_d.m_EndRadius);
+
+   // rubber
+   SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad, &vendcenter, rgv, rubBaseRadius, rubEndRadius);
+
+   psur->SetObject(this);
+   psur->SetLineColor(RGB(128, 0, 0), false, 0);
+
+   psur->Polygon(rgv, 4);
+   psur->Ellipse(m_d.m_Center.x, m_d.m_Center.y, rubBaseRadius);
+   psur->Ellipse(vendcenter.x, vendcenter.y, rubEndRadius);
 }
 
 void Flipper::Render(Sur * const psur)
 {
    const float anglerad = ANGTORAD(m_d.m_StartAngle);
    const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
+   const float rubBaseRadius = m_d.m_BaseRadius - m_d.m_rubberthickness;
+   const float rubEndRadius = m_d.m_EndRadius - m_d.m_rubberthickness;
 
    Vertex2D vendcenter;
    Vertex2D rgv[4];
@@ -457,6 +471,23 @@ void Flipper::Render(Sur * const psur)
    psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius, rgv[0].x, rgv[0].y, rgv[3].x, rgv[3].y);
    psur->Arc(vendcenter.x, vendcenter.y, m_d.m_EndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
 
+   //rubber
+   SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad, &vendcenter, rgv, rubBaseRadius, rubEndRadius);
+
+   psur->SetFillColor(m_ptable->RenderSolid() ? g_pvp->m_fillColor : -1);
+   psur->SetBorderColor(-1, false, 0);
+   psur->SetLineColor(RGB(0, 0, 0), false, 0);
+
+   psur->SetObject(this);
+
+   psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+   psur->Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
+
+   psur->Arc(m_d.m_Center.x, m_d.m_Center.y, rubBaseRadius, rgv[0].x, rgv[0].y, rgv[3].x, rgv[3].y);
+   psur->Arc(vendcenter.x, vendcenter.y, rubEndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
+
+
+   //draw the flipper up position
    SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad2, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
    psur->SetLineColor(RGB(128, 128, 128), true, 0);
@@ -554,6 +585,7 @@ void Flipper::Render(Sur * const psur)
          , rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
       else psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius + m_d.m_EndRadius
          , rgv[1].x, rgv[1].y, rgv[0].x, rgv[0].y);
+
    }
 
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
