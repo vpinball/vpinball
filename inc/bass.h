@@ -1,6 +1,6 @@
 /*
 	BASS 2.4 C/C++ header file
-	Copyright (c) 1999-2017 Un4seen Developments Ltd.
+	Copyright (c) 1999-2018 Un4seen Developments Ltd.
 
 	See the BASS.CHM file for more detailed documentation
 */
@@ -264,7 +264,7 @@ typedef struct {
 	DWORD flags;	// BASS_SAMPLE_xxx flags
 	DWORD length;	// length (in bytes)
 	DWORD max;		// maximum simultaneous playbacks
-	DWORD origres;	// original resolution bits
+	DWORD origres;	// original resolution
 	DWORD chans;	// number of channels
 	DWORD mingap;	// minimum gap (ms) between creating channels
 	DWORD mode3d;	// BASS_3DMODE_xxx mode
@@ -365,6 +365,8 @@ typedef struct {
 	HSAMPLE sample; // sample
 	const char *filename; // filename
 } BASS_CHANNELINFO;
+
+#define BASS_ORIGRES_FLOAT		0x10000
 
 // BASS_CHANNELINFO types
 #define BASS_CTYPE_SAMPLE		1
