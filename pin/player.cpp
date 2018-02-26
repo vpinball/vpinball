@@ -220,7 +220,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    
    m_fThrowBalls = false;
 #ifdef PLAYBACK
-   m_fPlayback = fFalse;
+   m_fPlayback = false;
 
    m_fplaylog = NULL;
 #endif
@@ -475,6 +475,10 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    
    m_fThrowBalls = (GetRegIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0)==1);
    m_DebugBallSize = GetRegIntWithDefault("Editor", "ThrowBallSize", 50);
+
+   int numberOfTimesToShowTouchMessage = GetRegIntWithDefault("Player", "NumberOfTimesToShowTouchMessage", 10);
+   SetRegValueInt("Player", "NumberOfTimesToShowTouchMessage", max(numberOfTimesToShowTouchMessage-1,0));
+   m_showTouchMessage = (numberOfTimesToShowTouchMessage != 0);
 
    m_fShowFPS = 0;
 
@@ -784,6 +788,7 @@ void Player::CreateBoundingHitShapes(Vector<HitObject> *pvho)
 {
    // simple outer borders:
    LineSeg *plineseg;
+
    plineseg = new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_top), Vertex2D(m_ptable->m_right, m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassheight);
    pvho->AddElement(plineseg);
 
@@ -2881,7 +2886,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
 #ifdef C_DYNAMIC
                // is this ball static? .. set static and quench        
-               if (/*pball->m_coll.m_hitRigid &&*/ (pball->m_coll.m_hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts  //!! rather test isContact??
+               if (/*pball->m_coll.m_hitRigid &&*/ (pball->m_coll.m_hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts //!! rather test isContact??
                {
                   const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are taken from simulation
                   if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_ptable->m_Gravity*m_ptable->m_Gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_ptable->m_Gravity / GRAVITYCONST)
@@ -3832,7 +3837,7 @@ void Player::UpdateHUD()
 		DebugPrint(m_width / 2 - 320, 10, szFoo, len2, true);
 	}
 
-	if (!m_fCloseDown && m_supportsTouch && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
+	if (!m_fCloseDown && m_supportsTouch && m_showTouchMessage && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
 	{
 		char szFoo[256];
 		int len2 = sprintf_s(szFoo, "You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger");
@@ -5581,7 +5586,7 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
          if (szLine[c] == EOF)
          {
             fclose(m_fplaylog);
-            m_fPlayback = fFalse;
+            m_fPlayback = false;
             m_fplaylog = NULL;
             return dtime;
          }
