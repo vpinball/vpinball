@@ -525,7 +525,7 @@ private:
    int m_curAccel_y[PININ_JOYMXCNT];
 
 #ifdef PLAYBACK
-   BOOL m_fPlayback;
+   bool m_fPlayback;
    FILE *m_fplaylog;
 #endif
 
@@ -544,6 +544,7 @@ private:
    bool m_fPseudoPause;		// Nothing is moving, but we're still redrawing
 
    bool m_supportsTouch;    // Display is a touchscreen?
+   bool m_showTouchMessage;
 
 #ifdef LOG
    FILE *m_flog;
