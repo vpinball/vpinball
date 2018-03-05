@@ -1310,10 +1310,10 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    //
 
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
+   const float minSlope = (ptable->m_fOverridePhysics ? ptable->m_fOverrideMinSlope : ptable->m_angletiltMin);
+   const float maxSlope = (ptable->m_fOverridePhysics ? ptable->m_fOverrideMaxSlope : ptable->m_angletiltMax);
 
-   const float slope = ptable->m_angletiltMin
-      + (ptable->m_angletiltMax - ptable->m_angletiltMin)
-      * ptable->m_globalDifficulty;
+   const float slope = minSlope + (maxSlope - minSlope) * ptable->m_globalDifficulty;
 
    m_gravity.x = 0.f;
    m_gravity.y =  sinf(ANGTORAD(slope))*(ptable->m_fOverridePhysics ? ptable->m_fOverrideGravityConstant : ptable->m_Gravity);

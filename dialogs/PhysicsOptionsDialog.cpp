@@ -178,6 +178,22 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     SetItemText(1102, TablePhysicsContactScatterAngle);
 
+    float TablePhysicsMinSlope = DEFAULT_TABLE_MIN_SLOPE;
+    sprintf_s(tmp, 256, "TablePhysicsMinSlope%u", physicsselection);
+    hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsMinSlope);
+    if(hr != S_OK)
+        TablePhysicsMinSlope = DEFAULT_TABLE_MIN_SLOPE;
+
+    SetItemText(1103, TablePhysicsContactScatterAngle);
+
+    float TablePhysicsMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
+    sprintf_s(tmp, 256, "TablePhysicsMaxSlope%u", physicsselection);
+    hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsMaxSlope);
+    if(hr != S_OK)
+        TablePhysicsMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
+
+    SetItemText(1104, TablePhysicsContactScatterAngle);
+
     CString txt(physicsoptions[physicsselection]);
     SetDlgItemText(1110, txt);
     return TRUE;
@@ -206,6 +222,8 @@ struct PhysValues
     char elasticityFalloff[16];
     char friction[16];
     char coilRampup[16];
+    char minSlope[16];
+    char maxSlope[16];
     char name[32];
 };
 
@@ -255,6 +273,8 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             SetDlgItemText(1709, CString(loadValues.tableElasticityFalloff));
             SetDlgItemText(1710, CString(loadValues.playfieldScatter));
             SetDlgItemText(1102, CString(loadValues.defaultElementScatter));
+            SetDlgItemText(1103, CString(loadValues.minSlope));
+            SetDlgItemText(1104, CString(loadValues.maxSlope));
 
             SetDlgItemText(DISPID_Flipper_Speed, CString(loadValues.speed));
             SetDlgItemText(19, CString(loadValues.returnStrength));
@@ -266,6 +286,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             SetDlgItemText(22, CString(loadValues.elasticityFalloff));
             SetDlgItemText(109, CString(loadValues.friction));
             SetDlgItemText(110, CString(loadValues.coilRampup));
+
 
             SetDlgItemText(1110, CString(loadValues.name));
             SetFocus();
@@ -364,6 +385,12 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             xml_node<>*tabContactScatterAngle = xmlDoc.allocate_node(node_element, "defaultElementScatter", (new string(GetItemText(1102).c_str()))->c_str());
             table->append_node(tabContactScatterAngle);
 
+            xml_node<>*tabMinSlope = xmlDoc.allocate_node(node_element, "playfieldminslope", (new string(GetItemText(1103).c_str()))->c_str());
+            table->append_node(tabMinSlope);
+
+            xml_node<>*tabMaxSlope = xmlDoc.allocate_node(node_element, "playfieldmaxslope", (new string(GetItemText(1104).c_str()))->c_str());
+            table->append_node(tabMaxSlope);
+
             xml_node<>*settingName = xmlDoc.allocate_node(node_element, "name", (new string(GetItemText(1110).c_str()))->c_str());
             root->append_node(settingName);
             root->append_node(table);
@@ -457,6 +484,16 @@ bool PhysicsOptionsDialog::LoadSetting()
         strncpy_s(loadValues.tableElasticityFalloff, table->first_node("elasticityFalloff")->value(), 16);
         strncpy_s(loadValues.playfieldScatter, table->first_node("playfieldScatter")->value(), 16);
         strncpy_s(loadValues.defaultElementScatter, table->first_node("defaultElementScatter")->value(), 16);
+        try
+        {
+            strncpy_s(loadValues.minSlope, table->first_node("playfieldminslope")->value(), 16);
+            strncpy_s(loadValues.maxSlope, table->first_node("playfieldmaxslope")->value(), 16);
+        } 
+        catch(...)
+        {
+            sprintf_s(loadValues.minSlope, "%f", DEFAULT_TABLE_MIN_SLOPE);
+            sprintf_s(loadValues.maxSlope, "%f", DEFAULT_TABLE_MAX_SLOPE);
+        }
 
         strncpy_s(loadValues.speed, flipper->first_node("speed")->value(), 16);
         strncpy_s(loadValues.elasticity, flipper->first_node("strength")->value(), 16);
@@ -561,6 +598,14 @@ void PhysicsOptionsDialog::SaveCurrentPhysicsSetting()
 
     str = GetItemText(1102);
     sprintf_s(tmp2, 256, "TablePhysicsContactScatterAngle%u", physicsselection);
+    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+
+    str = GetItemText(1103);
+    sprintf_s(tmp2, 256, "TablePhysicsMinSlope%u", physicsselection);
+    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+
+    str = GetItemText(1103);
+    sprintf_s(tmp2, 256, "TablePhysicsMaxSlope%u", physicsselection);
     SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(1110);

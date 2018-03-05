@@ -602,6 +602,7 @@ public:
 
    int   m_fOverridePhysics;
    float m_fOverrideGravityConstant, m_fOverrideContactFriction, m_fOverrideElasticity, m_fOverrideElasticityFalloff, m_fOverrideScatterAngle;
+   float m_fOverrideMinSlope, m_fOverrideMaxSlope;
 
    unsigned int m_PhysicsMaxLoops;
 
