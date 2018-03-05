@@ -628,7 +628,7 @@ BEGIN
     LTEXT           "back is side, backbox is front)",IDC_STATIC,320,86,101,8
 END
 
-IDD_PHYSICS_OPTIONS DIALOGEX 0, 0, 199, 334
+IDD_PHYSICS_OPTIONS DIALOGEX 0, 0, 199, 378
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Global Physics Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -654,7 +654,7 @@ BEGIN
     EDITTEXT        113,88,137,40,12,ES_AUTOHSCROLL
     LTEXT           "EOS Torque Angle",IDC_STATIC,11,154,66,8
     EDITTEXT        189,88,152,40,12,ES_AUTOHSCROLL
-    GROUPBOX        "Playfield Settings",IDC_STATIC,5,171,127,103
+    GROUPBOX        "Playfield Settings",IDC_STATIC,5,171,127,136
     LTEXT           "Gravity Constant",IDC_STATIC,11,185,69,8
     EDITTEXT        1100,88,183,40,12,ES_AUTOHSCROLL
     LTEXT           "Friction",IDC_STATIC,11,200,69,8
@@ -665,15 +665,19 @@ BEGIN
     EDITTEXT        1709,88,227,40,12,ES_AUTOHSCROLL
     LTEXT           "Playfield Scatter",IDC_STATIC,11,245,69,8
     EDITTEXT        1710,88,242,40,12,ES_AUTOHSCROLL
-    LTEXT           "Default Ele. Scatter Angle",IDC_STATIC,11,260,92,8
+    LTEXT           "Default Ele. Scatter Angle",IDC_STATIC,11,260,76,8
     EDITTEXT        1102,88,257,40,12,ES_AUTOHSCROLL
-    LTEXT           "Set Name",IDC_STATIC,5,279,35,8
-    EDITTEXT        1110,48,277,80,12,ES_AUTOHSCROLL
-    LISTBOX         IDC_PhysicsList,5,292,188,35,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Set Name",IDC_STATIC,5,320,35,8
+    EDITTEXT        1110,48,318,80,12,ES_AUTOHSCROLL
+    LISTBOX         IDC_PhysicsList,5,333,188,35,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "&OK",IDOK,144,10,50,14
     PUSHBUTTON      "&Cancel",IDCANCEL,144,28,50,14
     PUSHBUTTON      "&Import Set",1111,144,241,50,14
     PUSHBUTTON      "&Export Set",1112,144,259,50,14
+    LTEXT           "Min Slope",IDC_STATIC,11,274,32,8
+    EDITTEXT        1103,88,272,40,12,ES_AUTOHSCROLL
+    LTEXT           "Max Slope",IDC_STATIC,11,288,34,8
+    EDITTEXT        1104,88,287,40,12,ES_AUTOHSCROLL
 END
 
 IDD_GAMEPAUSE DIALOGEX 0, 0, 78, 80
@@ -2364,7 +2368,7 @@ BEGIN
     IDD_PHYSICS_OPTIONS, DIALOG
     BEGIN
         RIGHTMARGIN, 198
-        BOTTOMMARGIN, 320
+        BOTTOMMARGIN, 374
     END
 
     IDD_GAMEPAUSE, DIALOG
@@ -2764,25 +2768,45 @@ END
 //
 
 IDR_VPINBALL            REGISTRY                "res\\vpinball.rgs"
+
 IDR_SURFACE             REGISTRY                "res\\surface.rgs"
+
 IDR_DRAG_POINT          REGISTRY                "res\\dragpoint.rgs"
+
 IDR_FLIPPER             REGISTRY                "res\\flipper.rgs"
+
 IDR_TIMER               REGISTRY                "res\\timer.rgs"
+
 IDR_PLUNGER             REGISTRY                "res\\plunger.rgs"
+
 IDR_TEXTBOX             REGISTRY                "res\\textbox.rgs"
+
 IDR_BUMPER              REGISTRY                "res\\bumper.rgs"
+
 IDR_PI_EVENT_HANDLER    REGISTRY                "res\\pieventhandler.rgs"
+
 IDR_TRIGGER             REGISTRY                "res\\trigger.rgs"
+
 IDR_LIGHT               REGISTRY                "res\\light.rgs"
+
 IDR_KICKER              REGISTRY                "res\\kicker.rgs"
+
 IDR_GATE                REGISTRY                "res\\gate.rgs"
+
 IDR_SPINNER             REGISTRY                "res\\spinner.rgs"
+
 IDR_RAMP                REGISTRY                "res\\ramp.rgs"
+
 IDR_DISP_REEL           REGISTRY                "res\\dispreel.rgs"
+
 IDR_LIGHT_SEQ           REGISTRY                "res\\lightseq.rgs"
+
 IDR_PRIMITIVE           REGISTRY                "res\\primitive.rgs"
+
 IDR_RUBBER              REGISTRY                "res\\rubber.rgs"
+
 IDR_HITTARGET           REGISTRY                "res\\hittarget.rgs"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3001,18 +3025,31 @@ END
 //
 
 IDB_TOOLBAR             BITMAP                  "res\\toolbar.bmp"
+
 IDB_BALL                BITMAP                  "res\\ball.bmp"
+
 IDB_ENV                 BITMAP                  "res\\envmap.bmp"
+
 IDB_LOGO                BITMAP                  "res\\logo.bmp"
+
 IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
+
 IDB_RINGENVMAP          BITMAP                  "res\\ringenvmap.bmp"
+
 IDB_BUMPERCAP           BITMAP                  "res\\bumperCap.bmp"
+
 IDB_KICKER_HOLE_WOOD    BITMAP                  "res\\kickerHoleWood.bmp"
+
 IDB_KICKER_CUP          BITMAP                  "res\\kickerCup.bmp"
+
 IDB_AO_DITHER           BITMAP                  "res\\AOdither.bmp"
+
 IDB_KICKER_WILLIAMS     BITMAP                  "res\\kickerWilliams.bmp"
+
 IDB_KICKER_GOTTLIEB     BITMAP                  "res\\kickerGottlieb.bmp"
+
 IDB_KICKER_T1           BITMAP                  "res\\kickerT1.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3084,11 +3121,17 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_VPINBALL            ICON                    "res\\vpinball.ico"
+
 IDI_SCRIPT              ICON                    "res\\script.ico"
+
 IDI_TABLE               ICON                    "res\\table.ico"
+
 IDI_PLAY                ICON                    "res\\play.ico"
+
 IDI_PAUSE               ICON                    "res\\pause.ico"
+
 IDI_STEP                ICON                    "res\\step.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3096,25 +3139,45 @@ IDI_STEP                ICON                    "res\\step.ico"
 //
 
 IDC_MAGNIFY             CURSOR                  "res\\magnify.cur"
+
 IDC_LIGHT               CURSOR                  "res\\light.cur"
+
 IDC_WALL                CURSOR                  "res\\wall.cur"
+
 IDC_FLIPPER             CURSOR                  "res\\flipper.cur"
+
 IDC_TRIGGER             CURSOR                  "res\\trigger.cur"
+
 IDC_GATE                CURSOR                  "res\\gate.cur"
+
 IDC_TIMER               CURSOR                  "res\\timer.cur"
+
 IDC_PLUNGER             CURSOR                  "res\\plunger.cur"
+
 IDC_TEXTBOX             CURSOR                  "res\\textbox.cur"
+
 IDC_BUMPER              CURSOR                  "res\\bumper.cur"
+
 IDC_KICKER              CURSOR                  "res\\kicker.cur"
+
 IDC_TARGET              CURSOR                  "res\\target.cur"
+
 IDC_DECAL               CURSOR                  "res\\decal.cur"
+
 IDC_SPINNER             CURSOR                  "res\\spinner.cur"
+
 IDC_RAMP                CURSOR                  "res\\ramp.cur"
+
 IDC_DISPREEL            CURSOR                  "res\\dispreel.cur"
+
 IDC_LIGHTSEQ            CURSOR                  "res\\lightseq.cur"
+
 IDC_PRIMITIVE           CURSOR                  "res\\primitive.cur"
+
 IDC_FLASHER             CURSOR                  "res\\flasher.cur"
+
 IDC_RUBBER              CURSOR                  "res\\rubber.cur"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3122,7 +3185,9 @@ IDC_RUBBER              CURSOR                  "res\\rubber.cur"
 //
 
 IDR_BLANK_TABLE         TABLE                   "res\\blankTable.vpx"
+
 IDR_EXAMPLE_TABLE       TABLE                   "res\\exampleTable.vpx"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3159,19 +3224,24 @@ END
 // AFX_DIALOG_LAYOUT
 //
 
-IDD_SOUNDDIALOG AFX_DIALOG_LAYOUT 
+IDD_SOUNDDIALOG AFX_DIALOG_LAYOUT
 BEGIN
-    0x0000
+    0
 END
 
-IDD_AUDIO_OPTIONS AFX_DIALOG_LAYOUT 
+IDD_AUDIO_OPTIONS AFX_DIALOG_LAYOUT
 BEGIN
-    0x0000
+    0
 END
 
-IDD_SOUND_POSITION_DIALOG AFX_DIALOG_LAYOUT 
+IDD_SOUND_POSITION_DIALOG AFX_DIALOG_LAYOUT
 BEGIN
-    0x0000
+    0
+END
+
+IDD_PHYSICS_OPTIONS AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 

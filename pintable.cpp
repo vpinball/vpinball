@@ -2603,11 +2603,24 @@ void PinTable::Play(bool _cameraMode)
             hr = GetRegStringAsFloat("Player", tmp, &fOverrideContactScatterAngle);
             if (hr != S_OK)
                fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
+
+            sprintf_s(tmp, 256, "TablePhysicsMinSlope%d", m_fOverridePhysics - 1);
+            hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideMinSlope);
+            if(hr != S_OK)
+                m_fOverrideMinSlope = DEFAULT_TABLE_MIN_SLOPE;
+
+            sprintf_s(tmp, 256, "TablePhysicsMaxSlope%d", m_fOverridePhysics - 1);
+            hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideMaxSlope);
+            if(hr != S_OK)
+                m_fOverrideMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
          }
 
          c_hardScatter = ANGTORAD(m_fOverridePhysics ? fOverrideContactScatterAngle : m_defaultScatter);
 
-         const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
+         const float minSlope = (m_fOverridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
+         const float maxSlope = (m_fOverridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
+
+         const float slope = minSlope + (maxSlope - minSlope)* m_globalDifficulty;
 
          g_pplayer->SetGravity(slope, m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
 
@@ -10168,7 +10181,9 @@ STDMETHODIMP PinTable::put_Gravity(float newVal)
    if (g_pplayer)
    {
       m_Gravity = newVal*GRAVITYCONST;
-      const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
+      const float minSlope = (m_fOverridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
+      const float maxSlope = (m_fOverridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
+      const float slope = minSlope + (maxSlope - minSlope)* m_globalDifficulty;
       g_pplayer->SetGravity(slope, m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else

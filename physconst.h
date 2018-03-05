@@ -16,6 +16,9 @@
 #define DEFAULT_TABLE_ELASTICITY        0.25f
 #define DEFAULT_TABLE_ELASTICITY_FALLOFF 0.f
 #define DEFAULT_TABLE_PFSCATTERANGLE    0.f
+#define DEFAULT_TABLE_MIN_SLOPE         6.0f
+#define DEFAULT_TABLE_MAX_SLOPE         6.0f
+
 
 //#define PRINT_DEBUG_COLLISION_TREE     // print collision acceleration structure info (will slow down debugging startup time if enabled)
 
