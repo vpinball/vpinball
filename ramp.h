@@ -86,7 +86,8 @@ public:
       // Remove the comment from the line above if you don't want your object to
       // support aggregation.
 
-      DECLARE_REGISTRY_RESOURCEID(IDR_RAMP)
+   DECLARE_REGISTRY_RESOURCEID(IDR_RAMP)
+
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
@@ -171,12 +172,12 @@ private:
       if (_accuracy==-1.f)
          accuracy = 4.0f*powf(10.0f, (10.0f - m_ptable->GetDetailLevel())*(float)(1.0 / 1.5)); // min = 4 (highest accuracy/detail level), max = 4 * 10^(10/1.5) = ~18.000.000 (lowest accuracy/detail level)
        else
-          accuracy = 4.0f*powf(10.0f, (10.0f - _accuracy)*(float)(1.0 / 1.5)); // used for hit shape calculation, always!
+         accuracy = 4.0f*powf(10.0f, (10.0f - _accuracy)*(float)(1.0 / 1.5)); // used for hit shape calculation, always!
       IHaveDragPoints::GetRgVertex(vv, false, accuracy);
    }
 
 
-   Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **const pMiddlePoints, const float _accuracy, const bool forRendering, const bool inc_width);
+   Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **const pMiddlePoints, const float _accuracy, const bool inc_width);
    void prepareHabitrail(RenderDevice* pd3dDevice);
    void AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3Ds& v2);
    void AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, const float zlow, const float zhigh);
@@ -187,7 +188,7 @@ private:
 
    void GenerateVertexBuffer(RenderDevice* pd3dDevice);
 
-   void AddLine(Vector<HitObject> * const pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2);
+   void AddWallLineSeg(Vector<HitObject> * const pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2, const float wallheight);
    void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
 
    void RenderRamp(RenderDevice *pd3dDevice, const Material * const mat);

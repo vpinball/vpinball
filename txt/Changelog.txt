@@ -1,5 +1,8 @@
 VP 10.5.0 Changelog
 ------------------------
+
+- fix ramp collision/internal walls reaching below and above the actual visible walls or wires, which was mainly an issue for rather straight and/or very steep ramps
+
 - draw also flipper thickness in the editor
 
 - improve gate swing physics, correct backwards initial swing, and expose new gravity factor parameter.
@@ -35,7 +38,7 @@ VP 10.5.0 Changelog
 
 - fix detection of used materials (bumpers, triggers & kickers were missing) and used images (color grading LUT was missing)
 
-- fix sound device selection/mapping for music (e.g. usually the backglass device)
+- fix sound device selection/mapping for music (i.e. usually the backglass device)
 
 - script button can now both open and close the script editor
 

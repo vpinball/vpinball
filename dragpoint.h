@@ -193,7 +193,6 @@ public:
    bool m_fAutoTexture;
    static Vertex3Ds m_copyPoint;       /*coordinates of a control point to copy*/
    static bool      m_pointCopied;
-
 };
 
 #endif // !defined(AFX_DRAGPOINT_H__E0C074C9_5BF2_4F8C_8012_76082BAC2203__INCLUDED_)

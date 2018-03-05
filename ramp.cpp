@@ -39,7 +39,7 @@ Ramp::~Ramp()
       dynamicIndexBuffer->release();
 
    if(rgheightInit)
-       delete [] rgheightInit;
+      delete [] rgheightInit;
 }
 
 void Ramp::UpdateUnitsInfo()
@@ -47,7 +47,7 @@ void Ramp::UpdateUnitsInfo()
    char tbuf[128];
    sprintf_s(tbuf, "TopH: %.03f | BottomH: %0.3f | TopW: %.03f | BottomW: %.03f | LeftW: %.03f | RightW: %.3f", g_pvp->ConvertToUnit(m_d.m_heighttop), g_pvp->ConvertToUnit(m_d.m_heightbottom), 
                                                                                   g_pvp->ConvertToUnit(m_d.m_widthtop), g_pvp->ConvertToUnit(m_d.m_widthbottom),
-                                                                                  g_pvp->ConvertToUnit(m_d.m_leftwallheight), g_pvp->ConvertToUnit(m_d.m_rightwallheight));
+                                                                                  g_pvp->ConvertToUnit(m_d.m_leftwallheightvisible), g_pvp->ConvertToUnit(m_d.m_rightwallheightvisible));
    g_pvp->SetStatusBarUnitInfo(tbuf);
 }
 
@@ -85,7 +85,6 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
       pdp->m_fSmooth = true;
       m_vdpoint.AddElement(pdp);
    }
-
 
    InitVBA(fTrue, 0, NULL);
 
@@ -181,7 +180,7 @@ void Ramp::PreRender(Sur * const psur)
    psur->SetObject(this);
 
    int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL, false, false);
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL, false);
    psur->Polygon(rgvLocal, cvertex * 2);
 
    delete[] rgvLocal;
@@ -198,7 +197,7 @@ void Ramp::Render(Sur * const psur)
    bool *pfCross;
    Vertex2D *middlePoints;
    int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false, false);
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false);
    psur->Polygon(rgvLocal, cvertex * 2);
 
    if (isHabitrail())
@@ -249,11 +248,7 @@ void Ramp::Render(Sur * const psur)
       {
          CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
          psur->SetFillColor(-1);
-         if (i == 0)
-            psur->SetBorderColor(RGB(0, 0, 255), false, 0);
-         else
-            psur->SetBorderColor(RGB(255, 0, 0), false, 0);
-
+         psur->SetBorderColor((i == 0) ? RGB(0, 0, 255) : RGB(255, 0, 0), false, 0);
          psur->SetObject(pdp);
 
          if (pdp->m_fDragging)
@@ -266,11 +261,7 @@ void Ramp::Render(Sur * const psur)
 
 void Ramp::RenderOutline(Sur * const psur, const bool solid)
 {
-   if ( solid )
-      psur->SetFillColor(BLUEPRINT_SOLID_COLOR);
-   else
-      psur->SetFillColor(-1);
-
+   psur->SetFillColor(solid ? BLUEPRINT_SOLID_COLOR : -1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this);
@@ -279,7 +270,7 @@ void Ramp::RenderOutline(Sur * const psur, const bool solid)
    bool *pfCross;
    Vertex2D *middlePoints;
    int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false, false);
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false);
    psur->Polygon(rgvLocal, cvertex * 2);
 
    if (isHabitrail())
@@ -317,7 +308,7 @@ void Ramp::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
    //!! meh, this is delivering something loosely related to the bounding vertices, but its only used in the cam fitting code so far, so keep for legacy reasons
    float *rgheight1;
    int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL, false, true);
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL, true);
 
    //pvvertex3D.reserve(pvvertex3D.size() + cvertex * 2);
    Vertex3Ds bbox_min(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -381,13 +372,14 @@ void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, float height)
  *  ppfCross     - size cvertex, true if i-th vertex corresponds to a control point
  *  ppratio      - how far along the ramp length the i-th vertex is, 1=start=bottom, 0=end=top (??)
  */
-Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D ** const pMiddlePoints, const float _accuracy, const bool forRendering, const bool inc_width)
+Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D ** const pMiddlePoints, const float _accuracy, const bool inc_width)
 {
    std::vector<RenderVertex3D> vvertex;
    GetCentralCurve(vvertex, _accuracy);
    // vvertex are the 2D vertices forming the central curve of the ramp as seen from above
 
    const int cvertex = (int)vvertex.size();
+   pcvertex = cvertex;
    Vertex2D * const rgvLocal = new Vertex2D[(m_d.m_type != RampTypeFlat) ? (cvertex + 1) * 2 : (cvertex * 2)];
 
    if (ppheight)
@@ -532,11 +524,10 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
       {
          (*pMiddlePoints)[i] = Vertex2D(vmiddle.x, vmiddle.y) + vnormal;
       }
-      rgvLocal[i] = Vertex2D(vmiddle.x, vmiddle.y) + (widthcur*0.5f) * vnormal;
+      rgvLocal[i                  ] = Vertex2D(vmiddle.x, vmiddle.y) + (widthcur*0.5f) * vnormal;
       rgvLocal[cvertex * 2 - i - 1] = Vertex2D(vmiddle.x, vmiddle.y) - (widthcur*0.5f) * vnormal;
    }
 
-   pcvertex = cvertex;
    return rgvLocal;
 }
 
@@ -598,7 +589,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 {
    float *rgheight1;
    int cvertex;
-   Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL, false, true);
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL, true);
 
    float wallheightright, wallheightleft;
 
@@ -621,8 +612,8 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
    }
    else if (m_d.m_type == RampType4Wire)
    {
-      wallheightleft = 62.0f;
       wallheightright = 62.0f;
+      wallheightleft = 62.0f;
    }
    else if (m_d.m_type == RampType3WireRight)
    {
@@ -631,8 +622,8 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
    }
    else if (m_d.m_type == RampType3WireLeft)
    {
-      wallheightleft = 62.0f;
       wallheightright = (float)(6 + 12.5);
+      wallheightleft = 62.0f;
    }
    else
       ShowError("Unknown Ramp type");
@@ -645,13 +636,13 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          const Vertex2D &pv2 = rgvLocal[i];
          const Vertex2D &pv3 = rgvLocal[i + 1];
 
-         AddLine(pvho, pv2, pv3, (i > 0), rgheight1[i], rgheight1[i + 1] + wallheightright);
-         AddLine(pvho, pv3, pv2, (i < (cvertex - 2)), rgheight1[i], rgheight1[i + 1] + wallheightright);
+         AddWallLineSeg(pvho, pv2, pv3, (i > 0), rgheight1[i], rgheight1[i + 1], wallheightright);
+         AddWallLineSeg(pvho, pv3, pv2, (i < (cvertex - 2)), rgheight1[i], rgheight1[i + 1], wallheightright);
 
          // add joints at start and end of right wall
          if (i == 0)
             AddJoint2D(pvho, pv2, rgheight1[0], rgheight1[0] + wallheightright);
-         else if (i == cvertex - 2)
+         if (i == cvertex - 2)
             AddJoint2D(pvho, pv3, rgheight1[cvertex - 1], rgheight1[cvertex - 1] + wallheightright);
       }
    }
@@ -664,13 +655,13 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          const Vertex2D &pv2 = rgvLocal[cvertex + i];
          const Vertex2D &pv3 = rgvLocal[cvertex + i + 1];
 
-         AddLine(pvho, pv2, pv3, (i > 0), rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1] + wallheightleft);
-         AddLine(pvho, pv3, pv2, (i < (cvertex - 2)), rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1] + wallheightleft);
+         AddWallLineSeg(pvho, pv2, pv3, (i > 0), rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1], wallheightleft);
+         AddWallLineSeg(pvho, pv3, pv2, (i < (cvertex - 2)), rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1], wallheightleft);
 
          // add joints at start and end of left wall
          if (i == 0)
             AddJoint2D(pvho, pv2, rgheight1[cvertex - 1], rgheight1[cvertex - 1] + wallheightleft);
-         else if (i == cvertex - 2)
+         if (i == cvertex - 2)
             AddJoint2D(pvho, pv3, rgheight1[0], rgheight1[0] + wallheightleft);
       }
    }
@@ -678,7 +669,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
    // Add hit triangles for the ramp floor.
    {
       HitTriangle *ph3dpolyOld = NULL;
-      const Vertex2D *pv1, *pv2, *pv3, *pv4;
+      const Vertex2D *pv3, *pv4;
 
       for (int i = 0; i < (cvertex - 1); i++)
       {
@@ -690,17 +681,18 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
           *    |   \ |
           *    2 - - 1
           */
-         pv1 = &rgvLocal[i];                    // i-th right
-         pv2 = &rgvLocal[cvertex * 2 - i - 1];    // i-th left
-         pv3 = &rgvLocal[cvertex * 2 - i - 2];    // (i+1)-th left
-         pv4 = &rgvLocal[i + 1];                  // (i+1)-th right
+         const Vertex2D *pv1, *pv2;
+         pv1 = &rgvLocal[i];                   // i-th right
+         pv2 = &rgvLocal[cvertex * 2 - i - 1]; // i-th left
+         pv3 = &rgvLocal[cvertex * 2 - i - 2]; // (i+1)-th left
+         pv4 = &rgvLocal[i + 1];               // (i+1)-th right
 
          {
             // left ramp floor triangle, CCW order
-            Vertex3Ds rgv3D[3];
-            rgv3D[0] = Vertex3Ds(pv2->x, pv2->y, rgheight1[i]);
-            rgv3D[1] = Vertex3Ds(pv1->x, pv1->y, rgheight1[i]);
-            rgv3D[2] = Vertex3Ds(pv3->x, pv3->y, rgheight1[i + 1]);
+            const Vertex3Ds rgv3D[3] = {
+             Vertex3Ds(pv2->x, pv2->y, rgheight1[i]),
+             Vertex3Ds(pv1->x, pv1->y, rgheight1[i]),
+             Vertex3Ds(pv3->x, pv3->y, rgheight1[i + 1])};
 
             // add joint for starting edge of ramp
             if (i == 0)
@@ -725,10 +717,10 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          }
 
          // right ramp floor triangle, CCW order
-         Vertex3Ds rgv3D[3];
-         rgv3D[0] = Vertex3Ds(pv3->x, pv3->y, rgheight1[i + 1]);
-         rgv3D[1] = Vertex3Ds(pv1->x, pv1->y, rgheight1[i]);
-         rgv3D[2] = Vertex3Ds(pv4->x, pv4->y, rgheight1[i + 1]);
+         const Vertex3Ds rgv3D[3] = {
+          Vertex3Ds(pv3->x, pv3->y, rgheight1[i + 1]),
+          Vertex3Ds(pv1->x, pv1->y, rgheight1[i]),
+          Vertex3Ds(pv4->x, pv4->y, rgheight1[i + 1])};
 
          // add joint for right edge
          AddJoint(pvho, rgv3D[1], rgv3D[2]);
@@ -750,8 +742,8 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
       if (cvertex >= 2)
       {
          // add joint for final edge of ramp
-         Vertex3Ds v1(pv4->x, pv4->y, rgheight1[cvertex - 1]);
-         Vertex3Ds v2(pv3->x, pv3->y, rgheight1[cvertex - 1]);
+         const Vertex3Ds v1(pv4->x, pv4->y, rgheight1[cvertex - 1]);
+         const Vertex3Ds v2(pv3->x, pv3->y, rgheight1[cvertex - 1]);
          AddJoint(pvho, v1, v2);
       }
    }
@@ -764,17 +756,17 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
    for (int i = 0; i < (cvertex - 1); i++)
    {
       // see sketch above
-      const Vertex2D * const pv1 = &rgvLocal[i];
-      const Vertex2D * const pv2 = &rgvLocal[cvertex * 2 - i - 1];
-      const Vertex2D * const pv3 = &rgvLocal[cvertex * 2 - i - 2];
-      const Vertex2D * const pv4 = &rgvLocal[i + 1];
+      const Vertex2D& pv1 = rgvLocal[i];
+      const Vertex2D& pv2 = rgvLocal[cvertex * 2 - i - 1];
+      const Vertex2D& pv3 = rgvLocal[cvertex * 2 - i - 2];
+      const Vertex2D& pv4 = rgvLocal[i + 1];
 
       {
          // left ramp triangle, order CW
          const Vertex3Ds rgv3D[3] = {
-            Vertex3Ds(pv1->x, pv1->y, rgheight1[i]),
-            Vertex3Ds(pv2->x, pv2->y, rgheight1[i]),
-            Vertex3Ds(pv3->x, pv3->y, rgheight1[i + 1]) };
+            Vertex3Ds(pv1.x, pv1.y, rgheight1[i]),
+            Vertex3Ds(pv2.x, pv2.y, rgheight1[i]),
+            Vertex3Ds(pv3.x, pv3.y, rgheight1[i + 1]) };
 
          HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
          if (ph3dpoly->IsDegenerate())
@@ -789,9 +781,9 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 
       // right ramp triangle, order CW
       const Vertex3Ds rgv3D[3] = {
-         Vertex3Ds(pv3->x, pv3->y, rgheight1[i + 1]),
-         Vertex3Ds(pv4->x, pv4->y, rgheight1[i + 1]),
-         Vertex3Ds(pv1->x, pv1->y, rgheight1[i]) };
+         Vertex3Ds(pv3.x, pv3.y, rgheight1[i + 1]),
+         Vertex3Ds(pv4.x, pv4.y, rgheight1[i + 1]),
+         Vertex3Ds(pv1.x, pv1.y, rgheight1[i]) };
 
       HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
       if (ph3dpoly->IsDegenerate())
@@ -836,14 +828,25 @@ void Ramp::AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, const float z
    SetupHitObject(pvho, new HitLineZ(p, zlow, zhigh));
 }
 
-void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2)
+void Ramp::AddWallLineSeg(Vector<HitObject> * const pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2, const float wallheight)
 {
-   LineSeg * const plineseg = new LineSeg(pv1, pv2, height1, height2);
+   //!! Hit-walls are still done via 2D line segments with only a single lower and upper border, so the wall will always reach below and above the actual ramp -between- two points of the ramp
 
-   SetupHitObject(pvho, plineseg);
+   // Thus, subdivide until at some point the approximation error is 'subtle' enough so that one will usually not notice (i.e. dependent on ball size)
+   if(height2-height1 > (float)(2.0*PHYS_SKIN)) //!! use ballsize
+   {
+      AddWallLineSeg(pvho, pv1, (pv1+pv2)*0.5f, pv3_exists, height1, (height1+height2)*0.5f, wallheight);
+      AddWallLineSeg(pvho, (pv1+pv2)*0.5f, pv2, true,       (height1+height2)*0.5f, height2, wallheight);
+   }
+   else
+   {
+      LineSeg * const plineseg = new LineSeg(pv1, pv2, height1, height2+wallheight);
 
-   if (pv3_exists)
-      AddJoint2D(pvho, pv1, height1, height2);
+      SetupHitObject(pvho, plineseg);
+
+      if (pv3_exists)
+         AddJoint2D(pvho, pv1, height1, height2+wallheight);
+   }
 }
 
 void Ramp::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
@@ -867,10 +870,7 @@ void Ramp::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
    obj->m_ObjType = ePrimitive;
    obj->m_fEnabled = m_d.m_fCollidable;
    obj->m_obj = (IFireEvents*) this;
-   if (m_d.m_fHitEvent)
-      obj->m_fe = true;
-   else
-      obj->m_fe = false;
+   obj->m_fe = m_d.m_fHitEvent;
 
    pvho->AddElement(obj);
    m_vhoCollidable.push_back(obj); //remember hit components of primitive
@@ -908,11 +908,11 @@ float Ramp::GetDepth(const Vertex3Ds& viewDir)
 
 bool Ramp::isHabitrail() const
 {
-   return  m_d.m_type == RampType4Wire
-      || m_d.m_type == RampType1Wire
-      || m_d.m_type == RampType2Wire
-      || m_d.m_type == RampType3WireLeft
-      || m_d.m_type == RampType3WireRight;
+   return m_d.m_type == RampType4Wire
+       || m_d.m_type == RampType1Wire
+       || m_d.m_type == RampType2Wire
+       || m_d.m_type == RampType3WireLeft
+       || m_d.m_type == RampType3WireRight;
 }
 
 void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, const Material * const mat)
@@ -1085,7 +1085,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
    if(rgheightInit)
        delete [] rgheightInit;
    int splinePoints;
-   const Vertex2D * const rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, NULL, (m_d.m_type != RampType1Wire) ? NULL : &middlePoints, -1, true, false);
+   const Vertex2D * const rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, NULL, (m_d.m_type != RampType1Wire) ? NULL : &middlePoints, -1, false);
 
    const int numRings = splinePoints;
    const int numSegments = accuracy;
@@ -2496,7 +2496,7 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
    const Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    float *rgheight;
    float *rgratio = NULL;
-   const Vertex2D * const rgvLocal = GetRampVertex(rampVertex, &rgheight, NULL, (m_d.m_imagealignment == ImageModeWorld) ? NULL : &rgratio, NULL, -1, true, true);
+   const Vertex2D * const rgvLocal = GetRampVertex(rampVertex, &rgheight, NULL, (m_d.m_imagealignment == ImageModeWorld) ? NULL : &rgratio, NULL, -1, true);
 
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
