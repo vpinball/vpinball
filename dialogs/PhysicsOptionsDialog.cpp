@@ -15,7 +15,6 @@ static unsigned int physicsselection = 0;
 
 PhysicsOptionsDialog::PhysicsOptionsDialog() : CDialog(IDD_PHYSICS_OPTIONS)
 {
-
 }
 
 BOOL PhysicsOptionsDialog::OnInitDialog()
@@ -184,7 +183,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     if(hr != S_OK)
         TablePhysicsMinSlope = DEFAULT_TABLE_MIN_SLOPE;
 
-    SetItemText(1103, TablePhysicsContactScatterAngle);
+    SetItemText(1103, TablePhysicsMinSlope);
 
     float TablePhysicsMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
     sprintf_s(tmp, 256, "TablePhysicsMaxSlope%u", physicsselection);
@@ -192,7 +191,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     if(hr != S_OK)
         TablePhysicsMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
 
-    SetItemText(1104, TablePhysicsContactScatterAngle);
+    SetItemText(1104, TablePhysicsMaxSlope);
 
     CString txt(physicsoptions[physicsselection]);
     SetDlgItemText(1110, txt);
@@ -286,7 +285,6 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             SetDlgItemText(22, CString(loadValues.elasticityFalloff));
             SetDlgItemText(109, CString(loadValues.friction));
             SetDlgItemText(110, CString(loadValues.coilRampup));
-
 
             SetDlgItemText(1110, CString(loadValues.name));
             SetFocus();
@@ -604,7 +602,7 @@ void PhysicsOptionsDialog::SaveCurrentPhysicsSetting()
     sprintf_s(tmp2, 256, "TablePhysicsMinSlope%u", physicsselection);
     SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
-    str = GetItemText(1103);
+    str = GetItemText(1104);
     sprintf_s(tmp2, 256, "TablePhysicsMaxSlope%u", physicsselection);
     SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
