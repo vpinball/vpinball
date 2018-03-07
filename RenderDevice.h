@@ -383,18 +383,7 @@ public:
    void SetTexture(const D3DXHANDLE texelName, D3DTexture *texel);
    void SetMaterial(const Material * const mat);
 
-   void SetDisableLighting(const float value) // only set top
-   {
-      if (currentDisableLighting.x != value || currentDisableLighting.y != 0.f)
-      {
-         currentDisableLighting.x = value;
-         currentDisableLighting.y = 0.f;
-         currentDisableLighting.z = 0.f;
-         currentDisableLighting.w = 0.f;
-         SetVector("fDisableLighting_top_below", &currentDisableLighting);
-      }
-   }
-   void SetDisableLighting(const D3DXVECTOR4& value) // set top and below
+   void SetDisableLighting(const D3DXVECTOR4& value) // sets the two top and below lighting flags, z and w unused
    {
       if (currentDisableLighting.x != value.x || currentDisableLighting.y != value.y)
       {
