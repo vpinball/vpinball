@@ -10,6 +10,7 @@ Changelog:
 - extend X and Y of EMReel and textbox elements so that these can be changed by the script
 - add GravityFactor to the gate element
 - add UserValue to target and primitive elements
+- add BlendDisableLightingFromBelow to target and wall elements
 10.4:
 - support reading nudge data from table script, and reading/writing nudge calibration settings:
   NudgeGetCalibration/NudgeSetCalibration, NudgeSensorStatus, NudgeTiltStatus
@@ -750,6 +751,7 @@ Friction(float) - 0..1
 *ReflectionEnabled(bool) - default=true
 DisableLighting(bool)
 BlendDisableLighting(float) - 0..1, same as DisableLighting, but can blend between the two extremes
+BlendDisableLightingFromBelow(float) - 0..1, similar to DisableLighting, but will block light coming from below (e.g. from light elements)
 
 Methods
 -------
@@ -869,6 +871,7 @@ Friction(float) - 0..1
 *ReflectionEnabled(bool)    - default=true
 DisableLighting(bool)
 BlendDisableLighting(float) - 0..1, same as DisableLighting, but can blend between the two extremes
+BlendDisableLightingFromBelow(float) - 0..1, similar to DisableLighting, but will block light coming from below (e.g. from light elements)
 DropSpeed(float)            - the speed how fast the drop or hit target will move 
 RaiseDelay(int)             - defines a delay in milliseconds after the dropped target will start to raise to it's normal position
 IsDropped(bool)             - can only be used for drop targets if the drop target is raised or dropped

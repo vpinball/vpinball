@@ -1,6 +1,8 @@
 VP 10.5.0 Changelog
 ------------------------
 
+- add 'Disable Lighting from below' functionality for Targets and Walls (0..1) to optionally disable light coming from below (e.g. from light elements)
+
 - fix ramp collision/internal walls reaching below and above the actual visible walls or wires, which was mainly an issue for rather straight and/or very steep ramps
 
 - draw also flipper thickness in the editor

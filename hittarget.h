@@ -42,7 +42,8 @@ public:
    int   m_RaiseDelay;
 
    float m_depthBias;      // for determining depth sorting
-   float m_fDisableLighting; // was bool, now 0..1
+   float m_fDisableLightingTop; // was bool, now 0..1
+   float m_fDisableLightingBelow; // 0..1
    bool m_fVisible;
 
    bool m_fUseHitEvent;
@@ -142,6 +143,8 @@ public:
    STDMETHOD(put_DisableLighting)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_BlendDisableLighting)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_BlendDisableLighting)(/*[in]*/ float newVal);
+   STDMETHOD(get_BlendDisableLightingFromBelow)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_BlendDisableLightingFromBelow)(/*[in]*/ float newVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_IsDropped)(/*[out, retval]*/ VARIANT_BOOL *pVal);
