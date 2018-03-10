@@ -147,7 +147,7 @@ static TBBUTTON const g_tbbuttonLayers[] = {
 };
 #endif
 
-static const int allLayers[8] =
+static const int allLayers[MAX_LAYERS] =
 {
    ID_LAYER_LAYER1,
    ID_LAYER_LAYER2,

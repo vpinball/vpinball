@@ -1799,7 +1799,7 @@ void PinTable::SwitchToLayer(int layerNumber)
    {
       IEditable *piedit = m_vedit.ElementAt(t);
       bool alreadyIn = false;
-      for (int i = 0; i < 8; i++)
+      for (int i = 0; i < MAX_LAYERS; i++)
       {
          if (m_layer[i].IndexOf(piedit) != -1)
             alreadyIn = true;
@@ -1814,7 +1814,7 @@ void PinTable::SwitchToLayer(int layerNumber)
    m_activeLayers[layerNumber] ^= true;
 
    // now set all elements to visible if their layer is active, otherwise hide them
-   for (int i = 0; i < 8; i++)
+   for (int i = 0; i < MAX_LAYERS; i++)
    {
       if (m_activeLayers[i])
       {
@@ -1849,7 +1849,7 @@ void PinTable::AssignToLayer(IEditable *obj, int layerNumber)
 
 void PinTable::MergeAllLayers()
 {
-   for (int t = 1; t < 8; t++)
+   for (int t = 1; t < MAX_LAYERS; t++)
    {
       for (int i = m_layer[t].Size() - 1; i >= 0; i--)
       {
@@ -1872,7 +1872,7 @@ void PinTable::BackupLayers()
    {
       IEditable *piedit = m_vedit.ElementAt(t);
       bool alreadyIn = false;
-      for (int i = 0; i < 8; i++)
+      for (int i = 0; i < MAX_LAYERS; i++)
       {
          if (m_layer[i].IndexOf(piedit) != -1)
             alreadyIn = true;
@@ -1884,7 +1884,7 @@ void PinTable::BackupLayers()
       }
    }
    // make all elements visible again
-   for (int t = 0; t < 8; t++)
+   for (int t = 0; t < MAX_LAYERS; t++)
    {
       //      for( int i=m_layer[t].Size()-1;i>=0;i-- )
       for (int i = 0; i < m_layer[t].Size(); i++)
@@ -1897,7 +1897,7 @@ void PinTable::BackupLayers()
 
 void PinTable::RestoreLayers()
 {
-   for (int i = 0; i < 8; i++)
+   for (int i = 0; i < MAX_LAYERS; i++)
    {
       if (m_activeLayers[i])
       {
@@ -1920,7 +1920,7 @@ void PinTable::RestoreLayers()
 
 void PinTable::DeleteFromLayer(IEditable *obj)
 {
-   for (int i = 0; i < 8; i++)
+   for (int i = 0; i < MAX_LAYERS; i++)
    {
       if (m_layer[i].IndexOf(obj) != -1)
       {
@@ -4091,7 +4091,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
    g_pvp->SetActionCur("");
 
-   for (int t = 0; t < 8; t++) m_layer[t].Empty();
+   for (int t = 0; t < MAX_LAYERS; t++) m_layer[t].Empty();
 
    // copy all elements into their layers
    for (int i = 0; i < 8; i++)
