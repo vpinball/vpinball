@@ -37,6 +37,7 @@ using namespace std::tr1;
 #define	PROT_CIPHER_LENGTH		PROT_PASSWORD_LENGTH+8
 #define	PROT_KEYVERSION			0
 
+#define MAX_LAYERS              8
 
 struct LightSource {
    COLORREF emission;
@@ -661,7 +662,7 @@ public:
    //CComObject<Surface> *m_psur;
 
    Vector< IEditable > m_vedit;
-   Vector< IEditable > m_layer[8];
+   Vector< IEditable > m_layer[MAX_LAYERS];
    Vector< ISelect > m_allHitElements;
 
    std::vector< Texture* > m_vimage;
