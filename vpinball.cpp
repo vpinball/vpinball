@@ -89,7 +89,7 @@ static TBBUTTON const g_tbbuttonPalette[] = {
    {36, ID_INSERT_RUBBER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_RUBBER, 18},
 };
 
-static TBBUTTON const g_tbbuttonLayers[] = {
+static TBBUTTON const g_tbbuttonLayers[MAX_LAYERS+1] = {
    {23, ID_LAYER_LAYER1, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, 0, 0},
    {24, ID_LAYER_LAYER2, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, 0, 1},
    {25, ID_LAYER_LAYER3, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, 0, 2},
@@ -134,7 +134,7 @@ static TBBUTTON const g_tbbuttonPalette[] = {
    { 36, ID_INSERT_RUBBER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_RUBBER, 18 },
 };
 
-static TBBUTTON const g_tbbuttonLayers[] = {
+static TBBUTTON const g_tbbuttonLayers[MAX_LAYERS+1] = {
    { 23, ID_LAYER_LAYER1, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0 },
    { 24, ID_LAYER_LAYER2, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 1 },
    { 25, ID_LAYER_LAYER3, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 2 },
@@ -1611,8 +1611,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       if (!ptCur) break;
       HMENU hmenu = ::GetMenu(m_hwnd);
       ptCur->MergeAllLayers();
-      for (int i = 0; i < 8; i++) ptCur->m_activeLayers[i] = false;
-      for (int i = 0; i < 8; i++) setLayerStatus(i);
+      for (int i = 0; i < MAX_LAYERS; i++) ptCur->m_activeLayers[i] = false;
+      for (int i = 0; i < MAX_LAYERS; i++) setLayerStatus(i);
       break;
    }
    case ID_LAYER_TOGGLEALL:
@@ -1620,8 +1620,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       ptCur = GetActiveTable();
       if (!ptCur) break;
       HMENU hmenu = ::GetMenu(m_hwnd);
-      for (int i = 0; i < 8; i++) ptCur->m_activeLayers[i] = !ptCur->m_toggleAllLayers;
-      for (int i = 0; i < 8; i++) setLayerStatus(i);
+      for (int i = 0; i < MAX_LAYERS; i++) ptCur->m_activeLayers[i] = !ptCur->m_toggleAllLayers;
+      for (int i = 0; i < MAX_LAYERS; i++) setLayerStatus(i);
       ptCur->m_toggleAllLayers ^= true;
       break;
    }
@@ -1674,7 +1674,7 @@ void VPinball::setLayerStatus(int layerNumber)
    CComObject<PinTable> *ptCur;
 
    ptCur = GetActiveTable();
-   if (!ptCur || layerNumber > 7) return;
+   if (!ptCur || layerNumber >= MAX_LAYERS) return;
 
    SendMessage(m_hwndToolbarLayers, TB_CHECKBUTTON, allLayers[layerNumber], MAKELONG((!ptCur->m_activeLayers[layerNumber]), 0));
 
@@ -1751,7 +1751,7 @@ void VPinball::SetEnableToolbar()
    // set layer button states
    if (ptCur)
    {
-      for (int i = 0; i < 8; ++i)
+      for (int i = 0; i < MAX_LAYERS; ++i)
       {
          SendMessage(m_hwndToolbarLayers, TB_CHECKBUTTON, allLayers[i], MAKELONG(ptCur->m_activeLayers[i], 0));
       }
@@ -2030,7 +2030,7 @@ void VPinball::SetEnableMenuItems()
       CheckMenuItem(hmenu, ID_VIEW_GRID, MF_BYCOMMAND | (ptCur->m_fGrid ? MF_CHECKED : MF_UNCHECKED));
       CheckMenuItem(hmenu, ID_VIEW_BACKDROP, MF_BYCOMMAND | (ptCur->m_fBackdrop ? MF_CHECKED : MF_UNCHECKED));
 
-      for (int i = 0; i < sizeof(allLayers) / sizeof(allLayers[0]); ++i)
+      for (int i = 0; i < MAX_LAYERS; ++i)
          CheckMenuItem(hmenu, allLayers[i], MF_BYCOMMAND | (ptCur->m_activeLayers[i] ? MF_CHECKED : MF_UNCHECKED));
    }
    else

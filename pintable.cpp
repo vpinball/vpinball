@@ -1334,7 +1334,7 @@ STDMETHODIMP ScriptGlobalTable::get_VersionRevision(int *pVal)
 
 PinTable::PinTable()
 {
-   for (int i = 0; i < 8; i++)
+   for (int i = 0; i < MAX_LAYERS; i++)
       m_activeLayers[i] = true;
    m_toggleAllLayers = false;
    m_savingActive = false;
@@ -4094,7 +4094,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
    for (int t = 0; t < MAX_LAYERS; t++) m_layer[t].Empty();
 
    // copy all elements into their layers
-   for (int i = 0; i < 8; i++)
+   for (int i = 0; i < MAX_LAYERS; i++)
    {
       for (int t = 0; t < m_vedit.Size(); t++)
       {

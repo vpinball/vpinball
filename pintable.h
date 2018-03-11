@@ -749,7 +749,7 @@ public:
 
    bool  m_fDirtyDraw; // Whether our background bitmap is up to date
 
-   bool  m_activeLayers[8];
+   bool  m_activeLayers[MAX_LAYERS];
    bool  m_toggleAllLayers;
    volatile bool m_savingActive;
 
