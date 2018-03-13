@@ -160,7 +160,7 @@ public:
       TEX_MIRROR = D3DTADDRESS_MIRROR
    };
 
-   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool useNvidiaApi, const bool disable_dwm);
+   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm);
    ~RenderDevice();
 
    void BeginScene();
@@ -175,6 +175,7 @@ public:
    D3DTexture* GetBackBufferTmpTexture() const { return m_pOffscreenBackBufferTmpTexture; }   // stereo/FXAA only
    D3DTexture* GetBackBufferTmpTexture2() const { return m_pOffscreenBackBufferTmpTexture2; } // SMAA only
    D3DTexture* GetMirrorTmpBufferTexture() const { return m_pMirrorTmpBufferTexture; }
+   D3DTexture* GetReflectionBufferTexture() const { return m_pReflectionBufferTexture; }
    RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; }
 
    D3DTexture* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
@@ -289,6 +290,7 @@ private:
    D3DTexture* m_pBloomBufferTexture;
    D3DTexture* m_pBloomTmpBufferTexture;
    D3DTexture* m_pMirrorTmpBufferTexture;
+   D3DTexture* m_pReflectionBufferTexture;
 
    UINT m_adapter;      // index of the display adapter to use
 

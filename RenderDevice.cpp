@@ -284,7 +284,7 @@ static pDF mDwmFlush = NULL;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = NULL;
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool useNvidiaApi, const bool disable_dwm)
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm)
    : m_texMan(*this)
 {
    m_stats_drawn_triangles = 0;
@@ -523,6 +523,17 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
       D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create render buffer!", hr, __FILE__, __LINE__);
+
+   // alloc buffer for screen space fake reflection rendering (optionally 2x2 res for manual super sampling)
+   if (ss_refl)
+   {
+      hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
+         D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pReflectionBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
+      if (FAILED(hr))
+         ReportError("Fatal Error: unable to create reflection buffer!", hr, __FILE__, __LINE__);
+   }
+   else
+      m_pReflectionBufferTexture = NULL;
 
    if(g_pplayer != NULL)
    {
@@ -800,6 +811,7 @@ RenderDevice::~RenderDevice()
    SAFE_RELEASE(m_pOffscreenBackBufferTexture);
    SAFE_RELEASE(m_pOffscreenBackBufferTmpTexture);
    SAFE_RELEASE(m_pOffscreenBackBufferTmpTexture2);
+   SAFE_RELEASE(m_pReflectionBufferTexture);
 
    if(g_pplayer)
    {
