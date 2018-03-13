@@ -398,6 +398,8 @@ public:
    bool m_dynamicAO;
    bool m_disableAO;
 
+   bool m_ss_refl;
+
    bool m_useNvidiaApi;
    bool m_disableDWM;
 
