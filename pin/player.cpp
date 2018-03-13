@@ -3666,6 +3666,30 @@ void Player::SetClipPlanePlayfield(const bool clip_orientation)
 	m_pin3d.m_pd3dDevice->GetCoreDevice()->SetClipPlane(0, clipSpacePlane);
 }
 
+void Player::SSRefl()
+{
+   RenderTarget* tmpReflSurface;
+   m_pin3d.m_pd3dDevice->GetReflectionBufferTexture()->GetSurfaceLevel(0, &tmpReflSurface);
+   m_pin3d.m_pd3dDevice->SetRenderTarget(tmpReflSurface);
+   SAFE_RELEASE_NO_RCC(tmpReflSurface);
+
+   m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
+   m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
+   m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture4", &m_pin3d.aoDitherTexture); //!!!
+
+   const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), 1.0f, 1.0f);
+   m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
+
+   const D3DXVECTOR4 SSR_bumpHeight_fresnelRefl_scale(0.3f, 0.3f, 1.0f, 1.0f);
+   m_pin3d.m_pd3dDevice->FBShader->SetVector("SSR_bumpHeight_fresnelRefl_scale", &SSR_bumpHeight_fresnelRefl_scale);
+
+   m_pin3d.m_pd3dDevice->FBShader->SetTechnique("SSReflection");
+
+   m_pin3d.m_pd3dDevice->FBShader->Begin(0);
+   m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
+   m_pin3d.m_pd3dDevice->FBShader->End();
+}
+
 void Player::Bloom()
 {
    if (m_ptable->m_bloom_strength <= 0.0f)
@@ -4081,7 +4105,7 @@ void Player::PrepareVideoBuffersNormal()
    const bool FXAA2 = (((m_fFXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
    const bool FXAA3 = (((m_fFXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
 
-   if (stereo)
+   if (stereo || m_ss_refl)
       m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
 
    const float shiftedVerts[4 * 5] =
@@ -4107,25 +4131,7 @@ void Player::PrepareVideoBuffersNormal()
 #endif
 
    if (m_ss_refl)
-   {
-      RenderTarget* tmpReflSurface;
-      m_pin3d.m_pd3dDevice->GetReflectionBufferTexture()->GetSurfaceLevel(0, &tmpReflSurface);
-      m_pin3d.m_pd3dDevice->SetRenderTarget(tmpReflSurface);
-      SAFE_RELEASE_NO_RCC(tmpReflSurface);
-
-      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
-      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
-      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture4", &m_pin3d.aoDitherTexture); //!!!
-
-      const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), 1.0f, 1.0f);
-      m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
-
-      m_pin3d.m_pd3dDevice->FBShader->SetTechnique("SSReflection");
-
-      m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-      m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
-      m_pin3d.m_pd3dDevice->FBShader->End();
-   }
+       SSRefl();
 
    // switch to output buffer
    if (!(stereo || SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3))
@@ -4213,25 +4219,7 @@ void Player::PrepareVideoBuffersAO()
 #endif
 
    if (m_ss_refl)
-   {
-      RenderTarget* tmpReflSurface;
-      m_pin3d.m_pd3dDevice->GetReflectionBufferTexture()->GetSurfaceLevel(0, &tmpReflSurface);
-      m_pin3d.m_pd3dDevice->SetRenderTarget(tmpReflSurface);
-      SAFE_RELEASE_NO_RCC(tmpReflSurface);
-
-      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
-      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
-      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture4", &m_pin3d.aoDitherTexture); //!!!
-
-      const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), 1.0f, 1.0f);
-      m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
-
-      m_pin3d.m_pd3dDevice->FBShader->SetTechnique("SSReflection");
-
-      m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-      m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
-      m_pin3d.m_pd3dDevice->FBShader->End();
-   }
+       SSRefl();
 
    // separate normal generation pass, currently roughly same perf or even much worse
    /*RenderTarget* tmpSurface;

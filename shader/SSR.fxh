@@ -1,6 +1,6 @@
 // uses texSamplerDepth & texSampler4,texSampler5 & texSamplerAOdither & w_h_height.xy
 
-float3 SSR_bumpHeight_fresnelRefl_scale = float3(0.3,0.3,1.0);
+float3 SSR_bumpHeight_fresnelRefl_scale;
 
 float3 approx_bump_normal(const float2 coords, const float2 offs, const float scale, const float sharpness)
 {
@@ -16,7 +16,7 @@ float3 approx_bump_normal(const float2 coords, const float2 offs, const float sc
     const float dpy = tex2Dlod(texSamplerDepth, float4(coords.x,coords.y+offs.y, 0.,0.)).x;
     const float dmy = tex2Dlod(texSamplerDepth, float4(coords.x,coords.y-offs.y, 0.,0.)).x;
 
-    const float2 xymult = max(0.0, 1.0 - float2(abs(dmx - dpx), abs(dmy - dpy)) * sharpness);
+    const float2 xymult = max(1.0 - float2(abs(dmx - dpx), abs(dmy - dpy)) * sharpness, 0.0);
 
     return normalize(float3(float2(lmx - lpx,lmy - lpy)*xymult/offs, scale));
 }
@@ -45,7 +45,7 @@ float4 ps_main_fb_ss_refl(in VS_OUTPUT_2D IN) : COLOR
 
 	const float fresnel = (SSR_bumpHeight_fresnelRefl_scale.y + (1.0-SSR_bumpHeight_fresnelRefl_scale.y) * pow(1.0-saturate(dot(V,normal_b)),5)) // fresnel for falloff towards silhouette
 	                     * SSR_bumpHeight_fresnelRefl_scale.z // user scale
-						 * sqr(normal_fade_factor(normal_b/*normal*/)); // avoid reflections on playfield, etc
+	                     * sqr(normal_fade_factor(normal_b/*normal*/)); // avoid reflections on playfield, etc
 
 #if 0 // test code
     return float4(0.,sqr(normal_fade_factor(normal_b/*normal*/)),0., 1.0);
@@ -77,5 +77,5 @@ float4 ps_main_fb_ss_refl(in VS_OUTPUT_2D IN) : COLOR
 	refl += color0*color0w;
 	refl *= 1.0/(float)(samples-1); //!! -1 due to jitter
 
-	return float4(lerp(color0,refl, fresnel), 1.0);
+	return float4(lerp(color0,refl, min(fresnel,1.0)), 1.0);
 }
