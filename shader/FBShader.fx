@@ -1,7 +1,7 @@
 #include "Helpers.fxh"
 
 float4 ms_zpd_ya_td;
-float4 w_h_height; // in bloom w_h_height.z keeps strength
+float4 w_h_height; // for bloom, w_h_height.z keeps strength
 
 float2 AO_scale_timeblur;
 float mirrorFactor;
@@ -144,13 +144,15 @@ float3 FBColorGrade(float3 color)
 
 #include "FXAAStereoAO.fxh"
 
+#include "SSR.fxh"
+
 //
 //
 //
 
 VS_OUTPUT_2D vs_main_no_trafo (float4 vPosition  : POSITION0,  
                                float2 tc         : TEXCOORD0)
-{ 
+{
    VS_OUTPUT_2D Out;
 
    Out.pos = float4(vPosition.xy, 0.0,1.0);
@@ -163,7 +165,7 @@ VS_OUTPUT_2D vs_main_no_trafo (float4 vPosition  : POSITION0,
 // PS functions
 //
 
-float4 ps_main_fb_tonemap( in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_tonemap(in VS_OUTPUT_2D IN) : COLOR
 {
     //!! const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
     //!! if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
@@ -173,7 +175,7 @@ float4 ps_main_fb_tonemap( in VS_OUTPUT_2D IN) : COLOR
     return float4(FBColorGrade(FBGamma(saturate(result))), 1.0);
 }
 
-float4 ps_main_fb_bloom( in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_bloom(in VS_OUTPUT_2D IN) : COLOR
 {
     // collect clipped contribution of the 3x3 texels (via box blur (offset: 0.25*pixel=w_h_height.xy*0.5), NOT gaussian, as this is wrong) from original FB
     const float3 result = (tex2Dlod(texSampler5, float4(IN.tex0-w_h_height.xy*0.5, 0.,0.)).xyz
@@ -189,7 +191,7 @@ float4 ps_main_fb_AO(in VS_OUTPUT_2D IN) : COLOR
 	return float4(FBGamma(saturate(result)), 1.0);
 }
 
-float4 ps_main_fb_tonemap_AO( in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_tonemap_AO(in VS_OUTPUT_2D IN) : COLOR
 {
     const float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.,0.)).xyz) // moving AO before tonemap does not really change the look
            * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0.,0.)).x // omitting the shift blurs over 2x2 window
@@ -204,13 +206,13 @@ float4 ps_main_fb_tonemap_AO_static(in VS_OUTPUT_2D IN) : COLOR
 	return float4(result, 1.0);
 }
 
-float4 ps_main_fb_tonemap_no_filter( in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_tonemap_no_filter(in VS_OUTPUT_2D IN) : COLOR
 {
     const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy, 0.,0.)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.,0.)).xyz; //!! offset?
     return float4(/*FBDither(*/FBColorGrade(FBGamma(saturate(result))),/*IN.tex0*w_h_height.zw),*/ 1.0);
 }
 
-float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_tonemap_AO_no_filter(in VS_OUTPUT_2D IN) : COLOR
 {
     const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy, 0.,0.)).xyz) // moving AO before tonemap does not really change the look
            * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0.,0.)).x // omitting the shift blurs over 2x2 window
@@ -230,7 +232,7 @@ float4 ps_main_fb_tonemap_AO_no_filter_static(in VS_OUTPUT_2D IN) : COLOR
 //
 
 #if 0 // full or abusing lerp
-float4 ps_main_fb_bloom_horiz9x9( in VS_OUTPUT_2D IN) : COLOR
+float4 ps_main_fb_bloom_horiz9x9(in VS_OUTPUT_2D IN) : COLOR
 {
     const float offset9x9[5] = { 0.0, 1.0, 2.0, 3.0, 4.0 };
     const float weight9x9[5] = { 0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162 };
@@ -710,11 +712,24 @@ technique fb_bloom_vert27x27
 
 technique fb_mirror
 {
-   pass P0
-   {
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-      PixelShader = compile ps_3_0 ps_main_fb_mirror();
-   }
+	pass P0
+	{
+		VertexShader = compile vs_3_0 vs_main_no_trafo();
+		PixelShader = compile ps_3_0 ps_main_fb_mirror();
+	}
 }
+
+//
+
+technique SSReflection
+{
+	pass P0
+	{
+		VertexShader = compile vs_3_0 vs_main_no_trafo();
+		PixelShader = compile ps_3_0 ps_main_fb_ss_refl();
+	}
+}
+
+//
 
 #include "SMAA.fxh"

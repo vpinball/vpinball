@@ -212,8 +212,8 @@ float4 ps_main(in VS_NOTEX_OUTPUT IN, uniform bool is_metal) : COLOR
       result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 
       if (fDisableLighting_top_below.y < 1.0)
-          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-          result.xyz += lerp(sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.worldPos_t1x.w,-0.5*IN.normal_t1y.w)+0.5, 0.,0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
+         result.xyz += lerp(sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.worldPos_t1x.w,-0.5*IN.normal_t1y.w)+0.5, 0.,0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    return result;
@@ -254,8 +254,8 @@ float4 ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool doNo
       result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 
       if (fDisableLighting_top_below.y < 1.0)
-          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-          result.xyz += lerp(sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.tex01.z,-0.5*IN.tex01.w)+0.5, 0., 0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+         // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
+         result.xyz += lerp(sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.tex01.z,-0.5*IN.tex01.w)+0.5, 0., 0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    return result;

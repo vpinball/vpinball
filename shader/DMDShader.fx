@@ -120,7 +120,7 @@ float4 ps_main_DMD(in VS_OUTPUT IN) : COLOR
    }*/
 
    //if (rgba.b > 200.0)
-   //   return float4(InvToneMap(InvGamma(min(color2,float3(1.5,1.5,1.5))/*+colorg*/)), 0.5f);
+   //   return float4(InvToneMap(InvGamma(min(color2,float3(1.5,1.5,1.5))/*+colorg*/)), 0.5);
    //else
    return float4(InvToneMap(InvGamma(color2/*+colorg*/)), vRes_Alpha.z); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
@@ -134,7 +134,7 @@ float4 ps_main_noDMD(in VS_OUTPUT IN) : COLOR
 
 float4 ps_main_noDMD_notex(in VS_OUTPUT IN) : COLOR
 {
-   return float4(InvToneMap(InvGamma(vColor_Intensity.xyz * vColor_Intensity.w)), 1.0f); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   return float4(InvToneMap(InvGamma(vColor_Intensity.xyz * vColor_Intensity.w)), 1.0); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
 
