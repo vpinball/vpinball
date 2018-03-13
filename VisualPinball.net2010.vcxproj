@@ -6898,6 +6898,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <None Include="shader\FXAAStereoAO.fxh" />
     <None Include="shader\Helpers.fxh" />
     <None Include="shader\Material.fxh" />
+    <None Include="shader\SSR.fxh" />
     <None Include="res\textbox.rgs" />
     <None Include="res\timer.rgs" />
     <None Include="res\toolbar.bmp" />

@@ -346,6 +346,9 @@
     <None Include="shader\FXAAStereoAO.fxh">
       <Filter>shaders</Filter>
     </None>
+    <None Include="shader\SSR.fxh">
+      <Filter>shaders</Filter>
+    </None>
     <None Include="res\hittarget.rgs">
       <Filter>res</Filter>
     </None>
