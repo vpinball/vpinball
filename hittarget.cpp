@@ -177,7 +177,7 @@ void HitTarget::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt(strKeyName, "TargetType", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_targetType = (enum TargetType)iTmp;
+       m_d.m_targetType = (TargetType)iTmp;
    else
        m_d.m_targetType = DropTargetSimple;
 
