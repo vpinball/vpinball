@@ -1048,6 +1048,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="shader\FXAAStereoAO.fxh" />
     <None Include="shader\Helpers.fxh" />
     <None Include="shader\Material.fxh" />
+    <None Include="shader\SSR.fxh" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\AOdither.bmp" />

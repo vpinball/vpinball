@@ -204,6 +204,15 @@
     <Image Include="res\ringenvmap.bmp">
       <Filter>res</Filter>
     </Image>
+    <Image Include="res\kickerWilliams.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\kickerGottlieb.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\kickerT1.bmp">
+      <Filter>res</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\vpinball.rgs">
@@ -332,13 +341,16 @@
     <None Include="res\wall.cur">
       <Filter>res</Filter>
     </None>
-    <None Include="shader\Material.fxh">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="shader\FXAAStereoAO.fxh">
       <Filter>shaders</Filter>
     </None>
     <None Include="shader\Helpers.fxh">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shader\Material.fxh">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shader\SSR.fxh">
       <Filter>shaders</Filter>
     </None>
     <None Include="res\blankTable.vpx">

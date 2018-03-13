@@ -504,6 +504,9 @@
     <None Include="shader\Material.fxh">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="shader\SSR.fxh">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\xaudio\aac_codec.h">
