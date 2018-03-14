@@ -1,6 +1,9 @@
 VP 10.5.0 Changelog
 ------------------------
 
+- add ScreenSpace Reflections to the global video and table user properties, strength can be changed in the table lighting panel
+  This adds very fake, but also very fast local reflection effects to all table elements
+
 - add 'Disable Lighting from below' functionality for Targets and Walls (0..1) to optionally disable light coming from below (e.g. from light elements)
 
 - fix ramp collision/internal walls reaching below and above the actual visible walls or wires, which was mainly an issue for rather straight and/or very steep ramps
