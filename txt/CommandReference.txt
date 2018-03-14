@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.5:
+- add SSRScale to the table element
 - extend X and Y of EMReel and textbox elements so that these can be changed by the script
 - add GravityFactor to the gate element
 - add UserValue to target and primitive elements
@@ -226,6 +227,7 @@ NudgeTime(float)
 LightEmissionScale(float)
 EnvironmentEmissionScale(float)
 AOScale(float) - scaling factor when blending the ambient occlusion
+SSRScale(float) - scaling factor when blending the screen space reflections
 BloomStrength(float) - scaling factor when blurring the clipped framebuffer contribution (leave at 1 for kinda natural glow)
 *LightHeight(float) - height of lights
 *LightRange(float) - range of lights

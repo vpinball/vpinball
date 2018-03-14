@@ -160,6 +160,8 @@ public:
    STDMETHOD(put_NightDay)(/*[in]*/ int newVal);
    STDMETHOD(get_AOScale)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_AOScale)(/*[in]*/ float newVal);
+   STDMETHOD(get_SSRScale)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_SSRScale)(/*[in]*/ float newVal);
    STDMETHOD(get_BallReflection)(/*[out, retval]*/ UserDefaultOnOff *pVal);
    STDMETHOD(put_BallReflection)(/*[in]*/ UserDefaultOnOff newVal);
    STDMETHOD(get_PlayfieldReflectionStrength)(/*[out, retval]*/ int *pVal);
@@ -200,6 +202,8 @@ public:
    STDMETHOD(put_EnableAntialiasing)(/*[in]*/ UserDefaultOnOff newVal);
    STDMETHOD(get_EnableAO)(/*[out, retval]*/ UserDefaultOnOff *pVal);
    STDMETHOD(put_EnableAO)(/*[in]*/ UserDefaultOnOff newVal);
+   STDMETHOD(get_EnableSSR)(/*[out, retval]*/ UserDefaultOnOff *pVal);
+   STDMETHOD(put_EnableSSR)(/*[in]*/ UserDefaultOnOff newVal);
    STDMETHOD(get_EnableFXAA)(/*[out, retval]*/ FXAASettings *pVal);
    STDMETHOD(put_EnableFXAA)(/*[in]*/ FXAASettings newVal);
 
@@ -733,6 +737,7 @@ public:
    float m_envEmissionScale;
    float m_globalEmissionScale;
    float m_AOScale;
+   float m_SSRScale;
 
    int   m_useReflectionForBalls;
    float m_playfieldReflectionStrength;
@@ -742,6 +747,7 @@ public:
    int   m_useAA;
    int   m_useFXAA;
    int   m_useAO;
+   int   m_useSSR;
    float m_bloom_strength;
 
    HWND  m_hMaterialManager;
