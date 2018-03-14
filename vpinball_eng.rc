@@ -1464,7 +1464,7 @@ BEGIN
     EDITTEXT        IDC_REFLECTION_PLAYFIELD,101,66,20,12,ES_AUTOHSCROLL
 END
 
-IDD_PROPTABLE_USER DIALOGEX 0, 0, 125, 288
+IDD_PROPTABLE_USER DIALOGEX 0, 0, 125, 298
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1474,31 +1474,33 @@ BEGIN
     COMBOBOX        IDC_ENABLE_FXAA,55,16,66,60,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     LTEXT           "In-game AO",IDC_STATIC,7,32,43,8
     COMBOBOX        IDC_ENABLE_AO,55,30,66,60,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "FPS Limiter/VSync (-1=def.)",IDC_STATIC,7,46,94,8
-    EDITTEXT        IDC_TABLEAVSYNC,101,44,20,12,ES_AUTOHSCROLL
-    CONTROL         "",IDC_ALPHA_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,71,107,19
-    GROUPBOX        "Elements Detail Level",IDC_STATIC,7,62,114,42
+    LTEXT           "ScSp. Reflect.",IDC_STATIC,7,46,48,8
+    COMBOBOX        IDC_ENABLE_SSR,55,44,66,60,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "FPS Limiter/VSync (-1=def.)",IDC_STATIC,7,60,94,8
+    EDITTEXT        IDC_TABLEAVSYNC,101,58,20,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_ALPHA_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,83,107,19
+    GROUPBOX        "Elements Detail Level",IDC_STATIC,7,74,114,42
     CONTROL         "Use this slider instead of default",IDC_GLOBAL_ALPHA_ACC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,92,109,10
-    GROUPBOX        "Ball",IDC_STATIC,7,109,114,56
-    LTEXT           "Reflection",IDC_STATIC,12,122,61,8
-    COMBOBOX        IDC_BALL_REFLECTION,75,120,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Trail/Motion Blur",IDC_STATIC,12,136,61,8
-    COMBOBOX        IDC_BALL_TRAIL,75,134,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Trail Strength (0..100)",IDC_STATIC,12,150,81,8
-    EDITTEXT        IDC_TRAIL_EDIT,95,148,20,12,ES_AUTOHSCROLL
-    GROUPBOX        "Night->Day cycle",IDC_STATIC,7,170,114,42
-    CONTROL         "",IDC_DAYNIGHT_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,179,107,19
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,104,109,10
+    GROUPBOX        "Ball",IDC_STATIC,7,121,114,56
+    LTEXT           "Reflection",IDC_STATIC,12,134,61,8
+    COMBOBOX        IDC_BALL_REFLECTION,75,132,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Trail/Motion Blur",IDC_STATIC,12,148,61,8
+    COMBOBOX        IDC_BALL_TRAIL,75,146,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Trail Strength (0..100)",IDC_STATIC,12,162,81,8
+    EDITTEXT        IDC_TRAIL_EDIT,95,160,20,12,ES_AUTOHSCROLL
+    GROUPBOX        "Night->Day cycle",IDC_STATIC,7,182,114,42
+    CONTROL         "",IDC_DAYNIGHT_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,191,107,19
     CONTROL         "Use this slider instead of default",IDC_GLOBAL_DAYNIGHT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,200,110,10
-    LTEXT           "Gameplay Difficulty (0..100)",IDC_STATIC,7,220,90,8
-    EDITTEXT        209,101,218,20,12,ES_AUTOHSCROLL
-    LTEXT           "Overwrite Physics by Global Set",IDC_STATIC,7,232,60,16
-    COMBOBOX        1043,71,235,50,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Sound Effect Volume (0..100)",IDC_STATIC,7,257,94,8
-    EDITTEXT        IDC_TABLESOUNDVOLUME,101,255,20,12,ES_AUTOHSCROLL
-    LTEXT           "Music Volume (0..100)",IDC_STATIC,7,271,94,8
-    EDITTEXT        IDC_TABLEMUSICVOLUME,101,269,20,12,ES_AUTOHSCROLL
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,212,110,10
+    LTEXT           "Gameplay Difficulty (0..100)",IDC_STATIC,7,232,90,8
+    EDITTEXT        209,101,230,20,12,ES_AUTOHSCROLL
+    LTEXT           "Overwrite Physics by Global Set",IDC_STATIC,7,244,60,16
+    COMBOBOX        1043,71,247,50,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Sound Effect Volume (0..100)",IDC_STATIC,7,269,94,8
+    EDITTEXT        IDC_TABLESOUNDVOLUME,101,267,20,12,ES_AUTOHSCROLL
+    LTEXT           "Music Volume (0..100)",IDC_STATIC,7,283,94,8
+    EDITTEXT        IDC_TABLEMUSICVOLUME,101,281,20,12,ES_AUTOHSCROLL
 END
 
 IDD_PROPTABLE_PHYSICS DIALOGEX 0, 0, 125, 95
@@ -1519,7 +1521,7 @@ BEGIN
     EDITTEXT        215,81,76,40,12,ES_AUTOHSCROLL
 END
 
-IDD_PROPTABLE_LIGHTSOURCES DIALOGEX 0, 0, 125, 165
+IDD_PROPTABLE_LIGHTSOURCES DIALOGEX 0, 0, 125, 180
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1541,6 +1543,8 @@ BEGIN
     EDITTEXT        IDC_AOSCALE,90,131,32,12,ES_AUTOHSCROLL
     LTEXT           "Bloom Strength",IDC_STATIC,7,149,80,8
     EDITTEXT        IDC_BLOOM_STRENGTH,90,147,32,12,ES_AUTOHSCROLL
+    LTEXT           "ScreenSpace Refl. Scale",IDC_STATIC,7,165,80,8
+    EDITTEXT        IDC_SSR_STRENGTH,90,163,32,12,ES_AUTOHSCROLL
 END
 
 IDD_PROPTABLE_BALL DIALOGEX 0, 0, 125, 84
@@ -2554,7 +2558,6 @@ BEGIN
 
     IDD_PROPTABLE_USER, DIALOG
     BEGIN
-        BOTTOMMARGIN, 281
     END
 
     IDD_PROPTABLE_PHYSICS, DIALOG
@@ -2775,45 +2778,25 @@ END
 //
 
 IDR_VPINBALL            REGISTRY                "res\\vpinball.rgs"
-
 IDR_SURFACE             REGISTRY                "res\\surface.rgs"
-
 IDR_DRAG_POINT          REGISTRY                "res\\dragpoint.rgs"
-
 IDR_FLIPPER             REGISTRY                "res\\flipper.rgs"
-
 IDR_TIMER               REGISTRY                "res\\timer.rgs"
-
 IDR_PLUNGER             REGISTRY                "res\\plunger.rgs"
-
 IDR_TEXTBOX             REGISTRY                "res\\textbox.rgs"
-
 IDR_BUMPER              REGISTRY                "res\\bumper.rgs"
-
 IDR_PI_EVENT_HANDLER    REGISTRY                "res\\pieventhandler.rgs"
-
 IDR_TRIGGER             REGISTRY                "res\\trigger.rgs"
-
 IDR_LIGHT               REGISTRY                "res\\light.rgs"
-
 IDR_KICKER              REGISTRY                "res\\kicker.rgs"
-
 IDR_GATE                REGISTRY                "res\\gate.rgs"
-
 IDR_SPINNER             REGISTRY                "res\\spinner.rgs"
-
 IDR_RAMP                REGISTRY                "res\\ramp.rgs"
-
 IDR_DISP_REEL           REGISTRY                "res\\dispreel.rgs"
-
 IDR_LIGHT_SEQ           REGISTRY                "res\\lightseq.rgs"
-
 IDR_PRIMITIVE           REGISTRY                "res\\primitive.rgs"
-
 IDR_RUBBER              REGISTRY                "res\\rubber.rgs"
-
 IDR_HITTARGET           REGISTRY                "res\\hittarget.rgs"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3032,31 +3015,18 @@ END
 //
 
 IDB_TOOLBAR             BITMAP                  "res\\toolbar.bmp"
-
 IDB_BALL                BITMAP                  "res\\ball.bmp"
-
 IDB_ENV                 BITMAP                  "res\\envmap.bmp"
-
 IDB_LOGO                BITMAP                  "res\\logo.bmp"
-
 IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
-
 IDB_RINGENVMAP          BITMAP                  "res\\ringenvmap.bmp"
-
 IDB_BUMPERCAP           BITMAP                  "res\\bumperCap.bmp"
-
 IDB_KICKER_HOLE_WOOD    BITMAP                  "res\\kickerHoleWood.bmp"
-
 IDB_KICKER_CUP          BITMAP                  "res\\kickerCup.bmp"
-
 IDB_AO_DITHER           BITMAP                  "res\\AOdither.bmp"
-
 IDB_KICKER_WILLIAMS     BITMAP                  "res\\kickerWilliams.bmp"
-
 IDB_KICKER_GOTTLIEB     BITMAP                  "res\\kickerGottlieb.bmp"
-
 IDB_KICKER_T1           BITMAP                  "res\\kickerT1.bmp"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3128,17 +3098,11 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_VPINBALL            ICON                    "res\\vpinball.ico"
-
 IDI_SCRIPT              ICON                    "res\\script.ico"
-
 IDI_TABLE               ICON                    "res\\table.ico"
-
 IDI_PLAY                ICON                    "res\\play.ico"
-
 IDI_PAUSE               ICON                    "res\\pause.ico"
-
 IDI_STEP                ICON                    "res\\step.ico"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3146,45 +3110,25 @@ IDI_STEP                ICON                    "res\\step.ico"
 //
 
 IDC_MAGNIFY             CURSOR                  "res\\magnify.cur"
-
 IDC_LIGHT               CURSOR                  "res\\light.cur"
-
 IDC_WALL                CURSOR                  "res\\wall.cur"
-
 IDC_FLIPPER             CURSOR                  "res\\flipper.cur"
-
 IDC_TRIGGER             CURSOR                  "res\\trigger.cur"
-
 IDC_GATE                CURSOR                  "res\\gate.cur"
-
 IDC_TIMER               CURSOR                  "res\\timer.cur"
-
 IDC_PLUNGER             CURSOR                  "res\\plunger.cur"
-
 IDC_TEXTBOX             CURSOR                  "res\\textbox.cur"
-
 IDC_BUMPER              CURSOR                  "res\\bumper.cur"
-
 IDC_KICKER              CURSOR                  "res\\kicker.cur"
-
 IDC_TARGET              CURSOR                  "res\\target.cur"
-
 IDC_DECAL               CURSOR                  "res\\decal.cur"
-
 IDC_SPINNER             CURSOR                  "res\\spinner.cur"
-
 IDC_RAMP                CURSOR                  "res\\ramp.cur"
-
 IDC_DISPREEL            CURSOR                  "res\\dispreel.cur"
-
 IDC_LIGHTSEQ            CURSOR                  "res\\lightseq.cur"
-
 IDC_PRIMITIVE           CURSOR                  "res\\primitive.cur"
-
 IDC_FLASHER             CURSOR                  "res\\flasher.cur"
-
 IDC_RUBBER              CURSOR                  "res\\rubber.cur"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3192,9 +3136,7 @@ IDC_RUBBER              CURSOR                  "res\\rubber.cur"
 //
 
 IDR_BLANK_TABLE         TABLE                   "res\\blankTable.vpx"
-
 IDR_EXAMPLE_TABLE       TABLE                   "res\\exampleTable.vpx"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3231,39 +3173,39 @@ END
 // AFX_DIALOG_LAYOUT
 //
 
-IDD_SOUNDDIALOG AFX_DIALOG_LAYOUT
+IDD_SOUNDDIALOG AFX_DIALOG_LAYOUT 
 BEGIN
-    0
+    0x0000
 END
 
-IDD_AUDIO_OPTIONS AFX_DIALOG_LAYOUT
+IDD_AUDIO_OPTIONS AFX_DIALOG_LAYOUT 
 BEGIN
-    0
+    0x0000
 END
 
-IDD_SOUND_POSITION_DIALOG AFX_DIALOG_LAYOUT
+IDD_SOUND_POSITION_DIALOG AFX_DIALOG_LAYOUT 
 BEGIN
-    0
+    0x0000
 END
 
-IDD_PHYSICS_OPTIONS AFX_DIALOG_LAYOUT
+IDD_PHYSICS_OPTIONS AFX_DIALOG_LAYOUT 
 BEGIN
-    0
+    0x0000
 END
 
-IDD_PROPWALL_VISUALS AFX_DIALOG_LAYOUT
+IDD_PROPWALL_VISUALS AFX_DIALOG_LAYOUT 
 BEGIN
-    0
+    0x0000
 END
 
-IDD_PROPHITTARGET_VISUALS AFX_DIALOG_LAYOUT
+IDD_PROPHITTARGET_VISUALS AFX_DIALOG_LAYOUT 
 BEGIN
-    0
+    0x0000
 END
 
-IDD_PROPPRIMITIVE_VISUALS AFX_DIALOG_LAYOUT
+IDD_PROPPRIMITIVE_VISUALS AFX_DIALOG_LAYOUT 
 BEGIN
-    0
+    0x0000
 END
 
 

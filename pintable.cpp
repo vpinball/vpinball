@@ -3669,6 +3669,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(ENES), m_envEmissionScale);
    bw.WriteFloat(FID(GLES), m_globalEmissionScale);
    bw.WriteFloat(FID(AOSC), m_AOScale);
+   bw.WriteFloat(FID(SSSC), m_SSRScale);
 
    bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
    bw.WriteFloat(FID(MVOL), m_TableMusicVolume);
@@ -3691,6 +3692,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(UAAL), m_useAA);
    bw.WriteInt(FID(UFXA), m_useFXAA);
    bw.WriteInt(FID(UAOC), m_useAO);
+   bw.WriteInt(FID(USSR), m_useSSR);
    bw.WriteFloat(FID(BLST), m_bloom_strength);
 
    bw.WriteInt(FID(MASI), m_materials.Size());
@@ -4136,6 +4138,8 @@ void PinTable::SetLoadDefaults()
    m_globalEmissionScale = 1.0f;
    m_envEmissionScale = 10.0f;
    m_AOScale = 1.75f;
+   m_SSRScale = 1.0f;
+
    m_angletiltMax = 726.0f;
    m_angletiltMin = 4.5f;
 
@@ -4150,6 +4154,7 @@ void PinTable::SetLoadDefaults()
    m_useAA = -1;
    m_useFXAA = -1;
    m_useAO = -1;
+   m_useSSR = -1;
 
    m_bloom_strength = 1.0f;
 
@@ -4541,6 +4546,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_AOScale);
    }
+   else if (id == FID(SSSC))
+   {
+      pbr->GetFloat(&m_SSRScale);
+   }
    else if (id == FID(BREF))
    {
       pbr->GetInt(&m_useReflectionForBalls);
@@ -4576,6 +4585,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(UAOC))
    {
       pbr->GetInt(&m_useAO);
+   }
+   else if (id == FID(USSR))
+   {
+      pbr->GetInt(&m_useSSR);
    }
    else if (id == FID(UFXA))
    {
@@ -9691,6 +9704,24 @@ STDMETHODIMP PinTable::put_AOScale(float newVal)
    return S_OK;
 }
 
+STDMETHODIMP PinTable::get_SSRScale(float *pVal)
+{
+   *pVal = m_SSRScale;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_SSRScale(float newVal)
+{
+   STARTUNDO
+
+   m_SSRScale = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
 STDMETHODIMP PinTable::get_EnvironmentEmissionScale(float *pVal)
 {
    *pVal = m_envEmissionScale;
@@ -10691,6 +10722,22 @@ STDMETHODIMP PinTable::put_EnableAntialiasing(UserDefaultOnOff newVal)
 {
    STARTUNDO
    m_useAA = (int)newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_EnableSSR(UserDefaultOnOff *pVal)
+{
+   *pVal = (UserDefaultOnOff)m_useSSR;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_EnableSSR(UserDefaultOnOff newVal)
+{
+   STARTUNDO
+   m_useSSR = (int)newVal;
    STOPUNDO
 
    return S_OK;

@@ -812,6 +812,7 @@
 #define IDC_ENVEMISSIONSCALE            566
 #define IDC_LIGHTEMISSIONSCALE          567
 #define IDC_AOSCALE                     568
+#define IDC_SSR_STRENGTH                569
 #define IDC_TABLESOUNDVOLUME            579
 #define IDC_TABLEMUSICVOLUME            580
 #define IDS_PLAYFIELD                   581
@@ -822,6 +823,7 @@
 #define IDC_TEXT_INTENSITY              587
 #define IDC_GLOBAL_DAYNIGHT             588
 #define IDC_AUTOSAVE                    589
+#define IDC_ENABLE_SSR                  590
 #define IDD_PROPPOINT_POSITION_WITHZ    601
 #define IDD_PROPRUBBER_PHYSICS          602
 #define IDC_RUBBER                      602

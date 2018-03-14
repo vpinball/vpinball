@@ -59,7 +59,7 @@ float4 ps_main_fb_ss_refl(in VS_OUTPUT_2D IN) : COLOR
 
 	const float ushift = /*hash(IN.tex0) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
 	                     tex2Dlod(texSamplerAOdither, float4(IN.tex0/(64.0*w_h_height.xy) /*+ w_h_height.zw*/, 0.,0.)).x; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
-	const float2 offsMul = normal_b.xy * (/*w_h_height.xy*/ float2(1.0/1920.0,1.0/1080.0) * ReflBlurWidth); //!! makes it more resolution independent?? test with 4xSSAA
+	const float2 offsMul = normal_b.xy * (/*w_h_height.xy*/ float2(1.0/1920.0,1.0/1080.0) * ReflBlurWidth * (32./(float)samples)); //!! makes it more resolution independent?? test with 4xSSAA
 
 	// loop in screen space, simply collect all pixels in the normal direction (not even a depth check done!)
 	float3 refl = float3(0.,0.,0.);

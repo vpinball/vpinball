@@ -3680,7 +3680,7 @@ void Player::SSRefl()
    const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), 1.0f, 1.0f);
    m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
 
-   const D3DXVECTOR4 SSR_bumpHeight_fresnelRefl_scale(0.3f, 0.3f, 1.0f, 1.0f);
+   const D3DXVECTOR4 SSR_bumpHeight_fresnelRefl_scale(0.3f, 0.3f, m_ptable->m_SSRScale, 1.0f);
    m_pin3d.m_pd3dDevice->FBShader->SetVector("SSR_bumpHeight_fresnelRefl_scale", &SSR_bumpHeight_fresnelRefl_scale);
 
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("SSReflection");
@@ -4104,8 +4104,9 @@ void Player::PrepareVideoBuffersNormal()
    const bool FXAA1 = (((m_fFXAA == Fast_FXAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_FXAA));
    const bool FXAA2 = (((m_fFXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
    const bool FXAA3 = (((m_fFXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
+   const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_ptable->m_SSRScale > 0.f);
 
-   if (stereo || m_ss_refl)
+   if (stereo || ss_refl)
       m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
 
    const float shiftedVerts[4 * 5] =
@@ -4130,7 +4131,7 @@ void Player::PrepareVideoBuffersNormal()
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Bloom);
 #endif
 
-   if (m_ss_refl)
+   if (ss_refl)
        SSRefl();
 
    // switch to output buffer
@@ -4145,7 +4146,7 @@ void Player::PrepareVideoBuffersNormal()
    }
 
    // copy framebuffer over from texture and tonemap/gamma
-   if (m_ss_refl)
+   if (ss_refl)
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetReflectionBufferTexture());
    else
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
@@ -4201,6 +4202,7 @@ void Player::PrepareVideoBuffersAO()
    const bool FXAA1 = (((m_fFXAA == Fast_FXAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_FXAA));
    const bool FXAA2 = (((m_fFXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
    const bool FXAA3 = (((m_fFXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
+   const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_ptable->m_SSRScale > 0.f);
 
    m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
 
@@ -4218,7 +4220,7 @@ void Player::PrepareVideoBuffersAO()
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Bloom);
 #endif
 
-   if (m_ss_refl)
+   if (ss_refl)
        SSRefl();
 
    // separate normal generation pass, currently roughly same perf or even much worse
@@ -4291,7 +4293,7 @@ void Player::PrepareVideoBuffersAO()
       -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height)
    };
 
-   if (m_ss_refl)
+   if (ss_refl)
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetReflectionBufferTexture());
    else
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
