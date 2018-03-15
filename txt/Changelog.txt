@@ -1,5 +1,6 @@
 VP 10.5.0 Changelog
 ------------------------
+- increase usable layers from 8 to 11
 
 - add ScreenSpace Reflections to the global video and table user properties, strength can be changed in the table lighting panel
   This adds very fake, but also very fast local reflection effects to all table elements

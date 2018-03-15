@@ -143,7 +143,10 @@ static TBBUTTON const g_tbbuttonLayers[MAX_LAYERS+1] = {
    { 28, ID_LAYER_LAYER6, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 5 },
    { 29, ID_LAYER_LAYER7, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 6 },
    { 30, ID_LAYER_LAYER8, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 7 },
-   { 31, ID_LAYER_TOGGLEALL, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 8 },
+   { 37, ID_LAYER_LAYER9, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 8 },
+   { 38, ID_LAYER_LAYER10, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 9 },
+   { 39, ID_LAYER_LAYER11, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 10 },
+   { 31, ID_LAYER_TOGGLEALL, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 11 },
 };
 #endif
 
@@ -156,7 +159,10 @@ static const int allLayers[MAX_LAYERS] =
    ID_LAYER_LAYER5,
    ID_LAYER_LAYER6,
    ID_LAYER_LAYER7,
-   ID_LAYER_LAYER8
+   ID_LAYER_LAYER8,
+   ID_LAYER_LAYER9,
+   ID_LAYER_LAYER10,
+   ID_LAYER_LAYER11
 };
 
 static char recentNumber[LAST_OPENED_TABLE_COUNT];
@@ -1604,6 +1610,21 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
       setLayerStatus(7);
       break;
+   }
+   case ID_LAYER_LAYER9:
+   {
+       setLayerStatus(8);
+       break;
+   }
+   case ID_LAYER_LAYER10:
+   {
+       setLayerStatus(9);
+       break;
+   }
+   case ID_LAYER_LAYER11:
+   {
+       setLayerStatus(10);
+       break;
    }
    case ID_LAYER_MERGEALL:
    {

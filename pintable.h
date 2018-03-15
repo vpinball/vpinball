@@ -37,7 +37,7 @@ using namespace std::tr1;
 #define	PROT_CIPHER_LENGTH		PROT_PASSWORD_LENGTH+8
 #define	PROT_KEYVERSION			0
 
-#define MAX_LAYERS              8
+#define MAX_LAYERS              11
 
 struct LightSource {
    COLORREF emission;

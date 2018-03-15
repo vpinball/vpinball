@@ -5412,6 +5412,12 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
       AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER7, ls12.m_szbuffer);
       LocalString ls13(IDS_LAYER8);
       AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER8, ls13.m_szbuffer);
+      LocalString ls20(IDS_LAYER9);
+      AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER9, ls20.m_szbuffer);
+      LocalString ls21(IDS_LAYER10);
+      AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER10, ls21.m_szbuffer);
+      LocalString ls16(IDS_LAYER11);
+      AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER11, ls16.m_szbuffer);
 
       if (psel->layerIndex == 0)
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER1, MF_CHECKED);
@@ -5445,6 +5451,18 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER8, MF_CHECKED);
       else
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER8, MF_UNCHECKED);
+      if(psel->layerIndex == 8)
+          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER9, MF_CHECKED);
+      else
+          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER9, MF_UNCHECKED);
+      if(psel->layerIndex == 9)
+          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER10, MF_CHECKED);
+      else
+          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER10, MF_UNCHECKED);
+      if(psel->layerIndex == 10)
+          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER11, MF_CHECKED);
+      else
+          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER11, MF_UNCHECKED);
 
       FillCollectionContextMenu(hmenu, colSubMenu, psel);
 
@@ -5704,6 +5722,21 @@ void PinTable::DoCommand(int icmd, int x, int y)
       AssignMultiToLayer(7, x, y);
       break;
    }
+   case ID_ASSIGNTO_LAYER9:
+   {
+       AssignMultiToLayer(8, x, y);
+       break;
+   }
+   case ID_ASSIGNTO_LAYER10:
+   {
+       AssignMultiToLayer(9, x, y);
+       break;
+   }
+   case ID_ASSIGNTO_LAYER11:
+   {
+       AssignMultiToLayer(10, x, y);
+       break;
+   }
    }
 }
 void PinTable::AssignMultiToLayer(int layerNumber, int x, int y)
@@ -5754,6 +5787,21 @@ void PinTable::AssignMultiToLayer(int layerNumber, int x, int y)
       {
          psel->DoCommand(ID_ASSIGNTO_LAYER8, x, y);
          break;
+      }
+      case 8:
+      {
+          psel->DoCommand(ID_ASSIGNTO_LAYER9, x, y);
+          break;
+      }
+      case 9:
+      {
+          psel->DoCommand(ID_ASSIGNTO_LAYER10, x, y);
+          break;
+      }
+      case 10:
+      {
+          psel->DoCommand(ID_ASSIGNTO_LAYER11, x, y);
+          break;
       }
       }
    }
