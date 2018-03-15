@@ -2907,6 +2907,9 @@ BEGIN
         MENUITEM "Layer&6",                     ID_LAYER_LAYER6
         MENUITEM "Layer&7",                     ID_LAYER_LAYER7
         MENUITEM "Layer&8",                     ID_LAYER_LAYER8
+        MENUITEM "Layer&9",                     ID_LAYER_LAYER9
+        MENUITEM "Layer1&0",                    ID_LAYER_LAYER10
+        MENUITEM "Layer11",                     ID_LAYER_LAYER11
         MENUITEM SEPARATOR
         MENUITEM "&Merge All",                  ID_LAYER_MERGEALL
         MENUITEM "&Toggle All",                 ID_LAYER_TOGGLEALL
