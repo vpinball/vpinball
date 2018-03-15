@@ -3314,6 +3314,9 @@ STRINGTABLE
 BEGIN
     IDS_IMAGE_RAW_SIZE      "Raw Size"
     IDS_SIZE                "Size"
+    IDS_LAYER9              "Layer&9"
+    IDS_LAYER10             "L&ayer10"
+    IDS_LAYER11             "La&yer11"
     IDS_DRAWING_ORDER_SELECT "D&rawing Order (Select)"
 END
 

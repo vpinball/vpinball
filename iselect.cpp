@@ -217,6 +217,21 @@ void ISelect::DoCommand(int icmd, int x, int y)
       GetPTable()->AssignToLayer(piedit, 7);
       break;
    }
+   case ID_ASSIGNTO_LAYER9:
+   {
+       GetPTable()->AssignToLayer(piedit, 8);
+       break;
+   }
+   case ID_ASSIGNTO_LAYER10:
+   {
+       GetPTable()->AssignToLayer(piedit, 9);
+       break;
+   }
+   case ID_ASSIGNTO_LAYER11:
+   {
+       GetPTable()->AssignToLayer(piedit, 10);
+       break;
+   }
    /*default:
       psel->DoCommand(command, x, y);
       break;*/

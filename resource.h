@@ -217,6 +217,9 @@
 #define IDS_IMAGE_RAW_SIZE              192
 #define IDS_STRING193                   193
 #define IDS_SIZE                        193
+#define IDS_LAYER9                      194
+#define IDS_LAYER10                     195
+#define IDS_LAYER11                     196
 #define IDS_DRAWING_ORDER_SELECT        200
 #define IDR_APPMENU                     201
 #define IDC_SOUNDLIST                   201
@@ -1108,9 +1111,15 @@
 #define ID_LAYER_MERGEALL               32867
 #define ID_WALLMENU_SELECTALL           32868
 #define ID_WALLMENU_SELECTNONE          32869
+#define ID_LAYER_LAYER9                 32870
+#define ID_LAYER_LAYER10                32871
+#define ID_LAYER_LAYER11                32872
+#define ID_ASSIGNTO_LAYER9              32873
 #define ID_LAYER_TOGGLEALL              32874
 #define ID_EDIT_SEARCH                  32875
 #define ID_SELECT_ELEMENT               32876
+#define ID_ASSIGNTO_LAYER10             32877
+#define ID_ASSIGNTO_LAYER11             32878
 #define ID_EDIT_DRAWINGORDER_HIT        32879
 #define ID_EDIT_DRAWINGORDER_SELECT     32880
 #define ID_EDIT_COMMENT                 32882
