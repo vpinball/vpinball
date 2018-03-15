@@ -1,5 +1,6 @@
 VP 10.5.0 Changelog
 ------------------------
+
 - increase usable layers from 8 to 11
 
 - add ScreenSpace Reflections to the global video and table user properties, strength can be changed in the table lighting panel
@@ -48,7 +49,7 @@ VP 10.5.0 Changelog
 
 - script button can now both open and close the script editor
 
-- update BASS library to 2.4.13
+- update BASS library to 2.4.13.8
 
 - see core scripts (header of core.vbs) for the respective changelog (version 3.56)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
