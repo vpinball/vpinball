@@ -1259,6 +1259,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const unsigned int FXAA = (m_ptable->m_useFXAA == -1) ? m_fFXAA : m_ptable->m_useFXAA;
+   const bool ss_refl = (m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1);
 
    int colordepth;
    if (GetRegInt("Player", "ColorDepth", &colordepth) != S_OK)
@@ -1266,7 +1267,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    hr = m_pin3d.InitPin3D(m_hwnd, m_fFullScreen, m_width, m_height, colordepth,
-                          m_refreshrate, vsync, useAA, !!m_fStereo3D, FXAA, !m_disableAO, m_ss_refl);
+                          m_refreshrate, vsync, useAA, !!m_fStereo3D, FXAA, !m_disableAO, ss_refl);
 
    if (hr != S_OK)
    {
