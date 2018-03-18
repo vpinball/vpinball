@@ -101,7 +101,7 @@ Class cvpmNudge2
 	Public Sub Reset : End Sub
 
 	Public Sub SolGameOn(aEnabled)
-		if IsEmpty(mForce) then exit sub ‘prevent errors if vpmNudge.TiltObj isn’t set
+		if IsEmpty(mForce) then exit sub 'prevent errors if vpmNudge.TiltObj isn’t set
 		Dim obj, ii
 		If aEnabled Then
 			ii = 0
