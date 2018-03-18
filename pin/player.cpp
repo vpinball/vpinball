@@ -4098,14 +4098,14 @@ void Player::UpdateHUD()
 void Player::PrepareVideoBuffersNormal()
 {
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
-   const bool stereo= ((m_fStereo3D != 0) && m_fStereo3Denabled);
+   const bool stereo= ((m_fStereo3D != 0) && m_fStereo3Denabled && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable());
    const bool SMAA  = (((m_fFXAA == Quality_SMAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_SMAA));
    const bool DLAA  = (((m_fFXAA == Standard_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_DLAA));
    const bool NFAA  = (((m_fFXAA == Fast_NFAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
    const bool FXAA1 = (((m_fFXAA == Fast_FXAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_FXAA));
    const bool FXAA2 = (((m_fFXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
    const bool FXAA3 = (((m_fFXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
-   const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_ptable->m_SSRScale > 0.f);
+   const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable() && m_ptable->m_SSRScale > 0.f);
 
    if (stereo || ss_refl)
       m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
@@ -4196,14 +4196,14 @@ void Player::FlipVideoBuffers(const bool vsync)
 void Player::PrepareVideoBuffersAO()
 {
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
-   const bool stereo= ((m_fStereo3D != 0) && m_fStereo3Denabled);
+   const bool stereo= ((m_fStereo3D != 0) && m_fStereo3Denabled && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable());
    const bool SMAA  = (((m_fFXAA == Quality_SMAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_SMAA));
    const bool DLAA  = (((m_fFXAA == Standard_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_DLAA));
    const bool NFAA  = (((m_fFXAA == Fast_NFAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
    const bool FXAA1 = (((m_fFXAA == Fast_FXAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_FXAA));
    const bool FXAA2 = (((m_fFXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
    const bool FXAA3 = (((m_fFXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
-   const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_ptable->m_SSRScale > 0.f);
+   const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable() && m_ptable->m_SSRScale > 0.f);
 
    m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
 
