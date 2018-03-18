@@ -1,6 +1,6 @@
 // uses texSamplerDepth & texSampler4,texSampler5 & texSamplerAOdither & w_h_height.xy
 
-float3 SSR_bumpHeight_fresnelRefl_scale;
+float4 SSR_bumpHeight_fresnelRefl_scale_FS;
 
 float3 approx_bump_normal(const float2 coords, const float2 offs, const float scale, const float sharpness)
 {
@@ -23,7 +23,7 @@ float3 approx_bump_normal(const float2 coords, const float2 offs, const float sc
 
 float normal_fade_factor(const float3 n)
 {
-    return min(sqr(1.0-n.z) + max(n.y,0.0),1.0); // dot(n,float3(0,0,1))  dot(n,float3(0,1,0)) -> penalty for z-axis/up (geometry like playfield), bonus for y-axis (like backwall)
+    return min(sqr(1.0-n.z)*0.5 + max(SSR_bumpHeight_fresnelRefl_scale_FS.w == 0.0 ? n.y : n.x,0.0) + abs(SSR_bumpHeight_fresnelRefl_scale_FS.w == 0.0 ? n.x : n.y)*0.5,1.0); // dot(n,float3(0,0,1))  dot(n,float3(0,1,0))  dot(n,float3(1,0,0)) -> penalty for z-axis/up (geometry like playfield), bonus for y-axis (like backwall) and x-axis (like sidewalls)
 }
 
 float4 ps_main_fb_ss_refl(in VS_OUTPUT_2D IN) : COLOR
@@ -39,12 +39,12 @@ float4 ps_main_fb_ss_refl(in VS_OUTPUT_2D IN) : COLOR
 	const float3 normal = normalize(get_nonunit_normal(depth0,u));
 	float3 normal_b = approx_bump_normal(u, 0.01 * w_h_height.xy / depth0, depth0 / (0.05*depth0 + 0.0001), 1000.0); //!! magic
 	       normal_b = normalize(float3(normal.xy*normal_b.z + normal_b.xy*normal.z, normal.z*normal_b.z));
-	       normal_b = normalize(lerp(normal,normal_b, SSR_bumpHeight_fresnelRefl_scale.x * normal_fade_factor(normal))); // have less impact of fake bump normals on playfield, etc
+	       normal_b = normalize(lerp(normal,normal_b, SSR_bumpHeight_fresnelRefl_scale_FS.x * normal_fade_factor(normal))); // have less impact of fake bump normals on playfield, etc
 
 	const float3 V = normalize(float3(0.5-u, -0.5)); // WTF?! cam is in 0,0,0 but why z=-0.5?
 
-	const float fresnel = (SSR_bumpHeight_fresnelRefl_scale.y + (1.0-SSR_bumpHeight_fresnelRefl_scale.y) * pow(1.0-saturate(dot(V,normal_b)),5)) // fresnel for falloff towards silhouette
-	                     * SSR_bumpHeight_fresnelRefl_scale.z // user scale
+	const float fresnel = (SSR_bumpHeight_fresnelRefl_scale_FS.y + (1.0-SSR_bumpHeight_fresnelRefl_scale_FS.y) * pow(1.0-saturate(dot(V,normal_b)),5)) // fresnel for falloff towards silhouette
+	                     * SSR_bumpHeight_fresnelRefl_scale_FS.z // user scale
 	                     * sqr(normal_fade_factor(normal_b/*normal*/)); // avoid reflections on playfield, etc
 
 #if 0 // test code
@@ -69,7 +69,7 @@ float4 ps_main_fb_ss_refl(in VS_OUTPUT_2D IN) : COLOR
 		const float2 offs = u + ((float)i+ushift)*offsMul; //!! jitter per pixel (uses blue noise tex)
 		const float3 color = tex2Dlod(texSampler5, float4(offs, 0.,0.)).xyz;
 		
-		const float w = (float)(i-1)/(float)samples; //!! fake falloff for samples more far away
+		const float w = sqrt((float)(i-1)/(float)samples); //!! fake falloff for samples more far away
 		refl += color*(1.0-w); //!! dampen large values in addition?
 		color0w += w;
 	}
