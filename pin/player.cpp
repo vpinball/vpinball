@@ -3681,8 +3681,9 @@ void Player::SSRefl()
    const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), 1.0f, 1.0f);
    m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
 
-   const D3DXVECTOR4 SSR_bumpHeight_fresnelRefl_scale(0.3f, 0.3f, m_ptable->m_SSRScale, 1.0f);
-   m_pin3d.m_pd3dDevice->FBShader->SetVector("SSR_bumpHeight_fresnelRefl_scale", &SSR_bumpHeight_fresnelRefl_scale);
+   const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
+   const D3DXVECTOR4 SSR_bumpHeight_fresnelRefl_scale_FS(0.3f, 0.3f, m_ptable->m_SSRScale, rotation);
+   m_pin3d.m_pd3dDevice->FBShader->SetVector("SSR_bumpHeight_fresnelRefl_scale_FS", &SSR_bumpHeight_fresnelRefl_scale_FS);
 
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("SSReflection");
 
