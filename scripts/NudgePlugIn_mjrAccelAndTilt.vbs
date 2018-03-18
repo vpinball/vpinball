@@ -93,14 +93,15 @@ Class cvpmNudge2
 	Public Property Let Sensitivity(aSens) : mSensitivity = (10-aSens)+1 : End property
 
 	Public Sub DoNudge(ByVal aDir, ByVal aForce)
-               If TiltSwitch <> 0 Then vpmTimer.PulseSw TiltSwitch
-        End sub
+		If TiltSwitch <> 0 Then vpmTimer.PulseSw TiltSwitch
+	End sub
 
-        Public Sub Update : End Sub
+	Public Sub Update : End Sub
 
-        Public Sub Reset : End Sub
+	Public Sub Reset : End Sub
 
-        Public Sub SolGameOn(aEnabled)
+	Public Sub SolGameOn(aEnabled)
+		if IsEmpty(mForce) then exit sub ‘prevent errors if vpmNudge.TiltObj isn’t set
 		Dim obj, ii
 		If aEnabled Then
 			ii = 0

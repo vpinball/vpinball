@@ -3,13 +3,14 @@ Const VPinMAMEDriverVer = 3.56
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.56 (Update by nFozzy)
+' New in 3.56 (Update by nFozzy, DJRobX)
 ' - vpmFlips fixes / improvements 
 '   - Fixed vpmFlips execute script error
 '   - Added extra error check for detecting outdated system vbs files when UseSolenoids = 2
 '   - Change GameOnSolenoid from 16 to 19 for Hankin
 '   - Fixed an execute script issue that was causing dead flippers for some system languages
 ' - Fix WPC tables that use 'cSingleLFlip' (regression from 3.55)
+' - Fix script errors if using NudgePlugIn.vbs
 '
 ' New in 3.55 (Update by nFozzy)
 ' - Prevent 'object not a collection' errors if vpmNudge.TiltObj isn't set
