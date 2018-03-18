@@ -266,12 +266,12 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
 
    //
 
-   if(m_pd3dDevice->DepthBufferReadBackAvailable() && (stereo3D || useAO)) {
+   if(m_pd3dDevice->DepthBufferReadBackAvailable() && (stereo3D || useAO || ss_refl)) {
       m_pdds3DZBuffer = !m_pd3dDevice->m_useNvidiaApi ? (D3DTexture*)m_pd3dDevice->AttachZBufferTo(m_pddsBackBuffer) : m_pd3dDevice->DuplicateDepthTexture((RenderTarget*)m_pddsZBuffer);
 
       if (!m_pdds3DZBuffer)
       {
-         ShowError("Unable to create depth texture!\r\nTry to (un)set \"Alternative Depth Buffer processing\" in the video options!\r\nOr disable Ambient Occlusion and/or 3D stereo!");
+         ShowError("Unable to create depth texture!\r\nTry to (un)set \"Alternative Depth Buffer processing\" in the video options!\r\nOr disable Ambient Occlusion and/or 3D stereo and/or ScreenSpace Reflections!");
          return E_FAIL;
       }
    }

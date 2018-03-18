@@ -687,7 +687,7 @@ bool RenderDevice::DepthBufferReadBackAvailable()
 {
     if (m_INTZ_support && !m_useNvidiaApi)
         return true;
-    // fall back to NVIDIAs NVAPI, only handle AO if API was initialized
+    // fall back to NVIDIAs NVAPI, only handle DepthBuffer ReadBack if API was initialized
     return NVAPIinit;
 }
 
