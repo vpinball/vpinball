@@ -11,6 +11,8 @@ Const VPinMAMEDriverVer = 3.56
 '   - Fixed an execute script issue that was causing dead flippers for some system languages
 ' - Fix WPC tables that use 'cSingleLFlip' (regression from 3.55)
 ' - Fix script errors if using NudgePlugIn.vbs
+' - add Rubber, Ramp, Primitive and HitTarget support to vpmToggleObj
+' - add Rubber, Primitive and HitTarget support to vpmCreateEvents
 '
 ' New in 3.55 (Update by nFozzy)
 ' - Prevent 'object not a collection' errors if vpmNudge.TiltObj isn't set
@@ -2887,10 +2889,11 @@ End Sub
 Private Sub vpmToggleObj(aObj, aEnabled)
 	Dim mSwcopy
 	Select Case TypeName(aObj)
-		Case "Wall"                        aObj.IsDropped = aEnabled
+		Case "Wall", "HitTarget"           aObj.IsDropped = aEnabled
 		Case "Bumper", "Light"             aObj.State     = Abs(aEnabled)
 		Case "Kicker", "Trigger", "Timer"  aObj.Enabled   = aEnabled
 		Case "Gate"                        aObj.Open      = aEnabled
+		Case "Primitive", "Ramp", "Rubber" aObj.Visible   = aEnabled
 		Case "Integer"                     mSwcopy = aObj : Controller.Switch(mSwcopy) = aEnabled
 		Case Else MsgBox "vpmToggleObj: Unhandled Object " & TypeName(aObj)
 	End Select
@@ -2942,10 +2945,10 @@ Sub vpmCreateEvents(aHitObjs)
 				Else
 					vpmBuildEvent obj, "SlingShot", "vpmTimer.PulseSw " & Obj.TimerInterval
 				End If
-			Case "Bumper", "Gate"
-				vpmBuildEvent obj, "Hit","vpmTimer.PulseSw " & Obj.TimerInterval
+			Case "Bumper", "Gate", "Primitive", "HitTarget", "Rubber"
+				vpmBuildEvent obj, "Hit", "vpmTimer.PulseSw " & Obj.TimerInterval
 			Case "Spinner"
-				vpmBuildEvent obj, "Spin","vpmTimer.PulseSw " & Obj.TimerInterval
+				vpmBuildEvent obj, "Spin", "vpmTimer.PulseSw " & Obj.TimerInterval
 		End Select
 	Next
 End Sub
