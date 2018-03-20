@@ -215,40 +215,42 @@ T* reorderForsyth(const T* const indices,
 			int endpos = cVertex[v].cacheTag;
 			if (endpos < 0)
 				endpos = VERTEX_CACHE_SIZE + i;
-			// Move all cache entries from the previous position
-			// in the cache to the new target position (i) one
-			// step backwards
-			assert(endpos < VERTEX_CACHE_SIZE+3);
-			if(!(endpos < VERTEX_CACHE_SIZE+3))
-			{
-				delete [] cVertex;
-				delete [] triangleAdded;
-				delete [] triangleScore;
-				delete [] outTriangles;
-				delete [] triangleIndices;
-				return NULL;
-			}
-			for (int j = endpos; j > i; j--) {
-				cache[j] = cache[j-1];
-				// If this cache slot contains a real
-				// vertex, update its cache tag
-				if (cache[j] >= 0)
+			if (endpos > i) {
+				// Move all cache entries from the previous position
+				// in the cache to the new target position (i) one
+				// step backwards
+				assert(endpos < VERTEX_CACHE_SIZE+3);
+				if(!(endpos < VERTEX_CACHE_SIZE+3))
 				{
-					cVertex[cache[j]].cacheTag++;
-					if (cVertex[cache[j]].cacheTag >= VERTEX_CACHE_SIZE + 3)
+					delete [] cVertex;
+					delete [] triangleAdded;
+					delete [] triangleScore;
+					delete [] outTriangles;
+					delete [] triangleIndices;
+					return NULL;
+				}
+				for (int j = endpos; j > i; j--) {
+					cache[j] = cache[j-1];
+					// If this cache slot contains a real
+					// vertex, update its cache tag
+					if (cache[j] >= 0)
 					{
-						delete[] cVertex;
-						delete[] triangleAdded;
-						delete[] triangleScore;
-						delete[] outTriangles;
-						delete[] triangleIndices;
-						return NULL;
+						cVertex[cache[j]].cacheTag++;
+						if (cVertex[cache[j]].cacheTag >= VERTEX_CACHE_SIZE + 3)
+						{
+							delete[] cVertex;
+							delete[] triangleAdded;
+							delete[] triangleScore;
+							delete[] outTriangles;
+							delete[] triangleIndices;
+							return NULL;
+						}
 					}
 				}
+				// Insert the current vertex into its new target slot
+				cache[i] = v;
+				cVertex[v].cacheTag = i;
 			}
-			// Insert the current vertex into its new target slot
-			cache[i] = v;
-			cVertex[v].cacheTag = i;
 
 			// Find the current triangle in the list of active
 			// triangles and remove it (moving the last
