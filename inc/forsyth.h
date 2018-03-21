@@ -215,7 +215,7 @@ T* reorderForsyth(const T* const indices,
 			int endpos = cVertex[v].cacheTag;
 			if (endpos < 0)
 				endpos = VERTEX_CACHE_SIZE + i;
-			if (endpos > i) {
+			/*if (endpos > i)*/ { //!! supposedly should fix degenerate triangles, BUT..???
 				// Move all cache entries from the previous position
 				// in the cache to the new target position (i) one
 				// step backwards
