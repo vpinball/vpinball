@@ -154,6 +154,34 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_backgroundColor);
           return TRUE;
        }
+       case IDC_SET_DEFAULTS_BUTTON:
+       {
+          HWND hwndControl;
+          hwndControl = GetDlgItem(IDC_DRAW_DRAGPOINTS).GetHwnd();
+          SendMessage(hwndControl, BM_SETCHECK, BST_UNCHECKED, 0);
+          hwndControl = GetDlgItem(IDC_DRAW_LIGHTCENTERS).GetHwnd();
+          SendMessage(hwndControl, BM_SETCHECK, BST_UNCHECKED, 0);
+          SendDlgItemMessage(IDC_AUTOSAVE, BM_SETCHECK, BST_CHECKED, 0);
+          SendDlgItemMessage(IDC_PROP_FLOAT_CHECK, BM_SETCHECK, BST_CHECKED, 0);
+          SetDlgItemInt(IDC_AUTOSAVE_MINUTES, AUTOSAVE_DEFAULT_TIME, FALSE);
+          SetDlgItemInt(IDC_GRID_SIZE, 50, FALSE);
+          SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_SETCHECK, BST_UNCHECKED, 0);
+          SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_SETCHECK, BST_CHECKED, 0);
+          SetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, 50, FALSE);
+          SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, BST_CHECKED, 0);
+          SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_SETCURSEL, 0, 0);
+
+          const int x = 0;
+          const int y = 0;
+          SetRegValue("Editor", "CodeViewPosX", REG_DWORD, &x, 4);
+          SetRegValue("Editor", "CodeViewPosY", REG_DWORD, &y, 4);
+          const int width = 640;
+          const int height = 490;
+          SetRegValue("Editor", "CodeViewPosWidth", REG_DWORD, &width, 4);
+          SetRegValue("Editor", "CodeViewPosHeight", REG_DWORD, &height, 4);
+
+          return TRUE;
+       }
     }
 
     return FALSE;

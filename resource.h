@@ -933,6 +933,7 @@
 #define IDC_BUTTON2                     765
 #define IDC_DBG_MATERIALS_BUTTON        765
 #define IDC_POINT_PASTE_BUTTON          765
+#define IDC_SET_DEFAULTS_BUTTON         765
 #define IDC_DBG_BULB_MODULATE_VS_ADD    766
 #define IDC_DBG_TRANSMISSION_SCALE      767
 #define IDC_STATIC_GLOSSY_IMGLERP       768
