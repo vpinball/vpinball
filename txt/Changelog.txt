@@ -1,6 +1,10 @@
 VP 10.5.0 Changelog
 ------------------------
 
+- global physics settings: a value of -1 for the flipper physics will disable the physics value defined in the physics set
+
+- add 'Set Defaults' button to the editor properties to reset editor changes and position/size of the script window
+
 - increase usable layers from 8 to 11
 
 - add ScreenSpace Reflections to the global video and table user properties, strength can be changed in the table lighting panel
