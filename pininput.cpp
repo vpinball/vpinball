@@ -1083,7 +1083,7 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
         if (!ballGrabbed)
         {
             const float z = (input->dwData == 3) ? g_pplayer->m_ptable->m_glassheight : g_pplayer->m_ptable->m_tableheight;
-            Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)g_pplayer->m_DebugBallSize*0.5f);
+            Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)g_pplayer->m_DebugBallSize*0.5f, g_pplayer->m_DebugBallMass);
             pball->m_pballex->AddRef();
         }
     }

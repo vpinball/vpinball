@@ -1,5 +1,6 @@
 VP 10.5.0 Changelog
 ------------------------
+- Throw balls in player: add support to change the default ball mass when throwing a ball. The user can also set the default ball mass in the editor options under preferences menu.
 
 - global physics settings: a value of -1 for the flipper physics will disable the physics value defined in the physics set
 

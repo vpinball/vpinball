@@ -88,6 +88,12 @@ BOOL EditorOptionsDialog::OnInitDialog()
     int startVPfileDialog = GetRegIntWithDefault("Editor", "SelectTableOnStart", 1);
     SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, startVPfileDialog ? BST_CHECKED : BST_UNCHECKED, 0);
 
+    float throwBallMass = GetRegStringAsFloatWithDefault("Editor", "ThrowBallMass", 1.0f);
+    char textBuf[256] = { 0 };
+    f2sz(throwBallMass, textBuf);
+    CString textStr(textBuf);
+    SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, textStr);
+
     int units;
     HRESULT hr = GetRegInt("Editor", "Units", &units);
     if(hr != S_OK)
@@ -170,7 +176,7 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           SetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, 50, FALSE);
           SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, BST_CHECKED, 0);
           SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_SETCURSEL, 0, 0);
-
+          SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, "1.0");
           const int x = 0;
           const int y = 0;
           SetRegValue("Editor", "CodeViewPosX", REG_DWORD, &x, 4);
@@ -231,6 +237,12 @@ void EditorOptionsDialog::OnOK()
 
     const int ballSize = GetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, nothing, FALSE);
     SetRegValueInt("Editor", "ThrowBallSize", ballSize);
+
+    CString textStr;
+    float fv;
+    textStr = GetDlgItemText(IDC_THROW_BALLS_MASS_EDIT);
+    fv = sz2f((char*)textStr.c_str());
+    SetRegValueFloat("Editor", "ThrowBallMass", fv);
 
     checked = (SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
     SetRegValueBool("Editor", "GroupElementsInCollection", checked);

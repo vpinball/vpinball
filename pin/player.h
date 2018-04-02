@@ -429,6 +429,7 @@ public:
 
    bool m_fThrowBalls;
    int  m_DebugBallSize;
+   float m_DebugBallMass;
 
    bool m_fDetectScriptHang;
    bool m_fNoTimeCorrect;		// Used so the frame after debugging does not do normal time correction

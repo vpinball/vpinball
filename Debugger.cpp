@@ -484,6 +484,9 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          }
          SendDlgItemMessage(hwndDlg, IDC_BALL_THROWING, BM_SETCHECK, g_pplayer->m_fThrowBalls ? BST_CHECKED : BST_UNCHECKED, 0);
          SetDlgItemInt(hwndDlg, IDC_THROW_BALL_SIZE_EDIT2, g_pplayer->m_DebugBallSize, FALSE);
+         char textBuf[256] = { 0 };
+         f2sz(g_pplayer->m_DebugBallMass, textBuf);
+         SetDlgItemText(hwndDlg, IDC_THROW_BALL_MASS_EDIT2, textBuf);
 
          SendMessage(hwndDlg, RESIZE_FROM_EXPAND, 0, 0);
 
@@ -577,6 +580,11 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          g_pplayer->m_fUserDebugPaused = false;
          g_pplayer->RecomputePseudoPauseState();
          g_pplayer->m_DebugBallSize = GetDlgItemInt(hwndDlg, IDC_THROW_BALL_SIZE_EDIT2, NULL, FALSE);
+         char textBuf[256] = { 0 };
+         float fv;
+         GetDlgItemText(hwndDlg, IDC_THROW_BALL_MASS_EDIT2, textBuf, 255);
+         fv = sz2f(textBuf);
+         g_pplayer->m_DebugBallMass = fv;
          g_pplayer->m_fDebugMode = false;
          g_pplayer->m_fShowDebugger = false;
          ShowWindow(hwndDlg, SW_HIDE);

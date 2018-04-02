@@ -482,6 +482,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    
    m_fThrowBalls = (GetRegIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0)==1);
    m_DebugBallSize = GetRegIntWithDefault("Editor", "ThrowBallSize", 50);
+   m_DebugBallMass = GetRegStringAsFloatWithDefault("Editor", "ThrowBallMass", 1.0f);
 
    int numberOfTimesToShowTouchMessage = GetRegIntWithDefault("Player", "NumberOfTimesToShowTouchMessage", 10);
    SetRegValueInt("Player", "NumberOfTimesToShowTouchMessage", max(numberOfTimesToShowTouchMessage-1,0));
