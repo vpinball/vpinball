@@ -543,6 +543,9 @@
 #define DISPID_SIDES                    378
 #define IDC_GLOSSY_EDIT                 378
 #define IDC_ALPHA_EDIT2                 378
+#define IDC_THROW_BALL_MASS_EDIT2       378
+#define IDC_THROW_BALLS_SIZE_EDIT2      378
+#define IDC_THROW_BALLS_MASS_EDIT       378
 #define IDC_FILTERAMOUNT_EDIT           379
 #define IDD_PROPKICKER_STATE            379
 #define IDC_SPECULAR_EDIT               379
