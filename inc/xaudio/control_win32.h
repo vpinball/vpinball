@@ -17,6 +17,9 @@
 #ifndef STRICT
 #define STRICT
 #endif /* STRICT */
+
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h>
 
 #include "control.h"

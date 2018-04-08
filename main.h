@@ -1,15 +1,10 @@
 #pragma once
 
-#include <Windows.h>
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 
-#include "Richedit.h"
-#include <atlcom.h>
-#include <atlbase.h>
-#include <atlhost.h>
-#include <atlctl.h>
-#include <assert.h>
-
-#include "commctrl.h"
+#include <windows.h>
+#include <MMSystem.h>
 
 #ifdef USE_DINPUT8
 #define DIRECTINPUT_VERSION 0x0800
@@ -24,10 +19,21 @@
 #endif
 #include <d3d9.h>
 
-#include "stdio.h"
-#include "wchar.h"
+//#include <richedit.h>
+//#include <atlcom.h>
+#include <atlbase.h>
+//#include <atlhost.h>
+#include <atlctl.h>
+//#include <assert.h>
 
-#include "HELPERS.H"
+//#include <commctrl.h>
+
+//#include "stdio.h"
+//#include "wchar.h"
+
+#include <OLEAUTO.h>
+
+#include <wincrypt.h>
 
 #include <intrin.h>
 #include <xmmintrin.h>
@@ -35,7 +41,10 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-using namespace std;
+using std::string;
+using std::vector;
+
+#include "HELPERS.H"
 
 #include "def.h"
 
@@ -45,9 +54,6 @@ using namespace std;
 #include "math/bbox.h"
 
 #include "resource.h"
-
-class HitTimer;
-class PinBinary;
 
 #include "Scintilla.h"
 #include "scilexer.h"
@@ -61,7 +67,6 @@ class PinBinary;
 #include "vector.h"
 #include "vectorsort.h"
 #include "vpinball_i.h"
-#include "OLEAUTO.h"
 #include "regutil.h"
 
 #include "IDebug.h"
@@ -74,13 +79,16 @@ class PinBinary;
 #include "media/FileIO.h"
 #include "PinUndo.h"
 #include "ISelect.h"
+
 #include "IEditable.h"
 #include "PropBrowser.h"
 #include "CodeView.h"
 
 #include "media/lzwreader.h"
 #include "media/lzwwriter.h"
+
 #include "media/wavread.h"
+
 #include "PinInput.h"
 #include "PinSound.h"
 #include "PinBinary.h"

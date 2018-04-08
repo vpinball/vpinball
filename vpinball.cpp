@@ -2343,13 +2343,13 @@ HRESULT VPinball::GetTypeLibInfo(
 
 STDMETHODIMP_(ULONG) VPinball::AddRef()
 {
-   ASSERT(m_cref, "bad m_cref");
+   //!! ?? ASSERT(m_cref, "bad m_cref");
    return ++m_cref;
 }
 
 STDMETHODIMP_(ULONG) VPinball::Release()
 {
-   ASSERT(m_cref, "bad m_cref");
+   assert(m_cref);
    m_cref--;
 
    if (!m_cref)

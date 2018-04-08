@@ -12,9 +12,6 @@
 #define CRASH_HANDLER
 
 //#define _CRTDBG_MAP_ALLOC
-#ifdef _CRTDBG_MAP_ALLOC
- #include <crtdbg.h>
-#endif
 
 //#define DEBUG_NUDGE // debug new nudge code
 
@@ -79,10 +76,10 @@
 
 //
 
-#define _WINSOCKAPI_ // workaround some issue where windows.h is included before winsock2.h in some of the various includes
-
 #if !defined(AFX_STDAFX_H__35BEBBA5_0A4C_4321_A65C_AFFE89589F15__INCLUDED_)
 #define AFX_STDAFX_H__35BEBBA5_0A4C_4321_A65C_AFFE89589F15__INCLUDED_
+
+#define _WINSOCKAPI_ // workaround some issue where windows.h is included before winsock2.h in some of the various includes
 
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0
@@ -100,50 +97,54 @@
  #define _WIN32_WINNT 0x0403
 #endif
 #endif
+
 #define _ATL_APARTMENT_THREADED
 
-#include <atlbase.h>
+#include "main.h"
+
+//#include <vld.h>
+#ifdef _CRTDBG_MAP_ALLOC
+ #include <crtdbg.h>
+#endif
 
 #if(_WIN32_WINNT < 0x0500) // for Win32++ and old compilers
  #define WM_MENURBUTTONUP                0x0122
  #define WM_UNINITMENUPOPUP              0x0125
 #endif
 
-#include "main.h"
-
-#include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
-#include <wxx_archive.h>		// Add CArchive
-#include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
-#include <wxx_controls.h>		// Add CAnimation, CComboBox, CComboBoxEx, CDateTime, CHeader, CHotKey, CIPAddress, CProgressBar, CSpinButton, CScrollBar, CSlider, CToolTip
-#include <wxx_cstring.h>		// Add CString, CStringA, CStringW
-#include <wxx_ddx.h>			// Add CDataExchange
+//#include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
+//#include <wxx_archive.h>		// Add CArchive
+//#include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
+//#include <wxx_controls.h>		// Add CAnimation, CComboBox, CComboBoxEx, CDateTime, CHeader, CHotKey, CIPAddress, CProgressBar, CSpinButton, CScrollBar, CSlider, CToolTip
+//#include <wxx_cstring.h>		// Add CString, CStringA, CStringW
+//#include <wxx_ddx.h>			// Add CDataExchange
 #include <wxx_dialog.h>			// Add CDialog, CResizer
-#include <wxx_dockframe.h>		// Add CDockFrame, CMDIDockFrame
-#include <wxx_docking.h>		// Add CDocker, CDockContainer
-#include <wxx_exception.h>		// Add CException, CFileException, CNotSupportedException, CResourceException, CUserException, CWinException
-#include <wxx_file.h>			// Add CFile
-#include <wxx_frame.h>			// Add CFrame
-#include <wxx_gdi.h>			// Add CDC, CGDIObject, CBitmap, CBrush, CFont, CPalatte, CPen, CRgn
-#include <wxx_imagelist.h>		// Add CImageList
-#include <wxx_listview.h>		// Add CListView
-#include <wxx_mdi.h>			// Add CMDIChild, CMDIFrame, CDockMDIFrame
-#include <wxx_printdialogs.h>	// Add CPageSetupDialog, CPrintSetupDialog
-#include <wxx_propertysheet.h>	// Add CPropertyPage, CPropertySheet
-#include <wxx_rebar.h>			// Add CRebar
-#include <wxx_regkey.h>			// Add CRegKey
+//#include <wxx_dockframe.h>		// Add CDockFrame, CMDIDockFrame
+//#include <wxx_docking.h>		// Add CDocker, CDockContainer
+//#include <wxx_exception.h>		// Add CException, CFileException, CNotSupportedException, CResourceException, CUserException, CWinException
+//#include <wxx_file.h>			// Add CFile
+//#include <wxx_frame.h>			// Add CFrame
+//#include <wxx_gdi.h>			// Add CDC, CGDIObject, CBitmap, CBrush, CFont, CPalatte, CPen, CRgn
+//#include <wxx_imagelist.h>		// Add CImageList
+//#include <wxx_listview.h>		// Add CListView
+//#include <wxx_mdi.h>			// Add CMDIChild, CMDIFrame, CDockMDIFrame
+//#include <wxx_printdialogs.h>	// Add CPageSetupDialog, CPrintSetupDialog
+//#include <wxx_propertysheet.h>	// Add CPropertyPage, CPropertySheet
+//#include <wxx_rebar.h>			// Add CRebar
+//#include <wxx_regkey.h>			// Add CRegKey
 //#include <wxx_ribbon.h>		// Add CRibbon, CRibbonFrame
 #include <wxx_richedit.h>		// Add CRichEdit
-#include <wxx_shared_ptr.h>		// Add Shared_Ptr
-#include <wxx_socket.h>			// Add CSocket
-#include <wxx_statusbar.h>		// Add CStatusBar
-#include <wxx_stdcontrols.h>	// Add CButton, CEdit, CListBox
-#include <wxx_tab.h>			// Add CTab, CTabbedMDI
+//#include <wxx_shared_ptr.h>		// Add Shared_Ptr
+//#include <wxx_socket.h>			// Add CSocket
+//#include <wxx_statusbar.h>		// Add CStatusBar
+//#include <wxx_stdcontrols.h>	// Add CButton, CEdit, CListBox
+//#include <wxx_tab.h>			// Add CTab, CTabbedMDI
 //#include <wxx_taskdialog.h>	// Add CTaskDialog
-#include <wxx_time.h>			// Add CTime
-#include <wxx_toolbar.h>		// Add CToolBar
-#include <wxx_treeview.h>		// Add CTreeView
-#include <wxx_webbrowser.h>		// Add CAXWindow, CWebBrowser
-#include "wxx_wincore.h"
+//#include <wxx_time.h>			// Add CTime
+//#include <wxx_toolbar.h>		// Add CToolBar
+//#include <wxx_treeview.h>		// Add CTreeView
+//#include <wxx_webbrowser.h>		// Add CAXWindow, CWebBrowser
+#include <wxx_wincore.h>
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
