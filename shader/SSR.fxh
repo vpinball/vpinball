@@ -69,9 +69,16 @@ float4 ps_main_fb_ss_refl(in VS_OUTPUT_2D IN) : COLOR
 		const float2 offs = u + ((float)i+ushift)*offsMul; //!! jitter per pixel (uses blue noise tex)
 		const float3 color = tex2Dlod(texSampler5, float4(offs, 0.,0.)).xyz;
 		
+		[branch] if(i==1) // necessary special case as compiler warns/'optimizes' sqrt below into rqsrt?!
+		{
+		refl += color;
+		}
+		else
+		{
 		const float w = sqrt((float)(i-1)/(float)samples); //!! fake falloff for samples more far away
-		refl += color*(1.0-w); //!! dampen large values in addition?
+		refl += color*(1.0-w); //!! dampen large color values in addition?
 		color0w += w;
+		}
 	}
 
 	refl += color0*color0w;
