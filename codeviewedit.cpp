@@ -448,7 +448,7 @@ void CVPrefrence::ReadCheckBox(const HWND &hwndDlg)
 
 void CVPrefrence::GetPrefsFromReg()
 {
-	char RegEntry[33] = {0};
+	char RegEntry[33] = {};
 	strcpy_s(RegEntry, this->szRegName);
 	this->Highlight = GetRegBoolWithDefault("CVEdit", RegEntry, this->Highlight );
 	ZeroMemory(RegEntry, 33);
@@ -483,7 +483,7 @@ void CVPrefrence::GetPrefsFromReg()
 
 void CVPrefrence::SetPrefsToReg()
 {
-	char RegEntry[33] = {0};
+	char RegEntry[33] = {};
 	strcpy_s(RegEntry, this->szRegName);
 	SetRegValueBool("CVEdit", RegEntry, this->Highlight);
 	ZeroMemory(RegEntry, 33);

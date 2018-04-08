@@ -2,7 +2,6 @@
 #include "BlackBox.h"
 #include <cstdarg>
 #include <cstdio>
-#include <intrin.h>		// rdtsc
 #include <algorithm>	// sort
 
 #define WIN32_LEAN_AND_MEAN
@@ -66,7 +65,7 @@ namespace
 
       BlackBoxMessage	message;
       int				threadId;
-      __int64		ticks;
+      LONGLONG			ticks;
    };
 
    const int	kMaxMessages = 128;
@@ -89,11 +88,15 @@ namespace
          strcat_s(messages[i].message, ": ");
       }
       strcat_s(messages[i].message, msg);
-      messages[i].ticks = __rdtsc();
+      LARGE_INTEGER TimerNow;
+      QueryPerformanceCounter(&TimerNow);
+      messages[i].ticks = TimerNow.QuadPart;
 #else
       strcpy_s(messages[i].message, msg);
       messages[i].threadId = RDE_GET_CURRENT_THREAD_ID();
-      messages[i].ticks = __rdtsc();
+      LARGE_INTEGER TimerNow;
+      QueryPerformanceCounter(&TimerNow);
+      messages[i].ticks = TimerNow.QuadPart;
 #endif
       s_dirty = 1;
    }

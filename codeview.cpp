@@ -1699,7 +1699,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	char szLCDwellWord[256] = {};
 	const int CurrentLineNo = (int)SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, dwellpos, 0);
 	//return if in a comment
-	char text[MAX_LINE_LENGTH] = {0};
+	char text[MAX_LINE_LENGTH] = {};
 	SendMessage(m_hwndScintilla, SCI_GETLINE, CurrentLineNo, (LPARAM)text);
 	if(text[0] != '\0')
 	{
@@ -1744,7 +1744,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 				idx = FindClosestUD(PageConstructsDict, CurrentLineNo, idx);
 				const UserData* const Word = &PageConstructsDict->at(idx);
 				string ptemp = Word->Description;
-				ptemp += " (Line:" + to_string((long long)Word->LineNum + 1) + ")";
+				ptemp += " (Line:" + std::to_string((long long)Word->LineNum + 1) + ")";
 				if ( (Word->Comment.length() > 1) && DwellHelp )
 				{
 					ptemp += "\n" +  PageConstructsDict->at(idx).Comment;
@@ -2380,7 +2380,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
    }
 	//Collect Objects/Components from the menu. (cheat!)
 	int CBCount = (int)SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1;//Zero Based
-	char c_str1[256]={0};
+	char c_str1[256]={};
 	UserData ud;
 	while (CBCount >= 0) 
    {
@@ -2690,7 +2690,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             const size_t Listindex = SendMessage(pcv->m_hwndFunctionList, CB_GETCURSEL, 0, 0);
 				if (Listindex != -1)
 				{
-					char ConstructName[MAX_FIND_LENGTH] = {0};
+					char ConstructName[MAX_FIND_LENGTH] = {};
 					size_t index = SendMessage(pcv->m_hwndFunctionList, CB_GETLBTEXT, Listindex, (LPARAM)ConstructName);
 					vector<UserData>::iterator i;
 					int idx = 0;
@@ -2870,11 +2870,11 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			hChkBox = GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL);
 			SNDMSG(hChkBox, BM_SETCHECK, pcv->DwellHelp ? BST_CHECKED : BST_UNCHECKED, 0L);
 
-			char foo[65] = {0};
-			sprintf_s(foo,"%i", pcv->DisplayAutoCompleteLength );
+			char foo[65];
+			sprintf_s(foo,"%i", pcv->DisplayAutoCompleteLength);
 			SetDlgItemText( hwndDlg, IDC_CVP_EDIT_AUTOCHARS, foo);
 		
-			sprintf_s(foo,"%i", pcv->DwellDisplayTime );
+			sprintf_s(foo,"%i", pcv->DwellDisplayTime);
 			SetDlgItemText( hwndDlg, IDC_CVP_EDIT_MOUSEDWELL, foo);
 		}
 

@@ -13,6 +13,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
+#define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
 #include <assert.h>

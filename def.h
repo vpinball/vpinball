@@ -46,6 +46,14 @@ __forceinline unsigned int max(const unsigned int x, const unsigned int y)
 {
    return x < y ? y : x;
 }
+__forceinline unsigned long long min(const unsigned long long x, const unsigned long long y)
+{
+   return x < y ? x : y;
+}
+__forceinline unsigned long long max(const unsigned long long x, const unsigned long long y)
+{
+   return x < y ? y : x;
+}
 
 template <typename T>
 __forceinline T clamp(const T x, const T min, const T max)
@@ -106,8 +114,6 @@ typedef _int64          S64;
 #define MAXNAMEBUFFER 33
 #define MAXSTRING 1024
 #define MAXTOKEN 32*4
-
-#define ASSERT(fTest, err) //assert(fTest)
 
 #define CCO(x) CComObject<x>
 
@@ -341,7 +347,7 @@ inline void RemoveSpaces(char* source)
 //
 __forceinline float vpUnitsToInches(float value)
 {
-    return value * 0.0212765f;
+   return value * 0.0212765f;
 }
 
 __forceinline float inchesToVPUnits(float value)

@@ -1,4 +1,5 @@
 #pragma once
+#include <Commdlg.h>
 #include <activscp.h>
 #include <activdbg.h>
 #include "atlcom.h"
