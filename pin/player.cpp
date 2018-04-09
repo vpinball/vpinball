@@ -179,7 +179,7 @@ EnumAssignKeys touchkeymap[8] = {
 static unsigned int material_flips = 0;
 static unsigned int stats_drawn_static_triangles = 0;
 
-extern bool disableTrueFullscreen; // set via command line
+extern int disEnableTrueFullscreen; // set via command line
 
 //
 
@@ -2114,8 +2114,10 @@ void Player::InitWindow()
       m_fFullScreen = (fullscreen == 1);
 
    // command line override
-   if (disableTrueFullscreen)
+   if (disEnableTrueFullscreen == 0)
       m_fFullScreen = false;
+   else if (disEnableTrueFullscreen == 1)
+      m_fFullScreen = true;
 
    if (m_fFullScreen)
    {

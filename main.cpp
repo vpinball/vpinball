@@ -176,7 +176,7 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 }
 
 std::map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
-bool disableTrueFullscreen = false;
+int disEnableTrueFullscreen = -1;
 
 
 class VPApp : public CWinApp
@@ -260,7 +260,7 @@ public:
             || lstrcmpi(szArglist[i], _T("-Help")) == 0 || lstrcmpi(szArglist[i], _T("/Help")) == 0
             || lstrcmpi(szArglist[i], _T("-?")) == 0 || lstrcmpi(szArglist[i], _T("/?")) == 0)
          {
-            ShowError("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n\n-Edit [filename]  load file into VP\n-Play [filename]  load and play file\n-Pov [filename]  load, export pov and close");
+            ShowError("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n\n-Edit [filename]  load file into VP\n-Play [filename]  load and play file\n-Pov [filename]  load, export pov and close");
             bRun = false;
             break;
          }
@@ -280,16 +280,19 @@ public:
             break;
          }
 
-         disableTrueFullscreen |= (lstrcmpi(szArglist[i], _T("-DisableTrueFullscreen")) == 0 || lstrcmpi(szArglist[i], _T("/DisableTrueFullscreen")) == 0);
+         if (lstrcmpi(szArglist[i], _T("-DisableTrueFullscreen")) == 0 || lstrcmpi(szArglist[i], _T("/DisableTrueFullscreen")) == 0)
+             disEnableTrueFullscreen = 0;
+         if (lstrcmpi(szArglist[i], _T("-EnableTrueFullscreen")) == 0 || lstrcmpi(szArglist[i], _T("/EnableTrueFullscreen")) == 0)
+             disEnableTrueFullscreen = 1;
 
          const bool editfile = (lstrcmpi(szArglist[i], _T("-Edit")) == 0 || lstrcmpi(szArglist[i], _T("/Edit")) == 0);
          const bool playfile = (lstrcmpi(szArglist[i], _T("-Play")) == 0 || lstrcmpi(szArglist[i], _T("/Play")) == 0);
-		 const bool povfile = (lstrcmpi(szArglist[i], _T("-Pov")) == 0 || lstrcmpi(szArglist[i], _T("/Pov")) == 0);
-		 if ((editfile || playfile || povfile) && (i + 1 < nArgs))
+         const bool povfile = (lstrcmpi(szArglist[i], _T("-Pov")) == 0 || lstrcmpi(szArglist[i], _T("/Pov")) == 0);
+         if ((editfile || playfile || povfile) && (i + 1 < nArgs))
          {
             fFile = true;
             fPlay = playfile;
-			fPov = povfile;
+            fPov = povfile;
 
             // Remove leading - or /
             char* filename;
