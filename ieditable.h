@@ -1,8 +1,8 @@
 #pragma once
 
+class HitTimer;
 class Hitable;
 class Collection;
-
 class IScriptable;
 
 #define BLUEPRINT_SOLID_COLOR RGB(0,0,0)
@@ -229,7 +229,7 @@ public:
    void BeginPlay();
    void EndPlay();
 
-   class HitTimer *m_phittimer;
+   HitTimer *m_phittimer;
 
    VARIANT m_uservalue;
 
