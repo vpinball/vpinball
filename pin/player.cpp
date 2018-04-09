@@ -1641,6 +1641,11 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    Render(); //!! why here already? potentially not all initialized yet??
 
+   // Broadcast a message to notify front-ends that it is 
+   // time to reveal the playfield. 
+   UINT nMsgID = RegisterWindowMessage(_T("VPTableStart"));
+	::SendMessage(HWND_BROADCAST, nMsgID, NULL, NULL);
+ 
    return S_OK;
 }
 
