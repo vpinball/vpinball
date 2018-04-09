@@ -229,7 +229,7 @@ public:
    void BeginPlay();
    void EndPlay();
 
-   HitTimer *m_phittimer;
+   class HitTimer *m_phittimer;
 
    VARIANT m_uservalue;
 
