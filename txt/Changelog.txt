@@ -6,7 +6,7 @@ VP 10.5.0 Changelog
 
 - throw balls in player: add support to change the default ball mass when throwing a ball. The user can also set the default ball mass in the editor options (menu: preferences)
 
-- configurable global flipper physics sets: setting a value of -1 for a flipper physics setting in there will ignore that value and use the respective table flipper value instead
+- configurable global flipper physics sets: setting a negative value for a flipper physics setting in there will ignore that value and use the respective table flipper value instead
 
 - add 'Set Defaults' button to the editor properties to reset editor changes and position/size of the script window
 
