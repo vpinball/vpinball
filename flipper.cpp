@@ -262,7 +262,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
       if (hr != S_OK)
          m_d.m_OverrideMass = 1.f;
 
-      if (m_d.m_OverrideMass == -1.0f)
+      if (m_d.m_OverrideMass < 0.0f)
          m_d.m_OverrideMass = m_d.m_mass;
 
       m_d.m_OverrideStrength = 2200.f;
@@ -271,7 +271,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
       if (hr != S_OK)
          m_d.m_OverrideStrength = 2200.f;
       
-      if (m_d.m_OverrideStrength == -1.0f)
+      if (m_d.m_OverrideStrength < 0.0f)
          m_d.m_OverrideStrength = m_d.m_strength;
 
       m_d.m_OverrideElasticity = 0.8f;
@@ -280,7 +280,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
       if (hr != S_OK)
          m_d.m_OverrideElasticity = 0.8f;
 
-      if (m_d.m_OverrideElasticity == -1.0f)
+      if (m_d.m_OverrideElasticity < 0.0f)
          m_d.m_OverrideElasticity = m_d.m_elasticity;
 
 	  m_d.m_OverrideScatterAngle = 0.f;
@@ -289,7 +289,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
 	  if (hr != S_OK)
 		  m_d.m_OverrideScatterAngle = 0.f;
      
-     if (m_d.m_OverrideScatterAngle == -1.0f)
+     if (m_d.m_OverrideScatterAngle < 0.0f)
         m_d.m_OverrideScatterAngle = m_d.m_scatter;
 
      m_d.m_OverrideReturnStrength = 0.058f;
@@ -298,7 +298,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
      if (hr != S_OK)
         m_d.m_OverrideReturnStrength = 0.058f;
 
-     if (m_d.m_OverrideReturnStrength == -1.0f)
+     if (m_d.m_OverrideReturnStrength < 0.0f)
         m_d.m_OverrideReturnStrength = m_d.m_return;
 
       m_d.m_OverrideElasticityFalloff = 0.43f;
@@ -307,7 +307,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
       if (hr != S_OK)
          m_d.m_OverrideElasticityFalloff = 0.43f;
 
-      if (m_d.m_OverrideElasticityFalloff == -1.0f)
+      if (m_d.m_OverrideElasticityFalloff < 0.0f)
          m_d.m_OverrideElasticityFalloff = m_d.m_elasticityFalloff;
 
       m_d.m_OverrideFriction = 0.6f;
@@ -316,7 +316,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
       if (hr != S_OK)
          m_d.m_OverrideFriction = 0.6f;
 
-      if (m_d.m_OverrideFriction == -1.0f)
+      if (m_d.m_OverrideFriction < 0.0f)
          m_d.m_OverrideFriction = m_d.m_friction;
 
       m_d.m_OverrideCoilRampUp = 3.f;
@@ -325,9 +325,8 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
       if (hr != S_OK)
          m_d.m_OverrideCoilRampUp = 3.f;
 
-      if (m_d.m_OverrideCoilRampUp == -1.0f)
+      if (m_d.m_OverrideCoilRampUp < 0.0f)
          m_d.m_OverrideCoilRampUp = m_d.m_rampUp;
-
    }
 
    //

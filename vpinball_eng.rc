@@ -680,6 +680,7 @@ BEGIN
     EDITTEXT        1103,88,272,40,12,ES_AUTOHSCROLL
     LTEXT           "Max Slope",IDC_STATIC,11,288,34,8
     EDITTEXT        1104,88,287,40,12,ES_AUTOHSCROLL
+    LTEXT           "Note:\nInserting a negative value in this Flipper section will not modify the respective table-specific Flipper setting",IDC_STATIC,144,79,53,84
 END
 
 IDD_GAMEPAUSE DIALOGEX 0, 0, 78, 80
