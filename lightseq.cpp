@@ -1538,9 +1538,9 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
 {
    bool rc = false;
 
-   // if this tracer isn't valid, then exit with a finished return code
-   if (pTracer->type == eSeqNull)
-      return true;
+   // if this tracer isn't valid or there is no collection, then exit with a finished return code
+   if (pTracer->type == eSeqNull || m_pcollection == NULL)
+	   return true;
 
    if (pTracer->delay == 0)
    {
