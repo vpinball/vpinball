@@ -55,6 +55,8 @@ public:
    float m_OverrideFriction;
    float m_OverrideReturnStrength;
    float m_OverrideCoilRampUp;
+   float m_OverrideTorqueDamping;
+   float m_OverrideTorqueDampingAngle;
    float m_OverrideScatterAngle;
    int m_OverridePhysics;
 

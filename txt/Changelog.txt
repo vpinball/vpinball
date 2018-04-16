@@ -1,5 +1,8 @@
 VP 10.5.0 Changelog
 ------------------------
+
+- fix EOS Torque and EOS Torque Angle not overriding the table flipper settings when used via the global (flipper) physics sets
+
 - add -EnableTrueFullscreen (force enables/overrides the true fullscreen video preference) to command line
 
 - add VPTableStart broadcast message for frontends as notification that playfield should be shown
