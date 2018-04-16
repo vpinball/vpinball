@@ -23,7 +23,7 @@
 #include "stdafx.h"
 
 FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-   float zlow, float zhigh, float strength, float mass, float returnRatio)
+   float zlow, float zhigh, float strength, float mass, float returnRatio, float coil_ramp_up, float torqueDamping, float torqueDampingAngle)
 {
    m_height = zhigh - zlow;
 
@@ -33,22 +33,22 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, floa
    m_hitcircleBase.center = center;
 
    if (baser < 0.01f) baser = 0.01f; // must not be zero 
-   m_hitcircleBase.radius = baser;   //radius of base section
+   m_hitcircleBase.radius = baser;   // radius of base section
 
-   if (endr < 0.01f) endr = 0.01f; // must not be zero 
-   m_endradius = endr;             // radius of flipper end
+   if (endr < 0.01f) endr = 0.01f;   // must not be zero 
+   m_endradius = endr;               // radius of flipper end
 
    if (flipr < 0.01f) flipr = 0.01f; // must not be zero 
-   m_flipperradius = flipr; //radius of flipper arc, center-to-center radius
+   m_flipperradius = flipr;          // radius of flipper arc, center-to-center radius
 
-   if (angleEnd == angleStart) // otherwise hangs forever in collisions/updates
+   if (angleEnd == angleStart)       // otherwise hangs forever in collisions/updates
       angleEnd += 0.0001f;
 
    m_dir = (angleEnd >= angleStart) ? 1 : -1;
    m_solState = false;
    m_isInContact = false;
    m_curTorque = 0.0f;
-   m_torqueRampupSpeed = 1e6f;
+   m_EnableRotateEvent = 0;
 
    m_angleStart = angleStart;
    m_angleEnd = angleEnd;
@@ -74,8 +74,13 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, floa
 
    m_faceLength = m_flipperradius*cosf(fa); //Cosine of face angle X hypotenuse
 
-   zeroAngNorm.x = sinf(faceNormOffset);// F2 Norm, used in Green's transform, in FPM time search
-   zeroAngNorm.y = -cosf(faceNormOffset);// F1 norm, change sign of x component, i.e -zeroAngNorm.x
+   m_zeroAngNorm.x =  sinf(faceNormOffset); // F2 Norm, used in Green's transform, in FPM time search
+   m_zeroAngNorm.y = -cosf(faceNormOffset); // F1 norm, change sign of x component, i.e -zeroAngNorm.x
+
+   m_torqueRampupSpeed = coil_ramp_up;
+
+   m_torqueDamping = torqueDamping;
+   m_torqueDampingAngle = ANGTORAD(torqueDampingAngle);
 
 #if 0 // needs wiring of moment of inertia
    // now calculate moment of inertia using isoceles trapizoid and two circular sections
@@ -125,9 +130,12 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, floa
 }
 
 HitFlipper::HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-   float zlow, float zhigh, float strength, float mass, float returnRatio)
-   : m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, strength, mass, returnRatio)
+   float zlow, float zhigh, float strength, float mass, float returnRatio, float elasticity, float friction, float scatter, float coil_ramp_up, float torqueDamping, float torqueDampingAngle)
+   : m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, strength, mass, returnRatio, coil_ramp_up, torqueDamping, torqueDampingAngle)
 {
+   m_elasticity = elasticity;
+   SetFriction(friction);
+   m_scatter = scatter;
    m_last_hittime = 0;
 }
 
@@ -270,7 +278,7 @@ void FlipperMoverObject::UpdateVelocities()
       desiredTorque *= -m_returnRatio;
 
    // hold coil is weaker
-   const float EOS_angle = m_torqueDampingAngle * (float)(M_PI/180.0);
+   const float EOS_angle = m_torqueDampingAngle;
    if (fabsf(m_angleCur - m_angleEnd) < EOS_angle)
    {
       const float lerp = sqrf(sqrf(fabsf(m_angleCur - m_angleEnd) / EOS_angle)); // fade in/out damping, depending on angle to end
@@ -577,7 +585,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime,
 float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool face) const
 {
    const float angleCur = m_flipperMover.m_angleCur;
-   float anglespeed = m_flipperMover.m_anglespeed;				// rotation rate
+   float anglespeed = m_flipperMover.m_anglespeed;    // rotation rate
 
    const Vertex2D flipperbase = m_flipperMover.m_hitcircleBase.center;
    const float feRadius = m_flipperMover.m_endradius;
@@ -591,12 +599,12 @@ float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime
 
    // flipper positions at zero degrees rotation
 
-   float ffnx = m_flipperMover.zeroAngNorm.x; // flipper face normal vector //Face2 
-   if (face == LeftFace) ffnx = -ffnx;		  // negative for face1
+   float ffnx = m_flipperMover.m_zeroAngNorm.x;       // flipper face normal vector //Face2
+   if (face == LeftFace) ffnx = -ffnx;                // negative for face1
 
-   const float ffny = m_flipperMover.zeroAngNorm.y;	  // norm y component same for either face
-   const Vertex2D vp(									  // face segment V1 point
-      m_flipperMover.m_hitcircleBase.radius*ffnx, // face endpoint of line segment on base radius
+   const float ffny = m_flipperMover.m_zeroAngNorm.y; // norm y component same for either face
+   const Vertex2D vp(                                 // face segment V1 point
+      m_flipperMover.m_hitcircleBase.radius*ffnx,     // face endpoint of line segment on base radius
       m_flipperMover.m_hitcircleBase.radius*ffny);
 
    Vertex2D F;				// flipper face normal
@@ -847,7 +855,7 @@ void HitFlipper::Collide(CollisionEvent& coll)
          if (recoilTime <= 0.5f || bnv_after > 0.f)
          {
             // treat flipper as static for this impact
-            impulse = -(1.0f + epsilon) * bnv / pball->m_invMass;
+            impulse = -(1.0f + epsilon) * bnv * pball->m_mass;
             flipperImp.SetZero();
             rotI.SetZero();
          }

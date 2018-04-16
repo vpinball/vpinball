@@ -6,7 +6,7 @@ class FlipperMoverObject : public MoverObject
 {
 public:
    FlipperMoverObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-      float zlow, float zhigh, float strength, float mass, float returnRatio);
+      float zlow, float zhigh, float strength, float mass, float returnRatio, float coil_ramp_up, float torqueDamping, float torqueDampingAngle);
 
    virtual void UpdateDisplacements(const float dtime);
    virtual void UpdateVelocities();
@@ -66,7 +66,7 @@ public:
 
    int m_EnableRotateEvent;
 
-   Vertex2D zeroAngNorm; // base norms at zero degrees	
+   Vertex2D m_zeroAngNorm; // base norms at zero degrees
 
    bool m_solState;        // is solenoid enabled?
    bool m_isInContact;
@@ -84,7 +84,7 @@ class HitFlipper : public HitObject
 {
 public:
    HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-      float zlow, float zhigh, float strength, float mass, float returnRatio);
+      float zlow, float zhigh, float strength, float mass, float returnRatio, float elasticity, float friction, float scatter, float coil_ramp_up, float torqueDamping, float torqueDampingAngle);
    ~HitFlipper();
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
