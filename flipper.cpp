@@ -352,14 +352,13 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
    HitFlipper * const phf = new HitFlipper(m_d.m_Center, m_d.m_BaseRadius, m_d.m_EndRadius,
-      m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height);
+      m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height, this);
 
    phf->m_flipperMover.m_fEnabled = m_d.m_fEnabled;
    phf->m_flipperMover.m_fVisible = m_d.m_fVisible;
 
    pvho->AddElement(phf);
-   phf->m_pflipper = this;
-   phf->m_flipperMover.m_pflipper = this;
+
    m_phitflipper = phf;
 }
 

@@ -23,9 +23,9 @@
 #include "stdafx.h"
 
 FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-   float zlow, float zhigh)
+   float zlow, float zhigh, Flipper* pflipper)
 {
-   m_height = zhigh - zlow;
+   m_pflipper = pflipper;
 
    m_hitcircleBase.m_hitBBox.zlow = zlow;
    m_hitcircleBase.m_hitBBox.zhigh = zhigh;
@@ -44,7 +44,7 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, floa
    if (angleEnd == angleStart)       // otherwise hangs forever in collisions/updates
       angleEnd += 0.0001f;
 
-   m_dir = (angleEnd >= angleStart) ? 1 : -1;
+   m_direction = (angleEnd >= angleStart);
    m_solState = false;
    m_isInContact = false;
    m_curTorque = 0.0f;
@@ -122,13 +122,13 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, floa
 }
 
 HitFlipper::HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-   float zlow, float zhigh)
-   : m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh)
+   float zlow, float zhigh, Flipper* pflipper)
+   : m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, pflipper)
 {
-   m_elasticityFalloff = m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideElasticityFalloff : m_pflipper->m_d.m_elasticityFalloff;
-   m_elasticity = m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideElasticity : m_pflipper->m_d.m_elasticity;
-   SetFriction(m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideFriction : m_pflipper->m_d.m_friction);
-   m_scatter = ANGTORAD(m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideScatterAngle : m_pflipper->m_d.m_scatter);
+   m_elasticityFalloff = m_flipperMover.m_pflipper->m_d.m_OverridePhysics ? m_flipperMover.m_pflipper->m_d.m_OverrideElasticityFalloff : m_flipperMover.m_pflipper->m_d.m_elasticityFalloff;
+   m_elasticity = m_flipperMover.m_pflipper->m_d.m_OverridePhysics ? m_flipperMover.m_pflipper->m_d.m_OverrideElasticity : m_flipperMover.m_pflipper->m_d.m_elasticity;
+   SetFriction(m_flipperMover.m_pflipper->m_d.m_OverridePhysics ? m_flipperMover.m_pflipper->m_d.m_OverrideFriction : m_flipperMover.m_pflipper->m_d.m_friction);
+   m_scatter = ANGTORAD(m_flipperMover.m_pflipper->m_d.m_OverridePhysics ? m_flipperMover.m_pflipper->m_d.m_OverrideScatterAngle : m_flipperMover.m_pflipper->m_d.m_scatter);
 
    m_last_hittime = 0;
 }
@@ -264,7 +264,7 @@ void FlipperMoverObject::UpdateVelocities()
       desiredTorque *= lerp + (m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideTorqueDamping : m_pflipper->m_d.m_torqueDamping) * (1.0f - lerp);
    }
 
-   desiredTorque *= (float)m_dir;
+   desiredTorque *= m_direction ? 1.f : -1.f;
 
    float torqueRampupSpeed = m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideCoilRampUp : m_pflipper->m_d.m_rampUp;
    if (torqueRampupSpeed <= 0.f)
@@ -883,9 +883,9 @@ void HitFlipper::Collide(CollisionEvent& coll)
       //!! unused const float distance = coll.m_hitmoment;                     // moment .... and the flipper response
       const float flipperHit = /*(distance == 0.0f)*/ coll.m_hitmoment_bit ? -1.0f : -bnv; // move event processing to end of collision handler...
       if (flipperHit < 0.f)
-         m_pflipper->FireGroupEvent(DISPID_HitEvents_Hit);        // simple hit event
+         m_flipperMover.m_pflipper->FireGroupEvent(DISPID_HitEvents_Hit);        // simple hit event
       else
-         m_pflipper->FireVoidEventParm(DISPID_FlipperEvents_Collide, flipperHit); // collision velocity (normal to face)
+         m_flipperMover.m_pflipper->FireVoidEventParm(DISPID_FlipperEvents_Collide, flipperHit); // collision velocity (normal to face)
    }
 
    m_last_hittime = g_pplayer->m_time_msec; // keep resetting until idle for 250 milliseconds
