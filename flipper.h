@@ -83,8 +83,6 @@ public:
    Flipper();
    virtual ~Flipper();
 
-   void SetVertices(const float basex, const float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const;
-
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
    STANDARD_EDITABLE_DECLARES(Flipper, eItemFlipper, FLIPPER, 1)
@@ -121,6 +119,8 @@ public:
       }
       virtual unsigned long long GetImageID() { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
       virtual ItemTypeEnum HitableGetItemType() { return eItemFlipper; }
+
+      void SetVertices(const float basex, const float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const;
 
       void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
       void UpdateUnitsInfo();

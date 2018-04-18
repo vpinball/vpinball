@@ -23,7 +23,7 @@
 #include "stdafx.h"
 
 FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-   float zlow, float zhigh, float strength, float mass, float returnRatio, float coil_ramp_up, float torqueDamping, float torqueDampingAngle)
+   float zlow, float zhigh, float coil_ramp_up)
 {
    m_height = zhigh - zlow;
 
@@ -64,11 +64,8 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, floa
 
    const float faceNormOffset = (float)(M_PI / 2.0) - fa; //angle of normal when flipper center line at angle zero
 
-   m_force = strength;
-   m_returnRatio = returnRatio;
-
    // model inertia of flipper as that of rod of length flipr around its end
-   m_inertia = (float)(1.0 / 3.0) * mass * (flipr*flipr);
+   m_inertia = (float)(1.0 / 3.0) * (m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideMass : m_pflipper->m_d.m_mass) * (flipr*flipr);
 
    m_lastHitFace = false; // used to optimize hit face search order
 
@@ -78,9 +75,6 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, floa
    m_zeroAngNorm.y = -cosf(faceNormOffset); // F1 norm, change sign of x component, i.e -zeroAngNorm.x
 
    m_torqueRampupSpeed = coil_ramp_up;
-
-   m_torqueDamping = torqueDamping;
-   m_torqueDampingAngle = ANGTORAD(torqueDampingAngle);
 
 #if 0 // needs wiring of moment of inertia
    // now calculate moment of inertia using isoceles trapizoid and two circular sections
@@ -130,18 +124,11 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, floa
 }
 
 HitFlipper::HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-   float zlow, float zhigh, float strength, float mass, float returnRatio, float elasticity, float friction, float scatter, float coil_ramp_up, float torqueDamping, float torqueDampingAngle)
-   : m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, strength, mass, returnRatio, coil_ramp_up, torqueDamping, torqueDampingAngle)
+   float zlow, float zhigh, float scatter, float coil_ramp_up)
+   : m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, coil_ramp_up)
 {
-   m_elasticity = elasticity;
-   SetFriction(friction);
    m_scatter = scatter;
    m_last_hittime = 0;
-}
-
-HitFlipper::~HitFlipper()
-{
-   //m_pflipper->m_phitflipper = NULL;
 }
 
 void HitFlipper::CalcHitBBox()
@@ -179,17 +166,17 @@ void FlipperMoverObject::SetEndAngle(const float r)
         m_angleCur = m_angleMin;
 }
 
-float FlipperMoverObject::GetReturnRatio()
+float FlipperMoverObject::GetReturnRatio() const
 {
-   return m_returnRatio;
+   return m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideReturnStrength : m_pflipper->m_d.m_return;
 }
 
-void FlipperMoverObject::SetReturnRatio(const float r)
+float FlipperMoverObject::GetStrength() const
 {
-   m_returnRatio = r;
+   return m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideStrength : m_pflipper->m_d.m_strength;
 }
 
-float FlipperMoverObject::GetMass()
+float FlipperMoverObject::GetMass() const
 {
    return 3.0f * m_inertia / (m_flipperradius*m_flipperradius); //!! also change if wiring of moment of inertia happens (see ctor)
 }
@@ -197,16 +184,6 @@ float FlipperMoverObject::GetMass()
 void FlipperMoverObject::SetMass(const float m)
 {
    m_inertia = (float)(1.0 / 3.0) * m * (m_flipperradius*m_flipperradius); //!! also change if wiring of moment of inertia happens (see ctor)
-}
-
-float FlipperMoverObject::GetStrength()
-{
-   return m_force;
-}
-
-void FlipperMoverObject::SetStrength(const float s)
-{
-   m_force = s;
 }
 
 void FlipperMoverObject::UpdateDisplacements(const float dtime)
@@ -269,20 +246,20 @@ void FlipperMoverObject::UpdateDisplacements(const float dtime)
 void FlipperMoverObject::UpdateVelocities()
 {
    //const float springDispl = GetStrokeRatio() * 0.5f + 0.5f; // range: [0.5 .. 1]
-   //const float springForce = -0.6f * springDispl * m_force;
-   //const float solForce = m_solState ? m_force : 0.0f;
+   //const float springForce = -0.6f * springDispl * GetStrength();
+   //const float solForce = m_solState ? GetStrength() : 0.0f;
    //float force = m_dir * (solForce + springForce);
 
-   float desiredTorque = m_force;
+   float desiredTorque = GetStrength();
    if (!m_solState) // m_solState: true = button pressed, false = released
-      desiredTorque *= -m_returnRatio;
+      desiredTorque *= -GetReturnRatio();
 
    // hold coil is weaker
-   const float EOS_angle = m_torqueDampingAngle;
+   const float EOS_angle = ANGTORAD(m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideTorqueDampingAngle : m_pflipper->m_d.m_torqueDampingAngle);
    if (fabsf(m_angleCur - m_angleEnd) < EOS_angle)
    {
       const float lerp = sqrf(sqrf(fabsf(m_angleCur - m_angleEnd) / EOS_angle)); // fade in/out damping, depending on angle to end
-      desiredTorque *= lerp + m_torqueDamping * (1.0f - lerp);
+      desiredTorque *= lerp + (m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideTorqueDamping : m_pflipper->m_d.m_torqueDamping) * (1.0f - lerp);
    }
 
    desiredTorque *= (float)m_dir;
