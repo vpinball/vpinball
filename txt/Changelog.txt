@@ -1,6 +1,7 @@
 VP 10.5.0 Changelog
 ------------------------
 
+- fix Flipper element's EOS Torque and EOS Torque Angle and Elasticity and ElasticityFalloff and RampUp to be able to be changed by the script
 - fix EOS Torque and EOS Torque Angle not overriding the table flipper settings when used via the global (flipper) physics sets
 
 - add -EnableTrueFullscreen (force enables/overrides the true fullscreen video preference) to command line

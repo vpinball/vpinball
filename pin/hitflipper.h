@@ -6,7 +6,7 @@ class FlipperMoverObject : public MoverObject
 {
 public:
    FlipperMoverObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-      float zlow, float zhigh, float strength, float mass, float returnRatio, float coil_ramp_up, float torqueDamping, float torqueDampingAngle);
+      float zlow, float zhigh, float coil_ramp_up);
 
    virtual void UpdateDisplacements(const float dtime);
    virtual void UpdateVelocities();
@@ -18,12 +18,10 @@ public:
 
    void SetStartAngle(const float r);
    void SetEndAngle(const float r);
-   float GetReturnRatio();
-   void SetReturnRatio(const float r);
-   float GetMass();
+   float GetReturnRatio() const;
+   float GetMass() const;
    void SetMass(const float m);
-   float GetStrength();
-   void SetStrength(const float s);
+   float GetStrength() const;
 
    // rigid body functions
    Vertex3Ds SurfaceVelocity(const Vertex3Ds& surfP) const;
@@ -46,8 +44,6 @@ public:
    float m_angleCur;
 
    float m_flipperradius;
-   float m_force;
-   float m_returnRatio;
 
    float m_height;
 
@@ -60,9 +56,6 @@ public:
    float m_angleMin, m_angleMax;
 
    float m_inertia;	//moment of inertia
-
-   float m_torqueDamping;
-   float m_torqueDampingAngle;
 
    int m_EnableRotateEvent;
 
@@ -84,8 +77,8 @@ class HitFlipper : public HitObject
 {
 public:
    HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-      float zlow, float zhigh, float strength, float mass, float returnRatio, float elasticity, float friction, float scatter, float coil_ramp_up, float torqueDamping, float torqueDampingAngle);
-   ~HitFlipper();
+      float zlow, float zhigh, float scatter, float coil_ramp_up);
+   ~HitFlipper() { /*m_pflipper->m_phitflipper = NULL;*/ }
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eFlipper; }

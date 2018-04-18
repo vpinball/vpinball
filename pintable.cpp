@@ -10391,12 +10391,12 @@ STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
 {
    STARTUNDO
 
-      m_plungerNormalize = newVal;
+   m_plungerNormalize = newVal;
    GetRegInt("Player", "PlungerNormalize", &m_plungerNormalize);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_PlungerFilter(VARIANT_BOOL *pVal)
@@ -10409,12 +10409,13 @@ STDMETHODIMP PinTable::put_PlungerFilter(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      BOOL tmp = VBTOF(newVal);
+   BOOL tmp = VBTOF(newVal);
    GetRegInt("Player", "PlungerFilter", &tmp);
    m_plungerFilter = (tmp != 0);
 
    STOPUNDO
-      return S_OK;
+
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_PhysicsLoopTime(int *pVal)
@@ -10622,11 +10623,11 @@ STDMETHODIMP PinTable::put_Xlatez(float newVal)
 {
    STARTUNDO
 
-      m_BG_xlatez[m_currentBackglassMode] = newVal;
+   m_BG_xlatez[m_currentBackglassMode] = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 
@@ -10649,7 +10650,7 @@ STDMETHODIMP PinTable::put_SlopeMax(float newVal)
    else
    {
       STARTUNDO
-         m_angletiltMax = newVal;
+      m_angletiltMax = newVal;
       STOPUNDO
    }
    return S_OK;
@@ -10673,7 +10674,7 @@ STDMETHODIMP PinTable::put_SlopeMin(float newVal)
    else
    {
       STARTUNDO
-         m_angletiltMin = newVal;
+      m_angletiltMin = newVal;
       STOPUNDO
    }
    return S_OK;
@@ -10833,10 +10834,10 @@ STDMETHODIMP PinTable::get_OverridePhysics(PhysicsSet *pVal)
 STDMETHODIMP PinTable::put_OverridePhysics(PhysicsSet newVal)
 {
    STARTUNDO
-      m_fOverridePhysics = (int)newVal;
+   m_fOverridePhysics = (int)newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::ImportPhysics()
@@ -11140,10 +11141,10 @@ STDMETHODIMP PinTable::get_EnableDecals(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_EnableDecals(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_fRenderDecals = !!newVal;
+   m_fRenderDecals = !!newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_ShowDT(VARIANT_BOOL *pVal)
@@ -11176,10 +11177,10 @@ STDMETHODIMP PinTable::get_ReflectElementsOnPlayfield(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_ReflectElementsOnPlayfield(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_fReflectElementsOnPlayfield = (!!newVal);
+   m_fReflectElementsOnPlayfield = (!!newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_EnableEMReels(VARIANT_BOOL *pVal)
@@ -11200,7 +11201,7 @@ STDMETHODIMP PinTable::put_EnableEMReels(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_GlobalDifficulty(float *pVal)
 {
-	*pVal = m_globalDifficulty*100.f; //VP Editor
+   *pVal = m_globalDifficulty*100.f; //VP Editor
 
    return S_OK;
 }

@@ -351,25 +351,17 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    }
    else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-   const float strength = m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_d.m_strength;
-   const float return_ratio = m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : m_d.m_return;
-   const float mass = m_d.m_OverridePhysics ? m_d.m_OverrideMass : m_d.m_mass;
-   const float elasticity = m_d.m_OverridePhysics ? m_d.m_OverrideElasticity : m_d.m_elasticity;
-   const float friction = m_d.m_OverridePhysics ? m_d.m_OverrideFriction : m_d.m_friction;
    const float scatter = ANGTORAD(m_d.m_OverridePhysics ? m_d.m_OverrideScatterAngle : m_d.m_scatter);
 
    float coil_ramp_up = m_d.m_OverridePhysics ? m_d.m_OverrideCoilRampUp : m_d.m_rampUp;
    if (coil_ramp_up <= 0.f)
       coil_ramp_up = 1e6f; // set very high for instant coil response
    else
-      coil_ramp_up = min(strength / coil_ramp_up, 1e6f);
-
-   const float torqueDamping = m_d.m_OverridePhysics ? m_d.m_OverrideTorqueDamping : m_d.m_torqueDamping;
-   const float torqueDampingAngle = m_d.m_OverridePhysics ? m_d.m_OverrideTorqueDampingAngle : m_d.m_torqueDampingAngle;
+      coil_ramp_up = min((m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_d.m_strength) / coil_ramp_up, 1e6f);
 
    HitFlipper * const phf = new HitFlipper(m_d.m_Center, m_d.m_BaseRadius, m_d.m_EndRadius,
       m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height,
-      strength, mass, return_ratio, elasticity, friction, scatter, coil_ramp_up, torqueDamping, torqueDampingAngle);
+      scatter, coil_ramp_up);
 
    phf->m_flipperMover.m_fEnabled = m_d.m_fEnabled;
    phf->m_flipperMover.m_fVisible = m_d.m_fVisible;
@@ -1255,7 +1247,7 @@ STDMETHODIMP Flipper::put_BaseRadius(float newVal)
 {
    STARTUNDO
 
-      m_d.m_BaseRadius = newVal;
+   m_d.m_BaseRadius = newVal;
 
    STOPUNDO;
 
@@ -1302,20 +1294,17 @@ STDMETHODIMP Flipper::put_Length(float newVal)
 
 STDMETHODIMP Flipper::get_EOSTorque(float *pVal)
 {
-    if ( m_phitflipper )
-        *pVal = m_phitflipper->m_flipperMover.m_torqueDamping;
-    else
-        *pVal = m_d.m_torqueDamping;
+   *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideTorqueDamping : m_d.m_torqueDamping;
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::put_EOSTorque(float newVal)
 {
     if ( m_phitflipper )
     {
-        m_phitflipper->m_flipperMover.m_torqueDamping = newVal;
-        m_d.m_torqueDamping = newVal;    
+        if (!m_d.m_OverridePhysics)
+           m_d.m_torqueDamping = newVal;
     }
     else
     {
@@ -1329,20 +1318,17 @@ STDMETHODIMP Flipper::put_EOSTorque(float newVal)
 
 STDMETHODIMP Flipper::get_EOSTorqueAngle(float *pVal)
 {
-    if ( m_phitflipper )
-        *pVal = RADTOANG(m_phitflipper->m_flipperMover.m_torqueDampingAngle);
-    else
-        *pVal = m_d.m_torqueDampingAngle;
+   *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideTorqueDampingAngle : m_d.m_torqueDampingAngle;
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::put_EOSTorqueAngle(float newVal)
 {
     if ( m_phitflipper )
     {
-        m_phitflipper->m_flipperMover.m_torqueDampingAngle = ANGTORAD(newVal);
-        m_d.m_torqueDampingAngle = newVal;    
+        if (!m_d.m_OverridePhysics)
+           m_d.m_torqueDampingAngle = newVal;    
     }
     else
     {
@@ -1541,7 +1527,7 @@ STDMETHODIMP Flipper::get_Mass(float *pVal)
 {
     if (m_phitflipper)
     {
-        *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideMass : m_phitflipper->m_flipperMover.GetMass();
+        *pVal = m_phitflipper->m_flipperMover.GetMass();
     }
     else
         *pVal = m_d.m_mass;
@@ -1553,7 +1539,8 @@ STDMETHODIMP Flipper::put_Mass(float newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperMover.SetMass(m_d.m_OverridePhysics ? m_d.m_OverrideMass : newVal);
+      if (!m_d.m_OverridePhysics)
+         m_phitflipper->m_flipperMover.SetMass(newVal);
    }
    else
    {
@@ -1638,10 +1625,10 @@ STDMETHODIMP Flipper::put_RubberThickness(float newVal)
 
 STDMETHODIMP Flipper::put_RubberHeight(float newVal)
 {
-   STARTUNDO
-
    if (newVal < 0.f) newVal = 0.f;
-   else if (newVal > 1000.f) newVal = 50.f;
+   else if (newVal > 1000.f) newVal = 50.f; //!! legacy, deprecated
+
+   STARTUNDO
 
    m_d.m_rubberheight = newVal;
    UpdateUnitsInfo();
@@ -1667,10 +1654,10 @@ STDMETHODIMP Flipper::get_Strength(float *pVal)
 {
    if (m_phitflipper)
    {
-       *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_phitflipper->m_flipperMover.GetStrength();
+       *pVal = m_phitflipper->m_flipperMover.GetStrength();
    }
    else
-	   *pVal = m_d.m_strength;
+       *pVal = m_d.m_strength;
 
    return S_OK;
 }
@@ -1679,7 +1666,8 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperMover.SetStrength(m_d.m_OverridePhysics ? m_d.m_OverrideStrength : newVal);
+      if(!m_d.m_OverridePhysics)
+         m_d.m_strength = newVal;
    }
    else
    {
@@ -1731,7 +1719,7 @@ STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
    else
    {
       STARTUNDO
-         m_d.m_fEnabled = VBTOF(newVal);
+      m_d.m_fEnabled = VBTOF(newVal);
       STOPUNDO
    }
    return S_OK;
@@ -1739,7 +1727,7 @@ STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
 
 STDMETHODIMP Flipper::get_Elasticity(float *pVal)
 {
-   *pVal = (m_phitflipper) ? m_phitflipper->m_elasticity : m_d.m_elasticity;
+   *pVal = m_phitflipper ? m_phitflipper->m_elasticity : m_d.m_elasticity;
 
    return S_OK;
 }
@@ -1748,7 +1736,8 @@ STDMETHODIMP Flipper::put_Elasticity(float newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_elasticity = (m_d.m_OverridePhysics ? m_d.m_OverrideElasticity : m_d.m_elasticity);
+      if(!m_d.m_OverridePhysics)
+         m_phitflipper->m_elasticity = newVal;
    }
    else
    {
@@ -1762,16 +1751,17 @@ STDMETHODIMP Flipper::put_Elasticity(float newVal)
 
 STDMETHODIMP Flipper::get_Scatter(float *pVal)
 {
-	*pVal = (m_phitflipper) ? m_phitflipper->m_scatter : m_d.m_scatter;
+   *pVal = m_phitflipper ? m_phitflipper->m_scatter : m_d.m_scatter;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::put_Scatter(float newVal)
 {
 	if (m_phitflipper)
 	{
-		m_phitflipper->m_scatter = ANGTORAD(m_d.m_OverridePhysics ? m_d.m_OverrideScatterAngle : m_d.m_scatter);
+		if (!m_d.m_OverridePhysics)
+		   m_phitflipper->m_scatter = ANGTORAD(newVal);
 	}
 	else
 	{
@@ -1785,21 +1775,31 @@ STDMETHODIMP Flipper::put_Scatter(float newVal)
 
 STDMETHODIMP Flipper::get_ElasticityFalloff(float *pVal)
 {
-   *pVal = m_d.m_elasticityFalloff;
+   *pVal = m_phitflipper ? m_phitflipper->m_elasticityFalloff : m_d.m_elasticityFalloff;
+
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_ElasticityFalloff(float newVal)
 {
-   STARTUNDO
+   if (m_phitflipper)
+   {
+      if(!m_d.m_OverridePhysics)
+         m_phitflipper->m_elasticityFalloff = newVal;
+   }
+   else
+   {
+      STARTUNDO
       m_d.m_elasticityFalloff = newVal;
-   STOPUNDO
-      return S_OK;
+      STOPUNDO
+   }
+
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Friction(float *pVal)
 {
-   *pVal = (m_phitflipper) ? m_phitflipper->m_friction : m_d.m_friction;
+   *pVal = m_phitflipper ? m_phitflipper->m_friction : m_d.m_friction;
 
    return S_OK;
 }
@@ -1822,17 +1822,25 @@ STDMETHODIMP Flipper::put_Friction(float newVal)
 
 STDMETHODIMP Flipper::get_RampUp(float *pVal)
 {
-   *pVal = m_d.m_rampUp;
+   *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideCoilRampUp : m_d.m_rampUp;
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_RampUp(float newVal)
 {
-   STARTUNDO
+   if (m_phitflipper)
+   {
+      if(!m_d.m_OverridePhysics)
+         m_d.m_rampUp = newVal;
+   }
+   else
+   {
+      STARTUNDO
       m_d.m_rampUp = newVal;
-   STOPUNDO
-
-      return S_OK;
+      STOPUNDO
+   }
+   
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Height(float *pVal)
@@ -1858,7 +1866,7 @@ STDMETHODIMP Flipper::get_Return(float *pVal)
 {
    if (m_phitflipper)
    {
-       *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : m_phitflipper->m_flipperMover.GetReturnRatio();
+       *pVal = m_phitflipper->m_flipperMover.GetReturnRatio();
    }
    else
        *pVal = m_d.m_return;
@@ -1870,7 +1878,8 @@ STDMETHODIMP Flipper::put_Return(float newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperMover.SetReturnRatio(m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : clamp(newVal, 0.0f, 1.0f));
+      if(!m_d.m_OverridePhysics)
+         m_d.m_return = clamp(newVal, 0.0f, 1.0f);
    }
    else
    {
@@ -1893,9 +1902,9 @@ STDMETHODIMP Flipper::get_FlipperRadiusMin(float *pVal)
 
 STDMETHODIMP Flipper::put_FlipperRadiusMin(float newVal)
 {
-   STARTUNDO
-
    if (newVal < 0.0f) newVal = 0.0f;
+
+   STARTUNDO
 
    m_d.m_FlipperRadiusMin = newVal;
 
