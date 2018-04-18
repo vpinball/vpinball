@@ -6,7 +6,7 @@ class FlipperMoverObject : public MoverObject
 {
 public:
    FlipperMoverObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-      float zlow, float zhigh);
+      float zlow, float zhigh, Flipper* pflipper);
 
    virtual void UpdateDisplacements(const float dtime);
    virtual void UpdateVelocities();
@@ -45,22 +45,21 @@ public:
 
    float m_flipperradius;
 
-   float m_height;
-
-   int m_dir; //-1,1
    float m_curTorque;
    float m_contactTorque;
 
    float m_angleStart, m_angleEnd;
    float m_angleMin, m_angleMax;
 
-   float m_inertia;	//moment of inertia
+   float m_inertia;	        // moment of inertia
 
-   int m_EnableRotateEvent; //-1,0,1
+   int m_EnableRotateEvent; // -1,0,1
 
-   Vertex2D m_zeroAngNorm; // base norms at zero degrees
+   Vertex2D m_zeroAngNorm;  // base norms at zero degrees
 
-   bool m_solState;        // is solenoid enabled?
+   bool m_direction;
+
+   bool m_solState;         // is solenoid enabled?
    bool m_isInContact;
 
    bool m_fEnabled;
@@ -76,7 +75,7 @@ class HitFlipper : public HitObject
 {
 public:
    HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-      float zlow, float zhigh);
+      float zlow, float zhigh, Flipper* pflipper);
    ~HitFlipper() { /*m_pflipper->m_phitflipper = NULL;*/ }
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
@@ -90,10 +89,6 @@ public:
    float HitTestFlipperEnd(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
 
    float GetHitTime() const { return m_flipperMover.GetHitTime(); }
-
-   Vertex2D v;
-
-   Flipper *m_pflipper;
 
    FlipperMoverObject m_flipperMover;
    U32 m_last_hittime;
