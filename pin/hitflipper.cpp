@@ -23,7 +23,7 @@
 #include "stdafx.h"
 
 FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-   float zlow, float zhigh, float coil_ramp_up)
+   float zlow, float zhigh)
 {
    m_height = zhigh - zlow;
 
@@ -74,8 +74,6 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, floa
    m_zeroAngNorm.x =  sinf(faceNormOffset); // F2 Norm, used in Green's transform, in FPM time search
    m_zeroAngNorm.y = -cosf(faceNormOffset); // F1 norm, change sign of x component, i.e -zeroAngNorm.x
 
-   m_torqueRampupSpeed = coil_ramp_up;
-
 #if 0 // needs wiring of moment of inertia
    // now calculate moment of inertia using isoceles trapizoid and two circular sections
    // ISOSCELES TRAPEZOID, Area Moment of Inertia
@@ -124,10 +122,14 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, floa
 }
 
 HitFlipper::HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-   float zlow, float zhigh, float scatter, float coil_ramp_up)
-   : m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, coil_ramp_up)
+   float zlow, float zhigh)
+   : m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh)
 {
-   m_scatter = scatter;
+   m_elasticityFalloff = m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideElasticityFalloff : m_pflipper->m_d.m_elasticityFalloff;
+   m_elasticity = m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideElasticity : m_pflipper->m_d.m_elasticity;
+   SetFriction(m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideFriction : m_pflipper->m_d.m_friction);
+   m_scatter = ANGTORAD(m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideScatterAngle : m_pflipper->m_d.m_scatter);
+
    m_last_hittime = 0;
 }
 
@@ -264,12 +266,18 @@ void FlipperMoverObject::UpdateVelocities()
 
    desiredTorque *= (float)m_dir;
 
+   float torqueRampupSpeed = m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideCoilRampUp : m_pflipper->m_d.m_rampUp;
+   if (torqueRampupSpeed <= 0.f)
+      torqueRampupSpeed = 1e6f; // set very high for instant coil response
+   else
+      torqueRampupSpeed = min(GetStrength() / torqueRampupSpeed, 1e6f);
+
    // update current torque linearly towards desired torque
    // (simple model for coil hysteresis)
    if (desiredTorque >= m_curTorque)
-      m_curTorque = std::min(m_curTorque + m_torqueRampupSpeed * (float)PHYS_FACTOR, desiredTorque);
+      m_curTorque = std::min(m_curTorque + torqueRampupSpeed * (float)PHYS_FACTOR, desiredTorque);
    else
-      m_curTorque = std::max(m_curTorque - m_torqueRampupSpeed * (float)PHYS_FACTOR, desiredTorque);
+      m_curTorque = std::max(m_curTorque - torqueRampupSpeed * (float)PHYS_FACTOR, desiredTorque);
 
    // resolve contacts with stoppers
    float torque = m_curTorque;
@@ -800,8 +808,7 @@ void HitFlipper::Collide(CollisionEvent& coll)
     * We use a heuristic model which decreases the COR according to a falloff parameter:
     * 0 = no falloff, 1 = half the COR at 1 m/s (18.53 speed units)
     */
-   const float falloff = m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideElasticityFalloff : m_pflipper->m_d.m_elasticityFalloff;
-   const float epsilon = ElasticityWithFalloff(m_elasticity, falloff, bnv);
+   const float epsilon = ElasticityWithFalloff(m_elasticity, m_elasticityFalloff, bnv);
 
    float impulse = -(1.0f + epsilon) * bnv
       / (pball->m_invMass + normal.Dot(CrossProduct(angResp / m_flipperMover.m_inertia, rF)));
