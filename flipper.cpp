@@ -351,17 +351,8 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    }
    else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-   const float scatter = ANGTORAD(m_d.m_OverridePhysics ? m_d.m_OverrideScatterAngle : m_d.m_scatter);
-
-   float coil_ramp_up = m_d.m_OverridePhysics ? m_d.m_OverrideCoilRampUp : m_d.m_rampUp;
-   if (coil_ramp_up <= 0.f)
-      coil_ramp_up = 1e6f; // set very high for instant coil response
-   else
-      coil_ramp_up = min((m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_d.m_strength) / coil_ramp_up, 1e6f);
-
    HitFlipper * const phf = new HitFlipper(m_d.m_Center, m_d.m_BaseRadius, m_d.m_EndRadius,
-      m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height,
-      scatter, coil_ramp_up);
+      m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height);
 
    phf->m_flipperMover.m_fEnabled = m_d.m_fEnabled;
    phf->m_flipperMover.m_fVisible = m_d.m_fVisible;
