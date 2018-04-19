@@ -351,8 +351,8 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    }
    else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-   HitFlipper * const phf = new HitFlipper(m_d.m_Center, m_d.m_BaseRadius, m_d.m_EndRadius,
-      m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height, this);
+   HitFlipper * const phf = new HitFlipper(m_d.m_Center, max(m_d.m_BaseRadius, 0.01f), max(m_d.m_EndRadius, 0.01f),
+      max(m_d.m_FlipperRadius, 0.01f), ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height, this);
 
    phf->m_flipperMover.m_fEnabled = m_d.m_fEnabled;
    phf->m_flipperMover.m_fVisible = m_d.m_fVisible;
@@ -409,9 +409,9 @@ void Flipper::SetVertices(const float basex, const float basey, const float angl
    const float endy = basey - fradius*cosf(angle);
    pvEndCenter->y = endy;
 
-   const float faceNormx1 = sinf(angle - faceNormOffset); // normals to new face positions
+   const float faceNormx1 =  sinf(angle - faceNormOffset); // normals to new face positions
    const float faceNormy1 = -cosf(angle - faceNormOffset);
-   const float faceNormx2 = sinf(angle + faceNormOffset); // both faces
+   const float faceNormx2 =  sinf(angle + faceNormOffset); // both faces
    const float faceNormy2 = -cosf(angle + faceNormOffset);
 
    rgvTangents[0].x = basex + baseradius*faceNormx1;	// endpoints of faces

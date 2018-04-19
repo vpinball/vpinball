@@ -22,26 +22,15 @@
 
 #include "stdafx.h"
 
-FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-   float zlow, float zhigh, Flipper* pflipper)
+FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, float angleEnd,
+   const float zlow, const float zhigh, Flipper* const pflipper) : m_hitcircleBase(center, baser, zlow, zhigh) // base section
 {
    m_pflipper = pflipper;
 
-   m_hitcircleBase.m_hitBBox.zlow = zlow;
-   m_hitcircleBase.m_hitBBox.zhigh = zhigh;
+   m_endradius = endr;         // radius of flipper end
+   m_flipperradius = flipr;    // radius of flipper arc, center-to-center radius
 
-   m_hitcircleBase.center = center;
-
-   if (baser < 0.01f) baser = 0.01f; // must not be zero 
-   m_hitcircleBase.radius = baser;   // radius of base section
-
-   if (endr < 0.01f) endr = 0.01f;   // must not be zero 
-   m_endradius = endr;               // radius of flipper end
-
-   if (flipr < 0.01f) flipr = 0.01f; // must not be zero 
-   m_flipperradius = flipr;          // radius of flipper arc, center-to-center radius
-
-   if (angleEnd == angleStart)       // otherwise hangs forever in collisions/updates
+   if (angleEnd == angleStart) // otherwise hangs forever in collisions/updates
       angleEnd += 0.0001f;
 
    m_direction = (angleEnd >= angleStart);
@@ -52,27 +41,27 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, floa
 
    m_angleStart = angleStart;
    m_angleEnd = angleEnd;
-   m_angleMin = min(angleStart, angleEnd);
-   m_angleMax = max(angleStart, angleEnd);
    m_angleCur = angleStart;
 
    m_angularMomentum = 0;
    m_angularAcceleration = 0;
-   m_anglespeed = 0;
+   m_angleSpeed = 0;
 
-   const float fa = asinf((baser - endr) / flipr); //face to centerline angle (center to center)
+   const float ratio = (baser - endr) / flipr;
 
-   const float faceNormOffset = (float)(M_PI / 2.0) - fa; //angle of normal when flipper center line at angle zero
+   //const float fa = asinf(ratio); //face to centerline angle (center to center)
+   //const float faceNormOffset = (float)(M_PI / 2.0) - fa; //angle of normal when flipper center line at angle zero
 
    // model inertia of flipper as that of rod of length flipr around its end
-   m_inertia = (float)(1.0 / 3.0) * (m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideMass : m_pflipper->m_d.m_mass) * (flipr*flipr);
+   const float mass = m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideMass : m_pflipper->m_d.m_mass;
+   m_inertia = (float)(1.0 / 3.0) * mass * (flipr*flipr);
 
    m_lastHitFace = false; // used to optimize hit face search order
 
-   m_faceLength = m_flipperradius*cosf(fa); //Cosine of face angle X hypotenuse
+   //m_faceLength = m_flipperradius * sqrtf(1.0f-ratio*ratio); // Cosine of face angle X hypotenuse // = m_flipperradius * cosf(fa)
 
-   m_zeroAngNorm.x =  sinf(faceNormOffset); // F2 Norm, used in Green's transform, in FPM time search
-   m_zeroAngNorm.y = -cosf(faceNormOffset); // F1 norm, change sign of x component, i.e -zeroAngNorm.x
+   m_zeroAngNorm.x =  sqrtf(1.0f-ratio*ratio); // F2 Norm, used in Green's transform, in FPM time search  // =  sinf(faceNormOffset)
+   m_zeroAngNorm.y = -ratio;                   // F1 norm, change sign of x component, i.e -zeroAngNorm.x // = -cosf(faceNormOffset)
 
 #if 0 // needs wiring of moment of inertia
    // now calculate moment of inertia using isoceles trapizoid and two circular sections
@@ -121,8 +110,8 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, float baser, floa
 #endif
 }
 
-HitFlipper::HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-   float zlow, float zhigh, Flipper* pflipper)
+HitFlipper::HitFlipper(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, const float angleEnd,
+   const float zlow, const float zhigh, Flipper* const pflipper)
    : m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, pflipper)
 {
    m_elasticityFalloff = m_flipperMover.m_pflipper->m_d.m_OverridePhysics ? m_flipperMover.m_pflipper->m_d.m_OverrideElasticityFalloff : m_flipperMover.m_pflipper->m_d.m_elasticityFalloff;
@@ -147,25 +136,25 @@ void HitFlipper::CalcHitBBox()
 void FlipperMoverObject::SetStartAngle(const float r)
 {
     m_angleStart = r;
-    m_angleMin = min(m_angleStart, m_angleEnd);
-    m_angleMax = max(m_angleStart, m_angleEnd);
+    const float angleMin = min(m_angleStart, m_angleEnd);
+    const float angleMax = max(m_angleStart, m_angleEnd);
 
-    if (m_angleCur > m_angleMax)
-        m_angleCur = m_angleMax;
-    if (m_angleCur < m_angleMin)
-        m_angleCur = m_angleMin;
+    if (m_angleCur > angleMax)
+        m_angleCur = angleMax;
+    if (m_angleCur < angleMin)
+        m_angleCur = angleMin;
 }
 
 void FlipperMoverObject::SetEndAngle(const float r)
 {
     m_angleEnd = r;
-    m_angleMin = min(m_angleStart, m_angleEnd);
-    m_angleMax = max(m_angleStart, m_angleEnd);
+    const float angleMin = min(m_angleStart, m_angleEnd);
+    const float angleMax = max(m_angleStart, m_angleEnd);
 
-    if (m_angleCur > m_angleMax)
-        m_angleCur = m_angleMax;
-    if (m_angleCur < m_angleMin)
-        m_angleCur = m_angleMin;
+    if (m_angleCur > angleMax)
+        m_angleCur = angleMax;
+    if (m_angleCur < angleMin)
+        m_angleCur = angleMin;
 }
 
 float FlipperMoverObject::GetReturnRatio() const
@@ -190,48 +179,51 @@ void FlipperMoverObject::SetMass(const float m)
 
 void FlipperMoverObject::UpdateDisplacements(const float dtime)
 {
-   m_angleCur += m_anglespeed*dtime;	// move flipper angle
+   m_angleCur += m_angleSpeed*dtime;	// move flipper angle
 
-   if (m_angleCur > m_angleMax)
-      m_angleCur = m_angleMax;
-   if (m_angleCur < m_angleMin)
-      m_angleCur = m_angleMin;
+   const float angleMin = min(m_angleStart, m_angleEnd);
+   const float angleMax = max(m_angleStart, m_angleEnd);
 
-   if (fabsf(m_anglespeed) < 0.0005f)   // avoids 'jumping balls' when two or more balls held on flipper (and more other balls are in play) //!! make dependent on physics update rate
+   if (m_angleCur > angleMax)
+      m_angleCur = angleMax;
+   if (m_angleCur < angleMin)
+      m_angleCur = angleMin;
+
+   if (fabsf(m_angleSpeed) < 0.0005f)   // avoids 'jumping balls' when two or more balls held on flipper (and more other balls are in play) //!! make dependent on physics update rate
       return;
 
-   //if (m_anglespeed)
-   //    slintf("Ang.speed: %f\n", m_anglespeed);
+   //if (m_angleSpeed)
+   //    slintf("Ang.speed: %f\n", m_angleSpeed);
 
    bool handle_event = false;
 
-   if (m_angleCur == m_angleMax)        // hit stop?
+   if (m_angleCur == angleMax)        // hit stop?
    {
-      if (m_anglespeed > 0.f)
+      if (m_angleSpeed > 0.f)
       {
 #ifdef DEBUG_FLIPPERS
          if (m_startTime)
          {
             const U32 dur = g_pplayer->m_time_msec - m_startTime;
             m_startTime = 0;
-            slintf("Stroke duration: %u ms\nAng. velocity: %f\n", dur, m_anglespeed);
+            slintf("Stroke duration: %u ms\nAng. velocity: %f\n", dur, m_angleSpeed);
             slintf("Ball velocity: %f\n", g_pplayer->m_vball[0]->vel.Length());
          }
 #endif
          handle_event = true;
       }
    }
-   else if (m_angleCur == m_angleMin)
+   else if (m_angleCur == angleMin)
    {
-      if (m_anglespeed < 0.f)
+      if (m_angleSpeed < 0.f)
          handle_event = true;
    }
 
    if(handle_event)
    {
-      const float anglespd = fabsf(RADTOANG(m_anglespeed));
+      const float anglespd = fabsf(RADTOANG(m_angleSpeed));
       m_angularMomentum *= -0.3f; //!! make configurable?
-      m_anglespeed = m_angularMomentum / m_inertia;
+      m_angleSpeed = m_angularMomentum / m_inertia;
 
       if (m_EnableRotateEvent > 0)
       {
@@ -264,7 +256,8 @@ void FlipperMoverObject::UpdateVelocities()
       desiredTorque *= lerp + (m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideTorqueDamping : m_pflipper->m_d.m_torqueDamping) * (1.0f - lerp);
    }
 
-   desiredTorque *= m_direction ? 1.f : -1.f;
+   if (!m_direction)
+      desiredTorque = -desiredTorque;
 
    float torqueRampupSpeed = m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideCoilRampUp : m_pflipper->m_d.m_rampUp;
    if (torqueRampupSpeed <= 0.f)
@@ -282,19 +275,22 @@ void FlipperMoverObject::UpdateVelocities()
    // resolve contacts with stoppers
    float torque = m_curTorque;
    m_isInContact = false;
-   if (fabsf(m_anglespeed) <= 1e-2f)
+   if (fabsf(m_angleSpeed) <= 1e-2f)
    {
-      if (m_angleCur >= m_angleMax - 1e-2f && torque > 0.f)
+      const float angleMin = min(m_angleStart, m_angleEnd);
+      const float angleMax = max(m_angleStart, m_angleEnd);
+
+      if (m_angleCur >= angleMax - 1e-2f && torque > 0.f)
       {
-         m_angleCur = m_angleMax;
+         m_angleCur = angleMax;
          m_isInContact = true;
          m_contactTorque = torque;
          m_angularMomentum = 0.f;
          torque = 0.f;
       }
-      else if (m_angleCur <= m_angleMin + 1e-2f && torque < 0.f)
+      else if (m_angleCur <= angleMin + 1e-2f && torque < 0.f)
       {
-         m_angleCur = m_angleMin;
+         m_angleCur = angleMin;
          m_isInContact = true;
          m_contactTorque = torque;
          m_angularMomentum = 0.f;
@@ -303,14 +299,14 @@ void FlipperMoverObject::UpdateVelocities()
    }
 
    m_angularMomentum += (float)PHYS_FACTOR * torque;
-   m_anglespeed = m_angularMomentum / m_inertia;
+   m_angleSpeed = m_angularMomentum / m_inertia;
    m_angularAcceleration = torque / m_inertia;
 }
 
 void FlipperMoverObject::ApplyImpulse(const Vertex3Ds& rotI)
 {
    m_angularMomentum += rotI.z;            // only rotation about z axis
-   m_anglespeed = m_angularMomentum / m_inertia;    // TODO: figure out moment of inertia
+   m_angleSpeed = m_angularMomentum / m_inertia;    // TODO: figure out moment of inertia
 }
 
 
@@ -325,21 +321,21 @@ void FlipperMoverObject::SetSolenoidState(const bool s) // true = button pressed
 
 float FlipperMoverObject::GetStrokeRatio() const
 {
-   return (m_angleCur - m_angleStart) / (m_angleEnd - m_angleStart); //!! End == Start?
+   return (m_angleCur - m_angleStart) / (m_angleEnd - m_angleStart); // End == Start cannot happen, as handled in ctor
 }
 
 // compute the cross product (0,0,rz) x v
-static inline Vertex3Ds CrossZ(float rz, const Vertex3Ds& v)
+static inline Vertex3Ds CrossZ(const float rz, const Vertex3Ds& v)
 {
    return Vertex3Ds(-rz * v.y, rz * v.x, 0.f);
 }
 
 Vertex3Ds FlipperMoverObject::SurfaceVelocity(const Vertex3Ds& surfP) const
 {
-   //const Vertex3Ds angularVelocity(0, 0, m_anglespeed);
+   //const Vertex3Ds angularVelocity(0, 0, m_angleSpeed);
    //return CrossProduct( angularVelocity, surfP );
    // equivalent:
-   return CrossZ(m_anglespeed, surfP);
+   return CrossZ(m_angleSpeed, surfP);
 }
 
 Vertex3Ds FlipperMoverObject::SurfaceAcceleration(const Vertex3Ds& surfP) const
@@ -348,7 +344,7 @@ Vertex3Ds FlipperMoverObject::SurfaceAcceleration(const Vertex3Ds& surfP) const
    const Vertex3Ds tangAcc = CrossZ(m_angularAcceleration, surfP);
 
    // centripetal acceleration = (0,0,omega) x ( (0,0,omega) x surfP )
-   const float av2 = m_anglespeed * m_anglespeed;
+   const float av2 = m_angleSpeed * m_angleSpeed;
    const Vertex3Ds centrAcc(-av2 * surfP.x, -av2 * surfP.y, 0.f);
 
    return tangAcc + centrAcc;
@@ -356,23 +352,23 @@ Vertex3Ds FlipperMoverObject::SurfaceAcceleration(const Vertex3Ds& surfP) const
 
 float FlipperMoverObject::GetHitTime() const
 {
-   if (m_anglespeed == 0.f)
+   if (m_angleSpeed == 0.f)
       return -1.0f;
 
-   const float dist = (m_anglespeed > 0.f)
-      ? m_angleMax - m_angleCur       // >= 0
-      : m_angleMin - m_angleCur;      // <= 0
+   const float angleMin = min(m_angleStart, m_angleEnd);
+   const float angleMax = max(m_angleStart, m_angleEnd);
 
-   const float hittime = dist / m_anglespeed;
+   const float dist = (m_angleSpeed > 0.f)
+      ? angleMax - m_angleCur       // >= 0
+      : angleMin - m_angleCur;      // <= 0
+
+   const float hittime = dist / m_angleSpeed;
 
    if (infNaN(hittime) || hittime < 0.f)
       return -1.0f;
    else
       return hittime;
 }
-
-#define LeftFace 1
-#define RightFace 0
 
 float HitFlipper::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
@@ -420,12 +416,12 @@ float HitFlipper::HitTest(const Ball * const pball, const float dtime, Collision
 float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime, CollisionEvent& coll) const // replacement
 {
    const float angleCur = m_flipperMover.m_angleCur;
-   float anglespeed = m_flipperMover.m_anglespeed;		// rotation rate
+   float anglespeed = m_flipperMover.m_angleSpeed;		// rotation rate
 
    const Vertex2D flipperbase = m_flipperMover.m_hitcircleBase.center;
 
-   const float angleMin = m_flipperMover.m_angleMin;
-   const float angleMax = m_flipperMover.m_angleMax;
+   const float angleMin = min(m_flipperMover.m_angleStart, m_flipperMover.m_angleEnd);
+   const float angleMax = max(m_flipperMover.m_angleStart, m_flipperMover.m_angleEnd);
 
    const float ballr = pball->m_radius;
    const float feRadius = m_flipperMover.m_endradius;
@@ -538,7 +534,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime,
 
    const float inv_distance = 1.0f / distance;
    coll.m_hitvel.x = -dist.y*inv_distance; //Unit Tangent vector velocity of contact point(rotate normal right)
-   coll.m_hitvel.y = dist.x*inv_distance;
+   coll.m_hitvel.y =  dist.x*inv_distance;
 
    //!! unused coll.m_hitmoment = distance;				//moment arm diameter
    coll.m_hitmoment_bit = (distance == 0.f);
@@ -567,16 +563,16 @@ float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime,
 }
 
 
-float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool face) const
+float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool face1) const
 {
    const float angleCur = m_flipperMover.m_angleCur;
-   float anglespeed = m_flipperMover.m_anglespeed;    // rotation rate
+   float anglespeed = m_flipperMover.m_angleSpeed;    // rotation rate
 
    const Vertex2D flipperbase = m_flipperMover.m_hitcircleBase.center;
    const float feRadius = m_flipperMover.m_endradius;
 
-   const float angleMin = m_flipperMover.m_angleMin;
-   const float angleMax = m_flipperMover.m_angleMax;
+   const float angleMin = min(m_flipperMover.m_angleStart, m_flipperMover.m_angleEnd);
+   const float angleMax = max(m_flipperMover.m_angleStart, m_flipperMover.m_angleEnd);
 
    const float ballr  = pball->m_radius;
    const float ballvx = pball->m_vel.x;
@@ -585,7 +581,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime
    // flipper positions at zero degrees rotation
 
    float ffnx = m_flipperMover.m_zeroAngNorm.x;       // flipper face normal vector //Face2
-   if (face == LeftFace) ffnx = -ffnx;                // negative for face1
+   if (face1) ffnx = -ffnx;                           // negative for face1 (left face)
 
    const float ffny = m_flipperMover.m_zeroAngNorm.y; // norm y component same for either face
    const Vertex2D vp(                                 // face segment V1 point
@@ -668,8 +664,8 @@ float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime
 
    // here ball and flipper face are in contact... past the endpoints, also, don't forget embedded and near solution
 
-   Vertex2D T;			// flipper face tangent
-   if (face == LeftFace)
+   Vertex2D T;          // flipper face tangent
+   if (face1)           // left face?
    {
       T.x = -F.y; T.y = F.x;
    }	// rotate to form Tangent vector				
@@ -680,7 +676,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime
 
    const float bfftd = ballvtx * T.x + ballvty * T.y;			// ball to flipper face tanget distance
 
-   const float len = m_flipperMover.m_faceLength; // face segment length ... e.g. same on either face
+   const float len = m_flipperMover.m_flipperradius * m_flipperMover.m_zeroAngNorm.x; // face segment length ... e.g. same on either face
    if (bfftd < -C_TOL_ENDPNTS || bfftd > len + C_TOL_ENDPNTS) return -1.0f;	// not in range of touching
 
    const float hitz = pball->m_pos.z + pball->m_vel.z*t;	// check for a hole, relative to ball rolling point at hittime
@@ -760,7 +756,7 @@ void HitFlipper::Collide(CollisionEvent& coll)
    slintf("Collision\n  normal: %.2f %.2f %.2f\n  rel.vel.: %.2f %.2f %.2f\n", normal.x, normal.y, normal.z, vrel.x, vrel.y, vrel.z);
    slintf("  ball vel. %.2f %.2f %.2f\n", pball->m_vel.x, pball->m_vel.y, pball->m_vel.z);
    slintf("  norm.vel.: %.2f\n", bnv);
-   slintf("  flipper: %.2f %.2f\n", m_flipperMover.m_angleCur, m_flipperMover.m_anglespeed);
+   slintf("  flipper: %.2f %.2f\n", m_flipperMover.m_angleCur, m_flipperMover.m_angleSpeed);
 #endif
 
    if (bnv >= -C_LOWNORMVEL)							// nearly receding ... make sure of conditions
@@ -893,7 +889,7 @@ void HitFlipper::Collide(CollisionEvent& coll)
 #ifdef DEBUG_FLIPPERS
    slintf("   ---- after collision ----\n");
    slintf("  ball vel. %.2f %.2f %.2f\n", pball->m_vel.x, pball->m_vel.y, pball->m_vel.z);
-   slintf("  flipper: %.2f %.2f\n", m_flipperMover.m_angleCur, m_flipperMover.m_anglespeed);
+   slintf("  flipper: %.2f %.2f\n", m_flipperMover.m_angleCur, m_flipperMover.m_angleSpeed);
 #endif
 }
 
@@ -937,7 +933,7 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
       const Vertex3Ds arel = aB - aF;
 
       // time derivative of the normal vector
-      const Vertex3Ds normalDeriv = CrossZ(m_flipperMover.m_anglespeed, normal);
+      const Vertex3Ds normalDeriv = CrossZ(m_flipperMover.m_angleSpeed, normal);
 
       // relative acceleration in the normal direction
       const float normAcc = arel.Dot(normal) + 2.0f * normalDeriv.Dot(vrel);
