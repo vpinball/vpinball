@@ -5,8 +5,8 @@
 class FlipperMoverObject : public MoverObject
 {
 public:
-   FlipperMoverObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-      float zlow, float zhigh, Flipper* pflipper);
+   FlipperMoverObject(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, float angleEnd,
+      const float zlow, const float zhigh, Flipper* const pflipper);
 
    virtual void UpdateDisplacements(const float dtime);
    virtual void UpdateVelocities();
@@ -33,29 +33,27 @@ public:
 
    Flipper *m_pflipper;
 
-   float m_faceLength;
+   //float m_faceLength;
    HitCircle m_hitcircleBase;
    float m_endradius;
+   float m_flipperradius;
 
    // kinematic state
    float m_angularMomentum;
    float m_angularAcceleration;
-   float m_anglespeed;
+   float m_angleSpeed;
    float m_angleCur;
-
-   float m_flipperradius;
 
    float m_curTorque;
    float m_contactTorque;
 
    float m_angleStart, m_angleEnd;
-   float m_angleMin, m_angleMax;
 
    float m_inertia;	        // moment of inertia
 
-   int m_EnableRotateEvent; // -1,0,1
-
    Vertex2D m_zeroAngNorm;  // base norms at zero degrees
+
+   short m_EnableRotateEvent; // -1,0,1
 
    bool m_direction;
 
@@ -74,8 +72,8 @@ public:
 class HitFlipper : public HitObject
 {
 public:
-   HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
-      float zlow, float zhigh, Flipper* pflipper);
+   HitFlipper(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, const float angleEnd,
+      const float zlow, const float zhigh, Flipper* const pflipper);
    ~HitFlipper() { /*m_pflipper->m_phitflipper = NULL;*/ }
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
