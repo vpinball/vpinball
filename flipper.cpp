@@ -1741,7 +1741,7 @@ STDMETHODIMP Flipper::put_Elasticity(float newVal)
 
 STDMETHODIMP Flipper::get_Scatter(float *pVal)
 {
-   *pVal = m_phitflipper ? m_phitflipper->m_scatter : m_d.m_scatter;
+   *pVal = m_phitflipper ? RADTOANG(m_phitflipper->m_scatter) : m_d.m_scatter;
 
    return S_OK;
 }
