@@ -1024,8 +1024,12 @@
 #define IDC_TRAIL_EDIT                  1705
 #define IDB_ENV                         1706
 #define IDC_REFLECTION_PLAYFIELD        1707
+#define IDB_BUMPER_BASE                 1707
 #define IDC_PLAYFIELD_ELASTICITY        1708
+#define IDB_BUMPER_RING                 1708
 #define IDC_PLAYFIELD_ELASTICITY_FALLOFF 1709
+#define IDB_BUMPER_RING1                1709
+#define IDB_BUMPER_SKIRT                1709
 #define IDC_PLAYFIELD_SCATTER           1710
 #define IDC_TABLE_FILENAME              1711
 #define IDC_BALLPLAYFIELD_REFLECTION    1712

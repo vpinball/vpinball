@@ -149,6 +149,8 @@ private:
    Matrix3D m_fullMatrix;
    Vertex3D_NoTex2 *m_ringVertices;
    Texture m_ringTexture;
+   Texture m_skirtTexture;
+   Texture m_baseTexture;
    Texture m_capTexture;
    Material m_ringMaterial;
 

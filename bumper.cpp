@@ -401,6 +401,7 @@ void Bumper::UpdateRing(RenderDevice *pd3dDevice)
 void Bumper::RenderBase(RenderDevice *pd3dDevice, const Material * const baseMaterial)
 {
    pd3dDevice->basicShader->SetMaterial(baseMaterial);
+   pd3dDevice->basicShader->SetTexture("Texture0", &m_baseTexture);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
@@ -412,6 +413,7 @@ void Bumper::RenderBase(RenderDevice *pd3dDevice, const Material * const baseMat
 void Bumper::RenderSocket(RenderDevice *pd3dDevice, const Material * const socketMaterial)
 {
    pd3dDevice->basicShader->SetMaterial(socketMaterial);
+   pd3dDevice->basicShader->SetTexture("Texture0", &m_skirtTexture);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
@@ -436,7 +438,7 @@ void Bumper::UpdateSkirt(RenderDevice *pd3dDevice, const bool doCalculation)
 {
    const float SKIRT_TILT = 5.0f;
 
-   const float scalexy = m_d.m_radius*2.0f;
+   const float scalexy = m_d.m_radius;
    float rotx=0.0f, roty=0.0f;
 
    if (doCalculation)
@@ -475,8 +477,7 @@ void Bumper::UpdateSkirt(RenderDevice *pd3dDevice, const bool doCalculation)
       vert = rMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
-      // scale z by 0.6 to make the skirt a bit more flat
-      buf[i].z = (0.6f*vert.z*m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (m_baseHeight + 5.0f);
+      buf[i].z = (vert.z*m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (m_baseHeight + 5.0f);
 
       vert = Vertex3Ds(bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz);
       vert = rMatrix.MultiplyVectorNoTranslate(vert);
@@ -545,13 +546,8 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
             UpdateRing(pd3dDevice);
       }
 
-      if (m_ringMaterial.m_bIsMetal)
-      {
-         pd3dDevice->basicShader->SetTechnique(m_ringMaterial.m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-         pd3dDevice->basicShader->SetTexture("Texture0", &m_ringTexture);
-      }
-      else
-         pd3dDevice->basicShader->SetTechnique(m_ringMaterial.m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
+      pd3dDevice->basicShader->SetTechnique(m_ringMaterial.m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+      pd3dDevice->basicShader->SetTexture("Texture0", &m_ringTexture);
       pd3dDevice->basicShader->SetMaterial(&m_ringMaterial);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
       // render ring
@@ -579,7 +575,8 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       }
 
       const Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
-      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
+      pd3dDevice->basicShader->SetTexture("Texture0", &m_skirtTexture);
+      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
       RenderSocket(pd3dDevice, mat);
    }
@@ -683,7 +680,7 @@ void Bumper::ExportMesh(FILE *f)
 
 void Bumper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 {
-   const float scalexy = m_d.m_radius*1.7f;
+   const float scalexy = m_d.m_radius;
    for (int i = 0; i < bumperBaseNumVertices; i++)
    {
       Vertex3Ds vert(bumperBase[i].x, bumperBase[i].y, bumperBase[i].z);
@@ -704,7 +701,7 @@ void Bumper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 
 void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf)
 {
-   const float scalexy = m_d.m_radius*2.0f;
+    const float scalexy = m_d.m_radius;
 
    for (int i = 0; i < bumperSocketNumVertices; i++)
    {
@@ -713,7 +710,7 @@ void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf)
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
       // scale z by 0.6 to make the skirt a bit more flat
-      buf[i].z = (0.6f*vert.z*m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight+5.0f;
+      buf[i].z = (vert.z*m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight+5.0f;
 
       vert = Vertex3Ds(bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz);
       vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -727,7 +724,7 @@ void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf)
 
 void Bumper::GenerateRingMesh(Vertex3D_NoTex2 *buf)
 {
-   const float scalexy = m_d.m_radius*2.1f;
+   const float scalexy = m_d.m_radius;
 
    for (int i = 0; i < bumperRingNumVertices; i++)
    {
@@ -780,7 +777,8 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
    m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
    if (m_d.m_fBaseVisible)
    {
-      if (m_baseIndexBuffer)
+      m_baseTexture.CreateFromResource(IDB_BUMPER_BASE);
+      if(m_baseIndexBuffer)
          m_baseIndexBuffer->release();
       m_baseIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperBaseNumFaces, bumperBaseIndices);
 
@@ -797,7 +795,9 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
 
    if (m_d.m_fSkirtVisible)
    {
-      if (m_socketIndexBuffer)
+      m_skirtTexture.CreateFromResource(IDB_BUMPER_SKIRT);
+       
+      if(m_socketIndexBuffer)
          m_socketIndexBuffer->release();
       m_socketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperSocketNumFaces, bumperSocketIndices);
 
@@ -809,7 +809,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
 
    if (m_d.m_fRingVisible)
    {
-      m_ringTexture.CreateFromResource(IDB_RINGENVMAP);
+      m_ringTexture.CreateFromResource(IDB_BUMPER_RING);
 
       if (m_d.m_szRingMaterial[0] != '\0')
       {
@@ -872,7 +872,7 @@ void Bumper::RenderStatic(RenderDevice* pd3dDevice)
       const Material *mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
       if (!mat->m_bOpacityActive)
       {
-         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
+         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
          RenderBase(pd3dDevice, mat);
       }
    }
