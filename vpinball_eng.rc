@@ -3037,6 +3037,9 @@ IDB_AO_DITHER           BITMAP                  "res\\AOdither.bmp"
 IDB_KICKER_WILLIAMS     BITMAP                  "res\\kickerWilliams.bmp"
 IDB_KICKER_GOTTLIEB     BITMAP                  "res\\kickerGottlieb.bmp"
 IDB_KICKER_T1           BITMAP                  "res\\kickerT1.bmp"
+IDB_BUMPER_BASE         BITMAP                  "res\\bumperBase.bmp"
+IDB_BUMPER_RING         BITMAP                  "res\\bumperRing.bmp"
+IDB_BUMPER_SKIRT        BITMAP                  "res\\bumperSkirt.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
