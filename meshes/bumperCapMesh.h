@@ -1,5 +1,5 @@
 const unsigned int bumperCapNumVertices=839;
-const unsigned int bumperCapNumFaces=1194;
+const unsigned int bumperCapNumIndices=1194;
 const Vertex3D_NoTex2 bumperCap[839]=
 {
 { 0.229962f,-0.553872f,-0.084697f, 0.300600f,-0.725600f,0.619000f, 0.645999f,0.124135f},

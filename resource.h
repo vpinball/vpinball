@@ -837,7 +837,7 @@
 #define IDD_PROPRUBBER_VISUALS          604
 #define IDD_MATERIALDIALOG              605
 #define IDB_BITMAP1                     608
-#define IDB_RINGENVMAP                  609
+//#define IDB_RINGENVMAP                  609
 #define IDB_BITMAP2                     610
 #define IDB_BUMPERCAP                   610
 #define IDC_GLOSSY_IMGLERP_EDIT         611
@@ -1028,7 +1028,6 @@
 #define IDC_PLAYFIELD_ELASTICITY        1708
 #define IDB_BUMPER_RING                 1708
 #define IDC_PLAYFIELD_ELASTICITY_FALLOFF 1709
-#define IDB_BUMPER_RING1                1709
 #define IDB_BUMPER_SKIRT                1709
 #define IDC_PLAYFIELD_SCATTER           1710
 #define IDC_TABLE_FILENAME              1711

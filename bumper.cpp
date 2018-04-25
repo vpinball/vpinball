@@ -406,7 +406,7 @@ void Bumper::RenderBase(RenderDevice *pd3dDevice, const Material * const baseMat
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_baseVertexBuffer, 0, bumperBaseNumVertices, m_baseIndexBuffer, 0, bumperBaseNumFaces);
+   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_baseVertexBuffer, 0, bumperBaseNumVertices, m_baseIndexBuffer, 0, bumperBaseNumIndices);
    pd3dDevice->basicShader->End();
 }
 
@@ -418,7 +418,7 @@ void Bumper::RenderSocket(RenderDevice *pd3dDevice, const Material * const socke
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_socketVertexBuffer, 0, bumperSocketNumVertices, m_socketIndexBuffer, 0, bumperSocketNumFaces);
+   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_socketVertexBuffer, 0, bumperSocketNumVertices, m_socketIndexBuffer, 0, bumperSocketNumIndices);
    pd3dDevice->basicShader->End();
 }
 
@@ -430,7 +430,7 @@ void Bumper::RenderCap(RenderDevice *pd3dDevice, const Material * const capMater
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_capVertexBuffer, 0, bumperCapNumVertices, m_capIndexBuffer, 0, bumperCapNumFaces);
+   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_capVertexBuffer, 0, bumperCapNumVertices, m_capIndexBuffer, 0, bumperCapNumIndices);
    pd3dDevice->basicShader->End();
 }
 
@@ -552,7 +552,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
       // render ring
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_ringVertexBuffer, 0, bumperRingNumVertices, m_ringIndexBuffer, 0, bumperRingNumFaces);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_ringVertexBuffer, 0, bumperRingNumVertices, m_ringIndexBuffer, 0, bumperRingNumIndices);
       pd3dDevice->basicShader->End();
    }
 
@@ -627,7 +627,7 @@ void Bumper::ExportMesh(FILE *f)
       const Material * mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szBaseMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szBaseMaterial);
-      WaveFrontObj_WriteFaceInfoList(f, bumperBaseIndices, bumperBaseNumFaces);
+      WaveFrontObj_WriteFaceInfoList(f, bumperBaseIndices, bumperBaseNumIndices);
       WaveFrontObj_UpdateFaceOffset(bumperBaseNumVertices);
       delete[] base;
    }
@@ -640,7 +640,7 @@ void Bumper::ExportMesh(FILE *f)
 
       GenerateRingMesh(ring);
       WaveFrontObj_WriteVertexInfo(f, ring, bumperRingNumVertices);
-      WaveFrontObj_WriteFaceInfoList(f, bumperRingIndices, bumperRingNumFaces);
+      WaveFrontObj_WriteFaceInfoList(f, bumperRingIndices, bumperRingNumIndices);
       WaveFrontObj_UpdateFaceOffset(bumperRingNumVertices);
       delete[] ring;
    }
@@ -656,7 +656,7 @@ void Bumper::ExportMesh(FILE *f)
       const Material * mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szSkirtMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szSkirtMaterial);
-      WaveFrontObj_WriteFaceInfoList(f, bumperSocketIndices, bumperSocketNumFaces);
+      WaveFrontObj_WriteFaceInfoList(f, bumperSocketIndices, bumperSocketNumIndices);
       WaveFrontObj_UpdateFaceOffset(bumperSocketNumVertices);
       delete[] socket;
    }
@@ -672,7 +672,7 @@ void Bumper::ExportMesh(FILE *f)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szCapMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szCapMaterial);
-      WaveFrontObj_WriteFaceInfoList(f, bumperCapIndices, bumperCapNumFaces);
+      WaveFrontObj_WriteFaceInfoList(f, bumperCapIndices, bumperCapNumIndices);
       WaveFrontObj_UpdateFaceOffset(bumperCapNumVertices);
       delete[] cap;
    }
@@ -780,7 +780,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
       m_baseTexture.CreateFromResource(IDB_BUMPER_BASE);
       if(m_baseIndexBuffer)
          m_baseIndexBuffer->release();
-      m_baseIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperBaseNumFaces, bumperBaseIndices);
+      m_baseIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperBaseNumIndices, bumperBaseIndices);
 
       if (m_baseVertexBuffer)
          m_baseVertexBuffer->release();
@@ -799,7 +799,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
        
       if(m_socketIndexBuffer)
          m_socketIndexBuffer->release();
-      m_socketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperSocketNumFaces, bumperSocketIndices);
+      m_socketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperSocketNumIndices, bumperSocketIndices);
 
       if (m_socketVertexBuffer)
          m_socketVertexBuffer->release();
@@ -826,7 +826,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
 
       if (m_ringIndexBuffer)
          m_ringIndexBuffer->release();
-      m_ringIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperRingNumFaces, bumperRingIndices);
+      m_ringIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperRingNumIndices, bumperRingIndices);
 
       if (m_ringVertexBuffer)
          m_ringVertexBuffer->release();
@@ -847,7 +847,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
 
       if (m_capIndexBuffer)
          m_capIndexBuffer->release();
-      m_capIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperCapNumFaces, bumperCapIndices);
+      m_capIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperCapNumIndices, bumperCapIndices);
 
       if (m_capVertexBuffer)
          m_capVertexBuffer->release();
@@ -1113,11 +1113,11 @@ STDMETHODIMP Bumper::put_Force(float newVal)
 {
    STARTUNDO
 
-      m_d.m_force = newVal;
+   m_d.m_force = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Scatter(float *pVal)
