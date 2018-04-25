@@ -1054,7 +1054,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\ball.bmp" />
     <Image Include="res\bumperbase.bmp" />
     <Image Include="res\bumperCap.bmp" />
-    <Image Include="res\bumperSocket.bmp" />
+    <Image Include="res\bumperring.bmp" />
+    <Image Include="res\bumperskirt.bmp" />
     <Image Include="res\chevron.bmp" />
     <Image Include="res\envmap.bmp" />
     <Image Include="res\kickerCup.bmp" />
@@ -1062,7 +1063,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\kickerHoleWood.bmp" />
     <Image Include="res\kickerT1.bmp" />
     <Image Include="res\kickerWilliams.bmp" />
-    <Image Include="res\ringenvmap.bmp" />
     <Image Include="res\script.ico" />
     <Image Include="res\vpinball.ico" />
     <Image Include="res\logo.bmp" />

@@ -184,7 +184,10 @@
     <Image Include="res\bumperCap.bmp">
       <Filter>res</Filter>
     </Image>
-    <Image Include="res\bumperSocket.bmp">
+    <Image Include="res\bumperring.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\bumperskirt.bmp">
       <Filter>res</Filter>
     </Image>
     <Image Include="res\envmap.bmp">
@@ -194,9 +197,6 @@
       <Filter>res</Filter>
     </Image>
     <Image Include="res\kickerHoleWood.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\ringenvmap.bmp">
       <Filter>res</Filter>
     </Image>
     <Image Include="res\AOdither.bmp">
