@@ -1,5 +1,4 @@
-'Last Updated in VBS v3.13
-' - Fixed Labeling Errors
+'Last Updated in VBS v3.55
 
 'Key codes that can be used in the mappings below:
 '0          11      L CONTROL       29
