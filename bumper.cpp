@@ -522,7 +522,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       if (m_ringAnimate)
       {
          float step = m_d.m_ringSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-         const float limit = 45.f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+         const float limit = (m_d.m_heightScale*0.5f)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
          if (m_ringDown)
             step = -step;
          m_pbumperhitcircle->m_bumperanim_ringAnimOffset += step*diff_time_msec;
