@@ -464,9 +464,8 @@ void ImageDialog::Export()
    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
    char g_filename[MAX_PATH];
    char g_initDir[MAX_PATH];
-   int selectedItemsCount = 0;
+   const int selectedItemsCount = ListView_GetSelectedCount(hSoundList);
 
-   selectedItemsCount = ListView_GetSelectedCount(hSoundList);
    if (selectedItemsCount)	// if some items are selected???
    {
       char pathName[MAX_PATH] = { 0 };

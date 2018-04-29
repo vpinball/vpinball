@@ -387,8 +387,9 @@ void SoundDialog::ReImportFrom()
 void SoundDialog::Export()
 {
     CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
+    const int selectedItemsCount = ListView_GetSelectedCount(hSoundList);
 
-    if(ListView_GetSelectedCount( hSoundList ))
+    if(selectedItemsCount)
     {
         OPENFILENAME ofn;
         LVITEM lvitem;
@@ -463,14 +464,14 @@ void SoundDialog::Export()
                             break;
                         }
                     }
-                    memset( m_filename, 0, MAX_PATH );
-                    strcpy_s( m_filename, MAX_PATH, pathName );
-                    memcpy( &m_filename[lstrlen( pathName )], &pps->m_szPath[begin], (len - begin) + 1 );
-                    if(pt->ExportSound( hSoundList, pps, m_filename ))
+                    if (selectedItemsCount > 1)
                     {
-                        //pt->ReImportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, ofn.lpstrFile, fTrue);
-                        //pt->SetNonUndoableDirty(eSaveDirty);
+                       memset(m_filename, 0, MAX_PATH);
+                       strcpy_s(m_filename, MAX_PATH, pathName);
+                       strcat_s(m_filename, MAX_PATH, &pps->m_szPath[begin]);
                     }
+
+                    (void)pt->ExportSound(hSoundList, pps, m_filename);
                     sel = ListView_GetNextItem( hSoundList, sel, LVNI_SELECTED ); //next selected item
                     lvitem.iItem = sel;
                     lvitem.iSubItem = 0;
