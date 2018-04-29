@@ -464,8 +464,10 @@ void ImageDialog::Export()
    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
    char g_filename[MAX_PATH];
    char g_initDir[MAX_PATH];
+   int selectedItemsCount = 0;
 
-   if (ListView_GetSelectedCount(hSoundList))	// if some items are selected???
+   selectedItemsCount = ListView_GetSelectedCount(hSoundList);
+   if (selectedItemsCount)	// if some items are selected???
    {
       char pathName[MAX_PATH] = { 0 };
       int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
@@ -544,14 +546,13 @@ void ImageDialog::Export()
                         break;
                      }
                   }
-                  memset(g_filename, 0, MAX_PATH);
-                  strcpy_s(g_filename, MAX_PATH, pathName);
-                  memcpy(g_filename, &ppi->m_szPath[begin], (len - begin) + 1);
-                  if (pt->ExportImage(hSoundList, ppi, g_filename))
+                  if (selectedItemsCount>1)
                   {
-                     //pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ofn.lpstrFile);
-                     //pt->SetNonUndoableDirty(eSaveDirty);
+                     memset(g_filename, 0, MAX_PATH);
+                     strcpy_s(g_filename, MAX_PATH, pathName);
+                     strcat_s(g_filename, MAX_PATH, &ppi->m_szPath[begin]);
                   }
+                  (void)pt->ExportImage(hSoundList, ppi, g_filename);
                   sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
                   lvitem.iItem = sel;
                   lvitem.iSubItem = 0;
