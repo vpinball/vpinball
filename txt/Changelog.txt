@@ -1,5 +1,8 @@
 VP 10.5.0 Changelog
 ------------------------
+
+- static table elements are now over-sampled/better anti-aliased
+
 - update bumper base, ring and skirt with better meshes provided by flupper1
 
 - fix Flipper element's EOS Torque and EOS Torque Angle and Elasticity and ElasticityFalloff and RampUp to be able to be changed by the script
