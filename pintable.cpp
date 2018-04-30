@@ -8068,6 +8068,13 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 
    if (i == m_vsound.Size()) // did not find it
    {
+	   if (szName[0] && m_pcv && g_pplayer && g_pplayer->m_hwndDebugOutput)
+	   {
+		   std::string logmsg;
+		   logmsg = "Request to play \"" + std::string(szName) + "\", but sound not found.";
+
+		   m_pcv->AddToDebugOutput(logmsg.c_str());
+	   }
       return S_OK;
    }
 
