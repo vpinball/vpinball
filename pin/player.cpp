@@ -1838,9 +1838,40 @@ void Player::InitStatic(HWND hwndProgress)
       ph->RenderSetup(m_pin3d.m_pd3dDevice);
    }
 
+   m_pin3d.InitPlayfieldGraphics();
+
+   // allocate system/CPU memory buffer to copy static rendering buffer to (and accumulation float32 buffer) to do brute force oversampling of the static rendering
+   D3DSURFACE_DESC descStatic;
+   m_pin3d.m_pddsStatic->GetDesc(&descStatic);
+   RECT rectStatic;
+   rectStatic.left = 0;
+   rectStatic.right = descStatic.Width;
+   rectStatic.top = 0;
+   rectStatic.bottom = descStatic.Height;
+
+   float * __restrict const pdestStatic = new float[descStatic.Width*descStatic.Height * 3]; // RGB float32
+   memset(pdestStatic, 0, descStatic.Width*descStatic.Height*sizeof(float) * 3);
+
+   RenderTarget* offscreenSurface;
+   CHECKD3D(m_pin3d.m_pd3dDevice->GetCoreDevice()->CreateOffscreenPlainSurface(descStatic.Width, descStatic.Height, descStatic.Format, D3DPOOL_SYSTEMMEM, &offscreenSurface, NULL));
+
+#define STATIC_PRERENDER_ITERATIONS 25          // it's actually one iteration more, last one is always a pixel centered sample
+#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
+   // loop for X times and accumulate/average these renderings on CPU side
+   for (unsigned int iter = 0; iter <= STATIC_PRERENDER_ITERATIONS; ++iter)
+   {
+   if (cameraMode) // just do one iteration if in dynamic camera/light/material tweaking mode
+      iter = STATIC_PRERENDER_ITERATIONS;
+
+   // Setup Camera,etc matrices for each iteration. Last iteration must set a sample offset of 0,0 so that final depth buffer features 'correct' centering
+   m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS,
+      (iter == STATIC_PRERENDER_ITERATIONS) ? 0.f :       (iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS)       - 0.5f),
+      (iter == STATIC_PRERENDER_ITERATIONS) ? 0.f : (fmodf(iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f) - 0.5f));
+
+   // Now begin rendering of static buffer
    m_pin3d.m_pd3dDevice->BeginScene();
 
-   // Direct all renders to the "static" buffer.
+   // Direct all renders to the "static" buffer
    m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
 
    m_pin3d.DrawBackground();
@@ -1851,8 +1882,6 @@ void Player::InitStatic(HWND hwndProgress)
       Hitable * const ph = m_vhitables[i];
       ph->PreRenderStatic(m_pin3d.m_pd3dDevice);
    }
-
-   m_pin3d.InitPlayfieldGraphics();
 
    // Initialize one User Clipplane to be the playfield (but not enabled yet)
    SetClipPlanePlayfield(true);
@@ -1887,7 +1916,7 @@ void Player::InitStatic(HWND hwndProgress)
             if (ph)
             {
                ph->RenderStatic(m_pin3d.m_pd3dDevice);
-               if (hwndProgress && ((i % 16) == 0))
+               if (hwndProgress && ((i % 16) == 0) && iter == STATIC_PRERENDER_ITERATIONS)
                   SendMessage(hwndProgress, PBM_SETPOS, 60 + ((15 * i) / m_ptable->m_vedit.Size()), 0);
             }
          }
@@ -1902,7 +1931,7 @@ void Player::InitStatic(HWND hwndProgress)
             if (ph)
             {
                ph->RenderStatic(m_pin3d.m_pd3dDevice);
-               if (hwndProgress && ((i % 16) == 0))
+               if (hwndProgress && ((i % 16) == 0) && iter == STATIC_PRERENDER_ITERATIONS)
                   SendMessage(hwndProgress, PBM_SETPOS, 75 + ((15 * i) / m_ptable->m_vedit.Size()), 0);
             }
          }
@@ -1920,6 +1949,50 @@ void Player::InitStatic(HWND hwndProgress)
 
    // Finish the frame.
    m_pin3d.m_pd3dDevice->EndScene();
+
+   // Readback static buffer, convert 16bit to 32bit float, and accumulate
+   if (!cameraMode)
+   {
+   CHECKD3D(m_pin3d.m_pd3dDevice->GetCoreDevice()->GetRenderTargetData(m_pin3d.m_pddsStatic, offscreenSurface));
+
+   D3DLOCKED_RECT locked;
+   CHECKD3D(offscreenSurface->LockRect(&locked, &rectStatic, D3DLOCK_READONLY));
+
+   for (unsigned int y = 0; y < descStatic.Height; ++y)
+      for (unsigned int x = 0; x < descStatic.Width; ++x)
+      {
+         pdestStatic[(y*descStatic.Width + x)*3  ] += half2float(((unsigned short*)locked.pBits)[y*locked.Pitch/2 + x*4  ]);
+         pdestStatic[(y*descStatic.Width + x)*3+1] += half2float(((unsigned short*)locked.pBits)[y*locked.Pitch/2 + x*4+1]);
+         pdestStatic[(y*descStatic.Width + x)*3+2] += half2float(((unsigned short*)locked.pBits)[y*locked.Pitch/2 + x*4+2]);
+      }
+
+   offscreenSurface->UnlockRect();
+   }
+   }
+
+   // now normalize oversampled result in pdestStatic, convert back to 16bit float, and copy to/overwrite the static GPU buffer
+   if (!cameraMode)
+   {
+   D3DLOCKED_RECT locked;
+   CHECKD3D(offscreenSurface->LockRect(&locked, &rectStatic, D3DLOCK_DISCARD));
+
+   for (unsigned int y = 0; y < descStatic.Height; ++y)
+      for (unsigned int x = 0; x < descStatic.Width; ++x)
+      {
+         ((unsigned short*)locked.pBits)[y*locked.Pitch/2 + x*4  ] = float2half(pdestStatic[(y*descStatic.Width + x)*3  ]*(float)(1.0/(STATIC_PRERENDER_ITERATIONS+1)));
+         ((unsigned short*)locked.pBits)[y*locked.Pitch/2 + x*4+1] = float2half(pdestStatic[(y*descStatic.Width + x)*3+1]*(float)(1.0/(STATIC_PRERENDER_ITERATIONS+1)));
+         ((unsigned short*)locked.pBits)[y*locked.Pitch/2 + x*4+2] = float2half(pdestStatic[(y*descStatic.Width + x)*3+2]*(float)(1.0/(STATIC_PRERENDER_ITERATIONS+1)));
+      }
+
+   offscreenSurface->UnlockRect();
+
+   CHECKD3D(m_pin3d.m_pd3dDevice->GetCoreDevice()->UpdateSurface(offscreenSurface, NULL, m_pin3d.m_pddsStatic, NULL));
+   }
+
+   delete [] pdestStatic;
+   SAFE_RELEASE(offscreenSurface);
+
+   // Now finalize static buffer with non-dynamic AO
 
    // Dynamic AO disabled? -> Pre-Render Static AO
    const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1));

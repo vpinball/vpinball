@@ -566,7 +566,7 @@ void Pin3D::InitLayoutFS()
 // here is where the tables camera / rotation / scale is setup
 // flashers are ignored in the calculation of boundaries to center the
 // table in the view
-void Pin3D::InitLayout(const bool FSS_mode)
+void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypixoff)
 {
    TRACE_FUNCTION();
 
@@ -674,6 +674,13 @@ void Pin3D::InitLayout(const bool FSS_mode)
    D3DXMATRIX proj;
    D3DXMatrixPerspectiveFovLH(&proj, ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
    memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
+   // in-pixel offset for manual oversampling
+   if (xpixoff != 0.f || ypixoff != 0.f)
+   {
+      Matrix3D projTrans;
+      projTrans.SetTranslation((float)((double)xpixoff / (double)vp.Width), (float)((double)ypixoff / (double)vp.Height), 0.f);
+      projTrans.Multiply(m_proj.m_matProj, m_proj.m_matProj);
+   }
 
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
 
