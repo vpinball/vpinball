@@ -1,6 +1,8 @@
 VP 10.5.0 Changelog
 ------------------------
 
+- log message in debug window when PlaySound is called for a sound that's missing in the sound manager
+
 - static table elements are now over-sampled/better anti-aliased
 
 - update bumper base, ring and skirt with better meshes provided by flupper1
@@ -73,8 +75,6 @@ VP 10.5.0 Changelog
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
 
 - DirectX 8 port for input handling (currently disabled)
-
-- Log message in debug window when PlaySound is called for a sound that's missing in sound manager
 
 VP 10.4.0 Changelog
 ------------------------

@@ -1855,7 +1855,7 @@ void Player::InitStatic(HWND hwndProgress)
    RenderTarget* offscreenSurface;
    CHECKD3D(m_pin3d.m_pd3dDevice->GetCoreDevice()->CreateOffscreenPlainSurface(descStatic.Width, descStatic.Height, descStatic.Format, D3DPOOL_SYSTEMMEM, &offscreenSurface, NULL));
 
-#define STATIC_PRERENDER_ITERATIONS 25          // it's actually one iteration more, last one is always a pixel centered sample
+#define STATIC_PRERENDER_ITERATIONS 32          // it's actually one iteration more, last one is always a pixel centered sample
 #define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
    // loop for X times and accumulate/average these renderings on CPU side
    for (unsigned int iter = 0; iter <= STATIC_PRERENDER_ITERATIONS; ++iter)
@@ -1863,10 +1863,20 @@ void Player::InitStatic(HWND hwndProgress)
    if (cameraMode) // just do one iteration if in dynamic camera/light/material tweaking mode
       iter = STATIC_PRERENDER_ITERATIONS;
 
+   float u1 =       iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS);
+   float u2 = fmodf(iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f);
+   // the following line implements filter importance sampling for a small gauss (i.e. less jaggies as it also samples neighboring pixels) -> but also potentially more artifacts in compositing!
+   if (iter != STATIC_PRERENDER_ITERATIONS)
+   {
+      gaussianDistribution(u1, u2, 0.5f, 0.5f); //!! first 0.5 could be increased for more blur
+      // sanity check to be sure to limit filter area to 3x3 in practice, as the gauss transformation is unbound (which is correct, but for our use-case/limited amount of samples very bad)
+      assert(u1 > -1.f && u1 < 2.f);
+      assert(u2 > -1.f && u2 < 2.f);
+   }
    // Setup Camera,etc matrices for each iteration. Last iteration must set a sample offset of 0,0 so that final depth buffer features 'correct' centering
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS,
-      (iter == STATIC_PRERENDER_ITERATIONS) ? 0.f :       (iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS)       - 0.5f),
-      (iter == STATIC_PRERENDER_ITERATIONS) ? 0.f : (fmodf(iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f) - 0.5f));
+      (iter == STATIC_PRERENDER_ITERATIONS) ? 0.f : (u1 - 0.5f),
+      (iter == STATIC_PRERENDER_ITERATIONS) ? 0.f : (u2 - 0.5f));
 
    // Now begin rendering of static buffer
    m_pin3d.m_pd3dDevice->BeginScene();
@@ -2042,8 +2052,8 @@ void Player::InitStatic(HWND hwndProgress)
          m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pddsAOBackBuffer); //!! ?
 
          const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height),
-            radical_inverse(i)*(float)(1. / 9.0),
-            sobol(i)*(float)(2. / 9.0)); // jitter within lattice cell //!! ?
+            radical_inverse(i)*(float)(1. / 8.0),
+            sobol(i)*(float)(5. / 8.0)); // jitter within lattice cell //!! ?
          m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
 
          m_pin3d.m_pd3dDevice->FBShader->Begin(0);
@@ -4315,8 +4325,8 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
    
    const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height),
-      radical_inverse(m_overall_frames)*(float)(1. / 9.0),
-      sobol(m_overall_frames)*(float)(2. / 9.0)); // jitter within lattice cell
+      radical_inverse(m_overall_frames)*(float)(1. / 8.0),
+      sobol(m_overall_frames)*(float)(5. / 8.0)); // jitter within lattice cell //!! ?
    m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
 
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("normals");
@@ -4336,8 +4346,8 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
    const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height),
-      radical_inverse(m_overall_frames)*(float)(1. / 9.0),
-      sobol(m_overall_frames)*(float)(2. / 9.0)); // jitter within lattice cell
+      radical_inverse(m_overall_frames)*(float)(1. / 8.0),
+      sobol(m_overall_frames)*(float)(5. / 8.0)); // jitter within lattice cell //!! ?
    m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
    const D3DXVECTOR4 ao_s_tb(m_ptable->m_AOScale, 0.4f, 0.f,0.f); //!! 0.4f: fake global option in video pref? or time dependent?
    m_pin3d.m_pd3dDevice->FBShader->SetVector("AO_scale_timeblur", &ao_s_tb);
