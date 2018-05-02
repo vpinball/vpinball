@@ -291,6 +291,21 @@ inline unsigned short float2half(const float value)
    return hbits;
 }
 
+//
+
+inline void gaussianDistribution(float &u1, float &u2, const float sigma = 3.f, const float mu = 0.f)
+{
+#if 1 // lump3, limit to range instead of infinite support
+   const float root4 = sqrtf(sqrtf(1.f - u1));
+   const float tmp0 = sigma * sqrtf(9.f - 9.f * root4);
+#else
+   const float tmp0 = sigma * sqrtf(-2.f * logf(1.f - u1));
+#endif
+   const float tmp1 = (float)(2.0*M_PI) * u2;
+   u1 = tmp0 * cosf(tmp1) + mu;
+   u2 = tmp0 * sinf(tmp1) + mu;
+}
+
 // Math stuff which doesn't fit elsewhere
 
 // Solve the quadratic equation ax^2 + bx + c = 0.
