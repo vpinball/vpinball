@@ -1855,28 +1855,28 @@ void Player::InitStatic(HWND hwndProgress)
    RenderTarget* offscreenSurface;
    CHECKD3D(m_pin3d.m_pd3dDevice->GetCoreDevice()->CreateOffscreenPlainSurface(descStatic.Width, descStatic.Height, descStatic.Format, D3DPOOL_SYSTEMMEM, &offscreenSurface, NULL));
 
-#define STATIC_PRERENDER_ITERATIONS 32          // it's actually one iteration more, last one is always a pixel centered sample
+#define STATIC_PRERENDER_ITERATIONS 32
 #define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
    // loop for X times and accumulate/average these renderings on CPU side
-   for (unsigned int iter = 0; iter <= STATIC_PRERENDER_ITERATIONS; ++iter)
+   // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
+   for (int iter = STATIC_PRERENDER_ITERATIONS-1; iter >= 0; --iter)
    {
    if (cameraMode) // just do one iteration if in dynamic camera/light/material tweaking mode
-      iter = STATIC_PRERENDER_ITERATIONS;
+      iter = 0;
 
-   float u1 =       iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS);
-   float u2 = fmodf(iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f);
+   float u1 =       (float)iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS);
+   float u2 = fmodf((float)iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f);
    // the following line implements filter importance sampling for a small gauss (i.e. less jaggies as it also samples neighboring pixels) -> but also potentially more artifacts in compositing!
-   if (iter != STATIC_PRERENDER_ITERATIONS)
-   {
-      gaussianDistribution(u1, u2, 0.5f, 0.5f); //!! first 0.5 could be increased for more blur
-      // sanity check to be sure to limit filter area to 3x3 in practice, as the gauss transformation is unbound (which is correct, but for our use-case/limited amount of samples very bad)
-      assert(u1 > -1.f && u1 < 2.f);
-      assert(u2 > -1.f && u2 < 2.f);
-   }
-   // Setup Camera,etc matrices for each iteration. Last iteration must set a sample offset of 0,0 so that final depth buffer features 'correct' centering
-   m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS,
-      (iter == STATIC_PRERENDER_ITERATIONS) ? 0.f : (u1 - 0.5f),
-      (iter == STATIC_PRERENDER_ITERATIONS) ? 0.f : (u2 - 0.5f));
+   gaussianDistribution(u1, u2, 0.5f, 0.5f); //!! first 0.5 could be increased for more blur, but is pretty much what is recommended
+   // sanity check to be sure to limit filter area to 3x3 in practice, as the gauss transformation is unbound (which is correct, but for our use-case/limited amount of samples very bad)
+   assert(u1 > -1.f && u1 < 2.f);
+   assert(u2 > -1.f && u2 < 2.f);
+   // Last iteration MUST set a sample offset of 0,0 so that final depth buffer features 'correctly' centered pixel sample
+   if (iter == 0)
+     assert(u1 == 0.5f && u2 == 0.5f);
+
+   // Setup Camera,etc matrices for each iteration. 
+   m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, u1 - 0.5f, u2 - 0.5f);
 
    // Now begin rendering of static buffer
    m_pin3d.m_pd3dDevice->BeginScene();
@@ -1926,7 +1926,7 @@ void Player::InitStatic(HWND hwndProgress)
             if (ph)
             {
                ph->RenderStatic(m_pin3d.m_pd3dDevice);
-               if (hwndProgress && ((i % 16) == 0) && iter == STATIC_PRERENDER_ITERATIONS)
+               if (hwndProgress && ((i % 16) == 0) && iter == 0)
                   SendMessage(hwndProgress, PBM_SETPOS, 60 + ((15 * i) / m_ptable->m_vedit.Size()), 0);
             }
          }
@@ -1941,7 +1941,7 @@ void Player::InitStatic(HWND hwndProgress)
             if (ph)
             {
                ph->RenderStatic(m_pin3d.m_pd3dDevice);
-               if (hwndProgress && ((i % 16) == 0) && iter == STATIC_PRERENDER_ITERATIONS)
+               if (hwndProgress && ((i % 16) == 0) && iter == 0)
                   SendMessage(hwndProgress, PBM_SETPOS, 75 + ((15 * i) / m_ptable->m_vedit.Size()), 0);
             }
          }
@@ -1968,13 +1968,18 @@ void Player::InitStatic(HWND hwndProgress)
    D3DLOCKED_RECT locked;
    CHECKD3D(offscreenSurface->LockRect(&locked, &rectStatic, D3DLOCK_READONLY));
 
+   const unsigned short * __restrict const psrc = (unsigned short*)locked.pBits;
    for (unsigned int y = 0; y < descStatic.Height; ++y)
-      for (unsigned int x = 0; x < descStatic.Width; ++x)
+   {
+      unsigned int ofs0 = y*descStatic.Width*3;
+      unsigned int ofs1 = y*locked.Pitch/2;
+      for (unsigned int x = 0; x < descStatic.Width; ++x,ofs0+=3,ofs1+=4)
       {
-         pdestStatic[(y*descStatic.Width + x)*3  ] += half2float(((unsigned short*)locked.pBits)[y*locked.Pitch/2 + x*4  ]);
-         pdestStatic[(y*descStatic.Width + x)*3+1] += half2float(((unsigned short*)locked.pBits)[y*locked.Pitch/2 + x*4+1]);
-         pdestStatic[(y*descStatic.Width + x)*3+2] += half2float(((unsigned short*)locked.pBits)[y*locked.Pitch/2 + x*4+2]);
+         pdestStatic[ofs0  ] += half2float(psrc[ofs1  ]);
+         pdestStatic[ofs0+1] += half2float(psrc[ofs1+1]);
+         pdestStatic[ofs0+2] += half2float(psrc[ofs1+2]);
       }
+   }
 
    offscreenSurface->UnlockRect();
    }
@@ -1986,13 +1991,18 @@ void Player::InitStatic(HWND hwndProgress)
    D3DLOCKED_RECT locked;
    CHECKD3D(offscreenSurface->LockRect(&locked, &rectStatic, D3DLOCK_DISCARD));
 
+   unsigned short * __restrict const psrc = (unsigned short*)locked.pBits;
    for (unsigned int y = 0; y < descStatic.Height; ++y)
-      for (unsigned int x = 0; x < descStatic.Width; ++x)
+   {
+      unsigned int ofs0 = y*descStatic.Width*3;
+      unsigned int ofs1 = y*locked.Pitch/2;
+      for (unsigned int x = 0; x < descStatic.Width; ++x,ofs0+=3,ofs1+=4)
       {
-         ((unsigned short*)locked.pBits)[y*locked.Pitch/2 + x*4  ] = float2half(pdestStatic[(y*descStatic.Width + x)*3  ]*(float)(1.0/(STATIC_PRERENDER_ITERATIONS+1)));
-         ((unsigned short*)locked.pBits)[y*locked.Pitch/2 + x*4+1] = float2half(pdestStatic[(y*descStatic.Width + x)*3+1]*(float)(1.0/(STATIC_PRERENDER_ITERATIONS+1)));
-         ((unsigned short*)locked.pBits)[y*locked.Pitch/2 + x*4+2] = float2half(pdestStatic[(y*descStatic.Width + x)*3+2]*(float)(1.0/(STATIC_PRERENDER_ITERATIONS+1)));
+         psrc[ofs1  ] = float2half(pdestStatic[ofs0  ]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
+         psrc[ofs1+1] = float2half(pdestStatic[ofs0+1]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
+         psrc[ofs1+2] = float2half(pdestStatic[ofs0+2]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
       }
+   }
 
    offscreenSurface->UnlockRect();
 
