@@ -1855,17 +1855,49 @@ void Player::InitStatic(HWND hwndProgress)
    RenderTarget* offscreenSurface;
    CHECKD3D(m_pin3d.m_pd3dDevice->GetCoreDevice()->CreateOffscreenPlainSurface(descStatic.Width, descStatic.Height, descStatic.Format, D3DPOOL_SYSTEMMEM, &offscreenSurface, NULL));
 
+   // precomputed blue-noiseish points
+   static const float xyLDBNbnot[32*2] = {
+     0.00000,0.00000,
+     0.23151,0.02134,
+     0.36499,0.09920,
+     0.72093,0.06583,
+     0.10915,0.14369,
+     0.28712,0.25492,
+     0.56520,0.15482,
+     0.79879,0.23268,
+     0.97676,0.14925,
+     0.14252,0.35503,
+     0.34274,0.44402,
+     0.46509,0.31054,
+     0.65419,0.33279,
+     0.83216,0.41621,
+     0.98788,0.34947,
+     0.00905,0.46626,
+     0.20926,0.52188,
+     0.38723,0.62199,
+     0.54296,0.47739,
+     0.66531,0.57749,
+     0.82103,0.60530,
+     0.07578,0.64423,
+     0.13140,0.79996,
+     0.27600,0.72209,
+     0.53183,0.68873,
+     0.68756,0.77771,
+     0.96563,0.69429,
+     0.17589,0.97793,
+     0.32049,0.92231,
+     0.48734,0.85557,
+     0.67643,0.95568,
+     0.85440,0.82776};
+
 #define STATIC_PRERENDER_ITERATIONS 32
-#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
+//#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
    // loop for X times and accumulate/average these renderings on CPU side
    // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
-   for (int iter = STATIC_PRERENDER_ITERATIONS-1; iter >= 0; --iter)
+   for (int iter = cameraMode ? 0 : (STATIC_PRERENDER_ITERATIONS-1); iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
    {
-   if (cameraMode) // just do one iteration if in dynamic camera/light/material tweaking mode
-      iter = 0;
-
-   float u1 =       (float)iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS);
-   float u2 = fmodf((float)iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f);
+   float u1 = xyLDBNbnot[iter*2  ];  //      (float)iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS);
+   float u2 = xyLDBNbnot[iter*2+1];  //fmodf((float)iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f);
    // the following line implements filter importance sampling for a small gauss (i.e. less jaggies as it also samples neighboring pixels) -> but also potentially more artifacts in compositing!
    gaussianDistribution(u1, u2, 0.5f, 0.5f); //!! first 0.5 could be increased for more blur, but is pretty much what is recommended
    // sanity check to be sure to limit filter area to 3x3 in practice, as the gauss transformation is unbound (which is correct, but for our use-case/limited amount of samples very bad)
