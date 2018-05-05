@@ -442,6 +442,8 @@ void Decal::EndPlay()
       vertexBuffer->release();
       vertexBuffer = 0;
    }
+
+   IEditable::EndPlay();
 }
 
 void Decal::PostRenderStatic(RenderDevice* pd3dDevice)

@@ -438,6 +438,8 @@ void HitTarget::EndPlay()
       indexBuffer->release();
       indexBuffer = 0;
    }
+
+   IEditable::EndPlay();
 }
 
 //////////////////////////////

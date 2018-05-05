@@ -585,6 +585,8 @@ void Primitive::EndPlay()
    }
    m_d.m_fSkipRendering = false;
    m_d.m_fGroupdRendering = false;
+
+   IEditable::EndPlay();
 }
 
 //////////////////////////////
@@ -2772,11 +2774,11 @@ STDMETHODIMP Primitive::put_Scatter(float newVal)
 {
    STARTUNDO
 
-      m_d.m_scatter = newVal;
+   m_d.m_scatter = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Collidable(VARIANT_BOOL *pVal)
