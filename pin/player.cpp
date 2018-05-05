@@ -1641,6 +1641,16 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    Render(); //!! why here already? potentially not all initialized yet??
 
+#if(_WIN32_WINNT >= 0x0500)
+   if (m_fFullScreen) // blocks processes from taking focus away from our exclusive fullscreen app and disables mouse cursor
+   {
+	   ::LockSetForegroundWindow(LSFW_LOCK);
+	   ::ShowCursor(FALSE);
+   }
+#else
+#pragma message ( "Warning: Missing LockSetForegroundWindow()" )
+#endif
+
    // Broadcast a message to notify front-ends that it is 
    // time to reveal the playfield. 
    UINT nMsgID = RegisterWindowMessage(_T("VPTableStart"));
