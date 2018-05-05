@@ -516,7 +516,7 @@ public:
    void MoveCollectionUp(CComObject<Collection> *pcol);
    void MoveCollectionDown(CComObject<Collection> *pcol);
 
-   int GetDetailLevel();
+   int GetDetailLevel(); // used for rubber, ramp and ball
    float GetZPD();
    float GetMaxSeparation();
    float Get3DOffset();
