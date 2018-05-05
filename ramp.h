@@ -169,8 +169,16 @@ private:
    void GetCentralCurve(std::vector<T> &vv, const float _accuracy=-1.f )
    {
       float accuracy;
+
+      // as solid ramps are rendered into the static buffer, always use maximum precision
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+      if (!mat->m_bOpacityActive)
+         accuracy = 10.f;
+      else
+         accuracy = (float)m_ptable->GetDetailLevel();
+
       if (_accuracy==-1.f)
-         accuracy = 4.0f*powf(10.0f, (10.0f - m_ptable->GetDetailLevel())*(float)(1.0 / 1.5)); // min = 4 (highest accuracy/detail level), max = 4 * 10^(10/1.5) = ~18.000.000 (lowest accuracy/detail level)
+         accuracy = 4.0f*powf(10.0f, (10.0f -  accuracy)*(float)(1.0 / 1.5)); // min = 4 (highest accuracy/detail level), max = 4 * 10^(10/1.5) = ~18.000.000 (lowest accuracy/detail level)
        else
          accuracy = 4.0f*powf(10.0f, (10.0f - _accuracy)*(float)(1.0 / 1.5)); // used for hit shape calculation, always!
       IHaveDragPoints::GetRgVertex(vv, false, accuracy);

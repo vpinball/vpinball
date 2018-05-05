@@ -369,8 +369,8 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
 
    for (int i = 0; i < cvertex; i++)
    {
-      const RenderVertex & vprev = vvertex[(i>0) ? i - 1 : i];
-      const RenderVertex & vnext = vvertex[(i < (cvertex - 1)) ? i + 1 : 0];
+      const RenderVertex & vprev   = vvertex[(i>0) ? i - 1 : i];
+      const RenderVertex & vnext   = vvertex[(i < (cvertex - 1)) ? i + 1 : 0];
       const RenderVertex & vmiddle = vvertex[i];
 
 	  if (ppfCross)
@@ -592,16 +592,14 @@ void Rubber::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
       obj->SetFriction( m_d.m_friction );
       obj->m_scatter = ANGTORAD( m_d.m_scatter );
    }
+
    obj->m_fEnabled = m_d.m_fCollidable;
    // the rubber is of type ePrimitive for triggering the event in HitTriangle::Collide()
    obj->m_ObjType = ePrimitive;
    // hard coded threshold for now
    obj->m_threshold = 2.0f;
-   obj->m_obj = (IFireEvents *)this;
-   if (m_d.m_fHitEvent)
-      obj->m_fe = true;
-   else
-      obj->m_fe = false;
+   obj->m_obj = (IFireEvents *) this;
+   obj->m_fe = m_d.m_fHitEvent;
 
    pvho->AddElement(obj);
    m_vhoCollidable.push_back(obj);	//remember hit components of primitive
@@ -1487,8 +1485,13 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape)
    }
    else
    {
-      accuracy = (int)(m_ptable->GetDetailLevel()*1.3f);
+      accuracy = (int)((float)m_ptable->GetDetailLevel()*1.3f); // see also below
    }
+
+   // as solid rubbers are rendered into the static buffer, always use maximum precision
+   if (m_d.m_staticRendering)
+      accuracy = (int)(10.f*1.3f); // see also above
+
    if (_accuracy != -1)
       accuracy = _accuracy;
 

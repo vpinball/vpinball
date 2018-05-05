@@ -1079,8 +1079,13 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
    }
    else
    {
-      accuracy = (int)(m_ptable->GetDetailLevel()*1.3f);
+      accuracy = (int)((float)m_ptable->GetDetailLevel()*1.3f); // see below
    }
+
+   // as solid ramps are rendered into the static buffer, always use maximum precision
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   if (!mat->m_bOpacityActive)
+      accuracy = (int)(10.f*1.3f); // see above
 
    if(rgheightInit)
        delete [] rgheightInit;
@@ -1249,7 +1254,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
-   // dont render alpha shaded ramps into static buffer, these are done per frame later-on
+   // dont render transparent ramps into static buffer, these are done per frame later-on
    if (mat->m_bOpacityActive)
       return;
 
