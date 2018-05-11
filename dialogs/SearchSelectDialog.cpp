@@ -56,6 +56,20 @@ void SearchSelectDialog::Update()
 
    lv.mask = LVIF_TEXT | LVIF_PARAM;
    int idx = 0;
+   for (int i = 0; i < curTable->m_vcollection.Size(); i++)
+   {
+      CComObject<Collection> *const pcol = curTable->m_vcollection.ElementAt(i);
+      char szT[64]; 
+
+      WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, 64, NULL, NULL);
+      lv.iItem = idx;
+      lv.iSubItem = 0;
+      lv.lParam = (LPARAM)pcol;
+      lv.pszText = szT;
+      ListView_InsertItem(hElementList, &lv);
+      ListView_SetItemText(hElementList, idx, 1, "Collection");
+      idx++;
+   }
    for (int i = 0; i < curTable->m_vedit.Size(); i++)
    {
       IEditable * const piedit = curTable->m_vedit.ElementAt(i);
@@ -116,10 +130,25 @@ void SearchSelectDialog::SelectElement()
         lv.mask = LVIF_PARAM;
         if (ListView_GetItem(hElementList, &lv) == TRUE)
         {
-            IScriptable *pscript = (IScriptable*)lv.lParam;
-            ISelect *const pisel = pscript->GetISelect();
-            if (pisel)
-                curTable->AddMultiSel(pisel, true);
+           char szType[64];
+           ListView_GetItemText(hElementList, iItem, 1, szType, 32);
+           if (strcmp(szType, "Collection") == 0)
+           {
+              CComObject<Collection> *const pcol = (CComObject<Collection>*)lv.lParam;
+              if (pcol->m_visel.Size()>0)
+              {
+                 ISelect *const pisel = pcol->m_visel.ElementAt(0);
+                 if (pisel)
+                    curTable->AddMultiSel(pisel, false);
+              }
+           }
+           else
+           {
+              IScriptable *pscript = (IScriptable*)lv.lParam;
+              ISelect *const pisel = pscript->GetISelect();
+              if (pisel)
+                 curTable->AddMultiSel(pisel, true);
+           }
         }
     }
 }
