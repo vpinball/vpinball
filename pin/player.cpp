@@ -2304,10 +2304,9 @@ void Player::InitWindow()
    m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
 #if(_WIN32_WINNT >= 0x0500)
-   if (m_fFullScreen) // blocks processes from taking focus away from our exclusive fullscreen app and disables mouse cursor
+   if (m_fFullScreen) // Doubly insure processes can't take focus away from our exclusive fullscreen app, fixes problems noticed under PinUP Popper losing focus from B2S.
    {
       ::LockSetForegroundWindow(LSFW_LOCK);
-      ::ShowCursor(FALSE);
    }
 #else
    #pragma message ( "Warning: Missing LockSetForegroundWindow()" )
