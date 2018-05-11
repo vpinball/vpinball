@@ -1088,9 +1088,10 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
       SmartBrowser * const psb = (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
       if (psb==NULL)
-      {
          return FALSE;
-      }
+
+      if (psb->m_pvsel == NULL)
+         return FALSE;
 
       switch (code)
       {
