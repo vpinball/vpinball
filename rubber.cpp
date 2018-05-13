@@ -257,12 +257,9 @@ void Rubber::Render(Sur * const psur)
    }
 }
 
-void Rubber::RenderOutline(Sur * const psur, const bool solid)
+void Rubber::RenderBlueprint(Sur *psur, const bool solid)
 {
-   if (solid)
-      psur->SetFillColor(BLUEPRINT_SOLID_COLOR);
-   else
-      psur->SetFillColor(-1);
+   psur->SetFillColor(solid ? BLUEPRINT_SOLID_COLOR : -1);
 
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
@@ -287,11 +284,6 @@ void Rubber::RenderOutline(Sur * const psur, const bool solid)
    {
       DrawRubberMesh(psur);
    }
-}
-
-void Rubber::RenderBlueprint(Sur *psur, const bool solid)
-{
-   RenderOutline(psur, solid);
 }
 
 void Rubber::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
@@ -349,10 +341,10 @@ void Rubber::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
  *                 order: first forward along right side of ramp, then backward along the left side
  *  ppfCross     - size cvertex, true if i-th vertex corresponds to a control point
  */
-Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D ** const pMiddlePoints)
+Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D ** const pMiddlePoints, const float _accuracy)
 {
    std::vector<RenderVertex> vvertex;
-   GetCentralCurve(vvertex);
+   GetCentralCurve(vvertex, _accuracy);
    // vvertex are the 2D vertices forming the central curve of the rubber as seen from above
 
    const int cvertex = (int)vvertex.size();
@@ -464,9 +456,24 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
 /*
  * Get an approximation of the curve described by the control points of this ramp.
  */
-void Rubber::GetCentralCurve(std::vector<RenderVertex> & vv)
+void Rubber::GetCentralCurve(std::vector<RenderVertex> &vv, const float _accuracy)
 {
-   IHaveDragPoints::GetRgVertex(vv);
+      float accuracy;
+
+      // as solid rubbers are rendered into the static buffer, always use maximum precision
+      if (_accuracy != -1.f)
+         accuracy = _accuracy; // used for hit shape calculation, always!
+      else
+      {
+         if (m_d.m_staticRendering)
+            accuracy = 10.f;
+         else
+            accuracy = (float)m_ptable->GetDetailLevel();
+
+         accuracy = 4.0f*powf(10.0f, (10.0f - accuracy)*(float)(1.0 / 1.5)); // min = 4 (highest accuracy/detail level), max = 4 * 10^(10/1.5) = ~18.000.000 (lowest accuracy/detail level)
+      }
+
+      IHaveDragPoints::GetRgVertex(vv, true, accuracy);
 }
 
 float Rubber::GetSurfaceHeight(float x, float y)
@@ -1472,7 +1479,7 @@ void Rubber::ExportMesh(FILE *f)
    }
 }
 
-void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape)
+void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! hack, createHitShape==true needs adaption below if changing detail level for hitshape
 {
    int accuracy;
    if (m_ptable->GetDetailLevel() < 5)
@@ -1492,12 +1499,12 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape)
    if (m_d.m_staticRendering)
       accuracy = (int)(10.f*1.3f); // see also above
 
-   if (_accuracy != -1)
+   if (_accuracy != -1) // hit shapes have the same, static, precision
       accuracy = _accuracy;
 
    Vertex2D * middlePoints = 0;
    int splinePoints;
-   const Vertex2D * const rgvLocal = GetSplineVertex(splinePoints, NULL, &middlePoints);
+   const Vertex2D * const rgvLocal = GetSplineVertex(splinePoints, NULL, &middlePoints, (_accuracy != -1) ? 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)) : -1.f);
    const int numRings = splinePoints - 1;
    const int numSegments = accuracy;
    m_numVertices = numRings*numSegments;
