@@ -446,7 +446,7 @@ public:
    U32 m_script_max;
    U32 m_script_max_total;
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
    U32 c_hitcnts;
    U32 c_collisioncnt;
    U32 c_contactcnt;

@@ -293,6 +293,7 @@ inline unsigned short float2half(const float value)
 
 //
 
+// input two random numbers, output two transformed random numbers
 inline void gaussianDistribution(float &u1, float &u2, const float sigma = 3.f, const float mu = 0.f)
 {
 #if 1 // lump3, limit to range instead of infinite support

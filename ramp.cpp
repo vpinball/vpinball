@@ -2,8 +2,6 @@
 //#include "forsyth.h"
 #include "objloader.h"
 
-const float Ramp::HIT_SHAPE_DETAIL_LEVEL = 7.0f;
-
 Ramp::Ramp()
 {
    m_menuid = IDR_SURFACEMENU;
@@ -259,7 +257,7 @@ void Ramp::Render(Sur * const psur)
    }
 }
 
-void Ramp::RenderOutline(Sur * const psur, const bool solid)
+void Ramp::RenderBlueprint(Sur *psur, const bool solid)
 {
    psur->SetFillColor(solid ? BLUEPRINT_SOLID_COLOR : -1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
@@ -297,11 +295,6 @@ void Ramp::RenderOutline(Sur * const psur, const bool solid)
    delete[] middlePoints;
 }
 
-
-void Ramp::RenderBlueprint(Sur *psur, const bool solid)
-{
-   RenderOutline(psur, solid);
-}
 
 void Ramp::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
 {
@@ -351,7 +344,7 @@ void Ramp::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
    }
 }
 
-void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, float height)
+void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, const float height)
 {
    for (int i = 0; i < m_vdpoint.size(); i++)
    {

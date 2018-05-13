@@ -123,7 +123,7 @@ void HitKD::FillFromVector(Vector<HitObject>& vho)
       m_org_idx[i] = i;
    }
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
    g_pplayer->c_kDObjects = vho.size();
 #endif
 
@@ -145,7 +145,7 @@ void HitKD::FillFromIndices()
       m_rootNode.m_rectbounds.Extend(pho->m_hitBBox);
    }
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
    g_pplayer->c_kDObjects = m_num_items;
 #endif
 
@@ -162,7 +162,7 @@ void HitKD::FillFromIndices(const FRect3D& initialBounds)
 
    // assume that CalcHitBBox() was already called on the hit objects
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
    g_pplayer->c_kDObjects = m_num_items;
 #endif
 
@@ -218,7 +218,7 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
    m_children[0].m_rectbounds = m_rectbounds;
    m_children[1].m_rectbounds = m_rectbounds;
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
    g_pplayer->c_kDNextlevels++;
 #endif
 
@@ -401,7 +401,7 @@ void HitKDNode::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 
    for (unsigned i=m_start; i<m_start+org_items; i++)
    {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
       g_pplayer->c_tested++;
 #endif
       HitObject * const pho = m_hitoct->GetItemAt( i );
@@ -415,7 +415,7 @@ void HitKDNode::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 
    if (m_children) // not a leaf
    {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
       g_pplayer->c_traversed++;
 #endif
       if(axis == 0)
@@ -494,7 +494,7 @@ void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
       const unsigned int end = traversal_order ? size : (current->m_start / 4 - 1);
       for (unsigned int i = start; i != end; i += dt)
       {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
          g_pplayer->c_tested++; //!! +=4? or is this more fair?
 #endif
          // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
@@ -569,7 +569,7 @@ void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 
       if (current->m_children) // not a leaf
       {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
          g_pplayer->c_traversed++;
 #endif
          if (axis == 0)
@@ -609,7 +609,7 @@ void HitKDNode::HitTestXRay(const Ball * const pball, Vector<HitObject> * const 
 
    for (unsigned i = m_start; i < m_start + org_items; i++)
    {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
       g_pplayer->c_tested++;
 #endif
       HitObject * const pho = m_hitoct->GetItemAt(i);
@@ -617,7 +617,7 @@ void HitKDNode::HitTestXRay(const Ball * const pball, Vector<HitObject> * const 
          /*fRectIntersect3D(pball->m_hitBBox, pho->m_hitBBox) &&*/ //!! do bbox test before to save alu-instructions? or not to save registers? -> currently not, as just sphere vs sphere
 		 fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, pho->m_hitBBox))
       {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
          g_pplayer->c_deepTested++;
 #endif
          const float newtime = pho->HitTest(pball, coll.m_hittime, coll);
@@ -628,7 +628,7 @@ void HitKDNode::HitTestXRay(const Ball * const pball, Vector<HitObject> * const 
 
    if (m_children) // not a leaf
    {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
       g_pplayer->c_traversed++;
 #endif
       if (axis == 0)

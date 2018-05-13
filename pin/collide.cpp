@@ -511,7 +511,7 @@ void HitPoint::Collide(CollisionEvent& coll)
 
 void DoHitTest(Ball *const pball, HitObject *const pho, CollisionEvent& coll)
 {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
    g_pplayer->c_deepTested++;
 #endif
    if (pho == NULL || pball == NULL)

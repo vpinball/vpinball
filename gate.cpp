@@ -142,7 +142,7 @@ void Gate::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Gate", "GateType", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_type= (enum GateType)iTmp;
+       m_d.m_type= (GateType)iTmp;
    else
        m_d.m_type = GateWireW;
 

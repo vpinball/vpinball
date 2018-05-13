@@ -19,6 +19,7 @@
 #define DEFAULT_TABLE_MIN_SLOPE         6.0f
 #define DEFAULT_TABLE_MAX_SLOPE         6.0f
 
+#define HIT_SHAPE_DETAIL_LEVEL          7.0f // static detail level to approximate ramps and rubbers for the physics/collision code
 
 //#define PRINT_DEBUG_COLLISION_TREE     // print collision acceleration structure info (will slow down debugging startup time if enabled)
 

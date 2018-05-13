@@ -30,7 +30,7 @@ void HitQuadtree::Initialize()
    for (unsigned i = 0; i < m_vho.size(); ++i)
       bounds.Extend(m_vho[i]->m_hitBBox);
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
    g_pplayer->c_quadObjects = (U32)m_vho.size();
 #endif
 
@@ -39,7 +39,7 @@ void HitQuadtree::Initialize()
 
 void HitQuadtree::Initialize(const FRect3D& bounds)
 {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
    g_pplayer->c_quadObjects = (U32)m_vho.size();
 #endif
 
@@ -51,7 +51,7 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
    if (m_vho.size() <= 4) //!! magic
       return;
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
    g_pplayer->c_quadNextlevels++;
 #endif
 
@@ -203,12 +203,12 @@ void HitQuadtree::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 
    for (unsigned i=0; i<m_vho.size(); i++)
    {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
       g_pplayer->c_tested++;
 #endif
       if ((pball != m_vho[i]) // ball can not hit itself
          && fRectIntersect3D(pball->m_hitBBox, m_vho[i]->m_hitBBox)
-		 && fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, m_vho[i]->m_hitBBox))
+         && fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, m_vho[i]->m_hitBBox))
       {
          DoHitTest(pball, m_vho[i], coll);
       }
@@ -219,7 +219,7 @@ void HitQuadtree::HitTestBall(Ball * const pball, CollisionEvent& coll) const
       const bool fLeft = (pball->m_hitBBox.left <= m_vcenter.x);
       const bool fRight = (pball->m_hitBBox.right >= m_vcenter.x);
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
       g_pplayer->c_tested++;
 #endif
       if (pball->m_hitBBox.top <= m_vcenter.y) // Top
@@ -280,7 +280,7 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
             const size_t end = traversal_order ? size : -1;
             for (size_t i = start; i != end; i += dt)
             {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
                g_pplayer->c_tested++; //!! +=4? or is this more fair?
 #endif
                // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
@@ -340,7 +340,7 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 
          if (!current->m_fLeaf)
          {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
             g_pplayer->c_traversed++;
 #endif
             const bool fLeft = (pball->m_hitBBox.left <= current->m_vcenter.x);
@@ -371,12 +371,12 @@ void HitQuadtree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvho
 {
    for (unsigned i = 0; i < m_vho.size(); i++)
    {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
       g_pplayer->c_tested++;
 #endif
       if ((pball != m_vho[i]) && fRectIntersect3D(pball->m_hitBBox, m_vho[i]->m_hitBBox) && fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, m_vho[i]->m_hitBBox))
       {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
          g_pplayer->c_deepTested++;
 #endif
          const float newtime = m_vho[i]->HitTest(pball, coll.m_hittime, coll);
@@ -392,7 +392,7 @@ void HitQuadtree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvho
       const bool fLeft = (pball->m_hitBBox.left <= m_vcenter.x);
       const bool fRight = (pball->m_hitBBox.right >= m_vcenter.x);
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
       g_pplayer->c_tested++;
 #endif
       if (pball->m_hitBBox.top <= m_vcenter.y) // Top

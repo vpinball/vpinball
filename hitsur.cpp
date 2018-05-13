@@ -123,9 +123,7 @@ void HitSur::Ellipse(const float centerx, const float centery, const float radiu
 void HitSur::Ellipse2(const float centerx, const float centery, const int radius)
 {
    if (m_pcur == NULL)
-   {
       return;
-   }
 
    const int ix = SCALEXf(centerx);
    const int iy = SCALEYf(centery);
@@ -272,7 +270,6 @@ void HitSur::Arc(const float x, const float y, const float radius, const float p
 
 void HitSur::Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height)
 {
-
 }
 
 void HitSur::SetObject(ISelect *psel)
