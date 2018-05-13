@@ -83,7 +83,6 @@ public:
 
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
-   void RenderOutline(Sur * const psur, const bool solid=false);
    virtual void RenderBlueprint(Sur *psur, const bool solid=false);
 
    virtual void ClearForOverwrite();
@@ -116,14 +115,14 @@ public:
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
 
+   // IHaveDragPoints
+   virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
+   // end IHaveDragPoints
+
    void WriteRegDefaults();
    void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j);
    void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
    void UpdateUnitsInfo();
-
-   // IHaveDragPoints
-   virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
-   // end IHaveDragPoints
 
    PinTable *m_ptable;
 
@@ -149,9 +148,9 @@ private:
    PropertyPane *m_propPhysics;
    PropertyPane *m_propPosition;
 
-   void GetCentralCurve(std::vector<RenderVertex> & vv);
+   void GetCentralCurve(std::vector<RenderVertex> &vv, const float _accuracy = -1.f);
 
-   Vertex2D *GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D ** const pMiddlePoints);
+   Vertex2D *GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D ** const pMiddlePoints, const float _accuracy = -1.f);
 
    void GenerateVertexBuffer(RenderDevice* pd3dDevice);
 
