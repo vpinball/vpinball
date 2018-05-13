@@ -120,7 +120,7 @@ public:
    float m_elasticity;
    float m_elasticityFalloff;
    float m_friction;
-   float m_scatter;
+   float m_scatter; // in radians
 
    eObjType m_ObjType;
 

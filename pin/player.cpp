@@ -520,7 +520,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_lastcursorx = 0xfffffff;
    m_lastcursory = 0xfffffff;
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
    c_hitcnts = 0;
    c_collisioncnt = 0;
    c_contactcnt = 0;
@@ -1393,7 +1393,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       Hitable * const ph = pe->GetIHitable();
       if (ph)
       {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
          if(pe->GetScriptable())
          {
             CComBSTR bstr;
@@ -1864,8 +1864,9 @@ void Player::InitStatic(HWND hwndProgress)
    RenderTarget* offscreenSurface;
    CHECKD3D(m_pin3d.m_pd3dDevice->GetCoreDevice()->CreateOffscreenPlainSurface(descStatic.Width, descStatic.Height, descStatic.Format, D3DPOOL_SYSTEMMEM, &offscreenSurface, NULL));
 
+#define STATIC_PRERENDER_ITERATIONS 32
    // precomputed blue-noiseish points
-   static const float xyLDBNbnot[32*2] = {
+   static const float xyLDBNbnot[STATIC_PRERENDER_ITERATIONS*2] = {
      0.00000,0.00000,
      0.23151,0.02134,
      0.36499,0.09920,
@@ -1899,8 +1900,7 @@ void Player::InitStatic(HWND hwndProgress)
      0.67643,0.95568,
      0.85440,0.82776};
 
-#define STATIC_PRERENDER_ITERATIONS 32
-//#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
+//#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
    // loop for X times and accumulate/average these renderings on CPU side
    // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
    for (int iter = cameraMode ? 0 : (STATIC_PRERENDER_ITERATIONS-1); iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
@@ -1914,7 +1914,7 @@ void Player::InitStatic(HWND hwndProgress)
    assert(u2 > -1.f && u2 < 2.f);
    // Last iteration MUST set a sample offset of 0,0 so that final depth buffer features 'correctly' centered pixel sample
    if (iter == 0)
-     assert(u1 == 0.5f && u2 == 0.5f);
+      assert(u1 == 0.5f && u2 == 0.5f);
 
    // Setup Camera,etc matrices for each iteration. 
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS, u1 - 0.5f, u2 - 0.5f);
@@ -2916,7 +2916,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
    while (dtime > 0.f)
    {
       // first find hits, if any +++++++++++++++++++++ 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
       c_timesearch++;
 #endif
       hittime = dtime;        // begin time search from now ...  until delta ends
@@ -2965,7 +2965,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
             if (pball->m_coll.m_obj)                   // hit object
             {
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
                ++c_hitcnts;                            // stats for display
 
                if (/*pball->m_coll.m_hitRigid &&*/ pball->m_coll.m_hitdistance < -0.0875f) //rigid and embedded
@@ -3016,7 +3016,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
             // now collision, contact and script reactions on active ball (object)+++++++++
             HitObject * const pho = pball->m_coll.m_obj; // object that ball hit in trials
             m_pactiveball = pball;                       // For script that wants the ball doing the collision
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
             c_collisioncnt++;
 #endif
             pho->Collide(pball->m_coll);                 //!!!!! 3) collision on active ball
@@ -3044,7 +3044,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
                      if (--pball->m_dynamic <= 0)             //... ball static, cancels next gravity increment
                      {                                       // m_dynamic is cleared in ball gravity section
                         pball->m_dynamic = 0;
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
                         c_staticcnt++;
 #endif
                         pball->m_vel.x = pball->m_vel.y = pball->m_vel.z = 0.f; //quench the remaining velocity and set ...
@@ -3056,7 +3056,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
          }
       }
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
       c_contactcnt = (U32)m_contacts.size();
 #endif
       /*
@@ -3146,7 +3146,7 @@ void Player::UpdatePhysics()
    }
 
 #ifdef STEPPING
-#ifndef EVENTIME
+#ifndef EVENPHYSICSTIME
    if (m_fDebugWindowActive || m_fUserDebugPaused)
    {
       // Shift whole game foward in time
@@ -3164,7 +3164,7 @@ void Player::UpdatePhysics()
 #endif
 #endif
 
-#ifdef EVENTIME
+#ifdef EVENPHYSICSTIME
    if (!m_fPause || m_fStep)
    {
       initial_time_usec = m_curPhysicsFrameTime - 3547811060 + 3547825450;
@@ -4100,7 +4100,7 @@ void Player::UpdateHUD()
 		len = sprintf_s(szFoo, "Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
 		DebugPrint(10, 175, szFoo, len);
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
 		len = sprintf_s(szFoo, "Phys: %5u iterations (%5u avg %5u max))",
 			m_phys_iterations,
 			(U32)(m_phys_total_iterations / m_count),
@@ -4695,7 +4695,7 @@ void Player::Render()
 
    m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUGPHYSICS
    c_hitcnts = 0;
    c_collisioncnt = 0;
    c_contactcnt = 0;

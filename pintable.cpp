@@ -10275,7 +10275,7 @@ STDMETHODIMP PinTable::put_Gravity(float newVal)
    else
    {
       STARTUNDO
-         m_Gravity = newVal*GRAVITYCONST;
+      m_Gravity = newVal*GRAVITYCONST;
       STOPUNDO
    }
    return S_OK;
@@ -10310,11 +10310,11 @@ STDMETHODIMP PinTable::put_Elasticity(float newVal)
 {
    STARTUNDO
 
-      m_elasticity = newVal;
+   m_elasticity = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_ElasticityFalloff(float *pVal)
@@ -10328,11 +10328,11 @@ STDMETHODIMP PinTable::put_ElasticityFalloff(float newVal)
 {
    STARTUNDO
 
-      m_elasticityFalloff = newVal;
+   m_elasticityFalloff = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Scatter(float *pVal)
@@ -10346,11 +10346,11 @@ STDMETHODIMP PinTable::put_Scatter(float newVal)
 {
    STARTUNDO
 
-      m_scatter = newVal;
+   m_scatter = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_DefaultScatter(float *pVal)
@@ -10364,11 +10364,11 @@ STDMETHODIMP PinTable::put_DefaultScatter(float newVal)
 {
    STARTUNDO
 
-      m_defaultScatter = newVal;
+   m_defaultScatter = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_NudgeTime(float *pVal)
@@ -10381,10 +10381,10 @@ STDMETHODIMP PinTable::get_NudgeTime(float *pVal)
 STDMETHODIMP PinTable::put_NudgeTime(float newVal)
 {
    STARTUNDO
-      m_nudgeTime = newVal;
+   m_nudgeTime = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_PlungerNormalize(int *pVal)

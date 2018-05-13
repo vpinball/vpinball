@@ -160,7 +160,7 @@ void Light::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Light", "LightState", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_state = (enum LightState)iTmp;
+      m_d.m_state = (LightState)iTmp;
    else
       m_d.m_state = LightStateOff;
 

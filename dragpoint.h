@@ -30,6 +30,8 @@ public:
    virtual void GetPointCenter(Vertex2D * const pv) const;
    virtual void PutPointCenter(const Vertex2D * const pv);
 
+   virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
+
    void FlipPointY(Vertex2D *pvCenter);
    void FlipPointX(Vertex2D *pvCenter);
    void RotateDialog();
@@ -39,7 +41,6 @@ public:
    void TranslateDialog();
    void TranslatePoints(Vertex2D *pvOffset);
    void ReverseOrder();
-   virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
 
    void GetTextureCoords(const std::vector<RenderVertex> & vv, float **ppcoords);
 
@@ -50,7 +51,7 @@ public:
 
 protected:
    template <typename T>
-   void GetRgVertex(std::vector<T> &vv, const bool loop = true, const float accuracy = (float)(1.0 / (0.5*0.5)))
+   void GetRgVertex(std::vector<T> &vv, const bool loop = true, const float accuracy = 4.f) // 4 = maximum precision that we allow for
    {
       static const int Dim = T::Dim;    // for now, this is always 2 or 3
 
@@ -94,7 +95,7 @@ protected:
          // Properties of last point don't matter, because it won't be added to the list on this pass (it'll get added as the first point of the next curve)
          rendv2.set(pdp2->m_v);
 
-         RecurseSmoothLine(cc, 0, 1, rendv1, rendv2, vv, accuracy);
+         RecurseSmoothLine(cc, 0.f, 1.f, rendv1, rendv2, vv, accuracy);
       }
 
       if (!loop)

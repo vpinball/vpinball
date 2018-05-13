@@ -266,7 +266,7 @@ void PlungerMoverObject::UpdateVelocities()
    const float ReleaseThreshold = 0.2f;
 
    // note if we're acting as an auto plunger
-   const int autoPlunger = m_plunger->m_d.m_autoPlunger;
+   const bool autoPlunger = m_plunger->m_d.m_autoPlunger;
 
    // check which forces are acting on us
    if (m_fireTimer > 0)

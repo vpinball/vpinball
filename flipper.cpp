@@ -1477,20 +1477,20 @@ STDMETHODIMP Flipper::put_Material(BSTR newVal)
 
 /*STDMETHODIMP Flipper::get_AngleEOS(float *pVal)
 {
-*pVal = m_d.m_angleEOS;
+   *pVal = m_d.m_angleEOS;
 
-return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::put_AngleEOS(float newVal)
 {
-STARTUNDO
+   STARTUNDO
 
-m_d.m_angleEOS = newVal;
+   m_d.m_angleEOS = newVal;
 
-STOPUNDO
+   STOPUNDO
 
-return S_OK;
+   return S_OK;
 }*/
 
 void Flipper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -1748,19 +1748,19 @@ STDMETHODIMP Flipper::get_Scatter(float *pVal)
 
 STDMETHODIMP Flipper::put_Scatter(float newVal)
 {
-	if (m_phitflipper)
-	{
-		if (!m_d.m_OverridePhysics)
-		   m_phitflipper->m_scatter = ANGTORAD(newVal);
-	}
-	else
-	{
-		STARTUNDO
-		m_d.m_scatter = newVal;
-		STOPUNDO
-	}
+   if (m_phitflipper)
+   {
+      if (!m_d.m_OverridePhysics)
+         m_phitflipper->m_scatter = ANGTORAD(newVal);
+   }
+   else
+   {
+      STARTUNDO
+      m_d.m_scatter = newVal;
+      STOPUNDO
+   }
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_ElasticityFalloff(float *pVal)

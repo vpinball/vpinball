@@ -18,6 +18,8 @@
 //#define DEBUG_NO_SOUND
 //#define DEBUG_REFCOUNT_TRIGGER
 
+//#define ENABLE_TRACE // enables all TRACE_FUNCTION() calls to use D3DPERF_Begin/EndEvent
+
 //#define DEBUG_XXX // helps to detect out-of-bounds access, needs to link dbghelp.lib then
 //#define SLINTF    // enable debug console output
 
@@ -69,8 +71,9 @@
 
 //#define LOG
 
-//#define _DEBUGPHYSICS
-//#define EVENTIME 1
+//#define DEBUGPHYSICS          // enables detailed physics/collision handling output for the 'F11' stats/debug texts
+
+//#define EVENPHYSICSTIME
 
 #define DEBUG_BALL_SPIN
 

@@ -93,7 +93,6 @@ public:
 
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
-   void RenderOutline(Sur * const psur, const bool solid=false);
    virtual void RenderBlueprint(Sur *psur, const bool solid = false);
 
    virtual void ClearForOverwrite();
@@ -118,7 +117,7 @@ public:
 
    virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D);
 
-   void AssignHeightToControlPoint(const RenderVertex3D &v, float height);
+   void AssignHeightToControlPoint(const RenderVertex3D &v, const float height);
    virtual bool IsTransparent();
    virtual float GetDepth(const Vertex3Ds& viewDir);
    virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
@@ -162,7 +161,6 @@ private:
    PropertyPane *m_propPhysics;
 
    bool isHabitrail() const;
-   static const float HIT_SHAPE_DETAIL_LEVEL;
 
    // Get an approximation of the curve described by the control points of this ramp.
    template <typename T>
@@ -183,7 +181,6 @@ private:
          accuracy = 4.0f*powf(10.0f, (10.0f - _accuracy)*(float)(1.0 / 1.5)); // used for hit shape calculation, always!
       IHaveDragPoints::GetRgVertex(vv, false, accuracy);
    }
-
 
    Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **const pMiddlePoints, const float _accuracy, const bool inc_width);
    void prepareHabitrail(RenderDevice* pd3dDevice);
