@@ -1037,7 +1037,16 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
    case GET_COLOR_TABLE:
    {
       SmartBrowser * const psb = (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-      *((unsigned long **)lParam) = psb->GetBaseISel()->GetPTable()->m_rgcolorcustom;
+      if (psb)
+      {
+         ISelect *pisel = psb->GetBaseISel();
+         if (pisel)
+         {
+            PinTable *ptable = pisel->GetPTable();
+            if (ptable)
+               *((unsigned long **)lParam) = ptable->m_rgcolorcustom;
+         }
+      }
       return TRUE;
    }
    break;
