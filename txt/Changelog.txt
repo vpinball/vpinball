@@ -4,6 +4,7 @@ VP 10.5.0 Changelog
 - log message in debug window when PlaySound is called for a sound that's missing in the sound manager
 
 - static table elements are now over-sampled/better anti-aliased and always rendered at highest detail level (latter only applicable for rubbers and ramps)
+- rubbers now fully respect the element detail level slider, plus their hit shapes feature less triangles (=faster physics/collisions)
 
 - update bumper base, ring and skirt with better meshes provided by flupper1
 
