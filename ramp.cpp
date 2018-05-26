@@ -531,7 +531,7 @@ float Ramp::GetSurfaceHeight(float x, float y)
 
    int iSeg;
    Vertex2D vOut;
-   ClosestPointOnPolygon(vvertex, Vertex2D(x, y), &vOut, &iSeg, false);
+   ClosestPointOnPolygon(vvertex, Vertex2D(x, y), vOut, iSeg, false);
 
    if (iSeg == -1)
       return 0.0f; // Object is not on ramp path
@@ -1496,7 +1496,7 @@ void Ramp::AddPoint(int x, int y, const bool smooth)
 
    int iSeg;
    Vertex2D vOut;
-   ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, false);
+   ClosestPointOnPolygon(vvertex, v, vOut, iSeg, false);
 
    // Go through vertices (including iSeg itself) counting control points until iSeg
    int icp = 0;

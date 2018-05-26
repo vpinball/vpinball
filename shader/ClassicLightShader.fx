@@ -78,25 +78,23 @@ struct VS_LIGHT_OUTPUT
 VS_LIGHT_OUTPUT vs_light_main (float4 vPosition : POSITION0,  
                                float3 vNormal   : NORMAL0,  
                                float2 tc        : TEXCOORD0) 
-{ 
-   VS_LIGHT_OUTPUT Out;
-
+{
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    const float3 P = mul(vPosition, matWorldView).xyz;
    const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
 
+   VS_LIGHT_OUTPUT Out;
    Out.pos = mul(vPosition, matWorldViewProj);
    Out.tex0 = tc;
-   Out.tablePos = vPosition.xyz;
    Out.worldPos = P;
-   Out.normal = N;
-   
+   Out.tablePos = vPosition.xyz;
+   Out.normal = (imageBackglassMode.y == 0. ? N : vNormal);
    return Out; 
 }
 
 float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
 {
-    float4 pixel = tex2D(texSampler0, IN.tex0); //!! IN.tex0 abused in backglass mode
+    float4 pixel = tex2D(texSampler0, IN.tex0);
     if(!hdrTexture0)
         pixel.xyz = InvGamma(pixel.xyz);
 
@@ -119,7 +117,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
 
 	[branch] if(lightColor_intensity.w != 0.0)
     {
-        const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? IN.tablePos : float3(IN.tex0,0.0))) * lightCenter_maxRange.w;
+        const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? IN.tablePos : IN.normal)) * lightCenter_maxRange.w; //!! backglass mode abuses normal to pass in position
         const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
         const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
         color += float4(lcolor*(atten*lightColor_intensity.w),
@@ -136,7 +134,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLO
     float4 result = float4(0.0, 0.0, 0.0, 0.0);
     [branch] if (lightColor_intensity.w != 0.0)
     {
-        const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? IN.tablePos : float3(IN.tex0,0.0))) * lightCenter_maxRange.w;
+        const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? IN.tablePos : IN.normal)) * lightCenter_maxRange.w; //!! backglass mode abuses normal to pass in position
         const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
         const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
         result.xyz = lcolor*(atten*lightColor_intensity.w);

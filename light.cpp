@@ -65,6 +65,7 @@ int LightCenter::GetSelectLevel()
    return (m_plight->m_d.m_shape == ShapeCircle) ? 1 : 2; // Don't select light bulb twice if we have drag points
 }
 
+//
 
 Light::Light() : m_lightcenter(this)
 {
@@ -131,8 +132,8 @@ HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    InitShape();
 
-   m_fLockedByLS = false;			//>>> added by chris
-   m_realState = m_d.m_state;		//>>> added by chris
+   m_fLockedByLS = false;
+   m_realState = m_d.m_state;
    m_d.m_fVisible = true;
 
    return InitVBA(fTrue, 0, NULL);
@@ -146,6 +147,7 @@ void Light::SetDefaults(bool fromMouseClick)
 
    m_duration = 0;
    m_finalState = 0;
+
    hr = GetRegStringAsFloat("DefaultProps\\Light", "Falloff", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_falloff = fTmp;
@@ -319,11 +321,7 @@ void Light::WriteRegDefaults()
 
 Texture *Light::GetDisplayTexture()
 {
-   switch (m_d.m_state)
-   {
-   case LightStateOff: return m_ptable->GetImage(m_d.m_szOffImage);
-   default:            return NULL;
-   }
+   return (m_d.m_state == LightStateOff) ? m_ptable->GetImage(m_d.m_szOffImage) : NULL;
 }
 
 void Light::PreRender(Sur * const psur)
@@ -357,7 +355,7 @@ void Light::PreRender(Sur * const psur)
 
 void Light::Render(Sur * const psur)
 {
-   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints));		//>>> added by chris
+   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints));
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!fDrawDragpoints)
@@ -376,7 +374,7 @@ void Light::Render(Sur * const psur)
 
    RenderOutline(psur);
 
-   if ((m_d.m_shape == ShapeCustom) && fDrawDragpoints)	//<<< modified by chris
+   if ((m_d.m_shape == ShapeCustom) && fDrawDragpoints)
    {
       for (int i = 0; i < m_vdpoint.Size(); i++)
       {
@@ -529,7 +527,7 @@ void Light::FreeBuffers()
 void Light::EndPlay()
 {
    // ensure not locked just in case the player exits during a LS sequence
-   m_fLockedByLS = false;			//>>> added by chris
+   m_fLockedByLS = false;
 
    m_vvertex.clear();
 
@@ -672,12 +670,17 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
    else
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-   Vertex3D_NoTex2 centerHUD;
+   Vertex2D centerHUD;
    centerHUD.x = m_d.m_vCenter.x;
    centerHUD.y = m_d.m_vCenter.y;
-   centerHUD.z = 0.0f;
    if (m_fBackglass)
-      SetHUDVertices(&centerHUD, 1);
+   {
+      const float  mult = getBGxmult();
+      const float ymult = getBGymult();
+
+      centerHUD.x = centerHUD.x* mult - 0.5f;
+      centerHUD.y = centerHUD.y*ymult - 0.5f;
+   }
    const D3DXVECTOR4 center_range(centerHUD.x, centerHUD.y, !m_fBackglass ? m_surfaceHeight + 0.05f : 0.0f, 1.0f / max(m_d.m_falloff, 0.1f));
 
    if (!m_d.m_BulbLight)
@@ -693,7 +696,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->classicLightShader->SetBool("hdrTexture0", offTexel->IsHDR());
          pd3dDevice->classicLightShader->SetTechnique(m_surfaceMaterial->m_bIsMetal ? "light_with_texture_isMetal" : "light_with_texture_isNotMetal");
          pd3dDevice->classicLightShader->SetTexture("Texture0", offTexel);
-         if (m_ptable->m_fReflectElementsOnPlayfield)
+         if (m_ptable->m_fReflectElementsOnPlayfield && !m_fBackglass)
          {
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
             pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_ONE);
@@ -757,7 +760,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
    else
       pd3dDevice->lightShader->End();
 
-   if (!m_d.m_BulbLight && offTexel != NULL && m_ptable->m_fReflectElementsOnPlayfield)
+   if (!m_d.m_BulbLight && offTexel != NULL && m_ptable->m_fReflectElementsOnPlayfield && !m_fBackglass)
    {
       pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
       pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_SRCALPHA);
@@ -776,8 +779,6 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void Light::UpdateLightShapeHeight()
 {
-   Vertex3D_NoTex2 *buf;
-
    float height = m_initSurfaceHeight;
    if (m_d.m_BulbLight)
    {
@@ -785,32 +786,31 @@ void Light::UpdateLightShapeHeight()
       m_surfaceHeight = height;
    }
 
-   customMoverVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   for (int t = 0; t < customMoverVertexNum; t++)
+   if (!m_fBackglass)
    {
-      const RenderVertex * const pv0 = &m_vvertex[t];
-      if (!m_fBackglass)
-      {
+      Vertex3D_NoTex2 *buf;
+      customMoverVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      for (unsigned int t = 0; t < customMoverVertexNum; t++)
          buf[t].z = height + 0.1f;
-      }
+      customMoverVBuffer->unlock();
    }
-   customMoverVBuffer->unlock();
+
    m_updateLightShape = false;
 }
 
 void Light::PrepareMoversCustom()
 {
    GetRgVertex(m_vvertex);
-   const unsigned int cvertex = (unsigned int)m_vvertex.size();
 
-   if (cvertex == 0)
+   if (m_vvertex.size() == 0)
       return;
 
-   float maxdist = 0;
+   float maxdist = 0.f;
    std::vector<WORD> vtri;
 
    {
-   std::vector<unsigned int> vpoly(cvertex);   
+   std::vector<unsigned int> vpoly(m_vvertex.size());
+   const unsigned int cvertex = (unsigned int)m_vvertex.size();
    for (unsigned int i = 0; i < cvertex; i++)
    {
       vpoly[i] = i;
@@ -842,12 +842,12 @@ void Light::PrepareMoversCustom()
       char name[MAX_PATH];
       char textBuffer[MAX_PATH];
       WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
-      _snprintf_s(textBuffer, MAX_PATH-1, "%s has a wrong shape! It can not be rendered!", name);
+      _snprintf_s(textBuffer, MAX_PATH-1, "%s has an invalid shape! It can not be rendered!", name);
       ShowError(textBuffer);
       return;
    }
-   customMoverIndexNum = (int)vtri.size();
 
+   customMoverIndexNum = (unsigned int)vtri.size();
    g_pplayer->m_pin3d.m_pd3dDevice->CreateIndexBuffer(customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16, &customMoverIBuffer);
 
    WORD* bufi;
@@ -855,28 +855,29 @@ void Light::PrepareMoversCustom()
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
    customMoverIBuffer->unlock();
 
-   customMoverVertexNum = (int)m_vvertex.size();
+   customMoverVertexNum = (unsigned int)m_vvertex.size();
    const DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
    g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer(customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
 
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   Texture* pin = m_ptable->GetImage(m_d.m_szOffImage);
+   Texture* const pin = m_ptable->GetImage(m_d.m_szOffImage);
 
    const float inv_maxdist = (maxdist > 0.0f) ? 0.5f / sqrtf(maxdist) : 0.0f;
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
 
+   const float  mult = getBGxmult();
+   const float ymult = getBGymult();
+
    Vertex3D_NoTex2 *buf;
    customMoverVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   for (int t = 0; t < customMoverVertexNum; t++)
+   for (unsigned int t = 0; t < customMoverVertexNum; t++)
    {
       const RenderVertex * const pv0 = &m_vvertex[t];
 
-      buf[t].x = pv0->x;
-      buf[t].y = pv0->y;
-
       if (!m_fBackglass)
       {
+         buf[t].x = pv0->x;
+         buf[t].y = pv0->y;
          buf[t].z = height + 0.1f;
 
          // Check if we are using a custom texture.
@@ -894,11 +895,23 @@ void Light::PrepareMoversCustom()
 
          buf[t].nx = 0; buf[t].ny = 0; buf[t].nz = 1.0f;
       }
+      else
+      {
+         const float x = pv0->x* mult - 0.5f;
+         const float y = pv0->y*ymult - 0.5f;
+
+         buf[t].x = x;
+         buf[t].y = y;
+         buf[t].z = 0.0f;
+
+         buf[t].nx = x;
+         buf[t].ny = y;
+         buf[t].nz = 0.0f;
+
+         buf[t].tu = pv0->x * (float)(1.0 / EDITOR_BG_WIDTH);
+         buf[t].tv = pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT);
+      }
    }
-
-   if (m_fBackglass)
-      SetHUDVertices(buf, customMoverVertexNum);
-
    customMoverVBuffer->unlock();
 }
 
@@ -916,9 +929,9 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
 
    if (m_realState == LightStateBlinking)
       RestartBlinker(g_pplayer->m_time_msec);
-   else if(m_duration > 0 && m_realState==LightStateOn)
+   else if (m_duration > 0 && m_realState == LightStateOn)
    {
-       m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
+      m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
    }
 
    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
@@ -939,7 +952,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
 
       Vertex3D_NoTex2 *buf;
       bulbLightVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-      for (int i = 0; i < bulbLightNumVertices; i++)
+      for (unsigned int i = 0; i < bulbLightNumVertices; i++)
       {
          buf[i].x = bulbLight[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
          buf[i].y = bulbLight[i].y*m_d.m_meshRadius + m_d.m_vCenter.y;
@@ -961,7 +974,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
       pd3dDevice->CreateVertexBuffer(bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbSocketVBuffer);
 
       bulbSocketVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-      for (int i = 0; i < bulbSocketNumVertices; i++)
+      for (unsigned int i = 0; i < bulbSocketNumVertices; i++)
       {
          buf[i].x = bulbSocket[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
          buf[i].y = bulbSocket[i].y*m_d.m_meshRadius + m_d.m_vCenter.y;
@@ -1074,8 +1087,8 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
 
    m_ptable = ptable;
 
-   m_fLockedByLS = false;			//>>> added by chris
-   m_realState = m_d.m_state;		//>>> added by chris
+   m_fLockedByLS = false;
+   m_realState = m_d.m_state;
 
    br.Load();
    return S_OK;
@@ -1102,7 +1115,7 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(STAT))
    {
       pbr->GetInt(&m_d.m_state);
-      m_realState = m_d.m_state;		//>>> added by chris
+      m_realState = m_d.m_state;
    }
    else if (id == FID(COLR))
    {
@@ -1242,14 +1255,14 @@ void Light::EditMenu(HMENU hmenu)
 void Light::AddPoint(int x, int y, const bool smooth)
 {
    STARTUNDO
-      const Vertex2D v = m_ptable->TransformPoint(x, y);
+   const Vertex2D v = m_ptable->TransformPoint(x, y);
 
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
    int iSeg;
    Vertex2D vOut;
-   ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
+   ClosestPointOnPolygon(vvertex, v, vOut, iSeg, true);
 
    // Go through vertices (including iSeg itself) counting control points until iSeg
    int icp = 0;
@@ -1310,10 +1323,8 @@ void Light::DoCommand(int icmd, int x, int y)
       break;
 
    case ID_WALLMENU_ADDPOINT:
-   {
       AddPoint(x, y);
       break;
-   }
    }
 }
 
@@ -1341,18 +1352,18 @@ STDMETHODIMP Light::get_Falloff(float *pVal)
 
 STDMETHODIMP Light::put_Falloff(float newVal)
 {
-   if (newVal < 0)
+   if (newVal < 0.f)
    {
       return E_FAIL;
    }
 
    STARTUNDO
 
-      m_d.m_falloff = newVal;
+   m_d.m_falloff = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_FalloffPower(float *pVal)
@@ -1378,7 +1389,7 @@ STDMETHODIMP Light::get_State(LightState *pVal)
     if(g_pplayer && !m_fLockedByLS)
         *pVal = m_realState; 
     else
-    *pVal = m_d.m_state; //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
+        *pVal = m_d.m_state; //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
 
    return S_OK;
 }
@@ -1387,14 +1398,14 @@ STDMETHODIMP Light::put_State(LightState newVal)
 {
    STARTUNDO
 
-      // if the light is locked by the LS then just change the state and don't change the actual light
-      if (!m_fLockedByLS)
-         setLightState(newVal);
+   // if the light is locked by the LS then just change the state and don't change the actual light
+   if (!m_fLockedByLS)
+      setLightState(newVal);
    m_d.m_state = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Light::FlipY(Vertex2D * const pvCenter)
@@ -1433,11 +1444,11 @@ STDMETHODIMP Light::put_Color(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_color = newVal;
+   m_d.m_color = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_ColorFull(OLE_COLOR *pVal)
@@ -1451,11 +1462,11 @@ STDMETHODIMP Light::put_ColorFull(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_color2 = newVal;
+   m_d.m_color2 = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_X(float *pVal)
@@ -1914,22 +1925,6 @@ void Light::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
    pvproppane->AddElement(pproppane);
-}
-
-void Light::lockLight()
-{
-   m_fLockedByLS = true;
-}
-
-void Light::unLockLight()
-{
-   m_fLockedByLS = false;
-}
-
-void Light::setLightStateBypass(const LightState newVal)
-{
-   lockLight();
-   setLightState(newVal);
 }
 
 void Light::setLightState(const LightState newVal)

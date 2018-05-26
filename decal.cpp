@@ -460,7 +460,6 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice)
 {
    RenderText();
 
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    float leading, descent; // For fonts
@@ -482,7 +481,14 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice)
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
-   Vertex3D_NoTex2 vertices[4];
+   if (vertexBuffer)
+      vertexBuffer->release();
+   const DWORD vertexType = m_fBackglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX;
+   pd3dDevice->CreateVertexBuffer(4, 0, vertexType, &vertexBuffer);
+
+   Vertex3D_NoTex2 *vertices;
+   vertexBuffer->lock(0, 0, (void**)&vertices, VertexBuffer::WRITEONLY);
+
    vertices[0].x = m_d.m_vCenter.x + sn*(halfheight + leading) - cs*halfwidth;
    vertices[0].y = m_d.m_vCenter.y - cs*(halfheight + leading) - sn*halfwidth;
 
@@ -495,13 +501,29 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice)
    vertices[3].x = m_d.m_vCenter.x - sn*(halfheight + descent) - cs*halfwidth;
    vertices[3].y = m_d.m_vCenter.y + cs*(halfheight + descent) - sn*halfwidth;
 
-   for (int l = 0; l < 4; l++)
-      vertices[l].z = height + 0.2f;
-
    if (!m_fBackglass)
+   {
+      for (int i = 0; i < 4; i++)
+         vertices[i].z = height + 0.2f;
+
       SetNormal(vertices, rgi0123, 4);
+   }
    else
-      SetHUDVertices(vertices, 4);
+   {
+      const float  mult = getBGxmult();
+      const float ymult = getBGymult();
+
+      for (int i = 0; i < 4; ++i)
+      {
+         vertices[i].x = vertices[i].x* mult - 0.5f;
+         vertices[i].y = vertices[i].y*ymult - 0.5f;
+         vertices[i].z = 0.0f;
+
+         vertices[i].nx = 0.0f;
+         vertices[i].ny = 0.0f;
+         vertices[i].nz = 0.0f;
+      }
+   }
 
    vertices[0].tu = 0;
    vertices[0].tv = 0;
@@ -512,14 +534,6 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice)
    vertices[3].tu = 0;
    vertices[3].tv = 1.0f;
 
-   if (vertexBuffer)
-      vertexBuffer->release();
-   const DWORD vertexType = (m_fBackglass && GetPTable()->GetDecalsEnabled()) ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX;
-   pd3dDevice->CreateVertexBuffer(4, 0, vertexType, &vertexBuffer);
-
-   Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy(buf, vertices, 4 * sizeof(Vertex3D_NoTex2));
    vertexBuffer->unlock();
 }
 
@@ -594,7 +608,7 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
    }
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, (m_fBackglass && GetPTable()->GetDecalsEnabled()) ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, 4);
+   pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, m_fBackglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, 4);
    pd3dDevice->basicShader->End();
 
    // Set the render state.

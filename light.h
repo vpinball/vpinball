@@ -18,32 +18,26 @@ public:
    float m_intensity_scale;
    float m_fadeSpeedUp;
    float m_fadeSpeedDown;
-   U32 m_time_msec;
+   U32   m_time_msec;
    float m_currentIntensity;
    float m_transmissionScale;
    float m_modulate_vs_add;
    float m_meshRadius;
-   //float m_meshIntensity;
-   //float m_meshFadeSpeed;
    LightState m_state;
    COLORREF m_color;
-   COLORREF m_color2;
+   COLORREF m_color2; // color full
    TimerDataRoot m_tdr;
    Shape m_shape;
    //float m_borderwidth;
    //COLORREF m_bordercolor;
-   //Material normalMatr;
-   //Material borderMatr;
-   //float normalR,normalG,normalB;
-   //float borderR,borderG,borderB;
    char m_szSurface[MAXTOKEN];
    char m_szOffImage[MAXTOKEN];
 
-   float m_depthBias;      // for determining depth sorting
+   float m_depthBias; // for determining depth sorting
    float m_bulbHaloHeight;
 
    bool m_fVisible;
-   bool m_imageMode; // true = pass through/no lighting, false = use surface material
+   bool m_imageMode;  // true = pass through/no lighting, false = use surface material
    bool m_BulbLight;
    bool m_showBulbMesh;
    bool m_showReflectionOnBall;
@@ -197,12 +191,9 @@ public:
    void WriteRegDefaults();
    void FreeBuffers();
 
-   void        InitShape();
-   void		lockLight();
-   void		unLockLight();
-   void		setLightStateBypass(const LightState newVal);
-   void		setLightState(const LightState newVal);
-   void        RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color);
+   void InitShape();
+   void setLightState(const LightState newVal);
+   void RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color);
 
    PinTable *m_ptable;
 
@@ -213,21 +204,17 @@ public:
    float m_initSurfaceHeight;
    float m_surfaceHeight;
    bool  m_updateLightShape;
+   bool  m_fLockedByLS;
 
    // Run-time
 private:
    Material *m_surfaceMaterial;
-   Texture *m_surfaceTexture;
+   Texture  *m_surfaceTexture;
 
    LightCenter m_lightcenter;
 
-   //>>> Added By Chris
-   bool	m_fLockedByLS;
-   bool    m_roundLight;
-   //<<<
-
-   int customMoverVertexNum;
-   int customMoverIndexNum;
+   unsigned int customMoverVertexNum;
+   unsigned int customMoverIndexNum;
    VertexBuffer *customMoverVBuffer;
    IndexBuffer  *customMoverIBuffer;
    VertexBuffer *bulbLightVBuffer;
@@ -238,6 +225,8 @@ private:
    // ILight
 
    Texture *GetDisplayTexture();
+
+   bool m_roundLight;
 
 public:
    STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);

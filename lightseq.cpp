@@ -694,7 +694,7 @@ STDMETHODIMP LightSeq::StopPlay()
             Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
             LightState state;
             pLight->get_State(&state);
-            pLight->unLockLight();
+            pLight->m_fLockedByLS = false;
             pLight->put_State(state);
          }
       }
@@ -1765,7 +1765,8 @@ void LightSeq::SetElementToState(const int index, const LightState State)
    if (type == eItemLight)
    {
       Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
-      pLight->setLightStateBypass(State);
+      pLight->m_fLockedByLS = true;
+      pLight->setLightState(State);
    }
 }
 

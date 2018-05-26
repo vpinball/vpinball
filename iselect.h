@@ -94,12 +94,12 @@ public:
 
    // So objects don't have to implement all the transformation functions themselves
    virtual void GetCenter(Vertex2D * const pv) const = 0;
-   virtual void GetScale(float *sx, float *sy)
+   virtual void GetScale(float * const sx, float * const sy) const
    {
       *sx = 1.0f;
       *sy = 1.0f;
    }
-   virtual float GetRotate()
+   virtual float GetRotate() const
    {
       return 0.0f;
    }
