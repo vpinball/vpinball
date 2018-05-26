@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Material.h"
 #include "Texture.h"
 
@@ -158,27 +159,6 @@ public:
    bool fControlPoint; // Whether this point was a control point on the curve
    bool padd; // Useless padding to align to 4bytes, should enhance access speeds
 };
-
-
-template <class VtxType>
-void SetHUDVertices(VtxType * const rgv, const int count)
-{
-   const float mult = (float)g_pplayer->m_width * (float)(1.0 / EDITOR_BG_WIDTH)
-      * (g_pplayer->m_pin3d.m_useAA ? 2.0f : 1.0f); //!! WTF?
-   const float ymult = mult /
-      (((float)g_pplayer->m_screenwidth / (float)g_pplayer->m_screenheight) / (float)(4.0 / 3.0)); //!! ?
-
-   for (int i = 0; i < count; ++i)
-   {
-      rgv[i].tu = rgv[i].x = rgv[i].x*mult - 0.5f;  //!! abuses tu tv to pass position :/
-      rgv[i].tv = rgv[i].y = rgv[i].y*ymult - 0.5f;
-      rgv[i].z = 0.f;
-
-      rgv[i].nx = 0.0f;
-      rgv[i].ny = 0.0f;
-      rgv[i].nz = 0.0f;
-   }
-}
 
 template <class CurveType, class VtxType, class VtxContType>
 void RecurseSmoothLine(const CurveType & cc, const float t1, const float t2, const VtxType & vt1, const VtxType & vt2, VtxContType & vv, const float accuracy)
@@ -372,13 +352,13 @@ inline bool FlatWithAccuracy(const Vertex3Ds & v1, const Vertex3Ds & v2, const V
 
 // find closest point, projected on xy plane
 template <class VtxContType>
-inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const bool fClosed)
+inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, Vertex2D &pvout, int &piseg, const bool fClosed)
 {
    const int count = (int)rgv.size();
 
    float mindist = FLT_MAX;
    int seg = -1;
-   *piseg = -1; // in case we are not next to the line
+   piseg = -1; // in case we are not next to the line
 
    int cloop = count;
    if (!fClosed)
@@ -422,9 +402,10 @@ inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, 
          {
             mindist = dist;
             seg = i;
-            pvout->x = intersectx;
-            pvout->y = intersecty;
-            *piseg = seg;
+
+            pvout.x = intersectx;
+            pvout.y = intersecty;
+            piseg = seg;
          }
       }
    }

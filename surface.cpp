@@ -1161,7 +1161,7 @@ void Surface::AddPoint(int x, int y, const bool smooth)
 
    Vertex2D vOut;
    int iSeg;
-   ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
+   ClosestPointOnPolygon(vvertex, v, vOut, iSeg, true);
 
    // Go through vertices (including iSeg itself) counting control points until iSeg
    int icp = 0;

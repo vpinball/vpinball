@@ -91,8 +91,8 @@ public:
    virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter=false);
    virtual void Translate(Vertex2D *pvOffset);
    virtual void GetCenter(Vertex2D * const pv) const { GetPointCenter(pv); }
-   virtual void GetScale(float *sx, float *sy){ *sx = m_d.m_scaleX; *sy = m_d.m_scaleY; }
-   virtual float GetRotate(void){ return m_d.m_rotation; }
+   virtual void GetScale(float * const sx, float * const sy) const { *sx = m_d.m_scaleX; *sy = m_d.m_scaleY; }
+   virtual float GetRotate() const { return m_d.m_rotation; }
 
    virtual void PutCenter(const Vertex2D * const pv) { PutPointCenter(pv); }
    virtual void GetPointCenter(Vertex2D * const pv) const;

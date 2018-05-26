@@ -151,3 +151,15 @@ using std::vector;
 #include "extern.h"
 
 #include "editablereg.h"
+
+__forceinline float getBGxmult()
+{
+   return (float)g_pplayer->m_width * (float)(1.0 / EDITOR_BG_WIDTH)
+      * (g_pplayer->m_pin3d.m_useAA ? 2.0f : 1.0f);
+}
+
+__forceinline float getBGymult()
+{
+   return getBGxmult() /
+      (((float)g_pplayer->m_screenwidth / (float)g_pplayer->m_screenheight) / (float)((double)EDITOR_BG_WIDTH / EDITOR_BG_HEIGHT));
+}

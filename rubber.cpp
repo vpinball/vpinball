@@ -485,7 +485,7 @@ float Rubber::GetSurfaceHeight(float x, float y)
 
    int iSeg;
    Vertex2D vOut;
-   ClosestPointOnPolygon(vvertex, Vertex2D(x, y), &vOut, &iSeg, false);
+   ClosestPointOnPolygon(vvertex, Vertex2D(x, y), vOut, iSeg, false);
 
    // Go through vertices (including iSeg itself) counting control points until iSeg
    float totallength = 0.f;
@@ -889,7 +889,7 @@ void Rubber::DoCommand(int icmd, int x, int y)
 
       Vertex2D vOut;
       int iSeg = -1;
-      ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
+      ClosestPointOnPolygon(vvertex, v, vOut, iSeg, true);
 
       // Go through vertices (including iSeg itself) counting control points until iSeg
       int icp = 0;

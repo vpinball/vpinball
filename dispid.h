@@ -50,11 +50,9 @@
 #define DISPID_GameEvents_KeyUp 1001
 #define DISPID_GameEvents_Init 1002
 #define DISPID_GameEvents_MusicDone 1003
-//>>> added by chris
 #define DISPID_GameEvents_Exit 1004
 #define DISPID_GameEvents_Paused 1005
 #define DISPID_GameEvents_UnPaused 1006
-//<<<
 
 // Surface
 #define DISPID_SurfaceEvents_Slingshot 1101

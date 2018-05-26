@@ -51,7 +51,7 @@ public:
 
    CComObject<PinTable> *GetActiveTable();
    void InitTools();
-   void InitRegValues();			//>>> added by Chris
+   void InitRegValues();
    bool LoadFile();
    void LoadFileName(char *szFileName);
    void SetClipboard(Vector<IStream> *pvstm);
@@ -71,7 +71,7 @@ public:
    void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
 
    void GetMyPath();
-   void UpdateRecentFileList(char *szfilename);	//>>> added by chris
+   void UpdateRecentFileList(char *szfilename);
 
    STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
    STDMETHOD_(ULONG, AddRef)();

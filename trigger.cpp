@@ -285,7 +285,7 @@ void Trigger::Render(Sur * const psur)
 
       psur->Polygon(vvertex);
 
-      bool fDrawDragpoints = (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints);		//>>> added by chris
+      bool fDrawDragpoints = (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints);
       // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
       if (!fDrawDragpoints)
       {
@@ -932,14 +932,14 @@ void Trigger::DoCommand(int icmd, int x, int y)
    {
       STARTUNDO
 
-         const Vertex2D v = m_ptable->TransformPoint(x, y);
+      const Vertex2D v = m_ptable->TransformPoint(x, y);
 
       std::vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
 
       int iSeg;
       Vertex2D vOut;
-      ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
+      ClosestPointOnPolygon(vvertex, v, vOut, iSeg, true);
 
       // Go through vertices (including iSeg itself) counting control points until iSeg
       int icp = 0;

@@ -228,8 +228,8 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
-   const float mult = (float)(1.0 / EDITOR_BG_WIDTH);
-   const float ymult = (float)(1.0 / EDITOR_BG_WIDTH * 4.0 / 3.0);
+   const float mult  = (float)(1.0 / EDITOR_BG_WIDTH);
+   const float ymult = (float)(1.0 / EDITOR_BG_HEIGHT);
 
    const float rect_left = min(m_d.m_v1.x, m_d.m_v2.x);
    const float rect_top = min(m_d.m_v1.y, m_d.m_v2.y);

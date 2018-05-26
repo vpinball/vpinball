@@ -244,8 +244,8 @@ public:
    void ShowFindReplaceDialog();
    void Find(const FINDREPLACE * const pfr);
    void Replace(const FINDREPLACE * const pfr);
-   void SaveToStream(IStream *pistream, HCRYPTHASH const hcrypthash, const HCRYPTKEY hcryptkey);	//<<< modified by chris as part of table protection
-   void LoadFromStream(IStream *pistream, HCRYPTHASH const hcrypthash, const HCRYPTKEY hcryptkey);	//<<< modified by chris as part of table protection
+   void SaveToStream(IStream *pistream, HCRYPTHASH const hcrypthash, const HCRYPTKEY hcryptkey);   // incl. table protection
+   void LoadFromStream(IStream *pistream, HCRYPTHASH const hcrypthash, const HCRYPTKEY hcryptkey); // dto.
    void SetCaption(const char * const szCaption);
 	string upperCase(string input);
 	string lowerCase(string input);
