@@ -51,6 +51,7 @@
 #define DISPID_HEIGHTOFFSET             24
 #define IDC_ORIENTATION_EDIT            25
 #define IDC_RINGSPEED_EDIT              26
+#define IDC_RINGDROPOFFSET_EDIT         27
 #define IDS_PROJNAME                    100
 #define IDR_VPINBALL                    100
 #define IDR_SURFACE                     101
