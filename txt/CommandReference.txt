@@ -14,6 +14,7 @@ Changelog:
 - add GravityFactor to the gate element
 - add UserValue to target and primitive elements
 - add BlendDisableLightingFromBelow to target and wall elements
+- add RingDropOffset to the bumper element
 10.4:
 - support reading nudge data from table script, and reading/writing nudge calibration settings:
   NudgeGetCalibration/NudgeSetCalibration, NudgeSensorStatus, NudgeTiltStatus
@@ -261,6 +262,9 @@ Variables
 *Radius(float) - default=45.0
 *HeightScale (float) - default=90.0
 *Orientation(float) 
+RingDropOffset(float) - An offset to influence the ring animation. The default move down limit is calculated by (HeightScale*0.5) * Table_Scalez.
+                        The final move down limit is calculated by RingDropOffset + (HeightScale*0.5)* Table_Scalez.
+                        For example: If the ring is moving too far down you have try to set the RingDropOffset to -10.
 RingSpeed(float)
 *X(float) - X position
 *Y(float) - Y position

@@ -1265,6 +1265,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(25), helpstring("property Orientation")] HRESULT Orientation([in] float newVal);
                 [propget, id(26), helpstring("property RingSpeed")] HRESULT RingSpeed([out, retval] float *pVal);
                 [propput, id(26), helpstring("property RingSpeed")] HRESULT RingSpeed([in] float newVal);
+                [propget, id(27), helpstring("property RingDropOffset")] HRESULT RingDropOffset([out, retval] float *pVal);
+                [propput, id(27), helpstring("property RingDropOffset")] HRESULT RingDropOffset([in] float newVal);
                 [propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
                 [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
                 [propget, id(34), helpstring("property HitEvent")] HRESULT HasHitEvent([out, retval] VARIANT_BOOL *pVal);

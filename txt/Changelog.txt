@@ -1,5 +1,6 @@
 VP 10.5.0 Changelog
 ------------------------
+- add RingDropOffset to the bumper element
 
 - log message in debug window when PlaySound is called for a sound that's missing in the sound manager
 
