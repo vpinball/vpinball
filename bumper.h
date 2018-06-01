@@ -18,6 +18,7 @@ public:
    float m_heightScale;
    float m_orientation;
    float m_ringSpeed;
+   float m_ringDropOffset;
    U32 m_time_msec;
    TimerDataRoot m_tdr;
    char m_szCapMaterial[32];
@@ -188,6 +189,8 @@ public:
    STDMETHOD(put_RingSpeed)(/*[in]*/ float newVal);
    STDMETHOD(get_Orientation)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Orientation)(/*[in]*/ float newVal);
+   STDMETHOD(get_RingDropOffset)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RingDropOffset)(/*[in]*/ float newVal);
    STDMETHOD(get_Radius)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Radius)(/*[in]*/ float newVal);
    STDMETHOD(get_HasHitEvent)(/*[out, retval]*/ VARIANT_BOOL *pVal);

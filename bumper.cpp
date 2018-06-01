@@ -86,7 +86,7 @@ HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_vCenter.y = y;
 
    m_ringAnimate = false;
-
+   m_d.m_ringDropOffset = 0.0f;
    return InitVBA(fTrue, 0, NULL);
 }
 
@@ -512,6 +512,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 
    if (m_d.m_fRingVisible)
    {
+      const float limit = m_d.m_ringDropOffset + (m_d.m_heightScale*0.5f)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
       if (state == 1)
       {
          m_ringAnimate = true;
@@ -522,7 +523,6 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       if (m_ringAnimate)
       {
          float step = m_d.m_ringSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-         const float limit = (m_d.m_heightScale*0.5f)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
          if (m_ringDown)
             step = -step;
          m_pbumperhitcircle->m_bumperanim_ringAnimOffset += step*diff_time_msec;
@@ -927,6 +927,7 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteFloat(FID(HISC), m_d.m_heightScale);
    bw.WriteFloat(FID(RISP), m_d.m_ringSpeed);
    bw.WriteFloat(FID(ORIN), m_d.m_orientation);
+   bw.WriteFloat(FID(RDLI), m_d.m_ringDropOffset);
    bw.WriteString(FID(MATR), m_d.m_szCapMaterial);
    bw.WriteString(FID(BAMA), m_d.m_szBaseMaterial);
    bw.WriteString(FID(SKMA), m_d.m_szSkirtMaterial);
@@ -1024,7 +1025,11 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_d.m_orientation);
    }
-   else if (id == FID(SURF))
+   else if(id == FID (RDLI))
+   {
+      pbr->GetFloat (&m_d.m_ringDropOffset);
+   } 
+   else if(id == FID (SURF))
    {
       pbr->GetString(m_d.m_szSurface);
    }
@@ -1175,6 +1180,24 @@ STDMETHODIMP Bumper::put_RingSpeed(float newVal)
    STOPUNDO
 
       return S_OK;
+}
+
+STDMETHODIMP Bumper::get_RingDropOffset(float *pVal)
+{
+    *pVal = m_d.m_ringDropOffset;
+
+    return S_OK;
+}
+
+STDMETHODIMP Bumper::put_RingDropOffset(float newVal)
+{
+    STARTUNDO
+
+    m_d.m_ringDropOffset = newVal;
+
+    STOPUNDO
+
+        return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Orientation(float *pVal)
