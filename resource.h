@@ -838,7 +838,6 @@
 #define IDD_PROPRUBBER_VISUALS          604
 #define IDD_MATERIALDIALOG              605
 #define IDB_BITMAP1                     608
-//#define IDB_RINGENVMAP                  609
 #define IDB_BITMAP2                     610
 #define IDB_BUMPERCAP                   610
 #define IDC_GLOSSY_IMGLERP_EDIT         611
@@ -904,6 +903,8 @@
 #define IDC_DBG_LIGHT_ON_CHECK          727
 #define IDC_DEFAULT_GROUP_COLLECTION_CHECK 727
 #define IDC_CVP_EDIT_AUTOCHARS          728
+#define IDC_DEFAULT_GROUP_COLLECTION_CHECK2 728
+#define IDC_ALWAYSVIEWSCRIPT            728
 #define IDC_CVP_EDIT_MOUSEDWELL         729
 #define IDC_MAT_ELASTICITY              731
 #define IDC_MAT_FRICTION                732
@@ -1161,7 +1162,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        647
+#define _APS_NEXT_RESOURCE_VALUE        648
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         821
 #define _APS_NEXT_SYMED_VALUE           188

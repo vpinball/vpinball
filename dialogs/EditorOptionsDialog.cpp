@@ -82,6 +82,9 @@ BOOL EditorOptionsDialog::OnInitDialog()
     int groupElementsCollection = GetRegIntWithDefault("Editor", "GroupElementsInCollection", 1);
     SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_SETCHECK, groupElementsCollection ? BST_CHECKED : BST_UNCHECKED, 0);
 
+	int alwaysViewScript = GetRegIntWithDefault("Editor", "AlwaysViewScript", 0);
+	SendDlgItemMessage(IDC_ALWAYSVIEWSCRIPT, BM_SETCHECK, alwaysViewScript ? BST_CHECKED : BST_UNCHECKED, 0);
+
     int throwBallSize = GetRegIntWithDefault("Editor", "ThrowBallSize", 50);
     SetDlgItemInt( IDC_THROW_BALLS_SIZE_EDIT, throwBallSize, FALSE);
 
@@ -173,6 +176,7 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           SetDlgItemInt(IDC_GRID_SIZE, 50, FALSE);
           SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_SETCHECK, BST_UNCHECKED, 0);
           SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_SETCHECK, BST_CHECKED, 0);
+		  SendDlgItemMessage(IDC_ALWAYSVIEWSCRIPT, BM_SETCHECK, BST_CHECKED, 0);
           SetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, 50, FALSE);
           SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, BST_CHECKED, 0);
           SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_SETCURSEL, 0, 0);
@@ -246,6 +250,10 @@ void EditorOptionsDialog::OnOK()
 
     checked = (SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
     SetRegValueBool("Editor", "GroupElementsInCollection", checked);
+
+	checked = (SendDlgItemMessage(IDC_ALWAYSVIEWSCRIPT, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	SetRegValueBool("Editor", "AlwaysViewScript", checked);
+
 
     // Go through and reset the autosave time on all the tables
     if (autosave)
