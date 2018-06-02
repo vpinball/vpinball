@@ -5539,7 +5539,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
       break;
 
    case WM_DESTROY:
-	   if (!g_pplayer->m_fFullScreen)
+	   if (g_pplayer && !g_pplayer->m_fFullScreen)
 		   ShutDownPlayer();
       break;
 
