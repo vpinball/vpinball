@@ -189,6 +189,8 @@ extern int disEnableTrueFullscreen; // set via command line
 
 LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+void ShutDownPlayer();
+
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -5536,36 +5538,17 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
       mixer_get_volume();
       break;
 
-   case WM_CLOSE:
-      break;
-
    case WM_DESTROY:
-   {
-      if (g_pplayer->m_pxap)
-         g_pplayer->m_pxap->Pause();
-
-      // signal the script that the game is now exit to allow any cleanup
-      g_pplayer->m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
-      if (g_pplayer->m_fDetectScriptHang)
-         g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
-
-      PinTable * const playedTable = g_pplayer->m_ptable;
-
-      g_pplayer->m_ptable->StopPlaying();
-      g_pplayer->Shutdown();
-
-      delete g_pplayer; // needs to be deleted here, as code below relies on it being NULL
-      g_pplayer = NULL;
-
-      g_pvp->SetEnableToolbar();
-      mixer_shutdown();
-      hid_shutdown();
-      // modification to m_vedit of each table after playing them must be done here, otherwise VP will crash (WTF?!)
-      playedTable->RestoreLayers();
-
-      SetForegroundWindow(g_pvp->m_hwnd);
+	   if (!g_pplayer->m_fFullScreen)
+		   ShutDownPlayer();
       break;
-   }
+
+   case WM_CLOSE:
+	   // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY if script is not closed first.   
+	   // Shut down script first if in exclusive mode.  
+	   if (g_pplayer->m_fFullScreen)
+		   ShutDownPlayer();
+      break;
 
    case WM_KEYDOWN:
       g_pplayer->m_fDrawCursor = false;
@@ -5693,6 +5676,33 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
    }
 
    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+void ShutDownPlayer()
+{
+	if (g_pplayer->m_pxap)
+		g_pplayer->m_pxap->Pause();
+
+	// signal the script that the game is now exit to allow any cleanup
+	g_pplayer->m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
+	if (g_pplayer->m_fDetectScriptHang)
+		g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
+
+	PinTable * const playedTable = g_pplayer->m_ptable;
+
+	g_pplayer->m_ptable->StopPlaying();
+	g_pplayer->Shutdown();
+
+	delete g_pplayer; // needs to be deleted here, as code below relies on it being NULL
+	g_pplayer = NULL;
+
+	g_pvp->SetEnableToolbar();
+	mixer_shutdown();
+	hid_shutdown();
+	// modification to m_vedit of each table after playing them must be done here, otherwise VP will crash (WTF?!)
+	playedTable->RestoreLayers();
+
+	SetForegroundWindow(g_pvp->m_hwnd);
 }
 
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
