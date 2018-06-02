@@ -88,6 +88,7 @@ void CodeViewer::Init(IScriptableHost *psh)
    m_pScript = NULL;
 
    m_visible = false;
+   m_minimized = false;
 
    const HRESULT res = InitializeScriptEngine();
    if (res != S_OK)
@@ -344,9 +345,7 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
 
 void CodeViewer::SetVisible(const bool fVisible)
 {
-   m_visible = fVisible;
-
-   if(!fVisible)
+   if(!fVisible && !m_minimized)
    {
        RECT rc;
        GetWindowRect( m_hwndMain, &rc );
@@ -370,18 +369,24 @@ void CodeViewer::SetVisible(const bool fVisible)
       // is maximized, we don't want to restore to a smaller size,
       // so we check IsIconic to only restore in the minimized state.
       ShowWindow(m_hwndMain, fVisible ? SW_RESTORE : SW_HIDE);
+	  m_minimized = false;
    }
    else
       ShowWindow(m_hwndMain, fVisible ? SW_SHOW : SW_HIDE);
 
    if(fVisible)
    {
-       const int x = GetRegIntWithDefault( "Editor", "CodeViewPosX", 0 );
-       const int y = GetRegIntWithDefault( "Editor", "CodeViewPosY", 0 );
-       const int w = GetRegIntWithDefault( "Editor", "CodeViewPosWidth", 640 );
-       const int h = GetRegIntWithDefault( "Editor", "CodeViewPosHeight", 490 );
-       SetWindowPos( m_hwndMain, HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE );
+	   if (!m_visible)
+	   {
+		   const int x = GetRegIntWithDefault("Editor", "CodeViewPosX", 0);
+		   const int y = GetRegIntWithDefault("Editor", "CodeViewPosY", 0);
+		   const int w = GetRegIntWithDefault("Editor", "CodeViewPosWidth", 640);
+		   const int h = GetRegIntWithDefault("Editor", "CodeViewPosHeight", 490);
+		   SetWindowPos(m_hwndMain, HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE);
+	   }
+	   SetForegroundWindow(m_hwndMain);
    }
+   m_visible = fVisible;
 }
 
 void CodeViewer::SetEnabled(const BOOL fEnabled)
@@ -2568,7 +2573,22 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       return 0;
    }
    break;
-
+   case WM_SYSCOMMAND:
+   {
+	   if (wParam == SC_MINIMIZE && g_pvp != NULL)
+	   {
+		   CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+		   pcv->m_minimized = true;
+		   SendMessage(g_pvp->m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, 0L);
+	   }
+	   if (wParam == SC_RESTORE && g_pvp != NULL)
+	   {
+		   CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+		   pcv->m_minimized = false;
+		   SendMessage(g_pvp->m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, 1L);
+	   }
+   }
+   break;
    case WM_COMMAND:
    {
       const int code = HIWORD(wParam);

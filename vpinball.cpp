@@ -931,9 +931,11 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
             ShowPermissionError();
          else
          {
-            ptCur->m_pcv->SetVisible(!ptCur->m_pcv->m_visible);
+			int alwaysViewScript = GetRegIntWithDefault("Editor", "AlwaysViewScript", 0);
 
-            SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, MAKELONG(ptCur->m_pcv->m_visible, 0));
+            ptCur->m_pcv->SetVisible(alwaysViewScript || !(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized));
+
+            SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, MAKELONG(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized, 0));
          }
       }
       break;
@@ -1036,6 +1038,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          }
          else
          {
+			ptCur->m_searchSelectDlg.ShowWindow();
             ptCur->m_searchSelectDlg.SetForegroundWindow();
          }
       }
@@ -1989,7 +1992,7 @@ void VPinball::SetEnableMenuItems()
    // is there a valid table??
    if (ptCur)
    {
-      CheckMenuItem(hmenu, ID_EDIT_SCRIPT, MF_BYCOMMAND | (ptCur->m_pcv->m_visible ? MF_CHECKED : MF_UNCHECKED));
+      CheckMenuItem(hmenu, ID_EDIT_SCRIPT, MF_BYCOMMAND | ((ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized) ? MF_CHECKED : MF_UNCHECKED));
 
       EnableMenuItem(hmenu, IDM_CLOSE, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_EDIT_UNDO, MF_BYCOMMAND | MF_ENABLED);
