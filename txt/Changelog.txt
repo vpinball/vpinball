@@ -1,5 +1,13 @@
 VP 10.5.0 Changelog
 ------------------------
+
+- make exclusive fullscreen the new default when using Windows 10 build 1803 and above
+
+- optionally make View->Script always show the script (see new option in Preferences->Editor Options) 
+- make the Edit->Search/Select Element un-minimize if minimized when selected
+
+- improve table exit performance (particularly when using Windows 10 build 1803)
+
 - add RingDropOffset to the bumper element
 
 - log message in debug window when PlaySound is called for a sound that's missing in the sound manager

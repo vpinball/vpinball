@@ -5,6 +5,8 @@
 #include <unordered_set>
 
 #define DEFAULT_PLAYER_WIDTH 1024
+#define DEFAULT_PLAYER_FS_WIDTH 1920
+#define DEFAULT_PLAYER_FS_REFRESHRATE 60
 
 // NOTE that the following four definitions need to be in sync in their order!
 enum EnumAssignKeys

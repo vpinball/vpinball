@@ -276,7 +276,6 @@ BEGIN
     LTEXT           "Mark Parris - testing",IDC_STATIC,13,97,67,9
     LTEXT           "Jerry Rice - music",IDC_STATIC,86,97,66,9
     LTEXT           "Rolle Cruz - physics",IDC_STATIC,150,97,67,9
-    LTEXT           "",IDC_TRANSNAME2,140,142,76,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "VP9/VP10 Open Source Contributors",IDC_STATIC,47,109,128,9
     LTEXT           "Brian Smith",IDC_STATIC,13,121,42,9
     LTEXT           "Shagendo",IDC_STATIC,150,121,42,9
@@ -615,7 +614,7 @@ BEGIN
     LTEXT           "&Music Volume",IDC_STATIC_MUSIC,14,91,45,8
     CONTROL         "Slider1",IDC_MUSIC_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,9,102,110,18
     LTEXT           "General output Sound Device",IDC_STATIC_SOUNDDEVICE,124,11,170,10
-    LISTBOX         258,124,24,170,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_SoundList,124,24,170,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Backglass specific Sound Device",IDC_STATIC_SOUNDDEVICE2,123,73,170,10
     LISTBOX         IDC_SoundListBG,123,86,171,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,350,141,50,14
