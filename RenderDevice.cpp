@@ -55,6 +55,31 @@ static bool IsWindowsVistaOr7()
 	return vista || win7;
 }
 
+typedef HRESULT(STDAPICALLTYPE *pRGV)(LPOSVERSIONINFOEXW osi);
+static pRGV mRtlGetVersion = NULL;
+
+bool IsWindows10_1803orAbove()
+{
+	if (mRtlGetVersion == NULL)
+		mRtlGetVersion = (pRGV)GetProcAddress(GetModuleHandle(TEXT("ntdll")), "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
+
+	if (mRtlGetVersion != NULL)
+	{
+		OSVERSIONINFOEXW osInfo;
+		osInfo.dwOSVersionInfoSize = sizeof(osInfo);
+		mRtlGetVersion(&osInfo);
+
+		if (osInfo.dwMajorVersion > 10)
+			return true;
+		if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion > 0)
+			return true;
+		if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion == 0 && osInfo.dwBuildNumber >= 17134) // which is the more 'common' 1803
+			return true;
+	}
+
+	return false;
+}
+
 const VertexElement VertexTexelElement[] =
 {
    { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos

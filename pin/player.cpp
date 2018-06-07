@@ -2234,18 +2234,10 @@ void Player::InitWindow()
 
    HRESULT hr;
 
-   hr = GetRegInt("Player", "Width", &m_width);
-   if (hr != S_OK)
-      m_width = DEFAULT_PLAYER_WIDTH; // The default
-
-   hr = GetRegInt("Player", "Height", &m_height);
-   if (hr != S_OK)
-      m_height = m_width * 3 / 4;
-
    int fullscreen;
    hr = GetRegInt("Player", "FullScreen", &fullscreen);
    if (hr != S_OK)
-      m_fFullScreen = false;
+      m_fFullScreen = IsWindows10_1803orAbove();
    else
       m_fFullScreen = (fullscreen == 1);
 
@@ -2254,6 +2246,14 @@ void Player::InitWindow()
       m_fFullScreen = false;
    else if (disEnableTrueFullscreen == 1)
       m_fFullScreen = true;
+
+   hr = GetRegInt("Player", "Width", &m_width);
+   if (hr != S_OK)
+      m_width = m_fFullScreen ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH;
+
+   hr = GetRegInt("Player", "Height", &m_height);
+   if (hr != S_OK)
+      m_height = m_width * 9 / 16;
 
    if (m_fFullScreen)
    {
@@ -2273,13 +2273,13 @@ void Player::InitWindow()
       if (m_width > m_screenwidth)
       {
          m_width = m_screenwidth;
-         m_height = m_width * 3 / 4;
+         m_height = m_width * 9 / 16;
       }
 
       if (m_height > m_screenheight)
       {
          m_height = m_screenheight;
-         m_width = m_height * 4 / 3;
+         m_width = m_height * 16 / 9;
       }
    }
 
@@ -4167,7 +4167,7 @@ void Player::UpdateHUD()
     }
 #endif /*FPS*/
 
-	if (m_fFullScreen && m_fCloseDown) // currently cannot use dialog boxes in fullscreen, so necessary
+	if (m_fFullScreen && m_fCloseDown && !IsWindows10_1803orAbove()) // cannot use dialog boxes in exclusive fullscreen on older windows versions, so necessary
 	{
 		char szFoo[256];
 		const int len2 = sprintf_s(szFoo, "Press 'Enter' to continue or Press 'Q' to exit");

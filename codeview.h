@@ -91,14 +91,14 @@ class CodeViewer :
 
 {
 public:
-	CodeViewer();
-	virtual ~CodeViewer();
+   CodeViewer();
+   virtual ~CodeViewer();
 
-	void Init(IScriptableHost *psh);
+   void Init(IScriptableHost *psh);
 
-	void Create();
-	void Destroy();
-	void SetVisible(const bool fVisible);
+   void Create();
+   void Destroy();
+   void SetVisible(const bool fVisible);
 
    void SetEnabled(const BOOL fEnabled);
 
@@ -209,7 +209,8 @@ public:
 
    bool m_fScriptError; // Whether a script error has occured - used for polling from the game
 
-   bool m_visible, m_minimized;
+   bool m_visible;
+   bool m_minimized;
 
 private:
 #define MAX_FIND_LENGTH 81

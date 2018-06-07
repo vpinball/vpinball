@@ -130,7 +130,7 @@ void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes,
          modes[i].width == curSelMode->width &&
          modes[i].height == curSelMode->height &&
          modes[i].depth == curSelMode->depth &&
-         modes[i].refreshrate == curSelMode->refreshrate)
+         (modes[i].refreshrate == curSelMode->refreshrate || (curSelMode->refreshrate == 0 && modes[i].refreshrate == DEFAULT_PLAYER_FS_REFRESHRATE)))
          SendMessage(hwndList, LB_SETCURSEL, i, 0);
    }
 }
@@ -177,7 +177,13 @@ BOOL VideoOptionsDialog::OnInitDialog()
       controlHwnd = GetDlgItem(IDC_3D_STEREO_Y).GetHwnd();
       AddToolTip("Switches 3D Stereo effect to use the Y Axis.\r\nThis should usually be selected for Cabinets/rotated displays.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_FULLSCREEN).GetHwnd();
-      AddToolTip("Enforces exclusive Fullscreen Mode.\r\nDo not enable if you require to see the VPinMAME or B2S windows for example.\r\nEnforcing exclusive FS can slightly reduce input lag though.", hwndDlg, toolTipHwnd, controlHwnd);
+      if (IsWindows10_1803orAbove())
+      {
+          GetDlgItem(IDC_FULLSCREEN).SetWindowText("Force exclusive Fullscreen Mode");
+          AddToolTip("Enforces exclusive Fullscreen Mode.\r\nEnforcing exclusive FS can slightly reduce input lag.", hwndDlg, toolTipHwnd, controlHwnd);
+      }
+      else
+          AddToolTip("Enforces exclusive Fullscreen Mode.\r\nDo not enable if you require to see the VPinMAME or B2S windows for example.\r\nEnforcing exclusive FS can slightly reduce input lag though.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_10BIT_VIDEO).GetHwnd();
       AddToolTip("Enforces 10bit (WCG) rendering.\r\nRequires a corresponding 10bit output capable graphics card and monitor.\r\nAlso requires to have exclusive fullscreen mode enforced (for now).", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_BG_SET).GetHwnd();
@@ -414,16 +420,6 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const bool video10bit = (GetRegIntWithDefault("Player", "Render10Bit", 0) != 0);
    SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_SETCHECK, video10bit ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   int widthcur;
-   hr = GetRegInt("Player", "Width", &widthcur);
-   if (hr != S_OK)
-      widthcur = DEFAULT_PLAYER_WIDTH;
-
-   int heightcur;
-   hr = GetRegInt("Player", "Height", &heightcur);
-   if (hr != S_OK)
-      heightcur = widthcur * 3 / 4;
-
    int depthcur;
    hr = GetRegInt("Player", "ColorDepth", &depthcur);
    if (hr != S_OK)
@@ -437,7 +433,17 @@ BOOL VideoOptionsDialog::OnInitDialog()
    int fullscreen;
    hr = GetRegInt("Player", "FullScreen", &fullscreen);
    if (hr != S_OK)
-      fullscreen = 0;
+      fullscreen = !!IsWindows10_1803orAbove();
+
+   int widthcur;
+   hr = GetRegInt("Player", "Width", &widthcur);
+   if (hr != S_OK)
+      widthcur = fullscreen ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH;
+
+   int heightcur;
+   hr = GetRegInt("Player", "Height", &heightcur);
+   if (hr != S_OK)
+      heightcur = widthcur * 9 / 16;
 
    HWND hwndFullscreen = GetDlgItem(IDC_FULLSCREEN).GetHwnd();
    if (fullscreen)

@@ -391,7 +391,6 @@
 #define IDC_TRANSWEBSITE                303
 #define IDC_TRANSNAME                   304
 #define IDC_NEW                         305
-#define IDC_TRANSNAME2                  305
 #define IDC_CREATEFROMSELECTION         306
 #define IDC_NAME                        307
 #define IDC_OUTLIST                     309
