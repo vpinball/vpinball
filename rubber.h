@@ -155,7 +155,7 @@ private:
    void GenerateVertexBuffer(RenderDevice* pd3dDevice);
 
    void RenderObject(RenderDevice * const pd3dDevice);
-   void UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB, const float height);
+   void UpdateRubber(const bool updateVB, const float height);
    void GenerateMesh(const int _accuracy = -1, const bool createHitShape = false);
    void DrawRubberMesh(Sur * const psur);
 
