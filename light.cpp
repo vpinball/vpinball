@@ -545,7 +545,7 @@ void Light::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color)
+void Light::RenderBulbMesh(RenderDevice *pd3dDevice)
 {
    Material mat;
    mat.m_cBase = 0x181818;
@@ -601,7 +601,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
       return;
 
    if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh)
-      RenderBulbMesh(pd3dDevice, 0);
+      RenderBulbMesh(pd3dDevice);
 
    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
    m_d.m_time_msec = g_pplayer->m_time_msec;
@@ -908,8 +908,8 @@ void Light::PrepareMoversCustom()
          buf[t].ny = y;
          buf[t].nz = 0.0f;
 
-         buf[t].tu = pv0->x * (float)(1.0 / EDITOR_BG_WIDTH);
-         buf[t].tv = pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT);
+         buf[t].tu = m_d.m_BulbLight ? x : (pv0->x * (float)(1.0 / EDITOR_BG_WIDTH));
+         buf[t].tv = m_d.m_BulbLight ? y : (pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT));
       }
    }
    customMoverVBuffer->unlock();
@@ -994,7 +994,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
 void Light::RenderStatic(RenderDevice* pd3dDevice)
 {
    if (m_d.m_BulbLight && m_d.m_showBulbMesh && m_d.m_staticBulbMesh)
-      RenderBulbMesh(pd3dDevice, 0);
+      RenderBulbMesh(pd3dDevice);
 }
 
 void Light::SetObjectPos()

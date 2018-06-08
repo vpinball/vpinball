@@ -193,7 +193,7 @@ public:
 
    void InitShape();
    void setLightState(const LightState newVal);
-   void RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color);
+   void RenderBulbMesh(RenderDevice *pd3dDevice);
 
    PinTable *m_ptable;
 
