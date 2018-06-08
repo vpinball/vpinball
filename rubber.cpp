@@ -140,14 +140,14 @@ void Rubber::DrawRubberMesh(Sur * const psur)
 {
    std::vector<Vertex2D> drawVertices;
 
-   GenerateMesh(4);
-   UpdateRubber(NULL, false, m_d.m_height);
+   GenerateMesh(6);
+   UpdateRubber(false, m_d.m_height);
 
    for (int i = 0; i < (int)ringIndices.size(); i += 3)
    {
-      Vertex3Ds A = Vertex3Ds(m_vertices[ringIndices[i]].x, m_vertices[ringIndices[i]].y, m_vertices[ringIndices[i]].z);
-      Vertex3Ds B = Vertex3Ds(m_vertices[ringIndices[i + 1]].x, m_vertices[ringIndices[i + 1]].y, m_vertices[ringIndices[i + 1]].z);
-      Vertex3Ds C = Vertex3Ds(m_vertices[ringIndices[i + 2]].x, m_vertices[ringIndices[i + 2]].y, m_vertices[ringIndices[i + 2]].z);
+      const Vertex3Ds A = Vertex3Ds(m_vertices[ringIndices[i    ]].x, m_vertices[ringIndices[i    ]].y, m_vertices[ringIndices[i    ]].z);
+      const Vertex3Ds B = Vertex3Ds(m_vertices[ringIndices[i + 1]].x, m_vertices[ringIndices[i + 1]].y, m_vertices[ringIndices[i + 1]].z);
+      const Vertex3Ds C = Vertex3Ds(m_vertices[ringIndices[i + 2]].x, m_vertices[ringIndices[i + 2]].y, m_vertices[ringIndices[i + 2]].z);
       if (fabsf(m_vertices[ringIndices[i]].nz + m_vertices[ringIndices[i + 1]].nz) < 1.f)
       {
          drawVertices.push_back(Vertex2D(A.x, A.y));
@@ -166,13 +166,12 @@ void Rubber::DrawRubberMesh(Sur * const psur)
    }
    if (drawVertices.size() > 0)
       psur->Lines(drawVertices.data(), (int)(drawVertices.size() / 2));
-
 }
 
 void Rubber::PreRender(Sur * const psur)
 {
    //make 1 wire ramps look unique in editor - uses ramp color
-    psur->SetLineColor( RGB( 0, 0, 0 ), false, 0 );
+   psur->SetLineColor( RGB( 0, 0, 0 ), false, 0 );
    if (m_ptable->RenderSolid())
       psur->SetFillColor(RGB(192, 192, 192));
    else
@@ -183,7 +182,7 @@ void Rubber::PreRender(Sur * const psur)
    if (!m_d.m_showInEditor)
    {
       int cvertex;
-      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
+      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL, 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)));
       psur->Polygon(rgvLocal, cvertex* 2);
       delete[] rgvLocal;
    }
@@ -205,7 +204,7 @@ void Rubber::Render(Sur * const psur)
    {
       int cvertex;
       bool *pfCross;
-      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, &pfCross, NULL);
+      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, &pfCross, NULL, 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)));
 
       psur->Polygon(rgvLocal, cvertex* 2);
       for (int i = 0; i < cvertex; i++)
@@ -218,7 +217,8 @@ void Rubber::Render(Sur * const psur)
    else
    {
       DrawRubberMesh(psur);
-      // if y rotation is used don't show dragpoints
+
+      // if rotation is used don't show dragpoints
       return;
    }
 
@@ -270,7 +270,7 @@ void Rubber::RenderBlueprint(Sur *psur, const bool solid)
    {
       int cvertex;
       bool *pfCross;
-      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, &pfCross, NULL);
+      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, &pfCross, NULL, 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)));
 
       psur->Polygon(rgvLocal, cvertex* 2);
       for (int i = 0; i < cvertex; i++)
@@ -540,7 +540,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
    std::set< std::pair<unsigned, unsigned> > addedEdges;
 
    GenerateMesh(6, true); //!! adapt hacky code in the function if changing the "6" here
-   UpdateRubber(NULL, false, m_d.m_hitHeight);
+   UpdateRubber(false, m_d.m_hitHeight);
 
    // add collision triangles and edges
    for (unsigned i = 0; i < ringIndices.size(); i += 3)
@@ -1419,7 +1419,7 @@ void Rubber::RenderObject(RenderDevice * const pd3dDevice)
    }
 
    if (dynamicVertexBufferRegenerate)
-       UpdateRubber(pd3dDevice, true, m_d.m_height);
+       UpdateRubber(true, m_d.m_height);
 
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
@@ -1467,7 +1467,7 @@ void Rubber::ExportMesh(FILE *f)
 
       WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
       GenerateMesh();
-      UpdateRubber(NULL, false, m_d.m_height);
+      UpdateRubber(false, m_d.m_height);
 
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, m_vertices.data(), m_numVertices);
@@ -1499,7 +1499,7 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! h
    if (m_d.m_staticRendering)
       accuracy = (int)(10.f*1.3f); // see also above
 
-   if (_accuracy != -1) // hit shapes have the same, static, precision
+   if (_accuracy != -1) // hit shapes and UI display have the same, static, precision
       accuracy = _accuracy;
 
    Vertex2D * middlePoints = 0;
@@ -1651,7 +1651,7 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
    dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(ringIndices);
 }
 
-void Rubber::UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB, const float height)
+void Rubber::UpdateRubber(const bool updateVB, const float height)
 {
    Matrix3D fullMatrix,tempMat;
    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
