@@ -532,12 +532,13 @@ void HitTarget::ExportMesh( FILE *f )
 // Rendering
 //////////////////////////////
 
-//2d
-void HitTarget::PreRender(Sur * const psur)
+// 2D
+
+void HitTarget::UIRenderPass1(Sur * const psur)
 {
 }
 
-void HitTarget::Render(Sur * const psur)
+void HitTarget::UIRenderPass2(Sur * const psur)
 {
    psur->SetLineColor(RGB(0, 0, 0), false, 1);
    psur->SetObject(this);
@@ -798,7 +799,7 @@ void HitTarget::UpdateTarget(RenderDevice *pd3dDevice)
 }
 
 // Always called each frame to render over everything else (along with alpha ramps)
-void HitTarget::PostRenderStatic(RenderDevice* pd3dDevice)
+void HitTarget::RenderDynamic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 

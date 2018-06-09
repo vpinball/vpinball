@@ -108,7 +108,7 @@ void LightSeq::PutCenter(const Vertex2D * const pv)
 //
 // this is called before the grid lines are drawn on the map
 //
-void LightSeq::PreRender(Sur * const psur)
+void LightSeq::UIRenderPass1(Sur * const psur)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this);
@@ -132,7 +132,7 @@ void LightSeq::PreRender(Sur * const psur)
 // this is called after the grid lines have been drawn on the map.  draws a solid
 // outline over the grid lines
 //
-void LightSeq::Render(Sur * const psur)
+void LightSeq::UIRenderPass2(Sur * const psur)
 {
    psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
@@ -227,7 +227,7 @@ void LightSeq::EndPlay()
    IEditable::EndPlay();
 }
 
-void LightSeq::PostRenderStatic(RenderDevice* pd3dDevice)
+void LightSeq::RenderDynamic(RenderDevice* pd3dDevice)
 {
 }
 

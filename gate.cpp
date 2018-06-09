@@ -224,11 +224,11 @@ void Gate::WriteRegDefaults()
    SetRegValue("DefaultProps\\Gate", "GateType", REG_DWORD, &m_d.m_type, 4);
 }
 
-void Gate::PreRender(Sur * const psur)
+void Gate::UIRenderPass1(Sur * const psur)
 {
 }
 
-void Gate::Render(Sur * const psur)
+void Gate::UIRenderPass2(Sur * const psur)
 {
    psur->SetLineColor(RGB(0, 0, 0), false, 2);
    psur->SetObject(this);
@@ -519,7 +519,7 @@ void Gate::RenderObject(RenderDevice* pd3dDevice)
    pd3dDevice->basicShader->End();
 }
 
-void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
+void Gate::RenderDynamic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 

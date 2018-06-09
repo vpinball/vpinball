@@ -649,12 +649,13 @@ void Primitive::TransformVertices()
 // Rendering
 //////////////////////////////
 
-//2d
-void Primitive::PreRender(Sur * const psur)
+// 2D
+
+void Primitive::UIRenderPass1(Sur * const psur)
 {
 }
 
-void Primitive::Render(Sur * const psur)
+void Primitive::UIRenderPass2(Sur * const psur)
 {
    psur->SetLineColor(RGB(0, 0, 0), false, 1);
    psur->SetObject(this);
@@ -1142,7 +1143,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
 }
 
 // Always called each frame to render over everything else (along with alpha ramps)
-void Primitive::PostRenderStatic(RenderDevice* pd3dDevice)
+void Primitive::RenderDynamic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 

@@ -158,11 +158,11 @@ void Spinner::SetDefaults(bool fromMouseClick)
       m_d.m_szSurface[0] = 0;
 }
 
-void Spinner::PreRender(Sur * const psur)
+void Spinner::UIRenderPass1(Sur * const psur)
 {
 }
 
-void Spinner::Render(Sur * const psur)
+void Spinner::UIRenderPass2(Sur * const psur)
 {
    psur->SetLineColor(RGB(0, 0, 0), false, 3);
    psur->SetObject(this);
@@ -373,7 +373,7 @@ void Spinner::UpdatePlate(RenderDevice *pd3dDevice, Vertex3D_NoTex2 *vertBuffer)
       plateVertexBuffer->unlock();
 }
 
-void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
+void Spinner::RenderDynamic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 

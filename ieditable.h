@@ -133,8 +133,8 @@ public:
     } \
 	HRESULT Init(PinTable *ptable, float x, float y, bool fromMouseClick); \
 	INITVBA(ItemType) \
-	virtual void PreRender(Sur * const psur); \
-	virtual void Render(Sur * const psur); \
+	virtual void UIRenderPass1(Sur * const psur); \
+	virtual void UIRenderPass2(Sur * const psur); \
 	virtual PinTable *GetPTable() {return m_ptable;} \
 	virtual void GetHitShapes(Vector<HitObject> * const pvho); \
 	virtual void GetHitShapesDebug(Vector<HitObject> * const pvho); \
@@ -153,7 +153,7 @@ public:
 	virtual Hitable *GetIHitable() {return static_cast<Hitable *>(this);} \
     virtual void RenderSetup(RenderDevice* pd3dDevice); \
     virtual void RenderStatic(RenderDevice* pd3dDevice); \
-	virtual void PostRenderStatic(RenderDevice* pd3dDevice); \
+	virtual void RenderDynamic(RenderDevice* pd3dDevice); \
 	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;}\
 	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;} \
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \
@@ -181,9 +181,20 @@ public:
    IEditable();
    virtual ~IEditable();
 
-   virtual void PreRender(Sur * const psur) = 0;
-   virtual void Render(Sur * const psur) = 0;
+   // this function draws the shape of the object with a solid fill
+   // only used in the UI/editor and not the game
+   //
+   // this is called before the grid lines are drawn on the map
+   virtual void UIRenderPass1(Sur * const psur) = 0;
+   // this function draws the shape of the object with a black outline (no solid fill)
+   // only used in the UI/editor and not the game
+   //
+   // this is called after the grid lines have been drawn on the map.
+   // draws a solid outline over the grid lines
+   virtual void UIRenderPass2(Sur * const psur) = 0;
+
    virtual void RenderBlueprint(Sur *psur, const bool solid=false);
+
    virtual void ExportMesh(FILE *f) {}
 
    virtual ULONG STDMETHODCALLTYPE AddRef() = 0;

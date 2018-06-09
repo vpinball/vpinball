@@ -427,7 +427,7 @@ void Flipper::SetVertices(const float basex, const float basey, const float angl
    rgvTangents[2].y = endy + endradius*faceNormy2;
 }
 
-void Flipper::PreRender(Sur * const psur)
+void Flipper::UIRenderPass1(Sur * const psur)
 {
    const float rubBaseRadius = m_d.m_BaseRadius - m_d.m_rubberthickness;
    const float rubEndRadius = m_d.m_EndRadius - m_d.m_rubberthickness;
@@ -461,7 +461,7 @@ void Flipper::PreRender(Sur * const psur)
    psur->Ellipse(vendcenter.x, vendcenter.y, rubEndRadius);
 }
 
-void Flipper::Render(Sur * const psur)
+void Flipper::UIRenderPass2(Sur * const psur)
 {
    const float anglerad = ANGTORAD(m_d.m_StartAngle);
    const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
@@ -712,7 +712,7 @@ STDMETHODIMP Flipper::RotateToStart() // return to park, key/button up/released
 
    return S_OK;
 }
-void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
+void Flipper::RenderDynamic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 

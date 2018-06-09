@@ -94,10 +94,9 @@ public:
 
    // So objects don't have to implement all the transformation functions themselves
    virtual void GetCenter(Vertex2D * const pv) const = 0;
-   virtual void GetScale(float * const sx, float * const sy) const
+   virtual Vertex2D GetScale() const
    {
-      *sx = 1.0f;
-      *sy = 1.0f;
+      return Vertex2D(1.f, 1.f);
    }
    virtual float GetRotate() const
    {
@@ -114,16 +113,16 @@ public:
    HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
 
    virtual int GetSelectLevel() { return 1; }
-   virtual bool LoadMesh(){ return false; }
-   virtual void ExportMesh(){};
-   virtual void UpdatePropertyPanes(){};
-   virtual void AddPoint(int x, int y, const bool smooth=false){};
+   virtual bool LoadMesh() { return false; }
+   virtual void ExportMesh() {};
+   virtual void UpdatePropertyPanes() {};
+   virtual void AddPoint(int x, int y, const bool smooth=false) {};
 
    POINT m_ptLast;
 
    SelectState m_selectstate;
 
-   int m_menuid;  // context menu to use
+   int m_menuid; // context menu to use
 
    int layerIndex;
 

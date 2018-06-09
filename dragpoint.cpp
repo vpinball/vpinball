@@ -934,8 +934,7 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
       SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
       psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-      Vertex2D v;
-      psel->GetScale(&v.x, &v.y);
+      Vertex2D v = psel->GetScale();
 
       char szT[256];
       f2sz(v.x, szT);

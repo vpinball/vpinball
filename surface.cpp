@@ -256,7 +256,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 }
 
 
-void Surface::PreRender(Sur * const psur)
+void Surface::UIRenderPass1(Sur * const psur)
 {
    psur->SetFillColor(m_ptable->RenderSolid() ? g_pvp->m_fillColor : -1);
    psur->SetObject(this);
@@ -281,7 +281,7 @@ void Surface::PreRender(Sur * const psur)
       psur->Polygon(vvertex);
 }
 
-void Surface::Render(Sur * const psur)
+void Surface::UIRenderPass2(Sur * const psur)
 {
    psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
@@ -541,7 +541,7 @@ void Surface::MoveOffset(const float dx, const float dy)
    m_ptable->SetDirtyDraw();
 }
 
-void Surface::PostRenderStatic(RenderDevice* pd3dDevice)
+void Surface::RenderDynamic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 

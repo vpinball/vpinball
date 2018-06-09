@@ -245,7 +245,7 @@ void Trigger::SetDefaults(bool fromMouseClick)
 
 }
 
-void Trigger::PreRender(Sur * const psur)
+void Trigger::UIRenderPass1(Sur * const psur)
 {
    if (m_vdpoint.size() == 0)
       InitShape(m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -269,7 +269,7 @@ void Trigger::PreRender(Sur * const psur)
    }
 }
 
-void Trigger::Render(Sur * const psur)
+void Trigger::UIRenderPass2(Sur * const psur)
 {
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this);
@@ -632,9 +632,8 @@ void Trigger::UpdateAnimation(RenderDevice *pd3dDevice)
       }
    }
 }
-void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
+void Trigger::RenderDynamic(RenderDevice* pd3dDevice)
 {
-
    if (!m_d.m_fVisible || m_d.m_shape == TriggerNone)
       return;
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)

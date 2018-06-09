@@ -2175,7 +2175,7 @@ void PinTable::GetUniqueNamePasting(int type, WCHAR *wzUniqueName)
    }
 }
 
-void PinTable::Render(Sur * const psur)
+void PinTable::UIRenderPass2(Sur * const psur)
 {
    RECT rc;
    ::GetClientRect(m_hwnd, &rc);
@@ -2244,7 +2244,7 @@ void PinTable::Render(Sur * const psur)
       if (ptr->m_fBackglass == g_pvp->m_fBackglassView)
       {
          if (ptr->m_isVisible)
-            ptr->PreRender(psur);
+            ptr->UIRenderPass1(psur);
       }
    }
 
@@ -2285,7 +2285,7 @@ void PinTable::Render(Sur * const psur)
       if (m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView)
       {
          if (m_vedit.ElementAt(i)->m_isVisible)
-            m_vedit.ElementAt(i)->Render(psur);
+            m_vedit.ElementAt(i)->UIRenderPass2(psur);
       }
    }
 
@@ -2419,7 +2419,7 @@ void PinTable::Paint(HDC hdc)
    if (m_fDirtyDraw)
    {
       Sur * const psur = new PaintSur(hdc2, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, GetSelectedItem());
-      Render(psur);
+      UIRenderPass2(psur);
 
       delete psur;
    }
@@ -2447,14 +2447,14 @@ ISelect *PinTable::HitTest(const int x, const int y)
 
    m_allHitElements.RemoveAllElements();
 
-   Render(phs);
+   UIRenderPass2(phs);
 
    for (int i = 0; i < m_vedit.Size(); i++)
    {
       IEditable *ptr = m_vedit.ElementAt(i);
       if (ptr->m_fBackglass == g_pvp->m_fBackglassView)
       {
-         ptr->PreRender(phs2);
+         ptr->UIRenderPass1(phs2);
          ISelect* tmp = phs2->m_pselected;
          if (m_allHitElements.IndexOf(tmp) == -1 && tmp != NULL && tmp != this)
          {
@@ -2462,7 +2462,7 @@ ISelect *PinTable::HitTest(const int x, const int y)
          }
       }
    }
-   // it's possible that PreRender doesn't find all elements  (gates,plunger)
+   // it's possible that UIRenderPass1 doesn't find all elements  (gates,plunger)
    // check here if everything was already stored in the list
    if (m_allHitElements.IndexOf(phs->m_pselected) == -1)
    {
@@ -6450,7 +6450,7 @@ void PinTable::ExportBlueprint()
       }
    }
 
-   //Render(psur);
+   //UIRenderPass2(psur);
 
    delete psur;
 
@@ -6830,7 +6830,7 @@ void PinTable::DoCodeViewCommand(int command)
    switch (command)
    {
    case ID_SAVE:
-      // added by chris as part of table protection
+      // table protection
       if (!CheckPermissions(DISABLE_TABLE_SAVE))
       {
          TableSave();
@@ -7093,7 +7093,7 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
    }
 }
 
-void PinTable::PreRender(Sur * const psur)
+void PinTable::UIRenderPass1(Sur * const psur)
 {
 }
 
@@ -7455,8 +7455,8 @@ void PinTable::OnLButtonUp(int x, int y)
 
          HitRectSur * const phrs = new HitRectSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, &m_rcDragRect, &vsel);
 
-         // Just want one rendering pass (no PreRender) so we don't select things twice
-         Render(phrs);
+         // Just want one rendering pass (no UIRenderPass1) so we don't select things twice
+         UIRenderPass2(phrs);
 
          const int ksshift = GetKeyState(VK_SHIFT);
          const bool fAdd = ((ksshift & 0x80000000) != 0);

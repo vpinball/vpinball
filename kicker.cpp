@@ -162,11 +162,11 @@ void Kicker::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Kicker", "Legacy", m_d.m_legacyMode);
 }
 
-void Kicker::PreRender(Sur * const psur)
+void Kicker::UIRenderPass1(Sur * const psur)
 {
 }
 
-void Kicker::Render(Sur * const psur)
+void Kicker::UIRenderPass2(Sur * const psur)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetFillColor(-1);
@@ -570,7 +570,7 @@ void Kicker::SetDefaultPhysics(bool fromMouseClick)
       m_d.m_scatter = 0;
 }
 
-void Kicker::PostRenderStatic(RenderDevice* pd3dDevice)
+void Kicker::RenderDynamic(RenderDevice* pd3dDevice)
 {
    if (m_ptable->m_fReflectionEnabled)
       return;
