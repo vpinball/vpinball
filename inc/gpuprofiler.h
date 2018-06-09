@@ -34,6 +34,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 enum GTS
 {
 	GTS_BeginFrame = 0,
+
 	GTS_PlayfieldGraphics = 1,
 	GTS_Primitives_NT = 1, // eItemPrimitive
 	GTS_NonTransparent = 2,
@@ -44,13 +45,16 @@ enum GTS
 	GTS_Walls_Ramps_Rubbers_T = 4, // eItemSurface eItemRamp eItemRubber
 	GTS_Bloom = 5,
 	GTS_Primitives_T = 5, // eItemPrimitive
-	GTS_AO = 6,
+	GTS_SSR = 6,
 	GTS_Lights = 6, // eItemLight
-	GTS_PostProcess = 7,
-	GTS_Flashers = 7, //eItemFlasher
-	GTS_EndFrame = 8,
+	GTS_AO = 7,
+	GTS_Flashers = 7, // eItemFlasher
+	GTS_PostProcess = 8,
+	GTS_UNUSED = 8, // eXXX //!!
 
-	GTS_Max = 9
+	GTS_EndFrame = 9,
+
+	GTS_Max = 10
 };
 
 static const char * GTS_name_item[GTS_Max] =
@@ -63,6 +67,7 @@ static const char * GTS_name_item[GTS_Max] =
 	"Primitives (Transparent)",
 	"Lights",
 	"Flashers",
+	"UNUSED", //!!
 	"End Frame"
 };
 
@@ -74,6 +79,7 @@ static const char * GTS_name[GTS_Max] =
 	"Light Buffer",
 	"Transparent Elements",
 	"Bloom",
+	"ScreenSpace Reflections",
 	"Ambient Occlusion",
 	"Post Processing",
 	"End Frame"

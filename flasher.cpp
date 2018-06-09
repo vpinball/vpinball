@@ -279,7 +279,7 @@ void Flasher::UIRenderPass2(Sur * const psur)
    psur->SetObject(NULL);
 
    {
-      std::vector<RenderVertex> vvertex; //!! check/reuse from prerender
+      std::vector<RenderVertex> vvertex; //!! check/reuse from UIRenderPass1
       GetRgVertex(vvertex);
       psur->Polygon(vvertex);
    }
