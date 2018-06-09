@@ -1775,7 +1775,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
 
       // Draw transparent objects.
       for (unsigned int i = 0; i < m_vHitTrans.size(); ++i)
-         m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+         m_vHitTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
 
       std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
    }
@@ -1786,7 +1786,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
    {
       // Draw non-transparent objects.
       for (unsigned int i = 0; i < m_vHitNonTrans.size(); ++i)
-         m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+         m_vHitNonTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
    }
 
    m_pin3d.DisableAlphaBlend();
@@ -3517,7 +3517,7 @@ void Player::DrawBulbLightBuffer()
       // Draw bulb lights with transmission scale only
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
          if (m_vHitTrans[i]->RenderToLightBuffer())
-            m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+            m_vHitTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
 
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
       //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -3666,13 +3666,13 @@ void Player::RenderDynamics()
       // Draw non-transparent objects. No DMD's
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
         if(!m_vHitNonTrans[i]->IsDMD())
-          m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+          m_vHitNonTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
 
       m_dmdstate = 2;
       // Draw non-transparent DMD's
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
         if(m_vHitNonTrans[i]->IsDMD())
-          m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+          m_vHitNonTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
 
       DrawBalls();
 
@@ -3692,13 +3692,13 @@ void Player::RenderDynamics()
       // Draw transparent objects. No DMD's
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
         if(!m_vHitTrans[i]->IsDMD())
-          m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+          m_vHitTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
 
       m_dmdstate = 1;
       // Draw only transparent DMD's
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i) //!! is NonTrans correct or rather Trans????
         if(m_vHitNonTrans[i]->IsDMD())
-          m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+          m_vHitNonTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
 
 #ifdef FPS
       if (ProfilingMode() == 1)
@@ -3717,62 +3717,62 @@ void Player::RenderDynamics()
       // Draw non-transparent Primitives.
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
          if (m_vHitNonTrans[i]->HitableGetItemType() == eItemPrimitive)
-            m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+            m_vHitNonTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Primitives_NT);
 
       // Draw non-transparent Walls, Ramps, Rubbers.
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
          if (m_vHitNonTrans[i]->HitableGetItemType() == eItemSurface || m_vHitNonTrans[i]->HitableGetItemType() == eItemRamp || m_vHitNonTrans[i]->HitableGetItemType() == eItemRubber)
-            m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+            m_vHitNonTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Walls_Ramps_Rubbers_NT);
 
       // Else.
       m_dmdstate = 2;
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
          if (m_vHitNonTrans[i]->IsDMD() && m_vHitNonTrans[i]->HitableGetItemType() == eItemFlasher)
-            m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+            m_vHitNonTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
 
       DrawBalls();
 
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
          if (m_vHitNonTrans[i]->HitableGetItemType() != eItemPrimitive && m_vHitNonTrans[i]->HitableGetItemType() != eItemSurface && m_vHitNonTrans[i]->HitableGetItemType() != eItemRamp && m_vHitNonTrans[i]->HitableGetItemType() != eItemRubber)
-            m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+            m_vHitNonTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
 
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
          if (m_vHitTrans[i]->HitableGetItemType() != eItemPrimitive && m_vHitTrans[i]->HitableGetItemType() != eItemSurface && m_vHitTrans[i]->HitableGetItemType() != eItemRamp && m_vHitTrans[i]->HitableGetItemType() != eItemRubber && m_vHitTrans[i]->HitableGetItemType() != eItemLight && m_vHitTrans[i]->HitableGetItemType() != eItemFlasher)
-            m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+            m_vHitTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Else);
 
       // Draw transparent Walls, Ramps, Rubbers.
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
          if (m_vHitTrans[i]->HitableGetItemType() == eItemSurface || m_vHitTrans[i]->HitableGetItemType() == eItemRamp || m_vHitTrans[i]->HitableGetItemType() == eItemRubber)
-            m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+            m_vHitTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Walls_Ramps_Rubbers_T);
 
       // Draw transparent Primitives.
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
          if (m_vHitTrans[i]->HitableGetItemType() == eItemPrimitive)
-            m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+            m_vHitTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Primitives_T);
 
       // Draw Lights.
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i) //!! not necessary??!
          if (m_vHitNonTrans[i]->HitableGetItemType() == eItemLight)
-            m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+            m_vHitNonTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
          if (m_vHitTrans[i]->HitableGetItemType() == eItemLight)
-            m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+            m_vHitTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Lights);
 
       // Draw Flashers.
       m_dmdstate = 0;
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
          if (!m_vHitTrans[i]->IsDMD() && m_vHitTrans[i]->HitableGetItemType() == eItemFlasher)
-            m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+            m_vHitTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
       m_dmdstate = 1;
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
          if (m_vHitNonTrans[i]->IsDMD() && m_vHitNonTrans[i]->HitableGetItemType() == eItemFlasher)
-            m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+            m_vHitNonTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Flashers);
    }
 #endif

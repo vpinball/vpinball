@@ -324,7 +324,7 @@ Texture *Light::GetDisplayTexture()
    return (m_d.m_state == LightStateOff) ? m_ptable->GetImage(m_d.m_szOffImage) : NULL;
 }
 
-void Light::PreRender(Sur * const psur)
+void Light::UIRenderPass1(Sur * const psur)
 {
    psur->SetBorderColor(-1, false, 0);
    psur->SetFillColor(m_ptable->RenderSolid() ? (((m_d.m_color & 0xFEFEFE) + (m_d.m_color2 & 0xFEFEFE)) / 2) : -1);
@@ -353,7 +353,7 @@ void Light::PreRender(Sur * const psur)
    }
 }
 
-void Light::Render(Sur * const psur)
+void Light::UIRenderPass2(Sur * const psur)
 {
    bool fDrawDragpoints = ((m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints));
 
@@ -587,7 +587,7 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice)
    pd3dDevice->basicShader->End();
 }
 
-void Light::PostRenderStatic(RenderDevice* pd3dDevice)
+void Light::RenderDynamic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 

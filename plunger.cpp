@@ -227,11 +227,11 @@ void Plunger::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Plunger", "ReflectionEnabled", m_d.m_fReflectionEnabled);
 }
 
-void Plunger::PreRender(Sur * const psur)
+void Plunger::UIRenderPass1(Sur * const psur)
 {
 }
 
-void Plunger::Render(Sur * const psur)
+void Plunger::UIRenderPass2(Sur * const psur)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetFillColor(-1);
@@ -361,7 +361,7 @@ void Plunger::SetDefaultPhysics(bool fromMouseClick)
 
 }
 
-void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
+void Plunger::RenderDynamic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 

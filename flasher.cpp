@@ -224,7 +224,7 @@ void Flasher::WriteRegDefaults()
    SetRegValueInt("DefaultProps\\Flasher", "FilterAmount", m_d.m_fFilterAmount);
 }
 
-void Flasher::PreRender(Sur * const psur)
+void Flasher::UIRenderPass1(Sur * const psur)
 {
    if (m_vdpoint.Size() == 0)
       InitShape();
@@ -271,7 +271,7 @@ void Flasher::PreRender(Sur * const psur)
       psur->Polygon(vvertex);
 }
 
-void Flasher::Render(Sur * const psur)
+void Flasher::UIRenderPass2(Sur * const psur)
 {
    psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
@@ -1305,8 +1305,7 @@ STDMETHODIMP Flasher::put_ImageAlignment(RampImageAlignment newVal)
    return S_OK;
 }
 
-// Always called each frame to render over everything else (along with primitives)
-void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
+void Flasher::RenderDynamic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 

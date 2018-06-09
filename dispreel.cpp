@@ -146,7 +146,7 @@ STDMETHODIMP DispReel::InterfaceSupportsErrorInfo(REFIID riid)
 //
 // this is called before the grid lines are drawn on the map
 //
-void DispReel::PreRender(Sur * const psur)
+void DispReel::UIRenderPass1(Sur * const psur)
 {
    psur->SetBorderColor(-1, false, 0);
    psur->SetFillColor(m_d.m_backcolor);
@@ -178,7 +178,7 @@ void DispReel::PreRender(Sur * const psur)
 // this is called after the grid lines have been drawn on the map.  draws a solid
 // outline over the grid lines
 //
-void DispReel::Render(Sur * const psur)
+void DispReel::UIRenderPass2(Sur * const psur)
 {
    if (!GetPTable()->GetEMReelsEnabled()) return;
 
@@ -247,7 +247,7 @@ void DispReel::EndPlay()
    IEditable::EndPlay();
 }
 
-void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
+void DispReel::RenderDynamic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 

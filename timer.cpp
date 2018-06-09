@@ -70,11 +70,11 @@ void Timer::PutCenter(const Vertex2D * const pv)
    m_ptable->SetDirtyDraw();
 }
 
-void Timer::PreRender(Sur * const psur)
+void Timer::UIRenderPass1(Sur * const psur)
 {
 }
 
-void Timer::Render(Sur * const psur)
+void Timer::UIRenderPass2(Sur * const psur)
 {
    psur->SetFillColor(-1);//RGB(192,192,192));
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
@@ -133,7 +133,7 @@ void Timer::EndPlay()
    IEditable::EndPlay();
 }
 
-void Timer::PostRenderStatic(RenderDevice* pd3dDevice)
+void Timer::RenderDynamic(RenderDevice* pd3dDevice)
 {
 }
 

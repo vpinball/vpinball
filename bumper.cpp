@@ -203,7 +203,7 @@ STDMETHODIMP Bumper::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-void Bumper::PreRender(Sur * const psur)
+void Bumper::UIRenderPass1(Sur * const psur)
 {
    psur->SetBorderColor(-1, false, 0);
 
@@ -239,7 +239,7 @@ void Bumper::PreRender(Sur * const psur)
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
 }
 
-void Bumper::Render(Sur * const psur)
+void Bumper::UIRenderPass2(Sur * const psur)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetFillColor(-1);
@@ -490,7 +490,7 @@ void Bumper::UpdateSkirt(RenderDevice *pd3dDevice, const bool doCalculation)
    m_socketVertexBuffer->unlock();
 }
 
-void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
+void Bumper::RenderDynamic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 

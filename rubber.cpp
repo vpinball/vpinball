@@ -168,7 +168,7 @@ void Rubber::DrawRubberMesh(Sur * const psur)
       psur->Lines(drawVertices.data(), (int)(drawVertices.size() / 2));
 }
 
-void Rubber::PreRender(Sur * const psur)
+void Rubber::UIRenderPass1(Sur * const psur)
 {
    //make 1 wire ramps look unique in editor - uses ramp color
    psur->SetLineColor( RGB( 0, 0, 0 ), false, 0 );
@@ -192,7 +192,7 @@ void Rubber::PreRender(Sur * const psur)
    }
 }
 
-void Rubber::Render(Sur * const psur)
+void Rubber::UIRenderPass2(Sur * const psur)
 {
    psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
@@ -1448,7 +1448,7 @@ void Rubber::RenderObject(RenderDevice * const pd3dDevice)
 // Always called each frame to render over everything else (along with primitives)
 // Same code as RenderStatic (with the exception of the alpha tests).
 // Also has less drawing calls by bundling seperate calls.
-void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
+void Rubber::RenderDynamic(RenderDevice* pd3dDevice)
 {
    if (!m_d.m_staticRendering)
    {

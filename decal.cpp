@@ -181,7 +181,7 @@ void Decal::WriteRegDefaults()
 }
 
 
-void Decal::PreRender(Sur * const psur)
+void Decal::UIRenderPass1(Sur * const psur)
 {
    if (!m_fBackglass || GetPTable()->GetDecalsEnabled())
    {
@@ -213,7 +213,7 @@ void Decal::PreRender(Sur * const psur)
    }
 }
 
-void Decal::Render(Sur * const psur)
+void Decal::UIRenderPass2(Sur * const psur)
 {
    if (!m_fBackglass || GetPTable()->GetDecalsEnabled())
    {
@@ -446,7 +446,7 @@ void Decal::EndPlay()
    IEditable::EndPlay();
 }
 
-void Decal::PostRenderStatic(RenderDevice* pd3dDevice)
+void Decal::RenderDynamic(RenderDevice* pd3dDevice)
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    if (!m_fBackglass //!! should just check if material has opacity enabled, but this is crucial for HV setup performance like-is

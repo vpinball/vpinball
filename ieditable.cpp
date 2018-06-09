@@ -156,7 +156,7 @@ void IEditable::EndPlay()
 
 void IEditable::RenderBlueprint(Sur *psur, const bool solid)
 {
-   Render(psur);
+   UIRenderPass2(psur);
 }
 
 void IEditable::BeginUndo()

@@ -170,7 +170,7 @@ void Ramp::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
 }
 
 
-void Ramp::PreRender(Sur * const psur)
+void Ramp::UIRenderPass1(Sur * const psur)
 {
    //make 1 wire ramps look unique in editor - uses ramp color
    psur->SetFillColor(m_ptable->RenderSolid() ? g_pvp->m_fillColor : -1);
@@ -184,7 +184,7 @@ void Ramp::PreRender(Sur * const psur)
    delete[] rgvLocal;
 }
 
-void Ramp::Render(Sur * const psur)
+void Ramp::UIRenderPass2(Sur * const psur)
 {
    psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
@@ -2475,7 +2475,7 @@ void Ramp::RenderRamp(RenderDevice *pd3dDevice, const Material * const mat)
 // Always called each frame to render over everything else (along with primitives)
 // Same code as RenderStatic (with the exception of the alpha tests).
 // Also has less drawing calls by bundling seperate calls.
-void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
+void Ramp::RenderDynamic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 

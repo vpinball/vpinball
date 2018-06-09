@@ -307,7 +307,7 @@ public:
    HRESULT InitVBA();
    void CloseVBA();
 
-   void Render(Sur * const psur);
+   void UIRenderPass2(Sur * const psur);
    void Paint(HDC hdc);
    ISelect *HitTest(const int x, const int y);
    void SetDirtyDraw();
@@ -385,7 +385,7 @@ public:
    virtual void Translate(Vertex2D *pvOffset);
 
    // IEditable (mostly bogus for now)
-   virtual void PreRender(Sur * const psur);
+   virtual void UIRenderPass1(Sur * const psur);
    virtual ItemTypeEnum GetItemType() const { return eItemTable; }
    virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    virtual HRESULT InitPostLoad();
