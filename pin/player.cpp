@@ -3774,6 +3774,9 @@ void Player::RenderDynamics()
          if (m_vHitNonTrans[i]->IsDMD() && m_vHitNonTrans[i]->HitableGetItemType() == eItemFlasher)
             m_vHitNonTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Flashers);
+
+      // Unused so far.
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_UNUSED); //!!
    }
 #endif
    m_dmdstate = 0;
@@ -4278,7 +4281,16 @@ void Player::PrepareVideoBuffersNormal()
 #endif
 
    if (ss_refl)
-       SSRefl();
+      SSRefl();
+
+#ifdef FPS
+   if (ProfilingMode() == 1)
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_SSR);
+#endif
+#ifdef FPS
+   if (ProfilingMode() == 1)
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_AO);
+#endif
 
    // switch to output buffer
    if (!(stereo || SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3))
@@ -4367,7 +4379,12 @@ void Player::PrepareVideoBuffersAO()
 #endif
 
    if (ss_refl)
-       SSRefl();
+      SSRefl();
+
+#ifdef FPS
+   if (ProfilingMode() == 1)
+      m_pin3d.m_gpu_profiler.Timestamp(GTS_SSR);
+#endif
 
    // separate normal generation pass, currently roughly same perf or even much worse
    /*RenderTarget* tmpSurface;
