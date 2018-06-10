@@ -29,8 +29,29 @@ void VideoOptionsDialog::ResetVideoPreferences()
    HWND hwndDlg = GetHwnd();
 
    HWND hwndCheck = GetDlgItem(IDC_FULLSCREEN).GetHwnd();
-   SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(hwndDlg, false ? GET_FULLSCREENMODES : GET_WINDOW_MODES, 0, 0);
+   SendMessage(hwndCheck, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
+
+   int depthcur;
+   HRESULT hr = GetRegInt("Player", "ColorDepth", &depthcur);
+   if (hr != S_OK)
+      depthcur = 32;
+
+   int refreshrate;
+   hr = GetRegInt("Player", "RefreshRate", &refreshrate);
+   if (hr != S_OK)
+      refreshrate = 0; // The default
+
+   int widthcur;
+   hr = GetRegInt("Player", "Width", &widthcur);
+   if (hr != S_OK)
+      widthcur = true ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH;
+
+   int heightcur;
+   hr = GetRegInt("Player", "Height", &heightcur);
+   if (hr != S_OK)
+      heightcur = widthcur * 9 / 16;
+
+   SendMessage(hwndDlg, true ? GET_FULLSCREENMODES : GET_WINDOW_MODES, widthcur << 16 | refreshrate, heightcur << 16 | depthcur);
 
    hwndCheck = GetDlgItem(IDC_10BIT_VIDEO).GetHwnd();
    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -82,7 +103,7 @@ void VideoOptionsDialog::ResetVideoPreferences()
       ::EnableWindow(GetDlgItem(IDC_BALL_IMAGE_EDIT).GetHwnd(), FALSE);
       ::EnableWindow(GetDlgItem(IDC_BALL_DECAL_EDIT).GetHwnd(), FALSE);
    }
-   SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_SETCURSEL, 0, 0);
+   SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_SETCURSEL, 2, 0);
    hwndCheck = GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd();
    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    hwndCheck = GetDlgItem(IDC_BG_SET).GetHwnd();
@@ -341,7 +362,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    int fxaa;
    hr = GetRegInt("Player", "FXAA", &fxaa);
    if (hr != S_OK)
-      fxaa = 0;
+      fxaa = 2;
    SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Disabled");
    SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Fast FXAA");
    SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Standard FXAA");
@@ -824,7 +845,7 @@ void VideoOptionsDialog::OnOK()
    HWND hwndFXAA = GetDlgItem(IDC_FXAACB).GetHwnd();
    size_t fxaa = SendMessage(hwndFXAA, CB_GETCURSEL, 0, 0);
    if (fxaa == LB_ERR)
-      fxaa = 0;
+      fxaa = 2;
    SetRegValue("Player", "FXAA", REG_DWORD, &fxaa, 4);
 
    HWND hwndScaleFXDMD = GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd();
