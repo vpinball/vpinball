@@ -1,3 +1,6 @@
+// This shader and the accompanying code in light.cpp is a complete mess for the backglass mode of lights!
+// It's full of workarounds as some things otherwise simply refuse to work, which is most likely due to the nature of how backglass elements are rendered in the first place!
+
 #ifdef SEPARATE_CLASSICLIGHTSHADER
 #define NUM_BALL_LIGHTS 0 // just to avoid having too much constant mem allocated
 
@@ -75,9 +78,9 @@ struct VS_LIGHT_OUTPUT
    float3 normal        : TEXCOORD3;
 };
 
-VS_LIGHT_OUTPUT vs_light_main (float4 vPosition : POSITION0,  
-                               float3 vNormal   : NORMAL0,  
-                               float2 tc        : TEXCOORD0) 
+VS_LIGHT_OUTPUT vs_light_main (in float4 vPosition : POSITION0,  
+                               in float3 vNormal   : NORMAL0,  
+                               in float2 tc        : TEXCOORD0) 
 {
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    const float3 P = mul(vPosition, matWorldView).xyz;
@@ -88,7 +91,25 @@ VS_LIGHT_OUTPUT vs_light_main (float4 vPosition : POSITION0,
    Out.tex0 = tc;
    Out.worldPos = P;
    Out.tablePos = vPosition.xyz;
-   Out.normal = (imageBackglassMode.y == 0. ? N : vNormal);
+   Out.normal = (imageBackglassMode.y == 0. ? N : vNormal); //!!! backglass mode abuses normal to pass in position
+   return Out; 
+}
+
+// same again, but abuses tex0 to pass in position for backglass mode
+VS_LIGHT_OUTPUT vs_light_main_without_texel(in float4 vPosition : POSITION0,
+                                            in float3 vNormal   : NORMAL0,  
+                                            in float2 tc        : TEXCOORD0) 
+{
+   // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
+   const float3 P = mul(vPosition, matWorldView).xyz;
+   const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
+
+   VS_LIGHT_OUTPUT Out;
+   Out.pos = mul(vPosition, matWorldViewProj);
+   Out.tex0 = tc; //!!! == position for backglass mode
+   Out.worldPos = P;
+   Out.tablePos = vPosition.xyz;
+   Out.normal = N;
    return Out; 
 }
 
@@ -134,7 +155,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLO
     float4 result = float4(0.0, 0.0, 0.0, 0.0);
     [branch] if (lightColor_intensity.w != 0.0)
     {
-        const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? IN.tablePos : IN.normal)) * lightCenter_maxRange.w; //!! backglass mode abuses normal to pass in position
+        const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? IN.tablePos : float3(IN.tex0, 0.0))) * lightCenter_maxRange.w; //!! backglass mode abuses uv to pass in position
         const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
         const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
         result.xyz = lcolor*(atten*lightColor_intensity.w);
@@ -167,7 +188,7 @@ technique light_with_texture_isMetal
 //       SrcBlend = One;
 //       DestBlend = One;
        VertexShader = compile vs_3_0 vs_light_main();
-	  PixelShader = compile ps_3_0 PS_LightWithTexel(1);
+       PixelShader = compile ps_3_0 PS_LightWithTexel(1);
    } 
 }
 
@@ -179,7 +200,7 @@ technique light_with_texture_isNotMetal
 //       SrcBlend = One;
 //       DestBlend = One;
        VertexShader = compile vs_3_0 vs_light_main();
-	  PixelShader = compile ps_3_0 PS_LightWithTexel(0);
+       PixelShader = compile ps_3_0 PS_LightWithTexel(0);
    } 
 }
 
@@ -187,8 +208,8 @@ technique light_without_texture_isMetal
 { 
    pass P0 
    { 
-      VertexShader = compile vs_3_0 vs_light_main(); 
-	  PixelShader = compile ps_3_0 PS_LightWithoutTexel(1);
+      VertexShader = compile vs_3_0 vs_light_main_without_texel();
+      PixelShader = compile ps_3_0 PS_LightWithoutTexel(1);
    } 
 }
 
@@ -196,7 +217,7 @@ technique light_without_texture_isNotMetal
 { 
    pass P0 
    { 
-      VertexShader = compile vs_3_0 vs_light_main(); 
-	  PixelShader = compile ps_3_0 PS_LightWithoutTexel(0);
+      VertexShader = compile vs_3_0 vs_light_main_without_texel(); 
+      PixelShader = compile ps_3_0 PS_LightWithoutTexel(0);
    } 
 }
