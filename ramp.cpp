@@ -241,16 +241,13 @@ void Ramp::UIRenderPass2(Sur * const psur)
 
    if (fDrawDragpoints)
    {
+      psur->SetFillColor(-1);
       const int len = m_vdpoint.Size();
       for (int i = 0; i < len; i++)
       {
          CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
-         psur->SetFillColor(-1);
-         psur->SetBorderColor((i == 0) ? RGB(0, 0, 255) : RGB(255, 0, 0), false, 0);
+         psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : ((i == 0) ? RGB(0, 0, 255) : RGB(255, 0, 0)), false, 0);
          psur->SetObject(pdp);
-
-         if (pdp->m_fDragging)
-            psur->SetBorderColor(RGB(0, 255, 0), false, 0);
 
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
       }
@@ -413,14 +410,15 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    float currentlength = 0;
    for (int i = 0; i < cvertex; i++)
    {
+      // clamp next and prev as ramps do not loop
       const RenderVertex3D & vprev = vvertex[(i>0) ? i - 1 : i];
       const RenderVertex3D & vnext = vvertex[(i < (cvertex - 1)) ? i + 1 : i];
       const RenderVertex3D & vmiddle = vvertex[i];
 
-	  if (ppfCross)
-		  (*ppfCross)[i] = vmiddle.fControlPoint;
-	  
-	  Vertex2D vnormal;
+      if (ppfCross)
+         (*ppfCross)[i] = vmiddle.fControlPoint;
+
+      Vertex2D vnormal;
       {
          // Get normal at this point
          // Notice that these values equal the ones in the line
@@ -428,6 +426,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
          Vertex2D v1normal(vprev.y - vmiddle.y, vmiddle.x - vprev.x);   // vector vmiddle-vprev rotated RIGHT
          Vertex2D v2normal(vmiddle.y - vnext.y, vnext.x - vmiddle.x);   // vector vnext-vmiddle rotated RIGHT
 
+         // special handling for beginning and end of the ramp
          if (i == (cvertex - 1))
          {
             v1normal.Normalize();

@@ -170,7 +170,6 @@ void Rubber::DrawRubberMesh(Sur * const psur)
 
 void Rubber::UIRenderPass1(Sur * const psur)
 {
-   //make 1 wire ramps look unique in editor - uses ramp color
    psur->SetLineColor( RGB( 0, 0, 0 ), false, 0 );
    if (m_ptable->RenderSolid())
       psur->SetFillColor(RGB(192, 192, 192));
@@ -242,15 +241,13 @@ void Rubber::UIRenderPass2(Sur * const psur)
 
    if (fDrawDragpoints)
    {
+      psur->SetFillColor(-1);
+
       for (int i = 0; i < m_vdpoint.Size(); i++)
       {
          CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
-         psur->SetFillColor(-1);
-         psur->SetBorderColor(RGB(255, 0, 0), false, 0);
+         psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
          psur->SetObject(pdp);
-
-         if (pdp->m_fDragging)
-            psur->SetBorderColor(RGB(0, 255, 0), false, 0);
 
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
       }
@@ -356,19 +353,20 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
    }
    if (ppfCross)
    {
-	   *ppfCross = new bool[cvertex + 1];
+      *ppfCross = new bool[cvertex + 1];
    }
 
    for (int i = 0; i < cvertex; i++)
    {
-      const RenderVertex & vprev   = vvertex[(i>0) ? i - 1 : i];
+      // prev and next wrap around as rubbers always loop
+      const RenderVertex & vprev   = vvertex[(i>0) ? i - 1 : cvertex-1];
       const RenderVertex & vnext   = vvertex[(i < (cvertex - 1)) ? i + 1 : 0];
       const RenderVertex & vmiddle = vvertex[i];
 
-	  if (ppfCross)
-		  (*ppfCross)[i] = vmiddle.fControlPoint;
-	  
-	  Vertex2D vnormal;
+      if (ppfCross)
+         (*ppfCross)[i] = vmiddle.fControlPoint;
+
+      Vertex2D vnormal;
       {
          // Get normal at this point
          // Notice that these values equal the ones in the line
@@ -376,7 +374,8 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
          Vertex2D v1normal(vprev.y - vmiddle.y, vmiddle.x - vprev.x);   // vector vmiddle-vprev rotated RIGHT
          Vertex2D v2normal(vmiddle.y - vnext.y, vnext.x - vmiddle.x);   // vector vnext-vmiddle rotated RIGHT
 
-         if (i == (cvertex - 1))
+         // not needed special start/end handling as rubbers always loop
+         /*if (i == (cvertex - 1))
          {
             v1normal.Normalize();
             vnormal = v1normal;
@@ -386,7 +385,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
             v2normal.Normalize();
             vnormal = v2normal;
          }
-         else
+         else*/
          {
             v1normal.Normalize();
             v2normal.Normalize();
@@ -433,6 +432,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
 
       rgvLocal[i] = vmiddle + (widthcur*0.5f) * vnormal;
       rgvLocal[(cvertex + 1) * 2 - i - 1] = vmiddle - (widthcur*0.5f) * vnormal;
+
       if (i == 0)
       {
          rgvLocal[cvertex] = rgvLocal[0];
@@ -912,7 +912,7 @@ void Rubber::DoCommand(int icmd, int x, int y)
       {
          pdp->AddRef();
          pdp->Init(this, vOut.x, vOut.y);
-         pdp->m_fSmooth = true; // Ramps are usually always smooth
+         pdp->m_fSmooth = true; // Rubbers are usually always smooth
          m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
 
