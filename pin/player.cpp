@@ -1646,8 +1646,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    // 0 means disable limiting of draw-ahead queue
    m_limiter.Init(m_pin3d.m_pd3dDevice, m_fMaxPrerenderedFrames);
 
-   stats_drawn_static_triangles = m_pin3d.m_pd3dDevice->m_stats_drawn_triangles;
-
    Render(); //!! why here already? potentially not all initialized yet??
 
 #if(_WIN32_WINNT >= 0x0500)
@@ -1914,6 +1912,8 @@ void Player::InitStatic(HWND hwndProgress)
    // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
    for (int iter = cameraMode ? 0 : (STATIC_PRERENDER_ITERATIONS-1); iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
    {
+   m_pin3d.m_pd3dDevice->m_stats_drawn_triangles = 0;
+
    float u1 = xyLDBNbnot[iter*2  ];  //      (float)iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS);
    float u2 = xyLDBNbnot[iter*2+1];  //fmodf((float)iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f);
    // the following line implements filter importance sampling for a small gauss (i.e. less jaggies as it also samples neighboring pixels) -> but also potentially more artifacts in compositing!
@@ -2033,6 +2033,7 @@ void Player::InitStatic(HWND hwndProgress)
 
    offscreenSurface->UnlockRect();
    }
+   stats_drawn_static_triangles = m_pin3d.m_pd3dDevice->m_stats_drawn_triangles;
    }
 
    // now normalize oversampled result in pdestStatic, convert back to 16bit float, and copy to/overwrite the static GPU buffer
