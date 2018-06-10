@@ -832,6 +832,7 @@ void Light::PrepareMoversCustom()
       height += m_d.m_bulbHaloHeight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
       m_surfaceHeight = height;
    }
+
    if (customMoverIBuffer)
       customMoverIBuffer->release();
    if (customMoverVBuffer)
@@ -904,12 +905,15 @@ void Light::PrepareMoversCustom()
          buf[t].y = y;
          buf[t].z = 0.0f;
 
-         buf[t].nx = x;
+         buf[t].nx = x; //!!! abuses normal to pass position to shader :/ (only if !(m_d.m_BulbLight || pin == NULL))
          buf[t].ny = y;
          buf[t].nz = 0.0f;
 
-         buf[t].tu = m_d.m_BulbLight ? x : (pv0->x * (float)(1.0 / EDITOR_BG_WIDTH));
-         buf[t].tv = m_d.m_BulbLight ? y : (pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT));
+         //!!! why the hell must the bulb light mode still use the old data (uv=xy) ?? LightShader does not use it at all!?!
+         //!!! same for no image mode, the corresponding shader in ClassicLightShader does not work otherwise then!!
+
+         buf[t].tu = (m_d.m_BulbLight || pin == NULL) ? x : (pv0->x * (float)(1.0 / EDITOR_BG_WIDTH)); //!!! still wrong??? (f.e. create new BG light and stretch over BG) -> perspective correction wrong!!!??? 4 vertices only also wrong! decals work though!
+         buf[t].tv = (m_d.m_BulbLight || pin == NULL) ? y : (pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT));
       }
    }
    customMoverVBuffer->unlock();
