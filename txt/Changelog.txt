@@ -1,6 +1,8 @@
 VP 10.5.0 Changelog
 ------------------------
 
+- fix rubber triangulation issue leading to visual artifacts (especially in the editor) and rarely also weird physics behavior
+
 - make exclusive fullscreen the new default when using Windows 10 build 1803 and above
 
 - optionally make View->Script always show the script (see new option in Preferences->Editor Options) 
