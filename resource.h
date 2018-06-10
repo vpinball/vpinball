@@ -1000,6 +1000,7 @@
 #define IDC_STATIC_THICKNESS            818
 #define IDC_STATIC_THICKNESS_TEXT       819
 #define IDC_GLOBAL_SSREFLECTION_CHECK   820
+#define IDC_GLOBAL_PFREFLECTION_CHECK   821
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1163,7 +1164,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        648
 #define _APS_NEXT_COMMAND_VALUE         4022
-#define _APS_NEXT_CONTROL_VALUE         821
+#define _APS_NEXT_CONTROL_VALUE         822
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

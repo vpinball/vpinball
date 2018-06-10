@@ -402,6 +402,7 @@ public:
    bool m_disableAO;
 
    bool m_ss_refl;
+   bool m_pf_refl; // render playfield reflections for dynamic elements?
 
    bool m_useNvidiaApi;
    bool m_disableDWM;

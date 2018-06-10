@@ -563,7 +563,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    if(g_pplayer != NULL)
    {
        const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-       if(g_pplayer->m_ptable->m_fReflectElementsOnPlayfield || drawBallReflection)
+       if((g_pplayer->m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
        {
            hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
                                             D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorTmpBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
@@ -841,7 +841,7 @@ RenderDevice::~RenderDevice()
    if(g_pplayer)
    {
        const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-       if(g_pplayer->m_ptable->m_fReflectElementsOnPlayfield || drawBallReflection)
+       if((g_pplayer->m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
            SAFE_RELEASE(m_pMirrorTmpBufferTexture);
    }
    SAFE_RELEASE(m_pBloomBufferTexture);
