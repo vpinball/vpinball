@@ -311,6 +311,13 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    else
        m_ss_refl = (ss_refl == 1);
 
+   int pf_refl;
+   hr = GetRegInt("Player", "PFRefl", &pf_refl);
+   if (hr != S_OK)
+       m_pf_refl = true; // The default = on
+   else
+       m_pf_refl = (pf_refl == 1);
+
    hr = GetRegInt("Player", "Stereo3D", &m_fStereo3D);
    if (hr != S_OK)
       m_fStereo3D = 0; // The default = off
@@ -1942,10 +1949,10 @@ void Player::InitStatic(HWND hwndProgress)
    if (!cameraMode)
    {
       const bool drawBallReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
-      if (!m_ptable->m_fReflectElementsOnPlayfield && drawBallReflection)
+      if (!(m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) && drawBallReflection)
          RenderStaticMirror(true);
       else
-         if (m_ptable->m_fReflectElementsOnPlayfield)
+         if (m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/)
             RenderStaticMirror(false);
 
       // exclude playfield depth as dynamic mirror objects have to be added later-on
@@ -1953,7 +1960,7 @@ void Player::InitStatic(HWND hwndProgress)
       m_pin3d.RenderPlayfieldGraphics(false);
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
-      if (m_ptable->m_fReflectElementsOnPlayfield)
+      if (m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/)
          RenderMirrorOverlay();
 
       // to compensate for this when rendering the static objects, enable clipplane
@@ -3592,9 +3599,9 @@ void Player::RenderDynamics()
    {
 	   const bool drawBallReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
 
-	   if (!m_ptable->m_fReflectElementsOnPlayfield && drawBallReflection)
+	   if (!(m_ptable->m_fReflectElementsOnPlayfield && g_pplayer->m_pf_refl) && drawBallReflection)
 		   reflection_path = 1;
-	   else if (m_ptable->m_fReflectElementsOnPlayfield)
+	   else if (m_ptable->m_fReflectElementsOnPlayfield && g_pplayer->m_pf_refl)
 		   reflection_path = 2;
    }
 

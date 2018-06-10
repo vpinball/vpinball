@@ -69,6 +69,8 @@ void VideoOptionsDialog::ResetVideoPreferences()
    SendMessage(hwndCheck, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
    hwndCheck = GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd();
    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   hwndCheck = GetDlgItem(IDC_GLOBAL_PFREFLECTION_CHECK).GetHwnd();
+   SendMessage(hwndCheck, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
    hwndCheck = GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd();
    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    SetDlgItemText(IDC_BALL_IMAGE_EDIT, "");
@@ -303,6 +305,13 @@ BOOL VideoOptionsDialog::OnInitDialog()
    if (hr != S_OK)
       ssreflection = 0;
    SendMessage(hwndCheck, BM_SETCHECK, ssreflection ? BST_CHECKED : BST_UNCHECKED, 0);
+
+   hwndCheck = GetDlgItem(IDC_GLOBAL_PFREFLECTION_CHECK).GetHwnd();
+   int pfreflection;
+   hr = GetRegInt("Player", "PFRefl", &pfreflection);
+   if (hr != S_OK)
+      pfreflection = 1;
+   SendMessage(hwndCheck, BM_SETCHECK, pfreflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
    hwndCheck = GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd();
    int overwiteBallImage;
@@ -845,6 +854,10 @@ void VideoOptionsDialog::OnOK()
    HWND hwndSSReflect = GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd();
    size_t ssreflection = SendMessage(hwndSSReflect, BM_GETCHECK, 0, 0);
    SetRegValue("Player", "SSRefl", REG_DWORD, &ssreflection, 4);
+
+   HWND hwndPFReflect = GetDlgItem(IDC_GLOBAL_PFREFLECTION_CHECK).GetHwnd();
+   size_t pfreflection = SendMessage(hwndPFReflect, BM_GETCHECK, 0, 0);
+   SetRegValue("Player", "PFRefl", REG_DWORD, &pfreflection, 4);
 
    HWND hwndStereo3D = GetDlgItem(IDC_3D_STEREO).GetHwnd();
    size_t stereo3D = SendMessage(hwndStereo3D, CB_GETCURSEL, 0, 0);
