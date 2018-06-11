@@ -241,11 +241,10 @@ void Rubber::UIRenderPass2(Sur * const psur)
 
    if (fDrawDragpoints)
    {
-      psur->SetFillColor(-1);
-
       for (int i = 0; i < m_vdpoint.Size(); i++)
       {
          CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+         psur->SetFillColor(-1);
          psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
          psur->SetObject(pdp);
 

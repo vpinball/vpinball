@@ -241,11 +241,11 @@ void Ramp::UIRenderPass2(Sur * const psur)
 
    if (fDrawDragpoints)
    {
-      psur->SetFillColor(-1);
       const int len = m_vdpoint.Size();
       for (int i = 0; i < len; i++)
       {
          CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+         psur->SetFillColor(-1);
          psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : ((i == 0) ? RGB(0, 0, 255) : RGB(255, 0, 0)), false, 0);
          psur->SetObject(pdp);
 
