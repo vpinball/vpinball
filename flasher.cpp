@@ -300,17 +300,16 @@ void Flasher::UIRenderPass2(Sur * const psur)
          }
       }
    }
-   psur->SetFillColor(-1);
+
+   if (fDrawDragpoints)
    for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+      psur->SetFillColor(-1);
       psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
+      psur->SetObject(pdp);
 
-      if (fDrawDragpoints)
-      {
-         psur->SetObject(pdp);
-         psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
-      }
+      psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
    }
 }
 

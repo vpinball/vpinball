@@ -311,10 +311,12 @@ void Surface::UIRenderPass2(Sur * const psur)
       }
    }
 
-   psur->SetFillColor(-1);
    for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+      if (!(fDrawDragpoints || pdp->m_fSlingshot))
+         continue;
+      psur->SetFillColor(-1);
       psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
 
       if (fDrawDragpoints)
@@ -327,8 +329,8 @@ void Surface::UIRenderPass2(Sur * const psur)
       {
          psur->SetObject(NULL);
          const CComObject<DragPoint> * const pdp2 = m_vdpoint.ElementAt((i < m_vdpoint.Size() - 1) ? (i + 1) : 0);
-
          psur->SetLineColor(RGB(0, 0, 0), false, 3);
+
          psur->Line(pdp->m_v.x, pdp->m_v.y, pdp2->m_v.x, pdp2->m_v.y);
       }
    }

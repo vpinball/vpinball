@@ -376,12 +376,11 @@ void Light::UIRenderPass2(Sur * const psur)
 
    if ((m_d.m_shape == ShapeCustom) && fDrawDragpoints)
    {
-      psur->SetFillColor(-1);
-
-      for (int i = 0; i < m_vdpoint.Size(); i++)
+      const int len = m_vdpoint.Size();
+      for (int i = 0; i < len; i++)
       {
-         CComObject<DragPoint> *pdp;
-         pdp = m_vdpoint.ElementAt(i);
+         CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+         psur->SetFillColor(-1);
          psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(0, 0, 200), false, 0);
          psur->SetObject(pdp);
 

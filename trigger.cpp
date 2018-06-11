@@ -303,10 +303,10 @@ void Trigger::UIRenderPass2(Sur * const psur)
 
       if (fDrawDragpoints)
       {
-         psur->SetFillColor(-1);
          for (int i = 0; i < m_vdpoint.size(); i++)
          {
             CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+            psur->SetFillColor(-1);
             psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(0, 180, 0), false, 0);
             psur->SetObject(pdp);
 
