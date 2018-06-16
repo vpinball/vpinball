@@ -128,8 +128,10 @@ NV_DECLARE_HANDLE(NvPhysicalGpuHandle);            //!< A single physical GPU
 NV_DECLARE_HANDLE(NvDisplayHandle);                //!< Display Device driven by NVIDIA GPU(s) (an attached display)
 NV_DECLARE_HANDLE(NvMonitorHandle);                //!< Monitor handle
 NV_DECLARE_HANDLE(NvUnAttachedDisplayHandle);      //!< Unattached Display Device driven by NVIDIA GPU(s)
-NV_DECLARE_HANDLE(NvEventHandle);                  //!< A handle to an event registration instance
 NV_DECLARE_HANDLE(NvVisualComputingDeviceHandle);  //!< A handle to a Visual Computing Device
+NV_DECLARE_HANDLE(NvEventHandle);                  //!< A handle to an event registration instance
+
+
 NV_DECLARE_HANDLE(NvHICHandle);                    //!< A handle to a Host Interface Card
 NV_DECLARE_HANDLE(NvGSyncDeviceHandle);            //!< A handle to a Sync device
 NV_DECLARE_HANDLE(NvVioHandle);                    //!< A handle to an SDI device
@@ -182,8 +184,6 @@ typedef struct
 
 
 #endif //#ifndef NvGUID_Defined
-
-
 #define NVAPI_MAX_PHYSICAL_GPUS             64
 
 
@@ -199,18 +199,18 @@ typedef struct
 #define NVAPI_MAX_DISPLAYS                  NVAPI_PHYSICAL_GPUS * NVAPI_ADVANCED_DISPLAY_HEADS
 #define NVAPI_MAX_ACPI_IDS                  16
 #define NVAPI_MAX_VIEW_MODES                8
+
+
+#define NVAPI_SYSTEM_MAX_HWBCS              128
+#define NVAPI_SYSTEM_HWBC_INVALID_ID        0xffffffff
+
+#define NVAPI_SYSTEM_MAX_DISPLAYS           NVAPI_MAX_PHYSICAL_GPUS * NV_MAX_HEADS
 #define NV_MAX_HEADS                        4   //!< Maximum heads, each with NVAPI_DESKTOP_RES resolution
 #define NVAPI_MAX_HEADS_PER_GPU             32
-
-#define NV_MAX_HEADS            4   //!< Maximum number of heads, each with #NVAPI_DESKTOP_RES resolution
 #define NV_MAX_VID_STREAMS      4   //!< Maximum number of input video streams, each with a #NVAPI_VIDEO_SRC_INFO
 #define NV_MAX_VID_STREAMS_EX  20   //!< Increasing MAX no. of input video streams, each with a #NVAPI_VIDEO_SRC_INFO
 #define NV_MAX_VID_PROFILES     4   //!< Maximum number of output video profiles supported
 
-#define NVAPI_SYSTEM_MAX_DISPLAYS           NVAPI_MAX_PHYSICAL_GPUS * NV_MAX_HEADS
-
-#define NVAPI_SYSTEM_MAX_HWBCS              128
-#define NVAPI_SYSTEM_HWBC_INVALID_ID        0xffffffff
 #define NVAPI_MAX_AUDIO_DEVICES             16
 
 
@@ -379,6 +379,8 @@ typedef enum _NvAPI_Status
     NVAPI_MAX_DISPLAY_LIMIT_REACHED             = -215,    //!< GPU's Max Display Limit has Reached
     NVAPI_INVALID_DIRECT_MODE_DISPLAY           = -216,    //!< DirectMode not Enabled on the Display
     NVAPI_GPU_IN_DEBUG_MODE                     = -217,    //!< GPU is in debug mode, OC is NOT allowed.
+    NVAPI_D3D_CONTEXT_NOT_FOUND                 = -218,    //!< No NvAPI context was found for this D3D object
+    NVAPI_STEREO_VERSION_MISMATCH               = -219     //!< there is version mismatch between stereo driver and dx driver
 } NvAPI_Status;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -437,9 +439,9 @@ typedef struct
     NvU32   systemVideoMemory;                 //!< Size(in kb) of system memory the driver allocates at load time.
     NvU32   sharedSystemMemory;                //!< Size(in kb) of shared system memory that driver is allowed to commit for surfaces across all allocations.
     NvU32   curAvailableDedicatedVideoMemory;  //!< Size(in kb) of the current available physical framebuffer for allocating video memory surfaces.
-	NvU32   dedicatedVideoMemoryEvictionsSize; //!< Size(in kb) of the total size of memory released as a result of the evictions.
-	NvU32   dedicatedVideoMemoryEvictionCount; //!< Indicates the number of eviction events that caused an allocation to be removed from dedicated video memory to free GPU
-	                                           //!< video memory to make room for other allocations.
+    NvU32   dedicatedVideoMemoryEvictionsSize; //!< Size(in kb) of the total size of memory released as a result of the evictions.
+    NvU32   dedicatedVideoMemoryEvictionCount; //!< Indicates the number of eviction events that caused an allocation to be removed from dedicated video memory to free GPU
+                                               //!< video memory to make room for other allocations.
 } NV_DISPLAY_DRIVER_MEMORY_INFO_V3;
 
 //! \ingroup driverapi
