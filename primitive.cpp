@@ -219,7 +219,7 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
       overall_size += (unsigned int)prim->m_mesh.NumIndices();
    }
 
-   if (prims.size() == 0)
+   if (prims.size() <= 1)
       return;
 
    // The first primitive in the group is the base primitive
@@ -232,7 +232,7 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
    prims[0]->m_d.m_fGroupdRendering = true;
    vector<unsigned int> indices(overall_size);
    memcpy(indices.data(), prims[0]->m_mesh.m_indices.data(), prims[0]->m_mesh.NumIndices());
-
+   renderedPrims.push_back(prims[0]);
    for (size_t i = 1; i < prims.size(); i++)
    {
       const Material * const mat = g_pplayer->m_ptable->GetMaterial(prims[i]->m_d.m_szMaterial);
@@ -1065,6 +1065,10 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
             vertexBufferRegenerate = false;
       }
    }
+   else
+   {
+      fullMatrix.SetIdentity();
+   }
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
@@ -1090,7 +1094,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
        pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
        //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-       // accomodate models with UV coords outside of [0,1]
+       // accommodate models with UV coords outside of [0,1]
        pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
    }
    else if (pin)
@@ -1100,14 +1104,14 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
       //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-      // accomodate models with UV coords outside of [0,1]
+      // accommodate models with UV coords outside of [0,1]
       pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
    }
    else
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
 
    // set transform
-   if (!m_d.m_fGroupdRendering)
+   //if (!m_d.m_fGroupdRendering)
       g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
 
    // draw the mesh
@@ -1130,7 +1134,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
    }
 
    // reset transform
-   if (!m_d.m_fGroupdRendering)
+   //if (!m_d.m_fGroupdRendering)
       g_pplayer->UpdateBasicShaderMatrix();
 
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
