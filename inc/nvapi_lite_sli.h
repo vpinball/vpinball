@@ -147,7 +147,8 @@ typedef enum _NVAPI_D3D_SETRESOURCEHINT_CATEGORY
 
 //
 //  NVAPI_D3D_SRH_SLI_APP_CONTROLLED_INTERFRAME_CONTENT_SYNC:
-//  NVAPI_D3D_SRH_SLI_ASK_FOR_BROADCAST_USING: 
+//  NVAPI_D3D_SRH_SLI_ASK_FOR_BROADCAST_USING:
+//  NVAPI_D3D_SRH_SLI_RESPECT_DRIVER_INTERFRAME_CONTENT_SYNC:
 
 
 //! \ingroup dx
@@ -160,11 +161,18 @@ typedef enum _NVAPI_D3D_SETRESOURCEHINT_CATEGORY
 //!  NVAPI_D3D_SRH_SLI_ASK_FOR_BROADCAST_USAGE: Valid values : 0 or 1 \n
 //!  Default value: 0 \n
 //!  Explanation: If the value is 1, the driver will try to perform operations which involved target resource in broadcast, 
-//!  where its possible. Hint is static and must be set before resource starts using. 
+//!  where it's possible. Hint is static and must be set before resource starts using.
+//!  
+//!  NVAPI_D3D_SRH_SLI_RESPECT_DRIVER_INTERFRAME_CONTENT_SYNC: Valid values : 0 or 1 \n
+//!  Default value: 0 \n
+//!  Explanation: If the value is 1, the driver will do dirty resource resolve regardless of discard flags in the application profile or 
+//!  AFR-FriendlyD3DHints.exe name using.
+//!
 typedef enum _NVAPI_D3D_SETRESOURCEHINT_SLI
 {
     NVAPI_D3D_SRH_SLI_APP_CONTROLLED_INTERFRAME_CONTENT_SYNC = 1,
-    NVAPI_D3D_SRH_SLI_ASK_FOR_BROADCAST_USAGE = 2
+    NVAPI_D3D_SRH_SLI_ASK_FOR_BROADCAST_USAGE = 2,
+    NVAPI_D3D_SRH_SLI_RESPECT_DRIVER_INTERFRAME_CONTENT_SYNC = 3
 }  NVAPI_D3D_SETRESOURCEHINT_SLI;
 
 //! \ingroup dx

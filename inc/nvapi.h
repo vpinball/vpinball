@@ -41,7 +41,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Date: Jun 28, 2017 
+// Date: Apr 5, 2018 
 // File: nvapi.h
 //
 // NvAPI provides an interface to NVIDIA devices. This file contains the 
@@ -83,16 +83,18 @@ extern "C" {
 // FUNCTION NAME: NvAPI_Initialize
 //
 //! This function initializes the NvAPI library (if not already initialized) but always increments the ref-counter. 
-//! This must be called before calling other NvAPI_ functions. 
+//! This must be called before calling other NvAPI_ functions.
+//! Note: It is now mandatory to call NvAPI_Initialize before calling any other NvAPI.
+//! NvAPI_Unload should be called to unload the NVAPI Library. 
 //!
 //! SUPPORTED OS:  Windows XP and higher,  Mac OS X
 //!
 //!
 //! \since Release: 80
 //!
-//! \retval  NVAPI_ERROR            An error occurred during the initialization process (generic error)
-//! \retval  NVAPI_LIBRARYNOTFOUND  Failed to load the NVAPI support library
-//! \retval  NVAPI_OK               Initialized
+//! \return      This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//!              specific meaning for this API, they are listed below.
+//! \retval      NVAPI_LIBRARY_NOT_FOUND  Failed to load the NVAPI support library
 //! \sa nvapistatus
 //! \ingroup nvapifunctions
 ///////////////////////////////////////////////////////////////////////////////
@@ -109,11 +111,6 @@ NVAPI_INTERFACE NvAPI_Initialize();
 //! SUPPORTED OS:  Windows XP and higher,  Mac OS X
 //!
 //!
-//!  Note: By design, it is not mandatory to call NvAPI_Initialize before calling any NvAPI.
-//!        When any NvAPI is called without first calling NvAPI_Initialize, the internal refcounter
-//!        will be implicitly incremented. In such cases, calling NvAPI_Initialize from a different thread will
-//!        result in incrementing the refcount again and the user has to call NvAPI_Unload twice to 
-//!        unload the library. However, note that the implicit increment of the refcounter happens only once.
 //!        If the client wants unload functionality, it is recommended to always call NvAPI_Initialize and NvAPI_Unload in pairs.
 //!
 //!  Unloading NvAPI library is not supported when the library is in a resource locked state.
@@ -125,9 +122,9 @@ NVAPI_INTERFACE NvAPI_Initialize();
 //!  NVAPI_ERROR. Developers need to call the corresponding NvAPI_YYY to unlock the resources, 
 //!  before calling NvAPI_Unload again.
 //!
-//! \retval ::NVAPI_ERROR            One or more resources are locked and hence cannot unload NVAPI library
-//! \retval ::NVAPI_OK               NVAPI library unloaded
-//! \retval ::NVAPI_API_IN_USE       Atleast an API is still being called hence cannot unload NVAPI library from process
+//! \return      This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//!              specific meaning for this API, they are listed below.
+//! \retval      NVAPI_API_IN_USE       Atleast an API is still being called hence cannot unload requested driver.
 //!
 //! \ingroup nvapifunctions
 ///////////////////////////////////////////////////////////////////////////////
@@ -172,6 +169,7 @@ NVAPI_INTERFACE NvAPI_GetErrorMessage(NvAPI_Status nr,NvAPI_ShortString szDesc);
 //! \ingroup nvapifunctions
 ///////////////////////////////////////////////////////////////////////////////
 NVAPI_INTERFACE NvAPI_GetInterfaceVersionString(NvAPI_ShortString szDesc);
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //              All display port related data types definition starts
@@ -243,6 +241,7 @@ typedef enum _NV_DP_BPC
     NV_DP_BPC_12,
     NV_DP_BPC_16,
 } NV_DP_BPC;
+
 
 #endif  //#ifndef DISPLAYPORT_STRUCTS_DEFINED
 
@@ -348,7 +347,8 @@ typedef enum _NV_GPU_CONNECTOR_TYPE
     NVAPI_GPU_CONNECTOR_HDMI_C_MINI                     = 0x00000063,
     NVAPI_GPU_CONNECTOR_LFH_DISPLAYPORT_1               = 0x00000064,
     NVAPI_GPU_CONNECTOR_LFH_DISPLAYPORT_2               = 0x00000065,
-    NVAPI_GPU_CONNECTOR_VIRTUAL_WFD                     = 0x00000070,    
+    NVAPI_GPU_CONNECTOR_VIRTUAL_WFD                     = 0x00000070,
+    NVAPI_GPU_CONNECTOR_USB_C                           = 0x00000071,
     NVAPI_GPU_CONNECTOR_UNKNOWN                         = 0xFFFFFFFF,
 } NV_GPU_CONNECTOR_TYPE;
 
@@ -452,6 +452,7 @@ typedef enum _NV_SCALING
 } NV_SCALING;
 
 //! Rotate modes- used in NvAPI_SetViewEx().
+
 //! \ingroup dispcontrol
 typedef enum _NV_ROTATE
 {
@@ -2226,7 +2227,6 @@ NVAPI_INTERFACE NvAPI_GPU_GetQuadroStatus(NvPhysicalGpuHandle hPhysicalGpu, NvU3
 
 
 
-
 //! \ingroup gpu
 typedef struct _NV_BOARD_INFO
 {
@@ -2314,14 +2314,18 @@ typedef struct
     }domain[NVAPI_MAX_GPU_PUBLIC_CLOCKS];
 } NV_GPU_CLOCK_FREQUENCIES_V1;
 
+#ifndef NV_GPU_MAX_CLOCK_FREQUENCIES
+	#define NV_GPU_MAX_CLOCK_FREQUENCIES 3
+#endif
+
 //! \ingroup gpuclock
 //! Used in NvAPI_GPU_GetAllClockFrequencies()
 typedef enum
 {
-    NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ =   0,
-    NV_GPU_CLOCK_FREQUENCIES_BASE_CLOCK   =   1,
-    NV_GPU_CLOCK_FREQUENCIES_BOOST_CLOCK  =   2,
-    NV_GPU_CLOCK_FREQUENCIES_CLOCK_TYPE_NUM = 3
+    NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ                = 0,
+    NV_GPU_CLOCK_FREQUENCIES_BASE_CLOCK                  = 1,
+    NV_GPU_CLOCK_FREQUENCIES_BOOST_CLOCK                 = 2,
+    NV_GPU_CLOCK_FREQUENCIES_CLOCK_TYPE_NUM              = NV_GPU_MAX_CLOCK_FREQUENCIES
 }   NV_GPU_CLOCK_FREQUENCIES_CLOCK_TYPE;
 
 //! \ingroup gpuclock
@@ -2329,8 +2333,8 @@ typedef enum
 typedef struct
 {
     NvU32   version;        //!< Structure version
-    NvU32   ClockType:2;    //!< One of NV_GPU_CLOCK_FREQUENCIES_CLOCK_TYPE. Used to specify the type of clock to be returned.
-    NvU32   reserved:22;    //!< These bits are reserved for future use. Must be set to 0.
+    NvU32   ClockType:4;    //!< One of NV_GPU_CLOCK_FREQUENCIES_CLOCK_TYPE. Used to specify the type of clock to be returned.
+    NvU32   reserved:20;    //!< These bits are reserved for future use. Must be set to 0.
     NvU32   reserved1:8;    //!< These bits are reserved.
     struct
     {
@@ -4114,7 +4118,7 @@ NVAPI_INTERFACE NvAPI_GPU_SetIllumination(NV_GPU_SET_ILLUMINATION_PARM *pIllumin
 //
 // FUNCTION NAME: NvAPI_EnumNvidiaDisplayHandle
 //
-//! This function returns the handle of the NVIDIA display specified by the enum 
+//! This function returns the handle of the NVIDIA display specified by the enum
 //!                index (thisEnum). The client should keep enumerating until it
 //!                returns NVAPI_END_ENUMERATION.
 //!
@@ -4126,7 +4130,7 @@ NVAPI_INTERFACE NvAPI_GPU_SetIllumination(NV_GPU_SET_ILLUMINATION_PARM *pIllumin
 //!
 //! \since Release: 80
 //!
-//! \param [in]  thisEnum      The index of the NVIDIA display.   
+//! \param [in]  thisEnum      The index of the NVIDIA display.
 //! \param [out] pNvDispHandle Pointer to the NVIDIA display handle.
 //!
 //! \retval NVAPI_INVALID_ARGUMENT        Either the handle pointer is NULL or enum index too big
@@ -4145,7 +4149,7 @@ NVAPI_INTERFACE NvAPI_EnumNvidiaDisplayHandle(NvU32 thisEnum, NvDisplayHandle *p
 //
 // FUNCTION NAME: NvAPI_EnumNvidiaUnAttachedDisplayHandle
 //
-//! This function returns the handle of the NVIDIA unattached display specified by the enum 
+//! This function returns the handle of the NVIDIA unattached display specified by the enum
 //!                index (thisEnum). The client should keep enumerating until it
 //!                returns error.
 //!                Note: Display handles can get invalidated on a modeset, so the calling applications need to
@@ -4213,8 +4217,8 @@ NVAPI_INTERFACE NvAPI_GetAssociatedNvidiaDisplayHandle(const char *szDisplayName
 //
 // FUNCTION NAME: NvAPI_DISP_GetAssociatedUnAttachedNvidiaDisplayHandle
 //
-//!   DESCRIPTION: This function returns the handle of an unattached NVIDIA display that is 
-//!                associated with the given display name (such as "\\DISPLAY1"). 
+//!   DESCRIPTION: This function returns the handle of an unattached NVIDIA display that is
+//!                associated with the given display name (such as "\\DISPLAY1").
 //!
 //! SUPPORTED OS:  Windows XP and higher
 //!
@@ -4276,7 +4280,7 @@ NVAPI_INTERFACE NvAPI_GetUnAttachedAssociatedDisplayName(NvUnAttachedDisplayHand
 //!
 //! SUPPORTED OS:  Windows XP
 //!
-//!  
+//!
 //!
 //! \since Release: 80
 //!
@@ -4323,7 +4327,7 @@ NVAPI_INTERFACE NvAPI_GetVBlankCounter(NvDisplayHandle hNvDisplay, NvU32 *pCount
 //!  This function overrides the refresh rate on the given display/outputsMask.
 //!  The new refresh rate can be applied right away in this API call or deferred to be applied with the
 //!  next OS modeset. The override is good for only one modeset (regardless whether it's deferred or immediate).
-//!               
+//!
 //!
 //! SUPPORTED OS:  Windows XP
 //!
@@ -4332,11 +4336,11 @@ NVAPI_INTERFACE NvAPI_GetVBlankCounter(NvDisplayHandle hNvDisplay, NvU32 *pCount
 //!
 //!  \param [in] hNvDisplay    The NVIDIA display handle. It can be NVAPI_DEFAULT_HANDLE or a handle
 //!                           enumerated from NvAPI_EnumNVidiaDisplayHandle().
-//!  \param [in] outputsMask  A set of bits that identify all target outputs which are associated with the NVIDIA 
+//!  \param [in] outputsMask  A set of bits that identify all target outputs which are associated with the NVIDIA
 //!                           display handle to apply the refresh rate override. When SLI is enabled, the
 //!                           outputsMask only applies to the GPU that is driving the display output.
 //!  \param [in] refreshRate  The override value. "0.0" means cancel the override.
-//!  \param [in] bSetDeferred 
+//!  \param [in] bSetDeferred
 //!              - "0": Apply the refresh rate override immediately in this API call.\p
 //!              - "1": Apply refresh rate at the next OS modeset.
 //!
@@ -4385,16 +4389,16 @@ typedef struct _NV_DISPLAY_PORT_INFO_V1
     NV_DP_DYNAMIC_RANGE dynamicRange;                             //!< Dynamic range
     NV_DP_COLORIMETRY   colorimetry;                              //!< Ignored in RGB space
     NV_DP_BPC           bpc;                                      //!< Current bit-per-component
-    NvU32               isDp                                : 1;  //!< If the monitor is driven by a DisplayPort 
+    NvU32               isDp                                : 1;  //!< If the monitor is driven by a DisplayPort
     NvU32               isInternalDp                        : 1;  //!< If the monitor is driven by an NV Dp transmitter
     NvU32               isColorCtrlSupported                : 1;  //!< If the color format change is supported
     NvU32               is6BPCSupported                     : 1;  //!< If 6 bpc is supported
-    NvU32               is8BPCSupported                     : 1;  //!< If 8 bpc is supported    
+    NvU32               is8BPCSupported                     : 1;  //!< If 8 bpc is supported
     NvU32               is10BPCSupported                    : 1;  //!< If 10 bpc is supported
-    NvU32               is12BPCSupported                    : 1;  //!< If 12 bpc is supported        
+    NvU32               is12BPCSupported                    : 1;  //!< If 12 bpc is supported
     NvU32               is16BPCSupported                    : 1;  //!< If 16 bpc is supported
     NvU32               isYCrCb420Supported                 : 1;  //!< If YCrCb420 is supported
-    NvU32               isYCrCb422Supported                 : 1;  //!< If YCrCb422 is supported                                                  
+    NvU32               isYCrCb422Supported                 : 1;  //!< If YCrCb422 is supported
     NvU32               isYCrCb444Supported                 : 1;  //!< If YCrCb444 is supported
     NvU32               isRgb444SupportedOnCurrentMode      : 1;  //!< If Rgb444 is supported on the current mode
     NvU32               isYCbCr444SupportedOnCurrentMode    : 1;  //!< If YCbCr444 is supported on the current mode
@@ -4413,9 +4417,9 @@ typedef struct _NV_DISPLAY_PORT_INFO_V1
     NvU32               isMonBT2020RGBCapable               : 1;  // if BT2020 RGB extended colorimetry is supported
     NvU32               isMonBT2020YCCCapable               : 1;  // if BT2020 Y'CbCr extended colorimetry is supported
     NvU32               isMonBT2020cYCCCapable              : 1;  // if BT2020 cYCbCr (constant luminance) extended colorimetry is supported
-    
-    NvU32               reserved                            : 4;  //!< reserved  
- } NV_DISPLAY_PORT_INFO_V1; 
+
+    NvU32               reserved                            : 4;  //!< reserved
+ } NV_DISPLAY_PORT_INFO_V1;
 
  typedef NV_DISPLAY_PORT_INFO_V1 NV_DISPLAY_PORT_INFO;
 
@@ -4437,8 +4441,8 @@ typedef struct _NV_DISPLAY_PORT_INFO_V1
 //!
 //! \param [in]     hvDisplay     NVIDIA Display selection. It can be NVAPI_DEFAULT_HANDLE or a handle enumerated from NvAPI_EnumNVidiaDisplayHandle().
 //!                               This parameter is ignored when the outputId is a NvAPI displayId.
-//! \param [in]     outputId      This can either be the connection bit mask or the NvAPI displayId. When the legacy connection bit mask is passed, 
-//!                               it should have exactly 1 bit set to indicate a single display. If it's "0" then the default outputId from 
+//! \param [in]     outputId      This can either be the connection bit mask or the NvAPI displayId. When the legacy connection bit mask is passed,
+//!                               it should have exactly 1 bit set to indicate a single display. If it's "0" then the default outputId from
 //!                               NvAPI_GetAssociatedDisplayOutputId() will be used. See \ref handles.
 //! \param [out]    pInfo         The DisplayPort information
 //!
@@ -4524,10 +4528,10 @@ typedef struct _NV_HDMI_SUPPORT_INFO_V1
     NvU32      isMonxvYCC601Capable   : 1;  //!< If xvYCC 601 is supported
     NvU32      isMonxvYCC709Capable   : 1;  //!< If xvYCC 709 is supported
     NvU32      isMonHDMI              : 1;  //!< If the monitor is HDMI (with IEEE's HDMI registry ID)
-    NvU32      reserved               : 24; //!< Reserved. 
+    NvU32      reserved               : 24; //!< Reserved.
 
     NvU32      EDID861ExtRev;               //!< Revision number of the EDID 861 extension
- } NV_HDMI_SUPPORT_INFO_V1; 
+ } NV_HDMI_SUPPORT_INFO_V1;
 
 typedef struct _NV_HDMI_SUPPORT_INFO_V2
 {
@@ -4544,10 +4548,10 @@ typedef struct _NV_HDMI_SUPPORT_INFO_V2
     NvU32      isMonsYCC601Capable     : 1;  //!< if sYCC601 extended colorimetry is supported
     NvU32      isMonAdobeYCC601Capable : 1;  //!< if AdobeYCC601 extended colorimetry is supported
     NvU32      isMonAdobeRGBCapable    : 1;  //!< if AdobeRGB extended colorimetry is supported
-    NvU32      reserved                : 21; //!< Reserved. 
+    NvU32      reserved                : 21; //!< Reserved.
 
     NvU32      EDID861ExtRev;                //!< Revision number of the EDID 861 extension
- } NV_HDMI_SUPPORT_INFO_V2; 
+ } NV_HDMI_SUPPORT_INFO_V2;
 
 #define NV_HDMI_SUPPORT_INFO_VER1  MAKE_NVAPI_VERSION(NV_HDMI_SUPPORT_INFO_V1, 1)
 #define NV_HDMI_SUPPORT_INFO_VER2  MAKE_NVAPI_VERSION(NV_HDMI_SUPPORT_INFO_V2, 2)
@@ -4574,8 +4578,8 @@ typedef NV_HDMI_SUPPORT_INFO_V2    NV_HDMI_SUPPORT_INFO;
 //!
 //! \param [in]  hvDisplay  NVIDIA Display selection. It can be NVAPI_DEFAULT_HANDLE or a handle enumerated from NvAPI_EnumNVidiaDisplayHandle().
 //!                         This parameter is ignored when the outputId is a NvAPI displayId.
-//! \param [in]  outputId   This can either be the connection bit mask or the NvAPI displayId. When the legacy connection bit mask is passed, 
-//!                         it should have exactly 1 bit set to indicate a single display. If it's "0" then the default outputId from 
+//! \param [in]  outputId   This can either be the connection bit mask or the NvAPI displayId. When the legacy connection bit mask is passed,
+//!                         it should have exactly 1 bit set to indicate a single display. If it's "0" then the default outputId from
 //!                         NvAPI_GetAssociatedDisplayOutputId() will be used. See \ref handles.
 //! \param [out] pInfo      The monitor and GPU's HDMI support info
 //!
@@ -4594,7 +4598,7 @@ NVAPI_INTERFACE NvAPI_GetHDMISupportInfo(__in_opt NvDisplayHandle hNvDisplay, __
 typedef enum
 {
     NV_INFOFRAME_CMD_GET_DEFAULT = 0,     //!< Returns the fields in the infoframe with values set by the manufacturer - NVIDIA/OEM.
-    NV_INFOFRAME_CMD_RESET,               //!< Sets the fields in the infoframe to auto, and infoframe to the default infoframe for use in a set.    
+    NV_INFOFRAME_CMD_RESET,               //!< Sets the fields in the infoframe to auto, and infoframe to the default infoframe for use in a set.
     NV_INFOFRAME_CMD_GET,                 //!< Get the current infoframe state.
     NV_INFOFRAME_CMD_SET,                 //!< Set the current infoframe state (flushed to the monitor), the values are one time and do not persist.
     NV_INFOFRAME_CMD_GET_OVERRIDE,        //!< Get the override infoframe state, non-override fields will be set to value = AUTO, overridden fields will have the current override values.
@@ -4811,7 +4815,7 @@ typedef struct
     NvU32 activeFormatAspectRatio : 5;
     NvU32 picAspectRatio          : 3;
     NvU32 nonuniformScaling       : 3;
-    NvU32 barInfo                 : 3;    
+    NvU32 barInfo                 : 3;
     NvU32 top_bar                 : 17;
     NvU32 bottom_bar              : 17;
     NvU32 left_bar                : 17;
@@ -5025,7 +5029,7 @@ typedef struct
     NvU32 speakerPlacement    : 9;
     NvU32 downmixInhibit      : 2;
     NvU32 lfePlaybackLevel    : 3;
-    NvU32 levelShift          : 5; 
+    NvU32 levelShift          : 5;
     NvU32 Future12            : 2;
     NvU32 Future2x            : 4;
     NvU32 Future3x            : 4;
@@ -5043,7 +5047,7 @@ typedef struct
     NvU16 size;    //!< size of this structure
     NvU8  cmd;     //!< The actions to perform from NV_INFOFRAME_CMD
     NvU8  type;    //!< type of infoframe
-    
+
     union
     {
         NV_INFOFRAME_PROPERTY     property;  //!< This is NVIDIA-specific and corresponds to the property cmds and associated infoframe.
@@ -5065,8 +5069,8 @@ typedef struct
 //!
 //! \param [in]     displayId         Monitor Identifier
 //! \param [in,out] pInfoframeData    Contains data corresponding to InfoFrame
-//!                  
-//! \return    This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//!
+//! \return    This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with
 //!            specific meaning for this API, they are listed below.
 //!
 //! \ingroup dispcontrol
@@ -5091,10 +5095,10 @@ NVAPI_INTERFACE NvAPI_Disp_InfoFrameControl(__in NvU32 displayId, __inout NV_INF
 //!
 //! \param [in]     displayId         Monitor Identifier
 //! \param [in,out] pColorData        Contains data corresponding to color information
-//!                  
+//!
 //! \return  RETURN STATUS:
-//! ::NVAPI_OK,  
-//! ::NVAPI_ERROR, 
+//! ::NVAPI_OK,
+//! ::NVAPI_ERROR,
 //! ::NVAPI_INVALID_ARGUMENT
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -5215,12 +5219,12 @@ typedef struct _NV_COLOR_DATA_V4
         NvU8     colorimetry;     //!< One of NV_COLOR_COLORIMETRY enum values.
         NvU8     dynamicRange;    //!< One of NV_DYNAMIC_RANGE enum values.
         NV_BPC   bpc;             //!< One of NV_BPC enum values.
-        NV_COLOR_SELECTION_POLICY colorSelectionPolicy; //!< One of the color selection policy 
+        NV_COLOR_SELECTION_POLICY colorSelectionPolicy; //!< One of the color selection policy
     } data;
 } NV_COLOR_DATA_V4;
- 
+
 typedef NV_COLOR_DATA_V4    NV_COLOR_DATA;
- 
+
 #define NV_COLOR_DATA_VER1  MAKE_NVAPI_VERSION(NV_COLOR_DATA_V1, 1)
 #define NV_COLOR_DATA_VER2  MAKE_NVAPI_VERSION(NV_COLOR_DATA_V2, 2)
 #define NV_COLOR_DATA_VER3  MAKE_NVAPI_VERSION(NV_COLOR_DATA_V3, 3)
@@ -5244,8 +5248,8 @@ NVAPI_INTERFACE NvAPI_Disp_ColorControl(NvU32 displayId, NV_COLOR_DATA *pColorDa
 //!
 //! \param [in]     displayId           Monitor Identifier
 //! \param [in,out] pHdrCapabilities    display's HDR capabilities
-//!                  
-//! \return    This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//!
+//! \return    This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with
 //!            specific meaning for this API, they are listed below.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -5258,15 +5262,15 @@ typedef enum
 typedef struct _NV_HDR_CAPABILITIES_V1
 {
     NvU32 version;                                                  //!< Version of this structure
- 
+
     NvU32 isST2084EotfSupported                 :1;                 //!< HDMI2.0a UHDA HDR with ST2084 EOTF (CEA861.3). Boolean: 0 = not supported, 1 = supported;
     NvU32 isTraditionalHdrGammaSupported        :1;                 //!< HDMI2.0a traditional HDR gamma (CEA861.3). Boolean: 0 = not supported, 1 = supported;
     NvU32 isEdrSupported                        :1;                 //!< Extended Dynamic Range on SDR displays. Boolean: 0 = not supported, 1 = supported;
-    NvU32 driverExpandDefaultHdrParameters      :1;                 //!< If set, driver will expand default (=zero) HDR capabilities parameters contained in display's EDID. 
+    NvU32 driverExpandDefaultHdrParameters      :1;                 //!< If set, driver will expand default (=zero) HDR capabilities parameters contained in display's EDID.
                                                                     //!< Boolean: 0 = report actual HDR parameters, 1 = expand default HDR parameters;
     NvU32 isTraditionalSdrGammaSupported        :1;                 //!< HDMI2.0a traditional SDR gamma (CEA861.3). Boolean: 0 = not supported, 1 = supported;
     NvU32 reserved                              :27;
- 
+
     NV_STATIC_METADATA_DESCRIPTOR_ID static_metadata_descriptor_id; //!< Static Metadata Descriptor Id (0 for static metadata type 1)
 
     struct                                                          //!< Static Metadata Descriptor Type 1, CEA-861.3, SMPTE ST2086
@@ -5282,7 +5286,7 @@ typedef struct _NV_HDR_CAPABILITIES_V1
 
         NvU16    displayWhitePoint_x;                               //!< x coordinate of white point of the display ([0x0000-0xC350] = [0.0 - 1.0])
         NvU16    displayWhitePoint_y;                               //!< y coordinate of white point of the display ([0x0000-0xC350] = [0.0 - 1.0])
- 
+
         NvU16    desired_content_max_luminance;                     //!< Maximum display luminance = desired max luminance of HDR content ([0x0001-0xFFFF] = [1.0 - 65535.0] cd/m^2)
         NvU16    desired_content_min_luminance;                     //!< Minimum display luminance = desired min luminance of HDR content ([0x0001-0xFFFF] = [1.0 - 6.55350] cd/m^2)
         NvU16    desired_content_max_frame_average_luminance;       //!< Desired maximum Frame-Average Light Level (MaxFALL) of HDR content ([0x0001-0xFFFF] = [1.0 - 65535.0] cd/m^2)
@@ -5292,16 +5296,16 @@ typedef struct _NV_HDR_CAPABILITIES_V1
 typedef struct _NV_HDR_CAPABILITIES_V2
 {
     NvU32 version;                                                  //!< Version of this structure
- 
+
     NvU32 isST2084EotfSupported                 :1;                 //!< HDMI2.0a UHDA HDR with ST2084 EOTF (CEA861.3). Boolean: 0 = not supported, 1 = supported;
     NvU32 isTraditionalHdrGammaSupported        :1;                 //!< HDMI2.0a traditional HDR gamma (CEA861.3). Boolean: 0 = not supported, 1 = supported;
     NvU32 isEdrSupported                        :1;                 //!< Extended Dynamic Range on SDR displays. Boolean: 0 = not supported, 1 = supported;
-    NvU32 driverExpandDefaultHdrParameters      :1;                 //!< If set, driver will expand default (=zero) HDR capabilities parameters contained in display's EDID. 
+    NvU32 driverExpandDefaultHdrParameters      :1;                 //!< If set, driver will expand default (=zero) HDR capabilities parameters contained in display's EDID.
                                                                     //!< Boolean: 0 = report actual HDR parameters, 1 = expand default HDR parameters;
     NvU32 isTraditionalSdrGammaSupported        :1;                 //!< HDMI2.0a traditional SDR gamma (CEA861.3). Boolean: 0 = not supported, 1 = supported;
     NvU32 isDolbyVisionSupported                :1;                 //!< Dolby Vision Support. Boolean: 0 = not supported, 1 = supported;
     NvU32 reserved                              :26;
- 
+
     NV_STATIC_METADATA_DESCRIPTOR_ID static_metadata_descriptor_id; //!< Static Metadata Descriptor Id (0 for static metadata type 1)
 
     struct                                                          //!< Static Metadata Descriptor Type 1, CEA-861.3, SMPTE ST2086
@@ -5317,7 +5321,7 @@ typedef struct _NV_HDR_CAPABILITIES_V2
 
         NvU16    displayWhitePoint_x;                               //!< x coordinate of white point of the display ([0x0000-0xC350] = [0.0 - 1.0])
         NvU16    displayWhitePoint_y;                               //!< y coordinate of white point of the display ([0x0000-0xC350] = [0.0 - 1.0])
- 
+
         NvU16    desired_content_max_luminance;                     //!< Maximum display luminance = desired max luminance of HDR content ([0x0001-0xFFFF] = [1.0 - 65535.0] cd/m^2)
         NvU16    desired_content_min_luminance;                     //!< Minimum display luminance = desired min luminance of HDR content ([0x0001-0xFFFF] = [1.0 - 6.55350] cd/m^2)
         NvU16    desired_content_max_frame_average_luminance;       //!< Desired maximum Frame-Average Light Level (MaxFALL) of HDR content ([0x0001-0xFFFF] = [1.0 - 65535.0] cd/m^2)
@@ -5332,7 +5336,7 @@ typedef struct _NV_HDR_CAPABILITIES_V2
         NvU32 supports_global_dimming   : 1;                  //!< Indicates if sink supports global dimming
         NvU32 colorimetry               : 1;                  //!< If set indicates sink supports DCI P3 colorimetry, REc709 otherwise
         NvU32 reserved                  : 17;                 //!< Should be set to zero
-                                                              //!< All values below are encoded use DolbyVisionHDMITransmissionSpecification document to decode 
+                                                              //!< All values below are encoded use DolbyVisionHDMITransmissionSpecification document to decode
         NvU16 target_min_luminance;                           //!< Represents min luminance level of Sink
         NvU16 target_max_luminance;                           //!< Represents max luminance level of sink
         NvU16 cc_red_x;                                       //!< Red primary chromaticity coordinate x
@@ -5365,14 +5369,20 @@ typedef enum
 
 typedef enum
 {
-    NV_HDR_MODE_OFF    = 0,                         //!< HDR off - Turn Off any of HDR/SDR mode
-    NV_HDR_MODE_UHDA   = 2,                         //!< UHDA HDR (a.k.a HDR10) output: RGB/YCC 10/12bpc ST2084(PQ) EOTF (0..10000 nits luminance range), Rec2020 color primaries, ST2086 static HDR metadata.
-    NV_HDR_MODE_UHDBD  = 2,                         //!< UHD BD HDR == UHDA HDR. UHD BD HDR baseline mandatory output: YCbCr4:2:0 10bpc ST2084(PQ) EOTF, Rec2020 color primaries, ST2086 static HDR metadata.
-    NV_HDR_MODE_EDR    = 3,                         //!< EDR (Extended Dynamic Range) output - HDR content is tonemaped and gamut mapped to SDR display capabilties. SDR display is set to max luminance (~300 nits).
-    NV_HDR_MODE_SDR    = 4,                         //!< SDR (Standard Dynamic Range) output - SDR display is expected to max luminance (~100 nits).
-    NV_HDR_MODE_UHDA_PASSTHROUGH = 5,               //!< HDR output - signal UHDA HDR mode (PQ + Rec2020) to the sink but send FB pixel values unmodified (no PQ or Rec2020 conversions) - assumes FB is already in HDR10 format.
-    NV_HDR_MODE_UHDA_NB = 6,                        //!< NoteBook HDR: ~800nits Rec2020 color primaries edp 8bit panels driven with softclipping to 800nits and regional backlight control.
-    NV_HDR_MODE_DOLBY_VISION = 7                    //!< Dolby Vision: After setting the DV mode the DV enabled application has to start sending frames with the embedded DV dynamic metadata as described in Dolby Vision specification.
+    // Official production-ready HDR modes
+    NV_HDR_MODE_OFF                 = 0,            //!< Turn off HDR
+    NV_HDR_MODE_UHDA                = 2,            //!< Source: CCCS [a.k.a FP16 scRGB, linear, sRGB primaries, [-65504,0, 65504] range, RGB(1,1,1) = 80nits]  Output : UHDA HDR [a.k.a HDR10, RGB/YCC 10/12bpc ST2084(PQ) EOTF RGB(1,1,1) = 10000 nits, Rec2020 color primaries, ST2086 static HDR metadata]. This is the only supported production HDR mode.
+
+    // Experimental
+    NV_HDR_MODE_UHDA_PASSTHROUGH    = 5,            //!< Experimental mode only, not for production! Source: HDR10 RGB 10bpc Output: HDR10 RGB 10 bpc - signal UHDA HDR mode (PQ + Rec2020) to the sink but send source pixel values unmodified (no PQ or Rec2020 conversions) - assumes source is already in HDR10 format.
+    NV_HDR_MODE_DOLBY_VISION        = 7,            //!< Experimental mode only, not for production! Source: RGB8 Dolby Vision encoded (12 bpc YCbCr422 packed into RGB8) Output: Dolby Vision encoded : Application is to encoded frames in DV format and embed DV dynamic metadata as described in Dolby Vision specification.
+
+    // Unsupported/obsolete HDR modes
+    NV_HDR_MODE_EDR                 = 3,            //!< Do not use! Internal test mode only, to be removed. Source: CCCS (a.k.a FP16 scRGB) Output : EDR (Extended Dynamic Range) - HDR content is tonemapped and gamut mapped to output on regular SDR display set to max luminance ( ~300 nits ).
+    NV_HDR_MODE_SDR                 = 4,            //!< Do not use! Internal test mode only, to be removed. Source: any Output: SDR (Standard Dynamic Range), we continuously send SDR EOTF InfoFrame signaling, HDMI compliance testing.
+    NV_HDR_MODE_UHDA_NB             = 6,            //!< Do not use! Internal test mode only, to be removed. Source: CCCS (a.k.a FP16 scRGB) Output : notebook HDR
+    NV_HDR_MODE_UHDBD               = 2             //!< Do not use! Obsolete, to be removed. NV_HDR_MODE_UHDBD == NV_HDR_MODE_UHDA, reflects obsolete pre-UHDA naming convention.
+
 } NV_HDR_MODE;
 
 typedef struct _NV_HDR_COLOR_DATA_V1
@@ -5461,8 +5471,8 @@ typedef NV_HDR_COLOR_DATA_V2    NV_HDR_COLOR_DATA;
 //!
 //! \param [in]     displayId         Monitor Identifier
 //! \param [in,out] pHdrColorData     HDR configuration data
-//!                  
-//! \return    This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//!
+//! \return    This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with
 //!            specific meaning for this API, they are listed below.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -5479,12 +5489,12 @@ typedef struct
     NvU32                   reserved0      : 12;
     union
     {
-        NvU32               tvFormat       : 8;  //!< The actual analog HD/SDTV format. Used when the timing type is 
+        NvU32               tvFormat       : 8;  //!< The actual analog HD/SDTV format. Used when the timing type is
                                                  //!  NV_TIMING_OVERRIDE_ANALOG_TV and width==height==rr==0.
-        NvU32               ceaId          : 8;  //!< The EIA/CEA 861B/D predefined short timing descriptor ID. 
+        NvU32               ceaId          : 8;  //!< The EIA/CEA 861B/D predefined short timing descriptor ID.
                                                  //!  Used when the timing type is NV_TIMING_OVERRIDE_EIA861
                                                  //!  and width==height==rr==0.
-        NvU32               nvPsfId        : 8;  //!< The NV predefined PsF format Id. 
+        NvU32               nvPsfId        : 8;  //!< The NV predefined PsF format Id.
                                                  //!  Used when the timing type is NV_TIMING_OVERRIDE_NV_PREDEFINED.
     };
     NvU32                   scaling        : 8;  //!< Define preferred scaling
@@ -5495,13 +5505,13 @@ typedef struct
 typedef struct _NV_TIMING_INPUT
 {
     NvU32 version;                      //!< (IN)     structure version
-    
+
     NvU32 width;                        //!< Visible horizontal size
-    NvU32 height;                       //!< Visible vertical size 
+    NvU32 height;                       //!< Visible vertical size
     float rr;                           //!< Timing refresh rate
-        
+
     NV_TIMING_FLAG flag;                //!< Flag containing additional info for timing calculation.
-    
+
     NV_TIMING_OVERRIDE type;            //!< Timing type(formula) to use for calculating the timing
 }NV_TIMING_INPUT;
 
@@ -5515,19 +5525,19 @@ typedef struct _NV_TIMING_INPUT
 //! SUPPORTED OS:  Windows XP and higher
 //!
 //!
-//! \since Release: 313  
+//! \since Release: 313
 //!
 //!
 //! \param [in]   displayId     Display ID of the display.
 //! \param [in]   timingInput   Inputs used for calculating the timing.
-//! \param [out]  pTiming       Pointer to the NV_TIMING structure. 
+//! \param [out]  pTiming       Pointer to the NV_TIMING structure.
 //!
-//! \return        This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//! \return        This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with
 //!                specific meaning for this API, they are listed below.
 //!
 //! \ingroup dispcontrol
 ///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_DISP_GetTiming( __in NvU32 displayId,__in NV_TIMING_INPUT *timingInput, __out NV_TIMING *pTiming); 
+NVAPI_INTERFACE NvAPI_DISP_GetTiming( __in NvU32 displayId,__in NV_TIMING_INPUT *timingInput, __out NV_TIMING *pTiming);
 
 
 
@@ -5535,7 +5545,7 @@ NVAPI_INTERFACE NvAPI_DISP_GetTiming( __in NvU32 displayId,__in NV_TIMING_INPUT 
 // FUNCTION NAME:   NvAPI_DISP_GetMonitorCapabilities
 //
 //! \fn NvAPI_DISP_GetMonitorCapabilities(NvU32 displayId, NV_MONITOR_CAPABILITIES *pMonitorCapabilities)
-//! DESCRIPTION:     This API returns the Monitor capabilities 
+//! DESCRIPTION:     This API returns the Monitor capabilities
 //!
 //! SUPPORTED OS:  Windows Vista and higher
 //!
@@ -5543,8 +5553,8 @@ NVAPI_INTERFACE NvAPI_DISP_GetTiming( __in NvU32 displayId,__in NV_TIMING_INPUT 
 //! \param [in]      displayId                Monitor Identifier
 //! \param [out]     pMonitorCapabilities     The monitor support info
 //!
-//! \return ::NVAPI_OK, 
-//!         ::NVAPI_ERROR, 
+//! \return ::NVAPI_OK,
+//!         ::NVAPI_ERROR,
 //!         ::NVAPI_INVALID_ARGUMENT
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -5589,7 +5599,7 @@ typedef struct _NV_MONITOR_CAPS_VSDB
     NvU8    supportDeepColor30bits         : 1; //!< Byte 3
     NvU8    supportDeepColor36bits         : 1; //!< Byte 3
     NvU8    supportDeepColor48bits         : 1; //!< Byte 3
-    NvU8    supportAI                      : 1; //!< Byte 3 
+    NvU8    supportAI                      : 1; //!< Byte 3
     // byte 4
     NvU8    maxTmdsClock;  //!< Bye 4
     // byte 5
@@ -5600,7 +5610,7 @@ typedef struct _NV_MONITOR_CAPS_VSDB
     NvU8    reserved8                      : 1; //!< Byte 5
     NvU8    hasVicEntries                  : 1; //!< Byte 5
     NvU8    hasInterlacedLatencyField      : 1; //!< Byte 5
-    NvU8    hasLatencyField                : 1; //!< Byte 5    
+    NvU8    hasLatencyField                : 1; //!< Byte 5
     // byte 6
     NvU8    videoLatency; //!< Byte 6
     // byte 7
@@ -5611,13 +5621,13 @@ typedef struct _NV_MONITOR_CAPS_VSDB
     NvU8    interlacedAudioLatency; //!< Byte 9
     // byte 10
     NvU8    reserved13                     : 7; //!< Byte 10
-    NvU8    has3dEntries                   : 1; //!< Byte 10   
+    NvU8    has3dEntries                   : 1; //!< Byte 10
     // byte 11
     NvU8    hdmi3dLength                   : 5; //!< Byte 11
     NvU8    hdmiVicLength                  : 3; //!< Byte 11
     // Remaining bytes
     NvU8    hdmi_vic[7];  //!< Keeping maximum length for 3 bits
-    NvU8    hdmi_3d[31];  //!< Keeping maximum length for 5 bits 
+    NvU8    hdmi_3d[31];  //!< Keeping maximum length for 5 bits
 } NV_MONITOR_CAPS_VSDB;
 
 
@@ -5651,7 +5661,7 @@ NVAPI_INTERFACE NvAPI_DISP_GetMonitorCapabilities(__in NvU32 displayId, __inout 
 //! \ingroup dispcontrol
 typedef struct _NV_MONITOR_COLOR_DATA
 {
-    NvU32                   version;            
+    NvU32                   version;
 // We are only supporting DP monitors for now. We need to extend this to HDMI panels as well
     NV_DP_COLOR_FORMAT      colorFormat;        //!< One of the supported color formats
     NV_DP_BPC               backendBitDepths;   //!< One of the supported bit depths
@@ -5666,15 +5676,15 @@ typedef NV_MONITOR_COLOR_CAPS_V1 NV_MONITOR_COLOR_CAPS;
 ///////////////////////////////////////////////////////////////////////////////
 // FUNCTION NAME:   NvAPI_DISP_GetMonitorColorCapabilities
 //
-//! DESCRIPTION:    This API returns all the color formats and bit depth values supported by a given DP monitor. 
+//! DESCRIPTION:    This API returns all the color formats and bit depth values supported by a given DP monitor.
 //!
 //! USAGE:         Sequence of calls which caller should make to get the information.
 //!                1. First call NvAPI_DISP_GetMonitorColorCapabilities() with pMonitorColorCapabilities as NULL to get the count.
 //!                2. Allocate memory for color caps(NV_MONITOR_COLOR_CAPS) array.
-//!                3. Call NvAPI_DISP_GetMonitorColorCapabilities() again with the pointer to the memory allocated to get all the 
+//!                3. Call NvAPI_DISP_GetMonitorColorCapabilities() again with the pointer to the memory allocated to get all the
 //!                   color capabilities.
-//!                   
-//!                Note : 
+//!
+//!                Note :
 //!                1. pColorCapsCount should never be NULL, else the API will fail with NVAPI_INVALID_ARGUMENT.
 //!                2. *pColorCapsCount returned from the API will always be the actual count in any/every call.
 //!                3. Memory size to be allocated should be (*pColorCapsCount * sizeof(NV_MONITOR_COLOR_CAPS)).
@@ -5692,7 +5702,7 @@ typedef NV_MONITOR_COLOR_CAPS_V1 NV_MONITOR_COLOR_CAPS;
 //! \param [in, out] pColorCapsCount            - During input, the number of elements allocated for the pMonitorColorCapabilities pointer
 //!                                             - During output, the actual number of color data elements the monitor supports
 //!
-//! \return    This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//! \return    This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with
 //!            specific meaning for this API, they are listed below.
 //!
 //! \retval         NVAPI_INSUFFICIENT_BUFFER   The input buffer size is not sufficient to hold the total contents. In this case
@@ -5709,22 +5719,22 @@ NVAPI_INTERFACE NvAPI_DISP_GetMonitorColorCapabilities(__in NvU32 displayId, __i
 typedef struct
 {
     NvU32                   version;
-    
+
     // the source mode information
     NvU32                   width;             //!< Source surface(source mode) width
     NvU32                   height;            //!< Source surface(source mode) height
     NvU32                   depth;             //!< Source surface color depth."0" means all 8/16/32bpp
     NV_FORMAT               colorFormat;       //!< Color format (optional)
-  
+
     NV_VIEWPORTF            srcPartition;      //!< For multimon support, should be set to (0,0,1.0,1.0) for now.
-  
+
     float                   xRatio;            //!< Horizontal scaling ratio
     float                   yRatio;            //!< Vertical scaling ratio
-                                                             
+
     NV_TIMING               timing;            //!< Timing used to program TMDS/DAC/LVDS/HDMI/TVEncoder, etc.
     NvU32                   hwModeSetOnly : 1; //!< If set, it means a hardware modeset without OS update
-    
-}NV_CUSTOM_DISPLAY; 
+
+}NV_CUSTOM_DISPLAY;
 
 //! \ingroup dispcontrol
 //! Used in NV_CUSTOM_DISPLAY.
@@ -5733,19 +5743,19 @@ typedef struct
 ///////////////////////////////////////////////////////////////////////////////
 // FUNCTION NAME:   NvAPI_DISP_EnumCustomDisplay
 //
-//! DESCRIPTION:    This API enumerates the custom timing specified by the enum index. 
+//! DESCRIPTION:    This API enumerates the custom timing specified by the enum index.
 //!                 The client should keep enumerating until it returns NVAPI_END_ENUMERATION.
 //!
 //! SUPPORTED OS:  Windows XP and higher
 //!
 //!
-//! \since Release: 313 
+//! \since Release: 313
 //!
 //! \param [in]     displayId   Dispaly ID of the display.
 //! \param [in]     index       Enum index
-//! \param [inout]  pCustDisp   Pointer to the NV_CUSTOM_DISPLAY structure 
+//! \param [inout]  pCustDisp   Pointer to the NV_CUSTOM_DISPLAY structure
 //!
-//! \return        This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//! \return        This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with
 //!                specific meaning for this API, they are listed below.
 //! \retval        NVAPI_INVALID_DISPLAY_ID:   Custom Timing is not supported on the Display, whose display id is passed
 //!
@@ -5770,17 +5780,17 @@ NVAPI_INTERFACE NvAPI_DISP_EnumCustomDisplay( __in NvU32 displayId, __in NvU32 i
 //! SUPPORTED OS:  Windows XP,  Windows 7 and higher
 //!
 //!
-//! \since Release: 313   
+//! \since Release: 313
 //!
-//!                               
+//!
 //! \param [in]    pDisplayIds    Array of the target display Dispaly IDs - See \ref handles.
 //! \param [in]    count          Total number of the incoming Display IDs and corresponding NV_CUSTOM_DISPLAY structure. This is for the multi-head support.
 //! \param [in]    pCustDisp      Pointer to the NV_CUSTOM_DISPLAY structure array.
 //!
-//! \return        This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//! \return        This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with
 //!                specific meaning for this API, they are listed below.
 //! \retval        NVAPI_INVALID_DISPLAY_ID:   Custom Timing is not supported on the Display, whose display id is passed
-//! 
+//!
 //! \ingroup dispcontrol
 ///////////////////////////////////////////////////////////////////////////////
 NVAPI_INTERFACE NvAPI_DISP_TryCustomDisplay( __in_ecount(count) NvU32 *pDisplayIds, __in NvU32 count, __in_ecount(count) NV_CUSTOM_DISPLAY *pCustDisp);
@@ -5793,18 +5803,18 @@ NVAPI_INTERFACE NvAPI_DISP_TryCustomDisplay( __in_ecount(count) NvU32 *pDisplayI
 //! SUPPORTED OS:  Windows XP and higher
 //!
 //!
-//! \since Release: 313 
+//! \since Release: 313
 //!
 //!
 //! \param [in]     pDisplayIds     Array of Dispaly IDs on which custom display configuration is to be saved.
 //! \param [in]     count           Total number of the incoming Dispaly IDs. This is for the multi-head support.
 //! \param [in]     pCustDisp       Pointer to the NV_CUSTOM_DISPLAY structure
 //!
-//! \return        This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//! \return        This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with
 //!                specific meaning for this API, they are listed below.
 //! \retval        NVAPI_INVALID_DISPLAY_ID:   Custom Timing is not supported on the Display, whose display id is passed
 //!
-//! \ingroup dispcontrol 
+//! \ingroup dispcontrol
 ///////////////////////////////////////////////////////////////////////////////
 NVAPI_INTERFACE NvAPI_DISP_DeleteCustomDisplay( __in_ecount(count) NvU32 *pDisplayIds, __in NvU32 count, __in NV_CUSTOM_DISPLAY *pCustDisp);
 
@@ -5818,16 +5828,16 @@ NVAPI_INTERFACE NvAPI_DISP_DeleteCustomDisplay( __in_ecount(count) NvU32 *pDispl
 //! SUPPORTED OS:  Windows XP and higher
 //!
 //!
-//! \since Release: 313 
+//! \since Release: 313
 //!
 //!
 //! \param [in]     pDisplayIds         Array of Dispaly IDs on which custom display configuration is to be saved.
 //! \param [in]     count               Total number of the incoming Dispaly IDs. This is for the multi-head support.
 //! \param [in]     isThisOutputIdOnly  If set, the saved custom display will only be applied on the monitor with the same outputId (see \ref handles).
-//! \param [in]     isThisMonitorIdOnly If set, the saved custom display will only be applied on the monitor with the same EDID ID or 
+//! \param [in]     isThisMonitorIdOnly If set, the saved custom display will only be applied on the monitor with the same EDID ID or
 //!                                     the same TV connector in case of analog TV.
 //!
-//! \return        This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//! \return        This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with
 //!                specific meaning for this API, they are listed below.
 //! \retval        NVAPI_INVALID_DISPLAY_ID:   Custom Timing is not supported on the Display, whose display id is passed
 //!
@@ -5839,20 +5849,20 @@ NVAPI_INTERFACE NvAPI_DISP_SaveCustomDisplay( __in_ecount(count) NvU32 *pDisplay
 // FUNCTION NAME:   NvAPI_DISP_RevertCustomDisplayTrial
 //
 //! DESCRIPTION:    This API is used to restore the display configuration, that was changed by calling NvAPI_DISP_TryCustomDisplay(). This function
-//!                 must be called only after a custom display configuration is tested on the hardware, using NvAPI_DISP_TryCustomDisplay(),  
-//!                 otherwise no action is taken. On Vista, NvAPI_DISP_RevertCustomDisplayTrial should be called with an active display that  
-//!                 was affected during the NvAPI_DISP_TryCustomDisplay() call, per GPU. 
+//!                 must be called only after a custom display configuration is tested on the hardware, using NvAPI_DISP_TryCustomDisplay(),
+//!                 otherwise no action is taken. On Vista, NvAPI_DISP_RevertCustomDisplayTrial should be called with an active display that
+//!                 was affected during the NvAPI_DISP_TryCustomDisplay() call, per GPU.
 //!
 //! SUPPORTED OS:  Windows Vista and higher
 //!
 //!
-//! \since Release: 313  
+//! \since Release: 313
 //!
 //!
-//! \param [in]    pDisplayIds   Pointer to display Id, of an active display. 
+//! \param [in]    pDisplayIds   Pointer to display Id, of an active display.
 //! \param [in]    count         Total number of incoming Display IDs. For future use only. Currently it is expected to be passed as 1.
 //!
-//! \return        This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//! \return        This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with
 //!                specific meaning for this API, they are listed below.
 //!
 //! \ingroup dispcontrol
@@ -5863,7 +5873,7 @@ NVAPI_INTERFACE NvAPI_DISP_RevertCustomDisplayTrial( __in_ecount(count) NvU32* p
 // FUNCTION NAME:   NvAPI_GetView
 //
 //! This API lets caller retrieve the target display arrangement for selected source display handle.
-//! \note Display PATH with this API is limited to single GPU. DUALVIEW across GPUs will be returned as STANDARD VIEW. 
+//! \note Display PATH with this API is limited to single GPU. DUALVIEW across GPUs will be returned as STANDARD VIEW.
 //!       Use NvAPI_SYS_GetDisplayTopologies() to query views across GPUs.
 //!
 //! \deprecated  Do not use this function - it is deprecated in release 290. Instead, use NvAPI_DISP_GetDisplayConfig.
@@ -5872,9 +5882,9 @@ NVAPI_INTERFACE NvAPI_DISP_RevertCustomDisplayTrial( __in_ecount(count) NvU32* p
 //!
 //! \since Release: 85
 //!
-//!  \param [in]     hNvDisplay             NVIDIA Display selection. It can be #NVAPI_DEFAULT_HANDLE or a handle enumerated from 
+//!  \param [in]     hNvDisplay             NVIDIA Display selection. It can be #NVAPI_DEFAULT_HANDLE or a handle enumerated from
 //!                                         NvAPI_EnumNVidiaDisplayHandle().
-//!  \param [out]    pTargets               User allocated storage to retrieve an array of  NV_VIEW_TARGET_INFO. Can be NULL to retrieve 
+//!  \param [out]    pTargets               User allocated storage to retrieve an array of  NV_VIEW_TARGET_INFO. Can be NULL to retrieve
 //!                                         the targetCount.
 //!  \param [in,out] targetMaskCount        Count of target device mask specified in pTargetMask.
 //!  \param [out]    targetView             Target view selected from NV_TARGET_VIEW_MODE.
@@ -5897,7 +5907,7 @@ NVAPI_INTERFACE NvAPI_GetView(NvDisplayHandle hNvDisplay, NV_VIEW_TARGET_INFO *p
 // FUNCTION NAME:   NvAPI_GetViewEx
 //
 //! DESCRIPTION:    This API lets caller retrieve the target display arrangement for selected source display handle.
-//!                 \note Display PATH with this API is limited to single GPU. DUALVIEW across GPUs will be returned as STANDARD VIEW. 
+//!                 \note Display PATH with this API is limited to single GPU. DUALVIEW across GPUs will be returned as STANDARD VIEW.
 //!                       Use NvAPI_SYS_GetDisplayTopologies() to query views across GPUs.
 //!
 //! \deprecated  Do not use this function - it is deprecated in release 290. Instead, use NvAPI_DISP_GetDisplayConfig.
@@ -5917,8 +5927,8 @@ NVAPI_INTERFACE NvAPI_GetView(NvDisplayHandle hNvDisplay, NV_VIEW_TARGET_INFO *p
 //! \retval         NVAPI_ERROR                   Miscellaneous error occurred
 //! \retval         NVAPI_INVALID_ARGUMENT        Invalid input parameter.
 //! \retval         NVAPI_EXPECTED_DISPLAY_HANDLE hNvDisplay is not a valid display handle.
-//! 
-//! \ingroup dispcontrol   
+//!
+//! \ingroup dispcontrol
 ///////////////////////////////////////////////////////////////////////////////
 __nvapi_deprecated_function("Do not use this function - it is deprecated in release 290. Instead, use NvAPI_DISP_GetDisplayConfig.")
 NVAPI_INTERFACE NvAPI_GetViewEx(NvDisplayHandle hNvDisplay, NV_DISPLAY_PATH_INFO *pPathInfo, NvU32 *pPathCount, NV_TARGET_VIEW_MODE *pTargetViewMode);
@@ -5981,17 +5991,17 @@ NVAPI_INTERFACE NvAPI_DISP_GetDisplayIdByDisplayName(const char *displayName, Nv
 //!                  configuration.
 //!       USAGE:     The caller might have to call this three times to fetch all the required configuration details as follows:
 //!                  First  Pass: Caller should Call NvAPI_DISP_GetDisplayConfig() with pathInfo set to NULL to fetch pathInfoCount.
-//!                  Second Pass: Allocate memory for pathInfo with respect to the number of pathInfoCount(from First Pass) to fetch 
+//!                  Second Pass: Allocate memory for pathInfo with respect to the number of pathInfoCount(from First Pass) to fetch
 //!                               targetInfoCount. If sourceModeInfo is needed allocate memory or it can be initialized to NULL.
-//!             Third  Pass(Optional, only required if target information is required): Allocate memory for targetInfo with respect 
-//!                               to number of targetInfoCount(from Second Pass).               
+//!             Third  Pass(Optional, only required if target information is required): Allocate memory for targetInfo with respect
+//!                               to number of targetInfoCount(from Second Pass).
 //! SUPPORTED OS:  Windows Vista and higher
 //!
 //!
 //! \param [in,out]  pathInfoCount    Number of elements in pathInfo array, returns number of valid topologies, this cannot be null.
 //! \param [in,out]  pathInfo         Array of path information
 //!
-//! \return    This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//! \return    This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with
 //!            specific meaning for this API, they are listed below.
 //!
 //! \retval    NVAPI_INVALID_ARGUMENT  -   Invalid input parameter. Following can be the reason for this return value:
@@ -5999,7 +6009,7 @@ NVAPI_INTERFACE NvAPI_DISP_GetDisplayIdByDisplayName(const char *displayName, Nv
 //!                                        -# *pathInfoCount is 0 and pathInfo is not NULL.
 //!                                        -# *pathInfoCount is not 0 and pathInfo is NULL.
 //! \retval    NVAPI_DEVICE_BUSY       -   ModeSet has not yet completed. Please wait and call it again.
-//!                                       
+//!
 //! \ingroup dispcontrol
 ///////////////////////////////////////////////////////////////////////////////
 NVAPI_INTERFACE NvAPI_DISP_GetDisplayConfig(__inout NvU32 *pathInfoCount, __out_ecount_full_opt(*pathInfoCount) NV_DISPLAYCONFIG_PATH_INFO *pathInfo);
@@ -6015,7 +6025,7 @@ NVAPI_INTERFACE NvAPI_DISP_GetDisplayConfig(__inout NvU32 *pathInfoCount, __out_
 //!                  across multiple GPUs.
 //!
 //!                  If all sourceIds are zero, then NvAPI will pick up sourceId's based on the following criteria :
-//!                  - If user provides sourceModeInfo then we are trying to assign 0th sourceId always to GDIPrimary. 
+//!                  - If user provides sourceModeInfo then we are trying to assign 0th sourceId always to GDIPrimary.
 //!                     This is needed since active windows always moves along with 0th sourceId.
 //!                  - For rest of the paths, we are incrementally assigning the sourceId per adapter basis.
 //!                  - If user doesn't provide sourceModeInfo then NVAPI just picks up some default sourceId's in incremental order.
@@ -6027,7 +6037,7 @@ NVAPI_INTERFACE NvAPI_DISP_GetDisplayConfig(__inout NvU32 *pathInfoCount, __out_
 //! \param [in]      pathInfoCount   Number of supplied elements in pathInfo
 //! \param [in]      pathInfo        Array of path information
 //! \param [in]      flags           Flags for applying settings
-//! 
+//!
 //! \retval ::NVAPI_OK - completed request
 //! \retval ::NVAPI_API_NOT_INTIALIZED - NVAPI not initialized
 //! \retval ::NVAPI_ERROR - miscellaneous error occurred
@@ -7105,19 +7115,29 @@ NVAPI_INTERFACE NvAPI_GSync_EnumSyncDevices(__out NvGSyncDeviceHandle nvGSyncHan
 //! Used in NvAPI_GSync_QueryCapabilities().
 typedef struct _NV_GSYNC_CAPABILITIES_V1
 {
-    NvU32   version;						//!< Version of the structure
-    NvU32   boardId;						//!< Board ID
-    NvU32   revision;						//!< FPGA Revision
-    NvU32   capFlags;						//!< Capabilities of the Sync board. Reserved for future use
+    NvU32   version;                        //!< Version of the structure
+    NvU32   boardId;                        //!< Board ID
+    NvU32   revision;                       //!< FPGA Revision
+    NvU32   capFlags;                       //!< Capabilities of the Sync board. Reserved for future use
 } NV_GSYNC_CAPABILITIES_V1;
 
-typedef NV_GSYNC_CAPABILITIES_V1 NV_GSYNC_CAPABILITIES;
+typedef struct _NV_GSYNC_CAPABILITIES_V2
+{
+    NvU32   version;                        //!< Version of the structure
+    NvU32   boardId;                        //!< Board ID
+    NvU32   revision;                       //!< FPGA major revision
+    NvU32   capFlags;                       //!< Capabilities of the Sync board. Reserved for future use
+    NvU32   extendedRevision;               //!< FPGA minor revision
+} NV_GSYNC_CAPABILITIES_V2;
+
+typedef NV_GSYNC_CAPABILITIES_V2 NV_GSYNC_CAPABILITIES;
 
 
 //! \ingroup gsyncapi
 //! Macro for constructing the version field of NV_GSYNC_CAPABILITIES.
 #define NV_GSYNC_CAPABILITIES_VER1  MAKE_NVAPI_VERSION(NV_GSYNC_CAPABILITIES_V1,1)
-#define NV_GSYNC_CAPABILITIES_VER NV_GSYNC_CAPABILITIES_VER1
+#define NV_GSYNC_CAPABILITIES_VER2  MAKE_NVAPI_VERSION(NV_GSYNC_CAPABILITIES_V2,2)
+#define NV_GSYNC_CAPABILITIES_VER NV_GSYNC_CAPABILITIES_VER2
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7859,13 +7879,11 @@ NVAPI_INTERFACE NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(__in  IUnknown *pDev,
 // FUNCTION NAME: NvAPI_D3D11_SetNvShaderExtnSlot
 //
 //!   DESCRIPTION: This function sets the fake UAV slot that is used by Nvidia HLSL
-//!                shader extensions. All createShader calls made to the driver after
+//!                shader extensions globally. All createShader calls made to the driver after
 //!                setting this slot would treat writes/reads to this UAV in a 
 //!                different way. Applications are expected to bind null UAV to this slot.
 //!                The same slot is used for all shader stages.
-//!                To disable shader extensions the app may set this uav slot
-//!                to some value that is bigger than the max allowed slot index
-//!                e.g, 128 or 0xFFFFFFFF.
+//!                To disable shader extensions the app need to set this uav slot to 0xFFFFFFFF.
 //!                To use Nvidia HLSL extensions the application must include nvHLSLExtns.h 
 //!                in the hlsl shader code. See nvHLSLExtns.h for more details.
 //!
@@ -7889,6 +7907,43 @@ NVAPI_INTERFACE NvAPI_D3D11_SetNvShaderExtnSlot(__in IUnknown *pDev,
 
 #endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
 
+#if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_SetNvShaderExtnSlotLocalThread
+//
+//!   DESCRIPTION: This function sets the fake UAV slot that is used by Nvidia HLSL
+//!                shader extensions on local thread. All createShader calls on the same thread 
+//!                that calls this function after setting this slot would treat writes/reads 
+//!                to this UAV in a different way.
+//!                Applications are expected to bind null UAV to this slot.
+//!                The same slot is used for all shader stages.
+//!                To disable shader extensions the app may set this uav slot to 0xFFFFFFFF.
+//!                To use Nvidia HLSL extensions the application must include nvHLSLExtns.h 
+//!                in the hlsl shader code. See nvHLSLExtns.h for more details.
+//!
+//!                This function can be called from a different thread than the one calling immediate device setstate functions.  
+//!
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+//!
+//! \since Release: 387
+//!
+//! \param [in]        pDev         The device for which to set the extension slot
+//!                                 should be a ID3D11Device+ device
+//! \param [in]        uavSlot      the uav slot to use
+//!
+//! RETURN STATUS:     This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!                    If there are return error codes with specific meaning for this API, they are listed below.
+//! \retval ::         NVAPI_OK    : success, the uavSlot was set sucessfully
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_SetNvShaderExtnSlotLocalThread(__in IUnknown *pDev,
+                                                           __in NvU32 uavSlot);
+
+#endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
 
 #if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
 
@@ -8065,7 +8120,7 @@ NVAPI_INTERFACE NvAPI_D3D11_CreateRasterizerState(__in ID3D11Device *pDevice,
 //! SUPPORTED OS:  Windows Vista and higher
 //!
 
-#if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+#if defined (__cplusplus) && (defined(_D3D9_H_) || defined(__d3d11_h__) || defined(__d3d11_1_h__))
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -8127,7 +8182,7 @@ typedef NVAPI_ANSEL_CONFIGURATION_STRUCT_V1 NVAPI_ANSEL_CONFIGURATION_STRUCT;
 NVAPI_INTERFACE NvAPI_D3D_ConfigureAnsel(__in IUnknown *pDevice,
                                          __in NVAPI_ANSEL_CONFIGURATION_STRUCT *pNLSConfig);
 
-#endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+#endif //defined (__cplusplus) && (defined(_D3D9_H_) || defined(__d3d11_h__) || defined(__d3d11_1_h__))
 
 //! SUPPORTED OS:  Windows 8 and higher
 //!
@@ -8408,14 +8463,19 @@ typedef enum _NV_SWIZZLE_OFFSET
 //!
 
 #if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d12_h__)) && (!defined(CINTERFACE))
+#ifndef NV_CUSTOM_SEMANTIC_MAX_LIMIT
+#define NV_CUSTOM_SEMANTIC_MAX_LIMIT 8
+#endif
 
 typedef enum NV_CUSTOM_SEMANTIC_TYPE
 {
-    NV_NONE_SEMANTIC           = 0,
-    NV_X_RIGHT_SEMANTIC        = 1,
-    NV_VIEWPORT_MASK_SEMANTIC  = 2,
-
-    NV_CUSTOM_SEMANTIC_MAX     = 8,
+    NV_NONE_SEMANTIC              = 0,
+    NV_X_RIGHT_SEMANTIC           = 1,
+    NV_VIEWPORT_MASK_SEMANTIC     = 2,
+    NV_PACKED_EYE_INDEX_SEMANTIC  = 17,
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+    NV_CUSTOM_SEMANTIC_MAX        = NV_CUSTOM_SEMANTIC_MAX_LIMIT,
 } NV_CUSTOM_SEMANTIC_TYPE;
 
 typedef struct _NV_CUSTOM_SEMANTIC
@@ -9105,6 +9165,19 @@ struct NVAPI_D3D12_PSO_SET_SHADER_EXTENSION_SLOT_DESC_V1 : public NVAPI_D3D12_PS
 
 typedef NVAPI_D3D12_PSO_SET_SHADER_EXTENSION_SLOT_DESC_V1     NVAPI_D3D12_PSO_SET_SHADER_EXTENSION_SLOT_DESC;
 
+
+//! \ingroup dx
+//! Enum for compute shader derivative modes
+typedef enum _NV_COMPUTE_SHADER_DERIVATIVES
+{
+    NV_COMPUTE_SHADER_DERIVATIVE_NONE = 0,                  // No support for compute derivatives
+
+    NV_COMPUTE_SHADER_DERIVATIVE_GROUP_LINEAR = 1,          // Compute derivatives supported. Quads are defined as groups of four threads with linear thread IDs of the form 4N..4N + 3
+
+    NV_COMPUTE_SHADER_DERIVATIVE_GROUP_QUADS = 2,           // Compute derivatives supported. Quads are defined as group of 2x2 thread IDs in a 2D (or 3D) CTA. In this mode
+                                                            // the app must ensure that width and height of the CTA dimension are both multiples of 2
+} NV_COMPUTE_SHADER_DERIVATIVES;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // FUNCTION NAME: NvAPI_D3D12_CreateGraphicsPipelineState
@@ -9776,15 +9849,17 @@ NVAPI_INTERFACE NvAPI_D3D11_CreateMultiGPUDevice(__in ID3D11Device *pDevice, __i
 //!
 //! Used to query the support of Single Pass Stereo HW feature
 //! \ingroup dx 
-typedef struct _NV_QUERY_SINGLE_PASS_STEREO_SUPPORT_PARAMS
+typedef struct _NV_QUERY_SINGLE_PASS_STEREO_SUPPORT_PARAMS_V1
 {
     NvU32 version;                                                          // parameter struct version
     NvU32 bSinglePassStereoSupported;                                       // Single Pass Stereo supported
 } NV_QUERY_SINGLE_PASS_STEREO_SUPPORT_PARAMS_V1;
 
+#ifndef NV_QUERY_SINGLE_PASS_STEREO_SUPPORT_PARAMS_VER
 typedef NV_QUERY_SINGLE_PASS_STEREO_SUPPORT_PARAMS_V1                 NV_QUERY_SINGLE_PASS_STEREO_SUPPORT_PARAMS;
 #define NV_QUERY_SINGLE_PASS_STEREO_SUPPORT_PARAMS_VER1               MAKE_NVAPI_VERSION(NV_QUERY_SINGLE_PASS_STEREO_SUPPORT_PARAMS_V1, 1)
 #define NV_QUERY_SINGLE_PASS_STEREO_SUPPORT_PARAMS_VER                NV_QUERY_SINGLE_PASS_STEREO_SUPPORT_PARAMS_VER1
+#endif
 
 #if defined(__cplusplus) && (defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__))
 ///////////////////////////////////////////////////////////////////////////////
@@ -10375,9 +10450,380 @@ NVAPI_INTERFACE NvAPI_D3D12_Mosaic_GetViewportAndGpuPartitions(__inout NV_D3D12_
 
 #endif // defined(__cplusplus) && ( defined(__d3d12_h__))
 
-/////////////////////////////////////////////////////////////////////////
-// Video Input Output (VIO) API
-/////////////////////////////////////////////////////////////////////////
+
+//! SUPPORTED OS:  Windows 7 and higher
+//!
+#if defined (__cplusplus) && defined(__d3d11_h__) 
+
+//! \ingroup dx
+
+typedef enum NV_SMP_ASSIST_TYPE
+{
+    NV_SMP_ASSIST_NONE = 0,
+    NV_SMP_ASSIST_MRS  = 1,       // SMP Assist required for Multi-Res Shading
+    NV_SMP_ASSIST_LMS  = 2,       // SMP Assist required for Lens Matched Shading
+    NV_SMP_ASSIST_NUM_TYPES
+} NV_SMP_ASSIST_TYPE;
+
+typedef enum NV_SMP_ASSIST_LEVEL
+{
+    NV_SMP_ASSIST_LEVEL_FULL    = 0,      // Full assistance. App selects a pre-baked MRS/LMS config, driver handles correct setting of viewport, scissors and FastGS
+    NV_SMP_ASSIST_LEVEL_PARTIAL = 1,      // Partial assistance. App provides a custom MRS/LMS config, driver handles correct setting of viewport, scissors and FastGS
+    NV_SMP_ASSIST_LEVEL_MINIMAL = 2,      // Minimal assistance. App provides viewports and scissors. App sets FastGS as required. App sets LMS params as required (NvAPI_D3D_SetModifiedWMode). App provides SMPType as NONE. Driver handles correct setting of viewports and scissors.
+    NV_SMP_ASSIST_NUM_LEVELS
+} NV_SMP_ASSIST_LEVEL;
+
+typedef enum NV_MRS_CONFIG
+{
+    NV_MRS_CONFIG_BALANCED                     = 0,
+    NV_MRS_CONFIG_AGGRESSIVE                   = 1,
+    NV_MRS_CONFIG_OCULUSRIFT_CV1_CONSERVATIVE  = 2,
+    NV_MRS_CONFIG_OCULUSRIFT_CV1_BALANCED      = 3,
+    NV_MRS_CONFIG_OCULUSRIFT_CV1_AGGRESSIVE    = 4,
+    NV_MRS_CONFIG_HTC_VIVE_CONSERVATIVE        = 5,
+    NV_MRS_CONFIG_HTC_VIVE_BALANCED            = 6,
+    NV_MRS_CONFIG_HTC_VIVE_AGGRESSIVE          = 7,
+    NV_MRS_NUM_CONFIGS
+} NV_MRS_CONFIG;
+
+typedef enum NV_LMS_CONFIG
+{
+    NV_LMS_CONFIG_OCULUSRIFT_CV1_CONSERVATIVE = 0,
+    NV_LMS_CONFIG_OCULUSRIFT_CV1_BALANCED     = 1,
+    NV_LMS_CONFIG_OCULUSRIFT_CV1_AGGRESSIVE   = 2,
+    NV_LMS_CONFIG_HTC_VIVE_CONSERVATIVE       = 3,
+    NV_LMS_CONFIG_HTC_VIVE_BALANCED           = 4,
+    NV_LMS_CONFIG_HTC_VIVE_AGGRESSIVE         = 5,
+    NV_LMS_NUM_CONFIGS
+} NV_LMS_CONFIG;
+
+#define NV_SMP_ASSIST_FLAGS_DEFAULT    0x00000000
+
+#define NV_SMP_ASSIST_MAX_VIEWPORTS    16
+
+typedef struct _NV_MRS_CUSTOM_CONFIG_V1
+{
+    float           centerWidth;        //!< (IN) Size of the central viewport, ranging (0,1], where 1 is full original viewport size
+    float           centerHeight;
+    float           centerX;            //!< (IN) Location of the central viewport, ranging 0..1, where 0.5 is the center of the screen
+    float           centerY;
+    float           densityScaleX[3];   //!< (IN) Pixel density scale factors: how much the linear pixel density is scaled within each row and column (1.0 = full density)
+    float           densityScaleY[3];
+} NV_MRS_CUSTOM_CONFIG_V1;
+
+typedef NV_MRS_CUSTOM_CONFIG_V1 NV_MRS_CUSTOM_CONFIG;
+
+typedef struct _NV_MRS_INSTANCED_STEREO_CONFIG_V1
+{                                          //!< (OUT) MRS Instanced stereo config returned by the SMP Assist GetConstants API
+    float           centerWidth[2];        //!< (OUT) Size of the central viewport, ranging (0,1], where 1 is full original viewport size
+    float           centerHeight;
+    float           centerX[2];            //!< (OUT) Location of the central viewport, ranging 0..1, where 0.5 is the center of the screen
+    float           centerY;
+    float           densityScaleX[5];      //!< (OUT) Pixel density scale factors: how much the linear pixel density is scaled within each row and column (1.0 = full density)
+    float           densityScaleY[3];
+} NV_MRS_INSTANCED_STEREO_CONFIG_V1;
+
+typedef NV_MRS_INSTANCED_STEREO_CONFIG_V1 NV_MRS_INSTANCED_STEREO_CONFIG;
+
+typedef struct _NV_LMS_CUSTOM_CONFIG_V1
+{
+    float           warpLeft;           //!< (IN) LMS params to control warping of the 2 left quadrants
+    float           warpRight;          //!< (IN) LMS params to control warping of the 2 right quadrants
+    float           warpUp;             //!< (IN) LMS params to control warping of the 2 upper quadrants
+    float           warpDown;           //!< (IN) LMS params to control warping of the 2 lower quadrants
+
+    float           relativeSizeLeft;   //!< (IN) LMS params to control the width of the 2 left quandrants relative to the bounding box width
+    float           relativeSizeRight;  //!< (IN) LMS params to control the width of the 2 right quandrants relative to the bounding box width
+    float           relativeSizeUp;     //!< (IN) LMS params to control the height of the 2 upper quandrants relative to the bounding box height
+    float           relativeSizeDown;   //!< (IN) LMS params to control the height of the 2 lower quandrants relative to the bounding box height
+} NV_LMS_CUSTOM_CONFIG_V1;
+
+typedef NV_LMS_CUSTOM_CONFIG_V1 NV_LMS_CUSTOM_CONFIG;
+
+typedef struct _NV_LMS_INSTANCED_STEREO_CONFIG_V1
+{                                             //!< (OUT) LMS Instanced stereo config returned by the SMP Assist GetConstants API
+    NV_LMS_CUSTOM_CONFIG_V1 sLeftConfig;      //!< (OUT) LMS config for the Left eye view
+    NV_LMS_CUSTOM_CONFIG_V1 sRightConfig;     //!< (OUT) LMS config for the Right eye view
+} NV_LMS_INSTANCED_STEREO_CONFIG_V1;
+
+typedef NV_LMS_INSTANCED_STEREO_CONFIG_V1 NV_LMS_INSTANCED_STEREO_CONFIG;
+
+typedef enum _NV_SMP_ASSIST_EYE_INDEX
+{
+    NV_SMP_ASSIST_EYE_INDEX_MONO                  = 0,            // Non-stereo rendering
+    NV_SMP_ASSIST_EYE_INDEX_LEFT_EYE              = 1,            // Stereo - Rendering left eye
+    NV_SMP_ASSIST_EYE_INDEX_RIGHT_EYE             = 2,            // Stereo - Rendering right eye
+    NV_SMP_ASSIST_EYE_INDEX_INSTANCED_STEREO      = 3,            // Stereo - Rendering both eyes
+} NV_SMP_ASSIST_EYE_INDEX;
+
+#define NV_SMP_ASSIST_MINIMAL_LEVEL_NUM_EYE_INDICES 4 
+
+typedef struct _NV_CUSTOM_RECTS_V1
+{
+    NvU32                     numViewports[NV_SMP_ASSIST_MINIMAL_LEVEL_NUM_EYE_INDICES];
+    D3D11_VIEWPORT           *pViewports[NV_SMP_ASSIST_MINIMAL_LEVEL_NUM_EYE_INDICES];        //!< (IN) Viewports, for each eye index, that should be set when app calls Enable(eyeIndex) 
+    D3D11_RECT               *pScissors[NV_SMP_ASSIST_MINIMAL_LEVEL_NUM_EYE_INDICES];         //!< (IN) Scissors, for each eye index, that should be set when app calls Enable(eyeIndex)
+} NV_CUSTOM_RECTS_V1;
+
+typedef NV_CUSTOM_RECTS_V1 NV_CUSTOM_RECTS;
+
+typedef struct _NV_SMP_ASSIST_ENABLE_PARAMS_V1
+{
+    NvU32                    version;          //!< (IN) Structure version
+    NV_SMP_ASSIST_EYE_INDEX  eEyeIndex;        //!< (IN) Rendering mode for upcoming draw calls (Mono/Stereo-Left/Stereo-Right/Instanced Stereo)
+} NV_SMP_ASSIST_ENABLE_PARAMS_V1;
+
+typedef NV_SMP_ASSIST_ENABLE_PARAMS_V1          NV_SMP_ASSIST_ENABLE_PARAMS;
+#define NV_SMP_ASSIST_ENABLE_PARAMS_VER1        MAKE_NVAPI_VERSION(NV_SMP_ASSIST_ENABLE_PARAMS_V1, 1)
+#define NV_SMP_ASSIST_ENABLE_PARAMS_VER         NV_SMP_ASSIST_ENABLE_PARAMS_VER1
+
+typedef struct _NV_SMP_ASSIST_DISABLE_PARAMS_V1
+{
+    NvU32                version;               //!< (IN) Structure version
+    NvU32                Reserved;              //!< (IN) Unused.
+} NV_SMP_ASSIST_DISABLE_PARAMS_V1;
+
+typedef NV_SMP_ASSIST_DISABLE_PARAMS_V1          NV_SMP_ASSIST_DISABLE_PARAMS;
+#define NV_SMP_ASSIST_DISABLE_PARAMS_VER1        MAKE_NVAPI_VERSION(NV_SMP_ASSIST_DISABLE_PARAMS_V1, 1)
+#define NV_SMP_ASSIST_DISABLE_PARAMS_VER         NV_SMP_ASSIST_DISABLE_PARAMS_VER1
+
+// FastGS constant buffer data returned by the GetConstants API.
+// Refer VRWorks SDK's multiprojection_dx app (struct FastGSCBData)
+typedef struct _NV_SMP_ASSIST_FASTGSCBDATA_V1
+{
+    float NDCSplitsX[2];                        //!< (OUT) FastGS constant buffer data for Multi-Res Shading/ Lens Matched Shading
+    float NDCSplitsY[2];
+} NV_SMP_ASSIST_FASTGSCBDATA_V1;
+
+typedef NV_SMP_ASSIST_FASTGSCBDATA_V1 NV_SMP_ASSIST_FASTGSCBDATA;
+
+typedef struct _NV_SMP_ASSIST_FASTGSCBDATA_MRS_INSTANCED_STEREO_V1
+{
+    float NDCSplitsX[4];                        //!< (OUT) FastGS constant buffer data for Multi-Res Shading (Instanced stereo). 2 splits for left eye followed by 2 splits for right eye
+    float NDCSplitsY[2];
+} NV_SMP_ASSIST_FASTGSCBDATA_MRS_INSTANCED_STEREO_V1;
+
+typedef NV_SMP_ASSIST_FASTGSCBDATA_MRS_INSTANCED_STEREO_V1 NV_SMP_ASSIST_FASTGSCBDATA_MRS_INSTANCED_STEREO;
+
+// Constant buffer data to supply the UV-remapping helper functions
+// Refer VRWorks SDK's multiprojection_dx app (struct RemapCBData)
+typedef struct _NV_SMP_ASSIST_REMAPCBDATA_V1
+{
+                                                 //!< (OUT) Constant buffer data to supply the UV-remapping helper functions
+    float        ClipToWindowSplitsX[2];
+    float        ClipToWindowSplitsY[2];
+    float        ClipToWindowX[3][2];            // ClipToWindowX[i][0] is Scale and ClipToWindowX[i][1] is Bias
+    float        ClipToWindowY[3][2];            // ClipToWindowY[i][0] is Scale and ClipToWindowY[i][1] is Bias
+    float        ClipToWindowZ[2];               // ClipToWindowZ[0] is Scale and ClipToWindowZ[1] is Bias
+
+    float        WindowToClipSplitsX[2];
+    float        WindowToClipSplitsY[2];
+    float        WindowToClipX[3][2];            // WindowToClipX[i][0] is Scale and WindowToClipX[i][1] is Bias
+    float        WindowToClipY[3][2];            // WindowToClipY[i][0] is Scale and WindowToClipY[i][1] is Bias
+    float        WindowToClipZ[2];               // WindowToClipZ[0] is Scale and WindowToClipZ[1] is Bias
+
+    float       BoundingRectOriginX;
+    float       BoundingRectOriginY;
+    float       BoundingRectSizeWidth;
+    float       BoundingRectSizeHeight;
+    float       BoundingRectSizeInvWidth;
+    float       BoundingRectSizeInvHeight;
+
+    float        Padding[2];
+}NV_SMP_ASSIST_REMAPCBDATA_V1;
+
+typedef NV_SMP_ASSIST_REMAPCBDATA_V1 NV_SMP_ASSIST_REMAPCBDATA;
+
+//! SUPPORTED OS:  Windows 7 and higher
+//!
+
+typedef struct _NV_SMP_ASSIST_GET_CONSTANTS_V3
+{
+    NvU32                    version;                                        //!< (IN) Structure version
+    NV_SMP_ASSIST_EYE_INDEX  eEyeIndex;                                      //!< (IN) Viewports/scissors/constant buffer data corresponding to the input eEyeIndex will be returned
+    NvU32                    numViewports;                                   //!< (OUT) Number of valid viewport entries
+    D3D11_VIEWPORT           *pViewports;                                    //!< (OUT) If not NULL, this will contain the viewports computed by driver based on init params
+    D3D11_RECT               *pScissors;                                     //!< (OUT) If not NULL, this will contain the scissors computed by the driver based on init params
+                                                                             
+    NV_SMP_ASSIST_TYPE       eSMPAssistType;                                 //!< (OUT) SMP type provided in Init call
+    NV_SMP_ASSIST_LEVEL      eSMPAssistLevel;                                //!< (OUT) SMP Assist level provided in Init call
+                                                                             
+    union                                                                    
+    {                                                                        
+        NV_MRS_CUSTOM_CONFIG_V1 sMRSConfig;                                  //!< (OUT) If eSMPAssistType is MRS, then MRS config will be populated
+        NV_LMS_CUSTOM_CONFIG_V1 sLMSConfig;                                  //!< (OUT) If eSMPAssistType is LMS, then LMS config will be populated
+    };                                                                       
+                                                                             
+    float projectionSizeWidth;                                               //!< (OUT) MRS/LMS projection size
+    float projectionSizeHeight;                                              //!< (OUT) 
+                                                                             
+    NV_SMP_ASSIST_FASTGSCBDATA_V1 *pFastGSCBData;                            //!< (OUT) If not NULL, this will contain constant buffer data to supply the FastGS for culling primitives per-viewport
+    NV_SMP_ASSIST_REMAPCBDATA_V1  *pRemapCBData;                             //!< (OUT) If not NULL, this will contain constant buffer data to supply the UV-remapping helper functions
+                                                                             
+    D3D11_VIEWPORT          boundingViewport;                                //!< (OUT) If eSMPType is MRS or LMS then this will be a union of the individual viewports populated in pViewports
+    D3D11_RECT              boundingScissor;                                 //!< (OUT) If eSMPType is MRS or LMS then this will be a union of the individual scissor rects populated in pScissors
+
+    union
+    {                                                                             
+        NV_MRS_INSTANCED_STEREO_CONFIG_V1 sMRS_ISConfig;                     //!< (OUT) If eSMPAssistType is MRS and eEyeIndex is NV_SMP_ASSIST_EYE_INDEX_INSTANCED_STEREO then MRS Instanced stereo config will be populated
+        NV_LMS_INSTANCED_STEREO_CONFIG_V1 sLMS_ISConfig;                     //!< (OUT) If eSMPAssistType is LMS and eEyeIndex is NV_SMP_ASSIST_EYE_INDEX_INSTANCED_STEREO then LMS Instanced stereo config will be populated
+    };
+
+    NV_SMP_ASSIST_FASTGSCBDATA_MRS_INSTANCED_STEREO_V1 *pFastGSCBDataMRS_IS; //!< (OUT) If non-NULL and eSMPAssistType is MRS and eEyeIndex is NV_SMP_ASSIST_EYE_INDEX_INSTANCED_STEREO then MRS Instanced stereo FastGS constant buffer data will be populated
+} NV_SMP_ASSIST_GET_CONSTANTS_V3;
+
+#define NV_SMP_ASSIST_GET_CONSTANTS_VER3        MAKE_NVAPI_VERSION(NV_SMP_ASSIST_GET_CONSTANTS_V3, 3)
+typedef NV_SMP_ASSIST_GET_CONSTANTS_V3          NV_SMP_ASSIST_GET_CONSTANTS;
+#define NV_SMP_ASSIST_GET_CONSTANTS_VER         NV_SMP_ASSIST_GET_CONSTANTS_VER3
+
+//! SUPPORTED OS:  Windows 7 and higher
+//!
+
+typedef struct _NV_SMP_ASSIST_SETUP_PARAMS_V1
+{
+    NvU32                       version;             //!< (IN) Structure version
+    union
+    {
+        NV_MRS_CONFIG           eMRSConfig;          //!< (IN) If eSMPAssistType is MRS and SMP Assist Level is Full then provide MRS config enum
+        NV_LMS_CONFIG           eLMSConfig;          //!< (IN) If eSMPAssistType is LMS and SMP Assist Level is Full then provide LMS config enum
+        NV_MRS_CUSTOM_CONFIG_V1 sMRSCustomConfig;    //!< (IN) If eSMPAssistType is MRS and SMP Assist Level is Partial, then provide MRS config
+        NV_LMS_CUSTOM_CONFIG_V1 sLMSCustomConfig;    //!< (IN) If eSMPAssistType is LMS and SMP Assist Level is Partial, then provide LMS config
+        NV_CUSTOM_RECTS_V1      sCustomRects;        //!< (IN) If SMP Assist Level is Minimal, provide custom viewports and scissor rects for each eye index.
+    };
+
+    float           resolutionScale;                 //!< (IN) A resolution multiplier in the range [0.1, 3.0] if app wants to render at higher resolution
+    D3D11_VIEWPORT  boundingBox;                     //!< (IN) Rect on the rendertarget, to place the projection
+    float           vpOffsets[2];                    //!< (IN) Default set to 0. If non-zero, MRS/LMS viewports' TopLeftX and TopLeftY will be 
+	                                                 //!<      offset by vpOffsets[0] and vpOffsets[1] respectively.
+} NV_SMP_ASSIST_SETUP_PARAMS_V1;
+
+typedef NV_SMP_ASSIST_SETUP_PARAMS_V1          NV_SMP_ASSIST_SETUP_PARAMS;
+#define NV_SMP_ASSIST_SETUP_PARAMS_VER1        MAKE_NVAPI_VERSION(NV_SMP_ASSIST_SETUP_PARAMS_V1, 1)
+#define NV_SMP_ASSIST_SETUP_PARAMS_VER         NV_SMP_ASSIST_SETUP_PARAMS_VER1
+
+typedef struct _NV_SMP_ASSIST_UPDATE_INSTANCEDSTEREO_DATA_PARAMS_V1
+{
+    NvU32                version;               //!< (IN) Structure version
+    NV_SMP_ASSIST_TYPE   eSMPAssistType;        // Patch instanced stereo shaders (created with packed eye index) with this SMPAssistType (NV_SMP_ASSIST_LMS only)
+    float                leftCoeffs[4];         // Left eye: outpos.x = dotproduct(outputpos, leftCoeffs) + leftConst
+    float                leftConst;
+    float                rightCoeffs[4];        // Right eye: outpos.x = dotproduct(outputpos, rightCoeffs) + rightConst
+    float                rightConst;
+} NV_SMP_ASSIST_UPDATE_INSTANCEDSTEREO_DATA_PARAMS_V1;
+
+typedef NV_SMP_ASSIST_UPDATE_INSTANCEDSTEREO_DATA_PARAMS_V1          NV_SMP_ASSIST_UPDATE_INSTANCEDSTEREO_DATA_PARAMS;
+#define NV_SMP_ASSIST_UPDATE_INSTANCEDSTEREO_DATA_PARAMS_VER1        MAKE_NVAPI_VERSION(NV_SMP_ASSIST_UPDATE_INSTANCEDSTEREO_DATA_PARAMS_V1, 1)
+#define NV_SMP_ASSIST_UPDATE_INSTANCEDSTEREO_DATA_PARAMS_VER         NV_SMP_ASSIST_UPDATE_INSTANCEDSTEREO_DATA_PARAMS_VER1
+
+//! SUPPORTED OS:  Windows 7 and higher
+//!
+
+DECLARE_INTERFACE(ID3DNvSMPAssist_V1)
+{
+//////////////////////////////   VER1 methods //////////////////////////////////////////
+    // Disable SMP Assist for further Draw calls
+    STDMETHOD_(NvAPI_Status,Disable)(THIS_ __in IUnknown *pDevContext, __in const NV_SMP_ASSIST_DISABLE_PARAMS *psSMPAssistDisableParams) PURE;
+
+    // Enable SMP Assist for further Draw calls. App has to provide the type of rendering done in upcoming Draw calls - Mono/Left eye/Right eye/Instanced Stereo
+    STDMETHOD_(NvAPI_Status,Enable)(THIS_ __in IUnknown *pDevContext, __in const NV_SMP_ASSIST_ENABLE_PARAMS *psSMPAssistEnableParams) PURE; 
+
+    // Get the constants used by the drivers
+    STDMETHOD_(NvAPI_Status,GetConstants)(THIS_ __inout NV_SMP_ASSIST_GET_CONSTANTS *psSMPAssistGetConstants) PURE; 
+
+    // Setup the projections (rects, constant buffer data etc.)
+    STDMETHOD_(NvAPI_Status,SetupProjections)(THIS_ __in IUnknown *pDevice, __in const NV_SMP_ASSIST_SETUP_PARAMS *psSMPAssistSetupParams) PURE;
+
+    // Update instanced stereo specific data
+    STDMETHOD_(NvAPI_Status,UpdateInstancedStereoData)(THIS_ __in IUnknown *pDevice, __in const NV_SMP_ASSIST_UPDATE_INSTANCEDSTEREO_DATA_PARAMS *psSMPAssistInstancedStereoParams) PURE;
+//////////////////////////////   end of VER1 methods   //////////////////////////////////////////
+};
+
+typedef ID3DNvSMPAssist_V1     ID3DNvSMPAssist;
+#define ID3DNVSMPASSIST_VER1   MAKE_NVAPI_VERSION(ID3DNvSMPAssist_V1, 1)
+#define ID3DNVSMPASSIST_VER    ID3DNVSMPASSIST_VER1
+
+//! SUPPORTED OS:  Windows 7 and higher
+//!
+
+typedef struct _NV_SMP_ASSIST_INITIALIZE_PARAMS_V1
+{
+    NvU32                   version;                 //!< (IN) Structure version
+    NV_SMP_ASSIST_TYPE      eSMPAssistType;          //!< (IN) None/MRS/LMS
+    NV_SMP_ASSIST_LEVEL     eSMPAssistLevel;         //!< (IN) Full/Partial/Minimal 
+    NvU32                   flags;                   //!< (IN) Flags, if any
+
+    ID3DNvSMPAssist     **ppD3DNvSMPAssist;          //!< (OUT) Interface pointer returned by the Init call. Use for future Enable/Disable etc. calls
+
+} NV_SMP_ASSIST_INITIALIZE_PARAMS_V1;
+
+#define NV_SMP_ASSIST_INITIALIZE_PARAMS_VER1        MAKE_NVAPI_VERSION(NV_SMP_ASSIST_INITIALIZE_PARAMS_V1, 1)
+#ifndef NV_SMP_ASSIST_INITIALIZE_PARAMS_VER
+typedef NV_SMP_ASSIST_INITIALIZE_PARAMS_V1          NV_SMP_ASSIST_INITIALIZE_PARAMS;
+#define NV_SMP_ASSIST_INITIALIZE_PARAMS_VER         NV_SMP_ASSIST_INITIALIZE_PARAMS_VER1
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D_InitializeSMPAssist
+//
+//! DESCRIPTION: Initialize SMP Assist extension. Take the SMPAssist(MRS/LMS) params from the application. 
+//!              Provide the application with a interface pointer for future use.
+//!
+//! \since Release: 396
+//! \param [in]       pDevice                   Pointer to IUnknown (Currently supports ID3D11Device)
+//! \param [inout]    pSMPAssistInitParams      SMP Assist initialization params
+//! \return This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!         If there are return error codes with specific meaning for this API, they are listed below.
+//! \retval ::NVAPI_OK                          Call succeeded.
+//! \retval ::NVAPI_ERROR                       Call failed.
+//! \retval ::NVAPI_INVALID_ARGUMENT            One of the required input arguments was NULL
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D_InitializeSMPAssist(__in IUnknown *pDevice, __inout NV_SMP_ASSIST_INITIALIZE_PARAMS *pSMPAssistInitParams);
+
+#endif //defined(__cplusplus) && defined(__d3d11_h__)
+
+//! SUPPORTED OS:  Windows 7 and higher
+//!
+#if defined (__cplusplus) && defined(__d3d11_h__) 
+//! \ingroup dx
+typedef struct _NV_QUERY_SMP_ASSIST_SUPPORT_PARAMS_V1
+{
+    NvU32               version;                       //!< (IN) Structure version
+    NV_SMP_ASSIST_TYPE  eSMPAssistType;                //!< (IN) None/MRS/LMS
+    NV_SMP_ASSIST_LEVEL eSMPAssistLevel;               //!< (IN) Full/Partial/Minimal
+    NvBool              bSMPAssistSupported;           //!< (OUT) SMP Assist supported or not
+} NV_QUERY_SMP_ASSIST_SUPPORT_PARAMS_V1;
+
+typedef NV_QUERY_SMP_ASSIST_SUPPORT_PARAMS_V1          NV_QUERY_SMP_ASSIST_SUPPORT_PARAMS;
+#define NV_QUERY_SMP_ASSIST_SUPPORT_PARAMS_VER1        MAKE_NVAPI_VERSION(NV_QUERY_SMP_ASSIST_SUPPORT_PARAMS_V1, 1)
+#define NV_QUERY_SMP_ASSIST_SUPPORT_PARAMS_VER         NV_QUERY_SMP_ASSIST_SUPPORT_PARAMS_VER1
+
+//! SUPPORTED OS:  Windows 7 and higher
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D_QuerySMPAssistSupport
+//
+//! DESCRIPTION: Query SMP assist extension support.
+//!
+//! \since Release: 396
+//! \param [in]     pDev                                Pointer to IUnknown (Currently supports ID3D11Device)
+//! \param [out]    pQuerySMPAssistSupportParams        Pointer to a structure returning requested SMP assist support
+//!
+//! \return This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!         If there are return error codes with specific meaning for this API, they are listed below.
+//! \retval ::NVAPI_NOT_SUPPORTED                       Requested SMP assist is not supported.
+//! \retval ::NVAPI_OK                                  Call succeeded. Check value of pQuerySMPAssistSupportParams->bSMPAssistSupported 
+//! \retval ::NVAPI_INVALID_POINTER                     pDev or pQuerySMPAssistSupportParams was a NULL pointer
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D_QuerySMPAssistSupport(__in IUnknown *pDev, __inout NV_QUERY_SMP_ASSIST_SUPPORT_PARAMS *pQuerySMPAssistSupportParams);
+
+#endif //defined(__cplusplus) && defined(__d3d11_h__)
+
+
 
 
 
