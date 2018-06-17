@@ -216,7 +216,6 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
 
       prims.push_back(prim);
 
-      overall_size += (unsigned int)prim->m_mesh.NumIndices();
    }
 
    if (prims.size() <= 1)
@@ -229,9 +228,31 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
    const Texture * const groupTexel = g_pplayer->m_ptable->GetImage(prims[0]->m_d.m_szImage);
    m_numGroupVertices = (int)prims[0]->m_mesh.NumVertices();
    m_numGroupIndices = (int)prims[0]->m_mesh.NumIndices();
+   overall_size = (unsigned int)prims[0]->m_mesh.NumIndices();
+
+   // Now calculate the overall size of indices
+   for (size_t i = 1; i < prims.size(); i++)
+   {
+      const Material * const mat = g_pplayer->m_ptable->GetMaterial(prims[i]->m_d.m_szMaterial);
+      const Texture * const texel = g_pplayer->m_ptable->GetImage(prims[i]->m_d.m_szImage);
+      if (mat == groupMaterial && texel == groupTexel)
+      {
+         overall_size += (unsigned int)prims[i]->m_mesh.NumIndices();
+      }
+   }
+
+   // all primitives in the collection don't share the same texture and material
+   // don't group them and render them as usual
+   if (overall_size == prims[0]->m_mesh.NumIndices())
+      return;
+
    prims[0]->m_d.m_fGroupdRendering = true;
    vector<unsigned int> indices(overall_size);
-   memcpy(indices.data(), prims[0]->m_mesh.m_indices.data(), prims[0]->m_mesh.NumIndices());
+
+   // copy with a loop because memcpy seems to do some strange things with the indices
+   for (size_t k = 0; k < prims[0]->m_mesh.NumIndices(); k++)
+      indices[k] = prims[0]->m_mesh.m_indices[k];
+
    renderedPrims.push_back(prims[0]);
    for (size_t i = 1; i < prims.size(); i++)
    {
@@ -1111,8 +1132,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
 
    // set transform
-   //if (!m_d.m_fGroupdRendering)
-      g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
+   g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
 
    // draw the mesh
    pd3dDevice->basicShader->Begin(0);
@@ -1134,8 +1154,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
    }
 
    // reset transform
-   //if (!m_d.m_fGroupdRendering)
-      g_pplayer->UpdateBasicShaderMatrix();
+   g_pplayer->UpdateBasicShaderMatrix();
 
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
