@@ -70,6 +70,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyStagedFlipperR vpmFlips.FlipUR True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
+			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin			
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keySelfTest     .Switch(swTest)        = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
