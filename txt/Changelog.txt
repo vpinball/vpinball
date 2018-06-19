@@ -1,6 +1,10 @@
 VP 10.5.0 Changelog
 ------------------------
 
+- update builtin tables with 3 different sling arms (thanks bord and BorgDog)
+
+- fix issue with dynamic group rendering of primitives
+
 - add option to the global video preferences to disable reflections of dynamic elements on the playfield (to help lower end PC systems)
 
 - fix rubber triangulation issue leading to visual artifacts (especially in the editor) and rarely also weird physics behavior
