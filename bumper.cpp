@@ -491,9 +491,6 @@ void Bumper::RenderDynamic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 
-   if (m_ringVertexBuffer == NULL && (m_d.m_fBaseVisible || m_d.m_fCapVisible))
-      return;
-
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
 
