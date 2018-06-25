@@ -5750,12 +5750,13 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
       }
       case WM_COMMAND:
       {
-         switch (HIWORD(wParam))
+		 switch (HIWORD(wParam))
          {
             case BN_CLICKED:
             {
                switch (LOWORD(wParam))
                {
+			   case IDCANCEL:
                case ID_RESUME:
                {
                   EndDialog(hwndDlg, ID_RESUME);
