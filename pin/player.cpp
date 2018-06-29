@@ -221,6 +221,9 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_toogle_DTFS = false;
    
    m_fThrowBalls = false;
+   m_fBallControl = false;
+   m_pactiveballBC = NULL;
+   m_pBCTarget = NULL;
 #ifdef PLAYBACK
    m_fPlayback = false;
 
@@ -592,6 +595,8 @@ Player::~Player()
        delete m_decalImage;
        m_decalImage = NULL;
     }
+	delete g_pplayer->m_pBCTarget;
+	g_pplayer->m_pBCTarget = NULL;
 }
 
 void Player::Shutdown()
@@ -2204,6 +2209,9 @@ void Player::DestroyBall(Ball *pball)
    }
    else
 	   debugball = false;
+
+   if (m_pactiveballBC == pball)
+	   m_pactiveballBC = NULL;
 
    if (pball->m_pballex)
    {

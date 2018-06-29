@@ -492,7 +492,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 
          if ((hr == S_OK || hr == DI_BUFFEROVERFLOW) && (m_hwnd == GetForegroundWindow()))
          {
-            if (g_pplayer->m_fThrowBalls) // debug ball throw functionality
+            if (g_pplayer->m_fThrowBalls || g_pplayer->m_fBallControl) // debug ball throw functionality
             {
                if ((mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown && !middleMouseButtonDown)
                {
@@ -810,11 +810,13 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
    }
    else
    {
-      // Debug only, for testing parts of the left flipper input lag
+      // Debug only, for testing parts of the left flipper input lag, also release ball control
       if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
       {
          m_leftkey_down_usec = usec();
          m_leftkey_down_frame = g_pplayer->m_overall_frames;
+		 delete g_pplayer->m_pBCTarget;
+		 g_pplayer->m_pBCTarget = NULL;
       }
 
       // Mixer volume only
@@ -1032,6 +1034,24 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    if (m_joypmdown == n) FireKeyEvent(updown, DIK_8);
    if (m_joypmup == n) FireKeyEvent(updown, DIK_9);
    if (m_joypmenter == n) FireKeyEvent(updown, DIK_0);
+}
+
+void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
+{
+	if (input->dwData == 1 || input->dwData == 3)
+	{
+		delete g_pplayer->m_pBCTarget;
+		POINT point = { mouseX, mouseY };
+		ScreenToClient(m_hwnd, &point);
+
+		g_pplayer->m_pBCTarget = new Vertex3Ds(g_pplayer->m_pin3d.Get3DPointFrom2D(point));
+	}
+	else if (input->dwData == 2)
+	{
+		// Clear ball control on right click, but VP UI seems to get this messsage first.   Left flipper clear works better.
+		delete g_pplayer->m_pBCTarget;
+		g_pplayer->m_pBCTarget = NULL;
+	}
 }
 
 void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
@@ -1621,6 +1641,10 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          {
              ProcessThrowBalls(input);
          }
+		 else if (g_pplayer->m_fBallControl)
+		 {
+			 ProcessBallControl(input);
+		 }
          else
          {
             if (input->dwOfs == 1 && m_joylflipkey==25)

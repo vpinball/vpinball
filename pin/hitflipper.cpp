@@ -768,6 +768,7 @@ void HitFlipper::Collide(CollisionEvent& coll)
       else return;
 #endif
    }
+   g_pplayer->m_pactiveballBC = pball; // Ball control most recently collided with flipper
 
 #ifdef C_DISP_GAIN 
    // correct displacements, mostly from low velocity blindness, an alternative to true acceleration processing
