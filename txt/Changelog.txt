@@ -1,9 +1,19 @@
 VP 10.5.0 Changelog
 ------------------------
 
+- built-in ball control: Enable in debug window, left mouse click directs the ball towards the mouse cursor, left flipper key releases control
+
+- allow ESC-key to resume table if pause dialog is up
+
+- fix rendering of bumper base/skirt if ring is disabled
+
 - update builtin tables with 3 different sling arms (thanks bord and BorgDog)
 
-- fix issue with dynamic group rendering of primitives
+- fix issue with optimized dynamic group rendering of primitives, note that
+   1. if all elements in a group are dynamic primitives/meshes and all these use the same texture and same material, they will be grouped into
+      one big render buffer/single render call to speed up the rendering of transparent meshes on the table (like the plastics for example)
+   2. if elements are grouped together they will be treated as a group in the editor. Click on it and all elements in that group are selected at once
+   3. if you group primitives you can't animate or move/rotate them dynamically via script!
 
 - add option to the global video preferences to disable reflections of dynamic elements on the playfield (to help lower end PC systems)
 
