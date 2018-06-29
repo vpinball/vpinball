@@ -79,6 +79,9 @@ BOOL EditorOptionsDialog::OnInitDialog()
     int throwBallsAlwaysOn = GetRegIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0);
     SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_SETCHECK, throwBallsAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
 
+	int ballControlAlwaysOn = GetRegIntWithDefault("Editor", "BallControlAlwaysOn", 0);
+	SendDlgItemMessage(IDC_BALL_CONTROL_ALWAYS_ON_CHECK, BM_SETCHECK, ballControlAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
+
     int groupElementsCollection = GetRegIntWithDefault("Editor", "GroupElementsInCollection", 1);
     SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_SETCHECK, groupElementsCollection ? BST_CHECKED : BST_UNCHECKED, 0);
 
@@ -175,7 +178,8 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           SetDlgItemInt(IDC_AUTOSAVE_MINUTES, AUTOSAVE_DEFAULT_TIME, FALSE);
           SetDlgItemInt(IDC_GRID_SIZE, 50, FALSE);
           SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_SETCHECK, BST_UNCHECKED, 0);
-          SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_SETCHECK, BST_CHECKED, 0);
+		  SendDlgItemMessage(IDC_BALL_CONTROL_ALWAYS_ON_CHECK, BM_SETCHECK, BST_UNCHECKED, 0);
+		  SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_SETCHECK, BST_CHECKED, 0);
 		  SendDlgItemMessage(IDC_ALWAYSVIEWSCRIPT, BM_SETCHECK, BST_CHECKED, 0);
           SetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, 50, FALSE);
           SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, BST_CHECKED, 0);
@@ -238,6 +242,9 @@ void EditorOptionsDialog::OnOK()
 
     checked = (SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
     SetRegValueBool("Editor", "ThrowBallsAlwaysOn", checked);
+
+	checked = (SendDlgItemMessage(IDC_BALL_CONTROL_ALWAYS_ON_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	SetRegValueBool("Editor", "BallControlAlwaysOn", checked);
 
     const int ballSize = GetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, nothing, FALSE);
     SetRegValueInt("Editor", "ThrowBallSize", ballSize);

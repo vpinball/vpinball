@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 
 #define INPUT_BUFFER_SIZE MAX_KEYQUEUE_SIZE
+#define BALLCONTROL_DOUBLECLICK_THRESHOLD_USEC (500 * 1000)
 
 extern bool gMixerKeyDown;
 extern bool gMixerKeyUp;
@@ -548,6 +549,16 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                   PushQueue(didod, APP_MOUSE);
                   middleMouseButtonDown = false;
                }
+			   if (g_pplayer->m_fBallControl && !g_pplayer->m_fThrowBalls && leftMouseButtonDown && !rightMouseButtonDown && !middleMouseButtonDown)
+			   {
+				   POINT curPos;
+				   GetCursorPos(&curPos);
+				   didod[0].dwData = 4;
+				   mouseX = curPos.x;
+				   mouseY = curPos.y;
+				   PushQueue(didod, APP_MOUSE);
+			   }
+
             } //if (g_pplayer->m_fThrowBalls)
             else
             {
@@ -1038,19 +1049,29 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
 
 void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 {
-	if (input->dwData == 1 || input->dwData == 3)
+	if (input->dwData == 1 || input->dwData == 3 || input->dwData == 4)
 	{
-		delete g_pplayer->m_pBCTarget;
 		POINT point = { mouseX, mouseY };
 		ScreenToClient(m_hwnd, &point);
-
-		g_pplayer->m_pBCTarget = new Vertex3Ds(g_pplayer->m_pin3d.Get3DPointFrom2D(point));
-	}
-	else if (input->dwData == 2)
-	{
-		// Clear ball control on right click, but VP UI seems to get this messsage first.   Left flipper clear works better.
 		delete g_pplayer->m_pBCTarget;
-		g_pplayer->m_pBCTarget = NULL;
+		g_pplayer->m_pBCTarget = new Vertex3Ds(g_pplayer->m_pin3d.Get3DPointFrom2D(point));
+		if (input->dwData == 1 || input->dwData == 3)
+		{
+			UINT64 cur = usec();
+			if (m_lastclick_ballcontrol_usec + BALLCONTROL_DOUBLECLICK_THRESHOLD_USEC > cur)
+			{
+				// Double click.  Move the ball directly to the target if possible. 
+				Ball * const pBall = g_pplayer->m_pactiveballBC;
+				if (pBall)
+				{
+					pBall->m_pos.x = g_pplayer->m_pBCTarget->x;
+					pBall->m_pos.y = g_pplayer->m_pBCTarget->y;
+					pBall->m_vel.x = 0;
+					pBall->m_vel.y = 0;
+				}
+			}
+			m_lastclick_ballcontrol_usec = cur;
+		}
 	}
 }
 
@@ -1075,37 +1096,54 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
             vx = -vx2;
             vy = -vy2;
         }
-        bool ballGrabbed = false;
-        if (input->dwData == 1)
-        {
-            for (unsigned i = 0; i < g_pplayer->m_vball.size(); i++)
-            {
-                Ball * const pBall = g_pplayer->m_vball[i];
-                const float dx = fabsf(vertex.x - pBall->m_pos.x);
-                const float dy = fabsf(vertex.y - pBall->m_pos.y);
-                if (dx < pBall->m_radius*2.f && dy < pBall->m_radius*2.f)
-                {
-                    POINT newPoint;
-                    GetCursorPos(&newPoint);
-                    ScreenToClient(m_hwnd, &newPoint);
-                    const Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(newPoint);
+		POINT newPoint;
+		GetCursorPos(&newPoint);
+		ScreenToClient(m_hwnd, &newPoint);
+		const Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(newPoint);
 
-                    ballGrabbed = true;
-                    pBall->m_pos.x = vert.x;
-                    pBall->m_pos.y = vert.y;
-                    pBall->m_vel.x = vx;
-                    pBall->m_vel.y = vy;
-                    pBall->Init();
-                    break;
-                }
-            }
-        }
-        if (!ballGrabbed)
-        {
-            const float z = (input->dwData == 3) ? g_pplayer->m_ptable->m_glassheight : g_pplayer->m_ptable->m_tableheight;
-            Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)g_pplayer->m_DebugBallSize*0.5f, g_pplayer->m_DebugBallMass);
-            pball->m_pballex->AddRef();
-        }
+		if (g_pplayer->m_fBallControl)
+		{
+			// If Ball Control and Throw Balls are both checked, that means
+			// we want ball throwing behavior with the sensed active ball, instead
+			// of creating new ones 
+			Ball * const pBall = g_pplayer->m_pactiveballBC;
+			if (pBall)
+			{
+				pBall->m_pos.x = vert.x;
+				pBall->m_pos.y = vert.y;
+				pBall->m_vel.x = vx;
+				pBall->m_vel.y = vy;
+			}
+		}
+		else
+		{
+			bool ballGrabbed = false;
+			if (input->dwData == 1)
+			{
+				for (unsigned i = 0; i < g_pplayer->m_vball.size(); i++)
+				{
+					Ball * const pBall = g_pplayer->m_vball[i];
+					const float dx = fabsf(vertex.x - pBall->m_pos.x);
+					const float dy = fabsf(vertex.y - pBall->m_pos.y);
+					if (dx < pBall->m_radius*2.f && dy < pBall->m_radius*2.f)
+					{
+						ballGrabbed = true;
+						pBall->m_pos.x = vert.x;
+						pBall->m_pos.y = vert.y;
+						pBall->m_vel.x = vx;
+						pBall->m_vel.y = vy;
+						pBall->Init();
+						break;
+					}
+				}
+			}
+			if (!ballGrabbed)
+			{
+				const float z = (input->dwData == 3) ? g_pplayer->m_ptable->m_glassheight : g_pplayer->m_ptable->m_tableheight;
+				Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)g_pplayer->m_DebugBallSize*0.5f, g_pplayer->m_DebugBallMass);
+				pball->m_pballex->AddRef();
+			}
+		}
     }
     else if (input->dwData == 2)
     {
