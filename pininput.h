@@ -78,6 +78,7 @@ public:
    unsigned int m_leftkey_down_frame_rotate_to_end;
    UINT64 m_leftkey_down_usec_EOS;
    unsigned int m_leftkey_down_frame_EOS;
+   UINT64 m_lastclick_ballcontrol_usec;
 
    int e_JoyCnt;
    int uShockDevice;	// only one uShock device
