@@ -347,6 +347,8 @@ public:
 
    Ball *m_pactiveball;		// ball the script user can get with ActiveBall
    Ball *m_pactiveballDebug;	// ball the debugger will use as Activeball when firing events
+   Ball *m_pactiveballBC;	   // ball that the ball control UI will use
+   Vertex3Ds *m_pBCTarget;      // If non-null, the target location for the ball to roll towards
 
    std::vector<Ball*> m_vball;
    std::vector<HitFlipper*> m_vFlippers;
@@ -431,6 +433,7 @@ public:
    bool m_fTrailForBalls;
 
    bool m_fThrowBalls;
+   bool m_fBallControl;
    int  m_DebugBallSize;
    float m_DebugBallMass;
 

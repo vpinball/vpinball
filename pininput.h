@@ -56,6 +56,8 @@ public:
    void ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec);
 
    void ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input);
+   void ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input);
+
    int GetNextKey();
 
    void GetInputDeviceData(/*const U32 curr_time_msec*/);

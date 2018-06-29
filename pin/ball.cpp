@@ -391,7 +391,7 @@ void Ball::HandleStaticContact(const CollisionEvent& coll, const float friction,
    if (normVel <= C_CONTACTVEL)
    {
       const Vertex3Ds fe = m_mass * g_pplayer->m_gravity;      // external forces (only gravity for now)
-      const float dot = fe.Dot(coll.m_hitnormal);
+	  const float dot = fe.Dot(coll.m_hitnormal);
       const float normalForce = std::max(0.0f, -(dot*dtime + coll.m_hit_org_normalvelocity)); // normal force is always nonnegative
 
       // Add just enough to kill original normal velocity and counteract the external forces.
@@ -478,7 +478,7 @@ Vertex3Ds Ball::SurfaceVelocity(const Vertex3Ds& surfP) const
 Vertex3Ds Ball::SurfaceAcceleration(const Vertex3Ds& surfP) const
 {
    // if we had any external torque, we would have to add "(deriv. of ang.vel.) x surfP" here
-   return m_invMass * g_pplayer->m_gravity     // linear acceleration
+   return m_invMass * g_pplayer->m_gravity    // linear acceleration
       + CrossProduct(m_angularvelocity, CrossProduct(m_angularvelocity, surfP)); // centripetal acceleration
 }
 
@@ -562,7 +562,15 @@ void Ball::UpdateVelocities()
 {
    if (!m_frozen)  // Gravity
    {
-      m_vel += (float)PHYS_FACTOR * g_pplayer->m_gravity;
+	   if (g_pplayer->m_fBallControl && this == g_pplayer->m_pactiveballBC && g_pplayer->m_pBCTarget != NULL)
+	   {
+		   m_vel *= 0.5f;  // Null out most of the velocity, want a little bit so the ball can sort of find its way out of obstacles.
+		   m_vel += Vertex3Ds(max(-10.0f, min(10.0f, (g_pplayer->m_pBCTarget->x - m_pos.x) / 10.0f)),
+			   max(-10.0f, min(10.0f, (g_pplayer->m_pBCTarget->y - m_pos.y) / 10.0f)),
+			   -2.0f);
+	   }
+	   else
+		  m_vel += (float)PHYS_FACTOR * g_pplayer->m_gravity;
 
       m_vel.x += g_pplayer->m_NudgeX; // TODO: depends on STEPTIME
       m_vel.y += g_pplayer->m_NudgeY;

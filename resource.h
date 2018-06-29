@@ -584,6 +584,7 @@
 #define IDC_PRIMITIVE_IS_TOY            395
 #define IDC_ENABLE_FXAA                 395
 #define IDR_REGISTRY4                   395
+#define IDC_BALL_CONTROL                395
 #define IDC_ENABLE_AO                   396
 #define IDC_SIZE_HEIGHT                 397
 #define IDC_DEPTH_BIAS                  397
@@ -1162,7 +1163,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        648
+#define _APS_NEXT_RESOURCE_VALUE        649
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         822
 #define _APS_NEXT_SYMED_VALUE           188

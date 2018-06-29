@@ -483,7 +483,9 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             ShowWindow(hwndExpand, SW_HIDE);
          }
          SendDlgItemMessage(hwndDlg, IDC_BALL_THROWING, BM_SETCHECK, g_pplayer->m_fThrowBalls ? BST_CHECKED : BST_UNCHECKED, 0);
-         SetDlgItemInt(hwndDlg, IDC_THROW_BALL_SIZE_EDIT2, g_pplayer->m_DebugBallSize, FALSE);
+		 SendDlgItemMessage(hwndDlg, IDC_BALL_CONTROL, BM_SETCHECK, g_pplayer->m_fBallControl ? BST_CHECKED : BST_UNCHECKED, 0);
+
+		 SetDlgItemInt(hwndDlg, IDC_THROW_BALL_SIZE_EDIT2, g_pplayer->m_DebugBallSize, FALSE);
          char textBuf[256] = { 0 };
          f2sz(g_pplayer->m_DebugBallMass, textBuf);
          SetDlgItemText(hwndDlg, IDC_THROW_BALL_MASS_EDIT2, textBuf);
@@ -680,6 +682,14 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                      g_pplayer->m_fThrowBalls = !!checked;
                      break;
                   }
+				  case IDC_BALL_CONTROL:
+				  {
+					  HWND hwndControl = GetDlgItem(hwndDlg, IDC_BALL_CONTROL);
+					  size_t checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+					  g_pplayer->m_fBallControl = !!checked;
+					  break;
+				  }
+
                   case IDC_DBGLIGHTSBUTTON:
                   {
                      g_pplayer->m_hwndLightDebugger = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_DBGLIGHTDIALOG), hwndDlg, LightDebuggerProc, NULL);
