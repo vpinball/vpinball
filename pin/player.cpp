@@ -1331,12 +1331,10 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    else
        m_toogle_DTFS = false;
 
-   //
-
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
    const float minSlope = (ptable->m_fOverridePhysics ? ptable->m_fOverrideMinSlope : ptable->m_angletiltMin);
-   const float maxSlope = (ptable->m_fOverridePhysics ? ptable->m_fOverrideMaxSlope : ptable->m_angletiltMax);
-
+   const float maxSlope = (ptable->m_fOverridePhysics ? ptable->m_fOverrideMaxSlope : (ptable->m_angletiltMax == 726.0f) ? ptable->m_angletiltMin : ptable->m_angletiltMax);
+ 
    const float slope = minSlope + (maxSlope - minSlope) * ptable->m_globalDifficulty;
 
    m_gravity.x = 0.f;
