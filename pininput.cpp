@@ -1060,14 +1060,19 @@ void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 			UINT64 cur = usec();
 			if (m_lastclick_ballcontrol_usec + BALLCONTROL_DOUBLECLICK_THRESHOLD_USEC > cur)
 			{
-				// Double click.  Move the ball directly to the target if possible. 
+				// Double click.  Move the ball directly to the target if possible.   Drop 
+				// it fast from the glass height, so it will appear over any object (or on a raised playfield)
+			
 				Ball * const pBall = g_pplayer->m_pactiveballBC;
 				if (pBall)
 				{
 					pBall->m_pos.x = g_pplayer->m_pBCTarget->x;
 					pBall->m_pos.y = g_pplayer->m_pBCTarget->y;
-					pBall->m_vel.x = 0;
-					pBall->m_vel.y = 0;
+					pBall->m_pos.z = g_pplayer->m_ptable->m_glassheight;
+
+					pBall->m_vel.x = 0.0f;
+					pBall->m_vel.y = 0.0f;
+					pBall->m_vel.z = -1000.0f;
 				}
 			}
 			m_lastclick_ballcontrol_usec = cur;
