@@ -1,7 +1,13 @@
 VP 10.5.0 Changelog
 ------------------------
 
-- built-in ball control: Enable in debug window, left mouse click directs the ball towards the mouse cursor, left flipper key releases control
+- fix obscure bug where starting the blank/built-in tables with the options pane closed causes the ball to levitate off the table
+
+- built-in ball control: Enable in debug window (or via "ball control always on" in the global options)
+   - left mouse click directs the ball towards the mouse cursor, left flipper key releases control
+   - can also double click to make the active ball jump to the cursor
+   - can hold left mouse button down to guide the ball
+   - if "throw" and "ball control" are both checked, one can use the throwing action on the ball control instead of making a new ball
 
 - allow ESC-key to resume table if pause dialog is up
 
