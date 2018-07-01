@@ -740,10 +740,9 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,242,87,10
     LTEXT           "Convert VP units to",IDC_STATIC,7,272,62,8
     COMBOBOX        IDC_UNIT_LIST_COMBO,75,270,83,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Reset editor settings",IDC_STATIC,7,296,66,10
-    PUSHBUTTON      "Set defaults",IDC_SET_DEFAULTS_BUTTON,73,294,50,14
-    DEFPUSHBUTTON   "OK",IDOK,125,294,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,177,294,50,14
+    PUSHBUTTON      "Reset to Defaults",IDC_SET_DEFAULTS_BUTTON,4,294,81,14
+    DEFPUSHBUTTON   "OK",IDOK,123,294,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,175,294,50,14
 END
 
 IDD_COLLECTDIALOG DIALOGEX 0, 0, 316, 167
@@ -2935,7 +2934,7 @@ BEGIN
     POPUP "&Preferences"
     BEGIN
         MENUITEM "&Audio Options...",           ID_EDIT_AUDIOOPTIONS
-        MENUITEM "&Editor Options...",          ID_EDIT_EDITOROPTIONS
+        MENUITEM "&Editor/UI Options...",       ID_EDIT_EDITOROPTIONS
         MENUITEM "&Keys, Nudge and DOF...",     ID_EDIT_KEYS
         MENUITEM "&Security Options...",        ID_PREFERENCES_SECURITYOPTIONS
         MENUITEM "&Video Options...",           ID_EDIT_VIDEOOPTIONS
