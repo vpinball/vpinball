@@ -358,7 +358,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
    for (int i = 0; i < cvertex; i++)
    {
       // prev and next wrap around as rubbers always loop
-      const RenderVertex & vprev   = vvertex[(i>0) ? i - 1 : cvertex-1];
+      const RenderVertex & vprev   = vvertex[(i > 0) ? i - 1 : cvertex-1];
       const RenderVertex & vnext   = vvertex[(i < (cvertex - 1)) ? i + 1 : 0];
       const RenderVertex & vmiddle = vvertex[i];
 
@@ -373,12 +373,13 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
          Vertex2D v1normal(vprev.y - vmiddle.y, vmiddle.x - vprev.x);   // vector vmiddle-vprev rotated RIGHT
          Vertex2D v2normal(vmiddle.y - vnext.y, vnext.x - vmiddle.x);   // vector vnext-vmiddle rotated RIGHT
 
-         if (i == (cvertex - 1))
+         // not needed special start/end handling as rubbers always loop, except for the case where there are only 2 control points
+         if (cvertex == 2 && i == (cvertex - 1))
          {
             v1normal.Normalize();
             vnormal = v1normal;
          }
-         else if (i == 0)
+         else if (cvertex == 2 && i == 0)
          {
             v2normal.Normalize();
             vnormal = v2normal;
@@ -387,6 +388,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
          {
             v1normal.Normalize();
             v2normal.Normalize();
+
             if (fabsf(v1normal.x - v2normal.x) < 0.0001f && fabsf(v1normal.y - v2normal.y) < 0.0001f)
             {
                // Two parallel segments
@@ -402,14 +404,14 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
                const float B = vmiddle.x - vprev.x;
 
                // Shift line along the normal
-               const float C = -(A*(vprev.x - v1normal.x) + B*(vprev.y - v1normal.y));
+               const float C = A*(v1normal.x - vprev.x) + B*(v1normal.y - vprev.y);
 
                // Second line
                const float D = vnext.y - vmiddle.y;
                const float E = vmiddle.x - vnext.x;
 
                // Shift line along the normal
-               const float F = -(D*(vnext.x - v2normal.x) + E*(vnext.y - v2normal.y));
+               const float F = D*(v2normal.x - vnext.x) + E*(v2normal.y - vnext.y);
 
                const float det = A*E - B*D;
                const float inv_det = (det != 0.0f) ? 1.0f / det : 0.0f;
