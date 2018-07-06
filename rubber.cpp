@@ -373,8 +373,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
          Vertex2D v1normal(vprev.y - vmiddle.y, vmiddle.x - vprev.x);   // vector vmiddle-vprev rotated RIGHT
          Vertex2D v2normal(vmiddle.y - vnext.y, vnext.x - vmiddle.x);   // vector vnext-vmiddle rotated RIGHT
 
-         // not needed special start/end handling as rubbers always loop
-         /*if (i == (cvertex - 1))
+         if (i == (cvertex - 1))
          {
             v1normal.Normalize();
             vnormal = v1normal;
@@ -384,7 +383,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
             v2normal.Normalize();
             vnormal = v2normal;
          }
-         else*/
+         else
          {
             v1normal.Normalize();
             v2normal.Normalize();
