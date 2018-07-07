@@ -31,6 +31,8 @@ Const swCoin2          =  6
 Const swLRFlip         = 82
 Const swLLFlip         = 84
 
+Const GameOnSolenoid = 15
+
 ' Help Window
 vpmSystemHelp = "Sega/Stern Whitestar keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1"   & vbNewLine &_
@@ -65,8 +67,8 @@ Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False
-			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False
+			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True
+			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False : vpmFlips.FlipL True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
@@ -91,8 +93,8 @@ Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' Assume we handle the key
 	With Controller
 		Select Case keycode
-			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False
-			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False
+			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False : vpmFlips.FlipR False
+			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False : vpmFlips.FlipL False
 			Case StartGameKey    .Switch(swStartButton)  = False
 			Case keyBlack        .Switch(swBlack)        = False
 			Case keyGreen        .Switch(swGreen)        = False
