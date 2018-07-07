@@ -3,12 +3,16 @@ Const VPinMAMEDriverVer = 3.56
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.56 (Update by nFozzy, DJRobX)
-' - vpmFlips fixes / improvements 
+' New in 3.56 (Update by nFozzy, DJRobX, Fuzzel)
+' - update gts1.vbs and hankin.vbs so that the common coin keys (e.g. "5") also add coins on Gottlieb System 1 and Hankin tables
+' - vpmFlips fixes / improvements
 '   - Fixed vpmFlips execute script error
 '   - Added extra error check for detecting outdated system vbs files when UseSolenoids = 2
 '   - Change GameOnSolenoid from 16 to 19 for Hankin
 '   - Fixed an execute script issue that was causing dead flippers for some system languages
+' - S.A.M. fast flips support: To activate, add InitVpmFFlipsSAM to the table init.
+'   Should work for most games (see PinMAME whatsnew for supported sets). May need additional configuration for two-stage flipper support.
+' - Whitestar fast flips support
 ' - Fix WPC tables that use 'cSingleLFlip' (regression from 3.55)
 ' - Fix script errors if using NudgePlugIn.vbs
 ' - add Rubber, Ramp, Flasher, Primitive and HitTarget support to vpmToggleObj
