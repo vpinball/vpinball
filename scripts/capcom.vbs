@@ -30,6 +30,8 @@ Const swBuyIn       = 11
 Const swLRFlip = 82
 Const swLLFlip = 84
 
+Const GameOnSolenoid = 51
+
 ' Help window
 vpmSystemHelp = "Capcom keys" & vbNewLine &_
   vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
