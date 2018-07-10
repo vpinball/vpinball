@@ -13,6 +13,7 @@ Const VPinMAMEDriverVer = 3.56
 ' - S.A.M. fast flips support: To activate, add InitVpmFFlipsSAM to the table init.
 '   Should work for most games (see PinMAME whatsnew for supported sets). May need additional configuration for two-stage flipper support.
 ' - Whitestar fast flips support
+' - Capcom fast flips support
 ' - Fix WPC tables that use 'cSingleLFlip' (regression from 3.55)
 ' - Fix script errors if using NudgePlugIn.vbs
 ' - add Rubber, Ramp, Flasher, Primitive and HitTarget support to vpmToggleObj
