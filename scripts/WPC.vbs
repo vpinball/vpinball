@@ -2,7 +2,7 @@
 
 'sw116 and sw118 are commonly used for UL and UR flippers(in most WPC pins),
 'while in IJ (i think the only one that has it different?!) these are the ramp switches.
-'Everytime you press the flipper keys those switches are ‚Äúon‚Äù, so one did use the cSingleLFlip variable to prevent that.
+'Everytime you press the flipper keys those switches are ìonî, so one did use the cSingleLFlip variable to prevent that.
 'Nowadays cSingleLFlip has been replaced by the separate keyStagedFlipperL.
 
 Option Explicit
@@ -34,7 +34,7 @@ Const GameOnSolenoid = 31
 '- Some of these games may have solenoid jitter with solmodcallbacks enabled. If flippers die randomly, set the vpmFlips.InitDelay option.
 '- STAGED FLIPPER NOTE: Some games (Red & Ted, probably others) use swapped around upper flipper solenoid numbers, some table script modification may be necessary!
 
-'***These games will not work at all:***
+'***These games work only with VPM 3.1 and above:***
 'WPC-95 Machines (Congo / Attack From Mars onwards)
 
 ' Cabinet switches

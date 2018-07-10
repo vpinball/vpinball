@@ -1057,7 +1057,7 @@ void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 		g_pplayer->m_pBCTarget = new Vertex3Ds(g_pplayer->m_pin3d.Get3DPointFrom2D(point));
 		if (input->dwData == 1 || input->dwData == 3)
 		{
-			UINT64 cur = usec();
+			const UINT64 cur = usec();
 			if (m_lastclick_ballcontrol_usec + BALLCONTROL_DOUBLECLICK_THRESHOLD_USEC > cur)
 			{
 				// Double click.  Move the ball directly to the target if possible.   Drop 
@@ -1125,7 +1125,7 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 			bool ballGrabbed = false;
 			if (input->dwData == 1)
 			{
-				for (unsigned i = 0; i < g_pplayer->m_vball.size(); i++)
+				for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
 				{
 					Ball * const pBall = g_pplayer->m_vball[i];
 					const float dx = fabsf(vertex.x - pBall->m_pos.x);
@@ -1684,10 +1684,10 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          {
              ProcessThrowBalls(input);
          }
-		 else if (g_pplayer->m_fBallControl)
-		 {
-			 ProcessBallControl(input);
-		 }
+         else if (g_pplayer->m_fBallControl)
+         {
+             ProcessBallControl(input);
+         }
          else
          {
             if (input->dwOfs == 1 && m_joylflipkey==25)
