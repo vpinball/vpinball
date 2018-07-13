@@ -1,5 +1,8 @@
 'Last Updated in VBS v3.56
 
+' GoldenEye and Apollo13 use different flipper techinques and switch locations than other Sega games.
+
+
 Option Explicit
 LoadCore
 Private Sub LoadCore
@@ -15,7 +18,7 @@ Private Sub LoadCore
 End Sub
 
 '----------------------------
-' Apollo13 Data
+' Apollo13/GoldenEye Data
 '----------------------------
 ' Cabinet switches
 Const swBlack          =  0 'DED 8
@@ -36,7 +39,7 @@ Const GameOnSolenoid = 48
 Const UseSolenoids = 2
 
 ' Help Window
-vpmSystemHelp = "Apollo13 keys:" & vbNewLine &_
+vpmSystemHelp = "Sega keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1"   & vbNewLine &_
   vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2"   & vbNewLine &_
   vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3"   & vbNewLine &_

@@ -1,5 +1,7 @@
 'Last Updated in VBS v3.56
 
+' Note: use Sega2.vbs for Apollo13 or GoldenEye
+
 Option Explicit
 LoadCore
 Private Sub LoadCore
