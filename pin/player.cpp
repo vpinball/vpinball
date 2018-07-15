@@ -3325,9 +3325,16 @@ void Player::UpdatePhysics()
             HitTimer * const pht = m_vht.ElementAt(i);
             if ((pht->m_interval >= 0 && pht->m_nextfire <= p_timeCur) || (pht->m_interval < 0 && first_cycle))
             {
+			   unsigned int curnextfire = pht->m_nextfire;
                pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-               pht->m_nextfire += pht->m_interval;
-            }
+			   // Only add interval if the next fire time hasn't changed since the event was run. 
+			   // Handles corner case:
+			   //Timer1.Enabled = False
+			   //Timer1.Interval = 1000
+			   //Timer1.Enabled = True
+			   if (curnextfire == pht->m_nextfire)
+				   pht->m_nextfire += pht->m_interval;
+			}
          }
 
          m_script_period += (unsigned int)(usec() - (cur_time_usec+delta_frame));
@@ -4835,9 +4842,16 @@ void Player::Render()
       HitTimer * const pht = m_vht.ElementAt(i);
       if ((pht->m_interval >= 0 && pht->m_nextfire <= m_time_msec) || pht->m_interval < 0) 
       {
+		 unsigned int curnextfire = pht->m_nextfire;
+
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-         pht->m_nextfire += pht->m_interval;
-      }
+		 // Only add interval if the next fire time hasn't changed since the event was run. 
+		 // Handles corner case:
+		 //Timer1.Enabled = False
+		 //Timer1.Interval = 1000
+		 //Timer1.Enabled = True
+		 if (curnextfire == pht->m_nextfire)
+			 pht->m_nextfire += pht->m_interval;      }
    }
 
    m_pactiveball = old_pactiveball;
