@@ -531,82 +531,82 @@ void PhysicsOptionsDialog::SetItemText(int id, float value)
 
 void PhysicsOptionsDialog::SaveCurrentPhysicsSetting()
 {
-    char tmp2[256];
+    char tmp[256];
     CString str;
 
     str = GetItemText(DISPID_Flipper_Speed);
-    sprintf_s(tmp2, 256, "FlipperPhysicsMass%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "FlipperPhysicsMass%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(19);
-    sprintf_s(tmp2, 256, "FlipperPhysicsStrength%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "FlipperPhysicsStrength%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(21);
-    sprintf_s(tmp2, 256, "FlipperPhysicsElasticity%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "FlipperPhysicsElasticity%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str=GetItemText(112);
-    sprintf_s(tmp2, 256, "FlipperPhysicsScatter%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "FlipperPhysicsScatter%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(113);
-    sprintf_s(tmp2, 256, "FlipperPhysicsEOSTorque%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "FlipperPhysicsEOSTorque%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(189);
-    sprintf_s(tmp2, 256, "FlipperPhysicsEOSTorqueAngle%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "FlipperPhysicsEOSTorqueAngle%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(23);
-    sprintf_s(tmp2, 256, "FlipperPhysicsReturnStrength%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "FlipperPhysicsReturnStrength%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(22);
-    sprintf_s(tmp2, 256, "FlipperPhysicsElasticityFalloff%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "FlipperPhysicsElasticityFalloff%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(109);
-    sprintf_s(tmp2, 256, "FlipperPhysicsFriction%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "FlipperPhysicsFriction%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(110);
-    sprintf_s(tmp2, 256, "FlipperPhysicsCoilRampUp%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "FlipperPhysicsCoilRampUp%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(1100);
-    sprintf_s(tmp2, 256, "TablePhysicsGravityConstant%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "TablePhysicsGravityConstant%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(1101);
-    sprintf_s(tmp2, 256, "TablePhysicsContactFriction%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "TablePhysicsContactFriction%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(1708);
-    sprintf_s(tmp2, 256, "TablePhysicsElasticity%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "TablePhysicsElasticity%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(1709);
-    sprintf_s(tmp2, 256, "TablePhysicsElasticityFalloff%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "TablePhysicsElasticityFalloff%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(1710);
-    sprintf_s(tmp2, 256, "TablePhysicsScatterAngle%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "TablePhysicsScatterAngle%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(1102);
-    sprintf_s(tmp2, 256, "TablePhysicsContactScatterAngle%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "TablePhysicsContactScatterAngle%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(1103);
-    sprintf_s(tmp2, 256, "TablePhysicsMinSlope%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "TablePhysicsMinSlope%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(1104);
-    sprintf_s(tmp2, 256, "TablePhysicsMaxSlope%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "TablePhysicsMaxSlope%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 
     str = GetItemText(1110);
-    sprintf_s(tmp2, 256, "PhysicsSetName%u", physicsselection);
-    SetRegValue("Player", tmp2, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    sprintf_s(tmp, 256, "PhysicsSetName%u", physicsselection);
+    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
 }

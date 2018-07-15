@@ -297,7 +297,7 @@ public:
    Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f, const float mass = 1.0f);
    void DestroyBall(Ball *pball);
 
-   void CreateBoundingHitShapes(Vector<HitObject> *pvho);
+   void AddCabinetBoundingHitShapes();
 
    void InitDebugHitStructure();
    void DoDebugObjectMenu(int x, int y);

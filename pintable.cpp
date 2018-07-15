@@ -512,7 +512,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
    IStorage* pstgTable;
    IStream* pstmValue;
 
-   HRESULT hr = S_OK;
+   HRESULT hr;
 
    WCHAR wzPath[MAX_PATH];
    WideStrNCopy(g_pvp->m_wzMyPath, wzPath, MAX_PATH);
@@ -576,7 +576,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
    IStorage* pstgTable;
    IStream* pstmValue;
 
-   HRESULT hr = S_OK;
+   HRESULT hr;
 
    WCHAR wzPath[MAX_PATH];
    WideStrNCopy(g_pvp->m_wzMyPath, wzPath, MAX_PATH);
@@ -1438,7 +1438,6 @@ PinTable::PinTable()
    m_numMaterials = 0;
    HRESULT hr;
    int tmp;
-
 
    F32 nudgesens = 0.50f;
    hr = GetRegInt("Player", "NudgeSensitivity", &tmp);
@@ -2457,10 +2456,10 @@ void PinTable::Play(const bool _cameraMode)
    PathFromFilename(m_szFileName, szLoadDir);
    // make sure the load directory is the active directory
    SetCurrentDirectory(szLoadDir);
+
    BackupLayers();
 
    const HWND hwndProgressDialog = CreateDialog(g_hinst, MAKEINTRESOURCE(IDD_PROGRESS), g_pvp->m_hwnd, ProgressProc);
-   // TEXT
    ::ShowWindow(hwndProgressDialog, SW_SHOW);
 
    const HWND hwndProgressBar = ::GetDlgItem(hwndProgressDialog, IDC_PROGRESS2);
@@ -2468,6 +2467,7 @@ void PinTable::Play(const bool _cameraMode)
 
    ::SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
    ::SetWindowText(hwndStatusName, "Backing Up Table State...");
+
    BackupForPlay();
 
    m_backupLayback = m_BG_layback[m_BG_current_set];
@@ -2504,85 +2504,88 @@ void PinTable::Play(const bool _cameraMode)
          m_materialMap[m_materials.ElementAt(i)->m_szName] = m_materials.ElementAt(i);
       }
 
+      // parse the (optional) override-physics-sets that can be set globally
+      float fOverrideContactScatterAngle;
+      if (m_fOverridePhysics)
+      {
+          char tmp[256];
+
+          m_fOverrideGravityConstant = DEFAULT_TABLE_GRAVITY;
+          sprintf_s(tmp, 256, "TablePhysicsGravityConstant%d", m_fOverridePhysics - 1);
+          HRESULT hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideGravityConstant);
+          if (hr != S_OK)
+              m_fOverrideGravityConstant = DEFAULT_TABLE_GRAVITY;
+          m_fOverrideGravityConstant *= GRAVITYCONST;
+
+          m_fOverrideContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
+          sprintf_s(tmp, 256, "TablePhysicsContactFriction%d", m_fOverridePhysics - 1);
+          hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideContactFriction);
+          if (hr != S_OK)
+              m_fOverrideContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
+
+          m_fOverrideElasticity = DEFAULT_TABLE_ELASTICITY;
+          sprintf_s(tmp, 256, "TablePhysicsElasticity%d", m_fOverridePhysics - 1);
+          hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideElasticity);
+          if (hr != S_OK)
+              m_fOverrideElasticity = DEFAULT_TABLE_ELASTICITY;
+
+          m_fOverrideElasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
+          sprintf_s(tmp, 256, "TablePhysicsElasticityFalloff%d", m_fOverridePhysics - 1);
+          hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideElasticityFalloff);
+          if (hr != S_OK)
+              m_fOverrideElasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
+
+          m_fOverrideScatterAngle = DEFAULT_TABLE_PFSCATTERANGLE;
+          sprintf_s(tmp, 256, "TablePhysicsScatterAngle%d", m_fOverridePhysics - 1);
+          hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideScatterAngle);
+          if (hr != S_OK)
+              m_fOverrideScatterAngle = DEFAULT_TABLE_PFSCATTERANGLE;
+
+          fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
+          sprintf_s(tmp, 256, "TablePhysicsContactScatterAngle%d", m_fOverridePhysics - 1);
+          hr = GetRegStringAsFloat("Player", tmp, &fOverrideContactScatterAngle);
+          if (hr != S_OK)
+              fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
+
+          m_fOverrideMinSlope = DEFAULT_TABLE_MIN_SLOPE;
+          sprintf_s(tmp, 256, "TablePhysicsMinSlope%d", m_fOverridePhysics - 1);
+          hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideMinSlope);
+          if (hr != S_OK)
+              m_fOverrideMinSlope = DEFAULT_TABLE_MIN_SLOPE;
+
+          m_fOverrideMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
+          sprintf_s(tmp, 256, "TablePhysicsMaxSlope%d", m_fOverridePhysics - 1);
+          hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideMaxSlope);
+          if (hr != S_OK)
+              m_fOverrideMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
+      }
+
+      c_hardScatter = ANGTORAD(m_fOverridePhysics ? fOverrideContactScatterAngle : m_defaultScatter);
+
+      // create Player and init that one
+
       g_pplayer = new Player(_cameraMode);
-      HRESULT hr = g_pplayer->Init(this, hwndProgressBar, hwndStatusName);
+      const HRESULT hrInit = g_pplayer->Init(this, hwndProgressBar, hwndStatusName);
       if (!m_pcv->m_fScriptError)
       {
-         float fOverrideContactScatterAngle;
-
-         if (m_fOverridePhysics)
-         {
-            char tmp[256];
-
-            m_fOverrideGravityConstant = DEFAULT_TABLE_GRAVITY;
-            sprintf_s(tmp, 256, "TablePhysicsGravityConstant%d", m_fOverridePhysics - 1);
-            hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideGravityConstant);
-            if (hr != S_OK)
-               m_fOverrideGravityConstant = DEFAULT_TABLE_GRAVITY;
-            m_fOverrideGravityConstant *= GRAVITYCONST;
-
-            m_fOverrideContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
-            sprintf_s(tmp, 256, "TablePhysicsContactFriction%d", m_fOverridePhysics - 1);
-            hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideContactFriction);
-            if (hr != S_OK)
-               m_fOverrideContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
-
-			m_fOverrideElasticity = DEFAULT_TABLE_ELASTICITY;
-			sprintf_s(tmp, 256, "TablePhysicsElasticity%d", m_fOverridePhysics - 1);
-			hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideElasticity);
-			if (hr != S_OK)
-				m_fOverrideElasticity = DEFAULT_TABLE_ELASTICITY;
-			
-			m_fOverrideElasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
-			sprintf_s(tmp, 256, "TablePhysicsElasticityFalloff%d", m_fOverridePhysics - 1);
-			hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideElasticityFalloff);
-			if (hr != S_OK)
-				m_fOverrideElasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
-			
-			m_fOverrideScatterAngle = DEFAULT_TABLE_PFSCATTERANGLE;
-			sprintf_s(tmp, 256, "TablePhysicsScatterAngle%d", m_fOverridePhysics - 1);
-			hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideScatterAngle);
-			if (hr != S_OK)
-				m_fOverrideScatterAngle = DEFAULT_TABLE_PFSCATTERANGLE;
-
-			fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
-            sprintf_s(tmp, 256, "TablePhysicsContactScatterAngle%d", m_fOverridePhysics - 1);
-            hr = GetRegStringAsFloat("Player", tmp, &fOverrideContactScatterAngle);
-            if (hr != S_OK)
-               fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
-
-            m_fOverrideMinSlope = DEFAULT_TABLE_MIN_SLOPE;
-            sprintf_s(tmp, 256, "TablePhysicsMinSlope%d", m_fOverridePhysics - 1);
-            hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideMinSlope);
-            if(hr != S_OK)
-                m_fOverrideMinSlope = DEFAULT_TABLE_MIN_SLOPE;
-
-            m_fOverrideMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
-            sprintf_s(tmp, 256, "TablePhysicsMaxSlope%d", m_fOverridePhysics - 1);
-            hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideMaxSlope);
-            if(hr != S_OK)
-                m_fOverrideMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
-         }
-
-         c_hardScatter = ANGTORAD(m_fOverridePhysics ? fOverrideContactScatterAngle : m_defaultScatter);
-
          const float minSlope = (m_fOverridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
          const float maxSlope = (m_fOverridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
-
          const float slope = minSlope + (maxSlope - minSlope) * m_globalDifficulty;
-
          g_pplayer->SetGravity(slope, m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
+
+         //
 
          m_pcv->SetEnabled(false); // Can't edit script while playing
 
          g_pvp->SetEnableToolbar();
 
-         if (!m_pcv->m_fScriptError && (hr == S_OK))
+         if (!m_pcv->m_fScriptError && (hrInit == S_OK))
          {
             ::ShowWindow(g_pvp->m_hwndWork, SW_HIDE);
          }
          else
          {
+            ShowError("Problem occured during Player init");
             ::SendMessage(g_pplayer->m_hwnd, WM_CLOSE, 0, 0);
          }
       }
@@ -2702,8 +2705,7 @@ void PinTable::CreateTableWindow()
 
 HRESULT PinTable::InitVBA()
 {
-   HRESULT hr = S_OK;
-   return hr;
+   return S_OK;
 }
 
 void PinTable::CloseVBA()
@@ -2808,13 +2810,13 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 
       char szInitialDir[1024];
       HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, 1024);
-      char szFoo[MAX_PATH];
       if (hr == S_OK)
       {
          ofn.lpstrInitialDir = szInitialDir;
       }
       else
       {
+         char szFoo[MAX_PATH];
          lstrcpy(szFoo, g_pvp->m_szMyPath);
          lstrcat(szFoo, "Tables");
          ofn.lpstrInitialDir = szFoo;
@@ -2883,7 +2885,7 @@ HRESULT PinTable::Save(BOOL fSaveAs)
    // merge all elements for saving
    BackupLayers();
 
-   HRESULT hr = SaveToStorage(pstgRoot);
+   const HRESULT hr = SaveToStorage(pstgRoot);
 
    if (!FAILED(hr))
    {
@@ -3209,8 +3211,8 @@ HRESULT PinTable::SaveSoundToStream(PinSound *pps, IStream *pstm)
 HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 {
    int len;
-   ULONG read = 0;
-   HRESULT hr = S_OK;
+   ULONG read;
+   HRESULT hr;
 
    if (FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
       return hr;
@@ -3368,11 +3370,11 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
    {
       IStream *pstm;
       HRESULT hr;
-      ULONG writ;
 
       if (SUCCEEDED(hr = pstg->CreateStream(L"Screenshot", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstm)))
       {
          BiffWriter bw(pstm, hcrypthash, NULL);
+         ULONG writ;
          bw.WriteBytes(pin->m_ppb->m_pdata, pin->m_ppb->m_cdata, &writ);
          pstm->Release();
          pstm = NULL;
@@ -3711,7 +3713,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 HRESULT PinTable::LoadGameFromFilename(char *szFileName)
 {
    IStorage* pstgRoot;
-   HRESULT hr = S_OK;
 
    if (szFileName == NULL)
    {
@@ -3722,6 +3723,7 @@ HRESULT PinTable::LoadGameFromFilename(char *szFileName)
    strcpy_s(m_szFileName, sizeof(m_szFileName), szFileName);
    {
       MAKE_WIDEPTR_FROMANSI(wszCodeFile, szFileName);
+      HRESULT hr;
       if (FAILED(hr = StgOpenStorage(wszCodeFile, NULL, STGM_TRANSACTED | STGM_READ | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgRoot)))
       {
          // TEXT
@@ -3739,7 +3741,6 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 {
    IStorage *pstgData, *pstgInfo;
    IStream *pstmGame, *pstmItem, *pstmVersion;
-   HRESULT hr = S_OK;
 
    int ctotalitems;
    int cloadeditems;
@@ -3797,6 +3798,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
    int loadfileversion = CURRENT_FILE_FORMAT_VERSION;
 
    //load our stuff first
+   HRESULT hr;
    if (SUCCEEDED(hr = pstgRoot->OpenStorage(L"GameStg", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgData)))
    {
       if (SUCCEEDED(hr = pstgData->OpenStream(L"GameData", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmGame)))
@@ -4571,7 +4573,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_globalDifficulty);
       int tmp;
-      HRESULT hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
+      const HRESULT hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
       if (hr == S_OK) m_globalDifficulty = dequantizeUnsignedPercent(tmp);
    }
    else if (id == FID(CUST))
@@ -11406,7 +11408,7 @@ void PinTable::InvokeBallBallCollisionCallback(Ball *b1, Ball *b2, float hitVelo
       LPOLESTR fnNames = FnName;
 
       DISPID dispid;
-      HRESULT hr = disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &dispid);
+      const HRESULT hr = disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &dispid);
 
       if (SUCCEEDED(hr))  // did we find the collision callback function?
       {
