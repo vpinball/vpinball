@@ -1358,7 +1358,7 @@ PinTable::PinTable()
 
    SetDefaultPhysics(false);
 
-   m_defaultScatter = 0;
+   m_defaultScatter = 0.f;
    m_nudgeTime = 5.0f;
 
    m_plungerNormalize = 100;  //Mech-Plunger component adjustment or weak spring, aging
@@ -1930,13 +1930,10 @@ void PinTable::DeleteFromLayer(IEditable *obj)
    }
 }
 
-#define NEWFROMRES 1
-
-void PinTable::Init(VPinball *pvp, const bool useBlankTable)
+void PinTable::InitBuiltinTable(VPinball * const pvp, const bool useBlankTable)
 {
    m_pvp = pvp;
 
-#ifdef NEWFROMRES
    HRSRC hrsrc;
    // Get our new table resource, get it to be opened as a storage, and open it like a normal file
    if (useBlankTable)
@@ -1980,62 +1977,12 @@ void PinTable::Init(VPinball *pvp, const bool useBlankTable)
 
    LoadGameFromStorage(pis);
 
-   m_angletiltMin = 6;
-   m_angletiltMax = 726;
-
    //MAKE_WIDEPTR_FROMANSI(wszFileName, m_szFileName);
    //ApcProject->APC_PUT(DisplayName)(wszFileName);
 
    InitPostLoad(pvp);
 
    SetCaption(m_szTitle);
-
-#else
-
-   m_szFileName[0] = 0;
-   m_szBlueprintFileName[0] = 0;
-
-   //m_ptinfoCls = NULL;
-   //m_ptinfoInt = NULL;
-
-   m_left = 0;
-   m_top = 0;
-   m_right = EDITOR_BG_WIDTH;
-   m_bottom = EDITOR_BG_WIDTH*2;
-
-   m_scalex = 1.0f;
-   m_scaley = 1.0f;
-   m_zScale = 1.0f;
-
-   m_xlatex = 0.0f;
-   m_xlatey = 0.0f;
-   m_xlatez = 0.0f;
-
-   m_inclination = 43;
-   m_layback = 0;
-   m_FOV = 45;
-
-   m_maxSeparation = 0.03f;
-   m_ZPD = 0.5f;
-
-   SetDefaultView();
-
-   m_szImage[0] = 0;
-   m_szImageBackdrop[0] = 0;
-   m_ImageBackdropNightDay = false;
-   m_szEnvImage[0] = 0;
-
-   m_szImageColorGrade[0] = 0;
-
-   m_colorplayfield = RGB(128,128,128);
-   m_colorbackdrop = RGB(128,128,128);
-
-   InitVBA();
-
-   CreateTableWindow();
-
-   SetMyScrollInfo();
-#endif
 }
 
 void PinTable::SetDefaultView()
@@ -2496,7 +2443,7 @@ void PinTable::SetDirtyDraw()
    ::InvalidateRect(m_hwnd, NULL, fFalse);
 }
 
-void PinTable::Play(bool _cameraMode)
+void PinTable::Play(const bool _cameraMode)
 {
    if (g_pplayer)
       return; // Can't play twice
@@ -2512,12 +2459,12 @@ void PinTable::Play(bool _cameraMode)
    SetCurrentDirectory(szLoadDir);
    BackupLayers();
 
-   HWND hwndProgressDialog = CreateDialog(g_hinst, MAKEINTRESOURCE(IDD_PROGRESS), g_pvp->m_hwnd, ProgressProc);
+   const HWND hwndProgressDialog = CreateDialog(g_hinst, MAKEINTRESOURCE(IDD_PROGRESS), g_pvp->m_hwnd, ProgressProc);
    // TEXT
    ::ShowWindow(hwndProgressDialog, SW_SHOW);
 
-   HWND hwndProgressBar = ::GetDlgItem(hwndProgressDialog, IDC_PROGRESS2);
-   HWND hwndStatusName = ::GetDlgItem(hwndProgressDialog, IDC_STATUSNAME);
+   const HWND hwndProgressBar = ::GetDlgItem(hwndProgressDialog, IDC_PROGRESS2);
+   const HWND hwndStatusName = ::GetDlgItem(hwndProgressDialog, IDC_STATUSNAME);
 
    ::SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
    ::SetWindowText(hwndStatusName, "Backing Up Table State...");
@@ -2547,7 +2494,7 @@ void PinTable::Play(bool _cameraMode)
    {
       // set up the texture hashtable for fast access
       m_textureMap.clear();
-      for (unsigned i = 0; i < m_vimage.size(); i++)
+      for (size_t i = 0; i < m_vimage.size(); i++)
       {
          m_textureMap[m_vimage[i]->m_szInternalName] = m_vimage[i];
       }
@@ -2604,11 +2551,13 @@ void PinTable::Play(bool _cameraMode)
             if (hr != S_OK)
                fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
 
+            m_fOverrideMinSlope = DEFAULT_TABLE_MIN_SLOPE;
             sprintf_s(tmp, 256, "TablePhysicsMinSlope%d", m_fOverridePhysics - 1);
             hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideMinSlope);
             if(hr != S_OK)
                 m_fOverrideMinSlope = DEFAULT_TABLE_MIN_SLOPE;
 
+            m_fOverrideMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
             sprintf_s(tmp, 256, "TablePhysicsMaxSlope%d", m_fOverridePhysics - 1);
             hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideMaxSlope);
             if(hr != S_OK)
@@ -2620,11 +2569,11 @@ void PinTable::Play(bool _cameraMode)
          const float minSlope = (m_fOverridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
          const float maxSlope = (m_fOverridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
 
-         const float slope = minSlope + (maxSlope - minSlope)* m_globalDifficulty;
+         const float slope = minSlope + (maxSlope - minSlope) * m_globalDifficulty;
 
          g_pplayer->SetGravity(slope, m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
 
-         m_pcv->SetEnabled(fFalse); // Can't edit script while playing
+         m_pcv->SetEnabled(false); // Can't edit script while playing
 
          g_pvp->SetEnableToolbar();
 
@@ -2660,7 +2609,7 @@ void PinTable::StopPlaying()
    // Unhook script connections
    //m_pcv->m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
 
-   m_pcv->SetEnabled(fTrue);
+   m_pcv->SetEnabled(true);
 
    // Stop all sounds
    // In case we were playing any of the main buffers
@@ -4140,7 +4089,7 @@ void PinTable::SetLoadDefaults()
    m_AOScale = 1.75f;
    m_SSRScale = 1.0f;
 
-   m_angletiltMax = 726.0f;
+   m_angletiltMax = 6.0f;
    m_angletiltMin = 4.5f;
 
    m_useReflectionForBalls = -1;
@@ -4432,7 +4381,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(SLOP))
    {
       pbr->GetFloat(&m_angletiltMin);
-      if (m_angletiltMax == 726.0f) m_angletiltMax = m_angletiltMin; //!! ??
    }
    else if (id == FID(GLAS))
    {
@@ -10262,14 +10210,14 @@ STDMETHODIMP PinTable::get_Gravity(float *pVal)
 
 STDMETHODIMP PinTable::put_Gravity(float newVal)
 {
-   if (newVal < 0) newVal = 0;
+   if (newVal < 0.f) newVal = 0.f;
 
    if (g_pplayer)
    {
       m_Gravity = newVal*GRAVITYCONST;
       const float minSlope = (m_fOverridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
       const float maxSlope = (m_fOverridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
-      const float slope = minSlope + (maxSlope - minSlope)* m_globalDifficulty;
+      const float slope = minSlope + (maxSlope - minSlope) * m_globalDifficulty;
       g_pplayer->SetGravity(slope, m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else
@@ -10640,7 +10588,6 @@ STDMETHODIMP PinTable::put_Xlatez(float newVal)
 
 STDMETHODIMP PinTable::get_SlopeMax(float *pVal)
 {
-   if (m_angletiltMax == 726.0f) m_angletiltMax = m_angletiltMin;
    *pVal = m_angletiltMax;
 
    return S_OK;
@@ -10651,7 +10598,7 @@ STDMETHODIMP PinTable::put_SlopeMax(float newVal)
    if (g_pplayer)
    {
       m_angletiltMax = newVal;
-      const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
+      const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin) * m_globalDifficulty;
       g_pplayer->SetGravity(slope, m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else
@@ -10675,7 +10622,7 @@ STDMETHODIMP PinTable::put_SlopeMin(float newVal)
    if (g_pplayer)
    {
       m_angletiltMin = newVal;
-      const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
+      const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin) * m_globalDifficulty;
       g_pplayer->SetGravity(slope, m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else
@@ -11220,13 +11167,13 @@ STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
       int tmp;
       const HRESULT hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
       if (hr == S_OK)
-		  m_globalDifficulty = (float)tmp*(float)(1.0 / 100.0);
+         m_globalDifficulty = dequantizeUnsignedPercent(tmp);
       else
       {
-         if (newVal < 0) newVal = 0;
+         if (newVal < 0.f) newVal = 0.f;
             else if (newVal > 100.0f) newVal = 100.0f;
          STARTUNDO
-		 m_globalDifficulty = newVal*(float)(1.0 / 100.0);
+         m_globalDifficulty = newVal*(float)(1.0 / 100.0);
          STOPUNDO
       }
    }

@@ -295,7 +295,7 @@ public:
    PinTable();
    virtual ~PinTable();
 
-   void Init(VPinball *pvp, const bool useBlankTable=false);
+   void InitBuiltinTable(VPinball * const pvp, const bool useBlankTable = false);
    void InitPostLoad(VPinball *pvp);
 
    virtual HRESULT GetTypeName(BSTR *pVal);
@@ -328,7 +328,7 @@ public:
    //void FireVoidEvent(int dispid);
    void FireKeyEvent(int dispid, int keycode);
 
-   void Play(bool _cameraMode = false);
+   void Play(const bool _cameraMode = false);
    void StopPlaying();
 
    void ImportSound(HWND hwndListView, char *filename, BOOL fPlay);
@@ -523,7 +523,7 @@ public:
 
    FRect3D GetBoundingBox();
 
-   bool RenderSolid()      { return m_renderSolid; }
+   bool RenderSolid() const { return m_renderSolid; }
 
    void InvokeBallBallCollisionCallback(Ball *b1, Ball *b2, float hitVelocity);
 

@@ -389,7 +389,7 @@ void CodeViewer::SetVisible(const bool fVisible)
    m_visible = fVisible;
 }
 
-void CodeViewer::SetEnabled(const BOOL fEnabled)
+void CodeViewer::SetEnabled(const bool fEnabled)
 {
    SendMessage(m_hwndScintilla, SCI_SETREADONLY, !fEnabled, 0);
 

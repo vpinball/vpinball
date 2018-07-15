@@ -33,7 +33,7 @@ HRESULT GetRegStringAsFloat(const char *szKey, const char *szValue, float *pfloa
       if (len < 2)
          return E_FAIL;
       *pfloat = (float)atof(&szbuffer[1]);
-      *pfloat *= -1.0f;
+      *pfloat = -*pfloat;
    }
    else
       *pfloat = (float)atof(&szbuffer[0]);

@@ -100,7 +100,7 @@ public:
    void Destroy();
    void SetVisible(const bool fVisible);
 
-   void SetEnabled(const BOOL fEnabled);
+   void SetEnabled(const bool fEnabled);
 
    void SetClean(const SaveDirtyState sds);
 
