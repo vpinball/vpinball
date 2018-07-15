@@ -2,7 +2,6 @@
 
 ' GoldenEye and Apollo13 use different flipper techinques and switch locations than other Sega games.
 
-
 Option Explicit
 LoadCore
 Private Sub LoadCore
@@ -18,7 +17,7 @@ Private Sub LoadCore
 End Sub
 
 '----------------------------
-' Apollo13/GoldenEye Data
+' Apollo13 / GoldenEye Data
 '----------------------------
 ' Cabinet switches
 Const swBlack          =  0 'DED 8
@@ -49,7 +48,7 @@ vpmSystemHelp = "Sega keys:" & vbNewLine &_
   vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
 
 'Dip Switch / Options Menu
-Private Sub segaShowDips
+Private Sub sega2ShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
 		With vpmDips
@@ -64,7 +63,7 @@ Private Sub segaShowDips
 	End If
 	vpmDips.ViewDips
 End Sub
-Set vpmShowDips = GetRef("segaShowDips")
+Set vpmShowDips = GetRef("sega2ShowDips")
 Private vpmDips
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)

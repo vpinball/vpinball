@@ -897,8 +897,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       CComObject<PinTable> *pt;
       CComObject<PinTable>::CreateInstance(&pt);
       pt->AddRef();
-      pt->Init(this,code != ID_NEW_EXAMPLETABLE);
-      //pt = new PinTable(this);
+      pt->InitBuiltinTable(this,code != ID_NEW_EXAMPLETABLE);
       m_vtable.AddElement(pt);
       SetEnableToolbar();
       break;

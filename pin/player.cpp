@@ -201,7 +201,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
       int regs[4];
       __cpuid(regs, 1);
       // check for SSE and exit if not available, as some code relies on it by now
-      if ((regs[3] & 0x002000000) == 0) { // NO SSE?
+      if ((regs[3] & 0x002000000) == 0) { // No SSE?
          ShowError("SSE is not supported on this processor");
          exit(0);
       }
@@ -1333,8 +1333,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
    const float minSlope = (ptable->m_fOverridePhysics ? ptable->m_fOverrideMinSlope : ptable->m_angletiltMin);
-   const float maxSlope = (ptable->m_fOverridePhysics ? ptable->m_fOverrideMaxSlope : (ptable->m_angletiltMax == 726.0f) ? ptable->m_angletiltMin : ptable->m_angletiltMax);
- 
+   const float maxSlope = (ptable->m_fOverridePhysics ? ptable->m_fOverrideMaxSlope : ptable->m_angletiltMax);
+
    const float slope = minSlope + (maxSlope - minSlope) * ptable->m_globalDifficulty;
 
    m_gravity.x = 0.f;
@@ -3325,16 +3325,16 @@ void Player::UpdatePhysics()
             HitTimer * const pht = m_vht.ElementAt(i);
             if ((pht->m_interval >= 0 && pht->m_nextfire <= p_timeCur) || (pht->m_interval < 0 && first_cycle))
             {
-			   unsigned int curnextfire = pht->m_nextfire;
+               const unsigned int curnextfire = pht->m_nextfire;
                pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-			   // Only add interval if the next fire time hasn't changed since the event was run. 
-			   // Handles corner case:
-			   //Timer1.Enabled = False
-			   //Timer1.Interval = 1000
-			   //Timer1.Enabled = True
-			   if (curnextfire == pht->m_nextfire)
-				   pht->m_nextfire += pht->m_interval;
-			}
+               // Only add interval if the next fire time hasn't changed since the event was run. 
+               // Handles corner case:
+               //Timer1.Enabled = False
+               //Timer1.Interval = 1000
+               //Timer1.Enabled = True
+               if (curnextfire == pht->m_nextfire)
+                  pht->m_nextfire += pht->m_interval;
+            }
          }
 
          m_script_period += (unsigned int)(usec() - (cur_time_usec+delta_frame));
@@ -4842,16 +4842,16 @@ void Player::Render()
       HitTimer * const pht = m_vht.ElementAt(i);
       if ((pht->m_interval >= 0 && pht->m_nextfire <= m_time_msec) || pht->m_interval < 0) 
       {
-		 unsigned int curnextfire = pht->m_nextfire;
-
+         const unsigned int curnextfire = pht->m_nextfire;
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-		 // Only add interval if the next fire time hasn't changed since the event was run. 
-		 // Handles corner case:
-		 //Timer1.Enabled = False
-		 //Timer1.Interval = 1000
-		 //Timer1.Enabled = True
-		 if (curnextfire == pht->m_nextfire)
-			 pht->m_nextfire += pht->m_interval;      }
+         // Only add interval if the next fire time hasn't changed since the event was run. 
+         // Handles corner case:
+         //Timer1.Enabled = False
+         //Timer1.Interval = 1000
+         //Timer1.Enabled = True
+         if (curnextfire == pht->m_nextfire)
+            pht->m_nextfire += pht->m_interval;
+      }
    }
 
    m_pactiveball = old_pactiveball;
@@ -5771,13 +5771,13 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
       }
       case WM_COMMAND:
       {
-		 switch (HIWORD(wParam))
+         switch (HIWORD(wParam))
          {
             case BN_CLICKED:
             {
                switch (LOWORD(wParam))
                {
-			   case IDCANCEL:
+               case IDCANCEL:
                case ID_RESUME:
                {
                   EndDialog(hwndDlg, ID_RESUME);

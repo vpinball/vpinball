@@ -4,7 +4,8 @@ Const VPinMAMEDriverVer = 3.56
 ' VPinMAME driver core.
 '=======================
 ' New in 3.56 (Update by nFozzy, DJRobX, Fuzzel)
-' - update gts1.vbs and hankin.vbs so that the common coin keys (e.g. "5") also add coins on Gottlieb System 1 and Hankin tables
+' - Add specialized sega2.vbs for Apollo 13 and GoldenEye
+' - Update gts1.vbs and hankin.vbs so that the common coin keys (e.g. "5") also add coins on Gottlieb System 1 and Hankin tables
 ' - vpmFlips fixes / improvements
 '   - Fixed vpmFlips execute script error
 '   - Added extra error check for detecting outdated system vbs files when UseSolenoids = 2
@@ -16,8 +17,8 @@ Const VPinMAMEDriverVer = 3.56
 ' - Capcom fast flips support
 ' - Fix WPC tables that use 'cSingleLFlip' (regression from 3.55)
 ' - Fix script errors if using NudgePlugIn.vbs
-' - add Rubber, Ramp, Flasher, Primitive and HitTarget support to vpmToggleObj
-' - add Rubber, Primitive and HitTarget support to vpmCreateEvents
+' - Add Rubber, Ramp, Flasher, Primitive and HitTarget support to vpmToggleObj
+' - Add Rubber, Primitive and HitTarget support to vpmCreateEvents
 '
 ' New in 3.55 (Update by nFozzy)
 ' - Prevent 'object not a collection' errors if vpmNudge.TiltObj isn't set
