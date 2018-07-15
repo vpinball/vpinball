@@ -1,6 +1,11 @@
 VP 10.5.0 Changelog
 ------------------------
 
+- fix immediate player shutdown if global physics sets not setup/initialized by the user in the global options
+- fix wrong initialization order for global physics sets, leading to uninitialized physics parameters on the first run of a table (including potential crashes due to strange values)
+
+- handle corner case if a timer is disabled and then re-enabled within its own handler to prevent falsifying the timer interval
+
 - fix obscure bug where starting the blank/built-in tables with the options pane closed causes the ball to levitate off the table
 
 - built-in ball control: Enable in debug window (or via "ball control always on" in the global options)
