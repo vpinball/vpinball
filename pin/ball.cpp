@@ -513,6 +513,7 @@ void Ball::CalcHitBBox()
    m_hitBBox.zhigh = m_pos.z + vl;
 
    m_rcHitRadiusSqr = vl*vl;
+   assert(m_rcHitRadiusSqr <= FLT_MAX);
 
    // update defaultZ for ball reflection
    // if the ball was created by a kicker which is higher than the playfield 
