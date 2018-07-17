@@ -186,7 +186,7 @@ public:
    virtual unsigned long long GetImageID() { return (m_d.m_BulbLight ? 0 : (unsigned long long)(m_ptable->GetImage(m_d.m_szOffImage))); }
    virtual ItemTypeEnum HitableGetItemType() { return eItemLight; }
    virtual void UpdatePropertyPanes();
-   virtual void AddPoint(int x, int y, const bool smooth=true);
+   virtual void AddPoint(int x, int y, const bool smooth);
 
    void WriteRegDefaults();
    void FreeBuffers();

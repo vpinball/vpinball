@@ -56,7 +56,7 @@ public:
    void LoadFileName(char *szFileName);
    void SetClipboard(Vector<IStream> *pvstm);
 
-   BOOL FCanClose();
+   bool FCanClose();
 
    void DoPlay(bool _cameraMode = false);
 
@@ -94,7 +94,7 @@ public:
    HRESULT ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed);
    BOOL    processKeyInputForDialogs(MSG *pmsg);
 
-   BOOL CloseTable(PinTable *ppt);
+   bool CloseTable(PinTable *ppt);
 
    void SetEnableToolbar();
    void SetEnablePalette();

@@ -1324,7 +1324,7 @@ void Light::DoCommand(int icmd, int x, int y)
       break;
 
    case ID_WALLMENU_ADDPOINT:
-      AddPoint(x, y);
+      AddPoint(x, y, true);
       break;
    }
 }

@@ -22,7 +22,7 @@
 
 
 #define	RECENT_FIRST_MENU_IDM	5000	// ID of the first recent file list filename
-#define	RECENT_LAST_MENU_IDM	RECENT_FIRST_MENU_IDM+LAST_OPENED_TABLE_COUNT
+#define	RECENT_LAST_MENU_IDM	(RECENT_FIRST_MENU_IDM+LAST_OPENED_TABLE_COUNT)
 
 #define AUTOSAVE_DEFAULT_TIME 10
 
@@ -1184,19 +1184,19 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
             case eItemRamp:
             {
                Ramp * const pRamp = (Ramp*)psel;
-               pRamp->AddPoint(pt.x, pt.y,true);
+               pRamp->AddPoint(pt.x, pt.y, true);
                break;
             }
             case eItemLight:
             {
                Light * const pLight = (Light*)psel;
-               pLight->AddPoint(pt.x, pt.y,true);
+               pLight->AddPoint(pt.x, pt.y, true);
                break;
             }
             case eItemSurface:
             {
                Surface * const pSurf = (Surface*)psel;
-               pSurf->AddPoint(pt.x, pt.y,true);
+               pSurf->AddPoint(pt.x, pt.y, true);
                break;
             }
             default:
@@ -1912,21 +1912,21 @@ CComObject<PinTable> *VPinball::GetActiveTable()
       return NULL;
 }
 
-BOOL VPinball::FCanClose()
+bool VPinball::FCanClose()
 {
    while (m_vtable.Size())
    {
-      const BOOL fCanClose = CloseTable(m_vtable.ElementAt(0));
+      const bool fCanClose = CloseTable(m_vtable.ElementAt(0));
 
       if (!fCanClose)
-         return fFalse;
+         return false;
    }
 
-   return fTrue;
+   return true;
 }
 
 
-BOOL VPinball::CloseTable(PinTable *ppt)
+bool VPinball::CloseTable(PinTable *ppt)
 {
    if ((ppt->FDirty()) && (!ppt->CheckPermissions(DISABLE_TABLE_SAVE)))
    {
@@ -1940,7 +1940,7 @@ BOOL VPinball::CloseTable(PinTable *ppt)
       const int result = ::MessageBox(m_hwnd, szText, "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
       delete[] szText;
       if (result == IDCANCEL)
-         return fFalse;
+         return false;
 
       if (result == IDYES)
       {
@@ -1948,7 +1948,7 @@ BOOL VPinball::CloseTable(PinTable *ppt)
          {
             LocalString ls3(IDS_SAVEERROR);
             ::MessageBox(m_hwnd, ls3.m_szbuffer, "Visual Pinball", MB_ICONERROR);
-            return fFalse;
+            return false;
          }
       }
    }
@@ -1969,7 +1969,7 @@ BOOL VPinball::CloseTable(PinTable *ppt)
 
    SetEnableToolbar();
 
-   return fTrue;
+   return true;
 }
 
 void VPinball::ShowPermissionError()
@@ -2206,7 +2206,7 @@ BOOL VPinball::processKeyInputForDialogs(MSG *pmsg)
         if(g_pvp->m_dimensionDialog.IsWindow())
             return g_pvp->m_dimensionDialog.IsDialogMessage(*pmsg);
     }
-    return false;
+    return fFalse;
 }
 
 HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
@@ -2374,7 +2374,7 @@ void VPinball::OnClose()
    if (g_pplayer)
       SendMessage(g_pplayer->m_hwnd, WM_CLOSE, 0, 0);
 
-   BOOL fCanClose = g_pvp->FCanClose();
+   const bool fCanClose = g_pvp->FCanClose();
    if (fCanClose)
    {
       WINDOWPLACEMENT winpl;

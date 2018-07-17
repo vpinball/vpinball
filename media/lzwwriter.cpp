@@ -5,13 +5,8 @@ int LZWWriter::m_masks[17] = { 0x0000, 0x0001, 0x0003, 0x0007, 0x000F,
 0x01FF, 0x03FF, 0x07FF, 0x0FFF,
 0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF };
 
-LZWWriter::LZWWriter(IStream * pistream, int *bits, int width, int height, int pitch)
+LZWWriter::LZWWriter(IStream * pistream, int *bits, int width, int height, int pitch) : m_pistream(pistream), m_bits(bits), m_width(width), m_height(height), m_pitch(pitch)
 {
-   m_pistream = pistream;
-   m_bits = bits;
-   m_width = width; // 32-bit picture
-   m_height = height;
-   m_pitch = pitch;
 }
 
 LZWWriter::~LZWWriter()

@@ -41,7 +41,7 @@ bool CGpuProfiler::Init (IDirect3DDevice9 * const pDevice)
 	const HRESULT tsdHr = pDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, NULL);
 	const HRESULT tsfHr = pDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, NULL);
 
-	if (tsHr || tsdHr || tsfHr)
+	if (tsHr != D3D_OK || tsdHr != D3D_OK || tsfHr != D3D_OK)
 	{
 		ErrorPrintf("GPU Profiler: Query not supported");
 		return false;

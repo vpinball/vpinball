@@ -137,7 +137,7 @@ public:
    virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
-   virtual void AddPoint(int x, int y, const bool smooth=false);
+   virtual void AddPoint(int x, int y, const bool smooth);
 
 private:
    void CurvesToShapes(Vector<HitObject> * const pvho);

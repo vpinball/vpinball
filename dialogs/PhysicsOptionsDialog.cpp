@@ -238,7 +238,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     {
         case LBN_SELCHANGE:
         {
-            HWND hwndList = GetDlgItem(IDC_PhysicsList).GetHwnd();
+            const HWND hwndList = GetDlgItem(IDC_PhysicsList).GetHwnd();
 
             const size_t tmp = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
 

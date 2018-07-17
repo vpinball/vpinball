@@ -155,10 +155,8 @@ inline void Triangle::ReplaceVertex(Vertex * const vold, Vertex * const vnew)
 	ComputeNormal();
 }
 
-__forceinline Vertex::Vertex(const float3 &v, const size_t _id)
+__forceinline Vertex::Vertex(const float3 &v, const size_t _id) : position(v), id((unsigned int)_id)
 {
-	position = v;
-	id = (unsigned int)_id;
 	vertices.push_back(this);
 }
 

@@ -131,21 +131,23 @@ void Mesh::UploadToVB(VertexBuffer * vb, float frame)
    {
       for (size_t i = 0; i < m_vertices.size(); i++)
       {
-         m_vertices[i].x = m_animationFrames[iFrame].m_frameVerts[i].x;
-         m_vertices[i].y = m_animationFrames[iFrame].m_frameVerts[i].y;
-         m_vertices[i].z = m_animationFrames[iFrame].m_frameVerts[i].z;
-         m_vertices[i].nx = m_animationFrames[iFrame].m_frameVerts[i].nx;
-         m_vertices[i].ny = m_animationFrames[iFrame].m_frameVerts[i].ny;
-         m_vertices[i].nz = m_animationFrames[iFrame].m_frameVerts[i].nz;
+         const VertData &v = m_animationFrames[iFrame].m_frameVerts[i];
+         m_vertices[i].x = v.x;
+         m_vertices[i].y = v.y;
+         m_vertices[i].z = v.z;
+         m_vertices[i].nx = v.nx;
+         m_vertices[i].ny = v.ny;
+         m_vertices[i].nz = v.nz;
 
          if (iFrame + 1 < (int)m_animationFrames.size())
          {
-            m_vertices[i].x += (m_animationFrames[iFrame + 1].m_frameVerts[i].x - m_vertices[i].x)*fractpart;
-            m_vertices[i].y += (m_animationFrames[iFrame + 1].m_frameVerts[i].y - m_vertices[i].y)*fractpart;
-            m_vertices[i].z += (m_animationFrames[iFrame + 1].m_frameVerts[i].z - m_vertices[i].z)*fractpart;
-            m_vertices[i].nx += (m_animationFrames[iFrame + 1].m_frameVerts[i].nx - m_vertices[i].nx)*fractpart;
-            m_vertices[i].ny += (m_animationFrames[iFrame + 1].m_frameVerts[i].ny - m_vertices[i].ny)*fractpart;
-            m_vertices[i].nz += (m_animationFrames[iFrame + 1].m_frameVerts[i].nz - m_vertices[i].nz)*fractpart;
+            const VertData &v2 = m_animationFrames[iFrame + 1].m_frameVerts[i];
+            m_vertices[i].x += (v2.x - m_vertices[i].x)*fractpart;
+            m_vertices[i].y += (v2.y - m_vertices[i].y)*fractpart;
+            m_vertices[i].z += (v2.z - m_vertices[i].z)*fractpart;
+            m_vertices[i].nx += (v2.nx - m_vertices[i].nx)*fractpart;
+            m_vertices[i].ny += (v2.ny - m_vertices[i].ny)*fractpart;
+            m_vertices[i].nz += (v2.nz - m_vertices[i].nz)*fractpart;
          }
       }
    }

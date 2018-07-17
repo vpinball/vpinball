@@ -5276,7 +5276,7 @@ void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect 
         }
         if(allIndices.size() % m_vmultisel.Size() == 0)
         {
-            for(size_t i = 0; i < allIndices.size();i++)
+            for(size_t i = 0; i < allIndices.size(); i++)
                 CheckMenuItem(colSubMenu, 0x40000 + allIndices[i], MF_CHECKED);
         }
         else
@@ -6293,10 +6293,10 @@ void PinTable::DoLDoubleClick(int x, int y)
 
 void PinTable::ExportBlueprint()
 {
-   BOOL fSaveAs = fTrue;
+   //BOOL fSaveAs = fTrue;
    bool solid = false;
 
-   if (fSaveAs)
+   //if (fSaveAs)
    {
       //need to get a file name
       OPENFILENAME ofn;

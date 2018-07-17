@@ -1554,7 +1554,7 @@ void HitTarget::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), FALSE);
    }
-   else if (m_d.m_fCollidable)
+   else //if (m_d.m_fCollidable)
    {
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 34), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), TRUE);

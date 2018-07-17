@@ -1700,8 +1700,6 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	LRESULT wordstart = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, dwellpos, TRUE );
 	LRESULT wordfinish = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, dwellpos, TRUE );
 	char Mess[MAX_LINE_LENGTH*4] = {}; int MessLen = 0;
-	char szDwellWord[256] = {};
-	char szLCDwellWord[256] = {};
 	const int CurrentLineNo = (int)SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, dwellpos, 0);
 	//return if in a comment
 	char text[MAX_LINE_LENGTH] = {};
@@ -1721,6 +1719,8 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	if ((SendMessage(m_hwndScintilla, SCI_ISRANGEWORD, wordstart , wordfinish )) && ((wordfinish - wordstart) < 255))
 	{
 		//Retrieve the word
+		char szDwellWord[256] = {};
+		char szLCDwellWord[256] = {};
 		GetRange(m_hwndScintilla, wordstart, wordfinish, szDwellWord);
 		strcpy_s( szLCDwellWord, szDwellWord);
 		szLower(szLCDwellWord);
@@ -1737,7 +1737,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 			string ptemp = i->KeyName;
 			MessLen = sprintf_s(Mess, "VBS:%s",  ptemp.c_str() );
 		}
-		else if (MessLen == 0)
+		else //if (MessLen == 0)
 		{
 			//Has function list been filled?
 			StopErrorDisplay = true;
@@ -1774,7 +1774,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 			}
 		}
 #ifdef _DEBUG
-		if (MessLen == 0 )
+		if (MessLen == 0)
 		{
 			MessLen = sprintf_s(Mess, "Test:%s", szDwellWord);
 		}
@@ -2555,8 +2555,8 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 		{
          g_pvp->m_pcv = GetCodeViewerPtr(hwndDlg);
 			CodeViewer * const pcv = g_pvp->m_pcv;
-			pcv->StopErrorDisplay = false;
-			if (!(pcv->StopErrorDisplay))
+			//pcv->StopErrorDisplay = false;
+			//if (!(pcv->StopErrorDisplay))
 			{
 				pcv->StopErrorDisplay = true; ///stop Error reporting WIP
 				pcv->ParseForFunction();

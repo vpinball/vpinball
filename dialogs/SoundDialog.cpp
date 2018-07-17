@@ -408,7 +408,6 @@ void SoundDialog::Export()
             ofn.hwndOwner = g_pvp->m_hwnd;
             //TEXT
             ofn.lpstrFilter = "Sound Files (*.wav)\0*.wav\0";
-            char pathName[MAX_PATH] ={ 0 };
 
             int begin;		//select only file name from pathfilename
             int len = lstrlen( pps->m_szPath );
@@ -451,6 +450,7 @@ void SoundDialog::Export()
                 if(begin >= MAX_PATH)
                     begin=MAX_PATH - 1;
 
+                char pathName[MAX_PATH] = { 0 };
                 memcpy( pathName, ofn.lpstrFile, begin );
                 pathName[begin] = 0;
                 while(sel != -1)
