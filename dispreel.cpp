@@ -441,9 +441,11 @@ void DispReel::Animate()
             // play the sound (if any) for each click of the reel
             if (m_d.m_szSound[0] != 0)
             {
-               OLECHAR mySound[512];
+               WCHAR mySound[512];
                MultiByteToWideChar(CP_ACP, 0, m_d.m_szSound, -1, mySound, 32);
-               m_ptable->PlaySound(mySound, 0, 1.0f, 0.f, 0.f, 0, VARIANT_FALSE, VARIANT_TRUE, 0.f);
+               BSTR mySoundBSTR = SysAllocString(mySound);
+               m_ptable->PlaySound(mySoundBSTR, 0, 1.0f, 0.f, 0.f, 0, VARIANT_FALSE, VARIANT_TRUE, 0.f);
+               SysFreeString(mySoundBSTR);
             }
          }
 
