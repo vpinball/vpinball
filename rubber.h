@@ -146,7 +146,6 @@ private:
 
    PropertyPane *m_propVisual;
    PropertyPane *m_propPhysics;
-   PropertyPane *m_propPosition;
 
    void GetCentralCurve(std::vector<RenderVertex> &vv, const float _accuracy = -1.f);
 

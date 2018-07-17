@@ -388,6 +388,7 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf)
            zrot = 0.f;
        }
        break;
+       default:
        case KickerHoleSimple:
        {
            num_vertices = kickerSimpleHoleNumVertices;

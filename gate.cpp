@@ -55,6 +55,7 @@ void Gate::SetGateType(GateType type)
     }
     else
     {
+       assert(false);
        m_vertices = gateWire;
        m_indices = gateWireIndices;
        m_numIndices = gateWireNumIndices;

@@ -34,7 +34,7 @@ using namespace std::tr1;
 
 #define	PROT_DATA_VERSION		1
 #define	PROT_PASSWORD_LENGTH	16
-#define	PROT_CIPHER_LENGTH		PROT_PASSWORD_LENGTH+8
+#define	PROT_CIPHER_LENGTH		(PROT_PASSWORD_LENGTH+8)
 #define	PROT_KEYVERSION			0
 
 #define MAX_LAYERS              11

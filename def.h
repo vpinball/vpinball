@@ -113,7 +113,7 @@ typedef _int64          S64;
 
 #define MAXNAMEBUFFER 33
 #define MAXSTRING 1024
-#define MAXTOKEN 32*4
+#define MAXTOKEN (32*4)
 
 #define CCO(x) CComObject<x>
 

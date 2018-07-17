@@ -1216,7 +1216,7 @@ void Surface::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_ADDPOINT:
    {
-      AddPoint(x, y);
+      AddPoint(x, y, false);
    }
    break;
    }

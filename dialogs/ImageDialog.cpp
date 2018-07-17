@@ -468,7 +468,6 @@ void ImageDialog::Export()
 
    if (selectedItemsCount)	// if some items are selected???
    {
-      char pathName[MAX_PATH] = { 0 };
       int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
       if (sel != -1)
       {
@@ -529,6 +528,7 @@ void ImageDialog::Export()
                      break;
                   }
                }
+               char pathName[MAX_PATH] = { 0 };
                if (begin > 0)
                {
                   memcpy(pathName, ofn.lpstrFile, begin);

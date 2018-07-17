@@ -540,7 +540,7 @@ float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionE
    {
       if (bnv * bnd >= 0.f)                         // outside-receding || inside-approaching
       {
-         if ((m_ObjType != eTrigger) ||             // not a trigger?
+         if (//(m_ObjType != eTrigger) ||             // not a trigger? // always false due to rigid test
             (!pball->m_vpVolObjs) ||                // temporary ball
             // if trigger, then check:
             (fabsf(bnd) >= pball->m_radius*0.5f) ||	// not too close ... nor too far away

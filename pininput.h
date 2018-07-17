@@ -25,7 +25,7 @@
 #define JOYRANGE ((JOYRANGEMX) - (JOYRANGEMN) + 1)
 
 #define APP_JOYSTICKMX (APP_JOYSTICKMN + PININ_JOYMXCNT -1)
-#define APP_JOYSTICK(n) (APP_JOYSTICKMN + n)
+#define APP_JOYSTICK(n) (APP_JOYSTICKMN + (n))
 
 #define USE_DINPUT_FOR_KEYBOARD // can lead to less input lag maybe on some systems if disabled, but can miss input if key is only pressed very very quickly and/or FPS are low
 

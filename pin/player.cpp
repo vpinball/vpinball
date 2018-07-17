@@ -1174,13 +1174,13 @@ void Player::InitBallShader()
 void Player::CreateDebugFont()
 {
     HRESULT hr = D3DXCreateFont(m_pin3d.m_pd3dDevice->GetCoreDevice(), //device
-                                20,                                    //font height 
+                                20,                                    //font height
                                 0,                                     //font width
                                 FW_BOLD,                               //font weight
-                                1,                                     //mip levels 
-                                false,                                 //italic     
+                                1,                                     //mip levels
+                                fFalse,                                //italic
                                 DEFAULT_CHARSET,                       //charset
-                                OUT_DEFAULT_PRECIS,                    //output precision 
+                                OUT_DEFAULT_PRECIS,                    //output precision
                                 DEFAULT_QUALITY,                       //quality
                                 DEFAULT_PITCH | FF_DONTCARE,           //pitch and family
                                 "Arial",                               //font name
@@ -4062,7 +4062,7 @@ void Player::UpdateHUD()
 
 		// Draw the framerate.
 		const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
-		const int len2 = sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %d%%", m_fps+0.01f, fpsAvg+0.01f, RenderStaticOnly() ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
+		const int len2 = sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %u%%", m_fps+0.01f, fpsAvg+0.01f, RenderStaticOnly() ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
 		DebugPrint(10, 10, szFoo, len2);
 
 		const U32 period = m_lastFrameDuration;

@@ -31,6 +31,11 @@ Flasher::~Flasher()
       dynamicIndexBuffer->release();
       dynamicIndexBuffer = 0;
    }
+   if (vertices)
+   {
+      delete[] vertices;
+      vertices = 0;
+   }
 }
 
 void Flasher::InitShape()

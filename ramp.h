@@ -126,7 +126,7 @@ public:
    virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
-   virtual void AddPoint(int x, int y, const bool smooth=false);
+   virtual void AddPoint(int x, int y, const bool smooth);
 
    void WriteRegDefaults();
    void UpdateUnitsInfo();
@@ -157,7 +157,6 @@ private:
    VertexBuffer *dynamicVertexBuffer2;
    bool dynamicVertexBufferRegenerate;
 
-   PropertyPane *m_propPosition;
    PropertyPane *m_propPhysics;
 
    bool isHabitrail() const;
