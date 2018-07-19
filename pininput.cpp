@@ -1064,7 +1064,7 @@ void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 				// it fast from the glass height, so it will appear over any object (or on a raised playfield)
 			
 				Ball * const pBall = g_pplayer->m_pactiveballBC;
-				if (pBall)
+				if (pBall && !pBall->m_frozen)
 				{
 					pBall->m_pos.x = g_pplayer->m_pBCTarget->x;
 					pBall->m_pos.y = g_pplayer->m_pBCTarget->y;

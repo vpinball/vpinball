@@ -863,7 +863,17 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 {
    if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pball)
    {
-	  g_pplayer->m_pactiveballBC = m_phitkickercircle->m_pball; // Ball control most recently kicked
+	   if (g_pplayer->m_pactiveballBC == NULL)
+	   {
+		   // Ball control most recently kicked if none currently.  
+		   g_pplayer->m_pactiveballBC = m_phitkickercircle->m_pball;
+	   }
+	   if (g_pplayer->m_pactiveballBC == m_phitkickercircle->m_pball)
+	   {
+		  // Clear any existing ball control target to allow kickout to work correctly.
+		   delete g_pplayer->m_pBCTarget;
+		   g_pplayer->m_pBCTarget = NULL;
+	   }
       float anglerad = ANGTORAD(angle);				// yaw angle, zero is along -Y axis
 
       if (fabsf(inclination) > (float)(M_PI / 2.0))		// radians or degrees?  if greater PI/2 assume degrees
@@ -1370,7 +1380,9 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
                pball->m_frozen = true;
                pball->m_vpVolObjs->AddElement(m_obj);		// add kicker to ball's volume set
                m_pball = pball;
-               m_lastCapturedBall = pball;
+			   m_lastCapturedBall = pball;
+			   if (pball == g_pplayer->m_pactiveballBC)
+				   g_pplayer->m_pactiveballBC = NULL;
             }
             // Don't fire the hit event if the ball was just created
             // Fire the event before changing ball attributes, so scripters can get a useful ball state
