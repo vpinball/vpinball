@@ -5274,16 +5274,8 @@ void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect 
                 }
             }
         }
-        if(allIndices.size() % m_vmultisel.Size() == 0)
-        {
-            for(size_t i = 0; i < allIndices.size(); i++)
-                CheckMenuItem(colSubMenu, 0x40000 + allIndices[i], MF_CHECKED);
-        }
-        else
-        {
-            for(size_t i = 0; i < allIndices.size(); i++)
-                CheckMenuItem(colSubMenu, 0x40000 + allIndices[i], MF_CHECKED);
-        }
+         for(size_t i = 0; i < allIndices.size(); i++)
+               CheckMenuItem(colSubMenu, 0x40000 + allIndices[i], MF_CHECKED);
     }
 }
 
