@@ -350,7 +350,7 @@ public:
    Texture *GetImage(char * const szName) const;
    void CreateGDIBackdrop();
    int GetImageLink(Texture *ppi);
-   PinBinary *PinTable::GetImageLinkBinary(int id);
+   PinBinary *GetImageLinkBinary(int id);
 
    void ListCustomInfo(HWND hwndListView);
    int AddListItem(HWND hwndListView, char *szName, char *szValue1, LPARAM lparam);

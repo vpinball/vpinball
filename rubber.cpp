@@ -56,8 +56,7 @@ HRESULT Rubber::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, xx, yy);
-         pdp->m_fSmooth = true;
+         pdp->Init(this, xx, yy, 0.f, true);
          m_vdpoint.AddElement(pdp);
       }
    }
@@ -911,8 +910,7 @@ void Rubber::DoCommand(int icmd, int x, int y)
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, vOut.x, vOut.y);
-         pdp->m_fSmooth = true; // Rubbers are usually always smooth
+         pdp->Init(this, vOut.x, vOut.y, 0.f, true); // Rubbers are usually always smooth
          m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
 

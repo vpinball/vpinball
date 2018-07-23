@@ -68,9 +68,8 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x, y + length);
+      pdp->Init(this, x, y + length, 0.f, true);
       pdp->m_calcHeight = m_d.m_heightbottom;
-      pdp->m_fSmooth = true;
       m_vdpoint.AddElement(pdp);
    }
 
@@ -78,9 +77,8 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x, y - length);
+      pdp->Init(this, x, y - length, 0.f, true);
       pdp->m_calcHeight = m_d.m_heighttop;
-      pdp->m_fSmooth = true;
       m_vdpoint.AddElement(pdp);
    }
 
@@ -1511,9 +1509,7 @@ void Ramp::AddPoint(int x, int y, const bool smooth)
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, vOut.x, vOut.y, (vvertex[max(iSeg - 1, 0)].z + vvertex[min(iSeg + 1, (int)vvertex.size() - 1)].z)*0.5f);
-      pdp->m_calcHeight = 0.0f;
-      pdp->m_fSmooth = smooth; // Ramps are usually always smooth
+      pdp->Init(this, vOut.x, vOut.y, (vvertex[max(iSeg - 1, 0)].z + vvertex[min(iSeg + 1, (int)vvertex.size() - 1)].z)*0.5f, smooth); // Ramps are usually always smooth
       m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
 
