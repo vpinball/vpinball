@@ -444,7 +444,7 @@ void IHaveDragPoints::LoadPointToken(int id, BiffReader *pbr, int version)
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, 0, 0);
+         pdp->Init(this, 0.f, 0.f, 0.f, false);
          m_vdpoint.AddElement(pdp);
          BiffReader br(pbr->m_pistream, pdp, NULL, version, pbr->m_hcrypthash, pbr->m_hcryptkey);
          br.Load();
@@ -452,10 +452,10 @@ void IHaveDragPoints::LoadPointToken(int id, BiffReader *pbr, int version)
    }
 }
 
-void DragPoint::Init(IHaveDragPoints *pihdp, const float x, const float y, const float z)
+void DragPoint::Init(IHaveDragPoints *pihdp, const float x, const float y, const float z, const bool smooth)
 {
    m_pihdp = pihdp;
-   m_fSmooth = false;
+   m_fSmooth = smooth;
 
    m_fSlingshot = false;
    m_v.x = x;
@@ -464,10 +464,7 @@ void DragPoint::Init(IHaveDragPoints *pihdp, const float x, const float y, const
    m_calcHeight = 0.0f;
    m_fAutoTexture = true;
    m_texturecoord = 0.0f;
-   if (pihdp->GetIEditable()->GetItemType() == eItemRubber)
-      m_menuid = IDR_POINTMENU_SMOOTH;
-   else
-      m_menuid = IDR_POINTMENU;
+   m_menuid = (pihdp->GetIEditable()->GetItemType() == eItemRubber) ? IDR_POINTMENU_SMOOTH : IDR_POINTMENU;
 }
 
 void DragPoint::OnLButtonDown(int x, int y)

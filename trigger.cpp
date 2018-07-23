@@ -119,28 +119,28 @@ void Trigger::InitShape(float x, float y)
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x - lengthX, y - lengthY);
+      pdp->Init(this, x - lengthX, y - lengthY, 0.f, false);
       m_vdpoint.AddElement(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x - lengthX, y + lengthY);
+      pdp->Init(this, x - lengthX, y + lengthY, 0.f, false);
       m_vdpoint.AddElement(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x + lengthX, y + lengthY);
+      pdp->Init(this, x + lengthX, y + lengthY, 0.f, false);
       m_vdpoint.AddElement(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x + lengthX, y - lengthY);
+      pdp->Init(this, x + lengthX, y - lengthY, 0.f, false);
       m_vdpoint.AddElement(pdp);
    }
 }
@@ -951,7 +951,7 @@ void Trigger::DoCommand(int icmd, int x, int y)
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, vOut.x, vOut.y);
+         pdp->Init(this, vOut.x, vOut.y, 0.f, false);
          m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
 

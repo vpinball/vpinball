@@ -61,28 +61,28 @@ HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x - width, y - length);
+      pdp->Init(this, x - width, y - length, 0.f, false);
       m_vdpoint.AddElement(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x - width, y + length);
+      pdp->Init(this, x - width, y + length, 0.f, false);
       m_vdpoint.AddElement(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x + width, y + length);
+      pdp->Init(this, x + width, y + length, 0.f, false);
       m_vdpoint.AddElement(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x + width, y - length);
+      pdp->Init(this, x + width, y - length, 0.f, false);
       m_vdpoint.AddElement(pdp);
    }
 
@@ -144,23 +144,22 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x - width, y - length);
+      pdp->Init(this, x - width, y - length, 0.f, false);
       m_vdpoint.AddElement(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x - width, y + length);
+      pdp->Init(this, x - width, y + length, 0.f, false);
       pdp->m_fAutoTexture = false;
-      pdp->m_texturecoord = 0.0f;
       m_vdpoint.AddElement(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x + width, y + length);
+      pdp->Init(this, x + width, y + length, 0.f, false);
       pdp->m_fAutoTexture = false;
       pdp->m_texturecoord = 1.0f;
       m_vdpoint.AddElement(pdp);
@@ -169,7 +168,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x + 30.0f, y - 6.0f);
+      pdp->Init(this, x + 30.0f, y - 6.0f, 0.f, false);
       m_vdpoint.AddElement(pdp);
    }
 
@@ -1170,8 +1169,7 @@ void Surface::AddPoint(int x, int y, const bool smooth)
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, vOut.x, vOut.y);
-      pdp->m_fSmooth = smooth;
+      pdp->Init(this, vOut.x, vOut.y, 0.f, smooth);
       m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
 
@@ -1343,47 +1341,46 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
       }
 
       CComObject<DragPoint> *pdp;
-
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, m_ptable->m_left, m_ptable->m_top);
+         pdp->Init(this, m_ptable->m_left, m_ptable->m_top, 0.f, false);
          m_vdpoint.InsertElementAt(pdp, cvertex - minyindex - 1);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, m_ptable->m_right, m_ptable->m_top);
+         pdp->Init(this, m_ptable->m_right, m_ptable->m_top, 0.f, false);
          m_vdpoint.InsertElementAt(pdp, cvertex - minyindex - 1);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, m_ptable->m_right + 1.0f, m_ptable->m_bottom); //!! +1 needed for whatever reason (triangulation screwed up)
+         pdp->Init(this, m_ptable->m_right + 1.0f, m_ptable->m_bottom, 0.f, false); //!! +1 needed for whatever reason (triangulation screwed up)
          m_vdpoint.InsertElementAt(pdp, cvertex - minyindex - 1);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, m_ptable->m_left, m_ptable->m_bottom);
+         pdp->Init(this, m_ptable->m_left, m_ptable->m_bottom, 0.f, false);
          m_vdpoint.InsertElementAt(pdp, cvertex - minyindex - 1);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, m_ptable->m_left - 1.0f, m_ptable->m_top); //!! -1 needed for whatever reason (triangulation screwed up)
+         pdp->Init(this, m_ptable->m_left - 1.0f, m_ptable->m_top, 0.f, false); //!! -1 needed for whatever reason (triangulation screwed up)
          m_vdpoint.InsertElementAt(pdp, cvertex - minyindex - 1);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, tmpx, tmpy);
+         pdp->Init(this, tmpx, tmpy, 0.f, false);
          m_vdpoint.InsertElementAt(pdp, cvertex - minyindex - 1);
       }
 

@@ -52,32 +52,28 @@ void Flasher::InitShape()
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x - size*0.5f, y - size*0.5f);
-         pdp->m_fSmooth = false;
+         pdp->Init(this, x - size*0.5f, y - size*0.5f, 0.f, false);
          m_vdpoint.AddElement(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x - size*0.5f, y + size*0.5f);
-         pdp->m_fSmooth = false;
+         pdp->Init(this, x - size*0.5f, y + size*0.5f, 0.f, false);
          m_vdpoint.AddElement(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x + size*0.5f, y + size*0.5f);
-         pdp->m_fSmooth = false;
+         pdp->Init(this, x + size*0.5f, y + size*0.5f, 0.f, false);
          m_vdpoint.AddElement(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x + size*0.5f, y - size*0.5f);
-         pdp->m_fSmooth = false;
+         pdp->Init(this, x + size*0.5f, y - size*0.5f, 0.f, false);
          m_vdpoint.AddElement(pdp);
       }
    }
@@ -596,7 +592,7 @@ void Flasher::DoCommand(int icmd, int x, int y)
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, vOut.x, vOut.y);
+         pdp->Init(this, vOut.x, vOut.y, 0.f, false);
          m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
 

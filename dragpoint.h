@@ -122,9 +122,9 @@ class DragPoint :
    public ISelect
 {
 public:
-   DragPoint() { m_v.z = 0.0f; m_calcHeight = 0.0f; }
+   DragPoint() { }
 
-   void Init(IHaveDragPoints *pihdp, const float x, const float y, const float z = 0.f);
+   void Init(IHaveDragPoints *pihdp, const float x, const float y, const float z, const bool smooth);
 
    // From ISelect
    virtual void OnLButtonDown(int x, int y);
