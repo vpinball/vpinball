@@ -383,11 +383,11 @@ STDMETHODIMP ScriptGlobalTable::get_LockbarKey(long *pVal)
    return S_OK;
 }
 
-BOOL ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents)
+bool ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents)
 {
    char *szPath;
    szPath = new char[MAX_PATH + lstrlen(szfilename)];
-   BOOL fSuccess = fFalse;
+   bool fSuccess = false;
 
    if (dirname != NULL)
    {
@@ -436,7 +436,7 @@ BOOL ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname
 
       delete[] szContents;
 
-      fSuccess = fTrue;
+      fSuccess = true;
    }
 
    delete[] szPath;
@@ -446,7 +446,7 @@ BOOL ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname
 
 STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 {
-   BOOL fSuccess;
+   bool fSuccess;
    char szFileName[MAX_PATH];
 
    WideCharToMultiByte(CP_ACP, 0, FileName, -1, szFileName, MAX_PATH, NULL, NULL);
@@ -1642,7 +1642,7 @@ PinTable::~PinTable()
    SAFE_VECTOR_DELETE(m_szRules);
 }
 
-BOOL PinTable::FVerifySaveToClose()
+void PinTable::FVerifySaveToClose()
 {
    if (m_vAsyncHandles.size() > 0)
    {
@@ -1655,17 +1655,15 @@ BOOL PinTable::FVerifySaveToClose()
 
       g_pvp->SetActionCur("");
    }
-
-   return fTrue;
 }
 
-BOOL PinTable::CheckPermissions(unsigned long flag)
+bool PinTable::CheckPermissions(const unsigned long flag)
 {
    return (((m_protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) ||
       ((m_protectionData.flags & flag) == flag));
 }
 
-BOOL PinTable::IsTableProtected()
+bool PinTable::IsTableProtected()
 {
    return (m_protectionData.flags != 0);
 }
@@ -1678,7 +1676,7 @@ void PinTable::ResetProtectionBlock()
    m_protectionData.size = sizeof(m_protectionData);
 }
 
-BOOL PinTable::SetupProtectionBlock(unsigned char *pPassword, unsigned long flags)
+void PinTable::SetupProtectionBlock(const unsigned char *pPassword, const unsigned long flags)
 {
    int foo;
    HCRYPTPROV   hcp = NULL;
@@ -1726,17 +1724,15 @@ BOOL PinTable::SetupProtectionBlock(unsigned char *pPassword, unsigned long flag
    foo = CryptDestroyHash(hchkey);
    foo = CryptDestroyKey(hkey);
    foo = CryptReleaseContext(hcp, 0);
-
-   return fTrue;
 }
 
-BOOL PinTable::UnlockProtectionBlock(unsigned char *pPassword)
+bool PinTable::UnlockProtectionBlock(const unsigned char *pPassword)
 {
    char secret1[] = "Could not create";
    if ((memcmp(pPassword, &secret1, sizeof(secret1)) == 0))
    {
       ResetProtectionBlock();
-      return fTrue;
+      return true;
    }
 
    int foo;
@@ -1785,9 +1781,9 @@ BOOL PinTable::UnlockProtectionBlock(unsigned char *pPassword)
       (memcmp(paraphrase, PARAPHRASE_KEY, sizeof(PARAPHRASE_KEY)) == 0))
    {
       ResetProtectionBlock();
-      return fTrue;
+      return true;
    }
-   return fFalse;
+   return false;
 }
 
 void PinTable::SwitchToLayer(int layerNumber)
@@ -2050,19 +2046,6 @@ void PinTable::InitPostLoad(VPinball *pvp)
    CreateTableWindow();
 
    SetMyScrollInfo();
-}
-
-
-BOOL FWzEqual(const WCHAR *wz1, const WCHAR *wz2)
-{
-   while (*wz1 != 0 || *wz2 != 0)
-   {
-      if (*wz1++ != *wz2++)
-      {
-         return fFalse;
-      }
-   }
-   return fTrue;
 }
 
 
@@ -2330,13 +2313,13 @@ void PinTable::Render3DProjection(Sur * const psur)
 }
 
 
-BOOL PinTable::GetDecalsEnabled() const
+bool PinTable::GetDecalsEnabled() const
 {
    return m_fRenderDecals;
 }
 
 
-BOOL PinTable::GetEMReelsEnabled() const
+bool PinTable::GetEMReelsEnabled() const
 {
    return m_fRenderEMReels;
 }
@@ -2715,20 +2698,20 @@ void PinTable::CloseVBA()
 
 HRESULT PinTable::TableSave()
 {
-   BOOL fSaveAs = (!m_szFileName[0]);
+   const bool fSaveAs = (!m_szFileName[0]);
    return Save(fSaveAs);
 }
 
 
 HRESULT PinTable::SaveAs()
 {
-   return Save(fTrue);
+   return Save(true);
 }
 
 
 HRESULT PinTable::ApcProject_Save()
 {
-   BOOL fSaveAs = (!m_szFileName[0]);
+   const bool fSaveAs = (!m_szFileName[0]);
    return Save(fSaveAs);
 }
 
@@ -2788,7 +2771,7 @@ void PinTable::AutoSave()
    g_pvp->SetCursorCur(NULL, IDC_ARROW);
 }
 
-HRESULT PinTable::Save(BOOL fSaveAs)
+HRESULT PinTable::Save(const bool fSaveAs)
 {
    IStorage* pstgRoot;
 
@@ -4727,7 +4710,7 @@ bool PinTable::ExportSound(HWND hwndListView, PinSound *pps, char *szfilename)
    return false;
 }
 
-void PinTable::ReImportSound(HWND hwndListView, PinSound *pps, char *filename, BOOL fPlay)
+void PinTable::ReImportSound(const HWND hwndListView, PinSound *pps, char *filename, const bool fPlay)
 {
    PinSound * const ppsNew = g_pvp->m_pds.LoadWaveFile(filename);
 
@@ -4756,7 +4739,7 @@ void PinTable::ReImportSound(HWND hwndListView, PinSound *pps, char *filename, B
 }
 
 
-void PinTable::ImportSound(HWND hwndListView, char *szfilename, BOOL fPlay)
+void PinTable::ImportSound(const HWND hwndListView, char *szfilename, const bool fPlay)
 {
    PinSound * const pps = g_pvp->m_pds.LoadWaveFile(szfilename);
 
@@ -4877,7 +4860,7 @@ int PinTable::AddListBinary(HWND hwndListView, PinBinary *ppb)
    return index;
 }
 
-void PinTable::NewCollection(HWND hwndListView, BOOL fFromSelection)
+void PinTable::NewCollection(const HWND hwndListView, const bool fFromSelection)
 {
    WCHAR wzT[128];
 
@@ -5595,12 +5578,12 @@ void PinTable::DoCommand(int icmd, int x, int y)
    }
    case IDC_PASTE:
    {
-       Paste(fFalse, x, y);
+       Paste(false, x, y);
        break;
    }
    case IDC_PASTEAT:
    {
-      Paste(fTrue, x, y);
+      Paste(true, x, y);
       break;
    }
 
@@ -5954,7 +5937,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             const short x = (short)(lParam & 0xffff);
             const short y = (short)((lParam >> 16) & 0xffff);
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            const BOOL middleMouseButtonPressed = ((GetKeyState(VK_MBUTTON) & 0x100) != 0);  //((GetKeyState(VK_MENU) & 0x80000000) != 0);
+            const bool middleMouseButtonPressed = ((GetKeyState(VK_MBUTTON) & 0x100) != 0);  //((GetKeyState(VK_MENU) & 0x80000000) != 0);
             if(middleMouseButtonPressed)
             {
                 // panning feature starts here...if the user holds the middle mouse button and moves the mouse 
@@ -6279,13 +6262,13 @@ void PinTable::DoMouseMove(int x, int y)
 
 void PinTable::DoLDoubleClick(int x, int y)
 {
-   //g_pvp->m_sb.SetVisible(fTrue);
+   //g_pvp->m_sb.SetVisible(true);
    //::SendMessage(g_pvp->m_hwnd, WM_SIZE, 0, 0);
 }
 
 void PinTable::ExportBlueprint()
 {
-   //BOOL fSaveAs = fTrue;
+   //bool fSaveAs = true;
    bool solid = false;
 
    //if (fSaveAs)
@@ -6830,7 +6813,7 @@ void PinTable::CheckDirty()
    m_sdsCurrentDirtyState = sdsNewDirtyState;
 }
 
-BOOL PinTable::FDirty()
+bool PinTable::FDirty()
 {
    return (m_sdsCurrentDirtyState > eSaveClean);
 }
@@ -6938,9 +6921,9 @@ void PinTable::Copy(int x, int y)
    g_pvp->SetClipboard(&vstm);
 }
 
-void PinTable::Paste(BOOL fAtLocation, int x, int y)
+void PinTable::Paste(const bool fAtLocation, int x, int y)
 {
-   BOOL fError = fFalse;
+   bool fError = false;
    int cpasted = 0;
 
    if (CheckPermissions(DISABLE_CUTCOPYPASTE))
@@ -6985,7 +6968,7 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
 
       if (!(EditableRegistry::GetAllowedViews(type) & viewflag))
       {
-         fError = fTrue;
+         fError = true;
       }
       else
       {
@@ -7632,7 +7615,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             const short x = (short)(lParam & 0xffff);
             const short y = (short)((lParam >> 16) & 0xffff);
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            const BOOL middleMouseButtonPressed = ((GetKeyState(VK_MBUTTON) & 0x100) != 0);  //((GetKeyState(VK_MENU) & 0x80000000) != 0);
+            const bool middleMouseButtonPressed = ((GetKeyState(VK_MBUTTON) & 0x100) != 0);  //((GetKeyState(VK_MENU) & 0x80000000) != 0);
             if(middleMouseButtonPressed)
             {
                 // panning feature starts here...if the user holds the middle mouse button and moves the mouse 
@@ -8112,14 +8095,14 @@ void PinTable::ReImportImage(HWND hwndListView, Texture *ppi, char *filename)
    char szextension[MAX_PATH];
    ExtensionFromFilename(filename, szextension);
 
-   BOOL fBinary;
+   bool fBinary;
    if (!lstrcmpi(szextension, "bmp"))
    {
-      fBinary = fFalse;
+      fBinary = false;
    }
    else // other format
    {
-      fBinary = fTrue;
+      fBinary = true;
    }
 
    PinBinary *ppb = 0;

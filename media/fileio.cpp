@@ -1,13 +1,13 @@
 #include "stdafx.h"
 
-BOOL Exists(const char* const filePath)
+bool Exists(const char* const filePath)
 {
 	//This will get the file attributes bitlist of the file
-	DWORD fileAtt = GetFileAttributesA(filePath);
+	const DWORD fileAtt = GetFileAttributesA(filePath);
 
 	//If an error occurred it will equal to INVALID_FILE_ATTRIBUTES
 	if (fileAtt == INVALID_FILE_ATTRIBUTES)
-		return FALSE;
+		return false;
 
 	//If the path referers to a directory it should also not exists.
 	return ((fileAtt & FILE_ATTRIBUTE_DIRECTORY) == 0);
@@ -122,17 +122,16 @@ void TitleAndPathFromFilename(const char * const szfilename, char *szpath)
    *szpath = '\0';
 }
 
-BOOL RawReadFromFile(char *szfilename, int *psize, char **pszout)
+bool RawReadFromFile(char *szfilename, int *psize, char **pszout)
 {
-   HANDLE hFile = CreateFile(szfilename,
+   const HANDLE hFile = CreateFile(szfilename,
       GENERIC_READ, FILE_SHARE_READ,
       NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      return fFalse;
       //ShowError("The file could not be opened.");
-      //return;
+      return false;
    }
 
    *psize = GetFileSize(hFile, NULL);
@@ -140,7 +139,6 @@ BOOL RawReadFromFile(char *szfilename, int *psize, char **pszout)
    *pszout = new char[*psize + 2];
 
    DWORD read;
-
    /*BOOL fFoo =*/ ReadFile(hFile, *pszout, *psize, &read, NULL);
 
    (*pszout)[*psize] = '\0';
@@ -148,7 +146,7 @@ BOOL RawReadFromFile(char *szfilename, int *psize, char **pszout)
 
    /*fFoo =*/ CloseHandle(hFile);
 
-   return fTrue;
+   return true;
 }
 
 BiffWriter::BiffWriter(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)

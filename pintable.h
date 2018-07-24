@@ -314,11 +314,11 @@ public:
 
    void Render3DProjection(Sur * const psur);
 
-   BOOL GetDecalsEnabled() const;
-   BOOL GetEMReelsEnabled() const;
+   bool GetDecalsEnabled() const;
+   bool GetEMReelsEnabled() const;
 
    void Copy(int x, int y);
-   void Paste(BOOL fAtLocation, int x, int y);
+   void Paste(const bool fAtLocation, int x, int y);
 
    void ExportBlueprint();
    void ExportTableMesh();
@@ -331,8 +331,8 @@ public:
    void Play(const bool _cameraMode = false);
    void StopPlaying();
 
-   void ImportSound(HWND hwndListView, char *filename, BOOL fPlay);
-   void ReImportSound(HWND hwndListView, PinSound *pps, char *filename, BOOL fPlay);
+   void ImportSound(const HWND hwndListView, char *filename, const bool fPlay);
+   void ReImportSound(const HWND hwndListView, PinSound *pps, char *filename, const bool fPlay);
    bool ExportSound(HWND hwndListView, PinSound *pps, char *filename);
    void ListSounds(HWND hwndListView);
    int AddListSound(HWND hwndListView, PinSound *pps);
@@ -360,7 +360,7 @@ public:
    int AddListBinary(HWND hwndListView, PinBinary *ppb);
    void RemoveFont(PinFont *ppf);
 
-   void NewCollection(HWND hwndListView, BOOL fFromSelection);
+   void NewCollection(const HWND hwndListView, const bool fFromSelection);
    void ListCollections(HWND hwndListView);
    int AddListCollection(HWND hwndListView, CComObject<Collection> *pcol);
    void RemoveCollection(CComObject<Collection> *pcol);
@@ -426,7 +426,7 @@ public:
    HRESULT TableSave();
    HRESULT SaveAs();
    virtual HRESULT ApcProject_Save();
-   HRESULT Save(BOOL fSaveAs);
+   HRESULT Save(const bool fSaveAs);
    HRESULT SaveToStorage(IStorage *pstg);
    HRESULT SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash);
    HRESULT SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
@@ -489,9 +489,9 @@ public:
    void SetDirty(SaveDirtyState sds);
    void SetNonUndoableDirty(SaveDirtyState sds);
    void CheckDirty();
-   BOOL FDirty();
+   bool FDirty();
 
-   BOOL FVerifySaveToClose();
+   void FVerifySaveToClose();
 
    //void Play2(const LPDIRECTSOUNDBUFFER &pdsb, const int &decibelvolume, float randompitch, int pitch, PinSound * pps, PinDirectSound * pDS, float pan, float front_rear_fade, const int &flags, const VARIANT_BOOL &restart);
    //void Play(PinSoundCopy * ppsc, const int &decibelvolume, float randompitch, const LPDIRECTSOUNDBUFFER &pdsb, int pitch, PinDirectSound * pDS, float pan, float front_rear_fade, const int &flags, const VARIANT_BOOL &restart);
@@ -499,11 +499,11 @@ public:
    HRESULT StopSound(BSTR Sound);
    void StopAllSounds();
 
-   BOOL CheckPermissions(unsigned long flag);
-   BOOL IsTableProtected();
+   bool CheckPermissions(const unsigned long flag);
+   bool IsTableProtected();
    void ResetProtectionBlock();
-   BOOL SetupProtectionBlock(unsigned char *pPassword, unsigned long flags);
-   BOOL UnlockProtectionBlock(unsigned char *pPassword);
+   void SetupProtectionBlock(const unsigned char *pPassword, const unsigned long flags);
+   bool UnlockProtectionBlock(const unsigned char *pPassword);
 
    void SwitchToLayer(int layerNumber);
    void AssignToLayer(IEditable *obj, int layerNumber);
@@ -901,7 +901,7 @@ public:
 
    virtual ISelect *GetISelect() { return NULL; }
 
-   BOOL GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents);
+   bool GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents);
 
    BEGIN_COM_MAP(ScriptGlobalTable)
       COM_INTERFACE_ENTRY(ITableGlobal)

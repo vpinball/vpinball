@@ -169,12 +169,12 @@ void ISelect::DoCommand(int icmd, int x, int y)
    }
    case IDC_PASTE:
    {
-       GetPTable()->Paste(fFalse, x, y);
+       GetPTable()->Paste(false, x, y);
        break;
    }
    case IDC_PASTEAT:
    {
-       GetPTable()->Paste(fTrue, x, y);
+       GetPTable()->Paste(true, x, y);
        break;
    }
    case ID_ASSIGNTO_LAYER1:

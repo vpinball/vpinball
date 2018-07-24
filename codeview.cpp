@@ -814,7 +814,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
    PinTable * const pt = g_pvp->GetActiveTable();
    if (pt != NULL && !pt->CheckPermissions(DISABLE_TABLEVIEW))
    {
-      SetVisible(fTrue);
+      SetVisible(true);
       ShowWindow(m_hwndMain, SW_RESTORE);
       ColorError(nLine, nChar);
    }
@@ -2569,7 +2569,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
    case WM_CLOSE:
    {
       CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
-      pcv->SetVisible(fFalse);
+      pcv->SetVisible(false);
       return 0;
    }
    break;
