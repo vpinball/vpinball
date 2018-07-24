@@ -941,7 +941,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_EDIT_PROPERTIES:
    {
-      BOOL fShow = fFalse;
+      bool fShow = false;
 
       if (!g_pplayer) fShow = m_sb.GetVisible(); // Get the current display state 
 
@@ -949,7 +949,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       {
       case 0: fShow = !fShow; //!!?
          break;
-      case 1: fShow = fTrue;  //set
+      case 1: fShow = true;   //set
          break;
       case 2:                 //re-display 
          break;
@@ -957,7 +957,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          break;
       }
 
-      SetRegValue("Editor", "PropertiesVisible", REG_DWORD, &fShow, 4);
+      SetRegValueBool("Editor", "PropertiesVisible", fShow);
 
       if (!g_pplayer)
       {
@@ -1928,7 +1928,7 @@ bool VPinball::FCanClose()
 
 bool VPinball::CloseTable(PinTable *ppt)
 {
-   if ((ppt->FDirty()) && (!ppt->CheckPermissions(DISABLE_TABLE_SAVE)))
+   if (ppt->FDirty() && !ppt->CheckPermissions(DISABLE_TABLE_SAVE))
    {
       LocalString ls1(IDS_SAVE_CHANGES1);
       LocalString ls2(IDS_SAVE_CHANGES2);

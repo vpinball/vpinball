@@ -403,7 +403,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 
       psb->GetBaseIDisp()->QueryInterface(IID_IPerPropertyBrowsing, (void **)&pippb);
 
-      BOOL fGotStrings = fFalse;
+      bool fGotStrings = false;
 
       if (pippb)
       {
@@ -411,7 +411,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 
          if (hr == S_OK)
          {
-            fGotStrings = fTrue;
+            fGotStrings = true;
 
             SetWindowLongPtr(hwnd, GWLP_USERDATA, 0); // So we know later whether to set the property as a string or a number from itemdata
 
@@ -535,14 +535,14 @@ void SmartBrowser::RefreshProperties()
       EnumChildWindows(m_vhwndDialog[i], EnumChildProc, (size_t)this);
 }
 
-void SmartBrowser::SetVisible(BOOL fVisible)
+void SmartBrowser::SetVisible(const bool fVisible)
 {
    ShowWindow(m_hwndFrame, fVisible ? SW_SHOW : SW_HIDE);
 }
 
-BOOL SmartBrowser::GetVisible()
+bool SmartBrowser::GetVisible()
 {
-   return IsWindowVisible(m_hwndFrame);
+   return !!IsWindowVisible(m_hwndFrame);
 }
 
 void SmartBrowser::DrawHeader(HDC hdc)
@@ -877,7 +877,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
    }
 }
 
-void SmartBrowser::SetProperty(int dispid, VARIANT *pvar, BOOL fPutRef)
+void SmartBrowser::SetProperty(int dispid, VARIANT *pvar, const bool fPutRef)
 {
    if (m_pvsel == NULL)
       return;
@@ -1076,7 +1076,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
                CComVariant var(nPos);
 
-               psb->SetProperty(dispid, &var, FALSE);
+               psb->SetProperty(dispid, &var, false);
 
                psb->GetControlValue((HWND)lParam);
 
@@ -1136,7 +1136,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
             CComVariant var(szText);
 
-            psb->SetProperty(dispid, &var, fFalse);
+            psb->SetProperty(dispid, &var, false);
 
             psb->GetControlValue((HWND)lParam); // If the new value was not valid, re-fill the control with the real value
 
@@ -1216,7 +1216,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
             CComVariant var(fChecked);
 
-            psb->SetProperty(dispid, &var, fFalse);
+            psb->SetProperty(dispid, &var, false);
             psb->GetControlValue((HWND)lParam);
          }
          if (psb->m_pvsel->Size() >= 1)
@@ -1244,14 +1244,14 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
                pippb->Release();
 
-               psb->SetProperty(dispid, &var, fFalse);
+               psb->SetProperty(dispid, &var, false);
             }
          }
          else
          {
             // enum value
             CComVariant var((int)cookie);
-            psb->SetProperty(dispid, &var, fFalse);
+            psb->SetProperty(dispid, &var, false);
          }
 
          //SendMessage((HWND)lParam, WM_SETTEXT, 0, (LPARAM)"Foo"/*szT*/);
@@ -1268,7 +1268,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
          CComVariant var(color);
 
-         psb->SetProperty(dispid, &var, fFalse);
+         psb->SetProperty(dispid, &var, false);
 
          psb->GetControlValue((HWND)lParam);
       }
@@ -1280,7 +1280,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          // Addred because the object will release the old one (really this one), before addreffing it again
          pifd->AddRef();
          CComVariant var(pifd);
-         psb->SetProperty(dispid, &var, fTrue);
+         psb->SetProperty(dispid, &var, true);
          pifd->Release();
       }
       }

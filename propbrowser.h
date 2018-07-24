@@ -62,10 +62,10 @@ public:
    void GetControlValue(HWND hwndControl);
    HWND GetHWnd() { return m_hwndFrame; }
    void Init(HWND hwndParent);
-   void SetVisible(BOOL fVisible);
-   BOOL GetVisible();
+   void SetVisible(const bool fVisible);
+   bool GetVisible();
    void DrawHeader(HDC hdc);
-   void SetProperty(int dispid, VARIANT *pvar, BOOL fPutRef);
+   void SetProperty(int dispid, VARIANT *pvar, const bool fPutRef);
 
    void PopulateDropdowns();
    void RefreshProperties();

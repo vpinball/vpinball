@@ -277,7 +277,7 @@ void SoundDialog::Import()
             while(filenamelen > 0)
             {
                 lstrcpy( &szT[len], &szFileName[filenamestart] );
-                pt->ImportSound( hSoundList, szT, fFalse );
+                pt->ImportSound( hSoundList, szT, false );
                 filenamestart += filenamelen + 1;
                 filenamelen = lstrlen( &szFileName[filenamestart] );
             }
@@ -286,7 +286,7 @@ void SoundDialog::Import()
         {
             szInitialDir[ofn.nFileOffset] = 0;
             if(pt)
-               pt->ImportSound( hSoundList, szFileName, fTrue );
+               pt->ImportSound( hSoundList, szFileName, true );
         }
         SetRegValue( "RecentDir", "SoundDir", REG_SZ, szInitialDir, lstrlen( szInitialDir ) );
         if (pt)
@@ -375,7 +375,7 @@ void SoundDialog::ReImportFrom()
                 ListView_GetItem( hSoundList, &lvitem );
                 PinSound *pps = (PinSound *)lvitem.lParam;
 
-                pt->ReImportSound( hSoundList, pps, ofn.lpstrFile, fTrue );
+                pt->ReImportSound( hSoundList, pps, ofn.lpstrFile, true );
                 ListView_SetItemText( hSoundList, sel, 1, ofn.lpstrFile );
                 pt->SetNonUndoableDirty( eSaveDirty );
             }

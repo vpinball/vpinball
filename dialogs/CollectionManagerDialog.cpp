@@ -149,13 +149,13 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case IDC_NEW:
         {
-            pt->NewCollection(hListHwnd, fFalse);
+            pt->NewCollection(hListHwnd, false);
             pt->SetNonUndoableDirty(eSaveDirty);
             break;
         }
         case IDC_CREATEFROMSELECTION:
         {
-            pt->NewCollection(hListHwnd, fTrue);
+            pt->NewCollection(hListHwnd, true);
             pt->SetNonUndoableDirty(eSaveDirty);
             break;
         }

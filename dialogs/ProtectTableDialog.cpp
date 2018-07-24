@@ -139,7 +139,7 @@ void ProtectTableDialog::OnOK()
     {
         // nope.. lets get started
         PinTable *pt = g_pvp->GetActiveTable();
-        BOOL rc = pt->SetupProtectionBlock((unsigned char *)pw, flags);
+        pt->SetupProtectionBlock((unsigned char *)pw, flags);
         CDialog::OnOK();
     }
 
@@ -176,17 +176,9 @@ void UnprotectDialog::OnOK()
         PinTable * const pt = g_pvp->GetActiveTable();
         if (pt)
         {
-            const BOOL rc = pt->UnlockProtectionBlock((unsigned char *)pw);
-            if (rc)
-            {
-                LocalString ls(IDS_UNLOCK_SUCCESS);
-                MessageBox(ls.m_szbuffer, "Visual Pinball", MB_ICONINFORMATION);
-            }
-            else
-            {
-                LocalString ls(IDS_UNLOCK_FAILED);
-                MessageBox(ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
-            }
+            const bool rc = pt->UnlockProtectionBlock((unsigned char *)pw);
+            LocalString ls(rc ? IDS_UNLOCK_SUCCESS : IDS_UNLOCK_FAILED);
+            MessageBox(ls.m_szbuffer, "Visual Pinball", rc ? MB_ICONINFORMATION : MB_ICONWARNING);
         }
     }
     CDialog::OnOK();

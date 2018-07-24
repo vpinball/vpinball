@@ -1,10 +1,10 @@
 #pragma once
 #define FID(A) *(int *)#A
 
-BOOL Exists(const char* const filePath);
+bool Exists(const char* const filePath);
 void TitleFromFilename(char *szfilename, char *sztitle);
 void ExtensionFromFilename(char * const szfilename, char * const szextension);
-BOOL RawReadFromFile(char *szfilename, int *psize, char **pszout);
+bool RawReadFromFile(char *szfilename, int *psize, char **pszout);
 void PathFromFilename(const char * const szfilename, char *szpath);
 void TitleAndPathFromFilename(const char * const szfilename, char *szpath);
 
