@@ -474,7 +474,7 @@ void Bumper::UpdateSkirt(RenderDevice *pd3dDevice, const bool doCalculation)
       vert = rMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
-      buf[i].z = (vert.z*m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (m_baseHeight + 5.0f);
+      buf[i].z = vert.z*(m_d.m_heightScale*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + (m_baseHeight + 5.0f);
 
       vert = Vertex3Ds(bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz);
       vert = rMatrix.MultiplyVectorNoTranslate(vert);
@@ -605,7 +605,6 @@ void Bumper::ExportMesh(FILE *f)
    char subObjName[MAX_PATH];
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
 
-
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
 
@@ -681,7 +680,7 @@ void Bumper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
       vert = m_fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
-      buf[i].z = (vert.z * m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
+      buf[i].z = vert.z*(m_d.m_heightScale*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + m_baseHeight;
 
       vert = Vertex3Ds(bumperBase[i].nx, bumperBase[i].ny, bumperBase[i].nz);
       vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -703,8 +702,7 @@ void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf)
       vert = m_fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
-      // scale z by 0.6 to make the skirt a bit more flat
-      buf[i].z = (vert.z*m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight+5.0f;
+      buf[i].z = vert.z*(m_d.m_heightScale*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + (m_baseHeight+5.0f);
 
       vert = Vertex3Ds(bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz);
       vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -726,7 +724,7 @@ void Bumper::GenerateRingMesh(Vertex3D_NoTex2 *buf)
       vert = m_fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
-      buf[i].z = (vert.z * m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
+      buf[i].z = vert.z*(m_d.m_heightScale*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + m_baseHeight;
 
       vert = Vertex3Ds(bumperRing[i].nx, bumperRing[i].ny, bumperRing[i].nz);
       vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -748,7 +746,7 @@ void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf)
       vert = m_fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
-      buf[i].z = (vert.z *m_d.m_heightScale + m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
+      buf[i].z = (vert.z*m_d.m_heightScale + m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
 
       vert = Vertex3Ds(bumperCap[i].nx, bumperCap[i].ny, bumperCap[i].nz);
       vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -765,8 +763,6 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
    m_d.m_time_msec = g_pplayer->m_time_msec;
 
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-
-   const float scalez = m_d.m_radius*m_d.m_heightScale*2.0f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
    if (m_d.m_fBaseVisible)
@@ -1019,11 +1015,11 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_d.m_orientation);
    }
-   else if(id == FID (RDLI))
+   else if (id == FID(RDLI))
    {
       pbr->GetFloat (&m_d.m_ringDropOffset);
    } 
-   else if(id == FID (SURF))
+   else if (id == FID(SURF))
    {
       pbr->GetString(m_d.m_szSurface);
    }
@@ -1151,7 +1147,7 @@ STDMETHODIMP Bumper::put_HeightScale(float newVal)
 {
    STARTUNDO
 
-      m_d.m_heightScale = newVal;
+   m_d.m_heightScale = newVal;
 
    STOPUNDO
 
@@ -1365,11 +1361,11 @@ STDMETHODIMP Bumper::put_Surface(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Bumper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
