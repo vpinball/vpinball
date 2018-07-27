@@ -1,75 +1,55 @@
 VP 10.5.0 Changelog
 ------------------------
 
-- fix immediate player shutdown if global physics sets not setup/initialized by the user in the global options
-- fix wrong initialization order for global physics sets, leading to uninitialized physics parameters on the first run of a table (including potential crashes due to strange values)
+- add ScreenSpace Reflections to the global video and table user properties, strength can be changed in the table lighting panel
+   This adds very fake, but also very fast local reflection effects to all table elements
+- make exclusive fullscreen the new default when using Windows 10 build 1803 and above
+- add option to the global video preferences to disable reflections of dynamic elements on the playfield (to help lower end PC systems)
 
-- handle corner case if a timer is disabled and then re-enabled within its own handler to prevent falsifying the timer interval
+- static table elements are now over-sampled/better anti-aliased and always rendered at highest detail level (latter only applicable for rubbers and ramps)
 
-- fix obscure bug where starting the blank/built-in tables with the options pane closed causes the ball to levitate off the table
+- improve quality of internal DMD shader, now it's almost resolution independent, especially when using it via flashers (e.g. FSS tables and the like)
 
+- fix issue with optimized dynamic group rendering of primitives, in general note that
+   1. if all elements in a group are dynamic primitives/meshes and all these use the same texture and same material, they will be grouped into
+      one big render buffer/single render call to speed up the rendering of transparent meshes on the table (like the plastics for example)
+   2. if elements are grouped together they will be treated as a group in the editor. Click on it and all elements in that group are selected at once
+   3. if you group primitives you can't animate or move/rotate them dynamically via script!
+
+- throw balls in player: add support to change the default ball mass when throwing a ball. The user can also set the default ball mass in the editor options (menu: preferences)
 - built-in ball control: Enable in debug window (or via "ball control always on" in the global options)
    - left mouse click directs the ball towards the mouse cursor, left flipper key releases control
    - can also double click to make the active ball jump to the cursor
    - can hold left mouse button down to guide the ball
    - if "throw" and "ball control" are both checked, one can use the throwing action on the ball control instead of making a new ball
 
-- allow ESC-key to resume table if pause dialog is up
+- increase usable UI layers from 8 to 11
 
-- fix rendering of bumper base/skirt if ring is disabled
+- script button can now both open and close the script editor
+- optionally make View->Script always show the script (see new option in Preferences->Editor Options)
 
-- update builtin tables with 3 different sling arms (thanks bord and BorgDog)
+- add copy/paste feature for control points. Select a control point, press the "Copy" button or CTRL+C to copy the coordinates.
+   Then select another control point of another element and press the "Paste" button or leave the mouse cursor over the control point and press CTRL+V.
+   ATTENTION: you can also copy/paste control points of the same element but this can lead to bad shapes of the selected element
+- add units conversion feature from VPUnits -> inches/millimeters in the status bar for control points.
+   If you select two control points of a wall/ramp the status bar shows the distance of X/Y in the selected unit.
+   The unit used for the conversion can be set in the editor options dialog.
 
-- fix issue with optimized dynamic group rendering of primitives, note that
-   1. if all elements in a group are dynamic primitives/meshes and all these use the same texture and same material, they will be grouped into
-      one big render buffer/single render call to speed up the rendering of transparent meshes on the table (like the plastics for example)
-   2. if elements are grouped together they will be treated as a group in the editor. Click on it and all elements in that group are selected at once
-   3. if you group primitives you can't animate or move/rotate them dynamically via script!
-
-- add option to the global video preferences to disable reflections of dynamic elements on the playfield (to help lower end PC systems)
-
-- fix rubber triangulation issue leading to visual artifacts (especially in the editor) and rarely also weird physics behavior
-
-- make exclusive fullscreen the new default when using Windows 10 build 1803 and above
-
-- optionally make View->Script always show the script (see new option in Preferences->Editor Options) 
 - make the Edit->Search/Select Element un-minimize if minimized when selected
 
-- improve table exit performance (particularly when using Windows 10 build 1803)
-
-- add RingDropOffset to the bumper element
-
-- log message in debug window when PlaySound is called for a sound that's missing in the sound manager
-
-- static table elements are now over-sampled/better anti-aliased and always rendered at highest detail level (latter only applicable for rubbers and ramps)
-- rubbers now fully respect the element detail level slider, plus their hit shapes feature less triangles (=faster physics/collisions)
-
-- update bumper base, ring and skirt with better meshes provided by flupper1
-
-- fix Flipper element's EOS Torque and EOS Torque Angle and Elasticity and ElasticityFalloff and RampUp to be able to be changed by the script
-
-- fix EOS Torque and EOS Torque Angle not overriding the table flipper settings when used via the global (flipper) physics sets
-
-- add -EnableTrueFullscreen (force enables/overrides the true fullscreen video preference) to command line
-
-- add VPTableStart broadcast message for frontends as notification that playfield should be shown
-
-- throw balls in player: add support to change the default ball mass when throwing a ball. The user can also set the default ball mass in the editor options (menu: preferences)
-
-- configurable global flipper physics sets: setting a negative value for a flipper physics setting in there will ignore that value and use the respective table flipper value instead
-
+- fix detection of used materials (bumpers, triggers & kickers were missing) and used images (color grading LUT was missing)
+- fix sound device selection/mapping for music (i.e. usually the backglass device)
 - add 'Set Defaults' button to the editor properties to reset editor changes and position/size of the script window
 
-- increase usable layers from 8 to 11
+- configurable global flipper physics sets: setting a negative value for a flipper physics setting in there will ignore that value and use the respective table flipper value instead
+- fix immediate player shutdown if global physics sets not setup/initialized by the user in the global options
+- fix wrong initialization order for global physics sets, leading to uninitialized physics parameters on the first run of a table (including potential crashes due to strange values)
+- fix EOS Torque and EOS Torque Angle not overriding the table flipper settings when used via the global (flipper) physics sets
 
-- add ScreenSpace Reflections to the global video and table user properties, strength can be changed in the table lighting panel
-  This adds very fake, but also very fast local reflection effects to all table elements
-
-- add 'Disable Lighting from below' functionality for Targets and Walls (0..1) to optionally disable light coming from below (e.g. from light elements)
+- rubbers now fully respect the element detail level slider, plus their hit shapes feature less triangles (=faster physics/collisions)
+- fix rubber triangulation issue leading to visual artifacts (especially in the editor) and rarely also weird physics behavior
 
 - fix ramp collision/internal walls reaching below and above the actual visible walls or wires, which was mainly an issue for rather straight and/or very steep ramps
-
-- draw also flipper thickness in the editor
 
 - improve gate swing physics, correct backwards initial swing, and expose new gravity factor parameter.
   Also add some "bounce back" for 1-way gates. Currently set up to use as-is defaults, but Wrd1972 recommends the following settings:
@@ -84,29 +64,36 @@ VP 10.5.0 Changelog
     Dampening = .9
     Gravity = 1
 
-- add copy/paste feature for control points. Select a control point, press the "Copy" button or CTRL+C to copy the coordinates. 
-  Then select another control point of another element and press the "Paste" button or leave the mouse cursor over the control point and press CTRL+V.
-  ATTENTION: you can also copy/paste control points of the same element but this can lead to bad shapes of the selected element
-
-- fix kicker export bug
-
-- improve quality of internal DMD shader, now it's almost resolution independent, especially when using it via flashers (e.g. FSS tables and the like)
-
-- add units conversion feature from VPUnits -> inches/millimeters in the status bar for control points. 
-  If you select two control points of a wall/ramp the status bar shows the distance of X/Y in the selected unit.
-  The unit used for the conversion can be set in the editor options dialog.
-
 - animate bumper skirts depending on ball impact
-
-- fix triggers getting "stuck" when the ball is moving fast
+- add RingDropOffset to the bumper element
+- fix rendering of bumper base/skirt if ring is disabled
+- update bumper base, ring and skirt with better meshes provided by flupper1
 
 - allow reels and textboxes to be moved via the script (and textboxes can also be placed at floating point precision level)
 
-- fix detection of used materials (bumpers, triggers & kickers were missing) and used images (color grading LUT was missing)
+- add 'Disable Lighting from below' functionality for Targets and Walls (0..1) to optionally disable light coming from below (e.g. from light elements)
 
-- fix sound device selection/mapping for music (i.e. usually the backglass device)
+- handle corner case if a timer is disabled and then re-enabled within its own handler to prevent falsifying the timer interval
 
-- script button can now both open and close the script editor
+- fix flipper element's EOS Torque and EOS Torque Angle and Elasticity and ElasticityFalloff and RampUp to be able to be changed by the script
+- draw also flipper thickness in the editor
+
+- fix triggers getting "stuck" when the ball is moving fast
+
+- fix kicker export bug
+
+- update builtin tables with 3 different sling arms (thanks bord and BorgDog)
+- fix obscure bug where starting the blank/built-in tables with the options pane closed causes the ball to levitate off the table
+
+- allow ESC-key to resume table if pause dialog is up
+
+- add -EnableTrueFullscreen (force enables/overrides the true fullscreen video preference) to command line
+
+- improve table exit performance (particularly when using Windows 10 build 1803)
+
+- log message in debug window when PlaySound is called for a sound that's missing in the sound manager
+
+- add VPTableStart broadcast message for frontends as notification that playfield should be shown
 
 - update BASS library to 2.4.13.8
 
