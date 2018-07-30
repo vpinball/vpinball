@@ -1245,9 +1245,9 @@ void Primitive::PutCenter(const Vertex2D * const pv)
 // Save and Load
 //////////////////////////////
 
-HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    /*
     * Someone decided that it was a good idea to write these vectors including
@@ -1377,7 +1377,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    }
    bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
 
-   ISelect::SaveData(pstm, hcrypthash, hcryptkey);
+   ISelect::SaveData(pstm, hcrypthash);
 
    bw.WriteTag(FID(ENDB));
 

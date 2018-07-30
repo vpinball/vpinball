@@ -812,7 +812,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
    m_fScriptError = true;
 
    PinTable * const pt = g_pvp->GetActiveTable();
-   if (pt != NULL && !pt->CheckPermissions(DISABLE_TABLEVIEW))
+   if (pt != NULL)
    {
       SetVisible(true);
       ShowWindow(m_hwndMain, SW_RESTORE);
@@ -839,7 +839,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
    EnableWindow(g_pvp->m_hwnd, TRUE);
 
-   if (pt != NULL && !pt->CheckPermissions(DISABLE_TABLEVIEW))
+   if (pt != NULL)
       SetFocus(m_hwndScintilla);
 
    return S_OK;
@@ -1104,34 +1104,12 @@ next:
    }
 }
 
-void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
+void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
 {
    size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
    const size_t bufferSize = cchar + 32;
    char * const szText = new char[bufferSize + 1];
    SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
-
-   // if there is a valid key, then encrypt the script text (now in szText)
-   // (must be done before the hash is updated)
-   if (hcryptkey != NULL)
-   {
-      // get the size of the data to encrypt
-      DWORD cryptlen = (DWORD)cchar;
-
-      // encrypt the script
-      CryptEncrypt(hcryptkey,			// key to use
-         0, 				// not hashing data at the same time
-         TRUE, 				// last block (or only block)
-         0, 				// no flags
-         (BYTE *)szText,	// buffer to encrypt
-         &cryptlen,			// size of data to encrypt
-         (DWORD)bufferSize);		// maximum size of buffer (includes padding)
-
-      /*const int foo =*/ GetLastError();	// purge any errors
-
-      // update the size of the buffer to stream out (and create hash for)
-      cchar = cryptlen;
-   }
 
    ULONG writ = 0;
    pistream->Write(&cchar, (ULONG)sizeof(int), &writ);
@@ -2102,7 +2080,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 			int iUDIndx = UDKeyIndex( ListIn, CurrentParentKey);
 			if (iUDIndx == -1)
 			{
-				ParentTreeInvalid = true;
+				//ParentTreeInvalid = true;
 				ParentLevel = 0;
 				if (!StopErrorDisplay)
 				{
@@ -2125,7 +2103,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 		{
 			if (ParentLevel == -1)
 			{
-				ParentTreeInvalid = true;
+				//ParentTreeInvalid = true;
 				ParentLevel = 0;
 				if (!StopErrorDisplay)
 				{
@@ -2360,7 +2338,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
    const int scriptLines = (int)SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
    SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
 	ParentLevel = 0; //root
-	ParentTreeInvalid = false;
+	//ParentTreeInvalid = false;
 	for (int linecount = 0; linecount < scriptLines; ++linecount) 
    {
 		// Read line
@@ -2478,7 +2456,7 @@ void CodeViewer::ParseVPCore()
 ///////////////////////
 	ParentLevel = 0; //root
 	StopErrorDisplay = true;/// WIP BRANDREW (was set to false)
-	ParentTreeInvalid = false;
+	//ParentTreeInvalid = false;
 	int linecount = 0;
 	while (!feof(fCore))
 	{
@@ -3135,9 +3113,9 @@ ISelect *Collection::GetISelect()
    return NULL;
 }
 
-HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 

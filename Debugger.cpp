@@ -457,8 +457,6 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
          SendMessage(hwndDlg, RECOMPUTEBUTTONCHECK, 0, 0);
 
-         if (!g_pplayer->m_ptable->CheckPermissions(DISABLE_SCRIPT_EDITING))
-         {
             RECT rcEditSize;
             HWND hwndEditSize = GetDlgItem(hwndDlg, IDC_EDITSIZE);
             GetWindowRect(hwndEditSize, &rcEditSize);
@@ -476,12 +474,7 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETMARGINWIDTHN, 1, 0);
 
             SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETTABWIDTH, 4, 0);
-         }
-         else
-         {
-            HWND hwndExpand = GetDlgItem(hwndDlg, IDC_EXPAND);
-            ShowWindow(hwndExpand, SW_HIDE);
-         }
+
          SendDlgItemMessage(hwndDlg, IDC_BALL_THROWING, BM_SETCHECK, g_pplayer->m_fThrowBalls ? BST_CHECKED : BST_UNCHECKED, 0);
 		 SendDlgItemMessage(hwndDlg, IDC_BALL_CONTROL, BM_SETCHECK, g_pplayer->m_fBallControl ? BST_CHECKED : BST_UNCHECKED, 0);
 

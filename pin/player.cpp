@@ -5785,12 +5785,6 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                }
                case ID_DEBUGWINDOW:
                {
-                  if (g_pplayer->m_ptable->CheckPermissions(DISABLE_DEBUGGER))
-                  {
-                     EndDialog(hwndDlg, ID_RESUME);
-                  }
-                  else
-                  {
                      g_pplayer->m_fDebugMode = true;
                      if (g_pplayer->m_hwndDebugger && !IsWindowVisible(g_pplayer->m_hwndDebugger))
                      {
@@ -5802,7 +5796,6 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                         g_pplayer->m_hwndDebugger = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_DEBUGGER), g_pplayer->m_hwnd, DebuggerProc, NULL);
                      }
                      EndDialog(hwndDlg, ID_DEBUGWINDOW);
-                  }
                   break;
                }
                case ID_QUIT:

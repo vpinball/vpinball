@@ -1,4 +1,5 @@
 #pragma once
+
 #include "inc\gpuprofiler.h"
 #include "RenderDevice.h"
 #include "Texture.h"

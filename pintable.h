@@ -21,21 +21,8 @@ using namespace std::tr1;
 #define MIN_ZOOM 0.126f // purposely make them offset from powers to 2 to account for roundoff error
 #define MAX_ZOOM 63.9f
 
-// define table protection flags
-#define DISABLE_TABLE_SAVE		0x00000001      // cannot save table (or export)
 #define DISABLE_SCRIPT_EDITING	0x00000002		// cannot open script windows (stops editing and viewing)
-#define DISABLE_OPEN_MANAGERS	0x00000004		// cannot open file managers (image, sound etc..)
-#define DISABLE_CUTCOPYPASTE	0x00000008		// cannot cuy, copy and paste items to/from the clipboard
-#define DISABLE_TABLEVIEW		0x00000010		// cannot view the table design
-#define DISABLE_TABLE_SAVEPROT	0x00000020		// connot save a protected table (stops hijacking)
-#define DISABLE_DEBUGGER		0x00000040		// cannot use the visual table debugger
-
 #define DISABLE_EVERYTHING		0x80000000		// everything is off limits (including future locks)
-
-#define	PROT_DATA_VERSION		1
-#define	PROT_PASSWORD_LENGTH	16
-#define	PROT_CIPHER_LENGTH		(PROT_PASSWORD_LENGTH+8)
-#define	PROT_KEYVERSION			0
 
 #define MAX_LAYERS              11
 
@@ -47,7 +34,7 @@ struct LightSource {
 typedef struct {
    long				fileversion;
    long				size;
-   unsigned char	paraphrase[PROT_CIPHER_LENGTH];
+   unsigned char	paraphrase[16 + 8];
    unsigned long	flags;
    int				keyversion;
    int				spare1;
@@ -432,7 +419,7 @@ public:
    HRESULT SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
    HRESULT WriteInfoValue(IStorage* pstg, WCHAR *wzName, char *szValue, HCRYPTHASH hcrypthash);
    HRESULT ReadInfoValue(IStorage* pstg, WCHAR *wzName, char **pszValue, HCRYPTHASH hcrypthash);
-   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash);
    HRESULT LoadGameFromFilename(char *szFileName);
    HRESULT LoadGameFromStorage(IStorage *pstgRoot);
    HRESULT LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version);
@@ -498,12 +485,6 @@ public:
 
    HRESULT StopSound(BSTR Sound);
    void StopAllSounds();
-
-   bool CheckPermissions(const unsigned long flag);
-   bool IsTableProtected();
-   void ResetProtectionBlock();
-   void SetupProtectionBlock(const unsigned char *pPassword, const unsigned long flags);
-   bool UnlockProtectionBlock(const unsigned char *pPassword);
 
    void SwitchToLayer(int layerNumber);
    void AssignToLayer(IEditable *obj, int layerNumber);
@@ -644,10 +625,11 @@ public:
    U32   m_tblAutoStartRetry;      // msecs before retrying to autostart.
    float m_tblVolmod;              // volume modulation for doing audio balancing
    U32   m_tblExitConfirm;         // msecs for esc button to be pressed to exit completely
-   float m_globalDifficulty;		// Table Difficulty Level
+   float m_globalDifficulty;       // table Difficulty Level
 
    short m_oldMousePosX;
    short m_oldMousePosY;
+
    _protectionData m_protectionData;
 
    char m_szImage[MAXTOKEN];

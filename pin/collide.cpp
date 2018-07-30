@@ -151,7 +151,7 @@ float LineSeg::HitTest(const Ball * const pball, const float dtime, CollisionEve
    return HitTestBasic(pball, dtime, coll, true, true, true); // normal face, lateral, rigid
 }
 
-void LineSeg::Collide(CollisionEvent& coll)
+void LineSeg::Collide(const CollisionEvent& coll)
 {
    const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_vel);
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
@@ -173,7 +173,8 @@ void LineSeg::CalcNormal()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const
+float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime, CollisionEvent& coll,
+                                    const bool direction, const bool lateral, const bool rigid) const // all of these true = bumper/flipperbase/gate/spinner, all false = kicker/trigger
 {
    if (!m_fEnabled || pball->m_frozen) return -1.0f;
 
@@ -321,7 +322,7 @@ float HitCircle::HitTest(const Ball * const pball, const float dtime, CollisionE
    return HitTestBasicRadius(pball, dtime, coll, true, true, true);
 }
 
-void HitCircle::Collide(CollisionEvent& coll)
+void HitCircle::Collide(const CollisionEvent& coll)
 {
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 }
@@ -414,7 +415,7 @@ void HitLineZ::CalcHitBBox()
    // zlow and zhigh set in ctor
 }
 
-void HitLineZ::Collide(CollisionEvent& coll)
+void HitLineZ::Collide(const CollisionEvent& coll)
 {
    const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_vel);
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
@@ -500,7 +501,7 @@ void HitPoint::CalcHitBBox()
    m_hitBBox = FRect3D(m_p.x, m_p.x, m_p.y, m_p.y, m_p.z, m_p.z);
 }
 
-void HitPoint::Collide(CollisionEvent& coll)
+void HitPoint::Collide(const CollisionEvent& coll)
 {
    const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_vel);
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);

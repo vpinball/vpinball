@@ -165,7 +165,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eTrigger; }
-   virtual void Collide(CollisionEvent& coll)  { DoCollide(coll.m_ball, coll.m_hitnormal, coll.m_hitflag, false); }
+   virtual void Collide(const CollisionEvent& coll)  { DoCollide(coll.m_ball, coll.m_hitnormal, coll.m_hitflag, false); }
 
    void DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& hitnormal) const;
    void DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, const bool hitflag, const bool newBall);

@@ -526,9 +526,9 @@ void DispReel::PutCenter(const Vertex2D * const pv)
 }
 
 
-HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteStruct(FID(VER1), &m_d.m_v1, sizeof(Vertex2D));
    bw.WriteStruct(FID(VER2), &m_d.m_v2, sizeof(Vertex2D));
@@ -552,7 +552,7 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteBool(FID(VISI), m_d.m_fVisible);
    bw.WriteInt(FID(GIPR), m_d.m_imagesPerGridRow);
 
-   ISelect::SaveData(pstm, hcrypthash, hcryptkey); //add BDS2
+   ISelect::SaveData(pstm, hcrypthash);
 
    bw.WriteTag(FID(ENDB));
 

@@ -76,9 +76,7 @@ bool PinBinary::WriteToFile(char *szfilename)
 
 HRESULT PinBinary::SaveToStream(IStream *pstream)
 {
-   //HRESULT hr;
-
-   BiffWriter bw(pstream, NULL, NULL);
+   BiffWriter bw(pstream, NULL);
 
    bw.WriteString(FID(NAME), m_szName);
 

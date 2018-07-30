@@ -21,7 +21,7 @@ public:
 
    virtual int GetMinimumPoints() const { return 3; }
 
-   virtual HRESULT SavePointData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   virtual HRESULT SavePointData(IStream *pstm, HCRYPTHASH hcrypthash);
    //virtual HRESULT InitPointLoad(IStream *pstm, HCRYPTHASH hcrypthash);
    virtual void LoadPointToken(int id, BiffReader *pbr, int version);
 

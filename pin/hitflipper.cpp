@@ -732,7 +732,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime
 }
 
 
-void HitFlipper::Collide(CollisionEvent& coll)
+void HitFlipper::Collide(const CollisionEvent& coll)
 {
    Ball * const pball = coll.m_ball;
    const Vertex3Ds normal = coll.m_hitnormal;

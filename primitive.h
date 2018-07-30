@@ -25,6 +25,7 @@ public:
    std::vector<FrameData> m_animationFrames;
    std::vector<Vertex3D_NoTex2> m_vertices;
    std::vector<unsigned int> m_indices;
+
    Mesh(){ middlePoint.x = 0.0f; middlePoint.y = 0.0f; middlePoint.z = 0.0f; }
    void Clear();
    bool LoadWavefrontObj(const char *fname, const bool flipTV, const bool convertToLeftHanded);

@@ -689,7 +689,7 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
    }
 }
 
-void HitPlunger::Collide(CollisionEvent& coll)
+void HitPlunger::Collide(const CollisionEvent& coll)
 {
    Ball * const pball = coll.m_ball;
 

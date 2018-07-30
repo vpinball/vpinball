@@ -1019,9 +1019,9 @@ void Light::MoveOffset(const float dx, const float dy)
    m_ptable->SetDirtyDraw();
 }
 
-HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
    bw.WriteFloat(FID(RADI), m_d.m_falloff);
@@ -1052,11 +1052,11 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteFloat(FID(BMVA), m_d.m_modulate_vs_add);
    bw.WriteFloat(FID(BHHI), m_d.m_bulbHaloHeight);
 
-   ISelect::SaveData(pstm, hcrypthash, hcryptkey);
+   ISelect::SaveData(pstm, hcrypthash);
 
    //bw.WriteTag(FID(PNTS));
    HRESULT hr;
-   if (FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
+   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
       return hr;
 
    bw.WriteTag(FID(ENDB));

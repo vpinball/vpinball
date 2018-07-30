@@ -136,7 +136,7 @@ Texture::~Texture()
 
 HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
 {
-   BiffWriter bw(pstream, NULL, NULL);
+   BiffWriter bw(pstream, NULL);
 
    bw.WriteString(FID(NAME), m_szName);
    bw.WriteString(FID(INME), m_szInternalName);

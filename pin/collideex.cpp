@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-void BumperHitCircle::Collide(CollisionEvent& coll)
+void BumperHitCircle::Collide(const CollisionEvent& coll)
 {
    if (!m_fEnabled) return;
 
@@ -28,7 +28,7 @@ float LineSegSlingshot::HitTest(const Ball * const pball, const float dtime, Col
    return HitTestBasic(pball, dtime, coll, true, true, true);
 }
 
-void LineSegSlingshot::Collide(CollisionEvent& coll)
+void LineSegSlingshot::Collide(const CollisionEvent& coll)
 {
    Ball * const pball = coll.m_ball;
    const Vertex3Ds& hitnormal = coll.m_hitnormal;
@@ -154,7 +154,7 @@ float HitGate::HitTest(const Ball * const pball, const float dtime, CollisionEve
    return -1.0f;
 }
 
-void HitGate::Collide(CollisionEvent& coll)
+void HitGate::Collide(const CollisionEvent& coll)
 {
    Ball * const pball = coll.m_ball;
    const Vertex3Ds& hitnormal = coll.m_hitnormal;
@@ -333,7 +333,7 @@ float HitSpinner::HitTest(const Ball * const pball, const float dtime, Collision
    return -1.0f;
 }
 
-void HitSpinner::Collide(CollisionEvent& coll)
+void HitSpinner::Collide(const CollisionEvent& coll)
 {
    const Vertex3Ds& hitnormal = coll.m_hitnormal;
 
@@ -625,7 +625,7 @@ float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionE
    return -1.0f;
 }
 
-void Hit3DPoly::Collide(CollisionEvent& coll)
+void Hit3DPoly::Collide(const CollisionEvent& coll)
 {
    Ball * const pball = coll.m_ball;
    const Vertex3Ds& hitnormal = coll.m_hitnormal;
@@ -794,7 +794,7 @@ float HitTriangle::HitTest(const Ball * const pball, const float dtime, Collisio
       return -1.0f;
 }
 
-void HitTriangle::Collide(CollisionEvent& coll)
+void HitTriangle::Collide(const CollisionEvent& coll)
 {
    Ball * const pball = coll.m_ball;
    const Vertex3Ds& hitnormal = coll.m_hitnormal;
@@ -904,7 +904,7 @@ float HitPlane::HitTest(const Ball * const pball, const float dtime, CollisionEv
    return hittime;
 }
 
-void HitPlane::Collide(CollisionEvent& coll)
+void HitPlane::Collide(const CollisionEvent& coll)
 {
    //slintf("Playfield COLLISION - (%f %f %f) - (%f %f %f)\n",
    //        coll.m_ball->m_pos.x, coll.m_ball->m_pos.y, coll.m_ball->m_pos.z,
@@ -995,7 +995,7 @@ float HitLine3D::HitTest(const Ball * pball_, const float dtime, CollisionEvent&
    return hittime;
 }
 
-void HitLine3D::Collide(CollisionEvent& coll)
+void HitLine3D::Collide(const CollisionEvent& coll)
 {
    Ball *const pball = coll.m_ball;
    const Vertex3Ds& hitnormal = coll.m_hitnormal;
@@ -1024,7 +1024,7 @@ float TriggerLineSeg::HitTest(const Ball * const pball, const float dtime, Colli
    return HitTestBasic(pball, dtime, coll, false, false, false);
 }
 
-void TriggerLineSeg::Collide(CollisionEvent& coll)
+void TriggerLineSeg::Collide(const CollisionEvent& coll)
 {
    Ball * const pball = coll.m_ball;
 
@@ -1058,7 +1058,7 @@ float TriggerHitCircle::HitTest(const Ball * const pball, const float dtime, Col
    return HitTestBasicRadius(pball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
 }
 
-void TriggerHitCircle::Collide(CollisionEvent& coll)
+void TriggerHitCircle::Collide(const CollisionEvent& coll)
 {
    Ball * const pball = coll.m_ball;
 

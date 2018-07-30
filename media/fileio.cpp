@@ -149,19 +149,16 @@ bool RawReadFromFile(char *szfilename, int *psize, char **pszout)
    return true;
 }
 
-BiffWriter::BiffWriter(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+BiffWriter::BiffWriter(IStream *pistream, HCRYPTHASH hcrypthash)
 {
    m_pistream = pistream;
    m_hcrypthash = hcrypthash;
-   m_hcryptkey = hcryptkey;
 }
 
 HRESULT BiffWriter::WriteBytes(const void *pv, unsigned long count, unsigned long *foo)
 {
    if (m_hcrypthash)
-   {
       CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
-   }
 
    return m_pistream->Write(pv, count, foo);
 }
@@ -439,7 +436,7 @@ HRESULT BiffReader::Load()
    {
       if (m_version > 30)
       {
-         GetIntNoHash(&m_bytesinrecordremaining);
+         /*const HRESULT hr =*/ GetIntNoHash(&m_bytesinrecordremaining);
       }
 
       const HRESULT hr = GetInt(&tag);
@@ -460,7 +457,7 @@ HRESULT BiffReader::Load()
          if (m_bytesinrecordremaining > 0)
          {
             BYTE * const szT = new BYTE[m_bytesinrecordremaining];
-            GetStruct(szT, m_bytesinrecordremaining);
+            /*const HRESULT hr =*/ GetStruct(szT, m_bytesinrecordremaining);
             delete[] szT;
          }
       }

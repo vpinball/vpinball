@@ -678,9 +678,9 @@ void Rubber::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteFloat(FID(HTTP), m_d.m_height);
    bw.WriteFloat(FID(HTHI), m_d.m_hitHeight);
@@ -706,11 +706,11 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteString( FID( MAPH ), m_d.m_szPhysicsMaterial );
    bw.WriteBool( FID( OVPH ), m_d.m_fOverwritePhysics );
 
-   ISelect::SaveData(pstm, hcrypthash, hcryptkey);
+   ISelect::SaveData(pstm, hcrypthash);
 
    bw.WriteTag(FID(PNTS));
    HRESULT hr;
-   if (FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
+   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
       return hr;
 
    bw.WriteTag(FID(ENDB));

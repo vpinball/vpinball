@@ -409,7 +409,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    for (int i = 0; i < cvertex; i++)
    {
       // clamp next and prev as ramps do not loop
-      const RenderVertex3D & vprev = vvertex[(i>0) ? i - 1 : i];
+      const RenderVertex3D & vprev = vvertex[(i > 0) ? i - 1 : i];
       const RenderVertex3D & vnext = vvertex[(i < (cvertex - 1)) ? i + 1 : i];
       const RenderVertex3D & vmiddle = vvertex[i];
 
@@ -424,7 +424,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
          Vertex2D v1normal(vprev.y - vmiddle.y, vmiddle.x - vprev.x);   // vector vmiddle-vprev rotated RIGHT
          Vertex2D v2normal(vmiddle.y - vnext.y, vnext.x - vmiddle.x);   // vector vnext-vmiddle rotated RIGHT
 
-         // special handling for beginning and end of the ramp
+         // special handling for beginning and end of the ramp, as ramps do not loop
          if (i == (cvertex - 1))
          {
             v1normal.Normalize();
@@ -1284,9 +1284,9 @@ void Ramp::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteFloat(FID(HTBT), m_d.m_heightbottom);
    bw.WriteFloat(FID(HTTP), m_d.m_heighttop);
@@ -1316,14 +1316,14 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(RADX), m_d.m_wireDistanceX);
    bw.WriteFloat(FID(RADY), m_d.m_wireDistanceY);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
-   bw.WriteString( FID( MAPH ), m_d.m_szPhysicsMaterial );
-   bw.WriteBool( FID( OVPH ), m_d.m_fOverwritePhysics );
+   bw.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial );
+   bw.WriteBool(FID(OVPH), m_d.m_fOverwritePhysics );
 
-   ISelect::SaveData(pstm, hcrypthash, hcryptkey);
+   ISelect::SaveData(pstm, hcrypthash);
 
    bw.WriteTag(FID(PNTS));
    HRESULT hr;
-   if (FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
+   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
       return hr;
 
    bw.WriteTag(FID(ENDB));

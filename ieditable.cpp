@@ -117,13 +117,13 @@ HRESULT IEditable::put_UserValue(VARIANT *newVal)
 {
    STARTUNDO
 
-      VariantInit(&m_uservalue);
+   VariantInit(&m_uservalue);
    VariantClear(&m_uservalue);
    const HRESULT hr = VariantCopy(&m_uservalue, newVal);
 
    STOPUNDO
 
-      return hr;
+   return hr;
 }
 
 void IEditable::BeginPlay()
