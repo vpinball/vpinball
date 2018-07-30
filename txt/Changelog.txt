@@ -1,3 +1,13 @@
+VP 10.6.0 Changelog
+------------------------
+
+- remove all table encryption, old locked tables automatically unlock now
+
+- see core scripts (header of core.vbs) for the respective changelog (version 3.57)
+- see CommandReference.txt for the changelog of all the scripting properties/interface changes
+
+- DirectX 8 port for input handling (currently disabled)
+
 VP 10.5.0 Changelog
 ------------------------
 
@@ -99,8 +109,6 @@ VP 10.5.0 Changelog
 
 - see core scripts (header of core.vbs) for the respective changelog (version 3.56)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
-
-- DirectX 8 port for input handling (currently disabled)
 
 VP 10.4.0 Changelog
 ------------------------
