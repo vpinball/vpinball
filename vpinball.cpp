@@ -906,12 +906,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
       ptCur = GetActiveTable();
       if (ptCur)
-      {
-         if (ptCur->CheckPermissions(DISABLE_CUTCOPYPASTE))
-            ShowPermissionError();
-         else
-            ptCur->OnDelete();
-      }
+         ptCur->OnDelete();
       break;
    }
    case ID_TABLE_CAMERAMODE:
@@ -926,16 +921,11 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       ptCur = GetActiveTable();
       if (ptCur)
       {
-         if (ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING))
-            ShowPermissionError();
-         else
-         {
-			int alwaysViewScript = GetRegIntWithDefault("Editor", "AlwaysViewScript", 0);
+            int alwaysViewScript = GetRegIntWithDefault("Editor", "AlwaysViewScript", 0);
 
             ptCur->m_pcv->SetVisible(alwaysViewScript || !(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized));
 
             SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, MAKELONG(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized, 0));
-         }
       }
       break;
    }
@@ -985,10 +975,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       {
          ptCur = GetActiveTable();
          if (ptCur)
-         {
-            if (!ptCur->CheckPermissions(DISABLE_TABLEVIEW))
-               m_sb.CreateFromDispatch(m_hwnd, &ptCur->m_vmultisel);
-         }
+            m_sb.CreateFromDispatch(m_hwnd, &ptCur->m_vmultisel);
       }
       break;
    }
@@ -1010,11 +997,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
       ptCur = GetActiveTable();
       if (ptCur)
-      {
-         if (!ptCur->CheckPermissions(DISABLE_TABLEVIEW))
-            // Set selection to something in the new view (unless hiding table elements)
-            ptCur->AddMultiSel((ISelect *)ptCur, false);
-      }
+         // Set selection to something in the new view (unless hiding table elements)
+         ptCur->AddMultiSel((ISelect *)ptCur, false);
 
       SetEnableToolbar();
       break;
@@ -1211,14 +1195,9 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       ptCur = GetActiveTable();
       if (ptCur)
       {
-         if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
-            ShowPermissionError();
-         else
-         {
-            HRESULT hr = ptCur->TableSave();
-            if (hr == S_OK)
-               UpdateRecentFileList(ptCur->m_szFileName);
-         }
+         HRESULT hr = ptCur->TableSave();
+         if (hr == S_OK)
+            UpdateRecentFileList(ptCur->m_szFileName);
       }
       break;
    }
@@ -1227,66 +1206,9 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       ptCur = GetActiveTable();
       if (ptCur)
       {
-         if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
-            ShowPermissionError();
-         else
-         {
-            HRESULT hr = ptCur->SaveAs();
-            if (hr == S_OK)
-               UpdateRecentFileList(ptCur->m_szFileName);
-         }
-      }
-      break;
-   }
-   case IDM_SAVEASPROTECTED:
-   {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         if ((ptCur->CheckPermissions(DISABLE_TABLE_SAVE)) ||
-            (ptCur->CheckPermissions(DISABLE_TABLE_SAVEPROT)))
-            ShowPermissionError();
-         else
-         {
-            ProtectTableDialog *protectDlg = new ProtectTableDialog();
-            INT_PTR foo = protectDlg->DoModal();
-            delete protectDlg;
-
-            // if the dialog returned ok then perform a normal save as
-            if (foo==1)
-            {
-               HRESULT foo2 = ptCur->SaveAs();
-               if (foo2 == S_OK)
-               {
-                  // if the save was successful then the permissions take effect immediatly
-                  SetEnableToolbar();			// disable any tool bars
-                  ptCur->SetDirtyDraw();		// redraw the screen (incase hiding elements)
-                  UpdateRecentFileList(ptCur->m_szFileName);
-               }
-               else
-                  // if the save failed, then reset the permissions
-                  ptCur->ResetProtectionBlock();
-            }
-         }
-      }
-      break;
-   }
-   case IDM_UNLOCKPROTECTED:
-   {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         UnprotectDialog *unprotectDlg = new UnprotectDialog();
-         INT_PTR foo = unprotectDlg->DoModal();
-         delete unprotectDlg;
-
-         // if the dialog returned ok then table is unlocked
-         if (foo==1)
-         {
-            // re-enable any disabled menu items
-            SetEnableToolbar();			// disable any tool bars
-            ptCur->SetDirtyDraw();		// redraw the screen (incase hiding elements)
-         }
+         HRESULT hr = ptCur->SaveAs();
+         if (hr == S_OK)
+            UpdateRecentFileList(ptCur->m_szFileName);
       }
       break;
    }
@@ -1326,15 +1248,10 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       ptCur = GetActiveTable();
       if (ptCur)
       {
-         if (ptCur->CheckPermissions(DISABLE_CUTCOPYPASTE))
-            ShowPermissionError();
-         else
-         {
-             POINT ptCursor;
-             GetCursorPos(&ptCursor);
-             ::ScreenToClient(ptCur->m_hwnd, &ptCursor);
-             ptCur->Copy(ptCursor.x, ptCursor.y);
-         }
+          POINT ptCursor;
+          GetCursorPos(&ptCursor);
+          ::ScreenToClient(ptCur->m_hwnd, &ptCursor);
+          ptCur->Copy(ptCursor.x, ptCursor.y);
       }
       break;
    }
@@ -1373,48 +1290,28 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
       ptCur = GetActiveTable();
       if (ptCur)
-      {
-         if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
-            ShowPermissionError();
-         else
-            ptCur->ExportBlueprint();
-      }
+         ptCur->ExportBlueprint();
       break;
    }
    case ID_EXPORT_TABLEMESH:
    {
       ptCur = GetActiveTable();
       if (ptCur)
-      {
-         if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
-            ShowPermissionError();
-         else
-            ptCur->ExportTableMesh();
-      }
+         ptCur->ExportTableMesh();
       break;
    }
    case ID_IMPORT_BACKDROPPOV:
    {
        ptCur = GetActiveTable();
        if (ptCur)
-       {
-           if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
-               ShowPermissionError();
-           else
-               ptCur->ImportBackdropPOV();
-       }
+          ptCur->ImportBackdropPOV();
        break;
    }
    case ID_EXPORT_BACKDROPPOV:
    {
        ptCur = GetActiveTable();
        if (ptCur)
-       {
-           if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
-               ShowPermissionError();
-           else
-               ptCur->ExportBackdropPOV();
-       }
+          ptCur->ExportBackdropPOV();
        break;
    }
    case ID_FILE_EXIT:
@@ -1463,15 +1360,10 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
        ptCur = GetActiveTable();
        if (ptCur)
        {
-           if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-               ShowPermissionError();
-           else
-           {
-               ShowSubDialog(m_imageMngDlg);
+           ShowSubDialog(m_imageMngDlg);
 
-               m_sb.PopulateDropdowns(); // May need to update list of images
-               m_sb.RefreshProperties();
-           }
+           m_sb.PopulateDropdowns(); // May need to update list of images
+           m_sb.RefreshProperties();
        }
        break;
    }
@@ -1481,18 +1373,13 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
        ptCur = GetActiveTable();
        if (ptCur)
        {
-           if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-               ShowPermissionError();
-           else
+           if (!m_soundMngDlg.IsWindow())
            {
-               if (!m_soundMngDlg.IsWindow())
-               {
-                   m_soundMngDlg.Create(m_hwnd);
-                   m_soundMngDlg.ShowWindow();
-               }
-               else
-                   m_soundMngDlg.SetForegroundWindow();
+               m_soundMngDlg.Create(m_hwnd);
+               m_soundMngDlg.ShowWindow();
            }
+           else
+               m_soundMngDlg.SetForegroundWindow();
        }
        break;
    }
@@ -1502,15 +1389,10 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
        ptCur = GetActiveTable();
        if (ptCur)
        {
-           if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-               ShowPermissionError();
-           else
-           {
-               ShowSubDialog(m_materialDialog);
+           ShowSubDialog(m_materialDialog);
 
-               m_sb.PopulateDropdowns(); // May need to update list of images
-               m_sb.RefreshProperties();
-           }
+           m_sb.PopulateDropdowns(); // May need to update list of images
+           m_sb.RefreshProperties();
        }
        break;
    }
@@ -1518,28 +1400,11 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
        ptCur = GetActiveTable();
        if (ptCur)
-       {
-           if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-               ShowPermissionError();
-           else
-           {
-               /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_FONTDIALOG),
-                   m_hwnd, FontManagerProc, (size_t)ptCur);
-           }
-       }
+          /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_FONTDIALOG), m_hwnd, FontManagerProc, (size_t)ptCur);
        break;
    }
    case ID_TABLE_DIMENSIONMANAGER:
    {
-       ptCur = GetActiveTable();
-       if (ptCur)
-       {
-           if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-           {
-               ShowPermissionError();
-               break;
-           }
-       }
        ShowSubDialog(m_dimensionDialog);
        break;
    }
@@ -1549,15 +1414,10 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
        ptCur = GetActiveTable();
        if (ptCur)
        {
-           if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-               ShowPermissionError();
-           else
-           {
-               ShowSubDialog(m_collectionMngDlg);
+           ShowSubDialog(m_collectionMngDlg);
                
-               m_sb.PopulateDropdowns(); // May need to update list of collections
-               m_sb.RefreshProperties();
-           }
+           m_sb.PopulateDropdowns(); // May need to update list of collections
+           m_sb.RefreshProperties();
        }
        break;
    }
@@ -1714,14 +1574,6 @@ void VPinball::SetEnablePalette()
 
    bool fTableActive = (ptCur != NULL) && !g_pplayer;
 
-   // if we can't view the table elements then make the table as not active as that
-   // ensure all menu and toolbars are disabled.
-   if (ptCur)
-   {
-      if (ptCur->CheckPermissions(DISABLE_TABLEVIEW))
-         fTableActive = false;
-   }
-
    const unsigned state = (m_fBackglassView ? VIEW_BACKGLASS : VIEW_PLAYFIELD);
 
    for (unsigned int i = 0; i < TBCOUNTPALETTE; ++i)
@@ -1762,16 +1614,9 @@ void VPinball::SetEnableToolbar()
    for (unsigned int i = 0; i < 6; ++i)
    {
       const int id = toolList[i];
-      bool fEnable = fTableActive;
-
-      if (ptCur)
-      {
-         if ((id == ID_EDIT_SCRIPT) && ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING))
-            fEnable = false;
-      }
 
       // Set toolbar state
-      SendMessage(m_hwndToolbarMain, TB_ENABLEBUTTON, id, MAKELONG(fEnable, 0));
+      SendMessage(m_hwndToolbarMain, TB_ENABLEBUTTON, id, MAKELONG(fTableActive, 0));
    }
 
    // set layer button states
@@ -1784,7 +1629,7 @@ void VPinball::SetEnableToolbar()
    }
 
    SetEnablePalette();
-   ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 2);//redisplay 
+   ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 2); //redisplay 
 }
 
 void VPinball::DoPlay(bool _cameraMode)
@@ -1928,7 +1773,7 @@ bool VPinball::FCanClose()
 
 bool VPinball::CloseTable(PinTable *ppt)
 {
-   if (ppt->FDirty() && !ppt->CheckPermissions(DISABLE_TABLE_SAVE))
+   if (ppt->FDirty())
    {
       LocalString ls1(IDS_SAVE_CHANGES1);
       LocalString ls2(IDS_SAVE_CHANGES2);
@@ -1972,12 +1817,6 @@ bool VPinball::CloseTable(PinTable *ppt)
    return true;
 }
 
-void VPinball::ShowPermissionError()
-{
-   LocalString ls(IDS_PERMISSION_ERROR);
-   ::MessageBox(m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
-}
-
 void VPinball::SetEnableMenuItems()
 {
    CComObject<PinTable> * const ptCur = GetActiveTable();
@@ -2004,27 +1843,18 @@ void VPinball::SetEnableMenuItems()
       EnableMenuItem(hmenu, ID_EDIT_DRAWINGORDER_HIT, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_EDIT_DRAWINGORDER_SELECT, MF_BYCOMMAND | MF_ENABLED);
       // enable/disable save options
-      UINT flags = MF_BYCOMMAND | (ptCur->CheckPermissions(DISABLE_TABLE_SAVE) ? MF_GRAYED : MF_ENABLED);
+      UINT flags = MF_BYCOMMAND | MF_ENABLED;
       EnableMenuItem(hmenu, IDM_SAVE, flags);
       EnableMenuItem(hmenu, IDM_SAVEAS, flags);
-      EnableMenuItem(hmenu, IDM_SAVEASPROTECTED, flags);
       EnableMenuItem(hmenu, ID_FILE_EXPORT_BLUEPRINT, flags);
       EnableMenuItem(hmenu, ID_EXPORT_TABLEMESH, flags);
       EnableMenuItem(hmenu, ID_EXPORT_BACKDROPPOV, flags);
       EnableMenuItem(hmenu, ID_IMPORT_BACKDROPPOV, flags);
 
-      // if we can do a normal save but not a protected save then disable 'save as protected'
-      // (if we cant do any saves it is already disabled)
-      if ((!ptCur->CheckPermissions(DISABLE_TABLE_SAVE)) &&
-         (ptCur->CheckPermissions(DISABLE_TABLE_SAVEPROT)))
-         EnableMenuItem(hmenu, IDM_SAVEASPROTECTED, MF_BYCOMMAND | MF_GRAYED);
-
       // enable/disable script option
-      flags = MF_BYCOMMAND | (ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING) ? MF_GRAYED : MF_ENABLED);
       EnableMenuItem(hmenu, ID_EDIT_SCRIPT, flags);
 
       // enable/disable managers options
-      flags = MF_BYCOMMAND | (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS) ? MF_GRAYED : MF_ENABLED);
       EnableMenuItem(hmenu, ID_TABLE_SOUNDMANAGER, flags);
       EnableMenuItem(hmenu, ID_TABLE_IMAGEMANAGER, flags);
       EnableMenuItem(hmenu, ID_TABLE_FONTMANAGER, flags);
@@ -2032,23 +1862,10 @@ void VPinball::SetEnableMenuItems()
       EnableMenuItem(hmenu, ID_TABLE_COLLECTIONMANAGER, flags);
 
       // enable/disable editing options
-      flags = MF_BYCOMMAND | (ptCur->CheckPermissions(DISABLE_CUTCOPYPASTE) ? MF_GRAYED : MF_ENABLED);
       EnableMenuItem(hmenu, IDC_COPY, flags);
       EnableMenuItem(hmenu, IDC_PASTE, flags);
       EnableMenuItem(hmenu, IDC_PASTEAT, flags);
       EnableMenuItem(hmenu, ID_DELETE, flags);
-
-      // if the table is protected enable the unlock and disable 'save as protected' always
-      if (ptCur->IsTableProtected())
-      {
-         EnableMenuItem(hmenu, IDM_SAVEASPROTECTED, MF_BYCOMMAND | MF_GRAYED);
-         EnableMenuItem(hmenu, IDM_UNLOCKPROTECTED, MF_BYCOMMAND | MF_ENABLED);
-      }
-      else
-      {
-         // table is not protected, disable the unlock feature
-         EnableMenuItem(hmenu, IDM_UNLOCKPROTECTED, MF_BYCOMMAND | MF_GRAYED);
-      }
 
       CheckMenuItem(hmenu, ID_VIEW_SOLID, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_CHECKED : MF_UNCHECKED));
       CheckMenuItem(hmenu, ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
@@ -2065,8 +1882,6 @@ void VPinball::SetEnableMenuItems()
       EnableMenuItem(hmenu, IDM_CLOSE, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, IDM_SAVE, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, IDM_SAVEAS, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, IDM_SAVEASPROTECTED, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, IDM_UNLOCKPROTECTED, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, ID_FILE_EXPORT_BLUEPRINT, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, ID_EXPORT_TABLEMESH, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, ID_EXPORT_BACKDROPPOV, MF_BYCOMMAND | MF_GRAYED);
@@ -2671,12 +2486,9 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
          if (pt)
          {
-            if (pt->CheckPermissions(DISABLE_TABLEVIEW))
-               break;
+            const HMENU hmenu = CreatePopupMenu();
 
-            HMENU hmenu = CreatePopupMenu();
-
-            HWND hwndList = CreateWindowEx(0, "ListBox", "", WS_CHILD | LBS_SORT, 0, 0, 10, 10, hwnd, NULL, g_hinst, 0);
+            const HWND hwndList = CreateWindowEx(0, "ListBox", "", WS_CHILD | LBS_SORT, 0, 0, 10, 10, hwnd, NULL, g_hinst, 0);
 
             int menucount = 0;
             for (int i = 0; i < pt->m_vedit.Size(); i++)

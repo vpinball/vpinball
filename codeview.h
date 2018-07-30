@@ -245,14 +245,14 @@ public:
    void ShowFindReplaceDialog();
    void Find(const FINDREPLACE * const pfr);
    void Replace(const FINDREPLACE * const pfr);
-   void SaveToStream(IStream *pistream, HCRYPTHASH const hcrypthash, const HCRYPTKEY hcryptkey);   // incl. table protection
-   void LoadFromStream(IStream *pistream, HCRYPTHASH const hcrypthash, const HCRYPTKEY hcryptkey); // dto.
+   void SaveToStream(IStream *pistream, HCRYPTHASH const hcrypthash);
+   void LoadFromStream(IStream *pistream, HCRYPTHASH const hcrypthash, const HCRYPTKEY hcryptkey); // incl. table protection
    void SetCaption(const char * const szCaption);
 	string upperCase(string input);
 	string lowerCase(string input);
 
 	bool StopErrorDisplay;
-	bool ParentTreeInvalid;
+	//bool ParentTreeInvalid;
 	// WIP VBS page parse
 	void ParseVPCore();
 	void ParseForFunction();
@@ -359,7 +359,7 @@ public:
    virtual ISelect *GetISelect();
 
    //ILoadable
-   virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash);
    virtual HRESULT LoadData(IStream *pstm, PinTable *ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    virtual BOOL LoadToken(int id, BiffReader *pbr);
 

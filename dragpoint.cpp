@@ -411,9 +411,9 @@ void IHaveDragPoints::ClearPointsForOverwrite()
    m_vdpoint.RemoveAllElements();
 }
 
-HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    for (int i = 0; i < m_vdpoint.Size(); i++)
    {
@@ -426,7 +426,7 @@ HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash, HCR
       bw.WriteBool(FID(ATEX), pdp->m_fAutoTexture);
       bw.WriteFloat(FID(TEXC), pdp->m_texturecoord);
 
-      ((ISelect *)pdp)->SaveData(pstm, hcrypthash, hcryptkey);
+      ((ISelect *)pdp)->SaveData(pstm, hcrypthash);
 
       bw.WriteTag(FID(ENDB));
    }

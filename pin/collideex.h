@@ -13,7 +13,7 @@ public:
       m_pbumper = NULL;
    }
 
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
 
    Bumper *m_pbumper;
 
@@ -48,7 +48,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eLineSegSlingshot; }
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
 
    SlingshotAnimObject m_slingshotanim;
 
@@ -67,7 +67,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return e3DPoly; }
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox();
 
    void Init(Vertex3Ds * const rgv, const int count);
@@ -87,7 +87,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eTriangle; }
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox();
 
    bool IsDegenerate() const { return m_normal.IsZero(); }
@@ -108,7 +108,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return ePlane; }
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox() {}  //!! TODO: this is needed if we want to put it in the quadtree, but then again impossible as infinite area
 
    Vertex3Ds m_normal;
@@ -142,7 +142,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eSpinner; }
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime) { }
    virtual void CalcHitBBox();
 
@@ -181,7 +181,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eGate; }
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime) { }
    virtual void CalcHitBBox();
 
@@ -198,7 +198,7 @@ class TriggerLineSeg : public LineSeg
 public:
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eTrigger; }
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
 
    Trigger *m_ptrigger;
 };
@@ -213,7 +213,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eTrigger; }
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
 
    Trigger *m_ptrigger;
 };
@@ -227,7 +227,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return e3DLine; }
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox() { } // already done in constructor
 
 private:

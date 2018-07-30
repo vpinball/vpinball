@@ -643,9 +643,9 @@ void Kicker::PutCenter(const Vertex2D * const pv)
 }
 
 
-HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
    bw.WriteFloat(FID(RADI), m_d.m_radius);
@@ -663,7 +663,7 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteBool(FID(FATH), m_d.m_fFallThrough);
    bw.WriteBool(FID(LEMO), m_d.m_legacyMode);
 
-   ISelect::SaveData(pstm, hcrypthash, hcryptkey);
+   ISelect::SaveData(pstm, hcrypthash);
 
    bw.WriteTag(FID(ENDB));
 

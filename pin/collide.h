@@ -100,7 +100,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged (all derived classes DO implement this one!)
    virtual int GetType() const = 0;
-   virtual void Collide(CollisionEvent& coll) = 0;
+   virtual void Collide(const CollisionEvent& coll) = 0;
    virtual void Contact(CollisionEvent& coll, const float dtime); // apply contact forces for the given time interval. Ball, Spinner and Gate do nothing here, Flipper has a specialized handling
    virtual void CalcHitBBox() = 0;
 
@@ -147,7 +147,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eLineSeg; }
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox();
 
    float HitTestBasic(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const;
@@ -170,7 +170,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eCircle; }
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox();
 
    float HitTestBasicRadius(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const;
@@ -193,7 +193,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eJoint; }
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox();
 
    Vertex2D m_xy;
@@ -208,7 +208,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return ePoint; }
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox();
 
    Vertex3Ds m_p;

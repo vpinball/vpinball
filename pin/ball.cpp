@@ -313,7 +313,7 @@ float Ball::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll
    return hittime;
 }
 
-void Ball::Collide(CollisionEvent& coll)
+void Ball::Collide(const CollisionEvent& coll)
 {
    Ball * const pball = coll.m_ball;
 

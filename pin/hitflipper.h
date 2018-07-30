@@ -78,7 +78,7 @@ public:
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eFlipper; }
-   virtual void Collide(CollisionEvent& coll);
+   virtual void Collide(const CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);
    virtual void CalcHitBBox();
    virtual MoverObject *GetMoverObject() { return &m_flipperMover; }

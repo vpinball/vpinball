@@ -680,9 +680,9 @@ void Gate::PutCenter(const Vertex2D * const pv)
    m_ptable->SetDirtyDraw();
 }
 
-HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
    bw.WriteFloat(FID(LGTH), m_d.m_length);
@@ -706,7 +706,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
    bw.WriteInt(FID(GATY), m_d.m_type);
 
-   ISelect::SaveData(pstm, hcrypthash, hcryptkey);
+   ISelect::SaveData(pstm, hcrypthash);
 
    bw.WriteTag(FID(ENDB));
 

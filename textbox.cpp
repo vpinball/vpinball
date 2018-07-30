@@ -469,9 +469,9 @@ STDMETHODIMP Textbox::put_Text(BSTR newVal)
    return S_OK;
 }
 
-HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteStruct(FID(VER1), &m_d.m_v1, sizeof(Vertex2D));
    bw.WriteStruct(FID(VER2), &m_d.m_v2, sizeof(Vertex2D));
@@ -486,7 +486,7 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(TRNS), m_d.m_fTransparent);
    bw.WriteBool(FID(IDMD), m_d.m_IsDMD);
 
-   ISelect::SaveData(pstm, hcrypthash, hcryptkey);
+   ISelect::SaveData(pstm, hcrypthash);
 
    bw.WriteTag(FID(FONT));
    IPersistStream * ips;

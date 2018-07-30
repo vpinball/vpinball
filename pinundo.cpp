@@ -235,7 +235,7 @@ void UndoRecord::MarkForUndo(IEditable *pie)
    DWORD write;
    pstm->Write(&pie, sizeof(IEditable *), &write);
 
-   pie->SaveData(pstm, NULL, NULL);
+   pie->SaveData(pstm, NULL);
 
    m_vstm.AddElement(pstm);
 }

@@ -161,10 +161,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
 
    case IDC_COPY:
    {
-       if ( GetPTable()->CheckPermissions(DISABLE_CUTCOPYPASTE))
-           g_pvp->ShowPermissionError();
-       else
-           GetPTable()->Copy(x,y);
+       GetPTable()->Copy(x,y);
        break;
    }
    case IDC_PASTE:
@@ -386,11 +383,12 @@ BOOL ISelect::LoadToken(int id, BiffReader *pbr)
    return fTrue;
 }
 
-HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteBool(FID(LOCK), m_fLocked);
    bw.WriteInt(FID(LAYR), layerIndex);
+
    return S_OK;
 }

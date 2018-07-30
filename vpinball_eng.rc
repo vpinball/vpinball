@@ -791,49 +791,6 @@ BEGIN
     LTEXT           "The current selection contains multiple object types.  Select either a single object or a group of objects of the same type to edit properties.",IDC_STATIC,7,7,109,48
 END
 
-IDD_PROTECT_DIALOG DIALOGEX 0, 0, 286, 220
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Save As Protected.. Options"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
-BEGIN
-    GROUPBOX        " Table Protection Options ( At least one must be ticked ) ",IDC_STATIC,7,7,273,148,WS_TABSTOP
-    CONTROL         "Disable Save, Save As.., Save As Protected.. and Export Blueprint",IDC_PROTECT_SAVEAS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,23,261,10
-    CONTROL         "Disable only Save As Protected..",IDC_PROTECT_SAVEASPROT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,40,261,8
-    CONTROL         "Disable Script Editor from being opened",IDC_PROTECT_SCRIPT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,55,261,10
-    CONTROL         "Disable File Managers (Image, Sound, Font and Collection) from being opened",IDC_PROTECT_MANAGERS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,72,261,10
-    CONTROL         "Disable copying of table elements into the clipboard",IDC_PROTECT_COPY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,89,260,10
-    CONTROL         "Disable viewing of table elements",IDC_PROTECT_VIEWTABLE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,106,260,10
-    CONTROL         "Disable Visual Table Debugger",IDC_PROTECT_DEBUGGER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,122,261,10
-    CONTROL         "Disable everything, Load and Play only. (This also includes any future locks)",IDC_PROTECT_TOTALLOCK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,137,261,10
-    EDITTEXT        IDC_PROTECT_PASSWORD,107,161,75,14,ES_PASSWORD | ES_AUTOHSCROLL
-    EDITTEXT        IDC_PROTECT_PASSWORD2,107,179,75,14,ES_PASSWORD | ES_AUTOHSCROLL
-    CONTROL         "Show Password",IDD_PROTECT_SHOWPASSWORD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,198,67,10
-    DEFPUSHBUTTON   "&Save Table As..",IDOK,149,201,61,14
-    PUSHBUTTON      "&Cancel",IDCANCEL,219,201,61,14
-    LTEXT           "Please enter your Password",IDC_STATIC,7,164,99,8
-    LTEXT           "(Maximum of 16 characters)",IDC_STATIC,187,164,88,8
-    LTEXT           "Please reenter your Password",IDC_STATIC,7,182,99,8
-END
-
-IDD_UNLOCK_DIALOG DIALOGEX 0, 0, 164, 53
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Unlock Protected Table"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
-BEGIN
-    LTEXT           "Please enter Password",IDC_STATIC,7,11,78,8
-    EDITTEXT        IDC_UNLOCK_PASSWORD,88,8,66,14,ES_PASSWORD | ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "&Unlock Table",IDOK,28,31,61,14
-    PUSHBUTTON      "&Cancel",IDCANCEL,93,31,61,14
-END
-
 IDD_TABLEINFO DIALOGEX 0, 0, 455, 331
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Table Information"
@@ -2420,14 +2377,6 @@ BEGIN
     BEGIN
     END
 
-    IDD_PROTECT_DIALOG, DIALOG
-    BEGIN
-    END
-
-    IDD_UNLOCK_DIALOG, DIALOG
-    BEGIN
-    END
-
     IDD_TABLEINFO, DIALOG
     BEGIN
     END
@@ -2834,7 +2783,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Save\tCtrl+S",               IDM_SAVE
         MENUITEM "Save &As...",                 IDM_SAVEAS
-        MENUITEM "Save As Pro&tected...",       IDM_SAVEASPROTECTED
         MENUITEM SEPARATOR
         POPUP "&Import"
         BEGIN
@@ -2846,7 +2794,6 @@ BEGIN
             MENUITEM "OBJ &Mesh",                   ID_EXPORT_TABLEMESH
             MENUITEM "Backdrop &POV",               ID_EXPORT_BACKDROPPOV
         END
-        MENUITEM "Unlock",                      IDM_UNLOCKPROTECTED
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_FILE_EXIT
     END
@@ -3375,16 +3322,6 @@ BEGIN
     IDS_SAVE_CHANGES1       "Table '"
     IDS_SAVE_CHANGES2       "' has changed.  Do you want to save changes before exiting?"
     IDS_DRAWINFRONT         "Draw In &Front"
-END
-
-STRINGTABLE
-BEGIN
-    IDS_PERMISSION_ERROR    "This table is protected.\n\nThe table author has requested that this option be restricted."
-    IDS_PROTECT_ONETICKED   "You must tick at least one protection option."
-    IDS_PROTECT_PW_ZEROLEN  "You must supply a valid password."
-    IDS_PROTECT_PW_MISMATCH "Passwords don't match, please reenter your password."
-    IDS_UNLOCK_FAILED       "Password is invalid."
-    IDS_UNLOCK_SUCCESS      "This table has been successfully unlocked."
 END
 
 STRINGTABLE

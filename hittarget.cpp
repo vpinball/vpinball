@@ -885,9 +885,9 @@ void HitTarget::PutCenter(const Vertex2D * const pv)
 // Save and Load
 //////////////////////////////
 
-HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    /*
     * Someone decided that it was a good idea to write these vectors including
@@ -922,7 +922,8 @@ HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteInt(FID(RADE), m_d.m_RaiseDelay);
    bw.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
    bw.WriteBool(FID(OVPH), m_d.m_fOverwritePhysics);
-   ISelect::SaveData(pstm, hcrypthash, hcryptkey);
+
+   ISelect::SaveData(pstm, hcrypthash);
 
    bw.WriteTag(FID(ENDB));
 

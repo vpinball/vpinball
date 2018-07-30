@@ -1020,9 +1020,9 @@ void Trigger::Translate(Vertex2D *pvOffset)
    }
 }
 
-HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
    bw.WriteFloat(FID(RADI), m_d.m_radius);
@@ -1042,10 +1042,10 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(ANSP), m_d.m_animSpeed);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
 
-   ISelect::SaveData(pstm, hcrypthash, hcryptkey);
+   ISelect::SaveData(pstm, hcrypthash);
 
    HRESULT hr;
-   if (FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
+   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
       return hr;
 
    bw.WriteTag(FID(ENDB));

@@ -1005,9 +1005,9 @@ STDMETHODIMP Plunger::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteStruct(FID(VCEN), &m_d.m_v, sizeof(Vertex2D));
    bw.WriteFloat(FID(WDTH), m_d.m_width);
@@ -1046,7 +1046,7 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(SPRL), m_d.m_springLoops);
    bw.WriteFloat(FID(SPRE), m_d.m_springEndLoops);
 
-   ISelect::SaveData(pstm, hcrypthash, hcryptkey);
+   ISelect::SaveData(pstm, hcrypthash);
 
    bw.WriteTag(FID(ENDB));
 

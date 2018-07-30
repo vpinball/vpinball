@@ -19,7 +19,7 @@ public:
 class BiffWriter
 {
 public:
-   BiffWriter(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   BiffWriter(IStream *pistream, HCRYPTHASH hcrypthash);
    HRESULT WriteInt(int id, int value);
    HRESULT WriteString(int id, char *szvalue);
    HRESULT WriteWideString(int id, WCHAR *wzvalue);
@@ -36,7 +36,6 @@ public:
 
    IStream *m_pistream;
    HCRYPTHASH m_hcrypthash;
-   HCRYPTKEY m_hcryptkey;
 };
 
 class BiffReader

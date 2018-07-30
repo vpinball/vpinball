@@ -604,9 +604,9 @@ void Flasher::DoCommand(int icmd, int x, int y)
    }
 }
 
-HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteFloat(FID(FHEI), m_d.m_height);
    bw.WriteFloat(FID(FLAX), m_d.m_vCenter.x);
@@ -630,9 +630,10 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
    bw.WriteInt(FID(FILT), m_d.m_filter);
    bw.WriteInt(FID(FIAM), m_d.m_fFilterAmount);
-   ISelect::SaveData(pstm, hcrypthash, hcryptkey);
+   ISelect::SaveData(pstm, hcrypthash);
+
    HRESULT hr;
-   if (FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
+   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
       return hr;
 
    bw.WriteTag(FID(ENDB));

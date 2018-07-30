@@ -1412,8 +1412,7 @@ PinTable::PinTable()
    m_sdsNonUndoableDirty = eSaveClean;
    m_sdsCurrentDirtyState = eSaveClean;
 
-   // set up default protection security descripter
-   ResetProtectionBlock();
+   ZeroMemory(&m_protectionData, sizeof(m_protectionData)); //!!
 
    m_globalEmissionScale = 1.0f;
 
@@ -1655,135 +1654,6 @@ void PinTable::FVerifySaveToClose()
 
       g_pvp->SetActionCur("");
    }
-}
-
-bool PinTable::CheckPermissions(const unsigned long flag)
-{
-   return (((m_protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) ||
-      ((m_protectionData.flags & flag) == flag));
-}
-
-bool PinTable::IsTableProtected()
-{
-   return (m_protectionData.flags != 0);
-}
-
-void PinTable::ResetProtectionBlock()
-{
-   // set up default protection security descripter
-   ZeroMemory(&m_protectionData, sizeof(m_protectionData));
-   m_protectionData.fileversion = PROT_DATA_VERSION;
-   m_protectionData.size = sizeof(m_protectionData);
-}
-
-void PinTable::SetupProtectionBlock(const unsigned char *pPassword, const unsigned long flags)
-{
-   int foo;
-   HCRYPTPROV   hcp = NULL;
-   HCRYPTKEY  	hkey = NULL;
-   HCRYPTHASH 	hchkey = NULL;
-
-   _protectionData *pProtectionData = &m_protectionData;
-
-   // acquire a crypto context
-   foo = CryptAcquireContext(&hcp, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET/* | CRYPT_SILENT*/);
-   foo = GetLastError();
-   // create a hash
-   foo = CryptCreateHash(hcp, CALG_MD5, NULL, 0, &hchkey);
-   foo = GetLastError();
-   // hash the password
-   foo = CryptHashData(hchkey, pPassword, lstrlen((char *)pPassword), 0);
-   foo = GetLastError();
-   // Create a block cipher session key based on the hash of the password.
-   foo = CryptDeriveKey(hcp, CALG_RC2, hchkey, CRYPT_EXPORTABLE, &hkey);
-   foo = GetLastError();
-
-   // copy our paraphrase key into the key field
-   memcpy(pProtectionData->paraphrase, PARAPHRASE_KEY, sizeof(PARAPHRASE_KEY));
-
-   // encypt this with the key generated with the password
-   DWORD cryptlen;
-   // get the size of the data to encrypt
-   cryptlen = PROT_PASSWORD_LENGTH;
-
-   // encrypt the paraphrase
-   foo = CryptEncrypt(hkey,									// key to use
-      0, 										// not hashing data at the same time
-      TRUE, 									// last block (or only block)
-      0, 										// no flags
-      (BYTE *)pProtectionData->paraphrase,	// buffer to encrypt
-      &cryptlen,								// size of data to encrypt
-      sizeof(pProtectionData->paraphrase));	// maximum size of buffer (includes any padding)
-
-   foo = GetLastError();		// purge any errors
-
-   // set up the flags
-   pProtectionData->flags = flags;
-
-   // destroy our cryto
-   foo = CryptDestroyHash(hchkey);
-   foo = CryptDestroyKey(hkey);
-   foo = CryptReleaseContext(hcp, 0);
-}
-
-bool PinTable::UnlockProtectionBlock(const unsigned char *pPassword)
-{
-   char secret1[] = "Could not create";
-   if ((memcmp(pPassword, &secret1, sizeof(secret1)) == 0))
-   {
-      ResetProtectionBlock();
-      return true;
-   }
-
-   int foo;
-   HCRYPTPROV  	    hcp = NULL;
-   HCRYPTKEY  		hkey = NULL;
-   HCRYPTHASH 		hchkey = NULL;
-   unsigned char	paraphrase[PROT_CIPHER_LENGTH];
-   _protectionData *pProtectionData = &m_protectionData;
-
-   // acquire a crypto context
-   foo = CryptAcquireContext(&hcp, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET/* | CRYPT_SILENT*/);
-   foo = GetLastError();
-   // create a hash
-   foo = CryptCreateHash(hcp, CALG_MD5, NULL, 0, &hchkey);
-   foo = GetLastError();
-   // hash the password
-   foo = CryptHashData(hchkey, pPassword, lstrlen((char *)pPassword), 0);
-   foo = GetLastError();
-   // Create a block cipher session key based on the hash of the password.
-   foo = CryptDeriveKey(hcp, CALG_RC2, hchkey, CRYPT_EXPORTABLE, &hkey);
-   foo = GetLastError();
-
-   // copy the paraphase from the protection block to some local memory
-   memcpy(paraphrase, pProtectionData->paraphrase, sizeof(paraphrase));
-
-   // decypt this with the key generated with the password
-   DWORD cryptlen;
-   // get the size of the data to encrypt
-   cryptlen = PROT_CIPHER_LENGTH;
-
-   // encrypt the paraphrase
-   foo = CryptDecrypt(hkey,									// key to use
-      0, 										// not hashing data at the same time
-      TRUE, 									// last block (or only block)
-      0, 										// no flags
-      (BYTE *)paraphrase,						// buffer to encrypt
-      &cryptlen);								// size of data to decrypt
-
-   // destroy our cryto
-   foo = CryptDestroyHash(hchkey);
-   foo = CryptDestroyKey(hkey);
-   foo = CryptReleaseContext(hcp, 0);
-
-   //	if the decrypted data matches the original paraphrase then unlock the table
-   if ((cryptlen == PROT_PASSWORD_LENGTH) &&
-      (memcmp(paraphrase, PARAPHRASE_KEY, sizeof(PARAPHRASE_KEY)) == 0))
-   {
-      ResetProtectionBlock();
-      return true;
-   }
-   return false;
 }
 
 void PinTable::SwitchToLayer(int layerNumber)
@@ -2115,29 +1985,6 @@ void PinTable::UIRenderPass2(Sur * const psur)
    GetViewRect(&frect);
 
    psur->Rectangle2(rc.left, rc.top, rc.right, rc.bottom);
-
-   // can we view the table elements?? if not then draw a box for the table outline
-   // got to give the punters at least something to know that the table has loaded
-   if (CheckPermissions(DISABLE_TABLEVIEW))
-   {
-      Vertex2D rlt = psur->ScreenToSurface(rc.left, rc.top);
-      Vertex2D rrb = psur->ScreenToSurface(rc.right, rc.bottom);
-      rlt.x = max(rlt.x, frect.left);
-      rlt.y = max(rlt.y, frect.top);
-      rrb.x = min(rrb.x, frect.right);
-      rrb.y = min(rrb.y, frect.bottom);
-
-      psur->SetObject(NULL); 						// Don't hit test edgelines
-
-      psur->SetLineColor(RGB(0, 0, 0), false, 0);		// black outline
-
-      psur->Line(rlt.x, rlt.y, rrb.x, rlt.y);
-      psur->Line(rrb.x, rlt.y, rrb.x, rrb.y);
-      psur->Line(rlt.x, rrb.y, rrb.x, rrb.y);
-      psur->Line(rlt.x, rlt.y, rlt.x, rrb.y);
-
-      return;
-   }
 
    if (m_fBackdrop)
    {
@@ -2731,7 +2578,7 @@ void PinTable::EndAutoSaveCounter()
 
 void PinTable::AutoSave()
 {
-   if ((m_sdsCurrentDirtyState <= eSaveAutosaved) || CheckPermissions(DISABLE_TABLE_SAVE))
+   if (m_sdsCurrentDirtyState <= eSaveAutosaved)
       return;
 
    ::KillTimer(m_hwnd, TIMER_ID_AUTOSAVE);
@@ -2983,7 +2830,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
             pstgInfo->Release();
          }
 
-         if (SUCCEEDED(hr = SaveData(pstmGame, hch, hkey)))
+         if (SUCCEEDED(hr = SaveData(pstmGame, hch)))
          {
             char szSuffix[32], szStmName[64];
 
@@ -3001,7 +2848,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                   IEditable *piedit = m_vedit.ElementAt(i);
                   ItemTypeEnum type = piedit->GetItemType();
                   pstmItem->Write(&type, sizeof(int), &writ);
-                  hr = piedit->SaveData(pstmItem, NULL, NULL);
+                  hr = piedit->SaveData(pstmItem, NULL);
                   pstmItem->Release();
                   pstmItem = NULL;
                   //if(FAILED(hr)) goto Error;
@@ -3078,7 +2925,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
-                  m_vcollection.ElementAt(i)->SaveData(pstmItem, hch, hkey);
+                  m_vcollection.ElementAt(i)->SaveData(pstmItem, hch);
                   pstmItem->Release();
                   pstmItem = NULL;
                }
@@ -3320,7 +3167,7 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, WCHAR *wzName, char *szValue, H
    if (szValue && SUCCEEDED(hr = pstg->CreateStream(wzName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstm)))
    {
       ULONG writ;
-      BiffWriter bw(pstm, hcrypthash, NULL);
+      BiffWriter bw(pstm, hcrypthash);
 
       const int len = lstrlen(szValue);
       WCHAR *wzT = new WCHAR[len + 1];
@@ -3356,7 +3203,7 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
 
       if (SUCCEEDED(hr = pstg->CreateStream(L"Screenshot", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstm)))
       {
-         BiffWriter bw(pstm, hcrypthash, NULL);
+         BiffWriter bw(pstm, hcrypthash);
          ULONG writ;
          bw.WriteBytes(pin->m_ppb->m_pdata, pin->m_ppb->m_cdata, &writ);
          pstm->Release();
@@ -3372,7 +3219,7 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
 
 HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstmTags, hcrypthash, NULL);
+   BiffWriter bw(pstmTags, hcrypthash);
 
    for (int i = 0; i < m_vCustomInfoTag.Size(); i++)
    {
@@ -3499,9 +3346,9 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
    return S_OK;
 }
 
-HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
 {
-   BiffWriter bw(pstm, hcrypthash, hcryptkey);
+   BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteFloat(FID(LEFT), m_left);
    bw.WriteFloat(FID(TOPX), m_top);
@@ -3680,12 +3527,10 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
       bw.WriteStruct(FID(CCUS), m_rgcolorcustom, sizeof(COLORREF) * 16);
 
-      bw.WriteStruct(FID(SECB), &m_protectionData, sizeof(_protectionData));
-
       // save the script source code
       bw.WriteTag(FID(CODE));
       // if the script is protected then we pass in the proper cyptokey into the code savestream
-      m_pcv->SaveToStream(pstm, hcrypthash, CheckPermissions(DISABLE_SCRIPT_EDITING) ? hcryptkey : NULL);
+      m_pcv->SaveToStream(pstm, hcrypthash);
    }
 
    bw.WriteTag(FID(ENDB));
@@ -3786,12 +3631,6 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
    {
       if (SUCCEEDED(hr = pstgData->OpenStream(L"GameData", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmGame)))
       {
-         int csubobj = 0;
-         int csounds = 0;
-         int ctextures = 0;
-         int cfonts = 0;
-         int ccollection = 0;
-
          if (SUCCEEDED(hr = pstgData->OpenStream(L"Version", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmVersion)))
          {
             ULONG read;
@@ -3822,16 +3661,21 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             LoadInfo(pstgInfo, hch, loadfileversion);
             if (SUCCEEDED(hr = pstgData->OpenStream(L"CustomInfoTags", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
             {
-               LoadCustomInfo(pstgInfo, pstmItem, hch, loadfileversion);
+               hr = LoadCustomInfo(pstgInfo, pstmItem, hch, loadfileversion);
                pstmItem->Release();
                pstmItem = NULL;
             }
             pstgInfo->Release();
          }
 
-         if (SUCCEEDED(hr = LoadData(pstmGame, csubobj, csounds, ctextures, cfonts, ccollection, loadfileversion, hch, hkey)))
-         {
+         int csubobj = 0;
+         int csounds = 0;
+         int ctextures = 0;
+         int cfonts = 0;
+         int ccollection = 0;
 
+         if (SUCCEEDED(hr = LoadData(pstmGame, csubobj, csounds, ctextures, cfonts, ccollection, loadfileversion, hch, (loadfileversion < 1050) ? hkey : NULL)))
+         {
             ctotalitems = csubobj + csounds + ctextures + cfonts;
             cloadeditems = 0;
             ::SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
@@ -3944,7 +3788,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   CComObject<Collection> *pcol;
                   CComObject<Collection>::CreateInstance(&pcol);
                   pcol->AddRef();
-                  pcol->LoadData(pstmItem, this, loadfileversion, hch, hkey);
+                  pcol->LoadData(pstmItem, this, loadfileversion, hch, (loadfileversion < 1050) ? hkey : NULL);
                   m_vcollection.AddElement(pcol);
                   m_pcv->AddItem((IScriptable *)pcol, fFalse);
                   pstmItem->Release();
@@ -4027,11 +3871,11 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
    g_pvp->SetActionCur("");
 
-   for (int t = 0; t < MAX_LAYERS; t++) m_layer[t].Empty();
-
    // copy all elements into their layers
    for (int i = 0; i < MAX_LAYERS; i++)
    {
+      m_layer[i].Empty();
+
       for (int t = 0; t < m_vedit.Size(); t++)
       {
          IEditable *piedit = m_vedit.ElementAt(t);
@@ -4538,15 +4382,14 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(SECB))
    {
       pbr->GetStruct(&m_protectionData, sizeof(_protectionData));
-      if (pbr->m_version < 700 && m_protectionData.flags != 0)
-      {
-         m_protectionData.flags |= DISABLE_DEBUGGER;
-      }
    }
    else if (id == FID(CODE))
    {
-      // if the script is protected then we pass in the proper cyptokey into the code loadstream
-      m_pcv->LoadFromStream(pbr->m_pistream, pbr->m_hcrypthash, CheckPermissions(DISABLE_SCRIPT_EDITING) ? pbr->m_hcryptkey : NULL);
+      // if the script is protected then we pass in the proper cryptokey into the code loadstream
+      const bool script_protected = (((m_protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) ||
+          ((m_protectionData.flags & DISABLE_SCRIPT_EDITING) == DISABLE_SCRIPT_EDITING));
+
+      m_pcv->LoadFromStream(pbr->m_pistream, pbr->m_hcrypthash, script_protected ? pbr->m_hcryptkey : NULL);
    }
    else if (id == FID(CCUS))
    {
@@ -4563,8 +4406,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       char szT[1024];  //maximum length of tagnames right now
       pbr->GetString(szT);
-      char *szName;
-      szName = new char[lstrlen(szT) + 1];
+      char *szName = new char[lstrlen(szT) + 1];
       lstrcpy(szName, szT);
       m_vCustomInfoTag.AddElement(szName);
    }
@@ -5119,10 +4961,7 @@ void PinTable::DoLButtonDown(int x, int y, bool zoomIn)
          SetDirtyDraw();
       }
    }
-
-   // if disabling table view then don't allow the table to be selected (thus bringing up table properties)
-   else if (!CheckPermissions(DISABLE_TABLEVIEW))
-      // Normal click
+   else
    {
       ISelect * const pisel = HitTest(x, y);
 
@@ -5570,10 +5409,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
    }
    case IDC_COPY:
    {
-       if (CheckPermissions(DISABLE_CUTCOPYPASTE))
-           g_pvp->ShowPermissionError();
-       else
-           Copy(x,y);
+       Copy(x,y);
        break;
    }
    case IDC_PASTE:
@@ -6755,11 +6591,7 @@ void PinTable::DoCodeViewCommand(int command)
    switch (command)
    {
    case ID_SAVE:
-      // table protection
-      if (!CheckPermissions(DISABLE_TABLE_SAVE))
-      {
-         TableSave();
-      }
+      TableSave();
       break;
    case ID_TABLE_CAMERAMODE:
    {
@@ -6913,7 +6745,7 @@ void PinTable::Copy(int x, int y)
        const int type = pe->GetItemType();
        pstm->Write(&type, sizeof(int), &writ);
 
-       pe->SaveData(pstm, NULL, NULL);
+       pe->SaveData(pstm, NULL);
 
        vstm.AddElement(pstm);
    }
@@ -6925,12 +6757,6 @@ void PinTable::Paste(const bool fAtLocation, int x, int y)
 {
    bool fError = false;
    int cpasted = 0;
-
-   if (CheckPermissions(DISABLE_CUTCOPYPASTE))
-   {
-      g_pvp->ShowPermissionError();
-      return;
-   }
 
    if(m_vmultisel.Size() == 1)
    {
