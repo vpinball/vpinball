@@ -1,8 +1,10 @@
 Option Explicit
-Const VPinMAMEDriverVer = 3.56
+Const VPinMAMEDriverVer = 3.57
 '=======================
 ' VPinMAME driver core.
 '=======================
+' New in 3.57 (Update by)
+'
 ' New in 3.56 (Update by nFozzy, DJRobX, Fuzzel)
 ' - Add specialized sega2.vbs for Apollo 13 and GoldenEye
 ' - Update gts1.vbs and hankin.vbs so that the common coin keys (e.g. "5") also add coins on Gottlieb System 1 and Hankin tables
