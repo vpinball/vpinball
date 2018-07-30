@@ -4,7 +4,6 @@
 
 #include "StdAfx.h"
 #include "resource.h"
-#include "ProtectTableDialog.h"
 #include "KeysConfigDialog.h"
 
 #if defined(IMSPANISH)
