@@ -122,9 +122,6 @@
     <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="dialogs\ProtectTableDialog.cpp">
-      <Filter>dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="dialogs\KeysConfigDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
@@ -1027,9 +1024,6 @@
       <Filter>dialogs</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\PhysicsOptionsDialog.h">
-      <Filter>dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="dialogs\ProtectTableDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\MaterialDialog.h">

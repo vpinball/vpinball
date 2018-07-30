@@ -116,9 +116,6 @@
     <ClCompile Include="Dialogs\PhysicsOptionsDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="Dialogs\ProtectTableDialog.cpp">
-      <Filter>dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="Dialogs\SearchSelectDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
@@ -1024,9 +1021,6 @@
       <Filter>dialogs</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\PhysicsOptionsDialog.h">
-      <Filter>dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="dialogs\ProtectTableDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
     <ClInclude Include="Dialogs\SearchSelectDialog.h">

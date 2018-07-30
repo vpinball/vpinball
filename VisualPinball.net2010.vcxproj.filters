@@ -303,9 +303,6 @@
     <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dialogs\ProtectTableDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl">
@@ -918,9 +915,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\PhysicsOptionsDialog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dialogs\ProtectTableDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
