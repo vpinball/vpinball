@@ -261,12 +261,12 @@ CAPTION "About Visual Pinball"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,173,279,50,14
-    PUSHBUTTON      "Web Site",IDC_WEBSITE,156,255,67,14
+    PUSHBUTTON      "Web Site",IDC_WEBSITE,173,257,50,14
     PUSHBUTTON      "Translator's Web Site Name",IDC_TRANSLATEWEBSITE,151,44,72,14,NOT WS_VISIBLE | WS_DISABLED
     EDITTEXT        IDC_CHANGELOG,7,171,216,79,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | ES_WANTRETURN | WS_VSCROLL
-    CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,0,279,150,17
+    CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,23,277,119,17
     CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
-    LTEXT           "A Randy Davis Production",IDC_STATIC,13,35,94,8
+    LTEXT           "A Randy Davis and Visual Pinball team Production",IDC_STATIC,13,35,209,8
     LTEXT           "Version 10.5.0 Final",IDC_ABOUT_VERSION,13,45,135,10
     GROUPBOX        "Credits",IDC_STATIC,7,57,216,108
     LTEXT           "Original VP8/VP9 Team",IDC_STATIC,68,65,88,9
@@ -290,7 +290,7 @@ BEGIN
     LTEXT           "DJRobX",IDC_STATIC,46,151,32,8
     CTEXT           "Mukuste",IDC_STATIC,82,151,42,9
     LTEXT           "Brandrew",IDC_STATIC,150,151,42,9
-    CTEXT           "Copyright (C) 2000-2018 Randy Davis All rights reserved",IDC_STATIC,7,255,118,19
+    CTEXT           "Copyright (C) 2000-2018 Randy Davis and the\nVisual Pinball team. All rights reserved",IDC_STATIC,0,255,167,19
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,108,35,115,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,265,32,8,NOT WS_VISIBLE | WS_DISABLED
 END
