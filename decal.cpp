@@ -412,7 +412,7 @@ void Decal::RenderText()
       DrawText(hdc, m_d.m_sztext, len, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
 
    m_textImg->CopyFrom_Raw(bits);
-   Texture::SetOpaque(m_textImg);
+   m_textImg->SetOpaque();
 
    SelectObject(hdc, hFontOld);
    SelectObject(hdc, oldBmp);

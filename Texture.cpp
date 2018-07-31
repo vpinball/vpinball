@@ -63,6 +63,9 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 
 BaseTexture* BaseTexture::CreateFromFile(const char *szfile)
 {
+   if (szfile == NULL || szfile[0] == '\0')
+      return NULL;
+
    FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 
    // check the file signature and deduce its format
@@ -81,7 +84,7 @@ BaseTexture* BaseTexture::CreateFromFile(const char *szfile)
       FreeImage_Unload(dib);
 
       //if (bitsPerPixel == 24)
-      //   Texture::SetOpaque(mySurface);
+      //   mySurface->SetOpaque();
 
       return mySurface;
    }
@@ -383,23 +386,19 @@ void Texture::CreateTextureOffscreen(const int width, const int height)
    SetSizeFrom(m_pdsBuffer);
 }
 
-void Texture::SetOpaque(BaseTexture* const pdds)
+void BaseTexture::SetOpaque()
 {
-   if (pdds->m_format == BaseTexture::RGB_FP)
+   if (m_format == BaseTexture::RGB_FP)
       return;
 
-   const int width = pdds->width();
-   const int height = pdds->height();
-   const int pitch = pdds->pitch();
-
    // Assume our 32 bit color structure
-   BYTE *pch = pdds->data();
+   BYTE *pch = data();
 
-   for (int i = 0; i < height; i++)
+   for (int i = 0; i < height(); i++)
    {
-      for (int l = 0; l < width; l++)
+      for (int l = 0; l < width(); l++)
          pch[4 * l + 3] = 0xff;
 
-      pch += pitch;
+      pch += pitch();
    }
 }

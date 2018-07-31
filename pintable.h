@@ -327,9 +327,9 @@ public:
    HRESULT SaveSoundToStream(PinSound *pps, IStream *pstm);
    HRESULT LoadSoundFromStream(IStream *pstm, const int LoadFileVersion);
    void ClearOldSounds();
-   bool ExportImage(HWND hwndListView, Texture *ppi, char *filename);
+   bool ExportImage(Texture *ppi, char *filename);
    void ImportImage(HWND hwndListView, char *filename);
-   void ReImportImage(HWND hwndListView, Texture *ppi, char *filename);
+   void ReImportImage(Texture *ppi, char *filename);
    void ListImages(HWND hwndListView);
    int AddListImage(HWND hwndListView, Texture *ppi);
    void RemoveImage(Texture *ppi);

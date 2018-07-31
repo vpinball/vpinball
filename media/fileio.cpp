@@ -13,7 +13,7 @@ bool Exists(const char* const filePath)
 	return ((fileAtt & FILE_ATTRIBUTE_DIRECTORY) == 0);
 }
 
-void ExtensionFromFilename(char * const szfilename, char * const szextension)
+void ExtensionFromFilename(const char * const szfilename, char * const szextension)
 {
    const int len = lstrlen(szfilename);
 
@@ -35,7 +35,7 @@ void ExtensionFromFilename(char * const szfilename, char * const szextension)
    lstrcpy(szextension, &szfilename[begin]);
 }
 
-void TitleFromFilename(char *szfilename, char *sztitle)
+void TitleFromFilename(const char * const szfilename, char *sztitle)
 {
    const int len = lstrlen(szfilename);
 
@@ -63,7 +63,7 @@ void TitleFromFilename(char *szfilename, char *sztitle)
       end = len - 1;
    }
 
-   char *szT = &szfilename[begin];
+   const char *szT = &szfilename[begin];
    int count = end - begin;
 
    while (count--) { *sztitle++ = *szT++; }
@@ -122,7 +122,7 @@ void TitleAndPathFromFilename(const char * const szfilename, char *szpath)
    *szpath = '\0';
 }
 
-bool RawReadFromFile(char *szfilename, int *psize, char **pszout)
+bool RawReadFromFile(const char * const szfilename, int *psize, char **pszout)
 {
    const HANDLE hFile = CreateFile(szfilename,
       GENERIC_READ, FILE_SHARE_READ,

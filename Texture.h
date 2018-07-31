@@ -31,6 +31,8 @@ public:
    Format m_format;
    std::vector<BYTE> m_data;
 
+   void SetOpaque();
+
    void CopyFrom_Raw(const void* bits)  // copy bits which are already in the right format
    {
       memcpy(data(), bits, m_data.size());
@@ -131,14 +133,12 @@ public:
    BaseTexture *CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight);
    void CreateFromResource(const int id, int * const pwidth = NULL, int * const pheight = NULL);
 
-   static void SetOpaque(BaseTexture* const pdds);
-
    bool IsHDR() const
    {
        if(m_pdsBuffer == NULL)
-	   return false;
+           return false;
        else
-	   return (m_pdsBuffer->m_format == BaseTexture::RGB_FP);
+           return (m_pdsBuffer->m_format == BaseTexture::RGB_FP);
    }
 
    // create/release a DC which contains a (read-only) copy of the texture; for editor use

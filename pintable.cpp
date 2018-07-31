@@ -7916,20 +7916,12 @@ void PinTable::CreateGDIBackdrop()
 {
 }
 
-void PinTable::ReImportImage(HWND hwndListView, Texture *ppi, char *filename)
+void PinTable::ReImportImage(Texture *ppi, char *filename)
 {
    char szextension[MAX_PATH];
    ExtensionFromFilename(filename, szextension);
 
-   bool fBinary;
-   if (!lstrcmpi(szextension, "bmp"))
-   {
-      fBinary = false;
-   }
-   else // other format
-   {
-      fBinary = true;
-   }
+   const bool fBinary = !!lstrcmpi(szextension, "bmp");
 
    PinBinary *ppb = 0;
    if (fBinary)
@@ -7938,7 +7930,7 @@ void PinTable::ReImportImage(HWND hwndListView, Texture *ppi, char *filename)
       ppb->ReadFromFile(filename);
    }
 
-   BaseTexture *tex = BaseTexture::CreateFromFile(filename);
+   BaseTexture * const tex = BaseTexture::CreateFromFile(filename);
 
    if (tex == NULL)
    {
@@ -7963,7 +7955,7 @@ void PinTable::ReImportImage(HWND hwndListView, Texture *ppi, char *filename)
 }
 
 
-bool PinTable::ExportImage(HWND hwndListView, Texture *ppi, char *szfilename)
+bool PinTable::ExportImage(Texture *ppi, char *szfilename)
 {
    if (ppi->m_ppb != NULL)
       return ppi->m_ppb->WriteToFile(szfilename);
@@ -7973,14 +7965,12 @@ bool PinTable::ExportImage(HWND hwndListView, Texture *ppi, char *szfilename)
          NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
       if (hFile == INVALID_HANDLE_VALUE)
-      {
-         ShowError("The graphic file could not be written.");
          return false;
-      }
+
       const int surfwidth = ppi->m_width;					// texture width 
       const int surfheight = ppi->m_height;					// and height		
 
-      int bmplnsize = (surfwidth * 4 + 3) & -4;		// line size ... 4 bytes per pixel + pad to 4 byte boundary		
+      const int bmplnsize = (surfwidth * 4 + 3) & -4;		// line size ... 4 bytes per pixel + pad to 4 byte boundary		
 
       //<<<< began bmp file header and info <<<<<<<<<<<<<<<
 
@@ -8056,7 +8046,7 @@ void PinTable::ImportImage(HWND hwndListView, char *filename)
 {
    Texture * const ppi = new Texture();
 
-   ReImportImage(hwndListView, ppi, filename);
+   ReImportImage(ppi, filename);
 
    if (ppi->m_pdsBuffer == NULL)
    {
@@ -8139,9 +8129,9 @@ int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
    ListView_SetItemText(hwndListView, index, 4, sizeString);
    if((_stricmp(m_szImage, ppi->m_szName) == 0)
        || (_stricmp( m_szBallImage, ppi->m_szName ) == 0) 
-       || (_stricmp( m_szBallImageFront, ppi->m_szName)==0 )
+       || (_stricmp( m_szBallImageFront, ppi->m_szName ) == 0)
        || (_stricmp( m_szEnvImage, ppi->m_szName ) == 0)
-       || (_stricmp( m_BG_szImage[BG_DESKTOP], ppi->m_szName )==0)
+       || (_stricmp( m_BG_szImage[BG_DESKTOP], ppi->m_szName ) == 0)
        || (_stricmp( m_BG_szImage[BG_FSS], ppi->m_szName ) == 0)
        || (_stricmp( m_BG_szImage[BG_FULLSCREEN], ppi->m_szName ) == 0)
        || (_stricmp( m_szImageColorGrade, ppi->m_szName ) == 0))

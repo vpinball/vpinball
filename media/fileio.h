@@ -2,9 +2,9 @@
 #define FID(A) *(int *)#A
 
 bool Exists(const char* const filePath);
-void TitleFromFilename(char *szfilename, char *sztitle);
-void ExtensionFromFilename(char * const szfilename, char * const szextension);
-bool RawReadFromFile(char *szfilename, int *psize, char **pszout);
+void TitleFromFilename(const char * const szfilename, char *sztitle);
+void ExtensionFromFilename(const char * const szfilename, char * const szextension);
+bool RawReadFromFile(const char * const szfilename, int *psize, char **pszout);
 void PathFromFilename(const char * const szfilename, char *szpath);
 void TitleAndPathFromFilename(const char * const szfilename, char *szpath);
 
