@@ -510,7 +510,7 @@ STDMETHODIMP BallEx::DestroyBall(int *pVal)
    if (g_pplayer)
    {
       ++cnt;
-      Ball * b = g_pplayer->m_pactiveball;
+      Ball * const b = g_pplayer->m_pactiveball;
       g_pplayer->m_pactiveball = NULL;
       g_pplayer->DestroyBall(b); // clear ActiveBall
    }

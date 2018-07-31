@@ -30,7 +30,7 @@ Ball::Ball()
    m_orientation.Identity();
    m_inertia = (float)(2.0 / 5.0) * m_radius*m_radius * m_mass;
    m_bulb_intensity_scale = 1.0f;
-   m_playfieldReflectionStrength = 1.f;
+   m_playfieldReflectionStrength = 1.0f;
    m_reflectionEnabled = true;
    m_forceReflection = false;
    m_visible = true;
@@ -38,6 +38,7 @@ Ball::Ball()
 
    memset(m_szImage, 0, MAXTOKEN);
    memset(m_szImageFront, 0, MAXTOKEN);
+
    m_ringcounter_oldpos = 0;
    for (int i = 0; i < MAX_BALL_TRAIL_POS; ++i)
       m_oldpos[i].x = FLT_MAX;
@@ -62,7 +63,7 @@ void Ball::Init(const float mass)
 
    m_frozen = false;
 
-   m_playfieldReflectionStrength = 1.f;
+   m_playfieldReflectionStrength = 1.0f;
    m_reflectionEnabled = true;
    m_forceReflection = false;
    m_visible = true;
@@ -79,20 +80,16 @@ void Ball::Init(const float mass)
 
    m_color = RGB(255, 255, 255);
 
-   if (g_pplayer->m_ptable->m_szBallImage[0] == '\0')
+   // override table ball image with global ball image?
+   if (g_pplayer->m_fOverwriteBallImages && g_pplayer->m_ballImage)
+       m_pinballEnv = g_pplayer->m_ballImage;
+   else
    {
-       if (g_pplayer->m_fOverwriteBallImages && g_pplayer->m_ballImage)
-           m_pinballEnv = g_pplayer->m_ballImage;
-       else
+       if (g_pplayer->m_ptable->m_szBallImage[0] == '\0')
        {
            m_szImage[0] = '\0';
            m_pinballEnv = NULL;
        }
-   }
-   else
-   {
-       if (g_pplayer->m_fOverwriteBallImages && g_pplayer->m_ballImage)
-           m_pinballEnv = g_pplayer->m_ballImage;
        else
        {
            lstrcpy(m_szImage, g_pplayer->m_ptable->m_szBallImage);
@@ -100,26 +97,23 @@ void Ball::Init(const float mass)
        }
    }
 
-   if (g_pplayer->m_ptable->m_szBallImageFront[0] == '\0')
+   // override table ball logo/decal image with global ball logo/decal image?
+   if (g_pplayer->m_fOverwriteBallImages && g_pplayer->m_decalImage)
+       m_pinballDecal = g_pplayer->m_decalImage;
+   else
    {
-       if (g_pplayer->m_fOverwriteBallImages && g_pplayer->m_decalImage)
-           m_pinballDecal = g_pplayer->m_decalImage;
-       else
+       if (g_pplayer->m_ptable->m_szBallImageFront[0] == '\0')
        {
            m_szImageFront[0] = '\0';
            m_pinballDecal = NULL;
        }
-   }
-   else
-   {
-       if (g_pplayer->m_fOverwriteBallImages && g_pplayer->m_decalImage)
-           m_pinballDecal = g_pplayer->m_decalImage;
        else
        {
            lstrcpy(m_szImageFront, g_pplayer->m_ptable->m_szBallImageFront);
            m_pinballDecal = g_pplayer->m_ptable->GetImage(m_szImageFront);
        }
    }
+
    m_bulb_intensity_scale = g_pplayer->m_ptable->m_defaultBulbIntensityScaleOnBall;
 
    RenderSetup();
@@ -391,7 +385,7 @@ void Ball::HandleStaticContact(const CollisionEvent& coll, const float friction,
    if (normVel <= C_CONTACTVEL)
    {
       const Vertex3Ds fe = m_mass * g_pplayer->m_gravity;      // external forces (only gravity for now)
-	  const float dot = fe.Dot(coll.m_hitnormal);
+      const float dot = fe.Dot(coll.m_hitnormal);
       const float normalForce = std::max(0.0f, -(dot*dtime + coll.m_hit_org_normalvelocity)); // normal force is always nonnegative
 
       // Add just enough to kill original normal velocity and counteract the external forces.

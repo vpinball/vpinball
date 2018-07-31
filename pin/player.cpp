@@ -360,16 +360,19 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    int detecthang;
    hr = GetRegInt("Player", "DetectHang", &detecthang);
    if (hr != S_OK)
-      detecthang = fFalse; // The default
-   m_fDetectScriptHang = (detecthang == 1);
+      m_fDetectScriptHang = false; // The default
+   else
+      m_fDetectScriptHang = (detecthang == fTrue);
 
    m_ballImage = NULL;
    m_decalImage = NULL;
-   hr = GetRegInt("Player", "OverwriteBallImage", &detecthang);
+
+   int overwriteballimage;
+   hr = GetRegInt("Player", "OverwriteBallImage", &overwriteballimage);
    if (hr != S_OK)
        m_fOverwriteBallImages = false;
    else
-       m_fOverwriteBallImages = (detecthang == 1);
+       m_fOverwriteBallImages = (overwriteballimage == fTrue);
 
    int minphyslooptime;
    hr = GetRegInt("Player", "MinPhysLoopTime", &minphyslooptime);
@@ -381,55 +384,15 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    if (m_fOverwriteBallImages)
    {
        char imageName[MAX_PATH];
-       bool result = true;
 
        hr = GetRegString("Player", "BallImage", imageName, MAX_PATH);
        if (hr == S_OK)
        {
-           m_ballImage = new Texture();
+           BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
 
-           BOOL fBinary;
-           char szextension[MAX_PATH];
-           ExtensionFromFilename(imageName, szextension);
-
-           if (!lstrcmpi(szextension, "bmp"))
+           if (tex != NULL)
            {
-               fBinary = fFalse;
-           }
-           else // other format
-           {
-               fBinary = fTrue;
-           }
-
-           PinBinary *ppb = 0;
-           if (fBinary)
-           {
-               ppb = new PinBinary();
-               result = ppb->ReadFromFile(imageName);
-           }
-           if (!result)
-           {
-               m_ballImage->FreeStuff();
-               delete m_ballImage;
-               m_ballImage = NULL;
-           }
-           else
-           {
-               BaseTexture *tex = BaseTexture::CreateFromFile(imageName);
-
-               if (tex == NULL)
-               {
-                   if (ppb) delete ppb;
-                   return;
-               }
-
-               m_ballImage->FreeStuff();
-
-               if (fBinary)
-               {
-                   m_ballImage->m_ppb = ppb;
-               }
-
+               m_ballImage = new Texture();
 
                m_ballImage->m_width = tex->width();
                m_ballImage->m_height = tex->height();
@@ -440,50 +403,11 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
        hr = GetRegString("Player", "DecalImage", imageName, MAX_PATH);
        if (hr == S_OK)
        {
-           m_decalImage = new Texture();
+           BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
 
-           BOOL fBinary;
-           char szextension[MAX_PATH];
-           ExtensionFromFilename(imageName, szextension);
-
-           if (!lstrcmpi(szextension, "bmp"))
+           if (tex != NULL)
            {
-               fBinary = fFalse;
-           }
-           else // other format
-           {
-               fBinary = fTrue;
-           }
-
-           PinBinary *ppb = 0;
-           if (fBinary)
-           {
-               ppb = new PinBinary();
-               result = ppb->ReadFromFile(imageName);
-           }
-           if (!result)
-           {
-               m_decalImage->FreeStuff();
-               delete m_decalImage;
-               m_decalImage = NULL;
-           }
-           else
-           {
-               BaseTexture *tex = BaseTexture::CreateFromFile(imageName);
-
-               if (tex == NULL)
-               {
-                   if (ppb) delete ppb;
-                   return;
-               }
-
-               m_decalImage->FreeStuff();
-
-               if (fBinary)
-               {
-                   m_decalImage->m_ppb = ppb;
-               }
-
+               m_decalImage = new Texture();
 
                m_decalImage->m_width = tex->width();
                m_decalImage->m_height = tex->height();
@@ -586,18 +510,16 @@ Player::~Player()
     }
     if (m_ballImage)
     {
-       m_ballImage->FreeStuff();
        delete m_ballImage;
        m_ballImage = NULL;
     }
     if (m_decalImage)
     {
-       m_decalImage->FreeStuff();
        delete m_decalImage;
        m_decalImage = NULL;
     }
-	delete g_pplayer->m_pBCTarget;
-	g_pplayer->m_pBCTarget = NULL;
+    delete g_pplayer->m_pBCTarget;
+    g_pplayer->m_pBCTarget = NULL;
 }
 
 void Player::Shutdown()
@@ -629,13 +551,11 @@ void Player::Shutdown()
    SAFE_RELEASE(m_ballTrailVertexBuffer);
    if (m_ballImage)
    {
-       m_ballImage->FreeStuff();
        delete m_ballImage;
        m_ballImage = NULL;
    }
    if (m_decalImage)
    {
-       m_decalImage->FreeStuff();
        delete m_decalImage;
        m_decalImage = NULL;
    }

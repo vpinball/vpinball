@@ -551,7 +551,8 @@ void ImageDialog::Export()
                      strcpy_s(g_filename, MAX_PATH, pathName);
                      strcat_s(g_filename, MAX_PATH, &ppi->m_szPath[begin]);
                   }
-                  (void)pt->ExportImage(hSoundList, ppi, g_filename);
+                  if(!pt->ExportImage(ppi, g_filename))
+                     ShowError("Could not export Image");
                   sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
                   lvitem.iItem = sel;
                   lvitem.iSubItem = 0;
@@ -634,7 +635,7 @@ void ImageDialog::Reimport()
                if (hFile != INVALID_HANDLE_VALUE)
                {
                   CloseHandle(hFile);
-                  pt->ReImportImage(hSoundList, ppi, ppi->m_szPath);
+                  pt->ReImportImage(ppi, ppi->m_szPath);
                   pt->SetNonUndoableDirty(eSaveDirty);
                }
                else MessageBox( ppi->m_szPath, "  FILE NOT FOUND!  ", MB_OK);
@@ -670,7 +671,7 @@ void ImageDialog::UpdateAll()
          if (hFile != INVALID_HANDLE_VALUE)
          {
             CloseHandle(hFile);
-            pt->ReImportImage(hSoundList, ppi, ppi->m_szPath);
+            pt->ReImportImage(ppi, ppi->m_szPath);
             pt->SetNonUndoableDirty(eSaveDirty);
          }
          else
@@ -732,7 +733,7 @@ void ImageDialog::ReimportFrom()
                szInitialDir[ofn.nFileOffset] = 0;
                hr = SetRegValue("RecentDir", "ImageDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
 
-               pt->ReImportImage(hSoundList, ppi, ofn.lpstrFile);
+               pt->ReImportImage(ppi, ofn.lpstrFile);
                ListView_SetItemText(hSoundList, sel, 1, ppi->m_szPath);
                pt->SetNonUndoableDirty(eSaveDirty);
 
