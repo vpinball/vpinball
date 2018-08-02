@@ -23,10 +23,9 @@ void VideoOptionsDialog::AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwn
    SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }
 
-void VideoOptionsDialog::ResetVideoPreferences()
+void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 = default, 1 = lowend PC, 2 = highend PC
 {
-   char tmp[256];
-   HWND hwndDlg = GetHwnd();
+   const HWND hwndDlg = GetHwnd();
 
    HWND hwndCheck = GetDlgItem(IDC_FULLSCREEN).GetHwnd();
    SendMessage(hwndCheck, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -53,19 +52,17 @@ void VideoOptionsDialog::ResetVideoPreferences()
 
    SendMessage(hwndDlg, true ? GET_FULLSCREENMODES : GET_WINDOW_MODES, widthcur << 16 | refreshrate, heightcur << 16 | depthcur);
 
-   hwndCheck = GetDlgItem(IDC_10BIT_VIDEO).GetHwnd();
-   SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_Tex3072).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_Tex1024).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_Tex2048).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_TexUnlimited).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
-   hwndCheck = GetDlgItem(IDC_GLOBAL_REFLECTION_CHECK).GetHwnd();
-   SendMessage(hwndCheck, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
-   hwndCheck = GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd();
-   SendMessage(hwndCheck, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(IDC_Tex2048).GetHwnd(), BM_SETCHECK, profile == 1 ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(IDC_TexUnlimited).GetHwnd(), BM_SETCHECK, profile != 1 ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(IDC_GLOBAL_REFLECTION_CHECK).GetHwnd(), BM_SETCHECK, profile != 1 ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
    SetDlgItemInt(IDC_ADAPTIVE_VSYNC, 0, FALSE);
    SetDlgItemInt(IDC_MAX_PRE_FRAMES, 0, FALSE);
    float ballAspecRatioOffsetX = 0.0f;
+   char tmp[256];
    sprintf_s(tmp, 256, "%f", ballAspecRatioOffsetX);
    SetDlgItemTextA(IDC_CORRECTION_X, tmp);
    float ballAspecRatioOffsetY = 0.0f;
@@ -85,13 +82,13 @@ void VideoOptionsDialog::ResetVideoPreferences()
    hwndCheck = GetDlgItem(IDC_DYNAMIC_DN).GetHwnd();
    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    hwndCheck = GetDlgItem(IDC_DYNAMIC_AO).GetHwnd();
-   SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(hwndCheck, BM_SETCHECK, profile == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
    hwndCheck = GetDlgItem(IDC_ENABLE_AO).GetHwnd();
    SendMessage(hwndCheck, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
    hwndCheck = GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd();
-   SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(hwndCheck, BM_SETCHECK, profile == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
    hwndCheck = GetDlgItem(IDC_GLOBAL_PFREFLECTION_CHECK).GetHwnd();
-   SendMessage(hwndCheck, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(hwndCheck, BM_SETCHECK, profile != 1 ? BST_CHECKED : BST_UNCHECKED, 0);
    hwndCheck = GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd();
    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    SetDlgItemText(IDC_BALL_IMAGE_EDIT, "");
@@ -103,7 +100,7 @@ void VideoOptionsDialog::ResetVideoPreferences()
       ::EnableWindow(GetDlgItem(IDC_BALL_IMAGE_EDIT).GetHwnd(), FALSE);
       ::EnableWindow(GetDlgItem(IDC_BALL_DECAL_EDIT).GetHwnd(), FALSE);
    }
-   SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_SETCURSEL, 2, 0);
+   SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_SETCURSEL, profile == 1 ? 0 : (profile == 2 ? 3 : 2), 0);
    hwndCheck = GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd();
    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    hwndCheck = GetDlgItem(IDC_BG_SET).GetHwnd();
@@ -124,11 +121,11 @@ void VideoOptionsDialog::ResetVideoPreferences()
    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    hwndCheck = GetDlgItem(IDC_DISABLE_DWM).GetHwnd();
    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendMessage(GetDlgItem(IDC_FORCE_ANISO).GetHwnd(), BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
+   SendMessage(GetDlgItem(IDC_FORCE_ANISO).GetHwnd(), BM_SETCHECK, profile != 1 ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_TEX_COMPRESS).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_SOFTWARE_VP).GetHwnd(), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   HWND hwndARASlider = GetDlgItem(IDC_ARASlider).GetHwnd();
-   SendMessage(hwndARASlider, TBM_SETPOS, TRUE, 10);
+   const HWND hwndARASlider = GetDlgItem(IDC_ARASlider).GetHwnd();
+   SendMessage(hwndARASlider, TBM_SETPOS, TRUE, profile == 1 ? 5 : 10);
    SendMessage(GetDlgItem(IDC_StretchYes).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_StretchNo).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
@@ -137,7 +134,7 @@ void VideoOptionsDialog::ResetVideoPreferences()
 
 void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes, const VideoMode* curSelMode)
 {
-   HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
+   const HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
    SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
 
    for (unsigned i = 0; i < modes.size(); ++i)
@@ -161,9 +158,8 @@ void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes,
 
 BOOL VideoOptionsDialog::OnInitDialog()
 {
-   char tmp[256];
-   HWND hwndDlg = GetHwnd();
-   HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hinst, NULL);
+   const HWND hwndDlg = GetHwnd();
+   const HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hinst, NULL);
    if (toolTipHwnd)
    {
       SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
@@ -262,6 +258,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    hr = GetRegStringAsFloat("Player", "BallCorrectionX", &ballAspecRatioOffsetX);
    if (hr != S_OK)
       ballAspecRatioOffsetX = 0.0f;
+   char tmp[256];
    sprintf_s(tmp, 256, "%f", ballAspecRatioOffsetX);
    SetDlgItemTextA(IDC_CORRECTION_X, tmp);
 
@@ -697,7 +694,17 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    {
       case IDC_DEFAULTS:
       {
-         ResetVideoPreferences();
+         ResetVideoPreferences(0);
+         break;
+      }
+      case IDC_DEFAULTS_LOW:
+      {
+         ResetVideoPreferences(1);
+         break;
+      }
+      case IDC_DEFAULTS_HIGH:
+      {
+         ResetVideoPreferences(2);
          break;
       }
       case IDC_OVERWRITE_BALL_IMAGE_CHECK:
