@@ -729,6 +729,8 @@
 #define IDC_ENABLE_LEGACY_NUDGE         495
 #define IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW 496
 #define IDC_BALLDECALMODE               497
+#define IDC_DEFAULTS_LOW                498
+#define IDC_DEFAULTS_HIGH               499
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
