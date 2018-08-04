@@ -615,6 +615,8 @@ public:
 
    bool m_toogle_DTFS;
 
+   //bool m_low_quality_bloom;
+
    bool m_fStereo3DY;
    bool m_fOverwriteBallImages;
    Texture *m_ballImage;

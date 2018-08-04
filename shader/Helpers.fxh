@@ -20,12 +20,14 @@ float3 mul_w0(const float3 v, const float4x3 m)
     return v.x*m[0] + v.y*m[1] + v.z*m[2];
 }
 
+#if 0
 float acos_approx(const float v)
 {
     const float x = abs(v);
     const float res = (-0.155972/*C1*/ * x + 1.56467/*C0*/) * sqrt(1.0 - x);
     return (v >= 0.) ? res : PI - res;
 }
+#endif
 
 float acos_approx_divPI(const float v)
 {
@@ -34,6 +36,7 @@ float acos_approx_divPI(const float v)
     return (v >= 0.) ? res : 1. - res;
 }
 
+#if 0
 float atan2_approx(const float y, const float x)
 {
 	const float abs_y = abs(y);
@@ -43,6 +46,7 @@ float atan2_approx(const float y, const float x)
 	                  + (0.211868/*C3*/ * r * r - 0.987305/*C1*/) * ((x < 0.) ? -r : r);
 	return (y < 0.) ? -angle : angle;
 }
+#endif
 
 float atan2_approx_div2PI(const float y, const float x)
 {
@@ -74,7 +78,7 @@ float3 InvToneMap(const float3 color)
 
 float3 FBGamma(const float3 color) //!! use hardware support? D3DRS_SRGBWRITEENABLE
 {
-	return pow(color, 1.0/2.2); // pow does not matter anymore on current GPUs
+	return pow(color, 1.0/2.2); // pow does not matter anymore on current GPUs (tested also on tablet/intel)
 
 	/*const float3 t0 = sqrt(color);
 	const float3 t1 = sqrt(t0);
@@ -84,7 +88,7 @@ float3 FBGamma(const float3 color) //!! use hardware support? D3DRS_SRGBWRITEENA
 
 float3 FBToneMap(const float3 color)
 {
-    const float l = color.x*0.176204 + color.y*0.812985 + color.z*0.0108109;
+    const float l = dot(color,float3(0.176204,0.812985,0.0108109));
     return color * ((l*BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
 }
 
