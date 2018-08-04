@@ -7,6 +7,7 @@ float2 AO_scale_timeblur;
 float mirrorFactor;
 
 /*static*/ bool color_grade;
+/*static*/ bool do_bloom;
 
 texture Texture0; // FB
 texture Texture1; // Bloom
@@ -130,7 +131,7 @@ float3 FBDither(const float3 color, const int2 pos)
 
 float3 FBColorGrade(float3 color)
 {
-   if(!color_grade)
+   [branch] if(!color_grade)
        return color;
 
    color.xy = color.xy*(15.0/16.0) + 1.0/32.0; // assumes 16x16x16 resolution flattened to 256x16 texture
@@ -171,7 +172,9 @@ float4 ps_main_fb_tonemap(in VS_OUTPUT_2D IN) : COLOR
     //!! if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
     //!!   return float4(tex2Dlod(texSampler5, float4(IN.tex0, 0.,0.)).xyz, 1.0);
 
-    const float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.,0.)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.,0.)).xyz; //!! offset?
+    float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.,0.)).xyz);
+    [branch] if (do_bloom)
+        result += tex2Dlod(texSamplerBloom, float4(IN.tex0, 0., 0.)).xyz; //!! offset?
     return float4(FBColorGrade(FBGamma(saturate(result))), 1.0);
 }
 
@@ -193,37 +196,41 @@ float4 ps_main_fb_AO(in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_tonemap_AO(in VS_OUTPUT_2D IN) : COLOR
 {
-    const float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.,0.)).xyz) // moving AO before tonemap does not really change the look
-           * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0.,0.)).x // omitting the shift blurs over 2x2 window
-           + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.,0.)).xyz;  //!! offset?
+    float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.,0.)).xyz) // moving AO before tonemap does not really change the look
+                  * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0.,0.)).x; // omitting the shift blurs over 2x2 window
+    [branch] if (do_bloom)
+        result += tex2Dlod(texSamplerBloom, float4(IN.tex0, 0., 0.)).xyz;  //!! offset?
     return float4(FBColorGrade(FBGamma(saturate(result))), 1.0);
 }
 
 float4 ps_main_fb_tonemap_AO_static(in VS_OUTPUT_2D IN) : COLOR
 {
 	const float3 result = tex2Dlod(texSampler5, float4(IN.tex0, 0., 0.)).xyz
-	* tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0., 0.)).x; // omitting the shift blurs over 2x2 window
+	                    * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0., 0.)).x; // omitting the shift blurs over 2x2 window
 	return float4(result, 1.0);
 }
 
 float4 ps_main_fb_tonemap_no_filter(in VS_OUTPUT_2D IN) : COLOR
 {
-    const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy, 0.,0.)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.,0.)).xyz; //!! offset?
+    float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy, 0.,0.)).xyz);
+    [branch] if (do_bloom)
+        result += tex2Dlod(texSamplerBloom, float4(IN.tex0, 0., 0.)).xyz; //!! offset?
     return float4(/*FBDither(*/FBColorGrade(FBGamma(saturate(result))),/*IN.tex0*w_h_height.zw),*/ 1.0);
 }
 
 float4 ps_main_fb_tonemap_AO_no_filter(in VS_OUTPUT_2D IN) : COLOR
 {
-    const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy, 0.,0.)).xyz) // moving AO before tonemap does not really change the look
-           * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0.,0.)).x // omitting the shift blurs over 2x2 window
-	   + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.,0.)).xyz;  //!! offset?
+    float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy, 0.,0.)).xyz) // moving AO before tonemap does not really change the look
+                  * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0.,0.)).x; // omitting the shift blurs over 2x2 window
+    [branch] if (do_bloom)
+        result += tex2Dlod(texSamplerBloom, float4(IN.tex0, 0., 0.)).xyz;  //!! offset?
     return float4(FBColorGrade(FBGamma(saturate(result))), 1.0);
 }
 
 float4 ps_main_fb_tonemap_AO_no_filter_static(in VS_OUTPUT_2D IN) : COLOR
 {
 	const float3 result = tex2Dlod(texSampler4, float4(IN.tex0 + w_h_height.xy, 0., 0.)).xyz
-	* tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0., 0.)).x; // omitting the shift blurs over 2x2 window
+	                    * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0., 0.)).x; // omitting the shift blurs over 2x2 window
 	return float4(result, 1.0);
 }
 
@@ -231,6 +238,7 @@ float4 ps_main_fb_tonemap_AO_no_filter_static(in VS_OUTPUT_2D IN) : COLOR
 // Bloom (9x9)
 //
 
+#if 0
 #if 0 // full or abusing lerp
 float4 ps_main_fb_bloom_horiz9x9(in VS_OUTPUT_2D IN) : COLOR
 {
@@ -283,6 +291,7 @@ float4 ps_main_fb_bloom_vert9x9(in VS_OUTPUT_2D IN) : COLOR
 
     return float4(result*w_h_height.z, 1.0);
 }
+#endif
 
 #if 0
 float4 ps_main_fb_bloom_horiz9x9_4(in VS_OUTPUT_2D IN) : COLOR
@@ -308,8 +317,10 @@ float4 ps_main_fb_bloom_vert9x9_4(in VS_OUTPUT_2D IN) : COLOR
 
     return result*w_h_height.z;
 }
+#endif
+#endif
 
-
+#if 0
 //const float offset[4] = { 0.0, 1.411764705882353, 3.2941176470588234, 5.176470588235294 }; //13
 //const float weight[4] = { 0.1964825501511404, 0.2969069646728344, 0.09447039785044732, 0.010381362401148057 }; //13
 
@@ -426,7 +437,7 @@ float4 ps_main_fb_bloom_vert27x27(in VS_OUTPUT_2D IN) : COLOR
     return float4(result*w_h_height.z, 1.0);
 }
 #endif
-#endif
+
 
 // mirror
 float4 ps_main_fb_mirror(in VS_OUTPUT_2D IN) : COLOR
@@ -596,6 +607,7 @@ technique fb_tonemap_AO_no_filter_static
 
 // All Bloom variants:
 
+#if 0
 technique fb_bloom_horiz9x9
 { 
    pass P0 
@@ -614,7 +626,6 @@ technique fb_bloom_vert9x9
    }
 }
 
-#if 0
 technique fb_bloom_horiz9x9_4
 {
    pass P0

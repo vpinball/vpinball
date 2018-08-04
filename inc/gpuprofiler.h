@@ -78,7 +78,7 @@ static const char * GTS_name[GTS_Max] =
 	"Non-Transparent Elements",
 	"Light Buffer",
 	"Transparent Elements",
-	"Bloom",
+	"Bloom + Depth",
 	"ScreenSpace Reflections",
 	"Ambient Occlusion",
 	"Post Processing",

@@ -219,7 +219,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_fNoTimeCorrect = false;
 
    m_toogle_DTFS = false;
-   
+
    m_fThrowBalls = false;
    m_fBallControl = false;
    m_pactiveballBC = NULL;
@@ -416,10 +416,12 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
        }
    }
    
-   m_fThrowBalls = (GetRegIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0)==1);
+   m_fThrowBalls = (GetRegIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0) == 1);
    m_fBallControl = (GetRegIntWithDefault("Editor", "BallControlAlwaysOn", 0) == 1);
    m_DebugBallSize = GetRegIntWithDefault("Editor", "ThrowBallSize", 50);
    m_DebugBallMass = GetRegStringAsFloatWithDefault("Editor", "ThrowBallMass", 1.0f);
+
+   //m_low_quality_bloom = GetRegBoolWithDefault("Player", "LowQualityBloom", false);
 
    int numberOfTimesToShowTouchMessage = GetRegIntWithDefault("Player", "NumberOfTimesToShowTouchMessage", 10);
    SetRegValueInt("Player", "NumberOfTimesToShowTouchMessage", max(numberOfTimesToShowTouchMessage-1,0));
@@ -3786,11 +3788,11 @@ void Player::Bloom()
    if (m_ptable->m_bloom_strength <= 0.0f)
    {
       // need to reset content from (optional) bulb light abuse of the buffer
-      RenderTarget* tmpBloomSurface;
+      /*RenderTarget* tmpBloomSurface;
       m_pin3d.m_pd3dDevice->GetBloomBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface);
       m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface);
       m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
-      SAFE_RELEASE_NO_RCC(tmpBloomSurface);
+      SAFE_RELEASE_NO_RCC(tmpBloomSurface);*/
 
       return;
    }
@@ -3830,7 +3832,7 @@ void Player::Bloom()
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
       const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0 / (double)m_width), (float)(3.0 / (double)m_height), 1.0f, 1.0f);
       m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
-      m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_horiz19x19h");
+      m_pin3d.m_pd3dDevice->FBShader->SetTechnique(/*m_low_quality_bloom ? "fb_bloom_horiz9x9" :*/ "fb_bloom_horiz19x19h");
 
       m_pin3d.m_pd3dDevice->FBShader->Begin(0);
       m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
@@ -3847,7 +3849,7 @@ void Player::Bloom()
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture());
       const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0 / (double)m_width), (float)(3.0 / (double)m_height), m_ptable->m_bloom_strength, 1.0f);
       m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
-      m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_vert19x19h");
+      m_pin3d.m_pd3dDevice->FBShader->SetTechnique(/*m_low_quality_bloom ? "fb_bloom_vert9x9" :*/ "fb_bloom_vert19x19h");
 
       m_pin3d.m_pd3dDevice->FBShader->Begin(0);
       m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
@@ -4250,12 +4252,14 @@ void Player::PrepareVideoBuffersNormal()
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetReflectionBufferTexture());
    else
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
-   m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture1", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
+   if (m_ptable->m_bloom_strength > 0.0f)
+      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture1", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
 
    Texture * const pin = m_ptable->GetImage((char *)m_ptable->m_szImageColorGrade);
    if (pin)
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture4", pin);
    m_pin3d.m_pd3dDevice->FBShader->SetBool("color_grade", pin != NULL);
+   m_pin3d.m_pd3dDevice->FBShader->SetBool("do_bloom", (m_ptable->m_bloom_strength > 0.0f));
 
    const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5 / (double)m_width), (float)(0.5 / (double)m_height), 1.0f, 1.0f);
    m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
@@ -4402,13 +4406,15 @@ void Player::PrepareVideoBuffersAO()
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetReflectionBufferTexture());
    else
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
-   m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture1", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
+   if (m_ptable->m_bloom_strength > 0.0f)
+      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture1", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pddsAOBackBuffer);
 
    Texture * const pin = m_ptable->GetImage((char *)m_ptable->m_szImageColorGrade);
    if (pin)
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture4", pin);
    m_pin3d.m_pd3dDevice->FBShader->SetBool("color_grade", pin != NULL);
+   m_pin3d.m_pd3dDevice->FBShader->SetBool("do_bloom", (m_ptable->m_bloom_strength > 0.0f));
 
    const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5 / (double)m_width), (float)(0.5 / (double)m_height), 1.0f, 1.0f);
    m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
