@@ -246,7 +246,9 @@ public:
    void Find(const FINDREPLACE * const pfr);
    void Replace(const FINDREPLACE * const pfr);
    void SaveToStream(IStream *pistream, HCRYPTHASH const hcrypthash);
+   void SaveToFile(const char *filename);
    void LoadFromStream(IStream *pistream, HCRYPTHASH const hcrypthash, const HCRYPTKEY hcryptkey); // incl. table protection
+   void LoadFromFile(const char *filename);
    void SetCaption(const char * const szCaption);
 	string upperCase(string input);
 	string lowerCase(string input);
