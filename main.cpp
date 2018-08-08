@@ -188,6 +188,7 @@ private:
    bool fPlay;
    bool fPov;
    bool fFile;
+   bool fExtractScript;
    TCHAR szTableFileName[_MAX_PATH];
 
 public:
@@ -237,6 +238,7 @@ public:
       fPlay = false;
       fPov = false;
       bRun = true;
+	  fExtractScript = false;
       int nRet = 0;
       memset(szTableFileName, 0, _MAX_PATH);
       // Start VP with file dialog open and then also playing that one?
@@ -260,7 +262,7 @@ public:
             || lstrcmpi(szArglist[i], _T("-Help")) == 0 || lstrcmpi(szArglist[i], _T("/Help")) == 0
             || lstrcmpi(szArglist[i], _T("-?")) == 0 || lstrcmpi(szArglist[i], _T("/?")) == 0)
          {
-            ShowError("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n\n-Edit [filename]  load file into VP\n-Play [filename]  load and play file\n-Pov [filename]  load, export pov and close");
+            ShowError("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n\n-Edit [filename]  load file into VP\n-Play [filename]  load and play file\n-Pov [filename]  load, export pov and close\n-ExtractVBS [filename]  load, export table script and close");
             bRun = false;
             break;
          }
@@ -288,11 +290,14 @@ public:
          const bool editfile = (lstrcmpi(szArglist[i], _T("-Edit")) == 0 || lstrcmpi(szArglist[i], _T("/Edit")) == 0);
          const bool playfile = (lstrcmpi(szArglist[i], _T("-Play")) == 0 || lstrcmpi(szArglist[i], _T("/Play")) == 0);
          const bool povfile = (lstrcmpi(szArglist[i], _T("-Pov")) == 0 || lstrcmpi(szArglist[i], _T("/Pov")) == 0);
-         if ((editfile || playfile || povfile) && (i + 1 < nArgs))
+		 const bool extractscript = (lstrcmpi(szArglist[i], _T("-ExtractVBS")) == 0 || lstrcmpi(szArglist[i], _T("/ExtractVBS")) == 0);
+
+         if ((editfile || playfile || povfile || extractscript) && (i + 1 < nArgs))
          {
             fFile = true;
             fPlay = playfile;
             fPov = povfile;
+			fExtractScript = extractscript;
 
             // Remove leading - or /
             char* filename;
@@ -414,6 +419,21 @@ public:
                g_pvp->LoadFileName(szTableFileName);
             else
                lf = g_pvp->LoadFile();
+
+			if (fExtractScript && szTableFileName[0] != '\0')
+			{
+				TCHAR szScriptFilename[MAX_PATH];
+				strcpy_s(szScriptFilename, szTableFileName);
+				TCHAR *pos = strrchr(szScriptFilename, '.');
+				if (pos)
+				{
+					*pos = 0;
+					strcat_s(szScriptFilename, ".vbs");
+					g_pvp->m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
+				}
+				g_pvp->Quit();
+			}
+
 
             if (fPlay && lf)
                g_pvp->DoPlay();

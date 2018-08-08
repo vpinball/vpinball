@@ -1731,6 +1731,15 @@ void VPinball::LoadFileName(char *szFileName)
 		  }
 	  }
 
+	  // auto-import VBS table script, if exist...
+	  strcpy_s(szFileNameAuto, m_currentTablePath);
+	  strcat_s(szFileNameAuto, ppt->m_szTitle);
+	  strcat_s(szFileNameAuto, ".vbs");
+	  if (Exists(szFileNameAuto)) // We check if there is a table pov settings first
+	  {
+		  ppt->m_pcv->LoadFromFile(szFileNameAuto);
+	  }
+
       // get the load path from the filename
 	  SetRegValue("RecentDir", "LoadDir", REG_SZ, m_currentTablePath, lstrlen(m_currentTablePath));
 

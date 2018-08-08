@@ -1120,6 +1120,21 @@ void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
    delete[] szText;
 }
 
+void CodeViewer::SaveToFile(const char *filename)
+{
+	FILE *fScript = fopen(filename, "wb");
+	if (fScript)
+	{
+		size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+		const size_t bufferSize = cchar + 32;
+		char * const szText = new char[bufferSize + 1];
+		SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
+		fwrite(szText, cchar, 1, fScript);
+		fclose(fScript);
+		delete[] szText;
+	}
+}
+
 void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
 {
    m_fIgnoreDirty = true;
@@ -1172,6 +1187,39 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
    m_fIgnoreDirty = false;
    m_sdsDirty = eSaveClean;
 }
+
+void CodeViewer::LoadFromFile(const char *filename)
+{
+	FILE *fScript = fopen(filename, "rb");
+	if (fScript)
+	{
+		fseek(fScript, 0L, SEEK_END);
+		int cchar = ftell(fScript);
+		fseek(fScript, 0L, SEEK_SET);
+		m_fIgnoreDirty = true;
+
+		ULONG read = 0;
+		BYTE * const szText = new BYTE[cchar + 1];
+
+		cchar = fread(szText, 1, cchar, fScript);
+
+		szText[cchar] = L'\0';
+
+		// check for bogus control characters
+		for (int i = 0; i < cchar; ++i)
+		{
+			if (szText[i] < 9 || (szText[i] > 10 && szText[i] < 13) || (szText[i] > 13 && szText[i] < 32))
+				szText[i] = ' ';
+		}
+		SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
+		SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
+		delete[] szText;
+
+		m_fIgnoreDirty = false;
+		m_sdsDirty = eSaveClean;
+	}
+}
+
 
 void CodeViewer::ColorLine(const int line)
 {
