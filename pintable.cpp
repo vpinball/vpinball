@@ -6427,26 +6427,33 @@ void PinTable::ImportBackdropPOV(const char *filename)
     xmlDoc.clear();
 }
 
-void PinTable::ExportBackdropPOV()
+void PinTable::ExportBackdropPOV(const char *filename)
 {
-	OPENFILENAME ofn;
-	memset(m_szObjFileName, 0, MAX_PATH);
-	ZeroMemory(&ofn, sizeof(OPENFILENAME));
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hInstance = g_hinst;
-	ofn.hwndOwner = g_pvp->m_hwnd;
-	// TEXT
-	ofn.lpstrFilter = "POV file(*.pov)\0*.pov\0";
-	ofn.lpstrFile = m_szObjFileName;
-	ofn.nMaxFile = _MAX_PATH;
-	ofn.lpstrDefExt = "pov";
-	ofn.Flags = OFN_OVERWRITEPROMPT;
+	if (filename == NULL)
+	{
+		OPENFILENAME ofn;
+		memset(m_szObjFileName, 0, MAX_PATH);
+		ZeroMemory(&ofn, sizeof(OPENFILENAME));
+		ofn.lStructSize = sizeof(OPENFILENAME);
+		ofn.hInstance = g_hinst;
+		ofn.hwndOwner = g_pvp->m_hwnd;
+		// TEXT
+		ofn.lpstrFilter = "POV file(*.pov)\0*.pov\0";
+		ofn.lpstrFile = m_szObjFileName;
+		ofn.nMaxFile = _MAX_PATH;
+		ofn.lpstrDefExt = "pov";
+		ofn.Flags = OFN_OVERWRITEPROMPT;
 
-	int ret = GetSaveFileName(&ofn);
+		int ret = GetSaveFileName(&ofn);
 
-	// user canceled
-	if (ret == 0)
-		return;// S_FALSE;
+		// user canceled
+		if (ret == 0)
+			return;// S_FALSE;
+	}
+	else
+	{
+		strcpy_s(m_szObjFileName, filename);
+	}
 
     char strBuf[MAX_PATH];
     xml_document<> xmlDoc;

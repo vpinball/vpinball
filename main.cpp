@@ -420,7 +420,7 @@ public:
             else
                lf = g_pvp->LoadFile();
 
-			if (fExtractScript && szTableFileName[0] != '\0')
+			if (fExtractScript && lf)
 			{
 				TCHAR szScriptFilename[MAX_PATH];
 				strcpy_s(szScriptFilename, szTableFileName);
@@ -433,13 +433,22 @@ public:
 				}
 				g_pvp->Quit();
 			}
-
+			if (fPov && lf)
+			{
+				TCHAR szPOVFilename[MAX_PATH];
+				strcpy_s(szPOVFilename, szTableFileName);
+				TCHAR *pos = strrchr(szPOVFilename, '.');
+				if (pos)
+				{
+					*pos = 0;
+					strcat_s(szPOVFilename, ".pov");
+					g_pvp->m_ptableActive->ExportBackdropPOV(szPOVFilename);
+				}
+				g_pvp->Quit();			
+			}
 
             if (fPlay && lf)
-               g_pvp->DoPlay();
-
-			if (fPov && lf)
-			   g_pvp->Quit();
+               g_pvp->DoPlay();			 
          }
 
          // VBA APC handles message loop (bastards)
