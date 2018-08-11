@@ -106,6 +106,20 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                         ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
                     else
                         ListView_SortItems(SortData.hwndList, MyCompProcIntValues, &SortData);
+                    int count = ListView_GetItemCount(hListHwnd);
+                    for (int i = 0; i < count; i++)
+                    {
+                       LVITEM lvitem;
+                       lvitem.mask = LVIF_PARAM;
+                       lvitem.iItem = i;
+                       lvitem.iSubItem = 0;
+                       ListView_GetItem(hListHwnd, &lvitem);
+                       Collection * const pcol = (Collection *)lvitem.lParam;
+                       char buf[16] = { 0 };
+                       sprintf_s(buf, "%i", pcol->m_visel.Size());
+                       ListView_SetItemText(hListHwnd, i, 1, buf);
+
+                    }
                 }
             }
             if(pnmhdr->code == LVN_ENDLABELEDIT)
@@ -181,6 +195,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             {
                 ::SetFocus(hListHwnd);
                 LVITEM lvitem1;
+                memset(&lvitem1, 0, sizeof(LVITEM));
                 lvitem1.mask = LVCF_TEXT | LVIF_PARAM;
                 lvitem1.iItem = idx;
                 lvitem1.iSubItem = 0;
@@ -194,6 +209,11 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 char szT[MAX_PATH];
                 WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
                 ListView_SetItemText(hListHwnd, idx - 1, 0, szT);
+
+                char buf[16] = { 0 };
+                sprintf_s(buf, "%i", pcol->m_visel.Size());
+                ListView_SetItemText(hListHwnd, idx - 1, 1, buf);
+
                 ListView_SetItemState(hListHwnd, -1, 0, LVIS_SELECTED);
                 ListView_SetItemState(hListHwnd, idx - 1, LVIS_SELECTED, LVIS_SELECTED);
                 ListView_SetItemState(hListHwnd, idx - 1, LVIS_FOCUSED, LVIS_FOCUSED);
@@ -207,6 +227,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             {
                 ::SetFocus(hListHwnd);
                 LVITEM lvitem1;
+                memset(&lvitem1, 0, sizeof(LVITEM));
                 lvitem1.mask = LVCF_TEXT | LVIF_PARAM;
                 lvitem1.iItem = idx;
                 lvitem1.iSubItem = 0;
@@ -220,6 +241,11 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 char szT[MAX_PATH];
                 WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
                 ListView_SetItemText(hListHwnd, idx + 1, 0, szT);
+
+                char buf[16] = { 0 };
+                sprintf_s(buf, "%i", pcol->m_visel.Size());
+                ListView_SetItemText(hListHwnd, idx + 1, 1, buf);
+
                 ListView_SetItemState(hListHwnd, -1, 0, LVIS_SELECTED);
                 ListView_SetItemState(hListHwnd, idx + 1, LVIS_SELECTED, LVIS_SELECTED);
                 ListView_SetItemState(hListHwnd, idx + 1, LVIS_FOCUSED, LVIS_FOCUSED);
