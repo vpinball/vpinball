@@ -443,7 +443,7 @@ void PinSoundCopy::Play(const float volume, const float randompitch, const int p
 	switch (m_ppsOriginal->GetPinDirectSound()->m_i3DSoundMode)
 	{
 	case SNDCFG_SND3DALLREAR:
-		m_pDS3DBuffer->SetPosition(PinDirectSound::PanTo3D(pan), 0.0f, PinDirectSound::PanTo3D(1.0f), DS3D_IMMEDIATE);
+		m_pDS3DBuffer->SetPosition(PinDirectSound::PanTo3D(pan), 0.0f, -PinDirectSound::PanTo3D(1.0f), DS3D_IMMEDIATE);
 		break;
 	case SNDCFG_SND3DFRONTISFRONT:
 		m_pDS3DBuffer->SetPosition(PinDirectSound::PanTo3D(pan), 0.0f, PinDirectSound::PanTo3D(front_rear_fade), DS3D_IMMEDIATE);
