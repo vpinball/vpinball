@@ -3,7 +3,8 @@ Const VPinMAMEDriverVer = 3.57
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.57 (Update by)
+' New in 3.57 (Update by nFozzy)
+' - Beta 1 NF fastflips 2
 '
 ' New in 3.56 (Update by nFozzy, DJRobX, Fuzzel)
 ' - Add specialized sega2.vbs for Apollo 13 and GoldenEye
@@ -436,22 +437,6 @@ Dim vpmShowDips     ' Show DIPs function
 '   PinMAMETimer   : Timer object
 '   PulseTimer     : Timer object
 
-
-
-'   Beta Class (move me)
-' cvpmFlips (Object = vpmFlips) low latency flipper handling for games with pre-solid state flippers (fastflips)
-'   (Public) .Solenoid			- Integer, Flipper Solenoid number. vpmInit sets this to GameOnSolenoid from (whatever system .vbs)
-'   (Public) .TiltSol			- Boolean, control flipper enabled / tilts. This is handled automatically in the main loop if 'UseSolenoids' is used.
-'   (Public) .TiltObjects		- Boolean, Automatically calls vpmnudge.SolGameOn to disable slingshots and bumpers in vpmnudge.TiltObj array when tilted. (Default True)
-'   (Public) .Delay				- Integer input. Adds a buffer to the flipper solenoid response. Hack for some fliptronic / WPC-S WPCs that may have solenoid jitter. (Default 0)
-'   (Public) .CallbackL			- String input. Points to Left Flipper callback sub.  If UseSolenoids = 2, vpmInit automatically steals SolCallback(sLLFlipper).
-'   (Public) .CallbackR 		- String input. Points to Right Flipper callback sub. If UseSolenoids = 2, vpmInit automatically steals SolCallback(sLRFlipper).
-'   (Public) .CallbackUL		- String input. Upper Left Flipper callback sub.	 If UseSolenoids = 2, vpmInit automatically steals SolCallback(sULFlipper). 
-'   (Public) .CallbackUR		- String input. Upper Right Flipper callback sub.	 If UseSolenoids = 2, vpmInit automatically steals SolCallback(sURFlipper). 
-'   -debug commands-
-'   (Public) .DebugOn			- Boolean, debug always-on flippers
-'   (Public) .DebugTest			- Reports any discovered errors in debug box
-'   (Public) .PrintSols			- Print any enabled solenoids in the debug box (Debug for finding tilt solenoids)
 
 ' Available classes:
 ' ------------------
@@ -2573,136 +2558,182 @@ Set vpmTimer = New cvpmTimer
 If LoadScript("NudgePlugIn.vbs") Then Set vpmNudge = New cvpmNudge2 Else Set vpmNudge = New cvpmNudge
 
 '-------------
-'cvpmFlips (FastFlips)
+'cvpmFlips (FastFlips) 2 Beta 1
 '-------------
-dim vpmFlips : set vpmFlips = New cvpmFlips : vpmFlips.Name = "vpmFlips"
 
-'*************************************************
-Sub InitVpmFlips() 'Called from vpmInit
-	if not UseSolenoids > 1 then exit sub 
-	On Error Resume Next
-		if UseSolenoids > 2 then 
-			vpmFlips.Solenoid = UseSolenoids 
-		else 
-			err.clear
-			if IsEmpty(GameOnSolenoid) or Err then msgbox "VPMflips error: " & err.description
-			if err = 500 then 'Error 500 - Variable not defined
-				msgbox "UseSolenoids = 2 error!" & vbnewline & vbnewline & "GameOnSolenoid is not defined!" & vbnewline & _
-				"System may be incompatible (Check the compatibility list) or your system scripts may be out of date"
+'Redesigned to better support games from the solid-state flipper era, including previously unsupported games thanks to DJrobX and Stumblor!
+'New Features:
+'- Switches from script to rom control after a delay (100ms default, vpmflips.RomControlDelay)
+'	-This works independently for each flipper, ex. the Thing Flip will not interfere even briefly with lower flippers
+'- New Feature - vpmFlips.Enabled. vpmFlips.Enabled = True / False will enable / disable fastflips. (This does the same thing as vpmflipsSAM.RomControl)
+'	-May be necessary to manually disable flippers for video mode on some games
+'- New method to disable upper flippers without getting rom errors from the double action cab switches: call helper subs NoUpperLeftFlipper, NoUpperRightFlipper
+'	-On SS games that reuse upper flipper COILS, call the appropriate helper subs from the table script: NoUpperLeftFlipper, NoUpperRightFlipper (for example AFM)
+'	-On SS games that reuse upper flipper SWITCHES, you will still need the cSingleLFlip/cSingleRFlip lines! (Indiana Jones reuses coils and switches and therefore needs BOTH!)
+'- Initializes using pulsetimer. VpmInit Me line no longer necessary (? may change)
+
+'Todo
+'test delay - works okay but a little weird if longer than romcontroldelay
+'test more tables
+'test Red & Ted with the left side flippers
+'test region safety
+'update SAM.vbs ?
+
+dim vpmFlips : set vpmFlips = New cvpmFlips2 : vpmFlips.Name = "vpmFlips"
+
+Sub NoUpperLeftFlipper() : vpmFlips.FlipperSolNumber(2) = 0 : End Sub
+Sub NoUpperRightFlipper() : vpmFlips.FlipperSolNumber(3) = 0 : End Sub
+
+Function NullFunction(a) : End Function
+
+vpmtimer.addtimer 40, "vpmFlips.Init'" 'this might be a dumb idea but it would replace the requirement for vpminit me
+
+Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so delay
+    Public Name, Delay, TiltObjects, Sol, DebugOn
+    Public LagCompensation 'flag for solenoid jitter (may not be a problem anymore) set private
+
+    Public FlipperSolNumber(3)  'Flipper Solenoid Number. By default these are set to use the Core constants. 0=left 1=right 2=Uleft 3=URight
+    Public ButtonState(3)       'Key Flip State 'set private 
+    Public SolState(3)          'Rom Flip State	'set private
+
+    'Public SubL, SubUL, SubR, SubUR 'may restore these to reduce nested calls. For now the script is compressed a bit.
+    Public FlipperSub(3)    'Set to the flipper subs by .init
+
+    Public FlippersEnabled  'Flipper Circuit State (from the ROM)
+    Public OnOff            'FastFlips Enabled. Separate from FlippersEnabled, which is the flipper circuit state	'private 'todo rename
+
+    Public FlipAt(3)        'Flip Time in gametime	'private
+    Public RomControlDelay  'Delay after flipping that Rom Controlled Flips are accepted (default 100ms)
+
+
+    Private Sub Class_Initialize()
+        dim idx :for idx = 0 to 3 :FlipperSub(idx) = "NullFunction" : OnOff=True: ButtonState(idx)=0:SolState(idx)=0: Next
+        Delay=0: FlippersEnabled=0: DebugOn=0 : LagCompensation=0 : Sol=0 : TiltObjects=1
+        RomControlDelay = 100	'RomControlDelay MS between switching to rom controlled flippers
+        FlipperSolNumber(0)=sLLFlipper :FlipperSolNumber(1)=sLRFlipper :FlipperSolNumber(2)=sULFlipper : FlipperSolNumber(3)=sURFlipper
+    End Sub
+
+	Sub Init()	'called by a timer, but previously was called by vpminit sub
+		On Error Resume Next 'If there's no usesolenoids variable present, exit
+			call eval(UseSolenoids) : if err then exit Sub
+		On Error Goto 0
+		err.clear
+
+		'Set Solenoid
+		if not UseSolenoids > 1 then exit sub
+		On Error Resume Next
+			if UseSolenoids > 2 then
+				Solenoid = UseSolenoids
+			else 
+				err.clear
+				if IsEmpty(GameOnSolenoid) or Err then msgbox "VPMflips error: " & err.description
+				if err = 500 then 'Error 500 - Variable not defined
+					msgbox "UseSolenoids = 2 error!" & vbnewline & vbnewline & "GameOnSolenoid is not defined!" & vbnewline & _
+					"System may be incompatible (Check the compatibility list) or your system scripts may be out of date"
+				End If
+				Solenoid = GameOnSolenoid
 			End If
-			vpmFlips.Solenoid = GameOnSolenoid 
-		End If
-	On Error Goto 0
-	vpmFlips.DebugTestInit = True
+		On Error Goto 0
 
-	if not IsEmpty(SolCallback(sLLFlipper)) then vpmFlips.CallBackL = SolCallback(sLLFlipper)          'Lower Flippers
-	if not IsEmpty(SolCallback(sLRFlipper)) then vpmFlips.CallBackR = SolCallback(sLRFlipper)
-
-	On Error Resume Next
-		If cSingleLFlip Or Err Then 'For some WPC games (IJ) that reuse upper flipper solenoid numbers
-			if not IsEmpty(SolCallback(sULFlipper)) then vpmFlips.CallBackUL = SolCallback(sULFlipper) 'Upper Flippers
-		End If
-		If cSingleRFlip Or Err Then
-			if not IsEmpty(SolCallback(sURFlipper)) then vpmFlips.CallBackUR = SolCallback(sURFlipper)
-		End If
-	On Error Goto 0
-
-End Sub
-Function NullFunction(aEnabled):End Function	'1 argument null function
-
-Class cvpmFlips
-	Public TiltObjects, DebugOn, Name, Delay
-	Private SubL, SubUL, SubR, SubUR, FlippersEnabled,  LagCompensation, FlipState(3), Sol	'set private
-	
-	Private Sub Class_Initialize()
-		dim x : for x = 0 to 3 : flipstate(x) = 0 : Next
-		Delay = 0 : FlippersEnabled = 0 : DebugOn = 0 : LagCompensation = 0 : Sol = 0 : TiltObjects = 1
-		SubL = "NullFunction": SubR = "NullFunction" : SubUL = "NullFunction": SubUR = "NullFunction"
+		'Set callbacks
+		dim idx : for idx = 0 to 3
+			If IsNumeric(FlipperSolNumber(idx)) then
+				Callback(idx) = SolCallback(abs(FlipperSolNumber(idx)))
+			end If
+		Next
+		
+		'dim str 
+		'for idx = 0 to 3 : str = str & "Callback" & idx & ":" & Callback(idx) &vbnewline : Next
+		'str = "init successful" &vbnewline& _
+		'	"Sol=" & Solenoid & " " & sol &vbnewline& str
+		'msgbox str
+	''''vpmFlips.DebugTestInit = True	'removed debug stuff for the moment
 	End Sub
 
-	public DebugTestKeys, DebugTestInit
-	Public Sub DebugTest
-		dim e
-		if UseSolenoids = 1 then debug.print "debugtest: " & "UseSolenoids = 1, change to 2 or greater and restart to enable!" : Exit Sub
-		dim a : if usesolenoids = 2 and usesolenoids <> solenoid then a = "(Auto)"
-		if solenoid = 0 then a = " (undefined solenoid, automatic tilt is disabled)" : e = True
-		debug.print "--DebugTest--" & vbnewline & "Game:(" & cGameName & ") Flipper Sol=" & Solenoid & a & " Flippers on?: " & FlippersEnabled
-		if not DebugTestInit then debug.print "Init error! Please add 'vpmInit me' to the table1_init section of the table script!" : exit sub
-		if not FlippersEnabled and Controller.Solenoid(solenoid) and not DebugOn then debug.print "Tiltsol problem, flippers should be on right now!" : e = True 
+	'Index based callbacks...
+	Public Property Let Callback(aIdx, aInput)
+		if Not IsEmpty(aInput) then
+			FlipperSub(aIDX) = aInput	'hold old flipper subs
+			SolCallback(FlipperSolNumber(aIdx)) = name & ".RomFlip(" & aIdx & ")="
+		end if
+	End Property
+	Public Property Get Callback(aIdx) : CallBack = FlipperSub(aIDX) : End Property
 
-		if IsEmpty(keyStagedFlipperL) then debug.print "keyStagedFlipperL is empty or undefined (check vpmkeys.vbs)" : e = True
-		if IsEmpty(keyStagedFlipperR) then debug.print "keyStagedFlipperR is empty or undefined (check vpmkeys.vbs)" : e = True
-		if IsEmpty(DebugTestKeys) then debug.print "no flipper key inputs detected (press some buttons, or check system vbs!)"
-		if e then debug.print "--errors detected!--"
-	End Sub
-	'debug for finding sols	'vpmFlips.PrintSols
-	Public Sub PrintSols() : Dim x, sols: sols=controller.solenoids: for x= 0 to uBound(sols) : if sols(x) then debug.print x & ":" & sols(x) end if : Next : End Sub	'debug for finding sols	
-
-	'set callbacks
-	Public Property Let CallBackL(aInput)  : SubL  = aInput : SolCallback(sLLFlipper) = Empty: End Property	'execute
-	Public Property Let CallBackUL(aInput) : SubUL = aInput : SolCallback(sULFlipper) = Empty: End Property
-	Public Property Let CallBackR(aInput)  : SubR  = aInput : SolCallback(sLRFlipper) = Empty: End Property
-	Public Property Let CallBackUR(aInput) : SubUR = aInput : SolCallback(sURFlipper) = Empty: End Property
-	
-	'Automatically decouple flipper solcallback script lines (only if both are pointing to the same sub) thanks gtxjoe
-	Private Sub Decouple(aSolType, aInput)  : If StrComp(SolCallback(aSolType),aInput,1) = 0 then SolCallback(aSolType) = Empty End If : End Sub
-	Public Property Let Solenoid(aInput) : if not IsEmpty(aInput) then Sol = aInput : end if : End Property	'set solenoid
-	Public Property Get Solenoid : Solenoid = sol : End Property
-	
-	'call callbacks
-	Public Sub FlipL(ByVal aEnabled)
-		aEnabled = abs(aEnabled) 'True / False is not region safe with execute. Convert to 1 or 0 instead.
-		DebugTestKeys = 1
-		FlipState(0) = aEnabled	'track flipper button states: the game-on sol flips immediately if the button is held down (1.1)
-		If not FlippersEnabled and not DebugOn then Exit Sub
-		execute subL & " " & aEnabled
-	End Sub
-
-	Public Sub FlipR(ByVal aEnabled)
-		aEnabled = abs(aEnabled) 'True / False is not region safe with execute. Convert to 1 or 0 instead.
-		DebugTestKeys = 1
-		FlipState(1) = aEnabled
-		If not FlippersEnabled and not DebugOn then Exit Sub
-		execute subR & " " & aEnabled
-	End Sub
-
-	Public Sub FlipUL(ByVal aEnabled)
-		aEnabled = abs(aEnabled) 'True / False is not region safe with execute. Convert to 1 or 0 instead.
-		FlipState(2) = aEnabled
-		If not FlippersEnabled and not DebugOn then Exit Sub
-		execute subUL & " " & aEnabled
-	End Sub	
-
-	Public Sub FlipUR(ByVal aEnabled)
-		aEnabled = abs(aEnabled) 'True / False is not region safe with execute. Convert to 1 or 0 instead.
-		FlipState(3) = aEnabled
-		If not FlippersEnabled and not DebugOn then Exit Sub
-		execute subUR & " " & abs(aEnabled)
-	End Sub	
-	
-	Public Sub TiltSol(aEnabled)	'Handle solenoid / Delay (if delayinit)
-		If delay > 0 and not aEnabled then 	'handle delay
-			vpmtimer.addtimer Delay, Name & ".FireDelay" & "'"
-			LagCompensation = 1
-		else
-			If Delay > 0 then LagCompensation = 0
-			EnableFlippers(aEnabled)
+	Public Property Let Enabled(ByVal aEnabled)  'improving choreography
+		aEnabled = cBool(aEnabled)
+		if aEnabled <> OnOff then 'disregard redundant updates
+			OnOff = aEnabled
+			dim idx
+			If aEnabled then                    'Switch to ROM solenoid states or button states immediately
+				for idx = 0 to 3 
+					if SolState(idx) <> ButtonState(idx) And FlippersEnabled Then Execute FlipperSub(idx) &" "& ButtonState(idx) end If
+				Next
+			Else
+				for idx = 0 to 3 : if ButtonState(idx) <> SolState(idx) Then Execute FlipperSub(idx) &" "& SolState(idx) end if : Next
+			End If
 		end If
-	End Sub
-	
-	Sub FireDelay() : If LagCompensation then EnableFlippers 0 End If : End Sub
-	
-	Public Sub EnableFlippers(aEnabled)	'private
-		If aEnabled then execute SubL & " " & FlipState(0) : execute SubR & " " & FlipState(1) : execute subUL & " " & FlipState(2) : execute subUR & " " & FlipState(3)
-		FlippersEnabled = aEnabled
-		If TiltObjects then vpmnudge.solgameon aEnabled
-		If Not aEnabled then
-			execute subL & " " & 0
-			execute subR & " " & 0
-			execute subUL & " " & 0
-			execute subUR & " " & 0
-		End If
-	End Sub
+	End Property
+	Public Property Get Enabled : Enabled = OnOff : End Property
+
+	Public Property Let Solenoid(aInput) : if isnumeric(aInput) then Sol = abs(aInput) : end if : End Property 'set solenoid
+	Public Property Get Solenoid : Solenoid = sol : End Property
+
+	Public Property Let Flip(aIdx, ByVal aEnabled) 'Key Flip: Indexed base flip... may keep may not
+		aEnabled = abs(aEnabled)	'True / False is not region safe with execute. Convert to 1 or 0 instead.
+		ButtonState(aIDX) = aEnabled 'track flipper button states: the game-on sol flips immediately if the button is held down
+		'debug.print "Key Flip " & aIdx &" @ " & gametime  & " FF ON: " & OnOff & " Circuit On? " & FlippersEnabled
+		If OnOff and FlippersEnabled or DebugOn then
+			execute FlipperSub(aIdx) & " " & aEnabled
+			FlipAt(aIDX) = GameTime
+		end If
+	End Property
+
+    'call callbacks 	'legacy
+    Public Sub FlipL(aEnabled) : Flip(0)=aEnabled :End Sub : Public Sub FlipR(aEnabled) : Flip(1)=aEnabled :End Sub
+    Public Sub FlipUL(aEnabled): Flip(2)=aEnabled :End Sub : Public Sub FlipUR(aEnabled): Flip(3)=aEnabled :End Sub
+
+    Public Property Let RomFlip(aIdx, ByVal aEnabled)
+        aEnabled = abs(aEnabled)
+        SolState(aIdx) = aEnabled
+
+		If Not OnOff OR GameTime >= FlipAt(aIdx) + RomControlDelay Then
+			Execute FlipperSub(aIDX) & " " & aEnabled
+			'tb.text = "Rom Flip " & aIdx & " state:" & aEnabled &vbnewline&_
+			'GameTime & " >= " & FlipAt(aIdx) & "+" & RomControlDelay
+			'debug.print "rom flip @ " & gametime & "solenoid:" & sol & ": " & FlippersEnabled
+		end if
+    End property
+
+    Public Sub TiltSol(ByVal aEnabled)    'Handle solenoid / Delay (if delayinit)
+        aEnabled = cBool(aEnabled)
+        If delay > 0 and not aEnabled then  'handle delay
+            vpmtimer.addtimer Delay, Name & ".FireDelay" & "'"
+            LagCompensation = 1
+        else
+            If Delay > 0 then LagCompensation = 0
+            EnableFlippers(aEnabled)
+        end If
+    End Sub
+
+    Sub FireDelay() : If LagCompensation then EnableFlippers False End If : End Sub
+
+    Public Sub EnableFlippers(ByVal aEnabled) 'private
+        aEnabled = abs(aEnabled) 'Might fix TMNT issue with vpmnudge.solgameon?
+        dim idx
+        'If aEnabled then execute SubL &" "& ButtonState(0) :execute SubR &" "& ButtonState(1) :execute subUL &" "& ButtonState(2): execute subUR &" "& ButtonState(3)':end if
+        If aEnabled then : for idx = 0 to 3 : execute FlipperSub(idx) &" "& ButtonState(idx) : next : end If
+        FlippersEnabled = aEnabled
+        If TiltObjects then vpmnudge.solgameon aEnabled
+        If Not aEnabled then
+'            execute subL & " " & 0 : execute subR & " " & 0
+'            execute subUL & " " & 0 : execute subUR & " " & 0
+            for idx = 0 to 3 : execute FlipperSub(idx) &" "& 0 : Next
+        End If
+    End Sub
+
+    'debug for finding sols	
+    Public Sub PrintSols() : Dim x, sols: sols=controller.solenoids: for x= 0 to uBound(sols) : if sols(x) then debug.print x & ":" & sols(x) end if : Next : End Sub
+
 End Class
 
 
@@ -2750,7 +2781,7 @@ Public Sub vpmInit(aTable)
 		  MsgBox "Modulated Flashers/Solenoids not supported with this Visual PinMAME version (2.8 or newer is required)"
 		End If
 	End If
-	InitVpmFlips
+	'InitVpmFlips	'have vpmtimer doing this atm
 End Sub
 
 ' Exit function called in Table_Exit event
@@ -2870,7 +2901,7 @@ Sub PinMAMETimer_Timer
 			Else
 				If tmp <> "" Then Execute tmp & vpmTrueFalse(solon+1)
 			End If
-		if UseSolenoids > 1 then if nsol = vpmFlips.Solenoid then vpmFlips.TiltSol cbool(solon) 
+		if UseSolenoids > 1 then if nsol = vpmFlips.Solenoid then vpmFlips.TiltSol solon ': msgbox solon
 		Next
 	End If
 	If Not IsEmpty(ChgGI) Then
