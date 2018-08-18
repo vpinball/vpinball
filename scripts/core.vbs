@@ -3,7 +3,7 @@ Const VPinMAMEDriverVer = 3.57
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.57 (Update by nFozzy)
+' New in 3.57 (Update by nFozzy, DJRobX)
 ' - Beta 1 NF fastflips 2
 '
 ' New in 3.56 (Update by nFozzy, DJRobX, Fuzzel)
@@ -2569,7 +2569,8 @@ If LoadScript("NudgePlugIn.vbs") Then Set vpmNudge = New cvpmNudge2 Else Set vpm
 '	-May be necessary to manually disable flippers for video mode on some games
 '- New method to disable upper flippers without getting rom errors from the double action cab switches: call helper subs NoUpperLeftFlipper, NoUpperRightFlipper
 '	-On SS games that reuse upper flipper COILS, call the appropriate helper subs from the table script: NoUpperLeftFlipper, NoUpperRightFlipper (for example AFM)
-'	-On SS games that reuse upper flipper SWITCHES, you will still need the cSingleLFlip/cSingleRFlip lines! (Indiana Jones reuses coils and switches and therefore needs BOTH!)
+'	-On SS games that reuse upper flipper SWITCHES, you will still need the cSingleLFlip/cSingleRFlip lines!
+'	-CSinglexFlip automatically disables flippers to retain legacy behavior
 '- Initializes using pulsetimer. VpmInit Me line no longer necessary (? may change)
 
 'Todo
@@ -2622,9 +2623,20 @@ Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so del
 		'Set Solenoid
 		if not UseSolenoids > 1 then exit sub
 		On Error Resume Next
-			if UseSolenoids > 2 then
+			'For some WPC games (IJ) that reuse upper flipper
+			'switch numbers, and legacy fast flip code, disable
+			'flippers if cSinglexFlip is set.
+			If not cSingleLFlip Then
+				if err.number = 0 then NoUpperLeftFlipper
+			End If
+			err.clear
+			If not cSingleRFlip Then
+				if err.number = 0 then NoUpperRightFlipper
+			End If
+			err.clear
+			If UseSolenoids > 2 Then
 				Solenoid = UseSolenoids
-			else 
+			Else
 				err.clear
 				if IsEmpty(GameOnSolenoid) or Err then msgbox "VPMflips error: " & err.description
 				if err = 500 then 'Error 500 - Variable not defined
