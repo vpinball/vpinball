@@ -5,6 +5,8 @@ VP 10.6.0 Changelog
 
 - add buttons to video preferences to easily setup defaults for low- or high-end PCs
 
+- updated to latest FreeImage.dll (3.18.0)
+
 - see core scripts (header of core.vbs) for the respective changelog (version 3.57)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
 
