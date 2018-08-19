@@ -1,6 +1,10 @@
 VP 10.6.0 Changelog
 ------------------------
 
+- fix "all sounds to rear channels" bug
+
+- add missing implementation for -pov command line option
+
 - remove all table encryption, old locked tables automatically unlock now
 
 - add buttons to video preferences to easily setup defaults for low- or high-end PCs
