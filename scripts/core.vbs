@@ -3,8 +3,9 @@ Const VPinMAMEDriverVer = 3.57
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.57 (Update by nFozzy, DJRobX)
+' New in 3.57 (Update by nFozzy, DJRobX, chepas)
 ' - Beta 1 NF fastflips 2
+' - Add UsePdbLeds(top of script)/ChangedPDLEDs(controller)/PDLedCallback(callback) support and PDB.vbs especially for VP-PROC
 '
 ' New in 3.56 (Update by nFozzy, DJRobX, Fuzzel)
 ' - Add specialized sega2.vbs for Apollo 13 and GoldenEye
@@ -413,6 +414,7 @@ Dim SolCallback(68) ' Solenoids (parsed at Runtime)
 Dim SolModCallback(68) ' Solenoid modulated callbacks (parsed at Runtime) 
 Dim SolPrevState(68) ' When modulating solenoids are in use, needed to keep positive value levels from changing boolean state
 Dim LampCallback    ' Called after lamps are updated
+Dim PDLedCallback   ' Called after leds are updated
 Dim GICallback      ' Called for each changed GI String
 Dim GICallback2     ' Called for each changed GI String
 Dim MotorCallback   ' Called after solenoids are updated
@@ -714,7 +716,7 @@ Function CheckScript(file) 'Checks Tables and Scripts directories for specified 
   On Error Resume Next
 	Dim TablesDirectory:TablesDirectory = Left(UserDirectory,InStrRev(UserDirectory,"\",InStrRev(UserDirectory,"\")-1))&"Tables\"
 	Dim ScriptsDirectory:ScriptsDirectory = Left(UserDirectory,InStrRev(UserDirectory,"\",InStrRev(UserDirectory,"\")-1))&"Scripts\"
-	dim check:Set check = CreateObject("Scripting.FileSystemObject")
+	Dim check:Set check = CreateObject("Scripting.FileSystemObject")
 	If check.FileExists(tablesdirectory & file) Or check.FileExists(scriptsdirectory & file) Or check.FileExists(file) Then CheckScript = True
   On Error Goto 0
 End Function
@@ -2510,14 +2512,14 @@ Class cvpmImpulseP
 	End Sub
 
 	Public Sub PlungeBall(aBall)
-			aBall.VelY = IMPowerOut
+		aBall.VelY = IMPowerOut
 	End Sub
 
 	Public Sub Random(aInput) ' Random Output Varience
 		RandomOut = aInput
 	End Sub
 
-	Public Sub Fire	    	  ' Resets System and Transfer Power Value
+	Public Sub Fire	          ' Resets System and Transfer Power Value
 		If Auto = True Then
 		IMPowerOut = -Strength + ((Rnd) * RandomOut)
 		Else
@@ -2743,7 +2745,7 @@ Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so del
         End If
     End Sub
 
-    'debug for finding sols	
+    'debug for finding sols
     Public Sub PrintSols() : Dim x, sols: sols=controller.solenoids: for x= 0 to uBound(sols) : if sols(x) then debug.print x & ":" & sols(x) end if : Next : End Sub
 
 End Class
@@ -2848,7 +2850,7 @@ Sub vpmDoLampUpdate(aNo, aEnabled)
 End Sub
 
 Sub PinMAMETimer_Timer
-	Dim ChgLamp,ChgSol,ChgGI, ii, tmp, idx, nsol, solon
+	Dim ChgLamp,ChgSol,ChgGI, ii, tmp, idx, nsol, solon, ChgLed
 	Dim DMDp
 	Dim ChgNVRAM
 
@@ -2877,6 +2879,7 @@ Sub PinMAMETimer_Timer
 			End If
 		End If
 		If UseLamps Then ChgLamp = Controller.ChangedLamps Else LampCallback
+		If UsePdbLeds Then ChgLed = Controller.ChangedPDLeds Else PDLedCallback
 		If UseSolenoids Then ChgSol = Controller.ChangedSolenoids
 		If isObject(GICallback) or isObject(GICallback2) Then ChgGI = Controller.ChangedGIStrings
 		MotorCallback
@@ -2884,7 +2887,7 @@ Sub PinMAMETimer_Timer
 	If Not IsEmpty(ChgLamp) Then
 		On Error Resume Next
 			For ii = 0 To UBound(ChgLamp)
-				idx = chgLamp(ii, 0)
+				idx = ChgLamp(ii, 0)
 				If IsArray(Lights(idx)) Then
 					For Each tmp In Lights(idx) : tmp.State = ChgLamp(ii, 1) : Next
 				Else
@@ -2922,7 +2925,26 @@ Sub PinMAMETimer_Timer
 			GICallback2 ChgGI(ii, 0), ChgGI(ii, 1)
 		Next
 	End If
+	If Not IsEmpty(ChgLed) Then
+		On Error Resume Next
+			For ii = 0 To UBound(ChgLed)
+				Dim color,ledstate
+				idx = ChgLed(ii, 0)
+				color = ChgLed(ii, 1)
+				if color = 0 Then ledstate = 0 : Else ledstate = 1: End If
 
+				If IsArray(Lights(idx)) Then
+					For Each tmp In Lights(idx) : tmp.Color = color : tmp.State = ledstate : Next
+				Else
+					Lights(idx).Color = color : Lights(idx).State = ledstate
+				End If
+			Next
+			For Each tmp In vpmMultiLights
+				For ii = 1 To UBound(tmp) : tmp(ii).Color = tmp(0).Color : tmp(ii).State = tmp(0).State : Next
+			Next
+			PDLedCallback
+		On Error Goto 0
+	End If
 	'Me.Enabled = True 'this was supposed to be some kind of weird mutex, disable it
 End Sub
 
@@ -3034,7 +3056,7 @@ Function vpmMoveBall(aBall, aFromKick, aToKick)
 End Function
 
 Sub vpmAddBall
-Dim Answer
+	Dim Answer
 	If IsObject(vpmTrough) Then
 			Answer=MsgBox("Click YES to Add a ball to the Trough, NO Removes a ball from the Trough",vbYesNoCancel + vbQuestion)
 		If Answer = vbYes Then vpmTrough.AddBall 0
@@ -3345,7 +3367,7 @@ Sub NVOffset(version) ' version 2 for dB2S compatibility
 End Sub
 
 Sub VPMVol
-	dim VolPM,VolPMNew
+	Dim VolPM,VolPMNew
 	VolPM = Controller.Games(controller.GameName).Settings.Value("volume")
 	VolPMNew = InputBox ("Enter desired VPinMame Volume Level (-32 to 0)","VPinMame Volume",VolPM)
 	If VolPMNew = "" Then Exit Sub
