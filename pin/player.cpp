@@ -399,7 +399,9 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
                m_ballImage->m_pdsBuffer = tex;
            }
        }
-
+       // clear the string buffer otherwise it holds the ball image filename
+       // if no decal image files was read by GetRegString()
+       memset(imageName, 0, MAX_PATH);
        hr = GetRegString("Player", "DecalImage", imageName, MAX_PATH);
        if (hr == S_OK)
        {
