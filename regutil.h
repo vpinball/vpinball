@@ -1,7 +1,7 @@
 #pragma once
 
 HRESULT GetRegStringAsFloat(const char *szKey, const char *szValue, float *pfloat);
-HRESULT GetRegString(const char *szKey, const char *szValue, void *szbuffer, DWORD size);
+HRESULT GetRegString(const char * const szKey, const char * const szValue, void * const szbuffer, const DWORD size);
 HRESULT GetRegInt(const char *szKey, const char *szValue, int *pint);
 HRESULT GetRegValue(const char *szKey, const char *szValue, DWORD *ptype, void *pvalue, DWORD size);
 

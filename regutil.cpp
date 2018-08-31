@@ -3,15 +3,15 @@
 #define VP_REGKEY_GENERAL "Software\\Visual Pinball\\"
 #define VP_REGKEY "Software\\Visual Pinball\\VP10\\"
 
-HRESULT GetRegString(const char *szKey, const char *szValue, void *szbuffer, DWORD size)
+HRESULT GetRegString(const char * const szKey, const char * const szValue, void *const szbuffer, const DWORD size)
 {
+   if(size > 0) // clear string in case of reg value being set, but being null string which results in szbuffer being kept as-is
+      ((char*)szbuffer)[0] = 0;
+
    DWORD type = REG_NONE;
    const HRESULT hr = GetRegValue(szKey, szValue, &type, szbuffer, size);
 
-   if (type != REG_SZ)
-      return E_FAIL;
-
-   return hr;
+   return (type != REG_SZ) ? E_FAIL : hr;
 }
 
 HRESULT GetRegStringAsFloat(const char *szKey, const char *szValue, float *pfloat)
