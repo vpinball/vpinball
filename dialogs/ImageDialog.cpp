@@ -710,7 +710,7 @@ void ImageDialog::ReimportFrom()
          // TEXT
          ofn.lpstrFilter = "Bitmap, JPEG, PNG, EXR, HDR Files (.bmp/.jpg/.png/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.exr;*.hdr\0";
          ofn.lpstrFile = szFileName;
-         ofn.nMaxFile = _MAX_PATH;
+         ofn.nMaxFile = 1024;
          ofn.lpstrDefExt = "png";
          ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 

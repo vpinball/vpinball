@@ -357,7 +357,7 @@ void SoundDialog::ReImportFrom()
             // TEXT
             ofn.lpstrFilter = "Sound Files (*.wav)\0*.wav\0";
             ofn.lpstrFile = szFileName;
-            ofn.nMaxFile = _MAX_PATH;
+            ofn.nMaxFile = 1024;
             ofn.lpstrDefExt = "wav";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
