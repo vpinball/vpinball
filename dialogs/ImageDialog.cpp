@@ -512,7 +512,7 @@ void ImageDialog::Export()
             }
             else
             {
-               memcpy(g_filename, ppi->m_szName, strlen(ppi->m_szName));
+               strcat_s(g_filename, ppi->m_szName);
                string ext = string(ppi->m_szPath);
                size_t idx = ext.find_last_of(".");
                strcat_s(g_filename, ext.c_str() + idx);
