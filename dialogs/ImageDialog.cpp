@@ -68,6 +68,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          m_resizer.AddChild(GetDlgItem(IDC_OK).GetHwnd(), topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_ALPHA_MASK_EDIT).GetHwnd(), topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_STATIC_ALPHA).GetHwnd(), topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), topright, 0);
 
          LoadPosition();
 
@@ -465,6 +466,8 @@ void ImageDialog::Export()
    char g_filename[MAX_PATH];
    char g_initDir[MAX_PATH];
    const int selectedItemsCount = ListView_GetSelectedCount(hSoundList);
+      
+   const size_t renameOnExport = SendMessage(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), BM_GETCHECK, 0, 0);
 
    if (selectedItemsCount)	// if some items are selected???
    {
@@ -491,18 +494,28 @@ void ImageDialog::Export()
             memset(g_filename, 0, MAX_PATH);
             memset(g_initDir, 0, MAX_PATH);
 
-            for (begin = len; begin >= 0; begin--)
+            if (!renameOnExport)
             {
-               if (ppi->m_szPath[begin] == '\\')
+               for (begin = len; begin >= 0; begin--)
                {
-                  begin++;
-                  break;
+                  if (ppi->m_szPath[begin] == '\\')
+                  {
+                     begin++;
+                     break;
+                  }
+               }
+               if (begin > 0)
+               {
+                  memcpy(g_filename, &ppi->m_szPath[begin], len - begin);
+                  g_filename[len - begin] = 0;
                }
             }
-            if (begin > 0)
+            else
             {
-               memcpy(g_filename, &ppi->m_szPath[begin], len - begin);
-               g_filename[len - begin] = 0;
+               memcpy(g_filename, ppi->m_szName, strlen(ppi->m_szName));
+               string ext = string(ppi->m_szPath);
+               size_t idx = ext.find_last_of(".");
+               strcat_s(g_filename, ext.c_str() + idx);
             }
             ofn.lpstrFile = g_filename;
             ofn.nMaxFile = MAX_PATH;
@@ -510,8 +523,10 @@ void ImageDialog::Export()
 
             const HRESULT hr = GetRegString("RecentDir", "ImageDir", g_initDir, MAX_PATH);
 
-            if (hr == S_OK)ofn.lpstrInitialDir = g_initDir;
-            else ofn.lpstrInitialDir = NULL;
+            if (hr == S_OK)
+               ofn.lpstrInitialDir = g_initDir;
+            else 
+               ofn.lpstrInitialDir = NULL;
             //ofn.lpstrTitle = "SAVE AS";
             ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
@@ -549,7 +564,15 @@ void ImageDialog::Export()
                   {
                      memset(g_filename, 0, MAX_PATH);
                      strcpy_s(g_filename, MAX_PATH, pathName);
-                     strcat_s(g_filename, MAX_PATH, &ppi->m_szPath[begin]);
+                     if (!renameOnExport)
+                        strcat_s(g_filename, MAX_PATH, &ppi->m_szPath[begin]);
+                     else
+                     {
+                        strcat_s(g_filename, ppi->m_szName);
+                        string ext = string(ppi->m_szPath);
+                        size_t idx = ext.find_last_of(".");
+                        strcat_s(g_filename, ext.c_str() + idx);
+                     }
                   }
                   if(!pt->ExportImage(ppi, g_filename))
                      ShowError("Could not export Image");
