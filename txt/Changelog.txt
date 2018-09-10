@@ -1,6 +1,8 @@
 VP 10.6.0 Changelog
 ------------------------
 
+- add checkbox to image manager to use internal name as filename for exporting
+
 - fix "all sounds to rear channels" bug
 
 - add missing implementation for -pov command line option
