@@ -388,6 +388,7 @@ void SoundDialog::Export()
 {
     CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
     const int selectedItemsCount = ListView_GetSelectedCount(hSoundList);
+    const size_t renameOnExport = SendMessage(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), BM_GETCHECK, 0, 0);
 
     if(selectedItemsCount)
     {
@@ -414,15 +415,26 @@ void SoundDialog::Export()
             memset( m_filename, 0, MAX_PATH );
             memset( m_initDir, 0, MAX_PATH );
 
-            for(begin = len; begin >= 0; begin--)
+            if (!renameOnExport)
             {
-                if(pps->m_szPath[begin] == '\\')
-                {
-                    begin++;
-                    break;
-                }
+               for (begin = len; begin >= 0; begin--)
+               {
+                  if (pps->m_szPath[begin] == '\\')
+                  {
+                     begin++;
+                     break;
+                  }
+               }
+               memcpy(m_filename, &pps->m_szPath[begin], len - begin);
             }
-            memcpy( m_filename, &pps->m_szPath[begin], len - begin );
+            else
+            {
+               strcat_s(m_filename, pps->m_szName);
+               string ext = string(pps->m_szPath);
+               size_t idx = ext.find_last_of(".");
+               strcat_s(m_filename, ext.c_str() + idx);
+
+            }
             ofn.lpstrFile = m_filename;
             ofn.nMaxFile = MAX_PATH;
             ofn.lpstrDefExt = "wav";
@@ -468,7 +480,15 @@ void SoundDialog::Export()
                     {
                        memset(m_filename, 0, MAX_PATH);
                        strcpy_s(m_filename, MAX_PATH, pathName);
-                       strcat_s(m_filename, MAX_PATH, &pps->m_szPath[begin]);
+                       if (!renameOnExport)
+                          strcat_s(m_filename, MAX_PATH, &pps->m_szPath[begin]);
+                       else
+                       {
+                          strcat_s(m_filename, pps->m_szName);
+                          string ext = string(pps->m_szPath);
+                          size_t idx = ext.find_last_of(".");
+                          strcat_s(m_filename, ext.c_str() + idx);
+                       }
                     }
 
                     (void)pt->ExportSound(hSoundList, pps, m_filename);
