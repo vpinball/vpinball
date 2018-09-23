@@ -1,9 +1,7 @@
 VP 10.6.0 Changelog
 ------------------------
 
-- add checkbox to sound manager to use internal name as filename for exporting
-
-- add checkbox to image manager to use internal name as filename for exporting
+- add checkbox to sound- and image-manager to use internal name as filename for exporting
 
 - fix "all sounds to rear channels" bug
 
@@ -12,6 +10,7 @@ VP 10.6.0 Changelog
 - remove all table encryption, old locked tables automatically unlock now
 
 - add buttons to video preferences to easily setup defaults for low- or high-end PCs
+- add 'Force Bloom Filter off' to video preferences to increase performance on extremely low-end graphics cards (like on tablets)
 
 - updated to latest FreeImage.dll (3.18.0)
 
