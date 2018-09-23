@@ -412,6 +412,8 @@ public:
    bool m_fStereo3Denabled;
    int m_fStereo3D; // 0=off, 1=top/down, 2=interlaced/LG, 3=sidebyside
 
+   bool m_bloomOff;
+
    bool m_fPlayMusic;
    bool m_fPlaySound;
    int m_MusicVolume;

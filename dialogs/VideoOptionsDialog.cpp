@@ -119,6 +119,8 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    SetDlgItemTextA(IDC_3D_STEREO_ZPD, tmp);
    hwndCheck = GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd();
    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+   hwndCheck = GetDlgItem(IDC_BLOOM_OFF).GetHwnd();
+   SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    hwndCheck = GetDlgItem(IDC_DISABLE_DWM).GetHwnd();
    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_FORCE_ANISO).GetHwnd(), BM_SETCHECK, profile != 1 ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -165,6 +167,8 @@ BOOL VideoOptionsDialog::OnInitDialog()
       SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
       HWND controlHwnd = GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd();
       AddToolTip("Activate this if you get the corresponding error message on table start, or if you experience rendering problems.", hwndDlg, toolTipHwnd, controlHwnd);
+      controlHwnd = GetDlgItem(IDC_BLOOM_OFF).GetHwnd();
+      AddToolTip("Forces the bloom filter to be always off. Only for very low-end graphics cards.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_TEX_COMPRESS).GetHwnd();
       AddToolTip("This saves memory on your graphics card but harms quality of the textures.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_DISABLE_DWM).GetHwnd();
@@ -204,13 +208,13 @@ BOOL VideoOptionsDialog::OnInitDialog()
       else
           AddToolTip("Enforces exclusive Fullscreen Mode.\r\nDo not enable if you require to see the VPinMAME or B2S windows for example.\r\nEnforcing exclusive FS can slightly reduce input lag though.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_10BIT_VIDEO).GetHwnd();
-      AddToolTip("Enforces 10bit (WCG) rendering.\r\nRequires a corresponding 10bit output capable graphics card and monitor.\r\nAlso requires to have exclusive fullscreen mode enforced (for now).", hwndDlg, toolTipHwnd, controlHwnd);
+      AddToolTip("Enforces 10Bit (WCG) rendering.\r\nRequires a corresponding 10Bit output capable graphics card and monitor.\r\nAlso requires to have exclusive fullscreen mode enforced (for now).", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_BG_SET).GetHwnd();
       AddToolTip("Switches all tables to use the respective Cabinet display setup.\r\nAlso useful if a 270 degree rotated Desktop monitor is used.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_FXAACB).GetHwnd();
       AddToolTip("Enables post-processed Anti-Aliasing.\r\nThis delivers smoother images, at the cost of slight blurring.\r\n'Quality FXAA' and 'Quality SMAA' are recommended and lead to less artifacts,\nbut will harm performance on low-end graphics cards.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_AA_ALL_TABLES).GetHwnd();
-      AddToolTip("Enables brute-force 4x Anti-Aliasing.\r\nThis delivers very good quality, but slows down performance significantly.", hwndDlg, toolTipHwnd, controlHwnd);
+      AddToolTip("Enables brute-force 4x Anti-Aliasing (similar to DSR).\r\nThis delivers very good quality, but slows down performance significantly.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd();
       AddToolTip("When checked it overwrites the ball image/decal image(s) for every table.", hwndDlg, toolTipHwnd, controlHwnd);
    }
@@ -434,6 +438,13 @@ BOOL VideoOptionsDialog::OnInitDialog()
    if (hr != S_OK)
       nvidiaApi = 0;
    SendMessage(hwndCheck, BM_SETCHECK, (nvidiaApi != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+
+   hwndCheck = GetDlgItem(IDC_BLOOM_OFF).GetHwnd();
+   int bloomOff;
+   hr = GetRegInt("Player", "ForceBloomOff", &bloomOff);
+   if (hr != S_OK)
+      bloomOff = 0;
+   SendMessage(hwndCheck, BM_SETCHECK, (bloomOff != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const bool forceAniso = (GetRegIntWithDefault("Player", "ForceAnisotropicFiltering", 1) != 0);
    SendMessage(GetDlgItem(IDC_FORCE_ANISO).GetHwnd(), BM_SETCHECK, forceAniso ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -931,6 +942,10 @@ void VideoOptionsDialog::OnOK()
    HWND hwndNvidiaApi = GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd();
    size_t nvidiaApi = SendMessage(hwndNvidiaApi, BM_GETCHECK, 0, 0);
    SetRegValue("Player", "UseNVidiaAPI", REG_DWORD, &nvidiaApi, 4);
+
+   HWND hwndBloomOff = GetDlgItem(IDC_BLOOM_OFF).GetHwnd();
+   size_t bloomOff = SendMessage(hwndBloomOff, BM_GETCHECK, 0, 0);
+   SetRegValue("Player", "ForceBloomOff", REG_DWORD, &bloomOff, 4);
 
    //HWND hwndBallStretchNo = GetDlgItem(hwndDlg, IDC_StretchNo);
    HWND hwndBallStretchYes = GetDlgItem(IDC_StretchYes).GetHwnd();

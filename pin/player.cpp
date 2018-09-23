@@ -357,6 +357,13 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    else
        m_useNvidiaApi = (nvidiaApi == 1);
 
+   int bloomOff;
+   hr = GetRegInt("Player", "ForceBloomOff", &bloomOff);
+   if (hr != S_OK)
+       m_bloomOff = false;
+   else
+       m_bloomOff = (bloomOff == 1);
+
    int detecthang;
    hr = GetRegInt("Player", "DetectHang", &detecthang);
    if (hr != S_OK)
@@ -384,7 +391,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    if (m_fOverwriteBallImages)
    {
        char imageName[MAX_PATH];
-
+       //memset(imageName, 0, MAX_PATH);
        hr = GetRegString("Player", "BallImage", imageName, MAX_PATH);
        if (hr == S_OK)
        {
@@ -399,9 +406,8 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
                m_ballImage->m_pdsBuffer = tex;
            }
        }
-       // clear the string buffer otherwise it holds the ball image filename
-       // if no decal image files was read by GetRegString()
-       memset(imageName, 0, MAX_PATH);
+       // clear the string buffer, otherwise it will hold the ball image filename if decal image is a null string in the registry
+       //memset(imageName, 0, MAX_PATH);
        hr = GetRegString("Player", "DecalImage", imageName, MAX_PATH);
        if (hr == S_OK)
        {
@@ -425,7 +431,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 
    //m_low_quality_bloom = GetRegBoolWithDefault("Player", "LowQualityBloom", false);
 
-   int numberOfTimesToShowTouchMessage = GetRegIntWithDefault("Player", "NumberOfTimesToShowTouchMessage", 10);
+   const int numberOfTimesToShowTouchMessage = GetRegIntWithDefault("Player", "NumberOfTimesToShowTouchMessage", 10);
    SetRegValueInt("Player", "NumberOfTimesToShowTouchMessage", max(numberOfTimesToShowTouchMessage-1,0));
    m_showTouchMessage = (numberOfTimesToShowTouchMessage != 0);
 
@@ -3544,8 +3550,6 @@ void Player::RenderDynamics()
 		   reflection_path = 2;
    }
 
-   m_pin3d.m_pd3dDevice->BeginScene();
-
    if (reflection_path != 0)
    {
 	   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, D3DCLIPPLANE0);
@@ -3743,9 +3747,6 @@ void Player::RenderDynamics()
       // Debug draw of plumb.
       plumb_draw();
    }
-
-   // Finish rendering the next frame.
-   m_pin3d.m_pd3dDevice->EndScene();
 }
 
 void Player::SetClipPlanePlayfield(const bool clip_orientation)
@@ -3787,7 +3788,7 @@ void Player::SSRefl()
 
 void Player::Bloom()
 {
-   if (m_ptable->m_bloom_strength <= 0.0f)
+   if (m_ptable->m_bloom_strength <= 0.0f || m_bloomOff)
    {
       // need to reset content from (optional) bulb light abuse of the buffer
       /*RenderTarget* tmpBloomSurface;
@@ -4254,14 +4255,14 @@ void Player::PrepareVideoBuffersNormal()
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetReflectionBufferTexture());
    else
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
-   if (m_ptable->m_bloom_strength > 0.0f)
+   if (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff)
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture1", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
 
    Texture * const pin = m_ptable->GetImage((char *)m_ptable->m_szImageColorGrade);
    if (pin)
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture4", pin);
    m_pin3d.m_pd3dDevice->FBShader->SetBool("color_grade", pin != NULL);
-   m_pin3d.m_pd3dDevice->FBShader->SetBool("do_bloom", (m_ptable->m_bloom_strength > 0.0f));
+   m_pin3d.m_pd3dDevice->FBShader->SetBool("do_bloom", (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff));
 
    const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5 / (double)m_width), (float)(0.5 / (double)m_height), 1.0f, 1.0f);
    m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
@@ -4408,7 +4409,7 @@ void Player::PrepareVideoBuffersAO()
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetReflectionBufferTexture());
    else
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
-   if (m_ptable->m_bloom_strength > 0.0f)
+   if (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff)
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture1", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pddsAOBackBuffer);
 
@@ -4416,7 +4417,7 @@ void Player::PrepareVideoBuffersAO()
    if (pin)
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture4", pin);
    m_pin3d.m_pd3dDevice->FBShader->SetBool("color_grade", pin != NULL);
-   m_pin3d.m_pd3dDevice->FBShader->SetBool("do_bloom", (m_ptable->m_bloom_strength > 0.0f));
+   m_pin3d.m_pd3dDevice->FBShader->SetBool("do_bloom", (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff));
 
    const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5 / (double)m_width), (float)(0.5 / (double)m_height), 1.0f, 1.0f);
    m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
@@ -4706,7 +4707,11 @@ void Player::Render()
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dDevice->GetCoreDevice());
 #endif
    if (!RenderStaticOnly())
+   {
+      m_pin3d.m_pd3dDevice->BeginScene();
       RenderDynamics();
+      m_pin3d.m_pd3dDevice->EndScene();
+   }
 
    m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 

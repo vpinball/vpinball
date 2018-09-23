@@ -355,17 +355,19 @@ BEGIN
     EDITTEXT        IDC_DN_LATITUDE,223,127,36,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Longitude",IDC_STATIC,266,129,35,10
     EDITTEXT        IDC_DN_LONGITUDE,304,127,36,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "FPS Limiter/VSync",IDC_STATIC,162,162,75,10
-    EDITTEXT        IDC_ADAPTIVE_VSYNC,304,160,20,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Maximum pre-rendered Frames",IDC_STATIC,162,175,120,8
-    EDITTEXT        IDC_MAX_PRE_FRAMES,304,173,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "FPS Limiter/VSync",IDC_STATIC,162,157,75,10
+    EDITTEXT        IDC_ADAPTIVE_VSYNC,304,155,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Maximum pre-rendered Frames",IDC_STATIC,162,170,120,8
+    EDITTEXT        IDC_MAX_PRE_FRAMES,304,168,20,12,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "Texture Compression (performance)",IDC_TEX_COMPRESS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,187,124,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,180,124,10
     CONTROL         "Force Anisotropic Texture Filtering (quality)",IDC_FORCE_ANISO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,197,150,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,190,150,10
+    CONTROL         "Force Bloom Filter off (performance)",IDC_BLOOM_OFF,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,200,127,10
     CONTROL         "Alternative Depth Buffer processing",IDC_USE_NVIDIA_API_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,207,127,10
-    CONTROL         "Software Vertex processing",IDC_SOFTWARE_VP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,217,104,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,210,127,10
+    CONTROL         "Software Vertex processing",IDC_SOFTWARE_VP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,220,104,10
     CONTROL         "Disable Desktop Composition",IDC_DISABLE_DWM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,242,127,10
     CONTROL         "Force exclusive Fullscreen Mode (less compatible)",IDC_FULLSCREEN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,252,177,10
@@ -623,7 +625,7 @@ BEGIN
     LTEXT           "&Music Volume",IDC_STATIC_MUSIC,14,91,45,8
     CONTROL         "Slider1",IDC_MUSIC_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,9,102,110,18
     LTEXT           "General output Sound Device",IDC_STATIC_SOUNDDEVICE,124,11,170,10
-    LISTBOX         258,124,24,170,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_SoundList,124,24,170,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Backglass specific Sound Device",IDC_STATIC_SOUNDDEVICE2,123,73,170,10
     LISTBOX         IDC_SoundListBG,123,86,171,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,350,141,50,14
