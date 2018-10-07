@@ -19,53 +19,53 @@ texture Texture4; // normal map
 
 sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 {
-	Texture	  = (Texture0);
+    Texture	  = (Texture0);
     //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
     //MAGFILTER = LINEAR;
     //MINFILTER = LINEAR;
-	//ADDRESSU  = Wrap; //!! ?
-	//ADDRESSV  = Wrap;
-	//!! SRGBTexture = true;
+    //ADDRESSU  = Wrap; //!! ?
+    //ADDRESSV  = Wrap;
+    //!! SRGBTexture = true;
 };
 
 sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment
 {
-	Texture	  = (Texture1);
+    Texture	  = (Texture1);
     MIPFILTER = LINEAR; //!! ?
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
-	ADDRESSU  = Wrap;
-	ADDRESSV  = Wrap;
+    ADDRESSU  = Wrap;
+    ADDRESSV  = Wrap;
 };
 
 sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribution/radiance
 {
-	Texture	  = (Texture2);
+    Texture	  = (Texture2);
     MIPFILTER = NONE;
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
-	ADDRESSU  = Wrap;
-	ADDRESSV  = Wrap;
+    ADDRESSU  = Wrap;
+    ADDRESSV  = Wrap;
 };
 
 sampler2D texSamplerBL : TEXUNIT3 = sampler_state // bulb light/transmission buffer texture
 {
-	Texture	  = (Texture3);
+    Texture	  = (Texture3);
     MIPFILTER = NONE; //!! ??
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
-	ADDRESSU  = Clamp;
-	ADDRESSV  = Clamp;
+    ADDRESSU  = Clamp;
+    ADDRESSV  = Clamp;
 };
  
 sampler2D texSamplerN : TEXUNIT4 = sampler_state // normal map texture
 {
-	Texture = (Texture4);
-	//MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
-	//MAGFILTER = LINEAR;
-	//MINFILTER = LINEAR;
-	//ADDRESSU  = Wrap; //!! ?
-	//ADDRESSV  = Wrap;
+    Texture = (Texture4);
+    //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
+    //MAGFILTER = LINEAR;
+    //MINFILTER = LINEAR;
+    //ADDRESSU  = Wrap; //!! ?
+    //ADDRESSV  = Wrap;
 };
 
 bool hdrEnvTextures;
@@ -109,20 +109,20 @@ struct VS_DEPTH_ONLY_TEX_OUTPUT
 
 float3x3 TBN_trafo(const float3 N, const float3 V, const float2 uv)
 {
-	// derivatives: edge vectors for tri-pos and tri-uv
-	const float3 dpx = ddx(V);
-	const float3 dpy = ddy(V);
-	const float2 duvx = ddx(uv);
-	const float2 duvy = ddy(uv);
+   // derivatives: edge vectors for tri-pos and tri-uv
+   const float3 dpx = ddx(V);
+   const float3 dpy = ddy(V);
+   const float2 duvx = ddx(uv);
+   const float2 duvy = ddy(uv);
 
-	// solve linear system
-	const float3 dp2perp = cross(N, dpy);
-	const float3 dp1perp = cross(dpx, N);
-	const float3 T = dp2perp * duvx.x + dp1perp * duvy.x;
-	const float3 B = dp2perp * duvx.y + dp1perp * duvy.y;
+   // solve linear system
+   const float3 dp2perp = cross(N, dpy);
+   const float3 dp1perp = cross(dpx, N);
+   const float3 T = dp2perp * duvx.x + dp1perp * duvy.x;
+   const float3 B = dp2perp * duvx.y + dp1perp * duvy.y;
 
-	// construct scale-invariant transformation
-	return float3x3(T, B, N * sqrt( max(dot(T,T), dot(B,B)) )); // inverse scale, as will be normalized anyhow later-on (to save some mul's)
+   // construct scale-invariant transformation
+   return float3x3(T, B, N * sqrt( max(dot(T,T), dot(B,B)) )); // inverse scale, as will be normalized anyhow later-on (to save some mul's)
 }
 
 float3 normal_map(const float3 N, const float3 V, const float2 uv)
@@ -223,8 +223,7 @@ float4 ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool doNo
 {
    float4 pixel = tex2D(texSampler0, IN.tex01.xy);
 
-      if (pixel.a <= fAlphaTestValue)
-         clip(-1);           //stop the pixel shader if alpha test should reject pixel
+   clip(pixel.a <= fAlphaTestValue ? - 1 : 1); // stop the pixel shader if alpha test should reject pixel
 
    pixel.a *= cBase_Alpha.a;
    const float3 t = InvGamma(pixel.xyz);
@@ -268,8 +267,7 @@ float4 ps_main_depth_only_without_texture(in VS_DEPTH_ONLY_NOTEX_OUTPUT IN) : CO
 
 float4 ps_main_depth_only_with_texture(in VS_DEPTH_ONLY_TEX_OUTPUT IN) : COLOR
 {
-   if (tex2D(texSampler0, IN.tex0).a <= fAlphaTestValue)
-      clip(-1);           //stop the pixel shader if alpha test should reject pixel
+   clip(tex2D(texSampler0, IN.tex0).a <= fAlphaTestValue ? -1 : 1); // stop the pixel shader if alpha test should reject pixel
 
    return float4(0., 0., 0., 1.);
 }
