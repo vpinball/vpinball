@@ -380,7 +380,8 @@ typedef enum _NvAPI_Status
     NVAPI_INVALID_DIRECT_MODE_DISPLAY           = -216,    //!< DirectMode not Enabled on the Display
     NVAPI_GPU_IN_DEBUG_MODE                     = -217,    //!< GPU is in debug mode, OC is NOT allowed.
     NVAPI_D3D_CONTEXT_NOT_FOUND                 = -218,    //!< No NvAPI context was found for this D3D object
-    NVAPI_STEREO_VERSION_MISMATCH               = -219     //!< there is version mismatch between stereo driver and dx driver
+    NVAPI_STEREO_VERSION_MISMATCH               = -219,    //!< there is version mismatch between stereo driver and dx driver
+    NVAPI_GPU_NOT_POWERED                       = -220,    //!< GPU is not powered and so the request cannot be completed.
 } NvAPI_Status;
 
 ///////////////////////////////////////////////////////////////////////////////
