@@ -76,7 +76,7 @@ struct PlungerCoord
    // normal of the top vertex along this circle
    float nx, ny;
 
-   void set(float r, float y, float tv, float nx, float ny)
+   void set(const float r, const float y, const float tv, const float nx, const float ny)
    {
       this->r = r;
       this->y = y;

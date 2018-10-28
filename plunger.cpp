@@ -473,7 +473,7 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice)
       srcCells = 1;
 
    // figure the width in relative units (0..1) of each cell
-   float cellWid = 1.0f / float(srcCells);
+   const float cellWid = 1.0f / float(srcCells);
 
    // figure which plunger descriptor we're using
    const PlungerDesc *desc;
@@ -517,8 +517,9 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice)
       customDesc->c = cc;
 
       // figure the tip lathe descriptor from the shape point list
-      PlungerCoord c0 = { 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
-      PlungerCoord *c = cc, *cprv = &c0;
+      const PlungerCoord c0 = { 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
+      PlungerCoord *c = cc;
+      const PlungerCoord *cprv = &c0;
       float tiplen = 0;
       for (const char *p = m_d.m_szTipShape; *p != '\0'; cprv = c++)
       {
@@ -557,16 +558,16 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice)
 
          // Figure the normal as the average of the surrounding
          // surface normals.
-         PlungerCoord *cnxt = (i + 1 < nTip ? c + 1 : c);
-         float x0 = cprv->r, y0 = cprv->y;
-         float x1 = cnxt->r, y1 = cnxt->y;
-         float th = atan2f(y1 - y0, (x1 - x0) * m_d.m_width);
+         const PlungerCoord * const cnxt = (i + 1 < nTip ? c + 1 : c);
+         const float x0 = cprv->r, y0 = cprv->y;
+         const float x1 = cnxt->r, y1 = cnxt->y;
+         const float th = atan2f(y1 - y0, (x1 - x0) * m_d.m_width);
          c->nx = sinf(th);
          c->ny = -cosf(th);
       }
 
       // add the inner edge of the tip (abutting the rod)
-      float rRod = m_d.m_rodDiam / 2.0f;
+      const float rRod = m_d.m_rodDiam / 2.0f;
       float y = tiplen;
       (c++)->set(rRod, y, 0.24f, 1.0f, 0.0f);
 
@@ -1228,42 +1229,20 @@ STDMETHODIMP Plunger::MotionDevice(int *pVal)
    return S_OK;
 }
 
-STDMETHODIMP Plunger::Position(int *pVal)
+STDMETHODIMP Plunger::Position(int *pVal) // 0..25
 {
-   //      *pVal=m_curMechPlungerPos;
-   if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_PBWIZARD)
+   if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_PBWIZARD ||
+       g_pplayer->m_pininput.uShockType == USHOCKTYPE_ULTRACADE ||
+       g_pplayer->m_pininput.uShockType == USHOCKTYPE_SIDEWINDER ||
+       g_pplayer->m_pininput.uShockType == USHOCKTYPE_VIRTUAPIN)
    {
       const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
       float tmp = (g_pplayer->m_curMechPlungerPos < 0.f) ? g_pplayer->m_curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->m_curMechPlungerPos*(1.0f - m_d.m_parkPosition));
       tmp = tmp / range + m_d.m_parkPosition;           //scale and offset
-      *pVal = (int)(tmp*(float)(1.0 / 0.04));
+      *pVal = (int)(tmp*25.f);
    }
 
-   if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_ULTRACADE)
-   {
-      const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-      float tmp = (g_pplayer->m_curMechPlungerPos < 0.f) ? g_pplayer->m_curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->m_curMechPlungerPos*(1.0f - m_d.m_parkPosition));
-      tmp = tmp / range + m_d.m_parkPosition;           //scale and offset
-      *pVal = (int)(tmp*(float)(1.0 / 0.04));
-   }
-
-   if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_SIDEWINDER)
-   {
-      const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-      float tmp = (g_pplayer->m_curMechPlungerPos < 0.f) ? g_pplayer->m_curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->m_curMechPlungerPos*(1.0f - m_d.m_parkPosition));
-      tmp = tmp / range + m_d.m_parkPosition;           //scale and offset
-      *pVal = (int)(tmp*(float)(1.0 / 0.04));
-   }
-
-   if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_VIRTUAPIN)
-   {
-      const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-      float tmp = (g_pplayer->m_curMechPlungerPos < 0.f) ? g_pplayer->m_curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->m_curMechPlungerPos*(1.0f - m_d.m_parkPosition));
-      tmp = tmp / range + m_d.m_parkPosition;           //scale and offset
-      *pVal = (int)(tmp*(float)(1.0 / 0.04));
-   }
-
-   if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_GENERIC)
+   else if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_GENERIC)
    {
       float tmp;
       if (g_pplayer->m_pininput.m_linearPlunger)
@@ -1293,15 +1272,22 @@ STDMETHODIMP Plunger::Position(int *pVal)
          const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
          tmp = tmp / range + m_d.m_parkPosition;           //scale and offset
       }
-      *pVal = (int)(tmp*(float)(1.0 / 0.04));
+      *pVal = (int)(tmp*25.f);
    }
 
-   //      return tmp;
+   else // non-mechanical
+   {
+      const PlungerMoverObject& pa = m_phitplunger->m_plungerMover;
+      const float frame = (pa.m_pos - pa.m_frameStart) / (pa.m_frameEnd - pa.m_frameStart);
+
+      *pVal = (int)(saturate(frame)*25.f); //!! somehow if m_mechPlunger is enabled this will only deliver a value 0..20??
+   }
 
    //      float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
    //      float tmp = ((float)(JOYRANGEMN-1) < 0) ? (float)(JOYRANGEMN-1)*m_d.m_parkPosition : (float)(JOYRANGEMN-1)*(1.0f - m_d.m_parkPosition);
    //      tmp = tmp/range + m_d.m_parkPosition;           //scale and offset
    //      *pVal = tmp;
+
    return S_OK;
 }
 
@@ -1397,7 +1383,6 @@ STDMETHODIMP Plunger::get_Material(BSTR *pVal)
 
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
    *pVal = SysAllocString(wz);
-
 
    return S_OK;
 }
