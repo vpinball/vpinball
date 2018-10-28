@@ -187,6 +187,7 @@ Primitive::Primitive()
    memset( m_d.m_szMaterial, 0, 32 );
    memset( m_d.m_szPhysicsMaterial, 0, 32 );
    m_d.m_fOverwritePhysics=true;
+   m_d.m_fDrawAsPlayfieldMode = RENDER_NORMAL;
 }
 
 Primitive::~Primitive()
@@ -333,6 +334,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    HRESULT hr;
 
+   m_d.m_fDrawAsPlayfieldMode = RENDER_NORMAL;
    m_d.m_use3DMesh = false;
    m_d.m_meshFileName[0] = 0;
    // sides
@@ -1093,77 +1095,94 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       fullMatrix.SetIdentity();
    }
 
-   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   pd3dDevice->basicShader->SetMaterial(mat);
-
-   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, m_d.m_fBackfacesEnabled && mat->m_bOpacityActive ? D3DCULL_CW : D3DCULL_CCW);
-
-   if (m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f)
+   if (m_d.m_fDrawAsPlayfieldMode == RENDER_NORMAL)
    {
-      const D3DXVECTOR4 tmp(m_d.m_fDisableLightingTop,m_d.m_fDisableLightingBelow, 0.f,0.f);
-      pd3dDevice->basicShader->SetDisableLighting(tmp);
-   }
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+      pd3dDevice->basicShader->SetMaterial(mat);
 
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-   Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
+      pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, m_d.m_fBackfacesEnabled && mat->m_bOpacityActive ? D3DCULL_CW : D3DCULL_CCW);
 
-   if (pin && nMap)
-   {
-       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_normal_isMetal" : "basic_with_texture_normal_isNotMetal");
-       pd3dDevice->basicShader->SetTexture("Texture0", pin);
-       pd3dDevice->basicShader->SetTexture("Texture4", nMap);
-       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+      if (m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f)
+      {
+         const D3DXVECTOR4 tmp(m_d.m_fDisableLightingTop, m_d.m_fDisableLightingBelow, 0.f, 0.f);
+         pd3dDevice->basicShader->SetDisableLighting(tmp);
+      }
 
-       //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-       // accommodate models with UV coords outside of [0,1]
-       pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
-   }
-   else if (pin)
-   {
-      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-      pd3dDevice->basicShader->SetTexture("Texture0", pin);
-      pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+      Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
 
-      //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-      // accommodate models with UV coords outside of [0,1]
-      pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
+      if (pin && nMap)
+      {
+         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_normal_isMetal" : "basic_with_texture_normal_isNotMetal");
+         pd3dDevice->basicShader->SetTexture("Texture0", pin);
+         pd3dDevice->basicShader->SetTexture("Texture4", nMap);
+         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+
+         //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+         // accommodate models with UV coords outside of [0,1]
+         pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
+      }
+      else if (pin)
+      {
+         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+         pd3dDevice->basicShader->SetTexture("Texture0", pin);
+         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+
+         //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+         // accommodate models with UV coords outside of [0,1]
+         pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
+      }
+      else
+         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
+
+      // set transform
+      g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
+
+      // draw the mesh
+      pd3dDevice->basicShader->Begin(0);
+      if (m_d.m_fGroupdRendering)
+         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices);
+      else
+         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
+      pd3dDevice->basicShader->End();
+
+      if (m_d.m_fBackfacesEnabled && mat->m_bOpacityActive)
+      {
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+         pd3dDevice->basicShader->Begin(0);
+         if (m_d.m_fGroupdRendering)
+            pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices);
+         else
+            pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
+         pd3dDevice->basicShader->End();
+      }
+
+      // reset transform
+      g_pplayer->UpdateBasicShaderMatrix();
+
+      pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
+      //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
+      if (m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f)
+      {
+         const D3DXVECTOR4 tmp(0.f, 0.f, 0.f, 0.f);
+         pd3dDevice->basicShader->SetDisableLighting(tmp);
+      }
    }
    else
-      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
-
-   // set transform
-   g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
-
-   // draw the mesh
-   pd3dDevice->basicShader->Begin(0);
-   if (m_d.m_fGroupdRendering)
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices);
-   else
+   {
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      if (m_d.m_fDrawAsPlayfieldMode == RENDER_PLAYFIELD)
+      {
+         pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      }
+      g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
+      pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
-   pd3dDevice->basicShader->End();
-
-   if(m_d.m_fBackfacesEnabled && mat->m_bOpacityActive)
-   {
-       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-       pd3dDevice->basicShader->Begin(0);
-       if (m_d.m_fGroupdRendering)
-          pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices);
-       else
-          pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
-       pd3dDevice->basicShader->End();
-   }
-
-   // reset transform
-   g_pplayer->UpdateBasicShaderMatrix();
-
-   pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
-   //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
-   if (m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f)
-   {
-      const D3DXVECTOR4 tmp(0.f,0.f, 0.f,0.f);
-      pd3dDevice->basicShader->SetDisableLighting(tmp);
+      pd3dDevice->basicShader->End();
+      g_pplayer->UpdateBasicShaderMatrix();
    }
 }
 

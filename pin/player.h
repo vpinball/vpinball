@@ -505,6 +505,7 @@ public:
    unsigned int m_dmdstate; // used to distinguish different flasher/DMD rendering mode states
 
    int m_overall_frames; // amount of rendered frames since start
+   bool m_fMeshAsPlayfield;
 
 private:
    Vector<HitObject> m_vho;

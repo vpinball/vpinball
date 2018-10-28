@@ -93,6 +93,7 @@ public:
    bool m_fReflectionEnabled;
    bool m_fOverwritePhysics;
    bool m_fBackfacesEnabled;
+   int  m_fDrawAsPlayfieldMode;
 };
 
 class Primitive :
@@ -113,6 +114,9 @@ class Primitive :
 {
 public:
    static const int Max_Primitive_Sides = 100; //!! 100 works for sleepy, 99 doesn't
+   static const int RENDER_PLAYFIELD = 0;
+   static const int RENDER_PLAYFIELD_MIRROR = 1;
+   static const int RENDER_NORMAL = 2;
 
    STDMETHOD(get_Sides)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_Sides)(/*[in]*/ int newVal);
@@ -289,6 +293,7 @@ public:
    void    CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevice);
    void    RecalculateMatrices();
    void    TransformVertices();
+   void    RenderObject(RenderDevice *pd3dDevice);
 
    static INT_PTR CALLBACK ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -316,7 +321,6 @@ private:        // private member functions
    void UpdateEditorView();
 
    bool BrowseFor3DMeshFile();
-   void RenderObject(RenderDevice *pd3dDevice);
    void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
    void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj);
 
