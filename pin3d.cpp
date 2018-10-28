@@ -703,34 +703,49 @@ void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypi
 
 void Pin3D::InitPlayfieldGraphics()
 {
-   assert(tableVBuffer == NULL);
-   m_pd3dDevice->CreateVertexBuffer(4, 0, MY_D3DFVF_NOTEX2_VERTEX, &tableVBuffer);
+   IEditable *piEdit = g_pplayer->m_ptable->GetElementByName("playfield_mesh");
+   if (piEdit == NULL)
+   {
+      assert(tableVBuffer == NULL);
+      m_pd3dDevice->CreateVertexBuffer(4, 0, MY_D3DFVF_NOTEX2_VERTEX, &tableVBuffer);
 
-   Vertex3D_NoTex2 *buffer;
-   tableVBuffer->lock(0, 0, (void**)&buffer, VertexBuffer::WRITEONLY);
+      Vertex3D_NoTex2 *buffer;
+      tableVBuffer->lock(0, 0, (void**)&buffer, VertexBuffer::WRITEONLY);
 
-   unsigned int offs = 0;
-   for (unsigned int y = 0; y <= 1; ++y)
-      for (unsigned int x = 0; x <= 1; ++x, ++offs)
-      {
-         buffer[offs].x = (x & 1) ? g_pplayer->m_ptable->m_right  : g_pplayer->m_ptable->m_left;
-         buffer[offs].y = (y & 1) ? g_pplayer->m_ptable->m_bottom : g_pplayer->m_ptable->m_top;
-         buffer[offs].z = g_pplayer->m_ptable->m_tableheight;
+      unsigned int offs = 0;
+      for (unsigned int y = 0; y <= 1; ++y)
+         for (unsigned int x = 0; x <= 1; ++x, ++offs)
+         {
+            buffer[offs].x = (x & 1) ? g_pplayer->m_ptable->m_right : g_pplayer->m_ptable->m_left;
+            buffer[offs].y = (y & 1) ? g_pplayer->m_ptable->m_bottom : g_pplayer->m_ptable->m_top;
+            buffer[offs].z = g_pplayer->m_ptable->m_tableheight;
 
-         buffer[offs].tu = (x & 1) ? 1.f : 0.f;
-         buffer[offs].tv = (y & 1) ? 1.f : 0.f;
+            buffer[offs].tu = (x & 1) ? 1.f : 0.f;
+            buffer[offs].tv = (y & 1) ? 1.f : 0.f;
 
-         buffer[offs].nx = 0.f;
-         buffer[offs].ny = 0.f;
-         buffer[offs].nz = 1.f;
-      }
+            buffer[offs].nx = 0.f;
+            buffer[offs].ny = 0.f;
+            buffer[offs].nz = 1.f;
+         }
 
-   tableVBuffer->unlock();
+      tableVBuffer->unlock();
+   }
+   else
+      g_pplayer->m_fMeshAsPlayfield = true;
 }
 
 void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 {
    TRACE_FUNCTION();
+
+   IEditable *piEdit = g_pplayer->m_ptable->GetElementByName("playfield_mesh");
+   Primitive *pPrim = NULL;
+   if (piEdit != NULL)
+   {
+      pPrim = (Primitive *)piEdit;
+      pPrim->m_d.m_fVisible = true;
+      pPrim->m_d.m_fDrawAsPlayfieldMode = depth_only;
+   }
 
    const Material * const mat = g_pplayer->m_ptable->GetMaterial(g_pplayer->m_ptable->m_szPlayfieldMaterial);
    Texture * const pin = (depth_only && (!mat || !mat->m_bOpacityActive)) ? NULL : g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
@@ -764,11 +779,17 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
            m_pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    }
 
-   assert(tableVBuffer != NULL);
-   m_pd3dDevice->basicShader->Begin(0);
-   m_pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 0, 4);
-   m_pd3dDevice->basicShader->End();
-
+   if (pPrim==NULL)
+   { 
+      assert(tableVBuffer != NULL);
+      m_pd3dDevice->basicShader->Begin(0);
+      m_pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 0, 4);
+      m_pd3dDevice->basicShader->End();
+   }
+   else
+   {
+      pPrim->RenderObject(m_pd3dDevice);
+   }
    if(pin)
    {
       //m_pd3dDevice->basicShader->SetTexture("Texture0",(D3DTexture*)NULL);
@@ -778,6 +799,9 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 
    if(depth_only)
        m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0000000Fu); // reenable color writes with default value
+
+   if (pPrim != NULL)
+      pPrim->m_d.m_fVisible = false;
 
    // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
    // later rendering steps, so we keep it around for now.

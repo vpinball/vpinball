@@ -509,6 +509,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_ballDebugPoints = NULL;
    m_ballTrailVertexBuffer = NULL;
    m_pFont = NULL;
+   m_fMeshAsPlayfield = false;
 }
 
 Player::~Player()
@@ -2893,7 +2894,9 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
             pball->m_coll.m_obj = NULL;
 
             // always check for playfield and top glass
-            DoHitTest(pball, &m_hitPlayfield, pball->m_coll);
+            if (!m_fMeshAsPlayfield)
+               DoHitTest(pball, &m_hitPlayfield, pball->m_coll);
+
             DoHitTest(pball, &m_hitTopGlass, pball->m_coll);
 
             if (rand_mt_01() < 0.5f) // swap order of dynamic and static obj checks randomly

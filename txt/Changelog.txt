@@ -1,5 +1,11 @@
 VP 10.6.0 Changelog
 ------------------------
+- add support for using a primitive as playfield instead of the build-in one:
+    o to create a mesh playfield create a new blank table and export it as obj file.
+    o open the obj file in Blender and edit the playfield mesh(mesh name is "Table1")
+    o export the modified playfield mesh as a separate obj file and import it to VPX
+    o in VPX rename the playfield primitive to "playfield_mesh" 
+    o the playfield primitive doesn't need an image and a material. VPX will use the texture and material from the playfield properties.
 
 - add checkbox to sound- and image-manager to use internal name as filename for exporting
 
