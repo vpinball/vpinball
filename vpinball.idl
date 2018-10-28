@@ -1080,7 +1080,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(4), helpstring("property FireSpeed")] HRESULT FireSpeed([out, retval] float *pVal);
                 [propput, id(4), helpstring("property FireSpeed")] HRESULT FireSpeed([in] float newVal);
                 [id(5), helpstring("method CreateBall")] HRESULT CreateBall([out, retval] IBall **Ball);                
-                [id(6), helpstring("method Position")] HRESULT Position([out, retval] int *pVal); //added for mechanical plunger position BDS
+                [id(6), helpstring("method Position")] HRESULT Position([out, retval] int *pVal); //added for mechanical plunger position, also supports normal/digital one by now
                 [id(216), helpstring("method MotionDevice")] HRESULT MotionDevice([out, retval] int *pVal); //added for uShockType
                 [propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);

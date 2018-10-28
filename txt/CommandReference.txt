@@ -7,7 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.6:
-- 
+- add support for non-mechanical/digital Position() plunger call
 10.5:
 - EOSTorque, EOSTorqueAngle and Scatter of flipper element can now be changed by script
 - document missing DMDColoredPixels and add simple example for DMD access
@@ -582,8 +582,8 @@ Methods
 Pullback() - start retracting the plunger at the speed given by PullSpeed; continues automatically until Fire() is called
 Fire() - fire the plunger from the current position (for an auto-plunger, immediately pulls back all the way and fires with full strength)
 CreateBall(IBall **ball) - create a new ball located at the tip of the plunger
-Position() - returns an integer (0 to 25) giving the current position of the mechanical plunger
-MotionDevice() - returns a non-zero integer giving the type of special input device attached, or 0 if none is attached (1=Pinball Wizard, 2=Ultracade, 3=SideWinder, 4=VirtuaPin plunger kit, 5=Generic/other)
+Position() - returns an integer (0 to 25) with the current position of the (mechanical or digital) plunger
+MotionDevice() - returns a non-zero integer with the type of special input device attached, or 0 if none is attached (1=Pinball Wizard, 2=Ultracade, 3=SideWinder, 4=VirtuaPin plunger kit, 5=Generic/other)
 
 
 PRIMITIVE
