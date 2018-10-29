@@ -1170,14 +1170,9 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
          pd3dDevice->basicShader->SetDisableLighting(tmp);
       }
    }
-   else
+   else // m_d.m_fDrawAsPlayfieldMode == RENDER_PLAYFIELD:
    {
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-      if (m_d.m_fDrawAsPlayfieldMode == RENDER_PLAYFIELD)
-      {
-         pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      }
+      //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW); // don't mess with the render states when doing playfield rendering
       // set transform
       g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
       pd3dDevice->basicShader->Begin(0);
