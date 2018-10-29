@@ -117,8 +117,7 @@ class Primitive :
 public:
    static const int Max_Primitive_Sides = 100; //!! 100 works for sleepy, 99 doesn't
    static const int RENDER_PLAYFIELD = 0;
-   static const int RENDER_PLAYFIELD_MIRROR = 1;
-   static const int RENDER_NORMAL = 2;
+   static const int RENDER_NORMAL = 1;
 
    STDMETHOD(get_Sides)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_Sides)(/*[in]*/ int newVal);

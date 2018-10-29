@@ -703,7 +703,7 @@ void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypi
 
 void Pin3D::InitPlayfieldGraphics()
 {
-   IEditable *piEdit = g_pplayer->m_ptable->GetElementByName("playfield_mesh");
+   const IEditable * const piEdit = g_pplayer->m_ptable->GetElementByName("playfield_mesh");
    if (piEdit == NULL)
    {
       assert(tableVBuffer == NULL);
@@ -716,7 +716,7 @@ void Pin3D::InitPlayfieldGraphics()
       for (unsigned int y = 0; y <= 1; ++y)
          for (unsigned int x = 0; x <= 1; ++x, ++offs)
          {
-            buffer[offs].x = (x & 1) ? g_pplayer->m_ptable->m_right : g_pplayer->m_ptable->m_left;
+            buffer[offs].x = (x & 1) ? g_pplayer->m_ptable->m_right  : g_pplayer->m_ptable->m_left;
             buffer[offs].y = (y & 1) ? g_pplayer->m_ptable->m_bottom : g_pplayer->m_ptable->m_top;
             buffer[offs].z = g_pplayer->m_ptable->m_tableheight;
 
@@ -737,15 +737,6 @@ void Pin3D::InitPlayfieldGraphics()
 void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 {
    TRACE_FUNCTION();
-
-   IEditable *piEdit = g_pplayer->m_ptable->GetElementByName("playfield_mesh");
-   Primitive *pPrim = NULL;
-   if (piEdit != NULL)
-   {
-      pPrim = (Primitive *)piEdit;
-      pPrim->m_d.m_fVisible = true;
-      pPrim->m_d.m_fDrawAsPlayfieldMode = depth_only;
-   }
 
    const Material * const mat = g_pplayer->m_ptable->GetMaterial(g_pplayer->m_ptable->m_szPlayfieldMaterial);
    Texture * const pin = (depth_only && (!mat || !mat->m_bOpacityActive)) ? NULL : g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
@@ -779,7 +770,8 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
            m_pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    }
 
-   if (pPrim==NULL)
+   const IEditable * const piEdit = g_pplayer->m_ptable->GetElementByName("playfield_mesh");
+   if (piEdit == NULL)
    { 
       assert(tableVBuffer != NULL);
       m_pd3dDevice->basicShader->Begin(0);
@@ -788,8 +780,13 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
    }
    else
    {
+      Primitive * const pPrim = (Primitive *)piEdit;
+      pPrim->m_d.m_fVisible = true;
+      pPrim->m_d.m_fDrawAsPlayfieldMode = Primitive::RENDER_PLAYFIELD;
       pPrim->RenderObject(m_pd3dDevice);
+      pPrim->m_d.m_fVisible = false;
    }
+
    if(pin)
    {
       //m_pd3dDevice->basicShader->SetTexture("Texture0",(D3DTexture*)NULL);
@@ -799,9 +796,6 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 
    if(depth_only)
        m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0000000Fu); // reenable color writes with default value
-
-   if (pPrim != NULL)
-      pPrim->m_d.m_fVisible = false;
 
    // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
    // later rendering steps, so we keep it around for now.
