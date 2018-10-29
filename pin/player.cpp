@@ -1958,11 +1958,27 @@ void Player::InitStatic(HWND hwndProgress)
    {
       unsigned int ofs0 = y*descStatic.Width*3;
       unsigned int ofs1 = y*locked.Pitch/2;
+      if(descStatic.Format == D3DFMT_A16B16G16R16F)
+      {
       for (unsigned int x = 0; x < descStatic.Width; ++x,ofs0+=3,ofs1+=4)
       {
          pdestStatic[ofs0  ] += half2float(psrc[ofs1  ]);
          pdestStatic[ofs0+1] += half2float(psrc[ofs1+1]);
          pdestStatic[ofs0+2] += half2float(psrc[ofs1+2]);
+      }
+      }
+      else if(descStatic.Format == D3DFMT_R16F)
+      {
+      for (unsigned int x = 0; x < descStatic.Width; ++x,++ofs0,++ofs1)
+         pdestStatic[ofs0] += half2float(psrc[ofs1]);
+      }
+      else if(descStatic.Format == D3DFMT_G16R16F)
+      {
+      for (unsigned int x = 0; x < descStatic.Width; ++x,ofs0+=2,ofs1+=2)
+      {
+         pdestStatic[ofs0  ] += half2float(psrc[ofs1  ]);
+         pdestStatic[ofs0+1] += half2float(psrc[ofs1+1]);
+      }
       }
    }
 
@@ -1982,11 +1998,27 @@ void Player::InitStatic(HWND hwndProgress)
    {
       unsigned int ofs0 = y*descStatic.Width*3;
       unsigned int ofs1 = y*locked.Pitch/2;
+      if(descStatic.Format == D3DFMT_A16B16G16R16F)
+      {
       for (unsigned int x = 0; x < descStatic.Width; ++x,ofs0+=3,ofs1+=4)
       {
          psrc[ofs1  ] = float2half(pdestStatic[ofs0  ]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
          psrc[ofs1+1] = float2half(pdestStatic[ofs0+1]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
          psrc[ofs1+2] = float2half(pdestStatic[ofs0+2]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
+      }
+      }
+      else if(descStatic.Format == D3DFMT_R16F)
+      {
+      for (unsigned int x = 0; x < descStatic.Width; ++x,++ofs0,++ofs1)
+         psrc[ofs1] = float2half(pdestStatic[ofs0]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
+      }
+      else if(descStatic.Format == D3DFMT_G16R16F)
+      {
+      for (unsigned int x = 0; x < descStatic.Width; ++x,ofs0+=2,ofs1+=2)
+      {
+         psrc[ofs1  ] = float2half(pdestStatic[ofs0  ]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
+         psrc[ofs1+1] = float2half(pdestStatic[ofs0+1]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
+      }
       }
    }
 
