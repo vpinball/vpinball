@@ -80,6 +80,9 @@ public:
 
    float m_fDisableLightingTop; // was bool, now 0..1
    float m_fDisableLightingBelow; // 0..1
+
+   int  m_fDrawAsPlayfieldMode;
+
    bool m_use3DMesh;
    bool m_fVisible;
    bool m_DrawTexturesInside;
@@ -93,7 +96,6 @@ public:
    bool m_fReflectionEnabled;
    bool m_fOverwritePhysics;
    bool m_fBackfacesEnabled;
-   int  m_fDrawAsPlayfieldMode;
 };
 
 class Primitive :

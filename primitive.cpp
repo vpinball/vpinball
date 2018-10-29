@@ -186,7 +186,7 @@ Primitive::Primitive()
    memset(m_d.m_szNormalMap, 0, MAXTOKEN);
    memset( m_d.m_szMaterial, 0, 32 );
    memset( m_d.m_szPhysicsMaterial, 0, 32 );
-   m_d.m_fOverwritePhysics=true;
+   m_d.m_fOverwritePhysics = true;
    m_d.m_fDrawAsPlayfieldMode = RENDER_NORMAL;
 }
 
@@ -1178,10 +1178,12 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
          pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       }
+      // set transform
       g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
       pd3dDevice->basicShader->End();
+      // reset transform
       g_pplayer->UpdateBasicShaderMatrix();
    }
 }
@@ -1877,7 +1879,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             // TEXT
             ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
             ofn.lpstrFile = szFileName;
-            ofn.nMaxFile = _MAX_PATH;
+            ofn.nMaxFile = 1024;
             ofn.lpstrDefExt = "obj";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
@@ -1940,7 +1942,7 @@ bool Primitive::BrowseFor3DMeshFile()
    // TEXT
    ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
    ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = _MAX_PATH;
+   ofn.nMaxFile = 1024;
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
@@ -2118,7 +2120,7 @@ void Primitive::ExportMesh()
    // TEXT
    ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
    ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = _MAX_PATH;
+   ofn.nMaxFile = 1024;
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
