@@ -1653,7 +1653,7 @@ bool VPinball::LoadFile()
    // TEXT
    ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0";
    ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = _MAX_PATH;
+   ofn.nMaxFile = 1024;
    ofn.lpstrDefExt = "vpx";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
@@ -2848,7 +2848,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             // TEXT
             ofn.lpstrFilter = "Font Files (*.ttf)\0*.ttf\0";
             ofn.lpstrFile = szFileName;
-            ofn.nMaxFile = _MAX_PATH;
+            ofn.nMaxFile = 1024;
             ofn.lpstrDefExt = "ttf";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 

@@ -304,7 +304,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             // TEXT
             ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
             ofn.lpstrFile = szFileName;
-            ofn.nMaxFile = _MAX_PATH;
+            ofn.nMaxFile = 1024;
             ofn.lpstrDefExt = "vpp";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
@@ -442,7 +442,7 @@ bool PhysicsOptionsDialog::LoadSetting()
     // TEXT
     ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
     ofn.lpstrFile = szFileName;
-    ofn.nMaxFile = _MAX_PATH;
+    ofn.nMaxFile = 1024;
     ofn.lpstrDefExt = "vpp";
     ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
