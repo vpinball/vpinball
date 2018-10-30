@@ -82,6 +82,7 @@ public:
    float m_fDisableLightingBelow; // 0..1
 
    int  m_fDrawAsPlayfieldMode;
+   bool m_fIsPlayfield;
 
    bool m_use3DMesh;
    bool m_fVisible;

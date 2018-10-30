@@ -336,6 +336,8 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    m_d.m_fDrawAsPlayfieldMode = RENDER_NORMAL;
    m_d.m_use3DMesh = false;
+   m_d.m_fIsPlayfield = false;
+
    m_d.m_meshFileName[0] = 0;
    // sides
    m_d.m_Sides = fromMouseClick ? GetRegIntWithDefault(strKeyName, "Sides", 4) : 4;
@@ -444,7 +446,16 @@ void Primitive::GetTimers(Vector<HitTimer> * const pvht)
 
 void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
 {
-   if (m_d.m_fToy)
+    char name[MAX_PATH];
+    
+    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+    if(strcmp(name, "playfield_mesh") == 0)
+    {
+        m_d.m_fIsPlayfield = true;
+    }
+    
+    // playfield can't be a toy
+    if(m_d.m_fToy && !m_d.m_fIsPlayfield)
       return;
 
    RecalculateMatrices();
@@ -566,28 +577,41 @@ void Primitive::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigne
 void Primitive::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
 {
    const Material * const mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
-   if ( mat != NULL && !m_d.m_fOverwritePhysics )
+   if(!m_d.m_fIsPlayfield)
    {
-      obj->m_elasticity = mat->m_fElasticity;
-      obj->m_elasticityFalloff = mat->m_fElasticityFalloff;
-      obj->SetFriction( mat->m_fFriction );
-      obj->m_scatter = ANGTORAD( mat->m_fScatterAngle );
+       if(mat != NULL && !m_d.m_fOverwritePhysics)
+       {
+           obj->m_elasticity = mat->m_fElasticity;
+           obj->m_elasticityFalloff = mat->m_fElasticityFalloff;
+           obj->SetFriction(mat->m_fFriction);
+           obj->m_scatter = ANGTORAD(mat->m_fScatterAngle);
+       }
+       else
+       {
+           obj->m_elasticity = m_d.m_elasticity;
+           obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
+           obj->SetFriction(m_d.m_friction);
+           obj->m_scatter = ANGTORAD(m_d.m_scatter);
+       }
+
+       obj->m_threshold = m_d.m_threshold;
+       obj->m_fEnabled = m_d.m_fCollidable;
    }
    else
    {
-      obj->m_elasticity = m_d.m_elasticity;
-      obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
-      obj->SetFriction( m_d.m_friction );
-      obj->m_scatter = ANGTORAD( m_d.m_scatter );
+       obj->m_elasticity = m_ptable->m_elasticity;
+       obj->m_elasticityFalloff = m_ptable->m_elasticityFalloff;
+       obj->SetFriction(m_ptable->m_friction);
+       obj->m_scatter = ANGTORAD(m_ptable->m_scatter);
+       obj->m_fEnabled = true;
    }
 
-   obj->m_threshold = m_d.m_threshold;
    obj->m_ObjType = ePrimitive;
-   obj->m_fEnabled = m_d.m_fCollidable;
    obj->m_obj = (IFireEvents *) this;
-   if (m_d.m_fHitEvent)
-      obj->m_fe = true;
    obj->m_e = true;
+
+   if(m_d.m_fHitEvent)
+       obj->m_fe = true;
 
    pvho->AddElement(obj);
    m_vhoCollidable.push_back(obj);	//remember hit components of primitive

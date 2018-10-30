@@ -3,9 +3,15 @@ VP 10.6.0 Changelog
 - add support for using a primitive as playfield instead of the build-in one:
     o to create a mesh playfield create a new blank table and export it as obj file.
     o open the obj file in Blender and edit the playfield mesh(mesh name is "Table1")
+    o cut holes into the playfield where you want to place kickers, VUKs and so on
     o export the modified playfield mesh as a separate obj file and import it to VPX
     o in VPX rename the playfield primitive to "playfield_mesh" 
     o the playfield primitive doesn't need an image and a material. VPX will use the texture and material from the playfield properties.
+    
+    Note: VP can only handle a simple mesh plate with holes as a playfield. Adding other complicated meshes to the playfield (e.g. merge kicker meshes with the playfield) aren't supported.
+          Also the playfield_mesh is a special primitive, the core physics settings are taken from the table physics properties but you can also set "Has Hit Event" and set a "Hit Threshold"
+          if you want to be informed that the ball has hit the playfield. Settings like "Toy", "Collidable" or "Overwrite Material Settings" won't work for a playfield_mesh. 
+    See example table (File -> New -> Example Table) how you can use it.
 
 - add checkbox to sound- and image-manager to use internal name as filename for exporting
 
