@@ -18,7 +18,6 @@ public:
    COLORREF m_backcolor;
    COLORREF m_fontcolor;
    float m_intensity_scale;
-   char szfont[MAXSTRING];
    char sztext[MAXSTRING];
    TimerDataRoot m_tdr;
    TextAlignment m_talign;

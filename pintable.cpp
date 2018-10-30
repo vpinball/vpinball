@@ -2634,7 +2634,7 @@ HRESULT PinTable::Save(const bool fSaveAs)
       // TEXT
       ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
       ofn.lpstrFile = m_szFileName;
-      ofn.nMaxFile = _MAX_PATH;
+      ofn.nMaxFile = 1024;
       ofn.lpstrDefExt = "vpx";
       ofn.Flags = OFN_OVERWRITEPROMPT;
 
@@ -10608,7 +10608,7 @@ STDMETHODIMP PinTable::ImportPhysics()
    // TEXT
    ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
    ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = _MAX_PATH;
+   ofn.nMaxFile = 1024;
    ofn.lpstrDefExt = "vpp";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
@@ -10757,7 +10757,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    // TEXT
    ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
    ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = _MAX_PATH;
+   ofn.nMaxFile = 1024;
    ofn.lpstrDefExt = "vpp";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
