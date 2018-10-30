@@ -187,7 +187,7 @@ Primitive::Primitive()
    memset( m_d.m_szMaterial, 0, 32 );
    memset( m_d.m_szPhysicsMaterial, 0, 32 );
    m_d.m_fOverwritePhysics = true;
-   m_d.m_fDrawAsPlayfieldMode = RENDER_NORMAL;
+   m_d.m_useAsPlayfield = false;
 }
 
 Primitive::~Primitive()
@@ -334,9 +334,8 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    HRESULT hr;
 
-   m_d.m_fDrawAsPlayfieldMode = RENDER_NORMAL;
+   m_d.m_useAsPlayfield = false;
    m_d.m_use3DMesh = false;
-   m_d.m_fIsPlayfield = false;
 
    m_d.m_meshFileName[0] = 0;
    // sides
@@ -446,16 +445,8 @@ void Primitive::GetTimers(Vector<HitTimer> * const pvht)
 
 void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
 {
-    char name[MAX_PATH];
-    
-    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
-    if(strcmp(name, "playfield_mesh") == 0)
-    {
-        m_d.m_fIsPlayfield = true;
-    }
-    
-    // playfield can't be a toy
-    if(m_d.m_fToy && !m_d.m_fIsPlayfield)
+   // playfield can't be a toy
+   if(m_d.m_fToy && !m_d.m_useAsPlayfield)
       return;
 
    RecalculateMatrices();
@@ -475,7 +466,7 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
          prog_vertices[i].z = vertices[i].z;
       }
       std::vector<ProgMesh::tridata> prog_indices(m_mesh.NumIndices() / 3);
-	  {
+      {
       size_t i2 = 0;
       for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
       {
@@ -488,7 +479,7 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
       }
       if (i2 < prog_indices.size())
          prog_indices.resize(i2);
-	  }
+      }
       std::vector<unsigned int> prog_map;
       std::vector<unsigned int> prog_perm;
       ProgMesh::ProgressiveMesh(prog_vertices, prog_indices, prog_map, prog_perm);
@@ -577,7 +568,7 @@ void Primitive::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigne
 void Primitive::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
 {
    const Material * const mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
-   if(!m_d.m_fIsPlayfield)
+   if(!m_d.m_useAsPlayfield)
    {
        if(mat != NULL && !m_d.m_fOverwritePhysics)
        {
@@ -614,7 +605,7 @@ void Primitive::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
        obj->m_fe = true;
 
    pvho->AddElement(obj);
-   m_vhoCollidable.push_back(obj);	//remember hit components of primitive
+   m_vhoCollidable.push_back(obj); // remember hit components of primitive
 }
 
 void Primitive::EndPlay()
@@ -1119,7 +1110,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       fullMatrix.SetIdentity();
    }
 
-   if (m_d.m_fDrawAsPlayfieldMode == RENDER_NORMAL)
+   if (!m_d.m_useAsPlayfield)
    {
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
@@ -1194,7 +1185,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
          pd3dDevice->basicShader->SetDisableLighting(tmp);
       }
    }
-   else // m_d.m_fDrawAsPlayfieldMode == RENDER_PLAYFIELD:
+   else // m_d.m_useAsPlayfield == true:
    {
       //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW); // don't mess with the render states when doing playfield rendering
       // set transform
@@ -1750,6 +1741,14 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
 
 HRESULT Primitive::InitPostLoad()
 {
+   char name[MAX_PATH];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   if(strcmp(name, "playfield_mesh") == 0)
+   {
+      m_d.m_fVisible = false;
+      m_d.m_useAsPlayfield = true;
+   }
+
    if (!m_d.m_use3DMesh)
       CalculateBuiltinOriginal();
 
