@@ -770,8 +770,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
            m_pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    }
 
-   const IEditable * const piEdit = g_pplayer->m_ptable->GetElementByName("playfield_mesh");
-   if (piEdit == NULL)
+   if (!g_pplayer->m_fMeshAsPlayfield)
    { 
       assert(tableVBuffer != NULL);
       m_pd3dDevice->basicShader->Begin(0);
@@ -780,11 +779,11 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
    }
    else
    {
+      const IEditable * const piEdit = g_pplayer->m_ptable->GetElementByName("playfield_mesh");
       Primitive * const pPrim = (Primitive *)piEdit;
-      pPrim->m_d.m_fVisible = true;
-      pPrim->m_d.m_fDrawAsPlayfieldMode = Primitive::RENDER_PLAYFIELD;
+      pPrim->m_d.m_fVisible = true;  // temporary enable the otherwise invisible playfield
       pPrim->RenderObject(m_pd3dDevice);
-      pPrim->m_d.m_fVisible = false;
+      pPrim->m_d.m_fVisible = false; // restore
    }
 
    if(pin)

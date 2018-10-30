@@ -81,8 +81,7 @@ public:
    float m_fDisableLightingTop; // was bool, now 0..1
    float m_fDisableLightingBelow; // 0..1
 
-   int  m_fDrawAsPlayfieldMode;
-   bool m_fIsPlayfield;
+   bool m_useAsPlayfield;
 
    bool m_use3DMesh;
    bool m_fVisible;
@@ -117,8 +116,6 @@ class Primitive :
 {
 public:
    static const int Max_Primitive_Sides = 100; //!! 100 works for sleepy, 99 doesn't
-   static const int RENDER_PLAYFIELD = 0;
-   static const int RENDER_NORMAL = 1;
 
    STDMETHOD(get_Sides)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_Sides)(/*[in]*/ int newVal);
