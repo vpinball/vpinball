@@ -189,8 +189,8 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 	const HANDLE hCurrentProcess = GetCurrentProcess();
 	if (SymGetModuleInfo64(hCurrentProcess, address64, &moduleInfo))
 	{
-		char moduleName[_MAX_PATH + 1];
-		GetFileFromPath(moduleInfo.ImageName, moduleName, _MAX_PATH);
+		char moduleName[MAXSTRING + 1];
+		GetFileFromPath(moduleInfo.ImageName, moduleName, MAXSTRING);
 		const int moduleLen = (int)strlen(moduleName);
 		strncpy_s(symbol, maxSymbolLen, moduleName, _TRUNCATE);
 		symbol += moduleLen;
@@ -225,8 +225,8 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 	lineInfo.SizeOfStruct = sizeof(lineInfo);
 	if (SymGetLineFromAddr64(hCurrentProcess, address64, &displacementLine, &lineInfo))
 	{
-		char fileName[_MAX_PATH + 1];
-		GetFileFromPath(lineInfo.FileName, fileName, _MAX_PATH);
+		char fileName[MAXSTRING + 1];
+		GetFileFromPath(lineInfo.FileName, fileName, MAXSTRING);
 		int fileLineChars(0);
 		if (displacementLine > 0)
 		{

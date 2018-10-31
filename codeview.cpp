@@ -399,7 +399,7 @@ void CodeViewer::SetEnabled(const bool fEnabled)
 
 void CodeViewer::SetCaption(const char * const szCaption)
 {
-   char szT[_MAX_PATH];
+   char szT[MAXSTRING];
    strcpy_s(szT, sizeof(szT), szCaption);
    LocalString ls(IDS_SCRIPT);
    strcat_s(szT, sizeof(szT), " ");
@@ -1122,10 +1122,10 @@ void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
 
 void CodeViewer::SaveToFile(const char *filename)
 {
-	FILE *fScript = fopen(filename, "wb");
+	FILE * const fScript = fopen(filename, "wb");
 	if (fScript)
 	{
-		size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+		const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
 		const size_t bufferSize = cchar + 32;
 		char * const szText = new char[bufferSize + 1];
 		SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
@@ -1190,15 +1190,14 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
 
 void CodeViewer::LoadFromFile(const char *filename)
 {
-	FILE *fScript = fopen(filename, "rb");
+	FILE * const fScript = fopen(filename, "rb");
 	if (fScript)
 	{
 		fseek(fScript, 0L, SEEK_END);
-		int cchar = ftell(fScript);
+		long cchar = ftell(fScript);
 		fseek(fScript, 0L, SEEK_SET);
 		m_fIgnoreDirty = true;
 
-		ULONG read = 0;
 		BYTE * const szText = new BYTE[cchar + 1];
 
 		cchar = fread(szText, 1, cchar, fScript);
@@ -1206,13 +1205,14 @@ void CodeViewer::LoadFromFile(const char *filename)
 		szText[cchar] = L'\0';
 
 		// check for bogus control characters
-		for (int i = 0; i < cchar; ++i)
+		for (long i = 0; i < cchar; ++i)
 		{
 			if (szText[i] < 9 || (szText[i] > 10 && szText[i] < 13) || (szText[i] > 13 && szText[i] < 32))
 				szText[i] = ' ';
 		}
 		SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
 		SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
+
 		delete[] szText;
 
 		m_fIgnoreDirty = false;

@@ -2634,19 +2634,19 @@ HRESULT PinTable::Save(const bool fSaveAs)
       // TEXT
       ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
       ofn.lpstrFile = m_szFileName;
-      ofn.nMaxFile = 1024;
+      ofn.nMaxFile = MAXSTRING;
       ofn.lpstrDefExt = "vpx";
       ofn.Flags = OFN_OVERWRITEPROMPT;
 
-      char szInitialDir[1024];
-      HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, 1024);
+      char szInitialDir[MAXSTRING];
+      HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
       if (hr == S_OK)
       {
          ofn.lpstrInitialDir = szInitialDir;
       }
       else
       {
-         char szFoo[MAX_PATH];
+         char szFoo[MAXSTRING];
          lstrcpy(szFoo, g_pvp->m_szMyPath);
          lstrcat(szFoo, "Tables");
          ofn.lpstrInitialDir = szFoo;
@@ -4404,7 +4404,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(CUST))
    {
-      char szT[1024];  //maximum length of tagnames right now
+      char szT[MAXSTRING];  //maximum length of tagnames right now
       pbr->GetString(szT);
       char *szName = new char[lstrlen(szT) + 1];
       lstrcpy(szName, szT);
@@ -4838,8 +4838,8 @@ void PinTable::MoveCollectionDown(CComObject<Collection> *pcol)
 
 void PinTable::SetCollectionName(Collection *pcol, char *szName, HWND hwndList, int index)
 {
-   WCHAR wzT[1024];
-   MultiByteToWideChar(CP_ACP, 0, szName, -1, wzT, 1024);
+   WCHAR wzT[MAXSTRING];
+   MultiByteToWideChar(CP_ACP, 0, szName, -1, wzT, MAXSTRING);
    if (m_pcv->ReplaceName((IScriptable *)pcol, wzT) == S_OK)
    {
       if (hwndList)
@@ -6118,7 +6118,7 @@ void PinTable::ExportBlueprint()
       // TEXT
       ofn.lpstrFilter = "Bitmap (*.bmp)\0*.bmp\0";
       ofn.lpstrFile = m_szBlueprintFileName;
-      ofn.nMaxFile = _MAX_PATH;
+      ofn.nMaxFile = MAXSTRING;
       ofn.lpstrDefExt = "bmp";
       ofn.Flags = OFN_OVERWRITEPROMPT;
 
@@ -6309,7 +6309,7 @@ void PinTable::ExportTableMesh()
    // TEXT
    ofn.lpstrFilter = "Wavefront obj(*.obj)\0*.obj\0";
    ofn.lpstrFile = m_szObjFileName;
-   ofn.nMaxFile = _MAX_PATH;
+   ofn.nMaxFile = MAXSTRING;
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT;
 
@@ -6341,7 +6341,7 @@ void PinTable::ExportTableMesh()
 
 void PinTable::ImportBackdropPOV(const char *filename)
 {
-    char szFileName[1024];
+    char szFileName[MAXSTRING];
     bool oldFormatLoaded = false;
     szFileName[0] = '\0';
 
@@ -6355,7 +6355,7 @@ void PinTable::ImportBackdropPOV(const char *filename)
 		// TEXT
 		ofn.lpstrFilter = "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0";
 		ofn.lpstrFile = szFileName;
-		ofn.nMaxFile = _MAX_PATH;
+		ofn.nMaxFile = MAXSTRING;
 		ofn.lpstrDefExt = "pov";
 		ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
@@ -6440,7 +6440,7 @@ void PinTable::ExportBackdropPOV(const char *filename)
 		// TEXT
 		ofn.lpstrFilter = "POV file(*.pov)\0*.pov\0";
 		ofn.lpstrFile = m_szObjFileName;
-		ofn.nMaxFile = _MAX_PATH;
+		ofn.nMaxFile = MAXSTRING;
 		ofn.lpstrDefExt = "pov";
 		ofn.Flags = OFN_OVERWRITEPROMPT;
 
@@ -10596,8 +10596,8 @@ STDMETHODIMP PinTable::put_OverridePhysics(PhysicsSet newVal)
 
 STDMETHODIMP PinTable::ImportPhysics()
 {
-   char szFileName[1024];
-   char szInitialDir[1024];
+   char szFileName[MAXSTRING];
+   char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
 
    OPENFILENAME ofn;
@@ -10608,11 +10608,11 @@ STDMETHODIMP PinTable::ImportPhysics()
    // TEXT
    ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
    ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = 1024;
+   ofn.nMaxFile = MAXSTRING;
    ofn.lpstrDefExt = "vpp";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, 1024);
+   const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
    char szFoo[MAX_PATH];
    if (hr == S_OK)
    {
@@ -10745,8 +10745,8 @@ STDMETHODIMP PinTable::ExportPhysics()
 
    Flipper * const flipper = (Flipper *)m_vedit.ElementAt(i);
 
-   char szFileName[1024];
-   char szInitialDir[1024];
+   char szFileName[MAXSTRING];
+   char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
 
    OPENFILENAME ofn;
@@ -10757,11 +10757,11 @@ STDMETHODIMP PinTable::ExportPhysics()
    // TEXT
    ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
    ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = 1024;
+   ofn.nMaxFile = MAXSTRING;
    ofn.lpstrDefExt = "vpp";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, 1024);
+   const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
    char szFoo[MAX_PATH];
    if (hr == S_OK)
    {

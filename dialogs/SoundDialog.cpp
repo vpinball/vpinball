@@ -340,8 +340,8 @@ void SoundDialog::ReImportFrom()
     const int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
     if(sel != -1)
     {
-        char szFileName[1024];
-        char szInitialDir[1024];
+        char szFileName[MAXSTRING];
+        char szInitialDir[MAXSTRING];
 
         LocalString ls( IDS_REPLACESOUND );
         int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2 );
@@ -357,11 +357,11 @@ void SoundDialog::ReImportFrom()
             // TEXT
             ofn.lpstrFilter = "Sound Files (*.wav)\0*.wav\0";
             ofn.lpstrFile = szFileName;
-            ofn.nMaxFile = 1024;
+            ofn.nMaxFile = MAXSTRING;
             ofn.lpstrDefExt = "wav";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-            HRESULT hr = GetRegString( "RecentDir", "SoundDir", szInitialDir, 1024 );
+            HRESULT hr = GetRegString("RecentDir", "SoundDir", szInitialDir, MAXSTRING);
             ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
             const int ret = GetOpenFileName( &ofn );

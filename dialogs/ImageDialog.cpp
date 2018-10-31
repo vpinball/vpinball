@@ -716,8 +716,8 @@ void ImageDialog::ReimportFrom()
    int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
    if (sel != -1)
    {
-      char szFileName[1024];
-      char szInitialDir[1024];
+      char szFileName[MAXSTRING];
+      char szInitialDir[MAXSTRING];
 
       LocalString ls(IDS_REPLACEIMAGE);
       const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this image with a new one?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
@@ -733,11 +733,11 @@ void ImageDialog::ReimportFrom()
          // TEXT
          ofn.lpstrFilter = "Bitmap, JPEG, PNG, EXR, HDR Files (.bmp/.jpg/.png/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.exr;*.hdr\0";
          ofn.lpstrFile = szFileName;
-         ofn.nMaxFile = 1024;
+         ofn.nMaxFile = MAXSTRING;
          ofn.lpstrDefExt = "png";
          ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-         HRESULT hr = GetRegString("RecentDir", "ImageDir", szInitialDir, 1024);
+         HRESULT hr = GetRegString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
          ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
          const int ret = GetOpenFileName(&ofn);

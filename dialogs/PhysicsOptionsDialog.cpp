@@ -292,8 +292,8 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case 1112:
         {
-            char szFileName[1024];
-            char szInitialDir[1024];
+            char szFileName[MAXSTRING];
+            char szInitialDir[MAXSTRING];
             szFileName[0] = '\0';
 
             OPENFILENAME ofn;
@@ -304,11 +304,11 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             // TEXT
             ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
             ofn.lpstrFile = szFileName;
-            ofn.nMaxFile = 1024;
+            ofn.nMaxFile = MAXSTRING;
             ofn.lpstrDefExt = "vpp";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-            const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, 1024);
+            const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
             char szFoo[MAX_PATH];
             if(hr == S_OK)
             {
@@ -430,8 +430,8 @@ void PhysicsOptionsDialog::OnDestroy()
 
 bool PhysicsOptionsDialog::LoadSetting()
 {
-    char szFileName[1024];
-    char szInitialDir[1024];
+    char szFileName[MAXSTRING];
+    char szInitialDir[MAXSTRING];
     szFileName[0] = '\0';
 
     OPENFILENAME ofn;
@@ -442,11 +442,11 @@ bool PhysicsOptionsDialog::LoadSetting()
     // TEXT
     ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
     ofn.lpstrFile = szFileName;
-    ofn.nMaxFile = 1024;
+    ofn.nMaxFile = MAXSTRING;
     ofn.lpstrDefExt = "vpp";
     ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-    const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, 1024);
+    const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
     char szFoo[MAX_PATH];
     if(hr == S_OK)
     {

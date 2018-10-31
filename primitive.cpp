@@ -1789,9 +1789,9 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
          {
          case IDOK:
          {
-            char szFileName[1024] = { 0 };
+            char szFileName[MAXSTRING] = { 0 };
 
-            GetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName, 1023);
+            GetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName, MAXSTRING);
             if (szFileName[0] == 0)
             {
                ShowError("No .obj file selected!");
@@ -1816,7 +1816,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                size_t index = filename.find_last_of(".");
                if (index != -1)
                {
-                  char szMatName[1024] = { 0 };
+                  char szMatName[MAXSTRING] = { 0 };
                   memcpy(szMatName, szFileName, index);
                   strcat_s(szMatName, ".mtl");
                   Material *mat = new Material();
@@ -1885,8 +1885,8 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             if (prim == NULL)
                break;
 
-            char szFileName[1024];
-            char szInitialDir[1024];
+            char szFileName[MAXSTRING];
+            char szInitialDir[MAXSTRING];
             szFileName[0] = '\0';
 
             OPENFILENAME ofn;
@@ -1897,11 +1897,11 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             // TEXT
             ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
             ofn.lpstrFile = szFileName;
-            ofn.nMaxFile = 1024;
+            ofn.nMaxFile = MAXSTRING;
             ofn.lpstrDefExt = "obj";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-            const HRESULT hr = GetRegString("RecentDir", "ImportDir", szInitialDir, 1024);
+            const HRESULT hr = GetRegString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
             char szFoo[MAX_PATH];
             if (hr == S_OK)
             {
@@ -1946,10 +1946,11 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
 bool Primitive::BrowseFor3DMeshFile()
 {
    DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_MESH_IMPORT_DIALOG), g_pvp->m_hwnd, ObjImportProc, (size_t)this);
+#if 1
    return false;
-
-   char szFileName[1024];
-   char szInitialDir[1024];
+#else
+   char szFileName[MAXSTRING];
+   char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
 
    OPENFILENAME ofn;
@@ -1960,11 +1961,11 @@ bool Primitive::BrowseFor3DMeshFile()
    // TEXT
    ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
    ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = 1024;
+   ofn.nMaxFile = MAXSTRING;
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   const HRESULT hr = GetRegString("RecentDir", "ImportDir", szInitialDir, 1024);
+   const HRESULT hr = GetRegString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
    char szFoo[MAX_PATH];
    if (hr == S_OK)
    {
@@ -2025,6 +2026,7 @@ bool Primitive::BrowseFor3DMeshFile()
       return true;
    }
    return false;
+#endif
 }
 
 //////////////////////////////
@@ -2126,8 +2128,8 @@ bool Primitive::LoadMesh()
 
 void Primitive::ExportMesh()
 {
-   char szFileName[1024];
-   char szInitialDir[1024];
+   char szFileName[MAXSTRING];
+   char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
 
    OPENFILENAME ofn;
@@ -2138,11 +2140,11 @@ void Primitive::ExportMesh()
    // TEXT
    ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
    ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = 1024;
+   ofn.nMaxFile = MAXSTRING;
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, 1024);
+   const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
    char szFoo[MAX_PATH];
    if (hr == S_OK)
    {
