@@ -445,6 +445,14 @@ void Primitive::GetTimers(Vector<HitTimer> * const pvht)
 
 void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
 {
+   char name[MAX_PATH];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   if (strcmp(name, "playfield_mesh") == 0)
+   {
+      m_d.m_fVisible = false;
+      m_d.m_useAsPlayfield = true;
+   }
+
    // playfield can't be a toy
    if(m_d.m_fToy && !m_d.m_useAsPlayfield)
       return;
@@ -1741,14 +1749,6 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
 
 HRESULT Primitive::InitPostLoad()
 {
-   char name[MAX_PATH];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
-   if(strcmp(name, "playfield_mesh") == 0)
-   {
-      m_d.m_fVisible = false;
-      m_d.m_useAsPlayfield = true;
-   }
-
    if (!m_d.m_use3DMesh)
       CalculateBuiltinOriginal();
 
