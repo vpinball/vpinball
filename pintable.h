@@ -536,9 +536,9 @@ public:
    bool GetCollectionIndex(ISelect *element, int &collectionIndex, int &elementIndex);
 
    void LockElements();
-   char m_szFileName[_MAX_PATH];
-   char m_szBlueprintFileName[_MAX_PATH];
-   char m_szObjFileName[_MAX_PATH];
+   char m_szFileName[MAXSTRING];
+   char m_szBlueprintFileName[MAXSTRING];
+   char m_szObjFileName[MAXSTRING];
    char m_szTitle[MAX_LINE_LENGTH];
 
    HWND m_hwnd;

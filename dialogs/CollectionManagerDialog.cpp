@@ -525,9 +525,9 @@ void CollectionDialog::OnOK()
     const size_t fGroupElements = ::SendMessage(hwndGroupElements, BM_GETCHECK, 0, 0);
     pcol->m_fGroupElements = (BOOL)fGroupElements;
 
-    char szT[1024];
+    char szT[MAXSTRING];
     HWND hwndName = GetDlgItem(IDC_NAME).GetHwnd();
-    ::GetWindowText(hwndName, szT, 1024);
+    ::GetWindowText(hwndName, szT, MAXSTRING);
 
     pCurCollection.ppt->SetCollectionName(pcol, szT, NULL, 0);
 

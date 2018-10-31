@@ -1130,9 +1130,9 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
          if (fChanged)//SendMessage(hwndEdit, EM_GETMODIFY, 0, 0))
          {
-            char szText[1024];
+            char szText[MAXSTRING];
 
-            GetWindowText(hwndEdit, szText, 1024);
+            GetWindowText(hwndEdit, szText, MAXSTRING);
 
             CComVariant var(szText);
 

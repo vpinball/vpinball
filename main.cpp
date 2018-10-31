@@ -189,7 +189,7 @@ private:
    bool fPov;
    bool fFile;
    bool fExtractScript;
-   TCHAR szTableFileName[_MAX_PATH];
+   TCHAR szTableFileName[MAXSTRING];
 
 public:
    VPApp(HINSTANCE hInstance)
@@ -238,9 +238,10 @@ public:
       fPlay = false;
       fPov = false;
       bRun = true;
-	  fExtractScript = false;
+      fExtractScript = false;
       int nRet = 0;
-      memset(szTableFileName, 0, _MAX_PATH);
+      memset(szTableFileName, 0, MAXSTRING);
+
       // Start VP with file dialog open and then also playing that one?
       int stos;
       HRESULT hr = GetRegInt("Editor", "SelectTableOnStart", &stos);
@@ -339,8 +340,8 @@ public:
       free(szArglist);
 
       // load and register VP type library for COM integration
-      char szFileName[_MAX_PATH];
-      if (GetModuleFileName(theInstance, szFileName, _MAX_PATH))
+      char szFileName[MAXSTRING];
+      if (GetModuleFileName(theInstance, szFileName, MAXSTRING))
       {
          ITypeLib *ptl = NULL;
          MAKE_WIDEPTR_FROMANSI(wszFileName, szFileName);

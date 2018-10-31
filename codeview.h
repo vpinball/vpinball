@@ -5,6 +5,9 @@
 #include "atlcom.h"
 #include "codeviewedit.h"
 
+#define MAX_FIND_LENGTH 81
+#define MAX_LINE_LENGTH 2048
+
 enum SecurityLevelEnum
 {
    eSecurityNone = 0,
@@ -213,7 +216,6 @@ public:
    bool m_minimized;
 
 private:
-#define MAX_FIND_LENGTH 81
 
    IActiveScriptParse* m_pScriptParse;
    IActiveScriptDebug* m_pScriptDebug;
@@ -387,8 +389,6 @@ public:
    BOOL m_fStopSingleEvents;
    BOOL m_fGroupElements;
 };
-
-#define MAX_LINE_LENGTH 2048
 
 class OMCollectionEnum :
    public CComObjectRootEx<CComSingleThreadModel>,

@@ -1641,8 +1641,8 @@ void VPinball::DoPlay(bool _cameraMode)
 
 bool VPinball::LoadFile()
 {
-   char szFileName[1024];
-   char szInitialDir[1024];
+   char szFileName[MAXSTRING];
+   char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
 
    OPENFILENAME ofn;
@@ -1653,11 +1653,11 @@ bool VPinball::LoadFile()
    // TEXT
    ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0";
    ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = 1024;
+   ofn.nMaxFile = MAXSTRING;
    ofn.lpstrDefExt = "vpx";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, 1024);
+   const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
    char szFoo[MAX_PATH];
    if (hr == S_OK)
    {
@@ -2835,8 +2835,8 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
          case IDC_IMPORT:
          {
-            char szFileName[1024];
-            char szInitialDir[1024];
+            char szFileName[MAXSTRING];
+            char szInitialDir[MAXSTRING];
 
             szFileName[0] = '\0';
 
@@ -2848,11 +2848,11 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             // TEXT
             ofn.lpstrFilter = "Font Files (*.ttf)\0*.ttf\0";
             ofn.lpstrFile = szFileName;
-            ofn.nMaxFile = 1024;
+            ofn.nMaxFile = MAXSTRING;
             ofn.lpstrDefExt = "ttf";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-            HRESULT hr = GetRegString("RecentDir", "FontDir", szInitialDir, 1024);
+            HRESULT hr = GetRegString("RecentDir", "FontDir", szInitialDir, MAXSTRING);
             ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
             const int ret = GetOpenFileName(&ofn);
@@ -2928,7 +2928,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
          if (sel != -1)
          {
-         char szFileName[1024];
+         char szFileName[MAXSTRING];
 
          const int ans = MessageBox(hwndDlg, "Are you sure you want to replace this image with a new one?", "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
          if (ans == IDYES)
@@ -2942,7 +2942,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          ofn.hwndOwner = g_pvp->m_hwnd;
          ofn.lpstrFilter = "Font Files (*.ttf)\0*.ttf\0";
          ofn.lpstrFile = szFileName;
-         ofn.nMaxFile = _MAX_PATH;
+         ofn.nMaxFile = MAXSTRING;
          ofn.lpstrDefExt = "ttf";
          ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 

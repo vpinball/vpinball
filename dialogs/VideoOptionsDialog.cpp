@@ -739,7 +739,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_BROWSE_BALL_IMAGE:
       {
-         char szFileName[1024];
+         char szFileName[MAXSTRING];
          szFileName[0] = '\0';
 
          OPENFILENAME ofn;
@@ -750,7 +750,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          // TEXT
          ofn.lpstrFilter = "Bitmap, JPEG, PNG, EXR, HDR Files (.bmp/.jpg/.png/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.exr;*.hdr\0";
          ofn.lpstrFile = szFileName;
-         ofn.nMaxFile = _MAX_PATH;
+         ofn.nMaxFile = MAXSTRING;
          ofn.lpstrDefExt = "png";
          ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
          const int ret = GetOpenFileName(&ofn);
@@ -762,7 +762,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_BROWSE_BALL_DECAL:
       {
-         char szFileName[1024];
+         char szFileName[MAXSTRING];
          szFileName[0] = '\0';
 
          OPENFILENAME ofn;
@@ -773,7 +773,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          // TEXT
          ofn.lpstrFilter = "Bitmap, JPEG, PNG, EXR, HDR Files (.bmp/.jpg/.png/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.exr;*.hdr\0";
          ofn.lpstrFile = szFileName;
-         ofn.nMaxFile = _MAX_PATH;
+         ofn.nMaxFile = MAXSTRING;
          ofn.lpstrDefExt = "png";
          ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
          const int ret = GetOpenFileName(&ofn);

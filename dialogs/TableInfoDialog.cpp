@@ -98,12 +98,12 @@ INT_PTR TableInfoDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   if (plistview->uNewState & LVIS_SELECTED)
                   {
                      const int sel = plistview->iItem;
-                     char szT[1024];
+                     char szT[MAXSTRING];
 
-                     ListView_GetItemText(GetDlgItem(IDC_CUSTOMLIST).GetHwnd(), sel, 0, szT, 1024);
+                     ListView_GetItemText(GetDlgItem(IDC_CUSTOMLIST).GetHwnd(), sel, 0, szT, MAXSTRING);
                      ::SetWindowText(GetDlgItem(IDC_CUSTOMNAME).GetHwnd(), szT);
 
-                     ListView_GetItemText(GetDlgItem(IDC_CUSTOMLIST).GetHwnd(), sel, 1, szT, 1024);
+                     ListView_GetItemText(GetDlgItem(IDC_CUSTOMLIST).GetHwnd(), sel, 1, szT, MAXSTRING);
                      ::SetWindowText(GetDlgItem(IDC_CUSTOMVALUE).GetHwnd(), szT);
                   }
                }
@@ -244,14 +244,14 @@ void TableInfoDialog::OnOK()
    const int customcount = ListView_GetItemCount(GetDlgItem(IDC_CUSTOMLIST).GetHwnd());
    for (int i = 0; i < customcount; i++)
    {
-      char szT[1024];
-      ListView_GetItemText(GetDlgItem(IDC_CUSTOMLIST).GetHwnd(), i, 0, szT, 1024);
+      char szT[MAXSTRING];
+      ListView_GetItemText(GetDlgItem(IDC_CUSTOMLIST).GetHwnd(), i, 0, szT, MAXSTRING);
 
       char * const szName = new char[lstrlen(szT) + 1];
       lstrcpy(szName, szT);
       pt->m_vCustomInfoTag.AddElement(szName);
 
-      ListView_GetItemText(GetDlgItem(IDC_CUSTOMLIST).GetHwnd(), i, 1, szT, 1024);
+      ListView_GetItemText(GetDlgItem(IDC_CUSTOMLIST).GetHwnd(), i, 1, szT, MAXSTRING);
       char * const szValue = new char[lstrlen(szT) + 1];
       lstrcpy(szValue, szT);
       pt->m_vCustomInfoContent.AddElement(szValue);
