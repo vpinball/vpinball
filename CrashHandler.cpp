@@ -29,38 +29,78 @@ namespace
          fprintf(f, buffer);
    }
 
+   typedef HRESULT(STDAPICALLTYPE *pRGV)(LPOSVERSIONINFOEXW osi);
+   static pRGV mRtlGetVersion = NULL;
+
    void WriteSystemInfo(FILE* f)
    {
-      OSVERSIONINFOEX sysInfo;
-      memset(&sysInfo, 0, sizeof(sysInfo));
-      sysInfo.dwOSVersionInfoSize = sizeof(sysInfo);
-      ::GetVersionEx((OSVERSIONINFO*)&sysInfo);
+      if (mRtlGetVersion == NULL)
+         mRtlGetVersion = (pRGV)GetProcAddress(GetModuleHandle(TEXT("ntdll")), "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
 
-      // We're mainly interested in rough info and latest
-      // systems.
-      fprintf(f, "System: ");
-      if (sysInfo.dwMajorVersion == 6 && sysInfo.dwMinorVersion == 0)
+      DWORD major, minor, build;
+      BYTE product;
+      if (mRtlGetVersion != NULL) // Windows 10 1803 and above
       {
-         if (sysInfo.wProductType != VER_NT_WORKSTATION)
+         OSVERSIONINFOEXW osInfo;
+         osInfo.dwOSVersionInfoSize = sizeof(osInfo);
+         mRtlGetVersion(&osInfo);
+
+         major = osInfo.dwMajorVersion;
+         minor = osInfo.dwMinorVersion;
+         build = osInfo.dwBuildNumber;
+         product = osInfo.wProductType;
+      }
+      else
+      {
+         OSVERSIONINFOEX sysInfo;
+         memset(&sysInfo, 0, sizeof(sysInfo));
+         sysInfo.dwOSVersionInfoSize = sizeof(sysInfo);
+         ::GetVersionEx((OSVERSIONINFO*)&sysInfo);
+
+         major = sysInfo.dwMajorVersion;
+         minor = sysInfo.dwMinorVersion;
+         build = sysInfo.dwBuildNumber;
+         product = sysInfo.wProductType;
+      }
+
+      // We're mainly interested in rough info and latest systems
+      fprintf(f, "System: ");
+      if (major == 10)
+      {
+         fprintf(f, "Windows 10 (%u.%u %u%s)\n", major, minor, build, VER_NT_WORKSTATION ? "" : " Server");
+      }
+      else if (major == 6 && minor == 2)
+      {
+         if (product != VER_NT_WORKSTATION)
+            fprintf(f, "Windows Server 2012 (or above)\n"); //!! as otherwise the manifest should be adapted to target 8.1 or 10
+         else
+            fprintf(f, "Windows 8 (or above)\n"); //!! as otherwise the manifest should be adapted to target 8.1 or 10
+      }
+      else if (major == 6 && minor == 1)
+      {
+         if (product != VER_NT_WORKSTATION)
+            fprintf(f, "Windows Server 2008 R2\n");
+         else
+            fprintf(f, "Windows 7\n");
+      }
+      else if (major == 6 && minor == 0)
+      {
+         if (product != VER_NT_WORKSTATION)
             fprintf(f, "Windows Server 2008\n");
          else
             fprintf(f, "Windows Vista\n");
       }
-      else if (sysInfo.dwMajorVersion == 5)
+      else if (major == 5)
       {
-         if (sysInfo.dwMinorVersion == 2)
+         if (minor == 2)
             fprintf(f, "Windows Server 2003\n");
-         else if (sysInfo.dwMinorVersion == 1)
+         else if (minor == 1)
             fprintf(f, "Windows XP\n");
-         else if (sysInfo.dwMinorVersion == 0)
+         else if (minor == 0)
             fprintf(f, "Windows 2000\n");
       }
       else
-      {
-         fprintf(f, "Unknown Windows version - %u.%u (%s)\n",
-            sysInfo.dwMajorVersion, sysInfo.dwMinorVersion,
-            sysInfo.szCSDVersion);
-      }
+         fprintf(f, "Unknown Windows version - %u.%u (%u)\n", major, minor, build);
    }
 
    void WriteProcessorInfo(FILE* f)
