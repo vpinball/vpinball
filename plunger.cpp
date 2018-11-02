@@ -1280,7 +1280,7 @@ STDMETHODIMP Plunger::Position(int *pVal) // 0..25
       const PlungerMoverObject& pa = m_phitplunger->m_plungerMover;
       const float frame = (pa.m_pos - pa.m_frameStart) / (pa.m_frameEnd - pa.m_frameStart);
 
-      *pVal = (int)(saturate(frame)*25.f); //!! somehow if m_mechPlunger is enabled this will only deliver a value 0..20??
+      *pVal = (int)(25.f - saturate(frame)*25.f); //!! somehow if m_mechPlunger is enabled this will only deliver a value 25 - 0..20??
    }
 
    //      float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
