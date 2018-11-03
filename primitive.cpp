@@ -390,6 +390,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_fDisableLightingBelow = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "DisableLightingBelow", 0.f) : 0.f;
    m_d.m_fReflectionEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
    m_d.m_fBackfacesEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "BackfacesEnabled", false) : false;
+   m_d.m_fDisplayTexture = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "DisplayTexture", false) : false;
 }
 
 void Primitive::WriteRegDefaults()
@@ -436,6 +437,7 @@ void Primitive::WriteRegDefaults()
    SetRegValueFloat(strKeyName, "DisableLightingBelow", m_d.m_fDisableLightingBelow);
    SetRegValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
    SetRegValueBool(strKeyName, "BackfacesEnabled", m_d.m_fBackfacesEnabled);
+   SetRegValueBool(strKeyName, "DisplayTexture", m_d.m_fDisplayTexture);
 }
 
 void Primitive::GetTimers(Vector<HitTimer> * const pvht)
@@ -708,77 +710,117 @@ void Primitive::UIRenderPass2(Sur * const psur)
    psur->SetLineColor(RGB(0, 0, 0), false, 1);
    psur->SetObject(this);
 
-   if ((m_d.m_edgeFactorUI <= 0.0f) || (m_d.m_edgeFactorUI >= 1.0f) || !m_d.m_use3DMesh)
+   if (!m_d.m_fDisplayTexture)
    {
-      if (!m_d.m_use3DMesh || (m_d.m_edgeFactorUI >= 1.0f) || (m_mesh.NumVertices() <= 100)) // small mesh: draw all triangles
+      if ((m_d.m_edgeFactorUI <= 0.0f) || (m_d.m_edgeFactorUI >= 1.0f) || !m_d.m_use3DMesh)
       {
+         if (!m_d.m_use3DMesh || (m_d.m_edgeFactorUI >= 1.0f) || (m_mesh.NumVertices() <= 100)) // small mesh: draw all triangles
+         {
+            for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+            {
+               const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
+               const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
+               const Vertex3Ds * const C = &vertices[m_mesh.m_indices[i + 2]];
+               psur->Line(A->x, A->y, B->x, B->y);
+               psur->Line(B->x, B->y, C->x, C->y);
+               psur->Line(C->x, C->y, A->x, A->y);
+            }
+         }
+         else // large mesh: draw a simplified mesh for performance reasons, does not approximate the shape well
+         {
+            if (m_mesh.NumIndices() > 0)
+            {
+               const size_t numPts = m_mesh.NumIndices() / 3 + 1;
+               std::vector<Vertex2D> drawVertices(numPts);
+
+               const Vertex3Ds& A = vertices[m_mesh.m_indices[0]];
+               drawVertices[0] = Vertex2D(A.x, A.y);
+
+               unsigned int o = 1;
+               for (size_t i = 0; i < m_mesh.NumIndices(); i += 3, ++o)
+               {
+                  const Vertex3Ds& B = vertices[m_mesh.m_indices[i + 1]];
+                  drawVertices[o] = Vertex2D(B.x, B.y);
+               }
+
+               psur->Polyline(&drawVertices[0], (int)drawVertices.size());
+            }
+         }
+      }
+      else
+      {
+         std::vector<Vertex2D> drawVertices;
          for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
          {
             const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
             const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
             const Vertex3Ds * const C = &vertices[m_mesh.m_indices[i + 2]];
-            psur->Line(A->x, A->y, B->x, B->y);
-            psur->Line(B->x, B->y, C->x, C->y);
-            psur->Line(C->x, C->y, A->x, A->y);
-         }
-      }
-      else // large mesh: draw a simplified mesh for performance reasons, does not approximate the shape well
-      {
-         if (m_mesh.NumIndices() > 0)
-         {
-            const size_t numPts = m_mesh.NumIndices() / 3 + 1;
-            std::vector<Vertex2D> drawVertices(numPts);
-
-            const Vertex3Ds& A = vertices[m_mesh.m_indices[0]];
-            drawVertices[0] = Vertex2D(A.x, A.y);
-
-            unsigned int o = 1;
-            for (size_t i = 0; i < m_mesh.NumIndices(); i += 3, ++o)
+            const float An = normals[m_mesh.m_indices[i]];
+            const float Bn = normals[m_mesh.m_indices[i + 1]];
+            const float Cn = normals[m_mesh.m_indices[i + 2]];
+            if (fabsf(An + Bn) < m_d.m_edgeFactorUI)
             {
-               const Vertex3Ds& B = vertices[m_mesh.m_indices[i + 1]];
-               drawVertices[o] = Vertex2D(B.x, B.y);
+               drawVertices.push_back(Vertex2D(A->x, A->y));
+               drawVertices.push_back(Vertex2D(B->x, B->y));
             }
+            if (fabsf(Bn + Cn) < m_d.m_edgeFactorUI)
+            {
+               drawVertices.push_back(Vertex2D(B->x, B->y));
+               drawVertices.push_back(Vertex2D(C->x, C->y));
+            }
+            if (fabsf(Cn + An) < m_d.m_edgeFactorUI)
+            {
+               drawVertices.push_back(Vertex2D(C->x, C->y));
+               drawVertices.push_back(Vertex2D(A->x, A->y));
+            }
+         }
 
-            psur->Polyline(&drawVertices[0], (int)drawVertices.size());
-         }
+         if (drawVertices.size() > 0)
+            psur->Lines(&drawVertices[0], (int)(drawVertices.size() / 2));
       }
-   }
-   else
-   {
-      std::vector<Vertex2D> drawVertices;
-      for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
-      {
-         const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
-         const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
-         const Vertex3Ds * const C = &vertices[m_mesh.m_indices[i + 2]];
-         const float An = normals[m_mesh.m_indices[i]];
-         const float Bn = normals[m_mesh.m_indices[i + 1]];
-         const float Cn = normals[m_mesh.m_indices[i + 2]];
-         if (fabsf(An + Bn) < m_d.m_edgeFactorUI)
-         {
-            drawVertices.push_back(Vertex2D(A->x, A->y));
-            drawVertices.push_back(Vertex2D(B->x, B->y));
-         }
-         if (fabsf(Bn + Cn) < m_d.m_edgeFactorUI)
-         {
-            drawVertices.push_back(Vertex2D(B->x, B->y));
-            drawVertices.push_back(Vertex2D(C->x, C->y));
-         }
-         if (fabsf(Cn + An) < m_d.m_edgeFactorUI)
-         {
-            drawVertices.push_back(Vertex2D(C->x, C->y));
-            drawVertices.push_back(Vertex2D(A->x, A->y));
-         }
-      }
-
-      if (drawVertices.size() > 0)
-         psur->Lines(&drawVertices[0], (int)(drawVertices.size() / 2));
    }
 
    // draw center marker
    psur->SetLineColor(RGB(128, 128, 128), false, 1);
    psur->Line(m_d.m_vPosition.x - 10.0f, m_d.m_vPosition.y, m_d.m_vPosition.x + 10.0f, m_d.m_vPosition.y);
    psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y - 10.0f, m_d.m_vPosition.x, m_d.m_vPosition.y + 10.0f);
+   
+   if (m_d.m_fDisplayTexture)
+   {
+      Texture *ppi = NULL;
+      ppi = m_ptable->GetImage(m_d.m_szImage);
+      if (ppi)
+      {
+         ppi->EnsureHBitmap();
+         if (ppi->m_hbmGDIVersion)
+         {
+            std::vector<RenderVertex> vvertex;
+            for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+            {
+               const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
+               const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
+               const Vertex3Ds * const C = &vertices[m_mesh.m_indices[i + 2]];
+               RenderVertex rvA;
+               RenderVertex rvB;
+               RenderVertex rvC;
+               rvA.x = A->x;
+               rvA.y = A->y;
+               rvB.x = B->x;
+               rvB.y = B->y;
+               rvC.x = C->x;
+               rvC.y = C->y;
+               vvertex.push_back(rvC);
+               vvertex.push_back(rvB);
+               vvertex.push_back(rvA);
+
+            }
+            psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+
+            vvertex.clear();
+         }
+      }
+   }
+
 }
 
 void Primitive::RenderBlueprint(Sur *psur, const bool solid)
@@ -1331,6 +1373,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteBool(FID(EBFC), m_d.m_fBackfacesEnabled);
    bw.WriteString( FID( MAPH ), m_d.m_szPhysicsMaterial );
    bw.WriteBool( FID( OVPH ), m_d.m_fOverwritePhysics );
+   bw.WriteBool(FID(DIPT), m_d.m_fDisplayTexture);
 
    if (m_d.m_use3DMesh)
    {
@@ -1601,6 +1644,10 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(EBFC))
    {
       pbr->GetBool(&m_d.m_fBackfacesEnabled);
+   }
+   else if (id == FID(DIPT))
+   {
+      pbr->GetBool(&m_d.m_fDisplayTexture);
    }
    else if (id == FID(M3DN))
    {
@@ -3023,6 +3070,25 @@ STDMETHODIMP Primitive::put_OverwritePhysics( VARIANT_BOOL newVal )
 
         return S_OK;
 }
+
+STDMETHODIMP Primitive::get_DisplayTexture(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisplayTexture);
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_DisplayTexture(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+      m_d.m_fDisplayTexture = VBTOF(newVal);
+
+   STOPUNDO
+
+      return S_OK;
+}
+
 
 STDMETHODIMP Primitive::PlayAnim(float startFrame, float speed)
 {
