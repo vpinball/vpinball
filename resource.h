@@ -29,6 +29,7 @@
 #define DISPID_ROTRA1                   12
 #define IDC_DBG_LIGHT_INTENSITY         12
 #define DISPID_ROTRA2                   13
+#define IDC_DISPLAY_TEXTURE_CHECKBOX    38
 #define DISPID_TOPCOLOR                 14
 #define DISPID_ROTRA3                   14
 #define IDC_COLOR                       15

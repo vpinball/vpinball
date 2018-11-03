@@ -1,5 +1,6 @@
 VP 10.6.0 Changelog
 ------------------------
+- add support for showing the image of a primitve mesh in the editor. However this feature is far from perfect because Windows GDI, that draws the elements in the editor, can't handle meshes well.
 
 - re-use existing sound settings if re-importing a sound file
 

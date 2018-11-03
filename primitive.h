@@ -96,6 +96,7 @@ public:
    bool m_fReflectionEnabled;
    bool m_fOverwritePhysics;
    bool m_fBackfacesEnabled;
+   bool m_fDisplayTexture;     // in editor
 };
 
 class Primitive :
@@ -214,6 +215,8 @@ public:
    STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
+   STDMETHOD(get_DisplayTexture)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_DisplayTexture)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_DisableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_DisableLighting)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_BlendDisableLighting)(/*[out, retval]*/ float *pVal);

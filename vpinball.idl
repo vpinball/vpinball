@@ -1589,6 +1589,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(18), helpstring("method StopAnim")] HRESULT StopAnim();
                 [id(19), helpstring("method ShowFrame")] HRESULT ShowFrame([in]float frame);
                 [id(35), helpstring("method ContinueAnim")] HRESULT ContinueAnim([in]float speed);
+                [propget, id(38), helpstring("property DisplayTexture")] HRESULT DisplayTexture([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(38), helpstring("property DisplayTexture")] HRESULT DisplayTexture([in] VARIANT_BOOL newVal);
                 
                 [propget, id(101), helpstring("property Sides")] HRESULT Sides([out, retval] int *pVal);
                 [propput, id(101), helpstring("property Sides")] HRESULT Sides([in] int newVal);
