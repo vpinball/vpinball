@@ -76,7 +76,7 @@ public:
    WAVEFORMATEX m_wfx;
 
    int m_cdata;
-   char m_iOutputTarget;
+   SoundOutTypes m_iOutputTarget;
    int m_iBalance;
    int m_iFade;
    int m_iVolume;
@@ -108,7 +108,7 @@ public:
    //LPDIRECTSOUNDBUFFER m_pDSBuffer;
    CWaveSoundRead*     m_pWaveSoundRead;
    DWORD               m_dwBufferBytes;
-   int m_i3DSoundMode;
+   SoundConfigTypes    m_i3DSoundMode;
 };
 
 #endif // !defined(AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_)

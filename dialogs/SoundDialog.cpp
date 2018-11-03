@@ -529,6 +529,7 @@ void SoundDialog::SoundToBG()
                case SNDOUT_BACKGLASS:
                   ListView_SetItemText(hSoundList, sel, 2, "Backglass");
                   break;
+               case SNDOUT_TABLE:
                default:
                   ListView_SetItemText(hSoundList, sel, 2, "Table");
                   break;
@@ -799,7 +800,7 @@ BOOL SoundPositionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 void SoundPositionDialog::TestSound()
 {
 	// Hold the actual output target temporarily and reinitialize.  It could be reset if dialog is canceled.
-	const int iOutputTargetTmp = m_pps->m_iOutputTarget;
+	const SoundOutTypes iOutputTargetTmp = m_pps->m_iOutputTarget;
 	GetDialogValues();
 	m_pps->m_iOutputTarget = m_cOutputTarget;
 	m_pps->ReInitialize();

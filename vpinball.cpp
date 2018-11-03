@@ -426,7 +426,10 @@ void VPinball::InitPinDirectSound()
 	int DSidx1 = 0, DSidx2 = 0;
 	GetRegInt("Player", "SoundDevice", &DSidx1);
 	GetRegInt("Player", "SoundDeviceBG", &DSidx2);
-	GetRegInt("Player", "Sound3D", &m_pds.m_i3DSoundMode);
+	int tmp = (int)m_pds.m_i3DSoundMode;
+	GetRegInt("Player", "Sound3D", &tmp);
+	m_pds.m_i3DSoundMode = (SoundConfigTypes)tmp;
+
 	m_pds.InitDirectSound(m_hwnd, false);						// init Direct Sound (in pinsound.cpp)
 	// If these are the same device, and we are not in 3d mode, just point the backglass device to the main one. 
 	// For 3D we want two separate instances, one in basic stereo for music, and the other surround mode. 
