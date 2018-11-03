@@ -4564,6 +4564,11 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound *pps, char *filen
 
    PinSound psT = *pps;
    *pps = *ppsNew;
+   // recopy old settings over to new sound file
+   pps->m_iBalance = psT.m_iBalance;
+   pps->m_iFade = psT.m_iFade;
+   pps->m_iVolume = psT.m_iVolume;
+   pps->m_iOutputTarget = psT.m_iOutputTarget;
    *ppsNew = psT;
 
    lstrcpy(pps->m_szName, ppsNew->m_szName);

@@ -1,6 +1,8 @@
 VP 10.6.0 Changelog
 ------------------------
 
+- re-use existing sound settings if re-importing a sound file
+
 - fix crash in collection manager if a collection is moved up/down
 
 - fix ball decal splotches if only a global ball image was set in the video preferences

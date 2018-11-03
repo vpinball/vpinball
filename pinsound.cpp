@@ -454,7 +454,8 @@ void PinSoundCopy::Play(const float volume, const float randompitch, const int p
 	case SNDCFG_SND3D6CH:
 		m_pDS3DBuffer->SetPosition(PinDirectSound::PanTo3D(pan), 0.0f, -((PinDirectSound::PanTo3D(front_rear_fade) + 3.0f) / 2.0f), DS3D_IMMEDIATE);
 		break;
-	default:  // SNDCFG_SND3D2CH
+	case SNDCFG_SND3D2CH:
+	default:
 		if (pan != 0.f)
 			m_pDSBuffer->SetPan((LONG)(pan*DSBPAN_RIGHT));
 		break;
