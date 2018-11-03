@@ -157,6 +157,7 @@ STDMETHODIMP ScriptGlobalTable::NudgeSensorStatus(VARIANT *XNudge, VARIANT *YNud
 
 	return S_OK;
 }
+
 STDMETHODIMP ScriptGlobalTable::NudgeTiltStatus(VARIANT *XPlumb, VARIANT *YPlumb, VARIANT *Tilt)
 {
 	CComVariant(m_pt->m_tblNudgePlumbX).Detach(XPlumb);
@@ -3674,7 +3675,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
          int cfonts = 0;
          int ccollection = 0;
 
-         if (SUCCEEDED(hr = LoadData(pstmGame, csubobj, csounds, ctextures, cfonts, ccollection, loadfileversion, hch, (loadfileversion < 1050) ? hkey : NULL)))
+         if (SUCCEEDED(hr = LoadData(pstmGame, csubobj, csounds, ctextures, cfonts, ccollection, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL)))
          {
             ctotalitems = csubobj + csounds + ctextures + cfonts;
             cloadeditems = 0;
@@ -3788,7 +3789,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   CComObject<Collection> *pcol;
                   CComObject<Collection>::CreateInstance(&pcol);
                   pcol->AddRef();
-                  pcol->LoadData(pstmItem, this, loadfileversion, hch, (loadfileversion < 1050) ? hkey : NULL);
+                  pcol->LoadData(pstmItem, this, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL);
                   m_vcollection.AddElement(pcol);
                   m_pcv->AddItem((IScriptable *)pcol, fFalse);
                   pstmItem->Release();
