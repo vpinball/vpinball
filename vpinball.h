@@ -20,7 +20,8 @@
 #include "AboutDialog.h"
 #include "DrawingOrderDialog.h"
 
-#define CURRENT_FILE_FORMAT_VERSION 1050
+#define CURRENT_FILE_FORMAT_VERSION 1060
+#define NO_ENCRYPTION_FORMAT_VERSION 1050
 #define NEW_SOUND_FORMAT_VERSION 1031 // introduced surround option
 
 #define DEFAULT_SECURITY_LEVEL 0

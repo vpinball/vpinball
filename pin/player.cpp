@@ -1801,7 +1801,7 @@ void Player::InitStatic(HWND hwndProgress)
    rectStatic.bottom = descStatic.Height;
 
    float * __restrict const pdestStatic = new float[descStatic.Width*descStatic.Height * 3]; // RGB float32
-   memset(pdestStatic, 0, descStatic.Width*descStatic.Height*sizeof(float) * 3);
+   memset(pdestStatic, 0, descStatic.Width*descStatic.Height * 3 * sizeof(float));
 
    RenderTarget* offscreenSurface;
    CHECKD3D(m_pin3d.m_pd3dDevice->GetCoreDevice()->CreateOffscreenPlainSurface(descStatic.Width, descStatic.Height, descStatic.Format, D3DPOOL_SYSTEMMEM, &offscreenSurface, NULL));
@@ -5783,7 +5783,7 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 #ifdef PLAYBACK
 float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
 {
-   char szLine[1024];
+   char szLine[MAXSTRING];
    const float dtime = 0.45f;
 
    while (1)
