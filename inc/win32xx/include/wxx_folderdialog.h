@@ -1,12 +1,12 @@
-// Win32++   Version 8.5
-// Release Date: 1st December 2017
+// Win32++   Version 8.6
+// Release Date: 2nd November 2018
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2017  David Nash
+// Copyright (c) 2005-2018  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -78,14 +78,15 @@
 #include "wxx_dialog.h"
 
 #ifdef _MSC_VER
-  #pragma warning (disable : 4091)  // temporarily disable warning: 'typedef': ignored
-#endif
+#pragma warning ( push )
+#pragma warning (disable : 4091)  // temporarily disable warning: 'typedef': ignored
+#endif // _MSC_VER
 
 #include <shlobj.h>
 
 #ifdef _MSC_VER
-  #pragma warning (default : 4091)  // re-enable C4091 warning
-#endif
+#pragma warning ( pop )
+#endif // _MSC_VER
 
 
 // Support older compilers
@@ -121,45 +122,45 @@ namespace Win32xx
     class CFolderDialog : public CDialog
     {
     public:
-        CFolderDialog(UINT nID = 0);
+        CFolderDialog(UINT id = 0);
         virtual ~CFolderDialog();
 
-        virtual INT_PTR DoModal(HWND hWndParent = 0);
+        virtual INT_PTR DoModal(HWND parent = 0);
 
-        CString GetDisplayName() const       { return m_strDisplayName; }
+        CString GetDisplayName() const       { return m_displayName; }
         CString GetFolderPath() const;
-        LPITEMIDLIST GetFolderPidl() const   { return m_vPidl.back(); }
+        LPITEMIDLIST GetFolderPidl() const   { return m_fullPidl.back(); }
         int  GetImageIndex() const           { return m_imageIndex; }
         int  GetFlags() const                { return m_flags; }
-        void EnableOK(BOOL bEnable = TRUE);
-        void SetExpanded(LPCWSTR pszPath);
+        void EnableOK(BOOL enable = TRUE);
+        void SetExpanded(LPCWSTR pPath);
         void SetExpanded(LPITEMIDLIST pItemIDList);
         void SetFlags(UINT flags) { m_flags = flags; }
-        void SetOKText(LPCWSTR pszText);
-        void SetRoot(LPITEMIDLIST pidl);
+        void SetOKText(LPCWSTR pText);
+        void SetRoot(LPITEMIDLIST pItemIDList);
         void SetSelection(LPITEMIDLIST pItemIDList);
-        void SetSelection(LPCTSTR pszPath);
-        void SetStatusText(LPCTSTR pszText);
-        void SetTitle(LPCTSTR pszTitle);
+        void SetSelection(LPCTSTR pPath);
+        void SetStatusText(LPCTSTR pText);
+        void SetTitle(LPCTSTR pTitle);
 
     protected:
         virtual void OnCancel();
         virtual void OnInitialized();
-        virtual void OnIUnknown(LPARAM lParam);
+        virtual void OnIUnknown(LPARAM lparam);
         virtual void OnOK();
         virtual void OnSelChanged();
-        virtual int  OnValidateFailed(LPARAM lParam);
+        virtual int  OnValidateFailed(LPARAM lparam);
 
     private:
-        static int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData);
+        static int CALLBACK BrowseCallbackProc(HWND wnd, UINT uMsg, LPARAM param1, LPARAM lparam2);
 
-        CString m_strDisplayName;
-        CString m_strTitle;
+        CString m_displayName;
+        CString m_title;
         BROWSEINFO m_bi;
         LPITEMIDLIST m_pidlRoot;
         int m_imageIndex;
         UINT m_flags;
-        std::vector<LPITEMIDLIST> m_vPidl;
+        std::vector<LPITEMIDLIST> m_fullPidl;
     };
 
 }
@@ -171,11 +172,11 @@ namespace Win32xx
 namespace Win32xx
 {
 
-    inline CFolderDialog::CFolderDialog(UINT nID) : CDialog(nID), m_pidlRoot(0), m_imageIndex(0)
+    inline CFolderDialog::CFolderDialog(UINT id) : CDialog(id), m_pidlRoot(0), m_imageIndex(0)
     {
         ZeroMemory(&m_bi, sizeof(m_bi));
         m_bi.lpfn = BrowseCallbackProc;
-        m_bi.lParam = reinterpret_cast<LPARAM>(this);
+        m_bi.lParam = (LPARAM)this;
 
         // Set the default flags.
         //  BIF_NEWDIALOGSTYLE    - Only return file system directories.
@@ -185,29 +186,27 @@ namespace Win32xx
         ::CoInitialize(NULL);
     }
 
-
     inline CFolderDialog::~CFolderDialog()
     {
         // Free the memory allocated to our pidls.
         std::vector<LPITEMIDLIST>::iterator it;
-        for (it = m_vPidl.begin(); it != m_vPidl.end(); ++it)
+        for (it = m_fullPidl.begin(); it != m_fullPidl.end(); ++it)
             CoTaskMemFree(*it);
 
         ::CoUninitialize();
     }
 
-
     // The callback function used used to send messages to and process messages
     // from a Browse dialog box displayed in response to a call to SHBrowseForFolder.
-    inline int CALLBACK CFolderDialog::BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
+    inline int CALLBACK CFolderDialog::BrowseCallbackProc(HWND wnd, UINT msg, LPARAM param1, LPARAM param2)
     {
-        CFolderDialog* pThis = reinterpret_cast<CFolderDialog*>(lpData);
+        CFolderDialog* pThis = reinterpret_cast<CFolderDialog*>(param2);
         int result = 0;
 
-        if (pThis->m_hWnd == 0)
-            pThis->Attach(hwnd);
+        if (pThis->GetHwnd() == 0)
+            pThis->Attach(wnd);
 
-        switch (uMsg)
+        switch (msg)
         {
         case BFFM_INITIALIZED:
             pThis->OnInitialized();
@@ -216,33 +215,32 @@ namespace Win32xx
             pThis->OnSelChanged();
             break;
         case BFFM_VALIDATEFAILED:
-            result = pThis->OnValidateFailed(lParam);
+            result = pThis->OnValidateFailed(param1);
             break;
         case BFFM_IUNKNOWN:
-            pThis->OnIUnknown(lParam);
+            pThis->OnIUnknown(param1);
             break;
         }
 
         return result;
     }
 
-
     // Displays the folder browser dialog.
-    inline INT_PTR CFolderDialog::DoModal(HWND hWndParent)
+    inline INT_PTR CFolderDialog::DoModal(HWND parent)
     {
-        m_bi.lpszTitle = m_strTitle.c_str();
-        m_bi.pszDisplayName = m_strDisplayName.GetBuffer(MAX_PATH);
+        m_bi.lpszTitle = m_title.c_str();
+        m_bi.pszDisplayName = m_displayName.GetBuffer(MAX_PATH);
         m_bi.ulFlags = m_flags;
-        m_bi.hwndOwner = hWndParent;
+        m_bi.hwndOwner = parent;
         m_bi.pidlRoot = m_pidlRoot;
 
         LPITEMIDLIST pidl = ::SHBrowseForFolder(&m_bi);
-        m_strDisplayName.ReleaseBuffer();
+        m_displayName.ReleaseBuffer();
 
         INT_PTR result = 0;
         if (pidl)
         {
-            m_vPidl.push_back(pidl);
+            m_fullPidl.push_back(pidl);
             result = IDOK;
             OnOK();
         }
@@ -258,30 +256,27 @@ namespace Win32xx
         return result;
     }
 
-
     // Enables or disables the OK button
-    inline void CFolderDialog::EnableOK(BOOL bEnable /*TRUE*/)
+    inline void CFolderDialog::EnableOK(BOOL enable /*TRUE*/)
     {
-        SendMessage(BFFM_ENABLEOK, bEnable, 0L);
+        SendMessage(BFFM_ENABLEOK, (WPARAM)enable, 0);
     }
 
-
     // Returns the path of the selected folder.
+    // Refer to SHGetPathFromIDList in the Windows API documentation for more information.
     inline CString CFolderDialog::GetFolderPath() const
     {
         CString str;
-        SHGetPathFromIDList(m_vPidl.back(), str.GetBuffer(MAX_PATH));
+        SHGetPathFromIDList(m_fullPidl.back(), str.GetBuffer(MAX_PATH));
         str.ReleaseBuffer();
 
         return str;
     }
 
-
     // Called when the cancel button is pressed
     inline void CFolderDialog::OnCancel()
     {
     }
-
 
     // Called when the Folder dialog is displayed
     // Override this function to perform tasks when the dialog starts.
@@ -296,24 +291,20 @@ namespace Win32xx
     //  SetSelection(_T("C:\\Temp"));
     }
 
-
     // Called when an IUnknown interface is available to the dialog box.
     inline void CFolderDialog::OnIUnknown(LPARAM)
     {
     }
-
 
     // Called when the OK button is pressed.
     inline void CFolderDialog::OnOK()
     {
     }
 
-
     // Called when the selection has changed in the dialog box.
     inline void CFolderDialog::OnSelChanged()
     {
     }
-
 
     // Called when the user typed an invalid name into the dialog's edit box.
     inline int CFolderDialog::OnValidateFailed(LPARAM)
@@ -322,66 +313,64 @@ namespace Win32xx
         return 1;
     }
 
-
     // Specifies the path of a folder to expand in the Browse dialog box.
-    inline void CFolderDialog::SetExpanded(LPCWSTR pszPath)
+    // Refer to BFFM_SETEXPANDED in the Windows API documentation for more information.
+    inline void CFolderDialog::SetExpanded(LPCWSTR pPath)
     {
-        SendMessage(BFFM_SETEXPANDED, TRUE, (LPARAM)pszPath);
+        SendMessage(BFFM_SETEXPANDED, (WPARAM)TRUE, (LPARAM)pPath);
     }
 
-
     // Specifies the path of a folder to expand in the Browse dialog box.
+    // Refer to BFFM_SETEXPANDED in the Windows API documentation for more information.
     inline void CFolderDialog::SetExpanded(LPITEMIDLIST pItemIDList)
     {
-        SendMessage(BFFM_SETEXPANDED, FALSE, (LPARAM)pItemIDList);
+        SendMessage(BFFM_SETEXPANDED, (WPARAM)FALSE, (LPARAM)pItemIDList);
     }
-
 
     // Sets the text of the OK button.
-    inline void CFolderDialog::SetOKText(LPCWSTR pszText)
+    // Refer to BFFM_SETOKTEXT in the Windows API documentation for more information.
+    inline void CFolderDialog::SetOKText(LPCWSTR pText)
     {
-        SendMessage(BFFM_SETOKTEXT, 0, (LPARAM)pszText);
+        SendMessage(BFFM_SETOKTEXT, 0, (LPARAM)pText);
     }
-
 
     // Sets the location of the root folder from which to start browsing.
-    inline void CFolderDialog::SetRoot(LPITEMIDLIST pidl)
+    inline void CFolderDialog::SetRoot(LPITEMIDLIST pItemIDList)
     {
-        m_pidlRoot = pidl;
+        m_pidlRoot = pItemIDList;
     }
 
-
     // Specifies the path of a folder to select.
+    // Refer to BFFM_SETSELECTION in the Windows API documentation for more information.
     inline void CFolderDialog::SetSelection(LPITEMIDLIST pItemIDList)
     {
         SendMessage(BFFM_SETSELECTION, FALSE, (LPARAM)pItemIDList);
     }
 
-
     // Specifies the path of a folder to select.
-    inline void CFolderDialog::SetSelection(LPCTSTR pszPath)
+    // Refer to BFFM_SETSELECTION in the Windows API documentation for more information.
+    inline void CFolderDialog::SetSelection(LPCTSTR pPath)
     {
-        SendMessage(BFFM_SETSELECTION, TRUE, (LPARAM)pszPath);
+        SendMessage(BFFM_SETSELECTION, TRUE, (LPARAM)pPath);
     }
-
 
     // Sets the status text.
     // This is incompatible with the BIF_USENEWUI or BIF_NEWDIALOGSTYLE flags.
-    inline void CFolderDialog::SetStatusText(LPCTSTR pszText)
+    // Refer to BFFM_SETSTATUSTEXT in the Windows API documentation for more information.
+    inline void CFolderDialog::SetStatusText(LPCTSTR pText)
     {
-        SendMessage(BFFM_SETSTATUSTEXT, 0, (LPARAM)pszText);
+        SendMessage(BFFM_SETSTATUSTEXT, 0, (LPARAM)pText);
     }
 
-
     // Sets the title of the browse for folder dialog.
-    inline void CFolderDialog::SetTitle(LPCTSTR pszTitle)
+    inline void CFolderDialog::SetTitle(LPCTSTR pTitle)
     {
-        if (pszTitle)
-            m_strTitle = pszTitle;
+        if (pTitle)
+            m_title = pTitle;
         else
-            m_strTitle.Empty();
+            m_title.Empty();
 
-        m_bi.lpszTitle = m_strTitle.c_str();
+        m_bi.lpszTitle = m_title.c_str();
     }
 
 }

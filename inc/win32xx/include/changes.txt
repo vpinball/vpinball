@@ -1,3 +1,119 @@
+Version 8.6
+===========
+
+New Features and Enhancements
+-----------------------------
+* m_hWnd is no longer a protected member variable of CWnd. Use either *this or
+  GetHwnd() to access the window handle association associated with the CWnd.
+  Eliminating protected member variables keeps the code robust, and is
+  consistent with good software design.
+   
+* The programming style has been updated, and the Hungarian notation has 
+  been removed. The m_ prefix for member variables has been retained, as 
+  has a p prefix for pointers.
+  
+* Windows API functions that have been flagged as deprecated by Microsoft
+  because of security issues have been replaced by their more modern equivalents
+  for the compilers that support them. Warnings relating to deprecated code are
+  no longer disabled by the library. If your code issues warnings related to 
+  deprecated code, you can disable them, but updating your code might be a
+  better option.
+  
+* Three new functions have been supplied to guard against buffer overruns when
+  copying strings. They allow the size of the destination buffer to be specified, 
+  much like strcpy_s and wcscpy_s. The new functions are:
+  StrCopyA    Copies a char string to a buffer of specified size.
+  StrCopyW    Copies a wide string to a buffer of specified size.
+  StrCopy     Copies a TCHAR string to a buffer of specified size.
+  
+* Added CEvent
+* Added CMutex
+* Added CSemaphore
+* Updated CSocket
+ - now also supports async sockets
+ - added NetClientAsync sample
+ - added NetServerAsync sample
+* Updated frames
+ - Additional toolbars have better support for disabled buttons.
+ - Optimised the creation of the image list for disabled menu icons.
+ - Optimised AddMenuIcon (the disabled image-list isn't recreated unnecessarily).
+ - Added UseStatusBar option for OnCreate.
+ - Relaxed restrictions on size of images for menu icons. This provides better 
+    support for larger screen scaling available on windows 10 for DPI aware apps.
+ - Added VK_INSERT to the set of keys checked by the keyboard hook.
+
+* Updated CImageList
+* CRichEdit now supports RichEdit version 4.1 if available (XP and above).
+* The Notepad sample now supports UTF-8.
+* Added 5 new CResizer alignments for controls. They can be aligned as follows:
+  - topleft:      Positions top left
+  - topright:     Positions top right
+  - bottomleft:   Positions bottom left
+  - bottomright:  Positions bottom right
+  - center:	   Positions proportionally
+  - leftcenter:   Positions proportionally along the left side
+  - rightcenter:  Positions proportionally along the right side
+  - topcenter:    Positions proportionally along the top side
+  - bottomcenter: Positions proportionally along the bottom side
+
+
+Changes in detail
+-----------------
+Added NetClientAsync                             sample
+Added NetServerAsync                             sample
+Added wxx_mutex.h                                header file
+Added CEvent                                     class
+Added CMutex                                     class
+Added CSemaphore                                 class
+Added CBitmap::ConvertToDisabled                 member function
+Added CComboBox::GetEditCtrl                     member function
+Added CComboBox::GetLBCtrl                       member function
+Added CEdit::AppendText                          member function
+Added CFrameT::AddDisabledMenuImage              member function
+Added CFrameT::IsUsingStatusBar                  member function
+Added CFrameT::UseStatusBar                      member function
+Added CImageList::Copy                           member function
+Added CImageList::GetBkColor                     member function
+Added CImageList::GetDragImage                   member function
+Added CImageList::EndDrag                        member function
+Added CImageList::ExtractIcon                    member function
+Added CImageList::Read                           member function
+Added CImageList::SetBkColor                     member function
+Added CImageList::SetDragCursorImage             member function
+Added CImageLIst::Write                          member function
+Added CResizer::SetMinRect                       member function
+Added CResizer::SetMaxRect                       member function
+Added CRichEdit::AppendText                      member function
+Added CSocket::StartAsync                        member function
+Added CWinThread::IsRunning                      member function
+Added StrCopy                                    function
+Added StrCopyA                                   function
+Added StrCopyW                                   function
+
+Modified CFrameT::AddMenuIcon                    added optional iconWidth argument
+CTime::GetGmtTm                                  argument no longer optional or NULL
+CTime::GetLocalTm                                argument no longer optional or NULL
+
+Renamed CFrameT::GetUseIndicatorStatus    to     CFrameT::IsUsingIndicatorStatus
+Renamed CFrameT::GetUseMenuStatus         to     CFrameT::IsUsingMenuStatus
+Renamed CFrameT::GetUseReBar              to     CFrameT::IsUsingReBar
+Renamed CFrameT::GetUseThemes             to     CFrameT::IsUsingThemes
+Renamed CFrameT::GetUseToolBar            to     CFrameT::IsUsingToolBar
+Renamed CFrameT::SetUseIndicatorStatus    to     CFrameT::UseIndicatorStatus
+Renamed CFrameT::SetUseMenuStatus         to     CFrameT::UseMenuStatus
+Renamed CFrameT::SetUseReBar              to     CFrameT::UseReBar
+Renamed CFrameT::SetUseThemes             to     CFrameT::UseThemes
+Renamed CFrameT::SetUseToolBar            to     CFrameT::UseToolBar
+Renamed CSocket::GetLastError             to     CSocket::GetErrorString
+Renamed CToolBar::SetBitmap               to     CToolBar::AddReplaceBitmap
+
+The CFrameT::InitValues struct has been updated and now has the following members:
+ CRect   position
+ int     showCmd
+ BOOL    showStatusBar
+ BOOL    showToolBar
+
+
 Version 8.5
 ===========
 
