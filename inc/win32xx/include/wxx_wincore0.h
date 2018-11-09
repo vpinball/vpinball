@@ -1,12 +1,12 @@
-// Win32++   Version 8.5
-// Release Date: 1st December 2017
+// Win32++   Version 8.6
+// Release Date: 2nd November 2018
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2017  David Nash
+// Copyright (c) 2005-2018  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -101,10 +101,14 @@ namespace Win32xx
     // Other classes which provide the functionality of more specialized windows inherit from CWnd.
     class CWnd : public CObject
     {
+    friend class CColorDialog;
     friend class CCommonDialog;
-    friend class CMDIChild;
     friend class CDialog;
+    friend class CFileDialog;
+    friend class CFontDialog;
+    friend class CMDIChild;
     friend class CPropertyPage;
+    friend class CPropertySheet;
     friend class CTaskDialog;
     friend class CWinApp;
     friend class CWinThread;
@@ -114,173 +118,173 @@ namespace Win32xx
         virtual ~CWnd();    // Destructor
 
         // These virtual functions can be overridden
-        virtual BOOL Attach(HWND hWnd);
-        virtual BOOL AttachDlgItem(UINT nID, HWND hwndParent);
+        virtual BOOL Attach(HWND wnd);
+        virtual BOOL AttachDlgItem(UINT id, HWND parent);
         virtual void CenterWindow() const;
-        virtual HWND Create(HWND hParent = NULL);
-        virtual HWND CreateEx(DWORD dwExStyle, LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
-                              DWORD dwStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent,
-                              HMENU nIDorHMenu, LPVOID lpParam = NULL);
-        virtual HWND CreateEx(DWORD dwExStyle, LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
-                              DWORD dwStyle, const RECT& rc, HWND hWndParent, UINT nID, LPVOID lpParam = NULL);
+        virtual HWND Create(HWND parent = NULL);
+        virtual HWND CreateEx(DWORD exStyle, LPCTSTR pClassName, LPCTSTR pWindowName,
+                              DWORD style, int x, int y, int width, int height, HWND parent,
+                              HMENU idOrMenu, LPVOID lparam = NULL);
+        virtual HWND CreateEx(DWORD exStyle, LPCTSTR pClassName, LPCTSTR pWindowName,
+                              DWORD style, const RECT& rectc, HWND parent, UINT id, LPVOID lparam = NULL);
         virtual void Destroy();
         virtual HWND Detach();
-        static  CWnd* GetCWndPtr(HWND hWnd);
-        virtual HICON SetIconLarge(int nIcon);
-        virtual HICON SetIconSmall(int nIcon);
+        static  CWnd* GetCWndPtr(HWND wnd);
+        virtual HICON SetIconLarge(int iconID);
+        virtual HICON SetIconSmall(int iconID);
 
         // For Data Exchange
     #ifndef _WIN32_WCE
-        virtual void DoDataExchange(CDataExchange& DX);
-        virtual BOOL UpdateData(CDataExchange& DX, BOOL RetrieveAndValidate);
+        virtual void DoDataExchange(CDataExchange& dx);
+        virtual BOOL UpdateData(CDataExchange& dx, BOOL retrieveAndValidate);
     #endif
 
         // Attributes
-        HWND GetHwnd() const                { return m_hWnd; }
-        WNDPROC GetPrevWindowProc() const   { return m_PrevWindowProc; }
+        HWND GetHwnd() const                { return m_wnd; }
+        WNDPROC GetPrevWindowProc() const   { return m_prevWindowProc; }
 
         // Wrappers for Win32 API functions
         // These functions aren't virtual, and shouldn't be overridden
         HDC   BeginPaint(PAINTSTRUCT& ps) const;
         BOOL  BringWindowToTop() const;
-        LRESULT CallWindowProc(WNDPROC lpPrevWndFunc, UINT Msg, WPARAM wParam, LPARAM lParam) const;
-        BOOL  CheckDlgButton(int nIDButton, UINT uCheck) const;
-        BOOL  CheckRadioButton(int nIDFirstButton, int nIDLastButton, int nIDCheckButton) const;
-        CWnd  ChildWindowFromPoint(POINT pt) const;
-        BOOL  ClientToScreen(POINT& pt) const;
-        BOOL  ClientToScreen(RECT& rc) const;
-        LRESULT DefWindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam) const;
-        HDWP  DeferWindowPos(HDWP hWinPosInfo, HWND hWndInsertAfter, int x, int y, int cx, int cy, UINT uFlags) const;
-        HDWP  DeferWindowPos(HDWP hWinPosInfo, HWND hWndInsertAfter, const RECT& rc, UINT uFlags) const;
+        LRESULT CallWindowProc(WNDPROC pPrevWndFunc, UINT msg, WPARAM wparam, LPARAM lparam) const;
+        BOOL  CheckDlgButton(int buttonID, UINT check) const;
+        BOOL  CheckRadioButton(int firstButtonID, int lastButtonID, int checkButtonID) const;
+        CWnd  ChildWindowFromPoint(POINT point) const;
+        BOOL  ClientToScreen(POINT& point) const;
+        BOOL  ClientToScreen(RECT& rect) const;
+        LRESULT DefWindowProc(UINT msg, WPARAM wparam, LPARAM lparam) const;
+        HDWP  DeferWindowPos(HDWP winPosInfo, HWND insertAfter, int x, int y, int cx, int cy, UINT flags) const;
+        HDWP  DeferWindowPos(HDWP winPosInfo, HWND insertAfter, const RECT& rect, UINT flags) const;
         BOOL  DrawMenuBar() const;
         BOOL  EnableWindow(BOOL Enable = TRUE) const;
         BOOL  EndPaint(PAINTSTRUCT& ps) const;
         CWnd  GetActiveWindow() const;
-        CWnd  GetAncestor(UINT gaFlag = 3 /*= GA_ROOTOWNER*/) const;
+        CWnd  GetAncestor(UINT flag = 3 /*= GA_ROOTOWNER*/) const;
         CWnd  GetCapture() const;
-        ULONG_PTR GetClassLongPtr(int nIndex) const;
+        ULONG_PTR GetClassLongPtr(int index) const;
         CString GetClassName() const;
         CRect GetClientRect() const;
         CDC   GetDC() const;
-        CDC   GetDCEx(HRGN hrgnClip, DWORD flags) const;
+        CDC   GetDCEx(HRGN clip, DWORD flags) const;
         CWnd  GetDesktopWindow() const;
         int   GetDlgCtrlID() const;
-        CWnd  GetDlgItem(int nIDDlgItem) const;
-        UINT  GetDlgItemInt(int nIDDlgItem, BOOL& IsTranslated, BOOL IsSigned) const;
-        UINT  GetDlgItemInt(int nIDDlgItem, BOOL IsSigned) const;
-        CString GetDlgItemText(int nIDDlgItem) const;
+        CWnd  GetDlgItem(int dlgItemID) const;
+        UINT  GetDlgItemInt(int dlgItemID, BOOL& isTranslated, BOOL isSigned) const;
+        UINT  GetDlgItemInt(int dlgItemID, BOOL isSigned) const;
+        CString GetDlgItemText(int dlgItemID) const;
         DWORD GetExStyle() const;
         CWnd  GetFocus() const;
         CFont GetFont() const;
-        HICON GetIcon(BOOL IsBigIcon) const;
-        CWnd  GetNextDlgGroupItem(HWND hCtl, BOOL IsPrevious) const;
-        CWnd  GetNextDlgTabItem(HWND hCtl, BOOL IsPrevious) const;
+        HICON GetIcon(BOOL isBigIcon) const;
+        CWnd  GetNextDlgGroupItem(HWND control, BOOL isPrevious) const;
+        CWnd  GetNextDlgTabItem(HWND control, BOOL isPrevious) const;
         CWnd  GetParent() const;
-        BOOL  GetScrollInfo(int fnBar, SCROLLINFO& si) const;
+        BOOL  GetScrollInfo(int barType, SCROLLINFO& si) const;
         DWORD GetStyle() const;
-        CRect GetUpdateRect(BOOL Erase) const;
-        int GetUpdateRgn(HRGN hRgn, BOOL Erase) const;
-        CWnd  GetWindow(UINT uCmd) const;
+        CRect GetUpdateRect(BOOL erase) const;
+        int GetUpdateRgn(HRGN rgn, BOOL erase) const;
+        CWnd  GetWindow(UINT cmd) const;
         CDC   GetWindowDC() const;
-        LONG_PTR GetWindowLongPtr(int nIndex) const;
+        LONG_PTR GetWindowLongPtr(int index) const;
         CRect GetWindowRect() const;
         CString GetWindowText() const;
         int   GetWindowTextLength() const;
-        void  Invalidate(BOOL Erase = TRUE) const;
-        BOOL  InvalidateRect(const RECT& rc, BOOL Erase = TRUE) const;
-        BOOL  InvalidateRect(BOOL Erase = TRUE) const;
-        BOOL  InvalidateRgn(HRGN hRgn, BOOL Erase = TRUE) const;
-        BOOL  IsChild(HWND hwndChild) const;
-        BOOL  IsDialogMessage(MSG& Msg) const;
-        UINT  IsDlgButtonChecked(int nIDButton) const;
+        void  Invalidate(BOOL erase = TRUE) const;
+        BOOL  InvalidateRect(const RECT& rect, BOOL erase = TRUE) const;
+        BOOL  InvalidateRect(BOOL erase = TRUE) const;
+        BOOL  InvalidateRgn(HRGN rgn, BOOL erase = TRUE) const;
+        BOOL  IsChild(HWND child) const;
+        BOOL  IsDialogMessage(MSG& msg) const;
+        UINT  IsDlgButtonChecked(int buttonID) const;
         BOOL  IsWindow() const;
         BOOL  IsWindowEnabled() const;
         BOOL  IsWindowVisible() const;
-        BOOL  KillTimer(UINT_PTR uIDEvent) const;
-        int   MessageBox(LPCTSTR lpText, LPCTSTR lpCaption, UINT uType) const;
-        void  MapWindowPoints(HWND hWndTo, POINT& pt) const;
-        void  MapWindowPoints(HWND hWndTo, RECT& rc) const;
-        void  MapWindowPoints(HWND hWndTo, LPPOINT ptArray, UINT nCount) const;
-        BOOL  MoveWindow(int x, int y, int nWidth, int nHeight, BOOL Repaint = TRUE) const;
-        BOOL  MoveWindow(const RECT& rc, BOOL Repaint = TRUE) const;
-        BOOL  PostMessage(UINT uMsg, WPARAM wParam = 0L, LPARAM lParam = 0L) const;
-        BOOL  PostMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const;
-        BOOL  RedrawWindow(const RECT& rcUpdate, UINT flags = RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN) const;
-        BOOL  RedrawWindow(HRGN hRgn, UINT flags = RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN) const;
+        BOOL  KillTimer(UINT_PTR eventID) const;
+        int   MessageBox(LPCTSTR pText, LPCTSTR pCaption, UINT type) const;
+        void  MapWindowPoints(HWND to, POINT& point) const;
+        void  MapWindowPoints(HWND to, RECT& rect) const;
+        void  MapWindowPoints(HWND to, LPPOINT pointsArray, UINT count) const;
+        BOOL  MoveWindow(int x, int y, int width, int height, BOOL repaint = TRUE) const;
+        BOOL  MoveWindow(const RECT& rect, BOOL repaint = TRUE) const;
+        BOOL  PostMessage(UINT msg, WPARAM wparam = 0, LPARAM lparam = 0) const;
+        BOOL  PostMessage(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam) const;
+        BOOL  RedrawWindow(const RECT& updateRect, UINT flags = RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN) const;
+        BOOL  RedrawWindow(HRGN rgn, UINT flags = RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN) const;
         BOOL  RedrawWindow(UINT flags = RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN) const;
-        int   ReleaseDC(HDC hDC) const;
-        BOOL  ScreenToClient(POINT& Point) const;
-        BOOL  ScreenToClient(RECT& rc) const;
-        LRESULT SendDlgItemMessage(int nIDDlgItem, UINT Msg, WPARAM wParam, LPARAM lParam) const;
-        LRESULT SendMessage(UINT uMsg, WPARAM wParam = 0L, LPARAM lParam = 0L) const;
-        LRESULT SendMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const;
-        BOOL  SendNotifyMessage(UINT Msg, WPARAM wParam, LPARAM lParam) const;
+        int   ReleaseDC(HDC dc) const;
+        BOOL  ScreenToClient(POINT& point) const;
+        BOOL  ScreenToClient(RECT& rect) const;
+        LRESULT SendDlgItemMessage(int dlgItemID, UINT msg, WPARAM wparam, LPARAM lparam) const;
+        LRESULT SendMessage(UINT msg, WPARAM wparam = 0, LPARAM lparam = 0) const;
+        LRESULT SendMessage(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam) const;
+        BOOL  SendNotifyMessage(UINT msg, WPARAM wparam, LPARAM lparam) const;
         CWnd  SetActiveWindow() const;
         CWnd  SetCapture() const;
-        ULONG_PTR SetClassLongPtr(int nIndex, LONG_PTR dwNewLong) const;
-        LONG_PTR SetDlgCtrlID(int idCtrl) const;
-        BOOL  SetDlgItemInt(int nIDDlgItem, UINT uValue, BOOL IsSigned) const;
-        BOOL  SetDlgItemText(int nIDDlgItem, LPCTSTR lpString) const;
-        void  SetExStyle(DWORD dwExStyle) const;
+        ULONG_PTR SetClassLongPtr(int index, LONG_PTR newLong) const;
+        LONG_PTR SetDlgCtrlID(int id) const;
+        BOOL  SetDlgItemInt(int dlgItemID, UINT value, BOOL isSigned) const;
+        BOOL  SetDlgItemText(int dlgItemID, LPCTSTR pString) const;
+        void  SetExStyle(DWORD exStyle) const;
         CWnd  SetFocus() const;
-        void  SetFont(HFONT hFont, BOOL Redraw = TRUE) const;
+        void  SetFont(HFONT font, BOOL redraw = TRUE) const;
         BOOL  SetForegroundWindow() const;
-        HICON SetIcon(HICON hIcon, BOOL IsBigIcon) const;
-        CWnd  SetParent(HWND hWndParent) const;
-        BOOL  SetRedraw(BOOL Redraw = TRUE) const;
-        int   SetScrollInfo(int fnBar, const SCROLLINFO& si, BOOL Redraw) const;
-        void  SetStyle(DWORD dwStyle) const;
-        UINT_PTR SetTimer(UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc) const;
-        LONG_PTR SetWindowLongPtr(int nIndex, LONG_PTR dwNewLong) const;
-        BOOL  SetWindowPos(HWND hWndInsertAfter, int x, int y, int cx, int cy, UINT uFlags) const;
-        BOOL  SetWindowPos(HWND hWndInsertAfter, const RECT& rc, UINT uFlags) const;
-        int   SetWindowRgn(CRgn& Rgn, BOOL Redraw = TRUE) const;
-        BOOL  SetWindowText(LPCTSTR lpString) const;
-        HRESULT SetWindowTheme(LPCWSTR pszSubAppName, LPCWSTR pszSubIdList) const;
-        BOOL  ShowWindow(int nCmdShow = SW_SHOWNORMAL) const;
+        HICON SetIcon(HICON icon, BOOL isBigIcon) const;
+        CWnd  SetParent(HWND parent) const;
+        BOOL  SetRedraw(BOOL redraw = TRUE) const;
+        int   SetScrollInfo(int barType, const SCROLLINFO& si, BOOL redraw) const;
+        void  SetStyle(DWORD style) const;
+        UINT_PTR SetTimer(UINT_PTR eventID, UINT elapse, TIMERPROC pTimerFunc) const;
+        LONG_PTR SetWindowLongPtr(int index, LONG_PTR newLong) const;
+        BOOL  SetWindowPos(HWND insertAfter, int x, int y, int cx, int cy, UINT flags) const;
+        BOOL  SetWindowPos(HWND insertAfter, const RECT& rect, UINT flags) const;
+        int   SetWindowRgn(CRgn& rgn, BOOL redraw = TRUE) const;
+        BOOL  SetWindowText(LPCTSTR pString) const;
+        HRESULT SetWindowTheme(LPCWSTR pSubAppName, LPCWSTR pSubIdList) const;
+        BOOL  ShowWindow(int showCmd = SW_SHOWNORMAL) const;
         BOOL  UpdateWindow() const;
-        BOOL  ValidateRect(const RECT& rc) const;
+        BOOL  ValidateRect(const RECT& rect) const;
         BOOL  ValidateRect() const;
-        BOOL  ValidateRgn(HRGN hRgn) const;
-        static CWnd WindowFromPoint(POINT pt);
+        BOOL  ValidateRgn(HRGN rgn) const;
+        static CWnd WindowFromPoint(POINT point);
 
   #ifndef _WIN32_WCE
         BOOL  CloseWindow() const;
-        int   DlgDirList(LPTSTR lpPathSpec, int nIDListBox, int nIDStaticPath, UINT uFileType) const;
-        int   DlgDirListComboBox(LPTSTR lpPathSpec, int nIDComboBox, int nIDStaticPath, UINT uFiletype) const;
-        BOOL  DlgDirSelectEx(LPTSTR lpString, int nCount, int nIDListBox) const;
-        BOOL  DlgDirSelectComboBoxEx(LPTSTR lpString, int nCount, int nIDComboBox) const;
-        BOOL  DrawAnimatedRects(int idAni, const RECT& rcFrom, const RECT& rcTo) const;
-        BOOL  DrawCaption(HDC hDC, const RECT& rc, UINT uFlags) const;
-        BOOL  EnableScrollBar(UINT uSBflags, UINT uArrows) const;
+        int   DlgDirList(LPTSTR pPathSpec, int listBoxID, int staticPathID, UINT fileType) const;
+        int   DlgDirListComboBox(LPTSTR pPathSpec, int comboBoxID, int staticPathID, UINT filetype) const;
+        BOOL  DlgDirSelectEx(LPTSTR pString, int count, int listBoxID) const;
+        BOOL  DlgDirSelectComboBoxEx(LPTSTR pString, int count, int comboBoxID) const;
+        BOOL  DrawAnimatedRects(int aniID, const RECT& from, const RECT& to) const;
+        BOOL  DrawCaption(HDC dc, const RECT& rect, UINT flags) const;
+        BOOL  EnableScrollBar(UINT flags, UINT arrows) const;
         CWnd  GetLastActivePopup() const;
         CMenu GetMenu() const;
-        int   GetScrollPos(int nBar) const;
-        BOOL  GetScrollRange(int nBar, int& MinPos, int& MaxPos) const;
-        CMenu GetSystemMenu(BOOL RevertToDefault) const;
+        int   GetScrollPos(int barType) const;
+        BOOL  GetScrollRange(int barType, int& minPos, int& maxPos) const;
+        CMenu GetSystemMenu(BOOL revertToDefault) const;
         CWnd  GetTopWindow() const;
-        BOOL  GetWindowPlacement(WINDOWPLACEMENT& pWndpl) const;
-        BOOL  HiliteMenuItem(HMENU hMenu, UINT uItemHilite, UINT uHilite) const;
+        BOOL  GetWindowPlacement(WINDOWPLACEMENT& wp) const;
+        BOOL  HiliteMenuItem(HMENU menu, UINT itemID, UINT hilite) const;
         BOOL  IsIconic() const;
         BOOL  IsZoomed() const;
         BOOL  LockWindowUpdate() const;
         BOOL  OpenIcon() const;
-        void  Print(HDC hDC, DWORD dwFlags) const;
-        BOOL  SetMenu(HMENU hMenu) const;
-        BOOL  ScrollWindow(int XAmount, int YAmount, const RECT& rcScroll, LPCRECT prcClip = 0) const;
-        BOOL  ScrollWindow(int XAmount, int YAmount, LPCRECT prcClip = 0) const;
-        int   ScrollWindowEx(int dx, int dy, LPCRECT lprcScroll, LPCRECT lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate, UINT flags) const;
-        int   SetScrollPos(int nBar, int nPos, BOOL Redraw) const;
-        BOOL  SetScrollRange(int nBar, int nMinPos, int nMaxPos, BOOL Redraw) const;
+        void  Print(HDC dc, DWORD flags) const;
+        BOOL  SetMenu(HMENU menu) const;
+        BOOL  ScrollWindow(int xAmount, int yAmount, const RECT& scrollRect, LPCRECT pClipRect = 0) const;
+        BOOL  ScrollWindow(int xAmount, int yAmount, LPCRECT pClipRect = 0) const;
+        int   ScrollWindowEx(int dx, int dy, LPCRECT pScrollRect, LPCRECT pClipRect, HRGN updateRgn, LPRECT updateRect, UINT flags) const;
+        int   SetScrollPos(int barType, int pos, BOOL redraw) const;
+        BOOL  SetScrollRange(int barType, int minPos, int maxPos, BOOL redraw) const;
         BOOL  SetWindowPlacement(const WINDOWPLACEMENT& wndpl) const;
-        BOOL  ShowOwnedPopups(BOOL Show) const;
-        BOOL  ShowScrollBar(int nBar, BOOL Show) const;
-        BOOL  ShowWindowAsync(int nCmdShow) const;
+        BOOL  ShowOwnedPopups(BOOL show) const;
+        BOOL  ShowScrollBar(int barType, BOOL show) const;
+        BOOL  ShowWindowAsync(int showCmd) const;
         BOOL  UnLockWindowUpdate() const;
-        CWnd  WindowFromDC(HDC hDC) const;
+        CWnd  WindowFromDC(HDC dc) const;
 
     #ifndef WIN32_LEAN_AND_MEAN
-        void  DragAcceptFiles(BOOL Accept) const;
+        void  DragAcceptFiles(BOOL accept) const;
     #endif
   #endif
 
@@ -288,45 +292,44 @@ namespace Win32xx
 
     protected:
         // Override these functions as required
-        virtual LRESULT FinalWindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+        virtual LRESULT FinalWindowProc(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual void OnAttach();
-        virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+        virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
         virtual void OnClose();
         virtual int  OnCreate(CREATESTRUCT& cs);
         virtual void OnDestroy();
         virtual void OnDraw(CDC& dc);
         virtual BOOL OnEraseBkgnd(CDC& dc);
         virtual void OnInitialUpdate();
-        virtual void OnMenuUpdate(UINT nID);
-        virtual LRESULT OnMessageReflect(UINT uMsg, WPARAM wParam, LPARAM lParam);
-        virtual LRESULT OnNotify(WPARAM wParam, LPARAM lParam);
-        virtual LRESULT OnNotifyReflect(WPARAM wParam, LPARAM lParam);
-        virtual LRESULT OnPaint(UINT uMsg, WPARAM wParam, LPARAM lParam);
+        virtual void OnMenuUpdate(UINT id);
+        virtual LRESULT OnMessageReflect(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam);
+        virtual LRESULT OnNotifyReflect(WPARAM wparam, LPARAM lparam);
+        virtual LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual void PreCreate(CREATESTRUCT& cs);
         virtual void PreRegisterClass(WNDCLASS& wc);
-        virtual BOOL PreTranslateMessage(MSG& Msg);
-        virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+        virtual BOOL PreTranslateMessage(MSG& msg);
+        virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
 
         // Not intended to be overridden
-        virtual LRESULT WndProcDefault(UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-        HWND m_hWnd;                    // handle to this object's window
+        virtual LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
     private:
         CWnd(const CWnd&);              // Disable copy construction
         CWnd& operator = (const CWnd&); // Disable assignment operator
-        CWnd(HWND hWnd);                // Private constructor used internally
+        CWnd(HWND wnd);                // Private constructor used internally
 
-        static LRESULT CALLBACK StaticWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+        static LRESULT CALLBACK StaticWindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
         void AddToMap();
         void Cleanup();
-        LRESULT MessageReflect(UINT uMsg, WPARAM wParam, LPARAM lParam);
+        LRESULT MessageReflect(UINT msg, WPARAM wparam, LPARAM lparam);
         BOOL RegisterClass(WNDCLASS& wc);
         BOOL RemoveFromMap();
-        void Subclass(HWND hWnd);
+        void Subclass(HWND wnd);
 
-        WNDPROC m_PrevWindowProc;
+        HWND m_wnd;                    // handle to this object's window
+        WNDPROC m_prevWindowProc;
 
     }; // class CWnd
 

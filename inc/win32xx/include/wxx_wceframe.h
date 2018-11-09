@@ -1,12 +1,12 @@
-// Win32++   Version 8.5
-// Release Date: 1st December 2017
+// Win32++   Version 8.6
+// Release Date: 2nd November 2018
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2017  David Nash
+// Copyright (c) 2005-2018  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -83,14 +83,14 @@ namespace Win32xx
     public:
         CCmdBar();
         virtual ~CCmdBar();
-        virtual BOOL AddAdornments(DWORD dwFlags) const;
-        virtual int  AddBitmap(int idBitmap, int iNumImages, int iImageWidth, int iImageHeight) const;
-        virtual BOOL AddButtons(int nButtons, TBBUTTON* pTBButton) const;
-        virtual HWND Create(HWND hwndParent);
+        virtual BOOL AddAdornments(DWORD flags) const;
+        virtual int  AddBitmap(int bitmapID, int imageCount, int imageWidth, int imageHeight) const;
+        virtual BOOL AddButtons(int buttonCount, TBBUTTON* pButtonInfo) const;
+        virtual HWND Create(HWND parent);
         virtual int  GetHeight() const;
-        virtual HWND InsertComboBox(int iWidth, UINT dwStyle, WORD idComboBox, WORD iButton) const;
+        virtual HWND InsertComboBox(int iwidth, UINT style, WORD comboBoxID, WORD button) const;
         virtual BOOL IsVisible() const;
-        virtual BOOL Show(BOOL fShow) const;
+        virtual BOOL Show(BOOL show) const;
 
     private:
 
@@ -108,21 +108,21 @@ namespace Win32xx
     public:
         CWceFrame();
         virtual ~CWceFrame();
-        virtual void AddToolBarButton(UINT nID);
+        virtual void AddToolBarButton(UINT id);
         CRect GetViewRect() const;
-        virtual CCmdBar& GetMenuBar() const { return m_MenuBar; }
-        virtual void OnActivate(UINT uMsg, WPARAM wParam, LPARAM lParam);
+        virtual CCmdBar& GetMenuBar() const { return m_menuBar; }
+        virtual void OnActivate(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual int  OnCreate(CREATESTRUCT& cs);
         virtual void PreCreate(CREATESTRUCT& cs);
         virtual void RecalcLayout();
         virtual void SetButtons(const std::vector<UINT> ToolBarData);
-        virtual LRESULT WndProcDefault(UINT uMsg, WPARAM wParam, LPARAM lParam);
+        virtual LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
     protected:
-        std::vector<UINT> m_ToolBarData;
+        std::vector<UINT> m_toolBarData;
 
     private:
-        mutable CCmdBar m_MenuBar;
+        mutable CCmdBar m_menuBar;
         CString m_strAppName;
 
 #ifdef SHELL_AYGSHELL
@@ -140,48 +140,43 @@ namespace Win32xx
     {
     }
 
-
     inline CCmdBar::~CCmdBar()
     {
         if (IsWindow())
             ::CommandBar_Destroy(*this);
     }
 
-
     // Adds a button, and optionally, Help and OK buttons, to the command bar.
-    inline BOOL CCmdBar::AddAdornments(DWORD dwFlags) const
+    inline BOOL CCmdBar::AddAdornments(DWORD flags) const
     {
         assert(IsWindow());
-        return CommandBar_AddAdornments(*this, dwFlags, 0);
+        return CommandBar_AddAdornments(*this, flags, 0);
     }
 
-
     // Adds one or more images to the list of button images available in the command bar.
-    inline int CCmdBar::AddBitmap(int idBitmap, int iNumImages, int iImageWidth, int iImageHeight) const
+    inline int CCmdBar::AddBitmap(int bitmapID, int imageCount, int imageWidth, int imageHeight) const
     {
         assert(IsWindow());
         HINSTANCE hInst = GetApp().GetInstanceHandle();
-        return  CommandBar_AddBitmap(*this, hInst, idBitmap, iNumImages, iImageWidth, iImageHeight);
+        return  CommandBar_AddBitmap(*this, hInst, bitmapID, imageCount, imageWidth, imageHeight);
     }
-
 
     // Adds one or more toolbar buttons to a command bar control.
-    inline BOOL CCmdBar::AddButtons(int nButtons, TBBUTTON* pTBButton) const
+    inline BOOL CCmdBar::AddButtons(int buttonCount, TBBUTTON* pButtonInfo) const
     {
         assert(IsWindow());
-        return CommandBar_AddButtons(*this, nButtons, pTBButton);
+        return CommandBar_AddButtons(*this, buttonCount, pButtonInfo);
     }
 
-
     // Creates the command bar control.
-    inline HWND CCmdBar::Create(HWND hParent)
+    inline HWND CCmdBar::Create(HWND parent)
     {
 #ifdef SHELL_AYGSHELL
         SHMENUBARINFO mbi;
 
-        memset(&mbi, 0, sizeof(SHMENUBARINFO));
-        mbi.cbSize     = sizeof(SHMENUBARINFO);
-        mbi.hwndParent = hParent;
+        memset(&mbi, 0, sizeof(mbi));
+        mbi.cbSize     = sizeof(mbi);
+        mbi.hwndParent = parent;
         mbi.nToolBarId = IDW_MAIN;
         mbi.hInstRes   = GetApp().GetInstanceHandle();
         mbi.nBmpId     = 0;
@@ -193,7 +188,7 @@ namespace Win32xx
         }
 
 #else
-        *this = CommandBar_Create(GetApp().GetInstanceHandle(), hParent, IDW_MENUBAR);
+        *this = CommandBar_Create(GetApp().GetInstanceHandle(), parent, IDW_MENUBAR);
         assert (*this);
 
         CommandBar_InsertMenubar(*this, GetApp().GetInstanceHandle(), IDW_MAIN, 0);
@@ -202,7 +197,6 @@ namespace Win32xx
         return *this;
     }
 
-
     // Retrieves the height of the command bar in pixels.
     inline int CCmdBar::GetHeight() const
     {
@@ -210,14 +204,12 @@ namespace Win32xx
         return CommandBar_Height(*this);
     }
 
-
     // Inserts a combo box into the command bar.
-    inline HWND CCmdBar::InsertComboBox(int iWidth, UINT dwStyle, WORD idComboBox, WORD iButton) const
+    inline HWND CCmdBar::InsertComboBox(int width, UINT style, WORD comboBoxID, WORD button) const
     {
-        HINSTANCE hInst = GetApp().GetInstanceHandle();
-        return CommandBar_InsertComboBox(*this, hInst, iWidth, dwStyle, idComboBox, iButton);
+        HINSTANCE inst = GetApp().GetInstanceHandle();
+        return CommandBar_InsertComboBox(*this, inst, width, style, comboBoxID, button);
     }
-
 
     // Retrieves the visibility state of the command bar.
     inline BOOL CCmdBar::IsVisible() const
@@ -226,12 +218,11 @@ namespace Win32xx
         return ::CommandBar_IsVisible(*this);
     }
 
-
     // Shows or hides the command bar.
-    inline BOOL CCmdBar::Show(BOOL fShow) const
+    inline BOOL CCmdBar::Show(BOOL show) const
     {
         assert(IsWindow());
-        return ::CommandBar_Show(*this, fShow);
+        return ::CommandBar_Show(*this, show);
     }
 
 
@@ -248,19 +239,16 @@ namespace Win32xx
 #endif
     }
 
-
     inline CWceFrame::~CWceFrame()
     {
     }
 
-
     // Adds Resource IDs to toolbar buttons.
     // A resource ID of 0 is a separator.
-    inline void CWceFrame::AddToolBarButton(UINT nID)
+    inline void CWceFrame::AddToolBarButton(UINT id)
     {
-        m_ToolBarData.push_back(nID);
+        m_toolBarData.push_back(id);
     }
-
 
     // Returns a RECT structure which contains the dimensions of the client area of the frame.
     inline CRect CWceFrame::GetViewRect() const
@@ -276,7 +264,6 @@ namespace Win32xx
         return r;
     }
 
-
     // Called during window creation. Override this function to perform tasks such as
     // creating child windows.
     inline int CWceFrame::OnCreate(CREATESTRUCT& cs)
@@ -285,12 +272,12 @@ namespace Win32xx
         GetMenuBar().Create(*this);
 
         // Set the keyboard accelerators
-        HACCEL hAccel = LoadAccelerators(GetApp().GetResourceHandle(), MAKEINTRESOURCE(IDW_MAIN));
-        GetApp().SetAccelerators(hAccel, *this);
+        HACCEL accel = LoadAccelerators(GetApp().GetResourceHandle(), MAKEINTRESOURCE(IDW_MAIN));
+        GetApp().SetAccelerators(accel, *this);
 
         // Add the toolbar buttons
-        if (m_ToolBarData.size() > 0)
-            SetButtons(m_ToolBarData);
+        if (m_toolBarData.size() > 0)
+            SetButtons(m_toolBarData);
 
 #ifndef SHELL_AYGSHELL
         // Add close button
@@ -300,23 +287,21 @@ namespace Win32xx
         return 0;
     }
 
-
     // Called when the frame is activated.
-    inline void CWceFrame::OnActivate(UINT, WPARAM wParam, LPARAM lParam)
+    inline void CWceFrame::OnActivate(UINT, WPARAM wparam, LPARAM lparam)
     {
 #ifdef SHELL_AYGSHELL
         // Notify shell of our activate message
-        SHHandleWMActivate(*this, wParam, lParam, &m_sai, FALSE);
+        SHHandleWMActivate(*this, wparam, lparam, &m_sai, FALSE);
 
-        UINT fActive = LOWORD(wParam);
-        if ((fActive == WA_ACTIVE) || (fActive == WA_CLICKACTIVE))
+        UINT active = LOWORD(wparam);
+        if ((active == WA_ACTIVE) || (active == WA_CLICKACTIVE))
         {
             // Reposition the window when it's activated
             RecalcLayout();
         }
 #endif
     }
-
 
     // Called before the window is created. Override this function to set the window creation parameters.
     inline void CWceFrame::PreCreate(CREATESTRUCT& cs)
@@ -332,7 +317,6 @@ namespace Win32xx
 
         cs.lpszClass = m_strAppName;
     }
-
 
     // Repositions the client area of the frame.
     inline void CWceFrame::RecalcLayout()
@@ -354,36 +338,35 @@ namespace Win32xx
         UpdateWindow();
     }
 
-
     // Define the resource IDs for the toolbar like this in the Frame's constructor
     // m_ToolBarData.push_back ( 0 );               // Separator
     // m_ToolBarData.clear();
     // m_ToolBarData.push_back ( IDM_FILE_NEW   );
     // m_ToolBarData.push_back ( IDM_FILE_OPEN  );
     // m_ToolBarData.push_back ( IDM_FILE_SAVE  );
-    inline void CWceFrame::SetButtons(const std::vector<UINT> ToolBarData)
+    inline void CWceFrame::SetButtons(const std::vector<UINT> toolBarData)
     {
-        int iImages = 0;
-        int iNumButtons = static_cast<int>(ToolBarData.size());
+        int images = 0;
+        int buttonCount = static_cast<int>(toolBarData.size());
 
-        if (iNumButtons > 0)
+        if (buttonCount > 0)
         {
             // Create the TBBUTTON array for each button
-            std::vector<TBBUTTON> vTBB(iNumButtons);
+            std::vector<TBBUTTON> vTBB(buttonCount);
             TBBUTTON* tbbArray = &vTBB.front();
 
-            for (int j = 0 ; j < iNumButtons; j++)
+            for (int j = 0 ; j < buttonCount; j++)
             {
                 ZeroMemory(&tbbArray[j], sizeof(TBBUTTON));
 
-                if (ToolBarData[j] == 0)
+                if (toolBarData[j] == 0)
                 {
                     tbbArray[j].fsStyle = TBSTYLE_SEP;
                 }
                 else
                 {
-                    tbbArray[j].iBitmap = iImages++;
-                    tbbArray[j].idCommand = ToolBarData[j];
+                    tbbArray[j].iBitmap = images++;
+                    tbbArray[j].idCommand = toolBarData[j];
                     tbbArray[j].fsState = TBSTATE_ENABLED;
                     tbbArray[j].fsStyle = TBSTYLE_BUTTON;
                     tbbArray[j].iString = -1;
@@ -391,35 +374,34 @@ namespace Win32xx
             }
 
             // Add the bitmap
-            GetMenuBar().AddBitmap(IDW_MAIN, iImages , 16, 16);
+            GetMenuBar().AddBitmap(IDW_MAIN, images , 16, 16);
 
             // Add the buttons
-            GetMenuBar().AddButtons(iNumButtons, tbbArray);
+            GetMenuBar().AddButtons(buttonCount, tbbArray);
         }
     }
 
-
     // Provides default processing of the wceframe's messages.
-    inline LRESULT CWceFrame::WndProcDefault(UINT uMsg, WPARAM wParam, LPARAM lParam)
+    inline LRESULT CWceFrame::WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam)
     {
-        switch (uMsg)
+        switch (msg)
         {
             case WM_DESTROY:
                 PostQuitMessage(0);
                 break;
             case WM_ACTIVATE:
-                OnActivate(uMsg, wParam, lParam);
+                OnActivate(msg, wparam, lparam);
                 break;
 
 #ifdef SHELL_AYGSHELL
 
             case WM_SETTINGCHANGE:
-                SHHandleWMSettingChange(*this, wParam, lParam, &m_sai);
+                SHHandleWMSettingChange(*this, wparam, lparam, &m_sai);
                 break;
 #endif
 
         }
-        return CWnd::WndProcDefault(uMsg, wParam, lParam);
+        return CWnd::WndProcDefault(msg, wparam, lparam);
     }
 
 

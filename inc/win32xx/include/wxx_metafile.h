@@ -1,12 +1,12 @@
-// Win32++   Version 8.5
-// Release Date: 1st December 2017
+// Win32++   Version 8.6
+// Release Date: 2nd November 2018
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2017  David Nash
+// Copyright (c) 2005-2018  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -70,24 +70,24 @@ namespace Win32xx
     {
     public:
         CMetaFile();
-        CMetaFile(HMETAFILE hMetaFile);
+        CMetaFile(HMETAFILE metaFile);
         CMetaFile(const CMetaFile& rhs);
         ~CMetaFile();
         CMetaFile& operator = (const CMetaFile& rhs);
-        void operator = (const HMETAFILE hMetaFile);
-        operator HMETAFILE() { return m_pData->hMetaFile; }
+        void operator = (const HMETAFILE metaFile);
+        operator HMETAFILE() { return m_pData->metaFile; }
 
     private:
         struct CMetaFile_Data   // A structure that contains the data members for CMetaFile
         {
             // Constructor
-            CMetaFile_Data() : hMetaFile(0), Count(1L)  {}
+            CMetaFile_Data() : metaFile(0), count(1L)  {}
 
-            HMETAFILE hMetaFile;
-            long    Count;
+            HMETAFILE metaFile;
+            long    count;
         };
 
-        void Attach(HMETAFILE hMetaFile);
+        void Attach(HMETAFILE metaFile);
         void Release();
 
         CMetaFile_Data* m_pData;
@@ -105,24 +105,24 @@ namespace Win32xx
     {
     public:
         CEnhMetaFile();
-        CEnhMetaFile(HENHMETAFILE hEnhMetaFile);
+        CEnhMetaFile(HENHMETAFILE enhMetaFile);
         CEnhMetaFile(const CEnhMetaFile& rhs);
         ~CEnhMetaFile();
         CEnhMetaFile& operator = (const CEnhMetaFile& rhs);
-        void operator = (const HENHMETAFILE hEnhMetaFile);
-        operator HENHMETAFILE() { return m_pData->hEnhMetaFile; }
+        void operator = (const HENHMETAFILE enhMetaFile);
+        operator HENHMETAFILE() { return m_pData->enhMetaFile; }
 
     private:
         struct CEnhMetaFile_Data    // A structure that contains the data members for CEnhMetaFile
         {
             // Constructor
-            CEnhMetaFile_Data() : hEnhMetaFile(0), Count(1L) {}
+            CEnhMetaFile_Data() : enhMetaFile(0), count(1L) {}
 
-            HENHMETAFILE hEnhMetaFile;
-            long    Count;
+            HENHMETAFILE enhMetaFile;
+            long    count;
         };
 
-        void Attach(HENHMETAFILE hEnhMetaFile);
+        void Attach(HENHMETAFILE enhMetaFile);
         void Release();
 
         CEnhMetaFile_Data* m_pData;
@@ -146,32 +146,28 @@ namespace Win32xx
         m_pData = new CMetaFile_Data;
     }
 
-
-    inline CMetaFile::CMetaFile(HMETAFILE hMetaFile)
+    inline CMetaFile::CMetaFile(HMETAFILE metaFile)
     {
         m_pData = new CMetaFile_Data;
-        m_pData->hMetaFile = hMetaFile;
+        m_pData->metaFile = metaFile;
     }
-
 
     inline CMetaFile::CMetaFile(const CMetaFile& rhs)
     {
         m_pData = rhs.m_pData;
-        InterlockedIncrement(&m_pData->Count);
+        InterlockedIncrement(&m_pData->count);
     }
-
 
     inline CMetaFile::~CMetaFile()
     {
         Release();
     }
 
-
     inline CMetaFile& CMetaFile::operator = (const CMetaFile& rhs)
     {
         if (this != &rhs)
         {
-            InterlockedIncrement(&rhs.m_pData->Count);
+            InterlockedIncrement(&rhs.m_pData->count);
             Release();
             m_pData = rhs.m_pData;
         }
@@ -179,42 +175,39 @@ namespace Win32xx
         return *this;
     }
 
-
-    inline void CMetaFile::operator = (const HMETAFILE hMetaFile)
+    inline void CMetaFile::operator = (const HMETAFILE metaFile)
     {
-        Attach(hMetaFile);
+        Attach(metaFile);
     }
-
 
     // Attaches an existing HMETAFILE to this CMetaFile
     // The HMETAFILE can be NULL
-    inline void CMetaFile::Attach(HMETAFILE hMetaFile)
+    inline void CMetaFile::Attach(HMETAFILE metaFile)
     {
         assert(m_pData);
 
-        if (hMetaFile != m_pData->hMetaFile)
+        if (metaFile != m_pData->metaFile)
         {
             // Release any existing enhanced metafile
-            if (m_pData->hMetaFile != 0)
+            if (m_pData->metaFile != 0)
             {
                 Release();
                 m_pData = new CMetaFile_Data;
             }
 
-            m_pData->hMetaFile = hMetaFile;
+            m_pData->metaFile = metaFile;
         }
     }
-
 
     inline void CMetaFile::Release()
     {
         assert(m_pData);
 
-        if (InterlockedDecrement(&m_pData->Count) == 0)
+        if (InterlockedDecrement(&m_pData->count) == 0)
         {
-            if (m_pData->hMetaFile != NULL)
+            if (m_pData->metaFile != NULL)
             {
-                ::DeleteMetaFile(m_pData->hMetaFile);
+                ::DeleteMetaFile(m_pData->metaFile);
             }
 
             delete m_pData;
@@ -231,32 +224,28 @@ namespace Win32xx
         m_pData = new CEnhMetaFile_Data;
     }
 
-
-    inline CEnhMetaFile::CEnhMetaFile(HENHMETAFILE hEnhMetaFile)
+    inline CEnhMetaFile::CEnhMetaFile(HENHMETAFILE enhMetaFile)
     {
         m_pData = new CEnhMetaFile_Data;
-        m_pData->hEnhMetaFile = hEnhMetaFile;
+        m_pData->enhMetaFile = enhMetaFile;
     }
-
 
     inline CEnhMetaFile::CEnhMetaFile(const CEnhMetaFile& rhs)
     {
         m_pData = rhs.m_pData;
-        InterlockedIncrement(&m_pData->Count);
+        InterlockedIncrement(&m_pData->count);
     }
-
 
     inline CEnhMetaFile::~CEnhMetaFile()
     {
         Release();
     }
 
-
     inline CEnhMetaFile& CEnhMetaFile::operator = (const CEnhMetaFile& rhs)
     {
         if (this != &rhs)
         {
-            InterlockedIncrement(&rhs.m_pData->Count);
+            InterlockedIncrement(&rhs.m_pData->count);
             Release();
             m_pData = rhs.m_pData;
         }
@@ -264,42 +253,39 @@ namespace Win32xx
         return *this;
     }
 
-
-    inline void CEnhMetaFile::operator = (const HENHMETAFILE hEnhMetaFile)
+    inline void CEnhMetaFile::operator = (const HENHMETAFILE enhMetaFile)
     {
-        Attach(hEnhMetaFile);
+        Attach(enhMetaFile);
     }
-
 
     // Attaches an existing HENHMETAFILE to this CEnhMetaFile
     // The HENHMETAFILE can be NULL
-    inline void CEnhMetaFile::Attach(HENHMETAFILE hEnhMetaFile)
+    inline void CEnhMetaFile::Attach(HENHMETAFILE enhMetaFile)
     {
         assert(m_pData);
 
-        if (hEnhMetaFile != m_pData->hEnhMetaFile)
+        if (enhMetaFile != m_pData->enhMetaFile)
         {
             // Release any existing enhanced metafile
-            if (m_pData->hEnhMetaFile != 0)
+            if (m_pData->enhMetaFile != 0)
             {
                 Release();
                 m_pData = new CEnhMetaFile_Data;
             }
 
-            m_pData->hEnhMetaFile = hEnhMetaFile;
+            m_pData->enhMetaFile = enhMetaFile;
         }
     }
-
 
     inline void CEnhMetaFile::Release()
     {
         assert(m_pData);
 
-        if (InterlockedDecrement(&m_pData->Count) == 0)
+        if (InterlockedDecrement(&m_pData->count) == 0)
         {
-            if (m_pData->hEnhMetaFile != NULL)
+            if (m_pData->enhMetaFile != NULL)
             {
-                ::DeleteEnhMetaFile(m_pData->hEnhMetaFile);
+                ::DeleteEnhMetaFile(m_pData->enhMetaFile);
             }
 
             delete m_pData;

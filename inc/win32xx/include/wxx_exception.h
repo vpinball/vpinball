@@ -1,12 +1,12 @@
-// Win32++   Version 8.5
-// Release Date: 1st December 2017
+// Win32++   Version 8.6
+// Release Date: 2nd November 2018
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2017  David Nash
+// Copyright (c) 2005-2018  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -46,8 +46,8 @@
 //  try
 //  {
 //      ...
-//      if (Failed)
-//          throw CUserException(nID));
+//      if (failed)
+//          throw CUserException(id));
 //      ...
 //  }
 //  catch(const CException &e) // catch all exceptions inherited from CException
@@ -62,7 +62,7 @@
 //  try
 //  {
 //      ...
-//      if (Failed)
+//      if (failed)
 //          throw CUserException(_T("Some Text"));
 //      ...
 //  }
@@ -87,8 +87,8 @@ namespace Win32xx
     class CException : public std::exception
     {
     public:
-        CException(int nMessageID);
-        CException(LPCTSTR pszText = NULL, int nMessageID = 0);
+        CException(int messageID);
+        CException(LPCTSTR pText = NULL, int messageID = 0);
         virtual ~CException() throw();
 
         DWORD GetError() const throw();
@@ -98,10 +98,10 @@ namespace Win32xx
         virtual const char* what() const throw() = 0; // pure virtual function
 
     private:
-        TCHAR m_szText[MAX_STRING_SIZE];
-        TCHAR m_szErrorString[MAX_STRING_SIZE];
-        DWORD  m_nMessageID;
-        DWORD  m_Error;
+        TCHAR m_text[MAX_STRING_SIZE];
+        TCHAR m_errorString[MAX_STRING_SIZE];
+        DWORD m_messageID;
+        DWORD m_error;
     };
 
 
@@ -114,8 +114,8 @@ namespace Win32xx
     class CFileException : public CException
     {
     public:
-        CFileException(LPCTSTR szFilePath, int nMessageID);
-        CFileException(LPCTSTR szFilePath, LPCTSTR pszText= NULL, int nMessageID = 0);
+        CFileException(LPCTSTR pFilePath, int messageID);
+        CFileException(LPCTSTR pFilePath, LPCTSTR pText= NULL, int messageID = 0);
         virtual ~CFileException() throw();
 
         LPCTSTR GetFilePath() const throw();
@@ -123,7 +123,7 @@ namespace Win32xx
         virtual const char* what () const throw();
 
     private:
-        TCHAR m_szFilePath[MAX_STRING_SIZE];
+        TCHAR m_filePath[MAX_STRING_SIZE];
     };
 
 
@@ -136,8 +136,8 @@ namespace Win32xx
     class CNotSupportedException : public CException
     {
     public:
-        CNotSupportedException(int nMessageID);
-        CNotSupportedException(LPCTSTR pszText = NULL, int nMessageID = 0);
+        CNotSupportedException(int messageID);
+        CNotSupportedException(LPCTSTR pText = NULL, int messageID = 0);
         virtual ~CNotSupportedException() throw();
         virtual const char* what() const throw();
     };
@@ -152,8 +152,8 @@ namespace Win32xx
     class CResourceException : public CException
     {
     public:
-        CResourceException(int nMessageID);
-        CResourceException(LPCTSTR pszText = NULL, int nMessageID = 0);
+        CResourceException(int messageID);
+        CResourceException(LPCTSTR pText = NULL, int messageID = 0);
         virtual ~CResourceException() throw();
         virtual const char* what() const throw();
     };
@@ -171,8 +171,8 @@ namespace Win32xx
     class CUserException : public CException
     {
     public:
-        CUserException(int nMessageID);
-        CUserException(LPCTSTR pszText = NULL, int nMessageID = 0);
+        CUserException(int messageID);
+        CUserException(LPCTSTR pText = NULL, int messageID = 0);
         virtual ~CUserException() throw();
         virtual const char* what() const throw();
     };
@@ -187,8 +187,8 @@ namespace Win32xx
     class CWinException : public CException
     {
     public:
-        CWinException(int nMessageID);
-        CWinException(LPCTSTR pszText= NULL, int nMessageID = 0);
+        CWinException(int messageID);
+        CWinException(LPCTSTR pText= NULL, int messageID = 0);
         virtual ~CWinException() throw();
         virtual const char* what () const throw();
     };
@@ -199,67 +199,62 @@ namespace Win32xx
     //
 
     // CException constructor
-    inline CException::CException(int nMessageID)
-            : m_nMessageID(nMessageID), m_Error(::GetLastError())
+    inline CException::CException(int messageID)
+            : m_messageID(messageID), m_error(::GetLastError())
     {
-        memset(m_szText, 0, MAX_STRING_SIZE * sizeof(TCHAR));
-        memset(m_szErrorString, 0, MAX_STRING_SIZE * sizeof(TCHAR));
+        memset(m_text, 0, MAX_STRING_SIZE * sizeof(TCHAR));
+        memset(m_errorString, 0, MAX_STRING_SIZE * sizeof(TCHAR));
 
 
-        // Store error information in m_szErrorString
-        DWORD dwFlags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
-        ::FormatMessage(dwFlags, NULL, m_Error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), m_szErrorString, MAX_STRING_SIZE-1, NULL);
+        // Store error information in m_errorString
+        DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
+        ::FormatMessage(flags, NULL, m_error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), m_errorString, MAX_STRING_SIZE-1, NULL);
     }
 
 
     // CException constructor
-    inline CException::CException(LPCTSTR pszText /*= NULL*/, int nMessageID /*= 0*/)
-            : m_nMessageID(nMessageID), m_Error(::GetLastError())
+    inline CException::CException(LPCTSTR pText /*= NULL*/, int messageID /*= 0*/)
+            : m_messageID(messageID), m_error(::GetLastError())
     {
-        memset(m_szText, 0, MAX_STRING_SIZE * sizeof(TCHAR));
-        memset(m_szErrorString, 0, MAX_STRING_SIZE * sizeof(TCHAR));
+        memset(m_text, 0, MAX_STRING_SIZE * sizeof(TCHAR));
+        memset(m_errorString, 0, MAX_STRING_SIZE * sizeof(TCHAR));
 
-        if (pszText)
-            lstrcpyn(m_szText, pszText, MAX_STRING_SIZE-1);
+        if (pText)
+            StrCopy(m_text, pText, MAX_STRING_SIZE);
 
-        // Store error information in m_szErrorString
-        DWORD dwFlags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
-        ::FormatMessage(dwFlags, NULL, m_Error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), m_szErrorString, MAX_STRING_SIZE-1, NULL);
+        // Store error information in m_errorString
+        DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
+        ::FormatMessage(flags, NULL, m_error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), m_errorString, MAX_STRING_SIZE-1, NULL);
     }
-
 
     // CException destructor
     inline CException::~CException() throw()
     {
     }
 
-
     // Returns the error reported by GetLastError
     inline DWORD CException::GetError() const throw()
     {
-        return m_Error;
+        return m_error;
     }
-
 
     // Retrieves the error string from GetLastError.
     inline LPCTSTR CException::GetErrorString() const throw()
     {
-        return m_szErrorString;
+        return m_errorString;
     }
-
 
     // Retrieves the message ID specified when the exception is thrown.
     // This could be a resource ID for a string in the resource script (resource.rc).
     inline int CException::GetMessageID() const throw()
     {
-        return m_nMessageID;
+        return m_messageID;
     }
-
 
     // Retrieves the string specified when the exception is thrown.
     inline LPCTSTR CException::GetText() const throw()
     {
-        return m_szText;
+        return m_text;
     }
 
 
@@ -268,81 +263,76 @@ namespace Win32xx
     //
 
     // CFileException constructor
-    inline CFileException::CFileException(LPCTSTR szFilePath, int nMessageID)
-        : CException(nMessageID)
+    inline CFileException::CFileException(LPCTSTR pFilePath, int messageID)
+        : CException(messageID)
     {
         // Display some text in the debugger
         ::OutputDebugString(_T("*** CFileException thrown ***\n"));
 
-        memset(m_szFilePath, 0, MAX_STRING_SIZE * sizeof(TCHAR));
+        memset(m_filePath, 0, MAX_STRING_SIZE * sizeof(TCHAR));
 
-        if (szFilePath)
+        if (pFilePath)
         {
-            lstrcpyn(m_szFilePath, szFilePath, MAX_STRING_SIZE-1);
+            StrCopy(m_filePath, pFilePath, MAX_STRING_SIZE);
             ::OutputDebugString(_T("File name: "));
-            ::OutputDebugString(szFilePath);
+            ::OutputDebugString(pFilePath);
             ::OutputDebugString(_T("\n"));
         }
 
         if (GetError() != 0)
             ::OutputDebugString(GetErrorString());
     }
-
 
     // CFileException constructor
-    inline CFileException::CFileException(LPCTSTR szFilePath, LPCTSTR pszText /*= NULL*/, int nMessageID /*= 0*/)
-        : CException(pszText, nMessageID)
+    inline CFileException::CFileException(LPCTSTR pFilePath, LPCTSTR pText /*= NULL*/, int messageID /*= 0*/)
+        : CException(pText, messageID)
     {
         // Display some text in the debugger
         ::OutputDebugString(_T("*** CFileException thrown ***\n"));
 
-        memset(m_szFilePath, 0, MAX_STRING_SIZE * sizeof(TCHAR));
+        memset(m_filePath, 0, MAX_STRING_SIZE * sizeof(TCHAR));
 
-        if (szFilePath)
+        if (pFilePath)
         {
-            lstrcpyn(m_szFilePath, szFilePath, MAX_STRING_SIZE-1);
+            StrCopy(m_filePath, pFilePath, MAX_STRING_SIZE);
             ::OutputDebugString(_T("File name: "));
-            ::OutputDebugString(szFilePath);
+            ::OutputDebugString(pFilePath);
             ::OutputDebugString(_T("\n"));
         }
 
-        if (pszText)
+        if (pText)
         {
-            ::OutputDebugString(pszText);
+            ::OutputDebugString(pText);
             ::OutputDebugString(_T("\n"));
         }
 
         if (GetError() != 0)
             ::OutputDebugString(GetErrorString());
     }
-
 
     // CFileException destructor
     inline CFileException::~CFileException() throw()
     {
     }
 
-
     // Returns the filename and path specified when the exception was thrown
     inline LPCTSTR CFileException::GetFilePath() const throw()
     {
-        return m_szFilePath;
+        return m_filePath;
     }
-
 
     // Returns the filename excluding the path.
     inline LPCTSTR CFileException::GetFileName() const throw()
     {
         // Get the index of the first character after the last '\'
-        int index = lstrlen(m_szFilePath);
-        while ( index > 0  &&  m_szFilePath[index-1] != _T('\\') )
+        int index = lstrlen(m_filePath);
+        while ( index > 0  &&  m_filePath[index-1] != _T('\\') )
         {
             --index;
         }
 
-        return m_szFilePath + index;    // pointer arithmetic
+        return m_filePath + index;    // pointer arithmetic
     }
-
 
     // Returns the exception type as a char string. Use AtoT to convert this to TCHAR
     inline const char* CFileException::what() const throw()
@@ -356,8 +346,8 @@ namespace Win32xx
     //
 
     // CNotSupportedException constructor
-    inline CNotSupportedException::CNotSupportedException(int nMessageID)
-        : CException(nMessageID)
+    inline CNotSupportedException::CNotSupportedException(int messageID)
+        : CException(messageID)
     {
         // Display some text in the debugger
         ::OutputDebugString(_T("*** CNotSupportedException thrown ***\n"));
@@ -366,17 +356,16 @@ namespace Win32xx
             ::OutputDebugString(GetErrorString());
     }
 
-
     // CNotSupportedException constructor
-    inline CNotSupportedException::CNotSupportedException(LPCTSTR pszText /*= NULL*/, int nMessageID /*= 0*/)
-        : CException(pszText, nMessageID)
+    inline CNotSupportedException::CNotSupportedException(LPCTSTR pText /*= NULL*/, int messageID /*= 0*/)
+        : CException(pText, messageID)
     {
         // Display some text in the debugger
         ::OutputDebugString(_T("*** CNotSupportedException thrown ***\n"));
 
-        if (pszText)
+        if (pText)
         {
-            ::OutputDebugString(pszText);
+            ::OutputDebugString(pText);
             ::OutputDebugString(_T("\n"));
         }
 
@@ -384,14 +373,12 @@ namespace Win32xx
             ::OutputDebugString(GetErrorString());
     }
 
-
     // CNotSupportedException destructor
     inline CNotSupportedException::~CNotSupportedException() throw()
     {
         if (GetError() != 0)
             ::OutputDebugString(GetErrorString());
     }
-
 
     // Returns the exception type as a char string. Use AtoT to convert this to TCHAR
     inline const char* CNotSupportedException::what() const throw()
@@ -405,8 +392,8 @@ namespace Win32xx
     //
 
     // CResourceException constructor
-    inline CResourceException::CResourceException(int nMessageID)
-        : CException(nMessageID)
+    inline CResourceException::CResourceException(int messageID)
+        : CException(messageID)
     {
         // Display some text in the debugger
         ::OutputDebugString(_T("*** CResourceException thrown ***\n"));
@@ -415,17 +402,16 @@ namespace Win32xx
             ::OutputDebugString(GetErrorString());
     }
 
-
     // CResourceException constructor
-    inline CResourceException::CResourceException(LPCTSTR pszText /*= NULL*/, int nMessageID /*= 0*/)
-        : CException(pszText, nMessageID)
+    inline CResourceException::CResourceException(LPCTSTR pText /*= NULL*/, int messageID /*= 0*/)
+        : CException(pText, messageID)
     {
         // Display some text in the debugger
         ::OutputDebugString(_T("*** CResourceException thrown ***\n"));
 
-        if (pszText)
+        if (pText)
         {
-            ::OutputDebugString(pszText);
+            ::OutputDebugString(pText);
             ::OutputDebugString(_T("\n"));
         }
 
@@ -433,12 +419,10 @@ namespace Win32xx
             ::OutputDebugString(GetErrorString());
     }
 
-
     // CResourceException destructor
     inline CResourceException::~CResourceException() throw()
     {
     }
-
 
     // Returns the exception type as a char string. Use AtoT to convert this to TCHAR
     inline const char* CResourceException::what() const throw()
@@ -452,8 +436,8 @@ namespace Win32xx
     //
 
     // CUserException constructor
-    inline CUserException::CUserException(int nMessageID)
-            : CException(nMessageID)
+    inline CUserException::CUserException(int messageID)
+            : CException(messageID)
     {
         // Display some text in the debugger
         ::OutputDebugString(_T("*** CUserException thrown ***\n"));
@@ -462,17 +446,16 @@ namespace Win32xx
             ::OutputDebugString(GetErrorString());
     }
 
-
     // CUserException constructor
-    inline CUserException::CUserException(LPCTSTR pszText /*= NULL*/, int nMessageID /*= 0*/)
-            : CException(pszText, nMessageID)
+    inline CUserException::CUserException(LPCTSTR pText /*= NULL*/, int messageID /*= 0*/)
+            : CException(pText, messageID)
     {
         // Display some text in the debugger
         ::OutputDebugString(_T("*** CUserException thrown ***\n"));
 
-        if (pszText)
+        if (pText)
         {
-            ::OutputDebugString(pszText);
+            ::OutputDebugString(pText);
             ::OutputDebugString(_T("\n"));
         }
 
@@ -480,12 +463,10 @@ namespace Win32xx
             ::OutputDebugString(GetErrorString());
     }
 
-
     // CUserException destructor
     inline CUserException::~CUserException() throw()
     {
     }
-
 
     // Returns the exception type as a char string. Use AtoT to convert this to TCHAR
     inline const char* CUserException::what() const throw()
@@ -499,8 +480,8 @@ namespace Win32xx
     //
 
     // CWinException constructor
-    inline CWinException::CWinException(int nMessageID)
-        : CException(nMessageID)
+    inline CWinException::CWinException(int messageID)
+        : CException(messageID)
     {
         // Display some text in the debugger
         ::OutputDebugString(_T("*** CWinException thrown ***\n"));
@@ -509,16 +490,15 @@ namespace Win32xx
             ::OutputDebugString(GetErrorString());
     }
 
-
     // CWinException constructor
-    inline CWinException::CWinException(LPCTSTR pszText, int nMessageID)
-        : CException(pszText, nMessageID)
+    inline CWinException::CWinException(LPCTSTR pText, int messageID)
+        : CException(pText, messageID)
     {
         // Display some text in the debugger
         ::OutputDebugString(_T("*** CWinException thrown ***\n"));
-        if (pszText)
+        if (pText)
         {
-            ::OutputDebugString(pszText);
+            ::OutputDebugString(pText);
             ::OutputDebugString(_T("\n"));
         }
 
@@ -526,12 +506,10 @@ namespace Win32xx
             ::OutputDebugString(GetErrorString());
     }
 
-
     // CWinException destructor
     inline CWinException::~CWinException() throw()
     {
     }
-
 
     // Returns the exception type as a char string. Use AtoT to convert this to TCHAR
     inline const char * CWinException::what() const throw()
