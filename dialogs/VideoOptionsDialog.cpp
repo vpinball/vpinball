@@ -658,7 +658,7 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                       }
                       else {
                           memset(&szTx,'\x0', sizeof(szTx));
-                          strcpy(szT, szTx);
+                          strcpy_s(szT, szTx);
                       }
 
                       SendMessage(hwndList, LB_INSERTSTRING, cnt - 1, (LPARAM)szT);

@@ -96,6 +96,7 @@ public:
          {
             currentnode -= jumpnode;
          }
+
          jumpnode >>= 1;
       }
 

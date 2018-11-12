@@ -29,7 +29,6 @@
 #define DISPID_ROTRA1                   12
 #define IDC_DBG_LIGHT_INTENSITY         12
 #define DISPID_ROTRA2                   13
-#define IDC_DISPLAY_TEXTURE_CHECKBOX    38
 #define DISPID_TOPCOLOR                 14
 #define DISPID_ROTRA3                   14
 #define IDC_COLOR                       15
@@ -53,6 +52,7 @@
 #define IDC_ORIENTATION_EDIT            25
 #define IDC_RINGSPEED_EDIT              26
 #define IDC_RINGDROPOFFSET_EDIT         27
+#define IDC_DISPLAY_TEXTURE_CHECKBOX    38
 #define IDS_PROJNAME                    100
 #define IDR_VPINBALL                    100
 #define IDR_SURFACE                     101
@@ -733,6 +733,7 @@
 #define IDC_BALLDECALMODE               497
 #define IDC_DEFAULTS_LOW                498
 #define IDC_DEFAULTS_HIGH               499
+#define IDC_LEGACY_NUDGE_STRENGTH       500
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503

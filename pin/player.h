@@ -378,6 +378,7 @@ public:
 
    // legacy/VP9 style keyboard nudging
    bool m_legacyNudge;
+   float m_legacyNudgeStrength;
    float m_legacyNudgeBackX,m_legacyNudgeBackY;
    int m_legacyNudgeTime;
 
@@ -493,6 +494,7 @@ public:
    bool m_fUserDebugPaused;
    bool m_fDebugWindowActive;
    bool m_fCabinetMode;
+   bool m_fMeshAsPlayfield;
    bool m_fRecordContacts;             // flag for DoHitTest()
    std::vector< CollisionEvent > m_contacts;
    char m_ballShaderTechnique[MAX_PATH];
@@ -505,7 +507,6 @@ public:
    unsigned int m_dmdstate; // used to distinguish different flasher/DMD rendering mode states
 
    int m_overall_frames; // amount of rendered frames since start
-   bool m_fMeshAsPlayfield;
 
 private:
    Vector<HitObject> m_vho;
@@ -545,7 +546,7 @@ private:
    float m_BallStretchX;
    float m_BallStretchY;
 
-   float m_NudgeShake;         // whether to shake the screen during digital nudges and how much
+   float m_NudgeShake;         // whether to shake the screen during nudges and how much
    Vertex2D m_ScreenOffset;    // for screen shake effect during nudge
 
    int m_curPlunger;

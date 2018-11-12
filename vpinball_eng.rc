@@ -553,6 +553,8 @@ BEGIN
     GROUPBOX        "Nudge, Plumb, Plunger (Changes will not affect open tables)",IDC_STATIC,254,95,241,134
     CONTROL         "Legacy/VP9-style non-realistic Keyboard Nudge",IDC_ENABLE_LEGACY_NUDGE,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,257,174,236,10
+    EDITTEXT        IDC_LEGACY_NUDGE_STRENGTH,414,173,18,13,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "% Strength", IDC_STATIC, 435, 175, 50, 8
     CONTROL         "Enable Nudge Filter (mainly for Analog/additional Board setups)",IDC_ENABLE_NUDGE_FILTER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,186,236,10
     CONTROL         "Enable Analog Nudge",IDC_GLOBALACCEL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,257,198,102,10
@@ -624,7 +626,7 @@ BEGIN
     LTEXT           "&Music Volume",IDC_STATIC_MUSIC,14,91,45,8
     CONTROL         "Slider1",IDC_MUSIC_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,9,102,110,18
     LTEXT           "General output Sound Device",IDC_STATIC_SOUNDDEVICE,124,11,170,10
-    LISTBOX         258,124,24,170,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_SoundList,124,24,170,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Backglass specific Sound Device",IDC_STATIC_SOUNDDEVICE2,123,73,170,10
     LISTBOX         IDC_SoundListBG,123,86,171,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,350,141,50,14

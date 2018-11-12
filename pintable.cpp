@@ -58,19 +58,20 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 {
    if (g_pplayer && (!g_pplayer->m_legacyNudge || g_pplayer->m_legacyNudgeTime == 0))
    {
-      const float sn = sinf(ANGTORAD(Angle));
-      const float cs = cosf(ANGTORAD(Angle));
+      const float a  = ANGTORAD(Angle);
+      const float sn = sinf(a) * Force;
+      const float cs = cosf(a) * Force;
 
       if(g_pplayer->m_legacyNudge)
       {
-          g_pplayer->m_legacyNudgeBackX =  sn * Force;
-          g_pplayer->m_legacyNudgeBackY = -cs * Force;
+          g_pplayer->m_legacyNudgeBackX =  sn * g_pplayer->m_legacyNudgeStrength;
+          g_pplayer->m_legacyNudgeBackY = -cs * g_pplayer->m_legacyNudgeStrength;
           g_pplayer->m_legacyNudgeTime = 100;
       }
       else
       {
-          g_pplayer->m_tableVel.x +=  sn * Force;
-          g_pplayer->m_tableVel.y += -cs * Force;
+          g_pplayer->m_tableVel.x +=  sn;
+          g_pplayer->m_tableVel.y += -cs;
       }
    }
 
