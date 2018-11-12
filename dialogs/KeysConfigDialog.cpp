@@ -386,6 +386,12 @@ BOOL KeysConfigDialog::OnInitDialog()
         key = fFalse;
     ::SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
+    float legacyNudgeStrength;
+    hr = GetRegStringAsFloat("Player", "LegacyNudgeStrength", &legacyNudgeStrength);
+    if (hr != S_OK)
+        legacyNudgeStrength = 1.f;
+    SetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, quantizeUnsignedPercent(legacyNudgeStrength), FALSE);
+
     for (unsigned int i = 0; i <= 30; ++i)
     {
         int item;
@@ -1040,6 +1046,9 @@ void KeysConfigDialog::OnOK()
     hwndControl = GetDlgItem(IDC_ENABLE_LEGACY_NUDGE).GetHwnd();
     key = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
     SetRegValue("Player", "EnableLegacyNudge", REG_DWORD, &key, 4);
+
+    newvalue = GetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, nothing, TRUE);
+    SetRegValueFloat("Player", "LegacyNudgeStrength", dequantizeUnsignedPercent(newvalue));
 
     hwndControl = GetDlgItem(IDC_ENABLE_MOUSE_PLAYER).GetHwnd();
     key = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);

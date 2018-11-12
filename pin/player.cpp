@@ -1283,6 +1283,12 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       legacyNudge = fFalse; // The default
    m_legacyNudge = !!legacyNudge;
 
+   float legacyNudgeStrength;
+   hr = GetRegStringAsFloat("Player", "LegacyNudgeStrength", &legacyNudgeStrength);
+   if (hr != S_OK)
+      legacyNudgeStrength = 1.f; // The default
+   m_legacyNudgeStrength = legacyNudgeStrength;
+
    m_legacyNudgeBackX = 0.f;
    m_legacyNudgeBackY = 0.f;
 
@@ -2564,8 +2570,8 @@ int Player::NudgeGetTilt()
 
 void Player::NudgeUpdate()      // called on every integral physics frame
 {
-   m_NudgeX = 0;   // accumulate over joysticks, these acceleration values are used in update ball velocity calculations
-   m_NudgeY = 0;   // and are required to be acceleration values (not velocity or displacement)
+   m_NudgeX = 0.f;   // accumulate over joysticks, these acceleration values are used in update ball velocity calculations
+   m_NudgeY = 0.f;   // and are required to be acceleration values (not velocity or displacement)
 
    if (!m_ptable->m_tblAccelerometer) return;       // electronic accelerometer disabled 
 
@@ -2580,9 +2586,9 @@ void Player::NudgeUpdate()      // called on every integral physics frame
       const float dy = ((float)m_curAccel_y[j])*(float)(1.0 / JOYRANGE);
       if (m_ptable->m_tblMirrorEnabled)
          dx = -dx;
-      m_NudgeX += m_ptable->m_tblAccelAmpX * (dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());  //calc Green's transform component for X
-      const float nugY = m_ptable->m_tblAccelAmpY * (dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green transform component for Y...
-      m_NudgeY = m_ptable->m_tblAccelNormalMount ? (m_NudgeY + nugY) : (m_NudgeY - nugY);     // add as left or right hand coordinate system
+      m_NudgeX += m_ptable->m_tblAccelAmpX * (dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());        // calc Green's transform component for X
+      const float nugY = m_ptable->m_tblAccelAmpY * (dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green's transform component for Y
+      m_NudgeY = m_ptable->m_tblAccelNormalMount ? (m_NudgeY + nugY) : (m_NudgeY - nugY);                 // add as left or right hand coordinate system
    }
 }
 
@@ -3318,12 +3324,7 @@ void Player::UpdatePhysics()
       const Vertex3Ds force = -m_nudgeSpring * m_tableDisplacement - m_nudgeDamping * m_tableVel;
       m_tableVel          += (float)PHYS_FACTOR * force;
       m_tableDisplacement += (float)PHYS_FACTOR * m_tableVel;
-      if (m_NudgeShake > 0.0f)
-      {
-         // NB: in table coordinates, +Y points down, but in screen coordinates, it points up,
-         // so we have to flip the y component
-         SetScreenOffset(m_NudgeShake * m_tableDisplacement.x, -m_NudgeShake * m_tableDisplacement.y);
-      }
+
       m_tableVelDelta = m_tableVel - m_tableVelOld;
       m_tableVelOld = m_tableVel;
 
@@ -3346,6 +3347,13 @@ void Player::UpdatePhysics()
           if (m_NudgeShake > 0.0f)
               SetScreenOffset(m_NudgeShake * m_legacyNudgeBackX * sqrf((float)m_legacyNudgeTime*0.01f), -m_NudgeShake * m_legacyNudgeBackY * sqrf((float)m_legacyNudgeTime*0.01f));
       }
+      else
+          if (m_NudgeShake > 0.0f)
+          {
+              // NB: in table coordinates, +Y points down, but in screen coordinates, it points up,
+              // so we have to flip the y component
+              SetScreenOffset(m_NudgeShake * m_tableDisplacement.x, -m_NudgeShake * m_tableDisplacement.y);
+          }
 
       // Apply our filter to the nudge data
       if (m_pininput.m_enable_nudge_filter)
