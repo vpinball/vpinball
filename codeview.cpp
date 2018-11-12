@@ -1122,7 +1122,8 @@ void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
 
 void CodeViewer::SaveToFile(const char *filename)
 {
-	FILE * const fScript = fopen(filename, "wb");
+	FILE * fScript;
+	if (fopen_s(&fScript, filename, "wb") == 0)
 	if (fScript)
 	{
 		const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
@@ -1190,7 +1191,8 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
 
 void CodeViewer::LoadFromFile(const char *filename)
 {
-	FILE * const fScript = fopen(filename, "rb");
+	FILE * fScript;
+	if (fopen_s(&fScript, filename, "rb") == 0)
 	if (fScript)
 	{
 		fseek(fScript, 0L, SEEK_END);
