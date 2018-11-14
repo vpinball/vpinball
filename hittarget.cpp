@@ -1647,7 +1647,7 @@ STDMETHODIMP HitTarget::put_DropSpeed(float newVal)
 
 STDMETHODIMP HitTarget::get_IsDropped(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)(m_d.m_isDropped); //don't use FTOVB here because it converts a TRUE to -1 instead to 1
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_isDropped); 
 
    return S_OK;
 }
@@ -1656,7 +1656,7 @@ STDMETHODIMP HitTarget::put_IsDropped(VARIANT_BOOL newVal)
 {
    STARTUNDO
    
-   const bool val = VBTOF(newVal);
+   const bool val = (newVal!=0);
    if (g_pplayer && m_d.m_isDropped != val)
    {
       if (val)
