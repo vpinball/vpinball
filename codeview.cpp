@@ -504,7 +504,7 @@ void CodeViewer::Create()
 
    SetWindowLongPtr(m_hwndMain, GWLP_USERDATA, (size_t)this);
 
-   /////////////////// Item / Event Lists //!! ALL THIS STUFF IS NOT RES/DPI INDEPENDENT!
+   /////////////////// Item / Event Lists //!! ALL THIS STUFF IS NOT RES/DPI INDEPENDENT! also see WM_SIZE handler
 
    m_hwndItemText = CreateWindowEx(0, "Static", "ObjectsText",
 		WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 5, 0, 330, 30, m_hwndMain, NULL, g_hinst, 0);
@@ -2859,22 +2859,21 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
    case WM_SIZE:
    {
-      RECT rc;
-      GetClientRect(hwndDlg, &rc);
       CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
 
       if (pcv && pcv->m_hwndStatus)
       {
          SendMessage(pcv->m_hwndStatus, WM_SIZE, wParam, lParam);
 
+         RECT rc;
+         GetClientRect(hwndDlg, &rc);
+
          RECT rcStatus;
          GetClientRect(pcv->m_hwndStatus, &rcStatus);
          const int statheight = rcStatus.bottom - rcStatus.top;
 
-         const int buttonwidth = 0;
-
          SetWindowPos(pcv->m_hwndScintilla, NULL,
-            0, 0, rc.right - rc.left - buttonwidth/* - 20*/, rc.bottom - rc.top - 10 - statheight - 30, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+            0, 0, rc.right - rc.left, rc.bottom - rc.top - statheight - (30+2 +40), SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
       }
    }
    break;
