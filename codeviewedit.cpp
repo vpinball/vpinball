@@ -462,7 +462,10 @@ void CVPrefrence::GetPrefsFromReg()
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_Font");
-	GetRegString( "CVEdit", RegEntry, this->LogFont.lfFaceName, 32);
+	char bakupFaceName[LF_FACESIZE]; // to save the default font name, in case the corresponding registry entry is empty
+	strcpy_s(bakupFaceName, this->LogFont.lfFaceName);
+	if(GetRegString( "CVEdit", RegEntry, this->LogFont.lfFaceName, LF_FACESIZE) != S_OK)
+		strcpy_s(this->LogFont.lfFaceName, bakupFaceName);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontWeight");
