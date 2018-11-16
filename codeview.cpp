@@ -133,13 +133,12 @@ void GetRange(const HWND m_hwndScintilla, const size_t start, const size_t end, 
 
 void CodeViewer::GetWordUnderCaret()
 {
-
 	const LRESULT CurPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 );
 	WordUnderCaret.chrg.cpMin = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, CurPos, TRUE);
 	WordUnderCaret.chrg.cpMax = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, CurPos, TRUE);
 	if (( WordUnderCaret.chrg.cpMax - WordUnderCaret.chrg.cpMin) > MAX_FIND_LENGTH) return;
 
-   SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&WordUnderCaret);
+	SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&WordUnderCaret);
 }
 
 void CodeViewer::SetClean(const SaveDirtyState sds)
@@ -470,7 +469,7 @@ void CodeViewer::InitPreferences()
 	lPrefsList->push_back(prefVPcore);
 	for (size_t i = 0; i < lPrefsList->size(); ++i)
 	{
-		CVPrefrence* Pref = lPrefsList->at(i);
+		CVPrefrence* const Pref = lPrefsList->at(i);
 		Pref->SetDefaultFont(m_hwndMain);
 	}
 	// load prefs from registery
@@ -518,8 +517,8 @@ void CodeViewer::Create()
 	{
 		SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
 	}
-	char szValidChars[256] = {};
 
+	char szValidChars[256] = {};
    SendMessage(m_hwndScintilla, SCI_GETWORDCHARS, 0, (LPARAM)szValidChars);
    ValidChars = string(szValidChars);
 	VBValidChars = string("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
@@ -530,21 +529,17 @@ void CodeViewer::Create()
 	PageConstructsDict = new vector<UserData>();
 	VP_CoreDict = new vector<UserData>();
 	CurrentMembers = new vector<UserData>();
-   WordUnderCaret.lpstrText = NULL;
 	WordUnderCaret.lpstrText = (char *) CaretTextBuff;
-	CurrentConstruct.lpstrText = NULL;
 	CurrentConstruct.lpstrText = (char *) ConstructTextBuff;
 	// parse vb reserved words for auto complete.
 	VBwordsDict = new vector<UserData>;
 	int intWordFinish = -1; //skip space
 	char WordChar= vbsReservedWords[0];
-	char szWord[256];
-	int wordlen=0;
-	UserData VBWord;
 	while (WordChar != 0) //Just make sure with chars, we reached EOL
 	{
-		memset(szWord,0,256);
-		wordlen = 0;
+		char szWord[256];
+		memset(szWord, 0, 256);
+		int wordlen = 0;
 		intWordFinish++; //skip space
 		WordChar = vbsReservedWords[intWordFinish];
 		while (WordChar != 0 && WordChar != ' ')
@@ -554,6 +549,7 @@ void CodeViewer::Create()
 			wordlen++;
 			WordChar= vbsReservedWords[intWordFinish];
 		}
+		UserData VBWord;
 		VBWord.KeyName = string(szWord);
 		VBWord.UniqueKey = VBWord.KeyName;
 		FindOrInsertUD(VBwordsDict, VBWord);
@@ -659,7 +655,7 @@ void CodeViewer::Create()
    SendMessage(m_hwndItemList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndItemText = CreateWindowEx(0, "Static", "ObjectsText",
-		WS_CHILD | WS_VISIBLE | SS_SIMPLE, 5, 0, 180, 15, m_hwndMain, NULL, g_hinst, 0);
+		WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 5, 0, 180, 15, m_hwndMain, NULL, g_hinst, 0);
    SetWindowText(m_hwndItemText, "Table component:" );
    SendMessage(m_hwndItemText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
@@ -670,25 +666,25 @@ void CodeViewer::Create()
    SendMessage(m_hwndEventList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndEventText = CreateWindowEx(0, "Static", "EventsText",
-		WS_CHILD | WS_VISIBLE | SS_SIMPLE, 210 + 5, 0, 180, 15, m_hwndMain, NULL, g_hinst, 0);
+		WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 210 + 5, 0, 180, 15, m_hwndMain, NULL, g_hinst, 0);
    SetWindowText(m_hwndEventText, "Create Sub from component:" );
    SendMessage(m_hwndEventText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
-	
+
+    m_hwndFunctionText = CreateWindowEx(0, "Static", "FunctionsText",
+		WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 430 + 5, 0, 180, 15, m_hwndMain, NULL, g_hinst, 0);
+   SetWindowText(m_hwndFunctionText, "Go to Sub/Function:" );
+   SendMessage(m_hwndFunctionText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
+
 	m_hwndFunctionList = CreateWindowEx(0, "ComboBox", "Functions",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
       430 + 5, 17, 180, 400, m_hwndMain, NULL, g_hinst, 0);
    SetWindowLongPtr(m_hwndFunctionList, GWL_ID, IDC_FUNCTIONLIST);
    SendMessage(m_hwndFunctionList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
-    m_hwndFunctionText = CreateWindowEx(0, "Static", "FunctionsText",
-		WS_CHILD | WS_VISIBLE | SS_SIMPLE, 430 + 5, 0, 180, 15, m_hwndMain, NULL, g_hinst, 0);
-   SetWindowText(m_hwndFunctionText, "Go to Sub/Function:" );
-   SendMessage(m_hwndFunctionText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 	ParseVPCore();
 	UpdateScinFromPrefs();
 
 	SendMessage(m_hwndMain, WM_SIZE, 0, 0); // Make our window relay itself out
-
 }
 
 void CodeViewer::Destroy()
