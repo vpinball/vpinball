@@ -280,7 +280,6 @@
 #define IDD_PROPSPINNER                 242
 #define IDD_PROPPOINT                   243
 #define IDD_PROPWALL                    244
-#define IDD_CODEVIEW                    245
 #define ID_FIND                         245
 #define ID_COMPILE                      246
 #define IDD_ABOUT                       250
