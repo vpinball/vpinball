@@ -86,14 +86,14 @@ public:
    virtual void Delete() = 0;
    virtual void Uncreate() = 0;
 
-   virtual void FlipY(Vertex2D * const pvCenter);
-   virtual void FlipX(Vertex2D * const pvCenter);
-   virtual void Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter=false);
-   virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter=false);
-   virtual void Translate(Vertex2D *pvOffset);
+   virtual void FlipY(const Vertex2D& pvCenter);
+   virtual void FlipX(const Vertex2D& pvCenter);
+   virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
+   virtual void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
+   virtual void Translate(const Vertex2D &pvOffset);
 
    // So objects don't have to implement all the transformation functions themselves
-   virtual void GetCenter(Vertex2D * const pv) const = 0;
+   virtual Vertex2D GetCenter() const = 0;
    virtual Vertex2D GetScale() const
    {
       return Vertex2D(1.f, 1.f);
@@ -103,9 +103,9 @@ public:
       return 0.0f;
    }
 
-   virtual void PutCenter(const Vertex2D * const pv) = 0;
+   virtual void PutCenter(const Vertex2D& pv) = 0;
 
-   virtual void SetDefaultPhysics(bool fromMouseClick){}
+   virtual void SetDefaultPhysics(bool fromMouseClick) {}
 
    virtual IEditable *GetIEditable() = 0;
 
@@ -114,9 +114,9 @@ public:
 
    virtual int GetSelectLevel() { return 1; }
    virtual bool LoadMesh() { return false; }
-   virtual void ExportMesh() {};
-   virtual void UpdatePropertyPanes() {};
-   virtual void AddPoint(int x, int y, const bool smooth) {};
+   virtual void ExportMesh() {}
+   virtual void UpdatePropertyPanes() {}
+   virtual void AddPoint(int x, int y, const bool smooth) {}
 
    POINT m_ptLast;
 

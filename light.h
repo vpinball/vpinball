@@ -63,8 +63,8 @@ public:
 
    virtual BOOL LoadToken(int id, BiffReader *pbr) { return fTrue; }
 
-   virtual void GetCenter(Vertex2D * const pv) const;
-   virtual void PutCenter(const Vertex2D * const pv);
+   virtual Vertex2D GetCenter() const;
+   virtual void PutCenter(const Vertex2D& pv);
 
    virtual void MoveOffset(const float dx, const float dy);
 
@@ -167,17 +167,17 @@ public:
    virtual void EditMenu(HMENU hmenu);
    virtual void DoCommand(int icmd, int x, int y);
 
-   virtual void FlipY(Vertex2D * const pvCenter);
-   virtual void FlipX(Vertex2D * const pvCenter);
-   virtual void Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter=false);
-   virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter=false);
-   virtual void Translate(Vertex2D *pvOffset);
+   virtual void FlipY(const Vertex2D& pvCenter);
+   virtual void FlipX(const Vertex2D& pvCenter);
+   virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
+   virtual void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
+   virtual void Translate(const Vertex2D &pvOffset);
 
    // DragPoints
-   virtual void GetCenter(Vertex2D * const pv) const { GetPointCenter(pv); }
-   virtual void PutCenter(const Vertex2D * const pv) { PutPointCenter(pv); }
-   virtual void GetPointCenter(Vertex2D * const pv) const;
-   virtual void PutPointCenter(const Vertex2D * const pv);
+   virtual Vertex2D GetCenter() const { return GetPointCenter(); }
+   virtual void PutCenter(const Vertex2D& pv) { PutPointCenter(pv); }
+   virtual Vertex2D GetPointCenter() const;
+   virtual void PutPointCenter(const Vertex2D& pv);
 
    virtual bool IsTransparent() { return m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive); }
    virtual bool RenderToLightBuffer()		{ return m_d.m_BulbLight && (m_d.m_transmissionScale > 0.f); }

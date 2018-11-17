@@ -640,19 +640,19 @@ void Decal::MoveOffset(const float dx, const float dy)
    m_ptable->SetDirtyDraw();
 }
 
-void Decal::GetCenter(Vertex2D * const pv) const
+Vertex2D Decal::GetCenter() const
 {
-   *pv = m_d.m_vCenter;
+   return m_d.m_vCenter;
 }
 
-void Decal::PutCenter(const Vertex2D * const pv)
+void Decal::PutCenter(const Vertex2D& pv)
 {
-   m_d.m_vCenter = *pv;
+   m_d.m_vCenter = pv;
 
    m_ptable->SetDirtyDraw();
 }
 
-void Decal::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
+void Decal::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    ISelect::Rotate(ang, pvCenter, useElementCenter);
 

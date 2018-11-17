@@ -869,14 +869,14 @@ void Trigger::MoveOffset(const float dx, const float dy)
    m_ptable->SetDirtyDraw();
 }
 
-void Trigger::GetPointCenter(Vertex2D * const pv) const
+Vertex2D Trigger::GetPointCenter() const
 {
-   *pv = m_d.m_vCenter;
+   return m_d.m_vCenter;
 }
 
-void Trigger::PutPointCenter(const Vertex2D * const pv)
+void Trigger::PutPointCenter(const Vertex2D& pv)
 {
-   m_d.m_vCenter = *pv;
+   m_d.m_vCenter = pv;
 
    SetDirtyDraw();
 }
@@ -897,20 +897,12 @@ void Trigger::DoCommand(int icmd, int x, int y)
    switch (icmd)
    {
    case ID_WALLMENU_FLIP:
-   {
-      Vertex2D vCenter;
-      GetPointCenter(&vCenter);
-      FlipPointY(&vCenter);
-   }
-   break;
+      FlipPointY(GetPointCenter());
+      break;
 
    case ID_WALLMENU_MIRROR:
-   {
-      Vertex2D vCenter;
-      GetPointCenter(&vCenter);
-      FlipPointX(&vCenter);
-   }
-   break;
+      FlipPointX(GetPointCenter());
+      break;
 
    case ID_WALLMENU_ROTATE:
       RotateDialog();
@@ -963,19 +955,19 @@ void Trigger::DoCommand(int icmd, int x, int y)
    }
 }
 
-void Trigger::FlipY(Vertex2D * const pvCenter)
+void Trigger::FlipY(const Vertex2D& pvCenter)
 {
    if (m_d.m_shape == TriggerNone)
       IHaveDragPoints::FlipPointY(pvCenter);
 }
 
-void Trigger::FlipX(Vertex2D * const pvCenter)
+void Trigger::FlipX(const Vertex2D& pvCenter)
 {
    if (m_d.m_shape == TriggerNone)
       IHaveDragPoints::FlipPointX(pvCenter);
 }
 
-void Trigger::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
+void Trigger::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    if (m_d.m_shape == TriggerNone)
       IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
@@ -990,10 +982,10 @@ void Trigger::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
    }
 }
 
-void Trigger::Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter)
+void Trigger::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    if (m_d.m_shape == TriggerNone)
-      IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementsCenter);
+      IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
    else
    {
       GetIEditable()->BeginUndo();
@@ -1006,7 +998,7 @@ void Trigger::Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool u
    }
 }
 
-void Trigger::Translate(Vertex2D *pvOffset)
+void Trigger::Translate(const Vertex2D &pvOffset)
 {
    if (m_d.m_shape == TriggerNone)
       IHaveDragPoints::TranslatePoints(pvOffset);
@@ -1014,7 +1006,7 @@ void Trigger::Translate(Vertex2D *pvOffset)
    {
       GetIEditable()->BeginUndo();
       GetIEditable()->MarkForUndo();
-      MoveOffset(pvOffset->x, pvOffset->y);
+      MoveOffset(pvOffset.x, pvOffset.y);
       GetIEditable()->EndUndo();
       GetPTable()->SetDirtyDraw();
    }

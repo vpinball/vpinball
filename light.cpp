@@ -42,14 +42,14 @@ PinTable *LightCenter::GetPTable()
    return m_plight->GetPTable();
 }
 
-void LightCenter::GetCenter(Vertex2D * const pv) const
+Vertex2D LightCenter::GetCenter() const
 {
-   *pv = m_plight->m_d.m_vCenter;
+   return m_plight->m_d.m_vCenter;
 }
 
-void LightCenter::PutCenter(const Vertex2D * const pv)
+void LightCenter::PutCenter(const Vertex2D& pv)
 {
-   m_plight->m_d.m_vCenter = *pv;
+   m_plight->m_d.m_vCenter = pv;
 }
 
 void LightCenter::MoveOffset(const float dx, const float dy)
@@ -1232,14 +1232,14 @@ HRESULT Light::InitPostLoad()
    return S_OK;
 }
 
-void Light::GetPointCenter(Vertex2D * const pv) const
+Vertex2D Light::GetPointCenter() const
 {
-   *pv = m_d.m_vCenter;
+   return m_d.m_vCenter;
 }
 
-void Light::PutPointCenter(const Vertex2D * const pv)
+void Light::PutPointCenter(const Vertex2D& pv)
 {
-   m_d.m_vCenter = *pv;
+   m_d.m_vCenter = pv;
 
    SetDirtyDraw();
 }
@@ -1295,20 +1295,12 @@ void Light::DoCommand(int icmd, int x, int y)
    switch (icmd)
    {
    case ID_WALLMENU_FLIP:
-   {
-      Vertex2D vCenter;
-      GetPointCenter(&vCenter);
-      FlipPointY(&vCenter);
-   }
-   break;
+      FlipPointY(GetPointCenter());
+      break;
 
    case ID_WALLMENU_MIRROR:
-   {
-      Vertex2D vCenter;
-      GetPointCenter(&vCenter);
-      FlipPointX(&vCenter);
-   }
-   break;
+      FlipPointX(GetPointCenter());
+      break;
 
    case ID_WALLMENU_ROTATE:
       RotateDialog();
@@ -1408,27 +1400,27 @@ STDMETHODIMP Light::put_State(LightState newVal)
    return S_OK;
 }
 
-void Light::FlipY(Vertex2D * const pvCenter)
+void Light::FlipY(const Vertex2D& pvCenter)
 {
    IHaveDragPoints::FlipPointY(pvCenter);
 }
 
-void Light::FlipX(Vertex2D * const pvCenter)
+void Light::FlipX(const Vertex2D& pvCenter)
 {
    IHaveDragPoints::FlipPointX(pvCenter);
 }
 
-void Light::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
+void Light::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
 }
 
-void Light::Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter)
+void Light::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementsCenter);
+   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
 }
 
-void Light::Translate(Vertex2D *pvOffset)
+void Light::Translate(const Vertex2D &pvOffset)
 {
    IHaveDragPoints::TranslatePoints(pvOffset);
 }

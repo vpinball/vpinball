@@ -634,8 +634,7 @@ void Rubber::EndPlay()
 
 float Rubber::GetDepth(const Vertex3Ds& viewDir)
 {
-   Vertex2D center2D;
-   GetCenter(&center2D);
+   const Vertex2D center2D = GetCenter();
    return viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * m_d.m_height;
 }
 
@@ -852,20 +851,12 @@ void Rubber::DoCommand(int icmd, int x, int y)
    switch (icmd)
    {
    case ID_WALLMENU_FLIP:
-   {
-      Vertex2D vCenter;
-      GetPointCenter(&vCenter);
-      FlipPointY(&vCenter);
-   }
-   break;
+      FlipPointY(GetPointCenter());
+      break;
 
    case ID_WALLMENU_MIRROR:
-   {
-      Vertex2D vCenter;
-      GetPointCenter(&vCenter);
-      FlipPointX(&vCenter);
-   }
-   break;
+      FlipPointX(GetPointCenter());
+      break;
 
    case ID_WALLMENU_ROTATE:
       RotateDialog();
@@ -922,27 +913,27 @@ void Rubber::DoCommand(int icmd, int x, int y)
    }
 }
 
-void Rubber::FlipY(Vertex2D * const pvCenter)
+void Rubber::FlipY(const Vertex2D& pvCenter)
 {
    IHaveDragPoints::FlipPointY(pvCenter);
 }
 
-void Rubber::FlipX(Vertex2D * const pvCenter)
+void Rubber::FlipX(const Vertex2D& pvCenter)
 {
    IHaveDragPoints::FlipPointX(pvCenter);
 }
 
-void Rubber::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
+void Rubber::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
 }
 
-void Rubber::Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter)
+void Rubber::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementsCenter);
+   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
 }
 
-void Rubber::Translate(Vertex2D *pvOffset)
+void Rubber::Translate(const Vertex2D &pvOffset)
 {
    IHaveDragPoints::TranslatePoints(pvOffset);
 }

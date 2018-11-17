@@ -58,14 +58,14 @@ void Timer::MoveOffset(const float dx, const float dy)
    m_ptable->SetDirtyDraw();
 }
 
-void Timer::GetCenter(Vertex2D * const pv) const
+Vertex2D Timer::GetCenter() const
 {
-   *pv = m_d.m_v;
+   return m_d.m_v;
 }
 
-void Timer::PutCenter(const Vertex2D * const pv)
+void Timer::PutCenter(const Vertex2D& pv)
 {
-   m_d.m_v = *pv;
+   m_d.m_v = pv;
 
    m_ptable->SetDirtyDraw();
 }

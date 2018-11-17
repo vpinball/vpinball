@@ -1185,20 +1185,12 @@ void Surface::DoCommand(int icmd, int x, int y)
    switch (icmd)
    {
    case ID_WALLMENU_FLIP:
-   {
-      Vertex2D vCenter;
-      GetPointCenter(&vCenter);
-      FlipPointY(&vCenter);
-   }
-   break;
+      FlipPointY(GetPointCenter());
+      break;
 
    case ID_WALLMENU_MIRROR:
-   {
-      Vertex2D vCenter;
-      GetPointCenter(&vCenter);
-      FlipPointX(&vCenter);
-   }
-   break;
+      FlipPointX(GetPointCenter());
+      break;
 
    case ID_WALLMENU_ROTATE:
       RotateDialog();
@@ -1220,27 +1212,27 @@ void Surface::DoCommand(int icmd, int x, int y)
    }
 }
 
-void Surface::FlipY(Vertex2D * const pvCenter)
+void Surface::FlipY(const Vertex2D& pvCenter)
 {
    IHaveDragPoints::FlipPointY(pvCenter);
 }
 
-void Surface::FlipX(Vertex2D * const pvCenter)
+void Surface::FlipX(const Vertex2D& pvCenter)
 {
    IHaveDragPoints::FlipPointX(pvCenter);
 }
 
-void Surface::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
+void Surface::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
 }
 
-void Surface::Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter)
+void Surface::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementsCenter);
+   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
 }
 
-void Surface::Translate(Vertex2D *pvOffset)
+void Surface::Translate(const Vertex2D &pvOffset)
 {
    IHaveDragPoints::TranslatePoints(pvOffset);
 }

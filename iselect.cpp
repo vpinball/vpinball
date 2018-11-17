@@ -278,71 +278,66 @@ void ISelect::SetLockedFormat(Sur *psur)
    psur->SetLineColor(g_pvp->m_elemSelectLockedColor, false, 1);
 }
 
-void ISelect::FlipY(Vertex2D * const pvCenter)
+void ISelect::FlipY(const Vertex2D& pvCenter)
 {
    GetIEditable()->MarkForUndo();
 
-   Vertex2D vCenter;
-   GetCenter(&vCenter);
-   const float delta = vCenter.y - pvCenter->y;
+   Vertex2D vCenter = GetCenter();
+   const float delta = vCenter.y - pvCenter.y;
    vCenter.y -= delta * 2;
-   PutCenter(&vCenter);
+   PutCenter(vCenter);
 }
 
-void ISelect::FlipX(Vertex2D * const pvCenter)
+void ISelect::FlipX(const Vertex2D& pvCenter)
 {
    GetIEditable()->MarkForUndo();
 
-   Vertex2D vCenter;
-   GetCenter(&vCenter);
-   const float delta = vCenter.x - pvCenter->x;
+   Vertex2D vCenter = GetCenter();
+   const float delta = vCenter.x - pvCenter.x;
    vCenter.x -= delta * 2;
-   PutCenter(&vCenter);
+   PutCenter(vCenter);
 }
 
-void ISelect::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
+void ISelect::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    GetIEditable()->MarkForUndo();
 
-   Vertex2D vCenter;
-   GetCenter(&vCenter);
+   Vertex2D vCenter = GetCenter();
 
    const float sn = sinf(ANGTORAD(ang));
    const float cs = cosf(ANGTORAD(ang));
 
-   const float dx = vCenter.x - pvCenter->x;
-   const float dy = vCenter.y - pvCenter->y;
+   const float dx = vCenter.x - pvCenter.x;
+   const float dy = vCenter.y - pvCenter.y;
 
-   vCenter.x = pvCenter->x + cs*dx - sn*dy;
-   vCenter.y = pvCenter->y + cs*dy + sn*dx;
-   PutCenter(&vCenter);
+   vCenter.x = pvCenter.x + cs*dx - sn*dy;
+   vCenter.y = pvCenter.y + cs*dy + sn*dx;
+   PutCenter(vCenter);
 }
 
-void ISelect::Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter)
+void ISelect::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    GetIEditable()->MarkForUndo();
 
-   Vertex2D vCenter;
-   GetCenter(&vCenter);
+   Vertex2D vCenter = GetCenter();
 
-   const float dx = vCenter.x - pvCenter->x;
-   const float dy = vCenter.y - pvCenter->y;
+   const float dx = vCenter.x - pvCenter.x;
+   const float dy = vCenter.y - pvCenter.y;
 
-   vCenter.x = pvCenter->x + dx*scalex;
-   vCenter.y = pvCenter->y + dy*scaley;
-   PutCenter(&vCenter);
+   vCenter.x = pvCenter.x + dx*scalex;
+   vCenter.y = pvCenter.y + dy*scaley;
+   PutCenter(vCenter);
 }
 
-void ISelect::Translate(Vertex2D *pvOffset)
+void ISelect::Translate(const Vertex2D &pvOffset)
 {
    GetIEditable()->MarkForUndo();
 
-   Vertex2D vCenter;
-   GetCenter(&vCenter);
+   Vertex2D vCenter = GetCenter();
 
-   vCenter.x += pvOffset->x;
-   vCenter.y += pvOffset->y;
-   PutCenter(&vCenter);
+   vCenter.x += pvOffset.x;
+   vCenter.y += pvOffset.y;
+   PutCenter(vCenter);
 }
 
 HRESULT ISelect::GetTypeName(BSTR *pVal)

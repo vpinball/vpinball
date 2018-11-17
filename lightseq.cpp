@@ -91,14 +91,14 @@ void LightSeq::MoveOffset(const float dx, const float dy)
    m_ptable->SetDirtyDraw();
 }
 
-void LightSeq::GetCenter(Vertex2D * const pv) const
+Vertex2D LightSeq::GetCenter() const
 {
-   *pv = m_d.m_v;
+   return m_d.m_v;
 }
 
-void LightSeq::PutCenter(const Vertex2D * const pv)
+void LightSeq::PutCenter(const Vertex2D& pv)
 {
-   m_d.m_v = *pv;
+   m_d.m_v = pv;
 
    m_ptable->SetDirtyDraw();
 }
