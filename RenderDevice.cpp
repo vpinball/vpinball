@@ -309,7 +309,7 @@ static pDF mDwmFlush = NULL;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = NULL;
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm)
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
    : m_texMan(*this)
 {
    m_stats_drawn_triangles = 0;
@@ -543,9 +543,11 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create back buffer!", hr, __FILE__, __LINE__);
 
+   const D3DFORMAT render_format = (BWrendering == 1) ? D3DFMT_G16R16F : ((BWrendering == 2) ? D3DFMT_R16F : D3DFMT_A16B16G16R16F);
+
    // alloc float buffer for rendering (optionally 2x2 res for manual super sampling)
    hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
-      D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
+      D3DUSAGE_RENDERTARGET, render_format, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create render buffer!", hr, __FILE__, __LINE__);
 
@@ -553,7 +555,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    if (ss_refl)
    {
       hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
-         D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pReflectionBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
+         D3DUSAGE_RENDERTARGET, render_format, D3DPOOL_DEFAULT, &m_pReflectionBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create reflection buffer!", hr, __FILE__, __LINE__);
    }
@@ -566,20 +568,20 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
        if((g_pplayer->m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
        {
            hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
-                                            D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorTmpBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
+                                            D3DUSAGE_RENDERTARGET, render_format, D3DPOOL_DEFAULT, &m_pMirrorTmpBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
            if(FAILED(hr))
                ReportError("Fatal Error: unable to create reflection map!", hr, __FILE__, __LINE__);
        }
    }
    // alloc bloom tex at 1/3 x 1/3 res (allows for simple HQ downscale of clipped input while saving memory)
    hr = m_pD3DDevice->CreateTexture(width / 3, height / 3, 1,
-      D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomBufferTexture, NULL); //!! 8bit enough?
+      D3DUSAGE_RENDERTARGET, render_format, D3DPOOL_DEFAULT, &m_pBloomBufferTexture, NULL); //!! 8bit enough?
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create bloom buffer!", hr, __FILE__, __LINE__);
 
    // temporary buffer for gaussian blur
    hr = m_pD3DDevice->CreateTexture(width / 3, height / 3, 1,
-      D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL); //!! 8bit are enough! //!! but used also for bulb light transmission hack now!
+      D3DUSAGE_RENDERTARGET, render_format, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL); //!! 8bit are enough! //!! but used also for bulb light transmission hack now!
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create blur buffer!", hr, __FILE__, __LINE__);
 
@@ -606,7 +608,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
       m_pOffscreenBackBufferTmpTexture2 = NULL;
 
    if (video10bit && (FXAA == Quality_SMAA || FXAA == Standard_DLAA))
-      ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
+      ShowError("SMAA or DLAA post-processing AA should not be combined with 10Bit-output rendering (will result in visible artifacts)!");
 
    m_curIndexBuffer = 0;
    m_curVertexBuffer = 0;
@@ -841,7 +843,7 @@ RenderDevice::~RenderDevice()
    if(g_pplayer)
    {
        const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-       if((g_pplayer->m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
+       if ((g_pplayer->m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
            SAFE_RELEASE(m_pMirrorTmpBufferTexture);
    }
    SAFE_RELEASE(m_pBloomBufferTexture);
