@@ -413,6 +413,8 @@ public:
    bool m_fStereo3Denabled;
    int m_fStereo3D; // 0=off, 1=top/down, 2=interlaced/LG, 3=sidebyside
 
+   int m_BWrendering; // 0=off, 1=Black&White from RedGreen, 2=B&W from Red only
+
    bool m_bloomOff;
 
    bool m_fPlayMusic;

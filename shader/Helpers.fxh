@@ -5,6 +5,11 @@ float sqr(const float v)
     return v*v;
 }
 
+float3 sqr(const float3 v)
+{
+    return v*v;
+}
+
 float3 mul_w1(const float3 v, const float4x4 m)
 {
     return v.x*m[0].xyz + (v.y*m[1].xyz + (v.z*m[2].xyz + m[3].xyz));
@@ -73,9 +78,17 @@ float3 InvToneMap(const float3 color)
 {
     const float inv_2bh = 0.5/BURN_HIGHLIGHTS;
     const float bh = 4.0*BURN_HIGHLIGHTS - 2.0;
-	return (color - 1.0 + sqrt(color*(color + bh) + 1.0))*inv_2bh;
+    return (color - 1.0 + sqrt(color*(color + bh) + 1.0))*inv_2bh;
 }
 
+float FBGamma(const float color) //!! use hardware support? D3DRS_SRGBWRITEENABLE
+{
+    return pow(color, 1.0/2.2); // pow does not matter anymore on current GPUs (tested also on tablet/intel)
+}
+float2 FBGamma(const float2 color) //!! use hardware support? D3DRS_SRGBWRITEENABLE
+{
+    return pow(color, 1.0/2.2); // pow does not matter anymore on current GPUs (tested also on tablet/intel)
+}
 float3 FBGamma(const float3 color) //!! use hardware support? D3DRS_SRGBWRITEENABLE
 {
 	return pow(color, 1.0/2.2); // pow does not matter anymore on current GPUs (tested also on tablet/intel)
@@ -86,6 +99,15 @@ float3 FBGamma(const float3 color) //!! use hardware support? D3DRS_SRGBWRITEENA
 	return 0.662002687 * t0 + 0.684122060 * t1 - 0.323583601 * t2 - 0.0225411470 * color;*/
 }
 
+float FBToneMap(const float l)
+{
+    return l * ((l*BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
+}
+float2 FBToneMap(const float2 color)
+{
+    const float l = dot(color,float2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5));
+    return color * ((l*BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
+}
 float3 FBToneMap(const float3 color)
 {
     const float l = dot(color,float3(0.176204,0.812985,0.0108109));

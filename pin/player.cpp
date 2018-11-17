@@ -364,6 +364,13 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    else
        m_bloomOff = (bloomOff == 1);
 
+   int BWrendering;
+   hr = GetRegInt("Player", "BWRendering", &BWrendering);
+   if (hr != S_OK)
+      m_BWrendering = 0;
+   else
+      m_BWrendering = BWrendering;
+
    int detecthang;
    hr = GetRegInt("Player", "DetectHang", &detecthang);
    if (hr != S_OK)
@@ -4309,7 +4316,7 @@ void Player::PrepareVideoBuffersNormal()
 
    const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5 / (double)m_width), (float)(0.5 / (double)m_height), 1.0f, 1.0f);
    m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
-   m_pin3d.m_pd3dDevice->FBShader->SetTechnique(useAA ? "fb_tonemap" : "fb_tonemap_no_filter");
+   m_pin3d.m_pd3dDevice->FBShader->SetTechnique(useAA ? "fb_tonemap" : (m_BWrendering == 1 ? "fb_tonemap_no_filterRG" : (m_BWrendering == 2 ? "fb_tonemap_no_filterR" : "fb_tonemap_no_filterRGB")));
 
    m_pin3d.m_pd3dDevice->FBShader->Begin(0);
    m_pin3d.m_pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
@@ -5174,14 +5181,14 @@ void Player::DrawBalls()
 	  ballShader->SetVector("Roughness_WrapL_Edge_Thickness", &rwem);
 
       // ************************* draw the ball itself ****************************
-	  float sx, sy;
+      float sx, sy;
       if (m_antiStretchBall && m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] != 0.0f)
          //const D3DXVECTOR4 bs(m_BallStretchX/* +sx*/, m_BallStretchY - sy, inv_tablewidth, inv_tableheight);
          GetBallAspectRatio(pball, sx, sy, zheight);
-	  else
+      else
       {
-		 sx = m_BallStretchX;
-		 sy = m_BallStretchY;
+         sx = m_BallStretchX;
+         sy = m_BallStretchY;
       }
 
       const D3DXVECTOR4 diffuse = convertColor(pball->m_color, 1.0f);
