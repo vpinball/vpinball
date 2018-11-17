@@ -617,14 +617,14 @@ void Flipper::MoveOffset(const float dx, const float dy)
    m_ptable->SetDirtyDraw();
 }
 
-void Flipper::GetCenter(Vertex2D * const pv) const
+Vertex2D Flipper::GetCenter() const
 {
-   *pv = m_d.m_Center;
+   return m_d.m_Center;
 }
 
-void Flipper::PutCenter(const Vertex2D * const pv)
+void Flipper::PutCenter(const Vertex2D& pv)
 {
-   m_d.m_Center = *pv;
+   m_d.m_Center = pv;
 
    m_ptable->SetDirtyDraw();
 }

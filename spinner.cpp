@@ -506,14 +506,14 @@ void Spinner::MoveOffset(const float dx, const float dy)
    m_ptable->SetDirtyDraw();
 }
 
-void Spinner::GetCenter(Vertex2D * const pv) const
+Vertex2D Spinner::GetCenter() const
 {
-   *pv = m_d.m_vCenter;
+   return m_d.m_vCenter;
 }
 
-void Spinner::PutCenter(const Vertex2D * const pv)
+void Spinner::PutCenter(const Vertex2D& pv)
 {
-   m_d.m_vCenter = *pv;
+   m_d.m_vCenter = pv;
 
    m_ptable->SetDirtyDraw();
 }

@@ -27,19 +27,19 @@ public:
 
    virtual void ClearPointsForOverwrite();
 
-   virtual void GetPointCenter(Vertex2D * const pv) const;
-   virtual void PutPointCenter(const Vertex2D * const pv);
+   virtual Vertex2D GetPointCenter() const;
+   virtual void PutPointCenter(const Vertex2D& pv);
 
    virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
 
-   void FlipPointY(Vertex2D *pvCenter);
-   void FlipPointX(Vertex2D *pvCenter);
+   void FlipPointY(const Vertex2D& pvCenter);
+   void FlipPointX(const Vertex2D& pvCenter);
    void RotateDialog();
-   void RotatePoints(float ang, Vertex2D *pvCenter, const bool useElementCenter=false);
+   void RotatePoints(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
    void ScaleDialog();
-   void ScalePoints(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter=false);
+   void ScalePoints(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
    void TranslateDialog();
-   void TranslatePoints(Vertex2D *pvOffset);
+   void TranslatePoints(const Vertex2D &pvOffset);
    void ReverseOrder();
 
    void GetTextureCoords(const std::vector<RenderVertex> & vv, float **ppcoords);
@@ -134,8 +134,8 @@ public:
    virtual ItemTypeEnum GetItemType() const { return eItemDragPoint; }
 
    // Multi-object manipulation
-   virtual void GetCenter(Vertex2D * const pv) const;
-   virtual void PutCenter(const Vertex2D * const pv);
+   virtual Vertex2D GetCenter() const;
+   virtual void PutCenter(const Vertex2D& pv);
 
    virtual void EditMenu(HMENU hmenu);
    virtual void DoCommand(int icmd, int x, int y);

@@ -89,8 +89,8 @@ public:
       virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
       // Multi-object manipulation
-      virtual void GetCenter(Vertex2D * const pv) const;
-      virtual void PutCenter(const Vertex2D * const pv);
+      virtual Vertex2D GetCenter() const;
+      virtual void PutCenter(const Vertex2D& pv);
 
       virtual void UpdatePropertyPanes();
       virtual void SetDefaultPhysics(bool fromMouseClick);

@@ -495,27 +495,27 @@ void Flasher::SetObjectPos()
    g_pvp->SetObjectPosCur(0, 0);
 }
 
-void Flasher::FlipY(Vertex2D * const pvCenter)
+void Flasher::FlipY(const Vertex2D& pvCenter)
 {
    IHaveDragPoints::FlipPointY(pvCenter);
 }
 
-void Flasher::FlipX(Vertex2D * const pvCenter)
+void Flasher::FlipX(const Vertex2D& pvCenter)
 {
    IHaveDragPoints::FlipPointX(pvCenter);
 }
 
-void Flasher::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
+void Flasher::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
 }
 
-void Flasher::Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter)
+void Flasher::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementsCenter);
+   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
 }
 
-void Flasher::Translate(Vertex2D *pvOffset)
+void Flasher::Translate(const Vertex2D &pvOffset)
 {
    IHaveDragPoints::TranslatePoints(pvOffset);
 }
@@ -543,17 +543,13 @@ void Flasher::DoCommand(int icmd, int x, int y)
    {
    case ID_WALLMENU_FLIP:
    {
-      Vertex2D vCenter;
-      GetPointCenter(&vCenter);
-      FlipPointY(&vCenter);
+      FlipPointY(GetPointCenter());
    }
    break;
 
    case ID_WALLMENU_MIRROR:
    {
-      Vertex2D vCenter;
-      GetPointCenter(&vCenter);
-      FlipPointX(&vCenter);
+      FlipPointX(GetPointCenter());
    }
    break;
 

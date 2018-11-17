@@ -17,7 +17,7 @@ IHaveDragPoints::~IHaveDragPoints()
    }
 }
 
-void IHaveDragPoints::GetPointCenter(Vertex2D * const pv) const
+Vertex2D IHaveDragPoints::GetPointCenter() const
 {
    float minx = FLT_MAX;
    float maxx = -FLT_MAX;
@@ -33,34 +33,30 @@ void IHaveDragPoints::GetPointCenter(Vertex2D * const pv) const
       maxy = max(maxy, v.y);
    }
 
-   pv->x = (maxx + minx)*0.5f;
-   pv->y = (maxy + miny)*0.5f;
+   return Vertex2D((maxx + minx)*0.5f, (maxy + miny)*0.5f);
 }
 
-void IHaveDragPoints::PutPointCenter(const Vertex2D * const pv)
+void IHaveDragPoints::PutPointCenter(const Vertex2D& pv)
 {
 }
 
-void IHaveDragPoints::FlipPointY(Vertex2D *pvCenter)
+void IHaveDragPoints::FlipPointY(const Vertex2D& pvCenter)
 {
    GetIEditable()->BeginUndo();
    GetIEditable()->MarkForUndo();
 
-   Vertex2D newcenter;
-   GetPointCenter(&newcenter);
-
-   const float ycenter = pvCenter->y;
+   Vertex2D newcenter = GetPointCenter();
 
    for (int i = 0; i < m_vdpoint.Size(); i++)
    {
-      const float deltay = m_vdpoint.ElementAt(i)->m_v.y - ycenter;
+      const float deltay = m_vdpoint.ElementAt(i)->m_v.y - pvCenter.y;
 
       m_vdpoint.ElementAt(i)->m_v.y -= deltay*2.0f;
    }
 
-   const float deltay = newcenter.y - ycenter;
+   const float deltay = newcenter.y - pvCenter.y;
    newcenter.y -= deltay*2.0f;
-   PutPointCenter(&newcenter);
+   PutPointCenter(newcenter);
 
    ReverseOrder();
 
@@ -69,26 +65,23 @@ void IHaveDragPoints::FlipPointY(Vertex2D *pvCenter)
    GetPTable()->SetDirtyDraw();
 }
 
-void IHaveDragPoints::FlipPointX(Vertex2D *pvCenter)
+void IHaveDragPoints::FlipPointX(const Vertex2D& pvCenter)
 {
    GetIEditable()->BeginUndo();
    GetIEditable()->MarkForUndo();
 
-   Vertex2D newcenter;
-   GetPointCenter(&newcenter);
-
-   const float xcenter = pvCenter->x;
+   Vertex2D newcenter = GetPointCenter();
 
    for (int i = 0; i < m_vdpoint.Size(); i++)
    {
-      const float deltax = m_vdpoint.ElementAt(i)->m_v.x - xcenter;
+      const float deltax = m_vdpoint.ElementAt(i)->m_v.x - pvCenter.x;
 
       m_vdpoint.ElementAt(i)->m_v.x -= deltax*2.0f;
    }
 
-   const float deltax = newcenter.x - xcenter;
+   const float deltax = newcenter.x - pvCenter.x;
    newcenter.x -= deltax*2.0f;
-   PutPointCenter(&newcenter);
+   PutPointCenter(newcenter);
 
    ReverseOrder();
 
@@ -115,10 +108,9 @@ void IHaveDragPoints::TranslateDialog()
       g_pvp->m_hwnd, TranslateProc, (size_t)this->GetIEditable()->GetISelect());
 }
 
-void IHaveDragPoints::RotatePoints(float ang, Vertex2D *pvCenter, const bool useElementCenter)
+void IHaveDragPoints::RotatePoints(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   Vertex2D newcenter;
-   GetPointCenter(&newcenter);
+   Vertex2D newcenter = GetPointCenter();
 
    GetIEditable()->BeginUndo();
    GetIEditable()->MarkForUndo();
@@ -146,8 +138,8 @@ void IHaveDragPoints::RotatePoints(float ang, Vertex2D *pvCenter, const bool use
    }
    else
    {
-      const float centerx = pvCenter->x;
-      const float centery = pvCenter->y;
+      const float centerx = pvCenter.x;
+      const float centery = pvCenter.y;
 
       const float sn = sinf(ANGTORAD(ang));
       const float cs = cosf(ANGTORAD(ang));
@@ -172,7 +164,7 @@ void IHaveDragPoints::RotatePoints(float ang, Vertex2D *pvCenter, const bool use
          const float dy2 = cs*dy + sn*dx;
          newcenter.x = centerx + dx2;
          newcenter.y = centery + dy2;
-         PutPointCenter(&newcenter);
+         PutPointCenter(newcenter);
       }
    }
    GetIEditable()->EndUndo();
@@ -180,15 +172,14 @@ void IHaveDragPoints::RotatePoints(float ang, Vertex2D *pvCenter, const bool use
    GetPTable()->SetDirtyDraw();
 }
 
-void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter)
+void IHaveDragPoints::ScalePoints(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   Vertex2D newcenter;
-   GetPointCenter(&newcenter);
+   Vertex2D newcenter = GetPointCenter();
 
    GetIEditable()->BeginUndo();
    GetIEditable()->MarkForUndo();
 
-   if (useElementsCenter)
+   if (useElementCenter)
    {
       /* Don't use the pvCenter anymore! pvCenter is the mouse position when scaling is activated.
       Because the mouse position (scaling center) isn't shown in the editor use the element's center returned by GetPointCenter() */
@@ -206,8 +197,8 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter
    }
    else
    {
-      const float centerx = pvCenter->x;
-      const float centery = pvCenter->y;
+      const float centerx = pvCenter.x;
+      const float centery = pvCenter.y;
 
       for (int i = 0; i < m_vdpoint.Size(); i++)
       {
@@ -225,7 +216,7 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter
          const float dy = (newcenter.y - centery) * scaley;
          newcenter.x = centerx + dx;
          newcenter.y = centery + dy;
-         PutPointCenter(&newcenter);
+         PutPointCenter(newcenter);
       }
    }
 
@@ -234,7 +225,7 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter
    GetPTable()->SetDirtyDraw();
 }
 
-void IHaveDragPoints::TranslatePoints(Vertex2D *pvOffset)
+void IHaveDragPoints::TranslatePoints(const Vertex2D &pvOffset)
 {
    GetIEditable()->BeginUndo();
    GetIEditable()->MarkForUndo();
@@ -242,17 +233,16 @@ void IHaveDragPoints::TranslatePoints(Vertex2D *pvOffset)
    for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
-      pdp1->m_v.x += pvOffset->x;
-      pdp1->m_v.y += pvOffset->y;
+      pdp1->m_v.x += pvOffset.x;
+      pdp1->m_v.y += pvOffset.y;
    }
 
-   Vertex2D newcenter;
-   GetPointCenter(&newcenter);
+   Vertex2D newcenter = GetPointCenter();
 
-   newcenter.x += pvOffset->x;
-   newcenter.y += pvOffset->y;
+   newcenter.x += pvOffset.x;
+   newcenter.y += pvOffset.y;
 
-   PutPointCenter(&newcenter);
+   PutPointCenter(newcenter);
 
    GetIEditable()->EndUndo();
 
@@ -492,16 +482,15 @@ void DragPoint::MoveOffset(const float dx, const float dy)
    m_pihdp->GetIEditable()->SetDirtyDraw();
 }
 
-void DragPoint::GetCenter(Vertex2D * const pv) const
+Vertex2D DragPoint::GetCenter() const
 {
-   pv->x = m_v.x;
-   pv->y = m_v.y;
+   return Vertex2D(m_v.x, m_v.y);
 }
 
-void DragPoint::PutCenter(const Vertex2D * const pv)
+void DragPoint::PutCenter(const Vertex2D& pv)
 {
-   m_v.x = pv->x;
-   m_v.y = pv->y;
+   m_v.x = pv.x;
+   m_v.y = pv.y;
 
    m_pihdp->GetIEditable()->SetDirtyDraw();
 }
@@ -778,7 +767,6 @@ int rotateApplyCount = 0;
 INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    ISelect *psel;
-   bool useElementCenter = false;
 
    switch (uMsg)
    {
@@ -795,8 +783,7 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
       char szT[256];
       f2sz(angle, szT);
       SetDlgItemText(hwndDlg, IDC_ROTATEBY, szT);
-      Vertex2D v;
-      psel->GetCenter(&v);
+      const Vertex2D v = psel->GetCenter();
       f2sz(v.x, szT);
       SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
       f2sz(v.y, szT);
@@ -829,8 +816,7 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
                }
                else
                {
-                  Vertex2D v;
-                  psel->GetCenter(&v);
+                  const Vertex2D v = psel->GetCenter();
                   f2sz(v.x, szT);
                   SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
                   f2sz(v.y, szT);
@@ -860,14 +846,14 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
                GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);
                const float f = sz2f(szT);
 
-               useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
+               const bool useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
                GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
                Vertex2D v;
                v.x = sz2f(szT);
                GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
                v.y = sz2f(szT);
 
-               psel->Rotate(f, &v, useElementCenter);
+               psel->Rotate(f, v, useElementCenter);
             }
             EndDialog(hwndDlg, TRUE);
             break;
@@ -879,14 +865,14 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
             GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);
             const float f = sz2f(szT);
 
-            useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
+            const bool useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
             GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
             Vertex2D v;
             v.x = sz2f(szT);
             GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
             v.y = sz2f(szT);
 
-            psel->Rotate(f, &v, useElementCenter);
+            psel->Rotate(f, v, useElementCenter);
             psel->GetPTable()->SetDirtyDraw();
             break;
          }
@@ -921,7 +907,6 @@ int scaleApplyCount = 0;
 INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    ISelect *psel;
-   bool useElementCenter = false;
 
    switch (uMsg)
    {
@@ -938,7 +923,7 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
       SetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT);
       f2sz(v.y, szT);
       SetDlgItemText(hwndDlg, IDC_SCALEY, szT);
-      psel->GetCenter(&v);
+      v = psel->GetCenter();
 
       SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_SETCHECK, BST_CHECKED, 0);
 
@@ -981,8 +966,7 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                }
                else
                {
-                  Vertex2D v;
-                  psel->GetCenter(&v);
+                  const Vertex2D v = psel->GetCenter();
                   f2sz(v.x, szT);
                   SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
                   f2sz(v.y, szT);
@@ -1028,9 +1012,9 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
                v.y = sz2f(szT);
 
-               useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
+               const bool useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
                //pihdp->ScalePoints(fx, fy, &v);
-               psel->Scale(fx, fy, &v, useElementCenter);
+               psel->Scale(fx, fy, v, useElementCenter);
             }
             EndDialog(hwndDlg, TRUE);
             break;
@@ -1059,10 +1043,10 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
             GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
             v.y = sz2f(szT);
 
-            useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
+            const bool useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
             //pihdp->ScalePoints(fx, fy, &v);
-            psel->Scale(fx, fy, &v, useElementCenter);
+            psel->Scale(fx, fy, v, useElementCenter);
             psel->GetPTable()->SetDirtyDraw();
             break;
          }
@@ -1149,7 +1133,7 @@ INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
                GetDlgItemText(hwndDlg, IDC_OFFSETY, szT, 255);
                v.y = sz2f(szT);
 
-               psel->Translate(&v);
+               psel->Translate(v);
             }
             EndDialog(hwndDlg, TRUE);
             break;
@@ -1164,7 +1148,7 @@ INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
             GetDlgItemText(hwndDlg, IDC_OFFSETY, szT, 255);
             v.y = sz2f(szT);
 
-            psel->Translate(&v);
+            psel->Translate(v);
             psel->GetPTable()->SetDirtyDraw();
             break;
          }

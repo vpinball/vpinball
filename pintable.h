@@ -363,13 +363,13 @@ public:
    virtual void ExportMesh(FILE *f);
 
    // Multi-object manipulation
-   virtual void GetCenter(Vertex2D * const pv) const;
-   virtual void PutCenter(const Vertex2D * const pv);
-   virtual void FlipY(Vertex2D * const pvCenter);
-   virtual void FlipX(Vertex2D * const pvCenter);
-   virtual void Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter = false);
-   virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter=false);
-   virtual void Translate(Vertex2D *pvOffset);
+   virtual Vertex2D GetCenter() const;
+   virtual void PutCenter(const Vertex2D& pv);
+   virtual void FlipY(const Vertex2D& pvCenter);
+   virtual void FlipX(const Vertex2D& pvCenter);
+   virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
+   virtual void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
+   virtual void Translate(const Vertex2D &pvOffset);
 
    // IEditable (mostly bogus for now)
    virtual void UIRenderPass1(Sur * const psur);

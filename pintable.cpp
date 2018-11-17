@@ -5397,21 +5397,13 @@ void PinTable::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_FLIP:
    {
-      Vertex2D vCenter;
-
-      GetCenter(&vCenter);
-
-      FlipY(&vCenter);
+      FlipY(GetCenter());
       break;
    }
 
    case ID_WALLMENU_MIRROR:
    {
-      Vertex2D vCenter;
-
-      GetCenter(&vCenter);
-
-      FlipX(&vCenter);
+      FlipX(GetCenter());
       break;
    }
    case IDC_COPY:
@@ -5971,7 +5963,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void PinTable::FlipY(Vertex2D * const pvCenter)
+void PinTable::FlipY(const Vertex2D& pvCenter)
 {
    BeginUndo();
 
@@ -5983,7 +5975,7 @@ void PinTable::FlipY(Vertex2D * const pvCenter)
    EndUndo();
 }
 
-void PinTable::FlipX(Vertex2D * const pvCenter)
+void PinTable::FlipX(const Vertex2D& pvCenter)
 {
    BeginUndo();
 
@@ -5995,7 +5987,7 @@ void PinTable::FlipX(Vertex2D * const pvCenter)
    EndUndo();
 }
 
-void PinTable::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
+void PinTable::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    BeginUndo();
 
@@ -6007,19 +5999,19 @@ void PinTable::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter
    EndUndo();
 }
 
-void PinTable::Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter)
+void PinTable::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    BeginUndo();
 
    for (int i = 0; i < m_vmultisel.Size(); i++)
    {
-      m_vmultisel.ElementAt(i)->Scale(scalex, scaley, pvCenter, useElementsCenter);
+      m_vmultisel.ElementAt(i)->Scale(scalex, scaley, pvCenter, useElementCenter);
    }
 
    EndUndo();
 }
 
-void PinTable::Translate(Vertex2D *pvOffset)
+void PinTable::Translate(const Vertex2D &pvOffset)
 {
    BeginUndo();
 
@@ -6031,7 +6023,7 @@ void PinTable::Translate(Vertex2D *pvOffset)
    EndUndo();
 }
 
-void PinTable::GetCenter(Vertex2D * const pv) const
+Vertex2D PinTable::GetCenter() const
 {
    float minx = FLT_MAX;
    float maxx = -FLT_MAX;
@@ -6041,8 +6033,7 @@ void PinTable::GetCenter(Vertex2D * const pv) const
    for (int i = 0; i < m_vmultisel.Size(); i++)
    {
       ISelect * const psel = m_vmultisel.ElementAt(i);
-      Vertex2D vCenter;
-      psel->GetCenter(&vCenter);
+      const Vertex2D vCenter = psel->GetCenter();
 
       minx = min(minx, vCenter.x);
       maxx = max(maxx, vCenter.x);
@@ -6052,11 +6043,10 @@ void PinTable::GetCenter(Vertex2D * const pv) const
       //ty += m_vdpoint.ElementAt(i)->m_v.y;
    }
 
-   pv->x = (maxx + minx)*0.5f;
-   pv->y = (maxy + miny)*0.5f;
+   return Vertex2D((maxx + minx)*0.5f, (maxy + miny)*0.5f);
 }
 
-void PinTable::PutCenter(const Vertex2D * const pv)
+void PinTable::PutCenter(const Vertex2D& pv)
 {
 }
 
@@ -6837,18 +6827,16 @@ void PinTable::Paste(const bool fAtLocation, int x, int y)
    // Center view on newly created objects, if they are off the screen
    if (cpasted > 0)
    {
-      Vertex2D vcenter;
-      GetCenter(&vcenter);
+      GetCenter(); //!! ??
    }
 
    if ((cpasted > 0) && fAtLocation)
    {
-      Vertex2D vcenter;
-      GetCenter(&vcenter);
+      const Vertex2D vcenter = GetCenter();
 
-      Vertex2D vPos = TransformPoint(x, y);
-      Vertex2D vOffset = vPos - vcenter;
-      Translate(&vOffset);
+      const Vertex2D vPos = TransformPoint(x, y);
+      const Vertex2D vOffset = vPos - vcenter;
+      Translate(vOffset);
    }
 
    if (fError)

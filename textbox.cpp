@@ -391,17 +391,17 @@ void Textbox::MoveOffset(const float dx, const float dy)
    m_ptable->SetDirtyDraw();
 }
 
-void Textbox::GetCenter(Vertex2D * const pv) const
+Vertex2D Textbox::GetCenter() const
 {
-   *pv = m_d.m_v1;
+   return m_d.m_v1;
 }
 
-void Textbox::PutCenter(const Vertex2D * const pv)
+void Textbox::PutCenter(const Vertex2D& pv)
 {
-   m_d.m_v2.x = pv->x + m_d.m_v2.x - m_d.m_v1.x;
-   m_d.m_v2.y = pv->y + m_d.m_v2.y - m_d.m_v1.y;
+   m_d.m_v2.x = pv.x + m_d.m_v2.x - m_d.m_v1.x;
+   m_d.m_v2.y = pv.y + m_d.m_v2.y - m_d.m_v1.y;
 
-   m_d.m_v1 = *pv;
+   m_d.m_v1 = pv;
 
    m_ptable->SetDirtyDraw();
 }

@@ -73,12 +73,12 @@ public:
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
    // Multi-object manipulation
-   virtual void GetCenter(Vertex2D * const pv) const;
-   virtual void PutCenter(const Vertex2D * const pv);
+   virtual Vertex2D GetCenter() const;
+   virtual void PutCenter(const Vertex2D& pv);
    virtual float GetDepth(const Vertex3Ds& viewDir);
    virtual bool IsTransparent();
 
-   virtual void Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter = false);
+   virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
 
    STDMETHOD(get_Name)(BSTR *pVal) { return E_FAIL; }
 

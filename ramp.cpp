@@ -890,8 +890,7 @@ void Ramp::EndPlay()
 float Ramp::GetDepth(const Vertex3Ds& viewDir)
 {
    // TODO: improve
-   Vertex2D center2D;
-   GetCenter(&center2D);
+   const Vertex2D center2D = GetCenter();
    const float centerZ = 0.5f * (m_d.m_heightbottom + m_d.m_heighttop);
    return m_d.m_depthBias + viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * centerZ;
 }
@@ -1525,20 +1524,12 @@ void Ramp::DoCommand(int icmd, int x, int y)
    switch (icmd)
    {
    case ID_WALLMENU_FLIP:
-   {
-      Vertex2D vCenter;
-      GetPointCenter(&vCenter);
-      FlipPointY(&vCenter);
-   }
-   break;
+      FlipPointY(GetPointCenter());
+      break;
 
    case ID_WALLMENU_MIRROR:
-   {
-      Vertex2D vCenter;
-      GetPointCenter(&vCenter);
-      FlipPointX(&vCenter);
-   }
-   break;
+      FlipPointX(GetPointCenter());
+      break;
 
    case ID_WALLMENU_ROTATE:
       RotateDialog();
@@ -1560,27 +1551,27 @@ void Ramp::DoCommand(int icmd, int x, int y)
    }
 }
 
-void Ramp::FlipY(Vertex2D * const pvCenter)
+void Ramp::FlipY(const Vertex2D& pvCenter)
 {
    IHaveDragPoints::FlipPointY(pvCenter);
 }
 
-void Ramp::FlipX(Vertex2D * const pvCenter)
+void Ramp::FlipX(const Vertex2D& pvCenter)
 {
    IHaveDragPoints::FlipPointX(pvCenter);
 }
 
-void Ramp::Rotate(float ang, Vertex2D *pvCenter, const bool useElementCenter)
+void Ramp::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
 }
 
-void Ramp::Scale(float scalex, float scaley, Vertex2D *pvCenter, const bool useElementsCenter)
+void Ramp::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementsCenter);
+   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
 }
 
-void Ramp::Translate(Vertex2D *pvOffset)
+void Ramp::Translate(const Vertex2D &pvOffset)
 {
    IHaveDragPoints::TranslatePoints(pvOffset);
 }

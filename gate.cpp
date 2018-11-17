@@ -668,14 +668,14 @@ void Gate::MoveOffset(const float dx, const float dy)
    m_ptable->SetDirtyDraw();
 }
 
-void Gate::GetCenter(Vertex2D * const pv) const
+Vertex2D Gate::GetCenter() const
 {
-   *pv = m_d.m_vCenter;
+   return m_d.m_vCenter;
 }
 
-void Gate::PutCenter(const Vertex2D * const pv)
+void Gate::PutCenter(const Vertex2D& pv)
 {
-   m_d.m_vCenter = *pv;
+   m_d.m_vCenter = pv;
 
    m_ptable->SetDirtyDraw();
 }
