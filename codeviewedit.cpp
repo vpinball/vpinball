@@ -1,14 +1,10 @@
 #include "stdafx.h"
 #include "codeviewedit.h"
+
 UserData::UserData()
 {
 	LineNum=0;
-	Description="";
-	KeyName="";
 	eTyping = eUnknown;
-	UniqueParent = "";
-	Comment="";
-
 }
 
 UserData::UserData(const int LineNo, const string &Desc, const string &Name, const WordType &TypeIn)
@@ -77,20 +73,19 @@ int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::
 	//Find the start of other instances of strIn by crawling up list
 	//Usually (but not always) FindUDbyKey returns top of the list so its fast
 	const string strSearchData = lowerCase(strIn);
-	string strTableData = "";
 	const size_t SearchWidth = strSearchData.size();
 	while (true)
 	{
-		iNewPos-- ;
+		iNewPos--;
 		if (iNewPos < 0) break;
-		strTableData = lowerCase(ListIn->at(iNewPos).UniqueKey).substr(0, SearchWidth);
+		const string strTableData = lowerCase(ListIn->at(iNewPos).UniqueKey).substr(0, SearchWidth);
 		if (strSearchData.compare(strTableData) != 0) break;
 	}
 	++iNewPos;
 	// now walk down list of Keynames looking for what we want.
 	while (true)
 	{
-		strTableData = lowerCase(ListIn->at(iNewPos).KeyName);
+		string strTableData = lowerCase(ListIn->at(iNewPos).KeyName);
 		result = strSearchData.compare(strTableData); 
 		if (result == 0) break; //Found
 		++iNewPos;
@@ -112,12 +107,11 @@ int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, con
 	const size_t SearchWidth = strSearchData.size();
 	//Find the start of other instances of strIn by crawling up list
 	int iNewPos = CurrentIdx;
-	string strTableData = "";
 	while (true)
 	{
 		iNewPos-- ;
 		if (iNewPos < 0) break;
-		strTableData = lowerCase(ListIn->at(iNewPos).UniqueKey).substr(0, SearchWidth);
+		const string strTableData = lowerCase(ListIn->at(iNewPos).UniqueKey).substr(0, SearchWidth);
 		if (strSearchData.compare(strTableData) != 0) break;
 	}
 	++iNewPos;
@@ -141,7 +135,7 @@ int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, con
 		}
 		++iNewPos;
 		if (iNewPos == ListIn->size() ) break;
-		strTableData = lowerCase(ListIn->at(iNewPos).KeyName).substr(0, SearchWidth);
+		const string strTableData = lowerCase(ListIn->at(iNewPos).KeyName).substr(0, SearchWidth);
 		if (strSearchData.compare(strTableData) != 0) break;
 	}
 	--iNewPos;
@@ -157,9 +151,9 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 		UINT32 iCurPos = (ListSize >> 1);
 		int iNewPos = 1u << 30;
 		while ((!(iNewPos & ListSize)) && (iNewPos > 1))
-      {
-         iNewPos >>= 1;
-      }
+		{
+			iNewPos >>= 1;
+		}
 		int iJumpDelta = ((iNewPos) >> 1);
 		--iNewPos;//Zero Base
 		const string strSearchData = lowerCase( strIn );
@@ -192,9 +186,9 @@ int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 	UINT32 iCurPos = (ListSize >> 1);
 	UINT32 iNewPos = 1u << 30;
 	while ( (!(iNewPos & ListSize)) && (iNewPos > 1) )
-   {
-      iNewPos >>= 1;
-   }
+	{
+		iNewPos >>= 1;
+	}
 	int iJumpDelta = ((iNewPos) >> 1);
 	--iNewPos;//Zero Base
 	const string strSearchData = lowerCase( strIn );
@@ -228,9 +222,9 @@ int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
 	UINT32 iCurPos = (ListSize >> 1);
 	UINT32 iNewPos = 1u << 30;
 	while ( (!(iNewPos & ListSize)) && (iNewPos > 1) )
-   {
-      iNewPos >>= 1;
-   }
+	{
+		iNewPos >>= 1;
+	}
 	int iJumpDelta = ((iNewPos) >> 1);
 	--iNewPos;//Zero Base
 	const string strSearchData = lowerCase( strIn );
@@ -353,9 +347,9 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const strin
 	UINT32 iCurPos = (ListSize >> 1);
 	UINT32 iNewPos = 1u << 31;
 	while ((!(iNewPos & ListSize)) && (iNewPos > 1))
-   {
-      iNewPos >>= 1;
-   }
+	{
+		iNewPos >>= 1;
+	}
 	int iJumpDelta = ((iNewPos) >> 1);
 	--iNewPos;//Zero Base
 	const string strSearchData = lowerCase( strIn );
@@ -440,10 +434,7 @@ void CVPrefrence::SetCheckBox(const HWND &hwndDlg)
 
 void CVPrefrence::ReadCheckBox(const HWND &hwndDlg)
 {
-	if(IsDlgButtonChecked(hwndDlg,this->IDC_ChkBox_code))
-		this->Highlight = true;
-	else
-		this->Highlight = false;
+	this->Highlight = !!IsDlgButtonChecked(hwndDlg, this->IDC_ChkBox_code);
 }
 
 void CVPrefrence::GetPrefsFromReg()
@@ -554,5 +545,5 @@ void CVPrefrence::ApplyPreferences(const HWND &hwndScin,const CVPrefrence* Defau
 
 CVPrefrence::~CVPrefrence()
 {
-	//everything should be automatically detroyed.
+	//everything should be automatically destroyed.
 }
