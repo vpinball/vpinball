@@ -24,6 +24,8 @@ public:
 public:
 	UserData();
 	UserData(const int LineNo, const string &Desc, const string &Name, const WordType &TypeIn);
+	~UserData();
+
 	string lowerCase(string input);
 	bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, const string &strIn);
 	size_t FindOrInsertUD( vector<UserData>* ListIn, UserData& udIn);
@@ -35,7 +37,6 @@ public:
 	UserData GetUDfromUniqueKey(vector<UserData>* ListIn, const string &UniKey);
 	size_t GetUDPointerfromUniqueKey(vector<UserData>* ListIn, const string &UniKey);
 	void RemovePadding(string &line);
-	~UserData();
 };
 
 // CodeViewer Preferences 
@@ -45,13 +46,13 @@ public:
 	const char* szControlName;
 	LOGFONT LogFont;
 	int PointSize;
-	COLORREF rgb ;
-	bool Highlight;
+	COLORREF rgb;
 	const char *szRegName;
 	int SciKeywordID;
 	int IDC_ChkBox_code;
 	int IDC_ColorBut_code;
 	int IDC_Font_code;
+	bool Highlight;
 
 	CVPrefrence();
 	CVPrefrence* FillCVPreference( \
@@ -59,6 +60,8 @@ public:
 		const bool &bDisplay, const char* szRegistryName, \
 		const int &szScintillaKeyword, const int &IDC_ChkBox, \
 		const int &IDC_ColorBut, const int &IDC_Font);
+	~CVPrefrence();
+
 	void GetPrefsFromReg();
 	void SetPrefsToReg();
 	void SetCheckBox(const HWND &hwndDlg);
@@ -66,7 +69,6 @@ public:
 	void SetDefaultFont(const HWND &hwndDlg);
 	int GetHeightFromPointSize(const HWND &hwndDlg);
 	void ApplyPreferences(const HWND &hwndScin,const CVPrefrence* DefaultPref);
-	~CVPrefrence();
 };
 
 #endif //_CVEDIT_
