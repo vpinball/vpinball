@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-// this is the djb2 string hash algorithm
+// this is the djb2 string hash algorithm, str is converted to lower case
 unsigned long StringHash(const unsigned char *str)
 {
    //MessageBox(0, (char*)str, 0, 0);
@@ -8,7 +8,7 @@ unsigned long StringHash(const unsigned char *str)
    int c;
 
    while (c = *str++)
-      hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+      hash = ((hash << 5) + hash) + tolower(c); /* hash * 33 + c */
 
    return hash;
 }
