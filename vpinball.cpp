@@ -1306,14 +1306,14 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
        ptCur = GetActiveTable();
        if (ptCur)
-          ptCur->ImportBackdropPOV();
+          ptCur->ImportBackdropPOV(NULL);
        break;
    }
    case ID_EXPORT_BACKDROPPOV:
    {
        ptCur = GetActiveTable();
        if (ptCur)
-          ptCur->ExportBackdropPOV();
+          ptCur->ExportBackdropPOV(NULL);
        break;
    }
    case ID_FILE_EXIT:
@@ -1634,7 +1634,7 @@ void VPinball::SetEnableToolbar()
    ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 2); //redisplay 
 }
 
-void VPinball::DoPlay(bool _cameraMode)
+void VPinball::DoPlay(const bool _cameraMode)
 {
    NumVideoBytes = 0;
    CComObject<PinTable> * const ptCur = GetActiveTable();
@@ -2213,8 +2213,7 @@ void VPinball::OnClose()
          SetRegValue("Editor", "WindowRight", REG_DWORD, &winpl.rcNormalPosition.right, 4);
          SetRegValue("Editor", "WindowBottom", REG_DWORD, &winpl.rcNormalPosition.bottom, 4);
 
-         BOOL fMaximized = ::IsZoomed(m_hwnd);
-         SetRegValue("Editor", "WindowMaximized", REG_DWORD, &fMaximized, 4);
+         SetRegValueBool("Editor", "WindowMaximized", !!::IsZoomed(m_hwnd));
       }
       CWnd::OnClose();
    }

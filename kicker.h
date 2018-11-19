@@ -84,8 +84,8 @@ public:
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
 
-   virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual ItemTypeEnum HitableGetItemType() { return eItemKicker; }
+   virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemKicker; }
 
    void WriteRegDefaults();
    void GenerateMesh(Vertex3D_NoTex2 *const buf);

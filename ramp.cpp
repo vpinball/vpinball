@@ -50,7 +50,7 @@ void Ramp::UpdateUnitsInfo()
 }
 
 
-bool Ramp::IsTransparent()
+bool Ramp::IsTransparent() const
 {
    return m_ptable->GetMaterial(m_d.m_szMaterial)->m_bOpacityActive;
 }
@@ -521,7 +521,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    return rgvLocal;
 }
 
-float Ramp::GetSurfaceHeight(float x, float y)
+float Ramp::GetSurfaceHeight(float x, float y) const
 {
    std::vector<RenderVertex3D> vvertex;
    GetCentralCurve(vvertex);
@@ -887,7 +887,7 @@ void Ramp::EndPlay()
    }
 }
 
-float Ramp::GetDepth(const Vertex3Ds& viewDir)
+float Ramp::GetDepth(const Vertex3Ds& viewDir) const
 {
    // TODO: improve
    const Vertex2D center2D = GetCenter();

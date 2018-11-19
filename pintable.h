@@ -309,13 +309,13 @@ public:
 
    void ExportBlueprint();
    void ExportTableMesh();
-   void ImportBackdropPOV(const char *filename = NULL);
-   void ExportBackdropPOV(const char *filename = NULL);
+   void ImportBackdropPOV(const char *filename);
+   void ExportBackdropPOV(const char *filename);
 
    //void FireVoidEvent(int dispid);
    void FireKeyEvent(int dispid, int keycode);
 
-   void Play(const bool _cameraMode = false);
+   void Play(const bool _cameraMode);
    void StopPlaying();
 
    void ImportSound(const HWND hwndListView, char *filename, const bool fPlay);
@@ -334,7 +334,7 @@ public:
    int AddListImage(HWND hwndListView, Texture *ppi);
    void RemoveImage(Texture *ppi);
    HRESULT LoadImageFromStream(IStream *pstm, int version);
-   Texture *GetImage(char * const szName) const;
+   Texture* GetImage(const char * const szName) const;
    void CreateGDIBackdrop();
    int GetImageLink(Texture *ppi);
    PinBinary *GetImageLinkBinary(int id);
@@ -464,12 +464,12 @@ public:
    void SetDefaultView();
    void GetViewRect(FRect *pfrect);
 
-   bool IsNameUnique(WCHAR *wzName);
+   bool IsNameUnique(const WCHAR * const wzName) const;
    void GetUniqueName(ItemTypeEnum type, WCHAR *wzUniqueName);
    void GetUniqueName(WCHAR *prefix, WCHAR *wzUniqueName);
    void GetUniqueNamePasting(int type, WCHAR *wzUniqueName);
 
-   float GetSurfaceHeight(char *szName, float x, float y);
+   float GetSurfaceHeight(const char * const szName, float x, float y) const;
 
    void SetLoadDefaults();
 
@@ -497,12 +497,12 @@ public:
    void MoveCollectionUp(CComObject<Collection> *pcol);
    void MoveCollectionDown(CComObject<Collection> *pcol);
 
-   int GetDetailLevel(); // used for rubber, ramp and ball
-   float GetZPD();
-   float GetMaxSeparation();
-   float Get3DOffset();
+   int GetDetailLevel() const; // used for rubber, ramp and ball
+   float GetZPD() const;
+   float GetMaxSeparation() const;
+   float Get3DOffset() const;
 
-   FRect3D GetBoundingBox();
+   FRect3D GetBoundingBox() const;
 
    bool RenderSolid() const { return m_renderSolid; }
 
@@ -524,18 +524,21 @@ public:
    void ListMaterials(HWND hwndListView);
    int AddListMaterial(HWND hwndListView, Material *pmat);
    void RemoveMaterial(Material *pmat);
-   void AddDbgLight( Light *plight );
-   void UpdateDbgLight( void );
-   void AddMaterial( Material *pmat );
+   void AddDbgLight(Light *plight);
+   void UpdateDbgLight();
+   void AddMaterial(Material *pmat);
    void AddDbgMaterial(Material *pmat);
-   void UpdateDbgMaterial(void);
-   bool IsMaterialNameUnique(char *name);
-   Material* GetMaterial(char * const szName) const;
-   Material* GetSurfaceMaterial(char *szName);
-   Texture *GetSurfaceImage(char *szName);
+   void UpdateDbgMaterial();
+
+   bool IsMaterialNameUnique(const char * const name) const;
+   Material* GetMaterial(const char * const szName) const;
+   Material* GetSurfaceMaterial(const char * const szName) const;
+   Texture* GetSurfaceImage(const char * const szName) const;
+
    bool GetCollectionIndex(ISelect *element, int &collectionIndex, int &elementIndex);
 
    void LockElements();
+
    char m_szFileName[MAXSTRING];
    char m_szBlueprintFileName[MAXSTRING];
    char m_szObjFileName[MAXSTRING];

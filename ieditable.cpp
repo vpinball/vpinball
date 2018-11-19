@@ -134,7 +134,7 @@ void IEditable::BeginPlay()
    m_fSingleEvents = true;
    for (int i = 0; i < m_vCollection.Size(); i++)
    {
-      Collection *pcol = m_vCollection.ElementAt(i);
+      Collection * const pcol = m_vCollection.ElementAt(i);
       if (pcol->m_fFireEvents)
       {
          m_vEventCollection.AddElement(pcol);
@@ -201,5 +201,5 @@ void IEditable::InitScript()
       // Just in case something screws up - not good having a null script name
       swprintf_s(GetScriptable()->m_wzName, L"%d", (long)this);
 
-   GetPTable()->m_pcv->AddItem(GetScriptable(), fFalse);
+   GetPTable()->m_pcv->AddItem(GetScriptable(), false);
 }

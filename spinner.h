@@ -84,9 +84,9 @@ public:
    virtual void PutCenter(const Vertex2D& pv);
    virtual void SetDefaultPhysics(bool fromMouseClick);
 
-   virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual unsigned long long GetImageID() { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
-   virtual ItemTypeEnum HitableGetItemType() { return eItemSpinner; }
+   virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemSpinner; }
    virtual void ExportMesh(FILE *f);
 
    void WriteRegDefaults();

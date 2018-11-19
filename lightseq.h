@@ -107,8 +107,8 @@ public:
    virtual Vertex2D GetCenter() const;
    virtual void PutCenter(const Vertex2D& pv);
 
-   virtual void RenderBlueprint(Sur *psur, const bool solid=false);
-   virtual ItemTypeEnum HitableGetItemType() { return eItemLightSeq; }
+   virtual void RenderBlueprint(Sur *psur, const bool solid);
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemLightSeq; }
 
    void WriteRegDefaults();
 

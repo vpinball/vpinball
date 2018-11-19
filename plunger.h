@@ -76,13 +76,13 @@ struct PlungerCoord
    // normal of the top vertex along this circle
    float nx, ny;
 
-   void set(const float r, const float y, const float tv, const float nx, const float ny)
+   void set(const float _r, const float _y, const float _tv, const float _nx, const float _ny)
    {
-      this->r = r;
-      this->y = y;
-      this->tv = tv;
-      this->nx = nx;
-      this->ny = ny;
+      r  = _r;
+      y  = _y;
+      tv = _tv;
+      nx = _nx;
+      ny = _ny;
    }
 };
 
@@ -150,7 +150,7 @@ public:
    virtual Vertex2D GetCenter() const;
    virtual void PutCenter(const Vertex2D& pv);
    virtual void SetDefaultPhysics(bool fromMouseClick);
-   virtual ItemTypeEnum HitableGetItemType() { return eItemPlunger; }
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemPlunger; }
 
    void WriteRegDefaults();
 

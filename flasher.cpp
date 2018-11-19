@@ -723,21 +723,15 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(FVIS))
    {
-      BOOL iTmp;
-      pbr->GetBool(&iTmp);
-      m_d.m_IsVisible = (iTmp == 1);
+      pbr->GetBool(&m_d.m_IsVisible);
    }
    else if (id == FID(ADDB))
    {
-      BOOL iTmp;
-      pbr->GetBool(&iTmp);
-      m_d.m_fAddBlend = (iTmp == 1);
+      pbr->GetBool(&m_d.m_fAddBlend);
    }
    else if (id == FID(IDMD))
    {
-	   BOOL iTmp;
-	   pbr->GetBool(&iTmp);
-	   m_d.m_IsDMD = (iTmp == 1);
+      pbr->GetBool(&m_d.m_IsDMD);
    }
    else if (id == FID(DSPT))
    {

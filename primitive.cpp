@@ -2212,7 +2212,7 @@ void Primitive::ExportMesh()
    m_mesh.SaveWavefrontObj(ofn.lpstrFile, m_d.m_use3DMesh ? name : "Primitive");
 }
 
-bool Primitive::IsTransparent()
+bool Primitive::IsTransparent() const
 {
    if (m_d.m_fSkipRendering)
       return false;
@@ -2220,7 +2220,7 @@ bool Primitive::IsTransparent()
    return m_ptable->GetMaterial(m_d.m_szMaterial)->m_bOpacityActive;
 }
 
-float Primitive::GetDepth(const Vertex3Ds& viewDir)
+float Primitive::GetDepth(const Vertex3Ds& viewDir) const
 {
    return m_d.m_depthBias + m_d.m_vPosition.Dot(viewDir);
 }

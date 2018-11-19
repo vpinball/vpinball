@@ -28,7 +28,7 @@ Surface::~Surface()
    FreeBuffers();
 }
 
-bool Surface::IsTransparent()
+bool Surface::IsTransparent() const
 {
    bool result = false;
    if (m_d.m_fSideVisible)

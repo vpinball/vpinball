@@ -88,7 +88,7 @@ public:
    virtual Vertex2D GetCenter() const;
    virtual void PutCenter(const Vertex2D& pv);
 
-   virtual ItemTypeEnum HitableGetItemType() { return eItemDispReel; }
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemDispReel; }
 
    DECLARE_REGISTRY_RESOURCEID(IDR_DISP_REEL)
    // ISupportsErrorInfo

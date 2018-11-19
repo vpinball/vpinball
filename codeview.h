@@ -71,11 +71,11 @@ public:
    IUnknown *m_punk;
    IDispatch *m_pdisp;
    IScriptable *m_piscript;
-   BOOL m_fGlobal;
+   bool m_fGlobal;
 
    // for VectorSortString
-   int SortAgainst(CodeViewDispatch *pcvd/*void *pvoid*/);
-   int SortAgainstValue(void *pv);
+   int SortAgainst(const CodeViewDispatch * const pcvd/*void *pvoid*/) const;
+   int SortAgainstValue(const void * const pv) const;
 };
 
 
@@ -111,7 +111,7 @@ public:
    STDMETHOD(CleanUpScriptEngine)();
    STDMETHOD(InitializeScriptEngine)();
 
-   HRESULT AddItem(IScriptable * const piscript, const BOOL fGlobal);
+   HRESULT AddItem(IScriptable * const piscript, const bool fGlobal);
    void RemoveItem(IScriptable * const piscript);
    HRESULT ReplaceName(IScriptable * const piscript, WCHAR * const wzNew);
    void SelectItem(IScriptable * const piscript);
@@ -185,10 +185,10 @@ public:
       /* [in] */ DWORD cbContext,
       /* [in] */ DWORD dwReserved);
 
-   BOOL FControlAlreadyOkayed(CONFIRMSAFETY *pcs);
+   bool FControlAlreadyOkayed(CONFIRMSAFETY *pcs);
    void AddControlToOkayedList(CONFIRMSAFETY *pcs);
-   BOOL FControlMarkedSafe(CONFIRMSAFETY *pcs);
-   BOOL FUserManuallyOkaysControl(CONFIRMSAFETY *pcs);
+   bool FControlMarkedSafe(CONFIRMSAFETY *pcs);
+   bool FUserManuallyOkaysControl(CONFIRMSAFETY *pcs);
 
    virtual HRESULT STDMETHODCALLTYPE QueryService(
       REFGUID guidService,
@@ -385,9 +385,9 @@ public:
 
    VectorProtected<ISelect> m_visel;
 
-   BOOL m_fFireEvents;
-   BOOL m_fStopSingleEvents;
-   BOOL m_fGroupElements;
+   bool m_fFireEvents;
+   bool m_fStopSingleEvents;
+   bool m_fGroupElements;
 };
 
 class OMCollectionEnum :

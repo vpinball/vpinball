@@ -4,7 +4,7 @@
 unsigned long long tinymt64state[2] = { 'T', 'M' };
 
 
-float sz2f(char *sz)
+float sz2f(const char * const sz)
 {
    WCHAR wzT[256];
    MultiByteToWideChar(CP_ACP, 0, sz, -1, wzT, 256);
@@ -13,51 +13,49 @@ float sz2f(char *sz)
 
    if (SUCCEEDED(VariantChangeType(&var, &var, 0, VT_R4)))
    {
-      float result = V_R4(&var);
+      const float result = V_R4(&var);
       VariantClear(&var);
       return result;
    }
    return 0.0f;
 }
 
-void f2sz(const float f, char *sz)
+void f2sz(const float f, char * const sz)
 {
    CComVariant var = f;
 
    if (SUCCEEDED(VariantChangeType(&var, &var, 0, VT_BSTR)))
    {
-      WCHAR *wzT;
-      wzT = V_BSTR(&var);
+      WCHAR * const wzT = V_BSTR(&var);
 
       WideCharToMultiByte(CP_ACP, 0, wzT, -1, sz, 256, NULL, NULL);
       VariantClear(&var);
    }
    else
       sprintf_s(sz, 255, "0.0");
-
 }
 
-void WideStrCopy(WCHAR *wzin, WCHAR *wzout)
+void WideStrCopy(const WCHAR *wzin, WCHAR *wzout)
 {
    while (*wzin) { *wzout++ = *wzin++; }
    *wzout = 0;
 }
 
-void WideStrNCopy(WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen)
+void WideStrNCopy(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen)
 {
    DWORD i = 0;
    while (*wzin && (i < wzoutMaxLen - 1)) { *wzout++ = *wzin++; i++; }
    *wzout = 0;
 }
 
-void WideStrCat(WCHAR *wzin, WCHAR *wzout)
+void WideStrCat(const WCHAR *wzin, WCHAR *wzout)
 {
    wzout += lstrlenW(wzout);
    while (*wzin) { *wzout++ = *wzin++; }
    *wzout = 0;
 }
 
-int WideStrCmp(WCHAR *wz1, WCHAR *wz2)
+int WideStrCmp(const WCHAR *wz1, const WCHAR *wz2)
 {
    while (*wz1 != L'\0')
    {
@@ -82,7 +80,7 @@ int WideStrCmp(WCHAR *wz1, WCHAR *wz2)
    return 0;
 }
 
-int WzSzStrCmp(WCHAR *wz1, char *sz2)
+int WzSzStrCmp(const WCHAR *wz1, const char *sz2)
 {
    while (*wz1 != L'\0')
    {
@@ -98,7 +96,7 @@ int WzSzStrCmp(WCHAR *wz1, char *sz2)
    return 0;
 }
 
-int WzSzStrnCmp(WCHAR *wz1, char *sz2, int count)
+int WzSzStrnCmp(const WCHAR *wz1, const char *sz2, const int count)
 {
    int i = 0;
 
@@ -125,15 +123,15 @@ LocalString::LocalString(const int resid)
       m_szbuffer[0] = 0;
 }
 
-LocalStringW::LocalStringW(int resid)
+LocalStringW::LocalStringW(const int resid)
 {
    if (resid > 0)
-      LoadStringW(g_hinst, resid, this->str, 256);
+      LoadStringW(g_hinst, resid, str, 256);
    else
       str[0] = 0;
 }
 
-WCHAR *MakeWide(char *sz)
+WCHAR *MakeWide(const char * const sz)
 {
    const int len = lstrlen(sz);
    WCHAR * const wzT = new WCHAR[len + 1];
@@ -142,7 +140,7 @@ WCHAR *MakeWide(char *sz)
    return wzT;
 }
 
-char *MakeChar(WCHAR *wz)
+char *MakeChar(const WCHAR * const wz)
 {
    const int len = lstrlenW(wz);
    char * const szT = new char[len + 1];

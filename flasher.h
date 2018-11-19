@@ -79,7 +79,7 @@ public:
       virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
       virtual void ClearForOverwrite();
 
-      virtual void RenderBlueprint(Sur *psur, const bool solid=false);
+      virtual void RenderBlueprint(Sur *psur, const bool solid);
 
       virtual void FlipY(const Vertex2D& pvCenter);
       virtual void FlipX(const Vertex2D& pvCenter);
@@ -95,13 +95,13 @@ public:
       virtual void PutCenter(const Vertex2D& pv) { m_d.m_vCenter = pv; m_ptable->SetDirtyDraw(); }
       virtual void DoCommand(int icmd, int x, int y);
 
-      virtual bool IsTransparent() { return !m_d.m_IsDMD; }
-      virtual float GetDepth(const Vertex3Ds& viewDir)
+      virtual bool IsTransparent() const { return !m_d.m_IsDMD; }
+      virtual float GetDepth(const Vertex3Ds& viewDir) const
       {
          return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height;
       }
-      virtual unsigned long long GetMaterialID() { return 64-1; } //!! some constant number
-      virtual unsigned long long GetImageID()
+      virtual unsigned long long GetMaterialID() const { return 64-1; } //!! some constant number
+      virtual unsigned long long GetImageID() const
       {
 		  Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
 		  Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
@@ -112,8 +112,8 @@ public:
 			  tex = pinB;
 		  return (unsigned long long)tex;
       }
-      virtual bool IsDMD() { return m_d.m_IsDMD; }
-      virtual ItemTypeEnum HitableGetItemType() { return eItemFlasher; }
+      virtual bool IsDMD() const { return m_d.m_IsDMD; }
+      virtual ItemTypeEnum HitableGetItemType() const { return eItemFlasher; }
 
       virtual void UpdatePropertyPanes();
 

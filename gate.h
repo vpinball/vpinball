@@ -91,11 +91,11 @@ public:
    virtual void PutCenter(const Vertex2D& pv);
    virtual void SetDefaultPhysics(bool fromMouseClick);
 
-   virtual void RenderBlueprint(Sur *psur, const bool solid=false);
+   virtual void RenderBlueprint(Sur *psur, const bool solid);
    virtual void ExportMesh(FILE *f);
 
-   virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual ItemTypeEnum HitableGetItemType() { return eItemGate; }
+   virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemGate; }
 
    void WriteRegDefaults();
    void UpdateWire(RenderDevice *pd3dDevice);

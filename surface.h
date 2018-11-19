@@ -91,7 +91,7 @@ public:
 
    // IEditable
    virtual void WriteRegDefaults();
-   virtual void RenderBlueprint(Sur *psur, const bool solid=false);
+   virtual void RenderBlueprint(Sur *psur, const bool solid);
 
    virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D);
    virtual void ClearForOverwrite();
@@ -113,8 +113,8 @@ public:
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
    // end ISelect
 
-   virtual float GetDepth(const Vertex3Ds& viewDir) { return viewDir.z * m_d.m_heighttop; }
-   virtual unsigned long long GetMaterialID()
+   virtual float GetDepth(const Vertex3Ds& viewDir) const { return viewDir.z * m_d.m_heighttop; }
+   virtual unsigned long long GetMaterialID() const
    {
       unsigned long long h = 0;
       if (m_d.m_fSideVisible)
@@ -123,7 +123,7 @@ public:
          h = m_ptable->GetMaterial(m_d.m_szTopMaterial)->hash();
       return h;
    }
-   virtual unsigned long long GetImageID()
+   virtual unsigned long long GetImageID() const
    {
       Texture* tex = NULL;
       if (m_d.m_fSideVisible)
@@ -132,8 +132,8 @@ public:
          tex = m_ptable->GetImage(m_d.m_szImage);
       return (unsigned long long)tex;
    }
-   virtual ItemTypeEnum HitableGetItemType() { return eItemSurface; }
-   virtual bool IsTransparent();
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemSurface; }
+   virtual bool IsTransparent() const;
    virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
