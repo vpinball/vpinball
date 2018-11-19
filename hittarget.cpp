@@ -1109,12 +1109,12 @@ STDMETHODIMP HitTarget::put_Image(BSTR newVal)
 }
 
 
-bool HitTarget::IsTransparent()
+bool HitTarget::IsTransparent() const
 {
    return m_ptable->GetMaterial(m_d.m_szMaterial)->m_bOpacityActive;
 }
 
-float HitTarget::GetDepth(const Vertex3Ds& viewDir)
+float HitTarget::GetDepth(const Vertex3Ds& viewDir) const
 {
    return m_d.m_depthBias + m_d.m_vPosition.Dot(viewDir);
 }

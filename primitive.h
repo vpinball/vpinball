@@ -280,16 +280,16 @@ public:
    virtual bool LoadMesh();
    virtual void ExportMesh();
 
-   virtual bool IsTransparent();
-   virtual float GetDepth(const Vertex3Ds& viewDir);
-   virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual unsigned long long GetImageID() { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
-   virtual ItemTypeEnum HitableGetItemType() { return eItemPrimitive; }
+   virtual bool IsTransparent() const;
+   virtual float GetDepth(const Vertex3Ds& viewDir) const;
+   virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemPrimitive; }
 
    virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
-   virtual void RenderBlueprint(Sur *psur, const bool solid=false);
+   virtual void RenderBlueprint(Sur *psur, const bool solid);
 
 
    void    CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevice);

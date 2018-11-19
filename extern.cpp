@@ -4,7 +4,7 @@ HINSTANCE g_hinst;
 VPinball *g_pvp;
 Player *g_pplayer;
 HACCEL g_haccel;
-BOOL g_fKeepUndoRecords = fTrue;
+bool g_fKeepUndoRecords = true;
 
 void ShowError(const char * const sz)
 {

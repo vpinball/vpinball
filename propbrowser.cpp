@@ -288,7 +288,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
       PropertyPane * const pproppane = m_vproppane.ElementAt(i);
       ExpandoInfo * const pexinfo = new ExpandoInfo();
       pexinfo->m_id = i;
-      pexinfo->m_fExpanded = fFalse;
+      pexinfo->m_fExpanded = false;
       pexinfo->m_psb = this;
 
       LocalString ls(pproppane->titlestringid);
@@ -540,7 +540,7 @@ void SmartBrowser::SetVisible(const bool fVisible)
    ShowWindow(m_hwndFrame, fVisible ? SW_SHOW : SW_HIDE);
 }
 
-bool SmartBrowser::GetVisible()
+bool SmartBrowser::GetVisible() const
 {
    return !!IsWindowVisible(m_hwndFrame);
 }
@@ -1618,7 +1618,7 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case EXPANDO_EXPAND:
    {
       pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-      pexinfo->m_fExpanded = fTrue;
+      pexinfo->m_fExpanded = true;
 
       int titleheight;
       if (pexinfo->m_fHasCaption) // Null title means not an expando
@@ -1641,7 +1641,7 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case EXPANDO_COLLAPSE:
    {
       pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-      pexinfo->m_fExpanded = fFalse;
+      pexinfo->m_fExpanded = false;
 
       SetWindowPos(hwnd, NULL, 0, 0, pexinfo->m_psb->m_maxdialogwidth, EXPANDOHEIGHT, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
 

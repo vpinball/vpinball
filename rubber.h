@@ -83,11 +83,11 @@ public:
 
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
-   virtual void RenderBlueprint(Sur *psur, const bool solid=false);
+   virtual void RenderBlueprint(Sur *psur, const bool solid);
 
    virtual void ClearForOverwrite();
 
-   float GetSurfaceHeight(float x, float y);
+   float GetSurfaceHeight(float x, float y) const;
 
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
@@ -107,10 +107,10 @@ public:
 
    virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D);
 
-   virtual float GetDepth(const Vertex3Ds& viewDir);
-   virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual unsigned long long GetImageID() { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
-   virtual ItemTypeEnum HitableGetItemType() { return eItemRubber; }
+   virtual float GetDepth(const Vertex3Ds& viewDir) const;
+   virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemRubber; }
    virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
@@ -147,7 +147,7 @@ private:
    PropertyPane *m_propVisual;
    PropertyPane *m_propPhysics;
 
-   void GetCentralCurve(std::vector<RenderVertex> &vv, const float _accuracy = -1.f);
+   void GetCentralCurve(std::vector<RenderVertex> &vv, const float _accuracy = -1.f) const;
 
    Vertex2D *GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D ** const pMiddlePoints, const float _accuracy = -1.f);
 

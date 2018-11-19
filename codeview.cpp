@@ -49,12 +49,12 @@ CodeViewDispatch::~CodeViewDispatch()
 {
 }
 
-int CodeViewDispatch::SortAgainst(CodeViewDispatch *pcvd/*void *pvoid*/)
+int CodeViewDispatch::SortAgainst(const CodeViewDispatch * const pcvd/*void *pvoid*/) const
 {
    return SortAgainstValue(pcvd->m_wzName);
 }
 
-int CodeViewDispatch::SortAgainstValue(void *pv)
+int CodeViewDispatch::SortAgainstValue(const void * const pv) const
 {
    MAKE_ANSIPTR_FROMWIDE(szName1, (WCHAR *)pv);
    CharLowerBuff(szName1, lstrlen(szName1));
@@ -169,7 +169,7 @@ HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
    pcvd->m_piscript = NULL;
-   pcvd->m_fGlobal = fFalse;
+   pcvd->m_fGlobal = false;
 
    if (m_vcvd.GetSortedIndex(pcvd) != -1 || m_vcvdTemp.GetSortedIndex(pcvd) != -1)
    {
@@ -188,7 +188,7 @@ HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
    return S_OK;
 }
 
-HRESULT CodeViewer::AddItem(IScriptable * const piscript, const BOOL fGlobal)
+HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool fGlobal)
 {
    CodeViewDispatch * const pcvd = new CodeViewDispatch();
 
@@ -1534,14 +1534,14 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryCustomPolicy(
          fSafe = true;
 
       if (!fSafe && ((g_pvp->m_securitylevel == eSecurityWarnOnUnsafeType) || (g_pvp->m_securitylevel == eSecurityWarnOnType)))
-         fSafe = (FControlAlreadyOkayed(pcs) != 0);
+         fSafe = FControlAlreadyOkayed(pcs);
 
       if (!fSafe && (g_pvp->m_securitylevel <= eSecurityWarnOnUnsafeType))
-         fSafe = (FControlMarkedSafe(pcs) != 0);
+         fSafe = FControlMarkedSafe(pcs);
 
       if (!fSafe)
       {
-         fSafe = (FUserManuallyOkaysControl(pcs) != 0);
+         fSafe = FUserManuallyOkaysControl(pcs);
          if (fSafe && ((g_pvp->m_securitylevel == eSecurityWarnOnUnsafeType) || (g_pvp->m_securitylevel == eSecurityWarnOnType)))
             AddControlToOkayedList(pcs);
       }
@@ -1553,7 +1553,7 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryCustomPolicy(
    return S_OK;
 }
 
-BOOL CodeViewer::FControlAlreadyOkayed(CONFIRMSAFETY *pcs)
+bool CodeViewer::FControlAlreadyOkayed(CONFIRMSAFETY *pcs)
 {
    if (g_pplayer)
    {
@@ -1561,11 +1561,11 @@ BOOL CodeViewer::FControlAlreadyOkayed(CONFIRMSAFETY *pcs)
       {
          const CLSID * const pclsid = g_pplayer->m_controlclsidsafe.ElementAt(i);
          if (*pclsid == pcs->clsid)
-            return fTrue;
+            return true;
       }
    }
 
-   return fFalse;
+   return false;
 }
 
 void CodeViewer::AddControlToOkayedList(CONFIRMSAFETY *pcs)
@@ -1578,9 +1578,9 @@ void CodeViewer::AddControlToOkayedList(CONFIRMSAFETY *pcs)
    }
 }
 
-BOOL CodeViewer::FControlMarkedSafe(CONFIRMSAFETY *pcs)
+bool CodeViewer::FControlMarkedSafe(CONFIRMSAFETY *pcs)
 {
-   BOOL fSafe = fFalse;
+   bool fSafe = false;
    IObjectSafety *pios = NULL;
 
    if (FAILED(pcs->pUnk->QueryInterface(IID_IObjectSafety, (void **)&pios)))
@@ -1600,7 +1600,7 @@ BOOL CodeViewer::FControlMarkedSafe(CONFIRMSAFETY *pcs)
          goto LError;
    }
 
-   fSafe = fTrue;
+   fSafe = true;
 
 LError:
 
@@ -1610,11 +1610,11 @@ LError:
    return fSafe;
 }
 
-BOOL CodeViewer::FUserManuallyOkaysControl(CONFIRMSAFETY *pcs)
+bool CodeViewer::FUserManuallyOkaysControl(CONFIRMSAFETY *pcs)
 {
    OLECHAR *wzT;
    if (FAILED(OleRegGetUserType(pcs->clsid, USERCLASSTYPE_FULL, &wzT)))
-      return fFalse;
+      return false;
 
    const int len = lstrlenW(wzT) + 1; // include null termination
 
@@ -1632,14 +1632,10 @@ BOOL CodeViewer::FUserManuallyOkaysControl(CONFIRMSAFETY *pcs)
 
    const int ans = MessageBox(m_hwndMain, szT, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
 
-   BOOL fSafe = fFalse;
-   if (ans == IDYES)
-      fSafe = fTrue;
-
    delete[] szName;
    delete[] szT;
 
-   return fSafe;
+   return (ans == IDYES);
 }
 
 HRESULT STDMETHODCALLTYPE CodeViewer::QueryService(
@@ -1731,7 +1727,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	SendMessage(m_hwndScintilla, SCI_GETLINE, CurrentLineNo, (LPARAM)text);
 	if(text[0] != '\0')
 	{
-		const string strText = string(text);
+		const string strText(text);
 		const size_t t = strText.find_first_of('\'', 0 );
 		if (t != string::npos)
 		{
@@ -2056,8 +2052,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 				//Insert stuff after comma after cleaning up
 				int NewCommPos = RemainingLine.find_first_of(',', CommPos+1);
 				//get word @
-				string crWord;
-				crWord = RemainingLine.substr(CommPos+1, (NewCommPos == -1) ? string::npos : (NewCommPos - CommPos)-1 );
+				string crWord = RemainingLine.substr(CommPos+1, (NewCommPos == -1) ? string::npos : (NewCommPos - CommPos)-1 );
 				RemoveByVal(crWord);
 				RemovePadding(crWord);
 				RemoveNonVBSChars(crWord);
@@ -2097,8 +2092,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 				//Insert stuff after comma after cleaning up
 				int NewCommPos = RemainingLine.find_first_of(',', CommPos+1);
 				//get word @
-				string crWord;
-				crWord = RemainingLine.substr(CommPos+1, (NewCommPos == -1) ? string::npos : (NewCommPos - CommPos)-1 );
+				string crWord = RemainingLine.substr(CommPos+1, (NewCommPos == -1) ? string::npos : (NewCommPos - CommPos)-1 );
 				RemoveByVal(crWord);
 				RemovePadding(crWord);
 				RemoveNonVBSChars(crWord);
@@ -3135,11 +3129,10 @@ void CodeViewer::UpdateScinFromPrefs()
 
 Collection::Collection()
 {
-   m_fFireEvents = fFalse;
-   m_fStopSingleEvents = fFalse;
+   m_fFireEvents = false;
+   m_fStopSingleEvents = false;
 
-   int groupElementsCollection = GetRegIntWithDefault("Editor", "GroupElementsInCollection", 1);
-   m_fGroupElements = groupElementsCollection;
+   m_fGroupElements = !!GetRegIntWithDefault("Editor", "GroupElementsInCollection", 1);
 }
 
 STDMETHODIMP Collection::get_Name(BSTR *pVal)

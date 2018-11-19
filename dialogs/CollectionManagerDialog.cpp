@@ -515,15 +515,15 @@ void CollectionDialog::OnOK()
 
     HWND hwndFireEvents = GetDlgItem(IDC_FIRE).GetHwnd();
     const size_t fEvents = ::SendMessage(hwndFireEvents, BM_GETCHECK, 0, 0);
-    pcol->m_fFireEvents = (BOOL)fEvents;
+    pcol->m_fFireEvents = !!fEvents;
 
     HWND hwndStopSingle = GetDlgItem(IDC_SUPPRESS).GetHwnd();
     const size_t fStopSingle = ::SendMessage(hwndStopSingle, BM_GETCHECK, 0, 0);
-    pcol->m_fStopSingleEvents = (BOOL)fStopSingle;
+    pcol->m_fStopSingleEvents = !!fStopSingle;
 
     HWND hwndGroupElements = GetDlgItem(IDC_GROUP_CHECK).GetHwnd();
     const size_t fGroupElements = ::SendMessage(hwndGroupElements, BM_GETCHECK, 0, 0);
-    pcol->m_fGroupElements = (BOOL)fGroupElements;
+    pcol->m_fGroupElements = !!fGroupElements;
 
     char szT[MAXSTRING];
     HWND hwndName = GetDlgItem(IDC_NAME).GetHwnd();

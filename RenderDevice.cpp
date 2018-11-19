@@ -915,7 +915,7 @@ bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
 
 void RenderDevice::Flip(const bool vsync)
 {
-   BOOL dwm = 0;
+   bool dwm = false;
    if (vsync) // xp does neither have d3dex nor dwm, so vsync will always be specified during device set
       dwm = m_dwm_enabled;
 

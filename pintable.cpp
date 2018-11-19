@@ -1911,9 +1911,9 @@ void PinTable::InitPostLoad(VPinball *pvp)
    CreateGDIBackdrop();
 
    //InitVBA();
-   m_pcv->AddItem(this, fFalse);
-   m_pcv->AddItem(m_psgt, fTrue);
-   m_pcv->AddItem(m_pcv->m_pdm, fFalse);
+   m_pcv->AddItem(this, false);
+   m_pcv->AddItem(m_psgt, true);
+   m_pcv->AddItem(m_pcv->m_pdm, false);
 
    CreateTableWindow();
 
@@ -1921,7 +1921,7 @@ void PinTable::InitPostLoad(VPinball *pvp)
 }
 
 
-bool PinTable::IsNameUnique(WCHAR *wzName)
+bool PinTable::IsNameUnique(const WCHAR * const wzName) const
 {
    return m_pcv->m_vcvd.GetSortedIndex(wzName) == -1;
 }
@@ -2317,7 +2317,7 @@ void PinTable::Play(const bool _cameraMode)
    m_backupEmisionScale = m_lightEmissionScale;
    m_backupEnvEmissionScale = m_envEmissionScale;
 
-   g_fKeepUndoRecords = fFalse;
+   g_fKeepUndoRecords = false;
 
    m_pcv->m_fScriptError = false;
    m_pcv->Compile();
@@ -2427,7 +2427,7 @@ void PinTable::Play(const bool _cameraMode)
       RestoreBackup();
       // restore layers
       RestoreLayers();
-      g_fKeepUndoRecords = fTrue;
+      g_fKeepUndoRecords = true;
       m_pcv->EndSession();
       //delete g_pplayer;
       //g_pplayer = NULL;
@@ -2500,7 +2500,7 @@ void PinTable::StopPlaying()
    m_lightEmissionScale = lightEmissionScale;
    m_envEmissionScale = envEmissionScale;
 
-   g_fKeepUndoRecords = fTrue;
+   g_fKeepUndoRecords = true;
 
    ::ShowWindow(g_pvp->m_hwndWork, SW_SHOW);
    UpdateDbgMaterial();
@@ -3792,7 +3792,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   pcol->AddRef();
                   pcol->LoadData(pstmItem, this, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL);
                   m_vcollection.AddElement(pcol);
-                  m_pcv->AddItem((IScriptable *)pcol, fFalse);
+                  m_pcv->AddItem((IScriptable *)pcol, false);
                   pstmItem->Release();
                   pstmItem = NULL;
                }
@@ -4748,7 +4748,7 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fFromSelection)
    ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
 
    m_vcollection.AddElement(pcol);
-   m_pcv->AddItem((IScriptable *)pcol, fFalse);
+   m_pcv->AddItem((IScriptable *)pcol, false);
 }
 
 int PinTable::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
@@ -4801,27 +4801,27 @@ void PinTable::MoveCollectionUp(CComObject<Collection> *pcol)
       m_vcollection.InsertElementAt(pcol, idx - 1);
 }
 
-int PinTable::GetDetailLevel()
+int PinTable::GetDetailLevel() const
 {
    return m_overwriteGlobalDetailLevel ? m_userDetailLevel : m_globalDetailLevel;
 }
 
-float PinTable::GetZPD()
+float PinTable::GetZPD() const
 {
    return m_overwriteGlobalStereo3D ? m_3DZPD : m_global3DZPD;
 }
 
-float PinTable::GetMaxSeparation()
+float PinTable::GetMaxSeparation() const
 {
    return m_overwriteGlobalStereo3D ? m_3DmaxSeparation : m_global3DMaxSeparation;
 }
 
-float PinTable::Get3DOffset()
+float PinTable::Get3DOffset() const
 {
 	return m_overwriteGlobalStereo3D ? m_3DOffset : m_global3DOffset;
 }
 
-FRect3D PinTable::GetBoundingBox()
+FRect3D PinTable::GetBoundingBox() const
 {
    FRect3D bbox;
    bbox.left = m_left;
@@ -7823,8 +7823,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    {
 	   if (szName[0] && m_pcv && g_pplayer && g_pplayer->m_hwndDebugOutput)
 	   {
-		   std::string logmsg;
-		   logmsg = "Request to play \"" + std::string(szName) + "\", but sound not found.";
+		   std::string logmsg = "Request to play \"" + std::string(szName) + "\", but sound not found.";
 
 		   m_pcv->AddToDebugOutput(logmsg.c_str());
 	   }
@@ -7885,12 +7884,10 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 }
 
 
-Texture *PinTable::GetImage(char * const szName) const
+Texture* PinTable::GetImage(const char * const szName) const
 {
    if (szName == NULL || szName[0] == '\0')
       return NULL;
-
-   CharLowerBuff(szName, lstrlen(szName));
 
    // during playback, we use the hashtable for lookup
    if (!m_textureMap.empty())
@@ -7903,9 +7900,9 @@ Texture *PinTable::GetImage(char * const szName) const
          return NULL;
    }
 
-   for (unsigned i = 0; i < m_vimage.size(); i++)
+   for (size_t i = 0; i < m_vimage.size(); i++)
    {
-      if (!lstrcmp(m_vimage[i]->m_szInternalName, szName))
+      if (!lstrcmpi(m_vimage[i]->m_szInternalName, szName))
       {
          return m_vimage[i];
       }
@@ -8265,7 +8262,7 @@ void PinTable::ListMaterials(HWND hwndListView)
    }
 }
 
-bool PinTable::IsMaterialNameUnique(char *name)
+bool PinTable::IsMaterialNameUnique(const char * const name) const
 {
    for (int i = 0; i < m_materials.Size(); i++)
    {
@@ -8276,7 +8273,7 @@ bool PinTable::IsMaterialNameUnique(char *name)
 }
 
 
-Material* PinTable::GetMaterial(char * const szName) const
+Material* PinTable::GetMaterial(const char * const szName) const
 {
    if (szName == NULL || szName[0] == '\0')
       return &g_pvp->dummyMaterial;
@@ -8294,7 +8291,7 @@ Material* PinTable::GetMaterial(char * const szName) const
 
    for (int i = 0; i < m_materials.Size(); i++)
    {
-      if (!lstrcmp(m_materials.ElementAt(i)->m_szName, szName))
+      if (!lstrcmpi(m_materials.ElementAt(i)->m_szName, szName))
       {
          return m_materials.ElementAt(i);
       }
@@ -8627,7 +8624,7 @@ void PinTable::UpdateDbgLight( void )
 
 int PinTable::GetImageLink(Texture *ppi)
 {
-   if (!lstrcmp(ppi->m_szInternalName, m_szScreenShot))
+   if (!lstrcmpi(ppi->m_szInternalName, m_szScreenShot))
       return 1;
    else
       return 0;
@@ -9123,7 +9120,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    return var.Detach(pVarOut);
 }
 
-float PinTable::GetSurfaceHeight(char *szName, float x, float y)
+float PinTable::GetSurfaceHeight(const char * const szName, float x, float y) const
 {
    if (szName == NULL || szName[0] == 0)
       return m_tableheight;
@@ -9152,7 +9149,7 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
    return m_tableheight;
 }
 
-Material* PinTable::GetSurfaceMaterial(char *szName)
+Material* PinTable::GetSurfaceMaterial(const char * const szName) const
 {
    if (szName == NULL || szName[0] == 0)
       return GetMaterial(m_szPlayfieldMaterial);
@@ -9181,7 +9178,7 @@ Material* PinTable::GetSurfaceMaterial(char *szName)
    return GetMaterial(m_szPlayfieldMaterial);
 }
 
-Texture *PinTable::GetSurfaceImage(char *szName)
+Texture* PinTable::GetSurfaceImage(const char * const szName) const
 {
    if (szName == NULL || szName[0] == 0)
       return GetImage(m_szImage);

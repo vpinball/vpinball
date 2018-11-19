@@ -69,8 +69,8 @@ public:
    virtual Vertex2D GetCenter() const;
    virtual void PutCenter(const Vertex2D& pv);
 
-   virtual void RenderBlueprint(Sur *psur, const bool solid=false);
-   virtual ItemTypeEnum HitableGetItemType() { return eItemTimer; }
+   virtual void RenderBlueprint(Sur *psur, const bool solid);
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemTimer; }
 
    void WriteRegDefaults();
 

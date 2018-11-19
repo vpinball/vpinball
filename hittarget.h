@@ -173,11 +173,11 @@ public:
    void WriteRegDefaults();
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
-   virtual bool IsTransparent();
-   virtual float GetDepth(const Vertex3Ds& viewDir);
-   virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual unsigned long long GetImageID() { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
-   virtual ItemTypeEnum HitableGetItemType() { return eItemHitTarget; }
+   virtual bool IsTransparent() const;
+   virtual float GetDepth(const Vertex3Ds& viewDir) const;
+   virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemHitTarget; }
 
    virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);

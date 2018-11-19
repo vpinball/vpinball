@@ -18,13 +18,13 @@ const F32 volume_adjustment_bar_small_size[2] = { (float)(10.0 / 1000.0), (float
 const F32 volume_adjustment_bar_ysize = (float)(720.0 / 1000.0);
 const U32 volume_adjustment_color[3] = { 0x00ff00, 0xffff, 0xff };
 
-BOOL mixer_init(const HWND wnd)
+bool mixer_init(const HWND wnd)
 {
    // get the number of mixer devices present in the system
    nmixers = ::mixerGetNumDevs();
 
    if (!nmixers)
-      return 0;
+      return false;
 
    m_hMixer = NULL;
    //ZeroMemory(&sMxCaps, sizeof(MIXERCAPS));
@@ -44,14 +44,14 @@ BOOL mixer_init(const HWND wnd)
          MIXER_OBJECTF_MIXER | CALLBACK_WINDOW)
          != MMSYSERR_NOERROR)
       {
-         return 0;
+         return false;
       }
 
       /*if (::mixerGetDevCaps(reinterpret_cast<UINT>(m_hMixer),
                        &sMxCaps, sizeof(MIXERCAPS))
                        != MMSYSERR_NOERROR)
                        {
-                       return 0;
+                       return false;
                        }*/
    }
 
@@ -64,7 +64,7 @@ BOOL mixer_init(const HWND wnd)
       MIXER_GETLINEINFOF_COMPONENTTYPE)
       != MMSYSERR_NOERROR)
    {
-      return 0;
+      return false;
    }
 
    MIXERCONTROL mxc;
@@ -81,7 +81,7 @@ BOOL mixer_init(const HWND wnd)
       MIXER_GETLINECONTROLSF_ONEBYTYPE)
       != MMSYSERR_NOERROR)
    {
-      return 0;
+      return false;
    }
 
    // store dwControlID
@@ -91,7 +91,7 @@ BOOL mixer_init(const HWND wnd)
 
    mixer_get_volume();
 
-   return 1;
+   return true;
 }
 
 void mixer_shutdown()

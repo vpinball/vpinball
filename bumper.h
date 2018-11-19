@@ -95,17 +95,17 @@ public:
       virtual void UpdatePropertyPanes();
       virtual void SetDefaultPhysics(bool fromMouseClick);
       virtual void ExportMesh(FILE *f);
-      virtual void RenderBlueprint(Sur *psur, const bool solid = false);
+      virtual void RenderBlueprint(Sur *psur, const bool solid);
 
 
-	  virtual unsigned long long GetMaterialID()
+	  virtual unsigned long long GetMaterialID() const
 	  {
 		  if (!m_d.m_fBaseVisible && m_d.m_fCapVisible)
 			  return m_ptable->GetMaterial(m_d.m_szCapMaterial)->hash();
 		  else
 			  return 64-3; //!! some constant number
 	  }
-	  virtual unsigned long long GetImageID()
+	  virtual unsigned long long GetImageID() const
 	  {
 		  if (!m_d.m_fBaseVisible && m_d.m_fCapVisible)
 			  return (unsigned long long)&m_capTexture; //!! meh
@@ -113,7 +113,7 @@ public:
 			  return NULL;
 	  }
 
-      virtual ItemTypeEnum HitableGetItemType() { return eItemBumper; }
+      virtual ItemTypeEnum HitableGetItemType() const { return eItemBumper; }
 
       void WriteRegDefaults();
 

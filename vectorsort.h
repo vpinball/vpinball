@@ -62,7 +62,7 @@ public:
       RecomputeSearchStart();
    }
 
-   inline int GetSortedIndex(void * const pvoid) const
+   inline int GetSortedIndex(const void * const pvoid) const
    {
       int currentnode = m_searchstart - 1;  // Zero based
       int jumpnode = m_searchstart >> 1;

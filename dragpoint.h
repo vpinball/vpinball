@@ -51,7 +51,7 @@ public:
 
 protected:
    template <typename T>
-   void GetRgVertex(std::vector<T> &vv, const bool loop = true, const float accuracy = 4.f) // 4 = maximum precision that we allow for
+   void GetRgVertex(std::vector<T> &vv, const bool loop = true, const float accuracy = 4.f) const // 4 = maximum precision that we allow for
    {
       static const int Dim = T::Dim;    // for now, this is always 2 or 3
 

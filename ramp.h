@@ -93,11 +93,11 @@ public:
 
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
-   virtual void RenderBlueprint(Sur *psur, const bool solid = false);
+   virtual void RenderBlueprint(Sur *psur, const bool solid);
 
    virtual void ClearForOverwrite();
 
-   float GetSurfaceHeight(float x, float y);
+   float GetSurfaceHeight(float x, float y) const;
 
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
@@ -118,11 +118,11 @@ public:
    virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D);
 
    void AssignHeightToControlPoint(const RenderVertex3D &v, const float height);
-   virtual bool IsTransparent();
-   virtual float GetDepth(const Vertex3Ds& viewDir);
-   virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-   virtual unsigned long long GetImageID() { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
-   virtual ItemTypeEnum HitableGetItemType() { return eItemRamp; }
+   virtual bool IsTransparent() const;
+   virtual float GetDepth(const Vertex3Ds& viewDir) const;
+   virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemRamp; }
    virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
@@ -163,7 +163,7 @@ private:
 
    // Get an approximation of the curve described by the control points of this ramp.
    template <typename T>
-   void GetCentralCurve(std::vector<T> &vv, const float _accuracy = -1.f)
+   void GetCentralCurve(std::vector<T> &vv, const float _accuracy = -1.f) const
    {
       float accuracy;
 

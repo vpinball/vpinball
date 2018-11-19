@@ -154,7 +154,7 @@ public:
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
    void RenderOutline(Sur * const psur);
-   virtual void RenderBlueprint(Sur *psur, const bool solid=false);
+   virtual void RenderBlueprint(Sur *psur, const bool solid);
 
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
@@ -179,12 +179,12 @@ public:
    virtual Vertex2D GetPointCenter() const;
    virtual void PutPointCenter(const Vertex2D& pv);
 
-   virtual bool IsTransparent() { return m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive); }
-   virtual bool RenderToLightBuffer()		{ return m_d.m_BulbLight && (m_d.m_transmissionScale > 0.f); }
-   virtual float GetDepth(const Vertex3Ds& viewDir);
-   virtual unsigned long long GetMaterialID() { return m_surfaceMaterial ? m_surfaceMaterial->hash() : 64-2; } //!! 2 = some constant number
-   virtual unsigned long long GetImageID() { return (m_d.m_BulbLight ? 0 : (unsigned long long)(m_ptable->GetImage(m_d.m_szOffImage))); }
-   virtual ItemTypeEnum HitableGetItemType() { return eItemLight; }
+   virtual bool IsTransparent() const { return m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive); }
+   virtual bool RenderToLightBuffer() const { return m_d.m_BulbLight && (m_d.m_transmissionScale > 0.f); }
+   virtual float GetDepth(const Vertex3Ds& viewDir) const;
+   virtual unsigned long long GetMaterialID() const { return m_surfaceMaterial ? m_surfaceMaterial->hash() : 64 - 2; } //!! 2 = some constant number
+   virtual unsigned long long GetImageID() const { return (m_d.m_BulbLight ? 0 : (unsigned long long)(m_ptable->GetImage(m_d.m_szOffImage))); }
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemLight; }
    virtual void UpdatePropertyPanes();
    virtual void AddPoint(int x, int y, const bool smooth);
 

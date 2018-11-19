@@ -445,11 +445,11 @@ public:
 					strcat_s(szPOVFilename, ".pov");
 					g_pvp->m_ptableActive->ExportBackdropPOV(szPOVFilename);
 				}
-				g_pvp->Quit();			
+				g_pvp->Quit();
 			}
 
             if (fPlay && lf)
-               g_pvp->DoPlay();			 
+               g_pvp->DoPlay(false);
          }
 
          // VBA APC handles message loop (bastards)

@@ -46,11 +46,11 @@ struct PropertyPane
 
 struct ExpandoInfo
 {
-   int m_id;
-   BOOL m_fExpanded;
    SmartBrowser *m_psb;
-   BOOL m_fHasCaption; // Also means 'can expand/collapse'
+   int m_id;
    int m_dialogheight;
+   bool m_fExpanded;
+   bool m_fHasCaption; // Also means 'can expand/collapse'
 };
 
 class SmartBrowser
@@ -58,12 +58,13 @@ class SmartBrowser
 public:
    SmartBrowser();
    ~SmartBrowser();
+
    void CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> *pvsel);
    void GetControlValue(HWND hwndControl);
-   HWND GetHWnd() { return m_hwndFrame; }
+   HWND GetHWnd() const { return m_hwndFrame; }
    void Init(HWND hwndParent);
    void SetVisible(const bool fVisible);
-   bool GetVisible();
+   bool GetVisible() const;
    void DrawHeader(HDC hdc);
    void SetProperty(int dispid, VARIANT *pvar, const bool fPutRef);
 

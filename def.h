@@ -190,7 +190,7 @@ public:
 class LocalStringW
 {
 public:
-   LocalStringW(int resid);
+   LocalStringW(const int resid);
 
    WCHAR str[256];
 };
@@ -331,7 +331,7 @@ __forceinline float sobol(unsigned int i, unsigned int scramble = 0)
    return (float)scramble * 0.00000000023283064365386962890625f; // /2^32
 }
 
-inline void RemoveSpaces(char* source)
+inline void RemoveSpaces(char* const source)
 {
    char* i = source;
    char* j = source;
@@ -345,40 +345,40 @@ inline void RemoveSpaces(char* source)
 }
 
 //
-__forceinline float vpUnitsToInches(float value)
+
+__forceinline float vpUnitsToInches(const float value)
 {
    return value * 0.0212765f;
 }
 
-__forceinline float inchesToVPUnits(float value)
+__forceinline float inchesToVPUnits(const float value)
 {
-   return value / 0.0212765f;
+   return value * (float)(1.0/0.0212765);
 }
 
-__forceinline float vpUnitsToMillimeters(float value)
+__forceinline float vpUnitsToMillimeters(const float value)
 {
    return value * 0.540425f;
 }
 
-__forceinline float millimetersToVPUnits(float value)
+__forceinline float millimetersToVPUnits(const float value)
 {
-   return value / 0.540425f;
+   return value * (float)(1.0/0.540425);
 }
 
-float sz2f(char *sz);
-void f2sz(const float f, char *sz);
+float sz2f(const char * const sz);
+void f2sz(const float f, char * const sz);
 
-void WideStrCopy(WCHAR *wzin, WCHAR *wzout);
-void WideStrNCopy(WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen);
-int WideStrCmp(WCHAR *wz1, WCHAR *wz2);
-int WzSzStrCmp(WCHAR *wz1, char *sz2);
-void WideStrCat(WCHAR *wzin, WCHAR *wzout);
-int WzSzStrnCmp(WCHAR *wz1, char *sz2, int count);
+void WideStrCopy(const WCHAR *wzin, WCHAR *wzout);
+void WideStrNCopy(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen);
+int WideStrCmp(const WCHAR *wz1, const WCHAR *wz2);
+int WzSzStrCmp(const WCHAR *wz1, const char *sz2);
+void WideStrCat(const WCHAR *wzin, WCHAR *wzout);
+int WzSzStrnCmp(const WCHAR *wz1, const char *sz2, const int count);
 
 HRESULT OpenURL(char *szURL);
 
-WCHAR *MakeWide(char *sz);
-char *MakeChar(WCHAR *wz);
-
+WCHAR *MakeWide(const char * const sz);
+char *MakeChar(const WCHAR * const wz);
 
 #endif/* !__DEF_H__ */

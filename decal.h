@@ -75,8 +75,8 @@ public:
    // Multi-object manipulation
    virtual Vertex2D GetCenter() const;
    virtual void PutCenter(const Vertex2D& pv);
-   virtual float GetDepth(const Vertex3Ds& viewDir);
-   virtual bool IsTransparent();
+   virtual float GetDepth(const Vertex3Ds& viewDir) const;
+   virtual bool IsTransparent() const;
 
    virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
 
@@ -85,7 +85,7 @@ public:
    void WriteRegDefaults();
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
-   virtual ItemTypeEnum HitableGetItemType() { return eItemDecal; }
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemDecal; }
 
    void EnsureSize();
    HFONT GetFont();

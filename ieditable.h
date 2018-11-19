@@ -193,7 +193,7 @@ public:
    // draws a solid outline over the grid lines
    virtual void UIRenderPass2(Sur * const psur) = 0;
 
-   virtual void RenderBlueprint(Sur *psur, const bool solid=false);
+   virtual void RenderBlueprint(Sur *psur, const bool solid);
 
    virtual void ExportMesh(FILE *f) {}
 

@@ -455,7 +455,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
 /*
  * Get an approximation of the curve described by the control points of this ramp.
  */
-void Rubber::GetCentralCurve(std::vector<RenderVertex> &vv, const float _accuracy)
+void Rubber::GetCentralCurve(std::vector<RenderVertex> &vv, const float _accuracy) const
 {
       float accuracy;
 
@@ -475,7 +475,7 @@ void Rubber::GetCentralCurve(std::vector<RenderVertex> &vv, const float _accurac
       IHaveDragPoints::GetRgVertex(vv, true, accuracy);
 }
 
-float Rubber::GetSurfaceHeight(float x, float y)
+float Rubber::GetSurfaceHeight(float x, float y) const
 {
    std::vector<RenderVertex> vvertex;
    GetCentralCurve(vvertex);
@@ -632,7 +632,7 @@ void Rubber::EndPlay()
    }
 }
 
-float Rubber::GetDepth(const Vertex3Ds& viewDir)
+float Rubber::GetDepth(const Vertex3Ds& viewDir) const
 {
    const Vertex2D center2D = GetCenter();
    return viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * m_d.m_height;
