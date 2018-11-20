@@ -225,18 +225,17 @@ private:
 
    VectorSortString<CodeViewDispatch> m_vcvdTemp; // Objects added through script
 
-	bool ParseOKLineLength(const int LineLen);
-	string ParseRemoveLineComments(string *Line);
-	void ParseDelimtByColon(string *result, string *wholeline);
-	void ParseFindConstruct(int &Pos, const string *UCLine, WordType &Type, int &ConstructSize);
-	bool ParseStructureName(vector<UserData> *ListIn, UserData ud,
-									const string &UCline, const string &line, const int Lineno);
-	
-	int SureFind(const string &LineIn, const string &ToFind);
+	bool ParseOKLineLength(const size_t LineLen);
+	string ParseRemoveLineComments(string &Line);
+	void ParseDelimtByColon(string &result, string &wholeline);
+	void ParseFindConstruct(size_t &Pos, const string &UCLine, WordType &Type, int &ConstructSize);
+	bool ParseStructureName(vector<UserData> *ListIn, UserData ud, const string &UCline, const string &line, const int Lineno);
+
+	size_t SureFind(const string &LineIn, const string &ToFind);
 	void RemovePadding(string &line); 
 	void RemoveByVal(string &line); 
 	void RemoveNonVBSChars(string &line);
-	string ExtractWordOperand(const string &line, const int &StartPos);
+	string ExtractWordOperand(const string &line, const size_t StartPos);
 
 public:
    // Edit Class
@@ -261,7 +260,7 @@ public:
 	void ParseVPCore();
 	void ParseForFunction();
 
-	void ReadLineToParseBrain(string wholeline, int linecount, vector<UserData> *ListIn);
+	void ReadLineToParseBrain(string wholeline, const int linecount, vector<UserData> *ListIn);
 	bool ShowTooltip(SCNotification *Scn);
 	void ShowAutoComplete(SCNotification *pSCN);
 	void szLower(char * const incstr);
@@ -309,37 +308,38 @@ public:
 	string AutoCompMembersString;
 	Sci_TextRange WordUnderCaret;
 	Sci_TextRange CurrentConstruct;
+
 	void ListEventsFromItem();
-   void FindCodeFromEvent();
-   void TellHostToSelectItem();
-   void GetParamsFromEvent(const int iEvent, char * const szParams);
+	void FindCodeFromEvent();
+	void TellHostToSelectItem();
+	void GetParamsFromEvent(const int iEvent, char * const szParams);
 
-   void MarginClick(const int position, const int modifiers);
+	void MarginClick(const int position, const int modifiers);
 
-   void EvaluateScriptStatement(const char * const szScript);
-   void AddToDebugOutput(const char * const szText);
+	void EvaluateScriptStatement(const char * const szScript);
+	void AddToDebugOutput(const char * const szText);
 
-   CComObject<DebuggerModule> *m_pdm; // Object to expose to script for global functions
-   //ULONG m_cref;
+	CComObject<DebuggerModule> *m_pdm; // Object to expose to script for global functions
+	//ULONG m_cref;
 
-   HWND m_hwndMain;
-   HWND m_hwndScintilla;
-   HWND m_hwndStatus;
-   HWND m_hwndFind;
+	HWND m_hwndMain;
+	HWND m_hwndScintilla;
+	HWND m_hwndStatus;
+	HWND m_hwndFind;
 
-   
+
 	HWND m_hwndItemList;
 	HWND m_hwndItemText;
-   HWND m_hwndEventList;
+	HWND m_hwndEventList;
 	HWND m_hwndEventText;
-   HWND m_hwndFunctionList;
+	HWND m_hwndFunctionList;
 	HWND m_hwndFunctionText;
 
-   SaveDirtyState m_sdsDirty;
-   bool m_fIgnoreDirty;
-   HACCEL m_haccel; // Accelerator keys
+	SaveDirtyState m_sdsDirty;
+	bool m_fIgnoreDirty;
+	HACCEL m_haccel; // Accelerator keys
 
-   FINDREPLACE m_findreplaceold; //the last thing found/replaced
+	FINDREPLACE m_findreplaceold; // the last thing found/replaced
 
 	int m_errorLineNumber;
 };
@@ -418,8 +418,6 @@ inline bool FIsWhitespace(const char ch)
 {
    return (ch == ' ' || ch == 9/*tab*/);
 }
-
-
 
 inline void AddEventToList(char * const sz, const int index, const int dispid, const LPARAM lparam)
 {

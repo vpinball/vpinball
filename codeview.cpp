@@ -1193,7 +1193,7 @@ void CodeViewer::LoadFromFile(const char *filename)
 	if (fScript)
 	{
 		fseek(fScript, 0L, SEEK_END);
-		long cchar = ftell(fScript);
+		size_t cchar = ftell(fScript);
 		fseek(fScript, 0L, SEEK_SET);
 		m_fIgnoreDirty = true;
 
@@ -1204,7 +1204,7 @@ void CodeViewer::LoadFromFile(const char *filename)
 		szText[cchar] = L'\0';
 
 		// check for bogus control characters
-		for (long i = 0; i < cchar; ++i)
+		for (size_t i = 0; i < cchar; ++i)
 		{
 			if (szText[i] < 9 || (szText[i] > 10 && szText[i] < 13) || (szText[i] > 13 && szText[i] < 32))
 				szText[i] = ' ';
@@ -1968,56 +1968,56 @@ void CodeViewer::szUpper(char * const incstr)
 }
 
 // Makes sure what is found has only VBS Chars in..
-int CodeViewer::SureFind(const string &LineIn, const string &ToFind)
+size_t CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 {
 	const size_t Pos = LineIn.find(ToFind);
-	if (Pos == -1) return -1;
-	const char EndChr = LineIn[Pos + ToFind.length() ];
-	int IsValidVBChr = VBValidChars.find( EndChr );
-	if (IsValidVBChr >= 0 )
+	if (Pos == string::npos) return string::npos;
+	const char EndChr = LineIn[Pos + ToFind.length()];
+	size_t IsValidVBChr = VBValidChars.find( EndChr );
+	if (IsValidVBChr != string::npos)
 	{// Extra char on end - not what we want
-		return -1;
+		return string::npos;
 	}
 
 	if (Pos > 0)
 	{
 		const char StartChr = LineIn[Pos -1];
 		IsValidVBChr = VBValidChars.find( StartChr );
-		if (IsValidVBChr >= 0 )
+		if (IsValidVBChr != string::npos)
 		{
-			return -1;
+			return string::npos;
 		}
 	}
 	return Pos;
 }
 
-string CodeViewer::ParseRemoveLineComments(string *Line)
+string CodeViewer::ParseRemoveLineComments(string &Line)
 {
-	const int commentIdx = Line->find("'");
-	if (commentIdx == -1) return "";
-	string RetVal = Line->substr(commentIdx+1, string::npos);
+	const size_t commentIdx = Line.find("'");
+	if (commentIdx == string::npos) return "";
+	string RetVal = Line.substr(commentIdx+1, string::npos);
 	RemovePadding(RetVal);
 	if (commentIdx > 0)
 	{
-		*Line = string(Line->substr(0, commentIdx));
+		Line = Line.substr(0, commentIdx);
 		return RetVal;
 	}
-	Line->clear();
+	Line.clear();
 	return RetVal;
 }
 
-bool CodeViewer::ParseOKLineLength(const int LineLen)
+bool CodeViewer::ParseOKLineLength(const size_t LineLen)
 {
 	if (LineLen > MAX_LINE_LENGTH)
 	{
-		char szText[256] = {};
+		char szText[128];
 		sprintf_s(szText, "The current maximum script line length is %d", MAX_LINE_LENGTH);
-		char szCaption[256] = {};
+		char szCaption[128];
 		sprintf_s(szCaption, "Line too long on line %d", LineLen);
 		MessageBox(m_hwndMain, szText,szCaption, MB_OK);
 		return false;
 	}
-	if (LineLen <3) return false;
+	if (LineLen < 3) return false;
 	return true;
 }
 
@@ -2025,15 +2025,14 @@ bool CodeViewer::ParseOKLineLength(const int LineLen)
 static int ParentLevel = 0;
 
 //false is a fail/syntax error
-bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
-												const string &UCline, const string &line, const int Lineno)
+bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const string &UCline, const string &line, const int Lineno)
 {
 	string CurrentParentKey = "";
-	const int endIdx = SureFind(UCline,"END"); 
-	const int exitIdx = SureFind(UCline,"EXIT"); 
+	const size_t endIdx = SureFind(UCline,"END"); 
+	const size_t exitIdx = SureFind(UCline,"EXIT"); 
 	RemoveNonVBSChars( ud.KeyName );
 
-	if (endIdx == -1 && exitIdx == -1) 
+	if (endIdx == string::npos && exitIdx == string::npos)
 	{
 		if (ud.eTyping == eDim || ud.eTyping == eConst)
 		{
@@ -2046,13 +2045,13 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 				ListIn->at(iCurParent).Children.push_back(ud.UniqueKey);//add child to parent
 			}
 			string RemainingLine = line;
-			int CommPos = UCline.find_first_of(',');
-			while (CommPos != -1)
+			size_t CommPos = UCline.find_first_of(',');
+			while (CommPos != string::npos)
 			{
 				//Insert stuff after comma after cleaning up
-				int NewCommPos = RemainingLine.find_first_of(',', CommPos+1);
+				const size_t NewCommPos = RemainingLine.find_first_of(',', CommPos+1);
 				//get word @
-				string crWord = RemainingLine.substr(CommPos+1, (NewCommPos == -1) ? string::npos : (NewCommPos - CommPos)-1 );
+				string crWord = RemainingLine.substr(CommPos+1, (NewCommPos == string::npos) ? string::npos : (NewCommPos - CommPos)-1 );
 				RemoveByVal(crWord);
 				RemovePadding(crWord);
 				RemoveNonVBSChars(crWord);
@@ -2086,13 +2085,13 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 			++ParentLevel;
 			// get construct autodims
 			string RemainingLine = line;
-			int CommPos = UCline.find_first_of('(');
-			while (CommPos != -1)
+			size_t CommPos = UCline.find_first_of('(');
+			while (CommPos != string::npos)
 			{
 				//Insert stuff after comma after cleaning up
-				int NewCommPos = RemainingLine.find_first_of(',', CommPos+1);
+				const size_t NewCommPos = RemainingLine.find_first_of(',', CommPos+1);
 				//get word @
-				string crWord = RemainingLine.substr(CommPos+1, (NewCommPos == -1) ? string::npos : (NewCommPos - CommPos)-1 );
+				string crWord = RemainingLine.substr(CommPos+1, (NewCommPos == string::npos) ? string::npos : (NewCommPos - CommPos)-1 );
 				RemoveByVal(crWord);
 				RemovePadding(crWord);
 				RemoveNonVBSChars(crWord);
@@ -2140,7 +2139,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 	}
 	else
 	{
-		if (endIdx >= 0)
+		if (endIdx != string::npos)
 		{
 			if (ParentLevel == -1)
 			{
@@ -2188,65 +2187,65 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 					return true;
 				}
 			}//if (ParentLevel == -1)
-		}//if (endIdx >= 0)
+		}//if (endIdx != string::npos)
 	}
 	return false;
 }
 
-void CodeViewer::ParseDelimtByColon(string *result, string *wholeline)
+void CodeViewer::ParseDelimtByColon(string &result, string &wholeline)
 {
-	*result = *wholeline;
-	const int idx = result->find(":"); 
-	if (idx == -1)
+	result = wholeline;
+	const size_t idx = result.find(":"); 
+	if (idx == string::npos)
 	{
-		wholeline->clear();
+		wholeline.clear();
 		return;
 	}
 	if (idx > 0)
 	{
-		*result = wholeline->substr(0,idx);
-		*wholeline = wholeline->substr(idx + 1, (wholeline->length()) - (result->length()) ) ;
+		result = wholeline.substr(0,idx);
+		wholeline = wholeline.substr(idx + 1, (wholeline.length()) - (result.length()) ) ;
 		return;
 	}
-	wholeline->clear();
+	wholeline.clear();
 }
 
-void CodeViewer::ParseFindConstruct(int &Pos, const string *UCLineIn, WordType &Type,int &ConstructSize)
+void CodeViewer::ParseFindConstruct(size_t &Pos, const string &UCLineIn, WordType &Type,int &ConstructSize)
 {
-	if ( (Pos = SureFind( *UCLineIn ,"DIM")) != -1 )
+	if ( (Pos = SureFind( UCLineIn ,"DIM")) != string::npos)
 	{
 		ConstructSize =3;
 		Type = eDim;
 		return;
 	}
-	if ( (Pos = SureFind( *UCLineIn ,"CONST")) != -1 )
+	if ( (Pos = SureFind( UCLineIn ,"CONST")) != string::npos)
 	{
 		ConstructSize =5;
 		Type = eConst;
 		return;
 	}
-	if ( (Pos = SureFind( *UCLineIn ,"SUB")) != -1 )
+	if ( (Pos = SureFind( UCLineIn ,"SUB")) != string::npos)
 	{
 		ConstructSize =3;
 		Type = eSub;
 		return;
 	}
-	if ( (Pos = SureFind( *UCLineIn ,"FUNCTION")) != -1)
+	if ( (Pos = SureFind( UCLineIn ,"FUNCTION")) != string::npos)
 	{
 		ConstructSize = 8;
 		Type = eFunction;
 		return;
 	}
-	if ( (Pos = SureFind( *UCLineIn ,"CLASS")) != -1)
+	if ( (Pos = SureFind( UCLineIn ,"CLASS")) != string::npos)
 	{
 		ConstructSize = 5;
 		Type = eClass;
 		return;
 	}
-	if ( (Pos = SureFind( *UCLineIn ,"PROPERTY")) != -1)
+	if ( (Pos = SureFind( UCLineIn ,"PROPERTY")) != string::npos)
 	{
-		int GetLetPos;
-		if ( (GetLetPos = SureFind( *UCLineIn ,"GET")) != -1)
+		size_t GetLetPos;
+		if ( (GetLetPos = SureFind( UCLineIn ,"GET")) != string::npos)
 		{
 			if (Pos < GetLetPos)
 			{
@@ -2256,7 +2255,7 @@ void CodeViewer::ParseFindConstruct(int &Pos, const string *UCLineIn, WordType &
 				return;
 			}
 		}
-		if ( (GetLetPos = SureFind( *UCLineIn ,"LET")) != -1)
+		if ( (GetLetPos = SureFind( UCLineIn ,"LET")) != string::npos)
 		{
 			if (Pos < GetLetPos)
 			{
@@ -2266,7 +2265,7 @@ void CodeViewer::ParseFindConstruct(int &Pos, const string *UCLineIn, WordType &
 				return;
 			}
 		}
-		if ( (GetLetPos = SureFind( *UCLineIn ,"SET")) != -1)
+		if ( (GetLetPos = SureFind( UCLineIn ,"SET")) != string::npos)
 		{
 			if (Pos < GetLetPos)
 			{
@@ -2279,51 +2278,51 @@ void CodeViewer::ParseFindConstruct(int &Pos, const string *UCLineIn, WordType &
 		ConstructSize = 8;
 		return;
 	}
-	Pos = -1;
-	return;
+
+	Pos = string::npos;
 }
 
-void CodeViewer::ReadLineToParseBrain(string wholeline, int linecount, vector<UserData> *ListIn)
+void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, vector<UserData> *ListIn)
 {
-		string CommentTmp = ParseRemoveLineComments(&wholeline);
+		string CommentTmp = ParseRemoveLineComments(wholeline);
 		RemovePadding(CommentTmp);
 		while (wholeline.length() > 1)
 		{
 			string line;
-			ParseDelimtByColon(&line, &wholeline);
+			ParseDelimtByColon(line, wholeline);
 			RemovePadding(line);
-			string UCline = upperCase(line);
+			const string UCline = upperCase(line);
 			UserData UD;
 			UD.eTyping = eUnknown;
 			UD.LineNum = linecount;
 			UD.Comment = CommentTmp;
 			int SearchLength = 0 ;
-			int idx = -1;
-			ParseFindConstruct(idx, &UCline, UD.eTyping, SearchLength);
-			if (idx == -1) continue;
-			if ( idx >= 0) // Found something something structrual
+			size_t idx = string::npos;
+			ParseFindConstruct(idx, UCline, UD.eTyping, SearchLength);
+			if (idx == string::npos) continue;
+			if (idx != string::npos) // Found something something structrual
 			{
-				const int doubleQuoteIdx = line.find("\"");
-				if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue; // in a string literal
+				const size_t doubleQuoteIdx = line.find("\"");
+				if ((doubleQuoteIdx != string::npos) && (doubleQuoteIdx < idx)) continue; // in a string literal
 				const string sSubName = ExtractWordOperand(line, (idx + SearchLength) );
 				UD.Description = line;
 				UD.KeyName = sSubName;
 				//UserData ud(linecount, line, sSubName, Type);
 				if (!ParseStructureName( ListIn, UD, UCline, line, linecount))
 				{/*A critical brain error occured */}
-			}// if ( idx >= 0)
+			}// if ( idx != string::npos)
 		}// while (wholeline.length > 1) 
 }
 
 void CodeViewer::RemoveByVal(string &line)
 {
-	const int LL = line.length();
+	const size_t LL = line.length();
 	const string SearchLine = lowerCase(line);
-	int Pos = SureFind( SearchLine, "byval");
-	if (Pos > -1)
+	size_t Pos = SureFind( SearchLine, "byval");
+	if (Pos != string::npos)
 	{
 		Pos += 5;
-		if ( (LL-Pos) < 0 ) return;
+		if ( (SSIZE_T)(LL-Pos) < 0 ) return;
 		line = line.substr(Pos, (LL-Pos) );
 	}
 }
@@ -2332,19 +2331,19 @@ void CodeViewer::RemovePadding(string &line)
 {
 	const size_t LL = line.length();
 	size_t Pos = (line.find_first_not_of("\n\r\t ,"));
-	if (Pos == -1)
+	if (Pos == string::npos)
 	{
 		line.clear();
 		return;
 	}
 	if (Pos > 0)
 	{
-		if ( (LL-Pos) < 1 ) return;
+		if ( (SSIZE_T)(LL-Pos) < 1 ) return;
 		line = line.substr(Pos, (LL-Pos) );
 	}
 
 	Pos =  (line.find_last_not_of("\n\r\t ,"));
-	if (Pos != -1)
+	if (Pos != string::npos)
 	{
 		if ( Pos < 1 ) return;
 		line = line.erase(Pos+1);
@@ -2353,21 +2352,21 @@ void CodeViewer::RemovePadding(string &line)
 
 void CodeViewer::RemoveNonVBSChars(string &line)
 {
-	size_t LL = line.length();
+	const size_t LL = line.length();
 	size_t Pos = (line.find_first_of(VBValidChars));
-	if (Pos == -1)
+	if (Pos == string::npos)
 	{
 		line.clear();
 		return;
 	}
 	if (Pos > 0)
 	{
-		if ( (LL-Pos) < 1 ) return;
+		if ( (SSIZE_T)(LL-Pos) < 1 ) return;
 		line = line.substr(Pos, (LL-Pos) );
 	}
 
 	Pos =  (line.find_last_of(VBValidChars));
-	if (Pos != -1)
+	if (Pos != string::npos)
 	{
 		line = line.erase(Pos+1);
 	}
@@ -2375,49 +2374,49 @@ void CodeViewer::RemoveNonVBSChars(string &line)
 
 void CodeViewer::ParseForFunction() // Subs & Collections WIP 
 {
-  char text[MAX_LINE_LENGTH];
-   const int scriptLines = (int)SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
-   SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
+	char text[MAX_LINE_LENGTH];
+	const int scriptLines = (int)SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
+	SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
 	ParentLevel = 0; //root
 	//ParentTreeInvalid = false;
 	for (int linecount = 0; linecount < scriptLines; ++linecount) 
-   {
+	{
 		// Read line
-      const int lineLength = (int)SendMessage(m_hwndScintilla, SCI_LINELENGTH, linecount, 0);
+		const size_t lineLength = SendMessage(m_hwndScintilla, SCI_LINELENGTH, linecount, 0);
 		if ( !ParseOKLineLength(lineLength) ) continue;
 		memset(text, 0, MAX_LINE_LENGTH);
 		SendMessage(m_hwndScintilla, SCI_GETLINE, linecount, (LPARAM)text);
 		if(text[0] != '\0')
 		{
-		    string wholeline(text);
-		    ReadLineToParseBrain( wholeline, linecount, PageConstructsDict);
+			string wholeline(text);
+			ReadLineToParseBrain( wholeline, linecount, PageConstructsDict);
 		}
 	}
-   //Propergate subs&funcs in menu in order
+	//Propergate subs&funcs in menu in order
 	for (vector<UserData>::iterator i = PageConstructsDict->begin(); i != PageConstructsDict->end(); ++i) 
-   {
+	{
 		if (i->eTyping < eDim)
 		{
-			const char *c_str1 = i->KeyName.c_str ();
+			const char *c_str1 = i->KeyName.c_str();
 			SendMessage(m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)(c_str1) );
 		}
-   }
+	}
 	//Collect Objects/Components from the menu. (cheat!)
-	int CBCount = (int)SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1;//Zero Based
-	char c_str1[256]={};
-	UserData ud;
-	while (CBCount >= 0) 
-   {
+	size_t CBCount = SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1;//Zero Based
+	while ((SSIZE_T)CBCount >= 0)
+	{
+		char c_str1[256];
 		memset(c_str1,0,256);
 		SendMessage(m_hwndItemList, CB_GETLBTEXT, CBCount, (LPARAM)c_str1);
 		if(strlen(c_str1)>1)
 		{
+			UserData ud;
 			ud.KeyName = string(c_str1);
 			ud.UniqueKey = ud.KeyName;
 			FindOrInsertUD(ComponentsDict,ud);
 		}
 		CBCount--;
-   }
+	}
 	//Now merge the lot for Auto complete...
 	AutoCompList->clear();
 	for (vector<UserData>::iterator i = VBwordsDict->begin(); i != VBwordsDict->end(); ++i)
@@ -2507,7 +2506,7 @@ void CodeViewer::ParseVPCore()
 		{
 		    string wholeline(text);
 		    ++linecount;
-		    const int lineLength = (int)wholeline.length();
+		    const size_t lineLength = wholeline.length();
 		    if ( !ParseOKLineLength(lineLength) ) continue;
 		    ReadLineToParseBrain( wholeline, linecount, VP_CoreDict);
 		}
@@ -2515,20 +2514,20 @@ void CodeViewer::ParseVPCore()
 	fclose(fCore);
 }
 
-string CodeViewer::ExtractWordOperand(const string &line, const int &StartPos)
+string CodeViewer::ExtractWordOperand(const string &line, const size_t StartPos)
 {
 	size_t Substart = StartPos;
 	const size_t lineLength = line.size();
 	char linechar = 0;
 	linechar = line[Substart];
-	while ((ValidChars.find(linechar) == -1) && (Substart < lineLength))
+	while ((ValidChars.find(linechar) == string::npos) && (Substart < lineLength))
 	{
 		Substart++;
 		linechar = line[Substart];
 	}
 	//scan for last valid char
 	size_t Subfinish = Substart;
-	while ((ValidChars.find(linechar) != -1) && (Subfinish < lineLength))
+	while ((ValidChars.find(linechar) != string::npos) && (Subfinish < lineLength))
 	{
 		Subfinish++;
 		linechar = line[Subfinish];
