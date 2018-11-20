@@ -105,16 +105,15 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
          {
             case COLOR_CHANGED:
             {
-               int idx_row;
                char strText[255] = { 0 };
                const size_t color = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
-               HWND hwndcolor1 = GetDlgItem(hwndDlg, IDC_COLOR);
-               HWND hwndcolor2 = GetDlgItem(hwndDlg, IDC_COLOR2);
-               HWND hwndcolor3 = GetDlgItem(hwndDlg, IDC_COLOR3);
+               const HWND hwndcolor1 = GetDlgItem(hwndDlg, IDC_COLOR);
+               const HWND hwndcolor2 = GetDlgItem(hwndDlg, IDC_COLOR2);
+               const HWND hwndcolor3 = GetDlgItem(hwndDlg, IDC_COLOR3);
 
-               idx_row = SendMessage(hCombo, CB_GETCURSEL, 0, 0);
+               const LRESULT idx_row = SendMessage(hCombo, CB_GETCURSEL, 0, 0);
                SendMessage(hCombo, CB_GETLBTEXT, idx_row, (LPARAM)strText);
-               Material *pMat = ptable->GetMaterial(strText);
+               Material * const pMat = ptable->GetMaterial(strText);
                if (pMat != NULL)
                {
                   if (hwndcolor1 == (HWND)lParam)

@@ -906,7 +906,7 @@ void KeysConfigDialog::OnOK()
     HWND hwndControl;
     size_t key;
     size_t selected;
-    size_t newvalue;
+    int newvalue;
     BOOL nothing;
 
     SetValue(IDC_JOYCUSTOM1COMBO, "Player", "JoyCustom1");
@@ -945,25 +945,25 @@ void KeysConfigDialog::OnOK()
     SetValue(IDC_UDAXISCOMBO, "Player", "UDAxis");
 
     newvalue = GetDlgItemInt(IDC_LRAXISGAIN, nothing, TRUE);
-    if ((SSIZE_T)newvalue < 0)	{ newvalue = 0; }
+    if (newvalue < 0) { newvalue = 0; }
     SetRegValue("Player", "PBWAccelGainX", REG_DWORD, &newvalue, 4);
 
     newvalue = GetDlgItemInt(IDC_UDAXISGAIN, nothing, TRUE);
-    if ((SSIZE_T)newvalue < 0)	{ newvalue = 0; }
+    if (newvalue < 0) { newvalue = 0; }
     SetRegValue("Player", "PBWAccelGainY", REG_DWORD, &newvalue, 4);
 
     newvalue = GetDlgItemInt(IDC_DEADZONEAMT, nothing, TRUE);
-    if ((SSIZE_T)newvalue < 0) { newvalue = 0; }
+    if (newvalue < 0) { newvalue = 0; }
     if (newvalue > 100) { newvalue = 100; }
     SetRegValue("Player", "DeadZone", REG_DWORD, &newvalue, 4);
 
     newvalue = GetDlgItemInt(IDC_XMAX_EDIT, nothing, TRUE);
-    if ((SSIZE_T)newvalue < 0) { newvalue = 0; }
+    if (newvalue < 0) { newvalue = 0; }
     if (newvalue > 100) { newvalue = 100; }
     SetRegValue("Player", "PBWAccelMaxX", REG_DWORD, &newvalue, 4);
 
     newvalue = GetDlgItemInt(IDC_YMAX_EDIT, nothing, TRUE);
-    if ((SSIZE_T)newvalue < 0) { newvalue = 0; }
+    if (newvalue < 0) { newvalue = 0; }
     if (newvalue > 100) { newvalue = 100; }
     SetRegValue("Player", "PBWAccelMaxY", REG_DWORD, &newvalue, 4);
 
@@ -1005,7 +1005,7 @@ void KeysConfigDialog::OnOK()
     key = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
     SetRegValue("Player", "TiltSensCB", REG_DWORD, &key, 4);
     newvalue = GetDlgItemInt(IDC_GLOBALTILT, nothing, TRUE);
-    if ((SSIZE_T)newvalue < 0) { newvalue = 0; }
+    if (newvalue < 0) { newvalue = 0; }
     if (newvalue > 1000) { newvalue = 1000; }
     SetRegValue("Player", "TiltSensValue", REG_DWORD, &newvalue, 4);
     if (key == 1)
@@ -1048,7 +1048,7 @@ void KeysConfigDialog::OnOK()
     SetRegValue("Player", "EnableLegacyNudge", REG_DWORD, &key, 4);
 
     newvalue = GetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, nothing, TRUE);
-    SetRegValueFloat("Player", "LegacyNudgeStrength", dequantizeUnsignedPercent(newvalue));
+    SetRegValueFloat("Player", "LegacyNudgeStrength", dequantizeUnsignedPercent((unsigned int)newvalue));
 
     hwndControl = GetDlgItem(IDC_ENABLE_MOUSE_PLAYER).GetHwnd();
     key = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
