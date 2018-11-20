@@ -16,7 +16,7 @@ BSTR BstrFromVariant(VARIANT *pvar, LCID lcid)
    {
       // Ask OLEAUT32 to handle this.
       const HRESULT hr = ::VariantChangeTypeEx(&var, pvar, lcid, 0, VT_BSTR);
-      if (hr == hrNoError)
+      if (hr == S_OK)
       {
          assert(V_VT(&var) == VT_BSTR);
          return V_BSTR(&var);

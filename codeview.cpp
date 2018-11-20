@@ -860,8 +860,9 @@ void CodeViewer::Compile()
          m_pScript->AddNamedItem(m_vcvd.ElementAt(i)->m_wzName, flags);
       }
 
-      m_pScriptParse->ParseScriptText(wzText, 0, 0, 0, CONTEXTCOOKIE_NORMAL, 0,
-         SCRIPTTEXT_ISVISIBLE, 0, &exception);
+      if(m_pScriptParse->ParseScriptText(wzText, 0, 0, 0, CONTEXTCOOKIE_NORMAL, 0,
+         SCRIPTTEXT_ISVISIBLE, 0, &exception) == S_OK)
+         MessageBox(NULL, "Compilation successful", "Compile", MB_OK);
 
       m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
 

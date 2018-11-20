@@ -120,11 +120,9 @@ int file_exists(const char *filename)
       return 1;
    }
 }
-#endif
 
 void slintf(const char *str, ...)
 {
-#ifdef SLINTF
    static int initted;
    static int noconsole;
 
@@ -154,5 +152,5 @@ void slintf(const char *str, ...)
    slintf_popup_console();
 
    fputs(buffer, stdout);
-#endif
 }
+#endif
