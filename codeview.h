@@ -26,7 +26,6 @@ public:
    virtual ISelect *GetISelect() = 0;
 
    WCHAR m_wzName[MAXNAMEBUFFER];
-   WCHAR m_wzMatchName[MAXNAMEBUFFER]; // case-insensitive
 };
 
 class CodeViewer;
@@ -251,11 +250,7 @@ public:
    void LoadFromStream(IStream *pistream, HCRYPTHASH const hcrypthash, const HCRYPTKEY hcryptkey); // incl. table protection
    void LoadFromFile(const char *filename);
    void SetCaption(const char * const szCaption);
-	string upperCase(string input);
-	string lowerCase(string input);
 
-	bool StopErrorDisplay;
-	//bool ParentTreeInvalid;
 	// WIP VBS page parse
 	void ParseVPCore();
 	void ParseForFunction();
@@ -280,6 +275,8 @@ public:
 	CVPrefrence *prefVPcore;
 	COLORREF g_PrefCols[16];
 	COLORREF crBackColor;
+	bool StopErrorDisplay;
+	//bool ParentTreeInvalid;
 	bool DisplayAutoComplete;
 	void GetMembers(vector<UserData>* ListIn, const string &StrIn);
 	//TODO: int TabStop;
@@ -326,7 +323,6 @@ public:
 	HWND m_hwndScintilla;
 	HWND m_hwndStatus;
 	HWND m_hwndFind;
-
 
 	HWND m_hwndItemList;
 	HWND m_hwndItemText;
@@ -424,4 +420,18 @@ inline void AddEventToList(char * const sz, const int index, const int dispid, c
    const HWND hwnd = (HWND)lparam;
    const size_t listindex = SendMessage(hwnd, CB_ADDSTRING, 0, (size_t)sz);
    SendMessage(hwnd, CB_SETITEMDATA, listindex, index);
+}
+
+inline string upperCase(string input)
+{
+   for (string::iterator it = input.begin(); it != input.end(); ++it)
+      *it = toupper(*it);
+   return input;
+}
+
+inline string lowerCase(string input)
+{
+   for (string::iterator it = input.begin(); it != input.end(); ++it)
+      *it = tolower(*it);
+   return input;
 }

@@ -26,7 +26,6 @@ public:
 	UserData(const int LineNo, const string &Desc, const string &Name, const WordType &TypeIn);
 	~UserData();
 
-	string lowerCase(string input);
 	bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, const string &strIn);
 	size_t FindOrInsertUD( vector<UserData>* ListIn, UserData& udIn);
 	int FindUD(vector<UserData>* ListIn, string &strIn,vector<UserData>::iterator& UDiterOut, int &Pos);
@@ -55,20 +54,20 @@ public:
 	bool Highlight;
 
 	CVPrefrence();
-	CVPrefrence* FillCVPreference( \
-		const char* szCtrlNameIn,const COLORREF &crTextColor, \
-		const bool &bDisplay, const char* szRegistryName, \
-		const int &szScintillaKeyword, const int &IDC_ChkBox, \
-		const int &IDC_ColorBut, const int &IDC_Font);
+	CVPrefrence* FillCVPreference(
+		const char* szCtrlNameIn, const COLORREF crTextColor,
+		const bool bDisplay, const char* szRegistryName,
+		const int szScintillaKeyword, const int IDC_ChkBox,
+		const int IDC_ColorBut, const int IDC_Font);
 	~CVPrefrence();
 
 	void GetPrefsFromReg();
 	void SetPrefsToReg();
-	void SetCheckBox(const HWND &hwndDlg);
-	void ReadCheckBox(const HWND &hwndDlg);
-	void SetDefaultFont(const HWND &hwndDlg);
-	int GetHeightFromPointSize(const HWND &hwndDlg);
-	void ApplyPreferences(const HWND &hwndScin,const CVPrefrence* DefaultPref);
+	void SetCheckBox(const HWND hwndDlg);
+	void ReadCheckBox(const HWND hwndDlg);
+	void SetDefaultFont(const HWND hwndDlg);
+	int GetHeightFromPointSize(const HWND hwndDlg);
+	void ApplyPreferences(const HWND hwndScin, const CVPrefrence* DefaultPref);
 };
 
 #endif //_CVEDIT_

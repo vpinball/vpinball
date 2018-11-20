@@ -37,7 +37,6 @@ WNDPROC g_RichEditProc;
 IScriptable::IScriptable()
 {
    m_wzName[0] = 0;
-   m_wzMatchName[0] = 0;
 }
 
 CodeViewDispatch::CodeViewDispatch()
@@ -577,7 +576,7 @@ void CodeViewer::Create()
 	// parse vb reserved words for auto complete.
 	VBwordsDict = new vector<UserData>;
 	int intWordFinish = -1; //skip space
-	char WordChar= vbsReservedWords[0];
+	char WordChar = vbsReservedWords[0];
 	while (WordChar != 0) //Just make sure with chars, we reached EOL
 	{
 		char szWord[256];
@@ -601,12 +600,12 @@ void CodeViewer::Create()
 	for (vector<UserData>::iterator i = VBwordsDict->begin();i != VBwordsDict->end(); ++i)
 	{
 		//make vbsKeyWords in order.
-		vbsKeyWords += lowerCase( i->KeyName);
+		vbsKeyWords += lowerCase(i->KeyName);
 		vbsKeyWords += " ";
 		//Then capitalise first letter
 		WordChar = i->KeyName.at(0);
-		if (WordChar >= 'a' && WordChar <= 'z' ) WordChar -= ('a'- 'A');
-		i->KeyName.at(0) = WordChar;	
+		if (WordChar >= 'a' && WordChar <= 'z') WordChar -= ('a'- 'A');
+		i->KeyName.at(0) = WordChar;
 	}
 	///// Preferences
 	InitPreferences();
@@ -708,43 +707,35 @@ void CodeViewer::Destroy()
 		AutoCompList->clear();
 		delete AutoCompList;
 	}
-	AutoCompList = 0;
-
 	if(ComponentsDict)
 	{
 		ComponentsDict->clear();
 		delete ComponentsDict;
 	}
-	ComponentsDict = 0;
-
 	if(PageConstructsDict)
 	{
 		PageConstructsDict->clear();
 		delete PageConstructsDict;
 	}
-	PageConstructsDict = 0;
 	if(VBwordsDict)
 	{
 		VBwordsDict->clear();
 		delete VBwordsDict;
 	}
-	VBwordsDict = 0;
 	if(CurrentMembers)
 	{
 		CurrentMembers->clear();
 		delete CurrentMembers;
 	}
-	CurrentMembers = 0;
 	if(VP_CoreDict)
 	{
 		VP_CoreDict->clear();
 		delete VP_CoreDict;
 	}
-	VP_CoreDict = 0;
 
 	if (m_hwndFind) DestroyWindow(m_hwndFind);
 
-   DestroyWindow(m_hwndMain);
+	DestroyWindow(m_hwndMain);
 }
 
 STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
@@ -1931,20 +1922,6 @@ void RemoveComment(const HWND m_hwndScintilla)
    SendMessage(m_hwndScintilla, SCI_ENDUNDOACTION, 0, 0);
 }
 
-string CodeViewer::upperCase(string input)
-{
-   for (string::iterator it = input.begin(); it != input.end(); ++it)
-      *it = toupper(*it);
-   return input;
-}
-
-string CodeViewer::lowerCase(string input)
-{
-   for (string::iterator it = input.begin(); it != input.end(); ++it)
-      *it = tolower(*it);
-   return input;
-}
-
 void CodeViewer::szLower(char * const incstr)
 {
 	char *pC = incstr;
@@ -1962,7 +1939,7 @@ void CodeViewer::szUpper(char * const incstr)
 	while (*pC)
 	{
 		if (*pC >= 'a' && *pC <= 'z')
-			*pC = *pC - ('a' - 'A' );
+			*pC = *pC - ('a' - 'A');
 		pC++;
 	}
 }
@@ -2560,7 +2537,9 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       if ((pfr->Flags & FR_REPLACE) || (pfr->Flags & FR_REPLACEALL))
          pcv->Replace(pfr);
    }
-	SCNotification * const pscn = (SCNotification *)lParam;
+
+   SCNotification * const pscn = (SCNotification *)lParam;
+
    switch (uMsg)
    {
    case WM_DESTROY:
@@ -2583,11 +2562,11 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 		}
    }
    break;
-
    case WM_CLOSE:
    {
       CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
       pcv->SetVisible(false);
+      SendMessage(g_pvp->m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, 0L);
       return 0;
    }
    break;
@@ -2767,7 +2746,6 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       HWND hwndRE = pnmh->hwndFrom;
       const int code = pnmh->code;
       CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
-		//SCNotification * const pscn = (SCNotification *)lParam;
       switch (code)
       {
 
@@ -2983,7 +2961,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					SetRegValueBool("CVEdit", "DisplayAutoComplete", pcv->DisplayAutoComplete );
 				}
 				break;
-				//TODO: Impliment IDC_CVP_BUT_COL_BACKGROUND
+				//TODO: Implement IDC_CVP_BUT_COL_BACKGROUND
 /*				case IDC_CVP_BUT_COL_BACKGROUND:
 				{
 					CHOOSECOLOR cc;
