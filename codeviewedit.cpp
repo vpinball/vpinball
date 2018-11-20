@@ -19,13 +19,6 @@ UserData::~UserData()
 {
 }
 
-string UserData::lowerCase(string input)
-{
-   for (string::iterator it = input.begin(); it != input.end(); ++it)
-      *it = tolower(*it);
-   return input;
-}
-
 void UserData::RemovePadding(string &line)
 {
 	const size_t LL = line.length();
@@ -96,7 +89,7 @@ int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::
 	}
 	UDiterOut = ListIn->begin() + iNewPos;
 	Pos = iNewPos;
-	return result ;
+	return result;
 }
 
 //Finds the closest UD from CurrentLine in ListIn
@@ -343,7 +336,7 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const strin
 	}
 	vector<string>::iterator i = ListIn->begin();
 	int result = -2;
-	const unsigned int ListSize = (int)ListIn->size();
+	const unsigned int ListSize = (unsigned int)ListIn->size();
 	UINT32 iCurPos = (ListSize >> 1);
 	UINT32 iNewPos = 1u << 31;
 	while ((!(iNewPos & ListSize)) && (iNewPos > 1))
@@ -409,11 +402,11 @@ CVPrefrence::CVPrefrence()
 		SciKeywordID = 0;
 }
 
-CVPrefrence* CVPrefrence::FillCVPreference( \
-		const char* szCtrlNameIn,const COLORREF &crTextColor, \
-		const bool &bDisplay, const char* szRegistryName, \
-		const int &szScintillaKeyword, const int &IDC_ChkBox, \
-		const int &IDC_ColorBut, const int &IDC_Font)
+CVPrefrence* CVPrefrence::FillCVPreference(
+		const char* szCtrlNameIn, const COLORREF crTextColor,
+		const bool bDisplay, const char* szRegistryName,
+		const int szScintillaKeyword, const int IDC_ChkBox,
+		const int IDC_ColorBut, const int IDC_Font)
 {
 	szControlName = szCtrlNameIn;
 	rgb = crTextColor;
@@ -426,13 +419,13 @@ CVPrefrence* CVPrefrence::FillCVPreference( \
 	return (CVPrefrence *)this;
 }
 
-void CVPrefrence::SetCheckBox(const HWND &hwndDlg)
+void CVPrefrence::SetCheckBox(const HWND hwndDlg)
 {
 	const HWND hChkBox = GetDlgItem(hwndDlg,this->IDC_ChkBox_code);
 	SNDMSG(hChkBox, BM_SETCHECK, this->Highlight ? BST_CHECKED : BST_UNCHECKED, 0L);
 }
 
-void CVPrefrence::ReadCheckBox(const HWND &hwndDlg)
+void CVPrefrence::ReadCheckBox(const HWND hwndDlg)
 {
 	this->Highlight = !!IsDlgButtonChecked(hwndDlg, this->IDC_ChkBox_code);
 }
@@ -510,7 +503,7 @@ void CVPrefrence::SetPrefsToReg()
 	SetRegValueInt( "CVEdit", RegEntry, this->LogFont.lfStrikeOut);
 }
 
-void CVPrefrence::SetDefaultFont(const HWND &hwndDlg)
+void CVPrefrence::SetDefaultFont(const HWND hwndDlg)
 {
 	LOGFONT* const plfont = &this->LogFont;
 	memset(&this->LogFont, 0, sizeof(LOGFONT) );
@@ -522,7 +515,7 @@ void CVPrefrence::SetDefaultFont(const HWND &hwndDlg)
 	this->GetHeightFromPointSize(hwndDlg);
 }
 
-int CVPrefrence::GetHeightFromPointSize(const HWND &hwndDlg)
+int CVPrefrence::GetHeightFromPointSize(const HWND hwndDlg)
 {
 	const HDC hdc = GetDC(hwndDlg);
 	const int Height = -MulDiv(this->PointSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
@@ -530,7 +523,7 @@ int CVPrefrence::GetHeightFromPointSize(const HWND &hwndDlg)
 	return Height;
 }
 
-void CVPrefrence::ApplyPreferences(const HWND &hwndScin,const CVPrefrence* DefaultPref)
+void CVPrefrence::ApplyPreferences(const HWND hwndScin, const CVPrefrence* DefaultPref)
 {
 	const int id = this->SciKeywordID;
 	const bool HL = this->Highlight;
