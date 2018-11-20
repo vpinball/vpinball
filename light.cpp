@@ -604,12 +604,12 @@ void Light::RenderDynamic(RenderDevice* pd3dDevice)
    m_d.m_time_msec = g_pplayer->m_time_msec;
    const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
 
-   if((m_duration > 0) && ((U32)m_timerDurationEndTime < m_d.m_time_msec))
+   if((m_duration > 0) && (m_timerDurationEndTime < m_d.m_time_msec))
    {
        m_realState = (LightState)m_finalState;
        m_duration = 0;
        if(m_realState == LightStateBlinking)
-           RestartBlinker( g_pplayer->m_time_msec );
+           RestartBlinker(g_pplayer->m_time_msec);
    }
    if (m_realState == LightStateBlinking)
       UpdateBlinker(g_pplayer->m_time_msec);
@@ -1538,7 +1538,7 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_rgblinkpattern, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_rgblinkpattern, 32, NULL, NULL);
 
    if (m_rgblinkpattern[0] == '\0')
    {
@@ -1551,7 +1551,7 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_BlinkInterval(long *pVal)

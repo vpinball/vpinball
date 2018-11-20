@@ -76,38 +76,6 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 // Light
 
-class IBlink
-{
-public:
-   char m_rgblinkpattern[33];
-   int m_blinkinterval;
-   int m_duration;
-   int m_finalState;
-
-   int m_timenextblink;
-   int m_timerDurationEndTime;
-   int m_iblinkframe;
-
-   void UpdateBlinker(const int time_msec)
-   {
-      if (m_timenextblink <= time_msec)
-      {
-         m_iblinkframe++;
-         if (m_rgblinkpattern[m_iblinkframe] == 0)
-            m_iblinkframe = 0;
-
-         m_timenextblink += m_blinkinterval;
-      }
-   }
-
-   void RestartBlinker(const int cur_time_msec)
-   {
-      m_iblinkframe = 0;
-      m_timenextblink = cur_time_msec + m_blinkinterval;
-      m_timerDurationEndTime = cur_time_msec + m_duration;
-   }
-};
-
 class Light :
    public IDispatchImpl<ILight, &IID_ILight, &LIBID_VPinballLib>,
    //public ISupportErrorInfo,
@@ -121,7 +89,6 @@ class Light :
    public Hitable,
    public IHaveDragPoints,
    public IScriptable,
-   public IBlink,
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
@@ -281,7 +248,37 @@ public:
    STDMETHOD(put_ShowReflectionOnBall)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD( Duration )(/*[in]*/long startState, /*[in]*/long newVal, /*[in]*/long endState);
+   STDMETHOD(Duration)(/*[in]*/long startState, /*[in]*/long newVal, /*[in]*/long endState);
+
+   // was: class IBlink
+private:
+   char m_rgblinkpattern[33];
+   int m_blinkinterval;
+   int m_duration;
+   int m_finalState;
+
+   U32 m_timenextblink;
+   U32 m_timerDurationEndTime;
+   U32 m_iblinkframe;
+
+   void UpdateBlinker(const U32 time_msec)
+   {
+      if (m_timenextblink <= time_msec)
+      {
+         m_iblinkframe++;
+         if (m_rgblinkpattern[m_iblinkframe] == 0)
+            m_iblinkframe = 0;
+
+         m_timenextblink += m_blinkinterval;
+      }
+   }
+
+   void RestartBlinker(const U32 cur_time_msec)
+   {
+      m_iblinkframe = 0;
+      m_timenextblink = cur_time_msec + m_blinkinterval;
+      m_timerDurationEndTime = cur_time_msec + m_duration;
+   }
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)
