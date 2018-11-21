@@ -117,7 +117,7 @@ public:
    HRESULT ReplaceName(IScriptable * const piscript, WCHAR * const wzNew);
    void SelectItem(IScriptable * const piscript);
 
-   void Compile();
+   void Compile(const bool message);
    void Start();
 
    void EndSession();

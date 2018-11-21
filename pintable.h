@@ -289,7 +289,7 @@ public:
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
    void CreateTableWindow();
-   void SetCaption(char *szCaption);
+   void SetCaption(const char * const szCaption);
 
    HRESULT InitVBA();
    void CloseVBA();
