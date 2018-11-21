@@ -3,7 +3,7 @@
 #include <initguid.h>
 //#include <Windowsx.h>
 // The GUID used to identify the coclass of the VB Script engine
-// 	{B54F3741-5B07-11cf-A4B0-00AA004A55E8}
+//  {B54F3741-5B07-11cf-A4B0-00AA004A55E8}
 #define szCLSID_VBScript "{B54F3741-5B07-11cf-A4B0-00AA004A55E8}"
 DEFINE_GUID(CLSID_VBScript, 0xb54f3741, 0x5b07, 0x11cf, 0xa4, 0xb0, 0x0, 0xaa, 0x0, 0x4a, 0x55, 0xe8);
 //DEFINE_GUID(IID_IActiveScriptParse32, 0xbb1a2ae2, 0xa4f9, 0x11cf, 0x8f, 0x20, 0x0, 0x80, 0x5f, 0x2c, 0xd0, 0x64);
@@ -107,6 +107,9 @@ void CodeViewer::Init(IScriptableHost *psh)
 
 CodeViewer::~CodeViewer()
 {
+   if (g_pvp->m_pcv == this)
+      g_pvp->m_pcv = NULL;
+
    Destroy();
 
    for (int i = 0; i < m_vcvd.Size(); ++i)
@@ -114,9 +117,6 @@ CodeViewer::~CodeViewer()
 
    if (m_haccel)
       DestroyAcceleratorTable(m_haccel);
-
-   if (g_pvp->m_pcv == this)
-      g_pvp->m_pcv = NULL;
 
    m_pdm->Release();
 }
@@ -214,7 +214,7 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool fGlobal)
    WideCharToMultiByte(CP_ACP, 0, pcvd->m_wzName, -1, szT, 64, NULL, NULL);
    const size_t index = SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
    SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
-	//AndyS - WIP insert new item into autocomplete list??
+   //AndyS - WIP insert new item into autocomplete list??
    return S_OK;
 }
 
@@ -223,7 +223,7 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
    CComBSTR bstr;
    piscript->get_Name(&bstr);
 
-   int idx = m_vcvd.GetSortedIndex(bstr);
+   const int idx = m_vcvd.GetSortedIndex(bstr);
 
    if (idx == -1)
       return;
@@ -367,7 +367,7 @@ void CodeViewer::SetVisible(const bool fVisible)
       // is maximized, we don't want to restore to a smaller size,
       // so we check IsIconic to only restore in the minimized state.
       ShowWindow(m_hwndMain, fVisible ? SW_RESTORE : SW_HIDE);
-	  m_minimized = false;
+      m_minimized = false;
    }
    else
       ShowWindow(m_hwndMain, fVisible ? SW_SHOW : SW_HIDE);
@@ -499,14 +499,14 @@ void CodeViewer::Create()
 
    m_hwndMain = CreateWindowEx(0, "CVFrame", "Script",
       WS_POPUP | WS_SIZEBOX | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
-      x, y, w, h, m_hwndMain, NULL, g_hinst, 0);
+      x, y, w, h, g_pvp->m_hwnd, NULL, g_hinst, 0);
 
    SetWindowLongPtr(m_hwndMain, GWLP_USERDATA, (size_t)this);
 
    /////////////////// Item / Event Lists //!! ALL THIS STUFF IS NOT RES/DPI INDEPENDENT! also see WM_SIZE handler
 
    m_hwndItemText = CreateWindowEx(0, "Static", "ObjectsText",
-		WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 5, 0, 330, 30, m_hwndMain, NULL, g_hinst, 0);
+      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 5, 0, 330, 30, m_hwndMain, NULL, g_hinst, 0);
    SetWindowText(m_hwndItemText, "Table component:" );
    SendMessage(m_hwndItemText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
@@ -517,7 +517,7 @@ void CodeViewer::Create()
    SendMessage(m_hwndItemList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndEventText = CreateWindowEx(0, "Static", "EventsText",
-		WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 360 + 5, 0, 330, 30, m_hwndMain, NULL, g_hinst, 0);
+      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 360 + 5, 0, 330, 30, m_hwndMain, NULL, g_hinst, 0);
    SetWindowText(m_hwndEventText, "Create Sub from component:" );
    SendMessage(m_hwndEventText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
@@ -528,7 +528,7 @@ void CodeViewer::Create()
    SendMessage(m_hwndEventList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndFunctionText = CreateWindowEx(0, "Static", "FunctionsText",
-		WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 730 + 5, 0, 330, 30, m_hwndMain, NULL, g_hinst, 0);
+      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 730 + 5, 0, 330, 30, m_hwndMain, NULL, g_hinst, 0);
    SetWindowText(m_hwndFunctionText, "Go to Sub/Function:" );
    SendMessage(m_hwndFunctionText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
@@ -640,27 +640,27 @@ void CodeViewer::Create()
    SendMessage(m_hwndScintilla, SCI_SETMARGINWIDTHN, 1, 20);
 
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPEN, SC_MARK_MINUS);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPEN, prefEverythingElse->rgb);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPEN, crBackColor);
+   SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPEN, prefEverythingElse->rgb);
+   SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPEN, crBackColor);
 	//WIP markers
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDER, SC_MARK_PLUS);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDER, prefEverythingElse->rgb);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDER, crBackColor);
+   SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDER, prefEverythingElse->rgb);
+   SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDER, crBackColor);
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDERSUB, SC_MARK_EMPTY);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDERSUB, prefEverythingElse->rgb);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDERSUB, crBackColor);
+   SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDERSUB, prefEverythingElse->rgb);
+   SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDERSUB, crBackColor);
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDERTAIL, SC_MARK_EMPTY);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDERTAIL, prefEverythingElse->rgb);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDERTAIL, crBackColor);
+   SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDERTAIL, prefEverythingElse->rgb);
+   SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDERTAIL, crBackColor);
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDEREND, SC_MARK_EMPTY);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEREND, prefEverythingElse->rgb);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEREND, crBackColor);
+   SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEREND, prefEverythingElse->rgb);
+   SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEREND, crBackColor);
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPENMID, SC_MARK_EMPTY);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPENMID, prefEverythingElse->rgb);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPENMID, crBackColor);
+   SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPENMID, prefEverythingElse->rgb);
+   SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPENMID, crBackColor);
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDERMIDTAIL, SC_MARK_EMPTY);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDERMIDTAIL, prefEverythingElse->rgb);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDERMIDTAIL, crBackColor);
+   SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDERMIDTAIL, prefEverythingElse->rgb);
+   SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDERMIDTAIL, crBackColor);
 
    SendMessage(m_hwndScintilla, SCI_STYLESETSIZE, STYLE_DEFAULT, 10);
    SendMessage(m_hwndScintilla, SCI_STYLESETFONT, STYLE_DEFAULT, (LPARAM)"Courier");
@@ -670,21 +670,21 @@ void CodeViewer::Create()
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_IDENTIFIER, RGB(0, 0, 0));
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_DATE, RGB(0, 0, 0));
 
-	SendMessage(m_hwndScintilla, SCI_SETWORDCHARS, 0, (LPARAM)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
+   SendMessage(m_hwndScintilla, SCI_SETWORDCHARS, 0, (LPARAM)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
 
-	//SendMessage(m_hwndScintilla, SCI_SETMOUSEDOWNCAPTURES ,0,0); //send mouse events through scintilla.
-	SendMessage(m_hwndScintilla, SCI_AUTOCSETIGNORECASE, TRUE, 0);
-	SendMessage(m_hwndScintilla, SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR, SC_CASEINSENSITIVEBEHAVIOUR_IGNORECASE,0);
+   //SendMessage(m_hwndScintilla, SCI_SETMOUSEDOWNCAPTURES ,0,0); //send mouse events through scintilla.
+   SendMessage(m_hwndScintilla, SCI_AUTOCSETIGNORECASE, TRUE, 0);
+   SendMessage(m_hwndScintilla, SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR, SC_CASEINSENSITIVEBEHAVIOUR_IGNORECASE,0);
 
-	SendMessage(m_hwndScintilla, SCI_AUTOCSETFILLUPS, 0,(LPARAM) "[]{}()");
-	SendMessage(m_hwndScintilla, SCI_AUTOCSTOPS, 0,(LPARAM) " ");
+   SendMessage(m_hwndScintilla, SCI_AUTOCSETFILLUPS, 0,(LPARAM) "[]{}()");
+   SendMessage(m_hwndScintilla, SCI_AUTOCSTOPS, 0,(LPARAM) " ");
 
    //
 
-	ParseVPCore();
-	UpdateScinFromPrefs();
+   ParseVPCore();
+   UpdateScinFromPrefs();
 
-	SendMessage(m_hwndMain, WM_SIZE, 0, 0); // Make our window relay itself out
+   SendMessage(m_hwndMain, WM_SIZE, 0, 0); // Make our window relay itself out
 }
 
 void CodeViewer::Destroy()
@@ -1331,6 +1331,13 @@ void CodeViewer::GetParamsFromEvent(const int iEvent, char * const szParams)
    }
 }
 
+void AddEventToList(char * const sz, const int index, const int dispid, const LPARAM lparam)
+{
+   const HWND hwnd = (HWND)lparam;
+   const size_t listindex = SendMessage(hwnd, CB_ADDSTRING, 0, (size_t)sz);
+   SendMessage(hwnd, CB_SETITEMDATA, listindex, index);
+}
+
 void CodeViewer::ListEventsFromItem()
 {
    // Clear old events
@@ -1769,19 +1776,18 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 				}
 				MessLen = sprintf_s(Mess, "%s", ptemp.c_str() );
 			}
-
 			//Search VP core
 			else if (FindUD(VP_CoreDict, DwellWord, i, idx) == 0)
 			{
 				idx = FindClosestUD(VP_CoreDict, CurrentLineNo, idx) ; 
 				string ptemp = VP_CoreDict->at(idx).Description;
-				if ( (VP_CoreDict->at(idx).Comment.length() >1) && DwellHelp )
+				if ( (VP_CoreDict->at(idx).Comment.length() > 1) && DwellHelp )
 				{
 					ptemp += "\n" +  VP_CoreDict->at(idx).Comment;
 				}
 				MessLen = sprintf_s(Mess, "%s", ptemp.c_str() );
 			}
-			else if ( ( FindUD(ComponentsDict, DwellWord, i, idx)  == 0 ) )
+			else if (FindUD(ComponentsDict, DwellWord, i, idx) == 0)
 			{
 				MessLen = sprintf_s(Mess, "Component: %s", szDwellWord);
 			}
@@ -1795,7 +1801,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	}
 	if (MessLen > 0)
 	{
-		SendMessage(m_hwndScintilla,SCI_CALLTIPSHOW,dwellpos, (LPARAM)Mess );
+		SendMessage(m_hwndScintilla,SCI_CALLTIPSHOW,dwellpos, (LPARAM)Mess);
 		return true;
 	}
 	return false;
@@ -1923,28 +1929,6 @@ void RemoveComment(const HWND m_hwndScintilla)
    SendMessage(m_hwndScintilla, SCI_ENDUNDOACTION, 0, 0);
 }
 
-void CodeViewer::szLower(char * const incstr)
-{
-	char *pC = incstr;
-	while (*pC)
-	{
-		if (*pC >= 'A' && *pC <= 'Z')
-			*pC = *pC + ('a' - 'A');
-		pC++;
-	}
-}
-
-void CodeViewer::szUpper(char * const incstr)
-{
-	char *pC = incstr;
-	while (*pC)
-	{
-		if (*pC >= 'a' && *pC <= 'z')
-			*pC = *pC - ('a' - 'A');
-		pC++;
-	}
-}
-
 // Makes sure what is found has only VBS Chars in..
 size_t CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 {
@@ -1967,21 +1951,6 @@ size_t CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 		}
 	}
 	return Pos;
-}
-
-string CodeViewer::ParseRemoveLineComments(string &Line)
-{
-	const size_t commentIdx = Line.find("'");
-	if (commentIdx == string::npos) return "";
-	string RetVal = Line.substr(commentIdx+1, string::npos);
-	RemovePadding(RetVal);
-	if (commentIdx > 0)
-	{
-		Line = Line.substr(0, commentIdx);
-		return RetVal;
-	}
-	Line.clear();
-	return RetVal;
 }
 
 bool CodeViewer::ParseOKLineLength(const size_t LineLen)
@@ -2262,7 +2231,7 @@ void CodeViewer::ParseFindConstruct(size_t &Pos, const string &UCLineIn, WordTyp
 
 void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, vector<UserData> *ListIn)
 {
-		string CommentTmp = ParseRemoveLineComments(wholeline);
+		string CommentTmp = ParseRemoveVBSLineComments(wholeline);
 		RemovePadding(CommentTmp);
 		while (wholeline.length() > 1)
 		{
@@ -2302,29 +2271,6 @@ void CodeViewer::RemoveByVal(string &line)
 		Pos += 5;
 		if ( (SSIZE_T)(LL-Pos) < 0 ) return;
 		line = line.substr(Pos, (LL-Pos) );
-	}
-}
-
-void CodeViewer::RemovePadding(string &line)
-{
-	const size_t LL = line.length();
-	size_t Pos = (line.find_first_not_of("\n\r\t ,"));
-	if (Pos == string::npos)
-	{
-		line.clear();
-		return;
-	}
-	if (Pos > 0)
-	{
-		if ( (SSIZE_T)(LL-Pos) < 1 ) return;
-		line = line.substr(Pos, (LL-Pos) );
-	}
-
-	Pos =  (line.find_last_not_of("\n\r\t ,"));
-	if (Pos != string::npos)
-	{
-		if ( Pos < 1 ) return;
-		line = line.erase(Pos+1);
 	}
 }
 
@@ -2800,7 +2746,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				pcv->WordUnderCaret.lpstrText = CaretTextBuff;
 				memset(CaretTextBuff, 0, MAX_FIND_LENGTH);
 				pcv->GetWordUnderCaret();
-				pcv->szLower(pcv->WordUnderCaret.lpstrText);
+				szLower(pcv->WordUnderCaret.lpstrText);
 				// set back ground colour of all words on display
 				SendMessage(pcv->m_hwndScintilla, SCI_STYLESETBACK, SCE_B_KEYWORD5, RGB(200,200,200) );
 				SendMessage(pcv->m_hwndScintilla, SCI_SETKEYWORDS, 4 , (LPARAM)CaretTextBuff);

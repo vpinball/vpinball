@@ -3,43 +3,20 @@
 
 UserData::UserData()
 {
-	LineNum=0;
+	LineNum = 0;
 	eTyping = eUnknown;
 }
 
-UserData::UserData(const int LineNo, const string &Desc, const string &Name, const WordType &TypeIn)
+UserData::UserData(const int LineNo, const string &Desc, const string &Name, const WordType TypeIn)
 {
-	LineNum=LineNo;
-	Description=Desc;
-	KeyName=Name;
+	LineNum = LineNo;
+	Description = Desc;
+	KeyName = Name;
 	eTyping = TypeIn;
 }
 
 UserData::~UserData()
 {
-}
-
-void UserData::RemovePadding(string &line)
-{
-	const size_t LL = line.length();
-	size_t Pos = (line.find_first_not_of("\n\r\t ,"));
-	if (Pos == -1)
-	{
-		line.clear();
-		return;
-	}
-	if (Pos > 0)
-	{
-		if ( (LL-Pos) < 1 ) return;
-		line = line.substr(Pos, (LL-Pos) );
-	}
-
-	Pos =  (line.find_last_not_of("\n\r\t ,"));
-	if (Pos != -1)
-	{
-		if ( Pos < 1 ) return;
-		line = line.erase(Pos+1);
-	}
 }
 
 /*	FindUD - Now a human Search!
@@ -51,7 +28,7 @@ int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::
 {
 	int result = -2;
 	RemovePadding(strIn);
-	if (strIn.size() == 0 || (!ListIn) ) return -2;
+	if (strIn.size() == 0 || (!ListIn) || ListIn->size() == 0) return -2;
 
 	Pos = -1;
 	const int KeyResult = FindUDbyKey(ListIn, strIn, UDiterOut, Pos);
@@ -61,7 +38,7 @@ int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::
 	//Now see if it's in the Name list
 	//Jumpdelta should be intalised to the maximum count of am individual KeyName
 	//But for the momment the biggest is 64 x's in AMH
-	int iNewPos = Pos + KeyResult;//Start Very close to the result of key search
+	int iNewPos = Pos + KeyResult; //Start Very close to the result of key search
 	if (iNewPos < 0) iNewPos = 0;
 	//Find the start of other instances of strIn by crawling up list
 	//Usually (but not always) FindUDbyKey returns top of the list so its fast
@@ -138,7 +115,7 @@ int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, con
 int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int &PosOut )
 {
 	int result = -2;
-	if (ListIn && (strIn.size() > 0) )// Sanity chq.
+	if (ListIn && (ListIn->size() > 0) && (strIn.size() > 0))// Sanity chq.
 	{
 		const unsigned int ListSize = (int)ListIn->size();
 		UINT32 iCurPos = (ListSize >> 1);
@@ -173,7 +150,7 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 //Returns current Index of strIn in ListIn based on UniqueKey, or -1 if not found
 int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 {
-	if ( (!ListIn) || (strIn.size() <= 0) ) return -1;
+	if ( (!ListIn) || (ListIn->size() == 0) || (strIn.size() == 0) ) return -1;
 	int result = -2;
 	const unsigned int ListSize = (int)ListIn->size();
 	UINT32 iCurPos = (ListSize >> 1);
@@ -209,7 +186,7 @@ int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 //Returns current Index of strIn in ListIn based on KeyName, or -1 if not found
 int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
 {
-	if ( (!ListIn) || (strIn.size() <= 0) ) return -1;
+	if ( (!ListIn) || (ListIn->size() == 0) || (strIn.size() == 0) ) return -1;
 	int result = -2;
 	const unsigned int ListSize = (int)ListIn->size();
 	UINT32 iCurPos = (ListSize >> 1);

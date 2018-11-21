@@ -1,8 +1,9 @@
 #pragma once
+
 #include <Commdlg.h>
 #include <activscp.h>
 #include <activdbg.h>
-#include "atlcom.h"
+#include <atlcom.h>
 #include "codeviewedit.h"
 
 #define MAX_FIND_LENGTH 81
@@ -66,6 +67,7 @@ class CodeViewDispatch
 public:
    CodeViewDispatch();
    ~CodeViewDispatch();
+
    WCHAR m_wzName[32];
    IUnknown *m_punk;
    IDispatch *m_pdisp;
@@ -225,13 +227,11 @@ private:
    VectorSortString<CodeViewDispatch> m_vcvdTemp; // Objects added through script
 
 	bool ParseOKLineLength(const size_t LineLen);
-	string ParseRemoveLineComments(string &Line);
 	void ParseDelimtByColon(string &result, string &wholeline);
 	void ParseFindConstruct(size_t &Pos, const string &UCLine, WordType &Type, int &ConstructSize);
 	bool ParseStructureName(vector<UserData> *ListIn, UserData ud, const string &UCline, const string &line, const int Lineno);
 
 	size_t SureFind(const string &LineIn, const string &ToFind);
-	void RemovePadding(string &line); 
 	void RemoveByVal(string &line); 
 	void RemoveNonVBSChars(string &line);
 	string ExtractWordOperand(const string &line, const size_t StartPos);
@@ -258,8 +258,6 @@ public:
 	void ReadLineToParseBrain(string wholeline, const int linecount, vector<UserData> *ListIn);
 	bool ShowTooltip(SCNotification *Scn);
 	void ShowAutoComplete(SCNotification *pSCN);
-	void szLower(char * const incstr);
-	void szUpper(char * const incstr);
 	string ValidChars;
 	string VBValidChars;
 
@@ -410,16 +408,11 @@ private:
    int m_index;
 };
 
+// general string helpers:
+
 inline bool FIsWhitespace(const char ch)
 {
    return (ch == ' ' || ch == 9/*tab*/);
-}
-
-inline void AddEventToList(char * const sz, const int index, const int dispid, const LPARAM lparam)
-{
-   const HWND hwnd = (HWND)lparam;
-   const size_t listindex = SendMessage(hwnd, CB_ADDSTRING, 0, (size_t)sz);
-   SendMessage(hwnd, CB_SETITEMDATA, listindex, index);
 }
 
 inline string upperCase(string input)
@@ -434,4 +427,63 @@ inline string lowerCase(string input)
    for (string::iterator it = input.begin(); it != input.end(); ++it)
       *it = tolower(*it);
    return input;
+}
+
+inline void RemovePadding(string &line)
+{
+    const size_t LL = line.length();
+    size_t Pos = (line.find_first_not_of("\n\r\t ,"));
+    if (Pos == string::npos)
+    {
+        line.clear();
+        return;
+    }
+
+    if (Pos > 0)
+    {
+        if ((SSIZE_T)(LL - Pos) < 1) return;
+        line = line.substr(Pos, (LL - Pos));
+    }
+
+    Pos = (line.find_last_not_of("\n\r\t ,"));
+    if (Pos != string::npos)
+    {
+        if (Pos < 1) return;
+        line = line.erase(Pos + 1);
+    }
+}
+
+inline string ParseRemoveVBSLineComments(string &Line)
+{
+    const size_t commentIdx = Line.find("'");
+    if (commentIdx == string::npos) return "";
+    string RetVal = Line.substr(commentIdx + 1, string::npos);
+    RemovePadding(RetVal);
+    if (commentIdx > 0)
+    {
+        Line = Line.substr(0, commentIdx);
+        return RetVal;
+    }
+    Line.clear();
+    return RetVal;
+}
+
+inline void szLower(char * pC)
+{
+    while (*pC)
+    {
+        if (*pC >= 'A' && *pC <= 'Z')
+            *pC += ('a' - 'A');
+        pC++;
+    }
+}
+
+inline void szUpper(char * pC)
+{
+    while (*pC)
+    {
+        if (*pC >= 'a' && *pC <= 'z')
+            *pC -= ('a' - 'A');
+        pC++;
+    }
 }
