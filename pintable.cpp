@@ -6825,11 +6825,6 @@ void PinTable::Paste(const bool fAtLocation, int x, int y)
    }
 
    // Center view on newly created objects, if they are off the screen
-   if (cpasted > 0)
-   {
-      GetCenter(); //!! ??
-   }
-
    if ((cpasted > 0) && fAtLocation)
    {
       const Vertex2D vcenter = GetCenter();
