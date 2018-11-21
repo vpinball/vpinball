@@ -1791,7 +1791,7 @@ bool LightSeq::VerifyAndSetGridElement(const int x, const int y, const LightStat
    }
 }
 
-LightState LightSeq::GetElementState(const int index)
+LightState LightSeq::GetElementState(const int index) const
 {
    // just incase the element isn't a light
    LightState rc = LightStateOff;

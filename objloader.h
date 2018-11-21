@@ -1,6 +1,4 @@
 #pragma once
-#ifndef _OBJLOADER_H
-#define _OBJLOADER_H
 
 FILE* WaveFrontObj_ExportStart(const char *filename);
 void WaveFrontObj_ExportEnd(FILE *f);
@@ -17,6 +15,3 @@ void WaveFrontObj_WriteFaceInfoList(FILE *f, const WORD *faces, const unsigned i
 void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename, const Material * const mat);
 void WaveFrontObj_UseTexture(FILE *f, const char *texelName);
 bool WaveFrontObjLoadMaterial(const char *filename, Material *mat);
-
-
-#endif // !_OBJLOADER_H

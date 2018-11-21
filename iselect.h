@@ -124,7 +124,7 @@ public:
 
    int m_menuid; // context menu to use
 
-   int layerIndex;
+   int m_layerIndex;
 
    bool m_fDragging;
    bool m_fMarkedForUndo;

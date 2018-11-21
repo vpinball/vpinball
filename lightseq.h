@@ -13,26 +13,26 @@
 class LightSeqData
 {
 public:
-   Vertex2D 		m_v;
-   Vertex2D		m_vCenter;
-   WCHAR 			m_wzCollection[MAXNAMEBUFFER];	// collection to use
-   long			m_updateinterval;
-   TimerDataRoot 	m_tdr;
+   Vertex2D      m_v;
+   Vertex2D      m_vCenter;
+   WCHAR         m_wzCollection[MAXNAMEBUFFER];	// collection to use
+   long          m_updateinterval;
+   TimerDataRoot m_tdr;
 };
 
-typedef struct {
-   SequencerState 	Animation;
-   long 			TailLength;
-   long 			Repeat;
-   long 			Pause;
-   long			UpdateRate;
-} _LightSeqQueueData;
+struct LightSeqQueueData {
+   SequencerState Animation;
+   long           TailLength;
+   long           Repeat;
+   long           Pause;
+   long           UpdateRate;
+};
 
-typedef struct {
-   int					Head;
-   int					Tail;
-   _LightSeqQueueData	Data[LIGHTSEQQUEUESIZE];
-} _LightSeqQueue;
+struct LightSeqQueue {
+   int               Head;
+   int               Tail;
+   LightSeqQueueData Data[LIGHTSEQQUEUESIZE];
+};
 
 enum {
    eSeqNull,
@@ -43,7 +43,7 @@ enum {
    eSeqRadar
 };
 
-typedef struct {
+struct _tracer {
    int		type;				// type of tracer processing required
    int		delay;
    int		length;
@@ -59,7 +59,7 @@ typedef struct {
    float	processRadius;
    float	angle;
    float	stepAngle;
-} _tracer;
+};
 
 class LightSeq :
    public CComObjectRootEx<CComSingleThreadModel>,
@@ -134,7 +134,7 @@ private:
    _tracer			m_th1, m_th2, m_tt1, m_tt2;
    Collection		*m_pcollection;
    short			*m_pgridData;
-   _LightSeqQueue	m_queue;
+   LightSeqQueue	m_queue;
    SequencerState	m_playAnimation;
    long			m_tailLength;
    long			m_pauseValue;
@@ -157,8 +157,8 @@ public:
    STDMETHOD(Play)(/*[in]*/ SequencerState Animation, /*[in]*/ long TailLength, /*[in]*/ long Repeat, /*[in]*/ long Pause);
    STDMETHOD(StopPlay)();
 
-   PinTable 		*m_ptable;
-   LightSeqData 	m_d;
+   PinTable           *m_ptable;
+   LightSeqData       m_d;
 
    LightSeqAnimObject m_lightseqanim;
 
@@ -169,7 +169,7 @@ private:
    bool		ProcessTracer(_tracer * const pTracer, const LightState State);
    void		SetAllLightsToState(const LightState State);
    void 		SetElementToState(const int index, const LightState State);
-   LightState	GetElementState(const int index);
+   LightState	GetElementState(const int index) const;
    bool		VerifyAndSetGridElement(const int x, const int y, const LightState State);
 };
 

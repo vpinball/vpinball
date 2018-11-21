@@ -1,9 +1,6 @@
 #pragma once
 // Surface.h : Declaration of the Surface
 
-#ifndef __SURFACE_H_
-#define __SURFACE_H_
-
 #include "resource.h"       // main symbols
 
 class SurfaceData
@@ -246,5 +243,3 @@ public:
    STDMETHOD( put_OverwritePhysics )(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHODIMP PlaySlingshotHit();
 };
-
-#endif //__SURFACE_H_

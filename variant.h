@@ -1,6 +1,4 @@
 #pragma once
-#ifndef __VARIANT_H__
-#define __VARIANT_H__
 
 BSTR BstrFromVariant(VARIANT *pvar, LCID lcid = 0x409/*LCID lcid = lcidUSEnglish*/);
 
@@ -10,5 +8,3 @@ BSTR BstrFromVariant(VARIANT *pvar, LCID lcid = 0x409/*LCID lcid = lcidUSEnglish
 
 // Variant helpers
 #define SetVarBstr(_pvar,_bstr)		{VariantClear(_pvar);V_VT(_pvar)=VT_BSTR;(_pvar)->bstrVal=(_bstr);}
-
-#endif // __VARIANT_H__

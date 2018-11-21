@@ -1673,7 +1673,7 @@ void PinTable::SwitchToLayer(int layerNumber)
       }
       if (!alreadyIn)
       {
-         piedit->GetISelect()->layerIndex = 0;
+         piedit->GetISelect()->m_layerIndex = 0;
          m_layer[0].AddElement(piedit);
       }
    }
@@ -1708,8 +1708,8 @@ void PinTable::AssignToLayer(IEditable *obj, int layerNumber)
 {
    if (!m_activeLayers[layerNumber])
       obj->m_isVisible = false;
-   m_layer[obj->GetISelect()->layerIndex].RemoveElement(obj);
-   obj->GetISelect()->layerIndex = layerNumber;
+   m_layer[obj->GetISelect()->m_layerIndex].RemoveElement(obj);
+   obj->GetISelect()->m_layerIndex = layerNumber;
    m_layer[layerNumber].InsertElementAt(obj, 0);
    SetDirtyDraw();
 }
@@ -1721,7 +1721,7 @@ void PinTable::MergeAllLayers()
       for (int i = m_layer[t].Size() - 1; i >= 0; i--)
       {
          IEditable *piedit = m_layer[t].ElementAt(i);
-         piedit->GetISelect()->layerIndex = 0;
+         piedit->GetISelect()->m_layerIndex = 0;
          m_layer[0].AddElement(piedit);
       }
       m_layer[t].RemoveAllElements();
@@ -1746,7 +1746,7 @@ void PinTable::BackupLayers()
       }
       if (!alreadyIn)
       {
-         piedit->GetISelect()->layerIndex = 0;
+         piedit->GetISelect()->m_layerIndex = 0;
          m_layer[0].AddElement(piedit);
       }
    }
@@ -3881,7 +3881,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
       for (int t = 0; t < m_vedit.Size(); t++)
       {
          IEditable *piedit = m_vedit.ElementAt(t);
-         if (piedit->GetISelect()->layerIndex == i)
+         if (piedit->GetISelect()->m_layerIndex == i)
          {
             m_layer[i].AddElement(piedit);
          }
@@ -4383,7 +4383,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(SECB))
    {
-      pbr->GetStruct(&m_protectionData, sizeof(_protectionData));
+      pbr->GetStruct(&m_protectionData, sizeof(ProtectionData));
    }
    else if (id == FID(CODE))
    {
@@ -5190,47 +5190,47 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
       LocalString ls16(IDS_LAYER11);
       AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER11, ls16.m_szbuffer);
 
-      if (psel->layerIndex == 0)
+      if (psel->m_layerIndex == 0)
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER1, MF_CHECKED);
       else
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER1, MF_UNCHECKED);
-      if (psel->layerIndex == 1)
+      if (psel->m_layerIndex == 1)
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER2, MF_CHECKED);
       else
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER2, MF_UNCHECKED);
-      if (psel->layerIndex == 2)
+      if (psel->m_layerIndex == 2)
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER3, MF_CHECKED);
       else
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER3, MF_UNCHECKED);
-      if (psel->layerIndex == 3)
+      if (psel->m_layerIndex == 3)
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER4, MF_CHECKED);
       else
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER4, MF_UNCHECKED);
-      if (psel->layerIndex == 4)
+      if (psel->m_layerIndex == 4)
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER5, MF_CHECKED);
       else
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER5, MF_UNCHECKED);
-      if (psel->layerIndex == 5)
+      if (psel->m_layerIndex == 5)
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER6, MF_CHECKED);
       else
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER6, MF_UNCHECKED);
-      if (psel->layerIndex == 6)
+      if (psel->m_layerIndex == 6)
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER7, MF_CHECKED);
       else
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER7, MF_UNCHECKED);
-      if (psel->layerIndex == 7)
+      if (psel->m_layerIndex == 7)
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER8, MF_CHECKED);
       else
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER8, MF_UNCHECKED);
-      if(psel->layerIndex == 8)
+      if (psel->m_layerIndex == 8)
           CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER9, MF_CHECKED);
       else
           CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER9, MF_UNCHECKED);
-      if(psel->layerIndex == 9)
+      if (psel->m_layerIndex == 9)
           CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER10, MF_CHECKED);
       else
           CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER10, MF_UNCHECKED);
-      if(psel->layerIndex == 10)
+      if (psel->m_layerIndex == 10)
           CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER11, MF_CHECKED);
       else
           CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER11, MF_UNCHECKED);
@@ -6815,7 +6815,7 @@ void PinTable::Paste(const bool fAtLocation, int x, int y)
 
          m_vedit.AddElement(peditNew);
          // copy the new element to the same layer as the source element
-         m_layer[peditNew->GetISelect()->layerIndex].AddElement(peditNew);
+         m_layer[peditNew->GetISelect()->m_layerIndex].AddElement(peditNew);
          peditNew->InitPostLoad();
          peditNew->m_fBackglass = g_pvp->m_fBackglassView;
 
@@ -7014,7 +7014,7 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
    piSelect = m_vmultisel.ElementAt(0);
    if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetScriptable())
    {
-      string info = string("Layer ") + std::to_string((long long)piSelect->layerIndex+1);
+      string info = string("Layer ") + std::to_string((long long)piSelect->m_layerIndex+1);
       if (piSelect->GetItemType() == eItemPrimitive)
       {
          Primitive *prim = (Primitive*)piSelect;

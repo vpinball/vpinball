@@ -1,4 +1,5 @@
 #pragma once
+
 class PlungerMoverObject : public MoverObject
 {
 public:

@@ -10,7 +10,7 @@ ISelect::ISelect()
    m_fLocked = false;
 
    m_menuid = -1;
-   layerIndex = 0;
+   m_layerIndex = 0;
 }
 
 void ISelect::SetObjectPos()
@@ -136,16 +136,16 @@ void ISelect::DoCommand(int icmd, int x, int y)
       PinTable *ptable = GetPTable();
       ptable->m_vedit.RemoveElement(piedit);
       ptable->m_vedit.AddElement(piedit);
-      ptable->m_layer[layerIndex].RemoveElement(piedit);
-      ptable->m_layer[layerIndex].AddElement(piedit);
+      ptable->m_layer[m_layerIndex].RemoveElement(piedit);
+      ptable->m_layer[m_layerIndex].AddElement(piedit);
       ptable->SetDirtyDraw();
       break;
    }
    case ID_DRAWINBACK:
       GetPTable()->m_vedit.RemoveElement(piedit);
       GetPTable()->m_vedit.InsertElementAt(piedit, 0);
-      GetPTable()->m_layer[layerIndex].RemoveElement(piedit);
-      GetPTable()->m_layer[layerIndex].InsertElementAt(piedit, 0);
+      GetPTable()->m_layer[m_layerIndex].RemoveElement(piedit);
+      GetPTable()->m_layer[m_layerIndex].InsertElementAt(piedit, 0);
       GetPTable()->SetDirtyDraw();
       break;
    case ID_SETASDEFAULT:
@@ -373,7 +373,7 @@ BOOL ISelect::LoadToken(int id, BiffReader *pbr)
    }
    if (id == FID(LAYR))
    {
-      pbr->GetInt(&layerIndex);
+      pbr->GetInt(&m_layerIndex);
    }
    return fTrue;
 }
@@ -383,7 +383,7 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteBool(FID(LOCK), m_fLocked);
-   bw.WriteInt(FID(LAYR), layerIndex);
+   bw.WriteInt(FID(LAYR), m_layerIndex);
 
    return S_OK;
 }

@@ -1,6 +1,4 @@
 #pragma once
-#ifndef __LZWWRITER_H_
-#define __LZWWRITER_H_
 
 class LZWWriter
 {
@@ -73,5 +71,3 @@ public:
    HRESULT CharOut(char c);
    HRESULT FlushChar();
 };
-
-#endif

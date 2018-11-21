@@ -1,6 +1,4 @@
 #pragma once
-#ifndef __PLUMB_H__
-#define __PLUMB_H__
 
 void plumb_set_sensitivity(const F32 sens);
 void nudge_set_sensitivity(const F32 sens);
@@ -13,5 +11,3 @@ void plumb_update(const U32 curr_time_msec, const float getx, const float gety);
 int  plumb_tilted();
 
 void plumb_draw();
-
-#endif/* !__PLUMB_H__ */
