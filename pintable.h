@@ -31,7 +31,7 @@ struct LightSource {
    Vertex3Ds pos;
 };
 
-typedef struct {
+struct ProtectionData {
    long				fileversion;
    long				size;
    unsigned char	paraphrase[16 + 8];
@@ -39,7 +39,7 @@ typedef struct {
    int				keyversion;
    int				spare1;
    int				spare2;
-} _protectionData;
+};
 
 class ScriptGlobalTable;
 
@@ -633,7 +633,7 @@ public:
    short m_oldMousePosX;
    short m_oldMousePosY;
 
-   _protectionData m_protectionData;
+   ProtectionData m_protectionData;
 
    char m_szImage[MAXTOKEN];
    char m_szPlayfieldMaterial[32];

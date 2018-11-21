@@ -1,6 +1,4 @@
 #pragma once
-#ifndef __GIFREADER_H_
-#define __GIFREADER_H_
 
 #define MAX_CODES   4095
 
@@ -59,5 +57,3 @@ public:
 
    ULONG m_readahead; // How many bytes we read into our buffer
 };
-
-#endif

@@ -1,7 +1,5 @@
 // Ball.h : Declaration of the CBall
 #pragma once
-#ifndef __BALL_H_
-#define __BALL_H_
 
 #include "resource.h"       // main symbols
 
@@ -96,5 +94,3 @@ public:
    Ball *m_pball;
    VARIANT m_uservalue;
 };
-
-#endif //__BALL_H_

@@ -289,10 +289,10 @@ void DispReel::RenderDynamic(RenderDevice* pd3dDevice)
 
    for (int r = 0; r < m_d.m_reelcount; ++r) //!! optimize by doing all draws in a single one
    {
-       const float u0 = m_digitTexCoords[ReelInfo[r].currentValue].u_min;
-       const float v0 = m_digitTexCoords[ReelInfo[r].currentValue].v_min;
-       const float u1 = m_digitTexCoords[ReelInfo[r].currentValue].u_max;
-       const float v1 = m_digitTexCoords[ReelInfo[r].currentValue].v_max;
+       const float u0 = m_digitTexCoords[m_reelInfo[r].currentValue].u_min;
+       const float v0 = m_digitTexCoords[m_reelInfo[r].currentValue].v_min;
+       const float u1 = m_digitTexCoords[m_reelInfo[r].currentValue].u_max;
+       const float v1 = m_digitTexCoords[m_reelInfo[r].currentValue].v_max;
 
        float Verts[4 * 5] =
        {
@@ -330,11 +330,11 @@ void DispReel::RenderSetup(RenderDevice* pd3dDevice)
 
    for (int i = 0; i < m_d.m_reelcount; ++i)
    {
-      ReelInfo[i].currentValue = 0;
-      ReelInfo[i].motorPulses = 0;
-      ReelInfo[i].motorStepCount = 0;
-      ReelInfo[i].motorCalcStep = 0;
-      ReelInfo[i].motorOffset = 0;
+      m_reelInfo[i].currentValue = 0;
+      m_reelInfo[i].motorPulses = 0;
+      m_reelInfo[i].motorStepCount = 0;
+      m_reelInfo[i].motorCalcStep = 0;
+      m_reelInfo[i].motorOffset = 0;
    }
 
    // get a pointer to the image specified in the object
@@ -431,12 +431,12 @@ void DispReel::Animate()
       for (int i = m_d.m_reelcount - 1; i >= 0; i--)
       {
          // if the motor has stopped, and there are still motor steps then start another one
-         if ((ReelInfo[i].motorPulses != 0) && (ReelInfo[i].motorStepCount == 0))
+         if ((m_reelInfo[i].motorPulses != 0) && (m_reelInfo[i].motorStepCount == 0))
          {
             // get the number of steps (or increments) needed to move the reel
-            ReelInfo[i].motorStepCount = (int)m_d.m_motorsteps;
-            ReelInfo[i].motorCalcStep = (ReelInfo[i].motorPulses > 0) ? step : -step;
-            ReelInfo[i].motorOffset = 0;
+            m_reelInfo[i].motorStepCount = (int)m_d.m_motorsteps;
+            m_reelInfo[i].motorCalcStep = (m_reelInfo[i].motorPulses > 0) ? step : -step;
+            m_reelInfo[i].motorOffset = 0;
 
             // play the sound (if any) for each click of the reel
             if (m_d.m_szSound[0] != 0)
@@ -450,39 +450,39 @@ void DispReel::Animate()
          }
 
          // is the reel in the process of moving??
-         if (ReelInfo[i].motorStepCount != 0)
+         if (m_reelInfo[i].motorStepCount != 0)
          {
-            ReelInfo[i].motorOffset += ReelInfo[i].motorCalcStep;
-            ReelInfo[i].motorStepCount--;
+            m_reelInfo[i].motorOffset += m_reelInfo[i].motorCalcStep;
+            m_reelInfo[i].motorStepCount--;
             // have re reached the end of the step
-            if (ReelInfo[i].motorStepCount <= 0)
+            if (m_reelInfo[i].motorStepCount <= 0)
             {
-               ReelInfo[i].motorStepCount = 0;      // best to be safe (paranoid)
-               ReelInfo[i].motorOffset = 0;
+               m_reelInfo[i].motorStepCount = 0;      // best to be safe (paranoid)
+               m_reelInfo[i].motorOffset = 0;
 
-               if (ReelInfo[i].motorPulses < 0)
+               if (m_reelInfo[i].motorPulses < 0)
                {
-                  ReelInfo[i].motorPulses++;
-                  ReelInfo[i].currentValue--;
-                  if (ReelInfo[i].currentValue < 0)
+                  m_reelInfo[i].motorPulses++;
+                  m_reelInfo[i].currentValue--;
+                  if (m_reelInfo[i].currentValue < 0)
                   {
-                     ReelInfo[i].currentValue += AdjustValue;
+                     m_reelInfo[i].currentValue += AdjustValue;
                      // if not the first reel then decrement the next reel by 1
                      if (i != 0)
-                        ReelInfo[i - 1].motorPulses--;
+                        m_reelInfo[i - 1].motorPulses--;
                   }
                }
                else
                {
-                  ReelInfo[i].motorPulses--;
-                  ReelInfo[i].currentValue++;
-                  if (ReelInfo[i].currentValue > OverflowValue)
+                  m_reelInfo[i].motorPulses--;
+                  m_reelInfo[i].currentValue++;
+                  if (m_reelInfo[i].currentValue > OverflowValue)
                   {
-                     ReelInfo[i].currentValue -= AdjustValue;
+                     m_reelInfo[i].currentValue -= AdjustValue;
                      // if not the first reel then increment the next reel
                      // along by 1 (just like a car odometer)
                      if (i != 0)
-                        ReelInfo[i - 1].motorPulses++;
+                        m_reelInfo[i - 1].motorPulses++;
                   }
                }
             }
@@ -1038,9 +1038,9 @@ STDMETHODIMP DispReel::AddValue(long Value)
       val /= valbase;
 
       if (bNegative)
-         ReelInfo[i].motorPulses -= digitValue;
+         m_reelInfo[i].motorPulses -= digitValue;
       else
-         ReelInfo[i].motorPulses += digitValue;
+         m_reelInfo[i].motorPulses += digitValue;
 
       // move to next reel
       i--;
@@ -1061,11 +1061,11 @@ STDMETHODIMP DispReel::SetValue(long Value)
    // reset the motor
    for (int l = 0; l < m_d.m_reelcount; ++l)
    {
-      ReelInfo[l].currentValue = 0;
-      ReelInfo[l].motorPulses = 0;
-      ReelInfo[l].motorStepCount = 0;
-      ReelInfo[l].motorCalcStep = 0;
-      ReelInfo[l].motorOffset = 0;
+      m_reelInfo[l].currentValue = 0;
+      m_reelInfo[l].motorPulses = 0;
+      m_reelInfo[l].motorStepCount = 0;
+      m_reelInfo[l].motorCalcStep = 0;
+      m_reelInfo[l].motorOffset = 0;
    }
 
    // set the reel values (startint at the right most reel and move left)
@@ -1075,7 +1075,7 @@ STDMETHODIMP DispReel::SetValue(long Value)
       const int digitValue = val % valbase;
       // remove the value for this reel from the overall number
       val /= valbase;
-      ReelInfo[i].currentValue = digitValue;
+      m_reelInfo[i].currentValue = digitValue;
       // move to next reel
       i--;
    }
@@ -1095,13 +1095,13 @@ STDMETHODIMP DispReel::ResetToZero()
    // work for the last reel to the first one
    for (int i = m_d.m_reelcount - 1; i >= 0; i--)
    {
-      const int adjust = overflowValue - carry - ReelInfo[i].currentValue;
+      const int adjust = overflowValue - carry - m_reelInfo[i].currentValue;
       carry = 0;
 
       if (adjust != overflowValue)
       {
          // overwrite the pulse count with the adjust value
-         ReelInfo[i].motorPulses = adjust;
+         m_reelInfo[i].motorPulses = adjust;
          // as this reel returns to zero it will roll over the next reel along
          carry = 1;
       }
@@ -1116,7 +1116,7 @@ STDMETHODIMP DispReel::SpinReel(long ReelNumber, long PulseCount)
    if ((ReelNumber >= 1) && (ReelNumber <= m_d.m_reelcount))
    {
       const int reel = ReelNumber - 1;
-      ReelInfo[reel].motorPulses += PulseCount;
+      m_reelInfo[reel].motorPulses += PulseCount;
       return S_OK;
    }
    else

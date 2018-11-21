@@ -2,7 +2,7 @@
 
 //#define DEBUG_PLUMB
 
-typedef struct
+struct Plumb
 {
    F32 x, y;
    F32 vx, vy;
@@ -10,8 +10,7 @@ typedef struct
    int tilted;
    F32 tiltsens;
    F32 nudgesens;
-}
-Plumb;
+};
 
 static Plumb gPlumb;
 

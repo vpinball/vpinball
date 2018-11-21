@@ -256,7 +256,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    secondImage[0] = 0;
    if (piscript)
    {
-      sprintf_s(layerBuf, "%i", piscript->GetISelect()->layerIndex + 1);
+      sprintf_s(layerBuf, "%i", piscript->GetISelect()->m_layerIndex + 1);
    }
    ListView_SetItemText(hElementList, idx, 2, layerBuf);
    if (piedit->GetItemType() == eItemSurface)

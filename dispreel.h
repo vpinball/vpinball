@@ -34,13 +34,15 @@ public:
    bool        m_fVisible;
 };
 
-typedef struct {
+class ReelInfo
+{
+public:
    int     currentValue;       // current digit value
    int     motorPulses;        // number of motor pulses received for this reel (can be negative)
    int     motorStepCount;     // when equal to zero then at a whole letter
    float   motorCalcStep;      // calculated steping rate of motor
    float   motorOffset;        // frame value of motor (where to display the reel)
-} _reelInfo;
+};
 
 class DispReel :
    public CComObjectRootEx<CComSingleThreadModel>,
@@ -107,7 +109,7 @@ public:
    DispReelAnimObject m_dispreelanim;
 
 private:
-   _reelInfo   ReelInfo[MAX_REELS];
+   ReelInfo    m_reelInfo[MAX_REELS];
 
    float       m_reeldigitwidth;  // size of the individual reel digits (in bitmap form)
    float       m_reeldigitheight;

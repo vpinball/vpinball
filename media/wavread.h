@@ -6,9 +6,8 @@
 //
 // Copyright (c) 1999 Microsoft Corp. All rights reserved.
 //-----------------------------------------------------------------------------
-#ifndef WAVE_READ_H
-#define WAVE_READ_H
 
+#pragma once
 
 #include <mmreg.h>
 #include <mmsystem.h>
@@ -36,5 +35,3 @@ public:
    HRESULT Close();
 
 };
-
-#endif

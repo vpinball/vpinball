@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef __DEF_H__
-#define __DEF_H__
-
 #ifdef min
 #undef min
 #endif
@@ -380,5 +377,3 @@ HRESULT OpenURL(char *szURL);
 
 WCHAR *MakeWide(const char * const sz);
 char *MakeChar(const WCHAR * const wz);
-
-#endif/* !__DEF_H__ */

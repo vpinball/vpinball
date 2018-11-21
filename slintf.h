@@ -1,6 +1,4 @@
 #pragma once
-#ifndef __SLINTF_H__
-#define __SLINTF_H__
 
 #ifdef SLINTF
 void slintf_init();
@@ -12,5 +10,3 @@ void slintf(const char *str, ...);
 #else
 #define slintf(...) ((void)0)
 #endif
-
-#endif/* !__SLINTF_H__ */
