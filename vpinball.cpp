@@ -2050,6 +2050,7 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
          if (::IsDialogMessage(m_sb.m_vhwndDialog[i], pmsg))
             *pfConsumed = TRUE;
       }
+
       if (m_pcv && m_pcv->m_hwndMain)
       {
          //if (pmsg->hwnd == m_pcv->m_hwndMain)
@@ -2073,12 +2074,13 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
       {
          if (::IsDialogMessage(m_pcv->m_hwndFind, pmsg))
             *pfConsumed = TRUE;
-      }      
+      }
+
       if (!(*pfConsumed))
       {
          const int fTranslated = TranslateAccelerator(m_hwnd, g_haccel, pmsg);
 
-         if (fTranslated != 0)
+         if (fTranslated)
             *pfConsumed = TRUE;
       }
 

@@ -1,5 +1,4 @@
-#ifndef _CVEDIT_
-#define _CVEDIT_
+#pragma once
 
 //#define STYLE_SUBFUN 10
 //#define STYLE_COMPONENTS 11
@@ -10,7 +9,6 @@ enum WordType {eUnknown, eClass, eSub, eFunction, ePropGet, ePropLet, ePropSet, 
 
 class UserData
 {
-private:
 public:
 	string UniqueKey;
 	int LineNum; //Line No. Declaration
@@ -21,9 +19,8 @@ public:
 	string Description;//Brief Description
 	string Comment;
 
-public:
 	UserData();
-	UserData(const int LineNo, const string &Desc, const string &Name, const WordType &TypeIn);
+	UserData(const int LineNo, const string &Desc, const string &Name, const WordType TypeIn);
 	~UserData();
 
 	bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, const string &strIn);
@@ -35,7 +32,6 @@ public:
 	int UDIndex(vector<UserData>* ListIn, const string &strIn);
 	UserData GetUDfromUniqueKey(vector<UserData>* ListIn, const string &UniKey);
 	size_t GetUDPointerfromUniqueKey(vector<UserData>* ListIn, const string &UniKey);
-	void RemovePadding(string &line);
 };
 
 // CodeViewer Preferences 
@@ -69,5 +65,3 @@ public:
 	int GetHeightFromPointSize(const HWND hwndDlg);
 	void ApplyPreferences(const HWND hwndScin, const CVPrefrence* DefaultPref);
 };
-
-#endif //_CVEDIT_
