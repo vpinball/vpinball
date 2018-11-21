@@ -396,10 +396,10 @@ public:
 
    float m_globalEmissionScale;
 
-   int m_fVSync; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
-   int m_fMaxPrerenderedFrames;
-   int m_fFXAA;
-   bool m_fAA;
+   int m_VSync; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
+   int m_maxPrerenderedFrames;
+   int m_FXAA;
+   bool m_AA;
 
    bool m_dynamicAO;
    bool m_disableAO;
@@ -410,8 +410,8 @@ public:
    bool m_useNvidiaApi;
    bool m_disableDWM;
 
-   bool m_fStereo3Denabled;
-   int m_fStereo3D; // 0=off, 1=top/down, 2=interlaced/LG, 3=sidebyside
+   bool m_stereo3Denabled;
+   int m_stereo3D; // 0=off, 1=top/down, 2=interlaced/LG, 3=sidebyside
 
    int m_BWrendering; // 0=off, 1=Black&White from RedGreen, 2=B&W from Red only
 
@@ -429,8 +429,8 @@ public:
    int m_LastKnownGoodCounter;
    int m_ModalRefCount;
 
-   int m_fCloseType;			// if 0 exit player and close application if started minimized, if 1 close application always, 2 is brute force exit
-   bool m_fCloseDown;			// Whether to shut down the player at the end of this frame
+   int m_closeType;                  // if 0 exit player and close application if started minimized, if 1 close application always, 2 is brute force exit
+   bool m_fCloseDown;                // Whether to shut down the player at the end of this frame
    bool m_fCloseDownDelay;
    bool m_fShowDebugger;
 
@@ -443,11 +443,11 @@ public:
    float m_DebugBallMass;
 
    bool m_fDetectScriptHang;
-   bool m_fNoTimeCorrect;		// Used so the frame after debugging does not do normal time correction
+   bool m_fNoTimeCorrect;               // Used so the frame after debugging does not do normal time correction
 
    bool m_fDebugMode;
 
-   bool m_DebugBalls;			 // Draw balls in the foreground.
+   bool m_DebugBalls;                   // Draw balls in the foreground.
    bool m_ToggleDebugBalls;
 
    bool m_swap_ball_collision_handling; // Swaps the order of ball-ball collision handling around each physics cycle (in regard to the RLC comment block in quadtree.cpp (hopefully ;)))
@@ -615,7 +615,7 @@ public:
    bool m_fStep;
 #endif
 
-   unsigned int m_fShowFPS;
+   unsigned int m_showFPS;
 
    bool m_scaleFX_DMD;
 

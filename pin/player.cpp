@@ -255,13 +255,13 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    hr = GetRegInt("Player", "AdaptiveVSync", &vsync);
    if (hr != S_OK)
       vsync = 0; // The default
-   m_fVSync = vsync;
+   m_VSync = vsync;
 
    int maxPrerenderedFrames;
    hr = GetRegInt("Player", "MaxPrerenderedFrames", &maxPrerenderedFrames);
    if (hr != S_OK)
       maxPrerenderedFrames = 0;
-   m_fMaxPrerenderedFrames = maxPrerenderedFrames;
+   m_maxPrerenderedFrames = maxPrerenderedFrames;
 
    float nudgeStrength;
    hr = GetRegStringAsFloat("Player", "NudgeStrength", &nudgeStrength);
@@ -269,9 +269,9 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
       nudgeStrength = 2e-2f; // The default
    m_NudgeShake = nudgeStrength;
 
-   hr = GetRegInt("Player", "FXAA", &m_fFXAA);
+   hr = GetRegInt("Player", "FXAA", &m_FXAA);
    if (hr != S_OK)
-      m_fFXAA = Disabled; // The default = off
+      m_FXAA = Disabled; // The default = off
 
    int trailballs;
    hr = GetRegInt("Player", "BallTrail", &trailballs);
@@ -290,9 +290,9 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    int AA;
    hr = GetRegInt("Player", "USEAA", &AA);
    if (hr != S_OK)
-      m_fAA = false; // The default = off
+      m_AA = false; // The default = off
    else
-      m_fAA = (AA == 1);
+      m_AA = (AA == 1);
 
    int AO;
    hr = GetRegInt("Player", "DynamicAO", &AO);
@@ -321,15 +321,15 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    else
        m_pf_refl = (pf_refl == 1);
 
-   hr = GetRegInt("Player", "Stereo3D", &m_fStereo3D);
+   hr = GetRegInt("Player", "Stereo3D", &m_stereo3D);
    if (hr != S_OK)
-      m_fStereo3D = 0; // The default = off
+      m_stereo3D = 0; // The default = off
 
    int stereo3Denabled;
    hr = GetRegInt("Player", "Stereo3DEnabled", &stereo3Denabled);
    if (hr != S_OK)
-      stereo3Denabled = ((m_fStereo3D != 0) ? 1 : 0); // The default
-   m_fStereo3Denabled = (stereo3Denabled != 0);
+      stereo3Denabled = ((m_stereo3D != 0) ? 1 : 0); // The default
+   m_stereo3Denabled = (stereo3Denabled != 0);
 
    int stereo3DY;
    hr = GetRegInt("Player", "Stereo3DYAxis", &stereo3DY);
@@ -442,11 +442,11 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    SetRegValueInt("Player", "NumberOfTimesToShowTouchMessage", max(numberOfTimesToShowTouchMessage-1,0));
    m_showTouchMessage = (numberOfTimesToShowTouchMessage != 0);
 
-   m_fShowFPS = 0;
+   m_showFPS = 0;
 
    m_fCloseDown = false;
    m_fCloseDownDelay = true;
-   m_fCloseType = 0;
+   m_closeType = 0;
    m_fShowDebugger = false;
 
    m_DebugBalls = false;
@@ -543,7 +543,7 @@ Player::~Player()
 void Player::Shutdown()
 {
    // if limit framerate if requested by user (vsync Hz higher than refreshrate of gfxcard/monitor), restore timeEndPeriod
-   const int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
+   const int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
    if (localvsync > m_refreshrate)
       timeEndPeriod(1); // after last precise uSleep()
 
@@ -685,14 +685,14 @@ void Player::InitFPS()
 
 void Player::ToggleFPS()
 {
-   ++m_fShowFPS;
+   ++m_showFPS;
 
    m_pin3d.m_gpu_profiler.Shutdown(); // Kill it so that it cannot influence standard rendering performance (and otherwise if just switching profile modes to not falsify counters and query info)
 }
 
 unsigned int Player::ProfilingMode()
 {
-   const unsigned int modes = (m_fShowFPS & 7);
+   const unsigned int modes = (m_showFPS & 7);
    if (modes == 2)
       return 1;
    else if (modes == 3)
@@ -702,19 +702,19 @@ unsigned int Player::ProfilingMode()
 
 bool Player::ShowFPS()
 {
-   const unsigned int modes = (m_fShowFPS & 7);
+   const unsigned int modes = (m_showFPS & 7);
    return (modes == 1 || modes == 2 || modes == 3 || modes == 5 || modes == 7);
 }
 
 bool Player::RenderStaticOnly()
 {
-   const unsigned int modes = (m_fShowFPS & 7);
+   const unsigned int modes = (m_showFPS & 7);
    return (modes == 5);
 }
 
 bool Player::RenderAOOnly()
 {
-   const unsigned int modes = (m_fShowFPS & 7);
+   const unsigned int modes = (m_showFPS & 7);
    return (modes == 7);
 }
 
@@ -779,19 +779,19 @@ void Player::AddCabinetBoundingHitShapes()
    rgv3D[1] = Vertex3Ds(m_ptable->m_right, m_ptable->m_bottom, m_ptable->m_tableheight);
    rgv3D[0] = Vertex3Ds(m_ptable->m_left, m_ptable->m_bottom, m_ptable->m_tableheight);
    Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D, 4); //!!
-   ph3dpoly->SetFriction(m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideContactFriction : m_ptable->m_friction);
-   ph3dpoly->m_elasticity = m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideElasticity : m_ptable->m_elasticity;
-   ph3dpoly->m_elasticityFalloff = m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideElasticityFalloff : m_ptable->m_elasticityFalloff;
-   ph3dpoly->m_scatter = ANGTORAD(m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideScatterAngle : m_ptable->m_scatter);
+   ph3dpoly->SetFriction(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideContactFriction : m_ptable->m_friction);
+   ph3dpoly->m_elasticity = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticity : m_ptable->m_elasticity;
+   ph3dpoly->m_elasticityFalloff = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticityFalloff : m_ptable->m_elasticityFalloff;
+   ph3dpoly->m_scatter = ANGTORAD(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideScatterAngle : m_ptable->m_scatter);
    m_vho.AddElement(ph3dpoly);
    */
 
    // playfield:
    m_hitPlayfield = HitPlane(Vertex3Ds(0, 0, 1), m_ptable->m_tableheight);
-   m_hitPlayfield.SetFriction(m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideContactFriction : m_ptable->m_friction);
-   m_hitPlayfield.m_elasticity = m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideElasticity : m_ptable->m_elasticity;
-   m_hitPlayfield.m_elasticityFalloff = m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideElasticityFalloff : m_ptable->m_elasticityFalloff;
-   m_hitPlayfield.m_scatter = ANGTORAD(m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideScatterAngle : m_ptable->m_scatter);
+   m_hitPlayfield.SetFriction(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideContactFriction : m_ptable->m_friction);
+   m_hitPlayfield.m_elasticity = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticity : m_ptable->m_elasticity;
+   m_hitPlayfield.m_elasticityFalloff = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticityFalloff : m_ptable->m_elasticityFalloff;
+   m_hitPlayfield.m_scatter = ANGTORAD(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideScatterAngle : m_ptable->m_scatter);
 
    // glass:
    m_hitTopGlass = HitPlane(Vertex3Ds(0, 0, -1), m_ptable->m_glassheight);
@@ -1209,10 +1209,10 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    //
 
-   int vsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
+   int vsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
 
-   const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
-   const unsigned int FXAA = (m_ptable->m_useFXAA == -1) ? m_fFXAA : m_ptable->m_useFXAA;
+   const bool useAA = (m_AA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
+   const unsigned int FXAA = (m_ptable->m_useFXAA == -1) ? m_FXAA : m_ptable->m_useFXAA;
    const bool ss_refl = (m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1);
 
    int colordepth;
@@ -1221,7 +1221,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    hr = m_pin3d.InitPin3D(m_hwnd, m_fFullScreen, m_width, m_height, colordepth,
-                          m_refreshrate, vsync, useAA, !!m_fStereo3D, FXAA, !m_disableAO, ss_refl);
+                          m_refreshrate, vsync, useAA, !!m_stereo3D, FXAA, !m_disableAO, ss_refl);
 
    if (hr != S_OK)
    {
@@ -1271,13 +1271,13 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
 
-   const float minSlope = (ptable->m_fOverridePhysics ? ptable->m_fOverrideMinSlope : ptable->m_angletiltMin);
-   const float maxSlope = (ptable->m_fOverridePhysics ? ptable->m_fOverrideMaxSlope : ptable->m_angletiltMax);
+   const float minSlope = (ptable->m_overridePhysics ? ptable->m_fOverrideMinSlope : ptable->m_angletiltMin);
+   const float maxSlope = (ptable->m_overridePhysics ? ptable->m_fOverrideMaxSlope : ptable->m_angletiltMax);
    const float slope = minSlope + (maxSlope - minSlope) * ptable->m_globalDifficulty;
 
    m_gravity.x = 0.f;
-   m_gravity.y =  sinf(ANGTORAD(slope))*(ptable->m_fOverridePhysics ? ptable->m_fOverrideGravityConstant : ptable->m_Gravity);
-   m_gravity.z = -cosf(ANGTORAD(slope))*(ptable->m_fOverridePhysics ? ptable->m_fOverrideGravityConstant : ptable->m_Gravity);
+   m_gravity.y =  sinf(ANGTORAD(slope))*(ptable->m_overridePhysics ? ptable->m_fOverrideGravityConstant : ptable->m_Gravity);
+   m_gravity.z = -cosf(ANGTORAD(slope))*(ptable->m_overridePhysics ? ptable->m_fOverrideGravityConstant : ptable->m_Gravity);
 
    m_NudgeX = 0.f;
    m_NudgeY = 0.f;
@@ -1341,7 +1341,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 #ifdef FPS
    InitFPS();
-   m_fShowFPS = 0;
+   m_showFPS = 0;
 #endif
 
    for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
@@ -1550,7 +1550,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 #endif
 
    // if limit framerate if requested by user (vsync Hz higher than refreshrate of gfxcard/monitor), set timeBeginPeriod
-   const int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
+   const int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
    if (localvsync > m_refreshrate)
       timeBeginPeriod(1); // for uSleep() to work more precise
 
@@ -1592,7 +1592,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
 
    // 0 means disable limiting of draw-ahead queue
-   m_limiter.Init(m_pin3d.m_pd3dDevice, m_fMaxPrerenderedFrames);
+   m_limiter.Init(m_pin3d.m_pd3dDevice, m_maxPrerenderedFrames);
 
    Render(); //!! why here already? potentially not all initialized yet??
 
@@ -2049,7 +2049,7 @@ void Player::InitStatic(HWND hwndProgress)
    const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1));
    if (!m_disableAO && !useAO && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f))
    {
-      const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
+      const bool useAA = (m_AA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
 
       m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
 
@@ -3923,7 +3923,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture());
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
-      const D3DXVECTOR4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_fStereo3DY ? 1.0f : 0.0f, (m_fStereo3D == 3) ? 2.0f : (m_fStereo3D == 1) ? 1.0f : 0.0f);
+      const D3DXVECTOR4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_fStereo3DY ? 1.0f : 0.0f, (m_stereo3D == 3) ? 2.0f : (m_stereo3D == 1) ? 1.0f : 0.0f);
       m_pin3d.m_pd3dDevice->FBShader->SetVector("ms_zpd_ya_td", &ms_zpd_ya_td);
 
       const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), (float)m_height, m_ptable->Get3DOffset());
@@ -4007,7 +4007,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
 
 void Player::UpdateHUD()
 {
-	if (!m_fCloseDown && (m_fStereo3D != 0) && !m_fStereo3Denabled && (usec() < m_StartTime_usec + 4e+6)) // show for max. 4 seconds
+	if (!m_fCloseDown && (m_stereo3D != 0) && !m_stereo3Denabled && (usec() < m_StartTime_usec + 4e+6)) // show for max. 4 seconds
 	{
 		char szFoo[256];
 		const int len2 = sprintf_s(szFoo, "3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on");
@@ -4242,14 +4242,14 @@ void Player::UpdateHUD()
 
 void Player::PrepareVideoBuffersNormal()
 {
-   const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
-   const bool stereo= ((m_fStereo3D != 0) && m_fStereo3Denabled && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable());
-   const bool SMAA  = (((m_fFXAA == Quality_SMAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_SMAA));
-   const bool DLAA  = (((m_fFXAA == Standard_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_DLAA));
-   const bool NFAA  = (((m_fFXAA == Fast_NFAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
-   const bool FXAA1 = (((m_fFXAA == Fast_FXAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_FXAA));
-   const bool FXAA2 = (((m_fFXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
-   const bool FXAA3 = (((m_fFXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
+   const bool useAA = (m_AA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
+   const bool stereo= ((m_stereo3D != 0) && m_stereo3Denabled && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable());
+   const bool SMAA  = (((m_FXAA == Quality_SMAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_SMAA));
+   const bool DLAA  = (((m_FXAA == Standard_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_DLAA));
+   const bool NFAA  = (((m_FXAA == Fast_NFAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
+   const bool FXAA1 = (((m_FXAA == Fast_FXAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_FXAA));
+   const bool FXAA2 = (((m_FXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
+   const bool FXAA3 = (((m_FXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
    const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable() && m_ptable->m_SSRScale > 0.f);
 
    if (stereo || ss_refl)
@@ -4351,14 +4351,14 @@ void Player::FlipVideoBuffers(const bool vsync)
 
 void Player::PrepareVideoBuffersAO()
 {
-   const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
-   const bool stereo= ((m_fStereo3D != 0) && m_fStereo3Denabled && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable());
-   const bool SMAA  = (((m_fFXAA == Quality_SMAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_SMAA));
-   const bool DLAA  = (((m_fFXAA == Standard_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_DLAA));
-   const bool NFAA  = (((m_fFXAA == Fast_NFAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
-   const bool FXAA1 = (((m_fFXAA == Fast_FXAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_FXAA));
-   const bool FXAA2 = (((m_fFXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
-   const bool FXAA3 = (((m_fFXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
+   const bool useAA = (m_AA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
+   const bool stereo= ((m_stereo3D != 0) && m_stereo3Denabled && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable());
+   const bool SMAA  = (((m_FXAA == Quality_SMAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_SMAA));
+   const bool DLAA  = (((m_FXAA == Standard_DLAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_DLAA));
+   const bool NFAA  = (((m_FXAA == Fast_NFAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_NFAA));
+   const bool FXAA1 = (((m_FXAA == Fast_FXAA)     && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Fast_FXAA));
+   const bool FXAA2 = (((m_FXAA == Standard_FXAA) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Standard_FXAA));
+   const bool FXAA3 = (((m_FXAA == Quality_FXAA)  && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == Quality_FXAA));
    const bool ss_refl = (((m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1)) && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable() && m_ptable->m_SSRScale > 0.f);
 
    m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
@@ -4768,7 +4768,7 @@ void Player::Render()
    // Check if we should turn animate the plunger light.
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
-   int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
+   int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
    if (localvsync > m_refreshrate) // cannot sync, just limit to selected framerate
       localvsync = 0;
    else if (localvsync > 1) // adaptive sync to refresh rate
@@ -4871,7 +4871,7 @@ void Player::Render()
    }
 
    // limit framerate if requested by user (vsync Hz higher than refreshrate of gfxcard/monitor)
-   localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
+   localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
    if (localvsync > m_refreshrate)
    {
       timeforframe = usec() - timeforframe;
@@ -4894,15 +4894,15 @@ void Player::Render()
 
          size_t option;
 
-         if (m_fCloseType == 2)
+         if (m_closeType == 2)
          {
             exit(-9999); // blast into space
          }
-         else if (!VPinball::m_open_minimized && m_fCloseType == 0)
+         else if (!VPinball::m_open_minimized && m_closeType == 0)
          {
             option = DialogBox(g_hinst, MAKEINTRESOURCE(IDD_GAMEPAUSE), m_hwnd, PauseProc);
          }
-         else //m_fCloseType == all others
+         else //m_closeType == all others
          {
             option = ID_QUIT;
             SendMessage(g_pvp->m_hwnd, WM_COMMAND, ID_FILE_EXIT, NULL);

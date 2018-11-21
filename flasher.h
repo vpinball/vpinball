@@ -15,11 +15,11 @@ public:
    COLORREF m_color;
    TimerDataRoot m_tdr;
    float m_rotX, m_rotY, m_rotZ;
-   int m_fAlpha;
+   int m_alpha;
    float m_intensity_scale;
    float m_modulate_vs_add;
    float m_depthBias;      // for determining depth sorting
-   int  m_fFilterAmount;
+   int  m_filterAmount;
    Filters m_filter;
    RampImageAlignment m_imagealignment;
    char m_szImageA[MAXTOKEN];
