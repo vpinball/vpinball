@@ -1860,7 +1860,7 @@ void PinTable::SetDefaultView()
    m_zoom = 0.5f;
 }
 
-void PinTable::SetCaption(char *szCaption)
+void PinTable::SetCaption(const char * const szCaption)
 {
    ::SetWindowText(m_hwnd, szCaption);
    m_pcv->SetCaption(szCaption);
@@ -2320,7 +2320,7 @@ void PinTable::Play(const bool _cameraMode)
    g_fKeepUndoRecords = false;
 
    m_pcv->m_fScriptError = false;
-   m_pcv->Compile();
+   m_pcv->Compile(false);
 
    if (!m_pcv->m_fScriptError)
    {
@@ -6032,7 +6032,7 @@ Vertex2D PinTable::GetCenter() const
 
    for (int i = 0; i < m_vmultisel.Size(); i++)
    {
-      ISelect * const psel = m_vmultisel.ElementAt(i);
+      const ISelect * const psel = m_vmultisel.ElementAt(i);
       const Vertex2D vCenter = psel->GetCenter();
 
       minx = min(minx, vCenter.x);
@@ -6827,11 +6827,7 @@ void PinTable::Paste(const bool fAtLocation, int x, int y)
    // Center view on newly created objects, if they are off the screen
    if ((cpasted > 0) && fAtLocation)
    {
-      const Vertex2D vcenter = GetCenter();
-
-      const Vertex2D vPos = TransformPoint(x, y);
-      const Vertex2D vOffset = vPos - vcenter;
-      Translate(vOffset);
+      Translate(TransformPoint(x, y) - GetCenter());
    }
 
    if (fError)

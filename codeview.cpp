@@ -833,7 +833,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
    return S_OK;
 }
 
-void CodeViewer::Compile()
+void CodeViewer::Compile(const bool message)
 {
    if (m_pScript)
    {
@@ -862,7 +862,8 @@ void CodeViewer::Compile()
 
       if(m_pScriptParse->ParseScriptText(wzText, 0, 0, 0, CONTEXTCOOKIE_NORMAL, 0,
          SCRIPTTEXT_ISVISIBLE, 0, &exception) == S_OK)
-         MessageBox(NULL, "Compilation successful", "Compile", MB_OK);
+         if (message)
+             MessageBox(NULL, "Compilation successful", "Compile", MB_OK);
 
       m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
 
@@ -2567,9 +2568,9 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          switch (id)
          {
          case ID_COMPILE:
-            pcv->Compile();
+            pcv->Compile(true);
             // Setting the script to started, and the back to initialized will clear the script out so we can re-do it later
-				// - is this behavior just random or is it the way it's supposed to work?
+            // - is this behavior just random or is it the way it's supposed to work?
             //pcv->m_pScript->SetScriptState(SCRIPTSTATE_CLOSED /*SCRIPTSTATE_STARTED*/);
             pcv->EndSession();
             break;
