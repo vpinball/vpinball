@@ -2646,7 +2646,7 @@ void VPinball::Quit()
 {
    if (g_pplayer) {
       g_pplayer->m_fCloseDown = true;
-      g_pplayer->m_fCloseType = 1;
+      g_pplayer->m_closeType = 1;
    }
    else
       PostMessage(m_hwnd, WM_CLOSE, 0, 0);

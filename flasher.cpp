@@ -157,9 +157,9 @@ void Flasher::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Flasher", "Opacity", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fAlpha = iTmp;
+      m_d.m_alpha = iTmp;
    else
-      m_d.m_fAlpha = 100;
+      m_d.m_alpha = 100;
 
    m_d.m_intensity_scale = 1.0f;
 
@@ -171,9 +171,9 @@ void Flasher::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Flasher", "FilterAmount", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fFilterAmount = iTmp;
+      m_d.m_filterAmount = iTmp;
    else
-      m_d.m_fFilterAmount = 100;
+      m_d.m_filterAmount = 100;
 
    hr = GetRegInt("DefaultProps\\Flasher", "Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -214,7 +214,7 @@ void Flasher::WriteRegDefaults()
    SetRegValueInt("DefaultProps\\Flasher", "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SetRegValue("DefaultProps\\Flasher", "ImageA", REG_SZ, &m_d.m_szImageA, lstrlen(m_d.m_szImageA));
    SetRegValue("DefaultProps\\Flasher", "ImageB", REG_SZ, &m_d.m_szImageB, lstrlen(m_d.m_szImageB));
-   SetRegValueInt("DefaultProps\\Flasher", "Alpha", m_d.m_fAlpha);
+   SetRegValueInt("DefaultProps\\Flasher", "Alpha", m_d.m_alpha);
    SetRegValueFloat("DefaultProps\\Flasher", "ModulateVsAdd", m_d.m_modulate_vs_add);
    SetRegValueBool("DefaultProps\\Flasher", "Visible", m_d.m_IsVisible);
    SetRegValueBool("DefaultProps\\Flasher", "DisplayTexture", m_d.m_fDisplayTexture);
@@ -222,7 +222,7 @@ void Flasher::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Flasher", "DMD", m_d.m_IsDMD);
    SetRegValue("DefaultProps\\Flasher", "ImageMode", REG_DWORD, &m_d.m_imagealignment, 4);
    SetRegValue("DefaultProps\\Flasher", "Filter", REG_DWORD, &m_d.m_filter, 4);
-   SetRegValueInt("DefaultProps\\Flasher", "FilterAmount", m_d.m_fFilterAmount);
+   SetRegValueInt("DefaultProps\\Flasher", "FilterAmount", m_d.m_filterAmount);
 }
 
 void Flasher::UIRenderPass1(Sur * const psur)
@@ -616,7 +616,7 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteString(FID(IMAG), m_d.m_szImageA);
    bw.WriteString(FID(IMAB), m_d.m_szImageB);
-   bw.WriteInt(FID(FALP), m_d.m_fAlpha);
+   bw.WriteInt(FID(FALP), m_d.m_alpha);
    bw.WriteFloat(FID(MOVA), m_d.m_modulate_vs_add);
    bw.WriteBool(FID(FVIS), m_d.m_IsVisible);
    bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
@@ -625,7 +625,7 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(FLDB), m_d.m_depthBias);
    bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
    bw.WriteInt(FID(FILT), m_d.m_filter);
-   bw.WriteInt(FID(FIAM), m_d.m_fFilterAmount);
+   bw.WriteInt(FID(FIAM), m_d.m_filterAmount);
    ISelect::SaveData(pstm, hcrypthash);
 
    HRESULT hr;
@@ -711,7 +711,7 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
       pbr->GetInt(&iTmp);
       //if( iTmp>100 ) iTmp=100;
       if (iTmp < 0) iTmp = 0;
-      m_d.m_fAlpha = iTmp;
+      m_d.m_alpha = iTmp;
    }
    else if (id == FID(MOVA))
    {
@@ -751,7 +751,7 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(FIAM))
    {
-      pbr->GetInt(&m_d.m_fFilterAmount);
+      pbr->GetInt(&m_d.m_filterAmount);
    }
    else
    {
@@ -1101,7 +1101,7 @@ STDMETHODIMP Flasher::put_Filter(BSTR newVal)
 
 STDMETHODIMP Flasher::get_Opacity(long *pVal)
 {
-   *pVal = m_d.m_fAlpha;
+   *pVal = m_d.m_alpha;
    return S_OK;
 }
 
@@ -1109,13 +1109,13 @@ STDMETHODIMP Flasher::put_Opacity(long newVal)
 {
    STARTUNDO
 
-      m_d.m_fAlpha = newVal;
-   //if (m_d.m_fAlpha>100 ) m_d.m_fAlpha=100;
-   if (m_d.m_fAlpha < 0) m_d.m_fAlpha = 0;
+   m_d.m_alpha = newVal;
+   //if (m_d.m_alpha>100 ) m_d.m_alpha=100;
+   if (m_d.m_alpha < 0) m_d.m_alpha = 0;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flasher::get_IntensityScale(float *pVal)
@@ -1154,7 +1154,7 @@ STDMETHODIMP Flasher::put_ModulateVsAdd(float newVal)
 
 STDMETHODIMP Flasher::get_Amount(long *pVal)
 {
-   *pVal = m_d.m_fFilterAmount;
+   *pVal = m_d.m_filterAmount;
    return S_OK;
 }
 
@@ -1162,13 +1162,13 @@ STDMETHODIMP Flasher::put_Amount(long newVal)
 {
    STARTUNDO
 
-      m_d.m_fFilterAmount = newVal;
-   //if (m_d.m_fFilterAmount>100 ) m_d.m_fFilterAmount=100;
-   if (m_d.m_fFilterAmount < 0) m_d.m_fFilterAmount = 0;
+   m_d.m_filterAmount = newVal;
+   //if (m_d.m_filterAmount>100 ) m_d.m_filterAmount=100;
+   if (m_d.m_filterAmount < 0) m_d.m_filterAmount = 0;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flasher::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
@@ -1300,7 +1300,7 @@ void Flasher::RenderDynamic(RenderDevice* pd3dDevice)
    if (!m_d.m_IsVisible || dynamicVertexBuffer == NULL || m_ptable->m_fReflectionEnabled || (m_d.m_IsDMD && !g_pplayer->m_texdmd))
       return;
 
-   const D3DXVECTOR4 color = convertColor(m_d.m_color, (float)m_d.m_fAlpha*m_d.m_intensity_scale / 100.0f);
+   const D3DXVECTOR4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
    if (color.w == 0.f)
       return;
 
@@ -1401,7 +1401,7 @@ void Flasher::RenderDynamic(RenderDevice* pd3dDevice)
        else
            hdrTex0 = false;
 
-       const D3DXVECTOR4 ab((float)m_d.m_fFilterAmount / 100.0f, min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
+       const D3DXVECTOR4 ab((float)m_d.m_filterAmount / 100.0f, min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
            hdrTex0 ? 1.f : 0.f, (pinA && pinB && pinB->IsHDR()) ? 1.f : 0.f);
        pd3dDevice->flasherShader->SetVector("amount__blend_modulate_vs_add__hdrTexture01", &ab);
 

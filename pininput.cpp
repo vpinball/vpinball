@@ -1721,8 +1721,8 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          {
             if ((input->dwData & 0x80) != 0)
             {
-               g_pplayer->m_fStereo3Denabled = !g_pplayer->m_fStereo3Denabled;
-               SetRegValueBool("Player", "Stereo3DEnabled", g_pplayer->m_fStereo3Denabled);
+               g_pplayer->m_stereo3Denabled = !g_pplayer->m_stereo3Denabled;
+               SetRegValueBool("Player", "Stereo3DEnabled", g_pplayer->m_stereo3Denabled);
             }
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDBGBalls])
