@@ -1,5 +1,9 @@
 VP 10.6.0 Changelog
 ------------------------
+- add support for up to 9 custom start parameters (range 1-9). Usage: "Vpinball.exe -c1 param1 -c2 param2" sets two custom parameter "param1" and "param2". In the script use:
+  GetCustomParam(1) to get "param1" and GetCustomParam(2) to get "param2"
+
+- add EnableSkirtAnimation for bumpers to enable/disable skirt animation
 
 - add strength parameter for the (optional) legacy/VP9-like keyboard nudging code, can be set in the 'Keys, Nudge and DOF' preferences dialog
 

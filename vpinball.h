@@ -28,6 +28,7 @@
 #define DEFAULT_SECURITY_LEVEL 0
 
 #define LAST_OPENED_TABLE_COUNT	8
+#define MAX_CUSTOM_PARAM_INDEX 10
 
 
 class PinTable;
@@ -179,6 +180,8 @@ public:
    COLORREF m_backgroundColor;
    COLORREF m_fillColor;
    Vertex2D m_mouseCursorPosition;
+
+   static char *m_customParameters[MAX_CUSTOM_PARAM_INDEX];
 
 protected:
    virtual void OnClose();

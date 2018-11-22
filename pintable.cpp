@@ -24,7 +24,6 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 #define TIMER_ID_AUTOSAVE 12345
 #define TIMER_ID_CLOSE_TABLE 12346
 
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -444,6 +443,23 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname
    delete[] szPath;
 
    return fSuccess;
+}
+
+STDMETHODIMP ScriptGlobalTable::GetCustomParam(long index, BSTR *param)
+{
+
+    if(index <= 0 || index >= MAX_CUSTOM_PARAM_INDEX)
+        return E_FAIL;
+
+    size_t len = strlen(g_pvp->m_customParameters[index-1]);
+    WCHAR *wzContents = new WCHAR[len + 1];
+
+    MultiByteToWideChar(CP_ACP, 0, g_pvp->m_customParameters[index-1], len, wzContents, len + 1);
+    wzContents[len] = L'\0';
+
+    *param = SysAllocString(wzContents);
+    delete[] wzContents;
+    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
