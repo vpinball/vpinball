@@ -159,7 +159,8 @@ private:
 
    float   m_baseHeight;
    float   m_skirtCounter;
-   bool    m_skirtAnimate;
+   bool    m_doSkirtAnimation;
+   bool    m_enableSkirtAnimation;
    bool    m_ringDown;
    bool    m_ringAnimate;
 
@@ -209,6 +210,8 @@ public:
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
+   STDMETHOD(get_EnableSkirtAnimation)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_EnableSkirtAnimation)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(PlayHit)();
 };
 
