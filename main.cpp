@@ -288,6 +288,29 @@ public:
          if (lstrcmpi(szArglist[i], _T("-EnableTrueFullscreen")) == 0 || lstrcmpi(szArglist[i], _T("/EnableTrueFullscreen")) == 0)
              disEnableTrueFullscreen = 1;
 
+         bool useCustomParams = false;
+         int customIdx = 1;
+         for(char t = '1'; t <= '9'; t++)
+         {
+             char cmdTemp1[5] = {'-','c',0,0};
+             char cmdTemp2[5] = {'/','c',0,0};
+             cmdTemp1[2] = t;
+             cmdTemp2[2] = t;
+             if(lstrcmpi(szArglist[i], cmdTemp1) == 0 || lstrcmpi(szArglist[i], cmdTemp2) == 0)
+             {
+                 useCustomParams = true;
+                 break;
+             }
+             customIdx++;
+         }
+
+         if(useCustomParams && (i+1<nArgs))
+         {
+             size_t len = strlen(szArglist[i + 1]);
+             VPinball::m_customParameters[customIdx-1] = new char(len + 1);
+             strcpy_s(VPinball::m_customParameters[customIdx-1], len+1, szArglist[i + 1]);
+         }
+
          const bool editfile = (lstrcmpi(szArglist[i], _T("-Edit")) == 0 || lstrcmpi(szArglist[i], _T("/Edit")) == 0);
          const bool playfile = (lstrcmpi(szArglist[i], _T("-Play")) == 0 || lstrcmpi(szArglist[i], _T("/Play")) == 0);
          const bool povfile = (lstrcmpi(szArglist[i], _T("-Pov")) == 0 || lstrcmpi(szArglist[i], _T("/Pov")) == 0);

@@ -808,6 +808,7 @@ public:
    STDMETHOD(EndModal)();
    STDMETHOD(BeginModal)();
    STDMETHOD(GetTextFile)(BSTR FileName, /*[out, retval]*/ BSTR *pContents);
+   STDMETHOD(GetCustomParam)(long index, /*[out, retval]*/ BSTR *param);
    STDMETHOD(get_GameTime)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_SystemTime)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_AddCreditKey)(/*[out, retval]*/ long *pVal);
