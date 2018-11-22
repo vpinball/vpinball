@@ -8,7 +8,8 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 Changelog:
 10.6:
 - add support for non-mechanical/digital Position() plunger call
-- add EnableSkirtAnimation for Bumpers only via script
+- add EnableSkirtAnimation to the bumper element
+- add GetCustomParam to access custom command line parameters 
 10.5:
 - EOSTorque, EOSTorqueAngle and Scatter of flipper element can now be changed by script
 - document missing DMDColoredPixels and add simple example for DMD access
@@ -76,6 +77,8 @@ Variables
 
 *GameTime(int) - gets the current internal game time in milliseconds
 *SystemTime(int) - gets the current system time in milliseconds
+
+*GetCustomParam(int) - 1..9, i.e. GetCustomParam(1) to get "param1" and GetCustomParam(2) to get "param2" from the command line "VPinballX.exe -c1 param1 -c2 param2"
 
 *NightDay(int) - 0..100 value set in the UI (by the user) that defines if its night or day, so that the script can tweak table elements based on that value
 
@@ -281,7 +284,7 @@ UserValue(any) - can store any user defined value for re-use later-on
 *CapVisible(bool) - default=true
 *BaseVisible(bool) - default=true
 *ReflectionEnabled(bool) - default=true
-EnableSkirtAnimation(bool) - default=true
+EnableSkirtAnimation(bool) - default=true, en/disables the skirt animation of a bumper, for example if something external is triggering the bumper (i.e. no ball contact with the skirt)
 HasHitEvent(bool)
 Collidable(bool)
 
