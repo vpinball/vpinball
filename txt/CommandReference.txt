@@ -8,6 +8,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 Changelog:
 10.6:
 - add support for non-mechanical/digital Position() plunger call
+- add EnableSkirtAnimation for Bumpers only via script
 10.5:
 - EOSTorque, EOSTorqueAngle and Scatter of flipper element can now be changed by script
 - document missing DMDColoredPixels and add simple example for DMD access
@@ -280,6 +281,7 @@ UserValue(any) - can store any user defined value for re-use later-on
 *CapVisible(bool) - default=true
 *BaseVisible(bool) - default=true
 *ReflectionEnabled(bool) - default=true
+EnableSkirtAnimation(bool) - default=true
 HasHitEvent(bool)
 Collidable(bool)
 

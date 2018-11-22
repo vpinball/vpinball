@@ -24,7 +24,8 @@ Bumper::Bumper()
    memset(m_d.m_szRingMaterial, 0, 32);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
    m_ringDown = false;
-   m_skirtAnimate = false;
+   m_doSkirtAnimation = false;
+   m_enableSkirtAnimation = true;
    m_skirtCounter = 0.0f;
 }
 
@@ -552,21 +553,26 @@ void Bumper::RenderDynamic(RenderDevice* pd3dDevice)
 
    if (m_d.m_fSkirtVisible)
    {
-      if (state == 1)
-      {
-         m_skirtAnimate = true;
-         UpdateSkirt(pd3dDevice, true);
-         m_skirtCounter = 0.0f;
+       if(m_enableSkirtAnimation)
+       {
+          if(state == 1)
+          {
+              m_doSkirtAnimation = true;
+              UpdateSkirt(pd3dDevice, true);
+              m_skirtCounter = 0.0f;
+          }
+          if(m_doSkirtAnimation)
+          {
+              m_skirtCounter += /*1.0f**/diff_time_msec;
+              if(m_skirtCounter > 160.0f)
+              {
+                  m_doSkirtAnimation = false;
+                  UpdateSkirt(pd3dDevice, false);
+              }
+          }
       }
-      if (m_skirtAnimate)
-      {
-         m_skirtCounter += /*1.0f**/diff_time_msec;
-         if (m_skirtCounter > 160.0f)
-         {
-            m_skirtAnimate = false;
-            UpdateSkirt(pd3dDevice, false);
-         }
-      }
+      else
+         UpdateSkirt(pd3dDevice, false);
 
       const Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       pd3dDevice->basicShader->SetTexture("Texture0", &m_skirtTexture);
@@ -1503,6 +1509,22 @@ STDMETHODIMP Bumper::put_ReflectionEnabled(VARIANT_BOOL newVal)
    STOPUNDO
 
       return S_OK;
+}
+
+STDMETHODIMP Bumper::get_EnableSkirtAnimation(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_enableSkirtAnimation);
+
+    return S_OK;
+}
+
+STDMETHODIMP Bumper::put_EnableSkirtAnimation(VARIANT_BOOL newVal)
+{
+    STARTUNDO
+        m_enableSkirtAnimation = VBTOF(newVal);
+    STOPUNDO
+
+        return S_OK;
 }
 
 STDMETHODIMP Bumper::PlayHit()
