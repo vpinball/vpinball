@@ -247,7 +247,7 @@ void Flasher::UIRenderPass1(Sur * const psur)
          float _miny = FLT_MAX;
          float _maxx = -FLT_MAX;
          float _maxy = -FLT_MAX;
-         for (unsigned i = 0; i < vvertex.size(); i++)
+         for (size_t i = 0; i < vvertex.size(); i++)
          {
             if (vvertex[i].x < _minx) _minx = vvertex[i].x;
             if (vvertex[i].x > _maxx) _maxx = vvertex[i].x;
@@ -427,7 +427,7 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    if (dynamicIndexBuffer)
       dynamicIndexBuffer->release();
    pd3dDevice->CreateIndexBuffer(numPolys * 3, 0, IndexBuffer::FMT_INDEX16, &dynamicIndexBuffer);
-   NumVideoBytes += numPolys * 3 * sizeof(WORD);
+   NumVideoBytes += (int)(numPolys * 3 * sizeof(WORD));
 
    WORD* bufi;
    dynamicIndexBuffer->lock(0, 0, (void**)&bufi, 0);

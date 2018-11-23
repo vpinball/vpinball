@@ -113,7 +113,7 @@ void PaintSur::Polygon(const std::vector<RenderVertex> &rgv)
 {
    std::vector<POINT> rgpt(rgv.size());
 
-   for (unsigned i = 0; i < rgv.size(); i++)
+   for (size_t i = 0; i < rgv.size(); i++)
    {
       rgpt[i].x = SCALEXf(rgv[i].x);
       rgpt[i].y = SCALEYf(rgv[i].y);

@@ -199,7 +199,7 @@ void HitSur::Polygon(const std::vector<RenderVertex> &rgv)
    bool hx1 = (m_hitx >= x1);
    bool hy1 = (m_hity > y1);
    int crosscount = 0;	// count of lines which the hit point is to the left of
-   for (unsigned i = 0; i < rgv.size(); ++i)
+   for (size_t i = 0; i < rgv.size(); ++i)
    {
       const int x2 = x1;
       const int y2 = y1;

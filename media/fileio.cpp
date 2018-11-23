@@ -660,7 +660,7 @@ void FastIStream::SetSize(unsigned int i)
 
       if (m_rg)
       {
-         m_rgNew = realloc((void *)m_rg, sizeof(void *) * (i));
+         m_rgNew = realloc((void *)m_rg, sizeof(void *) * i);
       }
       else
       {

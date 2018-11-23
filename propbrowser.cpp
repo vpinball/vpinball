@@ -230,7 +230,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
             SetFocus(hwndParent);
       } while ((hwndFocus = GetParent(hwndFocus)) != NULL);
 
-      for (unsigned i = 0; i < m_vhwndExpand.size(); i++)
+      for (size_t i = 0; i < m_vhwndExpand.size(); i++)
          DestroyWindow(m_vhwndExpand[i]);
 
       m_vhwndExpand.clear();
@@ -338,7 +338,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
 
    LayoutExpandoWidth();
 
-   for (unsigned i = 0; i < m_vhwndExpand.size(); i++)
+   for (size_t i = 0; i < m_vhwndExpand.size(); i++)
    {
       SendMessage(m_vhwndExpand[i], EXPANDO_EXPAND, 0, 0);
       ShowWindow(m_vhwndExpand[i], SW_SHOWNOACTIVATE);
@@ -525,13 +525,13 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 
 void SmartBrowser::PopulateDropdowns()
 {
-   for (unsigned i = 0; i < m_vhwndDialog.size(); i++)
+   for (size_t i = 0; i < m_vhwndDialog.size(); i++)
       EnumChildWindows(m_vhwndDialog[i], EnumChildInitList, (size_t)this);
 }
 
 void SmartBrowser::RefreshProperties()
 {
-   for (unsigned i = 0; i < m_vhwndDialog.size(); i++)
+   for (size_t i = 0; i < m_vhwndDialog.size(); i++)
       EnumChildWindows(m_vhwndDialog[i], EnumChildProc, (size_t)this);
 }
 
@@ -903,7 +903,7 @@ void SmartBrowser::SetProperty(int dispid, VARIANT *pvar, const bool fPutRef)
 void SmartBrowser::LayoutExpandoWidth()
 {
    int maxwidth = 20; // Just in case we have a weird situation where there are no dialogs
-   for (unsigned i = 0; i < m_vhwndDialog.size(); i++)
+   for (size_t i = 0; i < m_vhwndDialog.size(); i++)
    {
       HWND hwnd = m_vhwndDialog[i];
       RECT rc;
@@ -911,7 +911,7 @@ void SmartBrowser::LayoutExpandoWidth()
       maxwidth = max(maxwidth, (rc.right - rc.left));
    }
 
-   for (unsigned i = 0; i < m_vhwndExpand.size(); i++)
+   for (size_t i = 0; i < m_vhwndExpand.size(); i++)
    {
       HWND hwndExpand = m_vhwndExpand[i];
       SetWindowPos(hwndExpand, NULL, 0, 0, maxwidth, 20, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
@@ -925,7 +925,7 @@ void SmartBrowser::LayoutExpandoWidth()
 void SmartBrowser::RelayoutExpandos()
 {
    int totalheight = 0;
-   for (unsigned i = 0; i < m_vhwndExpand.size(); i++)
+   for (size_t i = 0; i < m_vhwndExpand.size(); i++)
    {
       HWND hwndExpand = m_vhwndExpand[i];
       ExpandoInfo *pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwndExpand, GWLP_USERDATA);
@@ -950,7 +950,7 @@ void SmartBrowser::RelayoutExpandos()
       // longest time ago)
       // If nothing has ever been expanded by the user, higher panels will
       // get priority over lower panels
-      for (unsigned i = 0; i < m_vhwndExpand.size(); i++)
+      for (size_t i = 0; i < m_vhwndExpand.size(); i++)
       {
          const int titleid = m_vproppane.ElementAt(i)->titlestringid;
          if (titleid != NULL)
@@ -983,7 +983,7 @@ void SmartBrowser::RelayoutExpandos()
    }
 
    totalheight = 0;
-   for (unsigned i = 0; i < m_vhwndExpand.size(); i++)
+   for (size_t i = 0; i < m_vhwndExpand.size(); i++)
    {
       HWND hwndExpand = m_vhwndExpand[i];
       SetWindowPos(hwndExpand, NULL, EXPANDO_X_OFFSET, totalheight + EXPANDO_Y_OFFSET, 0, 0, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOSIZE | SWP_NOCOPYBITS);

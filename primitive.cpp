@@ -121,13 +121,13 @@ void Mesh::SaveWavefrontObj(const char *fname, const char *description)
    WaveFrontObj_Save(fname, description, *this);
 }
 
-void Mesh::UploadToVB(VertexBuffer * vb, float frame) 
+void Mesh::UploadToVB(VertexBuffer * vb, const float frame) 
 {
    float intPart;
    const float fractpart = modf(frame, &intPart);
    const int iFrame = (int)intPart;
 
-   if (frame != -1)
+   if (frame != -1.f)
    {
       for (size_t i = 0; i < m_vertices.size(); i++)
       {
@@ -506,7 +506,7 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
       std::set< std::pair<unsigned, unsigned> > addedEdges;
 
       // add collision triangles and edges
-      for (unsigned int i = 0; i < prog_new_indices.size(); ++i)
+      for (size_t i = 0; i < prog_new_indices.size(); ++i)
       {
          const unsigned int i0 = prog_new_indices[i].v[0];
          const unsigned int i1 = prog_new_indices[i].v[1];
@@ -527,7 +527,7 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
       prog_new_indices.clear();
 
       // add collision vertices
-      for (unsigned i = 0; i < prog_vertices.size(); ++i)
+      for (size_t i = 0; i < prog_vertices.size(); ++i)
          SetupHitObject(pvho, new HitPoint(prog_vertices[i].x, prog_vertices[i].y, prog_vertices[i].z));
    }
    else
@@ -535,7 +535,7 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
       std::set< std::pair<unsigned, unsigned> > addedEdges;
 
       // add collision triangles and edges
-      for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+      for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
       {
          const unsigned int i0 = m_mesh.m_indices[i];
          const unsigned int i1 = m_mesh.m_indices[i + 1];
@@ -554,7 +554,7 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
       }
 
       // add collision vertices
-      for (unsigned i = 0; i < m_mesh.NumVertices(); ++i)
+      for (size_t i = 0; i < m_mesh.NumVertices(); ++i)
          SetupHitObject(pvho, new HitPoint(vertices[i]));
    }
 }
@@ -685,7 +685,7 @@ void Primitive::TransformVertices()
    vertices.resize(m_mesh.NumVertices());
    normals.resize(m_mesh.NumVertices());
 
-   for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
+   for (size_t i = 0; i < m_mesh.NumVertices(); i++)
    {
       fullMatrix.MultiplyVector(m_mesh.m_vertices[i], vertices[i]);
       Vertex3Ds n;
@@ -716,7 +716,7 @@ void Primitive::UIRenderPass2(Sur * const psur)
       {
          if (!m_d.m_use3DMesh || (m_d.m_edgeFactorUI >= 1.0f) || (m_mesh.NumVertices() <= 100)) // small mesh: draw all triangles
          {
-            for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+            for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
             {
                const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
                const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
@@ -750,7 +750,7 @@ void Primitive::UIRenderPass2(Sur * const psur)
       else
       {
          std::vector<Vertex2D> drawVertices;
-         for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+         for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
          {
             const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
             const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
@@ -795,7 +795,7 @@ void Primitive::UIRenderPass2(Sur * const psur)
          if (ppi->m_hbmGDIVersion)
          {
             std::vector<RenderVertex> vvertex;
-            for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+            for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
             {
                const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
                const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
@@ -835,7 +835,7 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
 
    if(solid && m_d.m_use3DMesh)
    {
-       for(unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+       for(size_t i = 0; i < m_mesh.NumIndices(); i += 3)
        {
            const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
            const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
@@ -853,7 +853,7 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
    {
       if (!m_d.m_use3DMesh || (m_d.m_edgeFactorUI >= 1.0f) || (m_mesh.NumVertices() <= 100)) // small mesh: draw all triangles
       {
-         for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+         for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
          {
             const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
             const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
@@ -887,7 +887,7 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
    else
    {
       std::vector<Vertex2D> drawVertices;
-      for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+      for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
       {
          const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
          const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
@@ -1099,7 +1099,7 @@ void Primitive::ExportMesh(FILE *f)
       WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
       Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[m_mesh.NumVertices()];
       RecalculateMatrices();
-      for (unsigned int i = 0; i < m_mesh.NumVertices(); i++)
+      for (size_t i = 0; i < m_mesh.NumVertices(); i++)
       {
          const Vertex3D_NoTex2 &v = m_mesh.m_vertices[i];
          Vertex3Ds vert(v.x, v.y, v.z);
@@ -1266,7 +1266,7 @@ void Primitive::RenderSetup(RenderDevice* pd3dDevice)
    if (m_d.m_fGroupdRendering || m_d.m_fSkipRendering)
       return;
 
-   m_currentFrame = -1;
+   m_currentFrame = -1.f;
 
    if (vertexBuffer)
       vertexBuffer->release();
@@ -1421,7 +1421,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
       else
       {
          std::vector<WORD> tmp(m_mesh.NumIndices());
-         for (unsigned int i = 0; i < m_mesh.NumIndices(); ++i)
+         for (size_t i = 0; i < m_mesh.NumIndices(); ++i)
             tmp[i] = m_mesh.m_indices[i];
 #ifndef COMPRESS_MESHES
          bw.WriteStruct( FID(M3DI), &tmp[0], (int)(sizeof(WORD)*m_mesh.NumIndices()) );
@@ -1443,7 +1443,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
       if (m_mesh.m_animationFrames.size() > 0)
       {
          const mz_ulong slen = (mz_ulong)(sizeof(Mesh::VertData)*m_mesh.NumVertices());
-         for (unsigned int i = 0; i < m_mesh.m_animationFrames.size(); i++)
+         for (size_t i = 0; i < m_mesh.m_animationFrames.size(); i++)
          {
             mz_ulong clen = compressBound(slen);
             mz_uint8 * c = (mz_uint8 *)malloc(clen);
@@ -1657,7 +1657,7 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       pbr->GetInt(&numVertices);
       if (m_mesh.m_animationFrames.size() > 0)
       {
-         for (unsigned int i = 0; i < m_mesh.m_animationFrames.size(); i++)
+         for (size_t i = 0; i < m_mesh.m_animationFrames.size(); i++)
             m_mesh.m_animationFrames[i].m_frameVerts.clear();
          m_mesh.m_animationFrames.clear();
       }
@@ -1883,7 +1883,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             {
                if (importAbsolutePosition || centerMesh)
                {
-                  for (unsigned int i = 0; i < prim->m_mesh.m_vertices.size(); i++)
+                  for (size_t i = 0; i < prim->m_mesh.m_vertices.size(); i++)
                   {
                      prim->m_mesh.m_vertices[i].x -= prim->m_mesh.middlePoint.x;
                      prim->m_mesh.m_vertices[i].y -= prim->m_mesh.middlePoint.y;
@@ -1905,9 +1905,9 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                   {
                      if (centerMesh)
                      {
-                        for (unsigned int t = 0; t < prim->m_mesh.m_animationFrames.size(); t++)
+                        for (size_t t = 0; t < prim->m_mesh.m_animationFrames.size(); t++)
                         {
-                           for (unsigned int i = 0; i < prim->m_mesh.m_vertices.size(); i++)
+                           for (size_t i = 0; i < prim->m_mesh.m_vertices.size(); i++)
                            {
                               prim->m_mesh.m_animationFrames[t].m_frameVerts[i].x -= prim->m_mesh.middlePoint.x;
                               prim->m_mesh.m_animationFrames[t].m_frameVerts[i].y -= prim->m_mesh.middlePoint.y;

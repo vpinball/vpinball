@@ -139,7 +139,7 @@ void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes,
    const HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
    SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
 
-   for (unsigned i = 0; i < modes.size(); ++i)
+   for (size_t i = 0; i < modes.size(); ++i)
    {
       char szT[128];
       if (modes[i].depth)
@@ -562,7 +562,7 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          //  indexcur = indx;
 
          allVideoModes.clear();
-         unsigned int cnt = 0;
+         size_t cnt = 0;
 
          // test video modes first on list
 

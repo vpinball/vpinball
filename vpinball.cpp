@@ -2047,7 +2047,7 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
        if(*pfConsumed)
            return NOERROR;
 
-      for (unsigned i = 0; i < m_sb.m_vhwndDialog.size(); i++)
+      for (size_t i = 0; i < m_sb.m_vhwndDialog.size(); i++)
       {
          if (::IsDialogMessage(m_sb.m_vhwndDialog[i], pmsg))
             *pfConsumed = TRUE;

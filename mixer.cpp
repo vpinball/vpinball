@@ -35,8 +35,6 @@ bool mixer_init(const HWND wnd)
 
    // open the first mixer
    // A "mapper" for audio mixer devices does not currently exist.
-   if (nmixers != 0)
-   {
       if (::mixerOpen(&m_hMixer,
          0,
          reinterpret_cast<size_t>(wnd),
@@ -53,7 +51,6 @@ bool mixer_init(const HWND wnd)
                        {
                        return false;
                        }*/
-   }
 
    MIXERLINE mxl;
    mxl.cbStruct = sizeof(MIXERLINE);

@@ -54,14 +54,7 @@ void Gate::SetGateType(GateType type)
         m_numVertices = gatePlateNumVertices;
     }
     else
-    {
-       assert(false);
-       m_vertices = gateWire;
-       m_indices = gateWireIndices;
-       m_numIndices = gateWireNumIndices;
-       m_numVertices = gateWireNumVertices;
-       m_d.m_type = GateWireW;
-    }
+        ShowError("Unknown Gate type");
 }
 
 Gate::~Gate()

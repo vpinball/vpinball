@@ -24,9 +24,9 @@ namespace
       GetModuleFileName(hModule, buffer, MAX_PATH);
       const char* lastSeparatorPos = strrchr(buffer, '\\');
       if (lastSeparatorPos != 0)
-         fprintf(f, lastSeparatorPos + 1); // +1 -> skip over separator
+         fprintf(f, "%s", lastSeparatorPos + 1); // +1 -> skip over separator
       else
-         fprintf(f, buffer);
+         fprintf(f, "%s", buffer);
    }
 
    typedef HRESULT(STDAPICALLTYPE *pRGV)(LPOSVERSIONINFOEXW osi);
