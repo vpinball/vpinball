@@ -285,21 +285,21 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             FILE *f;
             fopen_s(&f, ofn.lpstrFile, "rb");
 
-            fread(&versionNumber, 1, 4, f);
+            fread(&versionNumber, 4, 1, f);
             if (versionNumber != 1)
             {
                ShowError("Materials are not compatible with this version!");
                fclose(f);
                break;
             }
-            fread(&materialCount, 1, 4, f);
+            fread(&materialCount, 4, 1, f);
             for (int i = 0; i < materialCount; i++)
             {
                Material *pmat = new Material();
                SaveMaterial mat;
                float physicsValue;
 
-               fread(&mat, 1, sizeof(SaveMaterial), f);
+               fread(&mat, sizeof(SaveMaterial), 1, f);
                pmat->m_cBase = mat.cBase;
                pmat->m_cGlossy = mat.cGlossy;
                pmat->m_cClearcoat = mat.cClearcoat;
@@ -314,13 +314,13 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                pmat->m_fEdgeAlpha = dequantizeUnsigned<7>(mat.bOpacityActive_fEdgeAlpha >> 1);
                memcpy(pmat->m_szName, mat.szName, 32);
 
-               fread(&physicsValue, 1, sizeof(float), f);
+               fread(&physicsValue, sizeof(float), 1, f);
                pmat->m_fElasticity = physicsValue;
-               fread(&physicsValue, 1, sizeof(float), f);
+               fread(&physicsValue, sizeof(float), 1, f);
                pmat->m_fElasticityFalloff = physicsValue;
-               fread(&physicsValue, 1, sizeof(float), f);
+               fread(&physicsValue, sizeof(float), 1, f);
                pmat->m_fFriction = physicsValue;
-               fread(&physicsValue, 1, sizeof(float), f);
+               fread(&physicsValue, sizeof(float), 1, f);
                pmat->m_fScatterAngle = physicsValue;
 
                pt->AddMaterial(pmat);
@@ -382,8 +382,8 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                FILE *f;
                fopen_s(&f, ofn.lpstrFile, "wb");
                const int MATERIAL_VERSION = 1;
-               fwrite(&MATERIAL_VERSION, 1, 4, f);
-               fwrite(&selCount, 1, 4, f);
+               fwrite(&MATERIAL_VERSION, 4, 1, f);
+               fwrite(&selCount, 4, 1, f);
                while (sel != -1)
                {
                   LVITEM lvitem;
@@ -406,11 +406,11 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                   mat.bOpacityActive_fEdgeAlpha = pmat->m_bOpacityActive ? 1 : 0;
                   mat.bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(pmat->m_fEdgeAlpha, 0.f, 1.f)) << 1;
                   memcpy(mat.szName, pmat->m_szName, 32);
-                  fwrite(&mat, 1, sizeof(SaveMaterial), f);
-                  fwrite(&pmat->m_fElasticity, 1, sizeof(float), f);
-                  fwrite(&pmat->m_fElasticityFalloff, 1, sizeof(float), f);
-                  fwrite(&pmat->m_fFriction, 1, sizeof(float), f);
-                  fwrite(&pmat->m_fScatterAngle, 1, sizeof(float), f);
+                  fwrite(&mat, sizeof(SaveMaterial), 1, f);
+                  fwrite(&pmat->m_fElasticity, sizeof(float), 1, f);
+                  fwrite(&pmat->m_fElasticityFalloff, sizeof(float), 1, f);
+                  fwrite(&pmat->m_fFriction, sizeof(float), 1, f);
+                  fwrite(&pmat->m_fScatterAngle, sizeof(float), 1, f);
 
                   sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
                }

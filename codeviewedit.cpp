@@ -504,9 +504,9 @@ void CVPrefrence::ApplyPreferences(const HWND hwndScin, const CVPrefrence* Defau
 {
 	const int id = this->SciKeywordID;
 	const bool HL = this->Highlight;
-	SendMessage(hwndScin, SCI_STYLESETFORE, id, HL ? this->rgb : DefaultPref->rgb);
+	SendMessage(hwndScin, SCI_STYLESETFORE, id, HL ? (LPARAM)this->rgb : (LPARAM)DefaultPref->rgb);
 	SendMessage(hwndScin, SCI_STYLESETFONT, id, HL ? (LPARAM)this->LogFont.lfFaceName : (LPARAM)DefaultPref->LogFont.lfFaceName);
-	SendMessage(hwndScin, SCI_STYLESETSIZE, id, HL ? (ULONG)(this->PointSize) : (LPARAM)DefaultPref->PointSize);
+	SendMessage(hwndScin, SCI_STYLESETSIZE, id, HL ? (LPARAM)(this->PointSize) : (LPARAM)DefaultPref->PointSize);
 	SendMessage(hwndScin, SCI_STYLESETWEIGHT, id, HL ? (LPARAM)this->LogFont.lfWeight : (LPARAM)DefaultPref->LogFont.lfWeight);
 	SendMessage(hwndScin, SCI_STYLESETITALIC, id, HL ? (LPARAM)this->LogFont.lfItalic : (LPARAM)DefaultPref->LogFont.lfItalic);
 	SendMessage(hwndScin, SCI_STYLESETUNDERLINE, id, HL ? (LPARAM)this->LogFont.lfUnderline : (LPARAM)DefaultPref->LogFont.lfUnderline);

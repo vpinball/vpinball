@@ -34,7 +34,7 @@ public:
 
    size_t NumVertices() const    { return m_vertices.size(); }
    size_t NumIndices() const     { return m_indices.size(); }
-   void UploadToVB(VertexBuffer * vb, float frame=-1.0f);
+   void UploadToVB(VertexBuffer * vb, const float frame);
 };
 
 // Indices for RotAndTra:

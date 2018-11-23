@@ -315,7 +315,7 @@ XAudPlayer::XAudPlayer()
           DSAudioDevices DSads;
           if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
           {
-              if ((unsigned int)DSidx >= DSads.size() || DSads[DSidx]->guid != NULL) // primary device has guid NULL, so use BASSidx = -1 in that case
+              if ((size_t)DSidx >= DSads.size() || DSads[DSidx]->guid != NULL) // primary device has guid NULL, so use BASSidx = -1 in that case
               {
                   BASS_DEVICEINFO info;
                   for (int i = 1; BASS_GetDeviceInfo(i, &info); i++) // 0 = no sound/no device

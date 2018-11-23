@@ -265,8 +265,6 @@ public:
 
    void Shutdown();
 
-   virtual IEditable *GetIEditable() { return (IEditable*)this; }
-
    void InitStatic(HWND hwndProgress);
 
    void UpdatePerFrame();

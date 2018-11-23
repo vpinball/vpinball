@@ -263,7 +263,7 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
          tmpFace.vi0 = faceVerts[0].v;
          tmpFace.ti0 = faceVerts[0].t;
          tmpFace.ni0 = faceVerts[0].n;
-         for (unsigned i = 1; i < faceVerts.size() - 1; ++i)
+         for (size_t i = 1; i < faceVerts.size() - 1; ++i)
          {
             tmpFace.vi1 = faceVerts[i].v;
             tmpFace.ti1 = faceVerts[i].t;
@@ -283,7 +283,7 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
       }
    }
 
-   for (unsigned int i = 0; i < tmpFaces.size(); i++)
+   for (size_t i = 0; i < tmpFaces.size(); i++)
    {
       int idx = isInList(tmpFaces[i].vi0, tmpFaces[i].ti0, tmpFaces[i].ni0);
       if (idx == -1)
@@ -366,7 +366,7 @@ Error:
 void WaveFrontObj_GetVertices(std::vector<Vertex3D_NoTex2>& objMesh) // clears temporary storage on the way
 {
    objMesh.resize(verts.size());
-   for (unsigned int i = 0; i < verts.size(); i++)
+   for (size_t i = 0; i < verts.size(); i++)
    {
       objMesh[i].x = verts[i].x;
       objMesh[i].y = verts[i].y;
@@ -383,7 +383,7 @@ void WaveFrontObj_GetVertices(std::vector<Vertex3D_NoTex2>& objMesh) // clears t
 void WaveFrontObj_GetIndices(std::vector<unsigned int>& list) // clears temporary storage on the way
 {
    list.resize(faces.size());
-   for (unsigned int i = 0; i < faces.size(); i++)
+   for (size_t i = 0; i < faces.size(); i++)
       list[i] = faces[i];
    faces.clear();
 }
@@ -512,7 +512,7 @@ void WaveFrontObj_WriteVertexInfo(FILE *f, const Vertex3D_NoTex2 *in_verts, unsi
 
 void WaveFrontObj_WriteFaceInfo(FILE *f, const std::vector<WORD> &in_faces)
 {
-   for (unsigned i = 0; i < in_faces.size(); i += 3)
+   for (size_t i = 0; i < in_faces.size(); i += 3)
    {
       fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", in_faces[i + 2] + 1 + faceIndexOffset, in_faces[i + 2] + 1 + faceIndexOffset, in_faces[i + 2] + 1 + faceIndexOffset
          , in_faces[i + 1] + 1 + faceIndexOffset, in_faces[i + 1] + 1 + faceIndexOffset, in_faces[i + 1] + 1 + faceIndexOffset
@@ -533,7 +533,7 @@ void WaveFrontObj_WriteFaceInfoList(FILE *f, const WORD *in_faces, const unsigne
 
 void WaveFrontObj_WriteFaceInfoLong(FILE *f, const std::vector<unsigned int> &in_faces)
 {
-   for (unsigned i = 0; i < in_faces.size(); i += 3)
+   for (size_t i = 0; i < in_faces.size(); i += 3)
    {
       fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", in_faces[i + 2] + 1 + faceIndexOffset, in_faces[i + 2] + 1 + faceIndexOffset, in_faces[i + 2] + 1 + faceIndexOffset
          , in_faces[i + 1] + 1 + faceIndexOffset, in_faces[i + 1] + 1 + faceIndexOffset, in_faces[i + 1] + 1 + faceIndexOffset

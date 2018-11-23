@@ -419,8 +419,8 @@ BOOL CollectionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 ::SendMessage(hwndList, LB_GETTEXT, rgsel[i], (LPARAM)szT);
                 const size_t data = ::SendMessage(hwndList, LB_GETITEMDATA, rgsel[i], 0);
 
-                const int newindex = (LOWORD(wParam) == IDC_UP) ? max(rgsel[i] - 1, (int)i) : min(rgsel[i] + 2, (int)(listsize - (count - 1) + i)); //!! see above
-                int oldindex = rgsel[i];
+                const size_t newindex = (LOWORD(wParam) == IDC_UP) ? max(rgsel[i] - 1, (int)i) : min(rgsel[i] + 2, (int)(listsize - (count - 1) + i)); //!! see above
+                size_t oldindex = rgsel[i];
 
                 if(oldindex > newindex)
                     oldindex++; // old item will be one lower when we try to delete it

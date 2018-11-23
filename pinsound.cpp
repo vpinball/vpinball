@@ -100,7 +100,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
    {
       hr = GetRegInt("Player", IsBackglass ? "SoundDeviceBG" : "SoundDevice", &DSidx);
-      if ((hr != S_OK) || ((unsigned int)DSidx >= DSads.size()))
+      if ((hr != S_OK) || ((size_t)DSidx >= DSads.size()))
          DSidx = 0; // The default primary sound device
    }
 

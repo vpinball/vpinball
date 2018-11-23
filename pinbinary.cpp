@@ -141,11 +141,9 @@ int CALLBACK EnumFontFamExProc(
 
 void PinFont::Register()
 {
-
    HDC hdcScreen = GetDC(NULL);
 
    LOGFONT lf;
-
    lf.lfCharSet = DEFAULT_CHARSET;
    lstrcpy(lf.lfFaceName, "");
    lf.lfPitchAndFamily = 0;

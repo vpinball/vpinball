@@ -27,7 +27,7 @@ void HitQuadtree::Initialize()
    FRect3D bounds;
    bounds.Clear();
 
-   for (unsigned i = 0; i < m_vho.size(); ++i)
+   for (size_t i = 0; i < m_vho.size(); ++i)
       bounds.Extend(m_vho[i]->m_hitBBox);
 
 #ifdef DEBUGPHYSICS
@@ -69,7 +69,7 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
    m_unique = m_vho[0]->m_e ? (Primitive *)(m_vho[0]->m_obj) : NULL;
 
    // sort items into appropriate child nodes
-   for (unsigned i = 0; i < m_vho.size(); i++)
+   for (size_t i = 0; i < m_vho.size(); i++)
    {
       int oct;
       HitObject * const pho = m_vho[i];
@@ -369,7 +369,7 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 
 void HitQuadtree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const
 {
-   for (unsigned i = 0; i < m_vho.size(); i++)
+   for (size_t i = 0; i < m_vho.size(); i++)
    {
 #ifdef DEBUGPHYSICS
       g_pplayer->c_tested++;

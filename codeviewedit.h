@@ -39,10 +39,10 @@ class CVPrefrence
 {
 public:
 	const char* szControlName;
+	const char *szRegName;
 	LOGFONT LogFont;
 	int PointSize;
 	COLORREF rgb;
-	const char *szRegName;
 	int SciKeywordID;
 	int IDC_ChkBox_code;
 	int IDC_ColorBut_code;

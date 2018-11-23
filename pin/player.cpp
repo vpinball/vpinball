@@ -580,7 +580,7 @@ void Player::Shutdown()
 
    m_limiter.Shutdown();
 
-   for (unsigned i = 0; i < m_vhitables.size(); ++i)
+   for (size_t i = 0; i < m_vhitables.size(); ++i)
       m_vhitables[i]->EndPlay();
 
    for (int i = 0; i < m_vho.Size(); i++)
@@ -594,7 +594,7 @@ void Player::Shutdown()
    //!! cleanup the whole mem management for balls, this is a mess!
 
    // balls are added to the octree, but not the hit object vector
-   for (unsigned i = 0; i < m_vball.size(); i++)
+   for (size_t i = 0; i < m_vball.size(); i++)
    {
       Ball * const pball = m_vball[i];
       if (pball->m_pballex)
@@ -839,7 +839,7 @@ void Player::InitRegValues()
 
 void Player::InitDebugHitStructure()
 {
-   for (unsigned i = 0; i < m_vhitables.size(); ++i)
+   for (size_t i = 0; i < m_vhitables.size(); ++i)
    {
       Hitable * const ph = m_vhitables[i];
       const int currentsize = m_vdebugho.Size();
@@ -1475,7 +1475,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial); // stable, so that objects with same materials will keep image order
 
       m = m_vHitNonTrans[0]->GetMaterialID();
-      for (unsigned int i = 1; i < m_vHitNonTrans.size(); ++i)
+      for (size_t i = 1; i < m_vHitNonTrans.size(); ++i)
          if (m_vHitNonTrans[i]->GetMaterialID() != m)
          {
             material_flips++;
@@ -1491,7 +1491,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
 
       m = m_vHitTrans[0]->GetMaterialID();
-      for (unsigned int i = 1; i < m_vHitTrans.size(); ++i)
+      for (size_t i = 1; i < m_vHitTrans.size(); ++i)
          if (m_vHitTrans[i]->GetMaterialID() != m)
          {
             material_flips++;
@@ -1581,7 +1581,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    SetFocus(m_hwnd);
 
    // Call Init -- TODO: what's the relation to ptable->FireVoidEvent() above?
-   for (unsigned i = 0; i < m_vhitables.size(); ++i)
+   for (size_t i = 0; i < m_vhitables.size(); ++i)
    {
       Hitable * const ph = m_vhitables[i];
       if (ph->GetEventProxyBase())
@@ -1727,7 +1727,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
       std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepthInverse);
 
       // Draw transparent objects.
-      for (unsigned int i = 0; i < m_vHitTrans.size(); ++i)
+      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
          m_vHitTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
 
       std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
@@ -1738,7 +1738,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
    if (!onlyBalls)
    {
       // Draw non-transparent objects.
-      for (unsigned int i = 0; i < m_vHitNonTrans.size(); ++i)
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
          m_vHitNonTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
    }
 
@@ -3503,7 +3503,7 @@ void Player::DrawBulbLightBuffer()
 
    // check if any bulb specified at all
    bool do_renderstage = false;
-   for (unsigned int i = 0; i < m_vHitTrans.size(); ++i)
+   for (size_t i = 0; i < m_vHitTrans.size(); ++i)
       if (m_vHitTrans[i]->RenderToLightBuffer())
       {
          do_renderstage = true;
@@ -4853,7 +4853,7 @@ void Player::Render()
       }
    }
 
-   for (unsigned i = 0; i < m_vballDelete.size(); i++)
+   for (size_t i = 0; i < m_vballDelete.size(); i++)
    {
       Ball * const pball = m_vballDelete[i];
       delete pball->m_vpVolObjs;
@@ -4973,7 +4973,7 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> &lig
    {
       float min_dist = FLT_MAX;
       light_nearest[l] = NULL;
-      for (unsigned int i = 0; i < lights.size(); ++i)
+      for (size_t i = 0; i < lights.size(); ++i)
       {
          bool already_processed = false;
          for (unsigned int i2 = 0; i2 < MAX_BALL_LIGHT_SOURCES - 1; ++i2)
@@ -5083,7 +5083,7 @@ void Player::DrawBalls()
    //m_pin3d.m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
    //m_pin3d.m_pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
 
-   for (unsigned i = 0; i < m_vball.size(); i++)
+   for (size_t i = 0; i < m_vball.size(); i++)
    {
       Ball * const pball = m_vball[i];
 
@@ -5510,7 +5510,7 @@ void Player::DoDebugObjectMenu(int x, int y)
             std::vector<int> vcommandid;
 
             pdc->GetDebugCommands(vids, vcommandid);
-            for (unsigned l = 0; l < vids.size(); l++)
+            for (size_t l = 0; l < vids.size(); l++)
             {
                LocalString ls(vids[l]);
                AppendMenu(submenu, MF_STRING, ((i + 1) << 16) | vcommandid[l] | 0x8000, ls.m_szbuffer);
@@ -5550,10 +5550,10 @@ void Player::DoDebugObjectMenu(int x, int y)
    }
 
    DestroyMenu(hmenu);
-   for (unsigned i = 0; i < vsubmenu.size(); i++)
+   for (size_t i = 0; i < vsubmenu.size(); i++)
       DestroyMenu(vsubmenu[i]);
 
-   for (unsigned i = 0; i < vvdispid.size(); i++)
+   for (size_t i = 0; i < vvdispid.size(); i++)
       delete vvdispid[i];
 
    UnpauseMusic();

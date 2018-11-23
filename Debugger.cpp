@@ -73,7 +73,7 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
             matNames.push_back(ptable->m_materials.ElementAt(i)->m_szName);
          }
          std::sort(matNames.begin(), matNames.end());
-         for (unsigned int i = 0; i < matNames.size(); i++)
+         for (size_t i = 0; i < matNames.size(); i++)
             ComboBox_AddString(hCombo, matNames[i].c_str());
 
          ShowWindow(g_pplayer->m_hwndDebugger, SW_HIDE);
@@ -250,7 +250,7 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
             }
          }
          std::sort(lightNames.begin(), lightNames.end() );
-         for (unsigned int i = 0; i < lightNames.size();i++)
+         for (size_t i = 0; i < lightNames.size();i++)
             ComboBox_AddString(hCombo, lightNames[i].c_str());
 
          ShowWindow(g_pplayer->m_hwndDebugger, SW_HIDE);

@@ -118,12 +118,12 @@ BOOL SearchSelectDialog::OnInitDialog()
 
 void SearchSelectDialog::SelectElement()
 {
-    const size_t count = ListView_GetSelectedCount(hElementList);
+    const int count = ListView_GetSelectedCount(hElementList);
 
     curTable->ClearMultiSel();
     int iItem = -1;
     LVITEM lv;
-    for (size_t i = 0; i < count; i++)
+    for (int i = 0; i < count; i++)
     {
         iItem = ListView_GetNextItem(hElementList, iItem, LVNI_SELECTED);
         lv.iItem = iItem;

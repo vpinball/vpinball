@@ -1120,7 +1120,7 @@ void CodeViewer::SaveToFile(const char *filename)
 		const size_t bufferSize = cchar + 32;
 		char * const szText = new char[bufferSize + 1];
 		SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
-		fwrite(szText, cchar, 1, fScript);
+		fwrite(szText, 1, cchar, fScript);
 		fclose(fScript);
 		delete[] szText;
 	}

@@ -1254,7 +1254,7 @@ STDMETHODIMP ScriptGlobalTable::GetBalls(LPSAFEARRAY *pVal)
 
    CComSafeArray<VARIANT> balls((ULONG)g_pplayer->m_vball.size());
 
-   for (unsigned i = 0; i < g_pplayer->m_vball.size(); ++i)
+   for (size_t i = 0; i < g_pplayer->m_vball.size(); ++i)
    {
       BallEx *pballex = g_pplayer->m_vball[i]->m_pballex;
 
@@ -1614,10 +1614,10 @@ PinTable::~PinTable()
       delete m_vsound.ElementAt(i);
    }
 
-   for (unsigned i = 0; i < m_vimage.size(); i++)
+   for (size_t i = 0; i < m_vimage.size(); i++)
       delete m_vimage[i];
 
-   for(int i = 0; i < m_materials.size(); ++i)
+   for(int i = 0; i < m_materials.Size(); ++i)
       delete m_materials.ElementAt(i);
 
    for (int i = 0; i < m_vfont.Size(); i++)
@@ -1667,7 +1667,7 @@ void PinTable::FVerifySaveToClose()
       //MessageBox(NULL, "Async work items not done", NULL, 0);
 
       // Close the remaining handles here, since the window messages will never be processed
-      for (unsigned i = 0; i < m_vAsyncHandles.size(); i++)
+      for (size_t i = 0; i < m_vAsyncHandles.size(); i++)
          CloseHandle(m_vAsyncHandles[i]);
 
       g_pvp->SetActionCur("");
@@ -2657,6 +2657,7 @@ HRESULT PinTable::Save(const bool fSaveAs)
       ofn.Flags = OFN_OVERWRITEPROMPT;
 
       char szInitialDir[MAXSTRING];
+      char szFoo[MAXSTRING];
       HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
       if (hr == S_OK)
       {
@@ -2664,7 +2665,6 @@ HRESULT PinTable::Save(const bool fSaveAs)
       }
       else
       {
-         char szFoo[MAXSTRING];
          lstrcpy(szFoo, g_pvp->m_szMyPath);
          lstrcat(szFoo, "Tables");
          ofn.lpstrInitialDir = szFoo;
@@ -3573,7 +3573,7 @@ HRESULT PinTable::LoadGameFromFilename(char *szFileName)
       if (FAILED(hr = StgOpenStorage(wszCodeFile, NULL, STGM_TRANSACTED | STGM_READ | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgRoot)))
       {
          // TEXT
-         char msg[256];
+         char msg[MAXSTRING+16];
          sprintf_s(msg, "Error loading %s", m_szFileName);
          ::MessageBox(g_pvp->m_hwnd, msg, "Load Error", 0);
          return hr;
@@ -6314,7 +6314,7 @@ void PinTable::ExportMesh(FILE *f)
 void PinTable::ExportTableMesh()
 {
    OPENFILENAME ofn;
-   memset(m_szObjFileName, 0, MAX_PATH);
+   memset(m_szObjFileName, 0, MAXSTRING);
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hInstance = g_hinst;
@@ -6445,7 +6445,7 @@ void PinTable::ExportBackdropPOV(const char *filename)
 	if (filename == NULL)
 	{
 		OPENFILENAME ofn;
-		memset(m_szObjFileName, 0, MAX_PATH);
+		memset(m_szObjFileName, 0, MAXSTRING);
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hInstance = g_hinst;
@@ -8104,10 +8104,8 @@ void PinTable::ImportImage(HWND hwndListView, char *filename)
 
 void PinTable::ListImages(HWND hwndListView)
 {
-   for (unsigned i = 0; i < m_vimage.size(); i++)
-   {
+   for (size_t i = 0; i < m_vimage.size(); i++)
       AddListImage(hwndListView, m_vimage[i]);
-   }
 }
 
 int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
@@ -8332,7 +8330,7 @@ void PinTable::AddMaterial(Material *pmat)
 void PinTable::AddDbgMaterial(Material *pmat)
 {
    bool alreadyIn = false;
-   unsigned int i;
+   size_t i;
 
    for (i = 0; i < m_dbgChangedMaterials.size(); i++)
    {
@@ -8381,7 +8379,7 @@ void PinTable::AddDbgMaterial(Material *pmat)
 void PinTable::UpdateDbgMaterial(void)
 {
    bool somethingChanged = false;
-   for (unsigned int i = 0; i < m_dbgChangedMaterials.size(); i++)
+   for (size_t i = 0; i < m_dbgChangedMaterials.size(); i++)
    {
       const Material * const pmat = m_dbgChangedMaterials[i];
       for (int t = 0; t < m_materials.Size(); t++)
@@ -8550,7 +8548,7 @@ void PinTable::RemoveMaterial(Material *pmat)
 void PinTable::AddDbgLight( Light *plight )
 {
     bool alreadyIn = false;
-    unsigned int i;
+    size_t i;
     char *lightName = GetElementName( plight );
 
     for(i = 0; i < m_dbgChangedMaterials.size(); i++)
@@ -8595,7 +8593,7 @@ void PinTable::AddDbgLight( Light *plight )
 void PinTable::UpdateDbgLight( void )
 {
     bool somethingChanged = false;
-    for(unsigned int i = 0; i < m_dbgChangedLights.size(); i++)
+    for(size_t i = 0; i < m_dbgChangedLights.size(); i++)
     {
         DebugLightData *data = m_dbgChangedLights[i];
         for(int t = 0; t < m_vedit.Size(); t++)

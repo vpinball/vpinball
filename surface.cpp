@@ -811,7 +811,7 @@ void Surface::ExportMesh(FILE *f)
       WaveFrontObj_UseTexture(f, m_d.m_szTopMaterial);
       WORD * const idx = new WORD[topBottomIndices.size() + sideIndices.size()];
       memcpy(idx, sideIndices.data(), sideIndices.size()*sizeof(WORD));
-      for (unsigned int i = 0; i < topBottomIndices.size(); i++)
+      for (size_t i = 0; i < topBottomIndices.size(); i++)
          idx[sideIndices.size() + i] = topBottomIndices[i] + numVertices * 4;
       WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)(topBottomIndices.size() + sideIndices.size()));
       WaveFrontObj_UpdateFaceOffset(numVertices * 5);
@@ -880,7 +880,7 @@ void Surface::PrepareSlingshots(RenderDevice *pd3dDevice)
    Vertex3D_NoTex2* const rgv3D = new Vertex3D_NoTex2[m_vlinesling.size() * 9];
 
    unsigned int offset = 0;
-   for (unsigned i = 0; i < m_vlinesling.size(); i++, offset += 9)
+   for (size_t i = 0; i < m_vlinesling.size(); i++, offset += 9)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
       plinesling->m_slingshotanim.m_fAnimations = (m_d.m_fSlingshotAnimation != 0);
@@ -997,7 +997,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
       return;
 
    bool nothing_to_draw = true;
-   for (unsigned i = 0; i < m_vlinesling.size(); i++)
+   for (size_t i = 0; i < m_vlinesling.size(); i++)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
       if (plinesling->m_slingshotanim.m_iframe || plinesling->m_doHitEvent)
@@ -1019,7 +1019,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
    pd3dDevice->basicShader->Begin(0);
-   for (unsigned i = 0; i < m_vlinesling.size(); i++)
+   for (size_t i = 0; i < m_vlinesling.size(); i++)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
       if (!plinesling->m_slingshotanim.m_iframe && !plinesling->m_doHitEvent)
@@ -2190,7 +2190,7 @@ STDMETHODIMP Surface::put_ReflectionEnabled(VARIANT_BOOL newVal)
 
 STDMETHODIMP Surface::PlaySlingshotHit()
 {
-    for (unsigned i = 0; i < m_vlinesling.size(); i++)
+    for (size_t i = 0; i < m_vlinesling.size(); i++)
     {
         LineSegSlingshot * const plinesling = m_vlinesling[i];
         if ( plinesling )
