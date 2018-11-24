@@ -10,14 +10,14 @@ DEFINE_GUID(CLSID_VBScript, 0xb54f3741, 0x5b07, 0x11cf, 0xa4, 0xb0, 0x0, 0xaa, 0
 //DEFINE_GUID(IID_IActiveScriptParse64,0xc7ef7658,0xe1ee,0x480e,0x97,0xea,0xd5,0x2c,0xb4,0xd7,0x6d,0x17);
 //DEFINE_GUID(IID_IActiveScriptDebug, 0x51973C10, 0xCB0C, 0x11d0, 0xB5, 0xC9, 0x00, 0xA0, 0x24, 0x4A, 0x0E, 0x7A);
 
-#define RECOLOR_LINE	WM_USER+100
+//#define RECOLOR_LINE WM_USER+100
 #define CONTEXTCOOKIE_NORMAL 1000
 #define CONTEXTCOOKIE_DEBUG 1001
 
-UINT g_FindMsgString; // Windows message for the FindText dialog
+static UINT g_FindMsgString; // Windows message for the FindText dialog
 
 //Scintillia Lexer parses only lower case unless otherwise told
-const char vbsReservedWords[] =
+static const char vbsReservedWords[] =
 "and as byref byval case call const "
 "continue dim do each else elseif end error exit false for function global "
 "goto if in loop me new next not nothing on optional or private public "
@@ -25,13 +25,11 @@ const char vbsReservedWords[] =
 "boolean byte currency date double integer long object single string type "
 "variant option explicit randomize";
 
-char CaretTextBuff[MAX_FIND_LENGTH];
-char ConstructTextBuff[MAX_FIND_LENGTH];
+static char CaretTextBuff[MAX_FIND_LENGTH];
+static char ConstructTextBuff[MAX_FIND_LENGTH];
 
 LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-WNDPROC g_RichEditProc;
 
 
 IScriptable::IScriptable()
@@ -499,7 +497,7 @@ void CodeViewer::Create()
 
    m_hwndMain = CreateWindowEx(0, "CVFrame", "Script",
       WS_POPUP | WS_SIZEBOX | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
-      x, y, w, h, g_pvp->m_hwnd, NULL, g_hinst, 0);
+      x, y, w, h, NULL, NULL, g_hinst, 0);
 
    SetWindowLongPtr(m_hwndMain, GWLP_USERDATA, (size_t)this);
 
