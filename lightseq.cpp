@@ -205,11 +205,11 @@ void LightSeq::GetTimers(Vector<HitTimer> * const pvht)
    }
 }
 
-void LightSeq::GetHitShapes(Vector<HitObject> * const pvho)
+void LightSeq::GetHitShapes(vector<HitObject*> &pvho)
 {
 }
 
-void LightSeq::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void LightSeq::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 

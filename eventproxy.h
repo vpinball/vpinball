@@ -63,10 +63,7 @@ public:
       {
          Collection * const pcollection = pT->m_vEventCollection.ElementAt(i);
 
-         /* this seems to break the COM interface because the Hit-Event of a collection needs a long parameter and not size_t
-      CComVariant rgvar[1] = {CComVariant((size_t)pT->m_viEventCollection.ElementAt(i))};
-      */
-         CComVariant rgvar[1] = { CComVariant((long)pT->m_viEventCollection.ElementAt(i)) };
+         CComVariant rgvar[1] = { CComVariant((long)pT->m_viEventCollection[i]) };
 
          DISPPARAMS dispparams = { rgvar, NULL, 1, 0 };
 

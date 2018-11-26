@@ -68,9 +68,9 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
       {
          vector<string> matNames;
          SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
-         for (int i = 0; i < ptable->m_materials.Size(); i++)
+         for (size_t i = 0; i < ptable->m_materials.size(); i++)
          {
-            matNames.push_back(ptable->m_materials.ElementAt(i)->m_szName);
+            matNames.push_back(ptable->m_materials[i]->m_szName);
          }
          std::sort(matNames.begin(), matNames.end());
          for (size_t i = 0; i < matNames.size(); i++)

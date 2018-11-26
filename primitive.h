@@ -323,8 +323,8 @@ private:        // private member functions
    void UpdateEditorView();
 
    bool BrowseFor3DMeshFile();
-   void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
-   void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj);
+   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
+   void AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj);
 
    void CalculateBuiltinOriginal();
 

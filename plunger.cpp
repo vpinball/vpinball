@@ -250,7 +250,7 @@ void Plunger::UIRenderPass2(Sur * const psur)
    }
 }
 
-void Plunger::GetHitShapes(Vector<HitObject> * const pvho)
+void Plunger::GetHitShapes(vector<HitObject*> &pvho)
 {
    const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
 
@@ -259,12 +259,12 @@ void Plunger::GetHitShapes(Vector<HitObject> * const pvho)
       zheight, m_d.m_v.y - m_d.m_stroke, m_d.m_v.y,
       this);
 
-   pvho->AddElement(php);
+   pvho.push_back(php);
    php->m_pplunger = this;
    m_phitplunger = php;
 }
 
-void Plunger::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Plunger::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 

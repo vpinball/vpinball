@@ -445,7 +445,7 @@ void Primitive::GetTimers(Vector<HitTimer> * const pvht)
    IEditable::BeginPlay();
 }
 
-void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
+void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 {
    char name[MAX_PATH];
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
@@ -559,11 +559,11 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
    }
 }
 
-void Primitive::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Primitive::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
-void Primitive::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj)
+void Primitive::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj)
 {
    // create pair uniquely identifying the edge (i,j)
    std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
@@ -575,7 +575,7 @@ void Primitive::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigne
    }
 }
 
-void Primitive::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
+void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
 {
    const Material * const mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
    if(!m_d.m_useAsPlayfield)
@@ -614,7 +614,7 @@ void Primitive::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
    if(m_d.m_fHitEvent)
        obj->m_fe = true;
 
-   pvho->AddElement(obj);
+   pvho.push_back(obj);
    m_vhoCollidable.push_back(obj); // remember hit components of primitive
 }
 

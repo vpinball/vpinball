@@ -101,8 +101,8 @@ public:
    virtual void ExportMesh(FILE *f);
    virtual ItemTypeEnum HitableGetItemType() const { return eItemTrigger; }
 
-   void CurvesToShapes(Vector<HitObject> * const pvho);
-   void AddLine(Vector<HitObject> * const pvho, const RenderVertex &pv1, const RenderVertex &pv2, const float height);
+   void CurvesToShapes(vector<HitObject*> &pvho);
+   void AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2, const float height);
 
    virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
 

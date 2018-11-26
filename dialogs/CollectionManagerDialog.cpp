@@ -491,7 +491,7 @@ void CollectionDialog::OnOK()
         if(index != -1)
         {
             pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection.RemoveElementAt(index);
-            pcol->m_visel.ElementAt(i)->GetIEditable()->m_viCollection.RemoveElementAt(index);
+			pcol->m_visel.ElementAt(i)->GetIEditable()->m_viCollection.erase(pcol->m_visel.ElementAt(i)->GetIEditable()->m_viCollection.begin()+index);
         }
     }
 
@@ -509,7 +509,7 @@ void CollectionDialog::OnOK()
         {
             pcol->m_visel.AddElement(pisel);
             pisel->GetIEditable()->m_vCollection.AddElement(pcol);
-            pisel->GetIEditable()->m_viCollection.AddElement((void *)i);
+            pisel->GetIEditable()->m_viCollection.push_back((int)i);
         }
     }
 

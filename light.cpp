@@ -447,11 +447,11 @@ void Light::GetTimers(Vector<HitTimer> * const pvht)
       pvht->AddElement(pht);
 }
 
-void Light::GetHitShapes(Vector<HitObject> * const pvho)
+void Light::GetHitShapes(vector<HitObject*> &pvho)
 {
 }
 
-void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Light::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -460,7 +460,7 @@ void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
    case ShapeCircle:
    default: {
       Hit3DPoly * const pcircle = new Hit3DPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height, m_d.m_falloff, 32);
-      pvho->AddElement(pcircle);
+      pvho.push_back(pcircle);
 
       break;
    }
@@ -480,7 +480,7 @@ void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
       }
 
       Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex);
-      pvho->AddElement(ph3dp);
+      pvho.push_back(ph3dp);
 
       break;
    }

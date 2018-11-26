@@ -377,7 +377,7 @@ void Trigger::GetTimers(Vector<HitTimer> * const pvht)
       pvht->AddElement(pht);
 }
 
-void Trigger::GetHitShapes(Vector<HitObject> * const pvho)
+void Trigger::GetHitShapes(vector<HitObject*> &pvho)
 {
    m_hitEnabled = m_d.m_fEnabled;
 
@@ -393,13 +393,13 @@ void Trigger::GetHitShapes(Vector<HitObject> * const pvho)
 
       m_ptriggerhitcircle->m_ptrigger = this;
 
-      pvho->AddElement(m_ptriggerhitcircle);
+      pvho.push_back(m_ptriggerhitcircle);
    }
    else
       CurvesToShapes(pvho);
 }
 
-void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Trigger::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    m_hitEnabled = m_d.m_fEnabled;
@@ -412,7 +412,7 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
       pcircle->m_ObjType = eTrigger;
       pcircle->m_obj = (IFireEvents*) this;
 
-      pvho->AddElement(pcircle);
+      pvho.push_back(pcircle);
       break;
    }
 
@@ -439,14 +439,14 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
       ph3dp->m_ObjType = eTrigger;
       ph3dp->m_obj = (IFireEvents*) this;
 
-      pvho->AddElement(ph3dp);
+      pvho.push_back(ph3dp);
       //ph3dp->m_fEnabled = false;	//!! disable hit process on polygon body, only trigger edges 
       break;
    }
    }
 }
 
-void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
+void Trigger::CurvesToShapes(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    std::vector<RenderVertex> vvertex;
@@ -478,7 +478,7 @@ void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
    ph3dpoly->m_ObjType = eTrigger;
    ph3dpoly->m_obj = (IFireEvents*) this;
 
-   pvho->AddElement(ph3dpoly);
+   pvho.push_back(ph3dpoly);
 #else
    delete [] rgv3D;
 #endif
@@ -486,7 +486,7 @@ void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
    delete[] rgv;
 }
 
-void Trigger::AddLine(Vector<HitObject> * const pvho, const RenderVertex &pv1, const RenderVertex &pv2, const float height)
+void Trigger::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2, const float height)
 {
    TriggerLineSeg * const plineseg = new TriggerLineSeg();
 
@@ -502,7 +502,7 @@ void Trigger::AddLine(Vector<HitObject> * const pvho, const RenderVertex &pv1, c
    plineseg->v2.x = pv2.x;
    plineseg->v2.y = pv2.y;
 
-   pvho->AddElement(plineseg);
+   pvho.push_back(plineseg);
 
    plineseg->CalcNormal();
 }

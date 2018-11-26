@@ -575,7 +575,7 @@ void Ramp::GetTimers(Vector<HitTimer> * const pvht)
       pvht->AddElement(pht);
 }
 
-void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
+void Ramp::GetHitShapes(vector<HitObject*> &pvho)
 {
    float *rgheight1;
    int cvertex;
@@ -790,11 +790,11 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
    delete[] rgvLocal;
 }
 
-void Ramp::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Ramp::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
-void Ramp::CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2)
+void Ramp::CheckJoint(vector<HitObject*> &pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2)
 {
    if (ph3d1)   // may be null in case of degenerate triangles
    {
@@ -808,17 +808,17 @@ void Ramp::CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const 
    AddJoint(pvho, ph3d2->m_rgv[0], ph3d2->m_rgv[1]);
 }
 
-void Ramp::AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3Ds& v2)
+void Ramp::AddJoint(vector<HitObject*> &pvho, const Vertex3Ds& v1, const Vertex3Ds& v2)
 {
    SetupHitObject(pvho, new HitLine3D(v1, v2));
 }
 
-void Ramp::AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, const float zlow, const float zhigh)
+void Ramp::AddJoint2D(vector<HitObject*> &pvho, const Vertex2D& p, const float zlow, const float zhigh)
 {
    SetupHitObject(pvho, new HitLineZ(p, zlow, zhigh));
 }
 
-void Ramp::AddWallLineSeg(Vector<HitObject> * const pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2, const float wallheight)
+void Ramp::AddWallLineSeg(vector<HitObject*> &pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2, const float wallheight)
 {
    //!! Hit-walls are still done via 2D line segments with only a single lower and upper border, so the wall will always reach below and above the actual ramp -between- two points of the ramp
 
@@ -839,7 +839,7 @@ void Ramp::AddWallLineSeg(Vector<HitObject> * const pvho, const Vertex2D &pv1, c
    }
 }
 
-void Ramp::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
+void Ramp::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
 {
    const Material * const mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
    if ( mat != NULL && !m_d.m_fOverwritePhysics )
@@ -862,7 +862,7 @@ void Ramp::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
    obj->m_obj = (IFireEvents*) this;
    obj->m_fe = m_d.m_fHitEvent;
 
-   pvho->AddElement(obj);
+   pvho.push_back(obj);
    m_vhoCollidable.push_back(obj); //remember hit components of primitive
 }
 

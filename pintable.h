@@ -323,7 +323,7 @@ public:
    bool ExportSound(HWND hwndListView, PinSound *pps, char *filename);
    void ListSounds(HWND hwndListView);
    int AddListSound(HWND hwndListView, PinSound *pps);
-   void RemoveSound(PinSound *pps);
+   void RemoveSound(PinSound * const pps);
    HRESULT SaveSoundToStream(PinSound *pps, IStream *pstm);
    HRESULT LoadSoundFromStream(IStream *pstm, const int LoadFileVersion);
    void ClearOldSounds();
@@ -345,7 +345,7 @@ public:
    void ImportFont(HWND hwndListView, char *filename);
    void ListFonts(HWND hwndListView);
    int AddListBinary(HWND hwndListView, PinBinary *ppb);
-   void RemoveFont(PinFont *ppf);
+   void RemoveFont(PinFont * const ppf);
 
    void NewCollection(const HWND hwndListView, const bool fFromSelection);
    void ListCollections(HWND hwndListView);
@@ -523,7 +523,7 @@ public:
 
    void ListMaterials(HWND hwndListView);
    int AddListMaterial(HWND hwndListView, Material *pmat);
-   void RemoveMaterial(Material *pmat);
+   void RemoveMaterial(Material * const pmat);
    void AddDbgLight(Light *plight);
    void UpdateDbgLight();
    void AddMaterial(Material *pmat);
@@ -654,20 +654,20 @@ public:
    Vector< IEditable > m_layer[MAX_LAYERS];
    Vector< ISelect > m_allHitElements;
 
-   std::vector< Texture* > m_vimage;
+   vector< Texture* > m_vimage;
 
    int m_numMaterials;
-   Vector< Material > m_materials;
+   vector< Material* > m_materials;
 
-   Vector< PinSound > m_vsound;
+   vector< PinSound* > m_vsound;
 
-   Vector< PinFont > m_vfont;
+   vector< PinFont* > m_vfont;
 
    VectorProtected< CComObject<Collection> > m_vcollection;
 
    COLORREF m_rgcolorcustom[16];		// array for the choosecolor in property browser
 
-   Vector< PinSoundCopy > m_voldsound; // copied sounds currently playing
+   vector< PinSoundCopy* > m_voldsound; // copied sounds currently playing
 
    float m_TableSoundVolume;
    float m_TableMusicVolume;
@@ -703,8 +703,8 @@ public:
 
    PinBinary *m_pbTempScreenshot; // Holds contents of screenshot image until the image asks for it
 
-   Vector<char> m_vCustomInfoTag;
-   Vector<char> m_vCustomInfoContent;
+   vector<char*> m_vCustomInfoTag;
+   vector<char*> m_vCustomInfoContent;
 
    std::vector<HANDLE> m_vAsyncHandles;
 

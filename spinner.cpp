@@ -200,7 +200,7 @@ void Spinner::GetTimers(Vector<HitTimer> * const pvht)
    }
 }
 
-void Spinner::GetHitShapes(Vector<HitObject> * const pvho)
+void Spinner::GetHitShapes(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    const float h = m_d.m_height + 30.0f;
@@ -214,7 +214,7 @@ void Spinner::GetHitShapes(Vector<HitObject> * const pvho)
    HitSpinner * const phitspinner = new HitSpinner(this, height);
    m_phitspinner = phitspinner;
 
-   pvho->AddElement(phitspinner);
+   pvho.push_back(phitspinner);
 
    if (m_d.m_fShowBracket)
    {
@@ -226,14 +226,14 @@ void Spinner::GetHitShapes(Vector<HitObject> * const pvho)
 
       HitCircle *phitcircle;
       phitcircle = new HitCircle(Vertex2D(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength), m_d.m_length*0.075f, height + m_d.m_height, height + h);
-      pvho->AddElement(phitcircle);
+      pvho.push_back(phitcircle);
 
       phitcircle = new HitCircle(Vertex2D(m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength), m_d.m_length*0.075f, height + m_d.m_height, height + h);
-      pvho->AddElement(phitcircle);
+      pvho.push_back(phitcircle);
    }
 }
 
-void Spinner::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Spinner::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
@@ -270,12 +270,12 @@ void Spinner::ExportMesh(FILE *f)
    char subObjName[MAX_PATH];
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
    std::vector<Vertex3D_NoTex2> transformedVertices;
-   Vector<HitObject> dummyHitObj;
+   vector<HitObject*> dummyHitObj;
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    m_posZ = height + m_d.m_height;
 
-   GetHitShapes(&dummyHitObj);
+   GetHitShapes(dummyHitObj);
 
    if (m_d.m_fShowBracket)
    {

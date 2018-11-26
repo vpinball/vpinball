@@ -20,10 +20,10 @@ HitKD::~HitKD()
 #endif
 }
 
-void HitKD::Init(Vector<HitObject> *vho, const unsigned int num_items)
+void HitKD::Init(vector<HitObject*> &vho)
 {
-   m_org_vho = vho;
-   m_num_items = num_items;
+   m_org_vho = &vho;
+   m_num_items = (unsigned int)vho.size();
 
    if (m_num_items > m_max_items)
    {
@@ -105,9 +105,9 @@ void HitKD::InitSseArrays()
 #endif
 }
 
-void HitKD::FillFromVector(Vector<HitObject>& vho)
+void HitKD::FillFromVector(vector<HitObject*> &vho)
 {
-   Init(&vho, vho.Size());
+   Init(vho);
 
    m_rootNode.m_rectbounds.Clear();
 
@@ -116,7 +116,7 @@ void HitKD::FillFromVector(Vector<HitObject>& vho)
 
    for (unsigned i = 0; i < m_num_items; ++i)
    {
-      HitObject * const pho = vho.ElementAt(i);
+      HitObject * const pho = vho[i];
       pho->CalcHitBBox(); //!! omit, as already calced?!
       m_rootNode.m_rectbounds.Extend(pho->m_hitBBox);
 
@@ -124,7 +124,7 @@ void HitKD::FillFromVector(Vector<HitObject>& vho)
    }
 
 #ifdef DEBUGPHYSICS
-   g_pplayer->c_kDObjects = vho.size();
+   g_pplayer->c_kDObjects = (U32)vho.size();
 #endif
 
    m_rootNode.CreateNextLevel(0, 0);
@@ -602,7 +602,7 @@ void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 }
 #endif
 
-void HitKDNode::HitTestXRay(const Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const
+void HitKDNode::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const
 {
    const unsigned int org_items = (m_items & 0x3FFFFFFF);
    const unsigned int axis = (m_items >> 30);
@@ -622,7 +622,7 @@ void HitKDNode::HitTestXRay(const Ball * const pball, Vector<HitObject> * const 
 #endif
          const float newtime = pho->HitTest(pball, coll.m_hittime, coll);
          if (newtime >= 0)
-            pvhoHit->AddElement(pho);
+            pvhoHit.push_back(pho);
       }
    }
 

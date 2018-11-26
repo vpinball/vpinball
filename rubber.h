@@ -120,8 +120,8 @@ public:
    // end IHaveDragPoints
 
    void WriteRegDefaults();
-   void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j);
-   void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
+   void AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j);
+   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
    void UpdateUnitsInfo();
 
    PinTable *m_ptable;

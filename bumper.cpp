@@ -301,7 +301,7 @@ void Bumper::GetTimers(Vector<HitTimer> * const pvht)
       pvht->AddElement(pht);
 }
 
-void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
+void Bumper::GetHitShapes(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -313,17 +313,17 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
 
    phitcircle->m_pbumper = this;
 
-   pvho->AddElement(phitcircle);
+   pvho.push_back(phitcircle);
 
    m_pbumperhitcircle = phitcircle;
 }
 
-void Bumper::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Bumper::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    Hit3DPoly * const pcircle = new Hit3DPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + m_d.m_heightScale, m_d.m_radius, 32);
-   pvho->AddElement(pcircle);
+   pvho.push_back(pcircle);
 }
 
 void Bumper::EndPlay()

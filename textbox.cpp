@@ -190,11 +190,11 @@ void Textbox::GetTimers(Vector<HitTimer> * const pvht)
    }
 }
 
-void Textbox::GetHitShapes(Vector<HitObject> * const pvho)
+void Textbox::GetHitShapes(vector<HitObject*> &pvho)
 {
 }
 
-void Textbox::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Textbox::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 

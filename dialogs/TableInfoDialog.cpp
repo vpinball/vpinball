@@ -233,13 +233,13 @@ void TableInfoDialog::OnOK()
    }
 
    // Clear old custom values, read back new ones
-   for (int i = 0; i < pt->m_vCustomInfoTag.Size(); i++)
+   for (size_t i = 0; i < pt->m_vCustomInfoTag.size(); i++)
    {
-      delete pt->m_vCustomInfoTag.ElementAt(i);
-      delete pt->m_vCustomInfoContent.ElementAt(i);
+      delete pt->m_vCustomInfoTag[i];
+      delete pt->m_vCustomInfoContent[i];
    }
-   pt->m_vCustomInfoTag.RemoveAllElements();
-   pt->m_vCustomInfoContent.RemoveAllElements();
+   pt->m_vCustomInfoTag.clear();
+   pt->m_vCustomInfoContent.clear();
 
    const int customcount = ListView_GetItemCount(GetDlgItem(IDC_CUSTOMLIST).GetHwnd());
    for (int i = 0; i < customcount; i++)
@@ -249,12 +249,12 @@ void TableInfoDialog::OnOK()
 
       char * const szName = new char[lstrlen(szT) + 1];
       lstrcpy(szName, szT);
-      pt->m_vCustomInfoTag.AddElement(szName);
+      pt->m_vCustomInfoTag.push_back(szName);
 
       ListView_GetItemText(GetDlgItem(IDC_CUSTOMLIST).GetHwnd(), i, 1, szT, MAXSTRING);
       char * const szValue = new char[lstrlen(szT) + 1];
       lstrcpy(szValue, szT);
-      pt->m_vCustomInfoContent.AddElement(szValue);
+      pt->m_vCustomInfoContent.push_back(szValue);
    }
 
    pt->SetNonUndoableDirty(eSaveDirty);

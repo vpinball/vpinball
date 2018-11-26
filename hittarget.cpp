@@ -264,7 +264,7 @@ const WORD dropTargetHitPlaneIndices[num_dropTargetHitPlaneIndices] =
    6, 12, 7, 12, 6, 13, 12, 13, 14, 13, 15, 14
 };
 
-void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
+void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
 {
     TransformVertices();
 
@@ -375,11 +375,11 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
     }
 }
 
-void HitTarget::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void HitTarget::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
-void HitTarget::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject)
+void HitTarget::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject)
 {
    // create pair uniquely identifying the edge (i,j)
    std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
@@ -391,7 +391,7 @@ void HitTarget::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigne
    }
 }
 
-void HitTarget::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj, const bool setHitObject)
+void HitTarget::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool setHitObject)
 {
    Material *mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
    if (mat != NULL && !m_d.m_fOverwritePhysics)
@@ -420,7 +420,7 @@ void HitTarget::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj, const 
    else
       obj->m_fe = false;
 
-   pvho->AddElement(obj);
+   pvho.push_back(obj);
    m_vhoCollidable.push_back(obj);	//remember hit components of primitive
 }
 

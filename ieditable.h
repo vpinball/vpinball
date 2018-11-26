@@ -136,8 +136,8 @@ public:
 	virtual void UIRenderPass1(Sur * const psur); \
 	virtual void UIRenderPass2(Sur * const psur); \
 	virtual PinTable *GetPTable() {return m_ptable;} \
-	virtual void GetHitShapes(Vector<HitObject> * const pvho); \
-	virtual void GetHitShapesDebug(Vector<HitObject> * const pvho); \
+	virtual void GetHitShapes(vector<HitObject*> &pvho); \
+	virtual void GetHitShapesDebug(vector<HitObject*> &pvho); \
 	virtual void GetTimers(Vector<HitTimer> * const pvht); \
 	virtual void EndPlay(); \
 	virtual void Delete() {IEditable::Delete();} \
@@ -245,11 +245,11 @@ public:
    VARIANT m_uservalue;
 
    Vector<Collection> m_vCollection;
-   Vector<int> m_viCollection;
+   vector<int> m_viCollection;
 
    // Optimizations for in-game
    Vector<Collection> m_vEventCollection;
-   Vector<int> m_viEventCollection;
+   vector<int> m_viEventCollection;
    bool m_fSingleEvents;
 
    bool m_fBackglass; // if the light is on the table (false) or a backglass view

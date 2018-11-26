@@ -195,7 +195,7 @@ void Kicker::GetTimers(Vector<HitTimer> * const pvht)
    }
 }
 
-void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
+void Kicker::GetHitShapes(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
@@ -227,12 +227,12 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
 
    phitcircle->m_pkicker = this;
 
-   pvho->AddElement(phitcircle);
+   pvho.push_back(phitcircle);
 
    m_phitkickercircle = phitcircle;
 }
 
-void Kicker::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Kicker::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
