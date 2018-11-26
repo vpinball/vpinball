@@ -583,13 +583,13 @@ void Player::Shutdown()
    for (size_t i = 0; i < m_vhitables.size(); ++i)
       m_vhitables[i]->EndPlay();
 
-   for (int i = 0; i < m_vho.Size(); i++)
-      delete m_vho.ElementAt(i);
-   m_vho.RemoveAllElements();
+   for (size_t i = 0; i < m_vho.size(); i++)
+      delete m_vho[i];
+   m_vho.clear();
 
-   for (int i = 0; i < m_vdebugho.Size(); i++)
-      delete m_vdebugho.ElementAt(i);
-   m_vdebugho.RemoveAllElements();
+   for (size_t i = 0; i < m_vdebugho.size(); i++)
+      delete m_vdebugho[i];
+   m_vdebugho.clear();
 
    //!! cleanup the whole mem management for balls, this is a mess!
 
@@ -608,9 +608,9 @@ void Player::Shutdown()
    }
 
    //!! see above
-   //for (int i=0;i<m_vho_dynamic.Size();i++)
-   //      delete m_vho_dynamic.ElementAt(i);
-   //m_vho_dynamic.RemoveAllElements();
+   //for (size_t i=0;i<m_vho_dynamic.size();i++)
+   //      delete m_vho_dynamic[i];
+   //m_vho_dynamic.clear();
 
    m_vball.clear();
 
@@ -751,16 +751,16 @@ void Player::AddCabinetBoundingHitShapes()
    LineSeg *plineseg;
 
    plineseg = new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_top), Vertex2D(m_ptable->m_right, m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassheight);
-   m_vho.AddElement(plineseg);
+   m_vho.push_back(plineseg);
 
    plineseg = new LineSeg(Vertex2D(m_ptable->m_left, m_ptable->m_bottom), Vertex2D(m_ptable->m_left, m_ptable->m_top), m_ptable->m_tableheight, m_ptable->m_glassheight);
-   m_vho.AddElement(plineseg);
+   m_vho.push_back(plineseg);
 
    plineseg = new LineSeg(Vertex2D(m_ptable->m_right, m_ptable->m_bottom), Vertex2D(m_ptable->m_left, m_ptable->m_bottom), m_ptable->m_tableheight, m_ptable->m_glassheight);
-   m_vho.AddElement(plineseg);
+   m_vho.push_back(plineseg);
 
    plineseg = new LineSeg(Vertex2D(m_ptable->m_left, m_ptable->m_top), Vertex2D(m_ptable->m_right, m_ptable->m_top), m_ptable->m_tableheight, m_ptable->m_glassheight);
-   m_vho.AddElement(plineseg);
+   m_vho.push_back(plineseg);
 
    // glass:
    Vertex3Ds * const rgv3D = new Vertex3Ds[4];
@@ -769,7 +769,7 @@ void Player::AddCabinetBoundingHitShapes()
    rgv3D[2] = Vertex3Ds(m_ptable->m_right, m_ptable->m_bottom, m_ptable->m_glassheight);
    rgv3D[3] = Vertex3Ds(m_ptable->m_left, m_ptable->m_bottom, m_ptable->m_glassheight);
    Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D, 4); //!!
-   m_vho.AddElement(ph3dpoly);
+   m_vho.push_back(ph3dpoly);
 
    /*
    // playfield:
@@ -783,7 +783,7 @@ void Player::AddCabinetBoundingHitShapes()
    ph3dpoly->m_elasticity = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticity : m_ptable->m_elasticity;
    ph3dpoly->m_elasticityFalloff = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticityFalloff : m_ptable->m_elasticityFalloff;
    ph3dpoly->m_scatter = ANGTORAD(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideScatterAngle : m_ptable->m_scatter);
-   m_vho.AddElement(ph3dpoly);
+   m_vho.push_back(ph3dpoly);
    */
 
    // playfield:
@@ -842,18 +842,18 @@ void Player::InitDebugHitStructure()
    for (size_t i = 0; i < m_vhitables.size(); ++i)
    {
       Hitable * const ph = m_vhitables[i];
-      const int currentsize = m_vdebugho.Size();
-      ph->GetHitShapesDebug(&m_vdebugho);
-      const int newsize = m_vdebugho.Size();
+      const size_t currentsize = m_vdebugho.size();
+      ph->GetHitShapesDebug(m_vdebugho);
+      const size_t newsize = m_vdebugho.size();
       // Save the objects the trouble of having the set the idispatch pointer themselves
-      for (int hitloop = currentsize; hitloop < newsize; hitloop++)
-         m_vdebugho.ElementAt(hitloop)->m_pfedebug = m_ptable->m_vedit.ElementAt(i)->GetIFireEvents();
+      for (size_t hitloop = currentsize; hitloop < newsize; hitloop++)
+         m_vdebugho[hitloop]->m_pfedebug = m_ptable->m_vedit.ElementAt(i)->GetIFireEvents();
    }
 
-   for (int i = 0; i < m_vdebugho.Size(); ++i)
+   for (size_t i = 0; i < m_vdebugho.size(); ++i)
    {
-      m_vdebugho.ElementAt(i)->CalcHitBBox();
-      m_debugoctree.AddElement(m_vdebugho.ElementAt(i));
+      m_vdebugho[i]->CalcHitBBox();
+      m_debugoctree.AddElement(m_vdebugho[i]);
    }
 
    m_debugoctree.Initialize(m_ptable->GetBoundingBox());
@@ -1362,12 +1362,12 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
             SetWindowText(hwndProgressName, wzDst);
          }
 #endif
-         const int currentsize = m_vho.Size();
-         ph->GetHitShapes(&m_vho);
-         const int newsize = m_vho.Size();
+         const size_t currentsize = m_vho.size();
+         ph->GetHitShapes(m_vho);
+         const size_t newsize = m_vho.size();
          // Save the objects the trouble of having to set the idispatch pointer themselves
-         for (int hitloop = currentsize; hitloop < newsize; hitloop++)
-            m_vho.ElementAt(hitloop)->m_pfedebug = pe->GetIFireEvents();
+         for (size_t hitloop = currentsize; hitloop < newsize; hitloop++)
+            m_vho[hitloop]->m_pfedebug = pe->GetIFireEvents();
 
          ph->GetTimers(&m_vht);
 
@@ -1393,9 +1393,9 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    AddCabinetBoundingHitShapes();
 
-   for (int i = 0; i < m_vho.Size(); ++i)
+   for (size_t i = 0; i < m_vho.size(); ++i)
    {
-      HitObject * const pho = m_vho.ElementAt(i);
+      HitObject * const pho = m_vho[i];
 
       pho->CalcHitBBox();
 
@@ -2152,7 +2152,7 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
 
    pball->CalcHitBBox();
 
-   m_vho_dynamic.AddElement(pball);
+   m_vho_dynamic.push_back(pball);
    m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
 
    if (!m_pactiveballDebug)
@@ -2197,7 +2197,7 @@ void Player::DestroyBall(Ball *pball)
    RemoveFromVector(m_vball, pball);
    RemoveFromVector<MoverObject*>(m_vmover, &pball->m_ballMover);
 
-   m_vho_dynamic.RemoveElement(pball);
+   m_vho_dynamic.push_back(pball);
    m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
 
    m_vballDelete.push_back(pball);
@@ -5405,7 +5405,7 @@ void AddEventToDebugMenu(char *sz, int index, int dispid, LPARAM lparam)
 
 void Player::DoDebugObjectMenu(int x, int y)
 {
-   if (m_vdebugho.Size() == 0)
+   if (m_vdebugho.size() == 0)
    {
       // First time the debug hit-testing has been used
       InitDebugHitStructure();
@@ -5446,13 +5446,13 @@ void Player::DoDebugObjectMenu(int x, int y)
    //const float slopex = (v3d2.x - v3d.x)/(v3d2.z - v3d.z);
    //const float xhit = v3d.x - (v3d.z*slopex);
 
-   Vector<HitObject> vhoHit;
+   vector<HitObject*> vhoHit;
 
-   m_hitoctree_dynamic.HitTestXRay(&ballT, &vhoHit, ballT.m_coll);
-   m_hitoctree.HitTestXRay(&ballT, &vhoHit, ballT.m_coll);
-   m_debugoctree.HitTestXRay(&ballT, &vhoHit, ballT.m_coll);
+   m_hitoctree_dynamic.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
+   m_hitoctree.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
+   m_debugoctree.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
 
-   if (vhoHit.Size() == 0)
+   if (vhoHit.size() == 0)
    {
       // Nothing was hit-tested
       return;
@@ -5465,9 +5465,9 @@ void Player::DoDebugObjectMenu(int x, int y)
    Vector<IFireEvents> vpfe;
    std::vector<HMENU> vsubmenu;
    std::vector< std::vector<int>* > vvdispid;
-   for (int i = 0; i < vhoHit.Size(); i++)
+   for (size_t i = 0; i < vhoHit.size(); i++)
    {
-      HitObject * const pho = vhoHit.ElementAt(i);
+      HitObject * const pho = vhoHit[i];
       // Make sure we don't do the same object twice through 2 different Hitobjs.
       if (pho->m_pfedebug && (vpfe.IndexOf(pho->m_pfedebug) == -1))
       {
@@ -5535,7 +5535,7 @@ void Player::DoDebugObjectMenu(int x, int y)
    {
       const int highword = HIWORD(icmd) - 1;
       const int lowword = icmd & 0xffff;
-      IFireEvents * const pfe = vhoHit.ElementAt(highword)->m_pfedebug;
+      IFireEvents * const pfe = vhoHit[highword]->m_pfedebug;
       if (lowword & 0x8000) // custom debug command
       {
          pfe->GetDebugCommands()->RunDebugCommand(lowword & 0x7fff);

@@ -421,11 +421,11 @@ void Decal::RenderText()
    DeleteObject(hbm);
 }
 
-void Decal::GetHitShapes(Vector<HitObject> * const pvho)
+void Decal::GetHitShapes(vector<HitObject*> &pvho)
 {
 }
 
-void Decal::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Decal::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 

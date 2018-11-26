@@ -186,17 +186,17 @@ private:
 
    Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **const pMiddlePoints, const float _accuracy, const bool inc_width);
    void prepareHabitrail(RenderDevice* pd3dDevice);
-   void AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3Ds& v2);
-   void AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, const float zlow, const float zhigh);
-   void CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
+   void AddJoint(vector<HitObject*> &pvho, const Vertex3Ds& v1, const Vertex3Ds& v2);
+   void AddJoint2D(vector<HitObject*> &pvho, const Vertex2D& p, const float zlow, const float zhigh);
+   void CheckJoint(vector<HitObject*> &pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
 
    void RenderStaticHabitrail(RenderDevice* pd3dDevice, const Material * const mat);
    void RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgicrosssection, const int start, const int stop);
 
    void GenerateVertexBuffer(RenderDevice* pd3dDevice);
 
-   void AddWallLineSeg(Vector<HitObject> * const pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2, const float wallheight);
-   void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
+   void AddWallLineSeg(vector<HitObject*> &pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2, const float wallheight);
+   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
 
    void RenderRamp(RenderDevice *pd3dDevice, const Material * const mat);
    void CreateWire(const int numRings, const int numSegments, const Vertex2D * const midPoints, Vertex3D_NoTex2 * const rgvBuf);

@@ -129,7 +129,7 @@ HRESULT IEditable::put_UserValue(VARIANT *newVal)
 void IEditable::BeginPlay()
 {
    m_vEventCollection.RemoveAllElements();
-   m_viEventCollection.RemoveAllElements();
+   m_viEventCollection.clear();
 
    m_fSingleEvents = true;
    for (int i = 0; i < m_vCollection.Size(); i++)
@@ -138,7 +138,7 @@ void IEditable::BeginPlay()
       if (pcol->m_fFireEvents)
       {
          m_vEventCollection.AddElement(pcol);
-         m_viEventCollection.AddElement(m_viCollection.ElementAt(i));
+         m_viEventCollection.push_back(m_viCollection[i]);
       }
       if (pcol->m_fStopSingleEvents)
          m_fSingleEvents = false;

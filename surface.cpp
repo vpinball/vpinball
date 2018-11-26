@@ -367,7 +367,7 @@ void Surface::GetTimers(Vector<HitTimer> * const pvht)
       pvht->AddElement(pht);
 }
 
-void Surface::GetHitShapes(Vector<HitObject> * const pvho)
+void Surface::GetHitShapes(vector<HitObject*> &pvho)
 {
    CurvesToShapes(pvho);
 
@@ -375,11 +375,11 @@ void Surface::GetHitShapes(Vector<HitObject> * const pvho)
    m_fDisabled = false;
 }
 
-void Surface::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Surface::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
-void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
+void Surface::CurvesToShapes(vector<HitObject*> &pvho)
 {
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
@@ -422,7 +422,7 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
    }
 }
 
-void Surface::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
+void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
 {
    Material *mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
    if( mat!=NULL && !m_d.m_fOverwritePhysics)
@@ -446,13 +446,13 @@ void Surface::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
       obj->m_threshold = m_d.m_threshold;
    }
 
-   pvho->AddElement(obj);
+   pvho.push_back(obj);
    m_vhoCollidable.push_back(obj);	//remember hit components of wall
    if (m_d.m_fDroppable)
       m_vhoDrop.push_back(obj);
 }
 
-void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex &pv1, const RenderVertex &pv2)
+void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2)
 {
    const float bottom = m_d.m_heightbottom + m_ptable->m_tableheight;
    const float top = m_d.m_heighttop + m_ptable->m_tableheight;

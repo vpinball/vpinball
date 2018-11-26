@@ -13,7 +13,7 @@ private:
    void Reset() { m_children = NULL; m_hitoct = NULL; m_start = 0; m_items = 0; }
 
    void HitTestBall(Ball * const pball, CollisionEvent& coll) const;
-   void HitTestXRay(const Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const;
+   void HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const;
 
    void CreateNextLevel(const unsigned int level, unsigned int level_empty);
 
@@ -38,14 +38,14 @@ public:
    HitKD();
    ~HitKD();
 
-   void Init(Vector<HitObject> *vho, const unsigned int num_items);
+   void Init(vector<HitObject*> &vho);
 
    void AddElementByIndex(unsigned i)
    {
       m_org_idx.push_back(i);
    }
 
-   void FillFromVector(Vector<HitObject>& vho);
+   void FillFromVector(vector<HitObject*> &vho);
    void FillFromIndices();
    void FillFromIndices(const FRect3D& initialBounds);
 
@@ -60,7 +60,7 @@ public:
       m_rootNode.HitTestBallSse(pball, coll);
    }
 
-   void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const
+   void HitTestXRay(Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const
    {
       m_rootNode.HitTestXRay(pball, pvhoHit, coll);
    }
@@ -78,12 +78,12 @@ private:
 
    HitObject* GetItemAt(const unsigned i) const
    {
-      return m_org_vho->ElementAt(m_org_idx[i]);
+      return (*m_org_vho)[m_org_idx[i]];
    }
 
    HitKDNode* AllocTwoNodes();
 
-   Vector<HitObject> *m_org_vho;
+   vector<HitObject*> *m_org_vho;
    std::vector<unsigned int> tmp;
 #ifdef KDTREE_SSE_LEAFTEST
    float * __restrict l_r_t_b_zl_zh;

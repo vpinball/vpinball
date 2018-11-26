@@ -1543,18 +1543,18 @@ void VPinball::ReInitPinDirectSound()
 	for (int i = 0; i < m_vtable.Size(); i++)
 	{
 		PinTable * const ptT = m_vtable.ElementAt(i);
-		for (int j = 0; j < ptT->m_vsound.Size(); j++)
+		for (size_t j = 0; j < ptT->m_vsound.size(); j++)
 		{
-			ptT->m_vsound.ElementAt(j)->UnInitialize();
+			ptT->m_vsound[j]->UnInitialize();
 		}
 	}
 	InitPinDirectSound();
 	for (int i = 0; i < m_vtable.Size(); i++)
 	{
 		PinTable * const ptT = m_vtable.ElementAt(i);
-		for (int j = 0; j < ptT->m_vsound.Size(); j++)
+		for (size_t j = 0; j < ptT->m_vsound.size(); j++)
 		{
-			ptT->m_vsound.ElementAt(j)->ReInitialize();
+			ptT->m_vsound[j]->ReInitialize();
 		}
 	}
 }

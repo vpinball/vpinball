@@ -119,12 +119,12 @@ void Timer::GetTimers(Vector<HitTimer> * const pvht)
       pvht->AddElement(pht);
 }
 
-void Timer::GetHitShapes(Vector<HitObject> * const pvho)
+void Timer::GetHitShapes(vector<HitObject*> &pvho)
 {
    m_phittimer = NULL;
 }
 
-void Timer::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Timer::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 

@@ -534,7 +534,7 @@ void Rubber::GetTimers(Vector<HitTimer> * const pvht)
       pvht->AddElement(pht);
 }
 
-void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
+void Rubber::GetHitShapes(vector<HitObject*> &pvho)
 {
    std::set< std::pair<unsigned, unsigned> > addedEdges;
 
@@ -567,7 +567,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
    }
 }
 
-void Rubber::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j)
+void Rubber::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j)
 {
    // create pair uniquely identifying the edge (i,j)
    std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
@@ -581,7 +581,7 @@ void Rubber::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, 
    }
 }
 
-void Rubber::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
+void Rubber::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
 {
    const Material *const mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
    if ( mat != NULL && !m_d.m_fOverwritePhysics )
@@ -607,11 +607,11 @@ void Rubber::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
    obj->m_obj = (IFireEvents *) this;
    obj->m_fe = m_d.m_fHitEvent;
 
-   pvho->AddElement(obj);
+   pvho.push_back(obj);
    m_vhoCollidable.push_back(obj);	//remember hit components of primitive
 }
 
-void Rubber::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Rubber::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 

@@ -334,11 +334,11 @@ void Flasher::GetTimers(Vector<HitTimer> * const pvht)
       pvht->AddElement(pht);
 }
 
-void Flasher::GetHitShapes(Vector<HitObject> * const pvho)
+void Flasher::GetHitShapes(vector<HitObject*> &pvho)
 {
 }
 
-void Flasher::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Flasher::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 

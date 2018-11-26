@@ -137,9 +137,9 @@ public:
    virtual void AddPoint(int x, int y, const bool smooth);
 
 private:
-   void CurvesToShapes(Vector<HitObject> * const pvho);
-   void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
-   void AddLine(Vector<HitObject> * const pvho, const RenderVertex &pv1, const RenderVertex &pv2);
+   void CurvesToShapes(vector<HitObject*> &pvho);
+   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
+   void AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2);
 
    void RenderSlingshots(RenderDevice* pd3dDevice);
    void RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop);

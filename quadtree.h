@@ -24,7 +24,7 @@ public:
    void Initialize(const FRect3D& bounds);
 
    void HitTestBall(Ball * const pball, CollisionEvent& coll) const;
-   void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const;
+   void HitTestXRay(Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const;
 
 private:
 

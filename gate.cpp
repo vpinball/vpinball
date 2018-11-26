@@ -362,7 +362,7 @@ void Gate::GetTimers(Vector<HitTimer> * const pvht)
    }
 }
 
-void Gate::GetHitShapes(Vector<HitObject> * const pvho)
+void Gate::GetHitShapes(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    const float h = m_d.m_height;		//relative height of the gate 
@@ -391,14 +391,14 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
       m_plineseg->SetFriction(m_d.m_friction);
       m_plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
 
-      pvho->AddElement(m_plineseg);
+      pvho.push_back(m_plineseg);
    }
 
    m_phitgate = new HitGate(this, height);
    m_phitgate->m_twoWay = m_d.m_twoWay;
    m_phitgate->m_obj = (IFireEvents*) this;
    m_phitgate->m_fe = true;
-   pvho->AddElement(m_phitgate);
+   pvho.push_back(m_phitgate);
 
    m_phitgate->m_fEnabled = m_d.m_fCollidable;
 
@@ -406,14 +406,14 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
    {
       HitCircle *phitcircle;
       phitcircle = new HitCircle(m_d.m_vCenter + halflength * tangent, 0.01f, height, height + h);
-      pvho->AddElement(phitcircle);
+      pvho.push_back(phitcircle);
 
       phitcircle = new HitCircle(m_d.m_vCenter - halflength * tangent, 0.01f, height, height + h);
-      pvho->AddElement(phitcircle);
+      pvho.push_back(phitcircle);
    }
 }
 
-void Gate::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Gate::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 

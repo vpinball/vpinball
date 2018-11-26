@@ -243,7 +243,7 @@ void Flipper::GetTimers(Vector<HitTimer> * const pvht)
       pvht->AddElement(pht);
 }
 
-void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
+void Flipper::GetHitShapes(vector<HitObject*> &pvho)
 {
    if (m_d.m_OverridePhysics)
    {
@@ -357,12 +357,12 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    phf->m_flipperMover.m_fEnabled = m_d.m_fEnabled;
    phf->m_flipperMover.m_fVisible = m_d.m_fVisible;
 
-   pvho->AddElement(phf);
+   pvho.push_back(phf);
 
    m_phitflipper = phf;
 }
 
-void Flipper::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Flipper::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
 
@@ -374,7 +374,7 @@ void Flipper::GetHitShapesDebug(Vector<HitObject> * const pvho)
    else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
    Hit3DPoly * const pcircle = new Hit3DPoly(m_d.m_Center.x, m_d.m_Center.y, height + m_d.m_height, m_d.m_FlipperRadius + m_d.m_EndRadius, 32);
-   pvho->AddElement(pcircle);
+   pvho.push_back(pcircle);
 }
 
 void Flipper::EndPlay()

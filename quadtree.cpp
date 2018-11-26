@@ -367,7 +367,7 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
    } while (current);
 }
 
-void HitQuadtree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const
+void HitQuadtree::HitTestXRay(Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const
 {
    for (size_t i = 0; i < m_vho.size(); i++)
    {
@@ -382,7 +382,7 @@ void HitQuadtree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvho
          const float newtime = m_vho[i]->HitTest(pball, coll.m_hittime, coll);
          if (newtime >= 0)
          {
-            pvhoHit->AddElement(m_vho[i]);
+            pvhoHit.push_back(m_vho[i]);
          }
       }
    }

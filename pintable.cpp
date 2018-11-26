@@ -1608,31 +1608,31 @@ PinTable::~PinTable()
 
    ClearOldSounds();
 
-   for (int i = 0; i < m_vsound.Size(); i++)
+   for (size_t i = 0; i < m_vsound.size(); i++)
    {
-      //m_vsound.ElementAt(i)->m_pDSBuffer->Release();
-      delete m_vsound.ElementAt(i);
+      //m_vsound[i]->m_pDSBuffer->Release();
+      delete m_vsound[i];
    }
 
    for (size_t i = 0; i < m_vimage.size(); i++)
       delete m_vimage[i];
 
-   for(int i = 0; i < m_materials.Size(); ++i)
-      delete m_materials.ElementAt(i);
+   for(size_t i = 0; i < m_materials.size(); ++i)
+      delete m_materials[i];
 
-   for (int i = 0; i < m_vfont.Size(); i++)
+   for (size_t i = 0; i < m_vfont.size(); i++)
    {
-      m_vfont.ElementAt(i)->UnRegister();
-      delete m_vfont.ElementAt(i);
+      m_vfont[i]->UnRegister();
+      delete m_vfont[i];
    }
 
    for (int i = 0; i < m_vcollection.Size(); i++)
       m_vcollection.ElementAt(i)->Release();
 
-   for (int i = 0; i < m_vCustomInfoTag.Size(); i++)
+   for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
-      delete m_vCustomInfoTag.ElementAt(i);
-      delete m_vCustomInfoContent.ElementAt(i);
+      delete m_vCustomInfoTag[i];
+      delete m_vCustomInfoContent[i];
    }
 
    m_pcv->Release();
@@ -2347,9 +2347,9 @@ void PinTable::Play(const bool _cameraMode)
          m_textureMap[m_vimage[i]->m_szInternalName] = m_vimage[i];
       }
       m_materialMap.clear();
-      for (int i = 0; i < m_materials.Size(); i++)
+      for (size_t i = 0; i < m_materials.size(); i++)
       {
-         m_materialMap[m_materials.ElementAt(i)->m_szName] = m_materials.ElementAt(i);
+         m_materialMap[m_materials[i]->m_szName] = m_materials[i];
       }
 
       // parse the (optional) override-physics-sets that can be set globally
@@ -2464,15 +2464,14 @@ void PinTable::StopPlaying()
 
    // Stop all sounds
    // In case we were playing any of the main buffers
-   for (int i = 0; i < m_vsound.Size(); i++)
+   for (size_t i = 0; i < m_vsound.size(); i++)
    {
-      m_vsound.ElementAt(i)->m_pDSBuffer->Stop();
+      m_vsound[i]->m_pDSBuffer->Stop();
    }
    // The usual case - copied sounds
-   for (int i = 0; i < m_voldsound.Size(); i++)
+   for (size_t i = 0; i < m_voldsound.size(); i++)
    {
-      PinSoundCopy *ppsc = m_voldsound.ElementAt(i);
-      ppsc->m_pDSBuffer->Stop();
+	  m_voldsound[i]->m_pDSBuffer->Stop();
    }
    ClearOldSounds();
 
@@ -2813,7 +2812,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
    ////////////// End Encryption
 
-   int ctotalitems = (int)(m_vedit.Size() + m_vsound.Size() + m_vimage.size() + m_vfont.Size() + m_vcollection.Size());
+   int ctotalitems = (int)(m_vedit.Size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.Size());
    int csaveditems = 0;
 
    ::SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
@@ -2876,7 +2875,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
             }
 
-            for (int i = 0; i < m_vsound.Size(); i++)
+            for (size_t i = 0; i < m_vsound.size(); i++)
             {
                strcpy_s(szStmName, sizeof(szStmName), "Sound");
                _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
@@ -2886,7 +2885,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
-                  SaveSoundToStream(m_vsound.ElementAt(i), pstmItem);
+                  SaveSoundToStream(m_vsound[i], pstmItem);
                   pstmItem->Release();
                   pstmItem = NULL;
                }
@@ -2895,7 +2894,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
             }
 
-            for (unsigned i = 0; i < m_vimage.size(); i++)
+            for (size_t i = 0; i < m_vimage.size(); i++)
             {
                strcpy_s(szStmName, sizeof(szStmName), "Image");
                _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
@@ -2914,7 +2913,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
             }
 
-            for (int i = 0; i < m_vfont.Size(); i++)
+            for (size_t i = 0; i < m_vfont.size(); i++)
             {
                strcpy_s(szStmName, sizeof(szStmName), "Font");
                _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
@@ -2924,7 +2923,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
-                  m_vfont.ElementAt(i)->SaveToStream(pstmItem);
+                  m_vfont[i]->SaveToStream(pstmItem);
                   pstmItem->Release();
                   pstmItem = NULL;
                }
@@ -3172,7 +3171,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
       return hr;
    }
 
-   m_vsound.AddElement(pps);
+   m_vsound.push_back(pps);
    return S_OK;
 }
 
@@ -3239,21 +3238,21 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 {
    BiffWriter bw(pstmTags, hcrypthash);
 
-   for (int i = 0; i < m_vCustomInfoTag.Size(); i++)
+   for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
-      bw.WriteString(FID(CUST), m_vCustomInfoTag.ElementAt(i));
+      bw.WriteString(FID(CUST), m_vCustomInfoTag[i]);
    }
 
    bw.WriteTag(FID(ENDB));
 
-   for (int i = 0; i < m_vCustomInfoTag.Size(); i++)
+   for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
-      char *szName = m_vCustomInfoTag.ElementAt(i);
+      char * const szName = m_vCustomInfoTag[i];
       int len = lstrlen(szName);
       WCHAR *wzName = new WCHAR[len + 1];
       MultiByteToWideChar(CP_ACP, 0, szName, -1, wzName, len + 1);
 
-      WriteInfoValue(pstg, wzName, m_vCustomInfoContent.ElementAt(i), hcrypthash);
+      WriteInfoValue(pstg, wzName, m_vCustomInfoContent[i], hcrypthash);
 
       delete[] wzName;
    }
@@ -3347,16 +3346,16 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
    BiffReader br(pstmTags, this, NULL, version, hcrypthash, NULL);
    br.Load();
 
-   for (int i = 0; i < m_vCustomInfoTag.Size(); i++)
+   for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
-      char *szName = m_vCustomInfoTag.ElementAt(i);
-      char *szValue;
+      char * const szName = m_vCustomInfoTag[i];
       const int len = lstrlen(szName);
       WCHAR *wzName = new WCHAR[len + 1];
       MultiByteToWideChar(CP_ACP, 0, szName, -1, wzName, len + 1);
 
-      ReadInfoValue(pstg, wzName, &szValue, hcrypthash);
-      m_vCustomInfoContent.AddElement(szValue);
+	  char *szValue;
+	  ReadInfoValue(pstg, wzName, &szValue, hcrypthash);
+      m_vCustomInfoContent.push_back(szValue);
 
       delete[] wzName;
    }
@@ -3494,13 +3493,13 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
    bw.WriteInt(FID(USSR), m_useSSR);
    bw.WriteFloat(FID(BLST), m_bloom_strength);
 
-   bw.WriteInt(FID(MASI), m_materials.Size());
-   if (m_materials.Size() > 0)
+   bw.WriteInt(FID(MASI), (int)m_materials.size());
+   if (m_materials.size() > 0)
    {
-      SaveMaterial * const mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_materials.Size());
-      for (int i = 0; i < m_materials.Size(); i++)
+      SaveMaterial * const mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_materials.size());
+      for (size_t i = 0; i < m_materials.size(); i++)
       {
-         const Material* const m = m_materials.ElementAt(i);
+         const Material* const m = m_materials[i];
          mats[i].cBase = m->m_cBase;
          mats[i].cGlossy = m->m_cGlossy;
          mats[i].cClearcoat = m->m_cClearcoat;
@@ -3515,18 +3514,18 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
          mats[i].bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(m->m_fEdgeAlpha, 0.f, 1.f)) << 1;
          strcpy_s(mats[i].szName, m->m_szName);
       }
-      bw.WriteStruct(FID(MATE), mats, (int)sizeof(SaveMaterial)*m_materials.Size());
-      SavePhysicsMaterial * const phymats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_materials.Size());
-      for ( int i = 0; i < m_materials.Size(); i++ )
+      bw.WriteStruct(FID(MATE), mats, (int)sizeof(SaveMaterial)*m_materials.size());
+      SavePhysicsMaterial * const phymats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_materials.size());
+      for ( size_t i = 0; i < m_materials.size(); i++ )
       {
-          const Material* const m = m_materials.ElementAt( i );
+          const Material* const m = m_materials[i];
           strcpy_s( phymats[i].szName, m->m_szName );
           phymats[i].fElasticity = m->m_fElasticity;
           phymats[i].fElasticityFallOff = m->m_fElasticityFalloff;
           phymats[i].fFriction = m->m_fFriction;
           phymats[i].fScatterAngle = m->m_fScatterAngle;
       }
-      bw.WriteStruct( FID( PHMA ), phymats, (int)sizeof( SavePhysicsMaterial )*m_materials.Size() );
+      bw.WriteStruct( FID( PHMA ), phymats, (int)sizeof( SavePhysicsMaterial )*m_materials.size() );
       free(mats);
       free(phymats);
    }
@@ -3536,9 +3535,9 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
    if (hcrypthash != 0)
    {
       bw.WriteInt(FID(SEDT), m_vedit.Size());
-      bw.WriteInt(FID(SSND), m_vsound.Size());
+      bw.WriteInt(FID(SSND), (int)m_vsound.size());
       bw.WriteInt(FID(SIMG), (int)m_vimage.size());
-      bw.WriteInt(FID(SFNT), m_vfont.Size());
+      bw.WriteInt(FID(SFNT), (int)m_vfont.size());
       bw.WriteInt(FID(SCOL), m_vcollection.Size());
 
       bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
@@ -3783,7 +3782,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   PinFont *ppf;
                   ppf = new PinFont();
                   ppf->LoadFromStream(pstmItem, loadfileversion);
-                  m_vfont.AddElement(ppf);
+                  m_vfont.push_back(ppf);
                   ppf->Register();
                   pstmItem->Release();
                   pstmItem = NULL;
@@ -3864,12 +3863,12 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
          }
 
          if (loadfileversion < 1030) // the m_fGlossyImageLerp part was included first with 10.3, so set all previously saved materials to the old default
-             for (int i = 0; i < m_materials.size(); ++i)
-                 m_materials.ElementAt(i)->m_fGlossyImageLerp = 1.f;
+             for (size_t i = 0; i < m_materials.size(); ++i)
+                 m_materials[i]->m_fGlossyImageLerp = 1.f;
 
          if (loadfileversion < 1040) // the m_fThickness part was included first with 10.4, so set all previously saved materials to the old default
-             for (int i = 0; i < m_materials.size(); ++i)
-                 m_materials.ElementAt(i)->m_fThickness = 0.05f;
+             for (size_t i = 0; i < m_materials.size(); ++i)
+                 m_materials[i]->m_fThickness = 0.05f;
 
          //////// End Authentication block
       }
@@ -4424,9 +4423,9 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       char szT[MAXSTRING];  //maximum length of tagnames right now
       pbr->GetString(szT);
-      char *szName = new char[lstrlen(szT) + 1];
+      char * const szName = new char[lstrlen(szT) + 1];
       lstrcpy(szName, szT);
-      m_vCustomInfoTag.AddElement(szName);
+      m_vCustomInfoTag.push_back(szName);
    }
    else if (id == FID(SVOL))
    {
@@ -4473,9 +4472,9 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
       SaveMaterial * const mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_numMaterials);
       pbr->GetStruct(mats, (int)sizeof(SaveMaterial)*m_numMaterials);
 
-      for(int i = 0; i < m_materials.size(); ++i)
-          delete m_materials.ElementAt(i);
-      m_materials.Reset();
+      for(size_t i = 0; i < m_materials.size(); ++i)
+          delete m_materials[i];
+      m_materials.clear();
 
       for (int i = 0; i < m_numMaterials; i++)
       {
@@ -4493,7 +4492,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
          pmat->m_bOpacityActive = !!(mats[i].bOpacityActive_fEdgeAlpha & 1);
          pmat->m_fEdgeAlpha = dequantizeUnsigned<7>(mats[i].bOpacityActive_fEdgeAlpha >> 1);
          strcpy_s(pmat->m_szName, mats[i].szName);
-         m_materials.AddElement(pmat);
+         m_materials.push_back(pmat);
       }
       free(mats);
    }
@@ -4516,7 +4515,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
            pmat->m_fFriction = mats[i].fFriction;
            pmat->m_fScatterAngle = mats[i].fScatterAngle;
            if( !found )
-              m_materials.AddElement( pmat );
+              m_materials.push_back( pmat );
        }
        free( mats );
    }
@@ -4618,7 +4617,7 @@ void PinTable::ImportSound(const HWND hwndListView, char *szfilename, const bool
       pps->m_pDSBuffer->Play(0, 0, 0);
    }
 
-   m_vsound.AddElement(pps);
+   m_vsound.push_back(pps);
 
    const int index = AddListSound(hwndListView, pps);
 
@@ -4628,9 +4627,9 @@ void PinTable::ImportSound(const HWND hwndListView, char *szfilename, const bool
 void PinTable::ListSounds(HWND hwndListView)
 {
 	ListView_DeleteAllItems(hwndListView);
-	for (int i = 0; i < m_vsound.Size(); i++)
+	for (size_t i = 0; i < m_vsound.size(); i++)
 	{
-		AddListSound(hwndListView, m_vsound.ElementAt(i));
+		AddListSound(hwndListView, m_vsound[i]);
 	}
 }
 
@@ -4668,9 +4667,15 @@ int PinTable::AddListSound(HWND hwndListView, PinSound *pps)
    return index;
 }
 
-void PinTable::RemoveSound(PinSound *pps)
+void PinTable::RemoveSound(PinSound * const pps)
 {
-   m_vsound.RemoveElement(pps);
+   for (size_t i = 0; i < m_vsound.size(); ++i)
+	   if (m_vsound[i] == pps)
+	   {
+		   m_vsound.erase(m_vsound.begin() + i);
+		   break;
+	   }
+
    delete pps;
 }
 
@@ -4682,7 +4687,7 @@ void PinTable::ImportFont(HWND hwndListView, char *filename)
 
    if (ppb->m_pdata != NULL)
    {
-      m_vfont.AddElement(ppb);
+      m_vfont.push_back(ppb);
 
       const int index = AddListBinary(hwndListView, ppb);
 
@@ -4693,9 +4698,15 @@ void PinTable::ImportFont(HWND hwndListView, char *filename)
 }
 
 
-void PinTable::RemoveFont(PinFont *ppf)
+void PinTable::RemoveFont(PinFont * const ppf)
 {
-   m_vfont.RemoveElement(ppf);
+   for (size_t i = 0; i < m_vfont.size(); ++i)
+	   if (m_vfont[i] == ppf)
+	   {
+		   m_vfont.erase(m_vfont.begin() + i);
+		   break;
+	   }
+
    ppf->UnRegister();
    delete ppf;
 }
@@ -4703,9 +4714,9 @@ void PinTable::RemoveFont(PinFont *ppf)
 
 void PinTable::ListFonts(HWND hwndListView)
 {
-   for (int i = 0; i < m_vfont.Size(); i++)
+   for (size_t i = 0; i < m_vfont.size(); i++)
    {
-      AddListBinary(hwndListView, m_vfont.ElementAt(i));
+      AddListBinary(hwndListView, m_vfont[i]);
    }
 }
 
@@ -4751,7 +4762,7 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fFromSelection)
                if (piedit->GetScriptable()) // check for scriptable because can't add decals to a collection - they have no name
                {
                   piedit->m_vCollection.AddElement(pcol);
-                  piedit->m_viCollection.AddElement((void *)pcol->m_visel.Size());
+                  piedit->m_viCollection.push_back(pcol->m_visel.Size());
                   pcol->m_visel.AddElement(m_vmultisel.ElementAt(i));
                }
             }
@@ -7747,19 +7758,21 @@ STDMETHODIMP PinTable::put_Offset(float newVal)
 
 void PinTable::ClearOldSounds()
 {
-   for (int i = 0; i < m_voldsound.Size(); i++)
+   size_t i = 0;
+   while (i < m_voldsound.size())
    {
-      //LPDIRECTSOUNDBUFFER pdsbOld = (LPDIRECTSOUNDBUFFER)(m_voldsound.ElementAt(i));
-      PinSoundCopy * const ppsc = m_voldsound.ElementAt(i);
+      //LPDIRECTSOUNDBUFFER pdsbOld = (LPDIRECTSOUNDBUFFER)(m_voldsound[i]);
+      PinSoundCopy * const ppsc = m_voldsound[i];
       DWORD status;
       ppsc->m_pDSBuffer->GetStatus(&status);
       if (!(status & DSBSTATUS_PLAYING)) //sound is done, we can throw it away now
       {
          ppsc->m_pDSBuffer->Release();
-         m_voldsound.RemoveElementAt(i);
+		 m_voldsound.erase(m_voldsound.begin() + i);
          delete ppsc;
-         i--; // elements will shift, check this one again
       }
+	  else
+         i++;
    }
 }
 
@@ -7769,18 +7782,18 @@ HRESULT PinTable::StopSound(BSTR Sound)
    CharLowerBuff(szName, lstrlen(szName));
 
    // In case we were playing any of the main buffers
-   for (int i = 0; i < m_vsound.Size(); i++)
+   for (size_t i = 0; i < m_vsound.size(); i++)
    {
-      if (!lstrcmp(m_vsound.ElementAt(i)->m_szInternalName, szName))
+      if (!lstrcmp(m_vsound[i]->m_szInternalName, szName))
       {
-         m_vsound.ElementAt(i)->m_pDSBuffer->Stop();
+         m_vsound[i]->m_pDSBuffer->Stop();
          break;
       }
    }
 
-   for (int i = 0; i < m_voldsound.Size(); i++)
+   for (size_t i = 0; i < m_voldsound.size(); i++)
    {
-      PinSoundCopy * const ppsc = m_voldsound.ElementAt(i);
+      PinSoundCopy * const ppsc = m_voldsound[i];
       if (!lstrcmp(ppsc->m_ppsOriginal->m_szInternalName, szName))
       {
          ppsc->m_pDSBuffer->Stop();
@@ -7794,15 +7807,14 @@ HRESULT PinTable::StopSound(BSTR Sound)
 void PinTable::StopAllSounds()
 {
 	// In case we were playing any of the main buffers
-	for (int i = 0; i < m_vsound.Size(); i++)
+	for (size_t i = 0; i < m_vsound.size(); i++)
 	{
-		m_vsound.ElementAt(i)->m_pDSBuffer->Stop();
+		m_vsound[i]->m_pDSBuffer->Stop();
 	}
 
-	for (int i = 0; i < m_voldsound.Size(); i++)
+	for (size_t i = 0; i < m_voldsound.size(); i++)
 	{
-		PinSoundCopy * const ppsc = m_voldsound.ElementAt(i);
-		ppsc->m_pDSBuffer->Stop();
+		m_voldsound[i]->m_pDSBuffer->Stop();
 	}
 }
 
@@ -7817,16 +7829,16 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
       hid_knock();
    }
 
-   int i;
-   for (i = 0; i < m_vsound.Size(); i++)
+   size_t i;
+   for (i = 0; i < m_vsound.size(); i++)
    {
-      if (!lstrcmp(m_vsound.ElementAt(i)->m_szInternalName, szName))
+      if (!lstrcmp(m_vsound[i]->m_szInternalName, szName))
       {
          break;
       }
    }
 
-   if (i == m_vsound.Size()) // did not find it
+   if (i == m_vsound.size()) // did not find it
    {
 	   if (szName[0] && m_pcv && g_pplayer && g_pplayer->m_hwndDebugOutput)
 	   {
@@ -7838,7 +7850,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    }
 
    ClearOldSounds();
-   PinSound * const pps = m_vsound.ElementAt(i);
+   PinSound * const pps = m_vsound[i];
 
    volume += dequantizeSignedPercent(pps->m_iVolume);
    pan += dequantizeSignedPercent(pps->m_iBalance);
@@ -7853,11 +7865,11 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    bool foundsame = false;
    if (usesame)
    {
-      for (int i2 = 0; i2 < m_voldsound.Size(); i2++)
+      for (size_t i2 = 0; i2 < m_voldsound.size(); i2++)
       {
-         if (m_voldsound.ElementAt(i2)->m_ppsOriginal->m_pDSBuffer == pdsb)
+         if (m_voldsound[i2]->m_ppsOriginal->m_pDSBuffer == pdsb)
          {
-            ppsc = m_voldsound.ElementAt(i2);
+            ppsc = m_voldsound[i2];
             foundsame = true;
             break;
          }
@@ -7877,7 +7889,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 	  ppsc->Play(volume * m_TableSoundVolume* ((float)g_pplayer->m_SoundVolume), randompitch, pitch, pan, front_rear_fade, flags, !!restart);
       if (!foundsame)
       {
-         m_voldsound.AddElement(ppsc);
+         m_voldsound.push_back(ppsc);
       }
    }
    else // Couldn't or didn't want to create a copy - just play the original
@@ -8261,17 +8273,17 @@ void PinTable::RemoveImage(Texture *ppi)
 
 void PinTable::ListMaterials(HWND hwndListView)
 {
-   for (int i = 0; i < m_materials.Size(); i++)
+   for (size_t i = 0; i < m_materials.size(); i++)
    {
-      AddListMaterial(hwndListView, m_materials.ElementAt(i));
+      AddListMaterial(hwndListView, m_materials[i]);
    }
 }
 
 bool PinTable::IsMaterialNameUnique(const char * const name) const
 {
-   for (int i = 0; i < m_materials.Size(); i++)
+   for (size_t i = 0; i < m_materials.size(); i++)
    {
-      if (!lstrcmpi(m_materials.ElementAt(i)->m_szName, name))
+      if (!lstrcmpi(m_materials[i]->m_szName, name))
          return false;
    }
    return true;
@@ -8294,11 +8306,11 @@ Material* PinTable::GetMaterial(const char * const szName) const
          return &g_pvp->dummyMaterial;
    }
 
-   for (int i = 0; i < m_materials.Size(); i++)
+   for (size_t i = 0; i < m_materials.size(); i++)
    {
-      if (!lstrcmpi(m_materials.ElementAt(i)->m_szName, szName))
+      if (!lstrcmpi(m_materials[i]->m_szName, szName))
       {
-         return m_materials.ElementAt(i);
+         return m_materials[i];
       }
    }
 
@@ -8324,7 +8336,7 @@ void PinTable::AddMaterial(Material *pmat)
       lstrcpy(pmat->m_szName, textBuf);
    }
 
-   m_materials.AddElement(pmat);
+   m_materials.push_back(pmat);
 }
 
 void PinTable::AddDbgMaterial(Material *pmat)
@@ -8382,11 +8394,11 @@ void PinTable::UpdateDbgMaterial(void)
    for (size_t i = 0; i < m_dbgChangedMaterials.size(); i++)
    {
       const Material * const pmat = m_dbgChangedMaterials[i];
-      for (int t = 0; t < m_materials.Size(); t++)
+      for (size_t t = 0; t < m_materials.size(); t++)
       {
-         if (strcmp(pmat->m_szName, m_materials.ElementAt(t)->m_szName) == 0)
+         if (strcmp(pmat->m_szName, m_materials[t]->m_szName) == 0)
          {
-            Material * const mat = m_materials.ElementAt(t);
+            Material * const mat = m_materials[t];
             mat->m_bIsMetal = pmat->m_bIsMetal;
             mat->m_bOpacityActive = pmat->m_bOpacityActive;
             mat->m_cBase = pmat->m_cBase;
@@ -8539,9 +8551,15 @@ int PinTable::AddListMaterial(HWND hwndListView, Material *pmat)
    return index;
 }
 
-void PinTable::RemoveMaterial(Material *pmat)
+void PinTable::RemoveMaterial(Material * const pmat)
 {
-   m_materials.RemoveElement(pmat);
+   for (size_t i = 0; i < m_materials.size(); ++i)
+	   if (m_materials[i] == pmat)
+	   {
+		   m_materials.erase(m_materials.begin() + i);
+		   break;
+	   }
+
    delete pmat;
 }
 
@@ -8652,8 +8670,8 @@ PinBinary *PinTable::GetImageLinkBinary(int id)
 
 void PinTable::ListCustomInfo(HWND hwndListView)
 {
-   for (int i = 0; i < m_vCustomInfoTag.Size(); i++)
-      AddListItem(hwndListView, m_vCustomInfoTag.ElementAt(i), m_vCustomInfoContent.ElementAt(i), NULL);
+   for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
+      AddListItem(hwndListView, m_vCustomInfoTag[i], m_vCustomInfoContent[i], NULL);
 }
 
 int PinTable::AddListItem(HWND hwndListView, char *szName, char *szValue1, LPARAM lparam)
@@ -8748,7 +8766,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    if (pcaStringsOut == NULL || pcaCookiesOut == NULL)
       return E_POINTER;
 
-   int cvar;
+   size_t cvar;
    WCHAR **rgstr;
    DWORD *rgdw;
 
@@ -8763,7 +8781,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    case DISPID_Image7:
    case DISPID_Image8:
    {
-      cvar = (int)m_vimage.size();
+      cvar = m_vimage.size();
 
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
       rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));
@@ -8775,7 +8793,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgstr[0] = wzDst;
       rgdw[0] = ~0u;
 
-      for (int ivar = 0; ivar < cvar; ivar++)
+      for (size_t ivar = 0; ivar < cvar; ivar++)
       {
          char *szSrc = m_vimage[ivar]->m_szName;
          DWORD cwch = lstrlen(szSrc) + 1;
@@ -8797,7 +8815,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    case IDC_MATERIAL_COMBO3:
    case IDC_MATERIAL_COMBO4:
    {
-      cvar = m_materials.Size();
+      cvar = m_materials.size();
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
       rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));
 
@@ -8808,9 +8826,9 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgstr[0] = wzDst;
       rgdw[0] = ~0u;
 
-      for (int ivar = 0; ivar < cvar; ivar++)
+      for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         char *szSrc = m_materials.ElementAt(ivar)->m_szName;
+         char *szSrc = m_materials[ivar]->m_szName;
          DWORD cwch = lstrlen(szSrc) + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == NULL)
@@ -8827,7 +8845,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    }
    case DISPID_Sound:
    {
-      cvar = m_vsound.Size();
+      cvar = m_vsound.size();
 
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
       rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));
@@ -8838,9 +8856,9 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgstr[0] = wzDst;
       rgdw[0] = ~0u;
 
-      for (int ivar = 0; ivar < cvar; ivar++)
+      for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         char *szSrc = m_vsound.ElementAt(ivar)->m_szName;
+         char *szSrc = m_vsound[ivar]->m_szName;
          DWORD cwch = lstrlen(szSrc) + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == NULL)
@@ -8871,7 +8889,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgstr[0] = wzDst;
       rgdw[0] = ~0u;
 
-      for (int ivar = 0; ivar < cvar; ivar++)
+      for (size_t ivar = 0; ivar < cvar; ivar++)
       {
          DWORD cwch = sizeof(m_vcollection.ElementAt(ivar)->m_wzName) + sizeof(DWORD); //!! +DWORD?
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch);
@@ -8980,10 +8998,10 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       return E_NOTIMPL;
    }
 
-   pcaStringsOut->cElems = cvar;
+   pcaStringsOut->cElems = (int)cvar;
    pcaStringsOut->pElems = rgstr;
 
-   pcaCookiesOut->cElems = cvar;
+   pcaCookiesOut->cElems = (int)cvar;
    pcaCookiesOut->pElems = rgdw;
 
    return S_OK;
@@ -9034,7 +9052,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         char *szSrc = m_materials.ElementAt(dwCookie)->m_szName;
+         char *szSrc = m_materials[dwCookie]->m_szName;
          DWORD cwch = lstrlen(szSrc) + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
@@ -9051,7 +9069,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         char *szSrc = m_vsound.ElementAt(dwCookie)->m_szName;
+         char *szSrc = m_vsound[dwCookie]->m_szName;
          DWORD cwch = lstrlen(szSrc) + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 

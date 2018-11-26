@@ -3139,7 +3139,7 @@ BOOL Collection::LoadToken(int id, BiffReader *pbr)
             if (!WideStrCmp(piscript->m_wzName, wzT))
             {
                piscript->GetISelect()->GetIEditable()->m_vCollection.AddElement(this);
-               piscript->GetISelect()->GetIEditable()->m_viCollection.AddElement((void *)m_visel.Size());
+               piscript->GetISelect()->GetIEditable()->m_viCollection.push_back(m_visel.Size());
                m_visel.AddElement(piscript->GetISelect());
                return fTrue;
             }

@@ -509,17 +509,17 @@ public:
    int m_overall_frames; // amount of rendered frames since start
 
 private:
-   Vector<HitObject> m_vho;
+   vector<HitObject*> m_vho;
    std::vector<MoverObject*> m_vmover; // moving objects for physics simulation
 
    std::vector<Ball*> m_vballDelete;   // Balls to free at the end of the frame
 
    /*HitKD*/HitQuadtree m_hitoctree;
 
-   Vector<HitObject> m_vdebugho;
+   vector<HitObject*> m_vdebugho;
    HitQuadtree m_debugoctree;
 
-   Vector<HitObject> m_vho_dynamic;
+   vector<HitObject*> m_vho_dynamic;
    HitKD m_hitoctree_dynamic; // should be generated from scratch each time something changes
 
    HitPlane m_hitPlayfield; // HitPlanes cannot be part of octree (infinite size)

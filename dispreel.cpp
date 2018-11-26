@@ -231,11 +231,11 @@ void DispReel::GetTimers(Vector<HitTimer> * const pvht)
 }
 
 
-void DispReel::GetHitShapes(Vector<HitObject> * const pvho)
+void DispReel::GetHitShapes(vector<HitObject*> &pvho)
 {
 }
 
-void DispReel::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void DispReel::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
