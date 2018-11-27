@@ -86,7 +86,7 @@ public:
       virtual void MoveOffset(const float dx, const float dy);
       virtual void SetObjectPos();
 
-      virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+      virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
       // Multi-object manipulation
       virtual Vertex2D GetCenter() const;

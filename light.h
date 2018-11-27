@@ -50,7 +50,7 @@ public:
    LightCenter(Light *plight);
    virtual HRESULT GetTypeName(BSTR *pVal);
    virtual IDispatch *GetDispatch();
-   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
    virtual void Delete();
    virtual void Uncreate();
@@ -118,7 +118,7 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
    void RenderOutline(Sur * const psur);
    virtual void RenderBlueprint(Sur *psur, const bool solid);

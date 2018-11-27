@@ -174,7 +174,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    //return S_OK;
 }
 
-PinSound *PinDirectSound::LoadWaveFile(TCHAR* strFileName)
+PinSound *PinDirectSound::LoadWaveFile(const TCHAR* const strFileName)
 {
    PinSound * const pps = new PinSound();
 
@@ -212,7 +212,7 @@ PinSound *PinDirectSound::LoadWaveFile(TCHAR* strFileName)
 // Name: CreateStaticBuffer()
 // Desc: Creates a wave file, sound buffer and notification events 
 //-----------------------------------------------------------------------------
-HRESULT PinDirectSound::CreateStaticBuffer(TCHAR* strFileName, PinSound *pps)
+HRESULT PinDirectSound::CreateStaticBuffer(const TCHAR* const strFileName, PinSound * const pps)
 {
    // Free any previous globals 
    SAFE_DELETE(m_pWaveSoundRead);
@@ -265,7 +265,7 @@ HRESULT PinDirectSound::CreateStaticBuffer(TCHAR* strFileName, PinSound *pps)
 // Name: FillBuffer()
 // Desc: Fill the DirectSound buffer with data from the wav file
 //-----------------------------------------------------------------------------
-HRESULT PinDirectSound::FillBuffer(PinSound *pps)
+HRESULT PinDirectSound::FillBuffer(PinSound * const pps)
 {
    BYTE*   pbWavData; // Pointer to actual wav data 
    UINT    cbWavSize; // Size of data
@@ -323,7 +323,7 @@ HRESULT PinDirectSound::FillBuffer(PinSound *pps)
    return S_OK;
 }
 
-HRESULT PinDirectSound::CreateDirectFromNative(PinSound *pps)
+HRESULT PinDirectSound::CreateDirectFromNative(PinSound * const pps)
 {
    DSBUFFERDESC dsbd;
    ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));

@@ -1,5 +1,7 @@
 #pragma once
 
+#define MIN_TEXTURE_SIZE 8
+
 struct FIBITMAP;
 
 // texture stored in main memory in 32bit ARGB uchar format or 96bit RGB float
@@ -107,7 +109,7 @@ public:
 	  }
    }
 
-   static BaseTexture *CreateFromHBitmap(HBITMAP hbm);
+   static BaseTexture *CreateFromHBitmap(const HBITMAP hbm);
    static BaseTexture *CreateFromFile(const char *filename);
    static BaseTexture *CreateFromFreeImage(FIBITMAP* dib);
 };
@@ -130,8 +132,8 @@ public:
    void CreateGDIVersion();
 
    void CreateTextureOffscreen(const int width, const int height);
-   BaseTexture *CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight);
-   void CreateFromResource(const int id, int * const pwidth = NULL, int * const pheight = NULL);
+   BaseTexture *CreateFromHBitmap(const HBITMAP hbm);
+   void CreateFromResource(const int id);
 
    bool IsHDR() const
    {

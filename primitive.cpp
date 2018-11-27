@@ -3152,21 +3152,21 @@ STDMETHODIMP Primitive::ShowFrame(float frame)
    return S_OK;
 }
 
-void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+void Primitive::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    m_propVisual = new PropertyPane(IDD_PROPPRIMITIVE_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(m_propVisual);
+   pvproppane.push_back(m_propVisual);
 
    m_propPosition = new PropertyPane(IDD_PROPPRIMITIVE_POSITION, IDS_POSITION_TRANSLATION);
-   pvproppane->AddElement(m_propPosition);
+   pvproppane.push_back(m_propPosition);
 
    m_propPhysics = new PropertyPane(IDD_PROPPRIMITIVE_PHYSICS, IDS_PHYSICS);
-   pvproppane->AddElement(m_propPhysics);
+   pvproppane.push_back(m_propPhysics);
 }
 
 void Primitive::UpdatePropertyPanes()

@@ -186,7 +186,7 @@ private:
    HRESULT hRes;
    bool bRun;
    bool fPlay;
-   bool fPov;
+   bool fExtractPov;
    bool fFile;
    bool fExtractScript;
    TCHAR szTableFileName[MAXSTRING];
@@ -236,10 +236,10 @@ public:
 
       fFile = false;
       fPlay = false;
-      fPov = false;
+      fExtractPov = false;
       bRun = true;
       fExtractScript = false;
-      int nRet = 0;
+
       memset(szTableFileName, 0, MAXSTRING);
 
       // Start VP with file dialog open and then also playing that one?
@@ -251,7 +251,7 @@ public:
       {
          fFile = true;
          fPlay = true;
-         fPov = false;
+         fExtractPov = false;
       }
 
       int nArgs;
@@ -263,39 +263,53 @@ public:
             || lstrcmpi(szArglist[i], _T("-Help")) == 0 || lstrcmpi(szArglist[i], _T("/Help")) == 0
             || lstrcmpi(szArglist[i], _T("-?")) == 0 || lstrcmpi(szArglist[i], _T("/?")) == 0)
          {
-            ShowError("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n\n-Edit [filename]  load file into VP\n-Play [filename]  load and play file\n-Pov [filename]  load, export pov and close\n-ExtractVBS [filename]  load, export table script and close");
+            ShowError("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n\n-Edit [filename]  load file into VP\n-Play [filename]  load and play file\n-Pov [filename]  load, export pov and close\n-ExtractVBS [filename]  load, export table script and close\n-c1 [customparam] .. -c9 [customparam]  custom user parameters that can be accessed in the script via GetCustomParam(X)");
             bRun = false;
             break;
          }
 
+         //
+
          if (lstrcmpi(szArglist[i], _T("-UnregServer")) == 0 || lstrcmpi(szArglist[i], _T("/UnregServer")) == 0)
          {
             _Module.UpdateRegistryFromResource(IDR_VPINBALL, FALSE);
-            nRet = _Module.UnregisterServer(TRUE);
+            const HRESULT nRet = _Module.UnregisterServer(TRUE);
+            if(nRet != S_OK)
+                ShowError("Unregister VP functions failed");
             bRun = false;
             break;
          }
          if (lstrcmpi(szArglist[i], _T("-RegServer")) == 0 || lstrcmpi(szArglist[i], _T("/RegServer")) == 0)
          {
             _Module.UpdateRegistryFromResource(IDR_VPINBALL, TRUE);
-            nRet = _Module.RegisterServer(TRUE);
+            const HRESULT nRet = _Module.RegisterServer(TRUE);
+            if(nRet != S_OK)
+                ShowError("Register VP functions failed");
             bRun = false;
             break;
          }
 
+         //
+
          if (lstrcmpi(szArglist[i], _T("-DisableTrueFullscreen")) == 0 || lstrcmpi(szArglist[i], _T("/DisableTrueFullscreen")) == 0)
+         {
              disEnableTrueFullscreen = 0;
+             continue;
+         }
          if (lstrcmpi(szArglist[i], _T("-EnableTrueFullscreen")) == 0 || lstrcmpi(szArglist[i], _T("/EnableTrueFullscreen")) == 0)
+         {
              disEnableTrueFullscreen = 1;
+             continue;
+         }
+
+         //
 
          bool useCustomParams = false;
          int customIdx = 1;
          for(char t = '1'; t <= '9'; t++)
          {
-             char cmdTemp1[5] = {'-','c',0,0};
-             char cmdTemp2[5] = {'/','c',0,0};
-             cmdTemp1[2] = t;
-             cmdTemp2[2] = t;
+             const char cmdTemp1[4] = {'-','c',t,0};
+             const char cmdTemp2[4] = {'/','c',t,0};
              if(lstrcmpi(szArglist[i], cmdTemp1) == 0 || lstrcmpi(szArglist[i], cmdTemp2) == 0)
              {
                  useCustomParams = true;
@@ -306,22 +320,31 @@ public:
 
          if(useCustomParams && (i+1<nArgs))
          {
-             size_t len = strlen(szArglist[i + 1]);
-             VPinball::m_customParameters[customIdx-1] = new char(len + 1);
-             strcpy_s(VPinball::m_customParameters[customIdx-1], len+1, szArglist[i + 1]);
+             const size_t len = strlen(szArglist[i + 1]);
+             VPinball::m_customParameters[customIdx - 1] = new WCHAR[len + 1];
+
+             MultiByteToWideChar(CP_ACP, 0, szArglist[i + 1], len, VPinball::m_customParameters[customIdx - 1], len + 1);
+             VPinball::m_customParameters[customIdx - 1][len] = L'\0';
+
+             ++i; // two params processed
+
+             continue;
          }
+
+         //
 
          const bool editfile = (lstrcmpi(szArglist[i], _T("-Edit")) == 0 || lstrcmpi(szArglist[i], _T("/Edit")) == 0);
          const bool playfile = (lstrcmpi(szArglist[i], _T("-Play")) == 0 || lstrcmpi(szArglist[i], _T("/Play")) == 0);
-         const bool povfile = (lstrcmpi(szArglist[i], _T("-Pov")) == 0 || lstrcmpi(szArglist[i], _T("/Pov")) == 0);
-		 const bool extractscript = (lstrcmpi(szArglist[i], _T("-ExtractVBS")) == 0 || lstrcmpi(szArglist[i], _T("/ExtractVBS")) == 0);
 
-         if ((editfile || playfile || povfile || extractscript) && (i + 1 < nArgs))
+         const bool extractpov = (lstrcmpi(szArglist[i], _T("-Pov")) == 0 || lstrcmpi(szArglist[i], _T("/Pov")) == 0);
+         const bool extractscript = (lstrcmpi(szArglist[i], _T("-ExtractVBS")) == 0 || lstrcmpi(szArglist[i], _T("/ExtractVBS")) == 0);
+
+         if ((editfile || playfile || extractpov || extractscript) && (i + 1 < nArgs))
          {
             fFile = true;
             fPlay = playfile;
-            fPov = povfile;
-			fExtractScript = extractscript;
+            fExtractPov = extractpov;
+            fExtractScript = extractscript;
 
             // Remove leading - or /
             char* filename;
@@ -353,10 +376,15 @@ public:
                   SetCurrentDirectory(szLoadDir);
                }
 
-            if (playfile || povfile)
+            if (playfile || extractpov || extractscript)
                VPinball::SetOpenMinimized();
 
-            break;
+            ++i; // two params processed
+
+            if(extractpov || extractscript)
+               break;
+            else
+               continue;
          }
       }
 
@@ -457,7 +485,7 @@ public:
 				}
 				g_pvp->Quit();
 			}
-			if (fPov && lf)
+			if (fExtractPov && lf)
 			{
 				TCHAR szPOVFilename[MAX_PATH];
 				strcpy_s(szPOVFilename, szTableFileName);

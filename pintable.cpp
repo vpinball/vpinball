@@ -451,14 +451,7 @@ STDMETHODIMP ScriptGlobalTable::GetCustomParam(long index, BSTR *param)
     if(index <= 0 || index >= MAX_CUSTOM_PARAM_INDEX)
         return E_FAIL;
 
-    size_t len = strlen(g_pvp->m_customParameters[index-1]);
-    WCHAR *wzContents = new WCHAR[len + 1];
-
-    MultiByteToWideChar(CP_ACP, 0, g_pvp->m_customParameters[index-1], len, wzContents, len + 1);
-    wzContents[len] = L'\0';
-
-    *param = SysAllocString(wzContents);
-    delete[] wzContents;
+    *param = SysAllocString(g_pvp->m_customParameters[index-1]);
     return S_OK;
 }
 
@@ -3000,7 +2993,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
    return hr;
 }
 
-HRESULT PinTable::SaveSoundToStream(PinSound *pps, IStream *pstm)
+HRESULT PinTable::SaveSoundToStream(PinSound * const pps, IStream *pstm)
 {
    ULONG writ = 0;
    int len = lstrlen(pps->m_szName);
@@ -3514,7 +3507,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
          mats[i].bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(m->m_fEdgeAlpha, 0.f, 1.f)) << 1;
          strcpy_s(mats[i].szName, m->m_szName);
       }
-      bw.WriteStruct(FID(MATE), mats, (int)sizeof(SaveMaterial)*m_materials.size());
+      bw.WriteStruct(FID(MATE), mats, (int)(sizeof(SaveMaterial)*m_materials.size()));
       SavePhysicsMaterial * const phymats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_materials.size());
       for ( size_t i = 0; i < m_materials.size(); i++ )
       {
@@ -3525,7 +3518,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
           phymats[i].fFriction = m->m_fFriction;
           phymats[i].fScatterAngle = m->m_fScatterAngle;
       }
-      bw.WriteStruct( FID( PHMA ), phymats, (int)sizeof( SavePhysicsMaterial )*m_materials.size() );
+      bw.WriteStruct( FID( PHMA ), phymats, (int)(sizeof(SavePhysicsMaterial)*m_materials.size()));
       free(mats);
       free(phymats);
    }
@@ -4524,14 +4517,14 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 }
 
 
-bool PinTable::ExportSound(HWND hwndListView, PinSound *pps, char *szfilename)
+bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
 {
    MMIOINFO mmio;
    MMCKINFO pck;
    ZeroMemory(&mmio, sizeof(mmio));
    ZeroMemory(&pck, sizeof(pck));
 
-   HMMIO hmmio = mmioOpen(szfilename, &mmio, MMIO_ALLOCBUF | MMIO_CREATE | MMIO_EXCLUSIVE | MMIO_READWRITE);
+   HMMIO hmmio = mmioOpen((LPSTR)szfilename, &mmio, MMIO_ALLOCBUF | MMIO_CREATE | MMIO_EXCLUSIVE | MMIO_READWRITE);
 
    if (hmmio != NULL)
    {
@@ -4569,7 +4562,7 @@ bool PinTable::ExportSound(HWND hwndListView, PinSound *pps, char *szfilename)
    return false;
 }
 
-void PinTable::ReImportSound(const HWND hwndListView, PinSound *pps, char *filename, const bool fPlay)
+void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, const char * const filename, const bool fPlay)
 {
    PinSound * const ppsNew = g_pvp->m_pds.LoadWaveFile(filename);
 
@@ -4603,7 +4596,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound *pps, char *filen
 }
 
 
-void PinTable::ImportSound(const HWND hwndListView, char *szfilename, const bool fPlay)
+void PinTable::ImportSound(const HWND hwndListView, const char * const szfilename, const bool fPlay)
 {
    PinSound * const pps = g_pvp->m_pds.LoadWaveFile(szfilename);
 
@@ -4634,7 +4627,7 @@ void PinTable::ListSounds(HWND hwndListView)
 }
 
 
-int PinTable::AddListSound(HWND hwndListView, PinSound *pps)
+int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
 {
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
@@ -4669,12 +4662,7 @@ int PinTable::AddListSound(HWND hwndListView, PinSound *pps)
 
 void PinTable::RemoveSound(PinSound * const pps)
 {
-   for (size_t i = 0; i < m_vsound.size(); ++i)
-	   if (m_vsound[i] == pps)
-	   {
-		   m_vsound.erase(m_vsound.begin() + i);
-		   break;
-	   }
+   RemoveFromVectorSingle(m_vsound, pps);
 
    delete pps;
 }
@@ -4700,12 +4688,7 @@ void PinTable::ImportFont(HWND hwndListView, char *filename)
 
 void PinTable::RemoveFont(PinFont * const ppf)
 {
-   for (size_t i = 0; i < m_vfont.size(); ++i)
-	   if (m_vfont[i] == ppf)
-	   {
-		   m_vfont.erase(m_vfont.begin() + i);
-		   break;
-	   }
+   RemoveFromVectorSingle(m_vfont, ppf);
 
    ppf->UnRegister();
    delete ppf;
@@ -5981,7 +5964,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             pt->BeginAutoSaveCounter();
             HANDLE hEvent = (HANDLE)wParam;
-            RemoveFromVector(pt->m_vAsyncHandles, hEvent);
+            RemoveFromVectorSingle(pt->m_vAsyncHandles, hEvent);
             CloseHandle(hEvent);
         }
         break;
@@ -6908,11 +6891,6 @@ void PinTable::SetDefaultPhysics(bool fromMouseClick)
    m_scatter = DEFAULT_TABLE_PFSCATTERANGLE;
 }
 
-IScriptable *PinTable::GetScriptable()
-{
-   return (IScriptable *)this;
-}
-
 void PinTable::ClearMultiSel(ISelect* newSel)
 {
    for (int i = 0; i < m_vmultisel.Size(); i++)
@@ -7294,39 +7272,39 @@ HRESULT PinTable::GetTypeName(BSTR *pVal)
    return S_OK;
 }
 
-void PinTable::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+void PinTable::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    if (!g_pvp->m_fBackglassView)
    {
       PropertyPane *pproppane;
 
       pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-      pvproppane->AddElement(pproppane);
+      pvproppane.push_back(pproppane);
 
       pproppane = new PropertyPane(IDD_PROPTABLE_USER, IDS_TABLE_USER);
-      pvproppane->AddElement(pproppane);
+      pvproppane.push_back(pproppane);
 
       pproppane = new PropertyPane(IDD_PROPTABLE_VISUALS, IDS_PLAYFIELD);
-      pvproppane->AddElement(pproppane);
+      pvproppane.push_back(pproppane);
 
       pproppane = new PropertyPane(IDD_PROPTABLE_BALL, IDS_DEFAULTBALL);
-      pvproppane->AddElement(pproppane);
+      pvproppane.push_back(pproppane);
 
       pproppane = new PropertyPane(IDD_PROPTABLE_PHYSICS, IDS_DIMENSIONSSLOPE);
-      pvproppane->AddElement(pproppane);
+      pvproppane.push_back(pproppane);
 
-	  pproppane = new PropertyPane(IDD_PROPTABLE_PHYSICS2, IDS_PHYSICS);
-	  pvproppane->AddElement(pproppane);
-	  
-	  pproppane = new PropertyPane(IDD_PROPTABLE_LIGHTSOURCES, IDS_LIGHTSOURCES);
-      pvproppane->AddElement(pproppane);
+      pproppane = new PropertyPane(IDD_PROPTABLE_PHYSICS2, IDS_PHYSICS);
+      pvproppane.push_back(pproppane);
+
+      pproppane = new PropertyPane(IDD_PROPTABLE_LIGHTSOURCES, IDS_LIGHTSOURCES);
+      pvproppane.push_back(pproppane);
    }
    else
    {
       PropertyPane *pproppane;
 
       pproppane = new PropertyPane(IDD_PROPBACKGLASS_VISUALS, IDS_VISUALS2);
-      pvproppane->AddElement(pproppane);
+      pvproppane.push_back(pproppane);
    }
 }
 
@@ -7643,7 +7621,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             }
             pt->BeginAutoSaveCounter();
             HANDLE hEvent = (HANDLE)wParam;
-            RemoveFromVector(pt->m_vAsyncHandles, hEvent);
+            RemoveFromVectorSingle(pt->m_vAsyncHandles, hEvent);
             CloseHandle(hEvent);
         }
         break;
@@ -7768,10 +7746,10 @@ void PinTable::ClearOldSounds()
       if (!(status & DSBSTATUS_PLAYING)) //sound is done, we can throw it away now
       {
          ppsc->m_pDSBuffer->Release();
-		 m_voldsound.erase(m_voldsound.begin() + i);
+         m_voldsound.erase(m_voldsound.begin() + i);
          delete ppsc;
       }
-	  else
+      else
          i++;
    }
 }
@@ -7934,7 +7912,7 @@ void PinTable::CreateGDIBackdrop()
 {
 }
 
-void PinTable::ReImportImage(Texture *ppi, char *filename)
+void PinTable::ReImportImage(Texture * const ppi, const char * const filename)
 {
    char szextension[MAX_PATH];
    ExtensionFromFilename(filename, szextension);
@@ -7973,7 +7951,7 @@ void PinTable::ReImportImage(Texture *ppi, char *filename)
 }
 
 
-bool PinTable::ExportImage(Texture *ppi, char *szfilename)
+bool PinTable::ExportImage(Texture * const ppi, const char * const szfilename)
 {
    if (ppi->m_ppb != NULL)
       return ppi->m_ppb->WriteToFile(szfilename);
@@ -8060,7 +8038,7 @@ bool PinTable::ExportImage(Texture *ppi, char *szfilename)
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++>>
 
-void PinTable::ImportImage(HWND hwndListView, char *filename)
+void PinTable::ImportImage(HWND hwndListView, const char * const filename)
 {
    Texture * const ppi = new Texture();
 
@@ -8120,7 +8098,7 @@ void PinTable::ListImages(HWND hwndListView)
       AddListImage(hwndListView, m_vimage[i]);
 }
 
-int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
+int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
 {
    char sizeString[MAXTOKEN] = { 0 };
    char * const usedStringYes="X";
@@ -8265,9 +8243,10 @@ int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
    return index;
 }
 
-void PinTable::RemoveImage(Texture *ppi)
+void PinTable::RemoveImage(Texture * const ppi)
 {
-   RemoveFromVector(m_vimage, ppi);
+   RemoveFromVectorSingle(m_vimage, ppi);
+
    delete ppi;
 }
 
@@ -8553,12 +8532,7 @@ int PinTable::AddListMaterial(HWND hwndListView, Material *pmat)
 
 void PinTable::RemoveMaterial(Material * const pmat)
 {
-   for (size_t i = 0; i < m_materials.size(); ++i)
-	   if (m_materials[i] == pmat)
-	   {
-		   m_materials.erase(m_materials.begin() + i);
-		   break;
-	   }
+   RemoveFromVectorSingle(m_materials, pmat);
 
    delete pmat;
 }
@@ -8645,12 +8619,9 @@ void PinTable::UpdateDbgLight( void )
 }
 
 
-int PinTable::GetImageLink(Texture *ppi)
+bool PinTable::GetImageLink(Texture * const ppi)
 {
-   if (!lstrcmpi(ppi->m_szInternalName, m_szScreenShot))
-      return 1;
-   else
-      return 0;
+   return (!lstrcmpi(ppi->m_szInternalName, m_szScreenShot));
 }
 
 PinBinary *PinTable::GetImageLinkBinary(int id)

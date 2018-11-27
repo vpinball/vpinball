@@ -1030,22 +1030,22 @@ STDMETHODIMP Spinner::get_CurrentAngle(float *pVal)
       return E_FAIL;
 }
 
-void Spinner::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+void Spinner::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPSPINNER_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPSPINNER_POSITION, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPSPINNER_PHYSICS, IDS_PHYSICS);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 }

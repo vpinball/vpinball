@@ -74,7 +74,7 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
    virtual void RenderBlueprint(Sur *psur, const bool solid);
 

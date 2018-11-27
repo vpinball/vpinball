@@ -124,15 +124,15 @@ void Rubber::WriteRegDefaults()
    SetRegValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
 }
 
-void Rubber::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
+void Rubber::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROPPOINT_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPPOINT_POSITION, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 }
 
 void Rubber::DrawRubberMesh(Sur * const psur)
@@ -1042,24 +1042,24 @@ STDMETHODIMP Rubber::put_Material(BSTR newVal)
    return S_OK;
 }
 
-void Rubber::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+void Rubber::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    m_propVisual = new PropertyPane(IDD_PROPRUBBER_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(m_propVisual);
+   pvproppane.push_back(m_propVisual);
 
    m_propPosition = new PropertyPane(IDD_PROPRUBBER_POSITION, IDS_POSITION);
-   pvproppane->AddElement(m_propPosition);
+   pvproppane.push_back(m_propPosition);
 
    m_propPhysics = new PropertyPane(IDD_PROPRUBBER_PHYSICS, IDS_PHYSICS);
-   pvproppane->AddElement(m_propPhysics);
+   pvproppane.push_back(m_propPhysics);
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 }
 
 STDMETHODIMP Rubber::get_Image(BSTR *pVal)

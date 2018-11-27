@@ -83,7 +83,7 @@ public:
    STDMETHOD(get_Name)(BSTR *pVal) { return E_FAIL; }
 
    void WriteRegDefaults();
-   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
    virtual ItemTypeEnum HitableGetItemType() const { return eItemDecal; }
 

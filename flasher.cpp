@@ -935,32 +935,32 @@ STDMETHODIMP Flasher::put_Color(OLE_COLOR newVal)
    return S_OK;
 }
 
-void Flasher::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+void Flasher::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    m_propVisual = new PropertyPane(IDD_PROPFLASHER_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(m_propVisual);
+   pvproppane.push_back(m_propVisual);
 
    pproppane = new PropertyPane(IDD_PROPFLASHER_POSITION, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 }
 
-void Flasher::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
+void Flasher::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROPPOINT_VISUALSWTEX, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPPOINT_POSITION, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 }
 
 STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)

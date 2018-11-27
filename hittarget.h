@@ -171,7 +171,7 @@ public:
 
    //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);
    void WriteRegDefaults();
-   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
    virtual bool IsTransparent() const;
    virtual float GetDepth(const Vertex3Ds& viewDir) const;

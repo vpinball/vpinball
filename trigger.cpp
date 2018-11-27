@@ -1447,24 +1447,24 @@ STDMETHODIMP Trigger::put_Material(BSTR newVal)
       return S_OK;
 }
 
-void Trigger::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+void Trigger::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    m_propVisual = new PropertyPane(IDD_PROPTRIGGER_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(m_propVisual);
+   pvproppane.push_back(m_propVisual);
 
    pproppane = new PropertyPane(IDD_PROPLIGHT_POSITION, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPTRIGGER_STATE, IDS_STATE);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 }
 
 STDMETHODIMP Trigger::get_TriggerShape(TriggerShape *pVal)

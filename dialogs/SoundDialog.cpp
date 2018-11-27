@@ -491,7 +491,7 @@ void SoundDialog::Export()
                        }
                     }
 
-                    (void)pt->ExportSound(hSoundList, pps, m_filename);
+                    (void)pt->ExportSound(pps, m_filename);
                     sel = ListView_GetNextItem( hSoundList, sel, LVNI_SELECTED ); //next selected item
                     lvitem.iItem = sel;
                     lvitem.iSubItem = 0;

@@ -81,6 +81,14 @@ inline void RemoveFromVector(std::vector<T>& v, const T& val)
 }
 
 template <typename T>
+inline void RemoveFromVectorSingle(std::vector<T>& v, const T& val)
+{
+   std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
+   if(it != v.end())
+      v.erase(it);
+}
+
+template <typename T>
 inline int FindIndexOf(std::vector<T>& v, const T& val)
 {
    std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);

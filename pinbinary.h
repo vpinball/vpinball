@@ -11,8 +11,8 @@ public:
    PinBinary();
    virtual ~PinBinary();
 
-   bool ReadFromFile(char *szfilename);
-   bool WriteToFile(char *szfilename);
+   bool ReadFromFile(const char * const szfilename);
+   bool WriteToFile(const char * const szfilename);
    HRESULT SaveToStream(IStream *pstream);
    HRESULT LoadFromStream(IStream *pstream, int version);
 

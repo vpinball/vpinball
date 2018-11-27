@@ -278,13 +278,13 @@ void IHaveDragPoints::ReverseOrder()
    m_vdpoint.ElementAt(m_vdpoint.Size() - 1)->m_fSlingshot = fSlingshotTemp;
 }
 
-void IHaveDragPoints::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
+void IHaveDragPoints::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    m_propVisuals = new PropertyPane(IDD_PROPPOINT_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(m_propVisuals);
+   pvproppane.push_back(m_propVisuals);
 
    m_propPosition = new PropertyPane(IDD_PROPPOINT_POSITION, IDS_POSITION);
-   pvproppane->AddElement(m_propPosition);
+   pvproppane.push_back(m_propPosition);
 }
 
 void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, float **ppcoords)
@@ -633,7 +633,7 @@ IDispatch *DragPoint::GetDispatch()
    return (IDispatch *)this;
 }
 
-void DragPoint::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+void DragPoint::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    m_pihdp->GetPointDialogPanes(pvproppane);
 }

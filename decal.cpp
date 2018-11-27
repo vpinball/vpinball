@@ -1034,15 +1034,15 @@ STDMETHODIMP Decal::put_Surface(BSTR newVal)
    return S_OK;
 }
 
-void Decal::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+void Decal::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROPDECAL_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPDECAL_POSITION, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 }
 
 STDMETHODIMP Decal::get_Type(DecalType *pVal)

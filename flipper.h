@@ -83,7 +83,7 @@ public:
    Flipper();
    virtual ~Flipper();
 
-   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
    STANDARD_EDITABLE_DECLARES(Flipper, eItemFlipper, FLIPPER, 1)
 
