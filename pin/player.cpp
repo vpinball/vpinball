@@ -2196,8 +2196,13 @@ void Player::DestroyBall(Ball *pball)
 
    RemoveFromVector(m_vball, pball);
    RemoveFromVector<MoverObject*>(m_vmover, &pball->m_ballMover);
+   for (size_t i = 0; i < m_vho_dynamic.size(); ++i)
+	   if (m_vho_dynamic[i] == pball)
+	   {
+		   m_vho_dynamic.erase(m_vho_dynamic.begin() + i);
+		   break;
+	   }
 
-   m_vho_dynamic.push_back(pball);
    m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
 
    m_vballDelete.push_back(pball);
@@ -3696,7 +3701,7 @@ void Player::RenderDynamics()
 
       m_dmdstate = 1;
       // Draw only transparent DMD's
-      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i) //!! is NonTrans correct or rather Trans????
+      for (size_t i = 0; i < m_vHitNonTrans.size(); ++i) // NonTrans is correct as DMDs are always sorted in there
         if(m_vHitNonTrans[i]->IsDMD())
           m_vHitNonTrans[i]->RenderDynamic(m_pin3d.m_pd3dDevice);
 
