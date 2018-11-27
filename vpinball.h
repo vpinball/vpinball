@@ -181,7 +181,7 @@ public:
    COLORREF m_fillColor;
    Vertex2D m_mouseCursorPosition;
 
-   static char *m_customParameters[MAX_CUSTOM_PARAM_INDEX];
+   static WCHAR *m_customParameters[MAX_CUSTOM_PARAM_INDEX];
 
 protected:
    virtual void OnClose();

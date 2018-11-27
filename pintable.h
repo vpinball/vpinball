@@ -286,7 +286,7 @@ public:
    void InitPostLoad(VPinball *pvp);
 
    virtual HRESULT GetTypeName(BSTR *pVal);
-   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
    void CreateTableWindow();
    void SetCaption(const char * const szCaption);
@@ -318,25 +318,25 @@ public:
    void Play(const bool _cameraMode);
    void StopPlaying();
 
-   void ImportSound(const HWND hwndListView, char *filename, const bool fPlay);
-   void ReImportSound(const HWND hwndListView, PinSound *pps, char *filename, const bool fPlay);
-   bool ExportSound(HWND hwndListView, PinSound *pps, char *filename);
+   void ImportSound(const HWND hwndListView, const char * const filename, const bool fPlay);
+   void ReImportSound(const HWND hwndListView, PinSound * const pps, const char * const filename, const bool fPlay);
+   bool ExportSound(PinSound * const pps, const char * const filename);
    void ListSounds(HWND hwndListView);
-   int AddListSound(HWND hwndListView, PinSound *pps);
+   int AddListSound(HWND hwndListView, PinSound * const pps);
    void RemoveSound(PinSound * const pps);
-   HRESULT SaveSoundToStream(PinSound *pps, IStream *pstm);
+   HRESULT SaveSoundToStream(PinSound * const pps, IStream *pstm);
    HRESULT LoadSoundFromStream(IStream *pstm, const int LoadFileVersion);
    void ClearOldSounds();
-   bool ExportImage(Texture *ppi, char *filename);
-   void ImportImage(HWND hwndListView, char *filename);
-   void ReImportImage(Texture *ppi, char *filename);
+   bool ExportImage(Texture * const ppi, const char * const filename);
+   void ImportImage(HWND hwndListView, const char * const filename);
+   void ReImportImage(Texture * const ppi, const char * const filename);
    void ListImages(HWND hwndListView);
-   int AddListImage(HWND hwndListView, Texture *ppi);
-   void RemoveImage(Texture *ppi);
+   int AddListImage(HWND hwndListView, Texture * const ppi);
+   void RemoveImage(Texture * const ppi);
    HRESULT LoadImageFromStream(IStream *pstm, int version);
    Texture* GetImage(const char * const szName) const;
    void CreateGDIBackdrop();
-   int GetImageLink(Texture *ppi);
+   bool GetImageLink(Texture * const ppi);
    PinBinary *GetImageLinkBinary(int id);
 
    void ListCustomInfo(HWND hwndListView);
@@ -379,7 +379,7 @@ public:
    virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);
    virtual ISelect *GetISelect();
    virtual void SetDefaults(bool fromMouseClick);
-   virtual IScriptable *GetScriptable();
+   virtual IScriptable *GetScriptable() { return (IScriptable *)this; }
    virtual void SetDefaultPhysics(bool fromMouseClick);
 
    virtual PinTable *GetPTable() { return this; }

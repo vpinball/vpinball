@@ -170,7 +170,7 @@ static const int allLayers[MAX_LAYERS] =
 static char recentNumber[LAST_OPENED_TABLE_COUNT];
 static char recentMenuname[MAX_PATH];
 
-char *VPinball::m_customParameters[MAX_CUSTOM_PARAM_INDEX] = {0};
+WCHAR *VPinball::m_customParameters[MAX_CUSTOM_PARAM_INDEX] = {0};
 
 #define TBCOUNTMAIN (sizeof(g_tbbuttonMain) / sizeof(TBBUTTON))
 #define TBCOUNTPALETTE (sizeof(g_tbbuttonPalette) / sizeof(TBBUTTON))

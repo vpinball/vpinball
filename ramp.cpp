@@ -156,15 +156,15 @@ void Ramp::WriteRegDefaults()
    SetRegValueFloat(strKeyName, "WireDistanceY", m_d.m_wireDistanceY);
 }
 
-void Ramp::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
+void Ramp::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROPPOINT_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPPOINT_POSITION_WITHZ, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 }
 
 
@@ -1725,24 +1725,24 @@ STDMETHODIMP Ramp::put_Type(RampType newVal)
    return S_OK;
 }
 
-void Ramp::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+void Ramp::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPRAMP_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    m_propPosition = new PropertyPane(IDD_PROPRAMP_POSITION, IDS_POSITION);
-   pvproppane->AddElement(m_propPosition);
+   pvproppane.push_back(m_propPosition);
 
    m_propPhysics = new PropertyPane(IDD_PROPRAMP_PHYSICS, IDS_PHYSICS);
-   pvproppane->AddElement(m_propPhysics);
+   pvproppane.push_back(m_propPhysics);
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 }
 
 

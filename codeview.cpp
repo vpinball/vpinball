@@ -1255,7 +1255,7 @@ void CodeViewer::TellHostToSelectItem()
    m_psh->SelectItem(pscript);
 }
 
-void CodeViewer::GetParamsFromEvent(const int iEvent, char * const szParams)
+void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams)
 {
    szParams[0] = '\0';
 

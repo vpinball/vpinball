@@ -1374,24 +1374,24 @@ STDMETHODIMP Bumper::put_Surface(BSTR newVal)
    return S_OK;
 }
 
-void Bumper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+void Bumper::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    m_propVisual = new PropertyPane(IDD_PROPBUMPER_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(m_propVisual);
+   pvproppane.push_back(m_propVisual);
 
    pproppane = new PropertyPane(IDD_PROPLIGHT_POSITION, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPBUMPER_PHYSICS, IDS_PHYSICS);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 }
 
 STDMETHODIMP Bumper::get_HasHitEvent(VARIANT_BOOL *pVal)

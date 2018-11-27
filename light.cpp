@@ -17,7 +17,7 @@ IDispatch *LightCenter::GetDispatch()
    return m_plight->GetDispatch();
 }
 
-void LightCenter::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+void LightCenter::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    m_plight->GetDialogPanes(pvproppane);
 }
@@ -1898,24 +1898,24 @@ STDMETHODIMP Light::put_BulbHaloHeight(float newVal)
       return S_OK;
 }
 
-void Light::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+void Light::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    m_propVisual = new PropertyPane(IDD_PROPLIGHT_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(m_propVisual);
+   pvproppane.push_back(m_propVisual);
 
    pproppane = new PropertyPane(IDD_PROPLIGHT_POSITION, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPLIGHT_STATE, IDS_STATE);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 }
 
 void Light::setLightState(const LightState newVal)

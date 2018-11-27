@@ -120,10 +120,10 @@ void SmartBrowser::Init(HWND hwndParent)
 
 void SmartBrowser::FreePropPanes()
 {
-   for (int i = 0; i < m_vproppane.Size(); i++)
-      delete m_vproppane.ElementAt(i);
+   for (size_t i = 0; i < m_vproppane.size(); i++)
+      delete m_vproppane[i];
 
-   m_vproppane.RemoveAllElements();
+   m_vproppane.clear();
 }
 
 void SmartBrowser::RemoveSelection(void)
@@ -157,8 +157,8 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
          {
             if (pisel3->GetItemType() != maintype)
             {
-               PropertyPane *pproppane = new PropertyPane(IDD_PROPMULTI, NULL);
-               m_vproppane.AddElement(pproppane);
+               PropertyPane * const pproppane = new PropertyPane(IDD_PROPMULTI, NULL);
+               m_vproppane.push_back(pproppane);
                //resourceid = IDD_PROPMULTI;
                fSame = false;
             }
@@ -193,11 +193,11 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
       {
          pisel = pvsel->ElementAt(0);
          if (pisel)
-            pisel->GetDialogPanes(&m_vproppane);
+            pisel->GetDialogPanes(m_vproppane);
       }
    }
 
-   const int propID = (m_vproppane.Size() > 0) ? m_vproppane.ElementAt(0)->dialogid : -1;
+   const int propID = (m_vproppane.size() > 0) ? m_vproppane[0]->dialogid : -1;
 
    // Optimized for selecting the same object
    // Have to check resourceid too, since there can be more than one dialog view of the same object (table/backdrop)
@@ -249,7 +249,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
       pvsel->Clone(m_pvsel);
    }
 
-   if (m_vproppane.Size() == 0)
+   if (m_vproppane.size() == 0)
    {
       m_szHeader[0] = '\0';
       InvalidateRect(m_hwndFrame, NULL, fTrue);
@@ -283,9 +283,9 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
 
    InvalidateRect(m_hwndFrame, NULL, fTrue);
 
-   for (int i = 0; i < m_vproppane.Size(); i++)
+   for (size_t i = 0; i < m_vproppane.size(); i++)
    {
-      PropertyPane * const pproppane = m_vproppane.ElementAt(i);
+      PropertyPane * const pproppane = m_vproppane[i];
       ExpandoInfo * const pexinfo = new ExpandoInfo();
       pexinfo->m_id = i;
       pexinfo->m_fExpanded = false;
@@ -318,7 +318,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
          hwndDialog = CreateDialogIndirectParam(g_hinst, pproppane->ptemplate,
          hwndExpand, PropertyProc, (size_t)this);
 
-      m_vproppane.ElementAt(i)->dialogHwnd = hwndDialog;
+      m_vproppane[i]->dialogHwnd = hwndDialog;
       m_vhwndDialog.push_back(hwndDialog);
 
       RECT rcDialog;
@@ -941,7 +941,7 @@ void SmartBrowser::RelayoutExpandos()
    {
       // The total height of our expandos is taller than our window
       // We have to shrink some
-      int indexBest = -1;
+      size_t indexBest = -1;
       int prioBest = 0xffff;
       int cnt = 0;
 
@@ -952,7 +952,7 @@ void SmartBrowser::RelayoutExpandos()
       // get priority over lower panels
       for (size_t i = 0; i < m_vhwndExpand.size(); i++)
       {
-         const int titleid = m_vproppane.ElementAt(i)->titlestringid;
+         const int titleid = m_vproppane[i]->titlestringid;
          if (titleid != NULL)
          {
             HWND hwndExpand = m_vhwndExpand[i];
@@ -996,8 +996,8 @@ void SmartBrowser::RelayoutExpandos()
 void SmartBrowser::ResetPriority(int expandoid)
 {
    // base prioritys on the title of the property pane
-   const int titleid = m_vproppane.ElementAt(expandoid)->titlestringid;
-   RemoveFromVector(m_vproppriority, titleid); // Remove this element if it currently exists in our current priority chain
+   const int titleid = m_vproppane[expandoid]->titlestringid;
+   RemoveFromVectorSingle(m_vproppriority, titleid); // Remove this element if it currently exists in our current priority chain
    m_vproppriority.push_back(titleid); // Add it back at the end (top) of the chain
 }
 

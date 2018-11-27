@@ -2,8 +2,6 @@
 #include "Texture.h"
 #include "freeimage.h"
 
-#define MIN_TEXTURE_SIZE 8
-
 BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 {
    // check if Textures exceed the maximum texture dimension
@@ -100,9 +98,9 @@ static FIBITMAP* HBitmapToFreeImage(HBITMAP hbmp)
    FIBITMAP* dib = FreeImage_Allocate(bm.bmWidth, bm.bmHeight, bm.bmBitsPixel);
    // The GetDIBits function clears the biClrUsed and biClrImportant BITMAPINFO members (dont't know why)
    // So we save these infos below. This is needed for palettized images only.
-   int nColors = FreeImage_GetColorsUsed(dib);
-   HDC dc = GetDC(NULL);
-   int Success = GetDIBits(dc, hbmp, 0, FreeImage_GetHeight(dib),
+   const int nColors = FreeImage_GetColorsUsed(dib);
+   const HDC dc = GetDC(NULL);
+   const int Success = GetDIBits(dc, hbmp, 0, FreeImage_GetHeight(dib),
       FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
    ReleaseDC(NULL, dc);
    // restore BITMAPINFO members
@@ -111,7 +109,7 @@ static FIBITMAP* HBitmapToFreeImage(HBITMAP hbmp)
    return dib;
 }
 
-BaseTexture* BaseTexture::CreateFromHBitmap(HBITMAP hbm)
+BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm)
 {
    FIBITMAP *dib = HBitmapToFreeImage(hbm);
    BaseTexture* pdds = BaseTexture::CreateFromFreeImage(dib);
@@ -158,14 +156,13 @@ HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
    }
    else // JPEG (or other binary format)
    {
-      const int linkid = pt->GetImageLink(this);
-      if (linkid == 0)
+      if (!pt->GetImageLink(this))
       {
          bw.WriteTag(FID(JPEG));
          m_ppb->SaveToStream(pstream);
       }
       else
-         bw.WriteInt(FID(LINK), linkid);
+         bw.WriteInt(FID(LINK), 1);
    }
    bw.WriteFloat(FID(ALTV), m_alphaTestValue);
    bw.WriteTag(FID(ENDB));
@@ -353,9 +350,9 @@ void Texture::ReleaseTextureDC(HDC dc)
    DeleteDC(dc);
 }
 
-void Texture::CreateFromResource(const int id, int * const pwidth, int * const pheight)
+void Texture::CreateFromResource(const int id)
 {
-   HBITMAP hbm = (HBITMAP)LoadImage(g_hinst, MAKEINTRESOURCE(id), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+   const HBITMAP hbm = (HBITMAP)LoadImage(g_hinst, MAKEINTRESOURCE(id), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
 
    if(m_pdsBuffer)
       FreeStuff();
@@ -363,17 +360,13 @@ void Texture::CreateFromResource(const int id, int * const pwidth, int * const p
    if (hbm == NULL)
       return;
 
-   m_pdsBuffer = CreateFromHBitmap(hbm, pwidth, pheight);
+   m_pdsBuffer = CreateFromHBitmap(hbm);
 }
 
-BaseTexture* Texture::CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight)
+BaseTexture* Texture::CreateFromHBitmap(const HBITMAP hbm)
 {
-   BaseTexture* pdds = BaseTexture::CreateFromHBitmap(hbm);
+   BaseTexture* const pdds = BaseTexture::CreateFromHBitmap(hbm);
    SetSizeFrom(pdds);
-   if (pwidth)
-      *pwidth = pdds->width();
-   if (pheight)
-      *pheight = pdds->height();
    return pdds;
 }
 

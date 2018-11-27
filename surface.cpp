@@ -1755,35 +1755,35 @@ STDMETHODIMP Surface::put_OverwritePhysics( VARIANT_BOOL newVal )
         return S_OK;
 }
 
-void Surface::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+void Surface::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPWALL_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPWALL_POSITION, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    m_propPhysics = new PropertyPane(IDD_PROPWALL_PHYSICS, IDS_STATE);
-   pvproppane->AddElement(m_propPhysics);
+   pvproppane.push_back(m_propPhysics);
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 }
 
-void Surface::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
+void Surface::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROPPOINT_VISUALSWTEX, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPPOINT_POSITION, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 }
 
 STDMETHODIMP Surface::get_CanDrop(VARIANT_BOOL *pVal)

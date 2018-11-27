@@ -269,9 +269,7 @@ public:
 
    //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);
    void WriteRegDefaults();
-   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
-
-   //virtual IScriptable *GetScriptable() {return NULL;}
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
    PinTable *m_ptable;
 

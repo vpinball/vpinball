@@ -98,7 +98,7 @@ public:
       CONNECTION_POINT_ENTRY(DIID_ILightSeqEvents)
    END_CONNECTION_POINT_MAP()
 
-   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
    void RenderOutline(Sur * const psur);
    virtual void MoveOffset(const float dx, const float dy);

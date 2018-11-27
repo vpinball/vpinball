@@ -2194,14 +2194,9 @@ void Player::DestroyBall(Ball *pball)
       pball->m_pballex->Release();
    }
 
-   RemoveFromVector(m_vball, pball);
-   RemoveFromVector<MoverObject*>(m_vmover, &pball->m_ballMover);
-   for (size_t i = 0; i < m_vho_dynamic.size(); ++i)
-	   if (m_vho_dynamic[i] == pball)
-	   {
-		   m_vho_dynamic.erase(m_vho_dynamic.begin() + i);
-		   break;
-	   }
+   RemoveFromVectorSingle(m_vball, pball);
+   RemoveFromVectorSingle<MoverObject*>(m_vmover, &pball->m_ballMover);
+   RemoveFromVectorSingle<HitObject*>(m_vho_dynamic, pball);
 
    m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
 

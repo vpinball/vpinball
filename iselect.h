@@ -80,7 +80,7 @@ public:
    static void GetTypeNameForType(ItemTypeEnum type, WCHAR * buf);
 
    virtual IDispatch *GetDispatch() = 0;
-   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane) = 0;
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane) = 0;
    virtual ItemTypeEnum GetItemType() const = 0;
 
    virtual void Delete() = 0;

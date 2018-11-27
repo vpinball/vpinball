@@ -83,7 +83,7 @@ public:
    END_CONNECTION_POINT_MAP()
 
    // IHaveDragPoints
-   virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetPointDialogPanes(vector<PropertyPane*> &pvproppane);
    // end IHaveDragPoints
 
    // IEditable
@@ -107,7 +107,7 @@ public:
 
    virtual void DoCommand(int icmd, int x, int y);
 
-   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
    // end ISelect
 
    virtual float GetDepth(const Vertex3Ds& viewDir) const { return viewDir.z * m_d.m_heighttop; }

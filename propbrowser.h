@@ -86,7 +86,7 @@ public:
    std::vector<HWND> m_vhwndExpand;
    std::vector<HWND> m_vhwndDialog;
 
-   Vector<PropertyPane> m_vproppane;
+   vector<PropertyPane*> m_vproppane;
 
    std::vector<int> m_vproppriority;
 

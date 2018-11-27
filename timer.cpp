@@ -300,13 +300,13 @@ HRESULT Timer::InitPostLoad()
    return S_OK;
 }
 
-void Timer::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+void Timer::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane->AddElement(pproppane);
+   pvproppane.push_back(pproppane);
 }

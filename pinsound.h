@@ -94,14 +94,13 @@ public:
    PinDirectSound();
    ~PinDirectSound();
 
-   void InitDirectSound(HWND hwnd, bool IsBackglass);
+   void InitDirectSound(const HWND hwnd, const bool IsBackglass);
    static float PanTo3D(float input);
 
-   PinSound *LoadWaveFile(TCHAR* strFileName);
-   HRESULT CreateStaticBuffer(TCHAR* strFileName, PinSound *pps);
-   HRESULT FillBuffer(PinSound *pps);
-   HRESULT CreateDirectFromNative(PinSound *pps);
-   HRESULT RestoreBuffers();
+   PinSound *LoadWaveFile(const TCHAR* const strFileName);
+   HRESULT CreateStaticBuffer(const TCHAR* const strFileName, PinSound * const pps);
+   HRESULT FillBuffer(PinSound * const pps);
+   HRESULT CreateDirectFromNative(PinSound * const pps);
 
    LPDIRECTSOUND       m_pDS;
    LPDIRECTSOUND3DLISTENER m_pDSListener;

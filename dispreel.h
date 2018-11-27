@@ -82,7 +82,7 @@ public:
 
    STANDARD_EDITABLE_DECLARES(DispReel, eItemDispReel, DISPREEL, 2)
 
-   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();

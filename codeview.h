@@ -307,7 +307,7 @@ public:
 	void ListEventsFromItem();
 	void FindCodeFromEvent();
 	void TellHostToSelectItem();
-	void GetParamsFromEvent(const int iEvent, char * const szParams);
+	void GetParamsFromEvent(const UINT iEvent, char * const szParams);
 
 	void MarginClick(const int position, const int modifiers);
 

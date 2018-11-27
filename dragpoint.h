@@ -30,7 +30,7 @@ public:
    virtual Vertex2D GetPointCenter() const;
    virtual void PutPointCenter(const Vertex2D& pv);
 
-   virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetPointDialogPanes(vector<PropertyPane*> &pvproppane);
 
    void FlipPointY(const Vertex2D& pvCenter);
    void FlipPointX(const Vertex2D& pvCenter);
@@ -144,7 +144,7 @@ public:
    virtual PinTable *GetPTable() { return m_pihdp->GetIEditable()->GetPTable(); }
    virtual IEditable *GetIEditable() { return m_pihdp->GetIEditable(); }
    virtual IDispatch *GetDispatch();
-   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
    virtual int GetSelectLevel() { return 2; } // So dragpoints won't be band-selected with the main objects
 

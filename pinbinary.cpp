@@ -14,7 +14,7 @@ PinBinary::~PinBinary()
    }
 }
 
-bool PinBinary::ReadFromFile(char *szfilename)
+bool PinBinary::ReadFromFile(const char * const szfilename)
 {
    HANDLE hFile = CreateFile(szfilename,
       GENERIC_READ, FILE_SHARE_READ,
@@ -53,7 +53,7 @@ bool PinBinary::ReadFromFile(char *szfilename)
    return true;
 }
 
-bool PinBinary::WriteToFile(char *szfilename)
+bool PinBinary::WriteToFile(const char * const szfilename)
 {
    HANDLE hFile = CreateFile(szfilename,
       GENERIC_WRITE, FILE_SHARE_READ,
