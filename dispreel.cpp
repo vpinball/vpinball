@@ -213,7 +213,7 @@ void DispReel::UIRenderPass2(Sur * const psur)
 // for this sort of object (reel driver) it is basically not really required but hey, somebody
 // might use it..
 //
-void DispReel::GetTimers(Vector<HitTimer> * const pvht)
+void DispReel::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 
@@ -225,9 +225,7 @@ void DispReel::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-   {
-      pvht->AddElement(pht);
-   }
+      pvht.push_back(pht);
 }
 
 

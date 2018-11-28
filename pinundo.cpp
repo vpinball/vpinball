@@ -9,19 +9,14 @@ PinUndo::PinUndo()
 
 PinUndo::~PinUndo()
 {
-   for (int i = 0; i < m_vur.Size(); ++i)
-   {
-      delete m_vur.ElementAt(i);
-   }
-   m_vur.RemoveAllElements();
+   for (size_t i = 0; i < m_vur.size(); ++i)
+      delete m_vur[i];
 }
 
 void PinUndo::SetCleanPoint(SaveDirtyState sds)
 {
    if (sds == eSaveClean)
-   {
-      m_cleanpoint = m_vur.Size();
-   }
+      m_cleanpoint = m_vur.size();
    m_sdsDirty = sds;
    m_ptable->SetDirty(sds);
 }
@@ -32,22 +27,22 @@ void PinUndo::BeginUndo()
 
    if (m_cUndoLayer == 1)
    {
-      if (m_vur.Size() == MAXUNDO)
+      if (m_vur.size() == MAXUNDO)
       {
-         delete m_vur.ElementAt(0);
-         m_vur.RemoveElementAt(0);
+         delete m_vur[0];
+         m_vur.erase(m_vur.begin());
          m_cleanpoint--;
       }
 
       UndoRecord * const pur = new UndoRecord();
 
-      m_vur.AddElement(pur);
+      m_vur.push_back(pur);
    }
 }
 
 void PinUndo::MarkForUndo(IEditable *pie)
 {
-   if (m_vur.Size() == 0)
+   if (m_vur.size() == 0)
    {
       _ASSERTE(fFalse);
       return;
@@ -59,14 +54,14 @@ void PinUndo::MarkForUndo(IEditable *pie)
       BeginUndo();
    }
 
-   UndoRecord * const pur = m_vur.ElementAt(m_vur.Size() - 1);
+   UndoRecord * const pur = m_vur[m_vur.size() - 1];
 
    pur->MarkForUndo(pie);
 }
 
 void PinUndo::MarkForCreate(IEditable *pie)
 {
-   if (m_vur.Size() == 0)
+   if (m_vur.size() == 0)
    {
       _ASSERTE(fFalse);
       return;
@@ -78,14 +73,14 @@ void PinUndo::MarkForCreate(IEditable *pie)
       BeginUndo();
    }
 
-   UndoRecord * const pur = m_vur.ElementAt(m_vur.Size() - 1);
+   UndoRecord * const pur = m_vur[m_vur.size() - 1];
 
    pur->MarkForCreate(pie);
 }
 
 void PinUndo::MarkForDelete(IEditable *pie)
 {
-   if (m_vur.Size() == 0)
+   if (m_vur.size() == 0)
    {
       _ASSERTE(fFalse);
       return;
@@ -97,14 +92,14 @@ void PinUndo::MarkForDelete(IEditable *pie)
       BeginUndo();
    }
 
-   UndoRecord * const pur = m_vur.ElementAt(m_vur.Size() - 1);
+   UndoRecord * const pur = m_vur[m_vur.size() - 1];
 
    pur->MarkForDelete(pie);
 }
 
 void PinUndo::Undo()
 {
-   if (m_vur.Size() == 0)
+   if (m_vur.size() == 0)
    {
       //_ASSERTE(fFalse);
       return;
@@ -116,7 +111,7 @@ void PinUndo::Undo()
       m_cUndoLayer = 0;
    }
 
-   if (m_vur.Size() == m_cleanpoint)
+   if (m_vur.size() == m_cleanpoint)
    {
       LocalString ls(IDS_UNDOPASTSAVE);
       const int result = MessageBox(m_ptable->m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_YESNO);
@@ -126,19 +121,17 @@ void PinUndo::Undo()
       }
    }
 
-   UndoRecord * const pur = m_vur.ElementAt(m_vur.Size() - 1);
+   UndoRecord * const pur = m_vur[m_vur.size() - 1];
    //IStorage *pstg = pur->m_pstg;
 
-   for (int i = 0; i < pur->m_vieDelete.Size(); i++)
-   {
-      m_ptable->Undelete(pur->m_vieDelete.ElementAt(i));
-   }
+   for (size_t i = 0; i < pur->m_vieDelete.size(); i++)
+      m_ptable->Undelete(pur->m_vieDelete[i]);
 
-   pur->m_vieDelete.RemoveAllElements(); // Don't want these released when this record gets deleted
+   pur->m_vieDelete.clear(); // Don't want these released when this record gets deleted
 
-   for (int i = 0; i < pur->m_vstm.Size(); i++)
+   for (size_t i = 0; i < pur->m_vstm.size(); i++)
    {
-      IStream * const pstm = pur->m_vstm.ElementAt(i);
+      IStream * const pstm = pur->m_vstm[i];
 
       // Go back to beginning of stream to load
       LARGE_INTEGER foo;
@@ -154,27 +147,25 @@ void PinUndo::Undo()
       int foo2;
       pie->InitLoad(pstm, m_ptable, &foo2, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
 
-      // Stream gets release when undo record is deleted
+      // Stream gets released when undo record is deleted
       //pstm->Release();
    }
 
-   for (int i = 0; i<pur->m_vieCreate.Size(); i++)
-   {
-      m_ptable->Uncreate(pur->m_vieCreate.ElementAt(i));
-   }
+   for (size_t i = 0; i<pur->m_vieCreate.size(); i++)
+      m_ptable->Uncreate(pur->m_vieCreate[i]);
 
-   m_vur.RemoveElement(pur);
+   RemoveFromVectorSingle(m_vur, pur);
    delete pur;
 
-   if ((m_vur.Size() == m_cleanpoint) && (m_sdsDirty > eSaveClean)) // UNDONE - how could we get here without m_fDirty being true?
+   if ((m_vur.size() == m_cleanpoint) && (m_sdsDirty > eSaveClean)) // UNDONE - how could we get here without m_fDirty being true?
    {
       m_sdsDirty = eSaveClean;
       m_ptable->SetDirty(eSaveClean);
    }
-   else if (/*m_vur.Size() < m_cleanpoint && */(m_sdsDirty < eSaveDirty))
+   else if (/*m_vur.size() < m_cleanpoint && */(m_sdsDirty < eSaveDirty))
    {
       // If we're not clean, we must be dirty (always process this case for autosave, even though to the user it wouldn't appear to matter)
-      if (m_vur.Size() < m_cleanpoint)
+      if (m_vur.size() < m_cleanpoint)
       {
          m_cleanpoint = -1; // Can't redo yet
       }
@@ -204,30 +195,22 @@ UndoRecord::UndoRecord()
 
 UndoRecord::~UndoRecord()
 {
-   for (int i = 0; i < m_vstm.Size(); i++)
-   {
-      m_vstm.ElementAt(i)->Release();
-   }
+   for (size_t i = 0; i < m_vstm.size(); i++)
+      m_vstm[i]->Release();
 
-   for (int i = 0; i < m_vieDelete.Size(); i++)
-   {
-      m_vieDelete.ElementAt(i)->Release();
-   }
+   for (size_t i = 0; i < m_vieDelete.size(); i++)
+      m_vieDelete[i]->Release();
 }
 
 void UndoRecord::MarkForUndo(IEditable *pie)
 {
-   if (m_vieMark.IndexOf(pie) != -1) // Been marked already
-   {
+   if (FindIndexOf(m_vieMark, pie) != -1) // Been marked already
       return;
-   }
 
-   if (m_vieCreate.IndexOf(pie) != -1) // Just created, so undo will delete it anyway
-   {
+   if (FindIndexOf(m_vieCreate, pie) != -1) // Just created, so undo will delete it anyway
       return;
-   }
 
-   m_vieMark.AddElement(pie);
+   m_vieMark.push_back(pie);
 
    FastIStream * const pstm = new FastIStream();
    pstm->AddRef();
@@ -237,39 +220,40 @@ void UndoRecord::MarkForUndo(IEditable *pie)
 
    pie->SaveData(pstm, NULL);
 
-   m_vstm.AddElement(pstm);
+   m_vstm.push_back(pstm);
 }
 
 void UndoRecord::MarkForCreate(IEditable *pie)
 {
 #ifdef _DEBUG
-   if (m_vieCreate.IndexOf(pie) != -1) // Created twice?
+   if (FindIndexOf(m_vieCreate, pie) != -1) // Created twice?
    {
       _ASSERTE(fFalse);
       return;
    }
 #endif
 
-   m_vieCreate.AddElement(pie);
+   m_vieCreate.push_back(pie);
 }
 
 void UndoRecord::MarkForDelete(IEditable *pie)
 {
 #ifdef _DEBUG
-   if (m_vieDelete.IndexOf(pie) != -1) // Already deleted - bad thing
+   if (FindIndexOf(m_vieDelete, pie) != -1) // Already deleted - bad thing
    {
       _ASSERTE(fFalse);
       return;
    }
 #endif
 
-   if (m_vieCreate.IndexOf(pie) != -1) // Created and deleted in the same step
+   const int pie_pos = FindIndexOf(m_vieCreate, pie);
+   if (pie_pos != -1) // Created and deleted in the same step
    {
       // Just forget about it
-      m_vieCreate.RemoveElement(pie);
-      m_vieMark.RemoveElement(pie);
+      m_vieCreate.erase(m_vieCreate.begin() + pie_pos);
+      RemoveFromVectorSingle(m_vieMark, pie);
       return;
    }
 
-   m_vieDelete.AddElement(pie);
+   m_vieDelete.push_back(pie);
 }

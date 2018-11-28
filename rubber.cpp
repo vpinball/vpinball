@@ -519,7 +519,7 @@ float Rubber::GetSurfaceHeight(float x, float y) const
     return zheight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 }
 
-void Rubber::GetTimers(Vector<HitTimer> * const pvht)
+void Rubber::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 
@@ -531,7 +531,7 @@ void Rubber::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-      pvht->AddElement(pht);
+      pvht.push_back(pht);
 }
 
 void Rubber::GetHitShapes(vector<HitObject*> &pvho)

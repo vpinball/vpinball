@@ -75,7 +75,7 @@ public:
    void RelayoutExpandos();
 
    void FreePropPanes();
-   void RemoveSelection(void);
+   void RemoveSelection();
    void ResetPriority(int expandoid);
 
    ISelect *GetBaseISel() { if (!m_pvsel || m_pvsel->Size() == 0) { return NULL; } return m_pvsel->ElementAt(0); }

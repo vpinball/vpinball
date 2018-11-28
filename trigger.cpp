@@ -362,7 +362,7 @@ void Trigger::RenderBlueprint(Sur *psur, const bool solid)
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
 }
 
-void Trigger::GetTimers(Vector<HitTimer> * const pvht)
+void Trigger::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 
@@ -374,7 +374,7 @@ void Trigger::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-      pvht->AddElement(pht);
+      pvht.push_back(pht);
 }
 
 void Trigger::GetHitShapes(vector<HitObject*> &pvho)

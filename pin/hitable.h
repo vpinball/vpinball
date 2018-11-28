@@ -5,7 +5,7 @@ class Hitable
 public:
    virtual void GetHitShapes(vector<HitObject*> &pvho) = 0;
    virtual void GetHitShapesDebug(vector<HitObject*> &pvho) = 0;
-   virtual void GetTimers(Vector<HitTimer> * const pvht) = 0;
+   virtual void GetTimers(vector<HitTimer*> &pvht) = 0;
    virtual EventProxyBase *GetEventProxyBase() = 0;
    virtual void EndPlay() = 0;
    virtual void PreRenderStatic(RenderDevice* pd3dDevice) { } // only used for kickers, due to special playfield cutout

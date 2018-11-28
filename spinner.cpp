@@ -183,7 +183,7 @@ void Spinner::UIRenderPass2(Sur * const psur)
       m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
 }
 
-void Spinner::GetTimers(Vector<HitTimer> * const pvht)
+void Spinner::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 
@@ -195,9 +195,7 @@ void Spinner::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-   {
-      pvht->AddElement(pht);
-   }
+      pvht.push_back(pht);
 }
 
 void Spinner::GetHitShapes(vector<HitObject*> &pvho)

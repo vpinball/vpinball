@@ -351,9 +351,9 @@ public:
    std::vector<Ball*> m_vball;
    std::vector<HitFlipper*> m_vFlippers;
 
-   Vector<AnimObject> m_vanimate; // animated objects that need frame updates
+   vector<AnimObject*> m_vanimate; // animated objects that need frame updates
 
-   Vector<HitTimer> m_vht;
+   vector<HitTimer*> m_vht;
    std::vector<TimerOnOff> m_changed_vht; // stores all en/disable changes to the m_vht timer list, to avoid problems with timers dis/enabling themselves
 
    Vertex3Ds m_gravity;
@@ -387,7 +387,7 @@ public:
    HWND m_hwndLightDebugger;
    HWND m_hwndMaterialDebugger;
 
-   Vector<CLSID> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
+   vector<CLSID*> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
 
    int m_sleeptime;          // time to sleep during each frame - can helps side threads like vpinmame
    int m_minphyslooptime;    // minimum physics loop processing time in usec (0-1000), effort to reduce input latency (mainly useful if vsync is enabled, too)

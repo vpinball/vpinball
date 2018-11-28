@@ -178,7 +178,7 @@ void Kicker::UIRenderPass2(Sur * const psur)
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius*0.25f);
 }
 
-void Kicker::GetTimers(Vector<HitTimer> * const pvht)
+void Kicker::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 
@@ -190,9 +190,7 @@ void Kicker::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-   {
-      pvht->AddElement(pht);
-   }
+      pvht.push_back(pht);
 }
 
 void Kicker::GetHitShapes(vector<HitObject*> &pvho)

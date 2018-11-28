@@ -432,7 +432,7 @@ void Light::RenderBlueprint(Sur *psur, const bool solid)
    RenderOutline(psur);
 }
 
-void Light::GetTimers(Vector<HitTimer> * const pvht)
+void Light::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 
@@ -444,7 +444,7 @@ void Light::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-      pvht->AddElement(pht);
+      pvht.push_back(pht);
 }
 
 void Light::GetHitShapes(vector<HitObject*> &pvho)

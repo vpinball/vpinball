@@ -133,21 +133,24 @@ void ISelect::DoCommand(int icmd, int x, int y)
       break;
    case ID_DRAWINFRONT:
    {
-      PinTable *ptable = GetPTable();
+      PinTable * const ptable = GetPTable();
       ptable->m_vedit.RemoveElement(piedit);
       ptable->m_vedit.AddElement(piedit);
-      ptable->m_layer[m_layerIndex].RemoveElement(piedit);
-      ptable->m_layer[m_layerIndex].AddElement(piedit);
+      RemoveFromVectorSingle(ptable->m_layer[m_layerIndex], piedit);
+      ptable->m_layer[m_layerIndex].push_back(piedit);
       ptable->SetDirtyDraw();
       break;
    }
    case ID_DRAWINBACK:
-      GetPTable()->m_vedit.RemoveElement(piedit);
-      GetPTable()->m_vedit.InsertElementAt(piedit, 0);
-      GetPTable()->m_layer[m_layerIndex].RemoveElement(piedit);
-      GetPTable()->m_layer[m_layerIndex].InsertElementAt(piedit, 0);
-      GetPTable()->SetDirtyDraw();
+   {
+      PinTable * const ptable = GetPTable();
+      ptable->m_vedit.RemoveElement(piedit);
+      ptable->m_vedit.InsertElementAt(piedit, 0);
+      RemoveFromVectorSingle(ptable->m_layer[m_layerIndex], piedit);
+      ptable->m_layer[m_layerIndex].insert(ptable->m_layer[m_layerIndex].begin(), piedit);
+      ptable->SetDirtyDraw();
       break;
+   }
    case ID_SETASDEFAULT:
       piedit->WriteRegDefaults();
       break;

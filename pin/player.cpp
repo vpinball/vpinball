@@ -641,9 +641,9 @@ void Player::Shutdown()
       m_pxap = NULL;
    }
 
-   for (int i = 0; i < m_controlclsidsafe.Size(); i++)
-      delete m_controlclsidsafe.ElementAt(i);
-   m_controlclsidsafe.RemoveAllElements();
+   for (size_t i = 0; i < m_controlclsidsafe.size(); i++)
+      delete m_controlclsidsafe[i];
+   m_controlclsidsafe.clear();
 
    m_changed_vht.clear();
 
@@ -1369,7 +1369,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
          for (size_t hitloop = currentsize; hitloop < newsize; hitloop++)
             m_vho[hitloop]->m_pfedebug = pe->GetIFireEvents();
 
-         ph->GetTimers(&m_vht);
+         ph->GetTimers(m_vht);
 
          // build list of hitables
          m_vhitables.push_back(ph);
@@ -1378,12 +1378,12 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
          if (pe->GetItemType() == eItemDispReel)
          {
              DispReel * const dispReel = (DispReel*)pe;
-             m_vanimate.AddElement(&dispReel->m_dispreelanim);
+             m_vanimate.push_back(&dispReel->m_dispreelanim);
          } else
          if (pe->GetItemType() == eItemLightSeq)
          {
              LightSeq * const lightseq = (LightSeq*)pe;
-             m_vanimate.AddElement(&lightseq->m_lightseqanim);
+             m_vanimate.push_back(&lightseq->m_lightseqanim);
          }
       }
    }
@@ -1404,7 +1404,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       if (pho->GetType() == eFlipper)
          m_vFlippers.push_back((HitFlipper*)pho);
       else if (pho->GetType() == eLineSegSlingshot) // Adding objects to animation update list, only slingshot! (dispreels and lightseqs are added above :/)
-         m_vanimate.AddElement(&((LineSegSlingshot*)pho)->m_slingshotanim);
+         m_vanimate.push_back(&((LineSegSlingshot*)pho)->m_slingshotanim);
 
       MoverObject * const pmo = pho->GetMoverObject();
       if (pmo && pmo->AddToList()) // Spinner, Gate, Flipper, Plunger (ball is added separately on each create ball)
@@ -3280,14 +3280,14 @@ void Player::UpdatePhysics()
       for(size_t i = 0; i < m_changed_vht.size(); ++i)
           if (m_changed_vht[i].enabled) // add the timer?
           {
-              if (m_vht.IndexOf(m_changed_vht[i].m_timer) < 0)
-                  m_vht.AddElement(m_changed_vht[i].m_timer);
+              if (FindIndexOf(m_vht, m_changed_vht[i].m_timer) < 0)
+                  m_vht.push_back(m_changed_vht[i].m_timer);
           }
           else // delete the timer?
           {
-              const int idx = m_vht.IndexOf(m_changed_vht[i].m_timer);
+              const int idx = FindIndexOf(m_vht, m_changed_vht[i].m_timer);
               if (idx >= 0)
-                  m_vht.RemoveElementAt(idx);
+                  m_vht.erase(m_vht.begin() + idx);
           }
       m_changed_vht.clear();
 
@@ -3298,9 +3298,9 @@ void Player::UpdatePhysics()
       {
          const unsigned int p_timeCur = (unsigned int)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000); // milliseconds
 
-         for (int i = 0; i < m_vht.Size(); i++)
+         for (size_t i = 0; i < m_vht.size(); i++)
          {
-            HitTimer * const pht = m_vht.ElementAt(i);
+            HitTimer * const pht = m_vht[i];
             if ((pht->m_interval >= 0 && pht->m_nextfire <= p_timeCur) || (pht->m_interval < 0 && first_cycle))
             {
                const unsigned int curnextfire = pht->m_nextfire;
@@ -4749,8 +4749,8 @@ void Player::Render()
    m_overall_frames++;
 
    // Process all AnimObjects (currently only DispReel, LightSeq and Slingshot)
-   for (int l = 0; l < m_vanimate.Size(); ++l)
-      m_vanimate.ElementAt(l)->Animate();
+   for (size_t l = 0; l < m_vanimate.size(); ++l)
+      m_vanimate[l]->Animate();
 
 #ifdef FPS
    if (ProfilingMode() == 1)
@@ -4806,23 +4806,23 @@ void Player::Render()
    for (size_t i = 0; i < m_changed_vht.size(); ++i)
        if (m_changed_vht[i].enabled) // add the timer?
        {
-           if (m_vht.IndexOf(m_changed_vht[i].m_timer) < 0)
-               m_vht.AddElement(m_changed_vht[i].m_timer);
+           if (FindIndexOf(m_vht, m_changed_vht[i].m_timer) < 0)
+               m_vht.push_back(m_changed_vht[i].m_timer);
        }
        else // delete the timer?
        {
-           const int idx = m_vht.IndexOf(m_changed_vht[i].m_timer);
+           const int idx = FindIndexOf(m_vht, m_changed_vht[i].m_timer);
            if (idx >= 0)
-               m_vht.RemoveElementAt(idx);
+               m_vht.erase(m_vht.begin() + idx);
        }
    m_changed_vht.clear();
 
    Ball * const old_pactiveball = m_pactiveball;
    m_pactiveball = NULL;  // No ball is the active ball for timers/key events
 
-   for (int i=0;i<m_vht.Size();i++)
+   for (size_t i=0;i<m_vht.size();i++)
    {
-      HitTimer * const pht = m_vht.ElementAt(i);
+      HitTimer * const pht = m_vht[i];
       if ((pht->m_interval >= 0 && pht->m_nextfire <= m_time_msec) || pht->m_interval < 0) 
       {
          const unsigned int curnextfire = pht->m_nextfire;
@@ -5462,16 +5462,16 @@ void Player::DoDebugObjectMenu(int x, int y)
 
    const HMENU hmenu = CreatePopupMenu();
 
-   Vector<IFireEvents> vpfe;
+   vector<IFireEvents*> vpfe;
    std::vector<HMENU> vsubmenu;
    std::vector< std::vector<int>* > vvdispid;
    for (size_t i = 0; i < vhoHit.size(); i++)
    {
       HitObject * const pho = vhoHit[i];
       // Make sure we don't do the same object twice through 2 different Hitobjs.
-      if (pho->m_pfedebug && (vpfe.IndexOf(pho->m_pfedebug) == -1))
+      if (pho->m_pfedebug && (FindIndexOf(vpfe, pho->m_pfedebug) == -1))
       {
-         vpfe.AddElement(pho->m_pfedebug);
+         vpfe.push_back(pho->m_pfedebug);
          CComVariant var;
          DISPPARAMS dispparams = {
             NULL,

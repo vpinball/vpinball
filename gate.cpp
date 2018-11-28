@@ -345,7 +345,7 @@ void Gate::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 
-void Gate::GetTimers(Vector<HitTimer> * const pvht)
+void Gate::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 
@@ -357,9 +357,7 @@ void Gate::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-   {
-      pvht->AddElement(pht);
-   }
+      pvht.push_back(pht);
 }
 
 void Gate::GetHitShapes(vector<HitObject*> &pvho)

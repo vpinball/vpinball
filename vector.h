@@ -1,6 +1,4 @@
 #pragma once
-#ifndef __VECTOR_H__
-#define __VECTOR_H__
 
 #define START_SIZE 32
 #define GROW_SIZE  32
@@ -140,17 +138,12 @@ public:
 
    inline bool Clone(VectorVoid * const pvector) const
    {
+      pvector->Reset();
+
       if (m_rg)
       {
-         pvector->Reset();
-
          if ((pvector->m_rg = (void **)malloc(sizeof(void *) * m_cMax)) == NULL)
-         {
-            pvector->m_cMax = 0;
-            pvector->m_cSize = 0;
-
             return false;  // OOM
-         }
 
          pvector->m_cMax = m_cMax;
          pvector->m_cSize = m_cSize;
@@ -159,13 +152,6 @@ public:
          {
             pvector->m_rg[i] = m_rg[i];
          }
-      }
-      else
-      {
-         pvector->m_rg = NULL;
-
-         pvector->m_cMax = 0;
-         pvector->m_cSize = 0;
       }
 
       return true;
@@ -359,4 +345,19 @@ public:
 private:
     CRITICAL_SECTION hCriticalSection;
 };
-#endif
+
+template <typename T>
+inline bool Clone(const std::vector<T>& v, VectorVoid * const pvector)
+{
+    pvector->Reset();
+
+    if (!v.empty())
+    {
+        pvector->Extend(v.size());
+
+        for (size_t i = 0; i < v.size(); ++i)	// We need this for smart pointers - they need to be ref counted
+            ((T*)pvector->GetArray())[i] = v[i];
+    }
+
+    return true;
+}

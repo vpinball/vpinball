@@ -98,8 +98,8 @@ public:
    long __stdcall Stat(struct tagSTATSTG *, unsigned long);
 
    int m_cref;
-   Vector<FastIStorage> m_vstg;
-   Vector<FastIStream> m_vstm;
+   vector<FastIStorage*> m_vstg;
+   vector<FastIStream*> m_vstm;
 
    WCHAR *m_wzName;
 };

@@ -474,15 +474,11 @@ FastIStorage::FastIStorage()
 
 FastIStorage::~FastIStorage()
 {
-   for (int i = 0; i < m_vstg.Size(); i++)
-   {
-      m_vstg.ElementAt(i)->Release();
-   }
+   for (size_t i = 0; i < m_vstg.size(); i++)
+      m_vstg[i]->Release();
 
-   for (int i = 0; i < m_vstm.Size(); i++)
-   {
-      m_vstm.ElementAt(i)->Release();
-   }
+   for (size_t i = 0; i < m_vstm.size(); i++)
+      m_vstm[i]->Release();
 
    SAFE_VECTOR_DELETE(m_wzName);
 }
@@ -522,7 +518,7 @@ long __stdcall FastIStorage::CreateStream(const WCHAR *wzName, unsigned long, un
 
    *ppstm = pfs;
 
-   m_vstm.AddElement(pfs);
+   m_vstm.push_back(pfs);
 
    return S_OK;
 }
@@ -543,7 +539,7 @@ long __stdcall FastIStorage::CreateStorage(const WCHAR *wzName, unsigned long, u
 
    *ppstg = pfs;
 
-   m_vstg.AddElement(pfs);
+   m_vstg.push_back(pfs);
 
    return S_OK;
 }
@@ -559,9 +555,9 @@ long __stdcall FastIStorage::CopyTo(unsigned long, const struct _GUID *, WCHAR *
    IStorage *pstgT;
    IStream *pstmT;
 
-   for (int i = 0; i < m_vstg.Size(); i++)
+   for (size_t i = 0; i < m_vstg.size(); i++)
    {
-      FastIStorage *pstgCur = m_vstg.ElementAt(i);
+      FastIStorage * const pstgCur = m_vstg[i];
       if (SUCCEEDED(hr = pstgNew->CreateStorage(pstgCur->m_wzName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstgT)))
       {
          pstgCur->CopyTo(0, NULL, NULL, pstgT);
@@ -569,9 +565,9 @@ long __stdcall FastIStorage::CopyTo(unsigned long, const struct _GUID *, WCHAR *
       }
    }
 
-   for (int i = 0; i < m_vstm.Size(); i++)
+   for (size_t i = 0; i < m_vstm.size(); i++)
    {
-      FastIStream *pstmCur = m_vstm.ElementAt(i);
+      FastIStream * const pstmCur = m_vstm[i];
       if (SUCCEEDED(hr = pstgNew->CreateStream(pstmCur->m_wzName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmT)))
       {
          ULONG writ;

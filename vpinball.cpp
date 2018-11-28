@@ -749,15 +749,15 @@ void VPinball::CreateMDIClient()
       TOOLBAR_WIDTH + SCROLL_WIDTH, 0, rc.right - rc.left - (TOOLBAR_WIDTH + SCROLL_WIDTH), rc.bottom - rc.top, m_hwnd, NULL, g_hinst, &ccs);
 }
 
-void VPinball::SetClipboard(Vector<IStream> *pvstm)
+void VPinball::SetClipboard(vector<IStream*> * const pvstm)
 {
-   for (int i = 0; i < m_vstmclipboard.Size(); i++)
-      m_vstmclipboard.ElementAt(i)->Release();
-   m_vstmclipboard.RemoveAllElements();
+   for (size_t i = 0; i < m_vstmclipboard.size(); i++)
+      m_vstmclipboard[i]->Release();
+   m_vstmclipboard.clear();
 
    if (pvstm)
-      for (int i = 0; i < pvstm->Size(); i++)
-         m_vstmclipboard.AddElement(pvstm->ElementAt(i));
+      for (size_t i = 0; i < pvstm->size(); i++)
+         m_vstmclipboard.push_back((*pvstm)[i]);
 }
 
 void VPinball::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
@@ -849,7 +849,7 @@ void VPinball::SetPropSel(VectorProtected<ISelect> *pvsel)
    m_sb.CreateFromDispatch(m_hwnd, pvsel);
 }
 
-void VPinball::DeletePropSel(void)
+void VPinball::DeletePropSel()
 {
    m_sb.RemoveSelection();
 }

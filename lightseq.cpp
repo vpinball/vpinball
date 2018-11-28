@@ -190,7 +190,7 @@ void LightSeq::RenderBlueprint(Sur *psur, const bool solid)
 //
 // for this sort of object it is basically not really required but hey, somebody might use it..
 //
-void LightSeq::GetTimers(Vector<HitTimer> * const pvht)
+void LightSeq::GetTimers(vector<HitTimer*> &pvht)
 {
    HitTimer * const pht = new HitTimer();
    pht->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : -1;
@@ -200,9 +200,7 @@ void LightSeq::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-   {
-      pvht->AddElement(pht);
-   }
+      pvht.push_back(pht);
 }
 
 void LightSeq::GetHitShapes(vector<HitObject*> &pvho)

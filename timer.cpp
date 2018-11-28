@@ -103,7 +103,7 @@ void Timer::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 
-void Timer::GetTimers(Vector<HitTimer> * const pvht)
+void Timer::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 
@@ -116,7 +116,7 @@ void Timer::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-      pvht->AddElement(pht);
+      pvht.push_back(pht);
 }
 
 void Timer::GetHitShapes(vector<HitObject*> &pvho)
