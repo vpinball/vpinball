@@ -173,7 +173,7 @@ void Textbox::UIRenderPass2(Sur * const psur)
    psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
 }
 
-void Textbox::GetTimers(Vector<HitTimer> * const pvht)
+void Textbox::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 
@@ -185,9 +185,7 @@ void Textbox::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-   {
-      pvht->AddElement(pht);
-   }
+      pvht.push_back(pht);
 }
 
 void Textbox::GetHitShapes(vector<HitObject*> &pvho)

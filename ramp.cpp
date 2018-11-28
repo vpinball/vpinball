@@ -560,7 +560,7 @@ float Ramp::GetSurfaceHeight(float x, float y) const
    return vvertex[iSeg].z + (startlength / totallength) * (topHeight - bottomHeight) + bottomHeight;
 }
 
-void Ramp::GetTimers(Vector<HitTimer> * const pvht)
+void Ramp::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 
@@ -572,7 +572,7 @@ void Ramp::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-      pvht->AddElement(pht);
+      pvht.push_back(pht);
 }
 
 void Ramp::GetHitShapes(vector<HitObject*> &pvho)

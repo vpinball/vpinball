@@ -268,7 +268,7 @@ void Plunger::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
-void Plunger::GetTimers(Vector<HitTimer> * const pvht)
+void Plunger::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 
@@ -280,9 +280,7 @@ void Plunger::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-   {
-      pvht->AddElement(pht);
-   }
+      pvht.push_back(pht);
 }
 
 void Plunger::EndPlay()

@@ -4,7 +4,7 @@ class HitRectSur : public Sur
 {
 public:
 
-   HitRectSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, FRect * const prcRect, Vector<ISelect> * const pvsel);
+   HitRectSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, FRect * const prcRect, vector<ISelect*> * const pvsel);
    virtual ~HitRectSur();
 
    virtual void Line(const float x, const float y, const float x2, const float y2);
@@ -23,20 +23,20 @@ public:
 
    virtual void SetObject(ISelect *psel);
 
-   void FailObject();
-
    virtual void SetFillColor(const int rgb);
    virtual void SetBorderColor(const int rgb, const bool fDashed, const int width);
    virtual void SetLineColor(const int rgb, const bool fDashed, const int width);
 
 private:
+   void FailObject();
+
    ISelect *m_pcur;
 
-   int m_indexcur;
+   size_t m_indexcur;
 
    FRect m_rcRect;
-   Vector<ISelect> *m_pvsel;
-   Vector<ISelect> m_vselFailed;
+   vector<ISelect*> *m_pvsel;
+   vector<ISelect*> m_vselFailed;
 
    bool m_fFailedAlready; // Object has already been discounted from selection
 };

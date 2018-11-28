@@ -59,9 +59,9 @@ public:
    void FireVoidGroupEvent(int dispid)
    {
       T* const pT = (T*)this;
-      for (int i = 0; i < pT->m_vEventCollection.Size(); ++i)
+      for (size_t i = 0; i < pT->m_vEventCollection.size(); ++i)
       {
-         Collection * const pcollection = pT->m_vEventCollection.ElementAt(i);
+         Collection * const pcollection = pT->m_vEventCollection[i];
 
          CComVariant rgvar[1] = { CComVariant((long)pT->m_viEventCollection[i]) };
 

@@ -37,9 +37,9 @@ void IEditable::Delete()
    if (GetScriptable())
       GetPTable()->m_pcv->RemoveItem(GetScriptable());
 
-   for (int i = 0; i < m_vCollection.Size(); i++)
+   for (size_t i = 0; i < m_vCollection.size(); i++)
    {
-      Collection *pcollection = m_vCollection.ElementAt(i);
+      Collection * const pcollection = m_vCollection[i];
       pcollection->m_visel.RemoveElement(GetISelect());
    }
 }
@@ -128,16 +128,16 @@ HRESULT IEditable::put_UserValue(VARIANT *newVal)
 
 void IEditable::BeginPlay()
 {
-   m_vEventCollection.RemoveAllElements();
+   m_vEventCollection.clear();
    m_viEventCollection.clear();
 
    m_fSingleEvents = true;
-   for (int i = 0; i < m_vCollection.Size(); i++)
+   for (size_t i = 0; i < m_vCollection.size(); i++)
    {
-      Collection * const pcol = m_vCollection.ElementAt(i);
+      Collection * const pcol = m_vCollection[i];
       if (pcol->m_fFireEvents)
       {
-         m_vEventCollection.AddElement(pcol);
+         m_vEventCollection.push_back(pcol);
          m_viEventCollection.push_back(m_viCollection[i]);
       }
       if (pcol->m_fStopSingleEvents)
@@ -185,9 +185,9 @@ void IEditable::Undelete()
 {
    InitVBA(fTrue, 0, (WCHAR *)this);
 
-   for (int i = 0; i < m_vCollection.Size(); i++)
+   for (size_t i = 0; i < m_vCollection.size(); i++)
    {
-      Collection *pcollection = m_vCollection.ElementAt(i);
+      Collection * const pcollection = m_vCollection[i];
       pcollection->m_visel.AddElement(GetISelect());
    }
 }

@@ -85,12 +85,12 @@ public:
 
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
 
-   void unlock(void)
+   void unlock()
    {
       CHECKD3D(this->Unlock());
    }
 
-   void release(void)
+   void release()
    {
       SAFE_RELEASE_NO_CHECK_NO_SET(this);
    }
@@ -116,12 +116,12 @@ public:
 
    void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
 
-   void unlock(void)
+   void unlock()
    {
       CHECKD3D(this->Unlock());
    }
 
-   void release(void)
+   void release()
    {
       SAFE_RELEASE_NO_CHECK_NO_SET(this);
    }

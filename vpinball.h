@@ -58,7 +58,7 @@ public:
    void InitRegValues();
    bool LoadFile();
    void LoadFileName(char *szFileName);
-   void SetClipboard(Vector<IStream> *pvstm);
+   void SetClipboard(vector<IStream*> * const pvstm);
 
    bool FCanClose();
 
@@ -70,7 +70,7 @@ public:
    float ConvertToUnit(float value);
    void SetPropSel(VectorProtected<ISelect> *pvsel);
 
-   void DeletePropSel(void);
+   void DeletePropSel();
    void SetActionCur(char *szaction);
    void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
 
@@ -136,7 +136,7 @@ public:
 
    SmartBrowser m_sb;
 
-   Vector<IStream> m_vstmclipboard;
+   vector<IStream*> m_vstmclipboard;
 
    PinDirectSound m_pds; //!! delete as soon as all on BASS
    PinDirectSound *m_pbackglassds; //!! delete

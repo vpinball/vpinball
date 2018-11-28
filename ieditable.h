@@ -138,7 +138,7 @@ public:
 	virtual PinTable *GetPTable() {return m_ptable;} \
 	virtual void GetHitShapes(vector<HitObject*> &pvho); \
 	virtual void GetHitShapesDebug(vector<HitObject*> &pvho); \
-	virtual void GetTimers(Vector<HitTimer> * const pvht); \
+	virtual void GetTimers(vector<HitTimer*> &pvht); \
 	virtual void EndPlay(); \
 	virtual void Delete() {IEditable::Delete();} \
 	virtual void Uncreate() {IEditable::Uncreate();} \
@@ -244,12 +244,13 @@ public:
 
    VARIANT m_uservalue;
 
-   Vector<Collection> m_vCollection;
+   vector<Collection*> m_vCollection;
    vector<int> m_viCollection;
 
    // Optimizations for in-game
-   Vector<Collection> m_vEventCollection;
+   vector<Collection*> m_vEventCollection;
    vector<int> m_viEventCollection;
+
    bool m_fSingleEvents;
 
    bool m_fBackglass; // if the light is on the table (false) or a backglass view

@@ -2,7 +2,7 @@
 
 #define PTINRECT(x,y) ((x) >= m_rcRect.left && (x) <= m_rcRect.right && (y) > m_rcRect.top && (y) < m_rcRect.bottom)
 
-HitRectSur::HitRectSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, FRect * const prcRect, Vector<ISelect> * const pvsel) : Sur(hdc, zoom, offx, offy, width, height)
+HitRectSur::HitRectSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, FRect * const prcRect, vector<ISelect*> * const pvsel) : Sur(hdc, zoom, offx, offy, width, height)
 {
    m_rcRect = *prcRect;
    m_pvsel = pvsel;
@@ -157,18 +157,19 @@ void HitRectSur::SetObject(ISelect *psel)
    m_pcur = psel;
    if (m_pcur)
    {
-      if (m_vselFailed.IndexOf(psel) != -1)
+      if (FindIndexOf(m_vselFailed, psel) != -1)
       {
          // Object failed previously - just skip this time
          m_fFailedAlready = true;
       }
       else
       {
-         const int index = m_pvsel->IndexOf(psel);
+         const size_t index = FindIndexOf(*m_pvsel,psel);
          if (index == -1)
          {
             // Object not in list yet - add it
-            m_indexcur = m_pvsel->AddElement(psel);
+            m_indexcur = m_pvsel->size();
+            m_pvsel->push_back(psel);
          }
          else
          {
@@ -187,10 +188,10 @@ void HitRectSur::FailObject()
 {
    m_fFailedAlready = true;
 
-   _ASSERTE(m_indexcur < m_pvsel->Size());
+   _ASSERTE(m_indexcur < m_pvsel->size());
 
-   m_pvsel->RemoveElementAt(m_indexcur); // perf?  Probably doesn't matter
-   m_vselFailed.AddElement(m_pcur);
+   m_pvsel->erase(m_pvsel->begin() + m_indexcur); // perf?  Probably doesn't matter
+   m_vselFailed.push_back(m_pcur);
 }
 
 void HitRectSur::SetFillColor(const int rgb)

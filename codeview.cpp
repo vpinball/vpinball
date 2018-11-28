@@ -1555,9 +1555,9 @@ bool CodeViewer::FControlAlreadyOkayed(CONFIRMSAFETY *pcs)
 {
    if (g_pplayer)
    {
-      for (int i = 0; i < g_pplayer->m_controlclsidsafe.Size(); ++i)
+      for (size_t i = 0; i < g_pplayer->m_controlclsidsafe.size(); ++i)
       {
-         const CLSID * const pclsid = g_pplayer->m_controlclsidsafe.ElementAt(i);
+         const CLSID * const pclsid = g_pplayer->m_controlclsidsafe[i];
          if (*pclsid == pcs->clsid)
             return true;
       }
@@ -1572,7 +1572,7 @@ void CodeViewer::AddControlToOkayedList(CONFIRMSAFETY *pcs)
    {
       CLSID * const pclsid = new CLSID();
       *pclsid = pcs->clsid;
-      g_pplayer->m_controlclsidsafe.AddElement(pclsid);
+      g_pplayer->m_controlclsidsafe.push_back(pclsid);
    }
 }
 
@@ -3138,7 +3138,7 @@ BOOL Collection::LoadToken(int id, BiffReader *pbr)
          {
             if (!WideStrCmp(piscript->m_wzName, wzT))
             {
-               piscript->GetISelect()->GetIEditable()->m_vCollection.AddElement(this);
+               piscript->GetISelect()->GetIEditable()->m_vCollection.push_back(this);
                piscript->GetISelect()->GetIEditable()->m_viCollection.push_back(m_visel.Size());
                m_visel.AddElement(piscript->GetISelect());
                return fTrue;

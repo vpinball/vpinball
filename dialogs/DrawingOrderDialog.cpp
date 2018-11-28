@@ -41,27 +41,28 @@ BOOL DrawingOrderDialog::OnInitDialog()
       ListView_DeleteAllItems(hOrderList);
    lv.mask = LVIF_TEXT;
 
-   char textBuf[256];
    // create a selection in the same drawing order as the selected elements are stored in the main vector
-   Vector<ISelect> selection;
+   vector<ISelect*> selection;
    if (m_drawingOrderSelect)
    {
       for (int i = pt->m_vedit.Size() - 1; i >= 0; i--)
          for (int t = 0; t < pt->m_vmultisel.Size(); t++)
          {
             if (pt->m_vmultisel.ElementAt(t) == pt->m_vedit.ElementAt(i)->GetISelect())
-               selection.AddElement(pt->m_vmultisel.ElementAt(t));
+               selection.push_back(pt->m_vmultisel.ElementAt(t));
          }
    }
-   for (int i = 0; i < (m_drawingOrderSelect ? selection.Size() : pt->m_allHitElements.Size()); i++)
+   for (size_t i = 0; i < (m_drawingOrderSelect ? selection.size() : pt->m_allHitElements.Size()); i++)
    {
-      IEditable *pedit = m_drawingOrderSelect ? selection.ElementAt(i)->GetIEditable() : pt->m_allHitElements.ElementAt(i)->GetIEditable();
+      IEditable *pedit = m_drawingOrderSelect ? selection[i]->GetIEditable() : pt->m_allHitElements.ElementAt(i)->GetIEditable();
       if (pedit)
       {
          char *szTemp;
          szTemp = pt->GetElementName(pedit);
          if (szTemp)
          {
+            char textBuf[256];
+
             lv.iItem = i;
             lv.iSubItem = 0;
             lv.pszText = szTemp;

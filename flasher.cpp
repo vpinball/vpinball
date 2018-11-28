@@ -319,7 +319,7 @@ void Flasher::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 
-void Flasher::GetTimers(Vector<HitTimer> * const pvht)
+void Flasher::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 
@@ -331,7 +331,7 @@ void Flasher::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-      pvht->AddElement(pht);
+      pvht.push_back(pht);
 }
 
 void Flasher::GetHitShapes(vector<HitObject*> &pvho)

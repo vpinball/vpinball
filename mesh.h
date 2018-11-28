@@ -226,7 +226,7 @@ inline bool FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * cons
    return (d341 * d342 < 0.0f);
 }
 
-// RenderVertexCont is either an array or a Vector<> of RenderVertex
+// RenderVertexCont = vector<> of RenderVertex (at the moment)
 template <class RenderVertexCont>
 inline bool AdvancePoint(const RenderVertexCont& rgv, const std::vector<unsigned int>& pvpoly, const unsigned int a, const unsigned int b, const unsigned int c, const int pre, const int post)
 {

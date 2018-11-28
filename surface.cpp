@@ -352,7 +352,7 @@ void Surface::RenderBlueprint(Sur *psur, const bool solid)
    psur->Polygon(vvertex);
 }
 
-void Surface::GetTimers(Vector<HitTimer> * const pvht)
+void Surface::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 
@@ -364,7 +364,7 @@ void Surface::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-      pvht->AddElement(pht);
+      pvht.push_back(pht);
 }
 
 void Surface::GetHitShapes(vector<HitObject*> &pvho)

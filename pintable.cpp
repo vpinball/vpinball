@@ -1673,17 +1673,21 @@ void PinTable::SwitchToLayer(int layerNumber)
    // if not new elements will be stored in layer1
    for (int t = 0; t < m_vedit.Size(); t++)
    {
-      IEditable *piedit = m_vedit.ElementAt(t);
+      IEditable * const piedit = m_vedit.ElementAt(t);
       bool alreadyIn = false;
       for (int i = 0; i < MAX_LAYERS; i++)
       {
-         if (m_layer[i].IndexOf(piedit) != -1)
+         if (FindIndexOf(m_layer[i], piedit) != -1)
+         {
             alreadyIn = true;
+            break;
+         }
       }
+
       if (!alreadyIn)
       {
          piedit->GetISelect()->m_layerIndex = 0;
-         m_layer[0].AddElement(piedit);
+         m_layer[0].push_back(piedit);
       }
    }
    //toggle layer
@@ -1692,21 +1696,10 @@ void PinTable::SwitchToLayer(int layerNumber)
    // now set all elements to visible if their layer is active, otherwise hide them
    for (int i = 0; i < MAX_LAYERS; i++)
    {
-      if (m_activeLayers[i])
+      for (size_t t = 0; t < m_layer[i].size(); t++)
       {
-         for (int t = 0; t < m_layer[i].Size(); t++)
-         {
-            IEditable *piedit = m_layer[i].ElementAt(t);
-            piedit->m_isVisible = true;
-         }
-      }
-      else
-      {
-         for (int t = 0; t < m_layer[i].Size(); t++)
-         {
-            IEditable *piedit = m_layer[i].ElementAt(t);
-            piedit->m_isVisible = false;
-         }
+         IEditable * const piedit = m_layer[i][t];
+         piedit->m_isVisible = m_activeLayers[i];
       }
    }
 
@@ -1717,9 +1710,9 @@ void PinTable::AssignToLayer(IEditable *obj, int layerNumber)
 {
    if (!m_activeLayers[layerNumber])
       obj->m_isVisible = false;
-   m_layer[obj->GetISelect()->m_layerIndex].RemoveElement(obj);
+   RemoveFromVectorSingle(m_layer[obj->GetISelect()->m_layerIndex], obj);
    obj->GetISelect()->m_layerIndex = layerNumber;
-   m_layer[layerNumber].InsertElementAt(obj, 0);
+   m_layer[layerNumber].insert(m_layer[layerNumber].begin(), obj);
    SetDirtyDraw();
 }
 
@@ -1727,15 +1720,15 @@ void PinTable::MergeAllLayers()
 {
    for (int t = 1; t < MAX_LAYERS; t++)
    {
-      for (int i = m_layer[t].Size() - 1; i >= 0; i--)
+      for (SSIZE_T i = m_layer[t].size() - 1; i >= 0; i--)
       {
-         IEditable *piedit = m_layer[t].ElementAt(i);
+         IEditable * const piedit = m_layer[t][i];
          piedit->GetISelect()->m_layerIndex = 0;
-         m_layer[0].AddElement(piedit);
+         m_layer[0].push_back(piedit);
       }
-      m_layer[t].RemoveAllElements();
+      m_layer[t].clear();
    }
-   m_layer[0].Clone(&m_vedit);
+   Clone(m_layer[0], &m_vedit);
 
    SetDirtyDraw();
 }
@@ -1750,22 +1743,22 @@ void PinTable::BackupLayers()
       bool alreadyIn = false;
       for (int i = 0; i < MAX_LAYERS; i++)
       {
-         if (m_layer[i].IndexOf(piedit) != -1)
+         if (FindIndexOf(m_layer[i], piedit) != -1)
             alreadyIn = true;
       }
       if (!alreadyIn)
       {
          piedit->GetISelect()->m_layerIndex = 0;
-         m_layer[0].AddElement(piedit);
+         m_layer[0].push_back(piedit);
       }
    }
    // make all elements visible again
    for (int t = 0; t < MAX_LAYERS; t++)
    {
-      //      for( int i=m_layer[t].Size()-1;i>=0;i-- )
-      for (int i = 0; i < m_layer[t].Size(); i++)
+      //for(SSIZE_T i = m_layer[t].size()-1; i >= 0; i--)
+      for (size_t i = 0; i < m_layer[t].size(); i++)
       {
-         IEditable *piedit = m_layer[t].ElementAt(i);
+         IEditable * const piedit = m_layer[t][i];
          piedit->m_isVisible = true;
       }
    }
@@ -1775,21 +1768,10 @@ void PinTable::RestoreLayers()
 {
    for (int i = 0; i < MAX_LAYERS; i++)
    {
-      if (m_activeLayers[i])
+      for (size_t t = 0; t < m_layer[i].size(); t++)
       {
-         for (int t = 0; t < m_layer[i].Size(); t++)
-         {
-            IEditable *piedit = m_layer[i].ElementAt(t);
-            piedit->m_isVisible = true;
-         }
-      }
-      else
-      {
-         for (int t = 0; t < m_layer[i].Size(); t++)
-         {
-            IEditable *piedit = m_layer[i].ElementAt(t);
-            piedit->m_isVisible = false;
-         }
+         IEditable * const piedit = m_layer[i][t];
+         piedit->m_isVisible = m_activeLayers[i];
       }
    }
 }
@@ -1798,9 +1780,9 @@ void PinTable::DeleteFromLayer(IEditable *obj)
 {
    for (int i = 0; i < MAX_LAYERS; i++)
    {
-      if (m_layer[i].IndexOf(obj) != -1)
+      if (FindIndexOf(m_layer[i], obj) != -1)
       {
-         m_layer[i].RemoveElement(obj);
+         RemoveFromVectorSingle(m_layer[i], obj);
          break;
       }
    }
@@ -2257,17 +2239,17 @@ ISelect *PinTable::HitTest(const int x, const int y)
    }
    delete phs2;
 
-   Vector<ISelect> tmpBuffer;
+   vector<ISelect*> tmpBuffer;
    for (int i = m_allHitElements.Size() - 1; i >= 0; i--)
    {
-      tmpBuffer.AddElement(m_allHitElements.ElementAt(i));
+      tmpBuffer.push_back(m_allHitElements.ElementAt(i));
    }
    m_allHitElements.RemoveAllElements();
-   for (int i = 0; i < tmpBuffer.Size(); i++)
+   for (size_t i = 0; i < tmpBuffer.size(); i++)
    {
-      m_allHitElements.AddElement(tmpBuffer.ElementAt(i));
+      m_allHitElements.AddElement(tmpBuffer[i]);
    }
-   tmpBuffer.RemoveAllElements();
+   tmpBuffer.clear();
 
    ISelect * const pisel = phs->m_pselected;
    delete phs;
@@ -3884,14 +3866,14 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
    // copy all elements into their layers
    for (int i = 0; i < MAX_LAYERS; i++)
    {
-      m_layer[i].Empty();
+      m_layer[i].clear();
 
       for (int t = 0; t < m_vedit.Size(); t++)
       {
          IEditable *piedit = m_vedit.ElementAt(t);
          if (piedit->GetISelect()->m_layerIndex == i)
          {
-            m_layer[i].AddElement(piedit);
+            m_layer[i].push_back(piedit);
          }
       }
    }
@@ -4744,7 +4726,7 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fFromSelection)
             {
                if (piedit->GetScriptable()) // check for scriptable because can't add decals to a collection - they have no name
                {
-                  piedit->m_vCollection.AddElement(pcol);
+                  piedit->m_vCollection.push_back(pcol);
                   piedit->m_viCollection.push_back(pcol->m_visel.Size());
                   pcol->m_visel.AddElement(m_vmultisel.ElementAt(i));
                }
@@ -6743,7 +6725,7 @@ void PinTable::Copy(int x, int y)
        }
    }
 
-   Vector<IStream> vstm;
+   vector<IStream*> vstm;
    //m_vstmclipboard
    for(int i = 0; i < m_vmultisel.Size(); i++)
    {
@@ -6761,7 +6743,7 @@ void PinTable::Copy(int x, int y)
 
        pe->SaveData(pstm, NULL);
 
-       vstm.AddElement(pstm);
+       vstm.push_back(pstm);
    }
 
    g_pvp->SetClipboard(&vstm);
@@ -6792,10 +6774,10 @@ void PinTable::Paste(const bool fAtLocation, int x, int y)
    // Do a backwards loop, so that the primary selection we had when
    // copying will again be the primary selection, since it will be
    // selected last.  Purely cosmetic.
-   for (int i = (g_pvp->m_vstmclipboard.Size() - 1); i >= 0; i--)
-      //for (i=0;i<g_pvp->m_vstmclipboard.Size();i++)
+   for (SSIZE_T i = g_pvp->m_vstmclipboard.size() - 1; i >= 0; i--)
+   //for (size_t i=0; i<g_pvp->m_vstmclipboard.size(); i++)
    {
-      pstm = g_pvp->m_vstmclipboard.ElementAt(i);
+      pstm = g_pvp->m_vstmclipboard[i];
 
       // Go back to beginning of stream to load
       LARGE_INTEGER foo;
@@ -6825,11 +6807,11 @@ void PinTable::Paste(const bool fAtLocation, int x, int y)
 
          m_vedit.AddElement(peditNew);
          // copy the new element to the same layer as the source element
-         m_layer[peditNew->GetISelect()->m_layerIndex].AddElement(peditNew);
+         m_layer[peditNew->GetISelect()->m_layerIndex].push_back(peditNew);
          peditNew->InitPostLoad();
          peditNew->m_fBackglass = g_pvp->m_fBackglassView;
 
-         AddMultiSel(peditNew->GetISelect(), (i == g_pvp->m_vstmclipboard.Size() - 1) ? false : true);
+         AddMultiSel(peditNew->GetISelect(), (i != g_pvp->m_vstmclipboard.size() - 1));
          cpasted++;
       }
    }
@@ -7029,20 +7011,20 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
 
 void PinTable::OnDelete()
 {
-   Vector<ISelect> m_vseldelete;
+   vector<ISelect*> m_vseldelete;
 
    for (int i = 0; i < m_vmultisel.Size(); i++)
    {
       // Can't delete these items yet - ClearMultiSel() will try to mark them as unselected
-      m_vseldelete.AddElement(m_vmultisel.ElementAt(i));
+      m_vseldelete.push_back(m_vmultisel.ElementAt(i));
    }
 
    ClearMultiSel();
 
    bool inCollection = false;
-   for (int t = 0; t < m_vseldelete.Size() && !inCollection; t++)
+   for (size_t t = 0; t < m_vseldelete.size() && !inCollection; t++)
    {
-      ISelect *ptr = m_vseldelete.ElementAt(t);
+      ISelect *ptr = m_vseldelete[t];
       for (int i = 0; i < m_vcollection.size() && !inCollection; i++)
       {
          for (int k = 0; k < m_vcollection.ElementAt(i)->m_visel.Size(); k++)
@@ -7065,10 +7047,10 @@ void PinTable::OnDelete()
       }
    }
 
-   for (int i = 0; i < m_vseldelete.Size(); i++)
+   for (size_t i = 0; i < m_vseldelete.size(); i++)
    {
-      DeleteFromLayer(m_vseldelete.ElementAt(i)->GetIEditable());
-      m_vseldelete.ElementAt(i)->Delete();
+      DeleteFromLayer(m_vseldelete[i]->GetIEditable());
+      m_vseldelete[i]->Delete();
    }
    // update properties to show the properties of the table
    g_pvp->SetPropSel(&m_vmultisel);
@@ -7195,7 +7177,7 @@ void PinTable::OnLButtonUp(int x, int y)
       ReleaseCapture();
       if ((m_rcDragRect.left != m_rcDragRect.right) || (m_rcDragRect.top != m_rcDragRect.bottom))
       {
-         Vector<ISelect> vsel;
+         vector<ISelect*> vsel;
 
          HDC hdc = ::GetDC(m_hwnd);
 
@@ -7214,28 +7196,28 @@ void PinTable::OnLButtonUp(int x, int y)
 
          int minlevel = INT_MAX;
 
-         for (int i = 0; i < vsel.Size(); i++)
+         for (size_t i = 0; i < vsel.size(); i++)
          {
-            minlevel = min(minlevel, vsel.ElementAt(i)->GetSelectLevel());
+            minlevel = min(minlevel, vsel[i]->GetSelectLevel());
          }
 
-         if (vsel.Size() > 0)
+         if (vsel.size() > 0)
          {
             int lastItemForUpdate = -1;
             //first check which item is the last item to add to the multi selection
-            for (int i = 0; i < vsel.Size(); i++)
+            for (size_t i = 0; i < vsel.size(); i++)
             {
-               if (vsel.ElementAt(i)->GetSelectLevel() == minlevel)
+               if (vsel[i]->GetSelectLevel() == minlevel)
                {
                   lastItemForUpdate = i;
                }
             }
 
-            for (int i = 0; i < vsel.Size(); i++)
+            for (size_t i = 0; i < vsel.size(); i++)
             {
-               if (vsel.ElementAt(i)->GetSelectLevel() == minlevel)
+               if (vsel[i]->GetSelectLevel() == minlevel)
                {
-                  AddMultiSel(vsel.ElementAt(i), true, (i == lastItemForUpdate)); //last item updates the (multi-)selection in the editor
+                  AddMultiSel(vsel[i], true, (i == lastItemForUpdate)); //last item updates the (multi-)selection in the editor
                }
             }
          }
@@ -8367,7 +8349,7 @@ void PinTable::AddDbgMaterial(Material *pmat)
    }
 }
 
-void PinTable::UpdateDbgMaterial(void)
+void PinTable::UpdateDbgMaterial()
 {
    bool somethingChanged = false;
    for (size_t i = 0; i < m_dbgChangedMaterials.size(); i++)

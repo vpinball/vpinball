@@ -228,7 +228,7 @@ void Flipper::WriteRegDefaults()
 }
 
 
-void Flipper::GetTimers(Vector<HitTimer> * const pvht)
+void Flipper::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 
@@ -240,7 +240,7 @@ void Flipper::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-      pvht->AddElement(pht);
+      pvht.push_back(pht);
 }
 
 void Flipper::GetHitShapes(vector<HitObject*> &pvho)

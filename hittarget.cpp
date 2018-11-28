@@ -1757,7 +1757,7 @@ STDMETHODIMP HitTarget::put_OverwritePhysics(VARIANT_BOOL newVal)
       return S_OK;
 }
 
-void HitTarget::GetTimers(Vector<HitTimer> * const pvht)
+void HitTarget::GetTimers(vector<HitTimer*> &pvht)
 {
     IEditable::BeginPlay();
 
@@ -1769,7 +1769,7 @@ void HitTarget::GetTimers(Vector<HitTimer> * const pvht)
     m_phittimer = pht;
 
     if (m_d.m_tdr.m_fTimerEnabled)
-        pvht->AddElement(pht);
+        pvht.push_back(pht);
 }
 
 STDMETHODIMP HitTarget::get_RaiseDelay(long *pVal)

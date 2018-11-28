@@ -246,7 +246,7 @@ void Decal::UIRenderPass2(Sur * const psur)
    }
 }
 
-void Decal::GetTimers(Vector<HitTimer> * const pvht)
+void Decal::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 }

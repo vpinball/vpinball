@@ -126,7 +126,7 @@ void SmartBrowser::FreePropPanes()
    m_vproppane.clear();
 }
 
-void SmartBrowser::RemoveSelection(void)
+void SmartBrowser::RemoveSelection()
 {
    if (m_pvsel)
    {

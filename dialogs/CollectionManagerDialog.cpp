@@ -487,11 +487,11 @@ void CollectionDialog::OnOK()
 
     for(int i = 0; i < pcol->m_visel.Size(); i++)
     {
-        const int index = pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection.IndexOf(pcol);
+        const int index = FindIndexOf(pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection, pcol);
         if(index != -1)
         {
-            pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection.RemoveElementAt(index);
-			pcol->m_visel.ElementAt(i)->GetIEditable()->m_viCollection.erase(pcol->m_visel.ElementAt(i)->GetIEditable()->m_viCollection.begin()+index);
+            pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection.erase (pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection.begin()  + index);
+            pcol->m_visel.ElementAt(i)->GetIEditable()->m_viCollection.erase(pcol->m_visel.ElementAt(i)->GetIEditable()->m_viCollection.begin() + index);
         }
     }
 
@@ -508,7 +508,7 @@ void CollectionDialog::OnOK()
         if(pisel) // Not sure how we could possibly get an iscript here that was never an iselect
         {
             pcol->m_visel.AddElement(pisel);
-            pisel->GetIEditable()->m_vCollection.AddElement(pcol);
+            pisel->GetIEditable()->m_vCollection.push_back(pcol);
             pisel->GetIEditable()->m_viCollection.push_back((int)i);
         }
     }

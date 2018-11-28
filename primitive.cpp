@@ -440,7 +440,7 @@ void Primitive::WriteRegDefaults()
    SetRegValueBool(strKeyName, "DisplayTexture", m_d.m_fDisplayTexture);
 }
 
-void Primitive::GetTimers(Vector<HitTimer> * const pvht)
+void Primitive::GetTimers(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
 }
