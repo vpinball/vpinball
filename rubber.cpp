@@ -46,18 +46,18 @@ HRESULT Rubber::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    //float length = 0.5f * GetRegStringAsFloatWithDefault("DefaultProps\\Rubber", "Length", 400.0f);
 
-   CComObject<DragPoint> *pdp;
    for (int i = 8; i > 0; i--)
    {
       const float angle = (float)(M_PI*2.0 / 8.0)*(float)i;
       const float xx = x + sinf(angle)*50.0f;
       const float yy = y - cosf(angle)*50.0f;
+      CComObject<DragPoint> *pdp;
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
          pdp->Init(this, xx, yy, 0.f, true);
-         m_vdpoint.AddElement(pdp);
+         m_vdpoint.push_back(pdp);
       }
    }
 
@@ -227,9 +227,9 @@ void Rubber::UIRenderPass2(Sur * const psur)
    if (!fDrawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
-      for (int i = 0; i < m_vdpoint.Size(); i++)
+      for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
-         const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+         const CComObject<DragPoint> * const pdp = m_vdpoint[i];
          if (pdp->m_selectstate != eNotSelected)
          {
             fDrawDragpoints = true;
@@ -240,9 +240,9 @@ void Rubber::UIRenderPass2(Sur * const psur)
 
    if (fDrawDragpoints)
    {
-      for (int i = 0; i < m_vdpoint.Size(); i++)
+      for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
-         CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+         CComObject<DragPoint> * const pdp = m_vdpoint[i];
          psur->SetFillColor(-1);
          psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
          psur->SetObject(pdp);
@@ -661,9 +661,9 @@ void Rubber::SetObjectPos()
 
 void Rubber::MoveOffset(const float dx, const float dy)
 {
-   for (int i = 0; i < m_vdpoint.Size(); i++)
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+      CComObject<DragPoint> * const pdp = m_vdpoint[i];
 
       pdp->m_v.x += dx;
       pdp->m_v.y += dy;
@@ -893,7 +893,7 @@ void Rubber::DoCommand(int icmd, int x, int y)
          return;
 
       //if (icp == 0) // need to add point after the last point
-      //icp = m_vdpoint.Size();
+      //icp = m_vdpoint.size();
       STARTUNDO
 
       CComObject<DragPoint> *pdp;
@@ -902,7 +902,7 @@ void Rubber::DoCommand(int icmd, int x, int y)
       {
          pdp->AddRef();
          pdp->Init(this, vOut.x, vOut.y, 0.f, true); // Rubbers are usually always smooth
-         m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+         m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
 
       SetDirtyDraw();

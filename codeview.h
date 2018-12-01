@@ -209,7 +209,7 @@ public:
 
    IActiveScript* m_pScript;
 
-   VectorSortString<CodeViewDispatch> m_vcvd;
+   VectorSortString<CodeViewDispatch*> m_vcvd;
 
    bool m_fScriptError; // Whether a script error has occured - used for polling from the game
 
@@ -224,7 +224,7 @@ private:
    char szFindString[MAX_FIND_LENGTH];
    char szReplaceString[MAX_FIND_LENGTH];
 
-   VectorSortString<CodeViewDispatch> m_vcvdTemp; // Objects added through script
+   VectorSortString<CodeViewDispatch*> m_vcvdTemp; // Objects added through script
 
 	bool ParseOKLineLength(const size_t LineLen);
 	void ParseDelimtByColon(string &result, string &wholeline);

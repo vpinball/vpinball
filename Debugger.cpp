@@ -241,9 +241,9 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
       {
          vector<string> lightNames;
          SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
-         for (int i = 0; i < ptable->m_vedit.Size(); i++)
+         for (size_t i = 0; i < ptable->m_vedit.size(); i++)
          {
-            IEditable *pedit = ptable->m_vedit.ElementAt(i);
+            IEditable * const pedit = ptable->m_vedit[i];
             if (pedit->GetItemType() == eItemLight)
             {
                lightNames.push_back(ptable->GetElementName(pedit));

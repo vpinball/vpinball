@@ -70,7 +70,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
       pdp->AddRef();
       pdp->Init(this, x, y + length, 0.f, true);
       pdp->m_calcHeight = m_d.m_heightbottom;
-      m_vdpoint.AddElement(pdp);
+      m_vdpoint.push_back(pdp);
    }
 
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -79,7 +79,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
       pdp->AddRef();
       pdp->Init(this, x, y - length, 0.f, true);
       pdp->m_calcHeight = m_d.m_heighttop;
-      m_vdpoint.AddElement(pdp);
+      m_vdpoint.push_back(pdp);
    }
 
    InitVBA(fTrue, 0, NULL);
@@ -226,9 +226,9 @@ void Ramp::UIRenderPass2(Sur * const psur)
    if (!fDrawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
-      for (int i = 0; i < m_vdpoint.Size(); i++)
+      for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
-         const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+         const CComObject<DragPoint> * const pdp = m_vdpoint[i];
          if (pdp->m_selectstate != eNotSelected)
          {
             fDrawDragpoints = true;
@@ -239,10 +239,9 @@ void Ramp::UIRenderPass2(Sur * const psur)
 
    if (fDrawDragpoints)
    {
-      const int len = m_vdpoint.Size();
-      for (int i = 0; i < len; i++)
+      for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
-         CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+         CComObject<DragPoint> * const pdp = m_vdpoint[i];
          psur->SetFillColor(-1);
          psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : ((i == 0) ? RGB(0, 0, 255) : RGB(255, 0, 0)), false, 0);
          psur->SetObject(pdp);
@@ -341,12 +340,10 @@ void Ramp::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
 
 void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, const float height)
 {
-   for (int i = 0; i < m_vdpoint.size(); i++)
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      if (m_vdpoint.ElementAt(i)->m_v.x == v.x && m_vdpoint.ElementAt(i)->m_v.y == v.y)
-      {
-         m_vdpoint.ElementAt(i)->m_calcHeight = height;
-      }
+      if (m_vdpoint[i]->m_v.x == v.x && m_vdpoint[i]->m_v.y == v.y)
+         m_vdpoint[i]->m_calcHeight = height;
    }
 }
 /*
@@ -1267,9 +1264,9 @@ void Ramp::SetObjectPos()
 
 void Ramp::MoveOffset(const float dx, const float dy)
 {
-   for (int i = 0; i < m_vdpoint.Size(); i++)
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+      CComObject<DragPoint> * const pdp = m_vdpoint[i];
 
       pdp->m_v.x += dx;
       pdp->m_v.y += dy;
@@ -1501,7 +1498,7 @@ void Ramp::AddPoint(int x, int y, const bool smooth)
          icp++;
 
    //if (icp == 0) // need to add point after the last point
-   //icp = m_vdpoint.Size();
+   //icp = m_vdpoint.size();
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -1509,7 +1506,7 @@ void Ramp::AddPoint(int x, int y, const bool smooth)
    {
       pdp->AddRef();
       pdp->Init(this, vOut.x, vOut.y, (vvertex[max(iSeg - 1, 0)].z + vvertex[min(iSeg + 1, (int)vvertex.size() - 1)].z)*0.5f, smooth); // Ramps are usually always smooth
-      m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+      m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
 
    SetDirtyDraw();

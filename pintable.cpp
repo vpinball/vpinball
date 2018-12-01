@@ -1268,16 +1268,16 @@ STDMETHODIMP ScriptGlobalTable::GetElements(LPSAFEARRAY *pVal)
    if (!pVal || !g_pplayer)
       return E_POINTER;
 
-   PinTable *pt = g_pplayer->m_ptable;
+   PinTable * const pt = g_pplayer->m_ptable;
 
-   CComSafeArray<VARIANT> objs(pt->m_vedit.Size());
+   CComSafeArray<VARIANT> objs((ULONG)pt->m_vedit.size());
 
-   for (int i = 0; i < pt->m_vedit.Size(); ++i)
+   for (size_t i = 0; i < pt->m_vedit.size(); ++i)
    {
-      IEditable *pie = pt->m_vedit.ElementAt(i);
+      IEditable * const pie = pt->m_vedit[i];
 
       CComVariant v = pie->GetISelect()->GetDispatch();
-      v.Detach(&objs[i]);
+      v.Detach(&objs[(LONG)i]);
    }
 
    *pVal = objs.Detach();
@@ -1292,9 +1292,9 @@ STDMETHODIMP ScriptGlobalTable::GetElementByName(BSTR name, IDispatch* *pVal)
 
    PinTable *pt = g_pplayer->m_ptable;
 
-   for (int i = 0; i < pt->m_vedit.Size(); ++i)
+   for (size_t i = 0; i < pt->m_vedit.size(); ++i)
    {
-      IEditable *pie = pt->m_vedit.ElementAt(i);
+      IEditable * const pie = pt->m_vedit[i];
 
       if (wcscmp(name, pie->GetScriptable()->m_wzName) == 0)
       {
@@ -1596,8 +1596,8 @@ void PinTable::ReadAccelerometerCalibration()
 
 PinTable::~PinTable()
 {
-   for (int i = 0; i < m_vedit.Size(); i++)
-      m_vedit.ElementAt(i)->Release();
+   for (size_t i = 0; i < m_vedit.size(); i++)
+      m_vedit[i]->Release();
 
    ClearOldSounds();
 
@@ -1671,9 +1671,9 @@ void PinTable::SwitchToLayer(int layerNumber)
 {
    // scan through all layers if all elements are already stored to a layer
    // if not new elements will be stored in layer1
-   for (int t = 0; t < m_vedit.Size(); t++)
+   for (size_t t = 0; t < m_vedit.size(); t++)
    {
-      IEditable * const piedit = m_vedit.ElementAt(t);
+      IEditable * const piedit = m_vedit[t];
       bool alreadyIn = false;
       for (int i = 0; i < MAX_LAYERS; i++)
       {
@@ -1728,7 +1728,17 @@ void PinTable::MergeAllLayers()
       }
       m_layer[t].clear();
    }
-   Clone(m_layer[0], &m_vedit);
+
+   //
+
+   m_vedit.clear();
+   if (!m_layer[0].empty())
+   {
+      m_vedit.resize(m_layer[0].size());
+
+      for (size_t i = 0; i < m_layer[0].size(); ++i)
+         m_vedit[i] = m_layer[0][i];
+   }
 
    SetDirtyDraw();
 }
@@ -1737,9 +1747,9 @@ void PinTable::BackupLayers()
 {
    // scan through all layers if all elements are already stored to a layer
    // if not new elements will be stored in layer1
-   for (int t = 0; t < m_vedit.Size(); t++)
+   for (size_t t = 0; t < m_vedit.size(); t++)
    {
-      IEditable *piedit = m_vedit.ElementAt(t);
+      IEditable * const piedit = m_vedit[t];
       bool alreadyIn = false;
       for (int i = 0; i < MAX_LAYERS; i++)
       {
@@ -2007,9 +2017,9 @@ void PinTable::UIRenderPass2(Sur * const psur)
    }
 
 
-   for (int i = 0; i < m_vedit.Size(); i++)
+   for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      IEditable *ptr = m_vedit.ElementAt(i);
+      IEditable * const ptr = m_vedit[i];
       if (ptr->m_fBackglass == g_pvp->m_fBackglassView)
       {
          if (ptr->m_isVisible)
@@ -2049,12 +2059,13 @@ void PinTable::UIRenderPass2(Sur * const psur)
       }
    }
 
-   for (int i = 0; i < m_vedit.Size(); i++)
+   for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      if (m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView)
+      IEditable * const ptr = m_vedit[i];
+      if (ptr->m_fBackglass == g_pvp->m_fBackglassView)
       {
-         if (m_vedit.ElementAt(i)->m_isVisible)
-            m_vedit.ElementAt(i)->UIRenderPass2(psur);
+         if (ptr->m_isVisible)
+            ptr->UIRenderPass2(psur);
       }
    }
 
@@ -2093,7 +2104,7 @@ void PinTable::UIRenderPass2(Sur * const psur)
 // draws the backdrop content
 void PinTable::Render3DProjection(Sur * const psur)
 {
-   if (m_vedit.Size() == 0)
+   if (m_vedit.empty())
       return;
 
    const float rotation = ANGTORAD(m_BG_rotation[m_BG_current_set]);
@@ -2101,8 +2112,8 @@ void PinTable::Render3DProjection(Sur * const psur)
    const float FOV = (m_BG_FOV[m_BG_current_set] < 1.0f) ? 1.0f : m_BG_FOV[m_BG_current_set]; // Can't have a real zero FOV, but this will look almost the same
 
    std::vector<Vertex3Ds> vvertex3D;
-   for (int i = 0; i < m_vedit.Size(); i++)
-      m_vedit.ElementAt(i)->GetBoundingVertices(vvertex3D);
+   for (size_t i = 0; i < m_vedit.size(); i++)
+      m_vedit[i]->GetBoundingVertices(vvertex3D);
 
    // dummy coordinate system for backdrop view
    PinProjection pinproj;
@@ -2205,8 +2216,7 @@ void PinTable::Paint(HDC hdc)
 
 ISelect *PinTable::HitTest(const int x, const int y)
 {
-   HDC hdc = ::GetDC(m_hwnd);
-   HWND listHwnd = NULL;
+   const HDC hdc = ::GetDC(m_hwnd);
 
    RECT rc;
    ::GetClientRect(m_hwnd, &rc);
@@ -2214,42 +2224,32 @@ ISelect *PinTable::HitTest(const int x, const int y)
    HitSur * const phs = new HitSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
    HitSur * const phs2 = new HitSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
 
-   m_allHitElements.RemoveAllElements();
+   m_allHitElements.clear();
 
    UIRenderPass2(phs);
 
-   for (int i = 0; i < m_vedit.Size(); i++)
+   for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      IEditable *ptr = m_vedit.ElementAt(i);
+      IEditable * const ptr = m_vedit[i];
       if (ptr->m_fBackglass == g_pvp->m_fBackglassView)
       {
          ptr->UIRenderPass1(phs2);
-         ISelect* tmp = phs2->m_pselected;
-         if (m_allHitElements.IndexOf(tmp) == -1 && tmp != NULL && tmp != this)
+         ISelect* const tmp = phs2->m_pselected;
+         if (FindIndexOf(m_allHitElements, tmp) == -1 && tmp != NULL && tmp != this)
          {
-            m_allHitElements.AddElement(tmp);
+            m_allHitElements.push_back(tmp);
          }
       }
    }
-   // it's possible that UIRenderPass1 doesn't find all elements  (gates,plunger)
+   // it's possible that UIRenderPass1 doesn't find all elements (gates,plunger)
    // check here if everything was already stored in the list
-   if (m_allHitElements.IndexOf(phs->m_pselected) == -1)
+   if (FindIndexOf(m_allHitElements, phs->m_pselected) == -1)
    {
-      m_allHitElements.AddElement(phs->m_pselected);
+      m_allHitElements.push_back(phs->m_pselected);
    }
    delete phs2;
 
-   vector<ISelect*> tmpBuffer;
-   for (int i = m_allHitElements.Size() - 1; i >= 0; i--)
-   {
-      tmpBuffer.push_back(m_allHitElements.ElementAt(i));
-   }
-   m_allHitElements.RemoveAllElements();
-   for (size_t i = 0; i < tmpBuffer.size(); i++)
-   {
-      m_allHitElements.AddElement(tmpBuffer[i]);
-   }
-   tmpBuffer.clear();
+   std::reverse(m_allHitElements.begin(), m_allHitElements.end());
 
    ISelect * const pisel = phs->m_pselected;
    delete phs;
@@ -2592,7 +2592,7 @@ void PinTable::AutoSave()
 
    AutoSavePackage * const pasp = new AutoSavePackage();
    pasp->pstg = pstgroot;
-   pasp->tableindex = g_pvp->m_vtable.IndexOf(this);
+   pasp->tableindex = FindIndexOf(g_pvp->m_vtable, (CComObject<PinTable> *)this);
    pasp->HwndTable = m_hwnd;
 
    if (hr == S_OK)
@@ -2787,7 +2787,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
    ////////////// End Encryption
 
-   int ctotalitems = (int)(m_vedit.Size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.Size());
+   int ctotalitems = (int)(m_vedit.size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.Size());
    int csaveditems = 0;
 
    ::SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
@@ -2824,10 +2824,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
          if (SUCCEEDED(hr = SaveData(pstmGame, hch)))
          {
-            char szSuffix[32], szStmName[64];
-
-            for (int i = 0; i < m_vedit.Size(); i++)
+            for (size_t i = 0; i < m_vedit.size(); i++)
             {
+               char szSuffix[32], szStmName[64];
                strcpy_s(szStmName, sizeof(szStmName), "GameItem");
                _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
                strcat_s(szStmName, sizeof(szStmName), szSuffix);
@@ -2837,8 +2836,8 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
                   ULONG writ;
-                  IEditable *piedit = m_vedit.ElementAt(i);
-                  ItemTypeEnum type = piedit->GetItemType();
+                  IEditable *const piedit = m_vedit[i];
+                  const ItemTypeEnum type = piedit->GetItemType();
                   pstmItem->Write(&type, sizeof(int), &writ);
                   hr = piedit->SaveData(pstmItem, NULL);
                   pstmItem->Release();
@@ -2852,6 +2851,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
             for (size_t i = 0; i < m_vsound.size(); i++)
             {
+               char szSuffix[32], szStmName[64];
                strcpy_s(szStmName, sizeof(szStmName), "Sound");
                _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
                strcat_s(szStmName, sizeof(szStmName), szSuffix);
@@ -2871,6 +2871,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
             for (size_t i = 0; i < m_vimage.size(); i++)
             {
+               char szSuffix[32], szStmName[64];
                strcpy_s(szStmName, sizeof(szStmName), "Image");
                _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
                strcat_s(szStmName, sizeof(szStmName), szSuffix);
@@ -2890,6 +2891,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
             for (size_t i = 0; i < m_vfont.size(); i++)
             {
+               char szSuffix[32], szStmName[64];
                strcpy_s(szStmName, sizeof(szStmName), "Font");
                _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
                strcat_s(szStmName, sizeof(szStmName), szSuffix);
@@ -2909,6 +2911,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
             for (int i = 0; i < m_vcollection.Size(); i++)
             {
+               char szSuffix[32], szStmName[64];
                strcpy_s(szStmName, sizeof(szStmName), "Collection");
                _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
                strcat_s(szStmName, sizeof(szStmName), szSuffix);
@@ -3509,7 +3512,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
 
    if (hcrypthash != 0)
    {
-      bw.WriteInt(FID(SEDT), m_vedit.Size());
+      bw.WriteInt(FID(SEDT), (int)m_vedit.size());
       bw.WriteInt(FID(SSND), (int)m_vsound.size());
       bw.WriteInt(FID(SIMG), (int)m_vimage.size());
       bw.WriteInt(FID(SFNT), (int)m_vfont.size());
@@ -3687,7 +3690,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   ItemTypeEnum type;
                   pstmItem->Read(&type, sizeof(int), &read);
 
-                  IEditable *piedit = EditableRegistry::Create(type);
+                  IEditable * const piedit = EditableRegistry::Create(type);
 
                   //AddSpriteProjItem();
                   int id = 0; // VBA id for this item
@@ -3697,7 +3700,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   pstmItem = NULL;
                   if (FAILED(hr)) break;
 
-                  m_vedit.AddElement(piedit);
+                  m_vedit.push_back(piedit);
 
                   //hr = piedit->InitPostLoad();
                }
@@ -3790,9 +3793,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
-            for (int i = 0; i < m_vedit.Size(); i++)
+            for (size_t i = 0; i < m_vedit.size(); i++)
             {
-               IEditable * const piedit = m_vedit.ElementAt(i);
+               IEditable * const piedit = m_vedit[i];
                piedit->InitPostLoad();
             }
          }
@@ -3868,9 +3871,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
    {
       m_layer[i].clear();
 
-      for (int t = 0; t < m_vedit.Size(); t++)
+      for (size_t t = 0; t < m_vedit.size(); t++)
       {
-         IEditable *piedit = m_vedit.ElementAt(t);
+         IEditable * const piedit = m_vedit[t];
          if (piedit->GetISelect()->m_layerIndex == i)
          {
             m_layer[i].push_back(piedit);
@@ -5028,7 +5031,7 @@ void PinTable::DoRButtonDown(int x, int y)
       ISelect *hit = HitTest(x, y);
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
-         if (m_allHitElements.IndexOf(m_vmultisel.ElementAt(i)) != -1)
+         if (FindIndexOf(m_allHitElements, m_vmultisel.ElementAt(i)) != -1)
          {
             // found a selected item - keep the current selection set
             // by re-selecting this item (which will also promote it
@@ -5234,39 +5237,36 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
 
       AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
       AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
-      /*now list all elements that are stacked at the mouse pointer*/
-      for (int i = 0; i < m_allHitElements.Size(); i++)
+      // now list all elements that are stacked at the mouse pointer
+      for (size_t i = 0; i < m_allHitElements.size(); i++)
       {
-         if (!m_allHitElements.ElementAt(i)->GetIEditable()->m_isVisible)
-         {
+         if (!m_allHitElements[i]->GetIEditable()->m_isVisible)
             continue;
-         }
 
-         ISelect *ptr = m_allHitElements.ElementAt(i);
+         ISelect * const ptr = m_allHitElements[i];
          if (ptr)
          {
-            IEditable *pedit = m_allHitElements.ElementAt(i)->GetIEditable();
+            IEditable * const pedit = m_allHitElements[i]->GetIEditable();
             if (pedit)
             {
-               char *szTemp;
-               szTemp = GetElementName(pedit);
+               char * const szTemp = GetElementName(pedit);
 
                if (szTemp)
                {
-                  // what a hack!
+                  //!! what a hack!
                   // the element index of the allHitElements vector is encoded inside the ID of the context menu item
                   // I didn't find an easy way to identify the selected menu item of a context menu
                   // so the ID_SELECT_ELEMENT is the global ID for selecting an element from the list and the rest is
                   // added for finding the element out of the list
                   // the selection is done in ISelect::DoCommand()
-                  unsigned long id = 0x80000000 + (i << 16) + ID_SELECT_ELEMENT;
+                  const unsigned long id = 0x80000000 + (i << 16) + ID_SELECT_ELEMENT;
                   AppendMenu(hmenu, MF_STRING, id, szTemp);
                }
             }
          }
       }
       bool fLocked = psel->m_fLocked;
-      // HACK
+      //!! HACK
       if (psel == this) // multi-select case
       {
          fLocked = FMutilSelLocked();
@@ -5317,9 +5317,9 @@ char *PinTable::GetElementName(IEditable *pedit)
 
 IEditable *PinTable::GetElementByName(const char *name)
 {
-   for (int i = 0; i < m_vedit.Size(); i++)
+   for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      IEditable *pedit = m_vedit.ElementAt(i);
+      IEditable * const pedit = m_vedit[i];
       if (strcmp(name, GetElementName(pedit)) == 0)
          return pedit;
    }
@@ -5352,8 +5352,8 @@ void PinTable::DoCommand(int icmd, int x, int y)
 
    if ((icmd & 0x0000FFFF) == ID_SELECT_ELEMENT)
    {
-      int i = (icmd & 0x00FF0000) >> 16;
-      ISelect * const pisel = m_allHitElements.ElementAt(i);
+      const int i = (icmd & 0x00FF0000) >> 16;
+      ISelect * const pisel = m_allHitElements[i];
       pisel->DoCommand(icmd, x, y);
       return;
    }
@@ -5365,8 +5365,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
    {
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
-         ISelect *psel;
-         psel = m_vmultisel.ElementAt(i);
+         ISelect * const psel = m_vmultisel.ElementAt(i);
          _ASSERTE(psel != this); // Would make an infinite loop
          psel->DoCommand(icmd, x, y);
       }
@@ -6031,8 +6030,8 @@ Vertex2D PinTable::GetCenter() const
       maxx = max(maxx, vCenter.x);
       miny = min(miny, vCenter.y);
       maxy = max(maxy, vCenter.y);
-      //tx += m_vdpoint.ElementAt(i)->m_v.x;
-      //ty += m_vdpoint.ElementAt(i)->m_v.y;
+      //tx += m_vdpoint[i]->m_v.x;
+      //ty += m_vdpoint[i]->m_v.y;
    }
 
    return Vertex2D((maxx + minx)*0.5f, (maxy + miny)*0.5f);
@@ -6191,9 +6190,9 @@ void PinTable::ExportBlueprint()
       Render3DProjection(psur);
    }
 
-   for (int i = 0; i < m_vedit.Size(); i++)
+   for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      IEditable *ptr = m_vedit.ElementAt(i);
+      IEditable * const ptr = m_vedit[i];
       if (ptr->m_isVisible && ptr->m_fBackglass == g_pvp->m_fBackglassView)
       {
          ptr->RenderBlueprint(psur, solid);
@@ -6315,9 +6314,9 @@ void PinTable::ExportTableMesh()
       return;
    }
    ExportMesh(f);
-   for (int i = 0; i < m_vedit.Size(); i++)
+   for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      IEditable *ptr = m_vedit.ElementAt(i);
+      IEditable * const ptr = m_vedit[i];
       if (ptr->m_isVisible && ptr->m_fBackglass == g_pvp->m_fBackglassView)
       {
          ptr->ExportMesh(f);
@@ -6681,7 +6680,7 @@ void PinTable::Uncreate(IEditable *pie)
 
 void PinTable::Undelete(IEditable *pie)
 {
-   m_vedit.AddElement(pie);
+   m_vedit.push_back(pie);
    pie->Undelete();
    SetDirtyDraw();
 }
@@ -6691,9 +6690,9 @@ void PinTable::BackupForPlay()
    m_undo.BeginUndo();
 
    m_undo.MarkForUndo((IEditable *)this);
-   for (int i = 0; i < m_vedit.Size(); i++)
+   for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      m_undo.MarkForUndo(m_vedit.ElementAt(i));
+      m_undo.MarkForUndo(m_vedit[i]);
    }
 
    m_undo.EndUndo();
@@ -6805,7 +6804,7 @@ void PinTable::Paste(const bool fAtLocation, int x, int y)
             peditNew->InitVBA(fTrue, 0, peditNew->GetScriptable()->m_wzName);
          }
 
-         m_vedit.AddElement(peditNew);
+         m_vedit.push_back(peditNew);
          // copy the new element to the same layer as the source element
          m_layer[peditNew->GetISelect()->m_layerIndex].push_back(peditNew);
          peditNew->InitPostLoad();
@@ -7118,16 +7117,15 @@ void PinTable::OnKeyDown(int key)
 
 void PinTable::UseTool(int x, int y, int tool)
 {
-   Vertex2D v = TransformPoint(x, y);
-   IEditable *pie = NULL;
+   const Vertex2D v = TransformPoint(x, y);
 
-    ItemTypeEnum type = EditableRegistry::TypeFromToolID(tool);
-    pie = EditableRegistry::CreateAndInit(type, this, v.x, v.y);
+   const ItemTypeEnum type = EditableRegistry::TypeFromToolID(tool);
+   IEditable * const pie = EditableRegistry::CreateAndInit(type, this, v.x, v.y);
 
    if (pie)
    {
       pie->m_fBackglass = g_pvp->m_fBackglassView;
-      m_vedit.AddElement(pie);
+      m_vedit.push_back(pie);
       AddMultiSel(pie->GetISelect(), false);
       if (m_searchSelectDlg.IsWindow())
          m_searchSelectDlg.Update();
@@ -7141,13 +7139,12 @@ void PinTable::UseTool(int x, int y, int tool)
 
 Vertex2D PinTable::TransformPoint(int x, int y) const
 {
-   Vertex2D result;
    RECT rc;
    ::GetClientRect(m_hwnd, &rc);
 
    HitSur * const phs = new HitSur(NULL, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
-   result = phs->ScreenToSurface(x, y);
+   const Vertex2D result = phs->ScreenToSurface(x, y);
 
    delete phs;
    return result;
@@ -7203,7 +7200,7 @@ void PinTable::OnLButtonUp(int x, int y)
 
          if (vsel.size() > 0)
          {
-            int lastItemForUpdate = -1;
+            size_t lastItemForUpdate = -1;
             //first check which item is the last item to add to the multi selection
             for (size_t i = 0; i < vsel.size(); i++)
             {
@@ -8116,10 +8113,10 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
    }
    else
    {
-       for(int i=0; i < m_vedit.Size(); i++)
+       for(size_t i=0; i < m_vedit.size(); i++)
        {
            bool inUse=false;
-           IEditable *pEdit=m_vedit.ElementAt( i );
+           IEditable * const pEdit=m_vedit[i];
            if(pEdit == NULL)
                continue;
 
@@ -8127,84 +8124,84 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
            {
                case eItemDispReel:
                {
-                   DispReel *pReel = (DispReel*)pEdit;
+                   DispReel * const pReel = (DispReel*)pEdit;
                    if(_stricmp( pReel->m_d.m_szImage, ppi->m_szName ) == 0)
                        inUse=true;
                    break;
                }
                case eItemPrimitive:
                {
-                   Primitive *pPrim = (Primitive*)pEdit;
+                   Primitive * const pPrim = (Primitive*)pEdit;
                    if((_stricmp( pPrim->m_d.m_szImage, ppi->m_szName ) == 0) || (_stricmp( pPrim->m_d.m_szNormalMap, ppi->m_szName ) == 0))
                        inUse=true;
                    break;
                }
                case eItemRamp:
                {
-                   Ramp *pRamp = (Ramp*)pEdit;
+                   Ramp * const pRamp = (Ramp*)pEdit;
                    if(_stricmp( pRamp->m_d.m_szImage, ppi->m_szName ) == 0)
                        inUse=true;
                    break;
                }
                case eItemSurface:
                {
-                   Surface *pSurf = (Surface*)pEdit;
+                   Surface * const pSurf = (Surface*)pEdit;
                    if((_stricmp( pSurf->m_d.m_szImage, ppi->m_szName ) == 0) || (_stricmp( pSurf->m_d.m_szSideImage, ppi->m_szName ) == 0))
                        inUse=true;
                    break;
                }
                case eItemDecal:
                {
-                   Decal *pDecal = (Decal*)pEdit;
+                   Decal * const pDecal = (Decal*)pEdit;
                    if(_stricmp( pDecal->m_d.m_szImage, ppi->m_szName ) == 0)
                        inUse=true;
                    break;
                }
                case eItemFlasher:
                {
-                   Flasher *pFlash = (Flasher*)pEdit;
+                   Flasher * const pFlash = (Flasher*)pEdit;
                    if((_stricmp( pFlash->m_d.m_szImageA, ppi->m_szName ) == 0) || (_stricmp( pFlash->m_d.m_szImageB, ppi->m_szName ) == 0))
                        inUse=true;
                    break;
                }
                case eItemFlipper:
                {
-                   Flipper *pFlip = (Flipper*)pEdit;
+                   Flipper * const pFlip = (Flipper*)pEdit;
                    if(_stricmp( pFlip->m_d.m_szImage, ppi->m_szName ) == 0)
                        inUse=true;
                    break;
                }
                case eItemHitTarget:
                {
-                   HitTarget *pHit = (HitTarget*)pEdit;
+                   HitTarget * const pHit = (HitTarget*)pEdit;
                    if(_stricmp( pHit->m_d.m_szImage, ppi->m_szName ) == 0)
                        inUse=true;
                    break;
                }
                case eItemLight:
                {
-                   Light *pLight = (Light*)pEdit;
+                   Light * const pLight = (Light*)pEdit;
                    if(_stricmp( pLight->m_d.m_szOffImage, ppi->m_szName ) == 0)
                        inUse=true;
                    break;
                }
                case eItemPlunger:
                {
-                   Plunger *pPlung = (Plunger*)pEdit;
+                   Plunger * const pPlung = (Plunger*)pEdit;
                    if(_stricmp( pPlung->m_d.m_szImage, ppi->m_szName ) == 0)
                        inUse=true;
                    break;
                }
                case eItemRubber:
                {
-                   Rubber *pRub = (Rubber*)pEdit;
+                   Rubber * const pRub = (Rubber*)pEdit;
                    if(_stricmp( pRub->m_d.m_szImage, ppi->m_szName ) == 0)
                        inUse=true;
                    break;
                }
                case eItemSpinner:
                {
-                   Spinner *pSpin = (Spinner*)pEdit;
+                   Spinner * const pSpin = (Spinner*)pEdit;
                    if(_stricmp( pSpin->m_d.m_szImage, ppi->m_szName ) == 0)
                        inUse=true;
                    break;
@@ -8404,10 +8401,10 @@ int PinTable::AddListMaterial(HWND hwndListView, Material *pmat)
    }
    else
    {
-      for (int i = 0; i < m_vedit.Size(); i++)
+      for (size_t i = 0; i < m_vedit.size(); i++)
       {
          bool inUse = false;
-         IEditable *pEdit = m_vedit.ElementAt(i);
+         IEditable * const pEdit = m_vedit[i];
          if (pEdit == NULL)
             continue;
 
@@ -8415,70 +8412,70 @@ int PinTable::AddListMaterial(HWND hwndListView, Material *pmat)
          {
          case eItemPrimitive:
          {
-            Primitive *pPrim = (Primitive*)pEdit;
+            Primitive * const pPrim = (Primitive*)pEdit;
             if ((_stricmp(pPrim->m_d.m_szMaterial, pmat->m_szName) == 0) || (_stricmp(pPrim->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0))
                inUse = true;
             break;
          }
          case eItemRamp:
          {
-            Ramp *pRamp = (Ramp*)pEdit;
+            Ramp * const pRamp = (Ramp*)pEdit;
             if ((_stricmp(pRamp->m_d.m_szMaterial, pmat->m_szName) == 0) || (_stricmp(pRamp->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0))
                inUse = true;
             break;
          }
          case eItemSurface:
          {
-            Surface *pSurf = (Surface*)pEdit;
+            Surface * const pSurf = (Surface*)pEdit;
             if ((_stricmp(pSurf->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0) || (_stricmp(pSurf->m_d.m_szSideMaterial, pmat->m_szName) == 0) || (_stricmp(pSurf->m_d.m_szTopMaterial, pmat->m_szName) == 0))
                inUse = true;
             break;
          }
          case eItemDecal:
          {
-            Decal *pDecal = (Decal*)pEdit;
+            Decal * const pDecal = (Decal*)pEdit;
             if ((_stricmp(pDecal->m_d.m_szMaterial, pmat->m_szName) == 0))
                inUse = true;
             break;
          }
          case eItemFlipper:
          {
-            Flipper *pFlip = (Flipper*)pEdit;
+            Flipper * const pFlip = (Flipper*)pEdit;
             if ((_stricmp(pFlip->m_d.m_szRubberMaterial, pmat->m_szName) == 0) || (_stricmp(pFlip->m_d.m_szMaterial, pmat->m_szName) == 0))
                inUse = true;
             break;
          }
          case eItemHitTarget:
          {
-            HitTarget *pHit = (HitTarget*)pEdit;
+            HitTarget * const pHit = (HitTarget*)pEdit;
             if ((_stricmp(pHit->m_d.m_szMaterial, pmat->m_szName) == 0) || (_stricmp(pHit->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0))
                inUse = true;
             break;
          }
          case eItemPlunger:
          {
-            Plunger *pPlung = (Plunger*)pEdit;
+            Plunger * const pPlung = (Plunger*)pEdit;
             if (_stricmp(pPlung->m_d.m_szMaterial, pmat->m_szName) == 0)
                inUse = true;
             break;
          }
          case eItemSpinner:
          {
-            Spinner *pSpin = (Spinner*)pEdit;
+            Spinner * const pSpin = (Spinner*)pEdit;
             if (_stricmp(pSpin->m_d.m_szMaterial, pmat->m_szName) == 0)
                inUse = true;
             break;
          }
          case eItemRubber:
          {
-            Rubber *pRub = (Rubber*)pEdit;
+            Rubber * const pRub = (Rubber*)pEdit;
             if ((_stricmp(pRub->m_d.m_szMaterial, pmat->m_szName) == 0) || (_stricmp(pRub->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0))
                inUse = true;
             break;
          }
          case eItemBumper:
          {
-            Bumper *pBump = (Bumper*)pEdit;
+            Bumper * const pBump = (Bumper*)pEdit;
             if ((_stricmp(pBump->m_d.m_szCapMaterial, pmat->m_szName) == 0) || (_stricmp(pBump->m_d.m_szBaseMaterial, pmat->m_szName) == 0) ||
                 (_stricmp(pBump->m_d.m_szSkirtMaterial, pmat->m_szName) == 0) || (_stricmp(pBump->m_d.m_szRingMaterial, pmat->m_szName) == 0))
                inUse = true;
@@ -8486,14 +8483,14 @@ int PinTable::AddListMaterial(HWND hwndListView, Material *pmat)
          }
          case eItemKicker:
          {
-            Kicker *pKick = (Kicker*)pEdit;
+            Kicker * const pKick = (Kicker*)pEdit;
             if (_stricmp(pKick->m_d.m_szMaterial, pmat->m_szName) == 0)
                inUse = true;
             break;
          }
          case eItemTrigger:
          {
-            Trigger *pTrig = (Trigger*)pEdit;
+            Trigger * const pTrig = (Trigger*)pEdit;
             if (_stricmp(pTrig->m_d.m_szMaterial, pmat->m_szName) == 0)
                inUse = true;
             break;
@@ -8569,12 +8566,12 @@ void PinTable::UpdateDbgLight( void )
     bool somethingChanged = false;
     for(size_t i = 0; i < m_dbgChangedLights.size(); i++)
     {
-        DebugLightData *data = m_dbgChangedLights[i];
-        for(int t = 0; t < m_vedit.Size(); t++)
+        const DebugLightData * const data = m_dbgChangedLights[i];
+        for(size_t t = 0; t < m_vedit.size(); t++)
         {
-            if(m_vedit.ElementAt( t )->GetItemType() == eItemLight)
+            if(m_vedit[t]->GetItemType() == eItemLight)
             {
-                Light *plight = (Light*)m_vedit.ElementAt( t );
+                Light * const plight = (Light*)m_vedit[t];
                 if(strcmp( data->name, GetElementName( plight ) ) == 0)
                 {
                     plight->m_d.m_color = data->color1;
@@ -8844,7 +8841,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         DWORD cwch = sizeof(m_vcollection.ElementAt(ivar)->m_wzName) + sizeof(DWORD); //!! +DWORD?
+         const DWORD cwch = sizeof(m_vcollection.ElementAt(ivar)->m_wzName) + sizeof(DWORD); //!! +DWORD?
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch);
          if (wzDst == NULL)
             ShowError("DISPID_Collection alloc failed (1)");
@@ -8864,13 +8861,13 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       const bool fRamps = true;
       const bool fFlashers = true;
 
-      for (int ivar = 0; ivar < m_vedit.Size(); ivar++)
-         if (m_vedit.ElementAt(ivar)->GetItemType() == eItemSurface ||
-            (fRamps && m_vedit.ElementAt(ivar)->GetItemType() == eItemRamp) ||
-            // **************** warning **********************
+      for (size_t ivar = 0; ivar < m_vedit.size(); ivar++)
+         if (m_vedit[ivar]->GetItemType() == eItemSurface ||
+            (fRamps && m_vedit[ivar]->GetItemType() == eItemRamp) ||
+            //!! **************** warning **********************
             // added to render to surface of DMD style lights and emreels
             // but no checks are being performed at moment:
-            (fFlashers && m_vedit.ElementAt(ivar)->GetItemType() == eItemFlasher))
+            (fFlashers && m_vedit[ivar]->GetItemType() == eItemFlasher))
             cvar++;
 
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
@@ -8886,17 +8883,17 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgdw[cvar] = ~0u;
       cvar++;
 
-      for (int ivar = 0; ivar < m_vedit.Size(); ivar++)
+      for (size_t ivar = 0; ivar < m_vedit.size(); ivar++)
       {
-         if (m_vedit.ElementAt(ivar)->GetItemType() == eItemSurface ||
-            (fRamps && m_vedit.ElementAt(ivar)->GetItemType() == eItemRamp) ||
-            // **************** warning **********************
+         if (m_vedit[ivar]->GetItemType() == eItemSurface ||
+            (fRamps && m_vedit[ivar]->GetItemType() == eItemRamp) ||
+            //!! **************** warning **********************
             // added to render to surface of DMD style lights and emreels
             // but no checks are being performed at moment:
-            (fFlashers && m_vedit.ElementAt(ivar)->GetItemType() == eItemFlasher))
+            (fFlashers && m_vedit[ivar]->GetItemType() == eItemFlasher))
          {
             CComBSTR bstr;
-            m_vedit.ElementAt(ivar)->GetScriptable()->get_Name(&bstr);
+            m_vedit[ivar]->GetScriptable()->get_Name(&bstr);
 
             DWORD cwch = lstrlenW(bstr) + 1;
             //wzDst = ::SysAllocString(bstr);
@@ -8985,8 +8982,8 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         char *szSrc = m_vimage[dwCookie]->m_szName;
-         DWORD cwch = lstrlen(szSrc) + 1;
+         const char * const szSrc = m_vimage[dwCookie]->m_szName;
+         const DWORD cwch = lstrlen(szSrc) + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
          MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);
@@ -9005,8 +9002,8 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         char *szSrc = m_materials[dwCookie]->m_szName;
-         DWORD cwch = lstrlen(szSrc) + 1;
+         const char * const szSrc = m_materials[dwCookie]->m_szName;
+         const DWORD cwch = lstrlen(szSrc) + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
          MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);
@@ -9022,8 +9019,8 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         char *szSrc = m_vsound[dwCookie]->m_szName;
-         DWORD cwch = lstrlen(szSrc) + 1;
+         const char * const szSrc = m_vsound[dwCookie]->m_szName;
+         const DWORD cwch = lstrlen(szSrc) + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
          MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);
@@ -9039,7 +9036,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         size_t cwch = sizeof(m_vcollection.ElementAt(dwCookie)->m_wzName) + sizeof(DWORD); //!! +DWORD?
+         const size_t cwch = sizeof(m_vcollection.ElementAt(dwCookie)->m_wzName) + sizeof(DWORD); //!! +DWORD?
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch);
          if (wzDst == NULL)
             ShowError("DISPID_Collection alloc failed (2)");
@@ -9050,13 +9047,9 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    break;
    case IDC_EFFECT_COMBO:
    {
-      int idx = dwCookie;
-      char *filterNames[5] = { "None", "Additive", "Multiply", "Overlay", "Screen" };
-      if (dwCookie == -1)
-      {
-         idx = 0;
-      }
-      DWORD cwch = lstrlen(filterNames[idx]) + 1;
+      const int idx = (dwCookie == -1) ? 0 : dwCookie;
+      const char * const filterNames[5] = { "None", "Additive", "Multiply", "Overlay", "Screen" };
+      const DWORD cwch = lstrlen(filterNames[idx]) + 1;
       wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
       MultiByteToWideChar(CP_ACP, 0, filterNames[idx], -1, wzDst, cwch);
@@ -9072,9 +9065,9 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       else
       {
          CComBSTR bstr;
-         m_vedit.ElementAt(dwCookie)->GetScriptable()->get_Name(&bstr);
+         m_vedit[dwCookie]->GetScriptable()->get_Name(&bstr);
 
-         DWORD cwch = lstrlenW(bstr) + 1;
+         const DWORD cwch = lstrlenW(bstr) + 1;
          //wzDst = ::SysAllocString(bstr);
 
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
@@ -9101,27 +9094,23 @@ float PinTable::GetSurfaceHeight(const char * const szName, float x, float y) co
    if (szName == NULL || szName[0] == 0)
       return m_tableheight;
 
-   for (int i = 0; i < m_vedit.Size(); i++)
+   for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      IEditable *item = m_vedit.ElementAt(i);
+      IEditable * const item = m_vedit[i];
       if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
       {
          CComBSTR bstr;
          item->GetScriptable()->get_Name(&bstr);
          if (!WzSzStrCmp(bstr, szName))
          {
-            IEditable * const piedit = item;
-            switch (piedit->GetItemType())
-            {
-            case eItemSurface:
-               return ((Surface *)piedit)->m_d.m_heighttop + m_tableheight;
-
-            case eItemRamp:
-               return ((Ramp *)piedit)->GetSurfaceHeight(x, y);
-            }
+            if (item->GetItemType() == eItemSurface)
+               return ((Surface *)item)->m_d.m_heighttop + m_tableheight;
+            else //if (item->GetItemType() == eItemRamp)
+               return ((Ramp *)item)->GetSurfaceHeight(x, y);
          }
       }
    }
+
    return m_tableheight;
 }
 
@@ -9130,27 +9119,23 @@ Material* PinTable::GetSurfaceMaterial(const char * const szName) const
    if (szName == NULL || szName[0] == 0)
       return GetMaterial(m_szPlayfieldMaterial);
 
-   for (int i = 0; i < m_vedit.Size(); i++)
+   for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      IEditable *item = m_vedit.ElementAt(i);
+      IEditable * const item = m_vedit[i];
       if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
       {
          CComBSTR bstr;
          item->GetScriptable()->get_Name(&bstr);
          if (!WzSzStrCmp(bstr, szName))
          {
-            IEditable * const piedit = item;
-            switch (piedit->GetItemType())
-            {
-            case eItemSurface:
-               return GetMaterial(((Surface *)piedit)->m_d.m_szTopMaterial);
-
-            case eItemRamp:
-               return GetMaterial(((Ramp *)piedit)->m_d.m_szMaterial);
-            }
+            if (item->GetItemType() == eItemSurface)
+               return GetMaterial(((Surface *)item)->m_d.m_szTopMaterial);
+            else //if (item->GetItemType() == eItemRamp)
+               return GetMaterial(((Ramp *)item)->m_d.m_szMaterial);
          }
       }
    }
+
    return GetMaterial(m_szPlayfieldMaterial);
 }
 
@@ -9159,27 +9144,23 @@ Texture* PinTable::GetSurfaceImage(const char * const szName) const
    if (szName == NULL || szName[0] == 0)
       return GetImage(m_szImage);
 
-   for (int i = 0; i < m_vedit.Size(); i++)
+   for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      IEditable *item = m_vedit.ElementAt(i);
+      IEditable * const item = m_vedit[i];
       if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
       {
          CComBSTR bstr;
          item->GetScriptable()->get_Name(&bstr);
          if (!WzSzStrCmp(bstr, szName))
          {
-            IEditable * const piedit = item;
-            switch (piedit->GetItemType())
-            {
-            case eItemSurface:
-               return GetImage(((Surface *)piedit)->m_d.m_szImage);
-
-            case eItemRamp:
-               return GetImage(((Ramp *)piedit)->m_d.m_szImage);
-            }
+            if (item->GetItemType() == eItemSurface)
+               return GetImage(((Surface *)item)->m_d.m_szImage);
+            else //if (item->GetItemType() == eItemRamp)
+               return GetImage(((Ramp *)item)->m_d.m_szImage);
          }
       }
    }
+
    return GetImage(m_szImage);
 }
 
@@ -10673,10 +10654,10 @@ STDMETHODIMP PinTable::ImportPhysics()
    }
    xmlDoc.clear();
 
-   for (int i = 0; i < m_vedit.Size(); i++)
-      if (m_vedit.ElementAt(i)->GetItemType() == eItemFlipper)
+   for (size_t i = 0; i < m_vedit.size(); i++)
+      if (m_vedit[i]->GetItemType() == eItemFlipper)
       {
-         Flipper * const flipper = (Flipper *)m_vedit.ElementAt(i);
+         Flipper * const flipper = (Flipper *)m_vedit[i];
          flipper->put_Mass(FlipperPhysicsMass); // was speed previously
          flipper->put_Strength(FlipperPhysicsStrength);
          flipper->put_Elasticity(FlipperPhysicsElasticity);
@@ -10695,10 +10676,10 @@ STDMETHODIMP PinTable::ImportPhysics()
 STDMETHODIMP PinTable::ExportPhysics()
 {
    bool foundflipper = false;
-   int i;
-   for (i = 0; i < m_vedit.Size(); i++)
+   size_t i;
+   for (i = 0; i < m_vedit.size(); i++)
    {
-      if (m_vedit.ElementAt(i)->GetItemType() == eItemFlipper)
+      if (m_vedit[i]->GetItemType() == eItemFlipper)
       {
          foundflipper = true;
          break;
@@ -10711,10 +10692,9 @@ STDMETHODIMP PinTable::ExportPhysics()
       return S_OK;
    }
 
-   Flipper * const flipper = (Flipper *)m_vedit.ElementAt(i);
+   Flipper * const flipper = (Flipper *)m_vedit[i];
 
    char szFileName[MAXSTRING];
-   char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
 
    OPENFILENAME ofn;
@@ -10729,6 +10709,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    ofn.lpstrDefExt = "vpp";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
+   char szInitialDir[MAXSTRING];
    const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
    char szFoo[MAX_PATH];
    if (hr == S_OK)

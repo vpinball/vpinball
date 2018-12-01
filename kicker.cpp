@@ -1204,7 +1204,7 @@ STDMETHODIMP Kicker::BallCntOver(int *pVal)
       {
          Ball * const pball = g_pplayer->m_vball[i];
 
-         if (pball->m_vpVolObjs && pball->m_vpVolObjs->IndexOf((IFireEvents*)this) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
+         if (pball->m_vpVolObjs && FindIndexOf(*(pball->m_vpVolObjs), (IFireEvents*)this) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
          {
             ++cnt;
             g_pplayer->m_pactiveball = pball; // set active ball for scriptor
@@ -1333,7 +1333,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
 {
    if (m_pball) return;								 // a previous ball already in kicker
 
-   const int i = pball->m_vpVolObjs->IndexOf(m_obj); // check if kicker in ball's volume set
+   const int i = FindIndexOf(*(pball->m_vpVolObjs), m_obj); // check if kicker in ball's volume set
 
    if (newBall || ((!hitbit) == (i < 0)))            // New or (Hit && !Vol || UnHit && Vol)
    {
@@ -1376,7 +1376,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
             else
             {
                pball->m_frozen = true;
-               pball->m_vpVolObjs->AddElement(m_obj);		// add kicker to ball's volume set
+               pball->m_vpVolObjs->push_back(m_obj);		// add kicker to ball's volume set
                m_pball = pball;
 			   m_lastCapturedBall = pball;
 			   if (pball == g_pplayer->m_pactiveballBC)
@@ -1413,7 +1413,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
       }
       else // exiting kickers volume
       {
-         pball->m_vpVolObjs->RemoveElementAt(i); // remove kicker to ball's volume set
+         pball->m_vpVolObjs->erase(pball->m_vpVolObjs->begin() + i); // remove kicker to ball's volume set
          m_pkicker->FireGroupEvent(DISPID_HitEvents_Unhit);
       }
    }

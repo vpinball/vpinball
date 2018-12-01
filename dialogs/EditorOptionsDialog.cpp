@@ -268,8 +268,8 @@ void EditorOptionsDialog::OnOK()
     else
         g_pvp->m_autosaveTime = -1;
 
-    for (int i = 0; i < g_pvp->m_vtable.Size(); i++)
-        g_pvp->m_vtable.ElementAt(i)->BeginAutoSaveCounter();
+    for (size_t i = 0; i < g_pvp->m_vtable.size(); i++)
+        g_pvp->m_vtable[i]->BeginAutoSaveCounter();
 
     SetRegValue("Editor", "DefaultMaterialColor", REG_DWORD, &g_pvp->dummyMaterial.m_cBase, 4);
     SetRegValue("Editor", "ElementSelectColor", REG_DWORD, &g_pvp->m_elemSelectColor, 4);

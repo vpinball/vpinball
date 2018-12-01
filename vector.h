@@ -3,54 +3,14 @@
 #define START_SIZE 32
 #define GROW_SIZE  32
 
-class VectorVoid // keeps only -pointers- of elements and does -not- free them afterwards!
+template<class T> class VectorProtected  // keeps only -pointers- of elements and does -not- free them afterwards! AND with a critical section
 {
-protected:
+private:
    int		m_cMax;		// Number of elements allocated
    int		m_cSize;	// Last element used
    void 	**m_rg;		// Data buffer
 
 public:
-   inline VectorVoid()
-   {
-      m_cSize = 0;
-      m_rg = (void **)malloc(sizeof(void *) * START_SIZE);
-      m_cMax = (!m_rg) ? 0 : START_SIZE;  // if !m_rg, we're actually OOM, but this will get caught the next time anything gets added to the Vector
-   }
-
-   inline VectorVoid(const int cSize)
-   {
-      m_cSize = 0;
-      m_rg = (void **)malloc(sizeof(void *) * cSize);
-      m_cMax = (!m_rg) ? 0 : cSize;
-   }
-
-   inline VectorVoid(const VectorVoid * const pvector)
-   {
-      m_rg = (void **)malloc(sizeof(void *) * pvector->m_cMax);
-
-      if (!m_rg)
-      {
-         m_cMax = 0;
-         m_cSize = 0;
-
-         return;
-      }
-
-      m_cMax = pvector->m_cMax;
-      m_cSize = pvector->m_cSize;
-
-      for (int i = 0; i < m_cSize; ++i)	// We need this for smart pointers - they need to be ref counted
-      {
-         m_rg[i] = pvector->m_rg[i];
-      }
-   }
-
-   inline ~VectorVoid()
-   {
-      if (m_rg)
-         free(m_rg);
-   }
 
    // essentially a debug-only method to tell the Vector to toss its heap mem
    inline void Reset()
@@ -70,29 +30,15 @@ public:
          free(m_rg);
       m_cSize = 0;
       m_rg = (void **)malloc(sizeof(void *) * START_SIZE);
-      m_cMax = (!m_rg) ? 0 : START_SIZE;  // if !m_rg, we're actually OOM, but this will get caught the next time anything gets added to the Vector
+      m_cMax = (!m_rg) ? 0 : START_SIZE; // if !m_rg, we're actually OOM, but this will get caught the next time anything gets added to the Vector
    }
 
-   inline int Size() const
-   {
-      return m_cSize;
-   }
-
-   int size() const    { return Size(); }      // for compatibility with std::vector
+   inline int Size() const { return m_cSize; }
+   inline int size() const { return m_cSize; } // for compatibility with std::vector
 
    inline int Capacity() const
    {
       return m_cMax;
-   }
-
-   inline void *ElementAt(const int iItem) const
-   {
-      return m_rg[iItem];
-   }
-
-   inline void *GetArray() const
-   {
-      return m_rg;
    }
 
    inline bool SetSize(const int i)
@@ -136,7 +82,7 @@ public:
       return true;
    }
 
-   inline bool Clone(VectorVoid * const pvector) const
+   inline bool Clone(VectorProtected * const pvector) const
    {
       pvector->Reset();
 
@@ -148,10 +94,8 @@ public:
          pvector->m_cMax = m_cMax;
          pvector->m_cSize = m_cSize;
 
-         for (int i = 0; i < m_cSize; ++i)	// We need this for smart pointers - they need to be ref counted
-         {
+         for (int i = 0; i < m_cSize; ++i) // We need this for smart pointers - they need to be ref counted
             pvector->m_rg[i] = m_rg[i];
-         }
       }
 
       return true;
@@ -267,37 +211,27 @@ public:
 
       return false;
    }
-};
 
-template<class T> class Vector : public VectorVoid // convenience wrapper for VectorVoid, so does only keep -pointers- internally, also -no- free later-on
-{
-public:
-   Vector() : VectorVoid() {}
-   Vector(const int cSize) : VectorVoid(cSize) {}
+   //
+   //
+   //
 
-   ~Vector() {}
-
-   typedef T value_type;
-
-   T *ElementAt(const int iItem) const
-   {
-      return (T *)(m_rg[iItem]);
-   }
-
-   T& operator[](const int iItem) { return *ElementAt(iItem); }
-   const T& operator[](const int iItem) const { return *ElementAt(iItem); }
-};
-
-template<class T> class VectorProtected : public VectorVoid // does the same as Vector but with a critical section
-{
-public:
-    VectorProtected() : VectorVoid()
+    VectorProtected()
     {
         InitializeCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
+
+        m_cSize = 0;
+        m_rg = (void **)malloc(sizeof(void *) * START_SIZE);
+        m_cMax = (!m_rg) ? 0 : START_SIZE;  // if !m_rg, we're actually OOM, but this will get caught the next time anything gets added to the Vector
     }
-    VectorProtected(const int cSize) : VectorVoid(cSize)
+
+    VectorProtected(const int reservedSize)
     {
         InitializeCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
+
+        m_cSize = 0;
+        m_rg = (void **)malloc(sizeof(void *) * reservedSize);
+        m_cMax = (!m_rg) ? 0 : reservedSize;
     }
 
     ~VectorProtected()
@@ -316,6 +250,9 @@ public:
            LeaveCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
            DeleteCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
        }
+
+       if (m_rg)
+          free(m_rg);
     }
 
     typedef T value_type;
@@ -331,33 +268,17 @@ public:
     T& operator[](const int iItem)
     {
         EnterCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
-        T &value = *ElementAt(iItem);
+        T &value = *((T *)(m_rg[iItem]));
         LeaveCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
         return value;
     }
     const T& operator[](const int iItem) const
     {
         EnterCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
-        const T &value = *ElementAt(iItem);
+        const T &value = *((T *)(m_rg[iItem]));
         LeaveCriticalSection((LPCRITICAL_SECTION)&hCriticalSection);
         return value;
     }
 private:
     CRITICAL_SECTION hCriticalSection;
 };
-
-template <typename T>
-inline bool Clone(const std::vector<T>& v, VectorVoid * const pvector)
-{
-    pvector->Reset();
-
-    if (!v.empty())
-    {
-        pvector->Extend(v.size());
-
-        for (size_t i = 0; i < v.size(); ++i)	// We need this for smart pointers - they need to be ref counted
-            ((T*)pvector->GetArray())[i] = v[i];
-    }
-
-    return true;
-}

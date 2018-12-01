@@ -79,23 +79,23 @@ float LineSeg::HitTestBasic(const Ball * const pball, const float dtime, Collisi
 #ifdef NEW_PHYSICS
              / -bnv;
 #else
-             *(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;			// don't compete for fast zero time events
+             *(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	        // don't compete for fast zero time events
 #endif
       }
-      else if (fabsf(bnv) > C_LOWNORMVEL) 					// not velocity low ????
-         hittime = bnd / -bnv;								// rate ok for safe divide 
+      else if (fabsf(bnv) > C_LOWNORMVEL)                   // not velocity low ????
+         hittime = bnd / -bnv;                              // rate ok for safe divide 
       else
-         return -1.0f;										// wait for touching
+         return -1.0f;                                      // wait for touching
    }
    else //non-rigid ... target hits
    {
-      if (bnv * bnd >= 0.f)									// outside-receding || inside-approaching
+      if (bnv * bnd >= 0.f)                                 // outside-receding || inside-approaching
       {
-         if ((m_ObjType != eTrigger) ||						// not a trigger
+         if ((m_ObjType != eTrigger) ||                     // not a trigger
              (!pball->m_vpVolObjs) ||
              // is a trigger, so test:
-             (fabsf(bnd) >= pball->m_radius*0.5f) ||	    // not too close ... nor too far away
-             (inside != (pball->m_vpVolObjs->IndexOf(m_obj) < 0))) // ...ball outside and hit set or ball inside and no hit set
+             (fabsf(bnd) >= pball->m_radius*0.5f) ||        // not too close ... nor too far away
+             (inside != (FindIndexOf(*(pball->m_vpVolObjs), m_obj) < 0))) // ...ball outside and hit set or ball inside and no hit set
          {
               return -1.0f;
          }
@@ -224,7 +224,7 @@ float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime,
    // Kicker is special.. handle ball stalled on kicker, commonly hit while receding, knocking back into kicker pocket
    if (m_ObjType == eKicker && bnd <= 0.f && bnd >= -radius && a < C_CONTACTVEL*C_CONTACTVEL && pball->m_vpVolObjs)
    {
-      pball->m_vpVolObjs->RemoveElement(m_obj); // cause capture
+      RemoveFromVectorSingle(*(pball->m_vpVolObjs), m_obj); // cause capture
    }
 
    if (rigid && bnd < (float)PHYS_TOUCH)        // positive: contact possible in future ... Negative: objects in contact now
@@ -239,13 +239,13 @@ float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime,
          hittime = /*std::max(0.0f,*/ -bnd / bnv /*)*/;   // estimate based on distance and speed along distance
    }
    else if (m_ObjType >= eTrigger // triggers & kickers
-      && pball->m_vpVolObjs && ((bnd < 0.f) == (pball->m_vpVolObjs->IndexOf(m_obj) < 0)))
+      && pball->m_vpVolObjs && ((bnd < 0.f) == (FindIndexOf(*(pball->m_vpVolObjs), m_obj) < 0)))
    { // here if ... ball inside and no hit set .... or ... ball outside and hit set
 
       if (fabsf(bnd - radius) < 0.05f) // if ball appears in center of trigger, then assumed it was gen'ed there
       {
-         pball->m_vpVolObjs->AddElement(m_obj); // special case for trigger overlaying a kicker
-      }                                         // this will add the ball to the trigger space without a Hit
+         pball->m_vpVolObjs->push_back(m_obj); // special case for trigger overlaying a kicker
+      }                                        // this will add the ball to the trigger space without a Hit
       else
       {
          bUnhit = (bnd > 0.f);	// ball on outside is UnHit, otherwise it's a Hit

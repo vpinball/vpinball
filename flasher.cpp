@@ -40,7 +40,7 @@ Flasher::~Flasher()
 
 void Flasher::InitShape()
 {
-   if (m_vdpoint.Size() == 0)
+   if (m_vdpoint.empty())
    {
       // First time shape has been set to custom - set up some points
       const float x = m_d.m_vCenter.x;
@@ -53,28 +53,28 @@ void Flasher::InitShape()
       {
          pdp->AddRef();
          pdp->Init(this, x - size*0.5f, y - size*0.5f, 0.f, false);
-         m_vdpoint.AddElement(pdp);
+         m_vdpoint.push_back(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
          pdp->Init(this, x - size*0.5f, y + size*0.5f, 0.f, false);
-         m_vdpoint.AddElement(pdp);
+         m_vdpoint.push_back(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
          pdp->Init(this, x + size*0.5f, y + size*0.5f, 0.f, false);
-         m_vdpoint.AddElement(pdp);
+         m_vdpoint.push_back(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
          pdp->Init(this, x + size*0.5f, y - size*0.5f, 0.f, false);
-         m_vdpoint.AddElement(pdp);
+         m_vdpoint.push_back(pdp);
       }
    }
 }
@@ -227,7 +227,7 @@ void Flasher::WriteRegDefaults()
 
 void Flasher::UIRenderPass1(Sur * const psur)
 {
-   if (m_vdpoint.Size() == 0)
+   if (m_vdpoint.empty())
       InitShape();
 
    psur->SetFillColor(m_ptable->RenderSolid() ? g_pvp->m_fillColor: -1);
@@ -291,9 +291,9 @@ void Flasher::UIRenderPass2(Sur * const psur)
    if (!fDrawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
-      for (int i = 0; i < m_vdpoint.Size(); i++)
+      for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
-         const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+         const CComObject<DragPoint> * const pdp = m_vdpoint[i];
          if (pdp->m_selectstate != eNotSelected)
          {
             fDrawDragpoints = true;
@@ -303,9 +303,9 @@ void Flasher::UIRenderPass2(Sur * const psur)
    }
 
    if (fDrawDragpoints)
-   for (int i = 0; i < m_vdpoint.Size(); i++)
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+      CComObject<DragPoint> * const pdp = m_vdpoint[i];
       psur->SetFillColor(-1);
       psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
       psur->SetObject(pdp);
@@ -524,9 +524,9 @@ void Flasher::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
-   for (int i = 0; i < m_vdpoint.Size(); i++)
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+      CComObject<DragPoint> * const pdp = m_vdpoint[i];
 
       pdp->m_v.x += dx;
       pdp->m_v.y += dy;
@@ -589,7 +589,7 @@ void Flasher::DoCommand(int icmd, int x, int y)
       {
          pdp->AddRef();
          pdp->Init(this, vOut.x, vOut.y, 0.f, false);
-         m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+         m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
 
       SetDirtyDraw();

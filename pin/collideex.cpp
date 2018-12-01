@@ -544,7 +544,7 @@ float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionE
             (!pball->m_vpVolObjs) ||                // temporary ball
             // if trigger, then check:
             (fabsf(bnd) >= pball->m_radius*0.5f) ||	// not too close ... nor too far away
-            (inside != (pball->m_vpVolObjs->IndexOf(m_obj) < 0))) // ...ball outside and hit set or ball inside and no hit set
+            (inside != (FindIndexOf(*(pball->m_vpVolObjs), m_obj) < 0))) // ...ball outside and hit set or ball inside and no hit set
             return -1.0f;
 
          hittime = 0;
@@ -651,7 +651,7 @@ void Hit3DPoly::Collide(const CollisionEvent& coll)
    {
       if (!pball->m_vpVolObjs) return;
 
-      const int i = pball->m_vpVolObjs->IndexOf(m_obj); // if -1 then not in objects volume set (i.e not already hit)
+      const int i = FindIndexOf(*(pball->m_vpVolObjs), m_obj); // if -1 then not in objects volume set (i.e not already hit)
 
       if ((!coll.m_hitflag) == (i < 0)) // Hit == NotAlreadyHit
       {
@@ -659,12 +659,12 @@ void Hit3DPoly::Collide(const CollisionEvent& coll)
 
          if (i < 0)
          {
-            pball->m_vpVolObjs->AddElement(m_obj);
+            pball->m_vpVolObjs->push_back(m_obj);
             ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
          }
          else
          {
-            pball->m_vpVolObjs->RemoveElementAt(i);
+            pball->m_vpVolObjs->erase(pball->m_vpVolObjs->begin() + i);
             ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Unhit);
          }
       }
@@ -1031,7 +1031,7 @@ void TriggerLineSeg::Collide(const CollisionEvent& coll)
    if ((m_ObjType != eTrigger) ||
       (!pball->m_vpVolObjs)) return;
 
-   const int i = pball->m_vpVolObjs->IndexOf(m_obj); // if -1 then not in objects volume set (i.e not already hit)
+   const int i = FindIndexOf(*(pball->m_vpVolObjs), m_obj); // if -1 then not in objects volume set (i.e not already hit)
 
    if ((!coll.m_hitflag) == (i < 0))                 // Hit == NotAlreadyHit
    {
@@ -1039,13 +1039,13 @@ void TriggerLineSeg::Collide(const CollisionEvent& coll)
 
       if (i < 0)
       {
-         pball->m_vpVolObjs->AddElement(m_obj);
+         pball->m_vpVolObjs->push_back(m_obj);
          ((Trigger*)m_obj)->TriggerAnimationHit();
          ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
       }
       else
       {
-         pball->m_vpVolObjs->RemoveElementAt(i);
+         pball->m_vpVolObjs->erase(pball->m_vpVolObjs->begin() + i);
          ((Trigger*)m_obj)->TriggerAnimationUnhit();
          ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Unhit);
       }
@@ -1065,7 +1065,7 @@ void TriggerHitCircle::Collide(const CollisionEvent& coll)
    if ((m_ObjType < eTrigger) || // triggers and kickers
       (!pball->m_vpVolObjs)) return;
 
-   const int i = pball->m_vpVolObjs->IndexOf(m_obj); // if -1 then not in objects volume set (i.e not already hit)
+   const int i = FindIndexOf(*(pball->m_vpVolObjs), m_obj); // if -1 then not in objects volume set (i.e not already hit)
 
    if ((!coll.m_hitflag) == (i < 0))                 // Hit == NotAlreadyHit
    {
@@ -1073,13 +1073,13 @@ void TriggerHitCircle::Collide(const CollisionEvent& coll)
 
       if (i < 0)
       {
-         pball->m_vpVolObjs->AddElement(m_obj);
+         pball->m_vpVolObjs->push_back(m_obj);
          ((Trigger*)m_obj)->TriggerAnimationHit();
          ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
       }
       else
       {
-         pball->m_vpVolObjs->RemoveElementAt(i);
+         pball->m_vpVolObjs->erase(pball->m_vpVolObjs->begin() + i);
          ((Trigger*)m_obj)->TriggerAnimationUnhit();
          ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Unhit);
       }

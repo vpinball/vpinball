@@ -70,9 +70,9 @@ void SearchSelectDialog::Update()
       ListView_SetItemText(hElementList, idx, 1, "Collection");
       idx++;
    }
-   for (int i = 0; i < curTable->m_vedit.Size(); i++)
+   for (size_t i = 0; i < curTable->m_vedit.size(); i++)
    {
-      IEditable * const piedit = curTable->m_vedit.ElementAt(i);
+      IEditable * const piedit = curTable->m_vedit[i];
       IScriptable * const piscript = piedit->GetScriptable();
       if (piscript)
       {

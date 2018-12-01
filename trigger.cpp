@@ -108,11 +108,10 @@ void Trigger::InitShape(float x, float y)
    float lengthX = 30.0f;
    float lengthY = 30.0f;
    UpdateEditorView();
-   for (int i = 0; i < m_vdpoint.size(); i++)
-   {
-      m_vdpoint.ElementAt(i)->Release();
-   }
-   m_vdpoint.RemoveAllElements();
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
+      m_vdpoint[i]->Release();
+   m_vdpoint.clear();
+
    // First time shape has been set to custom - set up some points
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -120,28 +119,28 @@ void Trigger::InitShape(float x, float y)
    {
       pdp->AddRef();
       pdp->Init(this, x - lengthX, y - lengthY, 0.f, false);
-      m_vdpoint.AddElement(pdp);
+      m_vdpoint.push_back(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
       pdp->Init(this, x - lengthX, y + lengthY, 0.f, false);
-      m_vdpoint.AddElement(pdp);
+      m_vdpoint.push_back(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
       pdp->Init(this, x + lengthX, y + lengthY, 0.f, false);
-      m_vdpoint.AddElement(pdp);
+      m_vdpoint.push_back(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
       pdp->Init(this, x + lengthX, y - lengthY, 0.f, false);
-      m_vdpoint.AddElement(pdp);
+      m_vdpoint.push_back(pdp);
    }
 }
 
@@ -153,7 +152,7 @@ HRESULT Trigger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_vCenter.y = y;
 
    SetDefaults(fromMouseClick);
-   if (m_vdpoint.size() == 0)
+   if (m_vdpoint.empty())
       InitShape(x, y);
 
    return InitVBA(fTrue, 0, NULL);
@@ -247,7 +246,7 @@ void Trigger::SetDefaults(bool fromMouseClick)
 
 void Trigger::UIRenderPass1(Sur * const psur)
 {
-   if (m_vdpoint.size() == 0)
+   if (m_vdpoint.empty())
       InitShape(m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    psur->SetBorderColor(-1, false, 0);
@@ -290,9 +289,9 @@ void Trigger::UIRenderPass2(Sur * const psur)
       if (!fDrawDragpoints)
       {
          // if any of the dragpoints of this object are selected then draw all the dragpoints
-         for (int i = 0; i < m_vdpoint.size(); i++)
+         for (size_t i = 0; i < m_vdpoint.size(); i++)
          {
-            CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+            CComObject<DragPoint> * const pdp = m_vdpoint[i];
             if (pdp->m_selectstate != eNotSelected)
             {
                fDrawDragpoints = true;
@@ -303,9 +302,9 @@ void Trigger::UIRenderPass2(Sur * const psur)
 
       if (fDrawDragpoints)
       {
-         for (int i = 0; i < m_vdpoint.size(); i++)
+         for (size_t i = 0; i < m_vdpoint.size(); i++)
          {
-            CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+            CComObject<DragPoint> * const pdp = m_vdpoint[i];
             psur->SetFillColor(-1);
             psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(0, 180, 0), false, 0);
             psur->SetObject(pdp);
@@ -858,13 +857,14 @@ void Trigger::MoveOffset(const float dx, const float dy)
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
 
-   for (int i = 0; i < m_vdpoint.size(); i++)
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+      CComObject<DragPoint> * const pdp = m_vdpoint[i];
 
       pdp->m_v.x += dx;
       pdp->m_v.y += dy;
    }
+
    UpdateEditorView();
    m_ptable->SetDirtyDraw();
 }
@@ -944,7 +944,7 @@ void Trigger::DoCommand(int icmd, int x, int y)
       {
          pdp->AddRef();
          pdp->Init(this, vOut.x, vOut.y, 0.f, false);
-         m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+         m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
 
       SetDirtyDraw();
@@ -1317,7 +1317,7 @@ STDMETHODIMP Trigger::BallCntOver(int *pVal)
       {
          Ball * const pball = g_pplayer->m_vball[i];
 
-         if (pball->m_vpVolObjs && pball->m_vpVolObjs->IndexOf((IFireEvents*)this) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
+         if (pball->m_vpVolObjs && FindIndexOf(*(pball->m_vpVolObjs), (IFireEvents*)this) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
          {
             g_pplayer->m_pactiveball = pball; // set active ball for scriptor
             ++cnt;
@@ -1340,10 +1340,10 @@ STDMETHODIMP Trigger::DestroyBall(int *pVal)
          Ball * const pball = g_pplayer->m_vball[i];
 
          int j;
-         if (pball->m_vpVolObjs && (j = pball->m_vpVolObjs->IndexOf((IFireEvents*)this)) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
+         if (pball->m_vpVolObjs && (j = FindIndexOf(*(pball->m_vpVolObjs), (IFireEvents*)this)) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
          {
             ++cnt;
-            pball->m_vpVolObjs->RemoveElementAt(j);
+            pball->m_vpVolObjs->erase(pball->m_vpVolObjs->begin() + j);
             g_pplayer->DestroyBall(pball); // inside trigger volume?
          }
       }
