@@ -847,7 +847,7 @@ void Player::InitDebugHitStructure()
       const size_t newsize = m_vdebugho.size();
       // Save the objects the trouble of having the set the idispatch pointer themselves
       for (size_t hitloop = currentsize; hitloop < newsize; hitloop++)
-         m_vdebugho[hitloop]->m_pfedebug = m_ptable->m_vedit.ElementAt(i)->GetIFireEvents();
+         m_vdebugho[hitloop]->m_pfedebug = m_ptable->m_vedit[i]->GetIFireEvents();
    }
 
    for (size_t i = 0; i < m_vdebugho.size(); ++i)
@@ -1344,9 +1344,9 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    m_showFPS = 0;
 #endif
 
-   for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
+   for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
    {
-      IEditable * const pe = m_ptable->m_vedit.ElementAt(i);
+      IEditable * const pe = m_ptable->m_vedit[i];
       Hitable * const ph = pe->GetIHitable();
       if (ph)
       {
@@ -1451,9 +1451,9 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    // static walls, rails, backdrops, etc. and also static playfield reflections
    InitStatic(hwndProgress);
 
-   for (int i = 0; i < m_ptable->m_vedit.Size(); ++i)
+   for (size_t i = 0; i < m_ptable->m_vedit.size(); ++i)
    {
-      IEditable * const pe = m_ptable->m_vedit.ElementAt(i);
+      IEditable * const pe = m_ptable->m_vedit[i];
       Hitable * const ph = pe->GetIHitable();
       if (ph)
       {
@@ -1655,11 +1655,11 @@ void Player::RenderStaticMirror(const bool onlyBalls)
       UpdateBasicShaderMatrix();
 
       // render mirrored static elements
-      for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
+      for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
       {
-         if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
+         if (m_ptable->m_vedit[i]->GetItemType() != eItemDecal)
          {
-            Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+            Hitable * const ph = m_ptable->m_vedit[i]->GetIHitable();
             if (ph)
             {
                ph->RenderStatic(m_pin3d.m_pd3dDevice);
@@ -1916,31 +1916,31 @@ void Player::InitStatic(HWND hwndProgress)
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, D3DCLIPPLANE0);
 
       // now render everything else
-      for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
+      for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
       {
-         if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
+         if (m_ptable->m_vedit[i]->GetItemType() != eItemDecal)
          {
-            Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+            Hitable * const ph = m_ptable->m_vedit[i]->GetIHitable();
             if (ph)
             {
                ph->RenderStatic(m_pin3d.m_pd3dDevice);
                if (hwndProgress && ((i % 16) == 0) && iter == 0)
-                  SendMessage(hwndProgress, PBM_SETPOS, 60 + ((15 * i) / m_ptable->m_vedit.Size()), 0);
+                  SendMessage(hwndProgress, PBM_SETPOS, 60 + ((15 * i) / m_ptable->m_vedit.size()), 0);
             }
          }
       }
 
       // Draw decals (they have transparency, so they have to be drawn after the wall they are on)
-      for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
+      for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
       {
-         if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemDecal)
+         if (m_ptable->m_vedit[i]->GetItemType() == eItemDecal)
          {
-            Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+            Hitable * const ph = m_ptable->m_vedit[i]->GetIHitable();
             if (ph)
             {
                ph->RenderStatic(m_pin3d.m_pd3dDevice);
                if (hwndProgress && ((i % 16) == 0) && iter == 0)
-                  SendMessage(hwndProgress, PBM_SETPOS, 75 + ((15 * i) / m_ptable->m_vedit.Size()), 0);
+                  SendMessage(hwndProgress, PBM_SETPOS, 75 + ((15 * i) / m_ptable->m_vedit.size()), 0);
             }
          }
       }
@@ -3630,11 +3630,11 @@ void Player::RenderDynamics()
 
       m_pin3d.RenderPlayfieldGraphics(false);
 
-      for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
+      for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
       {
-         if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
+         if (m_ptable->m_vedit[i]->GetItemType() != eItemDecal)
          {
-            Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+            Hitable * const ph = m_ptable->m_vedit[i]->GetIHitable();
             if (ph)
             {
                ph->RenderStatic(m_pin3d.m_pd3dDevice);
@@ -3642,11 +3642,11 @@ void Player::RenderDynamics()
          }
       }
       // Draw decals (they have transparency, so they have to be drawn after the wall they are on)
-      for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
+      for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
       {
-         if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemDecal)
+         if (m_ptable->m_vedit[i]->GetItemType() == eItemDecal)
          {
-            Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+            Hitable * const ph = m_ptable->m_vedit[i]->GetIHitable();
             if (ph)
             {
                ph->RenderStatic(m_pin3d.m_pd3dDevice);
@@ -5068,9 +5068,9 @@ void Player::DrawBalls()
 
    // collect all lights that can reflect on balls (currently only bulbs and if flag set to do so)
    std::vector<Light*> lights;
-   for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
+   for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
    {
-      IEditable *item = m_ptable->m_vedit.ElementAt(i);
+      IEditable * const item = m_ptable->m_vedit[i];
       if (item->GetItemType() == eItemLight && ((Light *)item)->m_d.m_BulbLight && ((Light *)item)->m_d.m_showReflectionOnBall)
          lights.push_back((Light *)item);
    }
@@ -5497,7 +5497,7 @@ void Player::DoDebugObjectMenu(int x, int y)
             vvdispid.push_back(pvdispid);
 
             DebugMenuItem dmi;
-            dmi.objectindex = i;
+            dmi.objectindex = (int)i;
             dmi.pvdispid = pvdispid;
             dmi.hmenu = submenu;
             EnumEventsFromDispatch(pho->m_pfedebug->GetDispatch(), AddEventToDebugMenu, (LPARAM)&dmi);
@@ -5728,7 +5728,7 @@ void ShutDownPlayer()
 	g_pvp->SetEnableToolbar();
 	mixer_shutdown();
 	hid_shutdown();
-	// modification to m_vedit of each table after playing them must be done here, otherwise VP will crash (WTF?!)
+	//!! modification to m_vedit of each table after playing them must be done here, otherwise VP will crash (WTF?!)
 	playedTable->RestoreLayers();
 
 	SetForegroundWindow(g_pvp->m_hwnd);

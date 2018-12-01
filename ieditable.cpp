@@ -31,7 +31,7 @@ void IEditable::ClearForOverwrite()
 
 void IEditable::Delete()
 {
-   GetPTable()->m_vedit.RemoveElement((IEditable *)this);
+   RemoveFromVectorSingle(GetPTable()->m_vedit, (IEditable *)this);
    MarkForDelete();
 
    if (GetScriptable())
@@ -46,7 +46,7 @@ void IEditable::Delete()
 
 void IEditable::Uncreate()
 {
-   GetPTable()->m_vedit.RemoveElement((IEditable *)this);
+   RemoveFromVectorSingle(GetPTable()->m_vedit, (IEditable *)this);
    if (GetScriptable())
       GetPTable()->m_pcv->RemoveItem(GetScriptable());
 }

@@ -96,7 +96,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
 
       PinTable *currentTable = GetPTable();
       int i = (icmd & 0x00FF0000) >> 16;
-      ISelect * const pisel = currentTable->m_allHitElements.ElementAt(i);
+      ISelect * const pisel = currentTable->m_allHitElements[i];
 
       const bool fAdd = ((ksshift & 0x80000000) != 0);
 
@@ -134,8 +134,8 @@ void ISelect::DoCommand(int icmd, int x, int y)
    case ID_DRAWINFRONT:
    {
       PinTable * const ptable = GetPTable();
-      ptable->m_vedit.RemoveElement(piedit);
-      ptable->m_vedit.AddElement(piedit);
+      RemoveFromVectorSingle(ptable->m_vedit, piedit);
+      ptable->m_vedit.push_back(piedit);
       RemoveFromVectorSingle(ptable->m_layer[m_layerIndex], piedit);
       ptable->m_layer[m_layerIndex].push_back(piedit);
       ptable->SetDirtyDraw();
@@ -144,8 +144,8 @@ void ISelect::DoCommand(int icmd, int x, int y)
    case ID_DRAWINBACK:
    {
       PinTable * const ptable = GetPTable();
-      ptable->m_vedit.RemoveElement(piedit);
-      ptable->m_vedit.InsertElementAt(piedit, 0);
+      RemoveFromVectorSingle(ptable->m_vedit, piedit);
+      ptable->m_vedit.insert(ptable->m_vedit.begin(), piedit);
       RemoveFromVectorSingle(ptable->m_layer[m_layerIndex], piedit);
       ptable->m_layer[m_layerIndex].insert(ptable->m_layer[m_layerIndex].begin(), piedit);
       ptable->SetDirtyDraw();

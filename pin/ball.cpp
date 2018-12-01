@@ -76,7 +76,7 @@ void Ball::Init(const float mass)
 
    m_pballex = NULL;
 
-   m_vpVolObjs = new VectorVoid;
+   m_vpVolObjs = new vector<IFireEvents*>;
 
    m_color = RGB(255, 255, 255);
 

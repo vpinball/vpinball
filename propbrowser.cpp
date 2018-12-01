@@ -287,7 +287,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
    {
       PropertyPane * const pproppane = m_vproppane[i];
       ExpandoInfo * const pexinfo = new ExpandoInfo();
-      pexinfo->m_id = i;
+      pexinfo->m_id = (int)i;
       pexinfo->m_fExpanded = false;
       pexinfo->m_psb = this;
 

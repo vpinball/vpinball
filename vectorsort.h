@@ -1,7 +1,7 @@
 #pragma once
 
 template<class T>
-class VectorSortString : public Vector<T>
+class VectorSortString : public vector<T>
 {
 protected:
    int m_searchstart; // The node to start the binary search at
@@ -18,16 +18,16 @@ public:
       // Find log base 2 of size of vector
       // Set the search start element to the middle one
       // Note that this value will be one based
-      const unsigned int size = m_cSize;
+      const unsigned int s = (unsigned int)size();
       unsigned int i = 1u << 31;
-      while ((!(i & size)) && (i > 1))
+      while ((!(i & s)) && (i > 1))
       {
          i >>= 1;
       }
       m_searchstart = i;
    }
 
-   inline void AddSortedString(T * const pT)
+   inline void AddSortedString(T const pT)
    {
       int currentnode = m_searchstart - 1;  // Zero based
       int jumpnode = m_searchstart >> 1;
@@ -36,7 +36,7 @@ public:
       {
          //assert(currentnode >= 0);
 
-         const int strcmp = (currentnode >= m_cSize) ? 1 : pT->SortAgainst(ElementAt(currentnode));
+         const int strcmp = (currentnode >= (int)size()) ? 1 : pT->SortAgainst(data()[currentnode]);
 
          if (jumpnode == 0)
          {
@@ -58,7 +58,7 @@ public:
          jumpnode >>= 1;
       }
 
-      InsertElementAt(pT, currentnode);
+      insert(begin() + currentnode, pT);
       RecomputeSearchStart();
    }
 
@@ -71,13 +71,13 @@ public:
       {
          //assert(currentnode >= 0);
          int strcmp;
-         if (currentnode >= m_cSize)
+         if (currentnode >= (int)size())
          {
             strcmp = -1;
          }
          else
          {
-            strcmp = ElementAt(currentnode)->SortAgainstValue(pvoid);
+            strcmp = data()[currentnode]->SortAgainstValue(pvoid);
 
             if (strcmp == 0)
             {
@@ -103,12 +103,12 @@ public:
       return -1;
    }
 
-   inline T *GetSortedElement(void * const pvoid) const
+   inline T GetSortedElement(void * const pvoid) const
    {
       const int i = GetSortedIndex(pvoid);
       if (i != -1)
       {
-         return ElementAt(i);
+         return data()[i];
       }
 
       return NULL;
@@ -116,7 +116,7 @@ public:
 
    inline void RemoveElementAt(const int iItem)
    {
-      Vector<T>::RemoveElementAt(iItem);
+      erase(begin()+iItem);
       RecomputeSearchStart();
    }
 };

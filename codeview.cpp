@@ -110,8 +110,8 @@ CodeViewer::~CodeViewer()
 
    Destroy();
 
-   for (int i = 0; i < m_vcvd.Size(); ++i)
-      delete m_vcvd.ElementAt(i);
+   for (size_t i = 0; i < m_vcvd.size(); ++i)
+      delete m_vcvd[i];
 
    if (m_haccel)
       DestroyAcceleratorTable(m_haccel);
@@ -152,9 +152,9 @@ void CodeViewer::EndSession()
 
    InitializeScriptEngine();
 
-   for (int i = 0; i < m_vcvdTemp.Size(); ++i)
-      delete m_vcvdTemp.ElementAt(i);
-   m_vcvdTemp.RemoveAllElements();
+   for (size_t i = 0; i < m_vcvdTemp.size(); ++i)
+      delete m_vcvdTemp[i];
+   m_vcvdTemp.clear();
 }
 
 HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
@@ -226,7 +226,7 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
    if (idx == -1)
       return;
 
-   CodeViewDispatch *pcvd = m_vcvd.ElementAt(idx);
+   CodeViewDispatch * const pcvd = m_vcvd[idx];
 
    _ASSERTE(pcvd);
 
@@ -235,7 +235,7 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
    // Remove item from dropdown
    char szT[64]; // Names can only be 32 characters (plus terminator)
    WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
-   size_t index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
+   const size_t index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
 
    delete pcvd;
@@ -267,7 +267,7 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, WCHAR * const wzNe
    if (idx == -1)
       return E_FAIL;
 
-   CodeViewDispatch * const pcvd = m_vcvd.ElementAt(idx);
+   CodeViewDispatch * const pcvd = m_vcvd[idx];
 
    _ASSERTE(pcvd);
 
@@ -850,12 +850,12 @@ void CodeViewer::Compile(const bool message)
 
       /*const HRESULT hr =*/ m_pScript->AddTypeLib(LIBID_VPinballLib, 1, 0, 0);
 
-      for (int i = 0; i < m_vcvd.Size(); ++i)
+      for (size_t i = 0; i < m_vcvd.size(); ++i)
       {
          int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
-         if (m_vcvd.ElementAt(i)->m_fGlobal)
+         if (m_vcvd[i]->m_fGlobal)
             flags |= SCRIPTITEM_GLOBALMEMBERS;
-         m_pScript->AddNamedItem(m_vcvd.ElementAt(i)->m_wzName, flags);
+         m_pScript->AddNamedItem(m_vcvd[i]->m_wzName, flags);
       }
 
       if(m_pScriptParse->ParseScriptText(wzText, 0, 0, 0, CONTEXTCOOKIE_NORMAL, 0,
@@ -3131,9 +3131,9 @@ BOOL Collection::LoadToken(int id, BiffReader *pbr)
       WCHAR wzT[MAXNAMEBUFFER];
       pbr->GetWideString((WCHAR *)wzT);
 
-      for (int i = 0; i < ppt->m_vedit.Size(); ++i)
+      for (size_t i = 0; i < ppt->m_vedit.size(); ++i)
       {
-         IScriptable * const piscript = ppt->m_vedit.ElementAt(i)->GetScriptable();
+         IScriptable * const piscript = ppt->m_vedit[i]->GetScriptable();
          if (piscript) // skip decals
          {
             if (!WideStrCmp(piscript->m_wzName, wzT))

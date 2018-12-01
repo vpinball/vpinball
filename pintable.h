@@ -650,9 +650,9 @@ public:
 
    //CComObject<Surface> *m_psur;
 
-   Vector< IEditable > m_vedit;
+   vector< IEditable* > m_vedit;
    vector< IEditable* > m_layer[MAX_LAYERS];
-   Vector< ISelect > m_allHitElements;
+   vector< ISelect* >   m_allHitElements;
 
    vector< Texture* > m_vimage;
 

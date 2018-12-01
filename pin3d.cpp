@@ -478,8 +478,8 @@ void Pin3D::InitLayoutFS()
    //const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
 
    std::vector<Vertex3Ds> vvertex3D;
-   for (int i = 0; i < g_pplayer->m_ptable->m_vedit.Size(); ++i)
-      g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(vvertex3D);
+   for (size_t i = 0; i < g_pplayer->m_ptable->m_vedit.size(); ++i)
+      g_pplayer->m_ptable->m_vedit[i]->GetBoundingVertices(vvertex3D);
 
    m_proj.m_rcviewport.left = 0;
    m_proj.m_rcviewport.top = 0;
@@ -575,8 +575,8 @@ void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypi
    const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
 
    std::vector<Vertex3Ds> vvertex3D;
-   for (int i = 0; i < g_pplayer->m_ptable->m_vedit.Size(); ++i)
-      g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(vvertex3D);
+   for (size_t i = 0; i < g_pplayer->m_ptable->m_vedit.size(); ++i)
+      g_pplayer->m_ptable->m_vedit[i]->GetBoundingVertices(vvertex3D);
 
    m_proj.m_rcviewport.left = 0;
    m_proj.m_rcviewport.top = 0;

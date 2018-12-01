@@ -364,9 +364,9 @@ BOOL CollectionDialog::OnInitDialog()
 
     PinTable * const ppt = pCurCollection.ppt;
 
-    for(int i = 0; i < ppt->m_vedit.Size(); i++)
+    for(size_t i = 0; i < ppt->m_vedit.size(); i++)
     {
-        IEditable * const piedit = ppt->m_vedit.ElementAt(i);
+        IEditable * const piedit = ppt->m_vedit[i];
         IScriptable * const piscript = piedit->GetScriptable();
         ISelect * const pisel = piedit->GetISelect();
 

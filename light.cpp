@@ -361,9 +361,9 @@ void Light::UIRenderPass2(Sur * const psur)
    if (!fDrawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
-      for (int i = 0; i < m_vdpoint.Size(); i++)
+      for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
-         const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+         const CComObject<DragPoint> * const pdp = m_vdpoint[i];
          if (pdp->m_selectstate != eNotSelected)
          {
             fDrawDragpoints = true;
@@ -376,10 +376,9 @@ void Light::UIRenderPass2(Sur * const psur)
 
    if ((m_d.m_shape == ShapeCustom) && fDrawDragpoints)
    {
-      const int len = m_vdpoint.Size();
-      for (int i = 0; i < len; i++)
+      for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
-         CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+         CComObject<DragPoint> * const pdp = m_vdpoint[i];
          psur->SetFillColor(-1);
          psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(0, 0, 200), false, 0);
          psur->SetObject(pdp);
@@ -1008,9 +1007,9 @@ void Light::MoveOffset(const float dx, const float dy)
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
 
-   for (int i = 0; i < m_vdpoint.Size(); i++)
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+      CComObject<DragPoint> * const pdp = m_vdpoint[i];
 
       pdp->m_v.x += dx;
       pdp->m_v.y += dy;
@@ -1272,7 +1271,7 @@ void Light::AddPoint(int x, int y, const bool smooth)
          icp++;
 
    //if (icp == 0) // need to add point after the last point
-   //icp = m_vdpoint.Size();
+   //icp = m_vdpoint.size();
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -1280,7 +1279,7 @@ void Light::AddPoint(int x, int y, const bool smooth)
    {
       pdp->AddRef();
       pdp->Init(this, vOut.x, vOut.y, 0.f, smooth);
-      m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+      m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
 
    SetDirtyDraw();
@@ -1500,25 +1499,24 @@ STDMETHODIMP Light::put_Y(float newVal)
 
 void Light::InitShape()
 {
-   if (m_vdpoint.Size() == 0)
+   if (m_vdpoint.empty())
    {
       // First time shape has been set to custom - set up some points
       const float x = m_d.m_vCenter.x;
       const float y = m_d.m_vCenter.y;
-
-      CComObject<DragPoint> *pdp;
 
       for (int i = 8; i > 0; i--)
       {
          const float angle = (float)(M_PI*2.0 / 8.0)*(float)i;
          float xx = x + sinf(angle)*m_d.m_falloff;
          float yy = y - cosf(angle)*m_d.m_falloff;
+         CComObject<DragPoint> *pdp;
          CComObject<DragPoint>::CreateInstance(&pdp);
          if (pdp)
          {
             pdp->AddRef();
             pdp->Init(this, xx, yy, 0.f, true);
-            m_vdpoint.AddElement(pdp);
+            m_vdpoint.push_back(pdp);
          }
       }
    }

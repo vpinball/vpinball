@@ -11,10 +11,8 @@ IHaveDragPoints::IHaveDragPoints()
 
 IHaveDragPoints::~IHaveDragPoints()
 {
-   for (int i = 0; i < m_vdpoint.Size(); i++)
-   {
-      m_vdpoint.ElementAt(i)->Release();
-   }
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
+      m_vdpoint[i]->Release();
 }
 
 Vertex2D IHaveDragPoints::GetPointCenter() const
@@ -24,9 +22,9 @@ Vertex2D IHaveDragPoints::GetPointCenter() const
    float miny = FLT_MAX;
    float maxy = -FLT_MAX;
 
-   for (int i = 0; i < m_vdpoint.Size(); i++)
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      const Vertex3Ds& v = m_vdpoint.ElementAt(i)->m_v;
+      const Vertex3Ds& v = m_vdpoint[i]->m_v;
       minx = min(minx, v.x);
       maxx = max(maxx, v.x);
       miny = min(miny, v.y);
@@ -47,11 +45,11 @@ void IHaveDragPoints::FlipPointY(const Vertex2D& pvCenter)
 
    Vertex2D newcenter = GetPointCenter();
 
-   for (int i = 0; i < m_vdpoint.Size(); i++)
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      const float deltay = m_vdpoint.ElementAt(i)->m_v.y - pvCenter.y;
+      const float deltay = m_vdpoint[i]->m_v.y - pvCenter.y;
 
-      m_vdpoint.ElementAt(i)->m_v.y -= deltay*2.0f;
+      m_vdpoint[i]->m_v.y -= deltay*2.0f;
    }
 
    const float deltay = newcenter.y - pvCenter.y;
@@ -72,11 +70,11 @@ void IHaveDragPoints::FlipPointX(const Vertex2D& pvCenter)
 
    Vertex2D newcenter = GetPointCenter();
 
-   for (int i = 0; i < m_vdpoint.Size(); i++)
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      const float deltax = m_vdpoint.ElementAt(i)->m_v.x - pvCenter.x;
+      const float deltax = m_vdpoint[i]->m_v.x - pvCenter.x;
 
-      m_vdpoint.ElementAt(i)->m_v.x -= deltax*2.0f;
+      m_vdpoint[i]->m_v.x -= deltax*2.0f;
    }
 
    const float deltax = newcenter.x - pvCenter.x;
@@ -125,9 +123,9 @@ void IHaveDragPoints::RotatePoints(const float ang, const Vertex2D& pvCenter, co
       const float sn = sinf(ANGTORAD(ang));
       const float cs = cosf(ANGTORAD(ang));
 
-      for (int i = 0; i < m_vdpoint.Size(); i++)
+      for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
-         DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
+         DragPoint * const pdp1 = m_vdpoint[i];
          const float dx = pdp1->m_v.x - centerx;
          const float dy = pdp1->m_v.y - centery;
          const float dx2 = cs*dx - sn*dy;
@@ -144,9 +142,9 @@ void IHaveDragPoints::RotatePoints(const float ang, const Vertex2D& pvCenter, co
       const float sn = sinf(ANGTORAD(ang));
       const float cs = cosf(ANGTORAD(ang));
 
-      for (int i = 0; i < m_vdpoint.Size(); i++)
+      for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
-         DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
+         DragPoint * const pdp1 = m_vdpoint[i];
          const float dx = pdp1->m_v.x - centerx;
          const float dy = pdp1->m_v.y - centery;
          const float dx2 = cs*dx - sn*dy;
@@ -186,9 +184,9 @@ void IHaveDragPoints::ScalePoints(const float scalex, const float scaley, const 
       const float centerx = newcenter.x;
       const float centery = newcenter.y;
 
-      for (int i = 0; i < m_vdpoint.Size(); i++)
+      for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
-         DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
+         DragPoint * const pdp1 = m_vdpoint[i];
          const float dx = (pdp1->m_v.x - centerx) * scalex;
          const float dy = (pdp1->m_v.y - centery) * scaley;
          pdp1->m_v.x = centerx + dx;
@@ -200,9 +198,9 @@ void IHaveDragPoints::ScalePoints(const float scalex, const float scaley, const 
       const float centerx = pvCenter.x;
       const float centery = pvCenter.y;
 
-      for (int i = 0; i < m_vdpoint.Size(); i++)
+      for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
-         DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
+         DragPoint * const pdp1 = m_vdpoint[i];
          const float dx = (pdp1->m_v.x - centerx) * scalex;
          const float dy = (pdp1->m_v.y - centery) * scaley;
          pdp1->m_v.x = centerx + dx;
@@ -230,9 +228,9 @@ void IHaveDragPoints::TranslatePoints(const Vertex2D &pvOffset)
    GetIEditable()->BeginUndo();
    GetIEditable()->MarkForUndo();
 
-   for (int i = 0; i < m_vdpoint.Size(); i++)
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
+      DragPoint * const pdp1 = m_vdpoint[i];
       pdp1->m_v.x += pvOffset.x;
       pdp1->m_v.y += pvOffset.y;
    }
@@ -251,31 +249,23 @@ void IHaveDragPoints::TranslatePoints(const Vertex2D &pvOffset)
 
 void IHaveDragPoints::ReverseOrder()
 {
-   if (m_vdpoint.Size() == 0)
-   {
+   if (m_vdpoint.empty())
       return;
-   }
 
    // Reverse order of points (switches winding, reverses inside/outside)
-   for (int i = 0; i < m_vdpoint.Size() / 2; i++)
-   {
-      DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
-      DragPoint * const pdp2 = m_vdpoint.ElementAt(m_vdpoint.Size() - 1 - i);
-      m_vdpoint.ReplaceElementAt(pdp2, i);
-      m_vdpoint.ReplaceElementAt(pdp1, m_vdpoint.Size() - 1 - i);
-   }
+   std::reverse(m_vdpoint.begin(), m_vdpoint.end());
 
-   const bool fSlingshotTemp = m_vdpoint.ElementAt(0)->m_fSlingshot;
+   const bool fSlingshotTemp = m_vdpoint[0]->m_fSlingshot;
 
-   for (int i = 0; i < m_vdpoint.Size() - 1; i++)
+   for (size_t i = 0; i < m_vdpoint.size() - 1; i++)
    {
-      DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
-      const DragPoint * const pdp2 = m_vdpoint.ElementAt(i + 1);
+      DragPoint * const pdp1 = m_vdpoint[i];
+      const DragPoint * const pdp2 = m_vdpoint[i + 1];
 
       pdp1->m_fSlingshot = pdp2->m_fSlingshot;
    }
 
-   m_vdpoint.ElementAt(m_vdpoint.Size() - 1)->m_fSlingshot = fSlingshotTemp;
+   m_vdpoint[m_vdpoint.size() - 1]->m_fSlingshot = fSlingshotTemp;
 }
 
 void IHaveDragPoints::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
@@ -304,7 +294,7 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
       const RenderVertex * const prv = &vv[i];
       if (prv->fControlPoint)
       {
-         if (!m_vdpoint.ElementAt(icontrolpoint)->m_fAutoTexture)
+         if (!m_vdpoint[icontrolpoint]->m_fAutoTexture)
          {
             vitexpoints.push_back(icontrolpoint);
             virenderpoints.push_back(i);
@@ -324,7 +314,7 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
    }
 
    // Wrap the array around so we cover the last section
-   vitexpoints.push_back(vitexpoints[0] + m_vdpoint.size());
+   vitexpoints.push_back(vitexpoints[0] + (int)m_vdpoint.size());
    virenderpoints.push_back(virenderpoints[0] + cpoints);
 
    for (int i = 0; i < (int)vitexpoints.size() - 1; ++i)
@@ -341,8 +331,8 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
       }
       else
       {
-         starttexcoord = m_vdpoint.ElementAt(vitexpoints[i] % m_vdpoint.Size())->m_texturecoord;
-         endtexcoord = m_vdpoint.ElementAt(vitexpoints[i + 1] % m_vdpoint.Size())->m_texturecoord;
+         starttexcoord = m_vdpoint[vitexpoints[i] % m_vdpoint.size()]->m_texturecoord;
+         endtexcoord = m_vdpoint[vitexpoints[i + 1] % m_vdpoint.size()]->m_texturecoord;
       }
 
       const float deltacoord = endtexcoord - starttexcoord;
@@ -387,28 +377,28 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
 
 void IHaveDragPoints::ClearPointsForOverwrite()
 {
-   for (int i = 0; i < m_vdpoint.Size(); i++)
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      if (m_vdpoint.ElementAt(i)->m_selectstate != eNotSelected/*GetPTable()->m_pselcur == m_vdpoint.ElementAt(i)*/)
+      if (m_vdpoint[i]->m_selectstate != eNotSelected/*GetPTable()->m_pselcur == m_vdpoint[i]*/)
       {
          //GetPTable()->SetSel(GetPTable());
          GetPTable()->AddMultiSel(GetPTable(), fFalse, fTrue);
       }
 
-      m_vdpoint.ElementAt(i)->Release();
+      m_vdpoint[i]->Release();
    }
 
-   m_vdpoint.RemoveAllElements();
+   m_vdpoint.clear();
 }
 
 HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
    BiffWriter bw(pstm, hcrypthash);
 
-   for (int i = 0; i < m_vdpoint.Size(); i++)
+   for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
       bw.WriteTag(FID(DPNT));
-      CComObject<DragPoint> *pdp = m_vdpoint.ElementAt(i);
+      CComObject<DragPoint> * const pdp = m_vdpoint[i];
       bw.WriteStruct(FID(VCEN), &(pdp->m_v), sizeof(Vertex2D));
       bw.WriteFloat(FID(POSZ), pdp->m_v.z);
       bw.WriteBool(FID(SMTH), pdp->m_fSmooth);
@@ -435,7 +425,7 @@ void IHaveDragPoints::LoadPointToken(int id, BiffReader *pbr, int version)
       {
          pdp->AddRef();
          pdp->Init(this, 0.f, 0.f, 0.f, false);
-         m_vdpoint.AddElement(pdp);
+         m_vdpoint.push_back(pdp);
          BiffReader br(pbr->m_pistream, pdp, NULL, version, pbr->m_hcrypthash, pbr->m_hcryptkey);
          br.Load();
       }
@@ -504,11 +494,11 @@ void DragPoint::EditMenu(HMENU hmenu)
 
 void DragPoint::Delete()
 {
-   if (m_pihdp->m_vdpoint.Size() > m_pihdp->GetMinimumPoints()) // Can't allow less points than the user can recover from
+   if ((int)m_pihdp->m_vdpoint.size() > m_pihdp->GetMinimumPoints()) // Can't allow less points than the user can recover from
    {
       m_pihdp->GetIEditable()->BeginUndo();
       m_pihdp->GetIEditable()->MarkForUndo();
-      m_pihdp->m_vdpoint.RemoveElement(this);
+      RemoveFromVectorSingle(m_pihdp->m_vdpoint, (CComObject<DragPoint> *)this);
       m_pihdp->GetIEditable()->EndUndo();
       m_pihdp->GetIEditable()->SetDirtyDraw();
       Release();
@@ -517,7 +507,7 @@ void DragPoint::Delete()
 
 void DragPoint::Uncreate()
 {
-   m_pihdp->m_vdpoint.RemoveElement(this);
+   RemoveFromVectorSingle(m_pihdp->m_vdpoint, (CComObject<DragPoint> *)this);
    Release();
 }
 
@@ -534,14 +524,14 @@ void DragPoint::DoCommand(int icmd, int x, int y)
       pedit->MarkForUndo();
 
       m_fSmooth = !m_fSmooth;
-      index2 = (m_pihdp->m_vdpoint.IndexOf(this) - 1 + m_pihdp->m_vdpoint.Size()) % m_pihdp->m_vdpoint.Size();
+      index2 = (FindIndexOf(m_pihdp->m_vdpoint, (CComObject<DragPoint> *)this) - 1 + (int)m_pihdp->m_vdpoint.size()) % (int)m_pihdp->m_vdpoint.size();
       if (m_fSmooth && m_fSlingshot)
       {
          m_fSlingshot = false;
       }
-      if (m_fSmooth && m_pihdp->m_vdpoint.ElementAt(index2)->m_fSlingshot)
+      if (m_fSmooth && m_pihdp->m_vdpoint[index2]->m_fSlingshot)
       {
-         m_pihdp->m_vdpoint.ElementAt(index2)->m_fSlingshot = false;
+         m_pihdp->m_vdpoint[index2]->m_fSlingshot = false;
       }
 
       pedit->EndUndo();
@@ -558,8 +548,8 @@ void DragPoint::DoCommand(int icmd, int x, int y)
       if (m_fSlingshot)
       {
          m_fSmooth = false;
-         index2 = (m_pihdp->m_vdpoint.IndexOf(this) + 1) % m_pihdp->m_vdpoint.Size();
-         m_pihdp->m_vdpoint.ElementAt(index2)->m_fSmooth = false;
+         index2 = (FindIndexOf(m_pihdp->m_vdpoint, (CComObject<DragPoint> *)this) + 1) % m_pihdp->m_vdpoint.size();
+         m_pihdp->m_vdpoint[index2]->m_fSmooth = false;
       }
 
       pedit->EndUndo();

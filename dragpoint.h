@@ -55,15 +55,15 @@ protected:
    {
       static const int Dim = T::Dim;    // for now, this is always 2 or 3
 
-      const int cpoint = m_vdpoint.Size();
+      const int cpoint = (int)m_vdpoint.size();
       const int endpoint = loop ? cpoint : cpoint - 1;
 
       T rendv2;
 
       for (int i = 0; i < endpoint; i++)
       {
-         const CComObject<DragPoint> * const pdp1 = m_vdpoint.ElementAt(i);
-         const CComObject<DragPoint> * const pdp2 = m_vdpoint.ElementAt((i < cpoint - 1) ? (i + 1) : 0);
+         const CComObject<DragPoint> * const pdp1 = m_vdpoint[i];
+         const CComObject<DragPoint> * const pdp2 = m_vdpoint[(i < cpoint - 1) ? (i + 1) : 0];
 
          if ((pdp1->m_v.x == pdp2->m_v.x) && (pdp1->m_v.y == pdp2->m_v.y) && (pdp1->m_v.z == pdp2->m_v.z))
          {
@@ -79,8 +79,8 @@ protected:
          if (inext >= cpoint)
             inext = (loop ? inext - cpoint : cpoint - 1);
 
-         const CComObject<DragPoint> * const pdp0 = m_vdpoint.ElementAt(iprev);
-         const CComObject<DragPoint> * const pdp3 = m_vdpoint.ElementAt(inext);
+         const CComObject<DragPoint> * const pdp0 = m_vdpoint[iprev];
+         const CComObject<DragPoint> * const pdp3 = m_vdpoint[inext];
 
          CatmullCurve<Dim> cc;
          cc.SetCurve(pdp0->m_v, pdp1->m_v, pdp2->m_v, pdp3->m_v);
@@ -108,7 +108,7 @@ protected:
       }
    }
 
-   Vector< CComObject<DragPoint> > m_vdpoint;
+   vector< CComObject<DragPoint>* > m_vdpoint;
 };
 
 /////////////////////////////////////////////////////////////////////////////
