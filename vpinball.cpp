@@ -902,7 +902,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       CComObject<PinTable>::CreateInstance(&pt);
       pt->AddRef();
       pt->InitBuiltinTable(this,code != ID_NEW_EXAMPLETABLE);
-      m_vtable.AddElement(pt);
+      m_vtable.push_back(pt);
       SetEnableToolbar();
       break;
    }
@@ -991,9 +991,9 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
       m_fBackglassView = fShow;
 
-      for (int i = 0; i < m_vtable.Size(); i++)
+      for (size_t i = 0; i < m_vtable.size(); i++)
       {
-         PinTable * const ptT = m_vtable.ElementAt(i);
+         PinTable * const ptT = m_vtable[i];
          ptT->SetDefaultView();
          ptT->SetDirtyDraw();
          ptT->SetMyScrollInfo();
@@ -1540,18 +1540,18 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
 void VPinball::ReInitPinDirectSound()
 {
-	for (int i = 0; i < m_vtable.Size(); i++)
+	for (size_t i = 0; i < m_vtable.size(); i++)
 	{
-		PinTable * const ptT = m_vtable.ElementAt(i);
+		PinTable * const ptT = m_vtable[i];
 		for (size_t j = 0; j < ptT->m_vsound.size(); j++)
 		{
 			ptT->m_vsound[j]->UnInitialize();
 		}
 	}
 	InitPinDirectSound();
-	for (int i = 0; i < m_vtable.Size(); i++)
+	for (size_t i = 0; i < m_vtable.size(); i++)
 	{
-		PinTable * const ptT = m_vtable.ElementAt(i);
+		PinTable * const ptT = m_vtable[i];
 		for (size_t j = 0; j < ptT->m_vsound.size(); j++)
 		{
 			ptT->m_vsound[j]->ReInitialize();
@@ -1694,7 +1694,7 @@ void VPinball::LoadFileName(char *szFileName)
    CComObject<PinTable>::CreateInstance(&ppt);
    ppt->AddRef();
    //ppt->Init(this);
-   m_vtable.AddElement(ppt);
+   m_vtable.push_back(ppt);
    const HRESULT hr = ppt->LoadGameFromFilename(szFileName);
 
    if (!SUCCEEDED(hr))
@@ -1704,8 +1704,7 @@ void VPinball::LoadFileName(char *szFileName)
          LocalString ls(IDS_CORRUPTFILE);
          ShowError(ls.m_szbuffer);
       }
-
-      m_vtable.RemoveElement(ppt);
+      RemoveFromVectorSingle(m_vtable, ppt);
       ppt->Release();
    }
    else
@@ -1772,9 +1771,9 @@ CComObject<PinTable> *VPinball::GetActiveTable()
 
 bool VPinball::FCanClose()
 {
-   while (m_vtable.Size())
+   while (m_vtable.size())
    {
-      const bool fCanClose = CloseTable(m_vtable.ElementAt(0));
+      const bool fCanClose = CloseTable(m_vtable[0]);
 
       if (!fCanClose)
          return false;
@@ -1821,7 +1820,7 @@ bool VPinball::CloseTable(PinTable *ppt)
    if (m_sb.GetBaseISel() && (ppt == m_sb.GetBaseISel()->GetPTable()))
       SetPropSel(NULL);
 
-   m_vtable.RemoveElement(ppt);
+   RemoveFromVectorSingle(m_vtable, (CComObject<PinTable>*)ppt);
    ppt->m_pcv->CleanUpScriptEngine();
    ppt->Release();
 
@@ -2505,14 +2504,14 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
             const HWND hwndList = CreateWindowEx(0, "ListBox", "", WS_CHILD | LBS_SORT, 0, 0, 10, 10, hwnd, NULL, g_hinst, 0);
 
             int menucount = 0;
-            for (int i = 0; i < pt->m_vedit.Size(); i++)
+            for (size_t i = 0; i < pt->m_vedit.size(); i++)
             {
-               IEditable * const piedit = pt->m_vedit.ElementAt(i);
+               IEditable * const piedit = pt->m_vedit[i];
                // check scriptable - decals don't have scripts and therefore don't have names
                if (piedit->GetScriptable() && piedit->m_fBackglass == g_pvp->m_fBackglassView && piedit->m_isVisible)
                {
                   char szT[64]; // Names can only be 32 characters (plus terminator)
-                  WideCharToMultiByte(CP_ACP, 0, pt->m_vedit.ElementAt(i)->GetScriptable()->m_wzName, -1, szT, 64, NULL, NULL);
+                  WideCharToMultiByte(CP_ACP, 0, pt->m_vedit[i]->GetScriptable()->m_wzName, -1, szT, 64, NULL, NULL);
 
                   const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
                   SendMessage(hwndList, LB_SETITEMDATA, index, i + 1);// menu can't have an item with id 0, so bump everything up one
@@ -2566,7 +2565,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                      pt->AddMultiSel(pcol->m_visel.ElementAt(i), i == 0 ? fAdd : true);
                }
                else
-                  pt->AddMultiSel(pt->m_vedit.ElementAt(icmd - 1)->GetISelect(), fAdd);
+                  pt->AddMultiSel(pt->m_vedit[icmd - 1]->GetISelect(), fAdd);
             }
             DestroyMenu(hmenu);
          }
