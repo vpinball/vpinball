@@ -120,7 +120,7 @@ public:
    HWND m_hwnd;
    HWND m_toolTipHwnd;
 
-   Vector< CComObject<PinTable> > m_vtable;
+   vector< CComObject<PinTable>* > m_vtable;
    CComObject<PinTable> *m_ptableActive;
 
    HWND m_hwndSideBar;
