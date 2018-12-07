@@ -170,7 +170,7 @@ static const int allLayers[MAX_LAYERS] =
 static char recentNumber[LAST_OPENED_TABLE_COUNT];
 static char recentMenuname[MAX_PATH];
 
-WCHAR *VPinball::m_customParameters[MAX_CUSTOM_PARAM_INDEX] = {0};
+WCHAR *VPinball::m_customParameters[MAX_CUSTOM_PARAM_INDEX] = {};
 
 #define TBCOUNTMAIN (sizeof(g_tbbuttonMain) / sizeof(TBBUTTON))
 #define TBCOUNTPALETTE (sizeof(g_tbbuttonPalette) / sizeof(TBBUTTON))
@@ -1704,6 +1704,7 @@ void VPinball::LoadFileName(char *szFileName)
          LocalString ls(IDS_CORRUPTFILE);
          ShowError(ls.m_szbuffer);
       }
+
       RemoveFromVectorSingle(m_vtable, ppt);
       ppt->Release();
    }
@@ -1783,13 +1784,13 @@ bool VPinball::FCanClose()
 }
 
 
-bool VPinball::CloseTable(PinTable *ppt)
+bool VPinball::CloseTable(PinTable * const ppt)
 {
    if (ppt->FDirty())
    {
       LocalString ls1(IDS_SAVE_CHANGES1);
       LocalString ls2(IDS_SAVE_CHANGES2);
-      char *szText = new char[lstrlen(ls1.m_szbuffer) + lstrlen(ls2.m_szbuffer) + lstrlen(ppt->m_szTitle) + 1];
+      char * const szText = new char[lstrlen(ls1.m_szbuffer) + lstrlen(ls2.m_szbuffer) + lstrlen(ppt->m_szTitle) + 1];
       lstrcpy(szText, ls1.m_szbuffer/*"Do you want to save the changes you made to '"*/);
       lstrcat(szText, ppt->m_szTitle);
       lstrcat(szText, ls2.m_szbuffer);
@@ -1820,7 +1821,7 @@ bool VPinball::CloseTable(PinTable *ppt)
    if (m_sb.GetBaseISel() && (ppt == m_sb.GetBaseISel()->GetPTable()))
       SetPropSel(NULL);
 
-   RemoveFromVectorSingle(m_vtable, (CComObject<PinTable>*)ppt);
+   RemoveFromVectorSingle(m_vtable, (CComObject<PinTable> *)ppt);
    ppt->m_pcv->CleanUpScriptEngine();
    ppt->Release();
 
@@ -2490,7 +2491,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
    {
    case WM_NOTIFY:
    {
-      LPNMHDR pnmhdr = (LPNMHDR)lParam;
+      const LPNMHDR pnmhdr = (LPNMHDR)lParam;
       switch (pnmhdr->code)
       {
       case TBN_DROPDOWN:
@@ -2511,7 +2512,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                if (piedit->GetScriptable() && piedit->m_fBackglass == g_pvp->m_fBackglassView && piedit->m_isVisible)
                {
                   char szT[64]; // Names can only be 32 characters (plus terminator)
-                  WideCharToMultiByte(CP_ACP, 0, pt->m_vedit[i]->GetScriptable()->m_wzName, -1, szT, 64, NULL, NULL);
+                  WideCharToMultiByte(CP_ACP, 0, piedit->GetScriptable()->m_wzName, -1, szT, 64, NULL, NULL);
 
                   const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
                   SendMessage(hwndList, LB_SETITEMDATA, index, i + 1);// menu can't have an item with id 0, so bump everything up one

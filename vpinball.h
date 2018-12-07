@@ -98,7 +98,7 @@ public:
    HRESULT ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed);
    BOOL    processKeyInputForDialogs(MSG *pmsg);
 
-   bool CloseTable(PinTable *ppt);
+   bool CloseTable(PinTable * const ppt);
 
    void SetEnableToolbar();
    void SetEnablePalette();
