@@ -24,7 +24,7 @@ ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
    { "Gottlieb System 1 (standard)", 20.25f, 42.0f },
    { "Gottlieb System 1 (widebody)", 26.75f, 47.0f },
    { "Gottlieb System 80 (standard)", 20.25f, 42.0f },
-   { "Gottlieb System 80 (widebody)", 23.75f, 46.5f },
+   { "Gottlieb System 80 (widebody)", 23.875f, 47.875f }, // verified on at least on two actual machines (via BorgDog)
    { "Gottlieb System 80 (extrawide)", 26.75f, 46.5f },
    { "Gottlieb System 3", 20.25f, 46.0f },
    { "Stern (widebody)", 23.875f, 45.0f },
