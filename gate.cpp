@@ -17,6 +17,7 @@ Gate::Gate()
    m_vertexbuffer_angle = FLT_MAX;
    memset(m_d.m_szMaterial, 0, 32);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
+   m_d.m_type = GateWireW;
    m_vertices = 0;
    m_indices = 0;
    m_numIndices = 0;
@@ -725,6 +726,8 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(GATY))
    {
        pbr->GetInt(&m_d.m_type);
+       if (m_d.m_type < GateWireW || m_d.m_type > GateLongPlate) // for tables that were saved in the phase where m_type could've been undefined
+           m_d.m_type = GateWireW;
    }
    else if (id == FID(VCEN))
    {
