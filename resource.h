@@ -348,6 +348,7 @@
 #define IDC_DEFAULT_COLORS_BUTTON       280
 #define IDC_TEST                        280
 #define IDC_POINT_COPY_BUTTON           280
+#define IDC_APPLY_TO_TABLE              280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
