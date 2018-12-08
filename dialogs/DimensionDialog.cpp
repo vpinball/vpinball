@@ -94,107 +94,107 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {
-   case WM_NOTIFY:
-   {
-      LPNMHDR pnmhdr = (LPNMHDR)lParam;
-      switch (pnmhdr->code)
+      case WM_NOTIFY:
       {
-      case LVN_ITEMCHANGED:
-      {
-         NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
-         int idx = plistview->iItem;
-         if (idx >= DIM_TABLE_SIZE || idx < 0)
-            break;
+         LPNMHDR pnmhdr = (LPNMHDR)lParam;
+         switch (pnmhdr->code)
+         {
+            case LVN_ITEMCHANGED:
+            {
+               NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
+               int idx = plistview->iItem;
+               if (idx >= DIM_TABLE_SIZE || idx < 0)
+                  break;
 
-         int width = (int)floorf(dimTable[idx].width*47.0f + 0.5f);
-         int height = (int)floorf(dimTable[idx].height*47.0f + 0.5f);
-         char textBuf[32];
-         sprintf_s(textBuf, "%i", width);
-         CString textStr(textBuf);
-         SetDlgItemText(IDC_VP_WIDTH, textStr);
-         sprintf_s(textBuf, "%i", height);
-         textStr = CString(textBuf);
-         SetDlgItemText(IDC_VP_HEIGHT, textStr);
-         sprintf_s(textBuf, "%.03f", dimTable[idx].width);
-         textStr = CString(textBuf);
-         SetDlgItemText(IDC_SIZE_WIDTH, textStr);
-         sprintf_s(textBuf, "%.03f", dimTable[idx].height);
-         textStr = CString(textBuf);
-         SetDlgItemText(IDC_SIZE_HEIGHT, textStr);
-         float ratio = (float)height / width;
-         sprintf_s(textBuf, "%.04f", ratio);
-         textStr = CString(textBuf);
-         SetDlgItemText(IDC_ASPECT_RATIO_EDIT, textStr);
-         break;
-      }
-      }
-      break;
-   }
-   case WM_COMMAND:
-   {
-      switch (HIWORD(wParam))
-      {
-      case EN_KILLFOCUS:
-      {
-         float sizeWidth, sizeHeight;
-         int vpWidth, vpHeight;
-         int ret = 0;
-         if (LOWORD(wParam) == IDC_SIZE_WIDTH)
-         {
-            char textBuf[32];
-            CString textStr;
-            textStr = GetDlgItemText(IDC_SIZE_WIDTH);
-            ret = sscanf_s(textStr.c_str(), "%f", &sizeWidth);
-            if (ret != 1 || sizeWidth < 0.0f)
-               sizeWidth = 0;
-            int width = (int)floorf(sizeWidth*47.0f + 0.5f);
-            sprintf_s(textBuf, "%i", width);
-            CString textStr2(textBuf);
-            SetDlgItemText(IDC_VP_WIDTH, textStr2);
-         }
-         if (LOWORD(wParam) == IDC_SIZE_HEIGHT)
-         {
-            char textBuf[32];
-            CString textStr;
-            textStr = GetDlgItemText(IDC_SIZE_HEIGHT);
-            ret = sscanf_s(textStr.c_str(), "%f", &sizeHeight);
-            if (ret != 1 || sizeHeight < 0.0f)
-               sizeHeight = 0;
-            int height = (int)floorf(sizeHeight*47.0f + 0.5f);
-            sprintf_s(textBuf, "%i", height);
-            CString textStr2(textBuf);
-            SetDlgItemText(IDC_VP_HEIGHT, textStr2);
-         }
-         if (LOWORD(wParam) == IDC_VP_WIDTH)
-         {
-            char textBuf[32];
-            CString textStr;
-            textStr = GetDlgItemText(IDC_VP_WIDTH);
-            ret = sscanf_s(textStr.c_str(), "%i", &vpWidth);
-            if (ret != 1 || vpWidth < 0)
-               vpWidth = 0;
-            float width = (float)vpWidth / 47.0f;
-            sprintf_s(textBuf, "%.3f", width);
-            CString textStr2(textBuf);
-            SetDlgItemText(IDC_SIZE_WIDTH, textStr2);
-         }
-         if (LOWORD(wParam) == IDC_VP_HEIGHT)
-         {
-            char textBuf[32];
-            CString textStr;
-            textStr = GetDlgItemText(IDC_VP_HEIGHT);
-            ret = sscanf_s(textStr.c_str(), "%i", &vpHeight);
-            if (ret != 1 || vpHeight < 0)
-               vpHeight = 0;
-            float height = (float)vpHeight / 47.0f;
-            sprintf_s(textBuf, "%.03f", height);
-            CString textStr2(textBuf);
-            SetDlgItemText(IDC_SIZE_HEIGHT, textStr2);
+               int width = (int)floorf(dimTable[idx].width*47.0f + 0.5f);
+               int height = (int)floorf(dimTable[idx].height*47.0f + 0.5f);
+               char textBuf[32];
+               sprintf_s(textBuf, "%i", width);
+               CString textStr(textBuf);
+               SetDlgItemText(IDC_VP_WIDTH, textStr);
+               sprintf_s(textBuf, "%i", height);
+               textStr = CString(textBuf);
+               SetDlgItemText(IDC_VP_HEIGHT, textStr);
+               sprintf_s(textBuf, "%.03f", dimTable[idx].width);
+               textStr = CString(textBuf);
+               SetDlgItemText(IDC_SIZE_WIDTH, textStr);
+               sprintf_s(textBuf, "%.03f", dimTable[idx].height);
+               textStr = CString(textBuf);
+               SetDlgItemText(IDC_SIZE_HEIGHT, textStr);
+               float ratio = (float)height / width;
+               sprintf_s(textBuf, "%.04f", ratio);
+               textStr = CString(textBuf);
+               SetDlgItemText(IDC_ASPECT_RATIO_EDIT, textStr);
+               break;
+            }
          }
          break;
       }
+      case WM_COMMAND:
+      {
+         switch (HIWORD(wParam))
+         {
+            case EN_KILLFOCUS:
+            {
+               float sizeWidth, sizeHeight;
+               int vpWidth, vpHeight;
+               int ret = 0;
+               if (LOWORD(wParam) == IDC_SIZE_WIDTH)
+               {
+                  char textBuf[32];
+                  CString textStr;
+                  textStr = GetDlgItemText(IDC_SIZE_WIDTH);
+                  ret = sscanf_s(textStr.c_str(), "%f", &sizeWidth);
+                  if (ret != 1 || sizeWidth < 0.0f)
+                     sizeWidth = 0;
+                  int width = (int)floorf(sizeWidth*47.0f + 0.5f);
+                  sprintf_s(textBuf, "%i", width);
+                  CString textStr2(textBuf);
+                  SetDlgItemText(IDC_VP_WIDTH, textStr2);
+               }
+               if (LOWORD(wParam) == IDC_SIZE_HEIGHT)
+               {
+                  char textBuf[32];
+                  CString textStr;
+                  textStr = GetDlgItemText(IDC_SIZE_HEIGHT);
+                  ret = sscanf_s(textStr.c_str(), "%f", &sizeHeight);
+                  if (ret != 1 || sizeHeight < 0.0f)
+                     sizeHeight = 0;
+                  int height = (int)floorf(sizeHeight*47.0f + 0.5f);
+                  sprintf_s(textBuf, "%i", height);
+                  CString textStr2(textBuf);
+                  SetDlgItemText(IDC_VP_HEIGHT, textStr2);
+               }
+               if (LOWORD(wParam) == IDC_VP_WIDTH)
+               {
+                  char textBuf[32];
+                  CString textStr;
+                  textStr = GetDlgItemText(IDC_VP_WIDTH);
+                  ret = sscanf_s(textStr.c_str(), "%i", &vpWidth);
+                  if (ret != 1 || vpWidth < 0)
+                     vpWidth = 0;
+                  float width = (float)vpWidth / 47.0f;
+                  sprintf_s(textBuf, "%.3f", width);
+                  CString textStr2(textBuf);
+                  SetDlgItemText(IDC_SIZE_WIDTH, textStr2);
+               }
+               if (LOWORD(wParam) == IDC_VP_HEIGHT)
+               {
+                  char textBuf[32];
+                  CString textStr;
+                  textStr = GetDlgItemText(IDC_VP_HEIGHT);
+                  ret = sscanf_s(textStr.c_str(), "%i", &vpHeight);
+                  if (ret != 1 || vpHeight < 0)
+                     vpHeight = 0;
+                  float height = (float)vpHeight / 47.0f;
+                  sprintf_s(textBuf, "%.03f", height);
+                  CString textStr2(textBuf);
+                  SetDlgItemText(IDC_SIZE_HEIGHT, textStr2);
+               }
+               break;
+            }
+         }
       }
-   }
    }
    return DialogProcDefault(uMsg, wParam, lParam);
 
@@ -206,6 +206,32 @@ BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
    switch (LOWORD(wParam))
    {
+      case IDC_APPLY_TO_TABLE:
+      {
+         PinTable *pt = g_pvp->GetActiveTable();
+         if (pt == NULL)
+         {
+            ShowError("No table loaded!");
+            break;
+         }
+
+         CString textStr;
+         int vpWidth, vpHeight;
+         int ret;
+
+         textStr = GetDlgItemText(IDC_VP_WIDTH);
+         ret = sscanf_s(textStr.c_str(), "%i", &vpWidth);
+         if (ret != 1 || vpWidth < 0)
+            vpWidth = 0;
+
+         textStr = GetDlgItemText(IDC_VP_HEIGHT);
+         ret = sscanf_s(textStr.c_str(), "%i", &vpHeight);
+         if (ret != 1 || vpHeight < 0)
+            vpHeight = 0;
+         pt->put_Width((float)vpWidth);
+         pt->put_Height((float)vpHeight);
+         break;
+      }
       case IDC_OK:
          CDialog::OnOK();
       default:
