@@ -211,8 +211,9 @@ struct PhysValues
     char tableElasticityFalloff[16];
     char playfieldScatter[16];
     char defaultElementScatter[16];
+    // Flipper:
     char speed[16];
-    char stength[16];
+    char strength[16];
     char elasticity[16];
     char scatter[16];
     char eosTorque[16];
@@ -221,6 +222,7 @@ struct PhysValues
     char elasticityFalloff[16];
     char friction[16];
     char coilRampup[16];
+
     char minSlope[16];
     char maxSlope[16];
     char name[32];
@@ -276,7 +278,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             SetDlgItemText(1104, CString(loadValues.maxSlope));
 
             SetDlgItemText(DISPID_Flipper_Speed, CString(loadValues.speed));
-            SetDlgItemText(19, CString(loadValues.returnStrength));
+            SetDlgItemText(19, CString(loadValues.strength));
             SetDlgItemText(21, CString(loadValues.elasticity));
             SetDlgItemText(112, CString(loadValues.scatter));
             SetDlgItemText(113, CString(loadValues.eosTorque));
@@ -494,7 +496,8 @@ bool PhysicsOptionsDialog::LoadSetting()
         }
 
         strncpy_s(loadValues.speed, flipper->first_node("speed")->value(), 16);
-        strncpy_s(loadValues.elasticity, flipper->first_node("strength")->value(), 16);
+        strncpy_s(loadValues.strength, flipper->first_node("strength")->value(), 16);
+        strncpy_s(loadValues.elasticity, flipper->first_node("elasticity")->value(), 16);
         strncpy_s(loadValues.scatter, flipper->first_node("scatter")->value(), 16);
         strncpy_s(loadValues.eosTorque, flipper->first_node("eosTorque")->value(), 16);
         strncpy_s(loadValues.eosTorqueAngle, flipper->first_node("eosTorqueAngle")->value(), 16);
@@ -502,6 +505,7 @@ bool PhysicsOptionsDialog::LoadSetting()
         strncpy_s(loadValues.elasticityFalloff, flipper->first_node("elasticityFalloff")->value(), 16);
         strncpy_s(loadValues.friction, flipper->first_node("friction")->value(), 16);
         strncpy_s(loadValues.coilRampup, flipper->first_node("coilRampUp")->value(), 16);
+
         strncpy_s(loadValues.name, root->first_node("name")->value(), 30);
     }
     catch(...)
