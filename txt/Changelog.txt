@@ -1,11 +1,14 @@
 VP 10.6.0 Changelog
 ------------------------
-- add apply button to the dimensions manager to apply the selected dimension to the active table.
 
-- add support for up to 9 custom start parameters (range 1-9). Usage: "Vpinball.exe -c1 param1 -c2 param2" sets two custom parameter "param1" and "param2". In the script use:
-  GetCustomParam(1) to get "param1" and GetCustomParam(2) to get "param2"
+- fix some regressions from VPX 10.3+ within the physics options dialog, especially with some of its flipper settings and when importing settings
 
-- add EnableSkirtAnimation for bumpers to enable/disable skirt animation
+- fix ball through bumper issue
+
+- add apply button to the dimensions manager to apply the selected dimension to the active table
+
+- add support for up to 9 custom start parameters (range 1-9). Usage: "VPinballX.exe -c1 param1 -c2 param2" sets two custom parameters "param1" and "param2".
+  To access these in the script use: GetCustomParam(1) to get "param1" and GetCustomParam(2) to get "param2"
 
 - add strength parameter for the (optional) legacy/VP9-like keyboard nudging code, can be set in the 'Keys, Nudge and DOF' preferences dialog
 
@@ -18,7 +21,7 @@ VP 10.6.0 Changelog
 - fix ball decal splotches if only a global ball image was set in the video preferences
 
 - new table-script manipulation features:
-  '-extractvbs' parameter: "VPinballX -extractvbs tablename.vpx" extracts the script and exits
+  '-extractvbs' parameter: "VPinballX.exe -extractvbs tablename.vpx" extracts the script and exits
   VPX will automatically replace the table-script with a vbs file named the same as the table file (similar to the existing pov file functionality)
 
 - add support for using a primitive as playfield instead of the build-in one:
@@ -45,11 +48,10 @@ VP 10.6.0 Changelog
 - add buttons to video preferences to easily setup defaults for low- or high-end PCs
 - add 'Force Bloom Filter off' to video preferences to increase performance on extremely low-end graphics cards (like on tablets)
 
-- updated to latest FreeImage.dll (3.18.0) (currently disabled)
-
 - see core scripts (header of core.vbs) for the respective changelog (version 3.57)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
 
+- updated to latest FreeImage.dll (3.18.0) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)
 
 VP 10.5.0 Changelog
