@@ -19,15 +19,16 @@ PhysicsOptionsDialog::PhysicsOptionsDialog() : CDialog(IDD_PHYSICS_OPTIONS)
 
 BOOL PhysicsOptionsDialog::OnInitDialog()
 {
-    char tmp[256];
-
-    HWND hwndList = GetDlgItem(IDC_PhysicsList).GetHwnd();
+    const HWND hwndList = GetDlgItem(IDC_PhysicsList).GetHwnd();
 
     const size_t size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
     for(size_t i = 0; i < size; i++)
     {
         if(physicsoptions[i])
+        {
             delete[] physicsoptions[i];
+            physicsoptions[i] = NULL;
+        }
         int* sd = (int *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
         delete sd;
     }
@@ -36,6 +37,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     for(unsigned int i = 0; i < num_physicsoptions; i++)
     {
         physicsoptions[i] = new char[256];
+        char tmp[256];
         sprintf_s(tmp, 256, "PhysicsSetName%u", i);
         if(GetRegString("Player", tmp, physicsoptions[i], 256) != S_OK)
             sprintf_s(physicsoptions[i], 256, "Set %u", i + 1);
@@ -48,6 +50,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     SendMessage(hwndList, LB_SETCURSEL, physicsselection, 0);
 
     HRESULT hr;
+    char tmp[256];
 
     float FlipperPhysicsMass = 1.f;
     sprintf_s(tmp, 256, "FlipperPhysicsMass%u", physicsselection);
@@ -195,6 +198,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     CString txt(physicsoptions[physicsselection]);
     SetDlgItemText(1110, txt);
+
     return TRUE;
 }
 
@@ -229,7 +233,6 @@ struct PhysValues
 };
 
 static PhysValues loadValues;
-static CString txtStr;
 
 
 BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -423,7 +426,10 @@ void PhysicsOptionsDialog::OnDestroy()
     for(size_t i = 0; i < size; i++)
     {
         if(physicsoptions[i])
+        {
             delete[] physicsoptions[i];
+            physicsoptions[i] = NULL;
+        }
         int* sd = (int *)::SendMessage(hwndList, LB_GETITEMDATA, i, 0);
         delete sd;
     }
@@ -526,7 +532,7 @@ CString PhysicsOptionsDialog::GetItemText(int id)
 
 void PhysicsOptionsDialog::SetItemText(int id, float value)
 {
-    char textBuf[256] ={ 0 };
+    char textBuf[256] = { 0 };
     f2sz(value, textBuf);
     CString textStr(textBuf);
     SetDlgItemText(id, textStr);

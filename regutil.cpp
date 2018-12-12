@@ -27,7 +27,10 @@ HRESULT GetRegStringAsFloat(const char *szKey, const char *szValue, float *pfloa
    if (len == 0)
       return E_FAIL;
 
-   //todo: convert decimal character in string to match regional setting of current machine
+   char* const fo = strchr(szbuffer, ',');
+   if (fo != NULL)
+      *fo = '.';
+
    if (szbuffer[0] == '-')
    {
       if (len < 2)
