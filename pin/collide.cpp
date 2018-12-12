@@ -236,7 +236,11 @@ float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime,
          isContact = true;
       }
       else
-         hittime = /*std::max(0.0f,*/ -bnd / bnv /*)*/;   // estimate based on distance and speed along distance
+         // estimate based on distance and speed along distance
+         // the ball can be that fast that in the next hit cycle the ball will be inside the hit shape of a bumper or other element.
+         // if that happens bnd is negative and greater than the negative bnv value that results in a negative hittime
+         // below the "if(infNan(hittime) || hittime <0.f...)" will then be true and the hit function will return -1.0f = no hit
+         hittime = std::max(0.0f, -bnd / bnv );   
    }
    else if (m_ObjType >= eTrigger // triggers & kickers
       && pball->m_vpVolObjs && ((bnd < 0.f) == (FindIndexOf(*(pball->m_vpVolObjs), m_obj) < 0)))
