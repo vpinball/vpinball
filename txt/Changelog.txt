@@ -1,6 +1,8 @@
 VP 10.6.0 Changelog
 ------------------------
 
+- add checkbox to 'user customizations'->'overwrite physics by global set' to optionally change all flipper settings, too
+
 - fix some regressions from VPX 10.3+ within the physics options dialog, especially with some of its flipper settings and when importing settings
 
 - fix ball through bumper issue

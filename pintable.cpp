@@ -1365,6 +1365,8 @@ PinTable::PinTable()
    m_fReflectionEnabled = false;
 
    m_overridePhysics = 0;
+   m_overridePhysicsFlipper = false;
+
    m_defaultBulbIntensityScaleOnBall = 1.0f;
 
    SetDefaultPhysics(false);
@@ -3386,6 +3388,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(SCZS), m_BG_scalez[2]);
 
    bw.WriteInt(FID(ORRP), m_overridePhysics);
+   bw.WriteBool(FID(ORPF), m_overridePhysicsFlipper);
    bw.WriteFloat(FID(GAVT), m_Gravity);
    bw.WriteFloat(FID(FRCT), m_friction);
    bw.WriteFloat(FID(ELAS), m_elasticity);
@@ -3937,6 +3940,8 @@ void PinTable::SetLoadDefaults()
    m_BallDecalMode = false;
 
    m_TableAdaptiveVSync = -1;
+
+   m_overridePhysicsFlipper = false;
 }
 
 HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -4115,6 +4120,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ORRP))
    {
       pbr->GetInt(&m_overridePhysics);
+   }
+   else if (id == FID(ORPF))
+   {
+      pbr->GetBool(&m_overridePhysicsFlipper);
    }
    else if (id == FID(GAVT))
    {
@@ -10538,6 +10547,22 @@ STDMETHODIMP PinTable::put_OverridePhysics(PhysicsSet newVal)
 {
    STARTUNDO
    m_overridePhysics = (int)newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_OverridePhysicsFlippers(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_overridePhysicsFlipper);
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_OverridePhysicsFlippers(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+   m_overridePhysicsFlipper = !!newVal;
    STOPUNDO
 
    return S_OK;

@@ -809,6 +809,7 @@
 #define IDS_PLAYFIELD                   581
 #define IDD_PROPTABLE_USER              582
 #define IDS_TABLE_USER                  583
+#define IDC_OVERRIDEPHYSICS_FLIPPERS    584
 #define IDC_TABLEAVSYNC                 585
 #define IDC_SOFTWARE_VP                 586
 #define IDC_TEXT_INTENSITY              587

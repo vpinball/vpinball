@@ -53,7 +53,7 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser
    //const float faceNormOffset = (float)(M_PI / 2.0) - fa; //angle of normal when flipper center line at angle zero
 
    // model inertia of flipper as that of rod of length flipr around its end
-   const float mass = m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideMass : m_pflipper->m_d.m_mass;
+   const float mass = (m_pflipper->m_d.m_OverridePhysics || (m_pflipper->m_ptable->m_overridePhysicsFlipper && m_pflipper->m_ptable->m_overridePhysics)) ? m_pflipper->m_d.m_OverrideMass : m_pflipper->m_d.m_mass;
    m_inertia = (float)(1.0 / 3.0) * mass * (flipr*flipr);
 
    m_lastHitFace = false; // used to optimize hit face search order
@@ -114,12 +114,17 @@ HitFlipper::HitFlipper(const Vertex2D& center, const float baser, const float en
    const float zlow, const float zhigh, Flipper* const pflipper)
    : m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, pflipper)
 {
-   m_elasticityFalloff = m_flipperMover.m_pflipper->m_d.m_OverridePhysics ? m_flipperMover.m_pflipper->m_d.m_OverrideElasticityFalloff : m_flipperMover.m_pflipper->m_d.m_elasticityFalloff;
-   m_elasticity = m_flipperMover.m_pflipper->m_d.m_OverridePhysics ? m_flipperMover.m_pflipper->m_d.m_OverrideElasticity : m_flipperMover.m_pflipper->m_d.m_elasticity;
-   SetFriction(m_flipperMover.m_pflipper->m_d.m_OverridePhysics ? m_flipperMover.m_pflipper->m_d.m_OverrideFriction : m_flipperMover.m_pflipper->m_d.m_friction);
-   m_scatter = ANGTORAD(m_flipperMover.m_pflipper->m_d.m_OverridePhysics ? m_flipperMover.m_pflipper->m_d.m_OverrideScatterAngle : m_flipperMover.m_pflipper->m_d.m_scatter);
+   UpdatePhysicsFromFlipper();
 
    m_last_hittime = 0;
+}
+
+void HitFlipper::UpdatePhysicsFromFlipper()
+{
+   m_elasticityFalloff = (m_flipperMover.m_pflipper->m_d.m_OverridePhysics || (m_flipperMover.m_pflipper->m_ptable->m_overridePhysicsFlipper && m_flipperMover.m_pflipper->m_ptable->m_overridePhysics)) ? m_flipperMover.m_pflipper->m_d.m_OverrideElasticityFalloff : m_flipperMover.m_pflipper->m_d.m_elasticityFalloff;
+   m_elasticity = (m_flipperMover.m_pflipper->m_d.m_OverridePhysics || (m_flipperMover.m_pflipper->m_ptable->m_overridePhysicsFlipper && m_flipperMover.m_pflipper->m_ptable->m_overridePhysics)) ? m_flipperMover.m_pflipper->m_d.m_OverrideElasticity : m_flipperMover.m_pflipper->m_d.m_elasticity;
+   SetFriction((m_flipperMover.m_pflipper->m_d.m_OverridePhysics || (m_flipperMover.m_pflipper->m_ptable->m_overridePhysicsFlipper && m_flipperMover.m_pflipper->m_ptable->m_overridePhysics)) ? m_flipperMover.m_pflipper->m_d.m_OverrideFriction : m_flipperMover.m_pflipper->m_d.m_friction);
+   m_scatter = ANGTORAD((m_flipperMover.m_pflipper->m_d.m_OverridePhysics || (m_flipperMover.m_pflipper->m_ptable->m_overridePhysicsFlipper && m_flipperMover.m_pflipper->m_ptable->m_overridePhysics)) ? m_flipperMover.m_pflipper->m_d.m_OverrideScatterAngle : m_flipperMover.m_pflipper->m_d.m_scatter);
 }
 
 void HitFlipper::CalcHitBBox()
@@ -159,12 +164,12 @@ void FlipperMoverObject::SetEndAngle(const float r)
 
 float FlipperMoverObject::GetReturnRatio() const
 {
-   return m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideReturnStrength : m_pflipper->m_d.m_return;
+   return (m_pflipper->m_d.m_OverridePhysics || (m_pflipper->m_ptable->m_overridePhysicsFlipper && m_pflipper->m_ptable->m_overridePhysics)) ? m_pflipper->m_d.m_OverrideReturnStrength : m_pflipper->m_d.m_return;
 }
 
 float FlipperMoverObject::GetStrength() const
 {
-   return m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideStrength : m_pflipper->m_d.m_strength;
+   return (m_pflipper->m_d.m_OverridePhysics || (m_pflipper->m_ptable->m_overridePhysicsFlipper && m_pflipper->m_ptable->m_overridePhysics)) ? m_pflipper->m_d.m_OverrideStrength : m_pflipper->m_d.m_strength;
 }
 
 float FlipperMoverObject::GetMass() const
@@ -249,17 +254,17 @@ void FlipperMoverObject::UpdateVelocities()
       desiredTorque *= -GetReturnRatio();
 
    // hold coil is weaker
-   const float EOS_angle = ANGTORAD(m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideTorqueDampingAngle : m_pflipper->m_d.m_torqueDampingAngle);
+   const float EOS_angle = ANGTORAD((m_pflipper->m_d.m_OverridePhysics || (m_pflipper->m_ptable->m_overridePhysicsFlipper && m_pflipper->m_ptable->m_overridePhysics)) ? m_pflipper->m_d.m_OverrideTorqueDampingAngle : m_pflipper->m_d.m_torqueDampingAngle);
    if (fabsf(m_angleCur - m_angleEnd) < EOS_angle)
    {
       const float lerp = sqrf(sqrf(fabsf(m_angleCur - m_angleEnd) / EOS_angle)); // fade in/out damping, depending on angle to end
-      desiredTorque *= lerp + (m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideTorqueDamping : m_pflipper->m_d.m_torqueDamping) * (1.0f - lerp);
+      desiredTorque *= lerp + ((m_pflipper->m_d.m_OverridePhysics || (m_pflipper->m_ptable->m_overridePhysicsFlipper && m_pflipper->m_ptable->m_overridePhysics)) ? m_pflipper->m_d.m_OverrideTorqueDamping : m_pflipper->m_d.m_torqueDamping) * (1.0f - lerp);
    }
 
    if (!m_direction)
       desiredTorque = -desiredTorque;
 
-   float torqueRampupSpeed = m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideCoilRampUp : m_pflipper->m_d.m_rampUp;
+   float torqueRampupSpeed = (m_pflipper->m_d.m_OverridePhysics || (m_pflipper->m_ptable->m_overridePhysicsFlipper && m_pflipper->m_ptable->m_overridePhysics)) ? m_pflipper->m_d.m_OverrideCoilRampUp : m_pflipper->m_d.m_rampUp;
    if (torqueRampupSpeed <= 0.f)
       torqueRampupSpeed = 1e6f; // set very high for instant coil response
    else
