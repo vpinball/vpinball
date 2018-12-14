@@ -199,6 +199,8 @@ public:
 
    STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ PhysicsSet *pVal);
    STDMETHOD(put_OverridePhysics)(/*[in]*/ PhysicsSet newVal);
+   STDMETHOD(get_OverridePhysicsFlippers)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_OverridePhysicsFlippers)(/*[in]*/ VARIANT_BOOL newVal);
 
    STDMETHOD(ImportPhysics)();
    STDMETHOD(ExportPhysics)();
@@ -606,6 +608,8 @@ public:
    float m_nudgeTime;
    int   m_plungerNormalize;
    bool  m_plungerFilter;
+
+   bool  m_overridePhysicsFlipper;
 
    bool  m_tblAutoStartEnabled;
    bool  m_tblMirrorEnabled;		// Mirror tables left to right.  This is activated by a cheat during table selection.

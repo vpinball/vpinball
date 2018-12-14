@@ -243,14 +243,15 @@ void Flipper::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
-void Flipper::GetHitShapes(vector<HitObject*> &pvho)
+void Flipper::UpdatePhysicsSettings()
 {
-   if (m_d.m_OverridePhysics)
+   if (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics))
    {
+      const int idx = m_d.m_OverridePhysics ? (m_d.m_OverridePhysics-1) : (m_ptable->m_overridePhysics-1);
       char tmp[256];
 
       m_d.m_OverrideMass = 1.f;
-      sprintf_s(tmp, 256, "FlipperPhysicsMass%d", m_d.m_OverridePhysics - 1);
+      sprintf_s(tmp, 256, "FlipperPhysicsMass%d", idx);
       HRESULT hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideMass);
       if (hr != S_OK)
          m_d.m_OverrideMass = 1.f;
@@ -259,7 +260,7 @@ void Flipper::GetHitShapes(vector<HitObject*> &pvho)
          m_d.m_OverrideMass = m_d.m_mass;
 
       m_d.m_OverrideStrength = 2200.f;
-      sprintf_s(tmp, 256, "FlipperPhysicsStrength%d", m_d.m_OverridePhysics - 1);
+      sprintf_s(tmp, 256, "FlipperPhysicsStrength%d", idx);
       hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideStrength);
       if (hr != S_OK)
          m_d.m_OverrideStrength = 2200.f;
@@ -268,7 +269,7 @@ void Flipper::GetHitShapes(vector<HitObject*> &pvho)
          m_d.m_OverrideStrength = m_d.m_strength;
 
       m_d.m_OverrideElasticity = 0.8f;
-      sprintf_s(tmp, 256, "FlipperPhysicsElasticity%d", m_d.m_OverridePhysics - 1);
+      sprintf_s(tmp, 256, "FlipperPhysicsElasticity%d", idx);
       hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideElasticity);
       if (hr != S_OK)
          m_d.m_OverrideElasticity = 0.8f;
@@ -276,17 +277,17 @@ void Flipper::GetHitShapes(vector<HitObject*> &pvho)
       if (m_d.m_OverrideElasticity < 0.0f)
          m_d.m_OverrideElasticity = m_d.m_elasticity;
 
-	  m_d.m_OverrideScatterAngle = 0.f;
-	  sprintf_s(tmp, 256, "FlipperPhysicsScatter%d", m_d.m_OverridePhysics - 1);
-	  hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideScatterAngle);
-	  if (hr != S_OK)
-		  m_d.m_OverrideScatterAngle = 0.f;
+      m_d.m_OverrideScatterAngle = 0.f;
+      sprintf_s(tmp, 256, "FlipperPhysicsScatter%d", idx);
+      hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideScatterAngle);
+      if (hr != S_OK)
+         m_d.m_OverrideScatterAngle = 0.f;
      
      if (m_d.m_OverrideScatterAngle < 0.0f)
         m_d.m_OverrideScatterAngle = m_d.m_scatter;
 
      m_d.m_OverrideReturnStrength = 0.058f;
-     sprintf_s(tmp, 256, "FlipperPhysicsReturnStrength%d", m_d.m_OverridePhysics - 1);
+     sprintf_s(tmp, 256, "FlipperPhysicsReturnStrength%d", idx);
      hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideReturnStrength);
      if (hr != S_OK)
         m_d.m_OverrideReturnStrength = 0.058f;
@@ -295,7 +296,7 @@ void Flipper::GetHitShapes(vector<HitObject*> &pvho)
         m_d.m_OverrideReturnStrength = m_d.m_return;
 
       m_d.m_OverrideElasticityFalloff = 0.43f;
-      sprintf_s(tmp, 256, "FlipperPhysicsElasticityFalloff%d", m_d.m_OverridePhysics - 1);
+      sprintf_s(tmp, 256, "FlipperPhysicsElasticityFalloff%d", idx);
       hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideElasticityFalloff);
       if (hr != S_OK)
          m_d.m_OverrideElasticityFalloff = 0.43f;
@@ -304,7 +305,7 @@ void Flipper::GetHitShapes(vector<HitObject*> &pvho)
          m_d.m_OverrideElasticityFalloff = m_d.m_elasticityFalloff;
 
       m_d.m_OverrideFriction = 0.6f;
-      sprintf_s(tmp, 256, "FlipperPhysicsFriction%d", m_d.m_OverridePhysics - 1);
+      sprintf_s(tmp, 256, "FlipperPhysicsFriction%d", idx);
       hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideFriction);
       if (hr != S_OK)
          m_d.m_OverrideFriction = 0.6f;
@@ -313,7 +314,7 @@ void Flipper::GetHitShapes(vector<HitObject*> &pvho)
          m_d.m_OverrideFriction = m_d.m_friction;
 
       m_d.m_OverrideCoilRampUp = 3.f;
-      sprintf_s(tmp, 256, "FlipperPhysicsCoilRampUp%d", m_d.m_OverridePhysics - 1);
+      sprintf_s(tmp, 256, "FlipperPhysicsCoilRampUp%d", idx);
       hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideCoilRampUp);
       if (hr != S_OK)
          m_d.m_OverrideCoilRampUp = 3.f;
@@ -322,7 +323,7 @@ void Flipper::GetHitShapes(vector<HitObject*> &pvho)
          m_d.m_OverrideCoilRampUp = m_d.m_rampUp;
 
       m_d.m_OverrideTorqueDamping = 0.75f;
-      sprintf_s(tmp, 256, "FlipperPhysicsEOSTorque%d", m_d.m_OverridePhysics - 1);
+      sprintf_s(tmp, 256, "FlipperPhysicsEOSTorque%d", idx);
       hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideTorqueDamping);
       if (hr != S_OK)
          m_d.m_OverrideTorqueDamping = 0.75f;
@@ -331,7 +332,7 @@ void Flipper::GetHitShapes(vector<HitObject*> &pvho)
          m_d.m_OverrideTorqueDamping = m_d.m_torqueDamping;
 
       m_d.m_OverrideTorqueDampingAngle = 6.f;
-      sprintf_s(tmp, 256, "FlipperPhysicsEOSTorqueAngle%d", m_d.m_OverridePhysics - 1);
+      sprintf_s(tmp, 256, "FlipperPhysicsEOSTorqueAngle%d", idx);
       hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideTorqueDampingAngle);
       if (hr != S_OK)
          m_d.m_OverrideTorqueDampingAngle = 6.f;
@@ -339,6 +340,11 @@ void Flipper::GetHitShapes(vector<HitObject*> &pvho)
       if (m_d.m_OverrideTorqueDampingAngle < 0.0f)
          m_d.m_OverrideTorqueDampingAngle = m_d.m_torqueDampingAngle;
    }
+}
+
+void Flipper::GetHitShapes(vector<HitObject*> &pvho)
+{
+   UpdatePhysicsSettings();
 
    //
 
@@ -1284,7 +1290,7 @@ STDMETHODIMP Flipper::put_Length(float newVal)
 
 STDMETHODIMP Flipper::get_EOSTorque(float *pVal)
 {
-   *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideTorqueDamping : m_d.m_torqueDamping;
+   *pVal = (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)) ? m_d.m_OverrideTorqueDamping : m_d.m_torqueDamping;
 
    return S_OK;
 }
@@ -1293,7 +1299,7 @@ STDMETHODIMP Flipper::put_EOSTorque(float newVal)
 {
     if ( m_phitflipper )
     {
-        if (!m_d.m_OverridePhysics)
+        if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
            m_d.m_torqueDamping = newVal;
     }
     else
@@ -1308,16 +1314,16 @@ STDMETHODIMP Flipper::put_EOSTorque(float newVal)
 
 STDMETHODIMP Flipper::get_EOSTorqueAngle(float *pVal)
 {
-   *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideTorqueDampingAngle : m_d.m_torqueDampingAngle;
+   *pVal = (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)) ? m_d.m_OverrideTorqueDampingAngle : m_d.m_torqueDampingAngle;
 
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_EOSTorqueAngle(float newVal)
 {
-    if ( m_phitflipper )
+    if (m_phitflipper)
     {
-        if (!m_d.m_OverridePhysics)
+        if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
            m_d.m_torqueDampingAngle = newVal;    
     }
     else
@@ -1529,7 +1535,7 @@ STDMETHODIMP Flipper::put_Mass(float newVal)
 {
    if (m_phitflipper)
    {
-      if (!m_d.m_OverridePhysics)
+      if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
          m_phitflipper->m_flipperMover.SetMass(newVal);
    }
    else
@@ -1554,6 +1560,12 @@ STDMETHODIMP Flipper::put_OverridePhysics(PhysicsSet newVal)
    STARTUNDO
    m_d.m_OverridePhysics = (int)newVal;
    STOPUNDO
+
+   if(m_phitflipper)
+   {
+      UpdatePhysicsSettings();
+      m_phitflipper->UpdatePhysicsFromFlipper();
+   }
 
    return S_OK;
 }
@@ -1656,7 +1668,7 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
 {
    if (m_phitflipper)
    {
-      if(!m_d.m_OverridePhysics)
+      if(!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
          m_d.m_strength = newVal;
    }
    else
@@ -1726,7 +1738,7 @@ STDMETHODIMP Flipper::put_Elasticity(float newVal)
 {
    if (m_phitflipper)
    {
-      if(!m_d.m_OverridePhysics)
+      if(!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
          m_phitflipper->m_elasticity = newVal;
    }
    else
@@ -1750,7 +1762,7 @@ STDMETHODIMP Flipper::put_Scatter(float newVal)
 {
    if (m_phitflipper)
    {
-      if (!m_d.m_OverridePhysics)
+      if(!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
          m_phitflipper->m_scatter = ANGTORAD(newVal);
    }
    else
@@ -1774,7 +1786,7 @@ STDMETHODIMP Flipper::put_ElasticityFalloff(float newVal)
 {
    if (m_phitflipper)
    {
-      if(!m_d.m_OverridePhysics)
+      if(!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
          m_phitflipper->m_elasticityFalloff = newVal;
    }
    else
@@ -1812,7 +1824,7 @@ STDMETHODIMP Flipper::put_Friction(float newVal)
 
 STDMETHODIMP Flipper::get_RampUp(float *pVal)
 {
-   *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideCoilRampUp : m_d.m_rampUp;
+   *pVal = (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)) ? m_d.m_OverrideCoilRampUp : m_d.m_rampUp;
    return S_OK;
 }
 
@@ -1820,7 +1832,7 @@ STDMETHODIMP Flipper::put_RampUp(float newVal)
 {
    if (m_phitflipper)
    {
-      if(!m_d.m_OverridePhysics)
+      if(!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
          m_d.m_rampUp = newVal;
    }
    else
@@ -1868,7 +1880,7 @@ STDMETHODIMP Flipper::put_Return(float newVal)
 {
    if (m_phitflipper)
    {
-      if(!m_d.m_OverridePhysics)
+      if(!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
          m_d.m_return = clamp(newVal, 0.0f, 1.0f);
    }
    else

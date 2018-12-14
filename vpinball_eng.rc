@@ -496,8 +496,9 @@ BEGIN
     PUSHBUTTON      "Lockbar/Fire",IDC_LOCKBARBUTTON,132,212,50,14
     CTEXT           "",IDC_LOCKBAR,132,227,50,8,SS_CENTERIMAGE
     COMBOBOX        IDC_JOYLOCKBARCOMBO,132,236,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Override Default Layout",IDC_DefaultLayout,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,258,88,10
-    CONTROL         "Disable ESC key",IDC_DisableESC_CB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,113,258,68,10
+    CONTROL         "Override Default Button Layout",IDC_DefaultLayout,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,258,153,10
+    CONTROL         "Disable ESC Key",IDC_DisableESC_CB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,176,258,68,10
     GROUPBOX        "PinMAME Buttons",IDC_STATIC,254,7,241,82
     CTEXT           "EB BuyIn (2)",IDC_STATIC,261,17,50,14,0,WS_EX_DLGMODALFRAME
     COMBOBOX        IDC_JOYPMBUYIN,261,32,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
@@ -893,9 +894,9 @@ BEGIN
     EDITTEXT        902,26,7,49,12,ES_AUTOHSCROLL
     EDITTEXT        903,26,23,49,12,ES_AUTOHSCROLL
     COMBOBOX        1502,7,46,111,162,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "&X",-1,7,9,8,8
-    LTEXT           "&Y",-1,7,25,8,8
-    LTEXT           "&Surface",-1,7,37,26,9
+    LTEXT           "&X",IDC_STATIC,7,9,8,8
+    LTEXT           "&Y",IDC_STATIC,7,25,8,8
+    LTEXT           "&Surface",IDC_STATIC,7,37,26,9
 END
 
 IDD_PROPLIGHT_STATE DIALOGEX 0, 0, 125, 57
@@ -905,23 +906,23 @@ BEGIN
     COMBOBOX        DISPID_Light_State,33,7,85,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        9,51,23,67,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_Light_BlinkInterval,51,38,67,12,ES_AUTOHSCROLL
-    LTEXT           "S&tate",-1,5,9,25,8
-    LTEXT           "Blink &Pattern",-1,5,25,43,9
-    LTEXT           "Blink Inter&val",-1,5,40,41,9
+    LTEXT           "S&tate",IDC_STATIC,5,9,25,8
+    LTEXT           "Blink &Pattern",IDC_STATIC,5,25,43,9
+    LTEXT           "Blink Inter&val",IDC_STATIC,5,40,41,9
 END
 
 IDD_PROPBUMPER_PHYSICS DIALOGEX 0, 0, 125, 75
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "&Force",-1,7,21,19,8
+    LTEXT           "&Force",IDC_STATIC,7,21,19,8
     EDITTEXT        2,57,19,48,12,ES_AUTOHSCROLL
-    LTEXT           "&Hit Threshold",-1,7,35,43,8
+    LTEXT           "&Hit Threshold",IDC_STATIC,7,35,43,8
     EDITTEXT        3,57,33,48,12,ES_AUTOHSCROLL
     CONTROL         "Has &Hit Event",34,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,60,10
     CONTROL         "Collidable (switchable in script)",111,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,115,10
     EDITTEXT        112,57,48,48,12,ES_AUTOHSCROLL
-    LTEXT           "Scatter Angle",-1,7,50,48,8
+    LTEXT           "Scatter Angle",IDC_STATIC,7,50,48,8
 END
 
 IDD_PROPBUMPER_STATE DIALOGEX 0, 0, 125, 61
@@ -931,9 +932,9 @@ BEGIN
     COMBOBOX        11,26,7,92,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        12,51,24,45,12,ES_AUTOHSCROLL
     EDITTEXT        13,51,42,45,12,ES_AUTOHSCROLL
-    LTEXT           "S&tate",-1,7,10,18,8
-    LTEXT           "Blink &Pattern",-1,7,27,43,9
-    LTEXT           "Blink Inter&val",-1,7,43,41,9
+    LTEXT           "S&tate",IDC_STATIC,7,10,18,8
+    LTEXT           "Blink &Pattern",IDC_STATIC,7,27,43,9
+    LTEXT           "Blink Inter&val",IDC_STATIC,7,43,41,9
 END
 
 IDD_PROPWALL_VISUALS DIALOGEX 0, 0, 125, 212
@@ -995,8 +996,8 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        9,66,7,52,12,ES_AUTOHSCROLL
     EDITTEXT        8,66,24,52,12,ES_AUTOHSCROLL
-    LTEXT           "To&p Height",-1,7,9,43,8
-    LTEXT           "&Bottom Height",-1,7,25,47,8
+    LTEXT           "To&p Height",IDC_STATIC,7,9,43,8
+    LTEXT           "&Bottom Height",IDC_STATIC,7,25,47,8
 END
 
 IDD_PROPGATE_VISUALS DIALOGEX 0, 0, 125, 89
@@ -1025,14 +1026,14 @@ BEGIN
     EDITTEXT        2145,48,81,44,12,ES_AUTOHSCROLL
     EDITTEXT        2144,48,94,44,12,ES_AUTOHSCROLL
     COMBOBOX        1502,7,120,111,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "&X",-1,7,9,21,8
-    LTEXT           "&Y",-1,7,25,21,8
-    LTEXT           "&Length",-1,7,40,38,8
-    LTEXT           "&Rotation",-1,7,69,38,8
-    LTEXT           "&Surface",-1,7,108,26,9
-    LTEXT           "&Height",-1,7,54,38,8
-    LTEXT           "Open Angle",-1,7,83,38,8
-    LTEXT           "Close Angle",-1,7,96,38,8
+    LTEXT           "&X",IDC_STATIC,7,9,21,8
+    LTEXT           "&Y",IDC_STATIC,7,25,21,8
+    LTEXT           "&Length",IDC_STATIC,7,40,38,8
+    LTEXT           "&Rotation",IDC_STATIC,7,69,38,8
+    LTEXT           "&Surface",IDC_STATIC,7,108,26,9
+    LTEXT           "&Height",IDC_STATIC,7,54,38,8
+    LTEXT           "Open Angle",IDC_STATIC,7,83,38,8
+    LTEXT           "Close Angle",IDC_STATIC,7,96,38,8
 END
 
 IDD_PROPRAMP_VISUALS DIALOGEX 0, 0, 125, 120
@@ -1095,16 +1096,16 @@ BEGIN
     EDITTEXT        107,76,97,40,12,ES_AUTOHSCROLL
     EDITTEXT        111,76,112,40,12,ES_AUTOHSCROLL
     COMBOBOX        1502,7,136,109,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "&X",-1,7,9,8,8
-    LTEXT           "&Y",-1,66,9,8,8
-    LTEXT           "&Surface",-1,7,126,36,9
-    LTEXT           "&Base Radius",-1,7,24,53,8
-    LTEXT           "&End Radius",-1,7,39,51,8
-    LTEXT           "&Length",-1,7,54,35,8
-    LTEXT           "&Start Angle",-1,7,69,48,8
-    LTEXT           "End &Angle",-1,7,84,42,8
-    LTEXT           "Height",-1,7,99,45,8
-    LTEXT           "Max.Difficulty Length",-1,7,113,68,8
+    LTEXT           "&X",IDC_STATIC,7,9,8,8
+    LTEXT           "&Y",IDC_STATIC,66,9,8,8
+    LTEXT           "&Surface",IDC_STATIC,7,126,36,9
+    LTEXT           "&Base Radius",IDC_STATIC,7,24,53,8
+    LTEXT           "&End Radius",IDC_STATIC,7,39,51,8
+    LTEXT           "&Length",IDC_STATIC,7,54,35,8
+    LTEXT           "&Start Angle",IDC_STATIC,7,69,48,8
+    LTEXT           "End &Angle",IDC_STATIC,7,84,42,8
+    LTEXT           "Height",IDC_STATIC,7,99,45,8
+    LTEXT           "Max.Difficulty Length",IDC_STATIC,7,113,68,8
 END
 
 IDD_PROPFLIPPER_PHYSICS DIALOGEX 0, 0, 125, 174
@@ -1121,40 +1122,40 @@ BEGIN
     EDITTEXT        112,76,112,40,12,ES_AUTOHSCROLL
     EDITTEXT        113,76,127,40,12,ES_AUTOHSCROLL
     EDITTEXT        189,76,142,40,12,ES_AUTOHSCROLL
-    LTEXT           "Overwrite Physics by Global Set",-1,7,155,60,16
+    LTEXT           "Overwrite Physics by Global Set",IDC_STATIC,7,155,60,16
     COMBOBOX        1044,71,157,50,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Mass",-1,7,9,66,8
-    LTEXT           "Strength",-1,7,24,66,8
-    LTEXT           "Elasticity",-1,7,39,66,8
-    LTEXT           "Elasticity Falloff",-1,7,54,66,8
-    LTEXT           "Friction",-1,7,69,66,8
-    LTEXT           "Return Strength Ratio",-1,7,84,66,8
-    LTEXT           "Coil Ramp Up",-1,7,99,66,8
-    LTEXT           "Scatter Angle",-1,7,114,66,8
-    LTEXT           "EOS Torque",-1,7,129,66,8
-    LTEXT           "EOS Torque Angle",-1,7,144,66,8
+    LTEXT           "Mass",IDC_STATIC,7,9,66,8
+    LTEXT           "Strength",IDC_STATIC,7,24,66,8
+    LTEXT           "Elasticity",IDC_STATIC,7,39,66,8
+    LTEXT           "Elasticity Falloff",IDC_STATIC,7,54,66,8
+    LTEXT           "Friction",IDC_STATIC,7,69,66,8
+    LTEXT           "Return Strength Ratio",IDC_STATIC,7,84,66,8
+    LTEXT           "Coil Ramp Up",IDC_STATIC,7,99,66,8
+    LTEXT           "Scatter Angle",IDC_STATIC,7,114,66,8
+    LTEXT           "EOS Torque",IDC_STATIC,7,129,66,8
+    LTEXT           "EOS Torque Angle",IDC_STATIC,7,144,66,8
 END
 
 IDD_PROPPLUNGER_PHYSICS DIALOGEX 0, 0, 125, 125
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "&Pull Speed",-1,7,4,35,9
+    LTEXT           "&Pull Speed",IDC_STATIC,7,4,35,9
     EDITTEXT        3,72,4,46,12,ES_AUTOHSCROLL
-    LTEXT           "&Release Speed",-1,7,19,50,8
+    LTEXT           "&Release Speed",IDC_STATIC,7,19,50,8
     EDITTEXT        4,72,17,46,12,ES_AUTOHSCROLL
-    LTEXT           "Stroke Length",-1,7,34,56,8
+    LTEXT           "Stroke Length",IDC_STATIC,7,34,56,8
     EDITTEXT        113,72,32,46,12,ES_AUTOHSCROLL
-    LTEXT           "Scatter Velocity",-1,7,47,56,8
+    LTEXT           "Scatter Velocity",IDC_STATIC,7,47,56,8
     EDITTEXT        114,72,45,46,12,ES_AUTOHSCROLL
     CONTROL         "Enable Mechanical Plunger",110,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,59,111,9
     CONTROL         "Auto Plunger",116,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,70,55,9
     CONTROL         "Visible",117,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,71,70,39,9
-    LTEXT           "Mech Strength",-1,7,83,60,8
+    LTEXT           "Mech Strength",IDC_STATIC,7,83,60,8
     EDITTEXT        111,72,81,46,12,ES_AUTOHSCROLL
-    LTEXT           "Momentum Xfer",-1,7,97,60,8
+    LTEXT           "Momentum Xfer",IDC_STATIC,7,97,60,8
     EDITTEXT        118,72,95,46,12,ES_AUTOHSCROLL
-    LTEXT           "Park Position (0..1)",-1,7,111,60,8
+    LTEXT           "Park Position (0..1)",IDC_STATIC,7,111,60,8
     EDITTEXT        112,72,109,46,12,ES_AUTOHSCROLL
 END
 
@@ -1163,9 +1164,9 @@ STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Visible",17,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,5,61,10
-    LTEXT           "Image",-1,7,18,38,8
+    LTEXT           "Image",IDC_STATIC,7,18,38,8
     COMBOBOX        DISPID_Image,7,28,111,69,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Material",-1,7,42,26,9
+    LTEXT           "Material",IDC_STATIC,7,42,26,9
     COMBOBOX        IDC_MATERIAL_COMBO,7,52,111,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Show Bracket",108,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,71,61,10
     CONTROL         "Reflection Enabled",IDC_SPINNER_REFLECT_ENABLED_CHECK,
@@ -1185,15 +1186,15 @@ BEGIN
     EDITTEXT        14,47,103,43,12,ES_AUTOHSCROLL
     EDITTEXT        15,47,118,43,12,ES_AUTOHSCROLL
     COMBOBOX        1502,7,143,111,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "&X",-1,7,9,8,8
-    LTEXT           "&Y",-1,7,23,8,8
-    LTEXT           "&Length",-1,7,39,23,8
-    LTEXT           "&Height",-1,7,53,22,8
-    LTEXT           "&Rotation",-1,7,73,38,8
-    LTEXT           "&Surface",-1,7,132,26,9
-    LTEXT           "Angle Max",-1,7,91,38,8
-    LTEXT           "Angle Min",-1,7,105,38,8
-    LTEXT           "Elasticity",-1,7,120,38,8
+    LTEXT           "&X",IDC_STATIC,7,9,8,8
+    LTEXT           "&Y",IDC_STATIC,7,23,8,8
+    LTEXT           "&Length",IDC_STATIC,7,39,23,8
+    LTEXT           "&Height",IDC_STATIC,7,53,22,8
+    LTEXT           "&Rotation",IDC_STATIC,7,73,38,8
+    LTEXT           "&Surface",IDC_STATIC,7,132,26,9
+    LTEXT           "Angle Max",IDC_STATIC,7,91,38,8
+    LTEXT           "Angle Min",IDC_STATIC,7,105,38,8
+    LTEXT           "Elasticity",IDC_STATIC,7,120,38,8
 END
 
 IDD_PROPSPINNER_PHYSICS DIALOGEX 0, 0, 125, 26
@@ -1201,7 +1202,7 @@ STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        7,47,7,44,12,ES_AUTOHSCROLL
-    LTEXT           "Damping",-1,7,9,38,8
+    LTEXT           "Damping",IDC_STATIC,7,9,38,8
 END
 
 IDD_PROPRAMP_PHYSICS DIALOGEX 0, 0, 125, 160
@@ -1256,7 +1257,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "&Enabled",904,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,5,42,8
     EDITTEXT        314,63,15,55,12,ES_AUTOHSCROLL
-    LTEXT           "Hit Height",-1,7,17,56,8
+    LTEXT           "Hit Height",IDC_STATIC,7,17,56,8
 END
 
 IDD_PROPKICKER_VISUALS DIALOGEX 0, 0, 125, 91
@@ -1304,12 +1305,12 @@ BEGIN
     EDITTEXT        4,37,55,40,12,ES_AUTOHSCROLL
     EDITTEXT        1,37,72,40,12,ES_AUTOHSCROLL
     COMBOBOX        1502,7,97,111,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "&X",-1,7,8,8,8
-    LTEXT           "&Y",-1,7,24,8,8
-    LTEXT           "&Width",-1,7,42,20,8
-    LTEXT           "&Height",-1,7,58,22,8
-    LTEXT           "&Surface",-1,7,87,26,9
-    LTEXT           "&Rotation",-1,7,74,28,8
+    LTEXT           "&X",IDC_STATIC,7,8,8,8
+    LTEXT           "&Y",IDC_STATIC,7,24,8,8
+    LTEXT           "&Width",IDC_STATIC,7,42,20,8
+    LTEXT           "&Height",IDC_STATIC,7,58,22,8
+    LTEXT           "&Surface",IDC_STATIC,7,87,26,9
+    LTEXT           "&Rotation",IDC_STATIC,7,74,28,8
 END
 
 IDD_PROPLIGHTSEQ_POSITION DIALOGEX 0, 0, 125, 42
@@ -1318,8 +1319,8 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        9,61,7,40,12,ES_AUTOHSCROLL
     EDITTEXT        10,61,23,40,12,ES_AUTOHSCROLL
-    LTEXT           "Table &X Center",-1,6,10,52,8
-    LTEXT           "&Table Y Center",-1,6,26,54,8
+    LTEXT           "Table &X Center",IDC_STATIC,6,10,52,8
+    LTEXT           "&Table Y Center",IDC_STATIC,6,26,54,8
 END
 
 IDD_PROPLIGHTSEQ_STATE DIALOGEX 0, 0, 125, 52
@@ -1328,8 +1329,8 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        DISPID_Collection,6,18,112,69,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        15,63,33,55,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "&Collection",-1,6,9,32,8
-    CONTROL         "Update Inter&val",-1,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,6,36,54,9
+    LTEXT           "&Collection",IDC_STATIC,6,9,32,8
+    CONTROL         "Update Inter&val",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,6,36,54,9
 END
 
 IDD_PROPTEXTBOX_VISUALS DIALOGEX 0, 0, 125, 93
@@ -1341,11 +1342,11 @@ BEGIN
     CONTROL         "Custom2",DISPID_Textbox_FontColor,"ColorControl",WS_TABSTOP,46,38,40,14
     CONTROL         "Custom2",DISPID_Textbox_Font,"FontControl",WS_TABSTOP,46,57,40,14
     COMBOBOX        11,41,74,77,55,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Back &Color",-1,7,22,36,11
-    LTEXT           "Text Co&lor",-1,7,42,36,8
+    LTEXT           "Back &Color",IDC_STATIC,7,22,36,11
+    LTEXT           "Text Co&lor",IDC_STATIC,7,42,36,8
     EDITTEXT        IDC_TEXT_INTENSITY,90,39,20,12,ES_AUTOHSCROLL
-    LTEXT           "&Font",-1,7,61,37,8
-    LTEXT           "&Alignment",-1,7,75,32,8
+    LTEXT           "&Font",IDC_STATIC,7,61,37,8
+    LTEXT           "&Alignment",IDC_STATIC,7,75,32,8
 END
 
 IDD_PROPTEXTBOX_POSITION DIALOGEX 0, 0, 125, 74
@@ -1356,10 +1357,10 @@ BEGIN
     EDITTEXT        60001,39,23,44,12,ES_AUTOHSCROLL
     EDITTEXT        60002,39,39,44,12,ES_AUTOHSCROLL
     EDITTEXT        60003,39,55,44,12,ES_AUTOHSCROLL
-    LTEXT           "&X",-1,7,9,8,8
-    LTEXT           "&Y",-1,7,25,8,8
-    LTEXT           "&Width",-1,7,41,20,8
-    LTEXT           "&Height",-1,7,57,22,8
+    LTEXT           "&X",IDC_STATIC,7,9,8,8
+    LTEXT           "&Y",IDC_STATIC,7,25,8,8
+    LTEXT           "&Width",IDC_STATIC,7,41,20,8
+    LTEXT           "&Height",IDC_STATIC,7,57,22,8
 END
 
 IDD_PROPTEXTBOX_STATE DIALOGEX 0, 0, 125, 42
@@ -1368,7 +1369,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Use Script DMD",555,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,70,10
     EDITTEXT        3,27,20,91,13,ES_AUTOHSCROLL
-    LTEXT           "&Text",-1,7,21,17,9
+    LTEXT           "&Text",IDC_STATIC,7,21,17,9
 END
 
 IDD_PROPDISPREEL_VISUALS DIALOGEX 0, 0, 125, 136
@@ -1399,12 +1400,12 @@ BEGIN
     EDITTEXT        5,59,57,38,12,ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        6,59,74,38,12,ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        7,59,90,38,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "&X",-1,6,9,8,8
-    LTEXT           "&Y",-1,6,26,8,8
-    LTEXT           "Reel &Width",-1,6,59,36,8
-    LTEXT           "Reel &Height",-1,6,76,38,8
-    LTEXT           "Reel Spacin&g",-1,6,91,44,8
-    LTEXT           "R&eels (Max 32)",-1,6,44,51,8
+    LTEXT           "&X",IDC_STATIC,6,9,8,8
+    LTEXT           "&Y",IDC_STATIC,6,26,8,8
+    LTEXT           "Reel &Width",IDC_STATIC,6,59,36,8
+    LTEXT           "Reel &Height",IDC_STATIC,6,76,38,8
+    LTEXT           "Reel Spacin&g",IDC_STATIC,6,91,44,8
+    LTEXT           "R&eels (Max 32)",IDC_STATIC,6,44,51,8
 END
 
 IDD_PROPDISPREEL_STATE DIALOGEX 0, 0, 125, 63
@@ -1433,7 +1434,7 @@ BEGIN
     EDITTEXT        IDC_REFLECTION_PLAYFIELD,101,66,20,12,ES_AUTOHSCROLL
 END
 
-IDD_PROPTABLE_USER DIALOGEX 0, 0, 125, 298
+IDD_PROPTABLE_USER DIALOGEX 0, 0, 125, 304
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1466,27 +1467,29 @@ BEGIN
     EDITTEXT        209,101,230,20,12,ES_AUTOHSCROLL
     LTEXT           "Overwrite Physics by Global Set",IDC_STATIC,7,244,60,16
     COMBOBOX        1043,71,247,50,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Sound Effect Volume (0..100)",IDC_STATIC,7,269,94,8
-    EDITTEXT        IDC_TABLESOUNDVOLUME,101,267,20,12,ES_AUTOHSCROLL
-    LTEXT           "Music Volume (0..100)",IDC_STATIC,7,283,94,8
-    EDITTEXT        IDC_TABLEMUSICVOLUME,101,281,20,12,ES_AUTOHSCROLL
+    CONTROL         "including Flipper Physics",IDC_OVERRIDEPHYSICS_FLIPPERS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,262,110,10
+    LTEXT           "Sound Effect Volume (0..100)",IDC_STATIC,7,277,94,8
+    EDITTEXT        IDC_TABLESOUNDVOLUME,101,275,20,12,ES_AUTOHSCROLL
+    LTEXT           "Music Volume (0..100)",IDC_STATIC,7,291,94,8
+    EDITTEXT        IDC_TABLEMUSICVOLUME,101,289,20,12,ES_AUTOHSCROLL
 END
 
 IDD_PROPTABLE_PHYSICS DIALOGEX 0, 0, 125, 95
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Table &Width",-1,7,8,74,8
+    LTEXT           "Table &Width",IDC_STATIC,7,8,74,8
     EDITTEXT        14,81,6,40,12,ES_AUTOHSCROLL
-    LTEXT           "Table &Height/Length",-1,7,22,74,8
+    LTEXT           "Table &Height/Length",IDC_STATIC,7,22,74,8
     EDITTEXT        13,81,20,40,12,ES_AUTOHSCROLL
-    LTEXT           "Top &Glass Height",-1,7,36,74,8
+    LTEXT           "Top &Glass Height",IDC_STATIC,7,36,74,8
     EDITTEXT        3,81,34,40,12,ES_AUTOHSCROLL
-    LTEXT           "Table &Field Height",-1,7,50,74,8
+    LTEXT           "Table &Field Height",IDC_STATIC,7,50,74,8
     EDITTEXT        214,81,48,40,12,ES_AUTOHSCROLL
-    LTEXT           "&Slope for Min. Difficulty",-1,7,64,74,8
+    LTEXT           "&Slope for Min. Difficulty",IDC_STATIC,7,64,74,8
     EDITTEXT        6,81,62,40,12,ES_AUTOHSCROLL
-    LTEXT           "Slope for &Max. Difficulty",-1,7,78,74,8
+    LTEXT           "Slope for &Max. Difficulty",IDC_STATIC,7,78,74,8
     EDITTEXT        215,81,76,40,12,ES_AUTOHSCROLL
 END
 
@@ -1651,7 +1654,7 @@ BEGIN
     CONTROL         "S&mooth",3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,40,10
     CONTROL         "Auto Texture Coord.",4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,80,10
     EDITTEXT        5,65,35,53,12,ES_AUTOHSCROLL
-    LTEXT           "&Texture Coord.",-1,7,37,48,8
+    LTEXT           "&Texture Coord.",IDC_STATIC,7,37,48,8
 END
 
 IDD_SECURITY_OPTIONS DIALOGEX 0, 0, 208, 182
@@ -1725,13 +1728,13 @@ BEGIN
     CONTROL         "&Enabled",DISPID_Enabled,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,39,11
     EDITTEXT        313,75,44,43,12,ES_AUTOHSCROLL
     EDITTEXT        314,75,58,43,12,ES_AUTOHSCROLL
-    LTEXT           "Scatter Angle",-1,7,46,56,8
-    LTEXT           "Hit Accuracy (0..1)",-1,7,60,61,8
+    LTEXT           "Scatter Angle",IDC_STATIC,7,46,56,8
+    LTEXT           "Hit Accuracy (0..1)",IDC_STATIC,7,60,61,8
     CONTROL         "Fall through",IDC_FALL_THROUGH_HOLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,19,53,10
     CONTROL         "Legacy (faster/approximate physics)",IDC_LEGACYMODE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,31,131,9
     EDITTEXT        315,75,72,43,12,ES_AUTOHSCROLL
-    LTEXT           "Hit Height",-1,7,74,61,8
+    LTEXT           "Hit Height",IDC_STATIC,7,74,61,8
 END
 
 IDD_PROPPRIMITIVE_POSITION DIALOGEX 0, 0, 125, 205
@@ -2116,21 +2119,21 @@ IDD_PROPHITTARGET_POSITION DIALOGEX 0, 0, 125, 78
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "ScaleX",-1,64,15,23,8
-    LTEXT           "ScaleY",-1,64,28,23,8
-    LTEXT           "ScaleZ",-1,64,42,23,8
-    LTEXT           "&X",-1,14,15,10,8
-    LTEXT           "&Y",-1,14,28,10,8
-    LTEXT           "&Z",-1,14,42,10,8
+    LTEXT           "ScaleX",IDC_STATIC,64,15,23,8
+    LTEXT           "ScaleY",IDC_STATIC,64,28,23,8
+    LTEXT           "ScaleZ",IDC_STATIC,64,42,23,8
+    LTEXT           "&X",IDC_STATIC,14,15,10,8
+    LTEXT           "&Y",IDC_STATIC,14,28,10,8
+    LTEXT           "&Z",IDC_STATIC,14,42,10,8
     EDITTEXT        DISPID_POSITION_X,24,13,27,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_POSITION_Y,24,27,27,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_POSITION_Z,24,40,27,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_SIZE_X,87,13,27,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_SIZE_Y,87,27,27,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_SIZE_Z,87,40,27,12,ES_AUTOHSCROLL
-    LTEXT           "Orientation",-1,9,60,37,8
+    LTEXT           "Orientation",IDC_STATIC,9,60,37,8
     EDITTEXT        DISPID_ROT_Z,47,58,27,12,ES_AUTOHSCROLL
-    GROUPBOX        "Position / Scale",-1,7,3,111,53
+    GROUPBOX        "Position / Scale",IDC_STATIC,7,3,111,53
 END
 
 IDD_PROPHITTARGET_PHYSICS DIALOGEX 0, 0, 125, 148
