@@ -275,8 +275,8 @@ void DispReel::RenderDynamic(RenderDevice* pd3dDevice)
    const D3DXVECTOR4 c = convertColor(0xFFFFFFFF, 1.f);
    pd3dDevice->DMDShader->SetVector("vColor_Intensity", &c);
 
-   pd3dDevice->DMDShader->SetTexture("Texture0", pin);
-   
+   pd3dDevice->DMDShader->SetTexture("Texture0", pin, false);
+
    pd3dDevice->DMDShader->Begin(0);
 
    // set up all the reel positions within the object frame

@@ -1371,7 +1371,7 @@ void Flasher::RenderDynamic(RenderDevice* pd3dDevice)
 #endif
        pd3dDevice->DMDShader->SetVector("vRes_Alpha", &r);
 
-       pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd));
+       pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd, false));
 
        pd3dDevice->DMDShader->Begin(0);
        pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys * 3);
@@ -1412,7 +1412,7 @@ void Flasher::RenderDynamic(RenderDevice* pd3dDevice)
        if (pinA && !pinB)
        {
            pd3dDevice->flasherShader->SetTechnique("basic_with_textureOne_noLight");
-           pd3dDevice->flasherShader->SetTexture("Texture0", pinA);
+           pd3dDevice->flasherShader->SetTexture("Texture0", pinA, false);
 
            if (!m_d.m_fAddBlend)
                flasherData.x = pinA->m_alphaTestValue * (float)(1.0 / 255.0);
@@ -1422,7 +1422,7 @@ void Flasher::RenderDynamic(RenderDevice* pd3dDevice)
        else if (!pinA && pinB)
        {
            pd3dDevice->flasherShader->SetTechnique("basic_with_textureOne_noLight");
-           pd3dDevice->flasherShader->SetTexture("Texture0", pinB);
+           pd3dDevice->flasherShader->SetTexture("Texture0", pinB, false);
 
            if (!m_d.m_fAddBlend)
                flasherData.x = pinB->m_alphaTestValue * (float)(1.0 / 255.0);
@@ -1432,8 +1432,8 @@ void Flasher::RenderDynamic(RenderDevice* pd3dDevice)
        else if (pinA && pinB)
        {
            pd3dDevice->flasherShader->SetTechnique("basic_with_textureAB_noLight");
-           pd3dDevice->flasherShader->SetTexture("Texture0", pinA);
-           pd3dDevice->flasherShader->SetTexture("Texture1", pinB);
+           pd3dDevice->flasherShader->SetTexture("Texture0", pinA, false);
+           pd3dDevice->flasherShader->SetTexture("Texture1", pinB, false);
 
            if (!m_d.m_fAddBlend)
            {

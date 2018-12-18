@@ -53,7 +53,7 @@ public:
       UnloadAll();
    }
 
-   D3DTexture* LoadTexture(BaseTexture* memtex);
+   D3DTexture* LoadTexture(BaseTexture* memtex, const bool linearRGB);
    void SetDirty(BaseTexture* memtex);
    void UnloadTexture(BaseTexture* memtex);
    void UnloadAll();
@@ -203,9 +203,9 @@ public:
 
    bool DepthBufferReadBackAvailable();
 
-   D3DTexture* CreateSystemTexture(BaseTexture* surf);
-   D3DTexture* UploadTexture(BaseTexture* surf, int *pTexWidth = NULL, int *pTexHeight = NULL);
-   void UpdateTexture(D3DTexture* tex, BaseTexture* surf);
+   D3DTexture* CreateSystemTexture(BaseTexture* surf, const bool linearRGB);
+   D3DTexture* UploadTexture(BaseTexture* surf, int *pTexWidth, int *pTexHeight, const bool linearRGB);
+   void UpdateTexture(D3DTexture* tex, BaseTexture* surf, const bool linearRGB);
 
    void SetRenderState(const RenderStates p1, DWORD p2);
    void SetTextureFilter(const DWORD texUnit, DWORD mode);
@@ -383,7 +383,7 @@ public:
       CHECKD3D(m_shader->End());
    }
 
-   void SetTexture(const D3DXHANDLE texelName, Texture *texel);
+   void SetTexture(const D3DXHANDLE texelName, Texture *texel, const bool linearRGB);
    void SetTexture(const D3DXHANDLE texelName, D3DTexture *texel);
    void SetMaterial(const Material * const mat);
 

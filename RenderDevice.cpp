@@ -199,13 +199,13 @@ void IndexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeT
 }
 unsigned int RenderDevice::Perf_GetNumLockCalls() const { return m_frameLockCalls; }
 
-D3DTexture* TextureManager::LoadTexture(BaseTexture* memtex)
+D3DTexture* TextureManager::LoadTexture(BaseTexture* memtex, const bool linearRGB)
 {
    const Iter it = m_map.find(memtex);
    if (it == m_map.end())
    {
       TexInfo texinfo;
-      texinfo.d3dtex = m_rd.UploadTexture(memtex, &texinfo.texWidth, &texinfo.texHeight);
+      texinfo.d3dtex = m_rd.UploadTexture(memtex, &texinfo.texWidth, &texinfo.texHeight, linearRGB);
       if (!texinfo.d3dtex)
          return 0;
       texinfo.dirty = false;
@@ -216,7 +216,7 @@ D3DTexture* TextureManager::LoadTexture(BaseTexture* memtex)
    {
       if (it->second.dirty)
       {
-         m_rd.UpdateTexture(it->second.d3dtex, memtex);
+         m_rd.UpdateTexture(it->second.d3dtex, memtex, linearRGB);
          it->second.dirty = false;
       }
       return it->second.d3dtex;
@@ -451,6 +451,8 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    m_autogen_mipmap = (caps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP) != 0;
    if (m_autogen_mipmap)
       m_autogen_mipmap = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_AUTOGENMIPMAP, D3DRTYPE_TEXTURE, D3DFMT_A8R8G8B8) == D3D_OK);
+
+   m_autogen_mipmap = false; //!! done to support sRGB/gamma correct generation of mipmaps which is not possible with auto gen mipmap in DX9!
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
    if (!NVAPIinit)
@@ -1176,7 +1178,7 @@ void RenderDevice::CopyDepth(D3DTexture* dest, void* src)
       CopyDepth(dest, (RenderTarget*)src);
 }
 
-D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf)
+D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf, const bool linearRGB)
 {
    const int texwidth = surf->width();
    const int texheight = surf->height();
@@ -1200,12 +1202,12 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf)
 
       // old RGBA copy code, just for reference:
       //BYTE *pdest = (BYTE*)locked.pBits;
-      //for (int y = 0; y < surf->height(); ++y)
-      //   memcpy(pdest + y*locked.Pitch, surf->data() + y*surf->pitch(), 4 * surf->width());
+      //for (int y = 0; y < texheight; ++y)
+      //   memcpy(pdest + y*locked.Pitch, surf->data() + y*surf->pitch(), 4 * texwidth);
 
       float * const pdest = (float*)locked.pBits;
       float * const psrc = (float*)surf->data();
-      for (int i = 0; i < surf->width()*surf->height(); ++i)
+      for (int i = 0; i < texwidth*texheight; ++i)
       {
          pdest[i * 4    ] = psrc[i * 3    ];
          pdest[i * 4 + 1] = psrc[i * 3 + 1];
@@ -1229,12 +1231,13 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf)
    }
 
    if (!(texformat != D3DFMT_DXT5 && m_autogen_mipmap))
-      CHECKD3D(D3DXFilterTexture(sysTex, NULL, D3DX_DEFAULT, D3DX_DEFAULT)); //!! D3DX_FILTER_SRGB
+      // normal maps or float textures are already in linear space!
+      CHECKD3D(D3DXFilterTexture(sysTex, NULL, D3DX_DEFAULT, (texformat == D3DFMT_A32B32G32R32F || linearRGB) ? D3DX_DEFAULT : (D3DX_FILTER_TRIANGLE | ((isPowerOf2(texwidth) && isPowerOf2(texheight)) ? 0 : D3DX_FILTER_DITHER) | D3DX_FILTER_SRGB))); // DX9 doc says default equals box filter (and dither for non power of 2 tex size), but actually it seems to be triangle!
 
    return sysTex;
 }
 
-D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *pTexHeight)
+D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *pTexHeight, const bool linearRGB)
 {
    IDirect3DTexture9 *sysTex, *tex;
    HRESULT hr;
@@ -1247,7 +1250,7 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *
 
    const BaseTexture::Format basetexformat = surf->m_format;
 
-   sysTex = CreateSystemTexture(surf);
+   sysTex = CreateSystemTexture(surf, linearRGB);
 
    const D3DFORMAT texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? D3DFMT_DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? D3DFMT_A32B32G32R32F : D3DFMT_A8R8G8B8);
 
@@ -1320,9 +1323,9 @@ void RenderDevice::UploadAndSetSMAATextures()
    CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", m_SMAAsearchTexture));
 }
 
-void RenderDevice::UpdateTexture(D3DTexture* tex, BaseTexture* surf)
+void RenderDevice::UpdateTexture(D3DTexture* tex, BaseTexture* surf, const bool linearRGB)
 {
-   IDirect3DTexture9* sysTex = CreateSystemTexture(surf);
+   IDirect3DTexture9* sysTex = CreateSystemTexture(surf, linearRGB);
    m_curTextureUpdates++;
    CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
    SAFE_RELEASE(sysTex);
@@ -1341,8 +1344,21 @@ void RenderDevice::SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYP
 
 void RenderDevice::SetTextureFilter(const DWORD texUnit, DWORD mode)
 {
+   // user can override the standard/faster-on-low-end trilinear by aniso filtering
    if ((mode == TEXTURE_MODE_TRILINEAR) && m_force_aniso)
       mode = TEXTURE_MODE_ANISOTROPIC;
+
+   // if in static rendering mode, use the oversampling there to do the texture 'filtering' (i.e. more sharp and crisp than aniso)
+   if (mode == TEXTURE_MODE_ANISOTROPIC || mode == TEXTURE_MODE_TRILINEAR)
+      if (g_pplayer->m_isRenderingStatic)
+      {
+          SetSamplerState(texUnit, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+          SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+          SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
+          return;
+      }
+
+   //
 
    switch (mode)
    {
@@ -1726,7 +1742,7 @@ void Shader::Unload()
    SAFE_RELEASE(m_shader);
 }
 
-void Shader::SetTexture(const D3DXHANDLE texelName, Texture *texel)
+void Shader::SetTexture(const D3DXHANDLE texelName, Texture *texel, const bool linearRGB)
 {
    const unsigned int idx = texelName[strlen(texelName) - 1] - '0'; // current convention: SetTexture gets "TextureX", where X 0..4
    assert(idx < TEXTURESET_STATE_CACHE_SIZE);
@@ -1744,7 +1760,7 @@ void Shader::SetTexture(const D3DXHANDLE texelName, Texture *texel)
    if (texel->m_pdsBuffer != currentTexture[idx])
    {
       currentTexture[idx] = texel->m_pdsBuffer;
-      CHECKD3D(m_shader->SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer)));
+      CHECKD3D(m_shader->SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer, linearRGB)));
 
       m_renderDevice->m_curTextureChanges++;
    }
