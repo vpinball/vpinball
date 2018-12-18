@@ -307,6 +307,11 @@ inline void gaussianDistribution(float &u1, float &u2, const float sigma = 3.f, 
    u2 = tmp0 * sinf(tmp1) + mu;
 }
 
+__forceinline bool isPowerOf2(const unsigned int n)
+{
+   return (n > 0 && ((n & (n - 1)) == 0));
+}
+
 // Math stuff which doesn't fit elsewhere
 
 // Solve the quadratic equation ax^2 + bx + c = 0.

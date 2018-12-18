@@ -399,7 +399,7 @@ void Bumper::UpdateRing(RenderDevice *pd3dDevice)
 void Bumper::RenderBase(RenderDevice *pd3dDevice, const Material * const baseMaterial)
 {
    pd3dDevice->basicShader->SetMaterial(baseMaterial);
-   pd3dDevice->basicShader->SetTexture("Texture0", &m_baseTexture);
+   pd3dDevice->basicShader->SetTexture("Texture0", &m_baseTexture, false);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
@@ -411,7 +411,7 @@ void Bumper::RenderBase(RenderDevice *pd3dDevice, const Material * const baseMat
 void Bumper::RenderSocket(RenderDevice *pd3dDevice, const Material * const socketMaterial)
 {
    pd3dDevice->basicShader->SetMaterial(socketMaterial);
-   pd3dDevice->basicShader->SetTexture("Texture0", &m_skirtTexture);
+   pd3dDevice->basicShader->SetTexture("Texture0", &m_skirtTexture, false);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
@@ -423,7 +423,7 @@ void Bumper::RenderSocket(RenderDevice *pd3dDevice, const Material * const socke
 void Bumper::RenderCap(RenderDevice *pd3dDevice, const Material * const capMaterial)
 {
    pd3dDevice->basicShader->SetMaterial(capMaterial);
-   pd3dDevice->basicShader->SetTexture("Texture0", &m_capTexture);
+   pd3dDevice->basicShader->SetTexture("Texture0", &m_capTexture, false);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
@@ -542,7 +542,7 @@ void Bumper::RenderDynamic(RenderDevice* pd3dDevice)
       }
 
       pd3dDevice->basicShader->SetTechnique(m_ringMaterial.m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-      pd3dDevice->basicShader->SetTexture("Texture0", &m_ringTexture);
+      pd3dDevice->basicShader->SetTexture("Texture0", &m_ringTexture, false);
       pd3dDevice->basicShader->SetMaterial(&m_ringMaterial);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
       // render ring
@@ -575,7 +575,7 @@ void Bumper::RenderDynamic(RenderDevice* pd3dDevice)
          UpdateSkirt(pd3dDevice, false);
 
       const Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
-      pd3dDevice->basicShader->SetTexture("Texture0", &m_skirtTexture);
+      pd3dDevice->basicShader->SetTexture("Texture0", &m_skirtTexture, false);
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
       RenderSocket(pd3dDevice, mat);

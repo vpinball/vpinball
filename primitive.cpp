@@ -455,6 +455,8 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
       m_d.m_useAsPlayfield = true;
    }
 
+   //
+
    // playfield can't be a toy
    if(m_d.m_fToy && !m_d.m_useAsPlayfield)
       return;
@@ -787,8 +789,7 @@ void Primitive::UIRenderPass2(Sur * const psur)
    
    if (m_d.m_fDisplayTexture)
    {
-      Texture *ppi = NULL;
-      ppi = m_ptable->GetImage(m_d.m_szImage);
+      Texture * const ppi = m_ptable->GetImage(m_d.m_szImage);
       if (ppi)
       {
          ppi->EnsureHBitmap();
@@ -812,7 +813,6 @@ void Primitive::UIRenderPass2(Sur * const psur)
                vvertex.push_back(rvC);
                vvertex.push_back(rvB);
                vvertex.push_back(rvA);
-
             }
             psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
 
@@ -1181,8 +1181,8 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       if (pin && nMap)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_normal_isMetal" : "basic_with_texture_normal_isNotMetal");
-         pd3dDevice->basicShader->SetTexture("Texture0", pin);
-         pd3dDevice->basicShader->SetTexture("Texture4", nMap);
+         pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
+         pd3dDevice->basicShader->SetTexture("Texture4", nMap, true);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
          //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
@@ -1192,7 +1192,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       else if (pin)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-         pd3dDevice->basicShader->SetTexture("Texture0", pin);
+         pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
          //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);

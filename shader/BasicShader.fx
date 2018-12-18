@@ -25,7 +25,7 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
     //MINFILTER = LINEAR;
     //ADDRESSU  = Wrap; //!! ?
     //ADDRESSV  = Wrap;
-    //!! SRGBTexture = true;
+    SRGBTexture = true;
 };
 
 sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment
@@ -226,7 +226,7 @@ float4 ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool doNo
    clip(pixel.a <= fAlphaTestValue ? - 1 : 1); // stop the pixel shader if alpha test should reject pixel
 
    pixel.a *= cBase_Alpha.a;
-   const float3 t = InvGamma(pixel.xyz);
+   const float3 t = /*InvGamma*/(pixel.xyz); // uses automatic sRGB trafo instead in sampler!
 
    // early out if no normal set (e.g. decal vertices)
    if (!any(IN.normal))

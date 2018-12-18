@@ -570,7 +570,7 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
    if (m_d.m_decaltype != DecalImage)
    {
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-      pd3dDevice->basicShader->SetTexture("Texture0", pd3dDevice->m_texMan.LoadTexture(m_textImg));
+      pd3dDevice->basicShader->SetTexture("Texture0", pd3dDevice->m_texMan.LoadTexture(m_textImg, false));
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
    }
    else
@@ -579,7 +579,7 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
       if (pin)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-         pd3dDevice->basicShader->SetTexture("Texture0", pin);
+         pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
       }
       else

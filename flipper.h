@@ -125,6 +125,8 @@ public:
       void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
       void UpdateUnitsInfo();
 
+      void UpdatePhysicsSettings();
+
       void WriteRegDefaults();
 
       //DECLARE_NOT_AGGREGATABLE(Flipper) 

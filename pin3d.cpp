@@ -749,7 +749,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 	   {
 		   SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
 		   m_pd3dDevice->basicShader->SetTechnique("basic_depth_only_with_texture");
-		   m_pd3dDevice->basicShader->SetTexture("Texture0", pin);
+		   m_pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
 		   m_pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 	   }
 	   else // No image by that name
@@ -763,7 +763,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
        {
            SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
            m_pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-           m_pd3dDevice->basicShader->SetTexture("Texture0", pin);
+           m_pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
            m_pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
        }
        else // No image by that name

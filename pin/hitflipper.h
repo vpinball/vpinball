@@ -83,6 +83,8 @@ public:
    virtual void CalcHitBBox();
    virtual MoverObject *GetMoverObject() { return &m_flipperMover; }
 
+   void UpdatePhysicsFromFlipper();
+
    float HitTestFlipperFace(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool face1) const;
    float HitTestFlipperEnd(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
 

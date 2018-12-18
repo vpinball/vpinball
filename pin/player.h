@@ -621,6 +621,8 @@ public:
 
    //bool m_low_quality_bloom;
 
+   bool m_isRenderingStatic;
+
    bool m_fStereo3DY;
    bool m_fOverwriteBallImages;
    Texture *m_ballImage;
