@@ -25,7 +25,7 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
     //MINFILTER = LINEAR;
 	//ADDRESSU  = Wrap; //!! ?
 	//ADDRESSV  = Wrap;
-	//!! SRGBTexture = true;
+	SRGBTexture = true;
 };
 
 sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment
@@ -116,8 +116,8 @@ VS_LIGHT_OUTPUT vs_light_main_without_texel(in float4 vPosition : POSITION0,
 float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
 {
     float4 pixel = tex2D(texSampler0, IN.tex0);
-    if(!hdrTexture0)
-        pixel.xyz = InvGamma(pixel.xyz);
+    //if(!hdrTexture0)
+    //    pixel.xyz = InvGamma(pixel.xyz); // done when reading the texture
 
     float4 color;
     // no lighting if HUD vertices or passthrough mode
