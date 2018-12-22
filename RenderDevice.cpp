@@ -447,6 +447,15 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    params.PresentationInterval = !!VSync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 #endif
 
+   // check if our HDR texture format supports/does sRGB conversion on texture reads, which must NOT be the case as we always set SRGBTexture=true independent of the format!
+   hr = m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F);
+   if (SUCCEEDED(hr))
+      ShowError("D3D device does support D3DFMT_A32B32G32R32F SRGBTexture reads (which leads to wrong tex colors)");
+   // now the same for our LDR/8bit texture format the other way round
+   hr = m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, D3DFMT_A8R8G8B8);
+   if (!SUCCEEDED(hr))
+      ShowError("D3D device does not support D3DFMT_A8R8G8B8 SRGBTexture reads (which leads to wrong tex colors)");
+
    // check if auto generation of mipmaps can be used, otherwise will be done via d3dx
    m_autogen_mipmap = (caps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP) != 0;
    if (m_autogen_mipmap)
@@ -1178,7 +1187,7 @@ void RenderDevice::CopyDepth(D3DTexture* dest, void* src)
       CopyDepth(dest, (RenderTarget*)src);
 }
 
-D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf, const bool linearRGB)
+D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const bool linearRGB)
 {
    const int texwidth = surf->width();
    const int texheight = surf->height();
@@ -1205,8 +1214,8 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf, const bool line
       //for (int y = 0; y < texheight; ++y)
       //   memcpy(pdest + y*locked.Pitch, surf->data() + y*surf->pitch(), 4 * texwidth);
 
-      float * const pdest = (float*)locked.pBits;
-      float * const psrc = (float*)surf->data();
+      float * const __restrict pdest = (float*)locked.pBits;
+      const float * const __restrict psrc = (float*)(surf->data());
       for (int i = 0; i < texwidth*texheight; ++i)
       {
          pdest[i * 4    ] = psrc[i * 3    ];
@@ -1237,23 +1246,22 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf, const bool line
    return sysTex;
 }
 
-D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *pTexHeight, const bool linearRGB)
+D3DTexture* RenderDevice::UploadTexture(BaseTexture* const surf, int * const pTexWidth, int * const pTexHeight, const bool linearRGB)
 {
-   IDirect3DTexture9 *sysTex, *tex;
-   HRESULT hr;
-
-   int texwidth = surf->width();
-   int texheight = surf->height();
+   const int texwidth = surf->width();
+   const int texheight = surf->height();
 
    if (pTexWidth) *pTexWidth = texwidth;
    if (pTexHeight) *pTexHeight = texheight;
 
    const BaseTexture::Format basetexformat = surf->m_format;
 
-   sysTex = CreateSystemTexture(surf, linearRGB);
+   IDirect3DTexture9 *sysTex = CreateSystemTexture(surf, linearRGB);
 
    const D3DFORMAT texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? D3DFMT_DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? D3DFMT_A32B32G32R32F : D3DFMT_A8R8G8B8);
 
+   HRESULT hr;
+   IDirect3DTexture9 *tex;
    hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? D3DUSAGE_AUTOGENMIPMAP : 0, texformat, D3DPOOL_DEFAULT, &tex, NULL);
    if (FAILED(hr))
       ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
@@ -1323,7 +1331,7 @@ void RenderDevice::UploadAndSetSMAATextures()
    CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", m_SMAAsearchTexture));
 }
 
-void RenderDevice::UpdateTexture(D3DTexture* tex, BaseTexture* surf, const bool linearRGB)
+void RenderDevice::UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool linearRGB)
 {
    IDirect3DTexture9* sysTex = CreateSystemTexture(surf, linearRGB);
    m_curTextureUpdates++;

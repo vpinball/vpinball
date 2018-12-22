@@ -203,9 +203,9 @@ public:
 
    bool DepthBufferReadBackAvailable();
 
-   D3DTexture* CreateSystemTexture(BaseTexture* surf, const bool linearRGB);
-   D3DTexture* UploadTexture(BaseTexture* surf, int *pTexWidth, int *pTexHeight, const bool linearRGB);
-   void UpdateTexture(D3DTexture* tex, BaseTexture* surf, const bool linearRGB);
+   D3DTexture* CreateSystemTexture(BaseTexture* const surf, const bool linearRGB);
+   D3DTexture* UploadTexture(BaseTexture* const surf, int * const pTexWidth, int * const pTexHeight, const bool linearRGB);
+   void UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool linearRGB);
 
    void SetRenderState(const RenderStates p1, DWORD p2);
    void SetTextureFilter(const DWORD texUnit, DWORD mode);
