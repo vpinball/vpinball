@@ -69,9 +69,19 @@ float atan2_approx_div2PI(const float y, const float x)
 
 #define BURN_HIGHLIGHTS 0.25
 
+float InvGamma(const float color) //!! use hardware support? D3DSAMP_SRGBTEXTURE
+{
+    //return /*color * (color * (color * 0.305306011 + 0.682171111) + 0.012522878);/*/ pow(color, 2.2); // pow does not matter anymore on current GPUs //!! not completely true for example when tested with FSS tables
+
+    if (color <= 0.04045)
+        return color * (1.0/12.92);
+    else
+        return pow(color * (1.0/1.055) + (0.055/1.055), 2.4);
+}
+
 float3 InvGamma(const float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE
 {
-	return /*color * (color * (color * 0.305306011 + 0.682171111) + 0.012522878);/*/ pow(color, 2.2); // pow does not matter anymore on current GPUs
+    return float3(InvGamma(color.x),InvGamma(color.y),InvGamma(color.z));
 }
 
 float3 InvToneMap(const float3 color)
