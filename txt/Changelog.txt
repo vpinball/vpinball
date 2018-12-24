@@ -1,6 +1,10 @@
 VP 10.6.0 Changelog
 ------------------------
 
+- implement proper sRGB pipeline for runtime filtering (only textures that are used in the 'standard' material)
+
+- increase static table elements precomputation samples from 32 to 64 and in addition do not do aniso/trilinear filtering there, but rely on the oversampling and bilerp instead, leading to much crisper textures
+
 - add checkbox to 'user customizations'->'overwrite physics by global set' to optionally change all flipper settings, too
 
 - fix some regressions from VPX 10.3+ within the physics options dialog, especially with some of its flipper settings and when importing settings
