@@ -638,13 +638,16 @@ float Rubber::GetDepth(const Vertex3Ds& viewDir) const
    return viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * m_d.m_height;
 }
 
-void Rubber::RenderSetup(RenderDevice* pd3dDevice)
+void Rubber::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    GenerateVertexBuffer(pd3dDevice);
 }
 
-void Rubber::RenderStatic(RenderDevice* pd3dDevice)
+void Rubber::RenderStatic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    if (m_d.m_staticRendering)
    {
       if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
@@ -1437,8 +1440,10 @@ void Rubber::RenderObject(RenderDevice * const pd3dDevice)
 // Always called each frame to render over everything else (along with primitives)
 // Same code as RenderStatic (with the exception of the alpha tests).
 // Also has less drawing calls by bundling seperate calls.
-void Rubber::RenderDynamic(RenderDevice* pd3dDevice)
+void Rubber::RenderDynamic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    if (!m_d.m_staticRendering)
    {
       if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)

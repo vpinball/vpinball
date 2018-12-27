@@ -83,7 +83,8 @@ private:
 
    // Data members
 public:
-   RenderDevice* m_pd3dDevice;
+   RenderDevice* m_pd3dPrimaryDevice;
+   RenderDevice* m_pd3dSecondaryDevice;
    RenderTarget* m_pddsBackBuffer;
 
    D3DTexture* m_pddsAOBackBuffer;

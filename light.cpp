@@ -583,8 +583,10 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice)
    pd3dDevice->basicShader->End();
 }
 
-void Light::RenderDynamic(RenderDevice* pd3dDevice)
+void Light::RenderDynamic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    TRACE_FUNCTION();
 
    if (!m_d.m_fVisible || m_ptable->m_fReflectionEnabled)
@@ -595,6 +597,9 @@ void Light::RenderDynamic(RenderDevice* pd3dDevice)
 
    if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
       return;
+
+   if (m_fBackglass)
+      pd3dDevice = g_pplayer->m_pin3d.m_pd3dSecondaryDevice;
 
    if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh)
       RenderBulbMesh(pd3dDevice);
@@ -805,20 +810,20 @@ void Light::PrepareMoversCustom()
    std::vector<WORD> vtri;
 
    {
-   std::vector<unsigned int> vpoly(m_vvertex.size());
-   const unsigned int cvertex = (unsigned int)m_vvertex.size();
-   for (unsigned int i = 0; i < cvertex; i++)
-   {
-      vpoly[i] = i;
+      std::vector<unsigned int> vpoly(m_vvertex.size());
+      const unsigned int cvertex = (unsigned int)m_vvertex.size();
+      for (unsigned int i = 0; i < cvertex; i++)
+      {
+         vpoly[i] = i;
 
-      const float dx = m_vvertex[i].x - m_d.m_vCenter.x;
-      const float dy = m_vvertex[i].y - m_d.m_vCenter.y;
-      const float dist = dx*dx + dy*dy;
-      if (dist > maxdist)
-         maxdist = dist;
-   }
+         const float dx = m_vvertex[i].x - m_d.m_vCenter.x;
+         const float dy = m_vvertex[i].y - m_d.m_vCenter.y;
+         const float dist = dx*dx + dy*dy;
+         if (dist > maxdist)
+            maxdist = dist;
+      }
 
-   PolygonToTriangles(m_vvertex, vpoly, vtri);
+      PolygonToTriangles(m_vvertex, vpoly, vtri);
    }
 
 
@@ -845,7 +850,7 @@ void Light::PrepareMoversCustom()
    }
 
    customMoverIndexNum = (unsigned int)vtri.size();
-   g_pplayer->m_pin3d.m_pd3dDevice->CreateIndexBuffer(customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16, &customMoverIBuffer);
+   g_pplayer->m_pin3d.m_pd3dPrimaryDevice->CreateIndexBuffer(customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16, &customMoverIBuffer);
 
    WORD* bufi;
    customMoverIBuffer->lock(0, 0, (void**)&bufi, 0);
@@ -854,7 +859,7 @@ void Light::PrepareMoversCustom()
 
    customMoverVertexNum = (unsigned int)m_vvertex.size();
    const DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
-   g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer(customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
+   g_pplayer->m_pin3d.m_pd3dPrimaryDevice->CreateVertexBuffer(customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
 
    Texture* const pin = m_ptable->GetImage(m_d.m_szOffImage);
 
@@ -915,8 +920,13 @@ void Light::PrepareMoversCustom()
    customMoverVBuffer->unlock();
 }
 
-void Light::RenderSetup(RenderDevice* pd3dDevice)
+void Light::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
+   if (m_fBackglass)
+      pd3dDevice = g_pplayer->m_pin3d.m_pd3dSecondaryDevice;
+
    m_iblinkframe = 0;
    m_d.m_time_msec = g_pplayer->m_time_msec;
    m_updateLightShape = false;
@@ -991,8 +1001,13 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
    PrepareMoversCustom();
 }
 
-void Light::RenderStatic(RenderDevice* pd3dDevice)
+void Light::RenderStatic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
+   if (m_fBackglass)
+      pd3dDevice = g_pplayer->m_pin3d.m_pd3dSecondaryDevice;
+
    if (m_d.m_BulbLight && m_d.m_showBulbMesh && m_d.m_staticBulbMesh)
       RenderBulbMesh(pd3dDevice);
 }

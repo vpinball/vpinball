@@ -94,7 +94,7 @@ public:
 
 private:
    void RenderText();
-   void RenderObject(RenderDevice* pd3dDevice);
+   void RenderObject();
 
    IFont *m_pIFont;
 

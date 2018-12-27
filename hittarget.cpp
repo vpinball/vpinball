@@ -799,8 +799,10 @@ void HitTarget::UpdateTarget(RenderDevice *pd3dDevice)
 }
 
 // Always called each frame to render over everything else (along with alpha ramps)
-void HitTarget::RenderDynamic(RenderDevice* pd3dDevice)
+void HitTarget::RenderDynamic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   
    TRACE_FUNCTION();
 
    if (!m_d.m_fVisible)
@@ -811,8 +813,10 @@ void HitTarget::RenderDynamic(RenderDevice* pd3dDevice)
    RenderObject(pd3dDevice);
 }
 
-void HitTarget::RenderSetup(RenderDevice* pd3dDevice)
+void HitTarget::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    if (vertexBuffer)
       vertexBuffer->release();
 
@@ -844,7 +848,7 @@ void HitTarget::RenderSetup(RenderDevice* pd3dDevice)
    m_d.m_time_msec = g_pplayer->m_time_msec;
 }
 
-void HitTarget::RenderStatic(RenderDevice* pd3dDevice)
+void HitTarget::RenderStatic()
 {
 }
 

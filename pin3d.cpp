@@ -10,7 +10,8 @@ Pin3D::Pin3D()
    m_pddsAOBackTmpBuffer = NULL;
    m_pddsZBuffer = NULL;
    m_pdds3DZBuffer = NULL;
-   m_pd3dDevice = NULL;
+   m_pd3dPrimaryDevice = NULL;
+   m_pd3dPrimaryDevice = NULL;
    m_pddsStatic = NULL;
    m_pddsStaticZ = NULL;
    m_envRadianceTexture = NULL;
@@ -27,8 +28,8 @@ Pin3D::~Pin3D()
 #ifdef FPS
    m_gpu_profiler.Shutdown();
 #endif
-   m_pd3dDevice->SetZBuffer(NULL);
-   m_pd3dDevice->FreeShader();
+   m_pd3dPrimaryDevice->SetZBuffer(NULL);
+   m_pd3dPrimaryDevice->FreeShader();
 
    pinballEnvTexture.FreeStuff();
 
@@ -38,7 +39,7 @@ Pin3D::~Pin3D()
 
    if (m_envRadianceTexture)
    {
-      m_pd3dDevice->m_texMan.UnloadTexture(m_envRadianceTexture);
+      m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_envRadianceTexture);
       delete m_envRadianceTexture;
       m_envRadianceTexture = NULL;
    }
@@ -48,7 +49,7 @@ Pin3D::~Pin3D()
 
    SAFE_RELEASE(m_pddsAOBackBuffer);
    SAFE_RELEASE(m_pddsAOBackTmpBuffer);
-   if (!m_pd3dDevice->m_useNvidiaApi && m_pd3dDevice->m_INTZ_support)
+   if (!m_pd3dPrimaryDevice->m_useNvidiaApi && m_pd3dPrimaryDevice->m_INTZ_support)
    {
       SAFE_RELEASE_NO_SET((D3DTexture*)m_pddsStaticZ);
       SAFE_RELEASE_NO_SET((D3DTexture*)m_pddsZBuffer);
@@ -64,7 +65,10 @@ Pin3D::~Pin3D()
    SAFE_RELEASE(m_pddsStatic);
    SAFE_RELEASE_NO_RCC(m_pddsBackBuffer);
 
-   delete m_pd3dDevice;
+   delete m_pd3dPrimaryDevice;
+
+   m_pd3dPrimaryDevice = NULL;
+   m_pd3dSecondaryDevice = NULL;
 }
 
 void Pin3D::TransformVertices(const Vertex3D_NoTex2 * rgv, const WORD * rgi, int count, Vertex2D * rgvout) const
@@ -208,18 +212,21 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
 
    m_useAA = useAA;
 
-   try {
-      m_pd3dDevice = new RenderDevice(m_hwnd, width, height, fullScreen, colordepth, refreshrate, VSync, useAA, stereo3D, FXAA, ss_refl, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
+   try 
+   {
+      m_pd3dPrimaryDevice = new RenderDevice(m_hwnd, width, height, fullScreen, colordepth, refreshrate, VSync, useAA, stereo3D, FXAA, ss_refl, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
+      // for now map the second render device to the primary.    
+      m_pd3dSecondaryDevice = m_pd3dPrimaryDevice;
    }
    catch (...) {
       return E_FAIL;
    }
 
    const int forceAniso = GetRegIntWithDefault("Player", "ForceAnisotropicFiltering", 1);
-   m_pd3dDevice->ForceAnisotropicFiltering(!!forceAniso);
+   m_pd3dPrimaryDevice->ForceAnisotropicFiltering(!!forceAniso);
 
    const int compressTextures = GetRegIntWithDefault("Player", "CompressTextures", 0);
-   m_pd3dDevice->CompressTextures(!!compressTextures);
+   m_pd3dPrimaryDevice->CompressTextures(!!compressTextures);
 
    // set the viewport for the newly created device
    vp.X = 0;
@@ -228,18 +235,18 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    vp.Height = height;
    vp.MinZ = 0.0f;
    vp.MaxZ = 1.0f;
-   m_pd3dDevice->SetViewport(&vp);
+   m_pd3dPrimaryDevice->SetViewport(&vp);
 
-   m_pd3dDevice->GetBackBufferTexture()->GetSurfaceLevel(0, &m_pddsBackBuffer);
+   m_pd3dPrimaryDevice->GetBackBufferTexture()->GetSurfaceLevel(0, &m_pddsBackBuffer);
 
    // Create the "static" color buffer.  
    // This will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).
-   m_pddsStatic = m_pd3dDevice->DuplicateRenderTarget(m_pddsBackBuffer);
+   m_pddsStatic = m_pd3dPrimaryDevice->DuplicateRenderTarget(m_pddsBackBuffer);
    if (!m_pddsStatic)
        return E_FAIL;
 
-   m_pddsZBuffer = m_pd3dDevice->AttachZBufferTo(m_pddsBackBuffer);
-   m_pddsStaticZ = m_pd3dDevice->AttachZBufferTo(m_pddsStatic);
+   m_pddsZBuffer = m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsBackBuffer);
+   m_pddsStaticZ = m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsStatic);
    if (!m_pddsZBuffer || !m_pddsStaticZ)
       return E_FAIL;
 
@@ -262,12 +269,12 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    EnvmapPrecalc(envTex->m_pdsBuffer->data(), envTex->m_pdsBuffer->width(), envTex->m_pdsBuffer->height(),
                  m_envRadianceTexture->data(), envTexWidth, envTexHeight, envTex->IsHDR());
 
-   m_pd3dDevice->m_texMan.SetDirty(m_envRadianceTexture);
+   m_pd3dPrimaryDevice->m_texMan.SetDirty(m_envRadianceTexture);
 
    //
 
-   if(m_pd3dDevice->DepthBufferReadBackAvailable() && (stereo3D || useAO || ss_refl)) {
-      m_pdds3DZBuffer = !m_pd3dDevice->m_useNvidiaApi ? (D3DTexture*)m_pd3dDevice->AttachZBufferTo(m_pddsBackBuffer) : m_pd3dDevice->DuplicateDepthTexture((RenderTarget*)m_pddsZBuffer);
+   if(m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (stereo3D || useAO || ss_refl)) {
+      m_pdds3DZBuffer = !m_pd3dPrimaryDevice->m_useNvidiaApi ? (D3DTexture*)m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsBackBuffer) : m_pd3dPrimaryDevice->DuplicateDepthTexture((RenderTarget*)m_pddsZBuffer);
 
       if (!m_pdds3DZBuffer)
       {
@@ -276,16 +283,16 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
       }
    }
 
-   if(m_pd3dDevice->DepthBufferReadBackAvailable() && useAO) 
+   if(m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && useAO) 
    {
        HRESULT hr;
-       hr = m_pd3dDevice->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackTmpBuffer, NULL);
+       hr = m_pd3dPrimaryDevice->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackTmpBuffer, NULL);
        if (FAILED(hr))
        {
            ShowError("Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
            return E_FAIL;
        }
-       hr = m_pd3dDevice->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackBuffer, NULL);
+       hr = m_pd3dPrimaryDevice->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackBuffer, NULL);
        if (FAILED(hr))
        {
            ShowError("Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
@@ -310,18 +317,18 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
 // Sets the texture filtering state.
 void Pin3D::SetTextureFilter(const int TextureNum, const int Mode) const
 {
-   m_pd3dDevice->SetTextureFilter(TextureNum, Mode);
+   m_pd3dPrimaryDevice->SetTextureFilter(TextureNum, Mode);
 }
 
 void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) const
 {
-   m_pd3dDevice->SetRenderTarget(pddsSurface);
-   m_pd3dDevice->SetZBuffer(pddsZ);
+   m_pd3dPrimaryDevice->SetRenderTarget(pddsSurface);
+   m_pd3dPrimaryDevice->SetZBuffer(pddsZ);
 }
 
 void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const
 {   
-   if (!m_pd3dDevice->m_useNvidiaApi && m_pd3dDevice->m_INTZ_support)
+   if (!m_pd3dPrimaryDevice->m_useNvidiaApi && m_pd3dPrimaryDevice->m_INTZ_support)
       SetRenderTarget(pddsSurface, (D3DTexture*)pddsZ);
    else
       SetRenderTarget(pddsSurface, (RenderTarget*)pddsZ);
@@ -329,10 +336,10 @@ void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const
 
 void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const
 {
-   m_pd3dDevice->SetRenderTarget(pddsSurface);
+   m_pd3dPrimaryDevice->SetRenderTarget(pddsSurface);
    IDirect3DSurface9 *textureSurface;
    CHECKD3D(pddsZ->GetSurfaceLevel(0, &textureSurface));
-   m_pd3dDevice->SetZBuffer(textureSurface);
+   m_pd3dPrimaryDevice->SetZBuffer(textureSurface);
    SAFE_RELEASE_NO_RCC(textureSurface);
 }
 
@@ -340,26 +347,26 @@ void Pin3D::InitRenderState()
 {
    g_pplayer->m_pin3d.DisableAlphaBlend();
 
-   m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
 
-   m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
-   m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-   m_pd3dDevice->SetRenderState(RenderDevice::CLIPPING, FALSE);
-   m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPING, FALSE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0);
 
    // initialize first texture stage
-   m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP/*WRAP*/);
-   m_pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-   m_pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+   m_pd3dPrimaryDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP/*WRAP*/);
+   m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+   m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
    SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-   m_pd3dDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
-   m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-   m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-   m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
+   m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
+   m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+   m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+   m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
 
-   m_pd3dDevice->SetTextureAddressMode(4, RenderDevice::TEX_CLAMP/*WRAP*/); // normal maps
+   m_pd3dPrimaryDevice->SetTextureAddressMode(4, RenderDevice::TEX_CLAMP/*WRAP*/); // normal maps
    SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
 }
 
@@ -373,28 +380,28 @@ void Pin3D::DrawBackground()
       : NULL;
    if (pin)
    {
-      m_pd3dDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L);
+      m_pd3dPrimaryDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L);
 
-      m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-      m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
 
       if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
-         m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+         m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
       g_pplayer->m_pin3d.DisableAlphaBlend();
 
       g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, ptable->m_ImageBackdropNightDay ? sqrtf(g_pplayer->m_globalEmissionScale) : 1.0f);
 
       if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
-         m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+         m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-      m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
-      m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
+      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    }
    else
    {
       const D3DCOLOR d3dcolor = COLORREF_to_D3DCOLOR(ptable->m_colorbackdrop);
-      m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, d3dcolor, 1.0f, 0L);
+      m_pd3dPrimaryDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, d3dcolor, 1.0f, 0L);
    }
 }
 
@@ -428,18 +435,18 @@ void Pin3D::InitLights()
       memcpy(&l[i].vPos, &g_pplayer->m_ptable->m_Light[i].pos, sizeof(float) * 3);
       memcpy(&l[i].vEmission, &emission, sizeof(float) * 3);
    }
-   m_pd3dDevice->basicShader->SetValue("packedLights", l, sizeof(CLight)*MAX_LIGHT_SOURCES);
+   m_pd3dPrimaryDevice->basicShader->SetValue("packedLights", l, sizeof(CLight)*MAX_LIGHT_SOURCES);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pd3dDevice->classicLightShader->SetValue("packedLights", l, sizeof(CLight)*MAX_LIGHT_SOURCES);
+   m_pd3dPrimaryDevice->classicLightShader->SetValue("packedLights", l, sizeof(CLight)*MAX_LIGHT_SOURCES);
 #endif
 
    D3DXVECTOR4 amb_lr = convertColor(g_pplayer->m_ptable->m_lightAmbient, g_pplayer->m_ptable->m_lightRange);
    amb_lr.x *= g_pplayer->m_globalEmissionScale;
    amb_lr.y *= g_pplayer->m_globalEmissionScale;
    amb_lr.z *= g_pplayer->m_globalEmissionScale;
-   m_pd3dDevice->basicShader->SetVector("cAmbient_LightRange", &amb_lr);
+   m_pd3dPrimaryDevice->basicShader->SetVector("cAmbient_LightRange", &amb_lr);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pd3dDevice->classicLightShader->SetVector("cAmbient_LightRange", &amb_lr);
+   m_pd3dPrimaryDevice->classicLightShader->SetVector("cAmbient_LightRange", &amb_lr);
 #endif
 
 }
@@ -546,9 +553,9 @@ void Pin3D::InitLayoutFS()
 
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
 
-   m_pd3dDevice->SetTransform(TRANSFORMSTATE_PROJECTION, &m_proj.m_matProj);
-   m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView);
-   m_pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &m_proj.m_matWorld);
+   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_PROJECTION, &m_proj.m_matProj);
+   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView);
+   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_WORLD, &m_proj.m_matWorld);
 
    m_proj.CacheTransform();
 
@@ -684,9 +691,9 @@ void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypi
 
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
 
-   m_pd3dDevice->SetTransform(TRANSFORMSTATE_PROJECTION, &m_proj.m_matProj);
-   m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView);
-   m_pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &m_proj.m_matWorld);
+   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_PROJECTION, &m_proj.m_matProj);
+   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView);
+   m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_WORLD, &m_proj.m_matWorld);
 
    m_proj.CacheTransform();
 
@@ -707,7 +714,7 @@ void Pin3D::InitPlayfieldGraphics()
    if (piEdit == NULL)
    {
       assert(tableVBuffer == NULL);
-      m_pd3dDevice->CreateVertexBuffer(4, 0, MY_D3DFVF_NOTEX2_VERTEX, &tableVBuffer);
+      m_pd3dPrimaryDevice->CreateVertexBuffer(4, 0, MY_D3DFVF_NOTEX2_VERTEX, &tableVBuffer);
 
       Vertex3D_NoTex2 *buffer;
       tableVBuffer->lock(0, 0, (void**)&buffer, VertexBuffer::WRITEONLY);
@@ -743,46 +750,46 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 
    if(depth_only)
    {
-       m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0); //m_pin3d.m_pd3dDevice->SetRenderTarget(NULL); // disable color writes
+       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0); //m_pin3d.m_pd3dDevice->SetRenderTarget(NULL); // disable color writes
 	   // even with depth-only rendering we have to take care of alpha textures (stencil playfield to see underlying objects)
 	   if (pin)
 	   {
 		   SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
-		   m_pd3dDevice->basicShader->SetTechnique("basic_depth_only_with_texture");
-		   m_pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
-		   m_pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+		   m_pd3dPrimaryDevice->basicShader->SetTechnique("basic_depth_only_with_texture");
+		   m_pd3dPrimaryDevice->basicShader->SetTexture("Texture0", pin, false);
+		   m_pd3dPrimaryDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 	   }
 	   else // No image by that name
-		   m_pd3dDevice->basicShader->SetTechnique("basic_depth_only_without_texture");
+		   m_pd3dPrimaryDevice->basicShader->SetTechnique("basic_depth_only_without_texture");
    }
    else
    {
-       m_pd3dDevice->basicShader->SetMaterial(mat);
+       m_pd3dPrimaryDevice->basicShader->SetMaterial(mat);
 
        if (pin)
        {
            SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
-           m_pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-           m_pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
-           m_pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+           m_pd3dPrimaryDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+           m_pd3dPrimaryDevice->basicShader->SetTexture("Texture0", pin, false);
+           m_pd3dPrimaryDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
        }
        else // No image by that name
-           m_pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
+           m_pd3dPrimaryDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    }
 
    if (!g_pplayer->m_fMeshAsPlayfield)
    { 
       assert(tableVBuffer != NULL);
-      m_pd3dDevice->basicShader->Begin(0);
-      m_pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 0, 4);
-      m_pd3dDevice->basicShader->End();
+      m_pd3dPrimaryDevice->basicShader->Begin(0);
+      m_pd3dPrimaryDevice->DrawPrimitiveVB(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 0, 4);
+      m_pd3dPrimaryDevice->basicShader->End();
    }
    else
    {
       const IEditable * const piEdit = g_pplayer->m_ptable->GetElementByName("playfield_mesh");
       Primitive * const pPrim = (Primitive *)piEdit;
       pPrim->m_d.m_fVisible = true;  // temporary enable the otherwise invisible playfield
-      pPrim->RenderObject(m_pd3dDevice);
+      pPrim->RenderObject(m_pd3dPrimaryDevice);
       pPrim->m_d.m_fVisible = false; // restore
    }
 
@@ -794,7 +801,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
    }
 
    if(depth_only)
-       m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0000000Fu); // reenable color writes with default value
+       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0000000Fu); // reenable color writes with default value
 
    // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
    // later rendering steps, so we keep it around for now.
@@ -802,29 +809,29 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 
 void Pin3D::EnableAlphaTestReference(const DWORD alphaRefValue) const
 {
-   m_pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, alphaRefValue);
-   m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
-   m_pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHAREF, alphaRefValue);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
 }
 
 void Pin3D::EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend, const bool set_blend_op) const
 {
-   m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-   m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_SRCALPHA);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_SRCALPHA);
    if (set_dest_blend)
-      m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, additiveBlending ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
+      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DESTBLEND, additiveBlending ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
    if (set_blend_op)
-      m_pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
+      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
 }
 
 void Pin3D::DisableAlphaBlend() const
 {
-   m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
 }
 
 void Pin3D::Flip(bool vsync)
 {
-   m_pd3dDevice->Flip(vsync);
+   m_pd3dPrimaryDevice->Flip(vsync);
 }
 
 Vertex3Ds Pin3D::Unproject(const Vertex3Ds& point)

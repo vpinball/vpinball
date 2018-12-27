@@ -264,7 +264,7 @@ void Kicker::EndPlay()
    IEditable::EndPlay();
 }
 
-void Kicker::RenderStatic(RenderDevice* pd3dDevice)
+void Kicker::RenderStatic()
 {
 }
 
@@ -417,8 +417,10 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf)
    }
 }
 
-void Kicker::RenderSetup(RenderDevice* pd3dDevice)
+void Kicker::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    if (m_d.m_kickertype == KickerInvisible)
       return;
 
@@ -569,8 +571,10 @@ void Kicker::SetDefaultPhysics(bool fromMouseClick)
       m_d.m_scatter = 0;
 }
 
-void Kicker::RenderDynamic(RenderDevice* pd3dDevice)
+void Kicker::RenderDynamic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    if (m_ptable->m_fReflectionEnabled)
       return;
 

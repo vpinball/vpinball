@@ -225,12 +225,14 @@ void LightSeq::EndPlay()
    IEditable::EndPlay();
 }
 
-void LightSeq::RenderDynamic(RenderDevice* pd3dDevice)
+void LightSeq::RenderDynamic()
 {
 }
 
-void LightSeq::RenderSetup(RenderDevice* pd3dDevice)
+void LightSeq::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    // zero pointers as a safe guard
    m_pcollection = NULL;
    m_pgridData = NULL;
@@ -332,7 +334,7 @@ void LightSeq::RenderSetup(RenderDevice* pd3dDevice)
    }
 }
 
-void LightSeq::RenderStatic(RenderDevice* pd3dDevice)
+void LightSeq::RenderStatic()
 {
 }
 

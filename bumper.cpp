@@ -488,8 +488,9 @@ void Bumper::UpdateSkirt(RenderDevice *pd3dDevice, const bool doCalculation)
    m_socketVertexBuffer->unlock();
 }
 
-void Bumper::RenderDynamic(RenderDevice* pd3dDevice)
+void Bumper::RenderDynamic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    TRACE_FUNCTION();
 
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
@@ -764,8 +765,10 @@ void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf)
    }
 }
 
-void Bumper::RenderSetup(RenderDevice* pd3dDevice)
+void Bumper::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    m_d.m_time_msec = g_pplayer->m_time_msec;
 
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
@@ -857,8 +860,10 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
 
 }
 
-void Bumper::RenderStatic(RenderDevice* pd3dDevice)
+void Bumper::RenderStatic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
 

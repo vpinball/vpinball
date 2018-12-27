@@ -536,8 +536,10 @@ void Surface::MoveOffset(const float dx, const float dy)
    m_ptable->SetDirtyDraw();
 }
 
-void Surface::RenderDynamic(RenderDevice* pd3dDevice)
+void Surface::RenderDynamic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    TRACE_FUNCTION();
 
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
@@ -929,8 +931,9 @@ void Surface::PrepareSlingshots(RenderDevice *pd3dDevice)
       slingIBuffer = pd3dDevice->CreateAndFillIndexBuffer(24, rgiSlingshot);
 }
 
-void Surface::RenderSetup(RenderDevice* pd3dDevice)
+void Surface::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    const float oldBottomHeight = m_d.m_heightbottom;
    const float oldTopHeight = m_d.m_heighttop;
 
@@ -981,10 +984,12 @@ void Surface::FreeBuffers()
    }
 }
 
-void Surface::RenderStatic(RenderDevice* pd3dDevice)
+void Surface::RenderStatic()
 {
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
+
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    RenderSlingshots(pd3dDevice);
    if (!m_d.m_fDroppable && !m_isDynamic)

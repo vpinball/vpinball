@@ -209,8 +209,10 @@ void Textbox::EndPlay()
    IEditable::EndPlay();
 }
 
-void Textbox::RenderDynamic(RenderDevice* pd3dDevice)
+void Textbox::RenderDynamic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    TRACE_FUNCTION();
 
    const bool dmd = (m_d.m_IsDMD || strstr(m_d.sztext, "DMD") != NULL); //!! second part is VP10.0 legacy
@@ -261,7 +263,7 @@ void Textbox::RenderDynamic(RenderDevice* pd3dDevice)
    //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
-void Textbox::RenderSetup(RenderDevice* pd3dDevice)
+void Textbox::RenderSetup()
 {
    m_pIFont->Clone(&m_pIFontPlay);
 
@@ -273,7 +275,7 @@ void Textbox::RenderSetup(RenderDevice* pd3dDevice)
    RenderText();
 }
 
-void Textbox::RenderStatic(RenderDevice* pd3dDevice)
+void Textbox::RenderStatic()
 {
 }
 
@@ -365,7 +367,7 @@ void Textbox::RenderText()
       pch += m_texture->pitch() - m_texture->width() * 4;
    }
 
-   g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.SetDirty(m_texture);
+   g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(m_texture);
 
    SelectObject(hdc, oldFont);
    SelectObject(hdc, oldBmp);

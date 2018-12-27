@@ -1162,8 +1162,8 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
       {
          if (g_pplayer->m_texdmd)
          {
-            g_pplayer->m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", (D3DTexture*)NULL);
-            g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
+            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTexture("Texture0", (D3DTexture*)NULL);
+            g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
             delete g_pplayer->m_texdmd;
          }
 #ifdef DMD_UPSCALE
@@ -1187,7 +1187,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
       if (g_pplayer->m_scaleFX_DMD)
          upscale(data, g_pplayer->m_dmdx, g_pplayer->m_dmdy, true);
 
-      g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.SetDirty(g_pplayer->m_texdmd);
+      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(g_pplayer->m_texdmd);
    }
 
    return S_OK;
@@ -1209,8 +1209,8 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! use 64bi
 		{
 			if (g_pplayer->m_texdmd)
 			{
-				g_pplayer->m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", (D3DTexture*)NULL);
-				g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
+				g_pplayer->m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTexture("Texture0", (D3DTexture*)NULL);
+				g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
 				delete g_pplayer->m_texdmd;
 			}
 #ifdef DMD_UPSCALE
@@ -1234,7 +1234,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! use 64bi
         if (g_pplayer->m_scaleFX_DMD)
             upscale(data, g_pplayer->m_dmdx, g_pplayer->m_dmdy, false);
 
-		g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.SetDirty(g_pplayer->m_texdmd);
+		g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(g_pplayer->m_texdmd);
 	}
 
 	return S_OK;

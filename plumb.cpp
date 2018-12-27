@@ -161,14 +161,14 @@ void plumb_draw()
    HRESULT				ReturnCode;
 
    // Save the current transformation state.
-   ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+   ReturnCode = g_pplayer->m_pin3d.m_pd3dPrimaryDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
    // Save the current render state.
    //Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
    // Save the current texture state.
    //Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
 
    static const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
-   g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix ); 
+   g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix ); 
 
    F32 x = sPlumbPos[0];
    F32 y = sPlumbPos[1];
@@ -186,6 +186,6 @@ void plumb_draw()
    // Restore the texture state.
    //Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
    // Restore the transformation state.
-   ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+   ReturnCode = g_pplayer->m_pin3d.m_pd3dPrimaryDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 #endif
 }
