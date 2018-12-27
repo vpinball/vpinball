@@ -400,8 +400,10 @@ void Flasher::UpdateMesh()
    dynamicVertexBuffer->unlock();
 }
 
-void Flasher::RenderSetup(RenderDevice* pd3dDevice)
+void Flasher::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
@@ -486,7 +488,7 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    }
 }
 
-void Flasher::RenderStatic(RenderDevice* pd3dDevice)
+void Flasher::RenderStatic()
 {
 }
 
@@ -1292,8 +1294,10 @@ STDMETHODIMP Flasher::put_ImageAlignment(RampImageAlignment newVal)
    return S_OK;
 }
 
-void Flasher::RenderDynamic(RenderDevice* pd3dDevice)
+void Flasher::RenderDynamic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    TRACE_FUNCTION();
 
    // Don't render if invisible (or DMD connection not set)
@@ -1371,7 +1375,7 @@ void Flasher::RenderDynamic(RenderDevice* pd3dDevice)
 #endif
        pd3dDevice->DMDShader->SetVector("vRes_Alpha", &r);
 
-       pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd, false));
+       pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd, false));
 
        pd3dDevice->DMDShader->Begin(0);
        pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys * 3);

@@ -133,16 +133,16 @@ void Timer::EndPlay()
    IEditable::EndPlay();
 }
 
-void Timer::RenderDynamic(RenderDevice* pd3dDevice)
+void Timer::RenderDynamic()
 {
 }
 
-void Timer::RenderSetup(RenderDevice* pd3dDevice)
+void Timer::RenderSetup()
 {
 
 }
 
-void Timer::RenderStatic(RenderDevice* pd3dDevice)
+void Timer::RenderStatic()
 {
 }
 

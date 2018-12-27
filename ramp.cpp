@@ -1218,8 +1218,10 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
    m_meshIndices.clear();
 }
 
-void Ramp::RenderSetup(RenderDevice* pd3dDevice)
+void Ramp::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    if (m_d.m_fVisible)
    {
       if (isHabitrail())
@@ -1229,8 +1231,10 @@ void Ramp::RenderSetup(RenderDevice* pd3dDevice)
    }
 }
 
-void Ramp::RenderStatic(RenderDevice* pd3dDevice)
+void Ramp::RenderStatic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    // return if not Visible
    if (!m_d.m_fVisible)
       return;
@@ -2458,8 +2462,10 @@ void Ramp::RenderRamp(RenderDevice *pd3dDevice, const Material * const mat)
 // Always called each frame to render over everything else (along with primitives)
 // Same code as RenderStatic (with the exception of the alpha tests).
 // Also has less drawing calls by bundling seperate calls.
-void Ramp::RenderDynamic(RenderDevice* pd3dDevice)
+void Ramp::RenderDynamic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    TRACE_FUNCTION();
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);

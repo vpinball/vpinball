@@ -446,18 +446,20 @@ void Decal::EndPlay()
    IEditable::EndPlay();
 }
 
-void Decal::RenderDynamic(RenderDevice* pd3dDevice)
+void Decal::RenderDynamic()
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    if (!m_fBackglass //!! should just check if material has opacity enabled, but this is crucial for HV setup performance like-is
       && mat && mat->m_bOpacityActive)
-      RenderObject(pd3dDevice);
+      RenderObject();
 }
 
 static const WORD rgi0123[4] = { 0, 1, 2, 3 };
 
-void Decal::RenderSetup(RenderDevice* pd3dDevice)
+void Decal::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    RenderText();
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
@@ -548,10 +550,16 @@ bool Decal::IsTransparent() const
    return !m_fBackglass;
 }
 
-void Decal::RenderObject(RenderDevice* pd3dDevice)
+void Decal::RenderObject()
 {
    if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
       return;
+
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice *pd3dSecondDevice = g_pplayer->m_pin3d.m_pd3dSecondaryDevice;
+
+   if (m_fBackglass)
+      pd3dDevice = g_pplayer->m_pin3d.m_pd3dSecondaryDevice;
 
    if (m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled))
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
@@ -616,12 +624,13 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
    //   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
-void Decal::RenderStatic(RenderDevice* pd3dDevice)
+void Decal::RenderStatic()
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+
    if (m_fBackglass //!! should just check if material has no opacity enabled, but this is crucial for HV setup performance like-is
       || !mat || !mat->m_bOpacityActive)
-      RenderObject(pd3dDevice);
+      RenderObject();
 }
 
 void Decal::SetObjectPos()

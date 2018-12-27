@@ -245,8 +245,10 @@ void DispReel::EndPlay()
    IEditable::EndPlay();
 }
 
-void DispReel::RenderDynamic(RenderDevice* pd3dDevice)
+void DispReel::RenderDynamic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    TRACE_FUNCTION();
 
    if (!m_d.m_fVisible || !GetPTable()->GetEMReelsEnabled())
@@ -320,8 +322,10 @@ void DispReel::RenderDynamic(RenderDevice* pd3dDevice)
    //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
-void DispReel::RenderSetup(RenderDevice* pd3dDevice)
+void DispReel::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    // get the render sizes of the objects (reels and frame)
    m_renderwidth = max(0.0f, m_d.m_width / (float)EDITOR_BG_WIDTH);
    m_renderheight = max(0.0f, m_d.m_height / (float)EDITOR_BG_HEIGHT);
@@ -406,7 +410,7 @@ void DispReel::RenderSetup(RenderDevice* pd3dDevice)
    m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
 }
 
-void DispReel::RenderStatic(RenderDevice* pd3dDevice)
+void DispReel::RenderStatic()
 {
 }
 

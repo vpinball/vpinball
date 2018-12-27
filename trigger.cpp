@@ -628,12 +628,14 @@ void Trigger::UpdateAnimation(RenderDevice *pd3dDevice)
       }
    }
 }
-void Trigger::RenderDynamic(RenderDevice* pd3dDevice)
+void Trigger::RenderDynamic()
 {
    if (!m_d.m_fVisible || m_d.m_shape == TriggerNone)
       return;
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
+
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    UpdateAnimation(pd3dDevice);
 
@@ -771,8 +773,10 @@ void Trigger::GenerateMesh()
    }
 }
 
-void Trigger::RenderSetup(RenderDevice* pd3dDevice)
+void Trigger::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    m_d.m_time_msec = g_pplayer->m_time_msec;
 
    hitEvent = false;
@@ -819,7 +823,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
       triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerButtonIndices);
    if (vertexBuffer)
       vertexBuffer->release();
-   ppin3d->m_pd3dDevice->CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
+   ppin3d->m_pd3dPrimaryDevice->CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
    NumVideoBytes += m_numVertices*(int)sizeof(Vertex3D_NoTex2);
 
    GenerateMesh();
@@ -843,7 +847,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    vertexBuffer->unlock();
 }
 
-void Trigger::RenderStatic(RenderDevice* pd3dDevice)
+void Trigger::RenderStatic()
 {
 }
 

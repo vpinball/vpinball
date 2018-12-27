@@ -718,8 +718,9 @@ STDMETHODIMP Flipper::RotateToStart() // return to park, key/button up/released
 
    return S_OK;
 }
-void Flipper::RenderDynamic(RenderDevice* pd3dDevice)
+void Flipper::RenderDynamic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    TRACE_FUNCTION();
 
    if (m_phitflipper && !m_phitflipper->m_flipperMover.m_fVisible)
@@ -970,8 +971,10 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
    delete [] temp;
 }
 
-void Flipper::RenderSetup(RenderDevice* pd3dDevice)
+void Flipper::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    if (indexBuffer)
       indexBuffer->release();
    indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(flipperBaseNumIndices, flipperBaseIndices);
@@ -986,7 +989,7 @@ void Flipper::RenderSetup(RenderDevice* pd3dDevice)
    vertexBuffer->unlock();
 }
 
-void Flipper::RenderStatic(RenderDevice* pd3dDevice)
+void Flipper::RenderStatic()
 {
 }
 

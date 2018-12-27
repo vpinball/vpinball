@@ -512,8 +512,10 @@ void Gate::RenderObject(RenderDevice* pd3dDevice)
    pd3dDevice->basicShader->End();
 }
 
-void Gate::RenderDynamic(RenderDevice* pd3dDevice)
+void Gate::RenderDynamic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    TRACE_FUNCTION();
 
    if (!m_phitgate->m_gateMover.m_fVisible)
@@ -611,8 +613,10 @@ void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
    }
 }
 
-void Gate::RenderSetup(RenderDevice* pd3dDevice)
+void Gate::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    if (bracketIndexBuffer)
       bracketIndexBuffer->release();
    bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(gateBracketNumIndices, gateBracketIndices);
@@ -643,7 +647,7 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
    wireVertexBuffer->unlock();
 }
 
-void Gate::RenderStatic(RenderDevice* pd3dDevice) // only the support structures are rendered here
+void Gate::RenderStatic()
 {
 }
 

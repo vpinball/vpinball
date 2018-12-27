@@ -371,8 +371,10 @@ void Spinner::UpdatePlate(RenderDevice *pd3dDevice, Vertex3D_NoTex2 *vertBuffer)
       plateVertexBuffer->unlock();
 }
 
-void Spinner::RenderDynamic(RenderDevice* pd3dDevice)
+void Spinner::RenderDynamic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    TRACE_FUNCTION();
 
    if (!m_phitspinner->m_spinnerMover.m_fVisible || !m_d.m_fVisible)
@@ -410,10 +412,12 @@ void Spinner::RenderDynamic(RenderDevice* pd3dDevice)
 }
 
 
-void Spinner::RenderSetup(RenderDevice* pd3dDevice)
+void Spinner::RenderSetup()
 {
    if (!m_d.m_fVisible)
       return;
+
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    m_posZ = height + m_d.m_height;
@@ -461,7 +465,7 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
    UpdatePlate(pd3dDevice);
 }
 
-void Spinner::RenderStatic(RenderDevice* pd3dDevice)
+void Spinner::RenderStatic()
 {
    if (!m_d.m_fShowBracket || !m_d.m_fVisible)
       return;
@@ -469,6 +473,7 @@ void Spinner::RenderStatic(RenderDevice* pd3dDevice)
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
 
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
    Material mat;

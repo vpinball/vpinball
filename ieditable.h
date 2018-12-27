@@ -151,9 +151,9 @@ public:
 	virtual IEditable *GetIEditable() {return static_cast<IEditable*>(this);} \
 	virtual ISelect *GetISelect() {return static_cast<ISelect*>(this);} \
 	virtual Hitable *GetIHitable() {return static_cast<Hitable *>(this);} \
-    virtual void RenderSetup(RenderDevice* pd3dDevice); \
-    virtual void RenderStatic(RenderDevice* pd3dDevice); \
-	virtual void RenderDynamic(RenderDevice* pd3dDevice); \
+    virtual void RenderSetup(); \
+    virtual void RenderStatic(); \
+	virtual void RenderDynamic(); \
 	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;}\
 	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;} \
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \

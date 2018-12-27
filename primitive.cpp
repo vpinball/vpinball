@@ -1249,8 +1249,10 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
 }
 
 // Always called each frame to render over everything else (along with alpha ramps)
-void Primitive::RenderDynamic(RenderDevice* pd3dDevice)
+void Primitive::RenderDynamic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    TRACE_FUNCTION();
 
    if (m_d.m_staticRendering || !m_d.m_fVisible || m_d.m_fSkipRendering)
@@ -1261,8 +1263,10 @@ void Primitive::RenderDynamic(RenderDevice* pd3dDevice)
    RenderObject(pd3dDevice);
 }
 
-void Primitive::RenderSetup(RenderDevice* pd3dDevice)
+void Primitive::RenderSetup()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    if (m_d.m_fGroupdRendering || m_d.m_fSkipRendering)
       return;
 
@@ -1278,8 +1282,10 @@ void Primitive::RenderSetup(RenderDevice* pd3dDevice)
    indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_mesh.m_indices);
 }
 
-void Primitive::RenderStatic(RenderDevice* pd3dDevice)
+void Primitive::RenderStatic()
 {
+   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    if (m_d.m_staticRendering && m_d.m_fVisible)
    {
       if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
