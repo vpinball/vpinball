@@ -2202,7 +2202,7 @@ void VPinball::OnClose()
          Sleep(THREADS_PAUSE);
    }
    if (g_pplayer)
-      SendMessage(g_pplayer->m_hwnd, WM_CLOSE, 0, 0);
+      SendMessage(g_pplayer->m_playfieldHwnd, WM_CLOSE, 0, 0);
 
    const bool fCanClose = g_pvp->FCanClose();
    if (fCanClose)

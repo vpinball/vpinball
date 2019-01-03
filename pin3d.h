@@ -77,7 +77,8 @@ public:
    void InitLights();
 
 private:
-   void InitRenderState();
+   void    InitRenderState();
+   HRESULT InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl);
 
    void Identity();
 

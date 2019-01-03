@@ -815,7 +815,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
    SysFreeString(ei.bstrHelpFile);
 
    if (g_pplayer)
-      EnableWindow(g_pplayer->m_hwnd, FALSE);
+      EnableWindow(g_pplayer->m_playfieldHwnd, FALSE);
    EnableWindow(g_pvp->m_hwnd, FALSE);
 
    /*const int result =*/ MessageBoxW(m_hwndMain,

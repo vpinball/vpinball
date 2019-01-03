@@ -1400,7 +1400,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    // TEXT
    SetWindowText(hwndProgressName, "Initializing Visuals...");
 
-   InitWindow();
+   InitPlayfieldWindow();
    InitKeys();
    InitRegValues();
 
@@ -1461,7 +1461,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       colordepth = 32; // The default
 
    // colordepth & refreshrate are only defined if fullscreen is true.
-   hr = m_pin3d.InitPin3D(m_hwnd, m_fFullScreen, m_width, m_height, colordepth,
+   hr = m_pin3d.InitPin3D(m_playfieldHwnd, m_fFullScreen, m_width, m_height, colordepth,
                           m_refreshrate, vsync, useAA, !!m_stereo3D, FXAA, !m_disableAO, ss_refl);
 
    if (hr != S_OK)
@@ -1473,9 +1473,9 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    }
 
    if (m_fFullScreen)
-      SetWindowPos(m_hwnd, NULL, 0, 0, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+      SetWindowPos(m_playfieldHwnd, NULL, 0, 0, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
 
-   m_pininput.Init(m_hwnd);
+   m_pininput.Init(m_playfieldHwnd);
 
    //
    const unsigned int lflip = get_vk(m_rgKeys[eLeftFlipperKey]);
@@ -1817,9 +1817,9 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    SetWindowText(hwndProgressName, "Starting...");
 
    // Show the window.
-   ShowWindow(m_hwnd, SW_SHOW);
-   SetForegroundWindow(m_hwnd);
-   SetFocus(m_hwnd);
+   ShowWindow(m_playfieldHwnd, SW_SHOW);
+   SetForegroundWindow(m_playfieldHwnd);
+   SetFocus(m_playfieldHwnd);
 
    // Call Init -- TODO: what's the relation to ptable->FireVoidEvent() above?
    for (size_t i = 0; i < m_vhitables.size(); ++i)
@@ -2431,7 +2431,7 @@ void Player::DestroyBall(Ball *pball)
 }
 
 //initalizes the player window, and places it somewhere on the screen, does not manage content
-void Player::InitWindow()
+void Player::InitPlayfieldWindow()
 {
    WNDCLASSEX wcex;
    ZeroMemory(&wcex, sizeof(WNDCLASSEX));
@@ -2515,7 +2515,7 @@ void Player::InitWindow()
       m_height += captionheight;
    }
    CalcBallAspectRatio();
-   m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
+   m_playfieldHwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
 #if(_WIN32_WINNT >= 0x0500)
    if (m_fFullScreen) // blocks processes from taking focus away from our exclusive fullscreen app and disables mouse cursor
@@ -2535,13 +2535,13 @@ void Player::InitWindow()
    if (!UnregisterTouchWindow)
       UnregisterTouchWindow = (pUnregisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "UnregisterTouchWindow");
    if (UnregisterTouchWindow)
-      UnregisterTouchWindow(m_hwnd);
+      UnregisterTouchWindow(m_playfieldHwnd);
 #else // would be useful if handling WM_TOUCH instead of WM_POINTERDOWN
    // Disable palm detection
    if (!RegisterTouchWindow)
       RegisterTouchWindow = (pRegisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "RegisterTouchWindow");
    if (RegisterTouchWindow)
-      RegisterTouchWindow(m_hwnd, 0);
+      RegisterTouchWindow(m_playfieldHwnd, 0);
 
    if (!IsTouchWindow)
        IsTouchWindow = (pIsTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "IsTouchWindow");
@@ -2564,12 +2564,12 @@ void Player::InitWindow()
       if (atomID)
       {
          // Try to disable press and hold gesture 
-         SetProp(m_hwnd, tabletAtom, (HANDLE)dwHwndTabletProperty);
+         SetProp(m_playfieldHwnd, tabletAtom, (HANDLE)dwHwndTabletProperty);
       }
       // Gesture configuration
       GESTURECONFIG gc[] = { 0, 0, GC_ALLGESTURES };
       UINT uiGcs = 1;
-      const BOOL bResult = SetGestureConfig(m_hwnd, 0, uiGcs, gc, sizeof(GESTURECONFIG));
+      const BOOL bResult = SetGestureConfig(m_playfieldHwnd, 0, uiGcs, gc, sizeof(GESTURECONFIG));
    }
 #endif
 
@@ -2580,22 +2580,22 @@ void Player::InitWindow()
    {
       const BOOL fEnabled = FALSE;
 
-      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_TAP, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_TAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(fEnabled), &fEnabled);
 
-      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_TAP, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_DOUBLETAP, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_RIGHTTAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_TAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_DOUBLETAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_RIGHTTAP, 0, sizeof(fEnabled), &fEnabled);
 
-      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(fEnabled), &fEnabled);
    }
 
-   mixer_init(m_hwnd);
+   mixer_init(m_playfieldHwnd);
    hid_init();
 
    if (!m_fFullScreen) // see above
@@ -3656,8 +3656,9 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
    }
 }
 
-void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float intensity)
+void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float intensity, bool backdrop)
 {
+   RenderDevice *pd3dDevice = m_pin3d.m_pd3dPrimaryDevice;
    float Verts[4 * 5] =
    {
        1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
@@ -3672,22 +3673,26 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
       Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * height + posy)*2.0f;
    }
 
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTechnique(tex ? "basic_noDMD" : "basic_noDMD_notex");
+   if(backdrop)
+       pd3dDevice = m_pin3d.m_pd3dSecondaryDevice;
+
+   pd3dDevice->DMDShader->SetTechnique(tex ? "basic_noDMD" : "basic_noDMD_notex");
 
    const D3DXVECTOR4 c = convertColor(color, intensity);
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector("vColor_Intensity", &c);
+   pd3dDevice->DMDShader->SetVector("vColor_Intensity", &c);
 
    if (tex)
-      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTexture("Texture0", tex, false);
+      pd3dDevice->DMDShader->SetTexture("Texture0", tex, false);
 
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->Begin(0);
-   m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->End();
+   pd3dDevice->DMDShader->Begin(0);
+   pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
+   pd3dDevice->DMDShader->End();
 }
 
-void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture * const tex, const float intensity)
+void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture * const tex, const float intensity, bool backdrop)
 {
-   float Verts[4 * 5] =
+    RenderDevice *pd3dDevice = m_pin3d.m_pd3dPrimaryDevice;
+    float Verts[4 * 5] =
    {
       1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
       0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
@@ -3701,17 +3706,20 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
       Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * height + posy)*2.0f;
    }
 
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTechnique(tex ? "basic_noDMD" : "basic_noDMD_notex");
+   if(backdrop)
+       pd3dDevice = m_pin3d.m_pd3dSecondaryDevice;
+
+   pd3dDevice->DMDShader->SetTechnique(tex ? "basic_noDMD" : "basic_noDMD_notex");
 
    const D3DXVECTOR4 c = convertColor(color, intensity);
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetVector("vColor_Intensity", &c);
+   pd3dDevice->DMDShader->SetVector("vColor_Intensity", &c);
 
    if (tex)
-      m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTexture("Texture0", tex);
+       pd3dDevice->DMDShader->SetTexture("Texture0", tex);
 
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->Begin(0);
-   m_pin3d.m_pd3dPrimaryDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
-   m_pin3d.m_pd3dPrimaryDevice->DMDShader->End();
+   pd3dDevice->DMDShader->Begin(0);
+   pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
+   pd3dDevice->DMDShader->End();
 }
 
 void Player::DrawBulbLightBuffer()
@@ -5104,7 +5112,7 @@ void Player::Render()
    if (m_ptable->m_pcv->m_fScriptError)
    {
       // Crash back to the editor
-      SendMessage(m_hwnd, WM_CLOSE, 0, 0);
+      SendMessage(m_playfieldHwnd, WM_CLOSE, 0, 0);
    }
    else
    {
@@ -5122,7 +5130,7 @@ void Player::Render()
          }
          else if (!VPinball::m_open_minimized && m_closeType == 0)
          {
-            option = DialogBox(g_hinst, MAKEINTRESOURCE(IDD_GAMEPAUSE), m_hwnd, PauseProc);
+            option = DialogBox(g_hinst, MAKEINTRESOURCE(IDD_GAMEPAUSE), m_playfieldHwnd, PauseProc);
          }
          else //m_closeType == all others
          {
@@ -5135,7 +5143,7 @@ void Player::Render()
          m_fNoTimeCorrect = true; // Skip the time we were in the dialog
          UnpauseMusic();
          if (option == ID_QUIT)
-            SendMessage(m_hwnd, WM_CLOSE, 0, 0); // This line returns to the editor after exiting a table
+            SendMessage(m_playfieldHwnd, WM_CLOSE, 0, 0); // This line returns to the editor after exiting a table
       }
       else if(m_fShowDebugger && !VPinball::m_open_minimized)
       {
@@ -5146,7 +5154,7 @@ void Player::Render()
                ShowWindow(g_pplayer->m_hwndDebugger, SW_SHOW);
           }
           else
-             g_pplayer->m_hwndDebugger = CreateDialogParam( g_hinst, MAKEINTRESOURCE( IDD_DEBUGGER ), m_hwnd, DebuggerProc, NULL );
+             g_pplayer->m_hwndDebugger = CreateDialogParam( g_hinst, MAKEINTRESOURCE( IDD_DEBUGGER ), m_playfieldHwnd, DebuggerProc, NULL );
 
           EndDialog( g_pvp->m_hwnd, ID_DEBUGWINDOW );
       }
@@ -5748,10 +5756,10 @@ void Player::DoDebugObjectMenu(int x, int y)
    POINT pt;
    pt.x = x;
    pt.y = y;
-   ClientToScreen(m_hwnd, &pt);
+   ClientToScreen(m_playfieldHwnd, &pt);
 
    const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | TPM_RIGHTBUTTON,
-      pt.x, pt.y, m_hwnd, NULL);
+      pt.x, pt.y, m_playfieldHwnd, NULL);
 
    if (icmd != 0 && vsubmenu.size() > 0)
    {
@@ -5873,7 +5881,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
          if (GetPointerInfo(GET_POINTERID_WPARAM(wParam), &pointerInfo))
 #endif
          {
-            ScreenToClient(g_pplayer->m_hwnd, &pointerInfo.ptPixelLocation);
+            ScreenToClient(g_pplayer->m_playfieldHwnd, &pointerInfo.ptPixelLocation);
             for (unsigned int i = 0; i < 8; ++i)
                if ((g_pplayer->m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN)) && Intersect(touchregion[i], g_pplayer->m_width, g_pplayer->m_height, pointerInfo.ptPixelLocation, fmodf(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set], 360.0f) != 0.f))
                {
@@ -5998,7 +6006,7 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                      }
                      else
                      {
-                        g_pplayer->m_hwndDebugger = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_DEBUGGER), g_pplayer->m_hwnd, DebuggerProc, NULL);
+                        g_pplayer->m_hwndDebugger = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_DEBUGGER), g_pplayer->m_playfieldHwnd, DebuggerProc, NULL);
                      }
                      EndDialog(hwndDlg, ID_DEBUGWINDOW);
                   break;

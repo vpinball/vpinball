@@ -293,7 +293,6 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
 static bool NVAPIinit = false; //!! meh
 
 bool RenderDevice::m_INTZ_support = false;
-bool RenderDevice::m_useNvidiaApi = false;
 
 #ifdef USE_D3D9EX
  typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
@@ -309,36 +308,59 @@ static pDF mDwmFlush = NULL;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = NULL;
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
-   : m_texMan(*this)
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
+    : m_texMan(*this), m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
+      m_colorDepth(colordepth), m_vsync(VSync), m_useAA(useAA), m_stereo3D(stereo3D), m_FXAA(FXAA), 
+      m_ssRefl(ss_refl), m_useNvidiaApi(useNvidiaApi), m_disableDwm(disable_dwm), m_BWrendering(BWrendering)
 {
-   m_stats_drawn_triangles = 0;
+    m_stats_drawn_triangles = 0;
 
-   m_useNvidiaApi = useNvidiaApi;
-   m_adapter = D3DADAPTER_DEFAULT;     // for now, always use the default adapter
+    mDwmIsCompositionEnabled = (pDICE)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmIsCompositionEnabled"); //!! remove as soon as win xp support dropped and use static link
+    mDwmEnableComposition = (pDEC)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmEnableComposition"); //!! remove as soon as win xp support dropped and use static link
+    mDwmFlush = (pDF)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmFlush"); //!! remove as soon as win xp support dropped and use static link
 
-   mDwmIsCompositionEnabled = (pDICE)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmIsCompositionEnabled"); //!! remove as soon as win xp support dropped and use static link
-   mDwmEnableComposition = (pDEC)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmEnableComposition"); //!! remove as soon as win xp support dropped and use static link
-   mDwmFlush = (pDF)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmFlush"); //!! remove as soon as win xp support dropped and use static link
+    if(mDwmIsCompositionEnabled && mDwmEnableComposition)
+    {
+        BOOL dwm = 0;
+        mDwmIsCompositionEnabled(&dwm);
+        m_dwm_enabled = m_dwm_was_enabled = !!dwm;
 
-   if (mDwmIsCompositionEnabled && mDwmEnableComposition)
-   {
-       BOOL dwm = 0;
-       mDwmIsCompositionEnabled(&dwm);
-       m_dwm_enabled = m_dwm_was_enabled = !!dwm;
+        if(m_dwm_was_enabled && m_disableDwm && IsWindowsVistaOr7()) // windows 8 and above will not allow do disable it, but will still return S_OK
+        {
+            mDwmEnableComposition(DWM_EC_DISABLECOMPOSITION);
+            m_dwm_enabled = false;
+        }
+    }
+    else
+    {
+        m_dwm_was_enabled = false;
+        m_dwm_enabled = false;
+    }
 
-       if (m_dwm_was_enabled && disable_dwm && IsWindowsVistaOr7()) // windows 8 and above will not allow do disable it, but will still return S_OK
-       {
-           mDwmEnableComposition(DWM_EC_DISABLECOMPOSITION);
-           m_dwm_enabled = false;
-       }
-   }
-   else
-   {
-       m_dwm_was_enabled = false;
-       m_dwm_enabled = false;
-   }
+    m_curIndexBuffer = 0;
+    m_curVertexBuffer = 0;
+    currentDeclaration = NULL;
+    //m_curShader = NULL;
 
+    // fill state caches with dummy values
+    memset(renderStateCache, 0xCC, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
+    memset(textureStateCache, 0xCC, sizeof(DWORD) * 8 * TEXTURE_STATE_CACHE_SIZE);
+    memset(textureSamplerCache, 0xCC, sizeof(DWORD) * 8 * TEXTURE_SAMPLER_CACHE_SIZE);
+
+    // initialize performance counters
+    m_curDrawCalls = m_frameDrawCalls = 0;
+    m_curStateChanges = m_frameStateChanges = 0;
+    m_curTextureChanges = m_frameTextureChanges = 0;
+    m_curParameterChanges = m_frameParameterChanges = 0;
+    m_curTextureUpdates = m_frameTextureUpdates = 0;
+
+    m_curLockCalls = m_frameLockCalls = 0; //!! meh
+
+}
+
+void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
+{
+    m_adapter = adapterIndex;
 #ifdef USE_D3D9EX
    m_pD3DEx = NULL;
    m_pD3DDeviceEx = NULL;
@@ -403,7 +425,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    if (hr != S_OK)
       video10bit = fFalse; // The default = off
 
-   if(!fullscreen && video10bit)
+   if(!m_fullscreen && video10bit)
    {
       ShowError("10Bit-Monitor support requires 'Force exclusive Fullscreen Mode' to be also enabled!");
       video10bit = fFalse;
@@ -411,7 +433,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
    // get the current display format
    D3DFORMAT format;
-   if (!fullscreen)
+   if (!m_fullscreen)
    {
       D3DDISPLAYMODE mode;
       CHECKD3D(m_pD3D->GetAdapterDisplayMode(m_adapter, &mode));
@@ -420,29 +442,29 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    }
    else
    {
-      format = (video10bit ? D3DFMT_A2R10G10B10 : ((colordepth == 16) ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8));
+      format = (video10bit ? D3DFMT_A2R10G10B10 : ((m_colorDepth == 16) ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8));
    }
 
    // limit vsync rate to actual refresh rate, otherwise special handling in renderloop
-   if (VSync > refreshrate)
-      VSync = 0;
+   if (m_vsync > refreshrate)
+      m_vsync = 0;
 
    D3DPRESENT_PARAMETERS params;
-   params.BackBufferWidth = width;
-   params.BackBufferHeight = height;
+   params.BackBufferWidth = m_width;
+   params.BackBufferHeight = m_height;
    params.BackBufferFormat = format;
    params.BackBufferCount = 1;
    params.MultiSampleType = /*useAA ? D3DMULTISAMPLE_4_SAMPLES :*/ D3DMULTISAMPLE_NONE; // D3DMULTISAMPLE_NONMASKABLE? //!! useAA now uses super sampling/offscreen render
    params.MultiSampleQuality = 0; // if D3DMULTISAMPLE_NONMASKABLE then set to > 0
    params.SwapEffect = D3DSWAPEFFECT_DISCARD;  // FLIP ?
-   params.hDeviceWindow = hwnd;
-   params.Windowed = !fullscreen;
+   params.hDeviceWindow = m_windowHwnd;
+   params.Windowed = !m_fullscreen;
    params.EnableAutoDepthStencil = FALSE;
    params.AutoDepthStencilFormat = D3DFMT_UNKNOWN;      // ignored
    params.Flags = /*fullscreen ? D3DPRESENTFLAG_LOCKABLE_BACKBUFFER :*/ /*(stereo3D ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL)*/; // D3DPRESENTFLAG_LOCKABLE_BACKBUFFER only needed for SetDialogBoxMode() below, but makes rendering slower on some systems :/
-   params.FullScreen_RefreshRateInHz = fullscreen ? refreshrate : 0;
+   params.FullScreen_RefreshRateInHz = m_fullscreen ? refreshrate : 0;
 #ifdef USE_D3D9EX
-   params.PresentationInterval = (m_pD3DEx && (VSync != 1)) ? D3DPRESENT_INTERVAL_IMMEDIATE : (!!VSync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE); //!! or have a special mode to force normal vsync?
+   params.PresentationInterval = (m_pD3DEx && (m_vsync != 1)) ? D3DPRESENT_INTERVAL_IMMEDIATE : (!!m_vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE); //!! or have a special mode to force normal vsync?
 #else
    params.PresentationInterval = !!VSync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 #endif
@@ -498,7 +520,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    {
       D3DDISPLAYMODEEX mode;
       mode.Size = sizeof(D3DDISPLAYMODEEX);
-      if(fullscreen)
+      if(m_fullscreen)
       {
           mode.Format = params.BackBufferFormat;
           mode.Width = params.BackBufferWidth;
@@ -510,10 +532,10 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
       CHECKD3D(m_pD3DEx->CreateDeviceEx(
          m_adapter,
          devtype,
-         hwnd,
+         m_windowHwnd,
          flags /*| D3DCREATE_PUREDEVICE*/,
          &params,
-         fullscreen ? &mode : NULL,
+         m_fullscreen ? &mode : NULL,
          &m_pD3DDeviceEx));
 
       m_pD3DDeviceEx->QueryInterface(__uuidof(IDirect3DDevice9), reinterpret_cast<void**>(&m_pD3DDevice));
@@ -529,7 +551,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
       HRESULT hr = m_pD3D->CreateDevice(
          m_adapter,
          devtype,
-         hwnd,
+         m_windowHwnd,
          flags /*| D3DCREATE_PUREDEVICE*/,
          &params,
          &m_pD3DDevice);
@@ -554,18 +576,18 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create back buffer!", hr, __FILE__, __LINE__);
 
-   const D3DFORMAT render_format = (BWrendering == 1) ? D3DFMT_G16R16F : ((BWrendering == 2) ? D3DFMT_R16F : D3DFMT_A16B16G16R16F);
+   const D3DFORMAT render_format = (m_BWrendering == 1) ? D3DFMT_G16R16F : ((m_BWrendering == 2) ? D3DFMT_R16F : D3DFMT_A16B16G16R16F);
 
    // alloc float buffer for rendering (optionally 2x2 res for manual super sampling)
-   hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
+   hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1,
       D3DUSAGE_RENDERTARGET, render_format, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create render buffer!", hr, __FILE__, __LINE__);
 
    // alloc buffer for screen space fake reflection rendering (optionally 2x2 res for manual super sampling)
-   if (ss_refl)
+   if (m_ssRefl)
    {
-      hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
+      hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1,
          D3DUSAGE_RENDERTARGET, render_format, D3DPOOL_DEFAULT, &m_pReflectionBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create reflection buffer!", hr, __FILE__, __LINE__);
@@ -578,28 +600,28 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
        const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
        if((g_pplayer->m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
        {
-           hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
+           hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1,
                                             D3DUSAGE_RENDERTARGET, render_format, D3DPOOL_DEFAULT, &m_pMirrorTmpBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
            if(FAILED(hr))
                ReportError("Fatal Error: unable to create reflection map!", hr, __FILE__, __LINE__);
        }
    }
    // alloc bloom tex at 1/3 x 1/3 res (allows for simple HQ downscale of clipped input while saving memory)
-   hr = m_pD3DDevice->CreateTexture(width / 3, height / 3, 1,
+   hr = m_pD3DDevice->CreateTexture(m_width / 3, m_height / 3, 1,
       D3DUSAGE_RENDERTARGET, render_format, D3DPOOL_DEFAULT, &m_pBloomBufferTexture, NULL); //!! 8bit enough?
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create bloom buffer!", hr, __FILE__, __LINE__);
 
    // temporary buffer for gaussian blur
-   hr = m_pD3DDevice->CreateTexture(width / 3, height / 3, 1,
+   hr = m_pD3DDevice->CreateTexture(m_width / 3, m_height / 3, 1,
       D3DUSAGE_RENDERTARGET, render_format, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL); //!! 8bit are enough! //!! but used also for bulb light transmission hack now!
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create blur buffer!", hr, __FILE__, __LINE__);
 
    // alloc temporary buffer for postprocessing
-   if (stereo3D || (FXAA > 0))
+   if (m_stereo3D || (m_FXAA > 0))
    {
-      hr = m_pD3DDevice->CreateTexture(width, height, 1,
+      hr = m_pD3DDevice->CreateTexture(m_width, m_height, 1,
          D3DUSAGE_RENDERTARGET, video10bit ? D3DFMT_A2R10G10B10 : D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTmpTexture, NULL);
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create stereo3D/post-processing AA buffer!", hr, __FILE__, __LINE__);
@@ -608,9 +630,9 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
       m_pOffscreenBackBufferTmpTexture = NULL;
 
    // alloc one more temporary buffer for SMAA
-   if (FXAA == Quality_SMAA)
+   if (m_FXAA == Quality_SMAA)
    {
-      hr = m_pD3DDevice->CreateTexture(width, height, 1,
+      hr = m_pD3DDevice->CreateTexture(m_width, m_height, 1,
          D3DUSAGE_RENDERTARGET, video10bit ? D3DFMT_A2R10G10B10 : D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTmpTexture2, NULL);
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create SMAA buffer!", hr, __FILE__, __LINE__);
@@ -618,76 +640,8 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    else
       m_pOffscreenBackBufferTmpTexture2 = NULL;
 
-   if (video10bit && (FXAA == Quality_SMAA || FXAA == Standard_DLAA))
+   if (video10bit && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
       ShowError("SMAA or DLAA post-processing AA should not be combined with 10Bit-output rendering (will result in visible artifacts)!");
-
-   m_curIndexBuffer = 0;
-   m_curVertexBuffer = 0;
-   currentDeclaration = NULL;
-   //m_curShader = NULL;
-
-   // fill state caches with dummy values
-   memset(renderStateCache, 0xCC, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
-   memset(textureStateCache, 0xCC, sizeof(DWORD) * 8 * TEXTURE_STATE_CACHE_SIZE);
-   memset(textureSamplerCache, 0xCC, sizeof(DWORD) * 8 * TEXTURE_SAMPLER_CACHE_SIZE);
-
-   // initialize performance counters
-   m_curDrawCalls = m_frameDrawCalls = 0;
-   m_curStateChanges = m_frameStateChanges = 0;
-   m_curTextureChanges = m_frameTextureChanges = 0;
-   m_curParameterChanges = m_frameParameterChanges = 0;
-   m_curTextureUpdates = m_frameTextureUpdates = 0;
-
-   m_curLockCalls = m_frameLockCalls = 0; //!! meh
-
-   bool shaderCompilationOkay = true;
-
-   basicShader = new Shader(this);
-#if _MSC_VER >= 1700
-   shaderCompilationOkay = basicShader->Load(g_basicShaderCode, sizeof(g_basicShaderCode)) && shaderCompilationOkay;
-#else
-   shaderCompilationOkay = basicShader->Load(basicShaderCode, sizeof(basicShaderCode)) && shaderCompilationOkay;
-#endif
-
-   DMDShader = new Shader(this);
-#if _MSC_VER >= 1700
-   shaderCompilationOkay = DMDShader->Load(g_dmdShaderCode, sizeof(g_dmdShaderCode)) && shaderCompilationOkay;
-#else
-   shaderCompilationOkay = DMDShader->Load(dmdShaderCode, sizeof(dmdShaderCode)) && shaderCompilationOkay;
-#endif
-
-   FBShader = new Shader(this);
-#if _MSC_VER >= 1700
-   shaderCompilationOkay = FBShader->Load(g_FBShaderCode, sizeof(g_FBShaderCode)) && shaderCompilationOkay;
-#else
-   shaderCompilationOkay = FBShader->Load(FBShaderCode, sizeof(FBShaderCode)) && shaderCompilationOkay;
-#endif
-
-   flasherShader = new Shader(this);
-#if _MSC_VER >= 1700
-   shaderCompilationOkay = flasherShader->Load(g_flasherShaderCode, sizeof(g_flasherShaderCode)) && shaderCompilationOkay;
-#else
-   shaderCompilationOkay = flasherShader->Load(flasherShaderCode, sizeof(flasherShaderCode)) && shaderCompilationOkay;
-#endif
-
-   lightShader = new Shader(this);
-#if _MSC_VER >= 1700
-   shaderCompilationOkay = lightShader->Load(g_lightShaderCode, sizeof(g_lightShaderCode)) && shaderCompilationOkay;
-#else
-   shaderCompilationOkay = lightShader->Load(lightShaderCode, sizeof(lightShaderCode)) && shaderCompilationOkay;
-#endif
-
-#ifdef SEPARATE_CLASSICLIGHTSHADER
-   classicLightShader = new Shader(this);
-#if _MSC_VER >= 1700
-   shaderCompilationOkay = classicLightShader->Load(g_classicLightShaderCode, sizeof(g_classicLightShaderCode)) && shaderCompilationOkay;
-#else
-   shaderCompilationOkay = classicLightShader->Load(classicLightShaderCode, sizeof(classicLightShaderCode)) && shaderCompilationOkay;
-#endif
-#endif
-
-   if (!shaderCompilationOkay)
-      ReportError("Fatal Error: shader compilation failed!", -1, __FILE__, __LINE__);
 
    // create default vertex declarations for shaders
    CreateVertexDeclaration(VertexTexelElement, &m_pVertexTexelDeclaration);
@@ -712,13 +666,69 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    //m_quadDynVertexBuffer = NULL;
    //CreateVertexBuffer(4, USAGE_DYNAMIC, MY_D3DFVF_TEX, &m_quadDynVertexBuffer);
 
-   if(FXAA == Quality_SMAA)
+   if(m_FXAA == Quality_SMAA)
        UploadAndSetSMAATextures();
    else
    {
        m_SMAAareaTexture = 0;
        m_SMAAsearchTexture = 0;
    }
+}
+
+bool RenderDevice::LoadShaders()
+{
+    bool shaderCompilationOkay = true;
+
+    basicShader = new Shader(this);
+#if _MSC_VER >= 1700
+    shaderCompilationOkay = basicShader->Load(g_basicShaderCode, sizeof(g_basicShaderCode)) && shaderCompilationOkay;
+#else
+    shaderCompilationOkay = basicShader->Load(basicShaderCode, sizeof(basicShaderCode)) && shaderCompilationOkay;
+#endif
+
+    DMDShader = new Shader(this);
+#if _MSC_VER >= 1700
+    shaderCompilationOkay = DMDShader->Load(g_dmdShaderCode, sizeof(g_dmdShaderCode)) && shaderCompilationOkay;
+#else
+    shaderCompilationOkay = DMDShader->Load(dmdShaderCode, sizeof(dmdShaderCode)) && shaderCompilationOkay;
+#endif
+
+    FBShader = new Shader(this);
+#if _MSC_VER >= 1700
+    shaderCompilationOkay = FBShader->Load(g_FBShaderCode, sizeof(g_FBShaderCode)) && shaderCompilationOkay;
+#else
+    shaderCompilationOkay = FBShader->Load(FBShaderCode, sizeof(FBShaderCode)) && shaderCompilationOkay;
+#endif
+
+    flasherShader = new Shader(this);
+#if _MSC_VER >= 1700
+    shaderCompilationOkay = flasherShader->Load(g_flasherShaderCode, sizeof(g_flasherShaderCode)) && shaderCompilationOkay;
+#else
+    shaderCompilationOkay = flasherShader->Load(flasherShaderCode, sizeof(flasherShaderCode)) && shaderCompilationOkay;
+#endif
+
+    lightShader = new Shader(this);
+#if _MSC_VER >= 1700
+    shaderCompilationOkay = lightShader->Load(g_lightShaderCode, sizeof(g_lightShaderCode)) && shaderCompilationOkay;
+#else
+    shaderCompilationOkay = lightShader->Load(lightShaderCode, sizeof(lightShaderCode)) && shaderCompilationOkay;
+#endif
+
+#ifdef SEPARATE_CLASSICLIGHTSHADER
+    classicLightShader = new Shader(this);
+#if _MSC_VER >= 1700
+    shaderCompilationOkay = classicLightShader->Load(g_classicLightShaderCode, sizeof(g_classicLightShaderCode)) && shaderCompilationOkay;
+#else
+    shaderCompilationOkay = classicLightShader->Load(classicLightShaderCode, sizeof(classicLightShaderCode)) && shaderCompilationOkay;
+#endif
+#endif
+
+    if(!shaderCompilationOkay)
+    {
+        ReportError("Fatal Error: shader compilation failed!", -1, __FILE__, __LINE__);
+        return false;
+    }
+    return true;
 }
 
 bool RenderDevice::DepthBufferReadBackAvailable()
