@@ -206,27 +206,77 @@ void EnvmapPrecalc(const void* const __restrict envmap, const DWORD env_xres, co
       }
 }
 
+HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl)
+{
+    m_pd3dPrimaryDevice = new RenderDevice(m_hwnd, vp.Width, vp.Height, fullScreen, colordepth, VSync, m_useAA, stereo3D, FXAA, ss_refl, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
+    try
+    {
+        m_pd3dPrimaryDevice->CreateDevice(refreshrate);
+    }
+    catch(...)
+    {
+        return E_FAIL;
+    }
+    
+    if(!m_pd3dPrimaryDevice->LoadShaders())
+        return E_FAIL;
+
+    const int forceAniso = GetRegIntWithDefault("Player", "ForceAnisotropicFiltering", 1);
+    m_pd3dPrimaryDevice->ForceAnisotropicFiltering(!!forceAniso);
+
+    const int compressTextures = GetRegIntWithDefault("Player", "CompressTextures", 0);
+    m_pd3dPrimaryDevice->CompressTextures(!!compressTextures);
+
+    m_pd3dPrimaryDevice->SetViewport(&vp);
+
+    m_pd3dPrimaryDevice->GetBackBufferTexture()->GetSurfaceLevel(0, &m_pddsBackBuffer);
+
+    m_pddsStatic = m_pd3dPrimaryDevice->DuplicateRenderTarget(m_pddsBackBuffer);
+    if(!m_pddsStatic)
+        return E_FAIL;
+
+    m_pddsZBuffer = m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsBackBuffer);
+    m_pddsStaticZ = m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsStatic);
+    if(!m_pddsZBuffer || !m_pddsStaticZ)
+        return E_FAIL;
+
+    if(m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (stereo3D || useAO || ss_refl))
+    {
+        m_pdds3DZBuffer = !m_pd3dPrimaryDevice->m_useNvidiaApi ? (D3DTexture*)m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsBackBuffer) : m_pd3dPrimaryDevice->DuplicateDepthTexture((RenderTarget*)m_pddsZBuffer);
+
+        if(!m_pdds3DZBuffer)
+        {
+            ShowError("Unable to create depth texture!\r\nTry to (un)set \"Alternative Depth Buffer processing\" in the video options!\r\nOr disable Ambient Occlusion and/or 3D stereo and/or ScreenSpace Reflections!");
+            return E_FAIL;
+        }
+    }
+
+    if(m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && useAO)
+    {
+        HRESULT hr;
+        hr = m_pd3dPrimaryDevice->GetCoreDevice()->CreateTexture(vp.Width, vp.Height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackTmpBuffer, NULL);
+        if(FAILED(hr))
+        {
+            ShowError("Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
+            return E_FAIL;
+        }
+        hr = m_pd3dPrimaryDevice->GetCoreDevice()->CreateTexture(vp.Width, vp.Height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackBuffer, NULL);
+        if(FAILED(hr))
+        {
+            ShowError("Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
+            return E_FAIL;
+        }
+        if(!m_pddsAOBackBuffer || !m_pddsAOBackTmpBuffer)
+            return E_FAIL;
+    }
+    return S_OK;
+}
+
 HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl)
 {
    m_hwnd = hwnd;
 
    m_useAA = useAA;
-
-   try 
-   {
-      m_pd3dPrimaryDevice = new RenderDevice(m_hwnd, width, height, fullScreen, colordepth, refreshrate, VSync, useAA, stereo3D, FXAA, ss_refl, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
-      // for now map the second render device to the primary.    
-      m_pd3dSecondaryDevice = m_pd3dPrimaryDevice;
-   }
-   catch (...) {
-      return E_FAIL;
-   }
-
-   const int forceAniso = GetRegIntWithDefault("Player", "ForceAnisotropicFiltering", 1);
-   m_pd3dPrimaryDevice->ForceAnisotropicFiltering(!!forceAniso);
-
-   const int compressTextures = GetRegIntWithDefault("Player", "CompressTextures", 0);
-   m_pd3dPrimaryDevice->CompressTextures(!!compressTextures);
 
    // set the viewport for the newly created device
    vp.X = 0;
@@ -235,25 +285,18 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    vp.Height = height;
    vp.MinZ = 0.0f;
    vp.MaxZ = 1.0f;
-   m_pd3dPrimaryDevice->SetViewport(&vp);
 
-   m_pd3dPrimaryDevice->GetBackBufferTexture()->GetSurfaceLevel(0, &m_pddsBackBuffer);
+   
+   if(FAILED(InitPrimary(fullScreen, colordepth, refreshrate, VSync, stereo3D, FXAA, useAO, ss_refl)))
+       return E_FAIL;
+
+   m_pd3dSecondaryDevice = m_pd3dPrimaryDevice;
+
 
    // Create the "static" color buffer.  
    // This will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).
-   m_pddsStatic = m_pd3dPrimaryDevice->DuplicateRenderTarget(m_pddsBackBuffer);
-   if (!m_pddsStatic)
-       return E_FAIL;
-
-   m_pddsZBuffer = m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsBackBuffer);
-   m_pddsStaticZ = m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsStatic);
-   if (!m_pddsZBuffer || !m_pddsStaticZ)
-      return E_FAIL;
 
    pinballEnvTexture.CreateFromResource(IDB_BALL);
-
-   //
-
    aoDitherTexture.CreateFromResource(IDB_AO_DITHER);
 
    m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_szEnvImage);
@@ -272,36 +315,6 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    m_pd3dPrimaryDevice->m_texMan.SetDirty(m_envRadianceTexture);
 
    //
-
-   if(m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (stereo3D || useAO || ss_refl)) {
-      m_pdds3DZBuffer = !m_pd3dPrimaryDevice->m_useNvidiaApi ? (D3DTexture*)m_pd3dPrimaryDevice->AttachZBufferTo(m_pddsBackBuffer) : m_pd3dPrimaryDevice->DuplicateDepthTexture((RenderTarget*)m_pddsZBuffer);
-
-      if (!m_pdds3DZBuffer)
-      {
-         ShowError("Unable to create depth texture!\r\nTry to (un)set \"Alternative Depth Buffer processing\" in the video options!\r\nOr disable Ambient Occlusion and/or 3D stereo and/or ScreenSpace Reflections!");
-         return E_FAIL;
-      }
-   }
-
-   if(m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && useAO) 
-   {
-       HRESULT hr;
-       hr = m_pd3dPrimaryDevice->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackTmpBuffer, NULL);
-       if (FAILED(hr))
-       {
-           ShowError("Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
-           return E_FAIL;
-       }
-       hr = m_pd3dPrimaryDevice->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackBuffer, NULL);
-       if (FAILED(hr))
-       {
-           ShowError("Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
-           return E_FAIL;
-       }
-       if (!m_pddsAOBackBuffer || !m_pddsAOBackTmpBuffer)
-          return E_FAIL;
-   }
-
    InitRenderState();
 
    // Direct all renders to the "static" buffer.
@@ -390,7 +403,7 @@ void Pin3D::DrawBackground()
 
       g_pplayer->m_pin3d.DisableAlphaBlend();
 
-      g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, ptable->m_ImageBackdropNightDay ? sqrtf(g_pplayer->m_globalEmissionScale) : 1.0f);
+      g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, ptable->m_ImageBackdropNightDay ? sqrtf(g_pplayer->m_globalEmissionScale) : 1.0f, true);
 
       if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
          m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);

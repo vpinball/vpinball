@@ -501,7 +501,7 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
    }
    else
    {
-      *pVal = (size_t)g_pplayer->m_hwnd;
+      *pVal = (size_t)g_pplayer->m_playfieldHwnd;
    }
 
    return S_OK;
@@ -2411,7 +2411,7 @@ void PinTable::Play(const bool _cameraMode)
          else
          {
             ShowError("Problem occured during Player init");
-            ::SendMessage(g_pplayer->m_hwnd, WM_CLOSE, 0, 0);
+            ::SendMessage(g_pplayer->m_playfieldHwnd, WM_CLOSE, 0, 0);
          }
       }
    }

@@ -162,8 +162,10 @@ public:
       TEX_MIRROR = D3DTADDRESS_MIRROR
    };
 
-   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
+   RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
    ~RenderDevice();
+   void CreateDevice(int &refreshrate, UINT adapterIndex = D3DADAPTER_DEFAULT);
+   bool LoadShaders();
 
    void BeginScene();
    void EndScene();
@@ -267,6 +269,18 @@ public:
       return m_pD3DDevice;
    }
 
+   HWND         m_windowHwnd;
+   int          m_width;
+   int          m_height;
+   bool         m_fullscreen;
+   int          m_colorDepth;
+   int          m_vsync;
+   bool         m_useAA;
+   bool         m_stereo3D;
+   unsigned int m_FXAA;
+   bool         m_ssRefl;
+   bool         m_disableDwm;
+   int          m_BWrendering;
 private:
    void DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount);
 
@@ -323,7 +337,7 @@ private:
    bool m_dwm_enabled;
 
 public:
-   static bool m_useNvidiaApi;
+   bool m_useNvidiaApi;
    static bool m_INTZ_support;
 
    // performance counters
