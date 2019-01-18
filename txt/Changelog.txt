@@ -54,6 +54,8 @@ VP 10.6.0 Changelog
 - add buttons to video preferences to easily setup defaults for low- or high-end PCs
 - add 'Force Bloom Filter off' to video preferences to increase performance on extremely low-end graphics cards (like on tablets)
 
+- update BASS library to 2.4.14
+
 - see core scripts (header of core.vbs) for the respective changelog (version 3.57)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
 
