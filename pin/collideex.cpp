@@ -139,7 +139,7 @@ float HitGate::HitTest(const Ball * const pball, const float dtime, CollisionEve
 {
    if (!m_fEnabled) return -1.0f;
 
-   for(unsigned int i = 0; i < 2; ++i)
+   for (unsigned int i = 0; i < 2; ++i)
    {
       const float hittime = m_lineseg[i].HitTestBasic(pball, dtime, coll, false, true, false); // any face, lateral, non-rigid
       if (hittime >= 0.f)
@@ -318,7 +318,7 @@ float HitSpinner::HitTest(const Ball * const pball, const float dtime, Collision
 {
    if (!m_fEnabled) return -1.0f;
 
-   for(unsigned int i = 0; i < 2; ++i)
+   for (unsigned int i = 0; i < 2; ++i)
    {
       const float hittime = m_lineseg[i].HitTestBasic(pball, dtime, coll, false, true, false); // any face, lateral, non-rigid
       if (hittime >= 0.f)

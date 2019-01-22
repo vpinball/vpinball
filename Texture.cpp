@@ -187,7 +187,7 @@ bool Texture::LoadFromMemory(BYTE *data, DWORD size)
    FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, 0);
    FreeImage_CloseMemory(hmem);
 
-   if(m_pdsBuffer)
+   if (m_pdsBuffer)
       FreeStuff();
 
    m_pdsBuffer = BaseTexture::CreateFromFreeImage(dib);
@@ -226,7 +226,7 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(BITS))
    {
-      if(m_pdsBuffer)
+      if (m_pdsBuffer)
          FreeStuff();
 
       m_pdsBuffer = new BaseTexture(m_width, m_height);
@@ -354,7 +354,7 @@ void Texture::CreateFromResource(const int id)
 {
    const HBITMAP hbm = (HBITMAP)LoadImage(g_hinst, MAKEINTRESOURCE(id), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
 
-   if(m_pdsBuffer)
+   if (m_pdsBuffer)
       FreeStuff();
 
    if (hbm == NULL)
@@ -372,7 +372,7 @@ BaseTexture* Texture::CreateFromHBitmap(const HBITMAP hbm)
 
 void Texture::CreateTextureOffscreen(const int width, const int height)
 {
-   if(m_pdsBuffer)
+   if (m_pdsBuffer)
       FreeStuff();
 
    m_pdsBuffer = new BaseTexture(width, height);

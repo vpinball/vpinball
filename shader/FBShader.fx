@@ -131,7 +131,7 @@ float3 FBDither(const float3 color, const int2 pos)
 
 float3 FBColorGrade(float3 color)
 {
-   [branch] if(!color_grade)
+   [branch] if (!color_grade)
        return color;
 
    color.xy = color.xy*(15.0/16.0) + 1.0/32.0; // assumes 16x16x16 resolution flattened to 256x16 texture

@@ -109,9 +109,9 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
    BOOLEAN  in_SPACE;
 
    len = lstrlen(CmdLine);
-   i = ((len + 2) / 2)*sizeof(PVOID) + sizeof(PVOID);
+   i = ((len + 2) / 2) * sizeof(PVOID) + sizeof(PVOID);
 
-   argv = (PCHAR*)malloc(i + (len + 2)*sizeof(CHAR));
+   argv = (PCHAR*)malloc(i + (len + 2) * sizeof(CHAR));
    _argv = (PCHAR)(((PUCHAR)argv) + i);
 
    argc = 0;
@@ -274,7 +274,7 @@ public:
          {
             _Module.UpdateRegistryFromResource(IDR_VPINBALL, FALSE);
             const HRESULT nRet = _Module.UnregisterServer(TRUE);
-            if(nRet != S_OK)
+            if (nRet != S_OK)
                 ShowError("Unregister VP functions failed");
             bRun = false;
             break;
@@ -283,7 +283,7 @@ public:
          {
             _Module.UpdateRegistryFromResource(IDR_VPINBALL, TRUE);
             const HRESULT nRet = _Module.RegisterServer(TRUE);
-            if(nRet != S_OK)
+            if (nRet != S_OK)
                 ShowError("Register VP functions failed");
             bRun = false;
             break;
@@ -306,7 +306,7 @@ public:
 
          bool useCustomParams = false;
          int customIdx = 1;
-         for(char t = '1'; t <= '9'; t++)
+         for (char t = '1'; t <= '9'; t++)
          {
              const char cmdTemp1[4] = {'-','c',t,0};
              const char cmdTemp2[4] = {'/','c',t,0};
@@ -318,7 +318,7 @@ public:
              customIdx++;
          }
 
-         if(useCustomParams && (i+1<nArgs))
+         if (useCustomParams && (i+1<nArgs))
          {
              const size_t len = strlen(szArglist[i + 1]);
              VPinball::m_customParameters[customIdx - 1] = new WCHAR[len + 1];
@@ -381,7 +381,7 @@ public:
 
             ++i; // two params processed
 
-            if(extractpov || extractscript)
+            if (extractpov || extractscript)
                break;
             else
                continue;

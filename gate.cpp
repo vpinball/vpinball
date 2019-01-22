@@ -395,7 +395,7 @@ void Gate::GetHitShapes(vector<HitObject*> &pvho)
 
    m_phitgate = new HitGate(this, height);
    m_phitgate->m_twoWay = m_d.m_twoWay;
-   m_phitgate->m_obj = (IFireEvents*) this;
+   m_phitgate->m_obj = (IFireEvents*)this;
    m_phitgate->m_fe = true;
    pvho.push_back(m_phitgate);
 
@@ -1282,7 +1282,6 @@ STDMETHODIMP Gate::put_GravityFactor(float newVal)
 
    return S_OK;
 }
-
 
 STDMETHODIMP Gate::get_Visible(VARIANT_BOOL *pVal)
 {

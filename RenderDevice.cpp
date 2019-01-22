@@ -425,7 +425,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    if (hr != S_OK)
       video10bit = fFalse; // The default = off
 
-   if(!m_fullscreen && video10bit)
+   if (!m_fullscreen && video10bit)
    {
       ShowError("10Bit-Monitor support requires 'Force exclusive Fullscreen Mode' to be also enabled!");
       video10bit = fFalse;
@@ -595,7 +595,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    else
       m_pReflectionBufferTexture = NULL;
 
-   if(g_pplayer != NULL)
+   if (g_pplayer != NULL)
    {
        const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
        if((g_pplayer->m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
@@ -723,7 +723,7 @@ bool RenderDevice::LoadShaders()
 #endif
 #endif
 
-    if(!shaderCompilationOkay)
+    if (!shaderCompilationOkay)
     {
         ReportError("Fatal Error: shader compilation failed!", -1, __FILE__, __LINE__);
         return false;
@@ -861,7 +861,7 @@ RenderDevice::~RenderDevice()
    SAFE_RELEASE(m_pOffscreenBackBufferTmpTexture2);
    SAFE_RELEASE(m_pReflectionBufferTexture);
 
-   if(g_pplayer)
+   if (g_pplayer)
    {
        const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
        if ((g_pplayer->m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
@@ -893,7 +893,7 @@ RenderDevice::~RenderDevice()
     */
    _fpreset();
 
-   if(m_dwm_was_enabled)
+   if (m_dwm_was_enabled)
       mDwmEnableComposition(DWM_EC_ENABLECOMPOSITION);
 }
 

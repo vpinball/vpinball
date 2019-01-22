@@ -387,7 +387,7 @@ void VPinball::Init()
 
    CreateMDIClient();								// Create MDI Child
 
-   int foo[6] = { 120, 240, 400, 600, 800, 1400};
+   int foo[6] = { 120, 240, 400, 600, 800, 1400 };
 
    m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE,
       "",
@@ -435,7 +435,7 @@ void VPinball::InitPinDirectSound()
 	m_pds.InitDirectSound(m_hwnd, false);						// init Direct Sound (in pinsound.cpp)
 	// If these are the same device, and we are not in 3d mode, just point the backglass device to the main one. 
 	// For 3D we want two separate instances, one in basic stereo for music, and the other surround mode. 
-	if (m_pds.m_i3DSoundMode==SNDCFG_SND3D2CH && DSidx1 == DSidx2)
+	if (m_pds.m_i3DSoundMode == SNDCFG_SND3D2CH && DSidx1 == DSidx2)
 	{
 		m_pbackglassds = &m_pds;
 	}
@@ -579,7 +579,7 @@ void VPinball::InitRegValues()
       GetRegString("RecentDir", szRegName, m_szRecentTableList[i], MAX_PATH);
    }
    hr = GetRegValue("Editor", "Units", &type, &g_pvp->m_convertToUnit, 4);
-   if(FAILED(hr))
+   if (FAILED(hr))
        g_pvp->m_convertToUnit = 0;
 }
 
@@ -1262,7 +1262,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case IDC_PASTE:
    {
       ptCur = GetActiveTable();
-      if(ptCur)
+      if (ptCur)
       {
           POINT ptCursor;
           GetCursorPos(&ptCursor);
@@ -2021,17 +2021,17 @@ void VPinball::UpdateRecentFileList(char *szfilename)
 
 BOOL VPinball::processKeyInputForDialogs(MSG *pmsg)
 {
-    if(g_pvp->m_ptableActive)
+    if (g_pvp->m_ptableActive)
     {
-        if(g_pvp->m_materialDialog.IsWindow())
+      if (g_pvp->m_materialDialog.IsWindow())
             return g_pvp->m_materialDialog.IsDialogMessage(*pmsg);
-        if(g_pvp->m_imageMngDlg.IsWindow())
+      if (g_pvp->m_imageMngDlg.IsWindow())
             return g_pvp->m_imageMngDlg.IsDialogMessage(*pmsg);
-        if(g_pvp->m_soundMngDlg.IsWindow())
+      if (g_pvp->m_soundMngDlg.IsWindow())
             return g_pvp->m_soundMngDlg.IsDialogMessage(*pmsg);
-        if(g_pvp->m_collectionMngDlg.IsWindow())
+      if (g_pvp->m_collectionMngDlg.IsWindow())
             return g_pvp->m_collectionMngDlg.IsDialogMessage(*pmsg);
-        if(g_pvp->m_dimensionDialog.IsWindow())
+      if (g_pvp->m_dimensionDialog.IsWindow())
             return g_pvp->m_dimensionDialog.IsDialogMessage(*pmsg);
     }
     return fFalse;
@@ -2044,7 +2044,7 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
    if (!g_pplayer)
    {
        *pfConsumed = processKeyInputForDialogs(pmsg);
-       if(*pfConsumed)
+       if (*pfConsumed)
            return NOERROR;
 
       for (size_t i = 0; i < m_sb.m_vhwndDialog.size(); i++)
@@ -2223,7 +2223,7 @@ void VPinball::OnClose()
    }
 }
 
-void VPinball::ShowSubDialog( CDialog &dlg )
+void VPinball::ShowSubDialog(CDialog &dlg)
 {
     if (!dlg.IsWindow())
     {
@@ -2255,7 +2255,7 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
 LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     HWND hwnd = GetHwnd();
-    switch(uMsg)
+    switch (uMsg)
     {
 
         case WM_DESTROY:
@@ -2275,7 +2275,7 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
 
         case WM_SIZE:
-        if(g_pvp && g_pvp->m_hwndSideBar)
+        if (g_pvp && g_pvp->m_hwndSideBar)
         {
             RECT rc;
             ::GetClientRect(hwnd, &rc);
@@ -2294,11 +2294,11 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             HWND hwndSB = g_pvp->m_sb.GetHWnd();
             int SBwidth = g_pvp->m_sb.m_maxdialogwidth;
 
-            if(g_pvp->m_fPropertiesFloating)
+            if (g_pvp->m_fPropertiesFloating)
                 SBwidth = 0;
             else
             {
-                if(g_pvp->m_sb.GetVisible())
+                if (g_pvp->m_sb.GetVisible())
                 {
                     ::SetWindowPos(hwndSB, NULL, rc.right - rc.left - SBwidth, 0, SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
                 }
@@ -2323,10 +2323,10 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             ::SetScrollInfo(g_pvp->m_hwndSideBarScroll, SB_VERT, &si, TRUE);
 
             // check if we have any blank space at the bottom and fill it in by moving the scrollbar up
-            if((int)(si.nPos + si.nPage) > si.nMax)
+            if ((int)(si.nPos + si.nPage) > si.nMax)
             {
                 g_pvp->m_palettescroll = si.nMax - si.nPage;
-                if(g_pvp->m_palettescroll < 0)
+                if (g_pvp->m_palettescroll < 0)
                     g_pvp->m_palettescroll = 0;
 
                 ::SetScrollPos(hwnd, SB_VERT, g_pvp->m_palettescroll, TRUE);
@@ -2335,10 +2335,10 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
 
             int sidebarwidth = TOOLBAR_WIDTH;
-            if(scrollwindowheight < si.nMax)
+            if (scrollwindowheight < si.nMax)
                 sidebarwidth += SCROLL_WIDTH;
 
-            if(g_pvp->m_fPropertiesFloating && hwndSB)
+            if (g_pvp->m_fPropertiesFloating && hwndSB)
             {
                 RECT smartRect;
                 ::GetWindowRect(hwndSB, &smartRect);
@@ -2371,7 +2371,7 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    switch(uMsg)
+    switch (uMsg)
     {
 
         case WM_DESTROY:
@@ -2391,7 +2391,7 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
 
         case WM_SIZE:
-        if(g_pvp && g_pvp->m_hwndSideBar)
+        if (g_pvp && g_pvp->m_hwndSideBar)
         {
             RECT rc;
             ::GetClientRect(hwnd, &rc);
@@ -2410,11 +2410,11 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             HWND hwndSB = g_pvp->m_sb.GetHWnd();
             int SBwidth = g_pvp->m_sb.m_maxdialogwidth;
 
-            if(g_pvp->m_fPropertiesFloating)
+            if (g_pvp->m_fPropertiesFloating)
                 SBwidth = 0;
             else
             {
-                if(g_pvp->m_sb.GetVisible())
+                if (g_pvp->m_sb.GetVisible())
                 {
                     ::SetWindowPos(hwndSB, NULL, rc.right - rc.left - SBwidth, 0, SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
                 }
@@ -2439,10 +2439,10 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             ::SetScrollInfo(g_pvp->m_hwndSideBarScroll, SB_VERT, &si, TRUE);
 
             // check if we have any blank space at the bottom and fill it in by moving the scrollbar up
-            if((int)(si.nPos + si.nPage) > si.nMax)
+            if ((int)(si.nPos + si.nPage) > si.nMax)
             {
                 g_pvp->m_palettescroll = si.nMax - si.nPage;
-                if(g_pvp->m_palettescroll < 0)
+                if (g_pvp->m_palettescroll < 0)
                     g_pvp->m_palettescroll = 0;
 
                 ::SetScrollPos(hwnd, SB_VERT, g_pvp->m_palettescroll, TRUE);
@@ -2451,10 +2451,10 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
 
             int sidebarwidth = TOOLBAR_WIDTH;
-            if(scrollwindowheight < si.nMax)
+            if (scrollwindowheight < si.nMax)
                 sidebarwidth += SCROLL_WIDTH;
 
-            if(g_pvp->m_fPropertiesFloating && hwndSB)
+            if (g_pvp->m_fPropertiesFloating && hwndSB)
             {
                 RECT smartRect;
                 ::GetWindowRect(hwndSB, &smartRect);
@@ -2672,9 +2672,9 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
    ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, sizeof(buf1));
 
    ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
-   if(nItem2 == -1 || nItem1 == -1)
+   if (nItem2 == -1 || nItem1 == -1)
        return 0;
-   if(lpsd->sortUpDown == 1)
+   if (lpsd->sortUpDown == 1)
       return(_stricmp(buf1, buf2));
    else
       return(_stricmp(buf1, buf2) * -1);

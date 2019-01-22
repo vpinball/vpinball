@@ -302,7 +302,7 @@ void Light::WriteRegDefaults()
    SetRegValue("DefaultProps\\Light", "ColorFull", REG_DWORD, &m_d.m_color2, 4);
    SetRegValue("DefaultProps\\Light", "OffImage", REG_SZ, &m_d.m_szOffImage, lstrlen(m_d.m_szOffImage));
    SetRegValue("DefaultProps\\Light", "BlinkPattern", REG_SZ, &m_rgblinkpattern, lstrlen(m_rgblinkpattern));
-   SetRegValue( "DefaultProps\\Light", "BlinkInterval", REG_DWORD, &m_blinkinterval, 4 );
+   SetRegValue("DefaultProps\\Light", "BlinkInterval", REG_DWORD, &m_blinkinterval, 4);
    //SetRegValue("DefaultProps\\Light","BorderColor", REG_DWORD, &m_d.m_bordercolor,4);
    SetRegValue("DefaultProps\\Light", "Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
    SetRegValueFloat("DefaultProps\\Light", "FadeSpeedUp", m_d.m_fadeSpeedUp);
@@ -608,11 +608,11 @@ void Light::RenderDynamic()
    m_d.m_time_msec = g_pplayer->m_time_msec;
    const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
 
-   if((m_duration > 0) && (m_timerDurationEndTime < m_d.m_time_msec))
+   if ((m_duration > 0) && (m_timerDurationEndTime < m_d.m_time_msec))
    {
        m_realState = (LightState)m_finalState;
        m_duration = 0;
-       if(m_realState == LightStateBlinking)
+       if (m_realState == LightStateBlinking)
            RestartBlinker(g_pplayer->m_time_msec);
    }
    if (m_realState == LightStateBlinking)
@@ -1047,7 +1047,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(BPAT), m_rgblinkpattern);
    bw.WriteString(FID(IMG1), m_d.m_szOffImage);
-   bw.WriteInt( FID( BINT ), m_blinkinterval );
+   bw.WriteInt(FID(BINT), m_blinkinterval);
    //bw.WriteInt(FID(BCOL), m_d.m_bordercolor);
    bw.WriteFloat(FID(BWTH), m_d.m_intensity);
    bw.WriteFloat(FID(TRMS), m_d.m_transmissionScale);
@@ -1392,7 +1392,7 @@ STDMETHODIMP Light::put_FalloffPower(float newVal)
 
 STDMETHODIMP Light::get_State(LightState *pVal)
 {
-    if(g_pplayer && !m_fLockedByLS)
+    if (g_pplayer && !m_fLockedByLS)
         *pVal = m_realState; 
     else
         *pVal = m_d.m_state; //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
@@ -1589,7 +1589,7 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
 }
 
 
-STDMETHODIMP Light::Duration( long startState, long newVal, long endState )
+STDMETHODIMP Light::Duration(long startState, long newVal, long endState)
 {
     STARTUNDO
 
@@ -1945,7 +1945,7 @@ void Light::setLightState(const LightState newVal)
             m_timenextblink = g_pplayer->m_time_msec; // Start pattern right away // + m_d.m_blinkinterval;
             m_iblinkframe = 0; // reset pattern
          }
-         if(m_duration > 0)
+         if (m_duration > 0)
              m_duration = 0;    //disable duration if a state was set this way
       }
    }

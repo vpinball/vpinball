@@ -684,7 +684,7 @@ void Plunger::RenderSetup()
    {
       const float ytip = beginy + dyPerFrame*(float)i;
 
-      if(m_d.m_type != PlungerTypeFlat)
+      if (m_d.m_type != PlungerTypeFlat)
       {
       // Go around in a circle starting at the top, stepping through
       // 'circlePoints' angles along the circle.  Start the texture
@@ -1415,7 +1415,7 @@ STDMETHODIMP Plunger::put_Image(BSTR newVal)
    char szImage[MAXTOKEN];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szImage);
-   if(tex && tex->IsHDR())
+   if (tex && tex->IsHDR())
    {
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
