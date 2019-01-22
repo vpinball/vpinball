@@ -93,7 +93,7 @@ float4 ps_main_DMD(in VS_OUTPUT IN) : COLOR
    [unroll] for(int j = -2; j <= 2; ++j)
    {
    const float2 uvj = IN.tex0 + float(j)*ddys; 
-   [unroll] for(int i = -2; i <= 2; ++i)
+   [unroll] for (int i = -2; i <= 2; ++i)
    {
       const float2 uv = uvj + float(i)*ddxs;
 

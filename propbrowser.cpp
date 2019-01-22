@@ -171,7 +171,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
                   for (int k = 0; k < pcol->m_visel.Size(); k++)
                   {
                      ISelect *pisel2 = pcol->m_visel.ElementAt(k);
-                     if ((col == NULL) && (pisel2!=NULL) && (pisel2 == pisel3))
+                     if ((col == NULL) && (pisel2 != NULL) && (pisel2 == pisel3))
                         col = pcol;
                      else if ((col != NULL) && (col == pcol) && (pisel2 != NULL) && (pisel2 == pisel3))
                      {
@@ -649,7 +649,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
       {
          hrEqual = VarCmp(&var, &varCheck, 0x409, 0);
       }
-      if(ptr->GetItemType() == eItemDragPoint && m_prevSelection!=ptr)
+      if (ptr->GetItemType() == eItemDragPoint && m_prevSelection != ptr)
           m_prevSelection = ptr;
 
       if (hrEqual != VARCMP_EQ)
@@ -701,13 +701,13 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
       else
          SetWindowText(hwndControl, "");
 
-      if(m_pvsel->Size() > 1)
+      if (m_pvsel->Size() > 1)
       {
           const ISelect *const mainItem = m_pvsel->ElementAt(0);
 
-          if(mainItem->GetItemType() == eItemDragPoint)
+          if (mainItem->GetItemType() == eItemDragPoint)
           {
-              if(m_prevSelection != mainItem)
+              if (m_prevSelection != mainItem)
               {
                   const DragPoint *const pMainPoint = (DragPoint*)mainItem;
                   const DragPoint *const mSecondPoint = (DragPoint*)m_prevSelection;
@@ -732,7 +732,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 
    case eButton:
    {
-      if(!fNinch)
+      if (!fNinch)
       {
          if (SUCCEEDED(VariantChangeType(&varResult, &var, 0, VT_BOOL)))
          {
@@ -1096,7 +1096,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          dispid = 0x80010000;
 
       SmartBrowser * const psb = (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-      if (psb==NULL)
+      if (psb == NULL)
          return FALSE;
 
       if (psb->m_pvsel == NULL)
@@ -1186,22 +1186,22 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          {
             psb->GetBaseISel()->GetPTable()->ExportPhysics();
          }
-         else if(dispid == IDC_POINT_COPY_BUTTON)
+         else if (dispid == IDC_POINT_COPY_BUTTON)
          {
              ISelect *pItem = psb->m_pvsel->ElementAt(0);
-             if((psb->m_pvsel->Size() == 1) && (pItem->GetItemType() == eItemDragPoint))
+             if ((psb->m_pvsel->Size() == 1) && (pItem->GetItemType() == eItemDragPoint))
              {
                  DragPoint *pPoint = (DragPoint*)pItem;
                  pPoint->Copy();
              }
          }
-         else if(dispid == IDC_POINT_PASTE_BUTTON)
+         else if (dispid == IDC_POINT_PASTE_BUTTON)
          {
              ISelect *pItem = psb->m_pvsel->ElementAt(0);
-             if((psb->m_pvsel->Size() == 1) && (pItem->GetItemType() == eItemDragPoint))
+             if ((psb->m_pvsel->Size() == 1) && (pItem->GetItemType() == eItemDragPoint))
              {
                 DragPoint *pPoint = (DragPoint*)pItem;
-                if(pPoint->m_pointCopied)
+                if (pPoint->m_pointCopied)
                 {
                     pPoint->Paste();
                     g_pvp->GetActiveTable()->SetDirtyDraw();

@@ -197,10 +197,10 @@ public:
    STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD( get_PhysicsMaterial )(/*[out, retval]*/ BSTR *pVal);
-   STDMETHOD( put_PhysicsMaterial )(/*[in]*/ BSTR newVal);
-   STDMETHOD( get_OverwritePhysics )(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD( put_OverwritePhysics )(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_PhysicsMaterial)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_PhysicsMaterial)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_OverwritePhysics)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_OverwritePhysics)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)

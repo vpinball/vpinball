@@ -1995,7 +1995,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
 
    // and flip back camera
    viewMat._33 = -viewMat._33;
-   if (rotation!=0.0f)
+   if (rotation != 0.0f)
       viewMat._31 = -viewMat._31;
    else
       viewMat._32 = -viewMat._32;
@@ -3901,7 +3901,7 @@ void Player::RenderDynamics()
       m_dmdstate = 2;
       // Draw non-transparent DMD's
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
-        if(m_vHitNonTrans[i]->IsDMD())
+        if (m_vHitNonTrans[i]->IsDMD())
           m_vHitNonTrans[i]->RenderDynamic();
 
       DrawBalls();

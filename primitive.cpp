@@ -184,8 +184,8 @@ Primitive::Primitive()
    m_propVisual = NULL;
    memset(m_d.m_szImage, 0, MAXTOKEN);
    memset(m_d.m_szNormalMap, 0, MAXTOKEN);
-   memset( m_d.m_szMaterial, 0, 32 );
-   memset( m_d.m_szPhysicsMaterial, 0, 32 );
+   memset(m_d.m_szMaterial, 0, 32);
+   memset(m_d.m_szPhysicsMaterial, 0, 32);
    m_d.m_fOverwritePhysics = true;
    m_d.m_useAsPlayfield = false;
 }
@@ -458,7 +458,7 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
    //
 
    // playfield can't be a toy
-   if(m_d.m_fToy && !m_d.m_useAsPlayfield)
+   if (m_d.m_fToy && !m_d.m_useAsPlayfield)
       return;
 
    RecalculateMatrices();
@@ -582,7 +582,7 @@ void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
    const Material * const mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
    if(!m_d.m_useAsPlayfield)
    {
-       if(mat != NULL && !m_d.m_fOverwritePhysics)
+       if (mat != NULL && !m_d.m_fOverwritePhysics)
        {
            obj->m_elasticity = mat->m_fElasticity;
            obj->m_elasticityFalloff = mat->m_fElasticityFalloff;
@@ -609,10 +609,10 @@ void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
    }
    obj->m_threshold = m_d.m_threshold;
    obj->m_ObjType = ePrimitive;
-   obj->m_obj = (IFireEvents *) this;
+   obj->m_obj = (IFireEvents *)this;
    obj->m_e = true;
 
-   if(m_d.m_fHitEvent)
+   if (m_d.m_fHitEvent)
        obj->m_fe = true;
 
    pvho.push_back(obj);
@@ -832,9 +832,9 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
    psur->SetLineColor(RGB(0, 0, 0), false, 1);
    psur->SetObject(this);
 
-   if(solid && m_d.m_use3DMesh)
+   if (solid && m_d.m_use3DMesh)
    {
-       for(size_t i = 0; i < m_mesh.NumIndices(); i += 3)
+       for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
        {
            const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
            const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
@@ -1137,7 +1137,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
          m_mesh.UploadToVB(vertexBuffer, m_currentFrame);
          if (m_currentFrame != -1.0f && m_DoAnimation)
          {
-            m_currentFrame+=m_speed;
+            m_currentFrame += m_speed;
             if (m_currentFrame >= (float)m_mesh.m_animationFrames.size())
             {
                if (m_Endless)
@@ -1375,8 +1375,8 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(DILB), m_d.m_fDisableLightingBelow);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
    bw.WriteBool(FID(EBFC), m_d.m_fBackfacesEnabled);
-   bw.WriteString( FID( MAPH ), m_d.m_szPhysicsMaterial );
-   bw.WriteBool( FID( OVPH ), m_d.m_fOverwritePhysics );
+   bw.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
+   bw.WriteBool(FID(OVPH), m_d.m_fOverwritePhysics);
    bw.WriteBool(FID(DIPT), m_d.m_fDisplayTexture);
 
    if (m_d.m_use3DMesh)
@@ -1619,13 +1619,13 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetBool(&m_d.m_fToy);
    }
-   else if ( id == FID( MAPH ) )
+   else if (id == FID(MAPH))
    {
-       pbr->GetString( m_d.m_szPhysicsMaterial );
+      pbr->GetString(m_d.m_szPhysicsMaterial);
    }
-   else if ( id == FID( OVPH ) )
+   else if (id == FID(OVPH))
    {
-       pbr->GetBool( &m_d.m_fOverwritePhysics );
+      pbr->GetBool(&m_d.m_fOverwritePhysics);
    }
    else if (id == FID(STRE))
    {
@@ -1874,9 +1874,9 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                   if (WaveFrontObjLoadMaterial(szMatName, mat))
                   {
                      PinTable *pActiveTable = g_pvp->GetActiveTable();
-                     if(pActiveTable)
+                     if (pActiveTable)
                      {
-                         pActiveTable->AddMaterial( mat );
+                         pActiveTable->AddMaterial(mat);
                      }
                      strcpy_s(prim->m_d.m_szMaterial, mat->m_szName);
                      g_pvp->m_sb.PopulateDropdowns(); // May need to update list of images
@@ -2099,7 +2099,7 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
    char szImage[MAXTOKEN];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szImage);
-   if(tex && tex->IsHDR())
+   if (tex && tex->IsHDR())
    {
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
@@ -3036,7 +3036,7 @@ STDMETHODIMP Primitive::put_ReflectionEnabled(VARIANT_BOOL newVal)
       return S_OK;
 }
 
-STDMETHODIMP Primitive::get_PhysicsMaterial( BSTR *pVal )
+STDMETHODIMP Primitive::get_PhysicsMaterial(BSTR *pVal)
 {
     WCHAR wz[512];
 
@@ -3046,7 +3046,7 @@ STDMETHODIMP Primitive::get_PhysicsMaterial( BSTR *pVal )
     return S_OK;
 }
 
-STDMETHODIMP Primitive::put_PhysicsMaterial( BSTR newVal )
+STDMETHODIMP Primitive::put_PhysicsMaterial(BSTR newVal)
 {
     STARTUNDO
 
@@ -3057,14 +3057,14 @@ STDMETHODIMP Primitive::put_PhysicsMaterial( BSTR newVal )
         return S_OK;
 }
 
-STDMETHODIMP Primitive::get_OverwritePhysics( VARIANT_BOOL *pVal )
+STDMETHODIMP Primitive::get_OverwritePhysics(VARIANT_BOOL *pVal)
 {
     *pVal = (VARIANT_BOOL)FTOVB( m_d.m_fOverwritePhysics );
 
     return S_OK;
 }
 
-STDMETHODIMP Primitive::put_OverwritePhysics( VARIANT_BOOL newVal )
+STDMETHODIMP Primitive::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
     STARTUNDO
 
@@ -3103,7 +3103,7 @@ STDMETHODIMP Primitive::put_DisplayTexture(VARIANT_BOOL newVal)
 STDMETHODIMP Primitive::PlayAnim(float startFrame, float speed)
 {
    int iFrame = (int)startFrame;
-   if (m_mesh.m_animationFrames.size() > 0 )
+   if (m_mesh.m_animationFrames.size() > 0)
    {
       if (startFrame >= m_mesh.m_animationFrames.size())
          startFrame = 0.0f;
@@ -3227,7 +3227,7 @@ void Primitive::UpdatePropertyPanes()
       else
          EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 33), FALSE);
 
-      if ( m_d.m_fOverwritePhysics )
+      if (m_d.m_fOverwritePhysics)
       {
           EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 110 ), TRUE );
           EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 112 ), TRUE );

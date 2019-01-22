@@ -221,7 +221,7 @@ void Kicker::GetHitShapes(vector<HitObject*> &pvho)
    phitcircle->m_fEnabled = m_d.m_fEnabled;
 
    phitcircle->m_ObjType = eKicker;
-   phitcircle->m_obj = (IFireEvents*) this;
+   phitcircle->m_obj = (IFireEvents*)this;
 
    phitcircle->m_pkicker = this;
 
@@ -270,7 +270,7 @@ void Kicker::RenderStatic()
 
 void Kicker::ExportMesh(FILE *f)
 {
-   if(m_d.m_kickertype == KickerInvisible)
+   if (m_d.m_kickertype == KickerInvisible)
        return;
 
    char name[MAX_PATH];

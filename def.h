@@ -84,7 +84,7 @@ template <typename T>
 inline void RemoveFromVectorSingle(std::vector<T>& v, const T& val)
 {
    std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
-   if(it != v.end())
+   if (it != v.end())
       v.erase(it);
 }
 
@@ -151,6 +151,7 @@ enum SaveDirtyState
 #define MY_D3DFVF_NOTEX2_VERTEX         1
 #define MY_D3DTRANSFORMED_NOTEX2_VERTEX 2 //!! delete
 
+//These Structs are used for rendering and loading meshes. They must match the VertexDeclaration in RenderDevice.cpp and the loaded meshes.
 class Vertex3D_TexelOnly // for rendering, uses MY_D3DFVF_TEX
 {
 public:

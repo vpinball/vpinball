@@ -19,7 +19,7 @@ Surface::Surface()
    memset(m_d.m_szSideMaterial, 0, 32);
    memset(m_d.m_szTopMaterial, 0, 32);
    memset(m_d.m_szSlingShotMaterial, 0, 32);
-   memset(m_d.m_szPhysicsMaterial,0,32);
+   memset(m_d.m_szPhysicsMaterial, 0, 32);
    m_d.m_fOverwritePhysics = true;
 }
 
@@ -338,7 +338,7 @@ void Surface::UIRenderPass2(Sur * const psur)
 void Surface::RenderBlueprint(Sur *psur, const bool solid)
 {
    // Don't render dragpoints for blueprint
-   if ( solid )
+   if (solid)
       psur->SetFillColor(BLUEPRINT_SOLID_COLOR);
    else
       psur->SetFillColor(-1);
@@ -425,23 +425,23 @@ void Surface::CurvesToShapes(vector<HitObject*> &pvho)
 void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
 {
    Material *mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
-   if( mat!=NULL && !m_d.m_fOverwritePhysics)
+   if (mat != NULL && !m_d.m_fOverwritePhysics)
    {
-       obj->m_elasticity = mat->m_fElasticity;
-       obj->SetFriction( mat->m_fFriction );
-       obj->m_scatter = ANGTORAD( mat->m_fScatterAngle );
+      obj->m_elasticity = mat->m_fElasticity;
+      obj->SetFriction(mat->m_fFriction);
+      obj->m_scatter = ANGTORAD(mat->m_fScatterAngle);
    }
    else
    {
-       obj->m_elasticity = m_d.m_elasticity;
-       obj->SetFriction( m_d.m_friction );
-       obj->m_scatter = ANGTORAD( m_d.m_scatter );
-       obj->m_fEnabled = m_d.m_fCollidable;
+      obj->m_elasticity = m_d.m_elasticity;
+      obj->SetFriction(m_d.m_friction);
+      obj->m_scatter = ANGTORAD(m_d.m_scatter);
+      obj->m_fEnabled = m_d.m_fCollidable;
    }
 
    if (m_d.m_fHitEvent)
    {
-      obj->m_obj = (IFireEvents*) this;
+      obj->m_obj = (IFireEvents*)this;
       obj->m_fe = true;
       obj->m_threshold = m_d.m_threshold;
    }
@@ -477,7 +477,7 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
 
    if (pv1.fSlingshot)  // slingshots always have hit events
    {
-      plineseg->m_obj = (IFireEvents*) this;
+      plineseg->m_obj = (IFireEvents*)this;
       plineseg->m_fe = true;
       plineseg->m_threshold = m_d.m_threshold;
    }
@@ -1276,8 +1276,8 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteInt(FID(DILI), (tmp == 1) ? 0 : tmp); // backwards compatible saving
    bw.WriteFloat(FID(DILB), m_d.m_fDisableLightingBelow);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
-   bw.WriteString( FID( MAPH ), m_d.m_szPhysicsMaterial );
-   bw.WriteBool( FID( OVPH ), m_d.m_fOverwritePhysics );
+   bw.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
+   bw.WriteBool(FID(OVPH), m_d.m_fOverwritePhysics);
 
    ISelect::SaveData(pstm, hcrypthash);
 
@@ -1437,9 +1437,9 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetString(m_d.m_szTopMaterial);
    }
-   else if ( id == FID( MAPH ) )
+   else if (id == FID(MAPH))
    {
-       pbr->GetString( m_d.m_szPhysicsMaterial );
+      pbr->GetString(m_d.m_szPhysicsMaterial);
    }
    else if (id == FID(SLMA))
    {
@@ -1490,7 +1490,7 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetBool(&m_d.m_fTopBottomVisible);
    }
-   else if ( id == FID( OVPH ) )
+   else if (id == FID(OVPH))
    {
       pbr->GetBool(&m_d.m_fOverwritePhysics);
    }
@@ -1587,7 +1587,7 @@ STDMETHODIMP Surface::put_Image(BSTR newVal)
    char szImage[MAXTOKEN];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szImage);
-   if(tex && tex->IsHDR())
+   if (tex && tex->IsHDR())
    {
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
@@ -1717,7 +1717,7 @@ STDMETHODIMP Surface::put_TopMaterial(BSTR newVal)
    return S_OK;
 }
 
-STDMETHODIMP Surface::get_PhysicsMaterial( BSTR *pVal )
+STDMETHODIMP Surface::get_PhysicsMaterial(BSTR *pVal)
 {
     WCHAR wz[512];
 
@@ -1727,7 +1727,7 @@ STDMETHODIMP Surface::get_PhysicsMaterial( BSTR *pVal )
     return S_OK;
 }
 
-STDMETHODIMP Surface::put_PhysicsMaterial( BSTR newVal )
+STDMETHODIMP Surface::put_PhysicsMaterial(BSTR newVal)
 {
     STARTUNDO
 
@@ -1738,14 +1738,14 @@ STDMETHODIMP Surface::put_PhysicsMaterial( BSTR newVal )
         return S_OK;
 }
 
-STDMETHODIMP Surface::get_OverwritePhysics( VARIANT_BOOL *pVal )
+STDMETHODIMP Surface::get_OverwritePhysics(VARIANT_BOOL *pVal)
 {
     *pVal = (VARIANT_BOOL)FTOVB( m_d.m_fOverwritePhysics );
 
     return S_OK;
 }
 
-STDMETHODIMP Surface::put_OverwritePhysics( VARIANT_BOOL newVal )
+STDMETHODIMP Surface::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
     STARTUNDO
 
@@ -1863,7 +1863,7 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
       m_fIsDropped = fNewVal;
 
       const bool b = !m_fIsDropped && m_d.m_fCollidable;
-      if(m_vhoDrop.size() > 0 && m_vhoDrop[0]->m_fEnabled != b)
+      if (m_vhoDrop.size() > 0 && m_vhoDrop[0]->m_fEnabled != b)
         for (size_t i = 0; i < m_vhoDrop.size(); i++) //!! costly
           m_vhoDrop[i]->m_fEnabled = b; //disable hit on enities composing the object 
    }
@@ -1997,7 +1997,7 @@ STDMETHODIMP Surface::put_SideImage(BSTR newVal)
    char szSideImage[MAXTOKEN];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szSideImage, 32, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szSideImage);
-   if(tex && tex->IsHDR())
+   if (tex && tex->IsHDR())
    {
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
@@ -2215,8 +2215,8 @@ void Surface::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 116), FALSE);
-      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), FALSE );
-      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS ), FALSE );
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), FALSE);
    }
    else
    {
@@ -2229,21 +2229,21 @@ void Surface::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 14), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 116), TRUE);
-      if ( !m_d.m_fOverwritePhysics )
+      if (!m_d.m_fOverwritePhysics)
       {
-         EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), TRUE );
-         EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 15 ), FALSE );
-         EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 114 ), FALSE );
-         EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 115 ), FALSE );
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), TRUE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 15), FALSE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
       }
       else
       {
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), FALSE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 15 ), TRUE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 114 ), TRUE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 115 ), TRUE );
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 15), TRUE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), TRUE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), TRUE);
       }
-      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS ), TRUE );
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), TRUE);
    }
 
 }

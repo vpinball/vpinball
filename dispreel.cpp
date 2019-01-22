@@ -228,7 +228,6 @@ void DispReel::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(pht);
 }
 
-
 void DispReel::GetHitShapes(vector<HitObject*> &pvho)
 {
 }

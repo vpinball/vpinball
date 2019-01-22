@@ -224,7 +224,7 @@ void FlipperMoverObject::UpdateDisplacements(const float dtime)
          handle_event = true;
    }
 
-   if(handle_event)
+   if (handle_event)
    {
       const float anglespd = fabsf(RADTOANG(m_angleSpeed));
       m_angularMomentum *= -0.3f; //!! make configurable?

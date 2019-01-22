@@ -604,7 +604,6 @@ void Flipper::UIRenderPass2(Sur * const psur)
          , rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
       else psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius + m_d.m_EndRadius
          , rgv[1].x, rgv[1].y, rgv[0].x, rgv[0].y);
-
    }
 
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
@@ -1564,7 +1563,7 @@ STDMETHODIMP Flipper::put_OverridePhysics(PhysicsSet newVal)
    m_d.m_OverridePhysics = (int)newVal;
    STOPUNDO
 
-   if(m_phitflipper)
+   if (m_phitflipper)
    {
       UpdatePhysicsSettings();
       m_phitflipper->UpdatePhysicsFromFlipper();
@@ -1671,7 +1670,7 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
 {
    if (m_phitflipper)
    {
-      if(!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+      if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
          m_d.m_strength = newVal;
    }
    else
@@ -1741,7 +1740,7 @@ STDMETHODIMP Flipper::put_Elasticity(float newVal)
 {
    if (m_phitflipper)
    {
-      if(!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+      if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
          m_phitflipper->m_elasticity = newVal;
    }
    else

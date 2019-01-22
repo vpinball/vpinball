@@ -61,7 +61,7 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
       const float sn = sinf(a) * Force;
       const float cs = cosf(a) * Force;
 
-      if(g_pplayer->m_legacyNudge)
+      if (g_pplayer->m_legacyNudge)
       {
           g_pplayer->m_legacyNudgeBackX =  sn * g_pplayer->m_legacyNudgeStrength;
           g_pplayer->m_legacyNudgeBackY = -cs * g_pplayer->m_legacyNudgeStrength;
@@ -448,7 +448,7 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname
 STDMETHODIMP ScriptGlobalTable::GetCustomParam(long index, BSTR *param)
 {
 
-    if(index <= 0 || index >= MAX_CUSTOM_PARAM_INDEX)
+    if (index <= 0 || index >= MAX_CUSTOM_PARAM_INDEX)
         return E_FAIL;
 
     *param = SysAllocString(g_pvp->m_customParameters[index-1]);
@@ -1612,7 +1612,7 @@ PinTable::~PinTable()
    for (size_t i = 0; i < m_vimage.size(); i++)
       delete m_vimage[i];
 
-   for(size_t i = 0; i < m_materials.size(); ++i)
+   for (size_t i = 0; i < m_materials.size(); ++i)
       delete m_materials[i];
 
    for (size_t i = 0; i < m_vfont.size(); i++)
@@ -1875,7 +1875,7 @@ void PinTable::InitPostLoad(VPinball *pvp)
    m_pvp = pvp;
    pvp->m_ptableActive = (CComObject<PinTable> *)this;
 
-   for(unsigned int i = 1; i < NUM_BG_SETS; ++i)
+   for (unsigned int i = 1; i < NUM_BG_SETS; ++i)
       if (m_BG_FOV[i] == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
       {
         m_BG_inclination[i] = m_BG_inclination[BG_DESKTOP];
@@ -1893,7 +1893,7 @@ void PinTable::InitPostLoad(VPinball *pvp)
         m_BG_scalez[i] = m_BG_scalez[BG_DESKTOP];
         m_BG_xlatez[i] = m_BG_xlatez[BG_DESKTOP];
 
-        if(m_BG_szImage[i][0] == 0 && i == BG_FSS) // copy image over for FSS mode
+        if (m_BG_szImage[i][0] == 0 && i == BG_FSS) // copy image over for FSS mode
             strcpy_s(m_BG_szImage[i], m_BG_szImage[BG_DESKTOP]);
       }
 
@@ -3045,7 +3045,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
       return hr;
 
    PinSound * const pps = new PinSound();
-   if(FAILED(hr = pstm->Read(pps->m_szName, len, &read)))
+   if (FAILED(hr = pstm->Read(pps->m_szName, len, &read)))
    {
        delete pps;
        return hr;
@@ -3497,16 +3497,16 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
       }
       bw.WriteStruct(FID(MATE), mats, (int)(sizeof(SaveMaterial)*m_materials.size()));
       SavePhysicsMaterial * const phymats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_materials.size());
-      for ( size_t i = 0; i < m_materials.size(); i++ )
+      for (size_t i = 0; i < m_materials.size(); i++)
       {
           const Material* const m = m_materials[i];
-          strcpy_s( phymats[i].szName, m->m_szName );
+          strcpy_s(phymats[i].szName, m->m_szName);
           phymats[i].fElasticity = m->m_fElasticity;
           phymats[i].fElasticityFallOff = m->m_fElasticityFalloff;
           phymats[i].fFriction = m->m_fFriction;
           phymats[i].fScatterAngle = m->m_fScatterAngle;
       }
-      bw.WriteStruct( FID( PHMA ), phymats, (int)(sizeof(SavePhysicsMaterial)*m_materials.size()));
+      bw.WriteStruct(FID(PHMA), phymats, (int)(sizeof(SavePhysicsMaterial)*m_materials.size()));
       free(mats);
       free(phymats);
    }
@@ -3722,7 +3722,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
-                  LoadSoundFromStream(pstmItem,loadfileversion);
+                  LoadSoundFromStream(pstmItem, loadfileversion);
                   pstmItem->Release();
                   pstmItem = NULL;
                }
@@ -4108,7 +4108,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(EFSS))
    {
       pbr->GetBool(&m_BG_enable_FSS);
-      if(m_BG_enable_FSS)
+      if (m_BG_enable_FSS)
          m_BG_current_set = BG_FSS; //!! FSS
    }
 #if 0
@@ -4459,7 +4459,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
       SaveMaterial * const mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_numMaterials);
       pbr->GetStruct(mats, (int)sizeof(SaveMaterial)*m_numMaterials);
 
-      for(size_t i = 0; i < m_materials.size(); ++i)
+      for (size_t i = 0; i < m_materials.size(); ++i)
           delete m_materials[i];
       m_materials.clear();
 
@@ -4483,12 +4483,12 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
       }
       free(mats);
    }
-   else if(id==FID(PHMA))
+   else if (id == FID(PHMA))
    {
        SavePhysicsMaterial * const mats = (SavePhysicsMaterial*)malloc( sizeof( SavePhysicsMaterial )*m_numMaterials );
        pbr->GetStruct( mats, (int)sizeof( SavePhysicsMaterial )*m_numMaterials );
 
-       for ( int i = 0; i < m_numMaterials; i++ )
+       for (int i = 0; i < m_numMaterials; i++)
        {
            bool found=true;
            Material * pmat = GetMaterial(mats[i].szName);
@@ -4993,7 +4993,7 @@ void PinTable::DoLButtonDown(int x, int y, bool zoomIn)
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
          ISelect *pisel2 = m_vmultisel.ElementAt(i);
-         if ( pisel2 )
+         if (pisel2)
             pisel2->OnLButtonDown(x, y);
       }
    }
@@ -5008,7 +5008,7 @@ void PinTable::DoLButtonUp(int x, int y)
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
          ISelect *pisel = m_vmultisel.ElementAt(i);
-         if ( pisel )
+         if (pisel)
             pisel->OnLButtonUp(x, y);
       }
    }
@@ -5061,11 +5061,11 @@ void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect 
     AppendMenu(hmenu, MF_POPUP | MF_STRING, (size_t)colSubMenu, ls16.m_szbuffer);
 
     int maxItems = m_vcollection.Size() - 1;
-    if(maxItems > 32) maxItems = 32;
+    if (maxItems > 32) maxItems = 32;
 
     // run through all collections and list up to 32 of them in the context menu
     // the actual processing is done in ISelect::DoCommand() 
-    for(int i = maxItems; i >= 0; i--)
+    for (int i = maxItems; i >= 0; i--)
     {
         CComBSTR bstr;
         m_vcollection.ElementAt(i)->get_Name(&bstr);
@@ -5075,13 +5075,13 @@ void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect 
         AppendMenu(colSubMenu, MF_POPUP, 0x40000 + i, szT);
         CheckMenuItem(colSubMenu, 0x40000 + i, MF_UNCHECKED);
     }
-    if(m_vmultisel.Size() == 1)
+    if (m_vmultisel.Size() == 1)
     {
-        for(int i = maxItems; i >= 0; i--)
+        for (int i = maxItems; i >= 0; i--)
         {
-            for(int t = 0; t < m_vcollection.ElementAt(i)->m_visel.Size(); t++)
+            for (int t = 0; t < m_vcollection.ElementAt(i)->m_visel.Size(); t++)
             {
-                if(psel == m_vcollection.ElementAt(i)->m_visel.ElementAt(t))
+                if (psel == m_vcollection.ElementAt(i)->m_visel.ElementAt(t))
                 {
                     CheckMenuItem(colSubMenu, 0x40000 + i, MF_CHECKED);
                 }
@@ -5092,22 +5092,22 @@ void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect 
     {
         vector<int> allIndices;
 
-        for(int t = 0; t < m_vmultisel.Size(); t++)
+        for (int t = 0; t < m_vmultisel.Size(); t++)
         {
             ISelect *iSel = m_vmultisel.ElementAt(t);
 
-            for(int i = maxItems; i >= 0 ; i--)
+            for (int i = maxItems; i >= 0; i--)
             {
-                for(int t = 0; t < m_vcollection.ElementAt(i)->m_visel.Size(); t++)
+                for (int t = 0; t < m_vcollection.ElementAt(i)->m_visel.Size(); t++)
                 {
-                    if((iSel == m_vcollection.ElementAt(i)->m_visel.ElementAt(t)))
+                    if ((iSel == m_vcollection.ElementAt(i)->m_visel.ElementAt(t)))
                     {
                         allIndices.push_back(i);
                     }
                 }
             }
         }
-         for(size_t i = 0; i < allIndices.size(); i++)
+         for (size_t i = 0; i < allIndices.size(); i++)
                CheckMenuItem(colSubMenu, 0x40000 + allIndices[i], MF_CHECKED);
     }
 }
@@ -5408,7 +5408,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
    }
    case IDC_COPY:
    {
-       Copy(x,y);
+       Copy(x, y);
        break;
    }
    case IDC_PASTE:
@@ -5589,11 +5589,11 @@ void PinTable::UpdateCollection(int index)
             }
          }
 
-         if(removeOnly)
+         if (removeOnly)
              return;
 
          /*selected elements are not part of the the selected collection and can be added*/
-         for(int t = 0; t < m_vmultisel.Size(); t++)
+         for (int t = 0; t < m_vmultisel.Size(); t++)
          {
             ISelect *ptr = m_vmultisel.ElementAt(t);
             m_vcollection.ElementAt(index)->m_visel.AddElement(ptr);
@@ -5657,7 +5657,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_TIMER:
         {
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            switch(wParam)
+            switch (wParam)
             {
                 case TIMER_ID_AUTOSAVE:
                 {
@@ -5679,16 +5679,16 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case WM_SETCURSOR:
         {
-            if(LOWORD(lParam) == HTCLIENT)
+            if (LOWORD(lParam) == HTCLIENT)
             {
                 char *cursorid;
                 HINSTANCE hinst = g_hinst;
 
-                if(g_pvp->m_ToolCur == ID_TABLE_MAGNIFY)
+                if (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY)
                 {
                     cursorid = MAKEINTRESOURCE(IDC_MAGNIFY);
                 }
-                else if(g_pvp->m_ToolCur == ID_INSERT_TARGET)
+                else if (g_pvp->m_ToolCur == ID_INSERT_TARGET)
                 {
                     // special case for targets, which are particular walls
                     cursorid = MAKEINTRESOURCE(IDC_TARGET);
@@ -5696,7 +5696,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 else
                 {
                     ItemTypeEnum type = EditableRegistry::TypeFromToolID(g_pvp->m_ToolCur);
-                    if(type != eItemInvalid)
+                    if (type != eItemInvalid)
                         cursorid = MAKEINTRESOURCE(EditableRegistry::GetCursorID(type));
                     else
                     {
@@ -5723,7 +5723,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case WM_MOUSEACTIVATE:
         case WM_ACTIVATE:
-        if(LOWORD(wParam) != WA_INACTIVE)
+        if (LOWORD(wParam) != WA_INACTIVE)
         {
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             pt->m_pvp->m_ptableActive = pt;
@@ -5738,7 +5738,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             const short x = (short)(lParam & 0xffff);
             const short y = (short)((lParam >> 16) & 0xffff);
-            if((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
+            if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
             {
                 pt->DoLButtonDown(x, y);
             }
@@ -5773,16 +5773,16 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             const short y = (short)((lParam >> 16) & 0xffff);
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             const bool middleMouseButtonPressed = ((GetKeyState(VK_MBUTTON) & 0x100) != 0);  //((GetKeyState(VK_MENU) & 0x80000000) != 0);
-            if(middleMouseButtonPressed)
+            if (middleMouseButtonPressed)
             {
                 // panning feature starts here...if the user holds the middle mouse button and moves the mouse 
                 // everything is moved in the direction of the mouse was moved
                 int dx = abs(pt->m_oldMousePosX - x);
                 int dy = abs(pt->m_oldMousePosY - y);
-                if(pt->m_oldMousePosX > x)  pt->m_offset.x += dx;
-                if(pt->m_oldMousePosX < x)  pt->m_offset.x -= dx;
-                if(pt->m_oldMousePosY > y)  pt->m_offset.y += dy;
-                if(pt->m_oldMousePosY < y)  pt->m_offset.y -= dy;
+                if (pt->m_oldMousePosX > x)  pt->m_offset.x += dx;
+                if (pt->m_oldMousePosX < x)  pt->m_offset.x -= dx;
+                if (pt->m_oldMousePosY > y)  pt->m_offset.y += dy;
+                if (pt->m_oldMousePosY < y)  pt->m_offset.y -= dy;
                 pt->SetDirtyDraw();
                 pt->SetMyScrollInfo();
                 pt->m_oldMousePosX = x;
@@ -5810,7 +5810,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             long x = (long)(lParam & 0xffff);
             long y = (long)((lParam >> 16) & 0xffff);
             POINT p;
-            if(GetCursorPos(&p) && ::ScreenToClient(hwnd, &p))
+            if (GetCursorPos(&p) && ::ScreenToClient(hwnd, &p))
             {
                 x = p.x;
                 y = p.y;
@@ -5833,7 +5833,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             si.cbSize = sizeof(SCROLLINFO);
             si.fMask = SIF_ALL;
             ::GetScrollInfo(hwnd, SB_HORZ, &si);
-            switch(LOWORD(wParam))
+            switch (LOWORD(wParam))
             {
                 case SB_LINELEFT:
                 pt->m_offset.x -= si.nPage / 10;
@@ -5868,7 +5868,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             si.cbSize = sizeof(SCROLLINFO);
             si.fMask = SIF_ALL;
             ::GetScrollInfo(hwnd, SB_VERT, &si);
-            switch(LOWORD(wParam))
+            switch (LOWORD(wParam))
             {
                 case SB_LINEUP:
                 pt->m_offset.y -= si.nPage / 10;
@@ -5901,7 +5901,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             const short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
             const int ksctrl = GetKeyState(VK_CONTROL);
-            if((ksctrl & 0x80000000))
+            if ((ksctrl & 0x80000000))
             {
                 POINT curpt;
                 curpt.x = GET_X_LPARAM(lParam);
@@ -5909,7 +5909,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 ::ScreenToClient(hwnd, &curpt);
                 const short x = (short)curpt.x;
                 const short y = (short)curpt.y;
-                if((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
+                if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
                 {
                     pt->DoLButtonDown(x, y, zDelta != -120);
                 }
@@ -5927,7 +5927,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_SIZE:
         {
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            if(pt) // Window might have just been created
+            if (pt) // Window might have just been created
             {
                 pt->SetMyScrollInfo();
                 pt->m_fDirtyDraw = true;
@@ -5944,7 +5944,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case DONE_AUTOSAVE:
         {
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            if(lParam == S_OK)
+            if (lParam == S_OK)
             {
                 g_pvp->SetActionCur("");
             }
@@ -6721,11 +6721,11 @@ void PinTable::Copy(int x, int y)
       return;
    }
 
-   if(m_vmultisel.Size() == 1)
+   if (m_vmultisel.Size() == 1)
    {
        // special check if the user selected a Control Point and wants to copy the coordinates
        ISelect *pItem = HitTest(x, y);
-       if(pItem->GetItemType() == eItemDragPoint)
+       if (pItem->GetItemType() == eItemDragPoint)
        {
            DragPoint *pPoint = (DragPoint*)pItem;
            pPoint->Copy();
@@ -6735,7 +6735,7 @@ void PinTable::Copy(int x, int y)
 
    vector<IStream*> vstm;
    //m_vstmclipboard
-   for(int i = 0; i < m_vmultisel.Size(); i++)
+   for (int i = 0; i < m_vmultisel.Size(); i++)
    {
        HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, 1);
 
@@ -6762,11 +6762,11 @@ void PinTable::Paste(const bool fAtLocation, int x, int y)
    bool fError = false;
    int cpasted = 0;
 
-   if(m_vmultisel.Size() == 1)
+   if (m_vmultisel.Size() == 1)
    {
        // User wants to paste the copied coordinates of a Control Point
        ISelect *pItem = HitTest(x, y);
-       if(pItem->GetItemType() == eItemDragPoint)
+       if (pItem->GetItemType() == eItemDragPoint)
        {
            DragPoint *pPoint = (DragPoint*)pItem;
            pPoint->Paste();
@@ -6945,7 +6945,7 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
       {
          // Make this new selection the primary one for the group
          piSelect = m_vmultisel.ElementAt(0);
-         if ( piSelect!=NULL )
+         if (piSelect != NULL)
             piSelect->m_selectstate = eMultiSelected;
          m_vmultisel.InsertElementAt(psel, 0);
       }
@@ -7300,7 +7300,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 {
     CComObject<PinTable> *pt;
 
-    switch(uMsg)
+    switch (uMsg)
     {
         case WM_CLOSE:
         {
@@ -7312,7 +7312,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         case WM_TIMER:
         {
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            switch(wParam)
+            switch (wParam)
             {
                 case TIMER_ID_AUTOSAVE:
                 {
@@ -7334,16 +7334,16 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
         case WM_SETCURSOR:
         {
-            if(LOWORD(lParam) == HTCLIENT)
+            if (LOWORD(lParam) == HTCLIENT)
             {
                 char *cursorid;
                 HINSTANCE hinst = g_hinst;
 
-                if(g_pvp->m_ToolCur == ID_TABLE_MAGNIFY)
+                if (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY)
                 {
                     cursorid = MAKEINTRESOURCE(IDC_MAGNIFY);
                 }
-                else if(g_pvp->m_ToolCur == ID_INSERT_TARGET)
+                else if (g_pvp->m_ToolCur == ID_INSERT_TARGET)
                 {
                     // special case for targets, which are particular walls
                     cursorid = MAKEINTRESOURCE(IDC_TARGET);
@@ -7351,7 +7351,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 else
                 {
                     ItemTypeEnum type = EditableRegistry::TypeFromToolID(g_pvp->m_ToolCur);
-                    if(type != eItemInvalid)
+                    if (type != eItemInvalid)
                         cursorid = MAKEINTRESOURCE(EditableRegistry::GetCursorID(type));
                     else
                     {
@@ -7378,7 +7378,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
         case WM_MOUSEACTIVATE:
         case WM_ACTIVATE:
-        if(LOWORD(wParam) != WA_INACTIVE)
+        if (LOWORD(wParam) != WA_INACTIVE)
         {
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             pt->m_pvp->m_ptableActive = pt;
@@ -7393,7 +7393,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             const short x = (short)(lParam & 0xffff);
             const short y = (short)((lParam >> 16) & 0xffff);
-            if((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
+            if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
             {
                 pt->DoLButtonDown(x, y);
             }
@@ -7428,16 +7428,16 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             const short y = (short)((lParam >> 16) & 0xffff);
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             const bool middleMouseButtonPressed = ((GetKeyState(VK_MBUTTON) & 0x100) != 0);  //((GetKeyState(VK_MENU) & 0x80000000) != 0);
-            if(middleMouseButtonPressed)
+            if (middleMouseButtonPressed)
             {
                 // panning feature starts here...if the user holds the middle mouse button and moves the mouse 
                 // everything is moved in the direction of the mouse was moved
                 int dx = abs(pt->m_oldMousePosX - x);
                 int dy = abs(pt->m_oldMousePosY - y);
-                if(pt->m_oldMousePosX > x)  pt->m_offset.x += dx;
-                if(pt->m_oldMousePosX < x)  pt->m_offset.x -= dx;
-                if(pt->m_oldMousePosY > y)  pt->m_offset.y += dy;
-                if(pt->m_oldMousePosY < y)  pt->m_offset.y -= dy;
+                if (pt->m_oldMousePosX > x)  pt->m_offset.x += dx;
+                if (pt->m_oldMousePosX < x)  pt->m_offset.x -= dx;
+                if (pt->m_oldMousePosY > y)  pt->m_offset.y += dy;
+                if (pt->m_oldMousePosY < y)  pt->m_offset.y -= dy;
                 pt->SetDirtyDraw();
                 pt->SetMyScrollInfo();
                 pt->m_oldMousePosX = x;
@@ -7465,7 +7465,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             long x = (long)(lParam & 0xffff);
             long y = (long)((lParam >> 16) & 0xffff);
             POINT p;
-            if(GetCursorPos(&p) && ::ScreenToClient(hwnd, &p))
+            if (GetCursorPos(&p) && ::ScreenToClient(hwnd, &p))
             {
                 x = p.x;
                 y = p.y;
@@ -7488,7 +7488,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             si.cbSize = sizeof(SCROLLINFO);
             si.fMask = SIF_ALL;
             ::GetScrollInfo(hwnd, SB_HORZ, &si);
-            switch(LOWORD(wParam))
+            switch (LOWORD(wParam))
             {
                 case SB_LINELEFT:
                 pt->m_offset.x -= si.nPage / 10;
@@ -7523,7 +7523,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             si.cbSize = sizeof(SCROLLINFO);
             si.fMask = SIF_ALL;
             ::GetScrollInfo(hwnd, SB_VERT, &si);
-            switch(LOWORD(wParam))
+            switch (LOWORD(wParam))
             {
                 case SB_LINEUP:
                 pt->m_offset.y -= si.nPage / 10;
@@ -7556,7 +7556,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             const short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
             const int ksctrl = GetKeyState(VK_CONTROL);
-            if((ksctrl & 0x80000000))
+            if ((ksctrl & 0x80000000))
             {
                 POINT curpt;
                 curpt.x = GET_X_LPARAM(lParam);
@@ -7564,7 +7564,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 ::ScreenToClient(hwnd, &curpt);
                 const short x = (short)curpt.x;
                 const short y = (short)curpt.y;
-                if((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
+                if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
                 {
                     pt->DoLButtonDown(x, y, zDelta != -120);
                 }
@@ -7582,7 +7582,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         case WM_SIZE:
         {
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            if(pt) // Window might have just been created
+            if (pt) // Window might have just been created
             {
                 pt->SetMyScrollInfo();
                 pt->m_fDirtyDraw = true;
@@ -7599,7 +7599,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         case DONE_AUTOSAVE:
         {
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            if(lParam == S_OK)
+            if (lParam == S_OK)
             {
                 g_pvp->SetActionCur("");
             }
@@ -8118,18 +8118,18 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
        || (_stricmp( m_BG_szImage[BG_FULLSCREEN], ppi->m_szName ) == 0)
        || (_stricmp( m_szImageColorGrade, ppi->m_szName ) == 0))
    {
-       ListView_SetItemText( hwndListView, index, 3, usedStringYes );
+       ListView_SetItemText(hwndListView, index, 3, usedStringYes);
    }
    else
    {
-       for(size_t i=0; i < m_vedit.size(); i++)
+       for (size_t i = 0; i < m_vedit.size(); i++)
        {
            bool inUse=false;
            IEditable * const pEdit=m_vedit[i];
            if(pEdit == NULL)
                continue;
 
-           switch(pEdit->GetItemType())
+           switch (pEdit->GetItemType())
            {
                case eItemDispReel:
                {
@@ -8221,9 +8221,9 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
                }
            }
 
-           if(inUse)
+           if (inUse)
            {
-               ListView_SetItemText( hwndListView, index, 3, usedStringYes );
+               ListView_SetItemText(hwndListView, index, 3, usedStringYes);
                break;
            }
        }//for
@@ -8525,21 +8525,21 @@ void PinTable::RemoveMaterial(Material * const pmat)
    delete pmat;
 }
 
-void PinTable::AddDbgLight( Light *plight )
+void PinTable::AddDbgLight(Light *plight)
 {
     bool alreadyIn = false;
     size_t i;
-    char *lightName = GetElementName( plight );
+    char *lightName = GetElementName(plight);
 
-    for(i = 0; i < m_dbgChangedMaterials.size(); i++)
+    for (i = 0; i < m_dbgChangedMaterials.size(); i++)
     {
-        if(strcmp( lightName, m_dbgChangedLights[i]->name) == 0)
+        if (strcmp(lightName, m_dbgChangedLights[i]->name) == 0)
         {
             alreadyIn = true;
             break;
         }
     }
-    if(alreadyIn)
+    if (alreadyIn)
     {
         m_dbgChangedLights[i]->color1 = plight->m_d.m_color;
         m_dbgChangedLights[i]->color2 = plight->m_d.m_color2;
@@ -8557,31 +8557,31 @@ void PinTable::AddDbgLight( Light *plight )
         DebugLightData *data = new DebugLightData;
         data->color1 = plight->m_d.m_color;
         data->color2 = plight->m_d.m_color2;
-        plight->get_BulbModulateVsAdd( &data->bulbModulateVsAdd );
-        plight->get_FadeSpeedDown( &data->fadeSpeedDown );
-        plight->get_FadeSpeedUp( &data->fadeSpeedUp );
-        plight->get_State( &data->lightstate );
-        plight->get_Falloff( &data->falloff );
-        plight->get_FalloffPower( &data->falloffPower );
-        plight->get_Intensity( &data->intensity );
-        plight->get_TransmissionScale( &data->transmissionScale );
-        strcpy_s( data->name, lightName );
+        plight->get_BulbModulateVsAdd(&data->bulbModulateVsAdd);
+        plight->get_FadeSpeedDown(&data->fadeSpeedDown);
+        plight->get_FadeSpeedUp(&data->fadeSpeedUp);
+        plight->get_State(&data->lightstate);
+        plight->get_Falloff(&data->falloff);
+        plight->get_FalloffPower(&data->falloffPower);
+        plight->get_Intensity(&data->intensity);
+        plight->get_TransmissionScale(&data->transmissionScale);
+        strcpy_s(data->name, lightName);
         m_dbgChangedLights.push_back(data);
     }
 }
 
-void PinTable::UpdateDbgLight( void )
+void PinTable::UpdateDbgLight(void)
 {
     bool somethingChanged = false;
-    for(size_t i = 0; i < m_dbgChangedLights.size(); i++)
+    for (size_t i = 0; i < m_dbgChangedLights.size(); i++)
     {
         const DebugLightData * const data = m_dbgChangedLights[i];
-        for(size_t t = 0; t < m_vedit.size(); t++)
+        for (size_t t = 0; t < m_vedit.size(); t++)
         {
-            if(m_vedit[t]->GetItemType() == eItemLight)
+            if (m_vedit[t]->GetItemType() == eItemLight)
             {
                 Light * const plight = (Light*)m_vedit[t];
-                if(strcmp( data->name, GetElementName( plight ) ) == 0)
+                if (strcmp(data->name, GetElementName(plight)) == 0)
                 {
                     plight->m_d.m_color = data->color1;
                     plight->m_d.m_color2 = data->color2;
@@ -8600,9 +8600,9 @@ void PinTable::UpdateDbgLight( void )
         }
     }
     m_dbgChangedLights.clear();
-    if(somethingChanged)
+    if (somethingChanged)
     {
-        SetNonUndoableDirty( eSaveDirty );
+        SetNonUndoableDirty(eSaveDirty);
     }
 }
 
@@ -8689,7 +8689,7 @@ STDMETHODIMP PinTable::put_Image(BSTR newVal)
    char szImage[MAXTOKEN];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
    const Texture * const tex = GetImage(szImage);
-   if(tex && tex->IsHDR())
+   if (tex && tex->IsHDR())
    {
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
@@ -9836,7 +9836,7 @@ STDMETHODIMP PinTable::put_ShowFSS(VARIANT_BOOL newVal)
 
    m_BG_enable_FSS = !!newVal;
 
-   if(m_BG_enable_FSS)
+   if (m_BG_enable_FSS)
       m_BG_current_set = FULL_SINGLE_SCREEN;
    else
       GetRegInt("Player", "BGSet", (int*)&m_BG_current_set);
@@ -9944,7 +9944,7 @@ STDMETHODIMP PinTable::put_ColorGradeImage(BSTR newVal)
    char szImage[MAXTOKEN];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
    const Texture * const tex = GetImage(szImage);
-   if(tex && (tex->m_width != 256 || tex->m_height != 16))
+   if (tex && (tex->m_width != 256 || tex->m_height != 16))
    {
        ShowError("Wrong image size, needs to be 256x16 resolution");
        return E_FAIL;
@@ -10428,7 +10428,7 @@ STDMETHODIMP PinTable::put_EnvironmentImage(BSTR newVal)
    char szImage[MAXTOKEN];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
    const Texture * const tex = GetImage(szImage);
-   if(tex && (tex->m_width != tex->m_height*2))
+   if (tex && (tex->m_width != tex->m_height*2))
    {
        ShowError("Wrong image size, needs to be 2x width in comparison to height");
        return E_FAIL;
@@ -11105,7 +11105,7 @@ STDMETHODIMP PinTable::put_BallFrontDecal(BSTR newVal)
    char szImage[MAXTOKEN];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
    const Texture * const tex = GetImage(szImage);
-   if(tex && tex->IsHDR())
+   if (tex && tex->IsHDR())
    {
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;

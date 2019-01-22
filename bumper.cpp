@@ -437,7 +437,7 @@ void Bumper::UpdateSkirt(RenderDevice *pd3dDevice, const bool doCalculation)
    const float SKIRT_TILT = 5.0f;
 
    const float scalexy = m_d.m_radius;
-   float rotx=0.0f, roty=0.0f;
+   float rotx = 0.0f, roty = 0.0f;
 
    if (doCalculation)
    {
@@ -509,6 +509,7 @@ void Bumper::RenderDynamic()
    if (m_d.m_fRingVisible)
    {
       const float limit = m_d.m_ringDropOffset + (m_d.m_heightScale*0.5f)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+
       if (state == 1)
       {
          m_ringAnimate = true;
@@ -538,7 +539,7 @@ void Bumper::RenderDynamic()
                m_ringAnimate = false;
             }
          }
-         if(m_ringVertexBuffer)
+         if (m_ringVertexBuffer)
             UpdateRing(pd3dDevice);
       }
 
@@ -554,18 +555,18 @@ void Bumper::RenderDynamic()
 
    if (m_d.m_fSkirtVisible)
    {
-       if(m_enableSkirtAnimation)
+       if (m_enableSkirtAnimation)
        {
-          if(state == 1)
+          if (state == 1)
           {
               m_doSkirtAnimation = true;
               UpdateSkirt(pd3dDevice, true);
               m_skirtCounter = 0.0f;
           }
-          if(m_doSkirtAnimation)
+          if (m_doSkirtAnimation)
           {
               m_skirtCounter += /*1.0f**/diff_time_msec;
-              if(m_skirtCounter > 160.0f)
+              if (m_skirtCounter > 160.0f)
               {
                   m_doSkirtAnimation = false;
                   UpdateSkirt(pd3dDevice, false);
@@ -581,7 +582,6 @@ void Bumper::RenderDynamic()
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
       RenderSocket(pd3dDevice, mat);
    }
-
 
    if (m_d.m_fBaseVisible)
    {
@@ -777,7 +777,7 @@ void Bumper::RenderSetup()
    if (m_d.m_fBaseVisible)
    {
       m_baseTexture.CreateFromResource(IDB_BUMPER_BASE);
-      if(m_baseIndexBuffer)
+      if (m_baseIndexBuffer)
          m_baseIndexBuffer->release();
       m_baseIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperBaseNumIndices, bumperBaseIndices);
 
@@ -796,7 +796,7 @@ void Bumper::RenderSetup()
    {
       m_skirtTexture.CreateFromResource(IDB_BUMPER_SKIRT);
        
-      if(m_socketIndexBuffer)
+      if (m_socketIndexBuffer)
          m_socketIndexBuffer->release();
       m_socketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperSocketNumIndices, bumperSocketIndices);
 
@@ -1028,7 +1028,7 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(RDLI))
    {
-      pbr->GetFloat (&m_d.m_ringDropOffset);
+      pbr->GetFloat(&m_d.m_ringDropOffset);
    } 
    else if (id == FID(SURF))
    {
@@ -1535,7 +1535,7 @@ STDMETHODIMP Bumper::put_EnableSkirtAnimation(VARIANT_BOOL newVal)
 STDMETHODIMP Bumper::PlayHit()
 {
     if ( m_pbumperhitcircle )
-        m_pbumperhitcircle->m_bumperanim_fHitEvent=true;
+        m_pbumperhitcircle->m_bumperanim_fHitEvent = true;
     return S_OK;
 }
 

@@ -71,7 +71,7 @@ void Spinner::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Spinner", "AngleMax", m_d.m_angleMax);
    SetRegValueFloat("DefaultProps\\Spinner", "AngleMin", m_d.m_angleMin);
    SetRegValueFloat("DefaultProps\\Spinner", "Elasticity", m_d.m_elasticity);
-   SetRegValueFloat("DefaultProps\\Spinner","AntiFriction", m_d.m_damping);
+   SetRegValueFloat("DefaultProps\\Spinner", "AntiFriction", m_d.m_damping);
    SetRegValueFloat("DefaultProps\\Spinner", "Scatter", m_d.m_scatter);
    SetRegValue("DefaultProps\\Spinner", "Visible", REG_DWORD, &m_d.m_fVisible, 4);
    SetRegValueBool("DefaultProps\\Spinner", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
@@ -330,7 +330,7 @@ void Spinner::ExportMesh(FILE *f)
 void Spinner::UpdatePlate(RenderDevice *pd3dDevice, Vertex3D_NoTex2 *vertBuffer)
 {
    // early out in case still same rotation
-   if( m_phitspinner->m_spinnerMover.m_angle == vertexBuffer_spinneranimangle)
+   if (m_phitspinner->m_spinnerMover.m_angle == vertexBuffer_spinneranimangle)
        return;
 
    vertexBuffer_spinneranimangle = m_phitspinner->m_spinnerMover.m_angle;
@@ -367,7 +367,7 @@ void Spinner::UpdatePlate(RenderDevice *pd3dDevice, Vertex3D_NoTex2 *vertBuffer)
       buf[i].tu = spinnerPlate[i].tu;
       buf[i].tv = spinnerPlate[i].tv;
    }
-   if ( pd3dDevice!=NULL && vertBuffer==NULL)
+   if (pd3dDevice != NULL && vertBuffer == NULL)
       plateVertexBuffer->unlock();
 }
 
@@ -793,7 +793,7 @@ STDMETHODIMP Spinner::put_Image(BSTR newVal)
    char szImage[MAXTOKEN];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szImage);
-   if(tex && tex->IsHDR())
+   if (tex && tex->IsHDR())
    {
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;

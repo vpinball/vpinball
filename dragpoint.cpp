@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 Vertex3Ds DragPoint::m_copyPoint;
-bool      DragPoint::m_pointCopied=false;
+bool      DragPoint::m_pointCopied = false;
 
 IHaveDragPoints::IHaveDragPoints()
 {
@@ -636,7 +636,7 @@ void DragPoint::Copy()
 
 void DragPoint::Paste()
 {
-    if(m_pointCopied)
+    if (m_pointCopied)
         m_v = m_copyPoint;
 }
 

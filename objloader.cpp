@@ -593,11 +593,11 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
        std::size_t pos = fname.find_last_of( "." );
        string name = fname.substr( 0, pos );
        char number[32] = { 0 };
-       for(unsigned int i = 0; i < mesh.m_animationFrames.size(); i++)
+       for (unsigned int i = 0; i < mesh.m_animationFrames.size(); i++)
        {
            std::vector<Vertex3D_NoTex2> vertsTmp = mesh.m_vertices;
 
-           for(unsigned int t = 0; t < mesh.NumVertices(); t++)
+           for (unsigned int t = 0; t < mesh.NumVertices(); t++)
            {
                vertsTmp[t].x = mesh.m_animationFrames[i].m_frameVerts[t].x;
                vertsTmp[t].y = mesh.m_animationFrames[i].m_frameVerts[t].y;

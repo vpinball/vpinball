@@ -182,7 +182,7 @@ void HitTarget::SetDefaults(bool fromMouseClick)
        m_d.m_targetType = DropTargetSimple;
 
    m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
-   if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple )
+   if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
        m_d.m_dropSpeed = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "DropSpeed", 0.5f) : 0.5f;
    else
        m_d.m_dropSpeed = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "DropSpeed", 0.2f) : 0.2f;
@@ -411,7 +411,7 @@ void HitTarget::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const 
    obj->m_threshold = m_d.m_threshold;
    obj->m_fEnabled = m_d.m_fCollidable;
    obj->m_ObjType = eHitTarget;
-   obj->m_obj = (IFireEvents*) this;
+   obj->m_obj = (IFireEvents*)this;
    if (setHitObject)
    {
       if (m_d.m_fUseHitEvent)
@@ -450,7 +450,7 @@ void HitTarget::GenerateMesh(std::vector<Vertex3D_NoTex2> &buf)
 {
    SetMeshType(m_d.m_targetType);
 
-   Matrix3D fullMatrix,tempMatrix;
+   Matrix3D fullMatrix, tempMatrix;
    fullMatrix.SetIdentity();
    tempMatrix.SetIdentity();
    tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
@@ -727,7 +727,7 @@ void HitTarget::RenderObject(RenderDevice *pd3dDevice)
    pd3dDevice->basicShader->End();
 
 #ifdef TWOSIDED_TRANSPARENCY
-   if(mat->m_bOpacityActive)
+   if (mat->m_bOpacityActive)
    {
        pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
        pd3dDevice->basicShader->Begin(0);
@@ -1097,7 +1097,7 @@ STDMETHODIMP HitTarget::put_Image(BSTR newVal)
    char szImage[MAXTOKEN];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szImage);
-   if(tex && tex->IsHDR())
+   if (tex && tex->IsHDR())
    {
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;

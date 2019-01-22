@@ -17,7 +17,7 @@ Rubber::Rubber()
    memset(m_d.m_szImage, 0, MAXTOKEN);
    memset(m_d.m_szMaterial, 0, 32);
    memset(m_d.m_szPhysicsMaterial, 0, 32);
-   m_d.m_fOverwritePhysics=true;
+   m_d.m_fOverwritePhysics = true;
    m_ptable = NULL;
    m_d.m_tdr.m_fTimerEnabled = false;
    m_d.m_tdr.m_TimerInterval = 0;
@@ -705,8 +705,8 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(ROTY), m_d.m_rotY);
    bw.WriteFloat(FID(ROTZ), m_d.m_rotZ);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
-   bw.WriteString( FID( MAPH ), m_d.m_szPhysicsMaterial );
-   bw.WriteBool( FID( OVPH ), m_d.m_fOverwritePhysics );
+   bw.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
+   bw.WriteBool(FID(OVPH), m_d.m_fOverwritePhysics);
 
    ISelect::SaveData(pstm, hcrypthash);
 
@@ -822,13 +822,13 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_d.m_rotZ);
    }
-   else if ( id == FID( MAPH ) )
+   else if (id == FID(MAPH))
    {
-       pbr->GetString( m_d.m_szPhysicsMaterial );
+      pbr->GetString(m_d.m_szPhysicsMaterial);
    }
-   else if ( id == FID( OVPH ) )
+   else if (id == FID(OVPH))
    {
-       pbr->GetBool( &m_d.m_fOverwritePhysics);
+      pbr->GetBool(&m_d.m_fOverwritePhysics);
    }
    else
    {
@@ -1082,7 +1082,7 @@ STDMETHODIMP Rubber::put_Image(BSTR newVal)
 
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, 32, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(m_szImage);
-   if(tex && tex->IsHDR())
+   if (tex && tex->IsHDR())
    {
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
@@ -1356,7 +1356,7 @@ STDMETHODIMP Rubber::put_RotZ(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Rubber::get_PhysicsMaterial( BSTR *pVal )
+STDMETHODIMP Rubber::get_PhysicsMaterial(BSTR *pVal)
 {
     WCHAR wz[512];
 
@@ -1366,7 +1366,7 @@ STDMETHODIMP Rubber::get_PhysicsMaterial( BSTR *pVal )
     return S_OK;
 }
 
-STDMETHODIMP Rubber::put_PhysicsMaterial( BSTR newVal )
+STDMETHODIMP Rubber::put_PhysicsMaterial(BSTR newVal)
 {
     STARTUNDO
 
@@ -1377,14 +1377,14 @@ STDMETHODIMP Rubber::put_PhysicsMaterial( BSTR newVal )
     return S_OK;
 }
 
-STDMETHODIMP Rubber::get_OverwritePhysics( VARIANT_BOOL *pVal )
+STDMETHODIMP Rubber::get_OverwritePhysics(VARIANT_BOOL *pVal)
 {
     *pVal = (VARIANT_BOOL)FTOVB( m_d.m_fOverwritePhysics );
 
     return S_OK;
 }
 
-STDMETHODIMP Rubber::put_OverwritePhysics( VARIANT_BOOL newVal )
+STDMETHODIMP Rubber::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
     STARTUNDO
 
@@ -1659,7 +1659,7 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
    fullMatrix.Multiply(tempMat, vertMatrix);
    tempMat.SetScaling(1.f, 1.f, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
    tempMat.Multiply(vertMatrix, vertMatrix);
-   if ( height==m_d.m_hitHeight )   // do not z-scale the hit mesh
+   if (height == m_d.m_hitHeight)   // do not z-scale the hit mesh
       tempMat.SetTranslation(middlePoint.x, middlePoint.y, height + m_ptable->m_tableheight);
    else
       tempMat.SetTranslation(middlePoint.x, middlePoint.y, height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_ptable->m_tableheight);
@@ -1705,30 +1705,30 @@ void Rubber::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
-      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 116 ), FALSE );
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 116), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 120), FALSE);
-      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), FALSE );
-      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS ), FALSE );
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), FALSE);
    }
    else
    {
-      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS ), TRUE );
-      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 116 ), TRUE );
-      if( m_d.m_fOverwritePhysics )
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), TRUE);
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 116), TRUE);
+      if (m_d.m_fOverwritePhysics)
       {
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), FALSE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 110 ), TRUE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 114 ), TRUE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 115 ), TRUE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 120 ), TRUE );
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), TRUE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), TRUE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), TRUE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 120), TRUE);
       }
       else
       {
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), TRUE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 110 ), FALSE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 114 ), FALSE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 115 ), FALSE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 120 ), FALSE );
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), TRUE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), FALSE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 120), FALSE);
       }
    }
 }
