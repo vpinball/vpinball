@@ -33,6 +33,8 @@ public:
    TimerDataRoot m_tdr;
 
    float m_threshold;			// speed at which ball needs to hit to register a hit
+   float m_currentHitThreshold;
+
    float m_elasticity;
    float m_elasticityFalloff;
    float m_friction;
@@ -159,6 +161,7 @@ public:
    STDMETHOD(put_PhysicsMaterial)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_OverwritePhysics)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_OverwritePhysics)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_HitThreshold)(/*[out, retval]*/ float *pVal);
 
 
    virtual void MoveOffset(const float dx, const float dy);

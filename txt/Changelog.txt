@@ -1,5 +1,6 @@
 VP 10.6.0 Changelog
 ------------------------
+- add support to read out the current hit threshold if the ball hits a Primitive or a HitTarget
 
 - implement proper sRGB pipeline for runtime filtering (only textures that are used in the 'standard' material)
 

@@ -71,6 +71,8 @@ public:
    float m_friction;
    float m_scatter;
 
+   float m_currentHitThreshold; // while playing and the ball hits the mesh the hit threshold is updated here
+
    float m_depthBias;      // for determining depth sorting
 
    float m_edgeFactorUI;   // for drawing the mesh in the editorUI
@@ -234,6 +236,7 @@ public:
    STDMETHOD(StopAnim)();
    STDMETHOD(ContinueAnim)(float speed);
    STDMETHOD(ShowFrame)(float frame);
+   STDMETHOD(get_HitThreshold)(/*[out, retval]*/ float *pVal);
 
    Primitive();
    virtual ~Primitive();

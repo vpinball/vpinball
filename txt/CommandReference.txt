@@ -10,6 +10,7 @@ Changelog:
 - add support for non-mechanical/digital Position() plunger call
 - add EnableSkirtAnimation to the bumper element
 - add GetCustomParam to access custom command line parameters 
+- add support to read out the current hit threshold if the ball hits a Primitive or a HitTarget
 10.5:
 - EOSTorque, EOSTorqueAngle and Scatter of flipper element can now be changed by script
 - document missing DMDColoredPixels and add simple example for DMD access
@@ -624,6 +625,7 @@ RotAndTra8(float) or ObjRotZ(float) - rotates the Z axis of the primitive's loca
                                won't have an effect. This is useful for objects like posts or static toys, because this won't have an impact of the perfomance
 HasHitEvent(bool) - enables the support for a hit event in the script (it's the same as for walls)
 Threshold(float) - hit threshold for firing the hit event
+HitThreshold(float) - holds the current hit threshold if a ball has hit the primitive
 Collidable(bool) - enables/disables collision detection, this can be used from within the script.
 Elasticity(float)
 ElasticityFalloff(float)
@@ -881,6 +883,8 @@ Variables
 *HasHitEvent(bool)           - if set a hit event is fired when the ball hits the drop/hit target without animation. An additional dropped/raised event
                                is fired for drop targets after the mesh animation is over.
 *Collidable(bool)
+Threshold(float)             - hit threshold for firing the hit event
+HitThreshold(float)          - holds the current hit threshold if a ball has hit the target
 Visible(bool)
 Material(string)
 Image(string) - texture name

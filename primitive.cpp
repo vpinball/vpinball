@@ -3075,6 +3075,12 @@ STDMETHODIMP Primitive::put_OverwritePhysics( VARIANT_BOOL newVal )
         return S_OK;
 }
 
+STDMETHODIMP Primitive::get_HitThreshold(float *pVal)
+{
+   *pVal = m_d.m_currentHitThreshold;
+   return S_OK;
+}
+
 STDMETHODIMP Primitive::get_DisplayTexture(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisplayTexture);
