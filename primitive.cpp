@@ -597,7 +597,6 @@ void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
            obj->m_scatter = ANGTORAD(m_d.m_scatter);
        }
 
-       obj->m_threshold = m_d.m_threshold;
        obj->m_fEnabled = m_d.m_fCollidable;
    }
    else
@@ -608,7 +607,7 @@ void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
        obj->m_scatter = ANGTORAD(m_ptable->m_scatter);
        obj->m_fEnabled = true;
    }
-
+   obj->m_threshold = m_d.m_threshold;
    obj->m_ObjType = ePrimitive;
    obj->m_obj = (IFireEvents *) this;
    obj->m_e = true;
