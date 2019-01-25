@@ -446,7 +446,7 @@ void Gate::EndPlay()
    }
 }
 
-void Gate::UpdateWire(RenderDevice *pd3dDevice)
+void Gate::UpdateWire()
 {
    if (m_phitgate->m_gateMover.m_angle == m_vertexbuffer_angle)
       return;
@@ -486,9 +486,11 @@ void Gate::UpdateWire(RenderDevice *pd3dDevice)
    wireVertexBuffer->unlock();
 }
 
-void Gate::RenderObject(RenderDevice* pd3dDevice)
+void Gate::RenderObject()
 {
-   UpdateWire(pd3dDevice);
+   UpdateWire();
+
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
@@ -514,8 +516,6 @@ void Gate::RenderObject(RenderDevice* pd3dDevice)
 
 void Gate::RenderDynamic()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    TRACE_FUNCTION();
 
    if (!m_phitgate->m_gateMover.m_fVisible)
@@ -524,7 +524,7 @@ void Gate::RenderDynamic()
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
 
-   RenderObject(pd3dDevice);
+   RenderObject();
 }
 
 void Gate::ExportMesh(FILE *f)
@@ -615,7 +615,7 @@ void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
 
 void Gate::RenderSetup()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (bracketIndexBuffer)
       bracketIndexBuffer->release();

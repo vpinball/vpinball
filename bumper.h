@@ -125,11 +125,11 @@ public:
 
 
 private:
-   void RenderBase(RenderDevice *pd3dDevice, const Material * const baseMaterial);
-   void RenderCap(RenderDevice *pd3dDevice, const Material * const capMaterial);
-   void RenderSocket(RenderDevice *pd3dDevice, const Material * const baseMaterial);
-   void UpdateRing(RenderDevice *pd3dDevice);
-   void UpdateSkirt(RenderDevice *pd3dDevice, const bool doCalculation);
+   void RenderBase(const Material * const baseMaterial);
+   void RenderCap(const Material * const capMaterial);
+   void RenderSocket(const Material * const baseMaterial);
+   void UpdateRing();
+   void UpdateSkirt(const bool doCalculation);
    void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
    void GenerateSocketMesh(Vertex3D_NoTex2 *buf);
    void GenerateRingMesh(Vertex3D_NoTex2 *buf);

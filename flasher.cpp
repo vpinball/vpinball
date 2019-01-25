@@ -402,7 +402,7 @@ void Flasher::UpdateMesh()
 
 void Flasher::RenderSetup()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
@@ -1296,7 +1296,7 @@ STDMETHODIMP Flasher::put_ImageAlignment(RampImageAlignment newVal)
 
 void Flasher::RenderDynamic()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    TRACE_FUNCTION();
 

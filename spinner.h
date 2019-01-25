@@ -90,7 +90,7 @@ public:
    virtual void ExportMesh(FILE *f);
 
    void WriteRegDefaults();
-   void UpdatePlate(RenderDevice *pd3dDevice, Vertex3D_NoTex2 *vertBuffer = NULL);
+   void UpdatePlate(Vertex3D_NoTex2 * const vertBuffer);
    void UpdateUnitsInfo();
 
    PinTable *m_ptable;

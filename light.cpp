@@ -541,7 +541,7 @@ void Light::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-void Light::RenderBulbMesh(RenderDevice *pd3dDevice)
+void Light::RenderBulbMesh()
 {
    Material mat;
    mat.m_cBase = 0x181818;
@@ -556,6 +556,9 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice)
    mat.m_fGlossyImageLerp = 1.0f;
    mat.m_fThickness = 0.05f;
    mat.m_cClearcoat = 0;
+
+   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    pd3dDevice->basicShader->SetTechnique(mat.m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    pd3dDevice->basicShader->SetMaterial(&mat);
 
@@ -599,7 +602,7 @@ void Light::RenderDynamic()
       return;
 
    if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh)
-      RenderBulbMesh(pd3dDevice);
+      RenderBulbMesh();
 
    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
    m_d.m_time_msec = g_pplayer->m_time_msec;
@@ -998,7 +1001,7 @@ void Light::RenderStatic()
    RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (m_d.m_BulbLight && m_d.m_showBulbMesh && m_d.m_staticBulbMesh)
-      RenderBulbMesh(pd3dDevice);
+      RenderBulbMesh();
 }
 
 void Light::SetObjectPos()

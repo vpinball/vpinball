@@ -140,7 +140,7 @@ void draw_transparent_box( F32 sx, F32 sy, const F32 x, const F32 y, const U32 c
 
    g_pplayer->m_pin3d.DisableAlphaBlend();
 
-   g_pplayer->Spritedraw( y, x,
+   g_pplayer->Spritedraw(y, x,
       sy, sx,
       col,
       (Texture*)NULL,

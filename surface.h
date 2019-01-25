@@ -141,10 +141,10 @@ private:
    void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
    void AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2);
 
-   void RenderSlingshots(RenderDevice* pd3dDevice);
-   void RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop);
-   void PrepareWallsAtHeight(RenderDevice* pd3dDevice);
-   void PrepareSlingshots(RenderDevice *pd3dDevice);
+   void RenderSlingshots();
+   void RenderWallsAtHeight(const bool fDrop);
+   void PrepareWallsAtHeight();
+   void PrepareSlingshots();
    void GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Vertex3D_NoTex2> &sideBuf, std::vector<WORD> &topBottomIndices, std::vector<WORD> &sideIndices);
 
    void FreeBuffers();

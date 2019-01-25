@@ -640,20 +640,17 @@ float Rubber::GetDepth(const Vertex3Ds& viewDir) const
 
 void Rubber::RenderSetup()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   GenerateVertexBuffer(pd3dDevice);
+   GenerateVertexBuffer();
 }
 
 void Rubber::RenderStatic()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    if (m_d.m_staticRendering)
    {
       if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
          return;
 
-      RenderObject(pd3dDevice);
+      RenderObject();
    }
 }
 
@@ -1396,7 +1393,7 @@ STDMETHODIMP Rubber::put_OverwritePhysics(VARIANT_BOOL newVal)
 }
 
 
-void Rubber::RenderObject(RenderDevice * const pd3dDevice)
+void Rubber::RenderObject()
 {
    TRACE_FUNCTION();
 
@@ -1413,7 +1410,7 @@ void Rubber::RenderObject(RenderDevice * const pd3dDevice)
    if (dynamicVertexBufferRegenerate)
        UpdateRubber(true, m_d.m_height);
 
-   pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
@@ -1442,14 +1439,12 @@ void Rubber::RenderObject(RenderDevice * const pd3dDevice)
 // Also has less drawing calls by bundling seperate calls.
 void Rubber::RenderDynamic()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    if (!m_d.m_staticRendering)
    {
       if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
          return;
 
-      RenderObject(pd3dDevice);
+      RenderObject();
    }
 }
 
@@ -1623,11 +1618,13 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! h
    delete[] middlePoints;
 }
 
-void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
+void Rubber::GenerateVertexBuffer()
 {
    dynamicVertexBufferRegenerate = true;
 
    GenerateMesh();
+
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (dynamicVertexBuffer)
       dynamicVertexBuffer->release();

@@ -361,7 +361,7 @@ void Plunger::SetDefaultPhysics(bool fromMouseClick)
 
 void Plunger::RenderDynamic()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    TRACE_FUNCTION();
 
@@ -452,7 +452,7 @@ static const char *nextTipToken(const char* &p)
 
 void Plunger::RenderSetup()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y) + m_d.m_zAdjust;
    const float stroke = m_d.m_stroke;
