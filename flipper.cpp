@@ -719,7 +719,7 @@ STDMETHODIMP Flipper::RotateToStart() // return to park, key/button up/released
 }
 void Flipper::RenderDynamic()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    TRACE_FUNCTION();
 
    if (m_phitflipper && !m_phitflipper->m_flipperMover.m_fVisible)
@@ -972,7 +972,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 
 void Flipper::RenderSetup()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (indexBuffer)
       indexBuffer->release();

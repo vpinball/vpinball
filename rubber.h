@@ -151,9 +151,9 @@ private:
 
    Vertex2D *GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D ** const pMiddlePoints, const float _accuracy = -1.f);
 
-   void GenerateVertexBuffer(RenderDevice* pd3dDevice);
+   void GenerateVertexBuffer();
 
-   void RenderObject(RenderDevice * const pd3dDevice);
+   void RenderObject();
    void UpdateRubber(const bool updateVB, const float height);
    void GenerateMesh(const int _accuracy = -1, const bool createHitShape = false);
    void DrawRubberMesh(Sur * const psur);

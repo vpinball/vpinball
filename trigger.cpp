@@ -538,7 +538,7 @@ void Trigger::TriggerAnimationUnhit()
    unhitEvent = true;
 }
 
-void Trigger::UpdateAnimation(RenderDevice *pd3dDevice)
+void Trigger::UpdateAnimation()
 {
    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
    m_d.m_time_msec = g_pplayer->m_time_msec;
@@ -553,7 +553,6 @@ void Trigger::UpdateAnimation(RenderDevice *pd3dDevice)
        animLimit = 25.0f;
 
    const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-
 
    if (hitEvent)
    {
@@ -635,9 +634,9 @@ void Trigger::RenderDynamic()
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
 
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   UpdateAnimation();
 
-   UpdateAnimation(pd3dDevice);
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
@@ -775,8 +774,6 @@ void Trigger::GenerateMesh()
 
 void Trigger::RenderSetup()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    m_d.m_time_msec = g_pplayer->m_time_msec;
 
    hitEvent = false;
@@ -810,6 +807,8 @@ void Trigger::RenderSetup()
       m_numVertices = triggerStarNumVertices;
       m_numIndices = triggerStarNumIndices;
    }
+
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (triggerIndexBuffer)
       triggerIndexBuffer->release();

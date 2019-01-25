@@ -98,8 +98,8 @@ public:
    virtual ItemTypeEnum HitableGetItemType() const { return eItemGate; }
 
    void WriteRegDefaults();
-   void UpdateWire(RenderDevice *pd3dDevice);
-   void RenderObject(RenderDevice* pd3dDevice);
+   void UpdateWire();
+   void RenderObject();
    void GenerateBracketMesh(Vertex3D_NoTex2 *buf);
    void GenerateWireMesh(Vertex3D_NoTex2 *buf);
    void UpdateUnitsInfo();

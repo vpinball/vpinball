@@ -380,7 +380,7 @@ void HitQuadtree::HitTestXRay(Ball * const pball, vector<HitObject*> &pvhoHit, C
          g_pplayer->c_deepTested++;
 #endif
          const float newtime = m_vho[i]->HitTest(pball, coll.m_hittime, coll);
-         if (newtime >= 0)
+         if (newtime >= 0.f)
          {
             pvhoHit.push_back(m_vho[i]);
          }
