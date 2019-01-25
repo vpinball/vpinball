@@ -358,13 +358,13 @@ void Pin3D::InitRenderState()
 {
    g_pplayer->m_pin3d.DisableAlphaBlend();
 
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::LIGHTING, RenderDevice::RS_FALSE);
 
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPING, FALSE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPING, RenderDevice::RS_FALSE);
    m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0);
 
    // initialize first texture stage
@@ -393,21 +393,21 @@ void Pin3D::DrawBackground()
    {
       m_pd3dPrimaryDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L);
 
-      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 
       if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
-         m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+         m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
 
       g_pplayer->m_pin3d.DisableAlphaBlend();
 
       g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, ptable->m_ImageBackdropNightDay ? sqrtf(g_pplayer->m_globalEmissionScale) : 1.0f, true);
 
       if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
-         m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+         m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
-      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
-      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
+      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    }
    else
    {
@@ -792,7 +792,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
    { 
       assert(tableVBuffer != NULL);
       m_pd3dPrimaryDevice->basicShader->Begin(0);
-      m_pd3dPrimaryDevice->DrawPrimitiveVB(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 0, 4);
+      m_pd3dPrimaryDevice->DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 0, 4);
       m_pd3dPrimaryDevice->basicShader->End();
    }
    else
@@ -821,18 +821,18 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 void Pin3D::EnableAlphaTestReference(const DWORD alphaRefValue) const
 {
    m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHAREF, alphaRefValue);
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, RenderDevice::RS_TRUE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHAFUNC, RenderDevice::Z_GREATEREQUAL);
 }
 
 void Pin3D::EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend, const bool set_blend_op) const
 {
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_SRCALPHA);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::SRC_ALPHA);
    if (set_dest_blend)
-      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DESTBLEND, additiveBlending ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
+      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DESTBLEND, additiveBlending ? RenderDevice::ONE : RenderDevice::INVSRC_ALPHA);
    if (set_blend_op)
-      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
+      m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
 }
 
 void Pin3D::DisableAlphaBlend() const

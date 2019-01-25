@@ -1020,8 +1020,8 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    pd3dDevice->basicShader->SetMaterial(mat);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
 
    pd3dDevice->basicShader->Begin(0);
    for (size_t i = 0; i < m_vlinesling.size(); i++)
@@ -1040,11 +1040,11 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
           }
       }
 
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, slingshotVBuffer, i * 9, 9, slingIBuffer, 0, 24);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, slingshotVBuffer, i * 9, 9, slingIBuffer, 0, 24);
    }
    pd3dDevice->basicShader->End();
 
-   //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
 
 void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
@@ -1065,16 +1065,16 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
       if (mat->m_bOpacityActive || !m_isDynamic)
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
       else
       {
          if (m_d.m_fTopBottomVisible && m_isDynamic)
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
          else
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
       }
       Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
       if (pinSide)
@@ -1090,7 +1090,7 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
 
       // combine drawcalls into one (hopefully faster)
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, VBuffer, 0, numVertices * 4, IBuffer, 0, numVertices * 6);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, VBuffer, 0, numVertices * 4, IBuffer, 0, numVertices * 6);
       pd3dDevice->basicShader->End();
    }
 
@@ -1101,12 +1101,12 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
       if (mat->m_bOpacityActive || !m_isDynamic)
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
       else
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
@@ -1120,28 +1120,28 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
       else
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
 
-	  // Top
+      // Top
       pd3dDevice->basicShader->Begin(0);
-	  pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, VBuffer, numVertices * 4 + (!fDrop ? 0 : numVertices), numVertices, IBuffer, numVertices * 6, numPolys * 3);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, VBuffer, numVertices * 4 + (!fDrop ? 0 : numVertices), numVertices, IBuffer, numVertices * 6, numPolys * 3);
       pd3dDevice->basicShader->End();
 
-	  // Only render Bottom for Reflections
-	  if (m_ptable->m_fReflectionEnabled)
-	  {
-        if (mat->m_bOpacityActive || !m_isDynamic)
-           pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-		  else
-			  pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CW);
+      // Only render Bottom for Reflections
+      if (m_ptable->m_fReflectionEnabled)
+      {
+          if (mat->m_bOpacityActive || !m_isDynamic)
+              pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+          else
+              pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CW);
 
-		  pd3dDevice->basicShader->Begin(0);
-		  pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, VBuffer, numVertices * 4 + numVertices * 2, numVertices, IBuffer, numVertices * 6, numPolys * 3);
-		  pd3dDevice->basicShader->End();
-	  }
+          pd3dDevice->basicShader->Begin(0);
+          pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, VBuffer, numVertices * 4 + numVertices * 2, numVertices, IBuffer, numVertices * 6, numPolys * 3);
+          pd3dDevice->basicShader->End();
+      }
    }
 
    // reset render states
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!!  not necessary anymore
-   //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
    if ((m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f) && (m_d.m_fSideVisible || m_d.m_fTopBottomVisible))
    {
       const D3DXVECTOR4 tmp(0.f,0.f, 0.f,0.f);

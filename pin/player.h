@@ -166,7 +166,7 @@ public:
          return;
 
       if (m_buffers[m_curIdx])
-         pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, m_buffers[m_curIdx], 0, 3);
+         pd3dDevice->DrawPrimitiveVB(RenderDevice::TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, m_buffers[m_curIdx], 0, 3);
 
       m_curIdx = (m_curIdx + 1) % m_buffers.size();
 
