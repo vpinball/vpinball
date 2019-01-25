@@ -176,11 +176,11 @@ public:
    D3DVALUE z;
 
    // Normals
-   D3DVALUE nx;
-   D3DVALUE ny;
-   D3DVALUE nz;
+   D3DVALUE nx; // w component if MY_D3DTRANSFORMED_NOTEX2_VERTEX
+   D3DVALUE ny; // tex coord (1) if MY_D3DTRANSFORMED_NOTEX2_VERTEX
+   D3DVALUE nz; // dto.
 
-   // Texture coordinates
+   // Texture coordinates (0)
    D3DVALUE tu;
    D3DVALUE tv;
 };

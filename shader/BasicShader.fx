@@ -228,10 +228,6 @@ float4 ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool doNo
    pixel.a *= cBase_Alpha.a;
    const float3 t = /*InvGamma*/(pixel.xyz); // uses automatic sRGB trafo instead in sampler!
 
-   // early out if no normal set (e.g. decal vertices)
-   if (!any(IN.normal))
-      return float4(InvToneMap(t*cBase_Alpha.xyz), pixel.a);
-
    const float3 diffuse  = t*cBase_Alpha.xyz;
    const float3 glossy   = is_metal ? diffuse : (t*cGlossy_ImageLerp.w + (1.0-cGlossy_ImageLerp.w))*cGlossy_ImageLerp.xyz*0.08; //!! use AO for glossy? specular?
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
@@ -270,6 +266,26 @@ float4 ps_main_depth_only_with_texture(in VS_DEPTH_ONLY_TEX_OUTPUT IN) : COLOR
    clip(tex2D(texSampler0, IN.tex0).a <= fAlphaTestValue ? -1 : 1); // stop the pixel shader if alpha test should reject pixel
 
    return float4(0., 0., 0., 1.);
+}
+
+//------------------------------------------
+// BG-Decal
+
+float4 ps_main_bg_decal(in VS_NOTEX_OUTPUT IN) : COLOR
+{
+   return float4(InvToneMap(cBase_Alpha.xyz), cBase_Alpha.a);
+}
+
+float4 ps_main_bg_decal_texture(in VS_OUTPUT IN) : COLOR
+{
+   float4 pixel = tex2D(texSampler0, IN.tex01.xy);
+
+   clip(pixel.a <= fAlphaTestValue ? - 1 : 1); // stop the pixel shader if alpha test should reject pixel
+
+   pixel.a *= cBase_Alpha.a;
+   const float3 t = /*InvGamma*/(pixel.xyz); // uses automatic sRGB trafo instead in sampler!
+
+   return float4(InvToneMap(t*cBase_Alpha.xyz), pixel.a);
 }
 
 //------------------------------------------
@@ -378,6 +394,29 @@ technique basic_depth_only_with_texture
       PixelShader = compile ps_3_0 ps_main_depth_only_with_texture();
    } 
 }
+
+//
+// BG-Decal
+//
+
+technique bg_decal_without_texture
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_notex_main(); 
+      PixelShader = compile ps_3_0 ps_main_bg_decal();
+   } 
+}
+
+technique bg_decal_with_texture
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_bg_decal_texture();
+   } 
+}
+
 
 //
 // Kicker
