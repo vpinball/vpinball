@@ -108,6 +108,7 @@ D3DDECL_END()
 
 VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = NULL;*/
 
+// pre-transformed, take care that this is a float4 and needs proper w component setup (also see https://docs.microsoft.com/en-us/windows/desktop/direct3d9/mapping-fvf-codes-to-a-directx-9-declaration)
 const VertexElement VertexTrafoTexelElement[] =
 {
    { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0 }, // transformed pos

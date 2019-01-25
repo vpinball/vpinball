@@ -458,9 +458,9 @@ static const WORD rgi0123[4] = { 0, 1, 2, 3 };
 
 void Decal::RenderSetup()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    RenderText();
+
+   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
@@ -521,7 +521,7 @@ void Decal::RenderSetup()
          vertices[i].y = vertices[i].y*ymult - 0.5f;
          vertices[i].z = 0.0f;
 
-         vertices[i].nx = 0.0f;
+         vertices[i].nx = 1.0f; //!! as this is the w component due to MY_D3DTRANSFORMED_NOTEX2_VERTEX usage
          vertices[i].ny = 0.0f;
          vertices[i].nz = 0.0f;
       }
@@ -555,11 +555,7 @@ void Decal::RenderObject()
    if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
       return;
 
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice *pd3dSecondDevice = g_pplayer->m_pin3d.m_pd3dSecondaryDevice;
-
-   if (m_fBackglass)
-      pd3dDevice = g_pplayer->m_pin3d.m_pd3dSecondaryDevice;
+   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled))
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
@@ -577,21 +573,21 @@ void Decal::RenderObject()
 
    if (m_d.m_decaltype != DecalImage)
    {
-      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+      pd3dDevice->basicShader->SetTechnique(!m_fBackglass ? (mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal") : "bg_decal_with_texture");
       pd3dDevice->basicShader->SetTexture("Texture0", pd3dDevice->m_texMan.LoadTexture(m_textImg, false));
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
    }
    else
    {
-      Texture *pin = m_ptable->GetImage(m_d.m_szImage);
+      Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
       {
-         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+         pd3dDevice->basicShader->SetTechnique(!m_fBackglass ? (mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal") : "bg_decal_with_texture");
          pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
       }
       else
-         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
+         pd3dDevice->basicShader->SetTechnique(!m_fBackglass ? (mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal") : "bg_decal_without_texture");
    }
 
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
