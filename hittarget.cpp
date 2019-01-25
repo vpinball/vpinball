@@ -289,7 +289,7 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
           // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
              Vertex3Ds(vertices[i0].x, vertices[i0].y, vertices[i0].z),
              Vertex3Ds(vertices[i2].x, vertices[i2].y, vertices[i2].z),
-             Vertex3Ds(vertices[i1].x, vertices[i1].y, vertices[i1].z)};
+             Vertex3Ds(vertices[i1].x, vertices[i1].y, vertices[i1].z) };
           SetupHitObject(pvho, new HitTriangle(rgv3D), m_d.m_legacy);
 
           AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2], m_d.m_legacy);
@@ -334,7 +334,7 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
              // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
                  rgv3D[i0],
                  rgv3D[i2],
-                 rgv3D[i1]};
+                 rgv3D[i1] };
              SetupHitObject(pvho, new HitTriangle(rgv3D2));
 
              AddHitEdge(pvho, addedEdges, i0, i1, rgv3D2[0], rgv3D2[2]);
@@ -361,7 +361,7 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
           // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
               Vertex3Ds(vertices[i0].x, vertices[i0].y, vertices[i0].z),
               Vertex3Ds(vertices[i2].x, vertices[i2].y, vertices[i2].z),
-              Vertex3Ds(vertices[i1].x, vertices[i1].y, vertices[i1].z)};
+              Vertex3Ds(vertices[i1].x, vertices[i1].y, vertices[i1].z) };
           SetupHitObject(pvho, new HitTriangle(rgv3D));
 
           AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2]);
@@ -504,27 +504,27 @@ void HitTarget::TransformVertices()
    }
 }
 
-void HitTarget::ExportMesh( FILE *f )
+void HitTarget::ExportMesh(FILE *f)
 {
-    char name[MAX_PATH];
-    char subObjName[MAX_PATH];
-    WideCharToMultiByte( CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL );
+   char name[MAX_PATH];
+   char subObjName[MAX_PATH];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
 
-    SetMeshType( m_d.m_targetType );
+   SetMeshType(m_d.m_targetType);
 
-    transformedVertices.resize(m_numVertices);
+   transformedVertices.resize(m_numVertices);
 
-    strcpy_s( subObjName, name );
-    WaveFrontObj_WriteObjectName( f, subObjName );
+   strcpy_s(subObjName, name);
+   WaveFrontObj_WriteObjectName(f, subObjName);
 
-    GenerateMesh( transformedVertices );
+   GenerateMesh(transformedVertices);
 
-    WaveFrontObj_WriteVertexInfo( f, transformedVertices.data(), m_numVertices );
-    const Material * mat = m_ptable->GetMaterial( m_d.m_szMaterial );
-    WaveFrontObj_WriteMaterial( m_d.m_szMaterial, NULL, mat );
-    WaveFrontObj_UseTexture( f, m_d.m_szMaterial );
-    WaveFrontObj_WriteFaceInfoList( f, m_indices, m_numIndices );
-    WaveFrontObj_UpdateFaceOffset( m_numVertices );
+   WaveFrontObj_WriteVertexInfo(f, transformedVertices.data(), m_numVertices);
+   const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+   WaveFrontObj_WriteFaceInfoList(f, m_indices, m_numIndices);
+   WaveFrontObj_UpdateFaceOffset(m_numVertices);
 }
 
 
@@ -558,8 +558,8 @@ void HitTarget::UIRenderPass2(Sur * const psur)
 
     const float radangle = ANGTORAD(m_d.m_rotZ-180.0f);
     const float halflength = 50.0f;
-    const float len1 = halflength *0.5f;
-    const float len2 = len1*0.5f;
+    const float len1 = halflength * 0.5f;
+    const float len2 = len1 * 0.5f;
     Vertex2D tmp;
     {
        // Draw Arrow
@@ -694,11 +694,11 @@ void HitTarget::RenderObject(RenderDevice *pd3dDevice)
    pd3dDevice->basicShader->SetMaterial(mat);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 #ifdef TWOSIDED_TRANSPARENCY
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, mat->m_bOpacityActive ? D3DCULL_CW : D3DCULL_CCW);
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, mat->m_bOpacityActive ? RenderDevice::CULL_CW : RenderDevice::CULL_CCW);
 #else
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 #endif
 
    if (m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f)
@@ -723,15 +723,15 @@ void HitTarget::RenderObject(RenderDevice *pd3dDevice)
 
    // draw the mesh
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, indexBuffer, 0, m_numIndices);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, indexBuffer, 0, m_numIndices);
    pd3dDevice->basicShader->End();
 
 #ifdef TWOSIDED_TRANSPARENCY
    if (mat->m_bOpacityActive)
    {
-       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
        pd3dDevice->basicShader->Begin(0);
-       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, indexBuffer, 0, m_numIndices);
+       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, indexBuffer, 0, m_numIndices);
        pd3dDevice->basicShader->End();
    }
 #endif

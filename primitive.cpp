@@ -579,8 +579,8 @@ void Primitive::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigne
 
 void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
 {
-   const Material * const mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
-   if(!m_d.m_useAsPlayfield)
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
+   if (!m_d.m_useAsPlayfield)
    {
        if (mat != NULL && !m_d.m_fOverwritePhysics)
        {
@@ -1165,8 +1165,8 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, m_d.m_fBackfacesEnabled && mat->m_bOpacityActive ? D3DCULL_CW : D3DCULL_CCW);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, m_d.m_fBackfacesEnabled && mat->m_bOpacityActive ? RenderDevice::CULL_CW : RenderDevice::CULL_CCW);
 
       if (m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f)
       {
@@ -1207,19 +1207,19 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       // draw the mesh
       pd3dDevice->basicShader->Begin(0);
       if (m_d.m_fGroupdRendering)
-         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices);
+         pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices);
       else
-         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
+         pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
       pd3dDevice->basicShader->End();
 
       if (m_d.m_fBackfacesEnabled && mat->m_bOpacityActive)
       {
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
          pd3dDevice->basicShader->Begin(0);
          if (m_d.m_fGroupdRendering)
-            pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices);
+            pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices);
          else
-            pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
+            pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
          pd3dDevice->basicShader->End();
       }
 
@@ -1240,7 +1240,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       // set transform
       g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
       pd3dDevice->basicShader->End();
       // reset transform
       g_pplayer->UpdateBasicShaderMatrix();
@@ -1385,7 +1385,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
       bw.WriteInt(FID(M3VN), (int)m_mesh.NumVertices());
 
 #ifndef COMPRESS_MESHES
-      bw.WriteStruct( FID(M3DX), &m_mesh.m_vertices[0], (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()) );
+      bw.WriteStruct(FID(M3DX), &m_mesh.m_vertices[0], (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()));
 #else
       /*bw.WriteTag(FID(M3CX));
       {
@@ -1408,7 +1408,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
       if (m_mesh.NumVertices() > 65535)
       {
 #ifndef COMPRESS_MESHES
-         bw.WriteStruct( FID(M3DI), &m_mesh.m_indices[0], (int)(sizeof(unsigned int)*m_mesh.NumIndices()) );
+         bw.WriteStruct(FID(M3DI), &m_mesh.m_indices[0], (int)(sizeof(unsigned int)*m_mesh.NumIndices()));
 #else
          /*bw.WriteTag(FID(M3CI));
           LZWWriter lzwwriter(pstm, (int *)&m_mesh.m_indices[0], sizeof(unsigned int)*m_mesh.NumIndices(), 1, sizeof(unsigned int)*m_mesh.NumIndices());
@@ -1429,7 +1429,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
          for (size_t i = 0; i < m_mesh.NumIndices(); ++i)
             tmp[i] = m_mesh.m_indices[i];
 #ifndef COMPRESS_MESHES
-         bw.WriteStruct( FID(M3DI), &tmp[0], (int)(sizeof(WORD)*m_mesh.NumIndices()) );
+         bw.WriteStruct(FID(M3DI), &tmp[0], (int)(sizeof(WORD)*m_mesh.NumIndices()));
 #else
          /*bw.WriteTag(FID(M3CI));
           LZWWriter lzwwriter(pstm, (int *)&tmp[0], sizeof(WORD)*m_mesh.NumIndices(), 1, sizeof(WORD)*m_mesh.NumIndices());
@@ -3213,12 +3213,12 @@ void Primitive::UpdatePropertyPanes()
 
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
-      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), FALSE );
-      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS ), FALSE );
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), FALSE);
    }
    else if (!m_d.m_fToy && m_d.m_fCollidable)
    {
-      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS ), TRUE );
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 34), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 481), TRUE);
@@ -3229,19 +3229,19 @@ void Primitive::UpdatePropertyPanes()
 
       if (m_d.m_fOverwritePhysics)
       {
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 110 ), TRUE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 112 ), TRUE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 114 ), TRUE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 115 ), TRUE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), FALSE );
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), TRUE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 112), TRUE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), TRUE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), TRUE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
       }
       else
       {
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 110 ), FALSE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 112 ), FALSE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 114 ), FALSE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 115 ), FALSE );
-          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), TRUE );
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), FALSE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 112), FALSE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
+         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), TRUE);
       }
    }
 

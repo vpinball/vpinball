@@ -33,7 +33,7 @@ class PinDirectSound *PinSound::GetPinDirectSound()
    if (m_pPinDirectSound)
       return m_pPinDirectSound;
 
-   if (m_iOutputTarget==SNDOUT_BACKGLASS)
+   if (m_iOutputTarget == SNDOUT_BACKGLASS)
       return g_pvp->m_pbackglassds;
 
    return &(g_pvp->m_pds);

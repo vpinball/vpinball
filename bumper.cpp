@@ -380,6 +380,7 @@ void Bumper::EndPlay()
 
 void Bumper::UpdateRing(RenderDevice *pd3dDevice)
 {
+   //TODO update Worldmatrix instead.
    Vertex3D_NoTex2 *buf;
    m_ringVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    for (int i = 0; i < bumperRingNumVertices; i++)
@@ -404,7 +405,7 @@ void Bumper::RenderBase(RenderDevice *pd3dDevice, const Material * const baseMat
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_baseVertexBuffer, 0, bumperBaseNumVertices, m_baseIndexBuffer, 0, bumperBaseNumIndices);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_baseVertexBuffer, 0, bumperBaseNumVertices, m_baseIndexBuffer, 0, bumperBaseNumIndices);
    pd3dDevice->basicShader->End();
 }
 
@@ -416,7 +417,7 @@ void Bumper::RenderSocket(RenderDevice *pd3dDevice, const Material * const socke
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_socketVertexBuffer, 0, bumperSocketNumVertices, m_socketIndexBuffer, 0, bumperSocketNumIndices);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_socketVertexBuffer, 0, bumperSocketNumVertices, m_socketIndexBuffer, 0, bumperSocketNumIndices);
    pd3dDevice->basicShader->End();
 }
 
@@ -428,7 +429,7 @@ void Bumper::RenderCap(RenderDevice *pd3dDevice, const Material * const capMater
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_capVertexBuffer, 0, bumperCapNumVertices, m_capIndexBuffer, 0, bumperCapNumIndices);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_capVertexBuffer, 0, bumperCapNumVertices, m_capIndexBuffer, 0, bumperCapNumIndices);
    pd3dDevice->basicShader->End();
 }
 
@@ -501,8 +502,8 @@ void Bumper::RenderDynamic()
    const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    const int state = m_pbumperhitcircle->m_bumperanim_fHitEvent ? 1 : 0;    // 0 = not hit, 1 = hit
 
@@ -549,7 +550,7 @@ void Bumper::RenderDynamic()
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
       // render ring
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_ringVertexBuffer, 0, bumperRingNumVertices, m_ringIndexBuffer, 0, bumperRingNumIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_ringVertexBuffer, 0, bumperRingNumVertices, m_ringIndexBuffer, 0, bumperRingNumIndices);
       pd3dDevice->basicShader->End();
    }
 
@@ -579,7 +580,7 @@ void Bumper::RenderDynamic()
       const Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       pd3dDevice->basicShader->SetTexture("Texture0", &m_skirtTexture, false);
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
       RenderSocket(pd3dDevice, mat);
    }
 
@@ -589,7 +590,7 @@ void Bumper::RenderDynamic()
       if (mat->m_bOpacityActive)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
          RenderBase(pd3dDevice, mat);
       }
    }
@@ -600,7 +601,7 @@ void Bumper::RenderDynamic()
       if (mat->m_bOpacityActive)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
          RenderCap(pd3dDevice, mat);
       }
    }

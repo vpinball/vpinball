@@ -209,8 +209,8 @@ private:        // private member functions
    bool BrowseFor3DMeshFile();
    void RenderObject(RenderDevice *pd3dDevice);
    void UpdateTarget(RenderDevice *pd3dDevice);
-   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool setHitObject=true);
-   void AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject=true);
+   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool setHitObject = true);
+   void AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject = true);
 
    PropertyPane *m_propVisual;
    PropertyPane *m_propPosition;

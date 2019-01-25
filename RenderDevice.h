@@ -157,11 +157,54 @@ public:
       COLORWRITEENABLE = D3DRS_COLORWRITEENABLE
    };
 
+   enum RenderStateValue
+   {
+      //Booleans
+      RS_FALSE = FALSE,
+      RS_TRUE = TRUE,
+      //Culling
+      CULL_NONE = D3DCULL_NONE,
+      CULL_CW = D3DCULL_CW,
+      CULL_CCW = D3DCULL_CCW,
+      //Depth functions
+      Z_ALWAYS = D3DCMP_ALWAYS,
+      Z_LESS = D3DCMP_LESS,
+      Z_LESSEQUAL = D3DCMP_LESSEQUAL,
+      Z_GREATER = D3DCMP_GREATER,
+      Z_GREATEREQUAL = D3DCMP_GREATEREQUAL,
+      //Blending ops
+      BLENDOP_MAX = D3DBLENDOP_MAX,
+      BLENDOP_ADD = D3DBLENDOP_ADD,
+      BLENDOP_REVSUBTRACT = D3DBLENDOP_REVSUBTRACT,
+      //Blending values
+      ZERO = D3DBLEND_ZERO,
+      ONE = D3DBLEND_ONE,
+      SRC_ALPHA = D3DBLEND_SRCALPHA,
+      DST_ALPHA = D3DBLEND_DESTALPHA,
+      INVSRC_ALPHA = D3DBLEND_INVSRCALPHA,
+      INVSRC_COLOR = D3DBLEND_INVSRCCOLOR,
+      //Clipping planes
+      PLANE0 = D3DCLIPPLANE0,
+
+      UNDEFINED
+   };
+
+
    enum TextureAddressMode {
       TEX_WRAP = D3DTADDRESS_WRAP,
       TEX_CLAMP = D3DTADDRESS_CLAMP,
       TEX_MIRROR = D3DTADDRESS_MIRROR
    };
+
+   enum PrimitveTypes {
+      TRIANGLEFAN = D3DPT_TRIANGLEFAN,
+      TRIANGLESTRIP = D3DPT_TRIANGLESTRIP,
+      TRIANGLELIST = D3DPT_TRIANGLELIST,
+      POINTLIST = D3DPT_POINTLIST,
+      LINELIST = D3DPT_LINELIST,
+      LINESTRIP = D3DPT_LINESTRIP
+   };
+
 
    RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering);
    ~RenderDevice();

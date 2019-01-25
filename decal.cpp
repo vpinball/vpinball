@@ -558,11 +558,11 @@ void Decal::RenderObject()
    RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled))
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
    else
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
@@ -609,7 +609,7 @@ void Decal::RenderObject()
    }
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, m_fBackglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, 4);
+   pd3dDevice->DrawPrimitiveVB(RenderDevice::TRIANGLEFAN, m_fBackglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, 4);
    pd3dDevice->basicShader->End();
 
    // Set the render state.
@@ -617,7 +617,7 @@ void Decal::RenderObject()
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 
    //if(m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled))
-   //   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   //   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
 
 void Decal::RenderStatic()

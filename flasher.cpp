@@ -1327,9 +1327,9 @@ void Flasher::RenderDynamic()
        }
 
        pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
 
-       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
        if((g_pplayer->m_dmdstate == 1) && alphadmd)
           g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend);
        else
@@ -1341,22 +1341,22 @@ void Flasher::RenderDynamic()
          g_pplayer->m_pin3d.EnableAlphaBlend(true);
        // max
        } else if (alphamode == 2) {
-         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_MAX);
-         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_SRCALPHA);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCCOLOR);
+         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_MAX);
+         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::SRC_ALPHA);
+         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR);
        //subtract
        } else if (alphamode == 3) {
-         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_SUBTRACT);
-         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_ZERO);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCCOLOR);
+         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_SUBTRACT);
+         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::ZERO);
+         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR);
        // normal
        } else if (alphamode == 4) {
-         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
-         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_SRCALPHA);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
+         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
+         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::SRC_ALPHA);
+         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_ALPHA);
        }
 
        const int alphatest = 0; //!!
@@ -1378,7 +1378,7 @@ void Flasher::RenderDynamic()
        pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd, false));
 
        pd3dDevice->DMDShader->Begin(0);
-       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys * 3);
+       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys * 3);
        pd3dDevice->DMDShader->End();
    }
    else if (g_pplayer->m_dmdstate == 0)
@@ -1390,7 +1390,7 @@ void Flasher::RenderDynamic()
        }
 
        pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
 
        Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
        Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
@@ -1452,18 +1452,18 @@ void Flasher::RenderDynamic()
 
        pd3dDevice->flasherShader->SetFlasherData(flasherData);
 
-       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
        g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend, false, false);
-       pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_INVSRCCOLOR : D3DBLEND_INVSRCALPHA);
-       pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_fAddBlend ? D3DBLENDOP_REVSUBTRACT : D3DBLENDOP_ADD);
+       pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? RenderDevice::INVSRC_COLOR : RenderDevice::INVSRC_ALPHA);
+       pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_fAddBlend ? RenderDevice::BLENDOP_REVSUBTRACT : RenderDevice::BLENDOP_ADD);
        
        pd3dDevice->flasherShader->Begin(0);
-       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys * 3);
+       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys * 3);
        pd3dDevice->flasherShader->End();
    }
 
-   //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-   //pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD); //!! not necessary anymore
+   //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+   //pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD); //!! not necessary anymore
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }
 

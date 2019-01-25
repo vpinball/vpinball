@@ -382,8 +382,8 @@ void Plunger::RenderDynamic()
    pd3dDevice->basicShader->SetMaterial(mat);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    Texture *pin = m_ptable->GetImage(m_d.m_szImage);
    if (pin)
@@ -396,7 +396,7 @@ void Plunger::RenderDynamic()
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer,
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer,
       frame*vtsPerFrame, vtsPerFrame,
       indexBuffer, 0, indicesPerFrame);
    pd3dDevice->basicShader->End();

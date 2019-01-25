@@ -748,8 +748,8 @@ void Flipper::RenderDynamic()
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    Matrix3D matTrafo;
    matTrafo.SetIdentity();
@@ -763,7 +763,7 @@ void Flipper::RenderDynamic()
    }
    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, flipperBaseVertices, indexBuffer, 0, flipperBaseNumIndices);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, flipperBaseVertices, indexBuffer, 0, flipperBaseNumIndices);
    pd3dDevice->basicShader->End();
 
    //render rubber
@@ -777,7 +777,7 @@ void Flipper::RenderDynamic()
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, flipperBaseVertices, flipperBaseVertices, indexBuffer, 0, flipperBaseNumIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, flipperBaseVertices, flipperBaseVertices, indexBuffer, 0, flipperBaseNumIndices);
       pd3dDevice->basicShader->End();
    }
    g_pplayer->UpdateBasicShaderMatrix();

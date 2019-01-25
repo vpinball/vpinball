@@ -1095,7 +1095,7 @@ void upscale(DWORD * const data, const unsigned int xres, const unsigned int yre
                 for (unsigned int i2 = 0; i2 < 3; ++i2,++o2)
                 {
                     // determine subpixel
-                    unsigned int sp=0;
+                    unsigned int sp = 0;
                     switch (o2)
                     {
                     case 0: sp = crn_x; break;
@@ -1110,7 +1110,7 @@ void upscale(DWORD * const data, const unsigned int xres, const unsigned int yre
                     }
 
                     // output coordinate - 0 = E, 1 = D, 2 = D0, 3 = F, 4 = F0, 5 = B, 6 = B0, 7 = H, 8 = H0
-                    unsigned int res=0;
+                    unsigned int res = 0;
                     switch (sp)
                     {
                     case 0: res = 0; break;
@@ -1527,13 +1527,13 @@ PinTable::PinTable()
    m_tblNudgePlumbY = 0.0f;
 
 #ifdef UNUSED_TILT
-   if ( FAILED(GetRegInt("Player", "JoltAmount", &m_jolt_amount) )
+   if (FAILED(GetRegInt("Player", "JoltAmount", &m_jolt_amount))
       m_jolt_amount = 500;
-   if ( FAILED(GetRegInt("Player", "TiltAmount", &m_tilt_amount) )
+   if (FAILED(GetRegInt("Player", "TiltAmount", &m_tilt_amount))
       m_tilt_amount = 950;
-   if ( FAILED(GetRegInt("Player", "JoltTriggerTime", &m_jolt_trigger_time) )
+   if (FAILED(GetRegInt("Player", "JoltTriggerTime", &m_jolt_trigger_time))
       m_jolt_trigger_time = 1000;
-   if ( FAILED(GetRegInt("Player", "TiltTriggerTime", &m_tilt_trigger_time) )
+   if (FAILED(GetRegInt("Player", "TiltTriggerTime", &m_tilt_trigger_time))
       m_tilt_trigger_time = 10000;
 #endif
 }
