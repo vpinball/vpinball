@@ -5455,7 +5455,7 @@ void Player::DrawBalls()
       //   DrawBallReflection(pball, zheight, lowDetailBall);
 
       //ballShader->SetFloat("reflection_ball_playfield", m_ptable->m_playfieldReflectionStrength);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
       if (m_fCabinetMode && !pball->m_decalMode)
           strcpy_s(m_ballShaderTechnique, MAX_PATH, "RenderBall_CabMode");
@@ -5566,7 +5566,7 @@ void Player::DrawBalls()
             memcpy(bufvb,rgv3D_all,num_rgv3D*sizeof(Vertex3D_NoTex2));
             m_ballTrailVertexBuffer->unlock();
 
-            m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+            m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
             m_pin3d.EnableAlphaBlend(false);
 
             ballShader->SetTechnique("RenderBallTrail");
@@ -5608,7 +5608,7 @@ void Player::DrawBalls()
 
    // Set the render state to something that will always display.
    if (m_ToggleDebugBalls && m_DebugBalls)
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
    if (m_ToggleDebugBalls)
       m_ToggleDebugBalls = false;
 }

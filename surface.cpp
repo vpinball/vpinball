@@ -2194,7 +2194,7 @@ STDMETHODIMP Surface::PlaySlingshotHit()
     for (size_t i = 0; i < m_vlinesling.size(); i++)
     {
         LineSegSlingshot * const plinesling = m_vlinesling[i];
-        if ( plinesling )
+        if (plinesling)
             plinesling->m_doHitEvent=true;
     }
     return S_OK;
