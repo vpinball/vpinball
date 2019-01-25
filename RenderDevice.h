@@ -148,6 +148,7 @@ public:
       DESTBLEND = D3DRS_DESTBLEND,
       LIGHTING = D3DRS_LIGHTING,
       SRCBLEND = D3DRS_SRCBLEND,
+      SRGBWRITEENABLE = D3DRS_SRGBWRITEENABLE,
       ZENABLE = D3DRS_ZENABLE,
       ZFUNC = D3DRS_ZFUNC,
       ZWRITEENABLE = D3DRS_ZWRITEENABLE,
@@ -277,10 +278,11 @@ public:
    int          m_vsync;
    bool         m_useAA;
    bool         m_stereo3D;
-   unsigned int m_FXAA;
    bool         m_ssRefl;
    bool         m_disableDwm;
+   unsigned int m_FXAA;
    int          m_BWrendering;
+
 private:
    void DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount);
 
@@ -470,8 +472,7 @@ public:
       {
          currentLightImageMode = (unsigned int)imageMode;
          currentLightBackglassMode = (unsigned int)backglassMode;
-         const D3DXVECTOR4 data(imageMode ? 1.0f : 0.0f, backglassMode ? 1.0f : 0.0f, 0.f, 0.f);
-         SetVector("imageBackglassMode", &data);
+         SetBool("lightingOff", imageMode || backglassMode); // at the moment can be combined into a single bool due to what the shader actually does in the end
       }
    }
 

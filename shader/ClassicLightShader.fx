@@ -1,5 +1,4 @@
-// This shader and the accompanying code in light.cpp is a complete mess for the backglass mode of lights!
-// It's full of workarounds as some things otherwise simply refuse to work, which is most likely due to the nature of how backglass elements are rendered in the first place!
+//!! This shader and the accompanying code in light.cpp is a bit messy for the backglass mode of lights!
 
 #ifdef SEPARATE_CLASSICLIGHTSHADER
 #define NUM_BALL_LIGHTS 0 // just to avoid having too much constant mem allocated
@@ -65,19 +64,21 @@ bool hdrEnvTextures;
 float4 lightColor_intensity;
 float4 lightColor2_falloff_power;
 float4 lightCenter_maxRange;
-float2 imageBackglassMode; // actually bool2
+bool lightingOff;
 
 bool hdrTexture0;
 
-struct VS_LIGHT_OUTPUT 
-{ 
+struct VS_LIGHT_OUTPUT
+{
    float4 pos           : POSITION;
-   float2 tex0          : TEXCOORD0; 
-   float3 worldPos      : TEXCOORD1;
-   float3 tablePos      : TEXCOORD2; 
-   float3 normal        : TEXCOORD3;
+   float2 tex0          : TEXCOORD1;
+   float3 tablePos      : TEXCOORD0; // rely for backglass mode that z is initialized to 0!
+   // non-backglass only, used for world space lighting:
+   float3 worldPos      : TEXCOORD2;
+   float3 normal        : NORMAL0;
 };
 
+// vertex shader is skipped for backglass elements, due to D3DDECLUSAGE_POSITIONT 
 VS_LIGHT_OUTPUT vs_light_main (in float4 vPosition : POSITION0,  
                                in float3 vNormal   : NORMAL0,  
                                in float2 tc        : TEXCOORD0) 
@@ -89,24 +90,6 @@ VS_LIGHT_OUTPUT vs_light_main (in float4 vPosition : POSITION0,
    VS_LIGHT_OUTPUT Out;
    Out.pos = mul(vPosition, matWorldViewProj);
    Out.tex0 = tc;
-   Out.worldPos = P;
-   Out.tablePos = vPosition.xyz;
-   Out.normal = (imageBackglassMode.y == 0. ? N : vNormal); //!!! backglass mode abuses normal to pass in position
-   return Out; 
-}
-
-// same again, but abuses tex0 to pass in position for backglass mode
-VS_LIGHT_OUTPUT vs_light_main_without_texel(in float4 vPosition : POSITION0,
-                                            in float3 vNormal   : NORMAL0,  
-                                            in float2 tc        : TEXCOORD0) 
-{
-   // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
-   const float3 P = mul(vPosition, matWorldView).xyz;
-   const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
-
-   VS_LIGHT_OUTPUT Out;
-   Out.pos = mul(vPosition, matWorldViewProj);
-   Out.tex0 = tc; //!!! == position for backglass mode
    Out.worldPos = P;
    Out.tablePos = vPosition.xyz;
    Out.normal = N;
@@ -121,7 +104,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
 
     float4 color;
     // no lighting if HUD vertices or passthrough mode
-    [branch] if (imageBackglassMode.x != 0. || imageBackglassMode.y != 0.)
+    [branch] if (lightingOff)
         color = pixel;
     else
     {
@@ -138,7 +121,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
 
     [branch] if (lightColor_intensity.w != 0.0)
     {
-        const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? IN.tablePos : IN.normal)) * lightCenter_maxRange.w; //!! backglass mode abuses normal to pass in position
+        const float len = length(lightCenter_maxRange.xyz - IN.tablePos) * lightCenter_maxRange.w; //!! backglass mode passes in position directly via the otherwise named mesh normal!
         const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
         const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
         color += float4(lcolor*(atten*lightColor_intensity.w),
@@ -155,7 +138,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLO
     float4 result = float4(0.0, 0.0, 0.0, 0.0);
     [branch] if (lightColor_intensity.w != 0.0)
     {
-        const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? IN.tablePos : float3(IN.tex0, 0.0))) * lightCenter_maxRange.w; //!! backglass mode abuses uv to pass in position
+        const float len = length(lightCenter_maxRange.xyz - IN.tablePos) * lightCenter_maxRange.w; //!! backglass mode passes in position directly via the otherwise named mesh normal!
         const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
         const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
         result.xyz = lcolor*(atten*lightColor_intensity.w);
@@ -164,7 +147,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLO
 
     float4 color;
     // no lighting if HUD vertices or passthrough mode
-    [branch] if (imageBackglassMode.x != 0. || imageBackglassMode.y != 0.)
+    [branch] if (lightingOff)
         color.xyz = lightColor_intensity.xyz;
     else
     {
@@ -208,7 +191,7 @@ technique light_without_texture_isMetal
 { 
    pass P0 
    { 
-      VertexShader = compile vs_3_0 vs_light_main_without_texel();
+      VertexShader = compile vs_3_0 vs_light_main();
       PixelShader = compile ps_3_0 PS_LightWithoutTexel(1);
    } 
 }
@@ -217,7 +200,7 @@ technique light_without_texture_isNotMetal
 { 
    pass P0 
    { 
-      VertexShader = compile vs_3_0 vs_light_main_without_texel(); 
+      VertexShader = compile vs_3_0 vs_light_main(); 
       PixelShader = compile ps_3_0 PS_LightWithoutTexel(0);
    } 
 }

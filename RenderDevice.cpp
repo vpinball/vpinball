@@ -111,9 +111,8 @@ VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = NULL;*/
 const VertexElement VertexTrafoTexelElement[] =
 {
    { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0 }, // transformed pos
-   { 0, 4 * sizeof(float), D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 }, // legacy //!! unused, just there to share same code as VertexNormalTexelElement
-   { 0, 5 * sizeof(float), D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 1 }, // legacy //!! dto.
-   { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 }, // tex0
+   { 0, 4 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  1 }, // (mostly, except for classic lights) unused, there to be able to share same code as VertexNormalTexelElement
+   { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  0 }, // tex0
    D3DDECL_END()
 };
 VertexDeclaration* RenderDevice::m_pVertexTrafoTexelDeclaration = NULL;
@@ -355,12 +354,12 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     m_curTextureUpdates = m_frameTextureUpdates = 0;
 
     m_curLockCalls = m_frameLockCalls = 0; //!! meh
-
 }
 
 void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 {
-    m_adapter = adapterIndex;
+   m_adapter = adapterIndex;
+
 #ifdef USE_D3D9EX
    m_pD3DEx = NULL;
    m_pD3DDeviceEx = NULL;
