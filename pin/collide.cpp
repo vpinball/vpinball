@@ -522,7 +522,7 @@ void DoHitTest(Ball *const pball, HitObject *const pho, CollisionEvent& coll)
    if (pho == NULL || pball == NULL)
       return;
 
-   if (pho->m_ObjType == eHitTarget && (((HitTarget*)pho->m_obj)->m_d.m_isDropped == true) )
+   if (pho->m_ObjType == eHitTarget && (((HitTarget*)pho->m_obj)->m_d.m_isDropped == true))
       return;
 
    CollisionEvent newColl;

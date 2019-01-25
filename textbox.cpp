@@ -256,7 +256,7 @@ void Textbox::RenderDynamic()
          g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, pd3dDevice->m_texMan.LoadTexture(m_texture, false), m_d.m_intensity_scale);
 
          //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
-         pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
+         pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, RenderDevice::RS_FALSE);
       }
 
    //if(g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
