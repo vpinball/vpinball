@@ -11,7 +11,7 @@ Pin3D::Pin3D()
    m_pddsZBuffer = NULL;
    m_pdds3DZBuffer = NULL;
    m_pd3dPrimaryDevice = NULL;
-   m_pd3dPrimaryDevice = NULL;
+   m_pd3dSecondaryDevice = NULL;
    m_pddsStatic = NULL;
    m_pddsStaticZ = NULL;
    m_envRadianceTexture = NULL;
@@ -286,12 +286,10 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    vp.MinZ = 0.0f;
    vp.MaxZ = 1.0f;
 
-   
    if(FAILED(InitPrimary(fullScreen, colordepth, refreshrate, VSync, stereo3D, FXAA, useAO, ss_refl)))
        return E_FAIL;
 
    m_pd3dSecondaryDevice = m_pd3dPrimaryDevice;
-
 
    // Create the "static" color buffer.  
    // This will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).

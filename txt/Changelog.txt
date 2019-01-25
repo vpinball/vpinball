@@ -1,5 +1,9 @@
 VP 10.6.0 Changelog
 ------------------------
+
+- fix some regressions (introduced with 10.5) with backdrop lights (most prominent: bulb lights had wrong falloff, the 'classic' lights wrong image mapping)
+- disable transmit for backdrop bulb lights
+
 - add support to read out the current hit threshold if the ball hits a Primitive or a HitTarget
 
 - implement proper sRGB pipeline for runtime filtering (only textures that are used in the 'standard' material)

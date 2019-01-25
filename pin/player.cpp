@@ -1674,14 +1674,14 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    // search through all collection for elements which support group rendering
    for (int i = 0; i < m_ptable->m_vcollection.Size(); i++)
    {
-      Collection *pcol = m_ptable->m_vcollection.ElementAt(i);
+      Collection * const pcol = m_ptable->m_vcollection.ElementAt(i);
       for (int t = 0; t < pcol->m_visel.size(); t++)
       {
          // search for a primitive in the group, if found try to create a grouped render element
-         ISelect *pisel = pcol->m_visel.ElementAt(t);
+         ISelect * const pisel = pcol->m_visel.ElementAt(t);
          if (pisel !=NULL && pisel->GetItemType() == eItemPrimitive)
          {
-            Primitive *prim = (Primitive*)pisel;
+            Primitive * const prim = (Primitive*)pisel;
             prim->CreateRenderGroup(pcol, m_pin3d.m_pd3dPrimaryDevice);
             break;
          }
@@ -3656,9 +3656,10 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
    }
 }
 
-void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float intensity, bool backdrop)
+void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float intensity, const bool backdrop)
 {
-   RenderDevice *pd3dDevice = m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = backdrop ? m_pin3d.m_pd3dSecondaryDevice : m_pin3d.m_pd3dPrimaryDevice;
+
    float Verts[4 * 5] =
    {
        1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
@@ -3673,8 +3674,6 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
       Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * height + posy)*2.0f;
    }
 
-   if(backdrop)
-       pd3dDevice = m_pin3d.m_pd3dSecondaryDevice;
 
    pd3dDevice->DMDShader->SetTechnique(tex ? "basic_noDMD" : "basic_noDMD_notex");
 
@@ -3689,10 +3688,10 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
    pd3dDevice->DMDShader->End();
 }
 
-void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture * const tex, const float intensity, bool backdrop)
+void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture * const tex, const float intensity, const bool backdrop)
 {
-    RenderDevice *pd3dDevice = m_pin3d.m_pd3dPrimaryDevice;
-    float Verts[4 * 5] =
+   RenderDevice * const pd3dDevice = backdrop ? m_pin3d.m_pd3dSecondaryDevice : m_pin3d.m_pd3dPrimaryDevice;
+   float Verts[4 * 5] =
    {
       1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
       0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
@@ -3705,9 +3704,6 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
       Verts[i * 5] = (Verts[i * 5] * width + posx)*2.0f - 1.0f;
       Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * height + posy)*2.0f;
    }
-
-   if(backdrop)
-       pd3dDevice = m_pin3d.m_pd3dSecondaryDevice;
 
    pd3dDevice->DMDShader->SetTechnique(tex ? "basic_noDMD" : "basic_noDMD_notex");
 

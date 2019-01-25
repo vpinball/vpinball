@@ -585,7 +585,7 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice)
 
 void Light::RenderDynamic()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    TRACE_FUNCTION();
 
@@ -597,9 +597,6 @@ void Light::RenderDynamic()
 
    if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
       return;
-
-   if (m_fBackglass)
-      pd3dDevice = g_pplayer->m_pin3d.m_pd3dSecondaryDevice;
 
    if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh)
       RenderBulbMesh(pd3dDevice);
@@ -906,15 +903,13 @@ void Light::PrepareMoversCustom()
          buf[t].y = y;
          buf[t].z = 0.0f;
 
-         buf[t].nx = x; //!!! abuses normal to pass position to shader :/ (only if !(m_d.m_BulbLight || pin == NULL))
-         buf[t].ny = y;
-         buf[t].nz = 0.0f;
+         buf[t].nx = 1.f; //!! for backglass we use no vertex shader (D3DDECLUSAGE_POSITIONT), thus w component is actually mapped to nx, and that must be 1
+         buf[t].ny = (pv0->x * (float)(1.0 / EDITOR_BG_WIDTH)); //!! abuses normal to pass tex coord via TEXCOORD1.xy to shader for non-bulbs :/
+         buf[t].nz = (pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT));
 
-         //!!! why the hell must the bulb light mode still use the old data (uv=xy) ?? LightShader does not use it at all!?!
-         //!!! same for no image mode, the corresponding shader in ClassicLightShader does not work otherwise then!!
-
-         buf[t].tu = (m_d.m_BulbLight || pin == NULL) ? x : (pv0->x * (float)(1.0 / EDITOR_BG_WIDTH)); //!!! still wrong??? (f.e. create new BG light and stretch over BG) -> perspective correction wrong!!!??? 4 vertices only also wrong! decals work though!
-         buf[t].tv = (m_d.m_BulbLight || pin == NULL) ? y : (pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT));
+         //!! in backglass mode, position is also passed in via texture coords (due to D3DDECLUSAGE_POSITIONT again)
+         buf[t].tu = x;
+         buf[t].tv = y;
       }
    }
    customMoverVBuffer->unlock();
@@ -922,10 +917,7 @@ void Light::PrepareMoversCustom()
 
 void Light::RenderSetup()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
-   if (m_fBackglass)
-      pd3dDevice = g_pplayer->m_pin3d.m_pd3dSecondaryDevice;
+   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    m_iblinkframe = 0;
    m_d.m_time_msec = g_pplayer->m_time_msec;
@@ -1003,10 +995,7 @@ void Light::RenderSetup()
 
 void Light::RenderStatic()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
-   if (m_fBackglass)
-      pd3dDevice = g_pplayer->m_pin3d.m_pd3dSecondaryDevice;
+   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (m_d.m_BulbLight && m_d.m_showBulbMesh && m_d.m_staticBulbMesh)
       RenderBulbMesh(pd3dDevice);
@@ -1622,13 +1611,14 @@ STDMETHODIMP Light::put_Intensity(float newVal)
 {
    STARTUNDO
 
-      m_d.m_intensity = max(0.f, newVal);
+   m_d.m_intensity = max(0.f, newVal);
    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
    if (isOn)
       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
+
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_TransmissionScale(float *pVal)
@@ -1642,11 +1632,11 @@ STDMETHODIMP Light::put_TransmissionScale(float newVal)
 {
    STARTUNDO
 
-      m_d.m_transmissionScale = max(0.f, newVal);
+   m_d.m_transmissionScale = max(0.f, newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_IntensityScale(float *pVal)
