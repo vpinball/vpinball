@@ -560,7 +560,7 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice)
    pd3dDevice->basicShader->SetMaterial(&mat);
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbSocketVBuffer, 0, bulbSocketNumVertices, bulbSocketIndexBuffer, 0, bulbSocketNumFaces);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbSocketVBuffer, 0, bulbSocketNumVertices, bulbSocketIndexBuffer, 0, bulbSocketNumFaces);
    pd3dDevice->basicShader->End();
 
    mat.m_cBase = 0;
@@ -579,7 +579,7 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice)
    pd3dDevice->basicShader->SetMaterial(&mat);
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces);
    pd3dDevice->basicShader->End();
 }
 
@@ -653,14 +653,14 @@ void Light::RenderDynamic()
 
    if (!m_fBackglass)
    {
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
       const float depthbias = -BASEDEPTHBIAS;
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
    }
    else
    {
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    }
 
    if (m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled))
@@ -696,9 +696,9 @@ void Light::RenderDynamic()
          pd3dDevice->classicLightShader->SetTexture("Texture0", offTexel, false);
          if (m_ptable->m_fReflectElementsOnPlayfield && g_pplayer->m_pf_refl && !m_fBackglass)
          {
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_ONE);
-            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_ONE);
+            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
+            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::ONE);
+            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::ONE);
          }
       }
       else
@@ -713,9 +713,9 @@ void Light::RenderDynamic()
 
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       ppin3d->EnableAlphaBlend(false, false, false);
-      //pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);  // add the lightcontribution
-      pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCCOLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
-      pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_REVSUBTRACT);
+      //pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  RenderDevice::SRC_ALPHA);  // add the lightcontribution
+      pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
+      pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_REVSUBTRACT);
 
       if (m_d.m_showBulbMesh) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
       {
@@ -726,7 +726,7 @@ void Light::RenderDynamic()
          pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add", 0.00001f); // additive, but avoid full 0, as it disables the blend
 
          pd3dDevice->lightShader->Begin(0);
-         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces);
+         pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces);
          pd3dDevice->lightShader->End();
       }
 
@@ -751,7 +751,7 @@ void Light::RenderDynamic()
       pd3dDevice->lightShader->Begin(0);
    }
 
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, customMoverVBuffer, 0, customMoverVertexNum, customMoverIBuffer, 0, customMoverIndexNum);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, customMoverVBuffer, 0, customMoverVertexNum, customMoverIBuffer, 0, customMoverIndexNum);
 
    if (!m_d.m_BulbLight)
       pd3dDevice->classicLightShader->End();
@@ -760,19 +760,19 @@ void Light::RenderDynamic()
 
    if (!m_d.m_BulbLight && offTexel != NULL && m_ptable->m_fReflectElementsOnPlayfield && g_pplayer->m_pf_refl && !m_fBackglass)
    {
-      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-      pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_SRCALPHA);
-      pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
+      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
+      pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::SRC_ALPHA);
+      pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_ALPHA);
    }
 
    /*if ( m_d.m_BulbLight ) //!! not necessary anymore
    {
    ppin3d->DisableAlphaBlend();
-   pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
+   pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
    }*/
 
    //if(m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled))
-   //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
 
 void Light::UpdateLightShapeHeight()

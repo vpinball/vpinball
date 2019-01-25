@@ -427,16 +427,16 @@ void Kicker::RenderSetup()
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-   if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype==KickerWilliams || m_d.m_kickertype==KickerGottlieb || m_d.m_kickertype==KickerCup2)
+   if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2)
    {
       Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[kickerPlateNumVertices];
       float rad = m_d.m_radius; 
 
-      if(m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb)
+      if (m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb)
           rad = m_d.m_radius * 0.88f;
-      else if(m_d.m_kickertype == KickerCup2)
+      else if (m_d.m_kickertype == KickerCup2)
           rad = m_d.m_radius * 0.87f;
-      else if(m_d.m_kickertype != KickerCup && m_d.m_kickertype != KickerWilliams)
+      else if (m_d.m_kickertype != KickerCup && m_d.m_kickertype != KickerWilliams)
           rad = m_d.m_radius * 0.82f;
 
       for (unsigned int i = 0; i < kickerPlateNumVertices; i++)
@@ -461,7 +461,7 @@ void Kicker::RenderSetup()
 
       Vertex3D_NoTex2 *bufvb;
       plateVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::WRITEONLY);
-      memcpy(bufvb,buf,kickerPlateNumVertices*sizeof(Vertex3D_NoTex2));
+      memcpy(bufvb, buf, kickerPlateNumVertices*sizeof(Vertex3D_NoTex2));
       plateVertexBuffer->unlock();
 
       delete[] buf;
@@ -470,7 +470,7 @@ void Kicker::RenderSetup()
    //
 
    const WORD * indices;
-   switch(m_d.m_kickertype)
+   switch (m_d.m_kickertype)
    {
        case KickerInvisible:
           assert(false);
@@ -578,14 +578,14 @@ void Kicker::RenderDynamic()
    if (m_ptable->m_fReflectionEnabled)
       return;
 
-   if(m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2)
+   if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2)
    {
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      if ( m_d.m_kickertype!=KickerHoleSimple)
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      if (m_d.m_kickertype!=KickerHoleSimple)
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
       else
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
 
 
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -593,13 +593,13 @@ void Kicker::RenderDynamic()
 
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "kickerBoolean_isMetal" : "kickerBoolean_isNotMetal");
       pd3dDevice->basicShader->Core()->SetFloat("fKickerScale", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
-      pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_ALWAYS);
+      pd3dDevice->SetRenderState(RenderDevice::ZFUNC, RenderDevice::Z_ALWAYS);
 
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, plateVertexBuffer, 0, kickerPlateNumVertices, plateIndexBuffer, 0, kickerPlateNumIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, plateVertexBuffer, 0, kickerPlateNumVertices, plateIndexBuffer, 0, kickerPlateNumIndices);
       pd3dDevice->basicShader->End();
 
-      pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_LESSEQUAL);
+      pd3dDevice->SetRenderState(RenderDevice::ZFUNC, RenderDevice::Z_LESSEQUAL);
 
       if (m_d.m_kickertype != KickerHoleSimple)
       {
@@ -613,7 +613,7 @@ void Kicker::RenderDynamic()
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
 
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, indexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, indexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
 
    }

@@ -260,15 +260,15 @@ void DispReel::RenderDynamic()
       return;
 
    if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
    else
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
    g_pplayer->m_pin3d.EnableAlphaTestReference(0xE0); //!!
-   pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER); //!! still necessary?
+   pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, RenderDevice::Z_GREATER); //!! still necessary?
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
 
    pd3dDevice->DMDShader->SetTechnique("basic_noDMD");
@@ -315,10 +315,10 @@ void DispReel::RenderDynamic()
    pd3dDevice->DMDShader->End();
 
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
-   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
+   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, RenderDevice::RS_FALSE);
 
    //if(g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
-   //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
 
 void DispReel::RenderSetup()

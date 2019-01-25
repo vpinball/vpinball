@@ -149,20 +149,20 @@ static VertexDeclaration* fvfToDecl(const DWORD fvf)
    }
 }
 
-static UINT ComputePrimitiveCount(const D3DPRIMITIVETYPE type, const int vertexCount)
+static UINT ComputePrimitiveCount(const RenderDevice::PrimitveTypes type, const int vertexCount)
 {
    switch (type)
    {
-   case D3DPT_POINTLIST:
+   case RenderDevice::POINTLIST:
       return vertexCount;
-   case D3DPT_LINELIST:
+   case RenderDevice::LINELIST:
       return vertexCount / 2;
-   case D3DPT_LINESTRIP:
+   case RenderDevice::LINESTRIP:
       return std::max(0, vertexCount - 1);
-   case D3DPT_TRIANGLELIST:
+   case RenderDevice::TRIANGLELIST:
       return vertexCount / 3;
-   case D3DPT_TRIANGLESTRIP:
-   case D3DPT_TRIANGLEFAN:
+   case RenderDevice::TRIANGLESTRIP:
+   case RenderDevice::TRIANGLEFAN:
       return std::max(0, vertexCount - 2);
    default:
       return 0;
@@ -1106,14 +1106,14 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
       // Perform a dummy draw call to ensure texture sampler 0 is set before the resolve is triggered
       // Vertex declaration and shaders may need to me adjusted to ensure no debug
       // error message is produced
-      m_pD3DDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
-      m_pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-      m_pD3DDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0);
+      m_pD3DDevice->SetRenderState(RenderDevice:ZENABLE, RenderDevice::RS_FALSE);
+      m_pD3DDevice->SetRenderState(RenderDevice:ZWRITEENABLE, RenderDevice::RS_FALSE);
+      m_pD3DDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0);
       D3DXVECTOR3 vDummyPoint(0.0f, 0.0f, 0.0f);
       m_pD3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, 1, vDummyPoint, sizeof(D3DXVECTOR3));
-      m_pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
-      m_pD3DDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
-      m_pD3DDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0x0F);
+      m_pD3DDevice->SetRenderState(RenderDevice:ZWRITEENABLE, RenderDevice::RS_TRUE);
+      m_pD3DDevice->SetRenderState(RenderDevice:ZENABLE, RenderDevice::RS_TRUE);
+      m_pD3DDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0F);
 
       // Trigger the depth buffer resolve; after this call texture sampler 0
       // will contain the contents of the resolve operation
@@ -1173,8 +1173,8 @@ void RenderDevice::CopyDepth(D3DTexture* dest, D3DTexture* src)
    FBShader->SetTechnique("fb_mirror");
 
    SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); // paranoia set //!!
-   SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-   SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+   SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+   SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
    SetRenderState(RenderDevice::ZENABLE, FALSE);
 
    FBShader->Begin(0);

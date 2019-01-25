@@ -906,8 +906,8 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, const Material * cons
    pd3dDevice->basicShader->SetMaterial(mat);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (!pin)
@@ -927,8 +927,8 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, const Material * cons
       matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
       g_pplayer->UpdateBasicShaderMatrix();
    }
@@ -939,15 +939,15 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, const Material * cons
       matTrafo._43 = m_d.m_wireDistanceY*0.5f;
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
       matTrafo.SetIdentity();
       matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
       g_pplayer->UpdateBasicShaderMatrix();
    }
@@ -958,14 +958,14 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, const Material * cons
       matTrafo._43 = m_d.m_wireDistanceY*0.5f;
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
       matTrafo.SetIdentity();
       matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
       g_pplayer->UpdateBasicShaderMatrix();
    }
@@ -976,25 +976,25 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, const Material * cons
       matTrafo._43 = m_d.m_wireDistanceY*0.5f;
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
       matTrafo.SetIdentity();
       matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
       g_pplayer->UpdateBasicShaderMatrix();
    }
    else
    {
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
    }
 
-   //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
 
 void Ramp::CreateWire(const int numRings, const int numSegments, const Vertex2D * const midPoints, Vertex3D_NoTex2 * const rgvbuf)
@@ -1073,7 +1073,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
    if (!mat->m_bOpacityActive)
       accuracy = (int)(10.f*1.3f); // see above
 
-   if(rgheightInit)
+   if (rgheightInit)
        delete [] rgheightInit;
    int splinePoints;
    const Vertex2D * const rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, NULL, (m_d.m_type != RampType1Wire) ? NULL : &middlePoints, -1, false);
@@ -2399,8 +2399,8 @@ void Ramp::RenderRamp(RenderDevice *pd3dDevice, const Material * const mat)
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // as both floor and walls are thinwalled
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // as both floor and walls are thinwalled
 
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
@@ -2422,14 +2422,14 @@ void Ramp::RenderRamp(RenderDevice *pd3dDevice, const Material * const mat)
       {
          // both walls with image and floor
          pd3dDevice->basicShader->Begin(0);
-         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices * 3, dynamicIndexBuffer, 0, (rampVertex - 1) * 6 * 3);
+         pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices * 3, dynamicIndexBuffer, 0, (rampVertex - 1) * 6 * 3);
          pd3dDevice->basicShader->End();
       }
       else
       {
          // only floor
          pd3dDevice->basicShader->Begin(0);
-         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, (rampVertex - 1) * 6);
+         pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, (rampVertex - 1) * 6);
 
          if (m_d.m_rightwallheightvisible != 0.f || m_d.m_leftwallheightvisible != 0.f)
          {
@@ -2441,14 +2441,14 @@ void Ramp::RenderRamp(RenderDevice *pd3dDevice, const Material * const mat)
             }
 
             if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f) //only render left & right side if the height is >0
-               pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, m_numVertices, m_numVertices * 2, dynamicIndexBuffer, 0, (rampVertex - 1) * 6 * 2);
+               pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, m_numVertices, m_numVertices * 2, dynamicIndexBuffer, 0, (rampVertex - 1) * 6 * 2);
             else
             {
                if (m_d.m_rightwallheightvisible != 0.f) //only render right side if the height is >0
-                  pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, m_numVertices, m_numVertices, dynamicIndexBuffer, 0, (rampVertex - 1) * 6);
+                  pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, m_numVertices, m_numVertices, dynamicIndexBuffer, 0, (rampVertex - 1) * 6);
 
                if (m_d.m_leftwallheightvisible != 0.f) //only render left side if the height is >0
-                  pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, m_numVertices * 2, m_numVertices, dynamicIndexBuffer, 0, (rampVertex - 1) * 6);
+                  pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, m_numVertices * 2, m_numVertices, dynamicIndexBuffer, 0, (rampVertex - 1) * 6);
             }
          }
 

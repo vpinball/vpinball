@@ -137,7 +137,7 @@ void Gate::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Gate", "GateType", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_type= (GateType)iTmp;
+       m_d.m_type = (GateType)iTmp;
    else
        m_d.m_type = GateWireW;
 
@@ -497,17 +497,17 @@ void Gate::RenderObject(RenderDevice* pd3dDevice)
    ppin3d->EnableAlphaBlend(false);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    pd3dDevice->basicShader->Begin(0);
 
    // render bracket      
    if (m_d.m_fShowBracket)
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bracketVertexBuffer, 0, gateBracketNumVertices, bracketIndexBuffer, 0, gateBracketNumIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bracketVertexBuffer, 0, gateBracketNumVertices, bracketIndexBuffer, 0, gateBracketNumIndices);
    // render wire
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, wireVertexBuffer, 0, m_numVertices, wireIndexBuffer, 0, m_numIndices);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, wireVertexBuffer, 0, m_numVertices, wireIndexBuffer, 0, m_numIndices);
 
    pd3dDevice->basicShader->End();
 }
@@ -1236,7 +1236,7 @@ STDMETHODIMP Gate::put_Friction(float newVal)
 
 STDMETHODIMP Gate::get_Damping(float *pVal)
 {
-   *pVal = !g_pplayer ? m_d.m_damping : powf(m_phitgate->m_gateMover.m_damping,(float)(1.0/PHYS_FACTOR));
+   *pVal = !g_pplayer ? m_d.m_damping : powf(m_phitgate->m_gateMover.m_damping, (float)(1.0/PHYS_FACTOR));
 
    return S_OK;
 }

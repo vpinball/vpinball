@@ -59,7 +59,7 @@ int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::
 		result = strSearchData.compare(strTableData); 
 		if (result == 0) break; //Found
 		++iNewPos;
-		if (iNewPos == ListIn->size() ) break;
+		if (iNewPos == ListIn->size()) break;
 		strTableData = lowerCase(ListIn->at(iNewPos).KeyName).substr(0, SearchWidth);
 		result = strSearchData.compare(strTableData);
 		if (result != 0) break;	//EO SubList
@@ -79,7 +79,7 @@ int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, con
 	int iNewPos = CurrentIdx;
 	while (true)
 	{
-		iNewPos-- ;
+		iNewPos--;
 		if (iNewPos < 0) break;
 		const string strTableData = lowerCase(ListIn->at(iNewPos).UniqueKey).substr(0, SearchWidth);
 		if (strSearchData.compare(strTableData) != 0) break;
@@ -89,7 +89,7 @@ int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, con
 	//find nearest definition above current line
 	int ClosestLineNum = 0;
 	int ClosestPos = CurrentIdx;
-	int Delta = - (INT_MAX - 1);
+	int Delta = -(INT_MAX - 1);
 	while (true)
 	{
 		const int NewLineNum = ListIn->at(iNewPos).LineNum;
@@ -104,7 +104,7 @@ int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, con
 			}
 		}
 		++iNewPos;
-		if (iNewPos == ListIn->size() ) break;
+		if (iNewPos == ListIn->size()) break;
 		const string strTableData = lowerCase(ListIn->at(iNewPos).KeyName).substr(0, SearchWidth);
 		if (strSearchData.compare(strTableData) != 0) break;
 	}
@@ -112,7 +112,7 @@ int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, con
 	return ClosestPos;
 }
 
-int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int &PosOut )
+int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int &PosOut)
 {
 	int result = -2;
 	if (ListIn && (ListIn->size() > 0) && (strIn.size() > 0))// Sanity chq.
@@ -126,7 +126,7 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 		}
 		int iJumpDelta = ((iNewPos) >> 1);
 		--iNewPos;//Zero Base
-		const string strSearchData = lowerCase( strIn );
+		const string strSearchData = lowerCase(strIn);
 		while (true)
 		{
 			iCurPos = iNewPos;
@@ -137,7 +137,7 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 				result = strSearchData.compare(strTableData);
 			}
 			if (iJumpDelta == 0 || result == 0) break;
-			if ( result < 0 )	{ iNewPos = iCurPos - iJumpDelta; }
+			if (result < 0) { iNewPos = iCurPos - iJumpDelta; }
 			else  { iNewPos = iCurPos + iJumpDelta; }
 			iJumpDelta >>= 1;
 		} 
@@ -150,18 +150,18 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 //Returns current Index of strIn in ListIn based on UniqueKey, or -1 if not found
 int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 {
-	if ( (!ListIn) || (ListIn->size() == 0) || (strIn.size() == 0) ) return -1;
+	if ((!ListIn) || (ListIn->size() == 0) || (strIn.size() == 0)) return -1;
 	int result = -2;
 	const unsigned int ListSize = (int)ListIn->size();
 	UINT32 iCurPos = (ListSize >> 1);
 	UINT32 iNewPos = 1u << 30;
-	while ( (!(iNewPos & ListSize)) && (iNewPos > 1) )
+	while ((!(iNewPos & ListSize)) && (iNewPos > 1))
 	{
 		iNewPos >>= 1;
 	}
 	int iJumpDelta = ((iNewPos) >> 1);
 	--iNewPos;//Zero Base
-	const string strSearchData = lowerCase( strIn );
+	const string strSearchData = lowerCase(strIn);
 	while (true)
 	{
 		iCurPos = iNewPos;
@@ -172,7 +172,7 @@ int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 			result = strSearchData.compare(strTableData);
 		}
 		if (iJumpDelta == 0 || result == 0) break;
-		if ( result < 0 )	{ iNewPos = iCurPos - iJumpDelta; }
+		if (result < 0) { iNewPos = iCurPos - iJumpDelta; }
 		else  { iNewPos = iCurPos + iJumpDelta; }
 		iJumpDelta >>= 1;
 	} 
@@ -186,18 +186,18 @@ int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 //Returns current Index of strIn in ListIn based on KeyName, or -1 if not found
 int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
 {
-	if ( (!ListIn) || (ListIn->size() == 0) || (strIn.size() == 0) ) return -1;
+	if ((!ListIn) || (ListIn->size() == 0) || (strIn.size() == 0)) return -1;
 	int result = -2;
 	const unsigned int ListSize = (int)ListIn->size();
 	UINT32 iCurPos = (ListSize >> 1);
 	UINT32 iNewPos = 1u << 30;
-	while ( (!(iNewPos & ListSize)) && (iNewPos > 1) )
+	while ((!(iNewPos & ListSize)) && (iNewPos > 1))
 	{
 		iNewPos >>= 1;
 	}
 	int iJumpDelta = ((iNewPos) >> 1);
 	--iNewPos;//Zero Base
-	const string strSearchData = lowerCase( strIn );
+	const string strSearchData = lowerCase(strIn);
 	while (true)
 	{
 		iCurPos = iNewPos;
@@ -208,7 +208,7 @@ int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
 			result = strSearchData.compare(strTableData);
 		}
 		if (iJumpDelta == 0 || result == 0) break;
-		if ( result < 0 )	{ iNewPos = iCurPos - iJumpDelta; }
+		if (result < 0) { iNewPos = iCurPos - iJumpDelta; }
 		else  { iNewPos = iCurPos + iJumpDelta; }
 		iJumpDelta >>= 1;
 	} 
@@ -225,7 +225,7 @@ UserData UserData::GetUDfromUniqueKey(vector<UserData>* ListIn, const string &Un
 	RetVal.eTyping = eUnknown;
 	size_t i = 0;
 	const size_t ListSize = ListIn->size();
-	while ( (RetVal.eTyping == eUnknown) && (i < ListSize) )
+	while ((RetVal.eTyping == eUnknown) && (i < ListSize))
 	{
 		if (UniKey == ListIn->at(i).UniqueKey)
 		{
@@ -294,16 +294,16 @@ size_t UserData::FindOrInsertUD(vector<UserData>* ListIn, UserData &udIn)
 			return ++Pos;
 		}
 		else
-		if (iterFound == ( ListIn->end() - 1) )
+		if (iterFound == (ListIn->end() - 1))
 		{//insert at end
 			ListIn->push_back(udIn);
-			return ListIn->size() -1;//Zero Base
+			return ListIn->size() - 1;//Zero Base
 		}
 	}
 	return -1;
 }
 
-bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const string &strIn)
+bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn, const string &strIn)
 {
 	//First in the list
 	if (ListIn->empty())
@@ -322,18 +322,18 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const strin
 	}
 	int iJumpDelta = ((iNewPos) >> 1);
 	--iNewPos;//Zero Base
-	const string strSearchData = lowerCase( strIn );
+	const string strSearchData = lowerCase(strIn);
 	while (true)
 	{
 		iCurPos = iNewPos;
 		if (iCurPos >= ListSize) { result = -1; }
 		else
 		{
-			const string strTableData = lowerCase(ListIn->at(iCurPos) );
+			const string strTableData = lowerCase(ListIn->at(iCurPos));
 			result = strSearchData.compare(strTableData);
 		}
 		if (iJumpDelta == 0 || result == 0) break;
-		if ( result < 0 )	{ iNewPos = iCurPos - iJumpDelta; }
+		if (result < 0) { iNewPos = iCurPos - iJumpDelta; }
 		else  { iNewPos = iCurPos + iJumpDelta; }
 		iJumpDelta >>= 1;
 	} 
@@ -347,7 +347,7 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const strin
 		return true;
 	}
 
-	if (i == ( ListIn->end() - 1) )//insert Above last element - Special case
+	if (i == (ListIn->end() - 1))//insert Above last element - Special case
 	{
 		ListIn->push_back(strIn);
 		return true;
@@ -360,7 +360,7 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const strin
 		return true;
 	}
 
-	if (i == ( ListIn->end() - 1) )//insert Above last element - Special case
+	if (i == (ListIn->end() - 1))//insert Above last element - Special case
 	{//insert at end
 		ListIn->push_back(strIn);
 		return true;
@@ -398,7 +398,7 @@ CVPrefrence* CVPrefrence::FillCVPreference(
 
 void CVPrefrence::SetCheckBox(const HWND hwndDlg)
 {
-	const HWND hChkBox = GetDlgItem(hwndDlg,this->IDC_ChkBox_code);
+	const HWND hChkBox = GetDlgItem(hwndDlg, this->IDC_ChkBox_code);
 	SNDMSG(hChkBox, BM_SETCHECK, this->Highlight ? BST_CHECKED : BST_UNCHECKED, 0L);
 }
 
@@ -411,38 +411,38 @@ void CVPrefrence::GetPrefsFromReg()
 {
 	char RegEntry[33] = {};
 	strcpy_s(RegEntry, this->szRegName);
-	this->Highlight = GetRegBoolWithDefault("CVEdit", RegEntry, this->Highlight );
+	this->Highlight = GetRegBoolWithDefault("CVEdit", RegEntry, this->Highlight);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_color");
-	this->rgb = GetRegIntWithDefault("CVEdit", RegEntry,this->rgb);
+	this->rgb = GetRegIntWithDefault("CVEdit", RegEntry, this->rgb);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontPointSize");
-	this->PointSize = GetRegIntWithDefault ( "CVEdit", RegEntry, this->PointSize);
+	this->PointSize = GetRegIntWithDefault("CVEdit", RegEntry, this->PointSize);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_Font");
 	char bakupFaceName[LF_FACESIZE]; // to save the default font name, in case the corresponding registry entry is empty
 	strcpy_s(bakupFaceName, this->LogFont.lfFaceName);
-	if(GetRegString( "CVEdit", RegEntry, this->LogFont.lfFaceName, LF_FACESIZE) != S_OK)
+	if (GetRegString("CVEdit", RegEntry, this->LogFont.lfFaceName, LF_FACESIZE) != S_OK)
 		strcpy_s(this->LogFont.lfFaceName, bakupFaceName);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontWeight");
-	this->LogFont.lfWeight = GetRegIntWithDefault( "CVEdit", RegEntry, this->LogFont.lfWeight);
+	this->LogFont.lfWeight = GetRegIntWithDefault("CVEdit", RegEntry, this->LogFont.lfWeight);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontItalic");
-	this->LogFont.lfItalic = GetRegIntWithDefault( "CVEdit", RegEntry, this->LogFont.lfItalic);
+	this->LogFont.lfItalic = GetRegIntWithDefault("CVEdit", RegEntry, this->LogFont.lfItalic);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontUnderline");
-	this->LogFont.lfUnderline = GetRegIntWithDefault( "CVEdit", RegEntry, this->LogFont.lfUnderline);
+	this->LogFont.lfUnderline = GetRegIntWithDefault("CVEdit", RegEntry, this->LogFont.lfUnderline);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontStrike");
-	this->LogFont.lfStrikeOut = GetRegIntWithDefault( "CVEdit", RegEntry, this->LogFont.lfStrikeOut);
+	this->LogFont.lfStrikeOut = GetRegIntWithDefault("CVEdit", RegEntry, this->LogFont.lfStrikeOut);
 }
 
 void CVPrefrence::SetPrefsToReg()
@@ -453,40 +453,40 @@ void CVPrefrence::SetPrefsToReg()
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_color");
-	SetRegValueInt("CVEdit", RegEntry,this->rgb);
+	SetRegValueInt("CVEdit", RegEntry, this->rgb);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontPointSize");
-	SetRegValueInt( "CVEdit", RegEntry, this->PointSize);
+	SetRegValueInt("CVEdit", RegEntry, this->PointSize);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_Font");
-	SetRegValueString( "CVEdit", RegEntry, this->LogFont.lfFaceName);
+	SetRegValueString("CVEdit", RegEntry, this->LogFont.lfFaceName);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontWeight");
-	SetRegValueInt( "CVEdit", RegEntry, this->LogFont.lfWeight);
+	SetRegValueInt("CVEdit", RegEntry, this->LogFont.lfWeight);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontItalic");
-	SetRegValueInt( "CVEdit", RegEntry, this->LogFont.lfItalic);
+	SetRegValueInt("CVEdit", RegEntry, this->LogFont.lfItalic);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontUnderline");
-	SetRegValueInt( "CVEdit", RegEntry, this->LogFont.lfUnderline);
+	SetRegValueInt("CVEdit", RegEntry, this->LogFont.lfUnderline);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontStrike");
-	SetRegValueInt( "CVEdit", RegEntry, this->LogFont.lfStrikeOut);
+	SetRegValueInt("CVEdit", RegEntry, this->LogFont.lfStrikeOut);
 }
 
 void CVPrefrence::SetDefaultFont(const HWND hwndDlg)
 {
 	LOGFONT* const plfont = &this->LogFont;
-	memset(&this->LogFont, 0, sizeof(LOGFONT) );
-	HFONT hFont = (HFONT) GetStockObject(ANSI_FIXED_FONT);
+	memset(&this->LogFont, 0, sizeof(LOGFONT));
+	HFONT hFont = (HFONT)GetStockObject(ANSI_FIXED_FONT);
 	if (hFont == NULL)
-		hFont = (HFONT) GetStockObject(SYSTEM_FONT);
+		hFont = (HFONT)GetStockObject(SYSTEM_FONT);
 	GetObject(hFont, sizeof(LOGFONT), plfont);
 	this->PointSize = 10;
 	this->GetHeightFromPointSize(hwndDlg);
@@ -496,7 +496,7 @@ int CVPrefrence::GetHeightFromPointSize(const HWND hwndDlg)
 {
 	const HDC hdc = GetDC(hwndDlg);
 	const int Height = -MulDiv(this->PointSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-	ReleaseDC(hwndDlg,hdc);
+	ReleaseDC(hwndDlg, hdc);
 	return Height;
 }
 

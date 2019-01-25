@@ -277,7 +277,7 @@ void ISelect::SetMultiSelectFormat(Sur *psur)
 
 void ISelect::SetLockedFormat(Sur *psur)
 {
-   psur->SetBorderColor(g_pvp->m_elemSelectLockedColor , false, 1);
+   psur->SetBorderColor(g_pvp->m_elemSelectLockedColor, false, 1);
    psur->SetLineColor(g_pvp->m_elemSelectLockedColor, false, 1);
 }
 
