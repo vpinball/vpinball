@@ -149,7 +149,7 @@ static VertexDeclaration* fvfToDecl(const DWORD fvf)
    }
 }
 
-static UINT ComputePrimitiveCount(const RenderDevice::PrimitveTypes type, const int vertexCount)
+static UINT ComputePrimitiveCount(const RenderDevice::PrimitiveTypes type, const int vertexCount)
 {
    switch (type)
    {
@@ -1110,7 +1110,7 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
       m_pD3DDevice->SetRenderState(RenderDevice:ZWRITEENABLE, RenderDevice::RS_FALSE);
       m_pD3DDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0);
       D3DXVECTOR3 vDummyPoint(0.0f, 0.0f, 0.0f);
-      m_pD3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, 1, vDummyPoint, sizeof(D3DXVECTOR3));
+      m_pD3DDevice->DrawPrimitiveUP(RenderDevice::POINTLIST, 1, vDummyPoint, sizeof(D3DXVECTOR3));
       m_pD3DDevice->SetRenderState(RenderDevice:ZWRITEENABLE, RenderDevice::RS_TRUE);
       m_pD3DDevice->SetRenderState(RenderDevice:ZENABLE, RenderDevice::RS_TRUE);
       m_pD3DDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0F);
@@ -1451,10 +1451,10 @@ void RenderDevice::SetRenderState(const RenderStates p1, DWORD p2)
 
    if (p1 == CULLMODE && (g_pplayer && (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->m_ptable->m_fReflectionEnabled)))
    {
-      if (p2 == D3DCULL_CCW)
-         p2 = D3DCULL_CW;
-      else if (p2 == D3DCULL_CW)
-         p2 = D3DCULL_CCW;
+      if (p2 == RenderDevice::CULL_CCW)
+         p2 = RenderDevice::CULL_CW;
+      else if (p2 == RenderDevice::CULL_CW)
+         p2 = RenderDevice::CULL_CCW;
    }
 
    CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)p1, p2));
@@ -1554,7 +1554,7 @@ void* RenderDevice::AttachZBufferTo(RenderTarget* surf)
    }
 }
 
-void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
+void RenderDevice::DrawPrimitive(const RenderDevice::PrimitiveTypes type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
 {
    HRESULT hr;
    VertexDeclaration * declaration = fvfToDecl(fvf);
@@ -1562,7 +1562,7 @@ void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, c
 
    const unsigned int np = ComputePrimitiveCount(type, vertexCount);
    m_stats_drawn_triangles += np;
-   hr = m_pD3DDevice->DrawPrimitiveUP(type, np, vertices, fvfToSize(fvf));
+   hr = m_pD3DDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)type, np, vertices, fvfToSize(fvf));
 
    if (FAILED(hr))
       ReportError("Fatal Error: DrawPrimitiveUP failed!", hr, __FILE__, __LINE__);
@@ -1578,9 +1578,9 @@ void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
    m_quadDynVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
    memcpy(bufvb,vertices,4*sizeof(Vertex3D_TexelOnly));
    m_quadDynVertexBuffer->unlock();
-   DrawPrimitiveVB(D3DPT_TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadDynVertexBuffer,0,4);*/
+   DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadDynVertexBuffer,0,4);*/
 
-   DrawPrimitive(D3DPT_TRIANGLESTRIP,MY_D3DFVF_TEX,vertices,4); // having a VB and lock/copying stuff each time is slower :/
+   DrawPrimitive(RenderDevice::TRIANGLESTRIP,MY_D3DFVF_TEX,vertices,4); // having a VB and lock/copying stuff each time is slower :/
 }
 
 void RenderDevice::DrawFullscreenTexturedQuad()
@@ -1594,10 +1594,10 @@ void RenderDevice::DrawFullscreenTexturedQuad()
    };   
    DrawTexturedQuad((Vertex3D_TexelOnly*)verts);*/
 
-   DrawPrimitiveVB(D3DPT_TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadVertexBuffer,0,4);
+   DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadVertexBuffer,0,4);
 }
 
-void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount)
+void RenderDevice::DrawPrimitiveVB(const RenderDevice::PrimitiveTypes type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount)
 {
    HRESULT hr;
    VertexDeclaration * declaration = fvfToDecl(fvf);
@@ -1612,14 +1612,14 @@ void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf,
 
    const unsigned int np = ComputePrimitiveCount(type, vertexCount);
    m_stats_drawn_triangles += np;
-   hr = m_pD3DDevice->DrawPrimitive(type, startVertex, np);
+   hr = m_pD3DDevice->DrawPrimitive((D3DPRIMITIVETYPE)type, startVertex, np);
    if (FAILED(hr))
       ReportError("Fatal Error: DrawPrimitive failed!", hr, __FILE__, __LINE__);
 
    m_curDrawCalls++;
 }
 
-void RenderDevice::DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount)
+void RenderDevice::DrawIndexedPrimitiveVB(const RenderDevice::PrimitiveTypes type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount)
 {
    VertexDeclaration * declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
@@ -1641,7 +1641,7 @@ void RenderDevice::DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, const DWO
    // render
    const unsigned int np = ComputePrimitiveCount(type, indexCount);
    m_stats_drawn_triangles += np;
-   CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive(type, startVertex, 0, vertexCount, startIndex, np));
+   CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type, startVertex, 0, vertexCount, startIndex, np));
 
    m_curDrawCalls++;
 }

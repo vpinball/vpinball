@@ -1236,7 +1236,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
    }
    else // m_d.m_useAsPlayfield == true:
    {
-      //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW); // don't mess with the render states when doing playfield rendering
+      //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW); // don't mess with the render states when doing playfield rendering
       // set transform
       g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
       pd3dDevice->basicShader->Begin(0);

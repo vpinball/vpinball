@@ -1495,8 +1495,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       if (hr == S_OK)
          m_ptable->m_tblMirrorEnabled = (tmp != 0);
    }
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    // if left flipper or shift hold during load, then swap DT/FS view (for quick testing)
    if (m_ptable->m_BG_current_set != 2 &&
@@ -1876,7 +1876,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
 
    if (!onlyBalls)
    {
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, D3DCLIPPLANE0);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, RenderDevice::PLANE0);
 
       D3DMATRIX viewMat;
       m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
@@ -1890,8 +1890,8 @@ void Player::RenderStaticMirror(const bool onlyBalls)
       m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
       m_ptable->m_fReflectionEnabled = true;
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
       UpdateBasicShaderMatrix();
 
@@ -1910,13 +1910,13 @@ void Player::RenderStaticMirror(const bool onlyBalls)
 
       m_pin3d.DisableAlphaBlend();
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
-      //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
+      //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
       m_ptable->m_fReflectionEnabled = false;
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
       // and flip back camera
       viewMat._33 = -viewMat._33;
@@ -1955,8 +1955,8 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
    m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
    m_ptable->m_fReflectionEnabled = true; // set to let matrices and postrenderstatics know that we need to handle reflections now
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    if (!onlyBalls)
       UpdateBasicShaderMatrix();
@@ -1985,13 +1985,13 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
 
    m_pin3d.DisableAlphaBlend();
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
-   //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
+   //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    m_ptable->m_fReflectionEnabled = false;
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    // and flip back camera
    viewMat._33 = -viewMat._33;
@@ -2018,17 +2018,17 @@ void Player::RenderMirrorOverlay()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique("fb_mirror");
 
    m_pin3d.EnableAlphaBlend(false, false);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::DST_ALPHA);
    // z-test must be enabled otherwise mirrored elements are drawn over blocking elements
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
 
    m_pin3d.m_pd3dPrimaryDevice->FBShader->Begin(0);
    m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
    m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
 
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
    m_pin3d.DisableAlphaBlend();
 }
 
@@ -2127,7 +2127,7 @@ void Player::InitStatic(HWND hwndProgress)
 
       // to compensate for this when rendering the static objects, enable clipplane
       SetClipPlanePlayfield(false);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, D3DCLIPPLANE0);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, RenderDevice::PLANE0);
 
       // now render everything else
       for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
@@ -2161,9 +2161,9 @@ void Player::InitStatic(HWND hwndProgress)
 
       m_pin3d.DisableAlphaBlend();
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0);
       SetClipPlanePlayfield(true);
@@ -2286,9 +2286,9 @@ void Player::InitStatic(HWND hwndProgress)
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
       m_pin3d.DisableAlphaBlend();
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 
       RenderTarget* tmpAOSurface;
       m_pin3d.m_pddsAOBackTmpBuffer->GetSurfaceLevel(0, &tmpAOSurface);
@@ -2342,9 +2342,9 @@ void Player::InitStatic(HWND hwndProgress)
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
       m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
 
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
       m_pin3d.m_pd3dPrimaryDevice->EndScene();
    }
@@ -3748,14 +3748,14 @@ void Player::DrawBulbLightBuffer()
             m_vHitTrans[i]->RenderDynamic();
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
-      //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
-      //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
+      //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
       m_pin3d.DisableAlphaBlend();
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 
       //for (unsigned int blur = 0; blur < 2; ++blur) // uses larger blur kernel instead now (see below)
       {
@@ -3797,9 +3797,9 @@ void Player::DrawBulbLightBuffer()
          SAFE_RELEASE_NO_RCC(tmpBloomSurface3);
       }
 
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
       m_current_renderstage = 0;
    }
@@ -3828,7 +3828,7 @@ void Player::RenderDynamics()
 
    if (reflection_path != 0)
    {
-	   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, D3DCLIPPLANE0);
+	   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, RenderDevice::PLANE0);
 	   RenderDynamicMirror(reflection_path == 1);
 	   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0); // disable playfield clipplane again
 
@@ -4012,9 +4012,9 @@ void Player::RenderDynamics()
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture("Texture3", (D3DTexture*)NULL); // need to reset the bulb light texture, as its used as render target for bloom again
 
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    if (!cameraMode)
    {
@@ -4492,9 +4492,9 @@ void Player::PrepareVideoBuffersNormal()
    m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
    m_pin3d.DisableAlphaBlend();
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 
    Bloom();
 
@@ -4554,9 +4554,9 @@ void Player::PrepareVideoBuffersNormal()
    if (ProfilingMode() == 1)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_PostProcess);
 #endif
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    UpdateHUD();
 
@@ -4592,9 +4592,9 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
    m_pin3d.DisableAlphaBlend();
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 
    Bloom();
 
@@ -4713,9 +4713,9 @@ void Player::PrepareVideoBuffersAO()
 
    //
 
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    UpdateHUD();
 
@@ -5270,13 +5270,13 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
    ballShader->SetVector("position_radius", &pos_radRef);
    const D3DXVECTOR4 refl((float)m_ptable->m_ballReflectionStrength * (float)(1.0 / 255.0), m_ptable->m_playfieldReflectionStrength, 0.f, 0.f);
    ballShader->SetVector("reflection_ball_playfield", &refl);
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
    m_pin3d.EnableAlphaBlend(false, false);
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::DST_ALPHA);
    ballShader->SetTechnique("RenderBallReflection");
 
    ballShader->Begin(0);
-   m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ballVertexBuffer, 0, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, ballIndexBuffer, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
+   m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ballVertexBuffer, 0, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, ballIndexBuffer, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
    ballShader->End();
 
    m_pin3d.DisableAlphaBlend();
@@ -5285,12 +5285,12 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
 void Player::DrawBalls()
 {
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
-   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
+   m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    if (m_ToggleDebugBalls && m_DebugBalls)
       // Set the render state to something that will always display.
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
 
    // collect all lights that can reflect on balls (currently only bulbs and if flag set to do so)
    std::vector<Light*> lights;
@@ -5469,7 +5469,7 @@ void Player::DrawBalls()
       ballShader->SetTechnique(m_ballShaderTechnique);
 
       ballShader->Begin(0);
-      m_pin3d.m_pd3dPrimaryDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ballVertexBuffer, 0, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, ballIndexBuffer, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
+      m_pin3d.m_pd3dPrimaryDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ballVertexBuffer, 0, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, ballIndexBuffer, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
       ballShader->End();
 
       // ball trails
@@ -5571,7 +5571,7 @@ void Player::DrawBalls()
 
             ballShader->SetTechnique("RenderBallTrail");
             ballShader->Begin(0);
-            m_pin3d.m_pd3dPrimaryDevice->DrawPrimitiveVB(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, m_ballTrailVertexBuffer, 0, num_rgv3D);
+            m_pin3d.m_pd3dPrimaryDevice->DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, m_ballTrailVertexBuffer, 0, num_rgv3D);
             ballShader->End();
          }
       }
@@ -5595,7 +5595,7 @@ void Player::DrawBalls()
          // draw points
          const float ptsize = 5.0f;
          m_pin3d.m_pd3dPrimaryDevice->SetRenderState((RenderDevice::RenderStates)D3DRS_POINTSIZE, *((DWORD*)&ptsize));
-         m_pin3d.m_pd3dPrimaryDevice->DrawPrimitiveVB(D3DPT_POINTLIST, MY_D3DFVF_TEX, m_ballDebugPoints, 0, 12);
+         m_pin3d.m_pd3dPrimaryDevice->DrawPrimitiveVB(RenderDevice::POINTLIST, MY_D3DFVF_TEX, m_ballDebugPoints, 0, 12);
 
          // reset transform
          m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
