@@ -313,10 +313,10 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    m_pd3dPrimaryDevice->m_texMan.SetDirty(m_envRadianceTexture);
 
    //
-   InitRenderState();
+   InitPrimaryRenderState();
 
    // Direct all renders to the "static" buffer.
-   SetRenderTarget(m_pddsStatic, m_pddsStaticZ);
+   SetPrimaryRenderTarget(m_pddsStatic, m_pddsStaticZ);
 
 //#ifdef FPS
    //m_gpu_profiler.Init(m_pd3dDevice->GetCoreDevice()); // done by first BeginFrame() call lazily
@@ -326,26 +326,45 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
 
 
 // Sets the texture filtering state.
-void Pin3D::SetTextureFilter(const int TextureNum, const int Mode) const
+void Pin3D::SetPrimaryTextureFilter(const int TextureNum, const int Mode) const
 {
    m_pd3dPrimaryDevice->SetTextureFilter(TextureNum, Mode);
 }
 
-void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) const
+void Pin3D::SetSecondaryTextureFilter(const int TextureNum, const int Mode) const
+{
+   m_pd3dSecondaryDevice->SetTextureFilter(TextureNum, Mode);
+}
+
+void Pin3D::SetPrimaryRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) const
 {
    m_pd3dPrimaryDevice->SetRenderTarget(pddsSurface);
    m_pd3dPrimaryDevice->SetZBuffer(pddsZ);
 }
 
-void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const
-{   
-   if (!m_pd3dPrimaryDevice->m_useNvidiaApi && m_pd3dPrimaryDevice->m_INTZ_support)
-      SetRenderTarget(pddsSurface, (D3DTexture*)pddsZ);
-   else
-      SetRenderTarget(pddsSurface, (RenderTarget*)pddsZ);
+void Pin3D::SetSecondaryRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) const
+{
+   m_pd3dSecondaryDevice->SetRenderTarget(pddsSurface);
+   m_pd3dSecondaryDevice->SetZBuffer(pddsZ);
 }
 
-void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const
+void Pin3D::SetPrimaryRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const
+{   
+   if (!m_pd3dPrimaryDevice->m_useNvidiaApi && m_pd3dPrimaryDevice->m_INTZ_support)
+      SetPrimaryRenderTarget(pddsSurface, (D3DTexture*)pddsZ);
+   else
+      SetPrimaryRenderTarget(pddsSurface, (RenderTarget*)pddsZ);
+}
+
+void Pin3D::SetSecondaryRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const
+{
+   if (!m_pd3dSecondaryDevice->m_useNvidiaApi && m_pd3dSecondaryDevice->m_INTZ_support)
+      SetSecondaryRenderTarget(pddsSurface, (D3DTexture*)pddsZ);
+   else
+      SetSecondaryRenderTarget(pddsSurface, (RenderTarget*)pddsZ);
+}
+
+void Pin3D::SetPrimaryRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const
 {
    m_pd3dPrimaryDevice->SetRenderTarget(pddsSurface);
    IDirect3DSurface9 *textureSurface;
@@ -354,7 +373,16 @@ void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const
    SAFE_RELEASE_NO_RCC(textureSurface);
 }
 
-void Pin3D::InitRenderState()
+void Pin3D::SetSecondaryRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const
+{
+   m_pd3dSecondaryDevice->SetRenderTarget(pddsSurface);
+   IDirect3DSurface9 *textureSurface;
+   CHECKD3D(pddsZ->GetSurfaceLevel(0, &textureSurface));
+   m_pd3dSecondaryDevice->SetZBuffer(textureSurface);
+   SAFE_RELEASE_NO_RCC(textureSurface);
+}
+
+void Pin3D::InitPrimaryRenderState()
 {
    g_pplayer->m_pin3d.DisableAlphaBlend();
 
@@ -371,19 +399,46 @@ void Pin3D::InitRenderState()
    m_pd3dPrimaryDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP/*WRAP*/);
    m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
    m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-   SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+   SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
    m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
    m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
    m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
    m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
 
    m_pd3dPrimaryDevice->SetTextureAddressMode(4, RenderDevice::TEX_CLAMP/*WRAP*/); // normal maps
-   SetTextureFilter(4, TEXTURE_MODE_TRILINEAR);
+   SetPrimaryTextureFilter(4, TEXTURE_MODE_TRILINEAR);
+}
+
+void Pin3D::InitSecondaryRenderState()
+{
+   g_pplayer->m_pin3d.DisableAlphaBlend();
+
+   m_pd3dSecondaryDevice->SetRenderState(RenderDevice::LIGHTING, RenderDevice::RS_FALSE);
+
+   m_pd3dSecondaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
+   m_pd3dSecondaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   m_pd3dSecondaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+
+   m_pd3dSecondaryDevice->SetRenderState(RenderDevice::CLIPPING, RenderDevice::RS_FALSE);
+   m_pd3dSecondaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0);
+
+   // initialize first texture stage
+   m_pd3dSecondaryDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP/*WRAP*/);
+   m_pd3dSecondaryDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+   m_pd3dSecondaryDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+   SetSecondaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+   m_pd3dSecondaryDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
+   m_pd3dSecondaryDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+   m_pd3dSecondaryDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+   m_pd3dSecondaryDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
+
+   m_pd3dSecondaryDevice->SetTextureAddressMode(4, RenderDevice::TEX_CLAMP/*WRAP*/); // normal maps
+   SetSecondaryTextureFilter(4, TEXTURE_MODE_TRILINEAR);
 }
 
 void Pin3D::DrawBackground()
 {
-   SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+   SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
 
    PinTable * const ptable = g_pplayer->m_ptable;
    Texture * const pin = ptable->GetDecalsEnabled()
@@ -765,7 +820,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 	   // even with depth-only rendering we have to take care of alpha textures (stencil playfield to see underlying objects)
 	   if (pin)
 	   {
-		   SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
+		   SetPrimaryTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
 		   m_pd3dPrimaryDevice->basicShader->SetTechnique("basic_depth_only_with_texture");
 		   m_pd3dPrimaryDevice->basicShader->SetTexture("Texture0", pin, false);
 		   m_pd3dPrimaryDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
@@ -779,7 +834,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 
        if (pin)
        {
-           SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
+           SetPrimaryTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
            m_pd3dPrimaryDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
            m_pd3dPrimaryDevice->basicShader->SetTexture("Texture0", pin, false);
            m_pd3dPrimaryDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
@@ -808,7 +863,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
    {
       //m_pd3dDevice->basicShader->SetTexture("Texture0",(D3DTexture*)NULL);
       //m_pd3dDevice->m_texMan.UnloadTexture(pin->m_pdsBuffer); //!! is used by ball reflection later-on
-      SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+      SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
    }
 
    if(depth_only)
