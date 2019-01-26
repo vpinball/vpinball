@@ -59,11 +59,15 @@ public:
 
    void Flip(bool vsync);
 
-   void SetRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) const;
-   void SetRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const;
-   void SetRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const;
-   void SetTextureFilter(const int TextureNum, const int Mode) const;
+   void SetPrimaryRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) const;
+   void SetPrimaryRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const;
+   void SetPrimaryRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const;
+   void SetSecondaryRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) const;
+   void SetSecondaryRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const;
+   void SetSecondaryRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const;
+   void SetPrimaryTextureFilter(const int TextureNum, const int Mode) const;
 
+   void SetSecondaryTextureFilter(const int TextureNum, const int Mode) const;
    void EnableAlphaTestReference(const DWORD alphaRefValue) const;
    void EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend = true, const bool set_blend_op = true) const;
    void DisableAlphaBlend() const;
@@ -77,7 +81,8 @@ public:
    void InitLights();
 
 private:
-   void    InitRenderState();
+   void InitPrimaryRenderState();
+   void InitSecondaryRenderState();
    HRESULT InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl);
 
    void Identity();

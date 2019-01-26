@@ -1740,7 +1740,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
          }
    }
    // Direct all renders to the back buffer.
-   m_pin3d.SetRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
+   m_pin3d.SetPrimaryRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
 
    SendMessage(hwndProgress, PBM_SETPOS, 90, 0);
 
@@ -2094,7 +2094,7 @@ void Player::InitStatic(HWND hwndProgress)
    m_pin3d.m_pd3dPrimaryDevice->BeginScene();
 
    // Direct all renders to the "static" buffer
-   m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
+   m_pin3d.SetPrimaryRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
 
    m_pin3d.DrawBackground();
 
@@ -2329,7 +2329,7 @@ void Player::InitStatic(HWND hwndProgress)
          m_pin3d.m_pddsAOBackTmpBuffer = tmpAO;
       }
 
-      m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
+      m_pin3d.SetPrimaryRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pddsAOBackBuffer);
