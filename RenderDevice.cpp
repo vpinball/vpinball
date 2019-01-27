@@ -343,7 +343,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     //m_curShader = NULL;
 
     // fill state caches with dummy values
-    memset(renderStateCache, 0xCC, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
     memset(textureStateCache, 0xCC, sizeof(DWORD) * 8 * TEXTURE_STATE_CACHE_SIZE);
     memset(textureSamplerCache, 0xCC, sizeof(DWORD) * 8 * TEXTURE_SAMPLER_CACHE_SIZE);
 
@@ -1437,17 +1436,23 @@ void RenderDevice::SetZBuffer(RenderTarget* surf)
    CHECKD3D(m_pD3DDevice->SetDepthStencilSurface(surf));
 }
 
+bool RenderDevice::SetRenderStateCache(const RenderStates p1, DWORD p2)
+{
+   if (renderStateCache.find(p1) == renderStateCache.end())
+   {
+      renderStateCache.insert(std::pair<RenderStates, DWORD>(p1, p2));
+      return false;
+   }
+   else if (renderStateCache[p1] != p2) {
+      renderStateCache[p1] = p2;
+      return false;
+   }
+   return true;
+}
+
 void RenderDevice::SetRenderState(const RenderStates p1, DWORD p2)
 {
-   if ((unsigned int)p1 < RENDER_STATE_CACHE_SIZE)
-   {
-      if (renderStateCache[p1] == p2)
-      {
-         // this render state is already set -> don't do anything then
-         return;
-      }
-      renderStateCache[p1] = p2;
-   }
+   if (SetRenderStateCache(p1, p2)) return;
 
    if (p1 == CULLMODE && (g_pplayer && (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->m_ptable->m_fReflectionEnabled)))
    {

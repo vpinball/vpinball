@@ -254,6 +254,7 @@ public:
    void UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool linearRGB);
 
    void SetRenderState(const RenderStates p1, DWORD p2);
+   bool SetRenderStateCache(const RenderStates p1, DWORD p2);
    void SetTextureFilter(const DWORD texUnit, DWORD mode);
    void SetTextureAddressMode(const DWORD texUnit, const TextureAddressMode mode);
    void SetTextureStageState(const DWORD stage, const D3DTEXTURESTAGESTATETYPE type, const DWORD value);
@@ -355,11 +356,10 @@ private:
 
    UINT m_adapter;      // index of the display adapter to use
 
-   static const DWORD RENDER_STATE_CACHE_SIZE = 256;
    static const DWORD TEXTURE_STATE_CACHE_SIZE = 256;
    static const DWORD TEXTURE_SAMPLER_CACHE_SIZE = 14;
 
-   DWORD renderStateCache[RENDER_STATE_CACHE_SIZE];          // for caching
+   std::map<RenderStates, DWORD> renderStateCache;           // for caching
    DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];     // dto.
    DWORD textureSamplerCache[8][TEXTURE_SAMPLER_CACHE_SIZE]; // dto.
 
