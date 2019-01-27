@@ -644,7 +644,7 @@ void Trigger::RenderDynamic()
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   if(m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD)
+   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
 
    pd3dDevice->basicShader->Begin(0);
@@ -815,7 +815,7 @@ void Trigger::RenderSetup()
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
       triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerSimpleIndices);
    else if (m_d.m_shape == TriggerWireD)
-       triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( m_numIndices, triggerDWireIndices );
+       triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerDWireIndices);
    else if (m_d.m_shape == TriggerStar)
       triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerStarIndices);
    else if (m_d.m_shape==TriggerButton)

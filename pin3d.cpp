@@ -326,114 +326,109 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
 
 
 // Sets the texture filtering state.
+void Pin3D::SetTextureFilter(RenderDevice * const pd3dDevice, const int TextureNum, const int Mode) const
+{
+   pd3dDevice->SetTextureFilter(TextureNum, Mode);
+}
+
 void Pin3D::SetPrimaryTextureFilter(const int TextureNum, const int Mode) const
 {
-   m_pd3dPrimaryDevice->SetTextureFilter(TextureNum, Mode);
+   SetTextureFilter(m_pd3dPrimaryDevice, TextureNum, Mode);
 }
 
 void Pin3D::SetSecondaryTextureFilter(const int TextureNum, const int Mode) const
 {
-   m_pd3dSecondaryDevice->SetTextureFilter(TextureNum, Mode);
+   SetTextureFilter(m_pd3dSecondaryDevice, TextureNum, Mode);
+}
+
+void Pin3D::SetRenderTarget(RenderDevice * const pd3dDevice, RenderTarget* pddsSurface, RenderTarget* pddsZ) const
+{
+   pd3dDevice->SetRenderTarget(pddsSurface);
+   pd3dDevice->SetZBuffer(pddsZ);
 }
 
 void Pin3D::SetPrimaryRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) const
 {
-   m_pd3dPrimaryDevice->SetRenderTarget(pddsSurface);
-   m_pd3dPrimaryDevice->SetZBuffer(pddsZ);
+   SetRenderTarget(m_pd3dPrimaryDevice, pddsSurface, pddsZ);
 }
 
 void Pin3D::SetSecondaryRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) const
 {
-   m_pd3dSecondaryDevice->SetRenderTarget(pddsSurface);
-   m_pd3dSecondaryDevice->SetZBuffer(pddsZ);
+   SetRenderTarget(m_pd3dSecondaryDevice, pddsSurface, pddsZ);
+}
+
+void Pin3D::SetRenderTarget(RenderDevice * const pd3dDevice, RenderTarget* pddsSurface, void* pddsZ) const
+{   
+   if (!pd3dDevice->m_useNvidiaApi && pd3dDevice->m_INTZ_support)
+      SetRenderTarget(pd3dDevice, pddsSurface, (D3DTexture*)pddsZ);
+   else
+      SetRenderTarget(pd3dDevice, pddsSurface, (RenderTarget*)pddsZ);
 }
 
 void Pin3D::SetPrimaryRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const
-{   
-   if (!m_pd3dPrimaryDevice->m_useNvidiaApi && m_pd3dPrimaryDevice->m_INTZ_support)
-      SetPrimaryRenderTarget(pddsSurface, (D3DTexture*)pddsZ);
-   else
-      SetPrimaryRenderTarget(pddsSurface, (RenderTarget*)pddsZ);
+{
+   SetRenderTarget(m_pd3dPrimaryDevice, pddsSurface, pddsZ);
 }
 
 void Pin3D::SetSecondaryRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const
 {
-   if (!m_pd3dSecondaryDevice->m_useNvidiaApi && m_pd3dSecondaryDevice->m_INTZ_support)
-      SetSecondaryRenderTarget(pddsSurface, (D3DTexture*)pddsZ);
-   else
-      SetSecondaryRenderTarget(pddsSurface, (RenderTarget*)pddsZ);
+   SetRenderTarget(m_pd3dSecondaryDevice, pddsSurface, pddsZ);
+}
+
+void Pin3D::SetRenderTarget(RenderDevice * const pd3dDevice, RenderTarget* pddsSurface, D3DTexture* pddsZ) const
+{
+   pd3dDevice->SetRenderTarget(pddsSurface);
+   IDirect3DSurface9 *textureSurface;
+   CHECKD3D(pddsZ->GetSurfaceLevel(0, &textureSurface));
+   pd3dDevice->SetZBuffer(textureSurface);
+   SAFE_RELEASE_NO_RCC(textureSurface);
 }
 
 void Pin3D::SetPrimaryRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const
 {
-   m_pd3dPrimaryDevice->SetRenderTarget(pddsSurface);
-   IDirect3DSurface9 *textureSurface;
-   CHECKD3D(pddsZ->GetSurfaceLevel(0, &textureSurface));
-   m_pd3dPrimaryDevice->SetZBuffer(textureSurface);
-   SAFE_RELEASE_NO_RCC(textureSurface);
+   SetRenderTarget(m_pd3dPrimaryDevice, pddsSurface, pddsZ);
 }
 
 void Pin3D::SetSecondaryRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const
 {
-   m_pd3dSecondaryDevice->SetRenderTarget(pddsSurface);
-   IDirect3DSurface9 *textureSurface;
-   CHECKD3D(pddsZ->GetSurfaceLevel(0, &textureSurface));
-   m_pd3dSecondaryDevice->SetZBuffer(textureSurface);
-   SAFE_RELEASE_NO_RCC(textureSurface);
+   SetRenderTarget(m_pd3dSecondaryDevice, pddsSurface, pddsZ);
+}
+
+void Pin3D::InitRenderState(RenderDevice * const pd3dDevice)
+{
+   g_pplayer->m_pin3d.DisableAlphaBlend(); //!! pick device, too
+
+   pd3dDevice->SetRenderState(RenderDevice::LIGHTING, RenderDevice::RS_FALSE);
+
+   pd3dDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+
+   pd3dDevice->SetRenderState(RenderDevice::CLIPPING, RenderDevice::RS_FALSE);
+   pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0);
+
+   // initialize first texture stage
+   pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP/*WRAP*/);
+   pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+   pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+   SetTextureFilter(pd3dDevice, 0, TEXTURE_MODE_TRILINEAR);
+   pd3dDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
+   pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+   pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+   pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
+
+   pd3dDevice->SetTextureAddressMode(4, RenderDevice::TEX_CLAMP/*WRAP*/); // normal maps
+   SetTextureFilter(pd3dDevice, 4, TEXTURE_MODE_TRILINEAR);
 }
 
 void Pin3D::InitPrimaryRenderState()
 {
-   g_pplayer->m_pin3d.DisableAlphaBlend();
-
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::LIGHTING, RenderDevice::RS_FALSE);
-
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
-
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPING, RenderDevice::RS_FALSE);
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0);
-
-   // initialize first texture stage
-   m_pd3dPrimaryDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP/*WRAP*/);
-   m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-   m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-   SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-   m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
-   m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-   m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-   m_pd3dPrimaryDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
-
-   m_pd3dPrimaryDevice->SetTextureAddressMode(4, RenderDevice::TEX_CLAMP/*WRAP*/); // normal maps
-   SetPrimaryTextureFilter(4, TEXTURE_MODE_TRILINEAR);
+   InitRenderState(m_pd3dPrimaryDevice);
 }
 
 void Pin3D::InitSecondaryRenderState()
 {
-   g_pplayer->m_pin3d.DisableAlphaBlend();
-
-   m_pd3dSecondaryDevice->SetRenderState(RenderDevice::LIGHTING, RenderDevice::RS_FALSE);
-
-   m_pd3dSecondaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
-   m_pd3dSecondaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-   m_pd3dSecondaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
-
-   m_pd3dSecondaryDevice->SetRenderState(RenderDevice::CLIPPING, RenderDevice::RS_FALSE);
-   m_pd3dSecondaryDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0);
-
-   // initialize first texture stage
-   m_pd3dSecondaryDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP/*WRAP*/);
-   m_pd3dSecondaryDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-   m_pd3dSecondaryDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-   SetSecondaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-   m_pd3dSecondaryDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
-   m_pd3dSecondaryDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-   m_pd3dSecondaryDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-   m_pd3dSecondaryDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
-
-   m_pd3dSecondaryDevice->SetTextureAddressMode(4, RenderDevice::TEX_CLAMP/*WRAP*/); // normal maps
-   SetSecondaryTextureFilter(4, TEXTURE_MODE_TRILINEAR);
+   InitRenderState(m_pd3dSecondaryDevice);
 }
 
 void Pin3D::DrawBackground()
