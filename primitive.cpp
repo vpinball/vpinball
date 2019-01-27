@@ -3040,8 +3040,8 @@ STDMETHODIMP Primitive::get_PhysicsMaterial(BSTR *pVal)
 {
     WCHAR wz[512];
 
-    MultiByteToWideChar( CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, 32 );
-    *pVal = SysAllocString( wz );
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, 32);
+    *pVal = SysAllocString(wz);
 
     return S_OK;
 }
@@ -3050,16 +3050,16 @@ STDMETHODIMP Primitive::put_PhysicsMaterial(BSTR newVal)
 {
     STARTUNDO
 
-        WideCharToMultiByte( CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL );
+    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL);
 
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_OverwritePhysics(VARIANT_BOOL *pVal)
 {
-    *pVal = (VARIANT_BOOL)FTOVB( m_d.m_fOverwritePhysics );
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fOverwritePhysics);
 
     return S_OK;
 }
@@ -3068,11 +3068,11 @@ STDMETHODIMP Primitive::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
     STARTUNDO
 
-        m_d.m_fOverwritePhysics = VBTOF( newVal );
+    m_d.m_fOverwritePhysics = VBTOF(newVal);
 
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_HitThreshold(float *pVal)

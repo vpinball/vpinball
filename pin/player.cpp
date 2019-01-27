@@ -576,7 +576,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    hr = GetRegInt("Player", "Stereo3DYAxis", &stereo3DY);
    if (hr != S_OK)
       stereo3DY = fFalse; // The default
-   m_fStereo3DY = (stereo3DY == 1);
+   m_stereo3DY = (stereo3DY == 1);
 
    int scaleFX_DMD;
    hr = GetRegInt("Player", "ScaleFXDMD", &scaleFX_DMD);
@@ -3740,7 +3740,7 @@ void Player::DrawBulbLightBuffer()
    {
       m_current_renderstage = 1; // for bulb lights so they know what they have to do
 
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, FALSE); // disable all z-tests as zbuffer is in different resolution
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE); // disable all z-tests as zbuffer is in different resolution
 
       // Draw bulb lights with transmission scale only
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
@@ -3748,9 +3748,9 @@ void Player::DrawBulbLightBuffer()
             m_vHitTrans[i]->RenderDynamic();
 
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
-      //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
+      //m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
-      //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
+      //m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
       m_pin3d.DisableAlphaBlend();
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
@@ -4149,7 +4149,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTmpTexture());
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
-      const D3DXVECTOR4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_fStereo3DY ? 1.0f : 0.0f, (m_stereo3D == 3) ? 2.0f : (m_stereo3D == 1) ? 1.0f : 0.0f);
+      const D3DXVECTOR4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_stereo3DY ? 1.0f : 0.0f, (m_stereo3D == 3) ? 2.0f : (m_stereo3D == 1) ? 1.0f : 0.0f);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("ms_zpd_ya_td", &ms_zpd_ya_td);
 
       const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), (float)m_height, m_ptable->Get3DOffset());

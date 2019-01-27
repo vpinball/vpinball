@@ -310,7 +310,7 @@ public:
          {
              const char cmdTemp1[4] = {'-','c',t,0};
              const char cmdTemp2[4] = {'/','c',t,0};
-             if(lstrcmpi(szArglist[i], cmdTemp1) == 0 || lstrcmpi(szArglist[i], cmdTemp2) == 0)
+             if (lstrcmpi(szArglist[i], cmdTemp1) == 0 || lstrcmpi(szArglist[i], cmdTemp2) == 0)
              {
                  useCustomParams = true;
                  break;
@@ -519,13 +519,14 @@ public:
 
 extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
+   int retval;
    try
    {
       // Start Win32++
       VPApp theApp(hInstance);
       theApp.InitInstance();
       // Run the application
-      return theApp.Run();
+      retval = theApp.Run();
    }
 
    // catch all CException types
@@ -534,6 +535,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       // Display the exception and quit
       MessageBox(NULL, e.GetText(), AtoT(e.what()), MB_ICONERROR);
 
-      return -1;
+      retval = -1;
    }
+   return retval;
 }
