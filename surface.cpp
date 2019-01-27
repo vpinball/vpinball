@@ -1035,10 +1035,10 @@ void Surface::RenderSlingshots()
       {
           if (plinesling->m_EventTimeReset == 0)
              plinesling->m_EventTimeReset = g_pplayer->m_time_msec+100;
-          else if ( plinesling->m_EventTimeReset < g_pplayer->m_time_msec )
+          else if (plinesling->m_EventTimeReset < g_pplayer->m_time_msec)
           {
               plinesling->m_doHitEvent = false;
-              plinesling->m_EventTimeReset=0;
+              plinesling->m_EventTimeReset = 0;
           }
       }
 
@@ -1725,8 +1725,8 @@ STDMETHODIMP Surface::get_PhysicsMaterial(BSTR *pVal)
 {
     WCHAR wz[512];
 
-    MultiByteToWideChar( CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, 32 );
-    *pVal = SysAllocString( wz );
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, 32);
+    *pVal = SysAllocString(wz);
 
     return S_OK;
 }
@@ -1735,16 +1735,16 @@ STDMETHODIMP Surface::put_PhysicsMaterial(BSTR newVal)
 {
     STARTUNDO
 
-        WideCharToMultiByte( CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL );
+    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL);
 
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP Surface::get_OverwritePhysics(VARIANT_BOOL *pVal)
 {
-    *pVal = (VARIANT_BOOL)FTOVB( m_d.m_fOverwritePhysics );
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fOverwritePhysics);
 
     return S_OK;
 }
@@ -1753,11 +1753,11 @@ STDMETHODIMP Surface::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
     STARTUNDO
 
-        m_d.m_fOverwritePhysics = VBTOF( newVal );
+    m_d.m_fOverwritePhysics = VBTOF(newVal);
 
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }
 
 void Surface::GetDialogPanes(vector<PropertyPane*> &pvproppane)
@@ -2199,7 +2199,7 @@ STDMETHODIMP Surface::PlaySlingshotHit()
     {
         LineSegSlingshot * const plinesling = m_vlinesling[i];
         if (plinesling)
-            plinesling->m_doHitEvent=true;
+            plinesling->m_doHitEvent = true;
     }
     return S_OK;
 }

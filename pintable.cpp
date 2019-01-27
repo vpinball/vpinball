@@ -896,7 +896,7 @@ void upscale(DWORD * const data, const unsigned int xres, const unsigned int yre
     for (unsigned int j = 0; j < yres; ++j)
     {
         const unsigned int jm1 = (j == 0) ? 0 : (j - 1)*xres;
-        const unsigned int jp1 = ((j == yres-1) ? yres-1 : j + 1)*xres;
+        const unsigned int jp1 = ((j == yres - 1) ? yres - 1 : j + 1)*xres;
         const unsigned int jp2 = ((j >= yres - 2) ? yres - 1 : j + 2)*xres;
 
         for (unsigned int i = 0; i < xres; ++i, ++o)
@@ -4485,26 +4485,26 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(PHMA))
    {
-       SavePhysicsMaterial * const mats = (SavePhysicsMaterial*)malloc( sizeof( SavePhysicsMaterial )*m_numMaterials );
-       pbr->GetStruct( mats, (int)sizeof( SavePhysicsMaterial )*m_numMaterials );
+       SavePhysicsMaterial * const mats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_numMaterials);
+       pbr->GetStruct(mats, (int)sizeof(SavePhysicsMaterial)*m_numMaterials);
 
        for (int i = 0; i < m_numMaterials; i++)
        {
-           bool found=true;
+           bool found = true;
            Material * pmat = GetMaterial(mats[i].szName);
-           if( pmat==NULL )
+           if (pmat == NULL)
            {
                pmat = new Material();
-               found=false;
+               found = false;
            }
            pmat->m_fElasticity = mats[i].fElasticity;
            pmat->m_fElasticityFalloff = mats[i].fElasticityFallOff;
            pmat->m_fFriction = mats[i].fFriction;
            pmat->m_fScatterAngle = mats[i].fScatterAngle;
-           if( !found )
-              m_materials.push_back( pmat );
+           if (!found)
+              m_materials.push_back(pmat);
        }
-       free( mats );
+       free(mats);
    }
 
    return fTrue;
@@ -5644,8 +5644,8 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     CComObject<PinTable> *pt;
 //    HWND hwnd = GetHwnd();
-    HWND hwnd=0;
-    switch(uMsg)
+    HWND hwnd = 0;
+    switch (uMsg)
     {
         case WM_CLOSE:
         {
@@ -8109,14 +8109,14 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
    _snprintf_s(sizeString, MAXTOKEN, "%i", ppi->m_pdsBuffer->m_data.size());
 
    ListView_SetItemText(hwndListView, index, 4, sizeString);
-   if((_stricmp(m_szImage, ppi->m_szName) == 0)
-       || (_stricmp( m_szBallImage, ppi->m_szName ) == 0) 
-       || (_stricmp( m_szBallImageFront, ppi->m_szName ) == 0)
-       || (_stricmp( m_szEnvImage, ppi->m_szName ) == 0)
-       || (_stricmp( m_BG_szImage[BG_DESKTOP], ppi->m_szName ) == 0)
-       || (_stricmp( m_BG_szImage[BG_FSS], ppi->m_szName ) == 0)
-       || (_stricmp( m_BG_szImage[BG_FULLSCREEN], ppi->m_szName ) == 0)
-       || (_stricmp( m_szImageColorGrade, ppi->m_szName ) == 0))
+   if ((_stricmp(m_szImage, ppi->m_szName) == 0)
+       || (_stricmp( m_szBallImage, ppi->m_szName) == 0) 
+       || (_stricmp( m_szBallImageFront, ppi->m_szName) == 0)
+       || (_stricmp( m_szEnvImage, ppi->m_szName) == 0)
+       || (_stricmp( m_BG_szImage[BG_DESKTOP], ppi->m_szName) == 0)
+       || (_stricmp( m_BG_szImage[BG_FSS], ppi->m_szName) == 0)
+       || (_stricmp( m_BG_szImage[BG_FULLSCREEN], ppi->m_szName) == 0)
+       || (_stricmp( m_szImageColorGrade, ppi->m_szName) == 0))
    {
        ListView_SetItemText(hwndListView, index, 3, usedStringYes);
    }
@@ -8124,9 +8124,9 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
    {
        for (size_t i = 0; i < m_vedit.size(); i++)
        {
-           bool inUse=false;
-           IEditable * const pEdit=m_vedit[i];
-           if(pEdit == NULL)
+           bool inUse = false;
+           IEditable * const pEdit = m_vedit[i];
+           if (pEdit == NULL)
                continue;
 
            switch (pEdit->GetItemType())
@@ -8134,85 +8134,85 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
                case eItemDispReel:
                {
                    DispReel * const pReel = (DispReel*)pEdit;
-                   if(_stricmp( pReel->m_d.m_szImage, ppi->m_szName ) == 0)
-                       inUse=true;
+                   if (_stricmp(pReel->m_d.m_szImage, ppi->m_szName) == 0)
+                       inUse = true;
                    break;
                }
                case eItemPrimitive:
                {
                    Primitive * const pPrim = (Primitive*)pEdit;
-                   if((_stricmp( pPrim->m_d.m_szImage, ppi->m_szName ) == 0) || (_stricmp( pPrim->m_d.m_szNormalMap, ppi->m_szName ) == 0))
-                       inUse=true;
+                   if ((_stricmp(pPrim->m_d.m_szImage, ppi->m_szName) == 0) || (_stricmp(pPrim->m_d.m_szNormalMap, ppi->m_szName) == 0))
+                       inUse = true;
                    break;
                }
                case eItemRamp:
                {
                    Ramp * const pRamp = (Ramp*)pEdit;
-                   if(_stricmp( pRamp->m_d.m_szImage, ppi->m_szName ) == 0)
-                       inUse=true;
+                   if (_stricmp(pRamp->m_d.m_szImage, ppi->m_szName) == 0)
+                       inUse = true;
                    break;
                }
                case eItemSurface:
                {
                    Surface * const pSurf = (Surface*)pEdit;
-                   if((_stricmp( pSurf->m_d.m_szImage, ppi->m_szName ) == 0) || (_stricmp( pSurf->m_d.m_szSideImage, ppi->m_szName ) == 0))
-                       inUse=true;
+                   if ((_stricmp(pSurf->m_d.m_szImage, ppi->m_szName) == 0) || (_stricmp(pSurf->m_d.m_szSideImage, ppi->m_szName) == 0))
+                       inUse = true;
                    break;
                }
                case eItemDecal:
                {
                    Decal * const pDecal = (Decal*)pEdit;
-                   if(_stricmp( pDecal->m_d.m_szImage, ppi->m_szName ) == 0)
-                       inUse=true;
+                   if (_stricmp(pDecal->m_d.m_szImage, ppi->m_szName) == 0)
+                       inUse = true;
                    break;
                }
                case eItemFlasher:
                {
                    Flasher * const pFlash = (Flasher*)pEdit;
-                   if((_stricmp( pFlash->m_d.m_szImageA, ppi->m_szName ) == 0) || (_stricmp( pFlash->m_d.m_szImageB, ppi->m_szName ) == 0))
-                       inUse=true;
+                   if ((_stricmp(pFlash->m_d.m_szImageA, ppi->m_szName) == 0) || (_stricmp(pFlash->m_d.m_szImageB, ppi->m_szName) == 0))
+                       inUse = true;
                    break;
                }
                case eItemFlipper:
                {
                    Flipper * const pFlip = (Flipper*)pEdit;
-                   if(_stricmp( pFlip->m_d.m_szImage, ppi->m_szName ) == 0)
-                       inUse=true;
+                   if (_stricmp(pFlip->m_d.m_szImage, ppi->m_szName) == 0)
+                       inUse = true;
                    break;
                }
                case eItemHitTarget:
                {
                    HitTarget * const pHit = (HitTarget*)pEdit;
-                   if(_stricmp( pHit->m_d.m_szImage, ppi->m_szName ) == 0)
-                       inUse=true;
+                   if (_stricmp(pHit->m_d.m_szImage, ppi->m_szName) == 0)
+                       inUse = true;
                    break;
                }
                case eItemLight:
                {
                    Light * const pLight = (Light*)pEdit;
-                   if(_stricmp( pLight->m_d.m_szOffImage, ppi->m_szName ) == 0)
-                       inUse=true;
+                   if (_stricmp(pLight->m_d.m_szOffImage, ppi->m_szName) == 0)
+                       inUse = true;
                    break;
                }
                case eItemPlunger:
                {
                    Plunger * const pPlung = (Plunger*)pEdit;
-                   if(_stricmp( pPlung->m_d.m_szImage, ppi->m_szName ) == 0)
-                       inUse=true;
+                   if (_stricmp(pPlung->m_d.m_szImage, ppi->m_szName) == 0)
+                       inUse = true;
                    break;
                }
                case eItemRubber:
                {
                    Rubber * const pRub = (Rubber*)pEdit;
-                   if(_stricmp( pRub->m_d.m_szImage, ppi->m_szName ) == 0)
-                       inUse=true;
+                   if (_stricmp(pRub->m_d.m_szImage, ppi->m_szName) == 0)
+                       inUse = true;
                    break;
                }
                case eItemSpinner:
                {
                    Spinner * const pSpin = (Spinner*)pEdit;
-                   if(_stricmp( pSpin->m_d.m_szImage, ppi->m_szName ) == 0)
-                       inUse=true;
+                   if (_stricmp(pSpin->m_d.m_szImage, ppi->m_szName) == 0)
+                       inUse = true;
                    break;
                }
                default:

@@ -575,48 +575,48 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    fclose(f);
    return;
    */
-   if(mesh.m_animationFrames.size() == 0)
+   if (mesh.m_animationFrames.size() == 0)
    {
-       f = WaveFrontObj_ExportStart( filename );
-       if(!f)
+      f = WaveFrontObj_ExportStart(filename);
+      if (!f)
            return;
-       fprintf_s( f, "# Visual Pinball OBJ file\n" );
-       fprintf_s( f, "# numVerts: %u numFaces: %u\n", (unsigned int)mesh.NumVertices(), (unsigned int)mesh.NumIndices() );
-       WaveFrontObj_WriteObjectName( f, description );
-       WaveFrontObj_WriteVertexInfo( f, mesh.m_vertices.data(), (unsigned int)mesh.m_vertices.size() );
-       WaveFrontObj_WriteFaceInfoLong( f, mesh.m_indices );
-       WaveFrontObj_ExportEnd( f );
+      fprintf_s(f, "# Visual Pinball OBJ file\n");
+      fprintf_s(f, "# numVerts: %u numFaces: %u\n", (unsigned int)mesh.NumVertices(), (unsigned int)mesh.NumIndices());
+      WaveFrontObj_WriteObjectName(f, description);
+      WaveFrontObj_WriteVertexInfo(f, mesh.m_vertices.data(), (unsigned int)mesh.m_vertices.size());
+      WaveFrontObj_WriteFaceInfoLong(f, mesh.m_indices);
+      WaveFrontObj_ExportEnd(f);
    }
    else
    {
-       string fname( filename );
-       std::size_t pos = fname.find_last_of( "." );
-       string name = fname.substr( 0, pos );
-       char number[32] = { 0 };
-       for (unsigned int i = 0; i < mesh.m_animationFrames.size(); i++)
-       {
-           std::vector<Vertex3D_NoTex2> vertsTmp = mesh.m_vertices;
+      string fname(filename);
+      std::size_t pos = fname.find_last_of(".");
+      string name = fname.substr(0, pos);
+      char number[32] = { 0 };
+      for (unsigned int i = 0; i < mesh.m_animationFrames.size(); i++)
+      {
+         std::vector<Vertex3D_NoTex2> vertsTmp = mesh.m_vertices;
 
-           for (unsigned int t = 0; t < mesh.NumVertices(); t++)
-           {
-               vertsTmp[t].x = mesh.m_animationFrames[i].m_frameVerts[t].x;
-               vertsTmp[t].y = mesh.m_animationFrames[i].m_frameVerts[t].y;
-               vertsTmp[t].z = mesh.m_animationFrames[i].m_frameVerts[t].z;
-               vertsTmp[t].nx = mesh.m_animationFrames[i].m_frameVerts[t].nx;
-               vertsTmp[t].ny = mesh.m_animationFrames[i].m_frameVerts[t].ny;
-               vertsTmp[t].nz = mesh.m_animationFrames[i].m_frameVerts[t].nz;
-           }
-           sprintf_s( number, "%05u", i );
-           fname = name + "_" + string(number)+".obj";
-           f = WaveFrontObj_ExportStart( fname.c_str() );
-           if(!f)
+         for (unsigned int t = 0; t < mesh.NumVertices(); t++)
+         {
+             vertsTmp[t].x = mesh.m_animationFrames[i].m_frameVerts[t].x;
+             vertsTmp[t].y = mesh.m_animationFrames[i].m_frameVerts[t].y;
+             vertsTmp[t].z = mesh.m_animationFrames[i].m_frameVerts[t].z;
+             vertsTmp[t].nx = mesh.m_animationFrames[i].m_frameVerts[t].nx;
+             vertsTmp[t].ny = mesh.m_animationFrames[i].m_frameVerts[t].ny;
+             vertsTmp[t].nz = mesh.m_animationFrames[i].m_frameVerts[t].nz;
+         }
+         sprintf_s(number, "%05u", i);
+         fname = name + "_" + string(number) + ".obj";
+         f = WaveFrontObj_ExportStart(fname.c_str());
+         if (!f)
                return;
-           fprintf_s( f, "# Visual Pinball OBJ file\n" );
-           fprintf_s( f, "# numVerts: %u numFaces: %u\n", (unsigned int)mesh.NumVertices(), (unsigned int)mesh.NumIndices() );
-           WaveFrontObj_WriteObjectName( f, description );
-           WaveFrontObj_WriteVertexInfo( f, vertsTmp.data(), (unsigned int)mesh.m_vertices.size() );
-           WaveFrontObj_WriteFaceInfoLong( f, mesh.m_indices );
-           WaveFrontObj_ExportEnd( f );
+         fprintf_s(f, "# Visual Pinball OBJ file\n");
+         fprintf_s(f, "# numVerts: %u numFaces: %u\n", (unsigned int)mesh.NumVertices(), (unsigned int)mesh.NumIndices());
+         WaveFrontObj_WriteObjectName(f, description);
+         WaveFrontObj_WriteVertexInfo(f, vertsTmp.data(), (unsigned int)mesh.m_vertices.size());
+         WaveFrontObj_WriteFaceInfoLong(f, mesh.m_indices);
+         WaveFrontObj_ExportEnd(f);
        }
    }
 }

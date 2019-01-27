@@ -583,20 +583,20 @@ void Rubber::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, 
 
 void Rubber::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
 {
-   const Material *const mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
-   if ( mat != NULL && !m_d.m_fOverwritePhysics )
+   const Material *const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
+   if (mat != NULL && !m_d.m_fOverwritePhysics)
    {
       obj->m_elasticity = mat->m_fElasticity;
       obj->m_elasticityFalloff = mat->m_fElasticityFalloff;
-      obj->SetFriction( mat->m_fFriction );
-      obj->m_scatter = ANGTORAD( mat->m_fScatterAngle );
+      obj->SetFriction(mat->m_fFriction);
+      obj->m_scatter = ANGTORAD(mat->m_fScatterAngle);
    }
    else
    {
       obj->m_elasticity = m_d.m_elasticity;
       obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
-      obj->SetFriction( m_d.m_friction );
-      obj->m_scatter = ANGTORAD( m_d.m_scatter );
+      obj->SetFriction(m_d.m_friction);
+      obj->m_scatter = ANGTORAD(m_d.m_scatter);
    }
 
    obj->m_fEnabled = m_d.m_fCollidable;
@@ -604,7 +604,7 @@ void Rubber::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
    obj->m_ObjType = ePrimitive;
    // hard coded threshold for now
    obj->m_threshold = 2.0f;
-   obj->m_obj = (IFireEvents *) this;
+   obj->m_obj = (IFireEvents *)this;
    obj->m_fe = m_d.m_fHitEvent;
 
    pvho.push_back(obj);
@@ -1357,8 +1357,8 @@ STDMETHODIMP Rubber::get_PhysicsMaterial(BSTR *pVal)
 {
     WCHAR wz[512];
 
-    MultiByteToWideChar( CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, 32 );
-    *pVal = SysAllocString( wz );
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, 32);
+    *pVal = SysAllocString(wz);
 
     return S_OK;
 }
@@ -1367,7 +1367,7 @@ STDMETHODIMP Rubber::put_PhysicsMaterial(BSTR newVal)
 {
     STARTUNDO
 
-    WideCharToMultiByte( CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL );
+    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL);
 
     STOPUNDO
 
@@ -1376,7 +1376,7 @@ STDMETHODIMP Rubber::put_PhysicsMaterial(BSTR newVal)
 
 STDMETHODIMP Rubber::get_OverwritePhysics(VARIANT_BOOL *pVal)
 {
-    *pVal = (VARIANT_BOOL)FTOVB( m_d.m_fOverwritePhysics );
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fOverwritePhysics);
 
     return S_OK;
 }
@@ -1385,7 +1385,7 @@ STDMETHODIMP Rubber::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
     STARTUNDO
 
-    m_d.m_fOverwritePhysics = VBTOF( newVal );
+    m_d.m_fOverwritePhysics = VBTOF(newVal);
 
     STOPUNDO
 

@@ -22,9 +22,9 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     const HWND hwndList = GetDlgItem(IDC_PhysicsList).GetHwnd();
 
     const size_t size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
-    for(size_t i = 0; i < size; i++)
+    for (size_t i = 0; i < size; i++)
     {
-        if(physicsoptions[i])
+        if (physicsoptions[i])
         {
             delete[] physicsoptions[i];
             physicsoptions[i] = NULL;
@@ -425,7 +425,7 @@ void PhysicsOptionsDialog::OnDestroy()
     const size_t size = ::SendMessage(hwndList, LB_GETCOUNT, 0, 0);
     for(size_t i = 0; i < size; i++)
     {
-        if(physicsoptions[i])
+        if (physicsoptions[i])
         {
             delete[] physicsoptions[i];
             physicsoptions[i] = NULL;

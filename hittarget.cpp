@@ -1659,7 +1659,7 @@ STDMETHODIMP HitTarget::put_IsDropped(VARIANT_BOOL newVal)
 {
    STARTUNDO
    
-   const bool val = (newVal!=0);
+   const bool val = (newVal != 0);
    if (g_pplayer && m_d.m_isDropped != val)
    {
       if (val)

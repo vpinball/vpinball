@@ -616,7 +616,7 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          // set up windowed fullscreen mode
          VideoMode mode;
-         // TODO: use multi-monitor functions
+         // TODO: use multi-monitor functions for DX9
          mode.width = GetSystemMetrics(SM_CXSCREEN);
          mode.height = GetSystemMetrics(SM_CYSCREEN);
          mode.depth = 0;
