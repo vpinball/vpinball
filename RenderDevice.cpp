@@ -343,8 +343,8 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     //m_curShader = NULL;
 
     // fill state caches with dummy values
-    memset(textureStateCache, 0xCC, sizeof(DWORD) * 8 * TEXTURE_STATE_CACHE_SIZE);
-    memset(textureSamplerCache, 0xCC, sizeof(DWORD) * 8 * TEXTURE_SAMPLER_CACHE_SIZE);
+    memset(textureStateCache, 0xCC, sizeof(DWORD) * TEXTURE_SAMPLERS * TEXTURE_STATE_CACHE_SIZE);
+    memset(textureSamplerCache, 0xCC, sizeof(DWORD) * TEXTURE_SAMPLERS * TEXTURE_SAMPLER_CACHE_SIZE);
 
     // initialize performance counters
     m_curDrawCalls = m_frameDrawCalls = 0;
@@ -1349,10 +1349,12 @@ void RenderDevice::UpdateTexture(D3DTexture* const tex, BaseTexture* const surf,
 
 void RenderDevice::SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYPE Type, const DWORD Value)
 {
-   if (textureSamplerCache[Sampler][Type] != Value)
+   const bool invalid_set = ((unsigned int)Type >= TEXTURE_SAMPLER_CACHE_SIZE || Sampler >= TEXTURE_SAMPLERS);
+   if (invalid_set || textureSamplerCache[Sampler][Type] != Value)
    {
       CHECKD3D(m_pD3DDevice->SetSamplerState(Sampler, Type, Value));
-      textureSamplerCache[Sampler][Type] = Value;
+      if (!invalid_set)
+         textureSamplerCache[Sampler][Type] = Value;
 
       m_curStateChanges++;
    }
@@ -1412,7 +1414,7 @@ void RenderDevice::SetTextureFilter(const DWORD texUnit, DWORD mode)
 
 void RenderDevice::SetTextureStageState(const DWORD p1, const D3DTEXTURESTAGESTATETYPE p2, const DWORD p3)
 {
-   if ((unsigned int)p2 < TEXTURE_STATE_CACHE_SIZE && p1 < 8)
+   if ((unsigned int)p2 < TEXTURE_STATE_CACHE_SIZE && p1 < TEXTURE_SAMPLERS)
    {
       if (textureStateCache[p1][p2] == p3)
       {
