@@ -356,12 +356,13 @@ private:
 
    UINT m_adapter;      // index of the display adapter to use
 
+   static const DWORD TEXTURE_SAMPLERS = 8;
    static const DWORD TEXTURE_STATE_CACHE_SIZE = 256;
    static const DWORD TEXTURE_SAMPLER_CACHE_SIZE = 14;
 
-   std::map<RenderStates, DWORD> renderStateCache;           // for caching
-   DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];     // dto.
-   DWORD textureSamplerCache[8][TEXTURE_SAMPLER_CACHE_SIZE]; // dto.
+   std::map<RenderStates, DWORD> renderStateCache;                          // for caching
+   DWORD textureStateCache[TEXTURE_SAMPLERS][TEXTURE_STATE_CACHE_SIZE];     // dto.
+   DWORD textureSamplerCache[TEXTURE_SAMPLERS][TEXTURE_SAMPLER_CACHE_SIZE]; // dto.
 
    VertexBuffer* m_curVertexBuffer;       // for caching
    IndexBuffer* m_curIndexBuffer;         // dto.
