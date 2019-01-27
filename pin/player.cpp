@@ -625,9 +625,9 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    int overwriteballimage;
    hr = GetRegInt("Player", "OverwriteBallImage", &overwriteballimage);
    if (hr != S_OK)
-       m_fOverwriteBallImages = false;
+       m_overwriteBallImages = false;
    else
-       m_fOverwriteBallImages = (overwriteballimage == fTrue);
+       m_overwriteBallImages = (overwriteballimage == fTrue);
 
    int minphyslooptime;
    hr = GetRegInt("Player", "MinPhysLoopTime", &minphyslooptime);
@@ -636,7 +636,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    else
       m_minphyslooptime = min(minphyslooptime,1000);
 
-   if (m_fOverwriteBallImages)
+   if (m_overwriteBallImages)
    {
        char imageName[MAX_PATH];
        //memset(imageName, 0, MAX_PATH);
@@ -2118,9 +2118,9 @@ void Player::InitStatic(HWND hwndProgress)
             RenderStaticMirror(false);
 
       // exclude playfield depth as dynamic mirror objects have to be added later-on
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
       m_pin3d.RenderPlayfieldGraphics(false);
-      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
       if (m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/)
          RenderMirrorOverlay();

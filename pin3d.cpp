@@ -887,7 +887,7 @@ void Pin3D::EnableAlphaBlend(const bool additiveBlending, const bool set_dest_bl
 
 void Pin3D::DisableAlphaBlend() const
 {
-   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+   m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
 }
 
 void Pin3D::Flip(bool vsync)

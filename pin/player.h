@@ -625,7 +625,7 @@ public:
    bool m_isRenderingStatic;
 
    bool m_stereo3DY;
-   bool m_fOverwriteBallImages;
+   bool m_overwriteBallImages;
    Texture *m_ballImage;
    Texture *m_decalImage;
 
