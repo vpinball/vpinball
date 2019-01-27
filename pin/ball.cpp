@@ -81,7 +81,7 @@ void Ball::Init(const float mass)
    m_color = RGB(255, 255, 255);
 
    // override table ball image with global ball image?
-   if (g_pplayer->m_fOverwriteBallImages && g_pplayer->m_ballImage)
+   if (g_pplayer->m_overwriteBallImages && g_pplayer->m_ballImage)
        m_pinballEnv = g_pplayer->m_ballImage;
    else
    {
@@ -98,7 +98,7 @@ void Ball::Init(const float mass)
    }
 
    // override table ball logo/decal image with global ball logo/decal image?
-   if (g_pplayer->m_fOverwriteBallImages && g_pplayer->m_decalImage)
+   if (g_pplayer->m_overwriteBallImages && g_pplayer->m_decalImage)
        m_pinballDecal = g_pplayer->m_decalImage;
    else
    {
