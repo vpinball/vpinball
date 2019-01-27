@@ -727,6 +727,14 @@ bool RenderDevice::LoadShaders()
         ReportError("Fatal Error: shader compilation failed!", -1, __FILE__, __LINE__);
         return false;
     }
+
+    // Now that shaders are compiled, set static textures for SMAA postprocessing shader
+    if (m_FXAA == Quality_SMAA)
+    {
+        CHECKD3D(FBShader->Core()->SetTexture("areaTex2D", m_SMAAareaTexture));
+        CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", m_SMAAsearchTexture));
+    }
+
     return true;
 }
 
@@ -1332,11 +1340,6 @@ void RenderDevice::UploadAndSetSMAATextures()
    CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, m_SMAAareaTexture));
    SAFE_RELEASE(sysTex);
    }
-
-   //
-
-   CHECKD3D(FBShader->Core()->SetTexture("areaTex2D", m_SMAAareaTexture));
-   CHECKD3D(FBShader->Core()->SetTexture("searchTex2D", m_SMAAsearchTexture));
 }
 
 void RenderDevice::UpdateTexture(D3DTexture* const tex, BaseTexture* const surf, const bool linearRGB)
