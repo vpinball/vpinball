@@ -681,9 +681,9 @@ STDMETHODIMP ScriptGlobalTable::get_SystemTime(long *pVal)
 
 /*STDMETHODIMP ScriptGlobalTable::put_NightDay(int pVal)
 {
-if(g_pplayer)
-g_pplayer->m_globalEmissionScale = dequantizeUnsignedPercent(newVal);
-return S_OK;
+   if (g_pplayer)
+      g_pplayer->m_globalEmissionScale = dequantizeUnsignedPercent(newVal);
+   return S_OK;
 }*/
 
 STDMETHODIMP ScriptGlobalTable::get_NightDay(int *pVal)
@@ -695,7 +695,7 @@ STDMETHODIMP ScriptGlobalTable::get_NightDay(int *pVal)
 
 /*STDMETHODIMP ScriptGlobalTable::put_ShowDT(int pVal)
 {
-   if(g_pplayer)
+   if (g_pplayer)
       g_pplayer->m_ptable->m_BG_current_set = (!!newVal) ? 0 : 1;
    return S_OK;
 }*/
@@ -722,7 +722,7 @@ STDMETHODIMP ScriptGlobalTable::get_ShowFSS(VARIANT_BOOL *pVal)
 
    m_BG_enable_FSS = !!newVal;
 
-   if(m_BG_enable_FSS)
+   if (m_BG_enable_FSS)
       m_BG_current_set = FULL_SINGLE_SCREEN;
    else
       GetRegInt("Player", "BGSet", (int*)&m_BG_current_set);
@@ -1767,7 +1767,7 @@ void PinTable::BackupLayers()
    // make all elements visible again
    for (int t = 0; t < MAX_LAYERS; t++)
    {
-      //for(SSIZE_T i = m_layer[t].size()-1; i >= 0; i--)
+      //for (SSIZE_T i = m_layer[t].size()-1; i >= 0; i--)
       for (size_t i = 0; i < m_layer[t].size(); i++)
       {
          IEditable * const piedit = m_layer[t][i];
@@ -2844,7 +2844,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                   hr = piedit->SaveData(pstmItem, NULL);
                   pstmItem->Release();
                   pstmItem = NULL;
-                  //if(FAILED(hr)) goto Error;
+                  //if (FAILED(hr)) goto Error;
                }
 
                csaveditems++;
@@ -2947,7 +2947,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
          pstmItem->Write(hashval, hashlen, &writ);
          pstmItem->Release();
          pstmItem = NULL;
-         //if(FAILED(hr)) goto Error;
+         //if (FAILED(hr)) goto Error;
 
          //CryptExportKey(hkey, NULL, PUBLICKEYBLOB, 0, BYTE *pbData, DWORD *pdwDataLen);
       }
@@ -8089,8 +8089,8 @@ void PinTable::ListImages(HWND hwndListView)
 int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
 {
    char sizeString[MAXTOKEN] = { 0 };
-   char * const usedStringYes="X";
-   char * const usedStringNo=" ";
+   char * const usedStringYes = "X";
+   char * const usedStringNo = " ";
 
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
@@ -8098,25 +8098,25 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
    lvitem.iSubItem = 0;
    lvitem.pszText = ppi->m_szName;
    lvitem.lParam = (size_t)ppi;
-   
+
    _snprintf_s(sizeString, MAXTOKEN, "%ix%i", ppi->m_realWidth, ppi->m_realHeight);
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
    ListView_SetItemText(hwndListView, index, 1, ppi->m_szPath);
    ListView_SetItemText(hwndListView, index, 2, sizeString);
    ListView_SetItemText(hwndListView, index, 3, usedStringNo);
-   
+
    _snprintf_s(sizeString, MAXTOKEN, "%i", ppi->m_pdsBuffer->m_data.size());
 
    ListView_SetItemText(hwndListView, index, 4, sizeString);
    if ((_stricmp(m_szImage, ppi->m_szName) == 0)
-       || (_stricmp( m_szBallImage, ppi->m_szName) == 0) 
-       || (_stricmp( m_szBallImageFront, ppi->m_szName) == 0)
-       || (_stricmp( m_szEnvImage, ppi->m_szName) == 0)
-       || (_stricmp( m_BG_szImage[BG_DESKTOP], ppi->m_szName) == 0)
-       || (_stricmp( m_BG_szImage[BG_FSS], ppi->m_szName) == 0)
-       || (_stricmp( m_BG_szImage[BG_FULLSCREEN], ppi->m_szName) == 0)
-       || (_stricmp( m_szImageColorGrade, ppi->m_szName) == 0))
+       || (_stricmp(m_szBallImage, ppi->m_szName) == 0) 
+       || (_stricmp(m_szBallImageFront, ppi->m_szName) == 0)
+       || (_stricmp(m_szEnvImage, ppi->m_szName) == 0)
+       || (_stricmp(m_BG_szImage[BG_DESKTOP], ppi->m_szName) == 0)
+       || (_stricmp(m_BG_szImage[BG_FSS], ppi->m_szName) == 0)
+       || (_stricmp(m_BG_szImage[BG_FULLSCREEN], ppi->m_szName) == 0)
+       || (_stricmp(m_szImageColorGrade, ppi->m_szName) == 0))
    {
        ListView_SetItemText(hwndListView, index, 3, usedStringYes);
    }

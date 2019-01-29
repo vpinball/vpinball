@@ -593,7 +593,7 @@ void Decal::RenderObject()
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
    //!!   pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_MIRROR);
 
-   //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
+   //ppin3d->SetPrimaryTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
 
    if (!m_fBackglass)
@@ -927,7 +927,7 @@ STDMETHODIMP Decal::put_Image(BSTR newVal)
    char szImage[MAXTOKEN];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szImage);
-   if(tex && tex->IsHDR())
+   if (tex && tex->IsHDR())
    {
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;

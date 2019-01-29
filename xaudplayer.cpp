@@ -134,7 +134,7 @@ int XAudPlayer::Tick()
       DWORD dwBufferLength2;
 
       HRESULT hr;
-      if( FAILED( hr = m_pDSBuffer->Lock(m_dwNextWriteOffset, cbData, 
+      if ( FAILED( hr = m_pDSBuffer->Lock(m_dwNextWriteOffset, cbData,
          &pbBuffer, &dwBufferLength, &pbBuffer2, &dwBufferLength2, 0L) ) )
          return 0;
 
@@ -277,7 +277,7 @@ HRESULT XAudPlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
 
    // Create a DirectSound buffer
    HRESULT hr;
-   if( FAILED( hr = g_pvp->m_pbackglassds->m_pDS->CreateSoundBuffer( &dsbd, &m_pDSBuffer, NULL ) ) )
+   if ( FAILED( hr = g_pvp->m_pbackglassds->m_pDS->CreateSoundBuffer( &dsbd, &m_pDSBuffer, NULL ) ) )
       return hr;
 
    m_dwNextWriteOffset = 0; 

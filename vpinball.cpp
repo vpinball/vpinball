@@ -2954,7 +2954,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
          const int ret = GetOpenFileName(&ofn);
 
-         if(ret)
+         if (ret)
          {
          LVITEM lvitem;
          lvitem.mask = LVIF_PARAM;

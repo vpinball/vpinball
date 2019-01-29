@@ -205,10 +205,10 @@ private:        // private member functions
 
    void UpdateEditorView();
 
-   void UpdateAnimation(RenderDevice *pd3dDevice);
+   void UpdateAnimation();
    bool BrowseFor3DMeshFile();
-   void RenderObject(RenderDevice *pd3dDevice);
-   void UpdateTarget(RenderDevice *pd3dDevice);
+   void RenderObject();
+   void UpdateTarget();
    void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool setHitObject = true);
    void AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject = true);
 

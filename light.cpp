@@ -998,8 +998,6 @@ void Light::RenderSetup()
 
 void Light::RenderStatic()
 {
-   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    if (m_d.m_BulbLight && m_d.m_showBulbMesh && m_d.m_staticBulbMesh)
       RenderBulbMesh();
 }

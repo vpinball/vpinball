@@ -551,7 +551,7 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    fprintf_s(f,"const unsigned int hitTargetT2NumFaces=%i;\n", mesh.NumIndices());
    fprintf_s(f,"Vertex3D_NoTex2 hitTargetT2Mesh[%i]=\n{\n",mesh.NumVertices());
 
-   for( int i=0;i<mesh.NumVertices();i++ )
+   for (int i=0; i<mesh.NumVertices(); i++)
    {
    fprintf_s(f,"{ %ff,%ff,%ff, %ff,%ff,%ff, %ff,%ff},\n",mesh.m_vertices[i].x, mesh.m_vertices[i].y,mesh.m_vertices[i].z,
    mesh.m_vertices[i].nx, mesh.m_vertices[i].ny,mesh.m_vertices[i].nz,
@@ -561,11 +561,11 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    fprintf_s(f,"};\nWORD hitTargetT2Indices[%i]=\n{\n   ",mesh.NumIndices());
 
    int ofs=0;
-   for( int i=0;i<mesh.NumIndices();i++ )
+   for (int i=0; i<mesh.NumIndices(); i++)
    {
    fprintf_s(f,"%i,",mesh.m_indices[i]);
    ofs++;
-   if( ofs==15 )
+   if (ofs==15)
    {
    ofs=0;
    fprintf_s(f,"\n   ");

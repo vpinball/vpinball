@@ -708,7 +708,7 @@ void Bumper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 
 void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf)
 {
-    const float scalexy = m_d.m_radius;
+   const float scalexy = m_d.m_radius;
 
    for (int i = 0; i < bumperSocketNumVertices; i++)
    {
@@ -1035,7 +1035,7 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(RDLI))
    {
       pbr->GetFloat(&m_d.m_ringDropOffset);
-   } 
+   }
    else if (id == FID(SURF))
    {
       pbr->GetString(m_d.m_szSurface);

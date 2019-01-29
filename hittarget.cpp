@@ -393,7 +393,7 @@ void HitTarget::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigne
 
 void HitTarget::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool setHitObject)
 {
-   Material *mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
    if (mat != NULL && !m_d.m_fOverwritePhysics)
    {
       obj->m_elasticity = mat->m_fElasticity;
@@ -601,7 +601,7 @@ void HitTarget::UpdateEditorView()
    TransformVertices();
 }
 
-void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
+void HitTarget::UpdateAnimation()
 {
     const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
     m_d.m_time_msec = g_pplayer->m_time_msec;
@@ -653,7 +653,7 @@ void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
                         FireGroupEvent(DISPID_TargetEvents_Raised);
                 }
             }
-            UpdateTarget(pd3dDevice);
+            UpdateTarget();
         }
     }
     else
@@ -681,14 +681,16 @@ void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
                     m_moveAnimation = false;
                 }
             }
-            UpdateTarget(pd3dDevice);
+            UpdateTarget();
         }
     }
 }
 
-void HitTarget::RenderObject(RenderDevice *pd3dDevice)
+void HitTarget::RenderObject()
 {
-   UpdateAnimation(pd3dDevice);
+   UpdateAnimation();
+
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
@@ -714,7 +716,7 @@ void HitTarget::RenderObject(RenderDevice *pd3dDevice)
       pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
-      //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+      //g_pplayer->m_pin3d.SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
       // accomodate models with UV coords outside of [0,1]
       pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
    }
@@ -745,12 +747,13 @@ void HitTarget::RenderObject(RenderDevice *pd3dDevice)
    }
 }
 
-void HitTarget::UpdateTarget(RenderDevice *pd3dDevice)
+void HitTarget::UpdateTarget()
 {
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
    {
+       //TODO Update object Matrix instead
        for (unsigned int i = 0; i < m_numVertices; i++)
        {
            buf[i].x = transformedVertices[i].x;
@@ -778,6 +781,7 @@ void HitTarget::UpdateTarget(RenderDevice *pd3dDevice)
        tempMatrix.SetTranslation(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z + m_ptable->m_tableheight);
        tempMatrix.Multiply(vertMatrix, vertMatrix);
 
+       //TODO Update object Matrix instead
        for (unsigned int i = 0; i < m_numVertices; i++)
        {
            Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
@@ -801,8 +805,6 @@ void HitTarget::UpdateTarget(RenderDevice *pd3dDevice)
 // Always called each frame to render over everything else (along with alpha ramps)
 void HitTarget::RenderDynamic()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-   
    TRACE_FUNCTION();
 
    if (!m_d.m_fVisible)
@@ -810,12 +812,12 @@ void HitTarget::RenderDynamic()
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
 
-   RenderObject(pd3dDevice);
+   RenderObject();
 }
 
 void HitTarget::RenderSetup()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (vertexBuffer)
       vertexBuffer->release();
@@ -837,7 +839,7 @@ void HitTarget::RenderSetup()
        {
            m_moveDown = false;
            m_moveAnimationOffset = -DROP_TARGET_LIMIT*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-           UpdateTarget(pd3dDevice);
+           UpdateTarget();
            return;
        }
    }

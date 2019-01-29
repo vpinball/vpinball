@@ -319,13 +319,13 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     mDwmEnableComposition = (pDEC)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmEnableComposition"); //!! remove as soon as win xp support dropped and use static link
     mDwmFlush = (pDF)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmFlush"); //!! remove as soon as win xp support dropped and use static link
 
-    if(mDwmIsCompositionEnabled && mDwmEnableComposition)
+    if (mDwmIsCompositionEnabled && mDwmEnableComposition)
     {
         BOOL dwm = 0;
         mDwmIsCompositionEnabled(&dwm);
         m_dwm_enabled = m_dwm_was_enabled = !!dwm;
 
-        if(m_dwm_was_enabled && m_disableDwm && IsWindowsVistaOr7()) // windows 8 and above will not allow do disable it, but will still return S_OK
+        if (m_dwm_was_enabled && m_disableDwm && IsWindowsVistaOr7()) // windows 8 and above will not allow do disable it, but will still return S_OK
         {
             mDwmEnableComposition(DWM_EC_DISABLECOMPOSITION);
             m_dwm_enabled = false;
@@ -1091,7 +1091,7 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
    }
 #endif
 #if 0 // leftover resolve z code, maybe useful later-on
-   else //if(m_RESZ_support)
+   else //if (m_RESZ_support)
    {
 #define RESZ_CODE 0x7FA05000
       IDirect3DSurface9 *pDSTSurface;
@@ -1484,7 +1484,7 @@ void RenderDevice::CreateVertexBuffer(const unsigned int vertexCount, const DWOR
    // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
    // This means we cannot read from vertex buffers, but I don't think we need to.
    HRESULT hr;
-   hr = m_pD3DDevice->CreateVertexBuffer(vertexCount * fvfToSize(fvf), D3DUSAGE_WRITEONLY | usage, 0,
+   hr = m_pD3DDevice->CreateVertexBuffer(vertexCount * fvfToSize(fvf), USAGE_STATIC | usage, 0,
       D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)vBuffer, NULL);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create vertex buffer!", hr, __FILE__, __LINE__);
@@ -1496,7 +1496,7 @@ void RenderDevice::CreateIndexBuffer(const unsigned int numIndices, const DWORD 
    // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
    HRESULT hr;
    const unsigned idxSize = (format == IndexBuffer::FMT_INDEX16) ? 2 : 4;
-   hr = m_pD3DDevice->CreateIndexBuffer(idxSize * numIndices, usage | D3DUSAGE_WRITEONLY, (D3DFORMAT)format,
+   hr = m_pD3DDevice->CreateIndexBuffer(idxSize * numIndices, usage | USAGE_STATIC, (D3DFORMAT)format,
       D3DPOOL_DEFAULT, (IDirect3DIndexBuffer9**)idxBuffer, NULL);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create index buffer!", hr, __FILE__, __LINE__);

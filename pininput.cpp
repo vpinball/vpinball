@@ -418,7 +418,7 @@ const DIDEVICEOBJECTDATA *PinInput::GetTail(/*const U32 curr_sim_msec*/)
    const DIDEVICEOBJECTDATA * const ptr = &m_diq[m_tail];
 
    // If we've simulated to or beyond the timestamp of when this control was received then process the control into the system
-   //if( curr_sim_msec >= ptr->dwTimeStamp ) //!! time stamp disabled to save a bit of lag
+   //if ( curr_sim_msec >= ptr->dwTimeStamp ) //!! time stamp disabled to save a bit of lag
    {
       m_tail = (m_tail + 1) % MAX_KEYQUEUE_SIZE; // advance tail of queue
 
@@ -856,7 +856,7 @@ int PinInput::started()
 
 void PinInput::autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec)
 {
-   //	if( !VPinball::m_open_minimized ) 
+   //	if (!VPinball::m_open_minimized)
    //		return;
 
    // Make sure we have a player.
@@ -1628,29 +1628,29 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
            m_nextKeyPressedTime = curr_time_msec;
 
            // Flying
-		   if(m_cameraMode == 1)
-		   {
+           if (m_cameraMode == 1)
+           {
 			   if (!m_cameraModeAltKey)
 				   g_pplayer->m_pin3d.m_camy += 10.0f;
 			   else
 				   g_pplayer->m_pin3d.m_camz += 10.0f;
-		   }
-		   else if(m_cameraMode == 2)
+           }
+           else if (m_cameraMode == 2)
 		   {
 			   if (!m_cameraModeAltKey)
 				   g_pplayer->m_pin3d.m_camy -= 10.0f;
 			   else
 				   g_pplayer->m_pin3d.m_camz -= 10.0f;
-		   }
-		   else if(m_cameraMode == 3)
-		   {
+           }
+           else if (m_cameraMode == 3)
+           {
 			   if (!m_cameraModeAltKey)
 				   g_pplayer->m_pin3d.m_camx -= 10.0f;
 			   else
 				   g_pplayer->m_pin3d.m_inc -= 0.01f;
-		   }
-		   else if(m_cameraMode == 4)
-		   {
+           }
+           else if (m_cameraMode == 4)
+           {
 			   if (!m_cameraModeAltKey)
 				   g_pplayer->m_pin3d.m_camx += 10.0f;
 			   else
@@ -1680,7 +1680,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
    {
       if (input->dwSequence == APP_MOUSE && g_pplayer)
       {
-         if(g_pplayer->m_fThrowBalls)
+         if (g_pplayer->m_fThrowBalls)
          {
              ProcessThrowBalls(input);
          }
@@ -1694,11 +1694,11 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             {
                FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey]);
             }
-            if(input->dwOfs == 2 && m_joyrflipkey == 26)
+            if (input->dwOfs == 2 && m_joyrflipkey == 26)
             {
                FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey]);
             }
-            if(input->dwOfs == 3 && m_joyplungerkey == 27)
+            if (input->dwOfs == 3 && m_joyplungerkey == 27)
             {
                FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[ePlungerKey]);
             }
@@ -1734,9 +1734,9 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                g_pplayer->m_ToggleDebugBalls = true;
             }
          }
-         else if(input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDebugger])
+         else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDebugger])
          {
-             if(started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
+             if (started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
              {
                  if ((input->dwData & 0x80) != 0)
                  { //on key down only
@@ -1750,7 +1750,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                  }
              }
          }
-         else if(((input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEscape]) && (m_disable_esc == 0)) || (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]))
+         else if (((input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEscape]) && (m_disable_esc == 0)) || (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]))
          {
             // Check if we have started a game yet.
             if (started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)

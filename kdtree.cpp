@@ -404,7 +404,7 @@ void HitKDNode::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 #ifdef DEBUGPHYSICS
       g_pplayer->c_tested++;
 #endif
-      HitObject * const pho = m_hitoct->GetItemAt( i );
+      HitObject * const pho = m_hitoct->GetItemAt(i);
       if ((pball != pho) // ball can not hit itself
 		  /*&& fRectIntersect3D(pball->m_hitBBox, pho->m_hitBBox)*/ //!! do bbox test before to save alu-instructions? or not to save registers? -> currently not, as just sphere vs sphere
 		 && fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, pho->m_hitBBox))
@@ -418,16 +418,16 @@ void HitKDNode::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 #ifdef DEBUGPHYSICS
       g_pplayer->c_traversed++;
 #endif
-      if(axis == 0)
+      if (axis == 0)
       {
          const float vcenter = (m_rectbounds.left+m_rectbounds.right)*0.5f;
-         if(pball->m_hitBBox.left <= vcenter)
+         if (pball->m_hitBBox.left <= vcenter)
             m_children[0].HitTestBall(pball, coll);
-         if(pball->m_hitBBox.right >= vcenter)
+         if (pball->m_hitBBox.right >= vcenter)
             m_children[1].HitTestBall(pball, coll);
       }
       else
-         if(axis == 1)
+         if (axis == 1)
          {
             const float vcenter = (m_rectbounds.top+m_rectbounds.bottom)*0.5f;
             if (pball->m_hitBBox.top <= vcenter)
@@ -439,9 +439,9 @@ void HitKDNode::HitTestBall(Ball * const pball, CollisionEvent& coll) const
          {
             const float vcenter = (m_rectbounds.zlow+m_rectbounds.zhigh)*0.5f;
 
-            if(pball->m_hitBBox.zlow <= vcenter)
+            if (pball->m_hitBBox.zlow <= vcenter)
                m_children[0].HitTestBall(pball, coll);
-            if(pball->m_hitBBox.zhigh >= vcenter)
+            if (pball->m_hitBBox.zhigh >= vcenter)
                m_children[1].HitTestBall(pball, coll);
          }
    }

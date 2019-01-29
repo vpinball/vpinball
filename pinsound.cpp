@@ -92,7 +92,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    LPDIRECTSOUNDBUFFER pDSBPrimary = NULL;
 
    // Initialize COM
-   //if( hr = CoInitialize( NULL ) )
+   //if (hr = CoInitialize(NULL))
    //return hr;
 
    DSAudioDevices DSads;
