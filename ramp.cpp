@@ -820,7 +820,7 @@ void Ramp::AddWallLineSeg(vector<HitObject*> &pvho, const Vertex2D &pv1, const V
    //!! Hit-walls are still done via 2D line segments with only a single lower and upper border, so the wall will always reach below and above the actual ramp -between- two points of the ramp
 
    // Thus, subdivide until at some point the approximation error is 'subtle' enough so that one will usually not notice (i.e. dependent on ball size)
-   if(height2-height1 > (float)(2.0*PHYS_SKIN)) //!! use ballsize
+   if (height2-height1 > (float)(2.0*PHYS_SKIN)) //!! use ballsize
    {
       AddWallLineSeg(pvho, pv1, (pv1+pv2)*0.5f, pv3_exists, height1, (height1+height2)*0.5f, wallheight);
       AddWallLineSeg(pvho, (pv1+pv2)*0.5f, pv2, true,       (height1+height2)*0.5f, height2, wallheight);
@@ -838,25 +838,25 @@ void Ramp::AddWallLineSeg(vector<HitObject*> &pvho, const Vertex2D &pv1, const V
 
 void Ramp::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
 {
-   const Material * const mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
-   if ( mat != NULL && !m_d.m_fOverwritePhysics )
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
+   if (mat != NULL && !m_d.m_fOverwritePhysics)
    {
       obj->m_elasticity = mat->m_fElasticity;
-      obj->SetFriction( mat->m_fFriction );
-      obj->m_scatter = ANGTORAD( mat->m_fScatterAngle );
+      obj->SetFriction(mat->m_fFriction);
+      obj->m_scatter = ANGTORAD(mat->m_fScatterAngle);
    }
    else
    {
       obj->m_elasticity = m_d.m_elasticity;
-      obj->SetFriction( m_d.m_friction );
-      obj->m_scatter = ANGTORAD( m_d.m_scatter );
+      obj->SetFriction(m_d.m_friction);
+      obj->m_scatter = ANGTORAD(m_d.m_scatter);
    }
 
    obj->m_threshold = m_d.m_threshold;
    // the ramp is of type ePrimitive for triggering the event in HitTriangle::Collide()
    obj->m_ObjType = ePrimitive;
    obj->m_fEnabled = m_d.m_fCollidable;
-   obj->m_obj = (IFireEvents*) this;
+   obj->m_obj = (IFireEvents*)this;
    obj->m_fe = m_d.m_fHitEvent;
 
    pvho.push_back(obj);

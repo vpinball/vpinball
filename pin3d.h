@@ -132,7 +132,7 @@ public:
 
    //Vertex3Ds m_viewVec;        // direction the camera is facing
 
-   ViewPort vp;
+   ViewPort m_viewPort;
    bool m_useAA;
 
 private:

@@ -711,7 +711,7 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    {
       int iTmp;
       pbr->GetInt(&iTmp);
-      //if( iTmp>100 ) iTmp=100;
+      //if (iTmp>100) iTmp=100;
       if (iTmp < 0) iTmp = 0;
       m_d.m_alpha = iTmp;
    }
@@ -1330,7 +1330,7 @@ void Flasher::RenderDynamic()
        pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
 
        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-       if((g_pplayer->m_dmdstate == 1) && alphadmd)
+       if ((g_pplayer->m_dmdstate == 1) && alphadmd)
           g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend);
        else
           g_pplayer->m_pin3d.DisableAlphaBlend();
@@ -1421,7 +1421,7 @@ void Flasher::RenderDynamic()
            if (!m_d.m_fAddBlend)
                flasherData.x = pinA->m_alphaTestValue * (float)(1.0 / 255.0);
 
-           //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
+           //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
        }
        else if (!pinA && pinB)
        {
@@ -1431,7 +1431,7 @@ void Flasher::RenderDynamic()
            if (!m_d.m_fAddBlend)
                flasherData.x = pinB->m_alphaTestValue * (float)(1.0 / 255.0);
 
-           //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
+           //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
        }
        else if (pinA && pinB)
        {
@@ -1445,7 +1445,7 @@ void Flasher::RenderDynamic()
                flasherData.y = pinB->m_alphaTestValue * (float)(1.0 / 255.0);
            }
 
-           //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
+           //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
        }
        else
            pd3dDevice->flasherShader->SetTechnique("basic_with_noLight");

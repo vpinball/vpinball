@@ -815,7 +815,7 @@ void Trigger::RenderSetup()
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
       triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerSimpleIndices);
    else if (m_d.m_shape == TriggerWireD)
-       triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerDWireIndices);
+      triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerDWireIndices);
    else if (m_d.m_shape == TriggerStar)
       triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerStarIndices);
    else if (m_d.m_shape == TriggerButton)

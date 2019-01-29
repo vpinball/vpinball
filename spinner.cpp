@@ -367,7 +367,7 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
       buf[i].tu = spinnerPlate[i].tu;
       buf[i].tv = spinnerPlate[i].tv;
    }
-   if (vertBuffer==NULL)
+   if (vertBuffer == NULL)
       plateVertexBuffer->unlock();
 }
 

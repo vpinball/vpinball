@@ -37,6 +37,7 @@ enum TransformStateType {
 };
 
 enum UsageFlags {
+   USAGE_STATIC = D3DUSAGE_WRITEONLY,    // to be used for vertex/index buffers which are uploaded once and never touched again
    USAGE_DYNAMIC = D3DUSAGE_DYNAMIC      // to be used for vertex/index buffers which are locked every frame/very often
 };
 
