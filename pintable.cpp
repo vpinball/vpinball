@@ -7653,7 +7653,7 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_MaxSeparation(float *pVal)
@@ -9249,11 +9249,11 @@ STDMETHODIMP PinTable::put_GlassHeight(float newVal)
 {
    STARTUNDO
 
-      m_glassheight = newVal;
+   m_glassheight = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_TableHeight(float *pVal)
@@ -9267,11 +9267,11 @@ STDMETHODIMP PinTable::put_TableHeight(float newVal)
 {
    STARTUNDO
 
-      m_tableheight = newVal;
+   m_tableheight = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 STDMETHODIMP PinTable::get_Width(float *pVal)
 {
@@ -9285,7 +9285,7 @@ STDMETHODIMP PinTable::put_Width(float newVal)
 {
    STARTUNDO
 
-      m_right = newVal;
+   m_right = newVal;
 
    SetDirtyDraw();
 
@@ -9293,7 +9293,7 @@ STDMETHODIMP PinTable::put_Width(float newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Height(float *pVal)
@@ -9307,7 +9307,7 @@ STDMETHODIMP PinTable::put_Height(float newVal)
 {
    STARTUNDO
 
-      m_bottom = newVal;
+   m_bottom = newVal;
 
    SetDirtyDraw();
 
@@ -9315,7 +9315,7 @@ STDMETHODIMP PinTable::put_Height(float newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_PlayfieldMaterial(BSTR *pVal)
@@ -9332,11 +9332,11 @@ STDMETHODIMP PinTable::put_PlayfieldMaterial(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szPlayfieldMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szPlayfieldMaterial, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_LightAmbient(OLE_COLOR *pVal)
@@ -9350,11 +9350,11 @@ STDMETHODIMP PinTable::put_LightAmbient(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_lightAmbient = newVal;
+   m_lightAmbient = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light0Emission(OLE_COLOR *pVal)
@@ -9368,11 +9368,11 @@ STDMETHODIMP PinTable::put_Light0Emission(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_Light[0].emission = newVal;
+   m_Light[0].emission = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_LightHeight(float *pVal)
@@ -9386,11 +9386,11 @@ STDMETHODIMP PinTable::put_LightHeight(float newVal)
 {
    STARTUNDO
 
-      m_lightHeight = newVal;
+   m_lightHeight = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_LightRange(float *pVal)
@@ -9602,11 +9602,11 @@ STDMETHODIMP PinTable::put_DefaultBulbIntensityScale(float newVal)
 {
    STARTUNDO
 
-      m_defaultBulbIntensityScaleOnBall = newVal;
+   m_defaultBulbIntensityScaleOnBall = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BloomStrength(float *pVal)
@@ -9778,11 +9778,11 @@ STDMETHODIMP PinTable::put_TableAdaptiveVSync(int newVal)
 {
    STARTUNDO
 
-      m_TableAdaptiveVSync = newVal;
+   m_TableAdaptiveVSync = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BackdropColor(OLE_COLOR *pVal)
@@ -9796,11 +9796,11 @@ STDMETHODIMP PinTable::put_BackdropColor(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_colorbackdrop = newVal;
+   m_colorbackdrop = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BackdropImageApplyNightDay(VARIANT_BOOL *pVal)
@@ -9984,6 +9984,7 @@ STDMETHODIMP PinTable::put_Gravity(float newVal)
       m_Gravity = newVal*GRAVITYCONST;
       STOPUNDO
    }
+
    return S_OK;
 }
 
@@ -10115,6 +10116,7 @@ STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
 STDMETHODIMP PinTable::get_PlungerFilter(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_plungerFilter);
+
    return S_OK;
 }
 
@@ -10142,16 +10144,17 @@ STDMETHODIMP PinTable::put_PhysicsLoopTime(int newVal)
 {
    STARTUNDO
 
-      m_PhysicsMaxLoops = newVal;
+   m_PhysicsMaxLoops = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BackglassMode(BackglassIndex *pVal)
 {
    *pVal = (BackglassIndex)(m_currentBackglassMode+DESKTOP);
+
    return S_OK;
 }
 
@@ -10174,11 +10177,11 @@ STDMETHODIMP PinTable::put_FieldOfView(float newVal)
 {
    STARTUNDO
 
-      m_BG_FOV[m_currentBackglassMode] = newVal;
+   m_BG_FOV[m_currentBackglassMode] = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Inclination(float *pVal)
@@ -10192,11 +10195,11 @@ STDMETHODIMP PinTable::put_Inclination(float newVal)
 {
    STARTUNDO
 
-      m_BG_inclination[m_currentBackglassMode] = newVal;
+   m_BG_inclination[m_currentBackglassMode] = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Layback(float *pVal)
@@ -10210,11 +10213,11 @@ STDMETHODIMP PinTable::put_Layback(float newVal)
 {
    STARTUNDO
 
-      m_BG_layback[m_currentBackglassMode] = newVal;
+   m_BG_layback[m_currentBackglassMode] = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Rotation(float *pVal)
@@ -10228,11 +10231,11 @@ STDMETHODIMP PinTable::put_Rotation(float newVal)
 {
    STARTUNDO
 
-      m_BG_rotation[m_currentBackglassMode] = newVal;
+   m_BG_rotation[m_currentBackglassMode] = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Scalex(float *pVal)
@@ -10246,11 +10249,11 @@ STDMETHODIMP PinTable::put_Scalex(float newVal)
 {
    STARTUNDO
 
-      m_BG_scalex[m_currentBackglassMode] = newVal;
+   m_BG_scalex[m_currentBackglassMode] = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Scaley(float *pVal)
@@ -10264,11 +10267,11 @@ STDMETHODIMP PinTable::put_Scaley(float newVal)
 {
    STARTUNDO
 
-      m_BG_scaley[m_currentBackglassMode] = newVal;
+   m_BG_scaley[m_currentBackglassMode] = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Scalez(float *pVal)
@@ -10282,11 +10285,11 @@ STDMETHODIMP PinTable::put_Scalez(float newVal)
 {
    STARTUNDO
 
-      m_BG_scalez[m_currentBackglassMode] = newVal;
+   m_BG_scalez[m_currentBackglassMode] = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Xlatex(float *pVal)
@@ -10300,11 +10303,11 @@ STDMETHODIMP PinTable::put_Xlatex(float newVal)
 {
    STARTUNDO
 
-      m_BG_xlatex[m_currentBackglassMode] = newVal;
+   m_BG_xlatex[m_currentBackglassMode] = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Xlatey(float *pVal)
@@ -10318,11 +10321,11 @@ STDMETHODIMP PinTable::put_Xlatey(float newVal)
 {
    STARTUNDO
 
-      m_BG_xlatey[m_currentBackglassMode] = newVal;
+   m_BG_xlatey[m_currentBackglassMode] = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Xlatez(float *pVal)
@@ -10365,6 +10368,7 @@ STDMETHODIMP PinTable::put_SlopeMax(float newVal)
       m_angletiltMax = newVal;
       STOPUNDO
    }
+
    return S_OK;
 }
 
@@ -10389,6 +10393,7 @@ STDMETHODIMP PinTable::put_SlopeMin(float newVal)
       m_angletiltMin = newVal;
       STOPUNDO
    }
+
    return S_OK;
 }
 
@@ -10439,8 +10444,6 @@ STDMETHODIMP PinTable::put_EnvironmentImage(BSTR newVal)
    strcpy_s(m_szEnvImage,szImage);
 
    STOPUNDO
-
-   return S_OK;
 
    return S_OK;
 }
@@ -10856,6 +10859,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    std::ofstream myfile(ofn.lpstrFile);
    myfile << xmlDoc;
    myfile.close();
+
    return S_OK;
 }
 
@@ -10951,6 +10955,7 @@ STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
          STOPUNDO
       }
    }
+
    return S_OK;
 }
 
@@ -11035,10 +11040,10 @@ STDMETHODIMP PinTable::get_JoltAmount(int *pVal)
 STDMETHODIMP PinTable::put_JoltAmount(int newVal)
 {
    STARTUNDO
-      m_jolt_amount = newVal;
+   m_jolt_amount = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_TiltAmount(int *pVal)
@@ -11051,10 +11056,10 @@ STDMETHODIMP PinTable::get_TiltAmount(int *pVal)
 STDMETHODIMP PinTable::put_TiltAmount(int newVal)
 {
    STARTUNDO
-      m_tilt_amount = newVal;
+   m_tilt_amount = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_JoltTriggerTime(int *pVal)
@@ -11067,10 +11072,10 @@ STDMETHODIMP PinTable::get_JoltTriggerTime(int *pVal)
 STDMETHODIMP PinTable::put_JoltTriggerTime(int newVal)
 {
    STARTUNDO
-      m_jolt_trigger_time = newVal;
+   m_jolt_trigger_time = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_TiltTriggerTime(int *pVal)
