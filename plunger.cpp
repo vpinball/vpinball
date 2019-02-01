@@ -848,7 +848,7 @@ void Plunger::RenderSetup()
             pm->z = (springRadius * (cs * m_d.m_width) + m_d.m_width + zheight) * zScale;
             pm->nx = 0.0f;
             pm->ny = -1.0f;
-            pm->nz = -0.0f;
+            pm->nz = 0.0f;
             pm->tu = (sn + 1.0f) * 0.5f;
             pm->tv = 0.76f;
             ++pm;
