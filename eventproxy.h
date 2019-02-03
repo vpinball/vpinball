@@ -63,11 +63,14 @@ public:
       {
          Collection * const pcollection = pT->m_vEventCollection[i];
 
-         CComVariant rgvar[1] = { CComVariant((long)pT->m_viEventCollection[i]) };
+         if (pcollection!=NULL)
+         {
+            CComVariant rgvar[1] = { CComVariant((long)pT->m_viEventCollection[i]) };
 
-         DISPPARAMS dispparams = { rgvar, NULL, 1, 0 };
+            DISPPARAMS dispparams = { rgvar, NULL, 1, 0 };
 
-         pcollection->FireDispID(dispid, &dispparams);
+            pcollection->FireDispID(dispid, &dispparams);
+         }
       }
 
       if (pT->m_fSingleEvents)
