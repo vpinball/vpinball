@@ -132,6 +132,7 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_StretchNo).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
    SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_SETCURSEL, 1, 0);
+   SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_SETCURSEL, 0, 0);
 }
 
 void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes, const VideoMode* curSelMode)
@@ -217,6 +218,8 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("Enables brute-force 4x Anti-Aliasing (similar to DSR).\r\nThis delivers very good quality, but slows down performance significantly.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd();
       AddToolTip("When checked it overwrites the ball image/decal image(s) for every table.", hwndDlg, toolTipHwnd, controlHwnd);
+      controlHwnd = GetDlgItem(IDC_DISPLAY_ID).GetHwnd();
+      AddToolTip("Select Display for Video output.", hwndDlg, toolTipHwnd, controlHwnd);
    }
 
    int maxTexDim;
@@ -468,6 +471,26 @@ BOOL VideoOptionsDialog::OnInitDialog()
    if (hr != S_OK)
       refreshrate = 0; // The default
 
+   int display;
+   int numDisplays = getNumberOfDisplays();
+   hr = GetRegInt("Player", "Display", &display);
+   if ((hr != S_OK) || (numDisplays <= display))
+      display = 0; // The default
+
+   SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_RESETCONTENT, 0, 0);
+   char displayName[256];
+   DISPLAY_DEVICE DispDev;
+   ZeroMemory(&DispDev, sizeof(DispDev));
+   DispDev.cb = sizeof(DispDev);
+   for (int i = 0;i < numDisplays;++i) {
+      if (EnumDisplayDevices(NULL, i, &DispDev, 0))
+         sprintf_s(displayName, "Display %d %s", (i + 1), DispDev.DeviceString);
+      else
+         sprintf_s(displayName, "Display %d", (i + 1));
+      SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)displayName);
+   }
+   SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_SETCURSEL, display, 0);
+
    int fullscreen;
    hr = GetRegInt("Player", "FullScreen", &fullscreen);
    if (hr != S_OK)
@@ -555,8 +578,15 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          //  indx = 0;
 
          const size_t csize = sizeof(rgwindowsize) / sizeof(int);
-         const int screenwidth = GetSystemMetrics(SM_CXSCREEN);
-         const int screenheight = GetSystemMetrics(SM_CYSCREEN);
+         int screenwidth;
+         int screenheight;
+         int x, y;
+         const int display = SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
+         if (!getDisplaySetupByID(display, x, y, screenwidth, screenheight)) {
+            screenwidth = GetSystemMetrics(SM_CXSCREEN);
+            screenheight = GetSystemMetrics(SM_CYSCREEN);
+         }
+
 
          //if (indx != -1)
          //  indexcur = indx;
@@ -579,17 +609,17 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          for (unsigned int i = 0; i < num_portrait_modes; ++i)
             if ((portrait_modes_width[i] <= screenwidth) && (portrait_modes_height[i] <= screenheight))
             {
-              VideoMode mymode;
-              mymode.width = portrait_modes_width[i];
-              mymode.height = portrait_modes_height[i];
-              mymode.depth = 0;
-              mymode.refreshrate = 0;
+               VideoMode mode;
+               mode.width = portrait_modes_width[i];
+               mode.height = portrait_modes_height[i];
+               mode.depth = 0;
+               mode.refreshrate = 0;
 
-              allVideoModes.push_back(mymode);
-              if (heightcur > widthcur)
-                if ((portrait_modes_width[i] == widthcur) && (portrait_modes_height[i] == heightcur))
-                  indx = i;
-              cnt++;
+               allVideoModes.push_back(mode);
+               if (heightcur > widthcur)
+                  if ((portrait_modes_width[i] == widthcur) && (portrait_modes_height[i] == heightcur))
+                     indx = i;
+               cnt++;
             }
 
          // add landscape play modes
@@ -616,9 +646,8 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          // set up windowed fullscreen mode
          VideoMode mode;
-         // TODO: use multi-monitor functions for DX9
-         mode.width = GetSystemMetrics(SM_CXSCREEN);
-         mode.height = GetSystemMetrics(SM_CYSCREEN);
+         mode.width = screenwidth;
+         mode.height = screenheight;
          mode.depth = 0;
          mode.refreshrate = 0;
          allVideoModes.push_back(mode);
@@ -672,7 +701,9 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       case GET_FULLSCREENMODES:
       {
          HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
-         EnumerateDisplayModes(0, allVideoModes);
+         HWND hwndDisplay = GetDlgItem(IDC_DISPLAY_ID).GetHwnd();
+         int display = SendMessage(hwndDisplay, CB_GETCURSEL, 0, 0);
+         EnumerateDisplayModes(display, allVideoModes);
 
          VideoMode curSelMode;
          curSelMode.width = (int)wParam >> 16;
@@ -783,13 +814,13 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          break;
       }
 
+      case IDC_DISPLAY_ID:
       case IDC_FULLSCREEN:
       {
          const size_t checked = SendDlgItemMessage(IDC_FULLSCREEN, BM_GETCHECK, 0, 0);
          SendMessage(checked ? GET_FULLSCREENMODES : GET_WINDOW_MODES, 0, 0);
          break;
       }
-
       default:
          return FALSE;
    }
@@ -813,6 +844,9 @@ void VideoOptionsDialog::OnOK()
       SetRegValue("Player", "ColorDepth", REG_DWORD, &pvm->depth, 4);
       SetRegValue("Player", "RefreshRate", REG_DWORD, &pvm->refreshrate, 4);
    }
+   HWND hwndDisplay = GetDlgItem(IDC_DISPLAY_ID).GetHwnd();
+   size_t display = SendMessage(hwndDisplay, CB_GETCURSEL, 0, 0);
+   SetRegValue("Player", "Display", REG_DWORD, &display, 4);
 
    HWND hwnd10bit = GetDlgItem(IDC_10BIT_VIDEO).GetHwnd();
    size_t video10bit = SendMessage(hwnd10bit, BM_GETCHECK, 0, 0);

@@ -781,6 +781,7 @@
 #define IDC_3D_STEREO_Y                 544
 #define IDC_ADAPTIVE_VSYNC              545
 #define IDC_STATIC_SOUNDDEVICE          546
+#define IDC_DISPLAY_ID                  546
 #define IDD_PROPTABLE_PHYSICS2          547
 #define IDC_STATIC_SOUNDDEVICE2         547
 #define IDD_PROPFLASHER_POSITION        548
@@ -1152,7 +1153,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        649
+#define _APS_NEXT_RESOURCE_VALUE        650
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         824
 #define _APS_NEXT_SYMED_VALUE           188
