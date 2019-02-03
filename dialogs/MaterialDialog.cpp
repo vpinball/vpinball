@@ -450,9 +450,9 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                m_deletingItem = false;
                int newCount = ListView_GetItemCount(m_hMaterialList);
                int selectedCount = ListView_GetSelectedCount(m_hMaterialList);
-               if(newCount > 0 && selectedCount == 0)
+               if (newCount > 0 && selectedCount == 0)
                {
-                   if(firstSelectedItemIdx >= newCount) firstSelectedItemIdx = 0;
+                   if (firstSelectedItemIdx >= newCount) firstSelectedItemIdx = 0;
                    // The previous selection is now deleted, so look again from the top of the list
                    ListView_SetItemState(m_hMaterialList, firstSelectedItemIdx, LVIS_FOCUSED | LVIS_SELECTED, 0x00F);
                }
@@ -513,7 +513,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   return FALSE;
                }
                size_t len = strlen(pinfo->item.pszText);
-               if(len > 31)
+               if (len > 31)
                {
                    ShowError("Material names can only be up to 31 characters long!");
                    return FALSE;
@@ -550,7 +550,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             case LVN_ITEMCHANGING:
             {
-               if(m_deletingItem)
+               if (m_deletingItem)
                    break;
 
                const int count = ListView_GetSelectedCount(m_hMaterialList);
@@ -606,7 +606,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                const int count = ListView_GetSelectedCount(m_hMaterialList);
 
-               if(m_deletingItem)
+               if (m_deletingItem)
                    break;
                if (count > 1)
                {

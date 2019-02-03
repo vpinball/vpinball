@@ -67,7 +67,7 @@ static bool initForsythDone = false;
 
 // Precalculate the tables
 inline void initForsyth() {
-    if(initForsythDone)
+	if (initForsythDone)
 	return;
 
 	for (unsigned int i = 0; i < CACHE_SCORE_TABLE_SIZE; i++) {
@@ -220,7 +220,7 @@ T* reorderForsyth(const T* const indices,
 				// in the cache to the new target position (i) one
 				// step backwards
 				assert(endpos < VERTEX_CACHE_SIZE+3);
-				if(!(endpos < VERTEX_CACHE_SIZE+3))
+				if (!(endpos < VERTEX_CACHE_SIZE+3))
 				{
 					delete [] cVertex;
 					delete [] triangleAdded;

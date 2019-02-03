@@ -428,9 +428,9 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
 
 #ifdef C_BALL_SPIN_HACK
    const float normVel = m_vel.Dot(hitnormal);
-   if((normVel <= 0.025f) || // check for <=0.025 originated from ball<->rubber collisions pushing the ball upwards, but this is still not enough, some could even use <=0.2
+   if ((normVel <= 0.025f) || // check for <=0.025 originated from ball<->rubber collisions pushing the ball upwards, but this is still not enough, some could even use <=0.2
 #else
-   if(
+   if (
 #endif
        (slipspeed < C_PRECISION))
    {

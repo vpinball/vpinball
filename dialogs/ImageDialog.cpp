@@ -100,7 +100,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          lvcol.cx = 60;
          ListView_InsertColumn(hListView, 4, &lvcol);
 
-         if(pt)
+         if (pt)
             pt->ListImages(hListView);
 
          char textBuf[16];
@@ -132,7 +132,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                SortData.hwndList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
                SortData.subItemIndex = columnNumber;
                SortData.sortUpDown = m_columnSortOrder;
-               if(columnNumber==4)
+               if (columnNumber==4)
                    ListView_SortItems(SortData.hwndList, MyCompProcIntValues, &SortData);
                else
                    ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
@@ -574,7 +574,7 @@ void ImageDialog::Export()
                         strcat_s(g_filename, ext.c_str() + idx);
                      }
                   }
-                  if(!pt->ExportImage(ppi, g_filename))
+                  if (!pt->ExportImage(ppi, g_filename))
                      ShowError("Could not export Image");
                   sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
                   lvitem.iItem = sel;
@@ -775,10 +775,10 @@ void ImageDialog::LoadPosition()
     HRESULT hr;
 
     hr = GetRegInt( "Editor", "ImageMngPosX", &x );
-    if(hr != S_OK)
+    if (hr != S_OK)
         x=0;
     hr = GetRegInt( "Editor", "ImageMngPosY", &y );
-    if(hr != S_OK)
+    if (hr != S_OK)
         y=0;
 
     w = GetRegIntWithDefault("Editor", "ImageMngWidth", 1000);

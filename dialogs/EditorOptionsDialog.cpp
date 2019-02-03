@@ -30,7 +30,7 @@ BOOL EditorOptionsDialog::OnInitDialog()
     m_toolTip = new CToolTip();
 
     HWND toolTipHwnd = ::CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), NULL, g_hinst, NULL);
-    if(toolTipHwnd)
+    if (toolTipHwnd)
     {
         SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
         HWND controlHwnd = GetDlgItem(IDC_THROW_BALLS_ALWAYS_ON_CHECK);
@@ -102,7 +102,7 @@ BOOL EditorOptionsDialog::OnInitDialog()
 
     int units;
     HRESULT hr = GetRegInt("Editor", "Units", &units);
-    if(hr != S_OK)
+    if (hr != S_OK)
         units = 0;
     SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"VPUnits");
     SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Inches");
@@ -282,7 +282,7 @@ void EditorOptionsDialog::OnOK()
 
     HWND hwndUnits = GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd();
     size_t units = SendMessage(hwndUnits, CB_GETCURSEL, 0, 0);
-    if(units == LB_ERR)
+    if (units == LB_ERR)
         units = 0;
     SetRegValue("Editor", "Units", REG_DWORD, &units, 4);
 

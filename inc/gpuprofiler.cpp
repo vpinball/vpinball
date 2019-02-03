@@ -75,7 +75,7 @@ bool CGpuProfiler::Init (IDirect3DDevice9 * const pDevice)
 		}
 	}
 
-	if(FAILED(pDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, &m_frequencyQuery)))
+	if (FAILED(pDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, &m_frequencyQuery)))
 	{
 		ErrorPrintf("GPU Profiler: Could not create frequency query!");
 		return false;
@@ -196,13 +196,13 @@ void CGpuProfiler::WaitForDataAndUpdate ()
 		c++;
 		Sleep(1); //!!
 	}
-	if(c >= GET_DATA_RETRIES)
+	if (c >= GET_DATA_RETRIES)
 	{
 		DebugPrintf("GPU Profiler: Failed while waiting for data");
 		return;
 	}
 
-	if(disjoint)
+	if (disjoint)
 	{
 		DebugPrintf("GPU Profiler: Timing interval disjoint");
 		return;
