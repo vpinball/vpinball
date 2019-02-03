@@ -27,7 +27,9 @@ struct VideoMode
    int refreshrate;
 };
 
+int getNumberOfDisplays();
 void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes);
+bool getDisplaySetupByID(const int display, int &x, int &y, int &width, int &height);
 
 
 enum TransformStateType {

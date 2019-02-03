@@ -250,6 +250,11 @@ void TextureManager::UnloadAll()
 
 ////////////////////////////////////////////////////////////////////
 
+int getNumberOfDisplays()
+{
+   return  GetSystemMetrics(SM_CMONITORS);
+}
+
 void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
 {
    IDirect3D9 *d3d = Direct3DCreate9(D3D_SDK_VERSION);
@@ -260,6 +265,8 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
    }
 
    modes.clear();
+   if (adapter >= getNumberOfDisplays())
+      return;
 
    //for (int j = 0; j < 2; ++j)
    const int j = 0; // limit to 32bit only nowadays
@@ -287,6 +294,38 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
    SAFE_RELEASE(d3d);
 }
 
+struct monitorData {
+   int display;
+   int count;
+   MONITORINFO info;
+};
+
+BOOL CALLBACK MonitorEnumProc(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __in  LPRECT lprcMonitor, __in  LPARAM dwData)
+{
+   monitorData* data = reinterpret_cast<monitorData*>(dwData);
+   if (data->display == data->count)
+      GetMonitorInfo(hMonitor, &data->info);
+   data->count++;
+   return TRUE;
+}
+
+bool getDisplaySetupByID(const int display, int &x, int &y, int &width, int &height)
+{
+   monitorData data;
+   data.count = 0;
+   data.display = display;
+   data.info.cbSize = sizeof(MONITORINFO);
+   EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, reinterpret_cast<LPARAM>(&data));
+   if (data.count > data.display) {
+      x = data.info.rcMonitor.left;
+      y = data.info.rcMonitor.top;
+      width = data.info.rcMonitor.right - data.info.rcMonitor.left;
+      height = data.info.rcMonitor.bottom - data.info.rcMonitor.top;
+      return width > 0 && height > 0;
+   }
+   else
+      return false;
+}
 ////////////////////////////////////////////////////////////////////
 
 #define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); MessageBox(NULL, ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
@@ -358,7 +397,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
 void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 {
-   m_adapter = adapterIndex;
+   m_adapter = getNumberOfDisplays() > adapterIndex ? adapterIndex : 0;
 
 #ifdef USE_D3D9EX
    m_pD3DEx = NULL;
@@ -540,7 +579,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       m_pD3DDeviceEx->QueryInterface(__uuidof(IDirect3DDevice9), reinterpret_cast<void**>(&m_pD3DDevice));
 
       // Get the display mode so that we can report back the actual refresh rate.
-      CHECKD3D(m_pD3DDeviceEx->GetDisplayModeEx(m_adapter, &mode, NULL));
+      CHECKD3D(m_pD3DDeviceEx->GetDisplayModeEx(0, &mode, NULL));
 
       refreshrate = mode.RefreshRate;
    }

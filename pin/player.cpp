@@ -2468,6 +2468,12 @@ void Player::InitPlayfieldWindow()
    if (hr != S_OK)
       m_height = m_width * 9 / 16;
 
+   int x = 0;
+   int y = 0;
+
+   unsigned int display = GetRegIntWithDefault("Player", "Display", 0);
+   display = display < getNumberOfDisplays() ? display : 0;
+
    if (m_fFullScreen)
    {
       m_screenwidth = m_width;
@@ -2478,8 +2484,12 @@ void Player::InitPlayfieldWindow()
    }
    else
    {
-      m_screenwidth = GetSystemMetrics(SM_CXSCREEN);
-      m_screenheight = GetSystemMetrics(SM_CYSCREEN);
+      DISPLAY_DEVICE DispDev;
+      if (!getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight)) {
+         m_screenwidth = GetSystemMetrics(SM_CXSCREEN);
+         m_screenheight = GetSystemMetrics(SM_CYSCREEN);
+         display = 0;
+      }
       m_refreshrate = 0; // The default
 
       // constrain window to screen
@@ -2494,10 +2504,9 @@ void Player::InitPlayfieldWindow()
          m_height = m_screenheight;
          m_width = m_height * 16 / 9;
       }
+      x += (m_screenwidth - m_width) / 2;
+      y += (m_screenheight - m_height) / 2;
    }
-
-   const int x = (m_screenwidth - m_width) / 2;
-   int y = (m_screenheight - m_height) / 2;
 
    // No window border, title, or control boxes.
    int windowflags = WS_POPUP;
