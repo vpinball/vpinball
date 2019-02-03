@@ -58,7 +58,7 @@ void CollectionManagerDialog::EditCollection()
     CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
 
     const int sel = ListView_GetNextItem(hListHwnd, -1, LVNI_SELECTED);
-    if(sel != -1)
+    if (sel != -1)
     {
         LVITEM lvitem;
         lvitem.mask = LVIF_PARAM;
@@ -71,7 +71,7 @@ void CollectionManagerDialog::EditCollection()
         cds.ppt = pt;
 
         CollectionDialog *colDlg = new CollectionDialog(cds);
-        if(colDlg->DoModal() >= 0)
+        if (colDlg->DoModal() >= 0)
             pt->SetNonUndoableDirty(eSaveDirty);
 
         char szT[MAX_PATH];
@@ -89,20 +89,20 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
         case WM_NOTIFY:
         {
             LPNMHDR pnmhdr = (LPNMHDR)lParam;
-            if(wParam == IDC_SOUNDLIST)
+            if (wParam == IDC_SOUNDLIST)
             {
                 LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
-                if(lpnmListView->hdr.code == LVN_COLUMNCLICK)
+                if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
                 {
                     const int columnNumber = lpnmListView->iSubItem;
-                    if(m_columnSortOrder == 1)
+                    if (m_columnSortOrder == 1)
                        m_columnSortOrder = 0;
                     else
                        m_columnSortOrder = 1;
                     SortData.hwndList = hListHwnd;
                     SortData.subItemIndex = columnNumber;
                     SortData.sortUpDown = m_columnSortOrder;
-                    if(columnNumber == 0)
+                    if (columnNumber == 0)
                         ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
                     else
                         ListView_SortItems(SortData.hwndList, MyCompProcIntValues, &SortData);
@@ -122,10 +122,10 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                     }
                 }
             }
-            if(pnmhdr->code == LVN_ENDLABELEDIT)
+            if (pnmhdr->code == LVN_ENDLABELEDIT)
             {
                 NMLVDISPINFO *pinfo = (NMLVDISPINFO *)lParam;
-                if(pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
+                if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
                     return FALSE;
                 LVITEM lvitem;
                 lvitem.mask = LVIF_PARAM;
@@ -137,7 +137,7 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                 pt->SetNonUndoableDirty(eSaveDirty);
                 return TRUE;
             }
-            else if(pnmhdr->code == NM_DBLCLK)
+            else if (pnmhdr->code == NM_DBLCLK)
             {
                 EditCollection();
                 return TRUE;
@@ -181,7 +181,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_RENAME:
         {
             const int sel = ListView_GetNextItem(hListHwnd, -1, LVNI_SELECTED);
-            if(sel != -1)
+            if (sel != -1)
             {
                 ::SetFocus(hListHwnd);
                 ListView_EditLabel(hListHwnd, sel);
@@ -191,7 +191,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_COL_UP_BUTTON:
         {
             const int idx = ListView_GetNextItem(hListHwnd, -1, LVNI_SELECTED);
-            if(idx != -1 && idx > 0)
+            if (idx != -1 && idx > 0)
             {
                 ::SetFocus(hListHwnd);
                 LVITEM lvitem1;
@@ -223,7 +223,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_COL_DOWN_BUTTON:
         {
             const int idx = ListView_GetNextItem(hListHwnd, -1, LVNI_SELECTED);
-            if(idx != -1 && (idx < pt->m_vcollection.Size() - 1))
+            if (idx != -1 && (idx < pt->m_vcollection.Size() - 1))
             {
                 ::SetFocus(hListHwnd);
                 LVITEM lvitem1;
@@ -255,11 +255,11 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_DELETE_COLLECTION:
         {
             const int sel = ListView_GetNextItem(hListHwnd, -1, LVNI_SELECTED);
-            if(sel != -1)
+            if (sel != -1)
             {
                 // TEXT
                 const int ans = MessageBox("Are you sure you want to remove this collection?", "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2);
-                if(ans == IDYES)
+                if (ans == IDYES)
                 {
                     LVITEM lvitem;
                     lvitem.mask = LVIF_PARAM;
@@ -304,10 +304,10 @@ void CollectionManagerDialog::LoadPosition()
     HRESULT hr;
 
     hr = GetRegInt("Editor", "CollectionMngPosX", &x);
-    if(hr != S_OK)
+    if (hr != S_OK)
         x=0;
     hr = GetRegInt("Editor", "CollectionMngPosY", &y);
-    if(hr != S_OK)
+    if (hr != S_OK)
         y=0;
 
     SetWindowPos(NULL, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
@@ -349,12 +349,12 @@ BOOL CollectionDialog::OnInitDialog()
     HWND hwndOut = GetDlgItem(IDC_OUTLIST).GetHwnd();
     HWND hwndIn = GetDlgItem(IDC_INLIST).GetHwnd();
 
-    for(int i = 0; i < pcol->m_visel.Size(); i++)
+    for (int i = 0; i < pcol->m_visel.Size(); i++)
     {
         ISelect * const pisel = pcol->m_visel.ElementAt(i);
         IEditable * const piedit = pisel->GetIEditable();
         IScriptable * const piscript = piedit->GetScriptable();
-        if(piscript)
+        if (piscript)
         {
             WideCharToMultiByte(CP_ACP, 0, piscript->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
             const size_t index = ::SendMessage(hwndIn, LB_ADDSTRING, 0, (size_t)szT);
@@ -364,7 +364,7 @@ BOOL CollectionDialog::OnInitDialog()
 
     PinTable * const ppt = pCurCollection.ppt;
 
-    for(size_t i = 0; i < ppt->m_vedit.size(); i++)
+    for (size_t i = 0; i < ppt->m_vedit.size(); i++)
     {
         IEditable * const piedit = ppt->m_vedit[i];
         IScriptable * const piscript = piedit->GetScriptable();
@@ -372,15 +372,15 @@ BOOL CollectionDialog::OnInitDialog()
 
         // Only process objects not in this collection
         int l;
-        for(l = 0; l < pcol->m_visel.Size(); l++)
+        for (l = 0; l < pcol->m_visel.Size(); l++)
         {
-            if(pisel == pcol->m_visel.ElementAt(l))
+            if (pisel == pcol->m_visel.ElementAt(l))
             {
                 break;
             }
         }
 
-        if((l == pcol->m_visel.Size()) && piscript)
+        if ((l == pcol->m_visel.Size()) && piscript)
             //if (!piedit->m_pcollection)
         {
             WideCharToMultiByte(CP_ACP, 0, piscript->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
@@ -409,7 +409,7 @@ BOOL CollectionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             int * const rgsel = new int[count]; //!! size_t?
             ::SendMessage(hwndList, LB_GETSELITEMS, count, (LPARAM)rgsel);
 
-            for(size_t loop = 0; loop < count; loop++)
+            for (size_t loop = 0; loop < count; loop++)
                 //for (i=count-1;i>=0;i--)
             {
                 const size_t i = (LOWORD(wParam) == IDC_UP) ? loop : (count - loop - 1);
@@ -422,7 +422,7 @@ BOOL CollectionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 const size_t newindex = (LOWORD(wParam) == IDC_UP) ? max(rgsel[i] - 1, (int)i) : min(rgsel[i] + 2, (int)(listsize - (count - 1) + i)); //!! see above
                 size_t oldindex = rgsel[i];
 
-                if(oldindex > newindex)
+                if (oldindex > newindex)
                     oldindex++; // old item will be one lower when we try to delete it
 
                 const size_t index = ::SendMessage(hwndList, LB_INSERTSTRING, newindex, (LPARAM)szT);
@@ -443,7 +443,7 @@ BOOL CollectionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             HWND hwndOut;
             HWND hwndIn;
 
-            if(LOWORD(wParam) == IDC_IN)
+            if (LOWORD(wParam) == IDC_IN)
             {
                 hwndOut = GetDlgItem(IDC_OUTLIST).GetHwnd();
                 hwndIn = GetDlgItem(IDC_INLIST).GetHwnd();
@@ -457,7 +457,7 @@ BOOL CollectionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             const size_t count = ::SendMessage(hwndOut, LB_GETSELCOUNT, 0, 0);
             int * const rgsel = new int[count];
             ::SendMessage(hwndOut, LB_GETSELITEMS, count, (LPARAM)rgsel);
-            for(size_t i = 0; i < count; i++)
+            for (size_t i = 0; i < count; i++)
             {
                 const size_t len = ::SendMessage(hwndOut, LB_GETTEXTLEN, rgsel[i], 0);
                 char * const szT = new char[len + 1]; // include null terminator
@@ -471,7 +471,7 @@ BOOL CollectionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
             // Remove the old strings after everything else, to avoid messing up indices
             // Remove things in reverse order, so we don't get messed up inside this loop
-            for(size_t i = 0; i < count; i++)
+            for (size_t i = 0; i < count; i++)
                 ::SendMessage(hwndOut, LB_DELETESTRING, rgsel[count - i - 1], 0);
 
             delete[] rgsel;
@@ -485,10 +485,10 @@ void CollectionDialog::OnOK()
 {
     Collection * const pcol = pCurCollection.pcol;
 
-    for(int i = 0; i < pcol->m_visel.Size(); i++)
+    for (int i = 0; i < pcol->m_visel.Size(); i++)
     {
         const int index = FindIndexOf(pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection, pcol);
-        if(index != -1)
+        if (index != -1)
         {
             pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection.erase (pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection.begin()  + index);
             pcol->m_visel.ElementAt(i)->GetIEditable()->m_viCollection.erase(pcol->m_visel.ElementAt(i)->GetIEditable()->m_viCollection.begin() + index);
@@ -501,11 +501,11 @@ void CollectionDialog::OnOK()
 
     const size_t count = ::SendMessage(hwndIn, LB_GETCOUNT, 0, 0);
 
-    for(size_t i = 0; i < count; i++)
+    for (size_t i = 0; i < count; i++)
     {
         IScriptable * const piscript = (IScriptable *)::SendMessage(hwndIn, LB_GETITEMDATA, i, 0);
         ISelect * const pisel = piscript->GetISelect();
-        if(pisel) // Not sure how we could possibly get an iscript here that was never an iselect
+        if (pisel) // Not sure how we could possibly get an iscript here that was never an iselect
         {
             pcol->m_visel.AddElement(pisel);
             pisel->GetIEditable()->m_vCollection.push_back(pcol);

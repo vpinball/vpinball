@@ -51,11 +51,11 @@ VS_OUTPUT vs_main (float4 vPosition : POSITION0,
    return Out;
 }
 
-// transformation matrices (only used for flashers so far)
+// transformation matrices (only used for flashers and backbox so far)
 float4x4 matWorldViewProj : WORLDVIEWPROJ;
 
-VS_OUTPUT vs_simple_main(float4 vPosition : POSITION0,
-    float2 tc : TEXCOORD0)
+VS_OUTPUT vs_simple_world(float4 vPosition : POSITION0,
+                          float2 tc : TEXCOORD0)
 {
     VS_OUTPUT Out;
 
@@ -152,7 +152,7 @@ technique basic_DMD_world
 {
     pass P0
     {
-        VertexShader = compile vs_3_0 vs_simple_main();
+        VertexShader = compile vs_3_0 vs_simple_world();
         PixelShader = compile ps_3_0 ps_main_DMD();
     }
 }
@@ -163,6 +163,15 @@ technique basic_noDMD
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main(); 
+      PixelShader = compile ps_3_0 ps_main_noDMD();
+   } 
+}
+
+technique basic_noDMD_world
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_simple_world(); 
       PixelShader = compile ps_3_0 ps_main_noDMD();
    } 
 }

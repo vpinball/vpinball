@@ -116,13 +116,13 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
         case WM_NOTIFY:
         {
             LPNMHDR pnmhdr = (LPNMHDR)lParam;
-            if(wParam == IDC_SOUNDLIST)
+            if (wParam == IDC_SOUNDLIST)
             {
                 LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
-                if(lpnmListView->hdr.code == LVN_COLUMNCLICK)
+                if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
                 {
                     const int columnNumber = lpnmListView->iSubItem;
-                    if(m_columnSortOrder == 1)
+                    if (m_columnSortOrder == 1)
                        m_columnSortOrder = 0;
                     else
                        m_columnSortOrder = 1;
@@ -137,7 +137,7 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                 case LVN_ENDLABELEDIT:
                 {
                     NMLVDISPINFO *pinfo = (NMLVDISPINFO *)lParam;
-                    if(pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
+                    if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
                         return FALSE;
                     ListView_SetItemText( hSoundList, pinfo->item.iItem, 0, pinfo->item.pszText );
                     LVITEM lvitem;
@@ -194,7 +194,7 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
         {
            CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
            const int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
-            if(sel != -1)
+            if (sel != -1)
             {
                 LVITEM lvitem;
                 lvitem.mask = LVIF_PARAM;
@@ -210,7 +210,7 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
         case IDC_RENAME:
         {
             const int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
-            if(sel != -1)
+            if (sel != -1)
             {
                 ::SetFocus( hSoundList );
                 ListView_EditLabel( hSoundList, sel );
@@ -261,12 +261,12 @@ void SoundDialog::Import()
 
     const int ret = GetOpenFileName( &ofn );
 
-    if(ret)
+    if (ret)
     {
         strcpy_s( szInitialDir, sizeof( szInitialDir ), szFileName );
 
         int len = lstrlen( szFileName );
-        if(len < ofn.nFileOffset)
+        if (len < ofn.nFileOffset)
         {
             // Multi-file select
             lstrcpy( szT, szFileName );
@@ -285,7 +285,7 @@ void SoundDialog::Import()
         else
         {
             szInitialDir[ofn.nFileOffset] = 0;
-            if(pt)
+            if (pt)
                pt->ImportSound( hSoundList, szFileName, true );
         }
         SetRegValue( "RecentDir", "SoundDir", REG_SZ, szInitialDir, lstrlen( szInitialDir ) );
@@ -299,11 +299,11 @@ void SoundDialog::ReImport()
 {
     CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
     const int count = ListView_GetSelectedCount( hSoundList );
-    if(count > 0)
+    if (count > 0)
     {
         LocalString ls( IDS_REPLACESOUND );
         const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2 );
-        if(ans == IDYES)
+        if (ans == IDYES)
         {
             int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
             while(sel != -1)
@@ -318,7 +318,7 @@ void SoundDialog::ReImport()
                 HANDLE hFile = CreateFile( pps->m_szPath, GENERIC_READ, FILE_SHARE_READ,
                                            NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 
-                if(hFile != INVALID_HANDLE_VALUE)
+                if (hFile != INVALID_HANDLE_VALUE)
                 {
                     CloseHandle( hFile );
 
@@ -338,14 +338,14 @@ void SoundDialog::ReImportFrom()
 {
     CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
     const int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
-    if(sel != -1)
+    if (sel != -1)
     {
         char szFileName[MAXSTRING];
         char szInitialDir[MAXSTRING];
 
         LocalString ls( IDS_REPLACESOUND );
         int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2 );
-        if(ans == IDYES)
+        if (ans == IDYES)
         {
             szFileName[0] = '\0';
 
@@ -366,7 +366,7 @@ void SoundDialog::ReImportFrom()
 
             const int ret = GetOpenFileName( &ofn );
 
-            if(ret)
+            if (ret)
             {
                 LVITEM lvitem;
                 lvitem.mask = LVIF_PARAM;
@@ -390,12 +390,12 @@ void SoundDialog::Export()
     const int selectedItemsCount = ListView_GetSelectedCount(hSoundList);
     const size_t renameOnExport = SendMessage(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), BM_GETCHECK, 0, 0);
 
-    if(selectedItemsCount)
+    if (selectedItemsCount)
     {
         OPENFILENAME ofn;
         LVITEM lvitem;
         int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED ); //next selected item 	
-        if(sel != -1)
+        if (sel != -1)
         {
             lvitem.mask = LVIF_PARAM;
             lvitem.iItem = sel;
@@ -440,26 +440,26 @@ void SoundDialog::Export()
             ofn.lpstrDefExt = "wav";
             const HRESULT hr = GetRegString( "RecentDir", "SoundDir", m_initDir, MAX_PATH );
 
-            if(hr == S_OK)ofn.lpstrInitialDir = m_initDir;
+            if (hr == S_OK)ofn.lpstrInitialDir = m_initDir;
             else ofn.lpstrInitialDir = NULL;
 
             ofn.lpstrTitle = "SAVE AS";
             ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
             m_initDir[ofn.nFileOffset] = 0;
-            if(GetSaveFileName( &ofn ))	//Get filename from user
+            if (GetSaveFileName( &ofn ))	//Get filename from user
             {
                 len = lstrlen( ofn.lpstrFile );
-                for(begin = len; begin >= 0; begin--)
+                for (begin = len; begin >= 0; begin--)
                 {
-                    if(ofn.lpstrFile[begin] == '\\')
+                    if (ofn.lpstrFile[begin] == '\\')
                     {
                         begin++;
                         break;
                     }
                 }
 
-                if(begin >= MAX_PATH)
+                if (begin >= MAX_PATH)
                     begin=MAX_PATH - 1;
 
                 char pathName[MAX_PATH] = { 0 };
@@ -468,9 +468,9 @@ void SoundDialog::Export()
                 while(sel != -1)
                 {
                     len = lstrlen( pps->m_szPath );
-                    for(begin = len; begin >= 0; begin--)
+                    for (begin = len; begin >= 0; begin--)
                     {
-                        if(pps->m_szPath[begin] == '\\')
+                        if (pps->m_szPath[begin] == '\\')
                         {
                             begin++;
                             break;
@@ -510,7 +510,7 @@ void SoundDialog::SoundToBG()
 {
     CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
 
-    if(ListView_GetSelectedCount( hSoundList ))
+    if (ListView_GetSelectedCount( hSoundList ))
     {
         LVITEM lvitem;
         int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED ); //next selected item 	
@@ -589,11 +589,11 @@ void SoundDialog::DeleteSound()
     CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
 
     const int count = ListView_GetSelectedCount( hSoundList );
-    if(count > 0)
+    if (count > 0)
     {
         LocalString ls( IDS_REMOVESOUND );
         const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2 );
-        if(ans == IDYES)
+        if (ans == IDYES)
         {
             int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
             while(sel != -1)
@@ -622,10 +622,10 @@ void SoundDialog::LoadPosition()
     HRESULT hr;
 
     hr = GetRegInt( "Editor", "SoundMngPosX", &x );
-    if(hr != S_OK)
+    if (hr != S_OK)
         x=0;
     hr = GetRegInt( "Editor", "SoundMngPosY", &y );
-    if(hr != S_OK)
+    if (hr != S_OK)
         y=0;
 
     SetWindowPos( NULL, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );

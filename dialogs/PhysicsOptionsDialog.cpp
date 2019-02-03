@@ -34,12 +34,12 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     }
     SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
 
-    for(unsigned int i = 0; i < num_physicsoptions; i++)
+    for (unsigned int i = 0; i < num_physicsoptions; i++)
     {
         physicsoptions[i] = new char[256];
         char tmp[256];
         sprintf_s(tmp, 256, "PhysicsSetName%u", i);
-        if(GetRegString("Player", tmp, physicsoptions[i], 256) != S_OK)
+        if (GetRegString("Player", tmp, physicsoptions[i], 256) != S_OK)
             sprintf_s(physicsoptions[i], 256, "Set %u", i + 1);
         sprintf_s(tmp, 256, "%u: %s", i + 1, physicsoptions[i]);
         const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)tmp);
@@ -55,7 +55,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float FlipperPhysicsMass = 1.f;
     sprintf_s(tmp, 256, "FlipperPhysicsMass%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsMass);
-    if(hr != S_OK)
+    if (hr != S_OK)
         FlipperPhysicsMass = 1.f;
 
     SetItemText(DISPID_Flipper_Speed, FlipperPhysicsMass);
@@ -63,7 +63,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float FlipperPhysicsStrength = 2200.f;
     sprintf_s(tmp, 256, "FlipperPhysicsStrength%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsStrength);
-    if(hr != S_OK)
+    if (hr != S_OK)
         FlipperPhysicsStrength = 2200.f;
 
     SetItemText(19, FlipperPhysicsStrength);
@@ -71,7 +71,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float FlipperPhysicsElasticity = 0.8f;
     sprintf_s(tmp, 256, "FlipperPhysicsElasticity%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsElasticity);
-    if(hr != S_OK)
+    if (hr != S_OK)
         FlipperPhysicsElasticity = 0.8f;
 
     SetItemText(21, FlipperPhysicsElasticity);
@@ -79,7 +79,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float FlipperPhysicsScatter = 0.f;
     sprintf_s(tmp, 256, "FlipperPhysicsScatter%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsScatter);
-    if(hr != S_OK)
+    if (hr != S_OK)
         FlipperPhysicsScatter = 0.f;
 
     SetItemText(112, FlipperPhysicsScatter);
@@ -87,7 +87,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float FlipperPhysicsTorqueDamping = 0.75f;
     sprintf_s(tmp, 256, "FlipperPhysicsEOSTorque%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsTorqueDamping);
-    if(hr != S_OK)
+    if (hr != S_OK)
         FlipperPhysicsTorqueDamping = 0.75f;
 
     SetItemText(113, FlipperPhysicsTorqueDamping);
@@ -95,7 +95,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float FlipperPhysicsTorqueDampingAngle = 6.f;
     sprintf_s(tmp, 256, "FlipperPhysicsEOSTorqueAngle%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsTorqueDampingAngle);
-    if(hr != S_OK)
+    if (hr != S_OK)
         FlipperPhysicsTorqueDampingAngle = 6.f;
 
     SetItemText(189, FlipperPhysicsTorqueDampingAngle);
@@ -103,7 +103,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float FlipperPhysicsReturnStrength = 0.058f;
     sprintf_s(tmp, 256, "FlipperPhysicsReturnStrength%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsReturnStrength);
-    if(hr != S_OK)
+    if (hr != S_OK)
         FlipperPhysicsReturnStrength = 0.058f;
 
     SetItemText(23, FlipperPhysicsReturnStrength);
@@ -111,7 +111,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float FlipperPhysicsElasticityFalloff = 0.43f;
     sprintf_s(tmp, 256, "FlipperPhysicsElasticityFalloff%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsElasticityFalloff);
-    if(hr != S_OK)
+    if (hr != S_OK)
         FlipperPhysicsElasticityFalloff = 0.43f;
 
     SetItemText(22, FlipperPhysicsElasticityFalloff);
@@ -119,7 +119,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float FlipperPhysicsFriction = 0.6f;
     sprintf_s(tmp, 256, "FlipperPhysicsFriction%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsFriction);
-    if(hr != S_OK)
+    if (hr != S_OK)
         FlipperPhysicsFriction = 0.6f;
 
     SetItemText(109, FlipperPhysicsFriction);
@@ -127,7 +127,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float FlipperPhysicsCoilRampUp = 3.f;
     sprintf_s(tmp, 256, "FlipperPhysicsCoilRampUp%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsCoilRampUp);
-    if(hr != S_OK)
+    if (hr != S_OK)
         FlipperPhysicsCoilRampUp = 3.f;
 
     SetItemText(110, FlipperPhysicsCoilRampUp);
@@ -135,7 +135,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float TablePhysicsGravityConstant = DEFAULT_TABLE_GRAVITY;
     sprintf_s(tmp, 256, "TablePhysicsGravityConstant%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsGravityConstant);
-    if(hr != S_OK)
+    if (hr != S_OK)
         TablePhysicsGravityConstant = DEFAULT_TABLE_GRAVITY;
 
     SetItemText(1100, TablePhysicsGravityConstant);
@@ -143,7 +143,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float TablePhysicsContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
     sprintf_s(tmp, 256, "TablePhysicsContactFriction%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsContactFriction);
-    if(hr != S_OK)
+    if (hr != S_OK)
         TablePhysicsContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
 
     SetItemText(1101, TablePhysicsContactFriction);
@@ -151,7 +151,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float TablePhysicsElasticity = DEFAULT_TABLE_ELASTICITY;
     sprintf_s(tmp, 256, "TablePhysicsElasticity%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsElasticity);
-    if(hr != S_OK)
+    if (hr != S_OK)
         TablePhysicsElasticity = DEFAULT_TABLE_ELASTICITY;
 
     SetItemText(1708, TablePhysicsElasticity);
@@ -159,7 +159,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float TablePhysicsElasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
     sprintf_s(tmp, 256, "TablePhysicsElasticityFalloff%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsElasticityFalloff);
-    if(hr != S_OK)
+    if (hr != S_OK)
         TablePhysicsElasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
 
     SetItemText(1709, TablePhysicsElasticityFalloff);
@@ -167,7 +167,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float TablePhysicsScatterAngle = DEFAULT_TABLE_PFSCATTERANGLE;
     sprintf_s(tmp, 256, "TablePhysicsScatterAngle%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsScatterAngle);
-    if(hr != S_OK)
+    if (hr != S_OK)
         TablePhysicsScatterAngle = DEFAULT_TABLE_PFSCATTERANGLE;
 
     SetItemText(1710, TablePhysicsScatterAngle);
@@ -175,7 +175,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float TablePhysicsContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
     sprintf_s(tmp, 256, "TablePhysicsContactScatterAngle%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsContactScatterAngle);
-    if(hr != S_OK)
+    if (hr != S_OK)
         TablePhysicsContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
 
     SetItemText(1102, TablePhysicsContactScatterAngle);
@@ -183,7 +183,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float TablePhysicsMinSlope = DEFAULT_TABLE_MIN_SLOPE;
     sprintf_s(tmp, 256, "TablePhysicsMinSlope%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsMinSlope);
-    if(hr != S_OK)
+    if (hr != S_OK)
         TablePhysicsMinSlope = DEFAULT_TABLE_MIN_SLOPE;
 
     SetItemText(1103, TablePhysicsMinSlope);
@@ -191,7 +191,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     float TablePhysicsMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
     sprintf_s(tmp, 256, "TablePhysicsMaxSlope%u", physicsselection);
     hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsMaxSlope);
-    if(hr != S_OK)
+    if (hr != S_OK)
         TablePhysicsMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
 
     SetItemText(1104, TablePhysicsMaxSlope);
@@ -247,13 +247,13 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
             const size_t tmp = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
 
-            if(tmp != physicsselection)
+            if (tmp != physicsselection)
             {
                 int result = ::MessageBox(NULL, "Save", "Save current physics set?", MB_YESNOCANCEL | MB_ICONQUESTION);
-                if(result == IDYES)
+                if (result == IDYES)
                     SaveCurrentPhysicsSetting();
 
-                if(result != IDCANCEL)
+                if (result != IDCANCEL)
                 {
                     physicsselection = (unsigned int)tmp;
                     SendMessage(WM_INITDIALOG, 0, 0); // reinit all boxes
@@ -268,7 +268,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     {
         case 1111:
         {
-            if(LoadSetting() == false)
+            if (LoadSetting() == false)
                 break;
 
             SetDlgItemText(1100, CString(loadValues.gravityConstant));
@@ -315,7 +315,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
             const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
             char szFoo[MAX_PATH];
-            if(hr == S_OK)
+            if (hr == S_OK)
             {
                 ofn.lpstrInitialDir = szInitialDir;
             }
@@ -326,7 +326,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             }
 
             const int ret = GetSaveFileName(&ofn);
-            if(ret == 0)
+            if (ret == 0)
                 break;
 
             xml_document<> xmlDoc;
@@ -423,7 +423,7 @@ void PhysicsOptionsDialog::OnDestroy()
 {
     HWND hwndList = GetDlgItem(IDC_PhysicsList).GetHwnd();
     const size_t size = ::SendMessage(hwndList, LB_GETCOUNT, 0, 0);
-    for(size_t i = 0; i < size; i++)
+    for (size_t i = 0; i < size; i++)
     {
         if (physicsoptions[i])
         {
@@ -456,7 +456,7 @@ bool PhysicsOptionsDialog::LoadSetting()
 
     const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
     char szFoo[MAX_PATH];
-    if(hr == S_OK)
+    if (hr == S_OK)
     {
         ofn.lpstrInitialDir = szInitialDir;
     }
@@ -467,7 +467,7 @@ bool PhysicsOptionsDialog::LoadSetting()
     }
 
     const int ret = GetOpenFileName(&ofn);
-    if(ret == 0)
+    if (ret == 0)
         return false;
 
     xml_document<> xmlDoc;
