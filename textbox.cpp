@@ -218,7 +218,8 @@ void Textbox::RenderDynamic()
    if (!m_d.m_fVisible || (dmd && !g_pplayer->m_texdmd))
       return;
 
-   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+//   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);

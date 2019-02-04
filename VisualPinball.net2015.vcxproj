@@ -240,7 +240,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -251,7 +251,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat />
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <OpenMPSupport>false</OpenMPSupport>
@@ -269,7 +269,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -306,7 +306,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -1136,6 +1136,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\win32xx\include\wxx_docking.h" />
     <ClInclude Include="inc\win32xx\include\wxx_exception.h" />
     <ClInclude Include="inc\win32xx\include\wxx_file.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_filefind.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_folderdialog.h" />
     <ClInclude Include="inc\win32xx\include\wxx_frame.h" />
     <ClInclude Include="inc\win32xx\include\wxx_gdi.h" />
     <ClInclude Include="inc\win32xx\include\wxx_imagelist.h" />
@@ -1144,6 +1146,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\win32xx\include\wxx_menu.h" />
     <ClInclude Include="inc\win32xx\include\wxx_menubar.h" />
     <ClInclude Include="inc\win32xx\include\wxx_metafile.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_mutex.h" />
     <ClInclude Include="inc\win32xx\include\wxx_printdialogs.h" />
     <ClInclude Include="inc\win32xx\include\wxx_propertysheet.h" />
     <ClInclude Include="inc\win32xx\include\wxx_rebar.h" />
@@ -1151,6 +1154,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\win32xx\include\wxx_regkey.h" />
     <ClInclude Include="inc\win32xx\include\wxx_ribbon.h" />
     <ClInclude Include="inc\win32xx\include\wxx_richedit.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_scrollview.h" />
     <ClInclude Include="inc\win32xx\include\wxx_shared_ptr.h" />
     <ClInclude Include="inc\win32xx\include\wxx_socket.h" />
     <ClInclude Include="inc\win32xx\include\wxx_statusbar.h" />

@@ -2459,7 +2459,7 @@ void Player::InitPlayfieldWindow()
    int x = 0;
    int y = 0;
 
-   unsigned int display = GetRegIntWithDefault("Player", "Display", 0);
+   int display = GetRegIntWithDefault("Player", "Display", 0);
    display = display < getNumberOfDisplays() ? display : 0;
 
    if (m_fFullScreen)
@@ -2472,7 +2472,6 @@ void Player::InitPlayfieldWindow()
    }
    else
    {
-      DISPLAY_DEVICE DispDev;
       if (!getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight)) {
          m_screenwidth = GetSystemMetrics(SM_CXSCREEN);
          m_screenheight = GetSystemMetrics(SM_CYSCREEN);
@@ -3655,7 +3654,8 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
 
 void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float intensity, const bool backdrop)
 {
-   RenderDevice * const pd3dDevice = backdrop ? m_pin3d.m_pd3dSecondaryDevice : m_pin3d.m_pd3dPrimaryDevice;
+//   RenderDevice * const pd3dDevice = backdrop ? m_pin3d.m_pd3dSecondaryDevice : m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = m_pin3d.m_pd3dPrimaryDevice;
 
    float Verts[4 * 5] =
    {
@@ -3686,7 +3686,9 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
 
 void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture * const tex, const float intensity, const bool backdrop)
 {
-   RenderDevice * const pd3dDevice = backdrop ? m_pin3d.m_pd3dSecondaryDevice : m_pin3d.m_pd3dPrimaryDevice;
+//   RenderDevice * const pd3dDevice = backdrop ? m_pin3d.m_pd3dSecondaryDevice : m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = m_pin3d.m_pd3dPrimaryDevice;
+
    float Verts[4 * 5] =
    {
       1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
