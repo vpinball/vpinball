@@ -1,8 +1,8 @@
 #pragma once
 
 #include <map>
-#include <d3d9.h>
-#include <d3dx9.h>
+#include "typeDefs3D.h"
+
 #include "Material.h"
 #include "Texture.h"
 
@@ -12,12 +12,6 @@ void ReportFatalError(const HRESULT hr, const char *file, const int line);
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line);
 
 bool IsWindows10_1803orAbove();
-
-typedef IDirect3DTexture9 D3DTexture;
-typedef D3DVIEWPORT9 ViewPort;
-typedef IDirect3DSurface9 RenderTarget;
-typedef D3DVERTEXELEMENT9 VertexElement;
-typedef IDirect3DVertexDeclaration9 VertexDeclaration;
 
 struct VideoMode
 {

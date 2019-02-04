@@ -172,13 +172,13 @@ public:
    //
 
    // number of animation frames
-   int cframes;
+   int m_cframes;
 
    // number of vertices per animation frame
-   int vtsPerFrame;
+   int m_vtsPerFrame;
 
    // number of triangle indices per frame
-   int indicesPerFrame;
+   int m_indicesPerFrame;
 
    // IPlunger
 public:
