@@ -646,13 +646,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
            BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
 
            if (tex != NULL)
-           {
-               m_ballImage = new Texture();
-
-               m_ballImage->m_width = tex->width();
-               m_ballImage->m_height = tex->height();
-               m_ballImage->m_pdsBuffer = tex;
-           }
+               m_ballImage = new Texture(tex);
        }
        // clear the string buffer, otherwise it will hold the ball image filename if decal image is a null string in the registry
        //memset(imageName, 0, MAX_PATH);
@@ -662,13 +656,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
            BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
 
            if (tex != NULL)
-           {
-               m_decalImage = new Texture();
-
-               m_decalImage->m_width = tex->width();
-               m_decalImage->m_height = tex->height();
-               m_decalImage->m_pdsBuffer = tex;
-           }
+               m_decalImage = new Texture(tex);
        }
    }
    
@@ -1872,7 +1860,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
    m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->GetSurfaceLevel(0, &tmpMirrorSurface);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(tmpMirrorSurface);
 
-   m_pin3d.m_pd3dPrimaryDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dPrimaryDevice->Clear(0, NULL, clearType::TARGET, 0, 1.0f, 0L);
 
    if (!onlyBalls)
    {
@@ -1941,7 +1929,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
    m_pin3d.m_pd3dPrimaryDevice->GetMirrorTmpBufferTexture()->GetSurfaceLevel(0, &tmpMirrorSurface);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(tmpMirrorSurface);
 
-   m_pin3d.m_pd3dPrimaryDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dPrimaryDevice->Clear(0, NULL, clearType::TARGET, 0, 1.0f, 0L);
 
    D3DMATRIX viewMat;
    m_pin3d.m_pd3dPrimaryDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
@@ -2058,7 +2046,7 @@ void Player::InitStatic(HWND hwndProgress)
    memset(pdestStatic, 0, descStatic.Width*descStatic.Height * 3 * sizeof(float));
 
    RenderTarget* offscreenSurface;
-   CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice()->CreateOffscreenPlainSurface(descStatic.Width, descStatic.Height, descStatic.Format, D3DPOOL_SYSTEMMEM, &offscreenSurface, NULL));
+   CHECKD3D(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice()->CreateOffscreenPlainSurface(descStatic.Width, descStatic.Height, descStatic.Format, (D3DPOOL)memoryPool::SYSTEM, &offscreenSurface, NULL));
 
    // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
    if (!cameraMode)
@@ -2185,7 +2173,7 @@ void Player::InitStatic(HWND hwndProgress)
    {
       unsigned int ofs0 = y*descStatic.Width*3;
       unsigned int ofs1 = y*locked.Pitch/2;
-      if(descStatic.Format == D3DFMT_A16B16G16R16F)
+      if (descStatic.Format == (D3DFORMAT)colorFormat::RGBA16F)
       {
       for (unsigned int x = 0; x < descStatic.Width; ++x,ofs0+=3,ofs1+=4)
       {
@@ -2194,12 +2182,12 @@ void Player::InitStatic(HWND hwndProgress)
          pdestStatic[ofs0+2] += half2float(psrc[ofs1+2]);
       }
       }
-      else if(descStatic.Format == D3DFMT_R16F)
+      else if (descStatic.Format == (D3DFORMAT)colorFormat::RED16F)
       {
       for (unsigned int x = 0; x < descStatic.Width; ++x,++ofs0,++ofs1)
          pdestStatic[ofs0] += half2float(psrc[ofs1]);
       }
-      else if(descStatic.Format == D3DFMT_G16R16F)
+      else if (descStatic.Format == (D3DFORMAT)colorFormat::RG16F)
       {
       for (unsigned int x = 0; x < descStatic.Width; ++x,ofs0+=2,ofs1+=2)
       {
@@ -2233,7 +2221,7 @@ void Player::InitStatic(HWND hwndProgress)
    {
       unsigned int ofs0 = y*descStatic.Width*3;
       unsigned int ofs1 = y*locked.Pitch/2;
-      if(descStatic.Format == D3DFMT_A16B16G16R16F)
+      if (descStatic.Format == (D3DFORMAT)colorFormat::RGBA16F)
       {
       for (unsigned int x = 0; x < descStatic.Width; ++x,ofs0+=3,ofs1+=4)
       {
@@ -2242,12 +2230,12 @@ void Player::InitStatic(HWND hwndProgress)
          psrc[ofs1+2] = float2half(pdestStatic[ofs0+2]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
       }
       }
-      else if(descStatic.Format == D3DFMT_R16F)
+      else if (descStatic.Format == (D3DFORMAT)colorFormat::RED16F)
       {
       for (unsigned int x = 0; x < descStatic.Width; ++x,++ofs0,++ofs1)
          psrc[ofs1] = float2half(pdestStatic[ofs0]*(float)(1.0/STATIC_PRERENDER_ITERATIONS));
       }
-      else if(descStatic.Format == D3DFMT_G16R16F)
+      else if (descStatic.Format == (D3DFORMAT)colorFormat::RG16F)
       {
       for (unsigned int x = 0; x < descStatic.Width; ++x,ofs0+=2,ofs1+=2)
       {
@@ -2295,7 +2283,7 @@ void Player::InitStatic(HWND hwndProgress)
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(tmpAOSurface);
       SAFE_RELEASE_NO_RCC(tmpAOSurface); //!!
 
-      m_pin3d.m_pd3dPrimaryDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
+      m_pin3d.m_pd3dPrimaryDevice->Clear(0, NULL, clearType::TARGET, 0, 1.0f, 0L);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", &m_pin3d.aoDitherTexture, true);
@@ -3683,7 +3671,6 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
       Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * height + posy)*2.0f;
    }
 
-
    pd3dDevice->DMDShader->SetTechnique(tex ? "basic_noDMD" : "basic_noDMD_notex");
 
    const D3DXVECTOR4 c = convertColor(color, intensity);
@@ -3734,7 +3721,7 @@ void Player::DrawBulbLightBuffer()
    m_pin3d.m_pd3dPrimaryDevice->GetBloomBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget(tmpBloomSurface);
 
-   m_pin3d.m_pd3dPrimaryDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dPrimaryDevice->Clear(0, NULL, clearType::TARGET, 0, 1.0f, 0L);
 
    // check if any bulb specified at all
    bool do_renderstage = false;
@@ -4079,7 +4066,7 @@ void Player::Bloom()
       /*RenderTarget* tmpBloomSurface;
       m_pin3d.m_pd3dDevice->GetBloomBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface);
       m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface);
-      m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
+      m_pin3d.m_pd3dDevice->Clear(0, NULL, clearType::TARGET, 0, 1.0f, 0L);
       SAFE_RELEASE_NO_RCC(tmpBloomSurface);*/
 
       return;

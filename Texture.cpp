@@ -64,7 +64,7 @@ BaseTexture* BaseTexture::CreateFromFile(const char *szfile)
    if (szfile == NULL || szfile[0] == '\0')
       return NULL;
 
-   FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+   FREE_IMAGE_FORMAT fif;
 
    // check the file signature and deduce its format
    fif = FreeImage_GetFileType(szfile, 0);
@@ -88,6 +88,32 @@ BaseTexture* BaseTexture::CreateFromFile(const char *szfile)
    }
    else
       return NULL;
+}
+
+BaseTexture* BaseTexture::CreateFromData(const void *data, const size_t size)
+{
+   FREE_IMAGE_FORMAT fif;
+
+   // check the file signature and deduce its format
+   FIMEMORY *dataHandle = FreeImage_OpenMemory((BYTE*)data, size);
+   fif = FreeImage_GetFileTypeFromMemory(dataHandle, size);
+
+   // check that the plugin has reading capabilities ...
+   if ((fif != FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fif)) {
+      // ok, let's load the file
+      FIBITMAP *dib = FreeImage_LoadFromMemory(fif, dataHandle, 0);
+
+      BaseTexture* mySurface = BaseTexture::CreateFromFreeImage(dib);
+      FreeImage_Unload(dib);
+
+      //if (bitsPerPixel == 24)
+      //   mySurface->SetOpaque();
+
+      FreeImage_CloseMemory(dataHandle);
+      return mySurface;
+   }
+   FreeImage_CloseMemory(dataHandle);
+   return NULL;
 }
 
 // from the FreeImage FAQ page
@@ -124,6 +150,17 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm)
 Texture::Texture()
 {
    m_pdsBuffer = NULL;
+   m_hbmGDIVersion = NULL;
+   m_ppb = NULL;
+   m_alphaTestValue = 1.0f;
+   memset(m_szName, 0, MAXTOKEN);
+}
+
+Texture::Texture(BaseTexture * const base)
+{
+   m_pdsBuffer = base;
+   SetSizeFrom(base);
+
    m_hbmGDIVersion = NULL;
    m_ppb = NULL;
    m_alphaTestValue = 1.0f;
@@ -180,7 +217,7 @@ HRESULT Texture::LoadFromStream(IStream *pstream, int version, PinTable *pt)
 }
 
 
-bool Texture::LoadFromMemory(BYTE *data, DWORD size)
+bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
 {
    FIMEMORY *hmem = FreeImage_OpenMemory(data, size);
    FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
@@ -191,9 +228,10 @@ bool Texture::LoadFromMemory(BYTE *data, DWORD size)
       FreeStuff();
 
    m_pdsBuffer = BaseTexture::CreateFromFreeImage(dib);
+   SetSizeFrom(m_pdsBuffer);
+
    FreeImage_Unload(dib);
 
-   SetSizeFrom(m_pdsBuffer);
    return true;
 }
 
@@ -230,13 +268,13 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
          FreeStuff();
 
       m_pdsBuffer = new BaseTexture(m_width, m_height);
+      SetSizeFrom(m_pdsBuffer);
 
       // 32-bit picture
       LZWReader lzwreader(pbr->m_pistream, (int *)m_pdsBuffer->data(), m_width * 4, m_height, m_pdsBuffer->pitch());
       lzwreader.Decoder();
 
       const int lpitch = m_pdsBuffer->pitch();
-      SetSizeFrom(m_pdsBuffer);
 
       // Assume our 32 bit color structure
       // Find out if all alpha values are zero
@@ -389,8 +427,9 @@ void BaseTexture::SetOpaque()
 
    for (int i = 0; i < height(); i++)
    {
-      for (int l = 0; l < width(); l++)
-         pch[4 * l + 3] = 0xff;
+      unsigned int offs = 3;
+      for (int l = 0; l < width(); l++,offs+=4)
+         pch[offs] = 0xff;
 
       pch += pitch();
    }

@@ -375,8 +375,8 @@ void Plunger::RenderDynamic()
    _ASSERTE(m_phitplunger);
 
    const PlungerMoverObject& pa = m_phitplunger->m_plungerMover;
-   const int frame0 = (int)((pa.m_pos - pa.m_frameStart) / (pa.m_frameEnd - pa.m_frameStart) * (cframes - 1) + 0.5f);
-   const int frame = (frame0 < 0 ? 0 : frame0 >= cframes ? cframes - 1 : frame0);
+   const int frame0 = (int)((pa.m_pos - pa.m_frameStart) / (pa.m_frameEnd - pa.m_frameStart) * (float)(m_cframes - 1) + 0.5f);
+   const int frame = (frame0 < 0 ? 0 : frame0 >= m_cframes ? m_cframes - 1 : frame0);
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
@@ -397,8 +397,8 @@ void Plunger::RenderDynamic()
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer,
-      frame*vtsPerFrame, vtsPerFrame,
-      indexBuffer, 0, indicesPerFrame);
+      frame*m_vtsPerFrame, m_vtsPerFrame,
+      indexBuffer, 0, m_indicesPerFrame);
    pd3dDevice->basicShader->End();
 }
 
@@ -458,10 +458,10 @@ void Plunger::RenderSetup()
    const float stroke = m_d.m_stroke;
    const float beginy = m_d.m_v.y;
    const float endy = m_d.m_v.y - stroke;
-   cframes = (int)((float)PLUNGER_FRAME_COUNT * (stroke*(float)(1.0 / 80.0))) + 1; // 25 frames per 80 units travel
-   const float inv_scale = (cframes > 1) ? (1.0f / (float)(cframes - 1)) : 0.0f;
+   m_cframes = (int)((float)PLUNGER_FRAME_COUNT * (stroke*(float)(1.0 / 80.0))) + 1; // 25 frames per 80 units travel
+   const float inv_scale = (m_cframes > 1) ? (1.0f / (float)(m_cframes - 1)) : 0.0f;
    const float dyPerFrame = (endy - beginy) * inv_scale;
-   int circlePoints = 0;
+   const int circlePoints = (m_d.m_type == PlungerTypeFlat) ? 0 : 24;
    float springLoops = 0.0f, springEndLoops = 0.0f;
    float springGauge = 0.0f;
    float springRadius = 0.0f;
@@ -580,7 +580,7 @@ void Plunger::RenderSetup()
       (c++)->set(rRod, y, 0.55f, 1.0f, 0.0f);
 
       // add the ring (texture is in the ring quadrant, 25%-50%)
-      float rRing = m_d.m_ringDiam / 2.0f;
+      const float rRing = m_d.m_ringDiam / 2.0f;
       (c++)->set(rRod, y, 0.26f, 0.0f, -1.0f);
       (c++)->set(rRing, y, 0.33f, 0.0f, -1.0f);
       (c++)->set(rRing, y, 0.33f, 1.0f, 0.0f);
@@ -600,7 +600,7 @@ void Plunger::RenderSetup()
 
       // Figure the fully compressed spring length.  This is
       // the lower bound for the rod length.
-      float springMin = (springLoops + springEndLoops)*springMinSpacing;
+      const float springMin = (springLoops + springEndLoops)*springMinSpacing;
 
       // Figure the rod bottom position (rody).  This is the fully
       // retracted tip position (beginy), plus the length of the parts
@@ -613,7 +613,7 @@ void Plunger::RenderSetup()
    }
 
    // get the number of lathe points from the descriptor
-   int lathePoints = desc->n;
+   const int lathePoints = desc->n;
 
    // calculate the frame rendering details
    int latheVts = 0, springVts = 0;
@@ -623,8 +623,8 @@ void Plunger::RenderSetup()
       // For the flat plunger, we render every frame as a simple
       // flat rectangle.  This requires four vertices for the corners,
       // and two triangles -> 6 indices.
-      vtsPerFrame = 4;
-      indicesPerFrame = 6;
+      m_vtsPerFrame = 4;
+      m_indicesPerFrame = 6;
    }
    else
    {
@@ -633,10 +633,9 @@ void Plunger::RenderSetup()
       // also need to render the spring:  this consists of 3
       // spirals, where each sprial has 'springLoops' loops
       // times 'circlePoints' vertices.
-      circlePoints = 24;
       latheVts = lathePoints * circlePoints;
-      springVts = int((springLoops + springEndLoops) * circlePoints) * 3;
-      vtsPerFrame = latheVts + springVts;
+      springVts = int((springLoops + springEndLoops) * (float)circlePoints) * 3;
+      m_vtsPerFrame = latheVts + springVts;
 
       // For the lathed section, we need two triangles == 6
       // indices for every point on every lathe circle past
@@ -662,15 +661,15 @@ void Plunger::RenderSetup()
 
       // the total number of indices is simply the sum of the
       // lathe and spring indices
-      indicesPerFrame = latheIndices + springIndices;
+      m_indicesPerFrame = latheIndices + springIndices;
    }
 
    // figure the relative spring gauge, in terms of the overall width
-   float springGaugeRel = springGauge / m_d.m_width;
+   const float springGaugeRel = springGauge / m_d.m_width;
 
    if (vertexBuffer)
       vertexBuffer->release();
-   pd3dDevice->CreateVertexBuffer(cframes*vtsPerFrame, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
+   pd3dDevice->CreateVertexBuffer(m_cframes*m_vtsPerFrame, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -680,7 +679,7 @@ void Plunger::RenderSetup()
    // Build the animation frames.  We have 'cframes' frames total.  The 0th frame
    // shows the plunger in the maximum retracted position; the cframes-1'th frame
    // is the maximum forward position.
-   for (int i = 0; i < cframes; i++, ptr += vtsPerFrame)
+   for (int i = 0; i < m_cframes; i++, ptr += m_vtsPerFrame)
    {
       const float ytip = beginy + dyPerFrame*(float)i;
 
@@ -699,7 +698,7 @@ void Plunger::RenderSetup()
          // Go down the long axis, adding a vertex for each point
          // in the descriptor list at the current lathe angle.
          if (tu > 1.0f) tu -= 1.0f;
-         const float angle = (float)(M_PI*2.0 / circlePoints)*(float)l;
+         const float angle = ((float)(M_PI*2.0) / (float)circlePoints)*(float)l;
          const float sn = sinf(angle);
          const float cs = cosf(angle);
          const PlungerCoord *c = desc->c;
@@ -708,7 +707,7 @@ void Plunger::RenderSetup()
          {
             // get the current point's coordinates
             float y = c->y + ytip;
-            float r = c->r;
+            const float r = c->r;
             float tv = c->tv;
 
             // the last coordinate is always the bottom of the rod
@@ -724,7 +723,7 @@ void Plunger::RenderSetup()
                // position and scale in each frame, so we need to figure the
                // proportional point of the texture at our cut-off point on
                // the object surface.
-               float ratio = (float(i) * inv_scale);
+               const float ratio = float(i) * inv_scale;
                tv = (pm - 1)->tv + (tv - (pm - 1)->tv)*ratio;
             }
 
@@ -781,7 +780,7 @@ void Plunger::RenderSetup()
          // cell and the fully retracted image in the rightmost cell.  Our frame
          // numbering is just the reverse, so figure the cell number in right-to-left
          // order to simplify the texture mapping calculations.
-         int cellIdx = srcCells - 1 - int((i * float(srcCells) / float(cframes)) + 0.5f);
+         int cellIdx = srcCells - 1 - int(((float)i * float(srcCells) / float(m_cframes)) + 0.5f);
          if (cellIdx < 0) cellIdx = 0;
 
          // Figure the texture coordinates.
@@ -824,21 +823,20 @@ void Plunger::RenderSetup()
          // (rody) position to figure the spring length.
          const int offset = circlePoints * lathePoints;
          const float y0 = ptr[offset - 2].y;
-         float y1 = rody;
-         int n = int((springLoops + springEndLoops) * circlePoints);
-         const int nEnd = int(springEndLoops * circlePoints);
+         const float y1 = rody;
+         int n = int((springLoops + springEndLoops) * (float)circlePoints);
+         const int nEnd = int(springEndLoops * (float)circlePoints);
          const int nMain = n - nEnd;
          const float yEnd = springEndLoops * springGauge * springMinSpacing;
          const float dyMain = (y1 - y0 - yEnd) / (float)(nMain - 1);
          const float dyEnd = yEnd / (float)(nEnd - 1);
          float dy = dyEnd;
          Vertex3D_NoTex2 * pm = &ptr[offset];
-         const float TWOPI = float(M_PI*2.0);
-         const float dtheta = TWOPI / (float)(circlePoints - 1) + (float)M_PI / (float)(n - 1);
+         const float dtheta = float(M_PI*2.0) / (float)(circlePoints - 1) + (float)M_PI / (float)(n - 1);
          for (float theta = (float)M_PI, y = y0; n != 0; --n, theta += dtheta, y += dy)
          {
             if (n == nMain) dy = dyMain;
-            if (theta >= TWOPI) theta -= TWOPI;
+            if (theta >= float(M_PI*2.0)) theta -= float(M_PI*2.0);
             const float sn = sinf(theta);
             const float cs = cosf(theta);
 
@@ -876,12 +874,12 @@ void Plunger::RenderSetup()
             ++pm;
          }
 
-         y1 += 0;
+         //y1 += 0;
       }
    }
 
    // set up the vertex index list
-   WORD * const indices = new WORD[indicesPerFrame];
+   WORD * const indices = new WORD[m_indicesPerFrame];
    int k = 0;
 
    // set up the vertex list for the lathe circles
