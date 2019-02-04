@@ -26,10 +26,6 @@
 #endif
 #pragma comment(lib, "dxerr.lib")       // TODO: put into build system
 
-#if _MSC_VER <= 1700
- #define VerSetConditionMask(_m_,_t_,_c_) (_m_|(_c_<<(1<<_t_))) //!! does not work with VER_SERVICEPACKMAJOR! (see below)
-#endif
-
 static bool IsWindowsVistaOr7()
 {
 	OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
@@ -252,7 +248,7 @@ void TextureManager::UnloadAll()
 
 int getNumberOfDisplays()
 {
-   return  GetSystemMetrics(SM_CMONITORS);
+   return GetSystemMetrics(SM_CMONITORS);
 }
 
 void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
@@ -397,7 +393,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
 void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 {
-   m_adapter = getNumberOfDisplays() > adapterIndex ? adapterIndex : 0;
+   m_adapter = getNumberOfDisplays() > (int)adapterIndex ? adapterIndex : 0;
 
 #ifdef USE_D3D9EX
    m_pD3DEx = NULL;
@@ -579,7 +575,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
       m_pD3DDeviceEx->QueryInterface(__uuidof(IDirect3DDevice9), reinterpret_cast<void**>(&m_pD3DDevice));
 
       // Get the display mode so that we can report back the actual refresh rate.
-      CHECKD3D(m_pD3DDeviceEx->GetDisplayModeEx(0, &mode, NULL));
+      CHECKD3D(m_pD3DDeviceEx->GetDisplayModeEx(0, &mode, NULL)); //!! what is the actual correct value for the swapchain here?
 
       refreshrate = mode.RefreshRate;
    }
@@ -718,47 +714,23 @@ bool RenderDevice::LoadShaders()
     bool shaderCompilationOkay = true;
 
     basicShader = new Shader(this);
-#if _MSC_VER >= 1700
     shaderCompilationOkay = basicShader->Load(g_basicShaderCode, sizeof(g_basicShaderCode)) && shaderCompilationOkay;
-#else
-    shaderCompilationOkay = basicShader->Load(basicShaderCode, sizeof(basicShaderCode)) && shaderCompilationOkay;
-#endif
 
     DMDShader = new Shader(this);
-#if _MSC_VER >= 1700
     shaderCompilationOkay = DMDShader->Load(g_dmdShaderCode, sizeof(g_dmdShaderCode)) && shaderCompilationOkay;
-#else
-    shaderCompilationOkay = DMDShader->Load(dmdShaderCode, sizeof(dmdShaderCode)) && shaderCompilationOkay;
-#endif
 
     FBShader = new Shader(this);
-#if _MSC_VER >= 1700
     shaderCompilationOkay = FBShader->Load(g_FBShaderCode, sizeof(g_FBShaderCode)) && shaderCompilationOkay;
-#else
-    shaderCompilationOkay = FBShader->Load(FBShaderCode, sizeof(FBShaderCode)) && shaderCompilationOkay;
-#endif
 
     flasherShader = new Shader(this);
-#if _MSC_VER >= 1700
     shaderCompilationOkay = flasherShader->Load(g_flasherShaderCode, sizeof(g_flasherShaderCode)) && shaderCompilationOkay;
-#else
-    shaderCompilationOkay = flasherShader->Load(flasherShaderCode, sizeof(flasherShaderCode)) && shaderCompilationOkay;
-#endif
 
     lightShader = new Shader(this);
-#if _MSC_VER >= 1700
     shaderCompilationOkay = lightShader->Load(g_lightShaderCode, sizeof(g_lightShaderCode)) && shaderCompilationOkay;
-#else
-    shaderCompilationOkay = lightShader->Load(lightShaderCode, sizeof(lightShaderCode)) && shaderCompilationOkay;
-#endif
 
 #ifdef SEPARATE_CLASSICLIGHTSHADER
     classicLightShader = new Shader(this);
-#if _MSC_VER >= 1700
     shaderCompilationOkay = classicLightShader->Load(g_classicLightShaderCode, sizeof(g_classicLightShaderCode)) && shaderCompilationOkay;
-#else
-    shaderCompilationOkay = classicLightShader->Load(classicLightShaderCode, sizeof(classicLightShaderCode)) && shaderCompilationOkay;
-#endif
 #endif
 
     if (!shaderCompilationOkay)
