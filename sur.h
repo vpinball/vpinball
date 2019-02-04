@@ -9,14 +9,7 @@ val = val + _xs_doublemagic;
 return ((int*)&val)[0];
 }*/
 
-#if _MSC_VER >= 1800
 #define RoundToInt lround
-#else
-__forceinline int RoundToInt(const float val)
-{
-   return (int)(val + ((val < 0.0f) ? -0.5f : 0.5f));
-}
-#endif
 
 #define SCALEXf(x) RoundToInt(((x) - m_offx)*m_zoom)
 #define SCALEYf(y) RoundToInt(((y) - m_offy)*m_zoom)
