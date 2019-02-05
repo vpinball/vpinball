@@ -636,17 +636,17 @@ void Hit3DPoly::Collide(const CollisionEvent& coll)
 
       pball->Collide3DWall(m_normal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
-      if (dot <= -m_threshold)
+      if (dot <= -m_threshold && m_obj != NULL)
       {
           if (m_ObjType == ePrimitive)
           {
-             ((Primitive*)m_obj)->m_d.m_currentHitThreshold = -dot;
+             ((Primitive*)m_obj)->m_currentHitThreshold = -dot;
              FireHitEvent(pball);
           }
           else if (m_ObjType == eHitTarget && m_fe && ((HitTarget*)m_obj)->m_d.m_isDropped == false)
           {
               ((HitTarget*)m_obj)->m_hitEvent = true;
-              ((HitTarget*)m_obj)->m_d.m_currentHitThreshold = -dot;
+              ((HitTarget*)m_obj)->m_currentHitThreshold = -dot;
               FireHitEvent(pball);
           }
       }
@@ -807,17 +807,17 @@ void HitTriangle::Collide(const CollisionEvent& coll)
 
    pball->Collide3DWall(m_normal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
-   if (dot <= -m_threshold)
+   if (dot <= -m_threshold && m_obj != NULL)
    {
       if (m_ObjType == ePrimitive)
       {
-         ((Primitive*)m_obj)->m_d.m_currentHitThreshold = -dot;
+         ((Primitive*)m_obj)->m_currentHitThreshold = -dot;
          FireHitEvent(pball);
       }
       else if (m_ObjType == eHitTarget && m_fe && ((HitTarget*)m_obj)->m_d.m_isDropped == false)
       {
           ((HitTarget*)m_obj)->m_hitEvent = true;
-          ((HitTarget*)m_obj)->m_d.m_currentHitThreshold = -dot;
+          ((HitTarget*)m_obj)->m_currentHitThreshold = -dot;
           FireHitEvent(pball);
       }
    }
@@ -1011,17 +1011,17 @@ void HitLine3D::Collide(const CollisionEvent& coll)
    const float dot = hitnormal.Dot(pball->m_vel);
    pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
-   if (dot <= -m_threshold)
+   if (dot <= -m_threshold && m_obj != NULL)
    {
        if (m_ObjType == ePrimitive)
        {
-          ((Primitive*)m_obj)->m_d.m_currentHitThreshold = -dot;
+          ((Primitive*)m_obj)->m_currentHitThreshold = -dot;
           FireHitEvent(pball);
        }
        else if (m_ObjType == eHitTarget && m_fe && ((HitTarget*)m_obj)->m_d.m_isDropped == false)
        {
            ((HitTarget*)m_obj)->m_hitEvent = true;
-           ((HitTarget*)m_obj)->m_d.m_currentHitThreshold = -dot;
+           ((HitTarget*)m_obj)->m_currentHitThreshold = -dot;
            FireHitEvent(pball);
        }
    }

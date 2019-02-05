@@ -33,7 +33,6 @@ public:
    TimerDataRoot m_tdr;
 
    float m_threshold;			// speed at which ball needs to hit to register a hit
-   float m_currentHitThreshold;
 
    float m_elasticity;
    float m_elasticityFalloff;
@@ -200,6 +199,7 @@ public:
    unsigned int     m_numVertices;
    unsigned int     m_numIndices;
    bool             m_hitEvent;
+   float            m_currentHitThreshold;
 
 private:        // private member functions
 
