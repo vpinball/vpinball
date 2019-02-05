@@ -71,8 +71,6 @@ public:
    float m_friction;
    float m_scatter;
 
-   float m_currentHitThreshold; // while playing and the ball hits the mesh the hit threshold is updated here
-
    float m_depthBias;      // for determining depth sorting
 
    float m_edgeFactorUI;   // for drawing the mesh in the editorUI
@@ -310,6 +308,7 @@ public:
    float m_speed;
    bool m_DoAnimation;
    bool m_Endless;
+   float m_currentHitThreshold; // while playing and the ball hits the mesh the hit threshold is updated here
 
 private:        // private member functions
 

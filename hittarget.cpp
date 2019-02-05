@@ -1765,7 +1765,7 @@ STDMETHODIMP HitTarget::put_OverwritePhysics(VARIANT_BOOL newVal)
 
 STDMETHODIMP HitTarget::get_HitThreshold(float *pVal)
 {
-   *pVal = m_d.m_currentHitThreshold;
+   *pVal = m_currentHitThreshold;
 
    return S_OK;
 }
