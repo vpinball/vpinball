@@ -481,11 +481,11 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_RESETCONTENT, 0, 0);
 
-   char displayName[256];
-   for (size_t dispConf = displays.begin(); dispConf != displays.end(); dispConf++)
+   for (std::vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); dispConf++)
    {
       if (display == -1 && dispConf->isPrimary)
          display = dispConf->display;
+      char displayName[256];
       sprintf_s(displayName, "Display %d%s %dx%d %s", dispConf->display + 1, (dispConf->isPrimary) ? "*" : "", dispConf->width, dispConf->height, dispConf->GPU_Name);
       SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)displayName);
    }

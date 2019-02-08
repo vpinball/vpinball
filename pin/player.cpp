@@ -1287,11 +1287,7 @@ void Player::UpdateBallShaderMatrix()
 void Player::InitBallShader()
 {
    ballShader = new Shader(m_pin3d.m_pd3dPrimaryDevice);
-#if _MSC_VER >= 1700
    ballShader->Load(g_ballShaderCode, sizeof(g_ballShaderCode));
-#else
-   ballShader->Load(ballShaderCode, sizeof(ballShaderCode));
-#endif
 
    UpdateBallShaderMatrix();
 

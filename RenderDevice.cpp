@@ -329,16 +329,16 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
    for (int i = 0;i < adapterCount;++i) {
       D3DADAPTER_IDENTIFIER9 adapter;
       pD3D->GetAdapterIdentifier(i, 0, &adapter);
-      size_t display = displayMap.find(adapter.DeviceName);
+      std::map<std::string, DisplayConfig>::iterator display = displayMap.find(adapter.DeviceName);
       if (display != displayMap.end()) {
          display->second.adapter = i;
-         strncpy(display->second.GPU_Name, adapter.Description, MAX_DEVICE_IDENTIFIER_STRING);
+         strncpy_s(display->second.GPU_Name, adapter.Description, MAX_DEVICE_IDENTIFIER_STRING);
       }
    }
    SAFE_RELEASE(pD3D);
    // Apply the same numbering as windows
    int i = 0;
-   for (size_t display = displayMap.begin(); display != displayMap.end(); display++)
+   for (std::map<std::string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); display++)
    {
       if (display->second.adapter >= 0) {
          display->second.display = i;
@@ -353,7 +353,7 @@ bool getDisplaySetupByID(const int display, int &x, int &y, int &width, int &hei
 {
    std::vector<DisplayConfig> displays;
    getDisplayList(displays);
-   for (size_t displayConf = displays.begin();displayConf != displays.end(); displayConf++) {
+   for (std::vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); displayConf++) {
       if ((display == -1 && displayConf->isPrimary) || display == displayConf->display) {
          x = displayConf->left;
          y = displayConf->top;
@@ -373,7 +373,7 @@ int getPrimaryDisplay()
 {
    std::vector<DisplayConfig> displays;
    getDisplayList(displays);
-   for (size_t displayConf = displays.begin();displayConf != displays.end(); displayConf++) {
+   for (std::vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); displayConf++) {
       if (displayConf->isPrimary) {
          return displayConf->adapter;
       }
