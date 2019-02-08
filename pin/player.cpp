@@ -2459,8 +2459,8 @@ void Player::InitPlayfieldWindow()
    int x = 0;
    int y = 0;
 
-   int display = GetRegIntWithDefault("Player", "Display", 0);
-   display = display < getNumberOfDisplays() ? display : 0;
+   int display = GetRegIntWithDefault("Player", "Display", -1);
+   display = display < getNumberOfDisplays() ? display : -1;
 
    if (m_fFullScreen)
    {
@@ -2472,11 +2472,7 @@ void Player::InitPlayfieldWindow()
    }
    else
    {
-      if (!getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight)) {
-         m_screenwidth = GetSystemMetrics(SM_CXSCREEN);
-         m_screenheight = GetSystemMetrics(SM_CYSCREEN);
-         display = 0;
-      }
+      getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight);
       m_refreshrate = 0; // The default
 
       // constrain window to screen

@@ -21,10 +21,24 @@ struct VideoMode
    int refreshrate;
 };
 
+struct DisplayConfig
+{
+   int display;
+   int adapter;
+   int top;
+   int left;
+   int width;
+   int height;
+   bool isPrimary;
+   char DeviceName[32];
+   char GPU_Name[MAX_DEVICE_IDENTIFIER_STRING];
+};
+
 int getNumberOfDisplays();
 void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes);
 bool getDisplaySetupByID(const int display, int &x, int &y, int &width, int &height);
-
+int getDisplayList(std::vector<DisplayConfig>& displays);
+int getPrimaryDisplay();
 
 enum TransformStateType {
    TRANSFORMSTATE_WORLD = D3DTS_WORLD,

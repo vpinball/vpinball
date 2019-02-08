@@ -290,38 +290,97 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
    SAFE_RELEASE(d3d);
 }
 
-struct monitorData {
-   int display;
-   int count;
-   MONITORINFO info;
-};
-
-BOOL CALLBACK MonitorEnumProc(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __in  LPRECT lprcMonitor, __in  LPARAM dwData)
+BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __in  LPRECT lprcMonitor, __in  LPARAM dwData)
 {
-   monitorData* data = reinterpret_cast<monitorData*>(dwData);
-   if (data->display == data->count)
-      GetMonitorInfo(hMonitor, &data->info);
-   data->count++;
+   std::map<std::string,DisplayConfig>* data = reinterpret_cast<std::map<std::string,DisplayConfig>*>(dwData);
+   DisplayConfig config;
+   MONITORINFOEX info;
+   info.cbSize = sizeof(MONITORINFOEX);
+   GetMonitorInfo(hMonitor, &info);
+   config.top = info.rcMonitor.top;
+   config.left = info.rcMonitor.left;
+   config.width = info.rcMonitor.right - info.rcMonitor.left;
+   config.height = info.rcMonitor.bottom - info.rcMonitor.top;
+   config.isPrimary = (config.top == 0) && (config.left == 0);
+   config.display = data->size(); // This number does neither map to the number form display settings nor something else.
+   config.adapter = -1;
+   memcpy(config.DeviceName, info.szDevice, 32); // Internal display name e.g. "\\\\.\\DISPLAY1"
+   data->insert(std::pair<std::string, DisplayConfig>(std::string(config.DeviceName), config));
    return TRUE;
+}
+
+int getDisplayList(std::vector<DisplayConfig>& displays)
+{
+   displays.clear();
+   std::map<std::string, DisplayConfig> displayMap;
+   // Get the resolution of all enabled displays.
+   EnumDisplayMonitors(NULL, NULL, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
+   DISPLAY_DEVICE DispDev;
+   ZeroMemory(&DispDev, sizeof(DispDev));
+   DispDev.cb = sizeof(DispDev);
+   IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
+   if (pD3D == NULL)
+   {
+      ShowError("Could not create D3D9 object.");
+      throw 0;
+   }
+   // Map the displays to the DX9 adapter. Otherwise this leads to an performance impact on systems with multiple GPUs
+   int adapterCount = pD3D->GetAdapterCount();
+   for (int i = 0;i < adapterCount;++i) {
+      D3DADAPTER_IDENTIFIER9 adapter;
+      pD3D->GetAdapterIdentifier(i, 0, &adapter);
+      size_t display = displayMap.find(adapter.DeviceName);
+      if (display != displayMap.end()) {
+         display->second.adapter = i;
+         strncpy(display->second.GPU_Name, adapter.Description, MAX_DEVICE_IDENTIFIER_STRING);
+      }
+   }
+   SAFE_RELEASE(pD3D);
+   // Apply the same numbering as windows
+   int i = 0;
+   for (size_t display = displayMap.begin(); display != displayMap.end(); display++)
+   {
+      if (display->second.adapter >= 0) {
+         display->second.display = i;
+         displays.push_back(display->second);
+      }
+      i++;
+   }
+   return i;
 }
 
 bool getDisplaySetupByID(const int display, int &x, int &y, int &width, int &height)
 {
-   monitorData data;
-   data.count = 0;
-   data.display = display;
-   data.info.cbSize = sizeof(MONITORINFO);
-   EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, reinterpret_cast<LPARAM>(&data));
-   if (data.count > data.display) {
-      x = data.info.rcMonitor.left;
-      y = data.info.rcMonitor.top;
-      width = data.info.rcMonitor.right - data.info.rcMonitor.left;
-      height = data.info.rcMonitor.bottom - data.info.rcMonitor.top;
-      return width > 0 && height > 0;
+   std::vector<DisplayConfig> displays;
+   getDisplayList(displays);
+   for (size_t displayConf = displays.begin();displayConf != displays.end(); displayConf++) {
+      if ((display == -1 && displayConf->isPrimary) || display == displayConf->display) {
+         x = displayConf->left;
+         y = displayConf->top;
+         width = displayConf->width;
+         height = displayConf->height;
+         return true;
+      }
    }
-   else
-      return false;
+   x = 0;
+   y = 0;
+   width = GetSystemMetrics(SM_CXSCREEN);
+   height = GetSystemMetrics(SM_CYSCREEN);
+   return false;
 }
+
+int getPrimaryDisplay()
+{
+   std::vector<DisplayConfig> displays;
+   getDisplayList(displays);
+   for (size_t displayConf = displays.begin();displayConf != displays.end(); displayConf++) {
+      if (displayConf->isPrimary) {
+         return displayConf->adapter;
+      }
+   }
+   return 0;
+}
+
 ////////////////////////////////////////////////////////////////////
 
 #define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); MessageBox(NULL, ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
@@ -393,8 +452,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
 void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 {
-   m_adapter = getNumberOfDisplays() > (int)adapterIndex ? adapterIndex : 0;
-
 #ifdef USE_D3D9EX
    m_pD3DEx = NULL;
    m_pD3DDeviceEx = NULL;
@@ -423,6 +480,8 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
          throw 0;
       }
    }
+
+   m_adapter = m_pD3D->GetAdapterCount() > (int)adapterIndex ? adapterIndex : 0;
 
    D3DDEVTYPE devtype = D3DDEVTYPE_HAL;
 
