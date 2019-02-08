@@ -210,11 +210,11 @@ void EnvmapPrecalc(const void* const __restrict envmap, const DWORD env_xres, co
 
 HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl)
 {
-   const unsigned int display = GetRegIntWithDefault("Player", "Display", 0);
+   const int display = GetRegIntWithDefault("Player", "Display", 0);
    std::vector<DisplayConfig> displays;
    getDisplayList(displays);
    int adapter = 0;
-   for (size_t dispConf = displays.begin(); dispConf != displays.end(); dispConf++)
+   for (std::vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); dispConf++)
       if (display == dispConf->display) adapter = dispConf->adapter;
 
     m_pd3dPrimaryDevice = new RenderDevice(m_hwnd, m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, VSync, m_useAA, stereo3D, FXAA, ss_refl, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
@@ -261,13 +261,13 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
     if (m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && useAO)
     {
         HRESULT hr;
-        hr = m_pd3dPrimaryDevice->GetCoreDevice()->CreateTexture(m_viewPort.Width, m_viewPort.Height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackTmpBuffer, NULL);
+        hr = m_pd3dPrimaryDevice->GetCoreDevice()->CreateTexture(m_viewPort.Width, m_viewPort.Height, 1, D3DUSAGE_RENDERTARGET, (D3DFORMAT)colorFormat::GREY8, (D3DPOOL)memoryPool::DEFAULT, &m_pddsAOBackTmpBuffer, NULL);
         if (FAILED(hr))
         {
             ShowError("Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
             return E_FAIL;
         }
-        hr = m_pd3dPrimaryDevice->GetCoreDevice()->CreateTexture(m_viewPort.Width, m_viewPort.Height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackBuffer, NULL);
+        hr = m_pd3dPrimaryDevice->GetCoreDevice()->CreateTexture(m_viewPort.Width, m_viewPort.Height, 1, D3DUSAGE_RENDERTARGET, (D3DFORMAT)colorFormat::GREY8, (D3DPOOL)memoryPool::DEFAULT, &m_pddsAOBackBuffer, NULL);
         if (FAILED(hr))
         {
             ShowError("Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
@@ -448,7 +448,7 @@ void Pin3D::DrawBackground()
       : NULL;
    if (pin)
    {
-      m_pd3dPrimaryDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L);
+      m_pd3dPrimaryDevice->Clear(0, NULL, clearType::ZBUFFER, 0, 1.0f, 0L);
 
       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
       m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_FALSE);
@@ -469,7 +469,7 @@ void Pin3D::DrawBackground()
    else
    {
       const D3DCOLOR d3dcolor = COLORREF_to_D3DCOLOR(ptable->m_colorbackdrop);
-      m_pd3dPrimaryDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, d3dcolor, 1.0f, 0L);
+      m_pd3dPrimaryDevice->Clear(0, NULL, clearType::TARGET | clearType::ZBUFFER, d3dcolor, 1.0f, 0L);
    }
 }
 
