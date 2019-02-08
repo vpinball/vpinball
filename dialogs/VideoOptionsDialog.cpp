@@ -471,22 +471,22 @@ BOOL VideoOptionsDialog::OnInitDialog()
    if (hr != S_OK)
       refreshrate = 0; // The default
 
+   std::vector<DisplayConfig> displays;
+   getDisplayList(displays);
    int display;
-   int numDisplays = getNumberOfDisplays();
+
    hr = GetRegInt("Player", "Display", &display);
-   if ((hr != S_OK) || (numDisplays <= display))
-      display = 0; // The default
+   if ((hr != S_OK) || ((int)displays.size() <= display))
+      display = -1;
 
    SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_RESETCONTENT, 0, 0);
+
    char displayName[256];
-   DISPLAY_DEVICE DispDev;
-   ZeroMemory(&DispDev, sizeof(DispDev));
-   DispDev.cb = sizeof(DispDev);
-   for (int i = 0;i < numDisplays;++i) {
-      if (EnumDisplayDevices(NULL, i, &DispDev, 0))
-         sprintf_s(displayName, "Display %d %s", (i + 1), DispDev.DeviceString);
-      else
-         sprintf_s(displayName, "Display %d", (i + 1));
+   for (size_t dispConf = displays.begin(); dispConf != displays.end(); dispConf++)
+   {
+      if (display == -1 && dispConf->isPrimary)
+         display = dispConf->display;
+      sprintf_s(displayName, "Display %d%s %dx%d %s", dispConf->display + 1, (dispConf->isPrimary) ? "*" : "", dispConf->width, dispConf->height, dispConf->GPU_Name);
       SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)displayName);
    }
    SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_SETCURSEL, display, 0);
@@ -582,11 +582,7 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          int screenheight;
          int x, y;
          const int display = SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
-         if (!getDisplaySetupByID(display, x, y, screenwidth, screenheight)) {
-            screenwidth = GetSystemMetrics(SM_CXSCREEN);
-            screenheight = GetSystemMetrics(SM_CYSCREEN);
-         }
-
+         getDisplaySetupByID(display, x, y, screenwidth, screenheight);
 
          //if (indx != -1)
          //  indexcur = indx;

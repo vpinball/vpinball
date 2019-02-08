@@ -211,10 +211,15 @@ void EnvmapPrecalc(const void* const __restrict envmap, const DWORD env_xres, co
 HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl)
 {
    const unsigned int display = GetRegIntWithDefault("Player", "Display", 0);
+   std::vector<DisplayConfig> displays;
+   getDisplayList(displays);
+   int adapter = 0;
+   for (size_t dispConf = displays.begin(); dispConf != displays.end(); dispConf++)
+      if (display == dispConf->display) adapter = dispConf->adapter;
 
     m_pd3dPrimaryDevice = new RenderDevice(m_hwnd, m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, VSync, m_useAA, stereo3D, FXAA, ss_refl, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
     try {
-        m_pd3dPrimaryDevice->CreateDevice(refreshrate, display);
+        m_pd3dPrimaryDevice->CreateDevice(refreshrate, adapter);
     }
     catch (...) {
         return E_FAIL;
