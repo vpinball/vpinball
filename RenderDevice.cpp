@@ -254,6 +254,10 @@ int getNumberOfDisplays()
 void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
 {
    modes.clear();
+
+   if (adapter >= getNumberOfDisplays())
+      return;
+
    IDirect3D9 *d3d = Direct3DCreate9(D3D_SDK_VERSION);
    if (d3d == NULL)
    {
@@ -261,8 +265,6 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
       throw 0;
    }
 
-   if (adapter >= getNumberOfDisplays())
-      return;
 
    //for (int j = 0; j < 2; ++j)
    const int j = 0; // limit to 32bit only nowadays
