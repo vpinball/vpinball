@@ -751,7 +751,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.x = 0;
       m_th1.stepX = 0;
       m_th1.processStepX = 1.0f;
-      m_th1.y = (float)m_lightSeqGridHeight - 1.0f;
+      m_th1.y = (float)(m_lightSeqGridHeight - 1);
       m_th1.stepY = -1.0f;
       m_th1.processStepY = 0;
       m_th1.length = m_lightSeqGridWidth;
@@ -794,7 +794,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       inverse = true;
    case SeqLeftOn:
       m_th1.type = eSeqLine;
-      m_th1.x = (float)m_lightSeqGridWidth - 1.0f;
+      m_th1.x = (float)(m_lightSeqGridWidth - 1);
       m_th1.stepX = -1.0f;
       m_th1.processStepX = 0;
       m_th1.y = 0;
@@ -825,10 +825,10 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       inverse = true;
    case SeqDiagUpLeftOn:
       m_th1.type = eSeqLine;
-      m_th1.x = (float)m_lightSeqGridWidth - 1.0f;
+      m_th1.x = (float)(m_lightSeqGridWidth - 1);
       m_th1.stepX = 0;
       m_th1.processStepX = -0.5f;
-      m_th1.y = (float)m_lightSeqGridHeight - 1.0f;
+      m_th1.y = (float)(m_lightSeqGridHeight - 1);
       m_th1.stepY = -1.0f;
       m_th1.processStepY = 1.0f;
       m_th1.length = m_lightSeqGridWidth * 2;
@@ -855,7 +855,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       inverse = true;
    case SeqDiagDownLeftOn:
       m_th1.type = eSeqLine;
-      m_th1.x = (float)m_lightSeqGridWidth - 1.0f;
+      m_th1.x = (float)(m_lightSeqGridWidth - 1);
       m_th1.stepX = 0;
       m_th1.processStepX = -0.5f;
       m_th1.y = 0;
@@ -985,7 +985,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.length = m_lightSeqGridHeight / 2 + m_GridYCenterAdjust;
       m_th1.frameCount = m_lightSeqGridWidth;
       m_th2.type = eSeqLine;
-      m_th2.x = (float)m_lightSeqGridWidth - 1.0f;
+      m_th2.x = (float)(m_lightSeqGridWidth - 1);
       m_th2.stepX = -1.0f;
       m_th2.processStepX = 0;
       m_th2.y = m_GridYCenter;
@@ -1001,7 +1001,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       inverse = true;
    case SeqStripe2HorizOn:
       m_th1.type = eSeqLine;
-      m_th1.x = (float)m_lightSeqGridWidth - 1.0f;
+      m_th1.x = (float)(m_lightSeqGridWidth - 1);
       m_th1.stepX = -1.0f;
       m_th1.processStepX = 0;
       m_th1.y = m_GridYCenter - 1.0f;
@@ -1029,7 +1029,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.x = m_GridXCenter - 1.0f;
       m_th1.stepX = 0;
       m_th1.processStepX = -1.0f;
-      m_th1.y = (float)m_lightSeqGridHeight - 1.0f;
+      m_th1.y = (float)(m_lightSeqGridHeight - 1);
       m_th1.stepY = -1.0f;
       m_th1.processStepY = 0;
       m_th1.length = m_lightSeqGridWidth / 2 + m_GridXCenterAdjust;
@@ -1062,7 +1062,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th2.x = m_GridXCenter;
       m_th2.stepX = 0;
       m_th2.processStepX = 1.0f;
-      m_th2.y = (float)m_lightSeqGridHeight - 1.0f;
+      m_th2.y = (float)(m_lightSeqGridHeight - 1);
       m_th2.stepY = -1.0f;
       m_th2.processStepY = 0;
       m_th2.length = m_lightSeqGridWidth / 2 + m_GridXCenterAdjust;
@@ -1083,7 +1083,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.length = m_lightSeqGridHeight / 2;
       m_th1.frameCount = m_lightSeqGridWidth;
       m_th2.type = eSeqLine;
-      m_th2.x = (float)m_lightSeqGridWidth - 1.0f;
+      m_th2.x = (float)(m_lightSeqGridWidth - 1);
       m_th2.stepX = -1.0f;
       m_th2.processStepX = 0;
       m_th2.y = 1.0f;
@@ -1099,7 +1099,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       inverse = true;
    case SeqHatch2HorizOn:
       m_th1.type = eSeqLine;
-      m_th1.x = (float)m_lightSeqGridWidth - 1.0f;
+      m_th1.x = (float)(m_lightSeqGridWidth - 1);
       m_th1.stepX = -1.0f;
       m_th1.processStepX = 0;
       m_th1.y = 0;
@@ -1127,7 +1127,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.x = 0;
       m_th1.stepX = 0;
       m_th1.processStepX = 2.0f;
-      m_th1.y = (float)m_lightSeqGridHeight - 1.0f;
+      m_th1.y = (float)(m_lightSeqGridHeight - 1);
       m_th1.stepY = -1.0f;
       m_th1.processStepY = 0;
       m_th1.length = m_lightSeqGridWidth / 2;
@@ -1160,7 +1160,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th2.x = 1.0f;
       m_th2.stepX = 0;
       m_th2.processStepX = 2.0f;
-      m_th2.y = (float)m_lightSeqGridHeight - 1.0f;
+      m_th2.y = (float)(m_lightSeqGridHeight - 1);
       m_th2.stepY = -1.0f;
       m_th2.processStepY = 0;
       m_th2.length = m_lightSeqGridWidth / 2;
@@ -1198,7 +1198,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 0;
       m_th1.stepAngle = 1.0f;
-      m_th1.processRadius = 1.0f;
+      m_th1.processRadiusNeg = false;
       m_th1.x = m_GridXCenter;
       m_th1.y = m_GridYCenter;
       m_th1.length = m_lightSeqGridWidth / 2 + m_GridXCenterAdjust + m_lightSeqGridHeight / 2 + m_GridYCenterAdjust;
@@ -1212,7 +1212,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 0;
       m_th1.stepAngle = -1.0f;
-      m_th1.processRadius = 1.0f;
+      m_th1.processRadiusNeg = false;
       m_th1.x = m_GridXCenter;
       m_th1.y = m_GridYCenter;
       m_th1.length = m_lightSeqGridWidth / 2 + m_GridXCenterAdjust + m_lightSeqGridHeight / 2 + m_GridYCenterAdjust;
@@ -1226,9 +1226,9 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 270.0f;
       m_th1.stepAngle = 1.0f;
-      m_th1.processRadius = 1.0f;
+      m_th1.processRadiusNeg = false;
       m_th1.x = m_GridXCenter;
-      m_th1.y = (float)m_lightSeqGridHeight - 1.0f;
+      m_th1.y = (float)(m_lightSeqGridHeight - 1);
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth + m_GridYCenterAdjust + m_GridXCenterAdjust;
       m_th1.frameCount = 180;
       break;
@@ -1240,9 +1240,9 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 90.0f;
       m_th1.stepAngle = -1.0f;
-      m_th1.processRadius = 1.0f;
+      m_th1.processRadiusNeg = false;
       m_th1.x = m_GridXCenter;
-      m_th1.y = (float)m_lightSeqGridHeight - 1.0f;
+      m_th1.y = (float)(m_lightSeqGridHeight - 1);
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth + m_GridYCenterAdjust + m_GridXCenterAdjust;
       m_th1.frameCount = 180;
       break;
@@ -1254,7 +1254,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 270.0f;
       m_th1.stepAngle = -1.0f;
-      m_th1.processRadius = 1.0f;
+      m_th1.processRadiusNeg = false;
       m_th1.x = m_GridXCenter;
       m_th1.y = 0;
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth + m_GridYCenterAdjust + m_GridXCenterAdjust;
@@ -1268,7 +1268,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 90.0f;
       m_th1.stepAngle = 1.0f;
-      m_th1.processRadius = 1.0f;
+      m_th1.processRadiusNeg = false;
       m_th1.x = m_GridXCenter;
       m_th1.y = 0;
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth + m_GridYCenterAdjust + m_GridXCenterAdjust;
@@ -1282,7 +1282,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 180.0f;
       m_th1.stepAngle = -1.0f;
-      m_th1.processRadius = 1.0f;
+      m_th1.processRadiusNeg = false;
       m_th1.x = 0;
       m_th1.y = m_GridYCenter;
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth + m_GridYCenterAdjust + m_GridXCenterAdjust;
@@ -1296,7 +1296,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 0;
       m_th1.stepAngle = 1.0f;
-      m_th1.processRadius = 1.0f;
+      m_th1.processRadiusNeg = false;
       m_th1.x = 0;
       m_th1.y = m_GridYCenter;
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth + m_GridYCenterAdjust + m_GridXCenterAdjust;
@@ -1310,8 +1310,8 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 180.0f;
       m_th1.stepAngle = -1.0f;
-      m_th1.processRadius = -1.0f;
-      m_th1.x = (float)m_lightSeqGridWidth - 1.0f;
+      m_th1.processRadiusNeg = true;
+      m_th1.x = (float)(m_lightSeqGridWidth - 1);
       m_th1.y = m_GridYCenter;
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth + m_GridYCenterAdjust + m_GridXCenterAdjust;
       m_th1.frameCount = 180;
@@ -1324,8 +1324,8 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 0;
       m_th1.stepAngle = 1.0f;
-      m_th1.processRadius = -1.0f;
-      m_th1.x = (float)m_lightSeqGridWidth - 1.0f;
+      m_th1.processRadiusNeg = true;
+      m_th1.x = (float)(m_lightSeqGridWidth - 1);
       m_th1.y = m_GridYCenter;
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth + m_GridYCenterAdjust + m_GridXCenterAdjust;
       m_th1.frameCount = 180;
@@ -1338,9 +1338,9 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 90.0f;
       m_th1.stepAngle = -1.0f;
-      m_th1.processRadius = 1.0f;
+      m_th1.processRadiusNeg = false;
       m_th1.x = 0;
-      m_th1.y = (float)m_lightSeqGridHeight - 1.0f;
+      m_th1.y = (float)(m_lightSeqGridHeight - 1);
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth;
       m_th1.frameCount = 90;
       break;
@@ -1352,9 +1352,9 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 0;
       m_th1.stepAngle = 1.0f;
-      m_th1.processRadius = 1.0f;
+      m_th1.processRadiusNeg = false;
       m_th1.x = 0;
-      m_th1.y = (float)m_lightSeqGridHeight - 1.0f;
+      m_th1.y = (float)(m_lightSeqGridHeight - 1);
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth;
       m_th1.frameCount = 90;
       break;
@@ -1366,9 +1366,9 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 90.0f;
       m_th1.stepAngle = 1.0f;
-      m_th1.processRadius = -1.0f;
-      m_th1.x = (float)m_lightSeqGridWidth - 1.0f;
-      m_th1.y = (float)m_lightSeqGridHeight - 1.0f;
+      m_th1.processRadiusNeg = true;
+      m_th1.x = (float)(m_lightSeqGridWidth - 1);
+      m_th1.y = (float)(m_lightSeqGridHeight - 1);
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth;
       m_th1.frameCount = 90;
       break;
@@ -1380,9 +1380,9 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 180.0f;
       m_th1.stepAngle = -1.0f;
-      m_th1.processRadius = -1.0f;
-      m_th1.x = (float)m_lightSeqGridWidth - 1.0f;
-      m_th1.y = (float)m_lightSeqGridHeight - 1.0f;
+      m_th1.processRadiusNeg = true;
+      m_th1.x = (float)(m_lightSeqGridWidth - 1);
+      m_th1.y = (float)(m_lightSeqGridHeight - 1);
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth;
       m_th1.frameCount = 90;
       break;
@@ -1394,7 +1394,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 180.0f;
       m_th1.stepAngle = -1.0f;
-      m_th1.processRadius = 1.0f;
+      m_th1.processRadiusNeg = false;
       m_th1.x = 0;
       m_th1.y = 0;
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth;
@@ -1408,7 +1408,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 90.0f;
       m_th1.stepAngle = 1.0f;
-      m_th1.processRadius = 1.0f;
+      m_th1.processRadiusNeg = false;
       m_th1.x = 0;
       m_th1.y = 0;
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth;
@@ -1422,8 +1422,8 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 0;
       m_th1.stepAngle = 1.0f;
-      m_th1.processRadius = -1.0f;
-      m_th1.x = (float)m_lightSeqGridWidth - 1.0f;
+      m_th1.processRadiusNeg = true;
+      m_th1.x = (float)(m_lightSeqGridWidth - 1);
       m_th1.y = 0;
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth;
       m_th1.frameCount = 90;
@@ -1436,8 +1436,8 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 90.0f;
       m_th1.stepAngle = -1.0f;
-      m_th1.processRadius = -1.0f;
-      m_th1.x = (float)m_lightSeqGridWidth - 1.0f;
+      m_th1.processRadiusNeg = true;
+      m_th1.x = (float)(m_lightSeqGridWidth - 1);
       m_th1.y = 0;
       m_th1.length = m_lightSeqGridHeight + m_lightSeqGridWidth;
       m_th1.frameCount = 90;
@@ -1450,7 +1450,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 0;
       m_th1.stepAngle = 1.0f;
-      m_th1.processRadius = 1.0f;
+      m_th1.processRadiusNeg = false;
       m_th1.x = m_GridXCenter;
       m_th1.y = m_GridYCenter - 1.0f;
       m_th1.length = m_lightSeqGridHeight / 2 + m_GridYCenterAdjust + m_lightSeqGridWidth / 2 + m_GridXCenterAdjust;
@@ -1458,7 +1458,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th2.type = eSeqRadar;
       m_th2.angle = (float)(180 - 1);
       m_th2.stepAngle = 1.0f;
-      m_th2.processRadius = 1.0f;
+      m_th2.processRadiusNeg = false;
       m_th2.x = m_GridXCenter;
       m_th2.y = m_GridYCenter;
       m_th2.length = m_lightSeqGridHeight / 2 + m_GridYCenterAdjust + m_lightSeqGridWidth / 2 + m_GridXCenterAdjust;
@@ -1472,7 +1472,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.type = eSeqRadar;
       m_th1.angle = 0;
       m_th1.stepAngle = -1.0f;
-      m_th1.processRadius = 1.0f;
+      m_th1.processRadiusNeg = false;
       m_th1.x = m_GridXCenter;
       m_th1.y = m_GridYCenter - 1.0f;
       m_th1.length = m_lightSeqGridHeight / 2 + m_GridYCenterAdjust + m_lightSeqGridWidth / 2 + m_GridXCenterAdjust;
@@ -1480,7 +1480,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th2.type = eSeqRadar;
       m_th2.angle = (float)(180 - 1);
       m_th2.stepAngle = -1.0f;
-      m_th2.processRadius = 1.0f;
+      m_th2.processRadiusNeg = false;
       m_th2.x = m_GridXCenter;
       m_th2.y = m_GridYCenter;
       m_th2.length = m_lightSeqGridHeight / 2 + m_GridYCenterAdjust + m_lightSeqGridWidth / 2 + m_GridXCenterAdjust;
@@ -1668,11 +1668,9 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
          const float sn4 = sinf(angle4);
          const float cs4 = cosf(angle4);
 
-         if (m_th1.processRadius == 1.0f)
-         {
             for (int i = 0; i < pTracer->length; ++i)
             {
-               const float fi = (float)i;
+               const float fi = m_th1.processRadiusNeg ? -(float)i : (float)i;
                float x = pTracer->x + sn*fi;
                float y = pTracer->y - cs*fi;
                VerifyAndSetGridElement((int)x, (int)y, State);
@@ -1686,26 +1684,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
                y = pTracer->y - cs4*fi;
                VerifyAndSetGridElement((int)x, (int)y, State);
             }
-         }
-         else
-         {
-            for (int i = 0; i < pTracer->length; ++i)
-            {
-               const float fi = (float)i;
-               float x = pTracer->x - sn*fi;
-               float y = pTracer->y + cs*fi;
-               VerifyAndSetGridElement((int)x, (int)y, State);
-               x = pTracer->x - sn2*fi;
-               y = pTracer->y + cs2*fi;
-               VerifyAndSetGridElement((int)x, (int)y, State);
-               x = pTracer->x - sn3*fi;
-               y = pTracer->y + cs3*fi;
-               VerifyAndSetGridElement((int)x, (int)y, State);
-               x = pTracer->x - sn4*fi;
-               y = pTracer->y + cs4*fi;
-               VerifyAndSetGridElement((int)x, (int)y, State);
-            }
-         }
+
          pTracer->frameCount -= 1;
          if (pTracer->frameCount == 0)
          {
@@ -1722,7 +1701,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
             {
                pTracer->angle -= 360.0f;
             }
-            if (pTracer->angle < 0)
+            if (pTracer->angle < 0.f)
             {
                pTracer->angle += 360.0f;
             }
