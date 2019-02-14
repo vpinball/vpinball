@@ -115,7 +115,7 @@ public:
 
       virtual ItemTypeEnum HitableGetItemType() const { return eItemBumper; }
 
-      void WriteRegDefaults();
+      virtual void WriteRegDefaults();
 
       PinTable *m_ptable;
 

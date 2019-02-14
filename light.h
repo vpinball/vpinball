@@ -155,7 +155,8 @@ public:
    virtual void UpdatePropertyPanes();
    virtual void AddPoint(int x, int y, const bool smooth);
 
-   void WriteRegDefaults();
+   virtual void WriteRegDefaults();
+
    void FreeBuffers();
 
    void InitShape();

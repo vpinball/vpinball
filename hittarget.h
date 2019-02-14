@@ -172,7 +172,7 @@ public:
    //STDMETHOD(get_Name)(BSTR *pVal) {return E_FAIL;}
 
    //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);
-   void WriteRegDefaults();
+   virtual void WriteRegDefaults();
    virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
    virtual bool IsTransparent() const;
@@ -209,7 +209,7 @@ private:        // private member functions
    bool BrowseFor3DMeshFile();
    void RenderObject();
    void UpdateTarget();
-   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool setHitObject = true);
+   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool setHitObject);
    void AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject = true);
 
    PropertyPane *m_propVisual;

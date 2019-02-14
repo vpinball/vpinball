@@ -397,9 +397,9 @@ void Gate::GetHitShapes(vector<HitObject*> &pvho)
    m_phitgate->m_twoWay = m_d.m_twoWay;
    m_phitgate->m_obj = (IFireEvents*)this;
    m_phitgate->m_fe = true;
-   pvho.push_back(m_phitgate);
-
    m_phitgate->m_fEnabled = m_d.m_fCollidable;
+
+   pvho.push_back(m_phitgate);
 
    if (m_d.m_fShowBracket)
    {

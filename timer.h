@@ -72,7 +72,7 @@ public:
    virtual void RenderBlueprint(Sur *psur, const bool solid);
    virtual ItemTypeEnum HitableGetItemType() const { return eItemTimer; }
 
-   void WriteRegDefaults();
+   virtual void WriteRegDefaults();
 
    STANDARD_EDITABLE_DECLARES(Timer, eItemTimer, TIMER, 3)
 

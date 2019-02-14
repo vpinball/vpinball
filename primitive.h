@@ -269,10 +269,8 @@ public:
    //STDMETHOD(get_Name)(BSTR *pVal) {return E_FAIL;}
 
    //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);
-   void WriteRegDefaults();
+   virtual void WriteRegDefaults();
    virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
-
-   PinTable *m_ptable;
 
    //!! here starts the more general primitive stuff:
 
@@ -297,6 +295,8 @@ public:
    void    RenderObject(RenderDevice *pd3dDevice);
 
    static INT_PTR CALLBACK ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+   PinTable *m_ptable;
 
    Mesh m_mesh;
 

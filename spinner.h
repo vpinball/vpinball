@@ -89,7 +89,7 @@ public:
    virtual ItemTypeEnum HitableGetItemType() const { return eItemSpinner; }
    virtual void ExportMesh(FILE *f);
 
-   void WriteRegDefaults();
+   virtual void WriteRegDefaults();
    void UpdatePlate(Vertex3D_NoTex2 * const vertBuffer);
    void UpdateUnitsInfo();
 
