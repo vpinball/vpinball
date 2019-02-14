@@ -127,7 +127,7 @@ public:
 
       void UpdatePhysicsSettings();
 
-      void WriteRegDefaults();
+      virtual void WriteRegDefaults();
 
       //DECLARE_NOT_AGGREGATABLE(Flipper) 
       // Remove the comment from the line above if you don't want your object to 

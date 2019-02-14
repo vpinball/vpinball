@@ -119,7 +119,7 @@ public:
    virtual void GetPointDialogPanes(vector<PropertyPane*> &pvproppane);
    // end IHaveDragPoints
 
-   void WriteRegDefaults();
+   virtual void WriteRegDefaults();
    void AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j);
    void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
    void UpdateUnitsInfo();

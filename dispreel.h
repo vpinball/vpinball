@@ -98,17 +98,17 @@ public:
 
    void        Animate();
 
-   void        WriteRegDefaults();
-
-   PinTable    *m_ptable;
-
-   DispReelData m_d;
-
-   float       m_renderwidth, m_renderheight;     // size of each reel (rendered)
+   virtual void WriteRegDefaults();
 
    DispReelAnimObject m_dispreelanim;
 
+   DispReelData m_d;
+
 private:
+   PinTable    *m_ptable;
+
+   float       m_renderwidth, m_renderheight;     // size of each reel (rendered)
+
    ReelInfo    m_reelInfo[MAX_REELS];
 
    float       m_reeldigitwidth;  // size of the individual reel digits (in bitmap form)

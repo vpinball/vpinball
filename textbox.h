@@ -77,7 +77,7 @@ public:
 
    void RenderText();
 
-   void WriteRegDefaults();
+   virtual void WriteRegDefaults();
 
 private:
    PinTable *m_ptable;

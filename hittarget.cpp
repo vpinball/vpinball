@@ -335,7 +335,7 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
                  rgv3D[i0],
                  rgv3D[i2],
                  rgv3D[i1] };
-             SetupHitObject(pvho, new HitTriangle(rgv3D2));
+             SetupHitObject(pvho, new HitTriangle(rgv3D2), true);
 
              AddHitEdge(pvho, addedEdges, i0, i1, rgv3D2[0], rgv3D2[2]);
              AddHitEdge(pvho, addedEdges, i1, i2, rgv3D2[2], rgv3D2[1]);
@@ -344,7 +344,7 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
 
           // add collision vertices
           for (unsigned i = 0; i < num_dropTargetHitPlaneVertices; ++i)
-             SetupHitObject(pvho, new HitPoint(rgv3D[i]));
+             SetupHitObject(pvho, new HitPoint(rgv3D[i]), true);
        }
     }
     else
@@ -362,7 +362,7 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
               Vertex3Ds(vertices[i0].x, vertices[i0].y, vertices[i0].z),
               Vertex3Ds(vertices[i2].x, vertices[i2].y, vertices[i2].z),
               Vertex3Ds(vertices[i1].x, vertices[i1].y, vertices[i1].z) };
-          SetupHitObject(pvho, new HitTriangle(rgv3D));
+          SetupHitObject(pvho, new HitTriangle(rgv3D), true);
 
           AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2]);
           AddHitEdge(pvho, addedEdges, i1, i2, rgv3D[2], rgv3D[1]);
@@ -371,7 +371,7 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
 
        // add collision vertices
        for (unsigned i = 0; i < m_numVertices; ++i)
-          SetupHitObject(pvho, new HitPoint(vertices[i]));
+          SetupHitObject(pvho, new HitPoint(vertices[i]), true);
     }
 }
 
@@ -412,13 +412,7 @@ void HitTarget::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const 
    obj->m_fEnabled = m_d.m_fCollidable;
    obj->m_ObjType = eHitTarget;
    obj->m_obj = (IFireEvents*)this;
-   if (setHitObject)
-   {
-      if (m_d.m_fUseHitEvent)
-         obj->m_fe = true;
-   }
-   else
-      obj->m_fe = false;
+   obj->m_fe = setHitObject && m_d.m_fUseHitEvent;
 
    pvho.push_back(obj);
    m_vhoCollidable.push_back(obj);	//remember hit components of primitive

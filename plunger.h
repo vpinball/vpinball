@@ -152,7 +152,7 @@ public:
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual ItemTypeEnum HitableGetItemType() const { return eItemPlunger; }
 
-   void WriteRegDefaults();
+   virtual void WriteRegDefaults();
 
    DECLARE_REGISTRY_RESOURCEID(IDR_PLUNGER)
    // ISupportsErrorInfo

@@ -30,7 +30,7 @@ struct DisplayConfig
    int width;
    int height;
    bool isPrimary;
-   char DeviceName[32];
+   char DeviceName[CCHDEVICENAME];
    char GPU_Name[MAX_DEVICE_IDENTIFIER_STRING];
 };
 

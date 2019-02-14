@@ -108,7 +108,7 @@ public:
 
    virtual void ClearForOverwrite();
 
-   void WriteRegDefaults();
+   virtual void WriteRegDefaults();
    void InitShape(float x, float y);
    void UpdateEditorView();
    void TriggerAnimationHit();

@@ -611,9 +611,7 @@ void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
    obj->m_ObjType = ePrimitive;
    obj->m_obj = (IFireEvents *)this;
    obj->m_e = true;
-
-   if (m_d.m_fHitEvent)
-       obj->m_fe = true;
+   obj->m_fe = m_d.m_fHitEvent;
 
    pvho.push_back(obj);
    m_vhoCollidable.push_back(obj); // remember hit components of primitive

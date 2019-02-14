@@ -117,7 +117,8 @@ public:
 
       virtual void UpdatePropertyPanes();
 
-      void WriteRegDefaults();
+      virtual void WriteRegDefaults();
+
       void UpdateMesh();
       void InitShape();
 
