@@ -56,7 +56,7 @@ struct _tracer {
    float	processStepY;
    float	radius;
    float	stepRadius;
-   float	processRadius;
+   bool		processRadiusNeg;
    float	angle;
    float	stepAngle;
 };
@@ -110,7 +110,7 @@ public:
    virtual void RenderBlueprint(Sur *psur, const bool solid);
    virtual ItemTypeEnum HitableGetItemType() const { return eItemLightSeq; }
 
-   void WriteRegDefaults();
+   virtual void WriteRegDefaults();
 
    STANDARD_EDITABLE_DECLARES(LightSeq, eItemLightSeq, LIGHTSEQ, 3)
 
@@ -157,14 +157,14 @@ public:
    STDMETHOD(Play)(/*[in]*/ SequencerState Animation, /*[in]*/ long TailLength, /*[in]*/ long Repeat, /*[in]*/ long Pause);
    STDMETHOD(StopPlay)();
 
-   PinTable           *m_ptable;
-   LightSeqData       m_d;
+   void		Animate();
 
    LightSeqAnimObject m_lightseqanim;
 
-   void		Animate();
-
 private:
+   PinTable           *m_ptable;
+   LightSeqData       m_d;
+
    void		SetupTracers(const SequencerState Animation, long TailLength, long Repeat, long Pause);
    bool		ProcessTracer(_tracer * const pTracer, const LightState State);
    void		SetAllLightsToState(const LightState State);
