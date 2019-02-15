@@ -487,12 +487,17 @@ public:
       }
    }
 
-   void SetFlasherData(const D3DXVECTOR4& color)
+   void SetFlasherData(const D3DXVECTOR4& color, const float mode)
    {
       if (currentFlasherData.x != color.x || currentFlasherData.y != color.y || currentFlasherData.z != color.z || currentFlasherData.w != color.w)
       {
          currentFlasherData = color;
          SetVector("alphaTestValueAB_filterMode_addBlend", &color);
+      }
+      if (currentFlasherMode != mode)
+      {
+         currentFlasherMode = mode;
+         SetFloat("flasherMode", mode);
       }
    }
 
@@ -597,8 +602,9 @@ private:
    float   currentAlphaTestValue;
    char    currentTechnique[64];
 
-   D3DXVECTOR4 currentFlasherColor; // both flasher only-data
+   D3DXVECTOR4 currentFlasherColor; // all flasher only-data
    D3DXVECTOR4 currentFlasherData;
+   float currentFlasherMode;
 
    D3DXVECTOR4 currentLightColor; // all light only-data
    D3DXVECTOR4 currentLightColor2;
