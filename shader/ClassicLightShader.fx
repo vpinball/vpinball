@@ -164,43 +164,43 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLO
 }
 
 technique light_with_texture_isMetal
-{ 
-   pass P0 
-   { 
+{
+   pass P0
+   {
       //       AlphaBlendEnable = true;
       //       SrcBlend = One;
       //       DestBlend = One;
       VertexShader = compile vs_3_0 vs_light_main();
-      PixelShader = compile ps_3_0 PS_LightWithTexel(1);
-   } 
+      PixelShader  = compile ps_3_0 PS_LightWithTexel(1);
+   }
 }
 
 technique light_with_texture_isNotMetal
-{ 
-   pass P0 
-   { 
+{
+   pass P0
+   {
       //       AlphaBlendEnable = true;
       //       SrcBlend = One;
       //       DestBlend = One;
       VertexShader = compile vs_3_0 vs_light_main();
-      PixelShader = compile ps_3_0 PS_LightWithTexel(0);
-   } 
+      PixelShader  = compile ps_3_0 PS_LightWithTexel(0);
+   }
 }
 
 technique light_without_texture_isMetal
-{ 
-   pass P0 
-   { 
+{
+   pass P0
+   {
       VertexShader = compile vs_3_0 vs_light_main();
-      PixelShader = compile ps_3_0 PS_LightWithoutTexel(1);
-   } 
+      PixelShader  = compile ps_3_0 PS_LightWithoutTexel(1);
+   }
 }
 
 technique light_without_texture_isNotMetal
-{ 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_light_main(); 
-      PixelShader = compile ps_3_0 PS_LightWithoutTexel(0);
-   } 
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_light_main();
+      PixelShader  = compile ps_3_0 PS_LightWithoutTexel(0);
+   }
 }

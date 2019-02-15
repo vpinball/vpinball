@@ -313,7 +313,7 @@ technique RenderBall_DecalMode
    pass p0
    {
       vertexshader = compile vs_3_0 vsBall();
-      pixelshader = compile ps_3_0 psBall(false, true);
+      pixelshader  = compile ps_3_0 psBall(false, true);
    }
 }
 
@@ -322,7 +322,7 @@ technique RenderBall_CabMode
    pass p0
    {
       vertexshader = compile vs_3_0 vsBall();
-      pixelshader = compile ps_3_0 psBall(true,false);
+      pixelshader  = compile ps_3_0 psBall(true,false);
    }
 }
 technique RenderBall_CabMode_DecalMode
@@ -330,14 +330,14 @@ technique RenderBall_CabMode_DecalMode
    pass p0
    {
       vertexshader = compile vs_3_0 vsBall();
-      pixelshader = compile ps_3_0 psBall(true,true);
+      pixelshader  = compile ps_3_0 psBall(true,true);
    }
 }
 
 /*technique RenderBallReflection
 {
-	pass p0 
-	{		
+	pass p0
+	{
 		vertexshader = compile vs_3_0 vsBallReflection();
 		pixelshader  = compile ps_3_0 psBallReflection();
 	}
@@ -345,8 +345,8 @@ technique RenderBall_CabMode_DecalMode
 
 technique RenderBallTrail
 {
-	pass p0 
-	{		
+	pass p0
+	{
 		vertexshader = compile vs_3_0 vsBallTrail();
 		pixelshader  = compile ps_3_0 psBallTrail();
 	}

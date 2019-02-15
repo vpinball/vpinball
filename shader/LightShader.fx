@@ -12,17 +12,17 @@ struct VS_LIGHTBULB_OUTPUT
    float3 tablePos : TEXCOORD0; // rely for backglass mode that z is initialized to 0!
 };
 
-// vertex shader is skipped for backglass elements, due to D3DDECLUSAGE_POSITIONT 
+// vertex shader is skipped for backglass elements, due to D3DDECLUSAGE_POSITIONT
 VS_LIGHTBULB_OUTPUT vs_lightbulb_main (in float4 vPosition : POSITION0/*,
-                                       float3 vNormal   : NORMAL0,
-                                       float2 tc        : TEXCOORD0*/)
+                                       in float3 vNormal   : NORMAL0,
+                                       in float2 tc        : TEXCOORD0*/)
 {
    VS_LIGHTBULB_OUTPUT Out;
 
    Out.pos = mul(vPosition, matWorldViewProj);
    Out.pos.z = max(Out.pos.z, 0.00001); // clamp lights to near clip plane to avoid them being partially clipped
    Out.tablePos = vPosition.xyz;
-   
+
    return Out; 
 }
 
@@ -37,7 +37,7 @@ float4 PS_BulbLight(in VS_LIGHTBULB_OUTPUT IN) : COLOR
 }
 
 technique bulb_light
-{ 
+{
    pass P0
    {
 		vertexshader = compile vs_3_0 vs_lightbulb_main();

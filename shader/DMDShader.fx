@@ -40,8 +40,8 @@ struct VS_OUTPUT
    float2 tex0 : TEXCOORD0;
 }; 
 
-VS_OUTPUT vs_main (float4 vPosition : POSITION0,
-                   float2 tc        : TEXCOORD0)
+VS_OUTPUT vs_main (in float4 vPosition : POSITION0,
+                   in float2 tc        : TEXCOORD0)
 { 
    VS_OUTPUT Out;
 
@@ -54,8 +54,8 @@ VS_OUTPUT vs_main (float4 vPosition : POSITION0,
 // transformation matrices (only used for flashers and backbox so far)
 float4x4 matWorldViewProj : WORLDVIEWPROJ;
 
-VS_OUTPUT vs_simple_world(float4 vPosition : POSITION0,
-                          float2 tc : TEXCOORD0)
+VS_OUTPUT vs_simple_world(in float4 vPosition : POSITION0,
+                          in float2 tc : TEXCOORD0)
 {
     VS_OUTPUT Out;
 
@@ -141,10 +141,10 @@ float4 ps_main_noDMD_notex(in VS_OUTPUT IN) : COLOR
 
 technique basic_DMD
 { 
-   pass P0 
+   pass P0
    {
-      VertexShader = compile vs_3_0 vs_main(); 
-      PixelShader = compile ps_3_0 ps_main_DMD();
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader  = compile ps_3_0 ps_main_DMD();
    }
 }
 
@@ -153,34 +153,34 @@ technique basic_DMD_world
     pass P0
     {
         VertexShader = compile vs_3_0 vs_simple_world();
-        PixelShader = compile ps_3_0 ps_main_DMD();
+        PixelShader  = compile ps_3_0 ps_main_DMD();
     }
 }
 
 
 technique basic_noDMD
 { 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_main(); 
-      PixelShader = compile ps_3_0 ps_main_noDMD();
-   } 
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader  = compile ps_3_0 ps_main_noDMD();
+   }
 }
 
 technique basic_noDMD_world
 { 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_simple_world(); 
-      PixelShader = compile ps_3_0 ps_main_noDMD();
-   } 
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_simple_world();
+      PixelShader  = compile ps_3_0 ps_main_noDMD();
+   }
 }
 
 technique basic_noDMD_notex
 { 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_main(); 
-      PixelShader = compile ps_3_0 ps_main_noDMD_notex();
-   } 
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader  = compile ps_3_0 ps_main_noDMD_notex();
+   }
 }

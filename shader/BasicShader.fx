@@ -61,7 +61,7 @@ sampler2D texSamplerBL : TEXUNIT3 = sampler_state // bulb light/transmission buf
 sampler2D texSamplerN : TEXUNIT4 = sampler_state // normal map texture
 {
     Texture = (Texture4);
-    //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
+    //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic //!! disallow and always use normal bilerp only? not even mipmaps?
     //MAGFILTER = LINEAR;
     //MINFILTER = LINEAR;
     //ADDRESSU  = Wrap; //!! ?
@@ -136,9 +136,9 @@ float3 normal_map(const float3 N, const float3 V, const float2 uv)
 // Standard Materials
 //
 
-VS_OUTPUT vs_main (float4 vPosition : POSITION0,  
-                   float3 vNormal   : NORMAL0,  
-                   float2 tc        : TEXCOORD0) 
+VS_OUTPUT vs_main (in float4 vPosition : POSITION0,  
+                   in float3 vNormal   : NORMAL0,  
+                   in float2 tc        : TEXCOORD0) 
 { 
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    const float3 P = mul(vPosition, matWorldView).xyz;
@@ -152,9 +152,9 @@ VS_OUTPUT vs_main (float4 vPosition : POSITION0,
    return Out; 
 }
 
-VS_NOTEX_OUTPUT vs_notex_main (float4 vPosition : POSITION0,  
-                               float3 vNormal   : NORMAL0,  
-                               float2 tc        : TEXCOORD0)
+VS_NOTEX_OUTPUT vs_notex_main (in float4 vPosition : POSITION0,  
+                               in float3 vNormal   : NORMAL0,  
+                               in float2 tc        : TEXCOORD0)
 { 
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    const float3 P = mul(vPosition, matWorldView).xyz;
@@ -172,7 +172,7 @@ VS_NOTEX_OUTPUT vs_notex_main (float4 vPosition : POSITION0,
    return Out; 
 }
 
-VS_DEPTH_ONLY_NOTEX_OUTPUT vs_depth_only_main_without_texture (float4 vPosition : POSITION0) 
+VS_DEPTH_ONLY_NOTEX_OUTPUT vs_depth_only_main_without_texture (in float4 vPosition : POSITION0) 
 { 
    VS_DEPTH_ONLY_NOTEX_OUTPUT Out;
 
@@ -181,8 +181,8 @@ VS_DEPTH_ONLY_NOTEX_OUTPUT vs_depth_only_main_without_texture (float4 vPosition 
    return Out; 
 }
 
-VS_DEPTH_ONLY_TEX_OUTPUT vs_depth_only_main_with_texture(float4 vPosition : POSITION0,
-                                                         float2 tc : TEXCOORD0)
+VS_DEPTH_ONLY_TEX_OUTPUT vs_depth_only_main_with_texture(in float4 vPosition : POSITION0,
+                                                         in float2 tc : TEXCOORD0)
 {
    VS_DEPTH_ONLY_TEX_OUTPUT Out;
 
@@ -208,7 +208,7 @@ float4 ps_main(in VS_NOTEX_OUTPUT IN, uniform bool is_metal) : COLOR
    result.xyz = lightLoop(IN.worldPos_t1x.xyz, N, V, diffuse, glossy, specular, edge, true, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
    result.a = cBase_Alpha.a;
 
-   [branch] if(cBase_Alpha.a < 1.0) {
+   [branch] if (cBase_Alpha.a < 1.0) {
       result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
 
       if (fDisableLighting_top_below.y < 1.0)
@@ -293,9 +293,9 @@ float4 ps_main_bg_decal_texture(in VS_OUTPUT IN) : COLOR
 
 float fKickerScale = 1.;
 
-VS_NOTEX_OUTPUT vs_kicker (float4 vPosition : POSITION0,  
-                           float3 vNormal   : NORMAL0,  
-                           float2 tc        : TEXCOORD0) 
+VS_NOTEX_OUTPUT vs_kicker (in float4 vPosition : POSITION0,  
+                           in float3 vNormal   : NORMAL0,  
+                           in float2 tc        : TEXCOORD0) 
 { 
     const float3 P = mul(vPosition, matWorldView).xyz;
     const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
@@ -303,7 +303,7 @@ VS_NOTEX_OUTPUT vs_kicker (float4 vPosition : POSITION0,
     VS_NOTEX_OUTPUT Out;
     Out.pos.xyw = mul(vPosition, matWorldViewProj).xyw;
     float4 P2 = vPosition;
-    P2.z -= 30.0f*fKickerScale;
+    P2.z -= 30.0f*fKickerScale; //!!
     Out.pos.z = mul(P2, matWorldViewProj).z;
     //if(cBase_Alpha.a < 1.0)
     {
@@ -328,7 +328,7 @@ technique basic_without_texture_isMetal
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_notex_main(); 
-      PixelShader = compile ps_3_0 ps_main(1);
+      PixelShader  = compile ps_3_0 ps_main(1);
    } 
 }
 
@@ -337,7 +337,7 @@ technique basic_without_texture_isNotMetal
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_notex_main(); 
-      PixelShader = compile ps_3_0 ps_main(0);
+      PixelShader  = compile ps_3_0 ps_main(0);
    } 
 }
 
@@ -346,7 +346,7 @@ technique basic_with_texture_isMetal
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main(); 
-      PixelShader = compile ps_3_0 ps_main_texture(1,0);
+      PixelShader  = compile ps_3_0 ps_main_texture(1,0);
    } 
 }
 
@@ -355,7 +355,7 @@ technique basic_with_texture_isNotMetal
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main(); 
-      PixelShader = compile ps_3_0 ps_main_texture(0,0);
+      PixelShader  = compile ps_3_0 ps_main_texture(0,0);
    } 
 }
 
@@ -364,7 +364,7 @@ technique basic_with_texture_normal_isMetal
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main();
-      PixelShader = compile ps_3_0 ps_main_texture(1,1);
+      PixelShader  = compile ps_3_0 ps_main_texture(1,1);
    }
 }
 
@@ -373,7 +373,7 @@ technique basic_with_texture_normal_isNotMetal
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main();
-      PixelShader = compile ps_3_0 ps_main_texture(0,1);
+      PixelShader  = compile ps_3_0 ps_main_texture(0,1);
    }
 }
 
@@ -382,17 +382,17 @@ technique basic_depth_only_without_texture
    pass P0
    {
       VertexShader = compile vs_3_0 vs_depth_only_main_without_texture();
-      PixelShader = compile ps_3_0 ps_main_depth_only_without_texture();
+      PixelShader  = compile ps_3_0 ps_main_depth_only_without_texture();
    }
 }
 
 technique basic_depth_only_with_texture
 { 
-   pass P0 
-   { 
+   pass P0
+   {
       VertexShader = compile vs_3_0 vs_depth_only_main_with_texture(); 
-      PixelShader = compile ps_3_0 ps_main_depth_only_with_texture();
-   } 
+      PixelShader  = compile ps_3_0 ps_main_depth_only_with_texture();
+   }
 }
 
 //
@@ -401,20 +401,20 @@ technique basic_depth_only_with_texture
 
 technique bg_decal_without_texture
 { 
-   pass P0 
-   { 
+   pass P0
+   {
       VertexShader = compile vs_3_0 vs_notex_main(); 
-      PixelShader = compile ps_3_0 ps_main_bg_decal();
-   } 
+      PixelShader  = compile ps_3_0 ps_main_bg_decal();
+   }
 }
 
 technique bg_decal_with_texture
 { 
-   pass P0 
-   { 
+   pass P0
+   {
       VertexShader = compile vs_3_0 vs_main();
-      PixelShader = compile ps_3_0 ps_main_bg_decal_texture();
-   } 
+      PixelShader  = compile ps_3_0 ps_main_bg_decal_texture();
+   }
 }
 
 
@@ -424,22 +424,22 @@ technique bg_decal_with_texture
 
 technique kickerBoolean_isMetal
 { 
-   pass P0 
-   { 
+   pass P0
+   {
       //ZWriteEnable=TRUE;
-      VertexShader = compile vs_3_0 vs_kicker(); 
-      PixelShader = compile ps_3_0 ps_main(1);
-   } 
+      VertexShader = compile vs_3_0 vs_kicker();
+      PixelShader  = compile ps_3_0 ps_main(1);
+   }
 }
 
 technique kickerBoolean_isNotMetal
 { 
-   pass P0 
-   { 
+   pass P0
+   {
       //ZWriteEnable=TRUE;
-      VertexShader = compile vs_3_0 vs_kicker(); 
-      PixelShader = compile ps_3_0 ps_main(0);
-   } 
+      VertexShader = compile vs_3_0 vs_kicker();
+      PixelShader  = compile ps_3_0 ps_main(0);
+   }
 }
 
 #ifndef SEPARATE_CLASSICLIGHTSHADER
