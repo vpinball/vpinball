@@ -158,8 +158,6 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   PinTable *m_ptable;
-
    PlungerData m_d;
    VertexBuffer *vertexBuffer;
    IndexBuffer *indexBuffer;
@@ -180,7 +178,10 @@ public:
    // number of triangle indices per frame
    int m_indicesPerFrame;
 
-   // IPlunger
+private:
+   PinTable *m_ptable;
+
+// IPlunger
 public:
    STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Surface)(/*[in]*/ BSTR newVal);

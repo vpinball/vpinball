@@ -20,7 +20,6 @@ public:
    void MarkForCreate(IEditable *pie);
    void MarkForDelete(IEditable *pie);
 
-   //IStorage *m_pstg;
    vector<FastIStream*> m_vstm;
    vector<IEditable*> m_vieMark;
    vector<IEditable*> m_vieCreate;
@@ -33,8 +32,6 @@ public:
    PinUndo();
    virtual ~PinUndo();
 
-   vector<UndoRecord*> m_vur;
-
    void BeginUndo();
    void MarkForUndo(IEditable *pie);
    void MarkForCreate(IEditable *pie);
@@ -44,11 +41,14 @@ public:
 
    void SetCleanPoint(SaveDirtyState sds);
 
+   PinTable *m_ptable;
+
+private:
+   vector<UndoRecord*> m_vur;
+
    int m_cUndoLayer;
 
    SaveDirtyState m_sdsDirty; // Dirty flag for saving on close
-
-   PinTable *m_ptable;
 
    size_t m_cleanpoint; // Undo record at which table is in a non-dirty state.  When negative, clean state can not be reached
 };

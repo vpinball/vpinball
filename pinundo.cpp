@@ -122,7 +122,6 @@ void PinUndo::Undo()
    }
 
    UndoRecord * const pur = m_vur[m_vur.size() - 1];
-   //IStorage *pstg = pur->m_pstg;
 
    for (size_t i = 0; i < pur->m_vieDelete.size(); i++)
       m_ptable->Undelete(pur->m_vieDelete[i]);

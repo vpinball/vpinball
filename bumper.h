@@ -117,8 +117,6 @@ public:
 
       virtual void WriteRegDefaults();
 
-      PinTable *m_ptable;
-
       BumperData m_d;
 
       BumperHitCircle *m_pbumperhitcircle;
@@ -134,6 +132,8 @@ private:
    void GenerateSocketMesh(Vertex3D_NoTex2 *buf);
    void GenerateRingMesh(Vertex3D_NoTex2 *buf);
    void GenerateCapMesh(Vertex3D_NoTex2 *buf);
+
+   PinTable *m_ptable;
 
    VertexBuffer *m_baseVertexBuffer;
    IndexBuffer *m_baseIndexBuffer;

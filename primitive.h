@@ -296,8 +296,6 @@ public:
 
    static INT_PTR CALLBACK ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-   PinTable *m_ptable;
-
    Mesh m_mesh;
 
    PrimitiveData m_d;
@@ -306,11 +304,12 @@ public:
    int m_numGroupIndices;
    float m_currentFrame;
    float m_speed;
+   float m_currentHitThreshold; // while playing and the ball hits the mesh the hit threshold is updated here
    bool m_DoAnimation;
    bool m_Endless;
-   float m_currentHitThreshold; // while playing and the ball hits the mesh the hit threshold is updated here
 
-private:        // private member functions
+private:
+   PinTable *m_ptable;
 
    int numIndices;         // only used during loading
    int numVertices;        // only used during loading

@@ -124,11 +124,11 @@ public:
    void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
    void UpdateUnitsInfo();
 
-   PinTable *m_ptable;
-
    RubberData m_d;
 
 private:
+   PinTable *m_ptable;
+
    Vertex2D *rgvInit;    // just for setup/static drawing
 
    int m_numVertices;      // this goes along with dynamicVertexBuffer

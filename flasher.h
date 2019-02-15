@@ -122,8 +122,6 @@ public:
       void UpdateMesh();
       void InitShape();
 
-      PinTable *m_ptable;
-
       FlasherData m_d;
       unsigned int numVertices;
       int numPolys;
@@ -136,7 +134,11 @@ public:
 	  PropertyPane *m_propVisual;
 	  
 	  bool dynamicVertexBufferRegenerate;
-	  // IFlasher
+
+private:
+   PinTable *m_ptable;
+
+// IFlasher
 public:
    STDMETHOD(get_ImageA)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_ImageA)(/*[in]*/ BSTR newVal);
