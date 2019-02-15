@@ -44,8 +44,8 @@ struct VS_OUTPUT_2D
    float2 tex0 : TEXCOORD0;
 };
 
-VS_OUTPUT_2D vs_simple_main (float4 vPosition : POSITION0, 
-                             float2 tc        : TEXCOORD0)
+VS_OUTPUT_2D vs_simple_main (in float4 vPosition : POSITION0,
+                             in float2 tc        : TEXCOORD0)
 {
    VS_OUTPUT_2D Out;
 
@@ -108,10 +108,10 @@ float4 ps_main_noLight(in VS_OUTPUT_2D IN) : COLOR
 //
 
 technique basic_noLight
-{ 
-   pass P0 
-   { 
+{
+   pass P0
+   {
       VertexShader = compile vs_3_0 vs_simple_main();
-      PixelShader = compile ps_3_0 ps_main_noLight();
-   } 
+      PixelShader  = compile ps_3_0 ps_main_noLight();
+   }
 }
