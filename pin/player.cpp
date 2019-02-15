@@ -4313,7 +4313,7 @@ void Player::UpdateHUD()
 		DebugPrint(10, 115, szFoo, len);
 		len = sprintf_s(szFoo, "Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads());
 		DebugPrint(10, 135, szFoo, len);
-		len = sprintf_s(szFoo, "Parameter changes: %u (%u Material ID changes)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges(), material_flips);
+		len = sprintf_s(szFoo, "Shader/Parameter changes: %u / %u (%u Material ID changes)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges(), material_flips);
 		DebugPrint(10, 155, szFoo, len);
 		len = sprintf_s(szFoo, "Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
 		DebugPrint(10, 175, szFoo, len);

@@ -265,7 +265,6 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
       throw 0;
    }
 
-
    //for (int j = 0; j < 2; ++j)
    const int j = 0; // limit to 32bit only nowadays
    {
@@ -306,7 +305,7 @@ BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __i
    config.isPrimary = (config.top == 0) && (config.left == 0);
    config.display = data->size(); // This number does neither map to the number form display settings nor something else.
    config.adapter = -1;
-   memcpy(config.DeviceName, info.szDevice, 32); // Internal display name e.g. "\\\\.\\DISPLAY1"
+   memcpy(config.DeviceName, info.szDevice, CCHDEVICENAME); // Internal display name e.g. "\\\\.\\DISPLAY1"
    data->insert(std::pair<std::string, DisplayConfig>(std::string(config.DeviceName), config));
    return TRUE;
 }
@@ -447,6 +446,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     m_curStateChanges = m_frameStateChanges = 0;
     m_curTextureChanges = m_frameTextureChanges = 0;
     m_curParameterChanges = m_frameParameterChanges = 0;
+    m_curTechniqueChanges = m_frameTechniqueChanges = 0;
     m_curTextureUpdates = m_frameTextureUpdates = 0;
 
     m_curLockCalls = m_frameLockCalls = 0; //!! meh
@@ -1045,7 +1045,8 @@ void RenderDevice::Flip(const bool vsync)
    m_frameStateChanges = m_curStateChanges;
    m_frameTextureChanges = m_curTextureChanges;
    m_frameParameterChanges = m_curParameterChanges;
-   m_curDrawCalls = m_curStateChanges = m_curTextureChanges = m_curParameterChanges = 0;
+   m_frameTechniqueChanges = m_curTechniqueChanges;
+   m_curDrawCalls = m_curStateChanges = m_curTextureChanges = m_curParameterChanges = m_curTechniqueChanges = 0;
    m_frameTextureUpdates = m_curTextureUpdates;
    m_curTextureUpdates = 0;
 
