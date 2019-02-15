@@ -1412,10 +1412,12 @@ void Flasher::RenderDynamic()
        pd3dDevice->flasherShader->SetFlasherColorAlpha(color);
 
        D3DXVECTOR4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_fAddBlend ? 1.f : 0.f);
+       float flasherMode;
+       pd3dDevice->flasherShader->SetTechnique("basic_noLight");
 
        if (pinA && !pinB)
        {
-           pd3dDevice->flasherShader->SetTechnique("basic_with_textureOne_noLight");
+           flasherMode = 0.f;
            pd3dDevice->flasherShader->SetTexture("Texture0", pinA, false);
 
            if (!m_d.m_fAddBlend)
@@ -1425,7 +1427,7 @@ void Flasher::RenderDynamic()
        }
        else if (!pinA && pinB)
        {
-           pd3dDevice->flasherShader->SetTechnique("basic_with_textureOne_noLight");
+           flasherMode = 0.f;
            pd3dDevice->flasherShader->SetTexture("Texture0", pinB, false);
 
            if (!m_d.m_fAddBlend)
@@ -1435,7 +1437,7 @@ void Flasher::RenderDynamic()
        }
        else if (pinA && pinB)
        {
-           pd3dDevice->flasherShader->SetTechnique("basic_with_textureAB_noLight");
+           flasherMode = 1.f;
            pd3dDevice->flasherShader->SetTexture("Texture0", pinA, false);
            pd3dDevice->flasherShader->SetTexture("Texture1", pinB, false);
 
@@ -1448,9 +1450,9 @@ void Flasher::RenderDynamic()
            //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
        }
        else
-           pd3dDevice->flasherShader->SetTechnique("basic_with_noLight");
+           flasherMode = 2.f;
 
-       pd3dDevice->flasherShader->SetFlasherData(flasherData);
+       pd3dDevice->flasherShader->SetFlasherData(flasherData, flasherMode);
 
        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
        g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend, false, false);
