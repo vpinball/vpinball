@@ -151,7 +151,6 @@ private:
 
    void UpdateUnitsInfo();
 
-   PinTable *m_ptable;
    BSTR m_bstrName;
 
    std::vector<LineSegSlingshot*> m_vlinesling;
@@ -171,7 +170,10 @@ private:
    bool m_isDynamic;
    bool m_fIsDropped;
 
-   // ISurface
+private:
+   PinTable *m_ptable;
+
+// ISurface
 public:
    bool m_fDisabled;
    SurfaceData m_d;

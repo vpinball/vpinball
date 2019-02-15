@@ -101,14 +101,15 @@ public:
    virtual void ExportMesh(FILE *f);
    virtual ItemTypeEnum HitableGetItemType() const { return eItemTrigger; }
 
-   void CurvesToShapes(vector<HitObject*> &pvho);
-   void AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2, const float height);
-
    virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
 
    virtual void ClearForOverwrite();
 
    virtual void WriteRegDefaults();
+
+   void CurvesToShapes(vector<HitObject*> &pvho);
+   void AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2, const float height);
+
    void InitShape(float x, float y);
    void UpdateEditorView();
    void TriggerAnimationHit();
@@ -116,11 +117,7 @@ public:
    void UpdateAnimation();
    void GenerateMesh();
 
-   PinTable *m_ptable;
-
    TriggerData m_d;
-
-   TriggerHitCircle *m_ptriggerhitcircle;
 
    int m_numVertices;
    int m_numIndices;
@@ -140,7 +137,12 @@ public:
    Vertex3D_NoTex2 *triggerVertices;
    PropertyPane *m_propVisual;
 
-   // ITrigger
+private:
+   PinTable *m_ptable;
+
+   TriggerHitCircle *m_ptriggerhitcircle;
+
+// ITrigger
 public:
    STDMETHOD(get_TriggerShape)(/*[out, retval]*/ TriggerShape *pVal);
    STDMETHOD(put_TriggerShape)(/*[in]*/ TriggerShape newVal);

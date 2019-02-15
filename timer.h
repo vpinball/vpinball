@@ -91,6 +91,7 @@ public:
    STDMETHOD(get_Enabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Enabled)(/*[in]*/ VARIANT_BOOL newVal);
 
+private:
    PinTable *m_ptable;
 
    TimerData m_d;

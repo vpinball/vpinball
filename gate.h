@@ -105,11 +105,11 @@ public:
    void GenerateWireMesh(Vertex3D_NoTex2 *buf);
    void UpdateUnitsInfo();
 
-   PinTable *m_ptable;
-
    GateData m_d;
 
 private:
+   PinTable *m_ptable;
+
    LineSeg *m_plineseg;
    HitGate *m_phitgate;
 

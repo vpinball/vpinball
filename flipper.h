@@ -137,15 +137,15 @@ public:
       // ISupportsErrorInfo
       STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-      PinTable *m_ptable;
-
       FlipperData m_d;
       VertexBuffer *vertexBuffer;
       IndexBuffer *indexBuffer;
 
       HitFlipper *m_phitflipper;
 
-      // IFlipper
+      PinTable *m_ptable;
+
+// IFlipper
 public:
    STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);

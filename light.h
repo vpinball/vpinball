@@ -163,8 +163,6 @@ public:
    void setLightState(const LightState newVal);
    void RenderBulbMesh();
 
-   PinTable *m_ptable;
-
    LightData m_d;
    LightState m_realState;
    std::vector<RenderVertex> m_vvertex;
@@ -176,6 +174,8 @@ public:
 
    // Run-time
 private:
+   PinTable *m_ptable;
+
    Material *m_surfaceMaterial;
    Texture  *m_surfaceTexture;
 

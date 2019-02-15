@@ -135,11 +135,11 @@ public:
    virtual void GetPointDialogPanes(vector<PropertyPane*> &pvproppane);
    // end IHaveDragPoints
 
-   PinTable *m_ptable;
-
    RampData m_d;
 
 private:
+   PinTable *m_ptable;
+
    int rampVertex;
    Vertex2D *rgvInit;    // just for setup/static drawing
    float *rgheightInit;
