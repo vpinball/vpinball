@@ -16,8 +16,8 @@ BOOL TableInfoDialog::OnInitDialog()
 {
    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
 
-   HWND hwndParent = GetParent().GetHwnd();
 /*
+   HWND hwndParent = GetParent().GetHwnd();
    CRect rcDlg;
    RECT rcMain;
    ::GetWindowRect(hwndParent, &rcMain);
@@ -200,7 +200,7 @@ BOOL TableInfoDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 void TableInfoDialog::OnOK()
 {
    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
-   HWND hwndDlg = GetHwnd();
+   //HWND hwndDlg = GetHwnd();
    SAFE_VECTOR_DELETE(pt->m_szTableName);
    SAFE_VECTOR_DELETE(pt->m_szAuthor);
    SAFE_VECTOR_DELETE(pt->m_szVersion);

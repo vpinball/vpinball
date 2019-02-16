@@ -1532,10 +1532,10 @@ STDMETHODIMP Bumper::get_EnableSkirtAnimation(VARIANT_BOOL *pVal)
 STDMETHODIMP Bumper::put_EnableSkirtAnimation(VARIANT_BOOL newVal)
 {
     STARTUNDO
-        m_enableSkirtAnimation = VBTOF(newVal);
+    m_enableSkirtAnimation = VBTOF(newVal);
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP Bumper::PlayHit()

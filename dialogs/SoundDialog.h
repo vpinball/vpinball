@@ -63,8 +63,8 @@ private:
 	void GetDialogValues();
 	void ReadValuesFromSliders();
 	void TestSound();
-	int SliderToValue(const int Slider);
-	int ValueToSlider(const int Value);
+	//int SliderToValue(const int Slider);
+	//int ValueToSlider(const int Value);
 };
 
 #endif

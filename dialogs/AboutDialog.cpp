@@ -29,9 +29,9 @@ INT_PTR AboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          char versionString[256];
          sprintf_s(versionString, "Version %i.%i.%i (Revision %i, %ubit)", VP_VERSION_MAJOR,VP_VERSION_MINOR,VP_VERSION_REV, SVN_REVISION,
 #ifdef _WIN64
-            64
+            64u
 #else
-            32
+            32u
 #endif
             );
          GetDlgItem(IDC_ABOUT_VERSION).SetWindowText(versionString);
@@ -91,9 +91,7 @@ BOOL AboutDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             hr = OpenURL("http://www.vpforums.org");
          else
          {
-            HWND hwndTransURL = GetDlgItem(IDC_TRANSWEBSITE);
-            LPCTSTR szSite;
-            szSite = GetDlgItem(IDC_TRANSWEBSITE).GetWindowText();
+            LPCTSTR szSite = GetDlgItem(IDC_TRANSWEBSITE).GetWindowText();
             strncpy_s(urlString, szSite, MAX_PATH);
             hr = OpenURL((char*)urlString);
          }

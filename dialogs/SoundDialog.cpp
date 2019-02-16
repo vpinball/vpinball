@@ -340,13 +340,11 @@ void SoundDialog::ReImportFrom()
     const int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
     if (sel != -1)
     {
-        char szFileName[MAXSTRING];
-        char szInitialDir[MAXSTRING];
-
         LocalString ls( IDS_REPLACESOUND );
         int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2 );
         if (ans == IDYES)
         {
+            char szFileName[MAXSTRING];
             szFileName[0] = '\0';
 
             OPENFILENAME ofn;
@@ -361,6 +359,7 @@ void SoundDialog::ReImportFrom()
             ofn.lpstrDefExt = "wav";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
+            char szInitialDir[MAXSTRING];
             HRESULT hr = GetRegString("RecentDir", "SoundDir", szInitialDir, MAXSTRING);
             ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
@@ -823,7 +822,7 @@ void SoundPositionDialog::OnCancel()
 	CDialog::OnCancel();
 }
 
-int SoundPositionDialog::SliderToValue(const int Slider)
+/*int SoundPositionDialog::SliderToValue(const int Slider)
 {
 	return quantizeSignedPercent(powf(dequantizeSignedPercent(Slider), 10.0f));
 }
@@ -831,4 +830,4 @@ int SoundPositionDialog::SliderToValue(const int Slider)
 int SoundPositionDialog::ValueToSlider(const int Value)
 {
 	return quantizeSignedPercent(powf(dequantizeSignedPercent(Value), (float)(1.0/10.0)));
-}
+}*/
