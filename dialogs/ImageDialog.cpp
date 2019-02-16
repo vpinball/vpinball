@@ -454,9 +454,7 @@ void ImageDialog::Import()
       SetFocus();
       g_pvp->m_sb.PopulateDropdowns();
       g_pvp->m_sb.RefreshProperties();
-
    }
-
 }
 
 void ImageDialog::Export()
@@ -716,13 +714,11 @@ void ImageDialog::ReimportFrom()
    int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
    if (sel != -1)
    {
-      char szFileName[MAXSTRING];
-      char szInitialDir[MAXSTRING];
-
       LocalString ls(IDS_REPLACEIMAGE);
       const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this image with a new one?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
+         char szFileName[MAXSTRING];
          szFileName[0] = '\0';
 
          OPENFILENAME ofn;
@@ -737,6 +733,7 @@ void ImageDialog::ReimportFrom()
          ofn.lpstrDefExt = "png";
          ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
+         char szInitialDir[MAXSTRING];
          HRESULT hr = GetRegString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
          ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 

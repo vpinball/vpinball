@@ -712,7 +712,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       }
       case WM_DRAWITEM:
       {
-         DRAWITEMSTRUCT * const pdis = (DRAWITEMSTRUCT *)lParam;
+         //DRAWITEMSTRUCT * const pdis = (DRAWITEMSTRUCT *)lParam;
          const int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
          if (sel != -1)
          {

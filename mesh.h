@@ -357,7 +357,6 @@ inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, 
    const int count = (int)rgv.size();
 
    float mindist = FLT_MAX;
-   int seg = -1;
    piseg = -1; // in case we are not next to the line
 
    int cloop = count;
@@ -401,7 +400,7 @@ inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, 
             intersecty <= (max(rgvi.y, rgvp2.y) + 0.1f))
          {
             mindist = dist;
-            seg = i;
+            const int seg = i;
 
             pvout.x = intersectx;
             pvout.y = intersecty;

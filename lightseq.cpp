@@ -542,10 +542,10 @@ STDMETHODIMP LightSeq::get_Collection(BSTR *pVal)
 STDMETHODIMP LightSeq::put_Collection(BSTR newVal)
 {
    STARTUNDO
-      memcpy(m_d.m_wzCollection, (void *)newVal, sizeof(m_d.m_wzCollection));
+   memcpy(m_d.m_wzCollection, (void *)newVal, sizeof(m_d.m_wzCollection));
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP LightSeq::get_CenterX(float *pVal)
@@ -557,16 +557,17 @@ STDMETHODIMP LightSeq::get_CenterX(float *pVal)
 
 STDMETHODIMP LightSeq::put_CenterX(float newVal)
 {
-   if ((newVal < 0) || (newVal >= (float)EDITOR_BG_WIDTH))
+   if ((newVal < 0.f) || (newVal >= (float)EDITOR_BG_WIDTH))
       return E_FAIL;
+
    STARTUNDO
-      m_d.m_vCenter.x = newVal;
+   m_d.m_vCenter.x = newVal;
    // set the centre point of the grid for effects which start from the center
    m_GridXCenter = floorf(m_d.m_vCenter.x * (float)(1.0 / LIGHTSEQGRIDSCALE));
    m_GridXCenterAdjust = abs(m_lightSeqGridWidth / 2 - (int)m_GridXCenter);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP LightSeq::get_CenterY(float *pVal)

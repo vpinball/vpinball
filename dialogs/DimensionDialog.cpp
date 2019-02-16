@@ -106,8 +106,8 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                if (idx >= DIM_TABLE_SIZE || idx < 0)
                   break;
 
-               int width = (int)floorf(dimTable[idx].width*47.0f + 0.5f);
-               int height = (int)floorf(dimTable[idx].height*47.0f + 0.5f);
+               int width = (int)(dimTable[idx].width*47.0f + 0.5f);
+               int height = (int)(dimTable[idx].height*47.0f + 0.5f);
                char textBuf[32];
                sprintf_s(textBuf, "%i", width);
                CString textStr(textBuf);
@@ -147,7 +147,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   ret = sscanf_s(textStr.c_str(), "%f", &sizeWidth);
                   if (ret != 1 || sizeWidth < 0.0f)
                      sizeWidth = 0;
-                  int width = (int)floorf(sizeWidth*47.0f + 0.5f);
+                  int width = (int)(sizeWidth*47.0f + 0.5f);
                   sprintf_s(textBuf, "%i", width);
                   CString textStr2(textBuf);
                   SetDlgItemText(IDC_VP_WIDTH, textStr2);
@@ -160,7 +160,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   ret = sscanf_s(textStr.c_str(), "%f", &sizeHeight);
                   if (ret != 1 || sizeHeight < 0.0f)
                      sizeHeight = 0;
-                  int height = (int)floorf(sizeHeight*47.0f + 0.5f);
+                  int height = (int)(sizeHeight*47.0f + 0.5f);
                   sprintf_s(textBuf, "%i", height);
                   CString textStr2(textBuf);
                   SetDlgItemText(IDC_VP_HEIGHT, textStr2);

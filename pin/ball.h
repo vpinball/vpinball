@@ -21,7 +21,7 @@ class Ball : public HitObject
 public:
    Ball();
 
-   void Init(const float mass = 1.0f);
+   void Init(const float mass);
    void RenderSetup();
 
    virtual void UpdateDisplacements(const float dtime);
