@@ -251,12 +251,15 @@ int getNumberOfDisplays()
    return GetSystemMetrics(SM_CMONITORS);
 }
 
-void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
+void EnumerateDisplayModes(const int display, std::vector<VideoMode>& modes)
 {
    modes.clear();
 
-   if (adapter >= getNumberOfDisplays())
+   std::vector<DisplayConfig> displays;
+   getDisplayList(displays);
+   if (display >= displays.size())
       return;
+   const int adapter = displays[display].adapter;
 
    IDirect3D9 *d3d = Direct3DCreate9(D3D_SDK_VERSION);
    if (d3d == NULL)
@@ -901,6 +904,8 @@ RenderDevice::~RenderDevice()
 {
    if (m_quadVertexBuffer)
       m_quadVertexBuffer->release();
+   m_quadVertexBuffer = NULL;
+
    //m_quadDynVertexBuffer->release();
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
