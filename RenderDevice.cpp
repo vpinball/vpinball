@@ -257,7 +257,7 @@ void EnumerateDisplayModes(const int display, std::vector<VideoMode>& modes)
 
    std::vector<DisplayConfig> displays;
    getDisplayList(displays);
-   if (display >= displays.size())
+   if (display >= (int)displays.size())
       return;
    const int adapter = displays[display].adapter;
 
