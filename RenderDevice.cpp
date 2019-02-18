@@ -964,6 +964,7 @@ RenderDevice::~RenderDevice()
 #endif
 
 #ifdef USE_D3D9EX
+   if (m_pD3DDeviceEx == m_pD3DDevice) m_pD3DDevice = NULL; //!! only needed if m_adapter > 0 ?? weird!!
    SAFE_RELEASE_NO_RCC(m_pD3DDeviceEx);
 #endif
    SAFE_RELEASE(m_pD3DDevice);
