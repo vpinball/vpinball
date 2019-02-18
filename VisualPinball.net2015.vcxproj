@@ -158,14 +158,15 @@
       <SuppressStartupBanner>false</SuppressStartupBanner>
     </Xdcmake>
     <PostBuildEvent>
-      <Message>Copies exe to production directory.</Message>
-      <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\UPin\VisualPinball\data\exe
-echo VPIN_DIR="%25VPIN_DIR%25"
-if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
-copy "$(TargetPath)" "%25VPIN_DIR%25"
-</Command>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
@@ -281,13 +282,13 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
-      <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\UPin\VisualPinball\data\exe
-echo VPIN_DIR="%25VPIN_DIR%25"
-if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
-copy "$(TargetPath)" "%25VPIN_DIR%25"
-</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
