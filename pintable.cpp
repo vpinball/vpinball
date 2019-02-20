@@ -2263,6 +2263,9 @@ ISelect *PinTable::HitTest(const int x, const int y)
 
 void PinTable::SetDirtyDraw()
 {
+   if(g_pplayer)
+       return;
+
    m_fDirtyDraw = true;
    ::InvalidateRect(m_hwnd, NULL, fFalse);
 }
@@ -7637,7 +7640,6 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
 {
    //GetIApcProjectItem()->put_Name(newVal);
 
-   STARTUNDO
 
       const int l = lstrlenW(newVal);
    if ((l > 32) || (l < 1))
@@ -7645,7 +7647,8 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
       return E_FAIL;
    }
 
-   if (m_pcv->ReplaceName((IScriptable *)this, newVal) == S_OK)
+   STARTUNDO
+   if(m_pcv->ReplaceName((IScriptable *)this, newVal) == S_OK)
    {
       WideStrNCopy(newVal, (WCHAR *)m_wzName, MAXNAMEBUFFER);
       //lstrcpyW((WCHAR *)m_wzName, newVal);
