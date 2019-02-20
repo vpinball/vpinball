@@ -42,6 +42,9 @@ Ramp::~Ramp()
 
 void Ramp::UpdateUnitsInfo()
 {
+   if(g_pplayer)
+       return;
+
    char tbuf[128];
    sprintf_s(tbuf, "TopH: %.03f | BottomH: %0.3f | TopW: %.03f | BottomW: %.03f | LeftW: %.03f | RightW: %.3f", g_pvp->ConvertToUnit(m_d.m_heighttop), g_pvp->ConvertToUnit(m_d.m_heightbottom), 
                                                                                   g_pvp->ConvertToUnit(m_d.m_widthtop), g_pvp->ConvertToUnit(m_d.m_widthbottom),
@@ -1513,8 +1516,6 @@ void Ramp::AddPoint(int x, int y, const bool smooth)
       m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
 
-   SetDirtyDraw();
-
    STOPUNDO
 }
 
@@ -1607,9 +1608,9 @@ STDMETHODIMP Ramp::put_HeightBottom(float newVal)
 
       m_d.m_heightbottom = newVal;
       dynamicVertexBufferRegenerate = true;
-      UpdateUnitsInfo();
 
       STOPUNDO
+      UpdateUnitsInfo();
    }
 
    return S_OK;
@@ -1631,9 +1632,9 @@ STDMETHODIMP Ramp::put_HeightTop(float newVal)
 
       m_d.m_heighttop = newVal;
       dynamicVertexBufferRegenerate = true;
-      UpdateUnitsInfo();
 
       STOPUNDO
+      UpdateUnitsInfo();
    }
 
    return S_OK;
@@ -1654,9 +1655,9 @@ STDMETHODIMP Ramp::put_WidthBottom(float newVal)
 
       m_d.m_widthbottom = newVal;
       dynamicVertexBufferRegenerate = true;
-      UpdateUnitsInfo();
 
       STOPUNDO
+      UpdateUnitsInfo();
    }
 
    return S_OK;
@@ -1678,9 +1679,9 @@ STDMETHODIMP Ramp::put_WidthTop(float newVal)
 
       m_d.m_widthtop = newVal;
       dynamicVertexBufferRegenerate = true;
-      UpdateUnitsInfo();
 
       STOPUNDO
+      UpdateUnitsInfo();
    }
 
    return S_OK;

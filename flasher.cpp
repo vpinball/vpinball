@@ -594,8 +594,6 @@ void Flasher::DoCommand(int icmd, int x, int y)
          m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
 
-      SetDirtyDraw();
-
       STOPUNDO
    }
    break;

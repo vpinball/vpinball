@@ -560,7 +560,7 @@ void Light::RenderBulbMesh()
 //   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   pd3dDevice->basicShader->SetTechnique(mat.m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
+   pd3dDevice->basicShader->SetTechnique("basic_without_texture_isNotMetal");
    pd3dDevice->basicShader->SetMaterial(&mat);
 
    pd3dDevice->basicShader->Begin(0);
@@ -579,7 +579,7 @@ void Light::RenderBulbMesh()
    mat.m_fGlossyImageLerp = 1.0f;
    mat.m_fThickness = 0.05f;
    mat.m_cClearcoat = 0xFFFFFF;
-   pd3dDevice->basicShader->SetTechnique(mat.m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
+   pd3dDevice->basicShader->SetTechnique("basic_without_texture_isNotMetal");
    pd3dDevice->basicShader->SetMaterial(&mat);
 
    pd3dDevice->basicShader->Begin(0);
@@ -1289,8 +1289,6 @@ void Light::AddPoint(int x, int y, const bool smooth)
       pdp->Init(this, vOut.x, vOut.y, 0.f, smooth);
       m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
-
-   SetDirtyDraw();
 
    STOPUNDO
 }

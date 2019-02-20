@@ -51,6 +51,9 @@ Kicker::~Kicker()
 
 void Kicker::UpdateUnitsInfo()
 {
+   if(g_pplayer)
+       return;
+
    char tbuf[128];
    sprintf_s(tbuf, "Radius: %.3f", g_pvp->ConvertToUnit(m_d.m_radius));
    g_pvp->SetStatusBarUnitInfo(tbuf);
@@ -1093,9 +1096,9 @@ STDMETHODIMP Kicker::put_Radius(float newVal)
    STARTUNDO
 
       m_d.m_radius = newVal;
-   UpdateUnitsInfo();
 
    STOPUNDO
+   UpdateUnitsInfo();
 
       return S_OK;
 }

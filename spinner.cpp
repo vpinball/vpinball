@@ -42,6 +42,9 @@ Spinner::~Spinner()
 
 void Spinner::UpdateUnitsInfo()
 {
+   if(g_pplayer)
+       return;
+
    char tbuf[128];
    sprintf_s(tbuf, "Length: %.3f | Height: %.3f", g_pvp->ConvertToUnit(m_d.m_length), g_pvp->ConvertToUnit(m_d.m_height));
    g_pvp->SetStatusBarUnitInfo(tbuf);
@@ -688,11 +691,11 @@ STDMETHODIMP Spinner::put_Length(float newVal)
    STARTUNDO
 
       m_d.m_length = newVal;
-   UpdateUnitsInfo();
 
    STOPUNDO
 
-      return S_OK;
+   UpdateUnitsInfo();
+   return S_OK;
 }
 
 STDMETHODIMP Spinner::get_Rotation(float *pVal)
@@ -726,9 +729,9 @@ STDMETHODIMP Spinner::put_Height(float newVal)
    STARTUNDO
 
       m_d.m_height = newVal;
-   UpdateUnitsInfo();
 
    STOPUNDO
+   UpdateUnitsInfo();
 
       return S_OK;
 }

@@ -1281,11 +1281,11 @@ STDMETHODIMP Flipper::get_Length(float *pVal)
 STDMETHODIMP Flipper::put_Length(float newVal)
 {
    STARTUNDO
-
-   m_d.m_FlipperRadiusMax = newVal;
+       m_d.m_FlipperRadiusMax = newVal;
+   STOPUNDO
+       
    UpdateUnitsInfo();
 
-   STOPUNDO
 
    return S_OK;
 }
@@ -1331,7 +1331,7 @@ STDMETHODIMP Flipper::put_EOSTorqueAngle(float newVal)
     else
     {
         STARTUNDO
-        m_d.m_torqueDampingAngle = newVal;
+            m_d.m_torqueDampingAngle = newVal;
         STOPUNDO
     }
 
@@ -1359,7 +1359,7 @@ STDMETHODIMP Flipper::put_StartAngle(float newVal)
    else
    {
       STARTUNDO
-      m_d.m_StartAngle = newVal;
+        m_d.m_StartAngle = newVal;
       STOPUNDO
    }
 
@@ -1387,7 +1387,7 @@ STDMETHODIMP Flipper::put_EndAngle(float newVal)
    else
    {
       STARTUNDO
-      m_d.m_EndAngle = newVal;
+        m_d.m_EndAngle = newVal;
       STOPUNDO;
    }
 
@@ -1434,7 +1434,7 @@ STDMETHODIMP Flipper::put_Y(float newVal)
 {
    STARTUNDO
 
-   m_d.m_Center.y = newVal;
+    m_d.m_Center.y = newVal;
 
    STOPUNDO
 
@@ -1543,7 +1543,7 @@ STDMETHODIMP Flipper::put_Mass(float newVal)
    else
    {
       STARTUNDO
-      m_d.m_mass = newVal;
+        m_d.m_mass = newVal;
       STOPUNDO
    }
 
@@ -1560,7 +1560,7 @@ STDMETHODIMP Flipper::get_OverridePhysics(PhysicsSet *pVal)
 STDMETHODIMP Flipper::put_OverridePhysics(PhysicsSet newVal)
 {
    STARTUNDO
-   m_d.m_OverridePhysics = (int)newVal;
+    m_d.m_OverridePhysics = (int)newVal;
    STOPUNDO
 
    if (m_phitflipper)
@@ -1633,11 +1633,10 @@ STDMETHODIMP Flipper::put_RubberHeight(float newVal)
    else if (newVal > 1000.f) newVal = 50.f; //!! legacy, deprecated
 
    STARTUNDO
-
-   m_d.m_rubberheight = newVal;
-   UpdateUnitsInfo();
-
+    m_d.m_rubberheight = newVal;
    STOPUNDO
+
+   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -1645,11 +1644,10 @@ STDMETHODIMP Flipper::put_RubberHeight(float newVal)
 STDMETHODIMP Flipper::put_RubberWidth(float newVal)
 {
    STARTUNDO
-
-   m_d.m_rubberwidth = newVal;
-   UpdateUnitsInfo();
-
+    m_d.m_rubberwidth = newVal;
    STOPUNDO
+ 
+   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -1857,12 +1855,10 @@ STDMETHODIMP Flipper::get_Height(float *pVal)
 STDMETHODIMP Flipper::put_Height(float newVal)
 {
    STARTUNDO
-
-   m_d.m_height = newVal;
-   UpdateUnitsInfo();
-
+       m_d.m_height = newVal;
    STOPUNDO
 
+   UpdateUnitsInfo();
    return S_OK;
 }
 
@@ -1889,7 +1885,7 @@ STDMETHODIMP Flipper::put_Return(float newVal)
    {
       STARTUNDO
 
-      m_d.m_return = clamp(newVal, 0.0f, 1.0f);
+        m_d.m_return = clamp(newVal, 0.0f, 1.0f);
 
       STOPUNDO
    }
@@ -1910,7 +1906,7 @@ STDMETHODIMP Flipper::put_FlipperRadiusMin(float newVal)
 
    STARTUNDO
 
-   m_d.m_FlipperRadiusMin = newVal;
+    m_d.m_FlipperRadiusMin = newVal;
 
    STOPUNDO
 

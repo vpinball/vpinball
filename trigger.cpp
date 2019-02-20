@@ -46,6 +46,8 @@ Trigger::~Trigger()
 
 void Trigger::UpdateEditorView()
 {
+   if(g_pplayer)
+       return;
    if (m_d.m_shape != TriggerNone)
    {
       const Vertex3D_NoTex2 *meshVertices;
@@ -950,8 +952,6 @@ void Trigger::DoCommand(int icmd, int x, int y)
          m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
 
-      SetDirtyDraw();
-
       STOPUNDO
    }
    break;
@@ -1387,9 +1387,9 @@ STDMETHODIMP Trigger::put_Rotation(float newVal)
    STARTUNDO
 
       m_d.m_rotation = newVal;
-   UpdateEditorView();
 
    STOPUNDO
+   UpdateEditorView();
 
       return S_OK;
 }
