@@ -87,19 +87,20 @@ public:
 
    virtual ItemTypeEnum HitableGetItemType() const { return eItemDecal; }
 
-   void EnsureSize();
-   HFONT GetFont();
-   void GetTextSize(int * const px, int * const py);
    DecalData m_d;
 
 private:
-   void RenderText();
+   void EnsureSize();
+   HFONT GetFont();
+   void GetTextSize(int * const px, int * const py);
+
+   void PreRenderText();
+
    void RenderObject();
 
    IFont *m_pIFont;
 
    PinTable *m_ptable;
-
 
    BaseTexture *m_textImg;
    float m_leading, m_descent;

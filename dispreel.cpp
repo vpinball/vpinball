@@ -85,7 +85,7 @@ void DispReel::SetDefaults(bool fromMouseClick)
    m_d.m_reelspacing = (hr == S_OK) && fromMouseClick ? fTmp : 4.0f;
 
    hr = GetRegStringAsFloat("DefaultProps\\EMReel", "MotorSteps", &fTmp);
-   m_d.m_motorsteps = (hr == S_OK) && fromMouseClick ? fTmp : 2.0f;
+   m_d.m_motorsteps = (hr == S_OK) && fromMouseClick ? (int)fTmp : 2;
 
    hr = GetRegInt("DefaultProps\\EMReel", "DigitRange", &iTmp);
    m_d.m_digitrange = (hr == S_OK) && fromMouseClick ? iTmp : 9;
@@ -118,10 +118,10 @@ void DispReel::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\EMReel", "Width", m_d.m_width);
    SetRegValueFloat("DefaultProps\\EMReel", "Height", m_d.m_height);
    SetRegValueFloat("DefaultProps\\EMReel", "ReelSpacing", m_d.m_reelspacing);
-   SetRegValueFloat("DefaultProps\\EMReel", "MotorSteps", m_d.m_motorsteps);
+   SetRegValueFloat("DefaultProps\\EMReel", "MotorSteps", (float)m_d.m_motorsteps);
    SetRegValueInt("DefaultProps\\Decal", "DigitRange", m_d.m_digitrange);
    SetRegValueInt("DefaultProps\\Decal", "UpdateInterval", m_d.m_updateinterval);
-   SetRegValue("DefaultProps\\EMReel", "BackColor", REG_DWORD, &m_d.m_backcolor, 4);
+   SetRegValueInt("DefaultProps\\EMReel", "BackColor", m_d.m_backcolor);
    SetRegValueBool("DefaultProps\\EMReel", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
    SetRegValueInt("DefaultProps\\EMReel", "TimerInterval", m_d.m_tdr.m_TimerInterval);
 }
@@ -424,7 +424,7 @@ void DispReel::Animate()
       const int OverflowValue = m_d.m_digitrange;
       const int AdjustValue = OverflowValue + 1;
 
-      const float step = m_reeldigitheight / m_d.m_motorsteps;
+      const float step = m_reeldigitheight / (float)m_d.m_motorsteps;
 
       // start at the last reel and work forwards (right to left)
       for (int i = m_d.m_reelcount - 1; i >= 0; i--)
@@ -433,7 +433,7 @@ void DispReel::Animate()
          if ((m_reelInfo[i].motorPulses != 0) && (m_reelInfo[i].motorStepCount == 0))
          {
             // get the number of steps (or increments) needed to move the reel
-            m_reelInfo[i].motorStepCount = (int)m_d.m_motorsteps;
+            m_reelInfo[i].motorStepCount = m_d.m_motorsteps;
             m_reelInfo[i].motorCalcStep = (m_reelInfo[i].motorPulses > 0) ? step : -step;
             m_reelInfo[i].motorOffset = 0;
 
@@ -540,12 +540,10 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteFloat(FID(WDTH), m_d.m_width);
    bw.WriteFloat(FID(HIGH), m_d.m_height);
-   const float reel = (float)m_d.m_reelcount;
-   bw.WriteFloat(FID(RCNT), reel);
+   bw.WriteFloat(FID(RCNT), (float)m_d.m_reelcount);
    bw.WriteFloat(FID(RSPC), m_d.m_reelspacing);
-   bw.WriteFloat(FID(MSTP), m_d.m_motorsteps);
-   const float dig = (float)m_d.m_digitrange;
-   bw.WriteFloat(FID(RANG), dig);
+   bw.WriteFloat(FID(MSTP), (float)m_d.m_motorsteps);
+   bw.WriteFloat(FID(RANG), (float)m_d.m_digitrange);
    bw.WriteInt(FID(UPTM), m_d.m_updateinterval);
    bw.WriteBool(FID(UGRD), m_d.m_fUseImageGrid);
    bw.WriteBool(FID(VISI), m_d.m_fVisible);
@@ -630,7 +628,9 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(MSTP))
    {
-      pbr->GetFloat(&m_d.m_motorsteps);
+      float motorsteps;
+      pbr->GetFloat(&motorsteps);
+      m_d.m_motorsteps = (int)motorsteps;
    }
    else if (id == FID(SOUN))
    {
@@ -914,7 +914,7 @@ STDMETHODIMP DispReel::put_Sound(BSTR newVal)
 
 STDMETHODIMP DispReel::get_Steps(float *pVal)
 {
-   *pVal = floorf(m_d.m_motorsteps);
+   *pVal = (float)m_d.m_motorsteps;
 
    return S_OK;
 }
@@ -922,7 +922,7 @@ STDMETHODIMP DispReel::get_Steps(float *pVal)
 STDMETHODIMP DispReel::put_Steps(float newVal)
 {
    STARTUNDO
-   m_d.m_motorsteps = max(1.0f, floorf(newVal));	// must have at least 1 step
+   m_d.m_motorsteps = max(1, (int)newVal); // must have at least 1 step
    STOPUNDO
 
    return S_OK;
@@ -939,8 +939,8 @@ STDMETHODIMP DispReel::put_Range(float newVal)
 {
    STARTUNDO
 
-   m_d.m_digitrange = (int)max(0.0f, floorf(newVal));        // must have at least 1 digit (0 is a digit)
-   if (m_d.m_digitrange > 512 - 1) m_d.m_digitrange = 512 - 1;  // and a max of 512 (0->511) //!! 512 requested by highrise
+   m_d.m_digitrange = max(0, (int)newVal);                     // must have at least 1 digit (0 is a digit)
+   if (m_d.m_digitrange > 512 - 1) m_d.m_digitrange = 512 - 1; // and a max of 512 (0->511) //!! 512 requested by highrise
 
    STOPUNDO
 
@@ -958,13 +958,13 @@ STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
 {
    STARTUNDO
 
-      m_d.m_updateinterval = max(5, newVal);
+   m_d.m_updateinterval = max(5, newVal);
    if (g_pplayer)
       m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP DispReel::get_UseImageGrid(VARIANT_BOOL *pVal)

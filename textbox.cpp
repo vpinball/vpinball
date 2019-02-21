@@ -272,14 +272,14 @@ void Textbox::RenderSetup()
    size.int64 = (LONGLONG)(size.int64 / 1.5 * g_pplayer->m_height * g_pplayer->m_width);
    m_pIFontPlay->put_Size(size);
 
-   RenderText();
+   PreRenderText();
 }
 
 void Textbox::RenderStatic()
 {
 }
 
-void Textbox::RenderText()
+void Textbox::PreRenderText()
 {
    RECT rect;
    rect.left = (int)min(m_d.m_v1.x, m_d.m_v2.x);
@@ -458,10 +458,10 @@ STDMETHODIMP Textbox::put_Text(BSTR newVal)
    {
       STARTUNDO
 
-         WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.sztext, 512, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.sztext, 512, NULL, NULL);
 
       if (g_pplayer)
-         RenderText();
+         PreRenderText();
 
       STOPUNDO
    }
