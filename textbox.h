@@ -75,11 +75,11 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   void RenderText();
-
    virtual void WriteRegDefaults();
 
 private:
+   void PreRenderText();
+
    PinTable *m_ptable;
 
    TextboxData m_d;
