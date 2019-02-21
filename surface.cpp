@@ -439,9 +439,12 @@ void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
       obj->m_fEnabled = m_d.m_fCollidable;
    }
 
-   obj->m_fe = m_d.m_fHitEvent;
-   obj->m_obj = (IFireEvents*)this;
-   obj->m_threshold = m_d.m_threshold;
+   if(m_d.m_fHitEvent)
+   {
+       obj->m_obj = (IFireEvents*)this;
+       obj->m_fe = true;
+       obj->m_threshold = m_d.m_threshold;
+   }
 
    pvho.push_back(obj);
    m_vhoCollidable.push_back(obj);	//remember hit components of wall
@@ -472,9 +475,12 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
 
    SetupHitObject(pvho, plineseg);
 
-   plineseg->m_fe = pv1.fSlingshot; // slingshots always have hit events
-   plineseg->m_obj = (IFireEvents*)this;
-   plineseg->m_threshold = m_d.m_threshold;
+   if(pv1.fSlingshot)  // slingshots always have hit events
+   {
+       plineseg->m_obj = (IFireEvents*)this;
+       plineseg->m_fe = true;
+       plineseg->m_threshold = m_d.m_threshold;
+   }
 
    if (m_d.m_heightbottom != 0.f)
       // add lower edge as a line
