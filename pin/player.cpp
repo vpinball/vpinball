@@ -1035,8 +1035,6 @@ void Player::InitKeys()
       const HRESULT hr = GetRegInt("Player", regkey_string[i], &key);
       if (hr != S_OK || key > 0xdd)
           key = regkey_defdik[i];
-      if(key > eCKeys)
-          key = eCKeys;
       m_rgKeys[i] = (EnumAssignKeys)key;
    }
 }
@@ -3648,8 +3646,7 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
 
 void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float intensity, const bool backdrop)
 {
-//   RenderDevice * const pd3dDevice = backdrop ? m_pin3d.m_pd3dSecondaryDevice : m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice * const pd3dDevice = m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = backdrop ? m_pin3d.m_pd3dSecondaryDevice : m_pin3d.m_pd3dPrimaryDevice;
 
    float Verts[4 * 5] =
    {
@@ -3680,8 +3677,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
 
 void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture * const tex, const float intensity, const bool backdrop)
 {
-//   RenderDevice * const pd3dDevice = backdrop ? m_pin3d.m_pd3dSecondaryDevice : m_pin3d.m_pd3dPrimaryDevice;
-   RenderDevice * const pd3dDevice = m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = backdrop ? m_pin3d.m_pd3dSecondaryDevice : m_pin3d.m_pd3dPrimaryDevice;
 
    float Verts[4 * 5] =
    {
@@ -5289,7 +5285,7 @@ void Player::DrawBalls()
    for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
    {
       IEditable * const item = m_ptable->m_vedit[i];
-      if (item->GetItemType() == eItemLight && ((Light *)item)->m_d.m_BulbLight && ((Light *)item)->m_d.m_showReflectionOnBall)
+      if (item && item->GetItemType() == eItemLight && ((Light *)item)->m_d.m_BulbLight && ((Light *)item)->m_d.m_showReflectionOnBall)
          lights.push_back((Light *)item);
    }
 
