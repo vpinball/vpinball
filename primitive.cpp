@@ -3214,7 +3214,7 @@ void Primitive::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), FALSE);
    }
-   else if (!m_d.m_fToy && m_d.m_fCollidable)
+   else
    {
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 34), TRUE);
