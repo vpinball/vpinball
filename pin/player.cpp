@@ -1035,6 +1035,8 @@ void Player::InitKeys()
       const HRESULT hr = GetRegInt("Player", regkey_string[i], &key);
       if (hr != S_OK || key > 0xdd)
           key = regkey_defdik[i];
+      if(key > eCKeys)
+          key = eCKeys;
       m_rgKeys[i] = (EnumAssignKeys)key;
    }
 }
