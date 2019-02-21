@@ -969,6 +969,7 @@ STDMETHODIMP Rubber::put_Height(float newVal)
 
       m_d.m_height = newVal;
       dynamicVertexBufferRegenerate = true;
+
       STOPUNDO
 
       UpdateUnitsInfo();
@@ -1016,6 +1017,7 @@ STDMETHODIMP Rubber::put_Thickness(int newVal)
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
+
       UpdateUnitsInfo();
    }
 

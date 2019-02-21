@@ -25,6 +25,7 @@ void PinUndo::BeginUndo()
 { 
    if(g_pplayer)
        return;
+
    m_cUndoLayer++;
 
    if (m_cUndoLayer == 1)

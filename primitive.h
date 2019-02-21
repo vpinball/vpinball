@@ -380,7 +380,6 @@ private:        // private data members
    std::vector<Vertex3Ds> vertices;
    std::vector<float> normals; // only z component actually
 
-
    VertexBuffer *vertexBuffer;
    IndexBuffer *indexBuffer;
    bool vertexBufferRegenerate;

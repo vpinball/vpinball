@@ -1,6 +1,8 @@
 VP 10.6.0 Changelog
 ------------------------
 
+- do not ignore primitive setting 'Has Hit Event' anymore (before it was always implicitly on)
+
 - add display selection in the video preferences
 
 - fix some regressions (introduced with 10.5) with backdrop lights (most prominent: bulb lights had wrong falloff, the 'classic' lights wrong image mapping)
