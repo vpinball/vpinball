@@ -332,8 +332,6 @@ void Primitive::SetDefaults(bool fromMouseClick)
 {
    static const char strKeyName[] = "DefaultProps\\Primitive";
 
-   HRESULT hr;
-
    m_d.m_useAsPlayfield = false;
    m_d.m_use3DMesh = false;
 
@@ -369,7 +367,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_aRotAndTra[7] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotAndTra7", 0.0f) : 0.0f;
    m_d.m_aRotAndTra[8] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotAndTra8", 0.0f) : 0.0f;
 
-   hr = GetRegString(strKeyName, "Image", m_d.m_szImage, MAXTOKEN);
+   HRESULT hr = GetRegString(strKeyName, "Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage[0] = 0;
 
@@ -2346,11 +2344,11 @@ STDMETHODIMP Primitive::put_X(float newVal)
    if (m_d.m_vPosition.x != newVal)
    {
       STARTUNDO
-         m_d.m_vPosition.x = newVal;
+      m_d.m_vPosition.x = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -2368,11 +2366,11 @@ STDMETHODIMP Primitive::put_Y(float newVal)
    if (m_d.m_vPosition.y != newVal)
    {
       STARTUNDO
-         m_d.m_vPosition.y = newVal;
+      m_d.m_vPosition.y = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -2390,11 +2388,11 @@ STDMETHODIMP Primitive::put_Z(float newVal)
    if (m_d.m_vPosition.z != newVal)
    {
       STARTUNDO
-         m_d.m_vPosition.z = newVal;
+      m_d.m_vPosition.z = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -2412,11 +2410,11 @@ STDMETHODIMP Primitive::put_Size_X(float newVal)
    if (m_d.m_vSize.x != newVal)
    {
       STARTUNDO
-         m_d.m_vSize.x = newVal;
+      m_d.m_vSize.x = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -2434,11 +2432,11 @@ STDMETHODIMP Primitive::put_Size_Y(float newVal)
    if (m_d.m_vSize.y != newVal)
    {
       STARTUNDO
-         m_d.m_vSize.y = newVal;
+      m_d.m_vSize.y = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -2456,11 +2454,11 @@ STDMETHODIMP Primitive::put_Size_Z(float newVal)
    if (m_d.m_vSize.z != newVal)
    {
       STARTUNDO
-         m_d.m_vSize.z = newVal;
+      m_d.m_vSize.z = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -2487,11 +2485,11 @@ STDMETHODIMP Primitive::put_RotX(float newVal)
    if (m_d.m_aRotAndTra[0] != newVal)
    {
       STARTUNDO
-         m_d.m_aRotAndTra[0] = newVal;
+      m_d.m_aRotAndTra[0] = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -2518,11 +2516,11 @@ STDMETHODIMP Primitive::put_RotY(float newVal)
    if (m_d.m_aRotAndTra[1] != newVal)
    {
       STARTUNDO
-         m_d.m_aRotAndTra[1] = newVal;
+      m_d.m_aRotAndTra[1] = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -2549,11 +2547,11 @@ STDMETHODIMP Primitive::put_RotZ(float newVal)
    if (m_d.m_aRotAndTra[2] != newVal)
    {
       STARTUNDO
-         m_d.m_aRotAndTra[2] = newVal;
+      m_d.m_aRotAndTra[2] = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -2580,11 +2578,11 @@ STDMETHODIMP Primitive::put_TransX(float newVal)
    if (m_d.m_aRotAndTra[3] != newVal)
    {
       STARTUNDO
-         m_d.m_aRotAndTra[3] = newVal;
+      m_d.m_aRotAndTra[3] = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -2611,11 +2609,11 @@ STDMETHODIMP Primitive::put_TransY(float newVal)
    if (m_d.m_aRotAndTra[4] != newVal)
    {
       STARTUNDO
-         m_d.m_aRotAndTra[4] = newVal;
+      m_d.m_aRotAndTra[4] = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -2642,11 +2640,11 @@ STDMETHODIMP Primitive::put_TransZ(float newVal)
    if (m_d.m_aRotAndTra[5] != newVal)
    {
       STARTUNDO
-         m_d.m_aRotAndTra[5] = newVal;
+      m_d.m_aRotAndTra[5] = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -2673,11 +2671,11 @@ STDMETHODIMP Primitive::put_ObjRotX(float newVal)
    if (m_d.m_aRotAndTra[6] != newVal)
    {
       STARTUNDO
-         m_d.m_aRotAndTra[6] = newVal;
+      m_d.m_aRotAndTra[6] = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -2704,11 +2702,11 @@ STDMETHODIMP Primitive::put_ObjRotY(float newVal)
    if (m_d.m_aRotAndTra[7] != newVal)
    {
       STARTUNDO
-         m_d.m_aRotAndTra[7] = newVal;
+      m_d.m_aRotAndTra[7] = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -2735,11 +2733,11 @@ STDMETHODIMP Primitive::put_ObjRotZ(float newVal)
    if (m_d.m_aRotAndTra[8] != newVal)
    {
       STARTUNDO
-         m_d.m_aRotAndTra[8] = newVal;
+      m_d.m_aRotAndTra[8] = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -3214,7 +3212,7 @@ void Primitive::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), FALSE);
    }
-   else
+   else //if (!m_d.m_fToy && m_d.m_fCollidable)
    {
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 34), TRUE);
@@ -3242,7 +3240,6 @@ void Primitive::UpdatePropertyPanes()
          EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), TRUE);
       }
    }
-
 }
 
 void Primitive::SetDefaultPhysics(bool fromMouseClick)

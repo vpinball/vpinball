@@ -1300,11 +1300,11 @@ STDMETHODIMP HitTarget::put_Orientation(float newVal)
    if (m_d.m_rotZ != newVal)
    {
       STARTUNDO
-         m_d.m_rotZ = newVal;
+      m_d.m_rotZ = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -1321,11 +1321,11 @@ STDMETHODIMP HitTarget::put_HasHitEvent(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fUseHitEvent = VBTOF(newVal);
+   m_d.m_fUseHitEvent = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_Threshold(float *pVal)
@@ -1615,7 +1615,7 @@ STDMETHODIMP HitTarget::put_DepthBias(float newVal)
    {
       STARTUNDO
 
-         m_d.m_depthBias = newVal;
+      m_d.m_depthBias = newVal;
 
       STOPUNDO
    }
@@ -1691,11 +1691,11 @@ STDMETHODIMP HitTarget::put_LegacyMode(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_legacy = VBTOF(newVal);
+   m_d.m_legacy = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 
@@ -1715,7 +1715,6 @@ STDMETHODIMP HitTarget::put_DrawStyle(TargetType newVal)
     if(!g_pplayer)
         UpdateEditorView();
 
-
     return S_OK;
 }
 
@@ -1733,11 +1732,11 @@ STDMETHODIMP HitTarget::put_PhysicsMaterial(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_OverwritePhysics(VARIANT_BOOL *pVal)
@@ -1751,11 +1750,11 @@ STDMETHODIMP HitTarget::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fOverwritePhysics = VBTOF(newVal);
+   m_d.m_fOverwritePhysics = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_HitThreshold(float *pVal)
@@ -1791,9 +1790,9 @@ STDMETHODIMP HitTarget::put_RaiseDelay(long newVal)
 {
     STARTUNDO
 
-        m_d.m_RaiseDelay = newVal;
+    m_d.m_RaiseDelay = newVal;
 
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }

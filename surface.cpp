@@ -439,11 +439,11 @@ void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
       obj->m_fEnabled = m_d.m_fCollidable;
    }
 
-   if(m_d.m_fHitEvent)
+   if (m_d.m_fHitEvent)
    {
-       obj->m_obj = (IFireEvents*)this;
-       obj->m_fe = true;
-       obj->m_threshold = m_d.m_threshold;
+      obj->m_obj = (IFireEvents*)this;
+      obj->m_fe = true;
+      obj->m_threshold = m_d.m_threshold;
    }
 
    pvho.push_back(obj);
@@ -475,11 +475,11 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
 
    SetupHitObject(pvho, plineseg);
 
-   if(pv1.fSlingshot)  // slingshots always have hit events
+   if (pv1.fSlingshot)  // slingshots always have hit events
    {
-       plineseg->m_obj = (IFireEvents*)this;
-       plineseg->m_fe = true;
-       plineseg->m_threshold = m_d.m_threshold;
+      plineseg->m_obj = (IFireEvents*)this;
+      plineseg->m_fe = true;
+      plineseg->m_threshold = m_d.m_threshold;
    }
 
    if (m_d.m_heightbottom != 0.f)
@@ -1535,7 +1535,8 @@ void Surface::UpdateUnitsInfo()
 {
    if(g_pplayer)
        return;
-   char tbuf[64];
+
+   char tbuf[128];
    sprintf_s(tbuf, "TopHeight: %.03f | BottomHeight: %0.3f", g_pvp->ConvertToUnit(m_d.m_heighttop), g_pvp->ConvertToUnit(m_d.m_heightbottom));
    g_pvp->SetStatusBarUnitInfo(tbuf);
 }
@@ -1678,6 +1679,7 @@ STDMETHODIMP Surface::put_HeightBottom(float newVal)
    STOPUNDO
 
    UpdateUnitsInfo();
+
    return S_OK;
 }
 
@@ -1695,6 +1697,7 @@ STDMETHODIMP Surface::put_HeightTop(float newVal)
    m_d.m_heighttop = newVal;
 
    STOPUNDO
+
    UpdateUnitsInfo();
 
    return S_OK;

@@ -198,8 +198,8 @@ public:
    const WORD      *m_indices;        // dto.
    unsigned int     m_numVertices;
    unsigned int     m_numIndices;
-   bool             m_hitEvent;
    float            m_currentHitThreshold;
+   bool             m_hitEvent;
 
 private:        // private member functions
 

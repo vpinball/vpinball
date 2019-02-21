@@ -46,7 +46,7 @@ void Ramp::UpdateUnitsInfo()
        return;
 
    char tbuf[128];
-   sprintf_s(tbuf, "TopH: %.03f | BottomH: %0.3f | TopW: %.03f | BottomW: %.03f | LeftW: %.03f | RightW: %.3f", g_pvp->ConvertToUnit(m_d.m_heighttop), g_pvp->ConvertToUnit(m_d.m_heightbottom), 
+   sprintf_s(tbuf, "TopH: %.03f | BottomH: %0.3f | TopW: %.03f | BottomW: %.03f | LeftW: %.03f | RightW: %.03f", g_pvp->ConvertToUnit(m_d.m_heighttop), g_pvp->ConvertToUnit(m_d.m_heightbottom), 
                                                                                   g_pvp->ConvertToUnit(m_d.m_widthtop), g_pvp->ConvertToUnit(m_d.m_widthbottom),
                                                                                   g_pvp->ConvertToUnit(m_d.m_leftwallheightvisible), g_pvp->ConvertToUnit(m_d.m_rightwallheightvisible));
    g_pvp->SetStatusBarUnitInfo(tbuf);
@@ -1610,6 +1610,7 @@ STDMETHODIMP Ramp::put_HeightBottom(float newVal)
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
+
       UpdateUnitsInfo();
    }
 
@@ -1634,6 +1635,7 @@ STDMETHODIMP Ramp::put_HeightTop(float newVal)
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
+
       UpdateUnitsInfo();
    }
 
@@ -1657,6 +1659,7 @@ STDMETHODIMP Ramp::put_WidthBottom(float newVal)
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
+
       UpdateUnitsInfo();
    }
 
@@ -1681,6 +1684,7 @@ STDMETHODIMP Ramp::put_WidthTop(float newVal)
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
+
       UpdateUnitsInfo();
    }
 
