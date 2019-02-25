@@ -51,7 +51,7 @@ public:
 
    void ParseCommand(size_t code, HWND hwnd, size_t notify);
    void ReInitPinDirectSound();
-   void setLayerStatus(int layerNumber);
+   void SetLayerStatus(const int layerNumber);
 
    CComObject<PinTable> *GetActiveTable();
    void InitTools();
@@ -60,7 +60,7 @@ public:
    void LoadFileName(char *szFileName);
    void SetClipboard(vector<IStream*> * const pvstm);
 
-   bool FCanClose();
+   bool CanClose();
 
    void DoPlay(const bool _cameraMode);
 

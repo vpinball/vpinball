@@ -663,8 +663,6 @@ void Gate::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
-
-   m_ptable->SetDirtyDraw();
 }
 
 Vertex2D Gate::GetCenter() const
@@ -675,8 +673,6 @@ Vertex2D Gate::GetCenter() const
 void Gate::PutCenter(const Vertex2D& pv)
 {
    m_d.m_vCenter = pv;
-
-   m_ptable->SetDirtyDraw();
 }
 
 HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
@@ -896,9 +892,9 @@ STDMETHODIMP Gate::put_Rotation(float newVal)
 {
    STARTUNDO
 
-      m_d.m_rotation = newVal;
+   m_d.m_rotation = newVal;
 
-   STOPUNDO;
+   STOPUNDO
 
    return S_OK;
 }

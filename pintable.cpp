@@ -729,8 +729,6 @@ STDMETHODIMP ScriptGlobalTable::get_ShowFSS(VARIANT_BOOL *pVal)
 
    STOPUNDO
 
-   SetDirtyDraw();
-
    return S_OK;
 }*/
 
@@ -1715,6 +1713,7 @@ void PinTable::AssignToLayer(IEditable *obj, int layerNumber)
    RemoveFromVectorSingle(m_layer[obj->GetISelect()->m_layerIndex], obj);
    obj->GetISelect()->m_layerIndex = layerNumber;
    m_layer[layerNumber].insert(m_layer[layerNumber].begin(), obj);
+
    SetDirtyDraw();
 }
 
@@ -1910,8 +1909,6 @@ void PinTable::InitPostLoad(VPinball *pvp)
    SetDefaultView();
 
    m_szBlueprintFileName[0] = 0;
-
-   CreateGDIBackdrop();
 
    //InitVBA();
    m_pcv->AddItem(this, false);
@@ -3195,7 +3192,7 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
    WriteInfoValue(pstg, L"TableDescription", m_szDescription, hcrypthash);
    WriteInfoValue(pstg, L"TableRules", m_szRules, hcrypthash);
 
-   Texture *pin = GetImage(m_szScreenShot);
+   Texture * const pin = GetImage(m_szScreenShot);
    if (pin != NULL && pin->m_ppb != NULL)
    {
       IStream *pstm;
@@ -4896,13 +4893,11 @@ void PinTable::SetMyScrollInfo()
    RECT rc;
    ::GetClientRect(m_hwnd, &rc);
 
-   HitSur * const phs = new HitSur(NULL, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
+   const HitSur phs(NULL, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
    Vertex2D rgv[2];
-   rgv[0] = phs->ScreenToSurface(rc.left, rc.top);
-   rgv[1] = phs->ScreenToSurface(rc.right, rc.bottom);
-
-   delete phs;
+   rgv[0] = phs.ScreenToSurface(rc.left, rc.top);
+   rgv[1] = phs.ScreenToSurface(rc.right, rc.bottom);
 
    SCROLLINFO si;
    ZeroMemory(&si, sizeof(SCROLLINFO));
@@ -4967,10 +4962,7 @@ void PinTable::DoLButtonDown(int x, int y, bool zoomIn)
       {
          m_offset = TransformPoint(x, y);
 
-         if (zoomIn)
-            SetZoom(m_zoom * 1.5f);
-         else
-            SetZoom(m_zoom * 0.5f);
+         SetZoom(m_zoom * (zoomIn ? 1.5f : 0.5f));
 
          SetDirtyDraw();
       }
@@ -4995,7 +4987,7 @@ void PinTable::DoLButtonDown(int x, int y, bool zoomIn)
 
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
-         ISelect *pisel2 = m_vmultisel.ElementAt(i);
+         ISelect *const pisel2 = m_vmultisel.ElementAt(i);
          if (pisel2)
             pisel2->OnLButtonDown(x, y);
       }
@@ -5033,6 +5025,7 @@ void PinTable::DoRButtonDown(int x, int y)
       {
          m_offset = TransformPoint(x, y);
          SetZoom(m_zoom * 0.5f);
+
          SetDirtyDraw();
       }
    }
@@ -5786,8 +5779,10 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (pt->m_oldMousePosX < x)  pt->m_offset.x -= dx;
                 if (pt->m_oldMousePosY > y)  pt->m_offset.y += dy;
                 if (pt->m_oldMousePosY < y)  pt->m_offset.y -= dy;
+
                 pt->SetDirtyDraw();
                 pt->SetMyScrollInfo();
+
                 pt->m_oldMousePosX = x;
                 pt->m_oldMousePosY = y;
                 break;
@@ -5852,7 +5847,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 break;
                 case SB_THUMBTRACK:
                 {
-                    const int delta = (int)(pt->m_offset.x - si.nPos);
+                    const int delta = (int)(pt->m_offset.x - (float)si.nPos);
                     pt->m_offset.x = (float)((short)HIWORD(wParam) + delta);
                     break;
                 }
@@ -5887,7 +5882,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 break;
                 case SB_THUMBTRACK:
                 {
-                    const int delta = (int)(pt->m_offset.y - si.nPos);
+                    const int delta = (int)(pt->m_offset.y - (float)si.nPos);
                     pt->m_offset.y = (float)((short)HIWORD(wParam) + delta);
                     break;
                 }
@@ -6672,6 +6667,8 @@ void PinTable::Undo()
    m_undo.Undo();
 
    SetDirtyDraw();
+   SetMyScrollInfo();
+
    if (m_searchSelectDlg.IsWindow())
    {
       m_searchSelectDlg.Update();
@@ -6768,10 +6765,10 @@ void PinTable::Paste(const bool fAtLocation, int x, int y)
    if (m_vmultisel.Size() == 1)
    {
        // User wants to paste the copied coordinates of a Control Point
-       ISelect *pItem = HitTest(x, y);
+       ISelect * const pItem = HitTest(x, y);
        if (pItem->GetItemType() == eItemDragPoint)
        {
-           DragPoint *pPoint = (DragPoint*)pItem;
+           DragPoint * const pPoint = (DragPoint*)pItem;
            pPoint->Paste();
            SetDirtyDraw();
            return;
@@ -7067,6 +7064,7 @@ void PinTable::OnDelete()
    g_pvp->SetPropSel(&m_vmultisel);
    if (m_searchSelectDlg.IsWindow())
       m_searchSelectDlg.Update();
+
    SetDirtyDraw();
 }
 
@@ -7122,6 +7120,7 @@ void PinTable::OnKeyDown(int key)
          g_pvp->m_sb.RefreshProperties();    // update position fields
       }
       EndUndo();
+      SetDirtyDraw();
    }
    break;
    }
@@ -7441,8 +7440,10 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 if (pt->m_oldMousePosX < x)  pt->m_offset.x -= dx;
                 if (pt->m_oldMousePosY > y)  pt->m_offset.y += dy;
                 if (pt->m_oldMousePosY < y)  pt->m_offset.y -= dy;
+
                 pt->SetDirtyDraw();
                 pt->SetMyScrollInfo();
+
                 pt->m_oldMousePosX = x;
                 pt->m_oldMousePosY = y;
                 break;
@@ -7897,10 +7898,6 @@ Texture* PinTable::GetImage(const char * const szName) const
    }
 
    return NULL;
-}
-
-void PinTable::CreateGDIBackdrop()
-{
 }
 
 void PinTable::ReImportImage(Texture * const ppi, const char * const filename)
@@ -8701,12 +8698,6 @@ STDMETHODIMP PinTable::put_Image(BSTR newVal)
 
    strcpy_s(m_szImage,szImage);
 
-   if (!g_pplayer)
-   {
-      CreateGDIBackdrop();
-      SetDirtyDraw();
-   }
-
    STOPUNDO
 
    return S_OK;
@@ -9190,8 +9181,6 @@ STDMETHODIMP PinTable::put_DisplayGrid(VARIANT_BOOL newVal)
 
    m_fGrid = !!newVal;
 
-   SetDirtyDraw();
-
    STOPUNDO
 
    return S_OK;
@@ -9209,8 +9198,6 @@ STDMETHODIMP PinTable::put_DisplayBackdrop(VARIANT_BOOL newVal)
    STARTUNDO
 
    m_fBackdrop = !!newVal;
-
-   SetDirtyDraw();
 
    STOPUNDO
 
@@ -9289,11 +9276,9 @@ STDMETHODIMP PinTable::put_Width(float newVal)
 
    m_right = newVal;
 
-   SetDirtyDraw();
+   STOPUNDO
 
    SetMyScrollInfo();
-
-   STOPUNDO
 
    return S_OK;
 }
@@ -9311,11 +9296,9 @@ STDMETHODIMP PinTable::put_Height(float newVal)
 
    m_bottom = newVal;
 
-   SetDirtyDraw();
+   STOPUNDO
 
    SetMyScrollInfo();
-
-   STOPUNDO
 
    return S_OK;
 }
@@ -9845,8 +9828,6 @@ STDMETHODIMP PinTable::put_ShowFSS(VARIANT_BOOL newVal)
 
    STOPUNDO
 
-   SetDirtyDraw();
-
    return S_OK;
 }
 
@@ -9865,12 +9846,6 @@ STDMETHODIMP PinTable::put_BackdropImage_DT(BSTR newVal) //!! HDR??
    STARTUNDO
 
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[0], 32, NULL, NULL);
-
-   if (!g_pplayer)
-   {
-      CreateGDIBackdrop();
-      SetDirtyDraw();
-   }
 
    STOPUNDO
 
@@ -9893,12 +9868,6 @@ STDMETHODIMP PinTable::put_BackdropImage_FS(BSTR newVal) //!! HDR??
 
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[1], 32, NULL, NULL);
 
-   if (!g_pplayer)
-   {
-      CreateGDIBackdrop();
-      SetDirtyDraw();
-   }
-
    STOPUNDO
 
    return S_OK;
@@ -9919,12 +9888,6 @@ STDMETHODIMP PinTable::put_BackdropImage_FSS(BSTR newVal) //!! HDR??
    STARTUNDO
 
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[2], 32, NULL, NULL);
-
-   if (!g_pplayer)
-   {
-      CreateGDIBackdrop();
-      SetDirtyDraw();
-   }
 
    STOPUNDO
 
@@ -10895,7 +10858,6 @@ STDMETHODIMP PinTable::put_ShowDT(VARIANT_BOOL newVal)
    m_BG_current_set = (!!newVal) ? (m_BG_enable_FSS ? BG_FSS : BG_DESKTOP) : BG_FULLSCREEN;
 
    //STOPUNDO
-
    SetDirtyDraw();
 
    return S_OK;

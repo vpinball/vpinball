@@ -618,8 +618,6 @@ void Flipper::MoveOffset(const float dx, const float dy)
 {
    m_d.m_Center.x += dx;
    m_d.m_Center.y += dy;
-
-   m_ptable->SetDirtyDraw();
 }
 
 Vertex2D Flipper::GetCenter() const
@@ -630,8 +628,6 @@ Vertex2D Flipper::GetCenter() const
 void Flipper::PutCenter(const Vertex2D& pv)
 {
    m_d.m_Center = pv;
-
-   m_ptable->SetDirtyDraw();
 }
 
 void Flipper::SetDefaultPhysics(bool fromMouseClick)
@@ -1247,7 +1243,7 @@ STDMETHODIMP Flipper::put_BaseRadius(float newVal)
 
    m_d.m_BaseRadius = newVal;
 
-   STOPUNDO;
+   STOPUNDO
 
    return S_OK;
 }
@@ -1387,8 +1383,8 @@ STDMETHODIMP Flipper::put_EndAngle(float newVal)
    else
    {
       STARTUNDO
-        m_d.m_EndAngle = newVal;
-      STOPUNDO;
+      m_d.m_EndAngle = newVal;
+      STOPUNDO
    }
 
    return S_OK;

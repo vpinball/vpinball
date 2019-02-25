@@ -1305,7 +1305,6 @@ void Primitive::MoveOffset(const float dx, const float dy)
    m_d.m_vPosition.y += dy;
 
    UpdateEditorView();
-   m_ptable->SetDirtyDraw();
 }
 
 Vertex2D Primitive::GetCenter() const
@@ -1319,7 +1318,6 @@ void Primitive::PutCenter(const Vertex2D& pv)
    m_d.m_vPosition.y = pv.y;
 
    UpdateEditorView();
-   m_ptable->SetDirtyDraw();
 }
 
 //////////////////////////////

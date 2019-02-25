@@ -1188,7 +1188,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          }
          else if (dispid == IDC_POINT_COPY_BUTTON)
          {
-             ISelect *pItem = psb->m_pvsel->ElementAt(0);
+             ISelect *const pItem = psb->m_pvsel->ElementAt(0);
              if ((psb->m_pvsel->Size() == 1) && (pItem->GetItemType() == eItemDragPoint))
              {
                  DragPoint *pPoint = (DragPoint*)pItem;
@@ -1197,7 +1197,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          }
          else if (dispid == IDC_POINT_PASTE_BUTTON)
          {
-             ISelect *pItem = psb->m_pvsel->ElementAt(0);
+             ISelect *const pItem = psb->m_pvsel->ElementAt(0);
              if ((psb->m_pvsel->Size() == 1) && (pItem->GetItemType() == eItemDragPoint))
              {
                 DragPoint *pPoint = (DragPoint*)pItem;
@@ -1233,10 +1233,10 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
          if (proptype == 0)
          {
-            IPerPropertyBrowsing *pippb;
-            IDispatch *pIdisp = psb->GetBaseIDisp();
+            IDispatch *const pIdisp = psb->GetBaseIDisp();
             if (pIdisp)
             {
+               IPerPropertyBrowsing *pippb;
                pIdisp->QueryInterface(IID_IPerPropertyBrowsing, (void **)&pippb);
 
                CComVariant var;

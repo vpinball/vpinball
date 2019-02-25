@@ -92,7 +92,7 @@ public:
       virtual int GetMinimumPoints() const { return 2; }
 
       virtual Vertex2D GetCenter() const { return m_d.m_vCenter; }
-      virtual void PutCenter(const Vertex2D& pv) { m_d.m_vCenter = pv; m_ptable->SetDirtyDraw(); }
+      virtual void PutCenter(const Vertex2D& pv) { m_d.m_vCenter = pv; }
       virtual void DoCommand(int icmd, int x, int y);
 
       virtual bool IsTransparent() const { return !m_d.m_IsDMD; }

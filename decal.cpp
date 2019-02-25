@@ -638,8 +638,6 @@ void Decal::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
-
-   m_ptable->SetDirtyDraw();
 }
 
 Vertex2D Decal::GetCenter() const
@@ -650,8 +648,6 @@ Vertex2D Decal::GetCenter() const
 void Decal::PutCenter(const Vertex2D& pv)
 {
    m_d.m_vCenter = pv;
-
-   m_ptable->SetDirtyDraw();
 }
 
 void Decal::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
@@ -1186,8 +1182,6 @@ STDMETHODIMP Decal::put_HasVerticalText(VARIANT_BOOL newVal)
    STARTUNDO
 
    m_d.m_fVerticalText = VBTOF(newVal);
-
-   SetDirtyDraw();
 
    EnsureSize();
 

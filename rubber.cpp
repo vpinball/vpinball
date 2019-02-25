@@ -671,8 +671,6 @@ void Rubber::MoveOffset(const float dx, const float dy)
       pdp->m_v.x += dx;
       pdp->m_v.y += dy;
    }
-
-   m_ptable->SetDirtyDraw();
 }
 
 void Rubber::ClearForOverwrite()

@@ -904,8 +904,6 @@ void Bumper::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
-
-   m_ptable->SetDirtyDraw();
 }
 
 Vertex2D Bumper::GetCenter() const
@@ -916,8 +914,6 @@ Vertex2D Bumper::GetCenter() const
 void Bumper::PutCenter(const Vertex2D& pv)
 {
    m_d.m_vCenter = pv;
-
-   m_ptable->SetDirtyDraw();
 }
 
 HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)

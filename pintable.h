@@ -332,7 +332,6 @@ public:
    void RemoveImage(Texture * const ppi);
    HRESULT LoadImageFromStream(IStream *pstm, int version);
    Texture* GetImage(const char * const szName) const;
-   void CreateGDIBackdrop();
    bool GetImageLink(Texture * const ppi);
    PinBinary *GetImageLinkBinary(int id);
 
