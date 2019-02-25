@@ -172,7 +172,7 @@ STDMETHODIMP ScriptGlobalTable::NudgeTiltStatus(VARIANT *XPlumb, VARIANT *YPlumb
 
 STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade)
 {
-   if (g_pplayer && g_pplayer->m_fPlaySound) m_pt->PlaySound(bstr, LoopCount, volume, pan, randompitch, pitch, usesame, restart, front_rear_fade);
+   if (g_pplayer && g_pplayer->m_PlaySound) m_pt->PlaySound(bstr, LoopCount, volume, pan, randompitch, pitch, usesame, restart, front_rear_fade);
 
    return S_OK;
 }
@@ -193,7 +193,7 @@ STDMETHODIMP ScriptGlobalTable::QuitPlayer(int CloseType)
 
 STDMETHODIMP ScriptGlobalTable::StopSound(BSTR Sound)
 {
-   if (g_pplayer && g_pplayer->m_fPlaySound)
+   if (g_pplayer && g_pplayer->m_PlaySound)
       m_pt->StopSound(Sound);
 
    return S_OK;
@@ -201,7 +201,7 @@ STDMETHODIMP ScriptGlobalTable::StopSound(BSTR Sound)
 
 STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
 {
-   if (g_pplayer && g_pplayer->m_fPlayMusic)
+   if (g_pplayer && g_pplayer->m_PlayMusic)
    {
       if (g_pplayer->m_pxap)
          EndMusic();
@@ -245,7 +245,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
 
 STDMETHODIMP ScriptGlobalTable::EndMusic()
 {
-   if (g_pplayer && g_pplayer->m_fPlayMusic)
+   if (g_pplayer && g_pplayer->m_PlayMusic)
    {
       if (g_pplayer->m_pxap)
       {
@@ -260,7 +260,7 @@ STDMETHODIMP ScriptGlobalTable::EndMusic()
 
 STDMETHODIMP ScriptGlobalTable::put_MusicVolume(float volume)
 {
-	if (g_pplayer && g_pplayer->m_fPlayMusic)
+	if (g_pplayer && g_pplayer->m_PlayMusic)
 	{
 		const float MusicVolumef = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f);
 #ifdef NO_XAUDIO

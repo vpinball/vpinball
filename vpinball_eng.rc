@@ -562,8 +562,8 @@ BEGIN
     LTEXT           "To interactively set, calibrate and test the Nudge parameters, please load the\n'Nudge Test and Calibration.vpx' table and run it",IDC_STATIC,255,273,168,25
     CONTROL         "Enable Mouse handling during Play",IDC_ENABLE_MOUSE_PLAYER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,233,150,10
-    CONTROL         "Enable flying around (Arrow Keys + Left Alt Key) during Camera/Light Edit Mode",IDC_ENABLE_CAMERA_FLY_AROUND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,245,289,10
+    CONTROL         "Enable flying around (Arrow Keys + Left Alt Key) during Camera/Light/Material Edit Mode",IDC_ENABLE_CAMERA_FLY_AROUND,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,245,300,10
     GROUPBOX        "DOF Controller Options",IDC_STATIC,500,7,120,191
     CTEXT           "Contactors",IDC_STATIC,505,17,50,14,0,WS_EX_DLGMODALFRAME
     COMBOBOX        IDC_DOF_CONTACTORS,505,32,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
@@ -694,7 +694,7 @@ BEGIN
     DEFPUSHBUTTON   "&Resume Game",ID_RESUME,7,17,64,14
     PUSHBUTTON      "&Debugger/Intera.Edit",ID_DEBUGWINDOW,7,40,64,14
     PUSHBUTTON      "&Quit to Editor",ID_QUIT,7,59,64,14
-    CTEXT           "Paused",IDC_STATIC,7,7,64,10
+    CTEXT           "Paused",IDC_STATIC,7,4,64,10
 END
 
 IDD_EDITOR_OPTIONS DIALOGEX 0, 0, 229, 313
@@ -2788,13 +2788,13 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "&Import"
         BEGIN
-            MENUITEM "Backdrop &POV",               ID_IMPORT_BACKDROPPOV
+            MENUITEM "&POV",                        ID_IMPORT_BACKDROPPOV
         END
         POPUP "Ex&port"
         BEGIN
-            MENUITEM "&Blueprint...",               ID_FILE_EXPORT_BLUEPRINT
+            MENUITEM "&Blueprint",                  ID_FILE_EXPORT_BLUEPRINT
             MENUITEM "OBJ &Mesh",                   ID_EXPORT_TABLEMESH
-            MENUITEM "Backdrop &POV",               ID_EXPORT_BACKDROPPOV
+            MENUITEM "&POV",                        ID_EXPORT_BACKDROPPOV
         END
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_FILE_EXIT
@@ -2820,11 +2820,11 @@ BEGIN
         MENUITEM "Outline",                     ID_VIEW_OUTLINE
         MENUITEM SEPARATOR
         MENUITEM "&Grid",                       ID_VIEW_GRID, CHECKED
-        MENUITEM "Back&drop",                   ID_VIEW_BACKDROP, CHECKED
+        MENUITEM "Playfield Image/Back&drop",   ID_VIEW_BACKDROP, CHECKED
         MENUITEM SEPARATOR
         MENUITEM "&Options",                    ID_EDIT_PROPERTIES
         MENUITEM "&Script",                     ID_EDIT_SCRIPT
-        MENUITEM "&Backglass View\t Ctrl+Space", ID_EDIT_BACKGLASSVIEW
+        MENUITEM "&Backglass/POV\t Ctrl+Space", ID_EDIT_BACKGLASSVIEW
     END
     POPUP "&Insert"
     BEGIN
@@ -2851,7 +2851,7 @@ BEGIN
     POPUP "&Table"
     BEGIN
         MENUITEM "&Play\tF5",                   ID_TABLE_PLAY
-        MENUITEM "Camera/Light Edit M&ode\tF6", ID_TABLE_CAMERAMODE
+        MENUITEM "Camera/Light/Material Edit M&ode\tF6", ID_TABLE_CAMERAMODE
         MENUITEM SEPARATOR
         MENUITEM "&Table Info...",              ID_TABLE_TABLEINFO
         MENUITEM "&Sound Manager...\tF2",       ID_TABLE_SOUNDMANAGER
@@ -2885,7 +2885,7 @@ BEGIN
         MENUITEM "&Audio Options...",           ID_EDIT_AUDIOOPTIONS
         MENUITEM "&Video/Graphics Options...",  ID_EDIT_VIDEOOPTIONS
         MENUITEM "&Editor/UI Options...",       ID_EDIT_EDITOROPTIONS
-        MENUITEM "Configure &Keys, Nudge and DOF...",     ID_EDIT_KEYS
+        MENUITEM "Configure &Keys, Nudge and DOF...", ID_EDIT_KEYS
         MENUITEM "Configure (Optional) Global &Physics Sets...", ID_EDIT_PHYSICSOPTIONS
         MENUITEM "&Scripting Security Options...", ID_PREFERENCES_SECURITYOPTIONS
     END
@@ -3330,8 +3330,8 @@ STRINGTABLE
 BEGIN
     IDS_DRAWINBACK          "Draw In &Back"
     IDS_SAVEERROR           "There was an error saving the file."
-    IDS_TB_BACKGLASS        "Backdrop"
-    IDS_WRONGFILEVERSION    "This table was saved by a new version of Visual Pinball. It's possible that it won't work well!"
+    IDS_TB_BACKGLASS        "Backglass/POV"
+    IDS_WRONGFILEVERSION    "This table was saved by a newer version of Visual Pinball. It's possible that it won't work well!"
     IDS_NOPASTEINVIEW       "One or more of the objects on the clipboard can not be placed into the current view."
     IDS_FINDLOOPED          "Passed the end of the file"
     IDS_FINDFAILED          "Cannot find the string '"

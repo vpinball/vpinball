@@ -328,7 +328,6 @@ public:
    void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture* const tex, const float intensity, const bool backdrop=false);
 
    HWND m_playfieldHwnd;
-   HWND m_backdropHwnd;
 
    Shader      *ballShader;
    IndexBuffer *ballIndexBuffer;
@@ -344,10 +343,10 @@ public:
 
    U32 m_time_msec;
 
-   Ball *m_pactiveball;		// ball the script user can get with ActiveBall
-   Ball *m_pactiveballDebug;	// ball the debugger will use as Activeball when firing events
-   Ball *m_pactiveballBC;	   // ball that the ball control UI will use
-   Vertex3Ds *m_pBCTarget;      // If non-null, the target location for the ball to roll towards
+   Ball *m_pactiveball;      // ball the script user can get with ActiveBall
+   Ball *m_pactiveballDebug; // ball the debugger will use as Activeball when firing events
+   Ball *m_pactiveballBC;    // ball that the ball control UI will use
+   Vertex3Ds *m_pBCTarget;   // If non-null, the target location for the ball to roll towards
 
    std::vector<Ball*> m_vball;
    std::vector<HitFlipper*> m_vFlippers;
@@ -416,8 +415,8 @@ public:
 
    bool m_bloomOff;
 
-   bool m_fPlayMusic;
-   bool m_fPlaySound;
+   bool m_PlayMusic;
+   bool m_PlaySound;
    int m_MusicVolume;
    int m_SoundVolume;
 
