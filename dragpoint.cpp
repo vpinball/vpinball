@@ -40,8 +40,7 @@ void IHaveDragPoints::PutPointCenter(const Vertex2D& pv)
 
 void IHaveDragPoints::FlipPointY(const Vertex2D& pvCenter)
 {
-   GetIEditable()->BeginUndo();
-   GetIEditable()->MarkForUndo();
+   STARTUNDOSELECT
 
    Vertex2D newcenter = GetPointCenter();
 
@@ -58,15 +57,12 @@ void IHaveDragPoints::FlipPointY(const Vertex2D& pvCenter)
 
    ReverseOrder();
 
-   GetIEditable()->EndUndo();
-
-   GetPTable()->SetDirtyDraw();
+   STOPUNDOSELECT
 }
 
 void IHaveDragPoints::FlipPointX(const Vertex2D& pvCenter)
 {
-   GetIEditable()->BeginUndo();
-   GetIEditable()->MarkForUndo();
+   STARTUNDOSELECT
 
    Vertex2D newcenter = GetPointCenter();
 
@@ -83,9 +79,7 @@ void IHaveDragPoints::FlipPointX(const Vertex2D& pvCenter)
 
    ReverseOrder();
 
-   GetIEditable()->EndUndo();
-
-   GetPTable()->SetDirtyDraw();
+   STOPUNDOSELECT
 }
 
 void IHaveDragPoints::RotateDialog()
@@ -110,8 +104,7 @@ void IHaveDragPoints::RotatePoints(const float ang, const Vertex2D& pvCenter, co
 {
    Vertex2D newcenter = GetPointCenter();
 
-   GetIEditable()->BeginUndo();
-   GetIEditable()->MarkForUndo();
+   STARTUNDOSELECT
 
    if (useElementCenter)
    {
@@ -165,17 +158,15 @@ void IHaveDragPoints::RotatePoints(const float ang, const Vertex2D& pvCenter, co
          PutPointCenter(newcenter);
       }
    }
-   GetIEditable()->EndUndo();
 
-   GetPTable()->SetDirtyDraw();
+   STOPUNDOSELECT
 }
 
 void IHaveDragPoints::ScalePoints(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    Vertex2D newcenter = GetPointCenter();
 
-   GetIEditable()->BeginUndo();
-   GetIEditable()->MarkForUndo();
+   STARTUNDOSELECT
 
    if (useElementCenter)
    {
@@ -218,15 +209,12 @@ void IHaveDragPoints::ScalePoints(const float scalex, const float scaley, const 
       }
    }
 
-   GetIEditable()->EndUndo();
-
-   GetPTable()->SetDirtyDraw();
+   STOPUNDOSELECT
 }
 
 void IHaveDragPoints::TranslatePoints(const Vertex2D &pvOffset)
 {
-   GetIEditable()->BeginUndo();
-   GetIEditable()->MarkForUndo();
+   STARTUNDOSELECT
 
    for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
@@ -242,9 +230,7 @@ void IHaveDragPoints::TranslatePoints(const Vertex2D &pvOffset)
 
    PutPointCenter(newcenter);
 
-   GetIEditable()->EndUndo();
-
-   GetPTable()->SetDirtyDraw();
+   STOPUNDOSELECT
 }
 
 void IHaveDragPoints::ReverseOrder()
@@ -468,8 +454,6 @@ void DragPoint::MoveOffset(const float dx, const float dy)
 {
    m_v.x += dx;
    m_v.y += dy;
-
-   m_pihdp->GetIEditable()->SetDirtyDraw();
 }
 
 Vertex2D DragPoint::GetCenter() const
@@ -481,8 +465,6 @@ void DragPoint::PutCenter(const Vertex2D& pv)
 {
    m_v.x = pv.x;
    m_v.y = pv.y;
-
-   m_pihdp->GetIEditable()->SetDirtyDraw();
 }
 
 void DragPoint::EditMenu(HMENU hmenu)
@@ -513,18 +495,17 @@ void DragPoint::Uncreate()
 
 void DragPoint::DoCommand(int icmd, int x, int y)
 {
-   int index2;
    ISelect::DoCommand(icmd, x, y);
    switch (icmd)
    {
    case ID_POINTMENU_SMOOTH:
    {
-      IEditable *pedit = m_pihdp->GetIEditable();
+      IEditable * const pedit = m_pihdp->GetIEditable();
       pedit->BeginUndo();
       pedit->MarkForUndo();
 
       m_fSmooth = !m_fSmooth;
-      index2 = (FindIndexOf(m_pihdp->m_vdpoint, (CComObject<DragPoint> *)this) - 1 + (int)m_pihdp->m_vdpoint.size()) % (int)m_pihdp->m_vdpoint.size();
+      const int index2 = (FindIndexOf(m_pihdp->m_vdpoint, (CComObject<DragPoint> *)this) - 1 + (int)m_pihdp->m_vdpoint.size()) % (int)m_pihdp->m_vdpoint.size();
       if (m_fSmooth && m_fSlingshot)
       {
          m_fSlingshot = false;
@@ -540,7 +521,7 @@ void DragPoint::DoCommand(int icmd, int x, int y)
    }
    case ID_POINTMENU_SLINGSHOT:
    {
-      IEditable *pedit = m_pihdp->GetIEditable();
+      IEditable * const pedit = m_pihdp->GetIEditable();
       pedit->BeginUndo();
       pedit->MarkForUndo();
 
@@ -548,7 +529,7 @@ void DragPoint::DoCommand(int icmd, int x, int y)
       if (m_fSlingshot)
       {
          m_fSmooth = false;
-         index2 = (FindIndexOf(m_pihdp->m_vdpoint, (CComObject<DragPoint> *)this) + 1) % m_pihdp->m_vdpoint.size();
+         const int index2 = (FindIndexOf(m_pihdp->m_vdpoint, (CComObject<DragPoint> *)this) + 1) % m_pihdp->m_vdpoint.size();
          m_pihdp->m_vdpoint[index2]->m_fSmooth = false;
       }
 

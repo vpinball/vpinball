@@ -491,7 +491,7 @@ void Spinner::RenderStatic()
    mat.m_fEdge = 1.0f;
    mat.m_fEdgeAlpha = 1.0f;
    pd3dDevice->basicShader->SetMaterial(&mat);
-   pd3dDevice->basicShader->SetTechnique("basic_without_texture_isMetal");
+   pd3dDevice->basicShader->SetTechnique(mat.m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    ppin3d->EnableAlphaBlend(false);
 
    pd3dDevice->basicShader->Begin(0);
@@ -508,8 +508,6 @@ void Spinner::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
-
-   m_ptable->SetDirtyDraw();
 }
 
 Vertex2D Spinner::GetCenter() const
@@ -520,8 +518,6 @@ Vertex2D Spinner::GetCenter() const
 void Spinner::PutCenter(const Vertex2D& pv)
 {
    m_d.m_vCenter = pv;
-
-   m_ptable->SetDirtyDraw();
 }
 
 void Spinner::SetDefaultPhysics(bool fromMouseClick)
@@ -690,11 +686,12 @@ STDMETHODIMP Spinner::put_Length(float newVal)
 {
    STARTUNDO
 
-      m_d.m_length = newVal;
+   m_d.m_length = newVal;
 
    STOPUNDO
 
    UpdateUnitsInfo();
+
    return S_OK;
 }
 
@@ -728,12 +725,13 @@ STDMETHODIMP Spinner::put_Height(float newVal)
 {
    STARTUNDO
 
-      m_d.m_height = newVal;
+   m_d.m_height = newVal;
 
    STOPUNDO
+
    UpdateUnitsInfo();
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Spinner::get_Damping(float *pVal)

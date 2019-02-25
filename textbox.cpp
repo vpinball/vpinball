@@ -387,8 +387,6 @@ void Textbox::MoveOffset(const float dx, const float dy)
 
    m_d.m_v2.x += dx;
    m_d.m_v2.y += dy;
-
-   m_ptable->SetDirtyDraw();
 }
 
 Vertex2D Textbox::GetCenter() const
@@ -402,8 +400,6 @@ void Textbox::PutCenter(const Vertex2D& pv)
    m_d.m_v2.y = pv.y + m_d.m_v2.y - m_d.m_v1.y;
 
    m_d.m_v1 = pv;
-
-   m_ptable->SetDirtyDraw();
 }
 
 STDMETHODIMP Textbox::get_BackColor(OLE_COLOR *pVal)
@@ -622,6 +618,7 @@ STDMETHODIMP Textbox::putref_Font(IFontDisp* pFont)
    //pFont->QueryInterface(IID_IFont, (void **)&m_pIFont);
 
    SetDirtyDraw();
+
    return S_OK;
 }
 

@@ -87,8 +87,6 @@ void LightSeq::MoveOffset(const float dx, const float dy)
 {
    m_d.m_v.x += dx;
    m_d.m_v.y += dy;
-
-   m_ptable->SetDirtyDraw();
 }
 
 Vertex2D LightSeq::GetCenter() const
@@ -99,8 +97,6 @@ Vertex2D LightSeq::GetCenter() const
 void LightSeq::PutCenter(const Vertex2D& pv)
 {
    m_d.m_v = pv;
-
-   m_ptable->SetDirtyDraw();
 }
 
 // this function draws the shape of the object with a solid fill

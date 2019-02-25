@@ -503,8 +503,6 @@ void DispReel::MoveOffset(const float dx, const float dy)
 
    m_d.m_v2.x += dx;
    m_d.m_v2.y += dy;
-
-   m_ptable->SetDirtyDraw();
 }
 
 
@@ -520,8 +518,6 @@ void DispReel::PutCenter(const Vertex2D& pv)
 
    m_d.m_v2.x = pv.x + getBoxWidth();
    m_d.m_v2.y = pv.y + getBoxHeight();
-
-   m_ptable->SetDirtyDraw();
 }
 
 

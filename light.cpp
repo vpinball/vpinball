@@ -56,8 +56,6 @@ void LightCenter::MoveOffset(const float dx, const float dy)
 {
    m_plight->m_d.m_vCenter.x += dx;
    m_plight->m_d.m_vCenter.y += dy;
-
-   GetPTable()->SetDirtyDraw();
 }
 
 int LightCenter::GetSelectLevel()
@@ -559,7 +557,7 @@ void Light::RenderBulbMesh()
 
    RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   pd3dDevice->basicShader->SetTechnique("basic_without_texture_isNotMetal");
+   pd3dDevice->basicShader->SetTechnique(mat.m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    pd3dDevice->basicShader->SetMaterial(&mat);
 
    pd3dDevice->basicShader->Begin(0);
@@ -578,7 +576,7 @@ void Light::RenderBulbMesh()
    mat.m_fGlossyImageLerp = 1.0f;
    mat.m_fThickness = 0.05f;
    mat.m_cClearcoat = 0xFFFFFF;
-   pd3dDevice->basicShader->SetTechnique("basic_without_texture_isNotMetal");
+   pd3dDevice->basicShader->SetTechnique(mat.m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    pd3dDevice->basicShader->SetMaterial(&mat);
 
    pd3dDevice->basicShader->Begin(0);
@@ -588,7 +586,7 @@ void Light::RenderBulbMesh()
 
 void Light::RenderDynamic()
 {
-    RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    TRACE_FUNCTION();
 
@@ -1019,8 +1017,6 @@ void Light::MoveOffset(const float dx, const float dy)
       pdp->m_v.x += dx;
       pdp->m_v.y += dy;
    }
-
-   m_ptable->SetDirtyDraw();
 }
 
 HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
@@ -1244,8 +1240,6 @@ Vertex2D Light::GetPointCenter() const
 void Light::PutPointCenter(const Vertex2D& pv)
 {
    m_d.m_vCenter = pv;
-
-   SetDirtyDraw();
 }
 
 void Light::EditMenu(HMENU hmenu)

@@ -631,8 +631,6 @@ void Kicker::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
-
-   m_ptable->SetDirtyDraw();
 }
 
 Vertex2D Kicker::GetCenter() const
@@ -643,8 +641,6 @@ Vertex2D Kicker::GetCenter() const
 void Kicker::PutCenter(const Vertex2D& pv)
 {
    m_d.m_vCenter = pv;
-
-   SetDirtyDraw();
 }
 
 
