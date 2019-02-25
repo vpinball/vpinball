@@ -276,31 +276,27 @@ void ISelect::SetLockedFormat(Sur *psur)
 
 void ISelect::FlipY(const Vertex2D& pvCenter)
 {
-   STARTUNDOSELECT
+   GetIEditable()->MarkForUndo(); // Start/EndUndo cycle is around the loop that calls this
 
    Vertex2D vCenter = GetCenter();
    const float delta = vCenter.y - pvCenter.y;
    vCenter.y -= delta * 2;
    PutCenter(vCenter);
-
-   STOPUNDOSELECT
 }
 
 void ISelect::FlipX(const Vertex2D& pvCenter)
 {
-   STARTUNDOSELECT
+   GetIEditable()->MarkForUndo(); // Start/EndUndo cycle is around the loop that calls this
 
    Vertex2D vCenter = GetCenter();
    const float delta = vCenter.x - pvCenter.x;
    vCenter.x -= delta * 2;
    PutCenter(vCenter);
-
-   STOPUNDOSELECT
 }
 
 void ISelect::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   STARTUNDOSELECT
+   GetIEditable()->MarkForUndo(); // Start/EndUndo cycle is around the loop that calls this
 
    Vertex2D vCenter = GetCenter();
 
@@ -313,13 +309,11 @@ void ISelect::Rotate(const float ang, const Vertex2D& pvCenter, const bool useEl
    vCenter.x = pvCenter.x + cs*dx - sn*dy;
    vCenter.y = pvCenter.y + cs*dy + sn*dx;
    PutCenter(vCenter);
-
-   STOPUNDOSELECT
 }
 
 void ISelect::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   STARTUNDOSELECT
+   GetIEditable()->MarkForUndo(); // Start/EndUndo cycle is around the loop that calls this
 
    Vertex2D vCenter = GetCenter();
 
@@ -329,21 +323,17 @@ void ISelect::Scale(const float scalex, const float scaley, const Vertex2D& pvCe
    vCenter.x = pvCenter.x + dx*scalex;
    vCenter.y = pvCenter.y + dy*scaley;
    PutCenter(vCenter);
-
-   STOPUNDOSELECT
 }
 
 void ISelect::Translate(const Vertex2D &pvOffset)
 {
-   STARTUNDOSELECT
+   GetIEditable()->MarkForUndo(); // Start/EndUndo cycle is around the loop that calls this
 
    Vertex2D vCenter = GetCenter();
 
    vCenter.x += pvOffset.x;
    vCenter.y += pvOffset.y;
    PutCenter(vCenter);
-
-   STOPUNDOSELECT
 }
 
 HRESULT ISelect::GetTypeName(BSTR *pVal)
