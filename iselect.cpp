@@ -39,7 +39,7 @@ void ISelect::OnLButtonUp(int x, int y)
    if (m_fMarkedForUndo)
    {
       m_fMarkedForUndo = false;
-      GetIEditable()->EndUndo();
+      STOPUNDOSELECT
    }
 }
 
@@ -66,10 +66,12 @@ void ISelect::OnMouseMove(int x, int y)
       if (!m_fMarkedForUndo)
       {
          m_fMarkedForUndo = true;
-         GetIEditable()->BeginUndo();
-         GetIEditable()->MarkForUndo();
+         STARTUNDOSELECT
       }
       MoveOffset((x - m_ptLast.x)*inv_zoom, (y - m_ptLast.y)*inv_zoom);
+
+      GetPTable()->SetDirtyDraw();
+
       m_ptLast.x = x;
       m_ptLast.y = y;
       SetObjectPos();
@@ -87,15 +89,15 @@ void ISelect::EditMenu(HMENU hmenu)
 
 void ISelect::DoCommand(int icmd, int x, int y)
 {
-   IEditable *piedit = GetIEditable();
+   IEditable * const piedit = GetIEditable();
 
    if ((icmd & 0x0000FFFF) == ID_SELECT_ELEMENT)
    {
       const int ksshift = GetKeyState(VK_SHIFT);
       const int ksctrl = GetKeyState(VK_CONTROL);
 
-      PinTable *currentTable = GetPTable();
-      int i = (icmd & 0x00FF0000) >> 16;
+      PinTable * const currentTable = GetPTable();
+      const int i = (icmd & 0x00FF0000) >> 16;
       ISelect * const pisel = currentTable->m_allHitElements[i];
 
       const bool fAdd = ((ksshift & 0x80000000) != 0);
@@ -119,8 +121,8 @@ void ISelect::DoCommand(int icmd, int x, int y)
       const int ksshift = GetKeyState(VK_SHIFT);
       const int ksctrl = GetKeyState(VK_CONTROL);
 
-      PinTable *currentTable = GetPTable();
-      int i = icmd & 0x000000FF;
+      PinTable * const currentTable = GetPTable();
+      const int i = icmd & 0x000000FF;
       currentTable->UpdateCollection(i);
    }
    switch (icmd)
@@ -155,11 +157,9 @@ void ISelect::DoCommand(int icmd, int x, int y)
       piedit->WriteRegDefaults();
       break;
    case ID_LOCK:
-      GetIEditable()->BeginUndo();
-      GetIEditable()->MarkForUndo();
+      STARTUNDOSELECT
       m_fLocked = !m_fLocked;
-      GetIEditable()->EndUndo();
-      GetPTable()->SetDirtyDraw();
+      STOPUNDOSELECT
       break;
 
    case IDC_COPY:
@@ -219,18 +219,18 @@ void ISelect::DoCommand(int icmd, int x, int y)
    }
    case ID_ASSIGNTO_LAYER9:
    {
-       GetPTable()->AssignToLayer(piedit, 8);
-       break;
+      GetPTable()->AssignToLayer(piedit, 8);
+      break;
    }
    case ID_ASSIGNTO_LAYER10:
    {
-       GetPTable()->AssignToLayer(piedit, 9);
-       break;
+      GetPTable()->AssignToLayer(piedit, 9);
+      break;
    }
    case ID_ASSIGNTO_LAYER11:
    {
-       GetPTable()->AssignToLayer(piedit, 10);
-       break;
+      GetPTable()->AssignToLayer(piedit, 10);
+      break;
    }
    /*default:
       psel->DoCommand(command, x, y);
@@ -260,16 +260,9 @@ void ISelect::SetSelectFormat(Sur *psur)
 
 void ISelect::SetMultiSelectFormat(Sur *psur)
 {
-   DWORD color;
-
-   if (m_fLocked)
-   {
-      color = g_pvp->m_elemSelectLockedColor;
-   }
-   else
-   {
-      color = g_pvp->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
-   }
+   const DWORD color = m_fLocked ?
+      g_pvp->m_elemSelectLockedColor :
+      g_pvp->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
 
    psur->SetBorderColor(color, false, 3);
    psur->SetLineColor(color, false, 3);
@@ -283,27 +276,31 @@ void ISelect::SetLockedFormat(Sur *psur)
 
 void ISelect::FlipY(const Vertex2D& pvCenter)
 {
-   GetIEditable()->MarkForUndo();
+   STARTUNDOSELECT
 
    Vertex2D vCenter = GetCenter();
    const float delta = vCenter.y - pvCenter.y;
    vCenter.y -= delta * 2;
    PutCenter(vCenter);
+
+   STOPUNDOSELECT
 }
 
 void ISelect::FlipX(const Vertex2D& pvCenter)
 {
-   GetIEditable()->MarkForUndo();
+   STARTUNDOSELECT
 
    Vertex2D vCenter = GetCenter();
    const float delta = vCenter.x - pvCenter.x;
    vCenter.x -= delta * 2;
    PutCenter(vCenter);
+
+   STOPUNDOSELECT
 }
 
 void ISelect::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   GetIEditable()->MarkForUndo();
+   STARTUNDOSELECT
 
    Vertex2D vCenter = GetCenter();
 
@@ -316,11 +313,13 @@ void ISelect::Rotate(const float ang, const Vertex2D& pvCenter, const bool useEl
    vCenter.x = pvCenter.x + cs*dx - sn*dy;
    vCenter.y = pvCenter.y + cs*dy + sn*dx;
    PutCenter(vCenter);
+
+   STOPUNDOSELECT
 }
 
 void ISelect::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   GetIEditable()->MarkForUndo();
+   STARTUNDOSELECT
 
    Vertex2D vCenter = GetCenter();
 
@@ -330,17 +329,21 @@ void ISelect::Scale(const float scalex, const float scaley, const Vertex2D& pvCe
    vCenter.x = pvCenter.x + dx*scalex;
    vCenter.y = pvCenter.y + dy*scaley;
    PutCenter(vCenter);
+
+   STOPUNDOSELECT
 }
 
 void ISelect::Translate(const Vertex2D &pvOffset)
 {
-   GetIEditable()->MarkForUndo();
+   STARTUNDOSELECT
 
    Vertex2D vCenter = GetCenter();
 
    vCenter.x += pvOffset.x;
    vCenter.y += pvOffset.y;
    PutCenter(vCenter);
+
+   STOPUNDOSELECT
 }
 
 HRESULT ISelect::GetTypeName(BSTR *pVal)
@@ -353,7 +356,7 @@ HRESULT ISelect::GetTypeName(BSTR *pVal)
 
 void ISelect::GetTypeNameForType(ItemTypeEnum type, WCHAR * buf)
 {
-   int strID = 0;
+   int strID;
 
    switch (type)
    {
@@ -374,7 +377,7 @@ BOOL ISelect::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetBool(&m_fLocked);
    }
-   if (id == FID(LAYR))
+   else if (id == FID(LAYR))
    {
       pbr->GetInt(&m_layerIndex);
    }
