@@ -1526,9 +1526,9 @@ STRINGTABLE
 BEGIN
     IDS_DRAWINBACK          "In den Hintergrund"
     IDS_SAVEERROR           "Fehler beim Speichern der Datei."
-    IDS_TB_BACKGLASS        "Backdrop"
+    IDS_TB_BACKGLASS        "Backglass/POV"
     IDS_WRONGFILEVERSION    "Visual Pinball can not load a file of that version."
-    IDS_NOPASTEINVIEW       "Visual Pinnball kann Datei mit dieser Versionsnummer nicht laden"
+    IDS_NOPASTEINVIEW       "Visual Pinball kann Datei mit dieser Versionsnummer nicht laden"
     IDS_FINDLOOPED          "Dateiende erreicht"
     IDS_FINDFAILED          "Kann Suchbegriff nicht finden: '"
     IDS_FINDFAILED2         "'"
