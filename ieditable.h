@@ -9,10 +9,13 @@ class IScriptable;
 
 class IFireEvents
 {
+
 public:
    virtual void FireGroupEvent(int dispid) = 0;
    virtual IDispatch *GetDispatch() = 0;
    virtual IDebugCommands *GetDebugCommands() = 0;
+
+   float   m_currentHitThreshold; // while playing and the ball hits the mesh the hit threshold is updated here
 };
 
 #define STARTUNDO \
