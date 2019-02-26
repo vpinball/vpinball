@@ -304,7 +304,6 @@ public:
    int m_numGroupIndices;
    float m_currentFrame;
    float m_speed;
-   float m_currentHitThreshold; // while playing and the ball hits the mesh the hit threshold is updated here
    bool m_DoAnimation;
    bool m_Endless;
 
