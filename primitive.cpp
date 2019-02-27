@@ -706,7 +706,6 @@ void Primitive::UIRenderPass2(Sur * const psur)
 {
    psur->SetLineColor(RGB(0, 0, 0), false, 1);
    psur->SetObject(this);
-
    if (!m_d.m_fDisplayTexture)
    {
       if ((m_d.m_edgeFactorUI <= 0.0f) || (m_d.m_edgeFactorUI >= 1.0f) || !m_d.m_use3DMesh)
@@ -1080,10 +1079,25 @@ void Primitive::CalculateBuiltinOriginal()
    ComputeNormals(m_mesh.m_vertices, m_mesh.m_indices);
 }
 
+void Primitive::UpdateMeshInfo()
+{
+    if(g_pplayer)
+        return;
+
+    char tbuf[128];
+    sprintf_s(tbuf, "vertices: %i | polygons: %i", m_mesh.NumVertices(), m_mesh.NumIndices());
+    g_pvp->SetStatusBarUnitInfo(tbuf, false);
+}
+
 void Primitive::UpdateEditorView()
 {
+    if(g_pplayer)
+        return;
+
    RecalculateMatrices();
    TransformVertices();
+
+
 }
 
 void Primitive::ExportMesh(FILE *f)
@@ -2084,7 +2098,6 @@ STDMETHODIMP Primitive::get_Image(BSTR *pVal)
 
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
    *pVal = SysAllocString(wz);
-
    return S_OK;
 }
 
@@ -2332,7 +2345,7 @@ STDMETHODIMP Primitive::put_DrawTexturesInside(VARIANT_BOOL newVal)
 STDMETHODIMP Primitive::get_X(float *pVal)
 {
    *pVal = m_d.m_vPosition.x;
-   g_pvp->SetStatusBarUnitInfo("");
+   UpdateMeshInfo();
 
    return S_OK;
 }
@@ -2345,8 +2358,7 @@ STDMETHODIMP Primitive::put_X(float newVal)
       m_d.m_vPosition.x = newVal;
       STOPUNDO
 
-      if (!g_pplayer)
-         UpdateEditorView();
+      UpdateEditorView();
    }
 
    return S_OK;
@@ -2367,8 +2379,7 @@ STDMETHODIMP Primitive::put_Y(float newVal)
       m_d.m_vPosition.y = newVal;
       STOPUNDO
 
-      if (!g_pplayer)
-         UpdateEditorView();
+      UpdateEditorView();
    }
 
    return S_OK;
@@ -2377,6 +2388,7 @@ STDMETHODIMP Primitive::put_Y(float newVal)
 STDMETHODIMP Primitive::get_Z(float *pVal)
 {
    *pVal = m_d.m_vPosition.z;
+   UpdateMeshInfo();
 
    return S_OK;
 }
@@ -2389,8 +2401,7 @@ STDMETHODIMP Primitive::put_Z(float newVal)
       m_d.m_vPosition.z = newVal;
       STOPUNDO
 
-      if (!g_pplayer)
-         UpdateEditorView();
+      UpdateEditorView();
    }
 
    return S_OK;
@@ -2411,8 +2422,7 @@ STDMETHODIMP Primitive::put_Size_X(float newVal)
       m_d.m_vSize.x = newVal;
       STOPUNDO
 
-      if (!g_pplayer)
-         UpdateEditorView();
+      UpdateEditorView();
    }
 
    return S_OK;
@@ -2433,8 +2443,7 @@ STDMETHODIMP Primitive::put_Size_Y(float newVal)
       m_d.m_vSize.y = newVal;
       STOPUNDO
 
-      if (!g_pplayer)
-         UpdateEditorView();
+      UpdateEditorView();
    }
 
    return S_OK;
@@ -2455,8 +2464,7 @@ STDMETHODIMP Primitive::put_Size_Z(float newVal)
       m_d.m_vSize.z = newVal;
       STOPUNDO
 
-      if (!g_pplayer)
-         UpdateEditorView();
+      UpdateEditorView();
    }
 
    return S_OK;
@@ -2464,7 +2472,7 @@ STDMETHODIMP Primitive::put_Size_Z(float newVal)
 
 STDMETHODIMP Primitive::get_RotAndTra0(float *pVal)
 {
-   return get_RotX(pVal);
+    return get_RotX(pVal);
 }
 
 STDMETHODIMP Primitive::put_RotAndTra0(float newVal)
@@ -2486,8 +2494,7 @@ STDMETHODIMP Primitive::put_RotX(float newVal)
       m_d.m_aRotAndTra[0] = newVal;
       STOPUNDO
 
-      if (!g_pplayer)
-         UpdateEditorView();
+      UpdateEditorView();
    }
 
    return S_OK;
@@ -2495,7 +2502,7 @@ STDMETHODIMP Primitive::put_RotX(float newVal)
 
 STDMETHODIMP Primitive::get_RotAndTra1(float *pVal)
 {
-   return get_RotY(pVal);
+    return get_RotY(pVal);
 }
 
 STDMETHODIMP Primitive::put_RotAndTra1(float newVal)
@@ -2548,8 +2555,7 @@ STDMETHODIMP Primitive::put_RotZ(float newVal)
       m_d.m_aRotAndTra[2] = newVal;
       STOPUNDO
 
-      if (!g_pplayer)
-         UpdateEditorView();
+      UpdateEditorView();
    }
 
    return S_OK;
@@ -2579,8 +2585,7 @@ STDMETHODIMP Primitive::put_TransX(float newVal)
       m_d.m_aRotAndTra[3] = newVal;
       STOPUNDO
 
-      if (!g_pplayer)
-         UpdateEditorView();
+      UpdateEditorView();
    }
 
    return S_OK;
@@ -2599,6 +2604,7 @@ STDMETHODIMP Primitive::put_RotAndTra4(float newVal)
 STDMETHODIMP Primitive::get_TransY(float *pVal)
 {
    *pVal = m_d.m_aRotAndTra[4];
+
    return S_OK;
 }
 
@@ -2610,8 +2616,7 @@ STDMETHODIMP Primitive::put_TransY(float newVal)
       m_d.m_aRotAndTra[4] = newVal;
       STOPUNDO
 
-      if (!g_pplayer)
-         UpdateEditorView();
+      UpdateEditorView();
    }
 
    return S_OK;
@@ -2641,8 +2646,7 @@ STDMETHODIMP Primitive::put_TransZ(float newVal)
       m_d.m_aRotAndTra[5] = newVal;
       STOPUNDO
 
-      if (!g_pplayer)
-         UpdateEditorView();
+      UpdateEditorView();
    }
 
    return S_OK;
@@ -2672,8 +2676,7 @@ STDMETHODIMP Primitive::put_ObjRotX(float newVal)
       m_d.m_aRotAndTra[6] = newVal;
       STOPUNDO
 
-      if (!g_pplayer)
-         UpdateEditorView();
+      UpdateEditorView();
    }
 
    return S_OK;
@@ -2703,8 +2706,7 @@ STDMETHODIMP Primitive::put_ObjRotY(float newVal)
       m_d.m_aRotAndTra[7] = newVal;
       STOPUNDO
 
-      if (!g_pplayer)
-         UpdateEditorView();
+      UpdateEditorView();
    }
 
    return S_OK;
@@ -2734,8 +2736,7 @@ STDMETHODIMP Primitive::put_ObjRotZ(float newVal)
       m_d.m_aRotAndTra[8] = newVal;
       STOPUNDO
 
-      if (!g_pplayer)
-         UpdateEditorView();
+      UpdateEditorView();
    }
 
    return S_OK;
@@ -2943,7 +2944,6 @@ STDMETHODIMP Primitive::put_IsToy(VARIANT_BOOL newVal)
 STDMETHODIMP Primitive::get_BackfacesEnabled(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fBackfacesEnabled);
-
    return S_OK;
 }
 
