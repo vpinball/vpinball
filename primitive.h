@@ -293,6 +293,7 @@ public:
    void    RecalculateMatrices();
    void    TransformVertices();
    void    RenderObject(RenderDevice *pd3dDevice);
+   void    UpdateMeshInfo();
 
    static INT_PTR CALLBACK ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

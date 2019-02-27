@@ -1,5 +1,6 @@
 VP 10.6.0 Changelog
 ------------------------
+- show amount of vertices/polygons for a mesh primitive in the status bar
 
 - do not ignore primitive setting 'Has Hit Event' anymore (before it was always implicitly on)
 

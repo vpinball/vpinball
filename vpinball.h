@@ -172,7 +172,7 @@ public:
 
    HMENU GetMainMenu(int id);
    void SetStatusBarElementInfo(const char *info);
-   void SetStatusBarUnitInfo(const char *info);
+   void SetStatusBarUnitInfo(const char *info, const bool isUnit=true);
 
    Material dummyMaterial;
    COLORREF m_elemSelectColor;

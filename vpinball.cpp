@@ -776,32 +776,35 @@ void VPinball::SetStatusBarElementInfo(const char *info)
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 4 | 0, (size_t)info);
 }
 
-void VPinball::SetStatusBarUnitInfo(const char *info)
+void VPinball::SetStatusBarUnitInfo(const char *info, const bool isUnit)
 {
     char textBuf[256] = { 0 };
 
     if (strlen(info) > 0)
     {
        strcpy_s(textBuf, info);
-       switch (m_convertToUnit)
+       if(isUnit)
        {
-       case 0:
-       {
-          strcat_s(textBuf, " (inch)");
-          break;
-       }
-       case 1:
-       {
-          strcat_s(textBuf, " (mm)");
-          break;
-       }
-       case 2:
-       {
-          strcat_s(textBuf, " (VPUnits)");
-          break;
-       }
-       default:
-          break;
+           switch(m_convertToUnit)
+           {
+               case 0:
+               {
+                   strcat_s(textBuf, " (inch)");
+                   break;
+               }
+               case 1:
+               {
+                   strcat_s(textBuf, " (mm)");
+                   break;
+               }
+               case 2:
+               {
+                   strcat_s(textBuf, " (VPUnits)");
+                   break;
+               }
+               default:
+               break;
+           }
        }
     }
     SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf);
