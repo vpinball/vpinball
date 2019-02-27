@@ -5129,8 +5129,8 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
    {
       hmenu = CreatePopupMenu();
       subMenu = CreatePopupMenu();
-      colSubMenu = CreatePopupMenu();
    }
+   colSubMenu = CreatePopupMenu();
 
    psel->EditMenu(hmenu);
 

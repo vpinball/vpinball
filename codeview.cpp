@@ -1207,6 +1207,7 @@ void CodeViewer::LoadFromFile(const char *filename)
 
 		m_fIgnoreDirty = false;
 		m_sdsDirty = eSaveClean;
+        fclose(fScript);
 	}
 }
 

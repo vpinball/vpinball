@@ -72,7 +72,7 @@ HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfxInfo)
       if (mmioRead(hmmioIn, (CHAR*)(((BYTE*)&((*ppwfxInfo)->cbSize)) + sizeof(WORD)),
          cbExtraBytes) != cbExtraBytes)
       {
-         delete *ppwfxInfo;
+         delete[] *ppwfxInfo;
          *ppwfxInfo = NULL;
          return E_FAIL;
       }
@@ -81,7 +81,7 @@ HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfxInfo)
    // Ascend the input file out of the 'fmt ' chunk.
    if (0 != mmioAscend(hmmioIn, &ckIn, 0))
    {
-      delete *ppwfxInfo;
+      delete[] *ppwfxInfo;
       *ppwfxInfo = NULL;
       return E_FAIL;
    }
