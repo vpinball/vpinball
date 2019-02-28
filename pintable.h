@@ -349,7 +349,7 @@ public:
    void RemoveCollection(CComObject<Collection> *pcol);
    void SetCollectionName(Collection *pcol, char *szName, HWND hwndList, int index);
 
-   void DoContextMenu(int x, int y, int menuid, ISelect *psel);
+   void DoContextMenu(int x, int y, const int menuid, ISelect *psel);
    virtual void DoCommand(int icmd, int x, int y);
    bool FMutilSelLocked();
 
