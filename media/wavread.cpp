@@ -16,7 +16,7 @@
 HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfxInfo)
 {
    MMCKINFO        ckIn;           // chunk info. for general use.
-   PCMWAVEFORMAT   pcmWaveFormat;  // Temp PCM structure to load in.       
+   PCMWAVEFORMAT   pcmWaveFormat;  // Temp PCM structure to load in.
 
    *ppwfxInfo = NULL;
 
@@ -46,7 +46,7 @@ HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfxInfo)
    // word, and thats how many extra bytes to allocate.
    if (pcmWaveFormat.wf.wFormatTag == WAVE_FORMAT_PCM)
    {
-      if (NULL == (*ppwfxInfo = new WAVEFORMATEX))
+      if (NULL == (*ppwfxInfo = (WAVEFORMATEX*)new CHAR[sizeof(WAVEFORMATEX)]))
          return E_FAIL;
 
       // Copy the bytes from the pcm structure to the waveformatex structure
@@ -60,8 +60,7 @@ HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfxInfo)
       if (mmioRead(hmmioIn, (CHAR*)&cbExtraBytes, sizeof(WORD)) != sizeof(WORD))
          return E_FAIL;
 
-      *ppwfxInfo = (WAVEFORMATEX*)new CHAR[sizeof(WAVEFORMATEX) + cbExtraBytes];
-      if (NULL == *ppwfxInfo)
+      if (NULL == (*ppwfxInfo = (WAVEFORMATEX*)new CHAR[sizeof(WAVEFORMATEX) + cbExtraBytes]))
          return E_FAIL;
 
       // Copy the bytes from the pcm structure to the waveformatex structure
