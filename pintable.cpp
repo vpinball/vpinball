@@ -563,7 +563,6 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
    BSTR bstr = BstrFromVariant(&Value, 0x409);
 
    DWORD writ;
-
    pstmValue->Write((WCHAR *)bstr, lstrlenW((WCHAR *)bstr) * (int)sizeof(WCHAR), &writ);
 
    SysFreeString(bstr);
@@ -6614,7 +6613,7 @@ void PinTable::SetNonUndoableDirty(SaveDirtyState sds)
 
 void PinTable::CheckDirty()
 {
-   SaveDirtyState sdsNewDirtyState = (SaveDirtyState)max(max((int)m_sdsDirtyProp, (int)m_sdsDirtyScript), (int)m_sdsNonUndoableDirty);
+   const SaveDirtyState sdsNewDirtyState = (SaveDirtyState)max(max((int)m_sdsDirtyProp, (int)m_sdsDirtyScript), (int)m_sdsNonUndoableDirty);
 
    if (sdsNewDirtyState != m_sdsCurrentDirtyState)
    {
@@ -6702,8 +6701,6 @@ void PinTable::RestoreBackup()
 
 void PinTable::Copy(int x, int y)
 {
-   ULONG writ = 0;
-
    if (MultiSelIsEmpty()) // Can't copy table
    {
       return;
@@ -6730,11 +6727,12 @@ void PinTable::Copy(int x, int y)
        IStream *pstm;
        CreateStreamOnHGlobal(hglobal, TRUE, &pstm);
 
-       IEditable *pe = m_vmultisel.ElementAt(i)->GetIEditable();
+       IEditable * const pe = m_vmultisel.ElementAt(i)->GetIEditable();
 
        ////////!! BUG!  With multi-select, if you have multiple dragpoints on
        //////// a surface selected, the surface will get copied multiple times
        const int type = pe->GetItemType();
+       ULONG writ = 0;
        pstm->Write(&type, sizeof(int), &writ);
 
        pe->SaveData(pstm, NULL);
