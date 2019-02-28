@@ -23,6 +23,7 @@ Bumper::Bumper()
    memset(m_d.m_szSkirtMaterial, 0, 32);
    memset(m_d.m_szRingMaterial, 0, 32);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
+   m_d.m_ringDropOffset = 0.0f;
    m_ringDown = false;
    m_doSkirtAnimation = false;
    m_enableSkirtAnimation = true;
@@ -86,8 +87,6 @@ HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
 
-   m_ringAnimate = false;
-   m_d.m_ringDropOffset = 0.0f;
    return InitVBA(fTrue, 0, NULL);
 }
 
@@ -168,6 +167,9 @@ void Bumper::SetDefaults(bool fromMouseClick)
        m_d.m_fCollidable = iTmp == 0 ? false : true;
    else
        m_d.m_fCollidable = true;
+
+   m_ringAnimate = false;
+   m_d.m_ringDropOffset = 0.0f;
 }
 
 void Bumper::WriteRegDefaults()
@@ -1056,11 +1058,11 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(HAHE))
    {
-       pbr->GetBool(&m_d.m_fHitEvent);
+      pbr->GetBool(&m_d.m_fHitEvent);
    }
    else if (id == FID(COLI))
    {
-       pbr->GetBool(&m_d.m_fCollidable);
+      pbr->GetBool(&m_d.m_fCollidable);
    }
    else if (id == FID(BSVS))
    {
@@ -1326,7 +1328,7 @@ STDMETHODIMP Bumper::put_SkirtMaterial(BSTR newVal)
 STDMETHODIMP Bumper::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-   g_pvp->SetStatusBarUnitInfo("");
+   g_pvp->SetStatusBarUnitInfo("", true);
 
    return S_OK;
 }
