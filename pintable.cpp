@@ -386,8 +386,7 @@ STDMETHODIMP ScriptGlobalTable::get_LockbarKey(long *pVal)
 
 bool ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents)
 {
-   char *szPath;
-   szPath = new char[MAX_PATH + lstrlen(szfilename)];
+   char *szPath = new char[MAX_PATH + lstrlen(szfilename)];
    bool fSuccess = false;
 
    if (dirname != NULL)
@@ -447,7 +446,6 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname
 
 STDMETHODIMP ScriptGlobalTable::GetCustomParam(long index, BSTR *param)
 {
-
     if (index <= 0 || index >= MAX_CUSTOM_PARAM_INDEX)
         return E_FAIL;
 
@@ -618,14 +616,11 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
 
    pstmValue->Stat(&statstg, STATFLAG_NONAME);
 
-   WCHAR *wzT;
+   const int size = statstg.cbSize.LowPart / sizeof(WCHAR);
 
-   int size = statstg.cbSize.LowPart / sizeof(WCHAR);
-
-   wzT = new WCHAR[size + 1];
+   WCHAR *wzT = new WCHAR[size + 1];
 
    DWORD read;
-
    hr = pstmValue->Read(wzT, size * (int)sizeof(WCHAR), &read);
    wzT[size] = L'\0';
 
@@ -3167,7 +3162,7 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, WCHAR *wzName, char *szValue, H
       BiffWriter bw(pstm, hcrypthash);
 
       const int len = lstrlen(szValue);
-      WCHAR *wzT = new WCHAR[len + 1];
+      WCHAR * const wzT = new WCHAR[len + 1];
       MultiByteToWideChar(CP_ACP, 0, szValue, -1, wzT, len + 1);
 
       bw.WriteBytes(wzT, len*(int)sizeof(WCHAR), &writ);
@@ -3229,7 +3224,7 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
    {
       char * const szName = m_vCustomInfoTag[i];
       int len = lstrlen(szName);
-      WCHAR *wzName = new WCHAR[len + 1];
+      WCHAR * const wzName = new WCHAR[len + 1];
       MultiByteToWideChar(CP_ACP, 0, szName, -1, wzName, len + 1);
 
       WriteInfoValue(pstg, wzName, m_vCustomInfoContent[i], hcrypthash);
@@ -3254,7 +3249,7 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, WCHAR *wzName, char **pszValue, 
       pstm->Stat(&ss, STATFLAG_NONAME);
 
       const int len = ss.cbSize.LowPart / (DWORD)sizeof(WCHAR);
-      WCHAR *wzT = new WCHAR[len + 1];
+      WCHAR * const wzT = new WCHAR[len + 1];
       *pszValue = new char[len + 1];
 
       ULONG read;
@@ -3330,7 +3325,7 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
    {
       char * const szName = m_vCustomInfoTag[i];
       const int len = lstrlen(szName);
-      WCHAR *wzName = new WCHAR[len + 1];
+      WCHAR * const wzName = new WCHAR[len + 1];
       MultiByteToWideChar(CP_ACP, 0, szName, -1, wzName, len + 1);
 
 	  char *szValue;
@@ -3760,8 +3755,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
-                  PinFont *ppf;
-                  ppf = new PinFont();
+                  PinFont * const ppf = new PinFont();
                   ppf->LoadFromStream(pstmItem, loadfileversion);
                   m_vfont.push_back(ppf);
                   ppf->Register();
@@ -5103,12 +5097,12 @@ void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect 
                 }
             }
         }
-         for (size_t i = 0; i < allIndices.size(); i++)
-               CheckMenuItem(colSubMenu, 0x40000 + allIndices[i], MF_CHECKED);
+        for (size_t i = 0; i < allIndices.size(); i++)
+            CheckMenuItem(colSubMenu, 0x40000 + allIndices[i], MF_CHECKED);
     }
 }
 
-void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
+void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
 {
    POINT pt;
    pt.x = x;
@@ -5117,20 +5111,15 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
 
    HMENU hmenumain;
    HMENU hmenu;
-   HMENU subMenu;
-   HMENU colSubMenu;
    if (menuid != -1)
    {
       hmenumain = LoadMenu(g_hinst, MAKEINTRESOURCE(menuid));
-
       hmenu = GetSubMenu(hmenumain, 0);
    }
    else
    {
       hmenu = CreatePopupMenu();
-      subMenu = CreatePopupMenu();
    }
-   colSubMenu = CreatePopupMenu();
 
    psel->EditMenu(hmenu);
 
@@ -5139,9 +5128,10 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
       if (GetMenuItemCount(hmenu) > 0)
       {
          AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
-         subMenu = CreatePopupMenu();
-         colSubMenu = CreatePopupMenu();
       }
+      HMENU subMenu = CreatePopupMenu();
+      HMENU colSubMenu = CreatePopupMenu();
+
       // TEXT
       LocalString ls17(IDS_COPY_ELEMENT);
       AppendMenu(hmenu, MF_STRING, IDC_COPY, ls17.m_szbuffer);
@@ -5223,17 +5213,17 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
       else
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER8, MF_UNCHECKED);
       if (psel->m_layerIndex == 8)
-          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER9, MF_CHECKED);
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER9, MF_CHECKED);
       else
-          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER9, MF_UNCHECKED);
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER9, MF_UNCHECKED);
       if (psel->m_layerIndex == 9)
-          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER10, MF_CHECKED);
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER10, MF_CHECKED);
       else
-          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER10, MF_UNCHECKED);
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER10, MF_UNCHECKED);
       if (psel->m_layerIndex == 10)
-          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER11, MF_CHECKED);
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER11, MF_CHECKED);
       else
-          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER11, MF_UNCHECKED);
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER11, MF_UNCHECKED);
 
       FillCollectionContextMenu(hmenu, colSubMenu, psel);
 
@@ -5295,7 +5285,7 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
    }
 }
 
-char elementName[256];
+static char elementName[256];
 char *PinTable::GetElementName(IEditable *pedit)
 {
    WCHAR *elemName = NULL;
@@ -5404,13 +5394,13 @@ void PinTable::DoCommand(int icmd, int x, int y)
    }
    case IDC_COPY:
    {
-       Copy(x, y);
-       break;
+      Copy(x, y);
+      break;
    }
    case IDC_PASTE:
    {
-       Paste(false, x, y);
-       break;
+      Paste(false, x, y);
+      break;
    }
    case IDC_PASTEAT:
    {
@@ -5480,18 +5470,18 @@ void PinTable::DoCommand(int icmd, int x, int y)
    }
    case ID_ASSIGNTO_LAYER9:
    {
-       AssignMultiToLayer(8, x, y);
-       break;
+      AssignMultiToLayer(8, x, y);
+      break;
    }
    case ID_ASSIGNTO_LAYER10:
    {
-       AssignMultiToLayer(9, x, y);
-       break;
+      AssignMultiToLayer(9, x, y);
+      break;
    }
    case ID_ASSIGNTO_LAYER11:
    {
-       AssignMultiToLayer(10, x, y);
-       break;
+      AssignMultiToLayer(10, x, y);
+      break;
    }
    }
 }
@@ -5499,8 +5489,7 @@ void PinTable::AssignMultiToLayer(int layerNumber, int x, int y)
 {
    for (int i = 0; i < m_vmultisel.Size(); i++)
    {
-      ISelect *psel;
-      psel = m_vmultisel.ElementAt(i);
+      ISelect * const psel = m_vmultisel.ElementAt(i);
       _ASSERTE(psel != this); // Would make an infinite loop
       switch (layerNumber)
       {
@@ -5546,18 +5535,18 @@ void PinTable::AssignMultiToLayer(int layerNumber, int x, int y)
       }
       case 8:
       {
-          psel->DoCommand(ID_ASSIGNTO_LAYER9, x, y);
-          break;
+         psel->DoCommand(ID_ASSIGNTO_LAYER9, x, y);
+         break;
       }
       case 9:
       {
-          psel->DoCommand(ID_ASSIGNTO_LAYER10, x, y);
-          break;
+         psel->DoCommand(ID_ASSIGNTO_LAYER10, x, y);
+         break;
       }
       case 10:
       {
-          psel->DoCommand(ID_ASSIGNTO_LAYER11, x, y);
-          break;
+         psel->DoCommand(ID_ASSIGNTO_LAYER11, x, y);
+         break;
       }
       }
    }
@@ -5586,12 +5575,12 @@ void PinTable::UpdateCollection(int index)
          }
 
          if (removeOnly)
-             return;
+            return;
 
          /*selected elements are not part of the the selected collection and can be added*/
          for (int t = 0; t < m_vmultisel.Size(); t++)
          {
-            ISelect *ptr = m_vmultisel.ElementAt(t);
+            ISelect * const ptr = m_vmultisel.ElementAt(t);
             m_vcollection.ElementAt(index)->m_visel.AddElement(ptr);
         }
       }
@@ -6264,7 +6253,7 @@ void PinTable::ExportMesh(FILE *f)
 
    const WORD playfieldPolyIndices[10] = { 0, 1, 3, 0, 3, 2, 2, 3, 5, 6 };
 
-   Vertex3D_NoTex2 *buffer = new Vertex3D_NoTex2[4 + 7];
+   Vertex3D_NoTex2 * const buffer = new Vertex3D_NoTex2[4 + 7];
    unsigned int offs = 0;
    for (unsigned int y = 0; y <= 1; ++y)
       for (unsigned int x = 0; x <= 1; ++x, ++offs)
@@ -6331,7 +6320,6 @@ void PinTable::ExportTableMesh()
    }
    WaveFrontObj_ExportEnd(f);
    ::MessageBox(NULL, "Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
-
 }
 
 void PinTable::ImportBackdropPOV(const char *filename)
@@ -6439,7 +6427,7 @@ void PinTable::ExportBackdropPOV(const char *filename)
 		ofn.lpstrDefExt = "pov";
 		ofn.Flags = OFN_OVERWRITEPROMPT;
 
-		int ret = GetSaveFileName(&ofn);
+		const int ret = GetSaveFileName(&ofn);
 
 		// user canceled
 		if (ret == 0)
@@ -7153,11 +7141,10 @@ Vertex2D PinTable::TransformPoint(int x, int y) const
    RECT rc;
    ::GetClientRect(m_hwnd, &rc);
 
-   HitSur * const phs = new HitSur(NULL, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
+   const HitSur phs(NULL, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
-   const Vertex2D result = phs->ScreenToSurface(x, y);
+   const Vertex2D result = phs.ScreenToSurface(x, y);
 
-   delete phs;
    return result;
 }
 
@@ -7291,9 +7278,7 @@ void PinTable::GetDialogPanes(vector<PropertyPane*> &pvproppane)
    }
    else
    {
-      PropertyPane *pproppane;
-
-      pproppane = new PropertyPane(IDD_PROPBACKGLASS_VISUALS, IDS_VISUALS2);
+      PropertyPane * const pproppane = new PropertyPane(IDD_PROPBACKGLASS_VISUALS, IDS_VISUALS2);
       pvproppane.push_back(pproppane);
    }
 }
@@ -7641,8 +7626,7 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
 {
    //GetIApcProjectItem()->put_Name(newVal);
 
-
-      const int l = lstrlenW(newVal);
+   const int l = lstrlenW(newVal);
    if ((l > 32) || (l < 1))
    {
       return E_FAIL;
@@ -7984,7 +7968,7 @@ bool PinTable::ExportImage(Texture * const ppi, const char * const szfilename)
       //write BMP Info Header
       WriteFile(hFile, &bmpi, sizeof(BITMAPINFOHEADER), &write, NULL);
 
-      unsigned char* sinfo = new unsigned char[bmplnsize + 4]; //linebuffer and safty pad
+      unsigned char* const sinfo = new unsigned char[bmplnsize + 4]; //linebuffer and safty pad
       if (!sinfo)
       {
          CloseHandle(hFile);
@@ -8553,7 +8537,7 @@ void PinTable::AddDbgLight(Light *plight)
     }
     else
     {
-        DebugLightData *data = new DebugLightData;
+        DebugLightData * const data = new DebugLightData;
         data->color1 = plight->m_d.m_color;
         data->color2 = plight->m_d.m_color2;
         plight->get_BulbModulateVsAdd(&data->bulbModulateVsAdd);
@@ -8569,7 +8553,7 @@ void PinTable::AddDbgLight(Light *plight)
     }
 }
 
-void PinTable::UpdateDbgLight(void)
+void PinTable::UpdateDbgLight()
 {
     bool somethingChanged = false;
     for (size_t i = 0; i < m_dbgChangedLights.size(); i++)
@@ -8802,7 +8786,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
       rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));
 
-      WCHAR *wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
+      WCHAR * wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
       // TEXT
       MultiByteToWideChar(CP_ACP, 0, "<None>", -1, wzDst, 7);
       rgstr[0] = wzDst;
@@ -8810,8 +8794,8 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         char *szSrc = m_vsound[ivar]->m_szName;
-         DWORD cwch = lstrlen(szSrc) + 1;
+         char * const szSrc = m_vsound[ivar]->m_szName;
+         const DWORD cwch = lstrlen(szSrc) + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == NULL)
          {
@@ -8897,7 +8881,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
             CComBSTR bstr;
             m_vedit[ivar]->GetScriptable()->get_Name(&bstr);
 
-            DWORD cwch = lstrlenW(bstr) + 1;
+            const DWORD cwch = lstrlenW(bstr) + 1;
             //wzDst = ::SysAllocString(bstr);
 
             wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
@@ -8923,7 +8907,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar)* sizeof(WCHAR *));
       rgdw = (DWORD *)CoTaskMemAlloc((cvar)* sizeof(DWORD));
 
-      WCHAR *wzDst = (WCHAR *)CoTaskMemAlloc(5 * sizeof(WCHAR));
+      WCHAR * wzDst = (WCHAR *)CoTaskMemAlloc(5 * sizeof(WCHAR));
       MultiByteToWideChar(CP_ACP, 0, "None", -1, wzDst, 5);
       rgstr[0] = wzDst;
       rgdw[0] = ~0u;
@@ -9265,7 +9249,7 @@ STDMETHODIMP PinTable::put_TableHeight(float newVal)
 STDMETHODIMP PinTable::get_Width(float *pVal)
 {
    *pVal = m_right-m_left;
-   g_pvp->SetStatusBarUnitInfo("");
+   g_pvp->SetStatusBarUnitInfo("", true);
 
    return S_OK;
 }
