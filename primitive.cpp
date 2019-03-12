@@ -929,28 +929,48 @@ void Primitive::CalculateBuiltinOriginal()
    middle->x = 0.0f;
    middle->y = 0.0f;
    middle->z = 0.5f;
+   middle->nx = 0.0f;
+   middle->ny = 0.0f;
+   middle->nz = 1.0f;
    middle = &m_mesh.m_vertices[m_d.m_Sides + 1]; // middle point bottom
    middle->x = 0.0f;
    middle->y = 0.0f;
    middle->z = -0.5f;
+   middle->nx = 0.0f;
+   middle->ny = 0.0f;
+   middle->nz = -1.0f;
    for (int i = 0; i < m_d.m_Sides; ++i)
    {
-      // calculate Top
+      // calculate top
       Vertex3D_NoTex2 * const topVert = &m_mesh.m_vertices[i + 1]; // top point at side
       const float currentAngle = addAngle*(float)i + offsAngle;
       topVert->x = sinf(currentAngle)*outerRadius;
       topVert->y = cosf(currentAngle)*outerRadius;
       topVert->z = 0.5f;
+      topVert->nx = 0.0f;
+      topVert->ny = 0.0f;
+      topVert->nz = 1.0f;
 
       // calculate bottom
       Vertex3D_NoTex2 * const bottomVert = &m_mesh.m_vertices[i + 1 + m_d.m_Sides + 1]; // bottompoint at side
       bottomVert->x = topVert->x;
       bottomVert->y = topVert->y;
       bottomVert->z = -0.5f;
+      bottomVert->nx = 0.0f;
+      bottomVert->ny = 0.0f;
+      bottomVert->nz = -1.0f;
 
       // calculate sides
-      m_mesh.m_vertices[m_d.m_Sides * 2 + 2 + i] = *topVert; // sideTopVert
-      m_mesh.m_vertices[m_d.m_Sides * 3 + 2 + i] = *bottomVert; // sideBottomVert
+      Vertex3D_NoTex2 &sideTopVert = m_mesh.m_vertices[m_d.m_Sides * 2 + 2 + i];
+      sideTopVert = *topVert;
+      sideTopVert.nx = sinf(currentAngle);
+      sideTopVert.ny = cosf(currentAngle);
+      sideTopVert.nz = 0.0f;
+      Vertex3D_NoTex2 &sideBottomVert = m_mesh.m_vertices[m_d.m_Sides * 3 + 2 + i];
+      sideBottomVert = *bottomVert;
+      sideBottomVert.nx = sideTopVert.nx;
+      sideBottomVert.ny = sideTopVert.ny;
+      sideBottomVert.nz = 0.0f;
 
       // calculate bounds for X and Y
       if (topVert->x < minX)
@@ -979,7 +999,7 @@ void Primitive::CalculateBuiltinOriginal()
       topVert->tu = (topVert->x - minX)*invx;
       topVert->tv = (topVert->y - minY)*invy;
 
-      Vertex3D_NoTex2 * const bottomVert = &m_mesh.m_vertices[i + 1 + m_d.m_Sides + 1]; // bottompoint at side
+      Vertex3D_NoTex2 * const bottomVert = &m_mesh.m_vertices[i + 1 + m_d.m_Sides + 1]; // bottom point at side
       bottomVert->tu = topVert->tu + 0.5f;
       bottomVert->tv = topVert->tv;
 
@@ -1076,7 +1096,7 @@ void Primitive::CalculateBuiltinOriginal()
    }
 
    //SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[0], m_mesh.NumIndices()); // SetNormal only works for plane polygons
-   ComputeNormals(m_mesh.m_vertices, m_mesh.m_indices);
+   //ComputeNormals(m_mesh.m_vertices, m_mesh.m_indices);
 }
 
 void Primitive::UpdateMeshInfo()
