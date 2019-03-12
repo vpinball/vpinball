@@ -1413,18 +1413,18 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
       bw.WriteInt(FID(M3VN), (int)m_mesh.NumVertices());
 
 #ifndef COMPRESS_MESHES
-      bw.WriteStruct(FID(M3DX), &m_mesh.m_vertices[0], (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()));
+      bw.WriteStruct(FID(M3DX), m_mesh.m_vertices.data(), (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()));
 #else
       /*bw.WriteTag(FID(M3CX));
       {
-      LZWWriter lzwwriter(pstm, (int *)&m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices(), 1, sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
+      LZWWriter lzwwriter(pstm, (int *)m_mesh.m_vertices.data(), sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices(), 1, sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
       lzwwriter.CompressBits(8 + 1);
       }*/
       {
       const mz_ulong slen = (mz_ulong)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
       mz_ulong clen = compressBound(slen);
       mz_uint8 * c = (mz_uint8 *)malloc(clen);
-      if (compress2(c, &clen, (const unsigned char *)&m_mesh.m_vertices[0], slen, MZ_BEST_COMPRESSION) != Z_OK)
+      if (compress2(c, &clen, (const unsigned char *)m_mesh.m_vertices.data(), slen, MZ_BEST_COMPRESSION) != Z_OK)
          ShowError("Could not compress primitive vertex data");
       bw.WriteInt(FID(M3CY), (int)clen);
       bw.WriteStruct(FID(M3CX), c, clen);
@@ -1436,15 +1436,15 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
       if (m_mesh.NumVertices() > 65535)
       {
 #ifndef COMPRESS_MESHES
-         bw.WriteStruct(FID(M3DI), &m_mesh.m_indices[0], (int)(sizeof(unsigned int)*m_mesh.NumIndices()));
+         bw.WriteStruct(FID(M3DI), m_mesh.m_indices.data(), (int)(sizeof(unsigned int)*m_mesh.NumIndices()));
 #else
          /*bw.WriteTag(FID(M3CI));
-          LZWWriter lzwwriter(pstm, (int *)&m_mesh.m_indices[0], sizeof(unsigned int)*m_mesh.NumIndices(), 1, sizeof(unsigned int)*m_mesh.NumIndices());
+          LZWWriter lzwwriter(pstm, (int *)m_mesh.m_indices.data(), sizeof(unsigned int)*m_mesh.NumIndices(), 1, sizeof(unsigned int)*m_mesh.NumIndices());
           lzwwriter.CompressBits(8 + 1);*/
          const mz_ulong slen = (mz_ulong)(sizeof(unsigned int)*m_mesh.NumIndices());
          mz_ulong clen = compressBound(slen);
          mz_uint8 * c = (mz_uint8 *)malloc(clen);
-         if (compress2(c, &clen, (const unsigned char *)&m_mesh.m_indices[0], slen, MZ_BEST_COMPRESSION) != Z_OK)
+         if (compress2(c, &clen, (const unsigned char *)m_mesh.m_indices.data(), slen, MZ_BEST_COMPRESSION) != Z_OK)
             ShowError("Could not compress primitive index data");
          bw.WriteInt(FID(M3CJ), (int)clen);
          bw.WriteStruct(FID(M3CI), c, clen);
@@ -1457,15 +1457,15 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
          for (size_t i = 0; i < m_mesh.NumIndices(); ++i)
             tmp[i] = m_mesh.m_indices[i];
 #ifndef COMPRESS_MESHES
-         bw.WriteStruct(FID(M3DI), &tmp[0], (int)(sizeof(WORD)*m_mesh.NumIndices()));
+         bw.WriteStruct(FID(M3DI), tmp.data(), (int)(sizeof(WORD)*m_mesh.NumIndices()));
 #else
          /*bw.WriteTag(FID(M3CI));
-          LZWWriter lzwwriter(pstm, (int *)&tmp[0], sizeof(WORD)*m_mesh.NumIndices(), 1, sizeof(WORD)*m_mesh.NumIndices());
+          LZWWriter lzwwriter(pstm, (int *)tmp.data(), sizeof(WORD)*m_mesh.NumIndices(), 1, sizeof(WORD)*m_mesh.NumIndices());
           lzwwriter.CompressBits(8 + 1);*/
          const mz_ulong slen = (mz_ulong)(sizeof(WORD)*m_mesh.NumIndices());
          mz_ulong clen = compressBound(slen);
          mz_uint8 * c = (mz_uint8 *)malloc(clen);
-         if (compress2(c, &clen, (const unsigned char *)&tmp[0], slen, MZ_BEST_COMPRESSION) != Z_OK)
+         if (compress2(c, &clen, (const unsigned char *)tmp.data(), slen, MZ_BEST_COMPRESSION) != Z_OK)
             ShowError("Could not compress primitive index data");
          bw.WriteInt(FID(M3CJ), (int)clen);
          bw.WriteStruct(FID(M3CI), c, clen);
@@ -1480,7 +1480,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
          {
             mz_ulong clen = compressBound(slen);
             mz_uint8 * c = (mz_uint8 *)malloc(clen);
-            if (compress2(c, &clen, (const unsigned char *)&m_mesh.m_animationFrames[i].m_frameVerts[0], slen, MZ_BEST_COMPRESSION) != Z_OK)
+            if (compress2(c, &clen, (const unsigned char *)m_mesh.m_animationFrames[i].m_frameVerts.data(), slen, MZ_BEST_COMPRESSION) != Z_OK)
                ShowError("Could not compress primitive animation vertex data");
             bw.WriteInt(FID(M3AY), (int)clen);
             bw.WriteStruct(FID(M3AX), c, clen);

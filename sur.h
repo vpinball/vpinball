@@ -1,6 +1,6 @@
 #pragma once
 
-// Much faster float-to-int conversion than standard C cast.
+// Much faster float-to-int conversion than standard C cast. (back in the days though)
 // Source: http://stereopsis.com/sree/fpu2006.html
 /*__forceinline int RoundToInt(double val)
 {
