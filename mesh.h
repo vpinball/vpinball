@@ -471,15 +471,24 @@ void ComputeNormals(Vertex3D_NoTex2* const vertices, const unsigned int numVerti
    {
       Vertex3D_NoTex2 &v = vertices[i];
       const float l = v.nx*v.nx + v.ny*v.ny + v.nz*v.nz;
-      const float inv_l = (l >= FLT_MIN) ? 1.0f / sqrtf(l) : 0.f;
-      v.nx *= inv_l;
-      v.ny *= inv_l;
-      v.nz *= inv_l;
+      if (l < FLT_MIN) // degenerate? use up vector then :/
+      {
+          v.nx = 0.f;
+          v.ny = 0.f;
+          v.nz = 1.f;
+      }
+      else
+      {
+          const float inv_l = 1.0f/sqrtf(l);
+          v.nx *= inv_l;
+          v.ny *= inv_l;
+          v.nz *= inv_l;
+      }
    }
 }
 
 template <typename T>
 void ComputeNormals(std::vector<Vertex3D_NoTex2>& vertices, const std::vector<T>& indices)
 {
-   ComputeNormals(&vertices[0], (unsigned int)vertices.size(), &indices[0], (unsigned int)indices.size());
+   ComputeNormals(vertices.data(), (unsigned int)vertices.size(), indices.data(), (unsigned int)indices.size());
 }
