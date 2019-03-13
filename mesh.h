@@ -471,11 +471,11 @@ void ComputeNormals(Vertex3D_NoTex2* const vertices, const unsigned int numVerti
    {
       Vertex3D_NoTex2 &v = vertices[i];
       const float l = v.nx*v.nx + v.ny*v.ny + v.nz*v.nz;
-      if (l < FLT_MIN) // degenerate? use up vector then :/
+      if (l < FLT_MIN) // degenerate?
       {
           v.nx = 0.f;
           v.ny = 0.f;
-          v.nz = 1.f;
+          v.nz = 0.f; // could also use up vector then, but this way easier to catch visually (1.f here)
       }
       else
       {
