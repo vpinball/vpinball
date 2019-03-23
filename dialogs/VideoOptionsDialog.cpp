@@ -153,7 +153,7 @@ void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes,
    {
       char szT[128];
 
-      if (modes[i].depth)
+      if (modes[i].depth) // i.e. is this windowed or not
          sprintf_s(szT, "%d x %d (%dHz)", modes[i].width, modes[i].height, /*modes[i].depth,*/ modes[i].refreshrate);
       else
          sprintf_s(szT, "%d x %d", modes[i].width, modes[i].height);
