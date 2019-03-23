@@ -140,22 +140,41 @@ void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes,
    const HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
    SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
 
+   int bestMatch = 0; // to find closest matching res
+   int bestMatchingPoints = 0; // dto.
+
+   int screenwidth;
+   int screenheight;
+   int x, y;
+   const int display = SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
+   getDisplaySetupByID(display, x, y, screenwidth, screenheight);
+
    for (size_t i = 0; i < modes.size(); ++i)
    {
       char szT[128];
+
       if (modes[i].depth)
          sprintf_s(szT, "%d x %d (%dHz)", modes[i].width, modes[i].height, /*modes[i].depth,*/ modes[i].refreshrate);
       else
          sprintf_s(szT, "%d x %d", modes[i].width, modes[i].height);
-      SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
 
-      if (curSelMode &&
-         modes[i].width == curSelMode->width &&
-         modes[i].height == curSelMode->height &&
-         modes[i].depth == curSelMode->depth &&
-         (modes[i].refreshrate == curSelMode->refreshrate || (curSelMode->refreshrate == 0 && modes[i].refreshrate == DEFAULT_PLAYER_FS_REFRESHRATE)))
-         SendMessage(hwndList, LB_SETCURSEL, i, 0);
+      SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
+      if (curSelMode) {
+         int matchingPoints = 0;
+         if (modes[i].width == curSelMode->width) matchingPoints += 100;
+         if (modes[i].height == curSelMode->height) matchingPoints += 100;
+         if (modes[i].depth == curSelMode->depth) matchingPoints += 50;
+         if (modes[i].refreshrate == curSelMode->refreshrate) matchingPoints += 10;
+         if (modes[i].width == screenwidth) matchingPoints += 3;
+         if (modes[i].height == screenheight) matchingPoints += 3;
+         if (modes[i].refreshrate == DEFAULT_PLAYER_FS_REFRESHRATE) matchingPoints += 1;
+         if (matchingPoints > bestMatchingPoints) {
+            bestMatch = i;
+            bestMatchingPoints = matchingPoints;
+         }
+      }
    }
+   SendMessage(hwndList, LB_SETCURSEL, bestMatch, 0);
 }
 
 
@@ -821,7 +840,10 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          }
          if (allVideoModes.size() > index) {
             const VideoMode* const pvm = &allVideoModes[index];
-            SendMessage(checked ? GET_FULLSCREENMODES : GET_WINDOW_MODES, (pvm->width) << 16 | (pvm->refreshrate), (pvm->height) << 16 | (pvm->depth));
+            if (checked)
+               SendMessage(GET_FULLSCREENMODES, (pvm->width << 16) | pvm->refreshrate, (pvm->height << 16) | pvm->depth);
+            else
+               SendMessage(GET_WINDOW_MODES, pvm->width, pvm->height);
          }
          else
             SendMessage(checked ? GET_FULLSCREENMODES : GET_WINDOW_MODES, 0, 0);
