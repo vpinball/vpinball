@@ -303,6 +303,14 @@ XAudPlayer::XAudPlayer()
 
    if (!bass_init)
    {
+      BASS_INFO info;
+      if (BASS_GetInfo(&info)) { // BASS is already in memory and initialized? (However that would've happened is a mystery to me)
+          bass_init = true;
+          return;
+      }
+
+      //
+
       int DSidx;
       const HRESULT hr = GetRegInt("Player", "SoundDeviceBG", &DSidx);
       if (hr != S_OK)
