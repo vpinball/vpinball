@@ -6363,7 +6363,20 @@ void PinTable::ImportBackdropPOV(const char *filename)
         xmlDoc.parse<0>(&content[0]);
 
         xml_node<> *root = xmlDoc.first_node("POV");
+        if(!root)
+        {
+            ShowError("Error parsing POV XML file: root is NULL");
+            xmlDoc.clear();
+            return;
+        }
+
         xml_node<> *desktop = root->first_node("desktop");
+        if(!desktop)
+        {
+            ShowError("Error parsing POV XML file: desktop is NULL");
+            xmlDoc.clear();
+            return;
+        }
         sscanf_s(desktop->first_node("inclination")->value(), "%f", &m_BG_inclination[BG_DESKTOP]);
         sscanf_s(desktop->first_node("fov")->value(), "%f", &m_BG_FOV[BG_DESKTOP]);
         sscanf_s(desktop->first_node("layback")->value(), "%f", &m_BG_layback[BG_DESKTOP]);
@@ -6376,6 +6389,13 @@ void PinTable::ImportBackdropPOV(const char *filename)
         sscanf_s(desktop->first_node("zoffset")->value(), "%f", &m_BG_xlatez[BG_DESKTOP]);
 
         xml_node<> *fullscreen = root->first_node("fullscreen");
+        if(!fullscreen)
+        {
+            ShowError("Error parsing POV XML file: fullscreen is NULL");
+            xmlDoc.clear();
+            return;
+        }
+
         sscanf_s(fullscreen->first_node("inclination")->value(), "%f", &m_BG_inclination[BG_FULLSCREEN]);
         sscanf_s(fullscreen->first_node("fov")->value(), "%f", &m_BG_FOV[BG_FULLSCREEN]);
         sscanf_s(fullscreen->first_node("layback")->value(), "%f", &m_BG_layback[BG_FULLSCREEN]);
@@ -6399,6 +6419,9 @@ void PinTable::ImportBackdropPOV(const char *filename)
         sscanf_s(fullsinglescreen->first_node("xoffset")->value(), "%f", &m_BG_xlatex[BG_FSS]);
         sscanf_s(fullsinglescreen->first_node("yoffset")->value(), "%f", &m_BG_xlatey[BG_FSS]);
         sscanf_s(fullsinglescreen->first_node("zoffset")->value(), "%f", &m_BG_xlatez[BG_FSS]);
+
+        MessageBox(NULL, "POV imported!", "Info", MB_OK | MB_ICONEXCLAMATION);
+
     }
     catch (...)
     {
