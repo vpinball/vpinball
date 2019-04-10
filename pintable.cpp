@@ -6409,6 +6409,12 @@ void PinTable::ImportBackdropPOV(const char *filename)
         oldFormatLoaded = true;
 
         xml_node<> *fullsinglescreen = root->first_node("fullsinglescreen");
+        if(!fullsinglescreen)
+        {
+            ShowError("Error parsing POV XML file: fullsinglescreen is NULL");
+            xmlDoc.clear();
+            return;
+        }
         sscanf_s(fullsinglescreen->first_node("inclination")->value(), "%f", &m_BG_inclination[BG_FSS]);
         sscanf_s(fullsinglescreen->first_node("fov")->value(), "%f", &m_BG_FOV[BG_FSS]);
         sscanf_s(fullsinglescreen->first_node("layback")->value(), "%f", &m_BG_layback[BG_FSS]);
@@ -6420,7 +6426,6 @@ void PinTable::ImportBackdropPOV(const char *filename)
         sscanf_s(fullsinglescreen->first_node("yoffset")->value(), "%f", &m_BG_xlatey[BG_FSS]);
         sscanf_s(fullsinglescreen->first_node("zoffset")->value(), "%f", &m_BG_xlatez[BG_FSS]);
 
-        MessageBox(NULL, "POV imported!", "Info", MB_OK | MB_ICONEXCLAMATION);
 
     }
     catch (...)
