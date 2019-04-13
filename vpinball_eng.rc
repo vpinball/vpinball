@@ -1994,8 +1994,8 @@ CAPTION "Material Manager"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "List1",IDC_MATERIAL_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | LVS_EDITLABELS | WS_BORDER | WS_TABSTOP,6,5,204,304
-    CONTROL         "Metal Material (disables Glossy and has stronger reflectivity)",IDC_DIFFUSE_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,215,5,199,10
+    CONTROL         "Metal Material (disables Glossy Layer and has stronger reflectivity)",IDC_DIFFUSE_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,215,5,261,10
     EDITTEXT        IDC_DIFFUSE_EDIT,290,31,21,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_GLOSSY_IMGLERP_EDIT,290,77,21,14,ES_AUTOHSCROLL
     LTEXT           "Use\nImage\n(0..1)",IDC_STATIC_GLOSSY_IMGLERP,268,72,22,27
@@ -2018,16 +2018,16 @@ BEGIN
     LTEXT           "Edge Brightness\n(0..1)",IDC_STATIC_EDGE_BRIGHTNESS,220,193,56,20
     EDITTEXT        IDC_THICKNESS_EDIT,290,288,21,14,ES_AUTOHSCROLL
     LTEXT           "Thickness\n(0..1)",IDC_STATIC_THICKNESS,220,289,66,20
-    GROUPBOX        "Opacity (can be modulated by Image on Object)",IDC_STATIC_OPACITY,214,223,192,87
+    GROUPBOX        "Opacity (will be modulated by Image/Alpha channel on Object)",IDC_STATIC_OPACITY,214,223,192,94
     LTEXT           "Amount\n(0..1)",IDC_STATIC_AMOUNT,220,235,30,16
     LTEXT           "Edge Opacity\n(0..1)",IDC_STATIC_EDGE_OPACITY,220,263,64,18
-    LTEXT           "Interacts with Edge Opacity && Amount, can provide a more natural result for thick materials",IDC_STATIC_THICKNESS_TEXT,313,284,92,24
-    LTEXT           "Increases the opacity on the silhouette (1=natural, 0=no change)",IDC_STATIC_EDGE_OPACITY_TEXT,313,258,81,24
+    LTEXT           "Interacts with Edge Opacity && Amount, can provide a more natural result for thick materials (1=thick, 0=no change)",IDC_STATIC_THICKNESS_TEXT,313,283,92,33
+    LTEXT           "Increases the opacity on the silhouette (1=natural, 0=no change)",IDC_STATIC_EDGE_OPACITY_TEXT,313,256,81,24
     LTEXT           "Dims the silhouette ""glow"" when using Glossy or Clearcoat Layers (1=natural, 0=dark)",IDC_STATIC_BRIGHTNESS_TEXT,313,183,85,34
     LTEXT           "Sets from very dull (Shininess low) to perfect/mirror-like (Shininess high) reflections (for glossy layer or metal only)",IDC_STATIC_SHININESS_TEXT,313,107,92,32
     LTEXT           "Add subtle reflections on non-metal materials (leave at non-black for most natural behavior)",IDC_STATIC_GLOSSY_TEXT,313,69,85,32
     LTEXT           "Add an additional thin clearcoat layer on top of the material",IDC_STATIC_CLEARCOAT_TEXT,313,148,75,26
-    GROUPBOX        "Base Color (can be modulated by Image on Object)",IDC_STATIC_BASE_COLOR,214,19,192,43
+    GROUPBOX        "Base Color (will be modulated by Image on Object)",IDC_STATIC_BASE_COLOR,214,19,192,43
     LTEXT           "Steers the basic Color of an Object. Wrap allows for light even if object is only lit from behind (0=natural)",IDC_STATIC_WRAP_TEXT,313,28,85,32
     LTEXT           "Wrap\n(0..1)",IDC_STATIC_WRAP,268,33,21,18
     CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,220,30,40,19
@@ -2040,8 +2040,8 @@ BEGIN
     EDITTEXT        IDC_MAT_ELASTICITY_FALLOFF,474,48,40,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_MAT_FRICTION,474,66,40,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_MAT_SCATTER_ANGLE,474,85,40,14,ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "&OK",IDOK,469,280,50,14
-    PUSHBUTTON      "&Cancel",IDCANCEL,469,296,50,14
+    DEFPUSHBUTTON   "&OK",IDOK,469,288,50,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,469,304,50,14
 END
 
 IDD_CODEVIEW_PREFS DIALOGEX 0, 0, 233, 124
@@ -2168,21 +2168,21 @@ CAPTION "Debug Materials"
 FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
 BEGIN
     COMBOBOX        IDC_DBG_MATERIALCOMBO,7,18,124,87,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Material",IDC_STATIC,7,9,26,8
-    CONTROL         "&Metal Material",IDC_DBG_METAL_MATERIAL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,36,60,10
+    LTEXT           "Material",IDC_STATIC,7,8,26,8
+    CONTROL         "&Metal Material (disables Glossy)",IDC_DBG_METAL_MATERIAL_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,36,124,10
     CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,9,63,40,19
-    GROUPBOX        "Base Color",IDC_STATIC,7,49,124,40
-    LTEXT           "Wrap\n(0..1)",IDC_STATIC,53,64,19,16
+    GROUPBOX        "Base Color",IDC_STATIC,7,48,124,40
+    LTEXT           "Wrap\n(0..1)",IDC_STATIC,56,64,19,16
     EDITTEXT        IDC_DBG_MATERIAL_BASE_WRAP_EDIT,79,65,40,14,ES_AUTOHSCROLL
     CONTROL         "Custom2",IDC_COLOR2,"ColorControl",WS_TABSTOP,9,103,40,19
-    LTEXT           "Use\nImage\n(0..1)",IDC_STATIC,53,99,21,28
+    LTEXT           "Use\nImage\n(0..1)",IDC_STATIC,56,99,21,28
     EDITTEXT        IDC_DBG_MATERIAL_GLOSSY_IMGLERP_EDIT,79,105,40,14,ES_AUTOHSCROLL
-    LTEXT           "Shininess\n(0..1)",IDC_STATIC,13,128,32,16
-    EDITTEXT        IDC_DBG_MATERIAL_SHININESS_EDIT,79,127,40,14,ES_AUTOHSCROLL
+    LTEXT           "Shininess\n(0..1)",IDC_STATIC,13,129,32,16
+    EDITTEXT        IDC_DBG_MATERIAL_SHININESS_EDIT,79,131,40,14,ES_AUTOHSCROLL
     LTEXT           "Edge Brightness\n(0..1)",IDC_STATIC,13,188,56,20
-    LTEXT           "Glossy",IDC_STATIC,9,93,22,8
     CONTROL         "Custom2",IDC_COLOR3,"ColorControl",WS_TABSTOP,9,163,40,19
-    LTEXT           "Clearcoat",IDC_STATIC,9,153,31,8
+    LTEXT           "Clearcoat Layer",IDC_STATIC,9,153,122,8
     EDITTEXT        IDC_DBG_MATERIAL_EDGE_EDIT,79,188,40,14,ES_AUTOHSCROLL
     GROUPBOX        "Opacity",IDC_STATIC,7,210,124,72
     LTEXT           "Amount\n(0..1)",IDC_STATIC,13,222,30,16
@@ -2193,7 +2193,8 @@ BEGIN
     LTEXT           "Thickness\n(0..1)",IDC_STATIC,13,263,60,19
     EDITTEXT        IDC_DBG_MATERIAL_THICKNESS_EDIT,79,263,40,14,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "&Apply",IDOK,7,286,50,14
-    PUSHBUTTON      "&Close",IDCANCEL,79,286,50,14
+    PUSHBUTTON      "&Close",IDCANCEL,81,286,50,14
+    GROUPBOX        "Glossy Layer",IDC_STATIC,7,87,124,40
 END
 
 IDD_DBGLIGHTDIALOG DIALOGEX 0, 0, 137, 201
@@ -2203,7 +2204,7 @@ CAPTION "Debug Lights"
 FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "&Apply",IDOK,7,182,50,14
-    PUSHBUTTON      "&Close",IDCANCEL,79,182,50,14
+    PUSHBUTTON      "&Close",IDCANCEL,81,182,50,14
     EDITTEXT        IDC_DBG_LIGHT_FALLOFF_POWER,58,98,40,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_DBG_LIGHT_INTENSITY,58,112,40,12,ES_AUTOHSCROLL
     LTEXT           "Falloff",IDC_STATIC,7,86,43,8
@@ -2211,23 +2212,23 @@ BEGIN
     LTEXT           "Intensity",IDC_STATIC,7,114,34,8
     LTEXT           "Color",IDC_STATIC,7,135,43,8
     LTEXT           "Full",IDC_STATIC,95,125,12,8
-    EDITTEXT        IDC_DBG_BULB_MODULATE_VS_ADD,58,149,40,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_DBG_TRANSMISSION_SCALE,58,163,40,12,ES_AUTOHSCROLL
-    LTEXT           "Modulate (0..1)",IDC_STATIC,7,153,48,8
-    LTEXT           "Transmit (0..1)",IDC_STATIC,7,166,48,8
+    EDITTEXT        IDC_DBG_BULB_MODULATE_VS_ADD,86,149,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_DBG_TRANSMISSION_SCALE,86,163,40,12,ES_AUTOHSCROLL
+    LTEXT           "Bulb Modulate (0..1)",IDC_STATIC,7,153,76,8
+    LTEXT           "Bulb Transmit (0..1)",IDC_STATIC,7,166,76,8
     COMBOBOX        IDC_LIGHTSCOMBO,7,18,124,87,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_DBG_LIGHT_FALLOFF,58,84,40,12,ES_AUTOHSCROLL
     CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,58,133,31,12
     CONTROL         "Custom2",IDC_COLOR2,"ColorControl",WS_TABSTOP,95,133,31,12
-    LTEXT           "Light",IDC_STATIC,7,9,16,8
+    LTEXT           "Light",IDC_STATIC,7,8,16,8
     CONTROL         "&On",IDC_DBG_LIGHT_ON_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,38,25,10
     CONTROL         "O&ff",IDC_DBG_LIGHT_OFF_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,46,38,25,10
     CONTROL         "&Blinking",IDC_DBG_LIGHT_BLINKING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,90,38,37,10
     LTEXT           "Fade Speed",IDC_STATIC,7,65,40,8
-    LTEXT           "Up",IDC_STATIC,53,55,10,8
-    LTEXT           "Down",IDC_STATIC,90,55,20,8
-    EDITTEXT        IDC_DBG_LIGHT_FADE_UP_EDIT,52,63,34,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_DBG_LIGHT_FADE_DOWN_EDIT,90,63,34,14,ES_AUTOHSCROLL
+    LTEXT           "Up",IDC_STATIC,59,55,10,8
+    LTEXT           "Down",IDC_STATIC,96,55,20,8
+    EDITTEXT        IDC_DBG_LIGHT_FADE_UP_EDIT,58,63,34,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_DBG_LIGHT_FADE_DOWN_EDIT,96,63,34,12,ES_AUTOHSCROLL
 END
 
 IDD_SOUND_POSITION_DIALOG DIALOGEX 0, 0, 298, 183
