@@ -16,14 +16,16 @@ public:
    UndoRecord();
    virtual ~UndoRecord();
 
-   void MarkForUndo(IEditable *pie);
-   void MarkForCreate(IEditable *pie);
-   void MarkForDelete(IEditable *pie);
+   void MarkForUndo(IEditable *const pie);
+   void MarkForCreate(IEditable *const pie);
+   void MarkForDelete(IEditable *const pie);
 
    vector<FastIStream*> m_vstm;
-   vector<IEditable*> m_vieMark;
    vector<IEditable*> m_vieCreate;
    vector<IEditable*> m_vieDelete;
+
+private:
+   vector<IEditable*> m_vieMark;
 };
 
 class PinUndo
@@ -33,13 +35,13 @@ public:
    virtual ~PinUndo();
 
    void BeginUndo();
-   void MarkForUndo(IEditable *pie);
-   void MarkForCreate(IEditable *pie);
-   void MarkForDelete(IEditable *pie);
+   void MarkForUndo(IEditable * const pie);
+   void MarkForCreate(IEditable *const pie);
+   void MarkForDelete(IEditable *const pie);
    void EndUndo();
    void Undo();
 
-   void SetCleanPoint(SaveDirtyState sds);
+   void SetCleanPoint(const SaveDirtyState sds);
 
    PinTable *m_ptable;
 

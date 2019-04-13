@@ -13,7 +13,7 @@ PinUndo::~PinUndo()
       delete m_vur[i];
 }
 
-void PinUndo::SetCleanPoint(SaveDirtyState sds)
+void PinUndo::SetCleanPoint(const SaveDirtyState sds)
 {
    if (sds == eSaveClean)
       m_cleanpoint = m_vur.size();
@@ -43,10 +43,10 @@ void PinUndo::BeginUndo()
    }
 }
 
-void PinUndo::MarkForUndo(IEditable *pie)
+void PinUndo::MarkForUndo(IEditable * const pie)
 {
    if(g_pplayer)
-       return;
+      return;
 
    if(m_vur.size() == 0)
    {
@@ -65,7 +65,7 @@ void PinUndo::MarkForUndo(IEditable *pie)
    pur->MarkForUndo(pie);
 }
 
-void PinUndo::MarkForCreate(IEditable *pie)
+void PinUndo::MarkForCreate(IEditable * const pie)
 {
    if (m_vur.size() == 0)
    {
@@ -84,7 +84,7 @@ void PinUndo::MarkForCreate(IEditable *pie)
    pur->MarkForCreate(pie);
 }
 
-void PinUndo::MarkForDelete(IEditable *pie)
+void PinUndo::MarkForDelete(IEditable * const pie)
 {
    if (m_vur.size() == 0)
    {
@@ -210,7 +210,7 @@ UndoRecord::~UndoRecord()
       m_vieDelete[i]->Release();
 }
 
-void UndoRecord::MarkForUndo(IEditable *pie)
+void UndoRecord::MarkForUndo(IEditable * const pie)
 {
    if (FindIndexOf(m_vieMark, pie) != -1) // Been marked already
       return;
@@ -231,7 +231,7 @@ void UndoRecord::MarkForUndo(IEditable *pie)
    m_vstm.push_back(pstm);
 }
 
-void UndoRecord::MarkForCreate(IEditable *pie)
+void UndoRecord::MarkForCreate(IEditable * const pie)
 {
 #ifdef _DEBUG
    if (FindIndexOf(m_vieCreate, pie) != -1) // Created twice?
@@ -244,7 +244,7 @@ void UndoRecord::MarkForCreate(IEditable *pie)
    m_vieCreate.push_back(pie);
 }
 
-void UndoRecord::MarkForDelete(IEditable *pie)
+void UndoRecord::MarkForDelete(IEditable * const pie)
 {
 #ifdef _DEBUG
    if (FindIndexOf(m_vieDelete, pie) != -1) // Already deleted - bad thing

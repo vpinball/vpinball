@@ -1059,7 +1059,7 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
    return FALSE;
 }
 
-int translateApplyCount = 0;
+static int translateApplyCount = 0;
 INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    ISelect *psel;

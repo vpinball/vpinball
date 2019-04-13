@@ -315,9 +315,9 @@ void CollectionManagerDialog::LoadPosition()
 
 void CollectionManagerDialog::SavePosition()
 {
-    CRect rect = GetWindowRect();
-    (void)SetRegValue("Editor", "CollectionMngPosX", REG_DWORD, &rect.left, 4);
-    (void)SetRegValue("Editor", "CollectionMngPosY", REG_DWORD, &rect.top, 4);
+    const CRect rect = GetWindowRect();
+    SetRegValueInt("Editor", "CollectionMngPosX", rect.left);
+    SetRegValueInt("Editor", "CollectionMngPosY", rect.top);
 }
 
 //######################################## Collection Dialog ########################################
