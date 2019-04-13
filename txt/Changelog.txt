@@ -1,5 +1,14 @@
 VP 10.6.0 Changelog
 ------------------------
+
+- add current active ball velocity/angular velocity, and the number of physics iterations per frame to the F11 debug output/stats
+
+- fix some potential crashes and quirks in the manager dialogs (most notably the alpha test value in the image manager being copied to other elements when deleting an image)
+
+- fix crashes if a POV file is broken/invalid
+
+- fix normal computations of the old legacy primitive (i.e. that triangulated tube)
+
 - show amount of vertices/polygons for a mesh primitive in the status bar
 
 - do not ignore primitive setting 'Has Hit Event' anymore (before it was always implicitly on)
