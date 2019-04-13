@@ -190,12 +190,12 @@ void AudioOptionsDialog::OnOK()
    hwndControl = GetDlgItem(IDC_PLAY_MUSIC).GetHwnd();
    checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
    fmusic = (checked == BST_CHECKED) ? 1 : 0;
-   SetRegValue("Player", "PlayMusic", REG_DWORD, &fmusic, 4);
+   SetRegValueInt("Player", "PlayMusic", fmusic);
 
    hwndControl = GetDlgItem(IDC_PLAY_SOUND).GetHwnd();
    checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
    fmusic = (checked == BST_CHECKED) ? 1 : 0;
-   SetRegValue("Player", "PlaySound", REG_DWORD, &fmusic, 4);
+   SetRegValueInt("Player", "PlaySound", fmusic);
 
    fmusic = SNDCFG_SND3D2CH;
    hwndControl = GetDlgItem(IDC_RADIO_SND3DALLREAR).GetHwnd();
@@ -222,22 +222,22 @@ void AudioOptionsDialog::OnOK()
    {
 	   fmusic = SNDCFG_SND3D6CH;
    }
-   SetRegValue("Player", "Sound3D", REG_DWORD, &fmusic, 4);
+   SetRegValueInt("Player", "Sound3D", fmusic);
 
    volume = SendMessage(hwndMusicSlider, TBM_GETPOS, 0, 0);
-   SetRegValue("Player", "MusicVolume", REG_DWORD, &volume, 4);
+   SetRegValueInt("Player", "MusicVolume", volume);
 
    volume = SendMessage(hwndSoundSlider, TBM_GETPOS, 0, 0);
-   SetRegValue("Player", "SoundVolume", REG_DWORD, &volume, 4);
+   SetRegValueInt("Player", "SoundVolume", volume);
 
    HWND hwndSoundList = GetDlgItem(IDC_SoundList).GetHwnd();
    size_t soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
    size_t sd = SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
-   SetRegValue("Player", "SoundDevice", REG_DWORD, &sd, 4);
+   SetRegValueInt("Player", "SoundDevice", sd);
    hwndSoundList = GetDlgItem(IDC_SoundListBG).GetHwnd();
    soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
    sd = SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
-   SetRegValue("Player", "SoundDeviceBG", REG_DWORD, &sd, 4);
+   SetRegValueInt("Player", "SoundDeviceBG", sd);
    g_pvp->ReInitPinDirectSound();
 
    CDialog::OnOK();
