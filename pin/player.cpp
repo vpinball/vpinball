@@ -4263,6 +4263,7 @@ void Player::UpdateHUD()
 			m_phys_max = m_phys_period-m_script_period;
 		if (m_phys_period-m_script_period > m_phys_max_total)
 			m_phys_max_total = m_phys_period-m_script_period;
+
 		if (m_phys_iterations > m_phys_max_iterations || m_time_msec - m_lastMaxChangeTime > 1000)
 			m_phys_max_iterations = m_phys_iterations;
 
@@ -4294,11 +4295,11 @@ void Player::UpdateHUD()
 		int len = sprintf_s(szFoo, "Overall: %.1f ms (%.1f (%.1f) avg %.1f max)",
 			float(1e-3*period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3*m_max), float(1e-3*m_max_total));
 		DebugPrint(10, 30, szFoo, len);
-		len = sprintf_s(szFoo, "%.1f%% Physics: %.1f ms (%.1f (%.1f %.1f%%) avg %.1f max)",
+		len = sprintf_s(szFoo, "%4.1f%% Physics: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
 			float((m_phys_period-m_script_period)*100.0 / period), float(1e-3*(m_phys_period-m_script_period)),
 			float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3*m_phys_max), float((double)m_phys_total*100.0 / (double)m_total), float(1e-3*m_phys_max_total));
 		DebugPrint(10, 50, szFoo, len);
-		len = sprintf_s(szFoo, "%.1f%% Scripts: %.1f ms (%.1f (%.1f %.1f%%) avg %.1f max)",
+		len = sprintf_s(szFoo, "%4.1f%% Scripts: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
 			float(m_script_period*100.0 / period), float(1e-3*m_script_period),
 			float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3*m_script_max), float((double)m_script_total*100.0 / (double)m_total), float(1e-3*m_script_max_total));
 		DebugPrint(10, 70, szFoo, len);
@@ -4315,13 +4316,14 @@ void Player::UpdateHUD()
 		len = sprintf_s(szFoo, "Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
 		DebugPrint(10, 175, szFoo, len);
 
-#ifdef DEBUGPHYSICS
-		len = sprintf_s(szFoo, "Phys: %5u iterations (%5u avg %5u max))",
+		len = sprintf_s(szFoo, "Physics: %u iterations per frame (%u avg %u max)    Ball Velocity / Ang.Vel.: %.1f %.1f",
 			m_phys_iterations,
 			(U32)(m_phys_total_iterations / m_count),
-			m_phys_max_iterations);
+			m_phys_max_iterations,
+			g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_vel + (float)PHYS_FACTOR*g_pplayer->m_gravity).Length() : -1.f, g_pplayer->m_pactiveball ? g_pplayer->m_pactiveball->m_angularvelocity.Length() : -1.f);
 		DebugPrint(10, 200, szFoo, len);
 
+#ifdef DEBUGPHYSICS
 #ifdef C_DYNAMIC
 		len = sprintf_s(szFoo, "Hits:%5u Collide:%5u Ctacs:%5u Static:%5u Embed:%5u TimeSearch:%5u",
 			c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts, c_timesearch);
@@ -4335,6 +4337,7 @@ void Player::UpdateHUD()
 			c_kDObjects, c_kDNextlevels, c_quadObjects, c_quadNextlevels, c_traversed, c_tested, c_deepTested);
 		DebugPrint(10, 240, szFoo, len);
 #endif
+
 		len = sprintf_s(szFoo, "Left Flipper keypress to rotate: %.1f ms (%d f) to eos: %.1f ms (%d f)",
 			(INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.,
 			(int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame),
@@ -4363,7 +4366,7 @@ void Player::UpdateHUD()
 			DebugPrint(10, 320, szFoo, len2);
 			for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
 			{
-				len2 = sprintf_s(szFoo, "   %s: %.2f ms (%.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
+				len2 = sprintf_s(szFoo, "   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
 				DebugPrint(10, 320 + gts * 20, szFoo, len2);
 			}
 			len2 = sprintf_s(szFoo, " Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
@@ -4373,7 +4376,7 @@ void Player::UpdateHUD()
 		{
 			for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
 			{
-				len2 = sprintf_s(szFoo, " %s: %.2f ms (%.1f%%)", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
+				len2 = sprintf_s(szFoo, " %s: %.2f ms (%4.1f%%)", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
 				DebugPrint(10, 300 + gts * 20, szFoo, len2);
 			}
 		}
