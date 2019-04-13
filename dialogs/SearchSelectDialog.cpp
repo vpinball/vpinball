@@ -498,10 +498,10 @@ void SearchSelectDialog::SavePosition()
 {
    int w, h;
    CRect rect = GetWindowRect();
-   (void)SetRegValue("Editor", "SearchSelectPosX", REG_DWORD, &rect.left, 4);
-   (void)SetRegValue("Editor", "SearchSelectPosY", REG_DWORD, &rect.top, 4);
+   SetRegValue("Editor", "SearchSelectPosX", REG_DWORD, &rect.left, 4);
+   SetRegValue("Editor", "SearchSelectPosY", REG_DWORD, &rect.top, 4);
    w = rect.right - rect.left;
-   (void)SetRegValue("Editor", "SearchSelectWidth", REG_DWORD, &w, 4);
+   SetRegValue("Editor", "SearchSelectWidth", REG_DWORD, &w, 4);
    h = rect.bottom - rect.top;
-   (void)SetRegValue("Editor", "SearchSelectHeight", REG_DWORD, &h, 4);
+   SetRegValue("Editor", "SearchSelectHeight", REG_DWORD, &h, 4);
 }
