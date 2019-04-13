@@ -28,7 +28,9 @@ private:
    void LoadPosition();
    void SavePosition();
    void UpdateImages();
+
    static int m_columnSortOrder;
+   static bool m_doNotChange;  // to avoid triggering LVN_ITEMCHANGING or LVN_ITEMCHANGED code on deletion
 };
 
 #endif // !H_IMAGE_DIALOG
