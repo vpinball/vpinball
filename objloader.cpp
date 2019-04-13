@@ -121,7 +121,7 @@ bool WaveFrontObjLoadMaterial(const char *filename, Material *mat)
       }
       else if (strcmp(lineHeader, "Ka") == 0)
       {
-         Vertex3Ds tmp;;
+         Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
       }
       else if (strcmp(lineHeader, "Kd") == 0)

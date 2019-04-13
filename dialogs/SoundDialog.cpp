@@ -302,7 +302,7 @@ void SoundDialog::ReImport()
     if (count > 0)
     {
         LocalString ls( IDS_REPLACESOUND );
-        const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2 );
+        const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2 );
         if (ans == IDYES)
         {
             int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
@@ -341,7 +341,7 @@ void SoundDialog::ReImportFrom()
     if (sel != -1)
     {
         LocalString ls( IDS_REPLACESOUND );
-        int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2 );
+        int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2 );
         if (ans == IDYES)
         {
             char szFileName[MAXSTRING];
@@ -591,7 +591,7 @@ void SoundDialog::DeleteSound()
     if (count > 0)
     {
         LocalString ls( IDS_REMOVESOUND );
-        const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2 );
+        const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2 );
         if (ans == IDYES)
         {
             int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
@@ -603,8 +603,8 @@ void SoundDialog::DeleteSound()
                 lvitem.iSubItem = 0;
                 ListView_GetItem( hSoundList, &lvitem );
                 PinSound * const pps = (PinSound *)lvitem.lParam;
-                pt->RemoveSound( pps );
                 ListView_DeleteItem( hSoundList, sel );
+                pt->RemoveSound(pps);
 
                 // The previous selection is now deleted, so look again from the top of the list
                 sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
@@ -632,9 +632,9 @@ void SoundDialog::LoadPosition()
 
 void SoundDialog::SavePosition()
 {
-    CRect rect = GetWindowRect();
-    (void)SetRegValue( "Editor", "SoundMngPosX", REG_DWORD, &rect.left, 4 );
-    (void)SetRegValue( "Editor", "SoundMngPosY", REG_DWORD, &rect.top, 4 );
+    const CRect rect = GetWindowRect();
+    SetRegValue( "Editor", "SoundMngPosX", REG_DWORD, &rect.left, 4 );
+    SetRegValue( "Editor", "SoundMngPosY", REG_DWORD, &rect.top, 4 );
 }
 
 

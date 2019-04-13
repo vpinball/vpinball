@@ -426,7 +426,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          if (count > 0)
          {
             LocalString ls(IDS_REMOVEMATERIAL);
-            const int ans = MessageBox(ls.m_szbuffer/*"Are you sure you want to remove this material?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
+            const int ans = MessageBox(ls.m_szbuffer/*"Are you sure you want to remove this material?"*/, "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2);
             if (ans == IDYES)
             {
                m_deletingItem = true;
@@ -441,7 +441,6 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                   ListView_GetItem(m_hMaterialList, &lvitem);
                   Material * const pmat = (Material*)lvitem.lParam;
                   ListView_DeleteItem(m_hMaterialList, sel);
-
                   pt->RemoveMaterial(pmat);
 
                   sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
@@ -849,11 +848,11 @@ void MaterialDialog::SavePosition()
     int w, h;
     CRect rect = GetWindowRect();
 
-    (void)SetRegValue("Editor", "MaterialMngPosX", REG_DWORD, &rect.left, 4);
-    (void)SetRegValue("Editor", "MaterialMngPosY", REG_DWORD, &rect.top, 4);
+    SetRegValue("Editor", "MaterialMngPosX", REG_DWORD, &rect.left, 4);
+    SetRegValue("Editor", "MaterialMngPosY", REG_DWORD, &rect.top, 4);
     w = rect.right - rect.left;
-    (void)SetRegValue("Editor", "MaterialMngWidth", REG_DWORD, &w, 4);
+    SetRegValue("Editor", "MaterialMngWidth", REG_DWORD, &w, 4);
     h = rect.bottom - rect.top;
-    (void)SetRegValue("Editor", "MaterialMngHeight", REG_DWORD, &h, 4);
+    SetRegValue("Editor", "MaterialMngHeight", REG_DWORD, &h, 4);
 }
 

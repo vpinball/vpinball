@@ -2897,8 +2897,8 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                   lvitem.iSubItem = 0;
                   ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
                   PinFont * const ppf = (PinFont *)lvitem.lParam;
-                  pt->RemoveFont(ppf);
                   ListView_DeleteItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
+                  pt->RemoveFont(ppf);
                }
             }
          }
