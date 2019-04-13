@@ -6426,7 +6426,8 @@ void PinTable::ImportBackdropPOV(const char *filename)
         sscanf_s(fullsinglescreen->first_node("yoffset")->value(), "%f", &m_BG_xlatey[BG_FSS]);
         sscanf_s(fullsinglescreen->first_node("zoffset")->value(), "%f", &m_BG_xlatez[BG_FSS]);
 
-
+        if (filename == NULL)
+            SetNonUndoableDirty(eSaveDirty);
     }
     catch (...)
     {
