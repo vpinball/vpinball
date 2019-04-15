@@ -33,20 +33,20 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "&Import",IDOK,198,93,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,253,93,50,14
-    LTEXT           "File",IDC_STATIC,15,12,12,8
-    EDITTEXT        IDC_FILENAME_EDIT,28,10,220,14,ES_AUTOHSCROLL
+    LTEXT           "File",IDC_STATIC,11,12,15,8
+    EDITTEXT        IDC_FILENAME_EDIT,28,10,215,14,ES_AUTOHSCROLL
     PUSHBUTTON      "&Browse",IDC_BROWSE_BUTTON,248,10,50,14
     CONTROL         "Convert coordinate system",IDC_CONVERT_COORD_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,41,103,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,41,146,10
     GROUPBOX        "Options",IDC_STATIC,15,29,279,62
     CONTROL         "Place at primitive's position",IDC_REL_POSITION_RADIO,
-                    "Button",BS_AUTORADIOBUTTON,20,65,101,10
+                    "Button",BS_AUTORADIOBUTTON,20,66,146,10
     CONTROL         "Place at mesh's absolute position (use mesh's midpoint)",IDC_ABS_POSITION_RADIO,
-                    "Button",BS_AUTORADIOBUTTON,20,79,190,10
-    CONTROL         "Center mesh to it's midpoint",IDC_CENTER_MESH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,41,105,10
-    CONTROL         "Import mesh's material",IDC_IMPORT_MATERIAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,53,88,10
+                    "Button",BS_AUTORADIOBUTTON,20,79,272,10
+    CONTROL         "Center mesh to it's midpoint",IDC_CENTER_MESH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,41,123,10
+    CONTROL         "Import mesh's material",IDC_IMPORT_MATERIAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,53,122,10
     CONTROL         "Import Animation Sequence",IDC_IMPORT_ANIM_SEQUENCE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,53,104,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,53,143,10
 END
 
 IDD_DIMENSION_CALCULATOR DIALOGEX 0, 0, 317, 182
