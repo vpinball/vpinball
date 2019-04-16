@@ -45,7 +45,7 @@ sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribu
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
 	ADDRESSU  = Wrap;
-	ADDRESSV  = Wrap;
+	ADDRESSV  = Clamp;
 };
 
 sampler2D texSampler7 : TEXUNIT3 = sampler_state // ball decal
@@ -212,7 +212,7 @@ float4 psBall( in vout IN, uniform bool cabMode, uniform bool decalMode ) : COLO
     const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos_t0y.xyz);
     const float3 r = reflect(v, normalize(IN.normal_t0x.xyz));
     // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
-	const float  m = (r.z + 1.0 > 0.) ? 0.3535533905932737622 * rsqrt(r.z + 1.0) : 0.; // 0.353...=0.5/sqrt(2)
+    const float  m = (r.z + 1.0 > 0.) ? 0.3535533905932737622 * rsqrt(r.z + 1.0) : 0.; // 0.353...=0.5/sqrt(2)
     const float edge = dot(v, r);
     const float lod = (edge > 0.6) ? // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
 		edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) :

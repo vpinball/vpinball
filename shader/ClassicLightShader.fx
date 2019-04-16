@@ -34,7 +34,7 @@ sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
 	ADDRESSU  = Wrap;
-	ADDRESSV  = Wrap;
+	ADDRESSV  = Clamp;
 };
 
 sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribution/radiance
@@ -44,7 +44,7 @@ sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribu
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
 	ADDRESSU  = Wrap;
-	ADDRESSV  = Wrap;
+	ADDRESSV  = Clamp;
 };
 
 #include "Material.fxh"
