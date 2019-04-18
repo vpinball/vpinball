@@ -794,7 +794,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          ofn.hInstance = g_hinst;
          ofn.hwndOwner = g_pvp->m_hwnd;
          // TEXT
-         ofn.lpstrFilter = "Bitmap, JPEG, PNG, EXR, HDR Files (.bmp/.jpg/.png/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.exr;*.hdr\0";
+         ofn.lpstrFilter = "Bitmap, JPEG, PNG, TGA, EXR, HDR Files (.bmp/.jpg/.png/.tga/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.exr;*.hdr\0";
          ofn.lpstrFile = szFileName;
          ofn.nMaxFile = MAXSTRING;
          ofn.lpstrDefExt = "png";
@@ -817,7 +817,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          ofn.hInstance = g_hinst;
          ofn.hwndOwner = g_pvp->m_hwnd;
          // TEXT
-         ofn.lpstrFilter = "Bitmap, JPEG, PNG, EXR, HDR Files (.bmp/.jpg/.png/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.exr;*.hdr\0";
+         ofn.lpstrFilter = "Bitmap, JPEG, PNG, TGA, EXR, HDR Files (.bmp/.jpg/.png/.tga/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.exr;*.hdr\0";
          ofn.lpstrFile = szFileName;
          ofn.nMaxFile = MAXSTRING;
          ofn.lpstrDefExt = "png";
