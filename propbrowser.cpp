@@ -152,7 +152,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
       // If not, we can't edit their collective properties
       for (int i = 1; i < pvsel->Size(); i++)
       {
-         ISelect *pisel3 = pvsel->ElementAt(i);
+         ISelect *const pisel3 = pvsel->ElementAt(i);
          if (pisel3)
          {
             if (pisel3->GetItemType() != maintype)
@@ -165,12 +165,12 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
             bool endLoop = false;
             for (int t = 0; t < g_pvp->m_ptableActive->m_vcollection.Size() && !endLoop; t++)
             {
-               Collection *pcol = g_pvp->m_ptableActive->m_vcollection.ElementAt(t);
+               Collection * const pcol = g_pvp->m_ptableActive->m_vcollection.ElementAt(t);
                if (pcol)
                {
                   for (int k = 0; k < pcol->m_visel.Size(); k++)
                   {
-                     ISelect *pisel2 = pcol->m_visel.ElementAt(k);
+                     ISelect * const pisel2 = pcol->m_visel.ElementAt(k);
                      if ((col == NULL) && (pisel2 != NULL) && (pisel2 == pisel3))
                         col = pcol;
                      else if ((col != NULL) && (col == pcol) && (pisel2 != NULL) && (pisel2 == pisel3))
@@ -292,9 +292,9 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
       pexinfo->m_psb = this;
 
       LocalString ls(pproppane->titlestringid);
-      char *szCaption = ls.m_szbuffer;
+      char * const szCaption = ls.m_szbuffer;
       pexinfo->m_fHasCaption = (pproppane->titlestringid != 0);
-      HWND hwndExpand = NULL;
+      HWND hwndExpand;
       if (g_pvp->m_fPropertiesFloating)
       {
          hwndExpand = CreateWindowEx(WS_EX_TOOLWINDOW, "ExpandoControl", szCaption,
@@ -313,10 +313,10 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
       HWND hwndDialog;
       if (pproppane->dialogid != 0)
          hwndDialog = CreateDialogParam(g_hinst, MAKEINTRESOURCE(pproppane->dialogid),
-         hwndExpand, PropertyProc, (size_t)this);
+            hwndExpand, PropertyProc, (size_t)this);
       else
          hwndDialog = CreateDialogIndirectParam(g_hinst, pproppane->ptemplate,
-         hwndExpand, PropertyProc, (size_t)this);
+            hwndExpand, PropertyProc, (size_t)this);
 
       m_vproppane[i]->dialogHwnd = hwndDialog;
       m_vhwndDialog.push_back(hwndDialog);
@@ -330,7 +330,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
       // user.
       if (m_pvsel && m_pvsel->Size() > 1)
       {
-         HWND hwndName = GetDlgItem(hwndDialog, DISPID_FAKE_NAME);
+         const HWND hwndName = GetDlgItem(hwndDialog, DISPID_FAKE_NAME);
          if (hwndName)
             EnableWindow(hwndName, FALSE);
       }
@@ -381,37 +381,32 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
    char szName[256];
    GetClassName(hwnd, szName, 256);
 
-   int type = eNotControl;
-
-   if (!strcmp(szName, "ComboBox"))
-      type = eCombo;
+   const int type = (!strcmp(szName, "ComboBox")) ? eCombo : eNotControl;
 
    if (type == eNotControl)
       return TRUE;
 
-   int dispid = GetDlgCtrlID(hwnd);
+   const int dispid = GetDlgCtrlID(hwnd);
 
    //case eCombo:
    {
-      CALPOLESTR     castr;
-      CADWORD        cadw;
-      IPerPropertyBrowsing *pippb;
-      char szT[512];
-
       if (psb->GetBaseIDisp() == NULL)
          return FALSE;
 
+      IPerPropertyBrowsing *pippb;
       psb->GetBaseIDisp()->QueryInterface(IID_IPerPropertyBrowsing, (void **)&pippb);
 
-      bool fGotStrings = false;
+      bool GotStrings = false;
 
       if (pippb)
       {
+         CALPOLESTR     castr;
+         CADWORD        cadw;
          HRESULT hr = pippb->GetPredefinedStrings(dispid, &castr, &cadw);
 
          if (hr == S_OK)
          {
-            fGotStrings = true;
+            GotStrings = true;
 
             SetWindowLongPtr(hwnd, GWLP_USERDATA, 0); // So we know later whether to set the property as a string or a number from itemdata
 
@@ -419,6 +414,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 
             for (ULONG i = 0; i < castr.cElems; i++)
             {
+               char szT[512];
                WideCharToMultiByte(CP_ACP, 0, castr.pElems[i], -1, szT, 512, NULL, NULL);
                const size_t index = SendMessage(hwnd, CB_ADDSTRING, 0, (size_t)szT);
                SendMessage(hwnd, CB_SETITEMDATA, index, (DWORD)cadw.pElems[i]);
@@ -435,7 +431,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
          pippb->Release();
       }
 
-      if (!fGotStrings)
+      if (!GotStrings)
       {
          SetWindowLongPtr(hwnd, GWLP_USERDATA, 1); // So we know later whether to set the property as a string or a number from itemdata
 
@@ -483,6 +479,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
                         /*const HRESULT hr =*/ pitiEnum->GetNames(pvd->memid, rgstr, 6, &cnames);
 
                         // Add enum string to combo control
+                        char szT[512];
                         WideCharToMultiByte(CP_ACP, 0, rgstr[0], -1, szT, 512, NULL, NULL);
                         const size_t index = SendMessage(hwnd, CB_ADDSTRING, 0, (size_t)szT);
                         SendMessage(hwnd, CB_SETITEMDATA, index, V_I4(pvd->lpvarValue));
@@ -573,7 +570,7 @@ void SmartBrowser::DrawHeader(HDC hdc)
 
 void SmartBrowser::GetControlValue(HWND hwndControl)
 {
-   bool fNinch = false;
+   bool Ninch = false;
    char szName[256];
    GetClassName(hwndControl, szName, 256);
    IDispatch * const pdisp = GetBaseIDisp();
@@ -654,7 +651,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 
       if (hrEqual != VARCMP_EQ)
       {
-         fNinch = true;
+         Ninch = true;
          break;
       }
    }
@@ -684,7 +681,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
             reSel = true;
       }
 
-      if (!fNinch)
+      if (!Ninch)
       {
          if (SUCCEEDED(VariantChangeType(&varResult, &var, 0, VT_BSTR)))
          {
@@ -719,7 +716,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
                   char tbuf[64];
                   sprintf_s(tbuf, "DX: %.3f | DY: %.3f | DZ: %.3f | CalcHeight: %.3f", g_pvp->ConvertToUnit(dx), g_pvp->ConvertToUnit(dy),
                                                                                        g_pvp->ConvertToUnit(dz), g_pvp->ConvertToUnit(dh));
-                  g_pvp->SetStatusBarUnitInfo(tbuf);
+                  g_pvp->SetStatusBarUnitInfo(tbuf, true);
 
               }
           }
@@ -732,7 +729,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 
    case eButton:
    {
-      if (!fNinch)
+      if (!Ninch)
       {
          if (SUCCEEDED(VariantChangeType(&varResult, &var, 0, VT_BOOL)))
          {
@@ -752,7 +749,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
    {
       if (SUCCEEDED(VariantChangeType(&varResult, &var, 0, VT_I4)))
       {
-         SendMessage(hwndControl, CHANGE_COLOR, (!fNinch) ? 0 : 1, V_I4(&varResult));
+         SendMessage(hwndControl, CHANGE_COLOR, (!Ninch) ? 0 : 1, V_I4(&varResult));
          VariantClear(&varResult);
       }
    }
@@ -760,13 +757,13 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 
    case eFont:
    {
-      SendMessage(hwndControl, CHANGE_FONT, (!fNinch) ? 0 : 1, (size_t)V_DISPATCH(&var));
+      SendMessage(hwndControl, CHANGE_FONT, (!Ninch) ? 0 : 1, (size_t)V_DISPATCH(&var));
       break;
    }
 
    case eCombo:
    {
-      if (!fNinch)
+      if (!Ninch)
       {
          char szT[512];
 
@@ -815,7 +812,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
          }
          else
             SendMessage(hwndControl, WM_SETTEXT, 0, (LPARAM)szT);
-      } // !fNinch
+      } // !Ninch
    }
    break;
 
@@ -868,7 +865,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
             SendMessage(hwndControl, TBM_SETLINESIZE, 0, 1); //number of positions to move per keypress
             SendMessage(hwndControl, TBM_SETPAGESIZE, 0, 1); //number of positions to move per click
             SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 0, 0); //ignored
-            SendMessage(hwndControl, TBM_SETPOS, (!fNinch) ? 1 : 0, data);
+            SendMessage(hwndControl, TBM_SETPOS, (!Ninch) ? 1 : 0, data);
          }
       }
       VariantClear(&varResult);
@@ -1054,9 +1051,9 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
    // a slider has been changed
    case WM_HSCROLL:
    {
-      if (lParam != NULL)									// must be scrollbar message
+      if (lParam != NULL)							// must be scrollbar message
       {
-         int nScrollCode = (int)LOWORD(wParam);			// scroll bar value
+         int nScrollCode = (int)LOWORD(wParam);		// scroll bar value
 
          if ((nScrollCode == SB_PAGELEFT) ||
             (nScrollCode == SB_LINELEFT) ||
@@ -1064,15 +1061,15 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             (nScrollCode == SB_LEFT) ||
             (nScrollCode == SB_RIGHT) ||
             (nScrollCode == SB_PAGERIGHT) ||
-            (nScrollCode == SB_THUMBPOSITION) ||		// updates for mouse scrollwheel
+            (nScrollCode == SB_THUMBPOSITION) ||	// updates for mouse scrollwheel
             (nScrollCode == SB_THUMBTRACK))			// update as long as button is held down
          {
-            SmartBrowser *psb = (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+            SmartBrowser * const psb = (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
             if (psb != NULL)
             {
-               size_t nPos = SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
+               const size_t nPos = SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
 
-               int dispid = GetDlgCtrlID((HWND)lParam);
+               const int dispid = GetDlgCtrlID((HWND)lParam);
 
                CComVariant var(nPos);
 
@@ -1108,12 +1105,12 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
       case CBN_KILLFOCUS:
       {
          HWND hwndEdit;
-         size_t fChanged;
+         size_t Changed;
 
          if (code == EN_KILLFOCUS)
          {
             hwndEdit = (HWND)lParam;
-            fChanged = SendMessage(hwndEdit, EM_GETMODIFY, 0, 0);
+            Changed = SendMessage(hwndEdit, EM_GETMODIFY, 0, 0);
          }
          else
          {
@@ -1121,14 +1118,14 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             pt.x = 1;
             pt.y = 1;
             hwndEdit = ChildWindowFromPoint((HWND)lParam, pt);
-            fChanged = GetWindowLongPtr(hwndEdit, GWLP_USERDATA);
-            if (fChanged)
+            Changed = GetWindowLongPtr(hwndEdit, GWLP_USERDATA);
+            if (Changed)
                // set user data to 1 because this is checked also in this function for case CBN_SELENDOK if proptype is 0
                // if so the the value is requested by PinTable::GetPredefinedValues() (e.g. image name, material name)
                SetWindowLongPtr(hwndEdit, GWLP_USERDATA, 1); 
          }
 
-         if (fChanged)//SendMessage(hwndEdit, EM_GETMODIFY, 0, 0))
+         if (Changed)//SendMessage(hwndEdit, EM_GETMODIFY, 0, 0))
          {
             char szText[MAXSTRING];
 
@@ -1313,7 +1310,7 @@ LRESULT CALLBACK SBFrameProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_PAINT:
    {
       PAINTSTRUCT ps;
-      HDC hdc = BeginPaint(hwnd, &ps);
+      const HDC hdc = BeginPaint(hwnd, &ps);
 
       SmartBrowser * const psb = (SmartBrowser *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
       psb->DrawHeader(hdc);
@@ -1381,7 +1378,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_DRAWITEM:
    {
       DRAWITEMSTRUCT * const pdis = (DRAWITEMSTRUCT *)lParam;
-      HDC hdc = pdis->hDC;
+      const HDC hdc = pdis->hDC;
       int offset = 0;
 
       DWORD state = DFCS_BUTTONPUSH;
@@ -1398,9 +1395,9 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       if (!(color & 0x80000000)) // normal color, not ninched
       {
          const COLORREF oldcolor = (COLORREF)color & 0xffffff; // have to AND it to get rid of ninch bit
-         HBRUSH hbrush = CreateSolidBrush(oldcolor);
+         const HBRUSH hbrush = CreateSolidBrush(oldcolor);
 
-         HBRUSH hbrushOld = (HBRUSH)SelectObject(hdc, hbrush);
+         const HBRUSH hbrushOld = (HBRUSH)SelectObject(hdc, hbrush);
 
          PatBlt(hdc, 6 + offset, 6 + offset, pdis->rcItem.right - pdis->rcItem.left - 12, pdis->rcItem.bottom - pdis->rcItem.top - 12, PATCOPY);
 
@@ -1418,7 +1415,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
       case BN_CLICKED:
       {
-         HWND hwndDlg = GetParent(hwnd);
+         const HWND hwndDlg = GetParent(hwnd);
          /*SmartBrowser * const psb =*/ (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
          CHOOSECOLOR cc;
          cc.lStructSize = sizeof(CHOOSECOLOR);
@@ -1455,10 +1452,10 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
       RECT rc;
       GetClientRect(hwnd, &rc);
-      HWND hwndButton = CreateWindow("BUTTON", "", BS_LEFT | WS_VISIBLE | WS_CHILD, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hwnd, NULL, g_hinst, 0);
+      const HWND hwndButton = CreateWindow("BUTTON", "", BS_LEFT | WS_VISIBLE | WS_CHILD, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hwnd, NULL, g_hinst, 0);
       SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 
-      HFONT hfontButton = CreateFont(-10, 0, 0, 0, /*FW_NORMAL*/ FW_MEDIUM, FALSE, FALSE, FALSE,
+      const HFONT hfontButton = CreateFont(-10, 0, 0, 0, /*FW_NORMAL*/ FW_MEDIUM, FALSE, FALSE, FALSE,
          DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
          ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "MS Sans Serif");
 
@@ -1471,9 +1468,9 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       POINT pt;
       pt.x = 1;
       pt.y = 1;
-      HWND hwndButton = ChildWindowFromPoint(hwnd, pt);
+      const HWND hwndButton = ChildWindowFromPoint(hwnd, pt);
 
-      HFONT hfontButton = (HFONT)SendMessage(hwndButton, WM_GETFONT, 0, 0);
+      const HFONT hfontButton = (HFONT)SendMessage(hwndButton, WM_GETFONT, 0, 0);
 
       SendMessage(hwndButton, WM_SETFONT, NULL, 0); // Just in case the button needs to use a font before it is destroyed
 
@@ -1489,7 +1486,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       POINT pt;
       pt.x = 1;
       pt.y = 1;
-      HWND hwndButton = ChildWindowFromPoint(hwnd, pt);
+      const HWND hwndButton = ChildWindowFromPoint(hwnd, pt);
 
       IFontDisp * const pifd = (IFontDisp *)lParam;
       IFont *pif;
@@ -1566,7 +1563,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             SendMessage(hwnd, CHANGE_FONT, 0, (size_t)pifd2);
 
-            HWND hwndDlg = GetParent(hwnd);
+            const HWND hwndDlg = GetParent(hwnd);
             const int id = GetDlgCtrlID(hwnd);
             SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(id, FONT_CHANGED), (LPARAM)hwnd);
 
@@ -1671,7 +1668,7 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_PAINT:
    {
       PAINTSTRUCT ps;
-      HDC hdc = BeginPaint(hwnd, &ps);
+      const HDC hdc = BeginPaint(hwnd, &ps);
 
       pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
@@ -1690,9 +1687,9 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          DrawCaption(hwnd, hdc, &rc, DC_SMALLCAP | DC_TEXT | 0x0020 | DC_ACTIVE);
 
-         HBITMAP hbmchevron = (HBITMAP)LoadImage(g_hinst, MAKEINTRESOURCE(IDB_CHEVRON), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR);
-         HDC hdcbmp = CreateCompatibleDC(hdc);
-         HBITMAP hbmOld = (HBITMAP)SelectObject(hdcbmp, hbmchevron);
+         const HBITMAP hbmchevron = (HBITMAP)LoadImage(g_hinst, MAKEINTRESOURCE(IDB_CHEVRON), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR);
+         const HDC hdcbmp = CreateCompatibleDC(hdc);
+         const HBITMAP hbmOld = (HBITMAP)SelectObject(hdcbmp, hbmchevron);
          const int offsetx = (rcCur.bottom - rcCur.top > EXPANDOHEIGHT) ? 18 : 0;
          BitBlt(hdc, rc.right - 20, 0, 18, 18, hdcbmp, offsetx, 0, SRCPAINT);
          SelectObject(hdcbmp, hbmOld);
