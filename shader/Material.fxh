@@ -60,7 +60,7 @@ float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
 float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const float3 diffuse, const float3 glossy, const float edge, const float glossyPower, const int i, const bool is_metal) 
 { 
    // early out here or maybe we can add more material elements without lighting later?
-   if(fDisableLighting_top_below.x == 1.0)
+   if (fDisableLighting_top_below.x == 1.0)
       return diffuse;
 
    const float3 lightDir = mul_w1(lights[i].vPos, matView) - pos; //!! do in vertex shader?! or completely before?!
@@ -69,17 +69,17 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
    float3 Out = float3(0.0,0.0,0.0);
    
    // compute diffuse color (lambert with optional rim/wrap component)
-   if(!is_metal && (NdotL + Roughness_WrapL_Edge_Thickness.y > 0.0))
+   if (!is_metal && (NdotL + Roughness_WrapL_Edge_Thickness.y > 0.0))
       Out = diffuse * ((NdotL + Roughness_WrapL_Edge_Thickness.y) / sqr(1.0+Roughness_WrapL_Edge_Thickness.y));
     
    // add glossy component (modified ashikhmin/blinn bastard), not fully energy conserving, but good enough
-   [branch] if(NdotL > 0.0)
+   [branch] if (NdotL > 0.0)
    {
 	 const float3 H = normalize(L + V); // half vector
 	 const float NdotH = dot(N, H);
 	 const float LdotH = dot(L, H);
 	 const float VdotH = dot(V, H);
-	 if((NdotH > 0.0) && (LdotH > 0.0) && (VdotH > 0.0))
+	 if ((NdotH > 0.0) && (LdotH > 0.0) && (VdotH > 0.0))
 		Out += FresnelSchlick(glossy, LdotH, edge) * (((glossyPower + 1.0) / (8.0*VdotH)) * pow(NdotH, glossyPower));
    }
  
@@ -91,11 +91,11 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
    fAtten = fAtten*fAtten/(sqrl_lightDir + 1.0);
 
    float3 ambient = glossy;
-   if(!is_metal)
+   if (!is_metal)
        ambient += diffuse;
 
    const float3 result = Out * lights[i].vEmission * fAtten + ambient * cAmbient_LightRange.xyz;
-   if(fDisableLighting_top_below.x != 0.0)
+   if (fDisableLighting_top_below.x != 0.0)
        return lerp(result,diffuse,fDisableLighting_top_below.x);
    else
        return result;
@@ -109,7 +109,7 @@ float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 	    acos_approx_divPI(N.z));
 
    float3 env = tex2Dlod(texSampler2, float4(uv, 0.,0.)).xyz;
-   if(!hdrEnvTextures)
+   if (!hdrEnvTextures)
        env = InvGamma(env);
    return diffuse * env*fenvEmissionScale_TexWidth.x;
 }
@@ -118,9 +118,9 @@ float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 // very very crude approximation by abusing miplevels
 float3 DoEnvmapGlossy(const float3 N, const float3 V, const float2 Ruv, const float3 glossy, const float glossyPower)
 {
-   const float mip = log2(fenvEmissionScale_TexWidth.y * sqrt(3.0)) - 0.5*log2(glossyPower + 1.0);
+   const float mip = min(log2(fenvEmissionScale_TexWidth.y * sqrt(3.0)) - 0.5*log2(glossyPower + 1.0), log2(fenvEmissionScale_TexWidth.y)-1.); //!! do diffuse lookup instead of this limit/min, if too low?? and blend?
    float3 env = tex2Dlod(texSampler1, float4(Ruv, 0., mip)).xyz;
-   if(!hdrEnvTextures)
+   if (!hdrEnvTextures)
        env = InvGamma(env);
    return glossy * env*fenvEmissionScale_TexWidth.x;
 }
@@ -130,7 +130,7 @@ float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const floa
 {
    const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_Thickness.z); //!! ?
    float3 env = tex2Dlod(texSampler1, float4(Ruv, 0., 0.)).xyz;
-   if(!hdrEnvTextures)
+   if (!hdrEnvTextures)
        env = InvGamma(env);
    return lerp(color1stLayer, env*fenvEmissionScale_TexWidth.x, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular
 }
@@ -142,7 +142,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    const float glossyMax = max(glossy.x,max(glossy.y,glossy.z));
    const float specularMax = max(specular.x,max(specular.y,specular.z)); //!! not needed as 2nd layer only so far
    const float sum = diffuseMax + glossyMax /*+ specularMax*/;
-   if(sum > 1.0)
+   if (sum > 1.0)
    {
       const float invsum = 1.0/sum;
       diffuse  *= invsum;
@@ -151,25 +151,25 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    }
 
    float NdotV = dot(N,V);
-   if(fix_normal_orientation && (NdotV < 0.0)) // flip normal in case of wrong orientation? (backside lighting), currently disabled if normal mapping active, for that case we should actually clamp the normal with respect to V instead (see f.e. 'view-dependant shading normal adaptation')
+   if (fix_normal_orientation && (NdotV < 0.0)) // flip normal in case of wrong orientation? (backside lighting), currently disabled if normal mapping active, for that case we should actually clamp the normal with respect to V instead (see f.e. 'view-dependant shading normal adaptation')
    {
       N = -N;
-	  NdotV = -NdotV;
+      NdotV = -NdotV;
    }
 
    float3 color = float3(0.0, 0.0, 0.0);
 
    // 1st Layer
-   [branch] if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
+   [branch] if ((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
-      for(int i = 0; i < iLightPointNum; i++)
+      for (int i = 0; i < iLightPointNum; i++)
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
    }
 
-   [branch] if(!is_metal && (diffuseMax > 0.0))
+   [branch] if (!is_metal && (diffuseMax > 0.0))
       color += DoEnvmapDiffuse(normalize(mul(matView, N).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 
-   [branch] if((glossyMax > 0.0) || (specularMax > 0.0))
+   [branch] if ((glossyMax > 0.0) || (specularMax > 0.0))
    {
 	   float3 R = (2.0*NdotV)*N - V; // reflect(-V,n);
 	   R = normalize(mul(matView, R).xyz); // trafo back to world for lookup into world space envmap // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
@@ -178,11 +178,11 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
 			0.5 + atan2_approx_div2PI(R.y, R.x),
 			acos_approx_divPI(R.z));
 
-	   if(glossyMax > 0.0)
+	   if (glossyMax > 0.0)
 		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge_Thickness.x);
 
 	   // 2nd Layer
-	   if(specularMax > 0.0)
+	   if (specularMax > 0.0)
 		  color = DoEnvmap2ndLayer(color, pos, N, V, NdotV, Ruv, specular);
    }
 
