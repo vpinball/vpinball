@@ -56,10 +56,8 @@ void MaterialDialog::EnableAllMaterialDialogItems()
 
 float MaterialDialog::getItemText(int id)
 {
-   CString textStr;
-   float fv;
-   textStr = GetDlgItemText(id);
-   fv = sz2f((char*)textStr.c_str());
+   const CString textStr(GetDlgItemText(id));
+   const float fv = sz2f((char*)textStr.c_str());
    return fv;
 }
 
@@ -67,7 +65,7 @@ void MaterialDialog::setItemText(int id, float value)
 {
    char textBuf[256] = { 0 };
    f2sz(value, textBuf);
-   CString textStr(textBuf);
+   const CString textStr(textBuf);
    SetDlgItemText(id, textStr);
 }
 
@@ -80,7 +78,7 @@ BOOL MaterialDialog::OnInitDialog()
 {
    LVCOLUMN lvcol;
    m_hMaterialList = GetDlgItem(IDC_MATERIAL_LIST).GetHwnd();
-   CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
 
    m_columnSortOrder = 1;
    m_deletingItem = false;
@@ -156,7 +154,7 @@ BOOL MaterialDialog::OnInitDialog()
 
 BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-   CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
    UNREFERENCED_PARAMETER(lParam);
    switch (HIWORD(wParam))
    {
@@ -166,9 +164,9 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          if (count > 0)
          {
             const size_t color = ::GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
-            HWND hwndcolor1 = GetDlgItem(IDC_COLOR).GetHwnd();
-            HWND hwndcolor2 = GetDlgItem(IDC_COLOR2).GetHwnd();
-            HWND hwndcolor3 = GetDlgItem(IDC_COLOR3).GetHwnd();
+            const HWND hwndcolor1 = GetDlgItem(IDC_COLOR).GetHwnd();
+            const HWND hwndcolor2 = GetDlgItem(IDC_COLOR2).GetHwnd();
+            const HWND hwndcolor3 = GetDlgItem(IDC_COLOR3).GetHwnd();
             int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
             while (sel != -1)
             {
@@ -201,7 +199,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          if (ListView_GetSelectedCount(m_hMaterialList))	// if some items are selected???
          {
             int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
-            int selCount = ListView_GetSelectedCount(m_hMaterialList);
+            const int selCount = ListView_GetSelectedCount(m_hMaterialList);
             if (sel == -1)
                break;
 
@@ -212,7 +210,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                lvitem.iItem = sel;
                lvitem.iSubItem = 0;
                ListView_GetItem(m_hMaterialList, &lvitem);
-               Material *pNewMat = new Material();
+               Material * const pNewMat = new Material();
                Material * const pmat = (Material*)lvitem.lParam;
                pNewMat->m_bIsMetal = pmat->m_bIsMetal;
                pNewMat->m_bOpacityActive = pmat->m_bOpacityActive;
@@ -245,7 +243,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_ADD_BUTTON:
       {
-         Material *pmat = new Material();
+         Material * const pmat = new Material();
 
          pt->AddMaterial(pmat);
          pt->AddListMaterial(m_hMaterialList, pmat);
@@ -295,10 +293,8 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             fread(&materialCount, 4, 1, f);
             for (int i = 0; i < materialCount; i++)
             {
-               Material *pmat = new Material();
+               Material * const pmat = new Material();
                SaveMaterial mat;
-               float physicsValue;
-
                fread(&mat, sizeof(SaveMaterial), 1, f);
                pmat->m_cBase = mat.cBase;
                pmat->m_cGlossy = mat.cGlossy;
@@ -314,6 +310,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                pmat->m_fEdgeAlpha = dequantizeUnsigned<7>(mat.bOpacityActive_fEdgeAlpha >> 1);
                memcpy(pmat->m_szName, mat.szName, 32);
 
+               float physicsValue;
                fread(&physicsValue, sizeof(float), 1, f);
                pmat->m_fElasticity = physicsValue;
                fread(&physicsValue, sizeof(float), 1, f);
@@ -351,7 +348,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             char szFileName[4096];
             char szInitialDir[4096];
             int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
-            int selCount = ListView_GetSelectedCount(m_hMaterialList);
+            const int selCount = ListView_GetSelectedCount(m_hMaterialList);
             if (sel == -1)
                break;
 
@@ -447,8 +444,8 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                }
 
                m_deletingItem = false;
-               int newCount = ListView_GetItemCount(m_hMaterialList);
-               int selectedCount = ListView_GetSelectedCount(m_hMaterialList);
+               const int newCount = ListView_GetItemCount(m_hMaterialList);
+               const int selectedCount = ListView_GetSelectedCount(m_hMaterialList);
                if (newCount > 0 && selectedCount == 0)
                {
                    if (firstSelectedItemIdx >= newCount) firstSelectedItemIdx = 0;
@@ -484,8 +481,8 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
       case WM_NOTIFY:
       {
-         CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
-         LPNMHDR pnmhdr = (LPNMHDR)lParam;
+         CCO(PinTable) *const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+         const LPNMHDR pnmhdr = (LPNMHDR)lParam;
          if (wParam == IDC_MATERIAL_LIST)
          {
             LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
@@ -523,7 +520,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                lvitem.iItem = pinfo->item.iItem;
                lvitem.iSubItem = 0;
                ListView_GetItem(m_hMaterialList, &lvitem);
-               Material *pmat = (Material*)lvitem.lParam;
+               Material * const pmat = (Material*)lvitem.lParam;
 
                if (pt->IsMaterialNameUnique(pinfo->item.pszText))
                {
@@ -733,7 +730,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void MaterialDialog::OnOK()
 {
-   CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
    const int count = ListView_GetSelectedCount(m_hMaterialList);
    if (count > 0)
    {
@@ -855,4 +852,3 @@ void MaterialDialog::SavePosition()
     h = rect.bottom - rect.top;
     SetRegValue("Editor", "MaterialMngHeight", REG_DWORD, &h, 4);
 }
-
