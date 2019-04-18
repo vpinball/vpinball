@@ -111,10 +111,87 @@ void Pin3D::TransformVertices(const Vertex3D_NoTex2 * rgv, const WORD * rgi, int
    }
 }
 
-void EnvmapPrecalc(const void* const __restrict envmap, const DWORD env_xres, const DWORD env_yres, void* const __restrict rad_envmap, const DWORD rad_env_xres, const DWORD rad_env_yres, const bool isHDR)
+void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres, const DWORD env_yres, void* const __restrict rad_envmap, const DWORD rad_env_xres, const DWORD rad_env_yres, const bool isHDR)
 {
+#define PREFILTER_ENVMAP_DIFFUSE
+#ifdef PREFILTER_ENVMAP_DIFFUSE
+   // pre-filter envmap with a gauss (separable/two passes: x and y)
+   //!!! not correct to pre-filter like this, but barely visible in the end, and helps to keep number of samples low (otherwise one would have to use >64k samples instead of 4k!)
+   if (isHDR && (env_xres > 64))
+   {
+	   const float scale_factor = (float)env_xres*(float)(1.0/64.);
+	   const int xs = (int)(scale_factor*0.5f + 0.5f);
+	   const void* const __restrict envmap2 = malloc(env_xres * env_yres * (isHDR ? 12 : 4));
+	   const void* const __restrict envmap3 = malloc(env_xres * env_yres * (isHDR ? 12 : 4));
+	   const float sigma = (scale_factor - 1.f)*0.25f;
+	   float* const __restrict weights = (float*)malloc((xs*2+1) * 4);
+	   for (int x = 0; x < (xs*2+1); ++x)
+		   weights[x] = (1.f / sqrtf((float)(2.*M_PI)*sigma*sigma))*expf(-(float)((x-xs)*(x-xs))/(2.f*sigma*sigma));
+
+	   // x-pass:
+
+	   for (int y = 0; y < (int)env_yres; ++y)
+		   for (int x = 0; x < (int)env_xres; ++x)
+		   {
+			   float sum[3] = { 0.f, 0.f, 0.f };
+			   float sum_w = 0.f;
+			   const int yoffs = y*(env_xres*3);
+				   for (int xt2 = 0; xt2 <= xs*2; ++xt2)
+				   {
+					   int xt = xt2 + (x - xs);
+					   if (xt < 0)
+						   xt += env_xres;
+					   else if (xt >= (int)env_xres)
+						   xt -= env_xres;
+					   const float w = weights[xt2];
+					   const unsigned int offs = xt*3 + yoffs;
+					   sum[0] += ((float*)envmap)[offs    ] * w;
+					   sum[1] += ((float*)envmap)[offs + 1] * w;
+					   sum[2] += ((float*)envmap)[offs + 2] * w;
+					   sum_w += w;
+				   }
+
+			   const unsigned int offs = (x + y*env_xres) * 3;
+			   const float inv_sum = 1.0f / sum_w;
+			   ((float*)envmap2)[offs  ] = sum[0] * inv_sum;
+			   ((float*)envmap2)[offs+1] = sum[1] * inv_sum;
+			   ((float*)envmap2)[offs+2] = sum[2] * inv_sum;
+		   }
+
+	   // y-pass:
+
+   	   for (int y = 0; y < (int)env_yres; ++y)
+		   for (int x = 0; x < (int)env_xres; ++x)
+		   {
+			   float sum[3] = { 0.f, 0.f, 0.f };
+			   float sum_w = 0.f;
+			   const int yt_end = min(y + xs, (int)env_yres - 1) - (y - xs);
+			   int offs = x * 3 + max(y - xs, 0)*(env_xres * 3);
+			   for (int yt = max(y - xs, 0) - (y - xs); yt <= yt_end; ++yt, offs += env_xres * 3)
+				   {
+					   const float w = weights[yt];
+					   sum[0] += ((float*)envmap2)[offs    ] * w;
+					   sum[1] += ((float*)envmap2)[offs + 1] * w;
+					   sum[2] += ((float*)envmap2)[offs + 2] * w;
+					   sum_w += w;
+				   }
+
+			   offs = (x + y*env_xres) * 3;
+			   const float inv_sum = 1.0f / sum_w;
+			   ((float*)envmap3)[offs  ] = sum[0] * inv_sum;
+			   ((float*)envmap3)[offs+1] = sum[1] * inv_sum;
+			   ((float*)envmap3)[offs+2] = sum[2] * inv_sum;
+		   }
+
+	   envmap = envmap3;
+	   free((void*)envmap2);
+	   free(weights);
+   }
+#endif
+
    // brute force sampling over hemisphere for each normal direction of the to-be-(ir)radiance-baked environment
    // not the fastest solution, could do a "cosine convolution" over the picture instead (where also just 1024 or x samples could be used per pixel)
+   //!! (note though that even 4096 samples can be too low if very bright spots (i.e. sun) in the image! see Delta_2k.hdr -> thus pre-filter enabled above!)
    // but with this implementation one can also have custom maps/LUTs for glossy, etc. later-on
    for (unsigned int y = 0; y < rad_env_yres; ++y)
       for (unsigned int x = 0; x < rad_env_xres; ++x)
@@ -147,8 +224,9 @@ void EnvmapPrecalc(const void* const __restrict envmap, const DWORD env_xres, co
             const Vertex3Ds l = rotate_to_vector_upper(cos_hemisphere_sample((float)s*(float)(1.0 / num_samples), radical_inverse(s)), n); // QMC hammersley point set
 #endif
             // trafo from light direction to envmap
-            const float u = atan2f(l.y, l.x) * (float)(0.5 / M_PI) + 0.5f;
-            const float v = acosf(l.z) * (float)(1.0 / M_PI);
+            // approximations seem to be good enough!
+            const float u = atan2_approx_div2PI(l.y, l.x) + 0.5f; //atan2f(l.y, l.x) * (float)(0.5 / M_PI) + 0.5f;
+            const float v = acos_approx_divPI(l.z); //acosf(l.z) * (float)(1.0 / M_PI);
 
             float r,g,b;
             if (isHDR)
@@ -156,7 +234,7 @@ void EnvmapPrecalc(const void* const __restrict envmap, const DWORD env_xres, co
                 unsigned int offs = ((int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres)*3;
                 if (offs >= env_yres*env_xres*3)
                     offs = 0;
-                r = ((float*)envmap)[offs];
+                r = ((float*)envmap)[offs  ];
                 g = ((float*)envmap)[offs+1];
                 b = ((float*)envmap)[offs+2];
             }
@@ -187,9 +265,9 @@ void EnvmapPrecalc(const void* const __restrict envmap, const DWORD env_xres, co
          sum[1] *= (float)(2.0/num_samples);
          sum[2] *= (float)(2.0/num_samples);
 #else
-         sum[0] *= (float)(1.0 / num_samples); // pre-divides by PI for final radiance/color lookup in shader
-         sum[1] *= (float)(1.0 / num_samples);
-         sum[2] *= (float)(1.0 / num_samples);
+         sum[0] *= (float)(1.0/num_samples); // pre-divides by PI for final radiance/color lookup in shader
+         sum[1] *= (float)(1.0/num_samples);
+         sum[2] *= (float)(1.0/num_samples);
 #endif
          if (isHDR)
          {
@@ -206,6 +284,11 @@ void EnvmapPrecalc(const void* const __restrict envmap, const DWORD env_xres, co
             ((DWORD*)rad_envmap)[y*rad_env_xres + x] = ((int)(sum[0] * 255.0f)) | (((int)(sum[1] * 255.0f)) << 8) | (((int)(sum[2] * 255.0f)) << 16);
          }
       }
+
+#ifdef PREFILTER_ENVMAP_DIFFUSE
+   if (isHDR && (env_xres > 64))
+	   free((void*)envmap);
+#endif
 }
 
 HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl)

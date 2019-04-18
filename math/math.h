@@ -10,6 +10,26 @@ __forceinline float sqrf(const float x)
    return x*x;
 }
 
+__forceinline float acos_approx_divPI(const float v)
+{
+    //return acosf(v)*(float)(1./M_PI);
+
+    const float x = fabsf(v);
+    const float res = ((float)(-0.155972/M_PI)/*C1*/ * x + (float)(1.56467/M_PI)/*C0*/) * sqrtf(1.0f - x);
+    return (v >= 0.f) ? res : 1.f - res;
+}
+
+__forceinline float atan2_approx_div2PI(const float y, const float x)
+{
+	//return atan2f(y,x)*(float)(0.5/M_PI);
+
+	const float abs_y = fabsf(y);
+	const float abs_x = fabsf(x);
+	const float r = (abs_x - abs_y) / (abs_x + abs_y);
+	const float angle = ((x < 0.f) ? (float)(3./8.) : (float)(1./8.))
+	                  + ((float)(0.211868/*C3*//(2.*M_PI)) * r * r - (float)(0.987305/*C1*//(2.*M_PI))) * ((x < 0.f) ? -r : r);
+	return (y < 0.f) ? -angle : angle;
+}
 
 __forceinline float precise_divide(const float a, const float b)
 {
