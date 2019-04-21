@@ -1,6 +1,8 @@
 VP 10.6.0 Changelog
 ------------------------
 
+- remove caption and window borders in windowed mode (only re-enable/toggle the caption if ESC menu is brought up)
+
 - fix some issues with the physically based lighting calculations, this can change the brightness (most noticably on the playfield) for some tables (more so if the (HDR) environment map is very high contrast, especially on the poles)
 
 - add current active ball velocity/angular velocity, and the number of physics iterations per frame to the F11 debug output/stats
