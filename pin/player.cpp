@@ -675,6 +675,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 
    m_fCloseDown = false;
    m_fCloseDownDelay = true;
+   m_ShowWindowedCaption = false;
    m_closeType = 0;
    m_fShowDebugger = false;
 
@@ -1384,7 +1385,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    // TEXT
    SetWindowText(hwndProgressName, "Initializing Visuals...");
 
-   InitPlayfieldWindow();
+   InitGameplayWindow();
    InitKeys();
    InitRegValues();
 
@@ -2415,7 +2416,7 @@ void Player::DestroyBall(Ball *pball)
 }
 
 //initalizes the player window, and places it somewhere on the screen, does not manage content
-void Player::InitPlayfieldWindow()
+void Player::InitGameplayWindow()
 {
    WNDCLASSEX wcex;
    ZeroMemory(&wcex, sizeof(WNDCLASSEX));
@@ -2483,25 +2484,34 @@ void Player::InitPlayfieldWindow()
          m_height = m_screenheight;
          m_width = m_height * 16 / 9;
       }
+
       x += (m_screenwidth - m_width) / 2;
       y += (m_screenheight - m_height) / 2;
    }
 
-   // No window border, title, or control boxes.
-   int windowflags = WS_POPUP;
-   int windowflagsex = 0;
+   int windowflags;
+   int windowflagsex;
 
    const int captionheight = GetSystemMetrics(SM_CYCAPTION);
 
-   if (!m_fFullScreen && ((m_screenheight - m_height) >= (captionheight * 2))) // We have enough room for a frame
+   if (false) // only do this nowadays if ESC menu is brought up //(!m_fFullScreen && ((m_screenheight - m_height) >= (captionheight * 2))) // We have enough room for a frame?
    {
       // Add a pretty window border and standard control boxes.
+
       windowflags = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN;
       windowflagsex = WS_EX_OVERLAPPEDWINDOW;
 
+      //!! does not respect borders so far!!! -> change width/height accordingly ??
+      //!! like this the render window is scaled and thus implicitly blurred!
       y -= captionheight;
       m_height += captionheight;
    }
+   else // No window border, title, or control boxes.
+   {
+      windowflags = WS_POPUP;
+      windowflagsex = 0;
+   }
+
    CalcBallAspectRatio();
    m_playfieldHwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
@@ -5103,7 +5113,32 @@ void Player::Render()
    else
    {
       if (m_fCloseDown && m_fCloseDownDelay) // wait for one frame to stop game, to be able to display the additional text (table info, etc)
-         m_fCloseDownDelay = false;
+      {
+		   m_fCloseDownDelay = false;
+
+		   // add or remove caption, border and buttons (only if in windowed mode)?
+		   const int captionheight = GetSystemMetrics(SM_CYCAPTION);
+		   if (!m_fFullScreen && (m_ShowWindowedCaption || (!m_ShowWindowedCaption && ((m_screenheight - m_height) >= (captionheight * 2))))) // We have enough room for a frame? //!! *2 ??
+		   {
+			   RECT rect;
+			   GetWindowRect(m_playfieldHwnd, &rect);
+			   const int x = rect.left;
+			   const int y = rect.top;
+
+			   // Add/Remove a pretty window border and standard control boxes.
+			   const int windowflags = m_ShowWindowedCaption ? WS_POPUP : (WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN);
+			   const int windowflagsex = m_ShowWindowedCaption ? 0 : WS_EX_OVERLAPPEDWINDOW;
+
+			   //!! does not respect borders so far!!! -> remove them or change width/height accordingly ?? otherwise ignore as eventually it will be restored anyway??
+			   //!! like this the render window is scaled and thus implicitly blurred though!
+			   SetWindowLong(m_playfieldHwnd, GWL_STYLE, windowflags);
+			   SetWindowLong(m_playfieldHwnd, GWL_EXSTYLE, windowflagsex);
+			   SetWindowPos(m_playfieldHwnd, NULL, x, m_ShowWindowedCaption ? (y + captionheight) : (y - captionheight), m_width, m_height + (m_ShowWindowedCaption ? 0 : captionheight), SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+			   ShowWindow(m_playfieldHwnd, SW_SHOW);
+
+			   m_ShowWindowedCaption = !m_ShowWindowedCaption;
+		   }
+      }
       else if (m_fCloseDown)
       {
          PauseMusic();
