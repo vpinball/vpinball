@@ -1626,7 +1626,7 @@ STDMETHODIMP Plunger::CreateBall(IBall **pBallEx)
 STDMETHODIMP Plunger::get_X(float *pVal)
 {
    *pVal = m_d.m_v.x;
-   g_pvp->SetStatusBarUnitInfo("");
+   g_pvp->SetStatusBarUnitInfo("", true);
 
    return S_OK;
 }
@@ -1635,11 +1635,11 @@ STDMETHODIMP Plunger::put_X(float newVal)
 {
    STARTUNDO
 
-      m_d.m_v.x = newVal;
+   m_d.m_v.x = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_Y(float *pVal)

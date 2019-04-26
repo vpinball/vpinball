@@ -1156,7 +1156,7 @@ STDMETHODIMP HitTarget::put_Visible(VARIANT_BOOL newVal)
 STDMETHODIMP HitTarget::get_X(float *pVal)
 {
    *pVal = m_d.m_vPosition.x;
-   g_pvp->SetStatusBarUnitInfo("");
+   g_pvp->SetStatusBarUnitInfo("", true);
 
    return S_OK;
 }

@@ -56,7 +56,7 @@ void Kicker::UpdateUnitsInfo()
 
    char tbuf[128];
    sprintf_s(tbuf, "Radius: %.3f", g_pvp->ConvertToUnit(m_d.m_radius));
-   g_pvp->SetStatusBarUnitInfo(tbuf);
+   g_pvp->SetStatusBarUnitInfo(tbuf, true);
 }
 
 HRESULT Kicker::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
