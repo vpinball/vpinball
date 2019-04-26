@@ -39,7 +39,7 @@ void Rubber::UpdateUnitsInfo()
 
    char tbuf[128];
    sprintf_s(tbuf, "Height: %.3f | Thickness: %.3f", g_pvp->ConvertToUnit(m_d.m_height), g_pvp->ConvertToUnit((float)m_d.m_thickness));
-   g_pvp->SetStatusBarUnitInfo(tbuf);
+   g_pvp->SetStatusBarUnitInfo(tbuf, true);
 }
 
 HRESULT Rubber::Init(PinTable *ptable, float x, float y, bool fromMouseClick)

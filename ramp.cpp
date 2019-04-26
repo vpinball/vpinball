@@ -49,7 +49,7 @@ void Ramp::UpdateUnitsInfo()
    sprintf_s(tbuf, "TopH: %.03f | BottomH: %0.3f | TopW: %.03f | BottomW: %.03f | LeftW: %.03f | RightW: %.03f", g_pvp->ConvertToUnit(m_d.m_heighttop), g_pvp->ConvertToUnit(m_d.m_heightbottom), 
                                                                                   g_pvp->ConvertToUnit(m_d.m_widthtop), g_pvp->ConvertToUnit(m_d.m_widthbottom),
                                                                                   g_pvp->ConvertToUnit(m_d.m_leftwallheightvisible), g_pvp->ConvertToUnit(m_d.m_rightwallheightvisible));
-   g_pvp->SetStatusBarUnitInfo(tbuf);
+   g_pvp->SetStatusBarUnitInfo(tbuf, true);
 }
 
 

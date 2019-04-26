@@ -89,7 +89,7 @@ void Gate::UpdateUnitsInfo()
 
    char tbuf[128];
    sprintf_s(tbuf, "Length: %.3f | Height: %.3f", g_pvp->ConvertToUnit(m_d.m_length), g_pvp->ConvertToUnit(m_d.m_height));
-   g_pvp->SetStatusBarUnitInfo(tbuf);
+   g_pvp->SetStatusBarUnitInfo(tbuf, true);
 }
 
 HRESULT Gate::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
