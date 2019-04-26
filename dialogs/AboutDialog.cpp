@@ -12,7 +12,6 @@ AboutDialog::AboutDialog() : CDialog(IDD_ABOUT)
 
 AboutDialog::~AboutDialog()
 {
-
 }
 
 void AboutDialog::OnDestroy()
@@ -73,7 +72,6 @@ INT_PTR AboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       }
       return TRUE;
    }
-
 
    return DialogProcDefault(uMsg, wParam, lParam);
 }

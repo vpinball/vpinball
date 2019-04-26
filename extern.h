@@ -6,5 +6,16 @@ extern Player *g_pplayer; // Game currently being played
 extern HACCEL g_haccel; // Accelerator keys
 extern bool g_fKeepUndoRecords;
 
-void ShowError(const char * const sz);
-void ExitApp();
+__forceinline void ShowError(const char * const sz)
+{
+   MessageBox(NULL, sz, "Error", MB_OK | MB_ICONEXCLAMATION);
+}
+
+inline void ExitApp()
+{
+   // Quit nicely.
+   if (g_pvp)
+      g_pvp->Quit();
+   else
+      exit(0);
+}

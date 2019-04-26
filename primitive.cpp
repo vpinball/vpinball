@@ -1266,6 +1266,14 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
    }
    else // m_d.m_useAsPlayfield == true:
    {
+      // shader is already fully configured in the playfield rendering case when we arrive here, so we only setup some special primitive params
+
+      if (m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f)
+      {
+         const D3DXVECTOR4 tmp(m_d.m_fDisableLightingTop, m_d.m_fDisableLightingBelow, 0.f, 0.f);
+         pd3dDevice->basicShader->SetDisableLighting(tmp);
+      }
+
       //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW); // don't mess with the render states when doing playfield rendering
       // set transform
       g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
@@ -1274,6 +1282,12 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       pd3dDevice->basicShader->End();
       // reset transform
       g_pplayer->UpdateBasicShaderMatrix();
+
+      if (m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f)
+      {
+         const D3DXVECTOR4 tmp(0.f, 0.f, 0.f, 0.f);
+         pd3dDevice->basicShader->SetDisableLighting(tmp);
+      }
    }
 }
 
