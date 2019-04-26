@@ -60,7 +60,8 @@ VP 10.6.0 Changelog
     o cut holes into the playfield where you want to place kickers, VUKs and so on
     o export the modified playfield mesh as a separate obj file and import it to VPX
     o in VPX rename the playfield primitive to "playfield_mesh"
-    o the playfield primitive doesn't need an image and a material. VPX will use the texture and material from the playfield properties
+    o the playfield primitive doesn't need an image and a material assigned
+      VPX will use the texture and material from the playfield properties, but will respect the 'disable lighting' parameter from the primitive
 
     Note: VP can only handle a simple mesh plate (with optional holes) as a playfield. Adding other complicated meshes to the playfield (e.g. merge kicker meshes with the playfield) is not supported.
           The "playfield_mesh" is also handled as a special primitive type: its physics settings are copied from the table physics properties, but in addition you can also set "Has Hit Event" and set a "Hit Threshold"

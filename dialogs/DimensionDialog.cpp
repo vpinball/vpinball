@@ -56,7 +56,7 @@ DimensionDialog::DimensionDialog() : CDialog(IDD_DIMENSION_CALCULATOR)
 
 BOOL DimensionDialog::OnInitDialog()
 {
-   HWND listHwnd = GetDlgItem(IDC_TABLE_DIM_LIST).GetHwnd();
+   const HWND listHwnd = GetDlgItem(IDC_TABLE_DIM_LIST).GetHwnd();
    LVCOLUMN lvc;
    LVITEM lv;
    ListView_SetExtendedListViewStyle(listHwnd, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
@@ -96,18 +96,18 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
       case WM_NOTIFY:
       {
-         LPNMHDR pnmhdr = (LPNMHDR)lParam;
+         const LPNMHDR pnmhdr = (LPNMHDR)lParam;
          switch (pnmhdr->code)
          {
             case LVN_ITEMCHANGED:
             {
                NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
-               int idx = plistview->iItem;
+               const int idx = plistview->iItem;
                if (idx >= DIM_TABLE_SIZE || idx < 0)
                   break;
 
-               int width = (int)(dimTable[idx].width*47.0f + 0.5f);
-               int height = (int)(dimTable[idx].height*47.0f + 0.5f);
+               const int width = (int)(dimTable[idx].width*47.0f + 0.5f);
+               const int height = (int)(dimTable[idx].height*47.0f + 0.5f);
                char textBuf[32];
                sprintf_s(textBuf, "%i", width);
                CString textStr(textBuf);
@@ -142,12 +142,11 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                if (LOWORD(wParam) == IDC_SIZE_WIDTH)
                {
                   char textBuf[32];
-                  CString textStr;
-                  textStr = GetDlgItemText(IDC_SIZE_WIDTH);
+                  const CString textStr(GetDlgItemText(IDC_SIZE_WIDTH));
                   ret = sscanf_s(textStr.c_str(), "%f", &sizeWidth);
                   if (ret != 1 || sizeWidth < 0.0f)
                      sizeWidth = 0;
-                  int width = (int)(sizeWidth*47.0f + 0.5f);
+                  const int width = (int)(sizeWidth*47.0f + 0.5f);
                   sprintf_s(textBuf, "%i", width);
                   CString textStr2(textBuf);
                   SetDlgItemText(IDC_VP_WIDTH, textStr2);
@@ -155,25 +154,23 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                if (LOWORD(wParam) == IDC_SIZE_HEIGHT)
                {
                   char textBuf[32];
-                  CString textStr;
-                  textStr = GetDlgItemText(IDC_SIZE_HEIGHT);
+                  const CString textStr(GetDlgItemText(IDC_SIZE_HEIGHT));
                   ret = sscanf_s(textStr.c_str(), "%f", &sizeHeight);
                   if (ret != 1 || sizeHeight < 0.0f)
                      sizeHeight = 0;
-                  int height = (int)(sizeHeight*47.0f + 0.5f);
+                  const int height = (int)(sizeHeight*47.0f + 0.5f);
                   sprintf_s(textBuf, "%i", height);
-                  CString textStr2(textBuf);
+                  const CString textStr2(textBuf);
                   SetDlgItemText(IDC_VP_HEIGHT, textStr2);
                }
                if (LOWORD(wParam) == IDC_VP_WIDTH)
                {
                   char textBuf[32];
-                  CString textStr;
-                  textStr = GetDlgItemText(IDC_VP_WIDTH);
+                  const CString textStr(GetDlgItemText(IDC_VP_WIDTH));
                   ret = sscanf_s(textStr.c_str(), "%i", &vpWidth);
                   if (ret != 1 || vpWidth < 0)
                      vpWidth = 0;
-                  float width = (float)vpWidth / 47.0f;
+                  const float width = (float)vpWidth / 47.0f;
                   sprintf_s(textBuf, "%.3f", width);
                   CString textStr2(textBuf);
                   SetDlgItemText(IDC_SIZE_WIDTH, textStr2);
@@ -181,12 +178,11 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                if (LOWORD(wParam) == IDC_VP_HEIGHT)
                {
                   char textBuf[32];
-                  CString textStr;
-                  textStr = GetDlgItemText(IDC_VP_HEIGHT);
+                  const CString textStr(GetDlgItemText(IDC_VP_HEIGHT));
                   ret = sscanf_s(textStr.c_str(), "%i", &vpHeight);
                   if (ret != 1 || vpHeight < 0)
                      vpHeight = 0;
-                  float height = (float)vpHeight / 47.0f;
+                  const float height = (float)vpHeight / 47.0f;
                   sprintf_s(textBuf, "%.03f", height);
                   CString textStr2(textBuf);
                   SetDlgItemText(IDC_SIZE_HEIGHT, textStr2);
@@ -196,8 +192,8 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          }
       }
    }
-   return DialogProcDefault(uMsg, wParam, lParam);
 
+   return DialogProcDefault(uMsg, wParam, lParam);
 }
 
 BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -208,7 +204,7 @@ BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    {
       case IDC_APPLY_TO_TABLE:
       {
-         PinTable *pt = g_pvp->GetActiveTable();
+         PinTable * const pt = g_pvp->GetActiveTable();
          if (pt == NULL)
          {
             ShowError("No table loaded!");
@@ -239,4 +235,3 @@ BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    }
    return TRUE;
 }
-
