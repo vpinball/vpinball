@@ -1040,7 +1040,7 @@ void Surface::RenderSlingshots()
           }
       }
 
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, slingshotVBuffer, i * 9, 9, slingIBuffer, 0, 24);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, slingshotVBuffer, (DWORD)i * 9, 9, slingIBuffer, 0, 24);
    }
    pd3dDevice->basicShader->End();
 

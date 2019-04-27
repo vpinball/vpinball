@@ -306,7 +306,7 @@ BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __i
    config.width = info.rcMonitor.right - info.rcMonitor.left;
    config.height = info.rcMonitor.bottom - info.rcMonitor.top;
    config.isPrimary = (config.top == 0) && (config.left == 0);
-   config.display = data->size(); // This number does neither map to the number form display settings nor something else.
+   config.display = (int)data->size(); // This number does neither map to the number form display settings nor something else.
    config.adapter = -1;
    memcpy(config.DeviceName, info.szDevice, CCHDEVICENAME); // Internal display name e.g. "\\\\.\\DISPLAY1"
    data->insert(std::pair<std::string, DisplayConfig>(std::string(config.DeviceName), config));

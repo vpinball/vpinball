@@ -223,19 +223,19 @@ void AudioOptionsDialog::OnOK()
    SetRegValueInt("Player", "Sound3D", fmusic);
 
    volume = SendMessage(hwndMusicSlider, TBM_GETPOS, 0, 0);
-   SetRegValueInt("Player", "MusicVolume", volume);
+   SetRegValueInt("Player", "MusicVolume", (int)volume);
 
    volume = SendMessage(hwndSoundSlider, TBM_GETPOS, 0, 0);
-   SetRegValueInt("Player", "SoundVolume", volume);
+   SetRegValueInt("Player", "SoundVolume", (int)volume);
 
    HWND hwndSoundList = GetDlgItem(IDC_SoundList).GetHwnd();
    size_t soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
    size_t sd = SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
-   SetRegValueInt("Player", "SoundDevice", sd);
+   SetRegValueInt("Player", "SoundDevice", (int)sd);
    hwndSoundList = GetDlgItem(IDC_SoundListBG).GetHwnd();
    soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
    sd = SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
-   SetRegValueInt("Player", "SoundDeviceBG", sd);
+   SetRegValueInt("Player", "SoundDeviceBG", (int)sd);
    g_pvp->ReInitPinDirectSound();
 
    CDialog::OnOK();
