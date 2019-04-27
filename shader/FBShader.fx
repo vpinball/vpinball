@@ -1,7 +1,7 @@
 #include "Helpers.fxh"
 
 float4 ms_zpd_ya_td;
-float4 w_h_height; // for bloom, w_h_height.z keeps strength
+float4 w_h_height; // for bloom, w_h_height.z keeps strength; for dither, w_h_height.zw keeps per-frame offset for temporal variation of the pattern
 
 float2 AO_scale_timeblur;
 float mirrorFactor;
@@ -123,11 +123,102 @@ struct VS_OUTPUT_2D
     {(51/64.0-0.5)/255.0, (19/64.0-0.5)/255.0, (59/64.0-0.5)/255.0, (27/64.0-0.5)/255.0, (49/64.0-0.5)/255.0, (17/64.0-0.5)/255.0, (57/64.0-0.5)/255.0, (25/64.0-0.5)/255.0},
     {(15/64.0-0.5)/255.0, (47/64.0-0.5)/255.0, ( 7/64.0-0.5)/255.0, (39/64.0-0.5)/255.0, (13/64.0-0.5)/255.0, (45/64.0-0.5)/255.0, ( 5/64.0-0.5)/255.0, (37/64.0-0.5)/255.0},
     {(63/64.0-0.5)/255.0, (31/64.0-0.5)/255.0, (55/64.0-0.5)/255.0, (23/64.0-0.5)/255.0, (61/64.0-0.5)/255.0, (29/64.0-0.5)/255.0, (53/64.0-0.5)/255.0, (21/64.0-0.5)/255.0} };
+*/
 
-float3 FBDither(const float3 color, const int2 pos)
+float triangularPDF(const float r) // from -1..1, c=0 (with random no r=0..1)
 {
-   return color + bayer_dither_pattern[pos.x%8][pos.y%8];
+   float p = 2.*r;
+   const bool b = (p > 1.);
+   if (b)
+      p = 2.-p;
+   p = 1.-sqrt(p);
+   return b ? p : -p;
+}
+float3 triangularPDF(const float3 r) // from -1..1, c=0 (with random no r=0..1)
+{
+   return float3(triangularPDF(r.x), triangularPDF(r.y), triangularPDF(r.z));
+}
+
+/*float DitherGradientNoise(const float2 tex0)
+{
+   // Interleaved Gradient Noise from "NEXT GENERATION POST PROCESSING IN CALL OF DUTY: ADVANCED WARFARE" http://advances.realtimerendering.com/s2014/index.html
+   const float3 magic = float3(0.06711056, 0.00583715, 52.9829189);
+
+   return frac(magic.z * frac(dot(tex0, magic.xy)));
+}
+
+float Dither64(const float2 tex0, const float time)
+{
+   const float3 k0 = float3(33., 52., 25.);
+
+   return frac(dot(float3(tex0, time), k0 * (1.0/64.0)));
 }*/
+
+float3 DitherVlachos(const float2 tex0, const float3 rgb)
+{
+   // Vlachos 2016, "Advanced VR Rendering", but using a TPDF
+   const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5 and 10/10/10bit??
+
+   const float noise = dot(float2(171.0, 231.0), tex0);
+   const float3 noise3 = frac(noise * (1.0 / float3(103.0, 71.0, 97.0)));
+
+   return rgb + triangularPDF(noise3)/*(noise3*2.0-1.0)*/ * (1.0/(quantSteps - 1.0));
+}
+
+float3 FBDither(const float3 color, /*const int2 pos*/const float2 tex0)
+{
+   //return color + bayer_dither_pattern[pos.x%8][pos.y%8];
+
+#ifndef BLUE_NOISE_DITHER
+   return DitherVlachos(tex0*(1.0/(2.0*w_h_height.xy)) + w_h_height.zw, color);
+#else // needs texSamplerAOdither
+   const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5 and 10/10/10bit??
+
+   // TPDF:
+   const float3 dither = /*float3(GradientNoise(tex0 / (2.0*w_h_height.xy) + w_h_height.zw*3.141),
+      GradientNoise(tex0.yx / (2.0*w_h_height.yx) + w_h_height.zw*1.618),
+      GradientNoise(tex0 / (2.0*w_h_height.xy) + w_h_height.wz*2.718281828459));*/
+   // Dither64(tex0 / (2.0*w_h_height.xy)+w_h_height.zw, 0.);
+       tex2Dlod(texSamplerAOdither, float4(tex0 / (64.0*(2.0*w_h_height.xy)) + w_h_height.zw*3.141, 0., 0.)).xyz;
+   return color + triangularPDF(dither) * (1.0/quantSteps); // quantSteps-1. ?
+
+   /*const float3 dither = tex2Dlod(texSamplerAOdither, float4(tex0 / (64.0*(2.0*w_h_height.xy)) + w_h_height.zw*2.718281828459, 0., 0.)).xyz;
+   const float3 dither2 = tex2Dlod(texSamplerAOdither, float4(tex0 / (64.0*(2.0*w_h_height.xy)) + w_h_height.wz*3.14159265358979, 0., 0.)).xyz;
+   return color + (dither - dither2) / quantSteps;*/
+
+   //const float3 dither = tex2Dlod(texSamplerAOdither, float4(tex0 / (64.0*(2.0*w_h_height.xy)) + w_h_height.wz*3.141, 0., 0.)).xyz*2.0 - 1.0;
+
+   // Lottes (1st one not working, 2nd 'quality', 3rd 'tradeoff'), IMHO too much magic:
+   /*const float blackLimit = 0.5 * InvGamma(1.0/(quantSteps - 1.0));
+   const float amount = 0.75 * (InvGamma(1.0/(quantSteps - 1.0)) - 1.0);
+   return color + dither*min(color + blackLimit, amount);*/
+
+   //const float3 amount = InvGamma(FBGamma(color) + (4. / quantSteps)) - color;
+   
+   //const float luma = saturate(dot(color,float3(0.212655,0.715158,0.072187)));
+   //const float3 amount = lerp(
+   //  InvGamma(4. / quantSteps), //!! precalc? would also solve 5/6/5 and 10/10/10bit issue!
+   //  InvGamma((4. / quantSteps)+1.)-1.,
+   //  luma);
+
+   //return color + dither*amount;
+
+   // RPDF:
+   //return color + dither/quantSteps; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
+#endif
+}
+
+float2 FBDither(const float2 color, /*const int2 pos*/const float2 tex0)
+{
+	return color; // on RG-only rendering do not dither anything for performance
+}
+
+float FBDither(const float color, /*const int2 pos*/const float2 tex0)
+{
+	return color; // on R-only rendering do not dither anything for performance
+}
+
+//
 
 float3 FBColorGrade(float3 color)
 {
@@ -175,7 +266,7 @@ float4 ps_main_fb_tonemap(in VS_OUTPUT_2D IN) : COLOR
     float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.,0.)).xyz);
     [branch] if (do_bloom)
         result += tex2Dlod(texSamplerBloom, float4(IN.tex0, 0., 0.)).xyz; //!! offset?
-    return float4(FBColorGrade(FBGamma(saturate(result))), 1.0);
+    return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
 }
 
 float4 ps_main_fb_bloom(in VS_OUTPUT_2D IN) : COLOR
@@ -190,8 +281,8 @@ float4 ps_main_fb_bloom(in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_AO(in VS_OUTPUT_2D IN) : COLOR
 {
-	const float3 result = tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0., 0.)).x; // omitting the shift blurs over 2x2 window
-	return float4(FBGamma(saturate(result)), 1.0);
+    const float3 result = tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0., 0.)).x; // omitting the shift blurs over 2x2 window
+    return float4(FBGamma(saturate(result)), 1.0);
 }
 
 float4 ps_main_fb_tonemap_AO(in VS_OUTPUT_2D IN) : COLOR
@@ -199,15 +290,15 @@ float4 ps_main_fb_tonemap_AO(in VS_OUTPUT_2D IN) : COLOR
     float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.,0.)).xyz) // moving AO before tonemap does not really change the look
                   * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0.,0.)).x; // omitting the shift blurs over 2x2 window
     [branch] if (do_bloom)
-        result += tex2Dlod(texSamplerBloom, float4(IN.tex0, 0., 0.)).xyz;  //!! offset?
-    return float4(FBColorGrade(FBGamma(saturate(result))), 1.0);
+        result += tex2Dlod(texSamplerBloom, float4(IN.tex0, 0., 0.)).xyz; //!! offset?
+    return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
 }
 
 float4 ps_main_fb_tonemap_AO_static(in VS_OUTPUT_2D IN) : COLOR
 {
-	const float3 result = tex2Dlod(texSampler5, float4(IN.tex0, 0., 0.)).xyz
-	                    * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0., 0.)).x; // omitting the shift blurs over 2x2 window
-	return float4(result, 1.0);
+    const float3 result = tex2Dlod(texSampler5, float4(IN.tex0, 0., 0.)).xyz
+                        * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0., 0.)).x; // omitting the shift blurs over 2x2 window
+    return float4(result, 1.0);
 }
 
 float4 ps_main_fb_tonemap_no_filterRGB(in VS_OUTPUT_2D IN) : COLOR
@@ -215,7 +306,7 @@ float4 ps_main_fb_tonemap_no_filterRGB(in VS_OUTPUT_2D IN) : COLOR
     float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy, 0.,0.)).xyz);
     [branch] if (do_bloom)
         result += tex2Dlod(texSamplerBloom, float4(IN.tex0, 0., 0.)).xyz; //!! offset?
-    return float4(/*FBDither(*/FBColorGrade(FBGamma(saturate(result))),/*IN.tex0*w_h_height.zw),*/ 1.0);
+    return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
 }
 
 float4 ps_main_fb_tonemap_no_filterRG(in VS_OUTPUT_2D IN) : COLOR
@@ -223,7 +314,7 @@ float4 ps_main_fb_tonemap_no_filterRG(in VS_OUTPUT_2D IN) : COLOR
     float2 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy, 0.,0.)).xy);
     [branch] if (do_bloom)
         result += tex2Dlod(texSamplerBloom, float4(IN.tex0, 0., 0.)).xy; //!! offset?
-    const float rg = /*FBDither(*//*FBColorGrade*/(FBGamma(saturate(dot(result,float2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)))))/*,IN.tex0*w_h_height.zw)*/;
+    const float rg = /*FBColorGrade*/(FBGamma(saturate(dot(FBDither(result, IN.tex0), float2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)))));
     return float4(rg,rg,rg,1.0);
 }
 
@@ -232,7 +323,7 @@ float4 ps_main_fb_tonemap_no_filterR(in VS_OUTPUT_2D IN) : COLOR
     float result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy, 0.,0.)).x);
     [branch] if (do_bloom)
         result += tex2Dlod(texSamplerBloom, float4(IN.tex0, 0., 0.)).x; //!! offset?
-    const float gray = /*FBDither(*//*FBColorGrade*/(FBGamma(saturate(result)))/*,IN.tex0*w_h_height.zw)*/;
+    const float gray = /*FBColorGrade*/(FBGamma(saturate(FBDither(result, IN.tex0))));
     return float4(gray,gray,gray,1.0);
 }
 
@@ -241,15 +332,15 @@ float4 ps_main_fb_tonemap_AO_no_filter(in VS_OUTPUT_2D IN) : COLOR
     float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy, 0.,0.)).xyz) // moving AO before tonemap does not really change the look
                   * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0.,0.)).x; // omitting the shift blurs over 2x2 window
     [branch] if (do_bloom)
-        result += tex2Dlod(texSamplerBloom, float4(IN.tex0, 0., 0.)).xyz;  //!! offset?
-    return float4(FBColorGrade(FBGamma(saturate(result))), 1.0);
+        result += tex2Dlod(texSamplerBloom, float4(IN.tex0, 0., 0.)).xyz; //!! offset?
+    return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
 }
 
 float4 ps_main_fb_tonemap_AO_no_filter_static(in VS_OUTPUT_2D IN) : COLOR
 {
-	const float3 result = tex2Dlod(texSampler4, float4(IN.tex0 + w_h_height.xy, 0., 0.)).xyz
-	                    * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0., 0.)).x; // omitting the shift blurs over 2x2 window
-	return float4(result, 1.0);
+    const float3 result = tex2Dlod(texSampler4, float4(IN.tex0 + w_h_height.xy, 0., 0.)).xyz
+                        * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0., 0.)).x; // omitting the shift blurs over 2x2 window
+    return float4(result, 1.0);
 }
 
 //
