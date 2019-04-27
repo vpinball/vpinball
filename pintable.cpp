@@ -2824,7 +2824,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
             {
                char szSuffix[32], szStmName[64];
                strcpy_s(szStmName, sizeof(szStmName), "GameItem");
-               _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+               _itoa_s((int)i, szSuffix, sizeof(szSuffix), 10);
                strcat_s(szStmName, sizeof(szStmName), szSuffix);
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
@@ -2849,7 +2849,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
             {
                char szSuffix[32], szStmName[64];
                strcpy_s(szStmName, sizeof(szStmName), "Sound");
-               _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+               _itoa_s((int)i, szSuffix, sizeof(szSuffix), 10);
                strcat_s(szStmName, sizeof(szStmName), szSuffix);
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
@@ -2869,7 +2869,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
             {
                char szSuffix[32], szStmName[64];
                strcpy_s(szStmName, sizeof(szStmName), "Image");
-               _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+               _itoa_s((int)i, szSuffix, sizeof(szSuffix), 10);
                strcat_s(szStmName, sizeof(szStmName), szSuffix);
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
@@ -2889,7 +2889,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
             {
                char szSuffix[32], szStmName[64];
                strcpy_s(szStmName, sizeof(szStmName), "Font");
-               _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+               _itoa_s((int)i, szSuffix, sizeof(szSuffix), 10);
                strcat_s(szStmName, sizeof(szStmName), szSuffix);
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
@@ -5253,7 +5253,7 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
                   // so the ID_SELECT_ELEMENT is the global ID for selecting an element from the list and the rest is
                   // added for finding the element out of the list
                   // the selection is done in ISelect::DoCommand()
-                  const unsigned long id = 0x80000000 + (i << 16) + ID_SELECT_ELEMENT;
+                  const unsigned long id = 0x80000000 + ((unsigned long)i << 16) + ID_SELECT_ELEMENT;
                   AppendMenu(hmenu, MF_STRING, id, szTemp);
                }
             }
@@ -8768,7 +8768,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
          //MsoWzCopy(szSrc,szDst);
          rgstr[ivar + 1] = wzDst;
-         rgdw[ivar + 1] = ivar;
+         rgdw[ivar + 1] = (DWORD)ivar;
       }
       cvar++;
    }
@@ -8801,7 +8801,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
          //MsoWzCopy(szSrc,szDst);
          rgstr[ivar + 1] = wzDst;
-         rgdw[ivar + 1] = ivar;
+         rgdw[ivar + 1] = (DWORD)ivar;
       }
       cvar++;
       break;
@@ -8833,7 +8833,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
          //MsoWzCopy(szSrc,szDst);
          rgstr[ivar + 1] = wzDst;
-         rgdw[ivar + 1] = ivar;
+         rgdw[ivar + 1] = (DWORD)ivar;
       }
       cvar++;
    }
@@ -8861,7 +8861,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
          else
             memcpy(wzDst, m_vcollection.ElementAt(ivar)->m_wzName, cwch);
          rgstr[ivar + 1] = wzDst;
-         rgdw[ivar + 1] = ivar;
+         rgdw[ivar + 1] = (DWORD)ivar;
       }
       cvar++;
    }
@@ -8921,7 +8921,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
             //MsoWzCopy(szSrc,szDst);
             rgstr[cvar] = wzDst;
-            rgdw[cvar] = ivar;
+            rgdw[cvar] = (DWORD)ivar;
             cvar++;
          }
       }

@@ -1,0 +1,1070 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="flasher.cpp" />
+    <ClCompile Include="rubber.cpp" />
+    <ClCompile Include="hash.cpp" />
+    <ClCompile Include="kdtree.cpp" />
+    <ClCompile Include="math\matrix.cpp" />
+    <ClCompile Include="objloader.cpp" />
+    <ClCompile Include="Pin\ball.cpp" />
+    <ClCompile Include="ballex.cpp" />
+    <ClCompile Include="bumper.cpp" />
+    <ClCompile Include="codeview.cpp" />
+    <ClCompile Include="Pin\collide.cpp" />
+    <ClCompile Include="Pin\collideex.cpp" />
+    <ClCompile Include="decal.cpp" />
+    <ClCompile Include="def.cpp" />
+    <ClCompile Include="dispreel.cpp" />
+    <ClCompile Include="disputil.cpp" />
+    <ClCompile Include="dragpoint.cpp" />
+    <ClCompile Include="eventproxy.cpp" />
+    <ClCompile Include="extern.cpp" />
+    <ClCompile Include="Media\fileio.cpp" />
+    <ClCompile Include="flipper.cpp" />
+    <ClCompile Include="gate.cpp" />
+    <ClCompile Include="hid.cpp" />
+    <ClCompile Include="Pin\hitflipper.cpp" />
+    <ClCompile Include="Pin\hitplunger.cpp" />
+    <ClCompile Include="hitrectsur.cpp" />
+    <ClCompile Include="hitsur.cpp" />
+    <ClCompile Include="hittarget.cpp" />
+    <ClCompile Include="ieditable.cpp" />
+    <ClCompile Include="iselect.cpp" />
+    <ClCompile Include="kicker.cpp" />
+    <ClCompile Include="light.cpp" />
+    <ClCompile Include="lightseq.cpp" />
+    <ClCompile Include="Media\lzwreader.cpp" />
+    <ClCompile Include="Media\lzwwriter.cpp" />
+    <ClCompile Include="memutil.cpp" />
+    <ClCompile Include="mesh.cpp" />
+    <ClCompile Include="mixer.cpp" />
+    <ClCompile Include="paintsur.cpp" />
+    <ClCompile Include="pin3d.cpp" />
+    <ClCompile Include="pinbinary.cpp" />
+    <ClCompile Include="pininput.cpp" />
+    <ClCompile Include="pinsound.cpp" />
+    <ClCompile Include="pintable.cpp" />
+    <ClCompile Include="pinundo.cpp" />
+    <ClCompile Include="Pin\player.cpp" />
+    <ClCompile Include="plumb.cpp" />
+    <ClCompile Include="plunger.cpp" />
+    <ClCompile Include="primitive.cpp" />
+    <ClCompile Include="propbrowser.cpp" />
+    <ClCompile Include="quadtree.cpp" />
+    <ClCompile Include="ramp.cpp" />
+    <ClCompile Include="regutil.cpp" />
+    <ClCompile Include="RenderDevice.cpp" />
+    <ClCompile Include="slintf.cpp" />
+    <ClCompile Include="spinner.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="surface.cpp" />
+    <ClCompile Include="textbox.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="timer.cpp" />
+    <ClCompile Include="trigger.cpp" />
+    <ClCompile Include="variant.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="vpinball.cpp" />
+    <ClCompile Include="Media\wavread.cpp" />
+    <ClCompile Include="wintimer.cpp" />
+    <ClCompile Include="worker.cpp" />
+    <ClCompile Include="xaudplayer.cpp" />
+    <ClCompile Include="math\math.cpp" />
+    <ClCompile Include="BlackBox.cpp" />
+    <ClCompile Include="CrashHandler.cpp" />
+    <ClCompile Include="MemoryStatus.cpp" />
+    <ClCompile Include="StackTrace.cpp" />
+    <ClCompile Include="inc\progmesh.cpp">
+      <Filter>inc</Filter>
+    </ClCompile>
+    <ClCompile Include="codeviewedit.cpp" />
+    <ClCompile Include="inc\miniz.c">
+      <Filter>inc</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger.cpp" />
+    <ClCompile Include="Dialogs\AboutDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\DimensionDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\DrawingOrderDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\ImageDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\MaterialDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\SearchSelectDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\SoundDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\TableInfoDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\EditorOptionsDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\AudioOptionsDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\VideoOptionsDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\CollectionManagerDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\KeysConfigDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="inc\gpuprofiler.cpp">
+      <Filter>inc</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="vpinball.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_eng.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_fre.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_ger.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vpinball_spa.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\AOdither.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\ball.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\chevron.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\logo.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\pause.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\play.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\script.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\step.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\table.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\toolbar.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\vpinball.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\bumperbase.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\bumperCap.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\bumperring.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\bumperskirt.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\envmap.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\kickerCup.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\kickerHoleWood.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\kickerWilliams.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\kickerGottlieb.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\kickerT1.bmp">
+      <Filter>res</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\vpinball.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\hittarget.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\ball.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\bumper.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\bumper.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\decal.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\dispreel.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\dispreel.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\dragpoint.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\flasher.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\flasher.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\flipper.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\flipper.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\gate.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\gate.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\kicker.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\kicker.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\light.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\light.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\lightseq.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\lightseq.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\magnify.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\pieventhandler.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\plunger.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\plunger.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\primitive.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\primitive.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\ramp.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\ramp.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\rubber.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\rubber.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\spinner.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\spinner.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\surface.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\target.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\textbox.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\textbox.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\timer.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\timer.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\trigger.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\trigger.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\wall.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="shader\FXAAStereoAO.fxh">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shader\Helpers.fxh">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shader\Material.fxh">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shader\SSR.fxh">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="res\blankTable.vpx">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\exampleTable.vpx">
+      <Filter>res</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="inc">
+      <UniqueIdentifier>{ba1f1ac4-658a-4269-9aa3-1a5f1b5a4784}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="xaudio">
+      <UniqueIdentifier>{3be2f050-9d6d-4658-b7eb-86d3fbd2ac86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="headers">
+      <UniqueIdentifier>{7753e061-8049-4205-aff5-172e23e728ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="res">
+      <UniqueIdentifier>{2553b092-dac2-4b2a-9c0c-35d589c67b37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{67a3c1e1-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="meshes">
+      <UniqueIdentifier>{23b51dec-131c-4ac3-8f28-4e8fd6a3b646}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\Win32xx">
+      <UniqueIdentifier>{4a732b2b-cffd-4023-a3ff-69e331d25eb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\Win32xx\include">
+      <UniqueIdentifier>{79f0d9fe-5f96-4893-a95c-5c2f5ef53016}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dialogs">
+      <UniqueIdentifier>{2890089b-1408-4cfb-a6ce-93c682c026da}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="inc\freeimage.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\hidpi.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\hidsdi.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\hidusage.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi_lite_common.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi_lite_d3dext.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi_lite_salend.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi_lite_salstart.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi_lite_sli.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi_lite_stereo.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi_lite_surround.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\scilexer.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\scintilla.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\aac_codec.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\audio_output.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\control.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\control_win32.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\decoder.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\feedback.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\fft.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\file_input.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\file_output.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\memory_input.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\mpeg_codec.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\player.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\properties.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\resampling_output_filter.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\stream_input.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\wave_codec.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\xanalyze.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\xaudio.h">
+      <Filter>xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="ballex.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="bumper.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="codeview.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="decal.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="def.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="dispid.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="dispreel.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="disputil.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="dragpoint.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="editablereg.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="eventproxy.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="extern.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="flasher.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="flipper.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="gate.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hash.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hid.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hitrectsur.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hitsur.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hittarget.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="idebug.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ieditable.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="iselect.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="kdtree.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="kicker.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="light.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="lightseq.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="memutil.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="mixer.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="paintsur.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="physconst.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pin3d.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pinbinary.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pininput.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pinsound.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pintable.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pinundo.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="plumb.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="plunger.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="primitive.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="propbrowser.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="quadtree.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ramp.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="regutil.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rubber.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="slintf.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="spinner.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="sur.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="surface.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="textbox.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="timer.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="trace.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="trigger.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="variant.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="vector.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="vectorsort.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="vpinball.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="vpinball_i.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="vpversion.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="wintimer.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="worker.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="xaudplayer.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="math\math.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="media\lzwwriter.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="media\lzwreader.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="math\matrix.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\ball.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\bass.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="math\bbox.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\collide.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\collideex.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="media\fileio.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\hitable.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\hitflipper.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\hitplunger.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\hittimer.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\player.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="math\vector.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="media\wavread.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="BlackBox.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="CrashHandler.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryStatus.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="StackTrace.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="objloader.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="codeviewedit.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Sci_Position.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\forsyth.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\progmesh.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\progmesh_vecmatquat_minimal.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\ballMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bulbLightMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bulbSocketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperBaseMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperCapMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperRingMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperSocketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\dropTargetT2Mesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\dropTargetT3Mesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\flipperBase.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\gateBracketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\gateWireMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetRectangleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetRoundMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\kickerCupMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\kickerHitMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\kickerHoleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\spinnerBracketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\spinnerPlateMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\triggerSimpleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\triggerStarMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\dropTargetT4Mesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetFatRectangleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetFatSquareMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\gateLongPlateMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\gatePlateMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\gateWireRectangleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetT1SlimMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetT2SlimMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_appcore.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_appcore0.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_archive.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_commondlg.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_controls.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_cstring.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_ddx.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_dialog.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_dockframe.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_docking.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_exception.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_file.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_frame.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_gdi.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_imagelist.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_listview.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_mdi.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_menu.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_menubar.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_metafile.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_printdialogs.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_propertysheet.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_rebar.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_rect.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_regkey.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_ribbon.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_richedit.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_shared_ptr.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_socket.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_statusbar.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_stdcontrols.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_tab.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_taskdialog.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_textconv.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_themes.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_time.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_toolbar.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_treeview.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_wceframe.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_wcestddef.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_webbrowser.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_wincore.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_wincore0.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\AboutDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\DimensionDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\DrawingOrderDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\ImageDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\SearchSelectDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\SoundDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\TableInfoDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\EditorOptionsDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\AudioOptionsDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\VideoOptionsDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\CollectionManagerDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\PhysicsOptionsDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\MaterialDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\KeysConfigDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\kickerSimpleHoleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\gpuprofiler.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="shader\BallShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\BasicShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\DMDShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\FBShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\FlasherShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\LightShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\ClassicLightShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="vpinball.idl">
+      <Filter>res</Filter>
+    </Midl>
+  </ItemGroup>
+</Project>

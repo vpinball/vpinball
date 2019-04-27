@@ -146,7 +146,7 @@ void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes,
    int screenwidth;
    int screenheight;
    int x, y;
-   const int display = SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
+   const int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
    getDisplaySetupByID(display, x, y, screenwidth, screenheight);
 
    for (size_t i = 0; i < modes.size(); ++i)
@@ -169,7 +169,7 @@ void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes,
          if (modes[i].height == screenheight) matchingPoints += 3;
          if (modes[i].refreshrate == DEFAULT_PLAYER_FS_REFRESHRATE) matchingPoints += 1;
          if (matchingPoints > bestMatchingPoints) {
-            bestMatch = i;
+            bestMatch = (int)i;
             bestMatchingPoints = matchingPoints;
          }
       }
@@ -600,7 +600,7 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          int screenwidth;
          int screenheight;
          int x, y;
-         const int display = SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
+         const int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
          getDisplaySetupByID(display, x, y, screenwidth, screenheight);
 
          //if (indx != -1)
@@ -717,7 +717,7 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
          HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
          HWND hwndDisplay = GetDlgItem(IDC_DISPLAY_ID).GetHwnd();
-         int display = SendMessage(hwndDisplay, CB_GETCURSEL, 0, 0);
+         int display = (int)SendMessage(hwndDisplay, CB_GETCURSEL, 0, 0);
          EnumerateDisplayModes(display, allVideoModes);
 
          VideoMode curSelMode;
@@ -835,7 +835,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          const size_t index = SendMessage(GetDlgItem(IDC_SIZELIST).GetHwnd(), LB_GETCURSEL, 0, 0);
          if (allVideoModes.size() == 0) {
             const HWND hwndDisplay = GetDlgItem(IDC_DISPLAY_ID).GetHwnd();
-            const int display = SendMessage(hwndDisplay, CB_GETCURSEL, 0, 0);
+            const int display = (int)SendMessage(hwndDisplay, CB_GETCURSEL, 0, 0);
             EnumerateDisplayModes(display, allVideoModes);
          }
          if (allVideoModes.size() > index) {
