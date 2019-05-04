@@ -20,15 +20,15 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 10
 ' Cabinet switches
-Const swStartButton	  = 1 'ok
-Const swCoin1     	  = 2 'ok
+Const swStartButton   = 1 'ok
+Const swCoin1         = 2 'ok
 Const swCoin2         = 3 'ok
 Const swCoin3         = 2 'avoid missing Coin Switch mappings
 Const swTilt          = 4 'ok
 Const swBallRollTilt  = 4 'ok
 Const swSlamTilt      = 5 'ok
 
-Const swLRFlip	      = 82'ok
+Const swLRFlip        = 82'ok
 Const swLLFlip        = 84'ok
 
 ' Help Window
@@ -41,9 +41,9 @@ vpmSystemHelp="MAC Keys:"&vbNewLine&_
 ' Dip Switch / Options Menu
 Private Sub MACDips
 	If Not IsObject(vpmDips) Then ' First time
-		Set vpmDips=New cvpmDips
+		Set vpmDips = New cvpmDips
 		With vpmDips
-				.AddForm 150, 245, "DIP Switches"
+			.AddForm 150, 245, "DIP Switches"
 			.AddFrame  0,0, 60, "", 0,_
 			  Array("DIP  1",&H00000001,"DIP  2",&H00000002,"DIP  3",&H00000004,"DIP  4",&H00000008,_
 			        "DIP  5",&H00000010,"DIP  6",&H00000020,"DIP  7",&H00000040,"DIP  8",&H00000080,_
