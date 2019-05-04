@@ -15,7 +15,7 @@ Private Sub LoadCore
 End Sub
 
 '-------------------------
-' LTD Data
+' LTD System 4 Data
 '-------------------------
 ' Cabinet switches
 Const swSelfTest       = 9
@@ -29,13 +29,13 @@ Const swLRFlip         = 82
 Const swLLFlip         = 84
 
 ' Help Window
-vpmSystemHelp = "LTD keys:" & vbNewLine &_
+vpmSystemHelp = "LTD System 4 keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #1"   & vbNewLine &_
   vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #2"   & vbNewLine &_
   vpmKeyName(keyEnter)  & vbTab & "Enter (Coin Door)" & vbNewLine &_
   vpmKeyName(keySelfTest)    & vbTab & "Self Test"
 
-'Dip Switch / Options Menu
+' Dip Switch / Options Menu
 Private Sub LTDShowDips
 	If Not IsObject(vpmDips) Then ' First time
 		Set vpmDips = New cvpmDips
