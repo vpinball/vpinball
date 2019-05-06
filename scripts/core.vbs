@@ -7,6 +7,7 @@ Const VPinMAMEDriverVer = 3.57
 ' - Beta 1 NF fastflips 2
 ' - Add UsePdbLeds(top of script)/ChangedPDLEDs(controller)/PDLedCallback(callback) support and PDB.vbs especially for VP-PROC
 ' - Added LTD3.vbs (LTD System III)
+' - Added FPVPX.vbs (1.01, helpers for Future Pinball conversions)
 '
 ' New in 3.56 (Update by nFozzy, DJRobX, Fuzzel)
 ' - Add specialized sega2.vbs for Apollo 13 and GoldenEye
