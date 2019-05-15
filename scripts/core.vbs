@@ -341,7 +341,7 @@ Const VPinMAMEDriverVer = 3.57
 ' New in 3.10
 '   - Public release
 ' Put this at the top of the table file
-'LoadVPM "02000000", "xxx.VBS", 3.15
+'LoadVPM "02000000", "xxx.VBS", 3.57 ' adapt 02000000 and 3.57 to the actually required minimum VPinMAME- and core scripts versions
 'Const cGameName    = "xxxx" ' PinMAME short game name
 'Const UseSolenoids = True
 'Const UseLamps     = True
