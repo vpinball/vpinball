@@ -1,6 +1,8 @@
 VP 10.6.0 Changelog
 ------------------------
 
+- increase robustness (and reduce temporary memory used) when handling very large images/textures
+
 - add rothbauerw's and cyberpez' ball dropping sound code to builtin example tables
 
 - add proper dithering to final output buffer (most noticable on gradients and/or low-quality/cheaper output monitors)
