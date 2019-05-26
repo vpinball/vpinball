@@ -2487,6 +2487,24 @@ void Player::InitGameplayWindow()
 
       x += (m_screenwidth - m_width) / 2;
       y += (m_screenheight - m_height) / 2;
+
+      // is this a non-fullscreen window? -> get previously saved window position
+      if ((m_height != m_screenheight) || (m_width != m_screenwidth))
+      {
+         const int xn = GetRegIntWithDefault("Player", "WindowPosX", x); //!! does this handle multi-display correctly like this?
+         const int yn = GetRegIntWithDefault("Player", "WindowPosY", y);
+
+         RECT r;
+         r.left = xn;
+         r.top = yn;
+         r.right = xn + m_width;
+         r.bottom = yn + m_height;
+         if (MonitorFromRect(&r, MONITOR_DEFAULTTONULL) != NULL) // window is visible somewhere, so use the coords from the registry
+         {
+            x = xn;
+            y = yn;
+         }
+      }
    }
 
    int windowflags;
@@ -5142,6 +5160,13 @@ void Player::Render()
 			   SetWindowPos(m_playfieldHwnd, NULL, x, m_ShowWindowedCaption ? (y + captionheight) : (y - captionheight), m_width, m_height + (m_ShowWindowedCaption ? 0 : captionheight), SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 			   ShowWindow(m_playfieldHwnd, SW_SHOW);
 
+			   // Save position of non-fullscreen player window to registry, and only if it was potentially moved around (i.e. when caption was already visible)
+			   if (m_ShowWindowedCaption)
+			   {
+				   HRESULT hr = SetRegValueInt("Player", "WindowPosX", x);
+				   hr = SetRegValueInt("Player", "WindowPosY", y + captionheight);
+			   }
+
 			   m_ShowWindowedCaption = !m_ShowWindowedCaption;
 		   }
       }
@@ -5169,6 +5194,7 @@ void Player::Render()
          m_fCloseDownDelay = true;
          m_fNoTimeCorrect = true; // Skip the time we were in the dialog
          UnpauseMusic();
+
          if (option == ID_QUIT)
             SendMessage(m_playfieldHwnd, WM_CLOSE, 0, 0); // This line returns to the editor after exiting a table
       }
