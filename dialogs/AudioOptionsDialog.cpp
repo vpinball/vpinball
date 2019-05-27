@@ -18,9 +18,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
    const HWND hwndSoundSlider = GetDlgItem(IDC_SOUND_SLIDER).GetHwnd();
    const HWND hwndStaticMusic = GetDlgItem(IDC_STATIC_MUSIC).GetHwnd();
    const HWND hwndStaticSound = GetDlgItem(IDC_STATIC_SOUND).GetHwnd();
-   hr = LoadValueInt("Player", "PlayMusic", &fmusic);
-   if (hr != S_OK)
-      fmusic = 1;
+   fmusic = LoadValueIntWithDefault("Player", "PlayMusic", 1);
 
    hwndControl = GetDlgItem(IDC_PLAY_MUSIC).GetHwnd();
    SendMessage(hwndControl, BM_SETCHECK, fmusic ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -30,9 +28,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
       ::EnableWindow(hwndStaticMusic, FALSE);
    }
 
-   hr = LoadValueInt("Player", "PlaySound", &fmusic);
-   if (hr != S_OK)
-      fmusic = 1;
+   fmusic = LoadValueIntWithDefault("Player", "PlaySound", 1);
 
    hwndControl = GetDlgItem(IDC_PLAY_SOUND).GetHwnd();
    SendMessage(hwndControl, BM_SETCHECK, fmusic ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -42,9 +38,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
       ::EnableWindow(hwndStaticSound, FALSE);
    }
 
-   hr = LoadValueInt("Player", "Sound3D", &fmusic);
-   if (hr != S_OK)
-      fmusic = 0;
+   fmusic = LoadValueIntWithDefault("Player", "Sound3D", 0);
 
    switch (fmusic)
    {
@@ -70,9 +64,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
 	   break;
    }
 
-   hr = LoadValueInt("Player", "MusicVolume", &fmusic);
-   if (hr != S_OK)
-      fmusic = 100;
+   fmusic = LoadValueIntWithDefault("Player", "MusicVolume", 100);
    ::SendMessage(hwndMusicSlider, TBM_SETRANGE, fTrue, MAKELONG(0, 100));
    ::SendMessage(hwndMusicSlider, TBM_SETTICFREQ, 10, 0);
    ::SendMessage(hwndMusicSlider, TBM_SETLINESIZE, 0, 1);
@@ -80,9 +72,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
    ::SendMessage(hwndMusicSlider, TBM_SETTHUMBLENGTH, 10, 0);
    ::SendMessage(hwndMusicSlider, TBM_SETPOS, TRUE, fmusic);
 
-   hr = LoadValueInt("Player", "SoundVolume", &fmusic);
-   if (hr != S_OK)
-      fmusic = 100;
+   fmusic = LoadValueIntWithDefault("Player", "SoundVolume", 100);
    ::SendMessage(hwndSoundSlider, TBM_SETRANGE, fTrue, MAKELONG(0, 100));
    ::SendMessage(hwndSoundSlider, TBM_SETTICFREQ, 10, 0);
    ::SendMessage(hwndSoundSlider, TBM_SETLINESIZE, 0, 1);
@@ -90,13 +80,8 @@ BOOL AudioOptionsDialog::OnInitDialog()
    ::SendMessage(hwndSoundSlider, TBM_SETTHUMBLENGTH, 10, 0);
    ::SendMessage(hwndSoundSlider, TBM_SETPOS, TRUE, fmusic);
 
-   int sd, sdbg;
-   hr = LoadValueInt("Player", "SoundDevice", &sd);
-   if (hr != S_OK)
-      sd = 0;
-   hr = LoadValueInt("Player", "SoundDeviceBG", &sdbg);
-   if (hr != S_OK)
-      sdbg = 0; // The default
+   const int sd = LoadValueIntWithDefault("Player", "SoundDevice", 0);
+   const int sdbg = LoadValueIntWithDefault("Player", "SoundDeviceBG", 0);
    SendMessage(GET_SOUNDDEVICES, sd, sdbg);
 
    return TRUE;

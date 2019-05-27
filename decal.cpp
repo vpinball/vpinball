@@ -55,14 +55,9 @@ void Decal::SetDefaults(bool fromMouseClick)
    float fTmp;
    int iTmp;
 
-   hr = LoadValueFloat("DefaultProps\\Decal", "Width", &fTmp);
-   m_d.m_width = (hr == S_OK) && fromMouseClick ? fTmp : 100.0f;
-
-   hr = LoadValueFloat("DefaultProps\\Decal", "Height", &fTmp);
-   m_d.m_height = (hr == S_OK) && fromMouseClick ? fTmp : 100.0f;
-
-   hr = LoadValueFloat("DefaultProps\\Decal", "Rotation", &fTmp);
-   m_d.m_rotation = (hr == S_OK) && fromMouseClick ? fTmp : 0;
+   m_d.m_width = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Decal", "Width", 100.0f) : 100.0f;
+   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Decal", "Height", 100.0f) : 100.0f;
+   m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Decal", "Rotation", 0.f) : 0.f;
 
    hr = LoadValueString("DefaultProps\\Decal", "Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -71,24 +66,15 @@ void Decal::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
-   hr = LoadValueInt("DefaultProps\\Decal", "DecalType", &iTmp);
-   m_d.m_decaltype = (hr == S_OK) && fromMouseClick ? (enum DecalType)iTmp : DecalImage;
+   m_d.m_decaltype = fromMouseClick ? (enum DecalType)LoadValueIntWithDefault("DefaultProps\\Decal", "DecalType", (int)DecalImage) : DecalImage;
 
    hr = LoadValueString("DefaultProps\\Decal", "Text", m_d.m_sztext, MAXSTRING);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_sztext[0] = '\0';
 
-   hr = LoadValueInt("DefaultProps\\Decal", "Sizing", &iTmp);
-   m_d.m_sizingtype = (hr == S_OK) && fromMouseClick ? (enum SizingType)iTmp : ManualSize;
-
-   hr = LoadValueInt("DefaultProps\\Decal", "Color", &iTmp);
-   m_d.m_color = (hr == S_OK) && fromMouseClick ? iTmp : RGB(0, 0, 0);
-
-   hr = LoadValueInt("DefaultProps\\Decal", "VerticalText", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fVerticalText = iTmp == 0 ? false : true;
-   else
-      m_d.m_fVerticalText = false;
+   m_d.m_sizingtype = fromMouseClick ? (enum SizingType)LoadValueIntWithDefault("DefaultProps\\Decal", "Sizing", (int)ManualSize) : ManualSize;
+   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Decal", "Color", RGB(0,0,0)) : RGB(0,0,0);
+   m_d.m_fVerticalText = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Decal", "VerticalText", false) : false;
 
    if (!m_pIFont)
    {
@@ -110,29 +96,11 @@ void Decal::SetDefaults(bool fromMouseClick)
          UNICODE_FROM_ANSI(fd.lpstrName, tmp, len);
       }
 
-      hr = LoadValueInt("DefaultProps\\Decal", "FontWeight", &iTmp);
-      fd.sWeight = (hr == S_OK) && fromMouseClick ? iTmp : FW_NORMAL;
-
-      hr = LoadValueInt("DefaultProps\\Decal", "FontCharSet", &iTmp);
-      fd.sCharset = (hr == S_OK) && fromMouseClick ? iTmp : 0;
-
-      hr = LoadValueInt("DefaultProps\\Decal", "FontItalic", &iTmp);
-      if ((hr == S_OK) && fromMouseClick)
-         fd.fItalic = iTmp == 0 ? false : true;
-      else
-         fd.fItalic = 0;
-
-      hr = LoadValueInt("DefaultProps\\Decal", "FontUnderline", &iTmp);
-      if ((hr == S_OK) && fromMouseClick)
-         fd.fUnderline = iTmp == 0 ? false : true;
-      else
-         fd.fUnderline = 0;
-
-      hr = LoadValueInt("DefaultProps\\Decal", "FontStrikeThrough", &iTmp);
-      if ((hr == S_OK) && fromMouseClick)
-         fd.fStrikethrough = iTmp == 0 ? false : true;
-      else
-         fd.fStrikethrough = 0;
+      fd.sWeight = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Decal", "FontWeight", FW_NORMAL) : FW_NORMAL;
+      fd.sCharset = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Decal", "FontCharSet", 0) : 0;
+      fd.fItalic = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Decal", "FontItalic", false) : false;
+      fd.fUnderline = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Decal", "FontUnderline", false) : false;
+      fd.fStrikethrough = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Decal", "FontStrikeThrough", false) : false;
 
       OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
    }
