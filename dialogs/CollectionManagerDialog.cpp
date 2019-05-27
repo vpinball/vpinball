@@ -300,15 +300,8 @@ void CollectionManagerDialog::OnCancel()
 
 void CollectionManagerDialog::LoadPosition()
 {
-    int x, y;
-    HRESULT hr;
-
-    hr = LoadValueInt("Editor", "CollectionMngPosX", &x);
-    if (hr != S_OK)
-        x=0;
-    hr = LoadValueInt("Editor", "CollectionMngPosY", &y);
-    if (hr != S_OK)
-        y=0;
+    const int x = LoadValueIntWithDefault("Editor", "CollectionMngPosX", 0);
+    const int y = LoadValueIntWithDefault("Editor", "CollectionMngPosY", 0);
 
     SetWindowPos(NULL, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
