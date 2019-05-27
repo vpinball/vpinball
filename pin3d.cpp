@@ -293,7 +293,7 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
 
 HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl)
 {
-   const int display = GetRegIntWithDefault("Player", "Display", 0);
+   const int display = LoadValueIntWithDefault("Player", "Display", 0);
    std::vector<DisplayConfig> displays;
    getDisplayList(displays);
    int adapter = 0;
@@ -311,10 +311,10 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
     if (!m_pd3dPrimaryDevice->LoadShaders())
         return E_FAIL;
 
-    const int forceAniso = GetRegIntWithDefault("Player", "ForceAnisotropicFiltering", 1);
+    const int forceAniso = LoadValueIntWithDefault("Player", "ForceAnisotropicFiltering", 1);
     m_pd3dPrimaryDevice->ForceAnisotropicFiltering(!!forceAniso);
 
-    const int compressTextures = GetRegIntWithDefault("Player", "CompressTextures", 0);
+    const int compressTextures = LoadValueIntWithDefault("Player", "CompressTextures", 0);
     m_pd3dPrimaryDevice->CompressTextures(!!compressTextures);
 
     m_pd3dPrimaryDevice->SetViewport(&m_viewPort);

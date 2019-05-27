@@ -486,10 +486,10 @@ void SearchSelectDialog::LoadPosition()
 {
    int x, y,w,h;
 
-   x = GetRegIntWithDefault("Editor", "SearchSelectPosX", 0);
-   y = GetRegIntWithDefault("Editor", "SearchSelectPosY", 0);
-   w = GetRegIntWithDefault("Editor", "SearchSelectWidth", 650);
-   h = GetRegIntWithDefault("Editor", "SearchSelectHeight", 400);
+   x = LoadValueIntWithDefault("Editor", "SearchSelectPosX", 0);
+   y = LoadValueIntWithDefault("Editor", "SearchSelectPosY", 0);
+   w = LoadValueIntWithDefault("Editor", "SearchSelectWidth", 650);
+   h = LoadValueIntWithDefault("Editor", "SearchSelectHeight", 400);
 
    SetWindowPos(NULL, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
@@ -497,10 +497,10 @@ void SearchSelectDialog::LoadPosition()
 void SearchSelectDialog::SavePosition()
 {
    const CRect rect = GetWindowRect();
-   SetRegValueInt("Editor", "SearchSelectPosX", rect.left);
-   SetRegValueInt("Editor", "SearchSelectPosY", rect.top);
+   SaveValueInt("Editor", "SearchSelectPosX", rect.left);
+   SaveValueInt("Editor", "SearchSelectPosY", rect.top);
    const int w = rect.right - rect.left;
-   SetRegValueInt("Editor", "SearchSelectWidth", w);
+   SaveValueInt("Editor", "SearchSelectWidth", w);
    const int h = rect.bottom - rect.top;
-   SetRegValueInt("Editor", "SearchSelectHeight", h);
+   SaveValueInt("Editor", "SearchSelectHeight", h);
 }

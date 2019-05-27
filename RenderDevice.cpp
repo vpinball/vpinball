@@ -519,7 +519,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    //   ShowError("D3D device doesn't support multiple render targets!");
 
    int video10bit;
-   HRESULT hr = GetRegInt("Player", "Render10Bit", &video10bit);
+   HRESULT hr = LoadValueInt("Player", "Render10Bit", &video10bit);
    if (hr != S_OK)
       video10bit = fFalse; // The default = off
 
@@ -608,7 +608,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    else
       params.MultiSampleQuality = min(params.MultiSampleQuality, MultiSampleQualityLevels);
 
-   const int softwareVP = GetRegIntWithDefault("Player", "SoftwareVertexProcessing", 0);
+   const int softwareVP = LoadValueIntWithDefault("Player", "SoftwareVertexProcessing", 0);
    const DWORD flags = softwareVP ? D3DCREATE_SOFTWARE_VERTEXPROCESSING : D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
    // Create the D3D device. This optionally goes to the proper fullscreen mode.

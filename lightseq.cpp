@@ -27,14 +27,14 @@ void LightSeq::SetDefaults(bool fromMouseClick)
    float fTmp;
    int iTmp;
 
-   hr = GetRegInt("DefaultProps\\LightSequence", "UpdateInterval", &iTmp);
+   hr = LoadValueInt("DefaultProps\\LightSequence", "UpdateInterval", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_updateinterval = iTmp;
    else
       m_d.m_updateinterval = 25;
 
    char tmp[MAXNAMEBUFFER];
-   hr = GetRegString("DefaultProps\\LightSequence", "Collection", tmp, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\LightSequence", "Collection", tmp, MAXNAMEBUFFER);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_wzCollection[0] = 0x00;
    else
@@ -42,25 +42,25 @@ void LightSeq::SetDefaults(bool fromMouseClick)
       UNICODE_FROM_ANSI(m_d.m_wzCollection, tmp, lstrlen(tmp));
       m_d.m_wzCollection[lstrlen(tmp)] = '\0';
    }
-   hr = GetRegStringAsFloat("DefaultProps\\LightSequence", "CenterX", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\LightSequence", "CenterX", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_vCenter.x = fTmp;
    else
       m_d.m_vCenter.x = EDITOR_BG_WIDTH / 2;
 
-   hr = GetRegStringAsFloat("DefaultProps\\LightSequence", "CenterY", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\LightSequence", "CenterY", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_vCenter.y = fTmp;
    else
       m_d.m_vCenter.y = (2 * EDITOR_BG_WIDTH) / 2;
 
-   hr = GetRegInt("DefaultProps\\LightSequence", "TimerEnabled", &iTmp);
+   hr = LoadValueInt("DefaultProps\\LightSequence", "TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_tdr.m_fTimerEnabled = false;
 
-   hr = GetRegInt("DefaultProps\\LightSequence", "TimerInterval", &iTmp);
+   hr = LoadValueInt("DefaultProps\\LightSequence", "TimerInterval", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_TimerInterval = iTmp;
    else
@@ -70,12 +70,12 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 void LightSeq::WriteRegDefaults()
 {
    MAKE_ANSIPTR_FROMWIDE(strTmp2, (WCHAR *)m_d.m_wzCollection);
-   SetRegValue("DefaultProps\\LightSequence", "UpdateInterval", REG_DWORD, &m_d.m_updateinterval, 4);
-   SetRegValue("DefaultProps\\LightSequence", "Collection", REG_SZ, strTmp2, 66);
-   SetRegValueFloat("DefaultProps\\LightSequence", "CenterX", m_d.m_vCenter.x);
-   SetRegValueFloat("DefaultProps\\LightSequence", "CenterY", m_d.m_vCenter.y);
-   SetRegValueBool("DefaultProps\\LightSequence", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
-   SetRegValue("DefaultProps\\LightSequence", "TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
+   SaveValueInt("DefaultProps\\LightSequence", "UpdateInterval", m_d.m_updateinterval);
+   SaveValueString("DefaultProps\\LightSequence", "Collection", strTmp2);
+   SaveValueFloat("DefaultProps\\LightSequence", "CenterX", m_d.m_vCenter.x);
+   SaveValueFloat("DefaultProps\\LightSequence", "CenterY", m_d.m_vCenter.y);
+   SaveValueBool("DefaultProps\\LightSequence", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueInt("DefaultProps\\LightSequence", "TimerInterval", m_d.m_tdr.m_TimerInterval);
 }
 
 void LightSeq::SetObjectPos()

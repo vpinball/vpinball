@@ -26,13 +26,13 @@ void Timer::SetDefaults(bool fromMouseClick)
    HRESULT hr;
    int iTmp;
 
-   hr = GetRegInt("DefaultProps\\Timer", "TimerEnabled", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Timer", "TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_tdr.m_fTimerEnabled = true;
 
-   hr = GetRegInt("DefaultProps\\Timer", "TimerInterval", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Timer", "TimerInterval", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_TimerInterval = iTmp;
    else
@@ -41,8 +41,8 @@ void Timer::SetDefaults(bool fromMouseClick)
 
 void Timer::WriteRegDefaults()
 {
-   SetRegValueBool("DefaultProps\\Timer", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
-   SetRegValueInt("DefaultProps\\Timer", "TimerInterval", m_d.m_tdr.m_TimerInterval);
+   SaveValueBool("DefaultProps\\Timer", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueInt("DefaultProps\\Timer", "TimerInterval", m_d.m_tdr.m_TimerInterval);
 }
 
 void Timer::SetObjectPos()

@@ -244,7 +244,7 @@ public:
 
       // Start VP with file dialog open and then also playing that one?
       int stos;
-      HRESULT hr = GetRegInt("Editor", "SelectTableOnStart", &stos);
+      HRESULT hr = LoadValueInt("Editor", "SelectTableOnStart", &stos);
       if (hr != S_OK)
          stos = 1; // The default = on
       if (stos)

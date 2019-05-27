@@ -312,7 +312,7 @@ XAudPlayer::XAudPlayer()
       //
 
       int DSidx;
-      const HRESULT hr = GetRegInt("Player", "SoundDeviceBG", &DSidx);
+      const HRESULT hr = LoadValueInt("Player", "SoundDeviceBG", &DSidx);
       if (hr != S_OK)
           DSidx = -1;
 

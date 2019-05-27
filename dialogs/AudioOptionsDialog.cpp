@@ -18,7 +18,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
    const HWND hwndSoundSlider = GetDlgItem(IDC_SOUND_SLIDER).GetHwnd();
    const HWND hwndStaticMusic = GetDlgItem(IDC_STATIC_MUSIC).GetHwnd();
    const HWND hwndStaticSound = GetDlgItem(IDC_STATIC_SOUND).GetHwnd();
-   hr = GetRegInt("Player", "PlayMusic", &fmusic);
+   hr = LoadValueInt("Player", "PlayMusic", &fmusic);
    if (hr != S_OK)
       fmusic = 1;
 
@@ -30,7 +30,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
       ::EnableWindow(hwndStaticMusic, FALSE);
    }
 
-   hr = GetRegInt("Player", "PlaySound", &fmusic);
+   hr = LoadValueInt("Player", "PlaySound", &fmusic);
    if (hr != S_OK)
       fmusic = 1;
 
@@ -42,9 +42,9 @@ BOOL AudioOptionsDialog::OnInitDialog()
       ::EnableWindow(hwndStaticSound, FALSE);
    }
 
-   hr = GetRegInt("Player", "Sound3D", &fmusic);
+   hr = LoadValueInt("Player", "Sound3D", &fmusic);
    if (hr != S_OK)
-	   fmusic = 0;
+      fmusic = 0;
 
    switch (fmusic)
    {
@@ -70,7 +70,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
 	   break;
    }
 
-   hr = GetRegInt("Player", "MusicVolume", &fmusic);
+   hr = LoadValueInt("Player", "MusicVolume", &fmusic);
    if (hr != S_OK)
       fmusic = 100;
    ::SendMessage(hwndMusicSlider, TBM_SETRANGE, fTrue, MAKELONG(0, 100));
@@ -80,7 +80,7 @@ BOOL AudioOptionsDialog::OnInitDialog()
    ::SendMessage(hwndMusicSlider, TBM_SETTHUMBLENGTH, 10, 0);
    ::SendMessage(hwndMusicSlider, TBM_SETPOS, TRUE, fmusic);
 
-   hr = GetRegInt("Player", "SoundVolume", &fmusic);
+   hr = LoadValueInt("Player", "SoundVolume", &fmusic);
    if (hr != S_OK)
       fmusic = 100;
    ::SendMessage(hwndSoundSlider, TBM_SETRANGE, fTrue, MAKELONG(0, 100));
@@ -91,14 +91,12 @@ BOOL AudioOptionsDialog::OnInitDialog()
    ::SendMessage(hwndSoundSlider, TBM_SETPOS, TRUE, fmusic);
 
    int sd, sdbg;
-   hr = GetRegInt("Player", "SoundDevice", &sd);
+   hr = LoadValueInt("Player", "SoundDevice", &sd);
    if (hr != S_OK)
       sd = 0;
-   hr = GetRegInt("Player", "SoundDeviceBG", &sdbg);
+   hr = LoadValueInt("Player", "SoundDeviceBG", &sdbg);
    if (hr != S_OK)
-   {
       sdbg = 0; // The default
-   }
    SendMessage(GET_SOUNDDEVICES, sd, sdbg);
 
    return TRUE;
@@ -188,12 +186,12 @@ void AudioOptionsDialog::OnOK()
    hwndControl = GetDlgItem(IDC_PLAY_MUSIC).GetHwnd();
    checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
    fmusic = (checked == BST_CHECKED) ? 1 : 0;
-   SetRegValueInt("Player", "PlayMusic", fmusic);
+   SaveValueInt("Player", "PlayMusic", fmusic);
 
    hwndControl = GetDlgItem(IDC_PLAY_SOUND).GetHwnd();
    checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
    fmusic = (checked == BST_CHECKED) ? 1 : 0;
-   SetRegValueInt("Player", "PlaySound", fmusic);
+   SaveValueInt("Player", "PlaySound", fmusic);
 
    fmusic = SNDCFG_SND3D2CH;
    hwndControl = GetDlgItem(IDC_RADIO_SND3DALLREAR).GetHwnd();
@@ -220,22 +218,22 @@ void AudioOptionsDialog::OnOK()
    {
 	   fmusic = SNDCFG_SND3D6CH;
    }
-   SetRegValueInt("Player", "Sound3D", fmusic);
+   SaveValueInt("Player", "Sound3D", fmusic);
 
    volume = SendMessage(hwndMusicSlider, TBM_GETPOS, 0, 0);
-   SetRegValueInt("Player", "MusicVolume", (int)volume);
+   SaveValueInt("Player", "MusicVolume", (int)volume);
 
    volume = SendMessage(hwndSoundSlider, TBM_GETPOS, 0, 0);
-   SetRegValueInt("Player", "SoundVolume", (int)volume);
+   SaveValueInt("Player", "SoundVolume", (int)volume);
 
    HWND hwndSoundList = GetDlgItem(IDC_SoundList).GetHwnd();
    size_t soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
    size_t sd = SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
-   SetRegValueInt("Player", "SoundDevice", (int)sd);
+   SaveValueInt("Player", "SoundDevice", (int)sd);
    hwndSoundList = GetDlgItem(IDC_SoundListBG).GetHwnd();
    soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
    sd = SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
-   SetRegValueInt("Player", "SoundDeviceBG", (int)sd);
+   SaveValueInt("Player", "SoundDeviceBG", (int)sd);
    g_pvp->ReInitPinDirectSound();
 
    CDialog::OnOK();

@@ -428,7 +428,7 @@ void ImageDialog::Import()
    ofn.lpstrDefExt = "png";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
 
-   HRESULT hr = GetRegString("RecentDir", "ImageDir", szInitialDir, 4096);
+   HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, 4096);
    ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
    const int ret = GetOpenFileName(&ofn);
@@ -459,7 +459,7 @@ void ImageDialog::Import()
          szInitialDir[ofn.nFileOffset] = 0;
          pt->ImportImage(hSoundList, szFileName);
       }
-      hr = SetRegValue("RecentDir", "ImageDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
+      hr = SaveValueString("RecentDir", "ImageDir", szInitialDir);
       pt->SetNonUndoableDirty(eSaveDirty);
       SetFocus();
       g_pvp->m_sb.PopulateDropdowns();
@@ -529,7 +529,7 @@ void ImageDialog::Export()
             ofn.nMaxFile = MAX_PATH;
             ofn.lpstrDefExt = "png";
 
-            const HRESULT hr = GetRegString("RecentDir", "ImageDir", g_initDir, MAX_PATH);
+            const HRESULT hr = LoadValueString("RecentDir", "ImageDir", g_initDir, MAX_PATH);
 
             if (hr == S_OK)
                ofn.lpstrInitialDir = g_initDir;
@@ -590,7 +590,7 @@ void ImageDialog::Export()
                   ListView_GetItem(hSoundList, &lvitem);
                   ppi = (Texture*)lvitem.lParam;
                }
-               SetRegValue("RecentDir", "ImageDir", REG_SZ, pathName, lstrlen(pathName));
+               SaveValueString("RecentDir", "ImageDir", pathName);
             } // finished all selected items
          }
       }
@@ -752,7 +752,7 @@ void ImageDialog::ReimportFrom()
          ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
          char szInitialDir[MAXSTRING];
-         HRESULT hr = GetRegString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
+         HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
          ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
          const int ret = GetOpenFileName(&ofn);
@@ -769,7 +769,7 @@ void ImageDialog::ReimportFrom()
             {
                strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
                szInitialDir[ofn.nFileOffset] = 0;
-               hr = SetRegValue("RecentDir", "ImageDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
+               hr = SaveValueString("RecentDir", "ImageDir", szInitialDir);
 
                pt->ReImportImage(ppi, ofn.lpstrFile);
                ListView_SetItemText(hSoundList, sel, 1, ppi->m_szPath);
@@ -790,15 +790,15 @@ void ImageDialog::LoadPosition()
     int x, y, w, h;
     HRESULT hr;
 
-    hr = GetRegInt( "Editor", "ImageMngPosX", &x );
+    hr = LoadValueInt( "Editor", "ImageMngPosX", &x );
     if (hr != S_OK)
         x=0;
-    hr = GetRegInt( "Editor", "ImageMngPosY", &y );
+    hr = LoadValueInt( "Editor", "ImageMngPosY", &y );
     if (hr != S_OK)
         y=0;
 
-    w = GetRegIntWithDefault("Editor", "ImageMngWidth", 1000);
-    h = GetRegIntWithDefault("Editor", "ImageMngHeight", 800);
+    w = LoadValueIntWithDefault("Editor", "ImageMngWidth", 1000);
+    h = LoadValueIntWithDefault("Editor", "ImageMngHeight", 800);
     SetWindowPos(NULL, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
@@ -807,10 +807,10 @@ void ImageDialog::SavePosition()
     int w, h;
     CRect rect = GetWindowRect();
 
-    SetRegValue("Editor", "ImageMngPosX", REG_DWORD, &rect.left, 4);
-    SetRegValue("Editor", "ImageMngPosY", REG_DWORD, &rect.top, 4);
+    SaveValueInt("Editor", "ImageMngPosX", rect.left);
+    SaveValueInt("Editor", "ImageMngPosY", rect.top);
     w = rect.right - rect.left;
-    SetRegValue("Editor", "ImageMngWidth", REG_DWORD, &w, 4);
+    SaveValueInt("Editor", "ImageMngWidth", w);
     h = rect.bottom - rect.top;
-    SetRegValue("Editor", "ImageMngHeight", REG_DWORD, &h, 4);
+    SaveValueInt("Editor", "ImageMngHeight", h);
 }

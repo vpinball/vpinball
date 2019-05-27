@@ -493,127 +493,127 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    HRESULT hr;
 
    int vsync;
-   hr = GetRegInt("Player", "AdaptiveVSync", &vsync);
+   hr = LoadValueInt("Player", "AdaptiveVSync", &vsync);
    if (hr != S_OK)
       vsync = 0; // The default
    m_VSync = vsync;
 
    int maxPrerenderedFrames;
-   hr = GetRegInt("Player", "MaxPrerenderedFrames", &maxPrerenderedFrames);
+   hr = LoadValueInt("Player", "MaxPrerenderedFrames", &maxPrerenderedFrames);
    if (hr != S_OK)
       maxPrerenderedFrames = 0;
    m_maxPrerenderedFrames = maxPrerenderedFrames;
 
    float nudgeStrength;
-   hr = GetRegStringAsFloat("Player", "NudgeStrength", &nudgeStrength);
+   hr = LoadValueFloat("Player", "NudgeStrength", &nudgeStrength);
    if (hr != S_OK)
       nudgeStrength = 2e-2f; // The default
    m_NudgeShake = nudgeStrength;
 
-   hr = GetRegInt("Player", "FXAA", &m_FXAA);
+   hr = LoadValueInt("Player", "FXAA", &m_FXAA);
    if (hr != S_OK)
       m_FXAA = Disabled; // The default = off
 
    int trailballs;
-   hr = GetRegInt("Player", "BallTrail", &trailballs);
+   hr = LoadValueInt("Player", "BallTrail", &trailballs);
    if (hr != S_OK)
       m_fTrailForBalls = true; // The default = on
    else
       m_fTrailForBalls = (trailballs == 1);
 
    int reflballs;
-   hr = GetRegInt("Player", "BallReflection", &reflballs);
+   hr = LoadValueInt("Player", "BallReflection", &reflballs);
    if (hr != S_OK)
       m_fReflectionForBalls = true; // The default = on
    else
       m_fReflectionForBalls = (reflballs == 1);
 
    int AA;
-   hr = GetRegInt("Player", "USEAA", &AA);
+   hr = LoadValueInt("Player", "USEAA", &AA);
    if (hr != S_OK)
       m_AA = false; // The default = off
    else
       m_AA = (AA == 1);
 
    int AO;
-   hr = GetRegInt("Player", "DynamicAO", &AO);
+   hr = LoadValueInt("Player", "DynamicAO", &AO);
    if (hr != S_OK)
       m_dynamicAO = false; // The default = off
    else
       m_dynamicAO = (AO == 1);
 
-   hr = GetRegInt("Player", "DisableAO", &AO);
+   hr = LoadValueInt("Player", "DisableAO", &AO);
    if (hr != S_OK)
        m_disableAO = false; // The default = off
    else
        m_disableAO = (AO == 1);
 
    int ss_refl;
-   hr = GetRegInt("Player", "SSRefl", &ss_refl);
+   hr = LoadValueInt("Player", "SSRefl", &ss_refl);
    if (hr != S_OK)
        m_ss_refl = false; // The default = off
    else
        m_ss_refl = (ss_refl == 1);
 
    int pf_refl;
-   hr = GetRegInt("Player", "PFRefl", &pf_refl);
+   hr = LoadValueInt("Player", "PFRefl", &pf_refl);
    if (hr != S_OK)
        m_pf_refl = true; // The default = on
    else
        m_pf_refl = (pf_refl == 1);
 
-   hr = GetRegInt("Player", "Stereo3D", &m_stereo3D);
+   hr = LoadValueInt("Player", "Stereo3D", &m_stereo3D);
    if (hr != S_OK)
       m_stereo3D = 0; // The default = off
 
    int stereo3Denabled;
-   hr = GetRegInt("Player", "Stereo3DEnabled", &stereo3Denabled);
+   hr = LoadValueInt("Player", "Stereo3DEnabled", &stereo3Denabled);
    if (hr != S_OK)
       stereo3Denabled = ((m_stereo3D != 0) ? 1 : 0); // The default
    m_stereo3Denabled = (stereo3Denabled != 0);
 
    int stereo3DY;
-   hr = GetRegInt("Player", "Stereo3DYAxis", &stereo3DY);
+   hr = LoadValueInt("Player", "Stereo3DYAxis", &stereo3DY);
    if (hr != S_OK)
       stereo3DY = fFalse; // The default
    m_stereo3DY = (stereo3DY == 1);
 
    int scaleFX_DMD;
-   hr = GetRegInt("Player", "ScaleFXDMD", &scaleFX_DMD);
+   hr = LoadValueInt("Player", "ScaleFXDMD", &scaleFX_DMD);
    if (hr != S_OK)
        scaleFX_DMD = fFalse; // The default
    m_scaleFX_DMD = (scaleFX_DMD == 1);
 
    int disableDWM;
-   hr = GetRegInt("Player", "DisableDWM", &disableDWM);
+   hr = LoadValueInt("Player", "DisableDWM", &disableDWM);
    if (hr != S_OK)
        m_disableDWM = false;
    else
        m_disableDWM = (disableDWM == 1);
 
    int nvidiaApi;
-   hr = GetRegInt("Player", "UseNVidiaAPI", &nvidiaApi);
+   hr = LoadValueInt("Player", "UseNVidiaAPI", &nvidiaApi);
    if (hr != S_OK)
        m_useNvidiaApi = false;
    else
        m_useNvidiaApi = (nvidiaApi == 1);
 
    int bloomOff;
-   hr = GetRegInt("Player", "ForceBloomOff", &bloomOff);
+   hr = LoadValueInt("Player", "ForceBloomOff", &bloomOff);
    if (hr != S_OK)
        m_bloomOff = false;
    else
        m_bloomOff = (bloomOff == 1);
 
    int BWrendering;
-   hr = GetRegInt("Player", "BWRendering", &BWrendering);
+   hr = LoadValueInt("Player", "BWRendering", &BWrendering);
    if (hr != S_OK)
       m_BWrendering = 0;
    else
       m_BWrendering = BWrendering;
 
    int detecthang;
-   hr = GetRegInt("Player", "DetectHang", &detecthang);
+   hr = LoadValueInt("Player", "DetectHang", &detecthang);
    if (hr != S_OK)
       m_fDetectScriptHang = false; // The default
    else
@@ -623,14 +623,14 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_decalImage = NULL;
 
    int overwriteballimage;
-   hr = GetRegInt("Player", "OverwriteBallImage", &overwriteballimage);
+   hr = LoadValueInt("Player", "OverwriteBallImage", &overwriteballimage);
    if (hr != S_OK)
        m_overwriteBallImages = false;
    else
        m_overwriteBallImages = (overwriteballimage == fTrue);
 
    int minphyslooptime;
-   hr = GetRegInt("Player", "MinPhysLoopTime", &minphyslooptime);
+   hr = LoadValueInt("Player", "MinPhysLoopTime", &minphyslooptime);
    if (hr != S_OK)
       m_minphyslooptime = 0;
    else
@@ -640,7 +640,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    {
        char imageName[MAX_PATH];
        //memset(imageName, 0, MAX_PATH);
-       hr = GetRegString("Player", "BallImage", imageName, MAX_PATH);
+       hr = LoadValueString("Player", "BallImage", imageName, MAX_PATH);
        if (hr == S_OK)
        {
            BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
@@ -650,7 +650,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
        }
        // clear the string buffer, otherwise it will hold the ball image filename if decal image is a null string in the registry
        //memset(imageName, 0, MAX_PATH);
-       hr = GetRegString("Player", "DecalImage", imageName, MAX_PATH);
+       hr = LoadValueString("Player", "DecalImage", imageName, MAX_PATH);
        if (hr == S_OK)
        {
            BaseTexture * const tex = BaseTexture::CreateFromFile(imageName);
@@ -660,15 +660,15 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
        }
    }
    
-   m_fThrowBalls = (GetRegIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0) == 1);
-   m_fBallControl = (GetRegIntWithDefault("Editor", "BallControlAlwaysOn", 0) == 1);
-   m_DebugBallSize = GetRegIntWithDefault("Editor", "ThrowBallSize", 50);
-   m_DebugBallMass = GetRegStringAsFloatWithDefault("Editor", "ThrowBallMass", 1.0f);
+   m_fThrowBalls = (LoadValueIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0) == 1);
+   m_fBallControl = (LoadValueIntWithDefault("Editor", "BallControlAlwaysOn", 0) == 1);
+   m_DebugBallSize = LoadValueIntWithDefault("Editor", "ThrowBallSize", 50);
+   m_DebugBallMass = LoadValueFloatWithDefault("Editor", "ThrowBallMass", 1.0f);
 
-   //m_low_quality_bloom = GetRegBoolWithDefault("Player", "LowQualityBloom", false);
+   //m_low_quality_bloom = LoadValueBoolWithDefault("Player", "LowQualityBloom", false);
 
-   const int numberOfTimesToShowTouchMessage = GetRegIntWithDefault("Player", "NumberOfTimesToShowTouchMessage", 10);
-   SetRegValueInt("Player", "NumberOfTimesToShowTouchMessage", max(numberOfTimesToShowTouchMessage-1,0));
+   const int numberOfTimesToShowTouchMessage = LoadValueIntWithDefault("Player", "NumberOfTimesToShowTouchMessage", 10);
+   SaveValueInt("Player", "NumberOfTimesToShowTouchMessage", max(numberOfTimesToShowTouchMessage-1,0));
    m_showTouchMessage = (numberOfTimesToShowTouchMessage != 0);
 
    m_showFPS = 0;
@@ -1033,7 +1033,7 @@ void Player::InitKeys()
    for(unsigned int i = 0; i < eCKeys; ++i)
    {
       int key;
-      const HRESULT hr = GetRegInt("Player", regkey_string[i], &key);
+      const HRESULT hr = LoadValueInt("Player", regkey_string[i], &key);
       if (hr != S_OK || key > 0xdd)
           key = regkey_defdik[i];
       m_rgKeys[i] = (EnumAssignKeys)key;
@@ -1045,24 +1045,24 @@ void Player::InitRegValues()
    HRESULT hr;
 
    int playmusic;
-   hr = GetRegInt("Player", "PlayMusic", &playmusic);
+   hr = LoadValueInt("Player", "PlayMusic", &playmusic);
    if (hr != S_OK)
       m_PlayMusic = true; // default value
    else
       m_PlayMusic = (playmusic == 1);
 
    int playsound;
-   hr = GetRegInt("Player", "PlaySound", &playsound);
+   hr = LoadValueInt("Player", "PlaySound", &playsound);
    if (hr != S_OK)
       m_PlaySound = true; // default value
    else
       m_PlaySound = (playsound == 1);
 
-   hr = GetRegInt("Player", "MusicVolume", &m_MusicVolume);
+   hr = LoadValueInt("Player", "MusicVolume", &m_MusicVolume);
    if (hr != S_OK)
       m_MusicVolume = 100; // default value
 
-   hr = GetRegInt("Player", "SoundVolume", &m_SoundVolume);
+   hr = LoadValueInt("Player", "SoundVolume", &m_SoundVolume);
    if (hr != S_OK)
       m_SoundVolume = 100; // default value
 }
@@ -1392,7 +1392,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    //
    int DN;
    bool dynamicDayNight;
-   HRESULT hr = GetRegInt("Player", "DynamicDayNight", &DN);
+   HRESULT hr = LoadValueInt("Player", "DynamicDayNight", &DN);
    if (hr != S_OK)
        dynamicDayNight = false; // The default = off
    else
@@ -1407,11 +1407,11 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
        localtime_s(&local_hour, &hour_machine);
 
        float lat;
-       hr = GetRegStringAsFloat("Player", "Latitude", &lat);
+       hr = LoadValueFloat("Player", "Latitude", &lat);
        if (hr != S_OK)
            lat = 52.52f;
        float lon;
-       hr = GetRegStringAsFloat("Player", "Longitude", &lon);
+       hr = LoadValueFloat("Player", "Longitude", &lon);
        if (hr != S_OK)
            lon = 13.37f;
 
@@ -1442,7 +1442,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    const bool ss_refl = (m_ss_refl && (m_ptable->m_useSSR == -1)) || (m_ptable->m_useSSR == 1);
 
    int colordepth;
-   if (GetRegInt("Player", "ColorDepth", &colordepth) != S_OK)
+   if (LoadValueInt("Player", "ColorDepth", &colordepth) != S_OK)
       colordepth = 32; // The default
 
    // colordepth & refreshrate are only defined if fullscreen is true.
@@ -1476,7 +1476,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       m_ptable->m_tblMirrorEnabled = false;
 
       int tmp;
-      hr = GetRegInt("Player", "mirror", &tmp);
+      hr = LoadValueInt("Player", "mirror", &tmp);
       if (hr == S_OK)
          m_ptable->m_tblMirrorEnabled = (tmp != 0);
    }
@@ -1511,13 +1511,13 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    m_legacyNudgeTime = 0;
 
    int legacyNudge;
-   hr = GetRegInt("Player", "EnableLegacyNudge", &legacyNudge);
+   hr = LoadValueInt("Player", "EnableLegacyNudge", &legacyNudge);
    if (hr != S_OK)
       legacyNudge = fFalse; // The default
    m_legacyNudge = !!legacyNudge;
 
    float legacyNudgeStrength;
-   hr = GetRegStringAsFloat("Player", "LegacyNudgeStrength", &legacyNudgeStrength);
+   hr = LoadValueFloat("Player", "LegacyNudgeStrength", &legacyNudgeStrength);
    if (hr != S_OK)
       legacyNudgeStrength = 1.f; // The default
    m_legacyNudgeStrength = legacyNudgeStrength;
@@ -2433,7 +2433,7 @@ void Player::InitGameplayWindow()
    HRESULT hr;
 
    int fullscreen;
-   hr = GetRegInt("Player", "FullScreen", &fullscreen);
+   hr = LoadValueInt("Player", "FullScreen", &fullscreen);
    if (hr != S_OK)
       m_fFullScreen = IsWindows10_1803orAbove();
    else
@@ -2445,25 +2445,25 @@ void Player::InitGameplayWindow()
    else if (disEnableTrueFullscreen == 1)
       m_fFullScreen = true;
 
-   hr = GetRegInt("Player", "Width", &m_width);
+   hr = LoadValueInt("Player", "Width", &m_width);
    if (hr != S_OK)
       m_width = m_fFullScreen ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH;
 
-   hr = GetRegInt("Player", "Height", &m_height);
+   hr = LoadValueInt("Player", "Height", &m_height);
    if (hr != S_OK)
       m_height = m_width * 9 / 16;
 
    int x = 0;
    int y = 0;
 
-   int display = GetRegIntWithDefault("Player", "Display", -1);
+   int display = LoadValueIntWithDefault("Player", "Display", -1);
    display = display < getNumberOfDisplays() ? display : -1;
 
    if (m_fFullScreen)
    {
       m_screenwidth = m_width;
       m_screenheight = m_height;
-      hr = GetRegInt("Player", "RefreshRate", &m_refreshrate);
+      hr = LoadValueInt("Player", "RefreshRate", &m_refreshrate);
       if (hr != S_OK)
          m_refreshrate = 0; // The default
    }
@@ -2491,8 +2491,8 @@ void Player::InitGameplayWindow()
       // is this a non-fullscreen window? -> get previously saved window position
       if ((m_height != m_screenheight) || (m_width != m_screenwidth))
       {
-         const int xn = GetRegIntWithDefault("Player", "WindowPosX", x); //!! does this handle multi-display correctly like this?
-         const int yn = GetRegIntWithDefault("Player", "WindowPosY", y);
+         const int xn = LoadValueIntWithDefault("Player", "WindowPosX", x); //!! does this handle multi-display correctly like this?
+         const int yn = LoadValueIntWithDefault("Player", "WindowPosY", y);
 
          RECT r;
          r.left = xn;
@@ -2623,23 +2623,23 @@ void Player::CalcBallAspectRatio()
    HRESULT hr;
 
    int ballStretchMode;
-   hr = GetRegInt("Player", "BallStretchMode", &ballStretchMode);
+   hr = LoadValueInt("Player", "BallStretchMode", &ballStretchMode);
    if (hr != S_OK)
       ballStretchMode = 0;
 
    // Monitors: 4:3, 16:9, 16:10, 21:10
    int ballStretchMonitor;
-   hr = GetRegInt("Player", "BallStretchMonitor", &ballStretchMonitor);
+   hr = LoadValueInt("Player", "BallStretchMonitor", &ballStretchMonitor);
    if (hr != S_OK)
       ballStretchMonitor = 1; // assume 16:9
 
    float ballAspecRatioOffsetX;
-   hr = GetRegStringAsFloat("Player", "BallCorrectionX", &ballAspecRatioOffsetX);
+   hr = LoadValueFloat("Player", "BallCorrectionX", &ballAspecRatioOffsetX);
    if (hr != S_OK)
       ballAspecRatioOffsetX = 0.0f;
 
    float ballAspecRatioOffsetY;
-   hr = GetRegStringAsFloat("Player", "BallCorrectionY", &ballAspecRatioOffsetY);
+   hr = LoadValueFloat("Player", "BallCorrectionY", &ballAspecRatioOffsetY);
    if (hr != S_OK)
       ballAspecRatioOffsetY = 0.0f;
 
@@ -5163,8 +5163,8 @@ void Player::Render()
 			   // Save position of non-fullscreen player window to registry, and only if it was potentially moved around (i.e. when caption was already visible)
 			   if (m_ShowWindowedCaption)
 			   {
-				   HRESULT hr = SetRegValueInt("Player", "WindowPosX", x);
-				   hr = SetRegValueInt("Player", "WindowPosY", y + captionheight);
+				   HRESULT hr = SaveValueInt("Player", "WindowPosX", x);
+				   hr = SaveValueInt("Player", "WindowPosY", y + captionheight);
 			   }
 
 			   m_ShowWindowedCaption = !m_ShowWindowedCaption;

@@ -96,73 +96,73 @@ void Bumper::SetDefaults(bool fromMouseClick)
    float fTmp;
    int iTmp;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Bumper", "Radius", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Bumper", "Radius", &fTmp);
    m_d.m_radius = (hr == S_OK) && fromMouseClick ? fTmp : 45.f;
 
    SetDefaultPhysics(fromMouseClick);
 
-   hr = GetRegStringAsFloat("DefaultProps\\Bumper", "HeightScale", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Bumper", "HeightScale", &fTmp);
    m_d.m_heightScale = (hr == S_OK) && fromMouseClick ? fTmp : 90.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Bumper", "RingSpeed", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Bumper", "RingSpeed", &fTmp);
    m_d.m_ringSpeed = (hr == S_OK) && fromMouseClick ? fTmp : 0.5f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Bumper", "Orientation", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Bumper", "Orientation", &fTmp);
    m_d.m_orientation = (hr == S_OK) && fromMouseClick ? fTmp : 0.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Bumper", "Threshold", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Bumper", "Threshold", &fTmp);
    m_d.m_threshold = (hr == S_OK) && fromMouseClick ? fTmp : 1.f;
 
-   hr = GetRegString("DefaultProps\\Bumper", "Surface", m_d.m_szSurface, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\Bumper", "Surface", m_d.m_szSurface, MAXTOKEN);
    if (hr != S_OK || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
-   hr = GetRegInt("DefaultProps\\Bumper", "TimerEnabled", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Bumper", "TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_tdr.m_fTimerEnabled = false;
 
-   hr = GetRegInt("DefaultProps\\Bumper", "TimerInterval", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Bumper", "TimerInterval", &iTmp);
    m_d.m_tdr.m_TimerInterval = (hr == S_OK) && fromMouseClick ? iTmp : 100;
 
-   hr = GetRegInt("DefaultProps\\Bumper", "CapVisible", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Bumper", "CapVisible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fCapVisible = iTmp == 0 ? false : true;
    else
       m_d.m_fCapVisible = true;
 
-   hr = GetRegInt("DefaultProps\\Bumper", "BaseVisible", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Bumper", "BaseVisible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fBaseVisible = iTmp == 0 ? false : true;
    else
       m_d.m_fBaseVisible = true;
 
-   hr = GetRegInt("DefaultProps\\Bumper", "RingVisible", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Bumper", "RingVisible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fRingVisible = iTmp == 0 ? false : true;
    else
       m_d.m_fRingVisible = true;
 
-   hr = GetRegInt("DefaultProps\\Bumper", "SkirtVisible", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Bumper", "SkirtVisible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fSkirtVisible = iTmp == 0 ? false : true;
    else
       m_d.m_fSkirtVisible = true;
 
-   hr = GetRegInt("DefaultProps\\Bumper", "ReflectionEnabled", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Bumper", "ReflectionEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_fReflectionEnabled = true;
 
-   hr = GetRegInt("DefaultProps\\Bumper", "HasHitEvent", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Bumper", "HasHitEvent", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
        m_d.m_fHitEvent= iTmp == 0 ? false : true;
    else
        m_d.m_fHitEvent = true;
 
-   hr = GetRegInt("DefaultProps\\Bumper", "Collidable", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Bumper", "Collidable", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
        m_d.m_fCollidable = iTmp == 0 ? false : true;
    else
@@ -174,21 +174,21 @@ void Bumper::SetDefaults(bool fromMouseClick)
 
 void Bumper::WriteRegDefaults()
 {
-   SetRegValueFloat("DefaultProps\\Bumper", "Radius", m_d.m_radius);
-   SetRegValueFloat("DefaultProps\\Bumper", "Force", m_d.m_force);
-   SetRegValueFloat("DefaultProps\\Bumper", "Scatter", m_d.m_scatter);
-   SetRegValueFloat("DefaultProps\\Bumper", "HeightScale", m_d.m_heightScale);
-   SetRegValueFloat("DefaultProps\\Bumper", "RingSpeed", m_d.m_ringSpeed);
-   SetRegValueFloat("DefaultProps\\Bumper", "Orientation", m_d.m_orientation);
-   SetRegValueFloat("DefaultProps\\Bumper", "Threshold", m_d.m_threshold);
-   SetRegValueBool("DefaultProps\\Bumper", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
-   SetRegValueInt("DefaultProps\\Bumper", "TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SetRegValueInt("DefaultProps\\Bumper", "CapVisible", m_d.m_fCapVisible);
-   SetRegValueInt("DefaultProps\\Bumper", "BaseVisible", m_d.m_fBaseVisible);
-   SetRegValueInt("DefaultProps\\Bumper", "HasHitEvent", m_d.m_fHitEvent);
-   SetRegValueInt("DefaultProps\\Bumper", "Collidable", m_d.m_fCollidable);
-   SetRegValueInt("DefaultProps\\Bumper", "ReflectionEnabled", m_d.m_fReflectionEnabled);
-   SetRegValue("DefaultProps\\Bumper", "Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
+   SaveValueFloat("DefaultProps\\Bumper", "Radius", m_d.m_radius);
+   SaveValueFloat("DefaultProps\\Bumper", "Force", m_d.m_force);
+   SaveValueFloat("DefaultProps\\Bumper", "Scatter", m_d.m_scatter);
+   SaveValueFloat("DefaultProps\\Bumper", "HeightScale", m_d.m_heightScale);
+   SaveValueFloat("DefaultProps\\Bumper", "RingSpeed", m_d.m_ringSpeed);
+   SaveValueFloat("DefaultProps\\Bumper", "Orientation", m_d.m_orientation);
+   SaveValueFloat("DefaultProps\\Bumper", "Threshold", m_d.m_threshold);
+   SaveValueBool("DefaultProps\\Bumper", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueInt("DefaultProps\\Bumper", "TimerInterval", m_d.m_tdr.m_TimerInterval);
+   SaveValueInt("DefaultProps\\Bumper", "CapVisible", m_d.m_fCapVisible);
+   SaveValueInt("DefaultProps\\Bumper", "BaseVisible", m_d.m_fBaseVisible);
+   SaveValueInt("DefaultProps\\Bumper", "HasHitEvent", m_d.m_fHitEvent);
+   SaveValueInt("DefaultProps\\Bumper", "Collidable", m_d.m_fCollidable);
+   SaveValueInt("DefaultProps\\Bumper", "ReflectionEnabled", m_d.m_fReflectionEnabled);
+   SaveValueString("DefaultProps\\Bumper", "Surface", m_d.m_szSurface);
 }
 
 STDMETHODIMP Bumper::InterfaceSupportsErrorInfo(REFIID riid)
@@ -1574,9 +1574,9 @@ void Bumper::SetDefaultPhysics(bool fromMouseClick)
    HRESULT hr;
    float fTmp;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Bumper", "Force", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Bumper", "Force", &fTmp);
    m_d.m_force = (hr == S_OK) && fromMouseClick ? fTmp : 15;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Bumper", "Scatter", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Bumper", "Scatter", &fTmp);
    m_d.m_scatter = (hr == S_OK) && fromMouseClick ? fTmp : 0;
 }
