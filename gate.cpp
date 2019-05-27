@@ -114,85 +114,85 @@ void Gate::SetDefaults(bool fromMouseClick)
    float fTmp;
    int iTmp;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Gate", "Length", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Gate", "Length", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_length = fTmp;
    else
       m_d.m_length = 100.f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Gate", "Height", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Gate", "Height", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_height = fTmp;
    else
       m_d.m_height = 50.f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Gate", "Rotation", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Gate", "Rotation", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_rotation = fTmp;
    else
       m_d.m_rotation = -90.f;
 
-   hr = GetRegInt("DefaultProps\\Gate", "ShowBracket", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Gate", "ShowBracket", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_fShowBracket = iTmp == 0 ? false : true;
+      m_d.m_fShowBracket = iTmp == 0 ? false : true;
    else
-       m_d.m_fShowBracket = true;
+      m_d.m_fShowBracket = true;
 
-   hr = GetRegInt("DefaultProps\\Gate", "GateType", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Gate", "GateType", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_type = (GateType)iTmp;
+      m_d.m_type = (GateType)iTmp;
    else
-       m_d.m_type = GateWireW;
+      m_d.m_type = GateWireW;
 
-   hr = GetRegInt("DefaultProps\\Gate", "Collidable", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Gate", "Collidable", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fCollidable = iTmp == 0 ? false : true;
    else
       m_d.m_fCollidable = true;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Gate", "AngleMin", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Gate", "AngleMin", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_angleMin = fTmp;
    else
       m_d.m_angleMin = 0;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Gate", "AngleMax", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Gate", "AngleMax", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_angleMax = fTmp;
    else
       m_d.m_angleMax = (float)(M_PI / 2.0);
 
-   hr = GetRegInt("DefaultProps\\Gate", "Visible", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Gate", "Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fVisible = iTmp == 0 ? false : true;
    else
       m_d.m_fVisible = true;
 
-   hr = GetRegInt("DefaultProps\\Gate", "TimerEnabled", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Gate", "TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_tdr.m_fTimerEnabled = false;
 
-   hr = GetRegInt("DefaultProps\\Gate", "TimerInterval", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Gate", "TimerInterval", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_TimerInterval = iTmp;
    else
       m_d.m_tdr.m_TimerInterval = 100;
 
-   hr = GetRegString("DefaultProps\\Gate", "Surface", &m_d.m_szSurface, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\Gate", "Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
    SetDefaultPhysics(fromMouseClick);
 
-   hr = GetRegInt("DefaultProps\\Gate", "TwoWay", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Gate", "TwoWay", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_twoWay = iTmp == 0 ? false : true;
    else
       m_d.m_twoWay = true;
 
-   hr = GetRegInt("DefaultProps\\Gate", "ReflectionEnabled", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Gate", "ReflectionEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
    else
@@ -202,24 +202,24 @@ void Gate::SetDefaults(bool fromMouseClick)
 
 void Gate::WriteRegDefaults()
 {
-   SetRegValueFloat("DefaultProps\\Gate", "Length", m_d.m_length);
-   SetRegValueFloat("DefaultProps\\Gate", "Height", m_d.m_height);
-   SetRegValueFloat("DefaultProps\\Gate", "Rotation", m_d.m_rotation);
-   SetRegValueBool("DefaultProps\\Gate", "ShowBracket", m_d.m_fShowBracket);
-   SetRegValueBool("DefaultProps\\Gate", "Collidable", m_d.m_fCollidable);
-   SetRegValueFloat("DefaultProps\\Gate", "AngleMin", m_d.m_angleMin);
-   SetRegValueFloat("DefaultProps\\Gate", "AngleMax", m_d.m_angleMax);
-   SetRegValueBool("DefaultProps\\Gate", "Visible", m_d.m_fVisible);
-   SetRegValueBool("DefaultProps\\Gate", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
-   SetRegValue("DefaultProps\\Gate", "TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
-   SetRegValue("DefaultProps\\Gate", "Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
-   SetRegValueFloat("DefaultProps\\Gate", "Elasticity", m_d.m_elasticity);
-   SetRegValueFloat("DefaultProps\\Gate", "Friction", m_d.m_friction);
-   SetRegValueFloat("DefaultProps\\Gate", "Scatter", m_d.m_scatter);
-   SetRegValueFloat("DefaultProps\\Gate", "GravityFactor", m_d.m_gravityfactor);
-   SetRegValueBool("DefaultProps\\Gate", "TwoWay", m_d.m_twoWay);
-   SetRegValueBool("DefaultProps\\Gate", "ReflectionEnabled", m_d.m_fReflectionEnabled);
-   SetRegValue("DefaultProps\\Gate", "GateType", REG_DWORD, &m_d.m_type, 4);
+   SaveValueFloat("DefaultProps\\Gate", "Length", m_d.m_length);
+   SaveValueFloat("DefaultProps\\Gate", "Height", m_d.m_height);
+   SaveValueFloat("DefaultProps\\Gate", "Rotation", m_d.m_rotation);
+   SaveValueBool("DefaultProps\\Gate", "ShowBracket", m_d.m_fShowBracket);
+   SaveValueBool("DefaultProps\\Gate", "Collidable", m_d.m_fCollidable);
+   SaveValueFloat("DefaultProps\\Gate", "AngleMin", m_d.m_angleMin);
+   SaveValueFloat("DefaultProps\\Gate", "AngleMax", m_d.m_angleMax);
+   SaveValueBool("DefaultProps\\Gate", "Visible", m_d.m_fVisible);
+   SaveValueBool("DefaultProps\\Gate", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueInt("DefaultProps\\Gate", "TimerInterval", m_d.m_tdr.m_TimerInterval);
+   SaveValueString("DefaultProps\\Gate", "Surface", m_d.m_szSurface);
+   SaveValueFloat("DefaultProps\\Gate", "Elasticity", m_d.m_elasticity);
+   SaveValueFloat("DefaultProps\\Gate", "Friction", m_d.m_friction);
+   SaveValueFloat("DefaultProps\\Gate", "Scatter", m_d.m_scatter);
+   SaveValueFloat("DefaultProps\\Gate", "GravityFactor", m_d.m_gravityfactor);
+   SaveValueBool("DefaultProps\\Gate", "TwoWay", m_d.m_twoWay);
+   SaveValueBool("DefaultProps\\Gate", "ReflectionEnabled", m_d.m_fReflectionEnabled);
+   SaveValueInt("DefaultProps\\Gate", "GateType", m_d.m_type);
 }
 
 void Gate::UIRenderPass1(Sur * const psur)
@@ -314,31 +314,31 @@ void Gate::SetDefaultPhysics(bool fromMouseClick)
    HRESULT hr;
    float fTmp;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Gate", "Elasticity", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Gate", "Elasticity", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_elasticity = fTmp;
    else
       m_d.m_elasticity = 0.3f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Gate", "Friction", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Gate", "Friction", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_friction = fTmp;
    else
       m_d.m_friction = 0.02f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Gate", "AntiFriction", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Gate", "AntiFriction", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_damping = fTmp;
    else
       m_d.m_damping = 0.985f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Gate", "Scatter", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Gate", "Scatter", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_scatter = fTmp;
    else
       m_d.m_scatter = 0;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Gate", "GravityFactor", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Gate", "GravityFactor", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_gravityfactor = fTmp;
    else

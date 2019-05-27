@@ -337,105 +337,105 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    m_d.m_meshFileName[0] = 0;
    // sides
-   m_d.m_Sides = fromMouseClick ? GetRegIntWithDefault(strKeyName, "Sides", 4) : 4;
+   m_d.m_Sides = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "Sides", 4) : 4;
    if (m_d.m_Sides > Max_Primitive_Sides)
       m_d.m_Sides = Max_Primitive_Sides;
 
    // colors
-   m_d.m_SideColor = fromMouseClick ? GetRegIntWithDefault(strKeyName, "SideColor", RGB(150, 150, 150)) : RGB(150, 150, 150);
+   m_d.m_SideColor = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "SideColor", RGB(150, 150, 150)) : RGB(150, 150, 150);
 
-   m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
-   m_d.m_staticRendering = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "StaticRendering", true) : true;
-   m_d.m_DrawTexturesInside = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "DrawTexturesInside", false) : false;
+   m_d.m_fVisible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Visible", true) : true;
+   m_d.m_staticRendering = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "StaticRendering", true) : true;
+   m_d.m_DrawTexturesInside = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DrawTexturesInside", false) : false;
 
    // Position (X and Y is already set by the click of the user)
-   m_d.m_vPosition.z = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Position_Z", 0.0f) : 0.0f;
+   m_d.m_vPosition.z = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Position_Z", 0.0f) : 0.0f;
 
    // Size
-   m_d.m_vSize.x = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Size_X", 100.0f) : 100.0f;
-   m_d.m_vSize.y = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Size_Y", 100.0f) : 100.0f;
-   m_d.m_vSize.z = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Size_Z", 100.0f) : 100.0f;
+   m_d.m_vSize.x = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Size_X", 100.0f) : 100.0f;
+   m_d.m_vSize.y = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Size_Y", 100.0f) : 100.0f;
+   m_d.m_vSize.z = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Size_Z", 100.0f) : 100.0f;
 
    // Rotation and Transposition
-   m_d.m_aRotAndTra[0] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotAndTra0", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[1] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotAndTra1", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[2] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotAndTra2", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[3] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotAndTra3", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[4] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotAndTra4", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[5] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotAndTra5", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[6] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotAndTra6", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[7] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotAndTra7", 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[8] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotAndTra8", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[0] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra0", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[1] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra1", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[2] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra2", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[3] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra3", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[4] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra4", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[5] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra5", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[6] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra6", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[7] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra7", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[8] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra8", 0.0f) : 0.0f;
 
-   HRESULT hr = GetRegString(strKeyName, "Image", m_d.m_szImage, MAXTOKEN);
+   HRESULT hr = LoadValueString(strKeyName, "Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage[0] = 0;
 
-   hr = GetRegString(strKeyName, "NormalMap", m_d.m_szNormalMap, MAXTOKEN);
+   hr = LoadValueString(strKeyName, "NormalMap", m_d.m_szNormalMap, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
        m_d.m_szNormalMap[0] = 0;
 
-   m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
+   m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_edgeFactorUI = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "EdgeFactorUI", 0.25f) : 0.25f;
-   m_d.m_collision_reductionFactor = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "CollisionReductionFactor", 0.f) : 0.f;
+   m_d.m_edgeFactorUI = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "EdgeFactorUI", 0.25f) : 0.25f;
+   m_d.m_collision_reductionFactor = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "CollisionReductionFactor", 0.f) : 0.f;
 
-   m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Collidable", true) : true;
-   m_d.m_fToy = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "IsToy", false) : false;
-   m_d.m_fDisableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? GetRegIntWithDefault(strKeyName, "DisableLighting", 0) : 0); // stored as uchar for backward compatibility
-   m_d.m_fDisableLightingBelow = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "DisableLightingBelow", 0.f) : 0.f;
-   m_d.m_fReflectionEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
-   m_d.m_fBackfacesEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "BackfacesEnabled", false) : false;
-   m_d.m_fDisplayTexture = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "DisplayTexture", false) : false;
+   m_d.m_fCollidable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Collidable", true) : true;
+   m_d.m_fToy = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "IsToy", false) : false;
+   m_d.m_fDisableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? LoadValueIntWithDefault(strKeyName, "DisableLighting", 0) : 0); // stored as uchar for backward compatibility
+   m_d.m_fDisableLightingBelow = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "DisableLightingBelow", 0.f) : 0.f;
+   m_d.m_fReflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
+   m_d.m_fBackfacesEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "BackfacesEnabled", false) : false;
+   m_d.m_fDisplayTexture = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DisplayTexture", false) : false;
 }
 
 void Primitive::WriteRegDefaults()
 {
    static const char strKeyName[] = "DefaultProps\\Primitive";
 
-   SetRegValueInt(strKeyName, "SideColor", m_d.m_SideColor);
-   SetRegValueBool(strKeyName, "Visible", m_d.m_fVisible);
-   SetRegValueBool(strKeyName, "StaticRendering", m_d.m_staticRendering);
-   SetRegValueBool(strKeyName, "DrawTexturesInside", m_d.m_DrawTexturesInside);
+   SaveValueInt(strKeyName, "SideColor", m_d.m_SideColor);
+   SaveValueBool(strKeyName, "Visible", m_d.m_fVisible);
+   SaveValueBool(strKeyName, "StaticRendering", m_d.m_staticRendering);
+   SaveValueBool(strKeyName, "DrawTexturesInside", m_d.m_DrawTexturesInside);
 
-   SetRegValueFloat(strKeyName, "Position_Z", m_d.m_vPosition.z);
+   SaveValueFloat(strKeyName, "Position_Z", m_d.m_vPosition.z);
 
-   SetRegValueFloat(strKeyName, "Size_X", m_d.m_vSize.x);
-   SetRegValueFloat(strKeyName, "Size_Y", m_d.m_vSize.y);
-   SetRegValueFloat(strKeyName, "Size_Z", m_d.m_vSize.z);
+   SaveValueFloat(strKeyName, "Size_X", m_d.m_vSize.x);
+   SaveValueFloat(strKeyName, "Size_Y", m_d.m_vSize.y);
+   SaveValueFloat(strKeyName, "Size_Z", m_d.m_vSize.z);
 
-   SetRegValueFloat(strKeyName, "RotAndTra0", m_d.m_aRotAndTra[0]);
-   SetRegValueFloat(strKeyName, "RotAndTra1", m_d.m_aRotAndTra[1]);
-   SetRegValueFloat(strKeyName, "RotAndTra2", m_d.m_aRotAndTra[2]);
-   SetRegValueFloat(strKeyName, "RotAndTra3", m_d.m_aRotAndTra[3]);
-   SetRegValueFloat(strKeyName, "RotAndTra4", m_d.m_aRotAndTra[4]);
-   SetRegValueFloat(strKeyName, "RotAndTra5", m_d.m_aRotAndTra[5]);
-   SetRegValueFloat(strKeyName, "RotAndTra6", m_d.m_aRotAndTra[6]);
-   SetRegValueFloat(strKeyName, "RotAndTra7", m_d.m_aRotAndTra[7]);
-   SetRegValueFloat(strKeyName, "RotAndTra8", m_d.m_aRotAndTra[8]);
+   SaveValueFloat(strKeyName, "RotAndTra0", m_d.m_aRotAndTra[0]);
+   SaveValueFloat(strKeyName, "RotAndTra1", m_d.m_aRotAndTra[1]);
+   SaveValueFloat(strKeyName, "RotAndTra2", m_d.m_aRotAndTra[2]);
+   SaveValueFloat(strKeyName, "RotAndTra3", m_d.m_aRotAndTra[3]);
+   SaveValueFloat(strKeyName, "RotAndTra4", m_d.m_aRotAndTra[4]);
+   SaveValueFloat(strKeyName, "RotAndTra5", m_d.m_aRotAndTra[5]);
+   SaveValueFloat(strKeyName, "RotAndTra6", m_d.m_aRotAndTra[6]);
+   SaveValueFloat(strKeyName, "RotAndTra7", m_d.m_aRotAndTra[7]);
+   SaveValueFloat(strKeyName, "RotAndTra8", m_d.m_aRotAndTra[8]);
 
-   SetRegValueString(strKeyName, "Image", m_d.m_szImage);
-   SetRegValueString(strKeyName, "NormalMap", m_d.m_szNormalMap);
-   SetRegValueBool(strKeyName, "HitEvent", m_d.m_fHitEvent);
-   SetRegValueFloat(strKeyName, "HitThreshold", m_d.m_threshold);
-   SetRegValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);
-   SetRegValueFloat(strKeyName, "ElasticityFalloff", m_d.m_elasticityFalloff);
-   SetRegValueFloat(strKeyName, "Friction", m_d.m_friction);
-   SetRegValueFloat(strKeyName, "Scatter", m_d.m_scatter);
+   SaveValueString(strKeyName, "Image", m_d.m_szImage);
+   SaveValueString(strKeyName, "NormalMap", m_d.m_szNormalMap);
+   SaveValueBool(strKeyName, "HitEvent", m_d.m_fHitEvent);
+   SaveValueFloat(strKeyName, "HitThreshold", m_d.m_threshold);
+   SaveValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);
+   SaveValueFloat(strKeyName, "ElasticityFalloff", m_d.m_elasticityFalloff);
+   SaveValueFloat(strKeyName, "Friction", m_d.m_friction);
+   SaveValueFloat(strKeyName, "Scatter", m_d.m_scatter);
 
-   SetRegValueFloat(strKeyName, "EdgeFactorUI", m_d.m_edgeFactorUI);
-   SetRegValueFloat(strKeyName, "CollisionReductionFactor", m_d.m_collision_reductionFactor);
+   SaveValueFloat(strKeyName, "EdgeFactorUI", m_d.m_edgeFactorUI);
+   SaveValueFloat(strKeyName, "CollisionReductionFactor", m_d.m_collision_reductionFactor);
 
-   SetRegValueBool(strKeyName, "Collidable", m_d.m_fCollidable);
-   SetRegValueBool(strKeyName, "IsToy", m_d.m_fToy);
+   SaveValueBool(strKeyName, "Collidable", m_d.m_fCollidable);
+   SaveValueBool(strKeyName, "IsToy", m_d.m_fToy);
    const int tmp = quantizeUnsigned<8>(clamp(m_d.m_fDisableLightingTop, 0.f, 1.f));
-   SetRegValueInt(strKeyName, "DisableLighting", (tmp == 1) ? 0 : tmp); // backwards compatible saving
-   SetRegValueFloat(strKeyName, "DisableLightingBelow", m_d.m_fDisableLightingBelow);
-   SetRegValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
-   SetRegValueBool(strKeyName, "BackfacesEnabled", m_d.m_fBackfacesEnabled);
-   SetRegValueBool(strKeyName, "DisplayTexture", m_d.m_fDisplayTexture);
+   SaveValueInt(strKeyName, "DisableLighting", (tmp == 1) ? 0 : tmp); // backwards compatible saving
+   SaveValueFloat(strKeyName, "DisableLightingBelow", m_d.m_fDisableLightingBelow);
+   SaveValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
+   SaveValueBool(strKeyName, "BackfacesEnabled", m_d.m_fBackfacesEnabled);
+   SaveValueBool(strKeyName, "DisplayTexture", m_d.m_fDisplayTexture);
 }
 
 void Primitive::GetTimers(vector<HitTimer*> &pvht)
@@ -1994,7 +1994,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             ofn.lpstrDefExt = "obj";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-            const HRESULT hr = GetRegString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
+            const HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
             char szFoo[MAX_PATH];
             if (hr == S_OK)
             {
@@ -2011,7 +2011,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             if (ret)
             {
                SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName);
-               SetRegValue("RecentDir", "ImportDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
+               SaveValueString("RecentDir", "ImportDir", szInitialDir);
                string filename(szFileName);
                size_t index = filename.find_last_of("\\");
                if (index != -1)
@@ -2058,7 +2058,7 @@ bool Primitive::BrowseFor3DMeshFile()
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   const HRESULT hr = GetRegString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
+   const HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
    char szFoo[MAX_PATH];
    if (hr == S_OK)
    {
@@ -2083,7 +2083,7 @@ bool Primitive::BrowseFor3DMeshFile()
    {
       return false;
    }
-   SetRegValue("RecentDir", "ImportDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
+   SaveValueString("RecentDir", "ImportDir", szInitialDir);
    m_mesh.Clear();
    m_d.m_use3DMesh = false;
    if (vertexBuffer)
@@ -2236,7 +2236,7 @@ void Primitive::ExportMesh()
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
+   const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
    char szFoo[MAX_PATH];
    if (hr == S_OK)
    {
@@ -3277,10 +3277,10 @@ void Primitive::UpdatePropertyPanes()
 void Primitive::SetDefaultPhysics(bool fromMouseClick)
 {
    static const char strKeyName[] = "DefaultProps\\Primitive";
-   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
-   m_d.m_elasticityFalloff = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "ElasticityFalloff", 0.5f) : 0.5f;
-   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
-   m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Scatter", 0) : 0;
+   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
+   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "ElasticityFalloff", 0.5f) : 0.5f;
+   m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
+   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter", 0) : 0;
 }
 
 STDMETHODIMP Primitive::get_DepthBias(float *pVal)

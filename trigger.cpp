@@ -166,79 +166,79 @@ void Trigger::SetDefaults(bool fromMouseClick)
    float fTmp;
    int iTmp;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Trigger", "Radius", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Trigger", "Radius", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_radius = fTmp;
    else
       m_d.m_radius = 25.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Trigger", "Rotation", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Trigger", "Rotation", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_rotation = fTmp;
    else
       m_d.m_rotation = 0.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Trigger", "WireThickness", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Trigger", "WireThickness", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_wireThickness = fTmp;
    else
       m_d.m_wireThickness = 0.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Trigger", "ScaleX", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Trigger", "ScaleX", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_scaleX = fTmp;
    else
       m_d.m_scaleX = 1.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Trigger", "ScaleY", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Trigger", "ScaleY", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_scaleY = fTmp;
    else
       m_d.m_scaleY = 1.0f;
 
-   hr = GetRegInt("DefaultProps\\Trigger", "TimerEnabled", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Trigger", "TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_tdr.m_fTimerEnabled = false;
 
-   hr = GetRegInt("DefaultProps\\Trigger", "TimerInterval", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Trigger", "TimerInterval", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_TimerInterval = iTmp;
    else
       m_d.m_tdr.m_TimerInterval = 100;
 
-   hr = GetRegInt("DefaultProps\\Trigger", "Enabled", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Trigger", "Enabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_fEnabled = true;
 
-   hr = GetRegInt("DefaultProps\\Trigger", "Visible", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Trigger", "Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fVisible = iTmp == 0 ? false : true;
    else
       m_d.m_fVisible = true;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Trigger", "HitHeight", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\Trigger", "HitHeight", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_hit_height = fTmp;
    else
       m_d.m_hit_height = 50.0f;
 
-   hr = GetRegInt("DefaultProps\\Trigger", "Shape", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Trigger", "Shape", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_shape = (TriggerShape)iTmp;
    else
       m_d.m_shape = TriggerWireA;
-   hr = GetRegString("DefaultProps\\Trigger", "Surface", &m_d.m_szSurface, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\Trigger", "Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
-   hr = GetRegStringAsFloat("DefaultProps\\trigger", "AnimSpeed", &fTmp);
+   hr = LoadValueFloat("DefaultProps\\trigger", "AnimSpeed", &fTmp);
    m_d.m_animSpeed = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
 
-   hr = GetRegInt("DefaultProps\\Trigger", "ReflectionEnabled", &iTmp);
+   hr = LoadValueInt("DefaultProps\\Trigger", "ReflectionEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
    else
@@ -1046,21 +1046,20 @@ void Trigger::ClearForOverwrite()
 
 void Trigger::WriteRegDefaults()
 {
-   SetRegValueBool("DefaultProps\\Trigger", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
-   SetRegValue("DefaultProps\\Trigger", "TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
-   SetRegValueBool("DefaultProps\\Trigger", "Enabled", m_d.m_fEnabled);
-   SetRegValueBool("DefaultProps\\Trigger", "Visible", m_d.m_fVisible);
-   SetRegValueFloat("DefaultProps\\Trigger", "HitHeight", m_d.m_hit_height);
-   SetRegValueFloat("DefaultProps\\Trigger", "Radius", m_d.m_radius);
-   SetRegValueFloat("DefaultProps\\Trigger", "Rotation", m_d.m_rotation);
-   SetRegValueFloat("DefaultProps\\Trigger", "WireThickness", m_d.m_wireThickness);
-   SetRegValueFloat("DefaultProps\\Trigger", "ScaleX", m_d.m_scaleX);
-   SetRegValueFloat("DefaultProps\\Trigger", "ScaleY", m_d.m_scaleY);
-   SetRegValue("DefaultProps\\Trigger", "Shape", REG_DWORD, &m_d.m_shape, 4);
-   SetRegValue("DefaultProps\\Trigger", "Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
-   SetRegValueFloat("DefaultProps\\Trigger", "AnimSpeed", m_d.m_animSpeed);
-   SetRegValueBool("DefaultProps\\Trigger", "ReflectionEnabled", m_d.m_fReflectionEnabled);
-
+   SaveValueBool("DefaultProps\\Trigger", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueInt("DefaultProps\\Trigger", "TimerInterval", m_d.m_tdr.m_TimerInterval);
+   SaveValueBool("DefaultProps\\Trigger", "Enabled", m_d.m_fEnabled);
+   SaveValueBool("DefaultProps\\Trigger", "Visible", m_d.m_fVisible);
+   SaveValueFloat("DefaultProps\\Trigger", "HitHeight", m_d.m_hit_height);
+   SaveValueFloat("DefaultProps\\Trigger", "Radius", m_d.m_radius);
+   SaveValueFloat("DefaultProps\\Trigger", "Rotation", m_d.m_rotation);
+   SaveValueFloat("DefaultProps\\Trigger", "WireThickness", m_d.m_wireThickness);
+   SaveValueFloat("DefaultProps\\Trigger", "ScaleX", m_d.m_scaleX);
+   SaveValueFloat("DefaultProps\\Trigger", "ScaleY", m_d.m_scaleY);
+   SaveValueInt("DefaultProps\\Trigger", "Shape", m_d.m_shape);
+   SaveValueString("DefaultProps\\Trigger", "Surface", m_d.m_szSurface);
+   SaveValueFloat("DefaultProps\\Trigger", "AnimSpeed", m_d.m_animSpeed);
+   SaveValueBool("DefaultProps\\Trigger", "ReflectionEnabled", m_d.m_fReflectionEnabled);
 }
 
 HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)

@@ -256,7 +256,7 @@ void SoundDialog::Import()
     ofn.lpstrDefExt = "wav";
     ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
 
-    HRESULT hr = GetRegString( "RecentDir", "SoundDir", szInitialDir, 4096 );
+    HRESULT hr = LoadValueString( "RecentDir", "SoundDir", szInitialDir, 4096 );
     ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
     const int ret = GetOpenFileName( &ofn );
@@ -288,7 +288,7 @@ void SoundDialog::Import()
             if (pt)
                pt->ImportSound( hSoundList, szFileName, true );
         }
-        SetRegValue( "RecentDir", "SoundDir", REG_SZ, szInitialDir, lstrlen( szInitialDir ) );
+        SaveValueString( "RecentDir", "SoundDir", szInitialDir);
         if (pt)
             pt->SetNonUndoableDirty( eSaveDirty );
     }
@@ -360,7 +360,7 @@ void SoundDialog::ReImportFrom()
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
             char szInitialDir[MAXSTRING];
-            HRESULT hr = GetRegString("RecentDir", "SoundDir", szInitialDir, MAXSTRING);
+            HRESULT hr = LoadValueString("RecentDir", "SoundDir", szInitialDir, MAXSTRING);
             ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
             const int ret = GetOpenFileName( &ofn );
@@ -437,7 +437,7 @@ void SoundDialog::Export()
             ofn.lpstrFile = m_filename;
             ofn.nMaxFile = MAX_PATH;
             ofn.lpstrDefExt = "wav";
-            const HRESULT hr = GetRegString( "RecentDir", "SoundDir", m_initDir, MAX_PATH );
+            const HRESULT hr = LoadValueString( "RecentDir", "SoundDir", m_initDir, MAX_PATH );
 
             if (hr == S_OK)ofn.lpstrInitialDir = m_initDir;
             else ofn.lpstrInitialDir = NULL;
@@ -498,7 +498,7 @@ void SoundDialog::Export()
                     pps = (PinSound *)lvitem.lParam;
 
                 }
-                SetRegValue( "RecentDir", "SoundDir", REG_SZ, pathName, lstrlen( pathName ) );
+                SaveValueString( "RecentDir", "SoundDir", pathName);
             }
         }
     }
@@ -620,10 +620,10 @@ void SoundDialog::LoadPosition()
     int x, y;
     HRESULT hr;
 
-    hr = GetRegInt( "Editor", "SoundMngPosX", &x );
+    hr = LoadValueInt( "Editor", "SoundMngPosX", &x );
     if (hr != S_OK)
         x=0;
-    hr = GetRegInt( "Editor", "SoundMngPosY", &y );
+    hr = LoadValueInt( "Editor", "SoundMngPosY", &y );
     if (hr != S_OK)
         y=0;
 
@@ -633,8 +633,8 @@ void SoundDialog::LoadPosition()
 void SoundDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
-    SetRegValue( "Editor", "SoundMngPosX", REG_DWORD, &rect.left, 4 );
-    SetRegValue( "Editor", "SoundMngPosY", REG_DWORD, &rect.top, 4 );
+    SaveValueInt( "Editor", "SoundMngPosX", rect.left);
+    SaveValueInt( "Editor", "SoundMngPosY", rect.top);
 }
 
 

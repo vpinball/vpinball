@@ -31,22 +31,22 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    SendMessage(hwndCheck, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
 
    int depthcur;
-   HRESULT hr = GetRegInt("Player", "ColorDepth", &depthcur);
+   HRESULT hr = LoadValueInt("Player", "ColorDepth", &depthcur);
    if (hr != S_OK)
       depthcur = 32;
 
    int refreshrate;
-   hr = GetRegInt("Player", "RefreshRate", &refreshrate);
+   hr = LoadValueInt("Player", "RefreshRate", &refreshrate);
    if (hr != S_OK)
       refreshrate = 0; // The default
 
    int widthcur;
-   hr = GetRegInt("Player", "Width", &widthcur);
+   hr = LoadValueInt("Player", "Width", &widthcur);
    if (hr != S_OK)
       widthcur = true ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH;
 
    int heightcur;
-   hr = GetRegInt("Player", "Height", &heightcur);
+   hr = LoadValueInt("Player", "Height", &heightcur);
    if (hr != S_OK)
       heightcur = widthcur * 9 / 16;
 
@@ -242,7 +242,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    }
 
    int maxTexDim;
-   HRESULT hr = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
+   HRESULT hr = LoadValueInt("Player", "MaxTexDimension", &maxTexDim);
    if (hr != S_OK)
       maxTexDim = 0; // default: Don't resize textures
    switch (maxTexDim)
@@ -256,32 +256,32 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    HWND hwndCheck = GetDlgItem(IDC_GLOBAL_REFLECTION_CHECK).GetHwnd();
    int reflection;
-   hr = GetRegInt("Player", "BallReflection", &reflection);
+   hr = LoadValueInt("Player", "BallReflection", &reflection);
    if (hr != S_OK)
       reflection = fTrue;
    SendMessage(hwndCheck, BM_SETCHECK, reflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
    hwndCheck = GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd();
    int trail;
-   hr = GetRegInt("Player", "BallTrail", &trail);
+   hr = LoadValueInt("Player", "BallTrail", &trail);
    if (hr != S_OK)
       trail = fTrue;
    SendMessage(hwndCheck, BM_SETCHECK, trail ? BST_CHECKED : BST_UNCHECKED, 0);
 
    int vsync;
-   hr = GetRegInt("Player", "AdaptiveVSync", &vsync);
+   hr = LoadValueInt("Player", "AdaptiveVSync", &vsync);
    if (hr != S_OK)
       vsync = 0;
    SetDlgItemInt(IDC_ADAPTIVE_VSYNC, vsync, FALSE);
 
    int maxPrerenderedFrames;
-   hr = GetRegInt("Player", "MaxPrerenderedFrames", &maxPrerenderedFrames);
+   hr = LoadValueInt("Player", "MaxPrerenderedFrames", &maxPrerenderedFrames);
    if (hr != S_OK)
       maxPrerenderedFrames = 0;
    SetDlgItemInt(IDC_MAX_PRE_FRAMES, maxPrerenderedFrames, FALSE);
 
    float ballAspecRatioOffsetX;
-   hr = GetRegStringAsFloat("Player", "BallCorrectionX", &ballAspecRatioOffsetX);
+   hr = LoadValueFloat("Player", "BallCorrectionX", &ballAspecRatioOffsetX);
    if (hr != S_OK)
       ballAspecRatioOffsetX = 0.0f;
    char tmp[256];
@@ -289,28 +289,28 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SetDlgItemTextA(IDC_CORRECTION_X, tmp);
 
    float ballAspecRatioOffsetY;
-   hr = GetRegStringAsFloat("Player", "BallCorrectionY", &ballAspecRatioOffsetY);
+   hr = LoadValueFloat("Player", "BallCorrectionY", &ballAspecRatioOffsetY);
    if (hr != S_OK)
       ballAspecRatioOffsetY = 0.0f;
    sprintf_s(tmp, 256, "%f", ballAspecRatioOffsetY);
    SetDlgItemTextA(IDC_CORRECTION_Y, tmp);
 
    float latitude;
-   hr = GetRegStringAsFloat("Player", "Latitude", &latitude);
+   hr = LoadValueFloat("Player", "Latitude", &latitude);
    if (hr != S_OK)
       latitude = 52.52f;
    sprintf_s(tmp, 256, "%f", latitude);
    SetDlgItemTextA(IDC_DN_LATITUDE, tmp);
 
    float longitude;
-   hr = GetRegStringAsFloat("Player", "Longitude", &longitude);
+   hr = LoadValueFloat("Player", "Longitude", &longitude);
    if (hr != S_OK)
       longitude = 13.37f;
    sprintf_s(tmp, 256, "%f", longitude);
    SetDlgItemTextA(IDC_DN_LONGITUDE, tmp);
 
    float nudgeStrength;
-   hr = GetRegStringAsFloat("Player", "NudgeStrength", &nudgeStrength);
+   hr = LoadValueFloat("Player", "NudgeStrength", &nudgeStrength);
    if (hr != S_OK)
       nudgeStrength = 2e-2f;
    sprintf_s(tmp, 256, "%f", nudgeStrength);
@@ -318,59 +318,59 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    hwndCheck = GetDlgItem(IDC_AA_ALL_TABLES).GetHwnd();
    int useAA;
-   hr = GetRegInt("Player", "USEAA", &useAA);
+   hr = LoadValueInt("Player", "USEAA", &useAA);
    if (hr != S_OK)
       useAA = 0;
    SendMessage(hwndCheck, BM_SETCHECK, (useAA != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
    hwndCheck = GetDlgItem(IDC_DYNAMIC_DN).GetHwnd();
    int useDN;
-   hr = GetRegInt("Player", "DynamicDayNight", &useDN);
+   hr = LoadValueInt("Player", "DynamicDayNight", &useDN);
    if (hr != S_OK)
       useDN = 0;
    SendMessage(hwndCheck, BM_SETCHECK, (useDN != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
    hwndCheck = GetDlgItem(IDC_DYNAMIC_AO).GetHwnd();
    int useAO;
-   hr = GetRegInt("Player", "DynamicAO", &useAO);
+   hr = LoadValueInt("Player", "DynamicAO", &useAO);
    if (hr != S_OK)
       useAO = 0;
    SendMessage(hwndCheck, BM_SETCHECK, (useAO != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
    hwndCheck = GetDlgItem(IDC_ENABLE_AO).GetHwnd();
-   hr = GetRegInt("Player", "DisableAO", &useAO);
+   hr = LoadValueInt("Player", "DisableAO", &useAO);
    if (hr != S_OK)
       useAO = 0;
    SendMessage(hwndCheck, BM_SETCHECK, (useAO != 0) ? BST_UNCHECKED : BST_CHECKED, 0); // inverted logic
 
    hwndCheck = GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd();
    int ssreflection;
-   hr = GetRegInt("Player", "SSRefl", &ssreflection);
+   hr = LoadValueInt("Player", "SSRefl", &ssreflection);
    if (hr != S_OK)
       ssreflection = 0;
    SendMessage(hwndCheck, BM_SETCHECK, ssreflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
    hwndCheck = GetDlgItem(IDC_GLOBAL_PFREFLECTION_CHECK).GetHwnd();
    int pfreflection;
-   hr = GetRegInt("Player", "PFRefl", &pfreflection);
+   hr = LoadValueInt("Player", "PFRefl", &pfreflection);
    if (hr != S_OK)
       pfreflection = 1;
    SendMessage(hwndCheck, BM_SETCHECK, pfreflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
    hwndCheck = GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd();
    int overwiteBallImage;
-   hr = GetRegInt("Player", "OverwriteBallImage", &overwiteBallImage);
+   hr = LoadValueInt("Player", "OverwriteBallImage", &overwiteBallImage);
    if (hr != S_OK)
       overwiteBallImage = 0;
    SendMessage(hwndCheck, BM_SETCHECK, (overwiteBallImage != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
    char imageName[MAX_PATH] = { 0 };
-   hr = GetRegString("Player", "BallImage", imageName, MAX_PATH);
+   hr = LoadValueString("Player", "BallImage", imageName, MAX_PATH);
    if (hr != S_OK)
       imageName[0] = 0;
    SetDlgItemText(IDC_BALL_IMAGE_EDIT, imageName);
    imageName[0] = 0;
-   hr = GetRegString("Player", "DecalImage", imageName, MAX_PATH);
+   hr = LoadValueString("Player", "DecalImage", imageName, MAX_PATH);
    if (hr != S_OK)
       imageName[0] = 0;
    SetDlgItemText(IDC_BALL_DECAL_EDIT, imageName);
@@ -383,7 +383,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    }
 
    int fxaa;
-   hr = GetRegInt("Player", "FXAA", &fxaa);
+   hr = LoadValueInt("Player", "FXAA", &fxaa);
    if (hr != S_OK)
       fxaa = 2;
    SendMessage(GetDlgItem(IDC_FXAACB).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Disabled");
@@ -397,20 +397,20 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    hwndCheck = GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd();
    int scaleFX_DMD;
-   hr = GetRegInt("Player", "ScaleFXDMD", &scaleFX_DMD);
+   hr = LoadValueInt("Player", "ScaleFXDMD", &scaleFX_DMD);
    if (hr != S_OK)
       scaleFX_DMD = fFalse;
    SendMessage(hwndCheck, BM_SETCHECK, scaleFX_DMD ? BST_CHECKED : BST_UNCHECKED, 0);
 
    hwndCheck = GetDlgItem(IDC_BG_SET).GetHwnd();
    int bgset;
-   hr = GetRegInt("Player", "BGSet", &bgset);
+   hr = LoadValueInt("Player", "BGSet", &bgset);
    if (hr != S_OK)
       bgset = 0;
    SendMessage(hwndCheck, BM_SETCHECK, (bgset != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
    int stereo3D;
-   hr = GetRegInt("Player", "Stereo3D", &stereo3D);
+   hr = LoadValueInt("Player", "Stereo3D", &stereo3D);
    if (hr != S_OK)
       stereo3D = 0;
    SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Disabled");
@@ -421,27 +421,27 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    hwndCheck = GetDlgItem(IDC_3D_STEREO_Y).GetHwnd();
    int stereo3DY;
-   hr = GetRegInt("Player", "Stereo3DYAxis", &stereo3DY);
+   hr = LoadValueInt("Player", "Stereo3DYAxis", &stereo3DY);
    if (hr != S_OK)
       stereo3DY = fFalse;
    SendMessage(hwndCheck, BM_SETCHECK, stereo3DY ? BST_CHECKED : BST_UNCHECKED, 0);
 
    float stereo3DOfs;
-   hr = GetRegStringAsFloat("Player", "Stereo3DOffset", &stereo3DOfs);
+   hr = LoadValueFloat("Player", "Stereo3DOffset", &stereo3DOfs);
    if (hr != S_OK)
       stereo3DOfs = 0.0f;
    sprintf_s(tmp, 256, "%f", stereo3DOfs);
    SetDlgItemTextA(IDC_3D_STEREO_OFS, tmp);
 
    float stereo3DMS;
-   hr = GetRegStringAsFloat("Player", "Stereo3DMaxSeparation", &stereo3DMS);
+   hr = LoadValueFloat("Player", "Stereo3DMaxSeparation", &stereo3DMS);
    if (hr != S_OK)
       stereo3DMS = 0.03f;
    sprintf_s(tmp, 256, "%f", stereo3DMS);
    SetDlgItemTextA(IDC_3D_STEREO_MS, tmp);
 
    float stereo3DZPD;
-   hr = GetRegStringAsFloat("Player", "Stereo3DZPD", &stereo3DZPD);
+   hr = LoadValueFloat("Player", "Stereo3DZPD", &stereo3DZPD);
    if (hr != S_OK)
       stereo3DZPD = 0.5f;
    sprintf_s(tmp, 256, "%f", stereo3DZPD);
@@ -449,44 +449,44 @@ BOOL VideoOptionsDialog::OnInitDialog()
 
    hwndCheck = GetDlgItem(IDC_DISABLE_DWM).GetHwnd();
    int disableDWM;
-   hr = GetRegInt("Player", "DisableDWM", &disableDWM);
+   hr = LoadValueInt("Player", "DisableDWM", &disableDWM);
    if (hr != S_OK)
       disableDWM = 0;
    SendMessage(hwndCheck, BM_SETCHECK, (disableDWM != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
    hwndCheck = GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd();
    int nvidiaApi;
-   hr = GetRegInt("Player", "UseNVidiaAPI", &nvidiaApi);
+   hr = LoadValueInt("Player", "UseNVidiaAPI", &nvidiaApi);
    if (hr != S_OK)
       nvidiaApi = 0;
    SendMessage(hwndCheck, BM_SETCHECK, (nvidiaApi != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
    hwndCheck = GetDlgItem(IDC_BLOOM_OFF).GetHwnd();
    int bloomOff;
-   hr = GetRegInt("Player", "ForceBloomOff", &bloomOff);
+   hr = LoadValueInt("Player", "ForceBloomOff", &bloomOff);
    if (hr != S_OK)
       bloomOff = 0;
    SendMessage(hwndCheck, BM_SETCHECK, (bloomOff != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const bool forceAniso = (GetRegIntWithDefault("Player", "ForceAnisotropicFiltering", 1) != 0);
+   const bool forceAniso = (LoadValueIntWithDefault("Player", "ForceAnisotropicFiltering", 1) != 0);
    SendMessage(GetDlgItem(IDC_FORCE_ANISO).GetHwnd(), BM_SETCHECK, forceAniso ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const bool compressTextures = (GetRegIntWithDefault("Player", "CompressTextures", 0) != 0);
+   const bool compressTextures = (LoadValueIntWithDefault("Player", "CompressTextures", 0) != 0);
    SendMessage(GetDlgItem(IDC_TEX_COMPRESS).GetHwnd(), BM_SETCHECK, compressTextures ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const bool softwareVP = (GetRegIntWithDefault("Player", "SoftwareVertexProcessing", 0) != 0);
+   const bool softwareVP = (LoadValueIntWithDefault("Player", "SoftwareVertexProcessing", 0) != 0);
    SendMessage(GetDlgItem(IDC_SOFTWARE_VP).GetHwnd(), BM_SETCHECK, softwareVP ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const bool video10bit = (GetRegIntWithDefault("Player", "Render10Bit", 0) != 0);
+   const bool video10bit = (LoadValueIntWithDefault("Player", "Render10Bit", 0) != 0);
    SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_SETCHECK, video10bit ? BST_CHECKED : BST_UNCHECKED, 0);
 
    int depthcur;
-   hr = GetRegInt("Player", "ColorDepth", &depthcur);
+   hr = LoadValueInt("Player", "ColorDepth", &depthcur);
    if (hr != S_OK)
       depthcur = 32;
 
    int refreshrate;
-   hr = GetRegInt("Player", "RefreshRate", &refreshrate);
+   hr = LoadValueInt("Player", "RefreshRate", &refreshrate);
    if (hr != S_OK)
       refreshrate = 0; // The default
 
@@ -494,7 +494,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    getDisplayList(displays);
    int display;
 
-   hr = GetRegInt("Player", "Display", &display);
+   hr = LoadValueInt("Player", "Display", &display);
    if ((hr != S_OK) || ((int)displays.size() <= display))
       display = -1;
 
@@ -511,17 +511,17 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_SETCURSEL, display, 0);
 
    int fullscreen;
-   hr = GetRegInt("Player", "FullScreen", &fullscreen);
+   hr = LoadValueInt("Player", "FullScreen", &fullscreen);
    if (hr != S_OK)
       fullscreen = !!IsWindows10_1803orAbove();
 
    int widthcur;
-   hr = GetRegInt("Player", "Width", &widthcur);
+   hr = LoadValueInt("Player", "Width", &widthcur);
    if (hr != S_OK)
       widthcur = fullscreen ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH;
 
    int heightcur;
-   hr = GetRegInt("Player", "Height", &heightcur);
+   hr = LoadValueInt("Player", "Height", &heightcur);
    if (hr != S_OK)
       heightcur = widthcur * 9 / 16;
 
@@ -538,7 +538,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    }
 
    int alphaRampsAccuracy;
-   hr = GetRegInt("Player", "AlphaRampAccuracy", &alphaRampsAccuracy);
+   hr = LoadValueInt("Player", "AlphaRampAccuracy", &alphaRampsAccuracy);
    if (hr != S_OK)
       alphaRampsAccuracy = 10;
    HWND hwndARASlider = GetDlgItem(IDC_ARASlider).GetHwnd();
@@ -550,7 +550,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwndARASlider, TBM_SETPOS, TRUE, alphaRampsAccuracy);
 
    int ballStretchMode;
-   hr = GetRegInt("Player", "BallStretchMode", &ballStretchMode);
+   hr = LoadValueInt("Player", "BallStretchMode", &ballStretchMode);
    if (hr != S_OK)
       ballStretchMode = 0;
    switch (ballStretchMode)
@@ -564,7 +564,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    // set selected Monitors
    // Monitors: 4:3, 16:9, 16:10, 21:10
    int selected;
-   hr = GetRegInt("Player", "BallStretchMonitor", &selected);
+   hr = LoadValueInt("Player", "BallStretchMonitor", &selected);
    if (hr != S_OK)
       selected = 1; // assume 16:9 as standard
    SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"4:3");
@@ -866,25 +866,25 @@ void VideoOptionsDialog::OnOK()
    BOOL nothing = 0;
    HWND hwndFullScreen = GetDlgItem(IDC_FULLSCREEN).GetHwnd();
    size_t fullscreen = SendMessage(hwndFullScreen, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "FullScreen", REG_DWORD, &fullscreen, 4);
+   SaveValueInt("Player", "FullScreen", fullscreen);
 
    HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
    size_t index = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
    VideoMode* pvm = &allVideoModes[index];
-   SetRegValue("Player", "Width", REG_DWORD, &pvm->width, 4);
-   SetRegValue("Player", "Height", REG_DWORD, &pvm->height, 4);
+   SaveValueInt("Player", "Width", pvm->width);
+   SaveValueInt("Player", "Height", pvm->height);
    if (fullscreen)
    {
-      SetRegValue("Player", "ColorDepth", REG_DWORD, &pvm->depth, 4);
-      SetRegValue("Player", "RefreshRate", REG_DWORD, &pvm->refreshrate, 4);
+      SaveValueInt("Player", "ColorDepth", pvm->depth);
+      SaveValueInt("Player", "RefreshRate", pvm->refreshrate);
    }
    HWND hwndDisplay = GetDlgItem(IDC_DISPLAY_ID).GetHwnd();
    size_t display = SendMessage(hwndDisplay, CB_GETCURSEL, 0, 0);
-   SetRegValue("Player", "Display", REG_DWORD, &display, 4);
+   SaveValueInt("Player", "Display", display);
 
    HWND hwnd10bit = GetDlgItem(IDC_10BIT_VIDEO).GetHwnd();
    size_t video10bit = SendMessage(hwnd10bit, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "Render10Bit", REG_DWORD, &video10bit, 4);
+   SaveValueInt("Player", "Render10Bit", video10bit);
 
    HWND maxTexDim3072 = GetDlgItem(IDC_Tex3072).GetHwnd();
    HWND maxTexDim1024 = GetDlgItem(IDC_Tex1024).GetHwnd();
@@ -897,123 +897,123 @@ void VideoOptionsDialog::OnOK()
       maxTexDim = 1024;
    if (SendMessage(maxTexDim2048, BM_GETCHECK, 0, 0) == BST_CHECKED)
       maxTexDim = 2048;
-   SetRegValue("Player", "MaxTexDimension", REG_DWORD, &maxTexDim, 4);
+   SaveValueInt("Player", "MaxTexDimension", maxTexDim);
 
    HWND hwndReflect = GetDlgItem(IDC_GLOBAL_REFLECTION_CHECK).GetHwnd();
    size_t reflection = SendMessage(hwndReflect, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "BallReflection", REG_DWORD, &reflection, 4);
+   SaveValueInt("Player", "BallReflection", reflection);
 
    HWND hwndTrail = GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd();
    size_t trail = SendMessage(hwndTrail, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "BallTrail", REG_DWORD, &trail, 4);
+   SaveValueInt("Player", "BallTrail", trail);
 
    int vsync = GetDlgItemInt(IDC_ADAPTIVE_VSYNC, nothing, TRUE);
-   SetRegValue("Player", "AdaptiveVSync", REG_DWORD, &vsync, 4);
+   SaveValueInt("Player", "AdaptiveVSync", vsync);
 
    int maxPrerenderedFrames = GetDlgItemInt(IDC_MAX_PRE_FRAMES, nothing, TRUE);
-   SetRegValue("Player", "MaxPrerenderedFrames", REG_DWORD, &maxPrerenderedFrames, 4);
+   SaveValueInt("Player", "MaxPrerenderedFrames", maxPrerenderedFrames);
 
    CString tmpStr;
    tmpStr = GetDlgItemTextA(IDC_CORRECTION_X);
-   SetRegValue("Player", "BallCorrectionX", REG_SZ, tmpStr.c_str(), lstrlen(tmpStr.c_str()));
+   SaveValueString("Player", "BallCorrectionX", tmpStr.c_str());
 
    tmpStr = GetDlgItemTextA(IDC_CORRECTION_Y);
-   SetRegValue("Player", "BallCorrectionY", REG_SZ, tmpStr.c_str(), lstrlen(tmpStr.c_str()));
+   SaveValueString("Player", "BallCorrectionY", tmpStr.c_str());
 
    tmpStr = GetDlgItemTextA(IDC_DN_LONGITUDE);
-   SetRegValue("Player", "Longitude", REG_SZ, tmpStr.c_str(), lstrlen(tmpStr.c_str()));
+   SaveValueString("Player", "Longitude", tmpStr.c_str());
 
    tmpStr = GetDlgItemTextA(IDC_DN_LATITUDE);
-   SetRegValue("Player", "Latitude", REG_SZ, tmpStr.c_str(), lstrlen(tmpStr.c_str()));
+   SaveValueString("Player", "Latitude", tmpStr.c_str());
 
    tmpStr = GetDlgItemTextA(IDC_NUDGE_STRENGTH);
-   SetRegValue("Player", "NudgeStrength", REG_SZ, tmpStr.c_str(), lstrlen(tmpStr.c_str()));
+   SaveValueString("Player", "NudgeStrength", tmpStr.c_str());
 
    HWND hwndFXAA = GetDlgItem(IDC_FXAACB).GetHwnd();
    size_t fxaa = SendMessage(hwndFXAA, CB_GETCURSEL, 0, 0);
    if (fxaa == LB_ERR)
       fxaa = 2;
-   SetRegValue("Player", "FXAA", REG_DWORD, &fxaa, 4);
+   SaveValueInt("Player", "FXAA", fxaa);
 
    HWND hwndScaleFXDMD = GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd();
    size_t scaleFX_DMD = SendMessage(hwndScaleFXDMD, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "ScaleFXDMD", REG_DWORD, &scaleFX_DMD, 4);
+   SaveValueInt("Player", "ScaleFXDMD", scaleFX_DMD);
 
    HWND hwndBGSet = GetDlgItem(IDC_BG_SET).GetHwnd();
    size_t BGSet = SendMessage(hwndBGSet, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "BGSet", REG_DWORD, &BGSet, 4);
+   SaveValueInt("Player", "BGSet", BGSet);
 
    HWND hwndUseAA = GetDlgItem(IDC_AA_ALL_TABLES).GetHwnd();
    size_t useAA = SendMessage(hwndUseAA, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "USEAA", REG_DWORD, &useAA, 4);
+   SaveValueInt("Player", "USEAA", useAA);
 
    HWND hwndUseDN = GetDlgItem(IDC_DYNAMIC_DN).GetHwnd();
    size_t useDN = SendMessage(hwndUseDN, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "DynamicDayNight", REG_DWORD, &useDN, 4);
+   SaveValueInt("Player", "DynamicDayNight", useDN);
 
    HWND hwndUseAO = GetDlgItem(IDC_DYNAMIC_AO).GetHwnd();
    size_t useAO = SendMessage(hwndUseAO, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "DynamicAO", REG_DWORD, &useAO, 4);
+   SaveValueInt("Player", "DynamicAO", useAO);
 
    hwndUseAO = GetDlgItem(IDC_ENABLE_AO).GetHwnd();
    useAO = SendMessage(hwndUseAO, BM_GETCHECK, 0, 0) ? 0 : 1; // inverted logic
-   SetRegValue("Player", "DisableAO", REG_DWORD, &useAO, 4);
+   SaveValueInt("Player", "DisableAO", useAO);
 
    HWND hwndSSReflect = GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd();
    size_t ssreflection = SendMessage(hwndSSReflect, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "SSRefl", REG_DWORD, &ssreflection, 4);
+   SaveValueInt("Player", "SSRefl", ssreflection);
 
    HWND hwndPFReflect = GetDlgItem(IDC_GLOBAL_PFREFLECTION_CHECK).GetHwnd();
    size_t pfreflection = SendMessage(hwndPFReflect, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "PFRefl", REG_DWORD, &pfreflection, 4);
+   SaveValueInt("Player", "PFRefl", pfreflection);
 
    HWND hwndStereo3D = GetDlgItem(IDC_3D_STEREO).GetHwnd();
    size_t stereo3D = SendMessage(hwndStereo3D, CB_GETCURSEL, 0, 0);
    if (stereo3D == LB_ERR)
       stereo3D = 0;
-   SetRegValue("Player", "Stereo3D", REG_DWORD, &stereo3D, 4);
-   SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &stereo3D, 4);
+   SaveValueInt("Player", "Stereo3D", stereo3D);
+   SaveValueInt("Player", "Stereo3DEnabled", stereo3D);
 
    HWND hwndStereo3DY = GetDlgItem(IDC_3D_STEREO_Y).GetHwnd();
    size_t stereo3DY = SendMessage(hwndStereo3DY, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "Stereo3DYAxis", REG_DWORD, &stereo3DY, 4);
+   SaveValueInt("Player", "Stereo3DYAxis", stereo3DY);
 
    HWND hwndForceAniso = GetDlgItem(IDC_FORCE_ANISO).GetHwnd();
    size_t forceAniso = SendMessage(hwndForceAniso, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "ForceAnisotropicFiltering", REG_DWORD, &forceAniso, 4);
+   SaveValueInt("Player", "ForceAnisotropicFiltering", forceAniso);
 
    HWND hwndTexCompress = GetDlgItem(IDC_TEX_COMPRESS).GetHwnd();
    size_t texCompress = SendMessage(hwndTexCompress, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "CompressTextures", REG_DWORD, &texCompress, 4);
+   SaveValueInt("Player", "CompressTextures", texCompress);
 
    HWND hwndSoftwareVP = GetDlgItem(IDC_SOFTWARE_VP).GetHwnd();
    size_t softwareVP = SendMessage(hwndSoftwareVP, BM_GETCHECK, 0, 0);
-   SetRegValueBool("Player", "SoftwareVertexProcessing", softwareVP != 0);
+   SaveValueBool("Player", "SoftwareVertexProcessing", softwareVP != 0);
 
    HWND hwndAraSlider = GetDlgItem(IDC_ARASlider).GetHwnd();
    size_t alphaRampsAccuracy = SendMessage(hwndAraSlider, TBM_GETPOS, 0, 0);
-   SetRegValue("Player", "AlphaRampAccuracy", REG_DWORD, &alphaRampsAccuracy, 4);
+   SaveValueInt("Player", "AlphaRampAccuracy", alphaRampsAccuracy);
 
    tmpStr = GetDlgItemTextA(IDC_3D_STEREO_OFS);
-   SetRegValue("Player", "Stereo3DOffset", REG_SZ, tmpStr.c_str(), lstrlen(tmpStr.c_str()));
+   SaveValueString("Player", "Stereo3DOffset", tmpStr.c_str());
 
    tmpStr = GetDlgItemTextA(IDC_3D_STEREO_MS);
-   SetRegValue("Player", "Stereo3DMaxSeparation", REG_SZ, tmpStr.c_str(), lstrlen(tmpStr.c_str()));
+   SaveValueString("Player", "Stereo3DMaxSeparation", tmpStr.c_str());
 
    tmpStr = GetDlgItemTextA(IDC_3D_STEREO_ZPD);
-   SetRegValue("Player", "Stereo3DZPD", REG_SZ, tmpStr.c_str(), lstrlen(tmpStr.c_str()));
+   SaveValueString("Player", "Stereo3DZPD", tmpStr.c_str());
 
    HWND hwndDisableDWM = GetDlgItem(IDC_DISABLE_DWM).GetHwnd();
    size_t disableDWM = SendMessage(hwndDisableDWM, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "DisableDWM", REG_DWORD, &disableDWM, 4);
+   SaveValueInt("Player", "DisableDWM", disableDWM);
 
    HWND hwndNvidiaApi = GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd();
    size_t nvidiaApi = SendMessage(hwndNvidiaApi, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "UseNVidiaAPI", REG_DWORD, &nvidiaApi, 4);
+   SaveValueInt("Player", "UseNVidiaAPI", nvidiaApi);
 
    HWND hwndBloomOff = GetDlgItem(IDC_BLOOM_OFF).GetHwnd();
    size_t bloomOff = SendMessage(hwndBloomOff, BM_GETCHECK, 0, 0);
-   SetRegValue("Player", "ForceBloomOff", REG_DWORD, &bloomOff, 4);
+   SaveValueInt("Player", "ForceBloomOff", bloomOff);
 
    //HWND hwndBallStretchNo = GetDlgItem(hwndDlg, IDC_StretchNo);
    HWND hwndBallStretchYes = GetDlgItem(IDC_StretchYes).GetHwnd();
@@ -1023,7 +1023,7 @@ void VideoOptionsDialog::OnOK()
       ballStretchMode = 1;
    if (SendMessage(hwndBallStretchMonitor, BM_GETCHECK, 0, 0) == BST_CHECKED)
       ballStretchMode = 2;
-   SetRegValue("Player", "BallStretchMode", REG_DWORD, &ballStretchMode, 4);
+   SaveValueInt("Player", "BallStretchMode", ballStretchMode);
 
    // get selected Monitors
    // Monitors: 4:3, 16:9, 16:10, 21:10
@@ -1031,22 +1031,21 @@ void VideoOptionsDialog::OnOK()
    size_t selected = SendMessage(hwndBallStretchCombo, CB_GETCURSEL, 0, 0);
    if (selected == LB_ERR)
       selected = 1; // assume a 16:9 Monitor as standard
-   SetRegValue("Player", "BallStretchMonitor", REG_DWORD, &selected, 4);
+   SaveValueInt("Player", "BallStretchMonitor", selected);
 
    const bool overwriteEnabled = IsDlgButtonChecked(IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED;
    if (overwriteEnabled)
    {
-      SetRegValueInt("Player", "OverwriteBallImage", 1);
+      SaveValueInt("Player", "OverwriteBallImage", 1);
       tmpStr = GetDlgItemText(IDC_BALL_IMAGE_EDIT);
-      SetRegValueString("Player", "BallImage", tmpStr.c_str());
+      SaveValueString("Player", "BallImage", tmpStr.c_str());
       tmpStr = GetDlgItemText(IDC_BALL_DECAL_EDIT);
-      SetRegValueString("Player", "DecalImage", tmpStr.c_str());
+      SaveValueString("Player", "DecalImage", tmpStr.c_str());
    }
    else
-      SetRegValueInt("Player", "OverwriteBallImage", 0);
+      SaveValueInt("Player", "OverwriteBallImage", 0);
 
    CDialog::OnOK();
-
 }
 
 void VideoOptionsDialog::OnClose()

@@ -271,7 +271,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          ofn.lpstrDefExt = "mat";
          ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER;
 
-         HRESULT hr = GetRegString("RecentDir", "MaterialDir", szInitialDir, 4096);
+         HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir, 4096);
          ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
          const int ret = GetOpenFileName(&ofn);
@@ -324,7 +324,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                pt->AddListMaterial(m_hMaterialList, pmat);
             }
             fclose(f);
-            SetRegValue("RecentDir", "MaterialDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
+            SaveValueString("RecentDir", "MaterialDir", szInitialDir);
             pt->SetNonUndoableDirty(eSaveDirty);
             g_pvp->m_sb.PopulateDropdowns(); // May need to update list of images
             g_pvp->m_sb.RefreshProperties();
@@ -364,7 +364,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ofn.nMaxFile = 4096;
             ofn.lpstrDefExt = "mat";
 
-            const HRESULT hr = GetRegString("RecentDir", "MaterialDir", szInitialDir, 4096);
+            const HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir, 4096);
 
             if (hr == S_OK)ofn.lpstrInitialDir = szInitialDir;
             else ofn.lpstrInitialDir = NULL;
@@ -413,7 +413,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                }
                fclose(f);
             }
-            SetRegValue("RecentDir", "MaterialDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
+            SaveValueString("RecentDir", "MaterialDir", szInitialDir);
          }
          break;
       }
@@ -828,15 +828,15 @@ void MaterialDialog::LoadPosition()
     int x, y, w, h;
     HRESULT hr;
 
-    hr = GetRegInt("Editor", "MaterialMngPosX", &x);
+    hr = LoadValueInt("Editor", "MaterialMngPosX", &x);
     if (hr != S_OK)
         x = 0;
-    hr = GetRegInt("Editor", "MaterialMngPosY", &y);
+    hr = LoadValueInt("Editor", "MaterialMngPosY", &y);
     if (hr != S_OK)
         y = 0;
 
-    w = GetRegIntWithDefault("Editor", "MaterialMngWidth", 1000);
-    h = GetRegIntWithDefault("Editor", "MaterialMngHeight", 800);
+    w = LoadValueIntWithDefault("Editor", "MaterialMngWidth", 1000);
+    h = LoadValueIntWithDefault("Editor", "MaterialMngHeight", 800);
     SetWindowPos(NULL, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
@@ -845,10 +845,10 @@ void MaterialDialog::SavePosition()
     int w, h;
     CRect rect = GetWindowRect();
 
-    SetRegValue("Editor", "MaterialMngPosX", REG_DWORD, &rect.left, 4);
-    SetRegValue("Editor", "MaterialMngPosY", REG_DWORD, &rect.top, 4);
+    SaveValueInt("Editor", "MaterialMngPosX", rect.left);
+    SaveValueInt("Editor", "MaterialMngPosY", rect.top);
     w = rect.right - rect.left;
-    SetRegValue("Editor", "MaterialMngWidth", REG_DWORD, &w, 4);
+    SaveValueInt("Editor", "MaterialMngWidth", w);
     h = rect.bottom - rect.top;
-    SetRegValue("Editor", "MaterialMngHeight", REG_DWORD, &h, 4);
+    SaveValueInt("Editor", "MaterialMngHeight", h);
 }

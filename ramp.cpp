@@ -64,7 +64,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    SetDefaults(fromMouseClick);
    m_d.m_fVisible = true;
 
-   float length = 0.5f * GetRegStringAsFloatWithDefault("DefaultProps\\Ramp", "Length", 400.0f);
+   float length = 0.5f * LoadValueFloatWithDefault("DefaultProps\\Ramp", "Length", 400.0f);
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -94,69 +94,69 @@ void Ramp::SetDefaults(bool fromMouseClick)
 {
    static const char strKeyName[] = "DefaultProps\\Ramp";
    
-   m_d.m_heightbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "HeightBottom", 0.0f) : 0.0f;
-   m_d.m_heighttop = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "HeightTop", 50.0f) : 50.0f;
-   m_d.m_widthbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "WidthBottom", 75.0f) : 75.0f;
-   m_d.m_widthtop = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "WidthTop", 60.0f) : 60.0f;
-   m_d.m_type = fromMouseClick ? (RampType)GetRegIntWithDefault(strKeyName, "RampType", RampTypeFlat) : RampTypeFlat;
+   m_d.m_heightbottom = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HeightBottom", 0.0f) : 0.0f;
+   m_d.m_heighttop = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HeightTop", 50.0f) : 50.0f;
+   m_d.m_widthbottom = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "WidthBottom", 75.0f) : 75.0f;
+   m_d.m_widthtop = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "WidthTop", 60.0f) : 60.0f;
+   m_d.m_type = fromMouseClick ? (RampType)LoadValueIntWithDefault(strKeyName, "RampType", RampTypeFlat) : RampTypeFlat;
 
-   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? GetRegIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
+   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
 
-   HRESULT hr = GetRegString(strKeyName, "Image", m_d.m_szImage, MAXTOKEN);
+   HRESULT hr = LoadValueString(strKeyName, "Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
 
-   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)GetRegIntWithDefault(strKeyName, "ImageMode", ImageModeWorld) : ImageModeWorld;
-   m_d.m_fImageWalls = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "ImageWalls", true) : true;
+   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)LoadValueIntWithDefault(strKeyName, "ImageMode", ImageModeWorld) : ImageModeWorld;
+   m_d.m_fImageWalls = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ImageWalls", true) : true;
 
-   m_d.m_leftwallheight = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "LeftWallHeight", 62.0f) : 62.0f;
-   m_d.m_rightwallheight = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RightWallHeight", 62.0f) : 62.0f;
-   m_d.m_leftwallheightvisible = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "LeftWallHeightVisible", 30.0f) : 30.0f;
-   m_d.m_rightwallheightvisible = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RightWallHeightVisible", 30.0f) : 30.0f;
+   m_d.m_leftwallheight = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "LeftWallHeight", 62.0f) : 62.0f;
+   m_d.m_rightwallheight = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RightWallHeight", 62.0f) : 62.0f;
+   m_d.m_leftwallheightvisible = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "LeftWallHeightVisible", 30.0f) : 30.0f;
+   m_d.m_rightwallheightvisible = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RightWallHeightVisible", 30.0f) : 30.0f;
 
-   m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
+   m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
-   m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Collidable", true) : true;
-   m_d.m_fReflectionEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
+   m_d.m_fVisible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Visible", true) : true;
+   m_d.m_fCollidable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Collidable", true) : true;
+   m_d.m_fReflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
 
-   m_d.m_wireDiameter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "WireDiameter", 8.0f) : 8.0f;
-   m_d.m_wireDistanceX = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "WireDistanceX", 38.0f) : 38.0f;
-   m_d.m_wireDistanceY = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "WireDistanceY", 88.0f) : 88.0f;
+   m_d.m_wireDiameter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "WireDiameter", 8.0f) : 8.0f;
+   m_d.m_wireDistanceX = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "WireDistanceX", 38.0f) : 38.0f;
+   m_d.m_wireDistanceY = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "WireDistanceY", 88.0f) : 88.0f;
 }
 
 void Ramp::WriteRegDefaults()
 {
    static const char strKeyName[] = "DefaultProps\\Ramp";
 
-   SetRegValueFloat(strKeyName, "HeightBottom", m_d.m_heightbottom);
-   SetRegValueFloat(strKeyName, "HeightTop", m_d.m_heighttop);
-   SetRegValueFloat(strKeyName, "WidthBottom", m_d.m_widthbottom);
-   SetRegValueFloat(strKeyName, "WidthTop", m_d.m_widthtop);
-   SetRegValueInt(strKeyName, "RampType", m_d.m_type);
-   SetRegValueBool(strKeyName, "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
-   SetRegValue(strKeyName, "TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
-   SetRegValue(strKeyName, "Image", REG_SZ, &m_d.m_szImage, lstrlen(m_d.m_szImage));
-   SetRegValue(strKeyName, "ImageMode", REG_DWORD, &m_d.m_imagealignment, 4);
-   SetRegValueBool(strKeyName, "ImageWalls", m_d.m_fImageWalls);
-   SetRegValueFloat(strKeyName, "LeftWallHeight", m_d.m_leftwallheight);
-   SetRegValueFloat(strKeyName, "RightWallHeight", m_d.m_rightwallheight);
-   SetRegValueFloat(strKeyName, "LeftWallHeightVisible", m_d.m_leftwallheightvisible);
-   SetRegValueFloat(strKeyName, "RightWallHeightVisible", m_d.m_rightwallheightvisible);
-   SetRegValueBool(strKeyName, "HitEvent", m_d.m_fHitEvent);
-   SetRegValueFloat(strKeyName, "HitThreshold", m_d.m_threshold);
-   SetRegValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);
-   SetRegValueFloat(strKeyName, "Friction", m_d.m_friction);
-   SetRegValueFloat(strKeyName, "Scatter", m_d.m_scatter);
-   SetRegValueBool(strKeyName, "Collidable", m_d.m_fCollidable);
-   SetRegValueBool(strKeyName, "Visible", m_d.m_fVisible);
-   SetRegValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
-   SetRegValueFloat(strKeyName, "WireDiameter", m_d.m_wireDiameter);
-   SetRegValueFloat(strKeyName, "WireDistanceX", m_d.m_wireDistanceX);
-   SetRegValueFloat(strKeyName, "WireDistanceY", m_d.m_wireDistanceY);
+   SaveValueFloat(strKeyName, "HeightBottom", m_d.m_heightbottom);
+   SaveValueFloat(strKeyName, "HeightTop", m_d.m_heighttop);
+   SaveValueFloat(strKeyName, "WidthBottom", m_d.m_widthbottom);
+   SaveValueFloat(strKeyName, "WidthTop", m_d.m_widthtop);
+   SaveValueInt(strKeyName, "RampType", m_d.m_type);
+   SaveValueBool(strKeyName, "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueInt(strKeyName, "TimerInterval", m_d.m_tdr.m_TimerInterval);
+   SaveValueString(strKeyName, "Image", m_d.m_szImage);
+   SaveValueInt(strKeyName, "ImageMode", m_d.m_imagealignment);
+   SaveValueBool(strKeyName, "ImageWalls", m_d.m_fImageWalls);
+   SaveValueFloat(strKeyName, "LeftWallHeight", m_d.m_leftwallheight);
+   SaveValueFloat(strKeyName, "RightWallHeight", m_d.m_rightwallheight);
+   SaveValueFloat(strKeyName, "LeftWallHeightVisible", m_d.m_leftwallheightvisible);
+   SaveValueFloat(strKeyName, "RightWallHeightVisible", m_d.m_rightwallheightvisible);
+   SaveValueBool(strKeyName, "HitEvent", m_d.m_fHitEvent);
+   SaveValueFloat(strKeyName, "HitThreshold", m_d.m_threshold);
+   SaveValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);
+   SaveValueFloat(strKeyName, "Friction", m_d.m_friction);
+   SaveValueFloat(strKeyName, "Scatter", m_d.m_scatter);
+   SaveValueBool(strKeyName, "Collidable", m_d.m_fCollidable);
+   SaveValueBool(strKeyName, "Visible", m_d.m_fVisible);
+   SaveValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
+   SaveValueFloat(strKeyName, "WireDiameter", m_d.m_wireDiameter);
+   SaveValueFloat(strKeyName, "WireDistanceX", m_d.m_wireDistanceX);
+   SaveValueFloat(strKeyName, "WireDistanceY", m_d.m_wireDistanceY);
 }
 
 void Ramp::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
@@ -2760,7 +2760,7 @@ void Ramp::UpdatePropertyPanes()
 void Ramp::SetDefaultPhysics(bool fromMouseClick)
 {
    static const char strKeyName[] = "DefaultProps\\Ramp";
-   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
-   m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Scatter", 0) : 0;
+   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
+   m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
+   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Scatter", 0) : 0;
 }

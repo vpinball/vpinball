@@ -303,10 +303,10 @@ void CollectionManagerDialog::LoadPosition()
     int x, y;
     HRESULT hr;
 
-    hr = GetRegInt("Editor", "CollectionMngPosX", &x);
+    hr = LoadValueInt("Editor", "CollectionMngPosX", &x);
     if (hr != S_OK)
         x=0;
-    hr = GetRegInt("Editor", "CollectionMngPosY", &y);
+    hr = LoadValueInt("Editor", "CollectionMngPosY", &y);
     if (hr != S_OK)
         y=0;
 
@@ -316,8 +316,8 @@ void CollectionManagerDialog::LoadPosition()
 void CollectionManagerDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
-    SetRegValueInt("Editor", "CollectionMngPosX", rect.left);
-    SetRegValueInt("Editor", "CollectionMngPosY", rect.top);
+    SaveValueInt("Editor", "CollectionMngPosX", rect.left);
+    SaveValueInt("Editor", "CollectionMngPosY", rect.top);
 }
 
 //######################################## Collection Dialog ########################################

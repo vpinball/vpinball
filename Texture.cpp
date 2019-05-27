@@ -6,7 +6,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 {
    // check if Textures exceed the maximum texture dimension
    int maxTexDim;
-   HRESULT hrMaxTex = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
+   HRESULT hrMaxTex = LoadValueInt("Player", "MaxTexDimension", &maxTexDim);
    if (hrMaxTex != S_OK)
       maxTexDim = 0; // default: Don't resize textures
    if (maxTexDim <= 0)

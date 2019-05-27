@@ -135,7 +135,7 @@ public:
    void Init(RenderDevice * const pd3dDevice, const int numFrames)
    {
       int EnableLegacyMaximumPreRenderedFrames = 0;
-      const HRESULT hr = GetRegInt("Player", "EnableLegacyMaximumPreRenderedFrames", &EnableLegacyMaximumPreRenderedFrames);
+      const HRESULT hr = LoadValueInt("Player", "EnableLegacyMaximumPreRenderedFrames", &EnableLegacyMaximumPreRenderedFrames);
       if (hr != S_OK)
           EnableLegacyMaximumPreRenderedFrames = 0;
 

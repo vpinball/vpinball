@@ -39,7 +39,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
         physicsoptions[i] = new char[256];
         char tmp[256];
         sprintf_s(tmp, 256, "PhysicsSetName%u", i);
-        if (GetRegString("Player", tmp, physicsoptions[i], 256) != S_OK)
+        if (LoadValueString("Player", tmp, physicsoptions[i], 256) != S_OK)
             sprintf_s(physicsoptions[i], 256, "Set %u", i + 1);
         sprintf_s(tmp, 256, "%u: %s", i + 1, physicsoptions[i]);
         const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)tmp);
@@ -54,7 +54,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float FlipperPhysicsMass = 1.f;
     sprintf_s(tmp, 256, "FlipperPhysicsMass%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsMass);
+    hr = LoadValueFloat("Player", tmp, &FlipperPhysicsMass);
     if (hr != S_OK)
         FlipperPhysicsMass = 1.f;
 
@@ -62,7 +62,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float FlipperPhysicsStrength = 2200.f;
     sprintf_s(tmp, 256, "FlipperPhysicsStrength%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsStrength);
+    hr = LoadValueFloat("Player", tmp, &FlipperPhysicsStrength);
     if (hr != S_OK)
         FlipperPhysicsStrength = 2200.f;
 
@@ -70,7 +70,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float FlipperPhysicsElasticity = 0.8f;
     sprintf_s(tmp, 256, "FlipperPhysicsElasticity%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsElasticity);
+    hr = LoadValueFloat("Player", tmp, &FlipperPhysicsElasticity);
     if (hr != S_OK)
         FlipperPhysicsElasticity = 0.8f;
 
@@ -78,7 +78,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float FlipperPhysicsScatter = 0.f;
     sprintf_s(tmp, 256, "FlipperPhysicsScatter%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsScatter);
+    hr = LoadValueFloat("Player", tmp, &FlipperPhysicsScatter);
     if (hr != S_OK)
         FlipperPhysicsScatter = 0.f;
 
@@ -86,7 +86,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float FlipperPhysicsTorqueDamping = 0.75f;
     sprintf_s(tmp, 256, "FlipperPhysicsEOSTorque%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsTorqueDamping);
+    hr = LoadValueFloat("Player", tmp, &FlipperPhysicsTorqueDamping);
     if (hr != S_OK)
         FlipperPhysicsTorqueDamping = 0.75f;
 
@@ -94,7 +94,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float FlipperPhysicsTorqueDampingAngle = 6.f;
     sprintf_s(tmp, 256, "FlipperPhysicsEOSTorqueAngle%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsTorqueDampingAngle);
+    hr = LoadValueFloat("Player", tmp, &FlipperPhysicsTorqueDampingAngle);
     if (hr != S_OK)
         FlipperPhysicsTorqueDampingAngle = 6.f;
 
@@ -102,7 +102,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float FlipperPhysicsReturnStrength = 0.058f;
     sprintf_s(tmp, 256, "FlipperPhysicsReturnStrength%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsReturnStrength);
+    hr = LoadValueFloat("Player", tmp, &FlipperPhysicsReturnStrength);
     if (hr != S_OK)
         FlipperPhysicsReturnStrength = 0.058f;
 
@@ -110,7 +110,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float FlipperPhysicsElasticityFalloff = 0.43f;
     sprintf_s(tmp, 256, "FlipperPhysicsElasticityFalloff%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsElasticityFalloff);
+    hr = LoadValueFloat("Player", tmp, &FlipperPhysicsElasticityFalloff);
     if (hr != S_OK)
         FlipperPhysicsElasticityFalloff = 0.43f;
 
@@ -118,7 +118,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float FlipperPhysicsFriction = 0.6f;
     sprintf_s(tmp, 256, "FlipperPhysicsFriction%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsFriction);
+    hr = LoadValueFloat("Player", tmp, &FlipperPhysicsFriction);
     if (hr != S_OK)
         FlipperPhysicsFriction = 0.6f;
 
@@ -126,7 +126,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float FlipperPhysicsCoilRampUp = 3.f;
     sprintf_s(tmp, 256, "FlipperPhysicsCoilRampUp%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsCoilRampUp);
+    hr = LoadValueFloat("Player", tmp, &FlipperPhysicsCoilRampUp);
     if (hr != S_OK)
         FlipperPhysicsCoilRampUp = 3.f;
 
@@ -134,7 +134,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float TablePhysicsGravityConstant = DEFAULT_TABLE_GRAVITY;
     sprintf_s(tmp, 256, "TablePhysicsGravityConstant%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsGravityConstant);
+    hr = LoadValueFloat("Player", tmp, &TablePhysicsGravityConstant);
     if (hr != S_OK)
         TablePhysicsGravityConstant = DEFAULT_TABLE_GRAVITY;
 
@@ -142,7 +142,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float TablePhysicsContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
     sprintf_s(tmp, 256, "TablePhysicsContactFriction%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsContactFriction);
+    hr = LoadValueFloat("Player", tmp, &TablePhysicsContactFriction);
     if (hr != S_OK)
         TablePhysicsContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
 
@@ -150,7 +150,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float TablePhysicsElasticity = DEFAULT_TABLE_ELASTICITY;
     sprintf_s(tmp, 256, "TablePhysicsElasticity%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsElasticity);
+    hr = LoadValueFloat("Player", tmp, &TablePhysicsElasticity);
     if (hr != S_OK)
         TablePhysicsElasticity = DEFAULT_TABLE_ELASTICITY;
 
@@ -158,7 +158,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float TablePhysicsElasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
     sprintf_s(tmp, 256, "TablePhysicsElasticityFalloff%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsElasticityFalloff);
+    hr = LoadValueFloat("Player", tmp, &TablePhysicsElasticityFalloff);
     if (hr != S_OK)
         TablePhysicsElasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
 
@@ -166,7 +166,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float TablePhysicsScatterAngle = DEFAULT_TABLE_PFSCATTERANGLE;
     sprintf_s(tmp, 256, "TablePhysicsScatterAngle%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsScatterAngle);
+    hr = LoadValueFloat("Player", tmp, &TablePhysicsScatterAngle);
     if (hr != S_OK)
         TablePhysicsScatterAngle = DEFAULT_TABLE_PFSCATTERANGLE;
 
@@ -174,7 +174,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float TablePhysicsContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
     sprintf_s(tmp, 256, "TablePhysicsContactScatterAngle%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsContactScatterAngle);
+    hr = LoadValueFloat("Player", tmp, &TablePhysicsContactScatterAngle);
     if (hr != S_OK)
         TablePhysicsContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
 
@@ -182,7 +182,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float TablePhysicsMinSlope = DEFAULT_TABLE_MIN_SLOPE;
     sprintf_s(tmp, 256, "TablePhysicsMinSlope%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsMinSlope);
+    hr = LoadValueFloat("Player", tmp, &TablePhysicsMinSlope);
     if (hr != S_OK)
         TablePhysicsMinSlope = DEFAULT_TABLE_MIN_SLOPE;
 
@@ -190,7 +190,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 
     float TablePhysicsMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
     sprintf_s(tmp, 256, "TablePhysicsMaxSlope%u", physicsselection);
-    hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsMaxSlope);
+    hr = LoadValueFloat("Player", tmp, &TablePhysicsMaxSlope);
     if (hr != S_OK)
         TablePhysicsMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
 
@@ -313,7 +313,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ofn.lpstrDefExt = "vpp";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-            const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
+            const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
             char szFoo[MAX_PATH];
             if (hr == S_OK)
             {
@@ -454,7 +454,7 @@ bool PhysicsOptionsDialog::LoadSetting()
     ofn.lpstrDefExt = "vpp";
     ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-    const HRESULT hr = GetRegString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
+    const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
     char szFoo[MAX_PATH];
     if (hr == S_OK)
     {
@@ -546,77 +546,77 @@ void PhysicsOptionsDialog::SaveCurrentPhysicsSetting()
 
     str = GetItemText(DISPID_Flipper_Speed);
     sprintf_s(tmp, 256, "FlipperPhysicsMass%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(19);
     sprintf_s(tmp, 256, "FlipperPhysicsStrength%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(21);
     sprintf_s(tmp, 256, "FlipperPhysicsElasticity%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str=GetItemText(112);
     sprintf_s(tmp, 256, "FlipperPhysicsScatter%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(113);
     sprintf_s(tmp, 256, "FlipperPhysicsEOSTorque%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(189);
     sprintf_s(tmp, 256, "FlipperPhysicsEOSTorqueAngle%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(23);
     sprintf_s(tmp, 256, "FlipperPhysicsReturnStrength%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(22);
     sprintf_s(tmp, 256, "FlipperPhysicsElasticityFalloff%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(109);
     sprintf_s(tmp, 256, "FlipperPhysicsFriction%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(110);
     sprintf_s(tmp, 256, "FlipperPhysicsCoilRampUp%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(1100);
     sprintf_s(tmp, 256, "TablePhysicsGravityConstant%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(1101);
     sprintf_s(tmp, 256, "TablePhysicsContactFriction%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(1708);
     sprintf_s(tmp, 256, "TablePhysicsElasticity%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(1709);
     sprintf_s(tmp, 256, "TablePhysicsElasticityFalloff%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(1710);
     sprintf_s(tmp, 256, "TablePhysicsScatterAngle%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(1102);
     sprintf_s(tmp, 256, "TablePhysicsContactScatterAngle%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(1103);
     sprintf_s(tmp, 256, "TablePhysicsMinSlope%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(1104);
     sprintf_s(tmp, 256, "TablePhysicsMaxSlope%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 
     str = GetItemText(1110);
     sprintf_s(tmp, 256, "PhysicsSetName%u", physicsselection);
-    SetRegValue("Player", tmp, REG_SZ, str.c_str(), lstrlen(str.c_str()));
+    SaveValueString("Player", tmp, str.c_str());
 }
