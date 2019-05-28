@@ -417,10 +417,8 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                         plight->get_FadeSpeedDown(&v);
                         f2sz(v, value);
                         SetDlgItemText(hwndDlg, IDC_DBG_LIGHT_FADE_DOWN_EDIT, value);
-                        HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
-                        SendMessage(hwndColor, CHANGE_COLOR, 0, plight->m_d.m_color);
-                        hwndColor = GetDlgItem(hwndDlg, IDC_COLOR2);
-                        SendMessage(hwndColor, CHANGE_COLOR, 0, plight->m_d.m_color2);
+                        SendMessage(GetDlgItem(hwndDlg, IDC_COLOR), CHANGE_COLOR, 0, plight->m_d.m_color);
+                        SendMessage(GetDlgItem(hwndDlg, IDC_COLOR2), CHANGE_COLOR, 0, plight->m_d.m_color2);
                         SetCheckButtonState(hwndDlg, plight);
                      };
                      break;

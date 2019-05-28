@@ -29,7 +29,7 @@ BOOL EditorOptionsDialog::OnInitDialog()
 {
     m_toolTip = new CToolTip();
 
-    HWND toolTipHwnd = ::CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), NULL, g_hinst, NULL);
+    const HWND toolTipHwnd = ::CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), NULL, g_hinst, NULL);
     if (toolTipHwnd)
     {
         SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
@@ -38,72 +38,57 @@ BOOL EditorOptionsDialog::OnInitDialog()
         controlHwnd = GetDlgItem(IDC_THROW_BALLS_SIZE_EDIT);
         AddToolTip("Defines the default size of the ball when dropped onto the table.", GetHwnd(), toolTipHwnd, controlHwnd);
     }
-    HWND hwndControl;
 
     // drag points
-    int fdrawpoints = LoadValueIntWithDefault("Editor", "ShowDragPoints", 0);
-    hwndControl = GetDlgItem(IDC_DRAW_DRAGPOINTS).GetHwnd();
-    SendMessage(hwndControl, BM_SETCHECK, fdrawpoints ? BST_CHECKED : BST_UNCHECKED, 0);
+    const int fdrawpoints = LoadValueIntWithDefault("Editor", "ShowDragPoints", 0);
+    SendMessage(GetDlgItem(IDC_DRAW_DRAGPOINTS).GetHwnd(), BM_SETCHECK, fdrawpoints ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    HWND hwndColor = GetDlgItem(IDC_COLOR).GetHwnd();
-    SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->dummyMaterial.m_cBase);
-
-    hwndColor = GetDlgItem(IDC_COLOR2).GetHwnd();
-    SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_elemSelectColor);
-
-    hwndColor = GetDlgItem(IDC_COLOR3).GetHwnd();
-    SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_elemSelectLockedColor);
-
-    hwndColor = GetDlgItem(IDC_COLOR4).GetHwnd();
-    SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_fillColor);
-
-    hwndColor = GetDlgItem(IDC_COLOR5).GetHwnd();
-    SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_backgroundColor);
+    SendMessage(GetDlgItem(IDC_COLOR).GetHwnd(), CHANGE_COLOR, 0, g_pvp->dummyMaterial.m_cBase);
+    SendMessage(GetDlgItem(IDC_COLOR2).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_elemSelectColor);
+    SendMessage(GetDlgItem(IDC_COLOR3).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_elemSelectLockedColor);
+    SendMessage(GetDlgItem(IDC_COLOR4).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_fillColor);
+    SendMessage(GetDlgItem(IDC_COLOR5).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_backgroundColor);
     // light centers
-    int fdrawcenters = LoadValueIntWithDefault("Editor", "DrawLightCenters", 0);
-    hwndControl = GetDlgItem(IDC_DRAW_LIGHTCENTERS).GetHwnd();
-    SendMessage(hwndControl, BM_SETCHECK, fdrawcenters ? BST_CHECKED : BST_UNCHECKED, 0);
+    const int fdrawcenters = LoadValueIntWithDefault("Editor", "DrawLightCenters", 0);
+    SendMessage(GetDlgItem(IDC_DRAW_LIGHTCENTERS).GetHwnd(), BM_SETCHECK, fdrawcenters ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    int fautosave = LoadValueIntWithDefault("Editor", "AutoSaveOn", 1);
+    const int fautosave = LoadValueIntWithDefault("Editor", "AutoSaveOn", 1);
     SendDlgItemMessage(IDC_AUTOSAVE, BM_SETCHECK, fautosave ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    int propFloating = LoadValueIntWithDefault("Editor", "PropertiesFloating", 1);
+    const int propFloating = LoadValueIntWithDefault("Editor", "PropertiesFloating", 1);
     SendDlgItemMessage(IDC_PROP_FLOAT_CHECK, BM_SETCHECK, propFloating ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    int fautosavetime = LoadValueIntWithDefault("Editor", "AutoSaveTime", AUTOSAVE_DEFAULT_TIME);
+    const int fautosavetime = LoadValueIntWithDefault("Editor", "AutoSaveTime", AUTOSAVE_DEFAULT_TIME);
     SetDlgItemInt(IDC_AUTOSAVE_MINUTES, fautosavetime, FALSE);
 
-    int gridsize = LoadValueIntWithDefault("Editor", "GridSize", 50);
+    const int gridsize = LoadValueIntWithDefault("Editor", "GridSize", 50);
     SetDlgItemInt(IDC_GRID_SIZE, gridsize, FALSE);
 
-    int throwBallsAlwaysOn = LoadValueIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0);
+    const int throwBallsAlwaysOn = LoadValueIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0);
     SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_SETCHECK, throwBallsAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    int ballControlAlwaysOn = LoadValueIntWithDefault("Editor", "BallControlAlwaysOn", 0);
+    const int ballControlAlwaysOn = LoadValueIntWithDefault("Editor", "BallControlAlwaysOn", 0);
     SendDlgItemMessage(IDC_BALL_CONTROL_ALWAYS_ON_CHECK, BM_SETCHECK, ballControlAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    int groupElementsCollection = LoadValueIntWithDefault("Editor", "GroupElementsInCollection", 1);
+    const int groupElementsCollection = LoadValueIntWithDefault("Editor", "GroupElementsInCollection", 1);
     SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_SETCHECK, groupElementsCollection ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    int alwaysViewScript = LoadValueIntWithDefault("Editor", "AlwaysViewScript", 0);
+    const int alwaysViewScript = LoadValueIntWithDefault("Editor", "AlwaysViewScript", 0);
     SendDlgItemMessage(IDC_ALWAYSVIEWSCRIPT, BM_SETCHECK, alwaysViewScript ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    int throwBallSize = LoadValueIntWithDefault("Editor", "ThrowBallSize", 50);
+    const int throwBallSize = LoadValueIntWithDefault("Editor", "ThrowBallSize", 50);
     SetDlgItemInt( IDC_THROW_BALLS_SIZE_EDIT, throwBallSize, FALSE);
 
-    int startVPfileDialog = LoadValueIntWithDefault("Editor", "SelectTableOnStart", 1);
+    const int startVPfileDialog = LoadValueIntWithDefault("Editor", "SelectTableOnStart", 1);
     SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, startVPfileDialog ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    float throwBallMass = LoadValueFloatWithDefault("Editor", "ThrowBallMass", 1.0f);
+    const float throwBallMass = LoadValueFloatWithDefault("Editor", "ThrowBallMass", 1.0f);
     char textBuf[256] = { 0 };
     f2sz(throwBallMass, textBuf);
-    CString textStr(textBuf);
+    const CString textStr(textBuf);
     SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, textStr);
 
-    int units;
-    HRESULT hr = LoadValueInt("Editor", "Units", &units);
-    if (hr != S_OK)
-        units = 0;
+    const int units = LoadValueIntWithDefault("Editor", "Units", 0);
     SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"VPUnits");
     SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Inches");
     SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"Millimeters");
@@ -252,7 +237,7 @@ void EditorOptionsDialog::OnOK()
     CString textStr;
     float fv;
     textStr = GetDlgItemText(IDC_THROW_BALLS_MASS_EDIT);
-    fv = sz2f((char*)textStr.c_str());
+    fv = sz2f(textStr.c_str());
     SaveValueFloat("Editor", "ThrowBallMass", fv);
 
     checked = (SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);

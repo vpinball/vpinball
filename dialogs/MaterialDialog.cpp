@@ -57,7 +57,7 @@ void MaterialDialog::EnableAllMaterialDialogItems()
 float MaterialDialog::getItemText(int id)
 {
    const CString textStr(GetDlgItemText(id));
-   const float fv = sz2f((char*)textStr.c_str());
+   const float fv = sz2f(textStr.c_str());
    return fv;
 }
 

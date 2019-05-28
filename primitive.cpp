@@ -72,7 +72,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
       else
       {
          name = "Unable to load file " + sname;
-         ShowError((char*)name.c_str());
+         ShowError(name.c_str());
          return false;
       }
 
