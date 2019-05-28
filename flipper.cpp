@@ -117,80 +117,33 @@ void Flipper::SetDefaults(bool fromMouseClick)
 {
    static const char regKey[] = "DefaultProps\\Flipper";
 
-   HRESULT hr;
-   float fTmp;
-   int iTmp;
-
    SetDefaultPhysics(fromMouseClick);
 
-   hr = LoadValueFloat(regKey, "StartAngle", &fTmp);
-   m_d.m_StartAngle = (hr == S_OK) && fromMouseClick ? fTmp : 121.f;
-
-   hr = LoadValueFloat(regKey, "EndAngle", &fTmp);
-   m_d.m_EndAngle = (hr == S_OK) && fromMouseClick ? fTmp : 70.f;
-
-   hr = LoadValueFloat(regKey, "BaseRadius", &fTmp);
-   m_d.m_BaseRadius = (hr == S_OK) && fromMouseClick ? fTmp : 21.5f;        // 15
-
-   hr = LoadValueFloat(regKey, "EndRadius", &fTmp);
-   m_d.m_EndRadius = (hr == S_OK) && fromMouseClick ? fTmp : 13.f;          // 6
-
-   hr = LoadValueFloat(regKey, "Length", &fTmp);
-   m_d.m_FlipperRadiusMax = (hr == S_OK) && fromMouseClick ? fTmp : 130.f;  // 80
-
-   hr = LoadValueFloat(regKey, "MaxDifLength", &fTmp);
-   m_d.m_FlipperRadiusMin = (hr == S_OK) && fromMouseClick ? fTmp : 0.f;
+   m_d.m_StartAngle = fromMouseClick ? LoadValueFloatWithDefault(regKey, "StartAngle", 121.f) : 121.f;
+   m_d.m_EndAngle = fromMouseClick ? LoadValueFloatWithDefault(regKey, "EndAngle", 70.f) : 70.f;
+   m_d.m_BaseRadius = fromMouseClick ? LoadValueFloatWithDefault(regKey, "BaseRadius", 21.5f) : 21.5f; // 15
+   m_d.m_EndRadius = fromMouseClick ? LoadValueFloatWithDefault(regKey, "EndRadius", 13.f) : 13.f; // 6
+   m_d.m_FlipperRadiusMax = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Length", 130.f) : 130.f; // 80
+   m_d.m_FlipperRadiusMin = fromMouseClick ? LoadValueFloatWithDefault(regKey, "MaxDifLength", 0.f) : 0.f;
 
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-   hr = LoadValueInt(regKey, "TimerEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_tdr.m_fTimerEnabled = false;
+   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval", 100) : 100;
+   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(regKey, "Color", RGB(255,255,255)) : RGB(255,255,255);
+   m_d.m_rubbercolor = fromMouseClick ? LoadValueIntWithDefault(regKey, "RubberColor", RGB(128,50,50)) : RGB(128,50,50);
 
-   hr = LoadValueInt(regKey, "TimerInterval", &iTmp);
-   m_d.m_tdr.m_TimerInterval = (hr == S_OK) && fromMouseClick ? iTmp : 100;
-
-   hr = LoadValueInt(regKey, "Color", &iTmp);
-   m_d.m_color = (hr == S_OK) && fromMouseClick ? iTmp : RGB(255, 255, 255);
-
-   hr = LoadValueInt(regKey, "RubberColor", &iTmp);
-   m_d.m_rubbercolor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(128, 50, 50);
-
-   hr = LoadValueString(regKey, "Surface", &m_d.m_szSurface, MAXTOKEN);
+   const HRESULT hr = LoadValueString(regKey, "Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
-   hr = LoadValueFloat(regKey, "Height", &fTmp);
-   m_d.m_height = (hr == S_OK) && fromMouseClick ? fTmp : 50.f;
-
-   hr = LoadValueFloat(regKey, "RubberThickness", &fTmp);
-   m_d.m_rubberthickness = (hr == S_OK) && fromMouseClick ? fTmp : 7.f;
-
-   hr = LoadValueFloat(regKey, "RubberHeight", &fTmp);
-   m_d.m_rubberheight = (hr == S_OK) && fromMouseClick ? fTmp : 19.f;
-
-   hr = LoadValueFloat(regKey, "RubberWidth", &fTmp);
-   m_d.m_rubberwidth = (hr == S_OK) && fromMouseClick ? fTmp : 24.f;
-
-   hr = LoadValueInt(regKey, "Visible", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fVisible = iTmp == 0 ? false : true;
-   else
-      m_d.m_fVisible = true;
-
-   hr = LoadValueInt(regKey, "Enabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_fEnabled = true;
-
-   hr = LoadValueInt(regKey, "ReflectionEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_fReflectionEnabled = true;
+   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Height", 50.f) : 50.f;
+   m_d.m_rubberthickness = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberThickness", 7.f) : 7.f;
+   m_d.m_rubberheight = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberHeight", 19.f) : 19.f;
+   m_d.m_rubberwidth = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberWidth", 24.f) : 24.f;
+   m_d.m_fVisible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible", true) : true;
+   m_d.m_fEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Enabled", true) : true;
+   m_d.m_fReflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled", true) : true;
 }
 
 void Flipper::WriteRegDefaults()
@@ -250,93 +203,53 @@ void Flipper::UpdatePhysicsSettings()
       const int idx = m_d.m_OverridePhysics ? (m_d.m_OverridePhysics-1) : (m_ptable->m_overridePhysics-1);
       char tmp[256];
 
-      m_d.m_OverrideMass = 1.f;
       sprintf_s(tmp, 256, "FlipperPhysicsMass%d", idx);
-      HRESULT hr = LoadValueFloat("Player", tmp, &m_d.m_OverrideMass);
-      if (hr != S_OK)
-         m_d.m_OverrideMass = 1.f;
-
+      m_d.m_OverrideMass = LoadValueFloatWithDefault("Player", tmp, 1.f);
       if (m_d.m_OverrideMass < 0.0f)
          m_d.m_OverrideMass = m_d.m_mass;
 
-      m_d.m_OverrideStrength = 2200.f;
       sprintf_s(tmp, 256, "FlipperPhysicsStrength%d", idx);
-      hr = LoadValueFloat("Player", tmp, &m_d.m_OverrideStrength);
-      if (hr != S_OK)
-         m_d.m_OverrideStrength = 2200.f;
-
+      m_d.m_OverrideStrength = LoadValueFloatWithDefault("Player", tmp, 2200.f);
       if (m_d.m_OverrideStrength < 0.0f)
          m_d.m_OverrideStrength = m_d.m_strength;
 
-      m_d.m_OverrideElasticity = 0.8f;
       sprintf_s(tmp, 256, "FlipperPhysicsElasticity%d", idx);
-      hr = LoadValueFloat("Player", tmp, &m_d.m_OverrideElasticity);
-      if (hr != S_OK)
-         m_d.m_OverrideElasticity = 0.8f;
-
+      m_d.m_OverrideElasticity = LoadValueFloatWithDefault("Player", tmp, 0.8f);
       if (m_d.m_OverrideElasticity < 0.0f)
          m_d.m_OverrideElasticity = m_d.m_elasticity;
 
-      m_d.m_OverrideScatterAngle = 0.f;
       sprintf_s(tmp, 256, "FlipperPhysicsScatter%d", idx);
-      hr = LoadValueFloat("Player", tmp, &m_d.m_OverrideScatterAngle);
-      if (hr != S_OK)
-         m_d.m_OverrideScatterAngle = 0.f;
-
+      m_d.m_OverrideScatterAngle = LoadValueFloatWithDefault("Player", tmp, 0.f);
       if (m_d.m_OverrideScatterAngle < 0.0f)
          m_d.m_OverrideScatterAngle = m_d.m_scatter;
 
-      m_d.m_OverrideReturnStrength = 0.058f;
       sprintf_s(tmp, 256, "FlipperPhysicsReturnStrength%d", idx);
-      hr = LoadValueFloat("Player", tmp, &m_d.m_OverrideReturnStrength);
-      if (hr != S_OK)
-         m_d.m_OverrideReturnStrength = 0.058f;
-
+      m_d.m_OverrideReturnStrength = LoadValueFloatWithDefault("Player", tmp, 0.058f);
       if (m_d.m_OverrideReturnStrength < 0.0f)
          m_d.m_OverrideReturnStrength = m_d.m_return;
 
-      m_d.m_OverrideElasticityFalloff = 0.43f;
       sprintf_s(tmp, 256, "FlipperPhysicsElasticityFalloff%d", idx);
-      hr = LoadValueFloat("Player", tmp, &m_d.m_OverrideElasticityFalloff);
-      if (hr != S_OK)
-         m_d.m_OverrideElasticityFalloff = 0.43f;
-
+      m_d.m_OverrideElasticityFalloff = LoadValueFloatWithDefault("Player", tmp, 0.43f);
       if (m_d.m_OverrideElasticityFalloff < 0.0f)
          m_d.m_OverrideElasticityFalloff = m_d.m_elasticityFalloff;
 
-      m_d.m_OverrideFriction = 0.6f;
       sprintf_s(tmp, 256, "FlipperPhysicsFriction%d", idx);
-      hr = LoadValueFloat("Player", tmp, &m_d.m_OverrideFriction);
-      if (hr != S_OK)
-         m_d.m_OverrideFriction = 0.6f;
-
+      m_d.m_OverrideFriction = LoadValueFloatWithDefault("Player", tmp, 0.6f);
       if (m_d.m_OverrideFriction < 0.0f)
          m_d.m_OverrideFriction = m_d.m_friction;
 
-      m_d.m_OverrideCoilRampUp = 3.f;
       sprintf_s(tmp, 256, "FlipperPhysicsCoilRampUp%d", idx);
-      hr = LoadValueFloat("Player", tmp, &m_d.m_OverrideCoilRampUp);
-      if (hr != S_OK)
-         m_d.m_OverrideCoilRampUp = 3.f;
-
+      m_d.m_OverrideCoilRampUp = LoadValueFloatWithDefault("Player", tmp, 3.f);
       if (m_d.m_OverrideCoilRampUp < 0.0f)
          m_d.m_OverrideCoilRampUp = m_d.m_rampUp;
 
-      m_d.m_OverrideTorqueDamping = 0.75f;
       sprintf_s(tmp, 256, "FlipperPhysicsEOSTorque%d", idx);
-      hr = LoadValueFloat("Player", tmp, &m_d.m_OverrideTorqueDamping);
-      if (hr != S_OK)
-         m_d.m_OverrideTorqueDamping = 0.75f;
-
+      m_d.m_OverrideTorqueDamping = LoadValueFloatWithDefault("Player", tmp, 0.75f);
       if (m_d.m_OverrideTorqueDamping < 0.0f)
          m_d.m_OverrideTorqueDamping = m_d.m_torqueDamping;
 
-      m_d.m_OverrideTorqueDampingAngle = 6.f;
       sprintf_s(tmp, 256, "FlipperPhysicsEOSTorqueAngle%d", idx);
-      hr = LoadValueFloat("Player", tmp, &m_d.m_OverrideTorqueDampingAngle);
-      if (hr != S_OK)
-         m_d.m_OverrideTorqueDampingAngle = 6.f;
-
+      m_d.m_OverrideTorqueDampingAngle = LoadValueFloatWithDefault("Player", tmp, 6.f);
       if (m_d.m_OverrideTorqueDampingAngle < 0.0f)
          m_d.m_OverrideTorqueDampingAngle = m_d.m_torqueDampingAngle;
    }

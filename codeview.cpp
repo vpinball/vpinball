@@ -2883,19 +2883,19 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				break;
 				case IDC_CVP_CHKBOX_DISPLAYDWELL:
 				{
-					pcv->DwellDisplay = IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL);
+					pcv->DwellDisplay = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL);
 					SaveValueBool("CVEdit", "DwellDisplay", pcv->DwellDisplay);
 				}
 				break;
 				case IDC_CVP_CHKBOX_HELPWITHDWELL:
 				{
-					pcv->DwellHelp = IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL);
+					pcv->DwellHelp = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL);
 					SaveValueBool("CVEdit", "DwellHelp", pcv->DwellHelp);
 				}
 				break;
 				case IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE:
 				{
-					pcv->DisplayAutoComplete = IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE);
+					pcv->DisplayAutoComplete = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE);
 					SaveValueBool("CVEdit", "DisplayAutoComplete", pcv->DisplayAutoComplete);
 				}
 				break;

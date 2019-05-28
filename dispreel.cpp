@@ -40,8 +40,6 @@ void DispReel::SetDefaults(bool fromMouseClick)
 
    // set all the Data defaults
    HRESULT hr;
-   float fTmp;
-   int iTmp;
 
    hr = LoadValueString("DefaultProps\\Ramp", "Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -51,59 +49,20 @@ void DispReel::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSound[0] = 0;
 
-   hr = LoadValueInt("DefaultProps\\EMReel", "UseImageGrid", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fUseImageGrid = iTmp == 0 ? false : true;
-   else
-      m_d.m_fUseImageGrid = false;
-
-   hr = LoadValueInt("DefaultProps\\EMReel", "Visible", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fVisible = iTmp == 0 ? false : true;
-   else
-      m_d.m_fVisible = true;
-
-   hr = LoadValueInt("DefaultProps\\EMReel", "ImagesPerRow", &iTmp);
-   m_d.m_imagesPerGridRow = (hr == S_OK) && fromMouseClick ? iTmp : 1;
-
-   hr = LoadValueInt("DefaultProps\\EMReel", "Transparent", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fTransparent = iTmp == 0 ? false : true;
-   else
-      m_d.m_fTransparent = false;
-
-   hr = LoadValueInt("DefaultProps\\EMReel", "ReelCount", &iTmp);
-   m_d.m_reelcount = (hr == S_OK) && fromMouseClick ? iTmp : 5;
-
-   hr = LoadValueFloat("DefaultProps\\EMReel", "Width", &fTmp);
-   m_d.m_width = (hr == S_OK) && fromMouseClick ? fTmp : 30.0f;
-
-   hr = LoadValueFloat("DefaultProps\\EMReel", "Height", &fTmp);
-   m_d.m_height = (hr == S_OK) && fromMouseClick ? fTmp : 40.0f;
-
-   hr = LoadValueFloat("DefaultProps\\EMReel", "ReelSpacing", &fTmp);
-   m_d.m_reelspacing = (hr == S_OK) && fromMouseClick ? fTmp : 4.0f;
-
-   hr = LoadValueFloat("DefaultProps\\EMReel", "MotorSteps", &fTmp);
-   m_d.m_motorsteps = (hr == S_OK) && fromMouseClick ? (int)fTmp : 2;
-
-   hr = LoadValueInt("DefaultProps\\EMReel", "DigitRange", &iTmp);
-   m_d.m_digitrange = (hr == S_OK) && fromMouseClick ? iTmp : 9;
-
-   hr = LoadValueInt("DefaultProps\\EMReel", "UpdateInterval", &iTmp);
-   m_d.m_updateinterval = (hr == S_OK) && fromMouseClick ? iTmp : 50;
-
-   hr = LoadValueInt("DefaultProps\\EMReel", "BackColor", &iTmp);
-   m_d.m_backcolor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(64, 64, 64);
-
-   hr = LoadValueInt("DefaultProps\\EMReel", "TimerEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_tdr.m_fTimerEnabled = 0;
-
-   hr = LoadValueInt("DefaultProps\\EMReel", "TimerInterval", &iTmp);
-   m_d.m_tdr.m_TimerInterval = (hr == S_OK) && fromMouseClick ? iTmp : 100;
+   m_d.m_fUseImageGrid = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "UseImageGrid", false) : false;
+   m_d.m_fVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "Visible", true) : true;
+   m_d.m_imagesPerGridRow = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "ImagesPerRow", 1) : 1;
+   m_d.m_fTransparent = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "Transparent", false) : false;
+   m_d.m_reelcount = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "ReelCount", 5) : 5;
+   m_d.m_width = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\EMReel", "Width", 30.0f) : 30.0f;
+   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\EMReel", "Height", 40.0f) : 40.0f;
+   m_d.m_reelspacing = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\EMReel", "ReelSpacing", 4.0f) : 4.0f;
+   m_d.m_motorsteps = fromMouseClick ? (int)LoadValueFloatWithDefault("DefaultProps\\EMReel", "MotorSteps", 2.f) : 2;
+   m_d.m_digitrange = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "DigitRange", 9) : 9;
+   m_d.m_updateinterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "UpdateInterval", 50) : 50;
+   m_d.m_backcolor = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "BackColor", RGB(64,64,64)) : RGB(64,64,64);
+   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "TimerInterval", 100) : 100;
 }
 
 void DispReel::WriteRegDefaults()
