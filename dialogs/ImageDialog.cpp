@@ -213,7 +213,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (ppi != NULL)
             {
                const CString textStr = GetDlgItemText(IDC_ALPHA_MASK_EDIT);
-               const float v = sz2f((char*)textStr.c_str());
+               const float v = sz2f(textStr.c_str());
                if (ppi->m_alphaTestValue != v)
                {
                   ppi->m_alphaTestValue = v;
@@ -335,7 +335,7 @@ void ImageDialog::UpdateImages()
             if (ppi != NULL)
             {
                 const CString textStr = GetDlgItemText(IDC_ALPHA_MASK_EDIT);
-                const float v = sz2f((char*)textStr.c_str());
+                const float v = sz2f(textStr.c_str());
                 if (ppi->m_alphaTestValue != v)
                 {
                     ppi->m_alphaTestValue = v;
@@ -787,18 +787,11 @@ void ImageDialog::ReimportFrom()
 
 void ImageDialog::LoadPosition()
 {
-    int x, y, w, h;
-    HRESULT hr;
+    const int x = LoadValueIntWithDefault( "Editor", "ImageMngPosX", 0 );
+    const int y = LoadValueIntWithDefault( "Editor", "ImageMngPosY", 0 );
 
-    hr = LoadValueInt( "Editor", "ImageMngPosX", &x );
-    if (hr != S_OK)
-        x=0;
-    hr = LoadValueInt( "Editor", "ImageMngPosY", &y );
-    if (hr != S_OK)
-        y=0;
-
-    w = LoadValueIntWithDefault("Editor", "ImageMngWidth", 1000);
-    h = LoadValueIntWithDefault("Editor", "ImageMngHeight", 800);
+    const int w = LoadValueIntWithDefault("Editor", "ImageMngWidth", 1000);
+    const int h = LoadValueIntWithDefault("Editor", "ImageMngHeight", 800);
     SetWindowPos(NULL, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
