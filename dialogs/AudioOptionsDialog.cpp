@@ -12,7 +12,6 @@ AudioOptionsDialog::AudioOptionsDialog() : CDialog(IDD_AUDIO_OPTIONS)
 BOOL AudioOptionsDialog::OnInitDialog()
 {
    int fmusic = 0;
-   HRESULT hr;
    HWND hwndControl;
    const HWND hwndMusicSlider = GetDlgItem(IDC_MUSIC_SLIDER).GetHwnd();
    const HWND hwndSoundSlider = GetDlgItem(IDC_SOUND_SLIDER).GetHwnd();

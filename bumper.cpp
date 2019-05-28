@@ -92,10 +92,6 @@ HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Bumper::SetDefaults(bool fromMouseClick)
 {
-   HRESULT hr;
-   float fTmp;
-   int iTmp;
-
    m_d.m_radius = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Bumper", "Radius", 45.f) : 45.f;
 
    SetDefaultPhysics(fromMouseClick);
@@ -105,7 +101,7 @@ void Bumper::SetDefaults(bool fromMouseClick)
    m_d.m_orientation = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Bumper", "Orientation", 0.0f) : 0.0f;
    m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Bumper", "Threshold", 1.f) : 1.f;
 
-   hr = LoadValueString("DefaultProps\\Bumper", "Surface", m_d.m_szSurface, MAXTOKEN);
+   const HRESULT hr = LoadValueString("DefaultProps\\Bumper", "Surface", m_d.m_szSurface, MAXTOKEN);
    if (hr != S_OK || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
@@ -1522,12 +1518,6 @@ void Bumper::UpdatePropertyPanes()
 
 void Bumper::SetDefaultPhysics(bool fromMouseClick)
 {
-   HRESULT hr;
-   float fTmp;
-
-   hr = LoadValueFloat("DefaultProps\\Bumper", "Force", &fTmp);
-   m_d.m_force = (hr == S_OK) && fromMouseClick ? fTmp : 15;
-
-   hr = LoadValueFloat("DefaultProps\\Bumper", "Scatter", &fTmp);
-   m_d.m_scatter = (hr == S_OK) && fromMouseClick ? fTmp : 0;
+   m_d.m_force = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Bumper", "Force", 15) : 15;
+   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Bumper", "Scatter", 0) : 0;
 }

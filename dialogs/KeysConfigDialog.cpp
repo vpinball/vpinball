@@ -386,10 +386,7 @@ BOOL KeysConfigDialog::OnInitDialog()
         key = fFalse;
     ::SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    float legacyNudgeStrength;
-    hr = LoadValueFloat("Player", "LegacyNudgeStrength", &legacyNudgeStrength);
-    if (hr != S_OK)
-        legacyNudgeStrength = 1.f;
+    const float legacyNudgeStrength = LoadValueFloatWithDefault("Player", "LegacyNudgeStrength", 1.f);
     SetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, quantizeUnsignedPercent(legacyNudgeStrength), FALSE);
 
     for (unsigned int i = 0; i <= 30; ++i)

@@ -101,53 +101,15 @@ HRESULT Flasher::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Flasher::SetDefaults(bool fromMouseClick)
 {
-   HRESULT hr;
-   float fTmp;
-   int iTmp;
+   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Flasher", "Height", 50.f) : 50.f;
+   m_d.m_rotX = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Flasher", "RotX", 0.f) : 0.f;
+   m_d.m_rotY = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Flasher", "RotY", 0.f) : 0.f;
+   m_d.m_rotZ = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Flasher", "RotZ", 0.f) : 0.f;
+   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "Color", RGB(50,200,50)) : RGB(50,200,50);
+   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "TimerInterval", 100) : 100;
 
-   hr = LoadValueFloat("DefaultProps\\Flasher", "Height", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_height = fTmp;
-   else
-      m_d.m_height = 50.0f;
-
-   hr = LoadValueFloat("DefaultProps\\Flasher", "RotX", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_rotX = fTmp;
-   else
-      m_d.m_rotX = 0.0f;
-
-   hr = LoadValueFloat("DefaultProps\\Flasher", "RotY", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_rotY = fTmp;
-   else
-      m_d.m_rotY = 0.0f;
-
-   hr = LoadValueFloat("DefaultProps\\Flasher", "RotZ", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_rotZ = fTmp;
-   else
-      m_d.m_rotZ = 0.0f;
-
-   hr = LoadValueInt("DefaultProps\\Flasher", "Color", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_color = iTmp;
-   else
-      m_d.m_color = RGB(50, 200, 50);
-
-   hr = LoadValueInt("DefaultProps\\Flasher", "TimerEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_tdr.m_fTimerEnabled = false;
-
-   hr = LoadValueInt("DefaultProps\\Flasher", "TimerInterval", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_TimerInterval = iTmp;
-   else
-      m_d.m_tdr.m_TimerInterval = 100;
-
-   hr = LoadValueString("DefaultProps\\Flasher", "ImageA", m_d.m_szImageA, MAXTOKEN);
+   HRESULT hr = LoadValueString("DefaultProps\\Flasher", "ImageA", m_d.m_szImageA, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImageA[0] = 0;
 
@@ -155,50 +117,16 @@ void Flasher::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImageB[0] = 0;
 
-   hr = LoadValueInt("DefaultProps\\Flasher", "Opacity", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_alpha = iTmp;
-   else
-      m_d.m_alpha = 100;
+   m_d.m_alpha = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "Opacity", 100) : 100;
 
    m_d.m_intensity_scale = 1.0f;
 
-   hr = LoadValueFloat("DefaultProps\\Flasher", "ModulateVsAdd", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_modulate_vs_add = fTmp;
-   else
-      m_d.m_modulate_vs_add = 0.9f;
-
-   hr = LoadValueInt("DefaultProps\\Flasher", "FilterAmount", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_filterAmount = iTmp;
-   else
-      m_d.m_filterAmount = 100;
-
-   hr = LoadValueInt("DefaultProps\\Flasher", "Visible", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_IsVisible = iTmp == 0 ? false : true;
-   else
-      m_d.m_IsVisible = true;
-
-   hr = LoadValueInt("DefaultProps\\Flasher", "AddBlend", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fAddBlend = iTmp == 0 ? false : true;
-   else
-      m_d.m_fAddBlend = false;
-
-   hr = LoadValueInt("DefaultProps\\Flasher", "DMD", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-	   m_d.m_IsDMD = iTmp == 0 ? false : true;
-   else
-	   m_d.m_IsDMD = false;
-
-   hr = LoadValueInt("DefaultProps\\Flasher", "DisplayTexture", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fDisplayTexture = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fDisplayTexture = false;
-
+   m_d.m_modulate_vs_add = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Flasher", "ModulateVsAdd", 0.9f) : 0.9f;
+   m_d.m_filterAmount = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "FilterAmount", 100) : 100;
+   m_d.m_IsVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "Visible", true) : true;
+   m_d.m_fAddBlend = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "AddBlend", false) : false;
+   m_d.m_IsDMD = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "DMD", false) : false;
+   m_d.m_fDisplayTexture = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "DisplayTexture", false) : false;
    m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)LoadValueIntWithDefault("DefaultProps\\Flasher", "ImageMode", ImageModeWrap) : ImageModeWrap;
    m_d.m_filter = fromMouseClick ? (Filters)LoadValueIntWithDefault("DefaultProps\\Flasher", "Filter", Filter_Overlay) : Filter_Overlay;
 }
