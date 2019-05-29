@@ -81,78 +81,26 @@ void Spinner::WriteRegDefaults()
    SaveValueInt("DefaultProps\\Spinner", "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SaveValueString("DefaultProps\\Spinner", "Image", m_d.m_szImage);
    SaveValueString("DefaultProps\\Spinner", "Surface", m_d.m_szSurface);
-   SaveValueInt("DefaultProps\\Spinner", "ReflectionEnabled", m_d.m_fReflectionEnabled);
+   SaveValueBool("DefaultProps\\Spinner", "ReflectionEnabled", m_d.m_fReflectionEnabled);
 }
 
 void Spinner::SetDefaults(bool fromMouseClick)
 {
-   HRESULT hr;
-   int iTmp;
-   float fTmp;
-
-   hr = LoadValueFloat("DefaultProps\\Spinner", "Length", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_length = fTmp;
-   else
-      m_d.m_length = 80;
-
-   hr = LoadValueFloat("DefaultProps\\Spinner", "Rotation", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_rotation = fTmp;
-   else
-      m_d.m_rotation = 0;
-
-   hr = LoadValueInt("DefaultProps\\Spinner", "ShowBracket", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fShowBracket = iTmp == 0 ? false : true;
-   else
-      m_d.m_fShowBracket = true;
-
-   hr = LoadValueInt("DefaultProps\\Spinner", "Height", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_height = (float)iTmp / 1000.0f;
-   else
-      m_d.m_height = 60;
+   m_d.m_length = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Spinner", "Length", 80.f) : 80.f;
+   m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Spinner", "Rotation", 0.f) : 0.f;
+   m_d.m_fShowBracket = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Spinner", "ShowBracket", true) : true;
+   m_d.m_height = (float)(fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Spinner", "Height", 60000) : 60000) / 1000.0f;
 
    SetDefaultPhysics(fromMouseClick);
 
-   hr = LoadValueFloat("DefaultProps\\Spinner", "AngleMax", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_angleMax = fTmp;
-   else
-      m_d.m_angleMax = 0;
+   m_d.m_angleMax = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Spinner", "AngleMax", 0.f) : 0.f;
+   m_d.m_angleMin = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Spinner", "AngleMin", 0.f) : 0.f;
+   m_d.m_fVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Spinner", "Visible", true) : true;
+   m_d.m_fReflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Spinner", "ReflectionEnabled", true) : true;
+   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Spinner", "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Spinner", "TimerInterval", 100) : 100;
 
-   hr = LoadValueFloat("DefaultProps\\Spinner", "AngleMin", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_angleMin = fTmp;
-   else
-      m_d.m_angleMin = 0;
-
-   hr = LoadValueInt("DefaultProps\\Spinner", "Visible", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fVisible = iTmp == 0 ? false : true;
-   else
-      m_d.m_fVisible = true;
-
-   hr = LoadValueInt("DefaultProps\\Spinner", "ReflectionEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_fReflectionEnabled = true;
-
-   hr = LoadValueInt("DefaultProps\\Spinner", "TimerEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_tdr.m_fTimerEnabled = false;
-
-   hr = LoadValueInt("DefaultProps\\Spinner", "TimerInterval", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_TimerInterval = iTmp;
-   else
-      m_d.m_tdr.m_TimerInterval = 100;
-
-   hr = LoadValueString("DefaultProps\\Spinner", "Image", m_d.m_szImage, MAXTOKEN);
+   HRESULT hr = LoadValueString("DefaultProps\\Spinner", "Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
 
@@ -522,18 +470,8 @@ void Spinner::PutCenter(const Vertex2D& pv)
 
 void Spinner::SetDefaultPhysics(bool fromMouseClick)
 {
-   HRESULT hr;
-   float fTmp;
-   hr = LoadValueFloat("DefaultProps\\Spinner", "Elasticity", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_elasticity = fTmp;
-   else
-      m_d.m_elasticity = 0.3f;
-   hr = LoadValueFloat("DefaultProps\\Spinner", "AntiFriction", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_damping = fTmp;
-   else
-      m_d.m_damping = 0.9879f;
+   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Spinner", "Elasticity", 0.3f) : 0.3f;
+   m_d.m_damping = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Spinner", "AntiFriction", 0.9879f) : 0.9879f;
 }
 
 HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)

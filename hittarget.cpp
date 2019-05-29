@@ -150,8 +150,6 @@ HRESULT HitTarget::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 void HitTarget::SetDefaults(bool fromMouseClick)
 {
    static const char strKeyName[] = "DefaultProps\\HitTarget";
-   HRESULT hr;
-   int iTmp;
 
    m_d.m_legacy = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "LegacyMode", false) : false;
    m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
@@ -171,16 +169,11 @@ void HitTarget::SetDefaults(bool fromMouseClick)
    // Rotation and Transposition
    m_d.m_rotZ = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Orientation", 0.0f) : 0.0f;
 
-   hr = LoadValueString(strKeyName, "Image", m_d.m_szImage, MAXTOKEN);
+   const HRESULT hr = LoadValueString(strKeyName, "Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage[0] = 0;
 
-   hr = LoadValueInt(strKeyName, "TargetType", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-       m_d.m_targetType = (TargetType)iTmp;
-   else
-       m_d.m_targetType = DropTargetSimple;
-
+   m_d.m_targetType = fromMouseClick ? (TargetType)LoadValueIntWithDefault(strKeyName, "TargetType", DropTargetSimple) : DropTargetSimple;
    m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
        m_d.m_dropSpeed = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "DropSpeed", 0.5f) : 0.5f;

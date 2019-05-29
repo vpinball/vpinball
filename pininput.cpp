@@ -102,152 +102,54 @@ PinInput::PinInput()
 
 void PinInput::LoadSettings()
 {
-   HRESULT hr;
-   int tmp;
-
-   hr = LoadValueInt("Player", "LRAxis", &tmp);
-   if (hr == S_OK) m_lr_axis = tmp;
-
-   hr = LoadValueInt("Player", "UDAxis", &tmp);
-   if (hr == S_OK) m_ud_axis = tmp;
-
-   hr = LoadValueInt("Player", "LRAxisFlip", &tmp);
-   if (hr == S_OK) m_lr_axis_reverse = tmp;
-
-   hr = LoadValueInt("Player", "UDAxisFlip", &tmp);
-   if (hr == S_OK) m_ud_axis_reverse = tmp;
-
-   hr = LoadValueInt("Player", "PlungerAxis", &tmp);
-   if (hr == S_OK) m_plunger_axis = tmp;
-
-   hr = LoadValueInt("Player", "ReversePlungerAxis", &tmp);
-   if (hr == S_OK) m_plunger_reverse = tmp;
-
-   hr = LoadValueInt("Player", "PBWDefaultLayout", &tmp);
-   if (hr == S_OK) m_override_default_buttons = tmp;
-
-   hr = LoadValueInt("Player", "DisableESC", &tmp);
-   if (hr == S_OK) m_disable_esc = tmp;
-
-   hr = LoadValueInt("Player", "JoyLFlipKey", &tmp);
-   if (hr == S_OK) m_joylflipkey = tmp;
-
-   hr = LoadValueInt("Player", "JoyRFlipKey", &tmp);
-   if (hr == S_OK) m_joyrflipkey = tmp;
-
-   hr = LoadValueInt("Player", "JoyPlungerKey", &tmp);
-   if (hr == S_OK) m_joyplungerkey = tmp;
-
-   hr = LoadValueInt("Player", "JoyAddCreditKey", &tmp);
-   if (hr == S_OK) m_joyaddcreditkey = tmp;
-
-   hr = LoadValueInt("Player", "JoyAddCredit2Key", &tmp);
-   if (hr == S_OK) m_joyaddcreditkey2 = tmp;
-
-   hr = LoadValueInt("Player", "JoyLMagnaSave", &tmp);
-   if (hr == S_OK) m_joylmagnasave = tmp;
-
-   hr = LoadValueInt("Player", "JoyRMagnaSave", &tmp);
-   if (hr == S_OK) m_joyrmagnasave = tmp;
-
-   hr = LoadValueInt("Player", "JoyStartGameKey", &tmp);
-   if (hr == S_OK) m_joystartgamekey = tmp;
-
-   hr = LoadValueInt("Player", "JoyFrameCount", &tmp);
-   if (hr == S_OK) m_joyframecount = tmp;
-
-   hr = LoadValueInt("Player", "JoyExitGameKey", &tmp);
-   if (hr == S_OK) m_joyexitgamekey = tmp;
-
-   hr = LoadValueInt("Player", "JoyVolumeUp", &tmp);
-   if (hr == S_OK) m_joyvolumeup = tmp;
-
-   hr = LoadValueInt("Player", "JoyVolumeDown", &tmp);
-   if (hr == S_OK) m_joyvolumedown = tmp;
-
-   hr = LoadValueInt("Player", "JoyLTiltKey", &tmp);
-   if (hr == S_OK) m_joylefttilt = tmp;
-
-   hr = LoadValueInt("Player", "JoyCTiltKey", &tmp);
-   if (hr == S_OK) m_joycentertilt = tmp;
-
-   hr = LoadValueInt("Player", "JoyRTiltKey", &tmp);
-   if (hr == S_OK) m_joyrighttilt = tmp;
-
-   hr = LoadValueInt("Player", "JoyPMBuyIn", &tmp);
-   if (hr == S_OK) m_joypmbuyin = tmp;
-
-   hr = LoadValueInt("Player", "JoyPMCoin3", &tmp);
-   if (hr == S_OK) m_joypmcoin3 = tmp;
-
-   hr = LoadValueInt("Player", "JoyPMCoin4", &tmp);
-   if (hr == S_OK) m_joypmcoin4 = tmp;
-
-   hr = LoadValueInt("Player", "JoyPMCoinDoor", &tmp);
-   if (hr == S_OK) m_joypmcoindoor = tmp;
-
-   hr = LoadValueInt("Player", "JoyPMCancel", &tmp);
-   if (hr == S_OK) m_joypmcancel = tmp;
-
-   hr = LoadValueInt("Player", "JoyPMDown", &tmp);
-   if (hr == S_OK) m_joypmdown = tmp;
-
-   hr = LoadValueInt("Player", "JoyPMUp", &tmp);
-   if (hr == S_OK) m_joypmup = tmp;
-
-   hr = LoadValueInt("Player", "JoyPMEnter", &tmp);
-   if (hr == S_OK) m_joypmenter = tmp;
-
-   hr = LoadValueInt("Player", "JoyCustom1", &tmp);
-   if (hr == S_OK) m_joycustom1 = tmp;
-
-   hr = LoadValueInt("Player", "JoyCustom1Key", &tmp);
-   if (hr == S_OK) m_joycustom1key = tmp;
-
-   hr = LoadValueInt("Player", "JoyCustom2", &tmp);
-   if (hr == S_OK) m_joycustom2 = tmp;
-
-   hr = LoadValueInt("Player", "JoyCustom2Key", &tmp);
-   if (hr == S_OK) m_joycustom2key = tmp;
-
-   hr = LoadValueInt("Player", "JoyCustom3", &tmp);
-   if (hr == S_OK) m_joycustom3 = tmp;
-
-   hr = LoadValueInt("Player", "JoyCustom3Key", &tmp);
-   if (hr == S_OK) m_joycustom3key = tmp;
-
-   hr = LoadValueInt("Player", "JoyCustom4", &tmp);
-   if (hr == S_OK) m_joycustom4 = tmp;
-
-   hr = LoadValueInt("Player", "JoyCustom4Key", &tmp);
-   if (hr == S_OK) m_joycustom4key = tmp;
-
-   hr = LoadValueInt("Player", "JoyMechTiltKey", &tmp);
-   if (hr == S_OK) m_joymechtilt = tmp;
-
-   hr = LoadValueInt("Player", "JoyDebugKey", &tmp);
-   if (hr == S_OK) m_joydebugballs = tmp;
-
-   hr = LoadValueInt("Player", "JoyDebuggerKey", &tmp);
-   if (hr == S_OK) m_joydebugger = tmp;
-
-   hr = LoadValueInt("Player", "JoyLockbarKey", &tmp);
-   if (hr == S_OK) m_joylockbar = tmp;
-
-   hr = LoadValueInt("Player", "EnableMouseInPlayer", &tmp);
-   if (hr == S_OK) m_enableMouseInPlayer = (tmp == fTrue);
-
-   hr = LoadValueInt("Player", "EnableCameraModeFlyAround", &tmp);
-   if (hr == S_OK) m_enableCameraModeFlyAround = (tmp == fTrue);
-
-   hr = LoadValueInt("Player", "EnableNudgeFilter", &tmp);
-   if (hr == S_OK) m_enable_nudge_filter = (tmp == fTrue);
-
-   hr = LoadValueInt("Player", "DeadZone", &m_deadz);
-   if (hr != S_OK)
-      m_deadz = 0;
-   else
-      m_deadz = m_deadz*JOYRANGEMX / 100;
+   m_lr_axis = LoadValueIntWithDefault("Player", "LRAxis", m_lr_axis);
+   m_ud_axis = LoadValueIntWithDefault("Player", "UDAxis", m_ud_axis);
+   m_lr_axis_reverse = LoadValueIntWithDefault("Player", "LRAxisFlip", m_lr_axis_reverse);
+   m_ud_axis_reverse = LoadValueIntWithDefault("Player", "UDAxisFlip", m_ud_axis_reverse);
+   m_plunger_axis = LoadValueIntWithDefault("Player", "PlungerAxis", m_plunger_axis);
+   m_plunger_reverse = LoadValueIntWithDefault("Player", "ReversePlungerAxis", m_plunger_reverse);
+   m_override_default_buttons = LoadValueIntWithDefault("Player", "PBWDefaultLayout", m_override_default_buttons);
+   m_disable_esc = LoadValueIntWithDefault("Player", "DisableESC", m_disable_esc);
+   m_joylflipkey = LoadValueIntWithDefault("Player", "JoyLFlipKey", m_joylflipkey);
+   m_joyrflipkey = LoadValueIntWithDefault("Player", "JoyRFlipKey", m_joyrflipkey);
+   m_joyplungerkey = LoadValueIntWithDefault("Player", "JoyPlungerKey", m_joyplungerkey);
+   m_joyaddcreditkey = LoadValueIntWithDefault("Player", "JoyAddCreditKey", m_joyaddcreditkey);
+   m_joyaddcreditkey2 = LoadValueIntWithDefault("Player", "JoyAddCredit2Key", m_joyaddcreditkey2);
+   m_joylmagnasave = LoadValueIntWithDefault("Player", "JoyLMagnaSave", m_joylmagnasave);
+   m_joyrmagnasave = LoadValueIntWithDefault("Player", "JoyRMagnaSave", m_joyrmagnasave);
+   m_joystartgamekey = LoadValueIntWithDefault("Player", "JoyStartGameKey", m_joystartgamekey);
+   m_joyframecount = LoadValueIntWithDefault("Player", "JoyFrameCount", m_joyframecount);
+   m_joyexitgamekey = LoadValueIntWithDefault("Player", "JoyExitGameKey", m_joyexitgamekey);
+   m_joyvolumeup = LoadValueIntWithDefault("Player", "JoyVolumeUp", m_joyvolumeup);
+   m_joyvolumedown = LoadValueIntWithDefault("Player", "JoyVolumeDown", m_joyvolumedown);
+   m_joylefttilt = LoadValueIntWithDefault("Player", "JoyLTiltKey", m_joylefttilt);
+   m_joycentertilt = LoadValueIntWithDefault("Player", "JoyCTiltKey", m_joycentertilt);
+   m_joyrighttilt = LoadValueIntWithDefault("Player", "JoyRTiltKey", m_joyrighttilt);
+   m_joypmbuyin = LoadValueIntWithDefault("Player", "JoyPMBuyIn", m_joypmbuyin);
+   m_joypmcoin3 = LoadValueIntWithDefault("Player", "JoyPMCoin3", m_joypmcoin3);
+   m_joypmcoin4 = LoadValueIntWithDefault("Player", "JoyPMCoin4", m_joypmcoin4);
+   m_joypmcoindoor = LoadValueIntWithDefault("Player", "JoyPMCoinDoor", m_joypmcoindoor);
+   m_joypmcancel = LoadValueIntWithDefault("Player", "JoyPMCancel", m_joypmcancel);
+   m_joypmdown = LoadValueIntWithDefault("Player", "JoyPMDown", m_joypmdown);
+   m_joypmup = LoadValueIntWithDefault("Player", "JoyPMUp", m_joypmup);
+   m_joypmenter = LoadValueIntWithDefault("Player", "JoyPMEnter", m_joypmenter);
+   m_joycustom1 = LoadValueIntWithDefault("Player", "JoyCustom1", m_joycustom1);
+   m_joycustom1key = LoadValueIntWithDefault("Player", "JoyCustom1Key", m_joycustom1key);
+   m_joycustom2 = LoadValueIntWithDefault("Player", "JoyCustom2", m_joycustom2);
+   m_joycustom2key = LoadValueIntWithDefault("Player", "JoyCustom2Key", m_joycustom2key);
+   m_joycustom3 = LoadValueIntWithDefault("Player", "JoyCustom3", m_joycustom3);
+   m_joycustom3key = LoadValueIntWithDefault("Player", "JoyCustom3Key", m_joycustom3key);
+   m_joycustom4 = LoadValueIntWithDefault("Player", "JoyCustom4", m_joycustom4);
+   m_joycustom4key = LoadValueIntWithDefault("Player", "JoyCustom4Key", m_joycustom4key);
+   m_joymechtilt = LoadValueIntWithDefault("Player", "JoyMechTiltKey", m_joymechtilt);
+   m_joydebugballs = LoadValueIntWithDefault("Player", "JoyDebugKey", m_joydebugballs);
+   m_joydebugger = LoadValueIntWithDefault("Player", "JoyDebuggerKey", m_joydebugger);
+   m_joylockbar = LoadValueIntWithDefault("Player", "JoyLockbarKey", m_joylockbar);
+   m_enableMouseInPlayer = LoadValueBoolWithDefault("Player", "EnableMouseInPlayer", m_enableMouseInPlayer);
+   m_enableCameraModeFlyAround = LoadValueBoolWithDefault("Player", "EnableCameraModeFlyAround", m_enableCameraModeFlyAround);
+   m_enable_nudge_filter = LoadValueBoolWithDefault("Player", "EnableNudgeFilter", m_enable_nudge_filter);
+   m_deadz = LoadValueIntWithDefault("Player", "DeadZone", 0);
+   m_deadz = m_deadz*JOYRANGEMX / 100;
 }
 
 //-----------------------------------------------------------------------------

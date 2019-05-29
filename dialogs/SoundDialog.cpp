@@ -617,15 +617,8 @@ void SoundDialog::DeleteSound()
 
 void SoundDialog::LoadPosition()
 {
-    int x, y;
-    HRESULT hr;
-
-    hr = LoadValueInt( "Editor", "SoundMngPosX", &x );
-    if (hr != S_OK)
-        x=0;
-    hr = LoadValueInt( "Editor", "SoundMngPosY", &y );
-    if (hr != S_OK)
-        y=0;
+    const int x = LoadValueIntWithDefault("Editor", "SoundMngPosX", 0);
+    const int y = LoadValueIntWithDefault("Editor", "SoundMngPosY", 0);
 
     SetWindowPos( NULL, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
 }

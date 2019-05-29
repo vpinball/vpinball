@@ -23,20 +23,8 @@ HRESULT Timer::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Timer::SetDefaults(bool fromMouseClick)
 {
-   HRESULT hr;
-   int iTmp;
-
-   hr = LoadValueInt("DefaultProps\\Timer", "TimerEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_tdr.m_fTimerEnabled = true;
-
-   hr = LoadValueInt("DefaultProps\\Timer", "TimerInterval", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_TimerInterval = iTmp;
-   else
-      m_d.m_tdr.m_TimerInterval = 100;
+   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Timer", "TimerEnabled", true) : true;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Timer", "TimerInterval", 100) : 100;
 }
 
 void Timer::WriteRegDefaults()

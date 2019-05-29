@@ -825,18 +825,11 @@ void MaterialDialog::OnClose()
 
 void MaterialDialog::LoadPosition()
 {
-    int x, y, w, h;
-    HRESULT hr;
+    const int x = LoadValueIntWithDefault("Editor", "MaterialMngPosX", 0);
+    const int y = LoadValueIntWithDefault("Editor", "MaterialMngPosY", 0);
 
-    hr = LoadValueInt("Editor", "MaterialMngPosX", &x);
-    if (hr != S_OK)
-        x = 0;
-    hr = LoadValueInt("Editor", "MaterialMngPosY", &y);
-    if (hr != S_OK)
-        y = 0;
-
-    w = LoadValueIntWithDefault("Editor", "MaterialMngWidth", 1000);
-    h = LoadValueIntWithDefault("Editor", "MaterialMngHeight", 800);
+    const int w = LoadValueIntWithDefault("Editor", "MaterialMngWidth", 1000);
+    const int h = LoadValueIntWithDefault("Editor", "MaterialMngHeight", 800);
     SetWindowPos(NULL, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 

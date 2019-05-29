@@ -37,160 +37,46 @@ HRESULT Plunger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Plunger::SetDefaults(bool fromMouseClick)
 {
-   HRESULT hr;
-   float fTmp;
-   int iTmp;
-
    SetDefaultPhysics(fromMouseClick);
 
-   hr = LoadValueFloat("DefaultProps\\Plunger", "Height", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_height = fTmp;
-   else
-      m_d.m_height = 20;
+   m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "Height", 20.f) : 20.f;
+   m_d.m_width = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "Width", 25.f) : 25.f;
+   m_d.m_zAdjust = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "ZAdjust", 0) : 0;
+   m_d.m_stroke = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "Stroke", m_d.m_height*4) : (m_d.m_height*4);
+   m_d.m_speedPull = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "PullSpeed", 5.f) : 5.f;
+   m_d.m_type = fromMouseClick ? (PlungerType)LoadValueIntWithDefault("DefaultProps\\Plunger", "PlungerType", PlungerTypeModern) : PlungerTypeModern;
+   m_d.m_color = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Plunger", "Color", RGB(76,76,76)) : RGB(76,76,76);
 
-   hr = LoadValueFloat("DefaultProps\\Plunger", "Width", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_width = fTmp;
-   else
-      m_d.m_width = 25;
-
-   hr = LoadValueFloat("DefaultProps\\Plunger", "ZAdjust", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_zAdjust = fTmp;
-   else
-      m_d.m_zAdjust = 0;
-
-   hr = LoadValueFloat("DefaultProps\\Plunger", "Stroke", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_stroke = fTmp;
-   else
-      m_d.m_stroke = m_d.m_height * 4;
-
-   hr = LoadValueFloat("DefaultProps\\Plunger", "PullSpeed", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_speedPull = fTmp;
-   else
-      m_d.m_speedPull = 5;
-
-   hr = LoadValueInt("DefaultProps\\Plunger", "PlungerType", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_type = (PlungerType)iTmp;
-   else
-      m_d.m_type = PlungerTypeModern;
-
-   hr = LoadValueInt("DefaultProps\\Plunger", "Color", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_color = iTmp;
-   else
-      m_d.m_color = RGB(76, 76, 76);
-
-   hr = LoadValueString("DefaultProps\\Plunger", "Image", m_d.m_szImage, MAXTOKEN);
+   HRESULT hr = LoadValueString("DefaultProps\\Plunger", "Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
 
-   hr = LoadValueInt("DefaultProps\\Plunger", "AnimFrames", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_animFrames = iTmp;
-   else
-      m_d.m_animFrames = 1;
-
-
-   hr = LoadValueInt("DefaultProps\\Plunger", "TimerEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_tdr.m_fTimerEnabled = false;
-
-   hr = LoadValueInt("DefaultProps\\Plunger", "TimerInterval", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_TimerInterval = iTmp;
-   else
-      m_d.m_tdr.m_TimerInterval = 100;
+   m_d.m_animFrames = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Plunger", "AnimFrames", 1) : 1;
+   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Plunger", "TimerInterval", 100) : 100;
 
    hr = LoadValueString("DefaultProps\\Plunger", "Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
-   hr = LoadValueInt("DefaultProps\\Plunger", "MechPlunger", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_mechPlunger = iTmp == 0 ? false : true;
-   else
-      m_d.m_mechPlunger = false;             // plungers require selection for mechanical input
-
-   hr = LoadValueInt("DefaultProps\\Plunger", "AutoPlunger", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_autoPlunger = iTmp == 0 ? false : true;
-   else
-      m_d.m_autoPlunger = false;
-
-
-   hr = LoadValueInt("DefaultProps\\Plunger", "Visible", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fVisible = iTmp == 0 ? false : true;
-   else
-      m_d.m_fVisible = true;
-
+   m_d.m_mechPlunger = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "MechPlunger", false) : false; // plungers require selection for mechanical input
+   m_d.m_autoPlunger = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "AutoPlunger", false) : false;
+   m_d.m_fVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "Visible", true) : true;
 
    hr = LoadValueString("DefaultProps\\Plunger", "CustomTipShape", m_d.m_szTipShape, MAXTIPSHAPE);
    if ((hr != S_OK) || !fromMouseClick)
       strcpy_s(m_d.m_szTipShape, MAXTIPSHAPE,
       "0 .34; 2 .6; 3 .64; 5 .7; 7 .84; 8 .88; 9 .9; 11 .92; 14 .92; 39 .84");
 
-   hr = LoadValueFloat("DefaultProps\\Plunger", "CustomRodDiam", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_rodDiam = fTmp;
-   else
-      m_d.m_rodDiam = 0.60f;
-
-   hr = LoadValueFloat("DefaultProps\\Plunger", "CustomRingGap", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_ringGap = fTmp;
-   else
-      m_d.m_ringGap = 2.0f;
-
-   hr = LoadValueFloat("DefaultProps\\Plunger", "CustomRingDiam", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_ringDiam = fTmp;
-   else
-      m_d.m_ringDiam = 0.94f;
-
-   hr = LoadValueFloat("DefaultProps\\Plunger", "CustomRingWidth", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_ringWidth = fTmp;
-   else
-      m_d.m_ringWidth = 3.0f;
-
-   hr = LoadValueFloat("DefaultProps\\Plunger", "CustomSpringDiam", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_springDiam = fTmp;
-   else
-      m_d.m_springDiam = 0.77f;
-
-   hr = LoadValueFloat("DefaultProps\\Plunger", "CustomSpringGauge", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_springGauge = fTmp;
-   else
-      m_d.m_springGauge = 1.38f;
-
-   hr = LoadValueFloat("DefaultProps\\Plunger", "CustomSpringLoops", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_springLoops = fTmp;
-   else
-      m_d.m_springLoops = 8.0f;
-
-   hr = LoadValueFloat("DefaultProps\\Plunger", "CustomSpringEndLoops", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_springEndLoops = fTmp;
-   else
-      m_d.m_springEndLoops = 2.5f;
-
-   hr = LoadValueInt("DefaultProps\\Plunger", "ReflectionEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_fReflectionEnabled = true;
-
+   m_d.m_rodDiam = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "CustomRodDiam", 0.60f) : 0.60f;
+   m_d.m_ringGap = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "CustomRingGap", 2.0f) : 2.0f;
+   m_d.m_ringDiam = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "CustomRingDiam", 0.94f) : 0.94f;
+   m_d.m_ringWidth = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "CustomRingWidth", 3.0f) : 3.0f;
+   m_d.m_springDiam = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "CustomSpringDiam", 0.77f) : 0.77f;
+   m_d.m_springGauge = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "CustomSpringGauge", 1.38f) : 1.38f;
+   m_d.m_springLoops = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "CustomSpringLoops", 8.0f) : 8.0f;
+   m_d.m_springEndLoops = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "CustomSpringEndLoops", 2.5f) : 2.5f;
+   m_d.m_fReflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "ReflectionEnabled", true) : true;
 }
 
 void Plunger::WriteRegDefaults()
@@ -323,37 +209,11 @@ void Plunger::PutCenter(const Vertex2D& pv)
 
 void Plunger::SetDefaultPhysics(bool fromMouseClick)
 {
-   HRESULT hr;
-   float fTmp;
-
-   hr = LoadValueFloat("DefaultProps\\Plunger", "ReleaseSpeed", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_speedFire = fTmp;
-   else
-      m_d.m_speedFire = 80;
-   hr = LoadValueFloat("DefaultProps\\Plunger", "MechStrength", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_mechStrength = fTmp;
-   else
-      m_d.m_mechStrength = 85;
-
-   hr = LoadValueFloat("DefaultProps\\Plunger", "ParkPosition", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_parkPosition = fTmp;
-   else
-      m_d.m_parkPosition = (float)(0.5 / 3.0); // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position //!! 0.01f better for some HW-plungers, but this seems to be rather a firmware/config issue
-   hr = LoadValueFloat("DefaultProps\\Plunger", "ScatterVelocity", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_scatterVelocity = fTmp;
-   else
-      m_d.m_scatterVelocity = 0;
-
-   hr = LoadValueFloat("DefaultProps\\Plunger", "MomentumXfer", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_momentumXfer = fTmp;
-   else
-      m_d.m_momentumXfer = 1.0f;
-
+   m_d.m_speedFire = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "ReleaseSpeed", 80.f) : 80.f;
+   m_d.m_mechStrength = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "MechStrength", 85.f) : 85.f;
+   m_d.m_parkPosition = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "ParkPosition", (float)(0.5/3.0)) : (float)(0.5/3.0); // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position //!! 0.01f better for some HW-plungers, but this seems to be rather a firmware/config issue
+   m_d.m_scatterVelocity = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "ScatterVelocity", 0.f) : 0.f;
+   m_d.m_momentumXfer = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "MomentumXfer", 1.f) : 1.f;
 }
 
 void Plunger::RenderDynamic()
