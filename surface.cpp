@@ -46,15 +46,9 @@ HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
    m_isWall = true;
-   float width = 50.0f, length = 50.0f, fTmp;
 
-   HRESULT hr = LoadValueFloat("DefaultProps\\Wall", "Width", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      width = fTmp;
-
-   hr = LoadValueFloat("DefaultProps\\Wall", "Length", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      length = fTmp;
+   const float width  = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Wall", "Width",  50.f) : 50.f;
+   const float length = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Wall", "Length", 50.f) : 50.f;
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -129,15 +123,9 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
    m_ptable = ptable;
    m_isWall = false;
-   float width = 30.0f, length = 6.0f, fTmp;
 
-   HRESULT hr = LoadValueFloat(strKeyName, "Width", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      width = fTmp;
-
-   hr = LoadValueFloat(strKeyName, "Length", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      length = fTmp;
+   const float width = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Width", 30.f) : 30.f;
+   const float length = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Length", 6.f) : 6.f;
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -182,7 +170,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    m_d.m_slingshot_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotThreshold", 0.0f) : 0.0f;
    m_d.m_fInner = true; //!! Deprecated, do not use anymore
 
-   hr = LoadValueString(strKeyName, "TopImage", m_d.m_szImage, MAXTOKEN);
+   HRESULT hr = LoadValueString(strKeyName, "TopImage", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
 

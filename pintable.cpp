@@ -1368,8 +1368,7 @@ PinTable::PinTable()
 
    m_plungerNormalize = 100;  //Mech-Plunger component adjustment or weak spring, aging
    m_plungerFilter = false;
-   m_PhysicsMaxLoops = 0xFFFFFFFF;
-   /*const HRESULT hr =*/ LoadValueInt("Player", "PhysicsMaxLoops", (int*)&m_PhysicsMaxLoops);
+   m_PhysicsMaxLoops = LoadValueIntWithDefault("Player", "PhysicsMaxLoops", 0xFFFFFFFFu);
 
    m_right = 0.0f;
    m_bottom = 0.0f;
@@ -1377,8 +1376,7 @@ PinTable::PinTable()
    m_glassheight = 210;
    m_tableheight = 0;
 
-   m_BG_current_set = BG_DESKTOP;
-   /*const HRESULT hr =*/ LoadValueInt("Player", "BGSet", (int*)&m_BG_current_set);
+   m_BG_current_set = LoadValueIntWithDefault("Player", "BGSet", BG_DESKTOP);
    m_currentBackglassMode = m_BG_current_set;
 
    m_BG_enable_FSS = false;
@@ -1440,6 +1438,7 @@ PinTable::PinTable()
    m_hMaterialManager = NULL;
 
    m_numMaterials = 0;
+
    HRESULT hr;
    int tmp;
 
@@ -1461,15 +1460,8 @@ PinTable::PinTable()
    if (hr == S_OK)
       m_tblAutoStart = tmp * 10;
 
-   m_tblAutoStartRetry = 0;
-   hr = LoadValueInt("Player", "AutostartRetry", &tmp);
-   if (hr == S_OK)
-      m_tblAutoStartRetry = tmp * 10;
-
-   m_tblAutoStartEnabled = false;
-   hr = LoadValueInt("Player", "asenable", &tmp);
-   if (hr == S_OK)
-      m_tblAutoStartEnabled = (tmp != 0);
+   m_tblAutoStartRetry = LoadValueIntWithDefault("Player", "AutostartRetry", 0) * 10;
+   m_tblAutoStartEnabled = LoadValueBoolWithDefault("Player", "asenable", false);
 
    m_tblVolmod = 1.0f;
    hr = LoadValueInt("Player", "Volmod", &tmp);
@@ -1483,29 +1475,17 @@ PinTable::PinTable()
 
    SaveValueString("Version", "VPinball", VP_VERSION_STRING_DIGITS);
 
-   if (FAILED(LoadValueInt("Player", "AlphaRampAccuracy", &m_globalDetailLevel)))
-   {
-      m_globalDetailLevel = 10;
-   }
+   m_globalDetailLevel = LoadValueIntWithDefault("Player", "AlphaRampAccuracy", 10);
    m_userDetailLevel = 10;
    m_overwriteGlobalDetailLevel = false;
 
    m_overwriteGlobalDayNight = true;
 
-   if (FAILED(LoadValueFloat("Player", "Stereo3DZPD", &m_global3DZPD)))
-   {
-      m_global3DZPD = 0.5f;
-   }
+   m_global3DZPD = LoadValueFloatWithDefault("Player", "Stereo3DZPD", 0.5f);
    m_3DZPD = 0.5f;
-   if (FAILED(LoadValueFloat("Player", "Stereo3DMaxSeparation", &m_global3DMaxSeparation)))
-   {
-      m_global3DMaxSeparation = 0.03f;
-   }
+   m_global3DMaxSeparation = LoadValueFloatWithDefault("Player", "Stereo3DMaxSeparation", 0.03f);
    m_3DmaxSeparation = 0.03f;
-   if (FAILED(LoadValueFloat("Player", "Stereo3DOffset", &m_global3DOffset)))
-   {
-      m_global3DOffset = 0.0f;
-   }
+   m_global3DOffset = LoadValueFloatWithDefault("Player", "Stereo3DOffset", 0.f);
    m_3DOffset = 0.0f;
    m_overwriteGlobalStereo3D = false;
 
@@ -1519,14 +1499,10 @@ PinTable::PinTable()
    m_tblNudgePlumbY = 0.0f;
 
 #ifdef UNUSED_TILT
-   if (FAILED(LoadValueInt("Player", "JoltAmount", &m_jolt_amount))
-      m_jolt_amount = 500;
-   if (FAILED(LoadValueInt("Player", "TiltAmount", &m_tilt_amount))
-      m_tilt_amount = 950;
-   if (FAILED(LoadValueInt("Player", "JoltTriggerTime", &m_jolt_trigger_time))
-      m_jolt_trigger_time = 1000;
-   if (FAILED(LoadValueInt("Player", "TiltTriggerTime", &m_tilt_trigger_time))
-      m_tilt_trigger_time = 10000;
+   m_jolt_amount = LoadValueIntWithDefault("Player", "JoltAmount", 500);
+   m_tilt_amount = LoadValueIntWithDefault("Player", "TiltAmount", 950);
+   m_jolt_trigger_time = LoadValueIntWithDefault("Player", "JoltTriggerTime", 1000);
+   m_tilt_trigger_time = LoadValueIntWithDefault("Player", "TiltTriggerTime", 10000);
 #endif
 }
 
@@ -1535,20 +1511,11 @@ void PinTable::ReadAccelerometerCalibration()
 	HRESULT hr;
 	int tmp;
 
-	int accel;
-	hr = LoadValueInt("Player", "PBWEnabled", &accel); // true if electronic accelerometer enabled
-	if (hr == S_OK)
-		m_tblAccelerometer = (accel != fFalse);
-	else
-		m_tblAccelerometer = true;
-
-	hr = LoadValueInt("Player", "PBWNormalMount", &accel); // true is normal mounting (left hand coordinates)
-	if (hr == S_OK)
-		m_tblAccelNormalMount = (accel != fFalse);
-	else
-		m_tblAccelNormalMount = true;
+	m_tblAccelerometer = LoadValueBoolWithDefault("Player", "PBWEnabled", true); // true if electronic accelerometer enabled
+	m_tblAccelNormalMount = LoadValueBoolWithDefault("Player", "PBWNormalMount", true); // true is normal mounting (left hand coordinates)
 
 	m_tblAccelAngle = 0.0f;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
+	int accel;
 	hr = LoadValueInt("Player", "PBWRotationCB", &accel);
 	if ((hr == S_OK) && accel)
 	{
@@ -2116,10 +2083,10 @@ void PinTable::Render3DProjection(Sur * const psur)
    pinproj.m_rcviewport.bottom = EDITOR_BG_HEIGHT;
 
    //const float aspect = 4.0f/3.0f;
-   int renderWidth, renderHeight;
-   LoadValueInt("Player", "Width", &renderWidth);
-   LoadValueInt("Player", "Height", &renderHeight);
-   const float aspect = ((float)renderWidth) / ((float)renderHeight); //(float)(4.0/3.0);
+   const bool fullscreen = LoadValueBoolWithDefault("Player", "FullScreen", IsWindows10_1803orAbove());
+   const int renderWidth = LoadValueIntWithDefault("Player", "Width", fullscreen ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH);
+   const int renderHeight = LoadValueIntWithDefault("Player", "Height", renderWidth * 9 / 16);
+   const float aspect = (float)((double)renderWidth / (double)renderHeight); //(float)(4.0/3.0);
 
    pinproj.FitCameraToVertices(vvertex3D, aspect, rotation, inclination, FOV, m_BG_xlatez[m_BG_current_set], m_BG_layback[m_BG_current_set]);
    pinproj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
@@ -2329,54 +2296,30 @@ void PinTable::Play(const bool _cameraMode)
       {
           char tmp[256];
 
-          m_fOverrideGravityConstant = DEFAULT_TABLE_GRAVITY;
           sprintf_s(tmp, 256, "TablePhysicsGravityConstant%d", m_overridePhysics - 1);
-          HRESULT hr = LoadValueFloat("Player", tmp, &m_fOverrideGravityConstant);
-          if (hr != S_OK)
-              m_fOverrideGravityConstant = DEFAULT_TABLE_GRAVITY;
+          m_fOverrideGravityConstant = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_GRAVITY);
           m_fOverrideGravityConstant *= GRAVITYCONST;
 
-          m_fOverrideContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
           sprintf_s(tmp, 256, "TablePhysicsContactFriction%d", m_overridePhysics - 1);
-          hr = LoadValueFloat("Player", tmp, &m_fOverrideContactFriction);
-          if (hr != S_OK)
-              m_fOverrideContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
+          m_fOverrideContactFriction = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_CONTACTFRICTION);
 
-          m_fOverrideElasticity = DEFAULT_TABLE_ELASTICITY;
           sprintf_s(tmp, 256, "TablePhysicsElasticity%d", m_overridePhysics - 1);
-          hr = LoadValueFloat("Player", tmp, &m_fOverrideElasticity);
-          if (hr != S_OK)
-              m_fOverrideElasticity = DEFAULT_TABLE_ELASTICITY;
+          m_fOverrideElasticity = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_ELASTICITY);
 
-          m_fOverrideElasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
           sprintf_s(tmp, 256, "TablePhysicsElasticityFalloff%d", m_overridePhysics - 1);
-          hr = LoadValueFloat("Player", tmp, &m_fOverrideElasticityFalloff);
-          if (hr != S_OK)
-              m_fOverrideElasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
+          m_fOverrideElasticityFalloff = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_ELASTICITY_FALLOFF);
 
-          m_fOverrideScatterAngle = DEFAULT_TABLE_PFSCATTERANGLE;
           sprintf_s(tmp, 256, "TablePhysicsScatterAngle%d", m_overridePhysics - 1);
-          hr = LoadValueFloat("Player", tmp, &m_fOverrideScatterAngle);
-          if (hr != S_OK)
-              m_fOverrideScatterAngle = DEFAULT_TABLE_PFSCATTERANGLE;
+          m_fOverrideScatterAngle = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_PFSCATTERANGLE);
 
-          fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
           sprintf_s(tmp, 256, "TablePhysicsContactScatterAngle%d", m_overridePhysics - 1);
-          hr = LoadValueFloat("Player", tmp, &fOverrideContactScatterAngle);
-          if (hr != S_OK)
-              fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
+          fOverrideContactScatterAngle = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_SCATTERANGLE);
 
-          m_fOverrideMinSlope = DEFAULT_TABLE_MIN_SLOPE;
           sprintf_s(tmp, 256, "TablePhysicsMinSlope%d", m_overridePhysics - 1);
-          hr = LoadValueFloat("Player", tmp, &m_fOverrideMinSlope);
-          if (hr != S_OK)
-              m_fOverrideMinSlope = DEFAULT_TABLE_MIN_SLOPE;
+          m_fOverrideMinSlope = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_MIN_SLOPE);
 
-          m_fOverrideMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
           sprintf_s(tmp, 256, "TablePhysicsMaxSlope%d", m_overridePhysics - 1);
-          hr = LoadValueFloat("Player", tmp, &m_fOverrideMaxSlope);
-          if (hr != S_OK)
-              m_fOverrideMaxSlope = DEFAULT_TABLE_MAX_SLOPE;
+          m_fOverrideMaxSlope = LoadValueFloatWithDefault("Player", tmp, DEFAULT_TABLE_MAX_SLOPE);
       }
 
       c_hardScatter = ANGTORAD(m_overridePhysics ? fOverrideContactScatterAngle : m_defaultScatter);
@@ -10984,10 +10927,7 @@ STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
 
 STDMETHODIMP PinTable::get_DeadZone(int *pVal)
 {
-   int deadz;
-   const HRESULT hr = LoadValueInt("Player", "DeadZone", &deadz);
-   if (hr != S_OK)
-      deadz = 0;
+   const int deadz = LoadValueIntWithDefault("Player", "DeadZone", 0);
 
    *pVal = deadz;
 

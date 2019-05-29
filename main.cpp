@@ -243,10 +243,7 @@ public:
       memset(szTableFileName, 0, MAXSTRING);
 
       // Start VP with file dialog open and then also playing that one?
-      int stos;
-      HRESULT hr = LoadValueInt("Editor", "SelectTableOnStart", &stos);
-      if (hr != S_OK)
-         stos = 1; // The default = on
+      const int stos = LoadValueIntWithDefault("Editor", "SelectTableOnStart", 1);
       if (stos)
       {
          fFile = true;
@@ -399,7 +396,7 @@ public:
          if (SUCCEEDED(LoadTypeLib(wszFileName, &ptl)))
          {
             // first try to register system-wide (if running as admin)
-            hr = RegisterTypeLib(ptl, wszFileName, NULL);
+            HRESULT hr = RegisterTypeLib(ptl, wszFileName, NULL);
             if (!SUCCEEDED(hr))
             {
                // if failed, register only for current user

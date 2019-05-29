@@ -518,15 +518,12 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    //if (caps.NumSimultaneousRTs < 2)
    //   ShowError("D3D device doesn't support multiple render targets!");
 
-   int video10bit;
-   HRESULT hr = LoadValueInt("Player", "Render10Bit", &video10bit);
-   if (hr != S_OK)
-      video10bit = fFalse; // The default = off
+   bool video10bit = LoadValueBoolWithDefault("Player", "Render10Bit", false);
 
    if (!m_fullscreen && video10bit)
    {
       ShowError("10Bit-Monitor support requires 'Force exclusive Fullscreen Mode' to be also enabled!");
-      video10bit = fFalse;
+      video10bit = false;
    }
 
    // get the current display format
@@ -568,7 +565,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 #endif
 
    // check if our HDR texture format supports/does sRGB conversion on texture reads, which must NOT be the case as we always set SRGBTexture=true independent of the format!
-   hr = m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA32F);
+   HRESULT hr = m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA32F);
    if (SUCCEEDED(hr))
       ShowError("D3D device does support D3DFMT_A32B32G32R32F SRGBTexture reads (which leads to wrong tex colors)");
    // now the same for our LDR/8bit texture format the other way round

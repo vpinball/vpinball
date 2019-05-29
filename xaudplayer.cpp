@@ -311,10 +311,7 @@ XAudPlayer::XAudPlayer()
 
       //
 
-      int DSidx;
-      const HRESULT hr = LoadValueInt("Player", "SoundDeviceBG", &DSidx);
-      if (hr != S_OK)
-          DSidx = -1;
+      const int DSidx = LoadValueIntWithDefault("Player", "SoundDeviceBG", -1);
 
       // now match the Direct Sound device with the BASS device (by name)
       int BASSidx = -1;

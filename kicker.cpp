@@ -73,80 +73,27 @@ HRESULT Kicker::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Kicker::SetDefaults(bool fromMouseClick)
 {
-   HRESULT hr;
-   float fTmp;
-   int iTmp;
-
-   hr = LoadValueFloat("DefaultProps\\Kicker", "Radius", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_radius = fTmp;
-   else
-      m_d.m_radius = 25;
-
-   hr = LoadValueInt("DefaultProps\\Kicker", "TimerEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_tdr.m_fTimerEnabled = false;
-
-   hr = LoadValueInt("DefaultProps\\Kicker", "TimerInterval", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_TimerInterval = iTmp;
-   else
-      m_d.m_tdr.m_TimerInterval = 100;
-
-   hr = LoadValueInt("DefaultProps\\Kicker", "Enabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_fEnabled = true;
-
-
-   hr = LoadValueFloat("DefaultProps\\Kicker", "HitAccuracy", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_hitAccuracy = fTmp;
-   else
-      m_d.m_hitAccuracy = 0.7f;
-
-   hr = LoadValueFloat("DefaultProps\\Kicker", "HitHeight", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_hit_height = fTmp;
-   else
-      m_d.m_hit_height = 40.0f;
-
-   hr = LoadValueFloat("DefaultProps\\Kicker", "Orientation", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_orientation = fTmp;
-   else
-      m_d.m_orientation = 0.0f;
+   m_d.m_radius = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Kicker", "Radius", 25.f) : 25.f;
+   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Kicker", "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Kicker", "TimerInterval", 100) : 100;
+   m_d.m_fEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Kicker", "Enabled", true) : true;
+   m_d.m_hitAccuracy = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Kicker", "HitAccuracy", 0.7f) : 0.7f;
+   m_d.m_hit_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Kicker", "HitHeight", 40.0f) : 40.0f;
+   m_d.m_orientation = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Kicker", "Orientation", 0.f) : 0.f;
 
    SetDefaultPhysics(fromMouseClick);
 
-   hr = LoadValueString("DefaultProps\\Kicker", "Surface", &m_d.m_szSurface, MAXTOKEN);
+   const HRESULT hr = LoadValueString("DefaultProps\\Kicker", "Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
-   hr = LoadValueInt("DefaultProps\\Kicker", "KickerType", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_kickertype = (KickerType)iTmp;
-   else
-      m_d.m_kickertype = KickerHole;
-
+   m_d.m_kickertype = fromMouseClick ? (KickerType)LoadValueIntWithDefault("DefaultProps\\Kicker", "KickerType", KickerHole) : KickerHole;
    //legacy handling:
    if (m_d.m_kickertype > KickerCup2)
-	   m_d.m_kickertype = KickerInvisible;
+      m_d.m_kickertype = KickerInvisible;
 
-   hr = LoadValueInt("DefaultProps\\Kicker", "FallThrough", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fFallThrough = iTmp == 0 ? false : true;
-   else
-      m_d.m_fFallThrough = false;
-
-   hr = LoadValueInt("DefaultProps\\Kicker", "Legacy", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_legacyMode = iTmp == 0 ? false : true;
-   else
-      m_d.m_legacyMode = true;
+   m_d.m_fFallThrough = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Kicker", "FallThrough", false) : false;
+   m_d.m_legacyMode = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Kicker", "Legacy", true) : true;
 }
 
 void Kicker::WriteRegDefaults()
@@ -564,14 +511,7 @@ void Kicker::PreRenderStatic(RenderDevice* pd3dDevice)
 
 void Kicker::SetDefaultPhysics(bool fromMouseClick)
 {
-   HRESULT hr;
-   float fTmp;
-
-   hr = LoadValueFloat("DefaultProps\\Kicker", "Scatter", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_scatter = fTmp;
-   else
-      m_d.m_scatter = 0;
+   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Kicker", "Scatter", 0.f) : 0.f;
 }
 
 void Kicker::RenderDynamic()

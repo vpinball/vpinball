@@ -162,88 +162,24 @@ HRESULT Trigger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Trigger::SetDefaults(bool fromMouseClick)
 {
-   HRESULT hr;
-   float fTmp;
-   int iTmp;
+   m_d.m_radius = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "Radius", 25.0f) : 25.0f;
+   m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "Rotation", 0.f) : 0.f;
+   m_d.m_wireThickness = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "WireThickness", 0.f) : 0.f;
+   m_d.m_scaleX = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "ScaleX", 1.f) : 1.f;
+   m_d.m_scaleY = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "ScaleY", 1.f) : 1.f;
+   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Trigger", "TimerInterval", 100) : 100;
+   m_d.m_fEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "Enabled", true) : true;
+   m_d.m_fVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "Visible", true) : true;
+   m_d.m_hit_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "HitHeight", 50.f) : 50.f;
+   m_d.m_shape = fromMouseClick ? (TriggerShape)LoadValueIntWithDefault("DefaultProps\\Trigger", "Shape", TriggerWireA) : TriggerWireA;
 
-   hr = LoadValueFloat("DefaultProps\\Trigger", "Radius", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_radius = fTmp;
-   else
-      m_d.m_radius = 25.0f;
-
-   hr = LoadValueFloat("DefaultProps\\Trigger", "Rotation", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_rotation = fTmp;
-   else
-      m_d.m_rotation = 0.0f;
-
-   hr = LoadValueFloat("DefaultProps\\Trigger", "WireThickness", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_wireThickness = fTmp;
-   else
-      m_d.m_wireThickness = 0.0f;
-
-   hr = LoadValueFloat("DefaultProps\\Trigger", "ScaleX", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_scaleX = fTmp;
-   else
-      m_d.m_scaleX = 1.0f;
-
-   hr = LoadValueFloat("DefaultProps\\Trigger", "ScaleY", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_scaleY = fTmp;
-   else
-      m_d.m_scaleY = 1.0f;
-
-   hr = LoadValueInt("DefaultProps\\Trigger", "TimerEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_tdr.m_fTimerEnabled = false;
-
-   hr = LoadValueInt("DefaultProps\\Trigger", "TimerInterval", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_TimerInterval = iTmp;
-   else
-      m_d.m_tdr.m_TimerInterval = 100;
-
-   hr = LoadValueInt("DefaultProps\\Trigger", "Enabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_fEnabled = true;
-
-   hr = LoadValueInt("DefaultProps\\Trigger", "Visible", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fVisible = iTmp == 0 ? false : true;
-   else
-      m_d.m_fVisible = true;
-
-   hr = LoadValueFloat("DefaultProps\\Trigger", "HitHeight", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_hit_height = fTmp;
-   else
-      m_d.m_hit_height = 50.0f;
-
-   hr = LoadValueInt("DefaultProps\\Trigger", "Shape", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_shape = (TriggerShape)iTmp;
-   else
-      m_d.m_shape = TriggerWireA;
-   hr = LoadValueString("DefaultProps\\Trigger", "Surface", &m_d.m_szSurface, MAXTOKEN);
+   HRESULT hr = LoadValueString("DefaultProps\\Trigger", "Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
-   hr = LoadValueFloat("DefaultProps\\trigger", "AnimSpeed", &fTmp);
-   m_d.m_animSpeed = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
-
-   hr = LoadValueInt("DefaultProps\\Trigger", "ReflectionEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_fReflectionEnabled = true;
-
+   m_d.m_animSpeed = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\trigger", "AnimSpeed", 1.f) : 1.f;
+   m_d.m_fReflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "ReflectionEnabled", true) : true;
 }
 
 void Trigger::UIRenderPass1(Sur * const psur)

@@ -547,42 +547,25 @@ void Flipper::SetDefaultPhysics(bool fromMouseClick)
 {
    static const char regKey[] = "DefaultProps\\Flipper";
 
-   HRESULT hr;
-   float fTmp;
-
-   hr = LoadValueFloat(regKey, "Scatter", &fTmp);
-   m_d.m_scatter = (hr == S_OK) && fromMouseClick ? fTmp : 0.0f;
-
-   hr = LoadValueFloat(regKey, "Strength", &fTmp);
-   m_d.m_strength = (hr == S_OK) && fromMouseClick ? fTmp : 2200.0f;
-
-   hr = LoadValueFloat(regKey, "EOSTorque", &fTmp);
-   m_d.m_torqueDamping = (hr == S_OK) && fromMouseClick ? fTmp : 0.75f;
-
-   hr = LoadValueFloat(regKey, "EOSTorqueAngle", &fTmp);
-   m_d.m_torqueDampingAngle = (hr == S_OK) && fromMouseClick ? fTmp : 6.f;
+   m_d.m_scatter = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Scatter", 0.f) : 0.f;
+   m_d.m_strength = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Strength", 2200.f) : 2200.f;
+   m_d.m_torqueDamping = fromMouseClick ? LoadValueFloatWithDefault(regKey, "EOSTorque", 0.75f) : 0.75f;
+   m_d.m_torqueDampingAngle = fromMouseClick ? LoadValueFloatWithDefault(regKey, "EOSTorqueAngle", 6.f) : 6.f;
 
    //m_d.m_angleEOS = 0;
 
-   hr = LoadValueFloat(regKey, "ReturnStrength", &fTmp);
-   m_d.m_return = (hr == S_OK) && fromMouseClick ? fTmp : 0.058f;
+   m_d.m_return = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ReturnStrength", 0.058f) : 0.058f;
 
-   hr = LoadValueFloat(regKey, "Mass", &fTmp);
+   float fTmp;
+   HRESULT hr = LoadValueFloat(regKey, "Mass", &fTmp);
    if (hr != S_OK)
       hr = LoadValueFloat(regKey, "Speed", &fTmp); // previously Mass was called Speed, deprecated!
    m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
 
-   hr = LoadValueFloat(regKey, "Elasticity", &fTmp);
-   m_d.m_elasticity = (hr == S_OK) && fromMouseClick ? fTmp : 0.8f;
-
-   hr = LoadValueFloat(regKey, "ElasticityFalloff", &fTmp);
-   m_d.m_elasticityFalloff = (hr == S_OK) && fromMouseClick ? fTmp : 0.43f;
-
-   hr = LoadValueFloat(regKey, "Friction", &fTmp);
-   m_d.m_friction = (hr == S_OK) && fromMouseClick ? fTmp : 0.6f;
-
-   hr = LoadValueFloat(regKey, "RampUp", &fTmp);
-   m_d.m_rampUp = (hr == S_OK) && fromMouseClick ? fTmp : 3.0f;
+   m_d.m_elasticity = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Elasticity", 0.8f) : 0.8f;
+   m_d.m_elasticityFalloff = fromMouseClick ? LoadValueFloatWithDefault(regKey, "ElasticityFalloff", 0.43f) : 0.43f;
+   m_d.m_friction = fromMouseClick ? LoadValueFloatWithDefault(regKey, "Friction", 0.6f) : 0.6f;
+   m_d.m_rampUp = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RampUp", 3.0f) : 3.0f;
 
    m_d.m_OverridePhysics = 0;
 }

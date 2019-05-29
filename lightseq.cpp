@@ -23,18 +23,10 @@ HRESULT LightSeq::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void LightSeq::SetDefaults(bool fromMouseClick)
 {
-   HRESULT hr;
-   float fTmp;
-   int iTmp;
-
-   hr = LoadValueInt("DefaultProps\\LightSequence", "UpdateInterval", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_updateinterval = iTmp;
-   else
-      m_d.m_updateinterval = 25;
+   m_d.m_updateinterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\LightSequence", "UpdateInterval", 25) : 25;
 
    char tmp[MAXNAMEBUFFER];
-   hr = LoadValueString("DefaultProps\\LightSequence", "Collection", tmp, MAXNAMEBUFFER);
+   const HRESULT hr = LoadValueString("DefaultProps\\LightSequence", "Collection", tmp, MAXNAMEBUFFER);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_wzCollection[0] = 0x00;
    else
@@ -42,29 +34,11 @@ void LightSeq::SetDefaults(bool fromMouseClick)
       UNICODE_FROM_ANSI(m_d.m_wzCollection, tmp, lstrlen(tmp));
       m_d.m_wzCollection[lstrlen(tmp)] = '\0';
    }
-   hr = LoadValueFloat("DefaultProps\\LightSequence", "CenterX", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_vCenter.x = fTmp;
-   else
-      m_d.m_vCenter.x = EDITOR_BG_WIDTH / 2;
 
-   hr = LoadValueFloat("DefaultProps\\LightSequence", "CenterY", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_vCenter.y = fTmp;
-   else
-      m_d.m_vCenter.y = (2 * EDITOR_BG_WIDTH) / 2;
-
-   hr = LoadValueInt("DefaultProps\\LightSequence", "TimerEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
-   else
-      m_d.m_tdr.m_fTimerEnabled = false;
-
-   hr = LoadValueInt("DefaultProps\\LightSequence", "TimerInterval", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_TimerInterval = iTmp;
-   else
-      m_d.m_tdr.m_TimerInterval = 100;
+   m_d.m_vCenter.x = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\LightSequence", "CenterX", EDITOR_BG_WIDTH / 2) : (EDITOR_BG_WIDTH / 2);
+   m_d.m_vCenter.y = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\LightSequence", "CenterY", (2 * EDITOR_BG_WIDTH) / 2) : ((2 * EDITOR_BG_WIDTH) / 2);
+   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\LightSequence", "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\LightSequence", "TimerInterval", 100) : 100;
 }
 
 void LightSeq::WriteRegDefaults()

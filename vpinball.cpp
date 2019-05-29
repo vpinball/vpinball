@@ -425,12 +425,9 @@ void VPinball::Init()
 
 void VPinball::InitPinDirectSound()
 {
-	int DSidx1 = 0, DSidx2 = 0;
-	LoadValueInt("Player", "SoundDevice", &DSidx1);
-	LoadValueInt("Player", "SoundDeviceBG", &DSidx2);
-	int tmp = (int)m_pds.m_i3DSoundMode;
-	LoadValueInt("Player", "Sound3D", &tmp);
-	m_pds.m_i3DSoundMode = (SoundConfigTypes)tmp;
+	int DSidx1 = LoadValueIntWithDefault("Player", "SoundDevice", 0);
+	int DSidx2 = LoadValueIntWithDefault("Player", "SoundDeviceBG", 0);
+	m_pds.m_i3DSoundMode = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)m_pds.m_i3DSoundMode);
 
 	m_pds.InitDirectSound(m_hwnd, false);						// init Direct Sound (in pinsound.cpp)
 	// If these are the same device, and we are not in 3d mode, just point the backglass device to the main one. 
@@ -502,9 +499,8 @@ void VPinball::SetAutoSaveMinutes(const int minutes)
 void VPinball::InitTools()
 {
    // was the properties panel open last time we used VP?
-   int state;
-   const HRESULT hr = LoadValueInt("Editor", "PropertiesVisible", (int *)&state);
-   if ((hr == S_OK) && (state == 1))
+   const bool state = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
+   if (state)
    {
       // if so then re-open it
       ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 1); //display
@@ -524,18 +520,15 @@ void VPinball::InitTools()
 ///</summary>
 void VPinball::InitRegValues()
 {
-   HRESULT hr;
-
-   int deadz;
-   deadz = LoadValueIntWithDefault("Player", "DeadZone", 0);
+   const int deadz = LoadValueIntWithDefault("Player", "DeadZone", 0);
    SaveValueInt("Player", "DeadZone", deadz);
 
    m_fAlwaysDrawDragPoints = LoadValueBoolWithDefault("Editor", "ShowDragPoints", false);
    m_fAlwaysDrawLightCenters = LoadValueBoolWithDefault("Editor", "DrawLightCenters", false);
    m_gridSize = LoadValueIntWithDefault("Editor", "GridSize", 50);
 
-   BOOL fAutoSave = LoadValueIntWithDefault("Editor", "AutoSaveOn", fTrue);
-   m_fPropertiesFloating = !!LoadValueIntWithDefault("Editor", "PropertiesFloating", fTrue);
+   const bool fAutoSave = LoadValueBoolWithDefault("Editor", "AutoSaveOn", true);
+   m_fPropertiesFloating = LoadValueBoolWithDefault("Editor", "PropertiesFloating", true);
 
    if (fAutoSave)
    {
@@ -546,25 +539,12 @@ void VPinball::InitRegValues()
       m_autosaveTime = -1;
 
    m_securitylevel = LoadValueIntWithDefault("Player", "SecurityLevel", DEFAULT_SECURITY_LEVEL);
-   hr = LoadValueInt("Editor", "DefaultMaterialColor", (int*)&g_pvp->dummyMaterial.m_cBase);
-   if (FAILED(hr))
-      g_pvp->dummyMaterial.m_cBase = 0xB469FF;
 
-   hr = LoadValueInt("Editor", "ElementSelectColor", (int*)&g_pvp->m_elemSelectColor);
-   if (FAILED(hr))
-      g_pvp->m_elemSelectColor = 0x00FF0000;
-
-   hr = LoadValueInt("Editor", "ElementSelectLockedColor", (int*)&g_pvp->m_elemSelectLockedColor);
-   if (FAILED(hr))
-      g_pvp->m_elemSelectLockedColor = 0x00A7726D;
-
-   hr = LoadValueInt("Editor", "BackgroundColor", (int*)&g_pvp->m_backgroundColor);
-   if (FAILED(hr))
-      g_pvp->m_backgroundColor = 0x008D8D8D;
-
-   hr = LoadValueInt("Editor", "FillColor", (int*)&g_pvp->m_fillColor);
-   if (FAILED(hr))
-      g_pvp->m_fillColor = 0x00B1CFB3;
+   g_pvp->dummyMaterial.m_cBase = LoadValueIntWithDefault("Editor", "DefaultMaterialColor", 0xB469FF);
+   g_pvp->m_elemSelectColor = LoadValueIntWithDefault("Editor", "ElementSelectColor", 0x00FF0000);
+   g_pvp->m_elemSelectLockedColor = LoadValueIntWithDefault("Editor", "ElementSelectLockedColor", 0x00A7726D);
+   g_pvp->m_backgroundColor = LoadValueIntWithDefault("Editor", "BackgroundColor", 0x008D8D8D);
+   g_pvp->m_fillColor = LoadValueIntWithDefault("Editor", "FillColor", 0x00B1CFB3);
 
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
       m_securitylevel = eSecurityNoControls;
@@ -577,9 +557,8 @@ void VPinball::InitRegValues()
       m_szRecentTableList[i][0] = 0x00;
       LoadValueString("RecentDir", szRegName, m_szRecentTableList[i], MAX_PATH);
    }
-   hr = LoadValueInt("Editor", "Units", &g_pvp->m_convertToUnit);
-   if (FAILED(hr))
-       g_pvp->m_convertToUnit = 0;
+
+   g_pvp->m_convertToUnit = LoadValueIntWithDefault("Editor", "Units", 0);
 }
 
 ///<summary>
@@ -2712,7 +2691,7 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
    {
    case WM_INITDIALOG:
    {
-      HWND hwndParent = GetParent(hwndDlg);
+      const HWND hwndParent = GetParent(hwndDlg);
       RECT rcDlg;
       RECT rcMain;
       GetWindowRect(hwndParent, &rcMain);
@@ -2723,26 +2702,16 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
-      int security;
-      HRESULT hr = LoadValueInt("Player", "SecurityLevel", &security);
-      if (hr != S_OK)
-         security = DEFAULT_SECURITY_LEVEL;
-
+      int security = LoadValueIntWithDefault("Player", "SecurityLevel", DEFAULT_SECURITY_LEVEL);
       if (security < 0 || security > 4)
          security = 0;
 
       const int buttonid = rgDlgIDFromSecurityLevel[security];
 
-      HWND hwndCheck = GetDlgItem(hwndDlg, buttonid);
+      SendMessage(GetDlgItem(hwndDlg, buttonid), BM_SETCHECK, BST_CHECKED, 0);
 
-      SendMessage(hwndCheck, BM_SETCHECK, BST_CHECKED, 0);
-
-      HWND hwndDetectHang = GetDlgItem(hwndDlg, IDC_HANGDETECT);
-      int hangdetect;
-      hr = LoadValueInt("Player", "DetectHang", &hangdetect);
-      if (hr != S_OK)
-         hangdetect = fFalse;
-      SendMessage(hwndDetectHang, BM_SETCHECK, hangdetect ? BST_CHECKED : BST_UNCHECKED, 0);
+      const bool hangdetect = LoadValueBoolWithDefault("Player", "DetectHang", false);
+      SendMessage(GetDlgItem(hwndDlg, IDC_HANGDETECT), BM_SETCHECK, hangdetect ? BST_CHECKED : BST_UNCHECKED, 0);
 
       return TRUE;
    }
@@ -2759,14 +2728,12 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
          {
             for (int i = 0; i < 5; i++)
             {
-               HWND hwndCheck = GetDlgItem(hwndDlg, rgDlgIDFromSecurityLevel[i]);
-               size_t checked = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
+               const size_t checked = SendMessage(GetDlgItem(hwndDlg, rgDlgIDFromSecurityLevel[i]), BM_GETCHECK, 0, 0);
                if (checked == BST_CHECKED)
                   SaveValueInt("Player", "SecurityLevel", i);
             }
 
-            HWND hwndCheck = GetDlgItem(hwndDlg, IDC_HANGDETECT);
-            size_t hangdetect = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
+            const size_t hangdetect = SendMessage(GetDlgItem(hwndDlg, IDC_HANGDETECT), BM_GETCHECK, 0, 0);
             SaveValueInt("Player", "DetectHang", hangdetect);
 
             EndDialog(hwndDlg, TRUE);

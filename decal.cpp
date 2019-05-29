@@ -51,15 +51,11 @@ HRESULT Decal::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Decal::SetDefaults(bool fromMouseClick)
 {
-   HRESULT hr;
-   float fTmp;
-   int iTmp;
-
    m_d.m_width = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Decal", "Width", 100.0f) : 100.0f;
    m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Decal", "Height", 100.0f) : 100.0f;
    m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Decal", "Rotation", 0.f) : 0.f;
 
-   hr = LoadValueString("DefaultProps\\Decal", "Image", m_d.m_szImage, MAXTOKEN);
+   HRESULT hr = LoadValueString("DefaultProps\\Decal", "Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
    hr = LoadValueString("DefaultProps\\Decal", "Surface", m_d.m_szSurface, MAXTOKEN);
@@ -81,6 +77,7 @@ void Decal::SetDefaults(bool fromMouseClick)
       FONTDESC fd;
       fd.cbSizeofstruct = sizeof(FONTDESC);
 
+      float fTmp;
       hr = LoadValueFloat("DefaultProps\\Decal", "FontSize", &fTmp);
       fd.cySize.int64 = (hr == S_OK) && fromMouseClick ? (LONGLONG)(fTmp * 10000.0) : 142500;
 
