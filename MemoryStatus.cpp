@@ -18,6 +18,7 @@ MemoryStatus::MemoryStatus()
 MemoryStatus MemoryStatus::GetCurrent()
 {
 	MemoryStatus status;
+	memset(&status, 0, sizeof(MemoryStatus));
 
 	MEMORY_BASIC_INFORMATION info;
 	unsigned char* address(0);

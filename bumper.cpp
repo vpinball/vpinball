@@ -130,11 +130,11 @@ void Bumper::WriteRegDefaults()
    SaveValueFloat("DefaultProps\\Bumper", "Threshold", m_d.m_threshold);
    SaveValueBool("DefaultProps\\Bumper", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
    SaveValueInt("DefaultProps\\Bumper", "TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SaveValueInt("DefaultProps\\Bumper", "CapVisible", m_d.m_fCapVisible);
-   SaveValueInt("DefaultProps\\Bumper", "BaseVisible", m_d.m_fBaseVisible);
-   SaveValueInt("DefaultProps\\Bumper", "HasHitEvent", m_d.m_fHitEvent);
-   SaveValueInt("DefaultProps\\Bumper", "Collidable", m_d.m_fCollidable);
-   SaveValueInt("DefaultProps\\Bumper", "ReflectionEnabled", m_d.m_fReflectionEnabled);
+   SaveValueBool("DefaultProps\\Bumper", "CapVisible", m_d.m_fCapVisible);
+   SaveValueBool("DefaultProps\\Bumper", "BaseVisible", m_d.m_fBaseVisible);
+   SaveValueBool("DefaultProps\\Bumper", "HasHitEvent", m_d.m_fHitEvent);
+   SaveValueBool("DefaultProps\\Bumper", "Collidable", m_d.m_fCollidable);
+   SaveValueBool("DefaultProps\\Bumper", "ReflectionEnabled", m_d.m_fReflectionEnabled);
    SaveValueString("DefaultProps\\Bumper", "Surface", m_d.m_szSurface);
 }
 

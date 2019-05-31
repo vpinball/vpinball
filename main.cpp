@@ -243,7 +243,7 @@ public:
       memset(szTableFileName, 0, MAXSTRING);
 
       // Start VP with file dialog open and then also playing that one?
-      const int stos = LoadValueIntWithDefault("Editor", "SelectTableOnStart", 1);
+      const bool stos = LoadValueBoolWithDefault("Editor", "SelectTableOnStart", true);
       if (stos)
       {
          fFile = true;

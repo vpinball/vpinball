@@ -906,7 +906,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       ptCur = GetActiveTable();
       if (ptCur)
       {
-         const int alwaysViewScript = LoadValueIntWithDefault("Editor", "AlwaysViewScript", 0);
+         const bool alwaysViewScript = LoadValueBoolWithDefault("Editor", "AlwaysViewScript", false);
 
          ptCur->m_pcv->SetVisible(alwaysViewScript || !(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized));
 
@@ -2733,8 +2733,8 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                   SaveValueInt("Player", "SecurityLevel", i);
             }
 
-            const size_t hangdetect = SendMessage(GetDlgItem(hwndDlg, IDC_HANGDETECT), BM_GETCHECK, 0, 0);
-            SaveValueInt("Player", "DetectHang", hangdetect);
+            const bool hangdetect = (SendMessage(GetDlgItem(hwndDlg, IDC_HANGDETECT), BM_GETCHECK, 0, 0) != 0);
+            SaveValueBool("Player", "DetectHang", hangdetect);
 
             EndDialog(hwndDlg, TRUE);
          }

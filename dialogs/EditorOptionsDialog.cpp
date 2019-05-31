@@ -40,7 +40,7 @@ BOOL EditorOptionsDialog::OnInitDialog()
     }
 
     // drag points
-    const int fdrawpoints = LoadValueIntWithDefault("Editor", "ShowDragPoints", 0);
+    const bool fdrawpoints = LoadValueBoolWithDefault("Editor", "ShowDragPoints", false);
     SendMessage(GetDlgItem(IDC_DRAW_DRAGPOINTS).GetHwnd(), BM_SETCHECK, fdrawpoints ? BST_CHECKED : BST_UNCHECKED, 0);
 
     SendMessage(GetDlgItem(IDC_COLOR).GetHwnd(), CHANGE_COLOR, 0, g_pvp->dummyMaterial.m_cBase);
@@ -49,13 +49,13 @@ BOOL EditorOptionsDialog::OnInitDialog()
     SendMessage(GetDlgItem(IDC_COLOR4).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_fillColor);
     SendMessage(GetDlgItem(IDC_COLOR5).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_backgroundColor);
     // light centers
-    const int fdrawcenters = LoadValueIntWithDefault("Editor", "DrawLightCenters", 0);
+    const bool fdrawcenters = LoadValueBoolWithDefault("Editor", "DrawLightCenters", false);
     SendMessage(GetDlgItem(IDC_DRAW_LIGHTCENTERS).GetHwnd(), BM_SETCHECK, fdrawcenters ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const int fautosave = LoadValueIntWithDefault("Editor", "AutoSaveOn", 1);
+    const bool fautosave = LoadValueBoolWithDefault("Editor", "AutoSaveOn", true);
     SendDlgItemMessage(IDC_AUTOSAVE, BM_SETCHECK, fautosave ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const int propFloating = LoadValueIntWithDefault("Editor", "PropertiesFloating", 1);
+    const bool propFloating = LoadValueBoolWithDefault("Editor", "PropertiesFloating", true);
     SendDlgItemMessage(IDC_PROP_FLOAT_CHECK, BM_SETCHECK, propFloating ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const int fautosavetime = LoadValueIntWithDefault("Editor", "AutoSaveTime", AUTOSAVE_DEFAULT_TIME);
@@ -64,22 +64,22 @@ BOOL EditorOptionsDialog::OnInitDialog()
     const int gridsize = LoadValueIntWithDefault("Editor", "GridSize", 50);
     SetDlgItemInt(IDC_GRID_SIZE, gridsize, FALSE);
 
-    const int throwBallsAlwaysOn = LoadValueIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0);
+    const bool throwBallsAlwaysOn = LoadValueBoolWithDefault("Editor", "ThrowBallsAlwaysOn", false);
     SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_SETCHECK, throwBallsAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const int ballControlAlwaysOn = LoadValueIntWithDefault("Editor", "BallControlAlwaysOn", 0);
+    const bool ballControlAlwaysOn = LoadValueBoolWithDefault("Editor", "BallControlAlwaysOn", false);
     SendDlgItemMessage(IDC_BALL_CONTROL_ALWAYS_ON_CHECK, BM_SETCHECK, ballControlAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const int groupElementsCollection = LoadValueIntWithDefault("Editor", "GroupElementsInCollection", 1);
+    const bool groupElementsCollection = LoadValueBoolWithDefault("Editor", "GroupElementsInCollection", true);
     SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_SETCHECK, groupElementsCollection ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const int alwaysViewScript = LoadValueIntWithDefault("Editor", "AlwaysViewScript", 0);
+    const bool alwaysViewScript = LoadValueBoolWithDefault("Editor", "AlwaysViewScript", false);
     SendDlgItemMessage(IDC_ALWAYSVIEWSCRIPT, BM_SETCHECK, alwaysViewScript ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const int throwBallSize = LoadValueIntWithDefault("Editor", "ThrowBallSize", 50);
     SetDlgItemInt( IDC_THROW_BALLS_SIZE_EDIT, throwBallSize, FALSE);
 
-    const int startVPfileDialog = LoadValueIntWithDefault("Editor", "SelectTableOnStart", 1);
+    const bool startVPfileDialog = LoadValueBoolWithDefault("Editor", "SelectTableOnStart", true);
     SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, startVPfileDialog ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const float throwBallMass = LoadValueFloatWithDefault("Editor", "ThrowBallMass", 1.0f);

@@ -691,8 +691,10 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                      break;
                   }
                }
+            break;
             }//case BN_CLICKED:
          }//switch (HIWORD(wParam))
+      break;
       }//case WM_COMMAND:
       default:
       {

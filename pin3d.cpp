@@ -311,11 +311,11 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
     if (!m_pd3dPrimaryDevice->LoadShaders())
         return E_FAIL;
 
-    const int forceAniso = LoadValueIntWithDefault("Player", "ForceAnisotropicFiltering", 1);
-    m_pd3dPrimaryDevice->ForceAnisotropicFiltering(!!forceAniso);
+    const bool forceAniso = LoadValueBoolWithDefault("Player", "ForceAnisotropicFiltering", true);
+    m_pd3dPrimaryDevice->ForceAnisotropicFiltering(forceAniso);
 
-    const int compressTextures = LoadValueIntWithDefault("Player", "CompressTextures", 0);
-    m_pd3dPrimaryDevice->CompressTextures(!!compressTextures);
+    const bool compressTextures = LoadValueBoolWithDefault("Player", "CompressTextures", false);
+    m_pd3dPrimaryDevice->CompressTextures(compressTextures);
 
     m_pd3dPrimaryDevice->SetViewport(&m_viewPort);
 

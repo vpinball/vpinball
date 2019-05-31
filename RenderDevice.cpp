@@ -605,7 +605,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    else
       params.MultiSampleQuality = min(params.MultiSampleQuality, MultiSampleQualityLevels);
 
-   const int softwareVP = LoadValueIntWithDefault("Player", "SoftwareVertexProcessing", 0);
+   const bool softwareVP = LoadValueBoolWithDefault("Player", "SoftwareVertexProcessing", false);
    const DWORD flags = softwareVP ? D3DCREATE_SOFTWARE_VERTEXPROCESSING : D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
    // Create the D3D device. This optionally goes to the proper fullscreen mode.
@@ -1287,18 +1287,18 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
    const int texheight = surf->height();
    const BaseTexture::Format basetexformat = surf->m_format;
 
-   const D3DFORMAT texformat = (D3DFORMAT)((m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? colorFormat::DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? (D3DFORMAT)colorFormat::RGBA32F : (D3DFORMAT)colorFormat::RGBA8));
+   const colorFormat texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? colorFormat::DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? colorFormat::RGBA32F : colorFormat::RGBA8);
 
    IDirect3DTexture9 *sysTex;
    HRESULT hr;
-   hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? 1 : 0, 0, texformat, (D3DPOOL)memoryPool::SYSTEM, &sysTex, NULL);
+   hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? 1 : 0, 0, (D3DFORMAT)texformat, (D3DPOOL)memoryPool::SYSTEM, &sysTex, NULL);
    if (FAILED(hr))
    {
       ReportError("Fatal Error: unable to create texture!", hr, __FILE__, __LINE__);
    }
 
    // copy data into system memory texture
-   if (texformat == (D3DFORMAT)colorFormat::RGBA32F)
+   if (texformat == colorFormat::RGBA32F)
    {
       D3DLOCKED_RECT locked;
       CHECKD3D(sysTex->LockRect(0, &locked, NULL, 0));
@@ -1335,7 +1335,7 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* const surf, const boo
 
    if (!(texformat != colorFormat::DXT5 && m_autogen_mipmap))
       // normal maps or float textures are already in linear space!
-      CHECKD3D(D3DXFilterTexture(sysTex, NULL, D3DX_DEFAULT, (texformat == (D3DFORMAT)colorFormat::RGBA32F || linearRGB) ? D3DX_FILTER_TRIANGLE : (D3DX_FILTER_TRIANGLE | D3DX_FILTER_SRGB)));
+      CHECKD3D(D3DXFilterTexture(sysTex, NULL, D3DX_DEFAULT, (texformat == colorFormat::RGBA32F || linearRGB) ? D3DX_FILTER_TRIANGLE : (D3DX_FILTER_TRIANGLE | D3DX_FILTER_SRGB)));
 
    return sysTex;
 }
@@ -1352,10 +1352,10 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* const surf, int * const pTe
 
    D3DTexture *sysTex = CreateSystemTexture(surf, linearRGB);
 
-   const D3DFORMAT texformat = (D3DFORMAT)((m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? colorFormat::DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? colorFormat::RGBA32F : colorFormat::RGBA8));
+   const colorFormat texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? colorFormat::DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? colorFormat::RGBA32F : colorFormat::RGBA8);
 
    D3DTexture *tex;
-   HRESULT hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? textureUsage::AUTOMIPMAP : 0, texformat, (D3DPOOL)memoryPool::DEFAULT, &tex, NULL);
+   HRESULT hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), (texformat != colorFormat::DXT5 && m_autogen_mipmap) ? textureUsage::AUTOMIPMAP : 0, (D3DFORMAT)texformat, (D3DPOOL)memoryPool::DEFAULT, &tex, NULL);
    if (FAILED(hr))
       ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
 
@@ -1366,7 +1366,7 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* const surf, int * const pTe
 
    SAFE_RELEASE(sysTex);
 
-   if (texformat != (D3DFORMAT)colorFormat::DXT5 && m_autogen_mipmap)
+   if (texformat != colorFormat::DXT5 && m_autogen_mipmap)
       tex->GenerateMipSubLevels(); // tell driver that now is a good time to generate mipmaps
 
    return tex;

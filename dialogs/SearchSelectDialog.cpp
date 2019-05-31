@@ -26,6 +26,8 @@ SearchSelectDialog::SearchSelectDialog() : CDialog(IDD_SEARCH_SELECT_ELEMENT)
     curTable = NULL;
 }
 
+static char szT[64]; //!! global, as otherwise can become invalid in assignment in Update() below
+
 void SearchSelectDialog::Update()
 {
    LVCOLUMN lvc;
@@ -59,7 +61,6 @@ void SearchSelectDialog::Update()
    for (int i = 0; i < curTable->m_vcollection.Size(); i++)
    {
       CComObject<Collection> *const pcol = curTable->m_vcollection.ElementAt(i);
-      char szT[64]; 
 
       WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, 64, NULL, NULL);
       lv.iItem = idx;
