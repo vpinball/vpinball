@@ -512,7 +512,7 @@ void Light::RenderDynamic()
    if (m_realState == LightStateBlinking)
       UpdateBlinker(g_pplayer->m_time_msec);
 
-   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
+   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_realState != LightStateOff);
 
    if (isOn)
    {
@@ -833,7 +833,7 @@ void Light::RenderSetup()
       m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
    }
 
-   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
+   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_realState != LightStateOff);
    if (isOn)
       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
    else
@@ -1501,7 +1501,7 @@ STDMETHODIMP Light::put_Intensity(float newVal)
    STARTUNDO
 
    m_d.m_intensity = max(0.f, newVal);
-   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
+   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_realState != LightStateOff);
    if (isOn)
       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
 
@@ -1539,13 +1539,13 @@ STDMETHODIMP Light::put_IntensityScale(float newVal)
 {
    STARTUNDO
 
-      m_d.m_intensity_scale = newVal;
-   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
+   m_d.m_intensity_scale = newVal;
+   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_realState != LightStateOff);
    if (isOn)
       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_Surface(BSTR *pVal)
@@ -1562,11 +1562,11 @@ STDMETHODIMP Light::put_Surface(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 
@@ -1602,11 +1602,11 @@ STDMETHODIMP Light::put_DepthBias(float newVal)
 {
    STARTUNDO
 
-      m_d.m_depthBias = newVal;
+   m_d.m_depthBias = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_FadeSpeedUp(float *pVal)
@@ -1620,11 +1620,11 @@ STDMETHODIMP Light::put_FadeSpeedUp(float newVal)
 {
    STARTUNDO
 
-      m_d.m_fadeSpeedUp = newVal;
+   m_d.m_fadeSpeedUp = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_FadeSpeedDown(float *pVal)

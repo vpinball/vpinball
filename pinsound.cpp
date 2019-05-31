@@ -129,7 +129,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    dsbd.dwFlags = DSBCAPS_PRIMARYBUFFER;
    if (!IsBackglass)
    {
-	   if (m_i3DSoundMode)
+	   if (m_i3DSoundMode != SNDCFG_SND3D2CH)
 		   dsbd.dwFlags |= DSBCAPS_CTRL3D;
    }
    dsbd.dwBufferBytes = 0;
@@ -145,7 +145,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    WAVEFORMATEX wfx;
    ZeroMemory(&wfx, sizeof(WAVEFORMATEX));
    wfx.wFormatTag = WAVE_FORMAT_PCM;
-   wfx.nChannels = m_i3DSoundMode ?  1 : 2;
+   wfx.nChannels = (m_i3DSoundMode != SNDCFG_SND3D2CH) ?  1 : 2;
    wfx.nSamplesPerSec = 44100;
    wfx.wBitsPerSample = 16;
    wfx.nBlockAlign = wfx.wBitsPerSample / (WORD)8 * wfx.nChannels;
@@ -156,7 +156,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
       ShowError("Could not set sound format.");
       return;// hr;
    }
-   if (!IsBackglass && m_i3DSoundMode)
+   if (!IsBackglass && (m_i3DSoundMode != SNDCFG_SND3D2CH))
    {
 	   // Obtain a listener interface.
 	   HRESULT result = pDSBPrimary->QueryInterface(IID_IDirectSound3DListener, (LPVOID*)&m_pDSListener);
@@ -235,7 +235,7 @@ HRESULT PinDirectSound::CreateStaticBuffer(const TCHAR* const strFileName, PinSo
    ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
    dsbd.dwSize = sizeof(DSBUFFERDESC);
    dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLPAN;
-   if (m_i3DSoundMode)
+   if (m_i3DSoundMode != SNDCFG_SND3D2CH)
 	   dsbd.dwFlags |= DSBCAPS_CTRL3D;
    dsbd.dwBufferBytes = m_pWaveSoundRead->m_ckIn.cksize;
    dsbd.lpwfxFormat = m_pWaveSoundRead->m_pwfx;
@@ -248,7 +248,7 @@ HRESULT PinDirectSound::CreateStaticBuffer(const TCHAR* const strFileName, PinSo
       ShowError("Could not create sound buffer.");
       return hr;
    }
-   if (m_i3DSoundMode) 
+   if (m_i3DSoundMode != SNDCFG_SND3D2CH)
    {
 	   pps->Get3DBuffer();
    }
@@ -329,7 +329,7 @@ HRESULT PinDirectSound::CreateDirectFromNative(PinSound * const pps)
    ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
    dsbd.dwSize = sizeof(DSBUFFERDESC);
    dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY;
-   if (m_i3DSoundMode)
+   if (m_i3DSoundMode != SNDCFG_SND3D2CH)
 	   dsbd.dwFlags |= DSBCAPS_CTRL3D;
    else
 	   dsbd.dwFlags |= DSBCAPS_CTRLPAN;
@@ -372,7 +372,7 @@ HRESULT PinDirectSound::CreateDirectFromNative(PinSound * const pps)
    pps->m_pDSBuffer->Unlock(pbData, pps->m_cdata, NULL, 0);
    pbData = NULL;
 
-   if (m_i3DSoundMode)
+   if (m_i3DSoundMode != SNDCFG_SND3D2CH)
    {
 	   pps->Get3DBuffer();
    }

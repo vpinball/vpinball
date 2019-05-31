@@ -358,7 +358,7 @@ void ISelect::GetTypeNameForType(ItemTypeEnum type, WCHAR * buf)
       strID = EditableRegistry::GetTypeNameStringID(type); break;
    }
 
-   LoadStringW(g_hinst, strID, buf, 256);
+   const int len = LoadStringW(g_hinst, strID, buf, 256);
 }
 
 BOOL ISelect::LoadToken(int id, BiffReader *pbr)

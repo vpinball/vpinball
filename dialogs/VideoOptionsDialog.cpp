@@ -262,20 +262,20 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const int useDN = LoadValueIntWithDefault("Player", "DynamicDayNight", 0);
    SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_SETCHECK, (useDN != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   int useAO = LoadValueIntWithDefault("Player", "DynamicAO", 0);
-   SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, (useAO != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+   bool useAO = LoadValueBoolWithDefault("Player", "DynamicAO", false);
+   SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_SETCHECK, useAO ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   useAO = LoadValueIntWithDefault("Player", "DisableAO", 0);
-   SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_SETCHECK, (useAO != 0) ? BST_UNCHECKED : BST_CHECKED, 0); // inverted logic
+   useAO = LoadValueBoolWithDefault("Player", "DisableAO", false);
+   SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_SETCHECK, useAO ? BST_UNCHECKED : BST_CHECKED, 0); // inverted logic
 
-   const int ssreflection = LoadValueIntWithDefault("Player", "SSRefl", 0);
+   const bool ssreflection = LoadValueBoolWithDefault("Player", "SSRefl", false);
    SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, ssreflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const int pfreflection = LoadValueIntWithDefault("Player", "PFRefl", 1);
+   const bool pfreflection = LoadValueBoolWithDefault("Player", "PFRefl", true);
    SendMessage(GetDlgItem(IDC_GLOBAL_PFREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, pfreflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const int overwiteBallImage = LoadValueIntWithDefault("Player", "OverwriteBallImage", 0);
-   SendMessage(GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd(), BM_SETCHECK, (overwiteBallImage != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+   const bool overwiteBallImage = LoadValueIntWithDefault("Player", "OverwriteBallImage", false);
+   SendMessage(GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd(), BM_SETCHECK, overwiteBallImage ? BST_CHECKED : BST_UNCHECKED, 0);
 
    char imageName[MAX_PATH] = { 0 };
    HRESULT hr = LoadValueString("Player", "BallImage", imageName, MAX_PATH);
@@ -333,25 +333,25 @@ BOOL VideoOptionsDialog::OnInitDialog()
    sprintf_s(tmp, 256, "%f", stereo3DZPD);
    SetDlgItemTextA(IDC_3D_STEREO_ZPD, tmp);
 
-   const int disableDWM = LoadValueIntWithDefault("Player", "DisableDWM", 0);
-   SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_SETCHECK, (disableDWM != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+   const bool disableDWM = LoadValueBoolWithDefault("Player", "DisableDWM", false);
+   SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_SETCHECK, disableDWM ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const int nvidiaApi = LoadValueIntWithDefault("Player", "UseNVidiaAPI", 0);
-   SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_SETCHECK, (nvidiaApi != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+   const bool nvidiaApi = LoadValueBoolWithDefault("Player", "UseNVidiaAPI", false);
+   SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_SETCHECK, nvidiaApi ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const int bloomOff = LoadValueIntWithDefault("Player", "ForceBloomOff", 0);
-   SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_SETCHECK, (bloomOff != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+   const bool bloomOff = LoadValueBoolWithDefault("Player", "ForceBloomOff", false);
+   SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_SETCHECK, bloomOff ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const bool forceAniso = (LoadValueIntWithDefault("Player", "ForceAnisotropicFiltering", 1) != 0);
+   const bool forceAniso = LoadValueBoolWithDefault("Player", "ForceAnisotropicFiltering", true);
    SendMessage(GetDlgItem(IDC_FORCE_ANISO).GetHwnd(), BM_SETCHECK, forceAniso ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const bool compressTextures = (LoadValueIntWithDefault("Player", "CompressTextures", 0) != 0);
+   const bool compressTextures = LoadValueBoolWithDefault("Player", "CompressTextures", false);
    SendMessage(GetDlgItem(IDC_TEX_COMPRESS).GetHwnd(), BM_SETCHECK, compressTextures ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const bool softwareVP = (LoadValueIntWithDefault("Player", "SoftwareVertexProcessing", 0) != 0);
+   const bool softwareVP = LoadValueBoolWithDefault("Player", "SoftwareVertexProcessing", false);
    SendMessage(GetDlgItem(IDC_SOFTWARE_VP).GetHwnd(), BM_SETCHECK, softwareVP ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const bool video10bit = (LoadValueIntWithDefault("Player", "Render10Bit", 0) != 0);
+   const bool video10bit = LoadValueBoolWithDefault("Player", "Render10Bit", false);
    SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_SETCHECK, video10bit ? BST_CHECKED : BST_UNCHECKED, 0);
 
    const int depthcur = LoadValueIntWithDefault("Player", "ColorDepth", 32);
@@ -713,13 +713,12 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 void VideoOptionsDialog::OnOK()
 {
    BOOL nothing = 0;
-   HWND hwndFullScreen = GetDlgItem(IDC_FULLSCREEN).GetHwnd();
-   size_t fullscreen = SendMessage(hwndFullScreen, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "FullScreen", fullscreen);
 
-   HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
-   size_t index = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
-   VideoMode* pvm = &allVideoModes[index];
+   const bool fullscreen = (SendMessage(GetDlgItem(IDC_FULLSCREEN).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "FullScreen", fullscreen);
+
+   const size_t index = SendMessage(GetDlgItem(IDC_SIZELIST).GetHwnd(), LB_GETCURSEL, 0, 0);
+   const VideoMode* const pvm = &allVideoModes[index];
    SaveValueInt("Player", "Width", pvm->width);
    SaveValueInt("Player", "Height", pvm->height);
    if (fullscreen)
@@ -727,39 +726,32 @@ void VideoOptionsDialog::OnOK()
       SaveValueInt("Player", "ColorDepth", pvm->depth);
       SaveValueInt("Player", "RefreshRate", pvm->refreshrate);
    }
-   HWND hwndDisplay = GetDlgItem(IDC_DISPLAY_ID).GetHwnd();
-   size_t display = SendMessage(hwndDisplay, CB_GETCURSEL, 0, 0);
+   const size_t display = SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
    SaveValueInt("Player", "Display", display);
 
-   HWND hwnd10bit = GetDlgItem(IDC_10BIT_VIDEO).GetHwnd();
-   size_t video10bit = SendMessage(hwnd10bit, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "Render10Bit", video10bit);
+   const bool video10bit = (SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "Render10Bit", video10bit);
 
-   HWND maxTexDim3072 = GetDlgItem(IDC_Tex3072).GetHwnd();
-   HWND maxTexDim1024 = GetDlgItem(IDC_Tex1024).GetHwnd();
-   HWND maxTexDim2048 = GetDlgItem(IDC_Tex2048).GetHwnd();
-   //HWND maxTexDimUnlimited = GetDlgItem(hwndDlg, IDC_TexUnlimited);
+   //const HWND maxTexDimUnlimited = GetDlgItem(hwndDlg, IDC_TexUnlimited);
    int maxTexDim = 0;
-   if (SendMessage(maxTexDim3072, BM_GETCHECK, 0, 0) == BST_CHECKED)
+   if (SendMessage(GetDlgItem(IDC_Tex3072).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
       maxTexDim = 3072;
-   if (SendMessage(maxTexDim1024, BM_GETCHECK, 0, 0) == BST_CHECKED)
+   if (SendMessage(GetDlgItem(IDC_Tex1024).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
       maxTexDim = 1024;
-   if (SendMessage(maxTexDim2048, BM_GETCHECK, 0, 0) == BST_CHECKED)
+   if (SendMessage(GetDlgItem(IDC_Tex2048).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
       maxTexDim = 2048;
    SaveValueInt("Player", "MaxTexDimension", maxTexDim);
 
-   HWND hwndReflect = GetDlgItem(IDC_GLOBAL_REFLECTION_CHECK).GetHwnd();
-   size_t reflection = SendMessage(hwndReflect, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "BallReflection", reflection);
+   const bool reflection = (SendMessage(GetDlgItem(IDC_GLOBAL_REFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "BallReflection", reflection);
 
-   HWND hwndTrail = GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd();
-   size_t trail = SendMessage(hwndTrail, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "BallTrail", trail);
+   const bool trail = (SendMessage(GetDlgItem(IDC_GLOBAL_TRAIL_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "BallTrail", trail);
 
-   int vsync = GetDlgItemInt(IDC_ADAPTIVE_VSYNC, nothing, TRUE);
+   const int vsync = GetDlgItemInt(IDC_ADAPTIVE_VSYNC, nothing, TRUE);
    SaveValueInt("Player", "AdaptiveVSync", vsync);
 
-   int maxPrerenderedFrames = GetDlgItemInt(IDC_MAX_PRE_FRAMES, nothing, TRUE);
+   const int maxPrerenderedFrames = GetDlgItemInt(IDC_MAX_PRE_FRAMES, nothing, TRUE);
    SaveValueInt("Player", "MaxPrerenderedFrames", maxPrerenderedFrames);
 
    CString tmpStr;
@@ -778,69 +770,55 @@ void VideoOptionsDialog::OnOK()
    tmpStr = GetDlgItemTextA(IDC_NUDGE_STRENGTH);
    SaveValueString("Player", "NudgeStrength", tmpStr.c_str());
 
-   HWND hwndFXAA = GetDlgItem(IDC_FXAACB).GetHwnd();
+   const HWND hwndFXAA = GetDlgItem(IDC_FXAACB).GetHwnd();
    size_t fxaa = SendMessage(hwndFXAA, CB_GETCURSEL, 0, 0);
    if (fxaa == LB_ERR)
       fxaa = 2;
    SaveValueInt("Player", "FXAA", fxaa);
 
-   HWND hwndScaleFXDMD = GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd();
-   size_t scaleFX_DMD = SendMessage(hwndScaleFXDMD, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "ScaleFXDMD", scaleFX_DMD);
+   const bool scaleFX_DMD = (SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "ScaleFXDMD", scaleFX_DMD);
 
-   HWND hwndBGSet = GetDlgItem(IDC_BG_SET).GetHwnd();
-   size_t BGSet = SendMessage(hwndBGSet, BM_GETCHECK, 0, 0);
+   const size_t BGSet = SendMessage(GetDlgItem(IDC_BG_SET).GetHwnd(), BM_GETCHECK, 0, 0);
    SaveValueInt("Player", "BGSet", BGSet);
 
-   HWND hwndUseAA = GetDlgItem(IDC_AA_ALL_TABLES).GetHwnd();
-   size_t useAA = SendMessage(hwndUseAA, BM_GETCHECK, 0, 0);
+   const size_t useAA = SendMessage(GetDlgItem(IDC_AA_ALL_TABLES).GetHwnd(), BM_GETCHECK, 0, 0);
    SaveValueInt("Player", "USEAA", useAA);
 
-   HWND hwndUseDN = GetDlgItem(IDC_DYNAMIC_DN).GetHwnd();
-   size_t useDN = SendMessage(hwndUseDN, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "DynamicDayNight", useDN);
+   const bool useDN = (SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "DynamicDayNight", useDN);
 
-   HWND hwndUseAO = GetDlgItem(IDC_DYNAMIC_AO).GetHwnd();
-   size_t useAO = SendMessage(hwndUseAO, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "DynamicAO", useAO);
+   bool useAO = (SendMessage(GetDlgItem(IDC_DYNAMIC_AO).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "DynamicAO", useAO);
 
-   hwndUseAO = GetDlgItem(IDC_ENABLE_AO).GetHwnd();
-   useAO = SendMessage(hwndUseAO, BM_GETCHECK, 0, 0) ? 0 : 1; // inverted logic
-   SaveValueInt("Player", "DisableAO", useAO);
+   useAO = SendMessage(GetDlgItem(IDC_ENABLE_AO).GetHwnd(), BM_GETCHECK, 0, 0) ? false : true; // inverted logic
+   SaveValueBool("Player", "DisableAO", useAO);
 
-   HWND hwndSSReflect = GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd();
-   size_t ssreflection = SendMessage(hwndSSReflect, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "SSRefl", ssreflection);
+   const bool ssreflection = (SendMessage(GetDlgItem(IDC_GLOBAL_SSREFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "SSRefl", ssreflection);
 
-   HWND hwndPFReflect = GetDlgItem(IDC_GLOBAL_PFREFLECTION_CHECK).GetHwnd();
-   size_t pfreflection = SendMessage(hwndPFReflect, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "PFRefl", pfreflection);
+   const bool pfreflection = (SendMessage(GetDlgItem(IDC_GLOBAL_PFREFLECTION_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "PFRefl", pfreflection);
 
-   HWND hwndStereo3D = GetDlgItem(IDC_3D_STEREO).GetHwnd();
-   size_t stereo3D = SendMessage(hwndStereo3D, CB_GETCURSEL, 0, 0);
+   size_t stereo3D = SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (stereo3D == LB_ERR)
       stereo3D = 0;
    SaveValueInt("Player", "Stereo3D", stereo3D);
    SaveValueInt("Player", "Stereo3DEnabled", stereo3D);
 
-   HWND hwndStereo3DY = GetDlgItem(IDC_3D_STEREO_Y).GetHwnd();
-   size_t stereo3DY = SendMessage(hwndStereo3DY, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "Stereo3DYAxis", stereo3DY);
+   const bool stereo3DY = (SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "Stereo3DYAxis", stereo3DY);
 
-   HWND hwndForceAniso = GetDlgItem(IDC_FORCE_ANISO).GetHwnd();
-   size_t forceAniso = SendMessage(hwndForceAniso, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "ForceAnisotropicFiltering", forceAniso);
+   const bool forceAniso = (SendMessage(GetDlgItem(IDC_FORCE_ANISO).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "ForceAnisotropicFiltering", forceAniso);
 
-   HWND hwndTexCompress = GetDlgItem(IDC_TEX_COMPRESS).GetHwnd();
-   size_t texCompress = SendMessage(hwndTexCompress, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "CompressTextures", texCompress);
+   const bool texCompress = (SendMessage(GetDlgItem(IDC_TEX_COMPRESS).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "CompressTextures", texCompress);
 
-   HWND hwndSoftwareVP = GetDlgItem(IDC_SOFTWARE_VP).GetHwnd();
-   size_t softwareVP = SendMessage(hwndSoftwareVP, BM_GETCHECK, 0, 0);
-   SaveValueBool("Player", "SoftwareVertexProcessing", softwareVP != 0);
+   const bool softwareVP = (SendMessage(GetDlgItem(IDC_SOFTWARE_VP).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "SoftwareVertexProcessing", softwareVP);
 
-   HWND hwndAraSlider = GetDlgItem(IDC_ARASlider).GetHwnd();
-   size_t alphaRampsAccuracy = SendMessage(hwndAraSlider, TBM_GETPOS, 0, 0);
+   const size_t alphaRampsAccuracy = SendMessage(GetDlgItem(IDC_ARASlider).GetHwnd(), TBM_GETPOS, 0, 0);
    SaveValueInt("Player", "AlphaRampAccuracy", alphaRampsAccuracy);
 
    tmpStr = GetDlgItemTextA(IDC_3D_STEREO_OFS);
@@ -852,32 +830,26 @@ void VideoOptionsDialog::OnOK()
    tmpStr = GetDlgItemTextA(IDC_3D_STEREO_ZPD);
    SaveValueString("Player", "Stereo3DZPD", tmpStr.c_str());
 
-   HWND hwndDisableDWM = GetDlgItem(IDC_DISABLE_DWM).GetHwnd();
-   size_t disableDWM = SendMessage(hwndDisableDWM, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "DisableDWM", disableDWM);
+   const bool disableDWM = (SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "DisableDWM", disableDWM);
 
-   HWND hwndNvidiaApi = GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd();
-   size_t nvidiaApi = SendMessage(hwndNvidiaApi, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "UseNVidiaAPI", nvidiaApi);
+   const bool nvidiaApi = (SendMessage(GetDlgItem(IDC_USE_NVIDIA_API_CHECK).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "UseNVidiaAPI", nvidiaApi);
 
-   HWND hwndBloomOff = GetDlgItem(IDC_BLOOM_OFF).GetHwnd();
-   size_t bloomOff = SendMessage(hwndBloomOff, BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "ForceBloomOff", bloomOff);
+   const bool bloomOff = (SendMessage(GetDlgItem(IDC_BLOOM_OFF).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
+   SaveValueBool("Player", "ForceBloomOff", bloomOff);
 
    //HWND hwndBallStretchNo = GetDlgItem(hwndDlg, IDC_StretchNo);
-   HWND hwndBallStretchYes = GetDlgItem(IDC_StretchYes).GetHwnd();
-   HWND hwndBallStretchMonitor = GetDlgItem(IDC_StretchMonitor).GetHwnd();
    int ballStretchMode = 0;
-   if (SendMessage(hwndBallStretchYes, BM_GETCHECK, 0, 0) == BST_CHECKED)
+   if (SendMessage(GetDlgItem(IDC_StretchYes).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
       ballStretchMode = 1;
-   if (SendMessage(hwndBallStretchMonitor, BM_GETCHECK, 0, 0) == BST_CHECKED)
+   if (SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED)
       ballStretchMode = 2;
    SaveValueInt("Player", "BallStretchMode", ballStretchMode);
 
    // get selected Monitors
    // Monitors: 4:3, 16:9, 16:10, 21:10
-   HWND hwndBallStretchCombo = GetDlgItem(IDC_MonitorCombo).GetHwnd();
-   size_t selected = SendMessage(hwndBallStretchCombo, CB_GETCURSEL, 0, 0);
+   size_t selected = SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (selected == LB_ERR)
       selected = 1; // assume a 16:9 Monitor as standard
    SaveValueInt("Player", "BallStretchMonitor", selected);
@@ -885,14 +857,14 @@ void VideoOptionsDialog::OnOK()
    const bool overwriteEnabled = IsDlgButtonChecked(IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED;
    if (overwriteEnabled)
    {
-      SaveValueInt("Player", "OverwriteBallImage", 1);
+      SaveValueBool("Player", "OverwriteBallImage", true);
       tmpStr = GetDlgItemText(IDC_BALL_IMAGE_EDIT);
       SaveValueString("Player", "BallImage", tmpStr.c_str());
       tmpStr = GetDlgItemText(IDC_BALL_DECAL_EDIT);
       SaveValueString("Player", "DecalImage", tmpStr.c_str());
    }
    else
-      SaveValueInt("Player", "OverwriteBallImage", 0);
+      SaveValueBool("Player", "OverwriteBallImage", false);
 
    CDialog::OnOK();
 }

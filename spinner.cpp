@@ -76,7 +76,7 @@ void Spinner::WriteRegDefaults()
    SaveValueFloat("DefaultProps\\Spinner", "Elasticity", m_d.m_elasticity);
    SaveValueFloat("DefaultProps\\Spinner", "AntiFriction", m_d.m_damping);
    SaveValueFloat("DefaultProps\\Spinner", "Scatter", m_d.m_scatter);
-   SaveValueInt("DefaultProps\\Spinner", "Visible", m_d.m_fVisible);
+   SaveValueBool("DefaultProps\\Spinner", "Visible", m_d.m_fVisible);
    SaveValueBool("DefaultProps\\Spinner", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
    SaveValueInt("DefaultProps\\Spinner", "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SaveValueString("DefaultProps\\Spinner", "Image", m_d.m_szImage);
