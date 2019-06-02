@@ -14,7 +14,7 @@ void TableInfoDialog::OnClose()
 
 BOOL TableInfoDialog::OnInitDialog()
 {
-   CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
 
 /*
    HWND hwndParent = GetParent().GetHwnd();
@@ -43,12 +43,12 @@ BOOL TableInfoDialog::OnInitDialog()
 
    // Init list of images
 
-   HWND hwndList = GetDlgItem(IDC_SCREENSHOT).GetHwnd();
+   const HWND hwndList = GetDlgItem(IDC_SCREENSHOT).GetHwnd();
 
-   LocalString ls(IDS_NONE);
+   const LocalString ls(IDS_NONE);
    ::SendMessage(hwndList, CB_ADDSTRING, 0, (LPARAM)ls.m_szbuffer);
 
-   for (unsigned i = 0; i < pt->m_vimage.size(); ++i)
+   for (size_t i = 0; i < pt->m_vimage.size(); ++i)
    {
       Texture * const pin = pt->m_vimage[i];
       if (pin->m_ppb)
@@ -81,7 +81,7 @@ BOOL TableInfoDialog::OnInitDialog()
 
 INT_PTR TableInfoDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
 
    switch (uMsg)
    {
@@ -119,7 +119,7 @@ INT_PTR TableInfoDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void TableInfoDialog::VPGetDialogItemText(int nIDDlgItem, char **psztext)
 {
-   HWND hwndItem = GetDlgItem(nIDDlgItem);
+   const HWND hwndItem = GetDlgItem(nIDDlgItem);
 
    const int length = ::GetWindowTextLength(hwndItem);
    *psztext = new char[length + 1];
@@ -136,7 +136,7 @@ BOOL TableInfoDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    {
       case IDC_ADD:
       {
-         CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+         CCO(PinTable) *const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
          char *szCustomName;
          VPGetDialogItemText(IDC_CUSTOMNAME, &szCustomName);
          if (szCustomName[0] != '\0')
@@ -221,11 +221,11 @@ void TableInfoDialog::OnOK()
    VPGetDialogItemText(IDC_DESCRIPTION, &pt->m_szDescription);
    VPGetDialogItemText(IDC_RULES, &pt->m_szRules);
 
-   HWND hwndList = GetDlgItem(IDC_SCREENSHOT).GetHwnd();
+   const HWND hwndList = GetDlgItem(IDC_SCREENSHOT).GetHwnd();
 
    ::GetWindowText(hwndList, pt->m_szScreenShot, MAXTOKEN);
 
-   LocalString ls(IDS_NONE);
+   const LocalString ls(IDS_NONE);
    if (!lstrcmp(pt->m_szScreenShot, ls.m_szbuffer))
    {
       // <None> is selected
