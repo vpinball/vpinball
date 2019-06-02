@@ -32,7 +32,7 @@ void SoundDialog::OnDestroy()
 void SoundDialog::OnClose()
 {
     SavePosition();
-    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+    CCO(PinTable) *const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
     if (pt && m_bPlayedSound)
     {
         pt->StopAllSounds(); 
@@ -61,7 +61,7 @@ int DPIValue(int value)
 
 BOOL SoundDialog::OnInitDialog()
 {
-    CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
+    CCO( PinTable ) *const pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
     hSoundList = GetDlgItem( IDC_SOUNDLIST ).GetHwnd();
 
     LoadPosition();
@@ -108,8 +108,8 @@ BOOL SoundDialog::OnInitDialog()
 
 INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
-    HWND hwndDlg = GetHwnd();
-    CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
+    const HWND hwndDlg = GetHwnd();
+    CCO( PinTable ) *const pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
 
     switch(uMsg)
     {
@@ -218,7 +218,6 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
             break;
         }
         default: return FALSE;
-            
     }
 
     return TRUE;

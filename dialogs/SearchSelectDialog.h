@@ -22,9 +22,10 @@ private:
    void SavePosition();
    void SelectElement();
    void SortItems(const int columnNumber);
-   HWND hElementList;
+
+   HWND m_hElementList;
    CResizer m_resizer;
-   CCO(PinTable) *curTable;
+   CCO(PinTable) *m_curTable;
    static int m_columnSortOrder;
    static int m_lastSortColumn;
    static bool m_switchSortOrder;

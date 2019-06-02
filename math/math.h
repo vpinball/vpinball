@@ -36,6 +36,17 @@ __forceinline float precise_divide(const float a, const float b)
     return _mm_cvtss_f32(_mm_div_ss(_mm_set_ss(a), _mm_set_ss(b)));
 }
 
+__forceinline double force_add(const double a, const double b) // hopefully compiler is not smart enough to still change order of computations then
+{
+    return _mm_cvtsd_f64(_mm_add_sd(_mm_set_sd(a), _mm_set_sd(b)));
+}
+
+__forceinline double force_add_in_order(const double a, const double b, const double c) // hopefully compiler is not smart enough to still change order of computations then
+{
+    return _mm_cvtsd_f64(_mm_add_sd(_mm_add_sd(_mm_set_sd(a), _mm_set_sd(b)),_mm_set_sd(c)));
+}
+
+
 
 // from "Scalar quantization to a signed integer" by Rutanen, keeps values under continuous quantize/dequantize cycles constant (and more)
 // BUT cannot map max values, e.g. for 7 bits: -1. -> -127 -> 0.99.. and 1. -> 127 -> 0.99..
