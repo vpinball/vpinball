@@ -274,7 +274,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const bool pfreflection = LoadValueBoolWithDefault("Player", "PFRefl", true);
    SendMessage(GetDlgItem(IDC_GLOBAL_PFREFLECTION_CHECK).GetHwnd(), BM_SETCHECK, pfreflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const bool overwiteBallImage = LoadValueIntWithDefault("Player", "OverwriteBallImage", false);
+   const bool overwiteBallImage = LoadValueBoolWithDefault("Player", "OverwriteBallImage", false);
    SendMessage(GetDlgItem(IDC_OVERWRITE_BALL_IMAGE_CHECK).GetHwnd(), BM_SETCHECK, overwiteBallImage ? BST_CHECKED : BST_UNCHECKED, 0);
 
    char imageName[MAX_PATH] = { 0 };
