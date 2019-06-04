@@ -25,6 +25,10 @@ __forceinline float atan2_approx_div2PI(const float y, const float x)
 
 	const float abs_y = fabsf(y);
 	const float abs_x = fabsf(x);
+
+	if(abs_x < 0.0000001f && abs_y < 0.0000001f)
+	   return 0.f;//(float)(M_PI/4.)*(float)(0.5/M_PI);
+
 	const float r = (abs_x - abs_y) / (abs_x + abs_y);
 	const float angle = ((x < 0.f) ? (float)(3./8.) : (float)(1./8.))
 	                  + ((float)(0.211868/*C3*//(2.*M_PI)) * r * r - (float)(0.987305/*C1*//(2.*M_PI))) * ((x < 0.f) ? -r : r);
