@@ -45,7 +45,7 @@ sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribu
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
 	ADDRESSU  = Wrap;
-	ADDRESSV  = Clamp;
+	ADDRESSV  = Wrap;
 };
 
 sampler2D texSampler7 : TEXUNIT3 = sampler_state // ball decal
