@@ -137,10 +137,7 @@ STDMETHODIMP ScriptGlobalTable::NudgeSetCalibration(int XMax, int YMax, int XGai
 	{
 		newvalue = 0;
 		SaveValueInt("Player", "TiltSensCB", newvalue);
-		HKEY hkey;
-		RegOpenKey(HKEY_CURRENT_USER, "Software\\Visual Pinball\\Player", &hkey);
-		RegDeleteValue(hkey, "TiltSensitivity");
-		RegCloseKey(hkey);
+		DeleteValue("Player", "TiltSensitivity");
 	}
 	
 	m_pt->ReadAccelerometerCalibration();
@@ -1455,23 +1452,14 @@ PinTable::PinTable()
 
    ReadAccelerometerCalibration();
 
-   m_tblAutoStart = 0;
-   hr = LoadValueInt("Player", "Autostart", &tmp);
-   if (hr == S_OK)
-      m_tblAutoStart = tmp * 10;
+   m_tblAutoStart = LoadValueIntWithDefault("Player", "Autostart", 0) * 10;
 
    m_tblAutoStartRetry = LoadValueIntWithDefault("Player", "AutostartRetry", 0) * 10;
    m_tblAutoStartEnabled = LoadValueBoolWithDefault("Player", "asenable", false);
 
-   m_tblVolmod = 1.0f;
-   hr = LoadValueInt("Player", "Volmod", &tmp);
-   if (hr == S_OK)
-      m_tblVolmod = (float)tmp*(float)(1.0 / 1000.0);
+   m_tblVolmod = (float)LoadValueIntWithDefault("Player", "Volmod", 1000) * (float)(1.0 / 1000.0);
 
-   m_tblExitConfirm = 2000;
-   hr = LoadValueInt("Player", "Exitconfirm", &tmp);
-   if (hr == S_OK)
-      m_tblExitConfirm = tmp * 1000 / 60;
+   m_tblExitConfirm = LoadValueIntWithDefault("Player", "Exitconfirm", 120) * 1000 / 60;
 
    SaveValueString("Version", "VPinball", VP_VERSION_STRING_DIGITS);
 
@@ -5231,14 +5219,13 @@ static char elementName[256];
 char *PinTable::GetElementName(IEditable *pedit)
 {
    WCHAR *elemName = NULL;
-   IScriptable *pscript = NULL;
    if (pedit)
    {
-      pscript = pedit->GetScriptable();
       if (pedit->GetItemType() == eItemDecal)
       {
          return "Decal";
       }
+      IScriptable * const pscript = pedit->GetScriptable();
       if (pscript)
       {
          elemName = pscript->m_wzName;
@@ -5504,7 +5491,7 @@ void PinTable::UpdateCollection(int index)
          /* if the selection is part of the selected collection remove only remove these elements*/
          for (int t = 0; t < m_vmultisel.Size(); t++)
          {
-            ISelect *ptr = m_vmultisel.ElementAt(t);
+            ISelect * const ptr = m_vmultisel.ElementAt(t);
             for (int k = 0; k < m_vcollection.ElementAt(index)->m_visel.Size(); k++)
             {
                if (ptr == m_vcollection.ElementAt(index)->m_visel.ElementAt(k))

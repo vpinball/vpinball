@@ -3,7 +3,9 @@
 #define VP_REGKEY_GENERAL "Software\\Visual Pinball\\"
 #define VP_REGKEY "Software\\Visual Pinball\\VP10\\"
 
-
+#ifdef ENABLE_INI
+ //!! TODO implement reading/writing to ini file instead of registry
+#else
 HRESULT LoadValue(const char *szKey, const char *szValue, DWORD *ptype, void *pvalue, DWORD size);
 
 
@@ -152,3 +154,28 @@ HRESULT SaveValueString(const char *szKey, const char *szValue, const char *val)
 {
    return SaveValue(szKey, szValue, REG_SZ, val, lstrlen(val));
 }
+
+HRESULT DeleteValue(const char *szKey, const char *szValue)
+{
+   char szPath[MAXSTRING];
+   if (strcmp(szKey, "Controller") == 0)
+      lstrcpy(szPath, VP_REGKEY_GENERAL);
+   else
+      lstrcpy(szPath, VP_REGKEY);
+   lstrcat(szPath, szKey);
+
+   HKEY hk;
+   DWORD RetVal = RegOpenKeyEx(HKEY_CURRENT_USER, szPath, 0, KEY_ALL_ACCESS, &hk);
+
+   if (RetVal == ERROR_SUCCESS)
+   {
+      RetVal = RegDeleteValue(hk, szValue);
+      RegCloseKey(hk);
+   }
+   else {
+      return ERROR_SUCCESS; // It is a success if you want to delete something that doesn't exist.
+   }
+
+   return (RetVal == ERROR_SUCCESS) ? S_OK : E_FAIL;
+}
+#endif

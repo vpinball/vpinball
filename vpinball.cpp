@@ -1751,9 +1751,9 @@ bool VPinball::CanClose()
 {
    while (m_vtable.size())
    {
-      const bool CanClose = CloseTable(m_vtable[0]);
+      const bool canClose = CloseTable(m_vtable[0]);
 
-      if (!CanClose)
+      if (!canClose)
          return false;
    }
 
@@ -2181,8 +2181,8 @@ void VPinball::OnClose()
    if (g_pplayer)
       SendMessage(g_pplayer->m_playfieldHwnd, WM_CLOSE, 0, 0);
 
-   const bool CanClose = g_pvp->CanClose();
-   if (CanClose)
+   const bool canClose = g_pvp->CanClose();
+   if (canClose)
    {
       WINDOWPLACEMENT winpl;
       winpl.length = sizeof(winpl);

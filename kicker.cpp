@@ -1031,12 +1031,12 @@ STDMETHODIMP Kicker::put_Radius(float newVal)
 {
    STARTUNDO
 
-      m_d.m_radius = newVal;
+   m_d.m_radius = newVal;
 
    STOPUNDO
    UpdateUnitsInfo();
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Kicker::get_FallThrough(VARIANT_BOOL *pVal)
@@ -1050,11 +1050,11 @@ STDMETHODIMP Kicker::put_FallThrough(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fFallThrough = VBTOF(newVal);
+   m_d.m_fFallThrough = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Kicker::get_Legacy(VARIANT_BOOL *pVal)

@@ -1526,17 +1526,19 @@ STRINGTABLE
 BEGIN
     IDS_DRAWINBACK          "In den Hintergrund"
     IDS_SAVEERROR           "Fehler beim Speichern der Datei."
-    IDS_TB_BACKGLASS        "Backglass/POV"
-    IDS_WRONGFILEVERSION    "Visual Pinball can not load a file of that version."
-    IDS_NOPASTEINVIEW       "Visual Pinball kann Datei mit dieser Versionsnummer nicht laden"
+    IDS_TB_BACKGLASS        "Backdrop/POV"
+    IDS_WRONGFILEVERSION    "Diese Datei wurde mit einer neueren Version von Visual Pinball erstellt."
+    IDS_NOPASTEINVIEW       "Eines oder mehrere Elemente in der Zwischenablage konnte nicht eingefügt werden."
     IDS_FINDLOOPED          "Dateiende erreicht"
     IDS_FINDFAILED          "Kann Suchbegriff nicht finden: '"
     IDS_FINDFAILED2         "'"
     IDS_CONTROLPOINT        "Kontrollpunkt"
     IDS_CORRUPTFILE         "Diese Datei ist defekt und kann nicht geladen werden!"
-    IDS_UNSECURECONTROL1    "This table is attempting to create an object of type '"
-    IDS_UNSECURECONTROL2    "'.  This object is not marked as being safe, and may represent a security threat.  Do you want to allow this object to be created?  Only answer Yes if you completely trust the source of this table."
+    IDS_REMOVEMATERIAL      "Ausgewählte Materialien wirklich löschen?"
+    IDS_UNSECURECONTROL1    "Dieser Tisch möche ein '"
+    IDS_UNSECURECONTROL2    "' Objekt erstellen. Dieses Objekt stellt möglicherweise ein Sicherheitsrisiko dar.  Soll es wirklich erstellt werden?"
     IDS_COLLECTION          "Collection"
+    IDS_DEFAULTPHYSICS      "Sollen die Physikeinstellungen wirklich zurückgesetzt werden?"
 END
 
 STRINGTABLE 
