@@ -460,7 +460,7 @@ public:
    void SetTexture(const D3DXHANDLE texelName, D3DTexture *texel);
    void SetMaterial(const Material * const mat);
 
-   void SetDisableLighting(const D3DXVECTOR4& value) // sets the two top and below lighting flags, z and w unused
+   void SetDisableLighting(const vec4& value) // sets the two top and below lighting flags, z and w unused
    {
       if (currentDisableLighting.x != value.x || currentDisableLighting.y != value.y)
       {
@@ -478,7 +478,7 @@ public:
       }
    }
 
-   void SetFlasherColorAlpha(const D3DXVECTOR4& color)
+   void SetFlasherColorAlpha(const vec4& color)
    {
       if (currentFlasherColor.x != color.x || currentFlasherColor.y != color.y || currentFlasherColor.z != color.z || currentFlasherColor.w != color.w)
       {
@@ -487,7 +487,7 @@ public:
       }
    }
 
-   void SetFlasherData(const D3DXVECTOR4& color, const float mode)
+   void SetFlasherData(const vec4& color, const float mode)
    {
       if (currentFlasherData.x != color.x || currentFlasherData.y != color.y || currentFlasherData.z != color.z || currentFlasherData.w != color.w)
       {
@@ -501,7 +501,7 @@ public:
       }
    }
 
-   void SetLightColorIntensity(const D3DXVECTOR4& color)
+   void SetLightColorIntensity(const vec4& color)
    {
       if (currentLightColor.x != color.x || currentLightColor.y != color.y || currentLightColor.z != color.z || currentLightColor.w != color.w)
       {
@@ -510,7 +510,7 @@ public:
       }
    }
 
-   void SetLightColor2FalloffPower(const D3DXVECTOR4& color)
+   void SetLightColor2FalloffPower(const vec4& color)
    {
       if (currentLightColor2.x != color.x || currentLightColor2.y != color.y || currentLightColor2.z != color.z || currentLightColor2.w != color.w)
       {
@@ -519,7 +519,7 @@ public:
       }
    }
 
-   void SetLightData(const D3DXVECTOR4& color)
+   void SetLightData(const vec4& color)
    {
       if (currentLightData.x != color.x || currentLightData.y != color.y || currentLightData.z != color.z || currentLightData.w != color.w)
       {
@@ -557,7 +557,7 @@ public:
       m_renderDevice->m_curParameterChanges++;
    }
 
-   void SetVector(const D3DXHANDLE hParameter, const D3DXVECTOR4* pVector)
+   void SetVector(const D3DXHANDLE hParameter, const vec4* pVector)
    {
       CHECKD3D(m_shader->SetVector(hParameter, pVector));
       m_renderDevice->m_curParameterChanges++;
@@ -595,20 +595,20 @@ private:
 
    Material currentMaterial;
 
-   D3DXVECTOR4 currentDisableLighting; // x and y: top and below, z and w unused
+   vec4 currentDisableLighting; // x and y: top and below, z and w unused
 
    static const DWORD TEXTURESET_STATE_CACHE_SIZE = 5; // current convention: SetTexture gets "TextureX", where X 0..4
    BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];
    float   currentAlphaTestValue;
    char    currentTechnique[64];
 
-   D3DXVECTOR4 currentFlasherColor; // all flasher only-data
-   D3DXVECTOR4 currentFlasherData;
+   vec4 currentFlasherColor; // all flasher only-data
+   vec4 currentFlasherData;
    float currentFlasherMode;
 
-   D3DXVECTOR4 currentLightColor; // all light only-data
-   D3DXVECTOR4 currentLightColor2;
-   D3DXVECTOR4 currentLightData;
+   vec4 currentLightColor; // all light only-data
+   vec4 currentLightColor2;
+   vec4 currentLightData;
    unsigned int currentLightImageMode;
    unsigned int currentLightBackglassMode;
 };

@@ -1228,7 +1228,7 @@ void Flasher::RenderDynamic()
    if (!m_d.m_IsVisible || dynamicVertexBuffer == NULL || m_ptable->m_fReflectionEnabled || (m_d.m_IsDMD && !g_pplayer->m_texdmd))
       return;
 
-   const D3DXVECTOR4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
+   const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
    if (color.w == 0.f)
       return;
 
@@ -1293,9 +1293,9 @@ void Flasher::RenderDynamic()
        pd3dDevice->DMDShader->SetVector("vColor_Intensity", &color);
 
 #ifdef DMD_UPSCALE
-       const D3DXVECTOR4 r((float)(g_pplayer->m_dmdx*3), (float)(g_pplayer->m_dmdy*3), m_d.m_modulate_vs_add, 0.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+       const vec4 r((float)(g_pplayer->m_dmdx*3), (float)(g_pplayer->m_dmdy*3), m_d.m_modulate_vs_add, 0.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
 #else
-       const D3DXVECTOR4 r((float)g_pplayer->m_dmdx, (float)g_pplayer->m_dmdy, m_d.m_modulate_vs_add, 0.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+       const vec4 r((float)g_pplayer->m_dmdx, (float)g_pplayer->m_dmdy, m_d.m_modulate_vs_add, 0.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
 #endif
        pd3dDevice->DMDShader->SetVector("vRes_Alpha", &r);
 
@@ -1329,13 +1329,13 @@ void Flasher::RenderDynamic()
        else
            hdrTex0 = false;
 
-       const D3DXVECTOR4 ab((float)m_d.m_filterAmount / 100.0f, min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
+       const vec4 ab((float)m_d.m_filterAmount / 100.0f, min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
            hdrTex0 ? 1.f : 0.f, (pinA && pinB && pinB->IsHDR()) ? 1.f : 0.f);
        pd3dDevice->flasherShader->SetVector("amount__blend_modulate_vs_add__hdrTexture01", &ab);
 
        pd3dDevice->flasherShader->SetFlasherColorAlpha(color);
 
-       D3DXVECTOR4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_fAddBlend ? 1.f : 0.f);
+       vec4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_fAddBlend ? 1.f : 0.f);
        float flasherMode;
        pd3dDevice->flasherShader->SetTechnique("basic_noLight");
 

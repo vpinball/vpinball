@@ -232,7 +232,7 @@ void DispReel::RenderDynamic()
 
    pd3dDevice->DMDShader->SetTechnique("basic_noDMD");
 
-   const D3DXVECTOR4 c = convertColor(0xFFFFFFFF, 1.f);
+   const vec4 c = convertColor(0xFFFFFFFF, 1.f);
    pd3dDevice->DMDShader->SetVector("vColor_Intensity", &c);
 
    pd3dDevice->DMDShader->SetTexture("Texture0", pin, false);

@@ -1044,7 +1044,7 @@ void Surface::RenderWallsAtHeight(const bool fDrop)
 
    if ((m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f) && (m_d.m_fSideVisible || m_d.m_fTopBottomVisible))
    {
-      const D3DXVECTOR4 tmp(m_d.m_fDisableLightingTop,m_d.m_fDisableLightingBelow, 0.f,0.f);
+      const vec4 tmp(m_d.m_fDisableLightingTop,m_d.m_fDisableLightingBelow, 0.f,0.f);
       pd3dDevice->basicShader->SetDisableLighting(tmp);
    }
 
@@ -1134,7 +1134,7 @@ void Surface::RenderWallsAtHeight(const bool fDrop)
    //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
    if ((m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f) && (m_d.m_fSideVisible || m_d.m_fTopBottomVisible))
    {
-      const D3DXVECTOR4 tmp(0.f,0.f, 0.f,0.f);
+      const vec4 tmp(0.f,0.f, 0.f,0.f);
       pd3dDevice->basicShader->SetDisableLighting(tmp);
    }
 
@@ -1144,7 +1144,7 @@ void Surface::AddPoint(int x, int y, const bool smooth)
 {
    STARTUNDO
 
-      const Vertex2D v = m_ptable->TransformPoint(x, y);
+   const Vertex2D v = m_ptable->TransformPoint(x, y);
 
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);

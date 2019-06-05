@@ -536,8 +536,8 @@ void Light::RenderDynamic()
    Texture *offTexel = NULL;
 
    // early out all lights with no contribution
-   const D3DXVECTOR4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
-   D3DXVECTOR4 lightColor_intensity = convertColor(m_d.m_color);
+   const vec4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
+   vec4 lightColor_intensity = convertColor(m_d.m_color);
    if (m_d.m_BulbLight ||
       (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szOffImage))) && (offTexel != NULL) && !m_fBackglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
    {
@@ -576,7 +576,7 @@ void Light::RenderDynamic()
       centerHUD.x = centerHUD.x* mult - 0.5f;
       centerHUD.y = centerHUD.y*ymult - 0.5f;
    }
-   const D3DXVECTOR4 center_range(centerHUD.x, centerHUD.y, !m_fBackglass ? m_surfaceHeight + 0.05f : 0.0f, 1.0f / max(m_d.m_falloff, 0.1f));
+   const vec4 center_range(centerHUD.x, centerHUD.y, !m_fBackglass ? m_surfaceHeight + 0.05f : 0.0f, 1.0f / max(m_d.m_falloff, 0.1f));
 
    if (!m_d.m_BulbLight)
    {
