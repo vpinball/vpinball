@@ -1,5 +1,7 @@
 #pragma once
 
+typedef struct D3DXVECTOR4 vec4;
+
 // 2D vector
 class Vertex2D
 {

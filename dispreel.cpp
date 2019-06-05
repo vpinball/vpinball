@@ -205,8 +205,6 @@ void DispReel::EndPlay()
 
 void DispReel::RenderDynamic()
 {
-   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    TRACE_FUNCTION();
 
    if (!m_d.m_fVisible || !GetPTable()->GetEMReelsEnabled())
@@ -217,6 +215,8 @@ void DispReel::RenderDynamic()
 
    if (!pin)
       return;
+
+   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);

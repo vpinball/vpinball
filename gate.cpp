@@ -758,13 +758,13 @@ STDMETHODIMP Gate::put_Length(float newVal)
 {
    STARTUNDO
 
-      m_d.m_length = newVal;
+   m_d.m_length = newVal;
 
    STOPUNDO
 
-       UpdateUnitsInfo();
+   UpdateUnitsInfo();
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_Height(float *pVal)
@@ -778,13 +778,13 @@ STDMETHODIMP Gate::put_Height(float newVal)
 {
    STARTUNDO
 
-      m_d.m_height = newVal;
+   m_d.m_height = newVal;
 
    STOPUNDO
 
    UpdateUnitsInfo();
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_Rotation(float *pVal)

@@ -15,3 +15,5 @@ HRESULT SaveValueString(const char *szKey, const char *szValue, const char *val)
 HRESULT SaveValueFloat(const char *szKey, const char *szValue, const float val);
 HRESULT SaveValueInt(const char *szKey, const char *szValue, const int val);
 HRESULT SaveValueBool(const char *szKey, const char *szValue, const bool val);
+
+HRESULT DeleteValue(const char *szKey, const char *szValue);

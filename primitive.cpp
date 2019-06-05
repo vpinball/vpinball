@@ -1308,8 +1308,6 @@ void Primitive::RenderDynamic()
 
 void Primitive::RenderSetup()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    if (m_d.m_fGroupdRendering || m_d.m_fSkipRendering)
       return;
 
@@ -1317,6 +1315,8 @@ void Primitive::RenderSetup()
 
    if (vertexBuffer)
       vertexBuffer->release();
+
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    pd3dDevice->CreateVertexBuffer((unsigned int)m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 

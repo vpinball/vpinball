@@ -433,7 +433,7 @@ void CodeViewer::UpdateRegWithPrefs()
 
 void CodeViewer::InitPreferences()
 {
-	for (int i = 0; i < 16 ; ++i)
+	for (int i = 0; i < 16; ++i)
 	{
 		g_PrefCols[i] = 0;
 	}
