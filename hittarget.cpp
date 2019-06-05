@@ -692,7 +692,7 @@ void HitTarget::RenderObject()
 
    if (m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f)
    {
-      const D3DXVECTOR4 tmp(m_d.m_fDisableLightingTop,m_d.m_fDisableLightingBelow, 0.f,0.f);
+      const vec4 tmp(m_d.m_fDisableLightingTop,m_d.m_fDisableLightingBelow, 0.f,0.f);
       pd3dDevice->basicShader->SetDisableLighting(tmp);
    }
 
@@ -729,7 +729,7 @@ void HitTarget::RenderObject()
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
    if (m_d.m_fDisableLightingTop != 0.f || m_d.m_fDisableLightingBelow != 0.f)
    {
-      const D3DXVECTOR4 tmp(0.f,0.f, 0.f,0.f);
+      const vec4 tmp(0.f,0.f, 0.f,0.f);
       pd3dDevice->basicShader->SetDisableLighting(tmp);
    }
 }

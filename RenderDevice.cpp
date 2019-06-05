@@ -1775,7 +1775,7 @@ Shader::Shader(RenderDevice *renderDevice)
    currentFlasherColor =
    currentLightColor =
    currentLightColor2 =
-   currentLightData = D3DXVECTOR4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+   currentLightData = vec4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
    currentLightImageMode = ~0u;
    currentLightBackglassMode = ~0u;
    currentTechnique[0] = 0;
@@ -1927,7 +1927,7 @@ void Shader::SetMaterial(const Material * const mat)
        fWrapLighting != currentMaterial.m_fWrapLighting ||
        fThickness != currentMaterial.m_fThickness)
    {
-      const D3DXVECTOR4 rwem(fRoughness, fWrapLighting, fEdge, fThickness);
+      const vec4 rwem(fRoughness, fWrapLighting, fEdge, fThickness);
       SetVector("Roughness_WrapL_Edge_Thickness", &rwem);
       currentMaterial.m_fRoughness = fRoughness;
       currentMaterial.m_fWrapLighting = fWrapLighting;
@@ -1938,7 +1938,7 @@ void Shader::SetMaterial(const Material * const mat)
    const float alpha = bOpacityActive ? fOpacity : 1.0f;
    if (cBase != currentMaterial.m_cBase || alpha != currentMaterial.m_fOpacity)
    {
-      const D3DXVECTOR4 cBaseF = convertColor(cBase, alpha);
+      const vec4 cBaseF = convertColor(cBase, alpha);
       SetVector("cBase_Alpha", &cBaseF);
       currentMaterial.m_cBase = cBase;
       currentMaterial.m_fOpacity = alpha;
@@ -1948,7 +1948,7 @@ void Shader::SetMaterial(const Material * const mat)
       if (cGlossy != currentMaterial.m_cGlossy ||
           fGlossyImageLerp != currentMaterial.m_fGlossyImageLerp)
       {
-         const D3DXVECTOR4 cGlossyF = convertColor(cGlossy, fGlossyImageLerp);
+         const vec4 cGlossyF = convertColor(cGlossy, fGlossyImageLerp);
          SetVector("cGlossy_ImageLerp", &cGlossyF);
          currentMaterial.m_cGlossy = cGlossy;
          currentMaterial.m_fGlossyImageLerp = fGlossyImageLerp;
@@ -1957,7 +1957,7 @@ void Shader::SetMaterial(const Material * const mat)
    if (cClearcoat != currentMaterial.m_cClearcoat ||
       (bOpacityActive && fEdgeAlpha != currentMaterial.m_fEdgeAlpha))
    {
-      const D3DXVECTOR4 cClearcoatF = convertColor(cClearcoat, fEdgeAlpha);
+      const vec4 cClearcoatF = convertColor(cClearcoat, fEdgeAlpha);
       SetVector("cClearcoat_EdgeAlpha", &cClearcoatF);
       currentMaterial.m_cClearcoat = cClearcoat;
       currentMaterial.m_fEdgeAlpha = fEdgeAlpha;

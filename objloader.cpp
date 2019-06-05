@@ -451,7 +451,7 @@ void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename
    RemoveSpaces(texelNameCopy);
    fprintf_s(matFile, "newmtl %s\n", texelNameCopy);
    fprintf_s(matFile, "Ns 7.843137\n");
-   D3DXVECTOR4 color = convertColor(mat->m_cBase);
+   vec4 color = convertColor(mat->m_cBase);
    fprintf_s(matFile, "Ka 0.000000 0.000000 0.000000\n");
    fprintf_s(matFile, "Kd %f %f %f\n", color.x, color.y, color.z);
    color = convertColor(mat->m_cGlossy);

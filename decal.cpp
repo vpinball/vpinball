@@ -569,7 +569,7 @@ void Decal::RenderObject()
    else
    {
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-      const D3DXVECTOR4 staticColor(1.0f, 1.0f, 1.0f, 1.0f);
+      const vec4 staticColor(1.0f, 1.0f, 1.0f, 1.0f);
       pd3dDevice->basicShader->SetVector("cBase_Alpha", &staticColor);
    }
 
