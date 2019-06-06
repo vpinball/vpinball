@@ -1436,29 +1436,16 @@ PinTable::PinTable()
 
    m_numMaterials = 0;
 
-   HRESULT hr;
-   int tmp;
+   nudge_set_sensitivity((float)LoadValueIntWithDefault("Player", "NudgeSensitivity", 500) * (float)(1.0/1000.0));
 
-   F32 nudgesens = 0.50f;
-   hr = LoadValueInt("Player", "NudgeSensitivity", &tmp);
-   if (hr == S_OK)
-      nudgesens = (float)tmp*(float)(1.0 / 1000.0);
-   nudge_set_sensitivity(nudgesens);
-
-   m_globalDifficulty = 0.2f;			// easy by default
-   hr = LoadValueInt("Player", "GlobalDifficulty", &tmp);
-   if (hr == S_OK)
-      m_globalDifficulty = dequantizeUnsignedPercent(tmp);
+   m_globalDifficulty = dequantizeUnsignedPercent(LoadValueIntWithDefault("Player", "GlobalDifficulty", 20)); // easy by default
 
    ReadAccelerometerCalibration();
 
    m_tblAutoStart = LoadValueIntWithDefault("Player", "Autostart", 0) * 10;
-
    m_tblAutoStartRetry = LoadValueIntWithDefault("Player", "AutostartRetry", 0) * 10;
    m_tblAutoStartEnabled = LoadValueBoolWithDefault("Player", "asenable", false);
-
    m_tblVolmod = (float)LoadValueIntWithDefault("Player", "Volmod", 1000) * (float)(1.0 / 1000.0);
-
    m_tblExitConfirm = LoadValueIntWithDefault("Player", "Exitconfirm", 120) * 1000 / 60;
 
    SaveValueString("Version", "VPinball", VP_VERSION_STRING_DIGITS);
@@ -1496,48 +1483,21 @@ PinTable::PinTable()
 
 void PinTable::ReadAccelerometerCalibration()
 {
-	HRESULT hr;
-	int tmp;
-
 	m_tblAccelerometer = LoadValueBoolWithDefault("Player", "PBWEnabled", true); // true if electronic accelerometer enabled
 	m_tblAccelNormalMount = LoadValueBoolWithDefault("Player", "PBWNormalMount", true); // true is normal mounting (left hand coordinates)
 
 	m_tblAccelAngle = 0.0f;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
-	int accel;
-	hr = LoadValueInt("Player", "PBWRotationCB", &accel);
-	if ((hr == S_OK) && accel)
-	{
-		hr = LoadValueInt("Player", "PBWRotationValue", &tmp);
-		if (hr == S_OK)
-			m_tblAccelAngle = (float)tmp;
-	}
+	const bool accel = LoadValueBoolWithDefault("Player", "PBWRotationCB", false);
+	if (accel)
+		m_tblAccelAngle = (float)LoadValueIntWithDefault("Player", "PBWRotationValue", 0);
 
-	m_tblAccelAmpX = 1.5f;
-	hr = LoadValueInt("Player", "PBWAccelGainX", &tmp);
-	if (hr == S_OK)
-		m_tblAccelAmpX = dequantizeUnsignedPercentNoClamp(tmp);
+	m_tblAccelAmpX = dequantizeUnsignedPercentNoClamp(LoadValueIntWithDefault("Player", "PBWAccelGainX", 150));
+	m_tblAccelAmpY = dequantizeUnsignedPercentNoClamp(LoadValueIntWithDefault("Player", "PBWAccelGainY", 150));
+	m_tblAccelMaxX = LoadValueIntWithDefault("Player", "PBWAccelMaxX", 100) * JOYRANGEMX / 100;
+	m_tblAccelMaxY = LoadValueIntWithDefault("Player", "PBWAccelMaxY", 100) * JOYRANGEMX / 100;
 
-	m_tblAccelAmpY = 1.5f;
-	hr = LoadValueInt("Player", "PBWAccelGainY", &tmp);
-	if (hr == S_OK)
-		m_tblAccelAmpY = dequantizeUnsignedPercentNoClamp(tmp);
-
-	m_tblAccelMaxX = JOYRANGEMX;
-	hr = LoadValueInt("Player", "PBWAccelMaxX", &tmp);
-	if (hr == S_OK)
-		m_tblAccelMaxX = tmp*JOYRANGEMX / 100;
-
-	m_tblAccelMaxY = JOYRANGEMX;
-	hr = LoadValueInt("Player", "PBWAccelMaxY", &tmp);
-	if (hr == S_OK)
-		m_tblAccelMaxY = tmp*JOYRANGEMX / 100;
-
-	// bug!! If tilt sensitiivty is not set, it's supposed to disable analog tilting, see KeysConfigDialog.cpp
-	F32 tiltsens = 0.40f;  
-	hr = LoadValueInt("Player", "TiltSensitivity", &tmp);
-	if (hr == S_OK)
-		tiltsens = (float)tmp*(float)(1.0 / 1000.0);
-	plumb_set_sensitivity(tiltsens);
+	// bug!! If tilt sensitivity is not set, it's supposed to disable analog tilting, see KeysConfigDialog.cpp
+	plumb_set_sensitivity((float)LoadValueIntWithDefault("Player", "TiltSensitivity", 400) * (float)(1.0/1000.0));
 
 	if (g_pplayer)
 		g_pplayer->m_pininput.LoadSettings();
@@ -4079,15 +4039,15 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(MPGC))
    {
-      pbr->GetInt(&m_plungerNormalize);
-      /*const HRESULT hr =*/ LoadValueInt("Player", "PlungerNormalize", &m_plungerNormalize);
+      int tmp;
+      pbr->GetInt(&tmp);
+      m_plungerNormalize = LoadValueIntWithDefault("Player", "PlungerNormalize", tmp);
    }
    else if (id == FID(MPDF))
    {
-      int tmp;
+      bool tmp;
       pbr->GetBool(&tmp);
-      /*const HRESULT hr =*/ LoadValueInt("Player", "PlungerFilter", &tmp);
-      m_plungerFilter = (tmp != 0);
+      m_plungerFilter = LoadValueBoolWithDefault("Player", "PlungerFilter", tmp);
    }
    else if (id == FID(PHML))
    {
@@ -10011,8 +9971,7 @@ STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
 {
    STARTUNDO
 
-   m_plungerNormalize = newVal;
-   LoadValueInt("Player", "PlungerNormalize", &m_plungerNormalize);
+   m_plungerNormalize = LoadValueIntWithDefault("Player", "PlungerNormalize", newVal);
 
    STOPUNDO
 
@@ -10030,9 +9989,8 @@ STDMETHODIMP PinTable::put_PlungerFilter(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-   BOOL tmp = VBTOF(newVal);
-   LoadValueInt("Player", "PlungerFilter", &tmp);
-   m_plungerFilter = (tmp != 0);
+   const BOOL tmp = VBTOF(newVal);
+   m_plungerFilter = LoadValueBoolWithDefault("Player", "PlungerFilter", tmp != 0);
 
    STOPUNDO
 
