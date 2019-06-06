@@ -2388,6 +2388,8 @@ void Ramp::RenderRamp(const Material * const mat)
       return;
    }
 
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    // see the comment in RenderStatic() above
    if (m_d.m_imagealignment == ImageModeWrap)
       pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
@@ -2398,8 +2400,6 @@ void Ramp::RenderRamp(const Material * const mat)
    {
       if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
          GenerateVertexBuffer();
-
-      RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
       pd3dDevice->basicShader->SetMaterial(mat);
 
