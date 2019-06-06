@@ -5174,6 +5174,10 @@ void Player::DrawBalls()
    //m_pin3d.m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
    //m_pin3d.m_pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
 
+   const Material * const playfield_mat = g_pplayer->m_ptable->GetMaterial(g_pplayer->m_ptable->m_szPlayfieldMaterial);
+   const vec4 playfield_cBaseF = convertColor(playfield_mat->m_cBase);
+   const float playfield_avg_diffuse = playfield_cBaseF.x*0.176204f + playfield_cBaseF.y*0.812985f + playfield_cBaseF.z*0.0108109f;
+
    for (size_t i = 0; i < m_vball.size(); i++)
    {
       Ball * const pball = m_vball[i];
@@ -5204,7 +5208,11 @@ void Player::DrawBalls()
 	  const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
 	  const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
 	  //const float inclination = ANGTORAD(m_ptable->m_inclination);
-	  const vec4 phr(inv_tablewidth, inv_tableheight, m_ptable->m_tableheight, m_ptable->m_ballPlayfieldReflectionStrength*pball->m_playfieldReflectionStrength);
+	  const vec4 phr(inv_tablewidth, inv_tableheight, m_ptable->m_tableheight,
+					 m_ptable->m_ballPlayfieldReflectionStrength*pball->m_playfieldReflectionStrength
+					 *playfield_avg_diffuse //!! hack: multiply average diffuse from playfield onto strength, as only diffuse lighting is used for reflection
+					 *0.5f                  //!! additional magic correction factor due to everything being wrong in the earlier reflection/lighting implementation
+					 );
 	  ballShader->SetVector("invTableRes__playfield_height_reflection", &phr);
 	  
 	  if ((zheight > maxz) || (pball->m_pos.z < minz))
