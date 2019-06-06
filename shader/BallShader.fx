@@ -45,7 +45,7 @@ sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribu
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
 	ADDRESSU  = Wrap;
-	ADDRESSV  = Wrap;
+	ADDRESSV  = Clamp;
 };
 
 sampler2D texSampler7 : TEXUNIT3 = sampler_state // ball decal
@@ -187,7 +187,7 @@ float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float
    //   N = -N;
 
    float3 color = float3(0.0, 0.0, 0.0);
-      
+
    [branch] if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       for(int i = 0; i < iLightPointBallsNum; i++)  
@@ -202,6 +202,39 @@ float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float
   
    return color;
 }
+
+float3 PFDoPointLight(const float3 pos, const float3 N, const float3 diffuse, const int i) 
+{ 
+   const float3 lightDir = mul_w1(lights[i].vPos, matView) - pos; //!! do in vertex shader?! or completely before?!
+   const float3 L = normalize(lightDir);
+   const float NdotL = dot(N, L);
+   // compute diffuse color (lambert)
+   const float3 Out = (NdotL > 0.0) ? diffuse * NdotL : float3(0.0,0.0,0.0);
+
+   const float sqrl_lightDir = dot(lightDir,lightDir); // tweaked falloff to have ranged lightsources
+   float fAtten = saturate(1.0 - sqrl_lightDir*sqrl_lightDir/(cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w)); //!! pre-mult/invert cAmbient_LightRange.w?
+   fAtten = fAtten*fAtten/(sqrl_lightDir + 1.0);
+
+   return Out * lights[i].vEmission * fAtten;
+}
+
+float3 PFlightLoop(const float3 pos, const float3 N, const float3 diffuse)
+{
+   const float diffuseMax = max(diffuse.x,max(diffuse.y,diffuse.z));
+
+   float3 color = float3(0.0,0.0,0.0);
+
+   [branch] if (diffuseMax > 0.0)
+   {
+      for (int i = 0; i < iLightPointNum; i++)
+         color += PFDoPointLight(pos, N, diffuse, i);
+
+      color += DoEnvmapDiffuse(float3(0.,0.,1.), diffuse); // directly wire world space playfield normal
+   }
+
+   return color;
+}
+
 
 
 //------------------------------------
@@ -234,10 +267,10 @@ float4 psBall( in vout IN, uniform bool cabMode, uniform bool decalMode ) : COLO
 	}
 	else
 	   ballImageColor = ScreenHDR( ballImageColor, decalColor ) * (0.5*fenvEmissionScale_TexWidth.x); //!! 0.5=magic
-	
-	const float3 playfield_normal = mul(matWorldViewInverse, float3(0.,0.,1.)).xyz; // actually: mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+
+	const float3 playfield_normal = normalize(mul(matWorldViewInverse, float3(0.,0.,1.)).xyz); //!! normalize necessary? // actually: mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
 	const float NdotR = dot(playfield_normal,r);
-	
+
 	float3 playfieldColor;
 	[branch] if(/*(reflection_ball_playfield > 0.0) &&*/ (NdotR > 0.0))
 	{
@@ -246,16 +279,15 @@ float4 psBall( in vout IN, uniform bool cabMode, uniform bool decalMode ) : COLO
        const float3 playfield_hit = IN.worldPos_t0y.xyz - t*r;
 
        const float2 uv = mul_w1(playfield_hit, matWorldViewInverse).xy * invTableRes__playfield_height_reflection.xy;
-	   playfieldColor = (t < 0.) ? float3(0., 0., 0.) // happens for example when inside kicker
+       playfieldColor = (t < 0.) ? float3(0.,0.,0.) // happens for example when inside kicker
                                  : InvGamma(tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz)*invTableRes__playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
 
-       //!! hack to get some lighting on sample, but only diffuse, the rest is not setup correctly anyhow
-       playfieldColor = lightLoop(playfield_hit, playfield_normal, -r, playfieldColor, float3(0.,0.,0.), float3(0.,0.,0.), 1.0, true, false);
+       //!! hack to get some lighting on reflection sample, but only diffuse, the rest is not setup correctly anyhow
+       playfieldColor = PFlightLoop(playfield_hit, playfield_normal, playfieldColor);
 
-	   //!! magic falloff & weight the rest in from the ballImage
-	   const float weight = NdotR*NdotR;
-	   playfieldColor *= weight;
-	   playfieldColor += ballImageColor*(1.0-weight);
+       //!! magic falloff & weight the rest in from the ballImage
+       const float weight = NdotR*NdotR;
+       playfieldColor = lerp(ballImageColor,playfieldColor,weight);
 	}
 	else
 	   playfieldColor = ballImageColor;

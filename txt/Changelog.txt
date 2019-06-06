@@ -1,6 +1,8 @@
 VP 10.6.0 Changelog
 ------------------------
 
+- fix lighting of the reflection of the playfield on the ball (before it was more or less ignoring the real lightsources and using a wrong lookup from the environment)
+
 - increase robustness (and reduce temporary memory used) when handling very large images/textures
 
 - add rothbauerw's and cyberpez' ball dropping sound code to builtin example tables
@@ -29,8 +31,6 @@ VP 10.6.0 Changelog
 - fix some regressions (introduced with 10.5) with backdrop lights (most prominent: bulb lights had wrong falloff, the 'classic' lights wrong image mapping)
   as a bonus, this should also finally fix all issues seen with backdrop lights on intel/builtin graphics in the past
 - disable transmit for backdrop bulb lights
-
-- add support to read out the current hit threshold if the ball hits a Primitive or a HitTarget
 
 - implement proper sRGB pipeline for runtime filtering (only for images/textures that are used in the 'standard' material)
 
