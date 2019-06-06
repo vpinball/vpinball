@@ -50,11 +50,13 @@ public:
    virtual int GetType() const { return eLineSegSlingshot; }
    virtual void Collide(const CollisionEvent& coll);
 
-   SlingshotAnimObject m_slingshotanim;
+   Surface *m_psurface;
 
    float m_force;
    unsigned int m_EventTimeReset;
-   Surface *m_psurface;
+
+   SlingshotAnimObject m_slingshotanim;
+
    bool m_doHitEvent;
 };
 

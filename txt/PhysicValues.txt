@@ -62,3 +62,30 @@ Stand-up metal targets:
 Elasticity         : 0.3 - 0.35
 Friction           : 0.15 - 0.25
 Scatter Angle      : 5
+
+
+
+jawdax' take on suggested values:
+
+Gravity Constant   : 0.8 - 0.83
+Playfield Friction : 0.02+
+
+Playfield Elasticity: 0.25
+
+
+Rubbers (default):
+------------------
+Elasticity         : 0.6
+Elasticity Falloff : 0.2
+Friction           : 0.5 - 0.6
+Scatter Angle      : 5
+
+Flipper:
+--------
+Mass               : 1.0
+Strength           : 1200-1800 (for EM tables) 2200-2800(for modern tables)
+Elasticity         : 0.55
+Elasticity Falloff : 0.1
+Friction           : 0.1 or 0.2
+Return Strength    : 0.058+
+Coil Up Ramp       : 2.4 - 3.5

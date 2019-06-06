@@ -1218,12 +1218,12 @@ STDMETHODIMP Flipper::put_EOSTorqueAngle(float newVal)
     if (m_phitflipper)
     {
         if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
-           m_d.m_torqueDampingAngle = newVal;    
+           m_d.m_torqueDampingAngle = newVal;
     }
     else
     {
         STARTUNDO
-            m_d.m_torqueDampingAngle = newVal;
+        m_d.m_torqueDampingAngle = newVal;
         STOPUNDO
     }
 
