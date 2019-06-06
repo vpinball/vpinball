@@ -2,8 +2,8 @@ This is a quick overview of all non-exposed registry keys VP parses.
 (some might not work correctly anymore, who knows)
 
 "Player" / "EnableLegacyMaximumPreRenderedFrames" always force old VP9.X-like hack to force the driver to discard pre-rendered frames
-"Player" / "PhysicsMaxLoops"
-"Player" / "GlobalDifficulty" chooses default slope/scatter/flipper difficulty of all tables (0..100, easy..difficult)
+"Player" / "PhysicsMaxLoops"  if the table sets max loops to -1, then this will override it
+"Player" / "GlobalDifficulty" overrides default slope/scatter/flipper difficulty of all tables (0..100, easy..difficult)
 "Player" / "Autostart"        presses start after loading a table automatically
 "Player" / "AutostartRetry"
 "Player" / "asenable"         enable autostart? (0 or 1)
