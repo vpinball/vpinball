@@ -60,7 +60,7 @@ public:
       m_rootNode.HitTestBallSse(pball, coll);
    }
 
-   void HitTestXRay(Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const
+   void HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const
    {
       m_rootNode.HitTestXRay(pball, pvhoHit, coll);
    }

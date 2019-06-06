@@ -198,7 +198,7 @@ Primitive::~Primitive()
       indexBuffer->release();
 }
 
-void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevice)
+void Primitive::CreateRenderGroup(Collection * const collection)
 {
    if (!collection->m_fGroupElements)
       return;
@@ -206,19 +206,18 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
    unsigned int overall_size = 0;
    vector<Primitive*> prims;
    vector<Primitive*> renderedPrims;
-   for (int i = 0; i < collection->m_visel.size(); i++)
+   for (size_t i = 0; i < collection->m_visel.size(); i++)
    {
-      ISelect *pisel = collection->m_visel.ElementAt(i);
+      const ISelect * const pisel = collection->m_visel.ElementAt(i);
       if (pisel->GetItemType() != eItemPrimitive)
          continue;
 
-      Primitive *prim = (Primitive*)pisel;
+      const Primitive * const prim = (Primitive*)pisel;
       // only support dynamic mesh primitives for now
       if (!prim->m_d.m_use3DMesh || prim->m_d.m_staticRendering)
          continue;
 
       prims.push_back(prim);
-
    }
 
    if (prims.size() <= 1)
@@ -278,6 +277,8 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
 
    if (vertexBuffer)
       vertexBuffer->release();
+
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    pd3dDevice->CreateVertexBuffer(m_numGroupVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
    if (indexBuffer)
@@ -1156,7 +1157,7 @@ void Primitive::ExportMesh(FILE *f)
    }
 }
 
-void Primitive::RenderObject(RenderDevice *pd3dDevice)
+void Primitive::RenderObject()
 {
    if (!m_d.m_fGroupdRendering)
    {
@@ -1188,6 +1189,8 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
    {
       fullMatrix.SetIdentity();
    }
+
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (!m_d.m_useAsPlayfield)
    {
@@ -1294,8 +1297,6 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
 // Always called each frame to render over everything else (along with alpha ramps)
 void Primitive::RenderDynamic()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    TRACE_FUNCTION();
 
    if (m_d.m_staticRendering || !m_d.m_fVisible || m_d.m_fSkipRendering)
@@ -1303,7 +1304,7 @@ void Primitive::RenderDynamic()
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
 
-   RenderObject(pd3dDevice);
+   RenderObject();
 }
 
 void Primitive::RenderSetup()
@@ -1327,14 +1328,12 @@ void Primitive::RenderSetup()
 
 void Primitive::RenderStatic()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    if (m_d.m_staticRendering && m_d.m_fVisible)
    {
       if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
          return;
 
-      RenderObject(pd3dDevice);
+      RenderObject();
    }
 }
 

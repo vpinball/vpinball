@@ -455,14 +455,14 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
                const float B = vmiddle.x - vprev.x;
 
                // Shift line along the normal
-               const float C = -(A*(vprev.x - v1normal.x) + B*(vprev.y - v1normal.y));
+               const float C = A*(v1normal.x - vprev.x) + B*(v1normal.y - vprev.y);
 
                // Second line
                const float D = vnext.y - vmiddle.y;
                const float E = vmiddle.x - vnext.x;
 
                // Shift line along the normal
-               const float F = -(D*(vnext.x - v2normal.x) + E*(vnext.y - v2normal.y));
+               const float F = D*(v2normal.x - vnext.x) + E*(v2normal.y - vnext.y);
 
                const float det = A*E - B*D;
                const float inv_det = (det != 0.0f) ? 1.0f / det : 0.0f;
@@ -904,8 +904,10 @@ bool Ramp::isHabitrail() const
        || m_d.m_type == RampType3WireRight;
 }
 
-void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, const Material * const mat)
+void Ramp::RenderStaticHabitrail(const Material * const mat)
 {
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+
    pd3dDevice->basicShader->SetMaterial(mat);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
@@ -1175,7 +1177,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
    delete[] tmpPoints;
 }
 
-void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
+void Ramp::PrepareHabitrail()
 {
    dynamicVertexBufferRegenerate = false;
    Vertex3D_NoTex2 *tmpBuf1 = NULL;
@@ -1186,6 +1188,8 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
       dynamicVertexBuffer->release();
    if (dynamicVertexBuffer2)
       dynamicVertexBuffer2->release();
+
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
    if (m_d.m_type != RampType1Wire)
@@ -1223,21 +1227,17 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
 
 void Ramp::RenderSetup()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    if (m_d.m_fVisible)
    {
       if (isHabitrail())
-         prepareHabitrail(pd3dDevice);
+         PrepareHabitrail();
       else
-         GenerateVertexBuffer(pd3dDevice);
+         GenerateVertexBuffer();
    }
 }
 
 void Ramp::RenderStatic()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    // return if not Visible
    if (!m_d.m_fVisible)
       return;
@@ -1259,9 +1259,9 @@ void Ramp::RenderStatic()
    //    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
    if (isHabitrail())
-      RenderStaticHabitrail(pd3dDevice, mat);
+      RenderStaticHabitrail(mat);
    else
-      RenderRamp(pd3dDevice, mat);
+      RenderRamp(mat);
 }
 
 void Ramp::SetObjectPos()
@@ -2377,7 +2377,7 @@ void Ramp::ExportMesh(FILE *f)
    }
 }
 
-void Ramp::RenderRamp(RenderDevice *pd3dDevice, const Material * const mat)
+void Ramp::RenderRamp(const Material * const mat)
 {
    if (!mat)
       return;
@@ -2393,11 +2393,13 @@ void Ramp::RenderRamp(RenderDevice *pd3dDevice, const Material * const mat)
       pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
    if (isHabitrail())
-      RenderStaticHabitrail(pd3dDevice, mat);
+      RenderStaticHabitrail(mat);
    else
    {
       if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
-         GenerateVertexBuffer(pd3dDevice);
+         GenerateVertexBuffer();
+
+      RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
       pd3dDevice->basicShader->SetMaterial(mat);
 
@@ -2467,8 +2469,6 @@ void Ramp::RenderRamp(RenderDevice *pd3dDevice, const Material * const mat)
 // Also has less drawing calls by bundling seperate calls.
 void Ramp::RenderDynamic()
 {
-   RenderDevice *pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    TRACE_FUNCTION();
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -2478,7 +2478,7 @@ void Ramp::RenderDynamic()
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
 
-   RenderRamp(pd3dDevice, mat);
+   RenderRamp(mat);
 }
 
 void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
@@ -2667,7 +2667,7 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
       delete[] rgratio;
 }
 
-void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
+void Ramp::GenerateVertexBuffer()
 {
    dynamicVertexBufferRegenerate = false;
 
@@ -2676,6 +2676,8 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 
    if (dynamicVertexBuffer)
       dynamicVertexBuffer->release();
+
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    pd3dDevice->CreateVertexBuffer(m_numVertices * 3, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
 

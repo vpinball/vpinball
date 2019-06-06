@@ -4,16 +4,11 @@ void BumperHitCircle::Collide(const CollisionEvent& coll)
 {
    if (!m_fEnabled) return;
 
-   Ball * const pball = coll.m_ball;
-   const Vertex3Ds& hitnormal = coll.m_hitnormal;
+   coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter); // reflect ball from wall
 
-   const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_vel);
-
-   pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);	//reflect ball from wall
-
-   if (m_pbumper->m_d.m_fHitEvent && (dot <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
+   if (m_pbumper->m_d.m_fHitEvent && (coll.m_hitnormal.Dot(coll.m_ball->m_vel) <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
    {
-      pball->m_vel += hitnormal * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
+      coll.m_ball->m_vel += coll.m_hitnormal * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
 
       m_bumperanim_fHitEvent = true;
       m_bumperanim_hitBallPosition = coll.m_ball->m_pos;
@@ -551,10 +546,10 @@ float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionE
          bUnHit = !inside;	// ball on outside is UnHit, otherwise it's a Hit
       }
       else
-         hittime = bnd / (-bnv);
+         hittime = bnd / -bnv;
    }
 
-   if (infNaN(hittime) || hittime < 0 || hittime > dtime) return -1.0f;	// time is outside this frame ... no collision
+   if (infNaN(hittime) || hittime < 0.f || hittime > dtime) return -1.0f;	// time is outside this frame ... no collision
 
    hitPos += hittime * pball->m_vel;     // advance hit point to contact
 
@@ -889,7 +884,7 @@ float HitPlane::HitTest(const Ball * const pball, const float dtime, CollisionEv
            return -1.0f;   // large distance, small velocity -> no hit
    }
 
-   hittime = bnd / (-bnv);                   // rate ok for safe divide
+   hittime = bnd / -bnv;                   // rate ok for safe divide
    if (hittime < 0.f)
        hittime = 0.0f;     // already penetrating? then collide immediately
 #endif
@@ -1081,7 +1076,7 @@ void TriggerHitCircle::Collide(const CollisionEvent& coll)
 
    if ((!coll.m_hitflag) == (i < 0))                 // Hit == NotAlreadyHit
    {
-      pball->m_pos += STATICTIME * pball->m_vel;     //move ball slightly forward
+      pball->m_pos += STATICTIME * pball->m_vel;     // move ball slightly forward
 
       if (i < 0)
       {

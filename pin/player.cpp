@@ -1500,7 +1500,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
          if (pisel !=NULL && pisel->GetItemType() == eItemPrimitive)
          {
             Primitive * const prim = (Primitive*)pisel;
-            prim->CreateRenderGroup(pcol, m_pin3d.m_pd3dPrimaryDevice);
+            prim->CreateRenderGroup(pcol);
             break;
          }
       }
