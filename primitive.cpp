@@ -198,7 +198,7 @@ Primitive::~Primitive()
       indexBuffer->release();
 }
 
-void Primitive::CreateRenderGroup(Collection * const collection)
+void Primitive::CreateRenderGroup(const Collection * const collection)
 {
    if (!collection->m_fGroupElements)
       return;
@@ -206,13 +206,13 @@ void Primitive::CreateRenderGroup(Collection * const collection)
    unsigned int overall_size = 0;
    vector<Primitive*> prims;
    vector<Primitive*> renderedPrims;
-   for (size_t i = 0; i < collection->m_visel.size(); i++)
+   for (int i = 0; i < collection->m_visel.Size(); i++)
    {
       const ISelect * const pisel = collection->m_visel.ElementAt(i);
       if (pisel->GetItemType() != eItemPrimitive)
          continue;
 
-      const Primitive * const prim = (Primitive*)pisel;
+      Primitive * const prim = (Primitive*)pisel;
       // only support dynamic mesh primitives for now
       if (!prim->m_d.m_use3DMesh || prim->m_d.m_staticRendering)
          continue;
