@@ -4,9 +4,11 @@ void BumperHitCircle::Collide(const CollisionEvent& coll)
 {
    if (!m_fEnabled) return;
 
+   const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_vel); // needs to be computed before Collide3DWall()!
+
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter); // reflect ball from wall
 
-   if (m_pbumper->m_d.m_fHitEvent && (coll.m_hitnormal.Dot(coll.m_ball->m_vel) <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
+   if (m_pbumper->m_d.m_fHitEvent && (dot <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
    {
       coll.m_ball->m_vel += coll.m_hitnormal * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
 
