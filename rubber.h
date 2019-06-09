@@ -101,6 +101,7 @@ public:
    virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
    virtual void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
    virtual void Translate(const Vertex2D &pvOffset);
+   virtual void AddPoint(int x, int y, const bool smooth);
 
    virtual Vertex2D GetCenter() const { return GetPointCenter(); }
    virtual void PutCenter(const Vertex2D& pv) { PutPointCenter(pv); }

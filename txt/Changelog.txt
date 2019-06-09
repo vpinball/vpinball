@@ -1,5 +1,6 @@
 VP 10.6.0 Changelog
 ------------------------
+- support 'Add Point' hotkey (F10 normal and F11 for smooth point) for rubbers
 
 - fix lighting of the reflection of the playfield on the ball (before it was more or less ignoring the real lightsources and using a wrong lookup from the environment)
 
