@@ -618,6 +618,44 @@ void Rubber::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
+void Rubber::AddPoint(int x, int y, const bool smooth)
+{
+    std::vector<RenderVertex> vvertex;
+    GetCentralCurve(vvertex);
+    const Vertex2D v = m_ptable->TransformPoint(x, y);
+    Vertex2D vOut;
+    int iSeg = -1;
+
+    ClosestPointOnPolygon(vvertex, v, vOut, iSeg, true);
+
+    // Go through vertices (including iSeg itself) counting control points until iSeg
+    int icp = 0;
+    for (int i = 0; i < (iSeg + 1); i++)
+        if (vvertex[i].fControlPoint)
+            icp++;
+
+    // ClosestPointOnPolygon() couldn't find a point -> don't try to add a new point 
+    // because that would lead to strange behavior
+    if (iSeg == -1)
+        return;
+
+    //if (icp == 0) // need to add point after the last point
+    //icp = m_vdpoint.size();
+    STARTUNDO
+
+        CComObject<DragPoint> *pdp;
+    CComObject<DragPoint>::CreateInstance(&pdp);
+    if (pdp)
+    {
+        pdp->AddRef();
+        pdp->Init(this, vOut.x, vOut.y, 0.f, smooth); // Rubbers are usually always smooth
+        m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+    }
+
+    STOPUNDO
+
+}
+
 void Rubber::EndPlay()
 {
    IEditable::EndPlay();
@@ -873,40 +911,7 @@ void Rubber::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_ADDPOINT:
    {
-      const Vertex2D v = m_ptable->TransformPoint(x, y);
-
-      std::vector<RenderVertex> vvertex;
-      GetCentralCurve(vvertex);
-
-      Vertex2D vOut;
-      int iSeg = -1;
-      ClosestPointOnPolygon(vvertex, v, vOut, iSeg, true);
-
-      // Go through vertices (including iSeg itself) counting control points until iSeg
-      int icp = 0;
-      for (int i = 0; i < (iSeg + 1); i++)
-         if (vvertex[i].fControlPoint)
-            icp++;
-
-      // ClosestPointOnPolygon() couldn't find a point -> don't try to add a new point 
-      // because that would lead to strange behavior
-      if (iSeg == -1)
-         return;
-
-      //if (icp == 0) // need to add point after the last point
-      //icp = m_vdpoint.size();
-      STARTUNDO
-
-      CComObject<DragPoint> *pdp;
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(this, vOut.x, vOut.y, 0.f, true); // Rubbers are usually always smooth
-         m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
-      }
-
-      STOPUNDO
+      AddPoint(x, y, true);
    }
    break;
    }

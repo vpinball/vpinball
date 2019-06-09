@@ -1127,6 +1127,12 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
                pSurf->AddPoint(pt.x, pt.y, false);
                break;
             }
+            case eItemRubber:
+            {
+               Rubber *const pRub = (Rubber*)psel;
+               pRub->AddPoint(pt.x, pt.y, false);
+               break;
+            }
             default:
                break;
             }
@@ -1166,6 +1172,12 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
             {
                Surface * const pSurf = (Surface*)psel;
                pSurf->AddPoint(pt.x, pt.y, true);
+               break;
+            }
+            case eItemRubber:
+            {
+               Rubber *const pRub = (Rubber*)psel;
+               pRub->AddPoint(pt.x, pt.y, true);
                break;
             }
             default:
