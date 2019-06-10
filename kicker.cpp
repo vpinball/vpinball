@@ -122,6 +122,40 @@ void Kicker::UIRenderPass2(Sur * const psur)
    psur->SetFillColor(-1);
    psur->SetObject(this);
 
+   const float radangle = ANGTORAD(m_d.m_orientation);
+   const float halflength = 50.0f;
+   const float len1 = halflength * 0.5f;
+   const float len2 = len1 * 0.5f;
+   Vertex2D tmp;
+   {
+       // Draw Arrow
+       psur->SetLineColor(RGB(255, 0, 0), false, 1);
+
+       {
+           const float sn = sinf(radangle);
+           const float cs = cosf(radangle);
+
+           tmp.x = m_d.m_vCenter.x + sn * len1;
+           tmp.y = m_d.m_vCenter.y - cs * len1;
+       }
+
+       psur->Line(tmp.x, tmp.y, m_d.m_vCenter.x, m_d.m_vCenter.y);
+       {
+           const float arrowang = radangle + 0.6f;
+           const float sn = sinf(arrowang);
+           const float cs = cosf(arrowang);
+
+           psur->Line(tmp.x, tmp.y, m_d.m_vCenter.x + sn * len2, m_d.m_vCenter.y - cs * len2);
+       }
+       {
+           const float arrowang = radangle - 0.6f;
+           const float sn = sinf(arrowang);
+           const float cs = cosf(arrowang);
+
+           psur->Line(tmp.x, tmp.y, m_d.m_vCenter.x + sn * len2, m_d.m_vCenter.y - cs * len2);
+       }
+   }
+
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius*0.75f);
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius*0.5f);
