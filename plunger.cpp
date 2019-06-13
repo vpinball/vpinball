@@ -315,7 +315,7 @@ void Plunger::RenderSetup()
    const float stroke = m_d.m_stroke;
    const float beginy = m_d.m_v.y;
    const float endy = m_d.m_v.y - stroke;
-   m_cframes = (int)((float)PLUNGER_FRAME_COUNT * (stroke*(float)(1.0 / 80.0))) + 1; // 25 frames per 80 units travel
+   m_cframes = (int)(stroke*(float)(PLUNGER_FRAME_COUNT / 80.0)) + 1; // 25 frames per 80 units travel
    const float inv_scale = (m_cframes > 1) ? (1.0f / (float)(m_cframes - 1)) : 0.0f;
    const float dyPerFrame = (endy - beginy) * inv_scale;
    const int circlePoints = (m_d.m_type == PlungerTypeFlat) ? 0 : 24;
@@ -1086,7 +1086,7 @@ STDMETHODIMP Plunger::MotionDevice(int *pVal)
    return S_OK;
 }
 
-STDMETHODIMP Plunger::Position(int *pVal) // 0..25
+STDMETHODIMP Plunger::Position(float *pVal) // 0..25
 {
    if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_PBWIZARD ||
        g_pplayer->m_pininput.uShockType == USHOCKTYPE_ULTRACADE ||
@@ -1096,9 +1096,8 @@ STDMETHODIMP Plunger::Position(int *pVal) // 0..25
       const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
       float tmp = (g_pplayer->m_curMechPlungerPos < 0.f) ? g_pplayer->m_curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->m_curMechPlungerPos*(1.0f - m_d.m_parkPosition));
       tmp = tmp / range + m_d.m_parkPosition;           //scale and offset
-      *pVal = (int)(tmp*25.f);
+      *pVal = tmp*25.f;
    }
-
    else if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_GENERIC)
    {
       float tmp;
@@ -1129,15 +1128,14 @@ STDMETHODIMP Plunger::Position(int *pVal) // 0..25
          const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
          tmp = tmp / range + m_d.m_parkPosition;           //scale and offset
       }
-      *pVal = (int)(tmp*25.f);
+      *pVal = tmp*25.f;
    }
-
    else // non-mechanical
    {
       const PlungerMoverObject& pa = m_phitplunger->m_plungerMover;
       const float frame = (pa.m_pos - pa.m_frameStart) / (pa.m_frameEnd - pa.m_frameStart);
 
-      *pVal = (int)(25.f - saturate(frame)*25.f); //!! somehow if m_mechPlunger is enabled this will only deliver a value 25 - 0..20??
+      *pVal = 25.f - saturate(frame)*25.f; //!! somehow if m_mechPlunger is enabled this will only deliver a value 25 - 0..20??
    }
 
    //      float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
@@ -1190,12 +1188,10 @@ STDMETHODIMP Plunger::get_PullSpeed(float *pVal)
 STDMETHODIMP Plunger::put_PullSpeed(float newVal)
 {
    STARTUNDO
-
-      m_d.m_speedPull = newVal;
-
+   m_d.m_speedPull = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_FireSpeed(float *pVal)
@@ -1208,12 +1204,10 @@ STDMETHODIMP Plunger::get_FireSpeed(float *pVal)
 STDMETHODIMP Plunger::put_FireSpeed(float newVal)
 {
    STARTUNDO
-
-      m_d.m_speedFire = newVal;
-
+   m_d.m_speedFire = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_Type(PlungerType *pVal)
@@ -1226,12 +1220,10 @@ STDMETHODIMP Plunger::get_Type(PlungerType *pVal)
 STDMETHODIMP Plunger::put_Type(PlungerType newVal)
 {
    STARTUNDO
-
-      m_d.m_type = newVal;
-
+   m_d.m_type = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_Material(BSTR *pVal)
@@ -1247,12 +1239,10 @@ STDMETHODIMP Plunger::get_Material(BSTR *pVal)
 STDMETHODIMP Plunger::put_Material(BSTR newVal)
 {
    STARTUNDO
-
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
-
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_Image(BSTR *pVal)
@@ -1277,9 +1267,7 @@ STDMETHODIMP Plunger::put_Image(BSTR newVal)
    }
 
    STARTUNDO
-
    strcpy_s(m_d.m_szImage,szImage);
-
    STOPUNDO
 
    return S_OK;
@@ -1294,10 +1282,10 @@ STDMETHODIMP Plunger::get_AnimFrames(int *pVal)
 STDMETHODIMP Plunger::put_AnimFrames(int newVal)
 {
    STARTUNDO
-      m_d.m_animFrames = newVal;
+   m_d.m_animFrames = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_TipShape(BSTR *pVal)
@@ -1313,12 +1301,10 @@ STDMETHODIMP Plunger::get_TipShape(BSTR *pVal)
 STDMETHODIMP Plunger::put_TipShape(BSTR newVal)
 {
    STARTUNDO
-
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szTipShape, MAXTOKEN, NULL, NULL);
-
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szTipShape, MAXTOKEN, NULL, NULL);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_RodDiam(float *pVal)
@@ -1331,12 +1317,10 @@ STDMETHODIMP Plunger::get_RodDiam(float *pVal)
 STDMETHODIMP Plunger::put_RodDiam(float newVal)
 {
    STARTUNDO
-
-      m_d.m_rodDiam = newVal;
-
+   m_d.m_rodDiam = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_RingGap(float *pVal)
@@ -1349,12 +1333,10 @@ STDMETHODIMP Plunger::get_RingGap(float *pVal)
 STDMETHODIMP Plunger::put_RingGap(float newVal)
 {
    STARTUNDO
-
-      m_d.m_ringGap = newVal;
-
+   m_d.m_ringGap = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_RingDiam(float *pVal)
@@ -1367,12 +1349,10 @@ STDMETHODIMP Plunger::get_RingDiam(float *pVal)
 STDMETHODIMP Plunger::put_RingDiam(float newVal)
 {
    STARTUNDO
-
-      m_d.m_ringDiam = newVal;
-
+   m_d.m_ringDiam = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_RingWidth(float *pVal)
@@ -1385,12 +1365,10 @@ STDMETHODIMP Plunger::get_RingWidth(float *pVal)
 STDMETHODIMP Plunger::put_RingWidth(float newVal)
 {
    STARTUNDO
-
-      m_d.m_ringWidth = newVal;
-
+   m_d.m_ringWidth = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_SpringDiam(float *pVal)
@@ -1403,12 +1381,10 @@ STDMETHODIMP Plunger::get_SpringDiam(float *pVal)
 STDMETHODIMP Plunger::put_SpringDiam(float newVal)
 {
    STARTUNDO
-
-      m_d.m_springDiam = newVal;
-
+   m_d.m_springDiam = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_SpringGauge(float *pVal)
@@ -1421,12 +1397,10 @@ STDMETHODIMP Plunger::get_SpringGauge(float *pVal)
 STDMETHODIMP Plunger::put_SpringGauge(float newVal)
 {
    STARTUNDO
-
-      m_d.m_springGauge = newVal;
-
+   m_d.m_springGauge = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_SpringLoops(float *pVal)
@@ -1439,12 +1413,10 @@ STDMETHODIMP Plunger::get_SpringLoops(float *pVal)
 STDMETHODIMP Plunger::put_SpringLoops(float newVal)
 {
    STARTUNDO
-
-      m_d.m_springLoops = newVal;
-
+   m_d.m_springLoops = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_SpringEndLoops(float *pVal)
@@ -1457,12 +1429,10 @@ STDMETHODIMP Plunger::get_SpringEndLoops(float *pVal)
 STDMETHODIMP Plunger::put_SpringEndLoops(float newVal)
 {
    STARTUNDO
-
-      m_d.m_springEndLoops = newVal;
-
+   m_d.m_springEndLoops = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::CreateBall(IBall **pBallEx)
@@ -1494,9 +1464,7 @@ STDMETHODIMP Plunger::get_X(float *pVal)
 STDMETHODIMP Plunger::put_X(float newVal)
 {
    STARTUNDO
-
    m_d.m_v.x = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -1512,12 +1480,10 @@ STDMETHODIMP Plunger::get_Y(float *pVal)
 STDMETHODIMP Plunger::put_Y(float newVal)
 {
    STARTUNDO
-
-      m_d.m_v.y = newVal;
-
+   m_d.m_v.y = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_Width(float *pVal)
@@ -1530,12 +1496,10 @@ STDMETHODIMP Plunger::get_Width(float *pVal)
 STDMETHODIMP Plunger::put_Width(float newVal)
 {
    STARTUNDO
-
-      m_d.m_width = newVal;
-
+   m_d.m_width = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_ZAdjust(float *pVal)
@@ -1548,12 +1512,10 @@ STDMETHODIMP Plunger::get_ZAdjust(float *pVal)
 STDMETHODIMP Plunger::put_ZAdjust(float newVal)
 {
    STARTUNDO
-
-      m_d.m_zAdjust = newVal;
-
+   m_d.m_zAdjust = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_Surface(BSTR *pVal)
@@ -1569,12 +1531,10 @@ STDMETHODIMP Plunger::get_Surface(BSTR *pVal)
 STDMETHODIMP Plunger::put_Surface(BSTR newVal)
 {
    STARTUNDO
-
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
-
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_MechStrength(float *pVal)
@@ -1587,10 +1547,10 @@ STDMETHODIMP Plunger::get_MechStrength(float *pVal)
 STDMETHODIMP Plunger::put_MechStrength(float newVal)
 {
    STARTUNDO
-      m_d.m_mechStrength = newVal;
+   m_d.m_mechStrength = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_MechPlunger(VARIANT_BOOL *pVal)
@@ -1603,10 +1563,10 @@ STDMETHODIMP Plunger::get_MechPlunger(VARIANT_BOOL *pVal)
 STDMETHODIMP Plunger::put_MechPlunger(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_d.m_mechPlunger = VBTOF(newVal);
+   m_d.m_mechPlunger = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_AutoPlunger(VARIANT_BOOL *pVal)
@@ -1619,10 +1579,10 @@ STDMETHODIMP Plunger::get_AutoPlunger(VARIANT_BOOL *pVal)
 STDMETHODIMP Plunger::put_AutoPlunger(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_d.m_autoPlunger = VBTOF(newVal);
+   m_d.m_autoPlunger = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_Visible(VARIANT_BOOL *pVal)
@@ -1635,12 +1595,10 @@ STDMETHODIMP Plunger::get_Visible(VARIANT_BOOL *pVal)
 STDMETHODIMP Plunger::put_Visible(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-      m_d.m_fVisible = VBTOF(newVal);
-
+   m_d.m_fVisible = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_ParkPosition(float *pVal)
@@ -1652,10 +1610,10 @@ STDMETHODIMP Plunger::get_ParkPosition(float *pVal)
 STDMETHODIMP Plunger::put_ParkPosition(float newVal)
 {
    STARTUNDO
-      m_d.m_parkPosition = newVal;
+   m_d.m_parkPosition = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_Stroke(float *pVal)
@@ -1669,12 +1627,12 @@ STDMETHODIMP Plunger::put_Stroke(float newVal)
 {
    STARTUNDO
 
-      if (newVal < 16.5f) newVal = 16.5f;
+   if (newVal < 16.5f) newVal = 16.5f;
    m_d.m_stroke = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_ScatterVelocity(float *pVal)
@@ -1687,10 +1645,10 @@ STDMETHODIMP Plunger::get_ScatterVelocity(float *pVal)
 STDMETHODIMP Plunger::put_ScatterVelocity(float newVal)
 {
    STARTUNDO
-      m_d.m_scatterVelocity = newVal;
+   m_d.m_scatterVelocity = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_MomentumXfer(float *pVal)
@@ -1703,10 +1661,10 @@ STDMETHODIMP Plunger::get_MomentumXfer(float *pVal)
 STDMETHODIMP Plunger::put_MomentumXfer(float newVal)
 {
    STARTUNDO
-      m_d.m_momentumXfer = newVal;
+   m_d.m_momentumXfer = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Plunger::get_ReflectionEnabled(VARIANT_BOOL *pVal)
@@ -1719,12 +1677,10 @@ STDMETHODIMP Plunger::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 STDMETHODIMP Plunger::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-      m_d.m_fReflectionEnabled = VBTOF(newVal);
-
+   m_d.m_fReflectionEnabled = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Plunger::GetDialogPanes(vector<PropertyPane*> &pvproppane)
