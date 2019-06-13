@@ -243,7 +243,7 @@ public:
    STDMETHOD(put_ScatterVelocity)(/*[in]*/ float newVal);
    STDMETHOD(get_MomentumXfer)(/*[out,retval]*/ float *pVal);
    STDMETHOD(put_MomentumXfer)(/*[in]*/ float newVal);
-   STDMETHOD(Position)(int *pVal); //added for mechanical plunger position
+   STDMETHOD(Position)(float *pVal); //added for mechanical plunger position
    STDMETHOD(MotionDevice)(int *pVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);

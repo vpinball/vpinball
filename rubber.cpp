@@ -643,7 +643,7 @@ void Rubber::AddPoint(int x, int y, const bool smooth)
     //icp = m_vdpoint.size();
     STARTUNDO
 
-        CComObject<DragPoint> *pdp;
+    CComObject<DragPoint> *pdp;
     CComObject<DragPoint>::CreateInstance(&pdp);
     if (pdp)
     {
@@ -653,7 +653,6 @@ void Rubber::AddPoint(int x, int y, const bool smooth)
     }
 
     STOPUNDO
-
 }
 
 void Rubber::EndPlay()
