@@ -26,13 +26,13 @@ public:
    char m_szSkirtMaterial[32];
    char m_szRingMaterial[32];
    char m_szSurface[MAXTOKEN];
-   bool m_fCapVisible;
-   bool m_fBaseVisible;
-   bool m_fRingVisible;
-   bool m_fSkirtVisible;
-   bool m_fReflectionEnabled;
-   bool m_fHitEvent;
-   bool m_fCollidable;
+   bool m_capVisible;
+   bool m_baseVisible;
+   bool m_ringVisible;
+   bool m_skirtVisible;
+   bool m_reflectionEnabled;
+   bool m_hitEvent;
+   bool m_collidable;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -98,20 +98,20 @@ public:
       virtual void RenderBlueprint(Sur *psur, const bool solid);
 
 
-	  virtual unsigned long long GetMaterialID() const
-	  {
-		  if (!m_d.m_fBaseVisible && m_d.m_fCapVisible)
-			  return m_ptable->GetMaterial(m_d.m_szCapMaterial)->hash();
-		  else
-			  return 64-3; //!! some constant number
-	  }
-	  virtual unsigned long long GetImageID() const
-	  {
-		  if (!m_d.m_fBaseVisible && m_d.m_fCapVisible)
-			  return (unsigned long long)&m_capTexture; //!! meh
-		  else
-			  return NULL;
-	  }
+      virtual unsigned long long GetMaterialID() const
+      {
+         if (!m_d.m_baseVisible && m_d.m_capVisible)
+            return m_ptable->GetMaterial(m_d.m_szCapMaterial)->hash();
+         else
+            return 64-3; //!! some constant number
+      }
+      virtual unsigned long long GetImageID() const
+      {
+         if (!m_d.m_baseVisible && m_d.m_capVisible)
+            return (unsigned long long)&m_capTexture; //!! meh
+         else
+            return NULL;
+      }
 
       virtual ItemTypeEnum HitableGetItemType() const { return eItemBumper; }
 

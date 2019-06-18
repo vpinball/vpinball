@@ -395,7 +395,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 
          if ((hr == S_OK || hr == DI_BUFFEROVERFLOW) && (m_hwnd == GetForegroundWindow()))
          {
-            if (g_pplayer->m_fThrowBalls || g_pplayer->m_fBallControl) // debug ball throw functionality
+            if (g_pplayer->m_throwBalls || g_pplayer->m_ballControl) // debug ball throw functionality
             {
                if ((mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown && !middleMouseButtonDown)
                {
@@ -451,15 +451,15 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                   PushQueue(didod, APP_MOUSE);
                   middleMouseButtonDown = false;
                }
-			   if (g_pplayer->m_fBallControl && !g_pplayer->m_fThrowBalls && leftMouseButtonDown && !rightMouseButtonDown && !middleMouseButtonDown)
-			   {
-				   POINT curPos;
-				   GetCursorPos(&curPos);
-				   didod[0].dwData = 4;
-				   mouseX = curPos.x;
-				   mouseY = curPos.y;
-				   PushQueue(didod, APP_MOUSE);
-			   }
+               if (g_pplayer->m_ballControl && !g_pplayer->m_throwBalls && leftMouseButtonDown && !rightMouseButtonDown && !middleMouseButtonDown)
+               {
+                  POINT curPos;
+                  GetCursorPos(&curPos);
+                  didod[0].dwData = 4;
+                  mouseX = curPos.x;
+                  mouseY = curPos.y;
+                  PushQueue(didod, APP_MOUSE);
+               }
 
             } //if (g_pplayer->m_fThrowBalls)
             else
@@ -662,7 +662,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       else if (keycode == DIK_RIGHT)  keycode = DIK_LEFT;
    }
 
-   if (g_pplayer->cameraMode)
+   if (g_pplayer->m_cameraMode)
    {
       m_keyPressedState[eLeftFlipperKey] = false;
       m_keyPressedState[eRightFlipperKey] = false;
@@ -710,15 +710,15 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       }
       else if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
       {
-         g_pplayer->backdropSettingActive++;
-         if (g_pplayer->backdropSettingActive == 13)
-            g_pplayer->backdropSettingActive = 0;
+         g_pplayer->m_backdropSettingActive++;
+         if (g_pplayer->m_backdropSettingActive == 13)
+            g_pplayer->m_backdropSettingActive = 0;
       }
       else if (keycode == g_pplayer->m_rgKeys[eLeftMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
       {
-         g_pplayer->backdropSettingActive--;
-         if (g_pplayer->backdropSettingActive == -1)
-            g_pplayer->backdropSettingActive = 12;
+         g_pplayer->m_backdropSettingActive--;
+         if (g_pplayer->m_backdropSettingActive == -1)
+            g_pplayer->m_backdropSettingActive = 12;
       }
    }
    else
@@ -728,8 +728,8 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       {
          m_leftkey_down_usec = usec();
          m_leftkey_down_frame = g_pplayer->m_overall_frames;
-		 delete g_pplayer->m_pBCTarget;
-		 g_pplayer->m_pBCTarget = NULL;
+         delete g_pplayer->m_pBCTarget;
+         g_pplayer->m_pBCTarget = NULL;
       }
 
       // Mixer volume only
@@ -919,13 +919,15 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    if (m_joyexitgamekey == n)
    {
       if (DISPID_GameEvents_KeyDown == updown)
-         g_pplayer->m_fCloseDown = true;
+         g_pplayer->m_closeDown = true;
    }
+#ifdef FPS
    if (m_joyframecount == n)
    {
       if (DISPID_GameEvents_KeyDown == updown)
          g_pplayer->ToggleFPS();
    }
+#endif
    if (m_joyvolumeup == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeUp]);
    if (m_joyvolumedown == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeDown]);
    if (m_joylefttilt == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eLeftTiltKey]);
@@ -1008,7 +1010,7 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 		ScreenToClient(m_hwnd, &newPoint);
 		const Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(newPoint);
 
-		if (g_pplayer->m_fBallControl)
+		if (g_pplayer->m_ballControl)
 		{
 			// If Ball Control and Throw Balls are both checked, that means
 			// we want ball throwing behavior with the sensed active ball, instead
@@ -1047,7 +1049,7 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 			if (!ballGrabbed)
 			{
 				const float z = (input->dwData == 3) ? g_pplayer->m_ptable->m_glassheight : g_pplayer->m_ptable->m_tableheight;
-				Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)g_pplayer->m_DebugBallSize*0.5f, g_pplayer->m_DebugBallMass);
+				Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)g_pplayer->m_debugBallSize*0.5f, g_pplayer->m_debugBallMass);
 				pball->m_pballex->AddRef();
 			}
 		}
@@ -1131,7 +1133,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
         {
             if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0)) // pause menu
             {
-                if (DISPID_GameEvents_KeyDown == updown) g_pplayer->m_fCloseDown = true;
+                if (DISPID_GameEvents_KeyDown == updown) g_pplayer->m_closeDown = true;
             }
             else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // volume down
                 FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeDown]);
@@ -1521,7 +1523,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
    GetInputDeviceData(/*curr_time_msec*/);
 
    // Camera/Light tweaking mode (F6) incl. fly-around parameters
-   if (g_pplayer->cameraMode)
+   if (g_pplayer->m_cameraMode)
    {
        if (m_head == m_tail) // key queue empty, so just continue using the old pressed key
        {
@@ -1582,11 +1584,11 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
    {
       if (input->dwSequence == APP_MOUSE && g_pplayer)
       {
-         if (g_pplayer->m_fThrowBalls)
+         if (g_pplayer->m_throwBalls)
          {
              ProcessThrowBalls(input);
          }
-         else if (g_pplayer->m_fBallControl)
+         else if (g_pplayer->m_ballControl)
          {
              ProcessBallControl(input);
          }
@@ -1610,14 +1612,16 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
       if (input->dwSequence == APP_KEYBOARD)
       {
          // Camera mode fly around:
-         if (g_pplayer && g_pplayer->cameraMode && m_enableCameraModeFlyAround)
+         if (g_pplayer && g_pplayer->m_cameraMode && m_enableCameraModeFlyAround)
               ProcessCameraKeys(input);
 
          // Normal game keys:
          if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eFrameCount])
          {
+#ifdef FPS
             if ((input->dwData & 0x80) != 0)
                g_pplayer->ToggleFPS();
+#endif
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEnable3D])
          {
@@ -1632,8 +1636,8 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             // Activate on edge only.
             if ((input->dwData & 0x80) != 0)
             {
-               g_pplayer->m_DebugBalls = !(g_pplayer->m_DebugBalls);
-               g_pplayer->m_ToggleDebugBalls = true;
+               g_pplayer->m_debugBalls = !(g_pplayer->m_debugBalls);
+               g_pplayer->m_toggleDebugBalls = true;
             }
          }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDebugger])
@@ -1648,7 +1652,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                  else
                  { //on key up only
                      m_exit_stamp = 0;
-                     g_pplayer->m_fShowDebugger = true;
+                     g_pplayer->m_showDebugger = true;
                  }
              }
          }
@@ -1664,7 +1668,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                else
                { //on key up only
                   m_exit_stamp = 0;
-                  g_pplayer->m_fCloseDown = true;
+                  g_pplayer->m_closeDown = true;
                }
             }
          }

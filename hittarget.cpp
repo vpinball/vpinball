@@ -402,7 +402,7 @@ void HitTarget::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const 
       obj->m_scatter = ANGTORAD(m_d.m_scatter);
    }
    obj->m_threshold = m_d.m_threshold;
-   obj->m_fEnabled = m_d.m_fCollidable;
+   obj->m_enabled = m_d.m_fCollidable;
    obj->m_ObjType = eHitTarget;
    obj->m_obj = (IFireEvents*)this;
    obj->m_fe = setHitObject && m_d.m_fUseHitEvent;
@@ -1407,28 +1407,25 @@ STDMETHODIMP HitTarget::put_Scatter(float newVal)
 
 STDMETHODIMP HitTarget::get_Collidable(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB((!g_pplayer) ? m_d.m_fCollidable : m_vhoCollidable[0]->m_fEnabled);
+   *pVal = (VARIANT_BOOL)FTOVB((!g_pplayer) ? m_d.m_fCollidable : m_vhoCollidable[0]->m_enabled);
 
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_Collidable(VARIANT_BOOL newVal)
 {
-   BOOL fNewVal = VBTOF(newVal);
+   const bool fNewVal = !!VBTOF(newVal);
    if (!g_pplayer)
    {
       STARTUNDO
-
-      m_d.m_fCollidable = !!fNewVal;
-
+      m_d.m_fCollidable = fNewVal;
       STOPUNDO
    }
    else
    {
-       const bool b = !!fNewVal;
-       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_fEnabled != b)
+       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != fNewVal)
            for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
-               m_vhoCollidable[i]->m_fEnabled = b;	//copy to hit checking on entities composing the object 
+               m_vhoCollidable[i]->m_enabled = fNewVal; //copy to hit checking on entities composing the object 
    }
 
    return S_OK;

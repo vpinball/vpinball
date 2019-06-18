@@ -326,14 +326,14 @@ public:
 
    HWND m_playfieldHwnd;
 
-   Shader      *ballShader;
-   IndexBuffer *ballIndexBuffer;
-   VertexBuffer *ballVertexBuffer;
+   Shader      *m_ballShader;
+   IndexBuffer *m_ballIndexBuffer;
+   VertexBuffer *m_ballVertexBuffer;
    VertexBuffer *m_ballTrailVertexBuffer;
    bool m_antiStretchBall;
 
-   bool cameraMode;
-   int backdropSettingActive;
+   bool m_cameraMode;
+   int m_backdropSettingActive;
    PinTable *m_ptable;
 
    Pin3D m_pin3d;
@@ -425,34 +425,29 @@ public:
    int m_ModalRefCount;
 
    int m_closeType;                  // if 0 exit player and close application if started minimized, if 1 close application always, 2 is brute force exit
-   bool m_fCloseDown;                // Whether to shut down the player at the end of this frame
-   bool m_fCloseDownDelay;
-   bool m_fShowDebugger;
+   bool m_closeDown;                 // Whether to shut down the player at the end of this frame
+   bool m_closeDownDelay;
+   bool m_showDebugger;
 
-   bool m_ShowWindowedCaption;
+   bool m_showWindowedCaption;
 
-   bool m_fReflectionForBalls;
-   bool m_fTrailForBalls;
+   bool m_reflectionForBalls;
+   bool m_trailForBalls;
 
-   bool m_fThrowBalls;
-   bool m_fBallControl;
-   int  m_DebugBallSize;
-   float m_DebugBallMass;
+   bool m_throwBalls;
+   bool m_ballControl;
+   int  m_debugBallSize;
+   float m_debugBallMass;
 
-   bool m_fDetectScriptHang;
-   bool m_fNoTimeCorrect;               // Used so the frame after debugging does not do normal time correction
+   bool m_detectScriptHang;
+   bool m_noTimeCorrect;                // Used so the frame after debugging does not do normal time correction
 
-   bool m_fDebugMode;
+   bool m_debugMode;
 
-   bool m_DebugBalls;                   // Draw balls in the foreground.
-   bool m_ToggleDebugBalls;
+   bool m_debugBalls;                   // Draw balls in the foreground.
+   bool m_toggleDebugBalls;
 
    bool m_swap_ball_collision_handling; // Swaps the order of ball-ball collision handling around each physics cycle (in regard to the RLC comment block in quadtree.cpp (hopefully ;)))
-
-   U32 m_script_period;
-   U64 m_script_total;
-   U32 m_script_max;
-   U32 m_script_max_total;
 
 #ifdef DEBUGPHYSICS
    U32 c_hitcnts;
@@ -488,13 +483,13 @@ public:
 
    bool m_touchregion_pressed[8]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
 
-   bool m_fDrawCursor;
-   bool m_fGameWindowActive;
-   bool m_fUserDebugPaused;
-   bool m_fDebugWindowActive;
-   bool m_fCabinetMode;
-   bool m_fMeshAsPlayfield;
-   bool m_fRecordContacts;             // flag for DoHitTest()
+   bool m_drawCursor;
+   bool m_gameWindowActive;
+   bool m_userDebugPaused;
+   bool m_debugWindowActive;
+   bool m_cabinetMode;
+   bool m_meshAsPlayfield;
+   bool m_recordContacts;             // flag for DoHitTest()
    std::vector< CollisionEvent > m_contacts;
    char m_ballShaderTechnique[MAX_PATH];
 
@@ -506,6 +501,10 @@ public:
    unsigned int m_dmdstate; // used to distinguish different flasher/DMD rendering mode states
 
    int m_overall_frames; // amount of rendered frames since start
+
+#ifdef LOG
+   FILE *m_flog;
+#endif
 
 private:
    vector<HitObject*> m_vho;
@@ -554,15 +553,10 @@ private:
 
    int m_pauseRefCount;
 
-   bool m_fPseudoPause;		// Nothing is moving, but we're still redrawing
+   bool m_pseudoPause;      // Nothing is moving, but we're still redrawing
 
    bool m_supportsTouch;    // Display is a touchscreen?
    bool m_showTouchMessage;
-
-#ifdef LOG
-   FILE *m_flog;
-   int m_timestamp;
-#endif
 
    U32 m_phys_iterations;
 
@@ -586,15 +580,22 @@ private:
    U32 m_phys_max;
    U32 m_phys_max_total;
 
+   U32 m_script_period;
+   U64 m_script_total;
+   U32 m_script_max;
+   U32 m_script_max_total;
+
    FrameQueueLimiter m_limiter;
 
 public:
    void ToggleFPS();
    void InitFPS();
    bool ShowFPS();
+#endif
+
+public:
    bool RenderStaticOnly();
    bool RenderAOOnly();
-   unsigned int ProfilingMode();
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D(1.0f));
    void InitShader();
    void UpdateCameraModeDisplay();
@@ -603,12 +604,12 @@ public:
    void CalcBallAspectRatio();
    void GetBallAspectRatio(const Ball * const pball, float &stretchX, float &stretchY, const float zHeight);
    //void DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall);
-#endif
+   unsigned int ProfilingMode();
 
 #ifdef STEPPING
-   U32 m_PauseTimeTarget;
-   bool m_fPause;
-   bool m_fStep;
+   U32 m_pauseTimeTarget;
+   bool m_pause;
+   bool m_step;
 #endif
 
    unsigned int m_showFPS;

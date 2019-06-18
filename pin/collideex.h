@@ -8,7 +8,7 @@ public:
    BumperHitCircle(const Vertex2D& c, const float r, const float zlow, const float zhigh)
       : HitCircle(c,r,zlow,zhigh)
    {
-      m_bumperanim_fHitEvent = true;
+      m_bumperanim_hitEvent = true;
       m_bumperanim_ringAnimOffset = 0.0f;
       m_pbumper = NULL;
    }
@@ -19,7 +19,7 @@ public:
 
    Vertex3Ds m_bumperanim_hitBallPosition;
    float m_bumperanim_ringAnimOffset;
-   bool m_bumperanim_fHitEvent;
+   bool m_bumperanim_hitEvent;
 };
 
 class SlingshotAnimObject : public AnimObject

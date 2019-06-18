@@ -140,7 +140,7 @@ void SearchSelectDialog::SelectElement()
               {
                  ISelect *const pisel = pcol->m_visel.ElementAt(0);
                  if (pisel)
-                    m_curTable->AddMultiSel(pisel, false);
+                    m_curTable->AddMultiSel(pisel, false, true, false);
               }
            }
            else
@@ -148,7 +148,7 @@ void SearchSelectDialog::SelectElement()
               IScriptable * const pscript = (IScriptable*)lv.lParam;
               ISelect *const pisel = pscript->GetISelect();
               if (pisel)
-                 m_curTable->AddMultiSel(pisel, true);
+                 m_curTable->AddMultiSel(pisel, true, true, false);
            }
         }
     }

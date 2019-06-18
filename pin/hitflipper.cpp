@@ -377,7 +377,7 @@ float FlipperMoverObject::GetHitTime() const
 
 float HitFlipper::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
-   if (!m_flipperMover.m_fEnabled) return -1;
+   if (!m_flipperMover.m_enabled) return -1;
 
    const bool lastface = m_flipperMover.m_lastHitFace;
 

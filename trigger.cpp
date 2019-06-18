@@ -169,7 +169,7 @@ void Trigger::SetDefaults(bool fromMouseClick)
    m_d.m_scaleY = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "ScaleY", 1.f) : 1.f;
    m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Trigger", "TimerInterval", 100) : 100;
-   m_d.m_fEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "Enabled", true) : true;
+   m_d.m_enabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "Enabled", true) : true;
    m_d.m_fVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "Visible", true) : true;
    m_d.m_hit_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "HitHeight", 50.f) : 50.f;
    m_d.m_shape = fromMouseClick ? (TriggerShape)LoadValueIntWithDefault("DefaultProps\\Trigger", "Shape", TriggerWireA) : TriggerWireA;
@@ -316,7 +316,7 @@ void Trigger::GetTimers(vector<HitTimer*> &pvht)
 
 void Trigger::GetHitShapes(vector<HitObject*> &pvho)
 {
-   m_hitEnabled = m_d.m_fEnabled;
+   m_hitEnabled = m_d.m_enabled;
 
    if (m_d.m_shape == TriggerStar || m_d.m_shape == TriggerButton)
    {
@@ -324,7 +324,7 @@ void Trigger::GetHitShapes(vector<HitObject*> &pvho)
 
       m_ptriggerhitcircle = new TriggerHitCircle(m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_hit_height);
 
-      m_ptriggerhitcircle->m_fEnabled = m_d.m_fEnabled;
+      m_ptriggerhitcircle->m_enabled = m_d.m_enabled;
       m_ptriggerhitcircle->m_ObjType = eTrigger;
       m_ptriggerhitcircle->m_obj = (IFireEvents*)this;
 
@@ -339,7 +339,7 @@ void Trigger::GetHitShapes(vector<HitObject*> &pvho)
 void Trigger::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   m_hitEnabled = m_d.m_fEnabled;
+   m_hitEnabled = m_d.m_enabled;
    switch (m_d.m_shape)
    {
    case TriggerButton:
@@ -377,7 +377,7 @@ void Trigger::GetHitShapesDebug(vector<HitObject*> &pvho)
       ph3dp->m_obj = (IFireEvents*)this;
 
       pvho.push_back(ph3dp);
-      //ph3dp->m_fEnabled = false;	//!! disable hit process on polygon body, only trigger edges 
+      //ph3dp->m_enabled = false;	//!! disable hit process on polygon body, only trigger edges 
       break;
    }
    }
@@ -956,7 +956,7 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteBool(FID(EBLD), m_d.m_fEnabled);
+   bw.WriteBool(FID(EBLD), m_d.m_enabled);
    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
    bw.WriteFloat(FID(THOT), m_d.m_hit_height);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
@@ -984,7 +984,7 @@ void Trigger::WriteRegDefaults()
 {
    SaveValueBool("DefaultProps\\Trigger", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
    SaveValueInt("DefaultProps\\Trigger", "TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SaveValueBool("DefaultProps\\Trigger", "Enabled", m_d.m_fEnabled);
+   SaveValueBool("DefaultProps\\Trigger", "Enabled", m_d.m_enabled);
    SaveValueBool("DefaultProps\\Trigger", "Visible", m_d.m_fVisible);
    SaveValueFloat("DefaultProps\\Trigger", "HitHeight", m_d.m_hit_height);
    SaveValueFloat("DefaultProps\\Trigger", "Radius", m_d.m_radius);
@@ -1059,7 +1059,7 @@ BOOL Trigger::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(EBLD))
    {
-      pbr->GetBool(&m_d.m_fEnabled);
+      pbr->GetBool(&m_d.m_enabled);
    }
    else if (id == FID(THOT))
    {
@@ -1192,7 +1192,7 @@ STDMETHODIMP Trigger::put_Surface(BSTR newVal)
 
 STDMETHODIMP Trigger::get_Enabled(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_hitEnabled : m_d.m_fEnabled);
+   *pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_hitEnabled : m_d.m_enabled);
 
    return S_OK;
 }
@@ -1203,15 +1203,13 @@ STDMETHODIMP Trigger::put_Enabled(VARIANT_BOOL newVal)
    {
       m_hitEnabled = VBTOF(newVal);
 
-      if (m_ptriggerhitcircle) m_ptriggerhitcircle->m_fEnabled = m_hitEnabled;
+      if (m_ptriggerhitcircle) m_ptriggerhitcircle->m_enabled = m_hitEnabled;
    }
    else
    {
       STARTUNDO
-
-         m_d.m_fEnabled = VBTOF(newVal);
-      m_hitEnabled = m_d.m_fEnabled;
-
+      m_d.m_enabled = VBTOF(newVal);
+      m_hitEnabled = m_d.m_enabled;
       STOPUNDO
    }
 

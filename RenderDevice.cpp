@@ -561,7 +561,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 #ifdef USE_D3D9EX
    params.PresentationInterval = (m_pD3DEx && (m_vsync != 1)) ? D3DPRESENT_INTERVAL_IMMEDIATE : (!!m_vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE); //!! or have a special mode to force normal vsync?
 #else
-   params.PresentationInterval = !!VSync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
+   params.PresentationInterval = !!m_vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 #endif
 
    // check if our HDR texture format supports/does sRGB conversion on texture reads, which must NOT be the case as we always set SRGBTexture=true independent of the format!
@@ -692,7 +692,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
 
    if (g_pplayer != NULL)
    {
-       const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
+       const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
        if ((g_pplayer->m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
        {
            hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1,
@@ -945,7 +945,7 @@ RenderDevice::~RenderDevice()
 
    if (g_pplayer)
    {
-       const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
+       const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
        if ((g_pplayer->m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
            SAFE_RELEASE(m_pMirrorTmpBufferTexture);
    }

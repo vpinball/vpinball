@@ -61,7 +61,7 @@ public:
    int m_OverridePhysics;
 
    bool  m_fVisible;
-   bool  m_fEnabled;
+   bool  m_enabled;
    bool  m_fReflectionEnabled;
 };
 

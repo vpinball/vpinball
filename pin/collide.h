@@ -93,7 +93,7 @@ struct CollisionEvent
 class HitObject
 {
 public:
-   HitObject() : m_fEnabled(true), m_ObjType(eNull), m_obj(NULL),
+   HitObject() : m_enabled(true), m_ObjType(eNull), m_obj(NULL),
       m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
       m_threshold(0.f), m_pfedebug(NULL), m_fe(false), m_e(false) {}
    virtual ~HitObject() {}
@@ -124,7 +124,7 @@ public:
 
    eObjType m_ObjType;
 
-   bool  m_fEnabled;
+   bool  m_enabled;
 
    bool  m_fe;  // FireEvents for m_obj?
    bool  m_e;   // currently only used to determine which HitTriangles/HitLines/HitPoints are being part of the same Primitive element m_obj, to be able to early out intersection traversal if primitive is flagged as not collidable

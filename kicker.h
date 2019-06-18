@@ -20,7 +20,7 @@ public:
    float m_hitAccuracy; //kicker hit grabbing object height ... default ballsize*0.7
    float m_orientation;
    float m_hit_height;
-   bool m_fEnabled;
+   bool m_enabled;
    bool m_fFallThrough;
    bool m_legacyMode;
 };

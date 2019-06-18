@@ -72,7 +72,7 @@ public:
    IUnknown *m_punk;
    IDispatch *m_pdisp;
    IScriptable *m_piscript;
-   bool m_fGlobal;
+   bool m_global;
 
    // for VectorSortString
    int SortAgainst(const CodeViewDispatch * const pcvd/*void *pvoid*/) const;
@@ -112,7 +112,7 @@ public:
    STDMETHOD(CleanUpScriptEngine)();
    STDMETHOD(InitializeScriptEngine)();
 
-   HRESULT AddItem(IScriptable * const piscript, const bool fGlobal);
+   HRESULT AddItem(IScriptable * const piscript, const bool global);
    void RemoveItem(IScriptable * const piscript);
    HRESULT ReplaceName(IScriptable * const piscript, WCHAR * const wzNew);
    void SelectItem(IScriptable * const piscript);
@@ -211,7 +211,7 @@ public:
 
    VectorSortString<CodeViewDispatch*> m_vcvd;
 
-   bool m_fScriptError; // Whether a script error has occured - used for polling from the game
+   bool m_scriptError; // Whether a script error has occured - used for polling from the game
 
    bool m_visible;
    bool m_minimized;
@@ -330,7 +330,8 @@ public:
 	HWND m_hwndFunctionText;
 
 	SaveDirtyState m_sdsDirty;
-	bool m_fIgnoreDirty;
+	bool m_ignoreDirty;
+
 	HACCEL m_haccel; // Accelerator keys
 
 	FINDREPLACE m_findreplaceold; // the last thing found/replaced
@@ -379,9 +380,9 @@ public:
 
    VectorProtected<ISelect> m_visel;
 
-   bool m_fFireEvents;
-   bool m_fStopSingleEvents;
-   bool m_fGroupElements;
+   bool m_fireEvents;
+   bool m_stopSingleEvents;
+   bool m_groupElements;
 };
 
 class OMCollectionEnum :

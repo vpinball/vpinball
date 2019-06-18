@@ -267,7 +267,7 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
 {
    std::vector<int> vitexpoints;
    std::vector<int> virenderpoints;
-   bool m_fNoCoords = false;
+   bool noCoords = false;
 
    const int cpoints = (int)vv.size();
    int icontrolpoint = 0;
@@ -296,7 +296,7 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
       vitexpoints.push_back(0);
       virenderpoints.push_back(0);
 
-      m_fNoCoords = true;
+      noCoords = true;
    }
 
    // Wrap the array around so we cover the last section
@@ -310,7 +310,7 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
 
       float starttexcoord;
       float endtexcoord;
-      if (m_fNoCoords)
+      if (noCoords)
       {
          starttexcoord = 0.0f;
          endtexcoord = 1.0f;
@@ -324,9 +324,7 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
       const float deltacoord = endtexcoord - starttexcoord;
 
       if (endrenderpoint <= startrenderpoint)
-      {
          endrenderpoint += cpoints;
-      }
 
       float totallength = 0.0f;
       for (int l = startrenderpoint; l < endrenderpoint; ++l)
@@ -368,7 +366,7 @@ void IHaveDragPoints::ClearPointsForOverwrite()
       if (m_vdpoint[i]->m_selectstate != eNotSelected/*GetPTable()->m_pselcur == m_vdpoint[i]*/)
       {
          //GetPTable()->SetSel(GetPTable());
-         GetPTable()->AddMultiSel(GetPTable(), fFalse, fTrue);
+         GetPTable()->AddMultiSel(GetPTable(), false, true, false);
       }
 
       m_vdpoint[i]->Release();

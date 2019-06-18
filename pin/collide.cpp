@@ -8,7 +8,7 @@ void HitObject::Contact(CollisionEvent& coll, const float dtime) { coll.m_ball->
 
 void HitObject::FireHitEvent(Ball * const pball)
 {
-   if (m_obj && m_fe && m_fEnabled)
+   if (m_obj && m_fe && m_enabled)
    {
       // is this the same place as last event? if same then ignore it
       const float dist_ls = (pball->m_Event_Pos - pball->m_pos).LengthSquared();
@@ -36,7 +36,7 @@ void LineSeg::CalcHitBBox()
 
 float LineSeg::HitTestBasic(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const
 {
-   if (!m_fEnabled || pball->m_frozen) return -1.0f;
+   if (!m_enabled || pball->m_frozen) return -1.0f;
 
    const float ballvx = pball->m_vel.x;						// ball velocity
    const float ballvy = pball->m_vel.y;
@@ -176,7 +176,7 @@ void LineSeg::CalcNormal()
 float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime, CollisionEvent& coll,
                                     const bool direction, const bool lateral, const bool rigid) const // all of these true = bumper/flipperbase/gate/spinner, all false = kicker/trigger
 {
-   if (!m_fEnabled || pball->m_frozen) return -1.0f;
+   if (!m_enabled || pball->m_frozen) return -1.0f;
 
    Vertex3Ds c(center.x, center.y, 0.0f);
    Vertex3Ds dist = pball->m_pos - c;    // relative ball position
@@ -337,7 +337,7 @@ void HitCircle::Collide(const CollisionEvent& coll)
 
 float HitLineZ::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
-   if (!m_fEnabled)
+   if (!m_enabled)
       return -1.0f;
 
    const Vertex2D bp2d(pball->m_pos.x, pball->m_pos.y);
@@ -434,7 +434,7 @@ void HitLineZ::Collide(const CollisionEvent& coll)
 
 float HitPoint::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
-   if (!m_fEnabled)
+   if (!m_enabled)
       return -1.0f;
 
    const Vertex3Ds dist = pball->m_pos - m_p;  // relative ball position
@@ -526,10 +526,10 @@ void DoHitTest(Ball *const pball, HitObject *const pho, CollisionEvent& coll)
       return;
 
    CollisionEvent newColl;
-   const float newtime = pho->HitTest(pball, coll.m_hittime, !g_pplayer->m_fRecordContacts ? coll : newColl);
+   const float newtime = pho->HitTest(pball, coll.m_hittime, !g_pplayer->m_recordContacts ? coll : newColl);
    const bool validhit = ((newtime >= 0.f) && !sign(newtime) && (newtime <= coll.m_hittime));
 
-   if (!g_pplayer->m_fRecordContacts) // simply find first event
+   if (!g_pplayer->m_recordContacts) // simply find first event
    {
       if (validhit)
       {

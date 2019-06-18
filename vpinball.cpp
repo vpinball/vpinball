@@ -983,7 +983,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       ptCur = GetActiveTable();
       if (ptCur)
          // Set selection to something in the new view (unless hiding table elements)
-         ptCur->AddMultiSel((ISelect *)ptCur, false);
+         ptCur->AddMultiSel((ISelect *)ptCur, false, true, false);
 
       SetEnableToolbar();
       break;
@@ -2080,7 +2080,7 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
    }
    else
    {
-      if (g_pplayer->m_fDebugMode)
+      if (g_pplayer->m_debugMode)
       {
          if (::IsDialogMessage(g_pplayer->m_hwndDebugger, pmsg))
             *pfConsumed = TRUE;
@@ -2115,7 +2115,7 @@ HRESULT VPinball::MainMsgLoop()
       }
       else
       {
-         if (g_pplayer && !g_pplayer->m_fPause)
+         if (g_pplayer && !g_pplayer->m_pause)
             ApcHost_OnIdle(&fConsumed);
          else
             WaitMessage();
@@ -2542,7 +2542,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
             GetCursorPos(&mousept);
 
             const int ksshift = GetKeyState(VK_SHIFT);
-            const bool fAdd = ((ksshift & 0x80000000) != 0);
+            const bool add = ((ksshift & 0x80000000) != 0);
 
             const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | 16384/*TPM_NOANIMATION*/, mousept.x, mousept.y, hwnd, NULL);
 
@@ -2552,10 +2552,10 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                {
                   Collection * const pcol = pt->m_vcollection.ElementAt(icmd & 0x7fffffff);
                   for (int i = 0; i < pcol->m_visel.Size(); i++)
-                     pt->AddMultiSel(pcol->m_visel.ElementAt(i), i == 0 ? fAdd : true);
+                     pt->AddMultiSel(pcol->m_visel.ElementAt(i), (i == 0) ? add : true, true, false);
                }
                else
-                  pt->AddMultiSel(pt->m_vedit[icmd - 1]->GetISelect(), fAdd);
+                  pt->AddMultiSel(pt->m_vedit[icmd - 1]->GetISelect(), add, true, false);
             }
             DestroyMenu(hmenu);
          }
@@ -2636,7 +2636,7 @@ STDMETHODIMP VPinball::QuitPlayer(int CloseType)
 void VPinball::Quit()
 {
    if (g_pplayer) {
-      g_pplayer->m_fCloseDown = true;
+      g_pplayer->m_closeDown = true;
       g_pplayer->m_closeType = 1;
    }
    else

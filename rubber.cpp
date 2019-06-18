@@ -602,7 +602,7 @@ void Rubber::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
       obj->m_scatter = ANGTORAD(m_d.m_scatter);
    }
 
-   obj->m_fEnabled = m_d.m_fCollidable;
+   obj->m_enabled = m_d.m_fCollidable;
    // the rubber is of type ePrimitive for triggering the event in HitTriangle::Collide()
    obj->m_ObjType = ePrimitive;
    // hard coded threshold for now
@@ -1193,28 +1193,25 @@ STDMETHODIMP Rubber::put_Scatter(float newVal)
 
 STDMETHODIMP Rubber::get_Collidable(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB((!g_pplayer) ? m_d.m_fCollidable : m_vhoCollidable[0]->m_fEnabled);
+   *pVal = (VARIANT_BOOL)FTOVB((!g_pplayer) ? m_d.m_fCollidable : m_vhoCollidable[0]->m_enabled);
 
    return S_OK;
 }
 
 STDMETHODIMP Rubber::put_Collidable(VARIANT_BOOL newVal)
 {
-   const BOOL fNewVal = VBTOF(newVal);
+   const bool fNewVal = !!VBTOF(newVal);
    if (!g_pplayer)
    {
       STARTUNDO
-
-      m_d.m_fCollidable = !!fNewVal;
-
+      m_d.m_fCollidable = fNewVal;
       STOPUNDO
    }
    else
    {
-       const bool b = !!fNewVal;
-       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_fEnabled != b)
+       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != fNewVal)
            for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
-               m_vhoCollidable[i]->m_fEnabled = b; //copy to hit checking on entities composing the object
+               m_vhoCollidable[i]->m_enabled = fNewVal; //copy to hit checking on entities composing the object
    }
 
    return S_OK;

@@ -142,7 +142,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
    m_d.m_rubberheight = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberHeight", 19.f) : 19.f;
    m_d.m_rubberwidth = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberWidth", 24.f) : 24.f;
    m_d.m_fVisible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible", true) : true;
-   m_d.m_fEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Enabled", true) : true;
+   m_d.m_enabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Enabled", true) : true;
    m_d.m_fReflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled", true) : true;
 }
 
@@ -176,7 +176,7 @@ void Flipper::WriteRegDefaults()
    SaveValueFloat(regKey, "RubberHeight", m_d.m_rubberheight);
    SaveValueFloat(regKey, "RubberWidth", m_d.m_rubberwidth);
    SaveValueBool(regKey, "Visible", m_d.m_fVisible);
-   SaveValueBool(regKey, "Enabled", m_d.m_fEnabled);
+   SaveValueBool(regKey, "Enabled", m_d.m_enabled);
    SaveValueBool(regKey, "ReflectionEnabled", m_d.m_fReflectionEnabled);
 }
 
@@ -273,7 +273,7 @@ void Flipper::GetHitShapes(vector<HitObject*> &pvho)
    HitFlipper * const phf = new HitFlipper(m_d.m_Center, max(m_d.m_BaseRadius, 0.01f), max(m_d.m_EndRadius, 0.01f),
       max(m_d.m_FlipperRadius, 0.01f), ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height, this);
 
-   phf->m_flipperMover.m_fEnabled = m_d.m_fEnabled;
+   phf->m_flipperMover.m_enabled = m_d.m_enabled;
    phf->m_flipperMover.m_fVisible = m_d.m_fVisible;
 
    pvho.push_back(phf);
@@ -919,7 +919,7 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(TODA), m_d.m_torqueDamping);
    bw.WriteFloat(FID(TDAA), m_d.m_torqueDampingAngle);
    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
-   bw.WriteBool(FID(ENBL), m_d.m_fEnabled);
+   bw.WriteBool(FID(ENBL), m_d.m_enabled);
    bw.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);
    bw.WriteFloat(FID(FHGT), m_d.m_height);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
@@ -1093,7 +1093,7 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(ENBL))
    {
-      pbr->GetBool(&m_d.m_fEnabled);
+      pbr->GetBool(&m_d.m_enabled);
    }
    else if (id == FID(REEN))
    {
@@ -1565,7 +1565,7 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
 
 STDMETHODIMP Flipper::get_Enabled(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_phitflipper ? m_phitflipper->m_flipperMover.m_fEnabled : m_d.m_fEnabled);
+   *pVal = (VARIANT_BOOL)FTOVB(m_phitflipper ? m_phitflipper->m_flipperMover.m_enabled : m_d.m_enabled);
 
    return S_OK;
 }
@@ -1574,12 +1574,12 @@ STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperMover.m_fEnabled = VBTOF(newVal); //m_d.m_fVisible
+      m_phitflipper->m_flipperMover.m_enabled = VBTOF(newVal); //m_d.m_fVisible
    }
    else
    {
       STARTUNDO
-      m_d.m_fEnabled = VBTOF(newVal);
+      m_d.m_enabled = VBTOF(newVal);
       STOPUNDO
    }
    return S_OK;
