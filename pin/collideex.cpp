@@ -2,17 +2,17 @@
 
 void BumperHitCircle::Collide(const CollisionEvent& coll)
 {
-   if (!m_fEnabled) return;
+   if (!m_enabled) return;
 
    const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_vel); // needs to be computed before Collide3DWall()!
 
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter); // reflect ball from wall
 
-   if (m_pbumper->m_d.m_fHitEvent && (dot <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
+   if (m_pbumper->m_d.m_hitEvent && (dot <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
    {
       coll.m_ball->m_vel += coll.m_hitnormal * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
 
-      m_bumperanim_fHitEvent = true;
+      m_bumperanim_hitEvent = true;
       m_bumperanim_hitBallPosition = coll.m_ball->m_pos;
       m_pbumper->FireGroupEvent(DISPID_HitEvents_Hit);
    }
@@ -134,7 +134,7 @@ HitGate::HitGate(Gate * const pgate, const float height)
 
 float HitGate::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
-   if (!m_fEnabled) return -1.0f;
+   if (!m_enabled) return -1.0f;
 
    for (unsigned int i = 0; i < 2; ++i)
    {
@@ -313,7 +313,7 @@ HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
 
 float HitSpinner::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
-   if (!m_fEnabled) return -1.0f;
+   if (!m_enabled) return -1.0f;
 
    for (unsigned int i = 0; i < 2; ++i)
    {
@@ -483,7 +483,7 @@ Hit3DPoly::~Hit3DPoly()
 
 float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
-   if (!m_fEnabled) return -1.0f;
+   if (!m_enabled) return -1.0f;
 
    const float bnv = m_normal.Dot(pball->m_vel);  //speed in Normal-vector direction
 
@@ -714,7 +714,7 @@ HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
 
 float HitTriangle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
-   if (!m_fEnabled) return -1.0f;
+   if (!m_enabled) return -1.0f;
 
    const float bnv = m_normal.Dot(pball->m_vel);     // speed in Normal-vector direction
 
@@ -836,7 +836,7 @@ void HitTriangle::CalcHitBBox()
 
 float HitPlane::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
 {
-   if (!m_fEnabled) return -1.0f;
+   if (!m_enabled) return -1.0f;
 
    //slintf("HitPlane test - %f %f\n", pball->m_pos.z, pball->m_vel.z);
 
@@ -972,7 +972,7 @@ HitLine3D::HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2)
 
 float HitLine3D::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll) const
 {
-   if (!m_fEnabled)
+   if (!m_enabled)
       return -1.0f;
 
    Ball * const pball = const_cast<Ball*>(pball_);   // HACK; needed below // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)

@@ -557,17 +557,17 @@ void Ball::UpdateVelocities()
 {
    if (!m_frozen)  // Gravity
    {
-	   if (g_pplayer->m_fBallControl && this == g_pplayer->m_pactiveballBC && g_pplayer->m_pBCTarget != NULL)
-	   {
-		   m_vel.x *= 0.5f;  // Null out most of the X/Y velocity, want a little bit so the ball can sort of find its way out of obstacles.
-		   m_vel.y *= 0.5f; 
+      if (g_pplayer->m_ballControl && this == g_pplayer->m_pactiveballBC && g_pplayer->m_pBCTarget != NULL)
+      {
+         m_vel.x *= 0.5f;  // Null out most of the X/Y velocity, want a little bit so the ball can sort of find its way out of obstacles.
+         m_vel.y *= 0.5f; 
 
-		   m_vel += Vertex3Ds(max(-10.0f, min(10.0f, (g_pplayer->m_pBCTarget->x - m_pos.x) / 10.0f)),
-			   max(-10.0f, min(10.0f, (g_pplayer->m_pBCTarget->y - m_pos.y) / 10.0f)),
-			   -2.0f);
-	   }
-	   else
-		  m_vel += (float)PHYS_FACTOR * g_pplayer->m_gravity;
+         m_vel += Vertex3Ds(max(-10.0f, min(10.0f, (g_pplayer->m_pBCTarget->x - m_pos.x) / 10.0f)),
+                            max(-10.0f, min(10.0f, (g_pplayer->m_pBCTarget->y - m_pos.y) / 10.0f)),
+                            -2.0f);
+      }
+      else
+         m_vel += (float)PHYS_FACTOR * g_pplayer->m_gravity;
 
       m_vel.x += g_pplayer->m_NudgeX; // TODO: depends on STEPTIME
       m_vel.y += g_pplayer->m_NudgeY;

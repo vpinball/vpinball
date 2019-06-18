@@ -60,7 +60,7 @@ public:
    bool m_solState;         // is solenoid enabled?
    bool m_isInContact;
 
-   bool m_fEnabled;
+   bool m_enabled;
    bool m_fVisible;
    bool m_lastHitFace;
 

@@ -23,7 +23,7 @@ public:
    U32 m_time_msec;
    float m_animSpeed;
    float m_wireThickness;
-   bool m_fEnabled;
+   bool m_enabled;
    bool m_fVisible;
    bool m_fReflectionEnabled;
 };

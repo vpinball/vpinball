@@ -816,7 +816,7 @@ void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypi
    //!! FSS: camy = 0.0f;
 
    m_proj.TranslateView(g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set] - m_proj.m_vertexcamera.x + camx, g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set] - m_proj.m_vertexcamera.y + camy, -m_proj.m_vertexcamera.z + camz);
-   if (g_pplayer->cameraMode && (g_pplayer->m_ptable->m_BG_current_set == 0 || g_pplayer->m_ptable->m_BG_current_set == 2)) // DT & FSS
+   if (g_pplayer->m_cameraMode && (g_pplayer->m_ptable->m_BG_current_set == 0 || g_pplayer->m_ptable->m_BG_current_set == 2)) // DT & FSS
       m_proj.RotateView(inclination, 0, rotation);
    else
    {
@@ -889,7 +889,7 @@ void Pin3D::InitPlayfieldGraphics()
       tableVBuffer->unlock();
    }
    else
-      g_pplayer->m_fMeshAsPlayfield = true;
+      g_pplayer->m_meshAsPlayfield = true;
 }
 
 void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
@@ -928,7 +928,7 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
            m_pd3dPrimaryDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    }
 
-   if (!g_pplayer->m_fMeshAsPlayfield)
+   if (!g_pplayer->m_meshAsPlayfield)
    { 
       assert(tableVBuffer != NULL);
       m_pd3dPrimaryDevice->basicShader->Begin(0);

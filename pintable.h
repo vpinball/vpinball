@@ -302,7 +302,7 @@ public:
    bool GetEMReelsEnabled() const;
 
    void Copy(int x, int y);
-   void Paste(const bool fAtLocation, int x, int y);
+   void Paste(const bool atLocation, const int x, const int y);
 
    void ExportBlueprint();
    void ExportTableMesh();
@@ -400,7 +400,7 @@ public:
    void ClearMultiSel(ISelect *newSel = NULL);
    bool MultiSelIsEmpty();
    ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
-   void AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate = true, bool fContextClick = false);
+   void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
 
    void BeginAutoSaveCounter();
    void EndAutoSaveCounter();

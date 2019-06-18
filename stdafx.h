@@ -56,15 +56,15 @@
 
 #define ADAPT_VSYNC_FACTOR 0.95 // safety factor where vsync is turned off (f.e. drops below 60fps * 0.95 = 57fps)
 
-#define ACCURATETIMERS 1        // if commented out, timers will only be triggered as often as frames are rendered (e.g. they can fall behind)
+#define ACCURATETIMERS          // if undefd, timers will only be triggered as often as frames are rendered (e.g. they can fall behind)
 #define MAX_TIMER_MSEC_INTERVAL 1 // amount of msecs to wait (at least) until same timer can be triggered again (e.g. they can fall behind, if set to > 1, as update cycle is 1000Hz)
 #define MAX_TIMERS_MSEC_OVERALL 5 // amount of msecs that all timers combined can take per frame (e.g. they can fall behind, if set to < somelargevalue)
 
-#define FPS 1                   // Enable FPS computation (default 'F11')
-#define STEPPING 1              // Enable Physics stepping
+#define FPS                     // enable FPS computation (default 'F11')
+#define STEPPING                // enable Physics stepping
 
 #if defined(_DEBUG) && defined(STEPPING)
- #define MOUSEPAUSE 1
+ #define MOUSEPAUSE
 #endif
 
 //#define PLAYBACK
@@ -75,7 +75,7 @@
 
 //#define EVENPHYSICSTIME
 
-#define DEBUG_BALL_SPIN
+#define DEBUG_BALL_SPIN         // enables dots glued to balls if in 'F11' mode
 
 //
 

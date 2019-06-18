@@ -424,7 +424,7 @@ void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
       obj->m_elasticity = m_d.m_elasticity;
       obj->SetFriction(m_d.m_friction);
       obj->m_scatter = ANGTORAD(m_d.m_scatter);
-      obj->m_fEnabled = m_d.m_fCollidable;
+      obj->m_enabled = m_d.m_fCollidable;
    }
 
    if (m_d.m_fHitEvent)
@@ -1856,9 +1856,9 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
       m_fIsDropped = fNewVal;
 
       const bool b = !m_fIsDropped && m_d.m_fCollidable;
-      if (m_vhoDrop.size() > 0 && m_vhoDrop[0]->m_fEnabled != b)
+      if (m_vhoDrop.size() > 0 && m_vhoDrop[0]->m_enabled != b)
         for (size_t i = 0; i < m_vhoDrop.size(); i++) //!! costly
-          m_vhoDrop[i]->m_fEnabled = b; //disable hit on enities composing the object 
+          m_vhoDrop[i]->m_enabled = b; //disable hit on enities composing the object 
    }
 
    return S_OK;
@@ -2050,22 +2050,20 @@ STDMETHODIMP Surface::get_Collidable(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
 {
-   const BOOL fNewVal = VBTOF(newVal);
+   const bool fNewVal = !!VBTOF(newVal);
 
    if (!g_pplayer)
    {
        STARTUNDO
+       m_d.m_fCollidable = fNewVal;
 
-       m_d.m_fCollidable = VBTOF(fNewVal);
-
-       STOPUNDO
-   }
+       STOPUNDO   }
    else
    {
-       const bool b = m_d.m_fDroppable ? (!!fNewVal && !m_fIsDropped) : !!fNewVal;
-       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_fEnabled != b)
+       const bool b = m_d.m_fDroppable ? (fNewVal && !m_fIsDropped) : fNewVal;
+       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != b)
            for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
-              m_vhoCollidable[i]->m_fEnabled = b; //copy to hit checking on enities composing the object 
+              m_vhoCollidable[i]->m_enabled = b; //copy to hit checking on enities composing the object 
    }
 
    return S_OK;

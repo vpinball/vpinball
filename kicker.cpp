@@ -76,7 +76,7 @@ void Kicker::SetDefaults(bool fromMouseClick)
    m_d.m_radius = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Kicker", "Radius", 25.f) : 25.f;
    m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Kicker", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Kicker", "TimerInterval", 100) : 100;
-   m_d.m_fEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Kicker", "Enabled", true) : true;
+   m_d.m_enabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Kicker", "Enabled", true) : true;
    m_d.m_hitAccuracy = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Kicker", "HitAccuracy", 0.7f) : 0.7f;
    m_d.m_hit_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Kicker", "HitHeight", 40.0f) : 40.0f;
    m_d.m_orientation = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Kicker", "Orientation", 0.f) : 0.f;
@@ -100,7 +100,7 @@ void Kicker::WriteRegDefaults()
 {
    SaveValueBool("DefaultProps\\Kicker", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
    SaveValueInt("DefaultProps\\Kicker", "TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SaveValueBool("DefaultProps\\Kicker", "Enabled", m_d.m_fEnabled);
+   SaveValueBool("DefaultProps\\Kicker", "Enabled", m_d.m_enabled);
    SaveValueFloat("DefaultProps\\Kicker", "HitAccuracy", m_d.m_hitAccuracy);
    SaveValueFloat("DefaultProps\\Kicker", "HitHeight", m_d.m_hit_height);
    SaveValueFloat("DefaultProps\\Kicker", "Orientation", m_d.m_orientation);
@@ -203,7 +203,7 @@ void Kicker::GetHitShapes(vector<HitObject*> &pvho)
       }
    }
 
-   phitcircle->m_fEnabled = m_d.m_fEnabled;
+   phitcircle->m_enabled = m_d.m_enabled;
 
    phitcircle->m_ObjType = eKicker;
    phitcircle->m_obj = (IFireEvents*)this;
@@ -629,7 +629,7 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteBool(FID(EBLD), m_d.m_fEnabled);
+   bw.WriteBool(FID(EBLD), m_d.m_enabled);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteInt(FID(TYPE), m_d.m_kickertype);
    bw.WriteFloat(FID(KSCT), m_d.m_scatter);
@@ -698,7 +698,7 @@ BOOL Kicker::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(EBLD))
    {
-      pbr->GetBool(&m_d.m_fEnabled);
+      pbr->GetBool(&m_d.m_enabled);
    }
    else if (id == FID(TMIN))
    {
@@ -964,7 +964,7 @@ STDMETHODIMP Kicker::put_Surface(BSTR newVal)
 
 STDMETHODIMP Kicker::get_Enabled(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fEnabled);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_enabled);
 
    return S_OK;
 }
@@ -973,10 +973,10 @@ STDMETHODIMP Kicker::put_Enabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-   m_d.m_fEnabled = VBTOF(newVal);
+   m_d.m_enabled = VBTOF(newVal);
 
    if (m_phitkickercircle)
-      m_phitkickercircle->m_fEnabled = m_d.m_fEnabled;
+      m_phitkickercircle->m_enabled = m_d.m_enabled;
 
    STOPUNDO
 

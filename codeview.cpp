@@ -96,7 +96,7 @@ void CodeViewer::Init(IScriptableHost *psh)
    }
 
    m_sdsDirty = eSaveClean;
-   m_fIgnoreDirty = false;
+   m_ignoreDirty = false;
 
    m_findreplaceold.lStructSize = 0; // So we know nothing has been searched for yet
 
@@ -166,7 +166,7 @@ HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
    pcvd->m_piscript = NULL;
-   pcvd->m_fGlobal = false;
+   pcvd->m_global = false;
 
    if (m_vcvd.GetSortedIndex(pcvd) != -1 || m_vcvdTemp.GetSortedIndex(pcvd) != -1)
    {
@@ -185,7 +185,7 @@ HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
    return S_OK;
 }
 
-HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool fGlobal)
+HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
 {
    CodeViewDispatch * const pcvd = new CodeViewDispatch();
 
@@ -197,7 +197,7 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool fGlobal)
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
    pcvd->m_piscript = piscript;
-   pcvd->m_fGlobal = fGlobal;
+   pcvd->m_global = global;
 
    if (m_vcvd.GetSortedIndex(pcvd) != -1)
    {
@@ -795,7 +795,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
       return S_OK;
    }
 
-   m_fScriptError = true;
+   m_scriptError = true;
 
    PinTable * const pt = g_pvp->GetActiveTable();
    if (pt != NULL)
@@ -853,7 +853,7 @@ void CodeViewer::Compile(const bool message)
       for (size_t i = 0; i < m_vcvd.size(); ++i)
       {
          int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
-         if (m_vcvd[i]->m_fGlobal)
+         if (m_vcvd[i]->m_global)
             flags |= SCRIPTITEM_GLOBALMEMBERS;
          m_pScript->AddNamedItem(m_vcvd[i]->m_wzName, flags);
       }
@@ -1126,7 +1126,7 @@ void CodeViewer::SaveToFile(const char *filename)
 
 void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
 {
-   m_fIgnoreDirty = true;
+   m_ignoreDirty = true;
 
    ULONG read = 0;
    int cchar;
@@ -1173,7 +1173,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
    SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
    delete[] szText;
 
-   m_fIgnoreDirty = false;
+   m_ignoreDirty = false;
    m_sdsDirty = eSaveClean;
 }
 
@@ -1186,7 +1186,7 @@ void CodeViewer::LoadFromFile(const char *filename)
 		fseek(fScript, 0L, SEEK_END);
 		size_t cchar = ftell(fScript);
 		fseek(fScript, 0L, SEEK_SET);
-		m_fIgnoreDirty = true;
+		m_ignoreDirty = true;
 
 		BYTE * const szText = new BYTE[cchar + 1];
 
@@ -1205,9 +1205,9 @@ void CodeViewer::LoadFromFile(const char *filename)
 
 		delete[] szText;
 
-		m_fIgnoreDirty = false;
+		m_ignoreDirty = false;
 		m_sdsDirty = eSaveClean;
-        fclose(fScript);
+		fclose(fScript);
 	}
 }
 
@@ -2398,7 +2398,7 @@ void CodeViewer::ParseVPCore()
    if (fopen_s(&fCore, sPath.c_str(), "r") != 0)
 	if (!fCore)
 	{
-      char szLoadDir[MAX_PATH] = { 0 };
+	  char szLoadDir[MAX_PATH] = { 0 };
 	  strcpy_s(szLoadDir, g_pvp->m_currentTablePath);
 	  strcat_s(szLoadDir, "\\core.vbs");
 	  if (fopen_s(&fCore, szLoadDir, "r") != 0)
@@ -2496,17 +2496,17 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
    case WM_ACTIVATE:
    {
       if (LOWORD(wParam) != WA_INACTIVE)
-		{
+      {
          g_pvp->m_pcv = GetCodeViewerPtr(hwndDlg);
-			CodeViewer * const pcv = g_pvp->m_pcv;
-			//pcv->StopErrorDisplay = false;
-			//if (!(pcv->StopErrorDisplay))
-			{
-				pcv->StopErrorDisplay = true; ///stop Error reporting WIP
-				pcv->ParseForFunction();
-			}
-			//pcv->StopErrorDisplay = false;
-		}
+         CodeViewer * const pcv = g_pvp->m_pcv;
+         //pcv->StopErrorDisplay = false;
+         //if (!(pcv->StopErrorDisplay))
+         {
+         	pcv->StopErrorDisplay = true; ///stop Error reporting WIP
+         	pcv->ParseForFunction();
+         }
+         //pcv->StopErrorDisplay = false;
+      }
    }
    break;
    case WM_CLOSE:
@@ -2541,24 +2541,24 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       switch (code)
       {
 
-		case SCEN_SETFOCUS:
-		{
+      case SCEN_SETFOCUS:
+      {
          CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
-			pcv->ParseForFunction();
-		}
-		break;
+         pcv->ParseForFunction();
+      }
+      break;
       case SCEN_CHANGE:
       {
-			// TODO: Line Parse Brain here?
+         // TODO: Line Parse Brain here?
          CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
          if (pcv->m_errorLineNumber != -1)
             pcv->UncolorError();
-         if (!pcv->m_fIgnoreDirty && (pcv->m_sdsDirty < eSaveDirty))
+         if (!pcv->m_ignoreDirty && (pcv->m_sdsDirty < eSaveDirty))
          {
             pcv->m_sdsDirty = eSaveDirty;
             pcv->m_psh->SetDirtyScript(eSaveDirty);
          }
-		}
+      }
       break;
 
       case BN_CLICKED: // or menu
@@ -3044,10 +3044,10 @@ void CodeViewer::UpdateScinFromPrefs()
 
 Collection::Collection()
 {
-   m_fFireEvents = false;
-   m_fStopSingleEvents = false;
+   m_fireEvents = false;
+   m_stopSingleEvents = false;
 
-   m_fGroupElements = LoadValueBoolWithDefault("Editor", "GroupElementsInCollection", true);
+   m_groupElements = LoadValueBoolWithDefault("Editor", "GroupElementsInCollection", true);
 }
 
 STDMETHODIMP Collection::get_Name(BSTR *pVal)
@@ -3080,9 +3080,9 @@ HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
       bw.WriteWideString(FID(ITEM), piscript->m_wzName);
    }
 
-   bw.WriteBool(FID(EVNT), m_fFireEvents);
-   bw.WriteBool(FID(SSNG), m_fStopSingleEvents);
-   bw.WriteBool(FID(GREL), m_fGroupElements);
+   bw.WriteBool(FID(EVNT), m_fireEvents);
+   bw.WriteBool(FID(SSNG), m_stopSingleEvents);
+   bw.WriteBool(FID(GREL), m_groupElements);
 
    bw.WriteTag(FID(ENDB));
 
@@ -3105,15 +3105,15 @@ BOOL Collection::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(EVNT))
    {
-      pbr->GetBool(&m_fFireEvents);
+      pbr->GetBool(&m_fireEvents);
    }
    else if (id == FID(SSNG))
    {
-      pbr->GetBool(&m_fStopSingleEvents);
+      pbr->GetBool(&m_stopSingleEvents);
    }
    else if (id == FID(GREL))
    {
-      pbr->GetBool(&m_fGroupElements);
+      pbr->GetBool(&m_groupElements);
    }
    else if (id == FID(ITEM))
    {

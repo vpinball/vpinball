@@ -2221,10 +2221,10 @@ void PinTable::Play(const bool _cameraMode)
 
    g_fKeepUndoRecords = false;
 
-   m_pcv->m_fScriptError = false;
+   m_pcv->m_scriptError = false;
    m_pcv->Compile(false);
 
-   if (!m_pcv->m_fScriptError)
+   if (!m_pcv->m_scriptError)
    {
       // set up the texture hashtable for fast access
       m_textureMap.clear();
@@ -2276,7 +2276,7 @@ void PinTable::Play(const bool _cameraMode)
 
       g_pplayer = new Player(_cameraMode);
       const HRESULT hrInit = g_pplayer->Init(this, hwndProgressBar, hwndStatusName);
-      if (!m_pcv->m_fScriptError)
+      if (!m_pcv->m_scriptError)
       {
          const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
          const float maxSlope = (m_overridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
@@ -2289,7 +2289,7 @@ void PinTable::Play(const bool _cameraMode)
 
          g_pvp->SetEnableToolbar();
 
-         if (!m_pcv->m_fScriptError && (hrInit == S_OK))
+         if (!m_pcv->m_scriptError && (hrInit == S_OK))
          {
             ::ShowWindow(g_pvp->m_hwndWork, SW_HIDE);
          }
@@ -2347,19 +2347,19 @@ void PinTable::StopPlaying()
    // if the simulation was run without a save first.
    // But I'm not sure how to fix it... - JEP
 
-   float inclination = m_BG_inclination[m_BG_current_set];
-   float fov = m_BG_FOV[m_BG_current_set];
-   float layback = m_BG_layback[m_BG_current_set];
-   float xlatex = m_BG_xlatex[m_BG_current_set];
-   float xlatey = m_BG_xlatey[m_BG_current_set];
-   float xlatez = m_BG_xlatez[m_BG_current_set];
-   float xscale = m_BG_scalex[m_BG_current_set];
-   float yscale = m_BG_scaley[m_BG_current_set];
-   float zscale = m_BG_scalez[m_BG_current_set];
-   float lightEmissionScale = m_lightEmissionScale;
-   float lightRange = m_lightRange;
-   float lightHeight = m_lightHeight;
-   float envEmissionScale = m_envEmissionScale;
+   const float inclination = m_BG_inclination[m_BG_current_set];
+   const float fov = m_BG_FOV[m_BG_current_set];
+   const float layback = m_BG_layback[m_BG_current_set];
+   const float xlatex = m_BG_xlatex[m_BG_current_set];
+   const float xlatey = m_BG_xlatey[m_BG_current_set];
+   const float xlatez = m_BG_xlatez[m_BG_current_set];
+   const float xscale = m_BG_scalex[m_BG_current_set];
+   const float yscale = m_BG_scaley[m_BG_current_set];
+   const float zscale = m_BG_scalez[m_BG_current_set];
+   const float lightEmissionScale = m_lightEmissionScale;
+   const float lightRange = m_lightRange;
+   const float lightHeight = m_lightHeight;
+   const float envEmissionScale = m_envEmissionScale;
 
    RestoreBackup();
 
@@ -4855,9 +4855,9 @@ void PinTable::DoLButtonDown(int x, int y, bool zoomIn)
    {
       ISelect * const pisel = HitTest(x, y);
 
-      const bool fAdd = ((ksshift & 0x80000000) != 0);
+      const bool add = ((ksshift & 0x80000000) != 0);
 
-      if (pisel == (ISelect *)this && fAdd)
+      if (pisel == (ISelect *)this && add)
       {
          // Can not include the table in multi-select
          // and table will not be unselected, because the
@@ -4867,7 +4867,7 @@ void PinTable::DoLButtonDown(int x, int y, bool zoomIn)
          return;
       }
 
-      AddMultiSel(pisel, fAdd);
+      AddMultiSel(pisel, add, true, false);
 
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
@@ -4931,7 +4931,7 @@ void PinTable::DoRButtonDown(int x, int y)
       }
 
       // update the selection
-      AddMultiSel(hit, false);
+      AddMultiSel(hit, false, true, false);
    }
 }
 
@@ -6489,9 +6489,7 @@ void PinTable::SelectItem(IScriptable *piscript)
 {
    ISelect * const pisel = piscript->GetISelect();
    if (pisel)
-   {
-      AddMultiSel(pisel, false);
-   }
+      AddMultiSel(pisel, false, true, false);
 }
 
 void PinTable::DoCodeViewCommand(int command)
@@ -6576,18 +6574,15 @@ void PinTable::Undo()
    SetMyScrollInfo();
 
    if (m_searchSelectDlg.IsWindow())
-   {
       m_searchSelectDlg.Update();
-   }
+
    g_pvp->m_sb.RefreshProperties();
 }
 
 void PinTable::Uncreate(IEditable *pie)
 {
    if (pie->GetISelect()->m_selectstate != eNotSelected)
-   {
-      AddMultiSel(pie->GetISelect(), true); // Remove the item from the multi-select list
-   }
+      AddMultiSel(pie->GetISelect(), true, true, false); // Remove the item from the multi-select list
 
    pie->GetISelect()->Uncreate();
    pie->Release();
@@ -6606,9 +6601,7 @@ void PinTable::BackupForPlay()
 
    m_undo.MarkForUndo((IEditable *)this);
    for (size_t i = 0; i < m_vedit.size(); i++)
-   {
       m_undo.MarkForUndo(m_vedit[i]);
-   }
 
    m_undo.EndUndo();
 }
@@ -6621,14 +6614,12 @@ void PinTable::RestoreBackup()
 void PinTable::Copy(int x, int y)
 {
    if (MultiSelIsEmpty()) // Can't copy table
-   {
       return;
-   }
 
    if (m_vmultisel.Size() == 1)
    {
        // special check if the user selected a Control Point and wants to copy the coordinates
-       ISelect *pItem = HitTest(x, y);
+       ISelect *const pItem = HitTest(x, y);
        if (pItem->GetItemType() == eItemDragPoint)
        {
            DragPoint *pPoint = (DragPoint*)pItem;
@@ -6641,7 +6632,7 @@ void PinTable::Copy(int x, int y)
    //m_vstmclipboard
    for (int i = 0; i < m_vmultisel.Size(); i++)
    {
-       HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, 1);
+       const HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, 1);
 
        IStream *pstm;
        CreateStreamOnHGlobal(hglobal, TRUE, &pstm);
@@ -6662,9 +6653,9 @@ void PinTable::Copy(int x, int y)
    g_pvp->SetClipboard(&vstm);
 }
 
-void PinTable::Paste(const bool fAtLocation, int x, int y)
+void PinTable::Paste(const bool atLocation, const int x, const int y)
 {
-   bool fError = false;
+   bool error = false;
    int cpasted = 0;
 
    if (m_vmultisel.Size() == 1)
@@ -6682,15 +6673,13 @@ void PinTable::Paste(const bool fAtLocation, int x, int y)
 
    const unsigned viewflag = (g_pvp->m_fBackglassView ? VIEW_BACKGLASS : VIEW_PLAYFIELD);
 
-   IStream* pstm;
-
    // Do a backwards loop, so that the primary selection we had when
    // copying will again be the primary selection, since it will be
    // selected last.  Purely cosmetic.
    for (SSIZE_T i = g_pvp->m_vstmclipboard.size() - 1; i >= 0; i--)
    //for (size_t i=0; i<g_pvp->m_vstmclipboard.size(); i++)
    {
-      pstm = g_pvp->m_vstmclipboard[i];
+      IStream* const pstm = g_pvp->m_vstmclipboard[i];
 
       // Go back to beginning of stream to load
       LARGE_INTEGER foo;
@@ -6703,7 +6692,7 @@ void PinTable::Paste(const bool fAtLocation, int x, int y)
 
       if (!(EditableRegistry::GetAllowedViews(type) & viewflag))
       {
-         fError = true;
+         error = true;
       }
       else
       {
@@ -6724,18 +6713,16 @@ void PinTable::Paste(const bool fAtLocation, int x, int y)
          peditNew->InitPostLoad();
          peditNew->m_fBackglass = g_pvp->m_fBackglassView;
 
-         AddMultiSel(peditNew->GetISelect(), (i != g_pvp->m_vstmclipboard.size() - 1));
+         AddMultiSel(peditNew->GetISelect(), (i != g_pvp->m_vstmclipboard.size() - 1), true, false);
          cpasted++;
       }
    }
 
    // Center view on newly created objects, if they are off the screen
-   if ((cpasted > 0) && fAtLocation)
-   {
+   if ((cpasted > 0) && atLocation)
       Translate(TransformPoint(x, y) - GetCenter());
-   }
 
-   if (fError)
+   if (error)
    {
       LocalString ls(IDS_NOPASTEINVIEW);
       ::MessageBox(m_hwnd, ls.m_szbuffer, "Visual Pinball", 0);
@@ -6812,9 +6799,9 @@ bool PinTable::MultiSelIsEmpty()
 // fUpdate tells us whether to go ahead and change the UI
 // based on the new selection, or whether more stuff is coming
 // down the pipe (speeds up drag-selection)
-void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContextClick)
+void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick)
 {
-   int index = m_vmultisel.IndexOf(psel);
+   const int index = m_vmultisel.IndexOf(psel);
    ISelect *piSelect = NULL;
    //_ASSERTE(m_vmultisel.ElementAt(0)->m_selectstate == eSelected);
 
@@ -6823,17 +6810,17 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
       _ASSERTE(psel->m_selectstate == eNotSelected);
       // If we non-shift click on an element outside the multi-select group, delete the old group
       // If the table is currently selected, deselect it - the table can not be part of a multi-select
-      if (!fAdd || MultiSelIsEmpty())
+      if (!add || MultiSelIsEmpty())
       {
          ClearMultiSel(psel);
-         if (!fAdd && !fContextClick)
+         if (!add && !contextClick)
          {
             int colIndex = -1;
             int elemIndex = -1;
             if (GetCollectionIndex(psel, colIndex, elemIndex))
             {
                CComObject<Collection> *col = m_vcollection.ElementAt(colIndex);
-               if (col->m_fGroupElements)
+               if (col->m_groupElements)
                {
                   for (int i = 0; i < col->m_visel.size(); i++)
                   {
@@ -6857,10 +6844,10 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
 
       psel->m_selectstate = eSelected;
 
-      if (fUpdate)
+      if (update)
          SetDirtyDraw();
    }
-   else if (fAdd) // Take the element off the list
+   else if (add) // Take the element off the list
    {
       _ASSERTE(psel->m_selectstate != eNotSelected);
       m_vmultisel.RemoveElementAt(index);
@@ -6875,7 +6862,7 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
       if (piSelect != NULL)
          piSelect->m_selectstate = eSelected;
 
-      if (fUpdate)
+      if (update)
          SetDirtyDraw();
    }
    else if (m_vmultisel.ElementAt(0) != psel) // Object already in list - no change to selection, only to primary
@@ -6898,11 +6885,11 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
       else
          ClearMultiSel(psel);
 
-      if (fUpdate)
+      if (update)
          SetDirtyDraw();
    }
 
-   if (fUpdate)
+   if (update)
    {
       g_pvp->SetPropSel(&m_vmultisel);
    }
@@ -7042,7 +7029,7 @@ void PinTable::UseTool(int x, int y, int tool)
    {
       pie->m_fBackglass = g_pvp->m_fBackglassView;
       m_vedit.push_back(pie);
-      AddMultiSel(pie->GetISelect(), false);
+      AddMultiSel(pie->GetISelect(), false, true, false);
       if (m_searchSelectDlg.IsWindow())
          m_searchSelectDlg.Update();
       BeginUndo();
@@ -7129,7 +7116,7 @@ void PinTable::OnLButtonUp(int x, int y)
             {
                if (vsel[i]->GetSelectLevel() == minlevel)
                {
-                  AddMultiSel(vsel[i], true, (i == lastItemForUpdate)); //last item updates the (multi-)selection in the editor
+                  AddMultiSel(vsel[i], true, (i == lastItemForUpdate), false); //last item updates the (multi-)selection in the editor
                }
             }
          }

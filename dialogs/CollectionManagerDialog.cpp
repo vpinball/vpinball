@@ -331,13 +331,13 @@ BOOL CollectionDialog::OnInitDialog()
     ::SetWindowText(hwndName, szT);
 
     HWND hwndFireEvents = GetDlgItem(IDC_FIRE).GetHwnd();
-    ::SendMessage(hwndFireEvents, BM_SETCHECK, pcol->m_fFireEvents ? BST_CHECKED : BST_UNCHECKED, 0);
+    ::SendMessage(hwndFireEvents, BM_SETCHECK, pcol->m_fireEvents ? BST_CHECKED : BST_UNCHECKED, 0);
 
     HWND hwndStopSingle = GetDlgItem(IDC_SUPPRESS).GetHwnd();
-    ::SendMessage(hwndStopSingle, BM_SETCHECK, pcol->m_fStopSingleEvents ? BST_CHECKED : BST_UNCHECKED, 0);
+    ::SendMessage(hwndStopSingle, BM_SETCHECK, pcol->m_stopSingleEvents ? BST_CHECKED : BST_UNCHECKED, 0);
 
     HWND hwndGroupElements = GetDlgItem(IDC_GROUP_CHECK).GetHwnd();
-    ::SendMessage(hwndGroupElements, BM_SETCHECK, pcol->m_fGroupElements ? BST_CHECKED : BST_UNCHECKED, 0);
+    ::SendMessage(hwndGroupElements, BM_SETCHECK, pcol->m_groupElements ? BST_CHECKED : BST_UNCHECKED, 0);
 
     HWND hwndOut = GetDlgItem(IDC_OUTLIST).GetHwnd();
     HWND hwndIn = GetDlgItem(IDC_INLIST).GetHwnd();
@@ -507,20 +507,19 @@ void CollectionDialog::OnOK()
     }
 
     HWND hwndFireEvents = GetDlgItem(IDC_FIRE).GetHwnd();
-    const size_t fEvents = ::SendMessage(hwndFireEvents, BM_GETCHECK, 0, 0);
-    pcol->m_fFireEvents = !!fEvents;
+    const size_t fireEvents = ::SendMessage(hwndFireEvents, BM_GETCHECK, 0, 0);
+    pcol->m_fireEvents = !!fireEvents;
 
     HWND hwndStopSingle = GetDlgItem(IDC_SUPPRESS).GetHwnd();
-    const size_t fStopSingle = ::SendMessage(hwndStopSingle, BM_GETCHECK, 0, 0);
-    pcol->m_fStopSingleEvents = !!fStopSingle;
+    const size_t stopSingleEvents = ::SendMessage(hwndStopSingle, BM_GETCHECK, 0, 0);
+    pcol->m_stopSingleEvents = !!stopSingleEvents;
 
     HWND hwndGroupElements = GetDlgItem(IDC_GROUP_CHECK).GetHwnd();
-    const size_t fGroupElements = ::SendMessage(hwndGroupElements, BM_GETCHECK, 0, 0);
-    pcol->m_fGroupElements = !!fGroupElements;
+    const size_t groupElements = ::SendMessage(hwndGroupElements, BM_GETCHECK, 0, 0);
+    pcol->m_groupElements = !!groupElements;
 
     char szT[MAXSTRING];
-    HWND hwndName = GetDlgItem(IDC_NAME).GetHwnd();
-    ::GetWindowText(hwndName, szT, MAXSTRING);
+    ::GetWindowText(GetDlgItem(IDC_NAME).GetHwnd(), szT, MAXSTRING);
 
     pCurCollection.ppt->SetCollectionName(pcol, szT, NULL, 0);
 

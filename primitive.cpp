@@ -200,7 +200,7 @@ Primitive::~Primitive()
 
 void Primitive::CreateRenderGroup(const Collection * const collection)
 {
-   if (!collection->m_fGroupElements)
+   if (!collection->m_groupElements)
       return;
 
    unsigned int overall_size = 0;
@@ -596,7 +596,7 @@ void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
            obj->m_scatter = ANGTORAD(m_d.m_scatter);
        }
 
-       obj->m_fEnabled = m_d.m_fCollidable;
+       obj->m_enabled = m_d.m_fCollidable;
    }
    else
    {
@@ -604,7 +604,7 @@ void Primitive::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
        obj->m_elasticityFalloff = m_ptable->m_elasticityFalloff;
        obj->SetFriction(m_ptable->m_friction);
        obj->m_scatter = ANGTORAD(m_ptable->m_scatter);
-       obj->m_fEnabled = true;
+       obj->m_enabled = true;
    }
    obj->m_threshold = m_d.m_threshold;
    obj->m_ObjType = ePrimitive;
@@ -2929,7 +2929,7 @@ STDMETHODIMP Primitive::put_Scatter(float newVal)
 
 STDMETHODIMP Primitive::get_Collidable(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB((!g_pplayer || m_vhoCollidable.empty()) ? m_d.m_fCollidable : m_vhoCollidable[0]->m_fEnabled);
+   *pVal = (VARIANT_BOOL)FTOVB((!g_pplayer || m_vhoCollidable.empty()) ? m_d.m_fCollidable : m_vhoCollidable[0]->m_enabled);
 
    return S_OK;
 }
@@ -2948,9 +2948,9 @@ STDMETHODIMP Primitive::put_Collidable(VARIANT_BOOL newVal)
    else
    {
        const bool b = !!fNewVal;
-       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_fEnabled != b)
+       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != b)
            for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
-               m_vhoCollidable[i]->m_fEnabled = b; //copy to hit-testing on entities composing the object
+               m_vhoCollidable[i]->m_enabled = b; //copy to hit-testing on entities composing the object
    }
 
    return S_OK;

@@ -135,12 +135,12 @@ void IEditable::BeginPlay()
    for (size_t i = 0; i < m_vCollection.size(); i++)
    {
       Collection * const pcol = m_vCollection[i];
-      if (pcol->m_fFireEvents)
+      if (pcol->m_fireEvents)
       {
          m_vEventCollection.push_back(pcol);
          m_viEventCollection.push_back(m_viCollection[i]);
       }
-      if (pcol->m_fStopSingleEvents)
+      if (pcol->m_stopSingleEvents)
          m_fSingleEvents = false;
    }
 }
