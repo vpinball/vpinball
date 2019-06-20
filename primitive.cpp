@@ -90,9 +90,9 @@ bool Mesh::LoadWavefrontObj(const char *fname, const bool flipTV, const bool con
    {
       WaveFrontObj_GetVertices(m_vertices);
       WaveFrontObj_GetIndices(m_indices);
-      float maxX = FLT_MIN, minX = FLT_MAX;
-      float maxY = FLT_MIN, minY = FLT_MAX;
-      float maxZ = FLT_MIN, minZ = FLT_MAX;
+      float maxX = -FLT_MAX, minX = FLT_MAX;
+      float maxY = -FLT_MAX, minY = FLT_MAX;
+      float maxZ = -FLT_MAX, minZ = FLT_MAX;
 
       for (size_t i = 0; i < m_vertices.size(); i++)
       {

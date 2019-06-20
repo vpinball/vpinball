@@ -5128,9 +5128,9 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
    
    m_pin3d.m_proj.TransformVertices(rgvIn, NULL, basicBallLoNumVertices / 2, rgvOut);
    
-   float maxX = FLT_MIN;
+   float maxX = -FLT_MAX;
    float minX = FLT_MAX;
-   float maxY = FLT_MIN;
+   float maxY = -FLT_MAX;
    float minY = FLT_MAX;
    for (unsigned int i = 0; i < basicBallLoNumVertices / 2; i++)
    {
