@@ -95,6 +95,8 @@ private:
 
    // Data members
 public:
+   CGpuProfiler m_gpu_profiler;
+
    RenderDevice* m_pd3dPrimaryDevice;
    RenderDevice* m_pd3dSecondaryDevice;
    RenderTarget* m_pddsBackBuffer;
@@ -104,9 +106,6 @@ public:
 
    D3DTexture* m_pdds3DZBuffer;
 
-#ifdef FPS
-   CGpuProfiler m_gpu_profiler;
-#endif
    void* m_pddsZBuffer; // D3DTexture* or RenderTarget*, depending on HW support
 
    RenderTarget* m_pddsStatic;
