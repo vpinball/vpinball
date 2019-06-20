@@ -99,7 +99,7 @@ public:
 
    bool IsZero() const
    {
-      return fabsf(x) < FLT_MIN && fabsf(y) < FLT_MIN;
+      return fabsf(x) <= FLT_MIN && fabsf(y) <= FLT_MIN;
    }
 };
 
@@ -216,7 +216,7 @@ public:
 
    bool IsZero() const
    {
-      return fabsf(x) < FLT_MIN && fabsf(y) < FLT_MIN && fabsf(z) < FLT_MIN;
+      return fabsf(x) <= FLT_MIN && fabsf(y) <= FLT_MIN && fabsf(z) <= FLT_MIN;
    }
 
    // access the x/y components as a 2D vector
