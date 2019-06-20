@@ -16,9 +16,9 @@ Flasher::Flasher()
    m_numVertices = 0;
    m_numPolys = 0;
    m_minx = FLT_MAX;
-   m_maxx = FLT_MIN;
+   m_maxx = -FLT_MAX;
    m_miny = FLT_MAX;
-   m_maxy = FLT_MIN;
+   m_maxy = -FLT_MAX;
 }
 
 Flasher::~Flasher()

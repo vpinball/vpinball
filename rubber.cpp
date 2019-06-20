@@ -1557,11 +1557,11 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! h
 
    ComputeNormals(m_vertices.data(), m_numVertices, m_ringIndices.data(), m_numIndices);
 
-   float maxx = FLT_MIN;
+   float maxx = -FLT_MAX;
    float minx = FLT_MAX;
-   float maxy = FLT_MIN;
+   float maxy = -FLT_MAX;
    float miny = FLT_MAX;
-   float maxz = FLT_MIN;
+   float maxz = -FLT_MAX;
    float minz = FLT_MAX;
    for (int i = 0; i < m_numVertices; i++)
    {
