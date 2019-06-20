@@ -95,7 +95,7 @@ struct PlungerDesc
    int n;
 
    // list of lathe coordinates
-   const PlungerCoord *c;
+   PlungerCoord *c;
 };
 
 
