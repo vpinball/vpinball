@@ -271,7 +271,7 @@ const static PlungerCoord modernCoords[] =
    { 0.25f, 100.0f, 1.00f, 0.3f, 0.0f }   // shaft
 };
 const static PlungerDesc modernDesc = {
-   sizeof(modernCoords) / sizeof(modernCoords[0]), modernCoords
+   sizeof(modernCoords) / sizeof(modernCoords[0]), (PlungerCoord*)modernCoords
 };
 
 // Flat Plunger.  This is a special case with no "lathe" entries;
@@ -372,15 +372,12 @@ void Plunger::RenderSetup()
       // allocate the descriptor and the coordinate array
       desc = customDesc = new PlungerDesc;
       customDesc->n = nn;
-      PlungerCoord *cc = new PlungerCoord[nn];
-      customDesc->c = cc;
+      customDesc->c = new PlungerCoord[nn];
 
       // figure the tip lathe descriptor from the shape point list
-      const PlungerCoord c0 = { 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
-      PlungerCoord *c = cc;
-      const PlungerCoord *cprv = &c0;
+      PlungerCoord *c = customDesc->c;
       float tiplen = 0;
-      for (const char *p = m_d.m_szTipShape; *p != '\0'; cprv = c++)
+      for (const char *p = m_d.m_szTipShape; *p != '\0'; c++)
       {
          // Parse the entry: "yOffset, diam".  yOffset is the
          // offset (in table distance units) from the previous
@@ -406,8 +403,9 @@ void Plunger::RenderSetup()
       }
 
       // Figure the normals and the texture coordinates
-      c = cc;
-      cprv = &c0;
+      c = customDesc->c;
+      const PlungerCoord c0 = { 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
+      const PlungerCoord *cprv = &c0;
       for (int i = 0; i < nTip; ++i, cprv = c++)
       {
          // Figure the texture coordinate.  The tip is always
@@ -420,9 +418,14 @@ void Plunger::RenderSetup()
          const PlungerCoord * const cnxt = (i + 1 < nTip ? c + 1 : c);
          const float x0 = cprv->r, y0 = cprv->y;
          const float x1 = cnxt->r, y1 = cnxt->y;
-         const float th = atan2f(y1 - y0, (x1 - x0) * m_d.m_width);
-         c->nx = sinf(th);
-         c->ny = -cosf(th);
+         const float yd = y1 - y0;
+         const float xd = (x1 - x0) * m_d.m_width;	 
+         //const float th = atan2f(yd, xd);
+         //c->nx = sinf(th);
+         //c->ny = -cosf(th);
+         const float r = sqrtf(xd*xd + yd*yd);
+         c->nx = yd / r;
+         c->ny = -xd / r;
       }
 
       // add the inner edge of the tip (abutting the rod)
@@ -808,6 +811,9 @@ void Plunger::RenderSetup()
       }
    }
 
+   // done with the vertex buffer
+   m_vertexBuffer->unlock();
+
    // if applicable, set up the vertex list for the flat plunger
    if (m_d.m_type == PlungerTypeFlat)
    {
@@ -832,9 +838,6 @@ void Plunger::RenderSetup()
 
    // done with the index scratch pad
    delete[] indices;
-
-   // done with the vertex buffer
-   vertexBuffer->unlock();
 
    // delete our custom descriptor, if we created one
    if (customDesc != 0)
