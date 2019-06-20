@@ -1611,7 +1611,7 @@ STDMETHODIMP Light::put_FadeSpeedDown(float newVal)
 
 STDMETHODIMP Light::get_Bulb(VARIANT_BOOL *pVal)
 {
-   *pVal = VBTOF(m_d.m_BulbLight);
+   *pVal = FTOVB(m_d.m_BulbLight);
 
    return S_OK;
 }
@@ -1627,7 +1627,7 @@ STDMETHODIMP Light::put_Bulb(VARIANT_BOOL newVal)
 
 STDMETHODIMP Light::get_ImageMode(VARIANT_BOOL *pVal)
 {
-   *pVal = VBTOF(m_d.m_imageMode);
+   *pVal = FTOVB(m_d.m_imageMode);
 
    return S_OK;
 }
@@ -1643,7 +1643,7 @@ STDMETHODIMP Light::put_ImageMode(VARIANT_BOOL newVal)
 
 STDMETHODIMP Light::get_ShowBulbMesh(VARIANT_BOOL *pVal)
 {
-   *pVal = VBTOF(m_d.m_showBulbMesh);
+   *pVal = FTOVB(m_d.m_showBulbMesh);
 
    return S_OK;
 }
@@ -1659,7 +1659,7 @@ STDMETHODIMP Light::put_ShowBulbMesh(VARIANT_BOOL newVal)
 
 STDMETHODIMP Light::get_StaticBulbMesh(VARIANT_BOOL *pVal)
 {
-   *pVal = VBTOF(m_d.m_staticBulbMesh);
+   *pVal = FTOVB(m_d.m_staticBulbMesh);
 
    return S_OK;
 }
@@ -1675,7 +1675,7 @@ STDMETHODIMP Light::put_StaticBulbMesh(VARIANT_BOOL newVal)
 
 STDMETHODIMP Light::get_ShowReflectionOnBall(VARIANT_BOOL *pVal)
 {
-   *pVal = VBTOF(m_d.m_showReflectionOnBall);
+   *pVal = FTOVB(m_d.m_showReflectionOnBall);
 
    return S_OK;
 }
