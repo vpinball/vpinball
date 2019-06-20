@@ -522,7 +522,7 @@ void Decal::RenderObject()
 
    RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   if (m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled))
+   if (m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
    else
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
@@ -581,7 +581,7 @@ void Decal::RenderObject()
    //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 
-   //if(m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled))
+   //if(m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
    //   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
 
@@ -1137,7 +1137,7 @@ STDMETHODIMP Decal::putref_Font(IFontDisp *pFont)
 
 STDMETHODIMP Decal::get_HasVerticalText(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVerticalText);
+   *pVal = FTOVB(m_d.m_fVerticalText);
 
    return S_OK;
 }
@@ -1145,11 +1145,8 @@ STDMETHODIMP Decal::get_HasVerticalText(VARIANT_BOOL *pVal)
 STDMETHODIMP Decal::put_HasVerticalText(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-   m_d.m_fVerticalText = VBTOF(newVal);
-
+   m_d.m_fVerticalText = VBTOb(newVal);
    EnsureSize();
-
    STOPUNDO
 
    return S_OK;

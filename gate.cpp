@@ -10,10 +10,10 @@ Gate::Gate()
 {
    m_phitgate = NULL;
    m_plineseg = NULL;
-   bracketIndexBuffer = NULL;
-   bracketVertexBuffer = NULL;
-   wireIndexBuffer = NULL;
-   wireVertexBuffer = NULL;
+   m_bracketIndexBuffer = NULL;
+   m_bracketVertexBuffer = NULL;
+   m_wireIndexBuffer = NULL;
+   m_wireVertexBuffer = NULL;
    m_vertexbuffer_angle = FLT_MAX;
    memset(m_d.m_szMaterial, 0, 32);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
@@ -60,25 +60,25 @@ void Gate::SetGateType(GateType type)
 
 Gate::~Gate()
 {
-   if (bracketVertexBuffer)
+   if (m_bracketVertexBuffer)
    {
-      bracketVertexBuffer->release();
-      bracketVertexBuffer = NULL;
+      m_bracketVertexBuffer->release();
+      m_bracketVertexBuffer = NULL;
    }
-   if (bracketIndexBuffer)
+   if (m_bracketIndexBuffer)
    {
-      bracketIndexBuffer->release();
-      bracketIndexBuffer = NULL;
+      m_bracketIndexBuffer->release();
+      m_bracketIndexBuffer = NULL;
    }
-   if (wireIndexBuffer)
+   if (m_wireIndexBuffer)
    {
-      wireIndexBuffer->release();
-      wireIndexBuffer = NULL;
+      m_wireIndexBuffer->release();
+      m_wireIndexBuffer = NULL;
    }
-   if (wireVertexBuffer)
+   if (m_wireVertexBuffer)
    {
-      wireVertexBuffer->release();
-      wireVertexBuffer = NULL;
+      m_wireVertexBuffer->release();
+      m_wireVertexBuffer = NULL;
    }
 }
 
@@ -115,11 +115,11 @@ void Gate::SetDefaults(bool fromMouseClick)
    m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Gate", "Rotation", -90.f) : -90.f;
    m_d.m_fShowBracket = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "ShowBracket", true) : true;
    m_d.m_type = fromMouseClick ? (GateType)LoadValueIntWithDefault("DefaultProps\\Gate", "GateType", GateWireW) : GateWireW;
-   m_d.m_fCollidable = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "Collidable", true) : true;
+   m_d.m_collidable = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "Collidable", true) : true;
    m_d.m_angleMin = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Gate", "AngleMin", 0.f) : 0.f;
    m_d.m_angleMax = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Gate", "AngleMax", (float)(M_PI / 2.0)) : (float)(M_PI / 2.0);
-   m_d.m_fVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "Visible", true) : true;
-   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "TimerEnabled", false) : false;
+   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "Visible", true) : true;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Gate", "TimerInterval", 100) : 100;
 
    const HRESULT hr = LoadValueString("DefaultProps\\Gate", "Surface", &m_d.m_szSurface, MAXTOKEN);
@@ -129,7 +129,7 @@ void Gate::SetDefaults(bool fromMouseClick)
    SetDefaultPhysics(fromMouseClick);
 
    m_d.m_twoWay = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "TwoWay", true) : true;
-   m_d.m_fReflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "ReflectionEnabled", true) : true;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "ReflectionEnabled", true) : true;
 }
 
 
@@ -139,11 +139,11 @@ void Gate::WriteRegDefaults()
    SaveValueFloat("DefaultProps\\Gate", "Height", m_d.m_height);
    SaveValueFloat("DefaultProps\\Gate", "Rotation", m_d.m_rotation);
    SaveValueBool("DefaultProps\\Gate", "ShowBracket", m_d.m_fShowBracket);
-   SaveValueBool("DefaultProps\\Gate", "Collidable", m_d.m_fCollidable);
+   SaveValueBool("DefaultProps\\Gate", "Collidable", m_d.m_collidable);
    SaveValueFloat("DefaultProps\\Gate", "AngleMin", m_d.m_angleMin);
    SaveValueFloat("DefaultProps\\Gate", "AngleMax", m_d.m_angleMax);
-   SaveValueBool("DefaultProps\\Gate", "Visible", m_d.m_fVisible);
-   SaveValueBool("DefaultProps\\Gate", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueBool("DefaultProps\\Gate", "Visible", m_d.m_visible);
+   SaveValueBool("DefaultProps\\Gate", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt("DefaultProps\\Gate", "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SaveValueString("DefaultProps\\Gate", "Surface", m_d.m_szSurface);
    SaveValueFloat("DefaultProps\\Gate", "Elasticity", m_d.m_elasticity);
@@ -151,7 +151,7 @@ void Gate::WriteRegDefaults()
    SaveValueFloat("DefaultProps\\Gate", "Scatter", m_d.m_scatter);
    SaveValueFloat("DefaultProps\\Gate", "GravityFactor", m_d.m_gravityfactor);
    SaveValueBool("DefaultProps\\Gate", "TwoWay", m_d.m_twoWay);
-   SaveValueBool("DefaultProps\\Gate", "ReflectionEnabled", m_d.m_fReflectionEnabled);
+   SaveValueBool("DefaultProps\\Gate", "ReflectionEnabled", m_d.m_reflectionEnabled);
    SaveValueInt("DefaultProps\\Gate", "GateType", m_d.m_type);
 }
 
@@ -266,7 +266,7 @@ void Gate::GetTimers(vector<HitTimer*> &pvht)
 
    m_phittimer = pht;
 
-   if (m_d.m_tdr.m_fTimerEnabled)
+   if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(pht);
 }
 
@@ -306,7 +306,7 @@ void Gate::GetHitShapes(vector<HitObject*> &pvho)
    m_phitgate->m_twoWay = m_d.m_twoWay;
    m_phitgate->m_obj = (IFireEvents*)this;
    m_phitgate->m_fe = true;
-   m_phitgate->m_enabled = m_d.m_fCollidable;
+   m_phitgate->m_enabled = m_d.m_collidable;
 
    pvho.push_back(m_phitgate);
 
@@ -332,25 +332,25 @@ void Gate::EndPlay()
    m_phitgate = NULL;
    m_plineseg = NULL;
 
-   if (bracketVertexBuffer)
+   if (m_bracketVertexBuffer)
    {
-      bracketVertexBuffer->release();
-      bracketVertexBuffer = NULL;
+      m_bracketVertexBuffer->release();
+      m_bracketVertexBuffer = NULL;
    }
-   if (bracketIndexBuffer)
+   if (m_bracketIndexBuffer)
    {
-      bracketIndexBuffer->release();
-      bracketIndexBuffer = NULL;
+      m_bracketIndexBuffer->release();
+      m_bracketIndexBuffer = NULL;
    }
-   if (wireIndexBuffer)
+   if (m_wireIndexBuffer)
    {
-      wireIndexBuffer->release();
-      wireIndexBuffer = NULL;
+      m_wireIndexBuffer->release();
+      m_wireIndexBuffer = NULL;
    }
-   if (wireVertexBuffer)
+   if (m_wireVertexBuffer)
    {
-      wireVertexBuffer->release();
-      wireVertexBuffer = NULL;
+      m_wireVertexBuffer->release();
+      m_wireVertexBuffer = NULL;
       m_vertexbuffer_angle = FLT_MAX;
    }
 }
@@ -371,11 +371,11 @@ void Gate::UpdateWire()
    Matrix3D vertMatrix;
    tempMat.SetScaling(m_d.m_length, m_d.m_length, m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
    tempMat.Multiply(fullMatrix, vertMatrix);
-   tempMat.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight);
+   tempMat.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight);
    tempMat.Multiply(vertMatrix, vertMatrix);
 
    Vertex3D_NoTex2 *buf;
-   wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+   m_wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    for (unsigned int i = 0; i < m_numVertices; i++)
    {
       Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
@@ -392,7 +392,7 @@ void Gate::UpdateWire()
       buf[i].tu = m_vertices[i].tu;
       buf[i].tv = m_vertices[i].tv;
    }
-   wireVertexBuffer->unlock();
+   m_wireVertexBuffer->unlock();
 }
 
 void Gate::RenderObject()
@@ -416,9 +416,9 @@ void Gate::RenderObject()
 
    // render bracket      
    if (m_d.m_fShowBracket)
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bracketVertexBuffer, 0, gateBracketNumVertices, bracketIndexBuffer, 0, gateBracketNumIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bracketVertexBuffer, 0, gateBracketNumVertices, m_bracketIndexBuffer, 0, gateBracketNumIndices);
    // render wire
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, wireVertexBuffer, 0, m_numVertices, wireIndexBuffer, 0, m_numIndices);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_wireVertexBuffer, 0, m_numVertices, m_wireIndexBuffer, 0, m_numIndices);
 
    pd3dDevice->basicShader->End();
 }
@@ -427,10 +427,10 @@ void Gate::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   if (!m_phitgate->m_gateMover.m_fVisible)
+   if (!m_phitgate->m_gateMover.m_visible)
       return;
 
-   if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
+   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
       return;
 
    RenderObject();
@@ -443,7 +443,7 @@ void Gate::ExportMesh(FILE *f)
    Vertex3D_NoTex2 *buf;
 
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
-   baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    if (m_d.m_fShowBracket)
    {
@@ -487,7 +487,7 @@ void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf)
       vert = fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight);
+      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight);
 
       vert = Vertex3Ds(gateBracket[i].nx, gateBracket[i].ny, gateBracket[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -510,7 +510,7 @@ void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
       vert = fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight);
+      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight);
 
       vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -526,34 +526,34 @@ void Gate::RenderSetup()
 {
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   if (bracketIndexBuffer)
-      bracketIndexBuffer->release();
-   bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(gateBracketNumIndices, gateBracketIndices);
+   if (m_bracketIndexBuffer)
+      m_bracketIndexBuffer->release();
+   m_bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(gateBracketNumIndices, gateBracketIndices);
 
-   if (bracketVertexBuffer)
-      bracketVertexBuffer->release();
-   pd3dDevice->CreateVertexBuffer(gateBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bracketVertexBuffer);
+   if (m_bracketVertexBuffer)
+      m_bracketVertexBuffer->release();
+   pd3dDevice->CreateVertexBuffer(gateBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bracketVertexBuffer);
 
    SetGateType(m_d.m_type);
 
-   baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    Vertex3D_NoTex2 *buf;
-   bracketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   m_bracketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateBracketMesh(buf);
-   bracketVertexBuffer->unlock();
+   m_bracketVertexBuffer->unlock();
 
-   if (wireIndexBuffer)
-      wireIndexBuffer->release();
-   wireIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, m_indices);
+   if (m_wireIndexBuffer)
+      m_wireIndexBuffer->release();
+   m_wireIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, m_indices);
 
-   if (wireVertexBuffer)
-      wireVertexBuffer->release();
-   pd3dDevice->CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &wireVertexBuffer);
+   if (m_wireVertexBuffer)
+      m_wireVertexBuffer->release();
+   pd3dDevice->CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_wireVertexBuffer);
 
-   wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+   m_wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    GenerateWireMesh(buf);
-   wireVertexBuffer->unlock();
+   m_wireVertexBuffer->unlock();
 }
 
 void Gate::RenderStatic()
@@ -590,9 +590,9 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(HGTH), m_d.m_height);
    bw.WriteFloat(FID(ROTA), m_d.m_rotation);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
+   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteBool(FID(GSUPT), m_d.m_fShowBracket);
-   bw.WriteBool(FID(GCOLD), m_d.m_fCollidable);
+   bw.WriteBool(FID(GCOLD), m_d.m_collidable);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
@@ -601,10 +601,10 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(GFRCT), m_d.m_friction);
    bw.WriteFloat(FID(AFRC), m_d.m_damping);
    bw.WriteFloat(FID(GGFCT), m_d.m_gravityfactor);
-   bw.WriteBool(FID(GVSBL), m_d.m_fVisible);
+   bw.WriteBool(FID(GVSBL), m_d.m_visible);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteBool(FID(TWWA), m_d.m_twoWay);
-   bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
+   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
    bw.WriteInt(FID(GATY), m_d.m_type);
 
    ISelect::SaveData(pstm, hcrypthash);
@@ -660,7 +660,7 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(TMON))
    {
-      pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
+      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
    }
    else if (id == FID(GSUPT))
    {
@@ -668,7 +668,7 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(GCOLD))
    {
-      pbr->GetBool(&m_d.m_fCollidable);
+      pbr->GetBool(&m_d.m_collidable);
    }
    else if (id == FID(TWWA))
    {
@@ -676,11 +676,11 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(GVSBL))
    {
-      pbr->GetBool(&m_d.m_fVisible);
+      pbr->GetBool(&m_d.m_visible);
    }
    else if (id == FID(REEN))
    {
-      pbr->GetBool(&m_d.m_fReflectionEnabled);
+      pbr->GetBool(&m_d.m_reflectionEnabled);
    }
    else if (id == FID(TMIN))
    {
@@ -884,7 +884,7 @@ STDMETHODIMP Gate::put_Material(BSTR newVal)
 
 STDMETHODIMP Gate::get_Open(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB((m_phitgate) ? m_phitgate->m_gateMover.m_fOpen : false);
+   *pVal = FTOVB((m_phitgate) ? m_phitgate->m_gateMover.m_fOpen : false);
 
    return S_OK;
 }
@@ -911,9 +911,9 @@ STDMETHODIMP Gate::put_Open(VARIANT_BOOL newVal)
       {
          m_phitgate->m_gateMover.m_fOpen = false;
 
-         m_phitgate->m_enabled = m_d.m_fCollidable;
+         m_phitgate->m_enabled = m_d.m_collidable;
          if (!m_d.m_twoWay)
-            m_plineseg->m_enabled = m_d.m_fCollidable;
+            m_plineseg->m_enabled = m_d.m_collidable;
 
          if (m_phitgate->m_gateMover.m_angle > m_phitgate->m_gateMover.m_angleMin)
             m_phitgate->m_gateMover.m_anglespeed = -0.2f;
@@ -933,17 +933,15 @@ STDMETHODIMP Gate::get_Elasticity(float *pVal)
 STDMETHODIMP Gate::put_Elasticity(float newVal)
 {
    STARTUNDO
-
-      m_d.m_elasticity = newVal;
-
+   m_d.m_elasticity = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_ShowBracket(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fShowBracket);
+   *pVal = FTOVB(m_d.m_fShowBracket);
 
    return S_OK;
 }
@@ -951,12 +949,10 @@ STDMETHODIMP Gate::get_ShowBracket(VARIANT_BOOL *pVal)
 STDMETHODIMP Gate::put_ShowBracket(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-      m_d.m_fShowBracket = VBTOF(newVal);
-
+   m_d.m_fShowBracket = VBTOb(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_CloseAngle(float *pVal)
@@ -968,7 +964,7 @@ STDMETHODIMP Gate::get_CloseAngle(float *pVal)
 
 STDMETHODIMP Gate::put_CloseAngle(float newVal)
 {
-   if (m_d.m_fCollidable)
+   if (m_d.m_collidable)
    {
       newVal = 0;
       ShowError("Gate is collidable! closing angles other than 0 aren't possible!");
@@ -1004,7 +1000,7 @@ STDMETHODIMP Gate::get_OpenAngle(float *pVal)
 
 STDMETHODIMP Gate::put_OpenAngle(float newVal)
 {
-   if (m_d.m_fCollidable)
+   if (m_d.m_collidable)
    {
       newVal = (float)(M_PI / 2.0);
       ShowError("Gate is collidable! open angles other than 90 aren't possible!");
@@ -1031,7 +1027,7 @@ STDMETHODIMP Gate::put_OpenAngle(float newVal)
 
 STDMETHODIMP Gate::get_Collidable(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_phitgate->m_enabled : m_d.m_fCollidable);
+   *pVal = FTOVB((g_pplayer) ? m_phitgate->m_enabled : m_d.m_collidable);
 
    return S_OK;
 }
@@ -1041,9 +1037,9 @@ STDMETHODIMP Gate::put_Collidable(VARIANT_BOOL newVal)
 {
    if (g_pplayer)
    {
-      m_phitgate->m_enabled = VBTOF(newVal);
+      m_phitgate->m_enabled = VBTOb(newVal);
       if (!m_d.m_twoWay)
-         m_plineseg->m_enabled = VBTOF(newVal);
+         m_plineseg->m_enabled = VBTOb(newVal);
       m_phitgate->m_gateMover.m_angleMax = m_d.m_angleMax;
       m_phitgate->m_gateMover.m_angleMin = m_d.m_angleMin;
 
@@ -1052,11 +1048,8 @@ STDMETHODIMP Gate::put_Collidable(VARIANT_BOOL newVal)
    else
    {
       STARTUNDO
-
-         m_d.m_fCollidable = VBTOF(newVal);
-
+      m_d.m_collidable = VBTOb(newVal);
       if (newVal) m_d.m_angleMin = 0;
-
       STOPUNDO
    }
 
@@ -1181,9 +1174,7 @@ STDMETHODIMP Gate::put_GravityFactor(float newVal)
    else
    {
       STARTUNDO
-
       m_d.m_gravityfactor = tmp;
-
       STOPUNDO
    }
 
@@ -1192,7 +1183,7 @@ STDMETHODIMP Gate::put_GravityFactor(float newVal)
 
 STDMETHODIMP Gate::get_Visible(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_phitgate->m_gateMover.m_fVisible : m_d.m_fVisible);
+   *pVal = FTOVB((g_pplayer) ? m_phitgate->m_gateMover.m_visible : m_d.m_visible);
 
    return S_OK;
 }
@@ -1200,15 +1191,11 @@ STDMETHODIMP Gate::get_Visible(VARIANT_BOOL *pVal)
 STDMETHODIMP Gate::put_Visible(VARIANT_BOOL newVal)
 {
    if (g_pplayer)
-   {
-      m_phitgate->m_gateMover.m_fVisible = VBTOF(newVal);
-   }
+      m_phitgate->m_gateMover.m_visible = VBTOb(newVal);
    else
    {
       STARTUNDO
-
-         m_d.m_fVisible = VBTOF(newVal);
-
+      m_d.m_visible = VBTOb(newVal);
       STOPUNDO
    }
 
@@ -1217,7 +1204,7 @@ STDMETHODIMP Gate::put_Visible(VARIANT_BOOL newVal)
 
 STDMETHODIMP Gate::get_TwoWay(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_twoWay);
+   *pVal = FTOVB(m_d.m_twoWay);
 
    return S_OK;
 }
@@ -1225,15 +1212,11 @@ STDMETHODIMP Gate::get_TwoWay(VARIANT_BOOL *pVal)
 STDMETHODIMP Gate::put_TwoWay(VARIANT_BOOL newVal)
 {
    if (g_pplayer)
-   {
-      m_phitgate->m_twoWay = VBTOF(newVal);
-   }
+      m_phitgate->m_twoWay = VBTOb(newVal);
    else
    {
       STARTUNDO
-
-         m_d.m_twoWay = VBTOF(newVal);
-
+      m_d.m_twoWay = VBTOb(newVal);
       STOPUNDO
    }
 
@@ -1242,7 +1225,7 @@ STDMETHODIMP Gate::put_TwoWay(VARIANT_BOOL newVal)
 
 STDMETHODIMP Gate::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+   *pVal = FTOVB(m_d.m_reflectionEnabled);
 
    return S_OK;
 }
@@ -1250,12 +1233,10 @@ STDMETHODIMP Gate::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 STDMETHODIMP Gate::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-      m_d.m_fReflectionEnabled = VBTOF(newVal);
-
+   m_d.m_reflectionEnabled = VBTOb(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_CurrentAngle(float *pVal)

@@ -29,10 +29,10 @@ public:
    float m_angleMax;
    GateType m_type;
    bool m_fShowBracket;
-   bool m_fCollidable;
-   bool m_fVisible;
+   bool m_collidable;
+   bool m_visible;
    bool m_twoWay;
-   bool m_fReflectionEnabled;
+   bool m_reflectionEnabled;
 };
 
 class Gate :
@@ -99,33 +99,33 @@ public:
 
    virtual void WriteRegDefaults();
 
+   GateData m_d;
+
+private:
    void UpdateWire();
    void RenderObject();
    void GenerateBracketMesh(Vertex3D_NoTex2 *buf);
    void GenerateWireMesh(Vertex3D_NoTex2 *buf);
    void UpdateUnitsInfo();
 
-   GateData m_d;
-
-private:
    PinTable *m_ptable;
 
    LineSeg *m_plineseg;
    HitGate *m_phitgate;
 
-   VertexBuffer *wireVertexBuffer;
-   IndexBuffer *wireIndexBuffer;
+   VertexBuffer *m_wireVertexBuffer;
+   IndexBuffer *m_wireIndexBuffer;
    float m_vertexbuffer_angle;
 
-   VertexBuffer *bracketVertexBuffer;
-   IndexBuffer *bracketIndexBuffer;
+   VertexBuffer *m_bracketVertexBuffer;
+   IndexBuffer *m_bracketIndexBuffer;
 
    const Vertex3D_NoTex2 *m_vertices;
    const WORD            *m_indices;
    unsigned int m_numVertices;
    unsigned int m_numIndices;
 
-   float baseHeight;
+   float m_baseHeight;
 
    // IGate
 public:

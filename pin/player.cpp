@@ -455,6 +455,7 @@ Player::Player(bool _cameraMode) : m_cameraMode(_cameraMode)
    m_pause = false;
    m_step = false;
 #endif
+
    m_pseudoPause = false;
    m_pauseRefCount = 0;
    m_noTimeCorrect = false;
@@ -467,9 +468,9 @@ Player::Player(bool _cameraMode) : m_cameraMode(_cameraMode)
    m_ballControl = false;
    m_pactiveballBC = NULL;
    m_pBCTarget = NULL;
+
 #ifdef PLAYBACK
    m_fPlayback = false;
-
    m_fplaylog = NULL;
 #endif
 
@@ -1007,7 +1008,7 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    D3DXMATRIX matWorld(worldMat);
    D3DXMATRIX matObject(objectTrafo);
 
-   if (m_ptable->m_fReflectionEnabled)
+   if (m_ptable->m_reflectionEnabled)
    {
       // *2.0f because every element is calculated that the lowest edge is around z=0 + table height so to get a correct
       // reflection the translation must be 1x table height + 1x table height to center around table height or 0
@@ -1633,7 +1634,10 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 #ifdef PLAYBACK
    if (m_fPlayback)
-      ParseLog((LARGE_INTEGER*)&m_PhysicsStepTime, (LARGE_INTEGER*)&m_StartTime_usec);
+   {
+      float physicsStepTime;
+      ParseLog((LARGE_INTEGER*)&physicsStepTime, (LARGE_INTEGER*)&m_StartTime_usec);
+   }
 #endif
 
 #ifdef LOG
@@ -1720,7 +1724,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
          viewMat._32 = -viewMat._32;
       m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
-      m_ptable->m_fReflectionEnabled = true;
+      m_ptable->m_reflectionEnabled = true;
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
@@ -1745,7 +1749,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
       //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
-      m_ptable->m_fReflectionEnabled = false;
+      m_ptable->m_reflectionEnabled = false;
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
@@ -1785,7 +1789,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
       viewMat._32 = -viewMat._32;
    m_pin3d.m_pd3dPrimaryDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
-   m_ptable->m_fReflectionEnabled = true; // set to let matrices and postrenderstatics know that we need to handle reflections now
+   m_ptable->m_reflectionEnabled = true; // set to let matrices and postrenderstatics know that we need to handle reflections now
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
@@ -1820,7 +1824,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
    //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
-   m_ptable->m_fReflectionEnabled = false;
+   m_ptable->m_reflectionEnabled = false;
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
@@ -3337,7 +3341,7 @@ void Player::UpdatePhysics()
 #ifdef ACCURATETIMERS
       // do the en/disable changes for the timers that piled up
       for(size_t i = 0; i < m_changed_vht.size(); ++i)
-          if (m_changed_vht[i].enabled) // add the timer?
+          if (m_changed_vht[i].m_enabled) // add the timer?
           {
               if (FindIndexOf(m_vht, m_changed_vht[i].m_timer) < 0)
                   m_vht.push_back(m_changed_vht[i].m_timer);
@@ -4196,10 +4200,10 @@ void Player::UpdateHUD()
 		DebugPrint(10, 260, szFoo, len);
 	}
 
-    // Draw performance readout - at end of CPU frame, so hopefully the previous frame
-    //  (whose data we're getting) will have finished on the GPU by now.
-    if (ProfilingMode() != 0)
-    {
+	// Draw performance readout - at end of CPU frame, so hopefully the previous frame
+	//  (whose data we're getting) will have finished on the GPU by now.
+	if (ProfilingMode() != 0)
+	{
 		char szFoo[256];
 		int len2 = sprintf_s(szFoo, "Detailed (approximate) GPU profiling:");
 		DebugPrint(10, 300, szFoo, len2);
@@ -4230,7 +4234,7 @@ void Player::UpdateHUD()
 				DebugPrint(10, 300 + gts * 20, szFoo, len2);
 			}
 		}
-    }
+	}
 #endif /*FPS*/
 
 	if (m_fFullScreen && m_closeDown && !IsWindows10_1803orAbove()) // cannot use dialog boxes in exclusive fullscreen on older windows versions, so necessary
@@ -5209,7 +5213,7 @@ void Player::DrawBalls()
       // calculate/adapt height of ball
       float zheight = (!pball->m_frozen) ? pball->m_pos.z : (pball->m_pos.z - pball->m_radius);
 
-      if (m_ptable->m_fReflectionEnabled)
+      if (m_ptable->m_reflectionEnabled)
          zheight -= m_ptable->m_tableheight*2.0f;
 
       const float maxz = pball->m_defaultZ + 3.0f;
@@ -5218,18 +5222,18 @@ void Player::DrawBalls()
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
          drawReflection = !((zheight > maxz) || pball->m_frozen || (pball->m_pos.z < minz));
 
-	  if (!drawReflection && m_ptable->m_fReflectionEnabled)
-		  continue;
+      if (!drawReflection && m_ptable->m_reflectionEnabled)
+         continue;
 
-	  const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
-	  const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
-	  //const float inclination = ANGTORAD(m_ptable->m_inclination);
-	  const vec4 phr(inv_tablewidth, inv_tableheight, m_ptable->m_tableheight,
+      const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
+      const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
+      //const float inclination = ANGTORAD(m_ptable->m_inclination);
+      const vec4 phr(inv_tablewidth, inv_tableheight, m_ptable->m_tableheight,
 					 m_ptable->m_ballPlayfieldReflectionStrength*pball->m_playfieldReflectionStrength
 					 *playfield_avg_diffuse //!! hack: multiply average diffuse from playfield onto strength, as only diffuse lighting is used for reflection
 					 *0.5f                  //!! additional magic correction factor due to everything being wrong in the earlier reflection/lighting implementation
 					 );
-	  m_ballShader->SetVector("invTableRes__playfield_height_reflection", &phr);
+      m_ballShader->SetVector("invTableRes__playfield_height_reflection", &phr);
 
       if ((zheight > maxz) || (pball->m_pos.z < minz))
       {
@@ -5239,9 +5243,9 @@ void Player::DrawBalls()
             zheight *= (m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] * 0.96f);
       }
 
-	  // collect the x nearest lights that can reflect on balls
-	  Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
-	  search_for_nearest(pball, lights, light_nearest);
+      // collect the x nearest lights that can reflect on balls
+      Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
+      search_for_nearest(pball, lights, light_nearest);
 
 	  struct CLight
 	  {
@@ -5283,17 +5287,17 @@ void Player::DrawBalls()
 			  l[light_i + MAX_LIGHT_SOURCES].vEmission[2] = 0.0f;
 		  }
 
-	  m_ballShader->SetValue("packedLights", l, sizeof(CLight)*(MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES));
+      m_ballShader->SetValue("packedLights", l, sizeof(CLight)*(MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES));
 
-	  // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
-	  float Roughness = 0.8f;
-	  if (light_nearest[0] != NULL)
-	  {
-		  const float dist = Vertex3Ds(light_nearest[0]->m_d.m_vCenter.x - pball->m_pos.x, light_nearest[0]->m_d.m_vCenter.y - pball->m_pos.y, light_nearest[0]->m_d.m_meshRadius + light_nearest[0]->m_surfaceHeight - pball->m_pos.z).Length(); //!! z pos
-		  Roughness = min(max(dist*0.006f, 0.4f), Roughness);
-	  }
-	  const vec4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
-	  m_ballShader->SetVector("Roughness_WrapL_Edge_Thickness", &rwem);
+      // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
+      float Roughness = 0.8f;
+      if (light_nearest[0] != NULL)
+      {
+          const float dist = Vertex3Ds(light_nearest[0]->m_d.m_vCenter.x - pball->m_pos.x, light_nearest[0]->m_d.m_vCenter.y - pball->m_pos.y, light_nearest[0]->m_d.m_meshRadius + light_nearest[0]->m_surfaceHeight - pball->m_pos.z).Length(); //!! z pos
+          Roughness = min(max(dist*0.006f, 0.4f), Roughness);
+      }
+      const vec4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
+      m_ballShader->SetVector("Roughness_WrapL_Edge_Thickness", &rwem);
 
       // ************************* draw the ball itself ****************************
       float sx, sy;
@@ -5313,15 +5317,15 @@ void Player::DrawBalls()
          pball->m_orientation.m_d[0][1], pball->m_orientation.m_d[1][1], pball->m_orientation.m_d[2][1], 0.0f,
          pball->m_orientation.m_d[0][2], pball->m_orientation.m_d[1][2], pball->m_orientation.m_d[2][2], 0.0f,
          0.f, 0.f, 0.f, 1.f);
-	  Matrix3D temp;
-	  memcpy(temp.m, m.m, 4 * 4 * sizeof(float));
-	  Matrix3D m3D_full;
-	  m3D_full.SetScaling(pball->m_radius*sx, pball->m_radius*sy, pball->m_radius);
-	  m3D_full.Multiply(temp, m3D_full);
-	  temp.SetTranslation(pball->m_pos.x, pball->m_pos.y, zheight);
-	  temp.Multiply(m3D_full, m3D_full);
-	  memcpy(m.m, m3D_full.m, 4 * 4 * sizeof(float));
-	  m_ballShader->SetMatrix("orientation", &m);
+      Matrix3D temp;
+      memcpy(temp.m, m.m, 4 * 4 * sizeof(float));
+      Matrix3D m3D_full;
+      m3D_full.SetScaling(pball->m_radius*sx, pball->m_radius*sy, pball->m_radius);
+      m3D_full.Multiply(temp, m3D_full);
+      temp.SetTranslation(pball->m_pos.x, pball->m_pos.y, zheight);
+      temp.Multiply(m3D_full, m3D_full);
+      memcpy(m.m, m3D_full.m, 4 * 4 * sizeof(float));
+      m_ballShader->SetMatrix("orientation", &m);
 
       if (!pball->m_pinballEnv)
       {
@@ -5362,7 +5366,7 @@ void Player::DrawBalls()
       m_ballShader->End();
 
       // ball trails
-      if((!m_ptable->m_fReflectionEnabled) && // do not render trails in reflection pass
+      if((!m_ptable->m_reflectionEnabled) && // do not render trails in reflection pass
          ((m_trailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1)))
       {
          Vertex3D_NoTex2 rgv3D_all[MAX_BALL_TRAIL_POS * 2];

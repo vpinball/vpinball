@@ -9,37 +9,37 @@ Trigger::Trigger()
 {
    m_ptriggerhitcircle = NULL;
 
-   hitEvent = false;
-   unhitEvent = false;
-   doAnimation = false;
-   moveDown = false;
-   animHeightOffset = 0.0f;
-   vertexBuffer_animHeightOffset = -FLT_MAX;
+   m_hitEvent = false;
+   m_unhitEvent = false;
+   m_doAnimation = false;
+   m_moveDown = false;
+   m_animHeightOffset = 0.0f;
+   m_vertexBuffer_animHeightOffset = -FLT_MAX;
 
    m_hitEnabled = true;
-   vertexBuffer = NULL;
-   triggerIndexBuffer = NULL;
-   triggerVertices = NULL;
+   m_vertexBuffer = NULL;
+   m_triggerIndexBuffer = NULL;
+   m_triggerVertices = NULL;
    m_menuid = IDR_SURFACEMENU;
    m_propVisual = NULL;
 }
 
 Trigger::~Trigger()
 {
-   if (vertexBuffer)
+   if (m_vertexBuffer)
    {
-      vertexBuffer->release();
-      vertexBuffer = 0;
+      m_vertexBuffer->release();
+      m_vertexBuffer = 0;
    }
-   if (triggerIndexBuffer)
+   if (m_triggerIndexBuffer)
    {
-      triggerIndexBuffer->release();
-      triggerIndexBuffer = 0;
+      m_triggerIndexBuffer->release();
+      m_triggerIndexBuffer = 0;
    }
-   if (triggerVertices)
+   if (m_triggerVertices)
    {
-      delete[] triggerVertices;
-      triggerVertices = 0;
+      delete[] m_triggerVertices;
+      m_triggerVertices = 0;
    }
 }
 
@@ -55,52 +55,55 @@ void Trigger::UpdateEditorView()
       {
          m_numVertices = triggerSimpleNumVertices;
          m_numIndices = triggerSimpleNumIndices;
-         faceIndices = triggerSimpleIndices;
+         m_faceIndices = triggerSimpleIndices;
          meshVertices = triggerSimple;
       }
       else if (m_d.m_shape == TriggerWireD)
       {
           m_numVertices = triggerDWireNumVertices;
           m_numIndices = triggerDWireNumIndices;
-          faceIndices = triggerDWireIndices;
+          m_faceIndices = triggerDWireIndices;
           meshVertices = triggerDWireMesh;
       }
       else if (m_d.m_shape == TriggerButton)
       {
          m_numVertices = triggerButtonNumVertices;
          m_numIndices = triggerButtonNumIndices;
-         faceIndices = triggerButtonIndices;
+         m_faceIndices = triggerButtonIndices;
          meshVertices = triggerButtonMesh;
       }
       else if (m_d.m_shape == TriggerStar)
       {
          m_numVertices = triggerStarNumVertices;
          m_numIndices = triggerStarNumIndices;
-         faceIndices = triggerStarIndices;
+         m_faceIndices = triggerStarIndices;
          meshVertices = triggerStar;
       }
       else
+      {
          ShowError("Unknown Trigger type");
+         return;
+      }
 
-      vertices.resize(m_numVertices);
+      m_vertices.resize(m_numVertices);
       Matrix3D fullMatrix;
       fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
       for (int i = 0; i < m_numVertices; i++)
       {
          Vertex3Ds vert(meshVertices[i].x, meshVertices[i].y, meshVertices[i].z);
-         fullMatrix.MultiplyVector(vert, vertices[i]);
+         fullMatrix.MultiplyVector(vert, m_vertices[i]);
          if (m_d.m_shape != TriggerStar && m_d.m_shape != TriggerButton)
          {
-            vertices[i].x *= m_d.m_scaleX;
-            vertices[i].y *= m_d.m_scaleY;
+            m_vertices[i].x *= m_d.m_scaleX;
+            m_vertices[i].y *= m_d.m_scaleY;
          }
          else
          {
-            vertices[i].x *= m_d.m_radius;
-            vertices[i].y *= m_d.m_radius;
+            m_vertices[i].x *= m_d.m_radius;
+            m_vertices[i].y *= m_d.m_radius;
          }
-         vertices[i].x += m_d.m_vCenter.x;
-         vertices[i].y += m_d.m_vCenter.y;
+         m_vertices[i].x += m_d.m_vCenter.x;
+         m_vertices[i].y += m_d.m_vCenter.y;
       }
    }
 }
@@ -167,10 +170,10 @@ void Trigger::SetDefaults(bool fromMouseClick)
    m_d.m_wireThickness = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "WireThickness", 0.f) : 0.f;
    m_d.m_scaleX = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "ScaleX", 1.f) : 1.f;
    m_d.m_scaleY = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "ScaleY", 1.f) : 1.f;
-   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Trigger", "TimerInterval", 100) : 100;
    m_d.m_enabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "Enabled", true) : true;
-   m_d.m_fVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "Visible", true) : true;
+   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "Visible", true) : true;
    m_d.m_hit_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "HitHeight", 50.f) : 50.f;
    m_d.m_shape = fromMouseClick ? (TriggerShape)LoadValueIntWithDefault("DefaultProps\\Trigger", "Shape", TriggerWireA) : TriggerWireA;
 
@@ -179,7 +182,7 @@ void Trigger::SetDefaults(bool fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
    m_d.m_animSpeed = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\trigger", "AnimSpeed", 1.f) : 1.f;
-   m_d.m_fReflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "ReflectionEnabled", true) : true;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Trigger", "ReflectionEnabled", true) : true;
 }
 
 void Trigger::UIRenderPass1(Sur * const psur)
@@ -272,13 +275,13 @@ void Trigger::UIRenderPass2(Sur * const psur)
          const size_t numPts = m_numIndices / 3 + 1;
          std::vector<Vertex2D> drawVertices(numPts);
 
-         const Vertex3Ds& A = vertices[faceIndices[0]];
+         const Vertex3Ds& A = m_vertices[m_faceIndices[0]];
          drawVertices[0] = Vertex2D(A.x, A.y);
 
          size_t o = 1;
          for (int i = 0; i < m_numIndices; i += 3, ++o)
          {
-            const Vertex3Ds& B = vertices[faceIndices[i + 1]];
+            const Vertex3Ds& B = m_vertices[m_faceIndices[i + 1]];
             drawVertices[o] = Vertex2D(B.x, B.y);
          }
 
@@ -310,7 +313,7 @@ void Trigger::GetTimers(vector<HitTimer*> &pvht)
 
    m_phittimer = pht;
 
-   if (m_d.m_tdr.m_fTimerEnabled)
+   if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(pht);
 }
 
@@ -448,32 +451,32 @@ void Trigger::EndPlay()
 {
    IEditable::EndPlay();
 
-   if (vertexBuffer)
+   if (m_vertexBuffer)
    {
-      vertexBuffer->release();
-      vertexBuffer = 0;
+      m_vertexBuffer->release();
+      m_vertexBuffer = 0;
    }
-   if (triggerIndexBuffer)
+   if (m_triggerIndexBuffer)
    {
-      triggerIndexBuffer->release();
-      triggerIndexBuffer = 0;
+      m_triggerIndexBuffer->release();
+      m_triggerIndexBuffer = 0;
    }
-   if (triggerVertices)
+   if (m_triggerVertices)
    {
-      delete[] triggerVertices;
-      triggerVertices = 0;
+      delete[] m_triggerVertices;
+      m_triggerVertices = 0;
    }
    m_ptriggerhitcircle = NULL;
 }
 
 void Trigger::TriggerAnimationHit()
 {
-   hitEvent = true;
+   m_hitEvent = true;
 }
 
 void Trigger::TriggerAnimationUnhit()
 {
-   unhitEvent = true;
+   m_unhitEvent = true;
 }
 
 void Trigger::UpdateAnimation()
@@ -492,84 +495,84 @@ void Trigger::UpdateAnimation()
 
    const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-   if (hitEvent)
+   if (m_hitEvent)
    {
-      doAnimation = true;
-      hitEvent = false;
+      m_doAnimation = true;
+      m_hitEvent = false;
       // unhitEvent = false;   // Bugfix: If HitEvent and unhitEvent happen at the same time, you want to favor the unhit, otherwise the switch gets stuck down.
-      animHeightOffset = 0.0f;
-      moveDown = true;
+      m_animHeightOffset = 0.0f;
+      m_moveDown = true;
    }
-   if (unhitEvent)
+   if (m_unhitEvent)
    {
-      doAnimation = true;
-      unhitEvent = false;
-      hitEvent = false;
-      animHeightOffset = limit;
-      moveDown = false;
+      m_doAnimation = true;
+      m_unhitEvent = false;
+      m_hitEvent = false;
+      m_animHeightOffset = limit;
+      m_moveDown = false;
    }
 
-   if (doAnimation)
+   if (m_doAnimation)
    {
       float step = diff_time_msec*m_d.m_animSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-      if (moveDown)
+      if (m_moveDown)
          step = -step;
-      animHeightOffset += step;
+      m_animHeightOffset += step;
 
-      if (moveDown)
+      if (m_moveDown)
       {
-         if (animHeightOffset <= -limit)
+         if (m_animHeightOffset <= -limit)
          {
-            animHeightOffset = -limit;
-            doAnimation = false;
-            moveDown = false;
+            m_animHeightOffset = -limit;
+            m_doAnimation = false;
+            m_moveDown = false;
          }
       }
       else
       {
-         if (animHeightOffset >= 0.0f)
+         if (m_animHeightOffset >= 0.0f)
          {
-            animHeightOffset = 0.0f;
-            doAnimation = false;
-            moveDown = true;
+            m_animHeightOffset = 0.0f;
+            m_doAnimation = false;
+            m_moveDown = true;
          }
       }
 
-      if (animHeightOffset != vertexBuffer_animHeightOffset)
+      if (m_animHeightOffset != m_vertexBuffer_animHeightOffset)
       {
-          vertexBuffer_animHeightOffset = animHeightOffset;
+          m_vertexBuffer_animHeightOffset = m_animHeightOffset;
 
           Vertex3D_NoTex2 *buf;
-          vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+          m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
           for (int i = 0; i < m_numVertices; i++)
           {
               if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD)
               {
-                  buf[i].x = triggerVertices[i].x + triggerVertices[i].nx*m_d.m_wireThickness;
-                  buf[i].y = triggerVertices[i].y + triggerVertices[i].ny*m_d.m_wireThickness;                 
-                  buf[i].z = triggerVertices[i].z + triggerVertices[i].nz*m_d.m_wireThickness + animHeightOffset;
+                  buf[i].x = m_triggerVertices[i].x + m_triggerVertices[i].nx*m_d.m_wireThickness;
+                  buf[i].y = m_triggerVertices[i].y + m_triggerVertices[i].ny*m_d.m_wireThickness;
+                  buf[i].z = m_triggerVertices[i].z + m_triggerVertices[i].nz*m_d.m_wireThickness + m_animHeightOffset;
               }
               else
               {
-                  buf[i].x = triggerVertices[i].x;
-                  buf[i].y = triggerVertices[i].y;
-                  buf[i].z = triggerVertices[i].z + animHeightOffset;
+                  buf[i].x = m_triggerVertices[i].x;
+                  buf[i].y = m_triggerVertices[i].y;
+                  buf[i].z = m_triggerVertices[i].z + m_animHeightOffset;
               }
-              buf[i].nx = triggerVertices[i].nx;
-              buf[i].ny = triggerVertices[i].ny;
-              buf[i].nz = triggerVertices[i].nz;
-              buf[i].tu = triggerVertices[i].tu;
-              buf[i].tv = triggerVertices[i].tv;
+              buf[i].nx = m_triggerVertices[i].nx;
+              buf[i].ny = m_triggerVertices[i].ny;
+              buf[i].nz = m_triggerVertices[i].nz;
+              buf[i].tu = m_triggerVertices[i].tu;
+              buf[i].tv = m_triggerVertices[i].tv;
           }
-          vertexBuffer->unlock();
+          m_vertexBuffer->unlock();
       }
    }
 }
 void Trigger::RenderDynamic()
 {
-   if (!m_d.m_fVisible || m_d.m_shape == TriggerNone)
+   if (!m_d.m_visible || m_d.m_shape == TriggerNone)
       return;
-   if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
+   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
       return;
 
    UpdateAnimation();
@@ -586,7 +589,7 @@ void Trigger::RenderDynamic()
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, triggerIndexBuffer, 0, m_numIndices);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numVertices, m_triggerIndexBuffer, 0, m_numIndices);
    pd3dDevice->basicShader->End();
 }
 
@@ -594,13 +597,13 @@ void Trigger::ExportMesh(FILE *f)
 {
    char name[MAX_PATH];
 
-   if (!m_d.m_fVisible || m_d.m_shape == TriggerNone)
+   if (!m_d.m_visible || m_d.m_shape == TriggerNone)
       return;
 
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
    GenerateMesh();
    WaveFrontObj_WriteObjectName(f, name);
-   WaveFrontObj_WriteVertexInfo(f, triggerVertices, m_numVertices);
+   WaveFrontObj_WriteVertexInfo(f, m_triggerVertices, m_numVertices);
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
@@ -627,36 +630,36 @@ void Trigger::GenerateMesh()
       m_numVertices = triggerSimpleNumVertices;
       m_numIndices = triggerSimpleNumIndices;
       verts = triggerSimple;
-      if (triggerVertices)
-         delete[] triggerVertices;
-      triggerVertices = new Vertex3D_NoTex2[m_numVertices];
+      if (m_triggerVertices)
+         delete[] m_triggerVertices;
+      m_triggerVertices = new Vertex3D_NoTex2[m_numVertices];
    }
    else if (m_d.m_shape == TriggerWireD)
    {
        m_numVertices = triggerDWireNumVertices;
        m_numIndices = triggerDWireNumIndices;
        verts = triggerDWireMesh;
-       if (triggerVertices)
-           delete[] triggerVertices;
-       triggerVertices = new Vertex3D_NoTex2[m_numVertices];
+       if (m_triggerVertices)
+           delete[] m_triggerVertices;
+       m_triggerVertices = new Vertex3D_NoTex2[m_numVertices];
    }
    else if (m_d.m_shape == TriggerButton)
    {
       m_numVertices = triggerButtonNumVertices;
       m_numIndices = triggerButtonNumIndices;
       verts = triggerButtonMesh;
-      if (triggerVertices)
-         delete[] triggerVertices;
-      triggerVertices = new Vertex3D_NoTex2[m_numVertices];
+      if (m_triggerVertices)
+         delete[] m_triggerVertices;
+      m_triggerVertices = new Vertex3D_NoTex2[m_numVertices];
    }
    else if (m_d.m_shape == TriggerStar)
    {
       m_numVertices = triggerStarNumVertices;
       m_numIndices = triggerStarNumIndices;
       verts = triggerStar;
-      if (triggerVertices)
-         delete[] triggerVertices;
-      triggerVertices = new Vertex3D_NoTex2[m_numVertices];
+      if (m_triggerVertices)
+         delete[] m_triggerVertices;
+      m_triggerVertices = new Vertex3D_NoTex2[m_numVertices];
    }
    else
    {
@@ -689,24 +692,24 @@ void Trigger::GenerateMesh()
 
       if (m_d.m_shape == TriggerButton || m_d.m_shape == TriggerStar)
       {
-         triggerVertices[i].x = (vert.x*m_d.m_radius) + m_d.m_vCenter.x;
-         triggerVertices[i].y = (vert.y*m_d.m_radius) + m_d.m_vCenter.y;
-         triggerVertices[i].z = (vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + baseHeight+zoffset;
+         m_triggerVertices[i].x = (vert.x*m_d.m_radius) + m_d.m_vCenter.x;
+         m_triggerVertices[i].y = (vert.y*m_d.m_radius) + m_d.m_vCenter.y;
+         m_triggerVertices[i].z = (vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + baseHeight+zoffset;
       }
       else 
       {
-         triggerVertices[i].x = (vert.x*m_d.m_scaleX) + m_d.m_vCenter.x;
-         triggerVertices[i].y = (vert.y*m_d.m_scaleY) + m_d.m_vCenter.y;
-         triggerVertices[i].z = (vert.z*1.0f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + baseHeight+zoffset;
+         m_triggerVertices[i].x = (vert.x*m_d.m_scaleX) + m_d.m_vCenter.x;
+         m_triggerVertices[i].y = (vert.y*m_d.m_scaleY) + m_d.m_vCenter.y;
+         m_triggerVertices[i].z = (vert.z*1.0f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + baseHeight+zoffset;
       }
 
       vert = Vertex3Ds(verts[i].nx, verts[i].ny, verts[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-      triggerVertices[i].nx = vert.x;
-      triggerVertices[i].ny = vert.y;
-      triggerVertices[i].nz = vert.z;
-      triggerVertices[i].tu = verts[i].tu;
-      triggerVertices[i].tv = verts[i].tv;
+      m_triggerVertices[i].nx = vert.x;
+      m_triggerVertices[i].ny = vert.y;
+      m_triggerVertices[i].nz = vert.z;
+      m_triggerVertices[i].tu = verts[i].tu;
+      m_triggerVertices[i].tv = verts[i].tv;
    }
 }
 
@@ -714,14 +717,14 @@ void Trigger::RenderSetup()
 {
    m_d.m_time_msec = g_pplayer->m_time_msec;
 
-   hitEvent = false;
-   unhitEvent = false;
-   doAnimation = false;
-   moveDown = false;
-   animHeightOffset = 0.0f;
-   vertexBuffer_animHeightOffset = -FLT_MAX;
+   m_hitEvent = false;
+   m_unhitEvent = false;
+   m_doAnimation = false;
+   m_moveDown = false;
+   m_animHeightOffset = 0.0f;
+   m_vertexBuffer_animHeightOffset = -FLT_MAX;
 
-   if (!m_d.m_fVisible || m_d.m_shape == TriggerNone)
+   if (!m_d.m_visible || m_d.m_shape == TriggerNone)
       return;
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -748,30 +751,30 @@ void Trigger::RenderSetup()
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   if (triggerIndexBuffer)
-      triggerIndexBuffer->release();
+   if (m_triggerIndexBuffer)
+      m_triggerIndexBuffer->release();
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
-      triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerSimpleIndices);
+      m_triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerSimpleIndices);
    else if (m_d.m_shape == TriggerWireD)
-      triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerDWireIndices);
+      m_triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerDWireIndices);
    else if (m_d.m_shape == TriggerStar)
-      triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerStarIndices);
+      m_triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerStarIndices);
    else if (m_d.m_shape == TriggerButton)
-      triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerButtonIndices);
-   if (vertexBuffer)
-      vertexBuffer->release();
-   ppin3d->m_pd3dPrimaryDevice->CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
+      m_triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerButtonIndices);
+   if (m_vertexBuffer)
+      m_vertexBuffer->release();
+   ppin3d->m_pd3dPrimaryDevice->CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer);
    NumVideoBytes += m_numVertices*(int)sizeof(Vertex3D_NoTex2);
 
    GenerateMesh();
    Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+   m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD)
    {
       Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[m_numVertices];
       for (int i = 0; i < m_numVertices; i++)
       {
-         memcpy(&tmp[i], &triggerVertices[i], sizeof(Vertex3D_NoTex2));
+         memcpy(&tmp[i], &m_triggerVertices[i], sizeof(Vertex3D_NoTex2));
          tmp[i].x += tmp[i].nx * m_d.m_wireThickness;
          tmp[i].y += tmp[i].ny * m_d.m_wireThickness;
          tmp[i].z += tmp[i].nz * m_d.m_wireThickness;
@@ -780,8 +783,8 @@ void Trigger::RenderSetup()
       delete [] tmp;
    }
    else
-      memcpy(buf, triggerVertices, sizeof(Vertex3D_NoTex2)*m_numVertices);
-   vertexBuffer->unlock();
+      memcpy(buf, m_triggerVertices, sizeof(Vertex3D_NoTex2)*m_numVertices);
+   m_vertexBuffer->unlock();
 }
 
 void Trigger::RenderStatic()
@@ -952,17 +955,17 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(WITI), m_d.m_wireThickness);
    bw.WriteFloat(FID(SCAX), m_d.m_scaleX);
    bw.WriteFloat(FID(SCAY), m_d.m_scaleY);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
+   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteBool(FID(EBLD), m_d.m_enabled);
-   bw.WriteBool(FID(VSBL), m_d.m_fVisible);
+   bw.WriteBool(FID(VSBL), m_d.m_visible);
    bw.WriteFloat(FID(THOT), m_d.m_hit_height);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteInt(FID(SHAP), m_d.m_shape);
    bw.WriteFloat(FID(ANSP), m_d.m_animSpeed);
-   bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
+   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
 
    ISelect::SaveData(pstm, hcrypthash);
 
@@ -982,10 +985,10 @@ void Trigger::ClearForOverwrite()
 
 void Trigger::WriteRegDefaults()
 {
-   SaveValueBool("DefaultProps\\Trigger", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueBool("DefaultProps\\Trigger", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt("DefaultProps\\Trigger", "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SaveValueBool("DefaultProps\\Trigger", "Enabled", m_d.m_enabled);
-   SaveValueBool("DefaultProps\\Trigger", "Visible", m_d.m_fVisible);
+   SaveValueBool("DefaultProps\\Trigger", "Visible", m_d.m_visible);
    SaveValueFloat("DefaultProps\\Trigger", "HitHeight", m_d.m_hit_height);
    SaveValueFloat("DefaultProps\\Trigger", "Radius", m_d.m_radius);
    SaveValueFloat("DefaultProps\\Trigger", "Rotation", m_d.m_rotation);
@@ -995,7 +998,7 @@ void Trigger::WriteRegDefaults()
    SaveValueInt("DefaultProps\\Trigger", "Shape", m_d.m_shape);
    SaveValueString("DefaultProps\\Trigger", "Surface", m_d.m_szSurface);
    SaveValueFloat("DefaultProps\\Trigger", "AnimSpeed", m_d.m_animSpeed);
-   SaveValueBool("DefaultProps\\Trigger", "ReflectionEnabled", m_d.m_fReflectionEnabled);
+   SaveValueBool("DefaultProps\\Trigger", "ReflectionEnabled", m_d.m_reflectionEnabled);
 }
 
 HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -1047,7 +1050,7 @@ BOOL Trigger::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(TMON))
    {
-      pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
+      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
    }
    else if (id == FID(TMIN))
    {
@@ -1067,11 +1070,11 @@ BOOL Trigger::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(VSBL))
    {
-      pbr->GetBool(&m_d.m_fVisible);
+      pbr->GetBool(&m_d.m_visible);
    }
    else if (id == FID(REEN))
    {
-      pbr->GetBool(&m_d.m_fReflectionEnabled);
+      pbr->GetBool(&m_d.m_reflectionEnabled);
    }
    else if (id == FID(SHAP))
    {
@@ -1124,12 +1127,10 @@ STDMETHODIMP Trigger::get_Radius(float *pVal)
 STDMETHODIMP Trigger::put_Radius(float newVal)
 {
    STARTUNDO
-
-      m_d.m_radius = newVal;
-
+   m_d.m_radius = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Trigger::get_X(float *pVal)
@@ -1143,12 +1144,10 @@ STDMETHODIMP Trigger::get_X(float *pVal)
 STDMETHODIMP Trigger::put_X(float newVal)
 {
    STARTUNDO
-
-      m_d.m_vCenter.x = newVal;
-
+   m_d.m_vCenter.x = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Trigger::get_Y(float *pVal)
@@ -1161,12 +1160,10 @@ STDMETHODIMP Trigger::get_Y(float *pVal)
 STDMETHODIMP Trigger::put_Y(float newVal)
 {
    STARTUNDO
-
-      m_d.m_vCenter.y = newVal;
-
+   m_d.m_vCenter.y = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Trigger::get_Surface(BSTR *pVal)
@@ -1182,17 +1179,15 @@ STDMETHODIMP Trigger::get_Surface(BSTR *pVal)
 STDMETHODIMP Trigger::put_Surface(BSTR newVal)
 {
    STARTUNDO
-
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
-
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Trigger::get_Enabled(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_hitEnabled : m_d.m_enabled);
+   *pVal = FTOVB((g_pplayer) ? m_hitEnabled : m_d.m_enabled);
 
    return S_OK;
 }
@@ -1201,14 +1196,14 @@ STDMETHODIMP Trigger::put_Enabled(VARIANT_BOOL newVal)
 {
    if (g_pplayer)
    {
-      m_hitEnabled = VBTOF(newVal);
+      m_hitEnabled = VBTOb(newVal);
 
       if (m_ptriggerhitcircle) m_ptriggerhitcircle->m_enabled = m_hitEnabled;
    }
    else
    {
       STARTUNDO
-      m_d.m_enabled = VBTOF(newVal);
+      m_d.m_enabled = VBTOb(newVal);
       m_hitEnabled = m_d.m_enabled;
       STOPUNDO
    }
@@ -1218,7 +1213,7 @@ STDMETHODIMP Trigger::put_Enabled(VARIANT_BOOL newVal)
 
 STDMETHODIMP Trigger::get_Visible(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
+   *pVal = FTOVB(m_d.m_visible);
 
    return S_OK;
 }
@@ -1226,12 +1221,10 @@ STDMETHODIMP Trigger::get_Visible(VARIANT_BOOL *pVal)
 STDMETHODIMP Trigger::put_Visible(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-      m_d.m_fVisible = VBTOF(newVal);
-
+   m_d.m_visible = VBTOb(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Trigger::BallCntOver(int *pVal)
@@ -1291,12 +1284,10 @@ STDMETHODIMP Trigger::get_HitHeight(float *pVal)
 STDMETHODIMP Trigger::put_HitHeight(float newVal)
 {
    STARTUNDO
-
-      m_d.m_hit_height = newVal;
-
+   m_d.m_hit_height = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Trigger::get_Rotation(float *pVal)
@@ -1309,13 +1300,12 @@ STDMETHODIMP Trigger::get_Rotation(float *pVal)
 STDMETHODIMP Trigger::put_Rotation(float newVal)
 {
    STARTUNDO
-
-      m_d.m_rotation = newVal;
-
+   m_d.m_rotation = newVal;
    STOPUNDO
+
    UpdateEditorView();
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Trigger::get_WireThickness(float *pVal)
@@ -1328,12 +1318,10 @@ STDMETHODIMP Trigger::get_WireThickness(float *pVal)
 STDMETHODIMP Trigger::put_WireThickness(float newVal)
 {
    STARTUNDO
-
-      m_d.m_wireThickness = newVal;
-
+   m_d.m_wireThickness = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Trigger::get_AnimSpeed(float *pVal)
@@ -1346,12 +1334,10 @@ STDMETHODIMP Trigger::get_AnimSpeed(float *pVal)
 STDMETHODIMP Trigger::put_AnimSpeed(float newVal)
 {
    STARTUNDO
-
-      m_d.m_animSpeed = newVal;
-
+   m_d.m_animSpeed = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 
@@ -1368,10 +1354,10 @@ STDMETHODIMP Trigger::get_Material(BSTR *pVal)
 STDMETHODIMP Trigger::put_Material(BSTR newVal)
 {
    STARTUNDO
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Trigger::GetDialogPanes(vector<PropertyPane*> &pvproppane)
@@ -1405,16 +1391,17 @@ STDMETHODIMP Trigger::get_TriggerShape(TriggerShape *pVal)
 STDMETHODIMP Trigger::put_TriggerShape(TriggerShape newVal)
 {
    STARTUNDO
-      m_d.m_shape = newVal;
+   m_d.m_shape = newVal;
    STOPUNDO
-      UpdateEditorView();
+
+   UpdateEditorView();
 
    return S_OK;
 }
 
 STDMETHODIMP Trigger::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+   *pVal = FTOVB(m_d.m_reflectionEnabled);
 
    return S_OK;
 }
@@ -1422,12 +1409,10 @@ STDMETHODIMP Trigger::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 STDMETHODIMP Trigger::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-      m_d.m_fReflectionEnabled = VBTOF(newVal);
-
+   m_d.m_reflectionEnabled = VBTOb(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Trigger::UpdatePropertyPanes()

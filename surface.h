@@ -22,21 +22,21 @@ public:
    float m_elasticity;
    float m_friction;
    float m_scatter;
-   float m_fDisableLightingTop; // was bool, now 0..1
-   float m_fDisableLightingBelow; // 0..1
-   bool m_fDroppable;
-   bool m_fFlipbook;           // if enabled, dropped walls are not rendered
-   bool m_fDisplayTexture;     // in editor
-   bool m_fSideVisible;
+   float m_disableLightingTop; // was bool, now 0..1
+   float m_disableLightingBelow; // 0..1
+   bool m_droppable;
+   bool m_flipbook;           // if enabled, dropped walls are not rendered
+   bool m_displayTexture;     // in editor
+   bool m_sideVisible;
    bool m_enabled;
-   bool m_fCollidable; //wall must be droppable too!
-   bool m_fIsBottomSolid; //is the bottom closed (lower side of the 'cube') or not (legacy behavior has bottom open, e.g. balls can drop into walls from below, or leave them if inside walls (if bottom area is large enough of course))
-   bool m_fSlingshotAnimation;
-   bool m_fTopBottomVisible;
-   bool m_fHitEvent;
-   bool m_fReflectionEnabled;
-   bool m_fOverwritePhysics;
-   bool m_fInner; //!! Deprecated, do not use! Always true after loading! (was: Inside or outside wall)
+   bool m_collidable; //wall must be droppable too!
+   bool m_isBottomSolid; //is the bottom closed (lower side of the 'cube') or not (legacy behavior has bottom open, e.g. balls can drop into walls from below, or leave them if inside walls (if bottom area is large enough of course))
+   bool m_slingshotAnimation;
+   bool m_topBottomVisible;
+   bool m_hitEvent;
+   bool m_reflectionEnabled;
+   bool m_overwritePhysics;
+   bool m_inner; //!! Deprecated, do not use! Always true after loading! (was: Inside or outside wall)
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ public:
    Surface();
    virtual ~Surface();
 
-   HRESULT InitTarget(PinTable * const ptable, const float x, const float y, bool fromMouseClick);
+   //HRESULT InitTarget(PinTable * const ptable, const float x, const float y, bool fromMouseClick);
 
    STANDARD_EDITABLE_DECLARES(Surface, eItemSurface, WALL, 1)
 
@@ -114,18 +114,18 @@ public:
    virtual unsigned long long GetMaterialID() const
    {
       unsigned long long h = 0;
-      if (m_d.m_fSideVisible)
+      if (m_d.m_sideVisible)
          h = m_ptable->GetMaterial(m_d.m_szSideMaterial)->hash();
-      if (m_d.m_fTopBottomVisible)
+      if (m_d.m_topBottomVisible)
          h = m_ptable->GetMaterial(m_d.m_szTopMaterial)->hash();
       return h;
    }
    virtual unsigned long long GetImageID() const
    {
       Texture* tex = NULL;
-      if (m_d.m_fSideVisible)
+      if (m_d.m_sideVisible)
          tex = m_ptable->GetImage(m_d.m_szSideImage);
-      if (m_d.m_fTopBottomVisible)
+      if (m_d.m_topBottomVisible)
          tex = m_ptable->GetImage(m_d.m_szImage);
       return (unsigned long long)tex;
    }
@@ -135,6 +135,9 @@ public:
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
    virtual void AddPoint(int x, int y, const bool smooth);
+
+   SurfaceData m_d;
+   bool m_disabled;
 
 private:
    void CurvesToShapes(vector<HitObject*> &pvho);
@@ -151,6 +154,8 @@ private:
 
    void UpdateUnitsInfo();
 
+   PinTable *m_ptable;
+
    BSTR m_bstrName;
 
    std::vector<LineSegSlingshot*> m_vlinesling;
@@ -158,26 +163,20 @@ private:
    std::vector<HitObject*> m_vhoDrop; // Objects to disable when dropped
    std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
-   unsigned int numVertices, numPolys;
+   unsigned int m_numVertices, m_numPolys;
 
-   VertexBuffer *slingshotVBuffer;
-   VertexBuffer *VBuffer;
-   IndexBuffer *IBuffer;
+   VertexBuffer *m_slingshotVBuffer;
+   VertexBuffer *m_VBuffer;
+   IndexBuffer *m_IBuffer;
 
    PropertyPane *m_propPhysics;
 
    bool m_isWall;
    bool m_isDynamic;
-   bool m_fIsDropped;
-
-private:
-   PinTable *m_ptable;
+   bool m_isDropped;
 
 // ISurface
 public:
-   bool m_fDisabled;
-   SurfaceData m_d;
-
    STDMETHOD(get_SideVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_SideVisible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_SideImage)(/*[out, retval]*/ BSTR *pVal);

@@ -89,28 +89,29 @@ public:
 
    virtual void WriteRegDefaults();
 
+   KickerData m_d;
+
+   std::vector<Vertex3Ds> m_hitMesh;
+
+private:
    void GenerateMesh(Vertex3D_NoTex2 *const buf);
    void UpdateUnitsInfo();
 
-   KickerData m_d;
-   std::vector<Vertex3Ds> hitMesh;
-
-private:
    PinTable *m_ptable;
 
    KickerHitCircle *m_phitkickercircle;
 
-   VertexBuffer *vertexBuffer;
-   IndexBuffer  *indexBuffer;
+   VertexBuffer *m_vertexBuffer;
+   IndexBuffer  *m_indexBuffer;
    unsigned int m_numVertices;
    unsigned int m_numIndices;
 
-   Texture texture;
+   Texture m_texture;
 
    float m_baseHeight;
 
-   VertexBuffer *plateVertexBuffer;
-   IndexBuffer  *plateIndexBuffer;
+   VertexBuffer *m_plateVertexBuffer;
+   IndexBuffer  *m_plateIndexBuffer;
 
 public:
    // IKicker

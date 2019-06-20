@@ -663,12 +663,10 @@ STDMETHODIMP DragPoint::get_Z(float *pVal)
 STDMETHODIMP DragPoint::put_Z(float newVal)
 {
    STARTUNDOSELECT
-
-      m_v.z = newVal;
-
+   m_v.z = newVal;
    STOPUNDOSELECT
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP DragPoint::get_CalcHeight(float *pVal)
@@ -680,7 +678,7 @@ STDMETHODIMP DragPoint::get_CalcHeight(float *pVal)
 
 STDMETHODIMP DragPoint::get_Smooth(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_fSmooth);
+   *pVal = FTOVB(m_fSmooth);
 
    return S_OK;
 }
@@ -688,17 +686,15 @@ STDMETHODIMP DragPoint::get_Smooth(VARIANT_BOOL *pVal)
 STDMETHODIMP DragPoint::put_Smooth(VARIANT_BOOL newVal)
 {
    STARTUNDOSELECT
-
-      m_fSmooth = VBTOF(newVal);
-
+   m_fSmooth = VBTOb(newVal);
    STOPUNDOSELECT
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP DragPoint::get_IsAutoTextureCoordinate(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_fAutoTexture);
+   *pVal = FTOVB(m_fAutoTexture);
 
    return S_OK;
 }
@@ -706,12 +702,10 @@ STDMETHODIMP DragPoint::get_IsAutoTextureCoordinate(VARIANT_BOOL *pVal)
 STDMETHODIMP DragPoint::put_IsAutoTextureCoordinate(VARIANT_BOOL newVal)
 {
    STARTUNDOSELECT
-
-      m_fAutoTexture = VBTOF(newVal);
-
+   m_fAutoTexture = VBTOb(newVal);
    STOPUNDOSELECT
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP DragPoint::get_TextureCoordinateU(float *pVal)
@@ -724,12 +718,10 @@ STDMETHODIMP DragPoint::get_TextureCoordinateU(float *pVal)
 STDMETHODIMP DragPoint::put_TextureCoordinateU(float newVal)
 {
    STARTUNDOSELECT
-
-      m_texturecoord = newVal;
-
+   m_texturecoord = newVal;
    STOPUNDOSELECT
 
-      return S_OK;
+   return S_OK;
 }
 
 int rotateApplyCount = 0;
@@ -903,10 +895,8 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
       SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_SETCHECK, TRUE, 0);
 
-      const HWND hwndEdit = GetDlgItem(hwndDlg, IDC_SCALEY);
-      const HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SCALEY);
-      EnableWindow(hwndEdit, FALSE);
-      EnableWindow(hwndText, FALSE);
+      EnableWindow(GetDlgItem(hwndDlg, IDC_SCALEY), FALSE);
+      EnableWindow(GetDlgItem(hwndDlg, IDC_STATIC_SCALEY), FALSE);
    }
    return TRUE;
    break;
@@ -1041,11 +1031,8 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
          case IDC_SQUARE:
          {
             const size_t checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
-            const HWND hwndEdit = GetDlgItem(hwndDlg, IDC_SCALEY);
-            const HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SCALEY);
-
-            EnableWindow(hwndEdit, !(checked == BST_CHECKED));
-            EnableWindow(hwndText, !(checked == BST_CHECKED));
+            EnableWindow(GetDlgItem(hwndDlg, IDC_SCALEY), !(checked == BST_CHECKED));
+            EnableWindow(GetDlgItem(hwndDlg, IDC_STATIC_SCALEY), !(checked == BST_CHECKED));
          }
          break;
          }

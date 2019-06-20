@@ -14,7 +14,7 @@ class TimerDataRoot
 {
 public:
    int m_TimerInterval;
-   bool m_fTimerEnabled;
+   bool m_TimerEnabled;
 };
 
 class TimerData
@@ -85,7 +85,6 @@ public:
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
    // ITimer
-public:
    STDMETHOD(get_Interval)(/*[out, retval]*/ long *pVal);
    STDMETHOD(put_Interval)(/*[in]*/ long newVal);
    STDMETHOD(get_Enabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);

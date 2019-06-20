@@ -29,19 +29,9 @@ public:
    COLORREF    m_backcolor;         // colour of the background
 
    TimerDataRoot m_tdr;             // timer information
-   bool        m_fTransparent;      // is the background transparent
+   bool        m_transparent;      // is the background transparent
    bool        m_fUseImageGrid;
-   bool        m_fVisible;
-};
-
-class ReelInfo
-{
-public:
-   int     currentValue;       // current digit value
-   int     motorPulses;        // number of motor pulses received for this reel (can be negative)
-   int     motorStepCount;     // when equal to zero then at a whole letter
-   float   motorCalcStep;      // calculated steping rate of motor
-   float   motorOffset;        // frame value of motor (where to display the reel)
+   bool        m_visible;
 };
 
 class DispReel :
@@ -92,23 +82,34 @@ public:
 
    virtual ItemTypeEnum HitableGetItemType() const { return eItemDispReel; }
 
+   virtual void WriteRegDefaults();
+
    DECLARE_REGISTRY_RESOURCEID(IDR_DISP_REEL)
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
    void        Animate();
 
-   virtual void WriteRegDefaults();
-
    DispReelAnimObject m_dispreelanim;
 
    DispReelData m_d;
 
 private:
+   float   getBoxWidth() const;
+   float   getBoxHeight() const;
+
    PinTable    *m_ptable;
 
    float       m_renderwidth, m_renderheight;     // size of each reel (rendered)
 
+   struct ReelInfo
+   {
+      int     currentValue;       // current digit value
+      int     motorPulses;        // number of motor pulses received for this reel (can be negative)
+      int     motorStepCount;     // when equal to zero then at a whole letter
+      float   motorCalcStep;      // calculated steping rate of motor
+      float   motorOffset;        // frame value of motor (where to display the reel)
+   };
    ReelInfo    m_reelInfo[MAX_REELS];
 
    float       m_reeldigitwidth;  // size of the individual reel digits (in bitmap form)
@@ -120,7 +121,6 @@ private:
       float u_min, u_max;
       float v_min, v_max;
    };
-
    std::vector<TexCoordRect> m_digitTexCoords;
 
    // IDispReel
@@ -163,10 +163,6 @@ public:
    STDMETHOD(AddValue)(/*[in]*/ long Value);
    STDMETHOD(SetValue)(/*[in]*/ long Value);
    STDMETHOD(SpinReel)(/*[in]*/ long ReelNumber, /*[in]*/ long PulseCount);
-
-private:
-   float   getBoxWidth() const;
-   float   getBoxHeight() const;
 };
 
 #endif // !defined(AFX_DISPREEL_H__1052EB33_4F53_460B_AAB8_09D3C517F225__INCLUDED_)

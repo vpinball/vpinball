@@ -14,8 +14,7 @@ protected:
    virtual void OnClose();
 
 private:
-   void DisableAllMaterialDialogItems();
-   void EnableAllMaterialDialogItems();
+   void EnableAllMaterialDialogItems(const BOOL e);
    float getItemText(int id);
    void  setItemText(int id, float value);
    void LoadPosition();

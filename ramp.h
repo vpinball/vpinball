@@ -35,12 +35,12 @@ public:
 
    float m_depthBias;      // for determining depth sorting
 
-   bool m_fHitEvent;
-   bool m_fCollidable;
-   bool m_fVisible;
+   bool m_hitEvent;
+   bool m_collidable;
+   bool m_visible;
    bool m_fImageWalls;
-   bool m_fReflectionEnabled;
-   bool m_fOverwritePhysics;
+   bool m_reflectionEnabled;
+   bool m_overwritePhysics;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -129,7 +129,6 @@ public:
    virtual void AddPoint(int x, int y, const bool smooth);
 
    virtual void WriteRegDefaults();
-   void UpdateUnitsInfo();
 
    // IHaveDragPoints
    virtual void GetPointDialogPanes(vector<PropertyPane*> &pvproppane);
@@ -138,11 +137,13 @@ public:
    RampData m_d;
 
 private:
+   void UpdateUnitsInfo();
+
    PinTable *m_ptable;
 
-   int rampVertex;
-   Vertex2D *rgvInit;    // just for setup/static drawing
-   float *rgheightInit;
+   int m_rampVertex;
+   Vertex2D *m_rgvInit;    // just for setup/static drawing
+   float *m_rgheightInit;
 
    int m_numVertices;      // this goes along with dynamicVertexBuffer
    int m_numIndices;
@@ -152,10 +153,10 @@ private:
 
    std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
-   VertexBuffer *dynamicVertexBuffer;
-   IndexBuffer *dynamicIndexBuffer;
-   VertexBuffer *dynamicVertexBuffer2;
-   bool dynamicVertexBufferRegenerate;
+   VertexBuffer *m_dynamicVertexBuffer;
+   IndexBuffer *m_dynamicIndexBuffer;
+   VertexBuffer *m_dynamicVertexBuffer2;
+   bool m_dynamicVertexBufferRegenerate;
 
    PropertyPane *m_propPhysics;
 

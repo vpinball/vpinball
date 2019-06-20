@@ -68,16 +68,16 @@ int LightCenter::GetSelectLevel()
 Light::Light() : m_lightcenter(this)
 {
    m_menuid = IDR_SURFACEMENU;
-   customMoverVBuffer = NULL;
-   customMoverIBuffer = NULL;
-   bulbLightIndexBuffer = NULL;
-   bulbLightVBuffer = NULL;
-   bulbSocketIndexBuffer = NULL;
-   bulbSocketVBuffer = NULL;
+   m_customMoverVBuffer = NULL;
+   m_customMoverIBuffer = NULL;
+   m_bulbLightIndexBuffer = NULL;
+   m_bulbLightVBuffer = NULL;
+   m_bulbSocketIndexBuffer = NULL;
+   m_bulbSocketVBuffer = NULL;
    m_d.m_szOffImage[0] = 0;
    m_d.m_depthBias = 0.0f;
    m_d.m_shape = ShapeCustom;
-   m_d.m_fVisible = true;
+   m_d.m_visible = true;
    m_roundLight = false;
    m_propVisual = NULL;
    m_updateLightShape = false;
@@ -87,35 +87,35 @@ Light::Light() : m_lightcenter(this)
 
 Light::~Light()
 {
-   if (customMoverVBuffer)
+   if (m_customMoverVBuffer)
    {
-      customMoverVBuffer->release();
-      customMoverVBuffer = 0;
+      m_customMoverVBuffer->release();
+      m_customMoverVBuffer = 0;
    }
-   if (customMoverIBuffer)
+   if (m_customMoverIBuffer)
    {
-      customMoverIBuffer->release();
-      customMoverIBuffer = 0;
+      m_customMoverIBuffer->release();
+      m_customMoverIBuffer = 0;
    }
-   if (bulbLightIndexBuffer)
+   if (m_bulbLightIndexBuffer)
    {
-      bulbLightIndexBuffer->release();
-      bulbLightIndexBuffer = 0;
+      m_bulbLightIndexBuffer->release();
+      m_bulbLightIndexBuffer = 0;
    }
-   if (bulbLightVBuffer)
+   if (m_bulbLightVBuffer)
    {
-      bulbLightVBuffer->release();
-      bulbLightVBuffer = 0;
+      m_bulbLightVBuffer->release();
+      m_bulbLightVBuffer = 0;
    }
-   if (bulbSocketIndexBuffer)
+   if (m_bulbSocketIndexBuffer)
    {
-      bulbSocketIndexBuffer->release();
-      bulbSocketIndexBuffer = 0;
+      m_bulbSocketIndexBuffer->release();
+      m_bulbSocketIndexBuffer = 0;
    }
-   if (bulbSocketVBuffer)
+   if (m_bulbSocketVBuffer)
    {
-      bulbSocketVBuffer->release();
-      bulbSocketVBuffer = 0;
+      m_bulbSocketVBuffer->release();
+      m_bulbSocketVBuffer = 0;
    }
 }
 
@@ -130,9 +130,9 @@ HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    InitShape();
 
-   m_fLockedByLS = false;
+   m_lockedByLS = false;
    m_realState = m_d.m_state;
-   m_d.m_fVisible = true;
+   m_d.m_visible = true;
 
    return InitVBA(fTrue, 0, NULL);
 }
@@ -148,7 +148,7 @@ void Light::SetDefaults(bool fromMouseClick)
 
    m_d.m_shape = ShapeCustom;
 
-   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Light", "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Light", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "TimerInterval", 100) : 100;
    m_d.m_color = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "Color", RGB(255,255,0)) : RGB(255,255,0);
    m_d.m_color2 = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "ColorFull", RGB(255,255,255)) : RGB(255,255,255);
@@ -190,7 +190,7 @@ void Light::WriteRegDefaults()
    SaveValueFloat("DefaultProps\\Light", "Falloff", m_d.m_falloff);
    SaveValueFloat("DefaultProps\\Light", "FalloffPower", m_d.m_falloff_power);
    SaveValueInt("DefaultProps\\Light", "LightState", m_d.m_state);
-   SaveValueBool("DefaultProps\\Light", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueBool("DefaultProps\\Light", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt("DefaultProps\\Light", "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SaveValueInt("DefaultProps\\Light", "Color", m_d.m_color);
    SaveValueInt("DefaultProps\\Light", "ColorFull", m_d.m_color2);
@@ -213,11 +213,6 @@ void Light::WriteRegDefaults()
    SaveValueFloat("DefaultProps\\Light", "BulbHaloHeight", m_d.m_bulbHaloHeight);
 }
 
-Texture *Light::GetDisplayTexture()
-{
-   return (m_d.m_state == LightStateOff) ? m_ptable->GetImage(m_d.m_szOffImage) : NULL;
-}
-
 void Light::UIRenderPass1(Sur * const psur)
 {
    psur->SetBorderColor(-1, false, 0);
@@ -225,7 +220,7 @@ void Light::UIRenderPass1(Sur * const psur)
    psur->SetObject(this);
 
    // workaround for the old round light object
-   // after loading m_roundLight is true if an pre VP10 table was loaded
+   // after loading m_roundLight is true if an pre-VPX table was loaded
    // init the round light to the new custom one
    if (m_roundLight)
    {
@@ -336,7 +331,7 @@ void Light::GetTimers(vector<HitTimer*> &pvht)
 
    m_phittimer = pht;
 
-   if (m_d.m_tdr.m_fTimerEnabled)
+   if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(pht);
 }
 
@@ -382,42 +377,42 @@ void Light::GetHitShapesDebug(vector<HitObject*> &pvho)
 
 void Light::FreeBuffers()
 {
-   if (customMoverVBuffer)
+   if (m_customMoverVBuffer)
    {
-      customMoverVBuffer->release();
-      customMoverVBuffer = 0;
+      m_customMoverVBuffer->release();
+      m_customMoverVBuffer = 0;
    }
-   if (customMoverIBuffer)
+   if (m_customMoverIBuffer)
    {
-      customMoverIBuffer->release();
-      customMoverIBuffer = 0;
+      m_customMoverIBuffer->release();
+      m_customMoverIBuffer = 0;
    }
-   if (bulbLightIndexBuffer)
+   if (m_bulbLightIndexBuffer)
    {
-      bulbLightIndexBuffer->release();
-      bulbLightIndexBuffer = 0;
+      m_bulbLightIndexBuffer->release();
+      m_bulbLightIndexBuffer = 0;
    }
-   if (bulbLightVBuffer)
+   if (m_bulbLightVBuffer)
    {
-      bulbLightVBuffer->release();
-      bulbLightVBuffer = 0;
+      m_bulbLightVBuffer->release();
+      m_bulbLightVBuffer = 0;
    }
-   if (bulbSocketIndexBuffer)
+   if (m_bulbSocketIndexBuffer)
    {
-      bulbSocketIndexBuffer->release();
-      bulbSocketIndexBuffer = 0;
+      m_bulbSocketIndexBuffer->release();
+      m_bulbSocketIndexBuffer = 0;
    }
-   if (bulbSocketVBuffer)
+   if (m_bulbSocketVBuffer)
    {
-      bulbSocketVBuffer->release();
-      bulbSocketVBuffer = 0;
+      m_bulbSocketVBuffer->release();
+      m_bulbSocketVBuffer = 0;
    }
 }
 
 void Light::EndPlay()
 {
    // ensure not locked just in case the player exits during a LS sequence
-   m_fLockedByLS = false;
+   m_lockedByLS = false;
 
    m_vvertex.clear();
 
@@ -457,7 +452,7 @@ void Light::RenderBulbMesh()
    pd3dDevice->basicShader->SetMaterial(&mat);
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbSocketVBuffer, 0, bulbSocketNumVertices, bulbSocketIndexBuffer, 0, bulbSocketNumFaces);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbSocketVBuffer, 0, bulbSocketNumVertices, m_bulbSocketIndexBuffer, 0, bulbSocketNumFaces);
    pd3dDevice->basicShader->End();
 
    mat.m_cBase = 0;
@@ -476,7 +471,7 @@ void Light::RenderBulbMesh()
    pd3dDevice->basicShader->SetMaterial(&mat);
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbLightVBuffer, 0, bulbLightNumVertices, m_bulbLightIndexBuffer, 0, bulbLightNumFaces);
    pd3dDevice->basicShader->End();
 }
 
@@ -486,10 +481,10 @@ void Light::RenderDynamic()
 
    TRACE_FUNCTION();
 
-   if (!m_d.m_fVisible || m_ptable->m_fReflectionEnabled)
+   if (!m_d.m_visible || m_ptable->m_reflectionEnabled)
       return;
 
-   if (customMoverVBuffer == NULL) // in case of degenerate light
+   if (m_customMoverVBuffer == NULL) // in case of degenerate light
       return;
 
    if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
@@ -560,7 +555,7 @@ void Light::RenderDynamic()
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    }
 
-   if (m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled))
+   if (m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
    else
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
@@ -623,7 +618,7 @@ void Light::RenderDynamic()
          pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add", 0.00001f); // additive, but avoid full 0, as it disables the blend
 
          pd3dDevice->lightShader->Begin(0);
-         pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces);
+         pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bulbLightVBuffer, 0, bulbLightNumVertices, m_bulbLightIndexBuffer, 0, bulbLightNumFaces);
          pd3dDevice->lightShader->End();
       }
 
@@ -648,7 +643,7 @@ void Light::RenderDynamic()
       pd3dDevice->lightShader->Begin(0);
    }
 
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, customMoverVBuffer, 0, customMoverVertexNum, customMoverIBuffer, 0, customMoverIndexNum);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, m_customMoverVBuffer, 0, m_customMoverVertexNum, m_customMoverIBuffer, 0, m_customMoverIndexNum);
 
    if (!m_d.m_BulbLight)
       pd3dDevice->classicLightShader->End();
@@ -668,7 +663,7 @@ void Light::RenderDynamic()
    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
    }*/
 
-   //if(m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled))
+   //if(m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
    //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
 
@@ -684,10 +679,10 @@ void Light::UpdateLightShapeHeight()
    if (!m_fBackglass)
    {
       Vertex3D_NoTex2 *buf;
-      customMoverVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-      for (unsigned int t = 0; t < customMoverVertexNum; t++)
+      m_customMoverVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      for (unsigned int t = 0; t < m_customMoverVertexNum; t++)
          buf[t].z = height + 0.1f;
-      customMoverVBuffer->unlock();
+      m_customMoverVBuffer->unlock();
    }
 
    m_updateLightShape = false;
@@ -728,10 +723,10 @@ void Light::PrepareMoversCustom()
       m_surfaceHeight = height;
    }
 
-   if (customMoverIBuffer)
-      customMoverIBuffer->release();
-   if (customMoverVBuffer)
-      customMoverVBuffer->release();
+   if (m_customMoverIBuffer)
+      m_customMoverIBuffer->release();
+   if (m_customMoverVBuffer)
+      m_customMoverVBuffer->release();
 
    if (vtri.size() == 0)
    {
@@ -743,17 +738,17 @@ void Light::PrepareMoversCustom()
       return;
    }
 
-   customMoverIndexNum = (unsigned int)vtri.size();
-   g_pplayer->m_pin3d.m_pd3dPrimaryDevice->CreateIndexBuffer(customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16, &customMoverIBuffer);
+   m_customMoverIndexNum = (unsigned int)vtri.size();
+   g_pplayer->m_pin3d.m_pd3dPrimaryDevice->CreateIndexBuffer(m_customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16, &m_customMoverIBuffer);
 
    WORD* bufi;
-   customMoverIBuffer->lock(0, 0, (void**)&bufi, 0);
+   m_customMoverIBuffer->lock(0, 0, (void**)&bufi, 0);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
-   customMoverIBuffer->unlock();
+   m_customMoverIBuffer->unlock();
 
-   customMoverVertexNum = (unsigned int)m_vvertex.size();
+   m_customMoverVertexNum = (unsigned int)m_vvertex.size();
    const DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
-   g_pplayer->m_pin3d.m_pd3dPrimaryDevice->CreateVertexBuffer(customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
+   g_pplayer->m_pin3d.m_pd3dPrimaryDevice->CreateVertexBuffer(m_customMoverVertexNum, 0, vertexType, &m_customMoverVBuffer);
 
    Texture* const pin = m_ptable->GetImage(m_d.m_szOffImage);
 
@@ -765,8 +760,8 @@ void Light::PrepareMoversCustom()
    const float ymult = getBGymult();
 
    Vertex3D_NoTex2 *buf;
-   customMoverVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   for (unsigned int t = 0; t < customMoverVertexNum; t++)
+   m_customMoverVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   for (unsigned int t = 0; t < m_customMoverVertexNum; t++)
    {
       const RenderVertex * const pv0 = &m_vvertex[t];
 
@@ -809,7 +804,7 @@ void Light::PrepareMoversCustom()
          buf[t].tv = y;
       }
    }
-   customMoverVBuffer->unlock();
+   m_customMoverVBuffer->unlock();
 }
 
 void Light::RenderSetup()
@@ -829,9 +824,7 @@ void Light::RenderSetup()
    if (m_realState == LightStateBlinking)
       RestartBlinker(g_pplayer->m_time_msec);
    else if (m_duration > 0 && m_realState == LightStateOn)
-   {
       m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
-   }
 
    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_realState != LightStateOff);
    if (isOn)
@@ -841,16 +834,16 @@ void Light::RenderSetup()
 
    if (m_d.m_BulbLight && m_d.m_showBulbMesh)
    {
-      if (bulbLightIndexBuffer)
-         bulbLightIndexBuffer->release();
-      bulbLightIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bulbLightNumFaces, bulbLightIndices);
+      if (m_bulbLightIndexBuffer)
+         m_bulbLightIndexBuffer->release();
+      m_bulbLightIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bulbLightNumFaces, bulbLightIndices);
 
-      if (bulbLightVBuffer)
-         bulbLightVBuffer->release();
-      pd3dDevice->CreateVertexBuffer(bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbLightVBuffer);
+      if (m_bulbLightVBuffer)
+         m_bulbLightVBuffer->release();
+      pd3dDevice->CreateVertexBuffer(bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bulbLightVBuffer);
 
       Vertex3D_NoTex2 *buf;
-      bulbLightVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      m_bulbLightVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       for (unsigned int i = 0; i < bulbLightNumVertices; i++)
       {
          buf[i].x = bulbLight[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
@@ -862,17 +855,17 @@ void Light::RenderSetup()
          buf[i].tu = bulbLight[i].tu;
          buf[i].tv = bulbLight[i].tv;
       }
-      bulbLightVBuffer->unlock();
+      m_bulbLightVBuffer->unlock();
 
-      if (bulbSocketIndexBuffer)
-         bulbSocketIndexBuffer->release();
-      bulbSocketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bulbSocketNumFaces, bulbSocketIndices);
+      if (m_bulbSocketIndexBuffer)
+         m_bulbSocketIndexBuffer->release();
+      m_bulbSocketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bulbSocketNumFaces, bulbSocketIndices);
 
-      if (bulbSocketVBuffer)
-         bulbSocketVBuffer->release();
-      pd3dDevice->CreateVertexBuffer(bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbSocketVBuffer);
+      if (m_bulbSocketVBuffer)
+         m_bulbSocketVBuffer->release();
+      pd3dDevice->CreateVertexBuffer(bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_bulbSocketVBuffer);
 
-      bulbSocketVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      m_bulbSocketVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       for (unsigned int i = 0; i < bulbSocketNumVertices; i++)
       {
          buf[i].x = bulbSocket[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
@@ -884,7 +877,7 @@ void Light::RenderSetup()
          buf[i].tu = bulbSocket[i].tu;
          buf[i].tv = bulbSocket[i].tv;
       }
-      bulbSocketVBuffer->unlock();
+      m_bulbSocketVBuffer->unlock();
    }
 
    PrepareMoversCustom();
@@ -925,7 +918,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteInt(FID(STAT), m_d.m_state);
    bw.WriteInt(FID(COLR), m_d.m_color);
    bw.WriteInt(FID(COL2), m_d.m_color2);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
+   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(BPAT), m_rgblinkpattern);
    bw.WriteString(FID(IMG1), m_d.m_szOffImage);
@@ -969,7 +962,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    m_d.m_state = LightStateOff;
    m_d.m_shape = ShapeCustom;
 
-   m_d.m_tdr.m_fTimerEnabled = false;
+   m_d.m_tdr.m_TimerEnabled = false;
    m_d.m_tdr.m_TimerInterval = 100;
 
    m_d.m_color = RGB(255, 255, 0);
@@ -984,7 +977,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
 
    m_ptable = ptable;
 
-   m_fLockedByLS = false;
+   m_lockedByLS = false;
    m_realState = m_d.m_state;
 
    br.Load();
@@ -1028,7 +1021,7 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(TMON))
    {
-      pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
+      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
    }
    else if (id == FID(TMIN))
    {
@@ -1237,14 +1230,10 @@ STDMETHODIMP Light::get_Falloff(float *pVal)
 STDMETHODIMP Light::put_Falloff(float newVal)
 {
    if (newVal < 0.f)
-   {
       return E_FAIL;
-   }
 
    STARTUNDO
-
    m_d.m_falloff = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -1260,17 +1249,15 @@ STDMETHODIMP Light::get_FalloffPower(float *pVal)
 STDMETHODIMP Light::put_FalloffPower(float newVal)
 {
    STARTUNDO
-
-      m_d.m_falloff_power = newVal;
-
+   m_d.m_falloff_power = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_State(LightState *pVal)
 {
-    if (g_pplayer && !m_fLockedByLS)
+    if (g_pplayer && !m_lockedByLS)
         *pVal = m_realState; 
     else
         *pVal = m_d.m_state; //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
@@ -1283,7 +1270,7 @@ STDMETHODIMP Light::put_State(LightState newVal)
    STARTUNDO
 
    // if the light is locked by the LS then just change the state and don't change the actual light
-   if (!m_fLockedByLS)
+   if (!m_lockedByLS)
       setLightState(newVal);
    m_d.m_state = newVal;
 
@@ -1327,9 +1314,7 @@ STDMETHODIMP Light::get_Color(OLE_COLOR *pVal)
 STDMETHODIMP Light::put_Color(OLE_COLOR newVal)
 {
    STARTUNDO
-
    m_d.m_color = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -1345,9 +1330,7 @@ STDMETHODIMP Light::get_ColorFull(OLE_COLOR *pVal)
 STDMETHODIMP Light::put_ColorFull(OLE_COLOR newVal)
 {
    STARTUNDO
-
    m_d.m_color2 = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -1364,12 +1347,10 @@ STDMETHODIMP Light::get_X(float *pVal)
 STDMETHODIMP Light::put_X(float newVal)
 {
    STARTUNDO
-
-      m_d.m_vCenter.x = newVal;
-
+   m_d.m_vCenter.x = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_Y(float *pVal)
@@ -1382,12 +1363,10 @@ STDMETHODIMP Light::get_Y(float *pVal)
 STDMETHODIMP Light::put_Y(float newVal)
 {
    STARTUNDO
-
-      m_d.m_vCenter.y = newVal;
-
+   m_d.m_vCenter.y = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Light::InitShape()
@@ -1455,15 +1434,12 @@ STDMETHODIMP Light::get_BlinkInterval(long *pVal)
 STDMETHODIMP Light::put_BlinkInterval(long newVal)
 {
    STARTUNDO
-
-      m_blinkinterval = newVal;
-
+   m_blinkinterval = newVal;
    if (g_pplayer)
       m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
-
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 
@@ -1471,21 +1447,22 @@ STDMETHODIMP Light::Duration(long startState, long newVal, long endState)
 {
     STARTUNDO
 
-        m_realState = (LightState)startState;
-        m_duration = newVal;
-        m_finalState = endState;
-        if (g_pplayer)
+    m_realState = (LightState)startState;
+    m_duration = newVal;
+    m_finalState = endState;
+    if (g_pplayer)
+    {
+        m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
+        if (m_realState == LightStateBlinking)
         {
-           m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
-           if (m_realState == LightStateBlinking)
-           {
-              m_iblinkframe = 0;
-              m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
-           }
+            m_iblinkframe = 0;
+            m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
         }
+    }
+
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }
 
 
@@ -1520,9 +1497,7 @@ STDMETHODIMP Light::get_TransmissionScale(float *pVal)
 STDMETHODIMP Light::put_TransmissionScale(float newVal)
 {
    STARTUNDO
-
    m_d.m_transmissionScale = max(0.f, newVal);
-
    STOPUNDO
 
    return S_OK;
@@ -1538,7 +1513,6 @@ STDMETHODIMP Light::get_IntensityScale(float *pVal)
 STDMETHODIMP Light::put_IntensityScale(float newVal)
 {
    STARTUNDO
-
    m_d.m_intensity_scale = newVal;
    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_realState != LightStateOff);
    if (isOn)
@@ -1561,9 +1535,7 @@ STDMETHODIMP Light::get_Surface(BSTR *pVal)
 STDMETHODIMP Light::put_Surface(BSTR newVal)
 {
    STARTUNDO
-
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
-
    STOPUNDO
 
    return S_OK;
@@ -1583,9 +1555,7 @@ STDMETHODIMP Light::get_Image(BSTR *pVal)
 STDMETHODIMP Light::put_Image(BSTR newVal)
 {
    STARTUNDO
-
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOffImage, 32, NULL, NULL);
-
    STOPUNDO
 
    return S_OK;
@@ -1601,9 +1571,7 @@ STDMETHODIMP Light::get_DepthBias(float *pVal)
 STDMETHODIMP Light::put_DepthBias(float newVal)
 {
    STARTUNDO
-
    m_d.m_depthBias = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -1619,9 +1587,7 @@ STDMETHODIMP Light::get_FadeSpeedUp(float *pVal)
 STDMETHODIMP Light::put_FadeSpeedUp(float newVal)
 {
    STARTUNDO
-
    m_d.m_fadeSpeedUp = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -1637,12 +1603,10 @@ STDMETHODIMP Light::get_FadeSpeedDown(float *pVal)
 STDMETHODIMP Light::put_FadeSpeedDown(float newVal)
 {
    STARTUNDO
-
-      m_d.m_fadeSpeedDown = newVal;
-
+   m_d.m_fadeSpeedDown = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_Bulb(VARIANT_BOOL *pVal)
@@ -1655,12 +1619,10 @@ STDMETHODIMP Light::get_Bulb(VARIANT_BOOL *pVal)
 STDMETHODIMP Light::put_Bulb(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-      m_d.m_BulbLight = VBTOF(newVal);
-
+   m_d.m_BulbLight = VBTOb(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_ImageMode(VARIANT_BOOL *pVal)
@@ -1673,9 +1635,7 @@ STDMETHODIMP Light::get_ImageMode(VARIANT_BOOL *pVal)
 STDMETHODIMP Light::put_ImageMode(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-   m_d.m_imageMode = VBTOF(newVal);
-
+   m_d.m_imageMode = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -1691,9 +1651,7 @@ STDMETHODIMP Light::get_ShowBulbMesh(VARIANT_BOOL *pVal)
 STDMETHODIMP Light::put_ShowBulbMesh(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-   m_d.m_showBulbMesh = VBTOF(newVal);
-
+   m_d.m_showBulbMesh = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -1709,12 +1667,10 @@ STDMETHODIMP Light::get_StaticBulbMesh(VARIANT_BOOL *pVal)
 STDMETHODIMP Light::put_StaticBulbMesh(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-      m_d.m_staticBulbMesh = VBTOF(newVal);
-
+   m_d.m_staticBulbMesh = VBTOb(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_ShowReflectionOnBall(VARIANT_BOOL *pVal)
@@ -1727,12 +1683,10 @@ STDMETHODIMP Light::get_ShowReflectionOnBall(VARIANT_BOOL *pVal)
 STDMETHODIMP Light::put_ShowReflectionOnBall(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-      m_d.m_showReflectionOnBall = VBTOF(newVal);
-
+   m_d.m_showReflectionOnBall = VBTOb(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_ScaleBulbMesh(float *pVal)
@@ -1745,12 +1699,10 @@ STDMETHODIMP Light::get_ScaleBulbMesh(float *pVal)
 STDMETHODIMP Light::put_ScaleBulbMesh(float newVal)
 {
    STARTUNDO
-
-      m_d.m_meshRadius = newVal;
-
+   m_d.m_meshRadius = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_BulbModulateVsAdd(float *pVal)
@@ -1763,12 +1715,10 @@ STDMETHODIMP Light::get_BulbModulateVsAdd(float *pVal)
 STDMETHODIMP Light::put_BulbModulateVsAdd(float newVal)
 {
    STARTUNDO
-
-      m_d.m_modulate_vs_add = newVal;
-
+   m_d.m_modulate_vs_add = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_BulbHaloHeight(float *pVal)
@@ -1781,13 +1731,11 @@ STDMETHODIMP Light::get_BulbHaloHeight(float *pVal)
 STDMETHODIMP Light::put_BulbHaloHeight(float newVal)
 {
    STARTUNDO
-
-      m_d.m_bulbHaloHeight = newVal;
-      m_updateLightShape = true;
-
+   m_d.m_bulbHaloHeight = newVal;
+   m_updateLightShape = true;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Light::GetDialogPanes(vector<PropertyPane*> &pvproppane)
@@ -1832,7 +1780,7 @@ void Light::setLightState(const LightState newVal)
 
 STDMETHODIMP Light::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
+   *pVal = FTOVB(m_d.m_visible);
 
    return S_OK;
 }
@@ -1840,10 +1788,10 @@ STDMETHODIMP Light::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
 STDMETHODIMP Light::put_Visible(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_d.m_fVisible = VBTOF(newVal);
+   m_d.m_visible = VBTOb(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Light::UpdatePropertyPanes()
@@ -1851,31 +1799,17 @@ void Light::UpdatePropertyPanes()
    if (m_propVisual == NULL)
       return;
 
+   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SHOW_BULB_MESH), m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SCALE_BULB_MESH), m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_BULB_MODULATE_VS_ADD), m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_REFLECT_ON_BALLS), m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_TRANSMISSION_SCALE), m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_HALO_EDIT), m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_IMAGE_MODE), !m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, DISPID_Image), !m_d.m_BulbLight);
+
    if (!m_d.m_BulbLight)
-   {
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SHOW_BULB_MESH), FALSE);
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STATIC_BULB_MESH), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SCALE_BULB_MESH), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_BULB_MODULATE_VS_ADD), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_REFLECT_ON_BALLS), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_TRANSMISSION_SCALE), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_HALO_EDIT), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_IMAGE_MODE), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, DISPID_Image), TRUE);
-   }
    else
-   {
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SHOW_BULB_MESH), TRUE);
-      if (m_d.m_showBulbMesh)
-         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STATIC_BULB_MESH), TRUE);
-      else
-         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STATIC_BULB_MESH), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SCALE_BULB_MESH), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_BULB_MODULATE_VS_ADD), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_REFLECT_ON_BALLS), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_TRANSMISSION_SCALE), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_HALO_EDIT), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_IMAGE_MODE), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, DISPID_Image), FALSE);
-   }
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STATIC_BULB_MESH), m_d.m_showBulbMesh);
 }

@@ -25,8 +25,8 @@ public:
    char m_szImage[MAXTOKEN];
    char m_szSurface[MAXTOKEN];
    bool m_fShowBracket;
-   bool m_fVisible;
-   bool m_fReflectionEnabled;
+   bool m_visible;
+   bool m_reflectionEnabled;
 };
 
 class HitSpinner;
@@ -90,24 +90,26 @@ public:
    virtual void ExportMesh(FILE *f);
 
    virtual void WriteRegDefaults();
-   void UpdatePlate(Vertex3D_NoTex2 * const vertBuffer);
-   void UpdateUnitsInfo();
 
    SpinnerData m_d;
-   float m_posZ;
 
    HitSpinner *m_phitspinner;
 
 private:
+   void UpdatePlate(Vertex3D_NoTex2 * const vertBuffer);
+   void UpdateUnitsInfo();
+
    PinTable *m_ptable;
 
-   VertexBuffer *bracketVertexBuffer;
-   IndexBuffer *bracketIndexBuffer;
-   VertexBuffer *plateVertexBuffer;
-   IndexBuffer *plateIndexBuffer;
-   Matrix3D fullMatrix;
+   VertexBuffer *m_bracketVertexBuffer;
+   IndexBuffer *m_bracketIndexBuffer;
+   VertexBuffer *m_plateVertexBuffer;
+   IndexBuffer *m_plateIndexBuffer;
+   Matrix3D m_fullMatrix;
 
-   float vertexBuffer_spinneranimangle;
+   float m_posZ;
+
+   float m_vertexBuffer_spinneranimangle;
 
    // ISpinner
 public:

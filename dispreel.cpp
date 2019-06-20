@@ -50,9 +50,9 @@ void DispReel::SetDefaults(bool fromMouseClick)
       m_d.m_szSound[0] = 0;
 
    m_d.m_fUseImageGrid = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "UseImageGrid", false) : false;
-   m_d.m_fVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "Visible", true) : true;
+   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "Visible", true) : true;
    m_d.m_imagesPerGridRow = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "ImagesPerRow", 1) : 1;
-   m_d.m_fTransparent = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "Transparent", false) : false;
+   m_d.m_transparent = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "Transparent", false) : false;
    m_d.m_reelcount = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "ReelCount", 5) : 5;
    m_d.m_width = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\EMReel", "Width", 30.0f) : 30.0f;
    m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\EMReel", "Height", 40.0f) : 40.0f;
@@ -61,7 +61,7 @@ void DispReel::SetDefaults(bool fromMouseClick)
    m_d.m_digitrange = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "DigitRange", 9) : 9;
    m_d.m_updateinterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "UpdateInterval", 50) : 50;
    m_d.m_backcolor = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "BackColor", RGB(64,64,64)) : RGB(64,64,64);
-   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "TimerInterval", 100) : 100;
 }
 
@@ -70,9 +70,9 @@ void DispReel::WriteRegDefaults()
    SaveValueString("DefaultProps\\EMReel", "Image", m_d.m_szImage);
    SaveValueString("DefaultProps\\EMReel", "Sound", m_d.m_szSound);
    SaveValueBool("DefaultProps\\Decal", "UseImageGrid", m_d.m_fUseImageGrid);
-   SaveValueBool("DefaultProps\\Decal", "Visible", m_d.m_fVisible);
+   SaveValueBool("DefaultProps\\Decal", "Visible", m_d.m_visible);
    SaveValueInt("DefaultProps\\Decal", "ImagesPerRow", m_d.m_imagesPerGridRow);
-   SaveValueBool("DefaultProps\\Decal", "Transparent", m_d.m_fTransparent);
+   SaveValueBool("DefaultProps\\Decal", "Transparent", m_d.m_transparent);
    SaveValueInt("DefaultProps\\Decal", "ReelCount", m_d.m_reelcount);
    SaveValueFloat("DefaultProps\\EMReel", "Width", m_d.m_width);
    SaveValueFloat("DefaultProps\\EMReel", "Height", m_d.m_height);
@@ -81,7 +81,7 @@ void DispReel::WriteRegDefaults()
    SaveValueInt("DefaultProps\\Decal", "DigitRange", m_d.m_digitrange);
    SaveValueInt("DefaultProps\\Decal", "UpdateInterval", m_d.m_updateinterval);
    SaveValueInt("DefaultProps\\EMReel", "BackColor", m_d.m_backcolor);
-   SaveValueBool("DefaultProps\\EMReel", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueBool("DefaultProps\\EMReel", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt("DefaultProps\\EMReel", "TimerInterval", m_d.m_tdr.m_TimerInterval);
 }
 
@@ -183,7 +183,7 @@ void DispReel::GetTimers(vector<HitTimer*> &pvht)
 
    m_phittimer = pht;
 
-   if (m_d.m_tdr.m_fTimerEnabled)
+   if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(pht);
 }
 
@@ -207,7 +207,7 @@ void DispReel::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   if (!m_d.m_fVisible || !GetPTable()->GetEMReelsEnabled())
+   if (!m_d.m_visible || !GetPTable()->GetEMReelsEnabled())
       return;
 
    // get a pointer to the image specified in the object
@@ -218,7 +218,7 @@ void DispReel::RenderDynamic()
 
    RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
+   if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
    else
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
@@ -276,7 +276,7 @@ void DispReel::RenderDynamic()
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, RenderDevice::RS_FALSE);
 
-   //if(g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
+   //if(g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled)
    //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
 
@@ -487,9 +487,9 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteStruct(FID(VER1), &m_d.m_v1, sizeof(Vertex2D));
    bw.WriteStruct(FID(VER2), &m_d.m_v2, sizeof(Vertex2D));
    bw.WriteInt(FID(CLRB), m_d.m_backcolor);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
+   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteBool(FID(TRNS), m_d.m_fTransparent);
+   bw.WriteBool(FID(TRNS), m_d.m_transparent);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteString(FID(SOUN), m_d.m_szSound);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
@@ -501,7 +501,7 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(RANG), (float)m_d.m_digitrange);
    bw.WriteInt(FID(UPTM), m_d.m_updateinterval);
    bw.WriteBool(FID(UGRD), m_d.m_fUseImageGrid);
-   bw.WriteBool(FID(VISI), m_d.m_fVisible);
+   bw.WriteBool(FID(VISI), m_d.m_visible);
    bw.WriteInt(FID(GIPR), m_d.m_imagesPerGridRow);
 
    ISelect::SaveData(pstm, hcrypthash);
@@ -553,7 +553,7 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(TMON))
    {
-      pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
+      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
    }
    else if (id == FID(TMIN))
    {
@@ -565,7 +565,7 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(TRNS))
    {
-      pbr->GetBool(&m_d.m_fTransparent);
+      pbr->GetBool(&m_d.m_transparent);
    }
    else if (id == FID(IMAG))
    {
@@ -597,7 +597,7 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(VISI))
    {
-      pbr->GetBool(&m_d.m_fVisible);
+      pbr->GetBool(&m_d.m_visible);
    }
    else if (id == FID(GIPR))
    {
@@ -787,7 +787,7 @@ STDMETHODIMP DispReel::put_Y(float newVal)
 
 STDMETHODIMP DispReel::get_IsTransparent(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fTransparent);
+   *pVal = FTOVB(m_d.m_transparent);
 
    return S_OK;
 }
@@ -795,7 +795,7 @@ STDMETHODIMP DispReel::get_IsTransparent(VARIANT_BOOL *pVal)
 STDMETHODIMP DispReel::put_IsTransparent(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fTransparent = VBTOF(newVal);
+   m_d.m_transparent = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -924,7 +924,7 @@ STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
 
 STDMETHODIMP DispReel::get_UseImageGrid(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fUseImageGrid);
+   *pVal = FTOVB(m_d.m_fUseImageGrid);
 
    return S_OK;
 }
@@ -932,7 +932,7 @@ STDMETHODIMP DispReel::get_UseImageGrid(VARIANT_BOOL *pVal)
 STDMETHODIMP DispReel::put_UseImageGrid(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fUseImageGrid = VBTOF(newVal);
+   m_d.m_fUseImageGrid = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -940,7 +940,7 @@ STDMETHODIMP DispReel::put_UseImageGrid(VARIANT_BOOL newVal)
 
 STDMETHODIMP DispReel::get_Visible(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
+   *pVal = FTOVB(m_d.m_visible);
 
    return S_OK;
 }
@@ -948,7 +948,7 @@ STDMETHODIMP DispReel::get_Visible(VARIANT_BOOL *pVal)
 STDMETHODIMP DispReel::put_Visible(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fVisible = VBTOF(newVal);
+   m_d.m_visible = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;

@@ -106,21 +106,16 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case COLOR_CHANGED:
         {
             const size_t color = ::GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
-            HWND hwndEvent = (HWND)lParam;
-            HWND hwndcolor1 = GetDlgItem(IDC_COLOR).GetHwnd();
-            HWND hwndcolor2 = GetDlgItem(IDC_COLOR2).GetHwnd();
-            HWND hwndcolor3 = GetDlgItem(IDC_COLOR3).GetHwnd();
-            HWND hwndcolor4 = GetDlgItem(IDC_COLOR4).GetHwnd();
-            HWND hwndcolor5 = GetDlgItem(IDC_COLOR5).GetHwnd();
-            if (hwndEvent == hwndcolor1)
+            const HWND hwndEvent = (HWND)lParam;
+            if (hwndEvent == GetDlgItem(IDC_COLOR).GetHwnd())
                g_pvp->dummyMaterial.m_cBase = (COLORREF)color;
-            else if (hwndEvent == hwndcolor2)
+            else if (hwndEvent == GetDlgItem(IDC_COLOR2).GetHwnd())
                g_pvp->m_elemSelectColor = (COLORREF)color;
-            else if (hwndEvent == hwndcolor3)
+            else if (hwndEvent == GetDlgItem(IDC_COLOR3).GetHwnd())
                g_pvp->m_elemSelectLockedColor = (COLORREF)color;
-            else if (hwndEvent == hwndcolor4)
+            else if (hwndEvent == GetDlgItem(IDC_COLOR4).GetHwnd())
                g_pvp->m_fillColor = (COLORREF)color;
-            else if (hwndEvent == hwndcolor5)
+            else if (hwndEvent == GetDlgItem(IDC_COLOR5).GetHwnd())
                g_pvp->m_backgroundColor = (COLORREF)color;
 
             return TRUE;

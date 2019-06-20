@@ -471,6 +471,7 @@ BOOL CollectionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         break;
     }
+
     return TRUE;
 }
 
@@ -480,11 +481,12 @@ void CollectionDialog::OnOK()
 
     for (int i = 0; i < pcol->m_visel.Size(); i++)
     {
-        const int index = FindIndexOf(pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection, pcol);
+        IEditable * const ie = pcol->m_visel.ElementAt(i)->GetIEditable();
+        const int index = FindIndexOf(ie->m_vCollection, pcol);
         if (index != -1)
         {
-            pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection.erase (pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection.begin()  + index);
-            pcol->m_visel.ElementAt(i)->GetIEditable()->m_viCollection.erase(pcol->m_visel.ElementAt(i)->GetIEditable()->m_viCollection.begin() + index);
+            ie->m_vCollection.erase (ie->m_vCollection.begin()  + index);
+            ie->m_viCollection.erase(ie->m_viCollection.begin() + index);
         }
     }
 
@@ -506,16 +508,13 @@ void CollectionDialog::OnOK()
         }
     }
 
-    HWND hwndFireEvents = GetDlgItem(IDC_FIRE).GetHwnd();
-    const size_t fireEvents = ::SendMessage(hwndFireEvents, BM_GETCHECK, 0, 0);
+    const size_t fireEvents = ::SendMessage(GetDlgItem(IDC_FIRE).GetHwnd(), BM_GETCHECK, 0, 0);
     pcol->m_fireEvents = !!fireEvents;
 
-    HWND hwndStopSingle = GetDlgItem(IDC_SUPPRESS).GetHwnd();
-    const size_t stopSingleEvents = ::SendMessage(hwndStopSingle, BM_GETCHECK, 0, 0);
+    const size_t stopSingleEvents = ::SendMessage(GetDlgItem(IDC_SUPPRESS).GetHwnd(), BM_GETCHECK, 0, 0);
     pcol->m_stopSingleEvents = !!stopSingleEvents;
 
-    HWND hwndGroupElements = GetDlgItem(IDC_GROUP_CHECK).GetHwnd();
-    const size_t groupElements = ::SendMessage(hwndGroupElements, BM_GETCHECK, 0, 0);
+    const size_t groupElements = ::SendMessage(GetDlgItem(IDC_GROUP_CHECK).GetHwnd(), BM_GETCHECK, 0, 0);
     pcol->m_groupElements = !!groupElements;
 
     char szT[MAXSTRING];

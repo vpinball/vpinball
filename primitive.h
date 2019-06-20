@@ -78,23 +78,23 @@ public:
 
    int  m_FrameAmount;
 
-   float m_fDisableLightingTop; // was bool, now 0..1
-   float m_fDisableLightingBelow; // 0..1
+   float m_disableLightingTop; // was bool, now 0..1
+   float m_disableLightingBelow; // 0..1
 
    bool m_useAsPlayfield;
 
    bool m_use3DMesh;
-   bool m_fVisible;
+   bool m_visible;
    bool m_DrawTexturesInside;
    bool m_staticRendering;
 
-   bool m_fHitEvent;
-   bool m_fCollidable;
+   bool m_hitEvent;
+   bool m_collidable;
    bool m_fToy;
    bool m_fSkipRendering;
    bool m_fGroupdRendering;
-   bool m_fReflectionEnabled;
-   bool m_fOverwritePhysics;
+   bool m_reflectionEnabled;
+   bool m_overwritePhysics;
    bool m_fBackfacesEnabled;
    bool m_fDisplayTexture;     // in editor
 };
@@ -300,23 +300,24 @@ public:
    Mesh m_mesh;
 
    PrimitiveData m_d;
-   Matrix3D fullMatrix;
-   int m_numGroupVertices;
-   int m_numGroupIndices;
-   float m_currentFrame;
-   float m_speed;
-   bool m_DoAnimation;
-   bool m_Endless;
 
 private:
    PinTable *m_ptable;
 
-   int numIndices;         // only used during loading
-   int numVertices;        // only used during loading
+   Matrix3D m_fullMatrix;
+   int m_numGroupVertices;
+   int m_numGroupIndices;
+   float m_currentFrame;
+   float m_speed;
+   bool m_doAnimation;
+   bool m_endless;
+
+   int m_numIndices;         // only used during loading
+   int m_numVertices;        // only used during loading
 #ifdef COMPRESS_MESHES
-   int compressedIndices;  // only used during loading
-   int compressedVertices; // only used during loading
-   int compressedAnimationVertices; // only used during loading
+   int m_compressedIndices;  // only used during loading
+   int m_compressedVertices; // only used during loading
+   int m_compressedAnimationVertices; // only used during loading
 #endif
 
    void UpdateEditorView();
@@ -330,8 +331,6 @@ private:
    PropertyPane *m_propVisual;
    PropertyPane *m_propPosition;
    PropertyPane *m_propPhysics;
-
-private:        // private data members
 
    std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
@@ -377,12 +376,12 @@ private:        // private data members
    // = nothing...
 
    // Vertices for editor display
-   std::vector<Vertex3Ds> vertices;
-   std::vector<float> normals; // only z component actually
+   std::vector<Vertex3Ds> m_vertices;
+   std::vector<float> m_normals; // only z component actually
 
-   VertexBuffer *vertexBuffer;
-   IndexBuffer *indexBuffer;
-   bool vertexBufferRegenerate;
+   VertexBuffer *m_vertexBuffer;
+   IndexBuffer *m_indexBuffer;
+   bool m_vertexBufferRegenerate;
 };
 
 #endif // !defined(AFX_PRIMITIVE_H__31CD2D6B-9BDD-4B1B-BC62-B9DE588A0CAA__INCLUDED_)

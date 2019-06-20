@@ -119,24 +119,25 @@ public:
 
       virtual void WriteRegDefaults();
 
-      void UpdateMesh();
-      void InitShape();
-
       FlasherData m_d;
-      unsigned int numVertices;
-      int numPolys;
-      float minx, maxx, miny, maxy;
-      Vertex3D_TexelOnly *vertices;
-
-      VertexBuffer *dynamicVertexBuffer;
-      IndexBuffer *dynamicIndexBuffer;
-      
-	  PropertyPane *m_propVisual;
-	  
-	  bool dynamicVertexBufferRegenerate;
 
 private:
+   void UpdateMesh();
+   void InitShape();
+
    PinTable *m_ptable;
+
+   unsigned int m_numVertices;
+   int m_numPolys;
+   float m_minx, m_maxx, m_miny, m_maxy;
+   Vertex3D_TexelOnly *m_vertices;
+
+   VertexBuffer *m_dynamicVertexBuffer;
+   IndexBuffer *m_dynamicIndexBuffer;
+
+   PropertyPane *m_propVisual;
+
+   bool m_dynamicVertexBufferRegenerate;
 
 // IFlasher
 public:

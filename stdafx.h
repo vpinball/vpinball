@@ -67,13 +67,12 @@
  #define MOUSEPAUSE
 #endif
 
-//#define PLAYBACK
+//#define PLAYBACK              // bitrotted, also how to record the playback to c:\badlog.txt ?? via LOG ??
+//#define LOG                   // bitrotted, will record stuff into c:\log.txt
 
-//#define LOG
+//#define EVENPHYSICSTIME       // bitrotted, most likely not functional anymore
 
 //#define DEBUGPHYSICS          // enables detailed physics/collision handling output for the 'F11' stats/debug texts
-
-//#define EVENPHYSICSTIME
 
 #define DEBUG_BALL_SPIN         // enables dots glued to balls if in 'F11' mode
 

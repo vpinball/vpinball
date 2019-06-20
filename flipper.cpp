@@ -81,18 +81,18 @@ static const Vertex3Ds* const vertsBaseTop = (Vertex3Ds*)vertsBaseTopf;
 Flipper::Flipper()
 {
    m_phitflipper = NULL;
-   vertexBuffer = NULL;
-   indexBuffer = NULL;
+   m_vertexBuffer = NULL;
+   m_indexBuffer = NULL;
    m_ptable = NULL;
    memset(m_d.m_szImage, 0, MAXTOKEN);
 }
 
 Flipper::~Flipper()
 {
-   if (vertexBuffer)
-      vertexBuffer->release();
-   if (indexBuffer)
-      indexBuffer->release();
+   if (m_vertexBuffer)
+      m_vertexBuffer->release();
+   if (m_indexBuffer)
+      m_indexBuffer->release();
 }
 
 void Flipper::UpdateUnitsInfo()
@@ -128,7 +128,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
 
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(regKey, "TimerInterval", 100) : 100;
    m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(regKey, "Color", RGB(255,255,255)) : RGB(255,255,255);
    m_d.m_rubbercolor = fromMouseClick ? LoadValueIntWithDefault(regKey, "RubberColor", RGB(128,50,50)) : RGB(128,50,50);
@@ -141,9 +141,9 @@ void Flipper::SetDefaults(bool fromMouseClick)
    m_d.m_rubberthickness = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberThickness", 7.f) : 7.f;
    m_d.m_rubberheight = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberHeight", 19.f) : 19.f;
    m_d.m_rubberwidth = fromMouseClick ? LoadValueFloatWithDefault(regKey, "RubberWidth", 24.f) : 24.f;
-   m_d.m_fVisible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible", true) : true;
+   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Visible", true) : true;
    m_d.m_enabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "Enabled", true) : true;
-   m_d.m_fReflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled", true) : true;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(regKey, "ReflectionEnabled", true) : true;
 }
 
 void Flipper::WriteRegDefaults()
@@ -166,7 +166,7 @@ void Flipper::WriteRegDefaults()
    SaveValueFloat(regKey, "ElasticityFalloff", m_d.m_elasticityFalloff);
    SaveValueFloat(regKey, "Friction", m_d.m_friction);
    SaveValueFloat(regKey, "RampUp", m_d.m_rampUp);
-   SaveValueBool(regKey, "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueBool(regKey, "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt(regKey, "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SaveValueInt(regKey, "Color", m_d.m_color);
    SaveValueInt(regKey, "RubberColor", m_d.m_rubbercolor);
@@ -175,9 +175,9 @@ void Flipper::WriteRegDefaults()
    SaveValueFloat(regKey, "RubberThickness", m_d.m_rubberthickness);
    SaveValueFloat(regKey, "RubberHeight", m_d.m_rubberheight);
    SaveValueFloat(regKey, "RubberWidth", m_d.m_rubberwidth);
-   SaveValueBool(regKey, "Visible", m_d.m_fVisible);
+   SaveValueBool(regKey, "Visible", m_d.m_visible);
    SaveValueBool(regKey, "Enabled", m_d.m_enabled);
-   SaveValueBool(regKey, "ReflectionEnabled", m_d.m_fReflectionEnabled);
+   SaveValueBool(regKey, "ReflectionEnabled", m_d.m_reflectionEnabled);
 }
 
 
@@ -192,7 +192,7 @@ void Flipper::GetTimers(vector<HitTimer*> &pvht)
 
    m_phittimer = pht;
 
-   if (m_d.m_tdr.m_fTimerEnabled)
+   if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(pht);
 }
 
@@ -274,7 +274,7 @@ void Flipper::GetHitShapes(vector<HitObject*> &pvho)
       max(m_d.m_FlipperRadius, 0.01f), ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height, this);
 
    phf->m_flipperMover.m_enabled = m_d.m_enabled;
-   phf->m_flipperMover.m_fVisible = m_d.m_fVisible;
+   phf->m_flipperMover.m_visible = m_d.m_visible;
 
    pvho.push_back(phf);
 
@@ -302,15 +302,15 @@ void Flipper::EndPlay()
    {
       m_phitflipper = NULL;
    }
-   if (vertexBuffer)
+   if (m_vertexBuffer)
    {
-      vertexBuffer->release();
-      vertexBuffer = NULL;
+      m_vertexBuffer->release();
+      m_vertexBuffer = NULL;
    }
-   if (indexBuffer)
+   if (m_indexBuffer)
    {
-      indexBuffer->release();
-      indexBuffer = NULL;
+      m_indexBuffer->release();
+      m_indexBuffer = NULL;
    }
 
    IEditable::EndPlay();
@@ -614,12 +614,12 @@ void Flipper::RenderDynamic()
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
    TRACE_FUNCTION();
 
-   if (m_phitflipper && !m_phitflipper->m_flipperMover.m_fVisible)
+   if (m_phitflipper && !m_phitflipper->m_flipperMover.m_visible)
       return;
-   if (m_phitflipper == NULL && !m_d.m_fVisible)
+   if (m_phitflipper == NULL && !m_d.m_visible)
       return;
 
-   if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
+   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
       return;
 
    const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -655,7 +655,7 @@ void Flipper::RenderDynamic()
    }
    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, flipperBaseVertices, indexBuffer, 0, flipperBaseNumIndices);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, flipperBaseVertices, m_indexBuffer, 0, flipperBaseNumIndices);
    pd3dDevice->basicShader->End();
 
    //render rubber
@@ -669,7 +669,7 @@ void Flipper::RenderDynamic()
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, flipperBaseVertices, flipperBaseVertices, indexBuffer, 0, flipperBaseNumIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, flipperBaseVertices, flipperBaseVertices, m_indexBuffer, 0, flipperBaseNumIndices);
       pd3dDevice->basicShader->End();
    }
    g_pplayer->UpdateBasicShaderMatrix();
@@ -866,18 +866,18 @@ void Flipper::RenderSetup()
 {
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   if (indexBuffer)
-      indexBuffer->release();
-   indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(flipperBaseNumIndices, flipperBaseIndices);
+   if (m_indexBuffer)
+      m_indexBuffer->release();
+   m_indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(flipperBaseNumIndices, flipperBaseIndices);
 
-   if (vertexBuffer)
-      vertexBuffer->release();
-   pd3dDevice->CreateVertexBuffer(flipperBaseVertices * 2, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
+   if (m_vertexBuffer)
+      m_vertexBuffer->release();
+   pd3dDevice->CreateVertexBuffer(flipperBaseVertices * 2, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer);
 
    Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateBaseMesh(buf);
-   vertexBuffer->unlock();
+   m_vertexBuffer->unlock();
 }
 
 void Flipper::RenderStatic()
@@ -898,7 +898,7 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(ANGE), m_d.m_EndAngle);
    bw.WriteInt(FID(OVRP), m_d.m_OverridePhysics);
    bw.WriteFloat(FID(FORC), m_d.m_mass);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
+   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
@@ -918,12 +918,12 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(SCTR), m_d.m_scatter);
    bw.WriteFloat(FID(TODA), m_d.m_torqueDamping);
    bw.WriteFloat(FID(TDAA), m_d.m_torqueDampingAngle);
-   bw.WriteBool(FID(VSBL), m_d.m_fVisible);
+   bw.WriteBool(FID(VSBL), m_d.m_visible);
    bw.WriteBool(FID(ENBL), m_d.m_enabled);
    bw.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);
    bw.WriteFloat(FID(FHGT), m_d.m_height);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
+   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
 
    ISelect::SaveData(pstm, hcrypthash);
 
@@ -992,7 +992,7 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(TMON))
    {
-      pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
+      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
    }
    else if (id == FID(TMIN))
    {
@@ -1089,7 +1089,7 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(VSBL))
    {
-      pbr->GetBool(&m_d.m_fVisible);
+      pbr->GetBool(&m_d.m_visible);
    }
    else if (id == FID(ENBL))
    {
@@ -1097,7 +1097,7 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(REEN))
    {
-      pbr->GetBool(&m_d.m_fReflectionEnabled);
+      pbr->GetBool(&m_d.m_reflectionEnabled);
    }
    else if (id == FID(IMAG))
    {
@@ -1543,7 +1543,7 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
 
 STDMETHODIMP Flipper::get_Visible(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_phitflipper ? m_phitflipper->m_flipperMover.m_fVisible : m_d.m_fVisible);
+   *pVal = FTOVB(m_phitflipper ? m_phitflipper->m_flipperMover.m_visible : m_d.m_visible);
 
    return S_OK;
 }
@@ -1552,12 +1552,12 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperMover.m_fVisible = VBTOF(newVal); //m_d.m_fVisible
+      m_phitflipper->m_flipperMover.m_visible = VBTOb(newVal); //m_d.m_visible
    }
    else
    {
       STARTUNDO
-      m_d.m_fVisible = VBTOF(newVal);
+      m_d.m_visible = VBTOb(newVal);
       STOPUNDO
    }
    return S_OK;
@@ -1565,7 +1565,7 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
 
 STDMETHODIMP Flipper::get_Enabled(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_phitflipper ? m_phitflipper->m_flipperMover.m_enabled : m_d.m_enabled);
+   *pVal = FTOVB(m_phitflipper ? m_phitflipper->m_flipperMover.m_enabled : m_d.m_enabled);
 
    return S_OK;
 }
@@ -1574,12 +1574,12 @@ STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperMover.m_enabled = VBTOF(newVal); //m_d.m_fVisible
+      m_phitflipper->m_flipperMover.m_enabled = VBTOb(newVal); //m_d.m_visible
    }
    else
    {
       STARTUNDO
-      m_d.m_enabled = VBTOF(newVal);
+      m_d.m_enabled = VBTOb(newVal);
       STOPUNDO
    }
    return S_OK;
@@ -1795,7 +1795,7 @@ STDMETHODIMP Flipper::put_Image(BSTR newVal)
 
 STDMETHODIMP Flipper::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+   *pVal = FTOVB(m_d.m_reflectionEnabled);
 
    return S_OK;
 }
@@ -1803,7 +1803,7 @@ STDMETHODIMP Flipper::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 STDMETHODIMP Flipper::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fReflectionEnabled = VBTOF(newVal);
+   m_d.m_reflectionEnabled = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
