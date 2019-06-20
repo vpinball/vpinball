@@ -561,7 +561,7 @@ private:
 
    U32 m_phys_iterations;
 
-#ifdef FPS
+   // all kinds of stats tracking, incl. FPS measurement
    U32 m_lastfpstime;
    U32 m_cframes;
    float m_fps;
@@ -592,9 +592,7 @@ public:
    void ToggleFPS();
    void InitFPS();
    bool ShowFPS();
-#endif
 
-public:
    bool RenderStaticOnly();
    bool RenderAOOnly();
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D(1.0f));

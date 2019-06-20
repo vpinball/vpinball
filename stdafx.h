@@ -60,7 +60,6 @@
 #define MAX_TIMER_MSEC_INTERVAL 1 // amount of msecs to wait (at least) until same timer can be triggered again (e.g. they can fall behind, if set to > 1, as update cycle is 1000Hz)
 #define MAX_TIMERS_MSEC_OVERALL 5 // amount of msecs that all timers combined can take per frame (e.g. they can fall behind, if set to < somelargevalue)
 
-#define FPS                     // enable FPS computation (default 'F11')
 #define STEPPING                // enable Physics stepping
 
 #if defined(_DEBUG) && defined(STEPPING)

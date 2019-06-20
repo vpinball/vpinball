@@ -696,9 +696,7 @@ void Player::Shutdown()
        m_decalImage = NULL;
    }
 
-#ifdef FPS
    m_limiter.Shutdown();
-#endif
 
    for (size_t i = 0; i < m_vhitables.size(); ++i)
       m_vhitables[i]->EndPlay();
@@ -778,7 +776,6 @@ void Player::Shutdown()
 #endif
 }
 
-#ifdef FPS
 void Player::InitFPS()
 {
     m_lastfpstime = m_time_msec;
@@ -810,7 +807,6 @@ void Player::ToggleFPS()
 
    m_pin3d.m_gpu_profiler.Shutdown(); // Kill it so that it cannot influence standard rendering performance (and otherwise if just switching profile modes to not falsify counters and query info)
 }
-#endif
 
 unsigned int Player::ProfilingMode()
 {
@@ -822,13 +818,11 @@ unsigned int Player::ProfilingMode()
    else return 0;
 }
 
-#ifdef FPS
 bool Player::ShowFPS()
 {
    const unsigned int modes = (m_showFPS & 7);
    return (modes == 1 || modes == 2 || modes == 3 || modes == 5 || modes == 7);
 }
-#endif
 
 bool Player::RenderStaticOnly()
 {
@@ -1411,10 +1405,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    // Need to set timecur here, for init functions that set timers
    m_time_msec = 0;
 
-#ifdef FPS
    InitFPS();
    m_showFPS = 0;
-#endif
 
    for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
    {
@@ -1665,10 +1657,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    if (m_detectScriptHang)
       g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
 
-#ifdef FPS
    // 0 means disable limiting of draw-ahead queue
    m_limiter.Init(m_pin3d.m_pd3dPrimaryDevice, m_maxPrerenderedFrames);
-#endif
 
    Render(); //!! why here already? potentially not all initialized yet??
 
@@ -3231,7 +3221,6 @@ void Player::UpdatePhysics()
       initial_time_usec = m_curPhysicsFrameTime;
 #endif
 
-#ifdef FPS
    //if (ShowFPS())
    {
       m_lastFrameDuration = (U32)(initial_time_usec - m_lastTime_usec);
@@ -3251,7 +3240,6 @@ void Player::UpdatePhysics()
    }
 
    m_script_period = 0;
-#endif
 
 #ifdef LOG
    const double timepassed = (double)(initial_time_usec - m_curPhysicsFrameTime) / 1000000.0;
@@ -3454,9 +3442,7 @@ void Player::UpdatePhysics()
       first_cycle = false;
    } // end while (m_curPhysicsFrameTime < initial_time_usec)
 
-#ifdef FPS
    m_phys_period = (U32)((usec() - delta_frame) - initial_time_usec);
-#endif
 }
 
 void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor, const float intensity)
@@ -3722,13 +3708,11 @@ void Player::RenderDynamics()
       }
    }
 
-#ifdef FPS
    if (ProfilingMode() == 1)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_PlayfieldGraphics);
 
    if (ProfilingMode() != 2) // normal rendering path for standard gameplay
    {
-#endif
       m_dmdstate = 0;
       // Draw non-transparent objects. No DMD's
       for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
@@ -3743,18 +3727,15 @@ void Player::RenderDynamics()
 
       DrawBalls();
 
-#ifdef FPS
       if (ProfilingMode() == 1)
          m_pin3d.m_gpu_profiler.Timestamp(GTS_NonTransparent);
       m_limiter.Execute(m_pin3d.m_pd3dPrimaryDevice); //!! move below other draw calls??
-#endif
 
       DrawBulbLightBuffer();
 
-#ifdef FPS
       if (ProfilingMode() == 1)
          m_pin3d.m_gpu_profiler.Timestamp(GTS_LightBuffer);
-#endif
+
       m_dmdstate = 0;
       // Draw transparent objects. No DMD's
       for (size_t i = 0; i < m_vHitTrans.size(); ++i)
@@ -3767,7 +3748,6 @@ void Player::RenderDynamics()
         if(m_vHitNonTrans[i]->IsDMD())
           m_vHitNonTrans[i]->RenderDynamic();
 
-#ifdef FPS
       if (ProfilingMode() == 1)
          m_pin3d.m_gpu_profiler.Timestamp(GTS_Transparent);
    }
@@ -3845,7 +3825,7 @@ void Player::RenderDynamics()
       // Unused so far.
       m_pin3d.m_gpu_profiler.Timestamp(GTS_UNUSED); //!!
    }
-#endif
+
    m_dmdstate = 0;
 
    //
@@ -4092,7 +4072,7 @@ void Player::UpdateHUD()
 		//!! visualize with real buttons or at least the areas??
 	}
 
-#ifdef FPS
+	// draw all kinds of stats, incl. FPS counter
 	if (ShowFPS() && !m_cameraMode)
 	{
 		char szFoo[256];
@@ -4235,7 +4215,6 @@ void Player::UpdateHUD()
 			}
 		}
 	}
-#endif /*FPS*/
 
 	if (m_fFullScreen && m_closeDown && !IsWindows10_1803orAbove()) // cannot use dialog boxes in exclusive fullscreen on older windows versions, so necessary
 	{
@@ -4342,22 +4321,17 @@ void Player::PrepareVideoBuffersNormal()
 
    Bloom();
 
-#ifdef FPS
    if (ProfilingMode() == 1)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Bloom);
-#endif
 
    if (ss_refl)
       SSRefl();
 
-#ifdef FPS
    if (ProfilingMode() == 1)
+   {
       m_pin3d.m_gpu_profiler.Timestamp(GTS_SSR);
-#endif
-#ifdef FPS
-   if (ProfilingMode() == 1)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_AO);
-#endif
+   }
 
    // switch to output buffer
    if (!(stereo || SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3))
@@ -4397,10 +4371,9 @@ void Player::PrepareVideoBuffersNormal()
 
    StereoFXAA(stereo, SMAA, DLAA, NFAA, FXAA1, FXAA2, FXAA3, false);
 
-#ifdef FPS
    if (ProfilingMode() == 1)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_PostProcess);
-#endif
+
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZENABLE, RenderDevice::RS_TRUE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
@@ -4445,18 +4418,14 @@ void Player::PrepareVideoBuffersAO()
 
    Bloom();
 
-#ifdef FPS
    if (ProfilingMode() == 1)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_Bloom);
-#endif
 
    if (ss_refl)
       SSRefl();
 
-#ifdef FPS
    if (ProfilingMode() == 1)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_SSR);
-#endif
 
    // separate normal generation pass, currently roughly same perf or even much worse
    /*RenderTarget* tmpSurface;
@@ -4500,10 +4469,9 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad();
    m_pin3d.m_pd3dPrimaryDevice->FBShader->End();
 
-#ifdef FPS
    if (ProfilingMode() == 1)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_AO);
-#endif
+
    // flip AO buffers (avoids copy)
    D3DTexture *tmpAO = m_pin3d.m_pddsAOBackBuffer;
    m_pin3d.m_pddsAOBackBuffer = m_pin3d.m_pddsAOBackTmpBuffer;
@@ -4556,10 +4524,8 @@ void Player::PrepareVideoBuffersAO()
 
    StereoFXAA(stereo, SMAA, DLAA, NFAA, FXAA1, FXAA2, FXAA3, true);
 
-#ifdef FPS
    if (ProfilingMode() == 1)
       m_pin3d.m_gpu_profiler.Timestamp(GTS_PostProcess);
-#endif
 
    //
 
@@ -4828,10 +4794,9 @@ void Player::Render()
    for (size_t l = 0; l < m_vanimate.size(); ++l)
       m_vanimate[l]->Animate();
 
-#ifdef FPS
    if (ProfilingMode() == 1)
       m_pin3d.m_gpu_profiler.BeginFrame(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
-#endif
+
    if (!RenderStaticOnly())
    {
       m_pin3d.m_pd3dPrimaryDevice->BeginScene();
@@ -4873,10 +4838,9 @@ void Player::Render()
    }
    FlipVideoBuffers(vsync);
 
-#ifdef FPS
    if (ProfilingMode() != 0)
       m_pin3d.m_gpu_profiler.EndFrame();
-#endif
+
 #ifndef ACCURATETIMERS
    // do the en/disable changes for the timers that piled up
    for (size_t i = 0; i < m_changed_vht.size(); ++i)
@@ -5470,9 +5434,7 @@ void Player::DrawBalls()
       }
 
 #ifdef DEBUG_BALL_SPIN        // draw debug points for visualizing ball rotation
-#ifdef FPS
       if (ShowFPS())
-#endif
       {
          // set transform
          Matrix3D matOrig, matNew, matRot;
