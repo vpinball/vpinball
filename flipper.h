@@ -60,9 +60,9 @@ public:
    float m_OverrideScatterAngle;
    int m_OverridePhysics;
 
-   bool  m_fVisible;
+   bool  m_visible;
    bool  m_enabled;
-   bool  m_fReflectionEnabled;
+   bool  m_reflectionEnabled;
 };
 
 class Flipper :
@@ -119,14 +119,6 @@ public:
       }
       virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
       virtual ItemTypeEnum HitableGetItemType() const { return eItemFlipper; }
-
-      void SetVertices(const float basex, const float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const;
-
-      void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
-      void UpdateUnitsInfo();
-
-      void UpdatePhysicsSettings();
-
       virtual void WriteRegDefaults();
 
       //DECLARE_NOT_AGGREGATABLE(Flipper) 
@@ -138,12 +130,21 @@ public:
       STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
       FlipperData m_d;
-      VertexBuffer *vertexBuffer;
-      IndexBuffer *indexBuffer;
-
-      HitFlipper *m_phitflipper;
 
       PinTable *m_ptable;
+
+private:
+      void SetVertices(const float basex, const float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const;
+
+      void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
+      void UpdateUnitsInfo();
+
+      void UpdatePhysicsSettings();
+
+      VertexBuffer *m_vertexBuffer;
+      IndexBuffer *m_indexBuffer;
+
+      HitFlipper *m_phitflipper;
 
 // IFlipper
 public:

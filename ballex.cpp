@@ -343,14 +343,14 @@ STDMETHODIMP BallEx::put_FrontDecal(BSTR newVal)
 
 STDMETHODIMP BallEx::get_DecalMode(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_pball->m_decalMode);
+   *pVal = FTOVB(m_pball->m_decalMode);
 
    return S_OK;
 }
 
 STDMETHODIMP BallEx::put_DecalMode(VARIANT_BOOL newVal)
 {
-   m_pball->m_decalMode = VBTOF(newVal);
+   m_pball->m_decalMode = VBTOb(newVal);
 
    return S_OK;
 }
@@ -446,14 +446,14 @@ STDMETHODIMP BallEx::put_BulbIntensityScale(float newVal)
 
 STDMETHODIMP BallEx::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_pball->m_reflectionEnabled);
+   *pVal = FTOVB(m_pball->m_reflectionEnabled);
 
    return S_OK;
 }
 
 STDMETHODIMP BallEx::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-   m_pball->m_reflectionEnabled = VBTOF(newVal);
+   m_pball->m_reflectionEnabled = VBTOb(newVal);
 
    return S_OK;
 }
@@ -478,28 +478,28 @@ STDMETHODIMP BallEx::put_PlayfieldReflectionScale(float newVal)
 
 STDMETHODIMP BallEx::get_ForceReflection(VARIANT_BOOL *pVal)
 {
-    *pVal = (VARIANT_BOOL)FTOVB(m_pball->m_forceReflection);
+    *pVal = FTOVB(m_pball->m_forceReflection);
 
     return S_OK;
 }
 
 STDMETHODIMP BallEx::put_ForceReflection(VARIANT_BOOL newVal)
 {
-    m_pball->m_forceReflection = VBTOF(newVal);
+    m_pball->m_forceReflection = VBTOb(newVal);
 
     return S_OK;
 }
 
 STDMETHODIMP BallEx::get_Visible(VARIANT_BOOL *pVal)
 {
-    *pVal = (VARIANT_BOOL)FTOVB(m_pball->m_visible);
+    *pVal = FTOVB(m_pball->m_visible);
 
     return S_OK;
 }
 
 STDMETHODIMP BallEx::put_Visible(VARIANT_BOOL newVal)
 {
-    m_pball->m_visible = VBTOF(newVal);
+    m_pball->m_visible = VBTOb(newVal);
 
     return S_OK;
 }

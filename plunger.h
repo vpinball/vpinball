@@ -41,8 +41,8 @@ public:
    float m_springEndLoops;
    bool m_mechPlunger;
    bool m_autoPlunger;
-   bool m_fVisible;
-   bool m_fReflectionEnabled;
+   bool m_visible;
+   bool m_reflectionEnabled;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -159,8 +159,12 @@ public:
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
    PlungerData m_d;
-   VertexBuffer *vertexBuffer;
-   IndexBuffer *indexBuffer;
+
+private:
+   PinTable *m_ptable;
+
+   VertexBuffer *m_vertexBuffer;
+   IndexBuffer *m_indexBuffer;
 
    HitPlunger *m_phitplunger;
 
@@ -177,9 +181,6 @@ public:
 
    // number of triangle indices per frame
    int m_indicesPerFrame;
-
-private:
-   PinTable *m_ptable;
 
 // IPlunger
 public:

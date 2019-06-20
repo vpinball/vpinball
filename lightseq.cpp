@@ -37,7 +37,7 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 
    m_d.m_vCenter.x = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\LightSequence", "CenterX", EDITOR_BG_WIDTH / 2) : (EDITOR_BG_WIDTH / 2);
    m_d.m_vCenter.y = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\LightSequence", "CenterY", (2 * EDITOR_BG_WIDTH) / 2) : ((2 * EDITOR_BG_WIDTH) / 2);
-   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\LightSequence", "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\LightSequence", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\LightSequence", "TimerInterval", 100) : 100;
 }
 
@@ -48,7 +48,7 @@ void LightSeq::WriteRegDefaults()
    SaveValueString("DefaultProps\\LightSequence", "Collection", strTmp2);
    SaveValueFloat("DefaultProps\\LightSequence", "CenterX", m_d.m_vCenter.x);
    SaveValueFloat("DefaultProps\\LightSequence", "CenterY", m_d.m_vCenter.y);
-   SaveValueBool("DefaultProps\\LightSequence", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueBool("DefaultProps\\LightSequence", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt("DefaultProps\\LightSequence", "TimerInterval", m_d.m_tdr.m_TimerInterval);
 }
 
@@ -169,7 +169,7 @@ void LightSeq::GetTimers(vector<HitTimer*> &pvht)
 
    m_phittimer = pht;
 
-   if (m_d.m_tdr.m_fTimerEnabled)
+   if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(pht);
 }
 
@@ -407,7 +407,7 @@ HRESULT LightSeq::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(CTRX), m_d.m_vCenter.x);
    bw.WriteFloat(FID(CTRY), m_d.m_vCenter.y);
    bw.WriteInt(FID(UPTM), m_d.m_updateinterval);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
+   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
 
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
@@ -459,7 +459,7 @@ BOOL LightSeq::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(TMON))
    {
-      pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
+      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
    }
    else if (id == FID(TMIN))
    {
@@ -663,7 +663,7 @@ STDMETHODIMP LightSeq::StopPlay()
             Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
             LightState state;
             pLight->get_State(&state);
-            pLight->m_fLockedByLS = false;
+            pLight->m_lockedByLS = false;
             pLight->put_State(state);
          }
       }
@@ -1713,7 +1713,7 @@ void LightSeq::SetElementToState(const int index, const LightState State)
    if (type == eItemLight)
    {
       Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
-      pLight->m_fLockedByLS = true;
+      pLight->m_lockedByLS = true;
       pLight->setLightState(State);
    }
 }

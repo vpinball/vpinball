@@ -36,7 +36,7 @@ public:
    float m_depthBias; // for determining depth sorting
    float m_bulbHaloHeight;
 
-   bool m_fVisible;
+   bool m_visible;
    bool m_imageMode;  // true = pass through/no lighting, false = use surface material
    bool m_BulbLight;
    bool m_showBulbMesh;
@@ -164,15 +164,11 @@ public:
    void RenderBulbMesh();
 
    LightData m_d;
+
    LightState m_realState;
-   std::vector<RenderVertex> m_vvertex;
-
-   float m_initSurfaceHeight;
    float m_surfaceHeight;
-   bool  m_updateLightShape;
-   bool  m_fLockedByLS;
+   bool  m_lockedByLS;
 
-   // Run-time
 private:
    PinTable *m_ptable;
 
@@ -181,20 +177,22 @@ private:
 
    LightCenter m_lightcenter;
 
-   unsigned int customMoverVertexNum;
-   unsigned int customMoverIndexNum;
-   VertexBuffer *customMoverVBuffer;
-   IndexBuffer  *customMoverIBuffer;
-   VertexBuffer *bulbLightVBuffer;
-   IndexBuffer  *bulbLightIndexBuffer;
-   VertexBuffer *bulbSocketVBuffer;
-   IndexBuffer  *bulbSocketIndexBuffer;
+   unsigned int m_customMoverVertexNum;
+   unsigned int m_customMoverIndexNum;
+   VertexBuffer *m_customMoverVBuffer;
+   IndexBuffer  *m_customMoverIBuffer;
+   VertexBuffer *m_bulbLightVBuffer;
+   IndexBuffer  *m_bulbLightIndexBuffer;
+   VertexBuffer *m_bulbSocketVBuffer;
+   IndexBuffer  *m_bulbSocketIndexBuffer;
    PropertyPane *m_propVisual;
-   // ILight
 
-   Texture *GetDisplayTexture();
+   std::vector<RenderVertex> m_vvertex;
 
-   bool m_roundLight;
+   float m_initSurfaceHeight;
+   bool  m_updateLightShape;
+
+   bool  m_roundLight; // pre-VPX compatibility
 
 public:
    STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);

@@ -262,7 +262,7 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 
    do
    {
-      if (current->m_unique == NULL || current->m_unique->m_d.m_fCollidable) // early out if only one unique primitive stored inside all of the subtree/current node that is also not collidable (at the moment)
+      if (current->m_unique == NULL || current->m_unique->m_d.m_collidable) // early out if only one unique primitive stored inside all of the subtree/current node that is also not collidable (at the moment)
       {
          if (current->lefts != 0) // does node contain hitables?
          {

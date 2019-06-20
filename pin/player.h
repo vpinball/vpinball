@@ -240,7 +240,7 @@ class NudgeFilterY : public NudgeFilter
 struct TimerOnOff
 {
    HitTimer* m_timer;
-   bool enabled;
+   bool m_enabled;
 };
 
 class Player
@@ -263,8 +263,6 @@ public:
    void Shutdown();
 
    void InitStatic(HWND hwndProgress);
-
-   void UpdatePerFrame();
 
    void UpdatePhysics();
    void Render();
@@ -470,7 +468,7 @@ public:
 #endif
 
 #ifdef DEBUG_BALL_SPIN
-   VertexBuffer * m_ballDebugPoints;
+   VertexBuffer *m_ballDebugPoints;
 #endif
    U32 m_movedPlunger;			// has plunger moved, must have moved at least three times
    U32 m_LastPlungerHit;		// The last time the plunger was in contact (at least the vicinity) of the ball.
@@ -504,11 +502,14 @@ public:
 
 #ifdef LOG
    FILE *m_flog;
-#endif
-
+#else
 private:
-   vector<HitObject*> m_vho;
+#endif
    std::vector<MoverObject*> m_vmover; // moving objects for physics simulation
+#ifdef LOG
+private:
+#endif
+   vector<HitObject*> m_vho;
 
    std::vector<Ball*> m_vballDelete;   // Balls to free at the end of the frame
 

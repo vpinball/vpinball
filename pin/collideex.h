@@ -134,7 +134,7 @@ public:
    float m_angleMin;
    float m_elasticity;
    float m_damping;
-   bool m_fVisible;
+   bool m_visible;
 };
 
 class HitSpinner : public HitObject
@@ -171,7 +171,7 @@ public:
    float m_friction;
    float m_damping;
    float m_gravityfactor;
-   bool m_fVisible;
+   bool m_visible;
    bool m_fOpen;      // True if the table logic is opening the gate, not just the ball passing through
    bool m_forcedMove; // True if the table logic is opening/closing the gate
 };

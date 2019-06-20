@@ -20,37 +20,20 @@ enum
 
 INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-class SmartBrowser;
-
 struct PropertyPane
 {
-   PropertyPane(const int dialog, const int title)
+   PropertyPane(const int dialog, const int title) : dialogid(dialog), titlestringid(title), ptemplate(NULL)
    {
-      dialogid = dialog;
-      titlestringid = title;
-      ptemplate = NULL;
    }
 
-   PropertyPane(LPDLGTEMPLATE pdt, const int title)
+   PropertyPane(LPDLGTEMPLATE pdt, const int title) : dialogid(0), titlestringid(title), ptemplate(pdt)
    {
-      ptemplate = pdt;
-      titlestringid = title;
-      dialogid = 0;
    }
 
    int dialogid;
    int titlestringid; // If NULL, this represents a non-expandable section
    LPDLGTEMPLATE ptemplate; // For custom controls
    HWND dialogHwnd;
-};
-
-struct ExpandoInfo
-{
-   SmartBrowser *m_psb;
-   int m_id;
-   int m_dialogheight;
-   bool m_fExpanded;
-   bool m_fHasCaption; // Also means 'can expand/collapse'
 };
 
 class SmartBrowser
@@ -102,3 +85,13 @@ public:
    VectorProtected<ISelect> *m_pvsel;
    int m_maxdialogwidth;
 };
+
+struct ExpandoInfo
+{
+   SmartBrowser *m_psb;
+   int m_id;
+   int m_dialogheight;
+   bool m_fExpanded;
+   bool m_fHasCaption; // Also means 'can expand/collapse'
+};
+

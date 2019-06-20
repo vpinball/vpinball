@@ -12,10 +12,10 @@
 Kicker::Kicker()
 {
    m_phitkickercircle = NULL;
-   vertexBuffer = NULL;
-   indexBuffer = NULL;
-   plateVertexBuffer = NULL;
-   plateIndexBuffer = NULL;
+   m_vertexBuffer = NULL;
+   m_indexBuffer = NULL;
+   m_plateVertexBuffer = NULL;
+   m_plateIndexBuffer = NULL;
    memset(m_d.m_szMaterial, 0, 32);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
    m_ptable = NULL;
@@ -26,26 +26,26 @@ Kicker::Kicker()
 
 Kicker::~Kicker()
 {
-   if (vertexBuffer)
+   if (m_vertexBuffer)
    {
-      vertexBuffer->release();
-      vertexBuffer = 0;
+      m_vertexBuffer->release();
+      m_vertexBuffer = 0;
    }
-   if (indexBuffer)
+   if (m_indexBuffer)
    {
-      indexBuffer->release();
-      indexBuffer = 0;
+      m_indexBuffer->release();
+      m_indexBuffer = 0;
    }
 
-   if (plateVertexBuffer)
+   if (m_plateVertexBuffer)
    {
-      plateVertexBuffer->release();
-      plateVertexBuffer = 0;
+      m_plateVertexBuffer->release();
+      m_plateVertexBuffer = 0;
    }
-   if (plateIndexBuffer)
+   if (m_plateIndexBuffer)
    {
-      plateIndexBuffer->release();
-      plateIndexBuffer = 0;
+      m_plateIndexBuffer->release();
+      m_plateIndexBuffer = 0;
    }
 }
 
@@ -74,7 +74,7 @@ HRESULT Kicker::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 void Kicker::SetDefaults(bool fromMouseClick)
 {
    m_d.m_radius = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Kicker", "Radius", 25.f) : 25.f;
-   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Kicker", "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Kicker", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Kicker", "TimerInterval", 100) : 100;
    m_d.m_enabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Kicker", "Enabled", true) : true;
    m_d.m_hitAccuracy = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Kicker", "HitAccuracy", 0.7f) : 0.7f;
@@ -98,7 +98,7 @@ void Kicker::SetDefaults(bool fromMouseClick)
 
 void Kicker::WriteRegDefaults()
 {
-   SaveValueBool("DefaultProps\\Kicker", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueBool("DefaultProps\\Kicker", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt("DefaultProps\\Kicker", "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SaveValueBool("DefaultProps\\Kicker", "Enabled", m_d.m_enabled);
    SaveValueFloat("DefaultProps\\Kicker", "HitAccuracy", m_d.m_hitAccuracy);
@@ -174,7 +174,7 @@ void Kicker::GetTimers(vector<HitTimer*> &pvht)
 
    m_phittimer = pht;
 
-   if (m_d.m_tdr.m_fTimerEnabled)
+   if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(pht);
 }
 
@@ -191,7 +191,7 @@ void Kicker::GetHitShapes(vector<HitObject*> &pvho)
    if (!m_d.m_legacyMode)
    {
       const float rad = phitcircle->radius * 0.8f;
-      hitMesh.resize(kickerHitNumVertices);
+      m_hitMesh.resize(kickerHitNumVertices);
       for (unsigned int t = 0; t < kickerHitNumVertices; t++)
       {
          // find the right normal by calculating the distance from current ball position to vertex of the kicker mesh               
@@ -199,7 +199,7 @@ void Kicker::GetHitShapes(vector<HitObject*> &pvho)
          vpos.x = vpos.x*rad + m_d.m_vCenter.x;
          vpos.y = vpos.y*rad + m_d.m_vCenter.y;
          vpos.z = vpos.z*rad * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
-         hitMesh[t] = vpos;
+         m_hitMesh[t] = vpos;
       }
    }
 
@@ -222,29 +222,29 @@ void Kicker::GetHitShapesDebug(vector<HitObject*> &pvho)
 void Kicker::EndPlay()
 {
    m_phitkickercircle = NULL;
-   if (vertexBuffer)
+   if (m_vertexBuffer)
    {
-      vertexBuffer->release();
-      vertexBuffer = 0;
+      m_vertexBuffer->release();
+      m_vertexBuffer = 0;
    }
-   if (indexBuffer)
+   if (m_indexBuffer)
    {
-      indexBuffer->release();
-      indexBuffer = 0;
-   }
-
-   if (plateVertexBuffer)
-   {
-      plateVertexBuffer->release();
-      plateVertexBuffer = 0;
-   }
-   if (plateIndexBuffer)
-   {
-      plateIndexBuffer->release();
-      plateIndexBuffer = 0;
+      m_indexBuffer->release();
+      m_indexBuffer = 0;
    }
 
-   hitMesh.clear();
+   if (m_plateVertexBuffer)
+   {
+      m_plateVertexBuffer->release();
+      m_plateVertexBuffer = 0;
+   }
+   if (m_plateIndexBuffer)
+   {
+      m_plateIndexBuffer->release();
+      m_plateIndexBuffer = 0;
+   }
+
+   m_hitMesh.clear();
 
    IEditable::EndPlay();
 }
@@ -436,18 +436,18 @@ void Kicker::RenderSetup()
          buf[i].tv = 0.0f;
       }
 
-      if (plateIndexBuffer)
-         plateIndexBuffer->release();
-      plateIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(kickerPlateNumIndices, kickerPlateIndices);
+      if (m_plateIndexBuffer)
+         m_plateIndexBuffer->release();
+      m_plateIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(kickerPlateNumIndices, kickerPlateIndices);
 
-      if (plateVertexBuffer)
-         plateVertexBuffer->release();
-      pd3dDevice->CreateVertexBuffer(kickerPlateNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &plateVertexBuffer);
+      if (m_plateVertexBuffer)
+         m_plateVertexBuffer->release();
+      pd3dDevice->CreateVertexBuffer(kickerPlateNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_plateVertexBuffer);
 
       Vertex3D_NoTex2 *bufvb;
-      plateVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::WRITEONLY);
+      m_plateVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::WRITEONLY);
       memcpy(bufvb, buf, kickerPlateNumVertices*sizeof(Vertex3D_NoTex2));
-      plateVertexBuffer->unlock();
+      m_plateVertexBuffer->unlock();
 
       delete[] buf;
    }
@@ -462,7 +462,7 @@ void Kicker::RenderSetup()
        break;
        case KickerCup:
        {
-          texture.CreateFromResource(IDB_KICKER_CUP);
+          m_texture.CreateFromResource(IDB_KICKER_CUP);
 
           m_numIndices = kickerCupNumIndices;
           m_numVertices = kickerCupNumVertices;
@@ -472,37 +472,37 @@ void Kicker::RenderSetup()
        break;
        case KickerWilliams:
        {
-           texture.CreateFromResource(IDB_KICKER_WILLIAMS);
+          m_texture.CreateFromResource(IDB_KICKER_WILLIAMS);
 
-           m_numIndices = kickerWilliamsNumIndices;
-           m_numVertices = kickerWilliamsNumVertices;
+          m_numIndices = kickerWilliamsNumIndices;
+          m_numVertices = kickerWilliamsNumVertices;
 
-           indices = kickerWilliamsIndices;
+          indices = kickerWilliamsIndices;
        }
        break;
        case KickerGottlieb:
        {
-           texture.CreateFromResource(IDB_KICKER_GOTTLIEB);
+          m_texture.CreateFromResource(IDB_KICKER_GOTTLIEB);
 
-           m_numIndices = kickerGottliebNumIndices;
-           m_numVertices = kickerGottliebNumVertices;
+          m_numIndices = kickerGottliebNumIndices;
+          m_numVertices = kickerGottliebNumVertices;
 
-           indices = kickerGottliebIndices;
+          indices = kickerGottliebIndices;
        }
        break;
        case KickerCup2:
        {
-           texture.CreateFromResource(IDB_KICKER_T1);
+          m_texture.CreateFromResource(IDB_KICKER_T1);
 
-           m_numIndices = kickerT1NumIndices;
-           m_numVertices = kickerT1NumVertices;
+          m_numIndices = kickerT1NumIndices;
+          m_numVertices = kickerT1NumVertices;
 
-           indices = kickerT1Indices;
+          indices = kickerT1Indices;
        }
        break;
        case KickerHole:
        {
-          texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
+          m_texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
 
           m_numIndices = kickerHoleNumIndices;
           m_numVertices = kickerHoleNumVertices;
@@ -513,7 +513,7 @@ void Kicker::RenderSetup()
        default:
        case KickerHoleSimple:
        {
-          texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
+          m_texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
 
           m_numIndices = kickerSimpleHoleNumIndices;
           m_numVertices = kickerSimpleHoleNumVertices;
@@ -525,18 +525,18 @@ void Kicker::RenderSetup()
 
    //
 
-   if (indexBuffer)
-       indexBuffer->release();
-   indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, indices);
+   if (m_indexBuffer)
+       m_indexBuffer->release();
+   m_indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, indices);
 
-   if (vertexBuffer)
-       vertexBuffer->release();
-   pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
+   if (m_vertexBuffer)
+       m_vertexBuffer->release();
+   pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer);
 
    Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateMesh(buf);
-   vertexBuffer->unlock();
+   m_vertexBuffer->unlock();
 }
 
 
@@ -553,7 +553,7 @@ void Kicker::RenderDynamic()
 {
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   if (m_ptable->m_fReflectionEnabled)
+   if (m_ptable->m_reflectionEnabled)
       return;
 
    if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2)
@@ -574,7 +574,7 @@ void Kicker::RenderDynamic()
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, RenderDevice::Z_ALWAYS);
 
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, plateVertexBuffer, 0, kickerPlateNumVertices, plateIndexBuffer, 0, kickerPlateNumIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_plateVertexBuffer, 0, kickerPlateNumVertices, m_plateIndexBuffer, 0, kickerPlateNumIndices);
       pd3dDevice->basicShader->End();
 
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, RenderDevice::Z_LESSEQUAL);
@@ -582,7 +582,7 @@ void Kicker::RenderDynamic()
       if (m_d.m_kickertype != KickerHoleSimple)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
-         pd3dDevice->basicShader->SetTexture("Texture0", &texture, false);
+         pd3dDevice->basicShader->SetTexture("Texture0", &m_texture, false);
       }
       else
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
@@ -591,7 +591,7 @@ void Kicker::RenderDynamic()
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
 
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, indexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numVertices, m_indexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();
 
    }
@@ -625,7 +625,7 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 
    bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
    bw.WriteFloat(FID(RADI), m_d.m_radius);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
+   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
@@ -694,7 +694,7 @@ BOOL Kicker::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(TMON))
    {
-      pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
+      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
    }
    else if (id == FID(EBLD))
    {
@@ -954,9 +954,7 @@ STDMETHODIMP Kicker::get_Surface(BSTR *pVal)
 STDMETHODIMP Kicker::put_Surface(BSTR newVal)
 {
    STARTUNDO
-
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
-
    STOPUNDO
 
    return S_OK;
@@ -964,7 +962,7 @@ STDMETHODIMP Kicker::put_Surface(BSTR newVal)
 
 STDMETHODIMP Kicker::get_Enabled(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_enabled);
+   *pVal = FTOVB(m_d.m_enabled);
 
    return S_OK;
 }
@@ -973,7 +971,7 @@ STDMETHODIMP Kicker::put_Enabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-   m_d.m_enabled = VBTOF(newVal);
+   m_d.m_enabled = VBTOb(newVal);
 
    if (m_phitkickercircle)
       m_phitkickercircle->m_enabled = m_d.m_enabled;
@@ -993,9 +991,7 @@ STDMETHODIMP Kicker::get_Scatter(float *pVal)
 STDMETHODIMP Kicker::put_Scatter(float newVal)
 {
    STARTUNDO
-
    m_d.m_scatter = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -1011,9 +1007,7 @@ STDMETHODIMP Kicker::get_HitAccuracy(float *pVal)
 STDMETHODIMP Kicker::put_HitAccuracy(float newVal)
 {
    STARTUNDO
-
    m_d.m_hitAccuracy = clamp(newVal, 0.f, 1.f);
-
    STOPUNDO
 
    return S_OK;
@@ -1076,7 +1070,7 @@ STDMETHODIMP Kicker::put_Radius(float newVal)
 
 STDMETHODIMP Kicker::get_FallThrough(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fFallThrough);
+   *pVal = FTOVB(m_d.m_fFallThrough);
 
    return S_OK;
 }
@@ -1084,9 +1078,7 @@ STDMETHODIMP Kicker::get_FallThrough(VARIANT_BOOL *pVal)
 STDMETHODIMP Kicker::put_FallThrough(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-   m_d.m_fFallThrough = VBTOF(newVal);
-
+   m_d.m_fFallThrough = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -1094,7 +1086,7 @@ STDMETHODIMP Kicker::put_FallThrough(VARIANT_BOOL newVal)
 
 STDMETHODIMP Kicker::get_Legacy(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_legacyMode);
+   *pVal = FTOVB(m_d.m_legacyMode);
 
    return S_OK;
 }
@@ -1102,12 +1094,10 @@ STDMETHODIMP Kicker::get_Legacy(VARIANT_BOOL *pVal)
 STDMETHODIMP Kicker::put_Legacy(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-      m_d.m_legacyMode = VBTOF(newVal);
-
+   m_d.m_legacyMode = VBTOb(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Kicker::GetDialogPanes(vector<PropertyPane*> &pvproppane)
@@ -1243,10 +1233,10 @@ void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& 
 {
     float minDist_sqr = FLT_MAX;
     unsigned int idx = ~0u;
-    for (size_t t = 0; t < m_pkicker->hitMesh.size(); t++)
+    for (size_t t = 0; t < m_pkicker->m_hitMesh.size(); t++)
     {
         // find the right normal by calculating the distance from current ball position to vertex of the kicker mesh               
-        const float length_sqr = (pball->m_pos - m_pkicker->hitMesh[t]).LengthSquared();
+        const float length_sqr = (pball->m_pos - m_pkicker->m_hitMesh[t]).LengthSquared();
         if (length_sqr < minDist_sqr)
         {
             minDist_sqr = length_sqr;

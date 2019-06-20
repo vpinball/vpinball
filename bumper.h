@@ -121,7 +121,6 @@ public:
 
       BumperHitCircle *m_pbumperhitcircle;
 
-
 private:
    void RenderBase(const Material * const baseMaterial);
    void RenderCap(const Material * const capMaterial);

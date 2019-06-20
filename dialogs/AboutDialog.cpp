@@ -48,12 +48,10 @@ INT_PTR AboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             SetDlgItemText(IDC_CHANGELOG, text.c_str());
 
-            HWND hChangelog = ::GetDlgItem(hwndDlg, IDC_CHANGELOG);
-
             HFONT hFont = CreateFont(14, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
                CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, VARIABLE_PITCH, TEXT("Courier New"));
 
-            ::SendMessage(hChangelog,
+            ::SendMessage(::GetDlgItem(hwndDlg, IDC_CHANGELOG),
                WM_SETFONT,
                (WPARAM)hFont,
                MAKELPARAM(TRUE, 0) // Redraw text
@@ -61,13 +59,11 @@ INT_PTR AboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          }
 
 #if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
-         HWND hwndTransName = ::GetDlgItem(hwndDlg, IDC_TRANSNAME);
-         ::ShowWindow(hwndTransName, SW_HIDE);
+         ::ShowWindow(::GetDlgItem(hwndDlg, IDC_TRANSNAME), SW_HIDE);
 #endif
 
 #if !(defined(IMSPANISH))
-         HWND hwndTransSite = ::GetDlgItem(hwndDlg, IDC_TRANSLATEWEBSITE);
-         ::ShowWindow(hwndTransSite, SW_HIDE);
+         ::ShowWindow(::GetDlgItem(hwndDlg, IDC_TRANSLATEWEBSITE), SW_HIDE);
 #endif
       }
       return TRUE;

@@ -22,36 +22,20 @@ extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM l
 int MaterialDialog::m_columnSortOrder;
 bool MaterialDialog::m_deletingItem;
 
-void MaterialDialog::DisableAllMaterialDialogItems()
+void MaterialDialog::EnableAllMaterialDialogItems(const BOOL e)
 {
-    ::EnableWindow(GetDlgItem( IDC_DIFFUSE_CHECK ).GetHwnd(), FALSE);
-    ::EnableWindow(GetDlgItem(IDC_DIFFUSE_EDIT).GetHwnd(), FALSE);
-    ::EnableWindow(GetDlgItem(IDC_GLOSSY_EDIT).GetHwnd(), FALSE);
-    ::EnableWindow(GetDlgItem(IDC_GLOSSY_IMGLERP_EDIT).GetHwnd(), FALSE);
-    ::EnableWindow(GetDlgItem(IDC_THICKNESS_EDIT).GetHwnd(), FALSE);
-    ::EnableWindow(GetDlgItem(IDC_SPECULAR_EDIT).GetHwnd(), FALSE);
-    ::EnableWindow(GetDlgItem(IDC_OPACITY_EDIT).GetHwnd(), FALSE);
-    ::EnableWindow(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), FALSE);
-    ::EnableWindow(GetDlgItem(IDC_EDGEALPHA_EDIT).GetHwnd(), FALSE);
-    ::EnableWindow(GetDlgItem(IDC_CLONE_BUTTON).GetHwnd(), FALSE);
-    ::EnableWindow(GetDlgItem(IDC_RENAME).GetHwnd(), FALSE);
-    ::EnableWindow(GetDlgItem(IDC_IMPORT).GetHwnd(), FALSE);
-}
-
-void MaterialDialog::EnableAllMaterialDialogItems()
-{
-   ::EnableWindow(GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd(), TRUE);
-   ::EnableWindow(GetDlgItem(IDC_DIFFUSE_EDIT).GetHwnd(), TRUE);
-   ::EnableWindow(GetDlgItem(IDC_GLOSSY_EDIT).GetHwnd(), TRUE);
-   ::EnableWindow(GetDlgItem(IDC_GLOSSY_IMGLERP_EDIT).GetHwnd(), TRUE);
-   ::EnableWindow(GetDlgItem(IDC_THICKNESS_EDIT).GetHwnd(), TRUE);
-   ::EnableWindow(GetDlgItem(IDC_SPECULAR_EDIT).GetHwnd(), TRUE);
-   ::EnableWindow(GetDlgItem(IDC_OPACITY_EDIT).GetHwnd(), TRUE);
-   ::EnableWindow(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), TRUE);
-   ::EnableWindow(GetDlgItem(IDC_EDGEALPHA_EDIT).GetHwnd(), TRUE);
-   ::EnableWindow(GetDlgItem(IDC_CLONE_BUTTON).GetHwnd(), TRUE);
-   ::EnableWindow(GetDlgItem(IDC_RENAME).GetHwnd(), TRUE);
-   ::EnableWindow(GetDlgItem(IDC_IMPORT).GetHwnd(), TRUE);
+   ::EnableWindow(GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd(), e);
+   ::EnableWindow(GetDlgItem(IDC_DIFFUSE_EDIT).GetHwnd(), e);
+   ::EnableWindow(GetDlgItem(IDC_GLOSSY_EDIT).GetHwnd(), e);
+   ::EnableWindow(GetDlgItem(IDC_GLOSSY_IMGLERP_EDIT).GetHwnd(), e);
+   ::EnableWindow(GetDlgItem(IDC_THICKNESS_EDIT).GetHwnd(), e);
+   ::EnableWindow(GetDlgItem(IDC_SPECULAR_EDIT).GetHwnd(), e);
+   ::EnableWindow(GetDlgItem(IDC_OPACITY_EDIT).GetHwnd(), e);
+   ::EnableWindow(GetDlgItem(IDC_OPACITY_CHECK).GetHwnd(), e);
+   ::EnableWindow(GetDlgItem(IDC_EDGEALPHA_EDIT).GetHwnd(), e);
+   ::EnableWindow(GetDlgItem(IDC_CLONE_BUTTON).GetHwnd(), e);
+   ::EnableWindow(GetDlgItem(IDC_RENAME).GetHwnd(), e);
+   ::EnableWindow(GetDlgItem(IDC_IMPORT).GetHwnd(), e);
 }
 
 float MaterialDialog::getItemText(int id)
@@ -552,10 +536,10 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                const int count = ListView_GetSelectedCount(m_hMaterialList);
                if (count > 1)
                {
-                  DisableAllMaterialDialogItems();
+                  EnableAllMaterialDialogItems(FALSE);
                   break;
                }
-               EnableAllMaterialDialogItems();
+               EnableAllMaterialDialogItems(TRUE);
 
                NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
                if ((plistview->uNewState & LVIS_SELECTED) != (plistview->uOldState & LVIS_SELECTED))
@@ -606,10 +590,11 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                    break;
                if (count > 1)
                {
-                  DisableAllMaterialDialogItems();
+                  EnableAllMaterialDialogItems(FALSE);
                   break;
                }
-               EnableAllMaterialDialogItems();
+               EnableAllMaterialDialogItems(TRUE);
+
                NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
                const int sel = plistview->iItem;
                LVITEM lvitem;

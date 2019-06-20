@@ -34,7 +34,7 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
 
    const bool threshold = (dot <= -m_psurface->m_d.m_slingshot_threshold);  // normal greater than threshold?
 
-   if (!m_psurface->m_fDisabled && threshold) // enabled and if velocity greater than threshold level		
+   if (!m_psurface->m_disabled && threshold) // enabled and if velocity greater than threshold level		
    {
       const float len = (v2.x - v1.x)*hitnormal.y - (v2.y - v1.y)*hitnormal.x; // length of segment, Unit TAN points from V1 to V2
 
@@ -55,7 +55,7 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
 
    pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
-   if (m_obj && m_fe && !m_psurface->m_fDisabled && threshold)
+   if (m_obj && m_fe && !m_psurface->m_disabled && threshold)
    {
       // is this the same place as last event? if same then ignore it
        const float dist_ls = (pball->m_Event_Pos - pball->m_pos).LengthSquared();
@@ -119,7 +119,7 @@ HitGate::HitGate(Gate * const pgate, const float height)
     m_gateMover.m_angleMax = pgate->m_d.m_angleMax;
 
     m_gateMover.m_friction = pgate->m_d.m_friction;
-    m_gateMover.m_fVisible = pgate->m_d.m_fVisible;
+    m_gateMover.m_visible = pgate->m_d.m_visible;
 
     m_gateMover.m_angle = m_gateMover.m_angleMin;
     m_gateMover.m_anglespeed = 0.0f;
@@ -308,7 +308,7 @@ HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
    m_spinnerMover.m_damping = powf(pspinner->m_d.m_damping, (float)PHYS_FACTOR);
 
    m_spinnerMover.m_elasticity = pspinner->m_d.m_elasticity;
-   m_spinnerMover.m_fVisible = pspinner->m_d.m_fVisible;
+   m_spinnerMover.m_visible = pspinner->m_d.m_visible;
 }
 
 float HitSpinner::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const

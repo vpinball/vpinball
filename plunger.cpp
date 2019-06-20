@@ -3,8 +3,8 @@
 Plunger::Plunger()
 {
    m_phitplunger = NULL;
-   vertexBuffer = NULL;
-   indexBuffer = NULL;
+   m_vertexBuffer = NULL;
+   m_indexBuffer = NULL;
    memset(m_d.m_szImage, 0, MAXTOKEN);
    memset(m_d.m_szMaterial, 0, 32);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
@@ -12,15 +12,15 @@ Plunger::Plunger()
 
 Plunger::~Plunger()
 {
-   if (vertexBuffer)
+   if (m_vertexBuffer)
    {
-      vertexBuffer->release();
-      vertexBuffer = NULL;
+      m_vertexBuffer->release();
+      m_vertexBuffer = NULL;
    }
-   if (indexBuffer)
+   if (m_indexBuffer)
    {
-      indexBuffer->release();
-      indexBuffer = NULL;
+      m_indexBuffer->release();
+      m_indexBuffer = NULL;
    }
 }
 
@@ -52,7 +52,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
       m_d.m_szImage[0] = 0;
 
    m_d.m_animFrames = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Plunger", "AnimFrames", 1) : 1;
-   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Plunger", "TimerInterval", 100) : 100;
 
    hr = LoadValueString("DefaultProps\\Plunger", "Surface", &m_d.m_szSurface, MAXTOKEN);
@@ -61,7 +61,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
 
    m_d.m_mechPlunger = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "MechPlunger", false) : false; // plungers require selection for mechanical input
    m_d.m_autoPlunger = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "AutoPlunger", false) : false;
-   m_d.m_fVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "Visible", true) : true;
+   m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "Visible", true) : true;
 
    hr = LoadValueString("DefaultProps\\Plunger", "CustomTipShape", m_d.m_szTipShape, MAXTIPSHAPE);
    if ((hr != S_OK) || !fromMouseClick)
@@ -76,7 +76,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
    m_d.m_springGauge = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "CustomSpringGauge", 1.38f) : 1.38f;
    m_d.m_springLoops = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "CustomSpringLoops", 8.0f) : 8.0f;
    m_d.m_springEndLoops = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "CustomSpringEndLoops", 2.5f) : 2.5f;
-   m_d.m_fReflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "ReflectionEnabled", true) : true;
+   m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "ReflectionEnabled", true) : true;
 }
 
 void Plunger::WriteRegDefaults()
@@ -91,14 +91,14 @@ void Plunger::WriteRegDefaults()
    SaveValueInt("DefaultProps\\Plunger", "AnimFrames", m_d.m_animFrames);
    SaveValueInt("DefaultProps\\Plunger", "Color", m_d.m_color);
    SaveValueString("DefaultProps\\Plunger", "Image", m_d.m_szImage);
-   SaveValueBool("DefaultProps\\Plunger", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueBool("DefaultProps\\Plunger", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt("DefaultProps\\Plunger", "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SaveValueString("DefaultProps\\Plunger", "Surface", m_d.m_szSurface);
    SaveValueBool("DefaultProps\\Plunger", "MechPlunger", m_d.m_mechPlunger);
    SaveValueBool("DefaultProps\\Plunger", "AutoPlunger", m_d.m_autoPlunger);
    SaveValueFloat("DefaultProps\\Plunger", "MechStrength", m_d.m_mechStrength);
    SaveValueFloat("DefaultProps\\Plunger", "ParkPosition", m_d.m_parkPosition);
-   SaveValueBool("DefaultProps\\Plunger", "Visible", m_d.m_fVisible);
+   SaveValueBool("DefaultProps\\Plunger", "Visible", m_d.m_visible);
    SaveValueFloat("DefaultProps\\Plunger", "ScatterVelocity", m_d.m_scatterVelocity);
    SaveValueFloat("DefaultProps\\Plunger", "MomentumXfer", m_d.m_momentumXfer);
    SaveValueString("DefaultProps\\Plunger", "CustomTipShape", m_d.m_szTipShape);
@@ -110,7 +110,7 @@ void Plunger::WriteRegDefaults()
    SaveValueFloat("DefaultProps\\Plunger", "CustomSpringGauge", m_d.m_springGauge);
    SaveValueFloat("DefaultProps\\Plunger", "CustomSpringLoops", m_d.m_springLoops);
    SaveValueFloat("DefaultProps\\Plunger", "CustomSpringEndLoops", m_d.m_springEndLoops);
-   SaveValueBool("DefaultProps\\Plunger", "ReflectionEnabled", m_d.m_fReflectionEnabled);
+   SaveValueBool("DefaultProps\\Plunger", "ReflectionEnabled", m_d.m_reflectionEnabled);
 }
 
 void Plunger::UIRenderPass1(Sur * const psur)
@@ -165,7 +165,7 @@ void Plunger::GetTimers(vector<HitTimer*> &pvht)
 
    m_phittimer = pht;
 
-   if (m_d.m_tdr.m_fTimerEnabled)
+   if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(pht);
 }
 
@@ -174,15 +174,15 @@ void Plunger::EndPlay()
    m_phitplunger = NULL;       // possible memory leak here?
 
    IEditable::EndPlay();
-   if (vertexBuffer)
+   if (m_vertexBuffer)
    {
-      vertexBuffer->release();
-      vertexBuffer = NULL;
+      m_vertexBuffer->release();
+      m_vertexBuffer = NULL;
    }
-   if (indexBuffer)
+   if (m_indexBuffer)
    {
-      indexBuffer->release();
-      indexBuffer = NULL;
+      m_indexBuffer->release();
+      m_indexBuffer = NULL;
    }
 }
 
@@ -223,10 +223,10 @@ void Plunger::RenderDynamic()
    TRACE_FUNCTION();
 
    // TODO: get rid of frame stuff
-   if (!m_d.m_fVisible)
+   if (!m_d.m_visible)
       return;
 
-   if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
+   if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
       return;
 
    _ASSERTE(m_phitplunger);
@@ -253,9 +253,9 @@ void Plunger::RenderDynamic()
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer,
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer,
       frame*m_vtsPerFrame, m_vtsPerFrame,
-      indexBuffer, 0, m_indicesPerFrame);
+      m_indexBuffer, 0, m_indicesPerFrame);
    pd3dDevice->basicShader->End();
 }
 
@@ -336,7 +336,7 @@ void Plunger::RenderSetup()
 
    // figure which plunger descriptor we're using
    const PlungerDesc *desc;
-   PlungerDesc *customDesc = 0;
+   PlungerDesc *customDesc = NULL;
    switch (m_d.m_type)
    {
    case PlungerTypeModern:
@@ -390,7 +390,7 @@ void Plunger::RenderSetup()
          // the diameter is the same as the nominal width; 0.5
          // is half the width.
          c->y = float(atof(nextTipToken(p)));
-         c->r = float(atof(nextTipToken(p))) / 2.0f;
+         c->r = float(atof(nextTipToken(p))) * 0.5f;
 
          // each entry has to have a higher y value than the last
          if (c->y < tiplen)
@@ -447,7 +447,7 @@ void Plunger::RenderSetup()
       (c++)->set(rRod, y, 0.49f, 0.0f, 1.0f);
 
       // set the spring values from the properties
-      springRadius = m_d.m_springDiam / 2.0f;
+      springRadius = m_d.m_springDiam * 0.5f;
       springGauge = m_d.m_springGauge;
       springLoops = m_d.m_springLoops;
       springEndLoops = m_d.m_springEndLoops;
@@ -467,7 +467,7 @@ void Plunger::RenderSetup()
       (c++)->set(rRod, rody, 0.74f, 1.0f, 0.0f);
    }
    break;
-   }
+   }//switch end
 
    // get the number of lathe points from the descriptor
    const int lathePoints = desc->n;
@@ -524,12 +524,12 @@ void Plunger::RenderSetup()
    // figure the relative spring gauge, in terms of the overall width
    const float springGaugeRel = springGauge / m_d.m_width;
 
-   if (vertexBuffer)
-      vertexBuffer->release();
-   pd3dDevice->CreateVertexBuffer(m_cframes*m_vtsPerFrame, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
+   if (m_vertexBuffer)
+      m_vertexBuffer->release();
+   pd3dDevice->CreateVertexBuffer(m_cframes*m_vtsPerFrame, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer);
 
    Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
 
    Vertex3D_NoTex2 *ptr = buf;
 
@@ -826,9 +826,9 @@ void Plunger::RenderSetup()
    }
 
    // create the new index buffer
-   if (indexBuffer)
-      indexBuffer->release();
-   indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(k, indices);
+   if (m_indexBuffer)
+      m_indexBuffer->release();
+   m_indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(k, indices);
 
    // done with the index scratch pad
    delete[] indices;
@@ -887,10 +887,10 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(PSCV), m_d.m_scatterVelocity);
    bw.WriteFloat(FID(MOMX), m_d.m_momentumXfer);
 
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
+   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteBool(FID(VSBL), m_d.m_fVisible);
-   bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
+   bw.WriteBool(FID(VSBL), m_d.m_visible);
+   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 
@@ -976,7 +976,7 @@ BOOL Plunger::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(TMON))
    {
-      pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
+      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
    }
    else if (id == FID(MECH))
    {
@@ -1012,11 +1012,11 @@ BOOL Plunger::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(VSBL))
    {
-      pbr->GetBool(&m_d.m_fVisible);
+      pbr->GetBool(&m_d.m_visible);
    }
    else if (id == FID(REEN))
    {
-      pbr->GetBool(&m_d.m_fReflectionEnabled);
+      pbr->GetBool(&m_d.m_reflectionEnabled);
    }
    else if (id == FID(SURF))
    {
@@ -1171,7 +1171,7 @@ STDMETHODIMP Plunger::Fire()
    }
 
 #ifdef LOG
-   const int i = g_pplayer->m_vmover.IndexOf(m_phitplunger);
+   const int i = FindIndexOf(g_pplayer->m_vmover, (MoverObject*)&m_phitplunger->m_plungerMover);
    fprintf(g_pplayer->m_flog, "Plunger Release %d\n", i);
 #endif
 
@@ -1555,7 +1555,7 @@ STDMETHODIMP Plunger::put_MechStrength(float newVal)
 
 STDMETHODIMP Plunger::get_MechPlunger(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_mechPlunger);
+   *pVal = FTOVB(m_d.m_mechPlunger);
 
    return S_OK;
 }
@@ -1563,7 +1563,7 @@ STDMETHODIMP Plunger::get_MechPlunger(VARIANT_BOOL *pVal)
 STDMETHODIMP Plunger::put_MechPlunger(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_mechPlunger = VBTOF(newVal);
+   m_d.m_mechPlunger = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -1571,7 +1571,7 @@ STDMETHODIMP Plunger::put_MechPlunger(VARIANT_BOOL newVal)
 
 STDMETHODIMP Plunger::get_AutoPlunger(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_autoPlunger);
+   *pVal = FTOVB(m_d.m_autoPlunger);
 
    return S_OK;
 }
@@ -1579,7 +1579,7 @@ STDMETHODIMP Plunger::get_AutoPlunger(VARIANT_BOOL *pVal)
 STDMETHODIMP Plunger::put_AutoPlunger(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_autoPlunger = VBTOF(newVal);
+   m_d.m_autoPlunger = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -1587,7 +1587,7 @@ STDMETHODIMP Plunger::put_AutoPlunger(VARIANT_BOOL newVal)
 
 STDMETHODIMP Plunger::get_Visible(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
+   *pVal = FTOVB(m_d.m_visible);
 
    return S_OK;
 }
@@ -1595,7 +1595,7 @@ STDMETHODIMP Plunger::get_Visible(VARIANT_BOOL *pVal)
 STDMETHODIMP Plunger::put_Visible(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fVisible = VBTOF(newVal);
+   m_d.m_visible = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -1669,7 +1669,7 @@ STDMETHODIMP Plunger::put_MomentumXfer(float newVal)
 
 STDMETHODIMP Plunger::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+   *pVal = FTOVB(m_d.m_reflectionEnabled);
 
    return S_OK;
 }
@@ -1677,7 +1677,7 @@ STDMETHODIMP Plunger::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 STDMETHODIMP Plunger::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fReflectionEnabled = VBTOF(newVal);
+   m_d.m_reflectionEnabled = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;

@@ -694,15 +694,15 @@ STDMETHODIMP ScriptGlobalTable::get_NightDay(int *pVal)
 STDMETHODIMP ScriptGlobalTable::get_ShowDT(VARIANT_BOOL *pVal)
 {
    if (g_pplayer)
-      *pVal = (VARIANT_BOOL)FTOVB(g_pplayer->m_ptable->m_BG_current_set == BG_DESKTOP || g_pplayer->m_ptable->m_BG_current_set == BG_FSS); // DT & FSS
+      *pVal = FTOVB(g_pplayer->m_ptable->m_BG_current_set == BG_DESKTOP || g_pplayer->m_ptable->m_BG_current_set == BG_FSS); // DT & FSS
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_ShowFSS(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(g_pplayer->m_ptable->m_BG_enable_FSS);
+   *pVal = FTOVB(g_pplayer->m_ptable->m_BG_enable_FSS);
 
-   //*pVal = (VARIANT_BOOL)FTOVB(g_pplayer->m_ptable->m_BG_current_set == 2);
+   //*pVal = FTOVB(g_pplayer->m_ptable->m_BG_current_set == 2);
 
    return S_OK;
 }
@@ -1351,7 +1351,7 @@ PinTable::PinTable()
    m_fRenderDecals = true;
    m_fRenderEMReels = true;
 
-   m_fReflectionEnabled = false;
+   m_reflectionEnabled = false;
 
    m_overridePhysics = 0;
    m_overridePhysicsFlipper = false;
@@ -4817,13 +4817,9 @@ void PinTable::FireKeyEvent(int dispid, int keycode)
    if (g_pplayer)
    {
       if (dispid == DISPID_GameEvents_KeyDown)
-      {
          fprintf(g_pplayer->m_flog, "Key Down %d\n", keycode);
-      }
       else
-      {
          fprintf(g_pplayer->m_flog, "Key Up %d\n", keycode);
-      }
    }
 #endif
 
@@ -9058,7 +9054,7 @@ Texture* PinTable::GetSurfaceImage(const char * const szName) const
 
 STDMETHODIMP PinTable::get_DisplayGrid(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_fGrid);
+   *pVal = FTOVB(m_fGrid);
 
    return S_OK;
 }
@@ -9076,7 +9072,7 @@ STDMETHODIMP PinTable::put_DisplayGrid(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_DisplayBackdrop(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_fBackdrop);
+   *pVal = FTOVB(m_fBackdrop);
 
    return S_OK;
 }
@@ -9542,7 +9538,7 @@ STDMETHODIMP PinTable::put_DetailLevel(int newVal)
 
 STDMETHODIMP PinTable::get_GlobalAlphaAcc(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_overwriteGlobalDetailLevel);
+   *pVal = FTOVB(m_overwriteGlobalDetailLevel);
 
    return S_OK;
 }
@@ -9564,25 +9560,23 @@ STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_GlobalDayNight(VARIANT_BOOL *pVal)
 {
-	*pVal = (VARIANT_BOOL)FTOVB(m_overwriteGlobalDayNight);
+   *pVal = FTOVB(m_overwriteGlobalDayNight);
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::put_GlobalDayNight(VARIANT_BOOL newVal)
 {
-	STARTUNDO
+   STARTUNDO
+   m_overwriteGlobalDayNight = !!newVal;
+   STOPUNDO
 
-	m_overwriteGlobalDayNight = !!newVal;
-
-	STOPUNDO
-
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_GlobalStereo3D(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_overwriteGlobalStereo3D);
+   *pVal = FTOVB(m_overwriteGlobalStereo3D);
 
    return S_OK;
 }
@@ -9596,7 +9590,7 @@ STDMETHODIMP PinTable::put_GlobalStereo3D(VARIANT_BOOL newVal)
    {
       m_3DmaxSeparation = m_global3DMaxSeparation;
       m_3DZPD = m_global3DZPD;
-	  m_3DOffset = m_global3DOffset;
+      m_3DOffset = m_global3DOffset;
    }
 
    STOPUNDO
@@ -9606,7 +9600,7 @@ STDMETHODIMP PinTable::put_GlobalStereo3D(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_BallDecalMode(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_BallDecalMode);
+   *pVal = FTOVB(m_BallDecalMode);
 
    return S_OK;
 }
@@ -9678,7 +9672,7 @@ STDMETHODIMP PinTable::put_BackdropColor(OLE_COLOR newVal)
 
 STDMETHODIMP PinTable::get_BackdropImageApplyNightDay(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_ImageBackdropNightDay);
+   *pVal = FTOVB(m_ImageBackdropNightDay);
 
    return S_OK;
 }
@@ -9696,9 +9690,9 @@ STDMETHODIMP PinTable::put_BackdropImageApplyNightDay(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_BG_enable_FSS);
+   *pVal = FTOVB(m_BG_enable_FSS);
 
-   //*pVal = (VARIANT_BOOL)FTOVB(m_BG_current_set == 2);
+   //*pVal = FTOVB(m_BG_current_set == 2);
 
    return S_OK;
 }
@@ -9957,9 +9951,7 @@ STDMETHODIMP PinTable::get_PlungerNormalize(int *pVal)
 STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
 {
    STARTUNDO
-
    m_plungerNormalize = LoadValueIntWithDefault("Player", "PlungerNormalize", newVal);
-
    STOPUNDO
 
    return S_OK;
@@ -9967,7 +9959,7 @@ STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
 
 STDMETHODIMP PinTable::get_PlungerFilter(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_plungerFilter);
+   *pVal = FTOVB(m_plungerFilter);
 
    return S_OK;
 }
@@ -9975,10 +9967,7 @@ STDMETHODIMP PinTable::get_PlungerFilter(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_PlungerFilter(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-   const BOOL tmp = VBTOF(newVal);
-   m_plungerFilter = LoadValueBoolWithDefault("Player", "PlungerFilter", tmp != 0);
-
+   m_plungerFilter = LoadValueBoolWithDefault("Player", "PlungerFilter", VBTOb(newVal));
    STOPUNDO
 
    return S_OK;
@@ -9994,9 +9983,7 @@ STDMETHODIMP PinTable::get_PhysicsLoopTime(int *pVal)
 STDMETHODIMP PinTable::put_PhysicsLoopTime(int newVal)
 {
    STARTUNDO
-
    m_PhysicsMaxLoops = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -10027,9 +10014,7 @@ STDMETHODIMP PinTable::get_FieldOfView(float *pVal)
 STDMETHODIMP PinTable::put_FieldOfView(float newVal)
 {
    STARTUNDO
-
    m_BG_FOV[m_currentBackglassMode] = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -10045,9 +10030,7 @@ STDMETHODIMP PinTable::get_Inclination(float *pVal)
 STDMETHODIMP PinTable::put_Inclination(float newVal)
 {
    STARTUNDO
-
    m_BG_inclination[m_currentBackglassMode] = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -10063,9 +10046,7 @@ STDMETHODIMP PinTable::get_Layback(float *pVal)
 STDMETHODIMP PinTable::put_Layback(float newVal)
 {
    STARTUNDO
-
    m_BG_layback[m_currentBackglassMode] = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -10081,9 +10062,7 @@ STDMETHODIMP PinTable::get_Rotation(float *pVal)
 STDMETHODIMP PinTable::put_Rotation(float newVal)
 {
    STARTUNDO
-
    m_BG_rotation[m_currentBackglassMode] = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -10099,9 +10078,7 @@ STDMETHODIMP PinTable::get_Scalex(float *pVal)
 STDMETHODIMP PinTable::put_Scalex(float newVal)
 {
    STARTUNDO
-
    m_BG_scalex[m_currentBackglassMode] = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -10117,9 +10094,7 @@ STDMETHODIMP PinTable::get_Scaley(float *pVal)
 STDMETHODIMP PinTable::put_Scaley(float newVal)
 {
    STARTUNDO
-
    m_BG_scaley[m_currentBackglassMode] = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -10135,9 +10110,7 @@ STDMETHODIMP PinTable::get_Scalez(float *pVal)
 STDMETHODIMP PinTable::put_Scalez(float newVal)
 {
    STARTUNDO
-
    m_BG_scalez[m_currentBackglassMode] = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -10153,9 +10126,7 @@ STDMETHODIMP PinTable::get_Xlatex(float *pVal)
 STDMETHODIMP PinTable::put_Xlatex(float newVal)
 {
    STARTUNDO
-
    m_BG_xlatex[m_currentBackglassMode] = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -10171,9 +10142,7 @@ STDMETHODIMP PinTable::get_Xlatey(float *pVal)
 STDMETHODIMP PinTable::put_Xlatey(float newVal)
 {
    STARTUNDO
-
    m_BG_xlatey[m_currentBackglassMode] = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -10189,9 +10158,7 @@ STDMETHODIMP PinTable::get_Xlatez(float *pVal)
 STDMETHODIMP PinTable::put_Xlatez(float newVal)
 {
    STARTUNDO
-
    m_BG_xlatez[m_currentBackglassMode] = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -10261,9 +10228,7 @@ STDMETHODIMP PinTable::get_BallImage(BSTR *pVal)
 STDMETHODIMP PinTable::put_BallImage(BSTR newVal)
 {
    STARTUNDO
-
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImage, 32, NULL, NULL);
-
    STOPUNDO
 
    return S_OK;
@@ -10291,9 +10256,7 @@ STDMETHODIMP PinTable::put_EnvironmentImage(BSTR newVal)
    }
 
    STARTUNDO
-
    strcpy_s(m_szEnvImage,szImage);
-
    STOPUNDO
 
    return S_OK;
@@ -10408,7 +10371,7 @@ STDMETHODIMP PinTable::put_OverridePhysics(PhysicsSet newVal)
 
 STDMETHODIMP PinTable::get_OverridePhysicsFlippers(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_overridePhysicsFlipper);
+   *pVal = FTOVB(m_overridePhysicsFlipper);
 
    return S_OK;
 }
@@ -10716,7 +10679,7 @@ STDMETHODIMP PinTable::ExportPhysics()
 
 STDMETHODIMP PinTable::get_EnableDecals(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_fRenderDecals);
+   *pVal = FTOVB(m_fRenderDecals);
 
    return S_OK;
 }
@@ -10732,7 +10695,7 @@ STDMETHODIMP PinTable::put_EnableDecals(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_ShowDT(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_BG_current_set == BG_DESKTOP || m_BG_current_set == BG_FSS); // DT & FSS
+   *pVal = FTOVB(m_BG_current_set == BG_DESKTOP || m_BG_current_set == BG_FSS); // DT & FSS
 
    return S_OK;
 }
@@ -10751,7 +10714,7 @@ STDMETHODIMP PinTable::put_ShowDT(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_ReflectElementsOnPlayfield(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_fReflectElementsOnPlayfield);
+   *pVal = FTOVB(m_fReflectElementsOnPlayfield);
 
    return S_OK;
 }
@@ -10767,7 +10730,7 @@ STDMETHODIMP PinTable::put_ReflectElementsOnPlayfield(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_EnableEMReels(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_fRenderEMReels);
+   *pVal = FTOVB(m_fRenderEMReels);
 
    return S_OK;
 }
@@ -10811,7 +10774,7 @@ STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
 
 STDMETHODIMP PinTable::get_Accelerometer(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_tblAccelerometer);
+   *pVal = FTOVB(m_tblAccelerometer);
 
    return S_OK;
 }
@@ -10827,7 +10790,7 @@ STDMETHODIMP PinTable::put_Accelerometer(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_AccelNormalMount(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_tblAccelNormalMount);
+   *pVal = FTOVB(m_tblAccelNormalMount);
 
    return S_OK;
 }

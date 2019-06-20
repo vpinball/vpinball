@@ -342,7 +342,7 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
    SAFE_RELEASE(pD3D);
    // Apply the same numbering as windows
    int i = 0;
-   for (std::map<std::string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); display++)
+   for (std::map<std::string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)
    {
       if (display->second.adapter >= 0) {
          display->second.display = i;
@@ -357,7 +357,7 @@ bool getDisplaySetupByID(const int display, int &x, int &y, int &width, int &hei
 {
    std::vector<DisplayConfig> displays;
    getDisplayList(displays);
-   for (std::vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); displayConf++) {
+   for (std::vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); ++displayConf) {
       if ((display == -1 && displayConf->isPrimary) || display == displayConf->display) {
          x = displayConf->left;
          y = displayConf->top;
@@ -377,7 +377,7 @@ int getPrimaryDisplay()
 {
    std::vector<DisplayConfig> displays;
    getDisplayList(displays);
-   for (std::vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); displayConf++) {
+   for (std::vector<DisplayConfig>::iterator displayConf = displays.begin(); displayConf != displays.end(); ++displayConf) {
       if (displayConf->isPrimary) {
          return displayConf->adapter;
       }
@@ -1536,7 +1536,7 @@ void RenderDevice::SetRenderState(const RenderStates p1, DWORD p2)
 {
    if (SetRenderStateCache(p1, p2)) return;
 
-   if (p1 == CULLMODE && (g_pplayer && (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->m_ptable->m_fReflectionEnabled)))
+   if (p1 == CULLMODE && (g_pplayer && (g_pplayer->m_ptable->m_tblMirrorEnabled ^ g_pplayer->m_ptable->m_reflectionEnabled)))
    {
       if (p2 == RenderDevice::CULL_CCW)
          p2 = RenderDevice::CULL_CW;

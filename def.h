@@ -207,7 +207,8 @@ public:
 #define RADTOANG(x) ((x) *(float)(180.0/M_PI))
 
 #define VBTOF(x) ((x) ? fTrue : fFalse)
-#define FTOVB(x) ((x) ? -1 : 0)
+#define VBTOb(x) (!!(x))
+#define FTOVB(x) ((x) ? (VARIANT_BOOL)-1 : (VARIANT_BOOL)0)
 
 __forceinline __m128 rcpps(const __m128 &T) //Newton Raphson
 {

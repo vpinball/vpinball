@@ -64,7 +64,7 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
        for (size_t i = 0; i < g_pplayer->m_changed_vht.size(); ++i)
            if (g_pplayer->m_changed_vht[i].m_timer == m_phittimer)
            {
-               g_pplayer->m_changed_vht[i].enabled = !!fNew;
+               g_pplayer->m_changed_vht[i].m_enabled = !!fNew;
                found = true;
                break;
            }
@@ -72,7 +72,7 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
        if (!found)
        {
          TimerOnOff too;
-         too.enabled = !!fNew;
+         too.m_enabled = !!fNew;
          too.m_timer = m_phittimer;
          g_pplayer->m_changed_vht.push_back(too);
        }

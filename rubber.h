@@ -24,14 +24,14 @@ public:
    float m_rotX;
    float m_rotY;
    float m_rotZ;
-   bool m_fHitEvent;
+   bool m_hitEvent;
    bool m_staticRendering;
    bool m_showInEditor;
 
-   bool m_fCollidable;
-   bool m_fVisible;
-   bool m_fReflectionEnabled;
-   bool m_fOverwritePhysics;
+   bool m_collidable;
+   bool m_visible;
+   bool m_reflectionEnabled;
+   bool m_overwritePhysics;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -121,29 +121,30 @@ public:
    // end IHaveDragPoints
 
    virtual void WriteRegDefaults();
-   void AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j);
-   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
-   void UpdateUnitsInfo();
 
    RubberData m_d;
 
 private:
+   void AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j);
+   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
+   void UpdateUnitsInfo();
+
    PinTable *m_ptable;
 
-   Vertex2D *rgvInit;    // just for setup/static drawing
+   Vertex2D *m_rgvInit;    // just for setup/static drawing
 
    int m_numVertices;      // this goes along with dynamicVertexBuffer
    int m_numIndices;
 
    std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
    std::vector<Vertex3D_NoTex2> m_vertices;
-   std::vector<WORD> ringIndices;
+   std::vector<WORD> m_ringIndices;
 
-   Vertex3Ds middlePoint;
+   Vertex3Ds m_middlePoint;
 
-   VertexBuffer *dynamicVertexBuffer;
-   IndexBuffer *dynamicIndexBuffer;
-   bool dynamicVertexBufferRegenerate;
+   VertexBuffer *m_dynamicVertexBuffer;
+   IndexBuffer *m_dynamicIndexBuffer;
+   bool m_dynamicVertexBufferRegenerate;
 
    PropertyPane *m_propVisual;
    PropertyPane *m_propPhysics;

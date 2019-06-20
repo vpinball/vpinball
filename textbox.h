@@ -21,8 +21,8 @@ public:
    char sztext[MAXSTRING];
    TimerDataRoot m_tdr;
    TextAlignment m_talign;
-   bool m_fTransparent;
-   bool m_fVisible;
+   bool m_transparent;
+   bool m_visible;
    bool m_IsDMD;
 };
 

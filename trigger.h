@@ -24,8 +24,8 @@ public:
    float m_animSpeed;
    float m_wireThickness;
    bool m_enabled;
-   bool m_fVisible;
-   bool m_fReflectionEnabled;
+   bool m_visible;
+   bool m_reflectionEnabled;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -107,40 +107,42 @@ public:
 
    virtual void WriteRegDefaults();
 
+   void TriggerAnimationHit();
+   void TriggerAnimationUnhit();
+
+   TriggerData m_d;
+
+   bool m_hitEnabled;		// for custom shape triggers
+
+private:
    void CurvesToShapes(vector<HitObject*> &pvho);
    void AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2, const float height);
 
    void InitShape(float x, float y);
    void UpdateEditorView();
-   void TriggerAnimationHit();
-   void TriggerAnimationUnhit();
    void UpdateAnimation();
    void GenerateMesh();
 
-   TriggerData m_d;
-
-   int m_numVertices;
-   int m_numIndices;
-   float animHeightOffset;
-   float vertexBuffer_animHeightOffset;
-   bool hitEvent;
-   bool unhitEvent;
-   bool doAnimation;
-   bool moveDown;
-
-   bool m_hitEnabled;		// for custom shape triggers
-
-   VertexBuffer *vertexBuffer;
-   IndexBuffer *triggerIndexBuffer;
-   std::vector<Vertex3Ds> vertices;
-   const WORD *faceIndices;
-   Vertex3D_NoTex2 *triggerVertices;
-   PropertyPane *m_propVisual;
-
-private:
    PinTable *m_ptable;
 
    TriggerHitCircle *m_ptriggerhitcircle;
+
+   VertexBuffer *m_vertexBuffer;
+   IndexBuffer *m_triggerIndexBuffer;
+   std::vector<Vertex3Ds> m_vertices;
+   const WORD *m_faceIndices;
+   Vertex3D_NoTex2 *m_triggerVertices;
+
+   PropertyPane *m_propVisual;
+
+   int m_numVertices;
+   int m_numIndices;
+   float m_animHeightOffset;
+   float m_vertexBuffer_animHeightOffset;
+   bool m_hitEvent;
+   bool m_unhitEvent;
+   bool m_doAnimation;
+   bool m_moveDown;
 
 // ITrigger
 public:

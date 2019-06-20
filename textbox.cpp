@@ -32,7 +32,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
 {
    //Textbox is always located on backdrop
    m_fBackglass = true;
-   m_d.m_fVisible = true;
+   m_d.m_visible = true;
 
    FONTDESC fd;
    fd.cbSizeofstruct = sizeof(FONTDESC);
@@ -43,10 +43,10 @@ void Textbox::SetDefaults(bool fromMouseClick)
       m_d.m_backcolor = RGB(0, 0, 0);
       m_d.m_fontcolor = RGB(255, 255, 255);
       m_d.m_intensity_scale = 1.0f;
-      m_d.m_tdr.m_fTimerEnabled = false;
+      m_d.m_tdr.m_TimerEnabled = false;
       m_d.m_tdr.m_TimerInterval = 100;
       m_d.m_talign = TextAlignRight;
-      m_d.m_fTransparent = false;
+      m_d.m_transparent = false;
 	  m_d.m_IsDMD = false;
 	  lstrcpy(m_d.sztext, "0");
 
@@ -63,10 +63,10 @@ void Textbox::SetDefaults(bool fromMouseClick)
       m_d.m_backcolor = LoadValueIntWithDefault("DefaultProps\\TextBox", "BackColor", RGB(0, 0, 0));
       m_d.m_fontcolor = LoadValueIntWithDefault("DefaultProps\\TextBox", "FontColor", RGB(255, 255, 255));
       m_d.m_intensity_scale = LoadValueFloatWithDefault("DefaultProps\\TextBox", "IntensityScale", 1.0f);
-      m_d.m_tdr.m_fTimerEnabled = LoadValueBoolWithDefault("DefaultProps\\TextBox", "TimerEnabled", false) ? true : false;
+      m_d.m_tdr.m_TimerEnabled = LoadValueBoolWithDefault("DefaultProps\\TextBox", "TimerEnabled", false) ? true : false;
       m_d.m_tdr.m_TimerInterval = LoadValueIntWithDefault("DefaultProps\\TextBox", "TimerInterval", 100);
       m_d.m_talign = (TextAlignment)LoadValueIntWithDefault("DefaultProps\\TextBox", "TextAlignment", TextAlignRight);
-      m_d.m_fTransparent = LoadValueBoolWithDefault("DefaultProps\\TextBox", "Transparent", false);
+      m_d.m_transparent = LoadValueBoolWithDefault("DefaultProps\\TextBox", "Transparent", false);
       m_d.m_IsDMD = LoadValueBoolWithDefault("DefaultProps\\TextBox", "DMD", false);
 
       const float fontSize = LoadValueFloatWithDefault("DefaultProps\\TextBox", "FontSize", 14.25f);
@@ -108,9 +108,9 @@ void Textbox::WriteRegDefaults()
 
    SaveValueInt("DefaultProps\\TextBox", "BackColor", m_d.m_backcolor);
    SaveValueInt("DefaultProps\\TextBox", "FontColor", m_d.m_fontcolor);
-   SaveValueBool("DefaultProps\\TextBox", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SaveValueBool("DefaultProps\\TextBox", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt("DefaultProps\\TextBox", "TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SaveValueBool("DefaultProps\\TextBox", "Transparent", m_d.m_fTransparent);
+   SaveValueBool("DefaultProps\\TextBox", "Transparent", m_d.m_transparent);
    SaveValueBool("DefaultProps\\TextBox", "DMD", m_d.m_IsDMD);
 
    FONTDESC fd;
@@ -184,7 +184,7 @@ void Textbox::GetTimers(vector<HitTimer*> &pvht)
 
    m_phittimer = pht;
 
-   if (m_d.m_tdr.m_fTimerEnabled)
+   if (m_d.m_tdr.m_TimerEnabled)
       pvht.push_back(pht);
 }
 
@@ -215,12 +215,12 @@ void Textbox::RenderDynamic()
 
    const bool dmd = (m_d.m_IsDMD || strstr(m_d.sztext, "DMD") != NULL); //!! second part is VP10.0 legacy
 
-   if (!m_d.m_fVisible || (dmd && !g_pplayer->m_texdmd))
+   if (!m_d.m_visible || (dmd && !g_pplayer->m_texdmd))
       return;
 
    RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
+   if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
    else
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
@@ -259,7 +259,7 @@ void Textbox::RenderDynamic()
          pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, RenderDevice::RS_FALSE);
       }
 
-   //if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
+   //if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled)
    //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
 
@@ -358,7 +358,7 @@ void Textbox::PreRenderText()
    {
       for (int l = 0; l < m_texture->width(); l++)
       {
-         if (m_d.m_fTransparent && (((*(D3DCOLOR *)pch) & 0xFFFFFF) == m_d.m_backcolor))
+         if (m_d.m_transparent && (((*(D3DCOLOR *)pch) & 0xFFFFFF) == m_d.m_backcolor))
             *(D3DCOLOR *)pch = 0x00000000; // set to black & alpha full transparent
          else
             *(D3DCOLOR *)pch |= 0xFF000000;
@@ -475,11 +475,11 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteInt(FID(CLRF), m_d.m_fontcolor);
    bw.WriteFloat(FID(INSC), m_d.m_intensity_scale);
    bw.WriteString(FID(TEXT), m_d.sztext);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
+   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteInt(FID(ALGN), m_d.m_talign);
-   bw.WriteBool(FID(TRNS), m_d.m_fTransparent);
+   bw.WriteBool(FID(TRNS), m_d.m_transparent);
    bw.WriteBool(FID(IDMD), m_d.m_IsDMD);
 
    ISelect::SaveData(pstm, hcrypthash);
@@ -535,7 +535,7 @@ BOOL Textbox::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(TMON))
    {
-      pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
+      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
    }
    else if (id == FID(TMIN))
    {
@@ -555,7 +555,7 @@ BOOL Textbox::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(TRNS))
    {
-      pbr->GetBool(&m_d.m_fTransparent);
+      pbr->GetBool(&m_d.m_transparent);
    }
    else if (id == FID(IDMD))
    {
@@ -632,9 +632,7 @@ STDMETHODIMP Textbox::get_Width(float *pVal)
 STDMETHODIMP Textbox::put_Width(float newVal)
 {
    STARTUNDO
-
    m_d.m_v2.x = m_d.m_v1.x + newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -650,9 +648,7 @@ STDMETHODIMP Textbox::get_Height(float *pVal)
 STDMETHODIMP Textbox::put_Height(float newVal)
 {
    STARTUNDO
-
    m_d.m_v2.y = m_d.m_v1.y + newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -669,12 +665,9 @@ STDMETHODIMP Textbox::get_X(float *pVal)
 STDMETHODIMP Textbox::put_X(float newVal)
 {
    STARTUNDO
-
    const float delta = newVal - m_d.m_v1.x;
-
    m_d.m_v1.x += delta;
    m_d.m_v2.x += delta;
-
    STOPUNDO
 
    return S_OK;
@@ -690,12 +683,9 @@ STDMETHODIMP Textbox::get_Y(float *pVal)
 STDMETHODIMP Textbox::put_Y(float newVal)
 {
    STARTUNDO
-
    const float delta = newVal - m_d.m_v1.y;
-
    m_d.m_v1.y += delta;
    m_d.m_v2.y += delta;
-
    STOPUNDO
 
    return S_OK;
@@ -711,9 +701,7 @@ STDMETHODIMP Textbox::get_IntensityScale(float *pVal)
 STDMETHODIMP Textbox::put_IntensityScale(float newVal)
 {
    STARTUNDO
-
    m_d.m_intensity_scale = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -749,9 +737,7 @@ STDMETHODIMP Textbox::get_Alignment(TextAlignment *pVal)
 STDMETHODIMP Textbox::put_Alignment(TextAlignment newVal)
 {
    STARTUNDO
-
    m_d.m_talign = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -759,7 +745,7 @@ STDMETHODIMP Textbox::put_Alignment(TextAlignment newVal)
 
 STDMETHODIMP Textbox::get_IsTransparent(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fTransparent);
+   *pVal = FTOVB(m_d.m_transparent);
 
    return S_OK;
 }
@@ -767,9 +753,7 @@ STDMETHODIMP Textbox::get_IsTransparent(VARIANT_BOOL *pVal)
 STDMETHODIMP Textbox::put_IsTransparent(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-   m_d.m_fTransparent = VBTOF(newVal);
-
+   m_d.m_transparent = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -777,25 +761,23 @@ STDMETHODIMP Textbox::put_IsTransparent(VARIANT_BOOL newVal)
 
 STDMETHODIMP Textbox::get_DMD(VARIANT_BOOL *pVal)
 {
-	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_IsDMD);
+   *pVal = FTOVB(m_d.m_IsDMD);
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Textbox::put_DMD(VARIANT_BOOL newVal)
 {
-	STARTUNDO
+   STARTUNDO
+   m_d.m_IsDMD = VBTOb(newVal);
+   STOPUNDO
 
-	m_d.m_IsDMD = VBTOF(newVal);
-
-	STOPUNDO
-
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Textbox::get_Visible(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
+   *pVal = FTOVB(m_d.m_visible);
 
    return S_OK;
 }
@@ -803,8 +785,8 @@ STDMETHODIMP Textbox::get_Visible(VARIANT_BOOL *pVal)
 STDMETHODIMP Textbox::put_Visible(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_d.m_fVisible = VBTOF(newVal);
+   m_d.m_visible = VBTOb(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
