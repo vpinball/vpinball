@@ -117,8 +117,9 @@ __forceinline void Triangle::ComputeNormal()
 	const float3 v1 = vertex[1]->position;
 	const float3 v2 = vertex[2]->position;
 	normal = cross(v1 - v0, v2 - v1);
-	if (magnitude(normal) > FLT_MIN)
-		normal = normalize(normal);
+	const float l = magnitude(normal);
+	if (l > FLT_MIN)
+		normal = normal / l;
 }
 
 inline void Triangle::ReplaceVertex(Vertex * const vold, Vertex * const vnew)
