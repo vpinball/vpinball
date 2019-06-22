@@ -51,10 +51,9 @@ public:
    inline Vertex2D ScreenToSurface(const int screenx, const int screeny) const
    {
       const float inv_zoom = 1.0f / m_zoom;
-      Vertex2D result;
-      result.x = (float)screenx*inv_zoom + m_offx;
-      result.y = (float)screeny*inv_zoom + m_offy;
-      return result;
+      return Vertex2D(
+       (float)screenx*inv_zoom + m_offx,
+       (float)screeny*inv_zoom + m_offy);
    }
 
    HDC m_hdc;

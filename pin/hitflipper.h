@@ -53,7 +53,7 @@ public:
 
    Vertex2D m_zeroAngNorm;  // base norms at zero degrees
 
-   short m_EnableRotateEvent; // -1,0,1
+   short m_enableRotateEvent; // -1,0,1
 
    bool m_direction;
 
@@ -91,5 +91,7 @@ public:
    float GetHitTime() const { return m_flipperMover.GetHitTime(); }
 
    FlipperMoverObject m_flipperMover;
+
+private:
    U32 m_last_hittime;
 };

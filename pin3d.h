@@ -91,8 +91,6 @@ private:
    void InitSecondaryRenderState();
    HRESULT InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl);
 
-   void Identity();
-
    // Data members
 public:
    CGpuProfiler m_gpu_profiler;
@@ -113,9 +111,9 @@ public:
 
    //RenderTarget* m_bloomTexture;
 
-   Texture pinballEnvTexture; // loaded from Resources
-   Texture envTexture; // loaded from Resources
-   Texture aoDitherTexture; // loaded from Resources
+   Texture m_pinballEnvTexture; // loaded from Resources
+   Texture m_builtinEnvTexture; // loaded from Resources
+   Texture m_aoDitherTexture; // loaded from Resources
 
    Texture* m_envTexture;
    BaseTexture* m_envRadianceTexture;
@@ -135,7 +133,7 @@ public:
    bool m_useAA;
 
 private:
-   VertexBuffer *tableVBuffer;
+   VertexBuffer *m_tableVBuffer;
 };
 
 Matrix3D ComputeLaybackTransform(float layback);

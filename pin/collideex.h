@@ -28,7 +28,7 @@ public:
    virtual void Animate();
 
    U32 m_TimeReset; // Time at which to pull in slingshot, Zero means the slingshot is currently reset
-   bool m_fAnimations;
+   bool m_animations;
    bool m_iframe;
 };
 
@@ -74,6 +74,7 @@ public:
 
    void Init(Vertex3Ds * const rgv, const int count);
 
+private:
    Vertex3Ds *m_rgv;
    Vertex3Ds m_normal;
    int m_cvertex;
@@ -113,6 +114,7 @@ public:
    virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox() {}  //!! TODO: this is needed if we want to put it in the quadtree, but then again impossible as infinite area
 
+private:
    Vertex3Ds m_normal;
    float m_d;
 };
@@ -172,7 +174,7 @@ public:
    float m_damping;
    float m_gravityfactor;
    bool m_visible;
-   bool m_fOpen;      // True if the table logic is opening the gate, not just the ball passing through
+   bool m_open;       // True if the table logic is opening the gate, not just the ball passing through
    bool m_forcedMove; // True if the table logic is opening/closing the gate
 };
 
@@ -189,10 +191,12 @@ public:
 
    virtual MoverObject *GetMoverObject() { return &m_gateMover; }
 
-   Gate *m_pgate;
-   LineSeg m_lineseg[3];
    GateMoverObject m_gateMover;
    bool m_twoWay;
+
+private:
+   Gate *m_pgate;
+   LineSeg m_lineseg[3];
 };
 
 class TriggerLineSeg : public LineSeg

@@ -66,7 +66,7 @@ void SmartBrowser::Init(HWND hwndParent)
    wcex.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
    RegisterClassEx(&wcex);
 
-   if (g_pvp->m_fPropertiesFloating)
+   if (g_pvp->m_propertiesFloating)
    {
       RECT rectParent;
       GetWindowRect(hwndParent, &rectParent);
@@ -197,7 +197,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
       }
    }
 
-   const int propID = (m_vproppane.size() > 0) ? m_vproppane[0]->dialogid : -1;
+   const int propID = (m_vproppane.size() > 0) ? m_vproppane[0]->m_dialogid : -1;
 
    // Optimized for selecting the same object
    // Have to check resourceid too, since there can be more than one dialog view of the same object (table/backdrop)
@@ -288,14 +288,14 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
       PropertyPane * const pproppane = m_vproppane[i];
       ExpandoInfo * const pexinfo = new ExpandoInfo();
       pexinfo->m_id = (int)i;
-      pexinfo->m_fExpanded = false;
+      pexinfo->m_expanded = false;
       pexinfo->m_psb = this;
 
-      LocalString ls(pproppane->titlestringid);
+      LocalString ls(pproppane->m_titlestringid);
       char * const szCaption = ls.m_szbuffer;
-      pexinfo->m_fHasCaption = (pproppane->titlestringid != 0);
+      pexinfo->m_hasCaption = (pproppane->m_titlestringid != 0);
       HWND hwndExpand;
-      if (g_pvp->m_fPropertiesFloating)
+      if (g_pvp->m_propertiesFloating)
       {
          hwndExpand = CreateWindowEx(WS_EX_TOOLWINDOW, "ExpandoControl", szCaption,
             WS_CHILD /*| WS_VISIBLE *//*| WS_BORDER*/,
@@ -311,14 +311,14 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
       m_vhwndExpand.push_back(hwndExpand);
 
       HWND hwndDialog;
-      if (pproppane->dialogid != 0)
-         hwndDialog = CreateDialogParam(g_hinst, MAKEINTRESOURCE(pproppane->dialogid),
+      if (pproppane->m_dialogid != 0)
+         hwndDialog = CreateDialogParam(g_hinst, MAKEINTRESOURCE(pproppane->m_dialogid),
             hwndExpand, PropertyProc, (size_t)this);
       else
-         hwndDialog = CreateDialogIndirectParam(g_hinst, pproppane->ptemplate,
+         hwndDialog = CreateDialogIndirectParam(g_hinst, pproppane->m_ptemplate,
             hwndExpand, PropertyProc, (size_t)this);
 
-      m_vproppane[i]->dialogHwnd = hwndDialog;
+      m_vproppane[i]->m_dialogHwnd = hwndDialog;
       m_vhwndDialog.push_back(hwndDialog);
 
       RECT rcDialog;
@@ -368,7 +368,6 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
       if (m_pvsel->Size() >= 1)
          m_pvsel->ElementAt(0)->UpdatePropertyPanes();
    }
-
 }
 
 BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
@@ -926,7 +925,7 @@ void SmartBrowser::RelayoutExpandos()
    {
       HWND hwndExpand = m_vhwndExpand[i];
       ExpandoInfo *pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwndExpand, GWLP_USERDATA);
-      if (pexinfo && pexinfo->m_fExpanded)
+      if (pexinfo && pexinfo->m_expanded)
          totalheight += pexinfo->m_dialogheight;
       totalheight += EXPANDOHEIGHT;
    }
@@ -949,7 +948,7 @@ void SmartBrowser::RelayoutExpandos()
       // get priority over lower panels
       for (size_t i = 0; i < m_vhwndExpand.size(); i++)
       {
-         const int titleid = m_vproppane[i]->titlestringid;
+         const int titleid = m_vproppane[i]->m_titlestringid;
          if (titleid != NULL)
          {
             HWND hwndExpand = m_vhwndExpand[i];
@@ -993,7 +992,7 @@ void SmartBrowser::RelayoutExpandos()
 void SmartBrowser::ResetPriority(int expandoid)
 {
    // base prioritys on the title of the property pane
-   const int titleid = m_vproppane[expandoid]->titlestringid;
+   const int titleid = m_vproppane[expandoid]->m_titlestringid;
    RemoveFromVectorSingle(m_vproppriority, titleid); // Remove this element if it currently exists in our current priority chain
    m_vproppriority.push_back(titleid); // Add it back at the end (top) of the chain
 }
@@ -1301,7 +1300,7 @@ LRESULT CALLBACK SBFrameProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
    case WM_CLOSE:
    {
-      if (g_pvp->m_fPropertiesFloating)
+      if (g_pvp->m_propertiesFloating)
       {
          return TRUE;
       }
@@ -1602,12 +1601,12 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
       pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-      if (pexinfo->m_fHasCaption) // Null title means not an expando
+      if (pexinfo->m_hasCaption) // Null title means not an expando
       {
          //const int xPos = LOWORD(lParam); 
          const int yPos = HIWORD(lParam);
          if (yPos < 16)//wParam == HTCAPTION)
-            SendMessage(hwnd, pexinfo->m_fExpanded ? EXPANDO_COLLAPSE : EXPANDO_EXPAND, 1, 0);
+            SendMessage(hwnd, pexinfo->m_expanded ? EXPANDO_COLLAPSE : EXPANDO_EXPAND, 1, 0);
       }
    }
    break;
@@ -1615,10 +1614,10 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case EXPANDO_EXPAND:
    {
       pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-      pexinfo->m_fExpanded = true;
+      pexinfo->m_expanded = true;
 
       int titleheight;
-      if (pexinfo->m_fHasCaption) // Null title means not an expando
+      if (pexinfo->m_hasCaption) // Null title means not an expando
       {
          titleheight = EXPANDOHEIGHT;
          pexinfo->m_psb->ResetPriority(pexinfo->m_id);
@@ -1638,7 +1637,7 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case EXPANDO_COLLAPSE:
    {
       pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-      pexinfo->m_fExpanded = false;
+      pexinfo->m_expanded = false;
 
       SetWindowPos(hwnd, NULL, 0, 0, pexinfo->m_psb->m_maxdialogwidth, EXPANDOHEIGHT, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
 
@@ -1675,7 +1674,7 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       //int textlength = GetWindowTextLength(hwnd);
 
       RECT rc;
-      if (pexinfo->m_fHasCaption) // Null title means not an expando
+      if (pexinfo->m_hasCaption) // Null title means not an expando
       {
          RECT rcCur;
          GetWindowRect(hwnd, &rcCur);

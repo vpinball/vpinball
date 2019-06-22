@@ -283,7 +283,7 @@ void Surface::UIRenderPass2(Sur * const psur)
    }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_fAlwaysDrawDragPoints);
+   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_alwaysDrawDragPoints);
 
    if (!fDrawDragpoints)
    {
@@ -302,10 +302,10 @@ void Surface::UIRenderPass2(Sur * const psur)
    for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
       CComObject<DragPoint> * const pdp = m_vdpoint[i];
-      if (!(fDrawDragpoints || pdp->m_fSlingshot))
+      if (!(fDrawDragpoints || pdp->m_slingshot))
          continue;
       psur->SetFillColor(-1);
-      psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
+      psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
 
       if (fDrawDragpoints)
       {
@@ -313,7 +313,7 @@ void Surface::UIRenderPass2(Sur * const psur)
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
       }
 
-      if (pdp->m_fSlingshot)
+      if (pdp->m_slingshot)
       {
          psur->SetObject(NULL);
          const CComObject<DragPoint> * const pdp2 = m_vdpoint[(i < m_vdpoint.size() - 1) ? (i + 1) : 0];
@@ -447,7 +447,7 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
    const float top = m_d.m_heighttop + m_ptable->m_tableheight;
 
    LineSeg *plineseg;
-   if (!pv1.fSlingshot)
+   if (!pv1.slingshot)
    {
       plineseg = new LineSeg(pv1, pv2, bottom, top);
    }
@@ -464,7 +464,7 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
 
    SetupHitObject(pvho, plineseg);
 
-   if (pv1.fSlingshot)  // slingshots always have hit events
+   if (pv1.slingshot)  // slingshots always have hit events
    {
       plineseg->m_obj = (IFireEvents*)this;
       plineseg->m_fe = true;
@@ -595,7 +595,7 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
       const int c = (i < m_numVertices - 1) ? (i + 1) : 0;
 
       Vertex2D vnormal[2];
-      if (pv1->fSmooth)
+      if (pv1->smooth)
       {
          vnormal[0].x = (rgnormal[a].x + rgnormal[i].x)*0.5f;
          vnormal[0].y = (rgnormal[a].y + rgnormal[i].y)*0.5f;
@@ -606,7 +606,7 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
          vnormal[0].y = rgnormal[i].y;
       }
 
-      if (pv2->fSmooth)
+      if (pv2->smooth)
       {
          vnormal[1].x = (rgnormal[i].x + rgnormal[c].x)*0.5f;
          vnormal[1].y = (rgnormal[i].y + rgnormal[c].y)*0.5f;
@@ -872,7 +872,7 @@ void Surface::PrepareSlingshots()
    for (size_t i = 0; i < m_vlinesling.size(); i++, offset += 9)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
-      plinesling->m_slingshotanim.m_fAnimations = (m_d.m_slingshotAnimation != 0);
+      plinesling->m_slingshotanim.m_animations = (m_d.m_slingshotAnimation != 0);
 
       rgv3D[offset].x = plinesling->v1.x;
       rgv3D[offset].y = plinesling->v1.y;
@@ -1157,7 +1157,7 @@ void Surface::AddPoint(int x, int y, const bool smooth)
    // Go through vertices (including iSeg itself) counting control points until iSeg
    int icp = 0;
    for (int i = 0; i < (iSeg + 1); i++)
-      if (vvertex[i].fControlPoint)
+      if (vvertex[i].controlPoint)
          icp++;
 
    CComObject<DragPoint> *pdp;
@@ -2141,27 +2141,27 @@ void Surface::UpdatePropertyPanes()
    if (m_propPhysics == NULL)
       return;
 
-   EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 3), m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 14), m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 116), m_d.m_collidable);
+   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), m_d.m_collidable);
+   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 3), m_d.m_collidable);
+   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 14), m_d.m_collidable);
+   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 111), m_d.m_collidable);
+   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 116), m_d.m_collidable);
 
    if (!m_d.m_collidable)
    {
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 4), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 15), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 4), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 15), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), FALSE);
    }
    else
    {
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 4), m_d.m_hitEvent);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 15), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 4), m_d.m_hitEvent);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 15), m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), m_d.m_overwritePhysics);
    }
 }
 

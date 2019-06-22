@@ -6,10 +6,10 @@ PinSound::PinSound() : PinSoundCopy(this)
    m_pDS3DBuffer = NULL;
    m_pdata = NULL;
    m_pPinDirectSound = NULL;
-   m_iOutputTarget = SNDOUT_TABLE;
-   m_iBalance = 0;
-   m_iFade = 0;
-   m_iVolume = 0;
+   m_outputTarget = SNDOUT_TABLE;
+   m_balance = 0;
+   m_fade = 0;
+   m_volume = 0;
 }
 
 PinSound::~PinSound()
@@ -17,9 +17,7 @@ PinSound::~PinSound()
    UnInitialize();
 
    if (m_pdata)
-   {
       delete [] m_pdata;
-   }
 }
 
 void PinSound::UnInitialize()
@@ -33,7 +31,7 @@ class PinDirectSound *PinSound::GetPinDirectSound()
    if (m_pPinDirectSound)
       return m_pPinDirectSound;
 
-   if (m_iOutputTarget == SNDOUT_BACKGLASS)
+   if (m_outputTarget == SNDOUT_BACKGLASS)
       return g_pvp->m_pbackglassds;
 
    return &(g_pvp->m_pds);
@@ -41,15 +39,15 @@ class PinDirectSound *PinSound::GetPinDirectSound()
 
 void PinSound::ReInitialize()
 {
-	SAFE_RELEASE(m_pDS3DBuffer);
-	SAFE_RELEASE(m_pDSBuffer);
-	m_pPinDirectSound = NULL;
-	GetPinDirectSound()->CreateDirectFromNative(this);
+   SAFE_RELEASE(m_pDS3DBuffer);
+   SAFE_RELEASE(m_pDSBuffer);
+   m_pPinDirectSound = NULL;
+   GetPinDirectSound()->CreateDirectFromNative(this);
 }
 
 PinDirectSound::PinDirectSound()
 {
-   m_i3DSoundMode = SNDCFG_SND3D2CH;
+   m_3DSoundMode = SNDCFG_SND3D2CH;
    m_pDS = NULL;
    m_pWaveSoundRead = NULL;
    m_pDSListener = NULL;
@@ -129,7 +127,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    dsbd.dwFlags = DSBCAPS_PRIMARYBUFFER;
    if (!IsBackglass)
    {
-	   if (m_i3DSoundMode != SNDCFG_SND3D2CH)
+	   if (m_3DSoundMode != SNDCFG_SND3D2CH)
 		   dsbd.dwFlags |= DSBCAPS_CTRL3D;
    }
    dsbd.dwBufferBytes = 0;
@@ -145,7 +143,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    WAVEFORMATEX wfx;
    ZeroMemory(&wfx, sizeof(WAVEFORMATEX));
    wfx.wFormatTag = WAVE_FORMAT_PCM;
-   wfx.nChannels = (m_i3DSoundMode != SNDCFG_SND3D2CH) ?  1 : 2;
+   wfx.nChannels = (m_3DSoundMode != SNDCFG_SND3D2CH) ?  1 : 2;
    wfx.nSamplesPerSec = 44100;
    wfx.wBitsPerSample = 16;
    wfx.nBlockAlign = wfx.wBitsPerSample / (WORD)8 * wfx.nChannels;
@@ -156,7 +154,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
       ShowError("Could not set sound format.");
       return;// hr;
    }
-   if (!IsBackglass && (m_i3DSoundMode != SNDCFG_SND3D2CH))
+   if (!IsBackglass && (m_3DSoundMode != SNDCFG_SND3D2CH))
    {
 	   // Obtain a listener interface.
 	   HRESULT result = pDSBPrimary->QueryInterface(IID_IDirectSound3DListener, (LPVOID*)&m_pDSListener);
@@ -235,8 +233,8 @@ HRESULT PinDirectSound::CreateStaticBuffer(const TCHAR* const strFileName, PinSo
    ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
    dsbd.dwSize = sizeof(DSBUFFERDESC);
    dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLPAN;
-   if (m_i3DSoundMode != SNDCFG_SND3D2CH)
-	   dsbd.dwFlags |= DSBCAPS_CTRL3D;
+   if (m_3DSoundMode != SNDCFG_SND3D2CH)
+      dsbd.dwFlags |= DSBCAPS_CTRL3D;
    dsbd.dwBufferBytes = m_pWaveSoundRead->m_ckIn.cksize;
    dsbd.lpwfxFormat = m_pWaveSoundRead->m_pwfx;
    memcpy(&pps->m_wfx, m_pWaveSoundRead->m_pwfx, sizeof(pps->m_wfx));
@@ -248,10 +246,8 @@ HRESULT PinDirectSound::CreateStaticBuffer(const TCHAR* const strFileName, PinSo
       ShowError("Could not create sound buffer.");
       return hr;
    }
-   if (m_i3DSoundMode != SNDCFG_SND3D2CH)
-   {
-	   pps->Get3DBuffer();
-   }
+   if (m_3DSoundMode != SNDCFG_SND3D2CH)
+      pps->Get3DBuffer();
 
    // Remember how big the buffer is
    m_dwBufferBytes = dsbd.dwBufferBytes;
@@ -329,7 +325,7 @@ HRESULT PinDirectSound::CreateDirectFromNative(PinSound * const pps)
    ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
    dsbd.dwSize = sizeof(DSBUFFERDESC);
    dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY;
-   if (m_i3DSoundMode != SNDCFG_SND3D2CH)
+   if (m_3DSoundMode != SNDCFG_SND3D2CH)
 	   dsbd.dwFlags |= DSBCAPS_CTRL3D;
    else
 	   dsbd.dwFlags |= DSBCAPS_CTRLPAN;
@@ -372,10 +368,8 @@ HRESULT PinDirectSound::CreateDirectFromNative(PinSound * const pps)
    pps->m_pDSBuffer->Unlock(pbData, pps->m_cdata, NULL, 0);
    pbData = NULL;
 
-   if (m_i3DSoundMode != SNDCFG_SND3D2CH)
-   {
-	   pps->Get3DBuffer();
-   }
+   if (m_3DSoundMode != SNDCFG_SND3D2CH)
+      pps->Get3DBuffer();
 
    return S_OK;
 }
@@ -410,9 +404,7 @@ PinSoundCopy::PinSoundCopy(class PinSound *pOriginal)
 		m_pDS3DBuffer = NULL;
 		pOriginal->GetPinDirectSound()->m_pDS->DuplicateSoundBuffer(pOriginal->m_pDSBuffer, &m_pDSBuffer);
 		if (m_pDSBuffer && pOriginal->m_pDS3DBuffer != NULL)
-		{
 			Get3DBuffer();
-		}
 	}
 }
 
@@ -440,7 +432,7 @@ void PinSoundCopy::Play(const float volume, const float randompitch, const int p
 			m_pDSBuffer->SetFrequency(freq + pitch);
 		}
 	}
-	switch (m_ppsOriginal->GetPinDirectSound()->m_i3DSoundMode)
+	switch (m_ppsOriginal->GetPinDirectSound()->m_3DSoundMode)
 	{
 	case SNDCFG_SND3DALLREAR:
 		m_pDS3DBuffer->SetPosition(PinDirectSound::PanTo3D(pan), 0.0f, -PinDirectSound::PanTo3D(1.0f), DS3D_IMMEDIATE);
@@ -476,14 +468,10 @@ void PinSoundCopy::Stop()
 
 HRESULT PinSoundCopy::Get3DBuffer()
 {
-	HRESULT hr = m_pDSBuffer->QueryInterface(IID_IDirectSound3DBuffer, (void**)&m_pDS3DBuffer);
+	const HRESULT hr = m_pDSBuffer->QueryInterface(IID_IDirectSound3DBuffer, (void**)&m_pDS3DBuffer);
 	if (FAILED(hr))
-	{
 		ShowError("Could not get interface to 3D sound buffer.");
-	}
 	else
-	{
 		m_pDS3DBuffer->SetMinDistance(5.0f, DS3D_IMMEDIATE);
-	}
 	return hr;
 }

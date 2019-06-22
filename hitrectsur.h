@@ -38,5 +38,5 @@ private:
    vector<ISelect*> *m_pvsel;
    vector<ISelect*> m_vselFailed;
 
-   bool m_fFailedAlready; // Object has already been discounted from selection
+   bool m_failedAlready; // Object has already been discounted from selection
 };

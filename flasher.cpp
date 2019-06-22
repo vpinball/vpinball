@@ -3,7 +3,7 @@
 Flasher::Flasher()
 {
    m_menuid = IDR_SURFACEMENU;
-   m_d.m_IsVisible = true;
+   m_d.m_isVisible = true;
    m_d.m_depthBias = 0.0f;
    m_dynamicVertexBuffer = 0;
    m_dynamicIndexBuffer = 0;
@@ -82,7 +82,7 @@ void Flasher::InitShape()
 HRESULT Flasher::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
-   m_d.m_IsVisible = true;
+   m_d.m_isVisible = true;
 
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
@@ -123,10 +123,10 @@ void Flasher::SetDefaults(bool fromMouseClick)
 
    m_d.m_modulate_vs_add = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Flasher", "ModulateVsAdd", 0.9f) : 0.9f;
    m_d.m_filterAmount = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Flasher", "FilterAmount", 100) : 100;
-   m_d.m_IsVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "Visible", true) : true;
-   m_d.m_fAddBlend = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "AddBlend", false) : false;
-   m_d.m_IsDMD = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "DMD", false) : false;
-   m_d.m_fDisplayTexture = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "DisplayTexture", false) : false;
+   m_d.m_isVisible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "Visible", true) : true;
+   m_d.m_addBlend = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "AddBlend", false) : false;
+   m_d.m_isDMD = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "DMD", false) : false;
+   m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Flasher", "DisplayTexture", false) : false;
    m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)LoadValueIntWithDefault("DefaultProps\\Flasher", "ImageMode", ImageModeWrap) : ImageModeWrap;
    m_d.m_filter = fromMouseClick ? (Filters)LoadValueIntWithDefault("DefaultProps\\Flasher", "Filter", Filter_Overlay) : Filter_Overlay;
 }
@@ -144,10 +144,10 @@ void Flasher::WriteRegDefaults()
    SaveValueString("DefaultProps\\Flasher", "ImageB", m_d.m_szImageB);
    SaveValueInt("DefaultProps\\Flasher", "Alpha", m_d.m_alpha);
    SaveValueFloat("DefaultProps\\Flasher", "ModulateVsAdd", m_d.m_modulate_vs_add);
-   SaveValueBool("DefaultProps\\Flasher", "Visible", m_d.m_IsVisible);
-   SaveValueBool("DefaultProps\\Flasher", "DisplayTexture", m_d.m_fDisplayTexture);
-   SaveValueBool("DefaultProps\\Flasher", "AddBlend", m_d.m_fAddBlend);
-   SaveValueBool("DefaultProps\\Flasher", "DMD", m_d.m_IsDMD);
+   SaveValueBool("DefaultProps\\Flasher", "Visible", m_d.m_isVisible);
+   SaveValueBool("DefaultProps\\Flasher", "DisplayTexture", m_d.m_displayTexture);
+   SaveValueBool("DefaultProps\\Flasher", "AddBlend", m_d.m_addBlend);
+   SaveValueBool("DefaultProps\\Flasher", "DMD", m_d.m_isDMD);
    SaveValueInt("DefaultProps\\Flasher", "ImageMode", m_d.m_imagealignment);
    SaveValueInt("DefaultProps\\Flasher", "Filter", m_d.m_filter);
    SaveValueInt("DefaultProps\\Flasher", "FilterAmount", m_d.m_filterAmount);
@@ -166,7 +166,7 @@ void Flasher::UIRenderPass1(Sur * const psur)
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
    Texture *ppi;
-   if (m_ptable->RenderSolid() && m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImageA)))
+   if (m_ptable->RenderSolid() && m_d.m_displayTexture && (ppi = m_ptable->GetImage(m_d.m_szImageA)))
    {
       ppi->EnsureHBitmap();
       if (m_d.m_imagealignment == ImageModeWrap)
@@ -214,7 +214,7 @@ void Flasher::UIRenderPass2(Sur * const psur)
    }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_fAlwaysDrawDragPoints);
+   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_alwaysDrawDragPoints);
 
    if (!fDrawDragpoints)
    {
@@ -235,7 +235,7 @@ void Flasher::UIRenderPass2(Sur * const psur)
    {
       CComObject<DragPoint> * const pdp = m_vdpoint[i];
       psur->SetFillColor(-1);
-      psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
+      psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
       psur->SetObject(pdp);
 
       psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
@@ -508,7 +508,7 @@ void Flasher::DoCommand(int icmd, int x, int y)
       // Go through vertices (including iSeg itself) counting control points until iSeg
       int icp = 0;
       for (int i = 0; i < (iSeg + 1); i++)
-         if (vvertex[i].fControlPoint)
+         if (vvertex[i].controlPoint)
             icp++;
 
       CComObject<DragPoint> *pdp;
@@ -544,10 +544,10 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteString(FID(IMAB), m_d.m_szImageB);
    bw.WriteInt(FID(FALP), m_d.m_alpha);
    bw.WriteFloat(FID(MOVA), m_d.m_modulate_vs_add);
-   bw.WriteBool(FID(FVIS), m_d.m_IsVisible);
-   bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
-   bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
-   bw.WriteBool(FID(IDMD), m_d.m_IsDMD);
+   bw.WriteBool(FID(FVIS), m_d.m_isVisible);
+   bw.WriteBool(FID(DSPT), m_d.m_displayTexture);
+   bw.WriteBool(FID(ADDB), m_d.m_addBlend);
+   bw.WriteBool(FID(IDMD), m_d.m_isDMD);
    bw.WriteFloat(FID(FLDB), m_d.m_depthBias);
    bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
    bw.WriteInt(FID(FILT), m_d.m_filter);
@@ -649,19 +649,19 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(FVIS))
    {
-      pbr->GetBool(&m_d.m_IsVisible);
+      pbr->GetBool(&m_d.m_isVisible);
    }
    else if (id == FID(ADDB))
    {
-      pbr->GetBool(&m_d.m_fAddBlend);
+      pbr->GetBool(&m_d.m_addBlend);
    }
    else if (id == FID(IDMD))
    {
-      pbr->GetBool(&m_d.m_IsDMD);
+      pbr->GetBool(&m_d.m_isDMD);
    }
    else if (id == FID(DSPT))
    {
-      pbr->GetBool(&m_d.m_fDisplayTexture);
+      pbr->GetBool(&m_d.m_displayTexture);
    }
    else if (id == FID(FLDB))
    {
@@ -1075,7 +1075,7 @@ STDMETHODIMP Flasher::put_Amount(long newVal)
 
 STDMETHODIMP Flasher::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
 {
-   *pVal = FTOVB(m_d.m_IsVisible);
+   *pVal = FTOVB(m_d.m_isVisible);
 
    return S_OK;
 }
@@ -1085,7 +1085,7 @@ STDMETHODIMP Flasher::put_Visible(VARIANT_BOOL newVal)
    //if (!g_pplayer )
    {
       STARTUNDO
-      m_d.m_IsVisible = VBTOb(newVal);			// set visibility
+      m_d.m_isVisible = VBTOb(newVal); // set visibility
       STOPUNDO
    }
 
@@ -1094,7 +1094,7 @@ STDMETHODIMP Flasher::put_Visible(VARIANT_BOOL newVal)
 
 STDMETHODIMP Flasher::get_DisplayTexture(VARIANT_BOOL *pVal) //temporary value of object
 {
-   *pVal = FTOVB(m_d.m_fDisplayTexture);
+   *pVal = FTOVB(m_d.m_displayTexture);
 
    return S_OK;
 }
@@ -1104,7 +1104,7 @@ STDMETHODIMP Flasher::put_DisplayTexture(VARIANT_BOOL newVal)
    if (!g_pplayer)
    {
       STARTUNDO
-      m_d.m_fDisplayTexture = VBTOb(newVal);			// set visibility
+      m_d.m_displayTexture = VBTOb(newVal); // set visibility
       STOPUNDO
    }
 
@@ -1113,7 +1113,7 @@ STDMETHODIMP Flasher::put_DisplayTexture(VARIANT_BOOL newVal)
 
 STDMETHODIMP Flasher::get_AddBlend(VARIANT_BOOL *pVal) //temporary value of object
 {
-   *pVal = FTOVB(m_d.m_fAddBlend);
+   *pVal = FTOVB(m_d.m_addBlend);
 
    return S_OK;
 }
@@ -1121,7 +1121,7 @@ STDMETHODIMP Flasher::get_AddBlend(VARIANT_BOOL *pVal) //temporary value of obje
 STDMETHODIMP Flasher::put_AddBlend(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fAddBlend = VBTOb(newVal);
+   m_d.m_addBlend = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -1129,7 +1129,7 @@ STDMETHODIMP Flasher::put_AddBlend(VARIANT_BOOL newVal)
 
 STDMETHODIMP Flasher::get_DMD(VARIANT_BOOL *pVal) //temporary value of object
 {
-   *pVal = FTOVB(m_d.m_IsDMD);
+   *pVal = FTOVB(m_d.m_isDMD);
 
    return S_OK;
 }
@@ -1137,7 +1137,7 @@ STDMETHODIMP Flasher::get_DMD(VARIANT_BOOL *pVal) //temporary value of object
 STDMETHODIMP Flasher::put_DMD(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_IsDMD = VBTOb(newVal);
+   m_d.m_isDMD = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -1190,7 +1190,7 @@ void Flasher::RenderDynamic()
    TRACE_FUNCTION();
 
    // Don't render if invisible (or DMD connection not set)
-   if (!m_d.m_IsVisible || m_dynamicVertexBuffer == NULL || m_ptable->m_reflectionEnabled || (m_d.m_IsDMD && !g_pplayer->m_texdmd))
+   if (!m_d.m_isVisible || m_dynamicVertexBuffer == NULL || m_ptable->m_reflectionEnabled || (m_d.m_isDMD && !g_pplayer->m_texdmd))
       return;
 
    const vec4 color = convertColor(m_d.m_color, (float)m_d.m_alpha*m_d.m_intensity_scale / 100.0f);
@@ -1200,12 +1200,12 @@ void Flasher::RenderDynamic()
    if (color.x == 0.f && color.y == 0.f && color.z == 0.f)
       return;
 
-   if (m_d.m_IsDMD && (g_pplayer->m_dmdstate == 0)) // don't draw any DMD, but this case should not happen in the first place
+   if (m_d.m_isDMD && (g_pplayer->m_dmdstate == 0)) // don't draw any DMD, but this case should not happen in the first place
       return;
 
    const bool alphadmd = (m_d.m_modulate_vs_add < 1.f);
 
-   if (m_d.m_IsDMD &&
+   if (m_d.m_isDMD &&
        (((g_pplayer->m_dmdstate == 1) && alphadmd) || // render alpha DMD
         ((g_pplayer->m_dmdstate == 2) && !alphadmd))) // render normal DMD
    {
@@ -1220,7 +1220,7 @@ void Flasher::RenderDynamic()
 
        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
        if ((g_pplayer->m_dmdstate == 1) && alphadmd)
-          g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend);
+          g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend);
        else
           g_pplayer->m_pin3d.DisableAlphaBlend();
 
@@ -1300,7 +1300,7 @@ void Flasher::RenderDynamic()
 
        pd3dDevice->flasherShader->SetFlasherColorAlpha(color);
 
-       vec4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_fAddBlend ? 1.f : 0.f);
+       vec4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_addBlend ? 1.f : 0.f);
        float flasherMode;
        pd3dDevice->flasherShader->SetTechnique("basic_noLight");
 
@@ -1309,7 +1309,7 @@ void Flasher::RenderDynamic()
            flasherMode = 0.f;
            pd3dDevice->flasherShader->SetTexture("Texture0", pinA, false);
 
-           if (!m_d.m_fAddBlend)
+           if (!m_d.m_addBlend)
                flasherData.x = pinA->m_alphaTestValue * (float)(1.0 / 255.0);
 
            //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
@@ -1319,7 +1319,7 @@ void Flasher::RenderDynamic()
            flasherMode = 0.f;
            pd3dDevice->flasherShader->SetTexture("Texture0", pinB, false);
 
-           if (!m_d.m_fAddBlend)
+           if (!m_d.m_addBlend)
                flasherData.x = pinB->m_alphaTestValue * (float)(1.0 / 255.0);
 
            //ppin3d->SetPrimaryTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
@@ -1330,7 +1330,7 @@ void Flasher::RenderDynamic()
            pd3dDevice->flasherShader->SetTexture("Texture0", pinA, false);
            pd3dDevice->flasherShader->SetTexture("Texture1", pinB, false);
 
-           if (!m_d.m_fAddBlend)
+           if (!m_d.m_addBlend)
            {
                flasherData.x = pinA->m_alphaTestValue * (float)(1.0 / 255.0);
                flasherData.y = pinB->m_alphaTestValue * (float)(1.0 / 255.0);
@@ -1344,10 +1344,10 @@ void Flasher::RenderDynamic()
        pd3dDevice->flasherShader->SetFlasherData(flasherData, flasherMode);
 
        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
-       g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend, false, false);
-       pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? RenderDevice::INVSRC_COLOR : RenderDevice::INVSRC_ALPHA);
-       pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_fAddBlend ? RenderDevice::BLENDOP_REVSUBTRACT : RenderDevice::BLENDOP_ADD);
-       
+       g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_addBlend, false, false);
+       pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_addBlend ? RenderDevice::INVSRC_COLOR : RenderDevice::INVSRC_ALPHA);
+       pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_addBlend ? RenderDevice::BLENDOP_REVSUBTRACT : RenderDevice::BLENDOP_ADD);
+
        pd3dDevice->flasherShader->Begin(0);
        pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_TEX, m_dynamicVertexBuffer, 0, m_numVertices, m_dynamicIndexBuffer, 0, m_numPolys * 3);
        pd3dDevice->flasherShader->End();
@@ -1364,9 +1364,9 @@ void Flasher::UpdatePropertyPanes()
       return;
 
    const BOOL w8 = (m_d.m_szImageA[0] == 0 && m_d.m_szImageB[0] == 0) ? FALSE : TRUE;
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, 8), w8);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, 8), w8);
 
    const BOOL w_ec_fa = (m_d.m_szImageB[0] == 0 || m_d.m_szImageA[0] == 0) ? FALSE : TRUE;
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_EFFECT_COMBO), w_ec_fa);
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_FILTERAMOUNT_EDIT), w_ec_fa);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_EFFECT_COMBO), w_ec_fa);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_FILTERAMOUNT_EDIT), w_ec_fa);
 }

@@ -71,7 +71,7 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
 
 void SlingshotAnimObject::Animate()
 {
-   if (!m_iframe && (m_TimeReset != 0) && m_fAnimations)
+   if (!m_iframe && (m_TimeReset != 0) && m_animations)
    {
       m_iframe = true;
    }
@@ -127,7 +127,7 @@ HitGate::HitGate(Gate * const pgate, const float height)
     m_gateMover.m_gravityfactor = pgate->m_d.m_gravityfactor;
 
     m_gateMover.m_pgate = pgate;
-    m_gateMover.m_fOpen = false;
+    m_gateMover.m_open = false;
     m_gateMover.m_forcedMove = false;
     m_twoWay = false;
 }
@@ -253,7 +253,7 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
 
 void GateMoverObject::UpdateVelocities()
 {
-   if (!m_fOpen)
+   if (!m_open)
    {
       if (fabsf(m_angle) < (m_angleMin+0.01f) && fabsf(m_anglespeed) < 0.01f)
       {

@@ -5,10 +5,10 @@ IEditable::IEditable()
 {
    m_phittimer = NULL;
 
-   m_fBackglass = false;
+   m_backglass = false;
    m_isVisible = true;
    VariantInit(&m_uservalue);
-   m_fSingleEvents = true;
+   m_singleEvents = true;
 }
 
 IEditable::~IEditable()
@@ -131,7 +131,7 @@ void IEditable::BeginPlay()
    m_vEventCollection.clear();
    m_viEventCollection.clear();
 
-   m_fSingleEvents = true;
+   m_singleEvents = true;
    for (size_t i = 0; i < m_vCollection.size(); i++)
    {
       Collection * const pcol = m_vCollection[i];
@@ -141,7 +141,7 @@ void IEditable::BeginPlay()
          m_viEventCollection.push_back(m_viCollection[i]);
       }
       if (pcol->m_stopSingleEvents)
-         m_fSingleEvents = false;
+         m_singleEvents = false;
    }
 }
 

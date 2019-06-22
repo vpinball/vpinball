@@ -459,7 +459,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
       case GET_COLOR_TABLE:
       {
-         *((unsigned long **)lParam) = &g_pvp->dummyMaterial.m_cBase;
+         *((unsigned long **)lParam) = &g_pvp->m_dummyMaterial.m_cBase;
          return TRUE;
       }
 

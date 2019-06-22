@@ -470,7 +470,7 @@ Player::Player(bool _cameraMode) : m_cameraMode(_cameraMode)
    m_pBCTarget = NULL;
 
 #ifdef PLAYBACK
-   m_fPlayback = false;
+   m_playback = false;
    m_fplaylog = NULL;
 #endif
 
@@ -766,7 +766,7 @@ void Player::Shutdown()
    m_changed_vht.clear();
 
 #if(_WIN32_WINNT >= 0x0500)
-   if (m_fFullScreen) // revert special tweaks of exclusive fullscreen app
+   if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
    {
        ::LockSetForegroundWindow(LSFW_UNLOCK);
        ::ShowCursor(TRUE);
@@ -1084,15 +1084,15 @@ void Player::InitShader()
    //m_pin3d.m_pd3dDevice->classicLightShader->SetVector("camera", &cam);
 #endif
 
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetBool("hdrEnvTextures", (m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.envTexture)->IsHDR());
-   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture("Texture1", m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.envTexture, false);
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetBool("hdrEnvTextures", (m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture)->IsHDR());
+   m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture("Texture1", m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture, false);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetTexture("Texture2", m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(m_pin3d.m_envRadianceTexture, false));
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetBool("hdrEnvTextures", (m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.envTexture)->IsHDR());
-   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetTexture("Texture1", m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.envTexture);
+   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetBool("hdrEnvTextures", (m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture)->IsHDR());
+   m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetTexture("Texture1", m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.m_builtinEnvTexture);
    m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetTexture("Texture2", m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture));
 #endif
-   const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f);
+   const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
    m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector("fenvEmissionScale_TexWidth", &st);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector("fenvEmissionScale_TexWidth", &st);
@@ -1169,7 +1169,7 @@ void Player::InitBallShader()
 
    //vec4 cam( matView._41, matView._42, matView._43, 1 );
    //m_ballShader->SetVector("camera", &cam);
-   const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f);
+   const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
    m_ballShader->SetVector("fenvEmissionScale_TexWidth", &st);
    //m_ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
@@ -1300,7 +1300,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    const int colordepth = LoadValueIntWithDefault("Player", "ColorDepth", 32);
 
    // colordepth & refreshrate are only defined if fullscreen is true.
-   const HRESULT hr = m_pin3d.InitPin3D(m_playfieldHwnd, m_fFullScreen, m_width, m_height, colordepth,
+   const HRESULT hr = m_pin3d.InitPin3D(m_playfieldHwnd, m_fullScreen, m_width, m_height, colordepth,
                                         m_refreshrate, vsync, useAA, !!m_stereo3D, FXAA, !m_disableAO, ss_refl);
 
    if (hr != S_OK)
@@ -1311,7 +1311,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       return hr;
    }
 
-   if (m_fFullScreen)
+   if (m_fullScreen)
       SetWindowPos(m_playfieldHwnd, NULL, 0, 0, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
 
    m_pininput.Init(m_playfieldHwnd);
@@ -1608,7 +1608,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 #endif
 
 #ifdef PLAYBACK
-   if (m_fPlayback)
+   if (m_playback)
       m_fplaylog = fopen("c:\\badlog.txt", "r");
 #endif
 
@@ -1625,7 +1625,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    m_nextPhysicsFrameTime = m_curPhysicsFrameTime + PHYSICS_STEPTIME;
 
 #ifdef PLAYBACK
-   if (m_fPlayback)
+   if (m_playback)
    {
       float physicsStepTime;
       ParseLog((LARGE_INTEGER*)&physicsStepTime, (LARGE_INTEGER*)&m_StartTime_usec);
@@ -1663,9 +1663,9 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    Render(); //!! why here already? potentially not all initialized yet??
 
 #if(_WIN32_WINNT >= 0x0500)
-   if (m_fFullScreen) // Doubly insure processes can't take focus away from our exclusive fullscreen app, fixes problems noticed under PinUP Popper losing focus from B2S.
+   if (m_fullScreen) // Doubly insure processes can't take focus away from our exclusive fullscreen app, fixes problems noticed under PinUP Popper losing focus from B2S.
    {
-	   ::LockSetForegroundWindow(LSFW_LOCK);
+      ::LockSetForegroundWindow(LSFW_LOCK);
    }
 #else
 #pragma message ( "Warning: Missing LockSetForegroundWindow()" )
@@ -1936,10 +1936,10 @@ void Player::InitStatic(HWND hwndProgress)
    if (!m_cameraMode)
    {
       const bool drawBallReflection = ((m_reflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
-      if (!(m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) && drawBallReflection)
+      if (!(m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) && drawBallReflection)
          RenderStaticMirror(true);
       else
-         if (m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/)
+         if (m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/)
             RenderStaticMirror(false);
 
       // exclude playfield depth as dynamic mirror objects have to be added later-on
@@ -1947,7 +1947,7 @@ void Player::InitStatic(HWND hwndProgress)
       m_pin3d.RenderPlayfieldGraphics(false);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
-      if (m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/)
+      if (m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/)
          RenderMirrorOverlay();
 
       // to compensate for this when rendering the static objects, enable clipplane
@@ -2123,7 +2123,7 @@ void Player::InitStatic(HWND hwndProgress)
       m_pin3d.m_pd3dPrimaryDevice->Clear(0, NULL, clearType::TARGET, 0, 1.0f, 0L);
 
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", &m_pin3d.aoDitherTexture, true);
+      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", &m_pin3d.m_aoDitherTexture, true);
       const vec4 ao_s_tb(m_ptable->m_AOScale, 0.1f, 0.f,0.f);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("AO_scale_timeblur", &ao_s_tb);
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique("AO");
@@ -2272,15 +2272,15 @@ void Player::InitGameplayWindow()
 
    //
 
-   m_fFullScreen = LoadValueBoolWithDefault("Player", "FullScreen", IsWindows10_1803orAbove());
+   m_fullScreen = LoadValueBoolWithDefault("Player", "FullScreen", IsWindows10_1803orAbove());
 
    // command line override
    if (disEnableTrueFullscreen == 0)
-      m_fFullScreen = false;
+      m_fullScreen = false;
    else if (disEnableTrueFullscreen == 1)
-      m_fFullScreen = true;
+      m_fullScreen = true;
 
-   m_width = LoadValueIntWithDefault("Player", "Width", m_fFullScreen ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH);
+   m_width = LoadValueIntWithDefault("Player", "Width", m_fullScreen ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH);
    m_height = LoadValueIntWithDefault("Player", "Height", m_width * 9 / 16);
 
    int x = 0;
@@ -2289,7 +2289,7 @@ void Player::InitGameplayWindow()
    int display = LoadValueIntWithDefault("Player", "Display", -1);
    display = (display < getNumberOfDisplays()) ? display : -1;
 
-   if (m_fFullScreen)
+   if (m_fullScreen)
    {
       m_screenwidth = m_width;
       m_screenheight = m_height;
@@ -2340,7 +2340,7 @@ void Player::InitGameplayWindow()
 
    const int captionheight = GetSystemMetrics(SM_CYCAPTION);
 
-   if (false) // only do this nowadays if ESC menu is brought up //(!m_fFullScreen && ((m_screenheight - m_height) >= (captionheight * 2))) // We have enough room for a frame?
+   if (false) // only do this nowadays if ESC menu is brought up //(!m_fullScreen && ((m_screenheight - m_height) >= (captionheight * 2))) // We have enough room for a frame?
    {
       // Add a pretty window border and standard control boxes.
 
@@ -2362,10 +2362,10 @@ void Player::InitGameplayWindow()
    m_playfieldHwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
 #if(_WIN32_WINNT >= 0x0500)
-   if (m_fFullScreen) // blocks processes from taking focus away from our exclusive fullscreen app and disables mouse cursor
+   if (m_fullScreen) // blocks processes from taking focus away from our exclusive fullscreen app and disables mouse cursor
    {
-	   ::LockSetForegroundWindow(LSFW_LOCK);
-	   ::ShowCursor(FALSE);
+      ::LockSetForegroundWindow(LSFW_LOCK);
+      ::ShowCursor(FALSE);
    }
 #else
    #pragma message ( "Warning: Missing LockSetForegroundWindow()" )
@@ -2442,7 +2442,7 @@ void Player::InitGameplayWindow()
    mixer_init(m_playfieldHwnd);
    hid_init();
 
-   if (!m_fFullScreen) // see above
+   if (!m_fullScreen) // see above
       SetCursorPos(400, 999999);
 }
 
@@ -2563,7 +2563,7 @@ void Player::CalcBallAspectRatio()
    case 2:
       m_BallStretchX = scalebackX*c + scalebackY*s;
       m_BallStretchY = scalebackY*c + scalebackX*s;
-      if (m_fFullScreen || (m_width == m_screenwidth && m_height == m_screenheight)) // detect windowed fullscreen
+      if (m_fullScreen || (m_width == m_screenwidth && m_height == m_screenheight)) // detect windowed fullscreen
       {
          m_antiStretchBall = true;
          m_BallStretchX *= scalebackMonitorX*c + scalebackMonitorY*s;
@@ -2669,7 +2669,7 @@ const float IIR_b[IIR_Order + 1] = {
    -1.0546654f,
    0.1873795f };
 
-void Player::mechPlungerUpdate()        // called on every integral physics frame, only really triggered if before mechPlungerIn() was called, which again relies on USHOCKTYPE_GENERIC,USHOCKTYPE_ULTRACADE,USHOCKTYPE_PBWIZARD,USHOCKTYPE_VIRTUAPIN,USHOCKTYPE_SIDEWINDER being used
+void Player::MechPlungerUpdate()        // called on every integral physics frame, only really triggered if before MechPlungerIn() was called, which again relies on USHOCKTYPE_GENERIC,USHOCKTYPE_ULTRACADE,USHOCKTYPE_PBWIZARD,USHOCKTYPE_VIRTUAPIN,USHOCKTYPE_SIDEWINDER being used
 {
    static int init = IIR_Order;    // first time call
    static float x[IIR_Order + 1] = { 0, 0, 0, 0, 0 };
@@ -2745,7 +2745,7 @@ float PlungerMoverObject::MechPlunger() const
    }
 }
 
-void Player::mechPlungerIn(const int z)
+void Player::MechPlungerIn(const int z)
 {
    m_curPlunger = -z; //axis reversal
 
@@ -3373,7 +3373,7 @@ void Player::UpdatePhysics()
 #endif
 
       NudgeUpdate();       // physics_diff_time is the balance of time to move from the graphic frame position to the next
-      mechPlungerUpdate(); // integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
+      MechPlungerUpdate(); // integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
       // this integral physics frame. Accelerations and inputs are always physics frame aligned
 
       // table movement is modeled as a mass-spring-damper system
@@ -3647,9 +3647,9 @@ void Player::RenderDynamics()
    {
 	   const bool drawBallReflection = ((m_reflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
 
-	   if (!(m_ptable->m_fReflectElementsOnPlayfield && g_pplayer->m_pf_refl) && drawBallReflection)
+	   if (!(m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl) && drawBallReflection)
 		   reflection_path = 1;
-	   else if (m_ptable->m_fReflectElementsOnPlayfield && g_pplayer->m_pf_refl)
+	   else if (m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl)
 		   reflection_path = 2;
    }
 
@@ -3673,7 +3673,7 @@ void Player::RenderDynamics()
    {
       m_pin3d.InitLights();
 
-      const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
+      const vec4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.m_builtinEnvTexture.m_height/*+m_pin3d.m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
       m_pin3d.m_pd3dPrimaryDevice->basicShader->SetVector("fenvEmissionScale_TexWidth", &st);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
       m_pin3d.m_pd3dPrimaryDevice->classicLightShader->SetVector("fenvEmissionScale_TexWidth", &st);
@@ -3867,7 +3867,7 @@ void Player::SSRefl()
 
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture());
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", &m_pin3d.aoDitherTexture, true); //!!!
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", &m_pin3d.m_aoDitherTexture, true); //!!!
 
    const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), 1.0f, 1.0f);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("w_h_height", &w_h_height);
@@ -4216,7 +4216,7 @@ void Player::UpdateHUD()
 		}
 	}
 
-	if (m_fFullScreen && m_closeDown && !IsWindows10_1803orAbove()) // cannot use dialog boxes in exclusive fullscreen on older windows versions, so necessary
+	if (m_fullScreen && m_closeDown && !IsWindows10_1803orAbove()) // cannot use dialog boxes in exclusive fullscreen on older windows versions, so necessary
 	{
 		char szFoo[256];
 		const int len2 = sprintf_s(szFoo, "Press 'Enter' to continue or Press 'Q' to exit");
@@ -4453,7 +4453,7 @@ void Player::PrepareVideoBuffersAO()
 
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pddsAOBackBuffer);
    //m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture1", m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()); // temporary normals
-   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", &m_pin3d.aoDitherTexture, true);
+   m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture4", &m_pin3d.m_aoDitherTexture, true);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
    const vec4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height),
@@ -4934,7 +4934,7 @@ void Player::Render()
 
 		   // add or remove caption, border and buttons (only if in windowed mode)?
 		   const int captionheight = GetSystemMetrics(SM_CYCAPTION);
-		   if (!m_fFullScreen && (m_showWindowedCaption || (!m_showWindowedCaption && ((m_screenheight - m_height) >= (captionheight * 2))))) // We have enough room for a frame? //!! *2 ??
+		   if (!m_fullScreen && (m_showWindowedCaption || (!m_showWindowedCaption && ((m_screenheight - m_height) >= (captionheight * 2))))) // We have enough room for a frame? //!! *2 ??
 		   {
 			   RECT rect;
 			   GetWindowRect(m_playfieldHwnd, &rect);
@@ -5293,8 +5293,8 @@ void Player::DrawBalls()
 
       if (!pball->m_pinballEnv)
       {
-         m_ballShader->SetBool("hdrTexture0", m_pin3d.pinballEnvTexture.IsHDR()); // should always be false, as read from (LDR-Bitmap-)Resources
-         m_ballShader->SetTexture("Texture0", &m_pin3d.pinballEnvTexture, false);
+         m_ballShader->SetBool("hdrTexture0", m_pin3d.m_pinballEnvTexture.IsHDR()); // should always be false, as read from (LDR-Bitmap-)Resources
+         m_ballShader->SetTexture("Texture0", &m_pin3d.m_pinballEnvTexture, false);
       }
       else
       {
@@ -5651,15 +5651,15 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
       break;
 
    case WM_DESTROY:
-	   if (g_pplayer && !g_pplayer->m_fFullScreen)
-		   ShutDownPlayer();
+      if (g_pplayer && !g_pplayer->m_fullScreen)
+         ShutDownPlayer();
       break;
 
    case WM_CLOSE:
-	   // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY if script is not closed first.   
-	   // Shut down script first if in exclusive mode.  
-	   if (g_pplayer->m_fFullScreen)
-		   ShutDownPlayer();
+      // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY if script is not closed first.   
+      // Shut down script first if in exclusive mode.  
+      if (g_pplayer->m_fullScreen)
+         ShutDownPlayer();
       break;
 
    case WM_KEYDOWN:
@@ -5897,7 +5897,7 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
          if (szLine[c] == EOF)
          {
             fclose(m_fplaylog);
-            m_fPlayback = false;
+            m_playback = false;
             m_fplaylog = NULL;
             return dtime;
          }

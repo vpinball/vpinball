@@ -26,7 +26,10 @@ public:
    virtual void SetBorderColor(const int rgb, const bool fDashed, const int width);
    virtual void SetLineColor(const int rgb, const bool fDashed, const int width);
 
-   ISelect *m_pcur, *m_pselected;
+   ISelect *m_pselected;
+
+private:
+   ISelect *m_pcur;
 
    int m_hitx, m_hity;
 };

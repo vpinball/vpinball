@@ -157,20 +157,20 @@ public:
    STDMETHOD(Play)(/*[in]*/ SequencerState Animation, /*[in]*/ long TailLength, /*[in]*/ long Repeat, /*[in]*/ long Pause);
    STDMETHOD(StopPlay)();
 
-   void		Animate();
+   void     Animate();
 
    LightSeqAnimObject m_lightseqanim;
 
 private:
-   PinTable           *m_ptable;
-   LightSeqData       m_d;
+   PinTable     *m_ptable;
+   LightSeqData m_d;
 
-   void		SetupTracers(const SequencerState Animation, long TailLength, long Repeat, long Pause);
-   bool		ProcessTracer(_tracer * const pTracer, const LightState State);
-   void		SetAllLightsToState(const LightState State);
-   void 		SetElementToState(const int index, const LightState State);
-   LightState	GetElementState(const int index) const;
-   bool		VerifyAndSetGridElement(const int x, const int y, const LightState State);
+   void     SetupTracers(const SequencerState Animation, long TailLength, long Repeat, long Pause);
+   bool     ProcessTracer(_tracer * const pTracer, const LightState State);
+   void     SetAllLightsToState(const LightState State);
+   void     SetElementToState(const int index, const LightState State);
+   LightState GetElementState(const int index) const;
+   bool     VerifyAndSetGridElement(const int x, const int y, const LightState State);
 };
 
 #endif // !defined(AFX_LIGHTSEQ_H__5EC2D0B7_3868_4CCC_81EC_A4653460DF7E__INCLUDED_)

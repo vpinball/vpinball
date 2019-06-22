@@ -82,7 +82,6 @@ public:
    STDMETHOD_(ULONG, Release)();
    //inline IDispatch *GetDispatch() {return (IVPinball *)this;}
 
-   HRESULT CheckTypeInfo(UINT itinfo, LCID lcid);
    ITypeInfo **GetTinfoClsAddr() { return &m_ptinfoCls; }
    ITypeInfo **GetTinfoIntAddr() { return &m_ptinfoInt; }
 
@@ -147,12 +146,12 @@ public:
 
    CodeViewer *m_pcv; // Currently active code window
 
-   bool m_fBackglassView; // Whether viewing the playfield or screen layout
+   bool m_backglassView; // Whether viewing the playfield or screen layout
 
-   bool m_fPropertiesFloating;
+   bool m_propertiesFloating;
 
-   bool m_fAlwaysDrawDragPoints;
-   bool m_fAlwaysDrawLightCenters;
+   bool m_alwaysDrawDragPoints;
+   bool m_alwaysDrawLightCenters;
    int m_gridSize;
    int m_convertToUnit; //0=Inches, 1=Millimeters, 2=VPUnits
 
@@ -174,7 +173,7 @@ public:
    void SetStatusBarElementInfo(const char *info);
    void SetStatusBarUnitInfo(const char *info, const bool isUnit);
 
-   Material dummyMaterial;
+   Material m_dummyMaterial;
    COLORREF m_elemSelectColor;
    COLORREF m_elemSelectLockedColor;
    COLORREF m_backgroundColor;

@@ -8,7 +8,7 @@ public:
    HitQuadtree()
    {
       m_unique = NULL;
-      m_fLeaf = true;
+      m_leaf = true;
       lefts = 0;
       rights = 0;
       tops = 0;
@@ -46,7 +46,7 @@ private:
    float* __restrict zlows;
    float* __restrict zhighs;
 
-   bool m_fLeaf;
+   bool m_leaf;
 
 #if !defined(NDEBUG) && defined(PRINT_DEBUG_COLLISION_TREE)
 public:
@@ -59,7 +59,7 @@ public:
       sprintf_s(msg, "[%f %f], items=%u", m_vcenter.x, m_vcenter.y, m_vho.size());
       strcat_s(indent, msg);
       OutputDebugString(indent);
-      if (!m_fLeaf)
+      if (!m_leaf)
       {
          m_children[0]->DumpTree(indentLevel + 1);
          m_children[1]->DumpTree(indentLevel + 1);

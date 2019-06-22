@@ -22,7 +22,7 @@ HitPlunger::HitPlunger(const float x, const float y, const float x2, const float
    m_plungerMover.m_fireTimer = 0;
    m_plungerMover.m_autoFireTimer = 0;
 
-   m_plungerMover.m_fStrokeEventsArmed = false;
+   m_plungerMover.m_strokeEventsArmed = false;
    m_plungerMover.m_speed = 0.0f;
    m_plungerMover.m_travelLimit = frameTop;
    m_plungerMover.m_scatterVelocity = pPlunger->m_d.m_scatterVelocity;
@@ -164,21 +164,21 @@ void PlungerMoverObject::UpdateDisplacements(const float dtime)
    // fire an Start/End of Stroke events, as appropriate
    const float strokeEventLimit = m_frameLen / 50.0f;
    const float strokeEventHysteresis = strokeEventLimit*2.0f;
-   if (m_fStrokeEventsArmed && m_pos + dx > m_frameStart - strokeEventLimit)
+   if (m_strokeEventsArmed && m_pos + dx > m_frameStart - strokeEventLimit)
    {
       m_plunger->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(m_speed));
-      m_fStrokeEventsArmed = false;
+      m_strokeEventsArmed = false;
    }
-   else if (m_fStrokeEventsArmed && m_pos + dx < m_frameEnd + strokeEventLimit)
+   else if (m_strokeEventsArmed && m_pos + dx < m_frameEnd + strokeEventLimit)
    {
       m_plunger->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(m_speed));
-      m_fStrokeEventsArmed = false;
+      m_strokeEventsArmed = false;
    }
    else if (m_pos > m_frameEnd + strokeEventHysteresis
       && m_pos < m_frameStart - strokeEventHysteresis)
    {
       // away from the limits - arm the stroke events
-      m_fStrokeEventsArmed = true;
+      m_strokeEventsArmed = true;
    }
 
    // update the display

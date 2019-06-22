@@ -71,11 +71,11 @@ protected:
             continue;
          }
 
-         int iprev = (pdp1->m_fSmooth ? i - 1 : i);
+         int iprev = (pdp1->m_smooth ? i - 1 : i);
          if (iprev < 0)
             iprev = (loop ? cpoint - 1 : 0);
 
-         int inext = (pdp2->m_fSmooth ? i + 2 : i + 1);
+         int inext = (pdp2->m_smooth ? i + 2 : i + 1);
          if (inext >= cpoint)
             inext = (loop ? inext - cpoint : cpoint - 1);
 
@@ -88,9 +88,9 @@ protected:
          T rendv1;
 
          rendv1.set(pdp1->m_v);
-         rendv1.fSmooth = pdp1->m_fSmooth;
-         rendv1.fSlingshot = pdp1->m_fSlingshot;
-         rendv1.fControlPoint = true;
+         rendv1.smooth = pdp1->m_smooth;
+         rendv1.slingshot = pdp1->m_slingshot;
+         rendv1.controlPoint = true;
 
          // Properties of last point don't matter, because it won't be added to the list on this pass (it'll get added as the first point of the next curve)
          rendv2.set(pdp2->m_v);
@@ -101,9 +101,9 @@ protected:
       if (!loop)
       {
          // Add the very last point to the list because nobody else added it
-         rendv2.fSmooth = true;
-         rendv2.fSlingshot = false;
-         rendv2.fControlPoint = false;
+         rendv2.smooth = true;
+         rendv2.slingshot = false;
+         rendv2.controlPoint = false;
          vv.push_back(rendv2);
       }
    }
@@ -189,10 +189,10 @@ public:
    float m_calcHeight;
    float m_texturecoord;
    IHaveDragPoints *m_pihdp;
-   bool m_fSmooth;
-   bool m_fSlingshot;
-   bool m_fAutoTexture;
-   static Vertex3Ds m_copyPoint;       /*coordinates of a control point to copy*/
+   bool m_smooth;
+   bool m_slingshot;
+   bool m_autoTexture;
+   static Vertex3Ds m_copyPoint;   // coordinates of a control point to copy
    static bool      m_pointCopied;
 };
 

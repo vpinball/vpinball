@@ -736,7 +736,7 @@ public:
    HWND  m_hMaterialManager;
    SearchSelectDialog m_searchSelectDlg;
 
-   bool  m_fDirtyDraw; // Whether our background bitmap is up to date
+   bool  m_dirtyDraw; // Whether our background bitmap is up to date
 
    bool  m_activeLayers[MAX_LAYERS];
    bool  m_toggleAllLayers;
@@ -744,12 +744,12 @@ public:
 
    bool  m_renderSolid;
 
-   bool  m_fGrid; // Display grid or not
-   bool  m_fBackdrop;
-   bool  m_fRenderDecals;
-   bool  m_fRenderEMReels;
+   bool  m_grid; // Display grid or not
+   bool  m_backdrop;
+   bool  m_renderDecals;
+   bool  m_renderEMReels;
    bool  m_overwriteGlobalStereo3D;
-   bool  m_fReflectElementsOnPlayfield;
+   bool  m_reflectElementsOnPlayfield;
    bool  m_reflectionEnabled;
 
    vector<Material*> m_dbgChangedMaterials;

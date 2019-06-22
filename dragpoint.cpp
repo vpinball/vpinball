@@ -241,17 +241,17 @@ void IHaveDragPoints::ReverseOrder()
    // Reverse order of points (switches winding, reverses inside/outside)
    std::reverse(m_vdpoint.begin(), m_vdpoint.end());
 
-   const bool fSlingshotTemp = m_vdpoint[0]->m_fSlingshot;
+   const bool slingshotTemp = m_vdpoint[0]->m_slingshot;
 
    for (size_t i = 0; i < m_vdpoint.size() - 1; i++)
    {
       DragPoint * const pdp1 = m_vdpoint[i];
       const DragPoint * const pdp2 = m_vdpoint[i + 1];
 
-      pdp1->m_fSlingshot = pdp2->m_fSlingshot;
+      pdp1->m_slingshot = pdp2->m_slingshot;
    }
 
-   m_vdpoint[m_vdpoint.size() - 1]->m_fSlingshot = fSlingshotTemp;
+   m_vdpoint[m_vdpoint.size() - 1]->m_slingshot = slingshotTemp;
 }
 
 void IHaveDragPoints::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
@@ -278,9 +278,9 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
    for (int i = 0; i < cpoints; ++i)
    {
       const RenderVertex * const prv = &vv[i];
-      if (prv->fControlPoint)
+      if (prv->controlPoint)
       {
-         if (!m_vdpoint[icontrolpoint]->m_fAutoTexture)
+         if (!m_vdpoint[icontrolpoint]->m_autoTexture)
          {
             vitexpoints.push_back(icontrolpoint);
             virenderpoints.push_back(i);
@@ -385,9 +385,9 @@ HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash)
       CComObject<DragPoint> * const pdp = m_vdpoint[i];
       bw.WriteStruct(FID(VCEN), &(pdp->m_v), sizeof(Vertex2D));
       bw.WriteFloat(FID(POSZ), pdp->m_v.z);
-      bw.WriteBool(FID(SMTH), pdp->m_fSmooth);
-      bw.WriteBool(FID(SLNG), pdp->m_fSlingshot);
-      bw.WriteBool(FID(ATEX), pdp->m_fAutoTexture);
+      bw.WriteBool(FID(SMTH), pdp->m_smooth);
+      bw.WriteBool(FID(SLNG), pdp->m_slingshot);
+      bw.WriteBool(FID(ATEX), pdp->m_autoTexture);
       bw.WriteFloat(FID(TEXC), pdp->m_texturecoord);
 
       ((ISelect *)pdp)->SaveData(pstm, hcrypthash);
@@ -419,14 +419,14 @@ void IHaveDragPoints::LoadPointToken(int id, BiffReader *pbr, int version)
 void DragPoint::Init(IHaveDragPoints *pihdp, const float x, const float y, const float z, const bool smooth)
 {
    m_pihdp = pihdp;
-   m_fSmooth = smooth;
+   m_smooth = smooth;
 
-   m_fSlingshot = false;
+   m_slingshot = false;
    m_v.x = x;
    m_v.y = y;
    m_v.z = z;
    m_calcHeight = 0.0f;
-   m_fAutoTexture = true;
+   m_autoTexture = true;
    m_texturecoord = 0.0f;
    m_menuid = (pihdp->GetIEditable()->GetItemType() == eItemRubber) ? IDR_POINTMENU_SMOOTH : IDR_POINTMENU;
 }
@@ -467,9 +467,9 @@ void DragPoint::PutCenter(const Vertex2D& pv)
 
 void DragPoint::EditMenu(HMENU hmenu)
 {
-   CheckMenuItem(hmenu, ID_POINTMENU_SMOOTH, MF_BYCOMMAND | (m_fSmooth ? MF_CHECKED : MF_UNCHECKED));
+   CheckMenuItem(hmenu, ID_POINTMENU_SMOOTH, MF_BYCOMMAND | (m_smooth ? MF_CHECKED : MF_UNCHECKED));
    //EnableMenuItem(hmenu, ID_POINTMENU_SLINGSHOT, MF_BYCOMMAND | (m_fSmooth ? MF_GRAYED : MF_ENABLED));
-   CheckMenuItem(hmenu, ID_POINTMENU_SLINGSHOT, MF_BYCOMMAND | ((m_fSlingshot && !m_fSmooth) ? MF_CHECKED : MF_UNCHECKED));
+   CheckMenuItem(hmenu, ID_POINTMENU_SLINGSHOT, MF_BYCOMMAND | ((m_slingshot && !m_smooth) ? MF_CHECKED : MF_UNCHECKED));
 }
 
 void DragPoint::Delete()
@@ -502,15 +502,15 @@ void DragPoint::DoCommand(int icmd, int x, int y)
       pedit->BeginUndo();
       pedit->MarkForUndo();
 
-      m_fSmooth = !m_fSmooth;
+      m_smooth = !m_smooth;
       const int index2 = (FindIndexOf(m_pihdp->m_vdpoint, (CComObject<DragPoint> *)this) - 1 + (int)m_pihdp->m_vdpoint.size()) % (int)m_pihdp->m_vdpoint.size();
-      if (m_fSmooth && m_fSlingshot)
+      if (m_smooth && m_slingshot)
       {
-         m_fSlingshot = false;
+         m_slingshot = false;
       }
-      if (m_fSmooth && m_pihdp->m_vdpoint[index2]->m_fSlingshot)
+      if (m_smooth && m_pihdp->m_vdpoint[index2]->m_slingshot)
       {
-         m_pihdp->m_vdpoint[index2]->m_fSlingshot = false;
+         m_pihdp->m_vdpoint[index2]->m_slingshot = false;
       }
 
       pedit->EndUndo();
@@ -523,12 +523,12 @@ void DragPoint::DoCommand(int icmd, int x, int y)
       pedit->BeginUndo();
       pedit->MarkForUndo();
 
-      m_fSlingshot = !m_fSlingshot;
-      if (m_fSlingshot)
+      m_slingshot = !m_slingshot;
+      if (m_slingshot)
       {
-         m_fSmooth = false;
+         m_smooth = false;
          const int index2 = (FindIndexOf(m_pihdp->m_vdpoint, (CComObject<DragPoint> *)this) + 1) % m_pihdp->m_vdpoint.size();
-         m_pihdp->m_vdpoint[index2]->m_fSmooth = false;
+         m_pihdp->m_vdpoint[index2]->m_smooth = false;
       }
 
       pedit->EndUndo();
@@ -575,15 +575,15 @@ BOOL DragPoint::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(SMTH))
    {
-      pbr->GetBool(&m_fSmooth);
+      pbr->GetBool(&m_smooth);
    }
    else if (id == FID(SLNG))
    {
-      pbr->GetBool(&m_fSlingshot);
+      pbr->GetBool(&m_slingshot);
    }
    else if (id == FID(ATEX))
    {
-      pbr->GetBool(&m_fAutoTexture);
+      pbr->GetBool(&m_autoTexture);
    }
    else if (id == FID(TEXC))
    {
@@ -628,11 +628,10 @@ STDMETHODIMP DragPoint::get_X(float *pVal)
 STDMETHODIMP DragPoint::put_X(float newVal)
 {
    STARTUNDOSELECT
-
-      m_v.x = newVal;
+   m_v.x = newVal;
    STOPUNDOSELECT
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP DragPoint::get_Y(float *pVal)
@@ -645,12 +644,10 @@ STDMETHODIMP DragPoint::get_Y(float *pVal)
 STDMETHODIMP DragPoint::put_Y(float newVal)
 {
    STARTUNDOSELECT
-
-      m_v.y = newVal;
-
+   m_v.y = newVal;
    STOPUNDOSELECT
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP DragPoint::get_Z(float *pVal)
@@ -678,7 +675,7 @@ STDMETHODIMP DragPoint::get_CalcHeight(float *pVal)
 
 STDMETHODIMP DragPoint::get_Smooth(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_fSmooth);
+   *pVal = FTOVB(m_smooth);
 
    return S_OK;
 }
@@ -686,7 +683,7 @@ STDMETHODIMP DragPoint::get_Smooth(VARIANT_BOOL *pVal)
 STDMETHODIMP DragPoint::put_Smooth(VARIANT_BOOL newVal)
 {
    STARTUNDOSELECT
-   m_fSmooth = VBTOb(newVal);
+   m_smooth = VBTOb(newVal);
    STOPUNDOSELECT
 
    return S_OK;
@@ -694,7 +691,7 @@ STDMETHODIMP DragPoint::put_Smooth(VARIANT_BOOL newVal)
 
 STDMETHODIMP DragPoint::get_IsAutoTextureCoordinate(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_fAutoTexture);
+   *pVal = FTOVB(m_autoTexture);
 
    return S_OK;
 }
@@ -702,7 +699,7 @@ STDMETHODIMP DragPoint::get_IsAutoTextureCoordinate(VARIANT_BOOL *pVal)
 STDMETHODIMP DragPoint::put_IsAutoTextureCoordinate(VARIANT_BOOL newVal)
 {
    STARTUNDOSELECT
-   m_fAutoTexture = VBTOb(newVal);
+   m_autoTexture = VBTOb(newVal);
    STOPUNDOSELECT
 
    return S_OK;

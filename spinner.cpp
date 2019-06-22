@@ -69,7 +69,7 @@ void Spinner::WriteRegDefaults()
 {
    SaveValueFloat("DefaultProps\\Spinner", "Length", m_d.m_length);
    SaveValueFloat("DefaultProps\\Spinner", "Rotation", m_d.m_rotation);
-   SaveValueBool("DefaultProps\\Spinner", "ShowBracket", m_d.m_fShowBracket);
+   SaveValueBool("DefaultProps\\Spinner", "ShowBracket", m_d.m_showBracket);
    SaveValueFloat("DefaultProps\\Spinner", "Height", m_d.m_height);
    SaveValueFloat("DefaultProps\\Spinner", "AngleMax", m_d.m_angleMax);
    SaveValueFloat("DefaultProps\\Spinner", "AngleMin", m_d.m_angleMin);
@@ -88,7 +88,7 @@ void Spinner::SetDefaults(bool fromMouseClick)
 {
    m_d.m_length = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Spinner", "Length", 80.f) : 80.f;
    m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Spinner", "Rotation", 0.f) : 0.f;
-   m_d.m_fShowBracket = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Spinner", "ShowBracket", true) : true;
+   m_d.m_showBracket = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Spinner", "ShowBracket", true) : true;
    m_d.m_height = (float)(fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Spinner", "Height", 60000) : 60000) / 1000.0f;
 
    SetDefaultPhysics(fromMouseClick);
@@ -165,7 +165,7 @@ void Spinner::GetHitShapes(vector<HitObject*> &pvho)
 
    pvho.push_back(phitspinner);
 
-   if (m_d.m_fShowBracket)
+   if (m_d.m_showBracket)
    {
       /*add a hit shape for the bracket if shown, just in case if the bracket spinner height is low enough so the ball can hit it*/
       const float halflength = m_d.m_length * 0.5f + (m_d.m_length*0.1875f);
@@ -226,7 +226,7 @@ void Spinner::ExportMesh(FILE *f)
 
    GetHitShapes(dummyHitObj);
 
-   if (m_d.m_fShowBracket)
+   if (m_d.m_showBracket)
    {
       strcpy_s(subObjName, name);
       strcat_s(subObjName, "Bracket");
@@ -418,7 +418,7 @@ void Spinner::RenderSetup()
 
 void Spinner::RenderStatic()
 {
-   if (!m_d.m_fShowBracket || !m_d.m_visible)
+   if (!m_d.m_showBracket || !m_d.m_visible)
       return;
 
    if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
@@ -490,7 +490,7 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(SMIN), m_d.m_angleMin);
    bw.WriteFloat(FID(SELA), m_d.m_elasticity);
    bw.WriteBool(FID(SVIS), m_d.m_visible);
-   bw.WriteBool(FID(SSUPT), m_d.m_fShowBracket);
+   bw.WriteBool(FID(SSUPT), m_d.m_showBracket);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteString(FID(IMGF), m_d.m_szImage);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
@@ -543,7 +543,7 @@ BOOL Spinner::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(SSUPT))
    {
-      pbr->GetBool(&m_d.m_fShowBracket);
+      pbr->GetBool(&m_d.m_showBracket);
    }
    else if (id == FID(HIGH))
    {
@@ -788,7 +788,7 @@ STDMETHODIMP Spinner::put_Surface(BSTR newVal)
 
 STDMETHODIMP Spinner::get_ShowBracket(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_d.m_fShowBracket);
+   *pVal = FTOVB(m_d.m_showBracket);
 
    return S_OK;
 }
@@ -796,7 +796,7 @@ STDMETHODIMP Spinner::get_ShowBracket(VARIANT_BOOL *pVal)
 STDMETHODIMP Spinner::put_ShowBracket(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fShowBracket = VBTOb(newVal);
+   m_d.m_showBracket = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;

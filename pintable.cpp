@@ -452,25 +452,25 @@ STDMETHODIMP ScriptGlobalTable::GetCustomParam(long index, BSTR *param)
 
 STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 {
-   bool fSuccess;
+   bool success;
    char szFileName[MAX_PATH];
 
    WideCharToMultiByte(CP_ACP, 0, FileName, -1, szFileName, MAX_PATH, NULL, NULL);
 
    // try to load the scripts from the current directory
-   fSuccess = GetTextFileFromDirectory(szFileName, NULL, pContents);
+   success = GetTextFileFromDirectory(szFileName, NULL, pContents);
 
    // if that fails, try the User, Scripts and Tables sub-directorys under where VP was loaded from
-   if (!fSuccess)
-      fSuccess = GetTextFileFromDirectory(szFileName, "User\\", pContents);
+   if (!success)
+      success = GetTextFileFromDirectory(szFileName, "User\\", pContents);
 
-   if (!fSuccess)
-      fSuccess = GetTextFileFromDirectory(szFileName, "Scripts\\", pContents);
+   if (!success)
+      success = GetTextFileFromDirectory(szFileName, "Scripts\\", pContents);
 
-   if (!fSuccess)
-      fSuccess = GetTextFileFromDirectory(szFileName, "Tables\\", pContents);
+   if (!success)
+      success = GetTextFileFromDirectory(szFileName, "Tables\\", pContents);
 
-   return (fSuccess) ? S_OK : E_FAIL;
+   return (success) ? S_OK : E_FAIL;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
@@ -700,9 +700,7 @@ STDMETHODIMP ScriptGlobalTable::get_ShowDT(VARIANT_BOOL *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_ShowFSS(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(g_pplayer->m_ptable->m_BG_enable_FSS);
-
-   //*pVal = FTOVB(g_pplayer->m_ptable->m_BG_current_set == 2);
+   *pVal = FTOVB(g_pplayer->m_ptable->m_BG_enable_FSS); //*pVal = FTOVB(g_pplayer->m_ptable->m_BG_current_set == 2);
 
    return S_OK;
 }
@@ -710,14 +708,11 @@ STDMETHODIMP ScriptGlobalTable::get_ShowFSS(VARIANT_BOOL *pVal)
 /*STDMETHODIMP PinTable::put_ShowFSS(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-   m_BG_enable_FSS = !!newVal;
-
+   m_BG_enable_FSS = VBTOb(newVal);
    if (m_BG_enable_FSS)
       m_BG_current_set = FULL_SINGLE_SCREEN;
    else
       LoadValueInt("Player", "BGSet", (int*)&m_BG_current_set);
-
    STOPUNDO
 
    return S_OK;
@@ -725,18 +720,17 @@ STDMETHODIMP ScriptGlobalTable::get_ShowFSS(VARIANT_BOOL *pVal)
 
 STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
 {
-	if (!g_pplayer)
-		return E_POINTER;
+   if (!g_pplayer)
+      return E_POINTER;
 
-	PinTable *pt = g_pplayer->m_ptable;
+   char Name[MAX_PATH];
+   WideCharToMultiByte(CP_ACP, 0, pVal, -1, Name, MAX_PATH, NULL, NULL);
 
-	char Name[MAX_PATH];
-	WideCharToMultiByte(CP_ACP, 0, pVal, -1, Name, MAX_PATH, NULL, NULL);
+   const PinTable * const pt = g_pplayer->m_ptable;
+   Material * const tmp = pt->GetMaterial(Name);
+   tmp->m_cBase = newVal;
 
-	Material *tmp = pt->GetMaterial(Name);
-	tmp->m_cBase = newVal;
-
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_WindowWidth(int *pVal)
@@ -1345,11 +1339,11 @@ PinTable::PinTable()
    m_hbmOffScreen = NULL;
 
    m_undo.m_ptable = this;
-   m_fGrid = true;
-   m_fBackdrop = true;
+   m_grid = true;
+   m_backdrop = true;
 
-   m_fRenderDecals = true;
-   m_fRenderEMReels = true;
+   m_renderDecals = true;
+   m_renderEMReels = true;
 
    m_reflectionEnabled = false;
 
@@ -1810,7 +1804,7 @@ void PinTable::InitPostLoad(VPinball *pvp)
       m_currentBackglassMode = BG_FSS;
 
    m_hbmOffScreen = NULL;
-   m_fDirtyDraw = true;
+   m_dirtyDraw = true;
 
    m_left = 0.f;
    m_top = 0.f;
@@ -1897,9 +1891,9 @@ void PinTable::UIRenderPass2(Sur * const psur)
 
    psur->Rectangle2(rc.left, rc.top, rc.right, rc.bottom);
 
-   if (m_fBackdrop)
+   if (m_backdrop)
    {
-      Texture * const ppi = GetImage((!g_pvp->m_fBackglassView) ? m_szImage : m_BG_szImage[m_BG_current_set]);
+      Texture * const ppi = GetImage((!g_pvp->m_backglassView) ? m_szImage : m_BG_szImage[m_BG_current_set]);
 
       if (ppi)
       {
@@ -1919,7 +1913,7 @@ void PinTable::UIRenderPass2(Sur * const psur)
       }
    }
 
-   if (g_pvp->m_fBackglassView)
+   if (g_pvp->m_backglassView)
    {
       Render3DProjection(psur);
    }
@@ -1928,14 +1922,14 @@ void PinTable::UIRenderPass2(Sur * const psur)
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const ptr = m_vedit[i];
-      if (ptr->m_fBackglass == g_pvp->m_fBackglassView)
+      if (ptr->m_backglass == g_pvp->m_backglassView)
       {
          if (ptr->m_isVisible)
             ptr->UIRenderPass1(psur);
       }
    }
 
-   if (m_fGrid && g_pvp->m_gridSize > 0)
+   if (m_grid && g_pvp->m_gridSize > 0)
    {
       Vertex2D rlt = psur->ScreenToSurface(rc.left, rc.top);
       Vertex2D rrb = psur->ScreenToSurface(rc.right, rc.bottom);
@@ -1970,14 +1964,14 @@ void PinTable::UIRenderPass2(Sur * const psur)
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const ptr = m_vedit[i];
-      if (ptr->m_fBackglass == g_pvp->m_fBackglassView)
+      if (ptr->m_backglass == g_pvp->m_backglassView)
       {
          if (ptr->m_isVisible)
             ptr->UIRenderPass2(psur);
       }
    }
 
-   if (g_pvp->m_fBackglassView) // Outline of the view, for when the grid is off
+   if (g_pvp->m_backglassView) // Outline of the view, for when the grid is off
    {
       psur->SetObject(NULL);
       psur->SetFillColor(-1);
@@ -1985,7 +1979,7 @@ void PinTable::UIRenderPass2(Sur * const psur)
       psur->Rectangle(0, 0, EDITOR_BG_WIDTH, EDITOR_BG_HEIGHT);
    }
 
-   if (m_fDragging)
+   if (m_dragging)
    {
       psur->SetFillColor(-1);
       psur->SetBorderColor(RGB(0, 0, 0), true, 0);
@@ -2074,13 +2068,13 @@ void PinTable::Render3DProjection(Sur * const psur)
 
 bool PinTable::GetDecalsEnabled() const
 {
-   return m_fRenderDecals;
+   return m_renderDecals;
 }
 
 
 bool PinTable::GetEMReelsEnabled() const
 {
-   return m_fRenderEMReels;
+   return m_renderEMReels;
 }
 
 // draws the main design screen
@@ -2091,7 +2085,7 @@ void PinTable::Paint(HDC hdc)
    RECT rc;
    ::GetClientRect(m_hwnd, &rc);
 
-   if (m_fDirtyDraw)
+   if (m_dirtyDraw)
    {
       if (m_hbmOffScreen)
       {
@@ -2104,7 +2098,7 @@ void PinTable::Paint(HDC hdc)
 
    HBITMAP hbmOld = (HBITMAP)SelectObject(hdc2, m_hbmOffScreen);
 
-   if (m_fDirtyDraw)
+   if (m_dirtyDraw)
    {
       Sur * const psur = new PaintSur(hdc2, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, GetSelectedItem());
       UIRenderPass2(psur);
@@ -2118,7 +2112,7 @@ void PinTable::Paint(HDC hdc)
 
    DeleteDC(hdc2);
 
-   m_fDirtyDraw = false;
+   m_dirtyDraw = false;
    //DeleteObject(hbmOffScreen);
 }
 
@@ -2139,7 +2133,7 @@ ISelect *PinTable::HitTest(const int x, const int y)
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const ptr = m_vedit[i];
-      if (ptr->m_fBackglass == g_pvp->m_fBackglassView)
+      if (ptr->m_backglass == g_pvp->m_backglassView)
       {
          ptr->UIRenderPass1(phs2);
          ISelect* const tmp = phs2->m_pselected;
@@ -2172,7 +2166,7 @@ void PinTable::SetDirtyDraw()
    if(g_pplayer)
        return;
 
-   m_fDirtyDraw = true;
+   m_dirtyDraw = true;
    ::InvalidateRect(m_hwnd, NULL, fFalse);
 }
 
@@ -2219,7 +2213,7 @@ void PinTable::Play(const bool _cameraMode)
    m_backupEmisionScale = m_lightEmissionScale;
    m_backupEnvEmissionScale = m_envEmissionScale;
 
-   g_fKeepUndoRecords = false;
+   g_keepUndoRecords = false;
 
    m_pcv->m_scriptError = false;
    m_pcv->Compile(false);
@@ -2305,7 +2299,7 @@ void PinTable::Play(const bool _cameraMode)
       RestoreBackup();
       // restore layers
       RestoreLayers();
-      g_fKeepUndoRecords = true;
+      g_keepUndoRecords = true;
       m_pcv->EndSession();
       //delete g_pplayer;
       //g_pplayer = NULL;
@@ -2377,7 +2371,7 @@ void PinTable::StopPlaying()
    m_lightEmissionScale = lightEmissionScale;
    m_envEmissionScale = envEmissionScale;
 
-   g_fKeepUndoRecords = true;
+   g_keepUndoRecords = true;
 
    ::ShowWindow(g_pvp->m_hwndWork, SW_SHOW);
    UpdateDbgMaterial();
@@ -2902,19 +2896,19 @@ HRESULT PinTable::SaveSoundToStream(PinSound * const pps, IStream *pstm)
    if (FAILED(hr = pstm->Write(pps->m_pdata, pps->m_cdata, &writ)))
       return hr;
 
-   if (FAILED(hr = pstm->Write(&pps->m_iOutputTarget, sizeof(bool), &writ)))
+   if (FAILED(hr = pstm->Write(&pps->m_outputTarget, sizeof(bool), &writ)))
       return hr;
 
    // Begin NEW_SOUND_VERSION data
 
-   if (FAILED(hr = pstm->Write(&pps->m_iVolume, sizeof(int), &writ)))
-	   return hr;
-   if (FAILED(hr = pstm->Write(&pps->m_iBalance, sizeof(int), &writ)))
-	   return hr;
-   if (FAILED(hr = pstm->Write(&pps->m_iFade, sizeof(int), &writ)))
-	   return hr;
-   if (FAILED(hr = pstm->Write(&pps->m_iVolume, sizeof(int), &writ)))
-	   return hr;
+   if (FAILED(hr = pstm->Write(&pps->m_volume, sizeof(int), &writ)))
+      return hr;
+   if (FAILED(hr = pstm->Write(&pps->m_balance, sizeof(int), &writ)))
+      return hr;
+   if (FAILED(hr = pstm->Write(&pps->m_fade, sizeof(int), &writ)))
+      return hr;
+   if (FAILED(hr = pstm->Write(&pps->m_volume, sizeof(int), &writ)))
+      return hr;
 
    return S_OK;
 }
@@ -2991,27 +2985,27 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 
    if (LoadFileVersion >= NEW_SOUND_FORMAT_VERSION)
    {
-	   if (FAILED(hr = pstm->Read(&pps->m_iOutputTarget, sizeof(char), &read)))
+	   if (FAILED(hr = pstm->Read(&pps->m_outputTarget, sizeof(char), &read)))
 	   {
 		   delete pps;
 		   return hr;
 	   }
-	   if (FAILED(hr = pstm->Read(&pps->m_iVolume, sizeof(int), &read)))
+	   if (FAILED(hr = pstm->Read(&pps->m_volume, sizeof(int), &read)))
 	   {
 		   delete pps;
 		   return hr;
 	   }
-	   if (FAILED(hr = pstm->Read(&pps->m_iBalance, sizeof(int), &read)))
+	   if (FAILED(hr = pstm->Read(&pps->m_balance, sizeof(int), &read)))
 	   {
 		   delete pps;
 		   return hr;
 	   }
-	   if (FAILED(hr = pstm->Read(&pps->m_iFade, sizeof(int), &read)))
+	   if (FAILED(hr = pstm->Read(&pps->m_fade, sizeof(int), &read)))
 	   {
 		   delete pps;
 		   return hr;
 	   }
-	   if (FAILED(hr = pstm->Read(&pps->m_iVolume, sizeof(int), &read)))
+	   if (FAILED(hr = pstm->Read(&pps->m_volume, sizeof(int), &read)))
 	   {
 		   delete pps;
 		   return hr;
@@ -3027,7 +3021,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 		   return hr;
 	   }
 
-	   pps->m_iOutputTarget = bToBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE;	
+	   pps->m_outputTarget = bToBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE;	
    }
 
    if (FAILED(hr = pps->GetPinDirectSound()->CreateDirectFromNative(pps)))
@@ -3287,8 +3281,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
 
    //bw.WriteFloat(FID(IMTCOL), m_transcolor);
 
-   bw.WriteBool(FID(REEL), m_fRenderEMReels);
-   bw.WriteBool(FID(DECL), m_fRenderDecals);
+   bw.WriteBool(FID(REEL), m_renderEMReels);
+   bw.WriteBool(FID(DECL), m_renderDecals);
 
    bw.WriteFloat(FID(OFFX), m_offset.x);
    bw.WriteFloat(FID(OFFY), m_offset.y);
@@ -3315,7 +3309,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
 
    bw.WriteString(FID(SSHT), m_szScreenShot);
 
-   bw.WriteBool(FID(FBCK), m_fBackdrop);
+   bw.WriteBool(FID(FBCK), m_backdrop);
 
    bw.WriteFloat(FID(GLAS), m_glassheight);
    bw.WriteFloat(FID(TBLH), m_tableheight);
@@ -3350,8 +3344,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
    bw.WriteInt(FID(ARAC), m_userDetailLevel);
    bw.WriteBool(FID(OGAC), m_overwriteGlobalDetailLevel);
    bw.WriteBool(FID(OGDN), m_overwriteGlobalDayNight);
-   bw.WriteBool(FID(GDAC), m_fGrid);
-   bw.WriteBool(FID(REOP), m_fReflectElementsOnPlayfield);
+   bw.WriteBool(FID(GDAC), m_grid);
+   bw.WriteBool(FID(REOP), m_reflectElementsOnPlayfield);
 
    bw.WriteInt(FID(UAAL), m_useAA);
    bw.WriteInt(FID(UFXA), m_useFXAA);
@@ -3805,7 +3799,7 @@ void PinTable::SetLoadDefaults()
 
    m_useReflectionForBalls = -1;
    m_playfieldReflectionStrength = 0.2f;
-   m_fReflectElementsOnPlayfield = false;
+   m_reflectElementsOnPlayfield = false;
 
    m_useTrailForBalls = -1;
    m_ballTrailStrength = 0.4f;
@@ -4057,11 +4051,11 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(DECL))
    {
-      pbr->GetBool(&m_fRenderDecals);
+      pbr->GetBool(&m_renderDecals);
    }
    else if (id == FID(REEL))
    {
-      pbr->GetBool(&m_fRenderEMReels);
+      pbr->GetBool(&m_renderEMReels);
    }
    else if (id == FID(OFFX))
    {
@@ -4125,7 +4119,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(FBCK))
    {
-      pbr->GetBool(&m_fBackdrop);
+      pbr->GetBool(&m_backdrop);
    }
    else if (id == FID(SEDT))
    {
@@ -4324,11 +4318,11 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(GDAC))
    {
-      pbr->GetBool(&m_fGrid);
+      pbr->GetBool(&m_grid);
    }
    else if (id == FID(REOP))
    {
-      pbr->GetBool(&m_fReflectElementsOnPlayfield);
+      pbr->GetBool(&m_reflectElementsOnPlayfield);
    }
    else if (id == FID(ARAC))
    {
@@ -4452,10 +4446,10 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    PinSound psT = *pps;
    *pps = *ppsNew;
    // recopy old settings over to new sound file
-   pps->m_iBalance = psT.m_iBalance;
-   pps->m_iFade = psT.m_iFade;
-   pps->m_iVolume = psT.m_iVolume;
-   pps->m_iOutputTarget = psT.m_iOutputTarget;
+   pps->m_balance = psT.m_balance;
+   pps->m_fade = psT.m_fade;
+   pps->m_volume = psT.m_volume;
+   pps->m_outputTarget = psT.m_outputTarget;
    *ppsNew = psT;
 
    lstrcpy(pps->m_szName, ppsNew->m_szName);
@@ -4518,7 +4512,7 @@ int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
 
    ListView_SetItemText(hwndListView, index, 1, pps->m_szPath);
 
-   switch (pps->m_iOutputTarget)
+   switch (pps->m_outputTarget)
    {
    case SNDOUT_BACKGLASS:
 	   ListView_SetItemText(hwndListView, index, 2, "Backglass");
@@ -4528,11 +4522,11 @@ int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
 	   break;
    }
    char textBuf[40];
-   sprintf_s(textBuf, "%.03f", dequantizeSignedPercent(pps->m_iBalance));
+   sprintf_s(textBuf, "%.03f", dequantizeSignedPercent(pps->m_balance));
    ListView_SetItemText(hwndListView, index, 3, textBuf);
-   sprintf_s(textBuf, "%.03f", dequantizeSignedPercent(pps->m_iFade));
+   sprintf_s(textBuf, "%.03f", dequantizeSignedPercent(pps->m_fade));
    ListView_SetItemText(hwndListView, index, 4, textBuf);
-   sprintf_s(textBuf, "%.03f", dequantizeSignedPercent(pps->m_iVolume));
+   sprintf_s(textBuf, "%.03f", dequantizeSignedPercent(pps->m_volume));
    ListView_SetItemText(hwndListView, index, 5, textBuf);
 
    return index;
@@ -4753,7 +4747,7 @@ void PinTable::SetZoom(float zoom)
 
 void PinTable::GetViewRect(FRect *pfrect)
 {
-   if (!g_pvp->m_fBackglassView)
+   if (!g_pvp->m_backglassView)
    {
       pfrect->left = m_left;
       pfrect->top = m_top;
@@ -4878,7 +4872,7 @@ void PinTable::DoLButtonUp(int x, int y)
 {
    //m_pselcur->OnLButtonUp(x,y);
 
-   if (!m_fDragging) // Not doing band select
+   if (!m_dragging) // Not doing band select
    {
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
@@ -5146,7 +5140,7 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
             }
          }
       }
-      bool fLocked = psel->m_fLocked;
+      bool fLocked = psel->m_locked;
       //!! HACK
       if (psel == this) // multi-select case
       {
@@ -5212,7 +5206,7 @@ bool PinTable::FMutilSelLocked()
 
    for (int i = 0; i < m_vmultisel.Size(); i++)
    {
-      if (m_vmultisel.ElementAt(i)->m_fLocked)
+      if (m_vmultisel.ElementAt(i)->m_locked)
       {
          fLocked = true;
          break;
@@ -5502,7 +5496,7 @@ void PinTable::LockElements()
          if (pedit)
          {
             pedit->MarkForUndo();
-            psel->m_fLocked = fLock;
+            psel->m_locked = fLock;
          }
       }
    }
@@ -5802,7 +5796,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (pt) // Window might have just been created
             {
                 pt->SetMyScrollInfo();
-                pt->m_fDirtyDraw = true;
+                pt->m_dirtyDraw = true;
                 // this window command is called whenever the MDI window changes over
                 // re-evaluate the toolbar depending on table permissions
                 g_pvp->SetEnableToolbar();
@@ -5952,7 +5946,7 @@ void PinTable::DoMouseMove(int x, int y)
 
    g_pvp->SetPosCur(v.x, v.y);
 
-   if (!m_fDragging) // Not doing band select
+   if (!m_dragging) // Not doing band select
    {
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
@@ -6005,7 +5999,7 @@ void PinTable::ExportBlueprint()
       CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 
    float tableheight, tablewidth;
-   if (g_pvp->m_fBackglassView)
+   if (g_pvp->m_backglassView)
    {
       tablewidth = (float)EDITOR_BG_WIDTH;
       tableheight = (float)EDITOR_BG_HEIGHT;
@@ -6066,7 +6060,7 @@ void PinTable::ExportBlueprint()
    SelectObject(hdc2, GetStockObject(WHITE_BRUSH));
    PatBlt(hdc2, 0, 0, bmwidth, bmheight, PATCOPY);
 
-   if (g_pvp->m_fBackglassView)
+   if (g_pvp->m_backglassView)
    {
       Render3DProjection(psur);
    }
@@ -6074,7 +6068,7 @@ void PinTable::ExportBlueprint()
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const ptr = m_vedit[i];
-      if (ptr->m_isVisible && ptr->m_fBackglass == g_pvp->m_fBackglassView)
+      if (ptr->m_isVisible && ptr->m_backglass == g_pvp->m_backglassView)
       {
          ptr->RenderBlueprint(psur, solid);
       }
@@ -6198,7 +6192,7 @@ void PinTable::ExportTableMesh()
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const ptr = m_vedit[i];
-      if (ptr->m_isVisible && ptr->m_fBackglass == g_pvp->m_fBackglassView)
+      if (ptr->m_isVisible && ptr->m_backglass == g_pvp->m_backglassView)
       {
          ptr->ExportMesh(f);
       }
@@ -6667,7 +6661,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
        }
    }
 
-   const unsigned viewflag = (g_pvp->m_fBackglassView ? VIEW_BACKGLASS : VIEW_PLAYFIELD);
+   const unsigned viewflag = (g_pvp->m_backglassView ? VIEW_BACKGLASS : VIEW_PLAYFIELD);
 
    // Do a backwards loop, so that the primary selection we had when
    // copying will again be the primary selection, since it will be
@@ -6707,7 +6701,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
          // copy the new element to the same layer as the source element
          m_layer[peditNew->GetISelect()->m_layerIndex].push_back(peditNew);
          peditNew->InitPostLoad();
-         peditNew->m_fBackglass = g_pvp->m_fBackglassView;
+         peditNew->m_backglass = g_pvp->m_backglassView;
 
          AddMultiSel(peditNew->GetISelect(), (i != g_pvp->m_vstmclipboard.size() - 1), true, false);
          cpasted++;
@@ -6980,7 +6974,7 @@ void PinTable::OnKeyDown(int key)
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
          ISelect *const pisel = m_vmultisel.ElementAt(i);
-         if (!pisel->GetIEditable()->GetISelect()->m_fLocked) // control points get lock info from parent - UNDONE - make this code snippet be in one place
+         if (!pisel->GetIEditable()->GetISelect()->m_locked) // control points get lock info from parent - UNDONE - make this code snippet be in one place
          {
             switch (key)
             {
@@ -7023,7 +7017,7 @@ void PinTable::UseTool(int x, int y, int tool)
 
    if (pie)
    {
-      pie->m_fBackglass = g_pvp->m_fBackglassView;
+      pie->m_backglass = g_pvp->m_backglassView;
       m_vedit.push_back(pie);
       AddMultiSel(pie->GetISelect(), false, true, false);
       if (m_searchSelectDlg.IsWindow())
@@ -7057,7 +7051,7 @@ void PinTable::OnLButtonDown(int x, int y)
    m_rcDragRect.top = v.y;
    m_rcDragRect.bottom = v.y;
 
-   m_fDragging = true;
+   m_dragging = true;
 
    ::SetCapture(GetPTable()->m_hwnd);
 
@@ -7066,9 +7060,9 @@ void PinTable::OnLButtonDown(int x, int y)
 
 void PinTable::OnLButtonUp(int x, int y)
 {
-   if (m_fDragging)
+   if (m_dragging)
    {
-      m_fDragging = false;
+      m_dragging = false;
       ReleaseCapture();
       if ((m_rcDragRect.left != m_rcDragRect.right) || (m_rcDragRect.top != m_rcDragRect.bottom))
       {
@@ -7133,7 +7127,7 @@ void PinTable::OnMouseMove(int x, int y)
    m_rcDragRect.right = v.x;
    m_rcDragRect.bottom = v.y;
 
-   if (m_fDragging)
+   if (m_dragging)
    {
       SetDirtyDraw();
    }
@@ -7141,7 +7135,7 @@ void PinTable::OnMouseMove(int x, int y)
 
 HRESULT PinTable::GetTypeName(BSTR *pVal)
 {
-   int stringid = (!g_pvp->m_fBackglassView) ? IDS_TABLE : IDS_TB_BACKGLASS;
+   int stringid = (!g_pvp->m_backglassView) ? IDS_TABLE : IDS_TB_BACKGLASS;
 
    LocalStringW ls(stringid);
    *pVal = SysAllocString(ls.str);
@@ -7151,7 +7145,7 @@ HRESULT PinTable::GetTypeName(BSTR *pVal)
 
 void PinTable::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 {
-   if (!g_pvp->m_fBackglassView)
+   if (!g_pvp->m_backglassView)
    {
       PropertyPane *pproppane;
 
@@ -7474,7 +7468,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             if (pt) // Window might have just been created
             {
                 pt->SetMyScrollInfo();
-                pt->m_fDirtyDraw = true;
+                pt->m_dirtyDraw = true;
                 // this window command is called whenever the MDI window changes over
                 // re-evaluate the toolbar depending on table permissions
                 g_pvp->SetEnableToolbar();
@@ -7706,9 +7700,9 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    ClearOldSounds();
    PinSound * const pps = m_vsound[i];
 
-   volume += dequantizeSignedPercent(pps->m_iVolume);
-   pan += dequantizeSignedPercent(pps->m_iBalance);
-   front_rear_fade += dequantizeSignedPercent(pps->m_iFade);
+   volume += dequantizeSignedPercent(pps->m_volume);
+   pan += dequantizeSignedPercent(pps->m_balance);
+   front_rear_fade += dequantizeSignedPercent(pps->m_fade);
    
    const int flags = (loopcount == -1) ? DSBPLAY_LOOPING : 0;
    // 10 volume = -10Db
@@ -8143,7 +8137,7 @@ bool PinTable::IsMaterialNameUnique(const char * const name) const
 Material* PinTable::GetMaterial(const char * const szName) const
 {
    if (szName == NULL || szName[0] == '\0')
-      return &g_pvp->dummyMaterial;
+      return &g_pvp->m_dummyMaterial;
 
    // during playback, we use the hashtable for lookup
    if (!m_materialMap.empty())
@@ -8153,7 +8147,7 @@ Material* PinTable::GetMaterial(const char * const szName) const
       if (it != m_materialMap.end())
          return it->second;
       else
-         return &g_pvp->dummyMaterial;
+         return &g_pvp->m_dummyMaterial;
    }
 
    for (size_t i = 0; i < m_materials.size(); i++)
@@ -8164,7 +8158,7 @@ Material* PinTable::GetMaterial(const char * const szName) const
       }
    }
 
-   return &g_pvp->dummyMaterial;
+   return &g_pvp->m_dummyMaterial;
 }
 
 void PinTable::AddMaterial(Material *pmat)
@@ -9054,7 +9048,7 @@ Texture* PinTable::GetSurfaceImage(const char * const szName) const
 
 STDMETHODIMP PinTable::get_DisplayGrid(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_fGrid);
+   *pVal = FTOVB(m_grid);
 
    return S_OK;
 }
@@ -9062,9 +9056,7 @@ STDMETHODIMP PinTable::get_DisplayGrid(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_DisplayGrid(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-   m_fGrid = !!newVal;
-
+   m_grid = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -9072,7 +9064,7 @@ STDMETHODIMP PinTable::put_DisplayGrid(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_DisplayBackdrop(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_fBackdrop);
+   *pVal = FTOVB(m_backdrop);
 
    return S_OK;
 }
@@ -9080,9 +9072,7 @@ STDMETHODIMP PinTable::get_DisplayBackdrop(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_DisplayBackdrop(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-   m_fBackdrop = !!newVal;
-
+   m_backdrop = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -9546,13 +9536,9 @@ STDMETHODIMP PinTable::get_GlobalAlphaAcc(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-   m_overwriteGlobalDetailLevel = !!newVal;
+   m_overwriteGlobalDetailLevel = VBTOb(newVal);
    if (!m_overwriteGlobalDetailLevel)
-   {
       m_userDetailLevel = m_globalDetailLevel;
-   }
-
    STOPUNDO
 
    return S_OK;
@@ -9568,7 +9554,7 @@ STDMETHODIMP PinTable::get_GlobalDayNight(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_GlobalDayNight(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_overwriteGlobalDayNight = !!newVal;
+   m_overwriteGlobalDayNight = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -9584,15 +9570,13 @@ STDMETHODIMP PinTable::get_GlobalStereo3D(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_GlobalStereo3D(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-   m_overwriteGlobalStereo3D = !!newVal;
+   m_overwriteGlobalStereo3D = VBTOb(newVal);
    if (!m_overwriteGlobalStereo3D)
    {
       m_3DmaxSeparation = m_global3DMaxSeparation;
       m_3DZPD = m_global3DZPD;
       m_3DOffset = m_global3DOffset;
    }
-
    STOPUNDO
 
    return S_OK;
@@ -9608,9 +9592,7 @@ STDMETHODIMP PinTable::get_BallDecalMode(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_BallDecalMode(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-   m_BallDecalMode = !!newVal;
-
+   m_BallDecalMode = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -9626,9 +9608,7 @@ STDMETHODIMP PinTable::get_TableMusicVolume(int *pVal)
 STDMETHODIMP PinTable::put_TableMusicVolume(int newVal)
 {
    STARTUNDO
-
    m_TableMusicVolume = dequantizeUnsignedPercent(newVal);
-
    STOPUNDO
 
    return S_OK;
@@ -9644,9 +9624,7 @@ STDMETHODIMP PinTable::get_TableAdaptiveVSync(int *pVal)
 STDMETHODIMP PinTable::put_TableAdaptiveVSync(int newVal)
 {
    STARTUNDO
-
    m_TableAdaptiveVSync = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9662,9 +9640,7 @@ STDMETHODIMP PinTable::get_BackdropColor(OLE_COLOR *pVal)
 STDMETHODIMP PinTable::put_BackdropColor(OLE_COLOR newVal)
 {
    STARTUNDO
-
    m_colorbackdrop = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9680,9 +9656,7 @@ STDMETHODIMP PinTable::get_BackdropImageApplyNightDay(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_BackdropImageApplyNightDay(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-   m_ImageBackdropNightDay = !!newVal;
-
+   m_ImageBackdropNightDay = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -9690,9 +9664,7 @@ STDMETHODIMP PinTable::put_BackdropImageApplyNightDay(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_BG_enable_FSS);
-
-   //*pVal = FTOVB(m_BG_current_set == 2);
+   *pVal = FTOVB(m_BG_enable_FSS); //*pVal = FTOVB(m_BG_current_set == 2);
 
    return S_OK;
 }
@@ -9700,14 +9672,11 @@ STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_ShowFSS(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
-   m_BG_enable_FSS = !!newVal;
-
+   m_BG_enable_FSS = VBTOb(newVal);
    if (m_BG_enable_FSS)
       m_BG_current_set = FULL_SINGLE_SCREEN;
    else
       LoadValueInt("Player", "BGSet", (int*)&m_BG_current_set);
-
    STOPUNDO
 
    return S_OK;
@@ -9726,9 +9695,7 @@ STDMETHODIMP PinTable::get_BackdropImage_DT(BSTR *pVal)
 STDMETHODIMP PinTable::put_BackdropImage_DT(BSTR newVal) //!! HDR??
 {
    STARTUNDO
-
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[0], 32, NULL, NULL);
-
    STOPUNDO
 
    return S_OK;
@@ -9747,9 +9714,7 @@ STDMETHODIMP PinTable::get_BackdropImage_FS(BSTR *pVal)
 STDMETHODIMP PinTable::put_BackdropImage_FS(BSTR newVal) //!! HDR??
 {
    STARTUNDO
-
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[1], 32, NULL, NULL);
-
    STOPUNDO
 
    return S_OK;
@@ -9768,9 +9733,7 @@ STDMETHODIMP PinTable::get_BackdropImage_FSS(BSTR *pVal)
 STDMETHODIMP PinTable::put_BackdropImage_FSS(BSTR newVal) //!! HDR??
 {
    STARTUNDO
-
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[2], 32, NULL, NULL);
-
    STOPUNDO
 
    return S_OK;
@@ -9798,9 +9761,7 @@ STDMETHODIMP PinTable::put_ColorGradeImage(BSTR newVal)
    }
 
    STARTUNDO
-
    strcpy_s(m_szImageColorGrade,szImage);
-
    STOPUNDO
 
    return S_OK;
@@ -9845,9 +9806,7 @@ STDMETHODIMP PinTable::get_Friction(float *pVal)
 STDMETHODIMP PinTable::put_Friction(float newVal)
 {
    STARTUNDO
-
    m_friction = clamp(newVal, 0.0f, 1.0f);
-
    STOPUNDO
 
    return S_OK;
@@ -9863,9 +9822,7 @@ STDMETHODIMP PinTable::get_Elasticity(float *pVal)
 STDMETHODIMP PinTable::put_Elasticity(float newVal)
 {
    STARTUNDO
-
    m_elasticity = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9881,9 +9838,7 @@ STDMETHODIMP PinTable::get_ElasticityFalloff(float *pVal)
 STDMETHODIMP PinTable::put_ElasticityFalloff(float newVal)
 {
    STARTUNDO
-
    m_elasticityFalloff = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9899,9 +9854,7 @@ STDMETHODIMP PinTable::get_Scatter(float *pVal)
 STDMETHODIMP PinTable::put_Scatter(float newVal)
 {
    STARTUNDO
-
    m_scatter = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9917,9 +9870,7 @@ STDMETHODIMP PinTable::get_DefaultScatter(float *pVal)
 STDMETHODIMP PinTable::put_DefaultScatter(float newVal)
 {
    STARTUNDO
-
    m_defaultScatter = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -10379,7 +10330,7 @@ STDMETHODIMP PinTable::get_OverridePhysicsFlippers(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_OverridePhysicsFlippers(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_overridePhysicsFlipper = !!newVal;
+   m_overridePhysicsFlipper = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -10679,7 +10630,7 @@ STDMETHODIMP PinTable::ExportPhysics()
 
 STDMETHODIMP PinTable::get_EnableDecals(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_fRenderDecals);
+   *pVal = FTOVB(m_renderDecals);
 
    return S_OK;
 }
@@ -10687,7 +10638,7 @@ STDMETHODIMP PinTable::get_EnableDecals(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_EnableDecals(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_fRenderDecals = !!newVal;
+   m_renderDecals = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -10703,10 +10654,9 @@ STDMETHODIMP PinTable::get_ShowDT(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_ShowDT(VARIANT_BOOL newVal)
 {
    //STARTUNDO // not saved/just a simple toggle, so do not trigger undo
-
-   m_BG_current_set = (!!newVal) ? (m_BG_enable_FSS ? BG_FSS : BG_DESKTOP) : BG_FULLSCREEN;
-
+   m_BG_current_set = VBTOb(newVal) ? (m_BG_enable_FSS ? BG_FSS : BG_DESKTOP) : BG_FULLSCREEN;
    //STOPUNDO
+
    SetDirtyDraw();
 
    return S_OK;
@@ -10714,7 +10664,7 @@ STDMETHODIMP PinTable::put_ShowDT(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_ReflectElementsOnPlayfield(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_fReflectElementsOnPlayfield);
+   *pVal = FTOVB(m_reflectElementsOnPlayfield);
 
    return S_OK;
 }
@@ -10722,7 +10672,7 @@ STDMETHODIMP PinTable::get_ReflectElementsOnPlayfield(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_ReflectElementsOnPlayfield(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_fReflectElementsOnPlayfield = (!!newVal);
+   m_reflectElementsOnPlayfield = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -10730,7 +10680,7 @@ STDMETHODIMP PinTable::put_ReflectElementsOnPlayfield(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_EnableEMReels(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_fRenderEMReels);
+   *pVal = FTOVB(m_renderEMReels);
 
    return S_OK;
 }
@@ -10738,7 +10688,7 @@ STDMETHODIMP PinTable::get_EnableEMReels(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_EnableEMReels(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_fRenderEMReels = !!newVal;
+   m_renderEMReels = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -10782,7 +10732,7 @@ STDMETHODIMP PinTable::get_Accelerometer(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_Accelerometer(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_tblAccelerometer = !!newVal;
+   m_tblAccelerometer = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -10798,7 +10748,7 @@ STDMETHODIMP PinTable::get_AccelNormalMount(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_AccelNormalMount(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_tblAccelNormalMount = !!newVal;
+   m_tblAccelNormalMount = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -10822,19 +10772,14 @@ STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
 
 STDMETHODIMP PinTable::get_DeadZone(int *pVal)
 {
-   const int deadz = LoadValueIntWithDefault("Player", "DeadZone", 0);
-
-   *pVal = deadz;
+   *pVal = LoadValueIntWithDefault("Player", "DeadZone", 0);
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_DeadZone(int newVal)
 {
-   if (newVal > 100) newVal = 100;
-   if (newVal < 0) newVal = 0;
-
-   SaveValueInt("Player", "DeadZone", newVal);
+   SaveValueInt("Player", "DeadZone", clamp(newVal, 0,100));
 
    return S_OK;
 }
@@ -10927,9 +10872,7 @@ STDMETHODIMP PinTable::put_BallFrontDecal(BSTR newVal)
    }
 
    STARTUNDO
-
    strcpy_s(m_szBallImageFront,szImage);
-
    STOPUNDO
 
    return S_OK;
@@ -10962,26 +10905,26 @@ STDMETHODIMP PinTable::get_Version(int *pVal)
 
 STDMETHODIMP PinTable::get_VPBuildVersion(int *pVal)
 {
-	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
-	return S_OK;
+   *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_VersionMajor(int *pVal)
 {
-	*pVal = VP_VERSION_MAJOR;
-	return S_OK;
+   *pVal = VP_VERSION_MAJOR;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_VersionMinor(int *pVal)
 {
-	*pVal = VP_VERSION_MINOR;
-	return S_OK;
+   *pVal = VP_VERSION_MINOR;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_VersionRevision(int *pVal)
 {
-	*pVal = VP_VERSION_REV;
-	return S_OK;
+   *pVal = VP_VERSION_REV;
+   return S_OK;
 }
 
 void PinTable::InvokeBallBallCollisionCallback(Ball *b1, Ball *b2, float hitVelocity)

@@ -208,7 +208,7 @@ void Bumper::UIRenderPass2(Sur * const psur)
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius*1.5f);
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
 
-   if (g_pvp->m_fAlwaysDrawLightCenters)
+   if (g_pvp->m_alwaysDrawLightCenters)
    {
       psur->Line(m_d.m_vCenter.x - 10.0f, m_d.m_vCenter.y, m_d.m_vCenter.x + 10.0f, m_d.m_vCenter.y);
       psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10.0f, m_d.m_vCenter.x, m_d.m_vCenter.y + 10.0f);
@@ -1465,10 +1465,10 @@ void Bumper::UpdatePropertyPanes()
    if (m_propVisual == NULL)
       return;
 
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_MATERIAL_COMBO), !m_d.m_capVisible ? FALSE : TRUE);
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_MATERIAL_COMBO2), !m_d.m_baseVisible ? FALSE : TRUE);
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_MATERIAL_COMBO3), !m_d.m_skirtVisible ? FALSE : TRUE);
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_ringVisible ? FALSE : TRUE);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_MATERIAL_COMBO), !m_d.m_capVisible ? FALSE : TRUE);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_MATERIAL_COMBO2), !m_d.m_baseVisible ? FALSE : TRUE);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_MATERIAL_COMBO3), !m_d.m_skirtVisible ? FALSE : TRUE);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_ringVisible ? FALSE : TRUE);
 }
 
 void Bumper::SetDefaultPhysics(bool fromMouseClick)

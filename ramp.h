@@ -192,7 +192,6 @@ private:
    void CheckJoint(vector<HitObject*> &pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
 
    void RenderStaticHabitrail(const Material * const mat);
-   void RenderPolygons(const int offset, WORD * const rgicrosssection, const int start, const int stop);
 
    void GenerateVertexBuffer();
 

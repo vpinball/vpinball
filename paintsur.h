@@ -3,7 +3,6 @@
 class PaintSur : public Sur
 {
 public:
-
    PaintSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, ISelect * const psel);
    virtual ~PaintSur();
 
@@ -26,11 +25,12 @@ public:
    virtual void SetBorderColor(const int rgb, const bool fDashed, const int width);
    virtual void SetLineColor(const int rgb, const bool fDashed, const int width);
 
+private:
    HBRUSH m_hbr;
    HPEN m_hpnOutline;
    HPEN m_hpnLine;
 
    ISelect *m_psel;
 
-   bool m_fNullBorder;
+   bool m_nullBorder;
 };

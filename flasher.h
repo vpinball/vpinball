@@ -24,10 +24,10 @@ public:
    RampImageAlignment m_imagealignment;
    char m_szImageA[MAXTOKEN];
    char m_szImageB[MAXTOKEN];
-   bool m_fDisplayTexture;
-   bool m_IsVisible;
-   bool m_fAddBlend;
-   bool m_IsDMD;
+   bool m_displayTexture;
+   bool m_isVisible;
+   bool m_addBlend;
+   bool m_isDMD;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -54,72 +54,72 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Flasher, eItemFlasher, FLASHER, 1)
 
-      BEGIN_COM_MAP(Flasher)
-         COM_INTERFACE_ENTRY(IFlasher)
-         COM_INTERFACE_ENTRY(IDispatch)
-         COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
-         COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
-         COM_INTERFACE_ENTRY(IProvideClassInfo)
-         COM_INTERFACE_ENTRY(IProvideClassInfo2)
-      END_COM_MAP()
+   BEGIN_COM_MAP(Flasher)
+      COM_INTERFACE_ENTRY(IFlasher)
+      COM_INTERFACE_ENTRY(IDispatch)
+      COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
+      COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
+      COM_INTERFACE_ENTRY(IProvideClassInfo)
+      COM_INTERFACE_ENTRY(IProvideClassInfo2)
+   END_COM_MAP()
 
-      DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
+   DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
 
-      DECLARE_PROTECT_FINAL_CONSTRUCT()
+   DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-      BEGIN_CONNECTION_POINT_MAP(Flasher)
-         CONNECTION_POINT_ENTRY(DIID_IFlasherEvents)
-      END_CONNECTION_POINT_MAP()
+   BEGIN_CONNECTION_POINT_MAP(Flasher)
+      CONNECTION_POINT_ENTRY(DIID_IFlasherEvents)
+   END_CONNECTION_POINT_MAP()
 
 
-      // ISupportsErrorInfo
-      STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
+   // ISupportsErrorInfo
+   STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-      virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
-      virtual void GetPointDialogPanes(vector<PropertyPane*> &pvproppane);
-      virtual void ClearForOverwrite();
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
+   virtual void GetPointDialogPanes(vector<PropertyPane*> &pvproppane);
+   virtual void ClearForOverwrite();
 
-      virtual void RenderBlueprint(Sur *psur, const bool solid);
+   virtual void RenderBlueprint(Sur *psur, const bool solid);
 
-      virtual void FlipY(const Vertex2D& pvCenter);
-      virtual void FlipX(const Vertex2D& pvCenter);
-      virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
-      virtual void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
-      virtual void Translate(const Vertex2D &pvOffset);
-      virtual void MoveOffset(const float dx, const float dy);
-      virtual void SetObjectPos();
+   virtual void FlipY(const Vertex2D& pvCenter);
+   virtual void FlipX(const Vertex2D& pvCenter);
+   virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
+   virtual void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
+   virtual void Translate(const Vertex2D &pvOffset);
+   virtual void MoveOffset(const float dx, const float dy);
+   virtual void SetObjectPos();
 
-      virtual int GetMinimumPoints() const { return 2; }
+   virtual int GetMinimumPoints() const { return 2; }
 
-      virtual Vertex2D GetCenter() const { return m_d.m_vCenter; }
-      virtual void PutCenter(const Vertex2D& pv) { m_d.m_vCenter = pv; }
-      virtual void DoCommand(int icmd, int x, int y);
+   virtual Vertex2D GetCenter() const { return m_d.m_vCenter; }
+   virtual void PutCenter(const Vertex2D& pv) { m_d.m_vCenter = pv; }
+   virtual void DoCommand(int icmd, int x, int y);
 
-      virtual bool IsTransparent() const { return !m_d.m_IsDMD; }
-      virtual float GetDepth(const Vertex3Ds& viewDir) const
-      {
-         return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height;
-      }
-      virtual unsigned long long GetMaterialID() const { return 64-1; } //!! some constant number
-      virtual unsigned long long GetImageID() const
-      {
-		  Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
-		  Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
-		  Texture *tex = NULL;
-		  if (pinA && !pinB)
-			  tex = pinA;
-		  else if (!pinA && pinB)
-			  tex = pinB;
-		  return (unsigned long long)tex;
-      }
-      virtual bool IsDMD() const { return m_d.m_IsDMD; }
-      virtual ItemTypeEnum HitableGetItemType() const { return eItemFlasher; }
+   virtual bool IsTransparent() const { return !m_d.m_isDMD; }
+   virtual float GetDepth(const Vertex3Ds& viewDir) const
+   {
+      return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height;
+   }
+   virtual unsigned long long GetMaterialID() const { return 64-1; } //!! some constant number
+   virtual unsigned long long GetImageID() const
+   {
+      Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
+      Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
+      Texture *tex = NULL;
+      if (pinA && !pinB)
+         tex = pinA;
+      else if (!pinA && pinB)
+         tex = pinB;
+      return (unsigned long long)tex;
+   }
+   virtual bool IsDMD() const { return m_d.m_isDMD; }
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemFlasher; }
 
-      virtual void UpdatePropertyPanes();
+   virtual void UpdatePropertyPanes();
 
-      virtual void WriteRegDefaults();
+   virtual void WriteRegDefaults();
 
-      FlasherData m_d;
+   FlasherData m_d;
 
 private:
    void UpdateMesh();

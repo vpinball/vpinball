@@ -24,7 +24,7 @@ public:
    float m_scatter;
    char m_szImage[MAXTOKEN];
    char m_szSurface[MAXTOKEN];
-   bool m_fShowBracket;
+   bool m_showBracket;
    bool m_visible;
    bool m_reflectionEnabled;
 };

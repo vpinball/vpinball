@@ -224,7 +224,7 @@ void Rubber::UIRenderPass2(Sur * const psur)
    }
 
 
-   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints));
+   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || (g_pvp->m_alwaysDrawDragPoints));
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!fDrawDragpoints)
@@ -247,7 +247,7 @@ void Rubber::UIRenderPass2(Sur * const psur)
       {
          CComObject<DragPoint> * const pdp = m_vdpoint[i];
          psur->SetFillColor(-1);
-         psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
+         psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
          psur->SetObject(pdp);
 
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
@@ -365,7 +365,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
       const RenderVertex & vmiddle = vvertex[i];
 
       if (ppfCross)
-         (*ppfCross)[i] = vmiddle.fControlPoint;
+         (*ppfCross)[i] = vmiddle.controlPoint;
 
       Vertex2D vnormal;
       {
@@ -444,7 +444,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
 
    if (ppfCross)
    {
-      (*ppfCross)[cvertex] = vvertex[0].fControlPoint;
+      (*ppfCross)[cvertex] = vvertex[0].controlPoint;
    }
    if (pMiddlePoints)
    {
@@ -631,7 +631,7 @@ void Rubber::AddPoint(int x, int y, const bool smooth)
     // Go through vertices (including iSeg itself) counting control points until iSeg
     int icp = 0;
     for (int i = 0; i < (iSeg + 1); i++)
-        if (vvertex[i].fControlPoint)
+        if (vvertex[i].controlPoint)
             icp++;
 
     // ClosestPointOnPolygon() couldn't find a point -> don't try to add a new point 
@@ -1667,24 +1667,24 @@ void Rubber::UpdatePropertyPanes()
    if (m_propVisual == NULL || m_propPosition == NULL || m_propPhysics == NULL)
       return;
 
-   EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 116), m_d.m_collidable);
+   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), m_d.m_collidable);
+   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 116), m_d.m_collidable);
 
    if (!m_d.m_collidable)
    {
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 120), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 110), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 120), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
    }
    else
    {
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 120), m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 110), m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 120), m_d.m_overwritePhysics);
    }
 }
 
