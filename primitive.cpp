@@ -1527,7 +1527,7 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
    return S_OK;
 }
 
-BOOL Primitive::LoadToken(int id, BiffReader *pbr)
+bool Primitive::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

@@ -934,7 +934,7 @@ HRESULT HitTarget::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
    return S_OK;
 }
 
-BOOL HitTarget::LoadToken(int id, BiffReader *pbr)
+bool HitTarget::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

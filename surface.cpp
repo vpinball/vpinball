@@ -1372,7 +1372,7 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
    return S_OK;
 }
 
-BOOL Surface::LoadToken(int id, BiffReader *pbr)
+bool Surface::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

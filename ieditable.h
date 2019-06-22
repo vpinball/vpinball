@@ -149,7 +149,7 @@ public:
 	virtual ItemTypeEnum GetItemType() const { return ItemType; } \
 	virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey); \
 	virtual HRESULT InitPostLoad(); \
-	virtual BOOL LoadToken(int id, BiffReader *pbr); \
+	virtual bool LoadToken(const int id, BiffReader * const pbr); \
 	virtual IDispatch *GetDispatch() {return static_cast<IDispatch *>(this);} \
 	virtual IEditable *GetIEditable() {return static_cast<IEditable*>(this);} \
 	virtual ISelect *GetISelect() {return static_cast<ISelect*>(this);} \

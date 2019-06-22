@@ -563,7 +563,7 @@ STDMETHODIMP DragPoint::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-BOOL DragPoint::LoadToken(int id, BiffReader *pbr)
+bool DragPoint::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(VCEN))
    {

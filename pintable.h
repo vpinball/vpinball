@@ -425,7 +425,7 @@ public:
    virtual IEditable *GetIEditable() { return (IEditable *)this; }
    virtual void Delete() {} // Can't delete table itself
    virtual void Uncreate() {}
-   virtual BOOL LoadToken(int id, BiffReader *pbr);
+   virtual bool LoadToken(const int id, BiffReader * const pbr);
 
    virtual IDispatch *GetPrimary() { return this->GetDispatch(); }
    virtual IDispatch *GetDispatch() { return (IDispatch *)this; }

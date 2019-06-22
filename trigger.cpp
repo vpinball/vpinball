@@ -1014,7 +1014,7 @@ HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
    return S_OK;
 }
 
-BOOL Trigger::LoadToken(int id, BiffReader *pbr)
+bool Trigger::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

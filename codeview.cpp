@@ -3092,7 +3092,7 @@ HRESULT Collection::LoadData(IStream *pstm, PinTable *ppt, int version, HCRYPTHA
    return S_OK;
 }
 
-BOOL Collection::LoadToken(int id, BiffReader *pbr)
+bool Collection::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(NAME))
    {

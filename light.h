@@ -61,7 +61,7 @@ public:
 
    virtual PinTable *GetPTable();
 
-   virtual BOOL LoadToken(int id, BiffReader *pbr) { return fTrue; }
+   virtual bool LoadToken(const int id, BiffReader * const pbr) { return fTrue; }
 
    virtual Vertex2D GetCenter() const;
    virtual void PutCenter(const Vertex2D& pv);

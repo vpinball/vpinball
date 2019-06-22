@@ -370,7 +370,7 @@ public:
    //ILoadable
    virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash);
    virtual HRESULT LoadData(IStream *pstm, PinTable *ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-   virtual BOOL LoadToken(int id, BiffReader *pbr);
+   virtual bool LoadToken(const int id, BiffReader * const pbr);
 
    STDMETHOD(get_Count)(long __RPC_FAR *plCount);
    STDMETHOD(get_Item)(long index, IDispatch __RPC_FAR * __RPC_FAR *ppidisp);

@@ -581,7 +581,7 @@ HRESULT Flasher::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
    return S_OK;
 }
 
-BOOL Flasher::LoadToken(int id, BiffReader *pbr)
+bool Flasher::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

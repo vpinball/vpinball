@@ -102,7 +102,7 @@ HRESULT PinBinary::LoadFromStream(IStream *pstream, int version)
    return S_OK;
 }
 
-BOOL PinBinary::LoadToken(int id, BiffReader *pbr)
+bool PinBinary::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(NAME))
    {

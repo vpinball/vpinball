@@ -444,7 +444,7 @@ HRESULT BiffReader::Load()
       bool fContinue = false;
       if (hr == S_OK)
       {
-         fContinue = !!m_piloadable->LoadToken(tag, this);
+         fContinue = m_piloadable->LoadToken(tag, this);
       }
 
       if (!fContinue)

@@ -525,7 +525,7 @@ HRESULT DispReel::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versio
 }
 
 
-BOOL DispReel::LoadToken(int id, BiffReader *pbr)
+bool DispReel::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {
