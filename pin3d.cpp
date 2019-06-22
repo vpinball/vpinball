@@ -15,7 +15,7 @@ Pin3D::Pin3D()
    m_pddsStatic = NULL;
    m_pddsStaticZ = NULL;
    m_envRadianceTexture = NULL;
-   tableVBuffer = NULL;
+   m_tableVBuffer = NULL;
 
    m_camx = 0.f;
    m_camy = 0.f;
@@ -30,11 +30,11 @@ Pin3D::~Pin3D()
    m_pd3dPrimaryDevice->SetZBuffer(NULL);
    m_pd3dPrimaryDevice->FreeShader();
 
-   pinballEnvTexture.FreeStuff();
+   m_pinballEnvTexture.FreeStuff();
 
-   envTexture.FreeStuff();
+   m_builtinEnvTexture.FreeStuff();
 
-   aoDitherTexture.FreeStuff();
+   m_aoDitherTexture.FreeStuff();
 
    if (m_envRadianceTexture)
    {
@@ -43,8 +43,8 @@ Pin3D::~Pin3D()
       m_envRadianceTexture = NULL;
    }
 
-   if (tableVBuffer)
-      tableVBuffer->release();
+   if (m_tableVBuffer)
+      m_tableVBuffer->release();
 
    SAFE_RELEASE(m_pddsAOBackBuffer);
    SAFE_RELEASE(m_pddsAOBackTmpBuffer);
@@ -383,13 +383,13 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    // Create the "static" color buffer.  
    // This will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).
 
-   pinballEnvTexture.CreateFromResource(IDB_BALL);
-   aoDitherTexture.CreateFromResource(IDB_AO_DITHER);
+   m_pinballEnvTexture.CreateFromResource(IDB_BALL);
+   m_aoDitherTexture.CreateFromResource(IDB_AO_DITHER);
 
    m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_szEnvImage);
-   envTexture.CreateFromResource(IDB_ENV);
+   m_builtinEnvTexture.CreateFromResource(IDB_ENV);
 
-   Texture * const envTex = m_envTexture ? m_envTexture : &envTexture;
+   Texture * const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
 
    const unsigned int envTexHeight = min(envTex->m_pdsBuffer->height(),256) / 8;
    const unsigned int envTexWidth = envTexHeight*2;
@@ -863,11 +863,11 @@ void Pin3D::InitPlayfieldGraphics()
    const IEditable * const piEdit = g_pplayer->m_ptable->GetElementByName("playfield_mesh");
    if (piEdit == NULL)
    {
-      assert(tableVBuffer == NULL);
-      m_pd3dPrimaryDevice->CreateVertexBuffer(4, 0, MY_D3DFVF_NOTEX2_VERTEX, &tableVBuffer);
+      assert(m_tableVBuffer == NULL);
+      m_pd3dPrimaryDevice->CreateVertexBuffer(4, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_tableVBuffer);
 
       Vertex3D_NoTex2 *buffer;
-      tableVBuffer->lock(0, 0, (void**)&buffer, VertexBuffer::WRITEONLY);
+      m_tableVBuffer->lock(0, 0, (void**)&buffer, VertexBuffer::WRITEONLY);
 
       unsigned int offs = 0;
       for (unsigned int y = 0; y <= 1; ++y)
@@ -885,7 +885,7 @@ void Pin3D::InitPlayfieldGraphics()
             buffer[offs].nz = 1.f;
          }
 
-      tableVBuffer->unlock();
+      m_tableVBuffer->unlock();
    }
    else
       g_pplayer->m_meshAsPlayfield = true;
@@ -929,9 +929,9 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 
    if (!g_pplayer->m_meshAsPlayfield)
    { 
-      assert(tableVBuffer != NULL);
+      assert(m_tableVBuffer != NULL);
       m_pd3dPrimaryDevice->basicShader->Begin(0);
-      m_pd3dPrimaryDevice->DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 0, 4);
+      m_pd3dPrimaryDevice->DrawPrimitiveVB(RenderDevice::TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, m_tableVBuffer, 0, 4);
       m_pd3dPrimaryDevice->basicShader->End();
    }
    else

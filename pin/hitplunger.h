@@ -206,7 +206,7 @@ public:
    // *close* to one of the ends without having to actually reach the
    // exact end, and ensures that we don't fire the event repeatedly
    // if we stop at one of the ends for a while.
-   bool m_fStrokeEventsArmed;
+   bool m_strokeEventsArmed;
 
    // Recent history of mechanical plunger readings.  We keep the
    // last few distinct readings so that we can make a better guess

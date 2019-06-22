@@ -30,7 +30,7 @@ public:
 
    TimerDataRoot m_tdr;             // timer information
    bool        m_transparent;      // is the background transparent
-   bool        m_fUseImageGrid;
+   bool        m_useImageGrid;
    bool        m_visible;
 };
 

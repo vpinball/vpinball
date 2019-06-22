@@ -36,7 +36,7 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 void DispReel::SetDefaults(bool fromMouseClick)
 {
    // object is only available on the backglass
-   m_fBackglass = true;
+   m_backglass = true;
 
    // set all the Data defaults
    HRESULT hr;
@@ -49,7 +49,7 @@ void DispReel::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSound[0] = 0;
 
-   m_d.m_fUseImageGrid = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "UseImageGrid", false) : false;
+   m_d.m_useImageGrid = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "UseImageGrid", false) : false;
    m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "Visible", true) : true;
    m_d.m_imagesPerGridRow = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\EMReel", "ImagesPerRow", 1) : 1;
    m_d.m_transparent = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\EMReel", "Transparent", false) : false;
@@ -69,7 +69,7 @@ void DispReel::WriteRegDefaults()
 {
    SaveValueString("DefaultProps\\EMReel", "Image", m_d.m_szImage);
    SaveValueString("DefaultProps\\EMReel", "Sound", m_d.m_szSound);
-   SaveValueBool("DefaultProps\\Decal", "UseImageGrid", m_d.m_fUseImageGrid);
+   SaveValueBool("DefaultProps\\Decal", "UseImageGrid", m_d.m_useImageGrid);
    SaveValueBool("DefaultProps\\Decal", "Visible", m_d.m_visible);
    SaveValueInt("DefaultProps\\Decal", "ImagesPerRow", m_d.m_imagesPerGridRow);
    SaveValueBool("DefaultProps\\Decal", "Transparent", m_d.m_transparent);
@@ -216,7 +216,7 @@ void DispReel::RenderDynamic()
    if (!pin)
       return;
 
-   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
@@ -304,7 +304,7 @@ void DispReel::RenderSetup()
    int GridCols, GridRows;
 
    // get the number of images per row of the image
-   if (m_d.m_fUseImageGrid)
+   if (m_d.m_useImageGrid)
    {
       GridCols = m_d.m_imagesPerGridRow;
       if (GridCols != 0) // best to be safe
@@ -500,7 +500,7 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(MSTP), (float)m_d.m_motorsteps);
    bw.WriteFloat(FID(RANG), (float)m_d.m_digitrange);
    bw.WriteInt(FID(UPTM), m_d.m_updateinterval);
-   bw.WriteBool(FID(UGRD), m_d.m_fUseImageGrid);
+   bw.WriteBool(FID(UGRD), m_d.m_useImageGrid);
    bw.WriteBool(FID(VISI), m_d.m_visible);
    bw.WriteInt(FID(GIPR), m_d.m_imagesPerGridRow);
 
@@ -593,7 +593,7 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(UGRD))
    {
-      pbr->GetBool(&m_d.m_fUseImageGrid);
+      pbr->GetBool(&m_d.m_useImageGrid);
    }
    else if (id == FID(VISI))
    {
@@ -680,10 +680,10 @@ STDMETHODIMP DispReel::get_BackColor(OLE_COLOR *pVal)
 STDMETHODIMP DispReel::put_BackColor(OLE_COLOR newVal)
 {
    STARTUNDO
-      m_d.m_backcolor = newVal;
+   m_d.m_backcolor = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP DispReel::get_Reels(float *pVal)
@@ -696,11 +696,9 @@ STDMETHODIMP DispReel::get_Reels(float *pVal)
 STDMETHODIMP DispReel::put_Reels(float newVal)
 {
    STARTUNDO
-
    m_d.m_reelcount = min(max(1, (int)newVal), MAX_REELS); // must have at least 1 reel and a max of MAX_REELS
    m_d.m_v2.x = m_d.m_v1.x + getBoxWidth();
    m_d.m_v2.y = m_d.m_v1.y + getBoxHeight();
-
    STOPUNDO
 
    return S_OK;
@@ -716,10 +714,8 @@ STDMETHODIMP DispReel::get_Width(float *pVal)
 STDMETHODIMP DispReel::put_Width(float newVal)
 {
    STARTUNDO
-
    m_d.m_width = max(0.0f, newVal);
    m_d.m_v2.x = m_d.m_v1.x + getBoxWidth();
-
    STOPUNDO
 
    return S_OK;
@@ -735,10 +731,8 @@ STDMETHODIMP DispReel::get_Height(float *pVal)
 STDMETHODIMP DispReel::put_Height(float newVal)
 {
    STARTUNDO
-
    m_d.m_height = max(0.0f, newVal);
    m_d.m_v2.y = m_d.m_v1.y + getBoxHeight();
-
    STOPUNDO
 
    return S_OK;
@@ -755,11 +749,9 @@ STDMETHODIMP DispReel::get_X(float *pVal)
 STDMETHODIMP DispReel::put_X(float newVal)
 {
    STARTUNDO
-
    const float delta = newVal - m_d.m_v1.x;
    m_d.m_v1.x += delta;
    m_d.m_v2.x = m_d.m_v1.x + getBoxWidth();
-
    STOPUNDO
 
    return S_OK;
@@ -775,11 +767,9 @@ STDMETHODIMP DispReel::get_Y(float *pVal)
 STDMETHODIMP DispReel::put_Y(float newVal)
 {
    STARTUNDO
-
    const float delta = newVal - m_d.m_v1.y;
    m_d.m_v1.y += delta;
    m_d.m_v2.y = m_d.m_v1.y + getBoxHeight();
-
    STOPUNDO
 
    return S_OK;
@@ -822,9 +812,7 @@ STDMETHODIMP DispReel::put_Image(BSTR newVal)
    }
 
    STARTUNDO
-
    strcpy_s(m_d.m_szImage,szImage);
-
    STOPUNDO
 
    return S_OK;
@@ -839,11 +827,9 @@ STDMETHODIMP DispReel::get_Spacing(float *pVal)
 STDMETHODIMP DispReel::put_Spacing(float newVal)
 {
    STARTUNDO
-
    m_d.m_reelspacing = max(0.0f, newVal);
    m_d.m_v2.x = m_d.m_v1.x + getBoxWidth();
    m_d.m_v2.y = m_d.m_v1.y + getBoxHeight();
-
    STOPUNDO
 
    return S_OK;
@@ -893,10 +879,8 @@ STDMETHODIMP DispReel::get_Range(float *pVal)
 STDMETHODIMP DispReel::put_Range(float newVal)
 {
    STARTUNDO
-
    m_d.m_digitrange = max(0, (int)newVal);                     // must have at least 1 digit (0 is a digit)
    if (m_d.m_digitrange > 512 - 1) m_d.m_digitrange = 512 - 1; // and a max of 512 (0->511) //!! 512 requested by highrise
-
    STOPUNDO
 
    return S_OK;
@@ -912,11 +896,9 @@ STDMETHODIMP DispReel::get_UpdateInterval(long *pVal)
 STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
 {
    STARTUNDO
-
    m_d.m_updateinterval = max(5, newVal);
    if (g_pplayer)
       m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
-
    STOPUNDO
 
    return S_OK;
@@ -924,7 +906,7 @@ STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
 
 STDMETHODIMP DispReel::get_UseImageGrid(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_d.m_fUseImageGrid);
+   *pVal = FTOVB(m_d.m_useImageGrid);
 
    return S_OK;
 }
@@ -932,7 +914,7 @@ STDMETHODIMP DispReel::get_UseImageGrid(VARIANT_BOOL *pVal)
 STDMETHODIMP DispReel::put_UseImageGrid(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fUseImageGrid = VBTOb(newVal);
+   m_d.m_useImageGrid = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;

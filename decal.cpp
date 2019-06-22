@@ -70,7 +70,7 @@ void Decal::SetDefaults(bool fromMouseClick)
 
    m_d.m_sizingtype = fromMouseClick ? (enum SizingType)LoadValueIntWithDefault("DefaultProps\\Decal", "Sizing", (int)ManualSize) : ManualSize;
    m_d.m_color = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Decal", "Color", RGB(0,0,0)) : RGB(0,0,0);
-   m_d.m_fVerticalText = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Decal", "VerticalText", false) : false;
+   m_d.m_verticalText = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Decal", "VerticalText", false) : false;
 
    if (!m_pIFont)
    {
@@ -113,7 +113,7 @@ void Decal::WriteRegDefaults()
    SaveValueString("DefaultProps\\Decal", "Text", m_d.m_sztext);
    SaveValueInt("DefaultProps\\Decal", "Sizing", m_d.m_sizingtype);
    SaveValueInt("DefaultProps\\Decal", "Color", m_d.m_color);
-   SaveValueBool("DefaultProps\\Decal", "VerticalText", m_d.m_fVerticalText);
+   SaveValueBool("DefaultProps\\Decal", "VerticalText", m_d.m_verticalText);
    SaveValueString("DefaultProps\\Decal", "Surface", m_d.m_szSurface);
 
    if (m_pIFont)
@@ -148,7 +148,7 @@ void Decal::WriteRegDefaults()
 
 void Decal::UIRenderPass1(Sur * const psur)
 {
-   if (!m_fBackglass || GetPTable()->GetDecalsEnabled())
+   if (!m_backglass || GetPTable()->GetDecalsEnabled())
    {
       psur->SetBorderColor(-1, false, 0);
       psur->SetFillColor(m_ptable->RenderSolid() ? RGB(0, 0, 255) : -1);
@@ -180,7 +180,7 @@ void Decal::UIRenderPass1(Sur * const psur)
 
 void Decal::UIRenderPass2(Sur * const psur)
 {
-   if (!m_fBackglass || GetPTable()->GetDecalsEnabled())
+   if (!m_backglass || GetPTable()->GetDecalsEnabled())
    {
       psur->SetBorderColor(RGB(0, 0, 0), false, 0);
       psur->SetFillColor(-1);
@@ -228,7 +228,7 @@ void Decal::GetTextSize(int * const px, int * const py)
    TEXTMETRIC tm;
    GetTextMetrics(hdcNull, &tm);
 
-   if (m_d.m_fVerticalText)
+   if (m_d.m_verticalText)
    {
       // Do huge amounts of work to get rid of the descent and internal ascent of the font, because it leaves ugly spaces
       *py = AUTOLEADING * len;
@@ -284,7 +284,7 @@ void Decal::PreRenderText()
    GetTextMetrics(hdcNull, &tm);
 
    float charheight;
-   if (m_d.m_fVerticalText)
+   if (m_d.m_verticalText)
    {
       int maxwidth = 0;
 
@@ -364,7 +364,7 @@ void Decal::PreRenderText()
    SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
    alignment = DT_CENTER;
 
-   if (m_d.m_fVerticalText)
+   if (m_d.m_verticalText)
    {
       for (int i = 0; i < len; i++)
       {
@@ -414,7 +414,7 @@ void Decal::EndPlay()
 void Decal::RenderDynamic()
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   if (!m_fBackglass //!! should just check if material has opacity enabled, but this is crucial for HV setup performance like-is
+   if (!m_backglass //!! should just check if material has opacity enabled, but this is crucial for HV setup performance like-is
       && mat && mat->m_bOpacityActive)
       RenderObject();
 }
@@ -425,7 +425,7 @@ void Decal::RenderSetup()
 {
    PreRenderText();
 
-   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
@@ -450,7 +450,7 @@ void Decal::RenderSetup()
 
    if (vertexBuffer)
       vertexBuffer->release();
-   const DWORD vertexType = m_fBackglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX;
+   const DWORD vertexType = m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX;
    pd3dDevice->CreateVertexBuffer(4, 0, vertexType, &vertexBuffer);
 
    Vertex3D_NoTex2 *vertices;
@@ -468,7 +468,7 @@ void Decal::RenderSetup()
    vertices[3].x = m_d.m_vCenter.x - sn*(halfheight + descent) - cs*halfwidth;
    vertices[3].y = m_d.m_vCenter.y + cs*(halfheight + descent) - sn*halfwidth;
 
-   if (!m_fBackglass)
+   if (!m_backglass)
    {
       for (int i = 0; i < 4; i++)
          vertices[i].z = height + 0.2f;
@@ -507,22 +507,22 @@ void Decal::RenderSetup()
 float Decal::GetDepth(const Vertex3Ds& viewDir) const
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-   return !m_fBackglass ? (viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z*height) : 0.f;
+   return !m_backglass ? (viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z*height) : 0.f;
 }
 
 bool Decal::IsTransparent() const
 {
-   return !m_fBackglass;
+   return !m_backglass;
 }
 
 void Decal::RenderObject()
 {
-   if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
+   if (m_backglass && !GetPTable()->GetDecalsEnabled())
       return;
 
-   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   if (m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
+   if (m_backglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
    else
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
@@ -538,7 +538,7 @@ void Decal::RenderObject()
 
    if (m_d.m_decaltype != DecalImage)
    {
-      pd3dDevice->basicShader->SetTechnique(!m_fBackglass ? (mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal") : "bg_decal_with_texture");
+      pd3dDevice->basicShader->SetTechnique(!m_backglass ? (mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal") : "bg_decal_with_texture");
       pd3dDevice->basicShader->SetTexture("Texture0", pd3dDevice->m_texMan.LoadTexture(m_textImg, false));
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
    }
@@ -547,12 +547,12 @@ void Decal::RenderObject()
       Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
       {
-         pd3dDevice->basicShader->SetTechnique(!m_fBackglass ? (mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal") : "bg_decal_with_texture");
+         pd3dDevice->basicShader->SetTechnique(!m_backglass ? (mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal") : "bg_decal_with_texture");
          pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
       }
       else
-         pd3dDevice->basicShader->SetTechnique(!m_fBackglass ? (mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal") : "bg_decal_without_texture");
+         pd3dDevice->basicShader->SetTechnique(!m_backglass ? (mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal") : "bg_decal_without_texture");
    }
 
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
@@ -561,7 +561,7 @@ void Decal::RenderObject()
    //ppin3d->SetPrimaryTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
 
-   if (!m_fBackglass)
+   if (!m_backglass)
    {
       const float depthbias = -5.f * BASEDEPTHBIAS;
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
@@ -574,14 +574,14 @@ void Decal::RenderObject()
    }
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawPrimitiveVB(RenderDevice::TRIANGLEFAN, m_fBackglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, 4);
+   pd3dDevice->DrawPrimitiveVB(RenderDevice::TRIANGLEFAN, m_backglass ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, 4);
    pd3dDevice->basicShader->End();
 
    // Set the render state.
    //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 
-   //if(m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
+   //if(m_backglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
    //   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
 
@@ -589,7 +589,7 @@ void Decal::RenderStatic()
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
-   if (m_fBackglass //!! should just check if material has no opacity enabled, but this is crucial for HV setup performance like-is
+   if (m_backglass //!! should just check if material has no opacity enabled, but this is crucial for HV setup performance like-is
       || !mat || !mat->m_bOpacityActive)
       RenderObject();
 }
@@ -639,9 +639,9 @@ HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteInt(FID(COLR), m_d.m_color);
    bw.WriteInt(FID(SIZE), m_d.m_sizingtype);
 
-   bw.WriteBool(FID(VERT), m_d.m_fVerticalText);
+   bw.WriteBool(FID(VERT), m_d.m_verticalText);
 
-   bw.WriteBool(FID(BGLS), m_fBackglass);
+   bw.WriteBool(FID(BGLS), m_backglass);
 
    ISelect::SaveData(pstm, hcrypthash);
 
@@ -723,11 +723,11 @@ BOOL Decal::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(VERT))
    {
-      pbr->GetBool(&m_d.m_fVerticalText);
+      pbr->GetBool(&m_d.m_verticalText);
    }
    else if (id == FID(BGLS))
    {
-      pbr->GetBool(&m_fBackglass);
+      pbr->GetBool(&m_backglass);
    }
    else if (id == FID(FONT))
    {
@@ -785,7 +785,7 @@ void Decal::EnsureSize()
 
       m_realheight = (float)cy.Lo * (float)(1.0 / 2545.0);
 
-      if (m_d.m_fVerticalText)
+      if (m_d.m_verticalText)
          m_realheight *= (float)lstrlen(m_d.m_sztext);
 
       m_realwidth = m_realheight * (float)sizex / (float)sizey;
@@ -813,7 +813,7 @@ void Decal::EnsureSize()
 
          m_realheight = (float)cy.Lo * (float)(1.0 / 2545.0);
 
-         if (m_d.m_fVerticalText)
+         if (m_d.m_verticalText)
          {
             m_realheight *= (float)lstrlen(m_d.m_sztext);
             m_realwidth = m_d.m_width;
@@ -1137,7 +1137,7 @@ STDMETHODIMP Decal::putref_Font(IFontDisp *pFont)
 
 STDMETHODIMP Decal::get_HasVerticalText(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_d.m_fVerticalText);
+   *pVal = FTOVB(m_d.m_verticalText);
 
    return S_OK;
 }
@@ -1145,7 +1145,7 @@ STDMETHODIMP Decal::get_HasVerticalText(VARIANT_BOOL *pVal)
 STDMETHODIMP Decal::put_HasVerticalText(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fVerticalText = VBTOb(newVal);
+   m_d.m_verticalText = VBTOb(newVal);
    EnsureSize();
    STOPUNDO
 

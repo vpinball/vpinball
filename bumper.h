@@ -74,52 +74,52 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Bumper, eItemBumper, BUMPER, 1)
 
-      BEGIN_CONNECTION_POINT_MAP(Bumper)
-         CONNECTION_POINT_ENTRY(DIID_IBumperEvents)
-      END_CONNECTION_POINT_MAP()
-
-      DECLARE_REGISTRY_RESOURCEID(IDR_BUMPER)
-
-      // ISupportsErrorInfo
-      STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
-
-      virtual void MoveOffset(const float dx, const float dy);
-      virtual void SetObjectPos();
-
-      virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
-
-      // Multi-object manipulation
-      virtual Vertex2D GetCenter() const;
-      virtual void PutCenter(const Vertex2D& pv);
-
-      virtual void UpdatePropertyPanes();
-      virtual void SetDefaultPhysics(bool fromMouseClick);
-      virtual void ExportMesh(FILE *f);
-      virtual void RenderBlueprint(Sur *psur, const bool solid);
-
-
-      virtual unsigned long long GetMaterialID() const
-      {
-         if (!m_d.m_baseVisible && m_d.m_capVisible)
-            return m_ptable->GetMaterial(m_d.m_szCapMaterial)->hash();
-         else
-            return 64-3; //!! some constant number
-      }
-      virtual unsigned long long GetImageID() const
-      {
-         if (!m_d.m_baseVisible && m_d.m_capVisible)
-            return (unsigned long long)&m_capTexture; //!! meh
-         else
-            return NULL;
-      }
-
-      virtual ItemTypeEnum HitableGetItemType() const { return eItemBumper; }
-
-      virtual void WriteRegDefaults();
-
-      BumperData m_d;
-
-      BumperHitCircle *m_pbumperhitcircle;
+   BEGIN_CONNECTION_POINT_MAP(Bumper)
+      CONNECTION_POINT_ENTRY(DIID_IBumperEvents)
+   END_CONNECTION_POINT_MAP()
+   
+   DECLARE_REGISTRY_RESOURCEID(IDR_BUMPER)
+   
+   // ISupportsErrorInfo
+   STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
+   
+   virtual void MoveOffset(const float dx, const float dy);
+   virtual void SetObjectPos();
+   
+   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
+   
+   // Multi-object manipulation
+   virtual Vertex2D GetCenter() const;
+   virtual void PutCenter(const Vertex2D& pv);
+   
+   virtual void UpdatePropertyPanes();
+   virtual void SetDefaultPhysics(bool fromMouseClick);
+   virtual void ExportMesh(FILE *f);
+   virtual void RenderBlueprint(Sur *psur, const bool solid);
+   
+   
+   virtual unsigned long long GetMaterialID() const
+   {
+      if (!m_d.m_baseVisible && m_d.m_capVisible)
+         return m_ptable->GetMaterial(m_d.m_szCapMaterial)->hash();
+      else
+         return 64-3; //!! some constant number
+   }
+   virtual unsigned long long GetImageID() const
+   {
+      if (!m_d.m_baseVisible && m_d.m_capVisible)
+         return (unsigned long long)&m_capTexture; //!! meh
+      else
+         return NULL;
+   }
+   
+   virtual ItemTypeEnum HitableGetItemType() const { return eItemBumper; }
+   
+   virtual void WriteRegDefaults();
+   
+   BumperData m_d;
+   
+   BumperHitCircle *m_pbumperhitcircle;
 
 private:
    void RenderBase(const Material * const baseMaterial);

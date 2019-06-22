@@ -4,7 +4,7 @@ extern HINSTANCE g_hinst;
 extern VPinball *g_pvp;
 extern Player *g_pplayer; // Game currently being played
 extern HACCEL g_haccel; // Accelerator keys
-extern bool g_fKeepUndoRecords;
+extern bool g_keepUndoRecords;
 
 __forceinline void ShowError(const char * const sz)
 {

@@ -10,6 +10,14 @@ public:
    LZWReader(IStream *pstm, int *bits, int width, int height, int pitch);
    ~LZWReader();
 
+   short Decoder();
+
+private:
+   short init_exp(int size);
+   int get_next_code();
+   int get_byte();
+   BYTE *NextLine();
+
    IStream *m_pstm;
 
    int m_msDelayCur;
@@ -39,14 +47,6 @@ public:
    BYTE stack[MAX_CODES + 1];     /* Stack for storing pixels */
    BYTE suffix[MAX_CODES + 1];    /* Suffix table */
    WCHAR prefix[MAX_CODES + 1];   /* Prefix linked list */
-
-
-   int get_byte();
-   BYTE *NextLine();
-
-   short init_exp(int size);
-   int get_next_code();
-   short Decoder();
 
    int m_cfilebuffer;
    BYTE m_pfilebufferbytes[FILE_BUF_SIZE];

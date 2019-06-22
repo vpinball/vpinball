@@ -37,7 +37,7 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser
    m_solState = false;
    m_isInContact = false;
    m_curTorque = 0.0f;
-   m_EnableRotateEvent = 0;
+   m_enableRotateEvent = 0;
 
    m_angleStart = angleStart;
    m_angleEnd = angleEnd;
@@ -230,15 +230,16 @@ void FlipperMoverObject::UpdateDisplacements(const float dtime)
       m_angularMomentum *= -0.3f; //!! make configurable?
       m_angleSpeed = m_angularMomentum / m_inertia;
 
-      if (m_EnableRotateEvent > 0)
+      if (m_enableRotateEvent > 0)
       {
           m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS, anglespd); // send EOS event
 
           g_pplayer->m_pininput.m_leftkey_down_usec_EOS = usec(); // debug only
           g_pplayer->m_pininput.m_leftkey_down_frame_EOS = g_pplayer->m_overall_frames;
       }
-      else if (m_EnableRotateEvent < 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_BOS, anglespd); // send Beginning of Stroke/Park event
-      m_EnableRotateEvent = 0;
+      else if (m_enableRotateEvent < 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_BOS, anglespd); // send Beginning of Stroke/Park event
+
+      m_enableRotateEvent = 0;
    }
 }
 

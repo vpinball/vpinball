@@ -592,7 +592,7 @@ STDMETHODIMP Flipper::RotateToEnd() // power stroke to hit ball, key/button down
       g_pplayer->m_pininput.m_leftkey_down_usec_rotate_to_end = usec(); // debug only
       g_pplayer->m_pininput.m_leftkey_down_frame_rotate_to_end = g_pplayer->m_overall_frames;
 
-      m_phitflipper->m_flipperMover.m_EnableRotateEvent = 1;
+      m_phitflipper->m_flipperMover.m_enableRotateEvent = 1;
       m_phitflipper->m_flipperMover.SetSolenoidState(true);
    }
 
@@ -603,7 +603,7 @@ STDMETHODIMP Flipper::RotateToStart() // return to park, key/button up/released
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_flipperMover.m_EnableRotateEvent = -1;
+      m_phitflipper->m_flipperMover.m_enableRotateEvent = -1;
       m_phitflipper->m_flipperMover.SetSolenoidState(false);
    }
 

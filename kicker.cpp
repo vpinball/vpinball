@@ -92,7 +92,7 @@ void Kicker::SetDefaults(bool fromMouseClick)
    if (m_d.m_kickertype > KickerCup2)
       m_d.m_kickertype = KickerInvisible;
 
-   m_d.m_fFallThrough = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Kicker", "FallThrough", false) : false;
+   m_d.m_fallThrough = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Kicker", "FallThrough", false) : false;
    m_d.m_legacyMode = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Kicker", "Legacy", true) : true;
 }
 
@@ -108,7 +108,7 @@ void Kicker::WriteRegDefaults()
    SaveValueFloat("DefaultProps\\Kicker", "Scatter", m_d.m_scatter);
    SaveValueInt("DefaultProps\\Kicker", "KickerType", m_d.m_kickertype);
    SaveValueString("DefaultProps\\Kicker", "Surface", m_d.m_szSurface);
-   SaveValueBool("DefaultProps\\Kicker", "FallThrough", m_d.m_fFallThrough);
+   SaveValueBool("DefaultProps\\Kicker", "FallThrough", m_d.m_fallThrough);
    SaveValueBool("DefaultProps\\Kicker", "Legacy", m_d.m_legacyMode);
 }
 
@@ -183,9 +183,9 @@ void Kicker::GetHitShapes(vector<HitObject*> &pvho)
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    KickerHitCircle * const phitcircle = new KickerHitCircle(m_d.m_vCenter, m_d.m_radius *
-      (m_d.m_legacyMode ? (m_d.m_fFallThrough ? 0.75f :
-                                                0.6f) // reduce the hit circle radius because only the inner circle of the kicker should start a hit event
-                                              : 1.f),
+      (m_d.m_legacyMode ? (m_d.m_fallThrough ? 0.75f :
+                                               0.6f) // reduce the hit circle radius because only the inner circle of the kicker should start a hit event
+                                             : 1.f),
       height, height+m_d.m_hit_height); // height of kicker hit cylinder
 
    if (!m_d.m_legacyMode)
@@ -636,7 +636,7 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(KHAC), m_d.m_hitAccuracy);
    bw.WriteFloat(FID(KHHI), m_d.m_hit_height);
    bw.WriteFloat(FID(KORI), m_d.m_orientation);
-   bw.WriteBool(FID(FATH), m_d.m_fFallThrough);
+   bw.WriteBool(FID(FATH), m_d.m_fallThrough);
    bw.WriteBool(FID(LEMO), m_d.m_legacyMode);
 
    ISelect::SaveData(pstm, hcrypthash);
@@ -721,7 +721,7 @@ BOOL Kicker::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(FATH))
    {
-      pbr->GetBool(&m_d.m_fFallThrough);
+      pbr->GetBool(&m_d.m_fallThrough);
    }
    else if (id == FID(LEMO))
    {
@@ -1070,7 +1070,7 @@ STDMETHODIMP Kicker::put_Radius(float newVal)
 
 STDMETHODIMP Kicker::get_FallThrough(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_d.m_fFallThrough);
+   *pVal = FTOVB(m_d.m_fallThrough);
 
    return S_OK;
 }
@@ -1078,7 +1078,7 @@ STDMETHODIMP Kicker::get_FallThrough(VARIANT_BOOL *pVal)
 STDMETHODIMP Kicker::put_FallThrough(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fFallThrough = VBTOb(newVal);
+   m_d.m_fallThrough = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -1339,7 +1339,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
 
          if (hitEvent)
          {
-            if (m_pkicker->m_d.m_fFallThrough)
+            if (m_pkicker->m_d.m_fallThrough)
                pball->m_frozen = false;
             else
             {
@@ -1355,7 +1355,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
             if (!newBall)
                m_pkicker->FireGroupEvent(DISPID_HitEvents_Hit);
 
-            if (pball->m_frozen || m_pkicker->m_d.m_fFallThrough)	// script may have unfrozen the ball
+            if (pball->m_frozen || m_pkicker->m_d.m_fallThrough)	// script may have unfrozen the ball
             {
                // if ball falls through hole, we fake the collision algo by changing the ball height
                // in HitTestBasicRadius() the z-position of the ball is checked if it is >= to the hit cylinder
@@ -1370,7 +1370,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
 #ifdef C_DYNAMIC
                pball->m_dynamic = 0;
 #endif
-               if (m_pkicker->m_d.m_fFallThrough)
+               if (m_pkicker->m_d.m_fallThrough)
                   pball->m_pos.z = m_hitBBox.zlow - pball->m_radius - 5.0f;
                else
                   pball->m_pos.z = m_hitBBox.zlow + pball->m_radius/**pball->m_radius/radius*/;

@@ -139,9 +139,9 @@ public:
 
    static const int Dim = 3;
 
-   bool fSmooth;
-   bool fSlingshot;
-   bool fControlPoint; // Whether this point was a control point on the curve
+   bool smooth;
+   bool slingshot;
+   bool controlPoint; // Whether this point was a control point on the curve
    bool padd; // Useless padding to align to 4bytes, should enhance access speeds
 };
 
@@ -150,13 +150,13 @@ class RenderVertex : public Vertex2D
 public:
    void set(const Vertex3Ds &v) { x = v.x; y = v.y; }
    void set(const RenderVertex &v) { *this = v; }
-   void set(const RenderVertex3D &v) { x = v.x; y = v.y; fSmooth = v.fSmooth; fSlingshot = v.fSlingshot; fControlPoint = v.fControlPoint; }
+   void set(const RenderVertex3D &v) { x = v.x; y = v.y; smooth = v.smooth; slingshot = v.slingshot; controlPoint = v.controlPoint; }
 
    static const int Dim = 2;
 
-   bool fSmooth;
-   bool fSlingshot;
-   bool fControlPoint; // Whether this point was a control point on the curve
+   bool smooth;
+   bool slingshot;
+   bool controlPoint; // Whether this point was a control point on the curve
    bool padd; // Useless padding to align to 4bytes, should enhance access speeds
 };
 
@@ -166,9 +166,9 @@ void RecurseSmoothLine(const CurveType & cc, const float t1, const float t2, con
    const float tMid = (t1 + t2)*0.5f;
    VtxType vmid;
    cc.GetPointAt(tMid, &vmid);
-   vmid.fSmooth = true; // Generated points must always be smooth, because they are part of the curve
-   vmid.fSlingshot = false; // Slingshots can't be along curves
-   vmid.fControlPoint = false; // We created this point, so it can't be a control point
+   vmid.smooth = true; // Generated points must always be smooth, because they are part of the curve
+   vmid.slingshot = false; // Slingshots can't be along curves
+   vmid.controlPoint = false; // We created this point, so it can't be a control point
 
    if (FlatWithAccuracy(vt1, vt2, vmid, accuracy))
    {

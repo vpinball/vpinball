@@ -244,7 +244,7 @@ void Light::UIRenderPass1(Sur * const psur)
 
 void Light::UIRenderPass2(Sur * const psur)
 {
-   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints));
+   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || (g_pvp->m_alwaysDrawDragPoints));
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!fDrawDragpoints)
@@ -269,7 +269,7 @@ void Light::UIRenderPass2(Sur * const psur)
       {
          CComObject<DragPoint> * const pdp = m_vdpoint[i];
          psur->SetFillColor(-1);
-         psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(0, 0, 200), false, 0);
+         psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(0, 0, 200), false, 0);
          psur->SetObject(pdp);
 
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
@@ -308,7 +308,7 @@ void Light::RenderOutline(Sur * const psur)
    }
    }
 
-   if (m_d.m_shape == ShapeCustom || g_pvp->m_fAlwaysDrawLightCenters)
+   if (m_d.m_shape == ShapeCustom || g_pvp->m_alwaysDrawLightCenters)
    {
       psur->Line(m_d.m_vCenter.x - 10.0f, m_d.m_vCenter.y, m_d.m_vCenter.x + 10.0f, m_d.m_vCenter.y);
       psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10.0f, m_d.m_vCenter.x, m_d.m_vCenter.y + 10.0f);
@@ -422,7 +422,7 @@ void Light::EndPlay()
 
 float Light::GetDepth(const Vertex3Ds& viewDir) const
 {
-   return (!m_fBackglass) ? (m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight) : 0.f;
+   return (!m_backglass) ? (m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight) : 0.f;
 }
 
 void Light::ClearForOverwrite()
@@ -446,7 +446,7 @@ void Light::RenderBulbMesh()
    mat.m_fThickness = 0.05f;
    mat.m_cClearcoat = 0;
 
-   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    pd3dDevice->basicShader->SetTechnique(mat.m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    pd3dDevice->basicShader->SetMaterial(&mat);
@@ -477,7 +477,7 @@ void Light::RenderBulbMesh()
 
 void Light::RenderDynamic()
 {
-   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    TRACE_FUNCTION();
 
@@ -487,7 +487,7 @@ void Light::RenderDynamic()
    if (m_customMoverVBuffer == NULL) // in case of degenerate light
       return;
 
-   if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
+   if (m_backglass && !GetPTable()->GetDecalsEnabled())
       return;
 
    if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh)
@@ -534,7 +534,7 @@ void Light::RenderDynamic()
    const vec4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
    vec4 lightColor_intensity = convertColor(m_d.m_color);
    if (m_d.m_BulbLight ||
-      (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szOffImage))) && (offTexel != NULL) && !m_fBackglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
+      (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szOffImage))) && (offTexel != NULL) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
    {
       if (m_d.m_currentIntensity == 0.f)
          return;
@@ -543,7 +543,7 @@ void Light::RenderDynamic()
          return;
    }
 
-   if (!m_fBackglass)
+   if (!m_backglass)
    {
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_FALSE);
       const float depthbias = -BASEDEPTHBIAS;
@@ -555,7 +555,7 @@ void Light::RenderDynamic()
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    }
 
-   if (m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
+   if (m_backglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
    else
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
@@ -563,7 +563,7 @@ void Light::RenderDynamic()
    Vertex2D centerHUD;
    centerHUD.x = m_d.m_vCenter.x;
    centerHUD.y = m_d.m_vCenter.y;
-   if (m_fBackglass)
+   if (m_backglass)
    {
       const float  mult = getBGxmult();
       const float ymult = getBGymult();
@@ -571,14 +571,14 @@ void Light::RenderDynamic()
       centerHUD.x = centerHUD.x* mult - 0.5f;
       centerHUD.y = centerHUD.y*ymult - 0.5f;
    }
-   const vec4 center_range(centerHUD.x, centerHUD.y, !m_fBackglass ? m_surfaceHeight + 0.05f : 0.0f, 1.0f / max(m_d.m_falloff, 0.1f));
+   const vec4 center_range(centerHUD.x, centerHUD.y, !m_backglass ? m_surfaceHeight + 0.05f : 0.0f, 1.0f / max(m_d.m_falloff, 0.1f));
 
    if (!m_d.m_BulbLight)
    {
       pd3dDevice->classicLightShader->SetLightData(center_range);
       pd3dDevice->classicLightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
 
-      pd3dDevice->classicLightShader->SetLightImageBackglassMode(m_d.m_imageMode, m_fBackglass);
+      pd3dDevice->classicLightShader->SetLightImageBackglassMode(m_d.m_imageMode, m_backglass);
       pd3dDevice->classicLightShader->SetMaterial(m_surfaceMaterial);
 
       if (offTexel != NULL)
@@ -586,7 +586,7 @@ void Light::RenderDynamic()
          pd3dDevice->classicLightShader->SetBool("hdrTexture0", offTexel->IsHDR());
          pd3dDevice->classicLightShader->SetTechnique(m_surfaceMaterial->m_bIsMetal ? "light_with_texture_isMetal" : "light_with_texture_isNotMetal");
          pd3dDevice->classicLightShader->SetTexture("Texture0", offTexel, false);
-         if (m_ptable->m_fReflectElementsOnPlayfield && g_pplayer->m_pf_refl && !m_fBackglass)
+         if (m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl && !m_backglass)
          {
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
             pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::ONE);
@@ -643,14 +643,14 @@ void Light::RenderDynamic()
       pd3dDevice->lightShader->Begin(0);
    }
 
-   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, m_customMoverVBuffer, 0, m_customMoverVertexNum, m_customMoverIBuffer, 0, m_customMoverIndexNum);
+   pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, (!m_backglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, m_customMoverVBuffer, 0, m_customMoverVertexNum, m_customMoverIBuffer, 0, m_customMoverIndexNum);
 
    if (!m_d.m_BulbLight)
       pd3dDevice->classicLightShader->End();
    else
       pd3dDevice->lightShader->End();
 
-   if (!m_d.m_BulbLight && offTexel != NULL && m_ptable->m_fReflectElementsOnPlayfield && g_pplayer->m_pf_refl && !m_fBackglass)
+   if (!m_d.m_BulbLight && offTexel != NULL && m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl && !m_backglass)
    {
       pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
       pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::SRC_ALPHA);
@@ -663,7 +663,7 @@ void Light::RenderDynamic()
    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
    }*/
 
-   //if(m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
+   //if(m_backglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
    //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
 
@@ -676,7 +676,7 @@ void Light::UpdateLightShapeHeight()
       m_surfaceHeight = height;
    }
 
-   if (!m_fBackglass)
+   if (!m_backglass)
    {
       Vertex3D_NoTex2 *buf;
       m_customMoverVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
@@ -747,7 +747,7 @@ void Light::PrepareMoversCustom()
    m_customMoverIBuffer->unlock();
 
    m_customMoverVertexNum = (unsigned int)m_vvertex.size();
-   const DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
+   const DWORD vertexType = (!m_backglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
    g_pplayer->m_pin3d.m_pd3dPrimaryDevice->CreateVertexBuffer(m_customMoverVertexNum, 0, vertexType, &m_customMoverVBuffer);
 
    Texture* const pin = m_ptable->GetImage(m_d.m_szOffImage);
@@ -765,7 +765,7 @@ void Light::PrepareMoversCustom()
    {
       const RenderVertex * const pv0 = &m_vvertex[t];
 
-      if (!m_fBackglass)
+      if (!m_backglass)
       {
          buf[t].x = pv0->x;
          buf[t].y = pv0->y;
@@ -809,7 +809,7 @@ void Light::PrepareMoversCustom()
 
 void Light::RenderSetup()
 {
-   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    m_iblinkframe = 0;
    m_d.m_time_msec = g_pplayer->m_time_msec;
@@ -928,7 +928,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(TRMS), m_d.m_transmissionScale);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
-   bw.WriteBool(FID(BGLS), m_fBackglass);
+   bw.WriteBool(FID(BGLS), m_backglass);
    bw.WriteFloat(FID(LIDB), m_d.m_depthBias);
    bw.WriteFloat(FID(FASP), m_d.m_fadeSpeedUp);
    bw.WriteFloat(FID(FASD), m_d.m_fadeSpeedDown);
@@ -1061,7 +1061,7 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(BGLS))
    {
-      pbr->GetBool(&m_fBackglass);
+      pbr->GetBool(&m_backglass);
    }
    else if (id == FID(LIDB))
    {
@@ -1155,7 +1155,7 @@ void Light::AddPoint(int x, int y, const bool smooth)
    // Go through vertices (including iSeg itself) counting control points until iSeg
    int icp = 0;
    for (int i = 0; i < (iSeg + 1); i++)
-      if (vvertex[i].fControlPoint)
+      if (vvertex[i].controlPoint)
          icp++;
 
    //if (icp == 0) // need to add point after the last point
@@ -1268,12 +1268,10 @@ STDMETHODIMP Light::get_State(LightState *pVal)
 STDMETHODIMP Light::put_State(LightState newVal)
 {
    STARTUNDO
-
    // if the light is locked by the LS then just change the state and don't change the actual light
    if (!m_lockedByLS)
       setLightState(newVal);
    m_d.m_state = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -1476,12 +1474,10 @@ STDMETHODIMP Light::get_Intensity(float *pVal)
 STDMETHODIMP Light::put_Intensity(float newVal)
 {
    STARTUNDO
-
    m_d.m_intensity = max(0.f, newVal);
    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_realState != LightStateOff);
    if (isOn)
       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
-
    STOPUNDO
 
    return S_OK;
@@ -1799,17 +1795,17 @@ void Light::UpdatePropertyPanes()
    if (m_propVisual == NULL)
       return;
 
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SHOW_BULB_MESH), m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SCALE_BULB_MESH), m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_BULB_MODULATE_VS_ADD), m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_REFLECT_ON_BALLS), m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_TRANSMISSION_SCALE), m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_HALO_EDIT), m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_IMAGE_MODE), !m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, DISPID_Image), !m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_SHOW_BULB_MESH), m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_SCALE_BULB_MESH), m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_BULB_MODULATE_VS_ADD), m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_REFLECT_ON_BALLS), m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_TRANSMISSION_SCALE), m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_HALO_EDIT), m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_IMAGE_MODE), !m_d.m_BulbLight);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, DISPID_Image), !m_d.m_BulbLight);
 
    if (!m_d.m_BulbLight)
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STATIC_BULB_MESH), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STATIC_BULB_MESH), FALSE);
    else
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STATIC_BULB_MESH), m_d.m_showBulbMesh);
+      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STATIC_BULB_MESH), m_d.m_showBulbMesh);
 }

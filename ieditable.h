@@ -19,32 +19,32 @@ public:
 };
 
 #define STARTUNDO \
-	if (g_fKeepUndoRecords) \
-   		{ \
+	if (g_keepUndoRecords) \
+		{ \
 		BeginUndo(); \
 		MarkForUndo(); \
-   		}
+		}
 
 #define STOPUNDO \
-	if (g_fKeepUndoRecords) \
-   		{ \
+	if (g_keepUndoRecords) \
+		{ \
 		EndUndo(); \
 		SetDirtyDraw(); \
-   		}
+		}
 
 #define STARTUNDOSELECT \
-	if (g_fKeepUndoRecords) \
-   		{ \
+	if (g_keepUndoRecords) \
+		{ \
 		GetIEditable()->BeginUndo(); \
 		GetIEditable()->MarkForUndo(); \
-   		}
+		}
 
 #define STOPUNDOSELECT \
-	if (g_fKeepUndoRecords) \
-   		{ \
+	if (g_keepUndoRecords) \
+		{ \
 		GetIEditable()->EndUndo(); \
 		GetIEditable()->SetDirtyDraw(); \
-   		}
+		}
 
 
 #define INITVBA(ItemType) \
@@ -52,12 +52,12 @@ public:
 		{ \
 		WCHAR wzUniqueName[128]; \
 		if (fNew && !wzName) \
-      			{ \
+			{ \
 				{ \
 				GetPTable()->GetUniqueName(ItemType, wzUniqueName); \
 				WideStrCopy(wzUniqueName, (WCHAR *)m_wzName);/*lstrcpyW((WCHAR *)m_wzName, wzUniqueName);*/ \
 				} \
-      			} \
+			} \
 		InitScript(); \
 		return S_OK; \
 		}
@@ -96,14 +96,14 @@ public:
 		{ \
 		int len = lstrlenW(newVal); \
 		if (len > 32 || len < 1) \
-      			{ \
+			{ \
 			return E_FAIL; \
-      			} \
+			} \
 		if (GetPTable()->m_pcv->ReplaceName(this, newVal) == S_OK) \
-      			{ \
+			{ \
 			WideStrCopy(newVal, (WCHAR *)m_wzName);/*lstrcpyW((WCHAR *)m_wzName, newVal);*/ \
 			return S_OK; \
-      			} \
+			} \
 		return E_FAIL; \
 		} \
 	STDMETHOD(get_TimerInterval)(/*[out, retval]*/ long *pVal) {*pVal = m_d.m_tdr.m_TimerInterval; return S_OK;} \
@@ -154,8 +154,8 @@ public:
 	virtual IEditable *GetIEditable() {return static_cast<IEditable*>(this);} \
 	virtual ISelect *GetISelect() {return static_cast<ISelect*>(this);} \
 	virtual Hitable *GetIHitable() {return static_cast<Hitable *>(this);} \
-    virtual void RenderSetup(); \
-    virtual void RenderStatic(); \
+	virtual void RenderSetup(); \
+	virtual void RenderStatic(); \
 	virtual void RenderDynamic(); \
 	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;}\
 	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;} \
@@ -164,11 +164,11 @@ public:
 	virtual void SetDefaults(bool fromMouseClick);
 
 #define _STANDARD_EDITABLE_CONSTANTS(ItTy, ResName, AllwdViews) \
-    static const ItemTypeEnum ItemType = ItTy; \
-    static const int TypeNameID = IDS_TB_##ResName; \
-    static const int ToolID = ID_INSERT_##ResName; \
-    static const int CursorID = IDC_##ResName; \
-    static const unsigned AllowedViews = AllwdViews;
+	static const ItemTypeEnum ItemType = ItTy; \
+	static const int TypeNameID = IDS_TB_##ResName; \
+	static const int ToolID = ID_INSERT_##ResName; \
+	static const int CursorID = IDC_##ResName; \
+	static const unsigned AllowedViews = AllwdViews;
 
 
 class EventProxyBase;
@@ -254,8 +254,8 @@ public:
    vector<Collection*> m_vEventCollection;
    vector<int> m_viEventCollection;
 
-   bool m_fSingleEvents;
+   bool m_singleEvents;
 
-   bool m_fBackglass; // if the light/decal (+dispreel/textbox is always true) is on the table (false) or a backglass view
+   bool m_backglass; // if the light/decal (+dispreel/textbox is always true) is on the table (false) or a backglass view
    bool m_isVisible;
 };

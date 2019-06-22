@@ -37,7 +37,7 @@ private:
 class SoundPositionDialog : public CDialog
 {
 public:
-	int m_iVolume, m_iFade, m_iBalance;
+	int m_volume, m_fade, m_balance;
 	SoundOutTypes m_cOutputTarget;
 	PinSound *m_pps;
 

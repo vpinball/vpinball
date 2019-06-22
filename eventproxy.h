@@ -73,7 +73,7 @@ public:
          }
       }
 
-      if (pT->m_fSingleEvents)
+      if (pT->m_singleEvents)
          FireVoidEvent(dispid);
    }
 

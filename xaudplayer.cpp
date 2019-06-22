@@ -15,7 +15,7 @@ XAudPlayer::XAudPlayer()
    //m_pDSNotify = NULL;
    m_decoder = NULL;
    //m_hNotificationEvent = NULL;
-   m_fEndData = false;
+   m_endData = false;
    m_lastplaypos = 0;
 }
 
@@ -37,7 +37,7 @@ XAudPlayer::~XAudPlayer()
 
 void XAudPlayer::Pause()
 {
-   if (m_fStarted)
+   if (m_started)
    {
       m_pDSBuffer->Stop();
    }
@@ -45,7 +45,7 @@ void XAudPlayer::Pause()
 
 void XAudPlayer::Unpause()
 {
-   if (m_fStarted)
+   if (m_started)
    {
       m_pDSBuffer->Play(0, 0, DSBPLAY_LOOPING);
    }
@@ -56,7 +56,7 @@ int XAudPlayer::Tick()
    DWORD playpos, writepos;
    m_pDSBuffer->GetCurrentPosition(&playpos, &writepos);
 
-   if (m_fEndData)
+   if (m_endData)
    {
       int timeplayed = playpos - m_lastplaypos;
       if (timeplayed < 0)
@@ -96,11 +96,11 @@ int XAudPlayer::Tick()
    if (status == XA_ERROR_TIMEOUT) // Need more input
    {
       unsigned char mp3_buffer[4096];
-      const int nb_read = fread(mp3_buffer, 1, 4096, file);
+      const int nb_read = fread(mp3_buffer, 1, 4096, m_file);
 
       if (nb_read == 0)
       {
-         //if (feof(file))
+         //if (feof(m_file))
          //	{
          //fprintf(stderr, "end of file\n");
          status = 0xffff;
@@ -151,15 +151,15 @@ int XAudPlayer::Tick()
       m_dwNextWriteOffset += cbData;
       m_dwNextWriteOffset %= m_dwBufferSize;
 
-      if (!m_fStarted)
+      if (!m_started)
       {
          m_pDSBuffer->Play(0, 0, DSBPLAY_LOOPING);
-         m_fStarted = true;
+         m_started = true;
       }
    }
    else
    {
-      m_fEndData = true;
+      m_endData = true;
       m_cDataLeft = m_dwNextWriteOffset - playpos;
       if (m_cDataLeft < 0)
       {
@@ -179,10 +179,10 @@ void XAudPlayer::End()
 
 int XAudPlayer::Init(char * const szFileName, const int volume)
 {
-   m_fStarted = false;
+   m_started = false;
 
    /* open the mp3 file (name passed as program argument */
-   if (fopen_s(&file, szFileName, "rb")) {
+   if (fopen_s(&m_file, szFileName, "rb")) {
       //fprintf(stderr, "cannot open input file\n");
       return 0;
    }

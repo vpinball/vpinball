@@ -10,6 +10,7 @@ struct DSAudioDevice
    LPGUID guid;
    string description;
    string module;
+
    DSAudioDevice() {
       guid = NULL;
    }
@@ -49,15 +50,15 @@ enum SoundConfigTypes : int { SNDCFG_SND3D2CH = 0, SNDCFG_SND3DALLREAR = 1, SNDC
 class PinSoundCopy
 {
 public:
-	PinSoundCopy(class PinSound *pOriginal);
+   PinSoundCopy(class PinSound *pOriginal);
 
-	void Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart);
-	void Stop();
-	HRESULT Get3DBuffer();
+   void Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart);
+   void Stop();
+   HRESULT Get3DBuffer();
 
-	LPDIRECTSOUNDBUFFER m_pDSBuffer;
-	LPDIRECTSOUND3DBUFFER m_pDS3DBuffer;
-	class PinSound *m_ppsOriginal;
+   LPDIRECTSOUNDBUFFER m_pDSBuffer;
+   LPDIRECTSOUND3DBUFFER m_pDS3DBuffer;
+   class PinSound *m_ppsOriginal;
 };
 
 class PinSound : public PinSoundCopy
@@ -65,6 +66,10 @@ class PinSound : public PinSoundCopy
 public:
    PinSound();
    ~PinSound();
+
+   class PinDirectSound *GetPinDirectSound();
+   void UnInitialize();
+   void ReInitialize();
 
    class PinDirectSound *m_pPinDirectSound;
 
@@ -76,14 +81,10 @@ public:
    WAVEFORMATEX m_wfx;
 
    int m_cdata;
-   SoundOutTypes m_iOutputTarget;
-   int m_iBalance;
-   int m_iFade;
-   int m_iVolume;
-
-   class PinDirectSound *GetPinDirectSound();
-   void UnInitialize();
-   void ReInitialize();
+   SoundOutTypes m_outputTarget;
+   int m_balance;
+   int m_fade;
+   int m_volume;
 };
 
 
@@ -103,11 +104,13 @@ public:
    HRESULT CreateDirectFromNative(PinSound * const pps);
 
    LPDIRECTSOUND       m_pDS;
+   SoundConfigTypes    m_3DSoundMode;
+
+private:
    LPDIRECTSOUND3DLISTENER m_pDSListener;
    //LPDIRECTSOUNDBUFFER m_pDSBuffer;
    CWaveSoundRead*     m_pWaveSoundRead;
    DWORD               m_dwBufferBytes;
-   SoundConfigTypes    m_i3DSoundMode;
 };
 
 #endif // !defined(AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_)

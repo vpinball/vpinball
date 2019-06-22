@@ -31,7 +31,7 @@ HRESULT Textbox::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 void Textbox::SetDefaults(bool fromMouseClick)
 {
    //Textbox is always located on backdrop
-   m_fBackglass = true;
+   m_backglass = true;
    m_d.m_visible = true;
 
    FONTDESC fd;
@@ -47,8 +47,8 @@ void Textbox::SetDefaults(bool fromMouseClick)
       m_d.m_tdr.m_TimerInterval = 100;
       m_d.m_talign = TextAlignRight;
       m_d.m_transparent = false;
-	  m_d.m_IsDMD = false;
-	  lstrcpy(m_d.sztext, "0");
+      m_d.m_isDMD = false;
+      lstrcpy(m_d.sztext, "0");
 
       fd.cySize.int64 = (LONGLONG)(14.25f * 10000.0f);
       fd.lpstrName = L"Arial";
@@ -67,7 +67,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
       m_d.m_tdr.m_TimerInterval = LoadValueIntWithDefault("DefaultProps\\TextBox", "TimerInterval", 100);
       m_d.m_talign = (TextAlignment)LoadValueIntWithDefault("DefaultProps\\TextBox", "TextAlignment", TextAlignRight);
       m_d.m_transparent = LoadValueBoolWithDefault("DefaultProps\\TextBox", "Transparent", false);
-      m_d.m_IsDMD = LoadValueBoolWithDefault("DefaultProps\\TextBox", "DMD", false);
+      m_d.m_isDMD = LoadValueBoolWithDefault("DefaultProps\\TextBox", "DMD", false);
 
       const float fontSize = LoadValueFloatWithDefault("DefaultProps\\TextBox", "FontSize", 14.25f);
       fd.cySize.int64 = (LONGLONG)(fontSize * 10000.0f);
@@ -111,7 +111,7 @@ void Textbox::WriteRegDefaults()
    SaveValueBool("DefaultProps\\TextBox", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
    SaveValueInt("DefaultProps\\TextBox", "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SaveValueBool("DefaultProps\\TextBox", "Transparent", m_d.m_transparent);
-   SaveValueBool("DefaultProps\\TextBox", "DMD", m_d.m_IsDMD);
+   SaveValueBool("DefaultProps\\TextBox", "DMD", m_d.m_isDMD);
 
    FONTDESC fd;
    fd.cbSizeofstruct = sizeof(FONTDESC);
@@ -213,12 +213,12 @@ void Textbox::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   const bool dmd = (m_d.m_IsDMD || strstr(m_d.sztext, "DMD") != NULL); //!! second part is VP10.0 legacy
+   const bool dmd = (m_d.m_isDMD || strstr(m_d.sztext, "DMD") != NULL); //!! second part is VP10.0 legacy
 
    if (!m_d.m_visible || (dmd && !g_pplayer->m_texdmd))
       return;
 
-   RenderDevice * const pd3dDevice = m_fBackglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
+   RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
@@ -480,7 +480,7 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteInt(FID(ALGN), m_d.m_talign);
    bw.WriteBool(FID(TRNS), m_d.m_transparent);
-   bw.WriteBool(FID(IDMD), m_d.m_IsDMD);
+   bw.WriteBool(FID(IDMD), m_d.m_isDMD);
 
    ISelect::SaveData(pstm, hcrypthash);
 
@@ -559,7 +559,7 @@ BOOL Textbox::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(IDMD))
    {
-	   pbr->GetBool(&m_d.m_IsDMD);
+      pbr->GetBool(&m_d.m_isDMD);
    }
    else if (id == FID(FONT))
    {
@@ -761,7 +761,7 @@ STDMETHODIMP Textbox::put_IsTransparent(VARIANT_BOOL newVal)
 
 STDMETHODIMP Textbox::get_DMD(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_d.m_IsDMD);
+   *pVal = FTOVB(m_d.m_isDMD);
 
    return S_OK;
 }
@@ -769,7 +769,7 @@ STDMETHODIMP Textbox::get_DMD(VARIANT_BOOL *pVal)
 STDMETHODIMP Textbox::put_DMD(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_IsDMD = VBTOb(newVal);
+   m_d.m_isDMD = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;

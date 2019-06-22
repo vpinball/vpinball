@@ -58,14 +58,10 @@ void PaintSur::Rectangle2(const int x, const int y, const int x2, const int y2)
    SelectObject(m_hdc, m_hbr);
    SelectObject(m_hdc, m_hpnOutline);
 
-   if (m_fNullBorder)
-   {
+   if (m_nullBorder)
       ::Rectangle(m_hdc, x, y, x2 + 1, y2 + 1);
-   }
    else
-   {
       ::Rectangle(m_hdc, x, y, x2, y2);
-   }
 }
 
 void PaintSur::Ellipse(float centerx, float centery, float radius)
@@ -269,7 +265,7 @@ void PaintSur::SetObject(ISelect *psel)
       {
          psel->SetMultiSelectFormat(this);
       }
-      else if (psel->m_fLocked)
+      else if (psel->m_locked)
       {
          psel->SetLockedFormat(this);
       }
@@ -301,13 +297,13 @@ void PaintSur::SetBorderColor(const int rgb, const bool fDashed, const int width
    if (rgb == -1)
    {
       m_hpnOutline = CreatePen(PS_NULL, width, rgb);
-      m_fNullBorder = true;
+      m_nullBorder = true;
    }
    else
    {
       const int style = fDashed ? PS_DOT : PS_SOLID;
       m_hpnOutline = CreatePen(style, width, rgb); //!! claims to be leaking mem
-      m_fNullBorder = false;
+      m_nullBorder = false;
    }
 }
 

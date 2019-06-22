@@ -43,7 +43,7 @@ BOOL EditorOptionsDialog::OnInitDialog()
     const bool fdrawpoints = LoadValueBoolWithDefault("Editor", "ShowDragPoints", false);
     SendMessage(GetDlgItem(IDC_DRAW_DRAGPOINTS).GetHwnd(), BM_SETCHECK, fdrawpoints ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    SendMessage(GetDlgItem(IDC_COLOR).GetHwnd(), CHANGE_COLOR, 0, g_pvp->dummyMaterial.m_cBase);
+    SendMessage(GetDlgItem(IDC_COLOR).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_dummyMaterial.m_cBase);
     SendMessage(GetDlgItem(IDC_COLOR2).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_elemSelectColor);
     SendMessage(GetDlgItem(IDC_COLOR3).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_elemSelectLockedColor);
     SendMessage(GetDlgItem(IDC_COLOR4).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_fillColor);
@@ -108,7 +108,7 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             const size_t color = ::GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
             const HWND hwndEvent = (HWND)lParam;
             if (hwndEvent == GetDlgItem(IDC_COLOR).GetHwnd())
-               g_pvp->dummyMaterial.m_cBase = (COLORREF)color;
+               g_pvp->m_dummyMaterial.m_cBase = (COLORREF)color;
             else if (hwndEvent == GetDlgItem(IDC_COLOR2).GetHwnd())
                g_pvp->m_elemSelectColor = (COLORREF)color;
             else if (hwndEvent == GetDlgItem(IDC_COLOR3).GetHwnd())
@@ -125,9 +125,9 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     {
        case IDC_DEFAULT_COLORS_BUTTON:
        {
-          g_pvp->dummyMaterial.m_cBase = 0xB469FF;
+          g_pvp->m_dummyMaterial.m_cBase = 0xB469FF;
           HWND hwndColor = GetDlgItem(IDC_COLOR).GetHwnd();
-          SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->dummyMaterial.m_cBase);
+          SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_dummyMaterial.m_cBase);
 
           g_pvp->m_elemSelectColor = 0x00FF0000;
           hwndColor = GetDlgItem(IDC_COLOR2).GetHwnd();
@@ -187,7 +187,7 @@ INT_PTR EditorOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         case GET_COLOR_TABLE:
         {
-            *((unsigned long **)lParam) = &g_pvp->dummyMaterial.m_cBase;
+            *((unsigned long **)lParam) = &g_pvp->m_dummyMaterial.m_cBase;
             return TRUE;
         }
     }
@@ -251,7 +251,7 @@ void EditorOptionsDialog::OnOK()
     for (size_t i = 0; i < g_pvp->m_vtable.size(); i++)
         g_pvp->m_vtable[i]->BeginAutoSaveCounter();
 
-    SaveValueInt("Editor", "DefaultMaterialColor", g_pvp->dummyMaterial.m_cBase);
+    SaveValueInt("Editor", "DefaultMaterialColor", g_pvp->m_dummyMaterial.m_cBase);
     SaveValueInt("Editor", "ElementSelectColor", g_pvp->m_elemSelectColor);
     SaveValueInt("Editor", "ElementSelectLockedColor", g_pvp->m_elemSelectLockedColor);
     SaveValueInt("Editor", "BackgroundColor", g_pvp->m_backgroundColor);

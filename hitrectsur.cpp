@@ -30,7 +30,7 @@ HitRectSur::~HitRectSur()
 
 void HitRectSur::Line(const float x, const float y, const float x2, const float y2)
 {
-   if (m_fFailedAlready)
+   if (m_failedAlready)
    {
       return;
    }
@@ -43,7 +43,7 @@ void HitRectSur::Line(const float x, const float y, const float x2, const float 
 
 void HitRectSur::Rectangle(const float x, const float y, const float x2, float y2)
 {
-   if (m_fFailedAlready)
+   if (m_failedAlready)
    {
       return;
    }
@@ -60,7 +60,7 @@ void HitRectSur::Rectangle2(const int x, const int y, const int x2, const int y2
 
 void HitRectSur::Ellipse(const float centerx, const float centery, const float radius)
 {
-   if (m_fFailedAlready)
+   if (m_failedAlready)
    {
       return;
    }
@@ -73,7 +73,7 @@ void HitRectSur::Ellipse(const float centerx, const float centery, const float r
 
 void HitRectSur::Ellipse2(const float centerx, const float centery, const int radius)
 {
-   if (m_fFailedAlready)
+   if (m_failedAlready)
    {
       return;
    }
@@ -99,7 +99,7 @@ void HitRectSur::Ellipse2(const float centerx, const float centery, const int ra
 
 void HitRectSur::Polygon(const Vertex2D * const rgv, const int count)
 {
-   if (m_fFailedAlready)
+   if (m_failedAlready)
    {
       return;
    }
@@ -116,7 +116,7 @@ void HitRectSur::Polygon(const Vertex2D * const rgv, const int count)
 // copy-pasted from above
 void HitRectSur::Polygon(const std::vector<RenderVertex> &rgv)
 {
-   if (m_fFailedAlready)
+   if (m_failedAlready)
    {
       return;
    }
@@ -160,7 +160,7 @@ void HitRectSur::SetObject(ISelect *psel)
       if (FindIndexOf(m_vselFailed, psel) != -1)
       {
          // Object failed previously - just skip this time
-         m_fFailedAlready = true;
+         m_failedAlready = true;
       }
       else
       {
@@ -175,18 +175,18 @@ void HitRectSur::SetObject(ISelect *psel)
          {
             m_indexcur = index;
          }
-         m_fFailedAlready = false;
+         m_failedAlready = false;
       }
    }
    else
    {
-      m_fFailedAlready = true;
+      m_failedAlready = true;
    }
 }
 
 void HitRectSur::FailObject()
 {
-   m_fFailedAlready = true;
+   m_failedAlready = true;
 
    _ASSERTE(m_indexcur < m_pvsel->size());
 

@@ -520,9 +520,9 @@ void SoundDialog::SoundToBG()
             ListView_GetItem( hSoundList, &lvitem );
             PinSound * const pps = (PinSound *)lvitem.lParam;
 
-            pps->m_iOutputTarget = (pps->m_iOutputTarget != SNDOUT_BACKGLASS) ? SNDOUT_BACKGLASS : SNDOUT_TABLE;
+            pps->m_outputTarget = (pps->m_outputTarget != SNDOUT_BACKGLASS) ? SNDOUT_BACKGLASS : SNDOUT_TABLE;
 
-            switch (pps->m_iOutputTarget)
+            switch (pps->m_outputTarget)
             {
                case SNDOUT_BACKGLASS:
                   ListView_SetItemText(hSoundList, sel, 2, "Backglass");
@@ -565,10 +565,10 @@ void SoundDialog::SoundPosition()
 				lvitem.iSubItem = 0;
 				ListView_GetItem(hSoundList, &lvitem);
 				pps = (PinSound *)lvitem.lParam;
-				pps->m_iOutputTarget = spd.m_cOutputTarget;
-				pps->m_iBalance = spd.m_iBalance;
-				pps->m_iFade = spd.m_iFade;
-				pps->m_iVolume = spd.m_iVolume;
+				pps->m_outputTarget = spd.m_cOutputTarget;
+				pps->m_balance = spd.m_balance;
+				pps->m_fade = spd.m_fade;
+				pps->m_volume = spd.m_volume;
 				pps->ReInitialize(); 
 
 				pt->SetNonUndoableDirty(eSaveDirty);
@@ -632,10 +632,10 @@ void SoundDialog::SavePosition()
 
 SoundPositionDialog::SoundPositionDialog(PinSound *pps) : CDialog(IDD_SOUND_POSITION_DIALOG)
 {
-	m_iBalance = pps->m_iBalance;
-	m_iFade = pps->m_iFade;
-	m_iVolume = pps->m_iVolume;
-	m_cOutputTarget = pps->m_iOutputTarget;
+	m_balance = pps->m_balance;
+	m_fade = pps->m_fade;
+	m_volume = pps->m_volume;
+	m_cOutputTarget = pps->m_outputTarget;
 	m_pps = pps;
 }
 
@@ -688,9 +688,9 @@ BOOL SoundPositionDialog::OnInitDialog()
 
 void SoundPositionDialog::SetSliderValues()
 {
-	m_Volume.SetPos(m_iVolume, 1);
-	m_Balance.SetPos(m_iBalance, 1);
-	m_Fader.SetPos(m_iFade, 1);
+	m_Volume.SetPos(m_volume, 1);
+	m_Balance.SetPos(m_balance, 1);
+	m_Fader.SetPos(m_fade, 1);
 }
 
 INT_PTR SoundPositionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -716,9 +716,9 @@ INT_PTR SoundPositionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		switch (HIWORD(wParam))
 		{
 		case EN_KILLFOCUS:
-			ReadTextValue(IDC_EDIT_BALANCE, m_iBalance);
-			ReadTextValue(IDC_EDIT_FADER, m_iFade);
-			ReadTextValue(IDC_EDIT_VOL, m_iVolume);
+			ReadTextValue(IDC_EDIT_BALANCE, m_balance);
+			ReadTextValue(IDC_EDIT_FADER, m_fade);
+			ReadTextValue(IDC_EDIT_VOL, m_volume);
 			SetSliderValues();
 			SetTextValues();
 			break;
@@ -739,9 +739,9 @@ void SoundPositionDialog::ReadTextValue(int item, int &oValue)
 
 void SoundPositionDialog::SetTextValues()
 {
-	SetTextValue(IDC_EDIT_BALANCE, m_iBalance);
-	SetTextValue(IDC_EDIT_FADER, m_iFade);
-	SetTextValue(IDC_EDIT_VOL, m_iVolume);
+	SetTextValue(IDC_EDIT_BALANCE, m_balance);
+	SetTextValue(IDC_EDIT_FADER, m_fade);
+	SetTextValue(IDC_EDIT_VOL, m_volume);
 }
 
 void SoundPositionDialog::SetTextValue(int ctl, int val)
@@ -764,9 +764,9 @@ void SoundPositionDialog::GetDialogValues()
 
 void SoundPositionDialog::ReadValuesFromSliders()
 {
-	m_iVolume = m_Volume.GetPos();
-	m_iFade = m_Fader.GetPos();
-	m_iBalance = m_Balance.GetPos();
+	m_volume = m_Volume.GetPos();
+	m_fade = m_Fader.GetPos();
+	m_balance = m_Balance.GetPos();
 }
 
 BOOL SoundPositionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -780,7 +780,7 @@ BOOL SoundPositionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 		GetDialogValues();
 		CDialog::OnOK(); 
 		break;
-	
+
 	default: return FALSE;
 
 	}
@@ -791,17 +791,17 @@ BOOL SoundPositionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 void SoundPositionDialog::TestSound()
 {
 	// Hold the actual output target temporarily and reinitialize.  It could be reset if dialog is canceled.
-	const SoundOutTypes iOutputTargetTmp = m_pps->m_iOutputTarget;
+	const SoundOutTypes iOutputTargetTmp = m_pps->m_outputTarget;
 	GetDialogValues();
-	m_pps->m_iOutputTarget = m_cOutputTarget;
+	m_pps->m_outputTarget = m_cOutputTarget;
 	m_pps->ReInitialize();
 
-	const float volume = dequantizeSignedPercent(m_iVolume);
-	const float pan = dequantizeSignedPercent(m_iBalance);
-	const float front_rear_fade = dequantizeSignedPercent(m_iFade);
+	const float volume = dequantizeSignedPercent(m_volume);
+	const float pan = dequantizeSignedPercent(m_balance);
+	const float front_rear_fade = dequantizeSignedPercent(m_fade);
 
 	m_pps->Play((1.0f + volume) * 100.0f, 0.0f, 0, pan, front_rear_fade, 0, false);
-	m_pps->m_iOutputTarget = iOutputTargetTmp;
+	m_pps->m_outputTarget = iOutputTargetTmp;
 }
 
 void SoundPositionDialog::OnOK()

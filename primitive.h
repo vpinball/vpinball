@@ -65,7 +65,7 @@ public:
 
    TimerDataRoot m_tdr;
 
-   float m_threshold;			// speed at which ball needs to hit to register a hit
+   float m_threshold;      // speed at which ball needs to hit to register a hit
    float m_elasticity;
    float m_elasticityFalloff;
    float m_friction;
@@ -74,11 +74,9 @@ public:
    float m_depthBias;      // for determining depth sorting
 
    float m_edgeFactorUI;   // for drawing the mesh in the editorUI
-   float m_collision_reductionFactor; //0=none..1=pow(num_vertices,0.75)
+   float m_collision_reductionFactor; // 0=none..1=pow(num_vertices,0.75)
 
-   int  m_FrameAmount;
-
-   float m_disableLightingTop; // was bool, now 0..1
+   float m_disableLightingTop;   // was bool, now 0..1
    float m_disableLightingBelow; // 0..1
 
    bool m_useAsPlayfield;
@@ -90,13 +88,13 @@ public:
 
    bool m_hitEvent;
    bool m_collidable;
-   bool m_fToy;
-   bool m_fSkipRendering;
-   bool m_fGroupdRendering;
+   bool m_toy;
+   bool m_skipRendering;
+   bool m_groupdRendering;
    bool m_reflectionEnabled;
    bool m_overwritePhysics;
-   bool m_fBackfacesEnabled;
-   bool m_fDisplayTexture;     // in editor
+   bool m_backfacesEnabled;
+   bool m_displayTexture;     // in editor
 };
 
 class Primitive :

@@ -171,8 +171,8 @@ Primitive::Primitive()
    m_d.m_edgeFactorUI = 0.25f;
    m_d.m_collision_reductionFactor = 0.f;
    m_d.m_depthBias = 0.0f;
-   m_d.m_fSkipRendering = false;
-   m_d.m_fGroupdRendering = false;
+   m_d.m_skipRendering = false;
+   m_d.m_groupdRendering = false;
    m_d.m_reflectionEnabled = true;
    m_numGroupIndices = 0;
    m_numGroupVertices = 0;
@@ -248,7 +248,7 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
    if (overall_size == prims[0]->m_mesh.NumIndices())
       return;
 
-   prims[0]->m_d.m_fGroupdRendering = true;
+   prims[0]->m_d.m_groupdRendering = true;
    vector<unsigned int> indices(overall_size);
 
    // copy with a loop because memcpy seems to do some strange things with the indices
@@ -268,11 +268,11 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
 
          m_numGroupVertices += (int)m.NumVertices();
          m_numGroupIndices += (int)m.NumIndices();
-         prims[i]->m_d.m_fSkipRendering = true;
+         prims[i]->m_d.m_skipRendering = true;
          renderedPrims.push_back(prims[i]);
       }
       else
-         prims[i]->m_d.m_fSkipRendering = false;
+         prims[i]->m_d.m_skipRendering = false;
    }
 
    if (m_vertexBuffer)
@@ -381,12 +381,12 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_collision_reductionFactor = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "CollisionReductionFactor", 0.f) : 0.f;
 
    m_d.m_collidable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Collidable", true) : true;
-   m_d.m_fToy = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "IsToy", false) : false;
+   m_d.m_toy = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "IsToy", false) : false;
    m_d.m_disableLightingTop = dequantizeUnsigned<8>(fromMouseClick ? LoadValueIntWithDefault(strKeyName, "DisableLighting", 0) : 0); // stored as uchar for backward compatibility
    m_d.m_disableLightingBelow = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "DisableLightingBelow", 0.f) : 0.f;
    m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
-   m_d.m_fBackfacesEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "BackfacesEnabled", false) : false;
-   m_d.m_fDisplayTexture = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DisplayTexture", false) : false;
+   m_d.m_backfacesEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "BackfacesEnabled", false) : false;
+   m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DisplayTexture", false) : false;
 }
 
 void Primitive::WriteRegDefaults()
@@ -427,13 +427,13 @@ void Primitive::WriteRegDefaults()
    SaveValueFloat(strKeyName, "CollisionReductionFactor", m_d.m_collision_reductionFactor);
 
    SaveValueBool(strKeyName, "Collidable", m_d.m_collidable);
-   SaveValueBool(strKeyName, "IsToy", m_d.m_fToy);
+   SaveValueBool(strKeyName, "IsToy", m_d.m_toy);
    const int tmp = quantizeUnsigned<8>(clamp(m_d.m_disableLightingTop, 0.f, 1.f));
    SaveValueInt(strKeyName, "DisableLighting", (tmp == 1) ? 0 : tmp); // backwards compatible saving
    SaveValueFloat(strKeyName, "DisableLightingBelow", m_d.m_disableLightingBelow);
    SaveValueBool(strKeyName, "ReflectionEnabled", m_d.m_reflectionEnabled);
-   SaveValueBool(strKeyName, "BackfacesEnabled", m_d.m_fBackfacesEnabled);
-   SaveValueBool(strKeyName, "DisplayTexture", m_d.m_fDisplayTexture);
+   SaveValueBool(strKeyName, "BackfacesEnabled", m_d.m_backfacesEnabled);
+   SaveValueBool(strKeyName, "DisplayTexture", m_d.m_displayTexture);
 }
 
 void Primitive::GetTimers(vector<HitTimer*> &pvht)
@@ -454,7 +454,7 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
    //
 
    // playfield can't be a toy
-   if (m_d.m_fToy && !m_d.m_useAsPlayfield)
+   if (m_d.m_toy && !m_d.m_useAsPlayfield)
       return;
 
    RecalculateMatrices();
@@ -628,8 +628,8 @@ void Primitive::EndPlay()
       m_indexBuffer->release();
       m_indexBuffer = 0;
    }
-   m_d.m_fSkipRendering = false;
-   m_d.m_fGroupdRendering = false;
+   m_d.m_skipRendering = false;
+   m_d.m_groupdRendering = false;
 
    IEditable::EndPlay();
 }
@@ -704,7 +704,7 @@ void Primitive::UIRenderPass2(Sur * const psur)
 {
    psur->SetLineColor(RGB(0, 0, 0), false, 1);
    psur->SetObject(this);
-   if (!m_d.m_fDisplayTexture)
+   if (!m_d.m_displayTexture)
    {
       if ((m_d.m_edgeFactorUI <= 0.0f) || (m_d.m_edgeFactorUI >= 1.0f) || !m_d.m_use3DMesh)
       {
@@ -779,7 +779,7 @@ void Primitive::UIRenderPass2(Sur * const psur)
    psur->Line(m_d.m_vPosition.x - 10.0f, m_d.m_vPosition.y, m_d.m_vPosition.x + 10.0f, m_d.m_vPosition.y);
    psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y - 10.0f, m_d.m_vPosition.x, m_d.m_vPosition.y + 10.0f);
    
-   if (m_d.m_fDisplayTexture)
+   if (m_d.m_displayTexture)
    {
       Texture * const ppi = m_ptable->GetImage(m_d.m_szImage);
       if (ppi)
@@ -1152,7 +1152,7 @@ void Primitive::ExportMesh(FILE *f)
 
 void Primitive::RenderObject()
 {
-   if (!m_d.m_fGroupdRendering)
+   if (!m_d.m_groupdRendering)
    {
       RecalculateMatrices();
 
@@ -1192,7 +1192,7 @@ void Primitive::RenderObject()
 
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, m_d.m_fBackfacesEnabled && mat->m_bOpacityActive ? RenderDevice::CULL_CW : RenderDevice::CULL_CCW);
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, m_d.m_backfacesEnabled && mat->m_bOpacityActive ? RenderDevice::CULL_CW : RenderDevice::CULL_CCW);
 
       if (m_d.m_disableLightingTop != 0.f || m_d.m_disableLightingBelow != 0.f)
       {
@@ -1232,17 +1232,17 @@ void Primitive::RenderObject()
 
       // draw the mesh
       pd3dDevice->basicShader->Begin(0);
-      if (m_d.m_fGroupdRendering)
+      if (m_d.m_groupdRendering)
          pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numGroupVertices, m_indexBuffer, 0, m_numGroupIndices);
       else
          pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
       pd3dDevice->basicShader->End();
 
-      if (m_d.m_fBackfacesEnabled && mat->m_bOpacityActive)
+      if (m_d.m_backfacesEnabled && mat->m_bOpacityActive)
       {
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
          pd3dDevice->basicShader->Begin(0);
-         if (m_d.m_fGroupdRendering)
+         if (m_d.m_groupdRendering)
             pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, m_numGroupVertices, m_indexBuffer, 0, m_numGroupIndices);
          else
             pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), m_indexBuffer, 0, (DWORD)m_mesh.NumIndices());
@@ -1292,7 +1292,7 @@ void Primitive::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   if (m_d.m_staticRendering || !m_d.m_visible || m_d.m_fSkipRendering)
+   if (m_d.m_staticRendering || !m_d.m_visible || m_d.m_skipRendering)
       return;
    if (m_ptable->m_reflectionEnabled && !m_d.m_reflectionEnabled)
       return;
@@ -1302,7 +1302,7 @@ void Primitive::RenderDynamic()
 
 void Primitive::RenderSetup()
 {
-   if (m_d.m_fGroupdRendering || m_d.m_fSkipRendering)
+   if (m_d.m_groupdRendering || m_d.m_skipRendering)
       return;
 
    m_currentFrame = -1.f;
@@ -1401,17 +1401,17 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(EFUI), m_d.m_edgeFactorUI);
    bw.WriteFloat(FID(CORF), m_d.m_collision_reductionFactor);
    bw.WriteBool(FID(CLDRP), m_d.m_collidable);
-   bw.WriteBool(FID(ISTO), m_d.m_fToy);
+   bw.WriteBool(FID(ISTO), m_d.m_toy);
    bw.WriteBool(FID(U3DM), m_d.m_use3DMesh);
    bw.WriteBool(FID(STRE), m_d.m_staticRendering);
    const int tmp = quantizeUnsigned<8>(clamp(m_d.m_disableLightingTop, 0.f, 1.f));
    bw.WriteInt(FID(DILI), (tmp == 1) ? 0 : tmp); // backwards compatible saving
    bw.WriteFloat(FID(DILB), m_d.m_disableLightingBelow);
    bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-   bw.WriteBool(FID(EBFC), m_d.m_fBackfacesEnabled);
+   bw.WriteBool(FID(EBFC), m_d.m_backfacesEnabled);
    bw.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
    bw.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
-   bw.WriteBool(FID(DIPT), m_d.m_fDisplayTexture);
+   bw.WriteBool(FID(DIPT), m_d.m_displayTexture);
 
    if (m_d.m_use3DMesh)
    {
@@ -1651,7 +1651,7 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(ISTO))
    {
-      pbr->GetBool(&m_d.m_fToy);
+      pbr->GetBool(&m_d.m_toy);
    }
    else if (id == FID(MAPH))
    {
@@ -1681,11 +1681,11 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(EBFC))
    {
-      pbr->GetBool(&m_d.m_fBackfacesEnabled);
+      pbr->GetBool(&m_d.m_backfacesEnabled);
    }
    else if (id == FID(DIPT))
    {
-      pbr->GetBool(&m_d.m_fDisplayTexture);
+      pbr->GetBool(&m_d.m_displayTexture);
    }
    else if (id == FID(M3DN))
    {
@@ -2244,7 +2244,7 @@ void Primitive::ExportMesh()
 
 bool Primitive::IsTransparent() const
 {
-   if (m_d.m_fSkipRendering)
+   if (m_d.m_skipRendering)
       return false;
 
    return m_ptable->GetMaterial(m_d.m_szMaterial)->m_bOpacityActive;
@@ -2928,7 +2928,7 @@ STDMETHODIMP Primitive::put_Collidable(VARIANT_BOOL newVal)
 
 STDMETHODIMP Primitive::get_IsToy(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_d.m_fToy);
+   *pVal = FTOVB(m_d.m_toy);
 
    return S_OK;
 }
@@ -2936,7 +2936,7 @@ STDMETHODIMP Primitive::get_IsToy(VARIANT_BOOL *pVal)
 STDMETHODIMP Primitive::put_IsToy(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fToy = VBTOb(newVal);
+   m_d.m_toy = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -2944,14 +2944,14 @@ STDMETHODIMP Primitive::put_IsToy(VARIANT_BOOL newVal)
 
 STDMETHODIMP Primitive::get_BackfacesEnabled(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_d.m_fBackfacesEnabled);
+   *pVal = FTOVB(m_d.m_backfacesEnabled);
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_BackfacesEnabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fBackfacesEnabled = VBTOb(newVal);
+   m_d.m_backfacesEnabled = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -3064,7 +3064,7 @@ STDMETHODIMP Primitive::get_HitThreshold(float *pVal)
 
 STDMETHODIMP Primitive::get_DisplayTexture(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_d.m_fDisplayTexture);
+   *pVal = FTOVB(m_d.m_displayTexture);
 
    return S_OK;
 }
@@ -3072,7 +3072,7 @@ STDMETHODIMP Primitive::get_DisplayTexture(VARIANT_BOOL *pVal)
 STDMETHODIMP Primitive::put_DisplayTexture(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fDisplayTexture = VBTOb(newVal);
+   m_d.m_displayTexture = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -3162,34 +3162,34 @@ void Primitive::UpdatePropertyPanes()
    if (m_propVisual == NULL || m_propPosition == NULL || m_propPhysics == NULL)
       return;
 
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, 106), !m_d.m_use3DMesh);
-   EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, 101), !m_d.m_use3DMesh);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, 106), !m_d.m_use3DMesh);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, 101), !m_d.m_use3DMesh);
 
-   const bool tc = (m_d.m_fToy || !m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), !tc);
-   EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 34), !tc);
+   const bool tc = (m_d.m_toy || !m_d.m_collidable);
+   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), !tc);
+   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 34), !tc);
 
    if (tc)
    {
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 33), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 481), !m_d.m_fToy);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), !m_d.m_fToy);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 112), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 33), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 481), !m_d.m_toy);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 111), !m_d.m_toy);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 110), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 112), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
    }
-   else //if (!m_d.m_fToy && m_d.m_collidable)
+   else //if (!m_d.m_toy && m_d.m_collidable)
    {
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 33), m_d.m_hitEvent);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 481), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 112), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 33), m_d.m_hitEvent);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 481), TRUE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 111), TRUE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 110), m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 112), m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_overwritePhysics);
    }
 }
 

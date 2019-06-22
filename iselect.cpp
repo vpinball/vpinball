@@ -3,11 +3,11 @@
 
 ISelect::ISelect()
 {
-   m_fDragging = false;
-   m_fMarkedForUndo = false;
+   m_dragging = false;
+   m_markedForUndo = false;
    m_selectstate = eNotSelected;
 
-   m_fLocked = false;
+   m_locked = false;
 
    m_menuid = -1;
    m_layerIndex = 0;
@@ -20,8 +20,8 @@ void ISelect::SetObjectPos()
 
 void ISelect::OnLButtonDown(int x, int y)
 {
-   m_fDragging = true;
-   m_fMarkedForUndo = false; // So we will be marked when and if we are dragged
+   m_dragging = true;
+   m_markedForUndo = false; // So we will be marked when and if we are dragged
    m_ptLast.x = x;
    m_ptLast.y = y;
 
@@ -32,13 +32,13 @@ void ISelect::OnLButtonDown(int x, int y)
 
 void ISelect::OnLButtonUp(int x, int y)
 {
-   m_fDragging = false;
+   m_dragging = false;
 
    ReleaseCapture();
 
-   if (m_fMarkedForUndo)
+   if (m_markedForUndo)
    {
-      m_fMarkedForUndo = false;
+      m_markedForUndo = false;
       STOPUNDOSELECT
    }
 }
@@ -61,11 +61,11 @@ void ISelect::OnMouseMove(int x, int y)
       return;
    }
 
-   if (m_fDragging && !GetIEditable()->GetISelect()->m_fLocked) // For drag points, follow the lock of the parent
+   if (m_dragging && !GetIEditable()->GetISelect()->m_locked) // For drag points, follow the lock of the parent
    {
-      if (!m_fMarkedForUndo)
+      if (!m_markedForUndo)
       {
-         m_fMarkedForUndo = true;
+         m_markedForUndo = true;
          STARTUNDOSELECT
       }
       MoveOffset((x - m_ptLast.x)*inv_zoom, (y - m_ptLast.y)*inv_zoom);
@@ -158,7 +158,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
       break;
    case ID_LOCK:
       STARTUNDOSELECT
-      m_fLocked = !m_fLocked;
+      m_locked = !m_locked;
       STOPUNDOSELECT
       break;
 
@@ -245,7 +245,7 @@ void ISelect::SetSelectFormat(Sur *psur)
 {
    DWORD color;
 
-   if (m_fLocked)
+   if (m_locked)
    {
       color = g_pvp->m_elemSelectLockedColor;
    }
@@ -260,7 +260,7 @@ void ISelect::SetSelectFormat(Sur *psur)
 
 void ISelect::SetMultiSelectFormat(Sur *psur)
 {
-   const DWORD color = m_fLocked ?
+   const DWORD color = m_locked ?
       g_pvp->m_elemSelectLockedColor :
       g_pvp->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
 
@@ -365,7 +365,7 @@ BOOL ISelect::LoadToken(int id, BiffReader *pbr)
 {
    if (id == FID(LOCK))
    {
-      pbr->GetBool(&m_fLocked);
+      pbr->GetBool(&m_locked);
    }
    else if (id == FID(LAYR))
    {
@@ -378,7 +378,7 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 {
    BiffWriter bw(pstm, hcrypthash);
 
-   bw.WriteBool(FID(LOCK), m_fLocked);
+   bw.WriteBool(FID(LOCK), m_locked);
    bw.WriteInt(FID(LAYR), m_layerIndex);
 
    return S_OK;

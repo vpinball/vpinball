@@ -392,7 +392,7 @@ void VPinball::Init()
    m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE,
       "",
       m_hwnd,
-      1);				// Create Status Line at the bottom
+      1);											// Create Status Line at the bottom
 
    ::SendMessage(m_hwndStatusBar, SB_SETPARTS, 6, (size_t)foo);	// Initialize Status bar with 6 empty cells
 
@@ -400,24 +400,24 @@ void VPinball::Init()
 
    m_sb.Init(m_hwnd);								// initialize smartbrowser (Property bar on the right) - see propbrowser.cpp
 
-   ::SendMessage(m_hwnd, WM_SIZE, 0, 0);				// Make our window relay itself out
+   ::SendMessage(m_hwnd, WM_SIZE, 0, 0);			// Make our window relay itself out
 
    InitTools();
    InitPinDirectSound();
 
-   m_fBackglassView = false;						// we are viewing Pinfield and not the backglass at first
+   m_backglassView = false;							// we are viewing Pinfield and not the backglass at first
 
    SetEnableToolbar();
 
    UpdateRecentFileList(NULL);						// update the recent loaded file list
 
-   wintimer_init();								    // calibrate the timer routines
-   if (m_fPropertiesFloating)
+   wintimer_init();									// calibrate the timer routines
+   if (m_propertiesFloating)
       ::SetForegroundWindow(m_hwnd);
 
 #ifdef SLINTF
    // see slintf.cpp
-   slintf_init();								    // initialize debug console (can be popupped by the following command)
+   slintf_init();									// initialize debug console (can be popupped by the following command)
    slintf_popup_console();
    slintf("Debug output:\n");
 #endif
@@ -427,12 +427,12 @@ void VPinball::InitPinDirectSound()
 {
 	int DSidx1 = LoadValueIntWithDefault("Player", "SoundDevice", 0);
 	int DSidx2 = LoadValueIntWithDefault("Player", "SoundDeviceBG", 0);
-	m_pds.m_i3DSoundMode = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)m_pds.m_i3DSoundMode);
+	m_pds.m_3DSoundMode = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)m_pds.m_3DSoundMode);
 
-	m_pds.InitDirectSound(m_hwnd, false);						// init Direct Sound (in pinsound.cpp)
+	m_pds.InitDirectSound(m_hwnd, false);			// init Direct Sound (in pinsound.cpp)
 	// If these are the same device, and we are not in 3d mode, just point the backglass device to the main one. 
 	// For 3D we want two separate instances, one in basic stereo for music, and the other surround mode. 
-	if (m_pds.m_i3DSoundMode == SNDCFG_SND3D2CH && DSidx1 == DSidx2)
+	if (m_pds.m_3DSoundMode == SNDCFG_SND3D2CH && DSidx1 == DSidx2)
 	{
 		m_pbackglassds = &m_pds;
 	}
@@ -523,12 +523,12 @@ void VPinball::InitRegValues()
    const int deadz = LoadValueIntWithDefault("Player", "DeadZone", 0);
    SaveValueInt("Player", "DeadZone", deadz);
 
-   m_fAlwaysDrawDragPoints = LoadValueBoolWithDefault("Editor", "ShowDragPoints", false);
-   m_fAlwaysDrawLightCenters = LoadValueBoolWithDefault("Editor", "DrawLightCenters", false);
+   m_alwaysDrawDragPoints = LoadValueBoolWithDefault("Editor", "ShowDragPoints", false);
+   m_alwaysDrawLightCenters = LoadValueBoolWithDefault("Editor", "DrawLightCenters", false);
    m_gridSize = LoadValueIntWithDefault("Editor", "GridSize", 50);
 
    const bool fAutoSave = LoadValueBoolWithDefault("Editor", "AutoSaveOn", true);
-   m_fPropertiesFloating = LoadValueBoolWithDefault("Editor", "PropertiesFloating", true);
+   m_propertiesFloating = LoadValueBoolWithDefault("Editor", "PropertiesFloating", true);
 
    if (fAutoSave)
    {
@@ -540,7 +540,7 @@ void VPinball::InitRegValues()
 
    m_securitylevel = LoadValueIntWithDefault("Player", "SecurityLevel", DEFAULT_SECURITY_LEVEL);
 
-   g_pvp->dummyMaterial.m_cBase = LoadValueIntWithDefault("Editor", "DefaultMaterialColor", 0xB469FF);
+   g_pvp->m_dummyMaterial.m_cBase = LoadValueIntWithDefault("Editor", "DefaultMaterialColor", 0xB469FF);
    g_pvp->m_elemSelectColor = LoadValueIntWithDefault("Editor", "ElementSelectColor", 0x00FF0000);
    g_pvp->m_elemSelectLockedColor = LoadValueIntWithDefault("Editor", "ElementSelectLockedColor", 0x00A7726D);
    g_pvp->m_backgroundColor = LoadValueIntWithDefault("Editor", "BackgroundColor", 0x008D8D8D);
@@ -966,11 +966,11 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_EDIT_BACKGLASSVIEW:
    {
-      const bool fShow = !m_fBackglassView;
+      const bool fShow = !m_backglassView;
 
       SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_BACKGLASSVIEW, MAKELONG(fShow, 0));
 
-      m_fBackglassView = fShow;
+      m_backglassView = fShow;
 
       for (size_t i = 0; i < m_vtable.size(); i++)
       {
@@ -1066,14 +1066,14 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
        ptCur = GetActiveTable();
        if (ptCur)
-           ptCur->put_DisplayGrid(!ptCur->m_fGrid);
+           ptCur->put_DisplayGrid(!ptCur->m_grid);
        break;
    }
    case ID_VIEW_BACKDROP:
    {
        ptCur = GetActiveTable();
        if (ptCur)
-           ptCur->put_DisplayBackdrop(!ptCur->m_fBackdrop);
+           ptCur->put_DisplayBackdrop(!ptCur->m_backdrop);
        break;
    }
    case IDC_SELECT:
@@ -1567,7 +1567,7 @@ void VPinball::SetEnablePalette()
 
    const bool fTableActive = (ptCur != NULL) && !g_pplayer;
 
-   const unsigned state = (m_fBackglassView ? VIEW_BACKGLASS : VIEW_PLAYFIELD);
+   const unsigned state = (m_backglassView ? VIEW_BACKGLASS : VIEW_PLAYFIELD);
 
    for (unsigned int i = 0; i < TBCOUNTPALETTE; ++i)
    {
@@ -1827,7 +1827,7 @@ void VPinball::SetEnableMenuItems()
    HMENU hmenu = ::GetMenu(m_hwnd);
 
    CheckMenuItem(hmenu, ID_EDIT_PROPERTIES, MF_BYCOMMAND | (m_sb.GetVisible() ? MF_CHECKED : MF_UNCHECKED));
-   CheckMenuItem(hmenu, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (m_fBackglassView ? MF_CHECKED : MF_UNCHECKED));
+   CheckMenuItem(hmenu, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (m_backglassView ? MF_CHECKED : MF_UNCHECKED));
 
    // is there a valid table??
    if (ptCur)
@@ -1872,8 +1872,8 @@ void VPinball::SetEnableMenuItems()
       CheckMenuItem(hmenu, ID_VIEW_SOLID, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_CHECKED : MF_UNCHECKED));
       CheckMenuItem(hmenu, ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
 
-      CheckMenuItem(hmenu, ID_VIEW_GRID, MF_BYCOMMAND | (ptCur->m_fGrid ? MF_CHECKED : MF_UNCHECKED));
-      CheckMenuItem(hmenu, ID_VIEW_BACKDROP, MF_BYCOMMAND | (ptCur->m_fBackdrop ? MF_CHECKED : MF_UNCHECKED));
+      CheckMenuItem(hmenu, ID_VIEW_GRID, MF_BYCOMMAND | (ptCur->m_grid ? MF_CHECKED : MF_UNCHECKED));
+      CheckMenuItem(hmenu, ID_VIEW_BACKDROP, MF_BYCOMMAND | (ptCur->m_backdrop ? MF_CHECKED : MF_UNCHECKED));
 
       for (int i = 0; i < MAX_LAYERS; ++i)
          CheckMenuItem(hmenu, allLayers[i], MF_BYCOMMAND | (ptCur->m_activeLayers[i] ? MF_CHECKED : MF_UNCHECKED));
@@ -2283,7 +2283,7 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             HWND hwndSB = g_pvp->m_sb.GetHWnd();
             int SBwidth = g_pvp->m_sb.m_maxdialogwidth;
 
-            if (g_pvp->m_fPropertiesFloating)
+            if (g_pvp->m_propertiesFloating)
                 SBwidth = 0;
             else
             {
@@ -2327,7 +2327,7 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (scrollwindowheight < si.nMax)
                 sidebarwidth += SCROLL_WIDTH;
 
-            if (g_pvp->m_fPropertiesFloating && hwndSB)
+            if (g_pvp->m_propertiesFloating && hwndSB)
             {
                 RECT smartRect;
                 ::GetWindowRect(hwndSB, &smartRect);
@@ -2399,7 +2399,7 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             HWND hwndSB = g_pvp->m_sb.GetHWnd();
             int SBwidth = g_pvp->m_sb.m_maxdialogwidth;
 
-            if (g_pvp->m_fPropertiesFloating)
+            if (g_pvp->m_propertiesFloating)
                 SBwidth = 0;
             else
             {
@@ -2443,7 +2443,7 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (scrollwindowheight < si.nMax)
                 sidebarwidth += SCROLL_WIDTH;
 
-            if (g_pvp->m_fPropertiesFloating && hwndSB)
+            if (g_pvp->m_propertiesFloating && hwndSB)
             {
                 RECT smartRect;
                 ::GetWindowRect(hwndSB, &smartRect);
@@ -2498,7 +2498,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
             {
                IEditable * const piedit = pt->m_vedit[i];
                // check scriptable - decals don't have scripts and therefore don't have names
-               if (piedit->GetScriptable() && piedit->m_fBackglass == g_pvp->m_fBackglassView && piedit->m_isVisible)
+               if (piedit->GetScriptable() && piedit->m_backglass == g_pvp->m_backglassView && piedit->m_isVisible)
                {
                   char szT[64]; // Names can only be 32 characters (plus terminator)
                   WideCharToMultiByte(CP_ACP, 0, piedit->GetScriptable()->m_wzName, -1, szT, 64, NULL, NULL);

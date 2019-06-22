@@ -28,7 +28,7 @@ public:
    float m_angleMin;
    float m_angleMax;
    GateType m_type;
-   bool m_fShowBracket;
+   bool m_showBracket;
    bool m_collidable;
    bool m_visible;
    bool m_twoWay;
@@ -74,11 +74,11 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Gate, eItemGate, GATE, 1)
 
-      //DECLARE_NOT_AGGREGATABLE(Gate)
-      // Remove the comment from the line above if you don't want your object to
-      // support aggregation.
+   //DECLARE_NOT_AGGREGATABLE(Gate)
+   // Remove the comment from the line above if you don't want your object to
+   // support aggregation.
 
-      DECLARE_REGISTRY_RESOURCEID(IDR_GATE)
+   DECLARE_REGISTRY_RESOURCEID(IDR_GATE)
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 

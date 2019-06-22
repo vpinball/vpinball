@@ -14,8 +14,26 @@ public:
    };
 
    LZWWriter(IStream * pistream, int *bits, int width, int height, int pitch);
-
    ~LZWWriter();
+
+   HRESULT CompressBits(int init_bits);
+
+private:
+   HRESULT WriteSz(char *sz, int cbytes);
+   HRESULT WriteByte(char ch);
+   HRESULT WriteWord(short word);
+   int bNextPixel();
+
+   HRESULT Output(int code);
+   HRESULT ClearBlock();
+   void ClearHash(int hsize);
+   HRESULT CharOut(char c);
+   HRESULT FlushChar();
+
+   inline int Maxcode(const int n_bits) const
+   {
+       return (1 << n_bits) - 1;
+   }
 
    CComPtr<IStream> m_pistream;
    int *m_bits;
@@ -46,28 +64,8 @@ public:
 
    static int m_masks[17];
 
-   HRESULT WriteSz(char *sz, int cbytes);
-   HRESULT WriteByte(char ch);
-   HRESULT WriteWord(short word);
-
-   HRESULT WriteGif();
-
    int m_iPixelCur;
    int m_iXCur;
 
-   int bNextPixel();
-
    bool m_clear_flg;
-
-   inline int Maxcode(int n_bits)
-   {
-      return (1 << n_bits) - 1;
-   }
-
-   HRESULT CompressBits(int init_bits);
-   HRESULT Output(int code);
-   HRESULT ClearBlock();
-   void ClearHash(int hsize);
-   HRESULT CharOut(char c);
-   HRESULT FlushChar();
 };

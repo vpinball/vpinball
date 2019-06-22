@@ -13,7 +13,7 @@ HitQuadtree::~HitQuadtree()
       _aligned_free(zhighs);
    }
 
-   if (!m_fLeaf)
+   if (!m_leaf)
    {
       for (int i = 0; i < 4; i++)
       {
@@ -55,7 +55,7 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
    g_pplayer->c_quadNextlevels++;
 #endif
 
-   m_fLeaf = false;
+   m_leaf = false;
 
    m_vcenter.x = (bounds.left + bounds.right)*0.5f;
    m_vcenter.y = (bounds.top + bounds.bottom)*0.5f;
@@ -214,7 +214,7 @@ void HitQuadtree::HitTestBall(Ball * const pball, CollisionEvent& coll) const
       }
    }//end for loop
 
-   if (!m_fLeaf)
+   if (!m_leaf)
    {
       const bool fLeft = (pball->m_hitBBox.left <= m_vcenter.x);
       const bool fRight = (pball->m_hitBBox.right >= m_vcenter.x);
@@ -338,7 +338,7 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
          //if (stackpos >= 127)
          //	ShowError("Quadtree stack size to be exceeded");
 
-         if (!current->m_fLeaf)
+         if (!current->m_leaf)
          {
 #ifdef DEBUGPHYSICS
             g_pplayer->c_traversed++;
@@ -387,7 +387,7 @@ void HitQuadtree::HitTestXRay(Ball * const pball, vector<HitObject*> &pvhoHit, C
       }
    }
 
-   if (!m_fLeaf)
+   if (!m_leaf)
    {
       const bool fLeft = (pball->m_hitBBox.left <= m_vcenter.x);
       const bool fRight = (pball->m_hitBBox.right >= m_vcenter.x);

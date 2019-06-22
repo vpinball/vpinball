@@ -35,74 +35,74 @@ enum EnumAssignKeys
    eCKeys
 };
 static const char* regkey_string[eCKeys] = {
-	"LFlipKey",
-	"RFlipKey",
-	"LTiltKey",
-	"RTiltKey",
-	"CTiltKey",
-	"PlungerKey",
-	"FrameCount",
-	"DebugBalls",
-	"Debugger",
-	"AddCreditKey",
-	"AddCreditKey2",
-	"StartGameKey",
-	"MechTilt",
-	"RMagnaSave",
-	"LMagnaSave",
-	"ExitGameKey",
-	"VolumeUp",
-	"VolumeDown",
-	"LockbarKey",
-	"Enable3DKey",
-	"EscapeKey"
+   "LFlipKey",
+   "RFlipKey",
+   "LTiltKey",
+   "RTiltKey",
+   "CTiltKey",
+   "PlungerKey",
+   "FrameCount",
+   "DebugBalls",
+   "Debugger",
+   "AddCreditKey",
+   "AddCreditKey2",
+   "StartGameKey",
+   "MechTilt",
+   "RMagnaSave",
+   "LMagnaSave",
+   "ExitGameKey",
+   "VolumeUp",
+   "VolumeDown",
+   "LockbarKey",
+   "Enable3DKey",
+   "EscapeKey"
 };
 static const int regkey_defdik[eCKeys] = {
-	DIK_LSHIFT,
-	DIK_RSHIFT,
-	DIK_Z,
-	DIK_SLASH,
-	DIK_SPACE,
-	DIK_RETURN,
-	DIK_F11,
-	DIK_O,
-	DIK_D,
-	DIK_5,
-	DIK_4,
-	DIK_1,
-	DIK_T,
-	DIK_RCONTROL,
-	DIK_LCONTROL,
-	DIK_Q,
-	DIK_EQUALS,
-	DIK_MINUS,
-	DIK_LALT,
-	DIK_F10,
-	DIK_ESCAPE
+   DIK_LSHIFT,
+   DIK_RSHIFT,
+   DIK_Z,
+   DIK_SLASH,
+   DIK_SPACE,
+   DIK_RETURN,
+   DIK_F11,
+   DIK_O,
+   DIK_D,
+   DIK_5,
+   DIK_4,
+   DIK_1,
+   DIK_T,
+   DIK_RCONTROL,
+   DIK_LCONTROL,
+   DIK_Q,
+   DIK_EQUALS,
+   DIK_MINUS,
+   DIK_LALT,
+   DIK_F10,
+   DIK_ESCAPE
 };
 static const int regkey_idc[eCKeys] = {
-	IDC_LEFTFLIPPER,
-	IDC_RIGHTFLIPPER,
-	IDC_LEFTTILT,
-	IDC_RIGHTTILT,
-	IDC_CENTERTILT,
-	IDC_PLUNGER_TEXT,
-	IDC_FRAMECOUNT,
-	IDC_DEBUGBALL,
-	IDC_DEBUGGER,
-	IDC_ADDCREDIT,
-	IDC_ADDCREDITKEY2,
-	IDC_STARTGAME,
-	IDC_MECHTILT,
-	IDC_RMAGSAVE,
-	IDC_LMAGSAVE,
-	IDC_EXITGAME,
-	IDC_VOLUMEUP,
-	IDC_VOLUMEDN,
-	IDC_LOCKBAR,
+   IDC_LEFTFLIPPER,
+   IDC_RIGHTFLIPPER,
+   IDC_LEFTTILT,
+   IDC_RIGHTTILT,
+   IDC_CENTERTILT,
+   IDC_PLUNGER_TEXT,
+   IDC_FRAMECOUNT,
+   IDC_DEBUGBALL,
+   IDC_DEBUGGER,
+   IDC_ADDCREDIT,
+   IDC_ADDCREDITKEY2,
+   IDC_STARTGAME,
+   IDC_MECHTILT,
+   IDC_RMAGSAVE,
+   IDC_LMAGSAVE,
+   IDC_EXITGAME,
+   IDC_VOLUMEUP,
+   IDC_VOLUMEDN,
+   IDC_LOCKBAR,
 
-	-1, //!! missing in key dialog!
-	-1
+   -1, //!! missing in key dialog!
+   -1
 };
 
 // Note: Nowadays the original code seems to be counter-productive, so we use the official
@@ -309,8 +309,8 @@ public:
    int  NudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
 #endif
 
-   void mechPlungerUpdate();
-   void mechPlungerIn(const int z);
+   void MechPlungerUpdate();
+   void MechPlungerIn(const int z);
 
    void SetGravity(float slopeDeg, float strength);
 
@@ -477,7 +477,7 @@ public:
    int m_width, m_height;
 
    int m_screenwidth, m_screenheight, m_refreshrate;
-   bool m_fFullScreen;
+   bool m_fullScreen;
 
    bool m_touchregion_pressed[8]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
 
@@ -538,7 +538,7 @@ private:
    int m_curAccel_y[PININ_JOYMXCNT];
 
 #ifdef PLAYBACK
-   bool m_fPlayback;
+   bool m_playback;
    FILE *m_fplaylog;
 #endif
 

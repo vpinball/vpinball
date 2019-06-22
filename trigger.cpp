@@ -225,7 +225,7 @@ void Trigger::UIRenderPass2(Sur * const psur)
 
       psur->Polygon(vvertex);
 
-      bool fDrawDragpoints = (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints);
+      bool fDrawDragpoints = (m_selectstate != eNotSelected) || (g_pvp->m_alwaysDrawDragPoints);
       // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
       if (!fDrawDragpoints)
       {
@@ -247,7 +247,7 @@ void Trigger::UIRenderPass2(Sur * const psur)
          {
             CComObject<DragPoint> * const pdp = m_vdpoint[i];
             psur->SetFillColor(-1);
-            psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : RGB(0, 180, 0), false, 0);
+            psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(0, 180, 0), false, 0);
             psur->SetObject(pdp);
 
             psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
@@ -873,7 +873,7 @@ void Trigger::DoCommand(int icmd, int x, int y)
       // Go through vertices (including iSeg itself) counting control points until iSeg
       int icp = 0;
       for (int i = 0; i < (iSeg + 1); i++)
-         if (vvertex[i].fControlPoint)
+         if (vvertex[i].controlPoint)
             icp++;
 
       //if (icp == 0) // need to add point after the last point
@@ -1422,23 +1422,23 @@ void Trigger::UpdatePropertyPanes()
 
    if (m_d.m_shape == TriggerStar || m_d.m_shape == TriggerButton)
    {
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_RADIUS_EDIT), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_ROTATION_EDIT), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_RINGSPEED_EDIT), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_THICKNESS_EDIT), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STAR_RADIUS_EDIT), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_ROTATION_EDIT), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_RINGSPEED_EDIT), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STAR_THICKNESS_EDIT), FALSE);
    }
    else if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD)
    {
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_RADIUS_EDIT), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_THICKNESS_EDIT), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_ROTATION_EDIT), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_RINGSPEED_EDIT), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STAR_RADIUS_EDIT), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STAR_THICKNESS_EDIT), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_ROTATION_EDIT), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_RINGSPEED_EDIT), TRUE);
    }
    else
    {
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_RADIUS_EDIT), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_THICKNESS_EDIT), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_ROTATION_EDIT), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_RINGSPEED_EDIT), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STAR_RADIUS_EDIT), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STAR_THICKNESS_EDIT), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_ROTATION_EDIT), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_RINGSPEED_EDIT), FALSE);
    }
 }

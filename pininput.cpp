@@ -1308,7 +1308,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     }
                     else if (m_plunger_axis == 1)
                     {	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis and (uShockType == USHOCKTYPE_GENERIC)
-                        g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+                        g_pplayer->MechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
                     }
                 }
                 break;
@@ -1340,7 +1340,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     }
                     else if (m_plunger_axis == 2)
                     {	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis and (uShockType == USHOCKTYPE_GENERIC)
-                        g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+                        g_pplayer->MechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
                     }
                 }
                 break;
@@ -1351,18 +1351,18 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                 if (g_pplayer)
                 {
                     if (uShockType == USHOCKTYPE_ULTRACADE)
-                        g_pplayer->mechPlungerIn((int)input->dwData);
+                        g_pplayer->MechPlungerIn((int)input->dwData);
                     if (((m_plunger_axis != 6) && (m_plunger_axis != 0)) || (m_override_default_buttons == 0))
-                    {											// with the ability to use rZ for plunger, checks to see if
+                    {                                          // with the ability to use rZ for plunger, checks to see if
                         if (uShockType == USHOCKTYPE_PBWIZARD) // the override is used and if so, if Plunger is set to Rz or
-                        {										// disabled. If override isn't used, uses default assignment
-                            g_pplayer->mechPlungerIn(-(int)input->dwData); // of the Z axis.
+                        {                                      // disabled. If override isn't used, uses default assignment
+                            g_pplayer->MechPlungerIn(-(int)input->dwData); // of the Z axis.
                         }
                     }
                     if ((uShockType == USHOCKTYPE_VIRTUAPIN) && (m_plunger_axis != 0))
-                        g_pplayer->mechPlungerIn(-(int)input->dwData);
+                        g_pplayer->MechPlungerIn(-(int)input->dwData);
                     if (((m_lr_axis == 3) || (m_ud_axis == 3)) && (uShockType == USHOCKTYPE_GENERIC))
-                    {  // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+                    {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
                         if (m_lr_axis == 3)
                             g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
@@ -1370,9 +1370,9 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                             g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? deadu : -deadu, joyk);
                     }
                     else if (m_plunger_axis == 3)
-                    {	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
+                    {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
                     }
                 }
                 break;
@@ -1383,7 +1383,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                 if (g_pplayer)
                 {
                     if (((m_lr_axis == 4) || (m_ud_axis == 4)) && (uShockType == USHOCKTYPE_GENERIC))
-                    {  // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+                    {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
                         if (m_lr_axis == 4)
                             g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
@@ -1391,9 +1391,9 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                             g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? deadu : -deadu, joyk);
                     }
                     else if (m_plunger_axis == 4)
-                    {	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
+                    {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
                     }
                 }
                 break;
@@ -1404,7 +1404,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                 if (g_pplayer)
                 {
                     if (((m_lr_axis == 5) || (m_ud_axis == 5)) && (uShockType == USHOCKTYPE_GENERIC))
-                    {  // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+                    {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
                         if (m_lr_axis == 5)
                             g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
@@ -1412,9 +1412,9 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                             g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? deadu : -deadu, joyk);
                     }
                     else if (m_plunger_axis == 5)
-                    {	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
+                    {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
                     }
                 }
                 break;
@@ -1425,9 +1425,9 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                 if (g_pplayer)
                 {
                     if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 1) && (m_plunger_axis == 6))
-                        g_pplayer->mechPlungerIn((int)input->dwData);
+                        g_pplayer->MechPlungerIn((int)input->dwData);
                     if (((m_lr_axis == 6) || (m_ud_axis == 6)) && (uShockType == USHOCKTYPE_GENERIC))
-                    {  // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+                    {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
                         if (m_lr_axis == 6)
                             g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
@@ -1437,7 +1437,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 6)
                     {
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
                     }
                 }
                 break;
@@ -1448,9 +1448,9 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                 if (g_pplayer)
                 {
                     if (uShockType == USHOCKTYPE_SIDEWINDER)
-                        g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+                        g_pplayer->MechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
                     if (((m_lr_axis == 7) || (m_ud_axis == 7)) && (uShockType == USHOCKTYPE_GENERIC))
-                    {  // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+                    {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
                         if (m_lr_axis == 7)
                             g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
@@ -1460,7 +1460,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 7)
                     {
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
                     }
                 }
                 break;
@@ -1471,7 +1471,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                 if (g_pplayer)
                 {
                     if (((m_lr_axis == 8) || (m_ud_axis == 8)) && (uShockType == USHOCKTYPE_GENERIC))
-                    {  // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+                    {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
                         if (m_lr_axis == 8)
                             g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
@@ -1481,7 +1481,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 8)
                     {
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
                     }
                 }
                 break;

@@ -24,15 +24,15 @@ class TempBuffer
 public:
    TempBuffer(const ULONG cb)
    {
-      m_fAlloc = (cb > 256);
-      if (m_fAlloc)
+      m_alloc = (cb > 256);
+      if (m_alloc)
          m_pbBuf = new char[cb];
       else
          m_pbBuf = m_szBufT;
    }
    ~TempBuffer()
    {
-      if (m_pbBuf && m_fAlloc) delete[] m_pbBuf;
+      if (m_pbBuf && m_alloc) delete[] m_pbBuf;
    }
    char *GetBuffer() const
    {
@@ -42,7 +42,7 @@ public:
 private:
    char *m_pbBuf;
    char  m_szBufT[256];  // We'll use this temp buffer for small cases.
-   bool  m_fAlloc;
+   bool  m_alloc;
 };
 
 

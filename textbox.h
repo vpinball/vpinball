@@ -23,7 +23,7 @@ public:
    TextAlignment m_talign;
    bool m_transparent;
    bool m_visible;
-   bool m_IsDMD;
+   bool m_isDMD;
 };
 
 class Textbox :

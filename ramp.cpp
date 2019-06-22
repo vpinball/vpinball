@@ -224,7 +224,7 @@ void Ramp::UIRenderPass2(Sur * const psur)
    delete[] pfCross;
    delete[] middlePoints;
 
-   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_fAlwaysDrawDragPoints);
+   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_alwaysDrawDragPoints);
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!fDrawDragpoints)
    {
@@ -246,7 +246,7 @@ void Ramp::UIRenderPass2(Sur * const psur)
       {
          CComObject<DragPoint> * const pdp = m_vdpoint[i];
          psur->SetFillColor(-1);
-         psur->SetBorderColor(pdp->m_fDragging ? RGB(0, 255, 0) : ((i == 0) ? RGB(0, 0, 255) : RGB(255, 0, 0)), false, 0);
+         psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : ((i == 0) ? RGB(0, 0, 255) : RGB(255, 0, 0)), false, 0);
          psur->SetObject(pdp);
 
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
@@ -414,7 +414,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
       const RenderVertex3D & vmiddle = vvertex[i];
 
       if (ppfCross)
-         (*ppfCross)[i] = vmiddle.fControlPoint;
+         (*ppfCross)[i] = vmiddle.controlPoint;
 
       Vertex2D vnormal;
       {
@@ -1502,7 +1502,7 @@ void Ramp::AddPoint(int x, int y, const bool smooth)
    // Go through vertices (including iSeg itself) counting control points until iSeg
    int icp = 0;
    for (int i = 0; i < (iSeg + 1); i++)
-      if (vvertex[i].fControlPoint)
+      if (vvertex[i].controlPoint)
          icp++;
 
    //if (icp == 0) // need to add point after the last point
@@ -2657,30 +2657,30 @@ void Ramp::UpdatePropertyPanes()
    if (m_propPosition == NULL || m_propPhysics == NULL)
       return;
 
-   EnableWindow(GetDlgItem(m_propPosition->dialogHwnd, 3), !(m_d.m_type != RampTypeFlat));
-   EnableWindow(GetDlgItem(m_propPosition->dialogHwnd, 4), !(m_d.m_type != RampTypeFlat));
-   EnableWindow(GetDlgItem(m_propPosition->dialogHwnd, 108), !(m_d.m_type != RampTypeFlat));
-   EnableWindow(GetDlgItem(m_propPosition->dialogHwnd, 109), !(m_d.m_type != RampTypeFlat));
-   EnableWindow(GetDlgItem(m_propPosition->dialogHwnd, IDC_WIRE_DIAMETER), (m_d.m_type != RampTypeFlat));
-   EnableWindow(GetDlgItem(m_propPosition->dialogHwnd, IDC_WIRE_DISTX), (m_d.m_type != RampTypeFlat));
-   EnableWindow(GetDlgItem(m_propPosition->dialogHwnd, IDC_WIRE_DISTY), (m_d.m_type != RampTypeFlat));
-   EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 10), m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 11), m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), m_d.m_collidable);
+   EnableWindow(GetDlgItem(m_propPosition->m_dialogHwnd, 3), !(m_d.m_type != RampTypeFlat));
+   EnableWindow(GetDlgItem(m_propPosition->m_dialogHwnd, 4), !(m_d.m_type != RampTypeFlat));
+   EnableWindow(GetDlgItem(m_propPosition->m_dialogHwnd, 108), !(m_d.m_type != RampTypeFlat));
+   EnableWindow(GetDlgItem(m_propPosition->m_dialogHwnd, 109), !(m_d.m_type != RampTypeFlat));
+   EnableWindow(GetDlgItem(m_propPosition->m_dialogHwnd, IDC_WIRE_DIAMETER), (m_d.m_type != RampTypeFlat));
+   EnableWindow(GetDlgItem(m_propPosition->m_dialogHwnd, IDC_WIRE_DISTX), (m_d.m_type != RampTypeFlat));
+   EnableWindow(GetDlgItem(m_propPosition->m_dialogHwnd, IDC_WIRE_DISTY), (m_d.m_type != RampTypeFlat));
+   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 10), m_d.m_collidable);
+   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 11), m_d.m_collidable);
+   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), m_d.m_collidable);
 
    if (!m_d.m_collidable)
    {
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 110), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
    }
    else
    {
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 110), m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), m_d.m_overwritePhysics);
+      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_overwritePhysics);
    }
 }
 

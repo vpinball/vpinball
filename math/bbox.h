@@ -64,11 +64,11 @@ inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
 
 inline bool fRectIntersect3D(const Vertex3Ds &sphere_p, const float sphere_rsqr, const FRect3D &rc)
 {
-	float ex = max(rc.left - sphere_p.x, 0.f) + max(sphere_p.x - rc.right, 0.f);
-	float ey = max(rc.top - sphere_p.y, 0.f) + max(sphere_p.y - rc.bottom, 0.f);
-	float ez = max(rc.zlow - sphere_p.z, 0.f) + max(sphere_p.z - rc.zhigh, 0.f);
-	ex *= ex;
-	ey *= ey;
-	ez *= ez;
-	return (ex + ey + ez <= sphere_rsqr);
+   float ex = max(rc.left - sphere_p.x, 0.f) + max(sphere_p.x - rc.right, 0.f);
+   float ey = max(rc.top - sphere_p.y, 0.f) + max(sphere_p.y - rc.bottom, 0.f);
+   float ez = max(rc.zlow - sphere_p.z, 0.f) + max(sphere_p.z - rc.zhigh, 0.f);
+   ex *= ex;
+   ey *= ey;
+   ez *= ez;
+   return (ex + ey + ez <= sphere_rsqr);
 }

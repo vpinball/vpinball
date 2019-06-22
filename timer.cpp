@@ -224,7 +224,7 @@ HRESULT Timer::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 
-   bw.WriteBool(FID(BGLS), m_fBackglass);
+   bw.WriteBool(FID(BGLS), m_backglass);
 
    ISelect::SaveData(pstm, hcrypthash);
 
@@ -269,7 +269,7 @@ BOOL Timer::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(BGLS))
    {
-      pbr->GetBool(&m_fBackglass);
+      pbr->GetBool(&m_backglass);
    }
    else
    {

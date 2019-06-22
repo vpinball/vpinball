@@ -3,15 +3,15 @@
 
 UserData::UserData()
 {
-	LineNum = 0;
+	m_lineNum = 0;
 	eTyping = eUnknown;
 }
 
 UserData::UserData(const int LineNo, const string &Desc, const string &Name, const WordType TypeIn)
 {
-	LineNum = LineNo;
-	Description = Desc;
-	KeyName = Name;
+	m_lineNum = LineNo;
+	m_description = Desc;
+	m_keyName = Name;
 	eTyping = TypeIn;
 }
 
@@ -36,7 +36,7 @@ int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::
 	if (KeyResult == 0) return 0;
 
 	//Now see if it's in the Name list
-	//Jumpdelta should be intalised to the maximum count of am individual KeyName
+	//Jumpdelta should be intalised to the maximum count of an individual key name
 	//But for the momment the biggest is 64 x's in AMH
 	int iNewPos = Pos + KeyResult; //Start Very close to the result of key search
 	if (iNewPos < 0) iNewPos = 0;
@@ -48,19 +48,19 @@ int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::
 	{
 		iNewPos--;
 		if (iNewPos < 0) break;
-		const string strTableData = lowerCase(ListIn->at(iNewPos).UniqueKey).substr(0, SearchWidth);
+		const string strTableData = lowerCase(ListIn->at(iNewPos).m_uniqueKey).substr(0, SearchWidth);
 		if (strSearchData.compare(strTableData) != 0) break;
 	}
 	++iNewPos;
 	// now walk down list of Keynames looking for what we want.
 	while (true)
 	{
-		string strTableData = lowerCase(ListIn->at(iNewPos).KeyName);
+		string strTableData = lowerCase(ListIn->at(iNewPos).m_keyName);
 		result = strSearchData.compare(strTableData); 
 		if (result == 0) break; //Found
 		++iNewPos;
 		if (iNewPos == ListIn->size()) break;
-		strTableData = lowerCase(ListIn->at(iNewPos).KeyName).substr(0, SearchWidth);
+		strTableData = lowerCase(ListIn->at(iNewPos).m_keyName).substr(0, SearchWidth);
 		result = strSearchData.compare(strTableData);
 		if (result != 0) break;	//EO SubList
 	}
@@ -73,7 +73,7 @@ int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::
 //On entry CurrentIdx must be set to the UD in the line
 int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, const int CurrentIdx)
 {
-	const string strSearchData = lowerCase(ListIn->at(CurrentIdx).KeyName);
+	const string strSearchData = lowerCase(ListIn->at(CurrentIdx).m_keyName);
 	const size_t SearchWidth = strSearchData.size();
 	//Find the start of other instances of strIn by crawling up list
 	int iNewPos = CurrentIdx;
@@ -81,7 +81,7 @@ int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, con
 	{
 		iNewPos--;
 		if (iNewPos < 0) break;
-		const string strTableData = lowerCase(ListIn->at(iNewPos).UniqueKey).substr(0, SearchWidth);
+		const string strTableData = lowerCase(ListIn->at(iNewPos).m_uniqueKey).substr(0, SearchWidth);
 		if (strSearchData.compare(strTableData) != 0) break;
 	}
 	++iNewPos;
@@ -92,11 +92,11 @@ int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, con
 	int Delta = -(INT_MAX - 1);
 	while (true)
 	{
-		const int NewLineNum = ListIn->at(iNewPos).LineNum;
+		const int NewLineNum = ListIn->at(iNewPos).m_lineNum;
 		const int NewDelta = NewLineNum - CurrentLine;
 		if (NewDelta >= Delta && NewLineNum <= CurrentLine)
 		{
-			if (lowerCase(ListIn->at(iNewPos).KeyName).compare(strSearchData) == 0)
+			if (lowerCase(ListIn->at(iNewPos).m_keyName).compare(strSearchData) == 0)
 			{
 				Delta = NewDelta;
 				ClosestLineNum = NewLineNum;
@@ -105,7 +105,7 @@ int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, con
 		}
 		++iNewPos;
 		if (iNewPos == ListIn->size()) break;
-		const string strTableData = lowerCase(ListIn->at(iNewPos).KeyName).substr(0, SearchWidth);
+		const string strTableData = lowerCase(ListIn->at(iNewPos).m_keyName).substr(0, SearchWidth);
 		if (strSearchData.compare(strTableData) != 0) break;
 	}
 	--iNewPos;
@@ -133,7 +133,7 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 			if (iCurPos >= ListSize) { result = -1; }
 			else
 			{
-				const string strTableData = lowerCase(ListIn->at(iCurPos).UniqueKey);
+				const string strTableData = lowerCase(ListIn->at(iCurPos).m_uniqueKey);
 				result = strSearchData.compare(strTableData);
 			}
 			if (iJumpDelta == 0 || result == 0) break;
@@ -147,7 +147,7 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 	return result;
 }
 
-//Returns current Index of strIn in ListIn based on UniqueKey, or -1 if not found
+//Returns current Index of strIn in ListIn based on m_uniqueKey, or -1 if not found
 int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 {
 	if ((!ListIn) || (ListIn->size() == 0) || (strIn.size() == 0)) return -1;
@@ -168,7 +168,7 @@ int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 		if (iCurPos >= ListSize) { result = -1; }
 		else
 		{
-			const string strTableData = lowerCase(ListIn->at(iCurPos).UniqueKey);
+			const string strTableData = lowerCase(ListIn->at(iCurPos).m_uniqueKey);
 			result = strSearchData.compare(strTableData);
 		}
 		if (iJumpDelta == 0 || result == 0) break;
@@ -183,7 +183,7 @@ int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 		return -1;
 }
 
-//Returns current Index of strIn in ListIn based on KeyName, or -1 if not found
+//Returns current Index of strIn in ListIn based on m_keyName, or -1 if not found
 int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
 {
 	if ((!ListIn) || (ListIn->size() == 0) || (strIn.size() == 0)) return -1;
@@ -204,7 +204,7 @@ int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
 		if (iCurPos >= ListSize) { result = -1; }
 		else
 		{
-			const string strTableData = lowerCase(ListIn->at(iCurPos).KeyName);
+			const string strTableData = lowerCase(ListIn->at(iCurPos).m_keyName);
 			result = strSearchData.compare(strTableData);
 		}
 		if (iJumpDelta == 0 || result == 0) break;
@@ -227,7 +227,7 @@ UserData UserData::GetUDfromUniqueKey(vector<UserData>* ListIn, const string &Un
 	const size_t ListSize = ListIn->size();
 	while ((RetVal.eTyping == eUnknown) && (i < ListSize))
 	{
-		if (UniKey == ListIn->at(i).UniqueKey)
+		if (UniKey == ListIn->at(i).m_uniqueKey)
 		{
 			RetVal = ListIn->at(i);
 		}
@@ -242,7 +242,7 @@ size_t UserData::GetUDPointerfromUniqueKey(vector<UserData>* ListIn, const strin
 	const size_t ListSize = ListIn->size();
 	while (i < ListSize)
 	{
-		if (UniKey == ListIn->at(i).UniqueKey)
+		if (UniKey == ListIn->at(i).m_uniqueKey)
 		{
 			return i;
 		}
@@ -262,11 +262,11 @@ size_t UserData::FindOrInsertUD(vector<UserData>* ListIn, UserData &udIn)
 	}
 	vector<UserData>::iterator iterFound  = ListIn->begin();
 	int Pos = 0;
-	const int KeyFound = FindUDbyKey(ListIn, udIn.UniqueKey, iterFound, Pos);
+	const int KeyFound = FindUDbyKey(ListIn, udIn.m_uniqueKey, iterFound, Pos);
 	if (KeyFound == 0)
 	{
 		//Same name, different parents.
-		const int ParentResult = udIn.UniqueParent.compare(iterFound->UniqueParent);
+		const int ParentResult = udIn.m_uniqueParent.compare(iterFound->m_uniqueParent);
 		if (ParentResult == -1)
 		{
 			ListIn->insert(iterFound, udIn);
@@ -372,11 +372,11 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn, const stri
 ////////////////Preferences
 CVPrefrence::CVPrefrence()
 {
-		szControlName = nullptr;
-		rgb = 0;
-		Highlight = false;
-		szRegName = nullptr;
-		SciKeywordID = 0;
+   szControlName = nullptr;
+   m_rgb = 0;
+   m_highlight = false;
+   szRegName = nullptr;
+   m_sciKeywordID = 0;
 }
 
 CVPrefrence* CVPrefrence::FillCVPreference(
@@ -385,131 +385,131 @@ CVPrefrence* CVPrefrence::FillCVPreference(
 		const int szScintillaKeyword, const int IDC_ChkBox,
 		const int IDC_ColorBut, const int IDC_Font)
 {
-	szControlName = szCtrlNameIn;
-	rgb = crTextColor;
-	Highlight = bDisplay;
-	szRegName = szRegistryName;
-	SciKeywordID = szScintillaKeyword;
-	IDC_ChkBox_code = IDC_ChkBox;
-	IDC_ColorBut_code = IDC_ColorBut;
-	IDC_Font_code = IDC_Font;
-	return (CVPrefrence *)this;
+   szControlName = szCtrlNameIn;
+   m_rgb = crTextColor;
+   m_highlight = bDisplay;
+   szRegName = szRegistryName;
+   m_sciKeywordID = szScintillaKeyword;
+   IDC_ChkBox_code = IDC_ChkBox;
+   IDC_ColorBut_code = IDC_ColorBut;
+   IDC_Font_code = IDC_Font;
+   return (CVPrefrence *)this;
 }
 
 void CVPrefrence::SetCheckBox(const HWND hwndDlg)
 {
 	const HWND hChkBox = GetDlgItem(hwndDlg, this->IDC_ChkBox_code);
-	SNDMSG(hChkBox, BM_SETCHECK, this->Highlight ? BST_CHECKED : BST_UNCHECKED, 0L);
+	SNDMSG(hChkBox, BM_SETCHECK, this->m_highlight ? BST_CHECKED : BST_UNCHECKED, 0L);
 }
 
 void CVPrefrence::ReadCheckBox(const HWND hwndDlg)
 {
-	this->Highlight = !!IsDlgButtonChecked(hwndDlg, this->IDC_ChkBox_code);
+	this->m_highlight = !!IsDlgButtonChecked(hwndDlg, this->IDC_ChkBox_code);
 }
 
 void CVPrefrence::GetPrefsFromReg()
 {
 	char RegEntry[33] = {};
 	strcpy_s(RegEntry, this->szRegName);
-	this->Highlight = LoadValueBoolWithDefault("CVEdit", RegEntry, this->Highlight);
+	this->m_highlight = LoadValueBoolWithDefault("CVEdit", RegEntry, this->m_highlight);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_color");
-	this->rgb = LoadValueIntWithDefault("CVEdit", RegEntry, this->rgb);
+	this->m_rgb = LoadValueIntWithDefault("CVEdit", RegEntry, this->m_rgb);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontPointSize");
-	this->PointSize = LoadValueIntWithDefault("CVEdit", RegEntry, this->PointSize);
+	this->m_pointSize = LoadValueIntWithDefault("CVEdit", RegEntry, this->m_pointSize);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_Font");
 	char bakupFaceName[LF_FACESIZE]; // to save the default font name, in case the corresponding registry entry is empty
-	strcpy_s(bakupFaceName, this->LogFont.lfFaceName);
-	if (LoadValueString("CVEdit", RegEntry, this->LogFont.lfFaceName, LF_FACESIZE) != S_OK)
-		strcpy_s(this->LogFont.lfFaceName, bakupFaceName);
+	strcpy_s(bakupFaceName, this->m_logFont.lfFaceName);
+	if (LoadValueString("CVEdit", RegEntry, this->m_logFont.lfFaceName, LF_FACESIZE) != S_OK)
+		strcpy_s(this->m_logFont.lfFaceName, bakupFaceName);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontWeight");
-	this->LogFont.lfWeight = LoadValueIntWithDefault("CVEdit", RegEntry, this->LogFont.lfWeight);
+	this->m_logFont.lfWeight = LoadValueIntWithDefault("CVEdit", RegEntry, this->m_logFont.lfWeight);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontItalic");
-	this->LogFont.lfItalic = LoadValueIntWithDefault("CVEdit", RegEntry, this->LogFont.lfItalic);
+	this->m_logFont.lfItalic = LoadValueIntWithDefault("CVEdit", RegEntry, this->m_logFont.lfItalic);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontUnderline");
-	this->LogFont.lfUnderline = LoadValueIntWithDefault("CVEdit", RegEntry, this->LogFont.lfUnderline);
+	this->m_logFont.lfUnderline = LoadValueIntWithDefault("CVEdit", RegEntry, this->m_logFont.lfUnderline);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontStrike");
-	this->LogFont.lfStrikeOut = LoadValueIntWithDefault("CVEdit", RegEntry, this->LogFont.lfStrikeOut);
+	this->m_logFont.lfStrikeOut = LoadValueIntWithDefault("CVEdit", RegEntry, this->m_logFont.lfStrikeOut);
 }
 
 void CVPrefrence::SetPrefsToReg()
 {
 	char RegEntry[33] = {};
 	strcpy_s(RegEntry, this->szRegName);
-	SaveValueBool("CVEdit", RegEntry, this->Highlight);
+	SaveValueBool("CVEdit", RegEntry, this->m_highlight);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_color");
-	SaveValueInt("CVEdit", RegEntry, this->rgb);
+	SaveValueInt("CVEdit", RegEntry, this->m_rgb);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontPointSize");
-	SaveValueInt("CVEdit", RegEntry, this->PointSize);
+	SaveValueInt("CVEdit", RegEntry, this->m_pointSize);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_Font");
-	SaveValueString("CVEdit", RegEntry, this->LogFont.lfFaceName);
+	SaveValueString("CVEdit", RegEntry, this->m_logFont.lfFaceName);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontWeight");
-	SaveValueInt("CVEdit", RegEntry, this->LogFont.lfWeight);
+	SaveValueInt("CVEdit", RegEntry, this->m_logFont.lfWeight);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontItalic");
-	SaveValueInt("CVEdit", RegEntry, this->LogFont.lfItalic);
+	SaveValueInt("CVEdit", RegEntry, this->m_logFont.lfItalic);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontUnderline");
-	SaveValueInt("CVEdit", RegEntry, this->LogFont.lfUnderline);
+	SaveValueInt("CVEdit", RegEntry, this->m_logFont.lfUnderline);
 	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontStrike");
-	SaveValueInt("CVEdit", RegEntry, this->LogFont.lfStrikeOut);
+	SaveValueInt("CVEdit", RegEntry, this->m_logFont.lfStrikeOut);
 }
 
 void CVPrefrence::SetDefaultFont(const HWND hwndDlg)
 {
-	LOGFONT* const plfont = &this->LogFont;
-	memset(&this->LogFont, 0, sizeof(LOGFONT));
+	LOGFONT* const plfont = &this->m_logFont;
+	memset(&this->m_logFont, 0, sizeof(LOGFONT));
 	HFONT hFont = (HFONT)GetStockObject(ANSI_FIXED_FONT);
 	if (hFont == NULL)
 		hFont = (HFONT)GetStockObject(SYSTEM_FONT);
 	GetObject(hFont, sizeof(LOGFONT), plfont);
-	this->PointSize = 10;
+	this->m_pointSize = 10;
 	this->GetHeightFromPointSize(hwndDlg);
 }
 
 int CVPrefrence::GetHeightFromPointSize(const HWND hwndDlg)
 {
 	const HDC hdc = GetDC(hwndDlg);
-	const int Height = -MulDiv(this->PointSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+	const int Height = -MulDiv(this->m_pointSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
 	ReleaseDC(hwndDlg, hdc);
 	return Height;
 }
 
 void CVPrefrence::ApplyPreferences(const HWND hwndScin, const CVPrefrence* DefaultPref)
 {
-	const int id = this->SciKeywordID;
-	const bool HL = this->Highlight;
-	SendMessage(hwndScin, SCI_STYLESETFORE, id, HL ? (LPARAM)this->rgb : (LPARAM)DefaultPref->rgb);
-	SendMessage(hwndScin, SCI_STYLESETFONT, id, HL ? (LPARAM)this->LogFont.lfFaceName : (LPARAM)DefaultPref->LogFont.lfFaceName);
-	SendMessage(hwndScin, SCI_STYLESETSIZE, id, HL ? (LPARAM)(this->PointSize) : (LPARAM)DefaultPref->PointSize);
-	SendMessage(hwndScin, SCI_STYLESETWEIGHT, id, HL ? (LPARAM)this->LogFont.lfWeight : (LPARAM)DefaultPref->LogFont.lfWeight);
-	SendMessage(hwndScin, SCI_STYLESETITALIC, id, HL ? (LPARAM)this->LogFont.lfItalic : (LPARAM)DefaultPref->LogFont.lfItalic);
-	SendMessage(hwndScin, SCI_STYLESETUNDERLINE, id, HL ? (LPARAM)this->LogFont.lfUnderline : (LPARAM)DefaultPref->LogFont.lfUnderline);
+	const int id = this->m_sciKeywordID;
+	const bool HL = this->m_highlight;
+	SendMessage(hwndScin, SCI_STYLESETFORE, id, HL ? (LPARAM)this->m_rgb : (LPARAM)DefaultPref->m_rgb);
+	SendMessage(hwndScin, SCI_STYLESETFONT, id, HL ? (LPARAM)this->m_logFont.lfFaceName : (LPARAM)DefaultPref->m_logFont.lfFaceName);
+	SendMessage(hwndScin, SCI_STYLESETSIZE, id, HL ? (LPARAM)(this->m_pointSize) : (LPARAM)DefaultPref->m_pointSize);
+	SendMessage(hwndScin, SCI_STYLESETWEIGHT, id, HL ? (LPARAM)this->m_logFont.lfWeight : (LPARAM)DefaultPref->m_logFont.lfWeight);
+	SendMessage(hwndScin, SCI_STYLESETITALIC, id, HL ? (LPARAM)this->m_logFont.lfItalic : (LPARAM)DefaultPref->m_logFont.lfItalic);
+	SendMessage(hwndScin, SCI_STYLESETUNDERLINE, id, HL ? (LPARAM)this->m_logFont.lfUnderline : (LPARAM)DefaultPref->m_logFont.lfUnderline);
 	// There is no strike through in Scintilla (yet!)
 }
 

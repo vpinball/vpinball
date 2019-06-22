@@ -280,7 +280,7 @@ void LightSeq::RenderSetup()
          pLight->get_X(&x);
          pLight->get_Y(&y);
 
-         if (pLight->m_fBackglass)
+         if (pLight->m_backglass)
          {
             // if the light is on the backglass then scale up its Y position
             y *= 2.666f; // 2 little devils ;-)
@@ -412,7 +412,7 @@ HRESULT LightSeq::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 
-   bw.WriteBool(FID(BGLS), m_fBackglass);
+   bw.WriteBool(FID(BGLS), m_backglass);
 
    bw.WriteTag(FID(ENDB));
 
@@ -471,7 +471,7 @@ BOOL LightSeq::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(BGLS))
    {
-      pbr->GetBool(&m_fBackglass);
+      pbr->GetBool(&m_backglass);
    }
    return fTrue;
 }

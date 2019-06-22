@@ -59,14 +59,15 @@ public:
    HRESULT Load();
 
    IStream *m_pistream;
-   ILoadable *m_piloadable;
    void *m_pdata;
    int m_version;
 
-   int m_bytesinrecordremaining;
-
    HCRYPTHASH m_hcrypthash;
    HCRYPTKEY m_hcryptkey;
+
+private:
+   ILoadable *m_piloadable;
+   int m_bytesinrecordremaining;
 };
 
 class FastIStream;
@@ -97,6 +98,7 @@ public:
    long __stdcall SetStateBits(unsigned long, unsigned long);
    long __stdcall Stat(struct tagSTATSTG *, unsigned long);
 
+private:
    int m_cref;
    vector<FastIStorage*> m_vstg;
    vector<FastIStream*> m_vstm;
@@ -128,12 +130,13 @@ public:
 
    void SetSize(unsigned int i);
 
+   char  *m_rg;          // Data buffer
+   WCHAR *m_wzName;
+   unsigned int m_cSize; // Size of stream
+
+private:
    int m_cref;
 
-   unsigned int		m_cMax;		// Number of elements allocated
-   unsigned int		m_cSeek;	// Last element used
-   unsigned int		m_cSize;	// Size of stream
-   char	*m_rg;		// Data buffer
-
-   WCHAR *m_wzName;
+   unsigned int m_cMax;  // Number of elements allocated
+   unsigned int m_cSeek; // Last element used
 };

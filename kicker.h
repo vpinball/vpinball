@@ -21,7 +21,7 @@ public:
    float m_orientation;
    float m_hit_height;
    bool m_enabled;
-   bool m_fFallThrough;
+   bool m_fallThrough;
    bool m_legacyMode;
 };
 

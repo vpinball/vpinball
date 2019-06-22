@@ -14,7 +14,6 @@ public:
    Ball *m_pball;
 };
 
-int NumBallsInitted();
 
 class Ball : public HitObject
 {

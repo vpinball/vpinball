@@ -126,7 +126,7 @@ public:
 
    int m_layerIndex;
 
-   bool m_fDragging;
-   bool m_fMarkedForUndo;
-   bool m_fLocked; // Can not be dragged in the editor
+   bool m_dragging;
+   bool m_markedForUndo;
+   bool m_locked; // Can not be dragged in the editor
 };

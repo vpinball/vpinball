@@ -113,7 +113,7 @@ void Gate::SetDefaults(bool fromMouseClick)
    m_d.m_length = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Gate", "Length", 100.f) : 100.f;
    m_d.m_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Gate", "Height", 50.f) : 50.f;
    m_d.m_rotation = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Gate", "Rotation", -90.f) : -90.f;
-   m_d.m_fShowBracket = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "ShowBracket", true) : true;
+   m_d.m_showBracket = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "ShowBracket", true) : true;
    m_d.m_type = fromMouseClick ? (GateType)LoadValueIntWithDefault("DefaultProps\\Gate", "GateType", GateWireW) : GateWireW;
    m_d.m_collidable = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "Collidable", true) : true;
    m_d.m_angleMin = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Gate", "AngleMin", 0.f) : 0.f;
@@ -138,7 +138,7 @@ void Gate::WriteRegDefaults()
    SaveValueFloat("DefaultProps\\Gate", "Length", m_d.m_length);
    SaveValueFloat("DefaultProps\\Gate", "Height", m_d.m_height);
    SaveValueFloat("DefaultProps\\Gate", "Rotation", m_d.m_rotation);
-   SaveValueBool("DefaultProps\\Gate", "ShowBracket", m_d.m_fShowBracket);
+   SaveValueBool("DefaultProps\\Gate", "ShowBracket", m_d.m_showBracket);
    SaveValueBool("DefaultProps\\Gate", "Collidable", m_d.m_collidable);
    SaveValueFloat("DefaultProps\\Gate", "AngleMin", m_d.m_angleMin);
    SaveValueFloat("DefaultProps\\Gate", "AngleMax", m_d.m_angleMax);
@@ -310,7 +310,7 @@ void Gate::GetHitShapes(vector<HitObject*> &pvho)
 
    pvho.push_back(m_phitgate);
 
-   if (m_d.m_fShowBracket)
+   if (m_d.m_showBracket)
    {
       HitCircle *phitcircle;
       phitcircle = new HitCircle(m_d.m_vCenter + halflength * tangent, 0.01f, height, height + h);
@@ -414,8 +414,8 @@ void Gate::RenderObject()
    pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    pd3dDevice->basicShader->Begin(0);
 
-   // render bracket      
-   if (m_d.m_fShowBracket)
+   // render bracket
+   if (m_d.m_showBracket)
       pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_bracketVertexBuffer, 0, gateBracketNumVertices, m_bracketIndexBuffer, 0, gateBracketNumIndices);
    // render wire
    pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_wireVertexBuffer, 0, m_numVertices, m_wireIndexBuffer, 0, m_numIndices);
@@ -445,7 +445,7 @@ void Gate::ExportMesh(FILE *f)
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-   if (m_d.m_fShowBracket)
+   if (m_d.m_showBracket)
    {
       buf = new Vertex3D_NoTex2[gateBracketNumVertices];
       strcpy_s(subName, name);
@@ -591,7 +591,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(ROTA), m_d.m_rotation);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteBool(FID(GSUPT), m_d.m_fShowBracket);
+   bw.WriteBool(FID(GSUPT), m_d.m_showBracket);
    bw.WriteBool(FID(GCOLD), m_d.m_collidable);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
@@ -664,7 +664,7 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(GSUPT))
    {
-      pbr->GetBool(&m_d.m_fShowBracket);
+      pbr->GetBool(&m_d.m_showBracket);
    }
    else if (id == FID(GCOLD))
    {
@@ -884,7 +884,7 @@ STDMETHODIMP Gate::put_Material(BSTR newVal)
 
 STDMETHODIMP Gate::get_Open(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB((m_phitgate) ? m_phitgate->m_gateMover.m_fOpen : false);
+   *pVal = FTOVB((m_phitgate) ? m_phitgate->m_gateMover.m_open : false);
 
    return S_OK;
 }
@@ -899,7 +899,7 @@ STDMETHODIMP Gate::put_Open(VARIANT_BOOL newVal)
 
       if (newVal)
       {
-         m_phitgate->m_gateMover.m_fOpen = true;
+         m_phitgate->m_gateMover.m_open = true;
          m_phitgate->m_enabled = false;
          if (!m_d.m_twoWay)
             m_plineseg->m_enabled = false;
@@ -909,7 +909,7 @@ STDMETHODIMP Gate::put_Open(VARIANT_BOOL newVal)
       }
       else
       {
-         m_phitgate->m_gateMover.m_fOpen = false;
+         m_phitgate->m_gateMover.m_open = false;
 
          m_phitgate->m_enabled = m_d.m_collidable;
          if (!m_d.m_twoWay)
@@ -941,7 +941,7 @@ STDMETHODIMP Gate::put_Elasticity(float newVal)
 
 STDMETHODIMP Gate::get_ShowBracket(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_d.m_fShowBracket);
+   *pVal = FTOVB(m_d.m_showBracket);
 
    return S_OK;
 }
@@ -949,7 +949,7 @@ STDMETHODIMP Gate::get_ShowBracket(VARIANT_BOOL *pVal)
 STDMETHODIMP Gate::put_ShowBracket(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_fShowBracket = VBTOb(newVal);
+   m_d.m_showBracket = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;
@@ -1061,17 +1061,17 @@ STDMETHODIMP Gate::Move(int dir, float speed, float angle) //move non-collidable
    if (g_pplayer)
    {
       m_phitgate->m_gateMover.m_forcedMove = true;
-      m_phitgate->m_gateMover.m_fOpen = true; // move always turns off natural swing
-      m_phitgate->m_enabled = false;          // and collidable off
+      m_phitgate->m_gateMover.m_open = true; // move always turns off natural swing
+      m_phitgate->m_enabled = false;         // and collidable off
       if (!m_d.m_twoWay)
          m_plineseg->m_enabled = false;
 
-      if (speed <= 0.0f) speed = 0.2f;		//default gate angle speed
-      else speed *= (float)(M_PI / 180.0);	// convert to radians
+      if (speed <= 0.0f) speed = 0.2f;       //default gate angle speed
+      else speed *= (float)(M_PI / 180.0);   // convert to radians
 
-      if (!dir || angle != 0)				// if no direction or non-zero angle
+      if (!dir || angle != 0)                // if no direction or non-zero angle
       {
-         angle *= (float)(M_PI / 180.0);	// convert to radians
+         angle *= (float)(M_PI / 180.0);     // convert to radians
 
          if (angle < m_d.m_angleMin) angle = m_d.m_angleMin;
          else if (angle > m_d.m_angleMax) angle = m_d.m_angleMax;
@@ -1082,11 +1082,11 @@ STDMETHODIMP Gate::Move(int dir, float speed, float angle) //move non-collidable
          else if (da < -1.0e-5f) dir = -1;
          else
          {
-            dir = 0;									// do nothing
-            m_phitgate->m_gateMover.m_anglespeed = 0;	//stop 
+            dir = 0;                                  // do nothing
+            m_phitgate->m_gateMover.m_anglespeed = 0; //stop 
          }
       }
-      else { angle = (dir < 0) ? m_d.m_angleMin : m_d.m_angleMax; }	//dir selected and angle not specified			
+      else { angle = (dir < 0) ? m_d.m_angleMin : m_d.m_angleMax; } //dir selected and angle not specified			
 
       if (dir > 0)
       {

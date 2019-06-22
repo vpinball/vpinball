@@ -18,7 +18,7 @@ public:
    SizingType m_sizingtype;
    COLORREF m_color;
    char m_szMaterial[32];
-   bool m_fVerticalText;
+   bool m_verticalText;
 };
 
 class Decal :

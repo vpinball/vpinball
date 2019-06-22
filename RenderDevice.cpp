@@ -693,7 +693,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    if (g_pplayer != NULL)
    {
        const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-       if ((g_pplayer->m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
+       if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
        {
            hr = m_pD3DDevice->CreateTexture(m_useAA ? 2 * m_width : m_width, m_useAA ? 2 * m_height : m_height, 1,
                                             D3DUSAGE_RENDERTARGET, render_format, (D3DPOOL)memoryPool::DEFAULT, &m_pMirrorTmpBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
@@ -946,7 +946,7 @@ RenderDevice::~RenderDevice()
    if (g_pplayer)
    {
        const bool drawBallReflection = ((g_pplayer->m_reflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-       if ((g_pplayer->m_ptable->m_fReflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
+       if ((g_pplayer->m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) || drawBallReflection)
            SAFE_RELEASE(m_pMirrorTmpBufferTexture);
    }
    SAFE_RELEASE(m_pBloomBufferTexture);
@@ -1913,7 +1913,7 @@ void Shader::SetMaterial(const Material * const mat)
       fEdge = 1.0f;
       fEdgeAlpha = 1.0f;
       fOpacity = 1.0f;
-      cBase = g_pvp->dummyMaterial.m_cBase;
+      cBase = g_pvp->m_dummyMaterial.m_cBase;
       cGlossy = 0;
       cClearcoat = 0;
       bIsMetal = false;

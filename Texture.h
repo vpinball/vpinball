@@ -30,6 +30,7 @@ public:
 private:
    int m_width;
    int m_height;
+
 public:
    std::vector<BYTE> m_data;
    int m_realWidth, m_realHeight;

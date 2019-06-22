@@ -22,18 +22,18 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 struct PropertyPane
 {
-   PropertyPane(const int dialog, const int title) : dialogid(dialog), titlestringid(title), ptemplate(NULL)
+   PropertyPane(const int dialog, const int title) : m_dialogid(dialog), m_titlestringid(title), m_ptemplate(NULL)
    {
    }
 
-   PropertyPane(LPDLGTEMPLATE pdt, const int title) : dialogid(0), titlestringid(title), ptemplate(pdt)
+   PropertyPane(LPDLGTEMPLATE pdt, const int title) : m_dialogid(0), m_titlestringid(title), m_ptemplate(pdt)
    {
    }
 
-   int dialogid;
-   int titlestringid; // If NULL, this represents a non-expandable section
-   LPDLGTEMPLATE ptemplate; // For custom controls
-   HWND dialogHwnd;
+   int m_dialogid;
+   int m_titlestringid; // If NULL, this represents a non-expandable section
+   LPDLGTEMPLATE m_ptemplate; // For custom controls
+   HWND m_dialogHwnd;
 };
 
 class SmartBrowser
@@ -91,7 +91,7 @@ struct ExpandoInfo
    SmartBrowser *m_psb;
    int m_id;
    int m_dialogheight;
-   bool m_fExpanded;
-   bool m_fHasCaption; // Also means 'can expand/collapse'
+   bool m_expanded;
+   bool m_hasCaption; // Also means 'can expand/collapse'
 };
 
