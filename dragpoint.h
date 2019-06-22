@@ -167,7 +167,7 @@ public:
    virtual void Delete();
    virtual void Uncreate();
 
-   virtual BOOL LoadToken(int id, BiffReader *pbr);
+   virtual bool LoadToken(const int id, BiffReader * const pbr);
 
    // IControlPoint
 public:

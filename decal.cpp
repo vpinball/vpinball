@@ -667,7 +667,7 @@ HRESULT Decal::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    return S_OK;
 }
 
-BOOL Decal::LoadToken(int id, BiffReader *pbr)
+bool Decal::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

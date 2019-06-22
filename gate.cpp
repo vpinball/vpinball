@@ -626,7 +626,7 @@ HRESULT Gate::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, H
    return S_OK;
 }
 
-BOOL Gate::LoadToken(int id, BiffReader *pbr)
+bool Gate::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {
@@ -634,9 +634,9 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(GATY))
    {
-       pbr->GetInt(&m_d.m_type);
-       if (m_d.m_type < GateWireW || m_d.m_type > GateLongPlate) // for tables that were saved in the phase where m_type could've been undefined
-           m_d.m_type = GateWireW;
+      pbr->GetInt(&m_d.m_type);
+      if (m_d.m_type < GateWireW || m_d.m_type > GateLongPlate) // for tables that were saved in the phase where m_type could've been undefined
+         m_d.m_type = GateWireW;
    }
    else if (id == FID(VCEN))
    {

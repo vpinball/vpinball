@@ -915,7 +915,7 @@ HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version,
    return S_OK;
 }
 
-BOOL Bumper::LoadToken(int id, BiffReader *pbr)
+bool Bumper::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

@@ -109,7 +109,7 @@ public:
 
    virtual IEditable *GetIEditable() = 0;
 
-   virtual BOOL LoadToken(int id, BiffReader *pbr);
+   virtual bool LoadToken(const int id, BiffReader * const pbr);
    HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash);
 
    virtual int GetSelectLevel() { return 1; }

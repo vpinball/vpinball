@@ -767,7 +767,7 @@ HRESULT Rubber::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version,
    return S_OK;
 }
 
-BOOL Rubber::LoadToken(int id, BiffReader *pbr)
+bool Rubber::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

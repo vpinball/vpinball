@@ -126,7 +126,7 @@ public:
    virtual ~Texture();
 
    // ILoadable callback
-   virtual BOOL LoadToken(int id, BiffReader *pbr);
+   virtual bool LoadToken(const int id, BiffReader * const pbr);
 
    HRESULT SaveToStream(IStream *pstream, PinTable *pt);
    HRESULT LoadFromStream(IStream *pstream, int version, PinTable *pt);

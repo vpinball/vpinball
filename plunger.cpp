@@ -927,7 +927,7 @@ HRESULT Plunger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
    return S_OK;
 }
 
-BOOL Plunger::LoadToken(int id, BiffReader *pbr)
+bool Plunger::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

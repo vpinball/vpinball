@@ -515,7 +515,7 @@ HRESULT Spinner::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
    return S_OK;
 }
 
-BOOL Spinner::LoadToken(int id, BiffReader *pbr)
+bool Spinner::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

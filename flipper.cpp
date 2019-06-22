@@ -944,7 +944,7 @@ HRESULT Flipper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
    return S_OK;
 }
 
-BOOL Flipper::LoadToken(int id, BiffReader *pbr)
+bool Flipper::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {
@@ -1077,7 +1077,7 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    }
    else if ( id == FID( TODA ) )
    {
-      pbr->GetFloat( &m_d.m_torqueDamping );
+      pbr->GetFloat(&m_d.m_torqueDamping);
    }
    else if (id == FID(TDAA))
    {

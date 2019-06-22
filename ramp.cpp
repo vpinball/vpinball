@@ -1347,7 +1347,7 @@ HRESULT Ramp::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, H
    return S_OK;
 }
 
-BOOL Ramp::LoadToken(int id, BiffReader *pbr)
+bool Ramp::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

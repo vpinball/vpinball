@@ -984,7 +984,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    return S_OK;
 }
 
-BOOL Light::LoadToken(int id, BiffReader *pbr)
+bool Light::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

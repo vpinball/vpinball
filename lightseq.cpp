@@ -431,7 +431,7 @@ HRESULT LightSeq::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versio
    return S_OK;
 }
 
-BOOL LightSeq::LoadToken(int id, BiffReader *pbr)
+bool LightSeq::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

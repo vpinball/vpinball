@@ -17,7 +17,7 @@ public:
    HRESULT LoadFromStream(IStream *pstream, int version);
 
    // ILoadable callback
-   virtual BOOL LoadToken(int id, BiffReader *pbr);
+   virtual bool LoadToken(const int id, BiffReader * const pbr);
 
    char m_szName[MAXTOKEN];
    char m_szInternalName[MAXTOKEN];

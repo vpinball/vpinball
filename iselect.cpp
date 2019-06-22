@@ -361,7 +361,7 @@ void ISelect::GetTypeNameForType(ItemTypeEnum type, WCHAR * buf)
    const int len = LoadStringW(g_hinst, strID, buf, 256);
 }
 
-BOOL ISelect::LoadToken(int id, BiffReader *pbr)
+bool ISelect::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(LOCK))
    {

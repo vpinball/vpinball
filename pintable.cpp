@@ -3841,7 +3841,7 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
    return S_OK;
 }
 
-BOOL PinTable::LoadToken(int id, BiffReader *pbr)
+bool PinTable::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

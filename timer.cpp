@@ -245,7 +245,7 @@ HRESULT Timer::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    return S_OK;
 }
 
-BOOL Timer::LoadToken(int id, BiffReader *pbr)
+bool Timer::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(PIID))
    {

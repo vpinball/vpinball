@@ -299,7 +299,7 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
 }
 
 
-BOOL Texture::LoadToken(int id, BiffReader *pbr)
+bool Texture::LoadToken(const int id, BiffReader * const pbr)
 {
    if (id == FID(NAME))
    {

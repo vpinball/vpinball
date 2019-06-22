@@ -1,5 +1,5 @@
 #pragma once
-#define FID(A) *(int *)#A
+#define FID(A) (int)((unsigned int)(#A[0])|((unsigned int)(#A[1])<<8)|((unsigned int)(#A[2])<<16)|((unsigned int)(#A[3])<<24))
 
 bool Exists(const char* const filePath);
 void TitleFromFilename(const char * const szfilename, char *sztitle);
@@ -13,7 +13,7 @@ class BiffReader;
 class ILoadable
 {
 public:
-   virtual BOOL LoadToken(int id, BiffReader *pbr) = 0;
+   virtual bool LoadToken(const int id, BiffReader * const pbr) = 0;
 };
 
 class BiffWriter
