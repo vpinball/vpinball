@@ -509,59 +509,22 @@ HRESULT Textbox::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 
 bool Textbox::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch(id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
-   }
-   else if (id == FID(VER1))
-   {
-      pbr->GetStruct(&m_d.m_v1, sizeof(Vertex2D));
-   }
-   else if (id == FID(VER2))
-   {
-      pbr->GetStruct(&m_d.m_v2, sizeof(Vertex2D));
-   }
-   else if (id == FID(CLRB))
-   {
-      pbr->GetInt(&m_d.m_backcolor);
-   }
-   else if (id == FID(CLRF))
-   {
-      pbr->GetInt(&m_d.m_fontcolor);
-   }
-   else if (id == FID(INSC))
-   {
-      pbr->GetFloat(&m_d.m_intensity_scale);
-   }
-   else if (id == FID(TMON))
-   {
-      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
-   }
-   else if (id == FID(TMIN))
-   {
-      pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-   }
-   else if (id == FID(TEXT))
-   {
-      pbr->GetString(m_d.sztext);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(ALGN))
-   {
-      pbr->GetInt(&m_d.m_talign);
-   }
-   else if (id == FID(TRNS))
-   {
-      pbr->GetBool(&m_d.m_transparent);
-   }
-   else if (id == FID(IDMD))
-   {
-      pbr->GetBool(&m_d.m_isDMD);
-   }
-   else if (id == FID(FONT))
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(VER1): pbr->GetStruct(&m_d.m_v1, sizeof(Vertex2D)); break;
+   case FID(VER2): pbr->GetStruct(&m_d.m_v2, sizeof(Vertex2D)); break;
+   case FID(CLRB): pbr->GetInt(&m_d.m_backcolor); break;
+   case FID(CLRF): pbr->GetInt(&m_d.m_fontcolor); break;
+   case FID(INSC): pbr->GetFloat(&m_d.m_intensity_scale); break;
+   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(TEXT): pbr->GetString(m_d.sztext); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(ALGN): pbr->GetInt(&m_d.m_talign); break;
+   case FID(TRNS): pbr->GetBool(&m_d.m_transparent); break;
+   case FID(IDMD): pbr->GetBool(&m_d.m_isDMD); break;
+   case FID(FONT):
    {
       if (!m_pIFont)
       {
@@ -581,12 +544,11 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
       m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
 
       ips->Load(pbr->m_pistream);
-   }
-   else
-   {
-      ISelect::LoadToken(id, pbr);
-   }
 
+      break;
+   }
+   default: ISelect::LoadToken(id, pbr); break;
+   }
    return fTrue;
 }
 

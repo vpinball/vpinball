@@ -1016,82 +1016,32 @@ HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 
 bool Trigger::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch(id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
-   }
-   else if (id == FID(VCEN))
-   {
-      pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
-   }
-   else if (id == FID(RADI))
-   {
-      pbr->GetFloat(&m_d.m_radius);
-   }
-   else if (id == FID(ROTA))
-   {
-      pbr->GetFloat(&m_d.m_rotation);
-   }
-   else if (id == FID(WITI))
-   {
-      pbr->GetFloat(&m_d.m_wireThickness);
-   }
-   else if (id == FID(SCAX))
-   {
-      pbr->GetFloat(&m_d.m_scaleX);
-   }
-   else if (id == FID(SCAY))
-   {
-      pbr->GetFloat(&m_d.m_scaleY);
-   }
-   else if (id == FID(MATR))
-   {
-      pbr->GetString(m_d.m_szMaterial);
-   }
-   else if (id == FID(TMON))
-   {
-      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
-   }
-   else if (id == FID(TMIN))
-   {
-      pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-   }
-   else if (id == FID(SURF))
-   {
-      pbr->GetString(m_d.m_szSurface);
-   }
-   else if (id == FID(EBLD))
-   {
-      pbr->GetBool(&m_d.m_enabled);
-   }
-   else if (id == FID(THOT))
-   {
-      pbr->GetFloat(&m_d.m_hit_height);
-   }
-   else if (id == FID(VSBL))
-   {
-      pbr->GetBool(&m_d.m_visible);
-   }
-   else if (id == FID(REEN))
-   {
-      pbr->GetBool(&m_d.m_reflectionEnabled);
-   }
-   else if (id == FID(SHAP))
-   {
-      pbr->GetInt(&m_d.m_shape);
-   }
-   else if (id == FID(ANSP))
-   {
-      pbr->GetFloat(&m_d.m_animSpeed);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
+   case FID(RADI): pbr->GetFloat(&m_d.m_radius); break;
+   case FID(ROTA): pbr->GetFloat(&m_d.m_rotation); break;
+   case FID(WITI): pbr->GetFloat(&m_d.m_wireThickness); break;
+   case FID(SCAX): pbr->GetFloat(&m_d.m_scaleX); break;
+   case FID(SCAY): pbr->GetFloat(&m_d.m_scaleY); break;
+   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
+   case FID(EBLD): pbr->GetBool(&m_d.m_enabled); break;
+   case FID(THOT): pbr->GetFloat(&m_d.m_hit_height); break;
+   case FID(VSBL): pbr->GetBool(&m_d.m_visible); break;
+   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
+   case FID(SHAP): pbr->GetInt(&m_d.m_shape); break;
+   case FID(ANSP): pbr->GetFloat(&m_d.m_animSpeed); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   default:
    {
       LoadPointToken(id, pbr, pbr->m_version);
       ISelect::LoadToken(id, pbr);
+      break;
+   }
    }
    return fTrue;
 }

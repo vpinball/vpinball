@@ -1529,169 +1529,55 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
 
 bool Primitive::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch(id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
-   }
-   else if (id == FID(VPOS))
-   {
-      pbr->GetVector3Padded(&m_d.m_vPosition);
-   }
-   else if (id == FID(VSIZ))
-   {
-      pbr->GetVector3Padded(&m_d.m_vSize);
-   }
-   else if (id == FID(RTV0))
-   {
-      pbr->GetFloat(&m_d.m_aRotAndTra[0]);
-   }
-   else if (id == FID(RTV1))
-   {
-      pbr->GetFloat(&m_d.m_aRotAndTra[1]);
-   }
-   else if (id == FID(RTV2))
-   {
-      pbr->GetFloat(&m_d.m_aRotAndTra[2]);
-   }
-   else if (id == FID(RTV3))
-   {
-      pbr->GetFloat(&m_d.m_aRotAndTra[3]);
-   }
-   else if (id == FID(RTV4))
-   {
-      pbr->GetFloat(&m_d.m_aRotAndTra[4]);
-   }
-   else if (id == FID(RTV5))
-   {
-      pbr->GetFloat(&m_d.m_aRotAndTra[5]);
-   }
-   else if (id == FID(RTV6))
-   {
-      pbr->GetFloat(&m_d.m_aRotAndTra[6]);
-   }
-   else if (id == FID(RTV7))
-   {
-      pbr->GetFloat(&m_d.m_aRotAndTra[7]);
-   }
-   else if (id == FID(RTV8))
-   {
-      pbr->GetFloat(&m_d.m_aRotAndTra[8]);
-   }
-   else if (id == FID(IMAG))
-   {
-      pbr->GetString(m_d.m_szImage);
-   }
-   else if (id == FID(NRMA))
-   {
-       pbr->GetString(m_d.m_szNormalMap);
-   }
-   else if (id == FID(SIDS))
-   {
-      pbr->GetInt(&m_d.m_Sides);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(MATR))
-   {
-      pbr->GetString(m_d.m_szMaterial);
-   }
-   else if (id == FID(SCOL))
-   {
-      pbr->GetInt(&m_d.m_SideColor);
-   }
-   else if (id == FID(TVIS))
-   {
-      pbr->GetBool(&m_d.m_visible);
-   }
-   else if (id == FID(REEN))
-   {
-      pbr->GetBool(&m_d.m_reflectionEnabled);
-   }
-   else if (id == FID(DTXI))
-   {
-      pbr->GetBool(&m_d.m_DrawTexturesInside);
-   }
-   else if (id == FID(HTEV))
-   {
-      pbr->GetBool(&m_d.m_hitEvent);
-   }
-   else if (id == FID(THRS))
-   {
-      pbr->GetFloat(&m_d.m_threshold);
-   }
-   else if (id == FID(ELAS))
-   {
-      pbr->GetFloat(&m_d.m_elasticity);
-   }
-   else if (id == FID(ELFO))
-   {
-      pbr->GetFloat(&m_d.m_elasticityFalloff);
-   }
-   else if (id == FID(RFCT))
-   {
-      pbr->GetFloat(&m_d.m_friction);
-   }
-   else if (id == FID(RSCT))
-   {
-      pbr->GetFloat(&m_d.m_scatter);
-   }
-   else if (id == FID(EFUI))
-   {
-      pbr->GetFloat(&m_d.m_edgeFactorUI);
-   }
-   else if (id == FID(CORF))
-   {
-      pbr->GetFloat(&m_d.m_collision_reductionFactor);
-   }
-   else if (id == FID(CLDRP))
-   {
-      pbr->GetBool(&m_d.m_collidable);
-   }
-   else if (id == FID(ISTO))
-   {
-      pbr->GetBool(&m_d.m_toy);
-   }
-   else if (id == FID(MAPH))
-   {
-      pbr->GetString(m_d.m_szPhysicsMaterial);
-   }
-   else if (id == FID(OVPH))
-   {
-      pbr->GetBool(&m_d.m_overwritePhysics);
-   }
-   else if (id == FID(STRE))
-   {
-      pbr->GetBool(&m_d.m_staticRendering);
-   }
-   else if (id == FID(DILI))
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(VPOS): pbr->GetVector3Padded(&m_d.m_vPosition); break;
+   case FID(VSIZ): pbr->GetVector3Padded(&m_d.m_vSize); break;
+   case FID(RTV0): pbr->GetFloat(&m_d.m_aRotAndTra[0]); break;
+   case FID(RTV1): pbr->GetFloat(&m_d.m_aRotAndTra[1]); break;
+   case FID(RTV2): pbr->GetFloat(&m_d.m_aRotAndTra[2]); break;
+   case FID(RTV3): pbr->GetFloat(&m_d.m_aRotAndTra[3]); break;
+   case FID(RTV4): pbr->GetFloat(&m_d.m_aRotAndTra[4]); break;
+   case FID(RTV5): pbr->GetFloat(&m_d.m_aRotAndTra[5]); break;
+   case FID(RTV6): pbr->GetFloat(&m_d.m_aRotAndTra[6]); break;
+   case FID(RTV7): pbr->GetFloat(&m_d.m_aRotAndTra[7]); break;
+   case FID(RTV8): pbr->GetFloat(&m_d.m_aRotAndTra[8]); break;
+   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+   case FID(NRMA): pbr->GetString(m_d.m_szNormalMap); break;
+   case FID(SIDS): pbr->GetInt(&m_d.m_Sides); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+   case FID(SCOL): pbr->GetInt(&m_d.m_SideColor); break;
+   case FID(TVIS): pbr->GetBool(&m_d.m_visible); break;
+   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
+   case FID(DTXI): pbr->GetBool(&m_d.m_DrawTexturesInside); break;
+   case FID(HTEV): pbr->GetBool(&m_d.m_hitEvent); break;
+   case FID(THRS): pbr->GetFloat(&m_d.m_threshold); break;
+   case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
+   case FID(ELFO): pbr->GetFloat(&m_d.m_elasticityFalloff); break;
+   case FID(RFCT): pbr->GetFloat(&m_d.m_friction); break;
+   case FID(RSCT): pbr->GetFloat(&m_d.m_scatter); break;
+   case FID(EFUI): pbr->GetFloat(&m_d.m_edgeFactorUI); break;
+   case FID(CORF): pbr->GetFloat(&m_d.m_collision_reductionFactor); break;
+   case FID(CLDRP): pbr->GetBool(&m_d.m_collidable); break;
+   case FID(ISTO): pbr->GetBool(&m_d.m_toy); break;
+   case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
+   case FID(OVPH): pbr->GetBool(&m_d.m_overwritePhysics); break;
+   case FID(STRE): pbr->GetBool(&m_d.m_staticRendering); break;
+   case FID(DILI):
    {
       int tmp;
       pbr->GetInt(&tmp);
       m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); // backwards compatible hacky loading!
+      break;
    }
-   else if (id == FID(DILB))
-   {
-      pbr->GetFloat(&m_d.m_disableLightingBelow);
-   }
-   else if (id == FID(U3DM))
-   {
-      pbr->GetBool(&m_d.m_use3DMesh);
-   }
-   else if (id == FID(EBFC))
-   {
-      pbr->GetBool(&m_d.m_backfacesEnabled);
-   }
-   else if (id == FID(DIPT))
-   {
-      pbr->GetBool(&m_d.m_displayTexture);
-   }
-   else if (id == FID(M3DN))
-   {
-      pbr->GetWideString((WCHAR *)m_d.m_meshFileName);
-   }
-   else if (id == FID(M3VN))
+   case FID(DILB): pbr->GetFloat(&m_d.m_disableLightingBelow); break;
+   case FID(U3DM): pbr->GetBool(&m_d.m_use3DMesh); break;
+   case FID(EBFC): pbr->GetBool(&m_d.m_backfacesEnabled); break;
+   case FID(DIPT): pbr->GetBool(&m_d.m_displayTexture); break;
+   case FID(M3DN): pbr->GetWideString((WCHAR *)m_d.m_meshFileName); break;
+   case FID(M3VN):
    {
       pbr->GetInt(&m_numVertices);
       if (m_mesh.m_animationFrames.size() > 0)
@@ -1700,19 +1586,18 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
             m_mesh.m_animationFrames[i].m_frameVerts.clear();
          m_mesh.m_animationFrames.clear();
       }
+      break;
    }
-   else if (id == FID(M3DX))
+   case FID(M3DX):
    {
       m_mesh.m_vertices.clear();
       m_mesh.m_vertices.resize(m_numVertices);
       pbr->GetStruct(m_mesh.m_vertices.data(), (int)sizeof(Vertex3D_NoTex2)*m_numVertices);
+      break;
    }
 #ifdef COMPRESS_MESHES
-   else if (id == FID(M3AY))
-   {
-      pbr->GetInt(&m_compressedAnimationVertices);
-   }
-   else if (id == FID(M3AX))
+   case FID(M3AY): pbr->GetInt(&m_compressedAnimationVertices); break;
+   case FID(M3AX):
    {
       Mesh::FrameData frameData;
       frameData.m_frameVerts.clear();
@@ -1732,12 +1617,10 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       }
       free(c);
       m_mesh.m_animationFrames.push_back(frameData);
+      break;
    }
-   else if (id == FID(M3CY))
-   {
-      pbr->GetInt(&m_compressedVertices);
-   }
-   else if (id == FID(M3CX))
+   case FID(M3CY): pbr->GetInt(&m_compressedVertices); break;
+   case FID(M3CX):
    {
       m_mesh.m_vertices.clear();
       m_mesh.m_vertices.resize(m_numVertices);
@@ -1754,13 +1637,11 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
          ShowError(err);
       }
       free(c);
+      break;
    }
 #endif
-   else if (id == FID(M3FN))
-   {
-      pbr->GetInt(&m_numIndices);
-   }
-   else if (id == FID(M3DI))
+   case FID(M3FN): pbr->GetInt(&m_numIndices); break;
+   case FID(M3DI):
    {
       m_mesh.m_indices.resize(m_numIndices);
       if (m_numVertices > 65535)
@@ -1772,13 +1653,11 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
          for (int i = 0; i < m_numIndices; ++i)
             m_mesh.m_indices[i] = tmp[i];
       }
+      break;
    }
 #ifdef COMPRESS_MESHES
-   else if (id == FID(M3CJ))
-   {
-      pbr->GetInt(&m_compressedIndices);
-   }
-   else if (id == FID(M3CI))
+   case FID(M3CJ): pbr->GetInt(&m_compressedIndices); break;
+   case FID(M3CI):
    {
       m_mesh.m_indices.resize(m_numIndices);
       if (m_numVertices > 65535)
@@ -1818,17 +1697,12 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
          for (int i = 0; i < m_numIndices; ++i)
             m_mesh.m_indices[i] = tmp[i];
       }
+      break;
    }
 #endif
-   else if (id == FID(PIDB))
-   {
-      pbr->GetFloat(&m_d.m_depthBias);
+   case FID(PIDB): pbr->GetFloat(&m_d.m_depthBias); break;
+   default: ISelect::LoadToken(id, pbr); break;
    }
-   else
-   {
-      ISelect::LoadToken(id, pbr);
-   }
-
    return fTrue;
 }
 
