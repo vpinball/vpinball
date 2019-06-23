@@ -669,67 +669,24 @@ HRESULT Decal::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
 
 bool Decal::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch (id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
-   }
-   else if (id == FID(VCEN))
-   {
-      pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
-   }
-   else if (id == FID(WDTH))
-   {
-      pbr->GetFloat(&m_d.m_width);
-   }
-   else if (id == FID(HIGH))
-   {
-      pbr->GetFloat(&m_d.m_height);
-   }
-   else if (id == FID(ROTA))
-   {
-      pbr->GetFloat(&m_d.m_rotation);
-   }
-   else if (id == FID(IMAG))
-   {
-      pbr->GetString(m_d.m_szImage);
-   }
-   else if (id == FID(SURF))
-   {
-      pbr->GetString(m_d.m_szSurface);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(TEXT))
-   {
-      pbr->GetString(m_d.m_sztext);
-   }
-   else if (id == FID(TYPE))
-   {
-      pbr->GetInt(&m_d.m_decaltype);
-   }
-   else if (id == FID(COLR))
-   {
-      pbr->GetInt(&m_d.m_color);
-   }
-   else if (id == FID(MATR))
-   {
-      pbr->GetString(m_d.m_szMaterial);
-   }
-   else if (id == FID(SIZE))
-   {
-      pbr->GetInt(&m_d.m_sizingtype);
-   }
-   else if (id == FID(VERT))
-   {
-      pbr->GetBool(&m_d.m_verticalText);
-   }
-   else if (id == FID(BGLS))
-   {
-      pbr->GetBool(&m_backglass);
-   }
-   else if (id == FID(FONT))
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
+   case FID(WDTH): pbr->GetFloat(&m_d.m_width); break;
+   case FID(HIGH): pbr->GetFloat(&m_d.m_height); break;
+   case FID(ROTA): pbr->GetFloat(&m_d.m_rotation); break;
+   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(TEXT): pbr->GetString(m_d.m_sztext); break;
+   case FID(TYPE): pbr->GetInt(&m_d.m_decaltype); break;
+   case FID(COLR): pbr->GetInt(&m_d.m_color); break;
+   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+   case FID(SIZE): pbr->GetInt(&m_d.m_sizingtype); break;
+   case FID(VERT): pbr->GetBool(&m_d.m_verticalText); break;
+   case FID(BGLS): pbr->GetBool(&m_backglass); break;
+   case FID(FONT):
    {
       if (!m_pIFont)
       {
@@ -749,12 +706,11 @@ bool Decal::LoadToken(const int id, BiffReader * const pbr)
       m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
 
       ips->Load(pbr->m_pistream);
-   }
-   else
-   {
-      ISelect::LoadToken(id, pbr);
-   }
 
+      break;
+   }
+   default: ISelect::LoadToken(id, pbr); break;
+   }
    return fTrue;
 }
 

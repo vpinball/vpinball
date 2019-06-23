@@ -363,13 +363,10 @@ void ISelect::GetTypeNameForType(ItemTypeEnum type, WCHAR * buf)
 
 bool ISelect::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(LOCK))
+   switch(id)
    {
-      pbr->GetBool(&m_locked);
-   }
-   else if (id == FID(LAYR))
-   {
-      pbr->GetInt(&m_layerIndex);
+   case FID(LOCK): pbr->GetBool(&m_locked); break;
+   case FID(LAYR): pbr->GetInt(&m_layerIndex); break;
    }
    return fTrue;
 }

@@ -583,106 +583,45 @@ HRESULT Flasher::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 
 bool Flasher::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch(id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
-   }
-   else if (id == FID(FHEI))
-   {
-      pbr->GetFloat(&m_d.m_height);
-   }
-   else if (id == FID(FLAX))
-   {
-      pbr->GetFloat(&m_d.m_vCenter.x);
-   }
-   else if (id == FID(FLAY))
-   {
-      pbr->GetFloat(&m_d.m_vCenter.y);
-   }
-   else if (id == FID(FROX))
-   {
-      pbr->GetFloat(&m_d.m_rotX);
-   }
-   else if (id == FID(FROY))
-   {
-      pbr->GetFloat(&m_d.m_rotY);
-   }
-   else if (id == FID(FROZ))
-   {
-      pbr->GetFloat(&m_d.m_rotZ);
-   }
-   else if (id == FID(COLR))
-   {
-      pbr->GetInt(&m_d.m_color);
-   }
-   else if (id == FID(TMON))
-   {
-      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
-   }
-   else if (id == FID(TMIN))
-   {
-      pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-   }
-   else if (id == FID(IMAG))
-   {
-      pbr->GetString(m_d.m_szImageA);
-   }
-   else if (id == FID(IMAB))
-   {
-      pbr->GetString(m_d.m_szImageB);
-   }
-   else if (id == FID(FALP))
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(FHEI): pbr->GetFloat(&m_d.m_height); break;
+   case FID(FLAX): pbr->GetFloat(&m_d.m_vCenter.x); break;
+   case FID(FLAY): pbr->GetFloat(&m_d.m_vCenter.y); break;
+   case FID(FROX): pbr->GetFloat(&m_d.m_rotX); break;
+   case FID(FROY): pbr->GetFloat(&m_d.m_rotY); break;
+   case FID(FROZ): pbr->GetFloat(&m_d.m_rotZ); break;
+   case FID(COLR): pbr->GetInt(&m_d.m_color); break;
+   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(IMAG): pbr->GetString(m_d.m_szImageA); break;
+   case FID(IMAB): pbr->GetString(m_d.m_szImageB); break;
+   case FID(FALP):
    {
       int iTmp;
       pbr->GetInt(&iTmp);
       //if (iTmp>100) iTmp=100;
       if (iTmp < 0) iTmp = 0;
       m_d.m_alpha = iTmp;
+      break;
    }
-   else if (id == FID(MOVA))
-   {
-      pbr->GetFloat(&m_d.m_modulate_vs_add);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(FVIS))
-   {
-      pbr->GetBool(&m_d.m_isVisible);
-   }
-   else if (id == FID(ADDB))
-   {
-      pbr->GetBool(&m_d.m_addBlend);
-   }
-   else if (id == FID(IDMD))
-   {
-      pbr->GetBool(&m_d.m_isDMD);
-   }
-   else if (id == FID(DSPT))
-   {
-      pbr->GetBool(&m_d.m_displayTexture);
-   }
-   else if (id == FID(FLDB))
-   {
-      pbr->GetFloat(&m_d.m_depthBias);
-   }
-   else if (id == FID(ALGN))
-   {
-      pbr->GetInt(&m_d.m_imagealignment);
-   }
-   else if (id == FID(FILT))
-   {
-      pbr->GetInt(&m_d.m_filter);
-   }
-   else if (id == FID(FIAM))
-   {
-      pbr->GetInt(&m_d.m_filterAmount);
-   }
-   else
+   case FID(MOVA): pbr->GetFloat(&m_d.m_modulate_vs_add); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(FVIS): pbr->GetBool(&m_d.m_isVisible); break;
+   case FID(ADDB): pbr->GetBool(&m_d.m_addBlend); break;
+   case FID(IDMD): pbr->GetBool(&m_d.m_isDMD); break;
+   case FID(DSPT): pbr->GetBool(&m_d.m_displayTexture); break;
+   case FID(FLDB): pbr->GetFloat(&m_d.m_depthBias); break;
+   case FID(ALGN): pbr->GetInt(&m_d.m_imagealignment); break;
+   case FID(FILT): pbr->GetInt(&m_d.m_filter); break;
+   case FID(FIAM): pbr->GetInt(&m_d.m_filterAmount); break;
+   default:
    {
       LoadPointToken(id, pbr, pbr->m_version);
       ISelect::LoadToken(id, pbr);
+      break;
+   }
    }
    return fTrue;
 }

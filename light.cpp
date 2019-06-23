@@ -986,133 +986,50 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
 
 bool Light::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch(id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
-   }
-   else if (id == FID(VCEN))
-   {
-      pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
-   }
-   else if (id == FID(RADI))
-   {
-      pbr->GetFloat(&m_d.m_falloff);
-   }
-   else if (id == FID(FAPO))
-   {
-      pbr->GetFloat(&m_d.m_falloff_power);
-   }
-   else if (id == FID(STAT))
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
+   case FID(RADI): pbr->GetFloat(&m_d.m_falloff); break;
+   case FID(FAPO): pbr->GetFloat(&m_d.m_falloff_power); break;
+   case FID(STAT):
    {
       pbr->GetInt(&m_d.m_state);
       m_realState = m_d.m_state;
+      break;
    }
-   else if (id == FID(COLR))
-   {
-      pbr->GetInt(&m_d.m_color);
-   }
-   else if (id == FID(COL2))
-   {
-      pbr->GetInt(&m_d.m_color2);
-   }
-   else if (id == FID(IMG1))
-   {
-      pbr->GetString(m_d.m_szOffImage);
-   }
-   else if (id == FID(TMON))
-   {
-      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
-   }
-   else if (id == FID(TMIN))
-   {
-      pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-   }
-   else if (id == FID(SHAP))
-   {
-      m_roundLight = true;
-   }
-   else if (id == FID(BPAT))
-   {
-      pbr->GetString(m_rgblinkpattern);
-   }
-   else if (id == FID(BINT))
-   {
-      pbr->GetInt(&m_blinkinterval);
-   }
-   /*else if (id == FID(BCOL))
-   {
-   pbr->GetInt(&m_d.m_bordercolor);
-   }*/
-   else if (id == FID(BWTH))
-   {
-      pbr->GetFloat(&m_d.m_intensity);
-   }
-   else if (id == FID(TRMS))
-   {
-      pbr->GetFloat(&m_d.m_transmissionScale);
-   }
-   else if (id == FID(SURF))
-   {
-      pbr->GetString(m_d.m_szSurface);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(BGLS))
-   {
-      pbr->GetBool(&m_backglass);
-   }
-   else if (id == FID(LIDB))
-   {
-      pbr->GetFloat(&m_d.m_depthBias);
-   }
-   else if (id == FID(FASP))
-   {
-      pbr->GetFloat(&m_d.m_fadeSpeedUp);
-   }
-   else if (id == FID(FASD))
-   {
-      pbr->GetFloat(&m_d.m_fadeSpeedDown);
-   }
-   else if (id == FID(BULT))
-   {
-      pbr->GetBool(&m_d.m_BulbLight);
-   }
-   else if (id == FID(IMMO))
-   {
-      pbr->GetBool(&m_d.m_imageMode);
-   }
-   else if (id == FID(SHBM))
-   {
-      pbr->GetBool(&m_d.m_showBulbMesh);
-   }
-   else if (id == FID(STBM))
-   {
-      pbr->GetBool(&m_d.m_staticBulbMesh);
-   }
-   else if (id == FID(SHRB))
-   {
-      pbr->GetBool(&m_d.m_showReflectionOnBall);
-   }
-   else if (id == FID(BMSC))
-   {
-      pbr->GetFloat(&m_d.m_meshRadius);
-   }
-   else if (id == FID(BMVA))
-   {
-      pbr->GetFloat(&m_d.m_modulate_vs_add);
-   }
-   else if (id == FID(BHHI))
-   {
-      pbr->GetFloat(&m_d.m_bulbHaloHeight);
-   }
-   else
+   case FID(COLR): pbr->GetInt(&m_d.m_color); break;
+   case FID(COL2): pbr->GetInt(&m_d.m_color2); break;
+   case FID(IMG1): pbr->GetString(m_d.m_szOffImage); break;
+   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(SHAP): m_roundLight = true; break;
+   case FID(BPAT): pbr->GetString(m_rgblinkpattern); break;
+   case FID(BINT): pbr->GetInt(&m_blinkinterval); break;
+   //case FID(BCOL): pbr->GetInt(&m_d.m_bordercolor); break;
+   case FID(BWTH): pbr->GetFloat(&m_d.m_intensity); break;
+   case FID(TRMS): pbr->GetFloat(&m_d.m_transmissionScale); break;
+   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(BGLS): pbr->GetBool(&m_backglass); break;
+   case FID(LIDB): pbr->GetFloat(&m_d.m_depthBias); break;
+   case FID(FASP): pbr->GetFloat(&m_d.m_fadeSpeedUp); break;
+   case FID(FASD): pbr->GetFloat(&m_d.m_fadeSpeedDown); break;
+   case FID(BULT): pbr->GetBool(&m_d.m_BulbLight); break;
+   case FID(IMMO): pbr->GetBool(&m_d.m_imageMode); break;
+   case FID(SHBM): pbr->GetBool(&m_d.m_showBulbMesh); break;
+   case FID(STBM): pbr->GetBool(&m_d.m_staticBulbMesh); break;
+   case FID(SHRB): pbr->GetBool(&m_d.m_showReflectionOnBall); break;
+   case FID(BMSC): pbr->GetFloat(&m_d.m_meshRadius); break;
+   case FID(BMVA): pbr->GetFloat(&m_d.m_modulate_vs_add); break;
+   case FID(BHHI): pbr->GetFloat(&m_d.m_bulbHaloHeight); break;
+   default:
    {
       LoadPointToken(id, pbr, pbr->m_version);
       ISelect::LoadToken(id, pbr);
+      break;
    }
-
+   }
    return fTrue;
 }
 

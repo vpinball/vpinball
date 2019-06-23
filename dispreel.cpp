@@ -527,93 +527,47 @@ HRESULT DispReel::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versio
 
 bool DispReel::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch (id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
-   }
-   else if (id == FID(VER1))
-   {
-      pbr->GetStruct(&m_d.m_v1, sizeof(Vertex2D));
-   }
-   else if (id == FID(VER2))
-   {
-      pbr->GetStruct(&m_d.m_v2, sizeof(Vertex2D));
-   }
-   else if (id == FID(WDTH))
-   {
-      pbr->GetFloat(&m_d.m_width);
-   }
-   else if (id == FID(HIGH))
-   {
-      pbr->GetFloat(&m_d.m_height);
-   }
-   else if (id == FID(CLRB))
-   {
-      pbr->GetInt(&m_d.m_backcolor);
-   }
-   else if (id == FID(TMON))
-   {
-      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
-   }
-   else if (id == FID(TMIN))
-   {
-      pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(TRNS))
-   {
-      pbr->GetBool(&m_d.m_transparent);
-   }
-   else if (id == FID(IMAG))
-   {
-      pbr->GetString(m_d.m_szImage);
-   }
-   else if (id == FID(RCNT))
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(VER1): pbr->GetStruct(&m_d.m_v1, sizeof(Vertex2D)); break;
+   case FID(VER2): pbr->GetStruct(&m_d.m_v2, sizeof(Vertex2D)); break;
+   case FID(WDTH): pbr->GetFloat(&m_d.m_width); break;
+   case FID(HIGH): pbr->GetFloat(&m_d.m_height); break;
+   case FID(CLRB): pbr->GetInt(&m_d.m_backcolor); break;
+   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(TRNS): pbr->GetBool(&m_d.m_transparent); break;
+   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+   case FID(RCNT):
    {
       float reel;
       pbr->GetFloat(&reel);
       m_d.m_reelcount = (int)reel;
+      break;
    }
-   else if (id == FID(RSPC))
-   {
-      pbr->GetFloat(&m_d.m_reelspacing);
-   }
-   else if (id == FID(MSTP))
+   case FID(RSPC): pbr->GetFloat(&m_d.m_reelspacing); break;
+   case FID(MSTP):
    {
       float motorsteps;
       pbr->GetFloat(&motorsteps);
       m_d.m_motorsteps = (int)motorsteps;
+      break;
    }
-   else if (id == FID(SOUN))
-   {
-      pbr->GetString(m_d.m_szSound);
-   }
-   else if (id == FID(UGRD))
-   {
-      pbr->GetBool(&m_d.m_useImageGrid);
-   }
-   else if (id == FID(VISI))
-   {
-      pbr->GetBool(&m_d.m_visible);
-   }
-   else if (id == FID(GIPR))
-   {
-      pbr->GetInt(&m_d.m_imagesPerGridRow);
-   }
-   else if (id == FID(RANG))
+   case FID(SOUN): pbr->GetString(m_d.m_szSound); break;
+   case FID(UGRD): pbr->GetBool(&m_d.m_useImageGrid); break;
+   case FID(VISI): pbr->GetBool(&m_d.m_visible); break;
+   case FID(GIPR): pbr->GetInt(&m_d.m_imagesPerGridRow); break;
+   case FID(RANG):
    {
       float dig;
       pbr->GetFloat(&dig);
       m_d.m_digitrange = (int)dig;
+      break;
    }
-   else if (id == FID(UPTM))
-   {
-      pbr->GetInt(&m_d.m_updateinterval);
-   }
-   else if (id == FID(FONT)) //!! deprecated, only here to support loading of old tables
+   case FID(UPTM): pbr->GetInt(&m_d.m_updateinterval); break;
+   case FID(FONT): //!! deprecated, only here to support loading of old tables
    {
       IFont *pIFont;
       FONTDESC fd;
@@ -634,10 +588,10 @@ bool DispReel::LoadToken(const int id, BiffReader * const pbr)
       ips->Load(pbr->m_pistream);
 
       pIFont->Release();
+
+      break;
    }
-   else
-   {
-      ISelect::LoadToken(id, pbr);
+   default: ISelect::LoadToken(id, pbr); break;
    }
    return fTrue;
 }
