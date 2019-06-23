@@ -946,168 +946,72 @@ HRESULT Flipper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 
 bool Flipper::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch(id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
-   }
-   else if (id == FID(VCEN))
-   {
-      pbr->GetStruct(&m_d.m_Center, sizeof(Vertex2D));
-   }
-   else if (id == FID(BASR))
-   {
-      pbr->GetFloat(&m_d.m_BaseRadius);
-   }
-   else if (id == FID(ENDR))
-   {
-      pbr->GetFloat(&m_d.m_EndRadius);
-   }
-   else if (id == FID(FLPR))
-   {
-      pbr->GetFloat(&m_d.m_FlipperRadiusMax);
-   }
-   /*else if (id == FID(FAEOS))
-   {
-   pbr->GetFloat(&m_d.m_angleEOS);
-   }*/
-   else if (id == FID(FRTN))
-   {
-      pbr->GetFloat(&m_d.m_return);
-   }
-   else if (id == FID(ANGS))
-   {
-      pbr->GetFloat(&m_d.m_StartAngle);
-   }
-   else if (id == FID(ANGE))
-   {
-      pbr->GetFloat(&m_d.m_EndAngle);
-   }
-   else if (id == FID(OVRP))
-   {
-      pbr->GetInt(&m_d.m_OverridePhysics);
-   }
-   else if (id == FID(FORC))
-   {
-      pbr->GetFloat(&m_d.m_mass);
-   }
-   else if (id == FID(TMON))
-   {
-      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
-   }
-   else if (id == FID(TMIN))
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(VCEN): pbr->GetStruct(&m_d.m_Center, sizeof(Vertex2D)); break;
+   case FID(BASR): pbr->GetFloat(&m_d.m_BaseRadius); break;
+   case FID(ENDR): pbr->GetFloat(&m_d.m_EndRadius); break;
+   case FID(FLPR): pbr->GetFloat(&m_d.m_FlipperRadiusMax); break;
+   //case FID(FAEOS): pbr->GetFloat(&m_d.m_angleEOS); break;
+   case FID(FRTN): pbr->GetFloat(&m_d.m_return); break;
+   case FID(ANGS): pbr->GetFloat(&m_d.m_StartAngle); break;
+   case FID(ANGE): pbr->GetFloat(&m_d.m_EndAngle); break;
+   case FID(OVRP): pbr->GetInt(&m_d.m_OverridePhysics); break;
+   case FID(FORC): pbr->GetFloat(&m_d.m_mass); break;
+   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN):
    {
       pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
       //m_d.m_tdr.m_TimerInterval = INT(m_d.m_tdr.m_TimerInterval);
       if (m_d.m_tdr.m_TimerInterval < 1)
          m_d.m_tdr.m_TimerInterval = 100;
+      break;
    }
-   else if (id == FID(SURF))
-   {
-      pbr->GetString(m_d.m_szSurface);
-   }
-   else if (id == FID(MATR))
-   {
-      pbr->GetString(m_d.m_szMaterial);
-   }
-   else if (id == FID(RUMA))
-   {
-      pbr->GetString(m_d.m_szRubberMaterial);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(RTHK)) //!! deprecated, remove
+   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
+   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+   case FID(RUMA): pbr->GetString(m_d.m_szRubberMaterial); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(RTHK): //!! deprecated, remove
    {
       int rt;
       pbr->GetInt(&rt);
       m_d.m_rubberthickness = (float)rt;
+      break;
    }
-   else if (id == FID(RTHF))
-   {
-      pbr->GetFloat(&m_d.m_rubberthickness);
-   }
-   else if (id == FID(RHGT)) //!! deprecated, remove
+   case FID(RTHF): pbr->GetFloat(&m_d.m_rubberthickness); break;
+   case FID(RHGT): //!! deprecated, remove
    {
       int rh;
       pbr->GetInt(&rh);
       m_d.m_rubberheight = (float)rh;
+      break;
    }
-   else if (id == FID(RHGF))
-   {
-      pbr->GetFloat(&m_d.m_rubberheight);
-   }
-   else if (id == FID(RWDT)) //!! deprecated, remove
+   case FID(RHGF): pbr->GetFloat(&m_d.m_rubberheight); break;
+   case FID(RWDT): //!! deprecated, remove
    {
       int rw;
       pbr->GetInt(&rw);
       m_d.m_rubberwidth = (float)rw;
+      break;
    }
-   else if (id == FID(RWDF))
-   {
-      pbr->GetFloat(&m_d.m_rubberwidth);
+   case FID(RWDF): pbr->GetFloat(&m_d.m_rubberwidth); break;
+   case FID(FHGT): pbr->GetFloat(&m_d.m_height); break;
+   case FID(STRG): pbr->GetFloat(&m_d.m_strength); break;
+   case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
+   case FID(ELFO): pbr->GetFloat(&m_d.m_elasticityFalloff); break;
+   case FID(FRIC): pbr->GetFloat(&m_d.m_friction); break;
+   case FID(RPUP): pbr->GetFloat(&m_d.m_rampUp); break;
+   case FID(SCTR): pbr->GetFloat(&m_d.m_scatter); break;
+   case FID(TODA): pbr->GetFloat(&m_d.m_torqueDamping); break;
+   case FID(TDAA): pbr->GetFloat(&m_d.m_torqueDampingAngle); break;
+   case FID(FRMN): pbr->GetFloat(&m_d.m_FlipperRadiusMin); break;
+   case FID(VSBL): pbr->GetBool(&m_d.m_visible); break;
+   case FID(ENBL): pbr->GetBool(&m_d.m_enabled); break;
+   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
+   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+   default: ISelect::LoadToken(id, pbr); break;
    }
-   else if (id == FID(FHGT))
-   {
-      pbr->GetFloat(&m_d.m_height);
-   }
-   else if (id == FID(STRG))
-   {
-      pbr->GetFloat(&m_d.m_strength);
-   }
-   else if (id == FID(ELAS))
-   {
-      pbr->GetFloat(&m_d.m_elasticity);
-   }
-   else if (id == FID(ELFO))
-   {
-      pbr->GetFloat(&m_d.m_elasticityFalloff);
-   }
-   else if (id == FID(FRIC))
-   {
-      pbr->GetFloat(&m_d.m_friction);
-   }
-   else if (id == FID(RPUP))
-   {
-      pbr->GetFloat(&m_d.m_rampUp);
-   }
-   else if (id == FID(SCTR))
-   {
-      pbr->GetFloat(&m_d.m_scatter);
-   }
-   else if ( id == FID( TODA ) )
-   {
-      pbr->GetFloat(&m_d.m_torqueDamping);
-   }
-   else if (id == FID(TDAA))
-   {
-      pbr->GetFloat(&m_d.m_torqueDampingAngle);
-   }
-   else if (id == FID(FRMN))
-   {
-      pbr->GetFloat(&m_d.m_FlipperRadiusMin);
-   }
-   else if (id == FID(VSBL))
-   {
-      pbr->GetBool(&m_d.m_visible);
-   }
-   else if (id == FID(ENBL))
-   {
-      pbr->GetBool(&m_d.m_enabled);
-   }
-   else if (id == FID(REEN))
-   {
-      pbr->GetBool(&m_d.m_reflectionEnabled);
-   }
-   else if (id == FID(IMAG))
-   {
-      pbr->GetString(m_d.m_szImage);
-   }
-   else
-   {
-      ISelect::LoadToken(id, pbr);
-   }
-
    return fTrue;
 }
 

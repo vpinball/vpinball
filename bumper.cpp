@@ -917,79 +917,27 @@ HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version,
 
 bool Bumper::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch(id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
-   }
-   else if (id == FID(VCEN))
-   {
-      pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
-   }
-   else if (id == FID(RADI))
-   {
-      pbr->GetFloat(&m_d.m_radius);
-   }
-   else if (id == FID(MATR))
-   {
-      pbr->GetString(m_d.m_szCapMaterial);
-   }
-   else if (id == FID(RIMA))
-   {
-      pbr->GetString(m_d.m_szRingMaterial);
-   }
-   else if (id == FID(BAMA))
-   {
-      pbr->GetString(m_d.m_szBaseMaterial);
-   }
-   else if (id == FID(SKMA))
-   {
-      pbr->GetString(m_d.m_szSkirtMaterial);
-   }
-   else if (id == FID(TMON))
-   {
-      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
-   }
-   else if (id == FID(TMIN))
-   {
-      pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-   }
-   else if (id == FID(THRS))
-   {
-      pbr->GetFloat(&m_d.m_threshold);
-   }
-   else if (id == FID(FORC))
-   {
-      pbr->GetFloat(&m_d.m_force);
-   }
-   else if (id == FID(BSCT))
-   {
-      pbr->GetFloat(&m_d.m_scatter);
-   }
-   else if (id == FID(HISC))
-   {
-      pbr->GetFloat(&m_d.m_heightScale);
-   }
-   else if (id == FID(RISP))
-   {
-      pbr->GetFloat(&m_d.m_ringSpeed);
-   }
-   else if (id == FID(ORIN))
-   {
-      pbr->GetFloat(&m_d.m_orientation);
-   }
-   else if (id == FID(RDLI))
-   {
-      pbr->GetFloat(&m_d.m_ringDropOffset);
-   }
-   else if (id == FID(SURF))
-   {
-      pbr->GetString(m_d.m_szSurface);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(BVIS))
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
+   case FID(RADI): pbr->GetFloat(&m_d.m_radius); break;
+   case FID(MATR): pbr->GetString(m_d.m_szCapMaterial); break;
+   case FID(RIMA): pbr->GetString(m_d.m_szRingMaterial); break;
+   case FID(BAMA): pbr->GetString(m_d.m_szBaseMaterial); break;
+   case FID(SKMA): pbr->GetString(m_d.m_szSkirtMaterial); break;
+   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(THRS): pbr->GetFloat(&m_d.m_threshold); break;
+   case FID(FORC): pbr->GetFloat(&m_d.m_force); break;
+   case FID(BSCT): pbr->GetFloat(&m_d.m_scatter); break;
+   case FID(HISC): pbr->GetFloat(&m_d.m_heightScale); break;
+   case FID(RISP): pbr->GetFloat(&m_d.m_ringSpeed); break;
+   case FID(ORIN): pbr->GetFloat(&m_d.m_orientation); break;
+   case FID(RDLI): pbr->GetFloat(&m_d.m_ringDropOffset); break;
+   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(BVIS):
    {
       // backwards compatibility when loading old VP9 tables
       bool value;
@@ -998,41 +946,23 @@ bool Bumper::LoadToken(const int id, BiffReader * const pbr)
       m_d.m_baseVisible = value;
       m_d.m_ringVisible = value;
       m_d.m_skirtVisible = value;
+      break;
    }
-   else if (id == FID(CAVI))
-   {
-      pbr->GetBool(&m_d.m_capVisible);
-   }
-   else if (id == FID(HAHE))
-   {
-      pbr->GetBool(&m_d.m_hitEvent);
-   }
-   else if (id == FID(COLI))
-   {
-      pbr->GetBool(&m_d.m_collidable);
-   }
-   else if (id == FID(BSVS))
+   case FID(CAVI): pbr->GetBool(&m_d.m_capVisible); break;
+   case FID(HAHE): pbr->GetBool(&m_d.m_hitEvent); break;
+   case FID(COLI): pbr->GetBool(&m_d.m_collidable); break;
+   case FID(BSVS):
    {
       pbr->GetBool(&m_d.m_baseVisible);
       // backwards compatibilty with pre 10.2 tables
       m_d.m_ringVisible = m_d.m_baseVisible;
       m_d.m_skirtVisible = m_d.m_baseVisible;
+      break;
    }
-   else if (id == FID(RIVS))
-   {
-      pbr->GetBool(&m_d.m_ringVisible);
-   }
-   else if (id == FID(SKVS))
-   {
-      pbr->GetBool(&m_d.m_skirtVisible);
-   }
-   else if (id == FID(REEN))
-   {
-      pbr->GetBool(&m_d.m_reflectionEnabled);
-   }
-   else
-   {
-      ISelect::LoadToken(id, pbr);
+   case FID(RIVS): pbr->GetBool(&m_d.m_ringVisible); break;
+   case FID(SKVS): pbr->GetBool(&m_d.m_skirtVisible); break;
+   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
+   default: ISelect::LoadToken(id, pbr); break;
    }
    return fTrue;
 }

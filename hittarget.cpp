@@ -936,125 +936,44 @@ HRESULT HitTarget::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
 
 bool HitTarget::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch(id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
-   }
-   else if (id == FID(VPOS))
-   {
-      pbr->GetVector3Padded(&m_d.m_vPosition);
-   }
-   else if (id == FID(VSIZ))
-   {
-      pbr->GetVector3Padded(&m_d.m_vSize);
-   }
-   else if (id == FID(ROTZ))
-   {
-      pbr->GetFloat(&m_d.m_rotZ);
-   }
-   else if (id == FID(IMAG))
-   {
-      pbr->GetString(m_d.m_szImage);
-   }
-   else if (id == FID(TRTY))
-   {
-       pbr->GetInt(&m_d.m_targetType);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(MATR))
-   {
-      pbr->GetString(m_d.m_szMaterial);
-   }
-   else if (id == FID(TVIS))
-   {
-      pbr->GetBool(&m_d.m_visible);
-   }
-   else if (id == FID(LEMO))
-   {
-      pbr->GetBool(&m_d.m_legacy);
-   }
-   else if (id == FID(ISDR))
-   {
-      pbr->GetBool(&m_d.m_isDropped);
-   }
-   else if (id == FID(DRSP))
-   {
-      pbr->GetFloat(&m_d.m_dropSpeed);
-   }
-   else if (id == FID(REEN))
-   {
-      pbr->GetBool(&m_d.m_reflectionEnabled);
-   }
-   else if (id == FID(HTEV))
-   {
-      pbr->GetBool(&m_d.m_useHitEvent);
-   }
-   else if (id == FID(THRS))
-   {
-      pbr->GetFloat(&m_d.m_threshold);
-   }
-   else if (id == FID(ELAS))
-   {
-      pbr->GetFloat(&m_d.m_elasticity);
-   }
-   else if (id == FID(ELFO))
-   {
-      pbr->GetFloat(&m_d.m_elasticityFalloff);
-   }
-   else if (id == FID(RFCT))
-   {
-      pbr->GetFloat(&m_d.m_friction);
-   }
-   else if (id == FID(RSCT))
-   {
-      pbr->GetFloat(&m_d.m_scatter);
-   }
-   else if (id == FID(CLDRP))
-   {
-      pbr->GetBool(&m_d.m_collidable);
-   }
-   else if (id == FID(DILI))
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(VPOS): pbr->GetVector3Padded(&m_d.m_vPosition); break;
+   case FID(VSIZ): pbr->GetVector3Padded(&m_d.m_vSize); break;
+   case FID(ROTZ): pbr->GetFloat(&m_d.m_rotZ); break;
+   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+   case FID(TRTY): pbr->GetInt(&m_d.m_targetType); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+   case FID(TVIS): pbr->GetBool(&m_d.m_visible); break;
+   case FID(LEMO): pbr->GetBool(&m_d.m_legacy); break;
+   case FID(ISDR): pbr->GetBool(&m_d.m_isDropped); break;
+   case FID(DRSP): pbr->GetFloat(&m_d.m_dropSpeed); break;
+   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
+   case FID(HTEV): pbr->GetBool(&m_d.m_useHitEvent); break;
+   case FID(THRS): pbr->GetFloat(&m_d.m_threshold); break;
+   case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
+   case FID(ELFO): pbr->GetFloat(&m_d.m_elasticityFalloff); break;
+   case FID(RFCT): pbr->GetFloat(&m_d.m_friction); break;
+   case FID(RSCT): pbr->GetFloat(&m_d.m_scatter); break;
+   case FID(CLDRP): pbr->GetBool(&m_d.m_collidable); break;
+   case FID(DILI):
    {
       int tmp;
       pbr->GetInt(&tmp);
       m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); // backwards compatible hacky loading!
+      break;
    }
-   else if (id == FID(DILB))
-   {
-      pbr->GetFloat(&m_d.m_disableLightingBelow);
+   case FID(DILB): pbr->GetFloat(&m_d.m_disableLightingBelow); break;
+   case FID(PIDB): pbr->GetFloat(&m_d.m_depthBias); break;
+   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(RADE): pbr->GetInt(&m_d.m_raiseDelay); break;
+   case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
+   case FID(OVPH): pbr->GetBool(&m_d.m_overwritePhysics); break;
+   default: ISelect::LoadToken(id, pbr); break;
    }
-   else if (id == FID(PIDB))
-   {
-      pbr->GetFloat(&m_d.m_depthBias);
-   }
-   else if (id == FID(TMON))
-   {
-       pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
-   }
-   else if (id == FID(TMIN))
-   {
-       pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-   }
-   else if (id == FID(RADE))
-   {
-       pbr->GetInt(&m_d.m_raiseDelay);
-   }
-   else if (id == FID(MAPH))
-   {
-      pbr->GetString(m_d.m_szPhysicsMaterial);
-   }
-   else if (id == FID(OVPH))
-   {
-      pbr->GetBool(&m_d.m_overwritePhysics);
-   }
-   else
-   {
-      ISelect::LoadToken(id, pbr);
-   }
-
    return fTrue;
 }
 

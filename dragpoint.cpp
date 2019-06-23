@@ -565,35 +565,16 @@ STDMETHODIMP DragPoint::InterfaceSupportsErrorInfo(REFIID riid)
 
 bool DragPoint::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(VCEN))
+   switch (id)
    {
-      pbr->GetStruct(&m_v, sizeof(Vertex2D));
+   case FID(VCEN): pbr->GetStruct(&m_v, sizeof(Vertex2D)); break;
+   case FID(POSZ): pbr->GetFloat(&m_v.z); break;
+   case FID(SMTH): pbr->GetBool(&m_smooth); break;
+   case FID(SLNG): pbr->GetBool(&m_slingshot); break;
+   case FID(ATEX): pbr->GetBool(&m_autoTexture); break;
+   case FID(TEXC): pbr->GetFloat(&m_texturecoord); break;
+   default: ISelect::LoadToken(id, pbr); break;
    }
-   else if (id == FID(POSZ))
-   {
-      pbr->GetFloat(&m_v.z);
-   }
-   else if (id == FID(SMTH))
-   {
-      pbr->GetBool(&m_smooth);
-   }
-   else if (id == FID(SLNG))
-   {
-      pbr->GetBool(&m_slingshot);
-   }
-   else if (id == FID(ATEX))
-   {
-      pbr->GetBool(&m_autoTexture);
-   }
-   else if (id == FID(TEXC))
-   {
-      pbr->GetFloat(&m_texturecoord);
-   }
-   else
-   {
-      ISelect::LoadToken(id, pbr);
-   }
-
    return fTrue;
 }
 

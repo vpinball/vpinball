@@ -3094,23 +3094,13 @@ HRESULT Collection::LoadData(IStream *pstm, PinTable *ppt, int version, HCRYPTHA
 
 bool Collection::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(NAME))
+   switch(id)
    {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(EVNT))
-   {
-      pbr->GetBool(&m_fireEvents);
-   }
-   else if (id == FID(SSNG))
-   {
-      pbr->GetBool(&m_stopSingleEvents);
-   }
-   else if (id == FID(GREL))
-   {
-      pbr->GetBool(&m_groupElements);
-   }
-   else if (id == FID(ITEM))
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(EVNT): pbr->GetBool(&m_fireEvents); break;
+   case FID(SSNG): pbr->GetBool(&m_stopSingleEvents); break;
+   case FID(GREL): pbr->GetBool(&m_groupElements); break;
+   case FID(ITEM):
    {
       //!! BUG - item list must be up to date in table (loaded) for the reverse name lookup to work
       PinTable * const ppt = (PinTable *)pbr->m_pdata;
@@ -3132,8 +3122,9 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
             }
          }
       }
+      break;
    }
-
+   }
    return fTrue;
 }
 

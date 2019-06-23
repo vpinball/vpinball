@@ -929,141 +929,42 @@ HRESULT Plunger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 
 bool Plunger::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch(id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
-   }
-   else if (id == FID(VCEN))
-   {
-      pbr->GetStruct(&m_d.m_v, sizeof(Vertex2D));
-   }
-   else if (id == FID(WDTH))
-   {
-      pbr->GetFloat(&m_d.m_width);
-   }
-   else if (id == FID(ZADJ))
-   {
-      pbr->GetFloat(&m_d.m_zAdjust);
-   }
-   else if (id == FID(HIGH))
-   {
-      pbr->GetFloat(&m_d.m_height);
-   }
-   else if (id == FID(HPSL))
-   {
-      pbr->GetFloat(&m_d.m_stroke);
-   }
-   else if (id == FID(SPDP))
-   {
-      pbr->GetFloat(&m_d.m_speedPull);
-   }
-   else if (id == FID(SPDF))
-   {
-      pbr->GetFloat(&m_d.m_speedFire);
-   }
-   else if (id == FID(MESTH))
-   {
-      pbr->GetFloat(&m_d.m_mechStrength);
-   }
-   else if (id == FID(MPRK))
-   {
-      pbr->GetFloat(&m_d.m_parkPosition);
-   }
-   else if (id == FID(PSCV))
-   {
-      pbr->GetFloat(&m_d.m_scatterVelocity);
-   }
-   else if (id == FID(MOMX))
-   {
-      pbr->GetFloat(&m_d.m_momentumXfer);
-   }
-   else if (id == FID(TMON))
-   {
-      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
-   }
-   else if (id == FID(MECH))
-   {
-      pbr->GetBool(&m_d.m_mechPlunger);
-   }
-   else if (id == FID(APLG))
-   {
-      pbr->GetBool(&m_d.m_autoPlunger);
-   }
-   else if (id == FID(TMIN))
-   {
-      pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(TYPE))
-   {
-      pbr->GetInt(&m_d.m_type);
-   }
-   else if (id == FID(ANFR))
-   {
-      pbr->GetInt(&m_d.m_animFrames);
-   }
-   else if (id == FID(MATR))
-   {
-      pbr->GetString(m_d.m_szMaterial);
-   }
-   else if (id == FID(IMAG))
-   {
-      pbr->GetString(m_d.m_szImage);
-   }
-   else if (id == FID(VSBL))
-   {
-      pbr->GetBool(&m_d.m_visible);
-   }
-   else if (id == FID(REEN))
-   {
-      pbr->GetBool(&m_d.m_reflectionEnabled);
-   }
-   else if (id == FID(SURF))
-   {
-      pbr->GetString(m_d.m_szSurface);
-   }
-   else if (id == FID(TIPS))
-   {
-      pbr->GetString(m_d.m_szTipShape);
-   }
-   else if (id == FID(RODD))
-   {
-      pbr->GetFloat(&m_d.m_rodDiam);
-   }
-   else if (id == FID(RNGG))
-   {
-      pbr->GetFloat(&m_d.m_ringGap);
-   }
-   else if (id == FID(RNGD))
-   {
-      pbr->GetFloat(&m_d.m_ringDiam);
-   }
-   else if (id == FID(RNGW))
-   {
-      pbr->GetFloat(&m_d.m_ringWidth);
-   }
-   else if (id == FID(SPRD))
-   {
-      pbr->GetFloat(&m_d.m_springDiam);
-   }
-   else if (id == FID(SPRG))
-   {
-      pbr->GetFloat(&m_d.m_springGauge);
-   }
-   else if (id == FID(SPRL))
-   {
-      pbr->GetFloat(&m_d.m_springLoops);
-   }
-   else if (id == FID(SPRE))
-   {
-      pbr->GetFloat(&m_d.m_springEndLoops);
-   }
-   else
-   {
-      ISelect::LoadToken(id, pbr);
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(VCEN): pbr->GetStruct(&m_d.m_v, sizeof(Vertex2D)); break;
+   case FID(WDTH): pbr->GetFloat(&m_d.m_width); break;
+   case FID(ZADJ): pbr->GetFloat(&m_d.m_zAdjust); break;
+   case FID(HIGH): pbr->GetFloat(&m_d.m_height); break;
+   case FID(HPSL): pbr->GetFloat(&m_d.m_stroke); break;
+   case FID(SPDP): pbr->GetFloat(&m_d.m_speedPull); break;
+   case FID(SPDF): pbr->GetFloat(&m_d.m_speedFire); break;
+   case FID(MESTH): pbr->GetFloat(&m_d.m_mechStrength); break;
+   case FID(MPRK): pbr->GetFloat(&m_d.m_parkPosition); break;
+   case FID(PSCV): pbr->GetFloat(&m_d.m_scatterVelocity); break;
+   case FID(MOMX): pbr->GetFloat(&m_d.m_momentumXfer); break;
+   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
+   case FID(MECH): pbr->GetBool(&m_d.m_mechPlunger); break;
+   case FID(APLG): pbr->GetBool(&m_d.m_autoPlunger); break;
+   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(TYPE): pbr->GetInt(&m_d.m_type); break;
+   case FID(ANFR): pbr->GetInt(&m_d.m_animFrames); break;
+   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+   case FID(VSBL): pbr->GetBool(&m_d.m_visible); break;
+   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
+   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
+   case FID(TIPS): pbr->GetString(m_d.m_szTipShape); break;
+   case FID(RODD): pbr->GetFloat(&m_d.m_rodDiam); break;
+   case FID(RNGG): pbr->GetFloat(&m_d.m_ringGap); break;
+   case FID(RNGD): pbr->GetFloat(&m_d.m_ringDiam); break;
+   case FID(RNGW): pbr->GetFloat(&m_d.m_ringWidth); break;
+   case FID(SPRD): pbr->GetFloat(&m_d.m_springDiam); break;
+   case FID(SPRG): pbr->GetFloat(&m_d.m_springGauge); break;
+   case FID(SPRL): pbr->GetFloat(&m_d.m_springLoops); break;
+   case FID(SPRE): pbr->GetFloat(&m_d.m_springEndLoops); break;
+   default: ISelect::LoadToken(id, pbr); break;
    }
    return fTrue;
 }

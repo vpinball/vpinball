@@ -628,101 +628,38 @@ HRESULT Gate::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, H
 
 bool Gate::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch(id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
-   }
-   else if (id == FID(GATY))
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(GATY):
    {
       pbr->GetInt(&m_d.m_type);
       if (m_d.m_type < GateWireW || m_d.m_type > GateLongPlate) // for tables that were saved in the phase where m_type could've been undefined
          m_d.m_type = GateWireW;
+      break;
    }
-   else if (id == FID(VCEN))
-   {
-      pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
+   case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
+   case FID(LGTH): pbr->GetFloat(&m_d.m_length); break;
+   case FID(HGTH): pbr->GetFloat(&m_d.m_height); break;
+   case FID(ROTA): pbr->GetFloat(&m_d.m_rotation); break;
+   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
+   case FID(GSUPT): pbr->GetBool(&m_d.m_showBracket); break;
+   case FID(GCOLD): pbr->GetBool(&m_d.m_collidable); break;
+   case FID(TWWA): pbr->GetBool(&m_d.m_twoWay); break;
+   case FID(GVSBL): pbr->GetBool(&m_d.m_visible); break;
+   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
+   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
+   case FID(GAMAX): pbr->GetFloat(&m_d.m_angleMax); break;
+   case FID(GAMIN): pbr->GetFloat(&m_d.m_angleMin); break;
+   case FID(GFRCT): pbr->GetFloat(&m_d.m_friction); break;
+   case FID(AFRC): pbr->GetFloat(&m_d.m_damping); break;
+   case FID(GGFCT): pbr->GetFloat(&m_d.m_gravityfactor); break;
+   default: ISelect::LoadToken(id, pbr); break;
    }
-   else if (id == FID(LGTH))
-   {
-      pbr->GetFloat(&m_d.m_length);
-   }
-   else if (id == FID(HGTH))
-   {
-      pbr->GetFloat(&m_d.m_height);
-   }
-   else if (id == FID(ROTA))
-   {
-      pbr->GetFloat(&m_d.m_rotation);
-   }
-   else if (id == FID(MATR))
-   {
-      pbr->GetString(m_d.m_szMaterial);
-   }
-   else if (id == FID(TMON))
-   {
-      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
-   }
-   else if (id == FID(GSUPT))
-   {
-      pbr->GetBool(&m_d.m_showBracket);
-   }
-   else if (id == FID(GCOLD))
-   {
-      pbr->GetBool(&m_d.m_collidable);
-   }
-   else if (id == FID(TWWA))
-   {
-      pbr->GetBool(&m_d.m_twoWay);
-   }
-   else if (id == FID(GVSBL))
-   {
-      pbr->GetBool(&m_d.m_visible);
-   }
-   else if (id == FID(REEN))
-   {
-      pbr->GetBool(&m_d.m_reflectionEnabled);
-   }
-   else if (id == FID(TMIN))
-   {
-      pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-   }
-   else if (id == FID(SURF))
-   {
-      pbr->GetString(m_d.m_szSurface);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(ELAS))
-   {
-      pbr->GetFloat(&m_d.m_elasticity);
-   }
-   else if (id == FID(GAMAX))
-   {
-      pbr->GetFloat(&m_d.m_angleMax);
-   }
-   else if (id == FID(GAMIN))
-   {
-      pbr->GetFloat(&m_d.m_angleMin);
-   }
-   else if (id == FID(GFRCT))
-   {
-      pbr->GetFloat(&m_d.m_friction);
-   }
-   else if (id == FID(AFRC))
-   {
-      pbr->GetFloat(&m_d.m_damping);
-   }
-   else if (id == FID(GGFCT))
-   {
-      pbr->GetFloat(&m_d.m_gravityfactor);
-   }
-   else
-   {
-      ISelect::LoadToken(id, pbr);
-   }
-
    return fTrue;
 }
 

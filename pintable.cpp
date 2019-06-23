@@ -3843,496 +3843,184 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
 
 bool PinTable::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch(id)
    {
-      pbr->GetInt(&((int *)pbr->m_pdata)[0]);
-   }
-   else if (id == FID(LEFT))
-   {
-      pbr->GetFloat(&m_left);
-   }
-   else if (id == FID(TOPX))
-   {
-      pbr->GetFloat(&m_top);
-   }
-   else if (id == FID(RGHT))
-   {
-      pbr->GetFloat(&m_right);
-   }
-   else if (id == FID(BOTM))
-   {
-      pbr->GetFloat(&m_bottom);
-   }
-   else if (id == FID(ROTA))
-   {
-      pbr->GetFloat(&m_BG_rotation[BG_DESKTOP]);
-   }
-   else if (id == FID(LAYB))
-   {
-      pbr->GetFloat(&m_BG_layback[BG_DESKTOP]);
-   }
-   else if (id == FID(INCL))
-   {
-      pbr->GetFloat(&m_BG_inclination[BG_DESKTOP]);
-   }
-   else if (id == FID(FOVX))
-   {
-      pbr->GetFloat(&m_BG_FOV[BG_DESKTOP]);
-   }
-   else if (id == FID(SCLX))
-   {
-      pbr->GetFloat(&m_BG_scalex[BG_DESKTOP]);
-   }
-   else if (id == FID(SCLY))
-   {
-      pbr->GetFloat(&m_BG_scaley[BG_DESKTOP]);
-   }
-   else if (id == FID(SCLZ))
-   {
-      pbr->GetFloat(&m_BG_scalez[BG_DESKTOP]);
-   }
-   else if (id == FID(XLTX))
-   {
-      pbr->GetFloat(&m_BG_xlatex[BG_DESKTOP]);
-   }
-   else if (id == FID(XLTY))
-   {
-      pbr->GetFloat(&m_BG_xlatey[BG_DESKTOP]);
-   }
-   else if (id == FID(XLTZ))
-   {
-      pbr->GetFloat(&m_BG_xlatez[BG_DESKTOP]);
-   }
-   else if (id == FID(ROTF))
-   {
-      pbr->GetFloat(&m_BG_rotation[BG_FULLSCREEN]);
-   }
-   else if (id == FID(LAYF))
-   {
-      pbr->GetFloat(&m_BG_layback[BG_FULLSCREEN]);
-   }
-   else if (id == FID(INCF))
-   {
-      pbr->GetFloat(&m_BG_inclination[BG_FULLSCREEN]);
-   }
-   else if (id == FID(FOVF))
-   {
-      pbr->GetFloat(&m_BG_FOV[BG_FULLSCREEN]);
-   }
-   else if (id == FID(SCFX))
-   {
-      pbr->GetFloat(&m_BG_scalex[BG_FULLSCREEN]);
-   }
-   else if (id == FID(SCFY))
-   {
-      pbr->GetFloat(&m_BG_scaley[BG_FULLSCREEN]);
-   }
-   else if (id == FID(SCFZ))
-   {
-      pbr->GetFloat(&m_BG_scalez[BG_FULLSCREEN]);
-   }
-   else if (id == FID(XLFX))
-   {
-      pbr->GetFloat(&m_BG_xlatex[BG_FULLSCREEN]);
-   }
-   else if (id == FID(XLFY))
-   {
-      pbr->GetFloat(&m_BG_xlatey[BG_FULLSCREEN]);
-   }
-   else if (id == FID(XLFZ))
-   {
-      pbr->GetFloat(&m_BG_xlatez[BG_FULLSCREEN]);
-   }
-   else if (id == FID(ROFS))
-   {
-      pbr->GetFloat(&m_BG_rotation[BG_FSS]);
-   }
-   else if (id == FID(LAFS))
-   {
-      pbr->GetFloat(&m_BG_layback[BG_FSS]);
-   }
-   else if (id == FID(INFS))
-   {
-      pbr->GetFloat(&m_BG_inclination[BG_FSS]);
-   }
-   else if (id == FID(FOFS))
-   {
-      pbr->GetFloat(&m_BG_FOV[BG_FSS]);
-   }
-   else if (id == FID(SCXS))
-   {
-      pbr->GetFloat(&m_BG_scalex[BG_FSS]);
-   }
-   else if (id == FID(SCYS))
-   {
-      pbr->GetFloat(&m_BG_scaley[BG_FSS]);
-   }
-   else if (id == FID(SCZS))
-   {
-      pbr->GetFloat(&m_BG_scalez[BG_FSS]);
-   }
-   else if (id == FID(XLXS))
-   {
-      pbr->GetFloat(&m_BG_xlatex[BG_FSS]);
-   }
-   else if (id == FID(XLYS))
-   {
-      pbr->GetFloat(&m_BG_xlatey[BG_FSS]);
-   }
-   else if (id == FID(XLZS))
-   {
-      pbr->GetFloat(&m_BG_xlatez[BG_FSS]);
-   }
-   else if (id == FID(EFSS))
+   case FID(PIID): pbr->GetInt(&((int *)pbr->m_pdata)[0]); break;
+   case FID(LEFT): pbr->GetFloat(&m_left); break;
+   case FID(TOPX): pbr->GetFloat(&m_top); break;
+   case FID(RGHT): pbr->GetFloat(&m_right); break;
+   case FID(BOTM): pbr->GetFloat(&m_bottom); break;
+   case FID(ROTA): pbr->GetFloat(&m_BG_rotation[BG_DESKTOP]); break;
+   case FID(LAYB): pbr->GetFloat(&m_BG_layback[BG_DESKTOP]); break;
+   case FID(INCL): pbr->GetFloat(&m_BG_inclination[BG_DESKTOP]); break;
+   case FID(FOVX): pbr->GetFloat(&m_BG_FOV[BG_DESKTOP]); break;
+   case FID(SCLX): pbr->GetFloat(&m_BG_scalex[BG_DESKTOP]); break;
+   case FID(SCLY): pbr->GetFloat(&m_BG_scaley[BG_DESKTOP]); break;
+   case FID(SCLZ): pbr->GetFloat(&m_BG_scalez[BG_DESKTOP]); break;
+   case FID(XLTX): pbr->GetFloat(&m_BG_xlatex[BG_DESKTOP]); break;
+   case FID(XLTY): pbr->GetFloat(&m_BG_xlatey[BG_DESKTOP]); break;
+   case FID(XLTZ): pbr->GetFloat(&m_BG_xlatez[BG_DESKTOP]); break;
+   case FID(ROTF): pbr->GetFloat(&m_BG_rotation[BG_FULLSCREEN]); break;
+   case FID(LAYF): pbr->GetFloat(&m_BG_layback[BG_FULLSCREEN]); break;
+   case FID(INCF): pbr->GetFloat(&m_BG_inclination[BG_FULLSCREEN]); break;
+   case FID(FOVF): pbr->GetFloat(&m_BG_FOV[BG_FULLSCREEN]); break;
+   case FID(SCFX): pbr->GetFloat(&m_BG_scalex[BG_FULLSCREEN]); break;
+   case FID(SCFY): pbr->GetFloat(&m_BG_scaley[BG_FULLSCREEN]); break;
+   case FID(SCFZ): pbr->GetFloat(&m_BG_scalez[BG_FULLSCREEN]); break;
+   case FID(XLFX): pbr->GetFloat(&m_BG_xlatex[BG_FULLSCREEN]); break;
+   case FID(XLFY): pbr->GetFloat(&m_BG_xlatey[BG_FULLSCREEN]); break;
+   case FID(XLFZ): pbr->GetFloat(&m_BG_xlatez[BG_FULLSCREEN]); break;
+   case FID(ROFS): pbr->GetFloat(&m_BG_rotation[BG_FSS]); break;
+   case FID(LAFS): pbr->GetFloat(&m_BG_layback[BG_FSS]); break;
+   case FID(INFS): pbr->GetFloat(&m_BG_inclination[BG_FSS]); break;
+   case FID(FOFS): pbr->GetFloat(&m_BG_FOV[BG_FSS]); break;
+   case FID(SCXS): pbr->GetFloat(&m_BG_scalex[BG_FSS]); break;
+   case FID(SCYS): pbr->GetFloat(&m_BG_scaley[BG_FSS]); break;
+   case FID(SCZS): pbr->GetFloat(&m_BG_scalez[BG_FSS]); break;
+   case FID(XLXS): pbr->GetFloat(&m_BG_xlatex[BG_FSS]); break;
+   case FID(XLYS): pbr->GetFloat(&m_BG_xlatey[BG_FSS]); break;
+   case FID(XLZS): pbr->GetFloat(&m_BG_xlatez[BG_FSS]); break;
+   case FID(EFSS):
    {
       pbr->GetBool(&m_BG_enable_FSS);
       if (m_BG_enable_FSS)
          m_BG_current_set = BG_FSS; //!! FSS
+      break;
    }
-#if 0
-   else if (id == FID(VERS))
-   {
-      pbr->GetString(szVersion);
-   }
-#endif
-   else if (id == FID(ORRP))
-   {
-      pbr->GetInt(&m_overridePhysics);
-   }
-   else if (id == FID(ORPF))
-   {
-      pbr->GetBool(&m_overridePhysicsFlipper);
-   }
-   else if (id == FID(GAVT))
-   {
-      pbr->GetFloat(&m_Gravity);
-   }
-   else if (id == FID(FRCT))
-   {
-      pbr->GetFloat(&m_friction);
-   }
-   else if (id == FID(ELAS))
-   {
-      pbr->GetFloat(&m_elasticity);
-   }
-   else if (id == FID(ELFA))
-   {
-      pbr->GetFloat(&m_elasticityFalloff);
-   }
-   else if (id == FID(PFSC))
-   {
-      pbr->GetFloat(&m_scatter);
-   }
-   else if (id == FID(SCAT))
-   {
-      pbr->GetFloat(&m_defaultScatter);
-   }
-   else if (id == FID(NDGT))
-   {
-      pbr->GetFloat(&m_nudgeTime);
-   }
-   else if (id == FID(MPGC))
+   //case FID(VERS): pbr->GetString(szVersion); break;
+   case FID(ORRP): pbr->GetInt(&m_overridePhysics); break;
+   case FID(ORPF): pbr->GetBool(&m_overridePhysicsFlipper); break;
+   case FID(GAVT): pbr->GetFloat(&m_Gravity); break;
+   case FID(FRCT): pbr->GetFloat(&m_friction); break;
+   case FID(ELAS): pbr->GetFloat(&m_elasticity); break;
+   case FID(ELFA): pbr->GetFloat(&m_elasticityFalloff); break;
+   case FID(PFSC): pbr->GetFloat(&m_scatter); break;
+   case FID(SCAT): pbr->GetFloat(&m_defaultScatter); break;
+   case FID(NDGT): pbr->GetFloat(&m_nudgeTime); break;
+   case FID(MPGC):
    {
       int tmp;
       pbr->GetInt(&tmp);
       m_plungerNormalize = LoadValueIntWithDefault("Player", "PlungerNormalize", tmp);
+      break;
    }
-   else if (id == FID(MPDF))
+   case FID(MPDF):
    {
       bool tmp;
       pbr->GetBool(&tmp);
       m_plungerFilter = LoadValueBoolWithDefault("Player", "PlungerFilter", tmp);
+      break;
    }
-   else if (id == FID(PHML))
+   case FID(PHML):
    {
       pbr->GetInt(&m_PhysicsMaxLoops);
       if (m_PhysicsMaxLoops == 0xFFFFFFFF)
          /*const HRESULT hr =*/ LoadValueInt("Player", "PhysicsMaxLoops", (int*)&m_PhysicsMaxLoops);
+      break;
    }
-   else if (id == FID(DECL))
-   {
-      pbr->GetBool(&m_renderDecals);
-   }
-   else if (id == FID(REEL))
-   {
-      pbr->GetBool(&m_renderEMReels);
-   }
-   else if (id == FID(OFFX))
-   {
-      pbr->GetFloat(&m_offset.x);
-   }
-   else if (id == FID(OFFY))
-   {
-      pbr->GetFloat(&m_offset.y);
-   }
-   else if (id == FID(ZOOM))
-   {
-      pbr->GetFloat(&m_zoom);
-   }
-   else if (id == FID(MAXSEP))
-   {
-      pbr->GetFloat(&m_3DmaxSeparation);
-   }
-   else if (id == FID(ZPD))
-   {
-      pbr->GetFloat(&m_3DZPD);
-   }
-   else if (id == FID(STO))
-   {
-	   pbr->GetFloat(&m_3DOffset);
-   }
-   else if (id == FID(OGST))
-   {
-      pbr->GetBool(&m_overwriteGlobalStereo3D);
-   }
-   else if (id == FID(SLPX))
-   {
-      pbr->GetFloat(&m_angletiltMax);
-   }
-   else if (id == FID(SLOP))
-   {
-      pbr->GetFloat(&m_angletiltMin);
-   }
-   else if (id == FID(GLAS))
-   {
-      pbr->GetFloat(&m_glassheight);
-   }
-   else if (id == FID(TBLH))
-   {
-      pbr->GetFloat(&m_tableheight);
-   }
-   else if (id == FID(IMAG))
-   {
-      pbr->GetString(m_szImage);
-   }
-   else if (id == FID(BLIM))
-   {
-      pbr->GetString(m_szBallImage);
-   }
-   else if (id == FID(BLIF))
-   {
-      pbr->GetString(m_szBallImageFront);
-   }
-   else if (id == FID(SSHT))
-   {
-      pbr->GetString(m_szScreenShot);
-   }
-   else if (id == FID(FBCK))
-   {
-      pbr->GetBool(&m_backdrop);
-   }
-   else if (id == FID(SEDT))
-   {
-      pbr->GetInt(&((int *)pbr->m_pdata)[1]);
-   }
-   else if (id == FID(SSND))
-   {
-      pbr->GetInt(&((int *)pbr->m_pdata)[2]);
-   }
-   else if (id == FID(SIMG))
-   {
-      pbr->GetInt(&((int *)pbr->m_pdata)[3]);
-   }
-   else if (id == FID(SFNT))
-   {
-      pbr->GetInt(&((int *)pbr->m_pdata)[4]);
-   }
-   else if (id == FID(SCOL))
-   {
-      pbr->GetInt(&((int *)pbr->m_pdata)[5]);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(BIMG))
-   {
-      pbr->GetString(m_BG_szImage[0]);
-   }
-   else if (id == FID(BIMF))
-   {
-      pbr->GetString(m_BG_szImage[1]);
-   }
-   else if (id == FID(BIMS))
-   {
-      pbr->GetString(m_BG_szImage[2]);
-   }
-   else if (id == FID(BIMN))
-   {
-      pbr->GetBool(&m_ImageBackdropNightDay);
-   }
-   else if (id == FID(IMCG))
-   {
-      pbr->GetString(m_szImageColorGrade);
-   }
-   else if (id == FID(EIMG))
-   {
-      pbr->GetString(m_szEnvImage);
-   }
-   else if (id == FID(PLMA))
-   {
-      pbr->GetString(m_szPlayfieldMaterial);
-   }
-   else if (id == FID(LZAM))
-   {
-      pbr->GetInt(&m_lightAmbient);
-   }
-   else if (id == FID(LZDI))
-   {
-      pbr->GetInt(&m_Light[0].emission);
-   }
-   else if (id == FID(LZHI))
-   {
-      pbr->GetFloat(&m_lightHeight);
-   }
-   else if (id == FID(LZRA))
-   {
-      pbr->GetFloat(&m_lightRange);
-   }
-   else if (id == FID(LIES))
-   {
-      pbr->GetFloat(&m_lightEmissionScale);
-   }
-   else if (id == FID(ENES))
-   {
-      pbr->GetFloat(&m_envEmissionScale);
-   }
-   else if (id == FID(GLES))
-   {
-      pbr->GetFloat(&m_globalEmissionScale);
-   }
-   else if (id == FID(AOSC))
-   {
-      pbr->GetFloat(&m_AOScale);
-   }
-   else if (id == FID(SSSC))
-   {
-      pbr->GetFloat(&m_SSRScale);
-   }
-   else if (id == FID(BREF))
-   {
-      pbr->GetInt(&m_useReflectionForBalls);
-   }
-   else if (id == FID(PLST))
+   case FID(DECL): pbr->GetBool(&m_renderDecals); break;
+   case FID(REEL): pbr->GetBool(&m_renderEMReels); break;
+   case FID(OFFX): pbr->GetFloat(&m_offset.x); break;
+   case FID(OFFY): pbr->GetFloat(&m_offset.y); break;
+   case FID(ZOOM): pbr->GetFloat(&m_zoom); break;
+   case FID(MAXSEP): pbr->GetFloat(&m_3DmaxSeparation); break;
+   case FID(ZPD): pbr->GetFloat(&m_3DZPD); break;
+   case FID(STO): pbr->GetFloat(&m_3DOffset); break;
+   case FID(OGST): pbr->GetBool(&m_overwriteGlobalStereo3D); break;
+   case FID(SLPX): pbr->GetFloat(&m_angletiltMax); break;
+   case FID(SLOP): pbr->GetFloat(&m_angletiltMin); break;
+   case FID(GLAS): pbr->GetFloat(&m_glassheight); break;
+   case FID(TBLH): pbr->GetFloat(&m_tableheight); break;
+   case FID(IMAG): pbr->GetString(m_szImage); break;
+   case FID(BLIM): pbr->GetString(m_szBallImage); break;
+   case FID(BLIF): pbr->GetString(m_szBallImageFront); break;
+   case FID(SSHT): pbr->GetString(m_szScreenShot); break;
+   case FID(FBCK): pbr->GetBool(&m_backdrop); break;
+   case FID(SEDT): pbr->GetInt(&((int *)pbr->m_pdata)[1]); break;
+   case FID(SSND): pbr->GetInt(&((int *)pbr->m_pdata)[2]); break;
+   case FID(SIMG): pbr->GetInt(&((int *)pbr->m_pdata)[3]); break;
+   case FID(SFNT): pbr->GetInt(&((int *)pbr->m_pdata)[4]); break;
+   case FID(SCOL): pbr->GetInt(&((int *)pbr->m_pdata)[5]); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(BIMG): pbr->GetString(m_BG_szImage[0]); break;
+   case FID(BIMF): pbr->GetString(m_BG_szImage[1]); break;
+   case FID(BIMS): pbr->GetString(m_BG_szImage[2]); break;
+   case FID(BIMN): pbr->GetBool(&m_ImageBackdropNightDay); break;
+   case FID(IMCG): pbr->GetString(m_szImageColorGrade); break;
+   case FID(EIMG): pbr->GetString(m_szEnvImage); break;
+   case FID(PLMA): pbr->GetString(m_szPlayfieldMaterial); break;
+   case FID(LZAM): pbr->GetInt(&m_lightAmbient); break;
+   case FID(LZDI): pbr->GetInt(&m_Light[0].emission); break;
+   case FID(LZHI): pbr->GetFloat(&m_lightHeight); break;
+   case FID(LZRA): pbr->GetFloat(&m_lightRange); break;
+   case FID(LIES): pbr->GetFloat(&m_lightEmissionScale); break;
+   case FID(ENES): pbr->GetFloat(&m_envEmissionScale); break;
+   case FID(GLES): pbr->GetFloat(&m_globalEmissionScale); break;
+   case FID(AOSC): pbr->GetFloat(&m_AOScale); break;
+   case FID(SSSC): pbr->GetFloat(&m_SSRScale); break;
+   case FID(BREF): pbr->GetInt(&m_useReflectionForBalls); break;
+   case FID(PLST):
    {
       int tmp;
       pbr->GetInt(&tmp);
       m_playfieldReflectionStrength = dequantizeUnsigned<8>(tmp);
+      break;
    }
-   else if (id == FID(BTRA))
-   {
-      pbr->GetInt(&m_useTrailForBalls);
-   }
-   else if (id == FID(BTST))
+   case FID(BTRA): pbr->GetInt(&m_useTrailForBalls); break;
+   case FID(BTST):
    {
       int tmp;
       pbr->GetInt(&tmp);
       m_ballTrailStrength = dequantizeUnsigned<8>(tmp);
+      break;
    }
-   else if (id == FID(BPRS))
-   {
-      pbr->GetFloat(&m_ballPlayfieldReflectionStrength);
-   }
-   else if (id == FID(DBIS))
-   {
-      pbr->GetFloat(&m_defaultBulbIntensityScaleOnBall);
-   }
-   else if (id == FID(UAAL))
-   {
-      pbr->GetInt(&m_useAA);
-   }
-   else if (id == FID(UAOC))
-   {
-      pbr->GetInt(&m_useAO);
-   }
-   else if (id == FID(USSR))
-   {
-      pbr->GetInt(&m_useSSR);
-   }
-   else if (id == FID(UFXA))
-   {
-      pbr->GetInt(&m_useFXAA);
-   }
-   else if (id == FID(BLST))
-   {
-      pbr->GetFloat(&m_bloom_strength);
-   }
-   else if (id == FID(BCLR))
-   {
-      pbr->GetInt(&m_colorbackdrop);
-   }
-   else if (id == FID(SECB))
-   {
-      pbr->GetStruct(&m_protectionData, sizeof(ProtectionData));
-   }
-   else if (id == FID(CODE))
+   case FID(BPRS): pbr->GetFloat(&m_ballPlayfieldReflectionStrength); break;
+   case FID(DBIS): pbr->GetFloat(&m_defaultBulbIntensityScaleOnBall); break;
+   case FID(UAAL): pbr->GetInt(&m_useAA); break;
+   case FID(UAOC): pbr->GetInt(&m_useAO); break;
+   case FID(USSR): pbr->GetInt(&m_useSSR); break;
+   case FID(UFXA): pbr->GetInt(&m_useFXAA); break;
+   case FID(BLST): pbr->GetFloat(&m_bloom_strength); break;
+   case FID(BCLR): pbr->GetInt(&m_colorbackdrop); break;
+   case FID(SECB): pbr->GetStruct(&m_protectionData, sizeof(ProtectionData)); break;
+   case FID(CODE):
    {
       // if the script is protected then we pass in the proper cryptokey into the code loadstream
       const bool script_protected = (((m_protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) ||
           ((m_protectionData.flags & DISABLE_SCRIPT_EDITING) == DISABLE_SCRIPT_EDITING));
 
       m_pcv->LoadFromStream(pbr->m_pistream, pbr->m_hcrypthash, script_protected ? pbr->m_hcryptkey : NULL);
+      break;
    }
-   else if (id == FID(CCUS))
-   {
-      pbr->GetStruct(m_rgcolorcustom, sizeof(COLORREF) * 16);
-   }
-   else if (id == FID(TDFT))
+   case FID(CCUS): pbr->GetStruct(m_rgcolorcustom, sizeof(COLORREF) * 16); break;
+   case FID(TDFT):
    {
       pbr->GetFloat(&m_globalDifficulty);
       int tmp;
       const HRESULT hr = LoadValueInt("Player", "GlobalDifficulty", &tmp);
       if (hr == S_OK) m_globalDifficulty = dequantizeUnsignedPercent(tmp);
+      break;
    }
-   else if (id == FID(CUST))
+   case FID(CUST):
    {
       char szT[MAXSTRING];  //maximum length of tagnames right now
       pbr->GetString(szT);
       char * const szName = new char[lstrlen(szT) + 1];
       lstrcpy(szName, szT);
       m_vCustomInfoTag.push_back(szName);
+      break;
    }
-   else if (id == FID(SVOL))
-   {
-      pbr->GetFloat(&m_TableSoundVolume);
-   }
-   else if (id == FID(BDMO))
-   {
-      pbr->GetBool(&m_BallDecalMode);
-   }
-   else if (id == FID(MVOL))
-   {
-      pbr->GetFloat(&m_TableMusicVolume);
-   }
-   else if (id == FID(AVSY))
-   {
-      pbr->GetInt(&m_TableAdaptiveVSync);
-   }
-   else if (id == FID(OGAC))
-   {
-      pbr->GetBool(&m_overwriteGlobalDetailLevel);
-   }
-   else if (id == FID(OGDN))
-   {
-	   pbr->GetBool(&m_overwriteGlobalDayNight);
-   }
-   else if (id == FID(GDAC))
-   {
-      pbr->GetBool(&m_grid);
-   }
-   else if (id == FID(REOP))
-   {
-      pbr->GetBool(&m_reflectElementsOnPlayfield);
-   }
-   else if (id == FID(ARAC))
-   {
-      pbr->GetInt(&m_userDetailLevel);
-   }
-   else if (id == FID(MASI))
-   {
-      pbr->GetInt(&m_numMaterials);
-   }
-   else if (id == FID(MATE))
+   case FID(SVOL): pbr->GetFloat(&m_TableSoundVolume); break;
+   case FID(BDMO): pbr->GetBool(&m_BallDecalMode); break;
+   case FID(MVOL): pbr->GetFloat(&m_TableMusicVolume); break;
+   case FID(AVSY): pbr->GetInt(&m_TableAdaptiveVSync); break;
+   case FID(OGAC): pbr->GetBool(&m_overwriteGlobalDetailLevel); break;
+   case FID(OGDN): pbr->GetBool(&m_overwriteGlobalDayNight); break;
+   case FID(GDAC): pbr->GetBool(&m_grid); break;
+   case FID(REOP): pbr->GetBool(&m_reflectElementsOnPlayfield); break;
+   case FID(ARAC): pbr->GetInt(&m_userDetailLevel); break;
+   case FID(MASI): pbr->GetInt(&m_numMaterials); break;
+   case FID(MATE):
    {
       SaveMaterial * const mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_numMaterials);
       pbr->GetStruct(mats, (int)sizeof(SaveMaterial)*m_numMaterials);
@@ -4360,8 +4048,9 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          m_materials.push_back(pmat);
       }
       free(mats);
+      break;
    }
-   else if (id == FID(PHMA))
+   case FID(PHMA):
    {
        SavePhysicsMaterial * const mats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_numMaterials);
        pbr->GetStruct(mats, (int)sizeof(SavePhysicsMaterial)*m_numMaterials);
@@ -4383,8 +4072,9 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
               m_materials.push_back(pmat);
        }
        free(mats);
+       break;
    }
-
+   }
    return fTrue;
 }
 
@@ -4392,14 +4082,15 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
 bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
 {
    MMIOINFO mmio;
-   MMCKINFO pck;
    ZeroMemory(&mmio, sizeof(mmio));
-   ZeroMemory(&pck, sizeof(pck));
 
-   HMMIO hmmio = mmioOpen((LPSTR)szfilename, &mmio, MMIO_ALLOCBUF | MMIO_CREATE | MMIO_EXCLUSIVE | MMIO_READWRITE);
+   const HMMIO hmmio = mmioOpen((LPSTR)szfilename, &mmio, MMIO_ALLOCBUF | MMIO_CREATE | MMIO_EXCLUSIVE | MMIO_READWRITE);
 
    if (hmmio != NULL)
    {
+      MMCKINFO pck;
+      ZeroMemory(&pck, sizeof(pck));
+
       // quick and dirty ... in a big hurry
 
       pck.ckid = mmioStringToFOURCC("RIFF", MMIO_TOUPPER);
@@ -4439,9 +4130,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    PinSound * const ppsNew = g_pvp->m_pds.LoadWaveFile(filename);
 
    if (ppsNew == NULL)
-   {
       return;
-   }
 
    PinSound psT = *pps;
    *pps = *ppsNew;
@@ -4462,9 +4151,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    delete ppsNew;
 
    if (fPlay)
-   {
       pps->m_pDSBuffer->Play(0, 0, 0);
-   }
 }
 
 
@@ -4473,14 +4160,10 @@ void PinTable::ImportSound(const HWND hwndListView, const char * const szfilenam
    PinSound * const pps = g_pvp->m_pds.LoadWaveFile(szfilename);
 
    if (pps == NULL)
-   {
       return;
-   }
 
    if (fPlay)
-   {
       pps->m_pDSBuffer->Play(0, 0, 0);
-   }
 
    m_vsound.push_back(pps);
 
@@ -4493,9 +4176,7 @@ void PinTable::ListSounds(HWND hwndListView)
 {
 	ListView_DeleteAllItems(hwndListView);
 	for (size_t i = 0; i < m_vsound.size(); i++)
-	{
 		AddListSound(hwndListView, m_vsound[i]);
-	}
 }
 
 
@@ -4570,9 +4251,7 @@ void PinTable::RemoveFont(PinFont * const ppf)
 void PinTable::ListFonts(HWND hwndListView)
 {
    for (size_t i = 0; i < m_vfont.size(); i++)
-   {
       AddListBinary(hwndListView, m_vfont[i]);
-   }
 }
 
 int PinTable::AddListBinary(HWND hwndListView, PinBinary *ppb)
@@ -4964,18 +4643,12 @@ void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect 
 
         for (int t = 0; t < m_vmultisel.Size(); t++)
         {
-            ISelect *iSel = m_vmultisel.ElementAt(t);
+            const ISelect * const iSel = m_vmultisel.ElementAt(t);
 
             for (int i = maxItems; i >= 0; i--)
-            {
                 for (int t = 0; t < m_vcollection.ElementAt(i)->m_visel.Size(); t++)
-                {
                     if ((iSel == m_vcollection.ElementAt(i)->m_visel.ElementAt(t)))
-                    {
                         allIndices.push_back(i);
-                    }
-                }
-            }
         }
         for (size_t i = 0; i < allIndices.size(); i++)
             CheckMenuItem(colSubMenu, 0x40000 + allIndices[i], MF_CHECKED);
@@ -5153,16 +4826,12 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
    const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD, pt.x, pt.y, m_hwnd, NULL);
 
    if (icmd != 0)
-   {
       psel->DoCommand(icmd, x, y);
-   }
 
    DestroyMenu(hmenu);
 
    if (menuid != -1)
-   {
       DestroyMenu(hmenumain);
-   }
 }
 
 static char elementName[256];
@@ -5172,14 +4841,11 @@ char *PinTable::GetElementName(IEditable *pedit)
    if (pedit)
    {
       if (pedit->GetItemType() == eItemDecal)
-      {
          return "Decal";
-      }
+
       IScriptable * const pscript = pedit->GetScriptable();
       if (pscript)
-      {
          elemName = pscript->m_wzName;
-      }
    }
    if (elemName)
    {
@@ -5202,18 +4868,11 @@ IEditable *PinTable::GetElementByName(const char *name)
 
 bool PinTable::FMutilSelLocked()
 {
-   bool fLocked = false;
-
    for (int i = 0; i < m_vmultisel.Size(); i++)
-   {
       if (m_vmultisel.ElementAt(i)->m_locked)
-      {
-         fLocked = true;
-         break;
-      }
-   }
+         return true;
 
-   return fLocked;
+   return false;
 }
 
 void PinTable::DoCommand(int icmd, int x, int y)
@@ -5236,132 +4895,36 @@ void PinTable::DoCommand(int icmd, int x, int y)
    {
    case ID_DRAWINFRONT:
    case ID_DRAWINBACK:
-   {
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
          ISelect * const psel = m_vmultisel.ElementAt(i);
          _ASSERTE(psel != this); // Would make an infinite loop
          psel->DoCommand(icmd, x, y);
       }
-   }
-   break;
-
-   case ID_EDIT_DRAWINGORDER_HIT:
-      g_pvp->ShowDrawingOrderDialog(false);
       break;
 
-   case ID_EDIT_DRAWINGORDER_SELECT:
-      g_pvp->ShowDrawingOrderDialog(true);
-      break;
-
-   case ID_LOCK:
-   {
-      LockElements();
-      break;
-   }
-
-   case ID_WALLMENU_FLIP:
-   {
-      FlipY(GetCenter());
-      break;
-   }
-
-   case ID_WALLMENU_MIRROR:
-   {
-      FlipX(GetCenter());
-      break;
-   }
-   case IDC_COPY:
-   {
-      Copy(x, y);
-      break;
-   }
-   case IDC_PASTE:
-   {
-      Paste(false, x, y);
-      break;
-   }
-   case IDC_PASTEAT:
-   {
-      Paste(true, x, y);
-      break;
-   }
-
-   case ID_WALLMENU_ROTATE:
-   {
-      DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ROTATE),
-         g_pvp->m_hwnd, RotateProc, (size_t)(ISelect *)this);
-   }
-   break;
-
-   case ID_WALLMENU_SCALE:
-   {
-      DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SCALE),
-         g_pvp->m_hwnd, ScaleProc, (size_t)(ISelect *)this);
-   }
-   break;
-
-   case ID_WALLMENU_TRANSLATE:
-   {
-      DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TRANSLATE),
-         g_pvp->m_hwnd, TranslateProc, (size_t)(ISelect *)this);
-   }
-   break;
-   case ID_ASSIGNTO_LAYER1:
-   {
-      AssignMultiToLayer(0, x, y);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER2:
-   {
-      AssignMultiToLayer(1, x, y);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER3:
-   {
-      AssignMultiToLayer(2, x, y);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER4:
-   {
-      AssignMultiToLayer(3, x, y);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER5:
-   {
-      AssignMultiToLayer(4, x, y);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER6:
-   {
-      AssignMultiToLayer(5, x, y);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER7:
-   {
-      AssignMultiToLayer(6, x, y);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER8:
-   {
-      AssignMultiToLayer(7, x, y);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER9:
-   {
-      AssignMultiToLayer(8, x, y);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER10:
-   {
-      AssignMultiToLayer(9, x, y);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER11:
-   {
-      AssignMultiToLayer(10, x, y);
-      break;
-   }
+   case ID_EDIT_DRAWINGORDER_HIT: g_pvp->ShowDrawingOrderDialog(false); break;
+   case ID_EDIT_DRAWINGORDER_SELECT: g_pvp->ShowDrawingOrderDialog(true); break;
+   case ID_LOCK: LockElements(); break;
+   case ID_WALLMENU_FLIP: FlipY(GetCenter()); break;
+   case ID_WALLMENU_MIRROR: FlipX(GetCenter()); break;
+   case IDC_COPY: Copy(x, y); break;
+   case IDC_PASTE: Paste(false, x, y); break;
+   case IDC_PASTEAT: Paste(true, x, y); break;
+   case ID_WALLMENU_ROTATE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ROTATE), g_pvp->m_hwnd, RotateProc, (size_t)(ISelect *)this); break;
+   case ID_WALLMENU_SCALE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SCALE), g_pvp->m_hwnd, ScaleProc, (size_t)(ISelect *)this); break;
+   case ID_WALLMENU_TRANSLATE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TRANSLATE), g_pvp->m_hwnd, TranslateProc, (size_t)(ISelect *)this); break;
+   case ID_ASSIGNTO_LAYER1: AssignMultiToLayer(0, x, y); break;
+   case ID_ASSIGNTO_LAYER2: AssignMultiToLayer(1, x, y); break;
+   case ID_ASSIGNTO_LAYER3: AssignMultiToLayer(2, x, y); break;
+   case ID_ASSIGNTO_LAYER4: AssignMultiToLayer(3, x, y); break;
+   case ID_ASSIGNTO_LAYER5: AssignMultiToLayer(4, x, y); break;
+   case ID_ASSIGNTO_LAYER6: AssignMultiToLayer(5, x, y); break;
+   case ID_ASSIGNTO_LAYER7: AssignMultiToLayer(6, x, y); break;
+   case ID_ASSIGNTO_LAYER8: AssignMultiToLayer(7, x, y); break;
+   case ID_ASSIGNTO_LAYER9: AssignMultiToLayer(8, x, y); break;
+   case ID_ASSIGNTO_LAYER10:AssignMultiToLayer(9, x, y); break;
+   case ID_ASSIGNTO_LAYER11:AssignMultiToLayer(10, x, y);break;
    }
 }
 void PinTable::AssignMultiToLayer(int layerNumber, int x, int y)
@@ -5372,61 +4935,17 @@ void PinTable::AssignMultiToLayer(int layerNumber, int x, int y)
       _ASSERTE(psel != this); // Would make an infinite loop
       switch (layerNumber)
       {
-      case 0:
-      {
-         psel->DoCommand(ID_ASSIGNTO_LAYER1, x, y);
-         break;
-      }
-      case 1:
-      {
-         psel->DoCommand(ID_ASSIGNTO_LAYER2, x, y);
-         break;
-      }
-      case 2:
-      {
-         psel->DoCommand(ID_ASSIGNTO_LAYER3, x, y);
-         break;
-      }
-      case 3:
-      {
-         psel->DoCommand(ID_ASSIGNTO_LAYER4, x, y);
-         break;
-      }
-      case 4:
-      {
-         psel->DoCommand(ID_ASSIGNTO_LAYER5, x, y);
-         break;
-      }
-      case 5:
-      {
-         psel->DoCommand(ID_ASSIGNTO_LAYER6, x, y);
-         break;
-      }
-      case 6:
-      {
-         psel->DoCommand(ID_ASSIGNTO_LAYER7, x, y);
-         break;
-      }
-      case 7:
-      {
-         psel->DoCommand(ID_ASSIGNTO_LAYER8, x, y);
-         break;
-      }
-      case 8:
-      {
-         psel->DoCommand(ID_ASSIGNTO_LAYER9, x, y);
-         break;
-      }
-      case 9:
-      {
-         psel->DoCommand(ID_ASSIGNTO_LAYER10, x, y);
-         break;
-      }
-      case 10:
-      {
-         psel->DoCommand(ID_ASSIGNTO_LAYER11, x, y);
-         break;
-      }
+      case 0: psel->DoCommand(ID_ASSIGNTO_LAYER1, x, y); break;
+      case 1: psel->DoCommand(ID_ASSIGNTO_LAYER2, x, y); break;
+      case 2: psel->DoCommand(ID_ASSIGNTO_LAYER3, x, y); break;
+      case 3: psel->DoCommand(ID_ASSIGNTO_LAYER4, x, y); break;
+      case 4: psel->DoCommand(ID_ASSIGNTO_LAYER5, x, y); break;
+      case 5: psel->DoCommand(ID_ASSIGNTO_LAYER6, x, y); break;
+      case 6: psel->DoCommand(ID_ASSIGNTO_LAYER7, x, y); break;
+      case 7: psel->DoCommand(ID_ASSIGNTO_LAYER8, x, y); break;
+      case 8: psel->DoCommand(ID_ASSIGNTO_LAYER9, x, y); break;
+      case 9: psel->DoCommand(ID_ASSIGNTO_LAYER10, x, y);break;
+      case 10:psel->DoCommand(ID_ASSIGNTO_LAYER11, x, y);break;
       }
    }
 }
@@ -5549,14 +5068,10 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 HINSTANCE hinst = g_hinst;
 
                 if (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY)
-                {
                     cursorid = MAKEINTRESOURCE(IDC_MAGNIFY);
-                }
                 else if (g_pvp->m_ToolCur == ID_INSERT_TARGET)
-                {
                     // special case for targets, which are particular walls
                     cursorid = MAKEINTRESOURCE(IDC_TARGET);
-                }
                 else
                 {
                     ItemTypeEnum type = EditableRegistry::TypeFromToolID(g_pvp->m_ToolCur);
@@ -5568,7 +5083,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         cursorid = IDC_ARROW;
                     }
                 }
-                HCURSOR hcursor = LoadCursor(hinst, cursorid);
+                const HCURSOR hcursor = LoadCursor(hinst, cursorid);
                 SetCursor(hcursor);
                 return TRUE;
             }
@@ -5603,13 +5118,9 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             const short x = (short)(lParam & 0xffff);
             const short y = (short)((lParam >> 16) & 0xffff);
             if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
-            {
                 pt->DoLButtonDown(x, y);
-            }
             else
-            {
                 pt->UseTool(x, y, g_pvp->m_ToolCur);
-            }
             break;
         }
 
@@ -5811,13 +5322,9 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             if (lParam == S_OK)
-            {
                 g_pvp->SetActionCur("");
-            }
             else
-            {
                 g_pvp->SetActionCur("Autosave Failed");
-            }
             pt->BeginAutoSaveCounter();
             HANDLE hEvent = (HANDLE)wParam;
             RemoveFromVectorSingle(pt->m_vAsyncHandles, hEvent);
@@ -5832,60 +5339,40 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 void PinTable::FlipY(const Vertex2D& pvCenter)
 {
    BeginUndo();
-
    for (int i = 0; i < m_vmultisel.Size(); i++)
-   {
       m_vmultisel.ElementAt(i)->FlipY(pvCenter);
-   }
-
    EndUndo();
 }
 
 void PinTable::FlipX(const Vertex2D& pvCenter)
 {
    BeginUndo();
-
    for (int i = 0; i < m_vmultisel.Size(); i++)
-   {
       m_vmultisel.ElementAt(i)->FlipX(pvCenter);
-   }
-
    EndUndo();
 }
 
 void PinTable::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    BeginUndo();
-
    for (int i = 0; i < m_vmultisel.Size(); i++)
-   {
       m_vmultisel.ElementAt(i)->Rotate(ang, pvCenter, useElementCenter);
-   }
-
    EndUndo();
 }
 
 void PinTable::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    BeginUndo();
-
    for (int i = 0; i < m_vmultisel.Size(); i++)
-   {
       m_vmultisel.ElementAt(i)->Scale(scalex, scaley, pvCenter, useElementCenter);
-   }
-
    EndUndo();
 }
 
 void PinTable::Translate(const Vertex2D &pvOffset)
 {
    BeginUndo();
-
    for (int i = 0; i < m_vmultisel.Size(); i++)
-   {
       m_vmultisel.ElementAt(i)->Translate(pvOffset);
-   }
-
    EndUndo();
 }
 
@@ -5949,14 +5436,10 @@ void PinTable::DoMouseMove(int x, int y)
    if (!m_dragging) // Not doing band select
    {
       for (int i = 0; i < m_vmultisel.Size(); i++)
-      {
          m_vmultisel.ElementAt(i)->OnMouseMove(x, y);
-      }
    }
    else
-   {
       OnMouseMove(x, y);
-   }
 }
 
 void PinTable::DoLDoubleClick(int x, int y)
@@ -6061,17 +5544,13 @@ void PinTable::ExportBlueprint()
    PatBlt(hdc2, 0, 0, bmwidth, bmheight, PATCOPY);
 
    if (g_pvp->m_backglassView)
-   {
       Render3DProjection(psur);
-   }
 
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const ptr = m_vedit[i];
       if (ptr->m_isVisible && ptr->m_backglass == g_pvp->m_backglassView)
-      {
          ptr->RenderBlueprint(psur, solid);
-      }
    }
 
    //UIRenderPass2(psur);
@@ -6079,20 +5558,14 @@ void PinTable::ExportBlueprint()
    delete psur;
 
    for (int i = 0; i < bmheight; i++)
-   {
       WriteFile(hfile, (pbits + ((i*bmwidth) * 3)), bmwidth * 3, &foo, NULL);
-   }
 
    // For some reason to make our bitmap compatible with all programs,
    // We need to write out dummy bytes as if our totalwidthbytes had been
    // a multiple of 4.
    for (int i = 0; i < bmheight; i++)
-   {
       for (int l = 0; l < bmlinebuffer; l++)
-      {
          WriteFile(hfile, pbits, 1, &foo, NULL);
-      }
-   }
 
    DeleteDC(hdc2);
    ::ReleaseDC(NULL, hdcScreen);
@@ -6193,9 +5666,7 @@ void PinTable::ExportTableMesh()
    {
       IEditable * const ptr = m_vedit[i];
       if (ptr->m_isVisible && ptr->m_backglass == g_pvp->m_backglassView)
-      {
          ptr->ExportMesh(f);
-      }
    }
    WaveFrontObj_ExportEnd(f);
    ::MessageBox(NULL, "Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
@@ -6226,9 +5697,7 @@ void PinTable::ImportBackdropPOV(const char *filename)
 			return;
 	}
 	else
-	{
 		strcpy_s(szFileName, filename);
-	}
 
     xml_document<> xmlDoc;
 
@@ -6342,9 +5811,7 @@ void PinTable::ExportBackdropPOV(const char *filename)
 			return;// S_FALSE;
 	}
 	else
-	{
 		strcpy_s(m_szObjFileName, filename);
-	}
 
     char strBuf[MAX_PATH];
     xml_document<> xmlDoc;
@@ -6533,9 +6000,7 @@ void PinTable::CheckDirty()
          SetCaption(szWindowName);
       }
       else
-      {
          SetCaption(m_szTitle);
-      }
    }
 
    m_sdsCurrentDirtyState = sdsNewDirtyState;
@@ -6880,9 +6345,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
    }
 
    if (update)
-   {
       g_pvp->SetPropSel(&m_vmultisel);
-   }
 
    piSelect = m_vmultisel.ElementAt(0);
    if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetScriptable())
@@ -6932,9 +6395,7 @@ void PinTable::OnDelete()
       LocalString ls(IDS_DELETE_ELEMENTS);
       const int ans = MessageBox(m_hwnd, ls.m_szbuffer/*"Selected elements are part of one or more collections.\nDo you really want to delete them?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
       if (ans != IDYES)
-      {
          return;
-      }
    }
 
    for (size_t i = 0; i < m_vseldelete.size(); i++)
@@ -6958,11 +6419,7 @@ void PinTable::OnKeyDown(int key)
 
    switch (key)
    {
-   case VK_DELETE:
-   {
-      OnDelete();
-   }
-   break;
+   case VK_DELETE: OnDelete(); break;
 
    case VK_LEFT:
    case VK_RIGHT:
@@ -7122,20 +6579,18 @@ void PinTable::OnLButtonUp(int x, int y)
 
 void PinTable::OnMouseMove(int x, int y)
 {
-   Vertex2D v = TransformPoint(x, y);
+   const Vertex2D v = TransformPoint(x, y);
 
    m_rcDragRect.right = v.x;
    m_rcDragRect.bottom = v.y;
 
    if (m_dragging)
-   {
       SetDirtyDraw();
-   }
 }
 
 HRESULT PinTable::GetTypeName(BSTR *pVal)
 {
-   int stringid = (!g_pvp->m_backglassView) ? IDS_TABLE : IDS_TB_BACKGLASS;
+   const int stringid = (!g_pvp->m_backglassView) ? IDS_TABLE : IDS_TB_BACKGLASS;
 
    LocalStringW ls(stringid);
    *pVal = SysAllocString(ls.str);
@@ -7532,7 +6987,6 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
       WideStrNCopy(newVal, (WCHAR *)m_wzName, MAXNAMEBUFFER);
       //lstrcpyW((WCHAR *)m_wzName, newVal);
    }
-
    STOPUNDO
 
    return S_OK;
@@ -7551,10 +7005,8 @@ STDMETHODIMP PinTable::get_MaxSeparation(float *pVal)
 STDMETHODIMP PinTable::put_MaxSeparation(float newVal)
 {
    STARTUNDO
-
    if (m_overwriteGlobalStereo3D)
       m_3DmaxSeparation = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -7573,10 +7025,8 @@ STDMETHODIMP PinTable::get_ZPD(float *pVal)
 STDMETHODIMP PinTable::put_ZPD(float newVal)
 {
    STARTUNDO
-
    if (m_overwriteGlobalStereo3D)
       m_3DZPD = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -7595,10 +7045,8 @@ STDMETHODIMP PinTable::get_Offset(float *pVal)
 STDMETHODIMP PinTable::put_Offset(float newVal)
 {
 	STARTUNDO
-
 	if (m_overwriteGlobalStereo3D)
 		m_3DOffset = newVal;
-
 	STOPUNDO
 
 	return S_OK;
@@ -7656,14 +7104,10 @@ void PinTable::StopAllSounds()
 {
 	// In case we were playing any of the main buffers
 	for (size_t i = 0; i < m_vsound.size(); i++)
-	{
 		m_vsound[i]->m_pDSBuffer->Stop();
-	}
 
 	for (size_t i = 0; i < m_voldsound.size(); i++)
-	{
 		m_voldsound[i]->m_pDSBuffer->Stop();
-	}
 }
 
 
@@ -7673,18 +7117,12 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    CharLowerBuff(szName, lstrlen(szName));
 
    if (!lstrcmp("knock", szName) || !lstrcmp("knocker", szName))
-   {
       hid_knock();
-   }
 
    size_t i;
    for (i = 0; i < m_vsound.size(); i++)
-   {
       if (!lstrcmp(m_vsound[i]->m_szInternalName, szName))
-      {
          break;
-      }
-   }
 
    if (i == m_vsound.size()) // did not find it
    {
@@ -7725,9 +7163,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    }
 
    if (ppsc == NULL)
-   {
       ppsc = new PinSoundCopy(pps);
-   }
 
    if (m_tblMirrorEnabled)
       pan = -pan;
@@ -7736,9 +7172,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    {
 	  ppsc->Play(volume * m_TableSoundVolume* ((float)g_pplayer->m_SoundVolume), randompitch, pitch, pan, front_rear_fade, flags, !!restart);
       if (!foundsame)
-      {
          m_voldsound.push_back(ppsc);
-      }
    }
    else // Couldn't or didn't want to create a copy - just play the original
    {
@@ -7768,12 +7202,8 @@ Texture* PinTable::GetImage(const char * const szName) const
    }
 
    for (size_t i = 0; i < m_vimage.size(); i++)
-   {
       if (!lstrcmpi(m_vimage[i]->m_szInternalName, szName))
-      {
          return m_vimage[i];
-      }
-   }
 
    return NULL;
 }
@@ -7803,9 +7233,7 @@ void PinTable::ReImportImage(Texture * const ppi, const char * const filename)
    ppi->FreeStuff();
 
    if (fBinary)
-   {
       ppi->m_ppb = ppb;
-   }
 
    //SAFE_RELEASE(ppi->m_pdsBuffer);
 
@@ -7930,17 +7358,11 @@ void PinTable::ImportImage(HWND hwndListView, const char * const filename)
    }
 
    for (end = len; end >= 0; end--)
-   {
       if (filename[end] == '.')
-      {
          break;
-      }
-   }
 
    if (end == 0)
-   {
       end = len - 1;
-   }
 
    strncpy_s(ppi->m_szName, &filename[begin], MAXTOKEN);
 
@@ -8118,18 +7540,15 @@ void PinTable::RemoveImage(Texture * const ppi)
 void PinTable::ListMaterials(HWND hwndListView)
 {
    for (size_t i = 0; i < m_materials.size(); i++)
-   {
       AddListMaterial(hwndListView, m_materials[i]);
-   }
 }
 
 bool PinTable::IsMaterialNameUnique(const char * const name) const
 {
    for (size_t i = 0; i < m_materials.size(); i++)
-   {
       if (!lstrcmpi(m_materials[i]->m_szName, name))
          return false;
-   }
+
    return true;
 }
 
@@ -8151,12 +7570,8 @@ Material* PinTable::GetMaterial(const char * const szName) const
    }
 
    for (size_t i = 0; i < m_materials.size(); i++)
-   {
       if (!lstrcmpi(m_materials[i]->m_szName, szName))
-      {
          return m_materials[i];
-      }
-   }
 
    return &g_pvp->m_dummyMaterial;
 }
@@ -8165,9 +7580,7 @@ void PinTable::AddMaterial(Material *pmat)
 {
    int suffix = 1;
    if (pmat->m_szName[0] == 0 || !strcmp(pmat->m_szName, "dummyMaterial"))
-   {
       strcpy_s(pmat->m_szName, "Material");
-   }
 
    if (!IsMaterialNameUnique(pmat->m_szName) || !strcmp(pmat->m_szName, "Material"))
    {
@@ -8262,9 +7675,7 @@ void PinTable::UpdateDbgMaterial()
    }
    m_dbgChangedMaterials.clear();
    if (somethingChanged)
-   {
       SetNonUndoableDirty(eSaveDirty);
-   }
 }
 
 int PinTable::AddListMaterial(HWND hwndListView, Material *pmat)
@@ -8478,9 +7889,7 @@ void PinTable::UpdateDbgLight()
     }
     m_dbgChangedLights.clear();
     if (somethingChanged)
-    {
         SetNonUndoableDirty(eSaveDirty);
-    }
 }
 
 
@@ -8539,13 +7948,9 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, int version)
       Texture * const ppi = new Texture();
 
       if (ppi->LoadFromStream(pstm, version, this) == S_OK)
-      {
          m_vimage.push_back(ppi);
-      }
       else
-      {
          delete ppi;
-      }
    }
 
    return S_OK;
@@ -8573,9 +7978,7 @@ STDMETHODIMP PinTable::put_Image(BSTR newVal)
    }
 
    STARTUNDO
-
    strcpy_s(m_szImage,szImage);
-
    STOPUNDO
 
    return S_OK;
@@ -8843,8 +8246,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
 
    switch (dispID)
    {
-   default:
-      return E_NOTIMPL;
+   default: return E_NOTIMPL;
 
    case DISPID_Image:
    case DISPID_Image2:
@@ -9111,9 +8513,7 @@ STDMETHODIMP PinTable::get_GlassHeight(float *pVal)
 STDMETHODIMP PinTable::put_GlassHeight(float newVal)
 {
    STARTUNDO
-
    m_glassheight = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9129,9 +8529,7 @@ STDMETHODIMP PinTable::get_TableHeight(float *pVal)
 STDMETHODIMP PinTable::put_TableHeight(float newVal)
 {
    STARTUNDO
-
    m_tableheight = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9147,9 +8545,7 @@ STDMETHODIMP PinTable::get_Width(float *pVal)
 STDMETHODIMP PinTable::put_Width(float newVal)
 {
    STARTUNDO
-
    m_right = newVal;
-
    STOPUNDO
 
    SetMyScrollInfo();
@@ -9167,9 +8563,7 @@ STDMETHODIMP PinTable::get_Height(float *pVal)
 STDMETHODIMP PinTable::put_Height(float newVal)
 {
    STARTUNDO
-
    m_bottom = newVal;
-
    STOPUNDO
 
    SetMyScrollInfo();
@@ -9190,9 +8584,7 @@ STDMETHODIMP PinTable::get_PlayfieldMaterial(BSTR *pVal)
 STDMETHODIMP PinTable::put_PlayfieldMaterial(BSTR newVal)
 {
    STARTUNDO
-
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szPlayfieldMaterial, 32, NULL, NULL);
-
    STOPUNDO
 
    return S_OK;
@@ -9208,9 +8600,7 @@ STDMETHODIMP PinTable::get_LightAmbient(OLE_COLOR *pVal)
 STDMETHODIMP PinTable::put_LightAmbient(OLE_COLOR newVal)
 {
    STARTUNDO
-
    m_lightAmbient = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9226,9 +8616,7 @@ STDMETHODIMP PinTable::get_Light0Emission(OLE_COLOR *pVal)
 STDMETHODIMP PinTable::put_Light0Emission(OLE_COLOR newVal)
 {
    STARTUNDO
-
    m_Light[0].emission = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9244,9 +8632,7 @@ STDMETHODIMP PinTable::get_LightHeight(float *pVal)
 STDMETHODIMP PinTable::put_LightHeight(float newVal)
 {
    STARTUNDO
-
    m_lightHeight = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9262,9 +8648,7 @@ STDMETHODIMP PinTable::get_LightRange(float *pVal)
 STDMETHODIMP PinTable::put_LightRange(float newVal)
 {
    STARTUNDO
-
    m_lightRange = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9280,9 +8664,7 @@ STDMETHODIMP PinTable::get_LightEmissionScale(float *pVal)
 STDMETHODIMP PinTable::put_LightEmissionScale(float newVal)
 {
    STARTUNDO
-
    m_lightEmissionScale = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9298,9 +8680,7 @@ STDMETHODIMP PinTable::get_NightDay(int *pVal)
 STDMETHODIMP PinTable::put_NightDay(int newVal)
 {
    STARTUNDO
-
    m_globalEmissionScale = dequantizeUnsignedPercent(newVal);
-
    STOPUNDO
 
    return S_OK;
@@ -9316,9 +8696,7 @@ STDMETHODIMP PinTable::get_AOScale(float *pVal)
 STDMETHODIMP PinTable::put_AOScale(float newVal)
 {
    STARTUNDO
-
    m_AOScale = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9334,9 +8712,7 @@ STDMETHODIMP PinTable::get_SSRScale(float *pVal)
 STDMETHODIMP PinTable::put_SSRScale(float newVal)
 {
    STARTUNDO
-
    m_SSRScale = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9352,9 +8728,7 @@ STDMETHODIMP PinTable::get_EnvironmentEmissionScale(float *pVal)
 STDMETHODIMP PinTable::put_EnvironmentEmissionScale(float newVal)
 {
    STARTUNDO
-
    m_envEmissionScale = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9370,9 +8744,7 @@ STDMETHODIMP PinTable::get_BallReflection(UserDefaultOnOff *pVal)
 STDMETHODIMP PinTable::put_BallReflection(UserDefaultOnOff newVal)
 {
    STARTUNDO
-
    m_useReflectionForBalls = (int)newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9388,9 +8760,7 @@ STDMETHODIMP PinTable::get_PlayfieldReflectionStrength(int *pVal)
 STDMETHODIMP PinTable::put_PlayfieldReflectionStrength(int newVal)
 {
    STARTUNDO
-
    m_playfieldReflectionStrength = dequantizeUnsignedPercent(newVal);
-
    STOPUNDO
 
    return S_OK;
@@ -9406,9 +8776,7 @@ STDMETHODIMP PinTable::get_BallTrail(UserDefaultOnOff *pVal)
 STDMETHODIMP PinTable::put_BallTrail(UserDefaultOnOff newVal)
 {
    STARTUNDO
-
    m_useTrailForBalls = (int)newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9424,9 +8792,7 @@ STDMETHODIMP PinTable::get_TrailStrength(int *pVal)
 STDMETHODIMP PinTable::put_TrailStrength(int newVal)
 {
    STARTUNDO
-
    m_ballTrailStrength = dequantizeUnsignedPercent(newVal);
-
    STOPUNDO
 
    return S_OK;
@@ -9441,13 +8807,11 @@ STDMETHODIMP PinTable::get_BallPlayfieldReflectionScale(float *pVal)
 
 STDMETHODIMP PinTable::put_BallPlayfieldReflectionScale(float newVal)
 {
-	STARTUNDO
+   STARTUNDO
+   m_ballPlayfieldReflectionStrength = newVal;
+   STOPUNDO
 
-	m_ballPlayfieldReflectionStrength = newVal;
-
-	STOPUNDO
-
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_DefaultBulbIntensityScale(float *pVal)
@@ -9460,9 +8824,7 @@ STDMETHODIMP PinTable::get_DefaultBulbIntensityScale(float *pVal)
 STDMETHODIMP PinTable::put_DefaultBulbIntensityScale(float newVal)
 {
    STARTUNDO
-
    m_defaultBulbIntensityScaleOnBall = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9478,9 +8840,7 @@ STDMETHODIMP PinTable::get_BloomStrength(float *pVal)
 STDMETHODIMP PinTable::put_BloomStrength(float newVal)
 {
    STARTUNDO
-
    m_bloom_strength = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -9496,9 +8856,7 @@ STDMETHODIMP PinTable::get_TableSoundVolume(int *pVal)
 STDMETHODIMP PinTable::put_TableSoundVolume(int newVal)
 {
    STARTUNDO
-
    m_TableSoundVolume = dequantizeUnsignedPercent(newVal);
-
    STOPUNDO
 
    return S_OK;
@@ -9517,10 +8875,8 @@ STDMETHODIMP PinTable::get_DetailLevel(int *pVal)
 STDMETHODIMP PinTable::put_DetailLevel(int newVal)
 {
    STARTUNDO
-
    if (m_overwriteGlobalDetailLevel)
       m_userDetailLevel = newVal;
-
    STOPUNDO
 
    return S_OK;

@@ -118,7 +118,6 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                        char buf[16] = { 0 };
                        sprintf_s(buf, "%i", pcol->m_visel.Size());
                        ListView_SetItemText(hListHwnd, i, 1, buf);
-
                     }
                 }
             }

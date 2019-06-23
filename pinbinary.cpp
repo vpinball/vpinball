@@ -104,27 +104,19 @@ HRESULT PinBinary::LoadFromStream(IStream *pstream, int version)
 
 bool PinBinary::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(NAME))
+   switch(id)
    {
-      pbr->GetString(m_szName);
-   }
-   else if (id == FID(INME))
-   {
-      pbr->GetString(m_szInternalName);
-   }
-   else if (id == FID(PATH))
-   {
-      pbr->GetString(m_szPath);
-   }
-   else if (id == FID(SIZE))
+   case FID(NAME): pbr->GetString(m_szName); break;
+   case FID(INME): pbr->GetString(m_szInternalName); break;
+   case FID(PATH): pbr->GetString(m_szPath); break;
+   case FID(SIZE):
    {
       pbr->GetInt(&m_cdata);
       m_pdata = new char[m_cdata];
+      break;
    }
-   else if (id == FID(DATA))
-   {
-      // Size must come before data, otherwise our structure won't be allocated
-      pbr->GetStruct(m_pdata, m_cdata);
+   // Size must come before data, otherwise our structure won't be allocated
+   case FID(DATA): pbr->GetStruct(m_pdata, m_cdata); break;
    }
    return fTrue;
 }
