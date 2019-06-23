@@ -1349,136 +1349,46 @@ HRESULT Ramp::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, H
 
 bool Ramp::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch(id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
-   }
-   else if (id == FID(HTBT))
-   {
-      pbr->GetFloat(&m_d.m_heightbottom);
-   }
-   else if (id == FID(HTTP))
-   {
-      pbr->GetFloat(&m_d.m_heighttop);
-   }
-   else if (id == FID(WDBT))
-   {
-      pbr->GetFloat(&m_d.m_widthbottom);
-   }
-   else if (id == FID(WDTP))
-   {
-      pbr->GetFloat(&m_d.m_widthtop);
-   }
-   else if (id == FID(MATR))
-   {
-      pbr->GetString(m_d.m_szMaterial);
-   }
-   else if (id == FID(TMON))
-   {
-      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
-   }
-   else if (id == FID(TMIN))
-   {
-      pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-   }
-   else if (id == FID(TYPE))
-   {
-      pbr->GetInt(&m_d.m_type);
-   }
-   else if (id == FID(IMAG))
-   {
-      pbr->GetString(m_d.m_szImage);
-   }
-   else if (id == FID(ALGN))
-   {
-      pbr->GetInt(&m_d.m_imagealignment);
-   }
-   else if (id == FID(IMGW))
-   {
-      pbr->GetBool(&m_d.m_fImageWalls);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(WLHL))
-   {
-      pbr->GetFloat(&m_d.m_leftwallheight);
-   }
-   else if (id == FID(WLHR))
-   {
-      pbr->GetFloat(&m_d.m_rightwallheight);
-   }
-   else if (id == FID(WVHL))
-   {
-      pbr->GetFloat(&m_d.m_leftwallheightvisible);
-   }
-   else if (id == FID(WVHR))
-   {
-      pbr->GetFloat(&m_d.m_rightwallheightvisible);
-   }
-      else if (id == FID(HTEV))
-   {
-      pbr->GetBool(&m_d.m_hitEvent);
-   }
-   else if (id == FID(THRS))
-   {
-      pbr->GetFloat(&m_d.m_threshold);
-   }
-   else if (id == FID(ELAS))
-   {
-      pbr->GetFloat(&m_d.m_elasticity);
-   }
-   else if (id == FID(RFCT))
-   {
-      pbr->GetFloat(&m_d.m_friction);
-   }
-   else if (id == FID(RSCT))
-   {
-      pbr->GetFloat(&m_d.m_scatter);
-   }
-   else if (id == FID(CLDRP))
-   {
-      pbr->GetBool(&m_d.m_collidable);
-   }
-   else if (id == FID(RVIS))
-   {
-      pbr->GetBool(&m_d.m_visible);
-   }
-   else if (id == FID(REEN))
-   {
-      pbr->GetBool(&m_d.m_reflectionEnabled);
-   }
-   else if (id == FID(RADB))
-   {
-      pbr->GetFloat(&m_d.m_depthBias);
-   }
-   else if (id == FID(RADI))
-   {
-      pbr->GetFloat(&m_d.m_wireDiameter);
-   }
-   else if (id == FID(RADX))
-   {
-      pbr->GetFloat(&m_d.m_wireDistanceX);
-   }
-   else if (id == FID(RADY))
-   {
-      pbr->GetFloat(&m_d.m_wireDistanceY);
-   }
-   else if (id == FID(MAPH))
-   {
-      pbr->GetString(m_d.m_szPhysicsMaterial);
-   }
-   else if (id == FID(OVPH))
-   {
-      pbr->GetBool(&m_d.m_overwritePhysics);
-   }
-   else
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(HTBT): pbr->GetFloat(&m_d.m_heightbottom); break;
+   case FID(HTTP): pbr->GetFloat(&m_d.m_heighttop); break;
+   case FID(WDBT): pbr->GetFloat(&m_d.m_widthbottom); break;
+   case FID(WDTP): pbr->GetFloat(&m_d.m_widthtop); break;
+   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(TYPE): pbr->GetInt(&m_d.m_type); break;
+   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+   case FID(ALGN): pbr->GetInt(&m_d.m_imagealignment); break;
+   case FID(IMGW): pbr->GetBool(&m_d.m_fImageWalls); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(WLHL): pbr->GetFloat(&m_d.m_leftwallheight); break;
+   case FID(WLHR): pbr->GetFloat(&m_d.m_rightwallheight); break;
+   case FID(WVHL): pbr->GetFloat(&m_d.m_leftwallheightvisible); break;
+   case FID(WVHR): pbr->GetFloat(&m_d.m_rightwallheightvisible); break;
+   case FID(HTEV): pbr->GetBool(&m_d.m_hitEvent); break;
+   case FID(THRS): pbr->GetFloat(&m_d.m_threshold); break;
+   case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
+   case FID(RFCT): pbr->GetFloat(&m_d.m_friction); break;
+   case FID(RSCT): pbr->GetFloat(&m_d.m_scatter); break;
+   case FID(CLDRP): pbr->GetBool(&m_d.m_collidable); break;
+   case FID(RVIS): pbr->GetBool(&m_d.m_visible); break;
+   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
+   case FID(RADB): pbr->GetFloat(&m_d.m_depthBias); break;
+   case FID(RADI): pbr->GetFloat(&m_d.m_wireDiameter); break;
+   case FID(RADX): pbr->GetFloat(&m_d.m_wireDistanceX); break;
+   case FID(RADY): pbr->GetFloat(&m_d.m_wireDistanceY); break;
+   case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
+   case FID(OVPH): pbr->GetBool(&m_d.m_overwritePhysics); break;
+   default:
    {
       LoadPointToken(id, pbr, pbr->m_version);
       ISelect::LoadToken(id, pbr);
+      break;
    }
-
+   }
    return fTrue;
 }
 

@@ -517,79 +517,27 @@ HRESULT Spinner::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 
 bool Spinner::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch(id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
+   case FID(ROTA): pbr->GetFloat(&m_d.m_rotation); break;
+   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(SSUPT): pbr->GetBool(&m_d.m_showBracket); break;
+   case FID(HIGH): pbr->GetFloat(&m_d.m_height); break;
+   case FID(LGTH): pbr->GetFloat(&m_d.m_length); break;
+   case FID(AFRC): pbr->GetFloat(&m_d.m_damping); break;
+   case FID(SMAX): pbr->GetFloat(&m_d.m_angleMax); break;
+   case FID(SMIN): pbr->GetFloat(&m_d.m_angleMin); break;
+   case FID(SELA): pbr->GetFloat(&m_d.m_elasticity); break;
+   case FID(SVIS): pbr->GetBool(&m_d.m_visible); break;
+   case FID(IMGF): pbr->GetString(m_d.m_szImage); break;
+   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   default: ISelect::LoadToken(id, pbr); break;
    }
-   else if (id == FID(VCEN))
-   {
-      pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
-   }
-   else if (id == FID(ROTA))
-   {
-      pbr->GetFloat(&m_d.m_rotation);
-   }
-   else if (id == FID(MATR))
-   {
-      pbr->GetString(m_d.m_szMaterial);
-   }
-   else if (id == FID(TMON))
-   {
-      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
-   }
-   else if (id == FID(TMIN))
-   {
-      pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-   }
-   else if (id == FID(SSUPT))
-   {
-      pbr->GetBool(&m_d.m_showBracket);
-   }
-   else if (id == FID(HIGH))
-   {
-      pbr->GetFloat(&m_d.m_height);
-   }
-   else if (id == FID(LGTH))
-   {
-      pbr->GetFloat(&m_d.m_length);
-   }
-   else if (id == FID(AFRC))
-   {
-      pbr->GetFloat(&m_d.m_damping);
-   }
-   else if (id == FID(SMAX))
-   {
-      pbr->GetFloat(&m_d.m_angleMax);
-   }
-   else if (id == FID(SMIN))
-   {
-      pbr->GetFloat(&m_d.m_angleMin);
-   }
-   else if (id == FID(SELA))
-   {
-      pbr->GetFloat(&m_d.m_elasticity);
-   }
-   else if (id == FID(SVIS))
-   {
-      pbr->GetBool(&m_d.m_visible);
-   }
-   else if (id == FID(IMGF))
-   {
-      pbr->GetString(m_d.m_szImage);
-   }
-   else if (id == FID(SURF))
-   {
-      pbr->GetString(m_d.m_szSurface);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else
-   {
-      ISelect::LoadToken(id, pbr);
-   }
-
    return fTrue;
 }
 

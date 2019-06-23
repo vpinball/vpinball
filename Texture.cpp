@@ -301,31 +301,15 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
 
 bool Texture::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(NAME))
+   switch(id)
    {
-      pbr->GetString(m_szName);
-   }
-   else if (id == FID(INME))
-   {
-      pbr->GetString(m_szInternalName);
-   }
-   else if (id == FID(PATH))
-   {
-      pbr->GetString(m_szPath);
-   }
-   else if (id == FID(WDTH))
-   {
-      pbr->GetInt(&m_width);
-   }
-   else if (id == FID(HGHT))
-   {
-      pbr->GetInt(&m_height);
-   }
-   else if (id == FID(ALTV))
-   {
-      pbr->GetFloat(&m_alphaTestValue);
-   }
-   else if (id == FID(BITS))
+   case FID(NAME): pbr->GetString(m_szName); break;
+   case FID(INME): pbr->GetString(m_szInternalName); break;
+   case FID(PATH): pbr->GetString(m_szPath); break;
+   case FID(WDTH): pbr->GetInt(&m_width); break;
+   case FID(HGHT): pbr->GetInt(&m_height); break;
+   case FID(ALTV): pbr->GetFloat(&m_alphaTestValue); break;
+   case FID(BITS):
    {
       if (m_pdsBuffer)
          FreeStuff();
@@ -361,8 +345,10 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
          for (int i = 0; i < m_height; i++)
             for (int l = 0; l < m_width; l++)
                pch[i*lpitch + 4 * l + 3] = 0xff;
+
+      break;
    }
-   else if (id == FID(JPEG))
+   case FID(JPEG):
    {
       m_ppb = new PinBinary();
       m_ppb->LoadFromStream(pbr->m_pistream, pbr->m_version);
@@ -370,16 +356,18 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       // m_ppb->m_pdata() is the buffer
       // m_ppb->m_cdata() is the filesize
       return LoadFromMemory((BYTE*)m_ppb->m_pdata, m_ppb->m_cdata);
+      break;
    }
-   else if (id == FID(LINK))
+   case FID(LINK):
    {
       int linkid;
-      PinTable * const pt = (PinTable *)pbr->m_pdata;
       pbr->GetInt(&linkid);
+      PinTable * const pt = (PinTable *)pbr->m_pdata;
       m_ppb = pt->GetImageLinkBinary(linkid);
       return LoadFromMemory((BYTE*)m_ppb->m_pdata, m_ppb->m_cdata);
+      break;
    }
-
+   }
    return fTrue;
 }
 

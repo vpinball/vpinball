@@ -1374,141 +1374,52 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 
 bool Surface::LoadToken(const int id, BiffReader * const pbr)
 {
-   if (id == FID(PIID))
+   switch(id)
    {
-      pbr->GetInt((int *)pbr->m_pdata);
-   }
-   else if (id == FID(HTEV))
-   {
-      pbr->GetBool(&m_d.m_hitEvent);
-   }
-   else if (id == FID(DROP))
-   {
-      pbr->GetBool(&m_d.m_droppable);
-   }
-   else if (id == FID(FLIP))
-   {
-      pbr->GetBool(&m_d.m_flipbook);
-   }
-   else if (id == FID(ISBS))
-   {
-      pbr->GetBool(&m_d.m_isBottomSolid);
-   }
-   else if (id == FID(CLDW))
-   {
-      pbr->GetBool(&m_d.m_collidable);
-   }
-   else if (id == FID(TMON))
-   {
-      pbr->GetBool(&m_d.m_tdr.m_TimerEnabled);
-   }
-   else if (id == FID(TMIN))
-   {
-      pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-   }
-   else if (id == FID(THRS))
-   {
-      pbr->GetFloat(&m_d.m_threshold);
-   }
-   else if (id == FID(IMAG))
-   {
-      pbr->GetString(m_d.m_szImage);
-   }
-   else if (id == FID(SIMG))
-   {
-      pbr->GetString(m_d.m_szSideImage);
-   }
-   else if (id == FID(SIMA))
-   {
-      pbr->GetString(m_d.m_szSideMaterial);
-   }
-   else if (id == FID(TOMA))
-   {
-      pbr->GetString(m_d.m_szTopMaterial);
-   }
-   else if (id == FID(MAPH))
-   {
-      pbr->GetString(m_d.m_szPhysicsMaterial);
-   }
-   else if (id == FID(SLMA))
-   {
-      pbr->GetString(m_d.m_szSlingShotMaterial);
-   }
-   else if (id == FID(HTBT))
-   {
-      pbr->GetFloat(&m_d.m_heightbottom);
-   }
-   else if (id == FID(HTTP))
-   {
-      pbr->GetFloat(&m_d.m_heighttop);
-   }
-   else if (id == FID(INNR))
-   {
-      //!! Deprecated, do not use anymore
-      pbr->GetBool(&m_d.m_inner);
-   }
-   else if (id == FID(NAME))
-   {
-      pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(DSPT))
-   {
-      pbr->GetBool(&m_d.m_displayTexture);
-   }
-   else if (id == FID(SLGF))
-   {
-      pbr->GetFloat(&m_d.m_slingshotforce);
-   }
-   else if (id == FID(SLTH))
-   {
-      pbr->GetFloat(&m_d.m_slingshot_threshold);
-   }
-   else if (id == FID(ELAS))
-   {
-      pbr->GetFloat(&m_d.m_elasticity);
-   }
-   else if (id == FID(WFCT))
-   {
-      pbr->GetFloat(&m_d.m_friction);
-   }
-   else if (id == FID(WSCT))
-   {
-      pbr->GetFloat(&m_d.m_scatter);
-   }
-   else if (id == FID(VSBL))
-   {
-      pbr->GetBool(&m_d.m_topBottomVisible);
-   }
-   else if (id == FID(OVPH))
-   {
-      pbr->GetBool(&m_d.m_overwritePhysics);
-   }
-   else if (id == FID(SLGA))
-   {
-      pbr->GetBool(&m_d.m_slingshotAnimation);
-   }
-   else if (id == FID(DILI))
+   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(HTEV): pbr->GetBool(&m_d.m_hitEvent); break;
+   case FID(DROP): pbr->GetBool(&m_d.m_droppable); break;
+   case FID(FLIP): pbr->GetBool(&m_d.m_flipbook); break;
+   case FID(ISBS): pbr->GetBool(&m_d.m_isBottomSolid); break;
+   case FID(CLDW): pbr->GetBool(&m_d.m_collidable); break;
+   case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
+   case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
+   case FID(THRS): pbr->GetFloat(&m_d.m_threshold); break;
+   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+   case FID(SIMG): pbr->GetString(m_d.m_szSideImage); break;
+   case FID(SIMA): pbr->GetString(m_d.m_szSideMaterial); break;
+   case FID(TOMA): pbr->GetString(m_d.m_szTopMaterial); break;
+   case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
+   case FID(SLMA): pbr->GetString(m_d.m_szSlingShotMaterial); break;
+   case FID(HTBT): pbr->GetFloat(&m_d.m_heightbottom); break;
+   case FID(HTTP): pbr->GetFloat(&m_d.m_heighttop); break;
+   case FID(INNR): pbr->GetBool(&m_d.m_inner); break; //!! Deprecated, do not use anymore
+   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(DSPT): pbr->GetBool(&m_d.m_displayTexture); break;
+   case FID(SLGF): pbr->GetFloat(&m_d.m_slingshotforce); break;
+   case FID(SLTH): pbr->GetFloat(&m_d.m_slingshot_threshold); break;
+   case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
+   case FID(WFCT): pbr->GetFloat(&m_d.m_friction); break;
+   case FID(WSCT): pbr->GetFloat(&m_d.m_scatter); break;
+   case FID(VSBL): pbr->GetBool(&m_d.m_topBottomVisible); break;
+   case FID(OVPH): pbr->GetBool(&m_d.m_overwritePhysics); break;
+   case FID(SLGA): pbr->GetBool(&m_d.m_slingshotAnimation); break;
+   case FID(DILI):
    {
       int tmp;
       pbr->GetInt(&tmp);
       m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); // backwards compatible hacky loading!
+      break;
    }
-   else if (id == FID(DILB))
-   {
-      pbr->GetFloat(&m_d.m_disableLightingBelow);
-   }
-   else if (id == FID(SVBL))
-   {
-      pbr->GetBool(&m_d.m_sideVisible);
-   }
-   else if (id == FID(REEN))
-   {
-      pbr->GetBool(&m_d.m_reflectionEnabled);
-   }
-   else
+   case FID(DILB): pbr->GetFloat(&m_d.m_disableLightingBelow); break;
+   case FID(SVBL): pbr->GetBool(&m_d.m_sideVisible); break;
+   case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
+   default:
    {
       LoadPointToken(id, pbr, pbr->m_version);
       ISelect::LoadToken(id, pbr);
+      break;
+   }
    }
    return fTrue;
 }
