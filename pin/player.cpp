@@ -1183,12 +1183,12 @@ void Player::InitBallShader()
 
    m_ballShader->SetTexture("Texture2", m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(m_pin3d.m_envRadianceTexture, false));
 
-   assert(ballIndexBuffer == NULL);
+   assert(m_ballIndexBuffer == NULL);
    const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
    m_ballIndexBuffer = m_pin3d.m_pd3dPrimaryDevice->CreateAndFillIndexBuffer(lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
 
    // VB for normal ball
-   assert(ballVertexBuffer == NULL);
+   assert(m_ballVertexBuffer == NULL);
    m_pin3d.m_pd3dPrimaryDevice->CreateVertexBuffer(lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_ballVertexBuffer);
 
    // load precomputed ball vertices into vertex buffer
@@ -5700,7 +5700,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
          g_pplayer->m_gameWindowActive = true;
          SetCursor(NULL);
-         g_pplayer->m_fNoTimeCorrect = true;
+         g_pplayer->m_noTimeCorrect = true;
       }
       break;
 #endif
