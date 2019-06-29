@@ -343,7 +343,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    m_d.m_visible = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Visible", true) : true;
    m_d.m_staticRendering = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "StaticRendering", true) : true;
-   m_d.m_DrawTexturesInside = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DrawTexturesInside", false) : false;
+   m_d.m_drawTexturesInside = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DrawTexturesInside", false) : false;
 
    // Position (X and Y is already set by the click of the user)
    m_d.m_vPosition.z = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Position_Z", 0.0f) : 0.0f;
@@ -386,6 +386,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_reflectionEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
    m_d.m_backfacesEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "BackfacesEnabled", false) : false;
    m_d.m_displayTexture = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "DisplayTexture", false) : false;
+   m_d.m_objectSpaceNormalMap = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ObjectSpaceNormalMap", false) : false;
 }
 
 void Primitive::WriteRegDefaults()
@@ -395,7 +396,7 @@ void Primitive::WriteRegDefaults()
    SaveValueInt(strKeyName, "SideColor", m_d.m_SideColor);
    SaveValueBool(strKeyName, "Visible", m_d.m_visible);
    SaveValueBool(strKeyName, "StaticRendering", m_d.m_staticRendering);
-   SaveValueBool(strKeyName, "DrawTexturesInside", m_d.m_DrawTexturesInside);
+   SaveValueBool(strKeyName, "DrawTexturesInside", m_d.m_drawTexturesInside);
 
    SaveValueFloat(strKeyName, "Position_Z", m_d.m_vPosition.z);
 
@@ -433,6 +434,7 @@ void Primitive::WriteRegDefaults()
    SaveValueBool(strKeyName, "ReflectionEnabled", m_d.m_reflectionEnabled);
    SaveValueBool(strKeyName, "BackfacesEnabled", m_d.m_backfacesEnabled);
    SaveValueBool(strKeyName, "DisplayTexture", m_d.m_displayTexture);
+   SaveValueBool(strKeyName, "ObjectSpaceNormalMap", m_d.m_objectSpaceNormalMap);
 }
 
 void Primitive::GetTimers(vector<HitTimer*> &pvht)
@@ -1016,7 +1018,7 @@ void Primitive::CalculateBuiltinOriginal()
 
    // 2 restore indices
    //   check if anti culling is enabled:
-   if (m_d.m_DrawTexturesInside)
+   if (m_d.m_drawTexturesInside)
    {
       m_mesh.m_indices.resize(m_d.m_Sides * 24);
       // yes: draw everything twice
@@ -1178,9 +1180,7 @@ void Primitive::RenderObject()
       }
    }
    else
-   {
       m_fullMatrix.SetIdentity();
-   }
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
@@ -1208,6 +1208,7 @@ void Primitive::RenderObject()
          pd3dDevice->basicShader->SetTexture("Texture0", pin, false);
          pd3dDevice->basicShader->SetTexture("Texture4", nMap, true);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+         pd3dDevice->basicShader->SetBool("objectSpaceNormalMap", m_d.m_objectSpaceNormalMap);
 
          //g_pplayer->m_pin3d.SetPrimaryTextureFilter(0, TEXTURE_MODE_TRILINEAR);
          // accommodate models with UV coords outside of [0,1]
@@ -1390,7 +1391,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteInt(FID(SCOL), m_d.m_SideColor);
    bw.WriteBool(FID(TVIS), m_d.m_visible);
-   bw.WriteBool(FID(DTXI), m_d.m_DrawTexturesInside);
+   bw.WriteBool(FID(DTXI), m_d.m_drawTexturesInside);
    bw.WriteBool(FID(HTEV), m_d.m_hitEvent);
    bw.WriteFloat(FID(THRS), m_d.m_threshold);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
@@ -1411,6 +1412,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
    bw.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
    bw.WriteBool(FID(DIPT), m_d.m_displayTexture);
+   bw.WriteBool(FID(OSNM), m_d.m_objectSpaceNormalMap);
 
    if (m_d.m_use3DMesh)
    {
@@ -1550,7 +1552,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(SCOL): pbr->GetInt(&m_d.m_SideColor); break;
    case FID(TVIS): pbr->GetBool(&m_d.m_visible); break;
    case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
-   case FID(DTXI): pbr->GetBool(&m_d.m_DrawTexturesInside); break;
+   case FID(DTXI): pbr->GetBool(&m_d.m_drawTexturesInside); break;
    case FID(HTEV): pbr->GetBool(&m_d.m_hitEvent); break;
    case FID(THRS): pbr->GetFloat(&m_d.m_threshold); break;
    case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
@@ -1700,6 +1702,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    }
 #endif
    case FID(PIDB): pbr->GetFloat(&m_d.m_depthBias); break;
+   case FID(OSNM): pbr->GetBool(&m_d.m_objectSpaceNormalMap); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
    return fTrue;
@@ -2215,17 +2218,17 @@ STDMETHODIMP Primitive::put_Visible(VARIANT_BOOL newVal)
 
 STDMETHODIMP Primitive::get_DrawTexturesInside(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_d.m_DrawTexturesInside);
+   *pVal = FTOVB(m_d.m_drawTexturesInside);
 
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_DrawTexturesInside(VARIANT_BOOL newVal)
 {
-   if (m_d.m_DrawTexturesInside != VBTOb(newVal))
+   if (m_d.m_drawTexturesInside != VBTOb(newVal))
    {
       STARTUNDO
-      m_d.m_DrawTexturesInside = VBTOb(newVal);
+      m_d.m_drawTexturesInside = VBTOb(newVal);
       m_vertexBufferRegenerate = true;
       STOPUNDO
    }
@@ -2825,6 +2828,21 @@ STDMETHODIMP Primitive::put_BackfacesEnabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
    m_d.m_backfacesEnabled = VBTOb(newVal);
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::get_ObjectSpaceNormalMap(VARIANT_BOOL *pVal)
+{
+   *pVal = FTOVB(m_d.m_objectSpaceNormalMap);
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_ObjectSpaceNormalMap(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+   m_d.m_objectSpaceNormalMap = VBTOb(newVal);
    STOPUNDO
 
    return S_OK;

@@ -83,7 +83,7 @@ public:
 
    bool m_use3DMesh;
    bool m_visible;
-   bool m_DrawTexturesInside;
+   bool m_drawTexturesInside;
    bool m_staticRendering;
 
    bool m_hitEvent;
@@ -95,6 +95,7 @@ public:
    bool m_overwritePhysics;
    bool m_backfacesEnabled;
    bool m_displayTexture;     // in editor
+   bool m_objectSpaceNormalMap; // matches the +X,+Y,+Z object space export/baking of Blender
 };
 
 class Primitive :
@@ -233,6 +234,8 @@ public:
    STDMETHOD(ContinueAnim)(float speed);
    STDMETHOD(ShowFrame)(float frame);
    STDMETHOD(get_HitThreshold)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(get_ObjectSpaceNormalMap)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_ObjectSpaceNormalMap)(/*[in]*/ VARIANT_BOOL newVal);
 
    Primitive();
    virtual ~Primitive();
