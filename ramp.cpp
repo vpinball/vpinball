@@ -1313,7 +1313,7 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
    bw.WriteFloat(FID(RFCT), m_d.m_friction);
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
-   bw.WriteBool(FID(CLDRP), m_d.m_collidable);
+   bw.WriteBool(FID(CLDR), m_d.m_collidable);
    bw.WriteBool(FID(RVIS), m_d.m_visible);
    bw.WriteFloat(FID(RADB), m_d.m_depthBias);
    bw.WriteFloat(FID(RADI), m_d.m_wireDiameter);
@@ -1373,7 +1373,7 @@ bool Ramp::LoadToken(const int id, BiffReader * const pbr)
    case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
    case FID(RFCT): pbr->GetFloat(&m_d.m_friction); break;
    case FID(RSCT): pbr->GetFloat(&m_d.m_scatter); break;
-   case FID(CLDRP): pbr->GetBool(&m_d.m_collidable); break;
+   case FID(CLDR): pbr->GetBool(&m_d.m_collidable); break;
    case FID(RVIS): pbr->GetBool(&m_d.m_visible); break;
    case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
    case FID(RADB): pbr->GetFloat(&m_d.m_depthBias); break;

@@ -30,12 +30,8 @@ void Mesh::Clear()
 
 bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool convertToLeftHanded)
 {
-   WIN32_FIND_DATA data;
-   HANDLE h;
    string name(fname);
-   int frameCounter = 0;
    size_t idx = name.find_last_of("_");
-   std::vector<string> allFiles;
    if (idx == string::npos)
    {
       ShowError("Can't find sequence of obj files! The file name of the sequence must be <meshname>_x.obj where x is the frame number!");
@@ -44,7 +40,10 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
    idx++;
    name = name.substr(0,idx);
    string sname = name + "*.obj";
-   h = FindFirstFile(sname.c_str(), &data);
+   WIN32_FIND_DATA data;
+   const HANDLE h = FindFirstFile(sname.c_str(), &data);
+   std::vector<string> allFiles;
+   int frameCounter = 0;
    if (h != INVALID_HANDLE_VALUE)
    {
       do
@@ -1400,7 +1399,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
    bw.WriteFloat(FID(EFUI), m_d.m_edgeFactorUI);
    bw.WriteFloat(FID(CORF), m_d.m_collision_reductionFactor);
-   bw.WriteBool(FID(CLDRP), m_d.m_collidable);
+   bw.WriteBool(FID(CLDR), m_d.m_collidable);
    bw.WriteBool(FID(ISTO), m_d.m_toy);
    bw.WriteBool(FID(U3DM), m_d.m_use3DMesh);
    bw.WriteBool(FID(STRE), m_d.m_staticRendering);
@@ -1560,7 +1559,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(RSCT): pbr->GetFloat(&m_d.m_scatter); break;
    case FID(EFUI): pbr->GetFloat(&m_d.m_edgeFactorUI); break;
    case FID(CORF): pbr->GetFloat(&m_d.m_collision_reductionFactor); break;
-   case FID(CLDRP): pbr->GetBool(&m_d.m_collidable); break;
+   case FID(CLDR): pbr->GetBool(&m_d.m_collidable); break;
    case FID(ISTO): pbr->GetBool(&m_d.m_toy); break;
    case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
    case FID(OVPH): pbr->GetBool(&m_d.m_overwritePhysics); break;
