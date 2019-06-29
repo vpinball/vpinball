@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.6:
+- fix potential problems for the light element for Bulb, ImageMode, ShowBulbMesh, StaticBulbMesh, ShowReflectionOnBall reads
 - change Position() of the plunger element to return a float instead of an integer
 - add support for non-mechanical/digital Position() plunger call
 - add EnableSkirtAnimation to the bumper element

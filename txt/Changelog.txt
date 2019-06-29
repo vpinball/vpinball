@@ -1,5 +1,10 @@
 VP 10.6.0 Changelog
 ------------------------
+
+- fix some potential problems with balls and rubbers outside of the playfield range, and when importing certain primitives via .obj
+
+- show kicker (default) orientation in the editor
+
 - support 'Add Point' hotkey (F10 normal and F11 for smooth point) for rubbers
 
 - fix lighting of the reflection of the playfield on the ball (before it was more or less ignoring the real lightsources and using a wrong lookup from the environment)
@@ -92,7 +97,7 @@ VP 10.6.0 Changelog
 - see core scripts (header of core.vbs) for the respective changelog (version 3.57)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
 
-- remove Visual Studio 2010 & 2012 support, add Visual Studio 2019 support
+- remove Visual Studio 2010 & 2012 & 2013 support, add Visual Studio 2019 support
 
 - updated to latest FreeImage.dll (3.18.0) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)
