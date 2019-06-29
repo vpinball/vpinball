@@ -892,7 +892,7 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(BASR), m_d.m_BaseRadius);
    bw.WriteFloat(FID(ENDR), m_d.m_EndRadius);
    bw.WriteFloat(FID(FLPR), m_d.m_FlipperRadiusMax);
-   //bw.WriteFloat(FID(FAEOS), m_d.m_angleEOS);
+   //bw.WriteFloat(FID(FAEO), m_d.m_angleEOS);
    bw.WriteFloat(FID(FRTN), m_d.m_return);
    bw.WriteFloat(FID(ANGS), m_d.m_StartAngle);
    bw.WriteFloat(FID(ANGE), m_d.m_EndAngle);
@@ -953,7 +953,7 @@ bool Flipper::LoadToken(const int id, BiffReader * const pbr)
    case FID(BASR): pbr->GetFloat(&m_d.m_BaseRadius); break;
    case FID(ENDR): pbr->GetFloat(&m_d.m_EndRadius); break;
    case FID(FLPR): pbr->GetFloat(&m_d.m_FlipperRadiusMax); break;
-   //case FID(FAEOS): pbr->GetFloat(&m_d.m_angleEOS); break;
+   //case FID(FAEO): pbr->GetFloat(&m_d.m_angleEOS); break;
    case FID(FRTN): pbr->GetFloat(&m_d.m_return); break;
    case FID(ANGS): pbr->GetFloat(&m_d.m_StartAngle); break;
    case FID(ANGE): pbr->GetFloat(&m_d.m_EndAngle); break;

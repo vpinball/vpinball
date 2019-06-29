@@ -490,7 +490,7 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteFloat(FID(SMIN), m_d.m_angleMin);
    bw.WriteFloat(FID(SELA), m_d.m_elasticity);
    bw.WriteBool(FID(SVIS), m_d.m_visible);
-   bw.WriteBool(FID(SSUPT), m_d.m_showBracket);
+   bw.WriteBool(FID(SSUP), m_d.m_showBracket);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteString(FID(IMGF), m_d.m_szImage);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
@@ -525,7 +525,7 @@ bool Spinner::LoadToken(const int id, BiffReader * const pbr)
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
    case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
-   case FID(SSUPT): pbr->GetBool(&m_d.m_showBracket); break;
+   case FID(SSUP): pbr->GetBool(&m_d.m_showBracket); break;
    case FID(HIGH): pbr->GetFloat(&m_d.m_height); break;
    case FID(LGTH): pbr->GetFloat(&m_d.m_length); break;
    case FID(AFRC): pbr->GetFloat(&m_d.m_damping); break;

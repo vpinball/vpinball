@@ -882,7 +882,7 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
 
-   bw.WriteFloat(FID(MESTH), m_d.m_mechStrength);
+   bw.WriteFloat(FID(MEST), m_d.m_mechStrength);
    bw.WriteBool(FID(MECH), m_d.m_mechPlunger);
    bw.WriteBool(FID(APLG), m_d.m_autoPlunger);
 
@@ -939,7 +939,7 @@ bool Plunger::LoadToken(const int id, BiffReader * const pbr)
    case FID(HPSL): pbr->GetFloat(&m_d.m_stroke); break;
    case FID(SPDP): pbr->GetFloat(&m_d.m_speedPull); break;
    case FID(SPDF): pbr->GetFloat(&m_d.m_speedFire); break;
-   case FID(MESTH): pbr->GetFloat(&m_d.m_mechStrength); break;
+   case FID(MEST): pbr->GetFloat(&m_d.m_mechStrength); break;
    case FID(MPRK): pbr->GetFloat(&m_d.m_parkPosition); break;
    case FID(PSCV): pbr->GetFloat(&m_d.m_scatterVelocity); break;
    case FID(MOMX): pbr->GetFloat(&m_d.m_momentumXfer); break;
