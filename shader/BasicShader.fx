@@ -69,6 +69,7 @@ sampler2D texSamplerN : TEXUNIT4 = sampler_state // normal map texture
 };
 
 bool hdrEnvTextures;
+bool objectSpaceNormalMap;
 
 #include "Material.fxh"
 
@@ -127,8 +128,15 @@ float3x3 TBN_trafo(const float3 N, const float3 V, const float2 uv)
 
 float3 normal_map(const float3 N, const float3 V, const float2 uv)
 {
-    return normalize( mul(TBN_trafo(N, V, uv),
-                          tex2D(texSamplerN, uv).xyz * (255./127.) - (128./127.)) );
+   float3 tn = tex2D(texSamplerN, uv).xyz * (255./127.) - (128./127.); // Note that Blender apparently does export tangent space normalmaps for Z (Blue) at full range, so 0..255 -> 0..1, which misses an option for here!
+
+   [branch] if (objectSpaceNormalMap)
+   {
+      tn.z = -tn.z; // this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
+      return normalize( mul(tn, matWorldViewInverseTranspose).xyz );
+   } else // tangent space
+      return normalize( mul(TBN_trafo(N, V, uv),
+                            tn) );
 }
 
 //------------------------------------
@@ -172,7 +180,7 @@ VS_NOTEX_OUTPUT vs_notex_main (in float4 vPosition : POSITION0,
    return Out; 
 }
 
-VS_DEPTH_ONLY_NOTEX_OUTPUT vs_depth_only_main_without_texture (in float4 vPosition : POSITION0) 
+VS_DEPTH_ONLY_NOTEX_OUTPUT vs_depth_only_main_without_texture(in float4 vPosition : POSITION0) 
 { 
    VS_DEPTH_ONLY_NOTEX_OUTPUT Out;
 
@@ -204,9 +212,9 @@ float4 ps_main(in VS_NOTEX_OUTPUT IN, uniform bool is_metal) : COLOR
 
    //return float4((N+1.0)*0.5,1.0); // visualize normals
 
-   float4 result;
-   result.xyz = lightLoop(IN.worldPos_t1x.xyz, N, V, diffuse, glossy, specular, edge, true, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
-   result.a = cBase_Alpha.a;
+   float4 result = float4(
+      lightLoop(IN.worldPos_t1x.xyz, N, V, diffuse, glossy, specular, edge, true, is_metal), //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+      cBase_Alpha.a);
 
    [branch] if (cBase_Alpha.a < 1.0) {
       result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
@@ -236,14 +244,14 @@ float4 ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool doNo
    const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos);
    float3 N = normalize(IN.normal);
 
-   if (doNormalMapping)
+   [branch] if (doNormalMapping)
       N = normal_map(N, V, IN.tex01.xy);
    
-   //return float4((N+1.0)*0.5,1.0); // visualize normals
+   //!! return float4((N+1.0)*0.5,1.0); // visualize normals
 
-   float4 result;
-   result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal);
-   result.a = pixel.a;
+   float4 result = float4(
+      lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, !doNormalMapping, is_metal),
+      pixel.a);
 
    [branch] if (cBase_Alpha.a < 1.0 && result.a < 1.0) {
       result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);

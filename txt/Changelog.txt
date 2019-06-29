@@ -1,7 +1,9 @@
 VP 10.6.0 Changelog
 ------------------------
 
-- fix some potential problems with balls and rubbers outside of the playfield range, and when importing certain primitives via .obj
+- add object space-normal mapping support to primitive (our implementation matches the object space, +X +Y +Z, export/baking in Blender)
+
+- fix some potential problems with balls and rubbers outside of the playfield range, and when importing certain primitive meshes via .obj
 
 - show kicker (default) orientation in the editor
 
