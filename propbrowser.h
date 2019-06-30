@@ -46,7 +46,7 @@ public:
    void GetControlValue(HWND hwndControl);
    HWND GetHWnd() const { return m_hwndFrame; }
    void Init(HWND hwndParent);
-   void SetVisible(const bool fVisible);
+   void SetVisible(const bool visible);
    bool GetVisible() const;
    void DrawHeader(HDC hdc);
    void SetProperty(int dispid, VARIANT *pvar, const bool fPutRef);

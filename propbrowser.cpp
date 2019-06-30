@@ -531,9 +531,9 @@ void SmartBrowser::RefreshProperties()
       EnumChildWindows(m_vhwndDialog[i], EnumChildProc, (size_t)this);
 }
 
-void SmartBrowser::SetVisible(const bool fVisible)
+void SmartBrowser::SetVisible(const bool visible)
 {
-   ShowWindow(m_hwndFrame, fVisible ? SW_SHOW : SW_HIDE);
+   ShowWindow(m_hwndFrame, visible ? SW_SHOW : SW_HIDE);
 }
 
 bool SmartBrowser::GetVisible() const

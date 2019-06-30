@@ -339,9 +339,9 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
    return S_OK;
 }
 
-void CodeViewer::SetVisible(const bool fVisible)
+void CodeViewer::SetVisible(const bool visible)
 {
-   if (!fVisible && !m_minimized)
+   if (!visible && !m_minimized)
    {
       RECT rc;
       GetWindowRect(m_hwndMain, &rc);
@@ -353,7 +353,7 @@ void CodeViewer::SetVisible(const bool fVisible)
       SaveValueInt("Editor", "CodeViewPosHeight", h);
    }
 
-   if (m_hwndFind && !fVisible)
+   if (m_hwndFind && !visible)
    {
       DestroyWindow(m_hwndFind);
       m_hwndFind = NULL;
@@ -364,13 +364,13 @@ void CodeViewer::SetVisible(const bool fVisible)
       // SW_RESTORE usually works in all cases, but if the window
       // is maximized, we don't want to restore to a smaller size,
       // so we check IsIconic to only restore in the minimized state.
-      ShowWindow(m_hwndMain, fVisible ? SW_RESTORE : SW_HIDE);
+      ShowWindow(m_hwndMain, visible ? SW_RESTORE : SW_HIDE);
       m_minimized = false;
    }
    else
-      ShowWindow(m_hwndMain, fVisible ? SW_SHOW : SW_HIDE);
+      ShowWindow(m_hwndMain, visible ? SW_SHOW : SW_HIDE);
 
-   if (fVisible)
+   if (visible)
    {
 	   if (!m_visible)
 	   {
@@ -382,15 +382,15 @@ void CodeViewer::SetVisible(const bool fVisible)
 	   }
 	   SetForegroundWindow(m_hwndMain);
    }
-   m_visible = fVisible;
+   m_visible = visible;
 }
 
-void CodeViewer::SetEnabled(const bool fEnabled)
+void CodeViewer::SetEnabled(const bool enabled)
 {
-   SendMessage(m_hwndScintilla, SCI_SETREADONLY, !fEnabled, 0);
+   SendMessage(m_hwndScintilla, SCI_SETREADONLY, !enabled, 0);
 
-   EnableWindow(m_hwndItemList, fEnabled);
-   EnableWindow(m_hwndEventList, fEnabled);
+   EnableWindow(m_hwndItemList, enabled);
+   EnableWindow(m_hwndEventList, enabled);
 }
 
 void CodeViewer::SetCaption(const char * const szCaption)
@@ -977,12 +977,12 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
    SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, scinfindflags, 0);
    size_t posFind = SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(pfr->lpstrFindWhat), (LPARAM)pfr->lpstrFindWhat);
 
-   bool fWrapped = false;
+   bool wrapped = false;
 
    if (posFind == -1)
    {
       // Not found, try looping the document
-      fWrapped = true;
+      wrapped = true;
       if (pfr->Flags & FR_DOWN)
       {
          startChar = 0;
@@ -1011,7 +1011,7 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
          SendMessage(m_hwndScintilla, SCI_ENSUREVISIBLEENFORCEPOLICY, line, 0);
       SendMessage(m_hwndScintilla, SCI_SETSEL, start, end);
 
-      if (!fWrapped)
+      if (!wrapped)
          SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)"");
       else
       {
@@ -1347,7 +1347,7 @@ void CodeViewer::ListEventsFromItem()
 
 void CodeViewer::FindCodeFromEvent()
 {
-   bool fFound = false;
+   bool found = false;
 
    char szItemName[512]; // Can't be longer than 32 chars, but use this buffer for concatenating
    char szEventName[512];
@@ -1406,7 +1406,7 @@ void CodeViewer::FindCodeFromEvent()
       {
          // We found a real sub heading - move the cursor inside of it
 
-         fFound = true;
+         found = true;
 
          size_t ichar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line + 1, 0);
          if (ichar == -1)
@@ -1420,7 +1420,7 @@ void CodeViewer::FindCodeFromEvent()
          SendMessage(m_hwndScintilla, SCI_SETSEL, ichar, ichar);
       }
 
-      if (fFound)
+      if (found)
          break;
 
       startChar = posFind + 1;
@@ -1428,7 +1428,7 @@ void CodeViewer::FindCodeFromEvent()
       SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
    }
 
-   if (!fFound)
+   if (!found)
    {
       char szNewCode[MAX_LINE_LENGTH];
       char szEnd[2];
@@ -1521,26 +1521,26 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryCustomPolicy(
 
    if (InlineIsEqualGUID(guidKey, GUID_CUSTOM_CONFIRMOBJECTSAFETY))
    {
-      bool fSafe = false;
+      bool safe = false;
       CONFIRMSAFETY *pcs = (CONFIRMSAFETY *)pContext;
 
       if (g_pvp->m_securitylevel == eSecurityNone)
-         fSafe = true;
+         safe = true;
 
-      if (!fSafe && ((g_pvp->m_securitylevel == eSecurityWarnOnUnsafeType) || (g_pvp->m_securitylevel == eSecurityWarnOnType)))
-         fSafe = FControlAlreadyOkayed(pcs);
+      if (!safe && ((g_pvp->m_securitylevel == eSecurityWarnOnUnsafeType) || (g_pvp->m_securitylevel == eSecurityWarnOnType)))
+         safe = FControlAlreadyOkayed(pcs);
 
-      if (!fSafe && (g_pvp->m_securitylevel <= eSecurityWarnOnUnsafeType))
-         fSafe = FControlMarkedSafe(pcs);
+      if (!safe && (g_pvp->m_securitylevel <= eSecurityWarnOnUnsafeType))
+         safe = FControlMarkedSafe(pcs);
 
-      if (!fSafe)
+      if (!safe)
       {
-         fSafe = FUserManuallyOkaysControl(pcs);
-         if (fSafe && ((g_pvp->m_securitylevel == eSecurityWarnOnUnsafeType) || (g_pvp->m_securitylevel == eSecurityWarnOnType)))
+         safe = FUserManuallyOkaysControl(pcs);
+         if (safe && ((g_pvp->m_securitylevel == eSecurityWarnOnUnsafeType) || (g_pvp->m_securitylevel == eSecurityWarnOnType)))
             AddControlToOkayedList(pcs);
       }
 
-      if (fSafe)
+      if (safe)
          *ppolicy = URLPOLICY_ALLOW;
    }
 
@@ -1574,7 +1574,7 @@ void CodeViewer::AddControlToOkayedList(CONFIRMSAFETY *pcs)
 
 bool CodeViewer::FControlMarkedSafe(CONFIRMSAFETY *pcs)
 {
-   bool fSafe = false;
+   bool safe = false;
    IObjectSafety *pios = NULL;
 
    if (FAILED(pcs->pUnk->QueryInterface(IID_IObjectSafety, (void **)&pios)))
@@ -1594,14 +1594,14 @@ bool CodeViewer::FControlMarkedSafe(CONFIRMSAFETY *pcs)
          goto LError;
    }
 
-   fSafe = true;
+   safe = true;
 
 LError:
 
    if (pios)
       pios->Release();
 
-   return fSafe;
+   return safe;
 }
 
 bool CodeViewer::FUserManuallyOkaysControl(CONFIRMSAFETY *pcs)
