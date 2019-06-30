@@ -103,9 +103,9 @@ public:
 
    void Create();
    void Destroy();
-   void SetVisible(const bool fVisible);
+   void SetVisible(const bool visible);
 
-   void SetEnabled(const bool fEnabled);
+   void SetEnabled(const bool enabled);
 
    void SetClean(const SaveDirtyState sds);
 

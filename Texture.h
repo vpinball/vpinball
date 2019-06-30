@@ -43,17 +43,18 @@ public:
       memcpy(data(), bits, m_data.size());
    }
 
-   void CopyTo_ConvertAlpha(BYTE* const bits) // premultiplies alpha (as Win32 AlphaBlend() wants it like that) OR converts rgb_fp format to 32bits
+   void CopyTo_ConvertAlpha(BYTE* const __restrict bits) // premultiplies alpha (as Win32 AlphaBlend() wants it like that) OR converts rgb_fp format to 32bits
    {
      if(m_format == RGB_FP) // Tonemap for 8bpc-Display
      {
+        const float * const __restrict src = (float*)m_data.data();
         unsigned int o = 0;
         for (int j = 0; j < m_height; ++j)
 			  for (int i = 0; i < m_width; ++i, ++o)
 			  {
-				  const float r = ((float*)m_data.data())[o * 3];
-				  const float g = ((float*)m_data.data())[o * 3 + 1];
-				  const float b = ((float*)m_data.data())[o * 3 + 2];
+				  const float r = src[o * 3];
+				  const float g = src[o * 3 + 1];
+				  const float b = src[o * 3 + 2];
 				  const float l = r*0.176204f + g*0.812985f + b*0.0108109f;
 				  const float n = (l*0.25f + 1.0f) / (l + 1.0f); // overflow is handled by clamp
 				  bits[o * 4    ] = (BYTE)(clamp(b*n, 0.f, 1.f) * 255.f);

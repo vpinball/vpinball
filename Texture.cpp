@@ -325,13 +325,14 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
 
       // Assume our 32 bit color structure
       // Find out if all alpha values are zero
-      BYTE * const pch = (BYTE *)m_pdsBuffer->data();
+      BYTE * const __restrict pch = (BYTE *)m_pdsBuffer->data();
       bool allAlphaZero = true;
       for (int i = 0; i < m_height; i++)
       {
-         for (int l = 0; l < m_width; l++)
+         unsigned int o = i*lpitch + 3;
+         for (int l = 0; l < m_width; l++,o+=4)
          {
-            if (pch[i*lpitch + 4 * l + 3] != 0)
+            if (pch[o] != 0)
             {
                allAlphaZero = false;
                goto endAlphaCheck;
@@ -343,8 +344,11 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       // all alpha values are 0: set them all to 0xff
       if (allAlphaZero)
          for (int i = 0; i < m_height; i++)
-            for (int l = 0; l < m_width; l++)
-               pch[i*lpitch + 4 * l + 3] = 0xff;
+         {
+            unsigned int o = i*lpitch + 3;
+            for (int l = 0; l < m_width; l++,o+=4)
+               pch[o] = 0xff;
+         }
 
       break;
    }
@@ -410,7 +414,7 @@ void Texture::CreateGDIVersion()
    bmi.bmiHeader.biCompression = BI_RGB;
    bmi.bmiHeader.biSizeImage = 0;
 
-   BYTE *tmp = new BYTE[m_width*m_height * 4];
+   BYTE * const tmp = new BYTE[m_width*m_height * 4];
    m_pdsBuffer->CopyTo_ConvertAlpha(tmp);
 
    SetStretchBltMode(hdcNew, COLORONCOLOR);
@@ -474,14 +478,12 @@ void BaseTexture::SetOpaque()
       return;
 
    // Assume our 32 bit color structure
-   BYTE *pch = data();
+   BYTE *const __restrict pch = data();
 
    for (int i = 0; i < height(); i++)
    {
-      unsigned int offs = 3;
+      unsigned int offs = i*pitch() + 3;
       for (int l = 0; l < width(); l++,offs+=4)
          pch[offs] = 0xff;
-
-      pch += pitch();
    }
 }
