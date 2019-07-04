@@ -1840,24 +1840,22 @@ void PinTable::GetUniqueName(ItemTypeEnum type, WCHAR *wzUniqueName)
 void PinTable::GetUniqueName(WCHAR *wzRoot, WCHAR *wzUniqueName)
 {
    int suffix = 1;
-   bool fFound = false;
+   bool found = false;
    WCHAR wzName[128];
    WCHAR wzSuffix[10];
 
-   while (!fFound)
+   while (!found)
    {
       WideStrNCopy(wzRoot, wzName, 128);
       _itow_s(suffix, wzSuffix, sizeof(wzSuffix) / sizeof(WCHAR), 10);
+      if(suffix < 10)
+         WideStrCat(L"0", wzName);
       WideStrCat(wzSuffix, wzName);
 
       if (IsNameUnique(wzName))
-      {
-         fFound = true;
-      }
+         found = true;
       else
-      {
-         suffix += 1;
-      }
+         suffix++;
    }
 
    WideStrCopy(wzName, wzUniqueName);
@@ -7898,7 +7896,7 @@ bool PinTable::GetImageLink(Texture * const ppi)
    return (!lstrcmpi(ppi->m_szInternalName, m_szScreenShot));
 }
 
-PinBinary *PinTable::GetImageLinkBinary(int id)
+PinBinary *PinTable::GetImageLinkBinary(const int id)
 {
    switch (id)
    {

@@ -333,7 +333,7 @@ public:
    HRESULT LoadImageFromStream(IStream *pstm, int version);
    Texture* GetImage(const char * const szName) const;
    bool GetImageLink(Texture * const ppi);
-   PinBinary *GetImageLinkBinary(int id);
+   PinBinary *GetImageLinkBinary(const int id);
 
    void ListCustomInfo(HWND hwndListView);
    int AddListItem(HWND hwndListView, char *szName, char *szValue1, LPARAM lparam);
@@ -704,7 +704,7 @@ public:
    vector<char*> m_vCustomInfoTag;
    vector<char*> m_vCustomInfoContent;
 
-   std::vector<HANDLE> m_vAsyncHandles;
+   vector<HANDLE> m_vAsyncHandles;
 
    int  m_globalDetailLevel;
    int  m_userDetailLevel;
