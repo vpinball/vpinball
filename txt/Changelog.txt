@@ -1,6 +1,8 @@
 VP 10.6.0 Changelog
 ------------------------
 
+- optimize .obj importer
+
 - add object space-normal mapping support to primitive (our implementation matches the object space, +X +Y +Z, export/baking settings in Blender)
   Object space-normal maps are commonly used if one reduces polygon counts of a complex model. The lost geometric details are then added back via a normal map
 
