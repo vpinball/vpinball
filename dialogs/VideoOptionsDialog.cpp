@@ -407,10 +407,10 @@ BOOL VideoOptionsDialog::OnInitDialog()
    const int ballStretchMode = LoadValueIntWithDefault("Player", "BallStretchMode", 0);
    switch (ballStretchMode)
    {
+      default:
       case 0:  SendMessage(GetDlgItem(IDC_StretchNo).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);      break;
       case 1:  SendMessage(GetDlgItem(IDC_StretchYes).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);     break;
       case 2:  SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0); break;
-      default: SendMessage(GetDlgItem(IDC_StretchNo).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);      break;
    }
 
    // set selected Monitors

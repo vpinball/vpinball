@@ -1,4 +1,7 @@
 #include "stdafx.h"
+#include <hash.h>
+
+// not thread safe!
 
 struct MyPoly
 {
@@ -10,35 +13,21 @@ struct MyPoly
 static vector<Vertex3Ds> tmpVerts;
 static vector<Vertex3Ds> tmpNorms;
 static vector<Vertex2D> tmpTexel;
+static std::unordered_set<std::pair<const Vertex3D_NoTex2*,const unsigned int>, Vertex3D_NoTex2IdxHashFunctor, Vertex3D_NoTex2IdxComparator> tmpCombined; // only used to find duplicate vertices quickly
 static vector<MyPoly> tmpFaces;
 static vector<Vertex3D_NoTex2> verts;
-static vector<int> faces;
+static vector<unsigned int> indices;
 static unsigned int faceIndexOffset = 0;
 static FILE *matFile = NULL;
-
-static int isInList(const int vi, const int ti, const int ni)
-{
-   for (unsigned int i = 0; i < verts.size(); i++)
-      if (verts[i].x == tmpVerts[vi].x && verts[i].y == tmpVerts[vi].y && verts[i].z == tmpVerts[vi].z
-         &&
-         verts[i].tu == tmpTexel[ti].x && verts[i].tv == tmpTexel[ti].y
-         &&
-         verts[i].nx == tmpNorms[ni].x && verts[i].ny == tmpNorms[ni].y && verts[i].nz == tmpNorms[ni].z)
-      {
-         return i;
-      }
-
-   return -1;
-}
 
 #if 0
 static void NormalizeNormals()
 {
-   for (unsigned int i = 0; i < faces.size(); i += 3)
+   for (size_t i = 0; i < indices.size(); i += 3)
    {
-      const int A = faces[i];
-      const int B = faces[i + 1];
-      const int C = faces[i + 2];
+      const unsigned int A = indices[i];
+      const unsigned int B = indices[i + 1];
+      const unsigned int C = indices[i + 2];
       const float x1 = verts[B].x - verts[A].x;
       const float y1 = verts[B].y - verts[A].y;
       const float z1 = verts[B].z - verts[A].z;
@@ -170,9 +159,10 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
    tmpVerts.clear();
    tmpTexel.clear();
    tmpNorms.clear();
+   tmpCombined.clear();
    tmpFaces.clear();
    verts.clear();
-   faces.clear();
+   indices.clear();
 
    struct VertInfo { int v; int t; int n; };
    std::vector<VertInfo> faceVerts;
@@ -193,7 +183,7 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
          Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
          if (convertToLeftHanded)
-            tmp.z *= -1.0f;
+            tmp.z = -tmp.z;
          tmpVerts.push_back(tmp);
       }
       else if (strcmp(lineHeader, "vt") == 0)
@@ -201,9 +191,7 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
          Vertex2D tmp;
          fscanf_s(f, "%f %f", &tmp.x, &tmp.y);
          if (flipTv || convertToLeftHanded)
-         {
             tmp.y = 1.f - tmp.y;
-         }
          tmpTexel.push_back(tmp);
       }
       else if (strcmp(lineHeader, "vn") == 0)
@@ -211,7 +199,7 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
          Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
          if (convertToLeftHanded)
-            tmp.z *= -1.f;
+            tmp.z = -tmp.z;
          tmpNorms.push_back(tmp);
       }
       else if (strcmp(lineHeader, "f") == 0)
@@ -283,67 +271,65 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
       }
    }
 
+   verts.reserve(tmpVerts.size()); //!! reserve more than needed, but this is necessary to have no re-allocs below, so that all addresses to elements in the vector remain the same during the loop!
+   indices.reserve(tmpFaces.size()*3);
+
    for (size_t i = 0; i < tmpFaces.size(); i++)
    {
-      int idx = isInList(tmpFaces[i].vi0, tmpFaces[i].ti0, tmpFaces[i].ni0);
-      if (idx == -1)
+      Vertex3D_NoTex2 tmp;
+      tmp.x  = tmpVerts[tmpFaces[i].vi0].x;
+      tmp.y  = tmpVerts[tmpFaces[i].vi0].y;
+      tmp.z  = tmpVerts[tmpFaces[i].vi0].z;
+      tmp.tu = tmpTexel[tmpFaces[i].ti0].x;
+      tmp.tv = tmpTexel[tmpFaces[i].ti0].y;
+      tmp.nx = tmpNorms[tmpFaces[i].ni0].x;
+      tmp.ny = tmpNorms[tmpFaces[i].ni0].y;
+      tmp.nz = tmpNorms[tmpFaces[i].ni0].z;
+      std::unordered_set<std::pair<const Vertex3D_NoTex2*,const unsigned int>, Vertex3D_NoTex2IdxHashFunctor, Vertex3D_NoTex2IdxComparator>::const_iterator idx = tmpCombined.find(std::pair<const Vertex3D_NoTex2*,const unsigned int>(&tmp,0)); // idx is ignored when searching via find
+      if (idx == tmpCombined.end())
       {
-         Vertex3D_NoTex2 tmp;
-         tmp.x = tmpVerts[tmpFaces[i].vi0].x;
-         tmp.y = tmpVerts[tmpFaces[i].vi0].y;
-         tmp.z = tmpVerts[tmpFaces[i].vi0].z;
-         tmp.tu = tmpTexel[tmpFaces[i].ti0].x;
-         tmp.tv = tmpTexel[tmpFaces[i].ti0].y;
-         tmp.nx = tmpNorms[tmpFaces[i].ni0].x;
-         tmp.ny = tmpNorms[tmpFaces[i].ni0].y;
-         tmp.nz = tmpNorms[tmpFaces[i].ni0].z;
          verts.push_back(tmp);
-         faces.push_back((int)(verts.size() - 1));
+         tmpCombined.insert(std::pair<const Vertex3D_NoTex2*,const unsigned int>(&verts.back(),(unsigned int)(verts.size() - 1)));
+         indices.push_back((unsigned int)(verts.size() - 1));
       }
       else
-      {
-         faces.push_back(idx);
-      }
+         indices.push_back(idx->second);
 
-      idx = isInList(tmpFaces[i].vi1, tmpFaces[i].ti1, tmpFaces[i].ni1);
-      if (idx == -1)
+      tmp.x  = tmpVerts[tmpFaces[i].vi1].x;
+      tmp.y  = tmpVerts[tmpFaces[i].vi1].y;
+      tmp.z  = tmpVerts[tmpFaces[i].vi1].z;
+      tmp.tu = tmpTexel[tmpFaces[i].ti1].x;
+      tmp.tv = tmpTexel[tmpFaces[i].ti1].y;
+      tmp.nx = tmpNorms[tmpFaces[i].ni1].x;
+      tmp.ny = tmpNorms[tmpFaces[i].ni1].y;
+      tmp.nz = tmpNorms[tmpFaces[i].ni1].z;
+      idx = tmpCombined.find(std::pair<const Vertex3D_NoTex2*,const unsigned int>(&tmp,0)); // idx is ignored when searching via find
+      if (idx == tmpCombined.end())
       {
-         Vertex3D_NoTex2 tmp;
-         tmp.x = tmpVerts[tmpFaces[i].vi1].x;
-         tmp.y = tmpVerts[tmpFaces[i].vi1].y;
-         tmp.z = tmpVerts[tmpFaces[i].vi1].z;
-         tmp.tu = tmpTexel[tmpFaces[i].ti1].x;
-         tmp.tv = tmpTexel[tmpFaces[i].ti1].y;
-         tmp.nx = tmpNorms[tmpFaces[i].ni1].x;
-         tmp.ny = tmpNorms[tmpFaces[i].ni1].y;
-         tmp.nz = tmpNorms[tmpFaces[i].ni1].z;
          verts.push_back(tmp);
-         faces.push_back((int)(verts.size() - 1));
+         tmpCombined.insert(std::pair<const Vertex3D_NoTex2*,const unsigned int>(&verts.back(),(unsigned int)(verts.size() - 1)));
+         indices.push_back((unsigned int)(verts.size() - 1));
       }
       else
-      {
-         faces.push_back(idx);
-      }
+         indices.push_back(idx->second);
 
-      idx = isInList(tmpFaces[i].vi2, tmpFaces[i].ti2, tmpFaces[i].ni2);
-      if (idx == -1)
+      tmp.x  = tmpVerts[tmpFaces[i].vi2].x;
+      tmp.y  = tmpVerts[tmpFaces[i].vi2].y;
+      tmp.z  = tmpVerts[tmpFaces[i].vi2].z;
+      tmp.tu = tmpTexel[tmpFaces[i].ti2].x;
+      tmp.tv = tmpTexel[tmpFaces[i].ti2].y;
+      tmp.nx = tmpNorms[tmpFaces[i].ni2].x;
+      tmp.ny = tmpNorms[tmpFaces[i].ni2].y;
+      tmp.nz = tmpNorms[tmpFaces[i].ni2].z;
+      idx = tmpCombined.find(std::pair<const Vertex3D_NoTex2*,const unsigned int>(&tmp,0)); // idx is ignored when searching via find
+      if (idx == tmpCombined.end())
       {
-         Vertex3D_NoTex2 tmp;
-         tmp.x = tmpVerts[tmpFaces[i].vi2].x;
-         tmp.y = tmpVerts[tmpFaces[i].vi2].y;
-         tmp.z = tmpVerts[tmpFaces[i].vi2].z;
-         tmp.tu = tmpTexel[tmpFaces[i].ti2].x;
-         tmp.tv = tmpTexel[tmpFaces[i].ti2].y;
-         tmp.nx = tmpNorms[tmpFaces[i].ni2].x;
-         tmp.ny = tmpNorms[tmpFaces[i].ni2].y;
-         tmp.nz = tmpNorms[tmpFaces[i].ni2].z;
          verts.push_back(tmp);
-         faces.push_back((int)(verts.size() - 1));
+         tmpCombined.insert(std::pair<const Vertex3D_NoTex2*,const unsigned int>(&verts.back(),(unsigned int)(verts.size() - 1)));
+         indices.push_back((unsigned int)(verts.size() - 1));
       }
       else
-      {
-         faces.push_back(idx);
-      }
+         indices.push_back(idx->second);
    }
    // not used yet
    //   NormalizeNormals();
@@ -351,6 +337,7 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
    tmpVerts.clear();
    tmpTexel.clear();
    tmpNorms.clear();
+   tmpCombined.clear();
    tmpFaces.clear();
    return true;
 
@@ -358,34 +345,22 @@ Error:
    tmpVerts.clear();
    tmpTexel.clear();
    tmpNorms.clear();
+   tmpCombined.clear();
    tmpFaces.clear();
    fclose(f);
    return false;
 }
 
-void WaveFrontObj_GetVertices(std::vector<Vertex3D_NoTex2>& objMesh) // clears temporary storage on the way
+void WaveFrontObj_GetVertices(std::vector<Vertex3D_NoTex2>& vertices) // clears temporary storage on the way
 {
-   objMesh.resize(verts.size());
-   for (size_t i = 0; i < verts.size(); i++)
-   {
-      objMesh[i].x = verts[i].x;
-      objMesh[i].y = verts[i].y;
-      objMesh[i].z = verts[i].z;
-      objMesh[i].tu = verts[i].tu;
-      objMesh[i].tv = verts[i].tv;
-      objMesh[i].nx = verts[i].nx;
-      objMesh[i].ny = verts[i].ny;
-      objMesh[i].nz = verts[i].nz;
-   }
+   vertices = verts;
    verts.clear();
 }
 
-void WaveFrontObj_GetIndices(std::vector<unsigned int>& list) // clears temporary storage on the way
+void WaveFrontObj_GetIndices(std::vector<unsigned int>& idx) // clears temporary storage on the way
 {
-   list.resize(faces.size());
-   for (size_t i = 0; i < faces.size(); i++)
-      list[i] = faces[i];
-   faces.clear();
+   idx = indices;
+   indices.clear();
 }
 
 FILE* WaveFrontObj_ExportStart(const char *filename)
