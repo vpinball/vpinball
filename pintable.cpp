@@ -1850,6 +1850,8 @@ void PinTable::GetUniqueName(WCHAR *wzRoot, WCHAR *wzUniqueName)
       _itow_s(suffix, wzSuffix, sizeof(wzSuffix) / sizeof(WCHAR), 10);
       if(suffix < 10)
          WideStrCat(L"0", wzName);
+      if(suffix < 100)
+         WideStrCat(L"0", wzName);
       WideStrCat(wzSuffix, wzName);
 
       if (IsNameUnique(wzName))
