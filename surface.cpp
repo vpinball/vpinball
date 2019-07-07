@@ -1421,7 +1421,7 @@ bool Surface::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
    }
-   return fTrue;
+   return true;
 }
 
 HRESULT Surface::InitPostLoad()

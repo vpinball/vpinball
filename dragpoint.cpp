@@ -575,7 +575,7 @@ bool DragPoint::LoadToken(const int id, BiffReader * const pbr)
    case FID(TEXC): pbr->GetFloat(&m_texturecoord); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
-   return fTrue;
+   return true;
 }
 
 IDispatch *DragPoint::GetDispatch()

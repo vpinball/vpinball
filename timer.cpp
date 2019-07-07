@@ -257,7 +257,7 @@ bool Timer::LoadToken(const int id, BiffReader * const pbr)
    case FID(BGLS): pbr->GetBool(&m_backglass); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
-   return fTrue;
+   return true;
 }
 
 HRESULT Timer::InitPostLoad()

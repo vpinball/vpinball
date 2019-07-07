@@ -966,7 +966,7 @@ bool Plunger::LoadToken(const int id, BiffReader * const pbr)
    case FID(SPRE): pbr->GetFloat(&m_d.m_springEndLoops); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
-   return fTrue;
+   return true;
 }
 
 HRESULT Plunger::InitPostLoad()

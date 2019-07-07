@@ -660,7 +660,7 @@ bool Gate::LoadToken(const int id, BiffReader * const pbr)
    case FID(GGFC): pbr->GetFloat(&m_d.m_gravityfactor); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
-   return fTrue;
+   return true;
 }
 
 HRESULT Gate::InitPostLoad()

@@ -446,7 +446,7 @@ bool LightSeq::LoadToken(const int id, BiffReader * const pbr)
    case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
    case FID(BGLS): pbr->GetBool(&m_backglass); break;
    }
-   return fTrue;
+   return true;
 }
 
 HRESULT LightSeq::InitPostLoad()

@@ -1043,7 +1043,7 @@ bool Trigger::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
    }
-   return fTrue;
+   return true;
 }
 
 HRESULT Trigger::InitPostLoad()

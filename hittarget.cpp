@@ -974,7 +974,7 @@ bool HitTarget::LoadToken(const int id, BiffReader * const pbr)
    case FID(OVPH): pbr->GetBool(&m_d.m_overwritePhysics); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
-   return fTrue;
+   return true;
 }
 
 HRESULT HitTarget::InitPostLoad()

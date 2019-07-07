@@ -3620,7 +3620,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
-                  LoadImageFromStream(pstmItem, loadfileversion);
+                  hr = LoadImageFromStream(pstmItem, loadfileversion);
+                  if (FAILED(hr))
+                     return hr;
                   pstmItem->Release();
                   pstmItem = NULL;
                }
@@ -3756,9 +3758,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
       {
          IEditable * const piedit = m_vedit[t];
          if (piedit->GetISelect()->m_layerIndex == i)
-         {
             m_layer[i].push_back(piedit);
-         }
       }
    }
 
@@ -4075,7 +4075,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
        break;
    }
    }
-   return fTrue;
+   return true;
 }
 
 

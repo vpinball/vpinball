@@ -5,6 +5,8 @@
 #include <activdbg.h>
 #include <atlcom.h>
 #include "codeviewedit.h"
+#include "scintilla.h"
+#include "scilexer.h"
 
 #define MAX_FIND_LENGTH 81
 #define MAX_LINE_LENGTH 2048
