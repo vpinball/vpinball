@@ -44,7 +44,7 @@
 using std::string;
 using std::vector;
 
-#include "HELPERS.H"
+#include "helpers.H"
 
 #include "def.h"
 
@@ -54,9 +54,6 @@ using std::vector;
 #include "math/bbox.h"
 
 #include "resource.h"
-
-#include "Scintilla.h"
-#include "scilexer.h"
 
 #include "memutil.h"
 #include "disputil.h"
@@ -69,43 +66,43 @@ using std::vector;
 #include "vpinball_i.h"
 #include "regutil.h"
 
-#include "IDebug.h"
+#include "idebug.h"
 
-#include "EventProxy.h"
+#include "eventproxy.h"
 
 #include "worker.h"
 
-#include "XAudPlayer.h"
-#include "media/FileIO.h"
-#include "PinUndo.h"
-#include "ISelect.h"
+#include "xaudplayer.h"
+#include "media/fileio.h"
+#include "pinundo.h"
+#include "iselect.h"
 
-#include "IEditable.h"
-#include "PropBrowser.h"
-#include "CodeView.h"
+#include "ieditable.h"
+#include "propbrowser.h"
+#include "codeview.h"
 
 #include "media/lzwreader.h"
 #include "media/lzwwriter.h"
 
 #include "media/wavread.h"
 
-#include "PinInput.h"
-#include "PinSound.h"
-#include "PinBinary.h"
+#include "pininput.h"
+#include "pinsound.h"
+#include "pinbinary.h"
 
-#include "VPinball.h"
-#include "PinTable.h"
+#include "vpinball.h"
+#include "pintable.h"
 
-#include "Mesh.h"
+#include "mesh.h"
 #include "pin/collide.h"
-#include "Pin3D.h"
+#include "pin3d.h"
 
 #include "sur.h"
 #include "paintsur.h"
 #include "hitsur.h"
 #include "hitrectsur.h"
 
-#include "BallEx.h"
+#include "ballex.h"
 
 #include "pin/collideex.h"
 #include "pin/ball.h"
@@ -117,7 +114,7 @@ using std::vector;
 
 #include "color.h"
 
-#include "DragPoint.h"
+#include "dragpoint.h"
 #include "timer.h"
 #include "surface.h"
 #include "flipper.h"
@@ -126,15 +123,15 @@ using std::vector;
 #include "dispreel.h"
 #include "lightseq.h"
 #include "bumper.h"
-#include "Trigger.h"
-#include "Light.h"
-#include "Kicker.h"
-#include "Decal.h"
-#include "Primitive.h"
+#include "trigger.h"
+#include "light.h"
+#include "kicker.h"
+#include "decal.h"
+#include "primitive.h"
 #include "hittarget.h"
-#include "Gate.h"
-#include "Spinner.h"
-#include "Ramp.h"
+#include "gate.h"
+#include "spinner.h"
+#include "ramp.h"
 #include "flasher.h"
 #include "rubber.h"
 #include "mixer.h"

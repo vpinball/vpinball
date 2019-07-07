@@ -372,7 +372,7 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
    }
-   return fTrue;
+   return true;
 }
 
 void Texture::FreeStuff()

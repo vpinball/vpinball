@@ -623,7 +623,7 @@ bool Flasher::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
    }
-   return fTrue;
+   return true;
 }
 
 HRESULT Flasher::InitPostLoad()

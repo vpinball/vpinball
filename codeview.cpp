@@ -3118,14 +3118,14 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
                piscript->GetISelect()->GetIEditable()->m_vCollection.push_back(this);
                piscript->GetISelect()->GetIEditable()->m_viCollection.push_back(m_visel.Size());
                m_visel.AddElement(piscript->GetISelect());
-               return fTrue;
+               return true;
             }
          }
       }
       break;
    }
    }
-   return fTrue;
+   return true;
 }
 
 STDMETHODIMP Collection::get_Count(long __RPC_FAR *plCount)

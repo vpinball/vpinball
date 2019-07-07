@@ -538,7 +538,7 @@ bool Spinner::LoadToken(const int id, BiffReader * const pbr)
    case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
-   return fTrue;
+   return true;
 }
 
 HRESULT Spinner::InitPostLoad()

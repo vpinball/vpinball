@@ -1030,7 +1030,7 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
    }
-   return fTrue;
+   return true;
 }
 
 HRESULT Light::InitPostLoad()

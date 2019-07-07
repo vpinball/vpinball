@@ -1705,7 +1705,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(OSNM): pbr->GetBool(&m_d.m_objectSpaceNormalMap); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
-   return fTrue;
+   return true;
 }
 
 HRESULT Primitive::InitPostLoad()

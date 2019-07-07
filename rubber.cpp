@@ -802,7 +802,7 @@ bool Rubber::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
    }
-   return fTrue;
+   return true;
 }
 
 HRESULT Rubber::InitPostLoad()

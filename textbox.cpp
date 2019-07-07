@@ -549,7 +549,7 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
    }
    default: ISelect::LoadToken(id, pbr); break;
    }
-   return fTrue;
+   return true;
 }
 
 HRESULT Textbox::InitPostLoad()

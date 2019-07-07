@@ -441,16 +441,12 @@ HRESULT BiffReader::Load()
 
       const HRESULT hr = GetInt(&tag);
 
-      bool fContinue = false;
+      bool cont = false;
       if (hr == S_OK)
-      {
-         fContinue = m_piloadable->LoadToken(tag, this);
-      }
+         cont = m_piloadable->LoadToken(tag, this);
 
-      if (!fContinue)
-      {
+      if (!cont)
          return E_FAIL;
-      }
 
       if (m_version > 30)
       {

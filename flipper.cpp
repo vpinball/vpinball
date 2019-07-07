@@ -1012,7 +1012,7 @@ bool Flipper::LoadToken(const int id, BiffReader * const pbr)
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
-   return fTrue;
+   return true;
 }
 
 HRESULT Flipper::InitPostLoad()

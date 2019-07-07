@@ -57,9 +57,7 @@ void ISelect::OnMouseMove(int x, int y)
    const float inv_zoom = 1.0f / ptable->m_zoom;
 
    if ((x == m_ptLast.x) && (y == m_ptLast.y))
-   {
       return;
-   }
 
    if (m_dragging && !GetIEditable()->GetISelect()->m_locked) // For drag points, follow the lock of the parent
    {
@@ -366,9 +364,15 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(LOCK): pbr->GetBool(&m_locked); break;
-   case FID(LAYR): pbr->GetInt(&m_layerIndex); break;
+   case FID(LAYR):
+   {
+      int tmp;
+      pbr->GetInt(&tmp);
+      m_layerIndex = (char)tmp;
+      break;
    }
-   return fTrue;
+   }
+   return true;
 }
 
 HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)

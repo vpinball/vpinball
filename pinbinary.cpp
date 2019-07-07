@@ -118,7 +118,7 @@ bool PinBinary::LoadToken(const int id, BiffReader * const pbr)
    // Size must come before data, otherwise our structure won't be allocated
    case FID(DATA): pbr->GetStruct(m_pdata, m_cdata); break;
    }
-   return fTrue;
+   return true;
 }
 
 int CALLBACK EnumFontFamExProc(
@@ -153,15 +153,21 @@ void PinFont::Register()
    while (szEnd > szPath)
    {
       if (*szEnd == '\\')
-      {
          break;
-      }
+
       szEnd--;
    }
 
    *(szEnd + 1) = '\0'; // Get rid of exe name
 
-   lstrcat(szPath, "VPTemp.ttf");
+   static int tempFontNumber = -1;
+   tempFontNumber++;
+
+   lstrcat(szPath, "VPTemp");
+   char tempFontNumber_s[4];
+   _itoa_s(tempFontNumber, tempFontNumber_s, 10);
+   lstrcat(szPath, tempFontNumber_s);
+   lstrcat(szPath, ".ttf");
 
    strcpy_s(m_szTempFile, sizeof(m_szTempFile), szPath);
 
