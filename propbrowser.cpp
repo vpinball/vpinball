@@ -203,19 +203,16 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
    // Have to check resourceid too, since there can be more than one dialog view of the same object (table/backdrop)
    if (pvsel && m_pvsel && (pvsel->Size() == m_pvsel->Size()) /*m_pisel == pisel*/ && (m_olddialog == propID))
    {
-      bool fSame = fTrue;
+      bool same = true;
       for (int i = 0; i < pvsel->Size(); i++)
-      {
          if (pvsel->ElementAt(i) != m_pvsel->ElementAt(i))
          {
-            fSame = false;
+            same = false;
             break;
          }
-      }
-      if (fSame)
-      {
+
+      if (same)
          return;
-      }
    }
 
    m_olddialog = propID;

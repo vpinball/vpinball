@@ -20,12 +20,12 @@ private:
 
    IStream *m_pstm;
 
-   int m_msDelayCur;
-
    /* output */
    BYTE *m_pbBitsOutCur;
    int m_cbStride;
+#ifdef _DEBUG
    int bad_code_count;
+#endif
 
    /* Static variables */
    int curr_size;                 /* The current code size */

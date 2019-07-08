@@ -2170,7 +2170,8 @@ void PinTable::SetDirtyDraw()
    ::InvalidateRect(m_hwnd, NULL, fFalse);
 }
 
-void PinTable::Play(const bool _cameraMode)
+// also creates Player instance
+void PinTable::Play(const bool cameraMode)
 {
    if (g_pplayer)
       return; // Can't play twice
@@ -2268,8 +2269,8 @@ void PinTable::Play(const bool _cameraMode)
 
       // create Player and init that one
 
-      g_pplayer = new Player(_cameraMode);
-      const HRESULT hrInit = g_pplayer->Init(this, hwndProgressBar, hwndStatusName);
+      HRESULT hrInit;
+      g_pplayer = new Player(cameraMode, this, hwndProgressBar, hwndStatusName, hrInit);
       if (!m_pcv->m_scriptError)
       {
          const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
@@ -2307,10 +2308,10 @@ void PinTable::Play(const bool _cameraMode)
 
    DestroyWindow(hwndProgressDialog);
 
-   //EnableWindow(g_pvp->m_hwndWork, fFalse); // Go modal in our main app window
+   //EnableWindow(g_pvp->m_hwndWork, FALSE); // Go modal in our main app window
 }
 
-
+// called before Player instance gets deleted
 void PinTable::StopPlaying()
 {
    // Unhook script connections
@@ -2335,7 +2336,7 @@ void PinTable::StopPlaying()
    m_textureMap.clear();
    m_materialMap.clear();
 
-   //	EnableWindow(g_pvp->m_hwndWork, fTrue); // Disable modal state after game ends
+   // EnableWindow(g_pvp->m_hwndWork, TRUE); // Disable modal state after game ends
 
    // This was causing the application to crash 
    // if the simulation was run without a save first.

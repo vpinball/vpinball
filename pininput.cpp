@@ -704,9 +704,9 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          g_pplayer->m_ptable->m_lightRange = g_pplayer->m_ptable->m_backupLightRange;
          g_pplayer->m_ptable->m_lightEmissionScale = g_pplayer->m_ptable->m_backupEmisionScale;
          g_pplayer->m_ptable->m_envEmissionScale = g_pplayer->m_ptable->m_backupEnvEmissionScale;
-         g_pplayer->m_pin3d.m_camx = 0;
-         g_pplayer->m_pin3d.m_camy = 0;
-         g_pplayer->m_pin3d.m_camz = 0;
+         g_pplayer->m_pin3d.m_cam.x = 0;
+         g_pplayer->m_pin3d.m_cam.y = 0;
+         g_pplayer->m_pin3d.m_cam.z = 0;
       }
       else if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
       {
@@ -836,9 +836,9 @@ void PinInput::ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input)
             if ((input->dwData & 0x80) != 0)
             {
                 if (!m_cameraModeAltKey)
-                    g_pplayer->m_pin3d.m_camy += 10.0f;
+                    g_pplayer->m_pin3d.m_cam.y += 10.0f;
                 else
-                    g_pplayer->m_pin3d.m_camz += 10.0f;
+                    g_pplayer->m_pin3d.m_cam.z += 10.0f;
 
                 m_cameraMode = 1;
             }
@@ -851,9 +851,9 @@ void PinInput::ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input)
             if ((input->dwData & 0x80) != 0)
             {
                 if (!m_cameraModeAltKey)
-                    g_pplayer->m_pin3d.m_camy -= 10.0f;
+                    g_pplayer->m_pin3d.m_cam.y -= 10.0f;
                 else
-                    g_pplayer->m_pin3d.m_camz -= 10.0f;
+                    g_pplayer->m_pin3d.m_cam.z -= 10.0f;
 
                 m_cameraMode = 2;
             }
@@ -866,7 +866,7 @@ void PinInput::ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input)
             if ((input->dwData & 0x80) != 0)
             {
                 if (!m_cameraModeAltKey)
-                    g_pplayer->m_pin3d.m_camx -= 10.0f;
+                    g_pplayer->m_pin3d.m_cam.x -= 10.0f;
                 else
                     g_pplayer->m_pin3d.m_inc -= 0.01f;
 
@@ -881,7 +881,7 @@ void PinInput::ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input)
             if ((input->dwData & 0x80) != 0)
             {
                 if (!m_cameraModeAltKey)
-                    g_pplayer->m_pin3d.m_camx += 10.0f;
+                    g_pplayer->m_pin3d.m_cam.x += 10.0f;
                 else
                     g_pplayer->m_pin3d.m_inc += 0.01f;
 
@@ -1533,28 +1533,28 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
            if (m_cameraMode == 1)
            {
 			   if (!m_cameraModeAltKey)
-				   g_pplayer->m_pin3d.m_camy += 10.0f;
+				   g_pplayer->m_pin3d.m_cam.y += 10.0f;
 			   else
-				   g_pplayer->m_pin3d.m_camz += 10.0f;
+				   g_pplayer->m_pin3d.m_cam.z += 10.0f;
            }
            else if (m_cameraMode == 2)
 		   {
 			   if (!m_cameraModeAltKey)
-				   g_pplayer->m_pin3d.m_camy -= 10.0f;
+				   g_pplayer->m_pin3d.m_cam.y -= 10.0f;
 			   else
-				   g_pplayer->m_pin3d.m_camz -= 10.0f;
+				   g_pplayer->m_pin3d.m_cam.z -= 10.0f;
            }
            else if (m_cameraMode == 3)
            {
 			   if (!m_cameraModeAltKey)
-				   g_pplayer->m_pin3d.m_camx -= 10.0f;
+				   g_pplayer->m_pin3d.m_cam.x -= 10.0f;
 			   else
 				   g_pplayer->m_pin3d.m_inc -= 0.01f;
            }
            else if (m_cameraMode == 4)
            {
 			   if (!m_cameraModeAltKey)
-				   g_pplayer->m_pin3d.m_camx += 10.0f;
+				   g_pplayer->m_pin3d.m_cam.x += 10.0f;
 			   else
 				   g_pplayer->m_pin3d.m_inc += 0.01f;
            }
