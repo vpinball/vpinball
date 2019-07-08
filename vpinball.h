@@ -116,12 +116,11 @@ public:
    ITypeInfo *m_ptinfoCls;
    ITypeInfo *m_ptinfoInt;
 
-   HWND m_hwnd;
-   HWND m_toolTipHwnd;
-
    vector< CComObject<PinTable>* > m_vtable;
    CComObject<PinTable> *m_ptableActive;
 
+   HWND m_hwnd;
+   HWND m_toolTipHwnd;
    HWND m_hwndSideBar;
    HWND m_hwndSideBarScroll;
    HWND m_hwndSideBarLayers;

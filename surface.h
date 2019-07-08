@@ -22,15 +22,15 @@ public:
    float m_elasticity;
    float m_friction;
    float m_scatter;
-   float m_disableLightingTop; // was bool, now 0..1
+   float m_disableLightingTop;   // was bool, now 0..1
    float m_disableLightingBelow; // 0..1
    bool m_droppable;
-   bool m_flipbook;           // if enabled, dropped walls are not rendered
-   bool m_displayTexture;     // in editor
+   bool m_flipbook;              // if enabled, dropped walls are not rendered
+   bool m_displayTexture;        // in editor
    bool m_sideVisible;
    bool m_enabled;
-   bool m_collidable; //wall must be droppable too!
-   bool m_isBottomSolid; //is the bottom closed (lower side of the 'cube') or not (legacy behavior has bottom open, e.g. balls can drop into walls from below, or leave them if inside walls (if bottom area is large enough of course))
+   bool m_collidable;            // wall must be droppable too!
+   bool m_isBottomSolid;         // is the bottom closed (lower side of the 'cube') or not (legacy behavior has bottom open, e.g. balls can drop into walls from below, or leave them if inside walls (if bottom area is large enough of course))
    bool m_slingshotAnimation;
    bool m_topBottomVisible;
    bool m_hitEvent;
@@ -145,7 +145,7 @@ private:
    void AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2);
 
    void RenderSlingshots();
-   void RenderWallsAtHeight(const bool fDrop);
+   void RenderWallsAtHeight(const bool drop);
    void PrepareWallsAtHeight();
    void PrepareSlingshots();
    void GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Vertex3D_NoTex2> &sideBuf, std::vector<WORD> &topBottomIndices, std::vector<WORD> &sideIndices);
@@ -155,8 +155,6 @@ private:
    void UpdateUnitsInfo();
 
    PinTable *m_ptable;
-
-   BSTR m_bstrName;
 
    std::vector<LineSegSlingshot*> m_vlinesling;
 

@@ -1036,7 +1036,7 @@ void Surface::RenderSlingshots()
    //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
 
-void Surface::RenderWallsAtHeight(const bool fDrop)
+void Surface::RenderWallsAtHeight(const bool drop)
 {
    if (m_ptable->m_reflectionEnabled && (/*m_d.m_heightbottom < 0.0f ||*/ m_d.m_heighttop < 0.0f))
       return;
@@ -1050,7 +1050,7 @@ void Surface::RenderWallsAtHeight(const bool fDrop)
    }
 
    // render side
-   if (m_d.m_sideVisible && !fDrop && (m_numVertices > 0)) // Don't need to render walls if dropped
+   if (m_d.m_sideVisible && !drop && (m_numVertices > 0)) // Don't need to render walls if dropped
    {
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
@@ -1113,7 +1113,7 @@ void Surface::RenderWallsAtHeight(const bool fDrop)
 
       // Top
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_VBuffer, m_numVertices * 4 + (!fDrop ? 0 : m_numVertices), m_numVertices, m_IBuffer, m_numVertices * 6, m_numPolys * 3);
+      pd3dDevice->DrawIndexedPrimitiveVB(RenderDevice::TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_VBuffer, m_numVertices * 4 + (!drop ? 0 : m_numVertices), m_numVertices, m_IBuffer, m_numVertices * 6, m_numPolys * 3);
       pd3dDevice->basicShader->End();
 
       // Only render Bottom for Reflections
