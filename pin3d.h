@@ -47,17 +47,17 @@ public:
    Pin3D();
    ~Pin3D();
 
-   HRESULT InitPin3D(const HWND hwnd, const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl);
+   HRESULT InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl);
 
    void InitLayoutFS();
    void InitLayout(const bool FSS_mode, const float xpixoff = 0.f, const float ypixoff = 0.f);
 
-   void TransformVertices(const Vertex3D_NoTex2 * rgv, const WORD * rgi, int count, Vertex2D * rgvout) const;
+   void TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const;
 
    Vertex3Ds Unproject(const Vertex3Ds& point);
    Vertex3Ds Get3DPointFrom2D(const POINT& p);
 
-   void Flip(bool vsync);
+   void Flip(const bool vsync);
 
    void SetRenderTarget(RenderDevice * const pd3dDevice, RenderTarget* pddsSurface, RenderTarget* pddsZ) const;
    void SetRenderTarget(RenderDevice * const pd3dDevice, RenderTarget* pddsSurface, D3DTexture* pddsZ) const;
@@ -89,7 +89,7 @@ private:
    void InitRenderState(RenderDevice * const pd3dDevice);
    void InitPrimaryRenderState();
    void InitSecondaryRenderState();
-   HRESULT InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl);
+   HRESULT InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl);
 
    // Data members
 public:
@@ -109,8 +109,6 @@ public:
    RenderTarget* m_pddsStatic;
    void* m_pddsStaticZ; // D3DTexture* or RenderTarget*, depending on HW support
 
-   //RenderTarget* m_bloomTexture;
-
    Texture m_pinballEnvTexture; // loaded from Resources
    Texture m_builtinEnvTexture; // loaded from Resources
    Texture m_aoDitherTexture; // loaded from Resources
@@ -121,16 +119,12 @@ public:
    PinProjection m_proj;
 
    // free-camera-mode-fly-around parameters
-   float m_camx;
-   float m_camy;
-   float m_camz;
+   Vertex3Ds m_cam;
    float m_inc;
-   HWND m_hwnd;
 
    //Vertex3Ds m_viewVec;        // direction the camera is facing
 
    ViewPort m_viewPort;
-   bool m_useAA;
 
 private:
    VertexBuffer *m_tableVBuffer;

@@ -151,8 +151,9 @@ using std::vector;
 
 __forceinline float getBGxmult()
 {
+   const bool useAA = (g_pplayer->m_AA && (g_pplayer->m_ptable->m_useAA == -1)) || (g_pplayer->m_ptable->m_useAA == 1);
    return (float)g_pplayer->m_width * (float)(1.0 / EDITOR_BG_WIDTH)
-      * (g_pplayer->m_pin3d.m_useAA ? 2.0f : 1.0f);
+      * (useAA ? 2.0f : 1.0f);
 }
 
 __forceinline float getBGymult()

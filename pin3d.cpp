@@ -17,9 +17,9 @@ Pin3D::Pin3D()
    m_envRadianceTexture = NULL;
    m_tableVBuffer = NULL;
 
-   m_camx = 0.f;
-   m_camy = 0.f;
-   m_camz = 0.f;
+   m_cam.x = 0.f;
+   m_cam.y = 0.f;
+   m_cam.z = 0.f;
    m_inc  = 0.f;
 }
 
@@ -72,7 +72,7 @@ Pin3D::~Pin3D()
    m_pd3dSecondaryDevice = NULL;
 }
 
-void Pin3D::TransformVertices(const Vertex3D_NoTex2 * rgv, const WORD * rgi, int count, Vertex2D * rgvout) const
+void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const
 {
    // Get the width and height of the viewport. This is needed to scale the
    // transformed vertices to fit the render window.
@@ -290,7 +290,7 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
 #endif
 }
 
-HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl)
+HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl)
 {
    const int display = LoadValueIntWithDefault("Player", "Display", 0);
    std::vector<DisplayConfig> displays;
@@ -299,7 +299,7 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
    for (std::vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
       if (display == dispConf->display) adapter = dispConf->adapter;
 
-    m_pd3dPrimaryDevice = new RenderDevice(m_hwnd, m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, VSync, m_useAA, stereo3D, FXAA, ss_refl, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
+    m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->m_playfieldHwnd, m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, VSync, useAA, stereo3D, FXAA, ss_refl, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
     try {
         m_pd3dPrimaryDevice->CreateDevice(refreshrate, adapter);
     }
@@ -361,12 +361,8 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
     return S_OK;
 }
 
-HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl)
+HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool useAO, const bool ss_refl)
 {
-   m_hwnd = hwnd;
-
-   m_useAA = useAA;
-
    // set the viewport for the newly created device
    m_viewPort.X = 0;
    m_viewPort.Y = 0;
@@ -375,7 +371,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    m_viewPort.MinZ = 0.0f;
    m_viewPort.MaxZ = 1.0f;
 
-   if (FAILED(InitPrimary(fullScreen, colordepth, refreshrate, VSync, stereo3D, FXAA, useAO, ss_refl)))
+   if (FAILED(InitPrimary(fullScreen, colordepth, refreshrate, VSync, useAA, stereo3D, FXAA, useAO, ss_refl)))
        return E_FAIL;
 
    m_pd3dSecondaryDevice = m_pd3dPrimaryDevice;
@@ -749,9 +745,9 @@ void Pin3D::InitLayout(const bool FSS_mode, const float xpixoff, const float ypi
    // within 50-60 deg and 40-50 FOV in editor.
    // these values were tested against all known video modes upto 1920x1080 
    // in landscape and portrait on the display
-   const float camx = m_camx;
-   const float camy = m_camy + (FSS_mode ? 500.0f : 0.f);
-         float camz = m_camz;
+   const float camx = m_cam.x;
+   const float camy = m_cam.y + (FSS_mode ? 500.0f : 0.f);
+         float camz = m_cam.z;
    const float inc  = m_inc  + (FSS_mode ? 0.2f : 0.f);
 
    if (FSS_mode)
@@ -979,7 +975,7 @@ void Pin3D::DisableAlphaBlend() const
    m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_FALSE);
 }
 
-void Pin3D::Flip(bool vsync)
+void Pin3D::Flip(const bool vsync)
 {
    m_pd3dPrimaryDevice->Flip(vsync);
 }

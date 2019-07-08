@@ -312,7 +312,9 @@ public:
    //void FireVoidEvent(int dispid);
    void FireKeyEvent(int dispid, int keycode);
 
-   void Play(const bool _cameraMode);
+   // also creates Player instance
+   void Play(const bool cameraMode);
+   // called before Player instance gets deleted
    void StopPlaying();
 
    void ImportSound(const HWND hwndListView, const char * const filename, const bool fPlay);

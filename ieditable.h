@@ -94,7 +94,7 @@ public:
 		} \
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) \
 		{ \
-		int len = lstrlenW(newVal); \
+		const int len = lstrlenW(newVal); \
 		if (len > 32 || len < 1) \
 			{ \
 			return E_FAIL; \

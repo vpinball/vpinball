@@ -13,7 +13,9 @@ LZWReader::LZWReader(IStream *pstm, int *bits, int width, int height, int pitch)
    m_cbStride = pitch;
    m_pbBitsOutCur = ((BYTE *)bits);// - m_cbStride;//+m_cbStride*(height-1);
 
+#ifdef _DEBUG
    bad_code_count = 0;
+#endif
 
    m_cfilebuffer = FILE_BUF_SIZE - 1;
    m_readahead = FILE_BUF_SIZE;
@@ -317,8 +319,10 @@ short LZWReader::Decoder()
           */
          if (code >= slot)
          {
+#ifdef _DEBUG
             if (code > slot)
                ++bad_code_count;
+#endif
             code = oc;
             *sp++ = (BYTE)fc;
          }

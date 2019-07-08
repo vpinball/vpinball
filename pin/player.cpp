@@ -428,13 +428,13 @@ extern int disEnableTrueFullscreen; // set via command line
 
 LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-void ShutDownPlayer();
+static void ShutDownPlayer();
 
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
-Player::Player(bool _cameraMode) : m_cameraMode(_cameraMode)
+Player::Player(const bool cameraMode, PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName, HRESULT &hrInit) : m_cameraMode(cameraMode)
 {
    {
       int regs[4];
@@ -635,10 +635,14 @@ Player::Player(bool _cameraMode) : m_cameraMode(_cameraMode)
    m_ballTrailVertexBuffer = NULL;
    m_pFont = NULL;
    m_meshAsPlayfield = false;
+
+   hrInit = Init(ptable, hwndProgress, hwndProgressName);
 }
 
 Player::~Player()
 {
+    Shutdown();
+
     if (m_pFont)
     {
         m_pFont->Release();
@@ -928,14 +932,6 @@ void Player::InitKeys()
    }
 }
 
-void Player::InitRegValues()
-{
-   m_PlayMusic = LoadValueBoolWithDefault("Player", "PlayMusic", true);
-   m_PlaySound = LoadValueBoolWithDefault("Player", "PlaySound", true);
-   m_MusicVolume = LoadValueIntWithDefault("Player", "MusicVolume", 100);
-   m_SoundVolume = LoadValueIntWithDefault("Player", "SoundVolume", 100);
-}
-
 void Player::InitDebugHitStructure()
 {
    for (size_t i = 0; i < m_vhitables.size(); ++i)
@@ -1206,7 +1202,7 @@ void Player::InitBallShader()
 
 void Player::CreateDebugFont()
 {
-    HRESULT hr = D3DXCreateFont(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice(), //device
+    const HRESULT hr = D3DXCreateFont(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice(), //device
                                 20,                                    //font height
                                 0,                                     //font width
                                 FW_BOLD,                               //font weight
@@ -1256,7 +1252,11 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    InitGameplayWindow();
    InitKeys();
-   InitRegValues();
+
+   m_PlayMusic = LoadValueBoolWithDefault("Player", "PlayMusic", true);
+   m_PlaySound = LoadValueBoolWithDefault("Player", "PlaySound", true);
+   m_MusicVolume = LoadValueIntWithDefault("Player", "MusicVolume", 100);
+   m_SoundVolume = LoadValueIntWithDefault("Player", "SoundVolume", 100);
 
    //
    const bool dynamicDayNight = LoadValueBoolWithDefault("Player", "DynamicDayNight", false);
@@ -1300,7 +1300,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    const int colordepth = LoadValueIntWithDefault("Player", "ColorDepth", 32);
 
    // colordepth & refreshrate are only defined if fullscreen is true.
-   const HRESULT hr = m_pin3d.InitPin3D(m_playfieldHwnd, m_fullScreen, m_width, m_height, colordepth,
+   const HRESULT hr = m_pin3d.InitPin3D(m_fullScreen, m_width, m_height, colordepth,
                                         m_refreshrate, vsync, useAA, !!m_stereo3D, FXAA, !m_disableAO, ss_refl);
 
    if (hr != S_OK)
@@ -4538,7 +4538,7 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->EndScene();
 }
 
-void Player::SetScreenOffset(float x, float y)
+void Player::SetScreenOffset(const float x, const float y)
 {
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
    m_ScreenOffset.x = (rotation != 0.0f ? -y : x);
@@ -5486,7 +5486,7 @@ void AddEventToDebugMenu(char *sz, int index, int dispid, LPARAM lparam)
    AppendMenu(hmenu, MF_STRING, menuid, sz);
 }
 
-void Player::DoDebugObjectMenu(int x, int y)
+void Player::DoDebugObjectMenu(const int x, const int y)
 {
    if (m_vdebugho.size() == 0)
    {
@@ -5794,31 +5794,30 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
    return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-void ShutDownPlayer()
+static void ShutDownPlayer()
 {
-	if (g_pplayer->m_pxap)
-		g_pplayer->m_pxap->Pause();
+   if (g_pplayer->m_pxap)
+      g_pplayer->m_pxap->Pause();
 
-	// signal the script that the game is now exit to allow any cleanup
-	g_pplayer->m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
-	if (g_pplayer->m_detectScriptHang)
-		g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
+   PinTable * const playedTable = g_pplayer->m_ptable;
 
-	PinTable * const playedTable = g_pplayer->m_ptable;
+   // signal the script that the game is now exited to allow any cleanup
+   playedTable->FireVoidEvent(DISPID_GameEvents_Exit);
+   if (g_pplayer->m_detectScriptHang)
+      g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
 
-	g_pplayer->m_ptable->StopPlaying();
-	g_pplayer->Shutdown();
+   playedTable->StopPlaying();
 
-	delete g_pplayer; // needs to be deleted here, as code below relies on it being NULL
-	g_pplayer = NULL;
+   delete g_pplayer; // needs to be deleted here, as code below relies on it being NULL
+   g_pplayer = NULL;
 
-	g_pvp->SetEnableToolbar();
-	mixer_shutdown();
-	hid_shutdown();
-	//!! modification to m_vedit of each table after playing them must be done here, otherwise VP will crash (WTF?!)
-	playedTable->RestoreLayers();
+   g_pvp->SetEnableToolbar();
+   mixer_shutdown();
+   hid_shutdown();
+   //!! modification to m_vedit of each table after playing them must be done here, otherwise VP will crash (WTF?!)
+   playedTable->RestoreLayers();
 
-	SetForegroundWindow(g_pvp->m_hwnd);
+   SetForegroundWindow(g_pvp->m_hwnd);
 }
 
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)

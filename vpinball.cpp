@@ -1260,7 +1260,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
           POINT ptCursor;
           GetCursorPos(&ptCursor);
           ::ScreenToClient(ptCur->m_hwnd, &ptCursor);
-          ptCur->Paste(fFalse, ptCursor.x, ptCursor.y);
+          ptCur->Paste(false, ptCursor.x, ptCursor.y);
       }
       break;
    }
@@ -1272,7 +1272,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          POINT ptCursor;
          GetCursorPos(&ptCursor);
          ::ScreenToClient(ptCur->m_hwnd, &ptCursor);
-         ptCur->Paste(fTrue, ptCursor.x, ptCursor.y);
+         ptCur->Paste(true, ptCursor.x, ptCursor.y);
       }
       break;
    }
@@ -2046,12 +2046,12 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
       {
          //if (pmsg->hwnd == m_pcv->m_hwndMain)
          {
-            int fTranslated = fFalse;
+            bool translated = false;
 
             if ((pmsg->hwnd == m_pcv->m_hwndMain) || ::IsChild(m_pcv->m_hwndMain, pmsg->hwnd))
-               fTranslated = TranslateAccelerator(m_pcv->m_hwndMain, m_pcv->m_haccel, pmsg);
+               translated = !!TranslateAccelerator(m_pcv->m_hwndMain, m_pcv->m_haccel, pmsg);
 
-            if (fTranslated)
+            if (translated)
                *pfConsumed = TRUE;
             else
             {
@@ -2069,9 +2069,9 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
 
       if (!(*pfConsumed))
       {
-         const int fTranslated = TranslateAccelerator(m_hwnd, g_haccel, pmsg);
+         const bool translated = !!TranslateAccelerator(m_hwnd, g_haccel, pmsg);
 
-         if (fTranslated)
+         if (translated)
             *pfConsumed = TRUE;
       }
 

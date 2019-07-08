@@ -64,10 +64,15 @@ public:
    ISelect *GetBaseISel() { if (!m_pvsel || m_pvsel->Size() == 0) { return NULL; } return m_pvsel->ElementAt(0); }
    IDispatch *GetBaseIDisp() { if (!m_pvsel || m_pvsel->Size() == 0) { return NULL; } return m_pvsel->ElementAt(0)->GetDispatch(); }
 
+   std::vector<HWND> m_vhwndDialog;
+
+   VectorProtected<ISelect> *m_pvsel;
+   int m_maxdialogwidth;
+
+private:
    HWND m_hwndFrame;
 
    std::vector<HWND> m_vhwndExpand;
-   std::vector<HWND> m_vhwndDialog;
 
    vector<PropertyPane*> m_vproppane;
 
@@ -81,9 +86,6 @@ public:
    char m_szHeader[64];
    char m_szHeaderCollection[64];
    ISelect *m_prevSelection;
-
-   VectorProtected<ISelect> *m_pvsel;
-   int m_maxdialogwidth;
 };
 
 struct ExpandoInfo
@@ -94,4 +96,3 @@ struct ExpandoInfo
    bool m_expanded;
    bool m_hasCaption; // Also means 'can expand/collapse'
 };
-

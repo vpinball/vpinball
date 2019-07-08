@@ -735,8 +735,8 @@ void Trigger::RenderSetup()
    }
    else if (m_d.m_shape == TriggerWireD)
    {
-       m_numVertices = triggerDWireNumVertices;
-       m_numIndices = triggerDWireNumIndices;
+      m_numVertices = triggerDWireNumVertices;
+      m_numIndices = triggerDWireNumIndices;
    }
    else if (m_d.m_shape == TriggerButton)
    {

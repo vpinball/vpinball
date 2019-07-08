@@ -53,14 +53,14 @@ void ISelect::OnRButtonUp(int x, int y)
 
 void ISelect::OnMouseMove(int x, int y)
 {
-   PinTable * const ptable = GetPTable();
-   const float inv_zoom = 1.0f / ptable->m_zoom;
-
    if ((x == m_ptLast.x) && (y == m_ptLast.y))
       return;
 
    if (m_dragging && !GetIEditable()->GetISelect()->m_locked) // For drag points, follow the lock of the parent
    {
+      PinTable * const ptable = GetPTable();
+      const float inv_zoom = 1.0f / ptable->m_zoom;
+
       if (!m_markedForUndo)
       {
          m_markedForUndo = true;
@@ -68,7 +68,7 @@ void ISelect::OnMouseMove(int x, int y)
       }
       MoveOffset((x - m_ptLast.x)*inv_zoom, (y - m_ptLast.y)*inv_zoom);
 
-      GetPTable()->SetDirtyDraw();
+      ptable->SetDirtyDraw();
 
       m_ptLast.x = x;
       m_ptLast.y = y;
@@ -98,9 +98,9 @@ void ISelect::DoCommand(int icmd, int x, int y)
       const int i = (icmd & 0x00FF0000) >> 16;
       ISelect * const pisel = currentTable->m_allHitElements[i];
 
-      const bool fAdd = ((ksshift & 0x80000000) != 0);
+      const bool add = ((ksshift & 0x80000000) != 0);
 
-      if (pisel == (ISelect *)currentTable && fAdd)
+      if (pisel == (ISelect *)currentTable && add)
       {
          // Can not include the table in multi-select
          // and table will not be unselected, because the
@@ -110,7 +110,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
          return;
       }
 
-      currentTable->AddMultiSel(pisel, fAdd, fTrue, fTrue);
+      currentTable->AddMultiSel(pisel, add, true, true);
       return;
    }
    if (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020))
@@ -162,18 +162,18 @@ void ISelect::DoCommand(int icmd, int x, int y)
 
    case IDC_COPY:
    {
-       GetPTable()->Copy(x,y);
-       break;
+      GetPTable()->Copy(x,y);
+      break;
    }
    case IDC_PASTE:
    {
-       GetPTable()->Paste(false, x, y);
-       break;
+      GetPTable()->Paste(false, x, y);
+      break;
    }
    case IDC_PASTEAT:
    {
-       GetPTable()->Paste(true, x, y);
-       break;
+      GetPTable()->Paste(true, x, y);
+      break;
    }
    case ID_ASSIGNTO_LAYER1:
    {
@@ -241,16 +241,8 @@ void ISelect::DoCommand(int icmd, int x, int y)
 
 void ISelect::SetSelectFormat(Sur *psur)
 {
-   DWORD color;
-
-   if (m_locked)
-   {
-      color = g_pvp->m_elemSelectLockedColor;
-   }
-   else
-   {
-      color = g_pvp->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
-   }
+   const DWORD color = m_locked ? g_pvp->m_elemSelectLockedColor
+                                : g_pvp->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
 
    psur->SetBorderColor(color, false, 4);
    psur->SetLineColor(color, false, 4);
@@ -278,7 +270,7 @@ void ISelect::FlipY(const Vertex2D& pvCenter)
 
    Vertex2D vCenter = GetCenter();
    const float delta = vCenter.y - pvCenter.y;
-   vCenter.y -= delta * 2;
+   vCenter.y -= delta * 2.f;
    PutCenter(vCenter);
 }
 
@@ -288,7 +280,7 @@ void ISelect::FlipX(const Vertex2D& pvCenter)
 
    Vertex2D vCenter = GetCenter();
    const float delta = vCenter.x - pvCenter.x;
-   vCenter.x -= delta * 2;
+   vCenter.x -= delta * 2.f;
    PutCenter(vCenter);
 }
 

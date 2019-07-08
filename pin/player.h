@@ -246,27 +246,20 @@ struct TimerOnOff
 class Player
 {
 public:
-   Player(bool _cameraMode);
+   Player(const bool cameraMode, PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName, HRESULT &hrInit);
    virtual ~Player();
 
-   HRESULT Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName);
+private:
    void RenderStaticMirror(const bool onlyBalls);
    void RenderDynamicMirror(const bool onlyBalls);
    void RenderMirrorOverlay();
    void InitBallShader();
-   void CreateDebugFont();
-   void DebugPrint(int x, int y, LPCSTR text, int stringLen, bool shadow = false);
    void InitGameplayWindow();
    void InitKeys();
-   void InitRegValues();
-
-   void Shutdown();
 
    void InitStatic(HWND hwndProgress);
 
    void UpdatePhysics();
-   void Render();
-   void RenderDynamics();
 
    void DrawBalls();
 
@@ -283,9 +276,11 @@ public:
    void PrepareVideoBuffersAO();
    void FlipVideoBuffers(const bool vsync);
 
-   void SetScreenOffset(float x, float y);     // set render offset in screen coordinates, e.g., for the nudge shake
-
    void PhysicsSimulateCycle(float dtime);
+
+public:
+   void Render();
+   void RenderDynamics();
 
    Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f, const float mass = 1.0f);
    void DestroyBall(Ball *pball);
@@ -293,7 +288,7 @@ public:
    void AddCabinetBoundingHitShapes();
 
    void InitDebugHitStructure();
-   void DoDebugObjectMenu(int x, int y);
+   void DoDebugObjectMenu(const int x, const int y);
 
    void PauseMusic();
    void UnpauseMusic();
@@ -588,22 +583,34 @@ private:
 
    FrameQueueLimiter m_limiter;
 
+   // only called from ctor
+   HRESULT Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName);
+   // only called from dtor
+   void Shutdown();
+
+   void CreateDebugFont();
+   void DebugPrint(int x, int y, LPCSTR text, int stringLen, bool shadow = false);
+
+   void SetScreenOffset(const float x, const float y);     // set render offset in screen coordinates, e.g., for the nudge shake
+
+   bool RenderStaticOnly();
+   bool RenderAOOnly();
+
+   void InitShader();
+   void CalcBallAspectRatio();
+   void GetBallAspectRatio(const Ball * const pball, float &stretchX, float &stretchY, const float zHeight);
+   //void DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall);
+   unsigned int ProfilingMode();
+
 public:
    void ToggleFPS();
    void InitFPS();
    bool ShowFPS();
 
-   bool RenderStaticOnly();
-   bool RenderAOOnly();
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D(1.0f));
-   void InitShader();
    void UpdateCameraModeDisplay();
    void UpdateBackdropSettings(const bool up);
    void UpdateBallShaderMatrix();
-   void CalcBallAspectRatio();
-   void GetBallAspectRatio(const Ball * const pball, float &stretchX, float &stretchY, const float zHeight);
-   //void DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall);
-   unsigned int ProfilingMode();
 
 #ifdef STEPPING
    U32 m_pauseTimeTarget;
@@ -626,5 +633,6 @@ public:
    Texture *m_ballImage;
    Texture *m_decalImage;
 
+private:
    ID3DXFont *m_pFont;
 };

@@ -63,7 +63,7 @@ public:
 class Hit3DPoly : public HitObject
 {
 public:
-   Hit3DPoly(Vertex3Ds * const rgv, const int count);
+   Hit3DPoly(Vertex3Ds * const rgv, const int count); // pointer is copied and content deleted in dtor
    Hit3DPoly(const float x, const float y, const float z, const float r, const int sections); // creates a circular hit poly
    virtual ~Hit3DPoly();
 
