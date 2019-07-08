@@ -271,8 +271,8 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
       }
    }
 
-   verts.reserve(tmpVerts.size()); //!! reserve more than needed, but this is necessary to have no re-allocs below, so that all addresses to elements in the vector remain the same during the loop!
-   indices.reserve(tmpFaces.size()*3);
+   verts.reserve(tmpFaces.size()*3); //!! reserve more than needed, but this is necessary to guarantee to not have any re-allocs below, so that all addresses to elements in the vector remain the same during the loop!
+   indices.reserve(tmpFaces.size()*3); // reserve what is needed upfront
 
    for (size_t i = 0; i < tmpFaces.size(); i++)
    {
