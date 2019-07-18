@@ -1,6 +1,8 @@
 VP 10.6.0 Changelog
 ------------------------
 
+- add x/y scale support to the camera mode to scale x/y axis at the same time
+
 - optimize .obj importer
 
 - add object space-normal mapping support to primitive (our implementation matches the object space, +X +Y +Z, export/baking settings in Blender)

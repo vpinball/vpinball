@@ -711,14 +711,14 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       else if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->m_backdropSettingActive++;
-         if (g_pplayer->m_backdropSettingActive == 13)
+         if (g_pplayer->m_backdropSettingActive == 14)
             g_pplayer->m_backdropSettingActive = 0;
       }
       else if (keycode == g_pplayer->m_rgKeys[eLeftMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->m_backdropSettingActive--;
          if (g_pplayer->m_backdropSettingActive == -1)
-            g_pplayer->m_backdropSettingActive = 12;
+            g_pplayer->m_backdropSettingActive = 13;
       }
    }
    else
