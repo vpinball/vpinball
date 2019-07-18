@@ -2270,7 +2270,9 @@ void PinTable::Play(const bool cameraMode)
       // create Player and init that one
 
       HRESULT hrInit;
-      g_pplayer = new Player(cameraMode, this, hwndProgressBar, hwndStatusName, hrInit);
+      // create the player g_pplayer variable will be set in the ctor
+      new Player(cameraMode, this, hwndProgressBar, hwndStatusName, hrInit);
+
       if (!m_pcv->m_scriptError)
       {
          const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
