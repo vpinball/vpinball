@@ -62,7 +62,7 @@ VP 10.6.0 Changelog
 
 - add strength parameter for the (optional) legacy/VP9-like keyboard nudging code, can be set in the 'Keys, Nudge and DOF' preferences dialog
 
-- add support for showing the image of a primitve mesh in the editor. However this feature is far from perfect because Windows GDI (which draws the elements in the editor) can't handle meshes well
+- add support for showing the image of a primitive mesh in the editor. However this feature is far from perfect because Windows GDI (which draws the elements in the editor) can't handle meshes well
 
 - re-use existing sound settings if re-importing a sound file
 
