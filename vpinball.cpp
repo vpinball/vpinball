@@ -756,6 +756,9 @@ void VPinball::SetStatusBarElementInfo(const char *info)
 
 void VPinball::SetStatusBarUnitInfo(const char *info, const bool isUnit)
 {
+    if (g_pplayer)
+        return;
+
     char textBuf[256] = { 0 };
 
     if (strlen(info) > 0)
