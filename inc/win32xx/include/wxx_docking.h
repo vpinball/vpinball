@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -227,6 +227,9 @@ namespace Win32xx
         LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
     private:
+        CDockContainer(const CDockContainer&);              // Disable copy construction
+        CDockContainer& operator = (const CDockContainer&); // Disable assignment operator
+
         std::vector<ContainerInfo>& GetAll() const {return m_pContainerParent->m_allInfo;}
         std::vector<ContainerInfo> m_allInfo;          // vector of ContainerInfo structs
         std::vector<UINT> m_toolBarData;               // vector of resource IDs for ToolBar buttons
@@ -683,9 +686,9 @@ namespace Win32xx
             HCURSOR cursor;
             DWORD side = GetDocker().GetDockStyle() & 0xF;
             if ((side == DS_DOCKED_LEFT) || (side == DS_DOCKED_RIGHT))
-                cursor = GetApp().LoadCursor(IDW_SPLITH);
+                cursor = GetApp()->LoadCursor(IDW_SPLITH);
             else
-                cursor = GetApp().LoadCursor(IDW_SPLITV);
+                cursor = GetApp()->LoadCursor(IDW_SPLITV);
 
             if (cursor) SetCursor(cursor);
             else TRACE("**WARNING** Missing cursor resource for slider bar\n");
@@ -1490,13 +1493,13 @@ namespace Win32xx
         switch (dockSide)
         {
         case DS_DOCKED_LEFTMOST:
-            if(RTL) rcHint.left = rcHint.right - Width;
-            else    rcHint.right = rcHint.left + Width;
+            if (RTL) rcHint.left = rcHint.right - Width;
+            else     rcHint.right = rcHint.left + Width;
 
             break;
         case DS_DOCKED_RIGHTMOST:
-            if(RTL) rcHint.right = rcHint.left + Width;
-            else    rcHint.left = rcHint.right - Width;
+            if (RTL) rcHint.right = rcHint.left + Width;
+            else     rcHint.left = rcHint.right - Width;
 
             break;
         case DS_DOCKED_TOPMOST:
@@ -1545,7 +1548,7 @@ namespace Win32xx
             m_bmBlueTint.CreateCompatibleBitmap(dcDesktop, rcBitmap.Width(), rcBitmap.Height());
             dcMem.SelectObject(m_bmBlueTint);
             dcMem.BitBlt(0, 0, rcBitmap.Width(), rcBitmap.Height(), dcDesktop, rcTarget.left, rcTarget.top, SRCCOPY);
-            dcMem.DetachBitmap();
+            m_bmBlueTint = dcMem.DetachBitmap();
             m_bmBlueTint.TintBitmap(-64, -24, +128);
 
             // Create the Hint window
@@ -1954,10 +1957,10 @@ namespace Win32xx
     /////////////////////////////////////////
     // Definitions for the CDocker class
     //
-    inline CDocker::CDocker() : m_pDockParent(NULL), m_isBlockMove(FALSE), m_isUndocking(FALSE),
-                    m_isClosing(FALSE), m_isDragging(FALSE), m_isDragAutoResize(TRUE), m_dockStartSize(0),
-                    m_dockID(0), m_redrawCount(0), m_ncHeight(0), m_dockZone(0), m_dockSizeRatio(1.0),
-                    m_dockStyle(0), m_dockUnderPoint(0)
+    inline CDocker::CDocker() : m_pDockParent(NULL), m_pDockAncestor(NULL), m_isBlockMove(FALSE),
+                    m_isUndocking(FALSE), m_isClosing(FALSE), m_isDragging(FALSE),
+                    m_isDragAutoResize(TRUE), m_dockStartSize(0), m_dockID(0), m_redrawCount(0),
+                    m_ncHeight(0), m_dockZone(0), m_dockSizeRatio(1.0), m_dockStyle(0), m_dockUnderPoint(0)
     {
         // Assume this docker is the DockAncestor for now.
         m_pDockAncestor = this;
@@ -2011,7 +2014,7 @@ namespace Win32xx
         pDocker->SetDockSize(dockSize);
 
         // Issue TRACE warnings for any missing resources
-        HMODULE module= GetApp().GetResourceHandle();
+        HMODULE module= GetApp()->GetResourceHandle();
 
         if (!(dockStyle & DS_NO_RESIZE))
         {
@@ -2086,11 +2089,11 @@ namespace Win32xx
         {
             if (!GetDockAncestor()->m_targetLeft.CheckTarget(pDragPos))
             {
-                if(!GetDockAncestor()->m_targetTop.CheckTarget(pDragPos))
+                if (!GetDockAncestor()->m_targetTop.CheckTarget(pDragPos))
                 {
-                    if(!GetDockAncestor()->m_targetRight.CheckTarget(pDragPos))
+                    if (!GetDockAncestor()->m_targetRight.CheckTarget(pDragPos))
                     {
-                        if(!GetDockAncestor()->m_targetBottom.CheckTarget(pDragPos))
+                        if (!GetDockAncestor()->m_targetBottom.CheckTarget(pDragPos))
                         {
                             // Not in a docking zone, so clean up
                             CDocker* pDockDrag = pDragPos->pDocker;
@@ -2328,16 +2331,6 @@ namespace Win32xx
         }
 
         // Redraw the docked windows
-        if (GetAncestor().IsWindowVisible())
-        {
-            // Give the view window focus unless its child already has it
-    //      if (!pDocker->GetView().IsChild(GetFocus()))
-    //          pDocker->GetView().SetFocus();
-
-            // Update the Dock captions
-    //      GetDockAncestor()->PostMessage(UWM_DOCKACTIVATE);
-        }
-
         pDocker->RecalcDockLayout();
     }
 
@@ -2433,10 +2426,8 @@ namespace Win32xx
 
         WORD hashPattern[] = {0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA};
         CBitmap hash;
-        CBrush dithered;
         hash.CreateBitmap(8, 8, 1, 1, hashPattern);
-        dithered.CreatePatternBrush(hash);
-        dcBar.SelectObject(dithered);
+        dcBar.CreatePatternBrush(hash);
 
         CRect rc = pDockBar->GetWindowRect();
         ScreenToClient(rc);
@@ -2619,7 +2610,7 @@ namespace Win32xx
     {
         CDocker* pDockTopLevel = (CDocker* const)this;
 
-        while(pDockTopLevel->GetDockParent())
+        while (pDockTopLevel->GetDockParent())
         {
             assert (pDockTopLevel != pDockTopLevel->GetDockParent());
             pDockTopLevel = pDockTopLevel->GetDockParent();
@@ -2722,7 +2713,7 @@ namespace Win32xx
 
     inline BOOL CDocker::IsUndockable() const
     {
-        // Returns TRUE if the docker is docked, or a dockancestor that has a DockContainer with tabs.
+        // Returns TRUE if the docker is docked, or a dock ancestor that has a CDockContainer with tabs.
         BOOL isUndockable = IsDocked();
 
         CDockContainer* pContainer = GetContainer();
@@ -2812,7 +2803,7 @@ namespace Win32xx
                         if (pDockParent != 0)
                         {
                             CDocker* pDocker = NewDockerFromID(di.dockID);
-                            if(!pDocker)
+                            if (!pDocker)
                                 throw CUserException(_T("Failed to add dockers with parents from registry"));
 
                             pDockParent->AddDockedChild(pDocker, di.dockStyle, di.dockSize, di.dockID);
@@ -3006,12 +2997,12 @@ namespace Win32xx
     // Called when the this docker is activated.
     inline LRESULT CDocker::OnActivate(UINT, WPARAM wparam, LPARAM)
     {
-        if ((wparam != WA_INACTIVE) && (this != GetDockAncestor()) && IsUndocked())
+        if ((this != GetDockAncestor()) && IsUndocked())
         {
             GetDockAncestor()->PostMessage(UWM_DOCKACTIVATE);
 
             // Give the view window focus unless its child already has it
-            if (!GetView().IsChild(GetFocus()))
+            if ((wparam != WA_INACTIVE) && !GetView().IsChild(GetFocus()))
                 GetView().SetFocus();
         }
 
@@ -3250,7 +3241,7 @@ namespace Win32xx
                 CDockContainer* pActive = 0;
                 if (pDocker->GetContainer())
                     pActive = pDocker->GetContainer()->GetActiveContainer();
-                
+
         //      pDocker->MoveDockChildren(this);
                 DockInContainer(pDocker, pDocker->GetDockStyle() | DockZone, FALSE);
                 if (pActive)
@@ -3821,7 +3812,7 @@ namespace Win32xx
                 {
                     DockInfo di = allDockInfo[u];
                     SubKeyName.Format(_T("DockChild%u"), u);
-                    if(ERROR_SUCCESS != keyDock.SetBinaryValue(SubKeyName, &di, sizeof(DockInfo)))
+                    if (ERROR_SUCCESS != keyDock.SetBinaryValue(SubKeyName, &di, sizeof(DockInfo)))
                         throw (CUserException(_T("KeyDock SetBinaryValue failed")));
                 }
 
@@ -4395,8 +4386,9 @@ namespace Win32xx
 
     //////////////////////////////////////
     // Declaration of the CDockContainer class
-    inline CDockContainer::CDockContainer() : m_currentPage(0), m_pDocker(0), m_tabIcon(0),
-                                        m_pressedTab(-1), m_isHideSingleTab(FALSE)
+    inline CDockContainer::CDockContainer() : m_currentPage(0), m_pDocker(0),
+                                         m_pContainerParent(0), m_tabIcon(0),
+                                         m_pressedTab(-1), m_isHideSingleTab(FALSE)
     {
         m_pContainerParent = this;
         m_viewPage.SetContainer(this);
@@ -4923,7 +4915,7 @@ namespace Win32xx
 
     inline void CDockContainer::SetTabIcon(UINT iconID)
     {
-        HICON icon = reinterpret_cast<HICON>(GetApp().LoadImage(iconID, IMAGE_ICON, 0, 0, LR_SHARED));
+        HICON icon = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, 0, 0, LR_SHARED));
         SetTabIcon(icon);
     }
 
@@ -5111,11 +5103,11 @@ namespace Win32xx
         // Display tooltips for the toolbar
         case TTN_GETDISPINFO:
             {
-                int iIndex =  GetToolBar().HitTest();
+                int index =  GetToolBar().HitTest();
                 LPNMTTDISPINFO lpDispInfo = (LPNMTTDISPINFO)lparam;
-                if (iIndex >= 0)
+                if (index >= 0)
                 {
-                    int id = GetToolBar().GetCommandID(iIndex);
+                    int id = GetToolBar().GetCommandID(index);
                     if (id > 0)
                     {
                         m_tooltip = LoadString(id);

@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -113,12 +113,12 @@ namespace Win32xx
         BOOL  SetButtonStyle(int buttonID, BYTE style) const;
         BOOL  SetButtonWidth(int buttonID, int width) const;
         BOOL  SetCommandID(int index, int buttonID) const;
-        CImageList SetDisableImageList(HIMAGELIST disabledImages);
+        HIMAGELIST SetDisableImageList(HIMAGELIST disabledImages);
         DWORD SetDrawTextFlags(DWORD mask, DWORD flags) const;
         DWORD SetExtendedStyle(DWORD exStyle) const;
-        CImageList SetHotImageList(HIMAGELIST hotImages);
+        HIMAGELIST SetHotImageList(HIMAGELIST hotImages);
         int   SetHotItem(int index) const;
-        CImageList SetImageList(HIMAGELIST normalImages);
+        HIMAGELIST SetImageList(HIMAGELIST normalImages);
         BOOL  SetIndent(int indent) const;
         BOOL  SetMaxTextRows(int maxRows) const;
         BOOL  SetPadding(int cx, int cy) const;
@@ -183,7 +183,7 @@ namespace Win32xx
 
         TBADDBITMAP tbab;
         ZeroMemory(&tbab, sizeof(tbab));
-        tbab.hInst = GetApp().GetResourceHandle();
+        tbab.hInst = GetApp()->GetResourceHandle();
         tbab.nID   = bitmapID;
         int result = (int)SendMessage(TB_ADDBITMAP, (WPARAM)images, (LPARAM)&tbab);
 
@@ -279,7 +279,7 @@ namespace Win32xx
     inline int CToolBar::AddString(UINT stringID) const
     {
         assert(IsWindow());
-        return (int)SendMessage(TB_ADDSTRING, (WPARAM)(GetApp().GetResourceHandle()), (LPARAM)stringID);
+        return (int)SendMessage(TB_ADDSTRING, (WPARAM)(GetApp()->GetResourceHandle()), (LPARAM)stringID);
     }
 
     // Adds a new string or strings to the list of strings available for a ToolBar control.
@@ -505,9 +505,9 @@ namespace Win32xx
     {
         assert(IsWindow());
         CRect rc;
-        int iCount = (int)SendMessage(TB_BUTTONCOUNT, 0, 0);
+        int count = (int)SendMessage(TB_BUTTONCOUNT, 0, 0);
 
-        if (iCount >= index)
+        if (count >= index)
             SendMessage(TB_GETITEMRECT, (WPARAM)index, (LPARAM)&rc);
 
         return rc;
@@ -779,7 +779,7 @@ namespace Win32xx
 
         TBREPLACEBITMAP tbrb;
         ZeroMemory(&tbrb, sizeof(tbrb));
-        tbrb.hInstNew = GetApp().GetResourceHandle();
+        tbrb.hInstNew = GetApp()->GetResourceHandle();
         tbrb.hInstOld = tbrb.hInstNew;
         tbrb.nIDNew = newBitmapID;
         tbrb.nIDOld = m_oldBitmapID;
@@ -1003,11 +1003,11 @@ namespace Win32xx
 
     // Sets the ImageList that the ToolBar control will use to display disabled buttons.
     // Refer to TB_SETDISABLEDIMAGELIST in the Windows API documentation for more information.
-    inline CImageList CToolBar::SetDisableImageList(HIMAGELIST disabledImages)
+    inline HIMAGELIST CToolBar::SetDisableImageList(HIMAGELIST disabledImages)
     {
         assert(IsWindow());
         HIMAGELIST images = (HIMAGELIST)SendMessage(TB_SETDISABLEDIMAGELIST, 0, (LPARAM)disabledImages);
-        return CImageList(images);
+        return images;
     }
 
     // Sets the text drawing flags for the ToolBar.
@@ -1029,11 +1029,11 @@ namespace Win32xx
 
     // Sets the image list that the ToolBar control will use to display hot buttons.
     // Refer to TB_SETHOTIMAGELIST in the Windows API documentation for more information.
-    inline CImageList CToolBar::SetHotImageList(HIMAGELIST hotImages)
+    inline HIMAGELIST CToolBar::SetHotImageList(HIMAGELIST hotImages)
     {
         assert(IsWindow());
         HIMAGELIST images = (HIMAGELIST)SendMessage(TB_SETHOTIMAGELIST, 0, (LPARAM)hotImages);
-        return CImageList(images);
+        return images;
     }
 
     // Sets the hot item in a ToolBar.
@@ -1046,11 +1046,11 @@ namespace Win32xx
 
     // Sets the image list that the ToolBar will use to display buttons that are in their default state.
     // Refer to TB_SETIMAGELIST in the Windows API documentation for more information.
-    inline CImageList CToolBar::SetImageList(HIMAGELIST normalImages)
+    inline HIMAGELIST CToolBar::SetImageList(HIMAGELIST normalImages)
     {
         assert(IsWindow());
         HIMAGELIST images = (HIMAGELIST)SendMessage(TB_SETIMAGELIST, 0, (LPARAM)normalImages);
-        return CImageList(images);
+        return images;
     }
 
     // Sets the indentation for the first button in a ToolBar control.

@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -107,15 +107,15 @@ namespace Win32xx
 
         //Initialization
         void Attach(HMENU menu);
-        void CreateMenu() const;
-        void CreatePopupMenu() const;
+        void CreateMenu();
+        void CreatePopupMenu();
         void DestroyMenu();
         HMENU Detach();
 
         HMENU GetHandle() const;
-        BOOL LoadMenu(LPCTSTR pResName) const;
-        BOOL LoadMenu(UINT resourceID) const;
-        BOOL LoadMenuIndirect(const LPMENUTEMPLATE pMenuTemplate) const;
+        BOOL LoadMenu(LPCTSTR pResName);
+        BOOL LoadMenu(UINT resourceID);
+        BOOL LoadMenuIndirect(const LPMENUTEMPLATE pMenuTemplate);
 
         //Menu Operations
         BOOL TrackPopupMenu(UINT flags, int x, int y, HWND wnd, LPCRECT pRect = 0) const;
@@ -132,7 +132,7 @@ namespace Win32xx
         UINT GetDefaultItem(UINT flags, BOOL byPosition = FALSE) const;
         DWORD GetMenuContextHelpId() const;
 
-#if(WINVER >= 0x0500)   // Minimum OS required is Win2000
+#if (WINVER >= 0x0500)   // Minimum OS required is Win2000
         BOOL GetMenuInfo(MENUINFO& mi) const;
         BOOL SetMenuInfo(const MENUINFO& mi) const;
 #endif
@@ -200,7 +200,7 @@ namespace Win32xx
     {
         m_pData = new CMenu_Data;
 
-        HMENU menu = ::LoadMenu(GetApp().GetResourceHandle(), MAKEINTRESOURCE(id));
+        HMENU menu = ::LoadMenu(GetApp()->GetResourceHandle(), MAKEINTRESOURCE(id));
         Attach(menu);
         m_pData->isManagedMenu = TRUE;
     }
@@ -245,11 +245,11 @@ namespace Win32xx
     // Store the HMENU and CMenu pointer in the HMENU map
     inline void CMenu::AddToMap() const
     {
-        assert( &GetApp() );
+        assert( GetApp() );
         assert(m_pData);
         assert(m_pData->menu);
 
-        GetApp().AddCMenuData(m_pData->menu, m_pData);
+        GetApp()->AddCMenuData(m_pData->menu, m_pData);
     }
 
     inline void CMenu::Release()
@@ -277,18 +277,18 @@ namespace Win32xx
     {
         BOOL success = FALSE;
 
-        if ( &GetApp() )
+        if ( GetApp() )
         {
             // Allocate an iterator for our HMENU map
             std::map<HMENU, CMenu_Data*, CompareHMENU>::iterator m;
 
-            CWinApp& app = GetApp();
-            CThreadLock mapLock(app.m_wndLock);
-            m = app.m_mapCMenuData.find(m_pData->menu);
-            if (m != app.m_mapCMenuData.end())
+            CWinApp* pApp = GetApp();
+            CThreadLock mapLock(pApp->m_wndLock);
+            m = pApp->m_mapCMenuData.find(m_pData->menu);
+            if (m != pApp->m_mapCMenuData.end())
             {
                 // Erase the Menu pointer entry from the map
-                app.m_mapCMenuData.erase(m);
+                pApp->m_mapCMenuData.erase(m);
                 success = TRUE;
             }
 
@@ -332,7 +332,7 @@ namespace Win32xx
             if (menu)
             {
                 // Add the menu to this CMenu
-                CMenu_Data* pCMenuData = GetApp().GetCMenuData(menu);
+                CMenu_Data* pCMenuData = GetApp()->GetCMenuData(menu);
                 if (pCMenuData)
                 {
                     delete m_pData;
@@ -369,24 +369,28 @@ namespace Win32xx
 
     // Creates an empty menu.
     // Refer to CreateMenu in the Windows API documentation for more information.
-    inline void CMenu::CreateMenu() const
+    inline void CMenu::CreateMenu()
     {
         assert(m_pData);
-        assert(NULL == m_pData->menu);
-        m_pData->menu = ::CreateMenu();
-        AddToMap();
-        m_pData->isManagedMenu = TRUE;
+        HMENU menu = ::CreateMenu();
+        if (menu != 0)
+        {
+            Attach(menu);
+            m_pData->isManagedMenu = TRUE;
+        }
     }
 
     // Creates a drop-down menu, submenu, or shortcut menu. The menu is initially empty.
     // Refer to CreatePopupMenu in the Windows API documentation for more information.
-    inline void CMenu::CreatePopupMenu() const
+    inline void CMenu::CreatePopupMenu()
     {
         assert(m_pData);
-        assert(NULL == m_pData->menu);
-        m_pData->menu = ::CreatePopupMenu();
-        AddToMap();
-        m_pData->isManagedMenu = TRUE;
+        HMENU menu = ::CreatePopupMenu();
+        if (menu != 0)
+        {
+            Attach(menu);
+            m_pData->isManagedMenu = TRUE;
+        }
     }
 
     // Deletes an item from the specified menu.
@@ -491,7 +495,7 @@ namespace Win32xx
 
 
 // minimum OS required : Win2000
-#if(WINVER >= 0x0500)
+#if (WINVER >= 0x0500)
 
     // Retrieves the menu information.
     // Refer to GetMenuInfo in the Windows API documentation for more information.
@@ -631,36 +635,50 @@ namespace Win32xx
 
     // Loads the menu from the specified windows resource.
     // Refer to LoadMenu in the Windows API documentation for more information.
-    inline BOOL CMenu::LoadMenu(LPCTSTR pResName) const
+    inline BOOL CMenu::LoadMenu(LPCTSTR pResName)
     {
         assert(m_pData);
         assert(NULL == m_pData->menu);
         assert(pResName);
-        m_pData->menu = ::LoadMenu(GetApp().GetResourceHandle(), pResName);
-        if (m_pData->menu != 0) AddToMap();
+        HMENU menu = ::LoadMenu(GetApp()->GetResourceHandle(), pResName);
+        if (menu != 0)
+        {
+            Attach(menu);
+            m_pData->isManagedMenu = TRUE;
+        }
+
         return NULL != m_pData->menu;
     }
 
     // Loads the menu from the specified windows resource.
     // Refer to LoadMenu in the Windows API documentation for more information.
-    inline BOOL CMenu::LoadMenu(UINT resID) const
+    inline BOOL CMenu::LoadMenu(UINT resID)
     {
         assert(m_pData);
         assert(NULL == m_pData->menu);
-        m_pData->menu = ::LoadMenu(GetApp().GetResourceHandle(), MAKEINTRESOURCE(resID));
-        if (m_pData->menu != 0) AddToMap();
-        return NULL != m_pData->menu;
+        HMENU menu = ::LoadMenu(GetApp()->GetResourceHandle(), MAKEINTRESOURCE(resID));
+        if (menu != 0)
+        {
+            Attach(menu);
+            m_pData->isManagedMenu = TRUE;
+        }
+        
+        return 0 != m_pData->menu;
     }
 
     // Loads the specified menu template and assigns it to this CMenu.
     // Refer to LoadMenuIndirect in the Windows API documentation for more information.
-    inline BOOL CMenu::LoadMenuIndirect(const LPMENUTEMPLATE pMenuTemplate) const
+    inline BOOL CMenu::LoadMenuIndirect(const LPMENUTEMPLATE pMenuTemplate)
     {
         assert(m_pData);
-        assert(NULL == m_pData->menu);
         assert(pMenuTemplate);
-        m_pData->menu = ::LoadMenuIndirect(pMenuTemplate);
-        if (m_pData->menu) AddToMap();
+        HMENU menu = ::LoadMenuIndirect(pMenuTemplate);
+        if (menu != 0)
+        {
+            Attach(menu);
+            m_pData->isManagedMenu = TRUE;
+        }
+
         return NULL != m_pData->menu;
     }
 

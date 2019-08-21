@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -184,28 +184,28 @@ namespace Win32xx
     // Store the HIMAGELIST and CImageList pointer in the HIMAGELIST map
     inline void CImageList::AddToMap() const
     {
-        assert( &GetApp() );
+        assert( GetApp() );
         assert(m_pData->images);
 
-        GetApp().AddCImlData(m_pData->images, m_pData);
+        GetApp()->AddCImlData(m_pData->images, m_pData);
     }
 
     inline BOOL CImageList::RemoveFromMap() const
     {
         BOOL success = FALSE;
 
-        if ( &GetApp() )
+        if ( GetApp() )
         {
             // Allocate an iterator for our CImageList data
             std::map<HIMAGELIST, CIml_Data*, CompareHIMAGELIST>::iterator m;
 
-            CWinApp& app = GetApp();
-            CThreadLock mapLock(app.m_wndLock);
-            m = app.m_mapCImlData.find(m_pData->images);
-            if (m != app.m_mapCImlData.end())
+            CWinApp* pApp = GetApp();
+            CThreadLock mapLock(pApp->m_wndLock);
+            m = pApp->m_mapCImlData.find(m_pData->images);
+            if (m != pApp->m_mapCImlData.end())
             {
                 // Erase the CImageList data entry from the map
-                app.m_mapCImlData.erase(m);
+                pApp->m_mapCImlData.erase(m);
                 success = TRUE;
             }
 
@@ -261,7 +261,7 @@ namespace Win32xx
             if (images)
             {
                 // Add the image list to this CImageList
-                CIml_Data* pCImlData = GetApp().GetCImlData(images);
+                CIml_Data* pCImlData = GetApp()->GetCImlData(images);
                 if (pCImlData)
                 {
                     delete m_pData;
@@ -332,7 +332,6 @@ namespace Win32xx
     inline BOOL CImageList::Create(UINT bitmapID, int cx, int grow, COLORREF mask)
     {
         assert(m_pData);
-        assert(NULL == m_pData->images);
 
         LPCTSTR pBitmapName = MAKEINTRESOURCE (bitmapID);
         return Create(pBitmapName, cx, grow, mask);
@@ -348,8 +347,8 @@ namespace Win32xx
     inline BOOL CImageList::Create(LPCTSTR pResourceName, int cx, int grow, COLORREF mask)
     {
         assert(m_pData);
-        assert(NULL == m_pData->images);
-        HIMAGELIST images = ImageList_LoadBitmap(GetApp().GetInstanceHandle(), pResourceName, cx, grow, mask);
+
+        HIMAGELIST images = ImageList_LoadBitmap(GetApp()->GetInstanceHandle(), pResourceName, cx, grow, mask);
 
         if (images)
         {
@@ -489,7 +488,7 @@ namespace Win32xx
     inline HICON CImageList::ExtractIcon(int index) const
     {
         assert(m_pData->images);
-        return ImageList_ExtractIcon(GetApp().GetResourceHandle(), *this, index);
+        return ImageList_ExtractIcon(GetApp()->GetResourceHandle(), *this, index);
     }
 
     // Retrieves the current background color for an image list.

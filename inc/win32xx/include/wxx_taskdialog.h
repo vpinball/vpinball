@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -128,8 +128,8 @@ namespace Win32xx
         {
             TaskButton(UINT id, LPCTSTR pText) : buttonID(id)
             {
-				if (IS_INTRESOURCE(pText))        // support MAKEINTRESOURCE
-					buttonText = LoadString((UINT)(UINT_PTR)pText);
+                if (IS_INTRESOURCE(pText))        // support MAKEINTRESOURCE
+                    buttonText = LoadString((UINT)(UINT_PTR)pText);
                 else
                     buttonText = pText;
             }
@@ -266,7 +266,7 @@ namespace Win32xx
         m_tc.hwndParent = parent;
 
         // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp().SetTlsData();
+        TLSData* pTLSData = GetApp()->SetTlsData();
 
         // Store the CWnd pointer in thread local storage
         pTLSData->pWnd = this;
@@ -288,12 +288,7 @@ namespace Win32xx
         if (result != S_OK)
         {
             // Throw an exception to indicate task dialog creation failure
-            if (result == E_OUTOFMEMORY)
-                throw CWinException(_T("TaskDialogIndirect failed, out of memory"));
-            if (result == E_INVALIDARG)
-                throw CWinException(_T("TaskDialogIndirect failed, invalid argument"));
-            else
-                throw CWinException(_T("TaskDialogIndirect failed"));
+            throw CWinException(g_msgTaskDialog);
         }
 
         return result;
@@ -694,7 +689,7 @@ namespace Win32xx
     {
         UNREFERENCED_PARAMETER(refData);
 
-        assert( &GetApp() );
+        assert( GetApp() );
 
         CTaskDialog* t = static_cast<CTaskDialog*>(GetCWndPtr(wnd));
         if (t == 0)
@@ -702,7 +697,7 @@ namespace Win32xx
             // The CTaskDialog pointer wasn't found in the map, so add it now
 
             // Retrieve the pointer to the TLS Data
-            TLSData* pTLSData = GetApp().GetTlsData();
+            TLSData* pTLSData = GetApp()->GetTlsData();
             assert(pTLSData);
 
             // Retrieve pointer to CTaskDialog object from Thread Local Storage TLS

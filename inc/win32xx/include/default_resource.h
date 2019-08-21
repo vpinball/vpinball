@@ -71,6 +71,14 @@
 #define IDW_SDRIGHT                      89
 #define IDW_SDTOP                        90
 
+// Print Preview Resources
+#define IDW_PRINTPREVIEW                 91
+#define IDW_PREVIEWPRINT                 92
+#define IDW_PREVIEWSETUP                 93
+#define IDW_PREVIEWPREV                  94
+#define IDW_PREVIEWNEXT                  95
+#define IDW_PREVIEWCLOSE                 96
+#define IDW_PREVIEWPANE                  97
 
 // A generic ID for any static control
 #ifndef IDC_STATIC
@@ -90,7 +98,7 @@
 // * When more than one static control is used in a dialog, the controls should
 //   have a unique ID, unless a resource ID of -1 is used.
 //
-// * Users of Win32++ are advised to begin their resource IDs from 100 to
+// * Users of Win32++ are advised to begin their resource IDs from 120 to
 //   allow for possible expansion of Win32++.
 
 

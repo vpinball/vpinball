@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -61,6 +61,83 @@
 
 namespace Win32xx
 {
+    /////////////////////////////////////////////
+    // Definitions for the CCriticalSection class
+    //
+    inline CCriticalSection::CCriticalSection() : m_count(0)
+    {
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#pragma warning ( push )
+#pragma warning ( disable : 28125 )       // call within __try __catch block. 
+#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+
+        ::InitializeCriticalSection(&m_cs);
+
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+#pragma warning ( pop )
+#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+    }
+
+    inline CCriticalSection::~CCriticalSection()
+    {
+        while (m_count > 0)
+        {
+            Release();
+        }
+
+        ::DeleteCriticalSection(&m_cs);
+    }
+
+
+    // Enter the critical section and increment the lock count.
+    inline void CCriticalSection::Lock()
+    {
+        ::EnterCriticalSection(&m_cs);
+        InterlockedIncrement(&m_count);
+    }
+
+    // Leave the critical section and decrement the lock count.
+    inline void CCriticalSection::Release()
+    {
+        assert(m_count > 0);
+        if (m_count > 0)
+        {
+            ::LeaveCriticalSection(&m_cs);
+            ::InterlockedDecrement(&m_count);
+        }
+    }
+
+
+    ///////////////////////////////////////
+    // Definitions for the CHGlobal class
+    //
+
+    // Allocates a new global memory buffer for this object
+    inline void CHGlobal::Alloc(size_t size)
+    {
+        Free();
+        m_hGlobal = ::GlobalAlloc(GHND, size);
+        if (m_hGlobal == 0)
+            throw std::bad_alloc();
+    }
+
+    // Manually frees the global memory assigned to this object
+    inline void CHGlobal::Free()
+    {
+        if (m_hGlobal != 0)
+            ::GlobalFree(m_hGlobal);
+
+        m_hGlobal = 0;
+    }
+
+    // Reassign is used when global memory has been reassigned, as
+    // can occur after a call to ::PrintDlg or ::PageSetupDlg.
+    // It assigns a new memory handle to be managed by this object
+    // and assumes any old memory has already been freed.
+    inline void  CHGlobal::Reassign(HGLOBAL hGlobal)
+    {
+        m_hGlobal = hGlobal;
+    }
 
     ///////////////////////////////////////
     // Definitions for the CObject class
@@ -146,7 +223,7 @@ namespace Win32xx
 #endif
 
         if (m_thread == 0)
-            throw CWinException(_T("Failed to create thread"));
+            throw CWinException(g_msgAppThreadFailed);
 
         return m_thread;
     }
@@ -155,7 +232,7 @@ namespace Win32xx
     // Note: CFrame set's itself as the main window of its thread
     inline HWND CWinThread::GetMainWnd() const
     {
-        TLSData* pTLSData = GetApp().GetTlsData();
+        TLSData* pTLSData = GetApp()->GetTlsData();
 
         // Will assert if the thread doesn't have TLSData assigned.
         // TLSData is assigned when the first window in the thread is created.
@@ -211,10 +288,7 @@ namespace Win32xx
         {
             // While idle, perform idle processing until OnIdle returns FALSE
             while (!::PeekMessage(&Msg, 0, 0, 0, PM_NOREMOVE) && OnIdle(lCount) != FALSE  )
-            {
                 ++lCount;
-            }
-
 
             lCount = 0;
 
@@ -263,11 +337,11 @@ namespace Win32xx
                 // Search the chain of parents for pretranslated messages.
                 for (HWND wnd = msg.hwnd; wnd != NULL; wnd = ::GetParent(wnd))
                 {
-                    CWnd* pWnd = GetApp().GetCWndFromMap(wnd);
+                    CWnd* pWnd = GetApp()->GetCWndFromMap(wnd);
                     if (pWnd)
                     {
                         isProcessed = pWnd->PreTranslateMessage(msg);
-                        if(isProcessed)
+                        if (isProcessed)
                             break;
                     }
                 }
@@ -306,7 +380,7 @@ namespace Win32xx
     // Note: CFrame set's itself as the main window of its thread
     inline void CWinThread::SetMainWnd(HWND wnd)
     {
-        TLSData* pTLSData = GetApp().SetTlsData();
+        TLSData* pTLSData = GetApp()->SetTlsData();
         pTLSData->mainWnd = wnd;
     }
 
@@ -337,7 +411,7 @@ namespace Win32xx
 
         if (pThread->InitInstance())
         {
-            GetApp().SetTlsData();
+            GetApp()->SetTlsData();
             return pThread->MessageLoop();
         }
 
@@ -352,12 +426,12 @@ namespace Win32xx
     // To begin Win32++, inherit your application class from this one.
     // You must run only one instance of the class inherited from CWinApp.
 
-    inline CWinApp::CWinApp() : m_callback(NULL), m_devMode(0), m_devNames(0)
+    inline CWinApp::CWinApp() : m_callback(NULL)
     {
         if ( 0 != SetnGetThis() )
         {
             // Test if this is the only instance of CWinApp
-            throw CNotSupportedException(_T("Only one instance of CWinApp is permitted"));
+            throw CNotSupportedException(g_msgAppInstanceFailed);
         }
 
         m_tlsData = ::TlsAlloc();
@@ -365,7 +439,7 @@ namespace Win32xx
         {
             // We only get here in the unlikely event that all TLS indexes are already allocated by this app
             // At least 64 TLS indexes per process are allowed. Win32++ requires only one TLS index.
-            throw CNotSupportedException(_T("CWinApp::CWinApp  Failed to allocate Thread Local Storage"));
+            throw CNotSupportedException(g_msgAppTLSFailed);
         }
 
         SetnGetThis(this);
@@ -388,10 +462,6 @@ namespace Win32xx
 
     inline CWinApp::~CWinApp()
     {
-        // Deallocate the global memory
-        GlobalFreeAll(m_devMode);
-        GlobalFreeAll(m_devNames);
-
         // Forcibly destroy any remaining windows now. Windows created from
         //  static CWnds or dangling pointers are destroyed here.
         std::map<HWND, CWnd*, CompareHWND>::const_iterator m;
@@ -446,29 +516,6 @@ namespace Win32xx
     }
 
 #endif
-
-    // Free the specified global memory. It also provides a TRACE warning
-    // if the global memory is currently locked.
-    inline void CWinApp::GlobalFreeAll(HGLOBAL buffer)
-    {
-        if (buffer == 0)
-            return;
-
-#ifndef _WIN32_WCE
-        // check validity of the handle
-        assert(::GlobalFlags(buffer) != GMEM_INVALID_HANDLE);
-        // decrement the lock count associated with the handle
-        UINT count = ::GlobalFlags(buffer) & GMEM_LOCKCOUNT;
-        while (count--)
-        {
-            TRACE("***WARNING Global memory still locked ***\n");
-            ::GlobalUnlock(buffer);
-        }
-#endif
-
-        // finally, really free the handle
-        ::GlobalFree(buffer);
-    }
 
     // Retrieves a pointer to CDC_Data from the map
     inline CDC_Data* CWinApp::GetCDCData(HDC dc)
@@ -736,6 +783,78 @@ namespace Win32xx
         }
 
         return pTLSData;
+    }
+
+
+    ////////////////////////////////////////
+    // Global Functions
+    //
+
+    // Returns a reference to the CWinApp derived class.
+    inline CWinApp* GetApp()
+    {
+        CWinApp* pApp = CWinApp::SetnGetThis();
+        return pApp;
+    }
+
+
+    // The following functions perform string copies. The size of the dst buffer
+    // is specified, much like strcpy_s. The dst buffer is always null terminated.
+    // Null or zero arguments cause an assert.
+
+    // Copies an ANSI string from src to dst. 
+    inline void StrCopyA(char* dst, const char* src, size_t dst_size)
+    {
+        assert(dst != 0);
+        assert(src != 0);
+        assert(dst_size != 0);
+
+        size_t index;
+
+        // Copy each character.
+        for (index = 0; index < dst_size - 1; ++index)
+        {
+            dst[index] = src[index];
+            if (src[index] == '\0')
+                break;
+        }
+
+        // Add null termination if required.
+        if (dst[index] != '\0')
+            dst[dst_size - 1] = '\0';
+    }
+
+    // Copies a wide string from src to dst.
+    inline void StrCopyW(wchar_t* dst, const wchar_t* src, size_t dst_size)
+    {
+        assert(dst != 0);
+        assert(src != 0);
+        assert(dst_size != 0);
+
+        size_t index;
+
+        // Copy each character.
+        for (index = 0; index < dst_size - 1; ++index)
+        {
+            dst[index] = src[index];
+            if (src[index] == '\0')
+                break;
+        }
+
+        // Add null termination if required.
+        if (dst[index] != '\0')
+            dst[dst_size - 1] = '\0';
+
+    }
+
+    // Copies a TCHAR string from src to dst.
+    inline void StrCopy(TCHAR* dst, const TCHAR* src, size_t dst_size)
+    {
+#ifdef UNICODE
+        StrCopyW(dst, src, dst_size);
+#else
+        StrCopyA(dst, src, dst_size);
+#endif
     }
 
 

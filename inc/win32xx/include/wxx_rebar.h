@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -555,7 +555,7 @@ namespace Win32xx
     }
 
     // Show or hide a band.
-	// Refer to RB_SHOWBAND in the Windows API documentation for more information.
+    // Refer to RB_SHOWBAND in the Windows API documentation for more information.
     inline BOOL CReBar::ShowBand(int band, BOOL show) const
     {
         assert(IsWindow());

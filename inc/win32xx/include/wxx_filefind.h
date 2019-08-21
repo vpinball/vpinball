@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -72,8 +72,7 @@ if (ff.FindFirstFile(_T("C:\\SomeFolder\\*.*")))
 #ifndef _WIN32XX_FILEFIND_H_
 #define _WIN32XX_FILEFIND_H_
 
-#include "wxx_appcore0.h"
-#include "wxx_cstring.h"
+#include "wxx_wincore.h"
 
 
 namespace Win32xx
