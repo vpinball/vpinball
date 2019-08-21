@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -91,7 +91,7 @@ namespace Win32xx
         UINT    GetVisibleCount() const;
         BOOL    ItemHasChildren(HTREEITEM item) const;
         COLORREF SetBkColor(COLORREF color) const;
-        CImageList SetImageList(HIMAGELIST images, int type = TVSIL_NORMAL) const;
+        HIMAGELIST SetImageList(HIMAGELIST images, int type = TVSIL_NORMAL) const;
         void    SetIndent(int indent) const;
         BOOL    SetInsertMark(HTREEITEM item, BOOL after = TRUE) const;
         COLORREF SetInsertMarkColor(COLORREF color) const;
@@ -422,11 +422,11 @@ namespace Win32xx
     // Sets the normal or state image list for a tree-view control
     // and redraws the control using the new images.
     // Refer to TreeView_SetImageList in the Windows API documentation for more information.
-    inline CImageList CTreeView::SetImageList(HIMAGELIST images, int type /*= TVSIL_NORMAL*/) const
+    inline HIMAGELIST CTreeView::SetImageList(HIMAGELIST images, int type /*= TVSIL_NORMAL*/) const
     {
         assert(IsWindow());
         HIMAGELIST oldImages = TreeView_SetImageList( *this, images, type );
-        return CImageList(oldImages);
+        return oldImages;
     }
 
     // Sets the width of indentation for a tree-view control

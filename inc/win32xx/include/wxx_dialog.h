@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -128,7 +128,7 @@ namespace Win32xx
 
         BOOL m_isModal;                  // a flag for modal dialogs
         LPCTSTR m_pResName;              // the resource name for the dialog
-        LPCDLGTEMPLATE m_pDlgTemplate;   // the dialog template for indirect dialogs
+		LPCDLGTEMPLATE m_pDlgTemplate;   // the dialog template for indirect dialogs
     };
 
 
@@ -175,6 +175,7 @@ namespace Win32xx
 
         struct ResizeData
         {
+            ResizeData() : corner(topleft), isFixedWidth(FALSE), isFixedHeight(FALSE), wnd(0) {}
             CRect initRect;
             CRect oldRect;
             Alignment corner;
@@ -184,6 +185,9 @@ namespace Win32xx
         };
 
     private:
+        CResizer(const CResizer&);              // Disable copy construction
+        CResizer& operator = (const CResizer&); // Disable assignment operator
+
         static BOOL CALLBACK EnumWindowsProc(HWND wnd, LPARAM lparam);
 
         HWND m_parent;
@@ -326,7 +330,7 @@ namespace Win32xx
                 LPNMHDR pNmhdr = reinterpret_cast<LPNMHDR>(lparam);
                 assert(pNmhdr);
                 HWND from = pNmhdr->hwndFrom;
-                CWnd* pFrom = GetApp().GetCWndFromMap(from);
+                CWnd* pFrom = GetApp()->GetCWndFromMap(from);
 
                 if (pFrom != NULL)
                     if (::GetParent(from) == m_wnd)
@@ -410,7 +414,7 @@ namespace Win32xx
     // Refer to DialogBox and DialogBoxIndirect in the Windows API documentation for more information.
     inline INT_PTR CDialog::DoModal(HWND parent /* = 0 */)
     {
-        assert( &GetApp() );        // Test if Win32++ has been started
+        assert( GetApp() );        // Test if Win32++ has been started
         assert(!IsWindow());        // Only one window per CWnd instance allowed
         assert(m_pDlgTemplate || m_pResName);  // Dialog layout must be defined.
 
@@ -419,7 +423,7 @@ namespace Win32xx
         m_wnd = 0;
 
         // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp().SetTlsData();
+        TLSData* pTLSData = GetApp()->SetTlsData();
 
     #ifndef _WIN32_WCE
         if (NULL == pTLSData->msgHook )
@@ -429,16 +433,16 @@ namespace Win32xx
         InterlockedIncrement(&pTLSData->dlgHooks);
     #endif
 
-        HINSTANCE instance = GetApp().GetInstanceHandle();
+        HINSTANCE instance = GetApp()->GetInstanceHandle();
         pTLSData->pWnd = this;
 
         // Create a modal dialog
-        if (IsIndirect())
+        if (IsIndirect() && m_pDlgTemplate != NULL)
             result = ::DialogBoxIndirect(instance, m_pDlgTemplate, parent, (DLGPROC)CDialog::StaticDialogProc);
         else
         {
-            if (::FindResource(GetApp().GetResourceHandle(), m_pResName, RT_DIALOG))
-                instance = GetApp().GetResourceHandle();
+            if (::FindResource(GetApp()->GetResourceHandle(), m_pResName, RT_DIALOG))
+                instance = GetApp()->GetResourceHandle();
             result = ::DialogBox(instance, m_pResName, parent, (DLGPROC)CDialog::StaticDialogProc);
         }
 
@@ -459,7 +463,7 @@ namespace Win32xx
         // Throw an exception if the dialog creation fails
         if (result == -1)
         {
-            throw CWinException(_T("Dialog creation failed"));
+            throw CWinException(g_msgWndDoModal);
         }
 
         return result;
@@ -469,7 +473,7 @@ namespace Win32xx
     // Refer to CreateDialog and CreateDialogIndirect in the Windows API documentation for more information.
     inline HWND CDialog::DoModeless(HWND parent /* = 0 */)
     {
-        assert( &GetApp() );        // Test if Win32++ has been started
+        assert( GetApp() );        // Test if Win32++ has been started
         assert(!IsWindow());        // Only one window per CWnd instance allowed
         assert(m_pDlgTemplate || m_pResName);  // Dialog layout must be defined.
 
@@ -477,21 +481,21 @@ namespace Win32xx
         m_wnd = 0;
 
         // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp().SetTlsData();
+        TLSData* pTLSData = GetApp()->SetTlsData();
 
         // Store the CWnd pointer in Thread Local Storage
         pTLSData->pWnd = this;
 
-        HINSTANCE instance = GetApp().GetInstanceHandle();
+        HINSTANCE instance = GetApp()->GetInstanceHandle();
         HWND wnd;
 
         // Create the modeless dialog
-        if (IsIndirect())
+        if (IsIndirect() && m_pDlgTemplate != NULL)
             wnd = ::CreateDialogIndirect(instance, m_pDlgTemplate, parent, (DLGPROC)CDialog::StaticDialogProc);
         else
         {
-            if (::FindResource(GetApp().GetResourceHandle(), m_pResName, RT_DIALOG))
-                instance = GetApp().GetResourceHandle();
+            if (::FindResource(GetApp()->GetResourceHandle(), m_pResName, RT_DIALOG))
+                instance = GetApp()->GetResourceHandle();
 
             wnd = ::CreateDialog(instance, m_pResName, parent, (DLGPROC)CDialog::StaticDialogProc);
         }
@@ -502,7 +506,7 @@ namespace Win32xx
         // Display information on dialog creation failure
         if (wnd == 0)
         {
-            throw CWinException(_T("Dialog creation failed"));
+            throw CWinException(g_msgWndDoModal);
         }
 
         return wnd;
@@ -557,7 +561,7 @@ namespace Win32xx
             // Process dialog keystrokes for modeless dialogs
             if (!IsModal())
             {
-                TLSData* pTLSData = GetApp().GetTlsData();
+                TLSData* pTLSData = GetApp()->GetTlsData();
                 if (NULL == pTLSData->msgHook)
                 {
                     if (IsDialogMessage(msg))
@@ -636,7 +640,7 @@ namespace Win32xx
         if (pDialog == 0)
         {
             // The HWND wasn't in the map, so add it now
-            TLSData* pTLSData = GetApp().GetTlsData();
+            TLSData* pTLSData = GetApp()->GetTlsData();
             assert(pTLSData);
 
             // Retrieve pointer to CWnd object from Thread Local Storage TLS
@@ -659,7 +663,7 @@ namespace Win32xx
     // Used by Modal Dialogs for idle processing and PreTranslateMessage.
     inline LRESULT CALLBACK CDialog::StaticMsgHook(int code, WPARAM wparam, LPARAM lparam)
     {
-        TLSData* pTLSData = GetApp().GetTlsData();
+        TLSData* pTLSData = GetApp()->GetTlsData();
         MSG msg;
         ZeroMemory(&msg, sizeof(msg));
         LONG count = 0;
@@ -670,7 +674,7 @@ namespace Win32xx
                             (msg.message != WM_TIMER) &&
                             (msg.message != WM_MOUSEMOVE) &&
                             (msg.message != WM_SETCURSOR) &&
-                                GetApp().OnIdle(count) != FALSE )
+                                GetApp()->OnIdle(count) != FALSE )
         {
             ++count;
         }

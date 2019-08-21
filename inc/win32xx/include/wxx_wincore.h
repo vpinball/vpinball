@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -132,29 +132,29 @@ namespace Win32xx
     inline void CWnd::AddToMap()
     {
         // The framework must be started
-        assert(&GetApp());
+        assert(GetApp());
 
         // This HWND is should not be in the map yet
-        assert (NULL == GetApp().GetCWndFromMap(*this));
+        assert (NULL == GetApp()->GetCWndFromMap(*this));
 
         // Remove any old map entry for this CWnd (required when the CWnd is reused)
         RemoveFromMap();
 
         // Add the (HWND, CWnd*) pair to the map
-        CThreadLock mapLock(GetApp().m_wndLock);
-        GetApp().m_mapHWND.insert(std::make_pair(GetHwnd(), this));
+        CThreadLock mapLock(GetApp()->m_wndLock);
+        GetApp()->m_mapHWND.insert(std::make_pair(GetHwnd(), this));
     }
 
     // Attaches a CWnd object to an existing window and calls the OnAttach virtual function.
     inline BOOL CWnd::Attach(HWND wnd)
     {
-        assert( &GetApp() );
+        assert( GetApp() );
         assert( ::IsWindow(wnd) );
         assert( !IsWindow() );
 
         // Ensure this thread has the TLS index set
         // Note: Perform the attach from the same thread as the window's message loop
-        GetApp().SetTlsData();
+        GetApp()->SetTlsData();
 
         Subclass(wnd);     // Set the window's callback to CWnd::StaticWindowProc
 
@@ -263,7 +263,7 @@ namespace Win32xx
     // Returns the CWnd to its default state
     inline void CWnd::Cleanup()
     {
-        if ( &GetApp() )
+        if ( GetApp() )
             RemoveFromMap();
 
         m_wnd = 0;
@@ -278,7 +278,7 @@ namespace Win32xx
     inline HWND CWnd::Create(HWND parent /* = 0 */)
     {
         // Test if Win32++ has been started
-        assert( &GetApp() );
+        assert( GetApp() );
 
         WNDCLASS wc;
         ZeroMemory(&wc, sizeof(wc));
@@ -348,7 +348,7 @@ namespace Win32xx
         int cy = rc.bottom - rc.top;
 
         INT_PTR idMenu = id;
-        HMENU menu = parent ? reinterpret_cast<HMENU>(idMenu) : ::LoadMenu(GetApp().GetResourceHandle(), MAKEINTRESOURCE(id));
+        HMENU menu = parent ? reinterpret_cast<HMENU>(idMenu) : ::LoadMenu(GetApp()->GetResourceHandle(), MAKEINTRESOURCE(id));
 
         return CreateEx(exStyle, pClassName, pWindowName, style, x, y, cx, cy, parent, menu, lparam);
     }
@@ -358,7 +358,7 @@ namespace Win32xx
     //  to create a window throws an exception.
     inline HWND CWnd::CreateEx(DWORD exStyle, LPCTSTR pClassName, LPCTSTR pWindowName, DWORD style, int x, int y, int width, int height, HWND hWParent, HMENU idOrMenu, LPVOID lparam /*= NULL*/)
     {
-        assert( &GetApp() );        // Test if Win32++ has been started
+        assert( GetApp() );        // Test if Win32++ has been started
         assert( !IsWindow() );      // Only one window per CWnd instance allowed
 
         // Ensure a window class is registered
@@ -382,7 +382,7 @@ namespace Win32xx
         }
 
         // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp().SetTlsData();
+        TLSData* pTLSData = GetApp()->SetTlsData();
 
         // Store the CWnd pointer in thread local storage
         pTLSData->pWnd = this;
@@ -390,7 +390,7 @@ namespace Win32xx
 
         // Create window
         HWND wnd = ::CreateWindowEx(exStyle, className, pWindowName, style, x, y, width, height,
-                                hWParent, idOrMenu, GetApp().GetInstanceHandle(), lparam);
+                                hWParent, idOrMenu, GetApp()->GetInstanceHandle(), lparam);
 
         // Tidy up
         pTLSData->pWnd = NULL;
@@ -398,14 +398,14 @@ namespace Win32xx
         if (wnd == 0)
         {
             // Throw an exception when window creation fails
-            throw CWinException(_T("CreateWindowEx failed"));
+            throw CWinException(g_msgWndCreateEx);
         }
 
         // Automatically subclass predefined window class types
         if (pClassName)
         {
-            ::GetClassInfo(GetApp().GetInstanceHandle(), pClassName, &wc);
-            if (wc.lpfnWndProc != GetApp().m_callback)
+            ::GetClassInfo(GetApp()->GetInstanceHandle(), pClassName, &wc);
+            if (wc.lpfnWndProc != GetApp()->m_callback)
             {
                 Subclass(wnd);
 
@@ -426,7 +426,7 @@ namespace Win32xx
     // Destroys the window and returns the CWnd back to its default state, ready for reuse.
     inline void CWnd::Destroy()
     {
-        if (&GetApp())          // Is the CWinApp object still valid?
+        if (GetApp())          // Is the CWinApp object still valid?
         {
             if (GetCWndPtr(*this) == this)
             {
@@ -464,9 +464,39 @@ namespace Win32xx
     //  or other window that utilize the DDX/DDV functions.
     inline void CWnd::DoDataExchange(CDataExchange& dx)
     {
-          // Any dialog or window using DDX/DDV for its controls should
-          // override of this member, and put calls to the DDX and DDV functions
-          // there.
+        // Any dialog or window using DDX/DDV for its controls should
+        // override of this member, and put calls to the DDX and DDV functions
+        // there.  For example:
+        
+        // connect to edit box holding int and specify limits.
+        // dx.DDX_Text(IDC_EDIT_UINT,       m_iUINT);
+        // dx.DDV_MinMaxUInt(               m_iUINT, 10, 10000);        
+          
+        // connect to edit box holding double and specify limits.
+        // dx.DDX_Text(IDC_EDIT_DOUBLE,     m_double);
+        // dx.DDV_MinMaxDouble(             m_double, -10.0, 100000.);
+        //
+        // connect to rich edit box holding a string and specify length.
+        // dx.DDX_Text(IDC_EDIT_RICHEDIT,   m_richEdit);
+        // dx.DDV_MaxChars(                 m_richEdit, 25); // limit length
+        //
+        // connect to slider control and specify limits.
+        // dx.DDX_Slider(IDC_SLIDER,        m_slider);
+        // dx.DDV_MinMaxSlider(             m_slider, 0, 1000);
+        //
+        // connect to progress bar.
+        // dx.DDX_Progress(IDC_PROGRESSBAR, m_progress);
+        //
+        // connect to bar to scroll bar.
+        // dx.DDX_Scroll(  IDC_SCROLLBAR,   m_scrollBar);
+        //
+        // connect to radio boxes.
+        // dx.DDX_Radio( IDC_RADIO_A,       m_radioA);
+        //
+        // connect to check boxes.
+        // dx.DDX_Check(IDC_CHECK_A,        m_checkA);
+        // dx.DDX_Check(IDC_CHECK_B,        m_checkB);
+        // dx.DDX_Check(IDC_CHECK_C,        m_checkC);
 
         UNREFERENCED_PARAMETER(dx);
     }
@@ -486,8 +516,8 @@ namespace Win32xx
     // Returns NULL if a CWnd object doesn't already exist for this HWND. 
     inline CWnd* CWnd::GetCWndPtr(HWND wnd)
     {
-        assert( &GetApp() );
-        return wnd? GetApp().GetCWndFromMap(wnd) : 0;
+        assert( GetApp() );
+        return wnd? GetApp()->GetCWndFromMap(wnd) : 0;
     }
 
     // The GetAncestor function retrieves the ancestor (root parent)
@@ -549,7 +579,7 @@ namespace Win32xx
 
         int nLength = ::GetWindowTextLength(::GetDlgItem(*this, dlgItemID));
         CString str;
-        ::GetDlgItemText(*this, dlgItemID, str.GetBuffer(nLength), nLength+1);
+        VERIFY(::GetDlgItemText(*this, dlgItemID, str.GetBuffer(nLength), nLength+1) != 0);
         str.ReleaseBuffer();
         return str;
     }
@@ -572,7 +602,7 @@ namespace Win32xx
         Destroy();
     }
 
-    // Called when the user interacts with the menu or toolar.
+    // Called when the user interacts with the menu or toolbar.
     inline BOOL CWnd::OnCommand(WPARAM wparam, LPARAM lparam)
     {
         UNREFERENCED_PARAMETER(wparam);
@@ -694,7 +724,7 @@ namespace Win32xx
             }
         }
 
-        CWnd* pWnd = GetApp().GetCWndFromMap(wnd);
+        CWnd* pWnd = GetApp()->GetCWndFromMap(wnd);
 
         if (pWnd != NULL)
             return pWnd->OnMessageReflect(msg, wparam, lparam);
@@ -860,7 +890,7 @@ namespace Win32xx
     // class prior to window creation.
     inline BOOL CWnd::RegisterClass(WNDCLASS& wc)
     {
-        assert( &GetApp() );
+        assert( GetApp() );
         assert( ('\0' != wc.lpszClassName[0] && ( lstrlen(wc.lpszClassName) <=  MAX_STRING_SIZE) ) );
 
         // Check to see if this classname is already registered
@@ -868,7 +898,7 @@ namespace Win32xx
         ZeroMemory(&wcTest, sizeof(wcTest));
         BOOL done = FALSE;
 
-        if (::GetClassInfo(GetApp().GetInstanceHandle(), wc.lpszClassName, &wcTest))
+        if (::GetClassInfo(GetApp()->GetInstanceHandle(), wc.lpszClassName, &wcTest))
         {
             wc = wcTest;
             done = TRUE;
@@ -877,7 +907,7 @@ namespace Win32xx
         if (!done)
         {
             // Set defaults
-            wc.hInstance    = GetApp().GetInstanceHandle();
+            wc.hInstance    = GetApp()->GetInstanceHandle();
             wc.lpfnWndProc  = CWnd::StaticWindowProc;
 
             // Register the WNDCLASS structure
@@ -894,20 +924,20 @@ namespace Win32xx
     {
         BOOL success = FALSE;
 
-        if ( &GetApp() )
+        if ( GetApp() )
         {
             // Allocate an iterator for our HWND map
             std::map<HWND, CWnd*, CompareHWND>::iterator m;
 
-            CWinApp& app = GetApp();
+            CWinApp* pApp = GetApp();
 
             // Erase the CWnd pointer entry from the map
-            CThreadLock mapLock(app.m_wndLock);
-            for (m = app.m_mapHWND.begin(); m != app.m_mapHWND.end(); ++m)
+            CThreadLock mapLock(pApp->m_wndLock);
+            for (m = pApp->m_mapHWND.begin(); m != pApp->m_mapHWND.end(); ++m)
             {
                 if (this == m->second)
                 {
-                    app.m_mapHWND.erase(m);
+                    pApp->m_mapHWND.erase(m);
                     success = TRUE;
                     break;
                 }
@@ -921,16 +951,16 @@ namespace Win32xx
     // Sets the large icon associated with the window.
     inline HICON CWnd::SetIconLarge(int iconID)
     {
-        assert( &GetApp() );
+        assert( GetApp() );
         assert(IsWindow());
 
         int cxIcon = ::GetSystemMetrics(SM_CXICON);
         int cyIcon = ::GetSystemMetrics(SM_CYICON);
 
 #ifndef _WIN32_WCE
-        HICON hIconLarge = reinterpret_cast<HICON>(GetApp().LoadImage(iconID, IMAGE_ICON, cxIcon, cyIcon, LR_SHARED));
+        HICON hIconLarge = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, cxIcon, cyIcon, LR_SHARED));
 #else
-        HICON hIconLarge = reinterpret_cast<HICON>(GetApp().LoadImage(iconID, IMAGE_ICON, cxIcon, cyIcon, 0));
+        HICON hIconLarge = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, cxIcon, cyIcon, 0));
 #endif
 
         if (hIconLarge != 0)
@@ -944,16 +974,16 @@ namespace Win32xx
     // Sets the small icon associated with the window.
     inline HICON CWnd::SetIconSmall(int iconID)
     {
-        assert( &GetApp() );
+        assert( GetApp() );
         assert(IsWindow());
 
         int cxSmallIcon = ::GetSystemMetrics(SM_CXSMICON);
         int cySmallIcon = ::GetSystemMetrics(SM_CYSMICON);
 
 #ifndef _WIN32_WCE
-        HICON hIconSmall = reinterpret_cast<HICON>(GetApp().LoadImage(iconID, IMAGE_ICON, cxSmallIcon, cySmallIcon, LR_SHARED));
+        HICON hIconSmall = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, cxSmallIcon, cySmallIcon, LR_SHARED));
 #else
-        HICON hIconSmall = reinterpret_cast<HICON>(GetApp().LoadImage(iconID, IMAGE_ICON, cxSmallIcon, cySmallIcon, 0));
+        HICON hIconSmall = reinterpret_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, cxSmallIcon, cySmallIcon, 0));
 #endif
 
         if (hIconSmall != 0)
@@ -968,15 +998,15 @@ namespace Win32xx
     // to the CWnd's WndProc function.
     inline LRESULT CALLBACK CWnd::StaticWindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
-        assert( &GetApp() );
+        assert( GetApp() );
 
-        CWnd* w = GetApp().GetCWndFromMap(wnd);
+        CWnd* w = GetApp()->GetCWndFromMap(wnd);
         if (w == 0)
         {
             // The CWnd pointer wasn't found in the map, so add it now
 
             // Retrieve the pointer to the TLS Data
-            TLSData* pTLSData = GetApp().GetTlsData();
+            TLSData* pTLSData = GetApp()->GetTlsData();
             assert(pTLSData);
 
             // Retrieve pointer to CWnd object from Thread Local Storage TLS
@@ -1008,20 +1038,20 @@ namespace Win32xx
 #ifndef _WIN32_WCE
 
     //  Dialog Data Exchange support. Call this function to retrieve values from
-    //  (retrieveAndValidate is TRUE) or assign values to (RetrieveAndValidate
+    //  (retrieveAndValidate is TRUE) or assign values to (retrieveAndValidate
     //  is FALSE) a set of controls appearing in DDX/DDV statements in an
     //  override of the DoDataExchange() member method.
     //
-    //  Return TRUE if the operation is successful, or FALSE otherwise. If
-    //  called when bRetrieveValidate is TRUE, success means the data has
+    //  Returns TRUE if the operation is successful, or FALSE otherwise. If
+    //  called when retrieveValidate is TRUE, success means the data has
     //  been validated.
     inline BOOL CWnd::UpdateData(CDataExchange& dx, BOOL retrieveAndValidate)
     {
         // must not update data before the window is created
         assert(IsWindow());
 
-        // A critical section ensures threads update the data seperately
-        CThreadLock lock(GetApp().m_appLock);
+        // A critical section ensures threads update the data separately
+        CThreadLock lock(GetApp()->m_appLock);
 
         dx.Init(*this, retrieveAndValidate);
 
@@ -1035,7 +1065,7 @@ namespace Win32xx
                 ::SetFocus(dx.GetLastEditControl());
                 ::SendMessage(dx.GetLastEditControl(), EM_SETSEL, 0, -1);
             }
-            ok = TRUE; // DoDataExchage completed succesfully
+            ok = TRUE; // DoDataExchage completed successfully
         }
         catch(const CUserException& e)
         {
@@ -1115,7 +1145,7 @@ namespace Win32xx
                 // Do notification reflection if message came from a child window.
                 // Restricting OnNotifyReflect to child windows avoids double handling.
                 HWND from = ((LPNMHDR)lparam)->hwndFrom;
-                CWnd* pWndFrom = GetApp().GetCWndFromMap(from);
+                CWnd* pWndFrom = GetApp()->GetCWndFromMap(from);
 
                 if (pWndFrom != NULL)
                     if (::GetParent(from) == m_wnd)
@@ -1829,10 +1859,10 @@ namespace Win32xx
     // The SetActiveWindow function activates the window, but
     // not if the application is in the background.
     // Refer to SetActiveWindow in the Windows API documentation for more information.
-    inline CWnd CWnd::SetActiveWindow() const
+    inline HWND CWnd::SetActiveWindow() const
     {
         assert(IsWindow());
-        return CWnd( ::SetActiveWindow(*this) );
+        return ::SetActiveWindow(*this);
     }
 
     // The SetCapture function sets the mouse capture to the window.
@@ -1840,10 +1870,10 @@ namespace Win32xx
     // window, or when the mouse button was pressed while the mouse was over the
     // capturing window and the button is still down.
     // Refer to SetCapture in the Windows API documentation for more information.
-    inline CWnd CWnd::SetCapture() const
+    inline HWND CWnd::SetCapture() const
     {
         assert(IsWindow());
-        return CWnd( ::SetCapture(*this) );
+        return ::SetCapture(*this);
     }
 
     // The SetClassLongPtr function replaces the specified value at the specified offset in the
@@ -1891,10 +1921,10 @@ namespace Win32xx
 
     // The SetFocus function sets the keyboard focus to the window.
     // Refer to SetFocus in the Windows API documentation for more information.
-    inline CWnd CWnd::SetFocus() const
+    inline HWND CWnd::SetFocus() const
     {
         assert(IsWindow());
-        return CWnd( ::SetFocus(*this) );
+        return ::SetFocus(*this);
     }
 
     // Specifies the font that the window will use when drawing text.
@@ -1924,10 +1954,10 @@ namespace Win32xx
 
     // The SetParent function changes the parent window of the child window.
     // Refer to SetParent in the Windows API documentation for more information.
-    inline CWnd CWnd::SetParent(HWND parent) const
+    inline HWND CWnd::SetParent(HWND parent) const
     {
         assert(IsWindow());
-        return CWnd(::SetParent(*this, parent));
+        return ::SetParent(*this, parent);
     }
 
     // This function allows changes in that window to be redrawn or prevents changes
@@ -2022,7 +2052,7 @@ namespace Win32xx
 #ifndef _WIN32_WCE
 
         HMODULE theme = ::LoadLibrary(_T("uxtheme.dll"));
-        if(theme != 0)
+        if (theme != 0)
         {
             typedef HRESULT (__stdcall *PFNSETWINDOWTHEME)(HWND wnd, LPCWSTR pSubAppName, LPCWSTR pSubIdList);
             PFNSETWINDOWTHEME pfn = (PFNSETWINDOWTHEME)GetProcAddress(theme, "SetWindowTheme");
@@ -2469,29 +2499,29 @@ namespace Win32xx
     template <>
     inline bool CStringT<CHAR>::LoadString(UINT id)
     {
-        assert (&GetApp());
+        assert (GetApp());
 
-        int nSize = 64;
+        int startSize = 64;
         CHAR* pTCharArray = 0;
         std::vector<CHAR> vString;
-        int nTChars = nSize;
+        int chars = startSize;
 
         Empty();
 
         // Increase the size of our array in a loop until we load the entire string
         // The ANSI and _UNICODE versions of LoadString behave differently. This technique works for both.
-        while ( nSize-1 <= nTChars )
+        while (startSize -1 <= chars )
         {
-            nSize = nSize * 4;
-            vString.assign(nSize+1, 0);
+            startSize = startSize * 4;
+            vString.assign(size_t(startSize)+1, 0);
             pTCharArray = &vString[0];
-            nTChars = ::LoadStringA (GetApp().GetResourceHandle(), id, pTCharArray, nSize);
+            chars = ::LoadStringA (GetApp()->GetResourceHandle(), id, pTCharArray, startSize);
         }
 
-        if (nTChars > 0)
+        if (chars > 0)
             m_str.assign(pTCharArray);
 
-        return (nTChars != 0);
+        return (chars != 0);
     }
 
 
@@ -2500,36 +2530,243 @@ namespace Win32xx
     template <>
     inline bool CStringT<WCHAR>::LoadString(UINT id)
     {
-        assert (&GetApp());
+        assert (GetApp());
 
-        int nSize = 64;
+        int startSize = 64;
         WCHAR* pTCharArray = 0;
         std::vector<WCHAR> vString;
-        int nTChars = nSize;
+        int chars = startSize;
 
         Empty();
 
         // Increase the size of our array in a loop until we load the entire string
         // The ANSI and _UNICODE versions of LoadString behave differently. This technique works for both.
-        while ( nSize-1 <= nTChars )
+        while (startSize -1 <= chars )
         {
-            nSize = nSize * 4;
-            vString.assign(nSize+1, 0);
+            startSize = startSize * 4;
+            vString.assign(size_t(startSize)+1, 0);
             pTCharArray = &vString[0];
-            nTChars = ::LoadStringW (GetApp().GetResourceHandle(), id, pTCharArray, nSize);
+            chars = ::LoadStringW (GetApp()->GetResourceHandle(), id, pTCharArray, startSize);
         }
 
-        if (nTChars > 0)
+        if (chars > 0)
             m_str.assign(pTCharArray);
 
-        return (nTChars != 0);
+        return (chars != 0);
     }
 
     ////////////////////////////////////////
     // Global Functions
     //
 
-#ifndef _WIN32_WCE      // for Win32/64 operating systems, not WinCE
+
+    // Returns the path to the AppData folder. Returns an empty CString if
+    // the Operating System doesn't support the use of an AppData folder.
+    // The AppData folder is available in Windows 2000 and above.
+    inline CString GetAppDataPath()
+    {
+        CString AppData;
+
+#ifndef _WIN32_WCE
+
+        HMODULE hShell = ::LoadLibrary(_T("Shell32.dll"));
+        if (hShell)
+        {
+            typedef HRESULT(WINAPI * MYPROC)(HWND, int, HANDLE, DWORD, LPTSTR);
+
+            // Get the function pointer of the SHGetFolderPath function
+#ifdef UNICODE
+            MYPROC pSHGetFolderPath = (MYPROC)GetProcAddress(hShell, "SHGetFolderPathW");
+#else
+            MYPROC pSHGetFolderPath = (MYPROC)GetProcAddress(hShell, "SHGetFolderPathA");
+#endif
+
+#ifndef CSIDL_APPDATA
+  #define CSIDL_APPDATA     0x001a
+  #define CSIDL_PERSONAL    0x0005 /* My Documents */
+#endif
+
+#ifndef CSIDL_FLAG_CREATE
+  #define CSIDL_FLAG_CREATE 0x8000
+#endif
+
+            if (pSHGetFolderPath)
+            {
+                // Call the SHGetFolderPath function to retrieve the AppData folder
+                pSHGetFolderPath(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, AppData.GetBuffer(MAX_PATH));
+                AppData.ReleaseBuffer();
+            }
+
+            // If we can't get the AppData folder, get the MyDocuments folder instead
+            if (AppData.IsEmpty())
+            {
+                typedef HRESULT(WINAPI * GETSPECIALPATH)(HWND, LPTSTR, int, BOOL);
+
+#ifdef UNICODE
+                GETSPECIALPATH pGetSpecialPath = (GETSPECIALPATH)GetProcAddress(hShell, "SHGetSpecialFolderPathW");
+#else
+                GETSPECIALPATH pGetSpecialPath = (GETSPECIALPATH)GetProcAddress(hShell, "SHGetSpecialFolderPathA");
+#endif
+
+                if (pGetSpecialPath)
+                {
+                    // Call the SHGetSpecialFolderPath function to retrieve the MyDocuments folder
+                    pGetSpecialPath(NULL, AppData.GetBuffer(MAX_PATH), CSIDL_PERSONAL, TRUE);
+                    AppData.ReleaseBuffer();
+                }
+            }
+
+            ::FreeLibrary(hShell);
+        }
+
+#endif // _WIN32_WCE
+
+        return AppData;
+    }
+
+    // Retrieves the command line arguments and stores them in a vector of CString.
+    // Similar to CommandLineToArgvW, but supports all versions of Windows,
+    // supports ANSI and Unicode, and doesn't require the user to use LocalFree.
+    inline std::vector<CString> GetCommandLineArgs()
+    {
+        std::vector<CString> CommandLineArgs;
+        CString CommandLine = GetCommandLine();
+        int index = 0;
+        int endPos = 0;
+
+        while (index < CommandLine.GetLength())
+        {
+            // Is the argument quoted?
+            bool IsQuoted = (CommandLine[index] == _T('\"'));
+
+            if (IsQuoted)
+            {
+                // Find the terminating token (quote followed by space)
+                endPos = CommandLine.Find(_T("\" "), index);
+                if (endPos == -1) endPos = CommandLine.GetLength() - 1;
+
+                // Store the argument in the CStringT vector without the quotes.
+                CString s;
+                if (endPos - index < 2)
+                    s = _T("\"\"");     // "" for a single quote or double quote argument
+                else
+                    s = CommandLine.Mid(index + 1, endPos - index - 1);
+
+                CommandLineArgs.push_back(s);
+                index = endPos + 2;
+            }
+            else
+            {
+                // Find the terminating token (space character)
+                endPos = CommandLine.Find(_T(' '), index);
+                if (endPos == -1) endPos = CommandLine.GetLength();
+
+                // Store the argument in the CStringT vector.
+                CString s = CommandLine.Mid(index, endPos - index);
+                CommandLineArgs.push_back(s);
+                index = endPos + 1;
+            }
+
+            // skip excess space characters
+            while (index < CommandLine.GetLength() && CommandLine[index] == _T(' '))
+                index++;
+        }
+
+        // CommandLineArgs is a vector of CStringT
+        return CommandLineArgs;
+    }
+
+#ifndef _WIN32_WCE
+
+    // Retrieves the version of common control dll used.
+    // return values and DLL versions
+    // 400  dll ver 4.00    Windows 95/Windows NT 4.0
+    // 470  dll ver 4.70    Internet Explorer 3.x
+    // 471  dll ver 4.71    Internet Explorer 4.0
+    // 472  dll ver 4.72    Internet Explorer 4.01 and Windows 98
+    // 580  dll ver 5.80    Internet Explorer 5
+    // 581  dll ver 5.81    Windows 2000 and Windows ME
+    // 582  dll ver 5.82    Windows XP, Vista, Windows 7 etc. without XP themes
+    // 600  dll ver 6.00    Windows XP with XP themes
+    // 610  dll ver 6.10    Windows Vista with XP themes
+    // 616  dll ver 6.16    Windows Vista SP1 or above with XP themes
+    inline int GetComCtlVersion()
+    {
+        // Load the Common Controls DLL
+        HMODULE comCtl = ::LoadLibrary(_T("COMCTL32.DLL"));
+        if (comCtl == 0)
+            return 0;
+
+        int comCtlVer = 400;
+
+        if (::GetProcAddress(comCtl, "InitCommonControlsEx"))
+        {
+            // InitCommonControlsEx is unique to 4.7 and later
+            comCtlVer = 470;
+
+            if (::GetProcAddress(comCtl, "DllGetVersion"))
+            {
+                typedef HRESULT CALLBACK DLLGETVERSION(DLLVERSIONINFO*);
+                DLLGETVERSION* pfnDLLGetVersion = NULL;
+
+                pfnDLLGetVersion = reinterpret_cast<DLLGETVERSION*>(::GetProcAddress(comCtl, "DllGetVersion"));
+                if (pfnDLLGetVersion)
+                {
+                    DLLVERSIONINFO dvi;
+                    dvi.cbSize = sizeof dvi;
+                    if (NOERROR == pfnDLLGetVersion(&dvi))
+                    {
+                        DWORD verMajor = dvi.dwMajorVersion;
+                        DWORD verMinor = dvi.dwMinorVersion;
+                        comCtlVer = 100 * verMajor + verMinor;
+                    }
+                }
+            }
+            else if (::GetProcAddress(comCtl, "InitializeFlatSB"))
+                comCtlVer = 471;    // InitializeFlatSB is unique to version 4.71
+        }
+
+        ::FreeLibrary(comCtl);
+
+        return comCtlVer;
+    }
+
+    // Retrieves the window version
+    // Return values and window versions:
+    //  1400     Windows 95
+    //  1410     Windows 98
+    //  1490     Windows ME
+    //  2400     Windows NT
+    //  2500     Windows 2000
+    //  2501     Windows XP
+    //  2502     Windows Server 2003
+    //  2600     Windows Vista and Windows Server 2008
+    //  2601     Windows 7 and Windows Server 2008 r2
+    //  2602     Windows 8 and Windows Server 2012
+    //  2603     Windows 8.1 and Windows Server 2012 r2
+    // Note: For windows 8.1 and above, the value returned is also affected by the embedded manifest
+    //       Applications not manifested for Windows 8.1 or Windows 10 will return the Windows 8 OS (2602).
+    inline int GetWinVersion()
+    {
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+  #pragma warning ( push )
+  #pragma warning ( disable : 4996 )        // GetVersion declared deprecated.
+  #pragma warning ( disable : 28159 )       // Deprecated function. Consider using IsWindows instead. 
+#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+
+        DWORD version = GetVersion();
+
+#if defined (_MSC_VER) && (_MSC_VER >= 1400)
+  #pragma warning ( pop )
+#endif // (_MSC_VER) && (_MSC_VER >= 1400)
+
+        int platform = (version < 0x80000000) ? 2 : 1;
+        int majorVer = LOBYTE(LOWORD(version));
+        int minorVer = HIBYTE(LOWORD(version));
+
+        int result = 1000 * platform + 100 * majorVer + minorVer;
+        return result;
+    }
 
 
     // Returns a NONCLIENTMETRICS struct filled from the system parameters.
@@ -2540,7 +2777,7 @@ namespace Win32xx
         ZeroMemory(&ncm, sizeof(ncm));
         ncm.cbSize = sizeof(ncm);
 
-#if (WINVER >= 0x0600)
+#if (WINVER >= 0x2600)
         // Is OS version less than Vista, adjust size to correct value
         if (GetWinVersion() < 2600)
             ncm.cbSize = CCSIZEOF_STRUCT(NONCLIENTMETRICS, lfMessageFont);
@@ -2568,8 +2805,7 @@ namespace Win32xx
         return (state & 0x8000);
     }
 
-
-#endif // #ifndef _WIN32_WCE
+#endif
 
     // Loads the common controls using InitCommonControlsEx or InitCommonControls.
     // Returns TRUE if InitCommonControlsEx is used.
@@ -2628,7 +2864,6 @@ namespace Win32xx
         str.LoadString(id);
         return str;
     }
-
 
 }
 

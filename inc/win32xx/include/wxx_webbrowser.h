@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -157,6 +157,7 @@ namespace Win32xx
         CAXWindow& GetAXWindow() const { return m_axContainer; }
         BOOL GetBusy() const;
         LPDISPATCH GetContainer() const;
+        LPDISPATCH GetDocument() const;
         BOOL GetFullScreen() const;
         long GetHeight() const;
         IWebBrowser2* GetIWebBrowser2() const { return m_pIWebBrowser2; }
@@ -164,6 +165,7 @@ namespace Win32xx
         CString GetLocationName() const;
         CString GetLocationURL() const;
         BOOL GetOffline() const;
+        LPDISPATCH GetParent() const;
         READYSTATE GetReadyState() const;
         BOOL GetRegisterAsBrowser() const;
         BOOL GetTheaterMode() const;
@@ -335,6 +337,8 @@ namespace Win32xx
         return E_NOINTERFACE;
     }
 
+    // Returns the IDispatch COM interface.
+    // The caller should release the IDispatch pointer.
     inline IDispatch* CAXWindow::GetDispatch()
     {
         if (!m_pUnk)
@@ -733,7 +737,9 @@ namespace Win32xx
 
     inline CWebBrowser::CWebBrowser() : m_pIWebBrowser2(0)
     {
-        OleInitialize(NULL);
+        HRESULT hr = OleInitialize(NULL);
+        if (FAILED(hr))
+            throw CWinException(g_msgOleInitialize);
     }
 
     inline CWebBrowser::~CWebBrowser()
@@ -757,7 +763,7 @@ namespace Win32xx
         GetAXWindow().Activate(TRUE);
 
         IUnknown* pUnk = GetAXWindow().GetUnknown();
-        if(pUnk)
+        if (pUnk)
         {
             // Store the pointer to the WebBrowser control
             HRESULT result = pUnk->QueryInterface(IID_IWebBrowser2, reinterpret_cast<void**>(&m_pIWebBrowser2));
@@ -836,6 +842,14 @@ namespace Win32xx
         return Value;
     }
 
+    // Retrieves an object reference to a document.
+    inline LPDISPATCH CWebBrowser::GetDocument() const
+    {
+        LPDISPATCH Value;
+        GetIWebBrowser2()->get_Document(&Value);
+        return Value;
+    }
+
     // Retrieves a value that indicates whether Internet Explorer is in full-screen mode or normal window mode.
     inline BOOL CWebBrowser::GetFullScreen() const
     {
@@ -885,7 +899,7 @@ namespace Win32xx
     {
         assert(pidl);
         UINT cbPidl = sizeof(pidl->mkid.cb);
-        while(pidl && pidl->mkid.cb)
+        while (pidl && pidl->mkid.cb)
         {
             cbPidl += pidl->mkid.cb;
 
@@ -946,6 +960,13 @@ namespace Win32xx
         VARIANT_BOOL Value = VARIANT_FALSE;
         GetIWebBrowser2()->get_TopLevelContainer(&Value);
         return (Value != 0);
+    }
+
+    inline LPDISPATCH CWebBrowser::GetParent() const
+    {
+        LPDISPATCH pDispatch = NULL;
+        GetIWebBrowser2()->get_Parent(&pDispatch);
+        return pDispatch;
     }
 
     // Retrieves the user type name of the contained document object.

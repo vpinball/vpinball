@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -66,11 +66,12 @@ namespace Win32xx
         BOOL SetPartIcon(int part, HICON icon) const;
 
         // Operations
-        CStatusBar(const CStatusBar&);              // Disable copy construction
-        CStatusBar& operator = (const CStatusBar&); // Disable assignment operator
-
         BOOL CreateParts(int parts, const int paneWidths[]) const;
         void SetSimple(BOOL isSimple = TRUE) const;
+
+    private:
+        CStatusBar(const CStatusBar&);              // Disable copy construction
+        CStatusBar& operator = (const CStatusBar&); // Disable assignment operator
     };
 
 }
@@ -181,7 +182,7 @@ namespace Win32xx
         // Permit the parent window to handle the drawing of the StatusBar's background.
         // Return TRUE to suppress default background drawing.
         return (GetParent().SendMessage(UWM_DRAWSBBKGND, (WPARAM)&dc,
-			(LPARAM)this) != 0);
+            (LPARAM)this) != 0);
     }
 
     // Called by CStatusBar::Create to set some window parameters
@@ -220,7 +221,7 @@ namespace Win32xx
 
     // Changes the width of an existing pane, or creates a new pane with the specified width.
     // A width of -1 for the last part sets the width to the border of the window.
-	// Refer to SB_SETPARTS in the Windows API documentation for more information.
+    // Refer to SB_SETPARTS in the Windows API documentation for more information.
     inline BOOL CStatusBar::SetPartWidth(int part, int width) const
     {
         assert(IsWindow());

@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -53,48 +53,66 @@
 // WM_APP range: 0x8000 through 0xBFFF
 // Note: The numbers defined for window messages don't always need to be unique. View windows defined by users for example,
 //  could use other user defined messages with the same number as those below without issue.
-#define UWM_DOCKACTIVATE      (WM_APP + 0x3F01) // Message - sent to dock ancestor when a docker is activated.
-#define UWM_DOCKDESTROYED     (WM_APP + 0x3F02) // Message - posted when docker is destroyed
+#define UWM_DOCKACTIVATE      (WM_APP + 0x3F01) // Message - posted to dock ancestor when a docker is activated.
+#define UWM_DOCKDESTROYED     (WM_APP + 0x3F02) // Message - posted when docker is destroyed.
 #define UWM_DRAWRBBKGND       (WM_APP + 0x3F03) // Message - sent by rebar to parent to perform background drawing. Return TRUE if handled.
 #define UWM_DRAWSBBKGND       (WM_APP + 0x3F04) // Message - sent by statusbar to parent to perform background drawing. Return TRUE if handled.
-#define UWM_GETCDIALOG        (WM_APP + 0x3F05) // Message - returns a pointer to this CWnd if it is a CDialog
-#define UWM_GETCDOCKCONTAINER (WM_APP + 0x3F06) // Message - returns a pointer to this CWnd if it is a CDockContainer
-#define UWM_GETCDOCKER        (WM_APP + 0x3F07) // Message - returns a pointer to this CWnd if it is a CDocker
-#define UWM_GETCFRAMET        (WM_APP + 0x3F08) // Message - returns a pointer to this CWnd if it is a CFrameT
-#define UWM_GETCTABBEDMDI     (WM_APP + 0x3F09) // Message - returns a pointer to this CWnd if it is a CTabbedMDI
-#define UWM_GETCTOOLBAR       (WM_APP + 0x3F0A) // Message - returns a pointer to this CWnd if it is a CToolBar
-#define UWM_GETCWND           (WM_APP + 0x3F0B) // Message - returns a pointer to this CWnd
-#define UWM_GETFRAMEVIEW      (WM_APP + 0x3F0C) // Message - returns the HWND of the frame's view window. Used by CMenuBar
-#define UWM_GETMBTHEME        (WM_APP + 0x3F0D) // Message - returns a pointer to MenuBarTheme
-#define UWM_GETRBTHEME        (WM_APP + 0x3F0E) // Message - returns a pointer to ReBarTheme
-#define UWM_GETSBTHEME        (WM_APP + 0x3F0F) // Message - returns a pointer to StatusBarTheme
-#define UWM_GETTBTHEME        (WM_APP + 0x3F10) // Message - returns a pointer to ToolBarTheme
-#define UWM_MDIACTIVATED      (WM_APP + 0x3F11) // Message - sent by MDI child to MDIFrame when it is activated
-#define UWM_MDIDESTROYED      (WM_APP + 0x3F12) // Message - sent by MDI client when a MDI child is destroyed
-#define UWM_MDIGETACTIVE      (WM_APP + 0x3F13) // Message - sent by MDI client when the state of a MDI child is queried
-#define UWM_POPUPMENU         (WM_APP + 0x3F14) // Message - creates the menubar popup menu
-#define UWM_TBRESIZE          (WM_APP + 0x3F15) // Message - sent by toolbar to parent. Used by the rebar
-#define UWM_TBWINPOSCHANGING  (WM_APP + 0x3F16) // Message - sent to parent. Toolbar is resizing
-#define UWM_UPDATECOMMAND     (WM_APP + 0x3F17) // Message - sent before a menu is displayed. Used by OnMenuUpdate
+#define UWM_GETCDIALOG        (WM_APP + 0x3F05) // Message - returns a pointer to this CWnd if it inherits from CDialog.
+#define UWM_GETCDOCKCONTAINER (WM_APP + 0x3F06) // Message - returns a pointer to this CWnd if it inherits from CDockContainer.
+#define UWM_GETCDOCKER        (WM_APP + 0x3F07) // Message - returns a pointer to this CWnd if it inherits from CDocker.
+#define UWM_GETCFRAMET        (WM_APP + 0x3F08) // Message - returns a pointer to this CWnd if it inherits from CFrameT.
+#define UWM_GETCTABBEDMDI     (WM_APP + 0x3F09) // Message - returns a pointer to this CWnd if it inherits from CTabbedMDI.
+#define UWM_GETCTOOLBAR       (WM_APP + 0x3F0A) // Message - returns a pointer to this CWnd if it inherits from CToolBar.
+#define UWM_GETCWND           (WM_APP + 0x3F0B) // Message - returns a pointer to this CWnd.
+#define UWM_GETFRAMEVIEW      (WM_APP + 0x3F0C) // Message - returns the HWND of the frame's view window. Used by CMenuBar.
+#define UWM_GETMBTHEME        (WM_APP + 0x3F0D) // Message - returns a pointer to MenuBarTheme.
+#define UWM_GETRBTHEME        (WM_APP + 0x3F0E) // Message - returns a pointer to ReBarTheme.
+#define UWM_GETSBTHEME        (WM_APP + 0x3F0F) // Message - returns a pointer to StatusBarTheme.
+#define UWM_GETTBTHEME        (WM_APP + 0x3F10) // Message - returns a pointer to ToolBarTheme.
+#define UWM_MDIACTIVATED      (WM_APP + 0x3F11) // Message - sent by MDI child to MDIFrame when it is activated.
+#define UWM_MDIDESTROYED      (WM_APP + 0x3F12) // Message - sent by MDI client when a MDI child is destroyed.
+#define UWM_MDIGETACTIVE      (WM_APP + 0x3F13) // Message - sent by MDI client when the state of a MDI child is queried.
+#define UWM_POPUPMENU         (WM_APP + 0x3F14) // Message - creates the menubar popup menu.
+#define UWM_TBRESIZE          (WM_APP + 0x3F15) // Message - sent by toolbar to parent. Used by the rebar.
+#define UWM_TBWINPOSCHANGING  (WM_APP + 0x3F16) // Message - sent to parent. Toolbar is resizing.
+#define UWM_UPDATECOMMAND     (WM_APP + 0x3F17) // Message - sent before a menu is displayed. Used by OnMenuUpdate.
 
-#define UWN_BARSTART          (WM_APP + 0x3F20) // Notification - docker bar selected for move
-#define UWN_BARMOVE           (WM_APP + 0x3F21) // Notification - docker bar moved
-#define UWN_BAREND            (WM_APP + 0x3F22) // Notification - end of docker bar move
-#define UWN_DOCKSTART         (WM_APP + 0x3F23) // Notification - about to start undocking
-#define UWN_DOCKMOVE          (WM_APP + 0x3F24) // Notification - undocked docker is being moved
-#define UWN_DOCKEND           (WM_APP + 0x3F25) // Notification - docker has been docked
-#define UMN_TABCHANGED        (WM_APP + 0x3F26) // Notification - tab size or position changed
-#define UWN_TABDRAGGED        (WM_APP + 0x3F27) // Notification - tab is being dragged
-#define UWN_TABCLOSE          (WM_APP + 0x3F28) // Notification - sent by CTab when a tab is about to be closed
-#define UWN_UNDOCKED          (WM_APP + 0x3F29) // Notification - sent by docker when undocked
+#define UWN_BARSTART          (WM_APP + 0x3F20) // Notification - sent by CDocker when the docker bar selected for move.
+#define UWN_BARMOVE           (WM_APP + 0x3F21) // Notification - sent by CDocker when the docker bar is moved.
+#define UWN_BAREND            (WM_APP + 0x3F22) // Notification - sent by CDocker when moving the docker bar has ended.
+#define UWN_DOCKSTART         (WM_APP + 0x3F23) // Notification - sent by CDocker when it's about to start undocking.
+#define UWN_DOCKMOVE          (WM_APP + 0x3F24) // Notification - sent by CDocker when the undocked docker is being moved.
+#define UWN_DOCKEND           (WM_APP + 0x3F25) // Notification - sent by CDocker when the docker has been docked.
+#define UMN_TABCHANGED        (WM_APP + 0x3F26) // Notification - sent by CTab when the tab size or position changed.
+#define UWN_TABDRAGGED        (WM_APP + 0x3F27) // Notification - sent by CTab when the tab is being dragged.
+#define UWN_TABCLOSE          (WM_APP + 0x3F28) // Notification - sent by CTab when a tab is about to be closed.
+#define UWN_UNDOCKED          (WM_APP + 0x3F29) // Notification - sent by docker when undocked.
+
+// print preview messages
+#define UWM_PREVIEWCLOSE      (WM_APP + 0x3F2A) // Message - sent by CPrintPreview when the 'Close' button is pressed.
+#define UWM_PRINTNOW          (WM_APP + 0x3F2B) // Message - sent by CPrintPreview when the 'Print Now' button is pressed.
+#define UWM_PRINTSETUP        (WM_APP + 0x3F2C) // Message - sent by CPrintPreview when the 'Print Setup' is button pressed.
 
 
 namespace Win32xx
 {
+    ///////////////////////////////
+    // Global function declarations
+    inline CString GetAppDataPath();
+    inline std::vector<CString> GetCommandLineArgs();
+    inline void LoadCommonControls();
+    inline CString LoadString(UINT id);
 
+#ifndef _WIN32_WCE
+    inline int GetComCtlVersion();
+    inline int GetWinVersion();
+    inline NONCLIENTMETRICS GetNonClientMetrics();
+    inline BOOL IsLeftButtonDown();
+#endif
+
+    ////////////////////////////////
     // Registered messages defined by Win32++
     const UINT UWM_WINDOWCREATED = ::RegisterWindowMessage(_T("UWM_WINDOWCREATED"));    // Posted when a window is created or attached.
-
 
     ////////////////////////////////
     // The CWnd class provides the functionality of a generic window.
@@ -219,18 +237,18 @@ namespace Win32xx
         LRESULT SendMessage(UINT msg, WPARAM wparam = 0, LPARAM lparam = 0) const;
         LRESULT SendMessage(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam) const;
         BOOL  SendNotifyMessage(UINT msg, WPARAM wparam, LPARAM lparam) const;
-        CWnd  SetActiveWindow() const;
-        CWnd  SetCapture() const;
+        HWND  SetActiveWindow() const;
+        HWND  SetCapture() const;
         ULONG_PTR SetClassLongPtr(int index, LONG_PTR newLong) const;
         LONG_PTR SetDlgCtrlID(int id) const;
         BOOL  SetDlgItemInt(int dlgItemID, UINT value, BOOL isSigned) const;
         BOOL  SetDlgItemText(int dlgItemID, LPCTSTR pString) const;
         void  SetExStyle(DWORD exStyle) const;
-        CWnd  SetFocus() const;
+        HWND  SetFocus() const;
         void  SetFont(HFONT font, BOOL redraw = TRUE) const;
         BOOL  SetForegroundWindow() const;
         HICON SetIcon(HICON icon, BOOL isBigIcon) const;
-        CWnd  SetParent(HWND parent) const;
+        HWND  SetParent(HWND parent) const;
         BOOL  SetRedraw(BOOL redraw = TRUE) const;
         int   SetScrollInfo(int barType, const SCROLLINFO& si, BOOL redraw) const;
         void  SetStyle(DWORD style) const;
@@ -333,7 +351,7 @@ namespace Win32xx
 
     }; // class CWnd
 
-}
+} // namespace Win32xx
 
 #endif // _WIN32XX_WINCORE0_H_
 

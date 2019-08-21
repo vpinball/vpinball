@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -299,7 +299,7 @@ namespace Win32xx
                     CString menuString;
                     menuString.Format(_T("&%d %s"), window+1, strMenuItem.c_str());
 
-                    windowMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD + window, menuString);
+                    windowMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD + UINT_PTR(window), menuString);
 
                     if (GetActiveMDIChild() == (*v).get())
                         windowMenu.CheckMenuItem(IDW_FIRSTCHILD + window, MF_CHECKED);
@@ -309,7 +309,7 @@ namespace Win32xx
                 else if (9 == window)
                 // For the 10th MDI child, add this menu item and return
                 {
-                    windowMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD + window, _T("&Windows..."));
+                    windowMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD + UINT_PTR(window), _T("&Windows..."));
                     return;
                 }
             }
@@ -323,7 +323,7 @@ namespace Win32xx
     {
         CMenu menu = T::GetFrameMenu();
 
-        if(GetActiveMDIChild())
+        if (GetActiveMDIChild())
             if (GetActiveMDIChild()->GetChildMenu())
                 menu = GetActiveMDIChild()->GetChildMenu();
 
@@ -493,9 +493,9 @@ namespace Win32xx
             else
                 UpdateFrameMenu(T::GetFrameMenu());
             if (pMDIChild->GetChildAccel())
-                GetApp().SetAccelerators(pMDIChild->GetChildAccel(), *this);
+                GetApp()->SetAccelerators(pMDIChild->GetChildAccel(), *this);
             else
-                GetApp().SetAccelerators(T::GetFrameAccel(), *this);
+                GetApp()->SetAccelerators(T::GetFrameAccel(), *this);
         }
 
         return 0;
@@ -620,9 +620,9 @@ namespace Win32xx
 
             // Update the accelerators
             if (GetActiveMDIChild()->GetChildAccel())
-                GetApp().SetAccelerators(GetActiveMDIChild()->GetChildAccel(), *this);
+                GetApp()->SetAccelerators(GetActiveMDIChild()->GetChildAccel(), *this);
             else
-                GetApp().SetAccelerators(T::GetFrameAccel(), *this);
+                GetApp()->SetAccelerators(T::GetFrameAccel(), *this);
         }
         else
         {
@@ -631,7 +631,7 @@ namespace Win32xx
             else
                 T::SetMenu( T::GetFrameMenu() );
 
-            GetApp().SetAccelerators(T::GetFrameAccel(), *this);
+            GetApp()->SetAccelerators(T::GetFrameAccel(), *this);
         }
     }
 
@@ -669,7 +669,7 @@ namespace Win32xx
                     else
                     {
                         GetMDIClient().SendMessage(WM_MDISETMENU, (WPARAM)(menu.GetHandle()),
-							(LPARAM)(menuWindow.GetHandle()));
+                            (LPARAM)(menuWindow.GetHandle()));
                         T::DrawMenuBar();
                     }
                 }
@@ -778,8 +778,8 @@ namespace Win32xx
     //
 
     // Sets the MDI Child's menu and accelerator in the constructor, like this ...
-    //   HMENU hChildMenu = LoadMenu(GetApp().GetResourceHandle(), _T("MdiMenuView"));
-    //   HACCEL hChildAccel = LoadAccelerators(GetApp().GetResourceHandle(), _T("MDIAccelView"));
+    //   HMENU hChildMenu = LoadMenu(GetApp()->GetResourceHandle(), _T("MdiMenuView"));
+    //   HACCEL hChildAccel = LoadAccelerators(GetApp()->GetResourceHandle(), _T("MDIAccelView"));
     //   SetHandles(hChildMenu, hChildAccel);
     //   SetView(m_View);
     inline CMDIChild::CMDIChild() : m_pView(NULL), m_childAccel(0)
@@ -828,7 +828,7 @@ namespace Win32xx
         int y = CW_USEDEFAULT;
         int cx = CW_USEDEFAULT;
         int cy = CW_USEDEFAULT;
-        if(cs.cx && cs.cy)
+        if (cs.cx && cs.cy)
         {
             x = cs.x;
             y = cs.y;

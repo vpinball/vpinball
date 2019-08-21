@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -156,7 +156,7 @@ namespace Win32xx
         void        SetCurFocus(int tab) const;
         int         SetCurSel(int tab) const;
         DWORD       SetExtendedStyle(DWORD exStyle) const;
-        CImageList  SetImageList(HIMAGELIST newImages) const;
+        HIMAGELIST  SetImageList(HIMAGELIST newImages) const;
         BOOL        SetItem(int tab, LPTCITEM pTabInfo) const;
         BOOL        SetItemExtra(int cb) const;
         DWORD       SetItemSize(int cx, int cy) const;
@@ -325,7 +325,7 @@ namespace Win32xx
     // Adds a tab along with the specified view window.
     // The framework assumes ownership of the CWnd pointer provided,
     // and deletes the CWnd object when the tab is removed or destroyed.
-	// Returns a pointer to the view window which was supplied.
+    // Returns a pointer to the view window which was supplied.
     // Use RemoveTabPage to remove the tab and page added in this manner.
     inline CWnd* CTab::AddTabPage(CWnd* pView, LPCTSTR pTabText, HICON icon, UINT tabID)
     {
@@ -369,7 +369,7 @@ namespace Win32xx
     // Use RemoveTabPage to remove the tab and page added in this manner.
     inline CWnd* CTab::AddTabPage(CWnd* pView, LPCTSTR pTabText, int iconID, UINT tabID /* = 0*/)
     {
-        HICON icon = reinterpret_cast<HICON>(LoadImage(GetApp().GetResourceHandle(),
+        HICON icon = reinterpret_cast<HICON>(LoadImage(GetApp()->GetResourceHandle(),
                                           MAKEINTRESOURCE(iconID), IMAGE_ICON, 0, 0, LR_SHARED));
         return AddTabPage(pView, pTabText, icon, tabID);
     }
@@ -685,12 +685,12 @@ namespace Win32xx
         }
 
         // Add the menu items
-        for(UINT u = 0; u < MIN(GetAllTabs().size(), 9); ++u)
+        for (UINT u = 0; u < MIN(GetAllTabs().size(), 9); ++u)
         {
             CString menuString;
             CString tabText = GetAllTabs()[u].TabText;
             menuString.Format(_T("&%d %s"), u+1, tabText.c_str());
-            m_listMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD +u, menuString);
+            m_listMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD + UINT_PTR(u), menuString);
         }
         if (GetAllTabs().size() >= 10)
             m_listMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD +9, _T("More Windows"));
@@ -1457,7 +1457,7 @@ namespace Win32xx
         // Display the modal dialog. The dialog is defined in the dialog template rather
         // than in the resource script (rc) file.
         CSelectDialog SelectDialog((LPCDLGTEMPLATE) dlgTemplate);
-        for(UINT u = 0; u < GetAllTabs().size(); ++u)
+        for (UINT u = 0; u < GetAllTabs().size(); ++u)
         {
             SelectDialog.AddItem(GetAllTabs()[u].TabText);
         }
@@ -1689,11 +1689,11 @@ namespace Win32xx
 
     // Assigns an image list to a tab control.
     // Refer to TabCtrl_SetImageList in the Windows API documentation for more information.
-    inline CImageList CTab::SetImageList(HIMAGELIST newImages) const
+    inline HIMAGELIST CTab::SetImageList(HIMAGELIST newImages) const
     {
         assert(IsWindow());
         HIMAGELIST images = TabCtrl_SetImageList( *this, newImages);
-        return CImageList(images);
+        return images;
     }
 
     // Sets some or all of a tab's attributes.
@@ -1814,7 +1814,7 @@ namespace Win32xx
         // Create the MDICLIENT view window
         if (!CreateEx(0, _T("MDICLIENT"), _T(""),
             style, 0, 0, 0, 0, parent, NULL, (PSTR) &clientcreate))
-                throw CWinException(_T("CMDIClient::Create ... CreateEx failed"));
+                throw CWinException(g_msgWndCreateEx);
 
         return *this;
     }
@@ -2090,7 +2090,7 @@ namespace Win32xx
                 // Add Active Tab to the registry
                 CString SubKeyName = _T("Active MDI Tab");
                 int nTab = GetActiveMDITab();
-                if(ERROR_SUCCESS != RegSetValueEx(hKeyMDIChild, SubKeyName, 0, REG_DWORD, reinterpret_cast<LPBYTE>(&nTab), sizeof(int)))
+                if (ERROR_SUCCESS != RegSetValueEx(hKeyMDIChild, SubKeyName, 0, REG_DWORD, reinterpret_cast<LPBYTE>(&nTab), sizeof(int)))
                     throw (CUserException(_T("RegSetValueEx failed")));
 
                 RegCloseKey(hKeyMDIChild);

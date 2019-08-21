@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -50,7 +50,7 @@
 //  however we need to have the GDI object separated from the device context.
 //  Wrapper classes for GDI objects are provided for this purpose. The classes
 //  are CBitmap, CBrush, CFont, CPalette, CPen and CRgn. These classes
-//  automatically delete the GDI resource assigned to them when their destructor
+//  automatically delete any GDI resources they create when their destructor
 //  is called. These wrapper class objects can be attached to the CDC as
 //  shown below.
 //
@@ -61,18 +61,23 @@
 //    HDC memDC = ::CreateCompatibleDC(clientDC);
 //    HBITMAP bitmap = ::CreateCompatibleBitmap(clientDC, cx, cy);
 //    HBITMAP oldBitmap = reinterpret_cast<HBITMAP>(::SelectObject(memDC, bitmap));
-//    HPEN pen = ::CreatePen(PS_SOLID, 1, RGB(255,0,0);
-//    HPEN oldPen = reinterpret_cast<HPEN>(::SelectObject(memDC, pen));
+//    HPEN pen1 = ::CreatePen(PS_SOLID, 1, RGB(255,0,0);
+//    HPEN oldPen = reinterpret_cast<HPEN>(::SelectObject(memDC, pen1));
 //    ::MoveToEx(memDC, 0, 0, NULL);
 //    ::LineTo(memDC, 50, 50);
+//
+//    // Select a new pen into memDC
 //    ::SelectObject(memDC, oldPen);
-//    ::DeleteObject(pen);
-//    pen = ::CreatePen(PS_SOLID, 1, RGB(0,255,0);
-//    oldPen = reinterpret_cast<HPEN>(::SelectObject(memDC, pen));
+//    ::DeleteObject(pen1);
+//    HPEN pen2 = ::CreatePen(PS_SOLID, 1, RGB(0,255,0);
+//    oldPen = reinterpret_cast<HPEN>(::SelectObject(memDC, pen2));
+//
 //    ::LineTo(memDC, 80, 80);
 //    ::BitBlt(clientDC, 0, 0, cx, cy, memDC, 0, 0);
+//
+//    // Cleanup
 //    ::SelectObject(memDC, oldPen);
-//    ::DeleteObject(pen);
+//    ::DeleteObject(pen2);
 //    ::SelectObject(memDC, oldBitmap);
 //    ::DeleteObject(bitmap);
 //    ::DeleteDC(memDC);
@@ -99,20 +104,20 @@
 //    CClientDC clientDC(*this)
 //    CMemDC memDC(clientDC);
 //    memDC.CreateCompatibleBitmap(clientDC, cx, cy);
-//    CPen myPen(PS_SOLID, 1, RGB(255,0,0));
-//    CPen oldPen = dcMem.SelectObject(myPen);
+//    CPen pen1(PS_SOLID, 1, RGB(255,0,0));
+//    CPen oldPen = dcMem.SelectObject(pen1);
 //    memDC.MoveTo(0, 0);
 //    memDC.LineTo(50, 50);
 //
-//    // Only need to select the OldPen if myPen is changed while its selected into memDC.
-//    memDC.SelectObject(oldPen);
-//
-//    // Change myPen and then re-select it into memDC
-//    myPen.CreatePen(PS_SOLID, 1, RGB(0,255,0));
-//    memDC.SelectObject(myPen);
+//    // Select a new pen into memDC
+//    CPen pen2(PS_SOLID, 1, RGB(0,255,0));
+//    memDC.SelectObject(pen2);
 //
 //    memDC.LineTo(80,80);
 //    clientDC.BitBlt(0, 0, cx, cy, memDC, 0, 0);
+//
+//    // Cleanup. Remove the pen from the DC before the pen is destroyed.
+//    memDC.SelectObject(oldPen);
 //  }
 
 // Notes:
@@ -125,12 +130,20 @@
 //  * Bitmaps can only be selected into one device context at a time.
 //  * Other GDI resources can be selected into more than one device context at a time.
 //  * Palettes use SelectPalatte to select them into device the context.
-//  * Regions use SelectClipRgn to select them into the device context.
+//  * Clipping regions use SelectClipRgn to select them into the device context.
+//  * Other regions use SelectObject to select them into the device context.
 //  * All the GDI classes are reference counted. This allows functions to safely
 //     pass these objects by value, as well as by pointer or by reference.
 //  * If SelectObject is used to select say a CPen into a device context, the
-//     CPen shouldn't be changed while device context is valid. Use SelectObject to
-//     select the old pen back into the device context before changing the pen.
+//     CPen shouldn't be changed or destroyed while device context is valid. Use 
+//     SelectObject to select the old pen back into the device context before
+//     changing the pen.
+//  * All GDI classes are reference counted and can be copied safely. This means they
+//     can be safely returned by value from functions. The associated GDI resource is
+//     only deleted (if appropriate) when the last copy of the object goes out of scope.
+//  * A copy of a GDI class is a clone of the original. Both class objects manipulate
+//     the one GDI resource.
+
 
 // The CBitmapInfoPtr class is a convenient wrapper for the BITMAPINFO structure.
 // The size of the BITMAPINFO structure is dependant on the type of HBITMAP, and its
@@ -154,6 +167,9 @@
 #include "wxx_exception.h"
 #include "wxx_metafile.h"
 
+#ifndef HGDI_ERROR
+  #define HGDI_ERROR ((HANDLE)-1)
+#endif
 
 // Disable macros from Windowsx.h
 #undef CopyRgn
@@ -392,7 +408,6 @@ namespace Win32xx
         // Constructor
         CDC_Data() : dc(0), count(1L), isManagedHDC(FALSE), wnd(0), savedDCState(0) {}
 
-        std::vector<GDIPtr> m_vGDIObjects;  // Smart pointers to internally created Bitmaps, Brushes, Fonts, Bitmaps and Regions
         CBitmap bitmap;
         CBrush  brush;
         CFont   font;
@@ -453,8 +468,7 @@ namespace Win32xx
         void CreateDIBSection(HDC dc, const LPBITMAPINFO pBMI, UINT usage, LPVOID* ppBits,
                                         HANDLE section, DWORD offset);
         CBitmap DetachBitmap();
-        BITMAP  GetBitmapData() const;
-        HBITMAP GetCurrentBitmap() const;
+
         BOOL LoadBitmap(UINT id);
         BOOL LoadBitmap(LPCTSTR pResName);
         BOOL LoadImage(UINT id, UINT flags);
@@ -471,8 +485,6 @@ namespace Win32xx
         // Create Brushes
         void CreatePatternBrush(HBITMAP bitmap);
         void CreateSolidBrush(COLORREF color);
-        HBRUSH GetCurrentBrush() const;
-        LOGBRUSH GetLogBrush() const;
 
 #ifndef _WIN32_WCE
         void CreateBrushIndirect(const LOGBRUSH& logBrush);
@@ -483,8 +495,6 @@ namespace Win32xx
 
         // Create Fonts
         void CreateFontIndirect(const LOGFONT& lf);
-        HFONT GetCurrentFont() const;
-        LOGFONT GetLogFont() const;
 
 #ifndef _WIN32_WCE
         void CreateFont(int height, int width, int escapement, int orientation, int weight,
@@ -504,8 +514,6 @@ namespace Win32xx
         // Create Pens
         void CreatePen(int style, int width, COLORREF color);
         void CreatePenIndirect(const LOGPEN& logPen);
-        HPEN GetCurrentPen() const;
-        LOGPEN GetLogPen() const;
 
         // Retrieve and Select Stock Objects
         HGDIOBJ GetStockObject(int index) const;
@@ -607,6 +615,8 @@ namespace Win32xx
         // Bitmap Functions
         BOOL BitBlt(int x, int y, int width, int height, HDC hSrc, int xSrc, int ySrc, DWORD rop) const;
         void DrawBitmap(int x, int y, int cx, int cy, HBITMAP image, COLORREF mask) const;
+        BITMAP  GetBitmapData() const;
+        HBITMAP GetCurrentBitmap() const;
         BOOL MaskBlt(int xDest, int yDest, int width, int height, HDC hSrc,
                            int xSrc, int ySrc, HBITMAP mask, int xMask, int yMask,
                            DWORD rop) const;
@@ -639,12 +649,23 @@ namespace Win32xx
 #endif
 
         // Brush Functions
+        HBRUSH GetCurrentBrush() const;
+        LOGBRUSH GetLogBrush() const;
+
+#ifndef _WIN32_WCE
+        CPoint   GetBrushOrgEx() const;
+        CPoint   SetBrushOrgEx(int x, int y);
+#endif
+
 #if (_WIN32_WINNT >= 0x0500)
         COLORREF GetDCBrushColor() const;
         COLORREF SetDCBrushColor(COLORREF color) const;
 #endif
 
         // Font Functions
+        HFONT GetCurrentFont() const;
+        LOGFONT GetLogFont() const;
+
 #ifndef _WIN32_WCE
         DWORD GetFontData(DWORD table, DWORD offset, LPVOID pBuffer,  DWORD data) const;
         DWORD GetFontLanguageInfo() const;
@@ -666,8 +687,11 @@ namespace Win32xx
         BOOL UpdateColors() const;
 #endif
 
-#ifndef _WIN32_WCE
         // Pen Functions
+        HPEN GetCurrentPen() const;
+        LOGPEN GetLogPen() const;
+
+#ifndef _WIN32_WCE
         BOOL GetMiterLimit(PFLOAT limit) const;
         BOOL SetMiterLimit(FLOAT newLimit, PFLOAT oldLimit) const;
 #endif
@@ -714,17 +738,17 @@ namespace Win32xx
         BOOL SetViewportOrgEx(POINT point, LPPOINT pPointRet = NULL) const;
         BOOL OffsetViewportOrgEx(int width, int height, LPPOINT pPoint = NULL) const;
         BOOL GetViewportExtEx(LPSIZE pSize)  const;
-        BOOL SetViewportExtEx(int x, int y, LPSIZE pSize) const;
-        BOOL SetViewportExtEx(SIZE size, LPSIZE pSizeRet) const;
-        BOOL ScaleViewportExtEx(int xNum, int xDenom, int yNum, int yDenom, LPSIZE pSize) const;
+        BOOL SetViewportExtEx(int x, int y, LPSIZE pSize = NULL) const;
+        BOOL SetViewportExtEx(SIZE size, LPSIZE pSizeRet = NULL) const;
+        BOOL ScaleViewportExtEx(int xNum, int xDenom, int yNum, int yDenom, LPSIZE pSize = NULL) const;
         BOOL GetWindowExtEx(LPSIZE pSize)  const;
-        BOOL SetWindowExtEx(int x, int y, LPSIZE pSize) const;
-        BOOL SetWindowExtEx(SIZE size, LPSIZE pSizeRet) const;
-        BOOL ScaleWindowExtEx(int xNum, int xDenom, int yNum, int yDenom, LPSIZE pSize) const;
+        BOOL SetWindowExtEx(int x, int y, LPSIZE pSize = NULL) const;
+        BOOL SetWindowExtEx(SIZE size, LPSIZE pSizeRet = NULL) const;
+        BOOL ScaleWindowExtEx(int xNum, int xDenom, int yNum, int yDenom, LPSIZE pSize = NULL) const;
         BOOL GetWindowOrgEx(LPPOINT pPoint)  const;
-        BOOL SetWindowOrgEx(int x, int y, LPPOINT pPoint) const;
-        BOOL SetWindowOrgEx(POINT point, LPPOINT pPointRet) const;
-        BOOL OffsetWindowOrgEx(int width, int height, LPPOINT pPoint) const;
+        BOOL SetWindowOrgEx(int x, int y, LPPOINT pPoint = NULL) const;
+        BOOL SetWindowOrgEx(POINT point, LPPOINT pPointRet = NULL) const;
+        BOOL OffsetWindowOrgEx(int width, int height, LPPOINT pPoint = NULL) const;
 #endif
 
         // MetaFile Functions
@@ -804,7 +828,7 @@ namespace Win32xx
             {
                 HDC dc = ::GetDC(wnd);
                 if (dc == 0)
-                    throw CResourceException(_T("GetDC failed"));
+                    throw CResourceException(g_msgGdiGetDC);
 
                 Attach(dc, wnd);
                 SetManaged(true);
@@ -835,7 +859,7 @@ namespace Win32xx
             {
                 HDC dc = ::GetDCEx(wnd, hrgnClip, flags);
                 if (dc == 0)
-                    throw CResourceException(_T("GetDCEx failed"));
+                    throw CResourceException(g_msgGdiGetDCEx);
 
                 Attach(dc, wnd);
                 SetManaged(true);
@@ -887,7 +911,7 @@ namespace Win32xx
             {
                 HDC dc = ::BeginPaint(wnd, &m_ps);
                 if (dc == 0)
-                    throw CResourceException(_T("BeginPaint failed"));
+                    throw CResourceException(g_msgGdiBeginPaint);
 
                 Attach(dc, wnd);
                 SetManaged(true);
@@ -943,7 +967,7 @@ namespace Win32xx
             {
                 HDC dc = ::GetWindowDC(wnd);
                 if (dc == 0)
-                    throw CResourceException(_T("GetWindowDC failed"));
+                    throw CResourceException(g_msgGdiGetWinDC);
 
                 Attach(dc, wnd);
                 SetManaged(true);
@@ -985,7 +1009,7 @@ namespace Win32xx
                 assert(GetHDC() == 0);
                 HDC dc = ::CreateMetaFile(pFilename);
                 if (dc == 0)
-                    throw CResourceException(_T("Failed to create a DC for the MetaFile"));
+                    throw CResourceException(g_msgGdiDC);
 
                 Attach(dc);
                 SetManaged(true);
@@ -1035,7 +1059,7 @@ namespace Win32xx
                 assert(GetHDC() == 0);
                 HDC dc = ::CreateEnhMetaFile(ref, pFileName, pBounds, pDescription);
                 if (dc == 0)
-                    throw CResourceException(_T("Failed to create a DC for the EnhMetaFile"));
+                    throw CResourceException(g_msgGdiDC);
 
                 Attach(dc);
                 SetManaged(true);
@@ -1085,7 +1109,7 @@ namespace Win32xx
             else                     cClrBits = 32;
 
             // Allocate memory for the BITMAPINFO structure.
-            UINT uQuadSize = (cClrBits == 24)? 0 : sizeof(RGBQUAD) * static_cast<int>(1 << cClrBits);
+            UINT uQuadSize = (cClrBits == 24)? 0 : UINT(sizeof(RGBQUAD)) * (1 << cClrBits);
             m_bmi.assign(sizeof(BITMAPINFOHEADER) + uQuadSize, 0);
             m_pbmiArray = (LPBITMAPINFO) &m_bmi[0];
 
@@ -1164,10 +1188,10 @@ namespace Win32xx
     // Store the HDC and CDC pointer in the HDC map
     inline void CGDIObject::AddToMap()
     {
-        assert( &GetApp() );
+        assert( GetApp() );
         assert(m_pData->hGDIObject);
 
-        GetApp().AddCGDIData(m_pData->hGDIObject, m_pData);
+        GetApp()->AddCGDIData(m_pData->hGDIObject, m_pData);
     }
 
     // Attaches a GDI HANDLE to the CGDIObject.
@@ -1187,7 +1211,7 @@ namespace Win32xx
             if (object)
             {
                 // Add the GDI object to this CCGDIObject
-                CGDI_Data* pCGDIData = GetApp().GetCGDIData(object);
+                CGDI_Data* pCGDIData = GetApp()->GetCGDIData(object);
                 if (pCGDIData)
                 {
                     delete m_pData;
@@ -1245,8 +1269,9 @@ namespace Win32xx
         return m_pData->hGDIObject;
     }
 
-    inline int CGDIObject::GetObject(int count, LPVOID pObject) const
     // Retrieves information for the specified graphics object.
+    // Refer to GetObject in the Windows API documentation for more information.
+    inline int CGDIObject::GetObject(int count, LPVOID pObject) const
     {
         assert(m_pData);
         return ::GetObject(m_pData->hGDIObject, count, pObject);
@@ -1277,18 +1302,18 @@ namespace Win32xx
     {
         BOOL success = FALSE;
 
-        if( &GetApp() )
+        if ( GetApp() )
         {
             // Allocate an iterator for our HDC map
             std::map<HGDIOBJ, CGDI_Data*, CompareGDI>::iterator m;
 
-            CWinApp& app = GetApp();
-            CThreadLock mapLock(app.m_gdiLock);
-            m = app.m_mapCGDIData.find(m_pData->hGDIObject);
-            if (m != app.m_mapCGDIData.end())
+            CWinApp* pApp = GetApp();
+            CThreadLock mapLock(pApp->m_gdiLock);
+            m = pApp->m_mapCGDIData.find(m_pData->hGDIObject);
+            if (m != pApp->m_mapCGDIData.end())
             {
                 // Erase the CGDIObject pointer entry from the map
-                app.m_mapCGDIData.erase(m);
+                pApp->m_mapCGDIData.erase(m);
                 success = TRUE;
             }
 
@@ -1341,9 +1366,9 @@ namespace Win32xx
     // Refer to LoadImage in the Windows API documentation for more information.
     inline BOOL CBitmap::LoadBitmap(LPCTSTR pResName)
     {
-        assert( &GetApp() );
+        assert( GetApp() );
 
-        HBITMAP bitmap = reinterpret_cast<HBITMAP>(::LoadImage(GetApp().GetResourceHandle(), pResName, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR));
+        HBITMAP bitmap = reinterpret_cast<HBITMAP>(::LoadImage(GetApp()->GetResourceHandle(), pResName, IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR));
         if (bitmap != 0)
         {
             Attach(bitmap);
@@ -1363,9 +1388,9 @@ namespace Win32xx
     // Refer to LoadImage in the Windows API documentation for more information.
     inline BOOL CBitmap::LoadImage(LPCTSTR pResName, UINT flags)
     {
-        assert( &GetApp() );
+        assert( GetApp() );
 
-        HBITMAP bitmap = reinterpret_cast<HBITMAP>(::LoadImage(GetApp().GetResourceHandle(), pResName, IMAGE_BITMAP, 0, 0, flags));
+        HBITMAP bitmap = reinterpret_cast<HBITMAP>(::LoadImage(GetApp()->GetResourceHandle(), pResName, IMAGE_BITMAP, 0, 0, flags));
         if (bitmap != 0)
         {
             Attach(bitmap);
@@ -1428,8 +1453,8 @@ namespace Win32xx
 
             for (int column = 0; column < bmiHeader.biWidth; ++column)
             {
-                // Calculate Index
-                index = yOffset + xOffset;
+                // Calculate index
+                index = size_t(yOffset) + size_t(xOffset);
 
                 // skip for colors matching the mask
                 if ((bits[index + 0] != GetRValue(mask)) &&
@@ -1457,10 +1482,10 @@ namespace Win32xx
     // Refer to CreateMappedBitmap in the Windows API documentation for more information.
     inline HBITMAP CBitmap::CreateMappedBitmap(UINT bitmapID, UINT flags /*= 0*/, LPCOLORMAP pColorMap /*= NULL*/, int mapSize /*= 0*/)
     {
-        assert(&GetApp());
-        HBITMAP bitmap = ::CreateMappedBitmap(GetApp().GetResourceHandle(), bitmapID, static_cast<WORD>(flags), pColorMap, mapSize);
+        assert(GetApp());
+        HBITMAP bitmap = ::CreateMappedBitmap(GetApp()->GetResourceHandle(), bitmapID, static_cast<WORD>(flags), pColorMap, mapSize);
         if (bitmap == 0)
-            throw CResourceException(_T("CreateMappedBitmap failed"));
+            throw CResourceException(g_msgGdiBitmap);
 
         Attach(bitmap);
         SetManaged(true);
@@ -1475,7 +1500,7 @@ namespace Win32xx
     {
         HBITMAP bitmap = ::CreateBitmap(width, height, planes, bitsPerPixel, pBits);
         if (bitmap == 0)
-            throw CResourceException(_T("CreateBitmap failed"));
+            throw CResourceException(g_msgGdiBitmap);
 
         Attach(bitmap);
         SetManaged(true);
@@ -1490,7 +1515,7 @@ namespace Win32xx
     {
         HBITMAP copyBitmap = ::CreateBitmapIndirect(&bitmap);
         if (copyBitmap == 0)
-            throw CResourceException(_T("CreateBitmapIndirect failed"));
+            throw CResourceException(g_msgGdiBitmap);
 
         Attach(copyBitmap);
         SetManaged(true);
@@ -1505,7 +1530,7 @@ namespace Win32xx
     {
         HBITMAP bitmap = ::CreateCompatibleBitmap(dc, width, height);
         if (bitmap == 0)
-            throw CResourceException(_T("CreateCompatibleBitmap"));
+            throw CResourceException(g_msgGdiBitmap);
 
         Attach(bitmap);
         SetManaged(true);
@@ -1592,8 +1617,8 @@ namespace Win32xx
 
             for (int column=0; column < bmiHeader.biWidth; ++column)
             {
-                // Calculate Index
-                index = yOffset + xOffset;
+                // Calculate index
+                index = size_t(yOffset) + size_t(xOffset);
 
                 BYTE byGray = (BYTE) ((pByteArray[index] + pByteArray[index +1]*6 + pByteArray[index +2] *3)/10);
                 pByteArray[index]   = byGray;
@@ -1662,7 +1687,7 @@ namespace Win32xx
             for (int Column=0; Column < bmiHeader.biWidth; ++Column)
             {
                 // Calculate index
-                index = yOffset + xOffset;
+                index = size_t(yOffset) + size_t(xOffset);
 
                 // Adjust the colour values
                 if (cBlue > 0)
@@ -1772,7 +1797,7 @@ namespace Win32xx
     {
         HBRUSH brush = ::CreateSolidBrush(color);
         if (brush == 0)
-            throw CResourceException(_T("CreateSolidBrush failed"));
+            throw CResourceException(g_msgGdiBrush);
 
         Attach(brush);
         SetManaged(true);
@@ -1787,7 +1812,7 @@ namespace Win32xx
     {
         HBRUSH brush = ::CreateHatchBrush(index, color);
         if (brush == 0)
-            throw CResourceException(_T("CreateHatchBrush failed"));
+            throw CResourceException(g_msgGdiBrush);
 
         Attach(brush);
         SetManaged(true);
@@ -1800,7 +1825,7 @@ namespace Win32xx
     {
         HBRUSH brush = ::CreateBrushIndirect(&logBrush);
         if (brush == 0)
-            throw CResourceException(_T("CreateBrushIndirect failed"));
+            throw CResourceException(g_msgGdiBrush);
 
         Attach(brush);
         SetManaged(true);
@@ -1813,7 +1838,7 @@ namespace Win32xx
     {
         HBRUSH brush = ::CreateDIBPatternBrush(hDIBPacked, colorSpec);
         if (brush == 0)
-            throw CResourceException(_T("CreateDIBPatternBrush failed"));
+            throw CResourceException(g_msgGdiBrush);
 
         Attach(brush);
         SetManaged(true);
@@ -1826,7 +1851,7 @@ namespace Win32xx
     {
         HBRUSH brush = ::CreateDIBPatternBrushPt(pPackedDIB, usage);
         if (brush == 0)
-            throw CResourceException(_T("CreateDIBPatternBrushPt failed"));
+            throw CResourceException(g_msgGdiBrush);
 
         Attach(brush);
         SetManaged(true);
@@ -1842,7 +1867,7 @@ namespace Win32xx
     {
         HBRUSH brush = ::CreatePatternBrush(bitmap);
         if (brush == 0)
-            throw CResourceException(_T("CreatePatternBrush failed"));
+            throw CResourceException(g_msgGdiBrush);
 
         Attach(brush);
         SetManaged(true);
@@ -1902,7 +1927,7 @@ namespace Win32xx
     {
         HFONT font = ::CreateFontIndirect(&logFont);
         if (font == 0)
-            throw CResourceException(_T("CreateFontIndirect"));
+            throw CResourceException(g_msgGdiFont);
 
         Attach(font);
         SetManaged(true);
@@ -1972,7 +1997,7 @@ namespace Win32xx
             pitchAndFamily, pFacename);
 
         if (font == 0)
-            throw CResourceException(_T("CreateFont failed"));
+            throw CResourceException(g_msgGdiFont);
 
         Attach(font);
         SetManaged(true);
@@ -2020,7 +2045,7 @@ namespace Win32xx
     {
         HPALETTE palette = ::CreatePalette (lpLogPalette);
         if (palette == 0)
-            throw CResourceException(_T("CreatePalette failed"));
+            throw CResourceException(g_msgGdiPalette);
 
         Attach(palette);
         SetManaged(true);
@@ -2035,7 +2060,7 @@ namespace Win32xx
     {
         HPALETTE palette = ::CreateHalftonePalette(dc);
         if (palette == 0)
-            throw CResourceException(_T("CreateHalftonePalette failed"));
+            throw CResourceException(g_msgGdiPalette);
 
         Attach(palette);
         ::RealizePalette(dc);
@@ -2239,7 +2264,7 @@ namespace Win32xx
     {
         HRGN rgn = ::CreateRectRgn(x1, y1, x2, y2);
         if (rgn == 0)
-            throw CResourceException(_T("CreateRectRgn failed"));
+            throw CResourceException(g_msgGdiRegion);
 
         Attach(rgn);
         SetManaged(true);
@@ -2252,7 +2277,7 @@ namespace Win32xx
     {
         HRGN rgn = ::CreateRectRgnIndirect(&rc);
         if (rgn == 0)
-            throw CResourceException(_T("CreateRectRgnIndirect failed"));
+            throw CResourceException(g_msgGdiRegion);
 
         Attach(rgn);
         SetManaged(true);
@@ -2267,7 +2292,7 @@ namespace Win32xx
     {
         HRGN rgn = ::CreateEllipticRgn(x1, y1, x2, y2);
         if (rgn == 0)
-            throw CResourceException(_T("CreateEllipticRgn failed"));
+            throw CResourceException(g_msgGdiRegion);
 
         Attach(rgn);
         SetManaged(true);
@@ -2280,7 +2305,7 @@ namespace Win32xx
     {
         HRGN rgn = ::CreateEllipticRgnIndirect(&rc);
         if (rgn == 0)
-            throw CResourceException(_T("CreateEllipticRgnIndirect failed"));
+            throw CResourceException(g_msgGdiRegion);
 
         Attach(rgn);
         SetManaged(true);
@@ -2293,7 +2318,7 @@ namespace Win32xx
     {
         HRGN rgn = ::CreatePolygonRgn(pPoints, count, mode);
         if (rgn == 0)
-            throw CResourceException(_T("CreatePolygonRgn failed"));
+            throw CResourceException(g_msgGdiRegion);
 
         Attach(rgn);
         SetManaged(true);
@@ -2306,7 +2331,7 @@ namespace Win32xx
     {
         HRGN rgn = ::CreatePolyPolygonRgn(pPoints, pPolyCounts, count, polyFillMode);
         if (rgn == 0)
-            throw CResourceException(_T("CreatePolyPolygonRgn failed"));
+            throw CResourceException(g_msgGdiRegion);
 
         Attach(rgn);
         SetManaged(true);
@@ -2319,7 +2344,7 @@ namespace Win32xx
     {
         HRGN rgn = ::CreateRoundRectRgn(x1, y1, x2, y2, x3, y3);
         if (rgn == 0)
-            throw CResourceException(_T("CreateRoundRectRgn failed"));
+            throw CResourceException(g_msgGdiRegion);
 
         Attach(rgn);
         SetManaged(true);
@@ -2334,7 +2359,7 @@ namespace Win32xx
         assert(dc != NULL);
         HRGN rgn = ::PathToRegion(dc);
         if (rgn == 0)
-            throw CResourceException(_T("PathToRegion failed"));
+            throw CResourceException(g_msgGdiRegion);
 
         Attach(rgn);
         SetManaged(true);
@@ -2350,7 +2375,7 @@ namespace Win32xx
     {
         HRGN rgn = ::ExtCreateRegion(pXForm, count, pRgnData);
         if (rgn == 0)
-            throw CResourceException(_T("ExtCreateRegion failed"));
+            throw CResourceException(g_msgGdiRegion);
 
         Attach(rgn);
         SetManaged(true);
@@ -2529,10 +2554,10 @@ namespace Win32xx
     // Store the HDC and CDC pointer in the HDC map
     inline void CDC::AddToMap()
     {
-        assert( &GetApp() );
+        assert( GetApp() );
         assert(m_pData->dc != 0);
 
-        GetApp().AddCDCData(m_pData->dc, m_pData);
+        GetApp()->AddCDCData(m_pData->dc, m_pData);
     }
 
     // Attaches a HDC to the CDC object.
@@ -2554,7 +2579,7 @@ namespace Win32xx
 
             if (dc)
             {
-                CDC_Data* pCDCData = GetApp().GetCDCData(dc);
+                CDC_Data* pCDCData = GetApp()->GetCDCData(dc);
                 if (pCDCData)
                 {
                     delete m_pData;
@@ -2625,7 +2650,7 @@ namespace Win32xx
         HDC dc = ::CreateCompatibleDC(hSource);
 
         if (dc == NULL)
-            throw CResourceException(_T("CreateCompatibleDC failed"));
+            throw CResourceException(g_msgGdiDC);
 
         m_pData->dc = dc;
         m_pData->isManagedHDC = TRUE;
@@ -2642,7 +2667,7 @@ namespace Win32xx
         HDC dc = ::CreateDC(pDriver, pDevice, pOutput, pInitData);
 
         if (dc == NULL)
-            throw CResourceException(_T("CreateDC failed"));
+            throw CResourceException(g_msgGdiDC);
 
         m_pData->dc = dc;
         m_pData->isManagedHDC = TRUE;
@@ -2662,7 +2687,7 @@ namespace Win32xx
         HDC dc = ::CreateIC(pDriver, pDevice, pOutput, pInitData);
 
         if (dc == 0)
-            throw CResourceException(_T("CreateIC failed"));
+            throw CResourceException(g_msgGdiIC);
 
         m_pData->dc = dc;
         m_pData->isManagedHDC = TRUE;
@@ -2679,16 +2704,16 @@ namespace Win32xx
         // Create the Image memory DC
         CMemDC imageDC(*this);
         imageDC.SetBkColor(mask);
-        ::SelectObject(imageDC, bitmap);
+        imageDC.SelectObject(bitmap);
 
         // Create the Mask memory DC
-        CMemDC dcMask(*this);
-        dcMask.CreateBitmap(cx, cy, 1, 1, NULL);
-        dcMask.BitBlt(0, 0, cx, cy, imageDC, 0, 0, SRCCOPY);
+        CMemDC maskDC(*this);
+        maskDC.CreateBitmap(cx, cy, 1, 1, NULL);
+        maskDC.BitBlt(0, 0, cx, cy, imageDC, 0, 0, SRCCOPY);
 
         // Mask the image to 'this' DC
         BitBlt(x, y, cx, cy, imageDC, 0, 0, SRCINVERT);
-        BitBlt(x, y, cx, cy, imageDC, 0, 0, SRCAND);
+        BitBlt(x, y, cx, cy, maskDC, 0, 0, SRCAND);
         BitBlt(x, y, cx, cy, imageDC, 0, 0, SRCINVERT);
     }
 
@@ -2710,7 +2735,7 @@ namespace Win32xx
 
         if (isVertical)
         {
-            for(int i=0; i < Width; ++i)
+            for (int i=0; i < Width; ++i)
             {
                 int r = r1 + (i * (r2-r1) / Width);
                 int g = g1 + (i * (g2-g1) / Width);
@@ -2722,7 +2747,7 @@ namespace Win32xx
         }
         else
         {
-            for(int i=0; i < Height; ++i)
+            for (int i=0; i < Height; ++i)
             {
                 int r = r1 + (i * (r2-r1) / Height);
                 int g = g1 + (i * (g2-g1) / Height);
@@ -2753,18 +2778,18 @@ namespace Win32xx
     {
         BOOL success = FALSE;
 
-        if( &GetApp() )
+        if ( GetApp() )
         {
             // Allocate an iterator for our Data map
             std::map<HDC, CDC_Data*, CompareHDC>::iterator m;
 
-            CWinApp& app = GetApp();
-            CThreadLock mapLock(app.m_gdiLock);
-            m = app.m_mapCDCData.find(m_pData->dc);
-            if (m != app.m_mapCDCData.end())
+            CWinApp* pApp = GetApp();
+            CThreadLock mapLock(pApp->m_gdiLock);
+            m = pApp->m_mapCDCData.find(m_pData->dc);
+            if (m != pApp->m_mapCDCData.end())
             {
                 // Erase the CDC data entry from the map
-                app.m_mapCDCData.erase(m);
+                pApp->m_mapCDCData.erase(m);
                 success = TRUE;
             }
 
@@ -2794,7 +2819,11 @@ namespace Win32xx
     inline HGDIOBJ CDC::SelectObject(HGDIOBJ object) const
     {
         assert(m_pData);
-        return ::SelectObject(m_pData->dc, object);
+        HGDIOBJ oldObject = ::SelectObject(m_pData->dc, object);
+        if (oldObject == 0)
+            throw CResourceException(g_msgGdiSelObject);
+
+        return oldObject;
     }
 
     // Select a bitmap into the device context.
@@ -2802,7 +2831,10 @@ namespace Win32xx
     inline HBITMAP CDC::SelectObject(HBITMAP bitmap) const
     {
         assert(m_pData);
-        return (HBITMAP)::SelectObject(m_pData->dc, bitmap);
+        HBITMAP oldBitmap = reinterpret_cast<HBITMAP>(::SelectObject(m_pData->dc, bitmap));
+        assert(oldBitmap != 0);     // SelectObject will fail if bitmap is invalid.
+
+        return oldBitmap;
     }
 
     // Select a brush into the device context.
@@ -2810,7 +2842,10 @@ namespace Win32xx
     inline HBRUSH CDC::SelectObject(HBRUSH brush) const
     {
         assert(m_pData);
-        return reinterpret_cast<HBRUSH>(::SelectObject(m_pData->dc, brush));
+        HBRUSH oldBrush = reinterpret_cast<HBRUSH>(::SelectObject(m_pData->dc, brush));
+        assert(oldBrush != 0);
+
+        return oldBrush;
     }
 
     // Select a font into the device context.
@@ -2818,7 +2853,10 @@ namespace Win32xx
     inline HFONT CDC::SelectObject(HFONT font) const
     {
         assert(m_pData);
-        return reinterpret_cast<HFONT>(::SelectObject(m_pData->dc, font));
+        HFONT oldFont = reinterpret_cast<HFONT>(::SelectObject(m_pData->dc, font));
+        assert(oldFont != 0);
+
+        return oldFont;
     }
 
     // Select a pen into the device context.
@@ -2826,16 +2864,21 @@ namespace Win32xx
     inline HPEN CDC::SelectObject(HPEN pen) const
     {
         assert(m_pData);
-        return reinterpret_cast<HPEN>(::SelectObject(m_pData->dc, pen));
+        HPEN oldPen = reinterpret_cast<HPEN>(::SelectObject(m_pData->dc, pen));
+        assert(oldPen != 0);
+
+        return oldPen;
     }
 
     // Select a region into the device context.
+    // The return value indicates the region's complexity: NULLREGION; SIMPLEREGION; or COMPLEXREGION.
     // Refer to SelectObject in the Windows API documentation for more information.
     inline int CDC::SelectObject(HRGN rgn) const
     {
         assert(m_pData);
-        INT_PTR object = reinterpret_cast<INT_PTR>(::SelectObject(m_pData->dc, rgn));
-        return static_cast<int>(object);
+        HGDIOBJ object = ::SelectObject(m_pData->dc, rgn);
+        assert(object != HGDI_ERROR);
+        return static_cast<int> (reinterpret_cast<INT_PTR>(object));
     }
 
     // Fills a rectangle with a solid color
@@ -3170,6 +3213,28 @@ namespace Win32xx
         brush.CreateDIBPatternBrushPt(pPackedDIB, usage);
         SelectObject(brush);
         m_pData->brush = brush;
+    }
+
+    // Retrieves the current brush origin for the specified device context.
+    // Refer to GetBrushOrgEx in the Windows API documentation for more information.
+    inline CPoint CDC::GetBrushOrgEx() const
+    {
+        assert(m_pData->dc != 0);
+        CPoint pt;
+        ::GetBrushOrgEx(m_pData->dc, &pt);
+        return pt;
+    }
+
+
+    // Sets the brush origin that GDI assigns to the next brush an application
+    // selects into the specified device context. Returns the old brush origin.
+    // Refer to SetBrushOrgEx in the Windows API documentation for more information.
+    inline CPoint CDC::SetBrushOrgEx(int x, int y)
+    {
+        assert(m_pData->dc != 0);
+        CPoint oldPt;
+        ::SetBrushOrgEx(m_pData->dc, x, y, &oldPt);
+        return oldPt;
     }
 
 #endif

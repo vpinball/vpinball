@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -185,7 +185,7 @@ namespace Win32xx
 
         m_psp.dwSize        = sizeof(m_psp);
         m_psp.dwFlags       |= PSP_USECALLBACK;
-        m_psp.hInstance     = GetApp().GetResourceHandle();
+        m_psp.hInstance     = GetApp()->GetResourceHandle();
         m_psp.pszTemplate   = MAKEINTRESOURCE(templateID);
         m_psp.pszTitle      = m_title;
         m_psp.pfnDlgProc    = (DLGPROC)CPropertyPage::StaticDialogProc;
@@ -466,7 +466,7 @@ namespace Win32xx
 
     inline UINT CALLBACK CPropertyPage::StaticPropSheetPageProc(HWND wnd, UINT msg, LPPROPSHEETPAGE ppsp)
     {
-        assert( &GetApp() );
+        assert( GetApp() );
         UNREFERENCED_PARAMETER(wnd);
 
         // Note: the hwnd is always NULL
@@ -475,7 +475,7 @@ namespace Win32xx
         {
         case PSPCB_CREATE:
             {
-                TLSData* pTLSData = GetApp().GetTlsData();
+                TLSData* pTLSData = GetApp()->GetTlsData();
                 assert(pTLSData);
 
                 // Store the CPropertyPage pointer in Thread Local Storage
@@ -489,14 +489,14 @@ namespace Win32xx
 
     inline INT_PTR CALLBACK CPropertyPage::StaticDialogProc(HWND hDlg, UINT msg, WPARAM wparam, LPARAM lparam)
     {
-        assert( &GetApp() );
+        assert( GetApp() );
 
         // Find matching CWnd pointer for this HWND
         CPropertyPage* pPage = static_cast<CPropertyPage*>(GetCWndPtr(hDlg));
         if (!pPage)
         {
             // matching CWnd pointer not found, so add it to HWNDMap now
-            TLSData* pTLSData = GetApp().GetTlsData();
+            TLSData* pTLSData = GetApp()->GetTlsData();
             pPage = static_cast<CPropertyPage*>(pTLSData->pWnd);
 
             // Set the wnd members and call DialogProc for this message
@@ -528,7 +528,7 @@ namespace Win32xx
 
         m_psh.dwFlags          = PSH_PROPSHEETPAGE | PSH_USECALLBACK;
         m_psh.hwndParent       = parent;
-        m_psh.hInstance        = GetApp().GetInstanceHandle();
+        m_psh.hInstance        = GetApp()->GetInstanceHandle();
         m_psh.pfnCallback      = (PFNPROPSHEETCALLBACK)CPropertySheet::Callback;
     }
 
@@ -548,7 +548,7 @@ namespace Win32xx
 
         m_psh.dwFlags          = PSH_PROPSHEETPAGE | PSH_USECALLBACK;
         m_psh.hwndParent       = parent;
-        m_psh.hInstance        = GetApp().GetInstanceHandle();
+        m_psh.hInstance        = GetApp()->GetInstanceHandle();
         m_psh.pfnCallback      = (PFNPROPSHEETCALLBACK)CPropertySheet::Callback;
     }
 
@@ -590,7 +590,7 @@ namespace Win32xx
     // being passed to the DialogProc.
     inline void CALLBACK CPropertySheet::Callback(HWND wnd, UINT msg, LPARAM lparam)
     {
-        assert( &GetApp() );
+        assert( GetApp() );
 
         switch(msg)
         {
@@ -599,7 +599,7 @@ namespace Win32xx
             {
                 LPDLGTEMPLATE  lpTemplate = (LPDLGTEMPLATE)lparam;
 
-                if(!(lpTemplate->style & WS_SYSMENU))
+                if (!(lpTemplate->style & WS_SYSMENU))
                 {
                     lpTemplate->style |= WS_SYSMENU;
                 }
@@ -610,13 +610,14 @@ namespace Win32xx
         case PSCB_INITIALIZED:
             {
                 // Retrieve pointer to CWnd object from Thread Local Storage
-                TLSData* pTLSData = GetApp().GetTlsData();
+                TLSData* pTLSData = GetApp()->GetTlsData();
                 assert(pTLSData);
 
                 CPropertySheet* w = static_cast<CPropertySheet*>(pTLSData->pWnd);
                 assert(w);
-
-                w->Attach(wnd);
+                
+                if (w != 0)
+                    w->Attach(wnd);
             }
             break;
         }
@@ -626,7 +627,7 @@ namespace Win32xx
     // Refer to PropertySheet in the Windows API documentation for more information.
     inline HWND CPropertySheet::Create(HWND parent /*= 0*/)
     {
-        assert( &GetApp() );
+        assert( GetApp() );
         assert(!IsWindow());        // Only one window per CWnd instance allowed
 
         if (parent)
@@ -643,7 +644,7 @@ namespace Win32xx
         m_psh.dwFlags |= PSH_MODELESS;
         HWND wnd = reinterpret_cast<HWND>(CreatePropertySheet(&m_psh));
         if (wnd == 0)
-            throw CWinException(_T("CreatePropertySheet failed"));
+            throw CWinException(g_msgWndPropertSheet);
 
         return wnd;
     }
@@ -652,7 +653,7 @@ namespace Win32xx
     // Refer to PropertySheet in the Windows API documentation for more information.
     inline INT_PTR CPropertySheet::CreatePropertySheet(LPCPROPSHEETHEADER pPSH)
     {
-        assert( &GetApp() );
+        assert( GetApp() );
 
         // Only one window per CWnd instance allowed
         assert(!IsWindow());
@@ -661,7 +662,7 @@ namespace Win32xx
         m_wnd = 0;
 
         // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp().SetTlsData();
+        TLSData* pTLSData = GetApp()->SetTlsData();
 
         // Store the 'this' pointer in Thread Local Storage
         pTLSData->pWnd = this;
@@ -673,7 +674,7 @@ namespace Win32xx
         pTLSData->pWnd = NULL;
 
         if (ipResult == -1)
-            throw CWinException(_T("PropertySheet failed"));
+            throw CWinException(g_msgWndPropertSheet);
 
         return ipResult;
     }
@@ -704,7 +705,7 @@ namespace Win32xx
     // Refer to PropertySheet in the Windows API documentation for more information.
     inline int CPropertySheet::DoModal()
     {
-        assert( &GetApp() );
+        assert( GetApp() );
         assert(!IsWindow());        // Only one window per CWnd instance allowed
 
         BuildPageArray();

@@ -1,3 +1,106 @@
+Version 8.7.0
+=============
+
+This version adds print preview support to the framework, and support for
+Microsoft Visual Studio Community 2019. 
+
+Bug Fix
+-------
+* Corrected a possible access violation in debug mode when an application with
+  a ribbon is closed.
+
+
+New Features and Enhancements
+-----------------------------
+* Added CPrintPreview.
+  The CPrintPreview displays a preview of the print job before it is sent to
+  the printer.
+
+  To use CPrintPreview, do the following:
+  1) Declare CPrintPreview as CMainFrame's member, specifying the source's
+     class as the template type. The source is where the PrintPage function
+     resides.
+  2) Use SetSource to specify to where to call the PrintPage function.
+  3) Declare a PrintPage function in the source for printing and previewing:
+      void  PrintPage(CDC& dc, UINT page);
+  4) Call CPrintPreview's DoPrintPreview(HWND ownerWindow, UINT maxPage = 1)
+     to initiate the print preview.
+  5) Create the preview window, and swap it into the frame's view.
+  6) Handle the UWM_PREVIEWCLOSE message to swap back to the default view when
+     the preview closes.
+
+  CPrintPreview supports all print jobs. Any printing using the PrintPage 
+  function can be previewed. Refer to the following samples:
+   Frame; INIFrame; FastGDI; Notepad; PrintPreview; and Scribble.
+
+* Added CHGlobal class.
+  The CHGlobal class is a wrapper for a global memory handle. It automatically
+  frees the global memory when it goes out of scope.
+
+* Extended the CGlobalLock class.
+  The CGlobalLock class is used to automatically lock and unlock global memory.
+  This can be useful when working with printers. Global memory is used to hold
+  memory for DEVNAMES and DEVMODE structures.
+
+  When the global memory is locked, we acquire a pointer we can use to access
+  its contents. CDevMode and CDevNames are useful typedefs for CGlobalLock.
+  The global memory is locked when CGlobalLock is constructed, and unlocked
+  when CGlobalLock is destructed.
+
+* Extended CScrollView
+  CScrollView now processes the following keys:
+  - Home and End.
+  - Page Up and Page Down.
+  - Left, right, up, and down arrow keys.
+
+* The samples now demonstrate an improved implementation of the Doc/View
+  architecture. Previously CDoc and CView were both member variables of
+  CMainFrame. Now CView is a member variable of CMainFrame, and CDoc is 
+  a member variable of CView. This allows both CMainFrame and CView to
+  easily access CDoc, which is what we need.  
+
+
+Changes in detail
+-----------------
+Added Console                                    sample
+Added CHGlobal                                   class
+Added CPrintPreview                              class
+Added CDC::GetBrushOrgEx                         member function
+Added CDC::SetBrushOrgEx                         member function
+Added CGlobalLock<DEVNAMES>::GetDeviceName       member function
+Added CGlobalLock<DEVNAMES>::GetDriverName       member function
+Added CGlobalLock<DEVNAMES>::GetPortName         member function
+Added CGlobalLock<DEVNAMES>::IsDefaultPrinter    member function
+Added CPrintDialog::SetDefaults                  member function
+Added CScrollView::GetLineScrollSize             member function
+Added CScrollView::GetPageScrollSize             member function
+Added CWebBrowser::GetDocument                   member function
+
+Modified ::GetApp               Now returns a pointer to CWinApp.
+
+Added VS2019 project files to all samples and tutorials
+
+Updated the samples
+ - Browser sample now demonstrates print and print preview.
+ - FastGDI sample now demonstrates print and print preview.
+ - PrintPreview sample now demonstrates print and print preview.
+ - NotePad sample now demonstrates print and print preview.
+ - Scribble sample now demonstrates print and print preview.
+ - Frame sample now demonstrates print and print preview.
+ - INIFrame sample now demonstrates print and print preview.
+ - PrintPreview sample now utilises CPrintPreview.
+ - Notepad sample now utilises CPrintPreview.
+
+Updated the tutorials
+ - The tutorials now demonstrate how to implement a print preview.
+ - The project files have been moved to a separate folder.
+
+Updated the documentation
+ - Added 'Networking' to 'Using Win32++
+ - Added 'Printing' to 'Using Win32++
+ - Added 'Print Preview' to 'Using Win32++
+
+
 Version 8.6
 ===========
 
@@ -50,7 +153,7 @@ New Features and Enhancements
   - topright:     Positions top right
   - bottomleft:   Positions bottom left
   - bottomright:  Positions bottom right
-  - center:	   Positions proportionally
+  - center:       Positions proportionally
   - leftcenter:   Positions proportionally along the left side
   - rightcenter:  Positions proportionally along the right side
   - topcenter:    Positions proportionally along the top side
@@ -180,7 +283,7 @@ Added CWnd::SetExStyle                               member function
 Added CWnd::SetStyle                                 member function
 
 Added ::GetNonClientMetrics                          global function
-Added UWM_GETCDIALIOG                                message
+Added UWM_GETCDIALOG                                 message
 
 Added Direct2D                                       sample
 Added FilePrintPreview                               sample
@@ -407,115 +510,6 @@ New Features and Enhancements
     a BOOL, making them simpler to use.
   
 
-Changes in detail
------------------
-Added CRibbonDockFrame          class
-Added CDateTime::SetTimeNone    member function
-Added CDocker::OnMouseActivate  member function
-Added CDocker::OnSize           member function
-Added CDocker::SetActiveDocker  member function
-Added CFrame::GetMRULimit       member function
-Added CFrame::SetMRULimit       member function
-Added CFrame::SetupMenuIcons    member function
-Added CFrame::OnUnInitMenuPopup member function
-Added additional overrides for CDC::SelectObject
-Added PrintPreview              sample application
-Added RibbonDockFrame           sample application      
-
-These functions use references instead of pointers:
-Modified CBitmap::CreateBitmapIndirect
-Modified CBitmap::CreateDIBitmap 
-Modified CBitmap::CreateDIBSection
-Modified CBrush::CreateBrushIndirect 
-Modified CComboBoxEx::GetItem
-Modified CComboBoxEx::InsertItem
-Modified CComboBoxEx::SetItem
-Modified CDC::CreateBitmapIndirect
-Modified CDC::CreateBrushIndirect
-Modified CDC::CreateDIBitmap 
-Modified CDC::CreateDIBSection
-Modified CDC::CreateFontIndirect
-Modified CDC::CreatePalette
-Modified CDC::CreatePenIndirect
-Modified CDC::DrawText
-Modified CDC::DrawTextEx
-Modified CDC::ExtTextOut
-Modified CDateTime::GetRange
-Modified CDateTime::GetTime
-Modified CDateTime::SetRange
-Modified CDateTime::SetTime
-Modified CDialog::MapDialogRect
-Modified CEdit::GetRect
-Modified CEdit::SetRect
-Modified CEdit::SetRectNP
-Modified CFont::CFont
-Modified CFont::CreateFontIndirect
-Modified CFont::CreatePointFontIndirect
-Modified CFontDialog::CFontDialog  
-Modified CHeader::GetItem
-Modified CHeader::InsertItem
-Modified CHeader::SetItem
-Modified CImageList::DrawIndirect
-Modified CImageList::GetImageInfo 
-Modified CListBox::GetItemRect
-Modified CMetaFileDC::CreateEnhanced
-Modified CMonthCalendar::GetCurSel
-Modified CMonthCalendar::GetMonthRange  
-Modified CMonthCalendar::GetRange
-Modified CMonthCalendar::GetSelRange
-Modified CMonthCalendar::GetToday
-Modified CMonthCalendar::HitTest
-Modified CMonthCalendar::SetCurSel 
-Modified CMonthCalendar::SetDayState
-Modified CMonthCalendar::SetSelRange
-Modified CMonthCalendar::SetToday
-Modified CPageSetupDialog::OnDrawPage
-Modified CPageSetupDialog::OnPreDrawPage
-Modified CPen::CreatePenIndirect
-Modified CPen::ExtCreatePen
-Modified CProgressBar::GetRange
-Modified CRichEdit::SetRect
-Modified CRichEdit::DisplayBand
-Modified CRichEdit::FindText
-Modified CRichEdit::FormatRange
-Modified CRichEdit::GetTextRange
-Modified CRichEdit::GetPunctuation
-Modified CRichEdit::SetPunctuation
-Modified CScrollBar::GetScrollRange
-Modified CScrollBar::GetScrollInfo
-Modified CScrollBar::SetScrollInfo
-Modified CTab::GetItemRect
-Modified CToolTip::AddTool 
-Modified CToolTip::AdjustRect
-Modified CToolTip::GetBubbleSize
-Modified CToolTip::GetMargin
-Modified CToolTip::GetToolInfo
-Modified CToolTip::HitTest
-Modified CToolTip::SetMargin
-Modified CToolTip::SetToolRect
-Modified CToolTip::SetToolInfo 
-Modified CWceFrame::GetMenuBar
-Modified CWnd::DrawAnimatedRects
-Modified CWnd::GetDlgItemInt 
-Modified CWnd::InvalidateRect
-Modified CWnd::RedrawWindow  
-Modified CWnd::ScrollWindow     
-Modified CWnd::ValidateRect
-
-Modified CWinThread::CreateThread           now returns thread handle.
-Modified CPropertyPage::OnApply             now returns BOOL
-Modified CPropertyPage::OnOK                now returns void
-Modified CPropertyPage::OnSetActive         now returns BOOL
-Modified CPropertyPage::OnWizardBack        now returns BOOL
-Modified CPropertyPage::OnWizardFinish      now returns BOOL
-Modified CPropertyPage::OnWizardNext        now returns BOOL
-
-Removed CDC::GetClipRgn
-Removed CDocker::GetDockFromPoint
-Removed CFrame::OnExitMenuLoop
-Removed CTab::OnDestroy
-
-
 Version 8.2
 ===========
 
@@ -568,71 +562,8 @@ Use CFiledDialog for these instead.
  - UWM_GETCTOOLBAR returns the CWnd* for any object inherited from CToolBar
 
 
-Changes in detail
------------------
-Added CCommonDialog             class
-Added CColorDialog              class
-Added CFindReplaceDialog        class
-Added CFontDialog               class
-Added CPageSetupDialog          class
-Added CPrinDialog               class
-Added GetAppDataPath            function
-Added CFile::GetFileDirectory   member function
-Added CFile::GetFileNameExt     member function
-Added CFile::GetFileNameWOExt   member function
-Added CFrame::GetInitValues     member function
-Added CFrame::SetInitValues     member function
-Added UWM_GETCWND               window message.
-Added UWM_GETCFRAME             window message.
-Added UWM_GETCDOCKER            window message.
-Added UWM_GETCDOCKCONTAINER     window message.
-Added UWM_GETCTABBEDMDI         window message.
-Added UWM_GETCTOOLBAR           window message.
-
-Modified CWinThread::GetMainWnd             now returns HWND
-Modified CWinThread::SetMainWnd             now accepts HWND
-Modified CWinThread::GetAcceleratorWindow   now returns HWND
-Modified CWinThread::SetAccelerators        now accepts HWND
-
-Renamed CWinThread::GetAccelerators to CWinThread::GetAcceleratorTable
-
-Removed CFrame::GetShowCmd
-Removed CFrame::GetShowStatusBar
-Removed CFrame::GetShowToolBar
-Removed CFrame::SetShowCmd
-Removed CFile::OpenFileDialog
-Removed CFile::SaveFileDialog
-Removed CException::ReportError
-Removed UWM_ISDOCKER            window message.
-Removed UWM_ISDOCKCONTAINER     window message.
-Removed UWM_ISFRAME             window message.
-Removed UWM_ISMDIFRAME          window message.
-Removed UWM_ISTABBEDMDI         window message.
-Removed UWM_ISTOOLBAR           window message.
-
-The following functions are now public:
-CWinApp::GetCWndFromMap
-CWinApp::GetTlsData
-CWinApp::SetTlsData
-
-Moved The "New Project" folder to samples
-
-
 Version 8.1
 ===========
-
-Important
----------
-The definition of the following virtual functions have changed. You will 
-need to update your code as accordingly. The current definitions are:
-- CWnd::OnCreate(CREATESTRUCT& cs)
-- CWnd::PreTranslateMessage(MSG& Msg)
-- CThread::PreTranslateMessage(MSG& Msg)
-Also:
-- SDI Frame applications which require docking support should use CDockFrame.
-- MDI Frame applications which require docking support should use CMDIDockFrame.
-- CArchive and CFile now throw CFileExceptions
-- CFile::Open throws a CFileException on failure and returns void.
 
 New Features and Enhancements
 ----------------------------- 
@@ -690,147 +621,18 @@ New Features and Enhancements
    - Added CNotSupportedException ( inherits from CException )
    - Added CUserException         ( inherits from CException )
    - Updated CWinException        ( inherits from CException )
-
-   CFileExceptions are thrown under the following circumstance
-    - CArchive fails to create the archive file
-    - CArchive fails to read from or write to the archive file
-    - CFile fails to create the file
-    - CFile fails to read from or write to the file.
-   
-   CNotSupportedExceptions are thrown under the following circumstances:
-    - An attempt is made to run more than one instance of CWinApp.
-    - CWinApp is prevented from starting the framework.
-    - CSocket fails to load the WS2_32.DLL.
-    - CSocket fails to initialize the use of WS2_32.DLL.    
-    
-   CResourceExceptions are thrown under the following circumstances:
-    An attempt to create a GDI resource fails. Applies to:
-       - device contexts
-       - bitmaps
-       - brushes
-       - fonts
-       - palettes
-       - pens
-       - regions
-   
-   CWinExceptions are now thrown under the following circumstances:
-    * A failure to create a thread
-    * A failure to create a window, including:
-       - generic windows
-       - dialogs
-       - property sheets
-       - task dialogs
-     
-   CUserExceptions are thrown under the following circumstances:
-    - A CDataExchange DDX or DDV function fails validation
-    - A CUserException is typically the exception thrown in user code. 
-   
-   Notes:
-    - Exceptions should be thrown by value, and caught by const reference.   
-    - Catch CExceptions to catch all exceptions inherited from CException.
-    - CException is an abstract class. CExceptions can't be thrown.
-    - A failure to create a GDI resources occurs when too many GDI resources
-      are allocated to the process. A GDI resource leak can cause this.  
       
 * Updated CWnd
    - Added OnPaint virtual function. OnPaint calls OnDraw for generic windows,
      but not for window controls. Users can now override OnPaint to draw to
      window controls as an alternative to custom draw or owner draw.     
    - Added DoDataExchange and UpdatedData to support CDataExchange.     
-  
-* Updated CCriticalSection
-  All critical sections are now guaranteed to be released when the
-  CCriticalSection's destructor is called.
-  
+   
 * Updated the documentation
    - Added 'Dialog Data Exchange (DDX and DDV)  to Using Win32++
    - Added 'Doc View Model'                     to Using Win32++
    - Added 'Serialization with CArchive'        to Using Win32++
    - Extended 'CString'                         in Using Win32++   
-
-
-Changes in detail
------------------
-Split wxx_winutils.h into several header files as follows:
-Added wxx_rect.h
-Added wxx_textconv.h
-Added wxx_themes.h
-Removed wxx_winutils.h
-
-Split wxx_wincore into several header files as follows:
-Added wxx_appcore0.h
-Added wxx_appcore.h
-Added wxx_exception.h
-Added wxx_wincore0.h
-Retained wxx_wincore.h
-
-Added CDataExchange class.
-Added CDockFrame class.    Inherits from CFrame and CDocker
-Added CMDIDockFrame class. Inherits from CMDIFrame and CDocker
-
-Added DDXDemo Sample
-
-Added UWN_TABCLOSE windows message notification
-Added CTabbedMDI::OnTabClose
-Added CWnd::DoDataExchange
-Added CWnd::OnPaint
-Added CWnd::SetDlgCtrlID
-Added CWnd::UpdateData
-
-Added CStringT class template
-Added CStringA typedef
-Added CStringW typedef
-Modified CString.   Now inherits from CStringT<TCHAR>
-Added CStringT::GetWindowText
-
-Added CException
-Added CFileException
-Added CNotSupportedException
-Added CResourceException
-Added CUserException
-
-Added CArchive::GetFile
-Added CArchive::ReadStringA
-Added CArchive::ReadStringW
-Added CArchive::WriteStringA
-Added CArchive::WriteStringW
-Added CArchive::operator<<(const CStringA& string);
-Added CArchive::operator<<(const CStringW& string);
-Added CArchive::operator>>(CStringA& s);
-Added CArchive::operator>>(CStringW& s);
-
-Added DirectX11 sample
-Renamed the DirectX sample to DirectX9
-Added project files for Visual Studio Community 2015
-
-Modified CDC::CreateCompatibleDC        returns HDC
-Modified CDC::CreateDC                  returns HDC
-Modified CDC::CreateIC                  returns HDC
-Modified CFile::Open    throws a CFileException on failure
-
-These function no longer use a pointer:
-Modified CMenu::GetMenuInfo
-Modified CMenu::SetMenuInfo
-Modified CMenu::GetMenuItemInfo
-Modified CMenu::SetMenuItemInfo
-Modified CMenu::InsertMenuItem
-Modified CResizer::Initialize
-Modified CToolBar::GetButton
-Modified CToolBar::InsertButton
-Modified CToolTip::RelayEvent
-Modified CThread::PreTranslateMessage
-Modified CWnd::OnCreate
-Modified CWnd::IsDialogMessage
-Modified CWnd::PreTranslateMessage
-
-Modified CDocker::GetAllDockChildren        returns const ref
-Modified CDocker::GetDockChildren           returns const ref
-Modified CDocker::GetAllDockers             returns const ref
-Modified CDockContainer::GetAllContainers   returns const ref
-Modified CMDIFrame::GetAllMDIChildren       returns const ref
-Modified CTab:: GetAllTabs                  returns const ref
-
-Updated theme colors for Windows 8, Windows 8.1 and Windows 10
 
 
 Version 8.0.1
@@ -900,54 +702,11 @@ New Features and Enhancements
     - CFile::shareDenyWrite     Denies write access to all others.
     - CFile::shareDenyRead      Denies read access to all others.
     - CFile::shareDenyNone      No sharing restrictions.
-  - CFile now throws an exception under the following circumstances
+    - CFile now throws an exception under the following circumstances
     - Failure to read from a file.
     - Failure to write to a file.
     - Failure to open the file in CFile's constructor.
     
-
-Changes in detail
------------------
-Added CArchive
-Added CObject
-Added CRegKey
-Added CTime
-Added CTimeSpan
-Added CDocker::LoadContainerRegistrySettings
-Added CFrame::SaveRegistryMRUSettings
-Added CFrame::SetAccelerators
-Added CMenu::FindMenuItem
-Added CMenu::InsertPopupMenu
-Added CWinException::GetText
-Added CWinThread::PostThreadMessage
-Added CWinThread::operator HANDLE()
-Added ::GetCommandLineArgs
-
-Added VERIFY macro
-Added _WIN32XX_VER macro
-Added INIFrame sample
-Added TimeDemo sample
-
-Modified CFile::CFile       now throws an exception on fail to open file
-Modified CFile::Read        now throws an exception on fail to read file
-Modified CFile::Write       now throws an exception on fail to write file
-
-Modified ::GetApp                           now returns a reference
-Modified CDockContainer::GetView            now returns a reference
-Modified CDockContainer::GetViewPage        now returns a reference
-Modified CDocker::GetView                   now returns a reference
-Modified CDocker::GetAllDockChildren        now returns a reference
-Modified CDocker::GetDockChildren           now returns a reference
-Modified CDocker::GetAllDockers             now returns a reference
-Modified CDockContainer::GetAllContainers   now returns a reference
-Modified CMDIChild::GetMDIFrame             now returns a reference
-Modified CMDIChild::GetView                 now returns a reference
-Modified CTab::GetAllTabs                   now returns a reference
-Modified CTabbedMDI::GetTab                 now returns a reference
-
-
-Renamed the header files. They are prefixed with wxx_
-
 
 Version 7.9
 ===========

@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -152,6 +152,9 @@ namespace Win32xx
         virtual int  OnValidateFailed(LPARAM lparam);
 
     private:
+        CFolderDialog(const CFolderDialog&);              // Disable copy construction
+        CFolderDialog& operator = (const CFolderDialog&); // Disable assignment operator    
+
         static int CALLBACK BrowseCallbackProc(HWND wnd, UINT uMsg, LPARAM param1, LPARAM lparam2);
 
         CString m_displayName;
@@ -183,7 +186,9 @@ namespace Win32xx
         //  BIF_NEWDIALOGSTYLE    - Provides a resizable dialog without an edit box.
         //  BIF_NONEWFOLDERBUTTON - Do not include the New Folder button in the browse dialog box.
         m_flags = BIF_RETURNONLYFSDIRS |BIF_NEWDIALOGSTYLE | BIF_NONEWFOLDERBUTTON;
-        ::CoInitialize(NULL);
+        HRESULT hr = ::CoInitialize(NULL);
+        if (FAILED(hr))
+            throw CWinException(g_msgCoInitialize);
     }
 
     inline CFolderDialog::~CFolderDialog()

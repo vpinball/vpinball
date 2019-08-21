@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -267,13 +267,13 @@ namespace Win32xx
     {
         friend CString operator + (const CString& string1, const CString& string2);
         friend CString operator + (const CString& string1, const TCHAR* pText);
-		friend CString operator + (const CString& string1, CHAR ch);
-		friend CString operator + (const CString& string1, WCHAR ch);
+        friend CString operator + (const CString& string1, CHAR ch);
+        friend CString operator + (const CString& string1, WCHAR ch);
         friend CString operator + (const CString& string1, int val);
         friend CString operator + (const CString& string1, double val);
         friend CString operator + (const TCHAR* pText, const CString& string1);
         friend CString operator + (CHAR ch, const CString& string1);
-		friend CString operator + (WCHAR ch, const CString& string1);
+        friend CString operator + (WCHAR ch, const CString& string1);
         friend CString operator + (int val, const CString& string1);
         friend CString operator + (double val, const CString& string1);
 
@@ -848,7 +848,7 @@ namespace Win32xx
         assert(index >= 0);
 
 #ifdef _MBCS
-        LPCSTR pStr = m_str.c_str();
+        LPCSTR pStr = (LPCSTR)m_str.c_str();
         LPCSTR pSubstr = strchr(pStr + index, ch);
         return (pSubstr == NULL) ? -1 : static_cast<int>(pSubstr - pStr);
 #else
@@ -917,12 +917,12 @@ namespace Win32xx
 
             while (-1 == result)
             {
-                buffer.assign( length+1, 0 );
+                buffer.assign( size_t(length)+1, 0 );
 
 #if !defined (_MSC_VER) ||  ( _MSC_VER < 1400 ) || defined (_WIN32_WCE)
                 result = _vsnprintf(&buffer[0], length, pFormat, args);
 #else
-                result = _vsnprintf_s(&buffer[0], length, length-1, pFormat, args);
+                result = _vsnprintf_s(&buffer[0], length, size_t(length)-1, pFormat, args);
 #endif
                 length *= 2;
             }
@@ -945,11 +945,11 @@ namespace Win32xx
 
             while (-1 == result)
             {
-                buffer.assign( length+1, 0 );
+                buffer.assign( size_t(length)+1, 0 );
 #if !defined (_MSC_VER) ||  ( _MSC_VER < 1400 ) || defined (_WIN32_WCE)
                 result = _vsnwprintf(&buffer[0], length, pFormat, args);
 #else
-                result = _vsnwprintf_s(&buffer[0], length, length-1, pFormat, args);
+                result = _vsnwprintf_s(&buffer[0], length, size_t(length)-1, pFormat, args);
 #endif
                 length *= 2;
             }
@@ -1029,7 +1029,7 @@ namespace Win32xx
         assert (minBufLength >= 0);
 
         T ch = 0;
-        m_buf.assign(minBufLength + 1, ch);
+        m_buf.assign(size_t(minBufLength) + 1, ch);
         typename std::basic_string<T>::iterator it_end;
 
         if (m_str.length() >= (size_t)minBufLength)
@@ -1057,8 +1057,8 @@ namespace Win32xx
         int length = ::GetEnvironmentVariableA(pVar, NULL, 0);
         if (length > 0)
         {
-            std::vector<CHAR> buffer(length +1, 0 );
-            ::GetEnvironmentVariableA(pVar, &buffer[0], length);
+            std::vector<CHAR> buffer(size_t(length) +1, 0 );
+            ::GetEnvironmentVariableA(pVar, &buffer[0], DWORD(length));
             m_str = &buffer[0];
         }
 
@@ -1075,8 +1075,8 @@ namespace Win32xx
         int length = ::GetEnvironmentVariableW(pVar, NULL, 0);
         if (length > 0)
         {
-            std::vector<WCHAR> buffer(length +1, 0 );
-            ::GetEnvironmentVariableW(pVar, &buffer[0], length);
+            std::vector<WCHAR> buffer(size_t(length) +1, 0 );
+            ::GetEnvironmentVariableW(pVar, &buffer[0], DWORD(length));
             m_str = &buffer[0];
         }
 
@@ -1094,7 +1094,7 @@ namespace Win32xx
         int length = ::GetWindowTextLengthA(wnd);
         if (length > 0)
         {
-            std::vector<CHAR> buffer(length +1, 0 );
+            std::vector<CHAR> buffer(size_t(length) +1, 0 );
             ::GetWindowTextA(wnd, &buffer[0], length +1);
             m_str = &buffer[0];
         }
@@ -1108,7 +1108,7 @@ namespace Win32xx
         int length = ::GetWindowTextLengthW(wnd);
         if (length > 0)
         {
-            std::vector<WCHAR> buffer(length +1, 0 );
+            std::vector<WCHAR> buffer(size_t(length) +1, 0 );
             ::GetWindowTextW(wnd, &buffer[0], length +1);
             m_str = &buffer[0];
         }
@@ -1444,7 +1444,7 @@ namespace Win32xx
         assert(pTokens);
 
         CStringT str;
-        if(start >= 0)
+        if (start >= 0)
         {
         size_t pos1 = m_str.find_first_not_of(pTokens, start);
         size_t pos2 = m_str.find_first_of(pTokens, pos1);
@@ -1846,10 +1846,10 @@ namespace Win32xx
 
     inline CString operator + (WCHAR ch, const CString& string1)
     {
-		CString str1(string1);
-		CString str(ch);
-		str += str1;
-		return str;
+        CString str1(string1);
+        CString str(ch);
+        str += str1;
+        return str;
     }
 
     inline CString operator + (int val, const CString& string1)
@@ -1864,106 +1864,6 @@ namespace Win32xx
         CString str;
         str.Format(_T("%g%s"), val, string1.c_str());
         return str;
-    }
-
-    //////////////////////////////////////////////
-    // CString global functions
-    //
-
-    // Returns the path to the AppData folder. Returns an empty CString if
-    // the Operating System doesn't support the use of an AppData folder.
-    // The AppData folder is available in Windows 2000 and above.
-    inline CString GetAppDataPath()
-    {
-        CString AppData;
-
-#ifndef _WIN32_WCE
-
-        HMODULE hShell = ::LoadLibrary(_T("Shell32.dll"));
-        if (hShell)
-        {
-            typedef HRESULT(WINAPI *MYPROC)(HWND, int, HANDLE, DWORD, LPTSTR);
-
-            // Get the function pointer of the SHGetFolderPath function
-  #ifdef UNICODE
-            MYPROC pSHGetFolderPath = (MYPROC)GetProcAddress(hShell, "SHGetFolderPathW");
-  #else
-            MYPROC pSHGetFolderPath = (MYPROC)GetProcAddress(hShell, "SHGetFolderPathA");
-  #endif
-
-  #ifndef CSIDL_APPDATA
-    #define CSIDL_APPDATA     0x001a
-  #endif
-
-  #ifndef CSIDL_FLAG_CREATE
-    #define CSIDL_FLAG_CREATE 0x8000
-  #endif
-
-            if (pSHGetFolderPath)
-            {
-                // Call the SHGetFolderPath function to retrieve the AppData folder
-                pSHGetFolderPath(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, AppData.GetBuffer(MAX_PATH));
-                AppData.ReleaseBuffer();
-            }
-
-            ::FreeLibrary(hShell);
-        }
-
-#endif // _WIN32_WCE
-
-        return AppData;
-    }
-
-    // Retrieves the command line arguments and stores them in a vector of CString.
-    // Similar to CommandLineToArgvW, but supports all versions of Windows,
-    // supports ANSI and Unicode, and doesn't require the user to use LocalFree.
-    inline std::vector<CString> GetCommandLineArgs()
-    {
-        std::vector<CString> CommandLineArgs;
-        CString CommandLine = GetCommandLine();
-        int index = 0;
-        int endPos = 0;
-
-        while (index < CommandLine.GetLength() )
-        {
-            // Is the argument quoted?
-            bool IsQuoted = (CommandLine[index] == _T('\"'));
-
-            if (IsQuoted)
-            {
-                // Find the terminating token (quote followed by space)
-                endPos = CommandLine.Find( _T("\" ") , index);
-                if (endPos == -1) endPos = CommandLine.GetLength()-1;
-
-                // Store the argument in the CStringT vector without the quotes.
-                CString s;
-                if (endPos - index < 2)
-                    s = _T("\"\"");     // "" for a single quote or double quote argument
-                else
-                    s = CommandLine.Mid(index +1, endPos - index -1);
-
-                CommandLineArgs.push_back(s);
-                index = endPos + 2;
-            }
-            else
-            {
-                // Find the terminating token (space character)
-                endPos = CommandLine.Find( _T(' ') , index);
-                if (endPos == -1) endPos = CommandLine.GetLength();
-
-                // Store the argument in the CStringT vector.
-                CString s = CommandLine.Mid(index, endPos - index);
-                CommandLineArgs.push_back(s);
-                index = endPos + 1;
-            }
-
-            // skip excess space characters
-            while (index < CommandLine.GetLength() && CommandLine[index] == _T(' '))
-                index++;
-        }
-
-        // CommandLineArgs is a vector of CStringT
-        return CommandLineArgs;
     }
 
 

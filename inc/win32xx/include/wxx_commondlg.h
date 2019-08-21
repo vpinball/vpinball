@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -48,7 +48,7 @@
 #ifndef _WIN32XX_COMMONDLG_H_
 #define _WIN32XX_COMMONDLG_H_
 
-#include <wxx_dialog.h>
+#include "wxx_dialog.h"
 #include "wxx_richedit.h"
 
 
@@ -95,7 +95,10 @@ namespace Win32xx
 
         // static callback
         static INT_PTR CALLBACK CDHookProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam);
-
+        
+    private:
+        CCommonDialog(const CCommonDialog&);              // Disable copy construction
+        CCommonDialog& operator = (const CCommonDialog&); // Disable assignment operator        
     };
 
 
@@ -122,7 +125,9 @@ namespace Win32xx
         INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
     private:
-        // private data
+        CColorDialog(const CColorDialog&);              // Disable copy construction
+        CColorDialog& operator = (const CColorDialog&); // Disable assignment operator
+
         CHOOSECOLOR     m_ofn;                   // ChooseColor parameters
         COLORREF        m_customColors[16];      // Custom colors array
     };
@@ -180,6 +185,9 @@ namespace Win32xx
         INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
     private:
+        CFileDialog(const CFileDialog&);              // Disable copy construction
+        CFileDialog& operator = (const CFileDialog&); // Disable assignment operator
+
         BOOL            m_isOpenFileDialog;  // TRUE = open, FALSE = save
         CString         m_filter;          // File filter string
         CString         m_fileName;        // File name string
@@ -230,6 +238,9 @@ namespace Win32xx
         INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
     private:
+        CFindReplaceDialog(const CFindReplaceDialog&);              // Disable copy construction
+        CFindReplaceDialog& operator = (const CFindReplaceDialog&); // Disable assignment operator
+
         FINDREPLACE     m_fr;               // FindReplace parameters
         BOOL            m_isFindDialogOnly; // TRUE for a find only dialog
         CString         m_findWhat;         // The Find string
@@ -271,6 +282,8 @@ namespace Win32xx
         INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
     private:
+        CFontDialog(const CFontDialog&);              // Disable copy construction
+        CFontDialog& operator = (const CFontDialog&); // Disable assignment operator
         DWORD FillInLogFont(const CHARFORMAT& cf);
 
         // private data
@@ -316,7 +329,7 @@ namespace Win32xx
         if (pCommonDlg == 0)
         {
             // The HWND wasn't in the map, so add it now
-            TLSData* pTLSData = GetApp().GetTlsData();
+            TLSData* pTLSData = GetApp()->GetTlsData();
             assert(pTLSData);
 
             // Retrieve pointer to CWnd object from Thread Local Storage TLS
@@ -404,11 +417,11 @@ namespace Win32xx
     // An exception is thrown if the dialog box isn't created.
     inline INT_PTR CColorDialog::DoModal(HWND owner /* = 0 */)
     {
-        assert( &GetApp() );    // Test if Win32++ has been started
+        assert( GetApp() );    // Test if Win32++ has been started
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
         // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp().SetTlsData();
+        TLSData* pTLSData = GetApp()->SetTlsData();
 
         // Create the modal dialog
         pTLSData->pWnd = this;
@@ -425,7 +438,7 @@ namespace Win32xx
             DWORD error = CommDlgExtendedError();
             if ((error != 0) && (error != CDERR_DIALOGFAILURE))
                 // ignore the exception caused by closing the dialog
-                throw CWinException(_T("CColorDialog::DoModal Failed"), error);
+                throw CWinException(g_msgWndDoModal, error);
 
             OnCancel();
             return IDCANCEL;
@@ -598,11 +611,11 @@ namespace Win32xx
     // Use SetParamaters to set a larger size if required.
     inline INT_PTR CFileDialog::DoModal(HWND owner /* = 0 */)
     {
-        assert( &GetApp() );    // Test if Win32++ has been started
+        assert( GetApp() );    // Test if Win32++ has been started
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
         // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp().SetTlsData();
+        TLSData* pTLSData = GetApp()->SetTlsData();
 
         // Create the modal dialog
         pTLSData->pWnd = this;
@@ -622,7 +635,7 @@ namespace Win32xx
             {
                 // ignore the exception caused by closing the dialog
                 if (error != CDERR_DIALOGFAILURE || (m_ofn.Flags & OFN_EXPLORER))
-                    throw CWinException(_T("CFileDialog::DoModal Failed"), error);
+                    throw CWinException(g_msgWndDoModal, error);
             }
 
             OnCancel();
@@ -937,7 +950,6 @@ namespace Win32xx
     {
         // Clear any existing filter
         m_ofn.lpstrFilter = NULL;
-        m_filter.Empty();
 
         // convert any '|' characters in pFilter to NULL characters
         if (pFilter)
@@ -988,7 +1000,7 @@ namespace Win32xx
 
         m_ofn.lStructSize       = StructSize;
         m_ofn.hwndOwner         = 0;            // Set this in DoModal
-        m_ofn.hInstance         = GetApp().GetInstanceHandle();
+        m_ofn.hInstance         = GetApp()->GetInstanceHandle();
         m_ofn.lpstrCustomFilter = ofn.lpstrCustomFilter;
         m_ofn.nMaxCustFilter    = MAX(MAX_PATH, ofn.nMaxCustFilter);
         m_ofn.nFilterIndex      = ofn.nFilterIndex;
@@ -1055,13 +1067,13 @@ namespace Win32xx
     inline BOOL CFindReplaceDialog::Create(BOOL isFindDialogOnly, LPCTSTR pFindWhat,
             LPCTSTR pReplaceWith, DWORD flags, HWND parent /* = 0*/)
     {
-        assert( &GetApp() );    // Test if Win32++ has been started
+        assert( GetApp() );    // Test if Win32++ has been started
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
         m_isFindDialogOnly = isFindDialogOnly;
 
         // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp().SetTlsData();
+        TLSData* pTLSData = GetApp()->SetTlsData();
         pTLSData->pWnd = this;
 
         // Initialize the FINDREPLACE struct values
@@ -1087,7 +1099,7 @@ namespace Win32xx
         if (wnd == 0)
         {
             // Throw an exception when window creation fails
-            throw CWinException(_T("CFindReplaceDialog::Create"));
+            throw CWinException(g_msgWndDoModal);
         }
 
         m_findWhat.ReleaseBuffer();
@@ -1242,7 +1254,7 @@ namespace Win32xx
 
         m_fr.lStructSize        = sizeof(m_fr);
         m_fr.hwndOwner          = 0;        // Set this in Create
-        m_fr.hInstance          = GetApp().GetInstanceHandle();
+        m_fr.hInstance          = GetApp()->GetInstanceHandle();
         m_fr.Flags              = fr.Flags;
         m_fr.lpstrFindWhat      = const_cast<LPTSTR>(m_findWhat.c_str());
         m_fr.lpstrReplaceWith   = const_cast<LPTSTR>(m_replaceWith.c_str());
@@ -1305,7 +1317,7 @@ namespace Win32xx
         // clear out logfont, style name, and choose font structure
         ZeroMemory(&m_logFont, sizeof(m_logFont));
         ZeroMemory(&m_cf, sizeof(m_cf));
-		m_cf.lStructSize = sizeof(m_cf);
+        m_cf.lStructSize = sizeof(m_cf);
 
         // set dialog parameters
         FillInLogFont(charformat);
@@ -1400,11 +1412,11 @@ namespace Win32xx
     // Display the FontDialog. hOwner specifies dialog's owner window.
     inline INT_PTR CFontDialog::DoModal(HWND owner /* = 0 */)
     {
-        assert( &GetApp() );    // Test if Win32++ has been started
+        assert( GetApp() );    // Test if Win32++ has been started
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
         // Ensure this thread has the TLS index set
-        TLSData* pTLSData = GetApp().SetTlsData();
+        TLSData* pTLSData = GetApp()->SetTlsData();
 
         // Create the modal dialog
         pTLSData->pWnd = this;
@@ -1425,7 +1437,7 @@ namespace Win32xx
             DWORD error = CommDlgExtendedError();
             if ((error != 0) && (error != CDERR_DIALOGFAILURE))
                 // ignore the exception caused by closing the dialog
-                throw CWinException(_T("CFontDialog::DoModal Failed"), error);
+                throw CWinException(g_msgWndDoModal, error);
 
             OnCancel();
             return IDCANCEL;
@@ -1592,7 +1604,7 @@ namespace Win32xx
         m_cf.lCustData      = cf.lCustData;
         m_cf.lpfnHook       = reinterpret_cast<LPCCHOOKPROC>(CDHookProc);
         m_cf.lpTemplateName = cf.lpTemplateName;
-        m_cf.hInstance      = GetApp().GetInstanceHandle();
+        m_cf.hInstance      = GetApp()->GetInstanceHandle();
         m_cf.lpszStyle      = const_cast<LPTSTR>(m_styleName.c_str());
         m_cf.nFontType      = cf.nFontType;
         m_cf.nSizeMin       = cf.nSizeMin;

@@ -73,14 +73,6 @@ BEGIN
         MENUITEM "Tool Bar",                    IDW_VIEW_TOOLBAR, CHECKED
         MENUITEM "Status Bar",                  IDW_VIEW_STATUSBAR, CHECKED
     END
-    POPUP "&Color"
-    BEGIN
-        MENUITEM "&Black",                      IDM_COLOR_BLACK
-        MENUITEM "&Red",                        IDM_COLOR_RED
-        MENUITEM "&Green",                      IDM_COLOR_GREEN
-        MENUITEM "B&lue",                       IDM_COLOR_BLUE
-        MENUITEM "&White",                      IDM_COLOR_WHITE
-    END
     POPUP "&Window"
     BEGIN
         MENUITEM "&Cascade\tShift+F5",          IDW_WINDOW_CASCADE
@@ -116,6 +108,7 @@ IDW_MAIN                 BITMAP                  "res/toolbar.bmp"
 // Dialog
 //
 
+// Help ABout Dialog
 IDW_ABOUT DIALOGEX 0, 0, 186, 90
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
@@ -125,6 +118,20 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,68,49,50,14
     CTEXT           "MDI Frame",IDC_STATIC,60,22,64,11
     ICON            IDW_MAIN,0,4,4,20,20
+END
+
+// Print Preview Dialog
+IDW_PRINTPREVIEW DIALOGEX 0, 0, 309, 178
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CLIPCHILDREN
+EXSTYLE WS_EX_CLIENTEDGE
+FONT 8, "MS Shell Dlg", 400, 0
+BEGIN
+    CONTROL         "",IDW_PREVIEWPANE,"PreviewPane",0x0,0,18,309,159
+    PUSHBUTTON      "",IDW_PREVIEWCLOSE,246,2,50,14 
+    PUSHBUTTON      "",IDW_PREVIEWPRINT,4,2,50,14
+    PUSHBUTTON      "",IDW_PREVIEWSETUP,55,2,50,14  
+    PUSHBUTTON      "",IDW_PREVIEWPREV,125,2,50,14
+    PUSHBUTTON      "",IDW_PREVIEWNEXT,176,2,50,14
 END
 
 
@@ -155,11 +162,19 @@ END
 
 STRINGTABLE
 BEGIN
-    IDW_MAIN                "MDI Frame"
-    IDW_INDICATOR_CAPS      "CAPS"
+    IDW_MAIN                "Scribble Application"
+    IDW_INDICATOR_CAPS      "CAP"
     IDW_INDICATOR_NUM       "NUM"
     IDW_INDICATOR_SCRL      "SCRL"
-    IDW_READY               "Ready"
+    IDW_READY               "Ready" 
+END
+
+BEGIN
+    IDW_PREVIEWPRINT         "Print Now"
+    IDW_PREVIEWSETUP         "Print Setup"
+    IDW_PREVIEWPREV          "Prev Page"
+    IDW_PREVIEWNEXT          "Next Page"
+    IDW_PREVIEWCLOSE         "Close"
 END
 
 STRINGTABLE
@@ -207,11 +222,6 @@ STRINGTABLE
 BEGIN
     IDM_FILE_NEWVIEW        "Create View MDI Child"
     IDM_FILE_CLOSE          "Close MDI Window"
-    IDM_COLOR_BLACK         "Use Black Printing"
-    IDM_COLOR_RED           "Use Red Printing"
-    IDM_COLOR_GREEN         "Use Green Printing"
-    IDM_COLOR_BLUE          "Use Blue Printing"
-    IDM_COLOR_WHITE         "Use White Printing"
     IDW_WINDOW_CASCADE      "Cascade MDI Windows"
     IDW_WINDOW_TILE         "Tile MDI Windows"
     IDW_WINDOW_ARRANGE      "Arrange Icons"

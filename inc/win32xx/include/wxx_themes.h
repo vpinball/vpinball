@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -115,14 +115,14 @@ namespace Win32xx
         {
             HMODULE module = ::LoadLibrary(_T("uxtheme.dll"));
 
-            if(module != 0)
+            if (module != 0)
             {
                 // Declare pointers to IsCompositionActive function
                 FARPROC pIsCompositionActive = ::GetProcAddress(module, "IsCompositionActive");
 
-                if(pIsCompositionActive)
+                if (pIsCompositionActive)
                 {
-                    if(pIsCompositionActive())
+                    if (pIsCompositionActive())
                     {
                         IsAeroThemed = TRUE;
                     }
@@ -143,15 +143,15 @@ namespace Win32xx
         if (GetWinVersion() >= 2501)
         {
             HMODULE theme = ::LoadLibrary(_T("uxtheme.dll"));
-            if(theme != 0)
+            if (theme != 0)
             {
                 // Declare pointers to functions
                 FARPROC pIsAppThemed   = ::GetProcAddress(theme, "IsAppThemed");
                 FARPROC pIsThemeActive = ::GetProcAddress(theme, "IsThemeActive");
 
-                if(pIsAppThemed && pIsThemeActive)
+                if (pIsAppThemed && pIsThemeActive)
                 {
-                    if(pIsAppThemed() && pIsThemeActive())
+                    if (pIsAppThemed() && pIsThemeActive())
                     {
                         // Test if ComCtl32 dll used is version 6 or later
                         IsXPThemed = (GetComCtlVersion() >= 600);

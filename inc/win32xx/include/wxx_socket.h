@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -88,7 +88,7 @@
 // 1) Create the socket.
 // 2) Bind an IP address to the socket.
 // 3) Listen on the socket for incoming connection requests.
-// 4) Use StartNotifyRevents to receive notification of network events.
+// 4) Use StartEvents to receive notification of network events.
 // 5) Override OnAccept to accept requests on a newly created data CSocket object.
 // 6) Create a new data socket for each client connection accepted.
 // 7) The server socket uses the 'accept' function to accept an incoming connection
@@ -105,7 +105,7 @@
 // Create an instance of this inherited class, and  perform the following steps:
 // 1) Create the socket.
 // 2) Connect to the server.
-// 3) Use StartNotifyRevents to receive notification of network events.
+// 3) Use StartEvents to receive notification of network events.
 //    We are now ready to send and receive data from the server.
 // * Use Send to send data to the server.
 // * Override OnReceive and use Receive to receive data from the server
@@ -129,7 +129,6 @@
 // include exception handling, TRACE etc.
 #include "wxx_wincore.h"
 #include "wxx_mutex.h"
-#include "wxx_cstring.h"
 
 // Work around a bugs in older versions of Visual Studio
 #ifdef _MSC_VER
@@ -229,11 +228,11 @@ namespace Win32xx
         WSADATA wsaData;
 
         if (::WSAStartup(MAKEWORD(2,2), &wsaData) != 0)
-            throw CNotSupportedException(_T("WSAStartup failed"));
+            throw CNotSupportedException(g_msgSocWSAStartup);
 
         m_ws2_32 = LoadLibrary(_T("WS2_32.dll"));
         if (m_ws2_32 == 0)
-            throw CNotSupportedException(_T("Failed to load WS2_2.dll"));
+            throw CNotSupportedException(g_msgSocWS2Dll);
 
 #ifdef _WIN32_WCE
         m_pfnGetAddrInfo = reinterpret_cast<GETADDRINFO*>( GetProcAddress(m_ws2_32, L"getaddrinfo") );
@@ -443,7 +442,7 @@ namespace Win32xx
     inline bool CSocket::Create( int family, int type, int protocol /*= IPPROTO_IP*/)
     {
         m_socket = socket(family, type, protocol);
-        if(m_socket == INVALID_SOCKET)
+        if (m_socket == INVALID_SOCKET)
         {
             TRACE("Failed to create socket\n");
             return FALSE;
@@ -488,7 +487,7 @@ namespace Win32xx
             events |= FD_QOS | FD_ROUTING_INTERFACE_CHANGE | FD_ADDRESS_LIST_CHANGE;
 
         // Associate the network events with the client socket.
-        if( SOCKET_ERROR == WSAEventSelect(clientSocket, allEvents[0], events))
+        if ( SOCKET_ERROR == WSAEventSelect(clientSocket, allEvents[0], events))
         {
             TRACE("Error in Event Select\n");
             ::WSACloseEvent(allEvents[0]);

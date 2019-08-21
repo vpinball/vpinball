@@ -1,12 +1,12 @@
-// Win32++   Version 8.6
-// Release Date: 2nd November 2018
+// Win32++   Version 8.7.0
+// Release Date: 12th August 2019
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2018  David Nash
+// Copyright (c) 2005-2019  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -69,6 +69,7 @@
 
 namespace Win32xx
 {
+
     class CEvent
     {
     public:
@@ -82,6 +83,9 @@ namespace Win32xx
         void SetEvent();
         
     private:
+        CEvent(const CEvent&);              // Disable copy construction
+        CEvent& operator = (const CEvent&); // Disable assignment operator
+
         HANDLE m_event;
     };
 
@@ -96,6 +100,9 @@ namespace Win32xx
         operator HANDLE() const  { return m_mutex; }
         
     private:
+        CMutex(const CMutex&);              // Disable copy construction
+        CMutex& operator = (const CMutex&); // Disable assignment operator
+
         HANDLE m_mutex;    
     };
 
@@ -111,6 +118,9 @@ namespace Win32xx
         BOOL ReleaseSemaphore(LONG releaseCount, LONG* pPreviousCount = NULL);
 
     private:
+        CSemaphore(const CSemaphore&);              // Disable copy construction
+        CSemaphore& operator = (const CSemaphore&); // Disable assignment operator
+
         HANDLE m_semaphore;
     };
 
@@ -134,7 +144,7 @@ namespace Win32xx
     {
         m_event = ::CreateEvent(pAttributes, isManualReset, isInitiallySignaled, pstrName);
         if (m_event == NULL)
-            throw CResourceException(_T("Unable to create event"));
+            throw CResourceException(g_msgMtxEvent);
     }
 
     // Sets the specified event object to the non-signalled state.
@@ -167,7 +177,7 @@ namespace Win32xx
     {
         m_mutex = ::CreateMutex(pAttributes, isInitiallySignaled, pName);
         if (m_mutex == NULL)
-            throw CResourceException(_T("Unable to create mutex"));
+            throw CResourceException(g_msgMtxMutex);
     }
 
 
@@ -191,7 +201,7 @@ namespace Win32xx
 
         m_semaphore = ::CreateSemaphore(pAttributes, initialCount, maxCount, pName);
         if (m_semaphore == NULL)
-            throw CResourceException(_T("Unable to create semaphore"));
+            throw CResourceException(g_msgMtxSemaphore);
     }
 
     // Increases the count of the specified semaphore object by a specified amount.
@@ -209,7 +219,4 @@ namespace Win32xx
 
 
 #endif // _WIN32XX_MUTEX_H_
-
-
-
 
