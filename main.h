@@ -17,7 +17,7 @@
 #ifdef _DEBUG
 #define D3D_DEBUG_INFO
 #endif
-#include <d3d9.h>
+#include "minid3d9.h"
 
 //#include <richedit.h>
 //#include <atlcom.h>

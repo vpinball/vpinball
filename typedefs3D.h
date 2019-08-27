@@ -7,7 +7,7 @@
  #include <sdl2/SDL.h>
  #include <sdl2/SDL_ttf.h>
 #else
- #include <d3d9.h>
+ #include "minid3d9.h"
  #include <d3dx9.h>
 #endif
 
