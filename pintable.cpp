@@ -2477,7 +2477,7 @@ void PinTable::AutoSave()
    AutoSavePackage * const pasp = new AutoSavePackage();
    pasp->pstg = pstgroot;
    pasp->tableindex = FindIndexOf(g_pvp->m_vtable, (CComObject<PinTable> *)this);
-   pasp->HwndTable = m_hwnd;
+   pasp->hwndtable = m_hwnd;
 
    if (hr == S_OK)
    {
@@ -8537,6 +8537,7 @@ STDMETHODIMP PinTable::put_TableHeight(float newVal)
 
    return S_OK;
 }
+
 STDMETHODIMP PinTable::get_Width(float *pVal)
 {
    *pVal = m_right-m_left;

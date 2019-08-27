@@ -169,8 +169,8 @@ public:
    static bool m_open_minimized;
 
    HMENU GetMainMenu(int id);
-   void SetStatusBarElementInfo(const char *info);
-   void SetStatusBarUnitInfo(const char *info, const bool isUnit);
+   void SetStatusBarElementInfo(const char * const info);
+   void SetStatusBarUnitInfo(const char * const info, const bool isUnit);
 
    Material m_dummyMaterial;
    COLORREF m_elemSelectColor;

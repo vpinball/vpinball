@@ -713,7 +713,6 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
                   sprintf_s(tbuf, "DX: %.3f | DY: %.3f | DZ: %.3f | CalcHeight: %.3f", g_pvp->ConvertToUnit(dx), g_pvp->ConvertToUnit(dy),
                                                                                        g_pvp->ConvertToUnit(dz), g_pvp->ConvertToUnit(dh));
                   g_pvp->SetStatusBarUnitInfo(tbuf, true);
-
               }
           }
       }

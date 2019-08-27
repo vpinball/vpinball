@@ -15,7 +15,7 @@ class AutoSavePackage
 public:
    FastIStorage *pstg;
    int tableindex;
-   HWND HwndTable;
+   HWND hwndtable;
 };
 
 unsigned int WINAPI VPWorkerThreadStart(void *param);

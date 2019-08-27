@@ -312,7 +312,6 @@ public:
 #ifdef PLAYBACK
    float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
 #endif
-   HRESULT Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName);
 
    void DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor, const float intensity);
    void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop=false);
@@ -584,6 +583,8 @@ private:
 
    FrameQueueLimiter m_limiter;
 
+   // only called from ctor
+   HRESULT Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName);
    // only called from dtor
    void Shutdown();
 

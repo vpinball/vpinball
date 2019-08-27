@@ -1111,8 +1111,6 @@ void Primitive::UpdateEditorView()
 
    RecalculateMatrices();
    TransformVertices();
-
-
 }
 
 void Primitive::ExportMesh(FILE *f)
