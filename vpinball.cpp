@@ -749,12 +749,12 @@ void VPinball::SetActionCur(char *szaction)
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 3 | 0, (size_t)szaction);
 }
 
-void VPinball::SetStatusBarElementInfo(const char *info)
+void VPinball::SetStatusBarElementInfo(const char * const info)
 {
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 4 | 0, (size_t)info);
 }
 
-void VPinball::SetStatusBarUnitInfo(const char *info, const bool isUnit)
+void VPinball::SetStatusBarUnitInfo(const char * const info, const bool isUnit)
 {
     if (g_pplayer)
         return;

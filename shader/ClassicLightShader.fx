@@ -56,7 +56,7 @@ float3 cClearcoat_EdgeAlpha; // actually doesn't feature edge-alpha
 //!! Gemstones are 0.05-0.17
 //!! Metals have high specular reflectance:  0.5-1.0
 
-//float  fAlphaTestValue;
+//float  alphaTestValue;
 
 bool hdrEnvTextures;
 #endif

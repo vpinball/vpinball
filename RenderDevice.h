@@ -474,7 +474,7 @@ public:
       if (currentAlphaTestValue != value)
       {
          currentAlphaTestValue = value;
-         SetFloat("fAlphaTestValue", value);
+         SetFloat("alphaTestValue", value);
       }
    }
 

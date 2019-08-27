@@ -80,7 +80,7 @@ float4 cGlossy_ImageLerp;
 //!! Gemstones are 0.05-0.17
 //!! Metals have high specular reflectance: 0.5-1.0
 
-float fAlphaTestValue;
+float alphaTestValue;
 
 struct VS_OUTPUT 
 { 
@@ -231,7 +231,7 @@ float4 ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool doNo
 {
    float4 pixel = tex2D(texSampler0, IN.tex01.xy);
 
-   clip(pixel.a <= fAlphaTestValue ? - 1 : 1); // stop the pixel shader if alpha test should reject pixel
+   clip(pixel.a <= alphaTestValue ? - 1 : 1); // stop the pixel shader if alpha test should reject pixel
 
    pixel.a *= cBase_Alpha.a;
    const float3 t = /*InvGamma*/(pixel.xyz); // uses automatic sRGB trafo instead in sampler!
@@ -271,7 +271,7 @@ float4 ps_main_depth_only_without_texture(in VS_DEPTH_ONLY_NOTEX_OUTPUT IN) : CO
 
 float4 ps_main_depth_only_with_texture(in VS_DEPTH_ONLY_TEX_OUTPUT IN) : COLOR
 {
-   clip(tex2D(texSampler0, IN.tex0).a <= fAlphaTestValue ? -1 : 1); // stop the pixel shader if alpha test should reject pixel
+   clip(tex2D(texSampler0, IN.tex0).a <= alphaTestValue ? -1 : 1); // stop the pixel shader if alpha test should reject pixel
 
    return float4(0., 0., 0., 1.);
 }
@@ -288,7 +288,7 @@ float4 ps_main_bg_decal_texture(in VS_OUTPUT IN) : COLOR
 {
    float4 pixel = tex2D(texSampler0, IN.tex01.xy);
 
-   clip(pixel.a <= fAlphaTestValue ? - 1 : 1); // stop the pixel shader if alpha test should reject pixel
+   clip(pixel.a <= alphaTestValue ? - 1 : 1); // stop the pixel shader if alpha test should reject pixel
 
    pixel.a *= cBase_Alpha.a;
    const float3 t = /*InvGamma*/(pixel.xyz); // uses automatic sRGB trafo instead in sampler!

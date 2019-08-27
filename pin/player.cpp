@@ -2423,21 +2423,21 @@ void Player::InitGameplayWindow()
       SetWindowFeedbackSetting = (pSWFS)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowFeedbackSetting");
    if (SetWindowFeedbackSetting)
    {
-      const BOOL fEnabled = FALSE;
+      const BOOL enabled = FALSE;
 
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_TAP, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(enabled), &enabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_TAP, 0, sizeof(enabled), &enabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(enabled), &enabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(enabled), &enabled);
 
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_TAP, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_DOUBLETAP, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(fEnabled), &fEnabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_RIGHTTAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(enabled), &enabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_TAP, 0, sizeof(enabled), &enabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_DOUBLETAP, 0, sizeof(enabled), &enabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_RIGHTTAP, 0, sizeof(enabled), &enabled);
 
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(enabled), &enabled);
    }
 
    mixer_init(m_playfieldHwnd);
@@ -5087,7 +5087,7 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
 {
    // always use lowest detail level for fastest update
    Vertex3Ds rgvIn[(basicBallLoNumVertices+1) / 2];
-   Vertex2D rgvOut[(basicBallLoNumVertices + 1) / 2];
+   Vertex2D rgvOut[(basicBallLoNumVertices+1) / 2];
 
    //     rgvIn[0].x = pball->m_pos.x;                    rgvIn[0].y = pball->m_pos.y+pball->m_radius;    rgvIn[0].z = zHeight;
    //     rgvIn[1].x = pball->m_pos.x + pball->m_radius;  rgvIn[1].y = pball->m_pos.y;                    rgvIn[1].z = zHeight;
@@ -5119,7 +5119,7 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
 
    const float midX = maxX - minX;
    const float midY = maxY - minY;
-   stretchY = midY / midX;
+   stretchY = midY/midX;
    //stretchX = midX/midY;
    stretchX = 1.0f;
 }
