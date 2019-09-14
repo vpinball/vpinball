@@ -169,7 +169,7 @@ BOOL VideoOptionsDialog::OnInitDialog()
       controlHwnd = GetDlgItem(IDC_ADAPTIVE_VSYNC).GetHwnd();
       AddToolTip("1-activates VSYNC for every frame (avoids tearing)\r\n2-adaptive VSYNC, waits only for fast frames (e.g. over 60fps)\r\nor set it to e.g. 60 or 120 to limit the fps to that value (energy saving/less heat)", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_MAX_PRE_FRAMES).GetHwnd();
-      AddToolTip("Experiment with 1 or 2 for a chance of lag reduction at the price of a bit of performance.", hwndDlg, toolTipHwnd, controlHwnd);
+      AddToolTip("Leave at 0 if you have enabled 'Low Latency' or 'Anti Lag' settings in the graphics driver.\r\nOtherwise experiment with 1 or 2 for a chance of lag reduction at the price of a bit of framerate.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_StretchMonitor).GetHwnd();
       AddToolTip("If played in cabinet mode and you get an egg shaped ball activate this.\r\nFor screen ratios other than 16:9 you may have to adjust the offsets.\r\nNormally you have to set the Y offset (around 1.5) but you have to experiment.", hwndDlg, toolTipHwnd, controlHwnd);
       controlHwnd = GetDlgItem(IDC_NUDGE_STRENGTH).GetHwnd();
