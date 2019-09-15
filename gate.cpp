@@ -186,6 +186,7 @@ void Gate::UIRenderPass2(Sur * const psur)
 
          psur->Line(tmp.x, tmp.y,
             m_d.m_vCenter.x, m_d.m_vCenter.y);
+         psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, halflength);
       }
 
    {
@@ -205,6 +206,7 @@ void Gate::UIRenderPass2(Sur * const psur)
 
       psur->Line(tmp.x, tmp.y,
          m_d.m_vCenter.x + sn*len2, m_d.m_vCenter.y - cs*len2);
+
    }
 
    if (m_d.m_twoWay)
