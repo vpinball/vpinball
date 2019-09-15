@@ -1,5 +1,6 @@
 VP 10.6.0 Changelog
 ------------------------
+- add a circle outline to the gate element to help in selecting a gate in the editor
 
 - add x/y scale support to the camera mode to scale x/y axis at the same time
 
