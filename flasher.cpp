@@ -344,7 +344,7 @@ void Flasher::RenderSetup()
    for (unsigned int i = 0; i < m_numVertices; i++)
       vpoly[i] = i;
 
-   PolygonToTriangles(vvertex, vpoly, vtri);
+   PolygonToTriangles(vvertex, vpoly, vtri, false);
    }
 
    m_numPolys = (int)(vtri.size()/3);
