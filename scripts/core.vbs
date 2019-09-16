@@ -361,7 +361,7 @@ Const VPinMAMEDriverVer = 3.57
 '	On Error Resume Next
 '		If ScriptEngineMajorVersion < 5 Then MsgBox "VB Script Engine 5.0 or higher required"
 '		ExecuteGlobal GetTextFile(VBSfile)
-'		If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the same folder as this table. " & vbNewLine & Err.Description : Err.Clear
+'		If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the Scripts folder of Visual Pinball. " & vbNewLine & Err.Description : Err.Clear
 '		Set Controller = CreateObject("VPinMAME.Controller")
 '		If Err Then MsgBox "Can't Load VPinMAME." & vbNewLine & Err.Description
 '		If VPMver>"" Then If Controller.Version < VPMver Or Err Then MsgBox "VPinMAME ver " & VPMver & " required." : Err.Clear

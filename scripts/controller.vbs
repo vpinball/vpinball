@@ -29,7 +29,7 @@
 '
 '  On Error Resume Next
 '  ExecuteGlobal GetTextFile("Controller.vbs")
-'  If Err Then MsgBox "Unable to open Controller.vbs. Ensure that it is in the same folder as this table."
+'  If Err Then MsgBox "Unable to open Controller.vbs. Ensure that it is in the Scripts folder of Visual Pinball."
 '  On Error Goto 0
 '
 'In addition the name of the rom (or the fake rom name for EM tables) is needed, because we need it for B2S (and loading VPM):
@@ -44,7 +44,7 @@
 '    On Error Resume Next
 '    If ScriptEngineMajorVersion <5 Then MsgBox "VB Script Engine 5.0 or higher required"
 '    ExecuteGlobal GetTextFile(VBSfile)
-'    If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the same folder as this table. " & vbNewLine & Err.Description
+'    If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the Scripts folder of Visual Pinball. " & vbNewLine & Err.Description
 '
 '    Set Controller = CreateObject("B2S.Server")
 '    'Set Controller = CreateObject("VPinMAME.Controller")
@@ -152,7 +152,7 @@ Sub LoadVBSFiles(VPMver, VBSfile, VBSver)
 	On Error Resume Next
 	If ScriptEngineMajorVersion < 5 Then MsgBox "VB Script Engine 5.0 or higher required"
 	ExecuteGlobal GetTextFile(VBSfile)
-	If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the same folder as this table. " & vbNewLine & Err.Description	
+	If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the Scripts folder of Visual Pinball. " & vbNewLine & Err.Description
 	InitializeOptions
 End Sub
 
