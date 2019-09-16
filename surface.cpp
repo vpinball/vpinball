@@ -693,7 +693,7 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
       for (unsigned int i = 0; i < m_numVertices; i++)
          vpoly[i] = i;
 
-      PolygonToTriangles(vvertex, vpoly, topBottomIndices);
+      PolygonToTriangles(vvertex, vpoly, topBottomIndices, false);
       }
 
       m_numPolys = (unsigned int)(topBottomIndices.size() / 3);

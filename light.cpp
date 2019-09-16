@@ -712,7 +712,7 @@ void Light::PrepareMoversCustom()
             maxdist = dist;
       }
 
-      PolygonToTriangles(m_vvertex, vpoly, vtri);
+      PolygonToTriangles(m_vvertex, vpoly, vtri, true);
    }
 
 

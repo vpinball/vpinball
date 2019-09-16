@@ -410,14 +410,88 @@ inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, 
    }
 }
 
+
+enum WindingOrder
+{
+    Clockwise,
+    CounterClockwise
+};
+
+// Find vertex along one edge of bounding box.
+// In this case, we find smallest y; in case of tie also smallest x.
+template <class RenderVertexCont>
+inline int FindCornerVertex(const RenderVertexCont& vertices)
+{
+    int minVertex = -1;
+    float minY = FLT_MAX;
+    float minXAtMinY = FLT_MAX;
+    for (size_t i = 0; i < vertices.size(); i++)
+    {
+        const RenderVertex vert = vertices[i];
+        const float y = vert.y;
+        if (y > minY)
+            continue;
+        if (y == minY)
+            if (vert.x >= minXAtMinY)
+                continue;
+
+        // Minimum so far.
+        minVertex = i;
+        minY = y;
+        minXAtMinY = vert.x;
+    }
+
+    return minVertex;
+}
+
+// Return value in (0..n-1).
+// Works for i in (-n..+infinity).
+// If need to allow more negative values, need more complex formula.
+inline int WrapAt(const int i, const int n)
+{
+    // "+n": Moves (-n..) up to (0..).
+    return (i + n) % n;
+}
+
+
+// https://en.wikipedia.org/wiki/Curve_orientation#Orientation_of_a_simple_polygon
+template <class RenderVertexCont>
+inline WindingOrder DetermineWindingOrder(const RenderVertexCont& vertices)
+{
+    size_t nVerts = vertices.size();
+    // If vertices duplicates first as last to represent closed polygon,
+    // skip last.
+    const RenderVertex lastV = vertices[nVerts - 1];
+    if (lastV.x == vertices[0].x && lastV.y == vertices[0].y)
+        nVerts--;
+    const int iMinVertex = FindCornerVertex(vertices);
+    // Orientation matrix:
+    //     [ 1  xa  ya ]
+    // O = | 1  xb  yb |
+    //     [ 1  xc  yc ]
+    const RenderVertex a = vertices[WrapAt(iMinVertex - 1, nVerts)];
+    const RenderVertex b = vertices[iMinVertex];
+    const RenderVertex c = vertices[WrapAt(iMinVertex + 1, nVerts)];
+    // determinant(O) = (xb*yc + xa*yb + ya*xc) - (ya*xb + yb*xc + xa*yc)
+    const float detOrient = (b.x * c.y + a.x * b.y + a.y * c.x) - (a.y * b.x + b.y * c.x + a.x * c.y);
+
+    // TBD: check for "==0", in which case is not defined?
+    // Can that happen?  Do we need to check other vertices / eliminate duplicate vertices?
+    return detOrient > 0.f ? Clockwise : CounterClockwise;
+}
+
 template <class RenderVertexCont, class Idx>
-void PolygonToTriangles(const RenderVertexCont& rgv, std::vector<unsigned int>& pvpoly, std::vector<Idx>& pvtri)
+void PolygonToTriangles(const RenderVertexCont& rgv, std::vector<unsigned int>& pvpoly, std::vector<Idx>& pvtri, const bool support_both_winding_orders)
 {
    // There should be this many convex triangles.
    // If not, the polygon is self-intersecting
    const size_t tricount = pvpoly.size() - 2;
 
    assert(tricount > 0);
+
+   // check if the polygon is in right orientation, otherwise flip it over
+   if(support_both_winding_orders && (DetermineWindingOrder(rgv) == Clockwise))
+      std::reverse(pvpoly.begin(), pvpoly.end());
 
    for (size_t l = 0; l < tricount; ++l)
       //while (pvpoly->Size() > 2)
