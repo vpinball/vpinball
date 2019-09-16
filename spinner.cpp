@@ -115,14 +115,15 @@ void Spinner::UIRenderPass1(Sur * const psur)
 
 void Spinner::UIRenderPass2(Sur * const psur)
 {
+   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 3);
    psur->SetObject(this);
 
    float halflength = m_d.m_length * 0.5f;
 
    const float radangle = ANGTORAD(m_d.m_rotation);
-   const float sn = sinf(radangle);
-   const float cs = cosf(radangle);
+   float sn = sinf(radangle);
+   float cs = cosf(radangle);
 
    psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
       m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
@@ -132,6 +133,11 @@ void Spinner::UIRenderPass2(Sur * const psur)
 
    psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
       m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
+
+   if (sn == 0.0f) sn = 1.0f;
+   if (cs == 0.0f) cs = 1.0f;
+   psur->Rectangle(m_d.m_vCenter.x - cs * halflength * 0.65f, m_d.m_vCenter.y - sn * halflength * 0.65f,
+                   m_d.m_vCenter.x + cs * halflength * 0.65f, m_d.m_vCenter.y + sn * halflength * 0.65f);
 }
 
 void Spinner::GetTimers(vector<HitTimer*> &pvht)
