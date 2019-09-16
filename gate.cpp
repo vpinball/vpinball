@@ -161,6 +161,7 @@ void Gate::UIRenderPass1(Sur * const psur)
 
 void Gate::UIRenderPass2(Sur * const psur)
 {
+   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 2);
    psur->SetObject(this);
 
