@@ -1,84 +1,7 @@
 VP 10.6.0 Changelog
 ------------------------
 
-- fix FPS-dependent animation speed if update interval of EM Reels and Light Sequence is chosen low (i.e. quick changes) and animate at the actual speed
-
-- support both winding orders for lights, which fixes the invalid shape error message for (some) lights
-
-- add a circle outline to the gate element to help in selecting a gate in the editor
-
-- add x/y scale support to the camera mode to scale x/y axis at the same time
-
-- optimize .obj importer
-
-- add object space-normal mapping support to primitive (our implementation matches the object space, +X +Y +Z, export/baking settings in Blender)
-  Object space-normal maps are commonly used if one reduces polygon counts of a complex model. The lost geometric details are then added back via a normal map
-
-- fix some potential problems with balls and rubbers outside of the playfield range, and when importing certain primitive meshes via .obj
-
-- show kicker (default) orientation in the editor
-
-- support 'Add Point' hotkey (F10 normal and F11 for smooth point) for rubbers
-
-- fix lighting of the reflection of the playfield on the ball (before it was more or less ignoring the real lightsources and using a wrong lookup from the environment)
-
-- increase robustness (and reduce temporary memory used) when handling very large images/textures
-
-- add rothbauerw's and cyberpez' ball dropping sound code to builtin example tables
-
-- add proper dithering to final output buffer (most noticable on gradients and/or low-quality/cheaper output monitors)
-
-- remove caption and window borders in windowed mode (only re-enable/toggle that caption if the 'ESC'/Pause-menu is brought up so that one can move the window around after unpausing again)
-- save position of the windowed mode player window
-
-- fix some issues with the physically based lighting calculations, this can change the brightness (most noticably on the playfield) for some tables (more so if the (HDR) environment map is very high contrast, especially on the poles)
-
-- add current active ball velocity/angular velocity, and the number of physics iterations per frame to the F11 debug output/stats
-
-- fix some potential crashes and quirks in the manager dialogs (most notably the alpha test value in the image manager being copied to other elements when deleting an image)
-
-- fix crashes if a POV file is broken/invalid
-
-- fix normal computations of the old legacy primitive (i.e. that triangulated tube)
-
-- show amount of vertices/polygons for a mesh primitive in the status bar
-
-- do not ignore primitive setting 'Has Hit Event' anymore (before it was always implicitly on)
-
-- add display selection in the video preferences
-
-- fix some regressions (introduced with 10.5) with backdrop lights (most prominent: bulb lights had wrong falloff, the 'classic' lights wrong image mapping)
-  as a bonus, this should also finally fix all issues seen with backdrop lights on intel/builtin graphics in the past
-- disable transmit for backdrop bulb lights
-
-- implement proper sRGB pipeline for runtime filtering (only for images/textures that are used in the 'standard' material)
-
-- increase static table elements precomputation samples from 32 to 64 and in addition do not do aniso/trilinear filtering there, but rely on the oversampling and bilerp instead, leading to much crisper textures
-
-- add checkbox to 'user customizations'->'overwrite physics by global set' to optionally change all flipper settings, too
-
-- fix some regressions from VPX 10.3+ within the physics options dialog, especially with some of its flipper settings and when importing settings
-
-- fix ball through bumper issue
-
-- add apply button to the dimensions manager to apply the selected dimension to the active table
-
-- add support for up to 9 custom start parameters (range 1-9). Usage: "VPinballX.exe -c1 param1 -c2 param2" sets two custom parameters "param1" and "param2".
-  To access these in the script use: GetCustomParam(1) to get "param1" and GetCustomParam(2) to get "param2"
-
-- add strength parameter for the (optional) legacy/VP9-like keyboard nudging code, can be set in the 'Keys, Nudge and DOF' preferences dialog
-
-- add support for showing the image of a primitive mesh in the editor. However this feature is far from perfect because Windows GDI (which draws the elements in the editor) can't handle meshes well
-
-- re-use existing sound settings if re-importing a sound file
-
-- fix crash in collection manager if a collection is moved up/down
-
-- fix ball decal splotches if only a global ball image was set in the video preferences
-
-- new table-script manipulation features:
-  '-extractvbs' parameter: "VPinballX.exe -extractvbs tablename.vpx" extracts the script and exits
-  VPX will automatically replace the table-script with a vbs file named the same as the table file (similar to the existing pov file functionality)
+FEATURES:
 
 - add support for using a primitive as playfield instead of the build-in one:
     o to create a mesh playfield create a new blank table and export it as obj file
@@ -94,16 +17,86 @@ VP 10.6.0 Changelog
           if you want to be informed that the ball has hit the playfield. Settings like "Toy", "Collidable" or "Overwrite Material Settings" won't work for the "playfield_mesh".
     See example table (File -> New -> Example Table) how to use it.
 
+- add object space-normal mapping support to primitive (our implementation matches the object space, +X +Y +Z, export/baking settings in Blender)
+  Object space-normal maps are commonly used if one reduces polygon counts of a complex model. The lost geometric details are then added back via a normal map
+
+- add proper dithering to final output buffer (most noticable on gradients and/or low-quality/cheaper output monitors)
+
+- implement proper sRGB pipeline for runtime filtering (only for images/textures that are used in the 'standard' material)
+- increase static table elements precomputation samples from 32 to 64 and in addition do not do aniso/trilinear filtering there, but rely on the oversampling and bilerp instead, leading to much crisper textures
+
+- add display selection in the video preferences
+- add buttons to video preferences to easily setup defaults for low- or high-end PCs
+- add 'Force Bloom Filter off' to video preferences to increase performance on extremely low-end graphics cards (like on tablets)
+- add checkbox to 'user customizations'->'overwrite physics by global set' to optionally change all flipper settings, too
+- add strength parameter for the (optional) legacy/VP9-like keyboard nudging code, can be set in the 'Keys, Nudge and DOF' preferences dialog
+
+- add a circle outline to the gate element to help in selecting a gate in the editor
+- show kicker (default) orientation in the editor
+- add support for showing the image of a primitive mesh in the editor. However this feature is far from perfect because Windows GDI (which draws the elements in the editor) can't handle meshes well
+
+- show amount of vertices/polygons for a mesh primitive in the status bar
+
+- add x/y scale support to the camera mode to scale x/y axis at the same time
+
+- support 'Add Point' hotkey (F10 normal and F11 for smooth point) for rubbers
+
+- add apply button to the dimensions manager to apply the selected dimension to the active table
+
+- add support for up to 9 custom start parameters (range 1-9). Usage: "VPinballX.exe -c1 param1 -c2 param2" sets two custom parameters "param1" and "param2".
+  To access these in the script use: GetCustomParam(1) to get "param1" and GetCustomParam(2) to get "param2"
+- new table-script manipulation features:
+  '-extractvbs' parameter: "VPinballX.exe -extractvbs tablename.vpx" extracts the script and exits
+  VPX will automatically replace the table-script with a vbs file named the same as the table file (similar to the existing pov file functionality)
+
 - add checkbox to sound- and image-manager to use internal name as filename for exporting
+- re-use existing sound settings if re-importing a sound file
+
+- add rothbauerw's and cyberpez' ball dropping sound code to builtin example tables
+
+- add current active ball velocity/angular velocity, and the number of physics iterations per frame to the F11 debug output/stats
+
+FIXES:
+
+- fix lighting of the reflection of the playfield on the ball (before it was more or less ignoring the real lightsources and using a wrong lookup from the environment)
+- fix some issues with the physically based lighting calculations, this can change the brightness (most noticably on the playfield) for some tables (more so if the (HDR) environment map is very high contrast, especially on the poles)
+- fix normal computations of the old legacy primitive (i.e. that triangulated tube)
+- fix ball decal splotches if only a global ball image was set in the video preferences
+
+- fix some regressions (introduced with 10.5) with backdrop lights (most prominent: bulb lights had wrong falloff, the 'classic' lights wrong image mapping)
+  as a bonus, this should also finally fix all issues seen with backdrop lights on intel/builtin graphics in the past
+- disable transmit for backdrop bulb lights
+
+- fix ball through bumper issue
 
 - fix "all sounds to rear channels" bug
 
+- fix FPS-dependent animation speed if update interval of EM Reels and Light Sequence is chosen low (i.e. quick changes) and animate at the actual speed
+
+- do not ignore primitive setting 'Has Hit Event' anymore (before it was always implicitly on)
+
+- fix some regressions from VPX 10.3+ within the physics options dialog, especially with some of its flipper settings and when importing settings
+
+- fix some potential crashes and quirks in the manager dialogs (most notably the alpha test value in the image manager being copied to other elements when deleting an image)
+- fix crash in collection manager if a collection is moved up/down
+
+- fix crashes if a POV file is broken/invalid
 - add missing implementation for -pov command line option
 
-- remove all table encryption, old locked tables automatically unlock now
+- support both winding orders for lights, which fixes the invalid shape error message for (some) lights
 
-- add buttons to video preferences to easily setup defaults for low- or high-end PCs
-- add 'Force Bloom Filter off' to video preferences to increase performance on extremely low-end graphics cards (like on tablets)
+- fix some potential problems with balls and rubbers outside of the playfield range, and when importing certain primitive meshes via .obj
+
+ELSE:
+
+- optimize .obj importer
+
+- increase robustness (and reduce temporary memory used) when handling very large images/textures
+
+- remove caption and window borders in windowed mode (only re-enable/toggle that caption if the 'ESC'/Pause-menu is brought up so that one can move the window around after unpausing again)
+- save position of the windowed mode player window
+
+- remove all table encryption, old locked tables automatically unlock now
 
 - update BASS library to 2.4.14
 
