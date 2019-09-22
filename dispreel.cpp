@@ -363,7 +363,7 @@ void DispReel::RenderSetup()
       }
    }
 
-   m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
+   m_timeNextUpdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
 }
 
 void DispReel::RenderStatic()
@@ -375,9 +375,9 @@ void DispReel::RenderStatic()
 // number of motor steps queued up for each reel
 void DispReel::Animate()
 {
-   while (g_pplayer->m_time_msec >= m_timenextupdate)
+   while (g_pplayer->m_time_msec >= m_timeNextUpdate)
    {
-      m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
+      m_timeNextUpdate += m_d.m_updateinterval;
 
       // work out the roll over values
       const int OverflowValue = m_d.m_digitrange;
@@ -852,7 +852,7 @@ STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
    STARTUNDO
    m_d.m_updateinterval = max(5, newVal); //!! reduce?
    if (g_pplayer)
-      m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
+      m_timeNextUpdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
    STOPUNDO
 
    return S_OK;
@@ -971,7 +971,7 @@ STDMETHODIMP DispReel::SetValue(long Value)
    }
 
    // force a immediate screen update
-   m_timenextupdate = g_pplayer->m_time_msec;
+   m_timeNextUpdate = g_pplayer->m_time_msec;
 
    return S_OK;
 }
