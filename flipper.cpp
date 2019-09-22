@@ -1165,9 +1165,7 @@ STDMETHODIMP Flipper::get_EndAngle(float *pVal)
 STDMETHODIMP Flipper::put_EndAngle(float newVal)
 {
    if (m_phitflipper)
-   {
       m_phitflipper->m_flipperMover.SetEndAngle(ANGTORAD(newVal));
-   }
    else
    {
       STARTUNDO

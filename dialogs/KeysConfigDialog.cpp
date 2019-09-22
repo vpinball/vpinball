@@ -850,7 +850,6 @@ void KeysConfigDialog::OnOK()
     SetValue(IDC_LRAXISCOMBO, "Player", "LRAxis");
     SetValue(IDC_UDAXISCOMBO, "Player", "UDAxis");
 
-    HWND hwndControl;
     size_t selected;
     int newvalue;
     BOOL nothing;
@@ -878,43 +877,34 @@ void KeysConfigDialog::OnOK()
     if (newvalue > 100) { newvalue = 100; }
     SaveValueInt("Player", "PBWAccelMaxY", newvalue);
 
-    hwndControl = GetDlgItem(IDC_DefaultLayout).GetHwnd();
-    selected = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    selected = ::SendMessage(GetDlgItem(IDC_DefaultLayout).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Player", "PBWDefaultLayout", selected != 0);
 
-    hwndControl = GetDlgItem(IDC_DisableESC_CB).GetHwnd();
-    selected = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    selected = ::SendMessage(GetDlgItem(IDC_DisableESC_CB).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Player", "DisableESC", selected != 0);
 
-    hwndControl = GetDlgItem(IDC_LRAXISFLIP).GetHwnd();
-    selected = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    selected = ::SendMessage(GetDlgItem(IDC_LRAXISFLIP).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Player", "LRAxisFlip", selected != 0);
 
-    hwndControl = GetDlgItem(IDC_UDAXISFLIP).GetHwnd();
-    selected = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    selected = ::SendMessage(GetDlgItem(IDC_UDAXISFLIP).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Player", "UDAxisFlip", selected != 0);
 
-    hwndControl = GetDlgItem(IDC_ReversePlunger).GetHwnd();
-    selected = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    selected = ::SendMessage(GetDlgItem(IDC_ReversePlunger).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Player", "ReversePlungerAxis", selected != 0);
 
-    hwndControl = GetDlgItem(IDC_GLOBALACCEL).GetHwnd();
-    selected = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    selected = ::SendMessage(GetDlgItem(IDC_GLOBALACCEL).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Player", "PBWEnabled", selected != 0);
 
-    hwndControl = GetDlgItem(IDC_GLOBALNMOUNT);
-    selected = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    selected = ::SendMessage(GetDlgItem(IDC_GLOBALNMOUNT).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Player", "PBWNormalMount", selected != 0);
 
-    hwndControl = GetDlgItem(IDC_CBGLOBALROTATION).GetHwnd();
-    selected = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    selected = ::SendMessage(GetDlgItem(IDC_CBGLOBALROTATION).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Player", "PBWRotationCB", selected != 0);
 
     newvalue = GetDlgItemInt(IDC_GLOBALROTATION, nothing, TRUE);
     SaveValueInt("Player", "PBWRotationValue", newvalue);
 
-    hwndControl = GetDlgItem(IDC_CBGLOBALTILT).GetHwnd();
-    const bool tscb = (::SendMessage(hwndControl, BM_GETCHECK, 0, 0) != 0);
+    const bool tscb = (::SendMessage(GetDlgItem(IDC_CBGLOBALTILT).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
     SaveValueBool("Player", "TiltSensCB", tscb);
 
     newvalue = GetDlgItemInt(IDC_GLOBALTILT, nothing, TRUE);
@@ -933,8 +923,7 @@ void KeysConfigDialog::OnOK()
 
     for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
     {        
-        hwndControl = GetDlgItem(regkey_idc[i]).GetHwnd();
-        const size_t key = ::GetWindowLongPtr(hwndControl, GWLP_USERDATA);
+        const size_t key = ::GetWindowLongPtr(GetDlgItem(regkey_idc[i]).GetHwnd(), GWLP_USERDATA);
         SaveValueInt("Player", regkey_string[i], key);
     }
 
@@ -952,27 +941,22 @@ void KeysConfigDialog::OnOK()
     SetValue(IDC_DOF_TARGETS, "Controller", "DOFTargets");
     SetValue(IDC_DOF_DROPTARGETS, "Controller", "DOFDropTargets");
 
-    hwndControl = GetDlgItem(IDC_ENABLE_NUDGE_FILTER).GetHwnd();
-    selected = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    selected = ::SendMessage(GetDlgItem(IDC_ENABLE_NUDGE_FILTER).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Player", "EnableNudgeFilter", selected != 0);
 
-    hwndControl = GetDlgItem(IDC_ENABLE_LEGACY_NUDGE).GetHwnd();
-    selected = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    selected = ::SendMessage(GetDlgItem(IDC_ENABLE_LEGACY_NUDGE).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Player", "EnableLegacyNudge", selected != 0);
 
     newvalue = GetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, nothing, TRUE);
     SaveValueFloat("Player", "LegacyNudgeStrength", dequantizeUnsignedPercent((unsigned int)newvalue));
 
-    hwndControl = GetDlgItem(IDC_ENABLE_MOUSE_PLAYER).GetHwnd();
-    selected = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    selected = ::SendMessage(GetDlgItem(IDC_ENABLE_MOUSE_PLAYER).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Player", "EnableMouseInPlayer", selected != 0);
 
-    hwndControl = GetDlgItem(IDC_ENABLE_CAMERA_FLY_AROUND).GetHwnd();
-    selected = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    selected = ::SendMessage(GetDlgItem(IDC_ENABLE_CAMERA_FLY_AROUND).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Player", "EnableCameraModeFlyAround", selected != 0);
 
-    hwndControl = GetDlgItem(IDC_DOF_FORCEDISABLE).GetHwnd();
-    selected = ::SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+    selected = ::SendMessage(GetDlgItem(IDC_DOF_FORCEDISABLE).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Controller", "ForceDisableB2S", selected != 0);
 
     CDialog::OnOK();
