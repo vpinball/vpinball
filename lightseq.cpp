@@ -306,13 +306,13 @@ void LightSeq::RenderStatic()
 {
 }
 
-// This function is called during Animate(). It basically check to see if the update
+// This function is called during Animate(). It basically checks to see if the update
 // interval has expired and if so handles the light effect
 void LightSeq::Animate()
 {
    if (m_playInProgress)
    {
-      if (g_pplayer->m_time_msec >= m_timeNextUpdate)
+      while (g_pplayer->m_time_msec >= m_timeNextUpdate && m_playInProgress)
       {
          if (!m_pauseInProgress)
          {
@@ -545,9 +545,9 @@ STDMETHODIMP LightSeq::get_UpdateInterval(long *pVal)
 STDMETHODIMP LightSeq::put_UpdateInterval(long newVal)
 {
    STARTUNDO
-      m_d.m_updateinterval = max(1, newVal);
+   m_d.m_updateinterval = max(1, newVal);
    STOPUNDO
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP LightSeq::Play(SequencerState Animation, long TailLength, long Repeat, long Pause)
@@ -1458,10 +1458,10 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_tt2.delay = TailLength;
    }
 
-   // are we are in inverse mode (tail is the lead) or not?
+   // are we in inverse mode (tail is the lead) or not?
    if (inverse)
    {
-      _tracer	temp;
+      _tracer temp;
       // swap the head and tail over
       memcpy(&temp, &m_tt1, sizeof(_tracer));
       memcpy(&m_tt1, &m_th1, sizeof(_tracer));

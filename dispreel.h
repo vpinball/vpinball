@@ -88,7 +88,7 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   void        Animate();
+   void    Animate();
 
    DispReelAnimObject m_dispreelanim;
 
