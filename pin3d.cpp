@@ -1225,3 +1225,161 @@ void PinProjection::TransformVertices(const Vertex3Ds * const rgv, const WORD * 
       rgvout[l].y = vTy;
    }
 }
+
+#ifdef ENABLE_BAM
+// #ravarcade: All code below will add BAM view and BAM head tracking.
+// Most of it is copy of
+//-----------------------------------------------------------------------
+
+BAM_Tracker::BAM_Tracker_Client BAM;
+
+void Mat4Mul(float *O, float *A, float *B)
+{
+   O[0] = A[0] * B[0] + A[1] * B[4] + A[2] * B[8] + A[3] * B[12];
+   O[1] = A[0] * B[1] + A[1] * B[5] + A[2] * B[9] + A[3] * B[13];
+   O[2] = A[0] * B[2] + A[1] * B[6] + A[2] * B[10] + A[3] * B[14];
+   O[3] = A[0] * B[3] + A[1] * B[7] + A[2] * B[11] + A[3] * B[15];
+
+   O[4] = A[4] * B[0] + A[5] * B[4] + A[6] * B[8] + A[7] * B[12];
+   O[5] = A[4] * B[1] + A[5] * B[5] + A[6] * B[9] + A[7] * B[13];
+   O[6] = A[4] * B[2] + A[5] * B[6] + A[6] * B[10] + A[7] * B[14];
+   O[7] = A[4] * B[3] + A[5] * B[7] + A[6] * B[11] + A[7] * B[15];
+
+   O[8] = A[8] * B[0] + A[9] * B[4] + A[10] * B[8] + A[11] * B[12];
+   O[9] = A[8] * B[1] + A[9] * B[5] + A[10] * B[9] + A[11] * B[13];
+   O[10] = A[8] * B[2] + A[9] * B[6] + A[10] * B[10] + A[11] * B[14];
+   O[11] = A[8] * B[3] + A[9] * B[7] + A[10] * B[11] + A[11] * B[15];
+
+   O[12] = A[12] * B[0] + A[13] * B[4] + A[14] * B[8] + A[15] * B[12];
+   O[13] = A[12] * B[1] + A[13] * B[5] + A[14] * B[9] + A[15] * B[13];
+   O[14] = A[12] * B[2] + A[13] * B[6] + A[14] * B[10] + A[15] * B[14];
+   O[15] = A[12] * B[3] + A[13] * B[7] + A[14] * B[11] + A[15] * B[15];
+}
+
+void Mat4Mul(float *OA, float *B)
+{
+   float A[16];
+   memcpy_s(A, sizeof(A), OA, sizeof(A));
+   Mat4Mul(OA, A, B);
+}
+
+void CreateProjectionAndViewMatrix(float *P, float *V)
+{
+   const float degToRad = 0.01745329251f;
+
+   // VPX stuffs
+   auto &t = g_pplayer->m_ptable;
+   int resolutionWidth = g_pplayer->m_pin3d.m_viewPort.Width;
+   int resolutionHeight = g_pplayer->m_pin3d.m_viewPort.Height;
+   int rotation = static_cast<int>(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] / 90.0f);
+   bool stereo3D = g_pplayer->m_stereo3D;
+   float tableLength = t->m_bottom;
+   float tableWidth = t->m_right;
+   float tableGlass = t->m_glassheight;
+   float minSlope = (t->m_overridePhysics ? t->m_fOverrideMinSlope : t->m_angletiltMin);
+   float maxSlope = (t->m_overridePhysics ? t->m_fOverrideMaxSlope : t->m_angletiltMax);
+   float slope = minSlope + (maxSlope - minSlope) * t->m_globalDifficulty;
+   float angle = -slope * degToRad;
+
+   // Data from config file (Settings):
+   float DisplaySize;
+   float DisplayNativeWidth;
+   float DisplayNativeHeight;
+   float AboveScreen;
+   float InsideScreen;
+
+   // Data from head tracking
+   float ViewerPositionX, ViewerPositionY, ViewerPositionZ;
+
+   // Get data from BAM Tracker
+   // we use Screen Width & Height as Native Resolution. Only aspect ration is important
+   DisplayNativeWidth = (float)BAM.GetScreenWidth(); // [mm]
+   DisplayNativeHeight = (float)BAM.GetScreenHeight(); // [mm]
+
+   double x, y, z;
+   BAM.GetPosition(x, y, z);
+
+   ViewerPositionX = (float)x;
+   ViewerPositionY = (float)y;
+   ViewerPositionZ = (float)z;
+
+   double w = DisplayNativeWidth, h = DisplayNativeHeight;
+   DisplaySize = (float)(sqrt(w*w + h * h) / 25.4); // [mm] -> [inchs]
+
+                                                    // constant params for this project
+   AboveScreen = 200.0; // 0.2m
+   InsideScreen = 2000.0; // 2.0m
+
+                          // Data build projection matrix
+   BuildProjectionMatrix(P,
+      DisplaySize,
+      DisplayNativeWidth, DisplayNativeHeight,
+      (float)resolutionWidth, (float)resolutionHeight,
+      0.0f, 0.0f,
+      (float)resolutionWidth, (float)resolutionHeight,
+      ViewerPositionX, ViewerPositionY, ViewerPositionZ,
+      -AboveScreen, InsideScreen,
+      rotation);
+
+   // Build View matrix from parts: Translation, Scale, Rotation
+   // .. but first View Matrix has camera position
+   float VT[16] = {
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      -ViewerPositionX, -ViewerPositionY, -ViewerPositionZ, 1
+   };
+
+   // --- Scale, ... some math
+   float pixelsToMillimeters = (float)(25.4*DisplaySize / sqrt(DisplayNativeWidth*DisplayNativeWidth + DisplayNativeHeight * DisplayNativeHeight));
+   float pixelsToMillimetersX = pixelsToMillimeters * DisplayNativeWidth / resolutionWidth;
+   float pixelsToMillimetersY = pixelsToMillimeters * DisplayNativeHeight / resolutionHeight;
+   float ptm = rotation & 1 ? pixelsToMillimetersX : pixelsToMillimetersY;
+   float tableLengthInMillimeters = ptm * tableLength;
+   float displayLengthInMillimeters = ptm * (rotation & 1 ? pixelsToMillimeters * DisplayNativeWidth : pixelsToMillimeters * DisplayNativeHeight);
+
+   // --- Scale world to fit in screen
+   float scale = displayLengthInMillimeters / tableLengthInMillimeters; // calc here scale
+   float S[16] = {
+      scale, 0, 0, 0,
+      0, scale, 0, 0,
+      0, 0, scale, 0,
+      0, 0, 0, 1
+   };
+   /// ===
+
+   // --- Translation to desired world element (playfield center or glass center)
+   float _S = sinf(angle);
+   float _C = cosf(angle);
+   float T[16] = {
+      1, 0, 0, 0,
+      0, -1, 0, 0,
+      0, 0, 1, 0,
+      scale*(-tableWidth * 0.5f),
+      scale*(tableLength * 0.5f - tableGlass * _S),
+      scale*(-tableGlass * _C), 1
+   };
+   /// ===
+
+   // --- Rotate world to make playfield or glass parallel to screen
+   float R[16] = {
+      1, 0, 0, 0,
+      0, _C, -_S, 0,
+      0, _S, _C, 0,
+      0, 0, 0, 1
+   };
+   /// ===
+
+   // combine all to one matrix
+   Mat4Mul(V, S, R);
+   Mat4Mul(V, T);
+   Mat4Mul(V, VT);
+}
+
+void Pin3D::UpdateBAMHeadTracking()
+{
+   // If BAM tracker is not runnign, we will not do anything.
+   if (BAM.IsBAMTrackerPresent())
+      CreateProjectionAndViewMatrix(&m_proj.m_matProj[0]._11, &m_proj.m_matView._11);
+}
+#endif
