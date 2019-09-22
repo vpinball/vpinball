@@ -1094,6 +1094,7 @@ void Primitive::CalculateBuiltinOriginal()
    //ComputeNormals(m_mesh.m_vertices, m_mesh.m_indices);
 }
 
+// placed in get_X so that this is shown when prim selected
 void Primitive::UpdateMeshInfo()
 {
     if(g_pplayer)
@@ -2279,7 +2280,6 @@ STDMETHODIMP Primitive::put_Y(float newVal)
 STDMETHODIMP Primitive::get_Z(float *pVal)
 {
    *pVal = m_d.m_vPosition.z;
-   UpdateMeshInfo();
 
    return S_OK;
 }
