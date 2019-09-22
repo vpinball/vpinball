@@ -31,7 +31,8 @@ FEATURES:
 - add checkbox to 'user customizations'->'overwrite physics by global set' to optionally change all flipper settings, too
 - add strength parameter for the (optional) legacy/VP9-like keyboard nudging code, can be set in the 'Keys, Nudge and DOF' preferences dialog
 
-- add a circle outline to the gate element to help in selecting a gate in the editor
+- add a circle outline to the gate element to help in selecting a gate in the editor and fix selection view, too
+- add a rectangle outline to the spinner element to help in selecting it in the editor and fix selection view, too
 - show kicker (default) orientation in the editor
 - add support for showing the image of a primitive mesh in the editor. However this feature is far from perfect because Windows GDI (which draws the elements in the editor) can't handle meshes well
 
