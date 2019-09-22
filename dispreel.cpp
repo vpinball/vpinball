@@ -375,7 +375,7 @@ void DispReel::RenderStatic()
 // number of motor steps queued up for each reel
 void DispReel::Animate()
 {
-   if (g_pplayer->m_time_msec >= m_timenextupdate)
+   while (g_pplayer->m_time_msec >= m_timenextupdate)
    {
       m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
 
@@ -850,7 +850,7 @@ STDMETHODIMP DispReel::get_UpdateInterval(long *pVal)
 STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
 {
    STARTUNDO
-   m_d.m_updateinterval = max(5, newVal);
+   m_d.m_updateinterval = max(5, newVal); //!! reduce?
    if (g_pplayer)
       m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
    STOPUNDO

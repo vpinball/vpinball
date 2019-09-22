@@ -1,6 +1,8 @@
 VP 10.6.0 Changelog
 ------------------------
 
+- fix FPS-dependent animation speed if update interval of EM Reels and Light Sequence is chosen low (i.e. quick changes) and animate at the actual speed
+
 - support both winding orders for lights, which fixes the invalid shape error message for (some) lights
 
 - add a circle outline to the gate element to help in selecting a gate in the editor
