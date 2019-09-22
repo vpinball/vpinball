@@ -170,11 +170,13 @@ void Gate::UIRenderPass2(Sur * const psur)
    const float len2 = len1 * 0.5f;
    Vertex2D tmp;
 
+   psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, halflength);
+
    {
       const float radangle = ANGTORAD(m_d.m_rotation);
       {
-         const float sn = sinf(radangle);
-         const float cs = cosf(radangle);
+         float sn = sinf(radangle);
+         float cs = cosf(radangle);
 
          psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
             m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
@@ -187,7 +189,6 @@ void Gate::UIRenderPass2(Sur * const psur)
 
          psur->Line(tmp.x, tmp.y,
             m_d.m_vCenter.x, m_d.m_vCenter.y);
-         psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, halflength);
       }
 
    {
