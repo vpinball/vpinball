@@ -316,7 +316,7 @@ void LightSeq::Animate()
       {
          if (!m_pauseInProgress)
          {
-            m_timeNextUpdate = g_pplayer->m_time_msec + m_updateRate;
+            m_timeNextUpdate += m_updateRate;
             // process the head tracers
             const bool th1finished = ProcessTracer(&m_th1, LightStateOn);
             const bool th2finished = ProcessTracer(&m_th2, LightStateOn);
@@ -371,13 +371,11 @@ void LightSeq::Animate()
          const int Tail = m_queue.Tail;
          // set the update rate for this sequence
          m_updateRate = m_queue.Data[Tail].UpdateRate;
-         // set up the tracers
+         // set up the tracers and start the ball rolling again
          SetupTracers(m_queue.Data[Tail].Animation,
             m_queue.Data[Tail].TailLength,
             m_queue.Data[Tail].Repeat,
             m_queue.Data[Tail].Pause);
-         // and start the ball rolling again
-         m_playInProgress = true;
       }
    }
 }
@@ -522,17 +520,17 @@ STDMETHODIMP LightSeq::get_CenterY(float *pVal)
 
 STDMETHODIMP LightSeq::put_CenterY(float newVal)
 {
-   if ((newVal < 0) || (newVal >= (float)(2 * EDITOR_BG_WIDTH)))
+   if ((newVal < 0.f) || (newVal >= (float)(2 * EDITOR_BG_WIDTH)))
       return E_FAIL;
 
    STARTUNDO
-      m_d.m_vCenter.y = newVal;
+   m_d.m_vCenter.y = newVal;
    // set the centre point of the grid for effects which start from the center
    m_GridYCenter = floorf(m_d.m_vCenter.y * (float)(1.0 / LIGHTSEQGRIDSCALE));
    m_GridYCenterAdjust = abs(m_lightSeqGridHeight / 2 - (int)m_GridYCenter);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP LightSeq::get_UpdateInterval(long *pVal)
@@ -666,14 +664,14 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
 
    switch (Animation)
    {
-      // blink all lights on and off
+   // blink all lights on and off
    case SeqBlinking:
       m_th1.type = eSeqBlink;
       m_th1.length = 0;
       m_th1.frameCount = 2;
       break;
 
-      // Randomly turn lights on and off for the pause period
+   // Randomly turn lights on and off for the pause period
    case SeqRandom:
       m_th1.type = eSeqRandom;
       m_th1.length = TailLength;
@@ -687,7 +685,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_pauseValue = Pause;
       break;
 
-      // Turn on all lights starting at the bottom of the playfield and moving up
+   // Turn on all lights starting at the bottom of the playfield and moving up
    case SeqUpOff:
       inverse = true;
    case SeqUpOn:
@@ -702,7 +700,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = m_lightSeqGridHeight;
       break;
 
-      // Turn on all lights starting at the top of the playfield and moving down
+   // Turn on all lights starting at the top of the playfield and moving down
    case SeqDownOff:
       inverse = true;
    case SeqDownOn:
@@ -717,7 +715,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = m_lightSeqGridHeight;
       break;
 
-      // Turn on all lights starting at the left of the playfield and moving right
+   // Turn on all lights starting at the left of the playfield and moving right
    case SeqRightOff:
       inverse = true;
    case SeqRightOn:
@@ -733,7 +731,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       TailLength /= 2;
       break;
 
-      // Turn on all lights starting at the right of the playfield and moving left
+   // Turn on all lights starting at the right of the playfield and moving left
    case SeqLeftOff:
       inverse = true;
    case SeqLeftOn:
@@ -749,7 +747,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       TailLength /= 2;
       break;
 
-      // Turn on all lights starting at the bottom/left of the playfield and diagonally up
+   // Turn on all lights starting at the bottom/left of the playfield and diagonally up
    case SeqDiagUpRightOff:
       inverse = true;
    case SeqDiagUpRightOn:
@@ -764,7 +762,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = m_lightSeqGridHeight + (m_lightSeqGridWidth * 2);
       break;
 
-      // Turn on all lights starting at the bottom/right of the playfield and diagonally up
+   // Turn on all lights starting at the bottom/right of the playfield and diagonally up
    case SeqDiagUpLeftOff:
       inverse = true;
    case SeqDiagUpLeftOn:
@@ -779,7 +777,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = m_lightSeqGridHeight + (m_lightSeqGridWidth * 2);
       break;
 
-      // Turn on all lights starting at the top/left of the playfield and diagonally down
+   // Turn on all lights starting at the top/left of the playfield and diagonally down
    case SeqDiagDownRightOff:
       inverse = true;
    case SeqDiagDownRightOn:
@@ -794,7 +792,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = m_lightSeqGridHeight + (m_lightSeqGridWidth * 2);
       break;
 
-      // Turn on all lights starting at the top/right of the playfield and diagonally down
+   // Turn on all lights starting at the top/right of the playfield and diagonally down
    case SeqDiagDownLeftOff:
       inverse = true;
    case SeqDiagDownLeftOn:
@@ -809,7 +807,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = m_lightSeqGridHeight + (m_lightSeqGridWidth * 2);
       break;
 
-      // Turn on all lights starting in the middle and moving outwards to the side edges
+   // Turn on all lights starting in the middle and moving outwards to the side edges
    case SeqMiddleOutHorizOff:
       inverse = true;
    case SeqMiddleOutHorizOn:
@@ -834,7 +832,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       TailLength /= 4;
       break;
 
-      // Turn on all lights starting on the side edges and moving into the middle
+   // Turn on all lights starting on the side edges and moving into the middle
    case SeqMiddleInHorizOff:
       inverse = true;
    case SeqMiddleInHorizOn:
@@ -887,7 +885,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       TailLength /= 2;
       break;
 
-      // Turn on all lights starting on the top and bottom edges and moving inwards to the middle
+   // Turn on all lights starting on the top and bottom edges and moving inwards to the middle
    case SeqMiddleInVertOff:
       inverse = true;
    case SeqMiddleInVertOn:
@@ -940,7 +938,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       TailLength /= 2;
       break;
 
-      // top half of the playfield wipes on to the left while the bottom half wipes on to the right
+   // top half of the playfield wipes on to the left while the bottom half wipes on to the right
    case SeqStripe2HorizOff:
       inverse = true;
    case SeqStripe2HorizOn:
@@ -965,7 +963,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       TailLength /= 2;
       break;
 
-      // left side of the playfield wipes on going up while the right side wipes on doing down
+   // left side of the playfield wipes on going up while the right side wipes on doing down
    case SeqStripe1VertOff:
       inverse = true;
    case SeqStripe1VertOn:
@@ -989,7 +987,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th2.frameCount = m_lightSeqGridHeight;
       break;
 
-      // left side of the playfield wipes on going down while the right side wipes on doing up
+   // left side of the playfield wipes on going down while the right side wipes on doing up
    case SeqStripe2VertOff:
       inverse = true;
    case SeqStripe2VertOn:
@@ -1013,7 +1011,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th2.frameCount = m_lightSeqGridHeight;
       break;
 
-      // turn lights on, cross-hatch with even lines going right and odd lines going left
+   // turn lights on, cross-hatch with even lines going right and odd lines going left
    case SeqHatch1HorizOff:
       inverse = true;
    case SeqHatch1HorizOn:
@@ -1038,7 +1036,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       TailLength /= 2;
       break;
 
-      // turn lights on, cross-hatch with even lines going left and odd lines going right
+   // turn lights on, cross-hatch with even lines going left and odd lines going right
    case SeqHatch2HorizOff:
       inverse = true;
    case SeqHatch2HorizOn:
@@ -1063,7 +1061,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       TailLength /= 2;
       break;
 
-      // turn lights on, cross-hatch with even lines going up and odd lines going down
+   // turn lights on, cross-hatch with even lines going up and odd lines going down
    case SeqHatch1VertOff:
       inverse = true;
    case SeqHatch1VertOn:
@@ -1087,7 +1085,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th2.frameCount = m_lightSeqGridHeight;
       break;
 
-      // turn lights on, cross-hatch with even lines going down and odd lines going up
+   // turn lights on, cross-hatch with even lines going down and odd lines going up
    case SeqHatch2VertOff:
       inverse = true;
    case SeqHatch2VertOn:
@@ -1111,7 +1109,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th2.frameCount = m_lightSeqGridHeight;
       break;
 
-      // turn on all the lights, starting in the table center and circle out
+   // turn on all the lights, starting in the table center and circle out
    case SeqCircleOutOff:
       inverse = true;
    case SeqCircleOutOn:
@@ -1123,7 +1121,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = m_lightSeqGridWidth / 2 + m_GridXCenterAdjust + m_lightSeqGridHeight / 2 + m_GridYCenterAdjust;
       break;
 
-      // turn on all the lights, starting at the table edges and circle in
+   // turn on all the lights, starting at the table edges and circle in
    case SeqCircleInOff:
       inverse = true;
    case SeqCircleInOn:
@@ -1135,7 +1133,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = m_lightSeqGridWidth / 2 + m_GridXCenterAdjust + m_lightSeqGridHeight / 2 + m_GridYCenterAdjust;
       break;
 
-      // turn all the lights on starting in the middle and sweeping around to the right
+   // turn all the lights on starting in the middle and sweeping around to the right
    case SeqClockRightOff:
       inverse = true;
    case SeqClockRightOn:
@@ -1149,7 +1147,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 360;
       break;
 
-      // turn all the lights on starting in the middle and sweeping around to the left
+   // turn all the lights on starting in the middle and sweeping around to the left
    case SeqClockLeftOff:
       inverse = true;
    case SeqClockLeftOn:
@@ -1163,7 +1161,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 360;
       break;
 
-      // turn all the lights on starting in the middle/bottom and sweeping around to the right
+   // turn all the lights on starting in the middle/bottom and sweeping around to the right
    case SeqRadarRightOff:
       inverse = true;
    case SeqRadarRightOn:
@@ -1177,7 +1175,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 180;
       break;
 
-      // turn all the lights on starting in the middle/bottom and sweeping around to the right
+   // turn all the lights on starting in the middle/bottom and sweeping around to the right
    case SeqRadarLeftOff:
       inverse = true;
    case SeqRadarLeftOn:
@@ -1191,7 +1189,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 180;
       break;
 
-      // turn all the lights on starting in the middle/yop and sweeping around to the right
+   // turn all the lights on starting in the middle/yop and sweeping around to the right
    case SeqWiperRightOff:
       inverse = true;
    case SeqWiperRightOn:
@@ -1205,7 +1203,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 180;
       break;
 
-      // turn all the lights on starting in the middle/top and sweeping around to the right
+   // turn all the lights on starting in the middle/top and sweeping around to the right
    case SeqWiperLeftOff:
       inverse = true;
    case SeqWiperLeftOn:
@@ -1219,7 +1217,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 180;
       break;
 
-      // turn all the lights on starting in the middle/left edge and sweeping up
+   // turn all the lights on starting in the middle/left edge and sweeping up
    case SeqFanLeftUpOff:
       inverse = true;
    case SeqFanLeftUpOn:
@@ -1233,7 +1231,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 180;
       break;
 
-      // turn all the lights on starting in the middle/left edge and sweeping down
+   // turn all the lights on starting in the middle/left edge and sweeping down
    case SeqFanLeftDownOff:
       inverse = true;
    case SeqFanLeftDownOn:
@@ -1247,7 +1245,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 180;
       break;
 
-      // turn all the lights on starting in the middle/right edge and sweeping up
+   // turn all the lights on starting in the middle/right edge and sweeping up
    case SeqFanRightUpOff:
       inverse = true;
    case SeqFanRightUpOn:
@@ -1261,7 +1259,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 180;
       break;
 
-      // turn all the lights on starting in the middle/right edge and sweeping down
+   // turn all the lights on starting in the middle/right edge and sweeping down
    case SeqFanRightDownOff:
       inverse = true;
    case SeqFanRightDownOn:
@@ -1275,7 +1273,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 180;
       break;
 
-      // turn all the lights on starting in the bottom/left corner and arcing up
+   // turn all the lights on starting in the bottom/left corner and arcing up
    case SeqArcBottomLeftUpOff:
       inverse = true;
    case SeqArcBottomLeftUpOn:
@@ -1289,7 +1287,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 90;
       break;
 
-      // turn all the lights on starting in the bottom/left corner and arcing down
+   // turn all the lights on starting in the bottom/left corner and arcing down
    case SeqArcBottomLeftDownOff:
       inverse = true;
    case SeqArcBottomLeftDownOn:
@@ -1303,7 +1301,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 90;
       break;
 
-      // turn all the lights on starting in the bottom/right corner and arcing up
+   // turn all the lights on starting in the bottom/right corner and arcing up
    case SeqArcBottomRightUpOff:
       inverse = true;
    case SeqArcBottomRightUpOn:
@@ -1317,7 +1315,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 90;
       break;
 
-      // turn all the lights on starting in the bottom/right corner and arcing down
+   // turn all the lights on starting in the bottom/right corner and arcing down
    case SeqArcBottomRightDownOff:
       inverse = true;
    case SeqArcBottomRightDownOn:
@@ -1331,7 +1329,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 90;
       break;
 
-      // turn all the lights on starting in the top/left corner and arcing up
+   // turn all the lights on starting in the top/left corner and arcing up
    case SeqArcTopLeftUpOff:
       inverse = true;
    case SeqArcTopLeftUpOn:
@@ -1345,7 +1343,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 90;
       break;
 
-      // turn all the lights on starting in the top/left corner and arcing down
+   // turn all the lights on starting in the top/left corner and arcing down
    case SeqArcTopLeftDownOff:
       inverse = true;
    case SeqArcTopLeftDownOn:
@@ -1359,7 +1357,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 90;
       break;
 
-      // turn all the lights on starting in the top/right corner and arcing up
+   // turn all the lights on starting in the top/right corner and arcing up
    case SeqArcTopRightUpOff:
       inverse = true;
    case SeqArcTopRightUpOn:
@@ -1373,7 +1371,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 90;
       break;
 
-      // turn all the lights on starting in the top/right corner and arcing down
+   // turn all the lights on starting in the top/right corner and arcing down
    case SeqArcTopRightDownOff:
       inverse = true;
    case SeqArcTopRightDownOn:
@@ -1387,7 +1385,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th1.frameCount = 90;
       break;
 
-      // turn all the lights on starting in the centre and screwing (2 tracers) clockwise
+   // turn all the lights on starting in the centre and screwing (2 tracers) clockwise
    case SeqScrewRightOff:
       inverse = true;
    case SeqScrewRightOn:
@@ -1409,7 +1407,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th2.frameCount = 180;
       break;
 
-      // turn all the lights on starting in the centre and screwing (2 tracers) anti-clockwise
+   // turn all the lights on starting in the centre and screwing (2 tracers) anti-clockwise
    case SeqScrewLeftOff:
       inverse = true;
    case SeqScrewLeftOn:
@@ -1431,7 +1429,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
       m_th2.frameCount = 180;
       break;
 
-      // unknown/supported animation (should happen as the animation is a enum, but hey!)
+   // unknown/supported animation (shouldn't happen as the animation is a enum, but hey!)
    default:
       // cause it to expire in 1 frame and move onto the next animation
       m_th1.length = 0;
@@ -1488,7 +1486,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
    {
       switch (pTracer->type)
       {
-         // process the blink type of effect
+      // process the blink type of effect
       case eSeqBlink:
          switch (pTracer->frameCount--)
          {
@@ -1508,7 +1506,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
          }
          break;
 
-         // process the random type of effect
+      // process the random type of effect
       case eSeqRandom: {
          // get the number of elements in this
          const float size = (float)m_pcollection->m_visel.Size();
@@ -1531,7 +1529,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
             SetElementToState(randomLight, state);
          }
 
-         pTracer->frameCount -= 1;
+         pTracer->frameCount--;
          if (pTracer->frameCount == 0)
          {
             // nullify this tracer
@@ -1541,7 +1539,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
          break;
       }
 
-                       // process the line tracers
+      // process the line tracers
       case eSeqLine: {
          // get the start of the trace line
          float x = pTracer->x;
@@ -1555,7 +1553,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
             y += pTracer->processStepY;
          }
 
-         pTracer->frameCount -= 1;
+         pTracer->frameCount--;
          if (pTracer->frameCount == 0)
          {
             // nullify this tracer
@@ -1571,7 +1569,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
          break;
       }
 
-                     // process the circle type of effect
+      // process the circle type of effect
       case eSeqCircle:
          for (float fi = 0; fi < 360.0f; fi += 0.5f)
          {
@@ -1582,7 +1580,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
             const float y = pTracer->y - cs*pTracer->radius;
             VerifyAndSetGridElement((int)x, (int)y, State);
          }
-         pTracer->frameCount -= 1;
+         pTracer->frameCount--;
          if (pTracer->frameCount == 0)
          {
             // nullify this tracer
@@ -1595,7 +1593,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
          }
          break;
 
-         // process the radar type of effect
+      // process the radar type of effect
       case eSeqRadar: {
          const float angle = pTracer->angle * (float)(M_PI * 2.0 / 360.0);
          const float sn = sinf(angle);
@@ -1605,7 +1603,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
          const float angle2 = (pTracer->angle + pTracer->stepAngle*0.25f) * (float)(M_PI * 2.0 / 360.0);
          const float sn2 = sinf(angle2);
          const float cs2 = cosf(angle2);
-         const float angle3 = (pTracer->angle + pTracer->stepAngle*0.5f) * (float)(M_PI * 2.0 / 360.0);
+         const float angle3 = (pTracer->angle + pTracer->stepAngle*0.5f ) * (float)(M_PI * 2.0 / 360.0);
          const float sn3 = sinf(angle3);
          const float cs3 = cosf(angle3);
          const float angle4 = (pTracer->angle + pTracer->stepAngle*0.75f) * (float)(M_PI * 2.0 / 360.0);
@@ -1629,7 +1627,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
                VerifyAndSetGridElement((int)x, (int)y, State);
             }
 
-         pTracer->frameCount -= 1;
+         pTracer->frameCount--;
          if (pTracer->frameCount == 0)
          {
             // nullify this tracer
@@ -1642,18 +1640,15 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
             pTracer->angle += pTracer->stepAngle;
             // process any wrap around
             if (pTracer->angle >= 360.0f)
-            {
                pTracer->angle -= 360.0f;
-            }
+
             if (pTracer->angle < 0.f)
-            {
                pTracer->angle += 360.0f;
-            }
          }
          break;
       }
 
-                      // invalid tracer type (shouldn't happen but hey!)
+      // invalid tracer type (shouldn't happen but hey!)
       default:
          rc = true;
       }
@@ -1662,7 +1657,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
    {
       pTracer->delay -= 1;
    }
-   return (rc);
+   return rc;
 }
 
 void LightSeq::SetAllLightsToState(const LightState State)
@@ -1671,9 +1666,7 @@ void LightSeq::SetAllLightsToState(const LightState State)
    {
       const int size = m_pcollection->m_visel.Size();
       for (int i = 0; i < size; ++i)
-      {
          SetElementToState(i, State);
-      }
    }
 }
 
@@ -1793,7 +1786,7 @@ LightState LightSeq::GetElementState(const int index) const
             }
          }
 
-         pTracer->frameCount -= 1;
+         pTracer->frameCount--;
          if (pTracer->frameCount == 0)
          {
             // nullify this tracer
