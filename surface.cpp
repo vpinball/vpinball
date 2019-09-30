@@ -411,9 +411,9 @@ void Surface::CurvesToShapes(vector<HitObject*> &pvho)
    }
 }
 
-void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
+void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj)
 {
-   Material *mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
+   Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
    if (mat != NULL && !m_d.m_overwritePhysics)
    {
       obj->m_elasticity = mat->m_fElasticity;
@@ -425,8 +425,9 @@ void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
       obj->m_elasticity = m_d.m_elasticity;
       obj->SetFriction(m_d.m_friction);
       obj->m_scatter = ANGTORAD(m_d.m_scatter);
-      obj->m_enabled = m_d.m_collidable;
    }
+
+   obj->m_enabled = m_d.m_collidable;
 
    if (m_d.m_hitEvent)
    {
@@ -1744,7 +1745,7 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
       const bool b = !m_isDropped && m_d.m_collidable;
       if (m_vhoDrop.size() > 0 && m_vhoDrop[0]->m_enabled != b)
         for (size_t i = 0; i < m_vhoDrop.size(); i++) //!! costly
-          m_vhoDrop[i]->m_enabled = b; //disable hit on enities composing the object 
+          m_vhoDrop[i]->m_enabled = b; //disable hit on entities composing the object 
    }
 
    return S_OK;
@@ -1931,7 +1932,7 @@ STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
        const bool b = m_d.m_droppable ? (fNewVal && !m_isDropped) : fNewVal;
        if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != b)
            for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
-              m_vhoCollidable[i]->m_enabled = b; //copy to hit checking on enities composing the object 
+              m_vhoCollidable[i]->m_enabled = b; //copy to hit checking on entities composing the object 
    }
 
    return S_OK;

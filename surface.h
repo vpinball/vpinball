@@ -141,7 +141,7 @@ public:
 
 private:
    void CurvesToShapes(vector<HitObject*> &pvho);
-   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
+   void SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj);
    void AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2);
 
    void RenderSlingshots();
