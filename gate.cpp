@@ -175,8 +175,8 @@ void Gate::UIRenderPass2(Sur * const psur)
    {
       const float radangle = ANGTORAD(m_d.m_rotation);
       {
-         float sn = sinf(radangle);
-         float cs = cosf(radangle);
+         const float sn = sinf(radangle);
+         const float cs = cosf(radangle);
 
          psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
             m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);

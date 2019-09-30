@@ -61,7 +61,9 @@ bool PinBinary::WriteToFile(const char * const szfilename)
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      ShowError("The temporary file could not be written.");
+      char bla[MAXSTRING];
+      sprintf_s(bla, "The temporary file %s could not be written.", szfilename);
+      ShowError(bla);
       return false;
    }
 
