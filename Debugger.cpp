@@ -555,8 +555,8 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             PlayDown = BST_CHECKED;
          }
 
-         HWND hwndTBParent = GetDlgItem(hwndDlg, IDC_TOOLBARSIZE);
-         HWND hwndToolbar = GetWindow(hwndTBParent, GW_CHILD);
+         const HWND hwndTBParent = GetDlgItem(hwndDlg, IDC_TOOLBARSIZE);
+         const HWND hwndToolbar = GetWindow(hwndTBParent, GW_CHILD);
 
          SendDlgItemMessage(hwndDlg, IDC_PLAY, BM_SETCHECK, PlayDown, 0);
          SendDlgItemMessage(hwndDlg, IDC_PAUSE, BM_SETCHECK, PauseDown, 0);
