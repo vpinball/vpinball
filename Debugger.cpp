@@ -601,12 +601,12 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          if (state == BST_CHECKED)
          {
             mult = 1;
-            SetWindowText(GetDlgItem(hwndDlg, IDC_EXPAND), "<");
+            SetWindowText(GetDlgItem(hwndDlg, IDC_EXPAND), "< Editor");
          }
          else
          {
             mult = -1;
-            SetWindowText(GetDlgItem(hwndDlg, IDC_EXPAND), ">");
+            SetWindowText(GetDlgItem(hwndDlg, IDC_EXPAND), "> Editor");
          }
 
          RECT rcSizer1;
