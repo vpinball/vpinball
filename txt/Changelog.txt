@@ -70,13 +70,15 @@ FIXES:
 
 - fix ball through bumper issue
 
+- fix rather old bug in physics-settings-per-material for the collidable setting of walls (introduced with 10.2)
+
 - fix "all sounds to rear channels" bug
 
 - fix FPS-dependent animation speed if update interval of EM Reels and Light Sequence is chosen low (i.e. quick changes) and animate at the actual speed
 
 - do not ignore primitive setting 'Has Hit Event' anymore (before it was always implicitly on)
 
-- fix some regressions from VPX 10.3+ within the physics options dialog, especially with some of its flipper settings and when importing settings
+- fix some regressions from 10.3+ within the physics options dialog, especially with some of its flipper settings and when importing settings
 
 - fix some potential crashes and quirks in the manager dialogs (most notably the alpha test value in the image manager being copied to other elements when deleting an image)
 - fix crash in collection manager if a collection is moved up/down
