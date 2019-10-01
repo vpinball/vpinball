@@ -14,4 +14,4 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
 void WaveFrontObj_WriteFaceInfoList(FILE *f, const WORD *faces, const unsigned int numIndices);
 void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename, const Material * const mat);
 void WaveFrontObj_UseTexture(FILE *f, const char *texelName);
-bool WaveFrontObjLoadMaterial(const char *filename, Material *mat);
+bool WaveFrontObjLoadMaterial(const char *filename, Material * const mat);

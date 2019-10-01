@@ -114,7 +114,7 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                const LRESULT idx_row = SendMessage(hCombo, CB_GETCURSEL, 0, 0);
                SendMessage(hCombo, CB_GETLBTEXT, idx_row, (LPARAM)strText);
                Material * const pMat = ptable->GetMaterial(strText);
-               if (pMat != NULL)
+               if (pMat != &g_pvp->m_dummyMaterial)
                {
                   if (hwndcolor1 == (HWND)lParam)
                      pMat->m_cBase = (COLORREF)color;
@@ -138,8 +138,8 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                   idx_row = ComboBox_GetCurSel(hCombo);
                   ComboBox_GetLBText(hCombo, idx_row, strText);
 
-                  Material *pMat = ptable->GetMaterial(strText);
-                  if (pMat != NULL)
+                  Material * const pMat = ptable->GetMaterial(strText);
+                  if (pMat != &g_pvp->m_dummyMaterial)
                   {
                      char value[256];
                      GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_BASE_WRAP_EDIT, value, 31);
@@ -194,8 +194,8 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                      idx_row = ComboBox_GetCurSel(hCombo);
                      ComboBox_GetLBText(hCombo, idx_row, strText);
 
-                     Material *pMat = ptable->GetMaterial(strText);
-                     if (pMat != NULL)
+                     Material *const pMat = ptable->GetMaterial(strText);
+                     if (pMat != &g_pvp->m_dummyMaterial)
                      {
                         char value[256];
                         f2sz(pMat->m_fWrapLighting, value);

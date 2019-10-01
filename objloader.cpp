@@ -71,7 +71,7 @@ static void NormalizeNormals()
 }
 #endif
 
-bool WaveFrontObjLoadMaterial(const char *filename, Material *mat)
+bool WaveFrontObjLoadMaterial(const char *filename, Material * const mat)
 {
    FILE *f;
 
