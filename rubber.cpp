@@ -587,7 +587,7 @@ void Rubber::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, 
 void Rubber::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj)
 {
    const Material *const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
-   if (mat != NULL && !m_d.m_overwritePhysics)
+   if (!m_d.m_overwritePhysics)
    {
       obj->m_elasticity = mat->m_fElasticity;
       obj->m_elasticityFalloff = mat->m_fElasticityFalloff;

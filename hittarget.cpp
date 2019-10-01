@@ -387,7 +387,7 @@ void HitTarget::AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigne
 void HitTarget::SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool setHitObject)
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
-   if (mat != NULL && !m_d.m_overwritePhysics)
+   if (!m_d.m_overwritePhysics)
    {
       obj->m_elasticity = mat->m_fElasticity;
       obj->m_elasticityFalloff = mat->m_fElasticityFalloff;
@@ -507,7 +507,7 @@ void HitTarget::ExportMesh(FILE *f)
    GenerateMesh(m_transformedVertices);
 
    WaveFrontObj_WriteVertexInfo(f, m_transformedVertices.data(), m_numVertices);
-   const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
    WaveFrontObj_WriteFaceInfoList(f, m_indices, m_numIndices);
