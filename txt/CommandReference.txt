@@ -1,4 +1,4 @@
-Visual Pinball 10 command Reference v0.98
+Visual Pinball 10 command Reference v0.99
 by Fuzzel
 
 This is a quick overview of all commands/variables VP knows. A lot of them do not have an effect when called from the script because they have an impact on the pre-rendering only.
@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.6:
+- add UpdateMaterial to the globals
 - fix potential problems for the light element for Bulb, ImageMode, ShowBulbMesh, StaticBulbMesh, ShowReflectionOnBall reads
 - change Position() of the plunger element to return a float instead of an integer
 - add support for non-mechanical/digital Position() plunger call
@@ -49,7 +50,7 @@ Changelog:
 10.2:
 - add GameTime and SystemTime to get the exact time in millisecond resolution
 - extend TimerInterval of each element by a special '-1' value which makes it dependent on the FPS that a user can reach, so the timer is only triggered exactly once per frame
-- add MaterialColor to the table element
+- add MaterialColor to the globals
 - extend PlayMusic with optional volume (0..1) and better document PlaySound
 - add Duration and BulbHaloHeight property to the light element
 - add PlayAnim,PlayAnimEndless,StopAnim,ContinueAnim & ShowFrame to the primitive element for animation use
@@ -146,6 +147,9 @@ VersionRevision - VP version revision
 GetBalls(Ball) - returns all Balls on the table
 GetElements(Editable) - returns all Elements on the table
 GetElementByName(string) - returns a certain Element, based on the name
+UpdateMaterial(string, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
+               OLE_COLOR base, OLE_COLOR glossy, OLE_COLOR clearcoat, VARIANT_BOOL isMetal, VARIANT_BOOL opacityActive,
+               float elasticity, float elasticityFalloff, float friction, float scatterAngle) - updates all parameters of a material (same input ranges as used in the material editor)
 MaterialColor(string,OLE_COLOR) - change base color of a material
 
 LoadValue(string,string,VARIANT) - load a value for tablename,valuename,value
