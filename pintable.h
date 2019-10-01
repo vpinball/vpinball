@@ -411,7 +411,7 @@ public:
    HRESULT TableSave();
    HRESULT SaveAs();
    virtual HRESULT ApcProject_Save();
-   HRESULT Save(const bool fSaveAs);
+   HRESULT Save(const bool saveAs);
    HRESULT SaveToStorage(IStorage *pstg);
    HRESULT SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash);
    HRESULT SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
@@ -520,12 +520,12 @@ public:
    END_CONNECTION_POINT_MAP()
 
    void ListMaterials(HWND hwndListView);
-   int AddListMaterial(HWND hwndListView, Material *pmat);
+   int AddListMaterial(HWND hwndListView, Material * const pmat);
    void RemoveMaterial(Material * const pmat);
-   void AddDbgLight(Light *plight);
+   void AddDbgLight(Light * const plight);
    void UpdateDbgLight();
-   void AddMaterial(Material *pmat);
-   void AddDbgMaterial(Material *pmat);
+   void AddMaterial(Material * const pmat);
+   void AddDbgMaterial(Material * const pmat);
    void UpdateDbgMaterial();
 
    bool IsMaterialNameUnique(const char * const name) const;

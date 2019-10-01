@@ -495,15 +495,13 @@ void ImageDialog::Export()
             ofn.lStructSize = sizeof(OPENFILENAME);
             ofn.hInstance = g_hinst;
             ofn.hwndOwner = g_pvp->m_hwnd;
-            //TEXT
-            ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0EXR (.exr)\0*.exr;\0HDR (.hdr)\0*.hdr\0";
-            int begin;		//select only file name from pathfilename
             int len = lstrlen(ppi->m_szPath);
             memset(g_filename, 0, MAX_PATH);
             memset(g_initDir, 0, MAX_PATH);
 
             if (!renameOnExport)
             {
+               int begin; //select only file name from pathfilename
                for (begin = len; begin >= 0; begin--)
                {
                   if (ppi->m_szPath[begin] == '\\')
@@ -527,14 +525,38 @@ void ImageDialog::Export()
             }
             ofn.lpstrFile = g_filename;
             ofn.nMaxFile = MAX_PATH;
-            ofn.lpstrDefExt = "png";
+
+            const string ext2(g_filename);
+            const size_t idx2 = ext2.find_last_of(".");
+            ofn.lpstrDefExt = ext2.c_str() + idx2 + 1;
+            // check which default file extension should be selected
+            ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0EXR (.exr)\0*.exr;\0HDR (.hdr)\0*.hdr\0";
+            if(!strcmp(ofn.lpstrDefExt,"png"))
+               ofn.nFilterIndex = 1;
+            else if (!strcmp(ofn.lpstrDefExt, "bmp"))
+               ofn.nFilterIndex = 2;
+            else if (!strcmp(ofn.lpstrDefExt, "jpg") || !strcmp(ofn.lpstrDefExt, "jpeg"))
+               ofn.nFilterIndex = 3;
+            else if (!strcmp(ofn.lpstrDefExt, "iff"))
+               ofn.nFilterIndex = 4;
+            else if (!strcmp(ofn.lpstrDefExt, "pcx"))
+               ofn.nFilterIndex = 5;
+            else if (!strcmp(ofn.lpstrDefExt, "pict"))
+               ofn.nFilterIndex = 6;
+            else if (!strcmp(ofn.lpstrDefExt, "psd"))
+               ofn.nFilterIndex = 7;
+            else if (!strcmp(ofn.lpstrDefExt, "tga"))
+               ofn.nFilterIndex = 8;
+            else if (!strcmp(ofn.lpstrDefExt, "tif") || !strcmp(ofn.lpstrDefExt, "tiff"))
+               ofn.nFilterIndex = 9;
+            else if (!strcmp(ofn.lpstrDefExt, "exr"))
+               ofn.nFilterIndex = 10;
+            else if (!strcmp(ofn.lpstrDefExt, "hdr"))
+               ofn.nFilterIndex = 11;
 
             const HRESULT hr = LoadValueString("RecentDir", "ImageDir", g_initDir, MAX_PATH);
 
-            if (hr == S_OK)
-               ofn.lpstrInitialDir = g_initDir;
-            else 
-               ofn.lpstrInitialDir = NULL;
+            ofn.lpstrInitialDir = (hr == S_OK) ? g_initDir : NULL;
             //ofn.lpstrTitle = "SAVE AS";
             ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
@@ -543,6 +565,7 @@ void ImageDialog::Export()
             if (GetSaveFileName(&ofn))	//Get filename from user
             {
                len = lstrlen(ofn.lpstrFile);
+               int begin; //select only file name from pathfilename
                for (begin = len; begin >= 0; begin--)
                {
                   if (ofn.lpstrFile[begin] == '\\')
@@ -577,12 +600,13 @@ void ImageDialog::Export()
                      else
                      {
                         strcat_s(g_filename, ppi->m_szName);
-                        string ext(ppi->m_szPath);
-                        size_t idx = ext.find_last_of(".");
+                        const string ext(ppi->m_szPath);
+                        const size_t idx = ext.find_last_of(".");
                         strcat_s(g_filename, ext.c_str() + idx);
                      }
                   }
-                  if (!pt->ExportImage(ppi, g_filename))
+
+                  if (!pt->ExportImage(ppi, g_filename)) //!! this will always export the image in its original format, no matter what was actually selected by the user
                      ShowError("Could not export Image");
                   sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
                   lvitem.iItem = sel;

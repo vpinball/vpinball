@@ -9,6 +9,7 @@
 #include <rapidxml_print.hpp>
 #include <fstream>
 #include <sstream>
+#include "freeimage.h"
 
 using namespace rapidxml;
 
@@ -507,7 +508,7 @@ STDMETHODIMP ScriptGlobalTable::AddObject(BSTR Name, IDispatch *pdisp)
    if (!g_pplayer)
       return E_FAIL;
 
-   g_pplayer->m_ptable->m_pcv->AddTemporaryItem(Name, pdisp);
+   m_pt->m_pcv->AddTemporaryItem(Name, pdisp);
 
    return S_OK;
 }
@@ -687,20 +688,20 @@ STDMETHODIMP ScriptGlobalTable::get_NightDay(int *pVal)
 /*STDMETHODIMP ScriptGlobalTable::put_ShowDT(int pVal)
 {
    if (g_pplayer)
-      g_pplayer->m_ptable->m_BG_current_set = (!!newVal) ? 0 : 1;
+      m_pt->m_BG_current_set = (!!newVal) ? 0 : 1;
    return S_OK;
 }*/
 
 STDMETHODIMP ScriptGlobalTable::get_ShowDT(VARIANT_BOOL *pVal)
 {
    if (g_pplayer)
-      *pVal = FTOVB(g_pplayer->m_ptable->m_BG_current_set == BG_DESKTOP || g_pplayer->m_ptable->m_BG_current_set == BG_FSS); // DT & FSS
+      *pVal = FTOVB(m_pt->m_BG_current_set == BG_DESKTOP || m_pt->m_BG_current_set == BG_FSS); // DT & FSS
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_ShowFSS(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(g_pplayer->m_ptable->m_BG_enable_FSS); //*pVal = FTOVB(g_pplayer->m_ptable->m_BG_current_set == 2);
+   *pVal = FTOVB(m_pt->m_BG_enable_FSS); //*pVal = FTOVB(m_pt->m_BG_current_set == 2);
 
    return S_OK;
 }
@@ -726,9 +727,11 @@ STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
    char Name[MAX_PATH];
    WideCharToMultiByte(CP_ACP, 0, pVal, -1, Name, MAX_PATH, NULL, NULL);
 
-   const PinTable * const pt = g_pplayer->m_ptable;
-   Material * const tmp = pt->GetMaterial(Name);
-   tmp->m_cBase = newVal;
+   Material * const pMat = m_pt->GetMaterial(Name);
+   if (pMat != &g_pvp->m_dummyMaterial)
+      pMat->m_cBase = newVal;
+   else
+      return E_FAIL;
 
    return S_OK;
 }
@@ -1251,13 +1254,11 @@ STDMETHODIMP ScriptGlobalTable::GetElements(LPSAFEARRAY *pVal)
    if (!pVal || !g_pplayer)
       return E_POINTER;
 
-   PinTable * const pt = g_pplayer->m_ptable;
+   CComSafeArray<VARIANT> objs((ULONG)m_pt->m_vedit.size());
 
-   CComSafeArray<VARIANT> objs((ULONG)pt->m_vedit.size());
-
-   for (size_t i = 0; i < pt->m_vedit.size(); ++i)
+   for (size_t i = 0; i < m_pt->m_vedit.size(); ++i)
    {
-      IEditable * const pie = pt->m_vedit[i];
+      IEditable * const pie = m_pt->m_vedit[i];
 
       CComVariant v = pie->GetISelect()->GetDispatch();
       v.Detach(&objs[(LONG)i]);
@@ -1273,11 +1274,9 @@ STDMETHODIMP ScriptGlobalTable::GetElementByName(BSTR name, IDispatch* *pVal)
    if (!pVal || !g_pplayer)
       return E_POINTER;
 
-   PinTable *pt = g_pplayer->m_ptable;
-
-   for (size_t i = 0; i < pt->m_vedit.size(); ++i)
+   for (size_t i = 0; i < m_pt->m_vedit.size(); ++i)
    {
-      IEditable * const pie = pt->m_vedit[i];
+      IEditable * const pie = m_pt->m_vedit[i];
 
       if (wcscmp(name, pie->GetScriptable()->m_wzName) == 0)
       {
@@ -2421,8 +2420,7 @@ void PinTable::CloseVBA()
 
 HRESULT PinTable::TableSave()
 {
-   const bool fSaveAs = (!m_szFileName[0]);
-   return Save(fSaveAs);
+   return Save(!m_szFileName[0]);
 }
 
 
@@ -2434,8 +2432,7 @@ HRESULT PinTable::SaveAs()
 
 HRESULT PinTable::ApcProject_Save()
 {
-   const bool fSaveAs = (!m_szFileName[0]);
-   return Save(fSaveAs);
+   return Save(!m_szFileName[0]);
 }
 
 
@@ -2494,12 +2491,12 @@ void PinTable::AutoSave()
    g_pvp->SetCursorCur(NULL, IDC_ARROW);
 }
 
-HRESULT PinTable::Save(const bool fSaveAs)
+HRESULT PinTable::Save(const bool saveAs)
 {
    IStorage* pstgRoot;
 
    // Get file name if needed
-   if (fSaveAs)
+   if (saveAs)
    {
       //need to get a file name
       OPENFILENAME ofn;
@@ -2512,7 +2509,7 @@ HRESULT PinTable::Save(const bool fSaveAs)
       ofn.lpstrFile = m_szFileName;
       ofn.nMaxFile = MAXSTRING;
       ofn.lpstrDefExt = "vpx";
-      ofn.Flags = OFN_OVERWRITEPROMPT;
+      ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
       char szInitialDir[MAXSTRING];
       char szFoo[MAXSTRING];
@@ -4062,8 +4059,9 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
        {
            bool found = true;
            Material * pmat = GetMaterial(mats[i].szName);
-           if (pmat == NULL)
+           if (pmat == &g_pvp->m_dummyMaterial)
            {
+               assert(!"SaveMaterial not found");
                pmat = new Material();
                found = false;
            }
@@ -5453,10 +5451,8 @@ void PinTable::DoLDoubleClick(int x, int y)
 
 void PinTable::ExportBlueprint()
 {
-   //bool fSaveAs = true;
-   bool solid = false;
-
-   //if (fSaveAs)
+   //bool saveAs = true;
+   //if (saveAs)
    {
       //need to get a file name
       OPENFILENAME ofn;
@@ -5464,25 +5460,21 @@ void PinTable::ExportBlueprint()
       ofn.lStructSize = sizeof(OPENFILENAME);
       ofn.hInstance = g_hinst;
       ofn.hwndOwner = g_pvp->m_hwnd;
-      // TEXT
-      ofn.lpstrFilter = "Bitmap (*.bmp)\0*.bmp\0";
+      ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0";
       ofn.lpstrFile = m_szBlueprintFileName;
       ofn.nMaxFile = MAXSTRING;
-      ofn.lpstrDefExt = "bmp";
-      ofn.Flags = OFN_OVERWRITEPROMPT;
+      ofn.lpstrDefExt = "png";
+      ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
-      int ret = GetSaveFileName(&ofn);
+      const int ret = GetSaveFileName(&ofn);
 
       // user cancelled
       if (ret == 0)
          return;// S_FALSE;
    }
-   const int result = ::MessageBox(g_pvp->m_hwnd, "Do you want a solid blueprint?", "Export As Solid?", MB_YESNO);
-   if (result == IDYES)
-      solid = true;
 
-   HANDLE hfile = CreateFile(m_szBlueprintFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL,
-      CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+   const int result = ::MessageBox(g_pvp->m_hwnd, "Do you want a solid blueprint?", "Export As Solid?", MB_YESNO);
+   const bool solid = (result == IDYES);
 
    float tableheight, tablewidth;
    if (g_pvp->m_backglassView)
@@ -5500,16 +5492,19 @@ void PinTable::ExportBlueprint()
    if (tableheight > tablewidth)
    {
       bmheight = 4096;
-      bmwidth = (int)((tablewidth / tableheight) * bmheight + 0.5f);
+      bmwidth = (int)((tablewidth / tableheight) * (float)bmheight + 0.5f);
    }
    else
    {
       bmwidth = 4096;
-      bmheight = (int)((tableheight / tablewidth) * bmwidth + 0.5f);
+      bmheight = (int)((tableheight / tablewidth) * (float)bmwidth + 0.5f);
    }
 
    int totallinebytes = bmwidth * 3;
    totallinebytes = (((totallinebytes - 1) / 4) + 1) * 4; // make multiple of four
+#if 0
+   HANDLE hfile = CreateFile(m_szBlueprintFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL,
+      CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
    const int bmlinebuffer = totallinebytes - (bmwidth * 3);
 
    BITMAPFILEHEADER bmfh;
@@ -5520,7 +5515,7 @@ void PinTable::ExportBlueprint()
 
    DWORD foo;
    WriteFile(hfile, &bmfh, sizeof(bmfh), &foo, NULL);
-
+#endif
    BITMAPINFO bmi;
    ZeroMemory(&bmi, sizeof(bmi));
    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -5530,8 +5525,9 @@ void PinTable::ExportBlueprint()
    bmi.bmiHeader.biBitCount = 24;
    bmi.bmiHeader.biCompression = BI_RGB;
    bmi.bmiHeader.biSizeImage = totallinebytes*bmheight;
-
+#if 0
    WriteFile(hfile, &bmi, sizeof(BITMAPINFOHEADER), &foo, NULL);
+#endif
 
    HDC hdcScreen = ::GetDC(NULL);
    HDC hdc2 = CreateCompatibleDC(hdcScreen);
@@ -5560,6 +5556,7 @@ void PinTable::ExportBlueprint()
 
    delete psur;
 
+#if 0
    for (int i = 0; i < bmheight; i++)
       WriteFile(hfile, (pbits + ((i*bmwidth) * 3)), bmwidth * 3, &foo, NULL);
 
@@ -5570,13 +5567,24 @@ void PinTable::ExportBlueprint()
       for (int l = 0; l < bmlinebuffer; l++)
          WriteFile(hfile, pbits, 1, &foo, NULL);
 
+   CloseHandle(hfile);
+#else
+   FIBITMAP * dib = FreeImage_Allocate(bmwidth, bmheight, 24);
+   BYTE * const psrc = FreeImage_GetBits(dib);
+   memcpy(psrc, pbits, bmwidth*bmheight * 3);
+   if (!FreeImage_Save(FreeImage_GetFIFFromFilename(m_szBlueprintFileName), dib, m_szBlueprintFileName, PNG_Z_BEST_COMPRESSION | BMP_SAVE_RLE))
+      ::MessageBox(NULL, "Export failed!", "Blueprint Export", MB_OK | MB_ICONEXCLAMATION);
+   else
+#endif
+   ::MessageBox(NULL, "Export finished!", "Blueprint Export", MB_OK);
+#if 1
+   FreeImage_Unload(dib);
+#endif
+
    DeleteDC(hdc2);
    ::ReleaseDC(NULL, hdcScreen);
 
    DeleteObject(hdib);
-
-   CloseHandle(hfile);
-   ::MessageBox(NULL, "Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
 }
 
 void PinTable::ExportMesh(FILE *f)
@@ -5594,7 +5602,7 @@ void PinTable::ExportMesh(FILE *f)
    rgv[4].x = m_left;     rgv[4].y = m_top;      rgv[4].z = m_tableheight + 50.0f;
    rgv[5].x = m_left;     rgv[5].y = m_bottom;   rgv[5].z = m_tableheight + 50.0f;
    rgv[6].x = m_right;    rgv[6].y = m_bottom;   rgv[6].z = m_tableheight + 50.0f;
-   //rgv[7].x=g_pplayer->m_ptable->m_right;    rgv[7].y=g_pplayer->m_ptable->m_top;      rgv[7].z=50.0f;
+   //rgv[7].x = m_right;    rgv[7].y = m_top;      rgv[7].z = 50.0f;
 
    for (int i = 0; i < 4; ++i)
    {
@@ -5650,7 +5658,7 @@ void PinTable::ExportTableMesh()
    ofn.lpstrFile = m_szObjFileName;
    ofn.nMaxFile = MAXSTRING;
    ofn.lpstrDefExt = "obj";
-   ofn.Flags = OFN_OVERWRITEPROMPT;
+   ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
    int ret = GetSaveFileName(&ofn);
 
@@ -5805,7 +5813,7 @@ void PinTable::ExportBackdropPOV(const char *filename)
 		ofn.lpstrFile = m_szObjFileName;
 		ofn.nMaxFile = MAXSTRING;
 		ofn.lpstrDefExt = "pov";
-		ofn.Flags = OFN_OVERWRITEPROMPT;
+		ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
 		const int ret = GetSaveFileName(&ofn);
 
@@ -7216,10 +7224,10 @@ void PinTable::ReImportImage(Texture * const ppi, const char * const filename)
    char szextension[MAX_PATH];
    ExtensionFromFilename(filename, szextension);
 
-   const bool fBinary = !!lstrcmpi(szextension, "bmp");
+   const bool binary = !!lstrcmpi(szextension, "bmp");
 
    PinBinary *ppb = 0;
-   if (fBinary)
+   if (binary)
    {
       ppb = new PinBinary();
       ppb->ReadFromFile(filename);
@@ -7235,7 +7243,7 @@ void PinTable::ReImportImage(Texture * const ppi, const char * const filename)
 
    ppi->FreeStuff();
 
-   if (fBinary)
+   if (binary)
       ppi->m_ppb = ppb;
 
    //SAFE_RELEASE(ppi->m_pdsBuffer);
@@ -7253,6 +7261,7 @@ bool PinTable::ExportImage(Texture * const ppi, const char * const szfilename)
       return ppi->m_ppb->WriteToFile(szfilename);
    else if (ppi->m_pdsBuffer != NULL)
    {
+#if 0
       HANDLE hFile = CreateFile(szfilename, GENERIC_WRITE, FILE_SHARE_READ,
          NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -7304,19 +7313,12 @@ bool PinTable::ExportImage(Texture * const ppi, const char * const szfilename)
       for (info = sinfo + surfwidth * 3; info < sinfo + bmplnsize; *info++ = 0); //fill padding with 0			
 
       const int pitch = ppi->m_pdsBuffer->pitch();
-      const BYTE *spch = ppi->m_pdsBuffer->data() + (surfheight * pitch);	// just past the end of the Texture part of DD surface
+      const BYTE *spch = ppi->m_pdsBuffer->data() + (surfheight * pitch); // just past the end of the Texture part of DD surface
 
       for (int i = 0; i < surfheight; i++)
       {
-         info = sinfo; //reset to start	
-         const BYTE *pch = (spch -= pitch);  // start on previous previous line
-
-         for (int l = 0; l < surfwidth; l++)
-         {
-            *(unsigned int*)info = *(unsigned int*)pch;
-            info += 4;
-            pch += 4;
-         }
+         const BYTE * const pch = (spch -= pitch); // start on previous previous line
+         memcpy(sinfo, pch, surfwidth*4);
 
          WriteFile(hFile, sinfo, bmplnsize, &write, NULL);
          GetLastError();
@@ -7324,6 +7326,25 @@ bool PinTable::ExportImage(Texture * const ppi, const char * const szfilename)
 
       delete[] sinfo;
       CloseHandle(hFile);
+#else
+      FIBITMAP * dib = FreeImage_Allocate(ppi->m_width, ppi->m_height, 32);
+      BYTE * const psrc = FreeImage_GetBits(dib);
+
+      const int pitch = ppi->m_pdsBuffer->pitch();
+      const BYTE *spch = ppi->m_pdsBuffer->data() + (ppi->m_height * pitch); // just past the end of the Texture part of DD surface
+
+      for (int i = 0; i < ppi->m_height; i++)
+      {
+         const BYTE * const pch = (spch -= pitch); // start on previous previous line
+         memcpy(psrc + i*(ppi->m_width*4), pch, ppi->m_width*4);
+      }
+
+      if (!FreeImage_Save(FreeImage_GetFIFFromFilename(szfilename), dib, szfilename, PNG_Z_BEST_COMPRESSION | JPEG_QUALITYGOOD | BMP_SAVE_RLE))
+         ::MessageBox(NULL, "Export failed!", "BMP Export", MB_OK | MB_ICONEXCLAMATION);
+      //else
+      //   ::MessageBox(NULL, "Export finished!", "BMP Export", MB_OK);
+      FreeImage_Unload(dib);
+#endif
       return true;
    }
    return false;
@@ -7579,7 +7600,7 @@ Material* PinTable::GetMaterial(const char * const szName) const
    return &g_pvp->m_dummyMaterial;
 }
 
-void PinTable::AddMaterial(Material *pmat)
+void PinTable::AddMaterial(Material * const pmat)
 {
    int suffix = 1;
    if (pmat->m_szName[0] == 0 || !strcmp(pmat->m_szName, "dummyMaterial"))
@@ -7599,7 +7620,7 @@ void PinTable::AddMaterial(Material *pmat)
    m_materials.push_back(pmat);
 }
 
-void PinTable::AddDbgMaterial(Material *pmat)
+void PinTable::AddDbgMaterial(Material * const pmat)
 {
    bool alreadyIn = false;
    size_t i;
@@ -7681,7 +7702,7 @@ void PinTable::UpdateDbgMaterial()
       SetNonUndoableDirty(eSaveDirty);
 }
 
-int PinTable::AddListMaterial(HWND hwndListView, Material *pmat)
+int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
 {
    LVITEM lvitem;
    char * const usedStringYes = "X";
@@ -7816,11 +7837,11 @@ void PinTable::RemoveMaterial(Material * const pmat)
    delete pmat;
 }
 
-void PinTable::AddDbgLight(Light *plight)
+void PinTable::AddDbgLight(Light * const plight)
 {
     bool alreadyIn = false;
     size_t i;
-    char *lightName = GetElementName(plight);
+    const char * const lightName = GetElementName(plight);
 
     for (i = 0; i < m_dbgChangedMaterials.size(); i++)
     {
