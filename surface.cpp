@@ -414,7 +414,7 @@ void Surface::CurvesToShapes(vector<HitObject*> &pvho)
 void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj)
 {
    Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
-   if (mat != NULL && !m_d.m_overwritePhysics)
+   if (!m_d.m_overwritePhysics)
    {
       obj->m_elasticity = mat->m_fElasticity;
       obj->SetFriction(mat->m_fFriction);

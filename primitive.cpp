@@ -1779,10 +1779,10 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                   char szMatName[MAXSTRING] = { 0 };
                   memcpy(szMatName, szFileName, index);
                   strcat_s(szMatName, ".mtl");
-                  Material *mat = new Material();
+                  Material * const mat = new Material();
                   if (WaveFrontObjLoadMaterial(szMatName, mat))
                   {
-                     PinTable *pActiveTable = g_pvp->GetActiveTable();
+                     PinTable * const pActiveTable = g_pvp->GetActiveTable();
                      if (pActiveTable)
                      {
                          pActiveTable->AddMaterial(mat);
