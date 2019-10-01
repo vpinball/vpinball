@@ -879,6 +879,9 @@ public:
    STDMETHOD(get_VersionMinor)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_VersionRevision)(/*[out, retval]*/ int *pVal);
 
+   STDMETHOD(UpdateMaterial)(BSTR pVal, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
+      OLE_COLOR base, OLE_COLOR glossy, OLE_COLOR clearcoat, VARIANT_BOOL isMetal, VARIANT_BOOL opacityActive,
+      float elasticity, float elasticityFalloff, float friction, float scatterAngle);
    STDMETHOD(MaterialColor)(BSTR pVal, OLE_COLOR newVal);
 
    void Init(PinTable *pt);

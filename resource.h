@@ -264,6 +264,7 @@
 #define IDC_VP_WINDOW_HEIGHT            227
 #define IDD_PROGRESS                    228
 #define IDD_PROPTABLE                   229
+#define IDC_UPDATE_MATERIAL             230
 #define IDD_PROPLIGHT                   231
 #define IDD_PROPRAMP                    232
 #define IDD_PROPTIMER                   233
