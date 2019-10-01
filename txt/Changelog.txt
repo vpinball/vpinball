@@ -53,9 +53,11 @@ FEATURES:
 - add checkbox to sound- and image-manager to use internal name as filename for exporting
 - re-use existing sound settings if re-importing a sound file
 
-- add rothbauerw's and cyberpez' ball dropping sound code to builtin example tables
+- allow to export blueprints in different image formats
 
 - add current active ball velocity/angular velocity, and the number of physics iterations per frame to the F11 debug output/stats
+
+- add rothbauerw's and cyberpez' ball dropping sound code to builtin example tables
 
 FIXES:
 

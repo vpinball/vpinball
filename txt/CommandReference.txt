@@ -888,7 +888,7 @@ Variables
 Threshold(float)             - hit threshold for firing the hit event
 HitThreshold(float)          - holds the current hit threshold if a ball has hit the target
 Visible(bool)
-Material(string)
+*Material(string)
 Image(string) - texture name
 Elasticity(float)
 ElasticityFalloff(float)
