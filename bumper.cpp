@@ -499,9 +499,21 @@ void Bumper::RenderDynamic()
             UpdateRing();
       }
 
-      pd3dDevice->basicShader->SetTechnique(m_ringMaterial.m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+      Material ringMaterial;
+      if (m_d.m_szRingMaterial[0] != '\0')
+      {
+         ringMaterial = *(m_ptable->GetMaterial(m_d.m_szRingMaterial));
+      }
+      else
+      {
+         ringMaterial.m_cBase = 0xFFFFFFFF; //!! set properly
+         ringMaterial.m_cGlossy = 0;
+         ringMaterial.m_bIsMetal = true;
+      }
+
+      pd3dDevice->basicShader->SetTechnique(ringMaterial.m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
       pd3dDevice->basicShader->SetTexture("Texture0", &m_ringTexture, false);
-      pd3dDevice->basicShader->SetMaterial(&m_ringMaterial);
+      pd3dDevice->basicShader->SetMaterial(&ringMaterial);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
       // render ring
       pd3dDevice->basicShader->Begin(0);
@@ -532,7 +544,7 @@ void Bumper::RenderDynamic()
       else
          UpdateSkirt(false);
 
-      const Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       pd3dDevice->basicShader->SetTexture("Texture0", &m_skirtTexture, false);
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
@@ -580,7 +592,7 @@ void Bumper::ExportMesh(FILE *f)
 
       GenerateBaseMesh(base);
       WaveFrontObj_WriteVertexInfo(f, base, bumperBaseNumVertices);
-      const Material * mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szBaseMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szBaseMaterial);
       WaveFrontObj_WriteFaceInfoList(f, bumperBaseIndices, bumperBaseNumIndices);
@@ -589,7 +601,7 @@ void Bumper::ExportMesh(FILE *f)
    }
    if (m_d.m_ringVisible)
    {
-      Vertex3D_NoTex2 *ring = new Vertex3D_NoTex2[bumperRingNumVertices];
+      Vertex3D_NoTex2 * const ring = new Vertex3D_NoTex2[bumperRingNumVertices];
       strcpy_s(subObjName, name);
       strcat_s(subObjName, "Ring");
       WaveFrontObj_WriteObjectName(f, subObjName);
@@ -602,14 +614,14 @@ void Bumper::ExportMesh(FILE *f)
    }
    if (m_d.m_skirtVisible)
    {
-      Vertex3D_NoTex2 *socket = new Vertex3D_NoTex2[bumperSocketNumVertices];
+      Vertex3D_NoTex2 * const socket = new Vertex3D_NoTex2[bumperSocketNumVertices];
       strcpy_s(subObjName, name);
       strcat_s(subObjName, "Skirt");
       WaveFrontObj_WriteObjectName(f, subObjName);
 
       GenerateSocketMesh(socket);
       WaveFrontObj_WriteVertexInfo(f, socket, bumperSocketNumVertices);
-      const Material * mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szSkirtMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szSkirtMaterial);
       WaveFrontObj_WriteFaceInfoList(f, bumperSocketIndices, bumperSocketNumIndices);
@@ -618,7 +630,7 @@ void Bumper::ExportMesh(FILE *f)
    }
    if (m_d.m_capVisible)
    {
-      Vertex3D_NoTex2 *cap = new Vertex3D_NoTex2[bumperCapNumVertices];
+      Vertex3D_NoTex2 * const cap = new Vertex3D_NoTex2[bumperCapNumVertices];
       strcpy_s(subObjName, name);
       strcat_s(subObjName, "Cap");
       WaveFrontObj_WriteObjectName(f, subObjName);
@@ -765,19 +777,6 @@ void Bumper::RenderSetup()
    if (m_d.m_ringVisible)
    {
       m_ringTexture.CreateFromResource(IDB_BUMPER_RING);
-
-      if (m_d.m_szRingMaterial[0] != '\0')
-      {
-         m_ringMaterial = *(m_ptable->GetMaterial(m_d.m_szRingMaterial));
-      }
-      else
-      {
-         Material default_material;
-         m_ringMaterial = default_material;
-         m_ringMaterial.m_cBase = 0xFFFFFFFF; //!! set properly
-         m_ringMaterial.m_cGlossy = 0;
-         m_ringMaterial.m_bIsMetal = true;
-      }
 
       if (m_ringIndexBuffer)
          m_ringIndexBuffer->release();

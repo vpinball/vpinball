@@ -152,7 +152,6 @@ private:
    Texture m_skirtTexture;
    Texture m_baseTexture;
    Texture m_capTexture;
-   Material m_ringMaterial;
 
    PropertyPane *m_propVisual;
 

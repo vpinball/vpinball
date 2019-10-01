@@ -415,7 +415,7 @@ void Decal::RenderDynamic()
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    if (!m_backglass //!! should just check if material has opacity enabled, but this is crucial for HV setup performance like-is
-      && mat && mat->m_bOpacityActive)
+      && mat->m_bOpacityActive)
       RenderObject();
 }
 
@@ -590,7 +590,7 @@ void Decal::RenderStatic()
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
    if (m_backglass //!! should just check if material has no opacity enabled, but this is crucial for HV setup performance like-is
-      || !mat || !mat->m_bOpacityActive)
+      || !mat->m_bOpacityActive)
       RenderObject();
 }
 
