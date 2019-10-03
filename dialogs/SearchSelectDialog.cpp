@@ -205,7 +205,7 @@ INT_PTR SearchSelectDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          const HWND hOkButton = GetDlgItem(IDOK).GetHwnd();
          const HWND hCancelButton = GetDlgItem(IDCANCEL).GetHwnd();
-         const int buttonY = (windowHeight - 80) + 5;
+         const int buttonY = (windowHeight - 85) + 5;
          ::GetClientRect(hOkButton, &buttonRc);
          const int buttonWidth = buttonRc.right - buttonRc.left;
          const int buttonHeight = buttonRc.bottom - buttonRc.top;
