@@ -194,26 +194,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                lvitem.iItem = sel;
                lvitem.iSubItem = 0;
                ListView_GetItem(m_hMaterialList, &lvitem);
-               Material * const pNewMat = new Material();
-               Material * const pmat = (Material*)lvitem.lParam;
-               pNewMat->m_bIsMetal = pmat->m_bIsMetal;
-               pNewMat->m_bOpacityActive = pmat->m_bOpacityActive;
-               pNewMat->m_cBase = pmat->m_cBase;
-               pNewMat->m_cClearcoat = pmat->m_cClearcoat;
-               pNewMat->m_cGlossy = pmat->m_cGlossy;
-               pNewMat->m_fEdge = pmat->m_fEdge;
-               pNewMat->m_fEdgeAlpha = pmat->m_fEdgeAlpha;
-               pNewMat->m_fOpacity = pmat->m_fOpacity;
-               pNewMat->m_fRoughness = pmat->m_fRoughness;
-               pNewMat->m_fGlossyImageLerp = pmat->m_fGlossyImageLerp;
-               pNewMat->m_fThickness = pmat->m_fThickness;
-               pNewMat->m_fWrapLighting = pmat->m_fWrapLighting;
-               memcpy(pNewMat->m_szName, pmat->m_szName, 32);
-
-               pNewMat->m_fElasticity = pmat->m_fElasticity;
-               pNewMat->m_fElasticityFalloff = pmat->m_fElasticityFalloff;
-               pNewMat->m_fFriction = pmat->m_fFriction;
-               pNewMat->m_fScatterAngle = pmat->m_fScatterAngle;
+               Material * const pNewMat = new Material((Material*)lvitem.lParam);
                pt->AddMaterial(pNewMat);
                pt->AddListMaterial(m_hMaterialList, pNewMat);
 
@@ -277,32 +258,17 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             fread(&materialCount, 4, 1, f);
             for (int i = 0; i < materialCount; i++)
             {
-               Material * const pmat = new Material();
                SaveMaterial mat;
                fread(&mat, sizeof(SaveMaterial), 1, f);
-               pmat->m_cBase = mat.cBase;
-               pmat->m_cGlossy = mat.cGlossy;
-               pmat->m_cClearcoat = mat.cClearcoat;
-               pmat->m_fWrapLighting = mat.fWrapLighting;
-               pmat->m_fRoughness = mat.fRoughness;
-               pmat->m_fGlossyImageLerp = dequantizeUnsigned<8>(mat.fGlossyImageLerp);
-               pmat->m_fThickness = dequantizeUnsigned<8>(mat.fThickness);
-               pmat->m_fEdge = mat.fEdge;
-               pmat->m_bIsMetal = mat.bIsMetal;
-               pmat->m_fOpacity = mat.fOpacity;
-               pmat->m_bOpacityActive = !!(mat.bOpacityActive_fEdgeAlpha & 1);
-               pmat->m_fEdgeAlpha = dequantizeUnsigned<7>(mat.bOpacityActive_fEdgeAlpha >> 1);
-               memcpy(pmat->m_szName, mat.szName, 32);
 
-               float physicsValue;
-               fread(&physicsValue, sizeof(float), 1, f);
-               pmat->m_fElasticity = physicsValue;
-               fread(&physicsValue, sizeof(float), 1, f);
-               pmat->m_fElasticityFalloff = physicsValue;
-               fread(&physicsValue, sizeof(float), 1, f);
-               pmat->m_fFriction = physicsValue;
-               fread(&physicsValue, sizeof(float), 1, f);
-               pmat->m_fScatterAngle = physicsValue;
+               float elasticity,elasticityFalloff,friction,scatterAngle;
+               fread(&elasticity, sizeof(float), 1, f);
+               fread(&elasticityFalloff, sizeof(float), 1, f);
+               fread(&friction, sizeof(float), 1, f);
+               fread(&scatterAngle, sizeof(float), 1, f);
+
+               Material * const pmat = new Material(mat.fWrapLighting, mat.fRoughness, dequantizeUnsigned<8>(mat.fGlossyImageLerp), dequantizeUnsigned<8>(mat.fThickness), mat.fEdge, dequantizeUnsigned<7>(mat.bOpacityActive_fEdgeAlpha >> 1), mat.fOpacity, mat.cBase, mat.cGlossy, mat.cClearcoat, mat.bIsMetal, !!(mat.bOpacityActive_fEdgeAlpha & 1), elasticity, elasticityFalloff, friction, scatterAngle);
+               memcpy(pmat->m_szName, mat.szName, 32);
 
                pt->AddMaterial(pmat);
                pt->AddListMaterial(m_hMaterialList, pmat);
@@ -387,6 +353,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                   mat.bOpacityActive_fEdgeAlpha = pmat->m_bOpacityActive ? 1 : 0;
                   mat.bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(pmat->m_fEdgeAlpha, 0.f, 1.f)) << 1;
                   memcpy(mat.szName, pmat->m_szName, 32);
+
                   fwrite(&mat, sizeof(SaveMaterial), 1, f);
                   fwrite(&pmat->m_fElasticity, sizeof(float), 1, f);
                   fwrite(&pmat->m_fElasticityFalloff, sizeof(float), 1, f);
