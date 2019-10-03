@@ -1,3 +1,7 @@
+VP 9.9.5b Changelog
+------------------------
+- fix "all sounds to rear channels" bug
+
 VP 9.9.5 Changelog
 ------------------------
 - add surround sound options/configurations:
