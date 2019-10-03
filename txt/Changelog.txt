@@ -823,6 +823,10 @@ VP 10.0.0 Changelog
 
 - technical compile note: make sure to install Microsoft SDK 5.0,7.0A,7.1 or 7.1A, if you compile VP and get missing header errors (optionally set the include path inc\winsdk)
 
+VP 9.9.X PM5 Plunger/Accel/Surround MOD b Changelog
+----------------------------------------
+- fix "all sounds to rear channels" bug
+
 VP 9.9.X PM5 Plunger/Accel/Surround MOD Changelog
 ----------------------------------------
 - add surround sound options/configurations:
@@ -852,6 +856,10 @@ VP 9.9.X PM5 Plunger/Accel MOD Changelog
    and remove implicit dead zone handling (if you have the dead zone setting at 0% and now experience problems, set it to at least 1%)
  - native support for the Pinscape Controller
  - CPU affinity setting
+
+VP 9.9.5b Changelog
+------------------------
+- fix "all sounds to rear channels" bug
 
 VP 9.9.5 Changelog
 ------------------------
