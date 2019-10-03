@@ -1,3 +1,7 @@
+VP 9.9.X PM5 Plunger/Accel/Surround MOD b Changelog
+----------------------------------------
+- fix "all sounds to rear channels" bug
+
 VP 9.9.X PM5 Plunger/Accel/Surround MOD Changelog
 ----------------------------------------
 - add surround sound options/configurations:
