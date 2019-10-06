@@ -1,3 +1,12 @@
+VP 10.7.0 Changelog
+------------------------
+
+- see core scripts (header of core.vbs) for the respective changelog (version 3.58)
+- see CommandReference.txt for the changelog of all the scripting properties/interface changes
+
+- updated to latest FreeImage.dll (3.18.0) (currently disabled)
+- DirectX 8 port for input handling (currently disabled)
+
 VP 10.6.0 Changelog
 ------------------------
 
@@ -109,9 +118,6 @@ ELSE:
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
 
 - remove Visual Studio 2010 & 2012 & 2013 support, add Visual Studio 2019 support
-
-- updated to latest FreeImage.dll (3.18.0) (currently disabled)
-- DirectX 8 port for input handling (currently disabled)
 
 VP 10.5.0 Changelog
 ------------------------
