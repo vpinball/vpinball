@@ -6,6 +6,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 
 Changelog:
+10.7:
 10.6:
 - add UpdateMaterial to the globals
 - fix potential problems for the light element for Bulb, ImageMode, ShowBulbMesh, StaticBulbMesh, ShowReflectionOnBall reads
