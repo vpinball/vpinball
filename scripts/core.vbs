@@ -3,7 +3,8 @@ Const VPinMAMEDriverVer = 3.58
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.58 (Update by )
+' New in 3.58 (Update by mfuegemann)
+' - Added s8_StillCrazy.vbs (System 8/Still Crazy)
 '
 ' New in 3.57 (Update by nFozzy, DJRobX, chepas, Gaston)
 ' - Beta 1 NF fastflips 2
