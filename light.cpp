@@ -586,7 +586,9 @@ void Light::RenderDynamic()
          pd3dDevice->classicLightShader->SetBool("hdrTexture0", offTexel->IsHDR());
          pd3dDevice->classicLightShader->SetTechnique(m_surfaceMaterial->m_bIsMetal ? "light_with_texture_isMetal" : "light_with_texture_isNotMetal");
          pd3dDevice->classicLightShader->SetTexture("Texture0", offTexel, false);
-         if (m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl && !m_backglass)
+		 // Was: if (m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl && !m_backglass)*/
+		 // TOTAN and Flintstones inserts break if alpha blending is disabled here.
+		 if (!m_backglass)
          {
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
             pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::ONE);
