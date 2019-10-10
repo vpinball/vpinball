@@ -847,6 +847,7 @@
 #define IDD_SOUND_POSITION              629
 #define IDD_SOUND_POSITION_DIALOG       629
 #define IDR_BLANK_TABLE                 630
+#define IDD_TOOLBAR                     630
 #define IDB_KICKER_WILLIAMS             640
 #define IDB_KICKER_GOTTLIEB             645
 #define IDB_BITMAP4                     646
@@ -1155,9 +1156,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        647
+#define _APS_NEXT_RESOURCE_VALUE        648
 #define _APS_NEXT_COMMAND_VALUE         4022
-#define _APS_NEXT_CONTROL_VALUE         825
+#define _APS_NEXT_CONTROL_VALUE         826
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
