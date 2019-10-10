@@ -906,15 +906,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case ID_SCRIPT_SHOWIDE:
    case ID_EDIT_SCRIPT:
    {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         const bool alwaysViewScript = LoadValueBoolWithDefault("Editor", "AlwaysViewScript", false);
-
-         ptCur->m_pcv->SetVisible(alwaysViewScript || !(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized));
-
-         SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, MAKELONG(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized, 0));
-      }
+      ToggleScriptEditor();
       break;
    }
    case ID_EDIT_PROPERTIES:
@@ -935,8 +927,6 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          break;
       }
 
-      SaveValueBool("Editor", "PropertiesVisible", fShow);
-
       if (!g_pplayer)
       {
          // Set toolbar button to the correct state
@@ -956,15 +946,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          SendMessage(m_hwndToolbarMain, TB_SETBUTTONINFO, ID_EDIT_PROPERTIES, (size_t)&tbinfo);
       }
 
-      m_sb.SetVisible(fShow);
-
+      ShowProperties(fShow);
       SendMessage(m_hwnd, WM_SIZE, 0, 0);
-      if (fShow)
-      {
-         ptCur = GetActiveTable();
-         if (ptCur)
-            m_sb.CreateFromDispatch(m_hwnd, &ptCur->m_vmultisel);
-      }
       break;
    }
    case ID_EDIT_BACKGLASSVIEW:
@@ -973,64 +956,17 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
       SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_BACKGLASSVIEW, MAKELONG(fShow, 0));
 
-      m_backglassView = fShow;
-
-      for (size_t i = 0; i < m_vtable.size(); i++)
-      {
-         PinTable * const ptT = m_vtable[i];
-         ptT->SetDefaultView();
-         ptT->SetDirtyDraw();
-         ptT->SetMyScrollInfo();
-      }
-
-      ptCur = GetActiveTable();
-      if (ptCur)
-         // Set selection to something in the new view (unless hiding table elements)
-         ptCur->AddMultiSel((ISelect *)ptCur, false, true, false);
-
-      SetEnableToolbar();
+      ShowBackglassView(fShow);
       break;
    }
    case ID_EDIT_SEARCH:
    {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         if (!ptCur->m_searchSelectDlg.IsWindow())
-         {
-            ptCur->m_searchSelectDlg.Create(m_hwnd);
-
-            char windowName[256];
-            strcpy_s(windowName, "Search/Select Element - ");
-            strncat_s(windowName, ptCur->m_szFileName, 255);
-            ::SetWindowText(ptCur->m_searchSelectDlg.GetHwnd(), windowName);
-
-            ptCur->m_searchSelectDlg.ShowWindow();
-         }
-         else
-         {
-			ptCur->m_searchSelectDlg.ShowWindow();
-            ptCur->m_searchSelectDlg.SetForegroundWindow();
-         }
-      }
+      ShowSearchSelect();
       break;
    }
    case ID_EDIT_SETDEFAULTPHYSICS:
    {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         LocalString ls(IDS_DEFAULTPHYSICS);
-         const int answ = ::MessageBox(m_hwnd, ls.m_szbuffer, "Continue?", MB_YESNO | MB_ICONWARNING);
-         if (answ == IDYES)
-         {
-            ptCur->BeginUndo();
-            for (int i = 0; i < ptCur->m_vmultisel.size(); i++)
-               ptCur->m_vmultisel.ElementAt(i)->SetDefaultPhysics(true);
-            ptCur->EndUndo();
-            m_sb.RefreshProperties();
-         }
-      }
+      SetDefaultPhysics();
       break;
    }
    case ID_LOCK:
@@ -1056,27 +992,17 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case ID_VIEW_SOLID:
    case ID_VIEW_OUTLINE:
    {
-       ptCur = GetActiveTable();
-       if (ptCur)
-       {
-           ptCur->m_renderSolid = (code == ID_VIEW_SOLID);
-           ptCur->SetDirtyDraw();
-           SaveValueBool("Editor", "RenderSolid", ptCur->m_renderSolid);
-       }
+       SetViewSolidOutline(code);
        break;
    }
    case ID_VIEW_GRID:
    {
-       ptCur = GetActiveTable();
-       if (ptCur)
-           ptCur->put_DisplayGrid(!ptCur->m_grid);
+       ShowGridView();
        break;
    }
    case ID_VIEW_BACKDROP:
    {
-       ptCur = GetActiveTable();
-       if (ptCur)
-           ptCur->put_DisplayBackdrop(!ptCur->m_backdrop);
+       ShowBackdropView();
        break;
    }
    case IDC_SELECT:
@@ -1097,119 +1023,22 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_ADD_CTRL_POINT:
    {
-      ptCur = GetActiveTable();
-      if (ptCur == NULL)
-         break;
-   
-      if (ptCur->m_vmultisel.Size() > 0)
-      {
-         ISelect * const psel = ptCur->m_vmultisel.ElementAt(0);
-         if (psel != NULL)
-         {
-            POINT pt;
-            GetCursorPos(&pt);
-            ::ScreenToClient(ptCur->m_hwnd, &pt);
-
-            switch (psel->GetItemType())
-            {
-            case eItemRamp:
-            {
-               Ramp * const pRamp = (Ramp*)psel;
-               pRamp->AddPoint(pt.x, pt.y, false);
-               break;
-            }
-            case eItemLight:
-            {
-               Light * const pLight = (Light*)psel;
-               pLight->AddPoint(pt.x, pt.y, false);
-               break;
-            }
-            case eItemSurface:
-            {
-               Surface * const pSurf = (Surface*)psel;
-               pSurf->AddPoint(pt.x, pt.y, false);
-               break;
-            }
-            case eItemRubber:
-            {
-               Rubber *const pRub = (Rubber*)psel;
-               pRub->AddPoint(pt.x, pt.y, false);
-               break;
-            }
-            default:
-               break;
-            }
-         }//if (psel != NULL)
-      }
+      AddControlPoint();
       break;
    }
    case ID_ADD_SMOOTH_CTRL_POINT:
    {
-      ptCur = GetActiveTable();
-      if (ptCur == NULL)
-         break;
-
-      if (ptCur->m_vmultisel.Size() > 0)
-      {
-         ISelect * const psel = ptCur->m_vmultisel.ElementAt(0);
-         if (psel != NULL)
-         {
-            POINT pt;
-            GetCursorPos(&pt);
-            ::ScreenToClient(ptCur->m_hwnd, &pt);
-            switch (psel->GetItemType())
-            {
-            case eItemRamp:
-            {
-               Ramp * const pRamp = (Ramp*)psel;
-               pRamp->AddPoint(pt.x, pt.y, true);
-               break;
-            }
-            case eItemLight:
-            {
-               Light * const pLight = (Light*)psel;
-               pLight->AddPoint(pt.x, pt.y, true);
-               break;
-            }
-            case eItemSurface:
-            {
-               Surface * const pSurf = (Surface*)psel;
-               pSurf->AddPoint(pt.x, pt.y, true);
-               break;
-            }
-            case eItemRubber:
-            {
-               Rubber *const pRub = (Rubber*)psel;
-               pRub->AddPoint(pt.x, pt.y, true);
-               break;
-            }
-            default:
-               break;
-            }
-         }
-      }
+      AddSmoothControlPoint();
       break;
    }
    case IDM_SAVE:
    {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         const HRESULT hr = ptCur->TableSave();
-         if (hr == S_OK)
-            UpdateRecentFileList(ptCur->m_szFileName);
-      }
+      SaveTable(false);
       break;
    }
    case IDM_SAVEAS:
    {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         const HRESULT hr = ptCur->SaveAs();
-         if (hr == S_OK)
-            UpdateRecentFileList(ptCur->m_szFileName);
-      }
+      SaveTable(true);
       break;
    }
 
@@ -2993,4 +2822,234 @@ void VPinball::CloseAllDialogs()
       m_materialDialog.Destroy();
    if (m_aboutDialog.IsWindow())
       m_aboutDialog.Destroy();
+   if (m_toolbarDialog.IsWindow())
+       m_toolbarDialog.Destroy();
+}
+
+void VPinball::ShowProperties(bool enable)
+{
+    SaveValueBool("Editor", "PropertiesVisible", enable);
+    m_sb.SetVisible(enable);
+    if (enable)
+    {
+        CComObject<PinTable> *ptCur = GetActiveTable();
+        if (ptCur)
+            m_sb.CreateFromDispatch(m_hwnd, &ptCur->m_vmultisel);
+    }
+}
+
+void VPinball::ShowBackglassView(bool enable)
+{
+    m_backglassView = enable;
+
+    for (size_t i = 0; i < m_vtable.size(); i++)
+    {
+        PinTable * const ptT = m_vtable[i];
+        ptT->SetDefaultView();
+        ptT->SetDirtyDraw();
+        ptT->SetMyScrollInfo();
+    }
+
+    CComObject<PinTable> *ptCur = GetActiveTable();
+    if (ptCur)
+       // Set selection to something in the new view (unless hiding table elements)
+        ptCur->AddMultiSel((ISelect *)ptCur, false, true, false);
+
+    SetEnableToolbar();
+}
+
+void VPinball::ToggleScriptEditor()
+{
+    CComObject<PinTable> *ptCur = GetActiveTable();
+    if (ptCur)
+    {
+        const bool alwaysViewScript = LoadValueBoolWithDefault("Editor", "AlwaysViewScript", false);
+
+        ptCur->m_pcv->SetVisible(alwaysViewScript || !(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized));
+
+        SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, MAKELONG(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized, 0));
+    }
+}
+
+void VPinball::ShowSearchSelect()
+{
+    CComObject<PinTable> *ptCur = GetActiveTable();
+    if (ptCur)
+    {
+        if (!ptCur->m_searchSelectDlg.IsWindow())
+        {
+            ptCur->m_searchSelectDlg.Create(m_hwnd);
+
+            char windowName[256];
+            strcpy_s(windowName, "Search/Select Element - ");
+            strncat_s(windowName, ptCur->m_szFileName, 255);
+            ::SetWindowText(ptCur->m_searchSelectDlg.GetHwnd(), windowName);
+
+            ptCur->m_searchSelectDlg.ShowWindow();
+        }
+        else
+        {
+            ptCur->m_searchSelectDlg.ShowWindow();
+            ptCur->m_searchSelectDlg.SetForegroundWindow();
+        }
+    }
+}
+
+void VPinball::SetDefaultPhysics()
+{
+    CComObject<PinTable> *ptCur = GetActiveTable();
+    if (ptCur)
+    {
+        LocalString ls(IDS_DEFAULTPHYSICS);
+        const int answ = ::MessageBox(m_hwnd, ls.m_szbuffer, "Continue?", MB_YESNO | MB_ICONWARNING);
+        if (answ == IDYES)
+        {
+            ptCur->BeginUndo();
+            for (int i = 0; i < ptCur->m_vmultisel.size(); i++)
+                ptCur->m_vmultisel.ElementAt(i)->SetDefaultPhysics(true);
+            ptCur->EndUndo();
+            m_sb.RefreshProperties();
+        }
+    }
+}
+
+void VPinball::SetViewSolidOutline(size_t viewId)
+{
+    CComObject<PinTable> *ptCur = GetActiveTable();
+    if (ptCur)
+    {
+        ptCur->m_renderSolid = (viewId == ID_VIEW_SOLID);
+        ptCur->SetDirtyDraw();
+        SaveValueBool("Editor", "RenderSolid", ptCur->m_renderSolid);
+    }
+}
+
+void VPinball::ShowGridView()
+{
+    CComObject<PinTable> *ptCur = GetActiveTable();
+    if (ptCur)
+        ptCur->put_DisplayGrid(!ptCur->m_grid);
+}
+
+void VPinball::ShowBackdropView()
+{
+    CComObject<PinTable> *ptCur = GetActiveTable();
+    if (ptCur)
+        ptCur->put_DisplayBackdrop(!ptCur->m_backdrop);
+}
+
+void VPinball::AddControlPoint()
+{
+    CComObject<PinTable> *ptCur = GetActiveTable();
+    if (ptCur == NULL)
+        return;
+
+    if (ptCur->m_vmultisel.Size() > 0)
+    {
+        ISelect * const psel = ptCur->m_vmultisel.ElementAt(0);
+        if (psel != NULL)
+        {
+            POINT pt;
+            GetCursorPos(&pt);
+            ::ScreenToClient(ptCur->m_hwnd, &pt);
+
+            switch (psel->GetItemType())
+            {
+                case eItemRamp:
+                {
+                    Ramp * const pRamp = (Ramp*)psel;
+                    pRamp->AddPoint(pt.x, pt.y, false);
+                    break;
+                }
+                case eItemLight:
+                {
+                    Light * const pLight = (Light*)psel;
+                    pLight->AddPoint(pt.x, pt.y, false);
+                    break;
+                }
+                case eItemSurface:
+                {
+                    Surface * const pSurf = (Surface*)psel;
+                    pSurf->AddPoint(pt.x, pt.y, false);
+                    break;
+                }
+                case eItemRubber:
+                {
+                    Rubber *const pRub = (Rubber*)psel;
+                    pRub->AddPoint(pt.x, pt.y, false);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }//if (psel != NULL)
+    }
+}
+
+void VPinball::AddSmoothControlPoint()
+{
+    CComObject<PinTable> *ptCur = GetActiveTable();
+    if (ptCur == NULL)
+        return;
+
+    if (ptCur->m_vmultisel.Size() > 0)
+    {
+        ISelect * const psel = ptCur->m_vmultisel.ElementAt(0);
+        if (psel != NULL)
+        {
+            POINT pt;
+            GetCursorPos(&pt);
+            ::ScreenToClient(ptCur->m_hwnd, &pt);
+            switch (psel->GetItemType())
+            {
+                case eItemRamp:
+                {
+                    Ramp * const pRamp = (Ramp*)psel;
+                    pRamp->AddPoint(pt.x, pt.y, true);
+                    break;
+                }
+                case eItemLight:
+                {
+                    Light * const pLight = (Light*)psel;
+                    pLight->AddPoint(pt.x, pt.y, true);
+                    break;
+                }
+                case eItemSurface:
+                {
+                    Surface * const pSurf = (Surface*)psel;
+                    pSurf->AddPoint(pt.x, pt.y, true);
+                    break;
+                }
+                case eItemRubber:
+                {
+                    Rubber *const pRub = (Rubber*)psel;
+                    pRub->AddPoint(pt.x, pt.y, true);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+    }
+}
+
+void VPinball::SaveTable(const bool saveAs)
+{
+    CComObject<PinTable> *ptCur = GetActiveTable();
+    if (ptCur)
+    {
+        if(!saveAs)
+        {
+            const HRESULT hr = ptCur->TableSave();
+            if (hr == S_OK)
+                UpdateRecentFileList(ptCur->m_szFileName);
+        }
+        else
+        {
+            const HRESULT hr = ptCur->SaveAs();
+            if (hr == S_OK)
+                UpdateRecentFileList(ptCur->m_szFileName);
+
+        }
+    }
 }

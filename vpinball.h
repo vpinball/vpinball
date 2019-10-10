@@ -20,6 +20,7 @@
 #include "SoundDialog.h"
 #include "AboutDialog.h"
 #include "DrawingOrderDialog.h"
+#include "ToolbarDialog.h"
 
 #define CURRENT_FILE_FORMAT_VERSION 1060
 #define NO_ENCRYPTION_FORMAT_VERSION 1050
@@ -52,6 +53,17 @@ public:
    void ParseCommand(size_t code, HWND hwnd, size_t notify);
    void ReInitPinDirectSound();
    void SetLayerStatus(const int layerNumber);
+   void ShowProperties(bool enable);
+   void ShowBackglassView(bool enable);
+   void ToggleScriptEditor();
+   void ShowSearchSelect();
+   void SetDefaultPhysics();
+   void SetViewSolidOutline(size_t viewId);
+   void ShowGridView();
+   void ShowBackdropView();
+   void AddControlPoint();
+   void AddSmoothControlPoint();
+   void SaveTable(const bool saveAs);
 
    CComObject<PinTable> *GetActiveTable();
    void InitTools();
@@ -208,6 +220,7 @@ private:
    DimensionDialog m_dimensionDialog;
    MaterialDialog m_materialDialog;
    AboutDialog m_aboutDialog;
+   ToolbarDialog m_toolbarDialog;
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)
