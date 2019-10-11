@@ -41,7 +41,7 @@ public:
 	SoundOutTypes m_cOutputTarget;
 	PinSound *m_pps;
 
-	SoundPositionDialog(PinSound *pps);
+	SoundPositionDialog(PinSound * const pps);
 	virtual ~SoundPositionDialog();
 
 protected:

@@ -4325,8 +4325,8 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fFromSelection)
    {
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
-         ISelect *pisel = m_vmultisel.ElementAt(i);
-         IEditable *piedit = pisel->GetIEditable();
+         ISelect * const pisel = m_vmultisel.ElementAt(i);
+         IEditable * const piedit = pisel->GetIEditable();
          if (piedit)
          {
             if (piedit->GetISelect() == pisel) // Do this check so we don't put walls in a collection when we only have the control point selected
@@ -10323,7 +10323,7 @@ void PinTable::SetMouseCursor()
             cursorid = IDC_ARROW;
         }
     }
-    HCURSOR hcursor = LoadCursor(hinst, cursorid);
+    const HCURSOR hcursor = LoadCursor(hinst, cursorid);
     SetCursor(hcursor);
 }
 
@@ -10346,8 +10346,8 @@ void PinTable::OnMouseMove(const short x, const short y)
     {
         // panning feature starts here...if the user holds the middle mouse button and moves the mouse 
         // everything is moved in the direction of the mouse was moved
-        int dx = abs(m_oldMousePosX - x);
-        int dy = abs(m_oldMousePosY - y);
+        const int dx = abs(m_oldMousePosX - x);
+        const int dy = abs(m_oldMousePosY - y);
         if (m_oldMousePosX > x)  m_offset.x += dx;
         if (m_oldMousePosX < x)  m_offset.x -= dx;
         if (m_oldMousePosY > y)  m_offset.y += dy;
@@ -10403,4 +10403,3 @@ void PinTable::OnClose()
     ::KillTimer(m_hwnd, TIMER_ID_AUTOSAVE);
     ::SetTimer(m_hwnd, TIMER_ID_CLOSE_TABLE, 100, NULL);	//wait 250 milliseconds
 }
-

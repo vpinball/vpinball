@@ -43,9 +43,9 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 
 void LightSeq::WriteRegDefaults()
 {
-   MAKE_ANSIPTR_FROMWIDE(strTmp2, (WCHAR *)m_d.m_wzCollection);
+   MAKE_ANSIPTR_FROMWIDE(strTmp, (WCHAR *)m_d.m_wzCollection);
    SaveValueInt("DefaultProps\\LightSequence", "UpdateInterval", m_d.m_updateinterval);
-   SaveValueString("DefaultProps\\LightSequence", "Collection", strTmp2);
+   SaveValueString("DefaultProps\\LightSequence", "Collection", strTmp);
    SaveValueFloat("DefaultProps\\LightSequence", "CenterX", m_d.m_vCenter.x);
    SaveValueFloat("DefaultProps\\LightSequence", "CenterY", m_d.m_vCenter.y);
    SaveValueBool("DefaultProps\\LightSequence", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);

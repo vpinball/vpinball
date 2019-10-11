@@ -14,7 +14,7 @@ void TableInfoDialog::OnClose()
 
 BOOL TableInfoDialog::OnInitDialog()
 {
-   CCO(PinTable) *const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
 /*
    HWND hwndParent = GetParent().GetHwnd();
@@ -81,7 +81,7 @@ BOOL TableInfoDialog::OnInitDialog()
 
 INT_PTR TableInfoDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   CCO(PinTable) *const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
    switch (uMsg)
    {
@@ -136,7 +136,7 @@ BOOL TableInfoDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    {
       case IDC_ADD:
       {
-         CCO(PinTable) *const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+         CCO(PinTable) * const pt = g_pvp->GetActiveTable();
          char *szCustomName;
          VPGetDialogItemText(IDC_CUSTOMNAME, &szCustomName);
          if (szCustomName[0] != '\0')
@@ -199,7 +199,7 @@ BOOL TableInfoDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void TableInfoDialog::OnOK()
 {
-   CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
    //HWND hwndDlg = GetHwnd();
    SAFE_VECTOR_DELETE(pt->m_szTableName);
    SAFE_VECTOR_DELETE(pt->m_szAuthor);

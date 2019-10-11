@@ -121,7 +121,7 @@ void Decal::WriteRegDefaults()
       FONTDESC fd;
       fd.cbSizeofstruct = sizeof(FONTDESC);
       m_pIFont->get_Size(&fd.cySize);
-      m_pIFont->get_Name(&fd.lpstrName);
+      m_pIFont->get_Name(&fd.lpstrName); //!! BSTR
       m_pIFont->get_Weight(&fd.sWeight);
       m_pIFont->get_Charset(&fd.sCharset);
       m_pIFont->get_Italic(&fd.fItalic);
@@ -522,7 +522,7 @@ void Decal::RenderObject()
 
    RenderDevice * const pd3dDevice = m_backglass ? g_pplayer->m_pin3d.m_pd3dSecondaryDevice : g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
-   if (m_backglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
+   if (m_backglass && (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
    else
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
@@ -581,7 +581,7 @@ void Decal::RenderObject()
    //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 
-   //if(m_backglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
+   //if(m_backglass && (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
    //   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
 

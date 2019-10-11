@@ -30,7 +30,7 @@ Light *GetLight(HWND hCombo)
    char strText[255] = { 0 };
    idx_row = ComboBox_GetCurSel(hCombo);
    ComboBox_GetLBText(hCombo, idx_row, strText);
-   IEditable *pedit = g_pplayer->m_ptable->GetElementByName(strText);
+   IEditable * const pedit = g_pplayer->m_ptable->GetElementByName(strText);
    if (pedit != NULL)
       return (Light*)pedit;
 
@@ -60,7 +60,7 @@ void SetCheckButtonState(HWND hwndDlg, Light *plight)
 }
 INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   PinTable *ptable = g_pplayer->m_ptable;
+   PinTable * const ptable = g_pplayer->m_ptable;
    HWND hCombo = GetDlgItem(hwndDlg, IDC_DBG_MATERIALCOMBO);
    switch (uMsg)
    {
@@ -232,7 +232,7 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 
 INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   PinTable *ptable = g_pplayer->m_ptable;
+   PinTable * const ptable = g_pplayer->m_ptable;
    HWND hCombo = GetDlgItem(hwndDlg, IDC_LIGHTSCOMBO);
 
    switch (uMsg)

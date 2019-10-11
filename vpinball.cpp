@@ -180,7 +180,6 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 typedef struct _tagSORTDATA
@@ -759,9 +758,9 @@ void VPinball::SetStatusBarUnitInfo(const char * const info, const bool isUnit)
     if (g_pplayer)
         return;
 
-    char textBuf[256] = { 0 };
+    char textBuf[256];
 
-    if (strlen(info) > 0)
+    if (info[0] != '\0')
     {
        strcpy_s(textBuf, info);
        if(isUnit)
@@ -788,6 +787,9 @@ void VPinball::SetStatusBarUnitInfo(const char * const info, const bool isUnit)
            }
        }
     }
+    else
+       textBuf[0] = '\0';
+
     SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf);
 }
 
@@ -873,8 +875,6 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
        /* close all dialogs if the table is changed to prevent further issues */
        CloseAllDialogs();
    }
-
-   CComObject<PinTable> *ptCur;
 
    switch (code)
    {
@@ -964,7 +964,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_LOCK:
    {
-      ptCur = GetActiveTable();
+      CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
          ptCur->LockElements();
       break;
@@ -1055,7 +1055,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case IDM_CLOSE:
    {
-      ptCur = GetActiveTable();
+      CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
          CloseTable(ptCur);
       break;
@@ -1077,38 +1077,38 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_EDIT_UNDO:
    {
-      ptCur = GetActiveTable();
+      CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
          ptCur->Undo();
       break;
    }
    case ID_FILE_EXPORT_BLUEPRINT:
    {
-      ptCur = GetActiveTable();
+      CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
          ptCur->ExportBlueprint();
       break;
    }
    case ID_EXPORT_TABLEMESH:
    {
-      ptCur = GetActiveTable();
+      CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
          ptCur->ExportTableMesh();
       break;
    }
    case ID_IMPORT_BACKDROPPOV:
    {
-       ptCur = GetActiveTable();
-       if (ptCur)
-          ptCur->ImportBackdropPOV(NULL);
-       break;
+      CComObject<PinTable> * const ptCur = GetActiveTable();
+      if (ptCur)
+         ptCur->ImportBackdropPOV(NULL);
+      break;
    }
    case ID_EXPORT_BACKDROPPOV:
    {
-       ptCur = GetActiveTable();
-       if (ptCur)
-          ptCur->ExportBackdropPOV(NULL);
-       break;
+      CComObject<PinTable> * const ptCur = GetActiveTable();
+      if (ptCur)
+         ptCur->ExportBackdropPOV(NULL);
+      break;
    }
    case ID_FILE_EXIT:
    {
@@ -1131,7 +1131,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       // refresh editor options from the registry
       InitRegValues();
       // force a screen refresh (it an active table is loaded)
-      ptCur = GetActiveTable();
+      CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
          ptCur->SetDirtyDraw();
       break;
@@ -1143,17 +1143,15 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_TABLE_TABLEINFO:
    {
-       ptCur = GetActiveTable();
+       CComObject<PinTable> * const ptCur = GetActiveTable();
        if (ptCur)
-       {
            m_tableInfoDialog.DoModal(m_hwnd);
-       }
        break;
    }
    case IDM_IMAGE_EDITOR:
    case ID_TABLE_IMAGEMANAGER:
    {
-       ptCur = GetActiveTable();
+       CComObject<PinTable> * const ptCur = GetActiveTable();
        if (ptCur)
        {
            ShowSubDialog(m_imageMngDlg);
@@ -1166,7 +1164,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case IDM_SOUND_EDITOR:
    case ID_TABLE_SOUNDMANAGER:
    {
-       ptCur = GetActiveTable();
+       CComObject<PinTable> * const ptCur = GetActiveTable();
        if (ptCur)
        {
            if (!m_soundMngDlg.IsWindow())
@@ -1182,7 +1180,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case IDM_MATERIAL_EDITOR:
    case ID_TABLE_MATERIALMANAGER:
    {
-       ptCur = GetActiveTable();
+       CComObject<PinTable> * const ptCur = GetActiveTable();
        if (ptCur)
        {
            ShowSubDialog(m_materialDialog);
@@ -1194,7 +1192,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_TABLE_FONTMANAGER:
    {
-       ptCur = GetActiveTable();
+       CComObject<PinTable> * const ptCur = GetActiveTable();
        if (ptCur)
           /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_FONTDIALOG), m_hwnd, FontManagerProc, (size_t)ptCur);
        break;
@@ -1207,7 +1205,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case IDM_COLLECTION_EDITOR:
    case ID_TABLE_COLLECTIONMANAGER:
    {
-       ptCur = GetActiveTable();
+       CComObject<PinTable> * const ptCur = GetActiveTable();
        if (ptCur)
        {
            ShowSubDialog(m_collectionMngDlg);
@@ -1354,7 +1352,7 @@ void VPinball::SetLayerStatus(const int layerNumber)
 
 void VPinball::SetEnablePalette()
 {
-   PinTable * const ptCur = GetActiveTable();
+   CComObject<PinTable> * const ptCur = GetActiveTable();
 
    const bool fTableActive = (ptCur != NULL) && !g_pplayer;
 
@@ -1382,7 +1380,7 @@ void VPinball::SetEnablePalette()
 
 void VPinball::SetEnableToolbar()
 {
-   PinTable * const ptCur = GetActiveTable();
+   CComObject<PinTable> * const ptCur = GetActiveTable();
 
    const bool fTableActive = (ptCur != NULL) && !g_pplayer;
 
@@ -1543,7 +1541,7 @@ CComObject<PinTable> *VPinball::GetActiveTable()
 
    if (hwndT)
    {
-      CComObject<PinTable> *pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwndT, GWLP_USERDATA);
+      CComObject<PinTable> * const pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwndT, GWLP_USERDATA);
       return pt;
    }
    else
@@ -1876,7 +1874,7 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
          if (::IsDialogMessage(g_pplayer->m_hwndDebugger, pmsg))
             *pfConsumed = TRUE;
          else if (::IsDialogMessage(g_pplayer->m_hwndLightDebugger, pmsg))
-               *pfConsumed = TRUE;
+            *pfConsumed = TRUE;
          else if (::IsDialogMessage(g_pplayer->m_hwndMaterialDebugger, pmsg))
             *pfConsumed = TRUE;
       }
@@ -1975,7 +1973,7 @@ STDMETHODIMP_(ULONG) VPinball::Release()
 
 void VPinball::OnClose()
 {
-   PinTable *ptable = g_pvp->GetActiveTable();
+   CComObject<PinTable> * const ptable = g_pvp->GetActiveTable();
    if (ptable)
    {
       while (ptable->m_savingActive)
@@ -2276,7 +2274,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
       {
       case TBN_DROPDOWN:
       {
-         PinTable * const pt = g_pvp->GetActiveTable();
+         CComObject<PinTable> * const pt = g_pvp->GetActiveTable();
 
          if (pt)
          {
@@ -2418,7 +2416,7 @@ STDMETHODIMP VPinball::FireKnocker(int Count)
 
 STDMETHODIMP VPinball::QuitPlayer(int CloseType)
 {
-   if (g_pplayer)g_pplayer->m_ptable->QuitPlayer(CloseType);
+   if (g_pplayer) g_pplayer->m_ptable->QuitPlayer(CloseType);
 
    return S_OK;
 }
@@ -2791,7 +2789,7 @@ void VPinball::ShowProperties(bool enable)
     m_sb.SetVisible(enable);
     if (enable)
     {
-        CComObject<PinTable> *ptCur = GetActiveTable();
+        CComObject<PinTable> * const ptCur = GetActiveTable();
         if (ptCur)
             m_sb.CreateFromDispatch(m_hwnd, &ptCur->m_vmultisel);
     }
@@ -2809,7 +2807,7 @@ void VPinball::ShowBackglassView(bool enable)
         ptT->SetMyScrollInfo();
     }
 
-    CComObject<PinTable> *ptCur = GetActiveTable();
+    CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
        // Set selection to something in the new view (unless hiding table elements)
         ptCur->AddMultiSel((ISelect *)ptCur, false, true, false);
@@ -2819,7 +2817,7 @@ void VPinball::ShowBackglassView(bool enable)
 
 void VPinball::ToggleScriptEditor()
 {
-    CComObject<PinTable> *ptCur = GetActiveTable();
+    CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
     {
         const bool alwaysViewScript = LoadValueBoolWithDefault("Editor", "AlwaysViewScript", false);
@@ -2832,7 +2830,7 @@ void VPinball::ToggleScriptEditor()
 
 void VPinball::ShowSearchSelect()
 {
-    CComObject<PinTable> *ptCur = GetActiveTable();
+    CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
     {
         if (!ptCur->m_searchSelectDlg.IsWindow())
@@ -2856,7 +2854,7 @@ void VPinball::ShowSearchSelect()
 
 void VPinball::SetDefaultPhysics()
 {
-    CComObject<PinTable> *ptCur = GetActiveTable();
+    CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
     {
         LocalString ls(IDS_DEFAULTPHYSICS);
@@ -2874,7 +2872,7 @@ void VPinball::SetDefaultPhysics()
 
 void VPinball::SetViewSolidOutline(size_t viewId)
 {
-    CComObject<PinTable> *ptCur = GetActiveTable();
+    CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
     {
         ptCur->m_renderSolid = (viewId == ID_VIEW_SOLID);
@@ -2885,21 +2883,21 @@ void VPinball::SetViewSolidOutline(size_t viewId)
 
 void VPinball::ShowGridView()
 {
-    CComObject<PinTable> *ptCur = GetActiveTable();
+    CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
         ptCur->put_DisplayGrid(!ptCur->m_grid);
 }
 
 void VPinball::ShowBackdropView()
 {
-    CComObject<PinTable> *ptCur = GetActiveTable();
+    CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
         ptCur->put_DisplayBackdrop(!ptCur->m_backdrop);
 }
 
 void VPinball::AddControlPoint()
 {
-    CComObject<PinTable> *ptCur = GetActiveTable();
+    CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur == NULL)
         return;
 
@@ -2947,7 +2945,7 @@ void VPinball::AddControlPoint()
 
 void VPinball::AddSmoothControlPoint()
 {
-    CComObject<PinTable> *ptCur = GetActiveTable();
+    CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur == NULL)
         return;
 
@@ -2994,7 +2992,7 @@ void VPinball::AddSmoothControlPoint()
 
 void VPinball::SaveTable(const bool saveAs)
 {
-    CComObject<PinTable> *ptCur = GetActiveTable();
+    CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
     {
         if(!saveAs)
@@ -3025,7 +3023,7 @@ void VPinball::OpenNewTable(size_t tableId)
 
 void VPinball::ProcessDeleteElement()
 {
-    CComObject<PinTable> *ptCur = GetActiveTable();
+    CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
         ptCur->OnDelete();
 }
@@ -3042,7 +3040,7 @@ void VPinball::OpenRecentFile(const size_t menuId)
 
 void VPinball::CopyPasteElement(const CopyPasteModes mode)
 {
-    CComObject<PinTable> *ptCur = GetActiveTable();
+    CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
     {
         POINT ptCursor;
@@ -3072,7 +3070,7 @@ void VPinball::CopyPasteElement(const CopyPasteModes mode)
 
 void VPinball::MergeAllLayers()
 {
-    CComObject<PinTable> *ptCur = GetActiveTable();
+    CComObject<PinTable> * const ptCur = GetActiveTable();
     if (!ptCur)
         return;
 
@@ -3083,7 +3081,7 @@ void VPinball::MergeAllLayers()
 
 void VPinball::ToggleAllLayers()
 {
-    CComObject<PinTable> *ptCur = GetActiveTable();
+    CComObject<PinTable> * const ptCur = GetActiveTable();
     if (!ptCur) 
         return;
 

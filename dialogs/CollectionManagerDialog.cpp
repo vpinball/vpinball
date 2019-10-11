@@ -23,7 +23,7 @@ CollectionManagerDialog::CollectionManagerDialog() : CDialog(IDD_COLLECTDIALOG)
 
 BOOL CollectionManagerDialog::OnInitDialog()
 {
-    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
     hListHwnd = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
@@ -55,7 +55,7 @@ BOOL CollectionManagerDialog::OnInitDialog()
 
 void CollectionManagerDialog::EditCollection()
 {
-    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
     const int sel = ListView_GetNextItem(hListHwnd, -1, LVNI_SELECTED);
     if (sel != -1)
@@ -82,7 +82,7 @@ void CollectionManagerDialog::EditCollection()
 
 INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
     switch(uMsg)
     {
@@ -150,7 +150,7 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
 
 BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
     UNREFERENCED_PARAMETER(lParam);
 
     switch(LOWORD(wParam))
@@ -386,7 +386,7 @@ BOOL CollectionDialog::OnInitDialog()
 
 BOOL CollectionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
     UNREFERENCED_PARAMETER(lParam);
 
     switch(LOWORD(wParam))

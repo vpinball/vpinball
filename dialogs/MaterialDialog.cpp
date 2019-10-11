@@ -60,9 +60,8 @@ MaterialDialog::MaterialDialog() : CDialog(IDD_MATERIALDIALOG)
 
 BOOL MaterialDialog::OnInitDialog()
 {
-   LVCOLUMN lvcol;
    m_hMaterialList = GetDlgItem(IDC_MATERIAL_LIST).GetHwnd();
-   CCO(PinTable) * const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
    m_columnSortOrder = 1;
    m_deletingItem = false;
@@ -118,6 +117,7 @@ BOOL MaterialDialog::OnInitDialog()
 
    LoadPosition();
    ListView_SetExtendedListViewStyle(m_hMaterialList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+   LVCOLUMN lvcol;
    lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
    LocalString ls(IDS_NAME);
    lvcol.pszText = ls.m_szbuffer;// = "Name";
@@ -138,7 +138,7 @@ BOOL MaterialDialog::OnInitDialog()
 
 BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-   CCO(PinTable) * const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
    UNREFERENCED_PARAMETER(lParam);
    switch (HIWORD(wParam))
    {
@@ -220,8 +220,8 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_IMPORT:
       {
-         char szFileName[4096];
-         char szInitialDir[4096];
+         char szFileName[MAXSTRING];
+         char szInitialDir[MAXSTRING];
          szFileName[0] = '\0';
 
          OPENFILENAME ofn;
@@ -232,11 +232,11 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
          ofn.lpstrFilter = "Material Files (.mat)\0*.mat\0";
          ofn.lpstrFile = szFileName;
-         ofn.nMaxFile = 4096;
+         ofn.nMaxFile = MAXSTRING;
          ofn.lpstrDefExt = "mat";
          ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER;
 
-         HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir, 4096);
+         HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir, MAXSTRING);
          ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
          const int ret = GetOpenFileName(&ofn);
@@ -295,8 +295,8 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       {
          if (ListView_GetSelectedCount(m_hMaterialList))	// if some items are selected???
          {
-            char szFileName[4096];
-            char szInitialDir[4096];
+            char szFileName[MAXSTRING];
+            char szInitialDir[MAXSTRING];
             int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
             const int selCount = ListView_GetSelectedCount(m_hMaterialList);
             if (sel == -1)
@@ -311,10 +311,10 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ofn.lpstrFile = szFileName;
             //TEXT
             ofn.lpstrFilter = "Material Files (.mat)\0*.mat\0";
-            ofn.nMaxFile = 4096;
+            ofn.nMaxFile = MAXSTRING;
             ofn.lpstrDefExt = "mat";
 
-            const HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir, 4096);
+            const HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir, MAXSTRING);
 
             if (hr == S_OK)ofn.lpstrInitialDir = szInitialDir;
             else ofn.lpstrInitialDir = NULL;
@@ -432,7 +432,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
       case WM_NOTIFY:
       {
-         CCO(PinTable) *const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+         CCO(PinTable) *const pt = g_pvp->GetActiveTable();
          const LPNMHDR pnmhdr = (LPNMHDR)lParam;
          if (wParam == IDC_MATERIAL_LIST)
          {
@@ -682,7 +682,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void MaterialDialog::OnOK()
 {
-   CCO(PinTable) * const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
    const int count = ListView_GetSelectedCount(m_hMaterialList);
    if (count > 0)
    {

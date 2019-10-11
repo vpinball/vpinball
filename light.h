@@ -44,36 +44,6 @@ public:
    bool m_staticBulbMesh;
 };
 
-class LightCenter : public ISelect
-{
-public:
-   LightCenter(Light *plight);
-   virtual HRESULT GetTypeName(BSTR *pVal);
-   virtual IDispatch *GetDispatch();
-   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
-
-   virtual void Delete();
-   virtual void Uncreate();
-
-   virtual int GetSelectLevel();
-
-   virtual IEditable *GetIEditable();
-
-   virtual PinTable *GetPTable();
-
-   virtual bool LoadToken(const int id, BiffReader * const pbr) { return fTrue; }
-
-   virtual Vertex2D GetCenter() const;
-   virtual void PutCenter(const Vertex2D& pv);
-
-   virtual void MoveOffset(const float dx, const float dy);
-
-   virtual ItemTypeEnum GetItemType() const { return eItemLightCenter; }
-
-private:
-   Light *m_plight;
-};
-
 /////////////////////////////////////////////////////////////////////////////
 // Light
 
@@ -171,6 +141,41 @@ public:
    bool  m_lockedByLS;
 
 private:
+
+   class LightCenter : public ISelect
+   {
+   public:
+      LightCenter(Light *plight) : m_plight(plight) { }
+      virtual HRESULT GetTypeName(BSTR *pVal) { return m_plight->GetTypeName(pVal); }
+      virtual IDispatch *GetDispatch() { return m_plight->GetDispatch(); }
+      virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane) { m_plight->GetDialogPanes(pvproppane); }
+
+      virtual void Delete() { m_plight->Delete(); }
+      virtual void Uncreate() { m_plight->Uncreate(); }
+
+      virtual int GetSelectLevel() { return (m_plight->m_d.m_shape == ShapeCircle) ? 1 : 2; } // Don't select light bulb twice if we have drag points
+
+      virtual IEditable *GetIEditable() { return (IEditable *)m_plight; }
+
+      virtual PinTable *GetPTable() { return m_plight->GetPTable(); }
+
+      virtual bool LoadToken(const int id, BiffReader * const pbr) { return true; }
+
+      virtual Vertex2D GetCenter() const { return m_plight->m_d.m_vCenter; }
+      virtual void PutCenter(const Vertex2D& pv) { m_plight->m_d.m_vCenter = pv; }
+
+      virtual void MoveOffset(const float dx, const float dy) {
+          m_plight->m_d.m_vCenter.x += dx;
+          m_plight->m_d.m_vCenter.y += dy;
+      }
+
+      virtual ItemTypeEnum GetItemType() const { return eItemLightCenter; }
+
+   private:
+      Light *m_plight;
+   };
+
+
    PinTable *m_ptable;
 
    Material *m_surfaceMaterial;

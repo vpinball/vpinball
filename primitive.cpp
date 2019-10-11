@@ -202,7 +202,7 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
    if (!collection->m_groupElements)
       return;
 
-   unsigned int overall_size = 0;
+   size_t overall_size = 0;
    vector<Primitive*> prims;
    vector<Primitive*> renderedPrims;
    for (int i = 0; i < collection->m_visel.Size(); i++)
@@ -225,20 +225,20 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
    // The first primitive in the group is the base primitive
    // this element gets rendered by rendering all other group primitives
    // the rest of the group is marked as skipped rendering
-   const Material * const groupMaterial = g_pplayer->m_ptable->GetMaterial(prims[0]->m_d.m_szMaterial);
-   const Texture * const groupTexel = g_pplayer->m_ptable->GetImage(prims[0]->m_d.m_szImage);
+   const Material * const groupMaterial = m_ptable->GetMaterial(prims[0]->m_d.m_szMaterial);
+   const Texture * const groupTexel = m_ptable->GetImage(prims[0]->m_d.m_szImage);
    m_numGroupVertices = (int)prims[0]->m_mesh.NumVertices();
    m_numGroupIndices = (int)prims[0]->m_mesh.NumIndices();
-   overall_size = (unsigned int)prims[0]->m_mesh.NumIndices();
+   overall_size = prims[0]->m_mesh.NumIndices();
 
    // Now calculate the overall size of indices
    for (size_t i = 1; i < prims.size(); i++)
    {
-      const Material * const mat = g_pplayer->m_ptable->GetMaterial(prims[i]->m_d.m_szMaterial);
-      const Texture * const texel = g_pplayer->m_ptable->GetImage(prims[i]->m_d.m_szImage);
+      const Material * const mat = m_ptable->GetMaterial(prims[i]->m_d.m_szMaterial);
+      const Texture * const texel = m_ptable->GetImage(prims[i]->m_d.m_szImage);
       if (mat == groupMaterial && texel == groupTexel)
       {
-         overall_size += (unsigned int)prims[i]->m_mesh.NumIndices();
+         overall_size += prims[i]->m_mesh.NumIndices();
       }
    }
 
@@ -257,8 +257,8 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
    renderedPrims.push_back(prims[0]);
    for (size_t i = 1; i < prims.size(); i++)
    {
-      const Material * const mat = g_pplayer->m_ptable->GetMaterial(prims[i]->m_d.m_szMaterial);
-      const Texture * const texel = g_pplayer->m_ptable->GetImage(prims[i]->m_d.m_szImage);
+      const Material * const mat = m_ptable->GetMaterial(prims[i]->m_d.m_szMaterial);
+      const Texture * const texel = m_ptable->GetImage(prims[i]->m_d.m_szImage);
       if (mat == groupMaterial && texel == groupTexel)
       {
          const Mesh &m = prims[i]->m_mesh;
@@ -1782,11 +1782,10 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                   Material * const mat = new Material();
                   if (WaveFrontObjLoadMaterial(szMatName, mat))
                   {
-                     PinTable * const pActiveTable = g_pvp->GetActiveTable();
+                     CComObject<PinTable> * const pActiveTable = g_pvp->GetActiveTable();
                      if (pActiveTable)
-                     {
                          pActiveTable->AddMaterial(mat);
-                     }
+
                      strcpy_s(prim->m_d.m_szMaterial, mat->m_szName);
                      g_pvp->m_sb.PopulateDropdowns(); // May need to update list of images
                      g_pvp->m_sb.RefreshProperties();

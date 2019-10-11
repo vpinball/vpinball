@@ -2,69 +2,6 @@
 #include "meshes/bulbLightMesh.h"
 #include "meshes/bulbSocketMesh.h"
 
-LightCenter::LightCenter(Light *plight)
-{
-   m_plight = plight;
-}
-
-HRESULT LightCenter::GetTypeName(BSTR *pVal)
-{
-   return m_plight->GetTypeName(pVal);
-}
-
-IDispatch *LightCenter::GetDispatch()
-{
-   return m_plight->GetDispatch();
-}
-
-void LightCenter::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   m_plight->GetDialogPanes(pvproppane);
-}
-
-void LightCenter::Delete()
-{
-   m_plight->Delete();
-}
-
-void LightCenter::Uncreate()
-{
-   m_plight->Uncreate();
-}
-
-IEditable *LightCenter::GetIEditable()
-{
-   return (IEditable *)m_plight;
-}
-
-PinTable *LightCenter::GetPTable()
-{
-   return m_plight->GetPTable();
-}
-
-Vertex2D LightCenter::GetCenter() const
-{
-   return m_plight->m_d.m_vCenter;
-}
-
-void LightCenter::PutCenter(const Vertex2D& pv)
-{
-   m_plight->m_d.m_vCenter = pv;
-}
-
-void LightCenter::MoveOffset(const float dx, const float dy)
-{
-   m_plight->m_d.m_vCenter.x += dx;
-   m_plight->m_d.m_vCenter.y += dy;
-}
-
-int LightCenter::GetSelectLevel()
-{
-   return (m_plight->m_d.m_shape == ShapeCircle) ? 1 : 2; // Don't select light bulb twice if we have drag points
-}
-
-//
-
 Light::Light() : m_lightcenter(this)
 {
    m_menuid = IDR_SURFACEMENU;
@@ -555,7 +492,7 @@ void Light::RenderDynamic()
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    }
 
-   if (m_backglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
+   if (m_backglass && (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE);
    else
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
@@ -665,7 +602,7 @@ void Light::RenderDynamic()
    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
    }*/
 
-   //if(m_backglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_reflectionEnabled))
+   //if(m_backglass && (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
    //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 }
 
