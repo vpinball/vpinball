@@ -346,14 +346,14 @@ void VPinball::Init()
    // See if we have previous window size information
    {
       int left, top, right, bottom;
-      BOOL fMaximized;
+      BOOL maximized;
 
       const HRESULT hrleft = LoadValueInt("Editor", "WindowLeft", &left);
       const HRESULT hrtop = LoadValueInt("Editor", "WindowTop", &top);
       const HRESULT hrright = LoadValueInt("Editor", "WindowRight", &right);
       const HRESULT hrbottom = LoadValueInt("Editor", "WindowBottom", &bottom);
 
-      const HRESULT hrmax = LoadValueInt("Editor", "WindowMaximized", &fMaximized);
+      const HRESULT hrmax = LoadValueInt("Editor", "WindowMaximized", &maximized);
 
       if (hrleft == S_OK && hrtop == S_OK && hrright == S_OK && hrbottom == S_OK)
       {
@@ -369,7 +369,7 @@ void VPinball::Init()
 
          if (m_open_minimized)
             winpl.showCmd |= SW_MINIMIZE;
-         else if (hrmax == S_OK && fMaximized)
+         else if (hrmax == S_OK && maximized)
             winpl.showCmd |= SW_MAXIMIZE;
 
          ::SetWindowPlacement(m_hwnd, &winpl);
@@ -526,10 +526,10 @@ void VPinball::InitRegValues()
    m_alwaysDrawLightCenters = LoadValueBoolWithDefault("Editor", "DrawLightCenters", false);
    m_gridSize = LoadValueIntWithDefault("Editor", "GridSize", 50);
 
-   const bool fAutoSave = LoadValueBoolWithDefault("Editor", "AutoSaveOn", true);
+   const bool autoSave = LoadValueBoolWithDefault("Editor", "AutoSaveOn", true);
    m_propertiesFloating = LoadValueBoolWithDefault("Editor", "PropertiesFloating", true);
 
-   if (fAutoSave)
+   if (autoSave)
    {
       m_autosaveTime = LoadValueIntWithDefault("Editor", "AutoSaveTime", AUTOSAVE_DEFAULT_TIME);
       SetAutoSaveMinutes(m_autosaveTime);
@@ -904,19 +904,19 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_EDIT_PROPERTIES:
    {
-      bool fShow = false;
+      bool show = false;
 
-      if (!g_pplayer) fShow = m_sb.GetVisible(); // Get the current display state 
+      if (!g_pplayer) show = m_sb.GetVisible(); // Get the current display state
 
       switch (notify)
       {
-      case 0: fShow = !fShow; //!!?
+      case 0: show = !show; //!!?
          break;
-      case 1: fShow = true;   //set
+      case 1: show = true;  //set
          break;
-      case 2:                 //re-display 
+      case 2:               //re-display 
          break;
-      default: fShow = !fShow;//toggle
+      default: show = !show;//toggle
          break;
       }
 
@@ -929,9 +929,9 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          tbinfo.dwMask = TBIF_STATE;
          SendMessage(m_hwndToolbarMain, TB_GETBUTTONINFO, ID_EDIT_PROPERTIES, (size_t)&tbinfo);
 
-         if (notify == 2) fShow = (tbinfo.fsState & TBSTATE_CHECKED) != 0;
+         if (notify == 2) show = (tbinfo.fsState & TBSTATE_CHECKED) != 0;
 
-         if (fShow ^ ((tbinfo.fsState & TBSTATE_CHECKED) != 0))
+         if (show ^ ((tbinfo.fsState & TBSTATE_CHECKED) != 0))
          {
             tbinfo.fsState ^= TBSTATE_CHECKED;
          }
@@ -939,17 +939,17 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          SendMessage(m_hwndToolbarMain, TB_SETBUTTONINFO, ID_EDIT_PROPERTIES, (size_t)&tbinfo);
       }
 
-      ShowProperties(fShow);
+      ShowProperties(show);
       SendMessage(m_hwnd, WM_SIZE, 0, 0);
       break;
    }
    case ID_EDIT_BACKGLASSVIEW:
    {
-      const bool fShow = !m_backglassView;
+      const bool show = !m_backglassView;
 
-      SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_BACKGLASSVIEW, MAKELONG(fShow, 0));
+      SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_BACKGLASSVIEW, MAKELONG(show, 0));
 
-      ShowBackglassView(fShow);
+      ShowBackglassView(show);
       break;
    }
    case ID_EDIT_SEARCH:
@@ -1354,7 +1354,7 @@ void VPinball::SetEnablePalette()
 {
    CComObject<PinTable> * const ptCur = GetActiveTable();
 
-   const bool fTableActive = (ptCur != NULL) && !g_pplayer;
+   const bool tableActive = (ptCur != NULL) && !g_pplayer;
 
    const unsigned state = (m_backglassView ? VIEW_BACKGLASS : VIEW_PLAYFIELD);
 
@@ -1366,14 +1366,14 @@ void VPinball::SetEnablePalette()
       ItemTypeEnum type = EditableRegistry::TypeFromToolID(id);
       const unsigned int enablecode = EditableRegistry::GetAllowedViews(type);
 
-      const bool fEnable = fTableActive && ((enablecode & state) != 0);
+      const bool enable = tableActive && ((enablecode & state) != 0);
 
       // Set toolbar state
-      SendMessage(m_hwndToolbarPalette, TB_ENABLEBUTTON, id, MAKELONG(fEnable, 0));
+      SendMessage(m_hwndToolbarPalette, TB_ENABLEBUTTON, id, MAKELONG(enable, 0));
 
       // Set menu item state
       HMENU hmenuInsert = GetMainMenu(INSERTMENU);
-      EnableMenuItem(hmenuInsert, id, MF_BYCOMMAND | (fEnable ? MF_ENABLED : MF_GRAYED));
+      EnableMenuItem(hmenuInsert, id, MF_BYCOMMAND | (enable ? MF_ENABLED : MF_GRAYED));
    }
 }
 
@@ -1382,7 +1382,7 @@ void VPinball::SetEnableToolbar()
 {
    CComObject<PinTable> * const ptCur = GetActiveTable();
 
-   const bool fTableActive = (ptCur != NULL) && !g_pplayer;
+   const bool tableActive = (ptCur != NULL) && !g_pplayer;
 
    static const int toolList[] = {
       ID_TABLE_MAGNIFY,
@@ -1398,17 +1398,13 @@ void VPinball::SetEnableToolbar()
       const int id = toolList[i];
 
       // Set toolbar state
-      SendMessage(m_hwndToolbarMain, TB_ENABLEBUTTON, id, MAKELONG(fTableActive, 0));
+      SendMessage(m_hwndToolbarMain, TB_ENABLEBUTTON, id, MAKELONG(tableActive, 0));
    }
 
    // set layer button states
    if (ptCur)
-   {
       for (int i = 0; i < MAX_LAYERS; ++i)
-      {
          SendMessage(m_hwndToolbarLayers, TB_CHECKBUTTON, allLayers[i], MAKELONG(ptCur->m_activeLayers[i], 0));
-      }
-   }
 
    SetEnablePalette();
    ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 2); //redisplay 
@@ -1885,21 +1881,20 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
 
 HRESULT VPinball::MainMsgLoop()
 {
-   BOOL fConsumed;
-   MSG msg;
-
+   BOOL consumed;
    for (;;)
    {
+      MSG msg;
       if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE))
       {
          if (msg.message == WM_QUIT)
             break;
 
-         fConsumed = fFalse;
+         consumed = fFalse;
 
-         ApcHost_OnTranslateMessage(&msg, &fConsumed);
+         ApcHost_OnTranslateMessage(&msg, &consumed);
 
-         if (!fConsumed)
+         if (!consumed)
             DispatchMessage(&msg);
       }
       else
