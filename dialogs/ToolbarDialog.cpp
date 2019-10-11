@@ -19,6 +19,25 @@ BOOL ToolbarDialog::OnInitDialog()
     m_hwnd = GetDlgItem(IDD_TOOLBAR).GetHwnd();
 
     SendDlgItemMessage(IDC_SELECT, BM_SETCHECK, BST_CHECKED, 0);
+    
+    const int iconSize = 24;
+    HANDLE hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MAGNIFY), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_TABLE_MAGNIFY), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SELECT), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(IDC_SELECT), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_OPTIONS), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_EDIT_PROPERTIES), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SCRIPT), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_EDIT_SCRIPT), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_BACKGLASS), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_EDIT_BACKGLASSVIEW), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PLAY), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_TABLE_PLAY), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
     return TRUE;
 }
 
