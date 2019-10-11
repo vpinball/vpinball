@@ -4537,7 +4537,7 @@ void PinTable::FireKeyEvent(int dispid, int keycode)
    FireDispID(dispid, &dispparams);
 }
 
-void PinTable::DoLButtonDown(int x, int y, bool zoomIn)
+void PinTable::DoLeftButtonDown(int x, int y, bool zoomIn)
 {
    const int ksshift = GetKeyState(VK_SHIFT);
    const int ksctrl = GetKeyState(VK_CONTROL);
@@ -4585,7 +4585,7 @@ void PinTable::DoLButtonDown(int x, int y, bool zoomIn)
    }
 }
 
-void PinTable::DoLButtonUp(int x, int y)
+void PinTable::OnLeftButtonUp(int x, int y)
 {
    //m_pselcur->OnLButtonUp(x,y);
 
@@ -4604,9 +4604,9 @@ void PinTable::DoLButtonUp(int x, int y)
    }
 }
 
-void PinTable::DoRButtonDown(int x, int y)
+void PinTable::OnRightButtonDown(int x, int y)
 {
-   DoLButtonUp(x, y); //corrects issue with left mouse button being in 'stuck down' position on a control point or object - BDS
+   OnLeftButtonUp(x, y); //corrects issue with left mouse button being in 'stuck down' position on a control point or object - BDS
 
    const int ks = GetKeyState(VK_CONTROL);
 
@@ -5156,7 +5156,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             const short x = (short)(lParam & 0xffff);
             const short y = (short)((lParam >> 16) & 0xffff);
             if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
-                pt->DoLButtonDown(x, y);
+                pt->DoLeftButtonDown(x, y);
             else
                 pt->UseTool(x, y, g_pvp->m_ToolCur);
             break;
@@ -5167,7 +5167,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             const short x = (short)(lParam & 0xffff);
             const short y = (short)((lParam >> 16) & 0xffff);
-            pt->DoLDoubleClick(x, y);
+            pt->OnLeftDoubleClick(x, y);
             break;
         }
 
@@ -5176,7 +5176,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             const short x = (short)(lParam & 0xffff);
             const short y = (short)((lParam >> 16) & 0xffff);
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            pt->DoLButtonUp(x, y);
+            pt->OnLeftButtonUp(x, y);
         }
         break;
 
@@ -5216,7 +5216,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             const short x = (short)(lParam & 0xffff);
             const short y = (short)((lParam >> 16) & 0xffff);
 
-            pt->DoRButtonDown(x, y);
+            pt->OnRightButtonDown(x, y);
             break;
         }
         case WM_CONTEXTMENU:
@@ -5230,7 +5230,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 x = p.x;
                 y = p.y;
             }
-            pt->DoRButtonUp(x, y);
+            pt->OnRightButtonUp(x, y);
             break;
         }
         case WM_KEYDOWN:
@@ -5326,7 +5326,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 const short y = (short)curpt.y;
                 if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
                 {
-                    pt->DoLButtonDown(x, y, zDelta != -120);
+                    pt->DoLeftButtonDown(x, y, zDelta != -120);
                 }
             }
             else
@@ -5441,7 +5441,7 @@ void PinTable::PutCenter(const Vertex2D& pv)
 {
 }
 
-void PinTable::DoRButtonUp(int x, int y)
+void PinTable::OnRightButtonUp(int x, int y)
 {
    GetSelectedItem()->OnRButtonUp(x, y);
 
@@ -5480,7 +5480,7 @@ void PinTable::DoMouseMove(int x, int y)
       OnMouseMove(x, y);
 }
 
-void PinTable::DoLDoubleClick(int x, int y)
+void PinTable::OnLeftDoubleClick(int x, int y)
 {
    //g_pvp->m_sb.SetVisible(true);
    //::SendMessage(g_pvp->m_hwnd, WM_SIZE, 0, 0);
@@ -6688,9 +6688,8 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     {
         case WM_CLOSE:
         {
-            ::KillTimer(hwnd, TIMER_ID_AUTOSAVE);
-            ::SetTimer(hwnd, TIMER_ID_CLOSE_TABLE, 100, NULL);	//wait 250 milliseconds
-
+            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
+            pt->OnClose();
             return 0;	// destroy the WM_CLOSE message
         }
         case WM_TIMER:
@@ -6720,31 +6719,8 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         {
             if (LOWORD(lParam) == HTCLIENT)
             {
-                char *cursorid;
-                HINSTANCE hinst = g_hinst;
-
-                if (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY)
-                {
-                    cursorid = MAKEINTRESOURCE(IDC_MAGNIFY);
-                }
-                else if (g_pvp->m_ToolCur == ID_INSERT_TARGET)
-                {
-                    // special case for targets, which are particular walls
-                    cursorid = MAKEINTRESOURCE(IDC_TARGET);
-                }
-                else
-                {
-                    ItemTypeEnum type = EditableRegistry::TypeFromToolID(g_pvp->m_ToolCur);
-                    if (type != eItemInvalid)
-                        cursorid = MAKEINTRESOURCE(EditableRegistry::GetCursorID(type));
-                    else
-                    {
-                        hinst = NULL;
-                        cursorid = IDC_ARROW;
-                    }
-                }
-                HCURSOR hcursor = LoadCursor(hinst, cursorid);
-                SetCursor(hcursor);
+                pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
+                pt->SetMouseCursor();
                 return TRUE;
             }
         }
@@ -6777,14 +6753,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             const short x = (short)(lParam & 0xffff);
             const short y = (short)((lParam >> 16) & 0xffff);
-            if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
-            {
-                pt->DoLButtonDown(x, y);
-            }
-            else
-            {
-                pt->UseTool(x, y, g_pvp->m_ToolCur);
-            }
+            pt->OnLeftButtonDown(x, y);
             break;
         }
 
@@ -6793,7 +6762,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             const short x = (short)(lParam & 0xffff);
             const short y = (short)((lParam >> 16) & 0xffff);
-            pt->DoLDoubleClick(x, y);
+            pt->OnLeftDoubleClick(x, y);
             break;
         }
 
@@ -6802,7 +6771,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             const short x = (short)(lParam & 0xffff);
             const short y = (short)((lParam >> 16) & 0xffff);
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            pt->DoLButtonUp(x, y);
+            pt->OnLeftButtonUp(x, y);
         }
         break;
 
@@ -6811,28 +6780,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             const short x = (short)(lParam & 0xffff);
             const short y = (short)((lParam >> 16) & 0xffff);
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            const bool middleMouseButtonPressed = ((GetKeyState(VK_MBUTTON) & 0x100) != 0);  //((GetKeyState(VK_MENU) & 0x80000000) != 0);
-            if (middleMouseButtonPressed)
-            {
-                // panning feature starts here...if the user holds the middle mouse button and moves the mouse 
-                // everything is moved in the direction of the mouse was moved
-                int dx = abs(pt->m_oldMousePosX - x);
-                int dy = abs(pt->m_oldMousePosY - y);
-                if (pt->m_oldMousePosX > x)  pt->m_offset.x += dx;
-                if (pt->m_oldMousePosX < x)  pt->m_offset.x -= dx;
-                if (pt->m_oldMousePosY > y)  pt->m_offset.y += dy;
-                if (pt->m_oldMousePosY < y)  pt->m_offset.y -= dy;
-
-                pt->SetDirtyDraw();
-                pt->SetMyScrollInfo();
-
-                pt->m_oldMousePosX = x;
-                pt->m_oldMousePosY = y;
-                break;
-            }
-            pt->DoMouseMove(x, y);
-            pt->m_oldMousePosX = x;
-            pt->m_oldMousePosY = y;
+            pt->OnMouseMove(x, y);
         }
         break;
 
@@ -6842,7 +6790,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             const short x = (short)(lParam & 0xffff);
             const short y = (short)((lParam >> 16) & 0xffff);
 
-            pt->DoRButtonDown(x, y);
+            pt->OnRightButtonDown(x, y);
             break;
         }
         case WM_CONTEXTMENU:
@@ -6856,7 +6804,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 x = p.x;
                 y = p.y;
             }
-            pt->DoRButtonUp(x, y);
+            pt->OnRightButtonUp(x, y);
             break;
         }
         case WM_KEYDOWN:
@@ -6941,26 +6889,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             //zoom in/out by pressing CTRL+mouse wheel
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             const short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-            const int ksctrl = GetKeyState(VK_CONTROL);
-            if ((ksctrl & 0x80000000))
-            {
-                POINT curpt;
-                curpt.x = GET_X_LPARAM(lParam);
-                curpt.y = GET_Y_LPARAM(lParam);
-                ::ScreenToClient(hwnd, &curpt);
-                const short x = (short)curpt.x;
-                const short y = (short)curpt.y;
-                if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
-                {
-                    pt->DoLButtonDown(x, y, zDelta != -120);
-                }
-            }
-            else
-            {
-                pt->m_offset.y -= zDelta / pt->m_zoom;	// change to orientation to match windows default
-                pt->SetDirtyDraw();
-                pt->SetMyScrollInfo();
-            }
+            pt->OnMouseWheel(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), zDelta);
             return 0;
         }
         break;
@@ -6970,11 +6899,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             if (pt) // Window might have just been created
             {
-                pt->SetMyScrollInfo();
-                pt->m_dirtyDraw = true;
-                // this window command is called whenever the MDI window changes over
-                // re-evaluate the toolbar depending on table permissions
-                g_pvp->SetEnableToolbar();
+                pt->OnSize();
             }
             break;
         }
@@ -10372,3 +10297,110 @@ void PinTable::InvokeBallBallCollisionCallback(Ball *b1, Ball *b2, float hitVelo
       }
    }
 }
+
+void PinTable::SetMouseCursor()
+{
+    char *cursorid;
+    HINSTANCE hinst = g_hinst;
+
+    if (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY)
+    {
+        cursorid = MAKEINTRESOURCE(IDC_MAGNIFY);
+    }
+    else if (g_pvp->m_ToolCur == ID_INSERT_TARGET)
+    {
+        // special case for targets, which are particular walls
+        cursorid = MAKEINTRESOURCE(IDC_TARGET);
+    }
+    else
+    {
+        ItemTypeEnum type = EditableRegistry::TypeFromToolID(g_pvp->m_ToolCur);
+        if (type != eItemInvalid)
+            cursorid = MAKEINTRESOURCE(EditableRegistry::GetCursorID(type));
+        else
+        {
+            hinst = NULL;
+            cursorid = IDC_ARROW;
+        }
+    }
+    HCURSOR hcursor = LoadCursor(hinst, cursorid);
+    SetCursor(hcursor);
+}
+
+void PinTable::OnLeftButtonDown(const short x, const short y)
+{
+    if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
+    {
+        DoLeftButtonDown(x, y);
+    }
+    else
+    {
+        UseTool(x, y, g_pvp->m_ToolCur);
+    }
+}
+
+void PinTable::OnMouseMove(const short x, const short y)
+{
+    const bool middleMouseButtonPressed = ((GetKeyState(VK_MBUTTON) & 0x100) != 0);  //((GetKeyState(VK_MENU) & 0x80000000) != 0);
+    if (middleMouseButtonPressed)
+    {
+        // panning feature starts here...if the user holds the middle mouse button and moves the mouse 
+        // everything is moved in the direction of the mouse was moved
+        int dx = abs(m_oldMousePosX - x);
+        int dy = abs(m_oldMousePosY - y);
+        if (m_oldMousePosX > x)  m_offset.x += dx;
+        if (m_oldMousePosX < x)  m_offset.x -= dx;
+        if (m_oldMousePosY > y)  m_offset.y += dy;
+        if (m_oldMousePosY < y)  m_offset.y -= dy;
+
+        SetDirtyDraw();
+        SetMyScrollInfo();
+
+        m_oldMousePosX = x;
+        m_oldMousePosY = y;
+        return;
+    }
+    DoMouseMove(x, y);
+    m_oldMousePosX = x;
+    m_oldMousePosY = y;
+}
+
+void PinTable::OnMouseWheel(const short x, const short y, const short zDelta)
+{
+    const int ksctrl = GetKeyState(VK_CONTROL);
+    if ((ksctrl & 0x80000000))
+    {
+        POINT curpt;
+        curpt.x = x;
+        curpt.y = y;
+        ::ScreenToClient(m_hwnd, &curpt);
+        const short x = (short)curpt.x;
+        const short y = (short)curpt.y;
+        if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
+        {
+            DoLeftButtonDown(x, y, zDelta != -120);
+        }
+    }
+    else
+    {
+        m_offset.y -= zDelta / m_zoom;	// change to orientation to match windows default
+        SetDirtyDraw();
+        SetMyScrollInfo();
+    }
+}
+
+void PinTable::OnSize()
+{
+    SetMyScrollInfo();
+    m_dirtyDraw = true;
+    // this window command is called whenever the MDI window changes over
+    // re-evaluate the toolbar depending on table permissions
+    g_pvp->SetEnableToolbar();
+}
+
+void PinTable::OnClose()
+{
+    ::KillTimer(m_hwnd, TIMER_ID_AUTOSAVE);
+    ::SetTimer(m_hwnd, TIMER_ID_CLOSE_TABLE, 100, NULL);	//wait 250 milliseconds
+}
+

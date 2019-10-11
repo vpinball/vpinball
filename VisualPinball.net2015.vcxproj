@@ -376,6 +376,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="Dialogs\SearchSelectDialog.cpp" />
     <ClCompile Include="Dialogs\SoundDialog.cpp" />
     <ClCompile Include="Dialogs\TableInfoDialog.cpp" />
+    <ClCompile Include="dialogs\ToolbarDialog.cpp" />
     <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="hittarget.cpp" />
@@ -1086,6 +1087,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="Dialogs\SearchSelectDialog.h" />
     <ClInclude Include="Dialogs\SoundDialog.h" />
     <ClInclude Include="Dialogs\TableInfoDialog.h" />
+    <ClInclude Include="dialogs\ToolbarDialog.h" />
     <ClInclude Include="dialogs\VideoOptionsDialog.h" />
     <ClInclude Include="dispid.h" />
     <ClInclude Include="dispreel.h" />

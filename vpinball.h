@@ -37,6 +37,13 @@ class PinTable;
 class VPinball : public CWnd
 {
 public:
+    enum CopyPasteModes
+    {
+        COPY = 0,
+        PASTE = 1,
+        PASTE_AT = 2
+    };
+    
    VPinball();
    virtual ~VPinball();
 
@@ -64,6 +71,12 @@ public:
    void AddControlPoint();
    void AddSmoothControlPoint();
    void SaveTable(const bool saveAs);
+   void OpenNewTable(size_t tableId);
+   void ProcessDeleteElement();
+   void OpenRecentFile(const size_t menuId);
+   void CopyPasteElement(const CopyPasteModes mode);
+   void MergeAllLayers();
+   void ToggleAllLayers();
 
    CComObject<PinTable> *GetActiveTable();
    void InitTools();
@@ -201,7 +214,10 @@ protected:
 #endif 
 
 private:
+
+
    void ShowSubDialog(CDialog &dlg);
+
    char m_szRecentTableList[LAST_OPENED_TABLE_COUNT + 1][MAX_PATH];
 
    HANDLE m_workerthread;
