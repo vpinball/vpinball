@@ -1900,7 +1900,7 @@ HRESULT VPinball::MainMsgLoop()
       else
       {
          if (g_pplayer && !g_pplayer->m_pause)
-            ApcHost_OnIdle(&fConsumed);
+            ApcHost_OnIdle(&consumed);
          else
             WaitMessage();
       }
