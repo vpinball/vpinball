@@ -374,6 +374,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="Dialogs\SearchSelectDialog.cpp" />
     <ClCompile Include="Dialogs\SoundDialog.cpp" />
     <ClCompile Include="Dialogs\TableInfoDialog.cpp" />
+    <ClCompile Include="dialogs\ToolbarDialog.cpp" />
     <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="hittarget.cpp" />
@@ -1089,6 +1090,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="Dialogs\SearchSelectDialog.h" />
     <ClInclude Include="Dialogs\SoundDialog.h" />
     <ClInclude Include="Dialogs\TableInfoDialog.h" />
+    <ClInclude Include="dialogs\ToolbarDialog.h" />
     <ClInclude Include="dialogs\VideoOptionsDialog.h" />
     <ClInclude Include="dispid.h" />
     <ClInclude Include="dispreel.h" />
@@ -1140,6 +1142,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\win32xx\include\wxx_docking.h" />
     <ClInclude Include="inc\win32xx\include\wxx_exception.h" />
     <ClInclude Include="inc\win32xx\include\wxx_file.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_filefind.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_folderdialog.h" />
     <ClInclude Include="inc\win32xx\include\wxx_frame.h" />
     <ClInclude Include="inc\win32xx\include\wxx_gdi.h" />
     <ClInclude Include="inc\win32xx\include\wxx_imagelist.h" />
@@ -1148,6 +1152,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\win32xx\include\wxx_menu.h" />
     <ClInclude Include="inc\win32xx\include\wxx_menubar.h" />
     <ClInclude Include="inc\win32xx\include\wxx_metafile.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_mutex.h" />
     <ClInclude Include="inc\win32xx\include\wxx_printdialogs.h" />
     <ClInclude Include="inc\win32xx\include\wxx_propertysheet.h" />
     <ClInclude Include="inc\win32xx\include\wxx_rebar.h" />
@@ -1155,6 +1160,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\win32xx\include\wxx_regkey.h" />
     <ClInclude Include="inc\win32xx\include\wxx_ribbon.h" />
     <ClInclude Include="inc\win32xx\include\wxx_richedit.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_scrollview.h" />
     <ClInclude Include="inc\win32xx\include\wxx_shared_ptr.h" />
     <ClInclude Include="inc\win32xx\include\wxx_socket.h" />
     <ClInclude Include="inc\win32xx\include\wxx_statusbar.h" />
@@ -1281,6 +1287,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="vectorsort.h" />
     <ClInclude Include="vpinball.h" />
     <ClInclude Include="vpinball_i.h" />
+    <ClInclude Include="VPTabbedMDI.h" />
     <ClInclude Include="vpversion.h" />
     <ClInclude Include="wintimer.h" />
     <ClInclude Include="worker.h" />
