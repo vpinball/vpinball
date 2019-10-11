@@ -905,6 +905,12 @@
     <ClInclude Include="inc\win32xx\include\wxx_file.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_filefind.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_folderdialog.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
     <ClInclude Include="inc\win32xx\include\wxx_frame.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
@@ -929,6 +935,9 @@
     <ClInclude Include="inc\win32xx\include\wxx_metafile.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_mutex.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
     <ClInclude Include="inc\win32xx\include\wxx_printdialogs.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
@@ -948,6 +957,9 @@
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
     <ClInclude Include="inc\win32xx\include\wxx_richedit.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_scrollview.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
     <ClInclude Include="inc\win32xx\include\wxx_shared_ptr.h">
@@ -1046,18 +1058,7 @@
     <ClInclude Include="inc\gpuprofiler.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_filefind.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_folderdialog.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_mutex.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_scrollview.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
+    <ClInclude Include="VPTabbedMDI.h" />
     <ClInclude Include="dialogs\ToolbarDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
