@@ -19,7 +19,7 @@ void DrawingOrderDialog::OnClose()
 
 BOOL DrawingOrderDialog::OnInitDialog()
 {
-   CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
    hOrderList = GetDlgItem(IDC_DRAWING_ORDER_LIST).GetHwnd();
    LVCOLUMN lvc;
    LVITEM lv;
@@ -183,7 +183,7 @@ void DrawingOrderDialog::OnOK()
 
 void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
 {
-   PinTable *pt = g_pvp->GetActiveTable();
+   CComObject<PinTable> * const pt = g_pvp->GetActiveTable();
    char text0[256], text1[256], text2[256];
    LVITEM lv;
    lv.mask = LVIF_TEXT;
@@ -287,7 +287,7 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
 
             for (int i = pt->m_vmultisel.Size() - 1; i >= 0; i--)
             {
-               IEditable *pedit = pt->m_vmultisel.ElementAt(i)->GetIEditable();
+               IEditable * const pedit = pt->m_vmultisel.ElementAt(i)->GetIEditable();
                pt->m_vedit.push_back(pedit);
             }
          }

@@ -204,7 +204,7 @@ BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    {
       case IDC_APPLY_TO_TABLE:
       {
-         PinTable * const pt = g_pvp->GetActiveTable();
+         CComObject<PinTable> * const pt = g_pvp->GetActiveTable();
          if (pt == NULL)
          {
             ShowError("No table loaded!");

@@ -98,7 +98,7 @@ void SearchSelectDialog::OnClose()
 BOOL SearchSelectDialog::OnInitDialog()
 {
    m_hElementList = GetDlgItem(IDC_ELEMENT_LIST).GetHwnd();
-   m_curTable = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   m_curTable = g_pvp->GetActiveTable();
 
    m_switchSortOrder = false;
 

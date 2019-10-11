@@ -72,4 +72,3 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     }
     return FALSE;
 }
-

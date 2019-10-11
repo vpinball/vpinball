@@ -574,12 +574,13 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
 
          for (unsigned int t = 0; t < mesh.NumVertices(); t++)
          {
-             vertsTmp[t].x = mesh.m_animationFrames[i].m_frameVerts[t].x;
-             vertsTmp[t].y = mesh.m_animationFrames[i].m_frameVerts[t].y;
-             vertsTmp[t].z = mesh.m_animationFrames[i].m_frameVerts[t].z;
-             vertsTmp[t].nx = mesh.m_animationFrames[i].m_frameVerts[t].nx;
-             vertsTmp[t].ny = mesh.m_animationFrames[i].m_frameVerts[t].ny;
-             vertsTmp[t].nz = mesh.m_animationFrames[i].m_frameVerts[t].nz;
+             const Mesh::VertData vi = mesh.m_animationFrames[i].m_frameVerts[t];
+             vertsTmp[t].x  = vi.x;
+             vertsTmp[t].y  = vi.y;
+             vertsTmp[t].z  = vi.z;
+             vertsTmp[t].nx = vi.nx;
+             vertsTmp[t].ny = vi.ny;
+             vertsTmp[t].nz = vi.nz;
          }
          sprintf_s(number, "%05u", i);
          fname = name + "_" + string(number) + ".obj";

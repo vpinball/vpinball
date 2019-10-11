@@ -271,12 +271,12 @@ HRESULT PinDirectSound::FillBuffer(PinSound * const pps)
    DWORD   dwLength2;
 
    // The size of wave data is in pWaveFileSound->m_ckIn
-   INT nWaveFileSize = m_pWaveSoundRead->m_ckIn.cksize;
+   const INT nWaveFileSize = m_pWaveSoundRead->m_ckIn.cksize;
 
    // Allocate that buffer.
    pbWavData = new BYTE[nWaveFileSize];
-   if (NULL == pbWavData)
-      return E_OUTOFMEMORY;
+   //if (NULL == pbWavData)
+   //   return E_OUTOFMEMORY;
 
    HRESULT hr;
    if (FAILED(hr = m_pWaveSoundRead->Read(nWaveFileSize,
@@ -326,9 +326,9 @@ HRESULT PinDirectSound::CreateDirectFromNative(PinSound * const pps)
    dsbd.dwSize = sizeof(DSBUFFERDESC);
    dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY;
    if (m_3DSoundMode != SNDCFG_SND3D2CH)
-	   dsbd.dwFlags |= DSBCAPS_CTRL3D;
+      dsbd.dwFlags |= DSBCAPS_CTRL3D;
    else
-	   dsbd.dwFlags |= DSBCAPS_CTRLPAN;
+      dsbd.dwFlags |= DSBCAPS_CTRLPAN;
 
    dsbd.dwBufferBytes = pps->m_cdata;
    dsbd.lpwfxFormat = &pps->m_wfx;

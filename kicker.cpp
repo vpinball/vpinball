@@ -804,17 +804,17 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 		   delete g_pplayer->m_pBCTarget;
 		   g_pplayer->m_pBCTarget = NULL;
 	   }
-      float anglerad = ANGTORAD(angle);				// yaw angle, zero is along -Y axis
+      float anglerad = ANGTORAD(angle);					// yaw angle, zero is along -Y axis
 
       if (fabsf(inclination) > (float)(M_PI / 2.0))		// radians or degrees?  if greater PI/2 assume degrees
          inclination *= (float)(M_PI / 180.0);			// convert to radians
 
       float scatterAngle = (m_d.m_scatter < 0.0f) ? c_hardScatter : ANGTORAD(m_d.m_scatter); // if < 0 use global value
-      scatterAngle *= g_pplayer->m_ptable->m_globalDifficulty;		// apply dificulty weighting
+      scatterAngle *= m_ptable->m_globalDifficulty;		// apply dificulty weighting
 
-      if (scatterAngle > 1.0e-5f)										// ignore near zero angles
+      if (scatterAngle > 1.0e-5f)						// ignore near zero angles
       {
-         float scatter = rand_mt_m11();								// -1.0f..1.0f
+         float scatter = rand_mt_m11();					// -1.0f..1.0f
          scatter *= (1.0f - scatter*scatter)*2.59808f * scatterAngle;// shape quadratic distribution and scale
          anglerad += scatter;
       }

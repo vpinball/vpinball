@@ -32,7 +32,7 @@ void SoundDialog::OnDestroy()
 void SoundDialog::OnClose()
 {
     SavePosition();
-    CCO(PinTable) *const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
     if (pt && m_bPlayedSound)
     {
         pt->StopAllSounds(); 
@@ -61,7 +61,7 @@ int DPIValue(int value)
 
 BOOL SoundDialog::OnInitDialog()
 {
-    CCO( PinTable ) *const pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
+    CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
     hSoundList = GetDlgItem( IDC_SOUNDLIST ).GetHwnd();
 
     LoadPosition();
@@ -109,7 +109,7 @@ BOOL SoundDialog::OnInitDialog()
 INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
     const HWND hwndDlg = GetHwnd();
-    CCO( PinTable ) *const pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
+    CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
 
     switch(uMsg)
     {
@@ -145,7 +145,7 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                     lvitem.iItem = pinfo->item.iItem;
                     lvitem.iSubItem = 0;
                     ListView_GetItem( hSoundList, &lvitem );
-                    PinSound *pps = (PinSound *)lvitem.lParam;
+                    PinSound * const pps = (PinSound *)lvitem.lParam;
                     strncpy_s( pps->m_szName, pinfo->item.pszText, MAXTOKEN );
                     strncpy_s( pps->m_szInternalName, pinfo->item.pszText, MAXTOKEN );
                     CharLowerBuff( pps->m_szInternalName, lstrlen( pps->m_szInternalName ) );
@@ -192,7 +192,7 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
         case IDC_OK: SavePosition(); CDialog::OnOK(); break;
         case IDC_PLAY:
         {
-           CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+           CCO(PinTable) * const pt = g_pvp->GetActiveTable();
            const int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
             if (sel != -1)
             {
@@ -236,10 +236,9 @@ void SoundDialog::OnCancel()
 
 void SoundDialog::Import()
 {
-    CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
-    char szFileName[4096];
-    char szInitialDir[4096];
-    char szT[4096];
+    CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
+    char szFileName[MAXSTRING];
+    char szInitialDir[MAXSTRING];
 
     szFileName[0] = '\0';
 
@@ -251,11 +250,11 @@ void SoundDialog::Import()
     // TEXT
     ofn.lpstrFilter = "Sound Files (*.wav)\0*.wav\0";
     ofn.lpstrFile = szFileName;
-    ofn.nMaxFile = 4096;
+    ofn.nMaxFile = MAXSTRING;
     ofn.lpstrDefExt = "wav";
     ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
 
-    HRESULT hr = LoadValueString( "RecentDir", "SoundDir", szInitialDir, 4096 );
+    HRESULT hr = LoadValueString( "RecentDir", "SoundDir", szInitialDir, MAXSTRING);
     ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
     const int ret = GetOpenFileName( &ofn );
@@ -268,6 +267,7 @@ void SoundDialog::Import()
         if (len < ofn.nFileOffset)
         {
             // Multi-file select
+            char szT[MAXSTRING];
             lstrcpy( szT, szFileName );
             lstrcat( szT, "\\" );
             len++;
@@ -296,7 +296,7 @@ void SoundDialog::Import()
 
 void SoundDialog::ReImport()
 {
-    CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
+    CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
     const int count = ListView_GetSelectedCount( hSoundList );
     if (count > 0)
     {
@@ -335,7 +335,7 @@ void SoundDialog::ReImport()
 
 void SoundDialog::ReImportFrom()
 {
-    CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
+    CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
     const int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
     if (sel != -1)
     {
@@ -384,7 +384,7 @@ void SoundDialog::ReImportFrom()
 
 void SoundDialog::Export()
 {
-    CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
+    CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
     const int selectedItemsCount = ListView_GetSelectedCount(hSoundList);
     const size_t renameOnExport = SendMessage(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), BM_GETCHECK, 0, 0);
 
@@ -506,7 +506,7 @@ void SoundDialog::Export()
 
 void SoundDialog::SoundToBG()
 {
-    CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
+    CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
 
     if (ListView_GetSelectedCount( hSoundList ))
     {
@@ -542,7 +542,7 @@ void SoundDialog::SoundToBG()
 
 void SoundDialog::SoundPosition()
 {
-	CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+	CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
 	if (ListView_GetSelectedCount(hSoundList))
 	{
@@ -584,7 +584,7 @@ void SoundDialog::SoundPosition()
 
 void SoundDialog::DeleteSound()
 {
-    CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
+    CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
 
     const int count = ListView_GetSelectedCount( hSoundList );
     if (count > 0)
@@ -630,7 +630,7 @@ void SoundDialog::SavePosition()
 }
 
 
-SoundPositionDialog::SoundPositionDialog(PinSound *pps) : CDialog(IDD_SOUND_POSITION_DIALOG)
+SoundPositionDialog::SoundPositionDialog(PinSound * const pps) : CDialog(IDD_SOUND_POSITION_DIALOG)
 {
 	m_balance = pps->m_balance;
 	m_fade = pps->m_fade;
@@ -696,7 +696,7 @@ void SoundPositionDialog::SetSliderValues()
 INT_PTR SoundPositionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	//const HWND hwndDlg = GetHwnd();
-	//CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+	//CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
 	switch (uMsg)
 	{

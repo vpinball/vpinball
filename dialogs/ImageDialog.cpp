@@ -47,7 +47,7 @@ BOOL ImageDialog::OnInitDialog()
 INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    HWND hwndDlg = GetHwnd();
-   CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
    m_resizer.HandleMessage(uMsg, wParam, lParam);
 
@@ -318,7 +318,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 void ImageDialog::UpdateImages()
 {
     HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
     const int count = ListView_GetSelectedCount(hSoundList);
     if (count > 0)
@@ -354,7 +354,7 @@ BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
    UNREFERENCED_PARAMETER(lParam);
    HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
    switch (LOWORD(wParam))
    {
@@ -410,10 +410,9 @@ void ImageDialog::OnCancel()
 void ImageDialog::Import()
 {
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) * const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
-   char szFileName[4096];
-   char szInitialDir[4096];
-   char szT[4096];
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+   char szFileName[MAXSTRING];
+   char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
 
    OPENFILENAME ofn;
@@ -424,11 +423,11 @@ void ImageDialog::Import()
 
    ofn.lpstrFilter = "Bitmap, JPEG, PNG, TGA, EXR, HDR Files (.bmp/.jpg/.png/.tga/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.exr;*.hdr\0";
    ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = 4096;
+   ofn.nMaxFile = MAXSTRING;
    ofn.lpstrDefExt = "png";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
 
-   HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, 4096);
+   HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
    ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
    const int ret = GetOpenFileName(&ofn);
@@ -441,6 +440,7 @@ void ImageDialog::Import()
       if (len < ofn.nFileOffset)
       {
          // Multi-file select
+         char szT[MAXSTRING];
          lstrcpy(szT, szFileName);
          lstrcat(szT, "\\");
          len++;
@@ -470,7 +470,7 @@ void ImageDialog::Import()
 void ImageDialog::Export()
 {
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) * const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
    char g_filename[MAX_PATH];
    char g_initDir[MAX_PATH];
    const int selectedItemsCount = ListView_GetSelectedCount(hSoundList);
@@ -626,7 +626,7 @@ void ImageDialog::Export()
 void ImageDialog::DeleteImage()
 {
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) * const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
    const int count = ListView_GetSelectedCount(hSoundList);
    if (count > 0)
@@ -671,10 +671,9 @@ void ImageDialog::DeleteImage()
 void ImageDialog::Reimport()
 {
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) * const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
    const int count = ListView_GetSelectedCount(hSoundList);
-
    if (count > 0)
    {
       LocalString ls(IDS_REPLACEIMAGE);
@@ -715,7 +714,7 @@ void ImageDialog::Reimport()
 void ImageDialog::UpdateAll()
 {
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) *const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
    const int count = ListView_GetSelectedCount(hSoundList);
    bool errorOccurred = false;
@@ -751,7 +750,7 @@ void ImageDialog::UpdateAll()
 void ImageDialog::ReimportFrom()
 {
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) * const pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
    int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
    if (sel != -1)

@@ -792,8 +792,8 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
    m_scriptError = true;
 
-   PinTable * const pt = g_pvp->GetActiveTable();
-   if (pt != NULL)
+   CComObject<PinTable> * const pt = g_pvp->GetActiveTable();
+   if (pt)
    {
       SetVisible(true);
       ShowWindow(m_hwndMain, SW_RESTORE);
