@@ -2295,11 +2295,11 @@ BEGIN
     PUSHBUTTON      "Primitive",ID_INSERT_PRIMITIVE,6,366,24,24,BS_ICON
     PUSHBUTTON      "Flasher",ID_INSERT_FLASHER,30,366,24,24,BS_ICON
     PUSHBUTTON      "Rubber",ID_INSERT_RUBBER,6,390,24,24,BS_ICON
-    CONTROL         "Magnify",ID_TABLE_MAGNIFY,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,6,6,24,24
-    CONTROL         "Select",IDC_SELECT,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,30,6,24,24
-    CONTROL         "Options",ID_EDIT_PROPERTIES,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,6,30,24,24
-    CONTROL         "Script",ID_EDIT_SCRIPT,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,30,30,24,24
-    CONTROL         "Backglass",ID_EDIT_BACKGLASSVIEW,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,6,54,24,24
+    CONTROL         "Magnify",ID_TABLE_MAGNIFY,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,6,6,24,24
+    CONTROL         "Select",IDC_SELECT,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,30,6,24,24
+    CONTROL         "Options",ID_EDIT_PROPERTIES,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,6,30,24,24
+    CONTROL         "Script",ID_EDIT_SCRIPT,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,30,30,24,24
+    CONTROL         "Backglass",ID_EDIT_BACKGLASSVIEW,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,6,54,24,24
 END
 
 
@@ -3167,6 +3167,14 @@ IDI_PLAY                ICON                    "res\\play.ico"
 IDI_PAUSE               ICON                    "res\\pause.ico"
 
 IDI_STEP                ICON                    "res\\step.ico"
+
+IDI_MAGNIFY             ICON                    "res\\magnify.ico"
+
+IDI_SELECT              ICON                    "res\\select.ico"
+
+IDI_OPTIONS             ICON                    "res\\options.ico"
+
+IDI_BACKGLASS           ICON                    "res\\backglass.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

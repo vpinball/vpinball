@@ -500,9 +500,14 @@
 #define IDI_PAUSE                       370
 #define IDI_STEP                        371
 #define IDC_JOYDEADZONESLIDER           371
+#define IDI_MAGNIFY                     372
 #define IDC_Tex3072                     373
+#define IDI_SELECT                      373
 #define IDC_Tex1024                     374
+#define IDI_OPTIONS                     374
 #define IDC_Tex2048                     375
+#define IDI_PLAY1                       375
+#define IDI_BACKGLASS                   375
 #define IDC_TexUnlimited                376
 #define IDC_Layback                     377
 #define IDC_LOADED_MESH_TEXT            377

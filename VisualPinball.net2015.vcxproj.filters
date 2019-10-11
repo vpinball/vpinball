@@ -213,6 +213,11 @@
     <Image Include="res\kickerT1.bmp">
       <Filter>res</Filter>
     </Image>
+    <Image Include="res\play1.ico" />
+    <Image Include="res\magnify.ico" />
+    <Image Include="res\select.ico" />
+    <Image Include="res\options.ico" />
+    <Image Include="res\backglass.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\vpinball.rgs">
