@@ -386,13 +386,13 @@ public:
    IEditable *GetElementByName(const char *name);
    void OnDelete();
 
-   void DoLButtonDown(int x, int y, bool zoomIn = true);
-   void DoLButtonUp(int x, int y);
-   void DoRButtonDown(int x, int y);
+   void DoLeftButtonDown(int x, int y, bool zoomIn = true);
+   void OnLeftButtonUp(int x, int y);
+   void OnRightButtonDown(int x, int y);
    void FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect *psel);
-   void DoRButtonUp(int x, int y);
+   void OnRightButtonUp(int x, int y);
    void DoMouseMove(int x, int y);
-   void DoLDoubleClick(int x, int y);
+   void OnLeftDoubleClick(int x, int y);
    void UseTool(int x, int y, int tool);
    void OnKeyDown(int key);
 
@@ -458,6 +458,7 @@ public:
    virtual void OnLButtonDown(int x, int y);
    virtual void OnLButtonUp(int x, int y);
    virtual void OnMouseMove(int x, int y);
+   void OnMouseMove(const short x, const short y);
 
    void SetDefaultView();
    void GetViewRect(FRect *pfrect);
@@ -792,6 +793,11 @@ public:
 #endif
    
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+   void SetMouseCursor();
+   void OnLeftButtonDown(const short x, const short y);
+   void OnMouseWheel(const short x, const short y, const short zDelta);
+   void OnSize();
+   void OnClose();
 
 private:
    std::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name

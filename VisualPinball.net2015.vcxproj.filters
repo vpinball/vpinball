@@ -128,6 +128,9 @@
     <ClCompile Include="inc\gpuprofiler.cpp">
       <Filter>inc</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\ToolbarDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1049,6 +1052,9 @@
     </ClInclude>
     <ClInclude Include="inc\win32xx\include\wxx_scrollview.h">
       <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\ToolbarDialog.h">
+      <Filter>dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

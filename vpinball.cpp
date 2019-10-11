@@ -882,19 +882,12 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case ID_NEW_BLANKTABLE:
    case ID_NEW_EXAMPLETABLE:
    {
-      CComObject<PinTable> *pt;
-      CComObject<PinTable>::CreateInstance(&pt);
-      pt->AddRef();
-      pt->InitBuiltinTable(this,code != ID_NEW_EXAMPLETABLE);
-      m_vtable.push_back(pt);
-      SetEnableToolbar();
+      OpenNewTable(code);
       break;
    }
    case ID_DELETE:
    {
-      ptCur = GetActiveTable();
-      if (ptCur)
-         ptCur->OnDelete();
+      ProcessDeleteElement();
       break;
    }
    case ID_TABLE_CAMERAMODE:
@@ -1051,12 +1044,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case RECENT_FIRST_MENU_IDM + 6:
    case RECENT_FIRST_MENU_IDM + 7:
    {
-      char szFileName[MAX_PATH];
-      // get the index into the recent list menu
-      const size_t Index = code - RECENT_FIRST_MENU_IDM;
-      // copy it into a temporary string so it can be correctly processed
-      memcpy(szFileName, m_szRecentTableList[Index], sizeof(szFileName));
-      LoadFileName(szFileName);
+      OpenRecentFile(code);
       break;
    }
 
@@ -1074,38 +1062,17 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case IDC_COPY:
    {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-          POINT ptCursor;
-          GetCursorPos(&ptCursor);
-          ::ScreenToClient(ptCur->m_hwnd, &ptCursor);
-          ptCur->Copy(ptCursor.x, ptCursor.y);
-      }
+      CopyPasteElement(COPY);
       break;
    }
    case IDC_PASTE:
    {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-          POINT ptCursor;
-          GetCursorPos(&ptCursor);
-          ::ScreenToClient(ptCur->m_hwnd, &ptCursor);
-          ptCur->Paste(false, ptCursor.x, ptCursor.y);
-      }
+      CopyPasteElement(PASTE);
       break;
    }
    case IDC_PASTEAT:
    {
-      ptCur = GetActiveTable();
-      if (ptCur)
-      {
-         POINT ptCursor;
-         GetCursorPos(&ptCursor);
-         ::ScreenToClient(ptCur->m_hwnd, &ptCursor);
-         ptCur->Paste(true, ptCursor.x, ptCursor.y);
-      }
+      CopyPasteElement(PASTE_AT);
       break;
    }
    case ID_EDIT_UNDO:
@@ -1322,20 +1289,12 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_LAYER_MERGEALL:
    {
-      ptCur = GetActiveTable();
-      if (!ptCur) break;
-      ptCur->MergeAllLayers();
-      for (int i = 0; i < MAX_LAYERS; i++) ptCur->m_activeLayers[i] = false;
-      for (int i = 0; i < MAX_LAYERS; i++) SetLayerStatus(i);
+      MergeAllLayers();
       break;
    }
    case ID_LAYER_TOGGLEALL:
    {
-      ptCur = GetActiveTable();
-      if (!ptCur) break;
-      for (int i = 0; i < MAX_LAYERS; i++) ptCur->m_activeLayers[i] = !ptCur->m_toggleAllLayers;
-      for (int i = 0; i < MAX_LAYERS; i++) SetLayerStatus(i);
-      ptCur->m_toggleAllLayers ^= true;
+      ToggleAllLayers();
       break;
    }
    case ID_HELP_ABOUT:
@@ -3052,4 +3011,83 @@ void VPinball::SaveTable(const bool saveAs)
 
         }
     }
+}
+
+void VPinball::OpenNewTable(size_t tableId)
+{
+    CComObject<PinTable> *pt;
+    CComObject<PinTable>::CreateInstance(&pt);
+    pt->AddRef();
+    pt->InitBuiltinTable(this, tableId != ID_NEW_EXAMPLETABLE);
+    m_vtable.push_back(pt);
+    SetEnableToolbar();
+}
+
+void VPinball::ProcessDeleteElement()
+{
+    CComObject<PinTable> *ptCur = GetActiveTable();
+    if (ptCur)
+        ptCur->OnDelete();
+}
+
+void VPinball::OpenRecentFile(const size_t menuId)
+{
+    char szFileName[MAX_PATH];
+    // get the index into the recent list menu
+    const size_t Index = menuId - RECENT_FIRST_MENU_IDM;
+    // copy it into a temporary string so it can be correctly processed
+    memcpy(szFileName, m_szRecentTableList[Index], sizeof(szFileName));
+    LoadFileName(szFileName);
+}
+
+void VPinball::CopyPasteElement(const CopyPasteModes mode)
+{
+    CComObject<PinTable> *ptCur = GetActiveTable();
+    if (ptCur)
+    {
+        POINT ptCursor;
+        GetCursorPos(&ptCursor);
+        ::ScreenToClient(ptCur->m_hwnd, &ptCursor);
+        switch (mode)
+        {
+            case COPY:
+            {
+                ptCur->Copy(ptCursor.x, ptCursor.y);
+                break;
+            }
+            case PASTE:
+            {
+                ptCur->Paste(false, ptCursor.x, ptCursor.y);
+                break;
+            }
+            case PASTE_AT:
+            {
+                ptCur->Paste(true, ptCursor.x, ptCursor.y);
+            }
+            default:
+                break;
+        }
+    }
+}
+
+void VPinball::MergeAllLayers()
+{
+    CComObject<PinTable> *ptCur = GetActiveTable();
+    if (!ptCur)
+        return;
+
+    ptCur->MergeAllLayers();
+    for (int i = 0; i < MAX_LAYERS; i++) ptCur->m_activeLayers[i] = false;
+    for (int i = 0; i < MAX_LAYERS; i++) SetLayerStatus(i);
+}
+
+void VPinball::ToggleAllLayers()
+{
+    CComObject<PinTable> *ptCur = GetActiveTable();
+    if (!ptCur) 
+        return;
+
+    for (int i = 0; i < MAX_LAYERS; i++) ptCur->m_activeLayers[i] = !ptCur->m_toggleAllLayers;
+    for (int i = 0; i < MAX_LAYERS; i++) SetLayerStatus(i);
+    ptCur->m_toggleAllLayers ^= true;
 }
