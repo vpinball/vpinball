@@ -232,6 +232,11 @@
     <Image Include="res\flasher.ico" />
     <Image Include="res\rubber.ico" />
     <Image Include="res\trigger.ico" />
+    <Image Include="res\decal.ico" />
+    <Image Include="res\kicker.ico" />
+    <Image Include="res\textbox.ico" />
+    <Image Include="res\reel.ico" />
+    <Image Include="res\lightseq.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\vpinball.rgs">
