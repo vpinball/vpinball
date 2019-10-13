@@ -23,7 +23,7 @@ public:
    HRESULT WriteInt(int id, int value);
    HRESULT WriteString(int id, char *szvalue);
    HRESULT WriteWideString(int id, WCHAR *wzvalue);
-   HRESULT WriteBool(int id, BOOL fvalue);
+   HRESULT WriteBool(int id, BOOL value);
    HRESULT WriteFloat(int id, float value);
    HRESULT WriteStruct(int id, void *pvalue, int size);
    HRESULT WriteVector3(int id, Vertex3Ds* vec);

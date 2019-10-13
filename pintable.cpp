@@ -385,7 +385,7 @@ STDMETHODIMP ScriptGlobalTable::get_LockbarKey(long *pVal)
 bool ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents)
 {
    char *szPath = new char[MAX_PATH + lstrlen(szfilename)];
-   bool fSuccess = false;
+   bool success = false;
 
    if (dirname != NULL)
    {
@@ -434,12 +434,12 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname
 
       delete[] szContents;
 
-      fSuccess = true;
+      success = true;
    }
 
    delete[] szPath;
 
-   return fSuccess;
+   return success;
 }
 
 STDMETHODIMP ScriptGlobalTable::GetCustomParam(long index, BSTR *param)
@@ -867,7 +867,7 @@ static inline bool4 ambi_dom(const Vertex4D &jDx)
 void upscale(DWORD * const data, const unsigned int xres, const unsigned int yres, const bool is_brightness_data)
 {
     std::vector<Vertex4D> metric(xres*yres); //!! avoid constant reallocs?
-    
+
     unsigned int o = 0;
     if (is_brightness_data)
     {
@@ -4163,7 +4163,7 @@ bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
    return false;
 }
 
-void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, const char * const filename, const bool fPlay)
+void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, const char * const filename, const bool play)
 {
    PinSound * const ppsNew = g_pvp->m_pds.LoadWaveFile(filename);
 
@@ -4188,19 +4188,19 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    psT.m_pDS3DBuffer = NULL;
    delete ppsNew;
 
-   if (fPlay)
+   if (play)
       pps->m_pDSBuffer->Play(0, 0, 0);
 }
 
 
-void PinTable::ImportSound(const HWND hwndListView, const char * const szfilename, const bool fPlay)
+void PinTable::ImportSound(const HWND hwndListView, const char * const szfilename, const bool play)
 {
    PinSound * const pps = g_pvp->m_pds.LoadWaveFile(szfilename);
 
    if (pps == NULL)
       return;
 
-   if (fPlay)
+   if (play)
       pps->m_pDSBuffer->Play(0, 0, 0);
 
    m_vsound.push_back(pps);
@@ -4308,7 +4308,7 @@ int PinTable::AddListBinary(HWND hwndListView, PinBinary *ppb)
    return index;
 }
 
-void PinTable::NewCollection(const HWND hwndListView, const bool fFromSelection)
+void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
 {
    WCHAR wzT[128];
 
@@ -4321,7 +4321,7 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fFromSelection)
 
    WideStrNCopy(wzT, pcol->m_wzName, MAXNAMEBUFFER);
 
-   if (fFromSelection && !MultiSelIsEmpty())
+   if (fromSelection && !MultiSelIsEmpty())
    {
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
@@ -4851,14 +4851,14 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
             }
          }
       }
-      bool fLocked = psel->m_locked;
+      bool locked = psel->m_locked;
       //!! HACK
       if (psel == this) // multi-select case
       {
-         fLocked = FMutilSelLocked();
+         locked = FMutilSelLocked();
       }
 
-      CheckMenuItem(hmenu, ID_LOCK, MF_BYCOMMAND | (fLocked ? MF_CHECKED : MF_UNCHECKED));
+      CheckMenuItem(hmenu, ID_LOCK, MF_BYCOMMAND | (locked ? MF_CHECKED : MF_UNCHECKED));
    }
 
    const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD, pt.x, pt.y, m_hwnd, NULL);
@@ -5043,7 +5043,7 @@ bool PinTable::GetCollectionIndex(ISelect *element, int &collectionIndex, int &e
 void PinTable::LockElements()
 {
    BeginUndo();
-   const bool fLock = !FMutilSelLocked();
+   const bool lock = !FMutilSelLocked();
    for (int i = 0; i < m_vmultisel.Size(); i++)
    {
       ISelect * const psel = m_vmultisel.ElementAt(i);
@@ -5053,7 +5053,7 @@ void PinTable::LockElements()
          if (pedit)
          {
             pedit->MarkForUndo();
-            psel->m_locked = fLock;
+            psel->m_locked = lock;
          }
       }
    }
@@ -6299,7 +6299,7 @@ bool PinTable::MultiSelIsEmpty()
    return (m_vmultisel.Size() == 1 && m_vmultisel.ElementAt(0) == this);
 }
 
-// fUpdate tells us whether to go ahead and change the UI
+// 'update' tells us whether to go ahead and change the UI
 // based on the new selection, or whether more stuff is coming
 // down the pipe (speeds up drag-selection)
 void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick)
@@ -6461,9 +6461,9 @@ void PinTable::OnDelete()
 
 void PinTable::OnKeyDown(int key)
 {
-   const int fShift = GetKeyState(VK_SHIFT) & 0x8000;
-   //const int fCtrl = GetKeyState(VK_CONTROL) & 0x8000;
-   //const int fAlt = GetKeyState(VK_MENU) & 0x8000;
+   const int shift = GetKeyState(VK_SHIFT) & 0x8000;
+   //const int ctrl = GetKeyState(VK_CONTROL) & 0x8000;
+   //const int alt = GetKeyState(VK_MENU) & 0x8000;
 
    switch (key)
    {
@@ -6475,7 +6475,7 @@ void PinTable::OnKeyDown(int key)
    case VK_DOWN:
    {
       BeginUndo();
-      const int distance = fShift ? 10 : 1;
+      const int distance = shift ? 10 : 1;
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
          ISelect *const pisel = m_vmultisel.ElementAt(i);
@@ -6573,7 +6573,7 @@ void PinTable::OnLButtonUp(int x, int y)
       {
          vector<ISelect*> vsel;
 
-         HDC hdc = ::GetDC(m_hwnd);
+         const HDC hdc = ::GetDC(m_hwnd);
 
          RECT rc;
          ::GetClientRect(m_hwnd, &rc);
@@ -6584,8 +6584,8 @@ void PinTable::OnLButtonUp(int x, int y)
          UIRenderPass2(phrs);
 
          const int ksshift = GetKeyState(VK_SHIFT);
-         const bool fAdd = ((ksshift & 0x80000000) != 0);
-         if (!fAdd)
+         const bool add = ((ksshift & 0x80000000) != 0);
+         if (!add)
             ClearMultiSel();
 
          int minlevel = INT_MAX;
@@ -8127,16 +8127,16 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    {
       cvar = 0;
 
-      const bool fRamps = true;
-      const bool fFlashers = true;
+      const bool ramps = true;
+      const bool flashers = true;
 
       for (size_t ivar = 0; ivar < m_vedit.size(); ivar++)
          if (m_vedit[ivar]->GetItemType() == eItemSurface ||
-            (fRamps && m_vedit[ivar]->GetItemType() == eItemRamp) ||
+            (ramps && m_vedit[ivar]->GetItemType() == eItemRamp) ||
             //!! **************** warning **********************
             // added to render to surface of DMD style lights and emreels
             // but no checks are being performed at moment:
-            (fFlashers && m_vedit[ivar]->GetItemType() == eItemFlasher))
+            (flashers && m_vedit[ivar]->GetItemType() == eItemFlasher))
             cvar++;
 
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
@@ -8155,11 +8155,11 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       for (size_t ivar = 0; ivar < m_vedit.size(); ivar++)
       {
          if (m_vedit[ivar]->GetItemType() == eItemSurface ||
-            (fRamps && m_vedit[ivar]->GetItemType() == eItemRamp) ||
+            (ramps && m_vedit[ivar]->GetItemType() == eItemRamp) ||
             //!! **************** warning **********************
             // added to render to surface of DMD style lights and emreels
             // but no checks are being performed at moment:
-            (fFlashers && m_vedit[ivar]->GetItemType() == eItemFlasher))
+            (flashers && m_vedit[ivar]->GetItemType() == eItemFlasher))
          {
             CComBSTR bstr;
             m_vedit[ivar]->GetScriptable()->get_Name(&bstr);

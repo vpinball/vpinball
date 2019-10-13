@@ -181,10 +181,10 @@ void Light::UIRenderPass1(Sur * const psur)
 
 void Light::UIRenderPass2(Sur * const psur)
 {
-   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || (g_pvp->m_alwaysDrawDragPoints));
+   bool drawDragpoints = ((m_selectstate != eNotSelected) || (g_pvp->m_alwaysDrawDragPoints));
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   if (!fDrawDragpoints)
+   if (!drawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
       for (size_t i = 0; i < m_vdpoint.size(); i++)
@@ -192,7 +192,7 @@ void Light::UIRenderPass2(Sur * const psur)
          const CComObject<DragPoint> * const pdp = m_vdpoint[i];
          if (pdp->m_selectstate != eNotSelected)
          {
-            fDrawDragpoints = true;
+            drawDragpoints = true;
             break;
          }
       }
@@ -200,7 +200,7 @@ void Light::UIRenderPass2(Sur * const psur)
 
    RenderOutline(psur);
 
-   if ((m_d.m_shape == ShapeCustom) && fDrawDragpoints)
+   if ((m_d.m_shape == ShapeCustom) && drawDragpoints)
    {
       for (size_t i = 0; i < m_vdpoint.size(); i++)
       {

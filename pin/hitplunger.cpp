@@ -513,7 +513,7 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
    Ball * const pball = const_cast<Ball*>(pball_);   // HACK; needed below // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)
 
    float hittime = dtime; //start time
-   bool fHit = false;
+   bool hit = false;
 
    // If we got here, then the ball is close enough to the plunger
    // to where we should animate the button's light.
@@ -521,41 +521,41 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
    g_pplayer->m_LastPlungerHit = g_pplayer->m_time_msec;
 
    // We are close enable the plunger light.
-   CollisionEvent hit;
+   CollisionEvent ce;
    float newtime;
 
    // Check for hits on the non-moving parts, like the side of back
    // of the plunger.  These are just like hitting a wall.
    // Check all and find the nearest collision.
 
-   newtime = m_plungerMover.m_linesegBase.HitTest(pball, dtime, hit);
+   newtime = m_plungerMover.m_linesegBase.HitTest(pball, dtime, ce);
    if (newtime >= 0.f && newtime <= hittime)
    {
-      fHit = true;
+      hit = true;
       hittime = newtime;
-      coll = hit;
+      coll = ce;
       coll.m_hitvel.x = 0.f;
       coll.m_hitvel.y = 0.f;
    }
 
    for (int i = 0; i < 2; i++)
    {
-      newtime = m_plungerMover.m_linesegSide[i].HitTest(pball, hittime, hit);
+      newtime = m_plungerMover.m_linesegSide[i].HitTest(pball, hittime, ce);
       if (newtime >= 0.f && newtime <= hittime)
       {
-         fHit = true;
+         hit = true;
          hittime = newtime;
-         coll = hit;
+         coll = ce;
          coll.m_hitvel.x = 0.f;
          coll.m_hitvel.y = 0.f;
       }
 
-      newtime = m_plungerMover.m_jointBase[i].HitTest(pball, hittime, hit);
+      newtime = m_plungerMover.m_jointBase[i].HitTest(pball, hittime, ce);
       if (newtime >= 0.f && newtime <= hittime)
       {
-         fHit = true;
+         hit = true;
          hittime = newtime;
-         coll = hit;
+         coll = ce;
          coll.m_hitvel.x = 0.f;
          coll.m_hitvel.y = 0.f;
       }
@@ -612,24 +612,24 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
    const float deltay = m_plungerMover.m_speed * xferRatio;
 
    // check the moving bits
-   newtime = m_plungerMover.m_linesegEnd.HitTest(pball, hittime, hit);
+   newtime = m_plungerMover.m_linesegEnd.HitTest(pball, hittime, ce);
    if (newtime >= 0.f && newtime <= hittime)
    {
-      fHit = true;
+      hit = true;
       hittime = newtime;
-      coll = hit;
+      coll = ce;
       coll.m_hitvel.x = 0.f;
       coll.m_hitvel.y = deltay;
    }
 
    for (int i = 0; i < 2; i++)
    {
-      newtime = m_plungerMover.m_jointEnd[i].HitTest(pball, hittime, hit);
+      newtime = m_plungerMover.m_jointEnd[i].HitTest(pball, hittime, ce);
       if (newtime >= 0.f && newtime <= hittime)
       {
-         fHit = true;
+         hit = true;
          hittime = newtime;
-         coll = hit;
+         coll = ce;
          coll.m_hitvel.x = 0.f;
          coll.m_hitvel.y = deltay;
       }
@@ -639,7 +639,7 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
    pball->m_vel.y = oldvely;
 
    // check for a hit
-   if (fHit)
+   if (hit)
    {
       // We hit the ball.  Set a travel limit to freeze the plunger at
       // its current position for the next displacement update.  This

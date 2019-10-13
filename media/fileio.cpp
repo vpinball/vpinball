@@ -139,12 +139,12 @@ bool RawReadFromFile(const char * const szfilename, int *psize, char **pszout)
    *pszout = new char[*psize + 2];
 
    DWORD read;
-   /*BOOL fFoo =*/ ReadFile(hFile, *pszout, *psize, &read, NULL);
+   /*BOOL foo =*/ ReadFile(hFile, *pszout, *psize, &read, NULL);
 
    (*pszout)[*psize] = '\0';
    (*pszout)[*psize + 1] = '\0'; // In case this is a unicode file, end it with a null character properly
 
-   /*fFoo =*/ CloseHandle(hFile);
+   /*foo =*/ CloseHandle(hFile);
 
    return true;
 }
@@ -227,7 +227,7 @@ HRESULT BiffWriter::WriteWideString(int id, WCHAR *wzvalue)
    return hr;
 }
 
-HRESULT BiffWriter::WriteBool(int id, BOOL fvalue)
+HRESULT BiffWriter::WriteBool(int id, BOOL value)
 {
    ULONG writ = 0;
    HRESULT hr;
@@ -238,7 +238,7 @@ HRESULT BiffWriter::WriteBool(int id, BOOL fvalue)
    if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
       return hr;
 
-   hr = WriteBytes(&fvalue, sizeof(BOOL), &writ);
+   hr = WriteBytes(&value, sizeof(BOOL), &writ);
 
    return hr;
 }

@@ -152,7 +152,7 @@ void HitRectSur::Image(const float x, const float y, const float x2, const float
 {
 }
 
-void HitRectSur::SetObject(ISelect *psel)
+void HitRectSur::SetObject(ISelect * const psel)
 {
    m_pcur = psel;
    if (m_pcur)
@@ -198,10 +198,10 @@ void HitRectSur::SetFillColor(const int rgb)
 {
 }
 
-void HitRectSur::SetBorderColor(const int rgb, const bool fDashed, const int width)
+void HitRectSur::SetBorderColor(const int rgb, const bool dashed, const int width)
 {
 }
 
-void HitRectSur::SetLineColor(const int rgb, const bool fDashed, const int width)
+void HitRectSur::SetLineColor(const int rgb, const bool dashed, const int width)
 {
 }

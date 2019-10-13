@@ -843,16 +843,16 @@ bool Player::RenderAOOnly()
 
 void Player::RecomputePauseState()
 {
-   const bool fOldPause = m_pause;
-   const bool fNewPause = !(m_gameWindowActive || m_debugWindowActive);// || m_fUserDebugPaused;
+   const bool oldPause = m_pause;
+   const bool newPause = !(m_gameWindowActive || m_debugWindowActive);// || m_userDebugPaused;
 
-   if (fOldPause && fNewPause)
+   if (oldPause && newPause)
    {
       m_LastKnownGoodCounter++; // So our catcher doesn't catch on the last value
       m_noTimeCorrect = true;
    }
 
-   m_pause = fNewPause;
+   m_pause = newPause;
 }
 
 void Player::RecomputePseudoPauseState()

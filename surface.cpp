@@ -140,7 +140,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    {
       pdp->AddRef();
       pdp->Init(this, x - width, y + length, 0.f, false);
-      pdp->m_fAutoTexture = false;
+      pdp->m_autoTexture = false;
       m_vdpoint.push_back(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -148,7 +148,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    {
       pdp->AddRef();
       pdp->Init(this, x + width, y + length, 0.f, false);
-      pdp->m_fAutoTexture = false;
+      pdp->m_autoTexture = false;
       pdp->m_texturecoord = 1.0f;
       m_vdpoint.push_back(pdp);
    }
@@ -283,9 +283,9 @@ void Surface::UIRenderPass2(Sur * const psur)
    }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_alwaysDrawDragPoints);
+   bool drawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_alwaysDrawDragPoints);
 
-   if (!fDrawDragpoints)
+   if (!drawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
       for (size_t i = 0; i < m_vdpoint.size(); i++)
@@ -293,7 +293,7 @@ void Surface::UIRenderPass2(Sur * const psur)
          const CComObject<DragPoint> * const pdp = m_vdpoint[i];
          if (pdp->m_selectstate != eNotSelected)
          {
-            fDrawDragpoints = true;
+            drawDragpoints = true;
             break;
          }
       }
@@ -302,12 +302,12 @@ void Surface::UIRenderPass2(Sur * const psur)
    for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
       CComObject<DragPoint> * const pdp = m_vdpoint[i];
-      if (!(fDrawDragpoints || pdp->m_slingshot))
+      if (!(drawDragpoints || pdp->m_slingshot))
          continue;
       psur->SetFillColor(-1);
       psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
 
-      if (fDrawDragpoints)
+      if (drawDragpoints)
       {
          psur->SetObject(pdp);
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
@@ -1251,7 +1251,7 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteString(FID(SLMA), m_d.m_szSlingShotMaterial);
    bw.WriteFloat(FID(HTBT), m_d.m_heightbottom);
    bw.WriteFloat(FID(HTTP), m_d.m_heighttop);
-   //bw.WriteBool(FID(INNR), m_d.m_fInner); //!! Deprecated
+   //bw.WriteBool(FID(INNR), m_d.m_inner); //!! Deprecated
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteBool(FID(DSPT), m_d.m_displayTexture);
    bw.WriteFloat(FID(SLGF), m_d.m_slingshotforce);
@@ -1736,11 +1736,11 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
    if (!g_pplayer || !m_d.m_droppable)
       return E_FAIL;
 
-   const bool fNewVal = VBTOb(newVal);
+   const bool val = VBTOb(newVal);
 
-   if (m_isDropped != fNewVal)
+   if (m_isDropped != val)
    {
-      m_isDropped = fNewVal;
+      m_isDropped = val;
 
       const bool b = !m_isDropped && m_d.m_collidable;
       if (m_vhoDrop.size() > 0 && m_vhoDrop[0]->m_enabled != b)

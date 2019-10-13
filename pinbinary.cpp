@@ -38,10 +38,9 @@ bool PinBinary::ReadFromFile(const char * const szfilename)
    m_pdata = new char[m_cdata];
 
    DWORD read;
+   /*BOOL foo =*/ ReadFile(hFile, m_pdata, m_cdata, &read, NULL);
 
-   /*int fFoo =*/ ReadFile(hFile, m_pdata, m_cdata, &read, NULL);
-
-   /*fFoo =*/ CloseHandle(hFile);
+   /*foo =*/ CloseHandle(hFile);
 
    strncpy_s(m_szPath, szfilename, MAX_PATH);
 
@@ -180,7 +179,7 @@ void PinFont::Register()
 
 void PinFont::UnRegister()
 {
-   /*const BOOL fFoo =*/ RemoveFontResource(m_szTempFile);
+   /*const BOOL foo =*/ RemoveFontResource(m_szTempFile);
 
    DeleteFile(m_szTempFile);
 }

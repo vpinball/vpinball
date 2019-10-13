@@ -108,7 +108,7 @@ void Ramp::SetDefaults(bool fromMouseClick)
       m_d.m_szImage[0] = 0;
 
    m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)LoadValueIntWithDefault(strKeyName, "ImageMode", ImageModeWorld) : ImageModeWorld;
-   m_d.m_fImageWalls = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ImageWalls", true) : true;
+   m_d.m_imageWalls = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ImageWalls", true) : true;
 
    m_d.m_leftwallheight = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "LeftWallHeight", 62.0f) : 62.0f;
    m_d.m_rightwallheight = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RightWallHeight", 62.0f) : 62.0f;
@@ -141,7 +141,7 @@ void Ramp::WriteRegDefaults()
    SaveValueInt(strKeyName, "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SaveValueString(strKeyName, "Image", m_d.m_szImage);
    SaveValueInt(strKeyName, "ImageMode", m_d.m_imagealignment);
-   SaveValueBool(strKeyName, "ImageWalls", m_d.m_fImageWalls);
+   SaveValueBool(strKeyName, "ImageWalls", m_d.m_imageWalls);
    SaveValueFloat(strKeyName, "LeftWallHeight", m_d.m_leftwallheight);
    SaveValueFloat(strKeyName, "RightWallHeight", m_d.m_rightwallheight);
    SaveValueFloat(strKeyName, "LeftWallHeightVisible", m_d.m_leftwallheightvisible);
@@ -224,9 +224,9 @@ void Ramp::UIRenderPass2(Sur * const psur)
    delete[] pfCross;
    delete[] middlePoints;
 
-   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_alwaysDrawDragPoints);
+   bool drawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_alwaysDrawDragPoints);
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   if (!fDrawDragpoints)
+   if (!drawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
       for (size_t i = 0; i < m_vdpoint.size(); i++)
@@ -234,13 +234,13 @@ void Ramp::UIRenderPass2(Sur * const psur)
          const CComObject<DragPoint> * const pdp = m_vdpoint[i];
          if (pdp->m_selectstate != eNotSelected)
          {
-            fDrawDragpoints = true;
+            drawDragpoints = true;
             break;
          }
       }
    }
 
-   if (fDrawDragpoints)
+   if (drawDragpoints)
    {
       for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
@@ -1303,7 +1303,7 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
-   bw.WriteBool(FID(IMGW), m_d.m_fImageWalls);
+   bw.WriteBool(FID(IMGW), m_d.m_imageWalls);
    bw.WriteFloat(FID(WLHL), m_d.m_leftwallheight);
    bw.WriteFloat(FID(WLHR), m_d.m_rightwallheight);
    bw.WriteFloat(FID(WVHL), m_d.m_leftwallheightvisible);
@@ -1362,7 +1362,7 @@ bool Ramp::LoadToken(const int id, BiffReader * const pbr)
    case FID(TYPE): pbr->GetInt(&m_d.m_type); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(ALGN): pbr->GetInt(&m_d.m_imagealignment); break;
-   case FID(IMGW): pbr->GetBool(&m_d.m_fImageWalls); break;
+   case FID(IMGW): pbr->GetBool(&m_d.m_imageWalls); break;
    case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
    case FID(WLHL): pbr->GetFloat(&m_d.m_leftwallheight); break;
    case FID(WLHR): pbr->GetFloat(&m_d.m_rightwallheight); break;
@@ -1708,17 +1708,17 @@ STDMETHODIMP Ramp::put_ImageAlignment(RampImageAlignment newVal)
 
 STDMETHODIMP Ramp::get_HasWallImage(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_d.m_fImageWalls);
+   *pVal = FTOVB(m_d.m_imageWalls);
 
    return S_OK;
 }
 
 STDMETHODIMP Ramp::put_HasWallImage(VARIANT_BOOL newVal)
 {
-   if (m_d.m_fImageWalls != VBTOb(newVal))
+   if (m_d.m_imageWalls != VBTOb(newVal))
    {
       STARTUNDO
-      m_d.m_fImageWalls = VBTOb(newVal);
+      m_d.m_imageWalls = VBTOb(newVal);
       m_dynamicVertexBufferRegenerate = true;
       STOPUNDO
    }
@@ -1873,18 +1873,18 @@ STDMETHODIMP Ramp::get_Collidable(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
 {
-   const bool fNewVal = VBTOb(newVal);
+   const bool val = VBTOb(newVal);
    if (!g_pplayer)
    {
       STARTUNDO
-      m_d.m_collidable = fNewVal;
+      m_d.m_collidable = val;
       STOPUNDO
    }
    else
    {
-       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != fNewVal)
+       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != val)
            for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
-               m_vhoCollidable[i]->m_enabled = fNewVal; //copy to hit checking on entities composing the object
+               m_vhoCollidable[i]->m_enabled = val; //copy to hit checking on entities composing the object
    }
 
    return S_OK;
@@ -2284,7 +2284,7 @@ void Ramp::RenderRamp(const Material * const mat)
 
       //ppin3d->EnableAlphaBlend( false ); //!! not necessary anymore
 
-      if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f && (!pin || m_d.m_fImageWalls))
+      if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f && (!pin || m_d.m_imageWalls))
       {
          // both walls with image and floor
          pd3dDevice->basicShader->Begin(0);
@@ -2299,7 +2299,7 @@ void Ramp::RenderRamp(const Material * const mat)
 
          if (m_d.m_rightwallheightvisible != 0.f || m_d.m_leftwallheightvisible != 0.f)
          {
-            if (pin && !m_d.m_fImageWalls)
+            if (pin && !m_d.m_imageWalls)
             {
                pd3dDevice->basicShader->End();
                pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
@@ -2454,7 +2454,7 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
          rgv3D[1].y = rgvLocal[i].y;
          rgv3D[1].z = (rgheight[i] + m_d.m_rightwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-         if (pin && m_d.m_fImageWalls)
+         if (pin && m_d.m_imageWalls)
          {
             if (m_d.m_imagealignment == ImageModeWorld)
             {
@@ -2493,7 +2493,7 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
          rgv3D[1].y = rgv3D[0].y;
          rgv3D[1].z = (rgheight[i] + m_d.m_leftwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-         if (pin && m_d.m_fImageWalls)
+         if (pin && m_d.m_imageWalls)
          {
             if (m_d.m_imagealignment == ImageModeWorld)
             {

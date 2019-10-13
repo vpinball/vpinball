@@ -253,7 +253,7 @@ void PaintSur::Image(const float x, const float y, const float x2, const float y
    StretchBlt(m_hdc, ix, iy, ix2 - ix, iy2 - iy, hdcSrc, 0, 0, width, height, SRCCOPY);
 }
 
-void PaintSur::SetObject(ISelect *psel)
+void PaintSur::SetObject(ISelect * const psel)
 {
    if ((m_psel != NULL) && (psel != NULL)) // m_psel can be null when rendering a blueprint or other item which has no selection feedback
    {
@@ -289,7 +289,7 @@ void PaintSur::SetFillColor(const int rgb)
    }
 }
 
-void PaintSur::SetBorderColor(const int rgb, const bool fDashed, const int width)
+void PaintSur::SetBorderColor(const int rgb, const bool dashed, const int width)
 {
    SelectObject(m_hdc, GetStockObject(BLACK_PEN));
    DeleteObject(m_hpnOutline);
@@ -301,13 +301,13 @@ void PaintSur::SetBorderColor(const int rgb, const bool fDashed, const int width
    }
    else
    {
-      const int style = fDashed ? PS_DOT : PS_SOLID;
+      const int style = dashed ? PS_DOT : PS_SOLID;
       m_hpnOutline = CreatePen(style, width, rgb); //!! claims to be leaking mem
       m_nullBorder = false;
    }
 }
 
-void PaintSur::SetLineColor(const int rgb, const bool fDashed, const int width)
+void PaintSur::SetLineColor(const int rgb, const bool dashed, const int width)
 {
    SelectObject(m_hdc, GetStockObject(BLACK_PEN));
    DeleteObject(m_hpnLine);
@@ -320,7 +320,7 @@ void PaintSur::SetLineColor(const int rgb, const bool fDashed, const int width)
    }
    else
    {
-      const int style = fDashed ? PS_DOT : PS_SOLID;
+      const int style = dashed ? PS_DOT : PS_SOLID;
       m_hpnLine = CreatePen(style, width, rgb);
    }
 }
