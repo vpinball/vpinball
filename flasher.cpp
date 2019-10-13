@@ -214,9 +214,9 @@ void Flasher::UIRenderPass2(Sur * const psur)
    }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_alwaysDrawDragPoints);
+   bool drawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_alwaysDrawDragPoints);
 
-   if (!fDrawDragpoints)
+   if (!drawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
       for (size_t i = 0; i < m_vdpoint.size(); i++)
@@ -224,13 +224,13 @@ void Flasher::UIRenderPass2(Sur * const psur)
          const CComObject<DragPoint> * const pdp = m_vdpoint[i];
          if (pdp->m_selectstate != eNotSelected)
          {
-            fDrawDragpoints = true;
+            drawDragpoints = true;
             break;
          }
       }
    }
 
-   if (fDrawDragpoints)
+   if (drawDragpoints)
    for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
       CComObject<DragPoint> * const pdp = m_vdpoint[i];

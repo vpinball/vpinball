@@ -224,10 +224,10 @@ void Rubber::UIRenderPass2(Sur * const psur)
    }
 
 
-   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || (g_pvp->m_alwaysDrawDragPoints));
+   bool drawDragpoints = ((m_selectstate != eNotSelected) || (g_pvp->m_alwaysDrawDragPoints));
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   if (!fDrawDragpoints)
+   if (!drawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
       for (size_t i = 0; i < m_vdpoint.size(); i++)
@@ -235,13 +235,13 @@ void Rubber::UIRenderPass2(Sur * const psur)
          const CComObject<DragPoint> * const pdp = m_vdpoint[i];
          if (pdp->m_selectstate != eNotSelected)
          {
-            fDrawDragpoints = true;
+            drawDragpoints = true;
             break;
          }
       }
    }
 
-   if (fDrawDragpoints)
+   if (drawDragpoints)
    {
       for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
@@ -1116,18 +1116,18 @@ STDMETHODIMP Rubber::get_Collidable(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Rubber::put_Collidable(VARIANT_BOOL newVal)
 {
-   const bool fNewVal = VBTOb(newVal);
+   const bool val = VBTOb(newVal);
    if (!g_pplayer)
    {
       STARTUNDO
-      m_d.m_collidable = fNewVal;
+      m_d.m_collidable = val;
       STOPUNDO
    }
    else
    {
-       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != fNewVal)
+       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != val)
            for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
-               m_vhoCollidable[i]->m_enabled = fNewVal; //copy to hit checking on entities composing the object
+               m_vhoCollidable[i]->m_enabled = val; //copy to hit checking on entities composing the object
    }
 
    return S_OK;

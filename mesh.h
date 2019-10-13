@@ -352,7 +352,7 @@ inline bool FlatWithAccuracy(const Vertex3Ds & v1, const Vertex3Ds & v2, const V
 
 // find closest point, projected on xy plane
 template <class VtxContType>
-inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, Vertex2D &pvout, int &piseg, const bool fClosed)
+inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, Vertex2D &pvout, int &piseg, const bool closed)
 {
    const int count = (int)rgv.size();
 
@@ -360,7 +360,7 @@ inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, 
    piseg = -1; // in case we are not next to the line
 
    int cloop = count;
-   if (!fClosed)
+   if (!closed)
       --cloop; // Don't check segment running from the end point to the beginning point
 
    // Go through line segment, calculate distance from point to the line

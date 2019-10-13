@@ -38,7 +38,7 @@ public:
    bool m_hitEvent;
    bool m_collidable;
    bool m_visible;
-   bool m_fImageWalls;
+   bool m_imageWalls;
    bool m_reflectionEnabled;
    bool m_overwritePhysics;
 };

@@ -49,7 +49,7 @@ public:
    void SetVisible(const bool visible);
    bool GetVisible() const;
    void DrawHeader(HDC hdc);
-   void SetProperty(int dispid, VARIANT *pvar, const bool fPutRef);
+   void SetProperty(int dispid, VARIANT *pvar, const bool putRef);
 
    void PopulateDropdowns();
    void RefreshProperties();

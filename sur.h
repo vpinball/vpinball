@@ -42,11 +42,11 @@ public:
    virtual void Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y) = 0;
    virtual void Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height) = 0;
 
-   virtual void SetObject(ISelect *psel) = 0;
+   virtual void SetObject(ISelect * const psel) = 0;
 
    virtual void SetFillColor(const int rgb) = 0;
-   virtual void SetBorderColor(const int rgb, const bool fDashed, const int width) = 0;
-   virtual void SetLineColor(const int rgb, const bool fDashed, const int width) = 0;
+   virtual void SetBorderColor(const int rgb, const bool dashed, const int width) = 0;
+   virtual void SetLineColor(const int rgb, const bool dashed, const int width) = 0;
 
    inline Vertex2D ScreenToSurface(const int screenx, const int screeny) const
    {

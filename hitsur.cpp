@@ -272,7 +272,7 @@ void HitSur::Image(const float x, const float y, const float x2, const float y2,
 {
 }
 
-void HitSur::SetObject(ISelect *psel)
+void HitSur::SetObject(ISelect * const psel)
 {
    m_pcur = psel;
 }
@@ -281,10 +281,10 @@ void HitSur::SetFillColor(const int rgb)
 {
 }
 
-void HitSur::SetBorderColor(const int rgb, const bool fDashed, const int width)
+void HitSur::SetBorderColor(const int rgb, const bool dashed, const int width)
 {
 }
 
-void HitSur::SetLineColor(const int rgb, const bool fDashed, const int width)
+void HitSur::SetLineColor(const int rgb, const bool dashed, const int width)
 {
 }

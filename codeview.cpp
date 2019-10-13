@@ -1369,7 +1369,7 @@ void CodeViewer::FindCodeFromEvent()
       const size_t line = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, posFind, 0);
       // Check for 'sub' and make sure we're not in a comment
       const size_t beginchar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
-      bool fGoodMatch = true;
+      bool goodMatch = true;
 
       char szLine[MAX_LINE_LENGTH];
       SOURCE_TEXT_ATTR wzFormat[MAX_LINE_LENGTH];
@@ -1388,21 +1388,21 @@ void CodeViewer::FindCodeFromEvent()
             break;
 
          if (!IsWhitespace(szLine[i]) /*&& (wzFormat[i] != 0 || wzFormat[i] != SOURCETEXT_ATTR_COMMENT)*/) //!!?
-            fGoodMatch = false;
+            goodMatch = false;
       }
 
       if (i < 2) // Can't fit the word 'sub' in here
       {
-         fGoodMatch = false;
+         goodMatch = false;
       }
       else
       {
          szLine[i + 1] = '\0';
          if (lstrcmpi(&szLine[i - 2], "sub")) //!! correct like this?
-            fGoodMatch = false;
+            goodMatch = false;
       }
 
-      if (fGoodMatch)
+      if (goodMatch)
       {
          // We found a real sub heading - move the cursor inside of it
 

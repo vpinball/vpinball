@@ -2782,18 +2782,18 @@ STDMETHODIMP Primitive::get_Collidable(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Primitive::put_Collidable(VARIANT_BOOL newVal)
 {
-   const bool fNewVal = VBTOb(newVal);
+   const bool val = VBTOb(newVal);
    if (!g_pplayer)
    {
       STARTUNDO
-      m_d.m_collidable = fNewVal;
+      m_d.m_collidable = val;
       STOPUNDO
    }
    else
    {
-       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != fNewVal)
+       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != val)
            for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
-               m_vhoCollidable[i]->m_enabled = fNewVal; //copy to hit-testing on entities composing the object
+               m_vhoCollidable[i]->m_enabled = val; //copy to hit-testing on entities composing the object
    }
 
    return S_OK;

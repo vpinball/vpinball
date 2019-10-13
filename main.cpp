@@ -184,11 +184,11 @@ class VPApp : public CWinApp
 private:
    HINSTANCE theInstance;
    HRESULT hRes;
-   bool bRun;
-   bool fPlay;
-   bool fExtractPov;
-   bool fFile;
-   bool fExtractScript;
+   bool run;
+   bool play;
+   bool extractPov;
+   bool file;
+   bool extractScript;
    TCHAR szTableFileName[MAXSTRING];
 
 public:
@@ -234,11 +234,11 @@ public:
       _ASSERTE(SUCCEEDED(hRes));
       _Module.Init(ObjectMap, theInstance, &LIBID_VPinballLib);
 
-      fFile = false;
-      fPlay = false;
-      fExtractPov = false;
-      bRun = true;
-      fExtractScript = false;
+      file = false;
+      play = false;
+      extractPov = false;
+      run = true;
+      extractScript = false;
 
       memset(szTableFileName, 0, MAXSTRING);
 
@@ -246,9 +246,9 @@ public:
       const bool stos = LoadValueBoolWithDefault("Editor", "SelectTableOnStart", true);
       if (stos)
       {
-         fFile = true;
-         fPlay = true;
-         fExtractPov = false;
+         file = true;
+         play = true;
+         extractPov = false;
       }
 
       int nArgs;
@@ -261,7 +261,7 @@ public:
             || lstrcmpi(szArglist[i], _T("-?")) == 0 || lstrcmpi(szArglist[i], _T("/?")) == 0)
          {
             ShowError("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n\n-Edit [filename]  load file into VP\n-Play [filename]  load and play file\n-Pov [filename]  load, export pov and close\n-ExtractVBS [filename]  load, export table script and close\n-c1 [customparam] .. -c9 [customparam]  custom user parameters that can be accessed in the script via GetCustomParam(X)");
-            bRun = false;
+            run = false;
             break;
          }
 
@@ -270,19 +270,19 @@ public:
          if (lstrcmpi(szArglist[i], _T("-UnregServer")) == 0 || lstrcmpi(szArglist[i], _T("/UnregServer")) == 0)
          {
             _Module.UpdateRegistryFromResource(IDR_VPINBALL, FALSE);
-            const HRESULT nRet = _Module.UnregisterServer(TRUE);
-            if (nRet != S_OK)
+            const HRESULT ret = _Module.UnregisterServer(TRUE);
+            if (ret != S_OK)
                 ShowError("Unregister VP functions failed");
-            bRun = false;
+            run = false;
             break;
          }
          if (lstrcmpi(szArglist[i], _T("-RegServer")) == 0 || lstrcmpi(szArglist[i], _T("/RegServer")) == 0)
          {
             _Module.UpdateRegistryFromResource(IDR_VPINBALL, TRUE);
-            const HRESULT nRet = _Module.RegisterServer(TRUE);
-            if (nRet != S_OK)
+            const HRESULT ret = _Module.RegisterServer(TRUE);
+            if (ret != S_OK)
                 ShowError("Register VP functions failed");
-            bRun = false;
+            run = false;
             break;
          }
 
@@ -338,10 +338,10 @@ public:
 
          if ((editfile || playfile || extractpov || extractscript) && (i + 1 < nArgs))
          {
-            fFile = true;
-            fPlay = playfile;
-            fExtractPov = extractpov;
-            fExtractScript = extractscript;
+            file = true;
+            play = playfile;
+            extractPov = extractpov;
+            extractScript = extractscript;
 
             // Remove leading - or /
             char* filename;
@@ -416,7 +416,7 @@ public:
 
    virtual int Run()
    {
-      if (bRun)
+      if (run)
       {
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
          hRes = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER,
@@ -461,7 +461,7 @@ public:
          g_pvp->Init();
          g_haccel = LoadAccelerators(g_hinst, MAKEINTRESOURCE(IDR_VPACCEL));
 
-         if (fFile)
+         if (file)
          {
             bool lf = true;
             if (szTableFileName[0] != '\0')
@@ -469,7 +469,7 @@ public:
             else
                lf = g_pvp->LoadFile();
 
-			if (fExtractScript && lf)
+			if (extractScript && lf)
 			{
 				TCHAR szScriptFilename[MAX_PATH];
 				strcpy_s(szScriptFilename, szTableFileName);
@@ -482,7 +482,7 @@ public:
 				}
 				g_pvp->Quit();
 			}
-			if (fExtractPov && lf)
+			if (extractPov && lf)
 			{
 				TCHAR szPOVFilename[MAX_PATH];
 				strcpy_s(szPOVFilename, szTableFileName);
@@ -496,7 +496,7 @@ public:
 				g_pvp->Quit();
 			}
 
-            if (fPlay && lf)
+            if (play && lf)
                g_pvp->DoPlay(false);
          }
 

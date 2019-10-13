@@ -221,11 +221,11 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                }
 
                const int count = ListView_GetSelectedCount(GetDlgItem(IDC_SOUNDLIST).GetHwnd());
-               const int fEnable = !(count > 1);
-               ::EnableWindow(GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), fEnable);
-               ::EnableWindow(GetDlgItem(IDC_RENAME).GetHwnd(), fEnable);
+               const BOOL enable = !(count > 1);
+               ::EnableWindow(GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), enable);
+               ::EnableWindow(GetDlgItem(IDC_RENAME).GetHwnd(), enable);
             }
-            //EnableWindow(GetDlgItem(hwndDlg, IDC_EXPORT), fEnable);
+            //EnableWindow(GetDlgItem(hwndDlg, IDC_EXPORT), enable);
          }
          break;
 

@@ -146,7 +146,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
    if (pvsel != NULL)
    {
       ItemTypeEnum maintype = pvsel->ElementAt(0)->GetItemType();
-      bool fSame = true;
+      bool same = true;
 
       // See if all items in multi-select are of the same type.
       // If not, we can't edit their collective properties
@@ -160,7 +160,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
                PropertyPane * const pproppane = new PropertyPane(IDD_PROPMULTI, NULL);
                m_vproppane.push_back(pproppane);
                //resourceid = IDD_PROPMULTI;
-               fSame = false;
+               same = false;
             }
             bool endLoop = false;
             for (int t = 0; t < g_pvp->m_ptableActive->m_vcollection.Size() && !endLoop; t++)
@@ -189,7 +189,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
          }
       }
 
-      if (fSame)
+      if (same)
       {
          pisel = pvsel->ElementAt(0);
          if (pisel)
@@ -728,9 +728,9 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
       {
          if (SUCCEEDED(VariantChangeType(&varResult, &var, 0, VT_BOOL)))
          {
-            BOOL fCheck = V_BOOL(&varResult);
+            const BOOL check = V_BOOL(&varResult);
 
-            SendMessage(hwndControl, BM_SETCHECK, fCheck ? BST_CHECKED : BST_UNCHECKED, 0);
+            SendMessage(hwndControl, BM_SETCHECK, check ? BST_CHECKED : BST_UNCHECKED, 0);
             VariantClear(&varResult);
          }
 
@@ -869,7 +869,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
    }
 }
 
-void SmartBrowser::SetProperty(int dispid, VARIANT *pvar, const bool fPutRef)
+void SmartBrowser::SetProperty(int dispid, VARIANT *pvar, const bool putRef)
 {
    if (m_pvsel == NULL)
       return;
@@ -886,7 +886,7 @@ void SmartBrowser::SetProperty(int dispid, VARIANT *pvar, const bool fPutRef)
       /*const HRESULT hr =*/ m_pvsel->ElementAt(i)->GetDispatch()->Invoke(dispid,
          IID_NULL,
          LOCALE_USER_DEFAULT,
-         fPutRef ? DISPATCH_PROPERTYPUTREF : DISPATCH_PROPERTYPUT,
+         putRef ? DISPATCH_PROPERTYPUTREF : DISPATCH_PROPERTYPUT,
          &disp,
          NULL, NULL, NULL);
    }
@@ -1204,9 +1204,9 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          {
             const size_t state = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0);
 
-            const BOOL fChecked = (state & BST_CHECKED) != 0;
+            const BOOL checked = (state & BST_CHECKED) != 0;
 
-            CComVariant var(fChecked);
+            CComVariant var(checked);
 
             psb->SetProperty(dispid, &var, false);
             psb->GetControlValue((HWND)lParam);

@@ -216,21 +216,21 @@ void HitQuadtree::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 
    if (!m_leaf)
    {
-      const bool fLeft = (pball->m_hitBBox.left <= m_vcenter.x);
-      const bool fRight = (pball->m_hitBBox.right >= m_vcenter.x);
+      const bool left = (pball->m_hitBBox.left <= m_vcenter.x);
+      const bool right = (pball->m_hitBBox.right >= m_vcenter.x);
 
 #ifdef DEBUGPHYSICS
       g_pplayer->c_tested++;
 #endif
       if (pball->m_hitBBox.top <= m_vcenter.y) // Top
       {
-         if (fLeft)  m_children[0]->HitTestBall(pball, coll);
-         if (fRight) m_children[1]->HitTestBall(pball, coll);
+         if (left)  m_children[0]->HitTestBall(pball, coll);
+         if (right) m_children[1]->HitTestBall(pball, coll);
       }
       if (pball->m_hitBBox.bottom >= m_vcenter.y) // Bottom
       {
-         if (fLeft)  m_children[2]->HitTestBall(pball, coll);
-         if (fRight) m_children[3]->HitTestBall(pball, coll);
+         if (left)  m_children[2]->HitTestBall(pball, coll);
+         if (right) m_children[3]->HitTestBall(pball, coll);
       }
    }
 #endif
@@ -343,18 +343,18 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 #ifdef DEBUGPHYSICS
             g_pplayer->c_traversed++;
 #endif
-            const bool fLeft = (pball->m_hitBBox.left <= current->m_vcenter.x);
-            const bool fRight = (pball->m_hitBBox.right >= current->m_vcenter.x);
+            const bool left = (pball->m_hitBBox.left <= current->m_vcenter.x);
+            const bool right = (pball->m_hitBBox.right >= current->m_vcenter.x);
 
             if (pball->m_hitBBox.top <= current->m_vcenter.y) // Top
             {
-               if (fLeft)  stack[++stackpos] = current->m_children[0];
-               if (fRight) stack[++stackpos] = current->m_children[1];
+               if (left)  stack[++stackpos] = current->m_children[0];
+               if (right) stack[++stackpos] = current->m_children[1];
             }
             if (pball->m_hitBBox.bottom >= current->m_vcenter.y) // Bottom
             {
-               if (fLeft)  stack[++stackpos] = current->m_children[2];
-               if (fRight) stack[++stackpos] = current->m_children[3];
+               if (left)  stack[++stackpos] = current->m_children[2];
+               if (right) stack[++stackpos] = current->m_children[3];
             }
          }
       }
@@ -389,21 +389,21 @@ void HitQuadtree::HitTestXRay(Ball * const pball, vector<HitObject*> &pvhoHit, C
 
    if (!m_leaf)
    {
-      const bool fLeft = (pball->m_hitBBox.left <= m_vcenter.x);
-      const bool fRight = (pball->m_hitBBox.right >= m_vcenter.x);
+      const bool left = (pball->m_hitBBox.left <= m_vcenter.x);
+      const bool right = (pball->m_hitBBox.right >= m_vcenter.x);
 
 #ifdef DEBUGPHYSICS
       g_pplayer->c_tested++;
 #endif
       if (pball->m_hitBBox.top <= m_vcenter.y) // Top
       {
-         if (fLeft)  m_children[0]->HitTestXRay(pball, pvhoHit, coll);
-         if (fRight) m_children[1]->HitTestXRay(pball, pvhoHit, coll);
+         if (left)  m_children[0]->HitTestXRay(pball, pvhoHit, coll);
+         if (right) m_children[1]->HitTestXRay(pball, pvhoHit, coll);
       }
       if (pball->m_hitBBox.bottom >= m_vcenter.y) // Bottom
       {
-         if (fLeft)  m_children[2]->HitTestXRay(pball, pvhoHit, coll);
-         if (fRight) m_children[3]->HitTestXRay(pball, pvhoHit, coll);
+         if (left)  m_children[2]->HitTestXRay(pball, pvhoHit, coll);
+         if (right) m_children[3]->HitTestXRay(pball, pvhoHit, coll);
       }
    }
 }
