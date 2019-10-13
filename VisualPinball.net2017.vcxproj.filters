@@ -218,6 +218,20 @@
     <Image Include="res\select.ico" />
     <Image Include="res\options.ico" />
     <Image Include="res\backglass.ico" />
+    <Image Include="res\wall.ico" />
+    <Image Include="res\gate.ico" />
+    <Image Include="res\ramp.ico" />
+    <Image Include="res\flipper.ico" />
+    <Image Include="res\bumper.ico" />
+    <Image Include="res\plunger.ico" />
+    <Image Include="res\spinner.ico" />
+    <Image Include="res\timer.ico" />
+    <Image Include="res\light.ico" />
+    <Image Include="res\target.ico" />
+    <Image Include="res\primitive.ico" />
+    <Image Include="res\flasher.ico" />
+    <Image Include="res\rubber.ico" />
+    <Image Include="res\trigger.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\vpinball.rgs">

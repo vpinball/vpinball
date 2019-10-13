@@ -1298,6 +1298,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case ID_HELP_ABOUT:
    {
       ShowSubDialog(m_aboutDialog);
+//       ShowSubDialog(m_toolbarDialog);
       break;
    }
    case ID_WINDOW_CASCADE:
