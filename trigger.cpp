@@ -22,6 +22,7 @@ Trigger::Trigger()
    m_triggerVertices = NULL;
    m_menuid = IDR_SURFACEMENU;
    m_propVisual = NULL;
+   memset(m_d.m_szMaterial, 0, 32);
 }
 
 Trigger::~Trigger()

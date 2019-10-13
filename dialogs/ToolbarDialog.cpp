@@ -38,6 +38,49 @@ BOOL ToolbarDialog::OnInitDialog()
 
     hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PLAY), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     ::SendMessage(GetDlgItem(ID_TABLE_PLAY), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_WALL), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_INSERT_WALL), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_GATE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_INSERT_GATE), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_RAMP), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_INSERT_RAMP), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FLIPPER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_INSERT_FLIPPER), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PLUNGER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_INSERT_PLUNGER), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_BUMPER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_INSERT_BUMPER), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SPINNER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_INSERT_SPINNER), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_TIMER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_INSERT_TIMER), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_TRIGGER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_INSERT_TRIGGER), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_LIGHT), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_INSERT_LIGHT), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_TARGET), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_INSERT_TARGET), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PRIMITIVE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_INSERT_PRIMITIVE), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_FLASHER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_INSERT_FLASHER), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_RUBBER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    ::SendMessage(GetDlgItem(ID_INSERT_RUBBER), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)hIcon);
+
     return TRUE;
 }
 

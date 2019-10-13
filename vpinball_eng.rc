@@ -3176,6 +3176,34 @@ IDI_OPTIONS             ICON                    "res\\options.ico"
 
 IDI_BACKGLASS           ICON                    "res\\backglass.ico"
 
+IDI_WALL                ICON                    "res\\wall.ico"
+
+IDI_GATE                ICON                    "res\\gate.ico"
+
+IDI_RAMP                ICON                    "res\\ramp.ico"
+
+IDI_FLIPPER             ICON                    "res\\flipper.ico"
+
+IDI_BUMPER              ICON                    "res\\bumper.ico"
+
+IDI_PLUNGER             ICON                    "res\\plunger.ico"
+
+IDI_SPINNER             ICON                    "res\\spinner.ico"
+
+IDI_TIMER               ICON                    "res\\timer.ico"
+
+IDI_LIGHT               ICON                    "res\\light.ico"
+
+IDI_TARGET              ICON                    "res\\target.ico"
+
+IDI_PRIMITIVE           ICON                    "res\\primitive.ico"
+
+IDI_FLASHER             ICON                    "res\\flasher.ico"
+
+IDI_RUBBER              ICON                    "res\\rubber.ico"
+
+IDI_TRIGGER             ICON                    "res\\trigger.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
