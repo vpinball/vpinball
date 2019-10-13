@@ -567,9 +567,13 @@
 #define IDI_PLAY2                       389
 #define IDI_TRIGGER                     389
 #define IDD_PROPTABLE_LIGHTSOURCES      390
+#define IDI_DECAL                       390
 #define IDD_SEARCH_SELECT_ELEMENT       391
+#define IDI_KICKER                      391
 #define IDD_DRAWING_ORDER               392
+#define IDI_TEXTBOX                     392
 #define IDR_Flasher                     393
+#define IDI_REEL                        393
 #define IDC_GLOBAL_REFLECTION_CHECK     394
 #define IDC_ENABLE_OFF_LIGHTING         394
 #define IDC_ENABLE_RAMP_LIGHTING        394
@@ -582,6 +586,7 @@
 #define IDC_DIFFUSE_CHECK               394
 #define IDC_SHOW_BULB_MESH              394
 #define IDC_FALL_THROUGH_HOLE           394
+#define IDI_LIGHTSEQ                    394
 #define IDC_PRIMITIVE_IS_TOY            395
 #define IDC_ENABLE_FXAA                 395
 #define IDR_REGISTRY4                   395
@@ -1015,6 +1020,8 @@
 #define IDC_BUMPER_SKIRT_ANIM           822
 #define IDC_CUSTOM_PARAMS               823
 #define IDC_OBJECT_SPACE_NORMALMAP      824
+#define IDC_STATIC_ELEMENTS             825
+#define IDC_STATIC_LAYERS               826
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1178,7 +1185,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        647
 #define _APS_NEXT_COMMAND_VALUE         4022
-#define _APS_NEXT_CONTROL_VALUE         825
+#define _APS_NEXT_CONTROL_VALUE         827
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
