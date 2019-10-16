@@ -1532,7 +1532,6 @@ void Rubber::GenerateVertexBuffer()
       m_dynamicVertexBuffer->release();
    pd3dDevice->CreateVertexBuffer(m_numVertices, m_d.m_staticRendering ? 0 : USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_dynamicVertexBuffer);
 
-   // Draw the floor of the ramp.
    Vertex3D_NoTex2 *buf;
    m_dynamicVertexBuffer->lock(0, 0, (void**)&buf, m_d.m_staticRendering ? VertexBuffer::WRITEONLY : VertexBuffer::DISCARDCONTENTS);
    memcpy(buf, m_vertices.data(), sizeof(Vertex3D_NoTex2)*m_numVertices);
