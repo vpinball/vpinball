@@ -1582,6 +1582,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
             vtx.x = 25.0f * cosf(theta) * cosf(phi);
             vtx.y = 25.0f * cosf(theta) * sinf(phi);
             vtx.z = 25.0f * sinf(theta);
+            vtx.tu = 0.f;
+            vtx.tv = 0.f;
             ballDbgVtx.push_back(vtx);
          }
       }
@@ -5171,7 +5173,7 @@ void Player::DrawBalls()
    //m_pin3d.m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
    //m_pin3d.m_pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
 
-   const Material * const playfield_mat = g_pplayer->m_ptable->GetMaterial(g_pplayer->m_ptable->m_szPlayfieldMaterial);
+   const Material * const playfield_mat = m_ptable->GetMaterial(m_ptable->m_szPlayfieldMaterial);
    const vec4 playfield_cBaseF = convertColor(playfield_mat->m_cBase);
    const float playfield_avg_diffuse = playfield_cBaseF.x*0.176204f + playfield_cBaseF.y*0.812985f + playfield_cBaseF.z*0.0108109f;
 
@@ -5238,7 +5240,7 @@ void Player::DrawBalls()
 
 	  for (unsigned int i2 = 0; i2 < MAX_LIGHT_SOURCES; ++i2)
 	  {
-		  memcpy(&l[i2].vPos, &g_pplayer->m_ptable->m_Light[i2].pos, sizeof(float) * 3);
+		  memcpy(&l[i2].vPos, &m_ptable->m_Light[i2].pos, sizeof(float) * 3);
 		  memcpy(&l[i2].vEmission, &emission, sizeof(float) * 3);
 	  }
 
@@ -5926,11 +5928,11 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
          sscanf_s(szLine, "%s %s %d",szWord, (unsigned)_countof(szWord), szSubWord, (unsigned)_countof(szSubWord), &index);
          if (!strcmp(szSubWord, "Down"))
          {
-            g_pplayer->m_ptable->FireKeyEvent(DISPID_GameEvents_KeyDown, index);
+            m_ptable->FireKeyEvent(DISPID_GameEvents_KeyDown, index);
          }
          else // Release
          {
-            g_pplayer->m_ptable->FireKeyEvent(DISPID_GameEvents_KeyUp, index);
+            m_ptable->FireKeyEvent(DISPID_GameEvents_KeyUp, index);
          }
       }
       else if (!strcmp(szWord, "Physics"))
