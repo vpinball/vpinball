@@ -1200,13 +1200,13 @@ void Ramp::PrepareHabitrail()
 
    // Draw the floor of the ramp.
    Vertex3D_NoTex2 *buf;
-   Vertex3D_NoTex2 *buf2;
    m_dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    memcpy(buf, tmpBuf1, sizeof(Vertex3D_NoTex2)*m_numVertices);
    m_dynamicVertexBuffer->unlock();
 
    if (m_d.m_type != RampType1Wire)
    {
+      Vertex3D_NoTex2 *buf2;
       m_dynamicVertexBuffer2->lock(0, 0, (void**)&buf2, VertexBuffer::WRITEONLY);
       memcpy(buf2, tmpBuf2, sizeof(Vertex3D_NoTex2)*m_numVertices);
       m_dynamicVertexBuffer2->unlock();
@@ -1623,10 +1623,13 @@ STDMETHODIMP Ramp::get_Type(RampType *pVal)
 
 STDMETHODIMP Ramp::put_Type(RampType newVal)
 {
-   STARTUNDO
-   m_d.m_type = newVal;
-   m_dynamicVertexBufferRegenerate = true;
-   STOPUNDO
+   if(m_d.m_type != newVal)
+   {
+      STARTUNDO
+      m_d.m_type = newVal;
+      m_dynamicVertexBufferRegenerate = true;
+      STOPUNDO
+   }
 
    return S_OK;
 }

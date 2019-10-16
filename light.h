@@ -99,7 +99,6 @@ public:
 
    virtual void ClearForOverwrite();
 
-   void UpdateLightShapeHeight();
    void PrepareMoversCustom();
 
    virtual void EditMenu(HMENU hmenu);
@@ -196,7 +195,7 @@ private:
    std::vector<RenderVertex> m_vvertex;
 
    float m_initSurfaceHeight;
-   bool  m_updateLightShape;
+   bool  m_updateBulbLightHeight;
 
    bool  m_roundLight; // pre-VPX compatibility
 

@@ -17,7 +17,7 @@ Light::Light() : m_lightcenter(this)
    m_d.m_visible = true;
    m_roundLight = false;
    m_propVisual = NULL;
-   m_updateLightShape = false;
+   m_updateBulbLightHeight = false;
    memset(m_d.m_szOffImage, 0, MAXTOKEN);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
 }
@@ -564,9 +564,20 @@ void Light::RenderDynamic()
       pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add", (g_pplayer->m_current_renderstage == 0) ? min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
    }
 
-   // render light shape
-   if (m_updateLightShape)
-      UpdateLightShapeHeight();
+   // (maybe) update, then render light shape
+   if (m_updateBulbLightHeight && m_d.m_BulbLight && !m_backglass)
+   {
+      const float height = m_initSurfaceHeight + m_d.m_bulbHaloHeight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+      m_surfaceHeight = height;
+
+      Vertex3D_NoTex2 *buf;
+      m_customMoverVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      for (unsigned int t = 0; t < m_customMoverVertexNum; t++)
+         buf[t].z = height + 0.1f;
+      m_customMoverVBuffer->unlock();
+
+      m_updateBulbLightHeight = false;
+   }
 
    lightColor_intensity.w = m_d.m_currentIntensity;
    if (!m_d.m_BulbLight)
@@ -604,27 +615,6 @@ void Light::RenderDynamic()
 
    //if(m_backglass && (m_ptable->m_tblMirrorEnabled^m_ptable->m_reflectionEnabled))
    //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
-}
-
-void Light::UpdateLightShapeHeight()
-{
-   float height = m_initSurfaceHeight;
-   if (m_d.m_BulbLight)
-   {
-      height += m_d.m_bulbHaloHeight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-      m_surfaceHeight = height;
-   }
-
-   if (!m_backglass)
-   {
-      Vertex3D_NoTex2 *buf;
-      m_customMoverVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-      for (unsigned int t = 0; t < m_customMoverVertexNum; t++)
-         buf[t].z = height + 0.1f;
-      m_customMoverVBuffer->unlock();
-   }
-
-   m_updateLightShape = false;
 }
 
 void Light::PrepareMoversCustom()
@@ -752,7 +742,7 @@ void Light::RenderSetup()
 
    m_iblinkframe = 0;
    m_d.m_time_msec = g_pplayer->m_time_msec;
-   m_updateLightShape = false;
+   m_updateBulbLightHeight = false;
 
    m_initSurfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    m_surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface);
@@ -1582,10 +1572,13 @@ STDMETHODIMP Light::get_BulbHaloHeight(float *pVal)
 
 STDMETHODIMP Light::put_BulbHaloHeight(float newVal)
 {
-   STARTUNDO
-   m_d.m_bulbHaloHeight = newVal;
-   m_updateLightShape = true;
-   STOPUNDO
+   if(m_d.m_bulbHaloHeight != newVal)
+   {
+      STARTUNDO
+      m_d.m_bulbHaloHeight = newVal;
+      m_updateBulbLightHeight = true;
+      STOPUNDO
+   }
 
    return S_OK;
 }
@@ -1659,9 +1652,5 @@ void Light::UpdatePropertyPanes()
    EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_HALO_EDIT), m_d.m_BulbLight);
    EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_IMAGE_MODE), !m_d.m_BulbLight);
    EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, DISPID_Image), !m_d.m_BulbLight);
-
-   if (!m_d.m_BulbLight)
-      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STATIC_BULB_MESH), FALSE);
-   else
-      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STATIC_BULB_MESH), m_d.m_showBulbMesh);
+   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STATIC_BULB_MESH), !m_d.m_BulbLight ? FALSE : m_d.m_showBulbMesh);
 }
