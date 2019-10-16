@@ -25,6 +25,7 @@ Bumper::Bumper()
    memset(m_d.m_szSurface, 0, MAXTOKEN);
    m_d.m_ringDropOffset = 0.0f;
    m_ringDown = false;
+   m_updateSkirt = false;
    m_doSkirtAnimation = false;
    m_enableSkirtAnimation = true;
    m_skirtCounter = 0.0f;
@@ -431,7 +432,7 @@ void Bumper::UpdateSkirt(const bool doCalculation)
       vert = rMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
-      buf[i].z = vert.z*(m_d.m_heightScale*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + (m_baseHeight + 5.0f);
+      buf[i].z = vert.z*(m_d.m_heightScale*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + (m_baseHeight+5.0f);
 
       vert = Vertex3Ds(bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz);
       vert = rMatrix.MultiplyVectorNoTranslate(vert);
@@ -461,6 +462,7 @@ void Bumper::RenderDynamic()
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
    const int state = m_pbumperhitcircle->m_bumperanim_hitEvent ? 1 : 0;    // 0 = not hit, 1 = hit
+   m_pbumperhitcircle->m_bumperanim_hitEvent = false;
 
    if (m_d.m_ringVisible)
    {
@@ -470,7 +472,6 @@ void Bumper::RenderDynamic()
       {
          m_ringAnimate = true;
          m_ringDown = true;
-         m_pbumperhitcircle->m_bumperanim_hitEvent = false;
       }
 
       if (m_ringAnimate)
@@ -523,8 +524,8 @@ void Bumper::RenderDynamic()
 
    if (m_d.m_skirtVisible)
    {
-       if (m_enableSkirtAnimation)
-       {
+      if (m_enableSkirtAnimation)
+      {
           if (state == 1)
           {
               m_doSkirtAnimation = true;
@@ -541,8 +542,11 @@ void Bumper::RenderDynamic()
               }
           }
       }
-      else
+      else if(m_updateSkirt) // do a single update if the animation was turned off via script
+      {
+         m_updateSkirt = false;
          UpdateSkirt(false);
+      }
 
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       pd3dDevice->basicShader->SetTexture("Texture0", &m_skirtTexture, false);
@@ -753,7 +757,6 @@ void Bumper::RenderSetup()
          m_baseVertexBuffer->release();
       pd3dDevice->CreateVertexBuffer(bumperBaseNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_baseVertexBuffer);
 
-
       Vertex3D_NoTex2 *buf;
       m_baseVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       GenerateBaseMesh(buf);
@@ -772,6 +775,10 @@ void Bumper::RenderSetup()
          m_socketVertexBuffer->release();
       pd3dDevice->CreateVertexBuffer(bumperSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_socketVertexBuffer);
 
+      Vertex3D_NoTex2 *buf;
+      m_socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      GenerateSocketMesh(buf);
+      m_socketVertexBuffer->unlock();
    }
 
    if (m_d.m_ringVisible)
@@ -1375,9 +1382,15 @@ STDMETHODIMP Bumper::get_EnableSkirtAnimation(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Bumper::put_EnableSkirtAnimation(VARIANT_BOOL newVal)
 {
-   STARTUNDO
-   m_enableSkirtAnimation = VBTOb(newVal);
-   STOPUNDO
+   const bool val = VBTOb(newVal);
+   if(m_enableSkirtAnimation != val)
+   {
+      STARTUNDO
+      if (!val)
+         m_updateSkirt = true;
+      m_enableSkirtAnimation = val;
+      STOPUNDO
+   }
 
    return S_OK;
 }

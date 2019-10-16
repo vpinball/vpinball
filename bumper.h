@@ -157,6 +157,7 @@ private:
 
    float   m_baseHeight;
    float   m_skirtCounter;
+   bool    m_updateSkirt;
    bool    m_doSkirtAnimation;
    bool    m_enableSkirtAnimation;
    bool    m_ringDown;
