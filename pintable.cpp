@@ -279,11 +279,6 @@ STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
    return S_OK;
 }
 
-IDispatch *ScriptGlobalTable::GetDispatch()
-{
-   return (IDispatch *)this;
-}
-
 STDMETHODIMP ScriptGlobalTable::get_LeftFlipperKey(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eLeftFlipperKey];
@@ -453,13 +448,11 @@ STDMETHODIMP ScriptGlobalTable::GetCustomParam(long index, BSTR *param)
 
 STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 {
-   bool success;
    char szFileName[MAX_PATH];
-
    WideCharToMultiByte(CP_ACP, 0, FileName, -1, szFileName, MAX_PATH, NULL, NULL);
 
-   // try to load the scripts from the current directory
-   success = GetTextFileFromDirectory(szFileName, NULL, pContents);
+   // try to load the file from the current directory
+   bool success = GetTextFileFromDirectory(szFileName, NULL, pContents);
 
    // if that fails, try the User, Scripts and Tables sub-directorys under where VP was loaded from
    if (!success)
@@ -471,7 +464,7 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
    if (!success)
       success = GetTextFileFromDirectory(szFileName, "Tables\\", pContents);
 
-   return (success) ? S_OK : E_FAIL;
+   return success ? S_OK : E_FAIL;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
@@ -2130,9 +2123,9 @@ void PinTable::Paint(HDC hdc)
       m_hbmOffScreen = CreateCompatibleBitmap(hdc, rc.right - rc.left, rc.bottom - rc.top);
    }
 
-   HDC hdc2 = CreateCompatibleDC(hdc);
+   const HDC hdc2 = CreateCompatibleDC(hdc);
 
-   HBITMAP hbmOld = (HBITMAP)SelectObject(hdc2, m_hbmOffScreen);
+   const HBITMAP hbmOld = (HBITMAP)SelectObject(hdc2, m_hbmOffScreen);
 
    if (m_dirtyDraw)
    {

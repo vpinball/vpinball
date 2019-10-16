@@ -773,6 +773,7 @@ public:
    };
 
    vector<DebugLightData*> m_dbgChangedLights;
+
    float m_backupInclination;
    float m_backupFOV;
    float m_backupRotation;
@@ -892,16 +893,17 @@ public:
 
    void Init(PinTable *pt);
 
-   virtual IDispatch *GetDispatch();
+   virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
 
    virtual ISelect *GetISelect() { return NULL; }
-
-   bool GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents);
 
    BEGIN_COM_MAP(ScriptGlobalTable)
       COM_INTERFACE_ENTRY(ITableGlobal)
       COM_INTERFACE_ENTRY(IDispatch)
    END_COM_MAP()
+
+private:
+   bool GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents);
 
    PinTable *m_pt;
 };
