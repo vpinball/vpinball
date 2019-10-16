@@ -122,33 +122,37 @@ void Mesh::SaveWavefrontObj(const char *fname, const char *description)
 
 void Mesh::UploadToVB(VertexBuffer * vb, const float frame) 
 {
-   float intPart;
-   const float fractpart = modf(frame, &intPart);
-   const int iFrame = (int)intPart;
-
    if (frame != -1.f)
    {
-      for (size_t i = 0; i < m_vertices.size(); i++)
-      {
-         const VertData &v = m_animationFrames[iFrame].m_frameVerts[i];
-         m_vertices[i].x = v.x;
-         m_vertices[i].y = v.y;
-         m_vertices[i].z = v.z;
-         m_vertices[i].nx = v.nx;
-         m_vertices[i].ny = v.ny;
-         m_vertices[i].nz = v.nz;
+      float intPart;
+      const float fractpart = modf(frame, &intPart);
+      const int iFrame = (int)intPart;
 
-         if (iFrame + 1 < (int)m_animationFrames.size())
-         {
-            const VertData &v2 = m_animationFrames[iFrame + 1].m_frameVerts[i];
-            m_vertices[i].x += (v2.x - m_vertices[i].x)*fractpart;
-            m_vertices[i].y += (v2.y - m_vertices[i].y)*fractpart;
-            m_vertices[i].z += (v2.z - m_vertices[i].z)*fractpart;
-            m_vertices[i].nx += (v2.nx - m_vertices[i].nx)*fractpart;
-            m_vertices[i].ny += (v2.ny - m_vertices[i].ny)*fractpart;
-            m_vertices[i].nz += (v2.nz - m_vertices[i].nz)*fractpart;
-         }
+      if (iFrame+1 < (int)m_animationFrames.size())
+      {
+          for (size_t i = 0; i < m_vertices.size(); i++)
+          {
+              const VertData& v  = m_animationFrames[iFrame  ].m_frameVerts[i];
+              const VertData& v2 = m_animationFrames[iFrame+1].m_frameVerts[i];
+              m_vertices[i].x  = v.x  + (v2.x  - v.x) *fractpart;
+              m_vertices[i].y  = v.y  + (v2.y  - v.y) *fractpart;
+              m_vertices[i].z  = v.z  + (v2.z  - v.z) *fractpart;
+              m_vertices[i].nx = v.nx + (v2.nx - v.nx)*fractpart;
+              m_vertices[i].ny = v.ny + (v2.ny - v.ny)*fractpart;
+              m_vertices[i].nz = v.nz + (v2.nz - v.nz)*fractpart;
+          }
       }
+      else
+          for (size_t i = 0; i < m_vertices.size(); i++)
+          {
+              const VertData& v = m_animationFrames[iFrame].m_frameVerts[i];
+              m_vertices[i].x  = v.x;
+              m_vertices[i].y  = v.y;
+              m_vertices[i].z  = v.z;
+              m_vertices[i].nx = v.nx;
+              m_vertices[i].ny = v.ny;
+              m_vertices[i].nz = v.nz;
+          }
    }
 
    Vertex3D_NoTex2 *buf;
@@ -2975,13 +2979,14 @@ STDMETHODIMP Primitive::PlayAnim(float startFrame, float speed)
          startFrame = 0.0f;
       //if (startFrame < 0.0f)
       //   startFrame = -startFrame;
+      if (speed < 0.0f) speed = -speed;
+
+      m_vertexBufferRegenerate = (m_currentFrame != startFrame) || (m_speed != speed) || !m_doAnimation || m_endless;
 
       m_currentFrame = startFrame;
-      if (speed < 0.0f) speed = -speed;
       m_speed = speed;
       m_doAnimation = true;
       m_endless = false;
-      m_vertexBufferRegenerate = true;
    }
    return S_OK;
 }
@@ -2990,15 +2995,18 @@ STDMETHODIMP Primitive::PlayAnimEndless(float speed)
 {
    if (m_mesh.m_animationFrames.size() > 0)
    {
-      m_currentFrame = 0.0f;
       if (speed < 0.0f) speed = -speed;
+
+      m_vertexBufferRegenerate = (m_currentFrame != 0.f) || (m_speed != speed) || !m_doAnimation || !m_endless;
+
+      m_currentFrame = 0.0f;
       m_speed = speed;
       m_doAnimation = true;
       m_endless = true;
-      m_vertexBufferRegenerate = true;
    }
    return S_OK;
 }
+
 STDMETHODIMP Primitive::StopAnim()
 {
    m_doAnimation = false;
@@ -3011,20 +3019,24 @@ STDMETHODIMP Primitive::ContinueAnim(float speed)
    if (m_currentFrame > 0.0f)
    {
       if (speed < 0.0f) speed = -speed;
+
+      m_vertexBufferRegenerate = (m_speed != speed) || !m_doAnimation;
+
       m_speed = speed;
       m_doAnimation = true;
-      m_vertexBufferRegenerate = true;
    }
    return S_OK;
 }
 
 STDMETHODIMP Primitive::ShowFrame(float frame)
 {
-   m_doAnimation = false;
    if ((size_t)frame >= m_mesh.m_animationFrames.size())
       frame = (float)(m_mesh.m_animationFrames.size() - 1);
+
+   m_vertexBufferRegenerate = (m_currentFrame != frame) || m_doAnimation;
+
    m_currentFrame = frame;
-   m_vertexBufferRegenerate = true;
+   m_doAnimation = false;
    return S_OK;
 }
 
