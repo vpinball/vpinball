@@ -47,9 +47,10 @@ public:
    VPinball();
    virtual ~VPinball();
 
+   void Init();
    void Quit();
 
-   void Init();
+private:
    void InitPinDirectSound();
    void RegisterClasses();
    void CreateSideBar();
@@ -57,8 +58,6 @@ public:
    HWND CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight);
    void CreateMDIClient();
 
-   void ParseCommand(size_t code, HWND hwnd, size_t notify);
-   void ReInitPinDirectSound();
    void SetLayerStatus(const int layerNumber);
    void ShowProperties(bool enable);
    void ShowBackglassView(bool enable);
@@ -77,55 +76,58 @@ public:
    void CopyPasteElement(const CopyPasteModes mode);
    void MergeAllLayers();
    void ToggleAllLayers();
-
-   CComObject<PinTable> *GetActiveTable();
    void InitTools();
    void InitRegValues();
+   bool CanClose();
+   void GetMyPath();
+   void UpdateRecentFileList(char *szfilename);
+
+   bool ApcHost_OnTranslateMessage(MSG* pmsg);
+   bool processKeyInputForDialogs(MSG *pmsg);
+
+   void SetEnablePalette();
+
+   void ShowSubDialog(CDialog &dlg);
+
+   void CloseAllDialogs();
+
+   HMENU GetMainMenu(int id);
+
+public:
+   void ParseCommand(size_t code, HWND hwnd, size_t notify);
+   void ReInitPinDirectSound();
+
+   CComObject<PinTable> *GetActiveTable();
    bool LoadFile();
    void LoadFileName(char *szFileName);
    void SetClipboard(vector<IStream*> * const pvstm);
-
-   bool CanClose();
 
    void DoPlay(const bool _cameraMode);
 
    void SetPosCur(float x, float y);
    void SetObjectPosCur(float x, float y);
    void ClearObjectPosCur();
-   float ConvertToUnit(float value);
+   float ConvertToUnit(const float value);
    void SetPropSel(VectorProtected<ISelect> *pvsel);
 
    void DeletePropSel();
    void SetActionCur(char *szaction);
    void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
 
-   void GetMyPath();
-   void UpdateRecentFileList(char *szfilename);
-
    STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
    STDMETHOD_(ULONG, AddRef)();
    STDMETHOD_(ULONG, Release)();
-   //inline IDispatch *GetDispatch() {return (IVPinball *)this;}
 
-   ITypeInfo **GetTinfoClsAddr() { return &m_ptinfoCls; }
-   ITypeInfo **GetTinfoIntAddr() { return &m_ptinfoInt; }
+   STDMETHOD(PlaySound)(BSTR bstr);
 
-   //virtual IDispatch *GetPrimary() {return this->GetDispatch(); }
+   STDMETHOD(FireKnocker)(int Count);
+   STDMETHOD(QuitPlayer)(int CloseType);
 
-   virtual HRESULT GetTypeLibInfo(HINSTANCE *phinstOut, const GUID **pplibidOut,
-      SHORT *pwMajLibOut, SHORT *pwMinLibOut,
-      const CLSID **ppclsidOut, const IID **ppiidOut,
-      ITypeLib ***ppptlOut);
-
-   HRESULT MainMsgLoop();
-   HRESULT ApcHost_OnIdle(BOOL* pfContinue);
-   HRESULT ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed);
-   BOOL    processKeyInputForDialogs(MSG *pmsg);
+   void MainMsgLoop();
 
    bool CloseTable(PinTable * const ppt);
 
    void SetEnableToolbar();
-   void SetEnablePalette();
    void SetEnableMenuItems();
 
    void EnsureWorkerThread();
@@ -135,17 +137,15 @@ public:
    static void SetOpenMinimized();
    void ShowDrawingOrderDialog(bool select);
 
-   void CloseAllDialogs();
+   void SetStatusBarElementInfo(const char * const info);
+   void SetStatusBarUnitInfo(const char * const info, const bool isUnit);
 
    ULONG m_cref;
-   ITypeInfo *m_ptinfoCls;
-   ITypeInfo *m_ptinfoInt;
 
    vector< CComObject<PinTable>* > m_vtable;
    CComObject<PinTable> *m_ptableActive;
 
    HWND m_hwnd;
-   HWND m_toolTipHwnd;
    HWND m_hwndSideBar;
    HWND m_hwndSideBarScroll;
    HWND m_hwndSideBarLayers;
@@ -185,17 +185,8 @@ public:
    WCHAR m_wzMyPath[MAX_PATH];
    char m_currentTablePath[MAX_PATH];
 
-   STDMETHOD(PlaySound)(BSTR bstr);
-
-   STDMETHOD(FireKnocker)(int Count);
-   STDMETHOD(QuitPlayer)(int CloseType);
-
    int m_autosaveTime;
    static bool m_open_minimized;
-
-   HMENU GetMainMenu(int id);
-   void SetStatusBarElementInfo(const char * const info);
-   void SetStatusBarUnitInfo(const char * const info, const bool isUnit);
 
    Material m_dummyMaterial;
    COLORREF m_elemSelectColor;
@@ -214,10 +205,6 @@ protected:
 #endif 
 
 private:
-
-
-   void ShowSubDialog(CDialog &dlg);
-
    char m_szRecentTableList[LAST_OPENED_TABLE_COUNT + 1][MAX_PATH];
 
    HANDLE m_workerthread;

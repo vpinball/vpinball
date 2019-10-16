@@ -814,20 +814,20 @@ void VPinball::ClearObjectPosCur()
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)"");
 }
 
-float VPinball::ConvertToUnit(float value)
+float VPinball::ConvertToUnit(const float value)
 {
-    switch (m_convertToUnit)
-    {
-        case 0:
+   switch (m_convertToUnit)
+   {
+      case 0:
         return vpUnitsToInches(value);
 
-        case 1:
+      case 1:
         return vpUnitsToMillimeters(value);
 
-        case 2:
+      case 2:
         return value;
-    }
-    return 0;
+   }
+   return 0;
 }
 
 void VPinball::SetPropSel(VectorProtected<ISelect> *pvsel)
@@ -1704,20 +1704,20 @@ void VPinball::UpdateRecentFileList(char *szfilename)
    if (szfilename != NULL)
    {
       // does this file name aready exist in the list?
-      bool bFound = false;
+      bool found = false;
       int i;
       for (i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
       {
          if (strcmp(m_szRecentTableList[i], szfilename) == 0)
          {
             // yes it does
-            bFound = true;
+            found = true;
             break;
          }
       }
 
       // if the entry is already in the list then copy all the items above it down one position
-      const int index = (bFound) ? i - 1 :
+      const int index = found ? i - 1 :
          // else copy the entire list down
          (LAST_OPENED_TABLE_COUNT - 2);
 
@@ -1794,38 +1794,38 @@ void VPinball::UpdateRecentFileList(char *szfilename)
    }
 }
 
-BOOL VPinball::processKeyInputForDialogs(MSG *pmsg)
+bool VPinball::processKeyInputForDialogs(MSG *pmsg)
 {
     if (g_pvp->m_ptableActive)
     {
       if (g_pvp->m_materialDialog.IsWindow())
-            return g_pvp->m_materialDialog.IsDialogMessage(*pmsg);
+            return !!g_pvp->m_materialDialog.IsDialogMessage(*pmsg);
       if (g_pvp->m_imageMngDlg.IsWindow())
-            return g_pvp->m_imageMngDlg.IsDialogMessage(*pmsg);
+            return !!g_pvp->m_imageMngDlg.IsDialogMessage(*pmsg);
       if (g_pvp->m_soundMngDlg.IsWindow())
-            return g_pvp->m_soundMngDlg.IsDialogMessage(*pmsg);
+            return !!g_pvp->m_soundMngDlg.IsDialogMessage(*pmsg);
       if (g_pvp->m_collectionMngDlg.IsWindow())
-            return g_pvp->m_collectionMngDlg.IsDialogMessage(*pmsg);
+            return !!g_pvp->m_collectionMngDlg.IsDialogMessage(*pmsg);
       if (g_pvp->m_dimensionDialog.IsWindow())
-            return g_pvp->m_dimensionDialog.IsDialogMessage(*pmsg);
+            return !!g_pvp->m_dimensionDialog.IsDialogMessage(*pmsg);
     }
-    return fFalse;
+    return false;
 }
 
-HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
+bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
 {
-   *pfConsumed = FALSE;
+   bool consumed;
 
    if (!g_pplayer)
    {
-       *pfConsumed = processKeyInputForDialogs(pmsg);
-       if (*pfConsumed)
-           return NOERROR;
+      consumed = processKeyInputForDialogs(pmsg);
+      if (consumed)
+         return true;
 
       for (size_t i = 0; i < m_sb.m_vhwndDialog.size(); i++)
       {
          if (::IsDialogMessage(m_sb.m_vhwndDialog[i], pmsg))
-            *pfConsumed = TRUE;
+            consumed = true;
       }
 
       if (m_pcv && m_pcv->m_hwndMain)
@@ -1838,11 +1838,11 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
                translated = !!TranslateAccelerator(m_pcv->m_hwndMain, m_pcv->m_haccel, pmsg);
 
             if (translated)
-               *pfConsumed = TRUE;
+               consumed = true;
             else
             {
                if (::IsDialogMessage(m_pcv->m_hwndMain, pmsg))
-                  *pfConsumed = TRUE;
+                  consumed = true;
             }
          }
       }
@@ -1850,39 +1850,39 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
       if (m_pcv && m_pcv->m_hwndFind)
       {
          if (::IsDialogMessage(m_pcv->m_hwndFind, pmsg))
-            *pfConsumed = TRUE;
+            consumed = true;
       }
 
-      if (!(*pfConsumed))
+      if (!consumed)
       {
          const bool translated = !!TranslateAccelerator(m_hwnd, g_haccel, pmsg);
 
          if (translated)
-            *pfConsumed = TRUE;
+            consumed = true;
       }
 
-      if (!(*pfConsumed))
-         /*const int fTranslated =*/ TranslateMessage(pmsg);
+      if (!consumed)
+         /*const bool translated = !!*/ TranslateMessage(pmsg);
    }
    else
    {
+      consumed = false;
       if (g_pplayer->m_debugMode)
       {
          if (::IsDialogMessage(g_pplayer->m_hwndDebugger, pmsg))
-            *pfConsumed = TRUE;
+            consumed = true;
          else if (::IsDialogMessage(g_pplayer->m_hwndLightDebugger, pmsg))
-            *pfConsumed = TRUE;
+            consumed = true;
          else if (::IsDialogMessage(g_pplayer->m_hwndMaterialDebugger, pmsg))
-            *pfConsumed = TRUE;
+            consumed = true;
       }
    }
 
-   return NOERROR;
+   return consumed;
 }
 
-HRESULT VPinball::MainMsgLoop()
+void VPinball::MainMsgLoop()
 {
-   BOOL consumed;
    for (;;)
    {
       MSG msg;
@@ -1891,31 +1891,18 @@ HRESULT VPinball::MainMsgLoop()
          if (msg.message == WM_QUIT)
             break;
 
-         consumed = fFalse;
-
-         ApcHost_OnTranslateMessage(&msg, &consumed);
-
+         const bool consumed = ApcHost_OnTranslateMessage(&msg);
          if (!consumed)
             DispatchMessage(&msg);
       }
       else
       {
          if (g_pplayer && !g_pplayer->m_pause)
-            ApcHost_OnIdle(&consumed);
+            g_pplayer->Render(); // always render on idle
          else
-            WaitMessage();
+            WaitMessage(); // otherwise wait for input
       }
    }
-
-   return S_OK;
-}
-
-HRESULT VPinball::ApcHost_OnIdle(BOOL* pfContinue)
-{
-   g_pplayer->Render();
-   *pfContinue = TRUE;
-
-   return S_OK;
 }
 
 STDMETHODIMP VPinball::QueryInterface(REFIID iid, void **ppvObjOut)
@@ -1932,19 +1919,6 @@ STDMETHODIMP VPinball::QueryInterface(REFIID iid, void **ppvObjOut)
    }
 
    return E_NOINTERFACE;
-}
-
-
-HRESULT VPinball::GetTypeLibInfo(
-   HINSTANCE    *phinstOut,
-   const GUID  **pplibidOut,
-   SHORT        *pwMajLib,
-   SHORT        *pwMinLib,
-   const CLSID **ppclsidOut,
-   const IID   **ppiidOut,
-   ITypeLib   ***ppptlOut)
-{
-   return S_OK;
 }
 
 STDMETHODIMP_(ULONG) VPinball::AddRef()
@@ -2147,7 +2121,6 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
-
         case WM_DESTROY:
         PostMessage(hwnd, WM_QUIT, 0, 0);
         break;
