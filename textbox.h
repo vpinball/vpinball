@@ -67,7 +67,7 @@ public:
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
    // Multi-object manipulation
-   virtual Vertex2D GetCenter() const;
+   virtual Vertex2D GetCenter() const { return m_d.m_v1; }
    virtual void PutCenter(const Vertex2D& pv);
    virtual ItemTypeEnum HitableGetItemType() const { return eItemTextbox; }
 
@@ -89,7 +89,6 @@ private:
    IFont *m_pIFont;
 
    IFont *m_pIFontPlay; // Our font, scaled to match play window resolution
-   HFONT m_hfont;
 
    // ITextbox
 public:

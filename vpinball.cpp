@@ -1943,7 +1943,7 @@ STDMETHODIMP_(ULONG) VPinball::Release()
 
 void VPinball::OnClose()
 {
-   CComObject<PinTable> * const ptable = g_pvp->GetActiveTable();
+   CComObject<PinTable> * const ptable = GetActiveTable();
    if (ptable)
    {
       while (ptable->m_savingActive)
@@ -2964,19 +2964,14 @@ void VPinball::SaveTable(const bool saveAs)
     CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
     {
+        HRESULT hr;
         if(!saveAs)
-        {
-            const HRESULT hr = ptCur->TableSave();
-            if (hr == S_OK)
-                UpdateRecentFileList(ptCur->m_szFileName);
-        }
+            hr = ptCur->TableSave();
         else
-        {
-            const HRESULT hr = ptCur->SaveAs();
-            if (hr == S_OK)
-                UpdateRecentFileList(ptCur->m_szFileName);
+            hr = ptCur->SaveAs();
 
-        }
+        if (hr == S_OK)
+            UpdateRecentFileList(ptCur->m_szFileName);
     }
 }
 

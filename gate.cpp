@@ -94,8 +94,6 @@ void Gate::UpdateUnitsInfo()
 
 HRESULT Gate::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
-   HRESULT hr = S_OK;
-
    m_ptable = ptable;
 
    m_d.m_vCenter.x = x;
@@ -105,7 +103,7 @@ HRESULT Gate::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    InitVBA(fTrue, 0, NULL);
 
-   return hr;
+   return S_OK;
 }
 
 void Gate::SetDefaults(bool fromMouseClick)

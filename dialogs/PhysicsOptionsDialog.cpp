@@ -176,7 +176,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
             if (tmp != physicsselection)
             {
-                int result = ::MessageBox(NULL, "Save", "Save current physics set?", MB_YESNOCANCEL | MB_ICONQUESTION);
+                int result = ::MessageBox(g_pvp->m_hwnd, "Save", "Save current physics set?", MB_YESNOCANCEL | MB_ICONQUESTION);
                 if (result == IDYES)
                     SaveCurrentPhysicsSetting();
 
