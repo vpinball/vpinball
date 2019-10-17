@@ -479,6 +479,7 @@ void Bumper::RenderDynamic()
          float step = m_d.m_ringSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
          if (m_ringDown)
             step = -step;
+         const float old_bumperanim_ringAnimOffset = m_pbumperhitcircle->m_bumperanim_ringAnimOffset;
          m_pbumperhitcircle->m_bumperanim_ringAnimOffset += step*diff_time_msec;
          if (m_ringDown)
          {
@@ -496,7 +497,7 @@ void Bumper::RenderDynamic()
                m_ringAnimate = false;
             }
          }
-         if (m_ringVertexBuffer)
+         if (m_ringVertexBuffer && (old_bumperanim_ringAnimOffset != m_pbumperhitcircle->m_bumperanim_ringAnimOffset))
             UpdateRing();
       }
 
