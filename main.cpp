@@ -183,7 +183,6 @@ class VPApp : public CWinApp
 {
 private:
    HINSTANCE theInstance;
-   HRESULT hRes;
    bool run;
    bool play;
    bool extractPov;
@@ -227,9 +226,9 @@ public:
 
       g_hinst = theInstance;
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
-      hRes = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+      const HRESULT hRes = CoInitializeEx(NULL, COINIT_MULTITHREADED);
 #else
-      hRes = CoInitialize(NULL);
+      const HRESULT hRes = CoInitialize(NULL);
 #endif
       _ASSERTE(SUCCEEDED(hRes));
       _Module.Init(ObjectMap, theInstance, &LIBID_VPinballLib);
@@ -419,12 +418,12 @@ public:
       if (run)
       {
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
-         hRes = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER,
+         const HRESULT hRes = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER,
             REGCLS_MULTIPLEUSE | REGCLS_SUSPENDED);
          _ASSERTE(SUCCEEDED(hRes));
          hRes = CoResumeClassObjects();
 #else
-         hRes = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER,
+         const HRESULT hRes = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER,
             REGCLS_MULTIPLEUSE);
 #endif
          _ASSERTE(SUCCEEDED(hRes));
@@ -504,6 +503,9 @@ public:
          g_pvp->MainMsgLoop();
 
          g_pvp->Release();
+
+         delete g_pvp;
+         g_pvp = NULL;
 
          DestroyAcceleratorTable(g_haccel);
 

@@ -1589,7 +1589,7 @@ void PinTable::FVerifySaveToClose()
    if (m_vAsyncHandles.size() > 0)
    {
       /*const DWORD wait =*/ WaitForMultipleObjects((DWORD)m_vAsyncHandles.size(), m_vAsyncHandles.data(), TRUE, INFINITE);
-      //MessageBox(NULL, "Async work items not done", NULL, 0);
+      //MessageBox(g_pvp->m_hwnd, "Async work items not done", NULL, 0);
 
       // Close the remaining handles here, since the window messages will never be processed
       for (size_t i = 0; i < m_vAsyncHandles.size(); i++)
@@ -5603,10 +5603,10 @@ void PinTable::ExportBlueprint()
    BYTE * const psrc = FreeImage_GetBits(dib);
    memcpy(psrc, pbits, bmwidth*bmheight * 3);
    if (!FreeImage_Save(FreeImage_GetFIFFromFilename(m_szBlueprintFileName), dib, m_szBlueprintFileName, PNG_Z_BEST_COMPRESSION | BMP_SAVE_RLE))
-      ::MessageBox(NULL, "Export failed!", "Blueprint Export", MB_OK | MB_ICONEXCLAMATION);
+      ::MessageBox(g_pvp->m_hwnd, "Export failed!", "Blueprint Export", MB_OK | MB_ICONEXCLAMATION);
    else
 #endif
-   ::MessageBox(NULL, "Export finished!", "Blueprint Export", MB_OK);
+   ::MessageBox(g_pvp->m_hwnd, "Export finished!", "Blueprint Export", MB_OK);
 #if 1
    FreeImage_Unload(dib);
 #endif
@@ -5710,7 +5710,7 @@ void PinTable::ExportTableMesh()
          ptr->ExportMesh(f);
    }
    WaveFrontObj_ExportEnd(f);
-   ::MessageBox(NULL, "Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
+   ::MessageBox(g_pvp->m_hwnd, "Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
 }
 
 void PinTable::ImportBackdropPOV(const char *filename)
@@ -7295,9 +7295,9 @@ bool PinTable::ExportImage(Texture * const ppi, const char * const szfilename)
       }
 
       if (!FreeImage_Save(FreeImage_GetFIFFromFilename(szfilename), dib, szfilename, PNG_Z_BEST_COMPRESSION | JPEG_QUALITYGOOD | BMP_SAVE_RLE))
-         ::MessageBox(NULL, "Export failed!", "BMP Export", MB_OK | MB_ICONEXCLAMATION);
+         ::MessageBox(g_pvp->m_hwnd, "Export failed!", "BMP Export", MB_OK | MB_ICONEXCLAMATION);
       //else
-      //   ::MessageBox(NULL, "Export finished!", "BMP Export", MB_OK);
+      //   ::MessageBox(g_pvp->m_hwnd, "Export finished!", "BMP Export", MB_OK);
       FreeImage_Unload(dib);
 #endif
       return true;

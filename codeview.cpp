@@ -856,7 +856,7 @@ void CodeViewer::Compile(const bool message)
       if (m_pScriptParse->ParseScriptText(wzText, 0, 0, 0, CONTEXTCOOKIE_NORMAL, 0,
          SCRIPTTEXT_ISVISIBLE, 0, &exception) == S_OK)
          if (message)
-             MessageBox(NULL, "Compilation successful", "Compile", MB_OK);
+             MessageBox(g_pvp->m_hwnd, "Compilation successful", "Compile", MB_OK);
 
       m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
 

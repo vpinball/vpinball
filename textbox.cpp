@@ -301,14 +301,14 @@ void Textbox::PreRenderText()
    bmi.bmiHeader.biSizeImage = 0;
 
    void *bits;
-   HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, NULL, 0);
+   const HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, NULL, 0);
    assert(hbm);
 
-   HDC hdc = CreateCompatibleDC(NULL);
-   HBITMAP oldBmp = (HBITMAP)SelectObject(hdc, hbm);
+   const HDC hdc = CreateCompatibleDC(NULL);
+   const HBITMAP oldBmp = (HBITMAP)SelectObject(hdc, hbm);
 
-   HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
-   HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
+   const HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
+   const HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
    PatBlt(hdc, 0, 0, width, height, PATCOPY);
    SelectObject(hdc, hbrushold);
    DeleteObject(hbrush);
@@ -389,11 +389,6 @@ void Textbox::MoveOffset(const float dx, const float dy)
    m_d.m_v2.y += dy;
 }
 
-Vertex2D Textbox::GetCenter() const
-{
-   return m_d.m_v1;
-}
-
 void Textbox::PutCenter(const Vertex2D& pv)
 {
    m_d.m_v2.x = pv.x + m_d.m_v2.x - m_d.m_v1.x;
@@ -412,12 +407,10 @@ STDMETHODIMP Textbox::get_BackColor(OLE_COLOR *pVal)
 STDMETHODIMP Textbox::put_BackColor(OLE_COLOR newVal)
 {
    STARTUNDO
-
-      m_d.m_backcolor = newVal;
-
+   m_d.m_backcolor = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Textbox::get_FontColor(OLE_COLOR *pVal)
@@ -430,12 +423,10 @@ STDMETHODIMP Textbox::get_FontColor(OLE_COLOR *pVal)
 STDMETHODIMP Textbox::put_FontColor(OLE_COLOR newVal)
 {
    STARTUNDO
-
-      m_d.m_fontcolor = newVal;
-
+   m_d.m_fontcolor = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Textbox::get_Text(BSTR *pVal)
@@ -455,7 +446,6 @@ STDMETHODIMP Textbox::put_Text(BSTR newVal)
       STARTUNDO
 
       WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.sztext, 512, NULL, NULL);
-
       if (g_pplayer)
          PreRenderText();
 

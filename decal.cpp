@@ -219,11 +219,11 @@ void Decal::GetTimers(vector<HitTimer*> &pvht)
 void Decal::GetTextSize(int * const px, int * const py)
 {
    const int len = lstrlen(m_d.m_sztext);
-   HFONT hFont = GetFont();
+   const HFONT hFont = GetFont();
    const int alignment = DT_LEFT;
 
-   HDC hdcNull = GetDC(NULL);
-   HFONT hFontOld = (HFONT)SelectObject(hdcNull, hFont);
+   const HDC hdcNull = GetDC(NULL);
+   const HFONT hFontOld = (HFONT)SelectObject(hdcNull, hFont);
 
    TEXTMETRIC tm;
    GetTextMetrics(hdcNull, &tm);
@@ -272,13 +272,11 @@ void Decal::PreRenderText()
 
    RECT rcOut = { 0 };
    const int len = lstrlen(m_d.m_sztext);
-   HFONT hFont, hFontOld;
-   hFont = GetFont();
+   const HFONT hFont = GetFont();
    int alignment = DT_LEFT;
 
-   HDC hdcNull;
-   hdcNull = GetDC(NULL);
-   hFontOld = (HFONT)SelectObject(hdcNull, hFont);
+   const HDC hdcNull = GetDC(NULL);
+   HFONT hFontOld = (HFONT)SelectObject(hdcNull, hFont);
 
    TEXTMETRIC tm;
    GetTextMetrics(hdcNull, &tm);
@@ -340,11 +338,11 @@ void Decal::PreRenderText()
    bmi.bmiHeader.biSizeImage = 0;
 
    void *bits;
-   HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, NULL, 0);
+   const HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, NULL, 0);
    assert(hbm);
 
-   HDC hdc = CreateCompatibleDC(NULL);
-   HBITMAP oldBmp = (HBITMAP)SelectObject(hdc, hbm);
+   const HDC hdc = CreateCompatibleDC(NULL);
+   const HBITMAP oldBmp = (HBITMAP)SelectObject(hdc, hbm);
 
    //m_pinimage.GetTextureDC(&hdc);
    /*if (m_d.m_color == RGB(255,255,255))
@@ -368,7 +366,7 @@ void Decal::PreRenderText()
    {
       for (int i = 0; i < len; i++)
       {
-         rcOut.top = AUTOLEADING*i;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
+         rcOut.top = AUTOLEADING * i;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
          rcOut.bottom = rcOut.top + 100;
          DrawText(hdc, &m_d.m_sztext[i], 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
       }
@@ -510,11 +508,6 @@ float Decal::GetDepth(const Vertex3Ds& viewDir) const
    return !m_backglass ? (viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z*height) : 0.f;
 }
 
-bool Decal::IsTransparent() const
-{
-   return !m_backglass;
-}
-
 void Decal::RenderObject()
 {
    if (m_backglass && !GetPTable()->GetDecalsEnabled())
@@ -597,22 +590,6 @@ void Decal::RenderStatic()
 void Decal::SetObjectPos()
 {
    g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
-}
-
-void Decal::MoveOffset(const float dx, const float dy)
-{
-   m_d.m_vCenter.x += dx;
-   m_d.m_vCenter.y += dy;
-}
-
-Vertex2D Decal::GetCenter() const
-{
-   return m_d.m_vCenter;
-}
-
-void Decal::PutCenter(const Vertex2D& pv)
-{
-   m_d.m_vCenter = pv;
 }
 
 void Decal::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
@@ -821,9 +798,7 @@ STDMETHODIMP Decal::get_Rotation(float *pVal)
 STDMETHODIMP Decal::put_Rotation(float newVal)
 {
    STARTUNDO
-
    m_d.m_rotation = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -851,9 +826,7 @@ STDMETHODIMP Decal::put_Image(BSTR newVal)
    }
 
    STARTUNDO
-
    strcpy_s(m_d.m_szImage,szImage);
-
    STOPUNDO
 
    return S_OK;
@@ -869,11 +842,8 @@ STDMETHODIMP Decal::get_Width(float *pVal)
 STDMETHODIMP Decal::put_Width(float newVal)
 {
    STARTUNDO
-
    m_d.m_width = newVal;
-
    EnsureSize();
-
    STOPUNDO
 
    return S_OK;
@@ -889,9 +859,7 @@ STDMETHODIMP Decal::get_Height(float *pVal)
 STDMETHODIMP Decal::put_Height(float newVal)
 {
    STARTUNDO
-
    m_d.m_height = newVal;
-
    EnsureSize();
 
    STOPUNDO
@@ -910,9 +878,7 @@ STDMETHODIMP Decal::get_X(float *pVal)
 STDMETHODIMP Decal::put_X(float newVal)
 {
    STARTUNDO
-
    m_d.m_vCenter.x = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -928,9 +894,7 @@ STDMETHODIMP Decal::get_Y(float *pVal)
 STDMETHODIMP Decal::put_Y(float newVal)
 {
    STARTUNDO
-
    m_d.m_vCenter.y = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -949,9 +913,7 @@ STDMETHODIMP Decal::get_Surface(BSTR *pVal)
 STDMETHODIMP Decal::put_Surface(BSTR newVal)
 {
    STARTUNDO
-
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
-
    STOPUNDO
 
    return S_OK;
@@ -978,11 +940,8 @@ STDMETHODIMP Decal::get_Type(DecalType *pVal)
 STDMETHODIMP Decal::put_Type(DecalType newVal)
 {
    STARTUNDO
-
    m_d.m_decaltype = newVal;
-
    EnsureSize();
-
    STOPUNDO
 
    return S_OK;
@@ -1003,11 +962,8 @@ STDMETHODIMP Decal::put_Text(BSTR newVal)
    if (lstrlenW(newVal) < 512)
    {
       STARTUNDO
-
       WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_sztext, 512, NULL, NULL);
-
       EnsureSize();
-
       STOPUNDO
    }
 
@@ -1024,11 +980,8 @@ STDMETHODIMP Decal::get_SizingType(SizingType *pVal)
 STDMETHODIMP Decal::put_SizingType(SizingType newVal)
 {
    STARTUNDO
-
    m_d.m_sizingtype = newVal;
-
    EnsureSize();
-
    STOPUNDO
 
    return S_OK;
@@ -1044,9 +997,7 @@ STDMETHODIMP Decal::get_FontColor(OLE_COLOR *pVal)
 STDMETHODIMP Decal::put_FontColor(OLE_COLOR newVal)
 {
    STARTUNDO
-
    m_d.m_color = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -1065,9 +1016,7 @@ STDMETHODIMP Decal::get_Material(BSTR *pVal)
 STDMETHODIMP Decal::put_Material(BSTR newVal)
 {
    STARTUNDO
-
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
-
    STOPUNDO
 
    return S_OK;
