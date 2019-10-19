@@ -3145,7 +3145,6 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
             ) //&& rand_mt_01() < 0.95f)
             {
             pball->m_angularmomentum *= 0.05f; // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
-            pball->m_angularvelocity *= 0.05f;
             }*/
 
             const Vertex3Ds diff_pos = pball->m_oldpos[p0] - pball->m_pos;
@@ -3159,7 +3158,6 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
             {
                const float damp = clamp(1.0f - (threshold - 666.f) / 10000.f, 0.23f, 1.f); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
                pball->m_angularmomentum *= damp;
-               pball->m_angularvelocity *= damp;
             }
          }
       }
@@ -4157,7 +4155,7 @@ void Player::UpdateHUD()
 			m_phys_iterations,
 			(U32)(m_phys_total_iterations / m_count),
 			m_phys_max_iterations,
-			g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_vel + (float)PHYS_FACTOR*g_pplayer->m_gravity).Length() : -1.f, g_pplayer->m_pactiveball ? g_pplayer->m_pactiveball->m_angularvelocity.Length() : -1.f);
+			g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_vel + (float)PHYS_FACTOR*g_pplayer->m_gravity).Length() : -1.f, g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_angularmomentum / g_pplayer->m_pactiveball->m_inertia).Length() : -1.f);
 		DebugPrint(10, 200, szFoo, len);
 
 #ifdef DEBUGPHYSICS

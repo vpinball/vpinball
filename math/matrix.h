@@ -6,7 +6,6 @@ class Matrix3
 public:
    Matrix3()
    {
-      Identity();
    }
 
    void scaleX(const float factor)
@@ -22,14 +21,14 @@ public:
       m_d[2][2] *= factor;
    }
 
-   void CreateSkewSymmetric(const Vertex3Ds &pv3D)
+   void SkewSymmetric(const Vertex3Ds &pv3D)
    {
       m_d[0][0] = 0; m_d[0][1] = -pv3D.z; m_d[0][2] = pv3D.y;
       m_d[1][0] = pv3D.z; m_d[1][1] = 0; m_d[1][2] = -pv3D.x;
       m_d[2][0] = -pv3D.y; m_d[2][1] = pv3D.x; m_d[2][2] = 0;
    }
 
-   void MultiplyScalar(const float scalar)
+   void MulScalar(const float scalar)
    {
       for (int i = 0; i < 3; ++i)
          for (int l = 0; l < 3; ++l)
@@ -46,14 +45,14 @@ public:
    }
 
    template <class VecType>
-   Vertex3Ds MultiplyVector(const VecType& v) const
+   Vertex3Ds MulVector(const VecType& v) const
    {
       return (*this) * v;
    }
 
    // multiply vector with matrix transpose
    template <class VecType>
-   Vertex3Ds MultiplyVectorT(const VecType& v) const
+   Vertex3Ds MulVectorT(const VecType& v) const
    {
       return Vertex3Ds(
          m_d[0][0] * v.x + m_d[1][0] * v.y + m_d[2][0] * v.z,
@@ -61,23 +60,33 @@ public:
          m_d[0][2] * v.x + m_d[1][2] * v.y + m_d[2][2] * v.z);
    }
 
-   void MultiplyMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
+   void MulMatrices(const Matrix3& pmat1, const Matrix3& pmat2)
    {
       Matrix3 matans;
       for (int i = 0; i < 3; ++i)
          for (int l = 0; l < 3; ++l)
-            matans.m_d[i][l] = pmat1->m_d[i][0] * pmat2->m_d[0][l] +
-            pmat1->m_d[i][1] * pmat2->m_d[1][l] +
-            pmat1->m_d[i][2] * pmat2->m_d[2][l];
-
+            matans.m_d[i][l] = pmat1.m_d[i][0] * pmat2.m_d[0][l] +
+                               pmat1.m_d[i][1] * pmat2.m_d[1][l] +
+                               pmat1.m_d[i][2] * pmat2.m_d[2][l];
       *this = matans;
    }
 
-   void AddMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
+   void MulMatricesAndMulScalar(const Matrix3& pmat1, const Matrix3& pmat2, const float scalar)
+   {
+      Matrix3 matans;
+      for (int i = 0; i < 3; ++i)
+         for (int l = 0; l < 3; ++l)
+            matans.m_d[i][l] = (pmat1.m_d[i][0] * pmat2.m_d[0][l] +
+                                pmat1.m_d[i][1] * pmat2.m_d[1][l] +
+                                pmat1.m_d[i][2] * pmat2.m_d[2][l])*scalar;
+      *this = matans;
+   }
+
+   void AddMatrix(const Matrix3& pmat)
    {
       for (int i = 0; i < 3; ++i)
          for (int l = 0; l < 3; ++l)
-            m_d[i][l] = pmat1->m_d[i][l] + pmat2->m_d[i][l];
+            m_d[i][l] += pmat.m_d[i][l];
    }
 
    void OrthoNormalize()
@@ -95,7 +104,7 @@ public:
       m_d[2][0] = vX.z; m_d[2][1] = vY.z; m_d[2][2] = vZ.z;
    }
 
-   void Transpose(Matrix3 * const pmatOut) const
+   /*void Transpose(Matrix3 * const pmatOut) const
    {
       for (int i = 0; i < 3; ++i)
       {
@@ -103,14 +112,14 @@ public:
          pmatOut->m_d[1][i] = m_d[i][1];
          pmatOut->m_d[2][i] = m_d[i][2];
       }
-   }
+   }*/
 
    void Identity(const float value = 1.0f)
    {
       m_d[0][0] = m_d[1][1] = m_d[2][2] = value;
       m_d[0][1] = m_d[0][2] =
-         m_d[1][0] = m_d[1][2] =
-         m_d[2][0] = m_d[2][1] = 0.0f;
+      m_d[1][0] = m_d[1][2] =
+      m_d[2][0] = m_d[2][1] = 0.0f;
    }
 
    // Create matrix for rotating around an arbitrary vector

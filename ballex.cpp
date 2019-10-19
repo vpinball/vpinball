@@ -146,18 +146,7 @@ STDMETHODIMP BallEx::get_AngVelX(float *pVal)
 {
    CHECKSTALEBALL
 
-   *pVal = m_pball->m_angularvelocity.x;
-
-   return S_OK;
-}
-
-STDMETHODIMP BallEx::put_AngVelX(float newVal)
-{
-   CHECKSTALEBALL
-
-   m_pball->m_angularvelocity.x = newVal;
-
-   m_pball->CalcHitBBox();
+   *pVal = m_pball->m_angularmomentum.x / m_pball->m_inertia;
 
    return S_OK;
 }
@@ -166,18 +155,7 @@ STDMETHODIMP BallEx::get_AngVelY(float *pVal)
 {
    CHECKSTALEBALL
 
-   *pVal = m_pball->m_angularvelocity.y;
-
-   return S_OK;
-}
-
-STDMETHODIMP BallEx::put_AngVelY(float newVal)
-{
-   CHECKSTALEBALL
-
-   m_pball->m_angularvelocity.y = newVal;
-
-   m_pball->CalcHitBBox();
+   *pVal = m_pball->m_angularmomentum.y / m_pball->m_inertia;
 
    return S_OK;
 }
@@ -186,18 +164,7 @@ STDMETHODIMP BallEx::get_AngVelZ(float *pVal)
 {
    CHECKSTALEBALL
 
-   *pVal = m_pball->m_angularvelocity.z;
-
-   return S_OK;
-}
-
-STDMETHODIMP BallEx::put_AngVelZ(float newVal)
-{
-   CHECKSTALEBALL
-
-   m_pball->m_angularvelocity.z = newVal;
-
-   m_pball->CalcHitBBox();
+   *pVal = m_pball->m_angularmomentum.z / m_pball->m_inertia;
 
    return S_OK;
 }
@@ -380,8 +347,6 @@ STDMETHODIMP BallEx::put_Mass(float newVal)
    CHECKSTALEBALL
 
    m_pball->m_mass = newVal;
-   m_pball->m_invMass = 1.0f / newVal;
-
    m_pball->m_inertia = (float)(2.0 / 5.0) * m_pball->m_radius*m_pball->m_radius * m_pball->m_mass;
 
    return S_OK;

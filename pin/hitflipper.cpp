@@ -52,7 +52,7 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser
    //const float fa = asinf(ratio); //face to centerline angle (center to center)
    //const float faceNormOffset = (float)(M_PI / 2.0) - fa; //angle of normal when flipper center line at angle zero
 
-   // model inertia of flipper as that of rod of length flipr around its end
+   // model inertia of flipper as that of rod of length flipper around its end
    const float mass = (m_pflipper->m_d.m_OverridePhysics || (m_pflipper->m_ptable->m_overridePhysicsFlipper && m_pflipper->m_ptable->m_overridePhysics)) ? m_pflipper->m_d.m_OverrideMass : m_pflipper->m_d.m_mass;
    m_inertia = (float)(1.0 / 3.0) * mass * (flipr*flipr);
 
@@ -813,8 +813,9 @@ void HitFlipper::Collide(const CollisionEvent& coll)
     */
    const float epsilon = ElasticityWithFalloff(m_elasticity, m_elasticityFalloff, bnv);
 
+   const float invMass = 1.0f/pball->m_mass;
    float impulse = -(1.0f + epsilon) * bnv
-      / (pball->m_invMass + normal.Dot(CrossProduct(angResp / m_flipperMover.m_inertia, rF)));
+      / (invMass + normal.Dot(CrossProduct(angResp / m_flipperMover.m_inertia, rF)));
    Vertex3Ds flipperImp = -(impulse * flipperResponseScaling) * normal;
 
 #ifdef DEBUG_FLIPPERS
@@ -834,7 +835,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
          // off the flipper, we need to make sure it does so with full
          // reflection, i.e., treat the flipper as static, otherwise
          // we get overly dead bounces.
-         const float bnv_after = bnv + impulse * pball->m_invMass;
+         const float bnv_after = bnv + impulse * invMass;
 
 #ifdef DEBUG_FLIPPERS
          slintf("  recoil time: %f  norm.vel after: %.2f\n", recoilTime, bnv_after);
@@ -849,7 +850,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
       }
    }
 
-   pball->m_vel += (impulse * pball->m_invMass) * normal;      // new velocity for ball after impact
+   pball->m_vel += (impulse * invMass) * normal;      // new velocity for ball after impact
    m_flipperMover.ApplyImpulse(rotI);
 
    // apply friction
@@ -864,7 +865,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
 
       // compute friction impulse
       const Vertex3Ds crossB = CrossProduct(rB, tangent);
-      float kt = pball->m_invMass + tangent.Dot(CrossProduct(crossB / pball->m_inertia, rB));
+      float kt = invMass + tangent.Dot(CrossProduct(crossB / pball->m_inertia, rB));
 
       const Vertex3Ds crossF = CrossProduct(rF, tangent);
       kt += tangent.Dot(CrossProduct(crossF / m_flipperMover.m_inertia, rF));    // flipper only has angular response
@@ -949,7 +950,8 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
          return;     // objects accelerating away from each other, nothing to do
 
       // hypothetical accelerations arising from a unit contact force in normal direction
-      const Vertex3Ds aBc = pball->m_invMass * normal;
+      const float invMass = 1.0f/pball->m_mass;
+      const Vertex3Ds aBc = invMass * normal;
       const Vertex3Ds cross = CrossProduct(rF, -normal);
       const Vertex3Ds aFc = CrossProduct(cross / m_flipperMover.m_inertia, rF);
       const float contactForceAcc = normal.Dot(aBc - aFc);
@@ -960,7 +962,7 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
 
       const float j = -normAcc / contactForceAcc;
 
-      pball->m_vel += ((j * dtime) * pball->m_invMass - coll.m_hit_org_normalvelocity) * normal; // kill any existing normal velocity
+      pball->m_vel += ((j * dtime) * invMass - coll.m_hit_org_normalvelocity) * normal; // kill any existing normal velocity
       m_flipperMover.ApplyImpulse((j * dtime) * cross);
 
       // apply friction
@@ -1002,7 +1004,7 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
       }
 
       const Vertex3Ds crossB = CrossProduct(rB, slipDir);
-      const float denomB = pball->m_invMass + slipDir.Dot(CrossProduct(crossB / pball->m_inertia, rB));
+      const float denomB = invMass + slipDir.Dot(CrossProduct(crossB / pball->m_inertia, rB));
       const float fric = clamp(numer / (denomB + denomF), -maxFric, maxFric);
       
       pball->ApplySurfaceImpulse((dtime * fric) * crossB, (dtime * fric) * slipDir);

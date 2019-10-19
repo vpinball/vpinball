@@ -23,9 +23,7 @@ Ball::Ball()
 #endif
    m_vel.SetZero();
    m_angularmomentum.SetZero();
-   m_angularvelocity.SetZero();
    m_mass = 1.0f;
-   m_invMass = 1.0f / m_mass;
    m_radius = 25.0f;
    m_orientation.Identity();
    m_inertia = (float)(2.0 / 5.0) * m_radius*m_radius * m_mass;
@@ -52,11 +50,9 @@ void Ball::Init(const float mass)
 {
    // Only called by real balls, not temporary objects created for physics/rendering
    m_mass = mass;
-   m_invMass = 1.0f / m_mass;
 
    m_orientation.Identity();
    m_inertia = (float)(2.0 / 5.0) * m_radius*m_radius * m_mass;
-   m_angularvelocity.SetZero();
    m_angularmomentum.SetZero();
 
    m_ballMover.m_pball = this;
@@ -182,7 +178,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const flo
 
       // compute friction impulse
       const Vertex3Ds cross = CrossProduct(surfP, tangent);
-      const float kt = m_invMass + tangent.Dot(CrossProduct(cross / m_inertia, surfP));
+      const float kt = 1.0f/m_mass + tangent.Dot(CrossProduct(cross / m_inertia, surfP));
 
       // friction impulse can't be greather than coefficient of friction times collision impulse (Coulomb friction cone)
       const float maxFric = friction * reactionImpulse;
@@ -336,9 +332,7 @@ void Ball::Collide(const CollisionEvent& coll)
 
    // send ball/ball collision event to script function
    if (dot < -0.25f)    // only collisions with at least some small true impact velocity (no contacts)
-   {
       g_pplayer->m_ptable->InvokeBallBallCollisionCallback(this, pball, -dot);
-   }
 
 #ifdef C_DISP_GAIN
    float edist = -C_DISP_GAIN * coll.m_hitdistance;
@@ -361,8 +355,9 @@ void Ball::Collide(const CollisionEvent& coll)
    }
 #endif
 
-   const float myInvMass = m_frozen ? 0.0f : m_invMass; // frozen ball has infinite mass
-   const float impulse = -(float)(1.0 + 0.8) * dot / (myInvMass + pball->m_invMass);    // resitution = 0.8
+   const float myInvMass = m_frozen ? 0.0f : 1.0f/m_mass; // frozen ball has infinite mass
+   const float pballInvMass = 1.0f/pball->m_mass; //!! do same frozen mass thing for that one?
+   const float impulse = -(float)(1.0 + 0.8) * dot / (myInvMass + pballInvMass); // resitution = 0.8
 
    if (!m_frozen)
    {
@@ -371,7 +366,7 @@ void Ball::Collide(const CollisionEvent& coll)
       m_dynamic = C_DYNAMIC;
 #endif
    }
-   pball->m_vel += (impulse * pball->m_invMass) * vnormal;
+   pball->m_vel += (impulse * pballInvMass) * vnormal;
 #ifdef C_DYNAMIC
    pball->m_dynamic = C_DYNAMIC;
 #endif
@@ -403,7 +398,6 @@ void Ball::HandleStaticContact(const CollisionEvent& coll, const float friction,
          vell = (1.f-vell)*(float)C_BALL_SPIN_HACK2;
          const float damp = (1.0f - friction * clamp(-coll.m_hit_org_normalvelocity / C_CONTACTVEL, 0.0f,1.0f)) * vell + (1.0f-vell); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
          m_angularmomentum *= damp;
-         m_angularvelocity *= damp;
       }
 #endif
 
@@ -423,7 +417,7 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
    const float slipspeed = slip.Length();
    Vertex3Ds slipDir;
    float numer;
-   //slintf("Velocity: %.2f Angular velocity: %.2f Surface velocity: %.2f Slippage: %.2f\n", m_vel.Length(), m_angularvelocity.Length(), surfVel.Length(), slipspeed);
+   //slintf("Velocity: %.2f Angular velocity: %.2f Surface velocity: %.2f Slippage: %.2f\n", m_vel.Length(), (m_angularmomentum / m_inertia).Length(), surfVel.Length(), slipspeed);
    //if (slipspeed > 1e-6f)
 
 #ifdef C_BALL_SPIN_HACK
@@ -457,7 +451,7 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
    }
 
    const Vertex3Ds cp = CrossProduct(surfP, slipDir);
-   const float denom = m_invMass + slipDir.Dot(CrossProduct(cp / m_inertia, surfP));
+   const float denom = 1.0f/m_mass + slipDir.Dot(CrossProduct(cp / m_inertia, surfP));
    const float fric = clamp(numer / denom, -maxFric, maxFric);
 
    if (!infNaN(fric))
@@ -466,25 +460,24 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
 
 Vertex3Ds Ball::SurfaceVelocity(const Vertex3Ds& surfP) const
 {
-   return m_vel + CrossProduct(m_angularvelocity, surfP); // linear velocity plus tangential velocity due to rotation
+   return m_vel + CrossProduct(m_angularmomentum / m_inertia, surfP); // linear velocity plus tangential velocity due to rotation
 }
 
 Vertex3Ds Ball::SurfaceAcceleration(const Vertex3Ds& surfP) const
 {
    // if we had any external torque, we would have to add "(deriv. of ang.vel.) x surfP" here
-   return m_invMass * g_pplayer->m_gravity    // linear acceleration
-      + CrossProduct(m_angularvelocity, CrossProduct(m_angularvelocity, surfP)); // centripetal acceleration
+   return g_pplayer->m_gravity/m_mass    // linear acceleration
+      + CrossProduct(m_angularmomentum / m_inertia, CrossProduct(m_angularmomentum / m_inertia, surfP)); // centripetal acceleration
 }
 
 void Ball::ApplySurfaceImpulse(const Vertex3Ds& rotI, const Vertex3Ds& impulse)
 {
-   m_vel += m_invMass * impulse;
+   m_vel += impulse/m_mass;
 
    m_angularmomentum += rotI;
    //const float aml = m_angularmomentum.Length();
    //if (aml > m_inertia*135.0f) //!! hack to limit ball spin
    //   m_angularmomentum *= (m_inertia*135.0f) / aml;
-   m_angularvelocity = m_angularmomentum / m_inertia;
 }
 
 void Ball::CalcHitBBox()
@@ -535,16 +528,13 @@ void Ball::UpdateDisplacements(const float dtime)
       CalcHitBBox();
 
       Matrix3 mat3;
-      mat3.CreateSkewSymmetric(m_angularvelocity);
+      mat3.SkewSymmetric(m_angularmomentum / m_inertia);
 
       Matrix3 addedorientation;
-      addedorientation.MultiplyMatrix(&mat3, &m_orientation);
-      addedorientation.MultiplyScalar(dtime);
+      addedorientation.MulMatricesAndMulScalar(mat3, m_orientation, dtime);
 
-      m_orientation.AddMatrix(&addedorientation, &m_orientation);
+      m_orientation.AddMatrix(addedorientation);
       m_orientation.OrthoNormalize();
-
-      m_angularvelocity = m_angularmomentum / m_inertia;
    }
 }
 

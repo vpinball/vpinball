@@ -823,7 +823,6 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
       if (speedz > 0.0f)
          speed *= cosf(inclination);
 
-      m_phitkickercircle->m_pball->m_angularvelocity.SetZero();
       m_phitkickercircle->m_pball->m_angularmomentum.SetZero();
       m_phitkickercircle->m_pball->m_coll.m_hitdistance = 0.0f;
       m_phitkickercircle->m_pball->m_coll.m_hittime = -1.0f;
@@ -1240,7 +1239,7 @@ void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& 
 
             // compute friction impulse
             const Vertex3Ds cross = CrossProduct(surfP, tangent);
-            const float kt = pball->m_invMass + tangent.Dot(CrossProduct(cross / pball->m_inertia, surfP));
+            const float kt = 1.0f/pball->m_mass + tangent.Dot(CrossProduct(cross / pball->m_inertia, surfP));
 
             // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
             const float maxFric = friction * reactionImpulse;
@@ -1318,7 +1317,6 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
                // Only mess with variables if ball was not kicked during event
                pball->m_vel.SetZero();
                pball->m_angularmomentum.SetZero();
-               pball->m_angularvelocity.SetZero();
                pball->m_pos.x = center.x;
                pball->m_pos.y = center.y;
 #ifdef C_DYNAMIC
