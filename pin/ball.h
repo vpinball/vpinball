@@ -77,7 +77,6 @@ public:
 
    float m_radius;
    float m_mass;
-   float m_invMass;
 
    float m_rcHitRadiusSqr; // extended (by m_vel + magic) squared radius, used in collision detection
 
@@ -85,7 +84,6 @@ public:
 
    Matrix3 m_orientation;
    Vertex3Ds m_angularmomentum;
-   Vertex3Ds m_angularvelocity;
    float m_inertia;
 
    unsigned int m_id; // unique ID for each ball

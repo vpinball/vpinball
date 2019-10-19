@@ -228,8 +228,8 @@ public:
 inline Vertex3Ds CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2)
 {
    return Vertex3Ds(pv1.y * pv2.z - pv1.z * pv2.y,
-      pv1.z * pv2.x - pv1.x * pv2.z,
-      pv1.x * pv2.y - pv1.y * pv2.x);
+                    pv1.z * pv2.x - pv1.x * pv2.z,
+                    pv1.x * pv2.y - pv1.y * pv2.x);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
