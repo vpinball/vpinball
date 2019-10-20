@@ -6,6 +6,7 @@ class ToolbarDialog : public CDialog
 public:
     ToolbarDialog();
     virtual ~ToolbarDialog();
+    void EnableButtons();
 
 protected:
     virtual BOOL OnInitDialog();
@@ -14,24 +15,10 @@ protected:
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 
 private:
-    enum LAYER_INDICES
-    {
-        LAYER1 = 0,
-        LAYER2 = 1,
-        LAYER3 = 2,
-        LAYER4 = 3,
-        LAYER5 = 4,
-        LAYER6 = 5,
-        LAYER7 = 6,
-        LAYER8 = 7,
-        LAYER9 = 8,
-        LAYER10 = 9,
-        LAYER11 = 10,
-        TOGGLE_ALL = 11
-    };
-
     HWND m_hwnd;
     CResizer m_resizer;
+    CToolTip m_tooltip;
+
     CButton m_magnifyButton;
     CButton m_selectButton;
     CButton m_optionsButton;

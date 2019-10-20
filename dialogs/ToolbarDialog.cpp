@@ -58,6 +58,34 @@ BOOL ToolbarDialog::OnInitDialog()
     AttachItem(ID_INSERT_FLASHER, m_flasherButton);
     AttachItem(ID_INSERT_RUBBER, m_rubberButton);
 
+    m_tooltip.Create(*this);
+    m_tooltip.AddTool(m_magnifyButton, _T("Zoom in/out"));
+    m_tooltip.AddTool(m_selectButton, _T("Select element"));
+    m_tooltip.AddTool(m_optionsButton, _T("Toggle properties"));
+    m_tooltip.AddTool(m_scriptButton, _T("Toggle script editor"));
+    m_tooltip.AddTool(m_backglassButton, _T("Toggle backglass view"));
+    m_tooltip.AddTool(m_playButton, _T("Play table"));
+
+    m_tooltip.AddTool(m_wallButton, _T("Insert Wall"));
+    m_tooltip.AddTool(m_gateButton, _T("Insert Gate"));
+    m_tooltip.AddTool(m_rampButton, _T("Insert Ramp"));
+    m_tooltip.AddTool(m_flipperButton, _T("Insert Flipper"));
+    m_tooltip.AddTool(m_plungerButton, _T("Insert Plunger"));
+    m_tooltip.AddTool(m_bumperButton, _T("Insert Bumper"));
+    m_tooltip.AddTool(m_spinnerButton, _T("Insert Spinner"));
+    m_tooltip.AddTool(m_timerButton, _T("Insert Timer"));
+    m_tooltip.AddTool(m_triggerButton, _T("Insert Trigger"));
+    m_tooltip.AddTool(m_lightButton, _T("Insert Light"));
+    m_tooltip.AddTool(m_kickerButton, _T("Insert Kicker"));
+    m_tooltip.AddTool(m_targetButton, _T("Insert Target"));
+    m_tooltip.AddTool(m_decalButton, _T("Insert Decal"));
+    m_tooltip.AddTool(m_textboxButton, _T("Insert Textbox"));
+    m_tooltip.AddTool(m_reelButton, _T("Insert Reel"));
+    m_tooltip.AddTool(m_lightseqButton, _T("Insert Light Sequence"));
+    m_tooltip.AddTool(m_primitiveButton, _T("Insert Primitive"));
+    m_tooltip.AddTool(m_flasherButton, _T("Insert Flasher"));
+    m_tooltip.AddTool(m_rubberButton, _T("Insert Rubber"));
+
     const int iconSize = 24;
     HANDLE hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MAGNIFY), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_magnifyButton.SetIcon((HICON)hIcon);
@@ -182,6 +210,7 @@ BOOL ToolbarDialog::OnInitDialog()
     m_resizer.AddChild(m_flasherButton, rightcenter, 0);
     m_resizer.AddChild(m_rubberButton, leftcenter, 0);
     m_resizer.RecalcLayout();
+    EnableButtons();
     return TRUE;
 }
 
@@ -199,6 +228,94 @@ INT_PTR ToolbarDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
     return DialogProcDefault(msg, wparam, lparam);
 }
 
+void ToolbarDialog::EnableButtons()
+{
+    if (!IsWindow())
+        return;
+    CComObject<PinTable> * const ptCur = g_pvp->GetActiveTable();
+    if (ptCur == NULL && !g_pplayer)
+    {
+        m_magnifyButton.EnableWindow(FALSE);
+        m_selectButton.EnableWindow(FALSE);
+        m_optionsButton.EnableWindow(FALSE);
+        m_scriptButton.EnableWindow(FALSE);
+        m_backglassButton.EnableWindow(FALSE);
+        m_playButton.EnableWindow(FALSE);
+
+        m_textboxButton.EnableWindow(FALSE);
+        m_reelButton.EnableWindow(FALSE);
+        m_wallButton.EnableWindow(FALSE);
+        m_gateButton.EnableWindow(FALSE);
+        m_rampButton.EnableWindow(FALSE);
+        m_flipperButton.EnableWindow(FALSE);
+        m_plungerButton.EnableWindow(FALSE);
+        m_bumperButton.EnableWindow(FALSE);
+        m_spinnerButton.EnableWindow(FALSE);
+        m_triggerButton.EnableWindow(FALSE);
+        m_kickerButton.EnableWindow(FALSE);
+        m_primitiveButton.EnableWindow(FALSE);
+        m_flasherButton.EnableWindow(FALSE);
+        m_rubberButton.EnableWindow(FALSE);
+
+        m_targetButton.EnableWindow(FALSE);
+        m_decalButton.EnableWindow(FALSE);
+        m_lightButton.EnableWindow(FALSE);
+        m_timerButton.EnableWindow(FALSE);
+        m_lightseqButton.EnableWindow(FALSE);
+    }
+    else if (g_pvp->m_backglassView)
+    {
+        m_textboxButton.EnableWindow(TRUE);
+        m_reelButton.EnableWindow(TRUE);
+        m_decalButton.EnableWindow(TRUE);
+        m_lightButton.EnableWindow(TRUE);
+        m_timerButton.EnableWindow(TRUE);
+        m_lightseqButton.EnableWindow(TRUE);
+
+        m_wallButton.EnableWindow(FALSE);
+        m_gateButton.EnableWindow(FALSE);
+        m_rampButton.EnableWindow(FALSE);
+        m_flipperButton.EnableWindow(FALSE);
+        m_plungerButton.EnableWindow(FALSE);
+        m_bumperButton.EnableWindow(FALSE);
+        m_spinnerButton.EnableWindow(FALSE);
+        m_triggerButton.EnableWindow(FALSE);
+        m_targetButton.EnableWindow(FALSE);
+        m_kickerButton.EnableWindow(FALSE);
+        m_primitiveButton.EnableWindow(FALSE);
+        m_flasherButton.EnableWindow(FALSE);
+        m_rubberButton.EnableWindow(FALSE);
+    }
+    else
+    {
+        m_magnifyButton.EnableWindow(TRUE);
+        m_selectButton.EnableWindow(TRUE);
+        m_optionsButton.EnableWindow(TRUE);
+        m_scriptButton.EnableWindow(TRUE);
+        m_backglassButton.EnableWindow(TRUE);
+        m_playButton.EnableWindow(TRUE);
+
+        m_textboxButton.EnableWindow(FALSE);
+        m_reelButton.EnableWindow(FALSE);
+        m_wallButton.EnableWindow(TRUE);
+        m_gateButton.EnableWindow(TRUE);
+        m_rampButton.EnableWindow(TRUE);
+        m_flipperButton.EnableWindow(TRUE);
+        m_plungerButton.EnableWindow(TRUE);
+        m_bumperButton.EnableWindow(TRUE);
+        m_spinnerButton.EnableWindow(TRUE);
+        m_triggerButton.EnableWindow(TRUE);
+        m_kickerButton.EnableWindow(TRUE);
+        m_primitiveButton.EnableWindow(TRUE);
+        m_flasherButton.EnableWindow(TRUE);
+        m_rubberButton.EnableWindow(TRUE);
+        m_decalButton.EnableWindow(TRUE);
+        m_lightButton.EnableWindow(TRUE);
+        m_timerButton.EnableWindow(TRUE);
+        m_lightseqButton.EnableWindow(TRUE);
+        m_targetButton.EnableWindow(TRUE);
+    }
+}
 
 BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
@@ -207,6 +324,38 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
     switch (id)
     {
+        case ID_INSERT_WALL:
+        case ID_INSERT_GATE:
+        case ID_INSERT_RAMP:
+        case ID_INSERT_FLIPPER:
+        case ID_INSERT_PLUNGER:
+        case ID_INSERT_BUMPER:
+        case ID_INSERT_SPINNER:
+        case ID_INSERT_TIMER:
+        case ID_INSERT_TRIGGER:
+        case ID_INSERT_LIGHT:
+        case ID_INSERT_KICKER:
+        case ID_INSERT_TARGET:
+        case ID_INSERT_DECAL:
+        case ID_INSERT_TEXTBOX:
+        case ID_INSERT_DISPREEL:
+        case ID_INSERT_LIGHTSEQ:
+        case ID_INSERT_PRIMITIVE:
+        case ID_INSERT_FLASHER:
+        case ID_INSERT_RUBBER:
+        {
+            ItemTypeEnum type = EditableRegistry::TypeFromToolID((int)id);
+            if (type != eItemInvalid)
+            {
+                g_pvp->m_ToolCur = (int)id;
+
+                POINT pt;
+                GetCursorPos(&pt);
+                SetCursorPos(pt.x, pt.y);
+                return FALSE;
+            }
+            break;
+        }
         case IDC_SELECT:
         case ID_TABLE_MAGNIFY:
         {
@@ -266,10 +415,6 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case ID_LAYER_TOGGLEALL:
         {
             g_pvp->ToggleAllLayers();
-            break;
-        }
-        case ID_INSERT_WALL:
-        {
             break;
         }
     }
