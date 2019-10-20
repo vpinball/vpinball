@@ -1076,7 +1076,6 @@
     <ClInclude Include="inc\gpuprofiler.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="VPTabbedMDI.h" />
     <ClInclude Include="dialogs\ToolbarDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>

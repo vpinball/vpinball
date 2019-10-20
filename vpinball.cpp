@@ -1336,6 +1336,7 @@ void VPinball::SetEnablePalette()
       HMENU hmenuInsert = GetMainMenu(INSERTMENU);
       EnableMenuItem(hmenuInsert, id, MF_BYCOMMAND | (enable ? MF_ENABLED : MF_GRAYED));
    }
+   m_toolbarDialog.EnableButtons();
 }
 
 

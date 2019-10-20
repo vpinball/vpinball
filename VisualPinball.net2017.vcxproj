@@ -1830,7 +1830,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="vectorsort.h" />
     <ClInclude Include="vpinball.h" />
     <ClInclude Include="vpinball_i.h" />
-    <ClInclude Include="VPTabbedMDI.h" />
     <ClInclude Include="vpversion.h" />
     <ClInclude Include="wintimer.h" />
     <ClInclude Include="worker.h" />
