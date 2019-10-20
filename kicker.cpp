@@ -1206,7 +1206,7 @@ void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& 
         const float dot = -pball->m_vel.Dot(hitnorm);
         const float reactionImpulse = pball->m_mass * fabsf(dot);
         /*
-        if (pball->m_pos.z > pball->m_defaultZ)
+        if (pball->m_pos.z > pball->m_radius + g_pplayer->m_ptable->m_tableheight)
         {
         // ball is on a surface(e.g. upper playfield) use a high friction and a different calculation to compensate surface collision
         friction = 1.0f;
@@ -1239,7 +1239,7 @@ void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& 
 
             // compute friction impulse
             const Vertex3Ds cross = CrossProduct(surfP, tangent);
-            const float kt = 1.0f/pball->m_mass + tangent.Dot(CrossProduct(cross / pball->m_inertia, surfP));
+            const float kt = 1.0f/pball->m_mass + tangent.Dot(CrossProduct(cross / pball->Inertia(), surfP));
 
             // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
             const float maxFric = friction * reactionImpulse;

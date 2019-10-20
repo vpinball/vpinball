@@ -865,7 +865,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
 
       // compute friction impulse
       const Vertex3Ds crossB = CrossProduct(rB, tangent);
-      float kt = invMass + tangent.Dot(CrossProduct(crossB / pball->m_inertia, rB));
+      float kt = invMass + tangent.Dot(CrossProduct(crossB / pball->Inertia(), rB));
 
       const Vertex3Ds crossF = CrossProduct(rF, tangent);
       kt += tangent.Dot(CrossProduct(crossF / m_flipperMover.m_inertia, rF));    // flipper only has angular response
@@ -1004,7 +1004,7 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
       }
 
       const Vertex3Ds crossB = CrossProduct(rB, slipDir);
-      const float denomB = invMass + slipDir.Dot(CrossProduct(crossB / pball->m_inertia, rB));
+      const float denomB = invMass + slipDir.Dot(CrossProduct(crossB / pball->Inertia(), rB));
       const float fric = clamp(numer / (denomB + denomF), -maxFric, maxFric);
       
       pball->ApplySurfaceImpulse((dtime * fric) * crossB, (dtime * fric) * slipDir);

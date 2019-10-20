@@ -79,8 +79,6 @@ STDMETHODIMP BallEx::put_VelX(float newVal)
 
    m_pball->m_vel.x = newVal;
 
-   m_pball->CalcHitBBox();
-
    return S_OK;
 }
 
@@ -98,8 +96,6 @@ STDMETHODIMP BallEx::put_VelY(float newVal)
    CHECKSTALEBALL
 
    m_pball->m_vel.y = newVal;
-
-   m_pball->CalcHitBBox();
 
    return S_OK;
 }
@@ -137,8 +133,6 @@ STDMETHODIMP BallEx::put_VelZ(float newVal)
 
    m_pball->m_vel.z = newVal;
 
-   m_pball->CalcHitBBox();
-
    return S_OK;
 }
 
@@ -146,7 +140,7 @@ STDMETHODIMP BallEx::get_AngVelX(float *pVal)
 {
    CHECKSTALEBALL
 
-   *pVal = m_pball->m_angularmomentum.x / m_pball->m_inertia;
+   *pVal = m_pball->m_angularmomentum.x / m_pball->Inertia();
 
    return S_OK;
 }
@@ -155,7 +149,7 @@ STDMETHODIMP BallEx::get_AngVelY(float *pVal)
 {
    CHECKSTALEBALL
 
-   *pVal = m_pball->m_angularmomentum.y / m_pball->m_inertia;
+   *pVal = m_pball->m_angularmomentum.y / m_pball->Inertia();
 
    return S_OK;
 }
@@ -164,7 +158,7 @@ STDMETHODIMP BallEx::get_AngVelZ(float *pVal)
 {
    CHECKSTALEBALL
 
-   *pVal = m_pball->m_angularmomentum.z / m_pball->m_inertia;
+   *pVal = m_pball->m_angularmomentum.z / m_pball->Inertia();
 
    return S_OK;
 }
@@ -184,8 +178,6 @@ STDMETHODIMP BallEx::put_AngMomX(float newVal)
 
    m_pball->m_angularmomentum.x = newVal;
 
-   m_pball->CalcHitBBox();
-
    return S_OK;
 }
 
@@ -204,8 +196,6 @@ STDMETHODIMP BallEx::put_AngMomY(float newVal)
 
    m_pball->m_angularmomentum.y = newVal;
 
-   m_pball->CalcHitBBox();
-
    return S_OK;
 }
 
@@ -223,8 +213,6 @@ STDMETHODIMP BallEx::put_AngMomZ(float newVal)
    CHECKSTALEBALL
 
    m_pball->m_angularmomentum.z = newVal;
-
-   m_pball->CalcHitBBox();
 
    return S_OK;
 }
@@ -347,7 +335,6 @@ STDMETHODIMP BallEx::put_Mass(float newVal)
    CHECKSTALEBALL
 
    m_pball->m_mass = newVal;
-   m_pball->m_inertia = (float)(2.0 / 5.0) * m_pball->m_radius*m_pball->m_radius * m_pball->m_mass;
 
    return S_OK;
 }
@@ -384,9 +371,6 @@ STDMETHODIMP BallEx::put_Radius(float newVal)
    CHECKSTALEBALL
 
    m_pball->m_radius = newVal;
-   m_pball->m_inertia = (float)(2.0 / 5.0) * m_pball->m_radius*m_pball->m_radius * m_pball->m_mass;
-
-   m_pball->CalcHitBBox();
 
    return S_OK;
 }

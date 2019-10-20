@@ -13,7 +13,6 @@ Ball::Ball()
    m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
    m_pinballEnv = NULL;
    m_pinballDecal = NULL;
-   m_defaultZ = 25.0f; //!! assumes ball radius 25
    m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
    m_frozen = false;
    m_color = RGB(255, 255, 255);
@@ -26,7 +25,6 @@ Ball::Ball()
    m_mass = 1.0f;
    m_radius = 25.0f;
    m_orientation.Identity();
-   m_inertia = (float)(2.0 / 5.0) * m_radius*m_radius * m_mass;
    m_bulb_intensity_scale = 1.0f;
    m_playfieldReflectionStrength = 1.0f;
    m_reflectionEnabled = true;
@@ -52,7 +50,6 @@ void Ball::Init(const float mass)
    m_mass = mass;
 
    m_orientation.Identity();
-   m_inertia = (float)(2.0 / 5.0) * m_radius*m_radius * m_mass;
    m_angularmomentum.SetZero();
 
    m_ballMover.m_pball = this;
@@ -178,7 +175,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const flo
 
       // compute friction impulse
       const Vertex3Ds cross = CrossProduct(surfP, tangent);
-      const float kt = 1.0f/m_mass + tangent.Dot(CrossProduct(cross / m_inertia, surfP));
+      const float kt = 1.0f/m_mass + tangent.Dot(CrossProduct(cross / Inertia(), surfP));
 
       // friction impulse can't be greather than coefficient of friction times collision impulse (Coulomb friction cone)
       const float maxFric = friction * reactionImpulse;
@@ -417,7 +414,7 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
    const float slipspeed = slip.Length();
    Vertex3Ds slipDir;
    float numer;
-   //slintf("Velocity: %.2f Angular velocity: %.2f Surface velocity: %.2f Slippage: %.2f\n", m_vel.Length(), (m_angularmomentum / m_inertia).Length(), surfVel.Length(), slipspeed);
+   //slintf("Velocity: %.2f Angular velocity: %.2f Surface velocity: %.2f Slippage: %.2f\n", m_vel.Length(), (m_angularmomentum / Inertia()).Length(), surfVel.Length(), slipspeed);
    //if (slipspeed > 1e-6f)
 
 #ifdef C_BALL_SPIN_HACK
@@ -451,7 +448,7 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
    }
 
    const Vertex3Ds cp = CrossProduct(surfP, slipDir);
-   const float denom = 1.0f/m_mass + slipDir.Dot(CrossProduct(cp / m_inertia, surfP));
+   const float denom = 1.0f/m_mass + slipDir.Dot(CrossProduct(cp / Inertia(), surfP));
    const float fric = clamp(numer / denom, -maxFric, maxFric);
 
    if (!infNaN(fric))
@@ -460,14 +457,15 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
 
 Vertex3Ds Ball::SurfaceVelocity(const Vertex3Ds& surfP) const
 {
-   return m_vel + CrossProduct(m_angularmomentum / m_inertia, surfP); // linear velocity plus tangential velocity due to rotation
+   return m_vel + CrossProduct(m_angularmomentum / Inertia(), surfP); // linear velocity plus tangential velocity due to rotation
 }
 
 Vertex3Ds Ball::SurfaceAcceleration(const Vertex3Ds& surfP) const
 {
+   const Vertex3Ds angularvelocity = m_angularmomentum / Inertia();
    // if we had any external torque, we would have to add "(deriv. of ang.vel.) x surfP" here
    return g_pplayer->m_gravity/m_mass    // linear acceleration
-      + CrossProduct(m_angularmomentum / m_inertia, CrossProduct(m_angularmomentum / m_inertia, surfP)); // centripetal acceleration
+      + CrossProduct(angularvelocity, CrossProduct(angularvelocity, surfP)); // centripetal acceleration
 }
 
 void Ball::ApplySurfaceImpulse(const Vertex3Ds& rotI, const Vertex3Ds& impulse)
@@ -476,8 +474,8 @@ void Ball::ApplySurfaceImpulse(const Vertex3Ds& rotI, const Vertex3Ds& impulse)
 
    m_angularmomentum += rotI;
    //const float aml = m_angularmomentum.Length();
-   //if (aml > m_inertia*135.0f) //!! hack to limit ball spin
-   //   m_angularmomentum *= (m_inertia*135.0f) / aml;
+   //if (aml > Inertia()*135.0f) //!! hack to limit ball spin
+   //   m_angularmomentum *= (Inertia()*135.0f) / aml;
 }
 
 void Ball::CalcHitBBox()
@@ -498,15 +496,6 @@ void Ball::CalcHitBBox()
    m_hitBBox.bottom = m_pos.y + vl;
    m_hitBBox.zlow = m_pos.z - vl;
    m_hitBBox.zhigh = m_pos.z + vl;
-
-   m_rcHitRadiusSqr = vl*vl;
-   assert(m_rcHitRadiusSqr <= FLT_MAX);
-
-   // update defaultZ for ball reflection
-   // if the ball was created by a kicker which is higher than the playfield 
-   // the defaultZ must be updated if the ball falls onto the playfield that means the Z value is equal to the radius
-   if (m_pos.z == m_radius + g_pplayer->m_ptable->m_tableheight)
-      m_defaultZ = m_pos.z;
 }
 
 void BallMoverObject::UpdateDisplacements(const float dtime)
@@ -525,10 +514,8 @@ void Ball::UpdateDisplacements(const float dtime)
       m_drsq = ds.LengthSquared(); // used to determine if static ball
 #endif
 
-      CalcHitBBox();
-
       Matrix3 mat3;
-      mat3.SkewSymmetric(m_angularmomentum / m_inertia);
+      mat3.SkewSymmetric(m_angularmomentum / Inertia());
 
       Matrix3 addedorientation;
       addedorientation.MulMatricesAndMulScalar(mat3, m_orientation, dtime);
@@ -568,6 +555,4 @@ void Ball::UpdateVelocities()
 #ifdef C_DYNAMIC
    m_dynamic = C_DYNAMIC; // always set .. after adding velocity
 #endif
-
-   CalcHitBBox();
 }

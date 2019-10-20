@@ -12,13 +12,13 @@ class HitKDNode
 private:
    void Reset() { m_children = NULL; m_hitoct = NULL; m_start = 0; m_items = 0; }
 
-   void HitTestBall(Ball * const pball, CollisionEvent& coll) const;
+   void HitTestBall(const Ball * const pball, CollisionEvent& coll) const;
    void HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const;
 
    void CreateNextLevel(const unsigned int level, unsigned int level_empty);
 
 #ifdef KDTREE_SSE_LEAFTEST
-   void HitTestBallSse(Ball * const pball, CollisionEvent& coll) const;
+   void HitTestBallSse(const Ball * const pball, CollisionEvent& coll) const;
 #endif
 
    FRect3D m_rectbounds;
@@ -55,7 +55,7 @@ public:
    // call when finalizing a tree (no dynamic changes planned on it)
    void Finalize();
 
-   void HitTestBall(Ball * const pball, CollisionEvent& coll) const
+   void HitTestBall(const Ball * const pball, CollisionEvent& coll) const
    {
       m_rootNode.HitTestBallSse(pball, coll);
    }

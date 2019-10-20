@@ -193,7 +193,7 @@ void HitQuadtree::InitSseArrays()
 
     */
 
-void HitQuadtree::HitTestBall(Ball * const pball, CollisionEvent& coll) const
+void HitQuadtree::HitTestBall(const Ball * const pball, CollisionEvent& coll) const
 {
 #if 1   /// with SSE optimizations //////////////////////////
 
@@ -236,7 +236,7 @@ void HitQuadtree::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 #endif
 }
 
-void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
+void HitQuadtree::HitTestBallSse(const Ball * const pball, CollisionEvent& coll) const
 {
    const HitQuadtree* stack[128]; //!! should be enough, but better implement test in construction to not exceed this
    unsigned int stackpos = 0;
@@ -255,7 +255,7 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
    const __m128 posx = _mm_set1_ps(pball->m_pos.x);
    const __m128 posy = _mm_set1_ps(pball->m_pos.y);
    const __m128 posz = _mm_set1_ps(pball->m_pos.z);
-   const __m128 rsqr = _mm_set1_ps(pball->m_rcHitRadiusSqr);
+   const __m128 rsqr = _mm_set1_ps(pball->HitRadiusSqr());
 
    const bool traversal_order = (rand_mt_01() < 0.5f); // swaps test order in leafs randomly
    const size_t dt = traversal_order ? 1 : -1;
@@ -367,14 +367,16 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
    } while (current);
 }
 
-void HitQuadtree::HitTestXRay(Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const
+void HitQuadtree::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const
 {
+   const float rcHitRadiusSqr = pball->HitRadiusSqr();
+
    for (size_t i = 0; i < m_vho.size(); i++)
    {
 #ifdef DEBUGPHYSICS
       g_pplayer->c_tested++;
 #endif
-      if ((pball != m_vho[i]) && fRectIntersect3D(pball->m_hitBBox, m_vho[i]->m_hitBBox) && fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, m_vho[i]->m_hitBBox))
+      if ((pball != m_vho[i]) && fRectIntersect3D(pball->m_hitBBox, m_vho[i]->m_hitBBox) && fRectIntersect3D(pball->m_pos, rcHitRadiusSqr, m_vho[i]->m_hitBBox))
       {
 #ifdef DEBUGPHYSICS
          g_pplayer->c_deepTested++;
