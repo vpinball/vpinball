@@ -32,6 +32,8 @@ public:
    virtual void Collide(const CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime) { }
    virtual void CalcHitBBox();
+
+   float HitRadiusSqr() const { return sqrf((m_hitBBox.right - m_hitBBox.left)*0.5f); } // this returns the extended (by m_vel + magic) squared radius, as needed to be used in the collision detection
    void Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const float elastFalloff, const float friction, float scatter_angle);
 
    void ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff);
@@ -39,23 +41,16 @@ public:
 
    Vertex3Ds SurfaceVelocity(const Vertex3Ds& surfP) const;
    Vertex3Ds SurfaceAcceleration(const Vertex3Ds& surfP) const;
+   float Inertia() const { return (float)(2.0/5.0) * m_radius*m_radius * m_mass; }
 
    void ApplySurfaceImpulse(const Vertex3Ds& rotI, const Vertex3Ds& impulse);
 
    void EnsureOMObject();
 
-   COLORREF m_color;
-
    // Per frame info
    CCO(BallEx) *m_pballex; // Object model version of the ball
 
-   char m_szImage[MAXTOKEN];
-   char m_szImageFront[MAXTOKEN];
-
-   Texture *m_pinballEnv;
-   Texture *m_pinballDecal;
-
-   vector<IFireEvents*>* m_vpVolObjs;// vector of triggers and kickers we are now inside (stored as IFireEvents* though, as HitObject.m_obj stores it like that!)
+   vector<IFireEvents*>* m_vpVolObjs; // vector of triggers and kickers we are now inside (stored as IFireEvents* though, as HitObject.m_obj stores it like that!)
 
    CollisionEvent m_coll;  // collision information, may not be a actual hit if something else happens first
 
@@ -67,36 +62,42 @@ public:
    BallMoverObject m_ballMover;
 
    Vertex3Ds m_pos;
-   float m_defaultZ;       // normal height of the ball //!! remove?
-
-   Vertex3Ds m_oldpos[MAX_BALL_TRAIL_POS]; // for the optional ball trails
-   unsigned int m_ringcounter_oldpos;
-
    Vertex3Ds m_vel;        // ball velocity
-   Vertex3Ds m_oldVel;
+   Vertex3Ds m_oldVel;     // hack for kicker hole handling only
 
    float m_radius;
    float m_mass;
 
-   float m_rcHitRadiusSqr; // extended (by m_vel + magic) squared radius, used in collision detection
-
    Vertex3Ds m_Event_Pos;  // last hit event position (to filter hit 'equal' hit events)
 
-   Matrix3 m_orientation;
    Vertex3Ds m_angularmomentum;
-   float m_inertia;
 
    unsigned int m_id; // unique ID for each ball
 
-   float m_bulb_intensity_scale; // to dampen/increase contribution of the bulb lights (locally/by script)
-
-   float m_playfieldReflectionStrength;
-
    bool m_frozen;
+
+   // rendering only:
    bool m_reflectionEnabled;
    bool m_forceReflection;
    bool m_visible;
    bool m_decalMode;
 
+   Matrix3 m_orientation;
+
+   char m_szImage[MAXTOKEN];
+   char m_szImageFront[MAXTOKEN];
+
+   float m_bulb_intensity_scale; // to dampen/increase contribution of the bulb lights (locally/by script)
+
+   float m_playfieldReflectionStrength;
+
+   COLORREF m_color;
+   Texture *m_pinballEnv;
+   Texture *m_pinballDecal;
+
+   Vertex3Ds m_oldpos[MAX_BALL_TRAIL_POS]; // for the optional ball trails
+   unsigned int m_ringcounter_oldpos;
+
+   //
    static unsigned int ballID; // increased for each ball created to have an unique ID for scripts for each ball
 };

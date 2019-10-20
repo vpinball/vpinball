@@ -115,7 +115,7 @@ public:
 
    float m_threshold;  // threshold for firing an event (usually (always??) normal dot ball-velocity)
 
-   FRect3D m_hitBBox;
+   FRect3D m_hitBBox;  // updated by CalcHitBBox, but for balls only on-demand when creating the collision hierarchies
 
    float m_elasticity;
    float m_elasticityFalloff;
@@ -218,4 +218,4 @@ public:
 // Callback for the broadphase collision test.
 // Perform the actual hittest between ball and hit object and update
 // collision information if a hit occurred.
-void DoHitTest(Ball * const pball, HitObject * const pho, CollisionEvent& coll);
+void DoHitTest(const Ball * const pball, HitObject * const pho, CollisionEvent& coll);

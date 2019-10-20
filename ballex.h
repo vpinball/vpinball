@@ -89,5 +89,6 @@ public:
    virtual void RunDebugCommand(int id);
 
    Ball *m_pball;
+private:
    VARIANT m_uservalue;
 };

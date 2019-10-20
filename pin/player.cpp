@@ -948,7 +948,7 @@ void Player::InitDebugHitStructure()
 
    for (size_t i = 0; i < m_vdebugho.size(); ++i)
    {
-      m_vdebugho[i]->CalcHitBBox();
+      m_vdebugho[i]->CalcHitBBox(); // need to update here, as only done lazily for some objects (i.e. balls!)
       m_debugoctree.AddElement(m_vdebugho[i]);
    }
 
@@ -1462,7 +1462,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    {
       HitObject * const pho = m_vho[i];
 
-      pho->CalcHitBBox();
+      pho->CalcHitBBox(); // need to update here, as only done lazily for some objects (i.e. balls!)
 
       m_hitoctree.AddElement(pho);
 
@@ -2191,6 +2191,7 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    pball->m_vel.x = vx;
    pball->m_vel.y = vy;
    pball->m_vel.z = vz;
+
    pball->Init(mass); // Call this after radius set to get proper inertial tensor set up
 
    pball->EnsureOMObject();
@@ -2200,15 +2201,13 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    m_vball.push_back(pball);
    m_vmover.push_back(&pball->m_ballMover); // balls are always added separately to this list!
 
-   pball->CalcHitBBox();
+   pball->CalcHitBBox(); // need to update here, as only done lazily
 
    m_vho_dynamic.push_back(pball);
    m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
 
    if (!m_pactiveballDebug)
       m_pactiveballDebug = pball;
-
-   pball->m_defaultZ = pball->m_pos.z;
 
    return pball;
 }
@@ -3082,8 +3081,6 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
             }
             else
             {
-               pball->CalcHitBBox(); // do new boundings 
-
 #ifdef C_DYNAMIC
                // is this ball static? .. set static and quench        
                if (/*pball->m_coll.m_hitRigid &&*/ (pball->m_coll.m_hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts //!! rather test isContact??
@@ -4155,7 +4152,7 @@ void Player::UpdateHUD()
 			m_phys_iterations,
 			(U32)(m_phys_total_iterations / m_count),
 			m_phys_max_iterations,
-			g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_vel + (float)PHYS_FACTOR*g_pplayer->m_gravity).Length() : -1.f, g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_angularmomentum / g_pplayer->m_pactiveball->m_inertia).Length() : -1.f);
+			g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_vel + (float)PHYS_FACTOR*g_pplayer->m_gravity).Length() : -1.f, g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_angularmomentum / g_pplayer->m_pactiveball->Inertia()).Length() : -1.f);
 		DebugPrint(10, 200, szFoo, len);
 
 #ifdef DEBUGPHYSICS
@@ -5193,8 +5190,8 @@ void Player::DrawBalls()
       if (m_ptable->m_reflectionEnabled)
          zheight -= m_ptable->m_tableheight*2.0f;
 
-      const float maxz = pball->m_defaultZ + 3.0f;
-      const float minz = pball->m_defaultZ - 0.1f;
+      const float maxz = (pball->m_radius + m_ptable->m_tableheight) + 3.0f;
+      const float minz = (pball->m_radius + m_ptable->m_tableheight) - 0.1f;
       if ((m_reflectionForBalls && pball->m_reflectionEnabled && !pball->m_forceReflection && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1 && !pball->m_forceReflection))
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
          drawReflection = !((zheight > maxz) || pball->m_frozen || (pball->m_pos.z < minz));
@@ -5532,9 +5529,10 @@ void Player::DoDebugObjectMenu(const int x, const int y)
    Ball ballT;
    ballT.m_pos = v3d;
    ballT.m_vel = v3d2 - v3d;
-   ballT.m_radius = 0;
+   ballT.m_radius = 0.f;
    ballT.m_coll.m_hittime = 1.0f;
-   ballT.CalcHitBBox();
+
+   ballT.CalcHitBBox(); // need to update here, as only done lazily
 
    //const float slope = (v3d2.y - v3d.y)/(v3d2.z - v3d.z);
    //const float yhit = v3d.y - (v3d.z*slope);
@@ -5543,7 +5541,6 @@ void Player::DoDebugObjectMenu(const int x, const int y)
    //const float xhit = v3d.x - (v3d.z*slopex);
 
    vector<HitObject*> vhoHit;
-
    m_hitoctree_dynamic.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
    m_hitoctree.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
    m_debugoctree.HitTestXRay(&ballT, vhoHit, ballT.m_coll);

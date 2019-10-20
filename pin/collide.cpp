@@ -12,7 +12,7 @@ void HitObject::FireHitEvent(Ball * const pball)
    {
       // is this the same place as last event? if same then ignore it
       const float dist_ls = (pball->m_Event_Pos - pball->m_pos).LengthSquared();
-      pball->m_Event_Pos = pball->m_pos;    //remember last collide position
+      pball->m_Event_Pos = pball->m_pos;    // remember last collision position
 
       const float normalDist = (m_ObjType == eHitTarget) ? 0.0f   // hit targets when used with a captured ball have always a too small distance
                                                          : 0.25f; //!! magic distance
@@ -238,8 +238,8 @@ float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime,
       else
          // estimate based on distance and speed along distance
          // the ball can be that fast that in the next hit cycle the ball will be inside the hit shape of a bumper or other element.
-         // if that happens bnd is negative and greater than the negative bnv value that results in a negative hittime
-         // below the "if (infNan(hittime) || hittime <0.f...)" will then be true and the hit function will return -1.0f = no hit
+         // if that happens bnd is negative and greater than the negative bnv value: that results in a negative hittime
+         // i.e. below the "if (infNan(hittime) || hittime <0.f...)" will then be true and the hit function would return -1.0f = no hit
          hittime = std::max(0.0f, -bnd / bnv);
    }
    else if (m_ObjType >= eTrigger // triggers & kickers
@@ -483,7 +483,7 @@ float HitPoint::HitTest(const Ball * const pball, const float dtime, CollisionEv
       hittime = (time1*time2 < 0.f) ? max(time1, time2) : min(time1, time2); // find smallest nonnegative solution
    }
 
-   if (infNaN(hittime) || hittime < 0 || hittime > dtime)
+   if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
       return -1.0f; // contact out of physics frame
 
    const Vertex3Ds hitPos = pball->m_pos + hittime * pball->m_vel;
@@ -514,7 +514,7 @@ void HitPoint::Collide(const CollisionEvent& coll)
       FireHitEvent(coll.m_ball);
 }
 
-void DoHitTest(Ball *const pball, HitObject *const pho, CollisionEvent& coll)
+void DoHitTest(const Ball *const pball, HitObject *const pho, CollisionEvent& coll)
 {
 #ifdef DEBUGPHYSICS
    g_pplayer->c_deepTested++;
@@ -533,7 +533,7 @@ void DoHitTest(Ball *const pball, HitObject *const pho, CollisionEvent& coll)
    {
       if (validhit)
       {
-         coll.m_ball = pball;
+         coll.m_ball = const_cast<Ball*>(pball); //!! meh, but will not be changed in here
          coll.m_obj = pho;
          coll.m_hittime = newtime;
       }
@@ -542,7 +542,7 @@ void DoHitTest(Ball *const pball, HitObject *const pho, CollisionEvent& coll)
    {
       if (newColl.m_isContact || validhit)
       {
-         newColl.m_ball = pball;
+         newColl.m_ball = const_cast<Ball*>(pball); //!! meh, but will not be changed in here
          newColl.m_obj = pho;
 
          if (newColl.m_isContact)

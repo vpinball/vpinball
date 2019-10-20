@@ -23,13 +23,13 @@ public:
    void Initialize();
    void Initialize(const FRect3D& bounds);
 
-   void HitTestBall(Ball * const pball, CollisionEvent& coll) const;
-   void HitTestXRay(Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const;
+   void HitTestBall(const Ball * const pball, CollisionEvent& coll) const;
+   void HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const;
 
 private:
 
    void CreateNextLevel(const FRect3D& bounds, const unsigned int level, unsigned int level_empty);
-   void HitTestBallSse(Ball * const pball, CollisionEvent& coll) const;
+   void HitTestBallSse(const Ball * const pball, CollisionEvent& coll) const;
 
    Primitive* m_unique; // everything below/including this node shares the same original primitive object (just for early outs if not collidable)
 
