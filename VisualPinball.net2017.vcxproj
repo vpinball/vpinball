@@ -1590,7 +1590,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\lightseq.ico" />
     <Image Include="res\magnify.ico" />
     <Image Include="res\options.ico" />
-    <Image Include="res\play1.ico" />
     <Image Include="res\plunger.ico" />
     <Image Include="res\primitive.ico" />
     <Image Include="res\ramp.ico" />

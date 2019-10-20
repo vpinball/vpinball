@@ -949,7 +949,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
       SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_BACKGLASSVIEW, MAKELONG(show, 0));
 
-      ShowBackglassView(show);
+      ToggleBackglassView();
       break;
    }
    case ID_EDIT_SEARCH:
@@ -1231,59 +1231,19 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       break;
    }
    case ID_LAYER_LAYER1:
-   {
-      SetLayerStatus(0);
-      break;
-   }
    case ID_LAYER_LAYER2:
-   {
-      SetLayerStatus(1);
-      break;
-   }
    case ID_LAYER_LAYER3:
-   {
-      SetLayerStatus(2);
-      break;
-   }
    case ID_LAYER_LAYER4:
-   {
-      SetLayerStatus(3);
-      break;
-   }
    case ID_LAYER_LAYER5:
-   {
-      SetLayerStatus(4);
-      break;
-   }
    case ID_LAYER_LAYER6:
-   {
-      SetLayerStatus(5);
-      break;
-   }
    case ID_LAYER_LAYER7:
-   {
-      SetLayerStatus(6);
-      break;
-   }
    case ID_LAYER_LAYER8:
-   {
-      SetLayerStatus(7);
-      break;
-   }
    case ID_LAYER_LAYER9:
-   {
-      SetLayerStatus(8);
-      break;
-   }
    case ID_LAYER_LAYER10:
-   {
-      SetLayerStatus(9);
-      break;
-   }
    case ID_LAYER_LAYER11:
    {
-      SetLayerStatus(10);
-      break;
+       SetLayerStatus(code - ID_LAYER_LAYER1);
+       break;
    }
    case ID_LAYER_MERGEALL:
    {
@@ -1297,8 +1257,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_HELP_ABOUT:
    {
-      ShowSubDialog(m_aboutDialog);
-//       ShowSubDialog(m_toolbarDialog);
+      //ShowSubDialog(m_aboutDialog);
+       ShowSubDialog(m_toolbarDialog);
       break;
    }
    case ID_WINDOW_CASCADE:
@@ -2764,9 +2724,10 @@ void VPinball::ShowProperties(bool enable)
     }
 }
 
-void VPinball::ShowBackglassView(bool enable)
+void VPinball::ToggleBackglassView()
 {
-    m_backglassView = enable;
+    const bool show = !m_backglassView;
+    m_backglassView = show;
 
     for (size_t i = 0; i < m_vtable.size(); i++)
     {
