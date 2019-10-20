@@ -58,10 +58,7 @@ private:
    HWND CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight);
    void CreateMDIClient();
 
-   void SetLayerStatus(const int layerNumber);
    void ShowProperties(bool enable);
-   void ShowBackglassView(bool enable);
-   void ToggleScriptEditor();
    void ShowSearchSelect();
    void SetDefaultPhysics();
    void SetViewSolidOutline(size_t viewId);
@@ -75,7 +72,6 @@ private:
    void OpenRecentFile(const size_t menuId);
    void CopyPasteElement(const CopyPasteModes mode);
    void MergeAllLayers();
-   void ToggleAllLayers();
    void InitTools();
    void InitRegValues();
    bool CanClose();
@@ -94,6 +90,10 @@ private:
    HMENU GetMainMenu(int id);
 
 public:
+   void SetLayerStatus(const int layerNumber);
+   void ToggleScriptEditor();
+   void ToggleAllLayers();
+   void ToggleBackglassView();
    void ParseCommand(size_t code, HWND hwnd, size_t notify);
    void ReInitPinDirectSound();
 

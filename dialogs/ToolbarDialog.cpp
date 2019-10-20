@@ -134,6 +134,11 @@ BOOL ToolbarDialog::OnInitDialog()
     hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_RUBBER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_rubberButton.SetIcon((HICON)hIcon);
 
+    for (int i = 0; i < 11; i++)
+    {
+        m_layerButtons[i].SetCheck(BST_CHECKED);
+    }
+
     m_resizer.Initialize(*this, CRect(0, 0, 61, 422));
 
     m_resizer.AddChild(m_magnifyButton, topleft, 0);
@@ -205,8 +210,8 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_SELECT:
         case ID_TABLE_MAGNIFY:
         {
-            SendDlgItemMessage(IDC_SELECT, BM_SETCHECK, BST_UNCHECKED, 0);
-            SendDlgItemMessage(ID_TABLE_MAGNIFY, BM_SETCHECK, BST_UNCHECKED, 0);
+            m_selectButton.SetCheck(BST_UNCHECKED);
+            m_magnifyButton.SetCheck(BST_UNCHECKED);
             switch (HIWORD(wParam))
             {
                 case BN_CLICKED:
@@ -221,6 +226,50 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 default:
                     break;
             }
+            break;
+        }
+        case ID_EDIT_PROPERTIES:
+        {
+            g_pvp->ParseCommand(id, m_hwnd, 3); //3=toggle
+            break;
+        }
+        case ID_EDIT_SCRIPT:
+        {
+            g_pvp->ToggleScriptEditor();
+            break;
+        }
+        case ID_EDIT_BACKGLASSVIEW:
+        {
+            g_pvp->ToggleBackglassView();
+            break;
+        }
+        case ID_TABLE_PLAY:
+        {
+            g_pvp->DoPlay(false);  //only normaly play mode via this dialog
+            break;
+        }
+        case ID_LAYER_LAYER1:
+        case ID_LAYER_LAYER2:
+        case ID_LAYER_LAYER3:
+        case ID_LAYER_LAYER4:
+        case ID_LAYER_LAYER5:
+        case ID_LAYER_LAYER6:
+        case ID_LAYER_LAYER7:
+        case ID_LAYER_LAYER8:
+        case ID_LAYER_LAYER9:
+        case ID_LAYER_LAYER10:
+        case ID_LAYER_LAYER11:
+        {
+            g_pvp->SetLayerStatus(id - ID_LAYER_LAYER1);
+            break;
+        }
+        case ID_LAYER_TOGGLEALL:
+        {
+            g_pvp->ToggleAllLayers();
+            break;
+        }
+        case ID_INSERT_WALL:
+        {
             break;
         }
     }
