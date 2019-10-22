@@ -23,8 +23,8 @@ public:
    void Init(const float mass);
    void RenderSetup();
 
-   virtual void UpdateDisplacements(const float dtime);
-   virtual void UpdateVelocities();
+   void UpdateDisplacements(const float dtime);
+   void UpdateVelocities();
 
    // From HitObject
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
@@ -85,7 +85,7 @@ public:
    Matrix3 m_orientation;
 
    char m_szImage[MAXTOKEN];
-   char m_szImageFront[MAXTOKEN];
+   char m_szImageDecal[MAXTOKEN];
 
    float m_bulb_intensity_scale; // to dampen/increase contribution of the bulb lights (locally/by script)
 

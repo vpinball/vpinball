@@ -644,7 +644,7 @@ public:
    char m_szImageColorGrade[MAXTOKEN];
 
    char m_szBallImage[MAXTOKEN];
-   char m_szBallImageFront[MAXTOKEN];
+   char m_szBallImageDecal[MAXTOKEN];
    bool m_BallDecalMode;
 
    char m_szEnvImage[MAXTOKEN];
@@ -889,6 +889,7 @@ public:
    STDMETHOD(UpdateMaterial)(BSTR pVal, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
       OLE_COLOR base, OLE_COLOR glossy, OLE_COLOR clearcoat, VARIANT_BOOL isMetal, VARIANT_BOOL opacityActive,
       float elasticity, float elasticityFalloff, float friction, float scatterAngle);
+   STDMETHOD(UpdateMaterialPhysics)(BSTR pVal, float elasticity, float elasticityFalloff, float friction, float scatterAngle);
    STDMETHOD(MaterialColor)(BSTR pVal, OLE_COLOR newVal);
 
    void Init(PinTable *pt);

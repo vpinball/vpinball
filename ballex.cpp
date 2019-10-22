@@ -272,7 +272,7 @@ STDMETHODIMP BallEx::get_FrontDecal(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImageFront, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImageDecal, -1, wz, 32);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -289,7 +289,7 @@ STDMETHODIMP BallEx::put_FrontDecal(BSTR newVal)
        return E_FAIL;
    }
 
-   strcpy_s(m_pball->m_szImageFront, szImage);
+   strcpy_s(m_pball->m_szImageDecal, szImage);
 
    m_pball->m_pinballDecal = tex;
 

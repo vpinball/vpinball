@@ -283,6 +283,7 @@
 #define IDD_PROPWALL                    244
 #define ID_FIND                         245
 #define ID_COMPILE                      246
+#define IDC_UPDATE_MATERIAL_PHYSICS     247
 #define IDD_ABOUT                       250
 #define IDC_WEBSITE                     250
 #define IDC_TRANSSITE                   251

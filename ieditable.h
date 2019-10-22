@@ -11,7 +11,7 @@ class IFireEvents
 {
 
 public:
-   virtual void FireGroupEvent(int dispid) = 0;
+   virtual void FireGroupEvent(const int dispid) = 0;
    virtual IDispatch *GetDispatch() = 0;
    virtual IDebugCommands *GetDebugCommands() = 0;
 
@@ -113,7 +113,7 @@ public:
 	STDMETHOD(get_UserValue)(VARIANT *pVal) {return IEditable::get_UserValue(pVal);} \
 	STDMETHOD(put_UserValue)(VARIANT *newVal) {return IEditable::put_UserValue(newVal);} \
 	virtual IScriptable *GetScriptable() {return (IScriptable *)this;} \
-	virtual void FireGroupEvent(int dispid) {FireVoidGroupEvent(dispid);}
+	virtual void FireGroupEvent(const int dispid) {FireVoidGroupEvent(dispid);}
 
 // used above, do not invoke directly
 #define _STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
