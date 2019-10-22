@@ -948,7 +948,7 @@ void Player::InitDebugHitStructure()
 
    for (size_t i = 0; i < m_vdebugho.size(); ++i)
    {
-      m_vdebugho[i]->CalcHitBBox(); // need to update here, as only done lazily for some objects (i.e. balls!)
+      m_vdebugho[i]->CalcHitBBox(); // maybe needed to update here, as only done lazily for some objects (i.e. balls!)
       m_debugoctree.AddElement(m_vdebugho[i]);
    }
 
@@ -1462,8 +1462,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    {
       HitObject * const pho = m_vho[i];
 
-      pho->CalcHitBBox(); // need to update here, as only done lazily for some objects (i.e. balls!)
-
+      pho->CalcHitBBox(); // maybe needed to update here, as only done lazily for some objects (i.e. balls!)
       m_hitoctree.AddElement(pho);
 
       if (pho->GetType() == eFlipper)
@@ -2185,12 +2184,10 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    pball->m_pos.x = x;
    pball->m_pos.y = y;
    pball->m_pos.z = z + pball->m_radius;
-   pball->m_bulb_intensity_scale = m_ptable->m_defaultBulbIntensityScaleOnBall;
-
-   //pball->z = z;
    pball->m_vel.x = vx;
    pball->m_vel.y = vy;
    pball->m_vel.z = vz;
+   pball->m_bulb_intensity_scale = m_ptable->m_defaultBulbIntensityScaleOnBall;
 
    pball->Init(mass); // Call this after radius set to get proper inertial tensor set up
 
@@ -5520,8 +5517,8 @@ void Player::DoDebugObjectMenu(const int x, const int y)
    // clipping plane (z=0) and the far clipping plane (z=1) to get the whole
    // range we need to hit test
    Vertex3Ds v3d, v3d2;
-   mat3D.MultiplyVector(Vertex3Ds(xcoord, ycoord, 0), v3d);
-   mat3D.MultiplyVector(Vertex3Ds(xcoord, ycoord, 1), v3d2);
+   mat3D.MultiplyVector(Vertex3Ds(xcoord, ycoord, 0.f), v3d);
+   mat3D.MultiplyVector(Vertex3Ds(xcoord, ycoord, 1.f), v3d2);
 
    // Create a ray (ball) that travels in 3D space from the screen pixel at
    // the near clipping plane to the far clipping plane, and find what

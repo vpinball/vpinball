@@ -85,8 +85,8 @@ void HitKD::InitSseArrays()
    for (unsigned int j = 0; j < m_num_items; ++j)
    {
       const FRect3D& r = GetItemAt(j)->m_hitBBox;
-      l_r_t_b_zl_zh[j] = r.left;
-      l_r_t_b_zl_zh[j + padded] = r.right;
+      l_r_t_b_zl_zh[j             ] = r.left;
+      l_r_t_b_zl_zh[j + padded    ] = r.right;
       l_r_t_b_zl_zh[j + padded * 2] = r.top;
       l_r_t_b_zl_zh[j + padded * 3] = r.bottom;
       l_r_t_b_zl_zh[j + padded * 4] = r.zlow;
@@ -95,11 +95,11 @@ void HitKD::InitSseArrays()
 
    for (unsigned int j = m_num_items; j < padded; ++j)
    {
-      l_r_t_b_zl_zh[j] = FLT_MAX;
-      l_r_t_b_zl_zh[j + padded] = -FLT_MAX;
-      l_r_t_b_zl_zh[j + padded * 2] = FLT_MAX;
+      l_r_t_b_zl_zh[j             ] =  FLT_MAX;
+      l_r_t_b_zl_zh[j + padded    ] = -FLT_MAX;
+      l_r_t_b_zl_zh[j + padded * 2] =  FLT_MAX;
       l_r_t_b_zl_zh[j + padded * 3] = -FLT_MAX;
-      l_r_t_b_zl_zh[j + padded * 4] = FLT_MAX;
+      l_r_t_b_zl_zh[j + padded * 4] =  FLT_MAX;
       l_r_t_b_zl_zh[j + padded * 5] = -FLT_MAX;
    }
 #endif
@@ -114,7 +114,7 @@ void HitKD::FillFromVector(vector<HitObject*> &vho)
    m_rootNode.m_start = 0;
    m_rootNode.m_items = m_num_items;
 
-   for (unsigned i = 0; i < m_num_items; ++i)
+   for (unsigned int i = 0; i < m_num_items; ++i)
    {
       HitObject * const pho = vho[i];
       pho->CalcHitBBox(); // need to update here, as only done lazily for some objects (i.e. balls!)
@@ -138,7 +138,7 @@ void HitKD::FillFromIndices()
    m_rootNode.m_start = 0;
    m_rootNode.m_items = m_num_items;
 
-   for (unsigned i = 0; i < m_num_items; ++i)
+   for (unsigned int i = 0; i < m_num_items; ++i)
    {
       HitObject * const pho = GetItemAt(i);
       pho->CalcHitBBox(); // need to update here, as only done lazily for some objects (i.e. balls!)

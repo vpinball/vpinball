@@ -121,11 +121,10 @@ float LineSeg::HitTestBasic(const Ball * const pball, const float dtime, Collisi
    if (!rigid)                                               // non rigid body collision? return direction
       coll.m_hitflag = bUnHit;                               // UnHit signal is receding from outside target
 
-   const float ballr = pball->m_radius;
-   const float hitz = pball->m_pos.z + pball->m_vel.z*hittime;  // check too high or low relative to ball rolling point at hittime
+   const float hitz = pball->m_pos.z + pball->m_vel.z*hittime; // check too high or low relative to ball rolling point at hittime
 
-   if (hitz + ballr * 0.5f < m_hitBBox.zlow                  // check limits of object's height and depth  
-       || hitz - ballr * 0.5f > m_hitBBox.zhigh)
+   if (hitz + pball->m_radius*0.5f < m_hitBBox.zlow          // check limits of object's height and depth  
+       || hitz - pball->m_radius*0.5f > m_hitBBox.zhigh)
    {
        return -1.0f;
    }

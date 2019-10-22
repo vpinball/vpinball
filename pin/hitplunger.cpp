@@ -33,26 +33,26 @@ HitPlunger::HitPlunger(const float x, const float y, const float x2, const float
    m_plungerMover.m_restPos = restPos;
    m_plungerMover.m_pos = frameTop + (restPos * frameLen);
 
-   m_hitBBox.zlow = zheight;
+   m_hitBBox.zlow  = zheight;
    m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
 
-   m_plungerMover.m_linesegBase.m_hitBBox.zlow = zheight;
+   m_plungerMover.m_linesegBase.m_hitBBox.zlow  = zheight;
    m_plungerMover.m_linesegBase.m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
-   m_plungerMover.m_linesegSide[0].m_hitBBox.zlow = zheight;
+   m_plungerMover.m_linesegSide[0].m_hitBBox.zlow  = zheight;
    m_plungerMover.m_linesegSide[0].m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
-   m_plungerMover.m_linesegSide[1].m_hitBBox.zlow = zheight;
+   m_plungerMover.m_linesegSide[1].m_hitBBox.zlow  = zheight;
    m_plungerMover.m_linesegSide[1].m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
-   m_plungerMover.m_linesegEnd.m_hitBBox.zlow = zheight;
-   m_plungerMover.m_linesegEnd.m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_linesegEnd.m_hitBBox.zlow    = zheight;
+   m_plungerMover.m_linesegEnd.m_hitBBox.zhigh   = zheight + PLUNGERHEIGHT;
 
-   m_plungerMover.m_jointBase[0].m_hitBBox.zlow = zheight;
+   m_plungerMover.m_jointBase[0].m_hitBBox.zlow  = zheight;
    m_plungerMover.m_jointBase[0].m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
-   m_plungerMover.m_jointBase[1].m_hitBBox.zlow = zheight;
+   m_plungerMover.m_jointBase[1].m_hitBBox.zlow  = zheight;
    m_plungerMover.m_jointBase[1].m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
-   m_plungerMover.m_jointEnd[0].m_hitBBox.zlow = zheight;
-   m_plungerMover.m_jointEnd[0].m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
-   m_plungerMover.m_jointEnd[1].m_hitBBox.zlow = zheight;
-   m_plungerMover.m_jointEnd[1].m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_jointEnd[0].m_hitBBox.zlow   = zheight;
+   m_plungerMover.m_jointEnd[0].m_hitBBox.zhigh  = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_jointEnd[1].m_hitBBox.zlow   = zheight;
+   m_plungerMover.m_jointEnd[1].m_hitBBox.zhigh  = zheight + PLUNGERHEIGHT;
 
    m_plungerMover.SetObjects(m_plungerMover.m_pos);
 }
@@ -60,9 +60,9 @@ HitPlunger::HitPlunger(const float x, const float y, const float x2, const float
 void HitPlunger::CalcHitBBox()
 {
    // Allow roundoff
-   m_hitBBox.left = m_plungerMover.m_x - 0.1f;
-   m_hitBBox.right = m_plungerMover.m_x2 + 0.1f;
-   m_hitBBox.top = m_plungerMover.m_frameEnd - 0.1f;
+   m_hitBBox.left   = m_plungerMover.m_x - 0.1f;
+   m_hitBBox.right  = m_plungerMover.m_x2 + 0.1f;
+   m_hitBBox.top    = m_plungerMover.m_frameEnd - 0.1f;
    m_hitBBox.bottom = m_plungerMover.m_y + 0.1f;
 
    // zlow & zhigh gets set in constructor
