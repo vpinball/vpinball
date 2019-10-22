@@ -748,6 +748,28 @@ STDMETHODIMP ScriptGlobalTable::UpdateMaterial(BSTR pVal, float wrapLighting, fl
       return E_FAIL;
 }
 
+STDMETHODIMP ScriptGlobalTable::UpdateMaterialPhysics(BSTR pVal, float elasticity, float elasticityFalloff, float friction, float scatterAngle)
+{
+   if (!g_pplayer)
+      return E_POINTER;
+
+   char Name[MAX_PATH];
+   WideCharToMultiByte(CP_ACP, 0, pVal, -1, Name, MAX_PATH, NULL, NULL);
+
+   Material * const pMat = m_pt->GetMaterial(Name);
+   if (pMat != &g_pvp->m_dummyMaterial)
+   {
+      pMat->m_fElasticity = elasticity;
+      pMat->m_fElasticityFalloff = elasticityFalloff;
+      pMat->m_fFriction = friction;
+      pMat->m_fScatterAngle = scatterAngle;
+
+      return S_OK;
+   }
+   else
+      return E_FAIL;
+}
+
 // only sets the base color
 STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
 {
@@ -3334,7 +3356,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
    bw.WriteBool(FID(BIMN), m_ImageBackdropNightDay);
    bw.WriteString(FID(IMCG), m_szImageColorGrade);
    bw.WriteString(FID(BLIM), m_szBallImage);
-   bw.WriteString(FID(BLIF), m_szBallImageFront);
+   bw.WriteString(FID(BLIF), m_szBallImageDecal);
    bw.WriteString(FID(EIMG), m_szEnvImage);
 
    bw.WriteString(FID(SSHT), m_szScreenShot);
@@ -3801,7 +3823,7 @@ void PinTable::SetLoadDefaults()
       m_BG_szImage[i][0] = 0;
    m_szImageColorGrade[0] = 0;
    m_szBallImage[0] = 0;
-   m_szBallImageFront[0] = 0;
+   m_szBallImageDecal[0] = 0;
    m_ImageBackdropNightDay = false;
    m_szEnvImage[0] = 0;
 
@@ -3963,7 +3985,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(TBLH): pbr->GetFloat(&m_tableheight); break;
    case FID(IMAG): pbr->GetString(m_szImage); break;
    case FID(BLIM): pbr->GetString(m_szBallImage); break;
-   case FID(BLIF): pbr->GetString(m_szBallImageFront); break;
+   case FID(BLIF): pbr->GetString(m_szBallImageDecal); break;
    case FID(SSHT): pbr->GetString(m_szScreenShot); break;
    case FID(FBCK): pbr->GetBool(&m_backdrop); break;
    case FID(SEDT): pbr->GetInt(&((int *)pbr->m_pdata)[1]); break;
@@ -7389,7 +7411,7 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
    ListView_SetItemText(hwndListView, index, 4, sizeString);
    if ((_stricmp(m_szImage, ppi->m_szName) == 0)
        || (_stricmp(m_szBallImage, ppi->m_szName) == 0) 
-       || (_stricmp(m_szBallImageFront, ppi->m_szName) == 0)
+       || (_stricmp(m_szBallImageDecal, ppi->m_szName) == 0)
        || (_stricmp(m_szEnvImage, ppi->m_szName) == 0)
        || (_stricmp(m_BG_szImage[BG_DESKTOP], ppi->m_szName) == 0)
        || (_stricmp(m_BG_szImage[BG_FSS], ppi->m_szName) == 0)
@@ -10190,7 +10212,7 @@ STDMETHODIMP PinTable::get_BallFrontDecal(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_szBallImageFront, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_szBallImageDecal, -1, wz, 32);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -10208,7 +10230,7 @@ STDMETHODIMP PinTable::put_BallFrontDecal(BSTR newVal)
    }
 
    STARTUNDO
-   strcpy_s(m_szBallImageFront,szImage);
+   strcpy_s(m_szBallImageDecal,szImage);
    STOPUNDO
 
    return S_OK;

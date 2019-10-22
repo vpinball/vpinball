@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.7:
+- add UpdateMaterialPhysics to the globals
 10.6:
 - add UpdateMaterial to the globals
 - fix potential problems for the light element for Bulb, ImageMode, ShowBulbMesh, StaticBulbMesh, ShowReflectionOnBall reads
@@ -151,7 +152,8 @@ GetElementByName(string) - returns a certain Element, based on the name
 UpdateMaterial(string, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
                OLE_COLOR base, OLE_COLOR glossy, OLE_COLOR clearcoat, VARIANT_BOOL isMetal, VARIANT_BOOL opacityActive,
                float elasticity, float elasticityFalloff, float friction, float scatterAngle) - updates all parameters of a material (same input ranges as used in the material editor)
-MaterialColor(string,OLE_COLOR) - change base color of a material
+UpdateMaterialPhysics(string, float elasticity, float elasticityFalloff, float friction, float scatterAngle) - update only the physics parameters of a material (same input ranges as used in the material editor)
+MaterialColor(string,OLE_COLOR) - change only the base color of a material
 
 LoadValue(string,string,VARIANT) - load a value for tablename,valuename,value
 SaveValue(string,string,VARIANT) - save a value for tablename,valuename,value
@@ -831,9 +833,9 @@ Z(float)
 VelX(float)
 VelY(float)
 VelZ(float)
-AngVelX(float)
-AngVelY(float)
-AngVelZ(float)
+*AngVelX(float)
+*AngVelY(float)
+*AngVelZ(float)
 AngMomX(float)
 AngMomY(float)
 AngMomZ(float)

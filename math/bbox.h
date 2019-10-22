@@ -62,7 +62,7 @@ inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
    //return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow);
 }
 
-inline bool fRectIntersect3D(const Vertex3Ds &sphere_p, const float sphere_rsqr, const FRect3D &rc)
+inline bool fRectIntersect3D(const Vertex3Ds &sphere_p, const float sphere_rsqr, const FRect3D &rc) // could also use SSE, but kd and quadtree already have native SSE variants in there
 {
    float ex = max(rc.left - sphere_p.x, 0.f) + max(sphere_p.x - rc.right, 0.f);
    float ey = max(rc.top - sphere_p.y, 0.f) + max(sphere_p.y - rc.bottom, 0.f);

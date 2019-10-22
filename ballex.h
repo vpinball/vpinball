@@ -1,12 +1,9 @@
-// Ball.h : Declaration of the CBall
 #pragma once
 
-#include "resource.h"       // main symbols
+#include "resource.h"
 
 class Ball;
 
-/////////////////////////////////////////////////////////////////////////////
-// CBall
 class BallEx :
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<BallEx, &CLSID_Ball>,
@@ -80,7 +77,7 @@ public:
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
 
-   virtual void FireGroupEvent(int dispid) {}
+   virtual void FireGroupEvent(const int dispid) {}
    virtual IDispatch *GetDispatch() { return ((IDispatch *) this); }
    virtual IDebugCommands *GetDebugCommands() { return (IDebugCommands *) this; }
 
