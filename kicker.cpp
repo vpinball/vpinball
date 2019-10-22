@@ -1263,46 +1263,38 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
 
       if (i < 0) // entering Kickers volume
       {
-         bool hitEvent;
          const float grabHeight = (m_hitBBox.zlow + pball->m_radius) * m_pkicker->m_d.m_hitAccuracy;
+         // early out here if the ball is slow and we are near the kicker center
+         const bool hitEvent = (pball->m_pos.z < grabHeight || m_pkicker->m_d.m_legacyMode || newBall);
 
-         if (pball->m_pos.z < grabHeight || m_pkicker->m_d.m_legacyMode || newBall)
+         if(!hitEvent)
          {
-            // early out here if the ball is slow and we are near the kicker center
-            hitEvent = true;
-         }
-         else
-         {
-            hitEvent = false;
             DoChangeBallVelocity(pball, hitnormal);
 
-            // this is an ugly hack to prevent the ball stopping rapidly at the kicker bevel 
+            // this is an ugly hack to prevent the ball stopping rapidly at the kicker bevel
             // something with the friction calculation is wrong in the physics engine
             // so we monitor the ball velocity if it drop under a length value of 0.2
             // if so we take the last "good" velocity to help the ball moving over the critical spot at the kicker bevel
             // this hack seems to work only if the kicker is on the playfield, a kicker attached to a wall has still problems
             // because the friction calculation for a wall is also different
-            const float length = pball->m_vel.Length();
-            if (length < 0.2f)
-            {
+            if (pball->m_vel.Length() < 0.2f)
                 pball->m_vel = pball->m_oldVel;
-            }
+
             pball->m_oldVel = pball->m_vel;
          }
 
          if (hitEvent)
          {
-            if (m_pkicker->m_d.m_fallThrough)
-               pball->m_frozen = false;
-            else
+            pball->m_frozen = !m_pkicker->m_d.m_fallThrough;
+            if (pball->m_frozen)
             {
-               pball->m_frozen = true;
                pball->m_vpVolObjs->push_back(m_obj);		// add kicker to ball's volume set
                m_pball = pball;
-			   m_lastCapturedBall = pball;
-			   if (pball == g_pplayer->m_pactiveballBC)
-				   g_pplayer->m_pactiveballBC = NULL;
+               m_lastCapturedBall = pball;
+               if (pball == g_pplayer->m_pactiveballBC)
+                  g_pplayer->m_pactiveballBC = NULL;
             }
+
             // Don't fire the hit event if the ball was just created
             // Fire the event before changing ball attributes, so scripters can get a useful ball state
             if (!newBall)
@@ -1326,9 +1318,9 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
                   pball->m_pos.z = m_hitBBox.zlow - pball->m_radius - 5.0f;
                else
                   pball->m_pos.z = m_hitBBox.zlow + pball->m_radius/**pball->m_radius/radius*/;
-
             }
-            else m_pball = NULL; // make sure
+            else
+               m_pball = NULL; // make sure
          }
       }
       else // exiting kickers volume

@@ -435,7 +435,7 @@ void Trigger::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
    plineseg->m_ObjType = eTrigger;
    plineseg->m_obj = (IFireEvents*)this;
 
-   plineseg->m_hitBBox.zlow = height;
+   plineseg->m_hitBBox.zlow  = height;
    plineseg->m_hitBBox.zhigh = height + max(m_d.m_hit_height - 8.0f, 0.f); //adjust for same hit height as circular
 
    plineseg->v1.x = pv1.x;
