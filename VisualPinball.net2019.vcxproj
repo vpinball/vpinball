@@ -371,6 +371,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\KeysConfigDialog.cpp" />
     <ClCompile Include="Dialogs\MaterialDialog.cpp" />
     <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
+    <ClCompile Include="dialogs\Properties\PropertyDialog.cpp" />
+    <ClCompile Include="dialogs\Properties\WallVisualsProperty.cpp" />
     <ClCompile Include="Dialogs\SearchSelectDialog.cpp" />
     <ClCompile Include="Dialogs\SoundDialog.cpp" />
     <ClCompile Include="Dialogs\TableInfoDialog.cpp" />
@@ -1044,22 +1046,39 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\AOdither.bmp" />
     <Image Include="res\backglass.ico" />
     <Image Include="res\ball.bmp" />
+    <Image Include="res\bumper.ico" />
     <Image Include="res\bumperbase.bmp" />
     <Image Include="res\bumperCap.bmp" />
     <Image Include="res\bumperring.bmp" />
     <Image Include="res\bumperskirt.bmp" />
     <Image Include="res\chevron.bmp" />
+    <Image Include="res\decal.ico" />
     <Image Include="res\envmap.bmp" />
+    <Image Include="res\flasher.ico" />
+    <Image Include="res\flipper.ico" />
+    <Image Include="res\gate.ico" />
+    <Image Include="res\kicker.ico" />
     <Image Include="res\kickerCup.bmp" />
     <Image Include="res\kickerGottlieb.bmp" />
     <Image Include="res\kickerHoleWood.bmp" />
     <Image Include="res\kickerT1.bmp" />
     <Image Include="res\kickerWilliams.bmp" />
+    <Image Include="res\light.ico" />
+    <Image Include="res\lightseq.ico" />
     <Image Include="res\magnify.ico" />
     <Image Include="res\options.ico" />
-    <Image Include="res\play1.ico" />
+    <Image Include="res\plunger.ico" />
+    <Image Include="res\primitive.ico" />
+    <Image Include="res\ramp.ico" />
+    <Image Include="res\reel.ico" />
+    <Image Include="res\rubber.ico" />
     <Image Include="res\script.ico" />
     <Image Include="res\select.ico" />
+    <Image Include="res\spinner.ico" />
+    <Image Include="res\target.ico" />
+    <Image Include="res\textbox.ico" />
+    <Image Include="res\timer.ico" />
+    <Image Include="res\trigger.ico" />
     <Image Include="res\vpinball.ico" />
     <Image Include="res\logo.bmp" />
     <Image Include="res\step.ico" />
@@ -1067,6 +1086,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\play.ico" />
     <Image Include="res\table.ico" />
     <Image Include="res\toolbar.bmp" />
+    <Image Include="res\wall.ico" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ballex.h" />
@@ -1087,6 +1107,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="dialogs\KeysConfigDialog.h" />
     <ClInclude Include="dialogs\MaterialDialog.h" />
     <ClInclude Include="dialogs\PhysicsOptionsDialog.h" />
+    <ClInclude Include="dialogs\Properties\PropertyDialog.h" />
+    <ClInclude Include="dialogs\Properties\WallVisualsProperty.h" />
     <ClInclude Include="Dialogs\SearchSelectDialog.h" />
     <ClInclude Include="Dialogs\SoundDialog.h" />
     <ClInclude Include="Dialogs\TableInfoDialog.h" />
@@ -1287,7 +1309,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="vectorsort.h" />
     <ClInclude Include="vpinball.h" />
     <ClInclude Include="vpinball_i.h" />
-    <ClInclude Include="VPTabbedMDI.h" />
     <ClInclude Include="vpversion.h" />
     <ClInclude Include="wintimer.h" />
     <ClInclude Include="worker.h" />
