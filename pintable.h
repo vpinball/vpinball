@@ -655,10 +655,19 @@ public:
    vector< IEditable* > m_layer[MAX_LAYERS];
    vector< ISelect* >   m_allHitElements;
 
+
    vector< Texture* > m_vimage;
+   vector<Texture *> GetImageList()
+   {
+       return m_vimage;
+   }
 
    int m_numMaterials;
    vector< Material* > m_materials;
+   vector<Material *> GetMaterialList()
+   {
+       return m_materials;
+   }
 
    vector< PinSound* > m_vsound;
 

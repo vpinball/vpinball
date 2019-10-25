@@ -21,6 +21,7 @@
 #include "AboutDialog.h"
 #include "DrawingOrderDialog.h"
 #include "ToolbarDialog.h"
+#include "Properties/PropertyDialog.h"
 
 #define CURRENT_FILE_FORMAT_VERSION 1060
 #define NO_ENCRYPTION_FORMAT_VERSION 1050
@@ -224,6 +225,7 @@ private:
    MaterialDialog m_materialDialog;
    AboutDialog m_aboutDialog;
    ToolbarDialog m_toolbarDialog;
+   PropertyDialog m_propertyDialog;
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)
