@@ -878,6 +878,7 @@
 #define IDB_KICKER_GOTTLIEB             645
 #define IDB_BITMAP4                     646
 #define IDB_KICKER_T1                   646
+#define IDD_PROPERTY_DIALOG             647
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1023,6 +1024,7 @@
 #define IDC_OBJECT_SPACE_NORMALMAP      824
 #define IDC_STATIC_ELEMENTS             825
 #define IDC_STATIC_LAYERS               826
+#define IDC_PROP_TAB                    827
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1126,13 +1128,14 @@
 #define ID_LAYER_LAYER3                 32851
 #define ID_LAYER_LAYER4                 32852
 #define ID_LAYER_LAYER5                 32853
-#define ID_LAYER_LAYER6                 32854 
+#define ID_LAYER_LAYER6                 32854
 #define ID_LAYER_LAYER7                 32855
 #define ID_LAYER_LAYER8                 32856
 #define ID_LAYER_LAYER9                 32857
 #define ID_LAYER_LAYER10                32858
 #define ID_LAYER_LAYER11                32859
 #define ID_LAYER_TOGGLEALL              32860
+#define ID_LAYER_MERGEALL               32861
 #define ID_WALLMENU_ASSIGNTO            32862
 #define ID_ASSIGNTO_LAYER1              32863
 #define ID_ASSIGNTO_LAYER2              32864
@@ -1145,12 +1148,11 @@
 #define ID_ASSIGNTO_LAYER9              32871
 #define ID_ASSIGNTO_LAYER10             32872
 #define ID_ASSIGNTO_MERGETOLAYER1       32873
-#define ID_LAYER_MERGEALL               32861
-#define ID_WALLMENU_SELECTALL           32877
-#define ID_WALLMENU_SELECTNONE          32878
+#define ID_ASSIGNTO_LAYER11             32874
 #define ID_EDIT_SEARCH                  32875
 #define ID_SELECT_ELEMENT               32876
-#define ID_ASSIGNTO_LAYER11             32874
+#define ID_WALLMENU_SELECTALL           32877
+#define ID_WALLMENU_SELECTNONE          32878
 #define ID_EDIT_DRAWINGORDER_HIT        32879
 #define ID_EDIT_DRAWINGORDER_SELECT     32880
 #define ID_EDIT_COMMENT                 32882
@@ -1184,9 +1186,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        647
+#define _APS_NEXT_RESOURCE_VALUE        649
 #define _APS_NEXT_COMMAND_VALUE         4022
-#define _APS_NEXT_CONTROL_VALUE         827
+#define _APS_NEXT_CONTROL_VALUE         828
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

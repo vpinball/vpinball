@@ -131,6 +131,12 @@
     <ClCompile Include="dialogs\ToolbarDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\Properties\PropertyDialog.cpp">
+      <Filter>dialogs\Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\Properties\WallVisualsProperty.cpp">
+      <Filter>dialogs\Properties</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -410,6 +416,9 @@
     </Filter>
     <Filter Include="dialogs">
       <UniqueIdentifier>{2890089b-1408-4cfb-a6ce-93c682c026da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dialogs\Properties">
+      <UniqueIdentifier>{448abbef-cfdb-46d4-8f5d-12a4e59cb1dc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1078,6 +1087,12 @@
     </ClInclude>
     <ClInclude Include="dialogs\ToolbarDialog.h">
       <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\Properties\PropertyDialog.h">
+      <Filter>dialogs\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\Properties\WallVisualsProperty.h">
+      <Filter>dialogs\Properties</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

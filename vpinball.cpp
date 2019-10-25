@@ -833,6 +833,7 @@ float VPinball::ConvertToUnit(const float value)
 void VPinball::SetPropSel(VectorProtected<ISelect> *pvsel)
 {
    m_sb.CreateFromDispatch(m_hwnd, pvsel);
+   m_propertyDialog.UpdateTabs(pvsel);
 }
 
 void VPinball::DeletePropSel()
@@ -1258,7 +1259,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case ID_HELP_ABOUT:
    {
       //ShowSubDialog(m_aboutDialog);
-       ShowSubDialog(m_toolbarDialog);
+       //ShowSubDialog(m_toolbarDialog);
+       ShowSubDialog(m_propertyDialog);
       break;
    }
    case ID_WINDOW_CASCADE:
