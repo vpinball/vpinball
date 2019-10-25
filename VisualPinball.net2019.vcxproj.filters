@@ -131,6 +131,12 @@
     <ClCompile Include="dialogs\ToolbarDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\Properties\PropertyDialog.cpp">
+      <Filter>dialogs\Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\Properties\WallVisualsProperty.cpp">
+      <Filter>dialogs\Properties</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -213,11 +219,29 @@
     <Image Include="res\kickerT1.bmp">
       <Filter>res</Filter>
     </Image>
-    <Image Include="res\play1.ico" />
     <Image Include="res\magnify.ico" />
     <Image Include="res\select.ico" />
     <Image Include="res\options.ico" />
     <Image Include="res\backglass.ico" />
+    <Image Include="res\wall.ico" />
+    <Image Include="res\gate.ico" />
+    <Image Include="res\ramp.ico" />
+    <Image Include="res\flipper.ico" />
+    <Image Include="res\bumper.ico" />
+    <Image Include="res\plunger.ico" />
+    <Image Include="res\spinner.ico" />
+    <Image Include="res\timer.ico" />
+    <Image Include="res\light.ico" />
+    <Image Include="res\target.ico" />
+    <Image Include="res\primitive.ico" />
+    <Image Include="res\flasher.ico" />
+    <Image Include="res\rubber.ico" />
+    <Image Include="res\trigger.ico" />
+    <Image Include="res\decal.ico" />
+    <Image Include="res\kicker.ico" />
+    <Image Include="res\textbox.ico" />
+    <Image Include="res\reel.ico" />
+    <Image Include="res\lightseq.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\vpinball.rgs">
@@ -392,6 +416,9 @@
     </Filter>
     <Filter Include="dialogs">
       <UniqueIdentifier>{2890089b-1408-4cfb-a6ce-93c682c026da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dialogs\Properties">
+      <UniqueIdentifier>{448abbef-cfdb-46d4-8f5d-12a4e59cb1dc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1058,9 +1085,14 @@
     <ClInclude Include="inc\gpuprofiler.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="VPTabbedMDI.h" />
     <ClInclude Include="dialogs\ToolbarDialog.h">
       <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\Properties\PropertyDialog.h">
+      <Filter>dialogs\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\Properties\WallVisualsProperty.h">
+      <Filter>dialogs\Properties</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
