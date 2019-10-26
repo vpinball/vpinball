@@ -25,34 +25,22 @@ PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG)
 
 void PropertyDialog::UpdateTextureComboBox(vector<Texture *> contentList, CComboBox &combo, char *selectName)
 {
-    int selIdx = 0;
-
     combo.AddString(_T("<None>"));
     for (size_t i = 0; i < contentList.size(); i++)
     {
         combo.AddString(contentList[i]->m_szName);
-        if (strncmp(contentList[i]->m_szName, selectName, MAXTOKEN) == 0)
-        {
-            selIdx = i + 1;
-        }
     }
-    combo.SetCurSel(selIdx);
+    combo.SetCurSel(combo.FindStringExact(1,selectName));
 }
 
 void PropertyDialog::UpdateMaterialComboBox(vector<Material *> contentList, CComboBox &combo, char *selectName)
 {
-    int selIdx = 0;
-
     combo.AddString(_T("<None>"));
     for (size_t i = 0; i < contentList.size(); i++)
     {
         combo.AddString(contentList[i]->m_szName);
-        if (strncmp(contentList[i]->m_szName, selectName, MAXTOKEN) == 0)
-        {
-            selIdx = i + 1;
-        }
     }
-    combo.SetCurSel(selIdx);
+    combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
 
 void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)

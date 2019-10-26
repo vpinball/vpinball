@@ -35,6 +35,26 @@ public:
     {
         ::SendMessage(checkBoxHwnd, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
     }
+    
+    static float GetFloatTextbox(CEdit &textbox)
+    {
+        const CString textStr(textbox.GetWindowText());
+        const float fv = sz2f(textStr.c_str());
+        return fv;
+    }
+
+    static void SetFloatTextbox(CEdit &textbox, const float value)
+    {
+        textbox.SetWindowText(CString(value).c_str());
+    }
+
+    static void GetComboBoxText(CComboBox &combo, char *strbuf)
+    {
+        char buf[MAXTOKEN];
+        combo.GetLBText(combo.GetCurSel(), buf);
+        CString str(buf);
+        strncpy_s(strbuf, MAXTOKEN, str.c_str(), (str.GetLength()>MAXTOKEN) ? MAXTOKEN-1:str.GetLength());
+    }
 
 protected:
     virtual BOOL OnInitDialog();
