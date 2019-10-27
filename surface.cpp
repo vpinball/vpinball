@@ -1652,9 +1652,6 @@ void Surface::GetDialogPanes(vector<PropertyPane*> &pvproppane)
    pproppane = new PropertyPane(IDD_PROPWALL_VISUALS, IDS_VISUALS);
    pvproppane.push_back(pproppane);
 
-   pproppane = new PropertyPane(IDD_PROPWALL_POSITION, IDS_POSITION);
-   pvproppane.push_back(pproppane);
-
    m_propPhysics = new PropertyPane(IDD_PROPWALL_PHYSICS, IDS_STATE);
    pvproppane.push_back(m_propPhysics);
 

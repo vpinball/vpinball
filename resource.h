@@ -411,7 +411,6 @@
 #define IDC_DRAW_LIGHTCENTERS           319
 #define IDD_PROPWALL_VISUALS            330
 #define IDD_PROPWALL_PHYSICS            331
-#define IDD_PROPWALL_POSITION           332
 #define IDD_PROPGATE_VISUALS            333
 #define IDD_PROPGATE_POSITION           334
 #define IDS_UNLOCK_SUCCESS              335
@@ -960,6 +959,7 @@
 #define IDC_DBG_TRANSMISSION_SCALE      767
 #define IDC_STATIC_GLOSSY_IMGLERP       768
 #define IDC_EDIT1                       769
+#define IDC_NAME_EDIT                   769
 #define IDC_OK                          770
 #define IDC_STATIC_ALPHA                771
 #define IDC_STATIC_BASE_COLOR           772
