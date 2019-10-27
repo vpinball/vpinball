@@ -23,6 +23,8 @@ private:
     CComboBox m_slingshotMaterialCombo;
     CEdit     m_disableLightingEdit;
     CEdit     m_disableLightFromBelowEdit;
+    CEdit     m_topHeightEdit;
+    CEdit     m_bottomHeightEdit;
 
 };
 

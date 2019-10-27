@@ -22,12 +22,20 @@ void WallVisualsProperty::UpdateVisuals()
     PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_WALL_REFLECT_ENABLED_CHECK), m_wall->m_d.m_reflectionEnabled);
     PropertyDialog::SetFloatTextbox(m_disableLightingEdit, m_wall->m_d.m_disableLightingTop);
     PropertyDialog::SetFloatTextbox(m_disableLightFromBelowEdit, m_wall->m_d.m_disableLightingBelow);
+    PropertyDialog::SetFloatTextbox(m_topHeightEdit, m_wall->m_d.m_heighttop);
+    PropertyDialog::SetFloatTextbox(m_bottomHeightEdit, m_wall->m_d.m_heightbottom);
 }
 
 void WallVisualsProperty::UpdateProperties(const int dispid)
 {
     switch (dispid)
     {
+        case 9:
+            m_wall->m_d.m_heighttop = PropertyDialog::GetFloatTextbox(m_topHeightEdit);
+            break;
+        case 8:
+            m_wall->m_d.m_heightbottom = PropertyDialog::GetFloatTextbox(m_bottomHeightEdit);
+            break;
         case DISPID_Image:
             PropertyDialog::GetComboBoxText(m_topImageCombo, m_wall->m_d.m_szImage);
             break;
@@ -44,10 +52,10 @@ void WallVisualsProperty::UpdateProperties(const int dispid)
             PropertyDialog::GetComboBoxText(m_slingshotMaterialCombo, m_wall->m_d.m_szSlingShotMaterial);
             break;
         case IDC_BLEND_DISABLE_LIGHTING:
-            PropertyDialog::SetFloatTextbox(m_disableLightingEdit, m_wall->m_d.m_disableLightingTop);
+            m_wall->m_d.m_disableLightingTop = PropertyDialog::GetFloatTextbox(m_disableLightingEdit);
             break;
         case IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW:
-            PropertyDialog::SetFloatTextbox(m_disableLightFromBelowEdit, m_wall->m_d.m_disableLightingBelow);
+            m_wall->m_d.m_disableLightingBelow = PropertyDialog::GetFloatTextbox(m_disableLightFromBelowEdit);
             break;
         case 16:
             m_wall->m_d.m_topBottomVisible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 16));
@@ -70,6 +78,7 @@ void WallVisualsProperty::UpdateProperties(const int dispid)
         default:
             break;
     }
+    UpdateVisuals();
 }
 
 BOOL WallVisualsProperty::OnInitDialog()
@@ -81,6 +90,8 @@ BOOL WallVisualsProperty::OnInitDialog()
     AttachItem(IDC_MATERIAL_COMBO3, m_slingshotMaterialCombo);
     AttachItem(IDC_BLEND_DISABLE_LIGHTING, m_disableLightingEdit);
     AttachItem(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW, m_disableLightFromBelowEdit);
+    AttachItem(9, m_topHeightEdit);
+    AttachItem(8, m_bottomHeightEdit);
     UpdateVisuals();
     return TRUE;
 }

@@ -1,23 +1,6 @@
 #ifndef H_PROPERTY_DIALOG
 #define H_PROPERTY_DIALOG
 
-class NameDialog: public CDialog
-{
-public:
-    NameDialog(ISelect *psel) : CDialog(IDD_PROP_NAME), m_iselect(psel)
-    {
-    }
-
-protected:
-    virtual BOOL OnInitDialog();
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-
-private:
-    CEdit m_nameEdit;
-    ISelect *m_iselect;
-};
-
-
 class PropertyDialog : public CDialog
 {
 public:
@@ -59,10 +42,13 @@ public:
 protected:
     virtual BOOL OnInitDialog();
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+    virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
 
 private:
     CTab m_tab;
     CDialog *m_tabs[5];
+    CEdit m_nameEdit;
+    CResizer m_resizer;
 };
 
 #endif
