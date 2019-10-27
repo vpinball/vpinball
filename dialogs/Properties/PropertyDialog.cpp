@@ -52,8 +52,8 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
     {
         case eItemSurface:
         {
-            m_tabs[0] = static_cast<CDialog *>(m_tab.AddTabPage(new WallVisualsProperty((Surface*)psel), _T("Visuals")));
-            m_tabs[1] = static_cast<CDialog *>(m_tab.AddTabPage(new WallPhysicsProperty((Surface*)psel), _T("Physics")));
+            m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new WallVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BaseProperty *>(m_tab.AddTabPage(new WallPhysicsProperty(pvsel), _T("Physics")));
             break;
         }
         default:

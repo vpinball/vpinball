@@ -1,6 +1,17 @@
 #ifndef H_PROPERTY_DIALOG
 #define H_PROPERTY_DIALOG
 
+
+class BaseProperty: public CDialog
+{
+public:
+    BaseProperty(int id) : CDialog(id)
+    {
+    }
+    virtual void UpdateProperties(const int dispid) = 0;
+    virtual void UpdateVisuals() = 0;
+};
+
 class PropertyDialog : public CDialog
 {
 public:
@@ -46,7 +57,7 @@ protected:
 
 private:
     CTab m_tab;
-    CDialog *m_tabs[5];
+    BaseProperty *m_tabs[5];
     CEdit m_nameEdit;
     CResizer m_resizer;
 };

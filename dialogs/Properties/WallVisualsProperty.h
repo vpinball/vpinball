@@ -1,10 +1,10 @@
 #ifndef H_WALL_VISUALS_PROPERTY
 #define H_WALL_VISUALS_PROPERTY
 
-class WallVisualsProperty: public CDialog
+class WallVisualsProperty: public BaseProperty
 {
 public:
-    WallVisualsProperty(Surface *wall);
+    WallVisualsProperty(VectorProtected<ISelect> *pvsel);
     virtual ~WallVisualsProperty() {}
 
     void UpdateVisuals();
@@ -15,7 +15,7 @@ protected:
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 
 private:
-    Surface  *m_wall;
+    VectorProtected<ISelect> *m_pvsel;
     CComboBox m_topImageCombo;
     CComboBox m_sideImageCombo;
     CComboBox m_topMaterialCombo;
