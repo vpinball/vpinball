@@ -1,10 +1,10 @@
 #ifndef H_WALL_PHYSICS_PROPERTY
 #define H_WALL_PHYSICS_PROPERTY
 
-class WallPhysicsProperty: public CDialog
+class WallPhysicsProperty: public BaseProperty
 {
 public:
-    WallPhysicsProperty(Surface *wall);
+    WallPhysicsProperty(VectorProtected<ISelect> *pvsel);
     virtual ~WallPhysicsProperty()
     {
     }
@@ -17,7 +17,7 @@ protected:
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 
 private:
-    Surface  *m_wall;
+    VectorProtected<ISelect> *m_pvsel;
     CEdit     m_hitThresholdEdit;
     CEdit     m_slingshotForceEdit;
     CEdit     m_slingshotThresholdEdit;
