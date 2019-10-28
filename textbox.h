@@ -77,12 +77,12 @@ public:
 
    virtual void WriteRegDefaults();
 
+   TextboxData m_d;
 private:
    void PreRenderText();
 
    PinTable *m_ptable;
 
-   TextboxData m_d;
 
    BaseTexture *m_texture;
 

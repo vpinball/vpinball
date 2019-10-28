@@ -90,10 +90,10 @@ public:
    STDMETHOD(get_Enabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Enabled)(/*[in]*/ VARIANT_BOOL newVal);
 
+   TimerData m_d;
 private:
    PinTable *m_ptable;
 
-   TimerData m_d;
 };
 
 #endif // !defined(AFX_TIMER_H__932D477C_A594_4941_906D_8BF11A68C838__INCLUDED_)

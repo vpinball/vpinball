@@ -833,7 +833,9 @@ float VPinball::ConvertToUnit(const float value)
 void VPinball::SetPropSel(VectorProtected<ISelect> *pvsel)
 {
    m_sb.CreateFromDispatch(m_hwnd, pvsel);
-   m_propertyDialog.UpdateTabs(pvsel);
+
+   if(m_propertyDialog.IsWindow())
+     m_propertyDialog.UpdateTabs(pvsel);
 }
 
 void VPinball::DeletePropSel()

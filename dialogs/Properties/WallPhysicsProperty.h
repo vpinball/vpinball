@@ -17,7 +17,6 @@ protected:
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 
 private:
-    VectorProtected<ISelect> *m_pvsel;
     CEdit     m_hitThresholdEdit;
     CEdit     m_slingshotForceEdit;
     CEdit     m_slingshotThresholdEdit;
