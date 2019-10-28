@@ -55,7 +55,6 @@
     <ClCompile Include="ramp.cpp" />
     <ClCompile Include="regutil.cpp" />
     <ClCompile Include="RenderDevice.cpp" />
-    <ClCompile Include="slintf.cpp" />
     <ClCompile Include="spinner.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="surface.cpp" />
@@ -140,6 +139,9 @@
     <ClCompile Include="dialogs\Properties\WallPhysicsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
+    <ClCompile Include="slintf.cpp">
+      <Filter>res</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -222,29 +224,75 @@
     <Image Include="res\kickerT1.bmp">
       <Filter>res</Filter>
     </Image>
-    <Image Include="res\magnify.ico" />
-    <Image Include="res\select.ico" />
-    <Image Include="res\options.ico" />
-    <Image Include="res\backglass.ico" />
-    <Image Include="res\wall.ico" />
-    <Image Include="res\gate.ico" />
-    <Image Include="res\ramp.ico" />
-    <Image Include="res\flipper.ico" />
-    <Image Include="res\bumper.ico" />
-    <Image Include="res\plunger.ico" />
-    <Image Include="res\spinner.ico" />
-    <Image Include="res\timer.ico" />
-    <Image Include="res\light.ico" />
-    <Image Include="res\target.ico" />
-    <Image Include="res\primitive.ico" />
-    <Image Include="res\flasher.ico" />
-    <Image Include="res\rubber.ico" />
-    <Image Include="res\trigger.ico" />
-    <Image Include="res\decal.ico" />
-    <Image Include="res\kicker.ico" />
-    <Image Include="res\textbox.ico" />
-    <Image Include="res\reel.ico" />
-    <Image Include="res\lightseq.ico" />
+    <Image Include="res\light.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\kicker.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\flipper.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\decal.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\bumper.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\backglass.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\flasher.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\gate.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\lightseq.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\magnify.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\options.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\plunger.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\ramp.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\reel.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\select.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\target.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\spinner.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\timer.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\trigger.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\wall.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\primitive.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\rubber.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\textbox.ico">
+      <Filter>res</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\vpinball.rgs">
