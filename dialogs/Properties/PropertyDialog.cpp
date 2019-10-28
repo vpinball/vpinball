@@ -2,6 +2,7 @@
 #include "Properties/PropertyDialog.h"
 #include "Properties/WallVisualsProperty.h"
 #include "Properties/WallPhysicsProperty.h"
+#include "Properties/GateVisualsProperty.h"
 #include <WindowsX.h>
 
 
@@ -10,7 +11,7 @@ PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG)
     memset(m_tabs, 0, sizeof(m_tabs));
 }
 
-void PropertyDialog::UpdateTextureComboBox(vector<Texture *> contentList, CComboBox &combo, char *selectName)
+void PropertyDialog::UpdateTextureComboBox(vector<Texture *> contentList, CComboBox &combo, const char *selectName)
 {
     combo.ResetContent();
     combo.AddString(_T("<None>"));
@@ -21,13 +22,48 @@ void PropertyDialog::UpdateTextureComboBox(vector<Texture *> contentList, CCombo
     combo.SetCurSel(combo.FindStringExact(1,selectName));
 }
 
-void PropertyDialog::UpdateMaterialComboBox(vector<Material *> contentList, CComboBox &combo, char *selectName)
+void PropertyDialog::UpdateMaterialComboBox(vector<Material *> contentList, CComboBox &combo, const char *selectName)
 {
     combo.ResetContent();
     combo.AddString(_T("<None>"));
     for (size_t i = 0; i < contentList.size(); i++)
     {
         combo.AddString(contentList[i]->m_szName);
+    }
+    combo.SetCurSel(combo.FindStringExact(1, selectName));
+}
+
+void PropertyDialog::UpdateSurfaceComboBox(PinTable *ptable, CComboBox &combo, const char *selectName)
+{
+    vector<string> contentList;
+
+    for (size_t i = 0; i < ptable->m_vedit.size(); i++)
+    {
+        if (ptable->m_vedit[i]->GetItemType() == eItemSurface || (ptable->m_vedit[i]->GetItemType() == eItemRamp) ||
+            //!! **************** warning **********************
+            // added to render to surface of DMD style lights and emreels
+            // but no checks are being performed at moment:
+            (ptable->m_vedit[i]->GetItemType() == eItemFlasher))
+        {
+            contentList.push_back(ptable->GetElementName(ptable->m_vedit[i]));
+        }
+    }
+    combo.ResetContent();
+    combo.AddString(_T("<None>"));
+    for (size_t i = 0; i < contentList.size(); i++)
+    {
+        combo.AddString(contentList[i].c_str());
+    }
+    combo.SetCurSel(combo.FindStringExact(1, selectName));
+}
+
+void PropertyDialog::UpdateComboBox(vector<string> contentList, CComboBox &combo, const char *selectName)
+{
+    combo.ResetContent();
+    combo.AddString(_T("<None>"));
+    for (size_t i = 0; i < contentList.size(); i++)
+    {
+        combo.AddString(contentList[i].c_str());
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
@@ -57,6 +93,11 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
             m_tabs[2] = static_cast<BaseProperty *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }
+        case eItemGate:
+        {
+            m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new GateVisualsProperty(pvsel), _T("Visuals")));
+            break;
+        }
         default:
             break;
     }
@@ -84,6 +125,20 @@ INT_PTR PropertyDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
     // Pass unhandled messages on to parent DialogProc
     return DialogProcDefault(msg, wparam, lparam);
+}
+
+BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
+{
+    for (int i = 0; i < 5; i++)
+    {
+        if (m_tabs[i]!=NULL)
+        {
+            BOOL ret = m_tabs[i]->IsDialogMessage(msg);
+            if (ret)
+                return TRUE;
+        }
+    }
+    return IsDialogMessage(msg);
 }
 
 BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)

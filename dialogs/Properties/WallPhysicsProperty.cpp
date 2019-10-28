@@ -108,6 +108,9 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
             case IDC_OVERWRITE_MATERIAL_SETTINGS:
                 wall->m_d.m_overwritePhysics = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS));
                 break;
+            case IDC_MATERIAL_COMBO:
+                PropertyDialog::GetComboBoxText(m_physicsMaterialCombo, wall->m_d.m_szPhysicsMaterial);
+                break;
             default:
                 break;
         }

@@ -35,8 +35,10 @@ public:
     PropertyDialog();
     void UpdateTabs(VectorProtected<ISelect> *pvsel);
 
-    static void UpdateTextureComboBox(vector<Texture*> contentList, CComboBox &combo, char *selectName);
-    static void UpdateMaterialComboBox(vector<Material *> contentList, CComboBox &combo, char *selectName);
+    static void UpdateTextureComboBox(vector<Texture*> contentList, CComboBox &combo, const char *selectName);
+    static void UpdateComboBox(vector<string> contentList, CComboBox &combo, const char *selectName);
+    static void UpdateMaterialComboBox(vector<Material *> contentList, CComboBox &combo, const char *selectName);
+    static void UpdateSurfaceComboBox(PinTable *ptable, CComboBox &combo, const char *selectName);
     static BOOL GetCheckboxState(HWND checkBoxHwnd)
     {
         size_t selected = ::SendMessage(checkBoxHwnd, BM_GETCHECK, 0, 0);
@@ -64,7 +66,9 @@ public:
 
     static void SetFloatTextbox(CEdit &textbox, const float value)
     {
-        textbox.SetWindowText(CString(value).c_str());
+        char strValue[256];
+        f2sz(value, strValue);
+        textbox.SetWindowText(strValue);
     }
 
     static void SetIntTextbox(CEdit &textbox, const int value)
@@ -79,6 +83,18 @@ public:
         CString str(buf);
         strncpy_s(strbuf, MAXTOKEN, str.c_str(), (str.GetLength()>MAXTOKEN) ? MAXTOKEN-1:str.GetLength());
     }
+
+    static int GetComboBoxIndex(CComboBox &combo, vector<string> contentList)
+    {
+        char buf[MAXTOKEN];
+        combo.GetLBText(combo.GetCurSel(), buf);
+        for (size_t i = 0; i < contentList.size(); i++)
+            if (contentList[i].compare(buf)==0)
+                return i;
+        return -1;
+    }
+
+    BOOL IsSubDialogMessage(MSG &msg) const;
 
 protected:
     virtual BOOL OnInitDialog();

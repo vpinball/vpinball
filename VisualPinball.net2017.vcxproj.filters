@@ -142,6 +142,9 @@
     <ClCompile Include="slintf.cpp">
       <Filter>res</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\Properties\GateVisualsProperty.cpp">
+      <Filter>dialogs\Properties</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1146,6 +1149,9 @@
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\Properties\WallPhysicsProperty.h">
+      <Filter>dialogs\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\Properties\GateVisualsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
   </ItemGroup>
