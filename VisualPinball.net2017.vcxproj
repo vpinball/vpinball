@@ -556,6 +556,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\KeysConfigDialog.cpp" />
     <ClCompile Include="Dialogs\MaterialDialog.cpp" />
     <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
+    <ClCompile Include="dialogs\Properties\GatePhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\GateVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\PropertyDialog.cpp" />
     <ClCompile Include="dialogs\Properties\WallPhysicsProperty.cpp" />
@@ -1634,6 +1635,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="dialogs\KeysConfigDialog.h" />
     <ClInclude Include="dialogs\MaterialDialog.h" />
     <ClInclude Include="dialogs\PhysicsOptionsDialog.h" />
+    <ClInclude Include="dialogs\Properties\GatePhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\GateVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\PropertyDialog.h" />
     <ClInclude Include="dialogs\Properties\WallPhysicsProperty.h" />

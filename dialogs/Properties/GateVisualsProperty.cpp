@@ -58,6 +58,15 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
             case 6:
                 gate->m_d.m_vCenter.y = PropertyDialog::GetFloatTextbox(m_yposEdit);
                 break;
+            case 14:
+                gate->m_d.m_visible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 14));
+                break;
+            case 15:
+                gate->m_d.m_showBracket = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 15));
+                break;
+            case IDC_GATE_REFLECT_ENABLED_CHECK:
+                gate->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_GATE_REFLECT_ENABLED_CHECK));
+                break;
             case DISPID_Gate_Length:
                 gate->m_d.m_length = PropertyDialog::GetFloatTextbox(m_lengthEdit);
                 break;

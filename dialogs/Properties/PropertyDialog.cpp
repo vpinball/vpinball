@@ -3,6 +3,7 @@
 #include "Properties/WallVisualsProperty.h"
 #include "Properties/WallPhysicsProperty.h"
 #include "Properties/GateVisualsProperty.h"
+#include "Properties/GatePhysicsProperty.h"
 #include <WindowsX.h>
 
 
@@ -96,6 +97,8 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
         case eItemGate:
         {
             m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new GateVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BaseProperty *>(m_tab.AddTabPage(new GatePhysicsProperty(pvsel), _T("Physics")));
+            m_tabs[2] = static_cast<BaseProperty *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }
         default:
