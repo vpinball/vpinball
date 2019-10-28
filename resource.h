@@ -412,7 +412,6 @@
 #define IDD_PROPWALL_VISUALS            330
 #define IDD_PROPWALL_PHYSICS            331
 #define IDD_PROPGATE_VISUALS            333
-#define IDD_PROPGATE_POSITION           334
 #define IDS_UNLOCK_SUCCESS              335
 #define IDD_PROPRAMP_VISUALS            335
 #define IDC_TABLENAME                   336
@@ -1186,7 +1185,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        648
+#define _APS_NEXT_RESOURCE_VALUE        649
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         828
 #define _APS_NEXT_SYMED_VALUE           188
