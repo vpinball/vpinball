@@ -15,7 +15,6 @@ protected:
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 
 private:
-    VectorProtected<ISelect> *m_pvsel;
     CComboBox m_topImageCombo;
     CComboBox m_sideImageCombo;
     CComboBox m_topMaterialCombo;

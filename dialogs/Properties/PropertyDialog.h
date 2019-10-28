@@ -4,12 +4,29 @@
 
 class BaseProperty: public CDialog
 {
-public:
-    BaseProperty(int id) : CDialog(id)
+public:    
+    BaseProperty(int id, VectorProtected<ISelect> *pvsel) : CDialog(id), m_pvsel(pvsel)
     {
     }
     virtual void UpdateProperties(const int dispid) = 0;
     virtual void UpdateVisuals() = 0;
+protected:
+    VectorProtected<ISelect> *m_pvsel;
+
+};
+
+class TimerProperty: public BaseProperty
+{
+public:
+    TimerProperty(VectorProtected<ISelect> *pvsel);
+    virtual void UpdateProperties(const int dispid);
+    virtual void UpdateVisuals();
+protected:
+    virtual BOOL OnInitDialog();
+    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+private:
+    CEdit   m_timerIntervalEdit;
+    CEdit   m_userValueEdit;
 };
 
 class PropertyDialog : public CDialog
@@ -37,7 +54,20 @@ public:
         return fv;
     }
 
+    static int GetIntTextbox(CEdit &textbox)
+    {
+        const CString textStr(textbox.GetWindowText());
+        int value = 0;
+        sscanf_s(textStr.c_str(), "%i", &value);
+        return value;
+    }
+
     static void SetFloatTextbox(CEdit &textbox, const float value)
+    {
+        textbox.SetWindowText(CString(value).c_str());
+    }
+
+    static void SetIntTextbox(CEdit &textbox, const int value)
     {
         textbox.SetWindowText(CString(value).c_str());
     }
