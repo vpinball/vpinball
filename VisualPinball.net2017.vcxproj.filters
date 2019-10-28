@@ -55,6 +55,7 @@
     <ClCompile Include="ramp.cpp" />
     <ClCompile Include="regutil.cpp" />
     <ClCompile Include="RenderDevice.cpp" />
+    <ClCompile Include="slintf.cpp" />
     <ClCompile Include="spinner.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="surface.cpp" />
@@ -138,9 +139,6 @@
     </ClCompile>
     <ClCompile Include="dialogs\Properties\WallPhysicsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="slintf.cpp">
-      <Filter>res</Filter>
     </ClCompile>
     <ClCompile Include="dialogs\Properties\GateVisualsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
