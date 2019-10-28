@@ -1773,6 +1773,10 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
             return !!g_pvp->m_collectionMngDlg.IsDialogMessage(*pmsg);
       if (g_pvp->m_dimensionDialog.IsWindow())
             return !!g_pvp->m_dimensionDialog.IsDialogMessage(*pmsg);
+      if (g_pvp->m_toolbarDialog.IsWindow())
+          return !!g_pvp->m_toolbarDialog.IsDialogMessage(*pmsg);
+      if (g_pvp->m_propertyDialog.IsWindow())
+          return !!g_pvp->m_propertyDialog.IsSubDialogMessage(*pmsg);
     }
     return false;
 }
