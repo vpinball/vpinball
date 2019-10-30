@@ -81,7 +81,7 @@ public:
         char buf[MAXTOKEN];
         combo.GetLBText(combo.GetCurSel(), buf);
         CString str(buf);
-        strncpy_s(strbuf, MAXTOKEN, str.c_str(), (str.GetLength()>MAXTOKEN) ? MAXTOKEN-1:str.GetLength());
+        strncpy_s(strbuf, MAXNAMEBUFFER, str.c_str(), (str.GetLength()> MAXNAMEBUFFER) ? MAXNAMEBUFFER-1:str.GetLength());
     }
 
     static int GetComboBoxIndex(CComboBox &combo, vector<string> contentList)
@@ -104,6 +104,7 @@ protected:
 private:
     CTab m_tab;
     BaseProperty *m_tabs[5];
+    int  m_curTabIndex;
     CEdit m_nameEdit;
     CResizer m_resizer;
 };

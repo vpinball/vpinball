@@ -18,10 +18,10 @@ Bumper::Bumper()
    m_socketVertexBuffer = NULL;
    m_ringAnimate = false;
    m_propVisual = NULL;
-   memset(m_d.m_szBaseMaterial, 0, 32);
-   memset(m_d.m_szCapMaterial, 0, 32);
-   memset(m_d.m_szSkirtMaterial, 0, 32);
-   memset(m_d.m_szRingMaterial, 0, 32);
+   memset(m_d.m_szBaseMaterial, 0, MAXNAMEBUFFER);
+   memset(m_d.m_szCapMaterial, 0, MAXNAMEBUFFER);
+   memset(m_d.m_szSkirtMaterial, 0, MAXNAMEBUFFER);
+   memset(m_d.m_szRingMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
    m_d.m_ringDropOffset = 0.0f;
    m_ringDown = false;
@@ -1115,7 +1115,7 @@ STDMETHODIMP Bumper::get_CapMaterial(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szCapMaterial, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szCapMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1124,7 +1124,7 @@ STDMETHODIMP Bumper::get_CapMaterial(BSTR *pVal)
 STDMETHODIMP Bumper::put_CapMaterial(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szCapMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szCapMaterial, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -1134,7 +1134,7 @@ STDMETHODIMP Bumper::get_RingMaterial(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szRingMaterial, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szRingMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1143,7 +1143,7 @@ STDMETHODIMP Bumper::get_RingMaterial(BSTR *pVal)
 STDMETHODIMP Bumper::put_RingMaterial(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szRingMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szRingMaterial, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -1153,7 +1153,7 @@ STDMETHODIMP Bumper::get_BaseMaterial(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szBaseMaterial, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szBaseMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1162,7 +1162,7 @@ STDMETHODIMP Bumper::get_BaseMaterial(BSTR *pVal)
 STDMETHODIMP Bumper::put_BaseMaterial(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szBaseMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szBaseMaterial, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -1172,7 +1172,7 @@ STDMETHODIMP Bumper::get_SkirtMaterial(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSkirtMaterial, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSkirtMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1181,7 +1181,7 @@ STDMETHODIMP Bumper::get_SkirtMaterial(BSTR *pVal)
 STDMETHODIMP Bumper::put_SkirtMaterial(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSkirtMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSkirtMaterial, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -1224,7 +1224,7 @@ STDMETHODIMP Bumper::get_Surface(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1233,7 +1233,7 @@ STDMETHODIMP Bumper::get_Surface(BSTR *pVal)
 STDMETHODIMP Bumper::put_Surface(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;

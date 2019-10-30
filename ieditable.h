@@ -95,7 +95,7 @@ public:
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) \
 		{ \
 		const int len = lstrlenW(newVal); \
-		if (len > 32 || len < 1) \
+		if (len > MAXNAMEBUFFER || len < 1) \
 			{ \
 			return E_FAIL; \
 			} \

@@ -156,7 +156,7 @@ struct PhysValues
 
     char minSlope[16];
     char maxSlope[16];
-    char name[32];
+    char name[MAXNAMEBUFFER];
 };
 
 static PhysValues loadValues;

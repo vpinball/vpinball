@@ -17,7 +17,7 @@ public:
    char m_sztext[MAXSTRING];
    SizingType m_sizingtype;
    COLORREF m_color;
-   char m_szMaterial[32];
+   char m_szMaterial[MAXNAMEBUFFER];
    bool m_verticalText;
 };
 

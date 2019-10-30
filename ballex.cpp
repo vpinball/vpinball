@@ -239,7 +239,7 @@ STDMETHODIMP BallEx::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImage, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImage, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -247,7 +247,7 @@ STDMETHODIMP BallEx::get_Image(BSTR *pVal)
 
 STDMETHODIMP BallEx::put_Image(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImage, MAXNAMEBUFFER, NULL, NULL);
 
    m_pball->m_pinballEnv = g_pplayer->m_ptable->GetImage(m_pball->m_szImage);
    m_pball->RenderSetup(); // nowadays does not do anything, but call it in case this changes in the future
@@ -272,7 +272,7 @@ STDMETHODIMP BallEx::get_FrontDecal(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImageDecal, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImageDecal, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -281,7 +281,7 @@ STDMETHODIMP BallEx::get_FrontDecal(BSTR *pVal)
 STDMETHODIMP BallEx::put_FrontDecal(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXNAMEBUFFER, NULL, NULL);
    Texture * const tex = g_pplayer->m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {

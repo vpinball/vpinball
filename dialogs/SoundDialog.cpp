@@ -746,7 +746,7 @@ void SoundPositionDialog::SetTextValues()
 
 void SoundPositionDialog::SetTextValue(int ctl, int val)
 {
-	char textBuf[32];
+    char textBuf[MAXNAMEBUFFER];
 	sprintf_s(textBuf, "%.03f", dequantizeSignedPercent(val));
 	const CString textStr(textBuf);
 	SetDlgItemText(ctl, textStr);

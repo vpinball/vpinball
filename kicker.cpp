@@ -16,7 +16,7 @@ Kicker::Kicker()
    m_indexBuffer = NULL;
    m_plateVertexBuffer = NULL;
    m_plateIndexBuffer = NULL;
-   memset(m_d.m_szMaterial, 0, 32);
+   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
    m_ptable = NULL;
    m_numVertices = 0;
@@ -898,7 +898,7 @@ STDMETHODIMP Kicker::get_Surface(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -907,7 +907,7 @@ STDMETHODIMP Kicker::get_Surface(BSTR *pVal)
 STDMETHODIMP Kicker::put_Surface(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -1098,7 +1098,7 @@ STDMETHODIMP Kicker::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1108,7 +1108,7 @@ STDMETHODIMP Kicker::put_Material(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
 
    STOPUNDO
 

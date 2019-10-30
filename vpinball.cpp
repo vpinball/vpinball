@@ -2227,7 +2227,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                // check scriptable - decals don't have scripts and therefore don't have names
                if (piedit->GetScriptable() && piedit->m_backglass == g_pvp->m_backglassView && piedit->m_isVisible)
                {
-                  char szT[64]; // Names can only be 32 characters (plus terminator)
+                  char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
                   WideCharToMultiByte(CP_ACP, 0, piedit->GetScriptable()->m_wzName, -1, szT, 64, NULL, NULL);
 
                   const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
@@ -2237,7 +2237,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
             for (int i = 0; i < pt->m_vcollection.Size(); i++)
             {
-               char szT[64]; // Names can only be 32 characters (plus terminator)
+               char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
 
                WideCharToMultiByte(CP_ACP, 0, pt->m_vcollection.ElementAt(i)->m_wzName, -1, szT, 64, NULL, NULL);
                strncat_s(szT, " (COL)", 64);

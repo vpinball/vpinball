@@ -13,7 +13,7 @@ class PlungerData
 {
 public:
    COLORREF m_color;
-   char m_szMaterial[32];
+   char m_szMaterial[MAXNAMEBUFFER];
    Vertex2D m_v;
    float m_width;
    float m_height;

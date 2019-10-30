@@ -27,10 +27,10 @@ public:
 
    char m_szSurface[MAXTOKEN];
    COLORREF m_color;
-   char m_szMaterial[32];
+   char m_szMaterial[MAXNAMEBUFFER];
 
    COLORREF m_rubbercolor;
-   char m_szRubberMaterial[32];
+   char m_szRubberMaterial[MAXNAMEBUFFER];
    float m_rubberthickness;
    float m_rubberheight;
    float m_rubberwidth;

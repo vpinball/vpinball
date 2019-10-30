@@ -15,7 +15,7 @@ public:
    TimerDataRoot m_tdr;
    char m_szSurface[MAXTOKEN];
    TriggerShape m_shape;
-   char m_szMaterial[32];
+   char m_szMaterial[MAXNAMEBUFFER];
    float m_rotation;
    float m_scaleX;
    float m_scaleY;

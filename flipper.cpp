@@ -1223,7 +1223,7 @@ STDMETHODIMP Flipper::get_Surface(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1232,7 +1232,7 @@ STDMETHODIMP Flipper::get_Surface(BSTR *pVal)
 STDMETHODIMP Flipper::put_Surface(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -1242,7 +1242,7 @@ STDMETHODIMP Flipper::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1251,7 +1251,7 @@ STDMETHODIMP Flipper::get_Material(BSTR *pVal)
 STDMETHODIMP Flipper::put_Material(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -1281,9 +1281,6 @@ void Flipper::GetDialogPanes(vector<PropertyPane*> &pvproppane)
    pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPFLIPPER_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPFLIPPER_POSITION, IDS_POSITION);
    pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPFLIPPER_PHYSICS, IDS_PHYSICS);
@@ -1346,7 +1343,7 @@ STDMETHODIMP Flipper::get_RubberMaterial(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szRubberMaterial, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szRubberMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1355,7 +1352,7 @@ STDMETHODIMP Flipper::get_RubberMaterial(BSTR *pVal)
 STDMETHODIMP Flipper::put_RubberMaterial(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szRubberMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szRubberMaterial, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -1671,7 +1668,7 @@ STDMETHODIMP Flipper::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1680,7 +1677,7 @@ STDMETHODIMP Flipper::get_Image(BSTR *pVal)
 STDMETHODIMP Flipper::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXNAMEBUFFER, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {

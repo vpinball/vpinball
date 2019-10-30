@@ -116,7 +116,7 @@ typedef double          F64;
 typedef unsigned _int64 U64;
 typedef _int64          S64;
 
-#define MAXNAMEBUFFER 33
+#define MAXNAMEBUFFER 32
 #define MAXSTRING 1024 // usually used for paths,filenames,etc
 #define MAXTOKEN (32*4)
 

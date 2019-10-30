@@ -131,8 +131,8 @@ void SearchSelectDialog::SelectElement()
         lv.mask = LVIF_PARAM;
         if (ListView_GetItem(m_hElementList, &lv) == TRUE)
         {
-           char szType[64];
-           ListView_GetItemText(m_hElementList, iItem, 1, szType, 32);
+           char szType[MAXNAMEBUFFER*2];
+           ListView_GetItemText(m_hElementList, iItem, 1, szType, MAXNAMEBUFFER);
            if (strcmp(szType, "Collection") == 0)
            {
               CComObject<Collection> *const pcol = (CComObject<Collection>*)lv.lParam;

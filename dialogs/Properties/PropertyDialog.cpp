@@ -6,10 +6,12 @@
 #include "Properties/GatePhysicsProperty.h"
 #include "Properties/RampVisualsProperty.h"
 #include "Properties/RampPhysicsProperty.h"
+#include "Properties/FlipperVisualsProperty.h"
+#include "Properties/FlipperPhysicsProperty.h"
 #include <WindowsX.h>
 
 
-PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG)
+PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_curTabIndex(0)
 {
     memset(m_tabs, 0, sizeof(m_tabs));
 }
@@ -78,6 +80,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
     if (psel == NULL)
         return;
 
+    m_curTabIndex = m_tab.GetCurSel();
     for (int i = 0; i < 5; i++)
         if (m_tabs[i] != NULL)
         {
@@ -110,9 +113,17 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
             m_tabs[2] = static_cast<BaseProperty *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }
+        case eItemFlipper:
+        {
+            m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new FlipperVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BaseProperty *>(m_tab.AddTabPage(new FlipperPhysicsProperty(pvsel), _T("Physics")));
+            m_tabs[2] = static_cast<BaseProperty *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
         default:
             break;
     }
+    m_tab.SetCurFocus(0);
 }
 
 BOOL PropertyDialog::OnInitDialog()
@@ -129,11 +140,9 @@ INT_PTR PropertyDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 {
     // Pass resizing messages on to the resizer
     m_resizer.HandleMessage(msg, wparam, lparam);
-
-//  switch (msg)
-//  {
-        //Additional messages to be handled go here
-//  }
+//     switch (msg)
+//     {
+//     }
     // Pass unhandled messages on to parent DialogProc
     return DialogProcDefault(msg, wparam, lparam);
 }
@@ -145,6 +154,8 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
     {
         if (m_tabs[i]!=NULL)
         {
+            if (msg.message == WM_KEYDOWN && msg.wParam == VK_RETURN)
+                return TRUE;                    //disable enter key for any input otherwise the app would crash!?
             BOOL ret = m_tabs[i]->IsDialogMessage(msg);
             if (ret)
                 return TRUE;
@@ -530,10 +541,6 @@ BOOL TimerProperty::OnCommand(WPARAM wParam, LPARAM lParam)
     {
         case EN_KILLFOCUS:
         case CBN_KILLFOCUS:
-        {
-            UpdateProperties(dispID);
-            return TRUE;
-        }
         case BN_CLICKED:
         {
             UpdateProperties(dispID);

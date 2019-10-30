@@ -3,7 +3,7 @@
 // only used for loading and saving
 struct SaveMaterial
 {
-   char szName[32];
+   char szName[MAXNAMEBUFFER];
    COLORREF cBase; // can be overriden by texture on object itself
    COLORREF cGlossy; // specular of glossy layer
    COLORREF cClearcoat; // specular of clearcoat layer
@@ -19,7 +19,7 @@ struct SaveMaterial
 
 struct SavePhysicsMaterial
 {
-    char szName[32];
+    char szName[MAXNAMEBUFFER];
     float fElasticity;
     float fElasticityFallOff;
     float fFriction;
@@ -48,7 +48,7 @@ public:
        , m_fFriction(0.0f)
        , m_fScatterAngle(0.0f)
    {
-      memset(m_szName, 0, 32);
+      memset(m_szName, 0, MAXNAMEBUFFER);
       strcpy_s(m_szName, "dummyMaterial");
    }
 
@@ -72,7 +72,7 @@ public:
        , m_fFriction(friction)
        , m_fScatterAngle(scatterAngle)
    {
-      memset(m_szName, 0, 32);
+      memset(m_szName, 0, MAXNAMEBUFFER);
       strcpy_s(m_szName, "dummyMaterial");
    }
 
@@ -94,7 +94,7 @@ public:
        , m_fFriction(pmat->m_fFriction)
        , m_fScatterAngle(pmat->m_fScatterAngle)
    {
-      memcpy(m_szName, pmat->m_szName, 32);
+      memcpy(m_szName, pmat->m_szName, MAXNAMEBUFFER);
    }
 
    inline unsigned long long hash() const
@@ -135,7 +135,7 @@ public:
       return (unsigned long long)h;*/
    }
 
-   char m_szName[32];
+   char m_szName[MAXNAMEBUFFER];
    float m_fWrapLighting;
    float m_fRoughness;
    float m_fGlossyImageLerp;

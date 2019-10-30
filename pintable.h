@@ -637,7 +637,7 @@ public:
    ProtectionData m_protectionData;
 
    char m_szImage[MAXTOKEN];
-   char m_szPlayfieldMaterial[32];
+   char m_szPlayfieldMaterial[MAXNAMEBUFFER];
    COLORREF m_colorbackdrop;
    bool m_ImageBackdropNightDay;
 

@@ -12,10 +12,10 @@ public:
    float m_slingshot_threshold;	// speed at which ball needs to trigger slingshot 
    char m_szImage[MAXTOKEN];
    char m_szSideImage[MAXTOKEN];
-   char m_szTopMaterial[32];
-   char m_szSideMaterial[32];
-   char m_szSlingShotMaterial[32];
-   char m_szPhysicsMaterial[32];
+   char m_szTopMaterial[MAXNAMEBUFFER];
+   char m_szSideMaterial[MAXNAMEBUFFER];
+   char m_szSlingShotMaterial[MAXNAMEBUFFER];
+   char m_szPhysicsMaterial[MAXNAMEBUFFER];
    float m_heightbottom;
    float m_heighttop;
    float m_slingshotforce;

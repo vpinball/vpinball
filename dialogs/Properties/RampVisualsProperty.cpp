@@ -132,10 +132,6 @@ BOOL RampVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
     {
         case EN_KILLFOCUS:
         case CBN_KILLFOCUS:
-        {
-            UpdateProperties(dispID);
-            return TRUE;
-        }
         case BN_CLICKED:
         {
             UpdateProperties(dispID);
