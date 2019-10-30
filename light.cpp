@@ -1243,7 +1243,7 @@ STDMETHODIMP Light::get_BlinkPattern(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_rgblinkpattern, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_rgblinkpattern, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1253,7 +1253,7 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 {
    STARTUNDO
 
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_rgblinkpattern, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_rgblinkpattern, MAXNAMEBUFFER, NULL, NULL);
 
    if (m_rgblinkpattern[0] == '\0')
    {
@@ -1369,7 +1369,7 @@ STDMETHODIMP Light::get_Surface(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1378,7 +1378,7 @@ STDMETHODIMP Light::get_Surface(BSTR *pVal)
 STDMETHODIMP Light::put_Surface(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -1389,7 +1389,7 @@ STDMETHODIMP Light::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szOffImage, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szOffImage, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1398,7 +1398,7 @@ STDMETHODIMP Light::get_Image(BSTR *pVal)
 STDMETHODIMP Light::put_Image(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOffImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOffImage, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;

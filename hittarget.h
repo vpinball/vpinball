@@ -27,8 +27,8 @@ public:
    float m_rotZ;
    char m_szImage[MAXTOKEN];
    TargetType m_targetType;
-   char m_szMaterial[32];
-   char m_szPhysicsMaterial[32];
+   char m_szMaterial[MAXNAMEBUFFER];
+   char m_szPhysicsMaterial[MAXNAMEBUFFER];
 
    TimerDataRoot m_tdr;
 

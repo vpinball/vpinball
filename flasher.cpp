@@ -818,7 +818,7 @@ STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageA, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageA, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -827,7 +827,7 @@ STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)
 STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
 {
    char m_szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXNAMEBUFFER, NULL, NULL);
 
    if (strcmp(m_szImage, m_d.m_szImageA) != 0)
    {
@@ -843,7 +843,7 @@ STDMETHODIMP Flasher::get_ImageB(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageB, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageB, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -852,7 +852,7 @@ STDMETHODIMP Flasher::get_ImageB(BSTR *pVal)
 STDMETHODIMP Flasher::put_ImageB(BSTR newVal)
 {
    char m_szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXNAMEBUFFER, NULL, NULL);
 
    if (strcmp(m_szImage, m_d.m_szImageB) != 0)
    {
@@ -872,28 +872,28 @@ STDMETHODIMP Flasher::get_Filter(BSTR *pVal)
    {
    case Filter_Additive:
    {
-      MultiByteToWideChar(CP_ACP, 0, "Additive", -1, wz, 32);
+      MultiByteToWideChar(CP_ACP, 0, "Additive", -1, wz, MAXNAMEBUFFER);
       break;
    }
    case Filter_Multiply:
    {
-      MultiByteToWideChar(CP_ACP, 0, "Multiply", -1, wz, 32);
+      MultiByteToWideChar(CP_ACP, 0, "Multiply", -1, wz, MAXNAMEBUFFER);
       break;
    }
    case Filter_Overlay:
    {
-      MultiByteToWideChar(CP_ACP, 0, "Overlay", -1, wz, 32);
+      MultiByteToWideChar(CP_ACP, 0, "Overlay", -1, wz, MAXNAMEBUFFER);
       break;
    }
    case Filter_Screen:
    {
-      MultiByteToWideChar(CP_ACP, 0, "Screen", -1, wz, 32);
+      MultiByteToWideChar(CP_ACP, 0, "Screen", -1, wz, MAXNAMEBUFFER);
       break;
    }
    default:
    case Filter_None:
    {
-      MultiByteToWideChar(CP_ACP, 0, "None", -1, wz, 32);
+      MultiByteToWideChar(CP_ACP, 0, "None", -1, wz, MAXNAMEBUFFER);
       break;
    }
    }
@@ -904,8 +904,8 @@ STDMETHODIMP Flasher::get_Filter(BSTR *pVal)
 
 STDMETHODIMP Flasher::put_Filter(BSTR newVal)
 {
-   char m_szFilter[32];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szFilter, 32, NULL, NULL);
+   char m_szFilter[MAXNAMEBUFFER];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szFilter, MAXNAMEBUFFER, NULL, NULL);
 
    if (strcmp(m_szFilter, "Additive") == 0 && m_d.m_filter != Filter_Additive)
    {

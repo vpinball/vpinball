@@ -161,7 +161,7 @@ HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
 {
    CodeViewDispatch * const pcvd = new CodeViewDispatch();
 
-   WideStrNCopy(bstr, pcvd->m_wzName, 32);
+   WideStrNCopy(bstr, pcvd->m_wzName, MAXNAMEBUFFER);
    pcvd->m_pdisp = pdisp;
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
@@ -192,7 +192,7 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
    CComBSTR bstr;
    piscript->get_Name(&bstr);
 
-   WideStrNCopy(bstr, pcvd->m_wzName, 32);
+   WideStrNCopy(bstr, pcvd->m_wzName, MAXNAMEBUFFER);
    pcvd->m_pdisp = piscript->GetDispatch();
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
@@ -208,8 +208,8 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
    m_vcvd.AddSortedString(pcvd);
 
    // Add item to dropdown
-   char szT[64]; // Names can only be 32 characters (plus terminator)
-   WideCharToMultiByte(CP_ACP, 0, pcvd->m_wzName, -1, szT, 64, NULL, NULL);
+   char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
+   WideCharToMultiByte(CP_ACP, 0, pcvd->m_wzName, -1, szT, MAXNAMEBUFFER*2, NULL, NULL);
    const size_t index = SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
    SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
    //AndyS - WIP insert new item into autocomplete list??
@@ -233,7 +233,7 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
    m_vcvd.RemoveElementAt(idx);
 
    // Remove item from dropdown
-   char szT[64]; // Names can only be 32 characters (plus terminator)
+   char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
    WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
    const size_t index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
@@ -246,7 +246,7 @@ void CodeViewer::SelectItem(IScriptable * const piscript)
    CComBSTR bstr;
    piscript->get_Name(&bstr);
 
-   char szT[64]; // Names can only be 32 characters (plus terminator)
+   char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
    WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
 
    const size_t index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
@@ -273,12 +273,12 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, WCHAR * const wzNe
 
    m_vcvd.RemoveElementAt(idx);
 
-   lstrcpynW(pcvd->m_wzName, wzNew, 32);
+   lstrcpynW(pcvd->m_wzName, wzNew, MAXNAMEBUFFER);
 
    m_vcvd.AddSortedString(pcvd);
 
    // Remove old name from dropdown and replace it with the new
-   char szT[64]; // Names can only be 32 characters (plus terminator)
+   char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
    WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
    size_t index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
@@ -1090,7 +1090,7 @@ next:
 void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
 {
    size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-   const size_t bufferSize = cchar + 32;
+   const size_t bufferSize = cchar + MAXNAMEBUFFER;
    char * const szText = new char[bufferSize + 1];
    SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
 
@@ -1110,7 +1110,7 @@ void CodeViewer::SaveToFile(const char *filename)
       if (fScript)
       {
 		const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-		const size_t bufferSize = cchar + 32;
+		const size_t bufferSize = cchar + MAXNAMEBUFFER;
 		char * const szText = new char[bufferSize + 1];
 		SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
 		fwrite(szText, 1, cchar, fScript);
@@ -1161,7 +1161,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
    // check for bogus control characters
    for (int i = 0; i < cchar; ++i)
    {
-      if (szText[i] < 9 || (szText[i] > 10 && szText[i] < 13) || (szText[i] > 13 && szText[i] < 32))
+      if (szText[i] < 9 || (szText[i] > 10 && szText[i] < 13) || (szText[i] > 13 && szText[i] < MAXNAMEBUFFER))
          szText[i] = ' ';
    }
    SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
@@ -1192,7 +1192,7 @@ void CodeViewer::LoadFromFile(const char *filename)
 		// check for bogus control characters
 		for (size_t i = 0; i < cchar; ++i)
 		{
-			if (szText[i] < 9 || (szText[i] > 10 && szText[i] < 13) || (szText[i] > 13 && szText[i] < 32))
+			if (szText[i] < 9 || (szText[i] > 10 && szText[i] < 13) || (szText[i] > 13 && szText[i] < MAXNAMEBUFFER))
 				szText[i] = ' ';
 		}
 		SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);

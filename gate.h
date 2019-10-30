@@ -17,7 +17,7 @@ public:
    float m_length;
    float m_height;
    float m_rotation;
-   char m_szMaterial[32];
+   char m_szMaterial[MAXNAMEBUFFER];
    TimerDataRoot m_tdr;
    float m_elasticity;
    float m_friction;

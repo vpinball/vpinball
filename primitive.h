@@ -59,9 +59,9 @@ public:
    char m_szNormalMap[MAXTOKEN];
    char m_meshFileName[256];
 
-   char m_szMaterial[32];
+   char m_szMaterial[MAXNAMEBUFFER];
    COLORREF m_SideColor;
-   char m_szPhysicsMaterial[32];
+   char m_szPhysicsMaterial[MAXNAMEBUFFER];
 
    TimerDataRoot m_tdr;
 

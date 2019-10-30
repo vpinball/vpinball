@@ -417,7 +417,6 @@
 #define IDC_TABLENAME                   336
 #define IDS_EDITOR                      336
 #define IDC_TABLEAUTHOR                 337
-#define IDD_PROPFLIPPER_POSITION        337
 #define IDS_DEFAULTBALL                 337
 #define IDC_EMAIL                       338
 #define IDD_PROPFLIPPER_PHYSICS         338
@@ -1184,7 +1183,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        649
+#define _APS_NEXT_RESOURCE_VALUE        650
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         828
 #define _APS_NEXT_SYMED_VALUE           188

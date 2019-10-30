@@ -3,7 +3,7 @@
 #include "DimensionDialog.h"
 struct ManufacturerDimensions
 {
-   char name[32];
+   char name[MAXNAMEBUFFER];
    float width;
    float height;
 };
@@ -75,7 +75,7 @@ BOOL DimensionDialog::OnInitDialog()
    if (listHwnd != NULL)
       ListView_DeleteAllItems(listHwnd);
    lv.mask = LVIF_TEXT;
-   char textBuf[32];
+   char textBuf[MAXNAMEBUFFER];
    for (int i = 0; i < DIM_TABLE_SIZE; i++)
    {
       lv.iItem = i;
@@ -108,7 +108,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                const int width = (int)(dimTable[idx].width*47.0f + 0.5f);
                const int height = (int)(dimTable[idx].height*47.0f + 0.5f);
-               char textBuf[32];
+               char textBuf[MAXNAMEBUFFER];
                sprintf_s(textBuf, "%i", width);
                CString textStr(textBuf);
                SetDlgItemText(IDC_VP_WIDTH, textStr);
@@ -141,7 +141,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                int ret = 0;
                if (LOWORD(wParam) == IDC_SIZE_WIDTH)
                {
-                  char textBuf[32];
+                  char textBuf[MAXNAMEBUFFER];
                   const CString textStr(GetDlgItemText(IDC_SIZE_WIDTH));
                   ret = sscanf_s(textStr.c_str(), "%f", &sizeWidth);
                   if (ret != 1 || sizeWidth < 0.0f)
@@ -153,7 +153,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                }
                if (LOWORD(wParam) == IDC_SIZE_HEIGHT)
                {
-                  char textBuf[32];
+                  char textBuf[MAXNAMEBUFFER];
                   const CString textStr(GetDlgItemText(IDC_SIZE_HEIGHT));
                   ret = sscanf_s(textStr.c_str(), "%f", &sizeHeight);
                   if (ret != 1 || sizeHeight < 0.0f)
@@ -165,7 +165,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                }
                if (LOWORD(wParam) == IDC_VP_WIDTH)
                {
-                  char textBuf[32];
+                  char textBuf[MAXNAMEBUFFER];
                   const CString textStr(GetDlgItemText(IDC_VP_WIDTH));
                   ret = sscanf_s(textStr.c_str(), "%i", &vpWidth);
                   if (ret != 1 || vpWidth < 0)
@@ -177,7 +177,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                }
                if (LOWORD(wParam) == IDC_VP_HEIGHT)
                {
-                  char textBuf[32];
+                  char textBuf[MAXNAMEBUFFER];
                   const CString textStr(GetDlgItemText(IDC_VP_HEIGHT));
                   ret = sscanf_s(textStr.c_str(), "%i", &vpHeight);
                   if (ret != 1 || vpHeight < 0)

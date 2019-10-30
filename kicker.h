@@ -12,7 +12,7 @@ class KickerData
 public:
    Vertex2D m_vCenter;
    float m_radius;
-   char m_szMaterial[32];
+   char m_szMaterial[MAXNAMEBUFFER];
    TimerDataRoot m_tdr;
    char m_szSurface[MAXTOKEN];
    KickerType m_kickertype;

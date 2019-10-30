@@ -13,7 +13,7 @@ public:
    Vertex2D m_vCenter;
    float m_length;
    float m_rotation;
-   char m_szMaterial[32];
+   char m_szMaterial[MAXNAMEBUFFER];
    TimerDataRoot m_tdr;
    float m_height;
    float m_damping;

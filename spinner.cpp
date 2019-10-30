@@ -12,7 +12,7 @@ Spinner::Spinner()
    m_plateIndexBuffer = 0;
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
    memset(m_d.m_szImage, 0, MAXTOKEN);
-   memset(m_d.m_szMaterial, 0, 32);
+   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
 }
 
@@ -646,7 +646,7 @@ STDMETHODIMP Spinner::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -655,7 +655,7 @@ STDMETHODIMP Spinner::get_Material(BSTR *pVal)
 STDMETHODIMP Spinner::put_Material(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -665,7 +665,7 @@ STDMETHODIMP Spinner::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -674,7 +674,7 @@ STDMETHODIMP Spinner::get_Image(BSTR *pVal)
 STDMETHODIMP Spinner::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXNAMEBUFFER, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -725,7 +725,7 @@ STDMETHODIMP Spinner::get_Surface(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -734,7 +734,7 @@ STDMETHODIMP Spinner::get_Surface(BSTR *pVal)
 STDMETHODIMP Spinner::put_Surface(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;

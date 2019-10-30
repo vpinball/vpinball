@@ -71,7 +71,7 @@ public:
    CodeViewDispatch();
    ~CodeViewDispatch();
 
-   WCHAR m_wzName[32];
+   WCHAR m_wzName[MAXNAMEBUFFER];
    IUnknown *m_punk;
    IDispatch *m_pdisp;
    IScriptable *m_piscript;

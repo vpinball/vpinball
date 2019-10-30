@@ -4671,8 +4671,8 @@ void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect 
     {
         CComBSTR bstr;
         m_vcollection.ElementAt(i)->get_Name(&bstr);
-        char szT[64]; // Names can only be 32 characters (plus terminator)
-        WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
+        char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
+        WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, NULL, NULL);
 
         AppendMenu(colSubMenu, MF_POPUP, 0x40000 + i, szT);
         CheckMenuItem(colSubMenu, 0x40000 + i, MF_UNCHECKED);
@@ -6964,7 +6964,7 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
    //GetIApcProjectItem()->put_Name(newVal);
 
    const int l = lstrlenW(newVal);
-   if ((l > 32) || (l < 1))
+   if ((l > MAXNAMEBUFFER) || (l < 1))
    {
       return E_FAIL;
    }
@@ -7585,7 +7585,7 @@ void PinTable::AddMaterial(Material * const pmat)
 
    if (!IsMaterialNameUnique(pmat->m_szName) || !strcmp(pmat->m_szName, "Material"))
    {
-      char textBuf[32];
+      char textBuf[MAXNAMEBUFFER];
       do
       {
          sprintf_s(textBuf, "%s%i", pmat->m_szName, suffix);
@@ -7961,7 +7961,7 @@ STDMETHODIMP PinTable::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_szImage, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_szImage, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -7970,7 +7970,7 @@ STDMETHODIMP PinTable::get_Image(BSTR *pVal)
 STDMETHODIMP PinTable::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXNAMEBUFFER, NULL, NULL);
    const Texture * const tex = GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -8577,7 +8577,7 @@ STDMETHODIMP PinTable::get_PlayfieldMaterial(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_szPlayfieldMaterial, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_szPlayfieldMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -8586,7 +8586,7 @@ STDMETHODIMP PinTable::get_PlayfieldMaterial(BSTR *pVal)
 STDMETHODIMP PinTable::put_PlayfieldMaterial(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szPlayfieldMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szPlayfieldMaterial, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -9044,7 +9044,7 @@ STDMETHODIMP PinTable::get_BackdropImage_DT(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_BG_szImage[0], -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_BG_szImage[0], -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -9053,7 +9053,7 @@ STDMETHODIMP PinTable::get_BackdropImage_DT(BSTR *pVal)
 STDMETHODIMP PinTable::put_BackdropImage_DT(BSTR newVal) //!! HDR??
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[0], 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[0], MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -9063,7 +9063,7 @@ STDMETHODIMP PinTable::get_BackdropImage_FS(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_BG_szImage[1], -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_BG_szImage[1], -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -9072,7 +9072,7 @@ STDMETHODIMP PinTable::get_BackdropImage_FS(BSTR *pVal)
 STDMETHODIMP PinTable::put_BackdropImage_FS(BSTR newVal) //!! HDR??
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[1], 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[1], MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -9082,7 +9082,7 @@ STDMETHODIMP PinTable::get_BackdropImage_FSS(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_BG_szImage[2], -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_BG_szImage[2], -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -9091,7 +9091,7 @@ STDMETHODIMP PinTable::get_BackdropImage_FSS(BSTR *pVal)
 STDMETHODIMP PinTable::put_BackdropImage_FSS(BSTR newVal) //!! HDR??
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[2], 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[2], MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -9101,7 +9101,7 @@ STDMETHODIMP PinTable::get_ColorGradeImage(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_szImageColorGrade, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_szImageColorGrade, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -9110,7 +9110,7 @@ STDMETHODIMP PinTable::get_ColorGradeImage(BSTR *pVal)
 STDMETHODIMP PinTable::put_ColorGradeImage(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXNAMEBUFFER, NULL, NULL);
    const Texture * const tex = GetImage(szImage);
    if (tex && (tex->m_width != 256 || tex->m_height != 16))
    {
@@ -9528,7 +9528,7 @@ STDMETHODIMP PinTable::get_BallImage(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_szBallImage, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_szBallImage, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -9537,7 +9537,7 @@ STDMETHODIMP PinTable::get_BallImage(BSTR *pVal)
 STDMETHODIMP PinTable::put_BallImage(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImage, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -9547,7 +9547,7 @@ STDMETHODIMP PinTable::get_EnvironmentImage(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_szEnvImage, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_szEnvImage, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -9556,7 +9556,7 @@ STDMETHODIMP PinTable::get_EnvironmentImage(BSTR *pVal)
 STDMETHODIMP PinTable::put_EnvironmentImage(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXNAMEBUFFER, NULL, NULL);
    const Texture * const tex = GetImage(szImage);
    if (tex && (tex->m_width != tex->m_height*2))
    {
@@ -10212,7 +10212,7 @@ STDMETHODIMP PinTable::get_BallFrontDecal(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_szBallImageDecal, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_szBallImageDecal, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -10221,7 +10221,7 @@ STDMETHODIMP PinTable::get_BallFrontDecal(BSTR *pVal)
 STDMETHODIMP PinTable::put_BallFrontDecal(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXNAMEBUFFER, NULL, NULL);
    const Texture * const tex = GetImage(szImage);
    if (tex && tex->IsHDR())
    {

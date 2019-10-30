@@ -10,8 +10,8 @@
 class RampData
 {
 public:
-   char m_szMaterial[32];
-   char m_szPhysicsMaterial[32];
+   char m_szMaterial[MAXNAMEBUFFER];
+   char m_szPhysicsMaterial[MAXNAMEBUFFER];
    TimerDataRoot m_tdr;
    float m_heightbottom;
    float m_heighttop;

@@ -30,8 +30,8 @@ HitTarget::HitTarget()
    m_propPosition = NULL;
    m_propVisual = NULL;
    memset(m_d.m_szImage, 0, MAXTOKEN);
-   memset(m_d.m_szMaterial, 0, 32);
-   memset(m_d.m_szPhysicsMaterial, 0, 32);
+   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
+   memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
    m_d.m_overwritePhysics = true;
    m_vertices = NULL;
    m_indices = NULL;
@@ -992,7 +992,7 @@ STDMETHODIMP HitTarget::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1001,7 +1001,7 @@ STDMETHODIMP HitTarget::get_Image(BSTR *pVal)
 STDMETHODIMP HitTarget::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXNAMEBUFFER, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -1031,7 +1031,7 @@ STDMETHODIMP HitTarget::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1040,7 +1040,7 @@ STDMETHODIMP HitTarget::get_Material(BSTR *pVal)
 STDMETHODIMP HitTarget::put_Material(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -1584,7 +1584,7 @@ STDMETHODIMP HitTarget::get_PhysicsMaterial(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1593,7 +1593,7 @@ STDMETHODIMP HitTarget::get_PhysicsMaterial(BSTR *pVal)
 STDMETHODIMP HitTarget::put_PhysicsMaterial(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
