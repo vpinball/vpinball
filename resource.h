@@ -415,7 +415,6 @@
 #define IDS_UNLOCK_SUCCESS              335
 #define IDD_PROPRAMP_VISUALS            335
 #define IDC_TABLENAME                   336
-#define IDD_PROPRAMP_POSITION           336
 #define IDS_EDITOR                      336
 #define IDC_TABLEAUTHOR                 337
 #define IDD_PROPFLIPPER_POSITION        337
@@ -1185,7 +1184,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        648
+#define _APS_NEXT_RESOURCE_VALUE        649
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         828
 #define _APS_NEXT_SYMED_VALUE           188

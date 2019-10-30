@@ -4,6 +4,8 @@
 #include "Properties/WallPhysicsProperty.h"
 #include "Properties/GateVisualsProperty.h"
 #include "Properties/GatePhysicsProperty.h"
+#include "Properties/RampVisualsProperty.h"
+#include "Properties/RampPhysicsProperty.h"
 #include <WindowsX.h>
 
 
@@ -101,6 +103,13 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
             m_tabs[2] = static_cast<BaseProperty *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }
+        case eItemRamp:
+        {
+            m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new RampVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BaseProperty *>(m_tab.AddTabPage(new RampPhysicsProperty(pvsel), _T("Physics")));
+            m_tabs[2] = static_cast<BaseProperty *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
         default:
             break;
     }
@@ -125,10 +134,10 @@ INT_PTR PropertyDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 //  {
         //Additional messages to be handled go here
 //  }
-
     // Pass unhandled messages on to parent DialogProc
     return DialogProcDefault(msg, wparam, lparam);
 }
+
 
 BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
 {

@@ -1644,9 +1644,6 @@ void Ramp::GetDialogPanes(vector<PropertyPane*> &pvproppane)
    pproppane = new PropertyPane(IDD_PROPRAMP_VISUALS, IDS_VISUALS);
    pvproppane.push_back(pproppane);
 
-   m_propPosition = new PropertyPane(IDD_PROPRAMP_POSITION, IDS_POSITION);
-   pvproppane.push_back(m_propPosition);
-
    m_propPhysics = new PropertyPane(IDD_PROPRAMP_PHYSICS, IDS_PHYSICS);
    pvproppane.push_back(m_propPhysics);
 
