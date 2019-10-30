@@ -8,6 +8,7 @@
 #include "Properties/RampPhysicsProperty.h"
 #include "Properties/FlipperVisualsProperty.h"
 #include "Properties/FlipperPhysicsProperty.h"
+#include "Properties/DragpointVisualsProperty.h"
 #include <WindowsX.h>
 
 
@@ -118,6 +119,19 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
             m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new FlipperVisualsProperty(pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BaseProperty *>(m_tab.AddTabPage(new FlipperPhysicsProperty(pvsel), _T("Physics")));
             m_tabs[2] = static_cast<BaseProperty *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
+        case eItemDragPoint:
+        {
+            DragPoint *dpoint = (DragPoint *)psel;
+            int itemType = dpoint->m_pihdp->GetIEditable()->GetItemType();
+            if(itemType==eItemRamp)
+                m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALSWHEIGHT, pvsel), _T("Visuals")));
+            else if(itemType == eItemLight || itemType==eItemTrigger)
+                m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALS, pvsel), _T("Visuals")));
+            else
+                m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALSWTEX, pvsel), _T("Visuals")));
+
             break;
         }
         default:

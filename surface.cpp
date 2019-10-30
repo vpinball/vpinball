@@ -1665,9 +1665,6 @@ void Surface::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
 
    pproppane = new PropertyPane(IDD_PROPPOINT_VISUALSWTEX, IDS_VISUALS);
    pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPPOINT_POSITION, IDS_POSITION);
-   pvproppane.push_back(pproppane);
 }
 
 STDMETHODIMP Surface::get_CanDrop(VARIANT_BOOL *pVal)
