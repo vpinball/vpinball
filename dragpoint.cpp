@@ -259,8 +259,8 @@ void IHaveDragPoints::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
    m_propVisuals = new PropertyPane(IDD_PROPPOINT_VISUALS, IDS_VISUALS);
    pvproppane.push_back(m_propVisuals);
 
-   m_propPosition = new PropertyPane(IDD_PROPPOINT_POSITION, IDS_POSITION);
-   pvproppane.push_back(m_propPosition);
+//   m_propPosition = new PropertyPane(IDD_PROPPOINT_POSITION, IDS_POSITION);
+//   pvproppane.push_back(m_propPosition);
 }
 
 void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, float **ppcoords)

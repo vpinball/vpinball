@@ -485,7 +485,6 @@
 #define IDD_PROPBACKGLASS_VISUALS       362
 #define IDC_ELEMENT_LIST                362
 #define IDC_DRAWING_ORDER_LIST          362
-#define IDD_PROPPOINT_POSITION          363
 #define IDD_PROPPOINT_VISUALS           364
 #define IDC_HANGDETECT                  364
 #define IDD_SECURITY_OPTIONS            365
@@ -841,7 +840,6 @@
 #define IDC_AUTOSAVE                    589
 #define IDC_ENABLE_SSR                  590
 #define IDC_BLOOM_OFF                   591
-#define IDD_PROPPOINT_POSITION_WITHZ    601
 #define IDD_PROPRUBBER_PHYSICS          602
 #define IDC_RUBBER                      602
 #define IDD_PROPRUBBER_POSITION         603
@@ -875,6 +873,7 @@
 #define IDB_BITMAP4                     646
 #define IDB_KICKER_T1                   646
 #define IDD_PROPERTY_DIALOG             647
+#define IDD_PROPPOINT_VISUALSWHEIGHT    648
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1183,7 +1182,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        650
+#define _APS_NEXT_RESOURCE_VALUE        654
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         828
 #define _APS_NEXT_SYMED_VALUE           188

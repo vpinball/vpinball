@@ -163,10 +163,7 @@ void Ramp::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
 {
    PropertyPane *pproppane;
 
-   pproppane = new PropertyPane(IDD_PROPPOINT_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPPOINT_POSITION_WITHZ, IDS_POSITION);
+   pproppane = new PropertyPane(IDD_PROPPOINT_VISUALSWHEIGHT, IDS_VISUALS);
    pvproppane.push_back(pproppane);
 }
 
