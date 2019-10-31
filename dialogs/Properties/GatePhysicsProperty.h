@@ -1,7 +1,7 @@
 #ifndef H_GATE_PHYSICS_PROPERTY
 #define H_GATE_PHYSICS_PROPERTY
 
-class GatePhysicsProperty: public BaseProperty
+class GatePhysicsProperty: public BasePropertyDialog
 {
 public:
     GatePhysicsProperty(VectorProtected<ISelect> *pvsel);

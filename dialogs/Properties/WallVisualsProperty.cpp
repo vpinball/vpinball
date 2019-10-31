@@ -2,7 +2,7 @@
 #include "Properties/WallVisualsProperty.h"
 #include <WindowsX.h>
 
-WallVisualsProperty::WallVisualsProperty(VectorProtected<ISelect> *pvsel) : BaseProperty(IDD_PROPWALL_VISUALS, pvsel)
+WallVisualsProperty::WallVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPWALL_VISUALS, pvsel)
 {
 
 }

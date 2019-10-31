@@ -2,10 +2,10 @@
 #define H_PROPERTY_DIALOG
 
 
-class BaseProperty: public CDialog
+class BasePropertyDialog: public CDialog
 {
 public:    
-    BaseProperty(int id, VectorProtected<ISelect> *pvsel) : CDialog(id), m_pvsel(pvsel)
+    BasePropertyDialog(int id, VectorProtected<ISelect> *pvsel) : CDialog(id), m_pvsel(pvsel)
     {
     }
     virtual void UpdateProperties(const int dispid) = 0;
@@ -15,7 +15,7 @@ protected:
 
 };
 
-class TimerProperty: public BaseProperty
+class TimerProperty: public BasePropertyDialog
 {
 public:
     TimerProperty(VectorProtected<ISelect> *pvsel);
@@ -116,7 +116,7 @@ protected:
 
 private:
     CTab m_tab;
-    BaseProperty *m_tabs[5];
+    BasePropertyDialog *m_tabs[5];
     int  m_curTabIndex;
     CEdit m_nameEdit;
     CResizer m_resizer;

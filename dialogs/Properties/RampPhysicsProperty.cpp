@@ -2,7 +2,7 @@
 #include "Properties/RampPhysicsProperty.h"
 #include <WindowsX.h>
 
-RampPhysicsProperty::RampPhysicsProperty(VectorProtected<ISelect> *pvsel) : BaseProperty(IDD_PROPRAMP_PHYSICS, pvsel)
+RampPhysicsProperty::RampPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_PHYSICS, pvsel)
 {
 }
 

@@ -95,30 +95,30 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
     {
         case eItemSurface:
         {
-            m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new WallVisualsProperty(pvsel), _T("Visuals")));
-            m_tabs[1] = static_cast<BaseProperty *>(m_tab.AddTabPage(new WallPhysicsProperty(pvsel), _T("Physics")));
-            m_tabs[2] = static_cast<BaseProperty *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new WallVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new WallPhysicsProperty(pvsel), _T("Physics")));
+            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }
         case eItemGate:
         {
-            m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new GateVisualsProperty(pvsel), _T("Visuals")));
-            m_tabs[1] = static_cast<BaseProperty *>(m_tab.AddTabPage(new GatePhysicsProperty(pvsel), _T("Physics")));
-            m_tabs[2] = static_cast<BaseProperty *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new GateVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new GatePhysicsProperty(pvsel), _T("Physics")));
+            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }
         case eItemRamp:
         {
-            m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new RampVisualsProperty(pvsel), _T("Visuals")));
-            m_tabs[1] = static_cast<BaseProperty *>(m_tab.AddTabPage(new RampPhysicsProperty(pvsel), _T("Physics")));
-            m_tabs[2] = static_cast<BaseProperty *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new RampVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new RampPhysicsProperty(pvsel), _T("Physics")));
+            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }
         case eItemFlipper:
         {
-            m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new FlipperVisualsProperty(pvsel), _T("Visuals")));
-            m_tabs[1] = static_cast<BaseProperty *>(m_tab.AddTabPage(new FlipperPhysicsProperty(pvsel), _T("Physics")));
-            m_tabs[2] = static_cast<BaseProperty *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new FlipperVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new FlipperPhysicsProperty(pvsel), _T("Physics")));
+            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }
         case eItemDragPoint:
@@ -126,11 +126,11 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
             DragPoint *dpoint = (DragPoint *)psel;
             int itemType = dpoint->m_pihdp->GetIEditable()->GetItemType();
             if(itemType==eItemRamp)
-                m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALSWHEIGHT, pvsel), _T("Visuals")));
+                m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALSWHEIGHT, pvsel), _T("Visuals")));
             else if(itemType == eItemLight || itemType==eItemTrigger)
-                m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALS, pvsel), _T("Visuals")));
+                m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALS, pvsel), _T("Visuals")));
             else
-                m_tabs[0] = static_cast<BaseProperty *>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALSWTEX, pvsel), _T("Visuals")));
+                m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALSWTEX, pvsel), _T("Visuals")));
 
             break;
         }
@@ -183,7 +183,7 @@ BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
-TimerProperty::TimerProperty(VectorProtected<ISelect> *pvsel) : BaseProperty(IDD_PROPTIMER, pvsel)
+TimerProperty::TimerProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTIMER, pvsel)
 {
 }
 

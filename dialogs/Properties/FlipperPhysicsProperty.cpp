@@ -2,7 +2,7 @@
 #include "Properties/FlipperPhysicsProperty.h"
 #include <WindowsX.h>
 
-FlipperPhysicsProperty::FlipperPhysicsProperty(VectorProtected<ISelect> *pvsel) : BaseProperty(IDD_PROPFLIPPER_PHYSICS, pvsel)
+FlipperPhysicsProperty::FlipperPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_PHYSICS, pvsel)
 {
     m_physicSetList.push_back("Set1");
     m_physicSetList.push_back("Set2");

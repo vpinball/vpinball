@@ -1,7 +1,7 @@
 #ifndef H_FLIPPER_PHYSICS_PROPERTY
 #define H_FLIPPER_PHYSICS_PROPERTY
 
-class FlipperPhysicsProperty: public BaseProperty
+class FlipperPhysicsProperty: public BasePropertyDialog
 {
 public:
     FlipperPhysicsProperty(VectorProtected<ISelect> *pvsel);
