@@ -22,8 +22,9 @@ void WallPhysicsProperty::UpdateVisuals()
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 3), wall->m_d.m_hitEvent);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS), wall->m_d.m_overwritePhysics);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 11), wall->m_d.m_droppable);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 110), wall->m_d.m_collidable);
+        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 111), wall->m_d.m_collidable);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 116), wall->m_d.m_isBottomSolid);
+        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 111), wall->m_d.m_collidable );
 
         if (!wall->m_d.m_collidable)
         {
@@ -95,17 +96,17 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
                 wall->m_d.m_slingshotforce = PropertyDialog::GetFloatTextbox(m_slingshotForceEdit);
                 PropertyDialog::EndUndo(wall);
                 break;
-            case 15:
+            case 110:
                 PropertyDialog::StartUndo(wall);
                 wall->m_d.m_elasticity = PropertyDialog::GetFloatTextbox(m_elasticityEdit);
                 PropertyDialog::EndUndo(wall);
                 break;
-            case 110:
+            case 111:
                 PropertyDialog::StartUndo(wall);
-                wall->m_d.m_collidable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 110));
+                wall->m_d.m_collidable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 111));
                 PropertyDialog::EndUndo(wall);
                 break;
-            case 111:
+            case 427:
                 PropertyDialog::StartUndo(wall);
                 wall->m_d.m_slingshot_threshold = PropertyDialog::GetFloatTextbox(m_slingshotThresholdEdit);
                 PropertyDialog::EndUndo(wall);
@@ -146,9 +147,9 @@ BOOL WallPhysicsProperty::OnInitDialog()
 {
     AttachItem(4, m_hitThresholdEdit);
     AttachItem(14, m_slingshotForceEdit);
-    AttachItem(111, m_slingshotThresholdEdit);
+    AttachItem(427, m_slingshotThresholdEdit);
     AttachItem(IDC_MATERIAL_COMBO4, m_physicsMaterialCombo);
-    AttachItem(15, m_elasticityEdit);
+    AttachItem(110, m_elasticityEdit);
     AttachItem(114, m_frictionEdit);
     AttachItem(115, m_scatterAngleEdit);
     UpdateVisuals();
