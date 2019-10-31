@@ -45,37 +45,59 @@ void FlipperPhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 19:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_strength = PropertyDialog::GetFloatTextbox(m_strengthEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 21:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_elasticity = PropertyDialog::GetFloatTextbox(m_elasticityEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 23:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_return = PropertyDialog::GetFloatTextbox(m_returnStrengthEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 26:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_friction = PropertyDialog::GetFloatTextbox(m_frictionEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 27:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_rampUp = PropertyDialog::GetFloatTextbox(m_coilUpRampEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 28:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_elasticityFalloff = PropertyDialog::GetFloatTextbox(m_elasticityFalloffEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 112:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_scatter = PropertyDialog::GetFloatTextbox(m_scatterAngleEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 113:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_torqueDamping = PropertyDialog::GetFloatTextbox(m_eosTorqueEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 189:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_torqueDampingAngle = PropertyDialog::GetFloatTextbox(m_eosTorqueAngleEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case DISPID_Flipper_Speed:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_mass = PropertyDialog::GetFloatTextbox(m_massEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 1044:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_OverridePhysics = (PhysicsSet)(PropertyDialog::GetComboBoxIndex(m_overwriteSettingsCombo, m_physicSetList) + 1);
+                PropertyDialog::EndUndo(flipper);
                 break;
             default:
                 break;

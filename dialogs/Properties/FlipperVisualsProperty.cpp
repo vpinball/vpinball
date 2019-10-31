@@ -45,61 +45,99 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 1:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_BaseRadius = PropertyDialog::GetFloatTextbox(m_baseRadiusEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 2:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_EndRadius = PropertyDialog::GetFloatTextbox(m_endRadiusEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 3:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_FlipperRadiusMax = PropertyDialog::GetFloatTextbox(m_lengthEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 4:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_StartAngle = PropertyDialog::GetFloatTextbox(m_startAngleEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 7:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_EndAngle = PropertyDialog::GetFloatTextbox(m_endAngleEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 13:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_Center.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 14:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_Center.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 18:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_rubberthickness = PropertyDialog::GetFloatTextbox(m_rubberThicknessEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 20:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_visible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 20));
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 24:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_rubberheight = PropertyDialog::GetFloatTextbox(m_rubberOffsetHeightEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 25:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_rubberwidth = PropertyDialog::GetFloatTextbox(m_rubberWidthEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 107:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_height = PropertyDialog::GetFloatTextbox(m_heightEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 111:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_FlipperRadiusMin = PropertyDialog::GetFloatTextbox(m_maxDifficultLengthEdit);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case 1502:
+                PropertyDialog::StartUndo(flipper);
                 PropertyDialog::GetComboBoxText(m_surfaceCombo, flipper->m_d.m_szSurface);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case IDC_FLIPPER_ENABLED:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_enabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_FLIPPER_ENABLED));
+                PropertyDialog::EndUndo(flipper);
                 break;
             case IDC_FLIPPER_REFLECT_ENABLED_CHECK:
+                PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_FLIPPER_REFLECT_ENABLED_CHECK));
+                PropertyDialog::EndUndo(flipper);
                 break;
             case DISPID_Image:
+                PropertyDialog::StartUndo(flipper);
                 PropertyDialog::GetComboBoxText(m_imageCombo, flipper->m_d.m_szImage);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case IDC_MATERIAL_COMBO:
+                PropertyDialog::StartUndo(flipper);
                 PropertyDialog::GetComboBoxText(m_materialCombo, flipper->m_d.m_szMaterial);
+                PropertyDialog::EndUndo(flipper);
                 break;
             case IDC_MATERIAL_COMBO2:
+                PropertyDialog::StartUndo(flipper);
                 PropertyDialog::GetComboBoxText(m_rubberMaterialCombo, flipper->m_d.m_szRubberMaterial);
+                PropertyDialog::EndUndo(flipper);
                 break;
 
             default:

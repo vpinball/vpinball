@@ -39,6 +39,19 @@ public:
     static void UpdateComboBox(vector<string> contentList, CComboBox &combo, const char *selectName);
     static void UpdateMaterialComboBox(vector<Material *> contentList, CComboBox &combo, const char *selectName);
     static void UpdateSurfaceComboBox(PinTable *ptable, CComboBox &combo, const char *selectName);
+
+    static void StartUndo(ISelect *psel)
+    {
+        psel->GetIEditable()->BeginUndo();
+        psel->GetIEditable()->MarkForUndo();
+    }
+
+    static void EndUndo(ISelect *psel)
+    {
+        psel->GetIEditable()->EndUndo();
+        psel->GetIEditable()->SetDirtyDraw();
+    }
+
     static BOOL GetCheckboxState(HWND checkBoxHwnd)
     {
         size_t selected = ::SendMessage(checkBoxHwnd, BM_GETCHECK, 0, 0);

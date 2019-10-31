@@ -44,43 +44,69 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 9:
+                PropertyDialog::StartUndo(gate);
                 gate->m_d.m_type = (GateType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList)+1);
+                PropertyDialog::EndUndo(gate);
                 break;
             case IDC_MATERIAL_COMBO:
+                PropertyDialog::StartUndo(gate);
                 PropertyDialog::GetComboBoxText(m_materialCombo, gate->m_d.m_szMaterial);
+                PropertyDialog::EndUndo(gate);
                 break;
             case 1502:
+                PropertyDialog::StartUndo(gate);
                 PropertyDialog::GetComboBoxText(m_surfaceCombo, gate->m_d.m_szSurface);
+                PropertyDialog::EndUndo(gate);
                 break;
             case 5:
+                PropertyDialog::StartUndo(gate);
                 gate->m_d.m_vCenter.x = PropertyDialog::GetFloatTextbox(m_xposEdit);
+                PropertyDialog::EndUndo(gate);
                 break;
             case 6:
+                PropertyDialog::StartUndo(gate);
                 gate->m_d.m_vCenter.y = PropertyDialog::GetFloatTextbox(m_yposEdit);
+                PropertyDialog::EndUndo(gate);
                 break;
             case 14:
+                PropertyDialog::StartUndo(gate);
                 gate->m_d.m_visible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 14));
+                PropertyDialog::EndUndo(gate);
                 break;
             case 15:
+                PropertyDialog::StartUndo(gate);
                 gate->m_d.m_showBracket = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 15));
+                PropertyDialog::EndUndo(gate);
                 break;
             case IDC_GATE_REFLECT_ENABLED_CHECK:
+                PropertyDialog::StartUndo(gate);
                 gate->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_GATE_REFLECT_ENABLED_CHECK));
+                PropertyDialog::EndUndo(gate);
                 break;
             case DISPID_Gate_Length:
+                PropertyDialog::StartUndo(gate);
                 gate->m_d.m_length = PropertyDialog::GetFloatTextbox(m_lengthEdit);
+                PropertyDialog::EndUndo(gate);
                 break;
             case DISPID_Gate_Height1:
+                PropertyDialog::StartUndo(gate);
                 gate->m_d.m_height = PropertyDialog::GetFloatTextbox(m_lengthEdit);
+                PropertyDialog::EndUndo(gate);
                 break;
             case DISPID_Gate_Rotation:
+                PropertyDialog::StartUndo(gate);
                 gate->m_d.m_rotation = PropertyDialog::GetFloatTextbox(m_rotationEdit);
+                PropertyDialog::EndUndo(gate);
                 break;
             case 2145:
+                PropertyDialog::StartUndo(gate);
                 gate->m_d.m_angleMax= PropertyDialog::GetFloatTextbox(m_openAngleEdit);
+                PropertyDialog::EndUndo(gate);
                 break;
             case 2144:
+                PropertyDialog::StartUndo(gate);
                 gate->m_d.m_angleMin = PropertyDialog::GetFloatTextbox(m_closeAngleEdit);
+                PropertyDialog::EndUndo(gate);
                 break;
             default:
                 break;

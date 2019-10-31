@@ -9,6 +9,8 @@ DragpointVisualsProperty::DragpointVisualsProperty(int id, VectorProtected<ISele
 
 void DragpointVisualsProperty::UpdateVisuals()
 {
+    DragPoint *prev = NULL;
+
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDragPoint))
@@ -16,8 +18,18 @@ void DragpointVisualsProperty::UpdateVisuals()
         DragPoint *dpoint = (DragPoint *)m_pvsel->ElementAt(i);
 
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 3), dpoint->m_smooth);
-        PropertyDialog::SetFloatTextbox(m_posXEdit, dpoint->m_v.x);
-        PropertyDialog::SetFloatTextbox(m_posYEdit, dpoint->m_v.y);
+        if (prev!=NULL)
+        {
+            if(prev->m_v.x!=dpoint->m_v.x)
+                m_posXEdit.SetWindowText(NULL);
+            if (prev->m_v.y != dpoint->m_v.y)
+                m_posYEdit.SetWindowText(NULL);
+        }
+        else
+        {
+            PropertyDialog::SetFloatTextbox(m_posXEdit, dpoint->m_v.x);
+            PropertyDialog::SetFloatTextbox(m_posYEdit, dpoint->m_v.y);
+        }
         if(m_id==IDD_PROPPOINT_VISUALSWHEIGHT)
         {
             PropertyDialog::SetFloatTextbox(m_realHeightEdit, dpoint->m_calcHeight);
@@ -26,8 +38,13 @@ void DragpointVisualsProperty::UpdateVisuals()
         if (m_id == IDD_PROPPOINT_VISUALSWTEX)
         {
             PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 4), dpoint->m_autoTexture);
-            PropertyDialog::SetFloatTextbox(m_textureCoordEdit, dpoint->m_texturecoord);
+            if (prev != NULL && prev->m_texturecoord != dpoint->m_texturecoord)
+                m_textureCoordEdit.SetWindowText(NULL);
+            else
+                PropertyDialog::SetFloatTextbox(m_textureCoordEdit, dpoint->m_texturecoord);
+
         }
+        prev = dpoint;
     }
 }
 
@@ -42,19 +59,34 @@ void DragpointVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 1:
+                PropertyDialog::StartUndo(dpoint);
                 dpoint->m_v.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
+                PropertyDialog::EndUndo(dpoint);
                 break;
             case 2:
+                PropertyDialog::StartUndo(dpoint);
                 dpoint->m_v.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
+                PropertyDialog::EndUndo(dpoint);
                 break;
             case 4:
+                PropertyDialog::StartUndo(dpoint);
                 dpoint->m_autoTexture = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 4));
+                PropertyDialog::EndUndo(dpoint);
+                break;
+            case 5:
+                PropertyDialog::StartUndo(dpoint);
+                dpoint->m_texturecoord = PropertyDialog::GetFloatTextbox(m_textureCoordEdit);
+                PropertyDialog::EndUndo(dpoint);
                 break;
             case 6:
+                PropertyDialog::StartUndo(dpoint);
                 dpoint->m_v.z = PropertyDialog::GetFloatTextbox(m_heightOffsetEdit);
+                PropertyDialog::EndUndo(dpoint);
                 break;
             case IDC_CALC_HEIGHT_EDIT:
+                PropertyDialog::StartUndo(dpoint);
                 dpoint->m_calcHeight = PropertyDialog::GetFloatTextbox(m_realHeightEdit);
+                PropertyDialog::EndUndo(dpoint);
                 break;
             default:
                 break;

@@ -38,49 +38,79 @@ void WallVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 9:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_heighttop = PropertyDialog::GetFloatTextbox(m_topHeightEdit);
+                PropertyDialog::EndUndo(wall);
                 break;
             case 8:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_heightbottom = PropertyDialog::GetFloatTextbox(m_bottomHeightEdit);
+                PropertyDialog::EndUndo(wall);
                 break;
             case DISPID_Image:
+                PropertyDialog::StartUndo(wall);
                 PropertyDialog::GetComboBoxText(m_topImageCombo, wall->m_d.m_szImage);
+                PropertyDialog::EndUndo(wall);
                 break;
             case DISPID_Image2:
+                PropertyDialog::StartUndo(wall);
                 PropertyDialog::GetComboBoxText(m_sideImageCombo, wall->m_d.m_szSideImage);
+                PropertyDialog::EndUndo(wall);
                 break;
             case IDC_MATERIAL_COMBO:
+                PropertyDialog::StartUndo(wall);
                 PropertyDialog::GetComboBoxText(m_topMaterialCombo, wall->m_d.m_szTopMaterial);
+                PropertyDialog::EndUndo(wall);
                 break;
             case IDC_MATERIAL_COMBO2:
+                PropertyDialog::StartUndo(wall);
                 PropertyDialog::GetComboBoxText(m_sideMaterialCombo, wall->m_d.m_szSideMaterial);
+                PropertyDialog::EndUndo(wall);
                 break;
             case IDC_MATERIAL_COMBO3:
+                PropertyDialog::StartUndo(wall);
                 PropertyDialog::GetComboBoxText(m_slingshotMaterialCombo, wall->m_d.m_szSlingShotMaterial);
+                PropertyDialog::EndUndo(wall);
                 break;
             case IDC_BLEND_DISABLE_LIGHTING:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_disableLightingTop = PropertyDialog::GetFloatTextbox(m_disableLightingEdit);
+                PropertyDialog::EndUndo(wall);
                 break;
             case IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_disableLightingBelow = PropertyDialog::GetFloatTextbox(m_disableLightFromBelowEdit);
+                PropertyDialog::EndUndo(wall);
                 break;
             case 16:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_topBottomVisible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 16));
+                PropertyDialog::EndUndo(wall);
                 break;
             case 13:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_displayTexture = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 13));
+                PropertyDialog::EndUndo(wall);
                 break;
             case 109:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_sideVisible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 109));
+                PropertyDialog::EndUndo(wall);
                 break;
             case 112:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_slingshotAnimation = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 112));
+                PropertyDialog::EndUndo(wall);
                 break;
             case 113:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_flipbook = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 113));
+                PropertyDialog::EndUndo(wall);
                 break;
             case IDC_WALL_REFLECT_ENABLED_CHECK:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_WALL_REFLECT_ENABLED_CHECK));
+                PropertyDialog::EndUndo(wall);
                 break;
             default:
                 break;

@@ -76,33 +76,53 @@ void RampPhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 10:
+                PropertyDialog::StartUndo(ramp);
                 ramp->m_d.m_leftwallheight = PropertyDialog::GetFloatTextbox(m_leftWallEdit);
+                PropertyDialog::EndUndo(ramp);
                 break;
             case 11:
+                PropertyDialog::StartUndo(ramp);
                 ramp->m_d.m_rightwallheight = PropertyDialog::GetFloatTextbox(m_rightWallEdit);
+                PropertyDialog::EndUndo(ramp);
                 break;
             case 33:
+                PropertyDialog::StartUndo(ramp);
                 ramp->m_d.m_threshold = PropertyDialog::GetFloatTextbox(m_hitThresholdEdit);
+                PropertyDialog::EndUndo(ramp);
                 break;
             case 34:
+                PropertyDialog::StartUndo(ramp);
                 ramp->m_d.m_hitEvent = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 34));
+                PropertyDialog::EndUndo(ramp);
             case 110:
+                PropertyDialog::StartUndo(ramp);
                 ramp->m_d.m_elasticity = PropertyDialog::GetFloatTextbox(m_elasticityEdit);
+                PropertyDialog::EndUndo(ramp);
                 break;
             case 111:
+                PropertyDialog::StartUndo(ramp);
                 ramp->m_d.m_collidable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 111));
+                PropertyDialog::EndUndo(ramp);
                 break;
             case 114:
+                PropertyDialog::StartUndo(ramp);
                 ramp->m_d.m_friction = PropertyDialog::GetFloatTextbox(m_frictionEdit);
+                PropertyDialog::EndUndo(ramp);
                 break;
             case 115:
+                PropertyDialog::StartUndo(ramp);
                 ramp->m_d.m_scatter = PropertyDialog::GetFloatTextbox(m_scatterAngleEdit);
+                PropertyDialog::EndUndo(ramp);
                 break;
             case IDC_MATERIAL_COMBO4:
+                PropertyDialog::StartUndo(ramp);
                 PropertyDialog::GetComboBoxText(m_physicsMaterialCombo, ramp->m_d.m_szPhysicsMaterial);
+                PropertyDialog::EndUndo(ramp);
                 break;
             case IDC_OVERWRITE_MATERIAL_SETTINGS:
+                PropertyDialog::StartUndo(ramp);
                 ramp->m_d.m_overwritePhysics = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS));
+                PropertyDialog::EndUndo(ramp);
                 break;
             default:
                 break;
