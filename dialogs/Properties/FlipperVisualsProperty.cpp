@@ -2,7 +2,7 @@
 #include "Properties/FlipperVisualsProperty.h"
 #include <WindowsX.h>
 
-FlipperVisualsProperty::FlipperVisualsProperty(VectorProtected<ISelect> *pvsel) : BaseProperty(IDD_PROPFLIPPER_VISUALS, pvsel)
+FlipperVisualsProperty::FlipperVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_VISUALS, pvsel)
 {
 }
 

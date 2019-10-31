@@ -1,7 +1,7 @@
 #ifndef H_RAMP_PHYSICS_PROPERTY
 #define H_RAMP_PHYSICS_PROPERTY
 
-class RampPhysicsProperty: public BaseProperty
+class RampPhysicsProperty: public BasePropertyDialog
 {
 public:
     RampPhysicsProperty(VectorProtected<ISelect> *pvsel);

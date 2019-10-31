@@ -2,7 +2,7 @@
 #include "Properties/GatePhysicsProperty.h"
 #include <WindowsX.h>
 
-GatePhysicsProperty::GatePhysicsProperty(VectorProtected<ISelect> *pvsel) : BaseProperty(IDD_PROPGATE_PHYSICS, pvsel)
+GatePhysicsProperty::GatePhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPGATE_PHYSICS, pvsel)
 {
 }
 

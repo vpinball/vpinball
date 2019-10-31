@@ -1,7 +1,7 @@
 #ifndef H_FLIPPER_VISUALS_PROPERTY
 #define H_FLIPPER_VISUALS_PROPERTY
 
-class FlipperVisualsProperty: public BaseProperty
+class FlipperVisualsProperty: public BasePropertyDialog
 {
 public:
     FlipperVisualsProperty(VectorProtected<ISelect> *pvsel);

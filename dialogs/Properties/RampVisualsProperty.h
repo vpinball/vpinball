@@ -1,7 +1,7 @@
 #ifndef H_RAMP_VISUALS_PROPERTY
 #define H_RAMP_VISUALS_PROPERTY
 
-class RampVisualsProperty: public BaseProperty
+class RampVisualsProperty: public BasePropertyDialog
 {
 
 public:

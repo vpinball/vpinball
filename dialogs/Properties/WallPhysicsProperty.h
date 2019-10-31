@@ -1,7 +1,7 @@
 #ifndef H_WALL_PHYSICS_PROPERTY
 #define H_WALL_PHYSICS_PROPERTY
 
-class WallPhysicsProperty: public BaseProperty
+class WallPhysicsProperty: public BasePropertyDialog
 {
 public:
     WallPhysicsProperty(VectorProtected<ISelect> *pvsel);

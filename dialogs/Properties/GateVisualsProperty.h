@@ -1,7 +1,7 @@
 #ifndef H_GATE_VISUALS_PROPERTY
 #define H_GATE_VISUALS_PROPERTY
 
-class GateVisualsProperty: public BaseProperty
+class GateVisualsProperty: public BasePropertyDialog
 {
 public:
     GateVisualsProperty(VectorProtected<ISelect> *pvsel);

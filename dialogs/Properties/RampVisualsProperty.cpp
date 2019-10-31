@@ -2,7 +2,7 @@
 #include "Properties/RampVisualsProperty.h"
 #include <WindowsX.h>
 
-RampVisualsProperty::RampVisualsProperty(VectorProtected<ISelect> *pvsel) : BaseProperty(IDD_PROPRAMP_VISUALS, pvsel)
+RampVisualsProperty::RampVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_VISUALS, pvsel)
 {
     m_typeList.push_back("RampTypeFlat");
     m_typeList.push_back("RampType4Wire");

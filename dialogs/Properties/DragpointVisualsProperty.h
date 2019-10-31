@@ -1,7 +1,7 @@
 #ifndef H_DRAGPOINT_VISUALS_PROPERTY
 #define H_DRAGPOINT_VISUALS_PROPERTY
 
-class DragpointVisualsProperty: public BaseProperty
+class DragpointVisualsProperty: public BasePropertyDialog
 {
 public:
     DragpointVisualsProperty(int id, VectorProtected<ISelect> *pvsel);

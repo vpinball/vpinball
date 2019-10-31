@@ -2,7 +2,7 @@
 #include "Properties/GateVisualsProperty.h"
 #include <WindowsX.h>
 
-GateVisualsProperty::GateVisualsProperty(VectorProtected<ISelect> *pvsel) : BaseProperty(IDD_PROPGATE_VISUALS, pvsel)
+GateVisualsProperty::GateVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPGATE_VISUALS, pvsel)
 {
     m_typeList.push_back("GateWireW");
     m_typeList.push_back("GateWireRectangle");

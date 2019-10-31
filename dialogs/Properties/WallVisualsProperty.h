@@ -1,7 +1,7 @@
 #ifndef H_WALL_VISUALS_PROPERTY
 #define H_WALL_VISUALS_PROPERTY
 
-class WallVisualsProperty: public BaseProperty
+class WallVisualsProperty: public BasePropertyDialog
 {
 public:
     WallVisualsProperty(VectorProtected<ISelect> *pvsel);
