@@ -76,40 +76,64 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 4:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_threshold = PropertyDialog::GetFloatTextbox(m_hitThresholdEdit);
+                PropertyDialog::EndUndo(wall);
                 break;
             case 3:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_hitEvent = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 3));
+                PropertyDialog::EndUndo(wall);
                 break;
             case 11:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_droppable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 11));
+                PropertyDialog::EndUndo(wall);
                 break;
             case 14:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_slingshotforce = PropertyDialog::GetFloatTextbox(m_slingshotForceEdit);
+                PropertyDialog::EndUndo(wall);
                 break;
             case 15:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_elasticity = PropertyDialog::GetFloatTextbox(m_elasticityEdit);
+                PropertyDialog::EndUndo(wall);
                 break;
             case 110:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_collidable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 110));
+                PropertyDialog::EndUndo(wall);
                 break;
             case 111:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_slingshot_threshold = PropertyDialog::GetFloatTextbox(m_slingshotThresholdEdit);
+                PropertyDialog::EndUndo(wall);
                 break;
             case 114:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_friction = PropertyDialog::GetFloatTextbox(m_frictionEdit);
+                PropertyDialog::EndUndo(wall);
                 break;
             case 115:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_scatter = PropertyDialog::GetFloatTextbox(m_scatterAngleEdit);
+                PropertyDialog::EndUndo(wall);
                 break;
             case 116:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_isBottomSolid = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 116));
+                PropertyDialog::EndUndo(wall);
                 break;
             case IDC_OVERWRITE_MATERIAL_SETTINGS:
+                PropertyDialog::StartUndo(wall);
                 wall->m_d.m_overwritePhysics = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS));
+                PropertyDialog::EndUndo(wall);
                 break;
             case IDC_MATERIAL_COMBO:
+                PropertyDialog::StartUndo(wall);
                 PropertyDialog::GetComboBoxText(m_physicsMaterialCombo, wall->m_d.m_szPhysicsMaterial);
+                PropertyDialog::EndUndo(wall);
                 break;
             default:
                 break;
