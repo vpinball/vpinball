@@ -18,7 +18,7 @@ void GatePhysicsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_frictionEdit, gate->m_d.m_friction);
         PropertyDialog::SetFloatTextbox(m_dampingEdit, gate->m_d.m_damping);
         PropertyDialog::SetFloatTextbox(m_gravityFactorEdit, gate->m_d.m_gravityfactor);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 2146), gate->m_d.m_collidable);
+        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 111), gate->m_d.m_collidable);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_TWO_WAY_CHECK), gate->m_d.m_twoWay);
     }
 }
@@ -52,9 +52,9 @@ void GatePhysicsProperty::UpdateProperties(const int dispid)
                 gate->m_d.m_gravityfactor = PropertyDialog::GetFloatTextbox(m_gravityFactorEdit);
                 PropertyDialog::EndUndo(gate);
                 break;
-            case 2146:
+            case 111:
                 PropertyDialog::StartUndo(gate);
-                gate->m_d.m_collidable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 2146));
+                gate->m_d.m_collidable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 111));
                 PropertyDialog::EndUndo(gate);
                 break;
             case IDC_TWO_WAY_CHECK:
@@ -72,7 +72,7 @@ void GatePhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL GatePhysicsProperty::OnInitDialog()
 {
-    AttachItem(11, m_elasticityEdit);
+    AttachItem(110, m_elasticityEdit);
     AttachItem(12, m_frictionEdit);
     AttachItem(13, m_dampingEdit);
     AttachItem(17, m_gravityFactorEdit);
