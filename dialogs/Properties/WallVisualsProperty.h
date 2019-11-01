@@ -25,6 +25,7 @@ private:
     CEdit     m_topHeightEdit;
     CEdit     m_bottomHeightEdit;
 
+
 };
 
 #endif 

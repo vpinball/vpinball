@@ -109,7 +109,7 @@ void RampPhysicsProperty::UpdateProperties(const int dispid)
                 ramp->m_d.m_friction = PropertyDialog::GetFloatTextbox(m_frictionEdit);
                 PropertyDialog::EndUndo(ramp);
                 break;
-            case 115:
+            case IDC_SCATTER_ANGLE_EDIT:
                 PropertyDialog::StartUndo(ramp);
                 ramp->m_d.m_scatter = PropertyDialog::GetFloatTextbox(m_scatterAngleEdit);
                 PropertyDialog::EndUndo(ramp);
@@ -139,7 +139,7 @@ BOOL RampPhysicsProperty::OnInitDialog()
     AttachItem(IDC_MATERIAL_COMBO4, m_physicsMaterialCombo);
     AttachItem(IDC_ELASTICITY_EDIT, m_elasticityEdit);
     AttachItem(IDC_FRICTION_EDIT, m_frictionEdit);
-    AttachItem(115, m_scatterAngleEdit);
+    AttachItem(IDC_SCATTER_ANGLE_EDIT, m_scatterAngleEdit);
     UpdateVisuals();
     return TRUE;
 }

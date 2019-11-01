@@ -1291,8 +1291,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(111), helpstring("property Collidable")] HRESULT Collidable([in] VARIANT_BOOL newVal);
                 [propget, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([in] VARIANT_BOOL newVal);
-                [propget, id(112), helpstring("property Scatter")] HRESULT Scatter([out, retval] float *pVal);
-                [propput, id(112), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
+                [propget, id(115), helpstring("property Scatter")] HRESULT Scatter([out, retval] float *pVal);
+                [propput, id(115), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
                 [propget, id(822), helpstring("property EnableSkirtAnimation")] HRESULT EnableSkirtAnimation([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(822), helpstring("property EnableSkirtAnimation")] HRESULT EnableSkirtAnimation([in] VARIANT_BOOL newVal);
                 [id(999), helpstring("method PlayHit")] HRESULT PlayHit();
@@ -1503,8 +1503,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
                 [propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
                 [id(312), helpstring("method BallCntOver")] HRESULT BallCntOver([out, retval] int *pVal);
-                [propget, id(313), helpstring("property Scatter")] HRESULT Scatter([out, retval] float *pVal);
-                [propput, id(313), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
+                [propget, id(115), helpstring("property Scatter")] HRESULT Scatter([out, retval] float *pVal);
+                [propput, id(115), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
                 [propget, id(314), helpstring("property HitAccuracy")] HRESULT HitAccuracy([out, retval] float *pVal);
                 [propput, id(314), helpstring("property HitAccuracy")] HRESULT HitAccuracy([in] float newVal);
                 [propget, id(315), helpstring("property HitHeight")] HRESULT HitHeight([out, retval] float *pVal);
