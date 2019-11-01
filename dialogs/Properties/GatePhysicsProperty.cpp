@@ -18,7 +18,7 @@ void GatePhysicsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_frictionEdit, gate->m_d.m_friction);
         PropertyDialog::SetFloatTextbox(m_dampingEdit, gate->m_d.m_damping);
         PropertyDialog::SetFloatTextbox(m_gravityFactorEdit, gate->m_d.m_gravityfactor);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 111), gate->m_d.m_collidable);
+        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK), gate->m_d.m_collidable);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_TWO_WAY_CHECK), gate->m_d.m_twoWay);
     }
 }
@@ -32,12 +32,12 @@ void GatePhysicsProperty::UpdateProperties(const int dispid)
         Gate *gate = (Gate *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
-            case 11:
+            case IDC_ELASTICITY_EDIT:
                 PropertyDialog::StartUndo(gate);
                 gate->m_d.m_elasticity = PropertyDialog::GetFloatTextbox(m_elasticityEdit);
                 PropertyDialog::EndUndo(gate);
                 break;
-            case 12:
+            case IDC_FRICTION_EDIT:
                 PropertyDialog::StartUndo(gate);
                 gate->m_d.m_friction = PropertyDialog::GetFloatTextbox(m_frictionEdit);
                 PropertyDialog::EndUndo(gate);
@@ -52,9 +52,9 @@ void GatePhysicsProperty::UpdateProperties(const int dispid)
                 gate->m_d.m_gravityfactor = PropertyDialog::GetFloatTextbox(m_gravityFactorEdit);
                 PropertyDialog::EndUndo(gate);
                 break;
-            case 111:
+            case IDC_COLLIDABLE_CHECK:
                 PropertyDialog::StartUndo(gate);
-                gate->m_d.m_collidable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 111));
+                gate->m_d.m_collidable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(gate);
                 break;
             case IDC_TWO_WAY_CHECK:
@@ -72,8 +72,8 @@ void GatePhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL GatePhysicsProperty::OnInitDialog()
 {
-    AttachItem(110, m_elasticityEdit);
-    AttachItem(12, m_frictionEdit);
+    AttachItem(IDC_ELASTICITY_EDIT, m_elasticityEdit);
+    AttachItem(IDC_FRICTION_EDIT, m_frictionEdit);
     AttachItem(13, m_dampingEdit);
     AttachItem(17, m_gravityFactorEdit);
     UpdateVisuals();

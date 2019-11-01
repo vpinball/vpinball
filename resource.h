@@ -51,7 +51,10 @@
 #define DISPID_HEIGHTOFFSET             24
 #define IDC_ORIENTATION_EDIT            25
 #define IDC_RINGSPEED_EDIT              26
+#define IDC_FRICTION_EDIT               114
 #define IDC_RINGDROPOFFSET_EDIT         27
+#define IDC_HIT_THRESHOLD_EDIT          33
+#define IDC_HAS_HITEVENT_CHECK          34
 #define IDC_DISPLAY_TEXTURE_CHECKBOX    38
 #define IDS_PROJNAME                    100
 #define IDR_VPINBALL                    100
@@ -71,12 +74,14 @@
 #define IDC_SELECT                      109
 #define DISPID_Table_GridSize           109
 #define IDS_ASSIGNTO                    109
+#define IDC_ELASTICITY_EDIT             110
 #define ID_INSERT_WALL                  110
 #define IDC_LIGHT                       110
 #define IDS_LAYER2                      110
 #define ID_INSERT_FLIPPER               111
 #define IDS_LAYER3                      111
 #define IDS                             111
+#define IDC_COLLIDABLE_CHECK            111
 #define IDS_TIMER_DESC                  112
 #define IDR_TIMER                       113
 #define IDS_LAYER4                      113
@@ -658,20 +663,10 @@
 #define IDC_DISABLE_LIGHTING            431
 #define IDC_PROP_FLOAT_CHECK            431
 #define EDITOR_CHECK                    431
-#define IDC_SHOW_IN_EDITOR_CHECK        479
 #define IDC_CONVERT_COORD_CHECK         431
 #define IDC_LEGACYMODE                  431
 #define IDC_REFLECT_ELEMENTS_CHECK      431
-#define IDC_RAMP_REFLECT_ENABLED_CHECK  431
-#define IDC_BUMPER_REFLECT_ENABLED_CHECK 431
-#define IDC_SPINNER_REFLECT_ENABLED_CHECK 431
-#define IDC_FLIPPER_REFLECT_ENABLED_CHECK 431
-#define IDC_GATE_REFLECT_ENABLED_CHECK  431
-#define IDC_PLUNGER_REFLECT_ENABLED_CHECK 431
-#define IDC_TRIGGER_REFLECT_ENABLED_CHECK 431
-#define IDC_PRIM_REFLECT_ENABLE_CHECK   431
-#define IDC_RUBBER_REFLECT_ENABLED_CHECK 431
-#define IDC_WALL_REFLECT_ENABLED_CHECK  431
+#define IDC_REFLECT_ENABLED_CHECK       431
 #define IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE 431
 #define IDC_USE_NVIDIA_API_CHECK        431
 #define IDC_DBG_MATERIAL_OPACITY_ACTIVE_CHECK 431
@@ -732,6 +727,7 @@
 #define IDC_SCALE_FX_DMD                476
 #define IDC_REL_POSITION_RADIO          477
 #define IDC_ABS_POSITION_RADIO          478
+#define IDC_SHOW_IN_EDITOR_CHECK        479
 #define IDC_CHECK3                      479
 #define IDC_CENTER_MESH                 479
 #define IDC_CVP_CHKBOX_HELPWITHDWELL    479
@@ -1020,6 +1016,7 @@
 #define IDC_STATIC_ELEMENTS             825
 #define IDC_STATIC_LAYERS               826
 #define IDC_PROP_TAB                    827
+#define IDC_REFLECT_ENABLE_CHECK        828
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1181,9 +1178,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        654
+#define _APS_NEXT_RESOURCE_VALUE        663
 #define _APS_NEXT_COMMAND_VALUE         4022
-#define _APS_NEXT_CONTROL_VALUE         828
+#define _APS_NEXT_CONTROL_VALUE         829
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

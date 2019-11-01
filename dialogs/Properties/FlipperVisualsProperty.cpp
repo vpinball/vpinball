@@ -31,7 +31,7 @@ void FlipperVisualsProperty::UpdateVisuals()
         PropertyDialog::UpdateSurfaceComboBox(flipper->GetPTable(), m_surfaceCombo, flipper->m_d.m_szSurface);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 20), flipper->m_d.m_visible);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_FLIPPER_ENABLED), flipper->m_d.m_enabled);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_FLIPPER_REFLECT_ENABLED_CHECK), flipper->m_d.m_reflectionEnabled);
+        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK), flipper->m_d.m_reflectionEnabled);
     }
 }
 
@@ -86,7 +86,7 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case 20:
                 PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_visible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 20));
+                flipper->m_d.m_visible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(flipper);
                 break;
             case 24:
@@ -116,12 +116,12 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_FLIPPER_ENABLED:
                 PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_enabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_FLIPPER_ENABLED));
+                flipper->m_d.m_enabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(flipper);
                 break;
-            case IDC_FLIPPER_REFLECT_ENABLED_CHECK:
+            case IDC_REFLECT_ENABLED_CHECK:
                 PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_FLIPPER_REFLECT_ENABLED_CHECK));
+                flipper->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(flipper);
                 break;
             case DISPID_Image:

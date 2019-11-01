@@ -38,7 +38,7 @@ void RampVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_distanceYEdit, ramp->m_d.m_wireDistanceY);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 9), ramp->m_d.m_imageWalls);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 112), ramp->m_d.m_visible);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_RAMP_REFLECT_ENABLED_CHECK), ramp->m_d.m_reflectionEnabled);
+        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK), ramp->m_d.m_reflectionEnabled);
     }
 }
 
@@ -83,7 +83,7 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case 9:
                 PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_imageWalls = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 9));
+                ramp->m_d.m_imageWalls = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(ramp);
                 break;
             case 108:
@@ -98,12 +98,12 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case 112:
                 PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_visible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 112));
+                ramp->m_d.m_visible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(ramp);
                 break;
-            case IDC_RAMP_REFLECT_ENABLED_CHECK:
+            case IDC_REFLECT_ENABLED_CHECK:
                 PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_RAMP_REFLECT_ENABLED_CHECK));
+                ramp->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(ramp);
                 break;
             case IDC_DEPTH_BIAS:

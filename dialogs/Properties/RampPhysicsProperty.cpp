@@ -22,13 +22,13 @@ void RampPhysicsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_scatterAngleEdit, ramp->m_d.m_scatter);
         PropertyDialog::UpdateMaterialComboBox(ramp->GetPTable()->GetMaterialList(), m_physicsMaterialCombo, ramp->m_d.m_szPhysicsMaterial);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS), ramp->m_d.m_overwritePhysics);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 34), ramp->m_d.m_hitEvent);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 111), ramp->m_d.m_collidable);
+        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK), ramp->m_d.m_hitEvent);
+        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK), ramp->m_d.m_collidable);
 
         if (!ramp->m_d.m_collidable)
         {
             ::EnableWindow(::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS), FALSE);
-            ::EnableWindow(::GetDlgItem(GetHwnd(), 34), FALSE);
+            ::EnableWindow(::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK), FALSE);
             m_hitThresholdEdit.EnableWindow(FALSE);
             m_physicsMaterialCombo.EnableWindow(FALSE);
             m_elasticityEdit.EnableWindow(FALSE);
@@ -40,7 +40,7 @@ void RampPhysicsProperty::UpdateVisuals()
         else
         {
             ::EnableWindow(::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS), TRUE);
-            ::EnableWindow(::GetDlgItem(GetHwnd(), 34), TRUE);
+            ::EnableWindow(::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK), TRUE);
             m_leftWallEdit.EnableWindow(TRUE);
             m_rightWallEdit.EnableWindow(TRUE);
             if (ramp->m_d.m_hitEvent)
@@ -85,26 +85,26 @@ void RampPhysicsProperty::UpdateProperties(const int dispid)
                 ramp->m_d.m_rightwallheight = PropertyDialog::GetFloatTextbox(m_rightWallEdit);
                 PropertyDialog::EndUndo(ramp);
                 break;
-            case 33:
+            case IDC_HIT_THRESHOLD_EDIT:
                 PropertyDialog::StartUndo(ramp);
                 ramp->m_d.m_threshold = PropertyDialog::GetFloatTextbox(m_hitThresholdEdit);
                 PropertyDialog::EndUndo(ramp);
                 break;
-            case 34:
+            case IDC_HAS_HITEVENT_CHECK:
                 PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_hitEvent = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 34));
+                ramp->m_d.m_hitEvent = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(ramp);
-            case 110:
+            case IDC_ELASTICITY_EDIT:
                 PropertyDialog::StartUndo(ramp);
                 ramp->m_d.m_elasticity = PropertyDialog::GetFloatTextbox(m_elasticityEdit);
                 PropertyDialog::EndUndo(ramp);
                 break;
-            case 111:
+            case IDC_COLLIDABLE_CHECK:
                 PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_collidable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 111));
+                ramp->m_d.m_collidable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(ramp);
                 break;
-            case 114:
+            case IDC_FRICTION_EDIT:
                 PropertyDialog::StartUndo(ramp);
                 ramp->m_d.m_friction = PropertyDialog::GetFloatTextbox(m_frictionEdit);
                 PropertyDialog::EndUndo(ramp);
@@ -133,12 +133,12 @@ void RampPhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL RampPhysicsProperty::OnInitDialog()
 {
-    AttachItem(33, m_hitThresholdEdit);
+    AttachItem(IDC_HIT_THRESHOLD_EDIT, m_hitThresholdEdit);
     AttachItem(10, m_leftWallEdit);
     AttachItem(11, m_rightWallEdit);
     AttachItem(IDC_MATERIAL_COMBO4, m_physicsMaterialCombo);
-    AttachItem(110, m_elasticityEdit);
-    AttachItem(114, m_frictionEdit);
+    AttachItem(IDC_ELASTICITY_EDIT, m_elasticityEdit);
+    AttachItem(IDC_FRICTION_EDIT, m_frictionEdit);
     AttachItem(115, m_scatterAngleEdit);
     UpdateVisuals();
     return TRUE;
