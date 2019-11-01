@@ -18,7 +18,7 @@ public:
       // Find log base 2 of size of vector
       // Set the search start element to the middle one
       // Note that this value will be one based
-      const unsigned int s = (unsigned int)size();
+      const unsigned int s = (unsigned int)vector<T>::size();
       unsigned int i = 1u << 31;
       while ((!(i & s)) && (i > 1))
       {
@@ -36,7 +36,7 @@ public:
       {
          //assert(currentnode >= 0);
 
-         const int strcmp = (currentnode >= (int)size()) ? 1 : pT->SortAgainst(data()[currentnode]);
+         const int strcmp = (currentnode >= (int)vector<T>::size()) ? 1 : pT->SortAgainst(vector<T>::data()[currentnode]);
 
          if (jumpnode == 0)
          {
@@ -58,7 +58,7 @@ public:
          jumpnode >>= 1;
       }
 
-      insert(begin() + currentnode, pT);
+      vector<T>::insert(vector<T>::begin() + currentnode, pT);
       RecomputeSearchStart();
    }
 
@@ -71,13 +71,13 @@ public:
       {
          //assert(currentnode >= 0);
          int strcmp;
-         if (currentnode >= (int)size())
+         if (currentnode >= (int)vector<T>::size())
          {
             strcmp = -1;
          }
          else
          {
-            strcmp = data()[currentnode]->SortAgainstValue(pvoid);
+            strcmp = vector<T>::data()[currentnode]->SortAgainstValue(pvoid);
 
             if (strcmp == 0)
             {
@@ -108,7 +108,7 @@ public:
       const int i = GetSortedIndex(pvoid);
       if (i != -1)
       {
-         return data()[i];
+         return vector<T>::data()[i];
       }
 
       return NULL;
@@ -116,7 +116,7 @@ public:
 
    inline void RemoveElementAt(const int iItem)
    {
-      erase(begin()+iItem);
+      vector<T>::erase(vector<T>::begin()+iItem);
       RecomputeSearchStart();
    }
 };

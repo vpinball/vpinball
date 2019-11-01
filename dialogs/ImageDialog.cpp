@@ -46,7 +46,6 @@ BOOL ImageDialog::OnInitDialog()
 
 INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   HWND hwndDlg = GetHwnd();
    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
    m_resizer.HandleMessage(uMsg, wParam, lParam);

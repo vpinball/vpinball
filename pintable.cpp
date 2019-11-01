@@ -16,7 +16,7 @@ using namespace rapidxml;
 #define HASHLENGTH 16
 
 const unsigned char TABLE_KEY[] = "Visual Pinball";
-const unsigned char PARAPHRASE_KEY[] = { 0xB4, 0x0B, 0xBE, 0x37, 0xC3, 0x0C, 0x8E, 0xA1, 0x5A, 0x05, 0xDF, 0x1B, 0x2D, 0x02, 0xEF, 0x8D };
+//const unsigned char PARAPHRASE_KEY[] = { 0xB4, 0x0B, 0xBE, 0x37, 0xC3, 0x0C, 0x8E, 0xA1, 0x5A, 0x05, 0xDF, 0x1B, 0x2D, 0x02, 0xEF, 0x8D };
 
 INT_PTR CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -1012,12 +1012,12 @@ void upscale(DWORD * const data, const unsigned int xres, const unsigned int yre
 
             const bool4 hori = bool4(low.x < max(D.w, A.w) && clr.x, low.x < max(E.w, B.w) && clr.y, low.z < max(E.w, H.w) && clr.z, low.z < max(D.w, G.w) && clr.w); // horizontal edges
             const bool4 vert = bool4(low.w < max(E.y, D.y) && clr.x, low.y < max(E.y, F.y) && clr.y, low.y < max(H.y, I.y) && clr.z, low.w < max(H.y, G.y) && clr.w); // vertical edges
-            const bool4 or = bool4(A.w < D.y, B.w <= F.y, H.w < I.y, G.w <= G.y);							                              // orientation
+            const bool4 ori = bool4(A.w < D.y, B.w <= F.y, H.w < I.y, G.w <= G.y);							                              // orientation
 
             g_res[o] = res;
             g_hori[o] = hori;
             g_vert[o] = vert;
-            g_or[o] = or;
+            g_or[o] = ori;
         }
     }
 
@@ -3496,12 +3496,6 @@ HRESULT PinTable::LoadGameFromFilename(char *szFileName)
 
 HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 {
-   IStorage *pstgData, *pstgInfo;
-   IStream *pstmGame, *pstmItem, *pstmVersion;
-
-   int ctotalitems;
-   int cloadeditems;
-
    RECT rc;
    ::SendMessage(g_pvp->m_hwndStatusBar, SB_GETRECT, 2, (size_t)&rc);
 
@@ -3555,11 +3549,14 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
    int loadfileversion = CURRENT_FILE_FORMAT_VERSION;
 
    //load our stuff first
+   IStorage* pstgData;
    HRESULT hr;
    if (SUCCEEDED(hr = pstgRoot->OpenStorage(L"GameStg", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgData)))
    {
+      IStream *pstmGame;
       if (SUCCEEDED(hr = pstgData->OpenStream(L"GameData", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmGame)))
       {
+         IStream* pstmVersion;
          if (SUCCEEDED(hr = pstgData->OpenStream(L"Version", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmVersion)))
          {
             ULONG read;
@@ -3585,9 +3582,11 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             CryptDeriveKey(hcp, CALG_RC2, hchkey, (loadfileversion == 600) ? CRYPT_EXPORTABLE : (CRYPT_EXPORTABLE | 0x00280000), &hkey);
          }
 
+         IStorage* pstgInfo;
          if (SUCCEEDED(hr = pstgRoot->OpenStorage(L"TableInfo", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgInfo)))
          {
             LoadInfo(pstgInfo, hch, loadfileversion);
+            IStream* pstmItem;
             if (SUCCEEDED(hr = pstgData->OpenStream(L"CustomInfoTags", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
             {
                hr = LoadCustomInfo(pstgInfo, pstmItem, hch, loadfileversion);
@@ -3605,8 +3604,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
          if (SUCCEEDED(hr = LoadData(pstmGame, csubobj, csounds, ctextures, cfonts, ccollection, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL)))
          {
-            ctotalitems = csubobj + csounds + ctextures + cfonts;
-            cloadeditems = 0;
+            const int ctotalitems = csubobj + csounds + ctextures + cfonts;
+            int cloadeditems = 0;
             ::SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
 
             for (int i = 0; i < csubobj; i++)
@@ -3618,6 +3617,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
+               IStream* pstmItem;
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
                   ULONG read;
@@ -3651,6 +3651,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
+               IStream* pstmItem;
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
                   LoadSoundFromStream(pstmItem, loadfileversion);
@@ -3670,6 +3671,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
+               IStream* pstmItem;
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
                   hr = LoadImageFromStream(pstmItem, loadfileversion);
@@ -3691,6 +3693,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
+               IStream* pstmItem;
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
                   PinFont * const ppf = new PinFont();
@@ -3713,6 +3716,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
+               IStream* pstmItem;
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
                   CComObject<Collection> *pcol;
@@ -3740,6 +3744,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
          if (loadfileversion > 40)
          {
+            IStream* pstmVersion;
             if (SUCCEEDED(hr = pstgData->OpenStream(L"MAC", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmVersion)))
             {
                BYTE hashvalOld[256];
@@ -3759,6 +3764,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                foo = CryptDestroyKey(hkey);
 
                foo = CryptReleaseContext(hcp, 0);
+               pstmVersion->Release();
 
                for (int i = 0; i < HASHLENGTH; i++)
                {
@@ -5587,7 +5593,7 @@ void PinTable::ExportBlueprint()
    char *pbits;
    HBITMAP hdib = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, (void **)&pbits, NULL, 0);
 
-   /*const HBITMAP hbmOld =*/ (HBITMAP)SelectObject(hdc2, hdib);
+   /*const HBITMAP hbmOld = (HBITMAP)*/SelectObject(hdc2, hdib);
 
    PaintSur * const psur = new PaintSur(hdc2, (float)bmwidth / tablewidth, tablewidth*0.5f, tableheight*0.5f, bmwidth, bmheight, NULL);
 
@@ -8125,12 +8131,12 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         const DWORD cwch = sizeof(m_vcollection.ElementAt(ivar)->m_wzName) + sizeof(DWORD); //!! +DWORD?
+         const DWORD cwch = sizeof(m_vcollection.ElementAt((int)ivar)->m_wzName) + sizeof(DWORD); //!! +DWORD?
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch);
          if (wzDst == NULL)
             ShowError("DISPID_Collection alloc failed (1)");
          else
-            memcpy(wzDst, m_vcollection.ElementAt(ivar)->m_wzName, cwch);
+            memcpy(wzDst, m_vcollection.ElementAt((int)ivar)->m_wzName, cwch);
          rgstr[ivar + 1] = wzDst;
          rgdw[ivar + 1] = (DWORD)ivar;
       }

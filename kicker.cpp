@@ -267,9 +267,6 @@ void Kicker::ExportMesh(FILE *f)
    const WORD *indices;
    switch (m_d.m_kickertype)
    {
-       case KickerInvisible:
-           assert(false);
-       break;
        case KickerCup:
        {
            num_vertices = kickerCupNumVertices;
@@ -305,6 +302,8 @@ void Kicker::ExportMesh(FILE *f)
            indices = kickerHoleIndices;
        }
        break;
+       case KickerInvisible:
+           assert(false);
        default:
        case KickerHoleSimple:
        {
@@ -335,9 +334,6 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf)
    float zrot = m_d.m_orientation;
    switch (m_d.m_kickertype)
    {
-       case KickerInvisible:
-           assert(false);
-       break;
        case KickerCup:
        {
            num_vertices = kickerCupNumVertices;
@@ -371,6 +367,8 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf)
            zrot = 0.f;
        }
        break;
+       case KickerInvisible:
+           assert(false);
        default:
        case KickerHoleSimple:
        {
@@ -409,7 +407,6 @@ void Kicker::RenderSetup()
    if (m_d.m_kickertype == KickerInvisible)
       return;
 
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2)

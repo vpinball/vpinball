@@ -92,7 +92,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
    if ((icmd & 0x0000FFFF) == ID_SELECT_ELEMENT)
    {
       const int ksshift = GetKeyState(VK_SHIFT);
-      const int ksctrl = GetKeyState(VK_CONTROL);
+      //const int ksctrl = GetKeyState(VK_CONTROL);
 
       PinTable * const currentTable = GetPTable();
       const int i = (icmd & 0x00FF0000) >> 16;
@@ -116,8 +116,8 @@ void ISelect::DoCommand(int icmd, int x, int y)
    if (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020))
    {
       /*add to collection*/
-      const int ksshift = GetKeyState(VK_SHIFT);
-      const int ksctrl = GetKeyState(VK_CONTROL);
+      //const int ksshift = GetKeyState(VK_SHIFT);
+      //const int ksctrl = GetKeyState(VK_CONTROL);
 
       PinTable * const currentTable = GetPTable();
       const int i = icmd & 0x000000FF;
@@ -348,7 +348,7 @@ void ISelect::GetTypeNameForType(ItemTypeEnum type, WCHAR * buf)
       strID = EditableRegistry::GetTypeNameStringID(type); break;
    }
 
-   const int len = LoadStringW(g_hinst, strID, buf, 256);
+   /*const int len =*/ LoadStringW(g_hinst, strID, buf, 256);
 }
 
 bool ISelect::LoadToken(const int id, BiffReader * const pbr)

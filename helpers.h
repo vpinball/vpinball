@@ -68,17 +68,17 @@ private:
     MultiByteToWideChar(CP_ACP, 0, pszAnsi, -1, pwszUnicode, cb);
 
 #define MAKE_WIDEPTR_FROMANSI(ptrname, pszAnsi) \
-    char *__psz##ptrname = pszAnsi?pszAnsi:""; \
-    long __l##ptrname = (lstrlen(__psz##ptrname) + 1) * (long)sizeof(WCHAR); \
+    const char * const __psz##ptrname = pszAnsi?pszAnsi:""; \
+    const long __l##ptrname = (lstrlen(__psz##ptrname) + 1) * (long)sizeof(WCHAR); \
     TempBuffer __TempBuffer##ptrname(__l##ptrname); \
     MultiByteToWideChar(CP_ACP, 0, __psz##ptrname, -1, (LPWSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname); \
-    LPWSTR ptrname = (LPWSTR)__TempBuffer##ptrname.GetBuffer()
+    const LPWSTR ptrname = (LPWSTR)__TempBuffer##ptrname.GetBuffer()
 
 #define MAKE_ANSIPTR_FROMWIDE(ptrname, pwszUnicode) \
-    WCHAR *__pwsz##ptrname = pwszUnicode?pwszUnicode:L""; \
-    long __l##ptrname = (lstrlenW(__pwsz##ptrname) + 1) * (long)sizeof(char); \
+    const WCHAR * const __pwsz##ptrname = pwszUnicode?pwszUnicode:L""; \
+    const long __l##ptrname = (lstrlenW(__pwsz##ptrname) + 1) * (long)sizeof(char); \
     TempBuffer __TempBuffer##ptrname(__l##ptrname); \
     WideCharToMultiByte(CP_ACP, 0, __pwsz##ptrname, -1, (LPSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname, NULL, NULL); \
-    LPSTR ptrname = (LPSTR)__TempBuffer##ptrname.GetBuffer()
+    const LPSTR ptrname = (LPSTR)__TempBuffer##ptrname.GetBuffer()
 
 //--- EOF -------------------------------------------------------------------

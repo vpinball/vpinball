@@ -420,9 +420,9 @@ enum WindingOrder
 // Find vertex along one edge of bounding box.
 // In this case, we find smallest y; in case of tie also smallest x.
 template <class RenderVertexCont>
-inline int FindCornerVertex(const RenderVertexCont& vertices)
+inline size_t FindCornerVertex(const RenderVertexCont& vertices)
 {
-    int minVertex = -1;
+    size_t minVertex = -1;
     float minY = FLT_MAX;
     float minXAtMinY = FLT_MAX;
     for (size_t i = 0; i < vertices.size(); i++)
@@ -447,7 +447,7 @@ inline int FindCornerVertex(const RenderVertexCont& vertices)
 // Return value in (0..n-1).
 // Works for i in (-n..+infinity).
 // If need to allow more negative values, need more complex formula.
-inline int WrapAt(const int i, const int n)
+__forceinline int WrapAt(const int i, const int n)
 {
     // "+n": Moves (-n..) up to (0..).
     return (i + n) % n;
@@ -464,14 +464,14 @@ inline WindingOrder DetermineWindingOrder(const RenderVertexCont& vertices)
     const RenderVertex lastV = vertices[nVerts - 1];
     if (lastV.x == vertices[0].x && lastV.y == vertices[0].y)
         nVerts--;
-    const int iMinVertex = FindCornerVertex(vertices);
+    const size_t iMinVertex = FindCornerVertex(vertices);
     // Orientation matrix:
     //     [ 1  xa  ya ]
     // O = | 1  xb  yb |
     //     [ 1  xc  yc ]
-    const RenderVertex a = vertices[WrapAt(iMinVertex - 1, nVerts)];
+    const RenderVertex a = vertices[WrapAt((int)iMinVertex - 1, (int)nVerts)];
     const RenderVertex b = vertices[iMinVertex];
-    const RenderVertex c = vertices[WrapAt(iMinVertex + 1, nVerts)];
+    const RenderVertex c = vertices[WrapAt((int)iMinVertex + 1, (int)nVerts)];
     // determinant(O) = (xb*yc + xa*yb + ya*xc) - (ya*xb + yb*xc + xa*yc)
     const float detOrient = (b.x * c.y + a.x * b.y + a.y * c.x) - (a.y * b.x + b.y * c.x + a.x * c.y);
 

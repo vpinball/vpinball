@@ -708,18 +708,18 @@ float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime
 
    //coll.hitvelocity.z = 0.0f; // used as normal velocity so far, only if isContact is set, see below
 
-   if (contactAng >= angleMax && anglespeed > 0.f || contactAng <= angleMin && anglespeed < 0.f)	// hit limits ??? 
+   if ((contactAng >= angleMax && anglespeed > 0.f) || (contactAng <= angleMin && anglespeed < 0.f)) // hit limits ??? 
       anglespeed = 0.0f;							// rotation stopped
 
-   //!! unused coll.m_hitmoment = distance;			//moment arm diameter
+   //!! unused coll.m_hitmoment = distance;			// moment arm diameter
    coll.m_hitmoment_bit = (distance == 0.f);
-   //!! unused coll.m_hitangularrate = anglespeed;	//radians/time at collison
+   //!! unused coll.m_hitangularrate = anglespeed;	// radians/time at collison
 
    const Vertex2D dv(
       ballvx - coll.m_hitvel.x *(anglespeed*distance),
-      ballvy - coll.m_hitvel.y *(anglespeed*distance)); //delta velocity ball to face
+      ballvy - coll.m_hitvel.y *(anglespeed*distance)); // delta velocity ball to face
 
-   const float bnv = dv.x*coll.m_hitnormal.x + dv.y*coll.m_hitnormal.y;  //dot Normal to delta v
+   const float bnv = dv.x*coll.m_hitnormal.x + dv.y*coll.m_hitnormal.y; // dot Normal to delta v
 
    if (fabsf(bnv) <= C_CONTACTVEL && bffnd <= (float)PHYS_TOUCH)
    {
@@ -729,8 +729,8 @@ float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime
    else if (bnv > C_LOWNORMVEL)
       return -1.0f; // not hit ... ball is receding from endradius already, must have been embedded
 
-   coll.m_hitdistance = bffnd;			//normal ...actual contact distance ... 
-   //coll.m_hitRigid = true;				// collision type
+   coll.m_hitdistance = bffnd; // normal ...actual contact distance ... 
+   //coll.m_hitRigid = true; // collision type
 
    return t;
 }

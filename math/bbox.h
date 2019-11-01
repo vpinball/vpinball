@@ -14,15 +14,15 @@ public:
 class FRect3D
 {
 public:
-   float left, top, right, bottom, zlow, zhigh;
+   float left, right, top, bottom, zlow, zhigh;
 
-   FRect3D()    { }
+   FRect3D() {}
 
    FRect3D(const float x1, const float x2, const float y1, const float y2, const float z1, const float z2)
       : left(x1), right(x2),
       top(y1), bottom(y2),
       zlow(z1), zhigh(z2)
-   { }
+   {}
 
    void Clear()
    {

@@ -407,9 +407,9 @@ typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = NULL;
 
 RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int VSync, const bool useAA, const bool stereo3D, const unsigned int FXAA, const bool ss_refl, const bool useNvidiaApi, const bool disable_dwm, const int BWrendering)
-    : m_texMan(*this), m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
-      m_colorDepth(colordepth), m_vsync(VSync), m_useAA(useAA), m_stereo3D(stereo3D), m_FXAA(FXAA), 
-      m_ssRefl(ss_refl), m_useNvidiaApi(useNvidiaApi), m_disableDwm(disable_dwm), m_BWrendering(BWrendering)
+    : m_windowHwnd(hwnd), m_width(width), m_height(height), m_fullscreen(fullscreen), 
+      m_colorDepth(colordepth), m_vsync(VSync), m_useAA(useAA), m_stereo3D(stereo3D),
+      m_ssRefl(ss_refl), m_disableDwm(disable_dwm), m_FXAA(FXAA), m_BWrendering(BWrendering), m_useNvidiaApi(useNvidiaApi), m_texMan(*this)
 {
     m_stats_drawn_triangles = 0;
 
@@ -990,7 +990,7 @@ void RenderDevice::EndScene()
    CHECKD3D(m_pD3DDevice->EndScene());
 }
 
-static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
+/*static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
 {
    IDirect3DQuery9* pEventQuery;
    pd3dDevice->CreateQuery(D3DQUERYTYPE_EVENT, &pEventQuery);
@@ -1002,7 +1002,7 @@ static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
          ;
       SAFE_RELEASE(pEventQuery);
    }
-}
+}*/
 
 bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
 {

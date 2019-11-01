@@ -639,7 +639,7 @@ void Pin3D::InitLayoutFS()
    m_proj.m_rcviewport.right = m_viewPort.Width;
    m_proj.m_rcviewport.bottom = m_viewPort.Height;
 
-   const float aspect = (float)m_viewPort.Width / (float)m_viewPort.Height; //(float)(4.0/3.0);
+   //const float aspect = (float)m_viewPort.Width / (float)m_viewPort.Height; //(float)(4.0/3.0);
 
    //m_proj.FitCameraToVerticesFS(vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
    const float yof = g_pplayer->m_ptable->m_bottom*0.5f + g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set];
@@ -1058,7 +1058,7 @@ void PinProjection::FitCameraToVerticesFS(std::vector<Vertex3Ds>& pvvertex3D, fl
    float maxxintercept = -FLT_MAX;
    float minxintercept = FLT_MAX;
 
-   const Matrix3D laybackTrans = ComputeLaybackTransform(layback);
+   //const Matrix3D laybackTrans = ComputeLaybackTransform(layback);
 
    for (size_t i = 0; i < pvvertex3D.size(); ++i)
    {

@@ -64,7 +64,7 @@ inline float ElasticityWithFalloff(const float elasticity, const float falloff, 
 
 struct CollisionEvent
 {
-   CollisionEvent() : m_ball(0), m_obj(0), m_isContact(false), m_hittime(0.0f), m_hitdistance(0.0f), /*m_hitmoment(0.0f)*/ m_hitmoment_bit(true), m_hitflag(false) /*, m_hitRigid(false)*/ {}
+   CollisionEvent() : m_ball(0), m_obj(0), m_hittime(0.0f), m_hitdistance(0.0f), /*m_hitmoment(0.0f)*/ m_hitmoment_bit(true), m_hitflag(false), /*m_hitRigid(false),*/ m_isContact(false) {}
 
    Ball* m_ball;         // the ball that collided with smth
    HitObject* m_obj;     // what the ball collided with
@@ -93,9 +93,9 @@ struct CollisionEvent
 class HitObject
 {
 public:
-   HitObject() : m_enabled(true), m_ObjType(eNull), m_obj(NULL),
+   HitObject() : m_pfedebug(NULL), m_obj(NULL), m_threshold(0.f),
       m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
-      m_threshold(0.f), m_pfedebug(NULL), m_fe(false), m_e(false) {}
+      m_ObjType(eNull), m_enabled(true), m_fe(false), m_e(false) {}
    virtual ~HitObject() {}
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged (all derived classes DO implement this one!)

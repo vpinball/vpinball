@@ -81,8 +81,8 @@ public:
    {
       T* const pT = (T*)this;
       pT->Lock();
-      IUnknown** pp = m_vec.begin();
-      while (pp < m_vec.end())
+      IUnknown** pp = IConnectionPointImpl<T, psrcid, CComDynamicUnkArray>::m_vec.begin();
+      while (pp < IConnectionPointImpl<T, psrcid, CComDynamicUnkArray>::m_vec.end())
       {
          if (*pp != NULL)
          {

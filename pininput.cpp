@@ -1,5 +1,29 @@
 #include "StdAfx.h"
 
+// from dinput.h, modernized to please clang
+#undef DIJOFS_X
+#undef DIJOFS_Y
+#undef DIJOFS_Z
+#undef DIJOFS_RX
+#undef DIJOFS_RY
+#undef DIJOFS_RZ
+#undef DIJOFS_SLIDER
+#undef DIJOFS_POV
+#undef DIJOFS_BUTTON
+#define DIJOFS_X            offsetof(DIJOYSTATE, lX)
+#define DIJOFS_Y            offsetof(DIJOYSTATE, lY)
+#define DIJOFS_Z            offsetof(DIJOYSTATE, lZ)
+#define DIJOFS_RX           offsetof(DIJOYSTATE, lRx)
+#define DIJOFS_RY           offsetof(DIJOYSTATE, lRy)
+#define DIJOFS_RZ           offsetof(DIJOYSTATE, lRz)
+#define DIJOFS_SLIDER(n)   (offsetof(DIJOYSTATE, rglSlider) + \
+                                                        (n) * sizeof(LONG))
+#define DIJOFS_POV(n)      (offsetof(DIJOYSTATE, rgdwPOV) + \
+                                                        (n) * sizeof(DWORD))
+#define DIJOFS_BUTTON(n)   (offsetof(DIJOYSTATE, rgbButtons) + (n))
+// end
+
+
 #define INPUT_BUFFER_SIZE MAX_KEYQUEUE_SIZE
 #define BALLCONTROL_DOUBLECLICK_THRESHOLD_USEC (500 * 1000)
 
@@ -222,11 +246,11 @@ BOOL CALLBACK EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi,
 // Callback for enumerating joysticks (gamepads)
 BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
-   DIPROPSTRING dstr = { 0 };
+   DIPROPSTRING dstr;
    dstr.diph.dwSize = sizeof(DIPROPSTRING);
    dstr.diph.dwHeaderSize = sizeof(DIPROPHEADER);
    dstr.diph.dwObj = 0;
-   dstr.diph.dwHow = 0;
+   dstr.diph.dwHow = DIPH_DEVICE;
 
    PinInput * const ppinput = (PinInput *)pvRef;
 
@@ -1578,7 +1602,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
    }
 
    const DIDEVICEOBJECTDATA * __restrict input;
-   while (input = GetTail(/*curr_sim_msec*/))
+   while ((input = GetTail(/*curr_sim_msec*/)))
    {
       if (input->dwSequence == APP_MOUSE && g_pplayer)
       {

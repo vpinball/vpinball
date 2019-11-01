@@ -75,14 +75,16 @@ int StackTrace::GetCallStack(Address* callStack, int maxDepth, int entriesToSkip
 {
 	PCONTEXT pContext(0);
 	HMODULE hKernel32Dll = GetModuleHandle("kernel32.dll");
-	void (WINAPI *pRtlCaptureContext)(PCONTEXT);
-	*(void**)&pRtlCaptureContext = GetProcAddress(hKernel32Dll, "RtlCaptureContext");
+	typedef void(WINAPI* pRtlCaptureContext)(PCONTEXT);
+	static pRtlCaptureContext RtlCaptureContext = NULL;
+	if(RtlCaptureContext == NULL)
+		RtlCaptureContext = (pRtlCaptureContext)GetProcAddress(hKernel32Dll, "RtlCaptureContext");
 	CONTEXT context;
-	if (pRtlCaptureContext)
+	if (RtlCaptureContext)
 	{
 		memset(&context, 0, sizeof(context));
 		context.ContextFlags = CONTEXT_FULL;
-		pRtlCaptureContext(&context);
+		RtlCaptureContext(&context);
 		pContext = &context;
 	}
 	// +1 -> skip over "us"

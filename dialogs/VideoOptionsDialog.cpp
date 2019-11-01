@@ -717,7 +717,7 @@ void VideoOptionsDialog::OnOK()
       SaveValueInt("Player", "RefreshRate", pvm->refreshrate);
    }
    const size_t display = SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
-   SaveValueInt("Player", "Display", display);
+   SaveValueInt("Player", "Display", (int)display);
 
    const bool video10bit = (SendMessage(GetDlgItem(IDC_10BIT_VIDEO).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValueBool("Player", "Render10Bit", video10bit);
@@ -764,16 +764,16 @@ void VideoOptionsDialog::OnOK()
    size_t fxaa = SendMessage(hwndFXAA, CB_GETCURSEL, 0, 0);
    if (fxaa == LB_ERR)
       fxaa = 2;
-   SaveValueInt("Player", "FXAA", fxaa);
+   SaveValueInt("Player", "FXAA", (int)fxaa);
 
    const bool scaleFX_DMD = (SendMessage(GetDlgItem(IDC_SCALE_FX_DMD).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValueBool("Player", "ScaleFXDMD", scaleFX_DMD);
 
    const size_t BGSet = SendMessage(GetDlgItem(IDC_BG_SET).GetHwnd(), BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "BGSet", BGSet);
+   SaveValueInt("Player", "BGSet", (int)BGSet);
 
    const size_t useAA = SendMessage(GetDlgItem(IDC_AA_ALL_TABLES).GetHwnd(), BM_GETCHECK, 0, 0);
-   SaveValueInt("Player", "USEAA", useAA);
+   SaveValueInt("Player", "USEAA", (int)useAA);
 
    const bool useDN = (SendMessage(GetDlgItem(IDC_DYNAMIC_DN).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValueBool("Player", "DynamicDayNight", useDN);
@@ -793,8 +793,8 @@ void VideoOptionsDialog::OnOK()
    size_t stereo3D = SendMessage(GetDlgItem(IDC_3D_STEREO).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (stereo3D == LB_ERR)
       stereo3D = 0;
-   SaveValueInt("Player", "Stereo3D", stereo3D);
-   SaveValueInt("Player", "Stereo3DEnabled", stereo3D);
+   SaveValueInt("Player", "Stereo3D", (int)stereo3D);
+   SaveValueInt("Player", "Stereo3DEnabled", (int)stereo3D);
 
    const bool stereo3DY = (SendMessage(GetDlgItem(IDC_3D_STEREO_Y).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValueBool("Player", "Stereo3DYAxis", stereo3DY);
@@ -809,7 +809,7 @@ void VideoOptionsDialog::OnOK()
    SaveValueBool("Player", "SoftwareVertexProcessing", softwareVP);
 
    const size_t alphaRampsAccuracy = SendMessage(GetDlgItem(IDC_ARASlider).GetHwnd(), TBM_GETPOS, 0, 0);
-   SaveValueInt("Player", "AlphaRampAccuracy", alphaRampsAccuracy);
+   SaveValueInt("Player", "AlphaRampAccuracy", (int)alphaRampsAccuracy);
 
    tmpStr = GetDlgItemTextA(IDC_3D_STEREO_OFS);
    SaveValueString("Player", "Stereo3DOffset", tmpStr.c_str());
@@ -842,7 +842,7 @@ void VideoOptionsDialog::OnOK()
    size_t selected = SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (selected == LB_ERR)
       selected = 1; // assume a 16:9 Monitor as standard
-   SaveValueInt("Player", "BallStretchMonitor", selected);
+   SaveValueInt("Player", "BallStretchMonitor", (int)selected);
 
    const bool overwriteEnabled = IsDlgButtonChecked(IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED;
    if (overwriteEnabled)

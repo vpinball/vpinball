@@ -44,7 +44,7 @@
 using std::string;
 using std::vector;
 
-#include "helpers.H"
+#include "helpers.h"
 
 #include "def.h"
 

@@ -153,9 +153,6 @@ float HitGate::HitTest(const Ball * const pball, const float dtime, CollisionEve
 
 void HitGate::Collide(const CollisionEvent& coll)
 {
-   Ball * const pball = coll.m_ball;
-   const Vertex3Ds& hitnormal = coll.m_hitnormal;
-   
    const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_vel);
    const float h = m_pgate->m_d.m_height*0.5f;
 
@@ -163,21 +160,21 @@ void HitGate::Collide(const CollisionEvent& coll)
    //angular speed = linear/radius (height of hit)
    float speed = fabsf(dot);
    // h is the height of the gate axis.
-  if (fabsf(h) > 1.0f) // avoid divide by zero
+   if (fabsf(h) > 1.0f) // avoid divide by zero
       speed /= h;
 
-  m_gateMover.m_anglespeed = speed;
-  if (!coll.m_hitflag && !m_twoWay)
-  {
+   m_gateMover.m_anglespeed = speed;
+   if (!coll.m_hitflag && !m_twoWay)
+   {
       m_gateMover.m_anglespeed *= (float)(1.0/8.0); // Give a little bounce-back.
       return; // hit from back doesn't count if not two-way
-  }
+   }
 
    // We encoded which side of the spinner the ball hit
    if (coll.m_hitflag && m_twoWay)
        m_gateMover.m_anglespeed = -m_gateMover.m_anglespeed;
 
-   FireHitEvent(pball);
+   FireHitEvent(coll.m_ball);
 }
 
 void HitGate::CalcHitBBox()
@@ -332,8 +329,6 @@ float HitSpinner::HitTest(const Ball * const pball, const float dtime, Collision
 
 void HitSpinner::Collide(const CollisionEvent& coll)
 {
-   const Vertex3Ds& hitnormal = coll.m_hitnormal;
-
    const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_vel);
 
    if (dot < 0.f) return; //hit from back doesn't count

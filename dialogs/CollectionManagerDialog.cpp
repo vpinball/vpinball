@@ -386,7 +386,6 @@ BOOL CollectionDialog::OnInitDialog()
 
 BOOL CollectionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
     UNREFERENCED_PARAMETER(lParam);
 
     switch(LOWORD(wParam))

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <map>
-#include "typeDefs3D.h"
+#include "typedefs3D.h"
 
 #include "Material.h"
 #include "Texture.h"

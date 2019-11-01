@@ -108,7 +108,6 @@ BOOL SoundDialog::OnInitDialog()
 
 INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
-    const HWND hwndDlg = GetHwnd();
     CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
 
     switch(uMsg)
@@ -192,8 +191,7 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
         case IDC_OK: SavePosition(); CDialog::OnOK(); break;
         case IDC_PLAY:
         {
-           CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-           const int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
+            const int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
             if (sel != -1)
             {
                 LVITEM lvitem;

@@ -122,7 +122,7 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
    i = 0;
    j = 0;
 
-   while (a = CmdLine[i]) {
+   while ((a = CmdLine[i])) {
       if (in_QM) {
          if (a == '\"') {
             in_QM = FALSE;
@@ -319,7 +319,7 @@ public:
              const size_t len = strlen(szArglist[i + 1]);
              VPinball::m_customParameters[customIdx - 1] = new WCHAR[len + 1];
 
-             MultiByteToWideChar(CP_ACP, 0, szArglist[i + 1], len, VPinball::m_customParameters[customIdx - 1], len + 1);
+             MultiByteToWideChar(CP_ACP, 0, szArglist[i + 1], (int)len, VPinball::m_customParameters[customIdx - 1], (int)len + 1);
              VPinball::m_customParameters[customIdx - 1][len] = L'\0';
 
              ++i; // two params processed

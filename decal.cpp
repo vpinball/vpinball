@@ -242,7 +242,7 @@ void Decal::GetTextSize(int * const px, int * const py)
          rcOut.bottom = 0x1;
          DrawText(hdcNull, &m_d.m_sztext[i], 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
 
-         *px = max(*px, rcOut.right);
+         *px = max(*px, (int)rcOut.right);
       }
    }
    else
@@ -293,7 +293,7 @@ void Decal::PreRenderText()
          rcOut.right = 1;
          rcOut.bottom = 1;
          DrawText(hdcNull, &m_d.m_sztext[i], 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
-         maxwidth = max(maxwidth, rcOut.right);
+         maxwidth = max(maxwidth, (int)rcOut.right);
       }
 
       rcOut.bottom += AUTOLEADING * (len - 1);
@@ -522,8 +522,6 @@ void Decal::RenderObject()
 
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
@@ -551,6 +549,7 @@ void Decal::RenderObject()
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
    //!!   pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_MIRROR);
 
+   //Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    //ppin3d->SetPrimaryTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
 
@@ -702,7 +701,7 @@ void Decal::EnsureSize()
 {
    if (((m_d.m_sizingtype != AutoSize) ||
       (m_d.m_decaltype == DecalImage)) && (m_d.m_sizingtype != AutoWidth) ||
-      (m_d.m_decaltype == DecalText && (m_d.m_sztext[0] == '\0')))
+      ((m_d.m_decaltype == DecalText) && (m_d.m_sztext[0] == '\0')))
    {
       m_realwidth = m_d.m_width;
       m_realheight = m_d.m_height;
