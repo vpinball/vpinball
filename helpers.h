@@ -67,12 +67,21 @@ private:
 #define UNICODE_FROM_ANSI(pwszUnicode, pszAnsi, cb) \
     MultiByteToWideChar(CP_ACP, 0, pszAnsi, -1, pwszUnicode, cb);
 
+#if _MSC_VER != 1900 // otherwise internal compiler error
 #define MAKE_WIDEPTR_FROMANSI(ptrname, pszAnsi) \
     const char * const __psz##ptrname = pszAnsi?pszAnsi:""; \
     const long __l##ptrname = (lstrlen(__psz##ptrname) + 1) * (long)sizeof(WCHAR); \
     TempBuffer __TempBuffer##ptrname(__l##ptrname); \
     MultiByteToWideChar(CP_ACP, 0, __psz##ptrname, -1, (LPWSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname); \
     const LPWSTR ptrname = (LPWSTR)__TempBuffer##ptrname.GetBuffer()
+#else
+#define MAKE_WIDEPTR_FROMANSI(ptrname, pszAnsi) \
+    const char * __psz##ptrname = pszAnsi?pszAnsi:""; \
+    const long __l##ptrname = (lstrlen(__psz##ptrname) + 1) * (long)sizeof(WCHAR); \
+    TempBuffer __TempBuffer##ptrname(__l##ptrname); \
+    MultiByteToWideChar(CP_ACP, 0, __psz##ptrname, -1, (LPWSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname); \
+    const LPWSTR ptrname = (LPWSTR)__TempBuffer##ptrname.GetBuffer()
+#endif
 
 #define MAKE_ANSIPTR_FROMWIDE(ptrname, pwszUnicode) \
     const WCHAR * const __pwsz##ptrname = pwszUnicode?pwszUnicode:L""; \
