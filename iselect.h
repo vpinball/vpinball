@@ -143,7 +143,7 @@ public:
 
    int m_menuid; // context menu to use
 
-   char m_layerIndex;
+   unsigned char m_layerIndex;
 
    bool m_dragging;
    bool m_markedForUndo;

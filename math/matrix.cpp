@@ -65,9 +65,6 @@ void Matrix3D::Invert()
 
 void RotateAround(const Vertex3Ds &pvAxis, Vertex3D_NoTex2 * const pvPoint, const int count, const float angle)
 {
-   const float rsin = sinf(angle);
-   const float rcos = cosf(angle);
-
    Matrix3 mat;
    mat.RotationAroundAxis(pvAxis, angle);
 
@@ -95,9 +92,6 @@ void RotateAround(const Vertex3Ds &pvAxis, Vertex3D_NoTex2 * const pvPoint, cons
 
 void RotateAround(const Vertex3Ds &pvAxis, Vertex3Ds * const pvPoint, const int count, const float angle)
 {
-   const float rsin = sinf(angle);
-   const float rcos = cosf(angle);
-
    Matrix3 mat;
    mat.RotationAroundAxis(pvAxis, angle);
 

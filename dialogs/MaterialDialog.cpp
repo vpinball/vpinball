@@ -183,7 +183,6 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          if (ListView_GetSelectedCount(m_hMaterialList))	// if some items are selected???
          {
             int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
-            const int selCount = ListView_GetSelectedCount(m_hMaterialList);
             if (sel == -1)
                break;
 

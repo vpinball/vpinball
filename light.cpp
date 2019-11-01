@@ -1606,9 +1606,8 @@ void Light::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 
 void Light::setLightState(const LightState newVal)
 {
-   if (newVal != m_realState) //state changed???
+   if (newVal != m_realState) // state changed???
    {
-      const LightState lastState = m_realState;
       m_realState = newVal;
 
       if (g_pplayer)
@@ -1619,7 +1618,7 @@ void Light::setLightState(const LightState newVal)
             m_iblinkframe = 0; // reset pattern
          }
          if (m_duration > 0)
-             m_duration = 0;    //disable duration if a state was set this way
+             m_duration = 0; // disable duration if a state was set this way
       }
    }
 }

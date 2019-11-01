@@ -161,7 +161,7 @@ void hid_init()
       WaitForSingleObject(sReportEvent, 200);
       CloseHandle(sReportEvent);
 
-      printf("%u bytes written\n", written);
+      printf("%lu bytes written\n", written);
 
       DWORD bytes_read;
 
@@ -171,7 +171,7 @@ void hid_init()
          &bytes_read,
          &ol);
 
-      printf("%u bytes read: ", bytes_read);
+      printf("%lu bytes read: ", bytes_read);
 
       for (U32 i = 0; i < bytes_read; i++)
       {

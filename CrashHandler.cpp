@@ -67,7 +67,7 @@ namespace
       fprintf(f, "System: ");
       if (major == 10)
       {
-         fprintf(f, "Windows 10 (%u.%u %u%s)\n", major, minor, build, VER_NT_WORKSTATION ? "" : " Server");
+         fprintf(f, "Windows 10 (%lu.%lu %lu%s)\n", major, minor, build, VER_NT_WORKSTATION ? "" : " Server");
       }
       else if (major == 6 && minor == 2)
       {
@@ -100,7 +100,7 @@ namespace
             fprintf(f, "Windows 2000\n");
       }
       else
-         fprintf(f, "Unknown Windows version - %u.%u (%u)\n", major, minor, build);
+         fprintf(f, "Unknown Windows version - %lu.%lu (%lu)\n", major, minor, build);
    }
 
    void WriteProcessorInfo(FILE* f)
@@ -108,7 +108,7 @@ namespace
       SYSTEM_INFO sysInfo;
       memset(&sysInfo, 0, sizeof(sysInfo));
       GetSystemInfo(&sysInfo);
-      fprintf(f, "Number of CPUs: %u\nProcessor type: %u\n",
+      fprintf(f, "Number of CPUs: %lu\nProcessor type: %lu\n",
          sysInfo.dwNumberOfProcessors, sysInfo.dwProcessorType);
    }
 
@@ -176,7 +176,7 @@ namespace
             "write to" : "read from"), exceptionPtrs->ExceptionRecord->ExceptionInformation[1]);
       }
       const DWORD threadId = ::GetCurrentThreadId();
-      fprintf(f, "Thread ID: 0x%X [%u]\n\n", threadId, threadId);
+      fprintf(f, "Thread ID: 0x%X [%lu]\n\n", threadId, threadId);
    }
 
    void WriteEnvironmentInfo(FILE* f)

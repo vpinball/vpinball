@@ -900,7 +900,7 @@ void SmartBrowser::LayoutExpandoWidth()
       HWND hwnd = m_vhwndDialog[i];
       RECT rc;
       GetWindowRect(hwnd, &rc);
-      maxwidth = max(maxwidth, (rc.right - rc.left));
+      maxwidth = max(maxwidth, (int)(rc.right - rc.left));
    }
 
    for (size_t i = 0; i < m_vhwndExpand.size(); i++)
@@ -1411,7 +1411,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       case BN_CLICKED:
       {
          const HWND hwndDlg = GetParent(hwnd);
-         /*SmartBrowser * const psb =*/ (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+         //SmartBrowser * const psb = (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
          CHOOSECOLOR cc;
          cc.lStructSize = sizeof(CHOOSECOLOR);
          cc.hwndOwner = hwnd;

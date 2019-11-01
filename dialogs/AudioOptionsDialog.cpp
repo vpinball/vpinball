@@ -100,13 +100,13 @@ INT_PTR AudioOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)DSads[i]->description.c_str());
                SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)i);
                const size_t indexbg = SendMessage(hwndListBG, LB_ADDSTRING, 0, (size_t)DSads[i]->description.c_str());
-               SendMessage(hwndListBG, LB_SETITEMDATA, index, (LPARAM)i);
+               SendMessage(hwndListBG, LB_SETITEMDATA, indexbg, (LPARAM)i);
                delete DSads[i];
             }
          }
 
          SendMessage(hwndList, LB_SETCURSEL, (wParam < DSads.size()) ? wParam : 0, 0);
-         SendMessage(hwndListBG, LB_SETCURSEL, (wParam < DSads.size()) ? lParam : 0, 0);
+         SendMessage(hwndListBG, LB_SETCURSEL, ((size_t)lParam < DSads.size()) ? lParam : 0, 0);
          break;
       }
       case RESET_SOUNDLIST_CONTENT:

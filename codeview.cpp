@@ -750,7 +750,7 @@ STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
 
    if (dwReturnMask & SCRIPTINFO_IUNKNOWN)
    {
-      if (*ppiunkItem = pcvd->m_punk)
+      if ((*ppiunkItem = pcvd->m_punk))
          (*ppiunkItem)->AddRef();
    }
 
@@ -1846,16 +1846,15 @@ void CodeViewer::MarginClick(const int position, const int modifiers)
 
 void AddComment(const HWND m_hwndScintilla)
 {
-   char *comment = "'";
+   const char * const comment = "'";
 
-   size_t startSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
+   const size_t startSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
    size_t endSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
-   size_t pos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0);
 
-   size_t selStartLine = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, startSel, 0);
+   const size_t selStartLine = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, startSel, 0);
    size_t selEndLine = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, endSel, 0);
    size_t lines = selEndLine - selStartLine + 1;
-   size_t posFromLine = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, selEndLine, 0);
+   const size_t posFromLine = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, selEndLine, 0);
 
    if (lines > 1 && endSel == posFromLine)
    {
@@ -1864,11 +1863,9 @@ void AddComment(const HWND m_hwndScintilla)
       endSel = SendMessage(m_hwndScintilla, SCI_GETLINEENDPOSITION, selEndLine, 0);
    }
    SendMessage(m_hwndScintilla, SCI_BEGINUNDOACTION, 0, 0);
-   size_t lineStart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, selStartLine, 0);
    if (lines <= 1)
    {
-      // Only a single line was selected, so just append whitespace + end-comment at end of line if needed
-      size_t lineEnd = SendMessage(m_hwndScintilla, SCI_GETLINEENDPOSITION, selEndLine, 0);
+      const size_t lineStart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, selStartLine, 0);
       SendMessage(m_hwndScintilla, SCI_INSERTTEXT, lineStart, (LPARAM)comment);
    }
    else
@@ -1876,7 +1873,7 @@ void AddComment(const HWND m_hwndScintilla)
       // More than one line selected, so insert middle_comments where needed
       for (size_t i = selStartLine; i < selEndLine + 1; ++i)
       {
-         lineStart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, i, 0);
+         const size_t lineStart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, i, 0);
          SendMessage(m_hwndScintilla, SCI_INSERTTEXT, lineStart, (LPARAM)comment);
       }
    }
@@ -1885,15 +1882,14 @@ void AddComment(const HWND m_hwndScintilla)
 
 void RemoveComment(const HWND m_hwndScintilla)
 {
-   char *comment = "\b";
+   //const char * const comment = "\b";
    size_t startSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
    size_t endSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
-   size_t pos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0);
 
-   size_t selStartLine = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, startSel, 0);
+   const size_t selStartLine = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, startSel, 0);
    size_t selEndLine = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, endSel, 0);
    size_t lines = selEndLine - selStartLine + 1;
-   size_t posFromLine = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, selEndLine, 0);
+   const size_t posFromLine = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, selEndLine, 0);
 
    if (lines > 1 && endSel == posFromLine)
    {
@@ -1906,8 +1902,8 @@ void RemoveComment(const HWND m_hwndScintilla)
 
    for (size_t i = selStartLine; i < selEndLine + 1; ++i)
    {
-      size_t lineStart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, i, 0);
-      size_t lineEnd = SendMessage(m_hwndScintilla, SCI_GETLINEENDPOSITION, i, 0);
+      const size_t lineStart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, i, 0);
+      const size_t lineEnd = SendMessage(m_hwndScintilla, SCI_GETLINEENDPOSITION, i, 0);
       char buf[MAX_LINE_LENGTH];
       if (lineEnd - lineStart < (MAX_LINE_LENGTH -1) )
       {
@@ -2400,7 +2396,7 @@ void CodeViewer::ParseVPCore()
 		  if (!fCore)
 		  {
 			  szLoadDir[0] = '\0';
-			  const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szLoadDir, MAX_PATH);
+			  /*const HRESULT hr =*/ LoadValueString("RecentDir", "LoadDir", szLoadDir, MAX_PATH);
 			  strcat_s(szLoadDir, "\\core.vbs");
 			  if (fopen_s(&fCore, szLoadDir, "r") != 0)
 				  if (!fCore)
@@ -2650,10 +2646,11 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				if (Listindex != -1)
 				{
 					char ConstructName[MAX_FIND_LENGTH] = {};
-					size_t index = SendMessage(pcv->m_hwndFunctionList, CB_GETLBTEXT, Listindex, (LPARAM)ConstructName);
+					/*size_t index =*/ SendMessage(pcv->m_hwndFunctionList, CB_GETLBTEXT, Listindex, (LPARAM)ConstructName);
 					vector<UserData>::iterator i;
-					int idx = 0;
-					int Pos = pcv->FindUD(pcv->m_pageConstructsDict, string(ConstructName), i, idx);
+					int idx;
+					string s(ConstructName);
+					/*int Pos =*/ pcv->FindUD(pcv->m_pageConstructsDict, s, i, idx);
 					SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, i->m_lineNum, 0);
 					SendMessage(pcv->m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
 				}

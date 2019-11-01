@@ -264,7 +264,7 @@ void EditorOptionsDialog::OnOK()
     size_t units = SendMessage(hwndUnits, CB_GETCURSEL, 0, 0);
     if (units == LB_ERR)
         units = 0;
-    SaveValueInt("Editor", "Units", units);
+    SaveValueInt("Editor", "Units", (int)units);
 
     CDialog::OnOK();
 }

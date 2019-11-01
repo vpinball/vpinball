@@ -81,8 +81,6 @@ BOOL TableInfoDialog::OnInitDialog()
 
 INT_PTR TableInfoDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-
    switch (uMsg)
    {
       case WM_NOTIFY:
@@ -114,7 +112,6 @@ INT_PTR TableInfoDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       }
    }
    return DialogProcDefault(uMsg, wParam, lParam);
-
 }
 
 void TableInfoDialog::VPGetDialogItemText(int nIDDlgItem, char **psztext)

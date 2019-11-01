@@ -924,7 +924,7 @@ void KeysConfigDialog::OnOK()
     for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
     {        
         const size_t key = ::GetWindowLongPtr(GetDlgItem(regkey_idc[i]).GetHwnd(), GWLP_USERDATA);
-        SaveValueInt("Player", regkey_string[i], key);
+        SaveValueInt("Player", regkey_string[i], (int)key);
     }
 
     SetValue(IDC_JOYCUSTOM1, "Player", "JoyCustom1Key");
@@ -984,7 +984,7 @@ void KeysConfigDialog::SetValue(int nID, char *regKey, char *regValue)
     size_t selected = ::SendMessage(GetDlgItem(nID).GetHwnd(), CB_GETCURSEL, 0, 0);
     if (selected == LB_ERR)
         selected = 2; // assume both as standard
-    SaveValueInt(regKey, regValue, selected);
+    SaveValueInt(regKey, regValue, (int)selected);
 }
 
 void KeysConfigDialog::StartTimer(int nID)

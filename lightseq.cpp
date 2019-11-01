@@ -543,7 +543,7 @@ STDMETHODIMP LightSeq::get_UpdateInterval(long *pVal)
 STDMETHODIMP LightSeq::put_UpdateInterval(long newVal)
 {
    STARTUNDO
-   m_d.m_updateinterval = max(1, newVal);
+   m_d.m_updateinterval = max((long)1, newVal);
    STOPUNDO
    return S_OK;
 }

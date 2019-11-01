@@ -19,7 +19,7 @@ public:
    { }
 
    BaseTexture(const int w, const int h, const Format format = RGBA)
-      : m_width(w), m_height(h), m_realWidth(w), m_realHeight(h), m_format(format), m_data((format == RGBA ? 4 : 3*4) * (w*h))
+      : m_width(w), m_height(h), m_data((format == RGBA ? 4 : 3*4) * (w*h)), m_realWidth(w), m_realHeight(h), m_format(format)
    { }
 
    int width() const   { return m_width; }

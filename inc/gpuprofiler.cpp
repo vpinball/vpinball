@@ -16,9 +16,9 @@ CGpuProfiler::CGpuProfiler ()
 :   m_init(false),
 	m_iFrameQuery(0),
 	m_iFrameCollect(-1),
+	m_frequencyQuery(NULL),
 	m_frameCountAvg(0),
 	m_tBeginAvg(0.0),
-	m_frequencyQuery(NULL),
 	m_device(NULL)
 {
 	memset(m_apQueryTsDisjoint, 0, sizeof(m_apQueryTsDisjoint));

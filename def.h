@@ -31,6 +31,10 @@ __forceinline int max(const int x, const int y)
 {
    return x < y ? y : x;
 }
+__forceinline long max(const long x, const long y)
+{
+   return x < y ? y : x;
+}
 __forceinline unsigned int min(const unsigned int x, const unsigned int y)
 {
    return x < y ? x : y;
@@ -83,7 +87,7 @@ inline void RemoveFromVector(std::vector<T>& v, const T& val)
 template <typename T>
 inline void RemoveFromVectorSingle(std::vector<T>& v, const T& val)
 {
-   std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
+   typename std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
    if (it != v.end())
       v.erase(it);
 }
@@ -91,7 +95,7 @@ inline void RemoveFromVectorSingle(std::vector<T>& v, const T& val)
 template <typename T>
 inline int FindIndexOf(const std::vector<T>& v, const T& val)
 {
-   std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
+   typename std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
    if (it != v.end())
       return (int)(it - v.begin());
    else

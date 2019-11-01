@@ -2265,7 +2265,7 @@ void Ramp::RenderRamp(const Material * const mat)
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_NONE); // as both floor and walls are thinwalled
 
-      Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+      //Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
       if (pin)

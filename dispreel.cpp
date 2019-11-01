@@ -850,7 +850,7 @@ STDMETHODIMP DispReel::get_UpdateInterval(long *pVal)
 STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
 {
    STARTUNDO
-   m_d.m_updateinterval = max(5, newVal); //!! reduce?
+   m_d.m_updateinterval = max((int)5, (int)newVal); //!! reduce?
    if (g_pplayer)
       m_timeNextUpdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
    STOPUNDO
@@ -900,7 +900,7 @@ STDMETHODIMP DispReel::get_ImagesPerGridRow(long *pVal)
 STDMETHODIMP DispReel::put_ImagesPerGridRow(long newVal)
 {
    STARTUNDO
-   m_d.m_imagesPerGridRow = max(1, newVal);
+   m_d.m_imagesPerGridRow = max((int)1, (int)newVal);
    STOPUNDO
 
    return S_OK;

@@ -143,10 +143,10 @@ BaseTexture* BaseTexture::CreateFromFile(const char *szfile)
 BaseTexture* BaseTexture::CreateFromData(const void *data, const size_t size)
 {
    // check the file signature and deduce its format
-   FIMEMORY * const dataHandle = FreeImage_OpenMemory((BYTE*)data, size);
+   FIMEMORY * const dataHandle = FreeImage_OpenMemory((BYTE*)data, (DWORD)size);
    if (!dataHandle)
       return NULL;
-   const FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(dataHandle, size);
+   const FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(dataHandle, (int)size);
 
    // check that the plugin has reading capabilities ...
    if ((fif != FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fif)) {
@@ -183,7 +183,7 @@ static FIBITMAP* HBitmapToFreeImage(HBITMAP hbmp)
    // So we save these infos below. This is needed for palettized images only.
    const int nColors = FreeImage_GetColorsUsed(dib);
    const HDC dc = GetDC(NULL);
-   const int Success = GetDIBits(dc, hbmp, 0, FreeImage_GetHeight(dib),
+   /*const int Success =*/ GetDIBits(dc, hbmp, 0, FreeImage_GetHeight(dib),
       FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
    ReleaseDC(NULL, dc);
    // restore BITMAPINFO members

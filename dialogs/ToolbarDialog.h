@@ -47,4 +47,4 @@ private:
     CButton m_rubberButton;
 };
 
-#endif H_TOOLBAR_DIALOG
+#endif // H_TOOLBAR_DIALOG

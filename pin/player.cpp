@@ -2450,7 +2450,7 @@ void Player::CalcBallAspectRatio()
    const int ballStretchMode = LoadValueIntWithDefault("Player", "BallStretchMode", 0);
 
    // Monitors: 4:3, 16:9, 16:10, 21:10
-   const int ballStretchMonitor = LoadValueIntWithDefault("Player", "BallStretchMonitor", 1); // assume 16:9
+   //const int ballStretchMonitor = LoadValueIntWithDefault("Player", "BallStretchMonitor", 1); // assume 16:9
    const float ballAspecRatioOffsetX = LoadValueFloatWithDefault("Player", "BallCorrectionX", 0.f);
    const float ballAspecRatioOffsetY = LoadValueFloatWithDefault("Player", "BallCorrectionY", 0.f);
 
