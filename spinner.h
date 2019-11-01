@@ -7,26 +7,20 @@
 
 #include "resource.h"       // main symbols
 
-class SpinnerData
+class SpinnerData : public BaseProperty
 {
 public:
    Vertex2D m_vCenter;
    float m_length;
    float m_rotation;
-   char m_szMaterial[MAXNAMEBUFFER];
    TimerDataRoot m_tdr;
    float m_height;
    float m_damping;
    float m_angleMax;
    float m_angleMin;
-   float m_elasticity;
    //float m_friction;
-   float m_scatter;
-   char m_szImage[MAXTOKEN];
    char m_szSurface[MAXTOKEN];
    bool m_showBracket;
-   bool m_visible;
-   bool m_reflectionEnabled;
 };
 
 class HitSpinner;

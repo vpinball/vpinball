@@ -48,29 +48,20 @@ public:
 //  ObjRotY = 7
 //  ObjRotZ = 8
 
-class PrimitiveData
+class PrimitiveData : public BaseProperty
 {
 public:
    int m_Sides;
    Vertex3Ds m_vPosition;
    Vertex3Ds m_vSize;
    float m_aRotAndTra[9];
-   char m_szImage[MAXTOKEN];
    char m_szNormalMap[MAXTOKEN];
    char m_meshFileName[256];
 
-   char m_szMaterial[MAXNAMEBUFFER];
    COLORREF m_SideColor;
-   char m_szPhysicsMaterial[MAXNAMEBUFFER];
-
    TimerDataRoot m_tdr;
 
-   float m_threshold;      // speed at which ball needs to hit to register a hit
-   float m_elasticity;
    float m_elasticityFalloff;
-   float m_friction;
-   float m_scatter;
-
    float m_depthBias;      // for determining depth sorting
 
    float m_edgeFactorUI;   // for drawing the mesh in the editorUI
@@ -82,17 +73,12 @@ public:
    bool m_useAsPlayfield;
 
    bool m_use3DMesh;
-   bool m_visible;
    bool m_drawTexturesInside;
    bool m_staticRendering;
 
-   bool m_hitEvent;
-   bool m_collidable;
    bool m_toy;
    bool m_skipRendering;
    bool m_groupdRendering;
-   bool m_reflectionEnabled;
-   bool m_overwritePhysics;
    bool m_backfacesEnabled;
    bool m_displayTexture;     // in editor
    bool m_objectSpaceNormalMap; // matches the +X,+Y,+Z object space export/baking of Blender

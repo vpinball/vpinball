@@ -7,14 +7,12 @@
 
 #include "resource.h"       // main symbols
 
-class BumperData
+class BumperData : public BaseProperty
 {
 public:
    Vertex2D m_vCenter;
    float m_radius;
-   float m_threshold; // speed at which ball needs to hit to register a hit
    float m_force; // force the bumper kicks back with
-   float m_scatter;
    float m_heightScale;
    float m_orientation;
    float m_ringSpeed;
@@ -30,9 +28,6 @@ public:
    bool m_baseVisible;
    bool m_ringVisible;
    bool m_skirtVisible;
-   bool m_reflectionEnabled;
-   bool m_hitEvent;
-   bool m_collidable;
 };
 
 /////////////////////////////////////////////////////////////////////////////
