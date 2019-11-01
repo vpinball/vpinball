@@ -51,7 +51,6 @@
 #define DISPID_HEIGHTOFFSET             24
 #define IDC_ORIENTATION_EDIT            25
 #define IDC_RINGSPEED_EDIT              26
-#define IDC_FRICTION_EDIT               114
 #define IDC_RINGDROPOFFSET_EDIT         27
 #define IDC_HIT_THRESHOLD_EDIT          33
 #define IDC_HAS_HITEVENT_CHECK          34
@@ -85,9 +84,11 @@
 #define IDS_TIMER_DESC                  112
 #define IDR_TIMER                       113
 #define IDS_LAYER4                      113
+#define IDC_FRICTION_EDIT               114
 #define ID_INSERT_TIMER                 114
 #define IDS_LAYER5                      114
 #define IDS_PLUNGER_DESC                115
+#define IDC_SCATTER_ANGLE_EDIT          115
 #define IDR_PLUNGER                     116
 #define IDS_TB_PLUNGER                  116
 #define ID_INSERT_PLUNGER               117
@@ -1178,7 +1179,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        663
+#define _APS_NEXT_RESOURCE_VALUE        664
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         829
 #define _APS_NEXT_SYMED_VALUE           188

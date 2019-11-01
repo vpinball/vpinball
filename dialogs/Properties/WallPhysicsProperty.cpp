@@ -24,7 +24,6 @@ void WallPhysicsProperty::UpdateVisuals()
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 11), wall->m_d.m_droppable);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK), wall->m_d.m_collidable);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 116), wall->m_d.m_isBottomSolid);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 111), wall->m_d.m_collidable );
 
         if (!wall->m_d.m_collidable)
         {
@@ -116,7 +115,7 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
                 wall->m_d.m_friction = PropertyDialog::GetFloatTextbox(m_frictionEdit);
                 PropertyDialog::EndUndo(wall);
                 break;
-            case 115:
+            case IDC_SCATTER_ANGLE_EDIT:
                 PropertyDialog::StartUndo(wall);
                 wall->m_d.m_scatter = PropertyDialog::GetFloatTextbox(m_scatterAngleEdit);
                 PropertyDialog::EndUndo(wall);
@@ -151,7 +150,7 @@ BOOL WallPhysicsProperty::OnInitDialog()
     AttachItem(IDC_MATERIAL_COMBO4, m_physicsMaterialCombo);
     AttachItem(IDC_ELASTICITY_EDIT, m_elasticityEdit);
     AttachItem(IDC_FRICTION_EDIT, m_frictionEdit);
-    AttachItem(115, m_scatterAngleEdit);
+    AttachItem(IDC_SCATTER_ANGLE_EDIT, m_scatterAngleEdit);
     UpdateVisuals();
     return TRUE;
 }
