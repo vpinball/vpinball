@@ -10,8 +10,8 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
@@ -33,8 +33,6 @@ private:
     CEdit     m_endAngleEdit;
     CEdit     m_heightEdit;
     CEdit     m_maxDifficultLengthEdit;
-
 };
 
 #endif // !H_FLIPPER_VISUALS_PROPERTY
-

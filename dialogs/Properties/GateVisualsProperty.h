@@ -28,7 +28,6 @@ private:
     CEdit     m_openAngleEdit;
     CEdit     m_closeAngleEdit;
     vector<string> m_typeList;
-    
 };
 
 #endif

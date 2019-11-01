@@ -12,7 +12,7 @@ void FlipperVisualsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
             continue;
-        Flipper *flipper = (Flipper *)m_pvsel->ElementAt(i);
+        Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
         PropertyDialog::UpdateTextureComboBox(flipper->GetPTable()->GetImageList(), m_imageCombo, flipper->m_d.m_szImage);
         PropertyDialog::UpdateMaterialComboBox(flipper->GetPTable()->GetMaterialList(), m_materialCombo, flipper->m_d.m_szMaterial);
         PropertyDialog::UpdateMaterialComboBox(flipper->GetPTable()->GetMaterialList(), m_rubberMaterialCombo, flipper->m_d.m_szRubberMaterial);
@@ -41,7 +41,7 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
             continue;
-        Flipper *flipper = (Flipper *)m_pvsel->ElementAt(i);
+        Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case 1:
@@ -186,4 +186,3 @@ BOOL FlipperVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
     }
     return FALSE;
 }
-

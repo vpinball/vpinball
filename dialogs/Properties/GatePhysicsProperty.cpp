@@ -12,7 +12,7 @@ void GatePhysicsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemGate))
             continue;
-        Gate *gate = (Gate *)m_pvsel->ElementAt(i);
+        const Gate * const gate = (Gate *)m_pvsel->ElementAt(i);
 
         PropertyDialog::SetFloatTextbox(m_elasticityEdit, gate->m_d.m_elasticity);
         PropertyDialog::SetFloatTextbox(m_frictionEdit, gate->m_d.m_friction);
@@ -29,7 +29,7 @@ void GatePhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemGate))
             continue;
-        Gate *gate = (Gate *)m_pvsel->ElementAt(i);
+        Gate * const gate = (Gate *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case IDC_ELASTICITY_EDIT:
@@ -97,4 +97,3 @@ BOOL GatePhysicsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
     }
     return FALSE;
 }
-

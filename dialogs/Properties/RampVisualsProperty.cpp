@@ -21,7 +21,7 @@ void RampVisualsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRamp))
             continue;
-        Ramp *ramp = (Ramp *)m_pvsel->ElementAt(i);
+        Ramp * const ramp = (Ramp *)m_pvsel->ElementAt(i);
         PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)ramp->m_d.m_type - 1].c_str());
         PropertyDialog::UpdateTextureComboBox(ramp->GetPTable()->GetImageList(), m_imageCombo, ramp->m_d.m_szImage);
         PropertyDialog::UpdateMaterialComboBox(ramp->GetPTable()->GetMaterialList(), m_materialCombo, ramp->m_d.m_szMaterial);
@@ -48,7 +48,7 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRamp))
             continue;
-        Ramp *ramp = (Ramp *)m_pvsel->ElementAt(i);
+        Ramp * const ramp = (Ramp *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case 1:
@@ -170,4 +170,3 @@ BOOL RampVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
     }
     return FALSE;
 }
-

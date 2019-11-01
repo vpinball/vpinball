@@ -20,7 +20,7 @@ public:
    float m_rotZ;
    bool m_staticRendering;
    bool m_showInEditor;
-};  
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // Rubber

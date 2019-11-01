@@ -1881,14 +1881,14 @@ bool PinTable::IsNameUnique(const WCHAR * const wzName) const
 }
 
 
-void PinTable::GetUniqueName(ItemTypeEnum type, WCHAR *wzUniqueName)
+void PinTable::GetUniqueName(ItemTypeEnum type, WCHAR * const wzUniqueName) const
 {
    WCHAR wzRoot[256];
    ISelect::GetTypeNameForType(type, wzRoot);
    GetUniqueName(wzRoot, wzUniqueName);
 }
 
-void PinTable::GetUniqueName(WCHAR *wzRoot, WCHAR *wzUniqueName)
+void PinTable::GetUniqueName(WCHAR *const wzRoot, WCHAR * const wzUniqueName) const
 {
    int suffix = 1;
    bool found = false;
@@ -4894,7 +4894,7 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
 }
 
 static char elementName[256];
-char *PinTable::GetElementName(IEditable *pedit)
+char *PinTable::GetElementName(IEditable *pedit) const
 {
    WCHAR *elemName = NULL;
    if (pedit)
