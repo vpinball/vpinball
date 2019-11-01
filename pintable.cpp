@@ -7234,7 +7234,7 @@ void PinTable::ReImportImage(Texture * const ppi, const char * const filename)
    ppi->SetSizeFrom(tex);
    ppi->m_pdsBuffer = tex;
 
-   strncpy_s(ppi->m_szPath, filename, MAX_PATH);
+   strncpy_s(ppi->m_szPath, filename, MAX_PATH-1);
 }
 
 
@@ -7405,7 +7405,7 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
    lvitem.pszText = ppi->m_szName;
    lvitem.lParam = (size_t)ppi;
 
-   _snprintf_s(sizeString, MAXTOKEN, "%ix%i", ppi->m_realWidth, ppi->m_realHeight);
+   _snprintf_s(sizeString, MAXTOKEN-1, "%ix%i", ppi->m_realWidth, ppi->m_realHeight);
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
    ListView_SetItemText(hwndListView, index, 1, ppi->m_szPath);

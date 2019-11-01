@@ -336,7 +336,7 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
       std::map<std::string, DisplayConfig>::iterator display = displayMap.find(adapter.DeviceName);
       if (display != displayMap.end()) {
          display->second.adapter = i;
-         strncpy_s(display->second.GPU_Name, adapter.Description, MAX_DEVICE_IDENTIFIER_STRING);
+         strncpy_s(display->second.GPU_Name, adapter.Description, MAX_DEVICE_IDENTIFIER_STRING-1);
       }
    }
    SAFE_RELEASE(pD3D);
