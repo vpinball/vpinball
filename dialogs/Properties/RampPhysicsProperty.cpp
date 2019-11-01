@@ -12,7 +12,7 @@ void RampPhysicsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRamp))
             continue;
-        Ramp *ramp = (Ramp *)m_pvsel->ElementAt(i);
+        Ramp * const ramp = (Ramp *)m_pvsel->ElementAt(i);
 
         PropertyDialog::SetFloatTextbox(m_hitThresholdEdit, ramp->m_d.m_threshold);
         PropertyDialog::SetFloatTextbox(m_leftWallEdit, ramp->m_d.m_leftwallheight);
@@ -43,10 +43,7 @@ void RampPhysicsProperty::UpdateVisuals()
             ::EnableWindow(::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK), TRUE);
             m_leftWallEdit.EnableWindow(TRUE);
             m_rightWallEdit.EnableWindow(TRUE);
-            if (ramp->m_d.m_hitEvent)
-                m_hitThresholdEdit.EnableWindow(TRUE);
-            else
-                m_hitThresholdEdit.EnableWindow(FALSE);
+            m_hitThresholdEdit.EnableWindow(ramp->m_d.m_hitEvent ? TRUE : FALSE);
 
             if (!ramp->m_d.m_overwritePhysics)
             {
@@ -72,7 +69,7 @@ void RampPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRamp))
             continue;
-        Ramp *ramp = (Ramp *)m_pvsel->ElementAt(i);
+        Ramp * const ramp = (Ramp *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case 10:
@@ -161,5 +158,3 @@ BOOL RampPhysicsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
     }
     return FALSE;
 }
-
-

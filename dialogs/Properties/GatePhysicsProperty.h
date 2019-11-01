@@ -21,7 +21,6 @@ private:
     CEdit     m_frictionEdit;
     CEdit     m_dampingEdit;
     CEdit     m_gravityFactorEdit;
-
 };
 
 #endif

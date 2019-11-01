@@ -40,7 +40,7 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemGate))
             continue;
-        Gate *gate = (Gate *)m_pvsel->ElementAt(i);
+        Gate * const gate = (Gate *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case 9:
@@ -148,4 +148,3 @@ BOOL GateVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
     }
     return FALSE;
 }
-

@@ -10,12 +10,11 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-
 
 private:
     CComboBox m_physicsMaterialCombo;
@@ -28,5 +27,3 @@ private:
 };
 
 #endif 
-
-

@@ -20,7 +20,7 @@ void FlipperPhysicsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
             continue;
-        Flipper *flipper = (Flipper *)m_pvsel->ElementAt(i);
+        const Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
         PropertyDialog::SetFloatTextbox(m_massEdit, flipper->m_d.m_mass);
         PropertyDialog::SetFloatTextbox(m_strengthEdit, flipper->m_d.m_strength);
         PropertyDialog::SetFloatTextbox(m_elasticityEdit, flipper->m_d.m_elasticity);
@@ -41,7 +41,7 @@ void FlipperPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
             continue;
-        Flipper *flipper = (Flipper *)m_pvsel->ElementAt(i);
+        Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case 19:
@@ -140,4 +140,3 @@ BOOL FlipperPhysicsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
     }
     return FALSE;
 }
-

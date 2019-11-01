@@ -4,14 +4,13 @@
 
 WallVisualsProperty::WallVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPWALL_VISUALS, pvsel)
 {
-
 }
 
 void WallVisualsProperty::UpdateVisuals()
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
-        Surface *wall = (Surface*)m_pvsel->ElementAt(i);
+        Surface * const wall = (Surface*)m_pvsel->ElementAt(i);
         PropertyDialog::UpdateTextureComboBox(wall->GetPTable()->GetImageList(), m_topImageCombo, wall->m_d.m_szImage);
         PropertyDialog::UpdateTextureComboBox(wall->GetPTable()->GetImageList(), m_sideImageCombo, wall->m_d.m_szSideImage);
         PropertyDialog::UpdateMaterialComboBox(wall->GetPTable()->GetMaterialList(), m_topMaterialCombo, wall->m_d.m_szTopMaterial);
@@ -34,7 +33,7 @@ void WallVisualsProperty::UpdateProperties(const int dispid)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
-        Surface *wall = (Surface*)m_pvsel->ElementAt(i);
+        Surface * const wall = (Surface*)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case 9:
@@ -151,4 +150,3 @@ BOOL WallVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
     }
     return FALSE;
 }
-

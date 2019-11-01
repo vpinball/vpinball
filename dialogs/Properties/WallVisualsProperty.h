@@ -24,9 +24,6 @@ private:
     CEdit     m_disableLightFromBelowEdit;
     CEdit     m_topHeightEdit;
     CEdit     m_bottomHeightEdit;
-
-
 };
 
 #endif 
-

@@ -10,7 +10,7 @@ void WallPhysicsProperty::UpdateVisuals()
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
-        Surface *wall = (Surface*)m_pvsel->ElementAt(i);
+        Surface * const wall = (Surface*)m_pvsel->ElementAt(i);
         PropertyDialog::UpdateMaterialComboBox(wall->GetPTable()->GetMaterialList(), m_physicsMaterialCombo, wall->m_d.m_szPhysicsMaterial);
 
         PropertyDialog::SetFloatTextbox(m_hitThresholdEdit, wall->m_d.m_threshold);
@@ -45,10 +45,7 @@ void WallPhysicsProperty::UpdateVisuals()
             ::EnableWindow(::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS), TRUE);
             m_slingshotForceEdit.EnableWindow(TRUE);
             m_slingshotThresholdEdit.EnableWindow(TRUE);
-            if (wall->m_d.m_hitEvent)
-                m_hitThresholdEdit.EnableWindow(TRUE);
-            else
-                m_hitThresholdEdit.EnableWindow(FALSE);
+            m_hitThresholdEdit.EnableWindow(wall->m_d.m_hitEvent ? TRUE : FALSE);
 
             if (!wall->m_d.m_overwritePhysics)
             {
@@ -72,7 +69,7 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
-        Surface *wall = (Surface*)m_pvsel->ElementAt(i);
+        Surface * const wall = (Surface*)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case IDC_HIT_THRESHOLD_EDIT:
@@ -172,4 +169,3 @@ BOOL WallPhysicsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
     }
     return FALSE;
 }
-

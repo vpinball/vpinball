@@ -10,8 +10,8 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
@@ -25,8 +25,6 @@ private:
     CButton m_copyButton;
     CButton m_pasteButton;
     int m_id;
-
 };
 
 #endif // !H_DRAGPOINT_VISUALS_PROPERTY
-

@@ -4,7 +4,7 @@
 
 class BasePropertyDialog: public CDialog
 {
-public:    
+public:
     BasePropertyDialog(int id, VectorProtected<ISelect> *pvsel) : CDialog(id), m_pvsel(pvsel)
     {
     }
@@ -35,10 +35,10 @@ public:
     PropertyDialog();
     void UpdateTabs(VectorProtected<ISelect> *pvsel);
 
-    static void UpdateTextureComboBox(vector<Texture*> contentList, CComboBox &combo, const char *selectName);
-    static void UpdateComboBox(vector<string> contentList, CComboBox &combo, const char *selectName);
-    static void UpdateMaterialComboBox(vector<Material *> contentList, CComboBox &combo, const char *selectName);
-    static void UpdateSurfaceComboBox(PinTable *ptable, CComboBox &combo, const char *selectName);
+    static void UpdateTextureComboBox(const vector<Texture*>& contentList, CComboBox &combo, const char *selectName);
+    static void UpdateComboBox(const vector<string>& contentList, CComboBox &combo, const char *selectName);
+    static void UpdateMaterialComboBox(const vector<Material *>& contentList, CComboBox &combo, const char *selectName);
+    static void UpdateSurfaceComboBox(const PinTable * const ptable, CComboBox &combo, const char *selectName);
 
     static void StartUndo(ISelect *psel)
     {
@@ -52,12 +52,12 @@ public:
         psel->GetIEditable()->SetDirtyDraw();
     }
 
-    static BOOL GetCheckboxState(HWND checkBoxHwnd)
+    static bool GetCheckboxState(HWND checkBoxHwnd)
     {
-        size_t selected = ::SendMessage(checkBoxHwnd, BM_GETCHECK, 0, 0);
+        const size_t selected = ::SendMessage(checkBoxHwnd, BM_GETCHECK, 0, 0);
         return selected != 0;
     }
-    static void SetCheckboxState(HWND checkBoxHwnd, BOOL checked)
+    static void SetCheckboxState(HWND checkBoxHwnd, bool checked)
     {
         ::SendMessage(checkBoxHwnd, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
     }
@@ -93,7 +93,7 @@ public:
     {
         char buf[MAXTOKEN];
         combo.GetLBText(combo.GetCurSel(), buf);
-        CString str(buf);
+        const CString str(buf);
         strncpy_s(strbuf, MAXNAMEBUFFER, str.c_str(), (str.GetLength()> MAXNAMEBUFFER) ? MAXNAMEBUFFER-1:str.GetLength());
     }
 
@@ -123,4 +123,3 @@ private:
 };
 
 #endif
-

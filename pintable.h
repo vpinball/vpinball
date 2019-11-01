@@ -381,7 +381,7 @@ public:
    virtual void SetDefaultPhysics(bool fromMouseClick);
 
    virtual PinTable *GetPTable() { return this; }
-   char *GetElementName(IEditable *pedit);
+   char *GetElementName(IEditable *pedit) const;
 
    IEditable *GetElementByName(const char *name);
    void OnDelete();
@@ -464,8 +464,8 @@ public:
    void GetViewRect(FRect *pfrect);
 
    bool IsNameUnique(const WCHAR * const wzName) const;
-   void GetUniqueName(ItemTypeEnum type, WCHAR *wzUniqueName);
-   void GetUniqueName(WCHAR *prefix, WCHAR *wzUniqueName);
+   void GetUniqueName(ItemTypeEnum type, WCHAR * const wzUniqueName) const;
+   void GetUniqueName(WCHAR * const prefix, WCHAR * const wzUniqueName) const;
    void GetUniqueNamePasting(int type, WCHAR *wzUniqueName);
 
    float GetSurfaceHeight(const char * const szName, float x, float y) const;
@@ -657,14 +657,14 @@ public:
 
 
    vector< Texture* > m_vimage;
-   vector<Texture *> GetImageList()
+   vector<Texture *> GetImageList() const
    {
        return m_vimage;
    }
 
    int m_numMaterials;
    vector< Material* > m_materials;
-   vector<Material *> GetMaterialList()
+   vector<Material *> GetMaterialList() const
    {
        return m_materials;
    }
