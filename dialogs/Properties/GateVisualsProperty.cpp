@@ -30,7 +30,7 @@ void GateVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_closeAngleEdit, gate->m_d.m_angleMin);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 14), gate->m_d.m_visible);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 15), gate->m_d.m_showBracket);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_GATE_REFLECT_ENABLED_CHECK), gate->m_d.m_reflectionEnabled);
+        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK), gate->m_d.m_reflectionEnabled);
     }
 }
 
@@ -70,17 +70,17 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case 14:
                 PropertyDialog::StartUndo(gate);
-                gate->m_d.m_visible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 14));
+                gate->m_d.m_visible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(gate);
                 break;
             case 15:
                 PropertyDialog::StartUndo(gate);
-                gate->m_d.m_showBracket = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 15));
+                gate->m_d.m_showBracket = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(gate);
                 break;
-            case IDC_GATE_REFLECT_ENABLED_CHECK:
+            case IDC_REFLECT_ENABLED_CHECK:
                 PropertyDialog::StartUndo(gate);
-                gate->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_GATE_REFLECT_ENABLED_CHECK));
+                gate->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(gate);
                 break;
             case DISPID_Gate_Length:

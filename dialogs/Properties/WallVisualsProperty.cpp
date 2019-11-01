@@ -22,7 +22,7 @@ void WallVisualsProperty::UpdateVisuals()
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 109), wall->m_d.m_sideVisible);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 112), wall->m_d.m_slingshotAnimation);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 113), wall->m_d.m_flipbook);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_WALL_REFLECT_ENABLED_CHECK), wall->m_d.m_reflectionEnabled);
+        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK), wall->m_d.m_reflectionEnabled);
         PropertyDialog::SetFloatTextbox(m_disableLightingEdit, wall->m_d.m_disableLightingTop);
         PropertyDialog::SetFloatTextbox(m_disableLightFromBelowEdit, wall->m_d.m_disableLightingBelow);
         PropertyDialog::SetFloatTextbox(m_topHeightEdit, wall->m_d.m_heighttop);
@@ -84,32 +84,32 @@ void WallVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case 16:
                 PropertyDialog::StartUndo(wall);
-                wall->m_d.m_topBottomVisible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 16));
+                wall->m_d.m_topBottomVisible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(wall);
                 break;
             case 13:
                 PropertyDialog::StartUndo(wall);
-                wall->m_d.m_displayTexture = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 13));
+                wall->m_d.m_displayTexture = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(wall);
                 break;
             case 109:
                 PropertyDialog::StartUndo(wall);
-                wall->m_d.m_sideVisible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 109));
+                wall->m_d.m_sideVisible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(wall);
                 break;
             case 112:
                 PropertyDialog::StartUndo(wall);
-                wall->m_d.m_slingshotAnimation = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 112));
+                wall->m_d.m_slingshotAnimation = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(wall);
                 break;
             case 113:
                 PropertyDialog::StartUndo(wall);
-                wall->m_d.m_flipbook = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 113));
+                wall->m_d.m_flipbook = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(wall);
                 break;
-            case IDC_WALL_REFLECT_ENABLED_CHECK:
+            case IDC_REFLECT_ENABLED_CHECK:
                 PropertyDialog::StartUndo(wall);
-                wall->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_WALL_REFLECT_ENABLED_CHECK));
+                wall->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(wall);
                 break;
             default:

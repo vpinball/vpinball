@@ -50,6 +50,20 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+class BaseProperty
+{
+public:
+    char  m_szImage[MAXTOKEN];
+    char  m_szMaterial[MAXNAMEBUFFER];
+    char  m_szPhysicsMaterial[MAXNAMEBUFFER];
+    float m_elasticity;
+    float m_friction;
+    float m_scatter;
+    bool  m_collidable;
+    bool  m_hitEvent;
+    bool  m_overwritePhysics;
+};
+
 // ISelect is the subclass for anything that can be manipulated with the mouse.
 // and that has a property sheet.
 
