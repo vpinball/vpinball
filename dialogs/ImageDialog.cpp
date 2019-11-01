@@ -159,8 +159,8 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                Texture * const ppi = (Texture *)lvitem.lParam;
                if (ppi != NULL)
                {
-                  strncpy_s(ppi->m_szName, pinfo->item.pszText, MAXTOKEN);
-                  strncpy_s(ppi->m_szInternalName, pinfo->item.pszText, MAXTOKEN);
+                  strncpy_s(ppi->m_szName, pinfo->item.pszText, MAXTOKEN-1);
+                  strncpy_s(ppi->m_szInternalName, pinfo->item.pszText, MAXTOKEN-1);
                   CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
                   if (pt)
                      pt->SetNonUndoableDirty(eSaveDirty);

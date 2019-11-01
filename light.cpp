@@ -94,7 +94,7 @@ void Light::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szOffImage[0] = 0;
 
-   hr = LoadValueString("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern, 33);
    if ((hr != S_OK) || !fromMouseClick)
       strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
 

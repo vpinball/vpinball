@@ -2239,8 +2239,8 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
             {
                char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
 
-               WideCharToMultiByte(CP_ACP, 0, pt->m_vcollection.ElementAt(i)->m_wzName, -1, szT, 64, NULL, NULL);
-               strncat_s(szT, " (COL)", 64);
+               WideCharToMultiByte(CP_ACP, 0, pt->m_vcollection.ElementAt(i)->m_wzName, -1, szT, MAXNAMEBUFFER*2, NULL, NULL);
+               strncat_s(szT, " (COL)", (MAXNAMEBUFFER*2)-1);
                const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
                SendMessage(hwndList, LB_SETITEMDATA, index, i | 0x80000000);
             }

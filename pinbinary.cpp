@@ -42,11 +42,11 @@ bool PinBinary::ReadFromFile(const char * const szfilename)
 
    /*foo =*/ CloseHandle(hFile);
 
-   strncpy_s(m_szPath, szfilename, MAX_PATH);
+   strncpy_s(m_szPath, szfilename, MAX_PATH-1);
 
    TitleFromFilename(szfilename, m_szName);
 
-   strncpy_s(m_szInternalName, m_szName, MAXTOKEN);
+   strncpy_s(m_szInternalName, m_szName, MAXTOKEN-1);
 
    CharLowerBuff(m_szInternalName, lstrlen(m_szInternalName));
    return true;
