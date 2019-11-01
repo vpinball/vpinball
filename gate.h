@@ -10,29 +10,22 @@
 /////////////////////////////////////////////////////////////////////////////
 // Gate
 
-class GateData
+class GateData : public BaseProperty
 {
 public:
    Vertex2D m_vCenter;
    float m_length;
    float m_height;
    float m_rotation;
-   char m_szMaterial[MAXNAMEBUFFER];
    TimerDataRoot m_tdr;
-   float m_elasticity;
-   float m_friction;
    float m_damping;
    float m_gravityfactor;
-   float m_scatter;
    char m_szSurface[MAXTOKEN];
    float m_angleMin;
    float m_angleMax;
    GateType m_type;
    bool m_showBracket;
-   bool m_collidable;
-   bool m_visible;
    bool m_twoWay;
-   bool m_reflectionEnabled;
 };
 
 class Gate :

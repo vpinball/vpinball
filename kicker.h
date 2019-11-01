@@ -7,16 +7,14 @@
 
 #include "resource.h"       // main symbols
 
-class KickerData
+class KickerData : public BaseProperty
 {
 public:
    Vertex2D m_vCenter;
    float m_radius;
-   char m_szMaterial[MAXNAMEBUFFER];
    TimerDataRoot m_tdr;
    char m_szSurface[MAXTOKEN];
    KickerType m_kickertype;
-   float m_scatter;
    float m_hitAccuracy; //kicker hit grabbing object height ... default ballsize*0.7
    float m_orientation;
    float m_hit_height;

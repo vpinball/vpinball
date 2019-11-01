@@ -7,32 +7,20 @@
 
 #include "resource.h"       // main symbols
 
-class RubberData
+class RubberData : public BaseProperty
 {
 public:
-   char m_szMaterial[MAXNAMEBUFFER];
-   char m_szPhysicsMaterial[MAXNAMEBUFFER];
    TimerDataRoot m_tdr;
    float m_height;
    float m_hitHeight;
    int m_thickness;
-   char m_szImage[MAXTOKEN];
-   float m_elasticity;
    float m_elasticityFalloff;
-   float m_friction;
-   float m_scatter;
    float m_rotX;
    float m_rotY;
    float m_rotZ;
-   bool m_hitEvent;
    bool m_staticRendering;
    bool m_showInEditor;
-
-   bool m_collidable;
-   bool m_visible;
-   bool m_reflectionEnabled;
-   bool m_overwritePhysics;
-};
+};  
 
 /////////////////////////////////////////////////////////////////////////////
 // Rubber

@@ -37,6 +37,8 @@ class PinTable;
 
 class IEditable;
 
+class TimerDataRoot;
+
 struct PropertyPane;
 
 enum SelectState
@@ -59,9 +61,12 @@ public:
     float m_elasticity;
     float m_friction;
     float m_scatter;
+    float m_threshold;
     bool  m_collidable;
     bool  m_hitEvent;
     bool  m_overwritePhysics;
+    bool  m_reflectionEnabled;
+    bool  m_visible;
 };
 
 // ISelect is the subclass for anything that can be manipulated with the mouse.

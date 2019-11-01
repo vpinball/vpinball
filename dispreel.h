@@ -11,11 +11,10 @@
 // DispReel
 
 // add data in this class is persisted with the table
-class DispReelData
+class DispReelData : public BaseProperty
 {
 public:
    Vertex2D    m_v1, m_v2;          // position on map (top right corner)
-   char        m_szImage[MAXTOKEN]; // image to use for the decals.
    int         m_imagesPerGridRow;
    int         m_reelcount;         // number of individual reel in the set
    float       m_width, m_height;   // size of each reel
@@ -31,7 +30,6 @@ public:
    TimerDataRoot m_tdr;             // timer information
    bool        m_transparent;      // is the background transparent
    bool        m_useImageGrid;
-   bool        m_visible;
 };
 
 class DispReel :

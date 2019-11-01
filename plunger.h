@@ -9,11 +9,10 @@
 
 const int MAXTIPSHAPE = 256;
 
-class PlungerData
+class PlungerData : public BaseProperty
 {
 public:
    COLORREF m_color;
-   char m_szMaterial[MAXNAMEBUFFER];
    Vertex2D m_v;
    float m_width;
    float m_height;
@@ -23,7 +22,6 @@ public:
    float m_speedFire;
    float m_mechStrength;
    PlungerType m_type;
-   char m_szImage[MAXTOKEN];
    int m_animFrames;
    TimerDataRoot m_tdr;
    float m_parkPosition;
@@ -41,8 +39,6 @@ public:
    float m_springEndLoops;
    bool m_mechPlunger;
    bool m_autoPlunger;
-   bool m_visible;
-   bool m_reflectionEnabled;
 };
 
 /////////////////////////////////////////////////////////////////////////////

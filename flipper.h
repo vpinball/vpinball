@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Flipper     // main symbols
 
-class FlipperData
+class FlipperData : public BaseProperty
 {
 public:
    float m_BaseRadius;
@@ -21,13 +21,10 @@ public:
    float m_EndAngle;
    float m_height;
    Vertex2D m_Center;
-   char m_szImage[MAXTOKEN];
-
    TimerDataRoot m_tdr;
 
    char m_szSurface[MAXTOKEN];
    COLORREF m_color;
-   char m_szMaterial[MAXNAMEBUFFER];
 
    COLORREF m_rubbercolor;
    char m_szRubberMaterial[MAXNAMEBUFFER];
@@ -37,15 +34,12 @@ public:
 
    float m_mass;
    float m_strength;
-   float m_elasticity;
    float m_elasticityFalloff;
-   float m_friction;
    float m_return;
    float m_rampUp;
    float m_torqueDamping;
    float m_torqueDampingAngle;
 
-   float m_scatter; // scatter angle on hit
    //float m_angleEOS; // angle at which EOS switch opens, as measured from EOS parked position //!! reenable?
 
    float m_OverrideMass;
@@ -62,7 +56,6 @@ public:
 
    bool  m_visible;
    bool  m_enabled;
-   bool  m_reflectionEnabled;
 };
 
 class Flipper :

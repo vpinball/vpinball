@@ -3,14 +3,12 @@
 
 #include "resource.h"       // main symbols
 
-class SurfaceData
+class SurfaceData : public BaseProperty
 {
 public:
    Vertex2D m_Center;
    TimerDataRoot m_tdr;
-   float m_threshold;			// speed at which ball needs to hit to register a hit
    float m_slingshot_threshold;	// speed at which ball needs to trigger slingshot 
-   char m_szImage[MAXTOKEN];
    char m_szSideImage[MAXTOKEN];
    char m_szTopMaterial[MAXNAMEBUFFER];
    char m_szSideMaterial[MAXNAMEBUFFER];
@@ -19,9 +17,6 @@ public:
    float m_heightbottom;
    float m_heighttop;
    float m_slingshotforce;
-   float m_elasticity;
-   float m_friction;
-   float m_scatter;
    float m_disableLightingTop;   // was bool, now 0..1
    float m_disableLightingBelow; // 0..1
    bool m_droppable;
@@ -29,13 +24,9 @@ public:
    bool m_displayTexture;        // in editor
    bool m_sideVisible;
    bool m_enabled;
-   bool m_collidable;            // wall must be droppable too!
    bool m_isBottomSolid;         // is the bottom closed (lower side of the 'cube') or not (legacy behavior has bottom open, e.g. balls can drop into walls from below, or leave them if inside walls (if bottom area is large enough of course))
    bool m_slingshotAnimation;
    bool m_topBottomVisible;
-   bool m_hitEvent;
-   bool m_reflectionEnabled;
-   bool m_overwritePhysics;
    bool m_inner; //!! Deprecated, do not use! Always true after loading! (was: Inside or outside wall)
 };
 
