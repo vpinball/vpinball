@@ -563,3 +563,109 @@ BOOL TimerProperty::OnCommand(WPARAM wParam, LPARAM lParam)
     }
     return FALSE;
 }
+
+void BasePropertyDialog::UpdateBaseProperties(ISelect *psel, const int dispid)
+{
+    if (!m_baseProperty || psel==NULL)
+        return;
+
+    switch (dispid)
+    {
+        case IDC_HIT_THRESHOLD_EDIT:
+            PropertyDialog::StartUndo(psel);
+            m_baseProperty->m_threshold = PropertyDialog::GetFloatTextbox(*m_baseHitThresholdEdit);
+            PropertyDialog::EndUndo(psel);
+            break;
+        case IDC_HAS_HITEVENT_CHECK:
+            PropertyDialog::StartUndo(psel);
+            m_baseProperty->m_hitEvent = PropertyDialog::GetCheckboxState(m_hHitEventCheck);
+            PropertyDialog::EndUndo(psel);
+            break;
+        case IDC_ELASTICITY_EDIT:
+            PropertyDialog::StartUndo(psel);
+            m_baseProperty->m_elasticity = PropertyDialog::GetFloatTextbox(*m_baseElasticityEdit);
+            PropertyDialog::EndUndo(psel);
+            break;
+        case IDC_COLLIDABLE_CHECK:
+            PropertyDialog::StartUndo(psel);
+            m_baseProperty->m_collidable = PropertyDialog::GetCheckboxState(m_hCollidableCheck);
+            PropertyDialog::EndUndo(psel);
+            break;
+        case IDC_REFLECT_ENABLED_CHECK:
+            PropertyDialog::StartUndo(psel);
+            m_baseProperty->m_collidable = PropertyDialog::GetCheckboxState(m_hReflectionEnabledCheck);
+            PropertyDialog::EndUndo(psel);
+            break;
+        case IDC_SCATTER_ANGLE_EDIT:
+            PropertyDialog::StartUndo(psel);
+            m_baseProperty->m_scatter = PropertyDialog::GetFloatTextbox(*m_baseScatterAngleEdit);
+            PropertyDialog::EndUndo(psel);
+            break;
+        case DISPID_Image:
+            PropertyDialog::StartUndo(psel);
+            PropertyDialog::GetComboBoxText(*m_baseImageCombo, m_baseProperty->m_szImage);
+            PropertyDialog::EndUndo(psel);
+            break;
+        case IDC_MATERIAL_COMBO:
+            PropertyDialog::StartUndo(psel);
+            PropertyDialog::GetComboBoxText(*m_baseMaterialCombo, m_baseProperty->m_szMaterial);
+            PropertyDialog::EndUndo(psel);
+            break;
+        case IDC_MATERIAL_COMBO4:
+            PropertyDialog::StartUndo(psel);
+            PropertyDialog::GetComboBoxText(*m_basePhysicsMaterialCombo, m_baseProperty->m_szPhysicsMaterial);
+            PropertyDialog::EndUndo(psel);
+            break;
+        case IDC_OVERWRITE_MATERIAL_SETTINGS:
+            PropertyDialog::StartUndo(psel);
+            m_baseProperty->m_overwritePhysics = PropertyDialog::GetCheckboxState(m_hOverwritePhysicsCheck);
+            PropertyDialog::EndUndo(psel);
+            break;
+    }
+}
+
+void BasePropertyDialog::UpdateBaseVisuals(ISelect *psel)
+{
+    if (!m_baseProperty)
+        return;
+
+    if (m_baseHitThresholdEdit)
+        PropertyDialog::SetFloatTextbox(*m_baseHitThresholdEdit, m_baseProperty->m_threshold);
+    if (m_baseElasticityEdit)
+        PropertyDialog::SetFloatTextbox(*m_baseElasticityEdit, m_baseProperty->m_elasticity);
+    if (m_baseFrictionEdit)
+        PropertyDialog::SetFloatTextbox(*m_baseFrictionEdit, m_baseProperty->m_friction);
+    if (m_baseScatterAngleEdit)
+        PropertyDialog::SetFloatTextbox(*m_baseScatterAngleEdit, m_baseProperty->m_scatter);
+    if (m_hHitEventCheck)
+        PropertyDialog::SetCheckboxState(m_hHitEventCheck, m_baseProperty->m_hitEvent);
+    if (m_hCollidableCheck)
+        PropertyDialog::SetCheckboxState(m_hCollidableCheck, m_baseProperty->m_collidable);
+    if (m_hReflectionEnabledCheck)
+        PropertyDialog::SetCheckboxState(m_hReflectionEnabledCheck, m_baseProperty->m_reflectionEnabled);
+    if (m_hVisibleCheck)
+        PropertyDialog::SetCheckboxState(m_hVisibleCheck, m_baseProperty->m_visible);
+    if(m_basePhysicsMaterialCombo)
+        PropertyDialog::UpdateMaterialComboBox(psel->GetPTable()->GetMaterialList(), *m_basePhysicsMaterialCombo, m_baseProperty->m_szPhysicsMaterial);
+    if(m_hOverwritePhysicsCheck)
+        PropertyDialog::SetCheckboxState(m_hOverwritePhysicsCheck, m_baseProperty->m_overwritePhysics);
+    if(m_baseMaterialCombo)
+        PropertyDialog::UpdateMaterialComboBox(psel->GetPTable()->GetMaterialList(), *m_baseMaterialCombo, m_baseProperty->m_szMaterial);
+    if (m_baseImageCombo)
+        PropertyDialog::UpdateTextureComboBox(psel->GetPTable()->GetImageList(), *m_baseImageCombo, m_baseProperty->m_szImage);
+
+    if (m_hCollidableCheck)
+    {
+        if(m_hHitEventCheck)            ::EnableWindow(m_hHitEventCheck, m_baseProperty->m_collidable);
+        if(m_hOverwritePhysicsCheck)         ::EnableWindow(m_hOverwritePhysicsCheck, m_baseProperty->m_collidable);
+        if(m_baseHitThresholdEdit)      m_baseHitThresholdEdit->EnableWindow(m_baseProperty->m_collidable);
+        if(m_basePhysicsMaterialCombo)  m_basePhysicsMaterialCombo->EnableWindow(m_baseProperty->m_collidable);
+        if(m_baseElasticityEdit)        m_baseElasticityEdit->EnableWindow(m_baseProperty->m_collidable);
+        if(m_baseFrictionEdit)          m_baseFrictionEdit->EnableWindow(m_baseProperty->m_collidable);
+        if(m_baseScatterAngleEdit)      m_baseScatterAngleEdit->EnableWindow(m_baseProperty->m_collidable);
+    }
+    if (m_hHitEventCheck && m_baseProperty->m_collidable)
+        if (m_baseHitThresholdEdit)      m_baseHitThresholdEdit->EnableWindow(m_baseProperty->m_hitEvent);
+    if (m_hOverwritePhysicsCheck && m_baseProperty->m_collidable)
+        if (m_basePhysicsMaterialCombo)  m_basePhysicsMaterialCombo->EnableWindow(!m_baseProperty->m_overwritePhysics);
+}

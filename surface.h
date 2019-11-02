@@ -13,7 +13,6 @@ public:
    char m_szTopMaterial[MAXNAMEBUFFER];
    char m_szSideMaterial[MAXNAMEBUFFER];
    char m_szSlingShotMaterial[MAXNAMEBUFFER];
-   char m_szPhysicsMaterial[MAXNAMEBUFFER];
    float m_heightbottom;
    float m_heighttop;
    float m_slingshotforce;
