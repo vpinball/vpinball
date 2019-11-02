@@ -7,12 +7,45 @@ class BasePropertyDialog: public CDialog
 public:
     BasePropertyDialog(int id, VectorProtected<ISelect> *pvsel) : CDialog(id), m_pvsel(pvsel)
     {
+        m_baseProperty = NULL;
+        m_baseHitThresholdEdit = NULL;
+        m_baseElasticityEdit = NULL;
+        m_baseFrictionEdit = NULL;
+        m_baseScatterAngleEdit = NULL;
+        m_basePhysicsMaterialCombo = NULL;
+        m_baseMaterialCombo = NULL;
+        m_baseImageCombo = NULL;
+        m_hCollidableCheck = 0;
+        m_hHitEventCheck = 0;
+        m_hOverwritePhysicsCheck = 0;
+        m_hReflectionEnabledCheck = 0;
+        m_hVisibleCheck = 0;
     }
-    virtual void UpdateProperties(const int dispid) = 0;
-    virtual void UpdateVisuals() = 0;
+    virtual void UpdateProperties(const int dispid)=0;
+    virtual void UpdateVisuals() =0;
+    void UpdateBaseProperties(ISelect *psel, const int dispid);
+    void UpdateBaseVisuals(ISelect *psel);
+
+    virtual void SetBaseProperty(BaseProperty *property)
+    {
+        m_baseProperty = property;
+    }
+
 protected:
     VectorProtected<ISelect> *m_pvsel;
-
+    BaseProperty    *m_baseProperty;
+    CEdit     *m_baseHitThresholdEdit;
+    CEdit     *m_baseElasticityEdit;
+    CEdit     *m_baseFrictionEdit;
+    CEdit     *m_baseScatterAngleEdit;
+    CComboBox *m_basePhysicsMaterialCombo;
+    CComboBox *m_baseMaterialCombo;
+    CComboBox *m_baseImageCombo;
+    HWND      m_hHitEventCheck;
+    HWND      m_hCollidableCheck;
+    HWND      m_hOverwritePhysicsCheck;
+    HWND      m_hReflectionEnabledCheck;
+    HWND      m_hVisibleCheck;
 };
 
 class TimerProperty: public BasePropertyDialog

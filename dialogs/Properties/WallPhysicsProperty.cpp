@@ -11,57 +11,22 @@ void WallPhysicsProperty::UpdateVisuals()
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
         Surface * const wall = (Surface*)m_pvsel->ElementAt(i);
-        PropertyDialog::UpdateMaterialComboBox(wall->GetPTable()->GetMaterialList(), m_physicsMaterialCombo, wall->m_d.m_szPhysicsMaterial);
-
-        PropertyDialog::SetFloatTextbox(m_hitThresholdEdit, wall->m_d.m_threshold);
         PropertyDialog::SetFloatTextbox(m_slingshotForceEdit, wall->m_d.m_slingshotforce);
         PropertyDialog::SetFloatTextbox(m_slingshotThresholdEdit, wall->m_d.m_slingshot_threshold);
-        PropertyDialog::SetFloatTextbox(m_elasticityEdit, wall->m_d.m_elasticity);
-        PropertyDialog::SetFloatTextbox(m_frictionEdit, wall->m_d.m_friction);
-        PropertyDialog::SetFloatTextbox(m_scatterAngleEdit, wall->m_d.m_scatter);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK), wall->m_d.m_hitEvent);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS), wall->m_d.m_overwritePhysics);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 11), wall->m_d.m_droppable);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK), wall->m_d.m_collidable);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 116), wall->m_d.m_isBottomSolid);
 
         if (!wall->m_d.m_collidable)
         {
             ::EnableWindow(::GetDlgItem(GetHwnd(), 116), FALSE);
-            ::EnableWindow(::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK), FALSE);
-            ::EnableWindow(::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS), FALSE);
-            m_hitThresholdEdit.EnableWindow(FALSE);
-            m_physicsMaterialCombo.EnableWindow(FALSE);
-            m_elasticityEdit.EnableWindow(FALSE);
-            m_frictionEdit.EnableWindow(FALSE);
-            m_scatterAngleEdit.EnableWindow(FALSE);
             m_slingshotForceEdit.EnableWindow(FALSE);
             m_slingshotThresholdEdit.EnableWindow(FALSE);
         }
         else
         {
             ::EnableWindow(::GetDlgItem(GetHwnd(), 116), TRUE);
-            ::EnableWindow(::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK), TRUE);
-            ::EnableWindow(::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS), TRUE);
-            m_slingshotForceEdit.EnableWindow(TRUE);
-            m_slingshotThresholdEdit.EnableWindow(TRUE);
-            m_hitThresholdEdit.EnableWindow(wall->m_d.m_hitEvent ? TRUE : FALSE);
-
-            if (!wall->m_d.m_overwritePhysics)
-            {
-                m_physicsMaterialCombo.EnableWindow(TRUE);
-                m_elasticityEdit.EnableWindow(FALSE);
-                m_frictionEdit.EnableWindow(FALSE);
-                m_scatterAngleEdit.EnableWindow(FALSE);
-            }
-            else
-            {
-                m_physicsMaterialCombo.EnableWindow(FALSE);
-                m_elasticityEdit.EnableWindow(TRUE);
-                m_frictionEdit.EnableWindow(TRUE);
-                m_scatterAngleEdit.EnableWindow(TRUE);
-            }
         }
+        UpdateBaseVisuals(wall);
     }
 }
 
@@ -72,16 +37,6 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
         Surface * const wall = (Surface*)m_pvsel->ElementAt(i);
         switch (dispid)
         {
-            case IDC_HIT_THRESHOLD_EDIT:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_threshold = PropertyDialog::GetFloatTextbox(m_hitThresholdEdit);
-                PropertyDialog::EndUndo(wall);
-                break;
-            case IDC_HAS_HITEVENT_CHECK:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_hitEvent = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(wall);
-                break;
             case 11:
                 PropertyDialog::StartUndo(wall);
                 wall->m_d.m_droppable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
@@ -92,29 +47,9 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
                 wall->m_d.m_slingshotforce = PropertyDialog::GetFloatTextbox(m_slingshotForceEdit);
                 PropertyDialog::EndUndo(wall);
                 break;
-            case IDC_ELASTICITY_EDIT:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_elasticity = PropertyDialog::GetFloatTextbox(m_elasticityEdit);
-                PropertyDialog::EndUndo(wall);
-                break;
-            case IDC_COLLIDABLE_CHECK:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_collidable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(wall);
-                break;
             case 427:
                 PropertyDialog::StartUndo(wall);
                 wall->m_d.m_slingshot_threshold = PropertyDialog::GetFloatTextbox(m_slingshotThresholdEdit);
-                PropertyDialog::EndUndo(wall);
-                break;
-            case IDC_FRICTION_EDIT:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_friction = PropertyDialog::GetFloatTextbox(m_frictionEdit);
-                PropertyDialog::EndUndo(wall);
-                break;
-            case IDC_SCATTER_ANGLE_EDIT:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_scatter = PropertyDialog::GetFloatTextbox(m_scatterAngleEdit);
                 PropertyDialog::EndUndo(wall);
                 break;
             case 116:
@@ -122,19 +57,10 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
                 wall->m_d.m_isBottomSolid = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(wall);
                 break;
-            case IDC_OVERWRITE_MATERIAL_SETTINGS:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_overwritePhysics = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(wall);
-                break;
-            case IDC_MATERIAL_COMBO:
-                PropertyDialog::StartUndo(wall);
-                PropertyDialog::GetComboBoxText(m_physicsMaterialCombo, wall->m_d.m_szPhysicsMaterial);
-                PropertyDialog::EndUndo(wall);
-                break;
             default:
                 break;
         }
+        UpdateBaseProperties(wall, dispid);
     }
     UpdateVisuals();
 }
@@ -148,6 +74,19 @@ BOOL WallPhysicsProperty::OnInitDialog()
     AttachItem(IDC_ELASTICITY_EDIT, m_elasticityEdit);
     AttachItem(IDC_FRICTION_EDIT, m_frictionEdit);
     AttachItem(IDC_SCATTER_ANGLE_EDIT, m_scatterAngleEdit);
+
+    m_baseHitThresholdEdit = &m_hitThresholdEdit;
+    m_baseElasticityEdit = &m_elasticityEdit;
+    m_baseFrictionEdit = &m_frictionEdit;
+    m_baseScatterAngleEdit = &m_scatterAngleEdit;
+    m_basePhysicsMaterialCombo = &m_physicsMaterialCombo;
+    m_hHitEventCheck = ::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK);
+    m_hCollidableCheck= ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
+    m_hOverwritePhysicsCheck = ::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS);
+
+    Surface * const wall = (Surface*)m_pvsel->ElementAt(0);
+    SetBaseProperty(&wall->m_d);
+
     UpdateVisuals();
     return TRUE;
 }
