@@ -462,6 +462,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <AdditionalOptions>/SAFESEH:NO
  %(AdditionalOptions)</AdditionalOptions>
       <LargeAddressAware>true</LargeAddressAware>
+      <Profile>true</Profile>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -528,6 +529,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <AdditionalOptions>/SAFESEH:NO
  %(AdditionalOptions)</AdditionalOptions>
       <LargeAddressAware>true</LargeAddressAware>
+      <Profile>true</Profile>
     </Link>
     <PostBuildEvent>
       <Command>%40echo off

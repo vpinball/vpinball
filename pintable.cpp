@@ -3481,7 +3481,7 @@ HRESULT PinTable::LoadGameFromFilename(char *szFileName)
    {
       MAKE_WIDEPTR_FROMANSI(wszCodeFile, szFileName);
       HRESULT hr;
-      if (FAILED(hr = StgOpenStorage(wszCodeFile, NULL, STGM_TRANSACTED | STGM_READ | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgRoot)))
+      if (FAILED(hr = StgOpenStorage(wszCodeFile, NULL, STGM_TRANSACTED | STGM_READ, NULL, 0, &pstgRoot)))
       {
          // TEXT
          char msg[MAXSTRING+16];
