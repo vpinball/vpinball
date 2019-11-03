@@ -2259,7 +2259,6 @@ Class cvpmVLock
 	End Sub
 
 	Public Sub SolExit(aEnabled)
-		debug.print "SolExit " & CStr(aEnabled)
 		Dim ii, mSwcopy
 		mGateOpen = aEnabled
 		If Not aEnabled Then Exit Sub
@@ -2305,7 +2304,6 @@ Class cvpmVLock
 	End Property
 
 	Public Sub TrigHit(aBall, aNo)
-		debug.print "TrigHit " & aNo & " GateOpen " & mGateOpen & " mBalls " & mBalls  
 		Dim mSwcopy
 		aNo = aNo - 1
 		If mSw(aNo) Then
