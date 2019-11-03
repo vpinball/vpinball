@@ -9,6 +9,8 @@
 #include "Properties/FlipperVisualsProperty.h"
 #include "Properties/FlipperPhysicsProperty.h"
 #include "Properties/DragpointVisualsProperty.h"
+#include "Properties/PlungerVisualsProperty.h"
+#include "Properties/PlungerPhysicsProperty.h"
 #include <WindowsX.h>
 
 
@@ -118,6 +120,13 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
         {
             m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new FlipperVisualsProperty(pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new FlipperPhysicsProperty(pvsel), _T("Physics")));
+            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
+        case eItemPlunger:
+        {
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new PlungerVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new PlungerPhysicsProperty(pvsel), _T("Physics")));
             m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }

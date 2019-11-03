@@ -134,7 +134,7 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
 BOOL RampVisualsProperty::OnInitDialog()
 {
     AttachItem(6, m_typeCombo);
-    AttachItem(1500, m_imageCombo);
+    AttachItem(DISPID_Image, m_imageCombo);
     AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
     AttachItem(8, m_modeCombo);
     AttachItem(IDC_DEPTH_BIAS, m_depthBiasEdit);
@@ -149,7 +149,7 @@ BOOL RampVisualsProperty::OnInitDialog()
     AttachItem(IDC_WIRE_DISTY, m_distanceYEdit);
 
     m_baseImageCombo = &m_imageCombo;
-    m_baseImageCombo = &m_materialCombo;
+    m_baseMaterialCombo = &m_materialCombo;
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
     m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
 

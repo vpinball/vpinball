@@ -161,6 +161,12 @@
     <ClCompile Include="dialogs\Properties\DragpointVisualsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\Properties\PlungerVisualsProperty.cpp">
+      <Filter>dialogs\Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\Properties\PlungerPhysicsProperty.cpp">
+      <Filter>dialogs\Properties</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1186,6 +1192,12 @@
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\Properties\DragpointVisualsProperty.h">
+      <Filter>dialogs\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\Properties\PlungerVisualsProperty.h">
+      <Filter>dialogs\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\Properties\PlungerPhysicsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
   </ItemGroup>
