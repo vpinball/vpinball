@@ -20,18 +20,16 @@ void FlipperPhysicsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
             continue;
-        const Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
+        Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
         PropertyDialog::SetFloatTextbox(m_massEdit, flipper->m_d.m_mass);
         PropertyDialog::SetFloatTextbox(m_strengthEdit, flipper->m_d.m_strength);
-        PropertyDialog::SetFloatTextbox(m_elasticityEdit, flipper->m_d.m_elasticity);
         PropertyDialog::SetFloatTextbox(m_elasticityFalloffEdit, flipper->m_d.m_elasticityFalloff);
-        PropertyDialog::SetFloatTextbox(m_frictionEdit, flipper->m_d.m_friction);
         PropertyDialog::SetFloatTextbox(m_returnStrengthEdit, flipper->m_d.m_return);
         PropertyDialog::SetFloatTextbox(m_coilUpRampEdit, flipper->m_d.m_rampUp);
-        PropertyDialog::SetFloatTextbox(m_scatterAngleEdit, flipper->m_d.m_scatter);
         PropertyDialog::SetFloatTextbox(m_eosTorqueEdit, flipper->m_d.m_torqueDamping);
         PropertyDialog::SetFloatTextbox(m_eosTorqueAngleEdit, flipper->m_d.m_torqueDampingAngle);
         PropertyDialog::UpdateComboBox(m_physicSetList, m_overwriteSettingsCombo, m_physicSetList[(int)flipper->m_d.m_OverridePhysics - 1].c_str());
+        UpdateBaseVisuals(flipper, &flipper->m_d);
     }
 }
 
@@ -49,19 +47,9 @@ void FlipperPhysicsProperty::UpdateProperties(const int dispid)
                 flipper->m_d.m_strength = PropertyDialog::GetFloatTextbox(m_strengthEdit);
                 PropertyDialog::EndUndo(flipper);
                 break;
-            case 21:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_elasticity = PropertyDialog::GetFloatTextbox(m_elasticityEdit);
-                PropertyDialog::EndUndo(flipper);
-                break;
             case 23:
                 PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_return = PropertyDialog::GetFloatTextbox(m_returnStrengthEdit);
-                PropertyDialog::EndUndo(flipper);
-                break;
-            case 26:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_friction = PropertyDialog::GetFloatTextbox(m_frictionEdit);
                 PropertyDialog::EndUndo(flipper);
                 break;
             case 27:
@@ -72,11 +60,6 @@ void FlipperPhysicsProperty::UpdateProperties(const int dispid)
             case 28:
                 PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_elasticityFalloff = PropertyDialog::GetFloatTextbox(m_elasticityFalloffEdit);
-                PropertyDialog::EndUndo(flipper);
-                break;
-            case 112:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_scatter = PropertyDialog::GetFloatTextbox(m_scatterAngleEdit);
                 PropertyDialog::EndUndo(flipper);
                 break;
             case 113:
@@ -100,6 +83,7 @@ void FlipperPhysicsProperty::UpdateProperties(const int dispid)
                 PropertyDialog::EndUndo(flipper);
                 break;
             default:
+                UpdateBaseProperties(flipper, &flipper->m_d, dispid);
                 break;
         }
     }
@@ -119,6 +103,9 @@ BOOL FlipperPhysicsProperty::OnInitDialog()
     AttachItem(113, m_eosTorqueEdit);
     AttachItem(189, m_eosTorqueAngleEdit);
     AttachItem(1044, m_overwriteSettingsCombo);
+    m_baseElasticityEdit = &m_elasticityEdit;
+    m_baseFrictionEdit = &m_frictionEdit;
+    m_baseScatterAngleEdit = &m_scatterAngleEdit;
     UpdateVisuals();
     return TRUE;
 }

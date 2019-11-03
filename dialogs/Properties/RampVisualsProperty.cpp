@@ -23,8 +23,6 @@ void RampVisualsProperty::UpdateVisuals()
             continue;
         Ramp * const ramp = (Ramp *)m_pvsel->ElementAt(i);
         PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)ramp->m_d.m_type - 1].c_str());
-        PropertyDialog::UpdateTextureComboBox(ramp->GetPTable()->GetImageList(), m_imageCombo, ramp->m_d.m_szImage);
-        PropertyDialog::UpdateMaterialComboBox(ramp->GetPTable()->GetMaterialList(), m_materialCombo, ramp->m_d.m_szMaterial);
         PropertyDialog::UpdateComboBox(m_imageModeList, m_modeCombo, m_imageModeList[(int)ramp->m_d.m_imagealignment - 1].c_str());
         PropertyDialog::SetFloatTextbox(m_depthBiasEdit, ramp->m_d.m_depthBias);
         PropertyDialog::SetFloatTextbox(m_topHeightEdit, ramp->m_d.m_heighttop);
@@ -37,8 +35,7 @@ void RampVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_distanceXEdit, ramp->m_d.m_wireDistanceX);
         PropertyDialog::SetFloatTextbox(m_distanceYEdit, ramp->m_d.m_wireDistanceY);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 9), ramp->m_d.m_imageWalls);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 112), ramp->m_d.m_visible);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK), ramp->m_d.m_reflectionEnabled);
+        UpdateBaseVisuals(ramp, &ramp->m_d);
     }
 }
 
@@ -127,6 +124,7 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
                 PropertyDialog::EndUndo(ramp);
                 break;
             default:
+                UpdateBaseProperties(ramp, &ramp->m_d, dispid);
                 break;
         }
     }
@@ -149,6 +147,12 @@ BOOL RampVisualsProperty::OnInitDialog()
     AttachItem(IDC_WIRE_DIAMETER, m_diameterEdit);
     AttachItem(IDC_WIRE_DISTX, m_distanceXEdit);
     AttachItem(IDC_WIRE_DISTY, m_distanceYEdit);
+
+    m_baseImageCombo = &m_imageCombo;
+    m_baseImageCombo = &m_materialCombo;
+    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
+    m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
+
     UpdateVisuals();
     return TRUE;
 }

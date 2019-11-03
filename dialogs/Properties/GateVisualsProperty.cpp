@@ -18,7 +18,6 @@ void GateVisualsProperty::UpdateVisuals()
             continue;
         Gate *gate = (Gate *)m_pvsel->ElementAt(i);
         PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)gate->m_d.m_type-1].c_str());
-        PropertyDialog::UpdateMaterialComboBox(gate->GetPTable()->GetMaterialList(), m_materialCombo, gate->m_d.m_szMaterial);
         PropertyDialog::UpdateSurfaceComboBox(gate->GetPTable(), m_surfaceCombo, gate->m_d.m_szSurface);
         PropertyDialog::SetFloatTextbox(m_xposEdit, gate->m_d.m_vCenter.x);
         PropertyDialog::SetFloatTextbox(m_yposEdit, gate->m_d.m_vCenter.y);
@@ -28,9 +27,8 @@ void GateVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_rotationEdit, gate->m_d.m_rotation);
         PropertyDialog::SetFloatTextbox(m_openAngleEdit, gate->m_d.m_angleMax);
         PropertyDialog::SetFloatTextbox(m_closeAngleEdit, gate->m_d.m_angleMin);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 14), gate->m_d.m_visible);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 15), gate->m_d.m_showBracket);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK), gate->m_d.m_reflectionEnabled);
+        UpdateBaseVisuals(gate, &gate->m_d);
     }
 }
 
@@ -48,11 +46,6 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
                 gate->m_d.m_type = (GateType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList)+1);
                 PropertyDialog::EndUndo(gate);
                 break;
-            case IDC_MATERIAL_COMBO:
-                PropertyDialog::StartUndo(gate);
-                PropertyDialog::GetComboBoxText(m_materialCombo, gate->m_d.m_szMaterial);
-                PropertyDialog::EndUndo(gate);
-                break;
             case 1502:
                 PropertyDialog::StartUndo(gate);
                 PropertyDialog::GetComboBoxText(m_surfaceCombo, gate->m_d.m_szSurface);
@@ -68,19 +61,9 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
                 gate->m_d.m_vCenter.y = PropertyDialog::GetFloatTextbox(m_yposEdit);
                 PropertyDialog::EndUndo(gate);
                 break;
-            case 14:
-                PropertyDialog::StartUndo(gate);
-                gate->m_d.m_visible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(gate);
-                break;
             case 15:
                 PropertyDialog::StartUndo(gate);
                 gate->m_d.m_showBracket = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(gate);
-                break;
-            case IDC_REFLECT_ENABLED_CHECK:
-                PropertyDialog::StartUndo(gate);
-                gate->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(gate);
                 break;
             case DISPID_Gate_Length:
@@ -109,6 +92,7 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
                 PropertyDialog::EndUndo(gate);
                 break;
             default:
+                UpdateBaseProperties(gate, &gate->m_d, dispid);
                 break;
         }
     }
@@ -118,15 +102,20 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
 BOOL GateVisualsProperty::OnInitDialog()
 {
     AttachItem(9, m_typeCombo);
-    AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
     AttachItem(1502, m_surfaceCombo);
     AttachItem(5, m_xposEdit);
     AttachItem(6, m_yposEdit);
+    AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
     AttachItem(DISPID_Gate_Length, m_lengthEdit);
     AttachItem(DISPID_Gate_Height1, m_heightEdit);
     AttachItem(DISPID_Gate_Rotation, m_rotationEdit);
     AttachItem(2145, m_openAngleEdit);
     AttachItem(2144, m_closeAngleEdit);
+
+    m_baseMaterialCombo = &m_materialCombo;
+    m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
+    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
+
     UpdateVisuals();
     return TRUE;
 }
