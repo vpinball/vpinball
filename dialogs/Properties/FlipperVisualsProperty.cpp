@@ -13,8 +13,6 @@ void FlipperVisualsProperty::UpdateVisuals()
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
             continue;
         Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
-        PropertyDialog::UpdateTextureComboBox(flipper->GetPTable()->GetImageList(), m_imageCombo, flipper->m_d.m_szImage);
-        PropertyDialog::UpdateMaterialComboBox(flipper->GetPTable()->GetMaterialList(), m_materialCombo, flipper->m_d.m_szMaterial);
         PropertyDialog::UpdateMaterialComboBox(flipper->GetPTable()->GetMaterialList(), m_rubberMaterialCombo, flipper->m_d.m_szRubberMaterial);
         PropertyDialog::SetFloatTextbox(m_rubberThicknessEdit, flipper->m_d.m_rubberthickness);
         PropertyDialog::SetFloatTextbox(m_rubberOffsetHeightEdit, flipper->m_d.m_rubberheight);
@@ -29,9 +27,8 @@ void FlipperVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_heightEdit, flipper->m_d.m_height);
         PropertyDialog::SetFloatTextbox(m_maxDifficultLengthEdit, flipper->m_d.m_FlipperRadiusMin);
         PropertyDialog::UpdateSurfaceComboBox(flipper->GetPTable(), m_surfaceCombo, flipper->m_d.m_szSurface);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 20), flipper->m_d.m_visible);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_FLIPPER_ENABLED), flipper->m_d.m_enabled);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK), flipper->m_d.m_reflectionEnabled);
+        UpdateBaseVisuals(flipper, &flipper->m_d);
     }
 }
 
@@ -84,11 +81,6 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
                 flipper->m_d.m_rubberthickness = PropertyDialog::GetFloatTextbox(m_rubberThicknessEdit);
                 PropertyDialog::EndUndo(flipper);
                 break;
-            case 20:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_visible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(flipper);
-                break;
             case 24:
                 PropertyDialog::StartUndo(flipper);
                 flipper->m_d.m_rubberheight = PropertyDialog::GetFloatTextbox(m_rubberOffsetHeightEdit);
@@ -119,21 +111,6 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
                 flipper->m_d.m_enabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(flipper);
                 break;
-            case IDC_REFLECT_ENABLED_CHECK:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(flipper);
-                break;
-            case DISPID_Image:
-                PropertyDialog::StartUndo(flipper);
-                PropertyDialog::GetComboBoxText(m_imageCombo, flipper->m_d.m_szImage);
-                PropertyDialog::EndUndo(flipper);
-                break;
-            case IDC_MATERIAL_COMBO:
-                PropertyDialog::StartUndo(flipper);
-                PropertyDialog::GetComboBoxText(m_materialCombo, flipper->m_d.m_szMaterial);
-                PropertyDialog::EndUndo(flipper);
-                break;
             case IDC_MATERIAL_COMBO2:
                 PropertyDialog::StartUndo(flipper);
                 PropertyDialog::GetComboBoxText(m_rubberMaterialCombo, flipper->m_d.m_szRubberMaterial);
@@ -141,6 +118,7 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
                 break;
 
             default:
+                UpdateBaseProperties(flipper, &flipper->m_d, dispid);
                 break;
         }
     }
@@ -165,6 +143,11 @@ BOOL FlipperVisualsProperty::OnInitDialog()
     AttachItem(107, m_heightEdit);
     AttachItem(111, m_maxDifficultLengthEdit);
     AttachItem(1502, m_surfaceCombo);
+
+    m_baseImageCombo = &m_imageCombo;
+    m_baseMaterialCombo = &m_materialCombo;
+    m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
+    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
     UpdateVisuals();
     return TRUE;
 }

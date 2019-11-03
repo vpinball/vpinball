@@ -12,14 +12,12 @@ void GatePhysicsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemGate))
             continue;
-        const Gate * const gate = (Gate *)m_pvsel->ElementAt(i);
+        Gate *gate = (Gate *)m_pvsel->ElementAt(i);
 
-        PropertyDialog::SetFloatTextbox(m_elasticityEdit, gate->m_d.m_elasticity);
-        PropertyDialog::SetFloatTextbox(m_frictionEdit, gate->m_d.m_friction);
         PropertyDialog::SetFloatTextbox(m_dampingEdit, gate->m_d.m_damping);
         PropertyDialog::SetFloatTextbox(m_gravityFactorEdit, gate->m_d.m_gravityfactor);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK), gate->m_d.m_collidable);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_TWO_WAY_CHECK), gate->m_d.m_twoWay);
+        UpdateBaseVisuals(gate, &gate->m_d);
     }
 }
 
@@ -32,16 +30,6 @@ void GatePhysicsProperty::UpdateProperties(const int dispid)
         Gate * const gate = (Gate *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
-            case IDC_ELASTICITY_EDIT:
-                PropertyDialog::StartUndo(gate);
-                gate->m_d.m_elasticity = PropertyDialog::GetFloatTextbox(m_elasticityEdit);
-                PropertyDialog::EndUndo(gate);
-                break;
-            case IDC_FRICTION_EDIT:
-                PropertyDialog::StartUndo(gate);
-                gate->m_d.m_friction = PropertyDialog::GetFloatTextbox(m_frictionEdit);
-                PropertyDialog::EndUndo(gate);
-                break;
             case 13:
                 PropertyDialog::StartUndo(gate);
                 gate->m_d.m_damping = PropertyDialog::GetFloatTextbox(m_dampingEdit);
@@ -52,11 +40,6 @@ void GatePhysicsProperty::UpdateProperties(const int dispid)
                 gate->m_d.m_gravityfactor = PropertyDialog::GetFloatTextbox(m_gravityFactorEdit);
                 PropertyDialog::EndUndo(gate);
                 break;
-            case IDC_COLLIDABLE_CHECK:
-                PropertyDialog::StartUndo(gate);
-                gate->m_d.m_collidable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(gate);
-                break;
             case IDC_TWO_WAY_CHECK:
                 PropertyDialog::StartUndo(gate);
                 gate->m_d.m_twoWay = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_TWO_WAY_CHECK));
@@ -64,6 +47,7 @@ void GatePhysicsProperty::UpdateProperties(const int dispid)
                 break;
 
             default:
+                UpdateBaseProperties(gate, &gate->m_d, dispid);
                 break;
         }
     }
@@ -72,10 +56,13 @@ void GatePhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL GatePhysicsProperty::OnInitDialog()
 {
-    AttachItem(IDC_ELASTICITY_EDIT, m_elasticityEdit);
-    AttachItem(IDC_FRICTION_EDIT, m_frictionEdit);
     AttachItem(13, m_dampingEdit);
     AttachItem(17, m_gravityFactorEdit);
+    AttachItem(IDC_ELASTICITY_EDIT, m_elasticityEdit);
+    AttachItem(IDC_FRICTION_EDIT, m_frictionEdit);
+    m_hCollidableCheck = ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
+    m_baseElasticityEdit = &m_elasticityEdit;
+    m_baseFrictionEdit = &m_frictionEdit;
     UpdateVisuals();
     return TRUE;
 }

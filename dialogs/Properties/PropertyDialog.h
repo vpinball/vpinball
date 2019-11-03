@@ -7,7 +7,6 @@ class BasePropertyDialog: public CDialog
 public:
     BasePropertyDialog(int id, VectorProtected<ISelect> *pvsel) : CDialog(id), m_pvsel(pvsel)
     {
-        m_baseProperty = NULL;
         m_baseHitThresholdEdit = NULL;
         m_baseElasticityEdit = NULL;
         m_baseFrictionEdit = NULL;
@@ -23,17 +22,11 @@ public:
     }
     virtual void UpdateProperties(const int dispid)=0;
     virtual void UpdateVisuals() =0;
-    void UpdateBaseProperties(ISelect *psel, const int dispid);
-    void UpdateBaseVisuals(ISelect *psel);
-
-    virtual void SetBaseProperty(BaseProperty *property)
-    {
-        m_baseProperty = property;
-    }
+    void UpdateBaseProperties(ISelect *psel, BaseProperty *property, const int dispid);
+    void UpdateBaseVisuals(ISelect *psel, BaseProperty *property);
 
 protected:
     VectorProtected<ISelect> *m_pvsel;
-    BaseProperty    *m_baseProperty;
     CEdit     *m_baseHitThresholdEdit;
     CEdit     *m_baseElasticityEdit;
     CEdit     *m_baseFrictionEdit;

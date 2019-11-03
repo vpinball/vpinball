@@ -26,7 +26,7 @@ void WallPhysicsProperty::UpdateVisuals()
         {
             ::EnableWindow(::GetDlgItem(GetHwnd(), 116), TRUE);
         }
-        UpdateBaseVisuals(wall);
+        UpdateBaseVisuals(wall, &wall->m_d);
     }
 }
 
@@ -58,9 +58,9 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
                 PropertyDialog::EndUndo(wall);
                 break;
             default:
+                UpdateBaseProperties(wall, &wall->m_d, dispid);
                 break;
         }
-        UpdateBaseProperties(wall, dispid);
     }
     UpdateVisuals();
 }
@@ -83,10 +83,7 @@ BOOL WallPhysicsProperty::OnInitDialog()
     m_hHitEventCheck = ::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK);
     m_hCollidableCheck= ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
     m_hOverwritePhysicsCheck = ::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS);
-
-    Surface * const wall = (Surface*)m_pvsel->ElementAt(0);
-    SetBaseProperty(&wall->m_d);
-
+    
     UpdateVisuals();
     return TRUE;
 }

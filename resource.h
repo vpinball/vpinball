@@ -706,6 +706,7 @@
 #define IDC_NUDGE_STRENGTH              456
 #define IDC_COLOR_FULL                  457
 #define IDC_REEL_VISIBLE                458
+#define IDC_VISIBLE_CHECK               458
 #define IDC_BG_NIGHT_DAY                459
 #define IDC_CORRECTION_X                460
 #define IDC_CORRECTION_Y                461
@@ -1179,7 +1180,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        649
+#define _APS_NEXT_RESOURCE_VALUE        650
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         829
 #define _APS_NEXT_SYMED_VALUE           188

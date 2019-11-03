@@ -7,40 +7,28 @@
 
 #include "resource.h"       // main symbols
 
-class RampData
+class RampData : public BaseProperty
 {
 public:
-   char m_szMaterial[MAXNAMEBUFFER];
-   char m_szPhysicsMaterial[MAXNAMEBUFFER];
    TimerDataRoot m_tdr;
    float m_heightbottom;
    float m_heighttop;
    float m_widthbottom;
    float m_widthtop;
    RampType m_type;
-   char m_szImage[MAXTOKEN];
    RampImageAlignment m_imagealignment;
    float m_leftwallheight;
    float m_rightwallheight;
    float m_leftwallheightvisible;
    float m_rightwallheightvisible;
 
-   float m_threshold;      // speed at which ball needs to hit to register a hit
-   float m_elasticity;
-   float m_friction;
-   float m_scatter;
    float m_wireDiameter;
    float m_wireDistanceX;
    float m_wireDistanceY;
 
    float m_depthBias;      // for determining depth sorting
 
-   bool m_hitEvent;
-   bool m_collidable;
-   bool m_visible;
    bool m_imageWalls;
-   bool m_reflectionEnabled;
-   bool m_overwritePhysics;
 };
 
 /////////////////////////////////////////////////////////////////////////////
