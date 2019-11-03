@@ -977,8 +977,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(18), helpstring("property RubberThickness")] HRESULT RubberThickness([in] float newVal);
                 [propget, id(19), helpstring("property Strength")] HRESULT Strength([out, retval] float *pVal);
                 [propput, id(19), helpstring("property Strength")] HRESULT Strength([in] float newVal);
-                [propget, id(20), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
-                [propput, id(20), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
+                [propget, id(458), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(458), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
                 [propget, id(394), helpstring("property Enabled")] HRESULT Enabled([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(394), helpstring("property Enabled")] HRESULT Enabled([in] VARIANT_BOOL newVal);
                 [propget, id(110), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);

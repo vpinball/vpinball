@@ -10,9 +10,12 @@
 #define DISPID_DispReel_FontColor2      3
 #define IDC_ADD                         3
 #define DISPID_SIZE_Z                   3
+#define IDC_PULL_SPEED                  3
+#define IDC_PULL_SPEED_EDIT             3
 #define DISPID_Gate_Rotation            4
 #define DISPID_Textbox_Font             4
 #define DISPID_POSITION_Z               4
+#define IDC_RELEASE_SPEED_EDIT          4
 #define DISPID_SIZE_X                   5
 #define DISPID_Surface_SideColor        6
 #define DISPID_SIZE_Y                   6
@@ -77,25 +80,32 @@
 #define ID_INSERT_WALL                  110
 #define IDC_LIGHT                       110
 #define IDS_LAYER2                      110
+#define IDC_ENABLE_MECH_PLUNGER_CHECK   110
 #define ID_INSERT_FLIPPER               111
 #define IDS_LAYER3                      111
 #define IDS                             111
 #define IDC_COLLIDABLE_CHECK            111
+#define IDC_MECH_STRENGTH_EDIT          111
 #define IDS_TIMER_DESC                  112
+#define IDC_PARK_POSITION_EDIT          112
 #define IDR_TIMER                       113
 #define IDS_LAYER4                      113
+#define IDC_STROKE_LENGTH_EDIT          113
 #define IDC_FRICTION_EDIT               114
 #define ID_INSERT_TIMER                 114
 #define IDS_LAYER5                      114
+#define IDC_SCATTER_VELOCITY_EDIT       114
 #define IDS_PLUNGER_DESC                115
 #define IDC_SCATTER_ANGLE_EDIT          115
 #define IDR_PLUNGER                     116
 #define IDS_TB_PLUNGER                  116
+#define IDC_AUTO_PLUNGER_CHECK          116
 #define ID_INSERT_PLUNGER               117
 #define IDC_PLUNGER_TEXT                117
 #define IDS_LAYER6                      117
 #define IDS_TEXTBOX_DESC                118
 #define IDC_STARTGAME                   118
+#define IDC_MOMENTUM_XFER_EDIT          118
 #define IDR_TEXTBOX                     119
 #define IDS_TB_TEXTBOX                  119
 #define IDC_LMAGSAVE                    119
@@ -570,6 +580,7 @@
 #define IDI_TRIGGER                     389
 #define IDD_PROPTABLE_LIGHTSOURCES      390
 #define IDI_DECAL                       390
+#define IDC_PLUNGER_TYPE_COMBO          390
 #define IDD_SEARCH_SELECT_ELEMENT       391
 #define IDI_KICKER                      391
 #define IDD_DRAWING_ORDER               392
@@ -1180,7 +1191,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        650
+#define _APS_NEXT_RESOURCE_VALUE        652
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         829
 #define _APS_NEXT_SYMED_VALUE           188
