@@ -43,7 +43,7 @@ bool CGpuProfiler::Init (IDirect3DDevice9 * const pDevice)
 
 	if (tsHr != D3D_OK || tsdHr != D3D_OK || tsfHr != D3D_OK)
 	{
-		ErrorPrintf("GPU Profiler: Query not supported");
+		//ErrorPrintf("GPU Profiler: Query not supported");
 		return false;
 	}
 
