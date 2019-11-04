@@ -5,6 +5,7 @@
 #define DISPID_Textbox_BackColor        1
 #define DISPID_Textbox_FontColor        2
 #define DISPID_Light_State              2
+#define IDC_FORCE_EDIT                  2
 #define DISPID_Gate_Length              3
 #define DISPID_Spinner_Length           3
 #define DISPID_DispReel_FontColor2      3
@@ -23,6 +24,7 @@
 #define DISPID_POSITION_X               7
 #define DISPID_Gate_Rotation3           8
 #define DISPID_POSITION_Y               8
+#define IDC_BUMPER_RADIUS_EDIT          8
 #define DISPID_Decal_SizingType         9
 #define DISPID_Surface_FaceColor        10
 #define DISPID_Light_BlinkInterval      10
@@ -52,6 +54,7 @@
 #define DISPID_ROTRA8                   22
 #define DISPID_ROTRA9                   23
 #define DISPID_HEIGHTOFFSET             24
+#define IDC_BUMPER_HEIGHT_SCALE_EDIT    24
 #define IDC_ORIENTATION_EDIT            25
 #define IDC_RINGSPEED_EDIT              26
 #define IDC_RINGDROPOFFSET_EDIT         27
@@ -76,11 +79,13 @@
 #define IDC_SELECT                      109
 #define DISPID_Table_GridSize           109
 #define IDS_ASSIGNTO                    109
+#define IDC_CAP_VISIBLE_CHECK           109
 #define IDC_ELASTICITY_EDIT             110
 #define ID_INSERT_WALL                  110
 #define IDC_LIGHT                       110
 #define IDS_LAYER2                      110
 #define IDC_ENABLE_MECH_PLUNGER_CHECK   110
+#define IDC_BASE_VISIBLE_CHECK          110
 #define ID_INSERT_FLIPPER               111
 #define IDS_LAYER3                      111
 #define IDS                             111
@@ -402,7 +407,6 @@
 #define IDD_PROPLIGHT_STATE             291
 #define IDD_PROPBUMPER_PHYSICS          292
 #define ID_QUIT                         293
-#define IDD_PROPBUMPER_STATE            293
 #define ID_RESUME                       294
 #define ID_DEBUGWINDOW                  295
 #define IDD_PHYSICS_OPTIONS             297
