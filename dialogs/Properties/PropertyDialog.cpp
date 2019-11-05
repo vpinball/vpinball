@@ -13,6 +13,8 @@
 #include "Properties/PlungerPhysicsProperty.h"
 #include "Properties/BumperVisualsProperty.h"
 #include "Properties/BumperPhysicsProperty.h"
+#include "Properties/SpinnerVisualsProperty.h"
+#include "Properties/SpinnerPhysicsProperty.h"
 #include <WindowsX.h>
 
 
@@ -136,6 +138,13 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
         {
             m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new BumperVisualsProperty(pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new BumperPhysicsProperty(pvsel), _T("Physics")));
+            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
+        case eItemSpinner:
+        {
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new SpinnerVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new SpinnerPhysicsProperty(pvsel), _T("Physics")));
             m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }

@@ -22,6 +22,7 @@
 #define DISPID_SIZE_Y                   6
 #define DISPID_Surface_SideColor2       7
 #define DISPID_POSITION_X               7
+#define IDC_DAMPING_EDIT                7
 #define DISPID_Gate_Rotation3           8
 #define DISPID_POSITION_Y               8
 #define IDC_BUMPER_RADIUS_EDIT          8
@@ -76,6 +77,7 @@
 #define IDC_TABLE_SCALEZ                108
 #define IDR_FLIPPER                     108
 #define IDS_LAYER1                      108
+#define IDC_SHOW_BRACKET_CHECK          108
 #define IDC_SELECT                      109
 #define DISPID_Table_GridSize           109
 #define IDS_ASSIGNTO                    109
@@ -457,7 +459,6 @@
 #define IDS_DEBUGNOCONVERT              341
 #define IDC_MATERIAL_COMBO2             341
 #define IDB_CHEVRON                     342
-#define IDD_PROPSPINNER_POSITION        342
 #define IDS_UNDOPASTSAVE                342
 #define IDD_PROPSPINNER_PHYSICS         343
 #define IDC_ACTIVEX0                    343
@@ -1038,6 +1039,7 @@
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
 #define DISPID_Surface                  1502
+#define IDC_SURFACE_COMBO               1502
 #define DISPID_Shape                    1503
 #define DISPID_UserValue                1504
 #define DISPID_Image3                   1505
@@ -1195,7 +1197,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        652
+#define _APS_NEXT_RESOURCE_VALUE        653
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         829
 #define _APS_NEXT_SYMED_VALUE           188

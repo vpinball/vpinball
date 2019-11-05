@@ -46,7 +46,7 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
                 gate->m_d.m_type = (GateType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList)+1);
                 PropertyDialog::EndUndo(gate);
                 break;
-            case 1502:
+            case IDC_SURFACE_COMBO:
                 PropertyDialog::StartUndo(gate);
                 PropertyDialog::GetComboBoxText(m_surfaceCombo, gate->m_d.m_szSurface);
                 PropertyDialog::EndUndo(gate);
@@ -102,7 +102,7 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
 BOOL GateVisualsProperty::OnInitDialog()
 {
     AttachItem(9, m_typeCombo);
-    AttachItem(1502, m_surfaceCombo);
+    AttachItem(IDC_SURFACE_COMBO, m_surfaceCombo);
     AttachItem(5, m_xposEdit);
     AttachItem(6, m_yposEdit);
     AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
