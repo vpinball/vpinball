@@ -1976,8 +1976,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(13), helpstring("property AngleMax")] HRESULT AngleMax([in] float newVal);
                 [propget, id(14), helpstring("property AngleMin")] HRESULT AngleMin([out, retval] float *pVal);
                 [propput, id(14), helpstring("property AngleMin")] HRESULT AngleMin([in] float newVal);
-                [propget, id(15), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
-                [propput, id(15), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
+                [propget, id(110), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
+                [propput, id(110), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
                 [propget, id(458), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(458), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
                 [propget, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([out, retval] VARIANT_BOOL *pVal);

@@ -914,9 +914,6 @@ void Spinner::GetDialogPanes(vector<PropertyPane*> &pvproppane)
    pproppane = new PropertyPane(IDD_PROPSPINNER_VISUALS, IDS_VISUALS);
    pvproppane.push_back(pproppane);
 
-   pproppane = new PropertyPane(IDD_PROPSPINNER_POSITION, IDS_POSITION);
-   pvproppane.push_back(pproppane);
-
    pproppane = new PropertyPane(IDD_PROPSPINNER_PHYSICS, IDS_PHYSICS);
    pvproppane.push_back(pproppane);
 

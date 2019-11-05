@@ -100,7 +100,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x86;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>C:\Tools\squishcoco\visualstudio;$(DXSDK_DIR)Utilities\Bin\x86;$(ExecutablePath)</ExecutablePath>
     <TargetName>VPinballX</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
@@ -112,7 +112,7 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>C:\Tools\squishcoco\visualstudio;$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
     <TargetName>VPinballX</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>false</LinkIncremental>
@@ -568,6 +568,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\Properties\PropertyDialog.cpp" />
     <ClCompile Include="dialogs\Properties\RampPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\RampVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\SpinnerPhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\SpinnerVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\WallPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\WallVisualsProperty.cpp" />
     <ClCompile Include="Dialogs\SearchSelectDialog.cpp" />
@@ -1656,6 +1658,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="dialogs\Properties\PropertyDialog.h" />
     <ClInclude Include="dialogs\Properties\RampPhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\RampVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\SpinnerPhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\SpinnerVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\WallPhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\WallVisualsProperty.h" />
     <ClInclude Include="Dialogs\SearchSelectDialog.h" />
