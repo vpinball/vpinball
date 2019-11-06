@@ -15,6 +15,8 @@
 #include "Properties/BumperPhysicsProperty.h"
 #include "Properties/SpinnerVisualsProperty.h"
 #include "Properties/SpinnerPhysicsProperty.h"
+#include "Properties/TriggerVisualsProperty.h"
+#include "Properties/TriggerPhysicsProperty.h"
 #include <WindowsX.h>
 
 
@@ -145,6 +147,18 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
         {
             m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new SpinnerVisualsProperty(pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new SpinnerPhysicsProperty(pvsel), _T("Physics")));
+            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
+        case eItemTimer:
+        {
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
+        case eItemTrigger:
+        {
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TriggerVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TriggerPhysicsProperty(pvsel), _T("Physics")));
             m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }

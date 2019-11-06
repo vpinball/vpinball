@@ -118,7 +118,7 @@ void BumperVisualsProperty::UpdateProperties(const int dispid)
                 bumper->m_d.m_vCenter.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
                 PropertyDialog::EndUndo(bumper);
                 break;
-            case 1502:
+            case IDC_SURFACE_COMBO:
                 PropertyDialog::StartUndo(bumper);
                 PropertyDialog::GetComboBoxText(m_surfaceCombo, bumper->m_d.m_szSurface);
                 PropertyDialog::EndUndo(bumper);

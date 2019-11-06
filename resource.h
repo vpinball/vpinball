@@ -424,6 +424,7 @@
 #define IDC_SUPPRESS                    312
 #define ID_INSERT_LIGHTSEQ              313
 #define IDS_TB_LIGHTSEQ                 314
+#define IDC_HIT_HEIGHT_EDIT             314
 #define IDC_LIGHTSEQ                    315
 #define IDS_REPLACEALL                  315
 #define IDD_PROPLIGHTSEQ                316
@@ -1197,7 +1198,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        653
+#define _APS_NEXT_RESOURCE_VALUE        654
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         829
 #define _APS_NEXT_SYMED_VALUE           188
