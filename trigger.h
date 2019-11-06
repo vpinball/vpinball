@@ -7,7 +7,7 @@
 
 #include "resource.h"       // main symbols
 
-class TriggerData
+class TriggerData : public BaseProperty
 {
 public:
    Vertex2D m_vCenter;
@@ -15,7 +15,6 @@ public:
    TimerDataRoot m_tdr;
    char m_szSurface[MAXTOKEN];
    TriggerShape m_shape;
-   char m_szMaterial[MAXNAMEBUFFER];
    float m_rotation;
    float m_scaleX;
    float m_scaleY;
@@ -24,8 +23,6 @@ public:
    float m_animSpeed;
    float m_wireThickness;
    bool m_enabled;
-   bool m_visible;
-   bool m_reflectionEnabled;
 };
 
 /////////////////////////////////////////////////////////////////////////////
