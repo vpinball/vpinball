@@ -8,7 +8,7 @@
 #include "resource.h"       // main symbols
 #include "RenderDevice.h"
 
-class LightData
+class LightData : public BaseProperty
 {
 public:
    Vertex2D m_vCenter;
@@ -31,12 +31,10 @@ public:
    //float m_borderwidth;
    //COLORREF m_bordercolor;
    char m_szSurface[MAXTOKEN];
-   char m_szOffImage[MAXTOKEN];
 
    float m_depthBias; // for determining depth sorting
    float m_bulbHaloHeight;
 
-   bool m_visible;
    bool m_imageMode;  // true = pass through/no lighting, false = use surface material
    bool m_BulbLight;
    bool m_showBulbMesh;
@@ -120,7 +118,7 @@ public:
    virtual bool RenderToLightBuffer() const { return m_d.m_BulbLight && (m_d.m_transmissionScale > 0.f) && !m_backglass; }
    virtual float GetDepth(const Vertex3Ds& viewDir) const;
    virtual unsigned long long GetMaterialID() const { return m_surfaceMaterial ? m_surfaceMaterial->hash() : 64 - 2; } //!! 2 = some constant number
-   virtual unsigned long long GetImageID() const { return (m_d.m_BulbLight ? 0 : (unsigned long long)(m_ptable->GetImage(m_d.m_szOffImage))); }
+   virtual unsigned long long GetImageID() const { return (m_d.m_BulbLight ? 0 : (unsigned long long)(m_ptable->GetImage(m_d.m_szImage))); }
    virtual ItemTypeEnum HitableGetItemType() const { return eItemLight; }
    virtual void UpdatePropertyPanes();
    virtual void AddPoint(int x, int y, const bool smooth);
@@ -138,6 +136,8 @@ public:
    LightState m_realState;
    float m_surfaceHeight;
    bool  m_lockedByLS;
+   char m_rgblinkpattern[33];
+   int m_blinkinterval;
 
 private:
 
@@ -256,8 +256,6 @@ public:
 
    // was: class IBlink
 private:
-   char m_rgblinkpattern[33];
-   int m_blinkinterval;
    int m_duration;
    int m_finalState;
 

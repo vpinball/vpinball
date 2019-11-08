@@ -15,6 +15,8 @@ void TriggerPhysicsProperty::UpdateVisuals()
         Trigger *trigger = (Trigger *)m_pvsel->ElementAt(i);
         PropertyDialog::SetFloatTextbox(m_hitHeightEdit, trigger->m_d.m_hit_height);
         PropertyDialog::SetCheckboxState(m_hEnableCheck, trigger->m_d.m_enabled);
+        //only show the first element on multi-select
+        break;
     }
 }
 

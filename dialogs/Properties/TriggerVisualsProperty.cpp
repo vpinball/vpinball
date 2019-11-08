@@ -4,6 +4,7 @@
 
 TriggerVisualsProperty::TriggerVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_VISUALS, pvsel)
 {
+    m_shapeList.push_back("TriggerNone");
     m_shapeList.push_back("TriggerWireA");
     m_shapeList.push_back("TriggerStar");
     m_shapeList.push_back("TriggerWireB");
@@ -21,7 +22,7 @@ void TriggerVisualsProperty::UpdateVisuals()
             continue;
         Trigger *trigger = (Trigger *)m_pvsel->ElementAt(i);
 
-        PropertyDialog::UpdateComboBox(m_shapeList, m_shapeCombo, m_shapeList[(int)trigger->m_d.m_shape - 1].c_str());
+        PropertyDialog::UpdateComboBox(m_shapeList, m_shapeCombo, m_shapeList[(int)trigger->m_d.m_shape].c_str());
         PropertyDialog::SetFloatTextbox(m_posXEdit, trigger->m_d.m_vCenter.x);
         PropertyDialog::SetFloatTextbox(m_posYEdit, trigger->m_d.m_vCenter.y);
         PropertyDialog::SetCheckboxState(m_hVisibleCheck, trigger->m_d.m_visible);
@@ -32,6 +33,8 @@ void TriggerVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_animationSpeedEdit, trigger->m_d.m_animSpeed);
         PropertyDialog::UpdateSurfaceComboBox(trigger->GetPTable(), m_surfaceCombo, trigger->m_d.m_szSurface);
         UpdateBaseVisuals(trigger, &trigger->m_d);
+        //only show the first element on multi-select
+        break;
     }
 }
 
@@ -46,7 +49,7 @@ void TriggerVisualsProperty::UpdateProperties(const int dispid)
         {
             case 1503:
                 PropertyDialog::StartUndo(trigger);
-                trigger->m_d.m_shape = (TriggerShape)(PropertyDialog::GetComboBoxIndex(m_shapeCombo, m_shapeList) + 1);
+                trigger->m_d.m_shape = (TriggerShape)(PropertyDialog::GetComboBoxIndex(m_shapeCombo, m_shapeList));
                 PropertyDialog::EndUndo(trigger);
                 break;
             case 902:

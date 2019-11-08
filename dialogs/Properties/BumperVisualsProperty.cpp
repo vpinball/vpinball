@@ -31,6 +31,8 @@ void BumperVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_posYEdit, bumper->m_d.m_vCenter.y);
         PropertyDialog::UpdateSurfaceComboBox(bumper->GetPTable(), m_surfaceCombo, bumper->m_d.m_szSurface);
         UpdateBaseVisuals(bumper, &bumper->m_d);
+        //only show the first element on multi-select
+        break;
     }
 }
 

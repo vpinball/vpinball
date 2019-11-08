@@ -7496,7 +7496,7 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
                case eItemLight:
                {
                    Light * const pLight = (Light*)pEdit;
-                   if (_stricmp(pLight->m_d.m_szOffImage, ppi->m_szName) == 0)
+                   if (_stricmp(pLight->m_d.m_szImage, ppi->m_szName) == 0)
                        inUse = true;
                    break;
                }

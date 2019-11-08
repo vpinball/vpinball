@@ -29,6 +29,8 @@ void GateVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_closeAngleEdit, gate->m_d.m_angleMin);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 15), gate->m_d.m_showBracket);
         UpdateBaseVisuals(gate, &gate->m_d);
+        //only show the first element on multi-select
+        break;
     }
 }
 

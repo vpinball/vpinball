@@ -27,6 +27,8 @@ void WallPhysicsProperty::UpdateVisuals()
             ::EnableWindow(::GetDlgItem(GetHwnd(), 116), TRUE);
         }
         UpdateBaseVisuals(wall, &wall->m_d);
+        //only show the first element on multi-select
+        break;
     }
 }
 

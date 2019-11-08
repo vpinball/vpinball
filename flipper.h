@@ -54,7 +54,6 @@ public:
    float m_OverrideScatterAngle;
    int m_OverridePhysics;
 
-   bool  m_visible;
    bool  m_enabled;
 };
 

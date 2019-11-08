@@ -16,6 +16,8 @@ void BumperPhysicsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_forceEdit, bumper->m_d.m_force);
         m_forceEdit.EnableWindow(bumper->m_d.m_collidable);
         UpdateBaseVisuals(bumper, &bumper->m_d);
+        //only show the first element on multi-select
+        break;
     }
 }
 

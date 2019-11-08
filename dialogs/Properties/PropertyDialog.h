@@ -55,6 +55,86 @@ private:
     CEdit   m_userValueEdit;
 };
 
+class ColorButton: public CButton
+{
+public:
+    ColorButton() : m_color(0)
+    {
+    }
+    ~ColorButton(){}
+    
+    void SetColor(COLORREF color)
+    {
+        m_color = color;
+        InvalidateRect(FALSE);
+        //UpdateWindow();
+    }
+
+    virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+    {
+              // get the device context and attach the button handle to it
+        TRIVERTEX vertex[2];
+
+        CDC dc;
+        dc.Attach(lpDrawItemStruct->hDC);
+          // determine the button rectangle
+        CRect rect = lpDrawItemStruct->rcItem;
+        
+        // draw in the button text
+        dc.DrawText(GetWindowText(), -1, rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+        // get the current state of the button
+        UINT state = lpDrawItemStruct->itemState;
+        if ((state & ODS_SELECTED))   // if it is pressed
+        {
+            dc.DrawEdge(rect, EDGE_SUNKEN, BF_RECT); // draw a sunken face
+        }
+        else
+        {
+            dc.DrawEdge(rect, EDGE_RAISED, BF_RECT); // draw a raised face
+        }
+          // draw the focus rectangle, a dotted rectangle just inside the
+          // button rectangle when the button has the focus.
+        if (lpDrawItemStruct->itemAction & ODA_FOCUS)
+        {
+            int iChange = 3;
+            rect.top += iChange;
+            rect.left += iChange;
+            rect.right -= iChange;
+            rect.bottom -= iChange;
+            dc.DrawFocusRect(rect);
+        }
+        unsigned char r, g, b;
+
+        r = GetRValue(m_color);
+        g = GetGValue(m_color);
+        b = GetBValue(m_color);
+        vertex[0].x = rect.TopLeft().x;
+        vertex[0].y = rect.TopLeft().y;
+        vertex[0].Red = (r << 8) + r;
+        vertex[0].Green = (g << 8) + g;
+        vertex[0].Blue = (b << 8) + b;
+        // do some shading
+        r = (unsigned char)(r * .9f);
+        g = (unsigned char)(g * .9f);
+        b = (unsigned char)(b * .9f);
+        vertex[1].x = rect.BottomRight().x;
+        vertex[1].y = rect.BottomRight().y;
+        vertex[1].Red = (r << 8) + r;
+        vertex[1].Green = (g << 8) + g;
+        vertex[1].Blue = (b << 8) + b;
+
+        GRADIENT_RECT gRect;
+        gRect.UpperLeft = 0;
+        gRect.LowerRight = 1;
+
+        GradientFill(lpDrawItemStruct->hDC, vertex, 2, &gRect, 1, GRADIENT_FILL_RECT_H);
+
+        dc.Detach();
+    }
+private:
+    COLORREF m_color;
+};
+
 class PropertyDialog : public CDialog
 {
 public:

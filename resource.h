@@ -27,6 +27,7 @@
 #define DISPID_POSITION_Y               8
 #define IDC_BUMPER_RADIUS_EDIT          8
 #define DISPID_Decal_SizingType         9
+#define IDC_BLINK_PATTERN_EDIT          9
 #define DISPID_Surface_FaceColor        10
 #define DISPID_Light_BlinkInterval      10
 #define DISPID_Light_BlinkInterval2     11
@@ -965,7 +966,9 @@
 #define IDC_DBG_MATERIALS_BUTTON        765
 #define IDC_POINT_PASTE_BUTTON          765
 #define IDC_SET_DEFAULTS_BUTTON         765
+#define IDC_COLOR_BUTTON1               765
 #define IDC_DBG_BULB_MODULATE_VS_ADD    766
+#define IDC_COLOR_BUTTON2               766
 #define IDC_DBG_TRANSMISSION_SCALE      767
 #define IDC_STATIC_GLOSSY_IMGLERP       768
 #define IDC_EDIT1                       769
@@ -1198,9 +1201,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        654
+#define _APS_NEXT_RESOURCE_VALUE        656
 #define _APS_NEXT_COMMAND_VALUE         4022
-#define _APS_NEXT_CONTROL_VALUE         829
+#define _APS_NEXT_CONTROL_VALUE         830
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

@@ -29,6 +29,8 @@ void FlipperVisualsProperty::UpdateVisuals()
         PropertyDialog::UpdateSurfaceComboBox(flipper->GetPTable(), m_surfaceCombo, flipper->m_d.m_szSurface);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_FLIPPER_ENABLED), flipper->m_d.m_enabled);
         UpdateBaseVisuals(flipper, &flipper->m_d);
+        //only show the first element on multi-select
+        break;
     }
 }
 

@@ -25,6 +25,8 @@ void WallVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_topHeightEdit, wall->m_d.m_heighttop);
         PropertyDialog::SetFloatTextbox(m_bottomHeightEdit, wall->m_d.m_heightbottom);
         UpdateBaseVisuals(wall, &wall->m_d);
+        //only show the first element on multi-select
+        break;
     }
 }
 

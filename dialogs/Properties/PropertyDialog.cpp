@@ -17,6 +17,8 @@
 #include "Properties/SpinnerPhysicsProperty.h"
 #include "Properties/TriggerVisualsProperty.h"
 #include "Properties/TriggerPhysicsProperty.h"
+#include "Properties/LightVisualsProperty.h"
+#include "Properties/LightStatesProperty.h"
 #include <WindowsX.h>
 
 
@@ -74,12 +76,11 @@ void PropertyDialog::UpdateSurfaceComboBox(const PinTable * const ptable, CCombo
 void PropertyDialog::UpdateComboBox(const vector<string>& contentList, CComboBox &combo, const char *selectName)
 {
     combo.ResetContent();
-    combo.AddString(_T("<None>"));
     for (size_t i = 0; i < contentList.size(); i++)
     {
         combo.AddString(contentList[i].c_str());
     }
-    combo.SetCurSel(combo.FindStringExact(1, selectName));
+    combo.SetCurSel(combo.FindStringExact(0, selectName));
 }
 
 void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
@@ -159,6 +160,13 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
         {
             m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TriggerVisualsProperty(pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TriggerPhysicsProperty(pvsel), _T("Physics")));
+            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
+        case eItemLight:
+        {
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new LightVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new LightStatesProperty(pvsel), _T("States")));
             m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }
@@ -640,6 +648,11 @@ void BasePropertyDialog::UpdateBaseProperties(ISelect *psel, BaseProperty *prope
         case IDC_REFLECT_ENABLED_CHECK:
             PropertyDialog::StartUndo(psel);
             property->m_reflectionEnabled = PropertyDialog::GetCheckboxState(m_hReflectionEnabledCheck);
+            PropertyDialog::EndUndo(psel);
+            break;
+        case IDC_FRICTION_EDIT:
+            PropertyDialog::StartUndo(psel);
+            property->m_friction = PropertyDialog::GetFloatTextbox(*m_baseFrictionEdit);
             PropertyDialog::EndUndo(psel);
             break;
         case IDC_SCATTER_ANGLE_EDIT:
