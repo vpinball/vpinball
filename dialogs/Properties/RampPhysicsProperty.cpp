@@ -28,6 +28,8 @@ void RampPhysicsProperty::UpdateVisuals()
             m_rightWallEdit.EnableWindow(TRUE);
         }
         UpdateBaseVisuals(ramp, &ramp->m_d);
+        //only show the first element on multi-select
+        break;
     }
 }
 

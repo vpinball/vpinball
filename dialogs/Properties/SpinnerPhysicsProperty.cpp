@@ -16,6 +16,8 @@ void SpinnerPhysicsProperty::UpdateVisuals()
 
         PropertyDialog::SetFloatTextbox(m_dampingEdit, spinner->m_d.m_damping);
         UpdateBaseVisuals(spinner, &spinner->m_d);
+        //only show the first element on multi-select
+        break;
     }
 }
 

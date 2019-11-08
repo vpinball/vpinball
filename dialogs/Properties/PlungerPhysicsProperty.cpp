@@ -24,6 +24,8 @@ void PlungerPhysicsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_momentumXferEdit, plunger->m_d.m_momentumXfer);
         PropertyDialog::SetFloatTextbox(m_parkPositionEdit, plunger->m_d.m_parkPosition);
         UpdateBaseVisuals(plunger, &plunger->m_d);
+        //only show the first element on multi-select
+        break;
     }
 }
 

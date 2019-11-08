@@ -1328,7 +1328,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       RECT rc;
       GetClientRect(hwnd, &rc);
 
-      /*const HWND hwndButton =*/ CreateWindow("BUTTON", "Color", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hwnd, NULL, g_hinst, 0);
+      CreateWindow("BUTTON", "Color", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hwnd, NULL, g_hinst, 0);
    }
    break;
 
@@ -1417,7 +1417,8 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          cc.hwndOwner = hwnd;
          cc.hInstance = NULL;
          cc.rgbResult = (COLORREF)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-         SendMessage(hwndDlg, GET_COLOR_TABLE, 0, (size_t)&cc.lpCustColors);
+         int id = GetDlgCtrlID(hwnd);
+         SendMessage(hwndDlg, GET_COLOR_TABLE, (WPARAM)id, (size_t)&cc.lpCustColors);
          //cc.lpCustColors = (unsigned long *)SendMessage(hwndDlg, GET_COLOR_TABLE, 0, 0);//psb->m_pisel->GetPTable()->m_rgcolorcustom;//cr;
          cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
          cc.lCustData = NULL;

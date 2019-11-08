@@ -30,6 +30,8 @@ void FlipperPhysicsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_eosTorqueAngleEdit, flipper->m_d.m_torqueDampingAngle);
         PropertyDialog::UpdateComboBox(m_physicSetList, m_overwriteSettingsCombo, m_physicSetList[(int)flipper->m_d.m_OverridePhysics - 1].c_str());
         UpdateBaseVisuals(flipper, &flipper->m_d);
+        //only show the first element on multi-select
+        break;
     }
 }
 
@@ -94,18 +96,18 @@ BOOL FlipperPhysicsProperty::OnInitDialog()
 {
     AttachItem(DISPID_Flipper_Speed, m_massEdit);
     AttachItem(19, m_strengthEdit);
-    AttachItem(21, m_elasticityEdit);
+    AttachItem(IDC_ELASTICITY_EDIT, m_elasticityEdit);
+    m_baseElasticityEdit = &m_elasticityEdit;
     AttachItem(28, m_elasticityFalloffEdit);
-    AttachItem(26, m_frictionEdit);
+    AttachItem(IDC_FRICTION_EDIT, m_frictionEdit);
+    m_baseFrictionEdit = &m_frictionEdit;
     AttachItem(23, m_returnStrengthEdit);
     AttachItem(27, m_coilUpRampEdit);
-    AttachItem(112, m_scatterAngleEdit);
+    AttachItem(IDC_SCATTER_ANGLE_EDIT, m_scatterAngleEdit);
+    m_baseScatterAngleEdit = &m_scatterAngleEdit;
     AttachItem(113, m_eosTorqueEdit);
     AttachItem(189, m_eosTorqueAngleEdit);
     AttachItem(1044, m_overwriteSettingsCombo);
-    m_baseElasticityEdit = &m_elasticityEdit;
-    m_baseFrictionEdit = &m_frictionEdit;
-    m_baseScatterAngleEdit = &m_scatterAngleEdit;
     UpdateVisuals();
     return TRUE;
 }

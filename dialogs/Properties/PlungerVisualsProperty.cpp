@@ -34,6 +34,8 @@ void PlungerVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_posYEdit, plunger->m_d.m_v.y);
         PropertyDialog::SetFloatTextbox(m_endLoopsEdit, plunger->m_d.m_springEndLoops);
         UpdateBaseVisuals(plunger, &plunger->m_d);
+        //only show the first element on multi-select
+        break;
     }
 }
 

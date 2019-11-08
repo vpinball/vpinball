@@ -109,13 +109,15 @@
  #define WM_UNINITMENUPOPUP              0x0125
 #endif
 
-//#include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
+#include <dlgs.h>
+#include <cderr.h>
+#include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
 //#include <wxx_archive.h>		// Add CArchive
-//#include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
+#include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
 //#include <wxx_controls.h>		// Add CAnimation, CComboBox, CComboBoxEx, CDateTime, CHeader, CHotKey, CIPAddress, CProgressBar, CSpinButton, CScrollBar, CSlider, CToolTip
 //#include <wxx_cstring.h>		// Add CString, CStringA, CStringW
 //#include <wxx_ddx.h>			// Add CDataExchange
-#include <wxx_dialog.h>			// Add CDialog, CResizer
+//#include <wxx_dialog.h>			// Add CDialog, CResizer
 //#include <wxx_dockframe.h>		// Add CDockFrame, CMDIDockFrame
 //#include <wxx_docking.h>		// Add CDocker, CDockContainer
 //#include <wxx_exception.h>		// Add CException, CFileException, CNotSupportedException, CResourceException, CUserException, CWinException

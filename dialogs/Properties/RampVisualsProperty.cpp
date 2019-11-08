@@ -22,7 +22,7 @@ void RampVisualsProperty::UpdateVisuals()
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRamp))
             continue;
         Ramp * const ramp = (Ramp *)m_pvsel->ElementAt(i);
-        PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)ramp->m_d.m_type - 1].c_str());
+        PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)ramp->m_d.m_type].c_str());
         PropertyDialog::UpdateComboBox(m_imageModeList, m_modeCombo, m_imageModeList[(int)ramp->m_d.m_imagealignment - 1].c_str());
         PropertyDialog::SetFloatTextbox(m_depthBiasEdit, ramp->m_d.m_depthBias);
         PropertyDialog::SetFloatTextbox(m_topHeightEdit, ramp->m_d.m_heighttop);
@@ -36,6 +36,8 @@ void RampVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_distanceYEdit, ramp->m_d.m_wireDistanceY);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 9), ramp->m_d.m_imageWalls);
         UpdateBaseVisuals(ramp, &ramp->m_d);
+        //only show the first element on multi-select
+        break;
     }
 }
 
@@ -70,7 +72,7 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case 6:
                 PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_type = (RampType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList) + 1);
+                ramp->m_d.m_type = (RampType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList));
                 PropertyDialog::EndUndo(ramp);
                 break;
             case 8:

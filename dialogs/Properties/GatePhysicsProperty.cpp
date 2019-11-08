@@ -18,6 +18,8 @@ void GatePhysicsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_gravityFactorEdit, gate->m_d.m_gravityfactor);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_TWO_WAY_CHECK), gate->m_d.m_twoWay);
         UpdateBaseVisuals(gate, &gate->m_d);
+        //only show the first element on multi-select
+        break;
     }
 }
 

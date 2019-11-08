@@ -367,8 +367,8 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    else if (piedit->GetItemType() == eItemLight)
    {
       Light *const light = (Light*)piedit;
-      if (IsValidString(light->m_d.m_szOffImage))
-         sprintf_s(textBuf, "%s", light->m_d.m_szOffImage);
+      if (IsValidString(light->m_d.m_szImage))
+         sprintf_s(textBuf, "%s", light->m_d.m_szImage);
 
       ListView_SetItemText(m_hElementList, idx, 1, "Light");
       ListView_SetItemText(m_hElementList, idx, 3, textBuf);

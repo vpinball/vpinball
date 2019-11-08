@@ -11,14 +11,14 @@ Light::Light() : m_lightcenter(this)
    m_bulbLightVBuffer = NULL;
    m_bulbSocketIndexBuffer = NULL;
    m_bulbSocketVBuffer = NULL;
-   m_d.m_szOffImage[0] = 0;
+   m_d.m_szImage[0] = 0;
    m_d.m_depthBias = 0.0f;
    m_d.m_shape = ShapeCustom;
    m_d.m_visible = true;
    m_roundLight = false;
    m_propVisual = NULL;
    m_updateBulbLightHeight = false;
-   memset(m_d.m_szOffImage, 0, MAXTOKEN);
+   memset(m_d.m_szImage, 0, MAXTOKEN);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
 }
 
@@ -90,9 +90,9 @@ void Light::SetDefaults(bool fromMouseClick)
    m_d.m_color = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "Color", RGB(255,255,0)) : RGB(255,255,0);
    m_d.m_color2 = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "ColorFull", RGB(255,255,255)) : RGB(255,255,255);
 
-   HRESULT hr = LoadValueString("DefaultProps\\Light", "OffImage", m_d.m_szOffImage, MAXTOKEN);
+   HRESULT hr = LoadValueString("DefaultProps\\Light", "OffImage", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szOffImage[0] = 0;
+      m_d.m_szImage[0] = 0;
 
    hr = LoadValueString("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern, 33);
    if ((hr != S_OK) || !fromMouseClick)
@@ -131,7 +131,7 @@ void Light::WriteRegDefaults()
    SaveValueInt("DefaultProps\\Light", "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SaveValueInt("DefaultProps\\Light", "Color", m_d.m_color);
    SaveValueInt("DefaultProps\\Light", "ColorFull", m_d.m_color2);
-   SaveValueString("DefaultProps\\Light", "OffImage", m_d.m_szOffImage);
+   SaveValueString("DefaultProps\\Light", "OffImage", m_d.m_szImage);
    SaveValueString("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern);
    SaveValueInt("DefaultProps\\Light", "BlinkInterval", m_blinkinterval);
    //SaveValueInt("DefaultProps\\Light","BorderColor", m_d.m_bordercolor);
@@ -471,7 +471,7 @@ void Light::RenderDynamic()
    const vec4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
    vec4 lightColor_intensity = convertColor(m_d.m_color);
    if (m_d.m_BulbLight ||
-      (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szOffImage))) && (offTexel != NULL) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
+      (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szImage))) && (offTexel != NULL) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
    {
       if (m_d.m_currentIntensity == 0.f)
          return;
@@ -680,7 +680,7 @@ void Light::PrepareMoversCustom()
    const DWORD vertexType = (!m_backglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
    g_pplayer->m_pin3d.m_pd3dPrimaryDevice->CreateVertexBuffer(m_customMoverVertexNum, 0, vertexType, &m_customMoverVBuffer);
 
-   Texture* const pin = m_ptable->GetImage(m_d.m_szOffImage);
+   Texture* const pin = m_ptable->GetImage(m_d.m_szImage);
 
    const float inv_maxdist = (maxdist > 0.0f) ? 0.5f / sqrtf(maxdist) : 0.0f;
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
@@ -851,7 +851,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(BPAT), m_rgblinkpattern);
-   bw.WriteString(FID(IMG1), m_d.m_szOffImage);
+   bw.WriteString(FID(IMG1), m_d.m_szImage);
    bw.WriteInt(FID(BINT), m_blinkinterval);
    //bw.WriteInt(FID(BCOL), m_d.m_bordercolor);
    bw.WriteFloat(FID(BWTH), m_d.m_intensity);
@@ -930,7 +930,7 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    }
    case FID(COLR): pbr->GetInt(&m_d.m_color); break;
    case FID(COL2): pbr->GetInt(&m_d.m_color2); break;
-   case FID(IMG1): pbr->GetString(m_d.m_szOffImage); break;
+   case FID(IMG1): pbr->GetString(m_d.m_szImage); break;
    case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
    case FID(SHAP): m_roundLight = true; break;
@@ -1389,7 +1389,7 @@ STDMETHODIMP Light::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szOffImage, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1398,7 +1398,7 @@ STDMETHODIMP Light::get_Image(BSTR *pVal)
 STDMETHODIMP Light::put_Image(BSTR newVal)
 {
    STARTUNDO
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOffImage, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, MAXNAMEBUFFER, NULL, NULL);
    STOPUNDO
 
    return S_OK;
@@ -1593,9 +1593,6 @@ void Light::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 
    m_propVisual = new PropertyPane(IDD_PROPLIGHT_VISUALS, IDS_VISUALS);
    pvproppane.push_back(m_propVisual);
-
-   pproppane = new PropertyPane(IDD_PROPLIGHT_POSITION, IDS_POSITION);
-   pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPLIGHT_STATE, IDS_STATE);
    pvproppane.push_back(pproppane);
