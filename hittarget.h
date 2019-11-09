@@ -19,25 +19,17 @@
 //  ObjRotY = 7
 //  ObjRotZ = 8
 
-class HitTargetData
+class HitTargetData : public BaseProperty
 {
 public:
    Vertex3Ds m_vPosition;
    Vertex3Ds m_vSize;
    float m_rotZ;
-   char m_szImage[MAXTOKEN];
    TargetType m_targetType;
-   char m_szMaterial[MAXNAMEBUFFER];
-   char m_szPhysicsMaterial[MAXNAMEBUFFER];
 
    TimerDataRoot m_tdr;
 
-   float m_threshold;			// speed at which ball needs to hit to register a hit
-
-   float m_elasticity;
    float m_elasticityFalloff;
-   float m_friction;
-   float m_scatter;
    float m_dropSpeed;
    U32   m_time_msec;
    int   m_raiseDelay;
@@ -45,14 +37,10 @@ public:
    float m_depthBias;      // for determining depth sorting
    float m_disableLightingTop; // was bool, now 0..1
    float m_disableLightingBelow; // 0..1
-   bool m_visible;
 
    bool m_useHitEvent;
-   bool m_collidable;
-   bool m_reflectionEnabled;
    bool m_legacy;
    bool m_isDropped;
-   bool m_overwritePhysics;
 };
 
 class HitTarget :
@@ -188,13 +176,13 @@ public:
    void GenerateMesh(std::vector<Vertex3D_NoTex2> &buf);
    void TransformVertices();
    void SetMeshType(const TargetType type);
+   void UpdateEditorView();
 
    HitTargetData    m_d;
 
    bool             m_hitEvent;
 
 private:
-   void UpdateEditorView();
 
    void UpdateAnimation();
    void RenderObject();

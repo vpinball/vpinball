@@ -22,6 +22,23 @@ public:
     }
     virtual void UpdateProperties(const int dispid)=0;
     virtual void UpdateVisuals() =0;
+    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam)
+    {
+        UNREFERENCED_PARAMETER(lParam);
+        const int dispID = LOWORD(wParam);
+
+        switch (HIWORD(wParam))
+        {
+            case EN_KILLFOCUS:
+            case CBN_KILLFOCUS:
+            case BN_CLICKED:
+            {
+                UpdateProperties(dispID);
+                return TRUE;
+            }
+        }
+        return FALSE;
+    }
     void UpdateBaseProperties(ISelect *psel, BaseProperty *property, const int dispid);
     void UpdateBaseVisuals(ISelect *psel, BaseProperty *property);
 
