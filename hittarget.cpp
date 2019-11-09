@@ -1414,9 +1414,6 @@ void HitTarget::GetDialogPanes(vector<PropertyPane*> &pvproppane)
    m_propVisual = new PropertyPane(IDD_PROPHITTARGET_VISUALS, IDS_VISUALS);
    pvproppane.push_back(m_propVisual);
 
-   m_propPosition = new PropertyPane(IDD_PROPHITTARGET_POSITION, IDS_POSITION_TRANSLATION);
-   pvproppane.push_back(m_propPosition);
-
    m_propPhysics = new PropertyPane(IDD_PROPHITTARGET_PHYSICS, IDS_PHYSICS);
    pvproppane.push_back(m_propPhysics);
 

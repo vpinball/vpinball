@@ -154,20 +154,3 @@ BOOL FlipperVisualsProperty::OnInitDialog()
     return TRUE;
 }
 
-BOOL FlipperVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
-{
-    UNREFERENCED_PARAMETER(lParam);
-    const int dispID = LOWORD(wParam);
-
-    switch (HIWORD(wParam))
-    {
-        case EN_KILLFOCUS:
-        case CBN_KILLFOCUS:
-        case BN_CLICKED:
-        {
-            UpdateProperties(dispID);
-            return TRUE;
-        }
-    }
-    return FALSE;
-}

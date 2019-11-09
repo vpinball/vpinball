@@ -15,7 +15,6 @@ public:
 
 protected:
     virtual BOOL OnInitDialog();
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 
 private:
     CComboBox m_typeCombo;

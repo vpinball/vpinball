@@ -19,6 +19,11 @@
 #include "Properties/TriggerPhysicsProperty.h"
 #include "Properties/LightVisualsProperty.h"
 #include "Properties/LightStatesProperty.h"
+#include "Properties/KickerVisualsProperty.h"
+#include "Properties/KickerPhysicsProperty.h"
+#include "Properties/HitTargetVisualsProperty.h"
+#include "Properties/HitTargetPhysicsProperty.h"
+
 #include <WindowsX.h>
 
 
@@ -167,6 +172,20 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
         {
             m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new LightVisualsProperty(pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new LightStatesProperty(pvsel), _T("States")));
+            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
+        case eItemKicker:
+        {
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new KickerVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new KickerPhysicsProperty(pvsel), _T("Physics")));
+            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
+        case eItemHitTarget:
+        {
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new HitTargetVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new HitTargetPhysicsProperty(pvsel), _T("Physics")));
             m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }

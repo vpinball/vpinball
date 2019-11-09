@@ -203,24 +203,6 @@ BOOL LightVisualsProperty::OnInitDialog()
     return TRUE;
 }
 
-BOOL LightVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
-{
-    UNREFERENCED_PARAMETER(lParam);
-    const int dispID = LOWORD(wParam);
-
-    switch (HIWORD(wParam))
-    {
-        case EN_KILLFOCUS:
-        case CBN_KILLFOCUS:
-        case BN_CLICKED:
-        {
-            UpdateProperties(dispID);
-            return TRUE;
-        }
-    }
-    return FALSE;
-}
-
 INT_PTR LightVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
