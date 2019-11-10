@@ -103,6 +103,20 @@ void Decal::SetDefaults(bool fromMouseClick)
    }
 }
 
+static char fontName[MAXTOKEN];
+char * Decal::GetFontName()
+{
+    if(m_pIFont)
+    {
+        CComBSTR bstr;
+        HRESULT hr = m_pIFont->get_Name(&bstr);
+
+        WideCharToMultiByte(CP_ACP, 0, bstr, -1, fontName, LF_FACESIZE, NULL, NULL);
+        return fontName;
+    }
+    return NULL;
+}
+
 void Decal::WriteRegDefaults()
 {
    SaveValueFloat("DefaultProps\\Decal", "Width", m_d.m_width);
@@ -923,9 +937,6 @@ void Decal::GetDialogPanes(vector<PropertyPane*> &pvproppane)
    PropertyPane *pproppane;
 
    pproppane = new PropertyPane(IDD_PROPDECAL_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPDECAL_POSITION, IDS_POSITION);
    pvproppane.push_back(pproppane);
 }
 

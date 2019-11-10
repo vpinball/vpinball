@@ -23,9 +23,11 @@
 #define DISPID_Surface_SideColor2       7
 #define DISPID_POSITION_X               7
 #define IDC_DAMPING_EDIT                7
+#define IDC_FONT_TYPE_COMBO             7
 #define DISPID_Gate_Rotation3           8
 #define DISPID_POSITION_Y               8
 #define IDC_BUMPER_RADIUS_EDIT          8
+#define IDC_DECAL_TEXT_EDIT             8
 #define DISPID_Decal_SizingType         9
 #define IDC_BLINK_PATTERN_EDIT          9
 #define IDC_KICKER_DISPLAY_COMBO        9
@@ -38,6 +40,7 @@
 #define DISPID_ROTRA1                   12
 #define IDC_DBG_LIGHT_INTENSITY         12
 #define DISPID_ROTRA2                   13
+#define IDC_DECAL_VERTICAL_TEXT_CHECK   13
 #define DISPID_TOPCOLOR                 14
 #define DISPID_ROTRA3                   14
 #define IDC_COLOR                       15
@@ -379,6 +382,7 @@
 #define IDC_TEST                        280
 #define IDC_POINT_COPY_BUTTON           280
 #define IDC_APPLY_TO_TABLE              280
+#define IDC_FONT_DIALOG_BUTTON          280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
@@ -491,7 +495,6 @@
 #define IDD_PROPDECAL_VISUALS           348
 #define IDC_CUSTOMVALUE                 348
 #define IDS_PAUSE                       348
-#define IDD_PROPDECAL_POSITION          349
 #define IDC_CUSTOMLIST                  349
 #define IDS_STEP                        349
 #define IDD_PROPLIGHTSEQ_POSITION       350
@@ -1206,7 +1209,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        658
+#define _APS_NEXT_RESOURCE_VALUE        659
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         830
 #define _APS_NEXT_SYMED_VALUE           188

@@ -5,19 +5,17 @@
 #if !defined(AFX_DECAL_H__447B3CE2_C9EA_4ED1_AA3D_A8328F6DFD48__INCLUDED_)
 #define AFX_DECAL_H__447B3CE2_C9EA_4ED1_AA3D_A8328F6DFD48__INCLUDED_
 
-class DecalData
+class DecalData : public BaseProperty
 {
 public:
    Vertex2D m_vCenter;
    float m_width, m_height;
    float m_rotation;
-   char m_szImage[MAXTOKEN];
    char m_szSurface[MAXTOKEN];
    DecalType m_decaltype;
    char m_sztext[MAXSTRING];
    SizingType m_sizingtype;
    COLORREF m_color;
-   char m_szMaterial[MAXNAMEBUFFER];
    bool m_verticalText;
 };
 
@@ -81,6 +79,8 @@ public:
    virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
 
    STDMETHOD(get_Name)(BSTR *pVal) { return E_FAIL; }
+   char *GetFontName();
+   HFONT GetFont();
 
    virtual void WriteRegDefaults();
    virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
@@ -88,17 +88,16 @@ public:
    virtual ItemTypeEnum HitableGetItemType() const { return eItemDecal; }
 
    DecalData m_d;
+   IFont *m_pIFont;
 
 private:
    void EnsureSize();
-   HFONT GetFont();
    void GetTextSize(int * const px, int * const py);
 
    void PreRenderText();
 
    void RenderObject();
 
-   IFont *m_pIFont;
 
    PinTable *m_ptable;
 
