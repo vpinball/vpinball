@@ -244,9 +244,21 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
         {
             if (msg.message == WM_KEYDOWN && msg.wParam == VK_RETURN)
                 return TRUE;                    //disable enter key for any input otherwise the app would crash!?
-            const BOOL ret = m_tabs[i]->IsDialogMessage(msg);
-            if (ret)
-                return TRUE;
+            if (msg.message == WM_KEYDOWN && msg.wParam == VK_DELETE)
+            {
+                CString className = GetFocus().GetClassName();
+                if (className!="Edit")
+                {
+                    g_pvp->ParseCommand(ID_DELETE, GetHwnd(), FALSE);
+                    return TRUE;
+                }
+            }
+            else
+            {
+                const BOOL ret = m_tabs[i]->IsDialogMessage(msg);
+                if (ret)
+                    return TRUE;
+            }
         }
     }
     return IsDialogMessage(msg);
