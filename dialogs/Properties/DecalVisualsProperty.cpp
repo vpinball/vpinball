@@ -7,9 +7,9 @@ DecalVisualsProperty::DecalVisualsProperty(VectorProtected<ISelect> *pvsel) : Ba
     m_typeList.push_back("DecalText");
     m_typeList.push_back("DecalImage");
 
-    m_sizingType.push_back("AutoSize");
-    m_sizingType.push_back("AutoWidth");
-    m_sizingType.push_back("ManualSize");
+    m_sizingList.push_back("AutoSize");
+    m_sizingList.push_back("AutoWidth");
+    m_sizingList.push_back("ManualSize");
 }
 
 DecalVisualsProperty::~DecalVisualsProperty()
@@ -27,7 +27,7 @@ void DecalVisualsProperty::UpdateVisuals()
         Decal * const decal = (Decal *)m_pvsel->ElementAt(i);
 
         PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[decal->m_d.m_decaltype].c_str());
-        PropertyDialog::UpdateComboBox(m_sizingType, m_sizingCombo, m_sizingType[decal->m_d.m_sizingtype].c_str());
+        PropertyDialog::UpdateComboBox(m_sizingList, m_sizingCombo, m_sizingList[decal->m_d.m_sizingtype].c_str());
         m_textEdit.SetWindowText(decal->m_d.m_sztext);
         PropertyDialog::SetCheckboxState(m_hVerticalTextCheck, decal->m_d.m_verticalText);
         m_fontColorButton.SetColor(decal->m_d.m_color);
@@ -122,6 +122,41 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 }
                 break;
             }
+            case DISPID_Decal_SizingType:
+                PropertyDialog::StartUndo(decal);
+                decal->m_d.m_sizingtype = (SizingType)PropertyDialog::GetComboBoxIndex(m_sizingCombo, m_sizingList);
+                PropertyDialog::EndUndo(decal);
+                break;
+            case 5:
+                PropertyDialog::StartUndo(decal);
+                decal->m_d.m_vCenter.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
+                PropertyDialog::EndUndo(decal);
+                break;
+            case 6:
+                PropertyDialog::StartUndo(decal);
+                decal->m_d.m_vCenter.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
+                PropertyDialog::EndUndo(decal);
+                break;
+            case 3:
+                PropertyDialog::StartUndo(decal);
+                decal->m_d.m_width = PropertyDialog::GetFloatTextbox(m_widthEdit);
+                PropertyDialog::EndUndo(decal);
+                break;
+            case 4:
+                PropertyDialog::StartUndo(decal);
+                decal->m_d.m_height = PropertyDialog::GetFloatTextbox(m_heigthEdit);
+                PropertyDialog::EndUndo(decal);
+                break;
+            case 1:
+                PropertyDialog::StartUndo(decal);
+                decal->m_d.m_rotation= PropertyDialog::GetFloatTextbox(m_rotationEdit);
+                PropertyDialog::EndUndo(decal);
+                break;
+            case IDC_SURFACE_COMBO:
+                PropertyDialog::StartUndo(decal);
+                PropertyDialog::GetComboBoxText(m_surfaceCombo, decal->m_d.m_szSurface);
+                PropertyDialog::EndUndo(decal);
+                break;
 
             default:
                 UpdateBaseProperties(decal, &decal->m_d, dispid);
@@ -141,6 +176,8 @@ BOOL DecalVisualsProperty::OnInitDialog()
     AttachItem(IDC_COLOR_BUTTON1, m_fontColorButton);
     AttachItem(IDC_FONT_DIALOG_BUTTON, m_fontDialogButton);
     AttachItem(DISPID_Image, m_imageCombo);
+    m_baseImageCombo = &m_imageCombo;
+
     AttachItem(DISPID_Decal_SizingType, m_sizingCombo);
     AttachItem(5, m_posXEdit);
     AttachItem(6, m_posYEdit);
