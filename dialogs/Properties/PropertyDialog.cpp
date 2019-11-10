@@ -23,6 +23,7 @@
 #include "Properties/KickerPhysicsProperty.h"
 #include "Properties/HitTargetVisualsProperty.h"
 #include "Properties/HitTargetPhysicsProperty.h"
+#include "Properties/DecalVisualsProperty.h"
 
 #include <WindowsX.h>
 
@@ -187,6 +188,11 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
             m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new HitTargetVisualsProperty(pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new HitTargetPhysicsProperty(pvsel), _T("Physics")));
             m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
+        case eItemDecal:
+        {
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new DecalVisualsProperty(pvsel), _T("Visuals")));
             break;
         }
         case eItemDragPoint:
