@@ -33,7 +33,7 @@ private:
     CComboBox   m_surfaceCombo;
     CFont       *m_font;
     vector<string> m_typeList;
-    vector<string> m_sizingType;
+    vector<string> m_sizingList;
 };
 
 #endif // !H_DECAL_VISUALS_PROPERTY
