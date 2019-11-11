@@ -611,9 +611,6 @@ void DispReel::GetDialogPanes(vector<PropertyPane*> &pvproppane)
    pproppane = new PropertyPane(IDD_PROPDISPREEL_VISUALS, IDS_VISUALS);
    pvproppane.push_back(pproppane);
 
-   pproppane = new PropertyPane(IDD_PROPDISPREEL_POSITION, IDS_POSITION);
-   pvproppane.push_back(pproppane);
-
    pproppane = new PropertyPane(IDD_PROPDISPREEL_STATE, IDS_STATE);
    pvproppane.push_back(pproppane);
 
