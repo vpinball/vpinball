@@ -42,10 +42,12 @@
 #define DISPID_ROTRA1                   12
 #define IDC_DBG_LIGHT_INTENSITY         12
 #define IDC_TEXTBOX_TRANSP_CHECK        12
+#define IDC_BACK_TRANSP_CHECK           12
 #define DISPID_ROTRA2                   13
 #define IDC_DECAL_VERTICAL_TEXT_CHECK   13
 #define DISPID_TOPCOLOR                 14
 #define DISPID_ROTRA3                   14
+#define IDC_SINGLE_DIGIT_RANGE_EDIT     14
 #define IDC_COLOR                       15
 #define DISPID_TOPVISIBLE               15
 #define DISPID_ROTRA4                   15
@@ -54,8 +56,10 @@
 #define IDC_COLOR2                      16
 #define DISPID_ROTRA6                   17
 #define IDC_COLOR3                      17
+#define IDC_USE_IMAGE_GRID_CHECK        17
 #define DISPID_SIDECOLOR                18
 #define IDC_COLOR4                      18
+#define IDC_IMAGES_PER_ROW_EDIT         18
 #define DISPID_SIDEVISIBLE              19
 #define IDC_COLOR5                      19
 #define DISPID_SMOOTHNORMALS            21
@@ -506,7 +510,6 @@
 #define IDD_PROPTEXTBOX_VISUALS         352
 #define IDD_PROPDISPREEL_VISUALS        355
 #define IDC_GUIDE1                      355
-#define IDD_PROPDISPREEL_POSITION       356
 #define IDD_PROPDISPREEL_STATE          357
 #define IDD_PROPTABLE_VISUALS           358
 #define IDC_GUIDE2                      359
