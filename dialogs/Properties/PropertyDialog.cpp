@@ -199,6 +199,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
         case eItemTextbox:
         {
             m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TextboxVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }
         case eItemDragPoint:

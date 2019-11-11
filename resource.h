@@ -13,6 +13,7 @@
 #define DISPID_SIZE_Z                   3
 #define IDC_PULL_SPEED                  3
 #define IDC_PULL_SPEED_EDIT             3
+#define IDC_TEXTBOX_TEXT_EDIT           3
 #define DISPID_Gate_Rotation            4
 #define DISPID_Textbox_Font             4
 #define DISPID_POSITION_Z               4
@@ -503,7 +504,6 @@
 #define IDD_PROPLIGHTSEQ_STATE          351
 #define IDC_STEPAMOUNT                  351
 #define IDD_PROPTEXTBOX_VISUALS         352
-#define IDD_PROPTEXTBOX_STATE           354
 #define IDD_PROPDISPREEL_VISUALS        355
 #define IDC_GUIDE1                      355
 #define IDD_PROPDISPREEL_POSITION       356
@@ -842,6 +842,7 @@
 #define IDS_HIDE                        553
 #define IDC_MODIFY3DSTEREO              554
 #define IDC_DMD2                        555
+#define IDC_USE_SCRIPT_DMD_CHECK        555
 #define IDC_ADDBLEND                    556
 #define IDC_DMD                         557
 #define IDC_LIGHTAMBIENT                558

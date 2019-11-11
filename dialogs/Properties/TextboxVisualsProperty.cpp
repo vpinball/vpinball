@@ -23,6 +23,7 @@ void TextboxVisualsProperty::UpdateVisuals()
             continue;
         Textbox* const text = (Textbox *)m_pvsel->ElementAt(i);
         PropertyDialog::SetCheckboxState(m_hTransparentCheck, text->m_d.m_transparent);
+        PropertyDialog::SetCheckboxState(m_hUseScriptDMDCheck, text->m_d.m_isDMD);
         m_backgroundColorButton.SetColor(text->m_d.m_backcolor);
         m_textColorButton.SetColor(text->m_d.m_fontcolor);
         PropertyDialog::SetFloatTextbox(m_posXEdit, text->m_d.m_v1.x);
@@ -31,6 +32,7 @@ void TextboxVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_heightEdit, text->m_d.m_v2.y - text->m_d.m_v1.y);
         PropertyDialog::UpdateComboBox(m_alignList, m_alignmentCombo, m_alignList[text->m_d.m_talign].c_str());
         PropertyDialog::SetFloatTextbox(m_textIntensityEdit, text->m_d.m_intensity_scale);
+        m_textEdit.SetWindowText(text->m_d.sztext);
         if (text->m_pIFont)
         {
             m_fontDialogButton.SetWindowText(text->GetFontName());
@@ -60,6 +62,26 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                 text->m_d.m_talign = (TextAlignment)PropertyDialog::GetComboBoxIndex(m_alignmentCombo, m_alignList);
                 PropertyDialog::EndUndo(text);
                 break;
+            case IDC_USE_SCRIPT_DMD_CHECK:
+                PropertyDialog::StartUndo(text);
+                text->m_d.m_isDMD = PropertyDialog::GetCheckboxState(m_hUseScriptDMDCheck);
+                PropertyDialog::EndUndo(text);
+                break;
+            case IDC_TEXT_INTENSITY:
+            {
+                PropertyDialog::StartUndo(text);
+                text->m_d.m_intensity_scale = PropertyDialog::GetFloatTextbox(m_textIntensityEdit);
+                PropertyDialog::EndUndo(text);
+                break;
+            }
+            case IDC_TEXTBOX_TEXT_EDIT:
+            {
+                PropertyDialog::StartUndo(text);
+                CString pattern = m_textEdit.GetWindowText();
+                strncpy_s(text->m_d.sztext, MAXSTRING-1, pattern, pattern.GetLength());
+                PropertyDialog::EndUndo(text);
+                break;
+            }
             case 60000:
             {
                 PropertyDialog::StartUndo(text);
@@ -67,13 +89,6 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                 const float delta = newValue - text->m_d.m_v1.x;
                 text->m_d.m_v1.x += delta;
                 text->m_d.m_v2.x += delta;
-                PropertyDialog::EndUndo(text);
-                break;
-            }
-            case IDC_TEXT_INTENSITY:
-            {
-                PropertyDialog::StartUndo(text);
-                text->m_d.m_intensity_scale = PropertyDialog::GetFloatTextbox(m_textIntensityEdit);
                 PropertyDialog::EndUndo(text);
                 break;
             }
@@ -183,6 +198,8 @@ BOOL TextboxVisualsProperty::OnInitDialog()
     AttachItem(60002, m_widthEdit);
     AttachItem(60003, m_heightEdit);
     AttachItem(IDC_TEXT_INTENSITY, m_textIntensityEdit);
+    m_hUseScriptDMDCheck = ::GetDlgItem(GetHwnd(), IDC_USE_SCRIPT_DMD_CHECK);
+    AttachItem(IDC_TEXTBOX_TEXT_EDIT, m_textEdit);
     UpdateVisuals();
     return TRUE;
 }

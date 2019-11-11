@@ -711,9 +711,6 @@ void Textbox::GetDialogPanes(vector<PropertyPane*> &pvproppane)
    pproppane = new PropertyPane(IDD_PROPTEXTBOX_VISUALS, IDS_VISUALS);
    pvproppane.push_back(pproppane);
 
-   pproppane = new PropertyPane(IDD_PROPTEXTBOX_STATE, IDS_STATE);
-   pvproppane.push_back(pproppane);
-
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
    pvproppane.push_back(pproppane);
 }

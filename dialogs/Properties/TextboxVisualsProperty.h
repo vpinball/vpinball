@@ -16,6 +16,7 @@ protected:
 
 private:
     HWND        m_hTransparentCheck;
+    HWND        m_hUseScriptDMDCheck;
     CComboBox   m_alignmentCombo;
     CButton     m_fontDialogButton;
     CFontDialog m_fontDialog;
@@ -27,6 +28,7 @@ private:
     CEdit        m_posYEdit;
     CEdit        m_widthEdit;
     CEdit        m_heightEdit;
+    CEdit        m_textEdit;
     CFont       *m_font;
     vector<string> m_alignList;
 
