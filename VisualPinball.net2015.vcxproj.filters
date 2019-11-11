@@ -206,6 +206,9 @@
     <ClCompile Include="dialogs\Properties\DecalVisualsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\Properties\TextboxVisualsProperty.cpp">
+      <Filter>dialogs\Properties</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1276,6 +1279,9 @@
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\Properties\DecalVisualsProperty.h">
+      <Filter>dialogs\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\Properties\TextboxVisualsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
   </ItemGroup>

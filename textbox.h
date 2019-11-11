@@ -76,6 +76,10 @@ public:
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
    virtual void WriteRegDefaults();
+   char *GetFontName();
+   HFONT GetFont();
+
+   IFont *m_pIFont;
 
    TextboxData m_d;
 private:
@@ -86,7 +90,6 @@ private:
 
    BaseTexture *m_texture;
 
-   IFont *m_pIFont;
 
    IFont *m_pIFontPlay; // Our font, scaled to match play window resolution
 

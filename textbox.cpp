@@ -139,6 +139,48 @@ void Textbox::WriteRegDefaults()
    SaveValueString("DefaultProps\\TextBox", "Text", m_d.sztext);
 }
 
+static char fontName[MAXTOKEN];
+char * Textbox::GetFontName()
+{
+    if (m_pIFont)
+    {
+        CComBSTR bstr;
+        HRESULT hr = m_pIFont->get_Name(&bstr);
+
+        WideCharToMultiByte(CP_ACP, 0, bstr, -1, fontName, LF_FACESIZE, NULL, NULL);
+        return fontName;
+    }
+    return NULL;
+}
+
+HFONT Textbox::GetFont()
+{
+    LOGFONT lf;
+    ZeroMemory(&lf, sizeof(lf));
+
+    lf.lfHeight = -72;
+    lf.lfCharSet = DEFAULT_CHARSET;
+    lf.lfQuality = NONANTIALIASED_QUALITY;
+
+    CComBSTR bstr;
+    HRESULT hr = m_pIFont->get_Name(&bstr);
+
+    WideCharToMultiByte(CP_ACP, 0, bstr, -1, lf.lfFaceName, LF_FACESIZE, NULL, NULL);
+
+    BOOL bl;
+    hr = m_pIFont->get_Bold(&bl);
+
+    lf.lfWeight = bl ? FW_BOLD : FW_NORMAL;
+
+    hr = m_pIFont->get_Italic(&bl);
+
+    lf.lfItalic = (BYTE)bl;
+
+    HFONT hFont = CreateFontIndirect(&lf);
+
+    return hFont;
+}
+
 STDMETHODIMP Textbox::InterfaceSupportsErrorInfo(REFIID riid)
 {
    static const IID* arr[] =
@@ -667,9 +709,6 @@ void Textbox::GetDialogPanes(vector<PropertyPane*> &pvproppane)
    pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPTEXTBOX_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPTEXTBOX_POSITION, IDS_POSITION);
    pvproppane.push_back(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPTEXTBOX_STATE, IDS_STATE);

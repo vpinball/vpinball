@@ -24,6 +24,7 @@
 #include "Properties/HitTargetVisualsProperty.h"
 #include "Properties/HitTargetPhysicsProperty.h"
 #include "Properties/DecalVisualsProperty.h"
+#include "Properties/TextboxVisualsProperty.h"
 
 #include <WindowsX.h>
 
@@ -193,6 +194,11 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
         case eItemDecal:
         {
             m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new DecalVisualsProperty(pvsel), _T("Visuals")));
+            break;
+        }
+        case eItemTextbox:
+        {
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TextboxVisualsProperty(pvsel), _T("Visuals")));
             break;
         }
         case eItemDragPoint:

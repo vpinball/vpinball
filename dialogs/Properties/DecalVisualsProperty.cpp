@@ -41,7 +41,7 @@ void DecalVisualsProperty::UpdateVisuals()
 
         if (decal->m_pIFont)
         {
-            m_fontDialogButton.SetWindowTextA(decal->GetFontName());
+            m_fontDialogButton.SetWindowText(decal->GetFontName());
             m_font = new CFont(decal->GetFont());
         }
 

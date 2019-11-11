@@ -577,6 +577,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\Properties\RampVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\SpinnerPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\SpinnerVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\TextboxVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\TriggerPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\TriggerVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\WallPhysicsProperty.cpp" />
@@ -1676,6 +1677,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="dialogs\Properties\RampVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\SpinnerPhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\SpinnerVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\TextboxVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\TriggerPhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\TriggerVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\WallPhysicsProperty.h" />

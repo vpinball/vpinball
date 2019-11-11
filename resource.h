@@ -36,9 +36,11 @@
 #define DISPID_Light_BlinkInterval      10
 #define DISPID_Light_BlinkInterval2     11
 #define DISPID_Light_BlinkDuration      11
+#define IDC_TEXTBOX_ALIGN_COMBO         11
 #define DISPID_Decal_Font               12
 #define DISPID_ROTRA1                   12
 #define IDC_DBG_LIGHT_INTENSITY         12
+#define IDC_TEXTBOX_TRANSP_CHECK        12
 #define DISPID_ROTRA2                   13
 #define IDC_DECAL_VERTICAL_TEXT_CHECK   13
 #define DISPID_TOPCOLOR                 14
@@ -501,7 +503,6 @@
 #define IDD_PROPLIGHTSEQ_STATE          351
 #define IDC_STEPAMOUNT                  351
 #define IDD_PROPTEXTBOX_VISUALS         352
-#define IDD_PROPTEXTBOX_POSITION        353
 #define IDD_PROPTEXTBOX_STATE           354
 #define IDD_PROPDISPREEL_VISUALS        355
 #define IDC_GUIDE1                      355
@@ -1209,7 +1210,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        659
+#define _APS_NEXT_RESOURCE_VALUE        660
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         830
 #define _APS_NEXT_SYMED_VALUE           188
