@@ -833,9 +833,9 @@ Z(float)
 VelX(float)
 VelY(float)
 VelZ(float)
-*AngVelX(float)
-*AngVelY(float)
-*AngVelZ(float)
+*AngVelX(float) - note that writing to this is supported for legacy reasons, but is and was always ignored 
+*AngVelY(float) - note that writing to this is supported for legacy reasons, but is and was always ignored 
+*AngVelZ(float) - note that writing to this is supported for legacy reasons, but is and was always ignored 
 AngMomX(float)
 AngMomY(float)
 AngMomZ(float)
