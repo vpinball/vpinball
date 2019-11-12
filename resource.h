@@ -19,16 +19,20 @@
 #define DISPID_POSITION_Z               4
 #define IDC_RELEASE_SPEED_EDIT          4
 #define DISPID_SIZE_X                   5
+#define IDC_REEL_WIDTH_EDIT             5
 #define DISPID_Surface_SideColor        6
 #define DISPID_SIZE_Y                   6
+#define IDC_REEL_HEIGHT_EDIT            6
 #define DISPID_Surface_SideColor2       7
 #define DISPID_POSITION_X               7
 #define IDC_DAMPING_EDIT                7
 #define IDC_FONT_TYPE_COMBO             7
+#define IDC_REEL_SPACING_EDIT           7
 #define DISPID_Gate_Rotation3           8
 #define DISPID_POSITION_Y               8
 #define IDC_BUMPER_RADIUS_EDIT          8
 #define IDC_DECAL_TEXT_EDIT             8
+#define IDC_MOTOR_STEPS_EDIT            8
 #define DISPID_Decal_SizingType         9
 #define IDC_BLINK_PATTERN_EDIT          9
 #define IDC_KICKER_DISPLAY_COMBO        9
@@ -38,6 +42,7 @@
 #define DISPID_Light_BlinkInterval2     11
 #define DISPID_Light_BlinkDuration      11
 #define IDC_TEXTBOX_ALIGN_COMBO         11
+#define IDC_REELS_EDIT                  11
 #define DISPID_Decal_Font               12
 #define DISPID_ROTRA1                   12
 #define IDC_DBG_LIGHT_INTENSITY         12
@@ -51,6 +56,7 @@
 #define IDC_COLOR                       15
 #define DISPID_TOPVISIBLE               15
 #define DISPID_ROTRA4                   15
+#define IDC_UPDATE_INTERVAL_EDIT        15
 #define DISPID_Flipper_Speed            16
 #define DISPID_ROTRA5                   16
 #define IDC_COLOR2                      16
@@ -1214,7 +1220,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        660
+#define _APS_NEXT_RESOURCE_VALUE        661
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         830
 #define _APS_NEXT_SYMED_VALUE           188

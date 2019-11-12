@@ -25,6 +25,8 @@
 #include "Properties/HitTargetPhysicsProperty.h"
 #include "Properties/DecalVisualsProperty.h"
 #include "Properties/TextboxVisualsProperty.h"
+#include "Properties/DispreelVisualsProperty.h"
+#include "Properties/DispreelStateProperty.h"
 
 #include <WindowsX.h>
 
@@ -76,6 +78,17 @@ void PropertyDialog::UpdateSurfaceComboBox(const PinTable * const ptable, CCombo
     for (size_t i = 0; i < contentList.size(); i++)
     {
         combo.AddString(contentList[i].c_str());
+    }
+    combo.SetCurSel(combo.FindStringExact(1, selectName));
+}
+
+void PropertyDialog::UpdateSoundComboBox(const PinTable *const ptable, CComboBox &combo, const char *selectName)
+{
+    combo.ResetContent();
+    combo.AddString(_T("<None>"));
+    for (size_t i=0;i<ptable->m_vsound.size();i++)
+    {
+        combo.AddString(ptable->m_vsound[i]->m_szName);
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
@@ -200,6 +213,13 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
         {
             m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TextboxVisualsProperty(pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
+        case eItemDispReel:
+        {
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new DispreelVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new DispreelStateProperty(pvsel), _T("States")));
+            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }
         case eItemDragPoint:

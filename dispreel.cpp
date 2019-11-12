@@ -639,17 +639,15 @@ STDMETHODIMP DispReel::put_BackColor(OLE_COLOR newVal)
 
 STDMETHODIMP DispReel::get_Reels(float *pVal)
 {
-   *pVal = (float)m_d.m_reelcount;
+   *pVal = (float)GetReels();
 
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Reels(float newVal)
 {
-   STARTUNDO
-   m_d.m_reelcount = min(max(1, (int)newVal), MAX_REELS); // must have at least 1 reel and a max of MAX_REELS
-   m_d.m_v2.x = m_d.m_v1.x + getBoxWidth();
-   m_d.m_v2.y = m_d.m_v1.y + getBoxHeight();
+    STARTUNDO
+        SetReels((int)newVal);
    STOPUNDO
 
    return S_OK;
@@ -657,16 +655,15 @@ STDMETHODIMP DispReel::put_Reels(float newVal)
 
 STDMETHODIMP DispReel::get_Width(float *pVal)
 {
-   *pVal = m_d.m_width;
+    *pVal = GetWidth();
 
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Width(float newVal)
 {
-   STARTUNDO
-   m_d.m_width = max(0.0f, newVal);
-   m_d.m_v2.x = m_d.m_v1.x + getBoxWidth();
+    STARTUNDO
+        SetWidth(newVal);
    STOPUNDO
 
    return S_OK;
@@ -674,16 +671,15 @@ STDMETHODIMP DispReel::put_Width(float newVal)
 
 STDMETHODIMP DispReel::get_Height(float *pVal)
 {
-   *pVal = m_d.m_height;
+    *pVal = GetHeight();
 
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Height(float newVal)
 {
-   STARTUNDO
-   m_d.m_height = max(0.0f, newVal);
-   m_d.m_v2.y = m_d.m_v1.y + getBoxHeight();
+    STARTUNDO
+        SetHeight(newVal);
    STOPUNDO
 
    return S_OK;
@@ -691,7 +687,7 @@ STDMETHODIMP DispReel::put_Height(float newVal)
 
 STDMETHODIMP DispReel::get_X(float *pVal)
 {
-   *pVal = m_d.m_v1.x;
+   *pVal = GetX();
    g_pvp->SetStatusBarUnitInfo("", true);
 
    return S_OK;
@@ -699,10 +695,8 @@ STDMETHODIMP DispReel::get_X(float *pVal)
 
 STDMETHODIMP DispReel::put_X(float newVal)
 {
-   STARTUNDO
-   const float delta = newVal - m_d.m_v1.x;
-   m_d.m_v1.x += delta;
-   m_d.m_v2.x = m_d.m_v1.x + getBoxWidth();
+    STARTUNDO
+        SetX(newVal);
    STOPUNDO
 
    return S_OK;
@@ -710,17 +704,15 @@ STDMETHODIMP DispReel::put_X(float newVal)
 
 STDMETHODIMP DispReel::get_Y(float *pVal)
 {
-   *pVal = m_d.m_v1.y;
+    *pVal = GetY();
 
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Y(float newVal)
 {
-   STARTUNDO
-   const float delta = newVal - m_d.m_v1.y;
-   m_d.m_v1.y += delta;
-   m_d.m_v2.y = m_d.m_v1.y + getBoxHeight();
+    STARTUNDO
+        SetY(newVal);
    STOPUNDO
 
    return S_OK;
@@ -771,16 +763,14 @@ STDMETHODIMP DispReel::put_Image(BSTR newVal)
 
 STDMETHODIMP DispReel::get_Spacing(float *pVal)
 {
-   *pVal = m_d.m_reelspacing;
+   *pVal = GetSpacing();
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Spacing(float newVal)
 {
-   STARTUNDO
-   m_d.m_reelspacing = max(0.0f, newVal);
-   m_d.m_v2.x = m_d.m_v1.x + getBoxWidth();
-   m_d.m_v2.y = m_d.m_v1.y + getBoxHeight();
+    STARTUNDO
+        SetSpacing(newVal);
    STOPUNDO
 
    return S_OK;
@@ -806,15 +796,15 @@ STDMETHODIMP DispReel::put_Sound(BSTR newVal)
 
 STDMETHODIMP DispReel::get_Steps(float *pVal)
 {
-   *pVal = (float)m_d.m_motorsteps;
+   *pVal = (float)GetMotorSteps();
 
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Steps(float newVal)
 {
-   STARTUNDO
-   m_d.m_motorsteps = max(1, (int)newVal); // must have at least 1 step
+    STARTUNDO
+        SetMotorSteps((int)newVal);
    STOPUNDO
 
    return S_OK;
@@ -822,7 +812,7 @@ STDMETHODIMP DispReel::put_Steps(float newVal)
 
 STDMETHODIMP DispReel::get_Range(float *pVal)
 {
-   *pVal = (float)m_d.m_digitrange;
+    *pVal = (float)GetRange();
 
    return S_OK;
 }
@@ -830,8 +820,7 @@ STDMETHODIMP DispReel::get_Range(float *pVal)
 STDMETHODIMP DispReel::put_Range(float newVal)
 {
    STARTUNDO
-   m_d.m_digitrange = max(0, (int)newVal);                     // must have at least 1 digit (0 is a digit)
-   if (m_d.m_digitrange > 512 - 1) m_d.m_digitrange = 512 - 1; // and a max of 512 (0->511) //!! 512 requested by highrise
+        SetRange((int)newVal);
    STOPUNDO
 
    return S_OK;
@@ -839,15 +828,15 @@ STDMETHODIMP DispReel::put_Range(float newVal)
 
 STDMETHODIMP DispReel::get_UpdateInterval(long *pVal)
 {
-   *pVal = m_d.m_updateinterval;
+   *pVal = GetUpdateInterval();
 
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
 {
-   STARTUNDO
-   m_d.m_updateinterval = max((int)5, (int)newVal); //!! reduce?
+    STARTUNDO
+        SetUpdateInterval((int)newVal);
    if (g_pplayer)
       m_timeNextUpdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
    STOPUNDO
@@ -889,15 +878,15 @@ STDMETHODIMP DispReel::put_Visible(VARIANT_BOOL newVal)
 
 STDMETHODIMP DispReel::get_ImagesPerGridRow(long *pVal)
 {
-   *pVal = m_d.m_imagesPerGridRow;
+    *pVal = GetImagesPerGridRow();
 
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_ImagesPerGridRow(long newVal)
 {
-   STARTUNDO
-   m_d.m_imagesPerGridRow = max((int)1, (int)newVal);
+    STARTUNDO
+        SetImagesPerGridRow((int)newVal);
    STOPUNDO
 
    return S_OK;

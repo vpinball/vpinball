@@ -84,6 +84,7 @@ public:
    virtual void ExportMesh(FILE *f);
 
    virtual void WriteRegDefaults();
+   void UpdateUnitsInfo();
 
    SpinnerData m_d;
 
@@ -91,7 +92,6 @@ public:
 
 private:
    void UpdatePlate(Vertex3D_NoTex2 * const vertBuffer);
-   void UpdateUnitsInfo();
 
    PinTable *m_ptable;
 

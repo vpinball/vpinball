@@ -33,6 +33,7 @@ void TriggerVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_animationSpeedEdit, trigger->m_d.m_animSpeed);
         PropertyDialog::UpdateSurfaceComboBox(trigger->GetPTable(), m_surfaceCombo, trigger->m_d.m_szSurface);
         UpdateBaseVisuals(trigger, &trigger->m_d);
+        trigger->UpdateEditorView();
         //only show the first element on multi-select
         break;
     }

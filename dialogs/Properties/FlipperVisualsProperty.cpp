@@ -25,7 +25,7 @@ void FlipperVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_startAngleEdit, flipper->m_d.m_StartAngle);
         PropertyDialog::SetFloatTextbox(m_endAngleEdit, flipper->m_d.m_EndAngle);
         PropertyDialog::SetFloatTextbox(m_heightEdit, flipper->m_d.m_height);
-        PropertyDialog::SetFloatTextbox(m_maxDifficultLengthEdit, flipper->m_d.m_FlipperRadiusMin);
+        PropertyDialog::SetFloatTextbox(m_maxDifficultLengthEdit, flipper->GetFlipperRadiusMin());
         PropertyDialog::UpdateSurfaceComboBox(flipper->GetPTable(), m_surfaceCombo, flipper->m_d.m_szSurface);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_FLIPPER_ENABLED), flipper->m_d.m_enabled);
         UpdateBaseVisuals(flipper, &flipper->m_d);
@@ -100,7 +100,7 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case 111:
                 PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_FlipperRadiusMin = PropertyDialog::GetFloatTextbox(m_maxDifficultLengthEdit);
+                flipper->SetFlipperRadiusMin(PropertyDialog::GetFloatTextbox(m_maxDifficultLengthEdit));
                 PropertyDialog::EndUndo(flipper);
                 break;
             case 1502:

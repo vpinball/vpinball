@@ -25,6 +25,7 @@ void SpinnerVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_angleMinEdit, spinner->m_d.m_angleMin);
 
         UpdateBaseVisuals(spinner, &spinner->m_d);
+        spinner->UpdateUnitsInfo();
         //only show the first element on multi-select
         break;
     }
