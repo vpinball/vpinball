@@ -45,8 +45,11 @@ public:
    STDMETHOD(get_VelX)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_VelX)(/*[in]*/ float newVal);
    STDMETHOD(get_AngVelZ)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_AngVelZ)(/*[out, retval]*/ float newVal) { return S_OK; }; // No-op to not break tables.
    STDMETHOD(get_AngVelY)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_AngVelY)(/*[out, retval]*/ float newVal) { return S_OK; }; // No-op to not break tables.
    STDMETHOD(get_AngVelX)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_AngVelX)(/*[out, retval]*/ float newVal) { return S_OK; }; // No-op to not break tables.
    STDMETHOD(get_AngMomZ)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_AngMomZ)(/*[in]*/ float newVal);
    STDMETHOD(get_AngMomY)(/*[out, retval]*/ float *pVal);
