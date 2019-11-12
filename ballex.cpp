@@ -163,6 +163,8 @@ STDMETHODIMP BallEx::get_AngVelZ(float *pVal)
    return S_OK;
 }
 
+
+
 STDMETHODIMP BallEx::get_AngMomX(float *pVal)
 {
    CHECKSTALEBALL
