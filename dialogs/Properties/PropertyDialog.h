@@ -162,6 +162,7 @@ public:
     static void UpdateComboBox(const vector<string>& contentList, CComboBox &combo, const char *selectName);
     static void UpdateMaterialComboBox(const vector<Material *>& contentList, CComboBox &combo, const char *selectName);
     static void UpdateSurfaceComboBox(const PinTable * const ptable, CComboBox &combo, const char *selectName);
+    static void UpdateSoundComboBox(const PinTable *const ptable, CComboBox &combo, const char *selectName);
 
     static void StartUndo(ISelect *psel)
     {

@@ -106,6 +106,7 @@ public:
 
    void TriggerAnimationHit();
    void TriggerAnimationUnhit();
+   void UpdateEditorView();
 
    TriggerData m_d;
 
@@ -116,7 +117,6 @@ private:
    void AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2, const float height);
 
    void InitShape(float x, float y);
-   void UpdateEditorView();
    void UpdateAnimation();
    void GenerateMesh();
 

@@ -11,7 +11,7 @@ void WallPhysicsProperty::UpdateVisuals()
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
         Surface * const wall = (Surface*)m_pvsel->ElementAt(i);
-        PropertyDialog::SetFloatTextbox(m_slingshotForceEdit, wall->m_d.m_slingshotforce);
+        PropertyDialog::SetFloatTextbox(m_slingshotForceEdit, wall->GetSlingshotStrength());
         PropertyDialog::SetFloatTextbox(m_slingshotThresholdEdit, wall->m_d.m_slingshot_threshold);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 11), wall->m_d.m_droppable);
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 116), wall->m_d.m_isBottomSolid);
@@ -46,7 +46,7 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
                 break;
             case 14:
                 PropertyDialog::StartUndo(wall);
-                wall->m_d.m_slingshotforce = PropertyDialog::GetFloatTextbox(m_slingshotForceEdit);
+                wall->SetSlingshotStrength(PropertyDialog::GetFloatTextbox(m_slingshotForceEdit));
                 PropertyDialog::EndUndo(wall);
                 break;
             case 427:

@@ -23,13 +23,14 @@ void FlipperPhysicsProperty::UpdateVisuals()
         Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
         PropertyDialog::SetFloatTextbox(m_massEdit, flipper->m_d.m_mass);
         PropertyDialog::SetFloatTextbox(m_strengthEdit, flipper->m_d.m_strength);
-        PropertyDialog::SetFloatTextbox(m_elasticityFalloffEdit, flipper->m_d.m_elasticityFalloff);
+        PropertyDialog::SetFloatTextbox(m_elasticityFalloffEdit, flipper->GetElastacityFalloff());
         PropertyDialog::SetFloatTextbox(m_returnStrengthEdit, flipper->m_d.m_return);
-        PropertyDialog::SetFloatTextbox(m_coilUpRampEdit, flipper->m_d.m_rampUp);
+        PropertyDialog::SetFloatTextbox(m_coilUpRampEdit, flipper->GetRampUp());
         PropertyDialog::SetFloatTextbox(m_eosTorqueEdit, flipper->m_d.m_torqueDamping);
         PropertyDialog::SetFloatTextbox(m_eosTorqueAngleEdit, flipper->m_d.m_torqueDampingAngle);
         PropertyDialog::UpdateComboBox(m_physicSetList, m_overwriteSettingsCombo, m_physicSetList[(int)flipper->m_d.m_OverridePhysics - 1].c_str());
         UpdateBaseVisuals(flipper, &flipper->m_d);
+        flipper->UpdateUnitsInfo();
         //only show the first element on multi-select
         break;
     }
@@ -51,17 +52,17 @@ void FlipperPhysicsProperty::UpdateProperties(const int dispid)
                 break;
             case 23:
                 PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_return = PropertyDialog::GetFloatTextbox(m_returnStrengthEdit);
+                flipper->SetReturn(PropertyDialog::GetFloatTextbox(m_returnStrengthEdit));
                 PropertyDialog::EndUndo(flipper);
                 break;
             case 27:
                 PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_rampUp = PropertyDialog::GetFloatTextbox(m_coilUpRampEdit);
+                flipper->SetRampUp(PropertyDialog::GetFloatTextbox(m_coilUpRampEdit));
                 PropertyDialog::EndUndo(flipper);
                 break;
             case 28:
                 PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_elasticityFalloff = PropertyDialog::GetFloatTextbox(m_elasticityFalloffEdit);
+                flipper->SetElastacityFalloff(PropertyDialog::GetFloatTextbox(m_elasticityFalloffEdit));
                 PropertyDialog::EndUndo(flipper);
                 break;
             case 113:

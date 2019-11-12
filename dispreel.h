@@ -86,8 +86,69 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   void    Animate();
+   int     GetImagesPerGridRow() { return m_d.m_imagesPerGridRow; }
+   void    SetImagesPerGridRow(int amount) { m_d.m_imagesPerGridRow = max(1, amount); }
+   int     GetReels() { return m_d.m_reelcount; }
+   void    SetReels(int reels)
+   {
+       m_d.m_reelcount = min(max(1, reels), MAX_REELS); // must have at least 1 reel and a max of MAX_REELS
+       m_d.m_v2.x = m_d.m_v1.x + getBoxWidth();
+       m_d.m_v2.y = m_d.m_v1.y + getBoxHeight();
+   }
+   int     GetRange() { return m_d.m_digitrange; }
+   void    SetRange(int newRange)
+   {
+       m_d.m_digitrange = max(0, newRange);                        // must have at least 1 digit (0 is a digit)
+       if (m_d.m_digitrange > 512 - 1) m_d.m_digitrange = 512 - 1; // and a max of 512 (0->511) //!! 512 requested by highrise
+   }
+   float   GetX() { return m_d.m_v1.x; }
+   void    SetX(float x)
+   {
+       const float delta = x - m_d.m_v1.x;
+       m_d.m_v1.x += delta;
+       m_d.m_v2.x = m_d.m_v1.x + getBoxWidth();
+   }
+   float   GetY() { return m_d.m_v1.y; }
+   void    SetY(float y)
+   {
+       const float delta = y - m_d.m_v1.y;
+       m_d.m_v1.y += delta;
+       m_d.m_v2.y = m_d.m_v1.y + getBoxHeight();
+   }
+   float   GetWidth() { return m_d.m_width; }
+   void    SetWidth(float width)
+   {
+       m_d.m_width = max(0.0f, width);
+       m_d.m_v2.x = m_d.m_v1.x + getBoxWidth();
 
+   }
+
+   float   GetHeight() { return m_d.m_height; }
+   void    SetHeight(float height)
+   {
+       m_d.m_height = max(0.0f, height);
+       m_d.m_v2.y = m_d.m_v1.y + getBoxHeight();
+   }
+   float   GetSpacing() { return m_d.m_reelspacing; }
+   void    SetSpacing(float newSpace) 
+   {
+       m_d.m_reelspacing = max(0.0f, newSpace);
+       m_d.m_v2.x = m_d.m_v1.x + getBoxWidth();
+       m_d.m_v2.y = m_d.m_v1.y + getBoxHeight();
+   }
+   int     GetMotorSteps() { return m_d.m_motorsteps; }
+   void    SetMotorSteps(int steps)
+   {
+       m_d.m_motorsteps = max(1, steps); // must have at least 1 step)
+   }
+   int     GetUpdateInterval() { return m_d.m_updateinterval; }
+   void    SetUpdateInterval(int interval)
+   {
+       m_d.m_updateinterval = max((int)5, interval);
+   }
+
+   void    Animate();
+   
    DispReelAnimObject m_dispreelanim;
 
    DispReelData m_d;

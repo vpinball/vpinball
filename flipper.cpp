@@ -1540,17 +1540,9 @@ STDMETHODIMP Flipper::get_ElasticityFalloff(float *pVal)
 
 STDMETHODIMP Flipper::put_ElasticityFalloff(float newVal)
 {
-   if (m_phitflipper)
-   {
-      if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
-         m_phitflipper->m_elasticityFalloff = newVal;
-   }
-   else
-   {
-      STARTUNDO
-      m_d.m_elasticityFalloff = newVal;
+       STARTUNDO
+           SetElastacityFalloff(newVal);
       STOPUNDO
-   }
 
    return S_OK;
 }
@@ -1580,23 +1572,15 @@ STDMETHODIMP Flipper::put_Friction(float newVal)
 
 STDMETHODIMP Flipper::get_RampUp(float *pVal)
 {
-   *pVal = (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)) ? m_d.m_OverrideCoilRampUp : m_d.m_rampUp;
+    *pVal = GetRampUp();
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_RampUp(float newVal)
 {
-   if (m_phitflipper)
-   {
-      if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
-         m_d.m_rampUp = newVal;
-   }
-   else
-   {
-      STARTUNDO
-      m_d.m_rampUp = newVal;
-      STOPUNDO
-   }
+    STARTUNDO
+        SetRampUp(newVal);
+    STOPUNDO
    
    return S_OK;
 }
@@ -1633,13 +1617,12 @@ STDMETHODIMP Flipper::put_Return(float newVal)
 {
    if (m_phitflipper)
    {
-      if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
-         m_d.m_return = clamp(newVal, 0.0f, 1.0f);
+       SetReturn(newVal);
    }
    else
    {
-      STARTUNDO
-      m_d.m_return = clamp(newVal, 0.0f, 1.0f);
+       STARTUNDO
+           SetReturn(newVal);
       STOPUNDO
    }
 
@@ -1648,17 +1631,15 @@ STDMETHODIMP Flipper::put_Return(float newVal)
 
 STDMETHODIMP Flipper::get_FlipperRadiusMin(float *pVal)
 {
-   *pVal = m_d.m_FlipperRadiusMin;
+   *pVal = GetFlipperRadiusMin();
 
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_FlipperRadiusMin(float newVal)
 {
-   if (newVal < 0.0f) newVal = 0.0f;
-
    STARTUNDO
-   m_d.m_FlipperRadiusMin = newVal;
+       SetFlipperRadiusMin(newVal);
    STOPUNDO
 
    return S_OK;
