@@ -28,6 +28,7 @@
 #include "Properties/DispreelVisualsProperty.h"
 #include "Properties/DispreelStateProperty.h"
 #include "Properties/LightseqStatesProperty.h"
+#include "Properties/PrimitiveVisualsProperty.h"
 
 #include <WindowsX.h>
 
@@ -242,6 +243,11 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
         {
             m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new LightseqStatesProperty(pvsel), _T("States")));
             m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
+        case eItemPrimitive:
+        {
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new PrimitiveVisualsProperty(pvsel), _T("Visuals")));
             break;
         }
         case eItemDragPoint:
