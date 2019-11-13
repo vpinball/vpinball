@@ -388,6 +388,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\Properties\HitTargetVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\KickerPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\KickerVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\LichtseqStatesProperty.cpp" />
     <ClCompile Include="dialogs\Properties\LightStatesProperty.cpp" />
     <ClCompile Include="dialogs\Properties\LightVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\PlungerPhysicsProperty.cpp" />
@@ -1150,6 +1151,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="dialogs\Properties\HitTargetVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\KickerPhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\KickerVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\LightseqStatesProperty.h" />
     <ClInclude Include="dialogs\Properties\LightStatesProperty.h" />
     <ClInclude Include="dialogs\Properties\LightVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\PlungerPhysicsProperty.h" />

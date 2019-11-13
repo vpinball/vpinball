@@ -27,6 +27,7 @@
 #include "Properties/TextboxVisualsProperty.h"
 #include "Properties/DispreelVisualsProperty.h"
 #include "Properties/DispreelStateProperty.h"
+#include "Properties/LightseqStatesProperty.h"
 
 #include <WindowsX.h>
 
@@ -89,6 +90,21 @@ void PropertyDialog::UpdateSoundComboBox(const PinTable *const ptable, CComboBox
     for (size_t i=0;i<ptable->m_vsound.size();i++)
     {
         combo.AddString(ptable->m_vsound[i]->m_szName);
+    }
+    combo.SetCurSel(combo.FindStringExact(1, selectName));
+}
+
+void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, CComboBox &combo, const char *selectName)
+{
+    combo.ResetContent();
+    combo.AddString(_T("<None>"));
+    for (size_t i = 0; i < ptable->m_vcollection.Size(); i++)
+    {
+        char szT[MAX_PATH] = {0};
+
+        WideCharToMultiByte(CP_ACP, 0, ptable->m_vcollection[i].m_wzName, -1, szT, MAX_PATH, NULL, NULL);
+
+        combo.AddString(szT);
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
@@ -220,6 +236,12 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
             m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new DispreelVisualsProperty(pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new DispreelStateProperty(pvsel), _T("States")));
             m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
+        case eItemLightSeq:
+        {
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new LightseqStatesProperty(pvsel), _T("States")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }
         case eItemDragPoint:
