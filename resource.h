@@ -87,12 +87,14 @@
 #define IDR_SURFACE                     101
 #define IDS_TB_TIMER                    101
 #define IDD_CODEVIEW_PREFS              101
+#define IDC_PRIMITIVE_LEGACY_SIDES_EDIT 101
 #define IDS_DRAGPOINT_DESC              102
 #define IDR_DRAG_POINT                  103
 #define IDS_TB_SELECT                   103
 #define IDS_TB_WALL                     104
 #define IDS_TB_FLIPPER                  105
 #define IDS_TB_PLAY                     106
+#define IDC_DRAW_TEXTURES_SIDES_CHECK   106
 #define IDS_FLIPPER_DESC                107
 #define IDC_KICKER_ORIENTATION_EDIT     107
 #define IDC_TABLE_SCALEZ                108

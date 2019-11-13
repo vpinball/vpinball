@@ -393,6 +393,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\Properties\LightVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\PlungerPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\PlungerVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\PrimitiveVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\PropertyDialog.cpp" />
     <ClCompile Include="dialogs\Properties\RampPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\RampVisualsProperty.cpp" />
@@ -1156,6 +1157,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="dialogs\Properties\LightVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\PlungerPhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\PlungerVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\PrimitiveVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\PropertyDialog.h" />
     <ClInclude Include="dialogs\Properties\RampPhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\RampVisualsProperty.h" />
