@@ -57,6 +57,7 @@
 #define DISPID_TOPVISIBLE               15
 #define DISPID_ROTRA4                   15
 #define IDC_UPDATE_INTERVAL_EDIT        15
+#define IDC_LIGHTSEQ_UPDATE_INTERVAL_EDIT 15
 #define DISPID_Flipper_Speed            16
 #define DISPID_ROTRA5                   16
 #define IDC_COLOR2                      16
@@ -1220,7 +1221,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        661
+#define _APS_NEXT_RESOURCE_VALUE        662
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         830
 #define _APS_NEXT_SYMED_VALUE           188

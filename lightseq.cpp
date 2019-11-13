@@ -459,9 +459,6 @@ void LightSeq::GetDialogPanes(vector<PropertyPane*> &pvproppane)
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
    pvproppane.push_back(pproppane);
 
-   pproppane = new PropertyPane(IDD_PROPLIGHTSEQ_POSITION, IDS_POSITION);
-   pvproppane.push_back(pproppane);
-
    pproppane = new PropertyPane(IDD_PROPLIGHTSEQ_STATE, IDS_STATE);
    pvproppane.push_back(pproppane);
 
@@ -491,7 +488,7 @@ STDMETHODIMP LightSeq::put_Collection(BSTR newVal)
 
 STDMETHODIMP LightSeq::get_CenterX(float *pVal)
 {
-   *pVal = m_d.m_vCenter.x;
+    *pVal = GetX();
 
    return S_OK;
 }
@@ -502,10 +499,7 @@ STDMETHODIMP LightSeq::put_CenterX(float newVal)
       return E_FAIL;
 
    STARTUNDO
-   m_d.m_vCenter.x = newVal;
-   // set the centre point of the grid for effects which start from the center
-   m_GridXCenter = floorf(m_d.m_vCenter.x * (float)(1.0 / LIGHTSEQGRIDSCALE));
-   m_GridXCenterAdjust = abs(m_lightSeqGridWidth / 2 - (int)m_GridXCenter);
+       SetX(newVal);
    STOPUNDO
 
    return S_OK;
@@ -513,7 +507,7 @@ STDMETHODIMP LightSeq::put_CenterX(float newVal)
 
 STDMETHODIMP LightSeq::get_CenterY(float *pVal)
 {
-   *pVal = m_d.m_vCenter.y;
+   *pVal = GetY();
 
    return S_OK;
 }
@@ -524,10 +518,7 @@ STDMETHODIMP LightSeq::put_CenterY(float newVal)
       return E_FAIL;
 
    STARTUNDO
-   m_d.m_vCenter.y = newVal;
-   // set the centre point of the grid for effects which start from the center
-   m_GridYCenter = floorf(m_d.m_vCenter.y * (float)(1.0 / LIGHTSEQGRIDSCALE));
-   m_GridYCenterAdjust = abs(m_lightSeqGridHeight / 2 - (int)m_GridYCenter);
+       SetY(newVal);
    STOPUNDO
 
    return S_OK;
@@ -535,15 +526,15 @@ STDMETHODIMP LightSeq::put_CenterY(float newVal)
 
 STDMETHODIMP LightSeq::get_UpdateInterval(long *pVal)
 {
-   *pVal = m_d.m_updateinterval;
+   *pVal = GetUpdateInterval();
 
    return S_OK;
 }
 
 STDMETHODIMP LightSeq::put_UpdateInterval(long newVal)
 {
-   STARTUNDO
-   m_d.m_updateinterval = max((long)1, newVal);
+    STARTUNDO
+        SetUpdateInterval(newVal);
    STOPUNDO
    return S_OK;
 }
