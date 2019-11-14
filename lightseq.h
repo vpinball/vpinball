@@ -157,30 +157,31 @@ public:
    STDMETHOD(Play)(/*[in]*/ SequencerState Animation, /*[in]*/ long TailLength, /*[in]*/ long Repeat, /*[in]*/ long Pause);
    STDMETHOD(StopPlay)();
 
-   float    GetX() { return m_d.m_vCenter.x; }
-   void     SetX(float value)
+   float    GetX() const { return m_d.m_vCenter.x; }
+   void     SetX(const float value)
    {
        if ((value < 0.f) || (value >= (float)EDITOR_BG_WIDTH))
-           return ;
+           return;
 
        m_d.m_vCenter.x = value;
        // set the center point of the grid for effects which start from the center
        m_GridXCenter = floorf(m_d.m_vCenter.x * (float)(1.0 / LIGHTSEQGRIDSCALE));
        m_GridXCenterAdjust = abs(m_lightSeqGridWidth / 2 - (int)m_GridXCenter);
    }
-   float    GetY() { return m_d.m_vCenter.y; }
-   void     SetY(float value)
+   float    GetY() const { return m_d.m_vCenter.y; }
+   void     SetY(const float value)
    {
        if ((value < 0.f) || (value >= (float)(2 * EDITOR_BG_WIDTH)))
            return;
+
        m_d.m_vCenter.y = value;
        // set the center point of the grid for effects which start from the center
        m_GridYCenter = floorf(m_d.m_vCenter.y * (float)(1.0 / LIGHTSEQGRIDSCALE));
        m_GridYCenterAdjust = abs(m_lightSeqGridHeight / 2 - (int)m_GridYCenter);
    }
 
-   long     GetUpdateInterval() { return m_d.m_updateinterval; }
-   void     SetUpdateInterval(long value) { m_d.m_updateinterval = max((long)1, value); }
+   long     GetUpdateInterval() const { return m_d.m_updateinterval; }
+   void     SetUpdateInterval(const long value) { m_d.m_updateinterval = max((long)1, value); }
 
    void     Animate();
 

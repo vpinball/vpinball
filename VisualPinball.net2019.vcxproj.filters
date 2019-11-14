@@ -140,10 +140,10 @@
     <ClCompile Include="dialogs\Properties\GateVisualsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
-    <ClCompile Include="dialogs\Properties\WallPhysicsProperty.cpp">
+    <ClCompile Include="dialogs\Properties\GatePhysicsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
-    <ClCompile Include="dialogs\Properties\GatePhysicsProperty.cpp">
+    <ClCompile Include="dialogs\Properties\WallPhysicsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
     <ClCompile Include="dialogs\Properties\RampPhysicsProperty.cpp">
@@ -185,13 +185,10 @@
     <ClCompile Include="dialogs\Properties\TriggerPhysicsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
-    <ClCompile Include="dialogs\Properties\LightVisualsProperty.cpp">
-      <Filter>dialogs\Properties</Filter>
-    </ClCompile>
     <ClCompile Include="dialogs\Properties\LightStatesProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
-    <ClCompile Include="dialogs\Properties\DecalVisualsProperty.cpp">
+    <ClCompile Include="dialogs\Properties\LightVisualsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
     <ClCompile Include="dialogs\Properties\HitTargetPhysicsProperty.cpp">
@@ -204,6 +201,9 @@
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
     <ClCompile Include="dialogs\Properties\KickerVisualsProperty.cpp">
+      <Filter>dialogs\Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\Properties\DecalVisualsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
     <ClCompile Include="dialogs\Properties\TextboxVisualsProperty.cpp">
@@ -1227,10 +1227,10 @@
     <ClInclude Include="dialogs\Properties\GateVisualsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
-    <ClInclude Include="dialogs\Properties\WallPhysicsProperty.h">
+    <ClInclude Include="dialogs\Properties\GatePhysicsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
-    <ClInclude Include="dialogs\Properties\GatePhysicsProperty.h">
+    <ClInclude Include="dialogs\Properties\WallPhysicsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\Properties\RampPhysicsProperty.h">
@@ -1272,13 +1272,10 @@
     <ClInclude Include="dialogs\Properties\TriggerPhysicsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
-    <ClInclude Include="dialogs\Properties\LightVisualsProperty.h">
-      <Filter>dialogs\Properties</Filter>
-    </ClInclude>
     <ClInclude Include="dialogs\Properties\LightStatesProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
-    <ClInclude Include="dialogs\Properties\DecalVisualsProperty.h">
+    <ClInclude Include="dialogs\Properties\LightVisualsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\Properties\HitTargetPhysicsProperty.h">
@@ -1291,6 +1288,9 @@
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\Properties\KickerVisualsProperty.h">
+      <Filter>dialogs\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\Properties\DecalVisualsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\Properties\TextboxVisualsProperty.h">

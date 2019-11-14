@@ -646,8 +646,8 @@ STDMETHODIMP DispReel::get_Reels(float *pVal)
 
 STDMETHODIMP DispReel::put_Reels(float newVal)
 {
-    STARTUNDO
-        SetReels((int)newVal);
+   STARTUNDO
+   SetReels((int)newVal);
    STOPUNDO
 
    return S_OK;
@@ -655,15 +655,15 @@ STDMETHODIMP DispReel::put_Reels(float newVal)
 
 STDMETHODIMP DispReel::get_Width(float *pVal)
 {
-    *pVal = GetWidth();
+   *pVal = GetWidth();
 
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Width(float newVal)
 {
-    STARTUNDO
-        SetWidth(newVal);
+   STARTUNDO
+   SetWidth(newVal);
    STOPUNDO
 
    return S_OK;
@@ -671,15 +671,15 @@ STDMETHODIMP DispReel::put_Width(float newVal)
 
 STDMETHODIMP DispReel::get_Height(float *pVal)
 {
-    *pVal = GetHeight();
+   *pVal = GetHeight();
 
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Height(float newVal)
 {
-    STARTUNDO
-        SetHeight(newVal);
+   STARTUNDO
+   SetHeight(newVal);
    STOPUNDO
 
    return S_OK;
@@ -695,8 +695,8 @@ STDMETHODIMP DispReel::get_X(float *pVal)
 
 STDMETHODIMP DispReel::put_X(float newVal)
 {
-    STARTUNDO
-        SetX(newVal);
+   STARTUNDO
+   SetX(newVal);
    STOPUNDO
 
    return S_OK;
@@ -704,15 +704,15 @@ STDMETHODIMP DispReel::put_X(float newVal)
 
 STDMETHODIMP DispReel::get_Y(float *pVal)
 {
-    *pVal = GetY();
+   *pVal = GetY();
 
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Y(float newVal)
 {
-    STARTUNDO
-        SetY(newVal);
+   STARTUNDO
+   SetY(newVal);
    STOPUNDO
 
    return S_OK;
@@ -769,8 +769,8 @@ STDMETHODIMP DispReel::get_Spacing(float *pVal)
 
 STDMETHODIMP DispReel::put_Spacing(float newVal)
 {
-    STARTUNDO
-        SetSpacing(newVal);
+   STARTUNDO
+   SetSpacing(newVal);
    STOPUNDO
 
    return S_OK;
@@ -803,8 +803,8 @@ STDMETHODIMP DispReel::get_Steps(float *pVal)
 
 STDMETHODIMP DispReel::put_Steps(float newVal)
 {
-    STARTUNDO
-        SetMotorSteps((int)newVal);
+   STARTUNDO
+   SetMotorSteps((int)newVal);
    STOPUNDO
 
    return S_OK;
@@ -812,7 +812,7 @@ STDMETHODIMP DispReel::put_Steps(float newVal)
 
 STDMETHODIMP DispReel::get_Range(float *pVal)
 {
-    *pVal = (float)GetRange();
+   *pVal = (float)GetRange();
 
    return S_OK;
 }
@@ -820,7 +820,7 @@ STDMETHODIMP DispReel::get_Range(float *pVal)
 STDMETHODIMP DispReel::put_Range(float newVal)
 {
    STARTUNDO
-        SetRange((int)newVal);
+   SetRange((int)newVal);
    STOPUNDO
 
    return S_OK;
@@ -835,8 +835,8 @@ STDMETHODIMP DispReel::get_UpdateInterval(long *pVal)
 
 STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
 {
-    STARTUNDO
-        SetUpdateInterval((int)newVal);
+   STARTUNDO
+   SetUpdateInterval((int)newVal);
    if (g_pplayer)
       m_timeNextUpdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
    STOPUNDO
@@ -878,15 +878,15 @@ STDMETHODIMP DispReel::put_Visible(VARIANT_BOOL newVal)
 
 STDMETHODIMP DispReel::get_ImagesPerGridRow(long *pVal)
 {
-    *pVal = GetImagesPerGridRow();
+   *pVal = GetImagesPerGridRow();
 
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_ImagesPerGridRow(long newVal)
 {
-    STARTUNDO
-        SetImagesPerGridRow((int)newVal);
+   STARTUNDO
+   SetImagesPerGridRow((int)newVal);
    STOPUNDO
 
    return S_OK;

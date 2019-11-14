@@ -20,8 +20,8 @@ public:
         m_hReflectionEnabledCheck = 0;
         m_hVisibleCheck = 0;
     }
-    virtual void UpdateProperties(const int dispid)=0;
-    virtual void UpdateVisuals() =0;
+    virtual void UpdateProperties(const int dispid) = 0;
+    virtual void UpdateVisuals() = 0;
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam)
     {
         UNREFERENCED_PARAMETER(lParam);
@@ -80,7 +80,7 @@ public:
     }
     ~ColorButton(){}
     
-    void SetColor(COLORREF color)
+    void SetColor(const COLORREF color)
     {
         m_color = color;
         InvalidateRect(FALSE);
@@ -89,31 +89,24 @@ public:
 
     virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
     {
-              // get the device context and attach the button handle to it
+        // get the device context and attach the button handle to it
         TRIVERTEX vertex[2];
 
         CDC dc;
         dc.Attach(lpDrawItemStruct->hDC);
-          // determine the button rectangle
+        // determine the button rectangle
         CRect rect = lpDrawItemStruct->rcItem;
         
         // draw in the button text
         dc.DrawText(GetWindowText(), -1, rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
         // get the current state of the button
         UINT state = lpDrawItemStruct->itemState;
-        if ((state & ODS_SELECTED))   // if it is pressed
-        {
-            dc.DrawEdge(rect, EDGE_SUNKEN, BF_RECT); // draw a sunken face
-        }
-        else
-        {
-            dc.DrawEdge(rect, EDGE_RAISED, BF_RECT); // draw a raised face
-        }
-          // draw the focus rectangle, a dotted rectangle just inside the
-          // button rectangle when the button has the focus.
+        dc.DrawEdge(rect, (state & ODS_SELECTED) ? EDGE_SUNKEN : EDGE_RAISED, BF_RECT); // if pressed draw sunken, otherwise raised face
+        // draw the focus rectangle, a dotted rectangle just inside the
+        // button rectangle when the button has the focus.
         if (lpDrawItemStruct->itemAction & ODA_FOCUS)
         {
-            int iChange = 3;
+            const int iChange = 3;
             rect.top += iChange;
             rect.left += iChange;
             rect.right -= iChange;
@@ -127,18 +120,18 @@ public:
         b = GetBValue(m_color);
         vertex[0].x = rect.TopLeft().x;
         vertex[0].y = rect.TopLeft().y;
-        vertex[0].Red = (r << 8) + r;
-        vertex[0].Green = (g << 8) + g;
-        vertex[0].Blue = (b << 8) + b;
+        vertex[0].Red   = ((unsigned int)r << 8) + r;
+        vertex[0].Green = ((unsigned int)g << 8) + g;
+        vertex[0].Blue  = ((unsigned int)b << 8) + b;
         // do some shading
-        r = (unsigned char)(r * .9f);
-        g = (unsigned char)(g * .9f);
-        b = (unsigned char)(b * .9f);
+        r = (unsigned char)((float)r * .9f);
+        g = (unsigned char)((float)g * .9f);
+        b = (unsigned char)((float)b * .9f);
         vertex[1].x = rect.BottomRight().x;
         vertex[1].y = rect.BottomRight().y;
-        vertex[1].Red = (r << 8) + r;
-        vertex[1].Green = (g << 8) + g;
-        vertex[1].Blue = (b << 8) + b;
+        vertex[1].Red   = ((unsigned int)r << 8) + r;
+        vertex[1].Green = ((unsigned int)g << 8) + g;
+        vertex[1].Blue  = ((unsigned int)b << 8) + b;
 
         GRADIENT_RECT gRect;
         gRect.UpperLeft = 0;
@@ -151,6 +144,8 @@ public:
 private:
     COLORREF m_color;
 };
+
+#define PROPERTY_TABS 5
 
 class PropertyDialog : public CDialog
 {
@@ -241,7 +236,7 @@ protected:
 
 private:
     CTab m_tab;
-    BasePropertyDialog *m_tabs[5];
+    BasePropertyDialog *m_tabs[PROPERTY_TABS];
     int  m_curTabIndex;
     CEdit m_nameEdit;
     CResizer m_resizer;

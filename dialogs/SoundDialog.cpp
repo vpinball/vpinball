@@ -7,7 +7,7 @@ typedef struct _tagSORTDATA
     HWND hwndList;
     int subItemIndex;
     int sortUpDown;
-}SORTDATA;
+} SORTDATA;
 
 extern SORTDATA SortData;
 extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption );
@@ -17,7 +17,7 @@ SoundDialog::SoundDialog() : CDialog( IDD_SOUNDDIALOG )
 {
     hSoundList = NULL;
     m_columnSortOrder = 1;
-    m_bPlayedSound = false;
+    m_playedSound = false;
 }
 
 SoundDialog::~SoundDialog()
@@ -33,10 +33,8 @@ void SoundDialog::OnClose()
 {
     SavePosition();
     CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-    if (pt && m_bPlayedSound)
-    {
+    if (pt && m_playedSound)
         pt->StopAllSounds(); 
-    }
     CDialog::OnClose();
 }
 
@@ -135,7 +133,7 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
             {
                 case LVN_ENDLABELEDIT:
                 {
-                    NMLVDISPINFO *pinfo = (NMLVDISPINFO *)lParam;
+                    NMLVDISPINFO *const pinfo = (NMLVDISPINFO *)lParam;
                     if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
                         return FALSE;
                     ListView_SetItemText( hSoundList, pinfo->item.iItem, 0, pinfo->item.pszText );
@@ -157,14 +155,14 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                 case LVN_ITEMCHANGED:
                 {
                     const int count = ListView_GetSelectedCount( hSoundList );
-                    const int fEnable = !(count > 1);
-                    ::EnableWindow( GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), fEnable );
-                    ::EnableWindow( GetDlgItem(IDC_RENAME).GetHwnd(), fEnable );
-                    ::EnableWindow( GetDlgItem(IDC_PLAY).GetHwnd(), fEnable );
-                    if (pt && m_bPlayedSound)
+                    const BOOL enable = !(count > 1);
+                    ::EnableWindow( GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), enable );
+                    ::EnableWindow( GetDlgItem(IDC_RENAME).GetHwnd(), enable );
+                    ::EnableWindow( GetDlgItem(IDC_PLAY).GetHwnd(), enable );
+                    if (pt && m_playedSound)
                     {
                         pt->StopAllSounds(); 
-                        m_bPlayedSound = false;
+                        m_playedSound = false;
                     }
                 }
                 break;
@@ -200,8 +198,8 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
                 lvitem.iSubItem = 0;
                 ListView_GetItem( hSoundList, &lvitem );
                 PinSound * const pps = (PinSound *)lvitem.lParam;
-                pps->m_pDSBuffer->Play( 0, 0, 0 );
-                m_bPlayedSound = true;
+                pps->TestPlay();
+                m_playedSound = true;
             }
             break;
         }
@@ -246,10 +244,10 @@ void SoundDialog::Import()
     ofn.hInstance = g_hinst;
     ofn.hwndOwner = g_pvp->m_hwnd;
     // TEXT
-    ofn.lpstrFilter = "Sound Files (*.wav)\0*.wav\0";
+    ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0";
     ofn.lpstrFile = szFileName;
     ofn.nMaxFile = MAXSTRING;
-    ofn.lpstrDefExt = "wav";
+    ofn.lpstrDefExt = "mp3";
     ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
 
     HRESULT hr = LoadValueString( "RecentDir", "SoundDir", szInitialDir, MAXSTRING);
@@ -338,7 +336,7 @@ void SoundDialog::ReImportFrom()
     if (sel != -1)
     {
         LocalString ls( IDS_REPLACESOUND );
-        int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2 );
+        const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2 );
         if (ans == IDYES)
         {
             char szFileName[MAXSTRING];
@@ -350,14 +348,14 @@ void SoundDialog::ReImportFrom()
             ofn.hInstance = g_hinst;
             ofn.hwndOwner = g_pvp->m_hwnd;
             // TEXT
-            ofn.lpstrFilter = "Sound Files (*.wav)\0*.wav\0";
+            ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0";
             ofn.lpstrFile = szFileName;
             ofn.nMaxFile = MAXSTRING;
-            ofn.lpstrDefExt = "wav";
+            ofn.lpstrDefExt = "mp3";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
             char szInitialDir[MAXSTRING];
-            HRESULT hr = LoadValueString("RecentDir", "SoundDir", szInitialDir, MAXSTRING);
+            const HRESULT hr = LoadValueString("RecentDir", "SoundDir", szInitialDir, MAXSTRING);
             ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
             const int ret = GetOpenFileName( &ofn );
@@ -404,7 +402,7 @@ void SoundDialog::Export()
             ofn.hInstance = g_hinst;
             ofn.hwndOwner = g_pvp->m_hwnd;
             //TEXT
-            ofn.lpstrFilter = "Sound Files (*.wav)\0*.wav\0";
+            ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0";
 
             int begin;		//select only file name from pathfilename
             int len = lstrlen( pps->m_szPath );
@@ -433,7 +431,7 @@ void SoundDialog::Export()
             }
             ofn.lpstrFile = m_filename;
             ofn.nMaxFile = MAX_PATH;
-            ofn.lpstrDefExt = "wav";
+            ofn.lpstrDefExt = "mp3";
             const HRESULT hr = LoadValueString( "RecentDir", "SoundDir", m_initDir, MAX_PATH );
 
             if (hr == S_OK)ofn.lpstrInitialDir = m_initDir;
@@ -773,14 +771,15 @@ BOOL SoundPositionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 	switch (LOWORD(wParam))
 	{
-	case IDC_TEST: TestSound(); break;
+	case IDC_TEST:
+		TestSound();
+		break;
 	case IDC_OK:
 		GetDialogValues();
 		CDialog::OnOK(); 
 		break;
-
-	default: return FALSE;
-
+	default:
+		return FALSE;
 	}
 
 	return TRUE;

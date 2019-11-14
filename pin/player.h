@@ -410,7 +410,7 @@ public:
    int m_MusicVolume;
    int m_SoundVolume;
 
-   XAudPlayer *m_pxap;
+   AudioPlayer *m_audio;
 
    int m_lastcursorx, m_lastcursory; // used for the dumb task of seeing if the mouse has really moved when we get a WM_MOUSEMOVE message
 

@@ -127,11 +127,12 @@ public:
    virtual void AddPoint(int x, int y, const bool smooth);
 
 
-   float    GetSlingshotStrength() { return m_d.m_slingshotforce * (float)(1.0 / 10.0); }
-   void     SetSlingshotStrength(float value)
+   float    GetSlingshotStrength() const { return m_d.m_slingshotforce * (float)(1.0/10.0); }
+   void     SetSlingshotStrength(const float value)
    {
        m_d.m_slingshotforce = value * 10.0f;
    }
+
    SurfaceData m_d;
    bool m_disabled;
 

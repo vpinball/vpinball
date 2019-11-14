@@ -145,7 +145,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
 
    if (pvsel != NULL)
    {
-      ItemTypeEnum maintype = pvsel->ElementAt(0)->GetItemType();
+      const ItemTypeEnum maintype = pvsel->ElementAt(0)->GetItemType();
       bool same = true;
 
       // See if all items in multi-select are of the same type.
@@ -1417,7 +1417,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          cc.hwndOwner = hwnd;
          cc.hInstance = NULL;
          cc.rgbResult = (COLORREF)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-         int id = GetDlgCtrlID(hwnd);
+         const int id = GetDlgCtrlID(hwnd);
          SendMessage(hwndDlg, GET_COLOR_TABLE, (WPARAM)id, (size_t)&cc.lpCustColors);
          //cc.lpCustColors = (unsigned long *)SendMessage(hwndDlg, GET_COLOR_TABLE, 0, 0);//psb->m_pisel->GetPTable()->m_rgcolorcustom;//cr;
          cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;

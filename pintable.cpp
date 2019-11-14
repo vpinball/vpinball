@@ -201,7 +201,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
 {
    if (g_pplayer && g_pplayer->m_PlayMusic)
    {
-      if (g_pplayer->m_pxap)
+      if (g_pplayer->m_audio)
          EndMusic();
 
       char szT[512];
@@ -222,19 +222,13 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
       // We know that szT can't be more than 512 characters as this point, and that szPath can't be more than MAX_PATH
       lstrcat(szPath, szT);
 
-      g_pplayer->m_pxap = new XAudPlayer();
+      g_pplayer->m_audio = new AudioPlayer();
 
-      const float MusicVolumef = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f);
-#ifdef NO_XAUDIO
-      const float MusicVolume = MusicVolumef;
-#else
-      const int MusicVolume = (MusicVolumef == 0.0f) ? DSBVOLUME_MIN : (int)(logf(MusicVolumef)*(float)(1000.0 / log(10.0)) - 2000.0f); // 10 volume = -10Db
-#endif
-
-      if (!g_pplayer->m_pxap->Init(szPath, MusicVolume))
+      const float MusicVolume = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f) * (float)(1.0/100.0);
+      if (!g_pplayer->m_audio->MusicInit(szPath, MusicVolume))
       {
-         delete g_pplayer->m_pxap;
-         g_pplayer->m_pxap = NULL;
+         delete g_pplayer->m_audio;
+         g_pplayer->m_audio = NULL;
       }
    }
 
@@ -245,11 +239,11 @@ STDMETHODIMP ScriptGlobalTable::EndMusic()
 {
    if (g_pplayer && g_pplayer->m_PlayMusic)
    {
-      if (g_pplayer->m_pxap)
+      if (g_pplayer->m_audio)
       {
-         g_pplayer->m_pxap->End();
-         delete g_pplayer->m_pxap;
-         g_pplayer->m_pxap = NULL;
+         g_pplayer->m_audio->MusicEnd();
+         delete g_pplayer->m_audio;
+         g_pplayer->m_audio = NULL;
       }
    }
 
@@ -260,13 +254,8 @@ STDMETHODIMP ScriptGlobalTable::put_MusicVolume(float volume)
 {
 	if (g_pplayer && g_pplayer->m_PlayMusic)
 	{
-		const float MusicVolumef = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f);
-#ifdef NO_XAUDIO
-		const float MusicVolume = MusicVolumef;
-#else
-		const int MusicVolume = (MusicVolumef == 0.0f) ? DSBVOLUME_MIN : (int)(logf(MusicVolumef)*(float)(1000.0 / log(10.0)) - 2000.0f); // 10 volume = -10Db
-#endif
-		g_pplayer->m_pxap->Volume(MusicVolume);
+		const float MusicVolume = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f) * (float)(1.0/100.0);
+		g_pplayer->m_audio->MusicVolume(MusicVolume);
 	}
 
 	return S_OK;
@@ -1553,13 +1542,10 @@ PinTable::~PinTable()
    for (size_t i = 0; i < m_vedit.size(); i++)
       m_vedit[i]->Release();
 
-   ClearOldSounds();
+   g_pvp->m_ps.ClearStoppedOldSounds();
 
    for (size_t i = 0; i < m_vsound.size(); i++)
-   {
-      //m_vsound[i]->m_pDSBuffer->Release();
       delete m_vsound[i];
-   }
 
    for (size_t i = 0; i < m_vimage.size(); i++)
       delete m_vimage[i];
@@ -2375,15 +2361,9 @@ void PinTable::StopPlaying()
    // Stop all sounds
    // In case we were playing any of the main buffers
    for (size_t i = 0; i < m_vsound.size(); i++)
-   {
-      m_vsound[i]->m_pDSBuffer->Stop();
-   }
+      m_vsound[i]->Stop();
    // The usual case - copied sounds
-   for (size_t i = 0; i < m_voldsound.size(); i++)
-   {
-	  m_voldsound[i]->m_pDSBuffer->Stop();
-   }
-   ClearOldSounds();
+   g_pvp->m_ps.StopAndClearOldSounds();
 
    m_pcv->EndSession();
    m_textureMap.clear();
@@ -2733,9 +2713,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
       {
          if (SUCCEEDED(hr = pstgData->CreateStream(L"Version", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
          {
-            ULONG writ;
             int version = CURRENT_FILE_FORMAT_VERSION;
             CryptHashData(hch, (BYTE *)&version, sizeof(version), 0);
+            ULONG writ;
             pstmItem->Write(&version, sizeof(version), &writ);
             pstmItem->Release();
             pstmItem = NULL;
@@ -3025,8 +3005,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 
    pps->m_pdata = new char[pps->m_cdata];
 
-   //LZWReader lzwreader(pstm, (int *)pps->m_pdata, pps->m_cdata, 1, pps->m_cdata);
-
+   //LZWReader lzwreader(pstm, (int *)pps->m_pdata, pps->m_cdata, 1, pps->m_cdata); // TODO could compress wav data
    //lzwreader.Decoder();
 
    if (FAILED(hr = pstm->Read(pps->m_pdata, pps->m_cdata, &read)))
@@ -3066,7 +3045,6 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    else
    {
 	   bool bToBackglassOutput;
-
 	   if (FAILED(hr = pstm->Read(&bToBackglassOutput, sizeof(bool), &read)))
 	   {
 		   delete pps;
@@ -3076,7 +3054,8 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 	   pps->m_outputTarget = bToBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE;	
    }
 
-   if (FAILED(hr = pps->GetPinDirectSound()->CreateDirectFromNative(pps)))
+   if (pps->IsWav()) // only use old direct sound code if playing wav's
+   if (FAILED(hr = pps->ReInitialize()))
    {
       delete pps;
       return hr;
@@ -4186,7 +4165,7 @@ bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
 
 void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, const char * const filename, const bool play)
 {
-   PinSound * const ppsNew = g_pvp->m_pds.LoadWaveFile(filename);
+   PinSound * const ppsNew = g_pvp->m_ps.LoadFile(filename);
 
    if (ppsNew == NULL)
       return;
@@ -4216,7 +4195,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
 
 void PinTable::ImportSound(const HWND hwndListView, const char * const szfilename, const bool play)
 {
-   PinSound * const pps = g_pvp->m_pds.LoadWaveFile(szfilename);
+   PinSound * const pps = g_pvp->m_ps.LoadFile(szfilename);
 
    if (pps == NULL)
       return;
@@ -7046,26 +7025,6 @@ STDMETHODIMP PinTable::put_Offset(float newVal)
 	return S_OK;
 }
 
-void PinTable::ClearOldSounds()
-{
-   size_t i = 0;
-   while (i < m_voldsound.size())
-   {
-      //LPDIRECTSOUNDBUFFER pdsbOld = (LPDIRECTSOUNDBUFFER)(m_voldsound[i]);
-      PinSoundCopy * const ppsc = m_voldsound[i];
-      DWORD status;
-      ppsc->m_pDSBuffer->GetStatus(&status);
-      if (!(status & DSBSTATUS_PLAYING)) //sound is done, we can throw it away now
-      {
-         ppsc->m_pDSBuffer->Release();
-         m_voldsound.erase(m_voldsound.begin() + i);
-         delete ppsc;
-      }
-      else
-         i++;
-   }
-}
-
 HRESULT PinTable::StopSound(BSTR Sound)
 {
    MAKE_ANSIPTR_FROMWIDE(szName, Sound);
@@ -7076,20 +7035,12 @@ HRESULT PinTable::StopSound(BSTR Sound)
    {
       if (!lstrcmp(m_vsound[i]->m_szInternalName, szName))
       {
-         m_vsound[i]->m_pDSBuffer->Stop();
+         m_vsound[i]->Stop();
          break;
       }
    }
 
-   for (size_t i = 0; i < m_voldsound.size(); i++)
-   {
-      PinSoundCopy * const ppsc = m_voldsound[i];
-      if (!lstrcmp(ppsc->m_ppsOriginal->m_szInternalName, szName))
-      {
-         ppsc->m_pDSBuffer->Stop();
-         break;
-      }
-   }
+   g_pvp->m_ps.StopOldSound(szName);
 
    return S_OK;
 }
@@ -7098,10 +7049,9 @@ void PinTable::StopAllSounds()
 {
 	// In case we were playing any of the main buffers
 	for (size_t i = 0; i < m_vsound.size(); i++)
-		m_vsound[i]->m_pDSBuffer->Stop();
+		m_vsound[i]->Stop();
 
-	for (size_t i = 0; i < m_voldsound.size(); i++)
-		m_voldsound[i]->m_pDSBuffer->Stop();
+	g_pvp->m_ps.StopOldSounds();
 }
 
 
@@ -7120,60 +7070,24 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 
    if (i == m_vsound.size()) // did not find it
    {
-	   if (szName[0] && m_pcv && g_pplayer && g_pplayer->m_hwndDebugOutput)
-	   {
-		   std::string logmsg = "Request to play \"" + std::string(szName) + "\", but sound not found.";
-
-		   m_pcv->AddToDebugOutput(logmsg.c_str());
-	   }
+      if (szName[0] && m_pcv && g_pplayer && g_pplayer->m_hwndDebugOutput)
+      {
+         const std::string logmsg = "Request to play \"" + std::string(szName) + "\", but sound not found.";
+         m_pcv->AddToDebugOutput(logmsg.c_str());
+      }
       return S_OK;
    }
 
-   ClearOldSounds();
    PinSound * const pps = m_vsound[i];
 
    volume += dequantizeSignedPercent(pps->m_volume);
    pan += dequantizeSignedPercent(pps->m_balance);
    front_rear_fade += dequantizeSignedPercent(pps->m_fade);
    
-   const int flags = (loopcount == -1) ? DSBPLAY_LOOPING : 0;
-   // 10 volume = -10Db
-
-   const LPDIRECTSOUNDBUFFER pdsb = pps->m_pDSBuffer;
-   //PinDirectSound *pDS = pps->m_pPinDirectSound;
-   PinSoundCopy * ppsc = NULL;
-   bool foundsame = false;
-   if (usesame)
-   {
-      for (size_t i2 = 0; i2 < m_voldsound.size(); i2++)
-      {
-         if (m_voldsound[i2]->m_ppsOriginal->m_pDSBuffer == pdsb)
-         {
-            ppsc = m_voldsound[i2];
-            foundsame = true;
-            break;
-         }
-      }
-   }
-
-   if (ppsc == NULL)
-      ppsc = new PinSoundCopy(pps);
-
    if (m_tblMirrorEnabled)
       pan = -pan;
 
-   if (ppsc->m_pDSBuffer)
-   {
-	  ppsc->Play(volume * m_TableSoundVolume* ((float)g_pplayer->m_SoundVolume), randompitch, pitch, pan, front_rear_fade, flags, !!restart);
-      if (!foundsame)
-         m_voldsound.push_back(ppsc);
-   }
-   else // Couldn't or didn't want to create a copy - just play the original
-   {
-      delete ppsc;
-
-	  pps->Play(volume * m_TableSoundVolume * ((float)g_pplayer->m_SoundVolume), randompitch, pitch, pan, front_rear_fade, flags, !!restart);
-   }
+   g_pvp->m_ps.Play(pps, volume * m_TableSoundVolume * ((float)g_pplayer->m_SoundVolume), randompitch, pitch, pan, front_rear_fade, loopcount, VBTOb(usesame), VBTOb(restart));
 
    return S_OK;
 }

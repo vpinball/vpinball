@@ -52,7 +52,7 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-class BaseProperty
+class BaseProperty // not everything in here is used in all of the derived classes, but it simplifies the UI code!
 {
 public:
     char  m_szImage[MAXTOKEN];

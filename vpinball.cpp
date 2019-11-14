@@ -402,7 +402,7 @@ void VPinball::Init()
    ::SendMessage(m_hwnd, WM_SIZE, 0, 0);			// Make our window relay itself out
 
    InitTools();
-   InitPinDirectSound();
+   m_ps.InitPinDirectSound(m_hwnd);
 
    m_backglassView = false;							// we are viewing Pinfield and not the backglass at first
 
@@ -420,26 +420,6 @@ void VPinball::Init()
    slintf_popup_console();
    slintf("Debug output:\n");
 #endif
-}
-
-void VPinball::InitPinDirectSound()
-{
-	int DSidx1 = LoadValueIntWithDefault("Player", "SoundDevice", 0);
-	int DSidx2 = LoadValueIntWithDefault("Player", "SoundDeviceBG", 0);
-	m_pds.m_3DSoundMode = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)m_pds.m_3DSoundMode);
-
-	m_pds.InitDirectSound(m_hwnd, false);			// init Direct Sound (in pinsound.cpp)
-	// If these are the same device, and we are not in 3d mode, just point the backglass device to the main one. 
-	// For 3D we want two separate instances, one in basic stereo for music, and the other surround mode. 
-	if (m_pds.m_3DSoundMode == SNDCFG_SND3D2CH && DSidx1 == DSidx2)
-	{
-		m_pbackglassds = &m_pds;
-	}
-	else
-	{
-		m_pbackglassds = new PinDirectSound();
-		m_pbackglassds->InitDirectSound(m_hwnd, true);
-	}
 }
 
 ///<summary>
@@ -1261,8 +1241,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case ID_HELP_ABOUT:
    {
       //ShowSubDialog(m_aboutDialog);
-       //ShowSubDialog(m_toolbarDialog);
-       ShowSubDialog(m_propertyDialog);
+      //ShowSubDialog(m_toolbarDialog);
+      ShowSubDialog(m_propertyDialog);
       break;
    }
    case ID_WINDOW_CASCADE:
@@ -1283,24 +1263,20 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
 }
 
-void VPinball::ReInitPinDirectSound()
+void VPinball::ReInitSound()
 {
 	for (size_t i = 0; i < m_vtable.size(); i++)
 	{
 		PinTable * const ptT = m_vtable[i];
 		for (size_t j = 0; j < ptT->m_vsound.size(); j++)
-		{
 			ptT->m_vsound[j]->UnInitialize();
-		}
 	}
-	InitPinDirectSound();
+	m_ps.ReInitPinDirectSound(m_hwnd);
 	for (size_t i = 0; i < m_vtable.size(); i++)
 	{
 		PinTable * const ptT = m_vtable[i];
 		for (size_t j = 0; j < ptT->m_vsound.size(); j++)
-		{
 			ptT->m_vsound[j]->ReInitialize();
-		}
 	}
 }
 

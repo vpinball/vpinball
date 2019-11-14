@@ -485,7 +485,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable, const HWND hwndPr
 
    m_sleeptime = 0;
 
-   m_pxap = NULL;
+   m_audio = NULL;
    m_pactiveball = NULL;
 
    m_curPlunger = JOYRANGEMN - 1;
@@ -758,10 +758,10 @@ void Player::Shutdown()
 
    //CloseHandle(m_hSongCompletionEvent);
 
-   if (m_pxap)
+   if (m_audio)
    {
-      delete m_pxap;
-      m_pxap = NULL;
+      delete m_audio;
+      m_audio = NULL;
    }
 
    for (size_t i = 0; i < m_controlclsidsafe.size(); i++)
@@ -4890,12 +4890,12 @@ void Player::Render()
 #endif
 
    // Update music stream
-   if (m_pxap)
+   if (m_audio)
    {
-      if (!m_pxap->Tick())
+      if (!m_audio->MusicActive())
       {
-         delete m_pxap;
-         m_pxap = NULL;
+         delete m_audio;
+         m_audio = NULL;
          m_ptable->FireVoidEvent(DISPID_GameEvents_MusicDone);
       }
    }
@@ -5019,8 +5019,8 @@ void Player::PauseMusic()
 {
    if (m_pauseRefCount == 0)
    {
-      if (m_pxap)
-         m_pxap->Pause();
+      if (m_audio)
+         m_audio->MusicPause();
 
       // signal the script that the game is now paused
       m_ptable->FireVoidEvent(DISPID_GameEvents_Paused);
@@ -5034,8 +5034,8 @@ void Player::UnpauseMusic()
    m_pauseRefCount--;
    if (m_pauseRefCount == 0)
    {
-      if (m_pxap)
-         m_pxap->Unpause();
+      if (m_audio)
+         m_audio->MusicUnpause();
 
       // signal the script that the game is now running again
       m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused);
@@ -5803,8 +5803,8 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 static void ShutDownPlayer()
 {
-   if (g_pplayer->m_pxap)
-      g_pplayer->m_pxap->Pause();
+   if (g_pplayer->m_audio)
+      g_pplayer->m_audio->MusicPause();
 
    PinTable * const playedTable = g_pplayer->m_ptable;
 

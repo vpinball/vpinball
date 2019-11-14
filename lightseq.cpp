@@ -499,7 +499,7 @@ STDMETHODIMP LightSeq::put_CenterX(float newVal)
       return E_FAIL;
 
    STARTUNDO
-       SetX(newVal);
+   SetX(newVal);
    STOPUNDO
 
    return S_OK;
@@ -518,7 +518,7 @@ STDMETHODIMP LightSeq::put_CenterY(float newVal)
       return E_FAIL;
 
    STARTUNDO
-       SetY(newVal);
+   SetY(newVal);
    STOPUNDO
 
    return S_OK;
@@ -533,9 +533,10 @@ STDMETHODIMP LightSeq::get_UpdateInterval(long *pVal)
 
 STDMETHODIMP LightSeq::put_UpdateInterval(long newVal)
 {
-    STARTUNDO
-        SetUpdateInterval(newVal);
+   STARTUNDO
+   SetUpdateInterval(newVal);
    STOPUNDO
+
    return S_OK;
 }
 

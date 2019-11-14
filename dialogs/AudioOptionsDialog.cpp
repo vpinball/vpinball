@@ -202,7 +202,7 @@ void AudioOptionsDialog::OnOK()
    soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
    sd = SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
    SaveValueInt("Player", "SoundDeviceBG", (int)sd);
-   g_pvp->ReInitPinDirectSound();
+   g_pvp->ReInitSound();
 
    CDialog::OnOK();
 }
