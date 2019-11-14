@@ -52,7 +52,6 @@ public:
    void Quit();
 
 private:
-   void InitPinDirectSound();
    void RegisterClasses();
    void CreateSideBar();
    HWND CreateLayerToolbar(HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight);
@@ -96,7 +95,7 @@ public:
    void ToggleAllLayers();
    void ToggleBackglassView();
    void ParseCommand(size_t code, HWND hwnd, size_t notify);
-   void ReInitPinDirectSound();
+   void ReInitSound();
 
    CComObject<PinTable> *GetActiveTable();
    bool LoadFile();
@@ -162,8 +161,7 @@ public:
 
    vector<IStream*> m_vstmclipboard;
 
-   PinDirectSound m_pds; //!! delete as soon as all on BASS
-   PinDirectSound *m_pbackglassds; //!! delete
+   AudioMusicPlayer m_ps;
 
    int m_ToolCur; // Palette button currently pressed
 

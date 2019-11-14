@@ -325,7 +325,6 @@ public:
    void RemoveSound(PinSound * const pps);
    HRESULT SaveSoundToStream(PinSound * const pps, IStream *pstm);
    HRESULT LoadSoundFromStream(IStream *pstm, const int LoadFileVersion);
-   void ClearOldSounds();
    bool ExportImage(Texture * const ppi, const char * const filename);
    void ImportImage(HWND hwndListView, const char * const filename);
    void ReImportImage(Texture * const ppi, const char * const filename);
@@ -676,8 +675,6 @@ public:
    VectorProtected< CComObject<Collection> > m_vcollection;
 
    COLORREF m_rgcolorcustom[16];		// array for the choosecolor in property browser
-
-   vector< PinSoundCopy* > m_voldsound; // copied sounds currently playing
 
    float m_TableSoundVolume;
    float m_TableMusicVolume;

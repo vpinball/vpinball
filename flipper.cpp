@@ -1540,9 +1540,9 @@ STDMETHODIMP Flipper::get_ElasticityFalloff(float *pVal)
 
 STDMETHODIMP Flipper::put_ElasticityFalloff(float newVal)
 {
-       STARTUNDO
-           SetElastacityFalloff(newVal);
-      STOPUNDO
+   STARTUNDO
+   SetElastacityFalloff(newVal);
+   STOPUNDO
 
    return S_OK;
 }
@@ -1572,15 +1572,15 @@ STDMETHODIMP Flipper::put_Friction(float newVal)
 
 STDMETHODIMP Flipper::get_RampUp(float *pVal)
 {
-    *pVal = GetRampUp();
+   *pVal = GetRampUp();
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_RampUp(float newVal)
 {
-    STARTUNDO
-        SetRampUp(newVal);
-    STOPUNDO
+   STARTUNDO
+   SetRampUp(newVal);
+   STOPUNDO
    
    return S_OK;
 }
@@ -1617,12 +1617,12 @@ STDMETHODIMP Flipper::put_Return(float newVal)
 {
    if (m_phitflipper)
    {
-       SetReturn(newVal);
+      SetReturn(newVal);
    }
    else
    {
-       STARTUNDO
-           SetReturn(newVal);
+      STARTUNDO
+      SetReturn(newVal);
       STOPUNDO
    }
 
@@ -1639,7 +1639,7 @@ STDMETHODIMP Flipper::get_FlipperRadiusMin(float *pVal)
 STDMETHODIMP Flipper::put_FlipperRadiusMin(float newVal)
 {
    STARTUNDO
-       SetFlipperRadiusMin(newVal);
+   SetFlipperRadiusMin(newVal);
    STOPUNDO
 
    return S_OK;

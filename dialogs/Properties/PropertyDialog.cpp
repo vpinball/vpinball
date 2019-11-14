@@ -99,12 +99,10 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, CCom
 {
     combo.ResetContent();
     combo.AddString(_T("<None>"));
-    for (size_t i = 0; i < ptable->m_vcollection.Size(); i++)
+    for (int i = 0; i < ptable->m_vcollection.Size(); i++)
     {
-        char szT[MAX_PATH] = {0};
-
+        char szT[MAX_PATH];
         WideCharToMultiByte(CP_ACP, 0, ptable->m_vcollection[i].m_wzName, -1, szT, MAX_PATH, NULL, NULL);
-
         combo.AddString(szT);
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName));
@@ -122,13 +120,12 @@ void PropertyDialog::UpdateComboBox(const vector<string>& contentList, CComboBox
 
 void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
 {
-    ISelect *psel = pvsel->ElementAt(0);
-
+    ISelect * const psel = pvsel->ElementAt(0);
     if (psel == NULL)
         return;
 
     m_curTabIndex = m_tab.GetCurSel();
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < PROPERTY_TABS; i++)
         if (m_tabs[i] != NULL)
         {
             m_tab.RemoveTabPage(m_tab.GetTabIndex(m_tabs[i]));
@@ -253,7 +250,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
         case eItemDragPoint:
         {
             const DragPoint * const dpoint = (DragPoint *)psel;
-            const int itemType = dpoint->m_pihdp->GetIEditable()->GetItemType();
+            const ItemTypeEnum itemType = dpoint->m_pihdp->GetIEditable()->GetItemType();
             if(itemType==eItemRamp)
                 m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALSWHEIGHT, pvsel), _T("Visuals")));
             else if(itemType == eItemLight || itemType==eItemTrigger)
@@ -293,7 +290,7 @@ INT_PTR PropertyDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
 BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
 {
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < PROPERTY_TABS; i++)
     {
         if (m_tabs[i]!=NULL)
         {
@@ -301,8 +298,8 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
                 return TRUE;                    //disable enter key for any input otherwise the app would crash!?
             if (msg.message == WM_KEYDOWN && msg.wParam == VK_DELETE)
             {
-                CString className = GetFocus().GetClassName();
-                if (className!="Edit")
+                const CString className = GetFocus().GetClassName();
+                if (className != "Edit")
                 {
                     g_pvp->ParseCommand(ID_DELETE, GetHwnd(), FALSE);
                     return TRUE;
@@ -808,7 +805,7 @@ void BasePropertyDialog::UpdateBaseVisuals(ISelect *psel, BaseProperty *property
     if (m_hCollidableCheck)
     {
         if(m_hHitEventCheck)            ::EnableWindow(m_hHitEventCheck, property->m_collidable);
-        if(m_hOverwritePhysicsCheck)         ::EnableWindow(m_hOverwritePhysicsCheck, property->m_collidable);
+        if(m_hOverwritePhysicsCheck)    ::EnableWindow(m_hOverwritePhysicsCheck, property->m_collidable);
         if(m_baseHitThresholdEdit)      m_baseHitThresholdEdit->EnableWindow(property->m_collidable);
         if(m_basePhysicsMaterialCombo)  m_basePhysicsMaterialCombo->EnableWindow(property->m_collidable);
         if(m_baseElasticityEdit)        m_baseElasticityEdit->EnableWindow(property->m_collidable);
@@ -816,7 +813,7 @@ void BasePropertyDialog::UpdateBaseVisuals(ISelect *psel, BaseProperty *property
         if(m_baseScatterAngleEdit)      m_baseScatterAngleEdit->EnableWindow(property->m_collidable);
     }
     if (m_hHitEventCheck && property->m_collidable)
-        if (m_baseHitThresholdEdit)      m_baseHitThresholdEdit->EnableWindow(property->m_hitEvent);
+        if (m_baseHitThresholdEdit)     m_baseHitThresholdEdit->EnableWindow(property->m_hitEvent);
     if (m_hOverwritePhysicsCheck && property->m_collidable)
-        if (m_basePhysicsMaterialCombo)  m_basePhysicsMaterialCombo->EnableWindow(!property->m_overwritePhysics);
+        if (m_basePhysicsMaterialCombo) m_basePhysicsMaterialCombo->EnableWindow(!property->m_overwritePhysics);
 }

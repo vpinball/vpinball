@@ -8,6 +8,8 @@
 #include "resource.h"       // main symbols
 #include "RenderDevice.h"
 
+#define NUM_RGB_BLINK_PATTERN 33
+
 class LightData : public BaseProperty
 {
 public:
@@ -136,7 +138,7 @@ public:
    LightState m_realState;
    float m_surfaceHeight;
    bool  m_lockedByLS;
-   char m_rgblinkpattern[33];
+   char m_rgblinkpattern[NUM_RGB_BLINK_PATTERN];
    int m_blinkinterval;
 
 private:

@@ -85,7 +85,7 @@ BOOL WallPhysicsProperty::OnInitDialog()
     m_hHitEventCheck = ::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK);
     m_hCollidableCheck= ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
     m_hOverwritePhysicsCheck = ::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS);
-    
+
     UpdateVisuals();
     return TRUE;
 }

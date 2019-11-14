@@ -121,11 +121,11 @@ public:
       // ISupportsErrorInfo
       STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-      float     GetElastacityFalloff()
+      float     GetElastacityFalloff() const
       {
           return m_phitflipper ? m_phitflipper->m_elasticityFalloff : m_d.m_elasticityFalloff;
       }
-      void      SetElastacityFalloff(float newVal)
+      void      SetElastacityFalloff(const float newVal)
       {
           if (m_phitflipper)
           {
@@ -134,14 +134,14 @@ public:
           }
           else
           {
-                  m_d.m_elasticityFalloff = newVal;
+              m_d.m_elasticityFalloff = newVal;
           }
       }
-      float     GetRampUp()
+      float     GetRampUp() const
       {
           return (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)) ? m_d.m_OverrideCoilRampUp : m_d.m_rampUp;
       }
-      void      SetRampUp(float value)
+      void      SetRampUp(const float value)
       {
           if (m_phitflipper)
           {
@@ -150,10 +150,10 @@ public:
           }
           else
           {
-                  m_d.m_rampUp = value;
+              m_d.m_rampUp = value;
           }
       }
-      void      SetReturn(float value)
+      void      SetReturn(const float value)
       {
           if (m_phitflipper)
           {
@@ -161,17 +161,17 @@ public:
                   m_d.m_return = clamp(value, 0.0f, 1.0f);
           }
           else
-            m_d.m_return = clamp(value, 0.0f, 1.0f);
+              m_d.m_return = clamp(value, 0.0f, 1.0f);
       }
-      float     GetFlipperRadiusMin() { return m_d.m_FlipperRadiusMin; }
-      void      SetFlipperRadiusMin(float value)
+      float     GetFlipperRadiusMin() const { return m_d.m_FlipperRadiusMin; }
+      void      SetFlipperRadiusMin(const float value)
       {
-          if (value < 0.0f) value = 0.0f;
-          m_d.m_FlipperRadiusMin = value;
+          m_d.m_FlipperRadiusMin = max(value,0.0f);
       }
-      void UpdateUnitsInfo();
-      FlipperData m_d;
 
+      void UpdateUnitsInfo();
+
+      FlipperData m_d;
       PinTable *m_ptable;
 
 private:

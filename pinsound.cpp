@@ -22,40 +22,73 @@ PinSound::~PinSound()
 
 void PinSound::UnInitialize()
 {
-	SAFE_RELEASE(m_pDS3DBuffer);
-	SAFE_RELEASE(m_pDSBuffer);
+   SAFE_RELEASE(m_pDS3DBuffer);
+   SAFE_RELEASE(m_pDSBuffer);
 }
 
 class PinDirectSound *PinSound::GetPinDirectSound()
 {
    if (m_pPinDirectSound)
       return m_pPinDirectSound;
-
-   if (m_outputTarget == SNDOUT_BACKGLASS)
-      return g_pvp->m_pbackglassds;
-
-   return &(g_pvp->m_pds);
+   else
+      return g_pvp->m_ps.GetPinDirectSound(m_outputTarget);
 }
 
-void PinSound::ReInitialize()
+HRESULT PinSound::ReInitialize()
 {
    SAFE_RELEASE(m_pDS3DBuffer);
    SAFE_RELEASE(m_pDSBuffer);
-   m_pPinDirectSound = NULL;
-   GetPinDirectSound()->CreateDirectFromNative(this);
-}
 
-PinDirectSound::PinDirectSound()
-{
-   m_3DSoundMode = SNDCFG_SND3D2CH;
-   m_pDS = NULL;
-   m_pWaveSoundRead = NULL;
-   m_pDSListener = NULL;
+   PinDirectSound * const pds = GetPinDirectSound();
+   if (pds->m_pDS == NULL)
+   {
+      m_pPinDirectSound = NULL;
+      m_pDSBuffer = NULL;
+      return E_FAIL;
+   }
+
+   DSBUFFERDESC dsbd;
+   ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
+   dsbd.dwSize = sizeof(DSBUFFERDESC);
+   dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | ((pds->m_3DSoundMode != SNDCFG_SND3D2CH) ? DSBCAPS_CTRL3D : DSBCAPS_CTRLPAN);
+   dsbd.dwBufferBytes = m_cdata;
+   dsbd.lpwfxFormat = &m_wfx;
+
+   // Create the static DirectSound buffer 
+   HRESULT hr;
+   if (FAILED(hr = pds->m_pDS->CreateSoundBuffer(&dsbd, &m_pDSBuffer, NULL)))
+   {
+      ShowError("Could not create sound buffer for load.");
+      m_pPinDirectSound = NULL;
+      m_pDSBuffer = NULL;
+      return hr;
+   }
+
+   m_pPinDirectSound = pds;
+
+   // Lock the buffer down
+   VOID*   pbData = NULL;
+   VOID*   pbData2 = NULL;
+   DWORD   dwLength,dwLength2;
+   if (FAILED(hr = m_pDSBuffer->Lock(0, m_cdata, &pbData, &dwLength,
+      &pbData2, &dwLength2, 0L)))
+   {
+      ShowError("Could not lock sound buffer for load.");
+      return hr;
+   }
+   // Copy the memory to it.
+   memcpy(pbData, m_pdata, m_cdata);
+   // Unlock the buffer, we don't need it anymore.
+   m_pDSBuffer->Unlock(pbData, m_cdata, NULL, 0);
+
+   if (pds->m_3DSoundMode != SNDCFG_SND3D2CH)
+      Get3DBuffer();
+
+   return S_OK;
 }
 
 PinDirectSound::~PinDirectSound()
 {
-   SAFE_DELETE(m_pWaveSoundRead);
    SAFE_RELEASE(m_pDSListener);
    SAFE_RELEASE(m_pDS);
 }
@@ -82,27 +115,20 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
 #ifdef DEBUG_NO_SOUND
    return;
 #endif
-   SAFE_DELETE(m_pWaveSoundRead);
    SAFE_RELEASE(m_pDSListener);
    SAFE_RELEASE(m_pDS);
-
-   HRESULT hr;
-   LPDIRECTSOUNDBUFFER pDSBPrimary = NULL;
-
-   // Initialize COM
-   //if (hr = CoInitialize(NULL))
-   //return hr;
 
    DSAudioDevices DSads;
    int DSidx = 0;
    if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
    {
-      hr = LoadValueInt("Player", IsBackglass ? "SoundDeviceBG" : "SoundDevice", &DSidx);
+      const HRESULT hr = LoadValueInt("Player", IsBackglass ? "SoundDeviceBG" : "SoundDevice", &DSidx);
       if ((hr != S_OK) || ((size_t)DSidx >= DSads.size()))
          DSidx = 0; // The default primary sound device
    }
 
    // Create IDirectSound using the selected sound device
+   HRESULT hr;
    if (FAILED(hr = DirectSoundCreate((DSidx != 0) ? DSads[DSidx]->guid : NULL, &m_pDS, NULL)))
    {
       ShowError("Could not create Direct Sound.");
@@ -125,14 +151,12 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
    dsbd.dwSize = sizeof(DSBUFFERDESC);
    dsbd.dwFlags = DSBCAPS_PRIMARYBUFFER;
-   if (!IsBackglass)
-   {
-	   if (m_3DSoundMode != SNDCFG_SND3D2CH)
-		   dsbd.dwFlags |= DSBCAPS_CTRL3D;
-   }
+   if (!IsBackglass && (m_3DSoundMode != SNDCFG_SND3D2CH))
+      dsbd.dwFlags |= DSBCAPS_CTRL3D;
    dsbd.dwBufferBytes = 0;
    dsbd.lpwfxFormat = NULL;
 
+   LPDIRECTSOUNDBUFFER pDSBPrimary = NULL;
    if (FAILED(hr = m_pDS->CreateSoundBuffer(&dsbd, &pDSBPrimary, NULL)))
    {
       ShowError("Could not create primary sound buffer.");
@@ -157,8 +181,8 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    if (!IsBackglass && (m_3DSoundMode != SNDCFG_SND3D2CH))
    {
 	   // Obtain a listener interface.
-	   HRESULT result = pDSBPrimary->QueryInterface(IID_IDirectSound3DListener, (LPVOID*)&m_pDSListener);
-	   if (FAILED(result))
+	   hr = pDSBPrimary->QueryInterface(IID_IDirectSound3DListener, (LPVOID*)&m_pDSListener);
+	   if (FAILED(hr))
 	   {
 		   ShowError("Could not acquire 3D listener interface.");
 		   return;// hr;
@@ -172,206 +196,98 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    //return S_OK;
 }
 
-PinSound *PinDirectSound::LoadWaveFile(const TCHAR* const strFileName)
+PinSound *AudioMusicPlayer::LoadFile(const TCHAR* const strFileName)
 {
    PinSound * const pps = new PinSound();
 
-   // Create the sound buffer object from the wave file data
-   if (FAILED(CreateStaticBuffer(strFileName, pps)))
-   {
-      ShowError("Could not create static sound buffer.");
-      delete pps;
-      return NULL;
-      //SetFileUI( hDlg, TEXT("Couldn't create sound buffer.") ); 
-   }
-   else // The sound buffer was successfully created
-   {
-      // Fill the buffer with wav data
-      FillBuffer(pps);
-
-      // Update the UI controls to show the sound as the file is loaded
-      //SetFileUI( hDlg, strFileName );
-      //OnEnablePlayUI( hDlg, TRUE );
-   }
-
    strncpy_s(pps->m_szPath, strFileName, MAX_PATH);
-
    TitleFromFilename(strFileName, pps->m_szName);
-
    strncpy_s(pps->m_szInternalName, pps->m_szName, MAXTOKEN);
-
    CharLowerBuff(pps->m_szInternalName, lstrlen(pps->m_szInternalName));
 
+   if (pps->IsWav()) // only use old direct sound code and wav reader if playing wav's
+   {
+	   // Create a new wave file class
+	   CWaveSoundRead* const pWaveSoundRead = new CWaveSoundRead();
+
+	   // Load the wave file
+	   if (FAILED(pWaveSoundRead->Open(strFileName)))
+	   {
+		   ShowError("Could not open wav file.");
+		   delete pWaveSoundRead;
+		   delete pps;
+		   return NULL;
+	   }
+
+	   // Set up the direct sound buffer, and only request the flags needed
+	   // since each requires some overhead and limits if the buffer can
+	   // be hardware accelerated
+	   DSBUFFERDESC dsbd;
+	   ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
+	   dsbd.dwSize = sizeof(DSBUFFERDESC);
+	   dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLPAN;
+	   if (m_pds.m_3DSoundMode != SNDCFG_SND3D2CH)
+		   dsbd.dwFlags |= DSBCAPS_CTRL3D;
+	   dsbd.dwBufferBytes = pWaveSoundRead->m_ckIn.cksize;
+	   dsbd.lpwfxFormat = pWaveSoundRead->m_pwfx;
+	   memcpy(&pps->m_wfx, pWaveSoundRead->m_pwfx, sizeof(pps->m_wfx));
+
+	   // Create the static DirectSound buffer
+	   HRESULT hr;
+	   if (FAILED(hr = m_pds.m_pDS->CreateSoundBuffer(&dsbd, &pps->m_pDSBuffer, NULL)))
+	   {
+		   ShowError("Could not create static sound buffer.");
+		   delete pWaveSoundRead;
+		   delete pps;
+		   return NULL;
+	   }
+	   if (m_pds.m_3DSoundMode != SNDCFG_SND3D2CH)
+		   pps->Get3DBuffer();
+
+	   // Remember how big the buffer is
+	   pps->m_cdata = dsbd.dwBufferBytes;
+	   pps->m_pPinDirectSound = &m_pds;
+
+	   // Fill the buffer with wav data
+
+		  // Allocate that buffer.
+		  pps->m_pdata = new char[pps->m_cdata];
+
+		  UINT cbWavSize; // Size of data
+		  if (FAILED(hr = pWaveSoundRead->Read(pps->m_cdata,
+			  (BYTE*)pps->m_pdata,
+			  &cbWavSize)))
+		  {
+			  ShowError("Could not read wav file.");
+			  delete pWaveSoundRead;
+			  delete pps;
+			  return NULL;
+		  }
+
+		  delete pWaveSoundRead;
+
+		  // Lock the buffer down
+		  VOID* pbData = NULL;
+		  VOID* pbData2 = NULL;
+		  DWORD dwLength, dwLength2;
+		  if (FAILED(hr = pps->m_pDSBuffer->Lock(0, pps->m_cdata, &pbData, &dwLength,
+			  &pbData2, &dwLength2, 0L)))
+		  {
+			  ShowError("Could not lock sound buffer.");
+			  delete pps;
+			  return NULL;
+		  }
+		  // Copy the memory to it.
+		  memcpy(pbData, pps->m_pdata, pps->m_cdata);
+		  // Unlock the buffer, we don't need it anymore.
+		  pps->m_pDSBuffer->Unlock(pbData, pps->m_cdata, NULL, 0);
+
+         // Update the UI controls to show the sound as the file is loaded
+         //SetFileUI( hDlg, strFileName );
+         //OnEnablePlayUI( hDlg, TRUE );
+   }
+
    return pps;
-}
-
-
-//-----------------------------------------------------------------------------
-// Name: CreateStaticBuffer()
-// Desc: Creates a wave file, sound buffer and notification events 
-//-----------------------------------------------------------------------------
-HRESULT PinDirectSound::CreateStaticBuffer(const TCHAR* const strFileName, PinSound * const pps)
-{
-   // Free any previous globals 
-   SAFE_DELETE(m_pWaveSoundRead);
-   //SAFE_RELEASE( m_pDSBuffer );
-
-   // Create a new wave file class
-   m_pWaveSoundRead = new CWaveSoundRead();
-
-   // Load the wave file
-   if (FAILED(m_pWaveSoundRead->Open(strFileName)))
-   {
-      ShowError("Could not open file.");
-      return E_FAIL;
-   }
-
-   // Set up the direct sound buffer, and only request the flags needed
-   // since each requires some overhead and limits if the buffer can 
-   // be hardware accelerated
-   DSBUFFERDESC dsbd;
-   ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
-   dsbd.dwSize = sizeof(DSBUFFERDESC);
-   dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLPAN;
-   if (m_3DSoundMode != SNDCFG_SND3D2CH)
-      dsbd.dwFlags |= DSBCAPS_CTRL3D;
-   dsbd.dwBufferBytes = m_pWaveSoundRead->m_ckIn.cksize;
-   dsbd.lpwfxFormat = m_pWaveSoundRead->m_pwfx;
-   memcpy(&pps->m_wfx, m_pWaveSoundRead->m_pwfx, sizeof(pps->m_wfx));
-
-   // Create the static DirectSound buffer 
-   HRESULT hr;
-   if (FAILED(hr = m_pDS->CreateSoundBuffer(&dsbd, &pps->m_pDSBuffer, NULL)))
-   {
-      ShowError("Could not create sound buffer.");
-      return hr;
-   }
-   if (m_3DSoundMode != SNDCFG_SND3D2CH)
-      pps->Get3DBuffer();
-
-   // Remember how big the buffer is
-   m_dwBufferBytes = dsbd.dwBufferBytes;
-   pps->m_pPinDirectSound = this;
-
-   return S_OK;
-}
-
-
-//-----------------------------------------------------------------------------
-// Name: FillBuffer()
-// Desc: Fill the DirectSound buffer with data from the wav file
-//-----------------------------------------------------------------------------
-HRESULT PinDirectSound::FillBuffer(PinSound * const pps)
-{
-   BYTE*   pbWavData; // Pointer to actual wav data 
-   UINT    cbWavSize; // Size of data
-   VOID*   pbData = NULL;
-   VOID*   pbData2 = NULL;
-   DWORD   dwLength;
-   DWORD   dwLength2;
-
-   // The size of wave data is in pWaveFileSound->m_ckIn
-   const INT nWaveFileSize = m_pWaveSoundRead->m_ckIn.cksize;
-
-   // Allocate that buffer.
-   pbWavData = new BYTE[nWaveFileSize];
-   //if (NULL == pbWavData)
-   //   return E_OUTOFMEMORY;
-
-   HRESULT hr;
-   if (FAILED(hr = m_pWaveSoundRead->Read(nWaveFileSize,
-      pbWavData,
-      &cbWavSize)))
-   {
-      delete[] pbWavData;
-      ShowError("Could not read wav file.");
-      return hr;
-   }
-
-   // Reset the file to the beginning 
-   m_pWaveSoundRead->Reset();
-
-   // Lock the buffer down
-   if (FAILED(hr = pps->m_pDSBuffer->Lock(0, m_dwBufferBytes, &pbData, &dwLength,
-      &pbData2, &dwLength2, 0L)))
-   {
-      delete[] pbWavData;
-      ShowError("Could not lock sound buffer.");
-      return hr;
-   }
-
-   // Copy the memory to it.
-   memcpy(pbData, pbWavData, m_dwBufferBytes);
-
-   // Unlock the buffer, we don't need it anymore.
-   pps->m_pDSBuffer->Unlock(pbData, m_dwBufferBytes, NULL, 0);
-   pbData = NULL;
-
-   pps->m_pdata = new char[m_dwBufferBytes];
-
-   memcpy(pps->m_pdata, pbWavData, m_dwBufferBytes);
-
-   pps->m_cdata = m_dwBufferBytes;
-
-   // We dont need the wav file data buffer anymore, so delete it 
-   SAFE_VECTOR_DELETE(pbWavData);
-
-   return S_OK;
-}
-
-HRESULT PinDirectSound::CreateDirectFromNative(PinSound * const pps)
-{
-   DSBUFFERDESC dsbd;
-   ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
-   dsbd.dwSize = sizeof(DSBUFFERDESC);
-   dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY;
-   if (m_3DSoundMode != SNDCFG_SND3D2CH)
-      dsbd.dwFlags |= DSBCAPS_CTRL3D;
-   else
-      dsbd.dwFlags |= DSBCAPS_CTRLPAN;
-
-   dsbd.dwBufferBytes = pps->m_cdata;
-   dsbd.lpwfxFormat = &pps->m_wfx;
-
-   if (m_pDS == NULL)
-   {
-      pps->m_pDSBuffer = NULL;
-      return E_FAIL;
-   }
-
-   // Create the static DirectSound buffer 
-   HRESULT hr;
-   if (FAILED(hr = m_pDS->CreateSoundBuffer(&dsbd, &pps->m_pDSBuffer, NULL)))
-   {
-      ShowError("Could not create sound buffer for load.");
-      return hr;
-   }
-
-   pps->m_pPinDirectSound = this;
-   VOID*   pbData = NULL;
-   VOID*   pbData2 = NULL;
-   DWORD   dwLength;
-   DWORD   dwLength2;
-
-   // Lock the buffer down
-   if (FAILED(hr = pps->m_pDSBuffer->Lock(0, pps->m_cdata, &pbData, &dwLength,
-      &pbData2, &dwLength2, 0L)))
-   {
-      ShowError("Could not lock sound buffer for load.");
-      return hr;
-   }
-
-   // Copy the memory to it.
-   memcpy(pbData, pps->m_pdata, pps->m_cdata);
-
-   // Unlock the buffer, we don't need it anymore.
-   pps->m_pDSBuffer->Unlock(pbData, pps->m_cdata, NULL, 0);
-   pbData = NULL;
-
-   if (m_3DSoundMode != SNDCFG_SND3D2CH)
-      pps->Get3DBuffer();
-
-   return S_OK;
 }
 
 // The existing pan value in PlaySound function takes a -1 to 1 value, however it's extremely non-linear.
@@ -383,7 +299,7 @@ float PinDirectSound::PanTo3D(float input)
 {
 	// DirectSound's position command does weird things at exactly 0. 
 	if (fabsf(input) < 0.0001f)
-		input = 0.0001f;
+		input = (input < 0.0f) ? -0.0001f : 0.0001f;
 	if (input < 0.0f)
 	{
 		return -powf(-max(input, -1.0f), (float)(1.0 / 10.0)) * 3.0f;
@@ -394,7 +310,7 @@ float PinDirectSound::PanTo3D(float input)
 	}
 }
 
-PinSoundCopy::PinSoundCopy(class PinSound *pOriginal)
+PinSoundCopy::PinSoundCopy(class PinSound * const pOriginal)
 {
 	m_ppsOriginal = pOriginal;
 
@@ -408,7 +324,7 @@ PinSoundCopy::PinSoundCopy(class PinSound *pOriginal)
 	}
 }
 
-void PinSoundCopy::Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart)
+void PinSoundCopy::PlayInternal(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart)
 {
 	const float totalvolume = max(min(volume, 100.0f), 0.0f);
 	const int decibelvolume = (totalvolume == 0.0f) ? DSBVOLUME_MIN : (int)(logf(totalvolume)*(float)(1000.0 / log(10.0)) - 2000.0f);
@@ -459,11 +375,6 @@ void PinSoundCopy::Play(const float volume, const float randompitch, const int p
 		m_pDSBuffer->Play(0, 0, flags);
 	else if (restart)
 		m_pDSBuffer->SetCurrentPosition(0);
-}
-
-void PinSoundCopy::Stop()
-{
-	m_pDSBuffer->Stop();
 }
 
 HRESULT PinSoundCopy::Get3DBuffer()

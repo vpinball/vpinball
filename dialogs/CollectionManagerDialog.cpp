@@ -322,24 +322,24 @@ BOOL CollectionDialog::OnInitDialog()
 {
     Collection * const pcol = pCurCollection.pcol;
 
-    HWND hwndName = GetDlgItem(IDC_NAME).GetHwnd();
+    const HWND hwndName = GetDlgItem(IDC_NAME).GetHwnd();
 
     char szT[MAX_PATH];
     WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
 
     ::SetWindowText(hwndName, szT);
 
-    HWND hwndFireEvents = GetDlgItem(IDC_FIRE).GetHwnd();
+    const HWND hwndFireEvents = GetDlgItem(IDC_FIRE).GetHwnd();
     ::SendMessage(hwndFireEvents, BM_SETCHECK, pcol->m_fireEvents ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    HWND hwndStopSingle = GetDlgItem(IDC_SUPPRESS).GetHwnd();
+    const HWND hwndStopSingle = GetDlgItem(IDC_SUPPRESS).GetHwnd();
     ::SendMessage(hwndStopSingle, BM_SETCHECK, pcol->m_stopSingleEvents ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    HWND hwndGroupElements = GetDlgItem(IDC_GROUP_CHECK).GetHwnd();
+    const HWND hwndGroupElements = GetDlgItem(IDC_GROUP_CHECK).GetHwnd();
     ::SendMessage(hwndGroupElements, BM_SETCHECK, pcol->m_groupElements ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    HWND hwndOut = GetDlgItem(IDC_OUTLIST).GetHwnd();
-    HWND hwndIn = GetDlgItem(IDC_INLIST).GetHwnd();
+    const HWND hwndOut = GetDlgItem(IDC_OUTLIST).GetHwnd();
+    const HWND hwndIn = GetDlgItem(IDC_INLIST).GetHwnd();
 
     for (int i = 0; i < pcol->m_visel.Size(); i++)
     {
@@ -365,12 +365,8 @@ BOOL CollectionDialog::OnInitDialog()
         // Only process objects not in this collection
         int l;
         for (l = 0; l < pcol->m_visel.Size(); l++)
-        {
             if (pisel == pcol->m_visel.ElementAt(l))
-            {
                 break;
-            }
-        }
 
         if ((l == pcol->m_visel.Size()) && piscript)
             //if (!piedit->m_pcollection)
@@ -431,19 +427,8 @@ BOOL CollectionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_IN:
         case IDC_OUT:
         {
-            HWND hwndOut;
-            HWND hwndIn;
-
-            if (LOWORD(wParam) == IDC_IN)
-            {
-                hwndOut = GetDlgItem(IDC_OUTLIST).GetHwnd();
-                hwndIn = GetDlgItem(IDC_INLIST).GetHwnd();
-            }
-            else
-            {
-                hwndOut = GetDlgItem(IDC_INLIST).GetHwnd();
-                hwndIn = GetDlgItem(IDC_OUTLIST).GetHwnd();
-            }
+            const HWND hwndOut = GetDlgItem((LOWORD(wParam) == IDC_IN) ? IDC_OUTLIST : IDC_INLIST).GetHwnd();
+            const HWND hwndIn = GetDlgItem((LOWORD(wParam) == IDC_IN) ? IDC_INLIST : IDC_OUTLIST).GetHwnd();
 
             const size_t count = ::SendMessage(hwndOut, LB_GETSELCOUNT, 0, 0);
             int * const rgsel = new int[count];

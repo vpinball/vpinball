@@ -26,7 +26,6 @@ UserData::~UserData()
 -2 =Zero Length string or error*/
 int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::iterator& UDiterOut, int &Pos)
 {
-	int result = -2;
 	RemovePadding(strIn);
 	if (strIn.size() == 0 || (!ListIn) || ListIn->size() == 0) return -2;
 
@@ -53,6 +52,7 @@ int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::
 	}
 	++iNewPos;
 	// now walk down list of Keynames looking for what we want.
+	int result;
 	while (true)
 	{
 		string strTableData = lowerCase(ListIn->at(iNewPos).m_keyName);
@@ -409,37 +409,30 @@ void CVPrefrence::ReadCheckBox(const HWND hwndDlg)
 
 void CVPrefrence::GetPrefsFromReg()
 {
-	char RegEntry[33] = {};
+	char RegEntry[33];
 	strcpy_s(RegEntry, this->szRegName);
 	this->m_highlight = LoadValueBoolWithDefault("CVEdit", RegEntry, this->m_highlight);
-	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_color");
 	this->m_rgb = LoadValueIntWithDefault("CVEdit", RegEntry, this->m_rgb);
-	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontPointSize");
 	this->m_pointSize = LoadValueIntWithDefault("CVEdit", RegEntry, this->m_pointSize);
-	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_Font");
 	char bakupFaceName[LF_FACESIZE]; // to save the default font name, in case the corresponding registry entry is empty
 	strcpy_s(bakupFaceName, this->m_logFont.lfFaceName);
 	if (LoadValueString("CVEdit", RegEntry, this->m_logFont.lfFaceName, LF_FACESIZE) != S_OK)
 		strcpy_s(this->m_logFont.lfFaceName, bakupFaceName);
-	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontWeight");
 	this->m_logFont.lfWeight = LoadValueIntWithDefault("CVEdit", RegEntry, this->m_logFont.lfWeight);
-	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontItalic");
 	this->m_logFont.lfItalic = LoadValueIntWithDefault("CVEdit", RegEntry, this->m_logFont.lfItalic);
-	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontUnderline");
 	this->m_logFont.lfUnderline = LoadValueIntWithDefault("CVEdit", RegEntry, this->m_logFont.lfUnderline);
-	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontStrike");
 	this->m_logFont.lfStrikeOut = LoadValueIntWithDefault("CVEdit", RegEntry, this->m_logFont.lfStrikeOut);
@@ -447,34 +440,27 @@ void CVPrefrence::GetPrefsFromReg()
 
 void CVPrefrence::SetPrefsToReg()
 {
-	char RegEntry[33] = {};
+	char RegEntry[33];
 	strcpy_s(RegEntry, this->szRegName);
 	SaveValueBool("CVEdit", RegEntry, this->m_highlight);
-	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_color");
 	SaveValueInt("CVEdit", RegEntry, this->m_rgb);
-	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontPointSize");
 	SaveValueInt("CVEdit", RegEntry, this->m_pointSize);
-	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_Font");
 	SaveValueString("CVEdit", RegEntry, this->m_logFont.lfFaceName);
-	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontWeight");
 	SaveValueInt("CVEdit", RegEntry, this->m_logFont.lfWeight);
-	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontItalic");
 	SaveValueInt("CVEdit", RegEntry, this->m_logFont.lfItalic);
-	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontUnderline");
 	SaveValueInt("CVEdit", RegEntry, this->m_logFont.lfUnderline);
-	ZeroMemory(RegEntry, 33);
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontStrike");
 	SaveValueInt("CVEdit", RegEntry, this->m_logFont.lfStrikeOut);

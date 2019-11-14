@@ -1248,7 +1248,7 @@ void Bumper::GetDialogPanes(vector<PropertyPane*> &pvproppane)
 
    m_propVisual = new PropertyPane(IDD_PROPBUMPER_VISUALS, IDS_VISUALS);
    pvproppane.push_back(m_propVisual);
-      
+
    pproppane = new PropertyPane(IDD_PROPBUMPER_PHYSICS, IDS_PHYSICS);
    pvproppane.push_back(pproppane);
 
