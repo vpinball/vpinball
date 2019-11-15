@@ -281,6 +281,7 @@ public:
    void TransformVertices();
    void RenderObject();
    void UpdateMeshInfo();
+   void UpdateEditorView();
 
    static INT_PTR CALLBACK ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -307,7 +308,6 @@ private:
    int m_compressedAnimationVertices; // only used during loading
 #endif
 
-   void UpdateEditorView();
 
    bool BrowseFor3DMeshFile();
    void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
