@@ -119,6 +119,7 @@
 #define IDC_KICKER_RADIUS_EDIT          111
 #define IDS_TIMER_DESC                  112
 #define IDC_PARK_POSITION_EDIT          112
+#define IDC_ELASTICITY_FALLOFF_EDIT     112
 #define IDR_TIMER                       113
 #define IDS_LAYER4                      113
 #define IDC_STROKE_LENGTH_EDIT          113
