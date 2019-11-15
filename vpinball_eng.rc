@@ -273,44 +273,44 @@ BEGIN
     LTEXT           "&Surface",IDC_STATIC,7,248,26,9
 END
 
-IDD_ABOUT DIALOGEX 0, 0, 232, 300
+IDD_ABOUT DIALOGEX 0, 0, 231, 336
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About Visual Pinball"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,173,279,50,14
-    PUSHBUTTON      "Web Site",IDC_WEBSITE,173,257,50,14
-    PUSHBUTTON      "Translator's Web Site Name",IDC_TRANSLATEWEBSITE,151,44,72,14,NOT WS_VISIBLE | WS_DISABLED
-    EDITTEXT        IDC_CHANGELOG,7,171,216,79,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | ES_WANTRETURN | WS_VSCROLL
-    CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,23,277,119,17
-    CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
-    LTEXT           "A Randy Davis and Visual Pinball team Production",IDC_STATIC,13,35,209,8
-    LTEXT           "Version 10.7.0",IDC_ABOUT_VERSION,13,45,135,10
-    GROUPBOX        "Credits",IDC_STATIC,7,57,216,108
-    LTEXT           "Original VP8/VP9 Team",IDC_STATIC,68,65,88,9
-    LTEXT           "Randy Davis - designer, developer",IDC_STATIC,13,77,115,9
-    LTEXT           "Noah Fentz - testing",IDC_STATIC,150,77,66,9
-    LTEXT           "Chris Leathley - additional development",IDC_STATIC,13,87,123,9
-    LTEXT           "Mark Parris - testing",IDC_STATIC,13,97,67,9
-    LTEXT           "Jerry Rice - music",IDC_STATIC,86,97,66,9
-    LTEXT           "Rolle Cruz - physics",IDC_STATIC,150,97,67,9
-    LTEXT           "VP9/VP10 Open Source Contributors",IDC_STATIC,47,109,128,9
-    LTEXT           "Brian Smith",IDC_STATIC,13,121,42,9
-    LTEXT           "Shagendo",IDC_STATIC,150,121,42,9
-    LTEXT           "Toxie^ainc",IDC_STATIC,85,121,42,9
-    LTEXT           "Wizard's Hat",IDC_STATIC,83,131,42,9
-    LTEXT           "Maddes",IDC_STATIC,13,131,42,9
-    LTEXT           "Poiuyterry",IDC_STATIC,150,131,42,9
-    CTEXT           "Cupid",IDC_STATIC,82,141,42,9
-    LTEXT           "Fuzzel",IDC_STATIC,13,141,21,8
-    LTEXT           "Koadic",IDC_STATIC,150,141,42,9
-    LTEXT           "Mjr",IDC_STATIC,13,151,21,8
-    LTEXT           "DJRobX",IDC_STATIC,46,151,32,8
-    CTEXT           "Mukuste",IDC_STATIC,82,151,42,9
-    LTEXT           "Brandrew",IDC_STATIC,150,151,42,9
-    CTEXT           "Copyright (C) 2000-2019 Randy Davis and the\nVisual Pinball team. All rights reserved",IDC_STATIC,0,255,167,19
-    LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,108,35,115,9,NOT WS_VISIBLE | WS_DISABLED
-    LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,265,32,8,NOT WS_VISIBLE | WS_DISABLED
+    DEFPUSHBUTTON   "OK",IDOK,173,313,50,14
+    PUSHBUTTON      "Web Site",IDC_WEBSITE,173,291,50,14
+    PUSHBUTTON      "Translator's Web Site Name",IDC_TRANSLATEWEBSITE,159,74,72,14,NOT WS_VISIBLE | WS_DISABLED
+    EDITTEXT        IDC_CHANGELOG,7,205,216,79,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | ES_WANTRETURN | WS_VSCROLL
+    CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,23,311,119,17
+    CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP,21,13,188,44
+    LTEXT           "A Randy Davis and Visual Pinball team Production",IDC_STATIC,21,65,209,8
+    LTEXT           "Version 10.7.0",IDC_ABOUT_VERSION,21,75,135,10
+    GROUPBOX        "Credits",IDC_STATIC,7,91,216,108
+    LTEXT           "Original VP8/VP9 Team",IDC_STATIC,68,99,88,9
+    LTEXT           "Randy Davis",IDC_STATIC,13,111,115,9
+    LTEXT           "Noah Fentz",IDC_STATIC,150,111,66,9
+    LTEXT           "Chris Leathley",IDC_STATIC,13,121,123,9
+    LTEXT           "Mark Parris",IDC_STATIC,13,131,67,9
+    LTEXT           "Jerry Rice",IDC_STATIC,89,131,66,9
+    LTEXT           "Rolle Cruz",IDC_STATIC,150,131,67,9
+    LTEXT           "VP9/VP10 Open Source Contributors",IDC_STATIC,47,143,128,9
+    LTEXT           "Brian Smith",IDC_STATIC,13,155,42,9
+    LTEXT           "Shagendo",IDC_STATIC,150,155,42,9
+    LTEXT           "Toxie",IDC_STATIC,94,155,42,9
+    LTEXT           "Wizard's Hat",IDC_STATIC,83,165,42,9
+    LTEXT           "Maddes",IDC_STATIC,13,165,42,9
+    LTEXT           "Poiuyterry",IDC_STATIC,150,165,42,9
+    CTEXT           "Cupid",IDC_STATIC,82,175,42,9
+    LTEXT           "Fuzzel",IDC_STATIC,13,175,21,8
+    LTEXT           "Koadic",IDC_STATIC,150,175,42,9
+    LTEXT           "Mjr",IDC_STATIC,13,185,21,8
+    LTEXT           "DJRobX",IDC_STATIC,46,185,32,8
+    CTEXT           "Mukuste",IDC_STATIC,82,185,42,9
+    LTEXT           "Brandrew",IDC_STATIC,150,185,42,9
+    CTEXT           "Copyright (C) 2000-2019 Randy Davis and the\nVisual Pinball team. All rights reserved",IDC_STATIC,0,289,167,19
+    LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,116,65,115,9,NOT WS_VISIBLE | WS_DISABLED
+    LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,299,32,8,NOT WS_VISIBLE | WS_DISABLED
 END
 
 IDD_VIDEO_OPTIONS DIALOGEX 0, 0, 353, 379
@@ -2361,7 +2361,7 @@ BEGIN
 
     IDD_ABOUT, DIALOG
     BEGIN
-        BOTTOMMARGIN, 222
+        BOTTOMMARGIN, 258
     END
 
     IDD_VIDEO_OPTIONS, DIALOG
@@ -3477,6 +3477,11 @@ BEGIN
 END
 
 IDD_PROPLIGHTSEQ_STATE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_ABOUT AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
