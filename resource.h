@@ -33,6 +33,7 @@
 #define IDC_BUMPER_RADIUS_EDIT          8
 #define IDC_DECAL_TEXT_EDIT             8
 #define IDC_MOTOR_STEPS_EDIT            8
+#define IDC_FLASHER_MODE_COMBO          8
 #define DISPID_Decal_SizingType         9
 #define IDC_BLINK_PATTERN_EDIT          9
 #define IDC_KICKER_DISPLAY_COMBO        9
@@ -50,6 +51,7 @@
 #define IDC_BACK_TRANSP_CHECK           12
 #define DISPID_ROTRA2                   13
 #define IDC_DECAL_VERTICAL_TEXT_CHECK   13
+#define IDC_DISPLAY_IMAGE_CHECK         13
 #define DISPID_TOPCOLOR                 14
 #define DISPID_ROTRA3                   14
 #define IDC_SINGLE_DIGIT_RANGE_EDIT     14
@@ -844,7 +846,6 @@
 #define IDC_DISPLAY_ID                  546
 #define IDD_PROPTABLE_PHYSICS2          547
 #define IDC_STATIC_SOUNDDEVICE2         547
-#define IDD_PROPFLASHER_POSITION        548
 #define IDS_DIMENSIONSSLOPE             549
 #define IDD_PROPFLASHER_VISUALS         549
 #define IDS_LIGHTSOURCES                550

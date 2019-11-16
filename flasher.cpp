@@ -794,9 +794,6 @@ void Flasher::GetDialogPanes(vector<PropertyPane*> &pvproppane)
    m_propVisual = new PropertyPane(IDD_PROPFLASHER_VISUALS, IDS_VISUALS);
    pvproppane.push_back(m_propVisual);
 
-   pproppane = new PropertyPane(IDD_PROPFLASHER_POSITION, IDS_POSITION);
-   pvproppane.push_back(pproppane);
-
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
    pvproppane.push_back(pproppane);
 }
