@@ -12,7 +12,7 @@ void LightVisualsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLight))
             continue;
-        Light *light = (Light *)m_pvsel->ElementAt(i);
+        Light * const light = (Light *)m_pvsel->ElementAt(i);
 
         PropertyDialog::SetFloatTextbox(m_falloffEdit, light->m_d.m_falloff);
         PropertyDialog::SetFloatTextbox(m_falloffPowerEdit, light->m_d.m_falloff_power);
@@ -46,7 +46,7 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLight))
             continue;
-        Light *light = (Light *)m_pvsel->ElementAt(i);
+        Light * const light = (Light *)m_pvsel->ElementAt(i);
 
         switch (dispid)
         {
@@ -166,7 +166,6 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                 }
                 break;
             }
-
             default:
                 UpdateBaseProperties(light, &light->m_d, dispid);
                 break;
@@ -224,4 +223,3 @@ INT_PTR LightVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam
     }
     return DialogProcDefault(uMsg, wParam, lParam);
 }
-

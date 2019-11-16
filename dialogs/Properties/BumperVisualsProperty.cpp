@@ -4,7 +4,6 @@
 
 BumperVisualsProperty::BumperVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_VISUALS, pvsel)
 {
-
 }
 
 void BumperVisualsProperty::UpdateVisuals()
@@ -156,4 +155,3 @@ BOOL BumperVisualsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-

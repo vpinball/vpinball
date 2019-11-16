@@ -15,7 +15,7 @@ void LightStatesProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLight))
             continue;
-        Light *light = (Light *)m_pvsel->ElementAt(i);
+        Light * const light = (Light *)m_pvsel->ElementAt(i);
         PropertyDialog::UpdateComboBox(m_stateList, m_stateCombo, m_stateList[(int)light->m_d.m_state].c_str());
         m_blinkPatternEdit.SetWindowText(light->m_rgblinkpattern);
         PropertyDialog::SetIntTextbox(m_blinkIntervalEdit, light->m_blinkinterval);
@@ -30,7 +30,7 @@ void LightStatesProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLight))
             continue;
-        Light *light = (Light *)m_pvsel->ElementAt(i);
+        Light * const light = (Light *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case DISPID_Light_State:
@@ -66,5 +66,3 @@ BOOL LightStatesProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-
-

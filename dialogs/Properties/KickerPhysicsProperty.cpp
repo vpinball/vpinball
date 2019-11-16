@@ -12,7 +12,7 @@ void KickerPhysicsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
             continue;
-        Kicker *kicker = (Kicker *)m_pvsel->ElementAt(i);
+        Kicker * const kicker = (Kicker *)m_pvsel->ElementAt(i);
 
         PropertyDialog::SetCheckboxState(m_hEnableCheck, kicker->m_d.m_enabled);
         PropertyDialog::SetCheckboxState(m_hFallThroughCheck, kicker->m_d.m_fallThrough);
@@ -31,7 +31,7 @@ void KickerPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
             continue;
-        Kicker *kicker = (Kicker *)m_pvsel->ElementAt(i);
+        Kicker * const kicker = (Kicker *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case DISPID_Enabled:
@@ -79,5 +79,3 @@ BOOL KickerPhysicsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-
-

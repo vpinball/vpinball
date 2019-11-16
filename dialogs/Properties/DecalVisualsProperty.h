@@ -37,4 +37,3 @@ private:
 };
 
 #endif // !H_DECAL_VISUALS_PROPERTY
-

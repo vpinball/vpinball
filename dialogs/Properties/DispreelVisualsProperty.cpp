@@ -12,7 +12,7 @@ void DispreelVisualsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDispReel))
             continue;
-        DispReel *reel = (DispReel *)m_pvsel->ElementAt(i);
+        DispReel * const reel = (DispReel *)m_pvsel->ElementAt(i);
 
         PropertyDialog::SetCheckboxState(m_hBackgroundTransparentCheck, reel->m_d.m_transparent);
         PropertyDialog::SetCheckboxState(m_hUseImageGridCheck, reel->m_d.m_useImageGrid);
@@ -38,7 +38,7 @@ void DispreelVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDispReel))
             continue;
-        DispReel *reel = (DispReel *)m_pvsel->ElementAt(i);
+        DispReel * const reel = (DispReel *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case IDC_BACK_TRANSP_CHECK:
@@ -139,7 +139,7 @@ INT_PTR DispreelVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
         case WM_DRAWITEM:
         {
             LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
-            UINT nID = static_cast<UINT>(wParam);
+            const UINT nID = static_cast<UINT>(wParam);
             if (nID == IDC_COLOR_BUTTON1)
             {
                 m_colorButton.DrawItem(lpDrawItemStruct);
@@ -149,4 +149,3 @@ INT_PTR DispreelVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
     }
     return DialogProcDefault(uMsg, wParam, lParam);
 }
-

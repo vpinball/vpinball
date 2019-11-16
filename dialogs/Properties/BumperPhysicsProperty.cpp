@@ -56,5 +56,3 @@ BOOL BumperPhysicsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-
-

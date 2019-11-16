@@ -31,7 +31,6 @@ private:
     CEdit        m_textEdit;
     CFont       *m_font;
     vector<string> m_alignList;
-
 };
 
 #endif

@@ -113,5 +113,3 @@ BOOL SpinnerVisualsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-
-

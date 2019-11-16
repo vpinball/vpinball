@@ -10,8 +10,8 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
 
@@ -32,8 +32,6 @@ private:
     CEdit     m_posXEdit;
     CEdit     m_posYEdit;
     CComboBox m_surfaceCombo;
-
-
 };
-#endif // !H_BUMPER_VISUALS_PROPERTY
 
+#endif // !H_BUMPER_VISUALS_PROPERTY

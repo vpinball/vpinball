@@ -12,8 +12,7 @@ void PlungerPhysicsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPlunger))
             continue;
-        Plunger *plunger = (Plunger *)m_pvsel->ElementAt(i);
-
+        Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
         PropertyDialog::SetFloatTextbox(m_pullSpeedEdit, plunger->m_d.m_speedPull);
         PropertyDialog::SetFloatTextbox(m_releaseSpeedEdit, plunger->m_d.m_speedFire);
         PropertyDialog::SetFloatTextbox(m_strokeLengthEdit, plunger->m_d.m_stroke);
@@ -35,7 +34,7 @@ void PlungerPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPlunger))
             continue;
-        Plunger *plunger = (Plunger *)m_pvsel->ElementAt(i);
+        Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case IDC_PULL_SPEED_EDIT:
@@ -106,5 +105,3 @@ BOOL PlungerPhysicsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-
-

@@ -10,8 +10,8 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
 
@@ -28,7 +28,6 @@ private:
     CComboBox m_materialCombo;
     CComboBox m_surfaceCombo;
     HWND      m_hShowBracketCheck;
-
 };
 
 #endif

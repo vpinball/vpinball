@@ -10,8 +10,8 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
 
@@ -29,4 +29,3 @@ private:
 };
 
 #endif
-

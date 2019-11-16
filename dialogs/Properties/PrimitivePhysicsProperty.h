@@ -10,8 +10,8 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
 
@@ -24,6 +24,6 @@ private:
     CEdit   m_frictionEdit;
     CEdit   m_scatterAngleEdit;
     CComboBox m_physicsMatrtialCombo;
-
 };
+
 #endif

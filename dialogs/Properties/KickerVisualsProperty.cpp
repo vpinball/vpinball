@@ -19,7 +19,7 @@ void KickerVisualsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
             continue;
-        Kicker *kicker = (Kicker *)m_pvsel->ElementAt(i);
+        Kicker * const kicker = (Kicker *)m_pvsel->ElementAt(i);
 
         PropertyDialog::UpdateComboBox(m_typeList, m_displayCombo, m_typeList[kicker->m_d.m_kickertype].c_str());
         PropertyDialog::SetFloatTextbox(m_radiusEdit, kicker->m_d.m_radius);
@@ -39,7 +39,7 @@ void KickerVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
             continue;
-        Kicker *kicker = (Kicker *)m_pvsel->ElementAt(i);
+        Kicker * const kicker = (Kicker *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case IDC_KICKER_DISPLAY_COMBO:
@@ -93,4 +93,3 @@ BOOL KickerVisualsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-

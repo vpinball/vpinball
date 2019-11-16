@@ -10,8 +10,8 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
 
@@ -31,8 +31,6 @@ private:
     CEdit   m_objRotXEdit;
     CEdit   m_objRotYEdit;
     CEdit   m_objRotZEdit;
-
 };
 
 #endif // !H_PRIMITIVE_POSITION_PROPERTY
-

@@ -158,7 +158,6 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 PropertyDialog::GetComboBoxText(m_surfaceCombo, decal->m_d.m_szSurface);
                 PropertyDialog::EndUndo(decal);
                 break;
-
             default:
                 UpdateBaseProperties(decal, &decal->m_d, dispid);
                 break;
@@ -196,8 +195,8 @@ INT_PTR DecalVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam
     {
         case WM_DRAWITEM:
         {
-            LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
-            UINT nID = static_cast<UINT>(wParam);
+            const LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+            const UINT nID = static_cast<UINT>(wParam);
             if (nID == IDC_COLOR_BUTTON1)
             {
                 m_fontColorButton.DrawItem(lpDrawItemStruct);
@@ -207,4 +206,3 @@ INT_PTR DecalVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam
     }
     return DialogProcDefault(uMsg, wParam, lParam);
 }
-
