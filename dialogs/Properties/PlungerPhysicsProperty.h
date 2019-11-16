@@ -10,8 +10,8 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
 
@@ -25,8 +25,6 @@ private:
     CEdit m_mechStrengthEdit;
     CEdit m_momentumXferEdit;
     CEdit m_parkPositionEdit;
-
 };
 
 #endif // !H_PLUNGER_PHYSICS_PROPERTY
-

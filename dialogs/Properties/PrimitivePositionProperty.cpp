@@ -37,7 +37,6 @@ void PrimitivePositionProperty::UpdateVisuals()
         //only show the first element on multi-select
         break;
     }
-    
 }
 
 void PrimitivePositionProperty::UpdateProperties(const int dispid)
@@ -151,4 +150,3 @@ BOOL PrimitivePositionProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-

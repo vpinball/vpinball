@@ -15,7 +15,7 @@ void PlungerVisualsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPlunger))
             continue;
-        Plunger *plunger = (Plunger *)m_pvsel->ElementAt(i);
+        Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
         PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)plunger->m_d.m_type - 1].c_str());
         PropertyDialog::UpdateSurfaceComboBox(plunger->GetPTable(), m_surfaceCombo, plunger->m_d.m_szSurface);
         PropertyDialog::SetIntTextbox(m_flatFramesEdit, plunger->m_d.m_animFrames);
@@ -45,7 +45,7 @@ void PlungerVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPlunger))
             continue;
-        Plunger *plunger = (Plunger *)m_pvsel->ElementAt(i);
+        Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
 
         switch (dispid)
         {
@@ -163,5 +163,3 @@ BOOL PlungerVisualsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-
-

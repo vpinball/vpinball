@@ -10,8 +10,8 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
 
@@ -27,4 +27,3 @@ private:
 };
 
 #endif // !H_HIT_TARGET_PHYSICS_PROPERTY
-

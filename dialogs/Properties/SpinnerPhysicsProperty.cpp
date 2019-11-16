@@ -52,4 +52,3 @@ BOOL SpinnerPhysicsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-

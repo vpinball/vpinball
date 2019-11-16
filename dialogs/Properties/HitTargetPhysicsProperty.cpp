@@ -4,7 +4,6 @@
 
 HitTargetPhysicsProperty::HitTargetPhysicsProperty(VectorProtected<ISelect> *pvsel): BasePropertyDialog(IDD_PROPHITTARGET_PHYSICS, pvsel)
 {
-
 }
 
 void HitTargetPhysicsProperty::UpdateVisuals()
@@ -13,7 +12,7 @@ void HitTargetPhysicsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemHitTarget))
             continue;
-        HitTarget *target = (HitTarget*)m_pvsel->ElementAt(i);
+        HitTarget * const target = (HitTarget*)m_pvsel->ElementAt(i);
 
         PropertyDialog::SetCheckboxState(m_hIsDroppedCheck, target->m_d.m_isDropped);
         PropertyDialog::SetCheckboxState(m_hLegacyModeCheck, target->m_d.m_legacy);
@@ -30,7 +29,7 @@ void HitTargetPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemHitTarget))
             continue;
-        HitTarget *target = (HitTarget*)m_pvsel->ElementAt(i);
+        HitTarget * const target = (HitTarget*)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case IDC_TARGET_ISDROPPED_CHECK:
@@ -48,7 +47,6 @@ void HitTargetPhysicsProperty::UpdateProperties(const int dispid)
                 target->m_d.m_elasticityFalloff = PropertyDialog::GetFloatTextbox(m_elasticityFalloffEdit);
                 PropertyDialog::EndUndo(target);
                 break;
-
             default:
                 UpdateBaseProperties(target, &target->m_d, dispid);
                 break;

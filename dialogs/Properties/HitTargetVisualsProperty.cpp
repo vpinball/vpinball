@@ -21,7 +21,7 @@ void HitTargetVisualsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemHitTarget))
             continue;
-        HitTarget *target = (HitTarget*)m_pvsel->ElementAt(i);
+        HitTarget * const target = (HitTarget*)m_pvsel->ElementAt(i);
         PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[target->m_d.m_targetType - 1].c_str());
         PropertyDialog::SetFloatTextbox(m_dropSpeedEdit, target->m_d.m_dropSpeed);
         PropertyDialog::SetIntTextbox(m_raiseDelayEdit, target->m_d.m_raiseDelay);
@@ -39,7 +39,6 @@ void HitTargetVisualsProperty::UpdateVisuals()
         UpdateBaseVisuals(target, &target->m_d);
         //only show the first element on multi-select
         break;
-
     }
 }
 
@@ -49,7 +48,7 @@ void HitTargetVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemHitTarget))
             continue;
-        HitTarget *target = (HitTarget*)m_pvsel->ElementAt(i);
+        HitTarget * const target = (HitTarget*)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case IDC_HIT_TARGET_TYPE:
@@ -157,4 +156,3 @@ BOOL HitTargetVisualsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-

@@ -76,4 +76,3 @@ BOOL PrimitivePhysicsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-

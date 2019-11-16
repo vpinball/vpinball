@@ -16,7 +16,7 @@ void GateVisualsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType()!=eItemGate))
             continue;
-        Gate *gate = (Gate *)m_pvsel->ElementAt(i);
+        Gate * const gate = (Gate *)m_pvsel->ElementAt(i);
         PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)gate->m_d.m_type-1].c_str());
         PropertyDialog::UpdateSurfaceComboBox(gate->GetPTable(), m_surfaceCombo, gate->m_d.m_szSurface);
         PropertyDialog::SetFloatTextbox(m_xposEdit, gate->m_d.m_vCenter.x);

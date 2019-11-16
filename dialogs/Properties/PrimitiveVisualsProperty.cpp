@@ -28,7 +28,6 @@ void PrimitiveVisualsProperty::UpdateVisuals()
         UpdateBaseVisuals(prim, &prim->m_d);
         //only show the first element on multi-select
         break;
-
     }
 }
 
@@ -138,4 +137,3 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-

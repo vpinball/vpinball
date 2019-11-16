@@ -12,7 +12,7 @@ void GatePhysicsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemGate))
             continue;
-        Gate *gate = (Gate *)m_pvsel->ElementAt(i);
+        Gate * const gate = (Gate *)m_pvsel->ElementAt(i);
 
         PropertyDialog::SetFloatTextbox(m_dampingEdit, gate->m_d.m_damping);
         PropertyDialog::SetFloatTextbox(m_gravityFactorEdit, gate->m_d.m_gravityfactor);

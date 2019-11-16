@@ -10,8 +10,8 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
 
@@ -22,8 +22,6 @@ private:
     CEdit   m_scatterAngleEdit;
     CEdit   m_hitAccuracyEdit;
     CEdit   m_hitHeightEdit;
-
 };
 
 #endif // !H_KICKER_PHYSICS_PROPERTY
-

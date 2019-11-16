@@ -11,7 +11,6 @@ TriggerVisualsProperty::TriggerVisualsProperty(VectorProtected<ISelect> *pvsel) 
     m_shapeList.push_back("TriggerButton");
     m_shapeList.push_back("TriggerWireC");
     m_shapeList.push_back("TriggerWireD");
-
 }
 
 void TriggerVisualsProperty::UpdateVisuals()
@@ -20,7 +19,7 @@ void TriggerVisualsProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemTrigger))
             continue;
-        Trigger *trigger = (Trigger *)m_pvsel->ElementAt(i);
+        Trigger * const trigger = (Trigger *)m_pvsel->ElementAt(i);
 
         PropertyDialog::UpdateComboBox(m_shapeList, m_shapeCombo, m_shapeList[(int)trigger->m_d.m_shape].c_str());
         PropertyDialog::SetFloatTextbox(m_posXEdit, trigger->m_d.m_vCenter.x);
@@ -45,7 +44,7 @@ void TriggerVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemTrigger))
             continue;
-        Trigger *trigger = (Trigger *)m_pvsel->ElementAt(i);
+        Trigger * const trigger = (Trigger *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case 1503:
@@ -88,7 +87,6 @@ void TriggerVisualsProperty::UpdateProperties(const int dispid)
                 trigger->m_d.m_animSpeed = PropertyDialog::GetFloatTextbox(m_animationSpeedEdit);
                 PropertyDialog::EndUndo(trigger);
                 break;
-
             default:
                 UpdateBaseProperties(trigger, &trigger->m_d, dispid);
                 break;
@@ -115,5 +113,3 @@ BOOL TriggerVisualsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-
-

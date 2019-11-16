@@ -10,8 +10,8 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -30,9 +30,6 @@ private:
     CEdit        m_reelWidthEdit;
     CEdit        m_reelHeightEdit;
     CEdit        m_reelSpacingEdit;
-
 };
 
-
 #endif // !H_DISPREEL_VISUALS_PROPERTY
-

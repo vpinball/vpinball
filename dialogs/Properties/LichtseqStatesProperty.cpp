@@ -69,6 +69,7 @@ void LightseqStatesProperty::UpdateProperties(const int dispid)
     }
     UpdateVisuals();
 }
+
 BOOL LightseqStatesProperty::OnInitDialog()
 {
     AttachItem(9, m_posXEdit);
@@ -78,4 +79,3 @@ BOOL LightseqStatesProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-

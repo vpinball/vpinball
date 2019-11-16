@@ -26,7 +26,7 @@ void TriggerPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemTrigger))
             continue;
-        Trigger *trigger = (Trigger *)m_pvsel->ElementAt(i);
+        Trigger * const trigger = (Trigger *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case 904:
@@ -53,5 +53,3 @@ BOOL TriggerPhysicsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-
-

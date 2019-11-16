@@ -10,8 +10,8 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
 
@@ -20,8 +20,6 @@ private:
     CEdit       m_blinkIntervalEdit;
     CComboBox   m_stateCombo;
     vector<string> m_stateList;
-
 };
 
 #endif // !H_LIGHT_STATES_PROPERTY
-

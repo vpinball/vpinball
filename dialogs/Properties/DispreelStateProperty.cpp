@@ -12,7 +12,7 @@ void DispreelStateProperty::UpdateVisuals()
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDispReel))
             continue;
-        DispReel *reel = (DispReel *)m_pvsel->ElementAt(i);
+        DispReel * const reel = (DispReel *)m_pvsel->ElementAt(i);
 
         PropertyDialog::SetIntTextbox(m_motorStepsEdit, reel->GetMotorSteps());
         PropertyDialog::SetIntTextbox(m_updateIntervalEdit, reel->GetUpdateInterval());
@@ -28,7 +28,7 @@ void DispreelStateProperty::UpdateProperties(const int dispid)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDispReel))
             continue;
-        DispReel *reel = (DispReel *)m_pvsel->ElementAt(i);
+        DispReel * const reel = (DispReel *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
             case IDC_MOTOR_STEPS_EDIT:
@@ -46,7 +46,6 @@ void DispreelStateProperty::UpdateProperties(const int dispid)
                 PropertyDialog::GetComboBoxText(m_soundCombo, reel->m_d.m_szSound);
                 PropertyDialog::EndUndo(reel);
                 break;
-
             default:
                 break;
         }
@@ -62,4 +61,3 @@ BOOL DispreelStateProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-

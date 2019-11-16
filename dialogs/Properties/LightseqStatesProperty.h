@@ -10,8 +10,8 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
 
@@ -22,6 +22,4 @@ private:
     CEdit       m_updateIntervalEdit;
 };
 
-
 #endif // !H_LIGHTSEQ_STATES_PROPERTY
-

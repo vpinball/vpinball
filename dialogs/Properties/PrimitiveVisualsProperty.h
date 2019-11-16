@@ -10,8 +10,8 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
 
@@ -31,8 +31,6 @@ private:
     CEdit       m_disableLightFromBelowEdit;
     CEdit       m_legacySidesEdit;
     CEdit       m_editorEdit;
-
 };
 
 #endif // !H_PRIMITIVE_VISUALS_PROPERTY
-
