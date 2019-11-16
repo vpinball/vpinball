@@ -90,8 +90,9 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
             }
             case IDC_FONT_DIALOG_BUTTON:
             {
-                CHOOSEFONT  cf = m_fontDialog.GetParameters();
-                cf.lpLogFont = &m_font->GetLogFont();
+                CHOOSEFONT cf = m_fontDialog.GetParameters();
+                LOGFONT lf = m_font->GetLogFont();
+                cf.lpLogFont = &lf;
                 cf.Flags |= CF_SCREENFONTS | CF_EFFECTS | CF_INITTOLOGFONTSTRUCT;
                 cf.rgbColors = decal->m_d.m_color;
                 m_fontDialog.SetParameters(cf);

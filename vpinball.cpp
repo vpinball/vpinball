@@ -629,7 +629,7 @@ HWND VPinball::CreateLayerToolbar(HWND hwndParent, unsigned int &buttonwidth, un
 
    const LRESULT wh = SendMessage(hwnd, TB_GETBUTTONSIZE, 0, 0);
    buttonwidth = wh&0xFFFF;
-   buttonheight = wh>>16;
+   buttonheight = (unsigned int)wh>>16;
 
    return hwnd;
 }
@@ -688,7 +688,7 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent, u
 
    const LRESULT wh = SendMessage(hwnd, TB_GETBUTTONSIZE, 0, 0);
    buttonwidth = wh&0xFFFF;
-   buttonheight = wh>>16;
+   buttonheight = (unsigned int)wh>>16;
 
    return hwnd;
 }

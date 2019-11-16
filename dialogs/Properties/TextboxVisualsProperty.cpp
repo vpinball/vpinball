@@ -146,8 +146,9 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
             }
             case IDC_FONT_DIALOG_BUTTON:
             {
-                CHOOSEFONT  cf = m_fontDialog.GetParameters();
-                cf.lpLogFont = &m_font->GetLogFont();
+                CHOOSEFONT cf = m_fontDialog.GetParameters();
+                LOGFONT lf = m_font->GetLogFont();
+                cf.lpLogFont = &lf;
                 cf.Flags |= CF_SCREENFONTS | CF_EFFECTS | CF_INITTOLOGFONTSTRUCT;
                 cf.rgbColors = text->m_d.m_fontcolor;
                 m_fontDialog.SetParameters(cf);
@@ -178,7 +179,6 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                 }
                 break;
             }
-
             default:
                 break;
         }
@@ -226,4 +226,3 @@ INT_PTR TextboxVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPar
     }
     return DialogProcDefault(uMsg, wParam, lParam);
 }
-

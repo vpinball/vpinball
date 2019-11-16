@@ -10,13 +10,12 @@ public:
     }
 
     void UpdateVisuals();
-
     void UpdateProperties(const int dispid);
+
 protected:
     virtual BOOL OnInitDialog();
 
 private:
-    HWND        m_hEnableCheck;
     vector<string> m_typeList;
     CComboBox   m_imageCombo;
     CComboBox   m_materialCombo;
@@ -34,6 +33,5 @@ private:
     CEdit       m_scaleZEdit;
     CEdit       m_orientationEdit;
 };
-
 
 #endif

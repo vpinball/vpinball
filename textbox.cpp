@@ -145,7 +145,7 @@ char * Textbox::GetFontName()
     if (m_pIFont)
     {
         CComBSTR bstr;
-        HRESULT hr = m_pIFont->get_Name(&bstr);
+        /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
 
         WideCharToMultiByte(CP_ACP, 0, bstr, -1, fontName, LF_FACESIZE, NULL, NULL);
         return fontName;
