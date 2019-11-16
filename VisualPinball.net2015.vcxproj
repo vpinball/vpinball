@@ -379,6 +379,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\Properties\DispreelStateProperty.cpp" />
     <ClCompile Include="dialogs\Properties\DispreelVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\DragpointVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\FlasherVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\FlipperPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\FlipperVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\GatePhysicsProperty.cpp" />
@@ -1145,6 +1146,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="dialogs\Properties\DispreelStateProperty.h" />
     <ClInclude Include="dialogs\Properties\DispreelVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\DragpointVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\FlasherVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\FlipperPhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\FlipperVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\GatePhysicsProperty.h" />
