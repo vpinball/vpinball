@@ -507,8 +507,8 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
                   char * const szText = new char[lineEnd - lineStart + 1];
                   TextRange tr;
-                  tr.chrg.cpMin = lineStart;
-                  tr.chrg.cpMax = lineEnd;
+                  tr.chrg.cpMin = (Sci_PositionCR)lineStart;
+                  tr.chrg.cpMax = (Sci_PositionCR)lineEnd;
                   tr.lpstrText = szText;
                   SendMessage(pnmh->hwndFrom, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 

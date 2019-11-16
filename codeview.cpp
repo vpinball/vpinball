@@ -122,8 +122,8 @@ CodeViewer::~CodeViewer()
 void GetRange(const HWND m_hwndScintilla, const size_t start, const size_t end, char * const text)
 {
    Sci_TextRange tr;
-   tr.chrg.cpMin = start;
-   tr.chrg.cpMax = end;
+   tr.chrg.cpMin = (Sci_PositionCR)start;
+   tr.chrg.cpMax = (Sci_PositionCR)end;
    tr.lpstrText = text;
    SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 }
@@ -131,8 +131,8 @@ void GetRange(const HWND m_hwndScintilla, const size_t start, const size_t end, 
 void CodeViewer::GetWordUnderCaret()
 {
    const LRESULT CurPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 );
-   m_wordUnderCaret.chrg.cpMin = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, CurPos, TRUE);
-   m_wordUnderCaret.chrg.cpMax = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, CurPos, TRUE);
+   m_wordUnderCaret.chrg.cpMin = (Sci_PositionCR)SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, CurPos, TRUE);
+   m_wordUnderCaret.chrg.cpMax = (Sci_PositionCR)SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, CurPos, TRUE);
    if (( m_wordUnderCaret.chrg.cpMax - m_wordUnderCaret.chrg.cpMin) > MAX_FIND_LENGTH) return;
 
    SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&m_wordUnderCaret);
@@ -1460,7 +1460,7 @@ void CodeViewer::FindCodeFromEvent()
 
       char szParams[MAX_LINE_LENGTH];
 
-      GetParamsFromEvent(iEventIndex, szParams);
+      GetParamsFromEvent((UINT)iEventIndex, szParams);
 
       lstrcpy(szNewCode, "Sub ");
       lstrcat(szNewCode, szItemName);
@@ -1662,8 +1662,8 @@ void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 		//Get member construct
 
 		LRESULT ConstructPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 ) - 2;
-		m_currentConstruct.chrg.cpMin = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, ConstructPos, TRUE);
-		m_currentConstruct.chrg.cpMax = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, ConstructPos, TRUE);
+		m_currentConstruct.chrg.cpMin = (Sci_PositionCR)SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, ConstructPos, TRUE);
+		m_currentConstruct.chrg.cpMax = (Sci_PositionCR)SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, ConstructPos, TRUE);
 		if ((m_currentConstruct.chrg.cpMax - m_currentConstruct.chrg.cpMin) > MAX_FIND_LENGTH) return;
 		SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&m_currentConstruct);
 		//Check Core dict first
