@@ -32,6 +32,8 @@
 #include "Properties/PrimitivePositionProperty.h"
 #include "Properties/PrimitivePhysicsProperty.h"
 #include "Properties/FlasherVisualsProperty.h"
+#include "Properties/RubberVisualsProperty.h"
+#include "Properties/RubberPhysicsProperty.h"
 
 #include <WindowsX.h>
 
@@ -256,6 +258,13 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
         {
             m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new FlasherVisualsProperty(pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
+            break;
+        }
+        case eItemRubber:
+        {
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new RubberVisualsProperty(pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new RubberPhysicsProperty(pvsel), _T("Physics")));
+            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
             break;
         }
         case eItemDragPoint:
@@ -826,5 +835,10 @@ void BasePropertyDialog::UpdateBaseVisuals(ISelect *psel, BaseProperty *property
     if (m_hHitEventCheck && property->m_collidable)
         if (m_baseHitThresholdEdit)     m_baseHitThresholdEdit->EnableWindow(property->m_hitEvent);
     if (m_hOverwritePhysicsCheck && property->m_collidable)
+    {
         if (m_basePhysicsMaterialCombo) m_basePhysicsMaterialCombo->EnableWindow(!property->m_overwritePhysics);
+        if (m_baseElasticityEdit)        m_baseElasticityEdit->EnableWindow(property->m_overwritePhysics);
+        if (m_baseFrictionEdit)          m_baseFrictionEdit->EnableWindow(property->m_overwritePhysics);
+        if (m_baseScatterAngleEdit)      m_baseScatterAngleEdit->EnableWindow(property->m_overwritePhysics);
+    }
 }

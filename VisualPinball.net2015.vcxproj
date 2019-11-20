@@ -399,6 +399,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\Properties\PropertyDialog.cpp" />
     <ClCompile Include="dialogs\Properties\RampPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\RampVisualsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\RubberPhysicsProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\RubberVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\SpinnerPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\SpinnerVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\TextboxVisualsProperty.cpp" />
@@ -1166,6 +1168,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="dialogs\Properties\PropertyDialog.h" />
     <ClInclude Include="dialogs\Properties\RampPhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\RampVisualsProperty.h" />
+    <ClInclude Include="dialogs\Properties\RubberPhysicsProperty.h" />
+    <ClInclude Include="dialogs\Properties\RubberVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\SpinnerPhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\SpinnerVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\TextboxVisualsProperty.h" />

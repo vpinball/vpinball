@@ -227,6 +227,15 @@
     <ClCompile Include="dialogs\Properties\PrimitivePositionProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\Properties\FlasherVisualsProperty.cpp">
+      <Filter>dialogs\Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\Properties\RubberVisualsProperty.cpp">
+      <Filter>dialogs\Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\Properties\RubberPhysicsProperty.cpp">
+      <Filter>dialogs\Properties</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1318,6 +1327,15 @@
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\Properties\PrimitivePositionProperty.h">
+      <Filter>dialogs\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\Properties\FlasherVisualsProperty.h">
+      <Filter>dialogs\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\Properties\RubberVisualsProperty.h">
+      <Filter>dialogs\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\Properties\RubberPhysicsProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
   </ItemGroup>

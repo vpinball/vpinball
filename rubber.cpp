@@ -979,9 +979,6 @@ void Rubber::GetDialogPanes(vector<PropertyPane*> &pvproppane)
    m_propVisual = new PropertyPane(IDD_PROPRUBBER_VISUALS, IDS_VISUALS);
    pvproppane.push_back(m_propVisual);
 
-   m_propPosition = new PropertyPane(IDD_PROPRUBBER_POSITION, IDS_POSITION);
-   pvproppane.push_back(m_propPosition);
-
    m_propPhysics = new PropertyPane(IDD_PROPRUBBER_PHYSICS, IDS_PHYSICS);
    pvproppane.push_back(m_propPhysics);
 
