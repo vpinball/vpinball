@@ -18,6 +18,10 @@ void HitTargetPhysicsProperty::UpdateVisuals()
         PropertyDialog::SetCheckboxState(m_hLegacyModeCheck, target->m_d.m_legacy);
         PropertyDialog::SetFloatTextbox(m_elasticityFalloffEdit, target->m_d.m_elasticityFalloff);
         UpdateBaseVisuals(target, &target->m_d);
+        m_elasticityFalloffEdit.EnableWindow(target->m_d.m_collidable);
+        if (target->m_d.m_collidable)
+            m_elasticityFalloffEdit.EnableWindow(target->m_d.m_overwritePhysics);
+
         //only show the first element on multi-select
         break;
     }

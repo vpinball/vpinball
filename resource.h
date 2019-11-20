@@ -6,6 +6,7 @@
 #define DISPID_Textbox_FontColor        2
 #define DISPID_Light_State              2
 #define IDC_FORCE_EDIT                  2
+#define IDC_RUBBER_HEIGHT_EDIT          2
 #define DISPID_Gate_Length              3
 #define DISPID_Spinner_Length           3
 #define DISPID_DispReel_FontColor2      3
@@ -18,6 +19,7 @@
 #define DISPID_Textbox_Font             4
 #define DISPID_POSITION_Z               4
 #define IDC_RELEASE_SPEED_EDIT          4
+#define IDC_RUBBER_THICKNESS_EDIT       4
 #define DISPID_SIZE_X                   5
 #define IDC_REEL_WIDTH_EDIT             5
 #define DISPID_Surface_SideColor        6
@@ -69,6 +71,7 @@
 #define DISPID_SIDECOLOR                18
 #define IDC_COLOR4                      18
 #define IDC_IMAGES_PER_ROW_EDIT         18
+#define IDC_RUBBER_ROTX_EDIT            18
 #define DISPID_SIDEVISIBLE              19
 #define IDC_COLOR5                      19
 #define DISPID_SMOOTHNORMALS            21
@@ -78,7 +81,9 @@
 #define DISPID_ROTRA9                   23
 #define DISPID_HEIGHTOFFSET             24
 #define IDC_BUMPER_HEIGHT_SCALE_EDIT    24
+#define IDC_RUBBER_ROTZ_EDIT            24
 #define IDC_ORIENTATION_EDIT            25
+#define IDC_RUBBER_ROTY_EDIT            25
 #define IDC_RINGSPEED_EDIT              26
 #define IDC_RINGDROPOFFSET_EDIT         27
 #define IDC_HIT_THRESHOLD_EDIT          33
@@ -882,7 +887,6 @@
 #define IDC_BLOOM_OFF                   591
 #define IDD_PROPRUBBER_PHYSICS          602
 #define IDC_RUBBER                      602
-#define IDD_PROPRUBBER_POSITION         603
 #define IDD_PROPRUBBER_VISUALS          604
 #define IDD_MATERIALDIALOG              605
 #define IDB_BITMAP1                     608
