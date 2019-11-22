@@ -239,7 +239,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\xaudio\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost</AdditionalOptions>
+      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -263,7 +263,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
-      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\xaudio\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost</AdditionalOptions>
+      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost</AdditionalOptions>
     </Link>
     <Xdcmake>
       <SuppressStartupBanner>false</SuppressStartupBanner>
@@ -282,7 +282,7 @@
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
     <Lib>
-      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\xaudio\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost</AdditionalOptions>
+      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -306,7 +306,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
-      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\xaudio\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost   --cs-partial-instrumentation</AdditionalOptions>
+      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost   --cs-partial-instrumentation</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -326,7 +326,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <LargeAddressAware>true</LargeAddressAware>
-      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\xaudio\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost   --cs-partial-instrumentation</AdditionalOptions>
+      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost   --cs-partial-instrumentation</AdditionalOptions>
     </Link>
     <Xdcmake>
       <SuppressStartupBanner>false</SuppressStartupBanner>
@@ -344,7 +344,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
     <Lib>
-      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\xaudio\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost   --cs-partial-instrumentation</AdditionalOptions>
+      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost   --cs-partial-instrumentation</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugCoverage|x64'">
@@ -368,7 +368,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
-      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\xaudio\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost</AdditionalOptions>
+      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -388,7 +388,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <LargeAddressAware>true</LargeAddressAware>
-      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\xaudio\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost</AdditionalOptions>
+      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost</AdditionalOptions>
     </Link>
     <Xdcmake>
       <SuppressStartupBanner>false</SuppressStartupBanner>
@@ -406,7 +406,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
     <Lib>
-      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\xaudio\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost</AdditionalOptions>
+      <AdditionalOptions>  --cs-exclude-file-abs-regex="^.*\\inc\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\inc\\win32xx\\include\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\math\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\media\\[^\\]*$" --cs-exclude-file-abs-regex="^.*\\meshes\\[^\\]*$" --cs-on --cs-condition --cs-line --cs-function --cs-hit --cs-full-instrumentation --cs-no-qt3 --cs-no-qt4 --cs-no-boost</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -1462,7 +1462,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
     </ClCompile>
-    <ClCompile Include="xaudplayer.cpp">
+    <ClCompile Include="audioplayer.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='DebugCoverage|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
@@ -1789,24 +1789,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\win32xx\include\wxx_webbrowser.h" />
     <ClInclude Include="inc\win32xx\include\wxx_wincore.h" />
     <ClInclude Include="inc\win32xx\include\wxx_wincore0.h" />
-    <ClInclude Include="inc\xaudio\aac_codec.h" />
-    <ClInclude Include="inc\xaudio\audio_output.h" />
-    <ClInclude Include="inc\xaudio\control.h" />
-    <ClInclude Include="inc\xaudio\control_win32.h" />
-    <ClInclude Include="inc\xaudio\decoder.h" />
-    <ClInclude Include="inc\xaudio\feedback.h" />
-    <ClInclude Include="inc\xaudio\fft.h" />
-    <ClInclude Include="inc\xaudio\file_input.h" />
-    <ClInclude Include="inc\xaudio\file_output.h" />
-    <ClInclude Include="inc\xaudio\memory_input.h" />
-    <ClInclude Include="inc\xaudio\mpeg_codec.h" />
-    <ClInclude Include="inc\xaudio\player.h" />
-    <ClInclude Include="inc\xaudio\properties.h" />
-    <ClInclude Include="inc\xaudio\resampling_output_filter.h" />
-    <ClInclude Include="inc\xaudio\stream_input.h" />
-    <ClInclude Include="inc\xaudio\wave_codec.h" />
-    <ClInclude Include="inc\xaudio\xanalyze.h" />
-    <ClInclude Include="inc\xaudio\xaudio.h" />
     <ClInclude Include="iselect.h" />
     <ClInclude Include="kdtree.h" />
     <ClInclude Include="kicker.h" />
@@ -1902,7 +1884,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="vpversion.h" />
     <ClInclude Include="wintimer.h" />
     <ClInclude Include="worker.h" />
-    <ClInclude Include="xaudplayer.h" />
+    <ClInclude Include="audioplayer.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">

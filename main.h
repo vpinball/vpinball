@@ -72,7 +72,7 @@ using std::vector;
 
 #include "worker.h"
 
-#include "xaudplayer.h"
+#include "audioplayer.h"
 #include "media/fileio.h"
 #include "pinundo.h"
 #include "iselect.h"

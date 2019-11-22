@@ -961,7 +961,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
     </ClCompile>
-    <ClCompile Include="xaudplayer.cpp">
+    <ClCompile Include="audioplayer.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -1264,24 +1264,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\win32xx\include\wxx_webbrowser.h" />
     <ClInclude Include="inc\win32xx\include\wxx_wincore.h" />
     <ClInclude Include="inc\win32xx\include\wxx_wincore0.h" />
-    <ClInclude Include="inc\xaudio\aac_codec.h" />
-    <ClInclude Include="inc\xaudio\audio_output.h" />
-    <ClInclude Include="inc\xaudio\control.h" />
-    <ClInclude Include="inc\xaudio\control_win32.h" />
-    <ClInclude Include="inc\xaudio\decoder.h" />
-    <ClInclude Include="inc\xaudio\feedback.h" />
-    <ClInclude Include="inc\xaudio\fft.h" />
-    <ClInclude Include="inc\xaudio\file_input.h" />
-    <ClInclude Include="inc\xaudio\file_output.h" />
-    <ClInclude Include="inc\xaudio\memory_input.h" />
-    <ClInclude Include="inc\xaudio\mpeg_codec.h" />
-    <ClInclude Include="inc\xaudio\player.h" />
-    <ClInclude Include="inc\xaudio\properties.h" />
-    <ClInclude Include="inc\xaudio\resampling_output_filter.h" />
-    <ClInclude Include="inc\xaudio\stream_input.h" />
-    <ClInclude Include="inc\xaudio\wave_codec.h" />
-    <ClInclude Include="inc\xaudio\xanalyze.h" />
-    <ClInclude Include="inc\xaudio\xaudio.h" />
     <ClInclude Include="iselect.h" />
     <ClInclude Include="kdtree.h" />
     <ClInclude Include="kicker.h" />
@@ -1377,7 +1359,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="vpversion.h" />
     <ClInclude Include="wintimer.h" />
     <ClInclude Include="worker.h" />
-    <ClInclude Include="xaudplayer.h" />
+    <ClInclude Include="audioplayer.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
