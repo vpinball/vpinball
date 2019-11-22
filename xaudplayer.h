@@ -12,7 +12,7 @@ public:
 
    bool MusicActive();
 
-   void MusicEnd();
+   //void MusicEnd();
 
    void MusicPause();
    void MusicUnpause();

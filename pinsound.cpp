@@ -1,11 +1,18 @@
 #include "StdAfx.h"
 
-PinSound::PinSound() : PinSoundCopy(this)
+extern bool bass_init;
+
+PinSound::PinSound() : PinDirectSoundWavCopy(this)
 {
+   if(!bass_init)
+   {
+      AudioPlayer ap; //!! just to get BASS init'ed, remove again as soon as all is unified! // also need (optionally) 2 devices, one BG, one normal
+   }
+
    m_pDSBuffer = NULL;
    m_pDS3DBuffer = NULL;
    m_pdata = NULL;
-   m_pPinDirectSound = NULL;
+   m_pPinDirectSound = NULL; // m_BASSstream = 0;
    m_outputTarget = SNDOUT_TABLE;
    m_balance = 0;
    m_fade = 0;
@@ -22,8 +29,16 @@ PinSound::~PinSound()
 
 void PinSound::UnInitialize()
 {
-   SAFE_RELEASE(m_pDS3DBuffer);
-   SAFE_RELEASE(m_pDSBuffer);
+   if (IsWav())
+   {
+      SAFE_RELEASE(m_pDS3DBuffer);
+      SAFE_RELEASE(m_pDSBuffer);
+   }
+   else
+   {
+      if (m_BASSstream)
+         BASS_StreamFree(m_BASSstream);
+   }
 }
 
 class PinDirectSound *PinSound::GetPinDirectSound()
@@ -286,6 +301,34 @@ PinSound *AudioMusicPlayer::LoadFile(const TCHAR* const strFileName)
          //SetFileUI( hDlg, strFileName );
          //OnEnablePlayUI( hDlg, TRUE );
    }
+   else
+   {
+	   FILE *f;
+	   fopen_s(&f, strFileName, "rb");
+	   fseek(f, 0, SEEK_END);
+	   pps->m_cdata = (int)ftell(f);
+	   fseek(f, 0, SEEK_SET);
+	   pps->m_pdata = new char[pps->m_cdata];
+	   fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f);
+	   fclose(f);
+
+	   pps->m_BASSstream = BASS_StreamCreateFile(
+		   TRUE,
+		   pps->m_pdata,
+		   0,
+		   pps->m_cdata,
+		   0 /*BASS_SAMPLE_3D | BASS_SAMPLE_LOOP*/ //!!
+	   );
+
+	   if (pps->m_BASSstream == NULL)
+	   {
+		   delete pps;
+		   char bla[MAX_PATH];
+		   sprintf_s(bla, "BASS music/sound library cannot load %s", strFileName);
+		   MessageBox(g_pvp->m_hwnd, bla, "Error", MB_ICONERROR);
+		   return NULL;
+	   }
+   }
 
    return pps;
 }
@@ -310,7 +353,7 @@ float PinDirectSound::PanTo3D(float input)
 	}
 }
 
-PinSoundCopy::PinSoundCopy(class PinSound * const pOriginal)
+PinDirectSoundWavCopy::PinDirectSoundWavCopy(class PinSound * const pOriginal)
 {
 	m_ppsOriginal = pOriginal;
 
@@ -324,7 +367,7 @@ PinSoundCopy::PinSoundCopy(class PinSound * const pOriginal)
 	}
 }
 
-void PinSoundCopy::PlayInternal(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart)
+void PinDirectSoundWavCopy::PlayInternal(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart)
 {
 	const float totalvolume = max(min(volume, 100.0f), 0.0f);
 	const int decibelvolume = (totalvolume == 0.0f) ? DSBVOLUME_MIN : (int)(logf(totalvolume)*(float)(1000.0 / log(10.0)) - 2000.0f);
@@ -377,7 +420,7 @@ void PinSoundCopy::PlayInternal(const float volume, const float randompitch, con
 		m_pDSBuffer->SetCurrentPosition(0);
 }
 
-HRESULT PinSoundCopy::Get3DBuffer()
+HRESULT PinDirectSoundWavCopy::Get3DBuffer()
 {
 	const HRESULT hr = m_pDSBuffer->QueryInterface(IID_IDirectSound3DBuffer, (void**)&m_pDS3DBuffer);
 	if (FAILED(hr))

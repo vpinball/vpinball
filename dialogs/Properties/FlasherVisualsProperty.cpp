@@ -158,7 +158,6 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
                 }
                 break;
             }
-
             default:
                 break;
         }
@@ -198,7 +197,7 @@ INT_PTR FlasherVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPar
         case WM_DRAWITEM:
         {
             LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
-            UINT nID = static_cast<UINT>(wParam);
+            const UINT nID = static_cast<UINT>(wParam);
             if (nID == IDC_COLOR_BUTTON1)
             {
                 m_colorButton.DrawItem(lpDrawItemStruct);
@@ -208,4 +207,3 @@ INT_PTR FlasherVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPar
     }
     return DialogProcDefault(uMsg, wParam, lParam);
 }
-

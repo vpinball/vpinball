@@ -317,8 +317,8 @@ public:
    // called before Player instance gets deleted
    void StopPlaying();
 
-   void ImportSound(const HWND hwndListView, const char * const filename, const bool play);
-   void ReImportSound(const HWND hwndListView, PinSound * const pps, const char * const filename, const bool play);
+   void ImportSound(const HWND hwndListView, const char * const filename);
+   void ReImportSound(const HWND hwndListView, PinSound * const pps, const char * const filename);
    bool ExportSound(PinSound * const pps, const char * const filename);
    void ListSounds(HWND hwndListView);
    int AddListSound(HWND hwndListView, PinSound * const pps);

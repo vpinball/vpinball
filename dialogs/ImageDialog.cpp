@@ -690,8 +690,8 @@ void ImageDialog::Reimport()
             Texture * const ppi = (Texture*)lvitem.lParam;
             if (ppi != NULL)
             {
-               HANDLE hFile = CreateFile(ppi->m_szPath, GENERIC_READ, FILE_SHARE_READ,
-                  NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+               const HANDLE hFile = CreateFile(ppi->m_szPath, GENERIC_READ, FILE_SHARE_READ,
+                                               NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
                if (hFile != INVALID_HANDLE_VALUE)
                {
@@ -699,7 +699,9 @@ void ImageDialog::Reimport()
                   pt->ReImportImage(ppi, ppi->m_szPath);
                   pt->SetNonUndoableDirty(eSaveDirty);
                }
-               else MessageBox( ppi->m_szPath, "  FILE NOT FOUND!  ", MB_OK);
+               else
+                  MessageBox( ppi->m_szPath, "FILE NOT FOUND!", MB_OK);
+
                sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
             }
          }

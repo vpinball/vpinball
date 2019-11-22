@@ -237,14 +237,10 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
 
 STDMETHODIMP ScriptGlobalTable::EndMusic()
 {
-   if (g_pplayer && g_pplayer->m_PlayMusic)
+   if (g_pplayer && g_pplayer->m_PlayMusic && g_pplayer->m_audio)
    {
-      if (g_pplayer->m_audio)
-      {
-         g_pplayer->m_audio->MusicEnd();
-         delete g_pplayer->m_audio;
-         g_pplayer->m_audio = NULL;
-      }
+      delete g_pplayer->m_audio;
+      g_pplayer->m_audio = NULL;
    }
 
    return S_OK;
@@ -1542,7 +1538,7 @@ PinTable::~PinTable()
    for (size_t i = 0; i < m_vedit.size(); i++)
       m_vedit[i]->Release();
 
-   g_pvp->m_ps.ClearStoppedOldSounds();
+   g_pvp->m_ps.ClearStoppedCopiedWavs();
 
    for (size_t i = 0; i < m_vsound.size(); i++)
       delete m_vsound[i];
@@ -2363,7 +2359,7 @@ void PinTable::StopPlaying()
    for (size_t i = 0; i < m_vsound.size(); i++)
       m_vsound[i]->Stop();
    // The usual case - copied sounds
-   g_pvp->m_ps.StopAndClearOldSounds();
+   g_pvp->m_ps.StopAndClearCopiedWavs();
 
    m_pcv->EndSession();
    m_textureMap.clear();
@@ -2919,6 +2915,7 @@ HRESULT PinTable::SaveSoundToStream(PinSound * const pps, IStream *pstm)
    if (FAILED(hr = pstm->Write(pps->m_szInternalName, len, &writ)))
       return hr;
 
+   if (pps->IsWav()) // only use old code if playing wav's
    if (FAILED(hr = pstm->Write(&pps->m_wfx, sizeof(pps->m_wfx), &writ)))
       return hr;
 
@@ -2991,6 +2988,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 
    pps->m_szInternalName[len] = 0;
 
+   if (pps->IsWav()) // only use old code if playing wav's
    if (FAILED(hr = pstm->Read(&pps->m_wfx, sizeof(pps->m_wfx), &read)))
    {
        delete pps;
@@ -4155,7 +4153,6 @@ bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
       if (wcch != pps->m_cdata) 
           ::MessageBox(m_hwnd, "Sound file incomplete!", "Visual Pinball", MB_ICONERROR);
       else return true;
-
    }
    else 
        ::MessageBox(m_hwnd, "Can not Open/Create Sound file!", "Visual Pinball", MB_ICONERROR);
@@ -4163,45 +4160,47 @@ bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
    return false;
 }
 
-void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, const char * const filename, const bool play)
+void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, const char * const filename)
 {
    PinSound * const ppsNew = g_pvp->m_ps.LoadFile(filename);
 
    if (ppsNew == NULL)
       return;
 
-   PinSound psT = *pps;
+   const int balance = pps->m_balance;
+   const int fade = pps->m_fade;
+   const int volume = pps->m_volume;
+   const SoundOutTypes outputTarget = pps->m_outputTarget;
+   char szName[MAXTOKEN];
+   lstrcpy(szName, pps->m_szName);
+   char szInternalName[MAXTOKEN];
+   lstrcpy(szInternalName, pps->m_szInternalName);
+
    *pps = *ppsNew;
-   // recopy old settings over to new sound file
-   pps->m_balance = psT.m_balance;
-   pps->m_fade = psT.m_fade;
-   pps->m_volume = psT.m_volume;
-   pps->m_outputTarget = psT.m_outputTarget;
-   *ppsNew = psT;
-
-   lstrcpy(pps->m_szName, ppsNew->m_szName);
-   lstrcpy(pps->m_szInternalName, ppsNew->m_szInternalName);
-
-   // make sure sound data doesn't get deleted twice
-   psT.m_pdata = NULL;
-   psT.m_pDSBuffer = NULL;
-   psT.m_pDS3DBuffer = NULL;
    delete ppsNew;
 
-   if (play)
-      pps->m_pDSBuffer->Play(0, 0, 0);
+   // recopy old settings over to new sound file
+   pps->m_balance = balance;
+   pps->m_fade = fade;
+   pps->m_volume = volume;
+   pps->m_outputTarget = outputTarget;
+   lstrcpy(pps->m_szName, szName);
+   lstrcpy(pps->m_szInternalName, szInternalName);
+
+   //if (play) //!! only do this when playing .wavs? or limit to a certain amount of time?
+   //   pps->TestPlay();
 }
 
 
-void PinTable::ImportSound(const HWND hwndListView, const char * const szfilename, const bool play)
+void PinTable::ImportSound(const HWND hwndListView, const char * const szfilename)
 {
    PinSound * const pps = g_pvp->m_ps.LoadFile(szfilename);
 
    if (pps == NULL)
       return;
 
-   if (play)
-      pps->m_pDSBuffer->Play(0, 0, 0);
+   //if (play) //!! only do this when playing .wavs? or limit to a certain amount of time?
+   //   pps->TestPlay();
 
    m_vsound.push_back(pps);
 
@@ -7032,15 +7031,13 @@ HRESULT PinTable::StopSound(BSTR Sound)
 
    // In case we were playing any of the main buffers
    for (size_t i = 0; i < m_vsound.size(); i++)
-   {
       if (!lstrcmp(m_vsound[i]->m_szInternalName, szName))
       {
          m_vsound[i]->Stop();
          break;
       }
-   }
 
-   g_pvp->m_ps.StopOldSound(szName);
+   g_pvp->m_ps.StopCopiedWav(szName);
 
    return S_OK;
 }
@@ -7051,7 +7048,7 @@ void PinTable::StopAllSounds()
 	for (size_t i = 0; i < m_vsound.size(); i++)
 		m_vsound[i]->Stop();
 
-	g_pvp->m_ps.StopOldSounds();
+	g_pvp->m_ps.StopCopiedWavs();
 }
 
 

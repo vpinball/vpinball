@@ -25,6 +25,7 @@ struct SavePhysicsMaterial
     float fFriction;
     float fScatterAngle;
 };
+
 class Material
 {
 public:
