@@ -96,6 +96,7 @@ endif()
 
 
 set(SOURCES
+  audioplayer.cpp
   ballex.cpp
   bumper.cpp
   codeview.cpp
@@ -151,7 +152,6 @@ set(SOURCES
   vpinball.cpp
   wintimer.cpp
   worker.cpp
-  xaudplayer.cpp
   inc/gpuprofiler.cpp
   inc/progmesh.cpp
   pin/ball.cpp
@@ -252,6 +252,7 @@ set(WIN32PP
 )
 
 set(HEADERS
+  audioplayer.h
   ballex.h
   bumper.h
   codeview.h
@@ -312,7 +313,6 @@ set(HEADERS
   vpinball.h
   wintimer.h
   worker.h
-  xaudplayer.h
   inc/gpuprofiler.h
   inc/progmesh.h
   pin/ball.h
@@ -395,7 +395,6 @@ find_library(LIB_FREEIMAGE freeimage.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 find_library(LIB_DINPUT dinput.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 find_library(LIB_D3DX9 d3dx9.lib PATHS ${DirectX_LIB_DIR})
 find_library(LIB_DSOUND dsound.lib PATHS ${DirectX_LIB_DIR})
-find_library(LIB_XAUDIO xaudio.lib PATHS ${CMAKE_SOURCE_DIR}/lib/xaudio)
 find_library(LIB_BASS bass.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 find_library(LIB_HID hid.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 

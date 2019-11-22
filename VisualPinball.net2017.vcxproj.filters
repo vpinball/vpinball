@@ -69,7 +69,7 @@
     <ClCompile Include="Media\wavread.cpp" />
     <ClCompile Include="wintimer.cpp" />
     <ClCompile Include="worker.cpp" />
-    <ClCompile Include="xaudplayer.cpp" />
+    <ClCompile Include="audioplayer.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="BlackBox.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
@@ -538,9 +538,6 @@
     <Filter Include="inc">
       <UniqueIdentifier>{ba1f1ac4-658a-4269-9aa3-1a5f1b5a4784}</UniqueIdentifier>
     </Filter>
-    <Filter Include="xaudio">
-      <UniqueIdentifier>{3be2f050-9d6d-4658-b7eb-86d3fbd2ac86}</UniqueIdentifier>
-    </Filter>
     <Filter Include="headers">
       <UniqueIdentifier>{7753e061-8049-4205-aff5-172e23e728ad}</UniqueIdentifier>
     </Filter>
@@ -608,60 +605,6 @@
     </ClInclude>
     <ClInclude Include="inc\scintilla.h">
       <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\aac_codec.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\audio_output.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\control.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\control_win32.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\decoder.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\feedback.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\fft.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\file_input.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\file_output.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\memory_input.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\mpeg_codec.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\player.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\properties.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\resampling_output_filter.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\stream_input.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\wave_codec.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\xanalyze.h">
-      <Filter>xaudio</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\xaudio\xaudio.h">
-      <Filter>xaudio</Filter>
     </ClInclude>
     <ClInclude Include="ballex.h">
       <Filter>headers</Filter>
@@ -870,7 +813,7 @@
     <ClInclude Include="worker.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="xaudplayer.h">
+    <ClInclude Include="audioplayer.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="math\math.h">
