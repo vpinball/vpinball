@@ -98,5 +98,3 @@ BOOL RubberVisualsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-
-

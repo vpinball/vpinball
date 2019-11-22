@@ -299,6 +299,7 @@
 #define IDC_SNDTOBG                     210
 #define IDC_CENTERX                     211
 #define IDC_CENTERY                     212
+#define IDC_STOP                        213
 #define IDC_SCALEFACTOR                 214
 #define IDR_VPACCEL                     216
 #define IDC_PROGRESS2                   216

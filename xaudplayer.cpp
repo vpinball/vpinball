@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 
-static bool bass_init = false; //!! meh
+/*static*/ bool bass_init = false; //!! meh
 
 AudioPlayer::AudioPlayer()
 {
@@ -59,7 +59,10 @@ AudioPlayer::AudioPlayer()
 AudioPlayer::~AudioPlayer()
 {
    if (m_stream)
+   {
+      BASS_ChannelStop(m_stream);
       BASS_StreamFree(m_stream);
+   }
 }
 
 void AudioPlayer::MusicPause()
@@ -79,11 +82,11 @@ bool AudioPlayer::MusicActive()
    return m_stream ? (BASS_ChannelIsActive(m_stream) == BASS_ACTIVE_PLAYING) : false;
 }
 
-void AudioPlayer::MusicEnd()
+/*void AudioPlayer::MusicEnd()
 {
    if (m_stream)
-      BASS_ChannelPause(m_stream); //!! ?
-}
+      BASS_ChannelStop(m_stream);
+}*/
 
 bool AudioPlayer::MusicInit(const char * const szFileName, const float volume)
 {

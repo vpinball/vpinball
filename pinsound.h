@@ -47,10 +47,10 @@ enum SoundConfigTypes : int { SNDCFG_SND3D2CH = 0, SNDCFG_SND3DALLREAR = 1, SNDC
 // 6CH: Rear of playfield shifted to the sides, and front of playfield shifted to the far rear.   Leaves front channels open
 // for default backglass and VPinMame. 
 
-class PinSoundCopy
+class PinDirectSoundWavCopy
 {
 public:
-   PinSoundCopy(class PinSound * const pOriginal);
+   PinDirectSoundWavCopy(class PinSound * const pOriginal);
 
 protected:
    void TestPlayInternal() { m_pDSBuffer->Play(0, 0, 0); }
@@ -65,7 +65,7 @@ public:
    LPDIRECTSOUND3DBUFFER m_pDS3DBuffer;
 };
 
-class PinSound : public PinSoundCopy
+class PinSound : public PinDirectSoundWavCopy
 {
 public:
    PinSound();
@@ -80,17 +80,52 @@ public:
    {
       if (IsWav())
          PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
+      else if (m_BASSstream)
+      {
+         BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_VOL, volume);
+         if (randompitch > 0.f)
+         {
+            float freq;
+            BASS_ChannelGetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, &freq);
+            freq += pitch;
+            const float rndh = rand_mt_01();
+            const float rndl = rand_mt_01();
+            BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, freq + freq * randompitch * rndh * rndh - freq * randompitch * rndl * rndl * 0.5f);
+         }
+         else if (pitch != 0)
+         {
+            float freq;
+            BASS_ChannelGetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, &freq);
+            BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, (float)(freq + pitch));
+         }
+         BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_PAN, pan);
+         BASS_ChannelPlay(m_BASSstream, restart ? fTrue : fFalse);
+      }
    }
 
-   void TestPlay() { if(IsWav()) TestPlayInternal(); }
+   void TestPlay()
+   {
+      if(IsWav())
+         TestPlayInternal();
+      else
+         if (m_BASSstream)
+            BASS_ChannelPlay(m_BASSstream, 0);
+   }
 
    void Stop()
    {
       if (IsWav())
          StopInternal();
+      else
+         if (m_BASSstream)
+            BASS_ChannelStop(m_BASSstream);
    }
 
-   class PinDirectSound *m_pPinDirectSound;
+   union
+   {
+      class PinDirectSound *m_pPinDirectSound;
+      HSTREAM m_BASSstream;
+   };
 
    char m_szName[MAXTOKEN]; // only filename, no ext
    char m_szInternalName[MAXTOKEN]; // only lower case filename, no ext
@@ -101,10 +136,11 @@ public:
    int m_fade;
    int m_volume;
 
+   char *m_pdata; // wav: copy of the buffer/sample data so we can save it out, else: the contents of the original file
+   int m_cdata;
+
    // old wav code only:
    WAVEFORMATEX m_wfx;
-   char *m_pdata; // Copy of the buffer data so we can save it out
-   int m_cdata;
 };
 
 
@@ -165,11 +201,11 @@ public:
 		return (outputTarget == SNDOUT_BACKGLASS) ? m_pbackglassds : &m_pds;
 	}
 
-	void StopOldSound(const char* const szName)
+	void StopCopiedWav(const char* const szName)
 	{
-		for (size_t i = 0; i < m_voldsound.size(); i++)
+		for (size_t i = 0; i < m_copiedwav.size(); i++)
 		{
-			PinSoundCopy * const ppsc = m_voldsound[i];
+			PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
 			if (!lstrcmp(ppsc->m_ppsOriginal->m_szInternalName, szName))
 			{
 				ppsc->m_pDSBuffer->Stop();
@@ -178,35 +214,35 @@ public:
 		}
 	}
 
-	void StopOldSounds()
+	void StopCopiedWavs()
 	{
-		for (size_t i = 0; i < m_voldsound.size(); i++)
-			m_voldsound[i]->m_pDSBuffer->Stop();
+		for (size_t i = 0; i < m_copiedwav.size(); i++)
+			m_copiedwav[i]->m_pDSBuffer->Stop();
 	}
 
-	void StopAndClearOldSounds()
+	void StopAndClearCopiedWavs()
 	{
-		for (size_t i = 0; i < m_voldsound.size(); i++)
+		for (size_t i = 0; i < m_copiedwav.size(); i++)
 		{
-			m_voldsound[i]->m_pDSBuffer->Stop();
-			m_voldsound[i]->m_pDSBuffer->Release();
-			delete m_voldsound[i];
+			m_copiedwav[i]->m_pDSBuffer->Stop();
+			m_copiedwav[i]->m_pDSBuffer->Release();
+			delete m_copiedwav[i];
 		}
-		m_voldsound.clear();
+		m_copiedwav.clear();
 	}
 
-	void ClearStoppedOldSounds()
+	void ClearStoppedCopiedWavs()
 	{
 	   size_t i = 0;
-	   while (i < m_voldsound.size())
+	   while (i < m_copiedwav.size())
 	   {
-		  PinSoundCopy * const ppsc = m_voldsound[i];
+		  PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
 		  DWORD status;
 		  ppsc->m_pDSBuffer->GetStatus(&status);
 		  if (!(status & DSBSTATUS_PLAYING)) // sound is done, we can throw it away now
 		  {
 			 ppsc->m_pDSBuffer->Release();
-			 m_voldsound.erase(m_voldsound.begin() + i);
+			 m_copiedwav.erase(m_copiedwav.begin() + i);
 			 delete ppsc;
 		  }
 		  else
@@ -216,20 +252,26 @@ public:
 
 	void Play(PinSound * const pps, const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
 	{
-		ClearStoppedOldSounds();
-
 		const int flags = (loopcount == -1) ? DSBPLAY_LOOPING : 0;
 
-		PinSoundCopy * ppsc = NULL;
+		if (!pps->IsWav())
+		{
+			pps->Play(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
+			return;
+		}
+
+		ClearStoppedCopiedWavs();
+
+		PinDirectSoundWavCopy * ppsc = NULL;
 		bool foundsame = false;
 		if (usesame)
 		{
 			const LPDIRECTSOUNDBUFFER pdsb = pps->m_pDSBuffer;
-			for (size_t i2 = 0; i2 < m_voldsound.size(); i2++)
+			for (size_t i2 = 0; i2 < m_copiedwav.size(); i2++)
 			{
-				if (m_voldsound[i2]->m_ppsOriginal->m_pDSBuffer == pdsb)
+				if (m_copiedwav[i2]->m_ppsOriginal->m_pDSBuffer == pdsb)
 				{
-					ppsc = m_voldsound[i2];
+					ppsc = m_copiedwav[i2];
 					foundsame = true;
 					break;
 				}
@@ -237,13 +279,13 @@ public:
 		}
 
 		if (ppsc == NULL)
-			ppsc = new PinSoundCopy(pps);
+			ppsc = new PinDirectSoundWavCopy(pps);
 
 		if (ppsc->m_pDSBuffer)
 		{
 			ppsc->PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
 			if (!foundsame)
-				m_voldsound.push_back(ppsc);
+				m_copiedwav.push_back(ppsc);
 		}
 		else // Couldn't or didn't want to create a copy - just play the original
 		{
@@ -259,7 +301,7 @@ private:
 	PinDirectSound m_pds;
 	PinDirectSound *m_pbackglassds;
 
-	vector< PinSoundCopy* > m_voldsound; // copied sounds currently playing
+	vector< PinDirectSoundWavCopy* > m_copiedwav; // copied sounds currently playing
 };
 
 #endif // !defined(AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_)

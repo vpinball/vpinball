@@ -70,4 +70,3 @@ BOOL RubberPhysicsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-

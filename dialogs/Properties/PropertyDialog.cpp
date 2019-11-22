@@ -48,9 +48,7 @@ void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList,
     combo.ResetContent();
     combo.AddString(_T("<None>"));
     for (size_t i = 0; i < contentList.size(); i++)
-    {
         combo.AddString(contentList[i]->m_szName);
-    }
     combo.SetCurSel(combo.FindStringExact(1,selectName));
 }
 
@@ -59,9 +57,7 @@ void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentLis
     combo.ResetContent();
     combo.AddString(_T("<None>"));
     for (size_t i = 0; i < contentList.size(); i++)
-    {
         combo.AddString(contentList[i]->m_szName);
-    }
     combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
 
@@ -83,9 +79,7 @@ void PropertyDialog::UpdateSurfaceComboBox(const PinTable * const ptable, CCombo
     combo.ResetContent();
     combo.AddString(_T("<None>"));
     for (size_t i = 0; i < contentList.size(); i++)
-    {
         combo.AddString(contentList[i].c_str());
-    }
     combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
 
@@ -94,9 +88,7 @@ void PropertyDialog::UpdateSoundComboBox(const PinTable *const ptable, CComboBox
     combo.ResetContent();
     combo.AddString(_T("<None>"));
     for (size_t i=0;i<ptable->m_vsound.size();i++)
-    {
         combo.AddString(ptable->m_vsound[i]->m_szName);
-    }
     combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
 
@@ -117,9 +109,7 @@ void PropertyDialog::UpdateComboBox(const vector<string>& contentList, CComboBox
 {
     combo.ResetContent();
     for (size_t i = 0; i < contentList.size(); i++)
-    {
         combo.AddString(contentList[i].c_str());
-    }
     combo.SetCurSel(combo.FindStringExact(0, selectName));
 }
 
@@ -837,8 +827,8 @@ void BasePropertyDialog::UpdateBaseVisuals(ISelect *psel, BaseProperty *property
     if (m_hOverwritePhysicsCheck && property->m_collidable)
     {
         if (m_basePhysicsMaterialCombo) m_basePhysicsMaterialCombo->EnableWindow(!property->m_overwritePhysics);
-        if (m_baseElasticityEdit)        m_baseElasticityEdit->EnableWindow(property->m_overwritePhysics);
-        if (m_baseFrictionEdit)          m_baseFrictionEdit->EnableWindow(property->m_overwritePhysics);
-        if (m_baseScatterAngleEdit)      m_baseScatterAngleEdit->EnableWindow(property->m_overwritePhysics);
+        if (m_baseElasticityEdit)       m_baseElasticityEdit->EnableWindow(property->m_overwritePhysics);
+        if (m_baseFrictionEdit)         m_baseFrictionEdit->EnableWindow(property->m_overwritePhysics);
+        if (m_baseScatterAngleEdit)     m_baseScatterAngleEdit->EnableWindow(property->m_overwritePhysics);
     }
 }

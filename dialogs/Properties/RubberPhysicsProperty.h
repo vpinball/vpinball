@@ -22,8 +22,6 @@ private:
     CEdit       m_frictionEdit;
     CEdit       m_scatterAngleEdit;
     CEdit       m_hitHeightEdit;
-
 };
 
 #endif // !H_RUBBER_PHYSICS_PROPERTY
-

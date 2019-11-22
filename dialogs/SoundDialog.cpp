@@ -17,7 +17,6 @@ SoundDialog::SoundDialog() : CDialog( IDD_SOUNDDIALOG )
 {
     hSoundList = NULL;
     m_columnSortOrder = 1;
-    m_playedSound = false;
 }
 
 SoundDialog::~SoundDialog()
@@ -33,7 +32,7 @@ void SoundDialog::OnClose()
 {
     SavePosition();
     CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-    if (pt && m_playedSound)
+    if (pt)
         pt->StopAllSounds(); 
     CDialog::OnClose();
 }
@@ -159,11 +158,9 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                     ::EnableWindow( GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), enable );
                     ::EnableWindow( GetDlgItem(IDC_RENAME).GetHwnd(), enable );
                     ::EnableWindow( GetDlgItem(IDC_PLAY).GetHwnd(), enable );
-                    if (pt && m_playedSound)
-                    {
+                    ::EnableWindow( GetDlgItem(IDC_STOP).GetHwnd(), fFalse );
+                    if (pt)
                         pt->StopAllSounds(); 
-                        m_playedSound = false;
-                    }
                 }
                 break;
             }
@@ -187,6 +184,22 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
         case IDC_SNDPOSITION: SoundPosition(); break;
         case IDC_DELETE_SOUND: DeleteSound(); break;
         case IDC_OK: SavePosition(); CDialog::OnOK(); break;
+        case IDC_STOP:
+        {
+            const int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
+            if (sel != -1)
+            {
+                LVITEM lvitem;
+                lvitem.mask = LVIF_PARAM;
+                lvitem.iItem = sel;
+                lvitem.iSubItem = 0;
+                ListView_GetItem( hSoundList, &lvitem );
+                PinSound * const pps = (PinSound *)lvitem.lParam;
+                pps->Stop();
+                ::EnableWindow(GetDlgItem(IDC_STOP).GetHwnd(), fFalse);
+            }
+            break;
+        }
         case IDC_PLAY:
         {
             const int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
@@ -199,7 +212,7 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
                 ListView_GetItem( hSoundList, &lvitem );
                 PinSound * const pps = (PinSound *)lvitem.lParam;
                 pps->TestPlay();
-                m_playedSound = true;
+                ::EnableWindow(GetDlgItem(IDC_STOP).GetHwnd(), fTrue);
             }
             break;
         }
@@ -272,7 +285,7 @@ void SoundDialog::Import()
             while(filenamelen > 0)
             {
                 lstrcpy( &szT[len], &szFileName[filenamestart] );
-                pt->ImportSound( hSoundList, szT, false );
+                pt->ImportSound( hSoundList, szT );
                 filenamestart += filenamelen + 1;
                 filenamelen = lstrlen( &szFileName[filenamestart] );
             }
@@ -281,7 +294,7 @@ void SoundDialog::Import()
         {
             szInitialDir[ofn.nFileOffset] = 0;
             if (pt)
-               pt->ImportSound( hSoundList, szFileName, true );
+               pt->ImportSound( hSoundList, szFileName );
         }
         SaveValueString( "RecentDir", "SoundDir", szInitialDir);
         if (pt)
@@ -310,17 +323,19 @@ void SoundDialog::ReImport()
                 ListView_GetItem( hSoundList, &lvitem );
                 PinSound * const pps = (PinSound *)lvitem.lParam;
 
-                HANDLE hFile = CreateFile( pps->m_szPath, GENERIC_READ, FILE_SHARE_READ,
-                                           NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+                const HANDLE hFile = CreateFile( pps->m_szPath, GENERIC_READ, FILE_SHARE_READ,
+                                                 NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 
                 if (hFile != INVALID_HANDLE_VALUE)
                 {
                     CloseHandle( hFile );
 
-                    pt->ReImportSound( hSoundList, pps, pps->m_szPath, count == 1 );
+                    pt->ReImportSound( hSoundList, pps, pps->m_szPath );
                     pt->SetNonUndoableDirty( eSaveDirty );
                 }
-                else MessageBox( pps->m_szPath, "  FILE NOT FOUND!  ", MB_OK );
+                else
+                    MessageBox( pps->m_szPath, "FILE NOT FOUND!", MB_OK );
+
                 sel = ListView_GetNextItem( hSoundList, sel, LVNI_SELECTED );
             }
         }
@@ -367,9 +382,9 @@ void SoundDialog::ReImportFrom()
                 lvitem.iItem = sel;
                 lvitem.iSubItem = 0;
                 ListView_GetItem( hSoundList, &lvitem );
-                PinSound *pps = (PinSound *)lvitem.lParam;
+                PinSound * const pps = (PinSound *)lvitem.lParam;
 
-                pt->ReImportSound( hSoundList, pps, ofn.lpstrFile, true );
+                pt->ReImportSound( hSoundList, pps, ofn.lpstrFile );
                 ListView_SetItemText( hSoundList, sel, 1, ofn.lpstrFile );
                 pt->SetNonUndoableDirty( eSaveDirty );
             }

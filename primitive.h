@@ -362,7 +362,7 @@ private:
    // 13 * float * 2 (additional middle points at top and bottom)
    // = nothing...
 
-   // Vertices for editor display
+   // Vertices for editor display & hit shape
    std::vector<Vertex3Ds> m_vertices;
    std::vector<float> m_normals; // only z component actually
 
