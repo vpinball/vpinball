@@ -215,7 +215,7 @@ STDMETHODIMP Timer::put_Interval(long newVal)
    return S_OK;
 }
 
-HRESULT Timer::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
+HRESULT Timer::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 

@@ -875,7 +875,7 @@ void HitTarget::PutCenter(const Vertex2D& pv)
 // Save and Load
 //////////////////////////////
 
-HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
+HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 

@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include "freeimage.h"
+#include "threadpool.h"
 
 using namespace rapidxml;
 
@@ -2731,7 +2732,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
             pstgInfo->Release();
          }
 
-         if (SUCCEEDED(hr = SaveData(pstmGame, hch)))
+         if (SUCCEEDED(hr = SaveData(pstmGame, hch, false)))
          {
             for (size_t i = 0; i < m_vedit.size(); i++)
             {
@@ -2748,7 +2749,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                   IEditable *const piedit = m_vedit[i];
                   const ItemTypeEnum type = piedit->GetItemType();
                   pstmItem->Write(&type, sizeof(int), &writ);
-                  hr = piedit->SaveData(pstmItem, NULL);
+                  hr = piedit->SaveData(pstmItem, NULL, false);
                   pstmItem->Release();
                   pstmItem = NULL;
                   //if (FAILED(hr)) goto Error;
@@ -2829,7 +2830,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
-                  m_vcollection.ElementAt(i)->SaveData(pstmItem, hch);
+                  m_vcollection.ElementAt(i)->SaveData(pstmItem, hch, false);
                   pstmItem->Release();
                   pstmItem = NULL;
                }
@@ -3251,7 +3252,7 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
    return S_OK;
 }
 
-HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash)
+HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 
@@ -3543,16 +3544,16 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             if (loadfileversion > CURRENT_FILE_FORMAT_VERSION)
             {
                char errorMsg[MAX_PATH] = { 0 };
-               sprintf_s(errorMsg, "This table was saved with version %i.%02i and is newer than the supported version %i.%02i! You might get problems loading/playing it!", loadfileversion / 100, loadfileversion % 100, CURRENT_FILE_FORMAT_VERSION / 100, CURRENT_FILE_FORMAT_VERSION%100);
+               sprintf_s(errorMsg, "This table was saved with version %i.%02i and is newer than the supported version %i.%02i! You might get problems loading/playing it!", loadfileversion / 100, loadfileversion % 100, CURRENT_FILE_FORMAT_VERSION / 100, CURRENT_FILE_FORMAT_VERSION % 100);
                ShowError(errorMsg);
-/*
-               pstgRoot->Release();
-               pstmGame->Release();
-               pstgData->Release();
-               DestroyWindow(hwndProgressBar);
-               g_pvp->SetCursorCur(NULL, IDC_ARROW);
-               return -1;
-*/
+               /*
+                              pstgRoot->Release();
+                              pstmGame->Release();
+                              pstgData->Release();
+                              DestroyWindow(hwndProgressBar);
+                              g_pvp->SetCursorCur(NULL, IDC_ARROW);
+                              return -1;
+               */
             }
 
             // Create a block cipher session key based on the hash of the password.
@@ -3638,28 +3639,34 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                cloadeditems++;
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
-
-            for (int i = 0; i < ctextures; i++)
             {
-               char szSuffix[32], szStmName[64];
-               strcpy_s(szStmName, sizeof(szStmName), "Image");
-               _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
-               strcat_s(szStmName, sizeof(szStmName), szSuffix);
+               ThreadPool pool(8);
 
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
-
-               IStream* pstmItem;
-               if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+               for (int i = 0; i < ctextures; i++)
                {
-                  hr = LoadImageFromStream(pstmItem, loadfileversion);
-                  if (FAILED(hr))
-                     return hr;
-                  pstmItem->Release();
-                  pstmItem = NULL;
+                  pool.enqueue([i, loadfileversion, pstgData, this] {
+                     HRESULT hr;
+                     char szSuffix[32], szStmName[64];
+                     strcpy_s(szStmName, sizeof(szStmName), "Image");
+                     _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+                     strcat_s(szStmName, sizeof(szStmName), szSuffix);
+
+                     MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
+
+                     IStream* pstmItem;
+                     if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+                     {
+                        hr = LoadImageFromStream(pstmItem, loadfileversion);
+                        if (FAILED(hr))
+                           return;
+                        pstmItem->Release();
+                        pstmItem = NULL;
+                     }
+                  });
+                  cloadeditems++;
                }
-               cloadeditems++;
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
+            ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 
             for (int i = 0; i < cfonts; i++)
             {
@@ -3759,12 +3766,12 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
          }
 
          if (loadfileversion < 1030) // the m_fGlossyImageLerp part was included first with 10.3, so set all previously saved materials to the old default
-             for (size_t i = 0; i < m_materials.size(); ++i)
-                 m_materials[i]->m_fGlossyImageLerp = 1.f;
+            for (size_t i = 0; i < m_materials.size(); ++i)
+               m_materials[i]->m_fGlossyImageLerp = 1.f;
 
          if (loadfileversion < 1040) // the m_fThickness part was included first with 10.4, so set all previously saved materials to the old default
-             for (size_t i = 0; i < m_materials.size(); ++i)
-                 m_materials[i]->m_fThickness = 0.05f;
+            for (size_t i = 0; i < m_materials.size(); ++i)
+               m_materials[i]->m_fThickness = 0.05f;
 
          //////// End Authentication block
       }
@@ -6103,8 +6110,9 @@ void PinTable::BackupForPlay()
 
    m_undo.MarkForUndo((IEditable *)this);
    for (size_t i = 0; i < m_vedit.size(); i++)
-      m_undo.MarkForUndo(m_vedit[i]);
-
+   {
+      m_undo.MarkForUndo(m_vedit[i], true);
+   }
    m_undo.EndUndo();
 }
 
@@ -6147,7 +6155,7 @@ void PinTable::Copy(int x, int y)
        ULONG writ = 0;
        pstm->Write(&type, sizeof(int), &writ);
 
-       pe->SaveData(pstm, NULL);
+       pe->SaveData(pstm, NULL, false);
 
        vstm.push_back(pstm);
    }
@@ -7853,6 +7861,7 @@ int PinTable::AddListItem(HWND hwndListView, char *szName, char *szValue1, LPARA
    return index;
 }
 
+std::mutex g_table_mutex;
 
 HRESULT PinTable::LoadImageFromStream(IStream *pstm, int version)
 {
@@ -7865,8 +7874,11 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, int version)
    {
       Texture * const ppi = new Texture();
 
-      if (ppi->LoadFromStream(pstm, version, this) == S_OK)
-         m_vimage.push_back(ppi);
+	  if (ppi->LoadFromStream(pstm, version, this) == S_OK)
+	  {
+		  const std::lock_guard<std::mutex> lock(g_table_mutex);
+		  m_vimage.push_back(ppi);
+	  }
       else
          delete ppi;
    }

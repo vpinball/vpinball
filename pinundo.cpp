@@ -43,7 +43,7 @@ void PinUndo::BeginUndo()
    }
 }
 
-void PinUndo::MarkForUndo(IEditable * const pie)
+void PinUndo::MarkForUndo(IEditable * const pie, bool bBackupForPlay)
 {
    if(g_pplayer)
       return;
@@ -62,7 +62,7 @@ void PinUndo::MarkForUndo(IEditable * const pie)
 
    UndoRecord * const pur = m_vur[m_vur.size() - 1];
 
-   pur->MarkForUndo(pie);
+   pur->MarkForUndo(pie, bBackupForPlay);
 }
 
 void PinUndo::MarkForCreate(IEditable * const pie)
@@ -151,7 +151,7 @@ void PinUndo::Undo()
 
       int foo2;
       pie->InitLoad(pstm, m_ptable, &foo2, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
-
+	  pie->InitPostLoad();
       // Stream gets released when undo record is deleted
       //pstm->Release();
    }
@@ -210,7 +210,7 @@ UndoRecord::~UndoRecord()
       m_vieDelete[i]->Release();
 }
 
-void UndoRecord::MarkForUndo(IEditable * const pie)
+void UndoRecord::MarkForUndo(IEditable * const pie, bool bBackupForPlay)
 {
    if (FindIndexOf(m_vieMark, pie) != -1) // Been marked already
       return;
@@ -226,7 +226,7 @@ void UndoRecord::MarkForUndo(IEditable * const pie)
    DWORD write;
    pstm->Write(&pie, sizeof(IEditable *), &write);
 
-   pie->SaveData(pstm, NULL);
+   pie->SaveData(pstm, NULL, true);
 
    m_vstm.push_back(pstm);
 }

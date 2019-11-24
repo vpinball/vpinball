@@ -946,7 +946,7 @@ void Trigger::Translate(const Vertex2D &pvOffset)
    }
 }
 
-HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
+HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 

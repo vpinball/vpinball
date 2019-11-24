@@ -7,6 +7,7 @@
 #include "objloader.h"
 #include "inc\miniz.c"
 #include "inc\progmesh.h"
+#include "ThreadPool.h"
 
 // defined in objloader.cpp
 extern bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool convertToLeftHanded);
@@ -15,6 +16,7 @@ extern void WaveFrontObj_GetIndices(std::vector<unsigned int>& list);
 extern void WaveFrontObj_Save(const char *filename, const char *description, const Mesh& mesh);
 //
 
+ThreadPool *g_pPrimitiveDecompressThreadPool = NULL;
 
 void Mesh::Clear()
 {
@@ -195,6 +197,7 @@ Primitive::Primitive()
 
 Primitive::~Primitive()
 {
+   WaitForMeshDecompression();
    if (m_vertexBuffer)
       m_vertexBuffer->release();
    if (m_indexBuffer)
@@ -1367,7 +1370,8 @@ void Primitive::PutCenter(const Vertex2D& pv)
 // Save and Load
 //////////////////////////////
 
-HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
+
+HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 
@@ -1417,7 +1421,8 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteBool(FID(DIPT), m_d.m_displayTexture);
    bw.WriteBool(FID(OSNM), m_d.m_objectSpaceNormalMap);
 
-   if (m_d.m_use3DMesh)
+   // No need to backup the meshes for play as the script cannot change them 
+   if (m_d.m_use3DMesh && !bBackupForPlay)
    {
       bw.WriteString(FID(M3DN), m_d.m_meshFileName);
       bw.WriteInt(FID(M3VN), (int)m_mesh.NumVertices());
@@ -1517,17 +1522,23 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
    m_ptable = ptable;
 
    br.Load();
+
+   /* will happen post-load 
    if (!m_d.m_use3DMesh)
       CalculateBuiltinOriginal();
 
-   unsigned int* tmp = reorderForsyth(m_mesh.m_indices.data(), (int)(m_mesh.NumIndices() / 3), (int)m_mesh.NumVertices());
-   if (tmp != NULL)
-   {
-      memcpy(m_mesh.m_indices.data(), tmp, m_mesh.NumIndices()*sizeof(unsigned int));
-      delete[] tmp;
-   }
+	  */
+   /*  Moved to import.
+	unsigned int* tmp = reorderForsyth(m_mesh.m_indices.data(), (int)(m_mesh.NumIndices() / 3), (int)m_mesh.NumVertices());
+	if (tmp != NULL)
+	{
+		memcpy(m_mesh.m_indices.data(), tmp, m_mesh.NumIndices() * sizeof(unsigned int));
+		delete[] tmp;
+	}
+	*/
 
-   UpdateEditorView();
+   // Will happen post-load
+   // UpdateEditorView();
    return S_OK;
 }
 
@@ -1603,25 +1614,25 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(M3AY): pbr->GetInt(&m_compressedAnimationVertices); break;
    case FID(M3AX):
    {
-      Mesh::FrameData frameData;
-      frameData.m_frameVerts.clear();
-      frameData.m_frameVerts.resize(m_numVertices);
+	   Mesh::FrameData frameData;
+	   frameData.m_frameVerts.clear();
+	   frameData.m_frameVerts.resize(m_numVertices);
 
-      /*LZWReader lzwreader(pbr->m_pistream, (int *)m_mesh.m_vertices.data(), sizeof(Vertex3D_NoTex2)*numVertices, 1, sizeof(Vertex3D_NoTex2)*numVertices);
-      lzwreader.Decoder();*/
-      mz_ulong uclen = (mz_ulong)(sizeof(Mesh::VertData)*m_mesh.NumVertices());
-      mz_uint8 * c = (mz_uint8 *)malloc(m_compressedAnimationVertices);
-      pbr->GetStruct(c, m_compressedAnimationVertices);
-      const int error = uncompress((unsigned char *)frameData.m_frameVerts.data(), &uclen, c, m_compressedAnimationVertices);
-      if (error != Z_OK)
-      {
-         char err[128];
-         sprintf_s(err, "Could not uncompress primitive animation vertex data, error %d", error);
-         ShowError(err);
-      }
-      free(c);
-      m_mesh.m_animationFrames.push_back(frameData);
-      break;
+	   /*LZWReader lzwreader(pbr->m_pistream, (int *)m_mesh.m_vertices.data(), sizeof(Vertex3D_NoTex2)*numVertices, 1, sizeof(Vertex3D_NoTex2)*numVertices);
+	   lzwreader.Decoder();*/
+	   mz_ulong uclen = (mz_ulong)(sizeof(Mesh::VertData)*m_mesh.NumVertices());
+	   mz_uint8 * c = (mz_uint8 *)malloc(m_compressedAnimationVertices);
+	   pbr->GetStruct(c, m_compressedAnimationVertices);
+	   const int error = uncompress((unsigned char *)frameData.m_frameVerts.data(), &uclen, c, m_compressedAnimationVertices);
+	   if (error != Z_OK)
+	   {
+		   char err[128];
+		   sprintf_s(err, "Could not uncompress primitive animation vertex data, error %d", error);
+		   ShowError(err);
+	   }
+	   free(c);
+	   m_mesh.m_animationFrames.push_back(frameData);
+	   break;
    }
    case FID(M3CY): pbr->GetInt(&m_compressedVertices); break;
    case FID(M3CX):
@@ -1633,14 +1644,20 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       mz_ulong uclen = (mz_ulong)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
       mz_uint8 * c = (mz_uint8 *)malloc(m_compressedVertices);
       pbr->GetStruct(c, m_compressedVertices);
-      const int error = uncompress((unsigned char *)m_mesh.m_vertices.data(), &uclen, c, m_compressedVertices);
-      if (error != Z_OK)
-      {
-         char err[128];
-         sprintf_s(err, "Could not uncompress primitive vertex data, error %d", error);
-         ShowError(err);
-      }
-      free(c);
+	  if (g_pPrimitiveDecompressThreadPool == NULL)
+		  g_pPrimitiveDecompressThreadPool = new ThreadPool(8);
+
+	  g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
+		  mz_ulong uclen2 = uclen;
+		  const int error = uncompress((unsigned char *)m_mesh.m_vertices.data(), &uclen2, c, m_compressedVertices);
+		  if (error != Z_OK)
+		  {
+			  char err[128];
+			  sprintf_s(err, "Could not uncompress primitive vertex data, error %d", error);
+			  ShowError(err);
+		  }
+		  free(c);
+	  });
       break;
    }
 #endif
@@ -1671,35 +1688,48 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
          mz_ulong uclen = (mz_ulong)(sizeof(unsigned int)*m_mesh.NumIndices());
          mz_uint8 * c = (mz_uint8 *)malloc(m_compressedIndices);
          pbr->GetStruct(c, m_compressedIndices);
-         const int error = uncompress((unsigned char *)m_mesh.m_indices.data(), &uclen, c, m_compressedIndices);
-         if (error != Z_OK)
-         {
-            char err[128];
-            sprintf_s(err, "Could not uncompress (large) primitive index data, error %d", error);
-            ShowError(err);
-         }
-         free(c);
+		 if (g_pPrimitiveDecompressThreadPool == NULL)
+			 g_pPrimitiveDecompressThreadPool = new ThreadPool(8);
+
+		 g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
+			 mz_ulong uclen2 = uclen;
+			 const int error = uncompress((unsigned char *)m_mesh.m_indices.data(), &uclen2, c, m_compressedIndices);
+			 if (error != Z_OK)
+			 {
+				 char err[128];
+				 sprintf_s(err, "Could not uncompress (large) primitive index data, error %d", error);
+				 ShowError(err);
+			 }
+			 free(c);
+		 }
+		 );
       }
       else
       {
-         std::vector<WORD> tmp(m_numIndices);
 
          //LZWReader lzwreader(pbr->m_pistream, (int *)tmp.data(), sizeof(WORD)*numIndices, 1, sizeof(WORD)*numIndices);
          //lzwreader.Decoder();
          mz_ulong uclen = (mz_ulong)(sizeof(WORD)*m_mesh.NumIndices());
          mz_uint8 * c = (mz_uint8 *)malloc(m_compressedIndices);
          pbr->GetStruct(c, m_compressedIndices);
-         const int error = uncompress((unsigned char *)tmp.data(), &uclen, c, m_compressedIndices);
-         if (error != Z_OK)
-         {
-            char err[128];
-            sprintf_s(err, "Could not uncompress (small) primitive index data, error %d", error);
-            ShowError(err);
-         }
-         free(c);
+         if (g_pPrimitiveDecompressThreadPool == NULL)
+            g_pPrimitiveDecompressThreadPool = new ThreadPool(8);
 
-         for (int i = 0; i < m_numIndices; ++i)
-            m_mesh.m_indices[i] = tmp[i];
+         g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
+            std::vector<WORD> tmp(m_numIndices);
+
+            mz_ulong uclen2 = uclen;
+            const int error = uncompress((unsigned char *)tmp.data(), &uclen2, c, m_compressedIndices);
+            if (error != Z_OK)
+            {
+               char err[128];
+               sprintf_s(err, "Could not uncompress (small) primitive index data, error %d", error);
+               ShowError(err);
+            }
+            free(c);
+            for (int i = 0; i < m_numIndices; ++i)
+               m_mesh.m_indices[i] = tmp[i];
+         });
       }
       break;
    }
@@ -1711,8 +1741,19 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
+void Primitive::WaitForMeshDecompression()
+{
+   if (g_pPrimitiveDecompressThreadPool)
+   {
+      // This will wait for the threads to finish decompressing meshes.
+      delete g_pPrimitiveDecompressThreadPool;
+      g_pPrimitiveDecompressThreadPool = NULL;
+   }
+}
+
 HRESULT Primitive::InitPostLoad()
 {
+   WaitForMeshDecompression();
    if (!m_d.m_use3DMesh)
       CalculateBuiltinOriginal();
 
@@ -1835,6 +1876,12 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                   }
                }
                prim->m_d.m_use3DMesh = true;
+			   unsigned int* tmp = reorderForsyth(prim->m_mesh.m_indices.data(), (int)(prim->m_mesh.NumIndices() / 3), (int)prim->m_mesh.NumVertices());
+			   if (tmp != NULL)
+			   {
+				   memcpy(prim->m_mesh.m_indices.data(), tmp, prim->m_mesh.NumIndices() * sizeof(unsigned int));
+				   delete[] tmp;
+			   }
                prim->UpdateEditorView();
                prim = NULL;
                EndDialog(hwndDlg, TRUE);
