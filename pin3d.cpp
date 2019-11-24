@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "RenderDevice.h"
+#include "../ThreadPool.h"
 
 int NumVideoBytes = 0;
 
@@ -192,97 +193,208 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
    // not the fastest solution, could do a "cosine convolution" over the picture instead (where also just 1024 or x samples could be used per pixel)
    //!! (note though that even 4096 samples can be too low if very bright spots (i.e. sun) in the image! see Delta_2k.hdr -> thus pre-filter enabled above!)
    // but with this implementation one can also have custom maps/LUTs for glossy, etc. later-on
-   for (unsigned int y = 0; y < rad_env_yres; ++y)
-      for (unsigned int x = 0; x < rad_env_xres; ++x)
-      {
-         // trafo from envmap to normal direction
-         const float phi = (float)x / (float)rad_env_xres * (float)(2.0*M_PI) + (float)M_PI;
-         const float theta = (float)y / (float)rad_env_yres * (float)M_PI;
-         const Vertex3Ds n(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
+   {
+      ThreadPool pool(8);
 
-         // draw x samples over hemisphere and collect cosine weighted environment map samples
-         float sum[3];
-         sum[0] = sum[1] = sum[2] = 0.0f;
+      for (unsigned int y = 0; y < rad_env_yres; ++y) {
+         pool.enqueue([y, rad_env_xres, rad_env_yres, isHDR, envmap, env_xres, env_yres, rad_envmap] {
+            for (unsigned int x = 0; x < rad_env_xres; ++x)
+            {
+               // trafo from envmap to normal direction
+               const float phi = (float)x / (float)rad_env_xres * (float)(2.0*M_PI) + (float)M_PI;
+               const float theta = (float)y / (float)rad_env_yres * (float)M_PI;
+               const Vertex3Ds n(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
 
-         const unsigned int num_samples = 4096;
-         for (unsigned int s = 0; s < num_samples; ++s)
-         {
-            //!! discard directions pointing below the playfield?? or give them another "average playfield" color??
+               // draw x samples over hemisphere and collect cosine weighted environment map samples
+
+               float sum[3];
+               sum[0] = sum[1] = sum[2] = 0.0f;
+
+               const unsigned int num_samples = 4096;
+               for (unsigned int s = 0; s < num_samples; ++s)
+               {
+                  //!! discard directions pointing below the playfield?? or give them another "average playfield" color??
 #define USE_ENVMAP_PRECALC_COSINE
 #ifndef USE_ENVMAP_PRECALC_COSINE
-            //!! as we do not use importance sampling on the environment, just not being smart -could- be better for high frequency environments
-            Vertex3Ds l = sphere_sample((float)s*(float)(1.0/num_samples), radical_inverse(s)); // QMC hammersley point set
-            float NdotL = l.Dot(n);
-            if (NdotL < 0.0f) // flip if on backside of hemisphere
-            {
-               NdotL = -NdotL;
-               l = -l;
-            }
+         //!! as we do not use importance sampling on the environment, just not being smart -could- be better for high frequency environments
+                  Vertex3Ds l = sphere_sample((float)s*(float)(1.0 / num_samples), radical_inverse(s)); // QMC hammersley point set
+                  float NdotL = l.Dot(n);
+                  if (NdotL < 0.0f) // flip if on backside of hemisphere
+                  {
+                     NdotL = -NdotL;
+                     l = -l;
+                  }
 #else
-            //Vertex3Ds cos_hemisphere_sample(const Vertex3Ds &normal, Vertex2D uv) { float theta = (float)(2.*M_PI) * uv.x; uv.y = 2.f * uv.y - 1.f; Vertex3Ds spherePoint(sqrt(1.f - uv.y * uv.y) * Vertex2D(cosf(theta), sinf(theta)), uv.y); return normalize(normal + spherePoint); }
-            const Vertex3Ds l = rotate_to_vector_upper(cos_hemisphere_sample((float)s*(float)(1.0 / num_samples), radical_inverse(s)), n); // QMC hammersley point set
+         //Vertex3Ds cos_hemisphere_sample(const Vertex3Ds &normal, Vertex2D uv) { float theta = (float)(2.*M_PI) * uv.x; uv.y = 2.f * uv.y - 1.f; Vertex3Ds spherePoint(sqrt(1.f - uv.y * uv.y) * Vertex2D(cosf(theta), sinf(theta)), uv.y); return normalize(normal + spherePoint); }
+                  const Vertex3Ds l = rotate_to_vector_upper(cos_hemisphere_sample((float)s*(float)(1.0 / num_samples), radical_inverse(s)), n); // QMC hammersley point set
 #endif
-            // trafo from light direction to envmap
-            // approximations seem to be good enough!
-            const float u = atan2_approx_div2PI(l.y, l.x) + 0.5f; //atan2f(l.y, l.x) * (float)(0.5 / M_PI) + 0.5f;
-            const float v = acos_approx_divPI(l.z); //acosf(l.z) * (float)(1.0 / M_PI);
+         // trafo from light direction to envmap
+         // approximations seem to be good enough!
+                  const float u = atan2_approx_div2PI(l.y, l.x) + 0.5f; //atan2f(l.y, l.x) * (float)(0.5 / M_PI) + 0.5f;
+                  const float v = acos_approx_divPI(l.z); //acosf(l.z) * (float)(1.0 / M_PI);
 
-            float r,g,b;
-            if (isHDR)
-            {
-                unsigned int offs = ((int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres)*3;
-                if (offs >= env_yres*env_xres*3)
-                    offs = 0;
-                r = ((float*)envmap)[offs  ];
-                g = ((float*)envmap)[offs+1];
-                b = ((float*)envmap)[offs+2];
-            }
-            else
-            {
-               unsigned int offs = (int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres;
-               if (offs >= env_yres*env_xres)
-                   offs = 0;
-               const DWORD rgb = ((DWORD*)envmap)[offs];
-               r = invGammaApprox((float)(rgb & 255) * (float)(1.0 / 255.0));
-               g = invGammaApprox((float)(rgb & 65280) * (float)(1.0 / 65280.0));
-               b = invGammaApprox((float)(rgb & 16711680) * (float)(1.0 / 16711680.0));
-            }
+                  float r, g, b;
+                  if (isHDR)
+                  {
+                     unsigned int offs = ((int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres) * 3;
+                     if (offs >= env_yres * env_xres * 3)
+                        offs = 0;
+                     r = ((float*)envmap)[offs];
+                     g = ((float*)envmap)[offs + 1];
+                     b = ((float*)envmap)[offs + 2];
+                  }
+                  else
+                  {
+                     unsigned int offs = (int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres;
+                     if (offs >= env_yres * env_xres)
+                        offs = 0;
+                     const DWORD rgb = ((DWORD*)envmap)[offs];
+                     r = invGammaApprox((float)(rgb & 255) * (float)(1.0 / 255.0));
+                     g = invGammaApprox((float)(rgb & 65280) * (float)(1.0 / 65280.0));
+                     b = invGammaApprox((float)(rgb & 16711680) * (float)(1.0 / 16711680.0));
+                  }
 #ifndef USE_ENVMAP_PRECALC_COSINE
-            sum[0] += r * NdotL;
-            sum[1] += g * NdotL;
-            sum[2] += b * NdotL;
+                  sum[0] += r * NdotL;
+                  sum[1] += g * NdotL;
+                  sum[2] += b * NdotL;
 #else
-            sum[0] += r;
-            sum[1] += g;
-            sum[2] += b;
+                  sum[0] += r;
+                  sum[1] += g;
+                  sum[2] += b;
 #endif
-         }
+               }
 
-         // average all samples
+
+               // average all samples
 #ifndef USE_ENVMAP_PRECALC_COSINE
-         sum[0] *= (float)(2.0/num_samples); // pre-divides by PI for final radiance/color lookup in shader
-         sum[1] *= (float)(2.0/num_samples);
-         sum[2] *= (float)(2.0/num_samples);
+               sum[0] *= (float)(2.0 / num_samples); // pre-divides by PI for final radiance/color lookup in shader
+               sum[1] *= (float)(2.0 / num_samples);
+               sum[2] *= (float)(2.0 / num_samples);
 #else
-         sum[0] *= (float)(1.0/num_samples); // pre-divides by PI for final radiance/color lookup in shader
-         sum[1] *= (float)(1.0/num_samples);
-         sum[2] *= (float)(1.0/num_samples);
+               sum[0] *= (float)(1.0 / num_samples); // pre-divides by PI for final radiance/color lookup in shader
+               sum[1] *= (float)(1.0 / num_samples);
+               sum[2] *= (float)(1.0 / num_samples);
 #endif
-         if (isHDR)
-         {
-            const unsigned int offs = (y*rad_env_xres + x)*3;
-            ((float*)rad_envmap)[offs  ] = sum[0];
-            ((float*)rad_envmap)[offs+1] = sum[1];
-            ((float*)rad_envmap)[offs+2] = sum[2];
-         }
-         else
-         {
-            sum[0] = gammaApprox(sum[0]);
-            sum[1] = gammaApprox(sum[1]);
-            sum[2] = gammaApprox(sum[2]);
-            ((DWORD*)rad_envmap)[y*rad_env_xres + x] = ((int)(sum[0] * 255.0f)) | (((int)(sum[1] * 255.0f)) << 8) | (((int)(sum[2] * 255.0f)) << 16);
-         }
+               if (isHDR)
+               {
+                  const unsigned int offs = (y*rad_env_xres + x) * 3;
+                  ((float*)rad_envmap)[offs] = sum[0];
+                  ((float*)rad_envmap)[offs + 1] = sum[1];
+                  ((float*)rad_envmap)[offs + 2] = sum[2];
+               }
+               else
+               {
+                  sum[0] = gammaApprox(sum[0]);
+                  sum[1] = gammaApprox(sum[1]);
+                  sum[2] = gammaApprox(sum[2]);
+                  ((DWORD*)rad_envmap)[y*rad_env_xres + x] = ((int)(sum[0] * 255.0f)) | (((int)(sum[1] * 255.0f)) << 8) | (((int)(sum[2] * 255.0f)) << 16);
+               }
+            }
+         });
       }
+   }
+
+   /* ///!!! QA-test above multithreading implementation. 
+   for (unsigned int y = 0; y < rad_env_yres; ++y)
+	   for (unsigned int x = 0; x < rad_env_xres; ++x)
+	   {
+		   // trafo from envmap to normal direction
+		   const float phi = (float)x / (float)rad_env_xres * (float)(2.0*M_PI) + (float)M_PI;
+		   const float theta = (float)y / (float)rad_env_yres * (float)M_PI;
+		   const Vertex3Ds n(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
+
+		   // draw x samples over hemisphere and collect cosine weighted environment map samples
+		   float sum[3];
+		   sum[0] = sum[1] = sum[2] = 0.0f;
+
+		   const unsigned int num_samples = 4096;
+		   for (unsigned int s = 0; s < num_samples; ++s)
+		   {
+			   //!! discard directions pointing below the playfield?? or give them another "average playfield" color??
+#define USE_ENVMAP_PRECALC_COSINE
+#ifndef USE_ENVMAP_PRECALC_COSINE
+			//!! as we do not use importance sampling on the environment, just not being smart -could- be better for high frequency environments
+			   Vertex3Ds l = sphere_sample((float)s*(float)(1.0 / num_samples), radical_inverse(s)); // QMC hammersley point set
+			   float NdotL = l.Dot(n);
+			   if (NdotL < 0.0f) // flip if on backside of hemisphere
+			   {
+				   NdotL = -NdotL;
+				   l = -l;
+			   }
+#else
+			//Vertex3Ds cos_hemisphere_sample(const Vertex3Ds &normal, Vertex2D uv) { float theta = (float)(2.*M_PI) * uv.x; uv.y = 2.f * uv.y - 1.f; Vertex3Ds spherePoint(sqrt(1.f - uv.y * uv.y) * Vertex2D(cosf(theta), sinf(theta)), uv.y); return normalize(normal + spherePoint); }
+			   const Vertex3Ds l = rotate_to_vector_upper(cos_hemisphere_sample((float)s*(float)(1.0 / num_samples), radical_inverse(s)), n); // QMC hammersley point set
+#endif
+			// trafo from light direction to envmap
+			// approximations seem to be good enough!
+			   const float u = atan2_approx_div2PI(l.y, l.x) + 0.5f; //atan2f(l.y, l.x) * (float)(0.5 / M_PI) + 0.5f;
+			   const float v = acos_approx_divPI(l.z); //acosf(l.z) * (float)(1.0 / M_PI);
+
+			   float r, g, b;
+			   if (isHDR)
+			   {
+				   unsigned int offs = ((int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres) * 3;
+				   if (offs >= env_yres * env_xres * 3)
+					   offs = 0;
+				   r = ((float*)envmap)[offs];
+				   g = ((float*)envmap)[offs + 1];
+				   b = ((float*)envmap)[offs + 2];
+			   }
+			   else
+			   {
+				   unsigned int offs = (int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres;
+				   if (offs >= env_yres * env_xres)
+					   offs = 0;
+				   const DWORD rgb = ((DWORD*)envmap)[offs];
+				   r = invGammaApprox((float)(rgb & 255) * (float)(1.0 / 255.0));
+				   g = invGammaApprox((float)(rgb & 65280) * (float)(1.0 / 65280.0));
+				   b = invGammaApprox((float)(rgb & 16711680) * (float)(1.0 / 16711680.0));
+			   }
+#ifndef USE_ENVMAP_PRECALC_COSINE
+			   sum[0] += r * NdotL;
+			   sum[1] += g * NdotL;
+			   sum[2] += b * NdotL;
+#else
+			   sum[0] += r;
+			   sum[1] += g;
+			   sum[2] += b;
+#endif
+		   }
+
+		   // average all samples
+#ifndef USE_ENVMAP_PRECALC_COSINE
+		   sum[0] *= (float)(2.0 / num_samples); // pre-divides by PI for final radiance/color lookup in shader
+		   sum[1] *= (float)(2.0 / num_samples);
+		   sum[2] *= (float)(2.0 / num_samples);
+#else
+		   sum[0] *= (float)(1.0 / num_samples); // pre-divides by PI for final radiance/color lookup in shader
+		   sum[1] *= (float)(1.0 / num_samples);
+		   sum[2] *= (float)(1.0 / num_samples);
+#endif
+		   if (isHDR)
+		   {
+			   const unsigned int offs = (y*rad_env_xres + x) * 3;
+			   if (((float*)rad_envmap)[offs] != sum[0] ||
+				   ((float*)rad_envmap)[offs + 1] != sum[1] ||
+				   ((float*)rad_envmap)[offs + 2] != sum[2])
+			   {
+				   char tmp[911];
+				   sprintf(tmp, "%d %d %f=%f %f=%f %f=%f ", x, y, ((float*)rad_envmap)[offs], sum[0], ((float*)rad_envmap)[offs + 1], sum[1], ((float*)rad_envmap)[offs + 2], sum[2]);
+				   ::OutputDebugString(tmp);
+			   }
+		   }
+		   else
+		   {
+			   sum[0] = gammaApprox(sum[0]);
+			   sum[1] = gammaApprox(sum[1]);
+			   sum[2] = gammaApprox(sum[2]);
+			   if (
+				   ((DWORD*)rad_envmap)[y*rad_env_xres + x] != ((int)(sum[0] * 255.0f)) | (((int)(sum[1] * 255.0f)) << 8) | (((int)(sum[2] * 255.0f)) << 16))
+				   ::MessageBox(NULL, "Not OK", "Not OK", MB_OK);
+		   }
+	   }
+
+   ///!!! */
 
 #ifdef PREFILTER_ENVMAP_DIFFUSE
    if (isHDR && (env_xres > 64))

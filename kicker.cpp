@@ -615,7 +615,7 @@ void Kicker::PutCenter(const Vertex2D& pv)
 }
 
 
-HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
+HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 

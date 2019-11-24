@@ -3059,7 +3059,7 @@ ISelect *Collection::GetISelect()
    return NULL;
 }
 
-HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
+HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 

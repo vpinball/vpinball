@@ -396,7 +396,7 @@ STDMETHODIMP LightSeq::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-HRESULT LightSeq::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
+HRESULT LightSeq::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 

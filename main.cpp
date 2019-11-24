@@ -468,32 +468,32 @@ public:
             else
                lf = g_pvp->LoadFile();
 
-			if (extractScript && lf)
-			{
-				TCHAR szScriptFilename[MAX_PATH];
-				strcpy_s(szScriptFilename, szTableFileName);
-				TCHAR *pos = strrchr(szScriptFilename, '.');
-				if (pos)
-				{
-					*pos = 0;
-					strcat_s(szScriptFilename, ".vbs");
-					g_pvp->m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
-				}
-				g_pvp->Quit();
-			}
-			if (extractPov && lf)
-			{
-				TCHAR szPOVFilename[MAX_PATH];
-				strcpy_s(szPOVFilename, szTableFileName);
-				TCHAR *pos = strrchr(szPOVFilename, '.');
-				if (pos)
-				{
-					*pos = 0;
-					strcat_s(szPOVFilename, ".pov");
-					g_pvp->m_ptableActive->ExportBackdropPOV(szPOVFilename);
-				}
-				g_pvp->Quit();
-			}
+            if (extractScript && lf)
+            {
+               TCHAR szScriptFilename[MAX_PATH];
+               strcpy_s(szScriptFilename, szTableFileName);
+               TCHAR *pos = strrchr(szScriptFilename, '.');
+               if (pos)
+               {
+                  *pos = 0;
+                  strcat_s(szScriptFilename, ".vbs");
+                  g_pvp->m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
+               }
+               g_pvp->Quit();
+            }
+            if (extractPov && lf)
+            {
+               TCHAR szPOVFilename[MAX_PATH];
+               strcpy_s(szPOVFilename, szTableFileName);
+               TCHAR *pos = strrchr(szPOVFilename, '.');
+               if (pos)
+               {
+                  *pos = 0;
+                  strcat_s(szPOVFilename, ".pov");
+                  g_pvp->m_ptableActive->ExportBackdropPOV(szPOVFilename);
+               }
+               g_pvp->Quit();
+            }
 
             if (play && lf)
                g_pvp->DoPlay(false);
@@ -504,7 +504,8 @@ public:
 
          g_pvp->Release();
 
-         delete g_pvp;
+         // delete g_pvp;
+         // Above causes frequent crashing!  COM objects should self destruct when they reach refcount 0?!
          g_pvp = NULL;
 
          DestroyAcceleratorTable(g_haccel);

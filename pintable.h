@@ -416,7 +416,7 @@ public:
    HRESULT SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
    HRESULT WriteInfoValue(IStorage* pstg, WCHAR *wzName, char *szValue, HCRYPTHASH hcrypthash);
    HRESULT ReadInfoValue(IStorage* pstg, WCHAR *wzName, char **pszValue, HCRYPTHASH hcrypthash);
-   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash);
+   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay);
    HRESULT LoadGameFromFilename(char *szFileName);
    HRESULT LoadGameFromStorage(IStorage *pstgRoot);
    HRESULT LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version);

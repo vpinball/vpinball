@@ -872,7 +872,7 @@ void Bumper::PutCenter(const Vertex2D& pv)
    m_d.m_vCenter = pv;
 }
 
-HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
+HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 
