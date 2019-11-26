@@ -315,6 +315,7 @@ set(HEADERS
   worker.h
   inc/gpuprofiler.h
   inc/progmesh.h
+  inc/ThreadPool.h
   pin/ball.h
   pin/collide.h
   pin/collideex.h

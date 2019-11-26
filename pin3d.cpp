@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "RenderDevice.h"
-#include "../ThreadPool.h"
+#include "inc\ThreadPool.h"
 
 int NumVideoBytes = 0;
 

@@ -10,7 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include "freeimage.h"
-#include "threadpool.h"
+#include "inc\ThreadPool.h"
 
 using namespace rapidxml;
 

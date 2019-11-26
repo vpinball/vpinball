@@ -1217,6 +1217,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\scilexer.h" />
     <ClInclude Include="inc\scintilla.h" />
     <ClInclude Include="inc\Sci_Position.h" />
+    <ClInclude Include="inc\ThreadPool.h" />
     <ClInclude Include="inc\win32xx\include\wxx_appcore.h" />
     <ClInclude Include="inc\win32xx\include\wxx_appcore0.h" />
     <ClInclude Include="inc\win32xx\include\wxx_archive.h" />
