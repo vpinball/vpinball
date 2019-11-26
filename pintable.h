@@ -805,7 +805,13 @@ public:
    void OnMouseWheel(const short x, const short y, const short zDelta);
    void OnSize();
    void OnClose();
-
+   void Set3DOffset(float value);
+   void SetZPD(const float value);
+   void SetMaxSeparation(const float value);
+   bool GetShowDT() const;
+   void SetShowDT(const bool enable);
+   bool GetShowFSS() const;
+   void SetShowFSS(const bool enable);
 private:
    std::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
    std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name
@@ -914,5 +920,4 @@ private:
 
    PinTable *m_pt;
 };
-
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)

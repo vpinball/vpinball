@@ -4416,9 +4416,21 @@ float PinTable::GetZPD() const
    return m_overwriteGlobalStereo3D ? m_3DZPD : m_global3DZPD;
 }
 
+void PinTable::SetZPD(const float value)
+{
+    if (m_overwriteGlobalStereo3D)
+        m_3DZPD = value;
+}
+
 float PinTable::GetMaxSeparation() const
 {
    return m_overwriteGlobalStereo3D ? m_3DmaxSeparation : m_global3DMaxSeparation;
+}
+
+void PinTable::SetMaxSeparation(const float value)
+{
+    if (m_overwriteGlobalStereo3D)
+        m_3DmaxSeparation = value;
 }
 
 float PinTable::Get3DOffset() const
@@ -6682,7 +6694,9 @@ void PinTable::GetDialogPanes(vector<PropertyPane*> &pvproppane)
    }
    else
    {
-      PropertyPane * const pproppane = new PropertyPane(IDD_PROPBACKGLASS_VISUALS, IDS_VISUALS2);
+      PropertyPane *pproppane = new PropertyPane(IDD_PROPBACKGLASS_VISUALS, IDS_VISUALS2);
+      pvproppane.push_back(pproppane);
+      pproppane = new PropertyPane(IDD_PROPBACKGLASS_CAMERA, IDS_POSITION);
       pvproppane.push_back(pproppane);
    }
 }
@@ -6974,10 +6988,8 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
 
 STDMETHODIMP PinTable::get_MaxSeparation(float *pVal)
 {
-   if (m_overwriteGlobalStereo3D)
-      *pVal = m_3DmaxSeparation;
-   else
-      *pVal = m_global3DMaxSeparation;
+
+    *pVal = GetMaxSeparation();
 
    return S_OK;
 }
@@ -6994,39 +7006,35 @@ STDMETHODIMP PinTable::put_MaxSeparation(float newVal)
 
 STDMETHODIMP PinTable::get_ZPD(float *pVal)
 {
-   if (m_overwriteGlobalStereo3D)
-      *pVal = m_3DZPD;
-   else
-      *pVal = m_global3DZPD;
-
+    *pVal = GetZPD();
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_ZPD(float newVal)
 {
    STARTUNDO
-   if (m_overwriteGlobalStereo3D)
-      m_3DZPD = newVal;
+        SetZPD(newVal);
    STOPUNDO
 
    return S_OK;
 }
 
+void PinTable::Set3DOffset(float value)
+{
+    if (m_overwriteGlobalStereo3D)
+        m_3DOffset = value;
+}
+
 STDMETHODIMP PinTable::get_Offset(float *pVal)
 {
-	if (m_overwriteGlobalStereo3D)
-		*pVal = m_3DOffset;
-	else
-		*pVal = m_global3DOffset;
-
+    *pVal = Get3DOffset();
 	return S_OK;
 }
 
 STDMETHODIMP PinTable::put_Offset(float newVal)
 {
-	STARTUNDO
-	if (m_overwriteGlobalStereo3D)
-		m_3DOffset = newVal;
+    STARTUNDO
+        Set3DOffset(newVal);
 	STOPUNDO
 
 	return S_OK;
@@ -8949,21 +8957,31 @@ STDMETHODIMP PinTable::put_BackdropImageApplyNightDay(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+bool PinTable::GetShowFSS() const
+{
+    return m_BG_enable_FSS;
+}
+
+void PinTable::SetShowFSS(const bool enable)
+{
+    m_BG_enable_FSS = enable;
+    if (m_BG_enable_FSS)
+        m_BG_current_set = FULL_SINGLE_SCREEN;
+    else
+        LoadValueInt("Player", "BGSet", (int*)&m_BG_current_set);
+}
+
 STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_BG_enable_FSS); //*pVal = FTOVB(m_BG_current_set == 2);
+   *pVal = FTOVB(GetShowFSS()); //*pVal = FTOVB(m_BG_current_set == 2);
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_ShowFSS(VARIANT_BOOL newVal)
 {
-   STARTUNDO
-   m_BG_enable_FSS = VBTOb(newVal);
-   if (m_BG_enable_FSS)
-      m_BG_current_set = FULL_SINGLE_SCREEN;
-   else
-      LoadValueInt("Player", "BGSet", (int*)&m_BG_current_set);
+    STARTUNDO
+        SetShowFSS(VBTOb(newVal));
    STOPUNDO
 
    return S_OK;
@@ -9931,9 +9949,19 @@ STDMETHODIMP PinTable::put_EnableDecals(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+bool PinTable::GetShowDT() const
+{
+    return m_BG_current_set == BG_DESKTOP || m_BG_current_set == BG_FSS;
+}
+
+void PinTable::SetShowDT(const bool enable)
+{
+    m_BG_current_set = enable ? (m_BG_enable_FSS ? BG_FSS : BG_DESKTOP) : BG_FULLSCREEN;
+}
+
 STDMETHODIMP PinTable::get_ShowDT(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_BG_current_set == BG_DESKTOP || m_BG_current_set == BG_FSS); // DT & FSS
+   *pVal = FTOVB(GetShowDT()); // DT & FSS
 
    return S_OK;
 }
@@ -9941,7 +9969,7 @@ STDMETHODIMP PinTable::get_ShowDT(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_ShowDT(VARIANT_BOOL newVal)
 {
    //STARTUNDO // not saved/just a simple toggle, so do not trigger undo
-   m_BG_current_set = VBTOb(newVal) ? (m_BG_enable_FSS ? BG_FSS : BG_DESKTOP) : BG_FULLSCREEN;
+   SetShowDT(VBTOb(newVal));
    //STOPUNDO
 
    SetDirtyDraw();

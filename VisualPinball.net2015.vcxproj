@@ -373,6 +373,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\KeysConfigDialog.cpp" />
     <ClCompile Include="Dialogs\MaterialDialog.cpp" />
     <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
+    <ClCompile Include="dialogs\Properties\BackglassCameraProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\BackglassVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\BumperPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\BumperVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\DecalVisualsProperty.cpp" />
@@ -1142,6 +1144,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="dialogs\KeysConfigDialog.h" />
     <ClInclude Include="dialogs\MaterialDialog.h" />
     <ClInclude Include="dialogs\PhysicsOptionsDialog.h" />
+    <ClInclude Include="dialogs\Properties\BackglassCameraProperty.h" />
+    <ClInclude Include="dialogs\Properties\BackglassVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\BumperPhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\BumperVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\DecalVisualsProperty.h" />

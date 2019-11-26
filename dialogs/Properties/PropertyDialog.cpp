@@ -34,6 +34,8 @@
 #include "Properties/FlasherVisualsProperty.h"
 #include "Properties/RubberVisualsProperty.h"
 #include "Properties/RubberPhysicsProperty.h"
+#include "Properties/BackglassVisualsProperty.h"
+#include "Properties/BackglassCameraProperty.h"
 
 #include <WindowsX.h>
 
@@ -131,6 +133,15 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
 
     switch (psel->GetItemType())
     {
+        case eItemTable:
+        {
+            if (g_pvp->m_backglassView)
+            {
+                m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new BackglassVisualsProperty(pvsel), _T("Visuals")));
+                m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new BackglassCameraProperty(pvsel), _T("Camera")));
+            }
+            break;
+        }
         case eItemSurface:
         {
             m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new WallVisualsProperty(pvsel), _T("Visuals")));
