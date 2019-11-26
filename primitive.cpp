@@ -7,7 +7,7 @@
 #include "objloader.h"
 #include "inc\miniz.c"
 #include "inc\progmesh.h"
-#include "ThreadPool.h"
+#include "inc\ThreadPool.h"
 
 // defined in objloader.cpp
 extern bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool convertToLeftHanded);

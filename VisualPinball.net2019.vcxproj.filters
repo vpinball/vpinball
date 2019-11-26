@@ -606,6 +606,9 @@
     <ClInclude Include="inc\scintilla.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ThreadPool.h">
+      <Filter>inc</Filter>
+    </ClInclude>
     <ClInclude Include="ballex.h">
       <Filter>headers</Filter>
     </ClInclude>
