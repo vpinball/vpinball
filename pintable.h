@@ -496,6 +496,7 @@ public:
    void MoveCollectionDown(CComObject<Collection> *pcol);
 
    int GetDetailLevel() const; // used for rubber, ramp and ball
+   void SetDetailLevel(const int value);
    float GetZPD() const;
    float GetMaxSeparation() const;
    float Get3DOffset() const;
@@ -812,6 +813,18 @@ public:
    void SetShowDT(const bool enable);
    bool GetShowFSS() const;
    void SetShowFSS(const bool enable);
+   void PutGlobalAlphaAcc(const bool enable);
+   int GetBallTrailStrength();
+   void SetBallTrailStrength(const int value);
+   int GetGlobalEmissionScale();
+   void SetGlobalEmissionScale(const int value);
+   float GetGlobalDifficulty();
+   void SetGlobalDifficulty(const float value);
+   int GetTableSoundVolume();
+   void SetTableSoundVolume( const int value);
+   int GetTableMusicVolume();
+   void SetTableMusicVolume(const int value);
+
 private:
    std::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
    std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name

@@ -4,6 +4,7 @@
 
 FlipperPhysicsProperty::FlipperPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_PHYSICS, pvsel)
 {
+    m_physicSetList.push_back("Disable");
     m_physicSetList.push_back("Set1");
     m_physicSetList.push_back("Set2");
     m_physicSetList.push_back("Set3");
@@ -28,7 +29,7 @@ void FlipperPhysicsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_coilUpRampEdit, flipper->GetRampUp());
         PropertyDialog::SetFloatTextbox(m_eosTorqueEdit, flipper->m_d.m_torqueDamping);
         PropertyDialog::SetFloatTextbox(m_eosTorqueAngleEdit, flipper->m_d.m_torqueDampingAngle);
-        PropertyDialog::UpdateComboBox(m_physicSetList, m_overwriteSettingsCombo, m_physicSetList[(int)flipper->m_d.m_OverridePhysics - 1].c_str());
+        PropertyDialog::UpdateComboBox(m_physicSetList, m_overwriteSettingsCombo, m_physicSetList[(int)flipper->m_d.m_OverridePhysics].c_str());
         UpdateBaseVisuals(flipper, &flipper->m_d);
         flipper->UpdateUnitsInfo();
         //only show the first element on multi-select
@@ -82,7 +83,7 @@ void FlipperPhysicsProperty::UpdateProperties(const int dispid)
                 break;
             case 1044:
                 PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_OverridePhysics = (PhysicsSet)(PropertyDialog::GetComboBoxIndex(m_overwriteSettingsCombo, m_physicSetList) + 1);
+                flipper->m_d.m_OverridePhysics = (PhysicsSet)(PropertyDialog::GetComboBoxIndex(m_overwriteSettingsCombo, m_physicSetList));
                 PropertyDialog::EndUndo(flipper);
                 break;
             default:

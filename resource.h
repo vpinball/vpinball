@@ -93,7 +93,6 @@
 #define IDS_PROJNAME                    100
 #define IDR_VPINBALL                    100
 #define IDC_X_SCALE_EDIT                100
-#define IDC_X_SCALE_EDITIDC_XY_ROTATION_EDIT 100
 #define IDR_SURFACE                     101
 #define IDS_TB_TIMER                    101
 #define IDD_CODEVIEW_PREFS              101
@@ -303,6 +302,7 @@
 #define IDC_EDIT                        209
 #define IDC_PAUSE                       209
 #define IDC_SNDEXPORT                   209
+#define IDC_GAME_DIFFICULTY_EDIT        209
 #define IDC_ROTATEBY                    210
 #define IDC_EXPORT                      210
 #define IDC_SNDTOBG                     210
@@ -540,9 +540,7 @@
 #define IDD_PROPDISPREEL_STATE          357
 #define IDD_PROPTABLE_VISUALS           358
 #define IDC_GUIDE2                      359
-#define IDD_PROPTABLE_PHYSICS           360
 #define IDC_EDITSIZE                    360
-#define IDD_PROPTABLE_BALL              361
 #define IDC_AUTOSAVE_MINUTES            361
 #define IDC_TOOLBARSIZE                 361
 #define IDD_PROPBACKGLASS_VISUALS       362
@@ -861,6 +859,7 @@
 #define IDC_DISPLAY_ID                  546
 #define IDD_PROPTABLE_PHYSICS2          547
 #define IDC_STATIC_SOUNDDEVICE2         547
+#define IDD_PROPTABLE_PHYSICS           547
 #define IDS_DIMENSIONSSLOPE             549
 #define IDD_PROPFLASHER_VISUALS         549
 #define IDS_LIGHTSOURCES                550
@@ -1081,6 +1080,7 @@
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
+#define IDC_OVERWRITE_PHYSICS_COMBO     1043
 #define IDC_3D_STEREO_OFFSET_EDIT       1045
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
@@ -1247,7 +1247,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        649
+#define _APS_NEXT_RESOURCE_VALUE        652
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         829
 #define _APS_NEXT_SYMED_VALUE           188
