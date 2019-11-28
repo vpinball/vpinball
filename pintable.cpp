@@ -8699,17 +8699,27 @@ STDMETHODIMP PinTable::put_BallReflection(UserDefaultOnOff newVal)
    return S_OK;
 }
 
+int PinTable::GetPlayfieldReflectionStrength()
+{
+    return quantizeUnsignedPercent(m_playfieldReflectionStrength);
+}
+
+void PinTable::SetPlayfieldReflectionStrength(const int value)
+{
+    m_playfieldReflectionStrength = dequantizeUnsignedPercent(value);
+}
+
 STDMETHODIMP PinTable::get_PlayfieldReflectionStrength(int *pVal)
 {
-   *pVal = quantizeUnsignedPercent(m_playfieldReflectionStrength);
+    *pVal = GetPlayfieldReflectionStrength();
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_PlayfieldReflectionStrength(int newVal)
 {
-   STARTUNDO
-   m_playfieldReflectionStrength = dequantizeUnsignedPercent(newVal);
+    STARTUNDO
+        SetPlayfieldReflectionStrength(newVal);
    STOPUNDO
 
    return S_OK;
