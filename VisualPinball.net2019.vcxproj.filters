@@ -242,6 +242,9 @@
     <ClCompile Include="dialogs\Properties\BackglassCameraProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\Properties\TableCustomProperty.cpp">
+      <Filter>dialogs\Properties</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -1294,6 +1297,9 @@
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\Properties\BackglassCameraProperty.h">
+      <Filter>dialogs\Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\Properties\TableCustomProperty.h">
       <Filter>dialogs\Properties</Filter>
     </ClInclude>
   </ItemGroup>

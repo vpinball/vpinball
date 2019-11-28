@@ -31,6 +31,7 @@ public:
         {
             case EN_KILLFOCUS:
             case CBN_KILLFOCUS:
+            case CBN_SELCHANGE:
             case BN_CLICKED:
             {
                 UpdateProperties(dispID);

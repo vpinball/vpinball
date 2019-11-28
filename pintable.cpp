@@ -4411,6 +4411,12 @@ int PinTable::GetDetailLevel() const
    return m_overwriteGlobalDetailLevel ? m_userDetailLevel : m_globalDetailLevel;
 }
 
+void PinTable::SetDetailLevel(const int value)
+{
+    if (m_overwriteGlobalDetailLevel)
+        m_userDetailLevel = value;
+}
+
 float PinTable::GetZPD() const
 {
    return m_overwriteGlobalStereo3D ? m_3DZPD : m_global3DZPD;
@@ -6680,13 +6686,7 @@ void PinTable::GetDialogPanes(vector<PropertyPane*> &pvproppane)
       pproppane = new PropertyPane(IDD_PROPTABLE_VISUALS, IDS_PLAYFIELD);
       pvproppane.push_back(pproppane);
 
-      pproppane = new PropertyPane(IDD_PROPTABLE_BALL, IDS_DEFAULTBALL);
-      pvproppane.push_back(pproppane);
-
-      pproppane = new PropertyPane(IDD_PROPTABLE_PHYSICS, IDS_DIMENSIONSSLOPE);
-      pvproppane.push_back(pproppane);
-
-      pproppane = new PropertyPane(IDD_PROPTABLE_PHYSICS2, IDS_PHYSICS);
+      pproppane = new PropertyPane(IDD_PROPTABLE_PHYSICS, IDS_PHYSICS);
       pvproppane.push_back(pproppane);
 
       pproppane = new PropertyPane(IDD_PROPTABLE_LIGHTSOURCES, IDS_LIGHTSOURCES);
@@ -8609,17 +8609,27 @@ STDMETHODIMP PinTable::put_LightEmissionScale(float newVal)
    return S_OK;
 }
 
+int PinTable::GetGlobalEmissionScale()
+{
+    return quantizeUnsignedPercent(m_globalEmissionScale);
+}
+
+void PinTable::SetGlobalEmissionScale(const int value)
+{
+    m_globalEmissionScale = dequantizeUnsignedPercent(value);
+}
+
 STDMETHODIMP PinTable::get_NightDay(int *pVal)
 {
-   *pVal = quantizeUnsignedPercent(m_globalEmissionScale);
+    *pVal = GetGlobalEmissionScale();
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_NightDay(int newVal)
 {
-   STARTUNDO
-   m_globalEmissionScale = dequantizeUnsignedPercent(newVal);
+    STARTUNDO
+        SetGlobalEmissionScale(newVal);
    STOPUNDO
 
    return S_OK;
@@ -8721,17 +8731,27 @@ STDMETHODIMP PinTable::put_BallTrail(UserDefaultOnOff newVal)
    return S_OK;
 }
 
+int PinTable::GetBallTrailStrength()
+{
+    return quantizeUnsignedPercent(m_ballTrailStrength);
+}
+
+void PinTable::SetBallTrailStrength(const int value)
+{
+    m_ballTrailStrength = dequantizeUnsignedPercent(value);
+}
+
 STDMETHODIMP PinTable::get_TrailStrength(int *pVal)
 {
-   *pVal = quantizeUnsignedPercent(m_ballTrailStrength);
+    *pVal = GetBallTrailStrength();
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_TrailStrength(int newVal)
 {
-   STARTUNDO
-   m_ballTrailStrength = dequantizeUnsignedPercent(newVal);
+    STARTUNDO
+        SetBallTrailStrength(newVal);
    STOPUNDO
 
    return S_OK;
@@ -8785,17 +8805,27 @@ STDMETHODIMP PinTable::put_BloomStrength(float newVal)
    return S_OK;
 }
 
+int PinTable::GetTableSoundVolume()
+{
+    return quantizeUnsignedPercent(m_TableSoundVolume);
+}
+
+void PinTable::SetTableSoundVolume(const int value)
+{
+    m_TableSoundVolume = dequantizeUnsignedPercent(value);
+}
+
 STDMETHODIMP PinTable::get_TableSoundVolume(int *pVal)
 {
-   *pVal = quantizeUnsignedPercent(m_TableSoundVolume);
+    *pVal = GetTableSoundVolume();
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_TableSoundVolume(int newVal)
 {
-   STARTUNDO
-   m_TableSoundVolume = dequantizeUnsignedPercent(newVal);
+    STARTUNDO
+        SetTableSoundVolume(newVal);
    STOPUNDO
 
    return S_OK;
@@ -8803,19 +8833,14 @@ STDMETHODIMP PinTable::put_TableSoundVolume(int newVal)
 
 STDMETHODIMP PinTable::get_DetailLevel(int *pVal)
 {
-   if (m_overwriteGlobalDetailLevel)
-      *pVal = m_userDetailLevel;
-   else
-      *pVal = m_globalDetailLevel;
-
+    *pVal = GetDetailLevel();
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_DetailLevel(int newVal)
 {
-   STARTUNDO
-   if (m_overwriteGlobalDetailLevel)
-      m_userDetailLevel = newVal;
+    STARTUNDO
+        SetDetailLevel(newVal);
    STOPUNDO
 
    return S_OK;
@@ -8828,12 +8853,17 @@ STDMETHODIMP PinTable::get_GlobalAlphaAcc(VARIANT_BOOL *pVal)
    return S_OK;
 }
 
+void PinTable::PutGlobalAlphaAcc(const bool enable)
+{
+    m_overwriteGlobalDetailLevel = enable;
+    if (!m_overwriteGlobalDetailLevel)
+        m_userDetailLevel = m_globalDetailLevel;
+}
+
 STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal)
 {
-   STARTUNDO
-   m_overwriteGlobalDetailLevel = VBTOb(newVal);
-   if (!m_overwriteGlobalDetailLevel)
-      m_userDetailLevel = m_globalDetailLevel;
+    STARTUNDO
+        PutGlobalAlphaAcc(VBTOb(newVal));
    STOPUNDO
 
    return S_OK;
@@ -8893,17 +8923,27 @@ STDMETHODIMP PinTable::put_BallDecalMode(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+int PinTable::GetTableMusicVolume()
+{
+    return quantizeUnsignedPercent(m_TableMusicVolume);
+}
+
+void PinTable::SetTableMusicVolume(const int value)
+{
+    m_TableMusicVolume = dequantizeUnsignedPercent(value);
+}
+
 STDMETHODIMP PinTable::get_TableMusicVolume(int *pVal)
 {
-   *pVal = quantizeUnsignedPercent(m_TableMusicVolume);
+    *pVal = GetTableMusicVolume();
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_TableMusicVolume(int newVal)
 {
-   STARTUNDO
-   m_TableMusicVolume = dequantizeUnsignedPercent(newVal);
+    STARTUNDO
+        SetTableMusicVolume(newVal);
    STOPUNDO
 
    return S_OK;
@@ -10009,9 +10049,29 @@ STDMETHODIMP PinTable::put_EnableEMReels(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+float PinTable::GetGlobalDifficulty()
+{
+    return m_globalDifficulty * 100.f;
+}
+
+void PinTable::SetGlobalDifficulty(const float value)
+{
+    int tmp;
+    const HRESULT hr = LoadValueInt("Player", "GlobalDifficulty", &tmp);
+    if (hr == S_OK)
+        m_globalDifficulty = dequantizeUnsignedPercent(tmp);
+    else
+    {
+        float v = value;
+        if (value < 0.f) v = 0.f;
+        else if (value > 100.0f) v = 100.0f;
+            m_globalDifficulty = v * (float)(1.0 / 100.0);
+    }
+}
+
 STDMETHODIMP PinTable::get_GlobalDifficulty(float *pVal)
 {
-   *pVal = m_globalDifficulty*100.f; //VP Editor
+    *pVal = GetGlobalDifficulty();
 
    return S_OK;
 }
@@ -10020,18 +10080,9 @@ STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
 {
    if (!g_pplayer)
    {  //VP Editor
-      int tmp;
-      const HRESULT hr = LoadValueInt("Player", "GlobalDifficulty", &tmp);
-      if (hr == S_OK)
-         m_globalDifficulty = dequantizeUnsignedPercent(tmp);
-      else
-      {
-         if (newVal < 0.f) newVal = 0.f;
-            else if (newVal > 100.0f) newVal = 100.0f;
-         STARTUNDO
-         m_globalDifficulty = newVal*(float)(1.0 / 100.0);
-         STOPUNDO
-      }
+       STARTUNDO
+           SetGlobalDifficulty(newVal);
+       STOPUNDO
    }
 
    return S_OK;

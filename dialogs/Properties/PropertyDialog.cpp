@@ -36,6 +36,7 @@
 #include "Properties/RubberPhysicsProperty.h"
 #include "Properties/BackglassVisualsProperty.h"
 #include "Properties/BackglassCameraProperty.h"
+#include "Properties/TableCustomProperty.h"
 
 #include <WindowsX.h>
 
@@ -139,6 +140,10 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
             {
                 m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new BackglassVisualsProperty(pvsel), _T("Visuals")));
                 m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new BackglassCameraProperty(pvsel), _T("Camera")));
+            }
+            else
+            {
+                m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TableCustomProperty(pvsel), _T("User")));
             }
             break;
         }
@@ -301,9 +306,6 @@ INT_PTR PropertyDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 {
     // Pass resizing messages on to the resizer
     m_resizer.HandleMessage(msg, wparam, lparam);
-//     switch (msg)
-//     {
-//     }
     // Pass unhandled messages on to parent DialogProc
     return DialogProcDefault(msg, wparam, lparam);
 }
