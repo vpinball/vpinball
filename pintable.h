@@ -824,7 +824,8 @@ public:
    void SetTableSoundVolume( const int value);
    int GetTableMusicVolume();
    void SetTableMusicVolume(const int value);
-
+   int GetPlayfieldReflectionStrength();
+   void SetPlayfieldReflectionStrength(const int value);
 private:
    std::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
    std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name
