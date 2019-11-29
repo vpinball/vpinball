@@ -4,12 +4,12 @@
 
 DecalVisualsProperty::DecalVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDECAL_VISUALS, pvsel), m_font(NULL)
 {
-    m_typeList.push_back("DecalText");
-    m_typeList.push_back("DecalImage");
+    m_typeList.push_back("Text");
+    m_typeList.push_back("Image");
 
-    m_sizingList.push_back("AutoSize");
-    m_sizingList.push_back("AutoWidth");
-    m_sizingList.push_back("ManualSize");
+    m_sizingList.push_back("Auto Size");
+    m_sizingList.push_back("Auto Width");
+    m_sizingList.push_back("Manual Size");
 }
 
 DecalVisualsProperty::~DecalVisualsProperty()

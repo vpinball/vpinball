@@ -4,9 +4,9 @@
 
 TextboxVisualsProperty::TextboxVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTEXTBOX_VISUALS, pvsel)
 {
-    m_alignList.push_back("TextAlignLeft");
-    m_alignList.push_back("TextAlignCenter");
-    m_alignList.push_back("TextAlignRight");
+    m_alignList.push_back("Align Left");
+    m_alignList.push_back("Align Center");
+    m_alignList.push_back("Align Right");
 }
 
 TextboxVisualsProperty::~TextboxVisualsProperty()

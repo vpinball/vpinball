@@ -4,9 +4,9 @@
 
 LightStatesProperty::LightStatesProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_STATE, pvsel)
 {
-    m_stateList.push_back("LightStateOff");
-    m_stateList.push_back("LightStateOn");
-    m_stateList.push_back("LightStateBlinking");
+    m_stateList.push_back("Off");
+    m_stateList.push_back("On");
+    m_stateList.push_back("Blinking");
 }
 
 void LightStatesProperty::UpdateVisuals()

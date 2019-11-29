@@ -4,15 +4,15 @@
 
 RampVisualsProperty::RampVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_VISUALS, pvsel)
 {
-    m_typeList.push_back("RampTypeFlat");
-    m_typeList.push_back("RampType4Wire");
-    m_typeList.push_back("RampType2Wire");
-    m_typeList.push_back("RampType3WireLeft");
-    m_typeList.push_back("RampType3WireRight");
-    m_typeList.push_back("RampType1Wire");
+    m_typeList.push_back("Flat");
+    m_typeList.push_back("4-Wire");
+    m_typeList.push_back("2-Wire");
+    m_typeList.push_back("3-Wire Left");
+    m_typeList.push_back("3-Wire Right");
+    m_typeList.push_back("1-Wire");
 
-    m_imageModeList.push_back("ImageModeWorld");
-    m_imageModeList.push_back("ImageModeWrap");
+    m_imageModeList.push_back("World");
+    m_imageModeList.push_back("Wrap");
 }
 
 void RampVisualsProperty::UpdateVisuals()

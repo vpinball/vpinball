@@ -10,8 +10,8 @@ FlasherVisualsProperty::FlasherVisualsProperty(VectorProtected<ISelect> *pvsel) 
     m_filterList.push_back("Multiply");
     m_filterList.push_back("Screen");
 
-    m_imageAlignList.push_back("ImageModeWorld");
-    m_imageAlignList.push_back("ImageModeWrap");
+    m_imageAlignList.push_back("World");
+    m_imageAlignList.push_back("Wrap");
 }
 
 void FlasherVisualsProperty::UpdateVisuals()

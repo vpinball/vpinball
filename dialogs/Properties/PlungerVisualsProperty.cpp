@@ -4,9 +4,9 @@
 
 PlungerVisualsProperty::PlungerVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_VISUALS, pvsel)
 {
-    m_typeList.push_back("PlungerTypeModern");
-    m_typeList.push_back("PlungerTypeFlat");
-    m_typeList.push_back("PlungerTypeCustom");
+    m_typeList.push_back("Modern");
+    m_typeList.push_back("Flat");
+    m_typeList.push_back("Custom");
 }
 
 void PlungerVisualsProperty::UpdateVisuals()
