@@ -31,8 +31,6 @@ private:
 
     CColorDialog m_colorDialog;
     ColorButton m_colorButton1;
-
 };
 
 #endif // !H_BACKGLASS_VISUALS_PROPERTY
-
