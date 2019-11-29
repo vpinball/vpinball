@@ -4,13 +4,13 @@
 
 TriggerVisualsProperty::TriggerVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_VISUALS, pvsel)
 {
-    m_shapeList.push_back("TriggerNone");
-    m_shapeList.push_back("TriggerWireA");
-    m_shapeList.push_back("TriggerStar");
-    m_shapeList.push_back("TriggerWireB");
-    m_shapeList.push_back("TriggerButton");
-    m_shapeList.push_back("TriggerWireC");
-    m_shapeList.push_back("TriggerWireD");
+    m_shapeList.push_back("None");
+    m_shapeList.push_back("Wire A");
+    m_shapeList.push_back("Star");
+    m_shapeList.push_back("Wire B");
+    m_shapeList.push_back("Button");
+    m_shapeList.push_back("Wire C");
+    m_shapeList.push_back("Wire D");
 }
 
 void TriggerVisualsProperty::UpdateVisuals()

@@ -4,15 +4,15 @@
 
 HitTargetVisualsProperty::HitTargetVisualsProperty(VectorProtected<ISelect> *pvsel):BasePropertyDialog(IDD_PROPHITTARGET_VISUALS, pvsel)
 {
-    m_typeList.push_back("DropTargetBeveled");
-    m_typeList.push_back("DropTargetSimple");
-    m_typeList.push_back("HitTargetRound");
-    m_typeList.push_back("HitTargetRectangle");
-    m_typeList.push_back("HitFatTargetRectangle");
-    m_typeList.push_back("HitFatTargetSquare");
-    m_typeList.push_back("DropTargetFlatSimple");
-    m_typeList.push_back("HitFatTargetSlim");
-    m_typeList.push_back("HitTargetSlim");
+    m_typeList.push_back("DropTarget Beveled");
+    m_typeList.push_back("DropTarget Simple");
+    m_typeList.push_back("HitTarget Round");
+    m_typeList.push_back("HitTarget Rectangle");
+    m_typeList.push_back("HitTarget Rectangle Fat");
+    m_typeList.push_back("HitTarget Square Fat");
+    m_typeList.push_back("DropTarget Simple Flat");
+    m_typeList.push_back("HitTarget Slim Fat");
+    m_typeList.push_back("HitTarget Slim");
 }
 
 void HitTargetVisualsProperty::UpdateVisuals()
