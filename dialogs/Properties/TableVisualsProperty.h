@@ -25,8 +25,6 @@ private:
     CEdit       m_ballDefaultBulbIntensScaleEdit;
     HWND        m_hLogoModeCheck;
     HWND        m_hReflectElementsCheck;
-
 };
 
 #endif
-

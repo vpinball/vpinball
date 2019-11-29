@@ -4,14 +4,14 @@
 
 TableCustomProperty::TableCustomProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_USER, pvsel)
 {
-    m_postAAList.push_back("Defaults");  // -1
+    m_postAAList.push_back("Default");  // -1
     m_postAAList.push_back("Disabled");  // 0
-    m_postAAList.push_back("Fast_FXAA"); // 1
-    m_postAAList.push_back("Standard_FXAA"); // 2
-    m_postAAList.push_back("Quality_FSAA"); // 3
-    m_postAAList.push_back("Fast_NFAA"); // 4
-    m_postAAList.push_back("Standard_DLAA"); // 5
-    m_postAAList.push_back("Quality_SMAA"); // 6
+    m_postAAList.push_back("Fast FXAA"); // 1
+    m_postAAList.push_back("Standard FXAA"); // 2
+    m_postAAList.push_back("Quality FXAA"); // 3
+    m_postAAList.push_back("Fast NFAA"); // 4
+    m_postAAList.push_back("Standard DLAA"); // 5
+    m_postAAList.push_back("Quality SMAA"); // 6
 
     m_userList.push_back("Default"); // -1
     m_userList.push_back("Off"); // 0
@@ -26,12 +26,11 @@ TableCustomProperty::TableCustomProperty(VectorProtected<ISelect> *pvsel) : Base
     m_physicSetList.push_back("Set6");
     m_physicSetList.push_back("Set7");
     m_physicSetList.push_back("Set8");
-
-}               
+}
 
 void TableCustomProperty::UpdateVisuals()
 {
-    CComObject<PinTable> *table = g_pvp->GetActiveTable();
+    CComObject<PinTable> * const table = g_pvp->GetActiveTable();
 
     PropertyDialog::UpdateComboBox(m_userList, m_SSAACombo, m_userList[table->m_useAA + 1].c_str());
     PropertyDialog::UpdateComboBox(m_postAAList, m_postProcAACombo, m_postAAList[table->m_useFXAA + 1].c_str());
@@ -56,7 +55,7 @@ void TableCustomProperty::UpdateVisuals()
 
 void TableCustomProperty::UpdateProperties(const int dispid)
 {
-    CComObject<PinTable> *table = g_pvp->GetActiveTable();
+    CComObject<PinTable> * const table = g_pvp->GetActiveTable();
     
     switch (dispid)
     {
@@ -135,7 +134,6 @@ void TableCustomProperty::UpdateProperties(const int dispid)
             table->m_TableAdaptiveVSync = PropertyDialog::GetIntTextbox(m_fpsLimiterEdit);
             PropertyDialog::EndUndo(table);
             break;
-
         default:
             break;
     }
@@ -177,6 +175,7 @@ BOOL TableCustomProperty::OnInitDialog()
     m_nightDaySlider.SetLineSize(1);
     m_nightDaySlider.SendMessage(TBM_SETTHUMBLENGTH, 5, 0);
     UpdateVisuals();
+
     return TRUE;
 }
 
@@ -186,7 +185,7 @@ INT_PTR TableCustomProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         case WM_HSCROLL:
         {
-                CComObject<PinTable> *table = g_pvp->GetActiveTable();
+                CComObject<PinTable> * const table = g_pvp->GetActiveTable();
                 if (table->m_overwriteGlobalDetailLevel)
                     table->SetDetailLevel(m_detailLevelSlider.GetPos());
                 if(table->m_overwriteGlobalDayNight)
