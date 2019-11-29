@@ -38,7 +38,7 @@
 #include "Properties/BackglassCameraProperty.h"
 #include "Properties/TableCustomProperty.h"
 #include "Properties/TableVisualsProperty.h"
-
+#include "Properties/TablePhysicsProperty.h"
 #include <WindowsX.h>
 
 
@@ -146,6 +146,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
             {
                 m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TableCustomProperty(pvsel), _T("User")));
                 m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TableVisualsProperty(pvsel), _T("Visuals")));
+                m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TablePhysicsProperty(pvsel), _T("Physics")));
             }
             break;
         }
