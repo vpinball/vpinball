@@ -41,4 +41,3 @@ private:
 };
 
 #endif // !H_TABLE_CUSTOM_PROPERTY
-

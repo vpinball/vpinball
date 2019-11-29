@@ -8,7 +8,7 @@ TableVisualsProperty::TableVisualsProperty(VectorProtected<ISelect> *pvsel) : Ba
 
 void TableVisualsProperty::UpdateVisuals()
 {
-    CComObject<PinTable> *table = g_pvp->GetActiveTable();
+    CComObject<PinTable> * const table = g_pvp->GetActiveTable();
 
     PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_imageCombo, table->m_szImage);
     PropertyDialog::UpdateMaterialComboBox(table->GetMaterialList(), m_materialCombo, table->m_szPlayfieldMaterial);
@@ -23,7 +23,7 @@ void TableVisualsProperty::UpdateVisuals()
 
 void TableVisualsProperty::UpdateProperties(const int dispid)
 {
-    CComObject<PinTable> *table = g_pvp->GetActiveTable();
+    CComObject<PinTable> * const table = g_pvp->GetActiveTable();
 
     switch (dispid)
     {
@@ -93,4 +93,3 @@ BOOL TableVisualsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-
