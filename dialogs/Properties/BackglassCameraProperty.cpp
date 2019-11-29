@@ -5,14 +5,14 @@
 
 BackglassCameraProperty::BackglassCameraProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBACKGLASS_CAMERA, pvsel)
 {
-    m_modeList.push_back("DESKTOP");
-    m_modeList.push_back("FULLSCREEN");
-    m_modeList.push_back("FULL_SINGLE_SCREEN");
+    m_modeList.push_back("Desktop (DT)");
+    m_modeList.push_back("Fullscreen (FS)");
+    m_modeList.push_back("Full Single Screen (FSS)");
 }
 
 void BackglassCameraProperty::UpdateVisuals()
 {
-    CComObject<PinTable> *table = g_pvp->GetActiveTable();
+    CComObject<PinTable> *const table = g_pvp->GetActiveTable();
     PropertyDialog::SetCheckboxState(m_hFssModeCheck, table->GetShowFSS());
     PropertyDialog::SetCheckboxState(m_hTestDesktopCheck, table->GetShowDT());
     PropertyDialog::UpdateComboBox(m_modeList, m_modeCombo, m_modeList[table->m_currentBackglassMode].c_str());
@@ -30,7 +30,7 @@ void BackglassCameraProperty::UpdateVisuals()
 
 void BackglassCameraProperty::UpdateProperties(const int dispid)
 {
-    CComObject<PinTable> *table = g_pvp->GetActiveTable();
+    CComObject<PinTable> *const table = g_pvp->GetActiveTable();
     switch (dispid)
     {
         case IDC_BG_FSS:
@@ -96,7 +96,6 @@ void BackglassCameraProperty::UpdateProperties(const int dispid)
             table->m_BG_xlatez[table->m_currentBackglassMode] = PropertyDialog::GetFloatTextbox(m_zOffsetEdit);
             PropertyDialog::EndUndo(table);
             break;
-
         default:
             break;
     }
@@ -120,6 +119,6 @@ BOOL BackglassCameraProperty::OnInitDialog()
     AttachItem(IDC_Z_OFFSET_EDIT, m_zOffsetEdit);
 
     UpdateVisuals();
+
     return TRUE;
 }
-

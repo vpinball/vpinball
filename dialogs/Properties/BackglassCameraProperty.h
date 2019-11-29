@@ -33,4 +33,3 @@ private:
 };
 
 #endif // !H_BACKGLASS_CAMERA_PROPERTY
-

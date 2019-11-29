@@ -8,7 +8,7 @@ BackglassVisualsProperty::BackglassVisualsProperty(VectorProtected<ISelect> *pvs
 
 void BackglassVisualsProperty::UpdateVisuals()
 {
-    CComObject<PinTable> *table = g_pvp->GetActiveTable();
+    CComObject<PinTable> * const table = g_pvp->GetActiveTable();
     PropertyDialog::SetCheckboxState(m_hApplyNightDayCheck, table->m_ImageBackdropNightDay);
     PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_dtImageCombo, table->m_BG_szImage[0]);
     PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_fsImageCombo, table->m_BG_szImage[1]);
@@ -25,7 +25,7 @@ void BackglassVisualsProperty::UpdateVisuals()
 
 void BackglassVisualsProperty::UpdateProperties(const int dispid)
 {
-    CComObject<PinTable> *table = g_pvp->GetActiveTable();
+    CComObject<PinTable> * const table = g_pvp->GetActiveTable();
     switch (dispid)
     {
         case IDC_BG_NIGHT_DAY:
@@ -137,4 +137,3 @@ INT_PTR BackglassVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lP
     }
     return DialogProcDefault(uMsg, wParam, lParam);
 }
-
