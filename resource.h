@@ -15,6 +15,7 @@
 #define IDC_PULL_SPEED                  3
 #define IDC_PULL_SPEED_EDIT             3
 #define IDC_TEXTBOX_TEXT_EDIT           3
+#define IDC_TABLE_GLASS_HEIGHT_EDIT     3
 #define DISPID_Gate_Rotation            4
 #define DISPID_Textbox_Font             4
 #define DISPID_POSITION_Z               4
@@ -25,6 +26,7 @@
 #define DISPID_Surface_SideColor        6
 #define DISPID_SIZE_Y                   6
 #define IDC_REEL_HEIGHT_EDIT            6
+#define IDC_MIN_DIFFICULTY_EDIT         6
 #define DISPID_Surface_SideColor2       7
 #define DISPID_POSITION_X               7
 #define IDC_DAMPING_EDIT                7
@@ -54,9 +56,11 @@
 #define DISPID_ROTRA2                   13
 #define IDC_DECAL_VERTICAL_TEXT_CHECK   13
 #define IDC_DISPLAY_IMAGE_CHECK         13
+#define IDC_TABLE_HEIGHT_EDIT           13
 #define DISPID_TOPCOLOR                 14
 #define DISPID_ROTRA3                   14
 #define IDC_SINGLE_DIGIT_RANGE_EDIT     14
+#define IDC_TABLE_WIDTH_EDIT            14
 #define IDC_COLOR                       15
 #define DISPID_TOPVISIBLE               15
 #define DISPID_ROTRA4                   15
@@ -310,6 +314,8 @@
 #define IDC_CENTERY                     212
 #define IDC_STOP                        213
 #define IDC_SCALEFACTOR                 214
+#define IDC_TABLE_FIELD_HEIGHT_EDIT     214
+#define IDC_MAX_DIFFICULTY_EDIT         215
 #define IDR_VPACCEL                     216
 #define IDC_PROGRESS2                   216
 #define IDC_SCALEY                      216
@@ -1082,6 +1088,13 @@
 #define IDC_3D_STEREO_ZPD_EDIT          1042
 #define IDC_OVERWRITE_PHYSICS_COMBO     1043
 #define IDC_3D_STEREO_OFFSET_EDIT       1045
+#define IDC_GRAVITY_EDIT                1100
+#define IDC_PLAYFIELD_FRICTION_EDIT     1101
+#define IDC_DEFAULT_SCATTER_EDIT        1102
+#define IDC_NUDGE_TIME_EDIT             1103
+#define IDC_MECH_PLUNGER_ADJ_EDIT       1104
+#define IDC_PHYSICS_MAC_LOOPS_EDIT      1105
+#define IDC_FILTER_MECH_PLUNGER_CHECK   1107
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1111,9 +1124,12 @@
 #define IDB_BUMPER_BASE                 1707
 #define IDC_PLAYFIELD_ELASTICITY        1708
 #define IDB_BUMPER_RING                 1708
+#define IDC_PLAYFIELD_ELASTICITY_EDIT   1708
 #define IDC_PLAYFIELD_ELASTICITY_FALLOFF 1709
 #define IDB_BUMPER_SKIRT                1709
+#define IDC_PLAYFIELD_FALLOFF_EDIT      1709
 #define IDC_PLAYFIELD_SCATTER           1710
+#define IDC_PLAYFIELD_SCATTER_EDIT      1710
 #define IDC_TABLE_FILENAME              1711
 #define IDC_BALLPLAYFIELD_REFLECTION    1712
 #define IDC_BALLPLAYFIELD_REFLECTION2   1713

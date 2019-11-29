@@ -8473,9 +8473,19 @@ STDMETHODIMP PinTable::put_TableHeight(float newVal)
    return S_OK;
 }
 
+float PinTable::GetTableWidth()
+{
+    return m_right - m_left;
+}
+
+void PinTable::SetTableWidth(const float value)
+{
+    m_right = value;
+}
+
 STDMETHODIMP PinTable::get_Width(float *pVal)
 {
-   *pVal = m_right-m_left;
+    *pVal = GetTableWidth();
    g_pvp->SetStatusBarUnitInfo("", true);
 
    return S_OK;
@@ -8483,8 +8493,8 @@ STDMETHODIMP PinTable::get_Width(float *pVal)
 
 STDMETHODIMP PinTable::put_Width(float newVal)
 {
-   STARTUNDO
-   m_right = newVal;
+    STARTUNDO
+        SetTableWidth(newVal);
    STOPUNDO
 
    SetMyScrollInfo();
@@ -8492,17 +8502,27 @@ STDMETHODIMP PinTable::put_Width(float newVal)
    return S_OK;
 }
 
+float PinTable::GetHeight()
+{
+    return m_bottom - m_top;
+}
+
+void PinTable::SetHeight(const float value)
+{
+    m_bottom = value;
+}
+
 STDMETHODIMP PinTable::get_Height(float *pVal)
 {
-   *pVal = m_bottom-m_top;
+   *pVal = GetHeight();
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_Height(float newVal)
 {
-   STARTUNDO
-   m_bottom = newVal;
+    STARTUNDO
+        SetHeight(newVal);
    STOPUNDO
 
    SetMyScrollInfo();
@@ -9122,9 +9142,19 @@ STDMETHODIMP PinTable::put_ColorGradeImage(BSTR newVal)
    return S_OK;
 }
 
+float PinTable::GetGravity()
+{
+    return m_Gravity * (float)(1.0 / GRAVITYCONST);
+}
+
+void PinTable::SetGravity(const float value)
+{
+    m_Gravity = value * GRAVITYCONST;
+}
+
 STDMETHODIMP PinTable::get_Gravity(float *pVal)
 {
-   *pVal = m_Gravity*(float)(1.0 / GRAVITYCONST);
+    *pVal = GetGravity();
 
    return S_OK;
 }
@@ -9135,7 +9165,7 @@ STDMETHODIMP PinTable::put_Gravity(float newVal)
 
    if (g_pplayer)
    {
-      m_Gravity = newVal*GRAVITYCONST;
+      SetGravity(newVal);
       const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
       const float maxSlope = (m_overridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
       const float slope = minSlope + (maxSlope - minSlope) * m_globalDifficulty;
@@ -9143,8 +9173,8 @@ STDMETHODIMP PinTable::put_Gravity(float newVal)
    }
    else
    {
-      STARTUNDO
-      m_Gravity = newVal*GRAVITYCONST;
+       STARTUNDO
+           SetGravity(newVal);
       STOPUNDO
    }
 
@@ -9158,10 +9188,15 @@ STDMETHODIMP PinTable::get_Friction(float *pVal)
    return S_OK;
 }
 
+void PinTable::SetFriction(const float value)
+{
+    m_friction = clamp(value, 0.0f, 1.0f);
+}
+
 STDMETHODIMP PinTable::put_Friction(float newVal)
 {
-   STARTUNDO
-   m_friction = clamp(newVal, 0.0f, 1.0f);
+    STARTUNDO
+        SetFriction(newVal);
    STOPUNDO
 
    return S_OK;
@@ -9254,10 +9289,15 @@ STDMETHODIMP PinTable::get_PlungerNormalize(int *pVal)
    return S_OK;
 }
 
+void PinTable::SetPlungerNormalize(int value)
+{
+    m_plungerNormalize = LoadValueIntWithDefault("Player", "PlungerNormalize", value);
+}
+
 STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
 {
-   STARTUNDO
-   m_plungerNormalize = LoadValueIntWithDefault("Player", "PlungerNormalize", newVal);
+    STARTUNDO
+        SetPlungerNormalize(newVal);
    STOPUNDO
 
    return S_OK;
