@@ -406,6 +406,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\Properties\SpinnerPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\SpinnerVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\TableCustomProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\TableLightsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\TablePhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\TableVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\TextboxVisualsProperty.cpp" />
@@ -1180,6 +1181,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="dialogs\Properties\SpinnerPhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\SpinnerVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\TableCustomProperty.h" />
+    <ClInclude Include="dialogs\Properties\TableLightsProperty.h" />
     <ClInclude Include="dialogs\Properties\TablePhysicsProperty.h" />
     <ClInclude Include="dialogs\Properties\TableVisualsProperty.h" />
     <ClInclude Include="dialogs\Properties\TextboxVisualsProperty.h" />

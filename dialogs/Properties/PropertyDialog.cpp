@@ -39,6 +39,7 @@
 #include "Properties/TableCustomProperty.h"
 #include "Properties/TableVisualsProperty.h"
 #include "Properties/TablePhysicsProperty.h"
+#include "Properties/TableLightsProperty.h"
 #include <WindowsX.h>
 
 
@@ -147,6 +148,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
                 m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TableCustomProperty(pvsel), _T("User")));
                 m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TableVisualsProperty(pvsel), _T("Visuals")));
                 m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TablePhysicsProperty(pvsel), _T("Physics")));
+                m_tabs[3] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TableLightsProperty(pvsel), _T("Lights")));
             }
             break;
         }
