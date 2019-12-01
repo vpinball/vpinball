@@ -38,7 +38,8 @@ struct ProtectionData {
 
 class ScriptGlobalTable;
 
-class PinTable :
+class PinTable:
+   public CWnd,
    public CComObjectRootEx<CComSingleThreadModel>,
    public IDispatchImpl<ITable, &IID_ITable, &LIBID_VPinballLib>,
    public IConnectionPointContainerImpl<PinTable>,

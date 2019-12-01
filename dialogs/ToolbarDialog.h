@@ -6,6 +6,8 @@ class ToolbarDialog : public CDialog
 public:
     ToolbarDialog();
     virtual ~ToolbarDialog();
+    virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
+
     void EnableButtons();
 
 protected:
@@ -47,4 +49,32 @@ private:
     CButton m_rubberButton;
 };
 
+class CContainToolbar: public CDockContainer
+{
+public:
+    CContainToolbar();
+    ~CContainToolbar()
+    {
+    }
+    ToolbarDialog *GetToolbar()
+    {
+        return &m_toolbar;
+    }
+
+private:
+    ToolbarDialog m_toolbar;
+};
+
+class CDockToolbar: public CDocker
+{
+public:
+    CDockToolbar();
+
+    virtual ~CDockToolbar()
+    {
+    }
+
+private:
+    CContainToolbar m_toolbarContainer;
+};
 #endif // H_TOOLBAR_DIALOG

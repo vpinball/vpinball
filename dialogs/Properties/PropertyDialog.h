@@ -229,6 +229,7 @@ public:
     }
 
     BOOL IsSubDialogMessage(MSG &msg) const;
+    virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
 
 protected:
     virtual BOOL OnInitDialog();
@@ -241,6 +242,35 @@ private:
     int  m_curTabIndex;
     CEdit m_nameEdit;
     CResizer m_resizer;
+};
+
+class CContainProperties: public CDockContainer
+{
+public:
+    CContainProperties();
+    ~CContainProperties()
+    {
+    }
+    PropertyDialog *GetProperties()
+    {
+        return &m_propertyDialog;
+    }
+
+private:
+    PropertyDialog m_propertyDialog;
+};
+
+class CDockPropertyDialog: public CDocker
+{
+public:
+    CDockPropertyDialog();
+
+    virtual ~CDockPropertyDialog()
+    {
+    }
+
+private:
+    CContainProperties m_propContainer;
 };
 
 #endif

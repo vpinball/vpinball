@@ -10,6 +10,16 @@ ToolbarDialog::~ToolbarDialog()
 {
 }
 
+LRESULT ToolbarDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam)
+// Respond to a mouse click on the window
+{
+    // Set window focus. The docker will now report this as active.
+    if (!IsChild(::GetFocus()))
+        SetFocus();
+
+    return FinalWindowProc(msg, wparam, lparam);
+}
+
 void ToolbarDialog::OnDestroy()
 {
 }
@@ -166,7 +176,7 @@ BOOL ToolbarDialog::OnInitDialog()
     {
         m_layerButtons[i].SetCheck(BST_CHECKED);
     }
-
+/*
     m_resizer.Initialize(*this, CRect(0, 0, 61, 422));
 
     m_resizer.AddChild(m_magnifyButton, topleft, 0);
@@ -209,7 +219,9 @@ BOOL ToolbarDialog::OnInitDialog()
     m_resizer.AddChild(m_primitiveButton, leftcenter, 0);
     m_resizer.AddChild(m_flasherButton, rightcenter, 0);
     m_resizer.AddChild(m_rubberButton, leftcenter, 0);
+
     m_resizer.RecalcLayout();
+*/
     EnableButtons();
     return TRUE;
 }
@@ -217,12 +229,12 @@ BOOL ToolbarDialog::OnInitDialog()
 INT_PTR ToolbarDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 {
     // Pass resizing messages on to the resizer
-    m_resizer.HandleMessage(msg, wparam, lparam);
+//    m_resizer.HandleMessage(msg, wparam, lparam);
 
-//  switch (msg)
-//  {
-        //Additional messages to be handled go here
-//  }
+    switch (msg)
+    {
+        case WM_MOUSEACTIVATE:      return OnMouseActivate(msg, wparam, lparam);
+    }
 
     // Pass unhandled messages on to parent DialogProc
     return DialogProcDefault(msg, wparam, lparam);
@@ -420,3 +432,19 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     }
     return FALSE;
 }
+
+CContainToolbar::CContainToolbar()
+{
+    SetView(m_toolbar); 
+    SetTabText(_T("Toolbar"));
+    SetTabIcon(IDI_VPINBALL);
+    SetDockCaption(_T("Toolbar"));
+    
+}
+
+CDockToolbar::CDockToolbar()
+{
+    SetView(m_toolbarContainer);
+    SetBarWidth(4);
+}
+
