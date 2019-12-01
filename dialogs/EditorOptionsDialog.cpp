@@ -39,15 +39,21 @@ BOOL EditorOptionsDialog::OnInitDialog()
         AddToolTip("Defines the default size of the ball when dropped onto the table.", GetHwnd(), toolTipHwnd, controlHwnd);
     }
 
+    AttachItem(IDC_COLOR_BUTTON2, m_colorButton2);
+    AttachItem(IDC_COLOR_BUTTON3, m_colorButton3);
+    AttachItem(IDC_COLOR_BUTTON4, m_colorButton4);
+    AttachItem(IDC_COLOR_BUTTON5, m_colorButton5);
+    AttachItem(IDC_COLOR_BUTTON6, m_colorButton6);
+    m_colorButton2.SetColor(g_pvp->m_dummyMaterial.m_cBase);
+    m_colorButton3.SetColor(g_pvp->m_elemSelectColor);
+    m_colorButton4.SetColor(g_pvp->m_elemSelectLockedColor);
+    m_colorButton5.SetColor(g_pvp->m_fillColor);
+    m_colorButton6.SetColor(g_pvp->m_backgroundColor);
+
     // drag points
     const bool fdrawpoints = LoadValueBoolWithDefault("Editor", "ShowDragPoints", false);
     SendMessage(GetDlgItem(IDC_DRAW_DRAGPOINTS).GetHwnd(), BM_SETCHECK, fdrawpoints ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    SendMessage(GetDlgItem(IDC_COLOR).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_dummyMaterial.m_cBase);
-    SendMessage(GetDlgItem(IDC_COLOR2).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_elemSelectColor);
-    SendMessage(GetDlgItem(IDC_COLOR3).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_elemSelectLockedColor);
-    SendMessage(GetDlgItem(IDC_COLOR4).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_fillColor);
-    SendMessage(GetDlgItem(IDC_COLOR5).GetHwnd(), CHANGE_COLOR, 0, g_pvp->m_backgroundColor);
     // light centers
     const bool fdrawcenters = LoadValueBoolWithDefault("Editor", "DrawLightCenters", false);
     SendMessage(GetDlgItem(IDC_DRAW_LIGHTCENTERS).GetHwnd(), BM_SETCHECK, fdrawcenters ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -101,49 +107,89 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
     UNREFERENCED_PARAMETER(lParam);
 
-    switch(HIWORD(wParam))
-    {
-        case COLOR_CHANGED:
-        {
-            const size_t color = ::GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
-            const HWND hwndEvent = (HWND)lParam;
-            if (hwndEvent == GetDlgItem(IDC_COLOR).GetHwnd())
-               g_pvp->m_dummyMaterial.m_cBase = (COLORREF)color;
-            else if (hwndEvent == GetDlgItem(IDC_COLOR2).GetHwnd())
-               g_pvp->m_elemSelectColor = (COLORREF)color;
-            else if (hwndEvent == GetDlgItem(IDC_COLOR3).GetHwnd())
-               g_pvp->m_elemSelectLockedColor = (COLORREF)color;
-            else if (hwndEvent == GetDlgItem(IDC_COLOR4).GetHwnd())
-               g_pvp->m_fillColor = (COLORREF)color;
-            else if (hwndEvent == GetDlgItem(IDC_COLOR5).GetHwnd())
-               g_pvp->m_backgroundColor = (COLORREF)color;
-
-            return TRUE;
-        }
-    }
     switch (LOWORD(wParam))
     {
+       case IDC_COLOR_BUTTON2:
+       {
+           CHOOSECOLOR cc = m_colorDialog.GetParameters();
+           cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+           m_colorDialog.SetParameters(cc);
+           m_colorDialog.SetColor(g_pvp->m_dummyMaterial.m_cBase);
+           if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+           {
+               g_pvp->m_dummyMaterial.m_cBase = m_colorDialog.GetColor();
+               m_colorButton2.SetColor(g_pvp->m_dummyMaterial.m_cBase);
+           }
+           break;
+       }
+       case IDC_COLOR_BUTTON3:
+       {
+           CHOOSECOLOR cc = m_colorDialog.GetParameters();
+           cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+           m_colorDialog.SetParameters(cc);
+           m_colorDialog.SetColor(g_pvp->m_elemSelectColor);
+           if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+           {
+               g_pvp->m_elemSelectColor = m_colorDialog.GetColor();
+               m_colorButton2.SetColor(g_pvp->m_elemSelectColor);
+           }
+           break;
+       }
+       case IDC_COLOR_BUTTON4:
+       {
+           CHOOSECOLOR cc = m_colorDialog.GetParameters();
+           cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+           m_colorDialog.SetParameters(cc);
+           m_colorDialog.SetColor(g_pvp->m_elemSelectLockedColor);
+           if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+           {
+               g_pvp->m_elemSelectLockedColor = m_colorDialog.GetColor();
+               m_colorButton2.SetColor(g_pvp->m_elemSelectLockedColor);
+           }
+           break;
+       }
+       case IDC_COLOR_BUTTON5:
+       {
+           CHOOSECOLOR cc = m_colorDialog.GetParameters();
+           cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+           m_colorDialog.SetParameters(cc);
+           m_colorDialog.SetColor(g_pvp->m_fillColor);
+           if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+           {
+               g_pvp->m_fillColor = m_colorDialog.GetColor();
+               m_colorButton2.SetColor(g_pvp->m_fillColor);
+           }
+           break;
+       }
+       case IDC_COLOR_BUTTON6:
+       {
+           CHOOSECOLOR cc = m_colorDialog.GetParameters();
+           cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+           m_colorDialog.SetParameters(cc);
+           m_colorDialog.SetColor(g_pvp->m_backgroundColor);
+           if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+           {
+               g_pvp->m_backgroundColor = m_colorDialog.GetColor();
+               m_colorButton2.SetColor(g_pvp->m_backgroundColor);
+           }
+           break;
+       }
        case IDC_DEFAULT_COLORS_BUTTON:
        {
           g_pvp->m_dummyMaterial.m_cBase = 0xB469FF;
-          HWND hwndColor = GetDlgItem(IDC_COLOR).GetHwnd();
-          SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_dummyMaterial.m_cBase);
+          m_colorButton2.SetColor(g_pvp->m_dummyMaterial.m_cBase);
 
           g_pvp->m_elemSelectColor = 0x00FF0000;
-          hwndColor = GetDlgItem(IDC_COLOR2).GetHwnd();
-          SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_elemSelectColor);
+          m_colorButton3.SetColor(g_pvp->m_elemSelectColor);
 
           g_pvp->m_elemSelectLockedColor = 0x00A7726D;
-          hwndColor = GetDlgItem(IDC_COLOR3).GetHwnd();
-          SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_elemSelectLockedColor);
+          m_colorButton4.SetColor(g_pvp->m_elemSelectLockedColor);
 
           g_pvp->m_fillColor = 0x00B1CFB3;
-          hwndColor = GetDlgItem(IDC_COLOR4).GetHwnd();
-          SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_fillColor);
+          m_colorButton5.SetColor(g_pvp->m_fillColor);
 
           g_pvp->m_backgroundColor = 0x008D8D8D;
-          hwndColor = GetDlgItem(IDC_COLOR5).GetHwnd();
-          SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_backgroundColor);
+          m_colorButton6.SetColor(g_pvp->m_backgroundColor);
           return TRUE;
        }
        case IDC_SET_DEFAULTS_BUTTON:
@@ -185,9 +231,31 @@ INT_PTR EditorOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch(uMsg)
     {
-        case GET_COLOR_TABLE:
+        case WM_DRAWITEM:
         {
-            *((unsigned long **)lParam) = &g_pvp->m_dummyMaterial.m_cBase;
+            LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+            UINT nID = static_cast<UINT>(wParam);
+            if (nID == IDC_COLOR_BUTTON2)
+            {
+                m_colorButton2.DrawItem(lpDrawItemStruct);
+            }
+            else if (nID == IDC_COLOR_BUTTON3)
+            {
+                m_colorButton3.DrawItem(lpDrawItemStruct);
+            }
+            else if (nID == IDC_COLOR_BUTTON4)
+            {
+                m_colorButton4.DrawItem(lpDrawItemStruct);
+            }
+            else if (nID == IDC_COLOR_BUTTON5)
+            {
+                m_colorButton5.DrawItem(lpDrawItemStruct);
+            }
+            else if (nID == IDC_COLOR_BUTTON6)
+            {
+                m_colorButton6.DrawItem(lpDrawItemStruct);
+            }
+
             return TRUE;
         }
     }
