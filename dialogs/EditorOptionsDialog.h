@@ -30,7 +30,6 @@ private:
     ColorButton m_colorButton4;
     ColorButton m_colorButton5;
     ColorButton m_colorButton6;
-
 };
 
 #endif // !H_EDITOR_OPTIONS_DIALOG

@@ -1232,7 +1232,7 @@ void Surface::Translate(const Vertex2D &pvOffset)
    IHaveDragPoints::TranslatePoints(pvOffset);
 }
 
-HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
+HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 

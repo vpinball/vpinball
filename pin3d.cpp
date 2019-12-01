@@ -225,11 +225,11 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
                      l = -l;
                   }
 #else
-         //Vertex3Ds cos_hemisphere_sample(const Vertex3Ds &normal, Vertex2D uv) { float theta = (float)(2.*M_PI) * uv.x; uv.y = 2.f * uv.y - 1.f; Vertex3Ds spherePoint(sqrt(1.f - uv.y * uv.y) * Vertex2D(cosf(theta), sinf(theta)), uv.y); return normalize(normal + spherePoint); }
+                  //Vertex3Ds cos_hemisphere_sample(const Vertex3Ds &normal, Vertex2D uv) { float theta = (float)(2.*M_PI) * uv.x; uv.y = 2.f * uv.y - 1.f; Vertex3Ds spherePoint(sqrt(1.f - uv.y * uv.y) * Vertex2D(cosf(theta), sinf(theta)), uv.y); return normalize(normal + spherePoint); }
                   const Vertex3Ds l = rotate_to_vector_upper(cos_hemisphere_sample((float)s*(float)(1.0 / num_samples), radical_inverse(s)), n); // QMC hammersley point set
 #endif
-         // trafo from light direction to envmap
-         // approximations seem to be good enough!
+                  // trafo from light direction to envmap
+                  // approximations seem to be good enough!
                   const float u = atan2_approx_div2PI(l.y, l.x) + 0.5f; //atan2f(l.y, l.x) * (float)(0.5 / M_PI) + 0.5f;
                   const float v = acos_approx_divPI(l.z); //acosf(l.z) * (float)(1.0 / M_PI);
 
@@ -294,7 +294,8 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
       }
    }
 
-   /* ///!!! QA-test above multithreading implementation. 
+   /* ///!!! QA-test above multithreading implementation.
+   //!! this is exactly the same code as above, so can be deleted at some point, as it only checks the multithreaded results with a singlethreaded implementation!
    for (unsigned int y = 0; y < rad_env_yres; ++y)
 	   for (unsigned int x = 0; x < rad_env_xres; ++x)
 	   {

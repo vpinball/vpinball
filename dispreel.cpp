@@ -480,7 +480,7 @@ void DispReel::PutCenter(const Vertex2D& pv)
 }
 
 
-HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
+HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 

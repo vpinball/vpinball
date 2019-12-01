@@ -28,8 +28,6 @@ private:
     CEdit       m_ambientOcclusionScaleEdit;
     CEdit       m_bloomStrengthEdit;
     CEdit       m_screenSpaceReflEdit;
-
 };
 
 #endif
-

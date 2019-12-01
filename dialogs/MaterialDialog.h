@@ -34,7 +34,6 @@ private:
    ColorButton m_colorButton1;
    ColorButton m_colorButton2;
    ColorButton m_colorButton3;
-
 };
 
 #endif // !H_MATERIAL_DIALOG

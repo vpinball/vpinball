@@ -234,7 +234,7 @@ INT_PTR EditorOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_DRAWITEM:
         {
             LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
-            UINT nID = static_cast<UINT>(wParam);
+            const UINT nID = static_cast<UINT>(wParam);
             if (nID == IDC_COLOR_BUTTON2)
             {
                 m_colorButton2.DrawItem(lpDrawItemStruct);
@@ -328,7 +328,7 @@ void EditorOptionsDialog::OnOK()
     checked = (SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
     SaveValueBool("Editor", "SelectTableOnStart", checked);
 
-    HWND hwndUnits = GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd();
+    const HWND hwndUnits = GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd();
     size_t units = SendMessage(hwndUnits, CB_GETCURSEL, 0, 0);
     if (units == LB_ERR)
         units = 0;
