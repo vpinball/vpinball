@@ -747,14 +747,9 @@ BEGIN
     LTEXT           "Grid size",IDC_STATIC,6,99,29,8
     EDITTEXT        IDC_GRID_SIZE,37,97,27,12,ES_AUTOHSCROLL
     LTEXT           "Default Material color",IDC_STATIC,6,116,68,8
-    CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,78,112,32,16
-    CONTROL         "Custom2",IDC_COLOR2,"ColorControl",WS_TABSTOP,78,131,32,16
     LTEXT           "Element Select color",IDC_STATIC,6,135,66,8
-    CONTROL         "Custom2",IDC_COLOR3,"ColorControl",WS_TABSTOP,78,150,32,16
     LTEXT           "Element Select color \n(locked)",IDC_STATIC,6,153,71,16
-    CONTROL         "Custom2",IDC_COLOR4,"ColorControl",WS_TABSTOP,78,170,32,16
     LTEXT           "Element Fill color",IDC_STATIC,6,174,54,8
-    CONTROL         "Custom2",IDC_COLOR5,"ColorControl",WS_TABSTOP,78,189,32,16
     LTEXT           "Table background",IDC_STATIC,6,193,60,8
     PUSHBUTTON      "Default colors",IDC_DEFAULT_COLORS_BUTTON,167,190,50,14
     GROUPBOX        "Ball debugging",IDC_STATIC,3,216,219,43
@@ -770,6 +765,11 @@ BEGIN
     PUSHBUTTON      "Reset to Defaults",IDC_SET_DEFAULTS_BUTTON,4,294,81,14
     DEFPUSHBUTTON   "OK",IDOK,123,294,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,175,294,50,14
+    CONTROL         "",IDC_COLOR_BUTTON2,"Button",BS_OWNERDRAW | WS_TABSTOP,78,111,32,16
+    CONTROL         "",IDC_COLOR_BUTTON3,"Button",BS_OWNERDRAW | WS_TABSTOP,78,130,32,16
+    CONTROL         "",IDC_COLOR_BUTTON4,"Button",BS_OWNERDRAW | WS_TABSTOP,78,150,32,16
+    CONTROL         "",IDC_COLOR_BUTTON5,"Button",BS_OWNERDRAW | WS_TABSTOP,78,170,32,16
+    CONTROL         "",IDC_COLOR_BUTTON6,"Button",BS_OWNERDRAW | WS_TABSTOP,78,190,32,16
 END
 
 IDD_COLLECTDIALOG DIALOGEX 0, 0, 316, 167
