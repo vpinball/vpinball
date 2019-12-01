@@ -1014,12 +1014,16 @@
 #define IDC_DBG_BULB_MODULATE_VS_ADD    766
 #define IDC_COLOR_BUTTON2               766
 #define IDC_DBG_TRANSMISSION_SCALE      767
+#define IDC_COLOR_BUTTON3               767
 #define IDC_STATIC_GLOSSY_IMGLERP       768
+#define IDC_COLOR_BUTTON4               768
 #define IDC_EDIT1                       769
 #define IDC_NAME_EDIT                   769
+#define IDC_COLOR_BUTTON5               769
 #define IDC_OK                          770
 #define IDC_STATIC_ALPHA                771
 #define IDC_STATIC_BASE_COLOR           772
+#define IDC_COLOR_BUTTON6               772
 #define IDC_STATIC_GLOSSY_LAYER         773
 #define IDC_STATIC_CLEARCOAR_LAYER      774
 #define IDC_STATIC_OPACITY              775
@@ -1263,7 +1267,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        652
+#define _APS_NEXT_RESOURCE_VALUE        654
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         829
 #define _APS_NEXT_SYMED_VALUE           188

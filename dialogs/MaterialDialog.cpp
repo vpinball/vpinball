@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "resource.h"
 #include "MaterialDialog.h"
 #include "vpversion.h"
@@ -66,6 +66,9 @@ BOOL MaterialDialog::OnInitDialog()
    m_columnSortOrder = 1;
    m_deletingItem = false;
    m_resizer.Initialize(*this, CRect(0, 0, 500, 600));
+   AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
+   AttachItem(IDC_COLOR_BUTTON2, m_colorButton2);
+   AttachItem(IDC_COLOR_BUTTON3, m_colorButton3);
    m_resizer.AddChild(m_hMaterialList, topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
    m_resizer.AddChild(GetDlgItem(IDC_DIFFUSE_CHECK).GetHwnd(), topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_BASE_COLOR).GetHwnd(), topright, 0);
@@ -73,9 +76,9 @@ BOOL MaterialDialog::OnInitDialog()
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_CLEARCOAR_LAYER).GetHwnd(), topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_OPACITY).GetHwnd(), topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_PHYSICS).GetHwnd(), topright, 0);
-   m_resizer.AddChild(GetDlgItem(IDC_COLOR).GetHwnd(), topright, 0);
-   m_resizer.AddChild(GetDlgItem(IDC_COLOR2).GetHwnd(), topright, 0);
-   m_resizer.AddChild(GetDlgItem(IDC_COLOR3).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_COLOR_BUTTON1).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_COLOR_BUTTON2).GetHwnd(), topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_COLOR_BUTTON3).GetHwnd(), topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_WRAP).GetHwnd(), topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_DIFFUSE_EDIT).GetHwnd(), topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC_WRAP_TEXT).GetHwnd(), topright, 0);
@@ -140,44 +143,136 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
    UNREFERENCED_PARAMETER(lParam);
-   switch (HIWORD(wParam))
+
+   switch (LOWORD(wParam))
    {
-      case COLOR_CHANGED:
-      {
-         const int count = ListView_GetSelectedCount(m_hMaterialList);
-         if (count > 0)
-         {
-            const size_t color = ::GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
-            const HWND hwndcolor1 = GetDlgItem(IDC_COLOR).GetHwnd();
-            const HWND hwndcolor2 = GetDlgItem(IDC_COLOR2).GetHwnd();
-            const HWND hwndcolor3 = GetDlgItem(IDC_COLOR3).GetHwnd();
-            int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
-            while (sel != -1)
-            {
+       case IDC_COLOR_BUTTON1:
+       {
+           CHOOSECOLOR cc = m_colorDialog.GetParameters();
+           cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+           m_colorDialog.SetParameters(cc);
+
+           if (ListView_GetSelectedCount(m_hMaterialList))	// if some items are selected???
+           {
+               int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
+               if (sel == -1)
+                   break;
+               
                LVITEM lvitem;
                lvitem.mask = LVIF_PARAM;
                lvitem.iItem = sel;
                lvitem.iSubItem = 0;
                ListView_GetItem(m_hMaterialList, &lvitem);
                Material * const pmat = (Material*)lvitem.lParam;
-               if (hwndcolor1 == (HWND)lParam)
-                  pmat->m_cBase = (COLORREF)color;
-               else if (hwndcolor2 == (HWND)lParam)
-                  pmat->m_cGlossy = (COLORREF)color;
-               else if (hwndcolor3 == (HWND)lParam)
-                  pmat->m_cClearcoat = (COLORREF)color;
+               m_colorDialog.SetColor(pmat->m_cBase);
+               if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+               {
+                   pmat->m_cBase = m_colorDialog.GetColor();
+                   m_colorButton1.SetColor(pmat->m_cBase);
+                   while (sel != -1)
+                   {
+                       sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
+                       if(sel!=-1)
+                       {
+                           LVITEM lvitem;
+                           lvitem.mask = LVIF_PARAM;
+                           lvitem.iItem = sel;
+                           lvitem.iSubItem = 0;
+                           ListView_GetItem(m_hMaterialList, &lvitem);
+                           Material * const pmat = (Material*)lvitem.lParam;
+                           pmat->m_cBase = m_colorDialog.GetColor();
+                       }
+                   }
+                   pt->SetNonUndoableDirty(eSaveDirty);
+               }
+           }
+           break;
+       }
+       case IDC_COLOR_BUTTON2:
+       {
+           CHOOSECOLOR cc = m_colorDialog.GetParameters();
+           cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+           m_colorDialog.SetParameters(cc);
 
-               // The previous selection is now deleted, so look again from the top of the list
-               sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
-            }
-            pt->SetNonUndoableDirty(eSaveDirty);
-         }
-         break;
-      }
-   }
+           if (ListView_GetSelectedCount(m_hMaterialList))	// if some items are selected???
+           {
+               int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
+               if (sel == -1)
+                   break;
 
-   switch (LOWORD(wParam))
-   {
+               LVITEM lvitem;
+               lvitem.mask = LVIF_PARAM;
+               lvitem.iItem = sel;
+               lvitem.iSubItem = 0;
+               ListView_GetItem(m_hMaterialList, &lvitem);
+               Material * const pmat = (Material*)lvitem.lParam;
+               m_colorDialog.SetColor(pmat->m_cGlossy);
+               if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+               {
+                   pmat->m_cGlossy = m_colorDialog.GetColor();
+                   m_colorButton2.SetColor(pmat->m_cGlossy);
+                   while (sel != -1)
+                   {
+                       sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
+                       if(sel!=-1)
+                       {
+                           LVITEM lvitem;
+                           lvitem.mask = LVIF_PARAM;
+                           lvitem.iItem = sel;
+                           lvitem.iSubItem = 0;
+                           ListView_GetItem(m_hMaterialList, &lvitem);
+                           Material * const pmat = (Material*)lvitem.lParam;
+                           pmat->m_cGlossy = m_colorDialog.GetColor();
+                       }
+                   }
+                   pt->SetNonUndoableDirty(eSaveDirty);
+               }
+           }
+           break;
+       }
+       case IDC_COLOR_BUTTON3:
+       {
+           CHOOSECOLOR cc = m_colorDialog.GetParameters();
+           cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+           m_colorDialog.SetParameters(cc);
+
+           if (ListView_GetSelectedCount(m_hMaterialList))	// if some items are selected???
+           {
+               int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
+               if (sel == -1)
+                   break;
+
+               LVITEM lvitem;
+               lvitem.mask = LVIF_PARAM;
+               lvitem.iItem = sel;
+               lvitem.iSubItem = 0;
+               ListView_GetItem(m_hMaterialList, &lvitem);
+               Material * const pmat = (Material*)lvitem.lParam;
+               m_colorDialog.SetColor(pmat->m_cClearcoat);
+               if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+               {
+                   pmat->m_cClearcoat = m_colorDialog.GetColor();
+                   m_colorButton3.SetColor(pmat->m_cClearcoat);
+                   while (sel != -1)
+                   {
+                       sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
+                       if(sel!=-1)
+                       {
+                           LVITEM lvitem;
+                           lvitem.mask = LVIF_PARAM;
+                           lvitem.iItem = sel;
+                           lvitem.iSubItem = 0;
+                           ListView_GetItem(m_hMaterialList, &lvitem);
+                           Material * const pmat = (Material*)lvitem.lParam;
+                           pmat->m_cClearcoat = m_colorDialog.GetColor();
+                       }
+                   }
+                   pt->SetNonUndoableDirty(eSaveDirty);
+               }
+           }
+           break;
+       }
+
       case IDC_CLONE_BUTTON:
       {
          if (ListView_GetSelectedCount(m_hMaterialList))	// if some items are selected???
@@ -423,12 +518,6 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     
    switch (uMsg)
    {
-      case GET_COLOR_TABLE:
-      {
-         *((unsigned long **)lParam) = &g_pvp->m_dummyMaterial.m_cBase;
-         return TRUE;
-      }
-
       case WM_NOTIFY:
       {
          CCO(PinTable) *const pt = g_pvp->GetActiveTable();
@@ -519,12 +608,9 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                      lvitem.iSubItem = 0;
                      ListView_GetItem(m_hMaterialList, &lvitem);
                      Material * const pmat = (Material*)lvitem.lParam;
-                     HWND hwndColor = GetDlgItem(IDC_COLOR).GetHwnd();
-                     SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cBase);
-                     hwndColor = GetDlgItem(IDC_COLOR2).GetHwnd();
-                     SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cGlossy);
-                     hwndColor = GetDlgItem(IDC_COLOR3).GetHwnd();
-                     SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cClearcoat);
+                     m_colorButton1.SetColor(pmat->m_cBase);
+                     m_colorButton2.SetColor(pmat->m_cGlossy);
+                     m_colorButton3.SetColor(pmat->m_cClearcoat);
                      setItemText(IDC_DIFFUSE_EDIT, pmat->m_fWrapLighting);
                      setItemText(IDC_GLOSSY_EDIT, pmat->m_fRoughness);
                      setItemText(IDC_GLOSSY_IMGLERP_EDIT, pmat->m_fGlossyImageLerp);
@@ -542,8 +628,6 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                      setItemText(IDC_MAT_ELASTICITY_FALLOFF, pmat->m_fElasticityFalloff);
                      setItemText(IDC_MAT_FRICTION, pmat->m_fFriction);
                      setItemText(IDC_MAT_SCATTER_ANGLE, pmat->m_fScatterAngle);
-
-                     ::InvalidateRect(hwndColor, NULL, FALSE);
                   }
                }
                break;
@@ -628,12 +712,9 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                }
                else if ((plistview->uOldState & LVIS_SELECTED) == 0)
                {
-                  HWND hwndColor = GetDlgItem(IDC_COLOR).GetHwnd();
-                  SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cBase);
-                  hwndColor = GetDlgItem(IDC_COLOR2).GetHwnd();
-                  SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cGlossy);
-                  hwndColor = GetDlgItem(IDC_COLOR3).GetHwnd();
-                  SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cClearcoat);
+                  m_colorButton1.SetColor(pmat->m_cBase);
+                  m_colorButton2.SetColor(pmat->m_cGlossy);
+                  m_colorButton3.SetColor(pmat->m_cClearcoat);
                   setItemText(IDC_DIFFUSE_EDIT, pmat->m_fWrapLighting);
                   setItemText(IDC_GLOSSY_EDIT, pmat->m_fRoughness);
                   setItemText(IDC_GLOSSY_IMGLERP_EDIT, pmat->m_fGlossyImageLerp);
@@ -673,6 +754,22 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          {
             // Nothing currently selected
          }
+    
+         LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+         UINT nID = static_cast<UINT>(wParam);
+         if (nID == IDC_COLOR_BUTTON1)
+         {
+             m_colorButton1.DrawItem(lpDrawItemStruct);
+         }
+         else if (nID == IDC_COLOR_BUTTON2)
+         {
+             m_colorButton2.DrawItem(lpDrawItemStruct);
+         }
+         else if (nID == IDC_COLOR_BUTTON3)
+         {
+             m_colorButton3.DrawItem(lpDrawItemStruct);
+         }
+
          return TRUE;
       }
    }
