@@ -497,7 +497,7 @@ STDMETHODIMP Textbox::put_Text(BSTR newVal)
    return S_OK;
 }
 
-HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
+HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 

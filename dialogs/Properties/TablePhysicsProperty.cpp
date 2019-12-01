@@ -112,9 +112,8 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
             table->m_angletiltMax = PropertyDialog::GetFloatTextbox(m_maxSlopeEdit);
             PropertyDialog::EndUndo(table);
             break;
-
         default:
-    	break;
+        break;
     }
 }
 
@@ -138,7 +137,9 @@ BOOL TablePhysicsProperty::OnInitDialog()
     AttachItem(IDC_TABLE_FIELD_HEIGHT_EDIT, m_tableFieldHeightEdit);
     AttachItem(IDC_MIN_DIFFICULTY_EDIT, m_minSlopeEdit);
     AttachItem(IDC_MAX_DIFFICULTY_EDIT, m_maxSlopeEdit);
+
     UpdateVisuals();
+
     return TRUE;
 }
 

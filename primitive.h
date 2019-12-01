@@ -222,7 +222,7 @@ public:
    STDMETHOD(get_HitThreshold)(/*[out, retval]*/ float *pVal);
    STDMETHOD(get_ObjectSpaceNormalMap)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ObjectSpaceNormalMap)(/*[in]*/ VARIANT_BOOL newVal);
-   
+
    Primitive();
    virtual ~Primitive();
 
@@ -252,7 +252,7 @@ public:
    // Multi-object manipulation
    virtual Vertex2D GetCenter() const;
    virtual void PutCenter(const Vertex2D& pv);
- 
+
    //STDMETHOD(get_Name)(BSTR *pVal) {return E_FAIL;}
 
    //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);

@@ -16,8 +16,8 @@
 #define MIN_ZOOM 0.126f // purposely make them offset from powers to 2 to account for roundoff error
 #define MAX_ZOOM 63.9f
 
-#define DISABLE_SCRIPT_EDITING	0x00000002		// cannot open script windows (stops editing and viewing)
-#define DISABLE_EVERYTHING		0x80000000		// everything is off limits (including future locks)
+#define DISABLE_SCRIPT_EDITING  0x00000002 // cannot open script windows (stops editing and viewing)
+#define DISABLE_EVERYTHING      0x80000000 // everything is off limits (including future locks)
 
 #define MAX_LAYERS              11
 
@@ -333,7 +333,7 @@ public:
    void RemoveImage(Texture * const ppi);
    HRESULT LoadImageFromStream(IStream *pstm, int version);
    Texture* GetImage(const char * const szName) const;
-   bool GetImageLink(Texture * const ppi);
+   bool GetImageLink(Texture * const ppi) const;
    PinBinary *GetImageLinkBinary(const int id);
 
    void ListCustomInfo(HWND hwndListView);
@@ -416,7 +416,7 @@ public:
    HRESULT SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
    HRESULT WriteInfoValue(IStorage* pstg, WCHAR *wzName, char *szValue, HCRYPTHASH hcrypthash);
    HRESULT ReadInfoValue(IStorage* pstg, WCHAR *wzName, char **pszValue, HCRYPTHASH hcrypthash);
-   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay);
+   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupForPlay);
    HRESULT LoadGameFromFilename(char *szFileName);
    HRESULT LoadGameFromStorage(IStorage *pstgRoot);
    HRESULT LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version);
@@ -460,7 +460,7 @@ public:
    void OnMouseMove(const short x, const short y);
 
    void SetDefaultView();
-   void GetViewRect(FRect *pfrect);
+   void GetViewRect(FRect *pfrect) const;
 
    bool IsNameUnique(const WCHAR * const wzName) const;
    void GetUniqueName(ItemTypeEnum type, WCHAR * const wzUniqueName) const;
@@ -806,7 +806,7 @@ public:
    void OnMouseWheel(const short x, const short y, const short zDelta);
    void OnSize();
    void OnClose();
-   void Set3DOffset(float value);
+   void Set3DOffset(const float value);
    void SetZPD(const float value);
    void SetMaxSeparation(const float value);
    bool GetShowDT() const;
@@ -814,26 +814,27 @@ public:
    bool GetShowFSS() const;
    void SetShowFSS(const bool enable);
    void PutGlobalAlphaAcc(const bool enable);
-   int GetBallTrailStrength();
+   int GetBallTrailStrength() const;
    void SetBallTrailStrength(const int value);
-   int GetGlobalEmissionScale();
+   int GetGlobalEmissionScale() const;
    void SetGlobalEmissionScale(const int value);
-   float GetGlobalDifficulty();
+   float GetGlobalDifficulty() const;
    void SetGlobalDifficulty(const float value);
-   int GetTableSoundVolume();
+   int GetTableSoundVolume() const;
    void SetTableSoundVolume( const int value);
-   int GetTableMusicVolume();
+   int GetTableMusicVolume() const;
    void SetTableMusicVolume(const int value);
-   int GetPlayfieldReflectionStrength();
+   int GetPlayfieldReflectionStrength() const;
    void SetPlayfieldReflectionStrength(const int value);
-   float GetGravity();
+   float GetGravity() const;
    void SetGravity(const float value);
    void SetFriction(const float value);
-   void SetPlungerNormalize(int value);
-   float GetTableWidth();
+   void SetPlungerNormalize(const int value);
+   float GetTableWidth() const;
    void SetTableWidth(const float value);
-   float GetHeight();
+   float GetHeight() const;
    void SetHeight(const float value);
+
 private:
    std::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
    std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name
@@ -942,4 +943,5 @@ private:
 
    PinTable *m_pt;
 };
+
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)

@@ -1934,9 +1934,9 @@ void PinTable::UIRenderPass2(Sur * const psur)
          ppi->EnsureHBitmap();
          if (ppi->m_hbmGDIVersion)
          {
-            HDC hdcScreen = ::GetDC(NULL);
-            HDC hdcNew = CreateCompatibleDC(hdcScreen);
-            HBITMAP hbmOld = (HBITMAP)SelectObject(hdcNew, ppi->m_hbmGDIVersion);
+            const HDC hdcScreen = ::GetDC(NULL);
+            const HDC hdcNew = CreateCompatibleDC(hdcScreen);
+            const HBITMAP hbmOld = (HBITMAP)SelectObject(hdcNew, ppi->m_hbmGDIVersion);
 
             psur->Image(frect.left, frect.top, frect.right, frect.bottom, hdcNew, ppi->m_width, ppi->m_height);
 
@@ -3252,7 +3252,7 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
    return S_OK;
 }
 
-HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
+HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 
@@ -4424,8 +4424,8 @@ float PinTable::GetZPD() const
 
 void PinTable::SetZPD(const float value)
 {
-    if (m_overwriteGlobalStereo3D)
-        m_3DZPD = value;
+   if (m_overwriteGlobalStereo3D)
+      m_3DZPD = value;
 }
 
 float PinTable::GetMaxSeparation() const
@@ -4435,13 +4435,13 @@ float PinTable::GetMaxSeparation() const
 
 void PinTable::SetMaxSeparation(const float value)
 {
-    if (m_overwriteGlobalStereo3D)
-        m_3DmaxSeparation = value;
+   if (m_overwriteGlobalStereo3D)
+      m_3DmaxSeparation = value;
 }
 
 float PinTable::Get3DOffset() const
 {
-	return m_overwriteGlobalStereo3D ? m_3DOffset : m_global3DOffset;
+   return m_overwriteGlobalStereo3D ? m_3DOffset : m_global3DOffset;
 }
 
 FRect3D PinTable::GetBoundingBox() const
@@ -4486,7 +4486,7 @@ void PinTable::SetZoom(float zoom)
    SetMyScrollInfo();
 }
 
-void PinTable::GetViewRect(FRect *pfrect)
+void PinTable::GetViewRect(FRect * const pfrect) const
 {
    if (!g_pvp->m_backglassView)
    {
@@ -4896,7 +4896,6 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
       DestroyMenu(hmenumain);
 }
 
-static char elementName[256];
 char *PinTable::GetElementName(IEditable *pedit) const
 {
    WCHAR *elemName = NULL;
@@ -4911,6 +4910,7 @@ char *PinTable::GetElementName(IEditable *pedit) const
    }
    if (elemName)
    {
+      static char elementName[256];
       WideCharToMultiByte(CP_ACP, 0, elemName, -1, elementName, 256, NULL, NULL);
       return elementName;
    }
@@ -7013,13 +7013,13 @@ STDMETHODIMP PinTable::get_ZPD(float *pVal)
 STDMETHODIMP PinTable::put_ZPD(float newVal)
 {
    STARTUNDO
-        SetZPD(newVal);
+   SetZPD(newVal);
    STOPUNDO
 
    return S_OK;
 }
 
-void PinTable::Set3DOffset(float value)
+void PinTable::Set3DOffset(const float value)
 {
     if (m_overwriteGlobalStereo3D)
         m_3DOffset = value;
@@ -7027,17 +7027,17 @@ void PinTable::Set3DOffset(float value)
 
 STDMETHODIMP PinTable::get_Offset(float *pVal)
 {
-    *pVal = Get3DOffset();
-	return S_OK;
+   *pVal = Get3DOffset();
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::put_Offset(float newVal)
 {
-    STARTUNDO
-        Set3DOffset(newVal);
-	STOPUNDO
+   STARTUNDO
+   Set3DOffset(newVal);
+   STOPUNDO
 
-	return S_OK;
+   return S_OK;
 }
 
 HRESULT PinTable::StopSound(BSTR Sound)
@@ -7060,11 +7060,11 @@ HRESULT PinTable::StopSound(BSTR Sound)
 
 void PinTable::StopAllSounds()
 {
-	// In case we were playing any of the main buffers
-	for (size_t i = 0; i < m_vsound.size(); i++)
-		m_vsound[i]->Stop();
+   // In case we were playing any of the main buffers
+   for (size_t i = 0; i < m_vsound.size(); i++)
+      m_vsound[i]->Stop();
 
-	g_pvp->m_ps.StopCopiedWavs();
+   g_pvp->m_ps.StopCopiedWavs();
 }
 
 
@@ -7827,7 +7827,7 @@ void PinTable::UpdateDbgLight()
 }
 
 
-bool PinTable::GetImageLink(Texture * const ppi)
+bool PinTable::GetImageLink(Texture * const ppi) const
 {
    return (!lstrcmpi(ppi->m_szInternalName, m_szScreenShot));
 }
@@ -7884,7 +7884,7 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, int version)
 
 	  if (ppi->LoadFromStream(pstm, version, this) == S_OK)
 	  {
-		  const std::lock_guard<std::mutex> lock(g_table_mutex);
+		  const std::lock_guard<std::mutex> lock(g_table_mutex); //!! needed nowadays due to multithreaded image decompression
 		  m_vimage.push_back(ppi);
 	  }
       else
@@ -8473,7 +8473,7 @@ STDMETHODIMP PinTable::put_TableHeight(float newVal)
    return S_OK;
 }
 
-float PinTable::GetTableWidth()
+float PinTable::GetTableWidth() const
 {
     return m_right - m_left;
 }
@@ -8485,7 +8485,7 @@ void PinTable::SetTableWidth(const float value)
 
 STDMETHODIMP PinTable::get_Width(float *pVal)
 {
-    *pVal = GetTableWidth();
+   *pVal = GetTableWidth();
    g_pvp->SetStatusBarUnitInfo("", true);
 
    return S_OK;
@@ -8493,8 +8493,8 @@ STDMETHODIMP PinTable::get_Width(float *pVal)
 
 STDMETHODIMP PinTable::put_Width(float newVal)
 {
-    STARTUNDO
-        SetTableWidth(newVal);
+   STARTUNDO
+   SetTableWidth(newVal);
    STOPUNDO
 
    SetMyScrollInfo();
@@ -8502,7 +8502,7 @@ STDMETHODIMP PinTable::put_Width(float newVal)
    return S_OK;
 }
 
-float PinTable::GetHeight()
+float PinTable::GetHeight() const
 {
     return m_bottom - m_top;
 }
@@ -8521,8 +8521,8 @@ STDMETHODIMP PinTable::get_Height(float *pVal)
 
 STDMETHODIMP PinTable::put_Height(float newVal)
 {
-    STARTUNDO
-        SetHeight(newVal);
+   STARTUNDO
+   SetHeight(newVal);
    STOPUNDO
 
    SetMyScrollInfo();
@@ -8629,7 +8629,7 @@ STDMETHODIMP PinTable::put_LightEmissionScale(float newVal)
    return S_OK;
 }
 
-int PinTable::GetGlobalEmissionScale()
+int PinTable::GetGlobalEmissionScale() const
 {
     return quantizeUnsignedPercent(m_globalEmissionScale);
 }
@@ -8641,15 +8641,15 @@ void PinTable::SetGlobalEmissionScale(const int value)
 
 STDMETHODIMP PinTable::get_NightDay(int *pVal)
 {
-    *pVal = GetGlobalEmissionScale();
+   *pVal = GetGlobalEmissionScale();
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_NightDay(int newVal)
 {
-    STARTUNDO
-        SetGlobalEmissionScale(newVal);
+   STARTUNDO
+   SetGlobalEmissionScale(newVal);
    STOPUNDO
 
    return S_OK;
@@ -8719,7 +8719,7 @@ STDMETHODIMP PinTable::put_BallReflection(UserDefaultOnOff newVal)
    return S_OK;
 }
 
-int PinTable::GetPlayfieldReflectionStrength()
+int PinTable::GetPlayfieldReflectionStrength() const
 {
     return quantizeUnsignedPercent(m_playfieldReflectionStrength);
 }
@@ -8731,15 +8731,15 @@ void PinTable::SetPlayfieldReflectionStrength(const int value)
 
 STDMETHODIMP PinTable::get_PlayfieldReflectionStrength(int *pVal)
 {
-    *pVal = GetPlayfieldReflectionStrength();
+   *pVal = GetPlayfieldReflectionStrength();
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_PlayfieldReflectionStrength(int newVal)
 {
-    STARTUNDO
-        SetPlayfieldReflectionStrength(newVal);
+   STARTUNDO
+   SetPlayfieldReflectionStrength(newVal);
    STOPUNDO
 
    return S_OK;
@@ -8761,7 +8761,7 @@ STDMETHODIMP PinTable::put_BallTrail(UserDefaultOnOff newVal)
    return S_OK;
 }
 
-int PinTable::GetBallTrailStrength()
+int PinTable::GetBallTrailStrength() const
 {
     return quantizeUnsignedPercent(m_ballTrailStrength);
 }
@@ -8773,15 +8773,15 @@ void PinTable::SetBallTrailStrength(const int value)
 
 STDMETHODIMP PinTable::get_TrailStrength(int *pVal)
 {
-    *pVal = GetBallTrailStrength();
+   *pVal = GetBallTrailStrength();
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_TrailStrength(int newVal)
 {
-    STARTUNDO
-        SetBallTrailStrength(newVal);
+   STARTUNDO
+   SetBallTrailStrength(newVal);
    STOPUNDO
 
    return S_OK;
@@ -8789,9 +8789,9 @@ STDMETHODIMP PinTable::put_TrailStrength(int newVal)
 
 STDMETHODIMP PinTable::get_BallPlayfieldReflectionScale(float *pVal)
 {
-	*pVal = m_ballPlayfieldReflectionStrength;
+   *pVal = m_ballPlayfieldReflectionStrength;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::put_BallPlayfieldReflectionScale(float newVal)
@@ -8835,7 +8835,7 @@ STDMETHODIMP PinTable::put_BloomStrength(float newVal)
    return S_OK;
 }
 
-int PinTable::GetTableSoundVolume()
+int PinTable::GetTableSoundVolume() const
 {
     return quantizeUnsignedPercent(m_TableSoundVolume);
 }
@@ -8847,15 +8847,15 @@ void PinTable::SetTableSoundVolume(const int value)
 
 STDMETHODIMP PinTable::get_TableSoundVolume(int *pVal)
 {
-    *pVal = GetTableSoundVolume();
+   *pVal = GetTableSoundVolume();
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_TableSoundVolume(int newVal)
 {
-    STARTUNDO
-        SetTableSoundVolume(newVal);
+   STARTUNDO
+   SetTableSoundVolume(newVal);
    STOPUNDO
 
    return S_OK;
@@ -8863,14 +8863,15 @@ STDMETHODIMP PinTable::put_TableSoundVolume(int newVal)
 
 STDMETHODIMP PinTable::get_DetailLevel(int *pVal)
 {
-    *pVal = GetDetailLevel();
+   *pVal = GetDetailLevel();
+
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_DetailLevel(int newVal)
 {
-    STARTUNDO
-        SetDetailLevel(newVal);
+   STARTUNDO
+   SetDetailLevel(newVal);
    STOPUNDO
 
    return S_OK;
@@ -8892,8 +8893,8 @@ void PinTable::PutGlobalAlphaAcc(const bool enable)
 
 STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal)
 {
-    STARTUNDO
-        PutGlobalAlphaAcc(VBTOb(newVal));
+   STARTUNDO
+   PutGlobalAlphaAcc(VBTOb(newVal));
    STOPUNDO
 
    return S_OK;
@@ -8953,7 +8954,7 @@ STDMETHODIMP PinTable::put_BallDecalMode(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-int PinTable::GetTableMusicVolume()
+int PinTable::GetTableMusicVolume() const
 {
     return quantizeUnsignedPercent(m_TableMusicVolume);
 }
@@ -8965,15 +8966,15 @@ void PinTable::SetTableMusicVolume(const int value)
 
 STDMETHODIMP PinTable::get_TableMusicVolume(int *pVal)
 {
-    *pVal = GetTableMusicVolume();
+   *pVal = GetTableMusicVolume();
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_TableMusicVolume(int newVal)
 {
-    STARTUNDO
-        SetTableMusicVolume(newVal);
+   STARTUNDO
+   SetTableMusicVolume(newVal);
    STOPUNDO
 
    return S_OK;
@@ -9029,16 +9030,16 @@ STDMETHODIMP PinTable::put_BackdropImageApplyNightDay(VARIANT_BOOL newVal)
 
 bool PinTable::GetShowFSS() const
 {
-    return m_BG_enable_FSS;
+   return m_BG_enable_FSS;
 }
 
 void PinTable::SetShowFSS(const bool enable)
 {
-    m_BG_enable_FSS = enable;
-    if (m_BG_enable_FSS)
-        m_BG_current_set = FULL_SINGLE_SCREEN;
-    else
-        LoadValueInt("Player", "BGSet", (int*)&m_BG_current_set);
+   m_BG_enable_FSS = enable;
+   if (m_BG_enable_FSS)
+      m_BG_current_set = FULL_SINGLE_SCREEN;
+   else
+      LoadValueInt("Player", "BGSet", (int*)&m_BG_current_set);
 }
 
 STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
@@ -9050,8 +9051,8 @@ STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
 
 STDMETHODIMP PinTable::put_ShowFSS(VARIANT_BOOL newVal)
 {
-    STARTUNDO
-        SetShowFSS(VBTOb(newVal));
+   STARTUNDO
+   SetShowFSS(VBTOb(newVal));
    STOPUNDO
 
    return S_OK;
@@ -9142,9 +9143,9 @@ STDMETHODIMP PinTable::put_ColorGradeImage(BSTR newVal)
    return S_OK;
 }
 
-float PinTable::GetGravity()
+float PinTable::GetGravity() const
 {
-    return m_Gravity * (float)(1.0 / GRAVITYCONST);
+   return m_Gravity * (float)(1.0 / GRAVITYCONST);
 }
 
 void PinTable::SetGravity(const float value)
@@ -9154,7 +9155,7 @@ void PinTable::SetGravity(const float value)
 
 STDMETHODIMP PinTable::get_Gravity(float *pVal)
 {
-    *pVal = GetGravity();
+   *pVal = GetGravity();
 
    return S_OK;
 }
@@ -9173,8 +9174,8 @@ STDMETHODIMP PinTable::put_Gravity(float newVal)
    }
    else
    {
-       STARTUNDO
-           SetGravity(newVal);
+      STARTUNDO
+      SetGravity(newVal);
       STOPUNDO
    }
 
@@ -9195,8 +9196,8 @@ void PinTable::SetFriction(const float value)
 
 STDMETHODIMP PinTable::put_Friction(float newVal)
 {
-    STARTUNDO
-        SetFriction(newVal);
+   STARTUNDO
+   SetFriction(newVal);
    STOPUNDO
 
    return S_OK;
@@ -9289,15 +9290,15 @@ STDMETHODIMP PinTable::get_PlungerNormalize(int *pVal)
    return S_OK;
 }
 
-void PinTable::SetPlungerNormalize(int value)
+void PinTable::SetPlungerNormalize(const int value)
 {
-    m_plungerNormalize = LoadValueIntWithDefault("Player", "PlungerNormalize", value);
+   m_plungerNormalize = LoadValueIntWithDefault("Player", "PlungerNormalize", value);
 }
 
 STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
 {
-    STARTUNDO
-        SetPlungerNormalize(newVal);
+   STARTUNDO
+   SetPlungerNormalize(newVal);
    STOPUNDO
 
    return S_OK;
@@ -10099,7 +10100,7 @@ STDMETHODIMP PinTable::put_EnableEMReels(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-float PinTable::GetGlobalDifficulty()
+float PinTable::GetGlobalDifficulty() const
 {
     return m_globalDifficulty * 100.f;
 }
@@ -10115,7 +10116,7 @@ void PinTable::SetGlobalDifficulty(const float value)
         float v = value;
         if (value < 0.f) v = 0.f;
         else if (value > 100.0f) v = 100.0f;
-            m_globalDifficulty = v * (float)(1.0 / 100.0);
+        m_globalDifficulty = v * (float)(1.0 / 100.0);
     }
 }
 
@@ -10128,10 +10129,10 @@ STDMETHODIMP PinTable::get_GlobalDifficulty(float *pVal)
 
 STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
 {
-   if (!g_pplayer)
-   {  //VP Editor
+   if (!g_pplayer) // VP Editor
+   {
        STARTUNDO
-           SetGlobalDifficulty(newVal);
+       SetGlobalDifficulty(newVal);
        STOPUNDO
    }
 

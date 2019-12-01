@@ -197,7 +197,7 @@ Primitive::Primitive()
 
 Primitive::~Primitive()
 {
-   WaitForMeshDecompression();
+   WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
    if (m_vertexBuffer)
       m_vertexBuffer->release();
    if (m_indexBuffer)
@@ -1371,7 +1371,7 @@ void Primitive::PutCenter(const Vertex2D& pv)
 //////////////////////////////
 
 
-HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
+HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 
@@ -1422,7 +1422,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, BOOL bBackupFo
    bw.WriteBool(FID(OSNM), m_d.m_objectSpaceNormalMap);
 
    // No need to backup the meshes for play as the script cannot change them 
-   if (m_d.m_use3DMesh && !bBackupForPlay)
+   if (m_d.m_use3DMesh && !backupForPlay)
    {
       bw.WriteString(FID(M3DN), m_d.m_meshFileName);
       bw.WriteInt(FID(M3VN), (int)m_mesh.NumVertices());
@@ -1523,22 +1523,16 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
 
    br.Load();
 
-   /* will happen post-load 
-   if (!m_d.m_use3DMesh)
-      CalculateBuiltinOriginal();
+   if(version < 1011) // so that old tables do the reorderForsyth on each load, new tables only on mesh import, so a simple resave of a old table will also skip this step
+   {
+      unsigned int* const tmp = reorderForsyth(m_mesh.m_indices.data(), (int)(m_mesh.NumIndices() / 3), (int)m_mesh.NumVertices());
+      if (tmp != NULL)
+      {
+         memcpy(m_mesh.m_indices.data(), tmp, m_mesh.NumIndices() * sizeof(unsigned int));
+         delete[] tmp;
+      }
+   }
 
-	  */
-   /*  Moved to import.
-	unsigned int* tmp = reorderForsyth(m_mesh.m_indices.data(), (int)(m_mesh.NumIndices() / 3), (int)m_mesh.NumVertices());
-	if (tmp != NULL)
-	{
-		memcpy(m_mesh.m_indices.data(), tmp, m_mesh.NumIndices() * sizeof(unsigned int));
-		delete[] tmp;
-	}
-	*/
-
-   // Will happen post-load
-   // UpdateEditorView();
    return S_OK;
 }
 
@@ -1614,25 +1608,25 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(M3AY): pbr->GetInt(&m_compressedAnimationVertices); break;
    case FID(M3AX):
    {
-	   Mesh::FrameData frameData;
-	   frameData.m_frameVerts.clear();
-	   frameData.m_frameVerts.resize(m_numVertices);
+      Mesh::FrameData frameData;
+      frameData.m_frameVerts.clear();
+      frameData.m_frameVerts.resize(m_numVertices);
 
-	   /*LZWReader lzwreader(pbr->m_pistream, (int *)m_mesh.m_vertices.data(), sizeof(Vertex3D_NoTex2)*numVertices, 1, sizeof(Vertex3D_NoTex2)*numVertices);
-	   lzwreader.Decoder();*/
-	   mz_ulong uclen = (mz_ulong)(sizeof(Mesh::VertData)*m_mesh.NumVertices());
-	   mz_uint8 * c = (mz_uint8 *)malloc(m_compressedAnimationVertices);
-	   pbr->GetStruct(c, m_compressedAnimationVertices);
-	   const int error = uncompress((unsigned char *)frameData.m_frameVerts.data(), &uclen, c, m_compressedAnimationVertices);
-	   if (error != Z_OK)
-	   {
-		   char err[128];
-		   sprintf_s(err, "Could not uncompress primitive animation vertex data, error %d", error);
-		   ShowError(err);
-	   }
-	   free(c);
-	   m_mesh.m_animationFrames.push_back(frameData);
-	   break;
+      /*LZWReader lzwreader(pbr->m_pistream, (int *)m_mesh.m_vertices.data(), sizeof(Vertex3D_NoTex2)*numVertices, 1, sizeof(Vertex3D_NoTex2)*numVertices);
+      lzwreader.Decoder();*/
+      mz_ulong uclen = (mz_ulong)(sizeof(Mesh::VertData)*m_mesh.NumVertices());
+      mz_uint8 * c = (mz_uint8 *)malloc(m_compressedAnimationVertices);
+      pbr->GetStruct(c, m_compressedAnimationVertices);
+      const int error = uncompress((unsigned char *)frameData.m_frameVerts.data(), &uclen, c, m_compressedAnimationVertices);
+      if (error != Z_OK)
+      {
+         char err[128];
+         sprintf_s(err, "Could not uncompress primitive animation vertex data, error %d", error);
+         ShowError(err);
+      }
+      free(c);
+      m_mesh.m_animationFrames.push_back(frameData);
+      break;
    }
    case FID(M3CY): pbr->GetInt(&m_compressedVertices); break;
    case FID(M3CX):
@@ -1701,8 +1695,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
 				 ShowError(err);
 			 }
 			 free(c);
-		 }
-		 );
+		 });
       }
       else
       {
@@ -1753,7 +1746,8 @@ void Primitive::WaitForMeshDecompression()
 
 HRESULT Primitive::InitPostLoad()
 {
-   WaitForMeshDecompression();
+   WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
+
    if (!m_d.m_use3DMesh)
       CalculateBuiltinOriginal();
 
@@ -1876,12 +1870,12 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                   }
                }
                prim->m_d.m_use3DMesh = true;
-			   unsigned int* tmp = reorderForsyth(prim->m_mesh.m_indices.data(), (int)(prim->m_mesh.NumIndices() / 3), (int)prim->m_mesh.NumVertices());
-			   if (tmp != NULL)
-			   {
-				   memcpy(prim->m_mesh.m_indices.data(), tmp, prim->m_mesh.NumIndices() * sizeof(unsigned int));
-				   delete[] tmp;
-			   }
+               unsigned int* const tmp = reorderForsyth(prim->m_mesh.m_indices.data(), (int)(prim->m_mesh.NumIndices() / 3), (int)prim->m_mesh.NumVertices());
+               if (tmp != NULL)
+               {
+                  memcpy(prim->m_mesh.m_indices.data(), tmp, prim->m_mesh.NumIndices() * sizeof(unsigned int));
+                  delete[] tmp;
+               }
                prim->UpdateEditorView();
                prim = NULL;
                EndDialog(hwndDlg, TRUE);

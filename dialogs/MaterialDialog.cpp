@@ -756,7 +756,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          }
     
          LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
-         UINT nID = static_cast<UINT>(wParam);
+         const UINT nID = static_cast<UINT>(wParam);
          if (nID == IDC_COLOR_BUTTON1)
          {
              m_colorButton1.DrawItem(lpDrawItemStruct);

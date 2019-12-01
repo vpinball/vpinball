@@ -16,7 +16,7 @@ public:
    UndoRecord();
    virtual ~UndoRecord();
 
-   void MarkForUndo(IEditable *const pie, bool bBackupForPlay);
+   void MarkForUndo(IEditable *const pie, const bool backupForPlay);
    void MarkForCreate(IEditable *const pie);
    void MarkForDelete(IEditable *const pie);
 
@@ -35,7 +35,7 @@ public:
    virtual ~PinUndo();
 
    void BeginUndo();
-   void MarkForUndo(IEditable * const pie, bool bBackupForPlay = false);
+   void MarkForUndo(IEditable * const pie, const bool backupForPlay = false);
    void MarkForCreate(IEditable *const pie);
    void MarkForDelete(IEditable *const pie);
    void EndUndo();

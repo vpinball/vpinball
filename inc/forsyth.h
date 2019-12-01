@@ -126,6 +126,9 @@ T* reorderForsyth(const T* const indices,
                   const int nTriangles,
                   const int nVertices)
 {
+	if (indices == NULL || nTriangles == 0 || nVertices == 0)
+		return NULL;
+
 	// The tables need not be inited every time this function
 	// is used. Either call initForsyth from the calling process,
 	// or just replace the score tables with precalculated values.

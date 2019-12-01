@@ -22,7 +22,6 @@ void TableLightsProperty::UpdateVisuals()
     PropertyDialog::SetFloatTextbox(m_screenSpaceReflEdit, table->m_SSRScale);
 }
 
-
 void TableLightsProperty::UpdateProperties(const int dispid)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
@@ -123,7 +122,7 @@ INT_PTR TableLightsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_DRAWITEM:
         {
             LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
-            UINT nID = static_cast<UINT>(wParam);
+            const UINT nID = static_cast<UINT>(wParam);
             if (nID == IDC_COLOR_BUTTON1)
             {
                 m_colorButton1.DrawItem(lpDrawItemStruct);
@@ -137,4 +136,3 @@ INT_PTR TableLightsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     return DialogProcDefault(uMsg, wParam, lParam);
 }
-

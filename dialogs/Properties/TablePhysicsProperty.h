@@ -35,9 +35,6 @@ private:
     CEdit   m_tableFieldHeightEdit;
     CEdit   m_minSlopeEdit;
     CEdit   m_maxSlopeEdit;
-
-
 };
 
 #endif // !H_TABLE_PHYSICS_PROPERTY
-

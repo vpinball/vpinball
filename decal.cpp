@@ -612,7 +612,7 @@ void Decal::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElem
    m_d.m_rotation += ang;
 }
 
-HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, BOOL bBackupForPlay)
+HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
 
