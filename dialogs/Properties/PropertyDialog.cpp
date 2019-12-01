@@ -301,16 +301,16 @@ BOOL PropertyDialog::OnInitDialog()
 {
     AttachItem(IDC_PROP_TAB, m_tab);
     AttachItem(IDC_NAME_EDIT, m_nameEdit);
-    m_resizer.Initialize(*this, CRect(0, 0, 243, 308));
-    m_resizer.AddChild(m_nameEdit, topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_tab, topcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
+//    m_resizer.Initialize(*this, CRect(0, 0, 243, 308));
+//     m_resizer.AddChild(m_nameEdit, topleft, RD_STRETCH_WIDTH);
+//     m_resizer.AddChild(m_tab, topcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
     return TRUE;
 }
 
 INT_PTR PropertyDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 {
     // Pass resizing messages on to the resizer
-    m_resizer.HandleMessage(msg, wparam, lparam);
+    //m_resizer.HandleMessage(msg, wparam, lparam);
     // Pass unhandled messages on to parent DialogProc
     return DialogProcDefault(msg, wparam, lparam);
 }
@@ -342,6 +342,16 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
         }
     }
     return IsDialogMessage(msg);
+}
+
+LRESULT PropertyDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam)
+// Respond to a mouse click on the window
+{
+    // Set window focus. The docker will now report this as active.
+    if (!IsChild(::GetFocus()))
+        SetFocus();
+
+    return FinalWindowProc(msg, wparam, lparam);
 }
 
 BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -850,3 +860,18 @@ void BasePropertyDialog::UpdateBaseVisuals(ISelect *psel, BaseProperty *property
         if (m_baseScatterAngleEdit)     m_baseScatterAngleEdit->EnableWindow(property->m_overwritePhysics);
     }
 }
+
+CContainProperties::CContainProperties()
+{
+    SetTabText(_T("Properties"));
+    SetTabIcon(IDI_OPTIONS);
+    SetDockCaption(_T("Properties"));
+    SetView(m_propertyDialog);
+}
+
+CDockPropertyDialog::CDockPropertyDialog()
+{
+    SetView(m_propContainer);
+    SetBarWidth(4);
+}
+

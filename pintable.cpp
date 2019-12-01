@@ -6466,7 +6466,7 @@ void PinTable::OnDelete()
    if (inCollection)
    {
       LocalString ls(IDS_DELETE_ELEMENTS);
-      const int ans = MessageBox(m_hwnd, ls.m_szbuffer/*"Selected elements are part of one or more collections.\nDo you really want to delete them?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
+      const int ans = ::MessageBox(m_hwnd, ls.m_szbuffer/*"Selected elements are part of one or more collections.\nDo you really want to delete them?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
       if (ans != IDYES)
          return;
    }
