@@ -3053,16 +3053,11 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 	   pps->m_outputTarget = bToBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE;	
    }
 
-   if (pps->IsWav()) // only use old direct sound code if playing wav's
+   if (FAILED(hr = pps->ReInitialize()))
    {
-	   if (FAILED(hr = pps->ReInitialize()))
-	   {
-		   delete pps;
-		   return hr;
-	   }
+	   delete pps;
+	   return hr;
    }
-   else
-	   pps->Setup();
 
    m_vsound.push_back(pps);
    return S_OK;
