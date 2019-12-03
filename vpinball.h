@@ -94,7 +94,7 @@ public:
    void ToggleScriptEditor();
    void ToggleAllLayers();
    void ToggleBackglassView();
-   void ParseCommand(size_t code, HWND hwnd, size_t notify);
+   BOOL ParseCommand(size_t code, HWND hwnd, size_t notify);
    void ReInitSound();
 
    CComObject<PinTable> *GetActiveTable();
@@ -197,11 +197,16 @@ public:
    static WCHAR *m_customParameters[MAX_CUSTOM_PARAM_INDEX];
 
 protected:
+   virtual void PreCreate(CREATESTRUCT& cs);
+   virtual void PreRegisterClass(WNDCLASS& wc);
    virtual void OnClose();
-#if 0
+   virtual void OnDestroy();
    virtual int  OnCreate(CREATESTRUCT& cs);
+   virtual LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam);
+   virtual void OnInitialUpdate();
+   virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-#endif 
+
 
 private:
    char m_szRecentTableList[LAST_OPENED_TABLE_COUNT + 1][MAX_PATH];

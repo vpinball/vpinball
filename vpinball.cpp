@@ -219,6 +219,38 @@ VPinball::VPinball()
    m_mouseCursorPosition.x = 0.0f;
    m_mouseCursorPosition.y = 0.0f;
    m_pcv = NULL;			// no currently active code window
+
+   m_NextTableID = 1;
+
+   m_ptableActive = NULL;
+   m_hwndSideBar = NULL;										//Handle for left Sidebar
+   m_hwndWork = NULL;											//Handle for Workarea
+
+   m_workerthread = NULL;										//Workerthread - only for hanging scripts and autosave - will be created later
+
+   GetMyPath();													//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
+
+   RegisterClasses();											//TODO - brief description of what happens in the function
+
+#ifdef _WIN64
+   m_scintillaDll = LoadLibrary("SciLexerVP64.DLL");
+#else
+   m_scintillaDll = LoadLibrary("SciLexerVP.DLL");
+#endif
+   if (m_scintillaDll == NULL)
+   {
+   #ifdef _WIN64
+       m_scintillaDll = LoadLibrary("SciLexer64.DLL");
+   #else
+       m_scintillaDll = LoadLibrary("SciLexer.DLL");
+   #endif
+       if (m_scintillaDll == NULL)
+       #ifdef _WIN64
+           ShowError("Unable to load SciLexer64.DLL");
+   #else
+           ShowError("Unable to load SciLexer.DLL");
+   #endif
+   }
 }
 
 ///<summary>
@@ -288,61 +320,12 @@ void VPinball::SetOpenMinimized()
 ///</summary>
 void VPinball::Init()
 {
-   m_NextTableID = 1;
 
-   m_ptableActive = NULL;
-   m_hwndSideBar = NULL;										//Handle for left Sidebar
-   m_hwndWork = NULL;											//Handle for Workarea
-
-   m_workerthread = NULL;										//Workerthread - only for hanging scripts and autosave - will be created later
-
-   GetMyPath();													//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
-
-   RegisterClasses();											//TODO - brief description of what happens in the function
-
-#ifdef _WIN64
-	m_scintillaDll = LoadLibrary("SciLexerVP64.DLL");
-#else
-	m_scintillaDll = LoadLibrary("SciLexerVP.DLL");
-#endif
-   if (m_scintillaDll == NULL)
-	{
-#ifdef _WIN64
-		m_scintillaDll = LoadLibrary("SciLexer64.DLL");
-#else
-		m_scintillaDll = LoadLibrary("SciLexer.DLL");
-#endif
-		if (m_scintillaDll == NULL)
-#ifdef _WIN64
-			ShowError("Unable to load SciLexer64.DLL");
-#else
-			ShowError("Unable to load SciLexer.DLL");
-#endif
-	}
-   char szName[256];
-   LoadString(g_hinst, IDS_PROJNAME, szName, 256);
-   // loading String "Visual Pinball" from Exe properties
-
-   const int screenwidth = GetSystemMetrics(SM_CXSCREEN);		// width of primary monitor
-   const int screenheight = GetSystemMetrics(SM_CYSCREEN);		// height of primary monitor
-
-   const int x = (screenwidth - MAIN_WINDOW_WIDTH) / 2;
-   const int y = (screenheight - MAIN_WINDOW_HEIGHT) / 2;
-   const int width = MAIN_WINDOW_WIDTH;
-   const int height = MAIN_WINDOW_HEIGHT;
-
-   LPTSTR lpCmdLine = GetCommandLine();						//this line necessary for _ATL_MIN_CRT
-
-   if (strstr(lpCmdLine, "minimized"))
-      SetOpenMinimized();
-
-//    m_hwnd = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, "VPinball", szName,
+//    m_hwnd = CreateEx(WS_EX_OVERLAPPEDWINDOW, "VPinball", szName,
 //       (m_open_minimized ? WS_MINIMIZE : 0) | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
-//       x, y, width, height, NULL, NULL, g_hinst, 0);				// get handle to and create main Window
-   m_hwnd = CreateEx(WS_EX_OVERLAPPEDWINDOW, "VPinball", szName,
-      (m_open_minimized ? WS_MINIMIZE : 0) | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
-      x, y, width, height, NULL, NULL);				// get handle to and create main Window
+//       x, y, width, height, NULL, NULL);				// get handle to and create main Window
 
+   m_hwnd = GetHwnd();
    // See if we have previous window size information
    {
       int left, top, right, bottom;
@@ -548,14 +531,7 @@ void VPinball::RegisterClasses()
    WNDCLASSEX wcex;
    ZeroMemory(&wcex, sizeof(WNDCLASSEX));
    wcex.cbSize = sizeof(WNDCLASSEX);
-   wcex.style = CS_DBLCLKS;//CS_NOCLOSE | CS_OWNDC;
-   wcex.lpfnWndProc = (WNDPROC)VPWndProc;
    wcex.hInstance = g_hinst;
-   wcex.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_VPINBALL));
-   wcex.lpszClassName = "VPinball";
-   wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-   wcex.lpszMenuName = MAKEINTRESOURCE(IDR_APPMENU);
-   RegisterClassEx(&wcex);
 
    // Register dummy child class
    wcex.lpszClassName = "VPStaticChild";
@@ -831,7 +807,7 @@ HMENU VPinball::GetMainMenu(int id)
 }
 
 
-void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
+BOOL VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 {
    // check if it's an Editable tool
    ItemTypeEnum type = EditableRegistry::TypeFromToolID((int)code);
@@ -848,7 +824,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          GetCursorPos(&pt);
          SetCursorPos(pt.x, pt.y);
       }
-      return;
+      return TRUE;
    }
 
    /* a MDI client window starts with ID 4000 and is incremented by Windows if a new window(table) is loaded 
@@ -866,24 +842,24 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case ID_NEW_EXAMPLETABLE:
    {
       OpenNewTable(code);
-      break;
+      return TRUE;
    }
    case ID_DELETE:
    {
       ProcessDeleteElement();
-      break;
+      return TRUE;
    }
    case ID_TABLE_CAMERAMODE:
    case ID_TABLE_PLAY:
    {
        DoPlay(code == ID_TABLE_CAMERAMODE);
-       break;
+       return TRUE;
    }
    case ID_SCRIPT_SHOWIDE:
    case ID_EDIT_SCRIPT:
    {
       ToggleScriptEditor();
-      break;
+      return TRUE;
    }
    case ID_EDIT_PROPERTIES:
    {
@@ -924,7 +900,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
       ShowProperties(show);
       SendMessage(m_hwnd, WM_SIZE, 0, 0);
-      break;
+      return TRUE;
    }
    case ID_EDIT_BACKGLASSVIEW:
    {
@@ -933,12 +909,12 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_BACKGLASSVIEW, MAKELONG(show, 0));
 
       ToggleBackglassView();
-      break;
+      return TRUE;
    }
    case ID_EDIT_SEARCH:
    {
       ShowSearchSelect();
-      break;
+      return TRUE;
    }
    case ID_EDIT_SETDEFAULTPHYSICS:
    {
@@ -950,36 +926,35 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
          ptCur->LockElements();
-      break;
-
+      return TRUE;
    }
    case ID_EDIT_DRAWINGORDER_HIT:
    {
       //DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
       ShowDrawingOrderDialog(false);
-      break;
+      return TRUE;
    }
    case ID_EDIT_DRAWINGORDER_SELECT:
    {
       //DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
       ShowDrawingOrderDialog(true);
-      break;
+      return TRUE;
    }
    case ID_VIEW_SOLID:
    case ID_VIEW_OUTLINE:
    {
        SetViewSolidOutline(code);
-       break;
+       return TRUE;
    }
    case ID_VIEW_GRID:
    {
        ShowGridView();
-       break;
+       return TRUE;
    }
    case ID_VIEW_BACKDROP:
    {
        ShowBackdropView();
-       break;
+       return TRUE;
    }
    case IDC_SELECT:
    case ID_TABLE_MAGNIFY:
@@ -995,27 +970,27 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          GetCursorPos(&pt);
          SetCursorPos(pt.x, pt.y);
       }
-      break;
+      return TRUE;
    }
    case ID_ADD_CTRL_POINT:
    {
       AddControlPoint();
-      break;
+      return TRUE;
    }
    case ID_ADD_SMOOTH_CTRL_POINT:
    {
       AddSmoothControlPoint();
-      break;
+      return TRUE;
    }
    case IDM_SAVE:
    {
       SaveTable(false);
-      break;
+      return TRUE;
    }
    case IDM_SAVEAS:
    {
       SaveTable(true);
-      break;
+      return TRUE;
    }
 
    case RECENT_FIRST_MENU_IDM:
@@ -1028,85 +1003,85 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case RECENT_FIRST_MENU_IDM + 7:
    {
       OpenRecentFile(code);
-      break;
+      return TRUE;
    }
 
    case IDM_OPEN:
    {
        LoadFile();
-       break;
+       return TRUE;
    }
    case IDM_CLOSE:
    {
       CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
          CloseTable(ptCur);
-      break;
+      return TRUE;
    }
    case IDC_COPY:
    {
       CopyPasteElement(COPY);
-      break;
+      return TRUE;
    }
    case IDC_PASTE:
    {
       CopyPasteElement(PASTE);
-      break;
+      return TRUE;
    }
    case IDC_PASTEAT:
    {
       CopyPasteElement(PASTE_AT);
-      break;
+      return TRUE;
    }
    case ID_EDIT_UNDO:
    {
       CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
          ptCur->Undo();
-      break;
+      return TRUE;
    }
    case ID_FILE_EXPORT_BLUEPRINT:
    {
       CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
          ptCur->ExportBlueprint();
-      break;
+      return TRUE;
    }
    case ID_EXPORT_TABLEMESH:
    {
       CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
          ptCur->ExportTableMesh();
-      break;
+      return TRUE;
    }
    case ID_IMPORT_BACKDROPPOV:
    {
       CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
          ptCur->ImportBackdropPOV(NULL);
-      break;
+      return TRUE;
    }
    case ID_EXPORT_BACKDROPPOV:
    {
       CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
          ptCur->ExportBackdropPOV(NULL);
-      break;
+      return TRUE;
    }
    case ID_FILE_EXIT:
    {
        PostMessage(m_hwnd, WM_CLOSE, 0, 0);
-       break;
+       return TRUE;
    }
    case ID_EDIT_AUDIOOPTIONS:
    {
        m_audioOptDialog.DoModal(m_hwnd);
-       break;
+       return TRUE;
    }
    case ID_EDIT_PHYSICSOPTIONS:
    {
        m_physicsOptDialog.DoModal(m_hwnd);
-       break;
+       return TRUE;
    }
    case ID_EDIT_EDITOROPTIONS:
    {
@@ -1117,19 +1092,19 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
          ptCur->SetDirtyDraw();
-      break;
+      return TRUE;
    }
    case ID_EDIT_VIDEOOPTIONS:
    {
        m_videoOptDialog.DoModal(m_hwnd);
-       break;
+       return TRUE;
    }
    case ID_TABLE_TABLEINFO:
    {
        CComObject<PinTable> * const ptCur = GetActiveTable();
        if (ptCur)
            m_tableInfoDialog.DoModal(m_hwnd);
-       break;
+       return TRUE;
    }
    case IDM_IMAGE_EDITOR:
    case ID_TABLE_IMAGEMANAGER:
@@ -1142,7 +1117,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
            m_sb.PopulateDropdowns(); // May need to update list of images
            m_sb.RefreshProperties();
        }
-       break;
+       return TRUE;
    }
    case IDM_SOUND_EDITOR:
    case ID_TABLE_SOUNDMANAGER:
@@ -1158,7 +1133,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
            else
                m_soundMngDlg.SetForegroundWindow();
        }
-       break;
+       return TRUE;
    }
    case IDM_MATERIAL_EDITOR:
    case ID_TABLE_MATERIALMANAGER:
@@ -1171,19 +1146,19 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
            m_sb.PopulateDropdowns(); // May need to update list of images
            m_sb.RefreshProperties();
        }
-       break;
+       return TRUE;
    }
    case ID_TABLE_FONTMANAGER:
    {
        CComObject<PinTable> * const ptCur = GetActiveTable();
        if (ptCur)
           /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_FONTDIALOG), m_hwnd, FontManagerProc, (size_t)ptCur);
-       break;
+       return TRUE;
    }
    case ID_TABLE_DIMENSIONMANAGER:
    {
        ShowSubDialog(m_dimensionDialog);
-       break;
+       return TRUE;
    }
    case IDM_COLLECTION_EDITOR:
    case ID_TABLE_COLLECTIONMANAGER:
@@ -1196,7 +1171,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
            m_sb.PopulateDropdowns(); // May need to update list of collections
            m_sb.RefreshProperties();
        }
-       break;
+       return TRUE;
    }
    case ID_PREFERENCES_SECURITYOPTIONS:
    {
@@ -1204,14 +1179,14 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
       // refresh editor options from the registry
       InitRegValues();
-      break;
+      return TRUE;
    }
    case ID_EDIT_KEYS:
    {
       KeysConfigDialog * const keysConfigDlg = new KeysConfigDialog();
       keysConfigDlg->DoModal();
       delete keysConfigDlg;
-      break;
+      return TRUE;
    }
    case ID_LAYER_LAYER1:
    case ID_LAYER_LAYER2:
@@ -1226,39 +1201,40 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case ID_LAYER_LAYER11:
    {
        SetLayerStatus((int)(code - ID_LAYER_LAYER1));
-       break;
+       return TRUE;
    }
    case ID_LAYER_MERGEALL:
    {
       MergeAllLayers();
-      break;
+      return TRUE;
    }
    case ID_LAYER_TOGGLEALL:
    {
       ToggleAllLayers();
-      break;
+      return TRUE;
    }
    case ID_HELP_ABOUT:
    {
       ShowSubDialog(m_aboutDialog);
-      break;
+      return TRUE;
    }
    case ID_WINDOW_CASCADE:
    {
       SendMessage(m_hwndWork, WM_MDICASCADE, 0, 0);
-      break;
+      return TRUE;
    }
    case ID_WINDOW_TILE:
    {
       SendMessage(m_hwndWork, WM_MDITILE, 0, 0);
-      break;
+      return TRUE;
    }
    case ID_WINDOW_ARRANGEICONS:
    {
       SendMessage(m_hwndWork, WM_MDIICONARRANGE, 0, 0);
-      break;
+      return TRUE;
    }
    }
+   return FALSE;
 }
 
 void VPinball::ReInitSound()
@@ -1884,6 +1860,42 @@ STDMETHODIMP_(ULONG) VPinball::Release()
    return m_cref;
 }
 
+void VPinball::PreCreate(CREATESTRUCT& cs)
+{
+          // do the base class stuff
+    CWnd::PreCreate(cs);
+    const int screenwidth = GetSystemMetrics(SM_CXSCREEN);		// width of primary monitor
+    const int screenheight = GetSystemMetrics(SM_CYSCREEN);		// height of primary monitor
+
+    const int x = (screenwidth - MAIN_WINDOW_WIDTH) / 2;
+    const int y = (screenheight - MAIN_WINDOW_HEIGHT) / 2;
+    const int width = MAIN_WINDOW_WIDTH;
+    const int height = MAIN_WINDOW_HEIGHT;
+
+
+    cs.x = x;  // set initial window placement
+    cs.y = x;
+    cs.cx = width;
+    cs.cy = height;
+       // specify a title bar and border with a window-menu on the title bar
+    cs.style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+    cs.dwExStyle = WS_EX_CLIENTEDGE
+        | WS_EX_CONTROLPARENT       // TAB key navigation
+//      | WS_EX_CONTEXTHELP     // doesn't work if WS_MINIMIZEBOX
+                    // or WS_MAXIMIZEBOX is specified
+        ;
+
+}
+
+void VPinball::PreRegisterClass(WNDCLASS& wc)
+{
+    wc.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_VPINBALL));
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.style = CS_DBLCLKS;//CS_NOCLOSE | CS_OWNDC;
+    wc.lpszClassName = _T("VPinball");
+    wc.lpszMenuName = MAKEINTRESOURCE(IDR_APPMENU);    
+}
+
 void VPinball::OnClose()
 {
    CComObject<PinTable> * const ptable = GetActiveTable();
@@ -1914,6 +1926,11 @@ void VPinball::OnClose()
    }
 }
 
+void VPinball::OnDestroy()
+{
+    PostMessage(WM_QUIT, 0, 0);
+}
+
 void VPinball::ShowSubDialog(CDialog &dlg)
 {
     if (!dlg.IsWindow())
@@ -1925,22 +1942,77 @@ void VPinball::ShowSubDialog(CDialog &dlg)
        dlg.SetForegroundWindow();
 }
 
-#if 0
 int VPinball::OnCreate(CREATESTRUCT& cs)
 {
     // OnCreate controls the way the frame is created.
     // Overriding CFrame::OnCreate is optional.
     // Uncomment the lines below to change frame options.
 
-    SetUseIndicatorStatus(FALSE);	// Don't show keyboard indicators in the StatusBar
-    SetUseMenuStatus(FALSE);			// Don't show menu descriptions in the StatusBar
-    SetUseReBar(FALSE);				// Don't use a ReBar
-    SetUseThemes(FALSE);				// Don't use themes
-    SetUseToolBar(FALSE);			// Don't use a ToolBar
+    // UseIndicatorStatus(FALSE);    // Don't show keyboard indicators in the StatusBar
+    // UseMenuStatus(FALSE);         // Don't show menu descriptions in the StatusBar
+    // UseReBar(FALSE);              // Don't use a ReBar
+    // UseStatusBar(FALSE);          // Don't use a StatusBar
+    // UseThemes(FALSE);             // Don't use themes
+    // UseToolBar(FALSE);            // Don't use a ToolBar
 
+    LPTSTR lpCmdLine = GetCommandLine();						//this line necessary for _ATL_MIN_CRT
+    if (strstr(lpCmdLine, "minimized"))
+        SetOpenMinimized();
 
+    WINDOWPLACEMENT wpl;
+    GetWindowPlacement(wpl);
+    if (m_open_minimized)
+        wpl.showCmd = SW_MINIMIZE;
+    else
+        wpl.showCmd = SW_MAXIMIZE;
+
+    SetWindowPlacement(wpl);
+
+    Init();
+
+    char szName[256];
+    LoadString(g_hinst, IDS_PROJNAME, szName, 256);
+    // loading String "Visual Pinball" from Exe properties
+    SetWindowText(szName);
     // call the base class function
-    return CMDIDockFrame::OnCreate(cs);
+    return CWnd::OnCreate(cs);
+}
+
+LRESULT VPinball::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    PAINTSTRUCT ps;
+    HDC hdc = BeginPaint(ps);
+    CRect rc = GetClientRect();
+    SelectObject(hdc, GetStockObject(WHITE_BRUSH));
+    PatBlt(hdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, PATCOPY);
+    EndPaint(ps);
+    return 0;
+}
+
+void VPinball::OnInitialUpdate()
+{
+        // Add some Dockers to the MDI Frame
+/*
+    DWORD dwStyle = DS_CLIENTEDGE; // The style added to each docker
+    int DockWidth = 150;
+    CDocker* pDock1 = AddDockedChild(new CDockToolbar, DS_DOCKED_LEFT | dwStyle, DockWidth);
+    CDocker* pDock2 = AddDockedChild(new CDockPropertyDialog, DS_DOCKED_RIGHT | dwStyle, DockWidth);
+
+    assert(pDock1->GetContainer());
+    assert(pDock2->GetContainer());
+    pDock1->GetContainer()->SetHideSingleTab(TRUE);
+    pDock2->GetContainer()->SetHideSingleTab(TRUE);
+*/
+
+    // Add some  MDI children
+    //AddMDIChild(new CSimpleMDIChild);
+}
+
+BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
+{
+    UINT id = LOWORD(wparam);
+
+    return g_pvp->ParseCommand(LOWORD(wparam), (HWND)lparam, HIWORD(wparam));
 }
 
 LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -1948,23 +2020,6 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     HWND hwnd = GetHwnd();
     switch (uMsg)
     {
-
-        case WM_DESTROY:
-        PostMessage(hwnd, WM_QUIT, 0, 0);
-        break;
-
-        case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = ::BeginPaint(hwnd, &ps);
-            RECT rc;
-            ::GetClientRect(hwnd, &rc);
-            SelectObject(hdc, GetStockObject(WHITE_BRUSH));
-            PatBlt(hdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, PATCOPY);
-            ::EndPaint(hwnd, &ps);
-        }
-        break;
-
         case WM_SIZE:
         if (g_pvp && g_pvp->m_hwndSideBar)
         {
@@ -2045,10 +2100,6 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             ::SetWindowPos(g_pvp->m_hwndWork, NULL, sidebarwidth, 0, rc.right - rc.left - (sidebarwidth)-SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
             return 0;
         }
-        break;
-
-        case WM_COMMAND:
-        g_pvp->ParseCommand(LOWORD(wParam), (HWND)lParam, HIWORD(wParam));
         break;
 
         case WM_INITMENUPOPUP:
@@ -2057,121 +2108,6 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     }
     return WndProcDefault(uMsg, wParam, lParam);
-}
-#endif 
-
-LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    switch (uMsg)
-    {
-        case WM_DESTROY:
-        PostMessage(hwnd, WM_QUIT, 0, 0);
-        break;
-
-        case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = ::BeginPaint(hwnd, &ps);
-            RECT rc;
-            ::GetClientRect(hwnd, &rc);
-            SelectObject(hdc, GetStockObject(WHITE_BRUSH));
-            PatBlt(hdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, PATCOPY);
-            ::EndPaint(hwnd, &ps);
-        }
-        break;
-
-        case WM_SIZE:
-        if (g_pvp && g_pvp->m_hwndSideBar)
-        {
-            RECT rc;
-            ::GetClientRect(hwnd, &rc);
-
-            SendMessage(g_pvp->m_hwndStatusBar, WM_SIZE, wParam, lParam);
-
-            RECT rcStatus;
-            ::GetWindowRect(g_pvp->m_hwndStatusBar, &rcStatus);
-            const int statheight = rcStatus.bottom - rcStatus.top;
-
-            //const int scrollwindowtop = 48*(TBCOUNTMAIN/2);
-            const int scrollwindowtop = 48 * (TBCOUNTMAIN / 2) + 28 * (TBCOUNTLAYERS / 2);
-            const int scrollwindowheight = rc.bottom - rc.top - statheight - scrollwindowtop;
-            ::SetWindowPos(g_pvp->m_hwndSideBarScroll, NULL, 0, scrollwindowtop, TOOLBAR_WIDTH + SCROLL_WIDTH, scrollwindowheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-
-            HWND hwndSB = g_pvp->m_sb.GetHWnd();
-            int SBwidth = g_pvp->m_sb.m_maxdialogwidth;
-
-            if (g_pvp->m_propertiesFloating)
-                SBwidth = 0;
-            else
-            {
-                if (g_pvp->m_sb.GetVisible())
-                {
-                    ::SetWindowPos(hwndSB, NULL, rc.right - rc.left - SBwidth, 0, SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-                }
-                else
-                    SBwidth = 0;
-            }
-
-            // Set scroll info for the palette scrollbar
-            SCROLLINFO si;
-            const size_t padding = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETPADDING, 0, 0);
-            const size_t buttonsize = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETBUTTONSIZE, 0, 0);
-            const int vertpadding = HIWORD(padding);
-            const int vertbutsize = HIWORD(buttonsize);
-            ZeroMemory(&si, sizeof(SCROLLINFO));
-            si.cbSize = sizeof(si);
-            si.fMask = SIF_ALL;
-            si.nMin = 0;
-            si.nMax = ((vertbutsize + vertpadding) * (TBCOUNTPALETTE / 2)) + 4; // Add 4 padding
-            si.nPage = scrollwindowheight;
-            si.nPos = g_pvp->m_palettescroll;
-
-            ::SetScrollInfo(g_pvp->m_hwndSideBarScroll, SB_VERT, &si, TRUE);
-
-            // check if we have any blank space at the bottom and fill it in by moving the scrollbar up
-            if ((int)(si.nPos + si.nPage) > si.nMax)
-            {
-                g_pvp->m_palettescroll = si.nMax - si.nPage;
-                if (g_pvp->m_palettescroll < 0)
-                    g_pvp->m_palettescroll = 0;
-
-                ::SetScrollPos(hwnd, SB_VERT, g_pvp->m_palettescroll, TRUE);
-
-                ::SetWindowPos(g_pvp->m_hwndToolbarPalette, NULL, 0, -g_pvp->m_palettescroll, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-            }
-
-            int sidebarwidth = TOOLBAR_WIDTH;
-            if (scrollwindowheight < si.nMax)
-                sidebarwidth += SCROLL_WIDTH;
-
-            if (g_pvp->m_propertiesFloating && hwndSB)
-            {
-                RECT smartRect;
-                ::GetWindowRect(hwndSB, &smartRect);
-
-                int sbHeight = smartRect.bottom - smartRect.top;//(rc.bottom - rc.top) - 100;
-                int smartWidth = smartRect.right - smartRect.left;
-                int sbX = rc.right - eSmartBrowserWidth - 20;
-
-                ::SetWindowPos(hwndSB, NULL, sbX, 40, smartWidth, sbHeight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-            }
-            ::SetWindowPos(g_pvp->m_hwndSideBar, NULL, 0, 0, sidebarwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-
-            ::SetWindowPos(g_pvp->m_hwndWork, NULL, sidebarwidth, 0, rc.right - rc.left - (sidebarwidth)-SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-            return 0;
-        }
-        break;
-
-        case WM_COMMAND:
-        g_pvp->ParseCommand(LOWORD(wParam), (HWND)lParam, HIWORD(wParam));
-        break;
-
-        case WM_INITMENUPOPUP:
-        g_pvp->SetEnableMenuItems();
-        break;
-
-    }
-    return g_pvp ? DefFrameProc(hwnd, g_pvp->m_hwndWork, uMsg, wParam, lParam) : 0;
 }
 
 
