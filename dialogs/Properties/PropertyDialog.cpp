@@ -874,4 +874,3 @@ CDockPropertyDialog::CDockPropertyDialog()
     SetView(m_propContainer);
     SetBarWidth(4);
 }
-

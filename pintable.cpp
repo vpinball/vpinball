@@ -3054,11 +3054,15 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    }
 
    if (pps->IsWav()) // only use old direct sound code if playing wav's
-   if (FAILED(hr = pps->ReInitialize()))
    {
-      delete pps;
-      return hr;
+	   if (FAILED(hr = pps->ReInitialize()))
+	   {
+		   delete pps;
+		   return hr;
+	   }
    }
+   else
+	   pps->Setup();
 
    m_vsound.push_back(pps);
    return S_OK;

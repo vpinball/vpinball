@@ -447,4 +447,3 @@ CDockToolbar::CDockToolbar()
     SetView(m_toolbarContainer);
     SetBarWidth(4);
 }
-

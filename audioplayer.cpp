@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 
 /*static*/ bool bass_init = false; //!! meh
+int bass_BG_idx = -1;
+int bass_STD_idx = -1;
 
 AudioPlayer::AudioPlayer()
 {
@@ -20,23 +22,32 @@ AudioPlayer::AudioPlayer()
 
       //
 
-      const int DSidx = LoadValueIntWithDefault("Player", "SoundDeviceBG", -1);
+      const int DS_STD_idx = LoadValueIntWithDefault("Player", "SoundDevice",   -1);
+      const int DS_BG_idx  = LoadValueIntWithDefault("Player", "SoundDeviceBG", -1);
+      bass_STD_idx = -1;
+      bass_BG_idx  = -1;
+
+      for(unsigned int idx = 0; idx < 2; ++idx)
+      {
+      const int DSidx = (idx == 0) ? DS_STD_idx : DS_BG_idx;
 
       // now match the Direct Sound device with the BASS device (by name)
-      int BASSidx = -1;
       if (DSidx != -1)
       {
           DSAudioDevices DSads;
           if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
           {
-              if ((size_t)DSidx >= DSads.size() || DSads[DSidx]->guid != NULL) // primary device has guid NULL, so use BASSidx = -1 in that case
+              if ((size_t)DSidx >= DSads.size() || DSads[DSidx]->guid != NULL) // primary device has guid NULL, so use BASS_idx = -1 in that case
               {
                   BASS_DEVICEINFO info;
                   for (int i = 1; BASS_GetDeviceInfo(i, &info); i++) // 0 = no sound/no device
                       if (info.flags & BASS_DEVICE_ENABLED) // device must be enabled
                       if (strcmp(info.name, DSads[DSidx]->description.c_str()) == 0)
                       {
-                          BASSidx = i;
+                          if(idx == 0)
+                              bass_STD_idx = (info.flags & BASS_DEVICE_DEFAULT) ? -1 : i;
+                          else
+                              bass_BG_idx  = (info.flags & BASS_DEVICE_DEFAULT) ? -1 : i;
                           break;
                       }
               }
@@ -45,13 +56,22 @@ AudioPlayer::AudioPlayer()
                   delete DSads[i];
           }
       }
+      }
 
-      if (!BASS_Init(BASSidx, 44100, 0, g_pvp->m_hwnd, NULL)) // note that sample rate is usually ignored and set depending on the input/file automatically
+      //BASS_SetConfig(BASS_CONFIG_FLOATDSP, fTrue);
+
+      for(unsigned int idx = 0; idx < 2; ++idx)
+      {
+      if (!BASS_Init((idx == 0) ? bass_STD_idx : bass_BG_idx, 44100, 0, g_pvp->m_hwnd, NULL)) // note that sample rate is usually ignored and set depending on the input/file automatically
       {
          char bla[128];
          sprintf_s(bla, "BASS music/sound library initialization error %d", BASS_ErrorGetCode());
          MessageBox(g_pvp->m_hwnd, bla, "Error", MB_ICONERROR);
       }
+      if (bass_STD_idx == bass_BG_idx) // skip 2nd device if it's the same
+         break;
+      }
+
       bass_init = true;
    }
 }
@@ -60,6 +80,7 @@ AudioPlayer::~AudioPlayer()
 {
    if (m_stream)
    {
+      if(bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
       BASS_ChannelStop(m_stream);
       BASS_StreamFree(m_stream);
    }
@@ -68,28 +89,44 @@ AudioPlayer::~AudioPlayer()
 void AudioPlayer::MusicPause()
 {
    if (m_stream)
+   {
+      if(bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
       BASS_ChannelPause(m_stream);
+   }
 }
 
 void AudioPlayer::MusicUnpause()
 {
    if (m_stream)
+   {
+      if (bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
       BASS_ChannelPlay(m_stream, 0);
+   }
 }
 
 bool AudioPlayer::MusicActive()
 {
-   return m_stream ? (BASS_ChannelIsActive(m_stream) == BASS_ACTIVE_PLAYING) : false;
+   if (m_stream)
+   {
+      if (bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
+      return (BASS_ChannelIsActive(m_stream) == BASS_ACTIVE_PLAYING);
+   }
+   else
+      return false;
 }
 
 /*void AudioPlayer::MusicEnd()
 {
    if (m_stream)
+   {
+      if(bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
       BASS_ChannelStop(m_stream);
+   }
 }*/
 
 bool AudioPlayer::MusicInit(const char * const szFileName, const float volume)
 {
+   if (bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
    m_stream = BASS_StreamCreateFile(FALSE, szFileName, 0, 0, /*BASS_SAMPLE_LOOP*/0); //!! ?
    if (m_stream == NULL)
    {
@@ -100,7 +137,6 @@ bool AudioPlayer::MusicInit(const char * const szFileName, const float volume)
    }
 
    BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_VOL, volume);
-
    BASS_ChannelPlay(m_stream, 0);
 
    return true;
@@ -109,5 +145,8 @@ bool AudioPlayer::MusicInit(const char * const szFileName, const float volume)
 void AudioPlayer::MusicVolume(const float volume)
 {
    if (m_stream)
+   {
+      if(bass_BG_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_BG_idx);
       BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_VOL, volume);
+   }
 }
