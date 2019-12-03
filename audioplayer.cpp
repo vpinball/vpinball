@@ -22,6 +22,7 @@ AudioPlayer::AudioPlayer()
 
       //
 
+      const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
       const int DS_STD_idx = LoadValueIntWithDefault("Player", "SoundDevice",   -1);
       const int DS_BG_idx  = LoadValueIntWithDefault("Player", "SoundDeviceBG", -1);
       bass_STD_idx = -1;
@@ -62,13 +63,13 @@ AudioPlayer::AudioPlayer()
 
       for(unsigned int idx = 0; idx < 2; ++idx)
       {
-      if (!BASS_Init((idx == 0) ? bass_STD_idx : bass_BG_idx, 44100, 0, g_pvp->m_hwnd, NULL)) // note that sample rate is usually ignored and set depending on the input/file automatically
+      if (!BASS_Init((idx == 0) ? bass_STD_idx : bass_BG_idx, 44100, (SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? BASS_DEVICE_3D : 0, g_pvp->m_hwnd, NULL)) // note that sample rate is usually ignored and set depending on the input/file automatically
       {
          char bla[128];
          sprintf_s(bla, "BASS music/sound library initialization error %d", BASS_ErrorGetCode());
          MessageBox(g_pvp->m_hwnd, bla, "Error", MB_ICONERROR);
       }
-      if (bass_STD_idx == bass_BG_idx) // skip 2nd device if it's the same
+      if (/*SoundMode3D == SNDCFG_SND3D2CH &&*/ bass_STD_idx == bass_BG_idx) // skip 2nd device if it's the same and 3D is disabled //!!! for now try to just use one even if 3D! and then adapt channel settings if sample is a backglass sample
          break;
       }
 

@@ -580,7 +580,7 @@ void SoundDialog::SoundPosition()
 				pps->m_balance = spd.m_balance;
 				pps->m_fade = spd.m_fade;
 				pps->m_volume = spd.m_volume;
-				pps->ReInitialize(); 
+				pps->ReInitialize();
 
 				pt->SetNonUndoableDirty(eSaveDirty);
 

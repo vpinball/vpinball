@@ -74,7 +74,7 @@ public:
    class PinDirectSound *GetPinDirectSound();
    void UnInitialize();
    HRESULT ReInitialize();
-   bool Setup();
+   void SetDevice(); //!! BASS only
    bool IsWav() const { return (_stricmp(strrchr(m_szPath, '.'), ".wav") == 0); }
 
    void Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart);
@@ -111,14 +111,13 @@ public:
 class PinDirectSound
 {
 public:
-   PinDirectSound() : m_pDS(NULL), m_3DSoundMode(SNDCFG_SND3D2CH), m_pDSListener(NULL) {}
+   PinDirectSound() : m_pDS(NULL), m_pDSListener(NULL) {}
    ~PinDirectSound();
 
    void InitDirectSound(const HWND hwnd, const bool IsBackglass);
    static float PanTo3D(float input);
 
    LPDIRECTSOUND       m_pDS;
-   SoundConfigTypes    m_3DSoundMode;
 
 private:
    LPDIRECTSOUND3DLISTENER m_pDSListener;
@@ -135,12 +134,12 @@ public:
 	{
 		const int DSidx1 = LoadValueIntWithDefault("Player", "SoundDevice", 0);
 		const int DSidx2 = LoadValueIntWithDefault("Player", "SoundDeviceBG", 0);
-		m_pds.m_3DSoundMode = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)m_pds.m_3DSoundMode);
+		const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
 
 		m_pds.InitDirectSound(hwnd, false);
 		// If these are the same device, and we are not in 3d mode, just point the backglass device to the main one.
 		// For 3D we want two separate instances, one in basic stereo for music, and the other surround mode.
-		if (m_pds.m_3DSoundMode == SNDCFG_SND3D2CH && DSidx1 == DSidx2)
+		if (SoundMode3D == SNDCFG_SND3D2CH && DSidx1 == DSidx2)
 		{
 			m_pbackglassds = &m_pds;
 		}

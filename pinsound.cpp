@@ -53,8 +53,9 @@ void PinSound::UnInitialize()
    {
       if (m_BASSstream)
       {
-         if (bass_STD_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_STD_idx);
+         SetDevice();
          BASS_StreamFree(m_BASSstream);
+         m_BASSstream = 0;
       }
    }
 }
@@ -69,8 +70,31 @@ class PinDirectSound *PinSound::GetPinDirectSound()
 
 HRESULT PinSound::ReInitialize()
 {
-   SAFE_RELEASE(m_pDS3DBuffer);
-   SAFE_RELEASE(m_pDSBuffer);
+   UnInitialize();
+
+   if(!IsWav())
+   {
+	   const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+
+	   SetDevice();
+	   m_BASSstream = BASS_StreamCreateFile(
+		   TRUE,
+		   m_pdata,
+		   0,
+		   m_cdata,
+		   (SoundMode3D != SNDCFG_SND3D2CH) ? (BASS_SAMPLE_3D | BASS_SAMPLE_MONO) : 0 /*| BASS_SAMPLE_LOOP*/ //!! mono really needed? doc claims so
+	   );
+
+	   if (m_BASSstream == NULL)
+	   {
+		   MessageBox(g_pvp->m_hwnd, "BASS music/sound library cannot create stream", "Error", MB_ICONERROR);
+		   return E_FAIL;
+	   }
+
+	   return S_OK;
+   }
+
+   // else old wav code:
 
    PinDirectSound * const pds = GetPinDirectSound();
    if (pds->m_pDS == NULL)
@@ -80,10 +104,12 @@ HRESULT PinSound::ReInitialize()
       return E_FAIL;
    }
 
+   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+
    DSBUFFERDESC dsbd;
    ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
    dsbd.dwSize = sizeof(DSBUFFERDESC);
-   dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | ((pds->m_3DSoundMode != SNDCFG_SND3D2CH) ? DSBCAPS_CTRL3D : DSBCAPS_CTRLPAN);
+   dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | ((SoundMode3D != SNDCFG_SND3D2CH) ? DSBCAPS_CTRL3D : DSBCAPS_CTRLPAN);
    dsbd.dwBufferBytes = m_cdata;
    dsbd.lpwfxFormat = &m_wfx;
 
@@ -114,30 +140,16 @@ HRESULT PinSound::ReInitialize()
    // Unlock the buffer, we don't need it anymore.
    m_pDSBuffer->Unlock(pbData, m_cdata, NULL, 0);
 
-   if (pds->m_3DSoundMode != SNDCFG_SND3D2CH)
+   if (SoundMode3D != SNDCFG_SND3D2CH)
       Get3DBuffer();
 
    return S_OK;
 }
 
-bool PinSound::Setup()
+void PinSound::SetDevice()
 {
-   if (bass_STD_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_STD_idx);
-   m_BASSstream = BASS_StreamCreateFile(
-      TRUE,
-      m_pdata,
-      0,
-      m_cdata,
-      0 /*BASS_SAMPLE_3D | BASS_SAMPLE_LOOP*/ //!!
-   );
-
-   if (m_BASSstream == NULL)
-   {
-      MessageBox(g_pvp->m_hwnd, "BASS music/sound library cannot create stream", "Error", MB_ICONERROR);
-      return false;
-   }
-
-   return true;
+   const int bass_idx = (m_outputTarget == SNDOUT_BACKGLASS) ? bass_BG_idx : bass_STD_idx;
+   if (bass_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_idx);
 }
 
 void PinSound::Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart)
@@ -146,7 +158,7 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
       PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
    else if (m_BASSstream)
    {
-      if (bass_STD_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_STD_idx);
+      SetDevice();
 
       //!! add missing attributes and compare how all the parameters are different from direct sound!
       BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_VOL, volume);
@@ -165,11 +177,48 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
          BASS_ChannelGetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, &freq);
          BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, (float)(freq + pitch));
       }
-      BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_PAN, pan);
-	  //!! When using DirectSound output on Windows, this attribute has no effect when speaker assignment is used, except on Windows Vista and newer with the BASS_CONFIG_VISTA_SPEAKERS config option enabled.
-	  //m_pan = pan;
-	  //if(pan != 0.f)
-	  //   BASS_ChannelSetDSP(m_BASSstream, PanDSP, &m_pan, 0);
+
+      const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+      switch (SoundMode3D)
+      {
+      case SNDCFG_SND3DALLREAR:
+      {
+         const BASS_3DVECTOR v(PinDirectSound::PanTo3D(pan), 0.0f, -PinDirectSound::PanTo3D(1.0f));
+         BASS_ChannelSet3DPosition(m_BASSstream, &v, NULL, NULL);
+         BASS_Apply3D();
+         break;
+      }
+      case SNDCFG_SND3DFRONTISFRONT:
+      {
+         const BASS_3DVECTOR v(PinDirectSound::PanTo3D(pan), 0.0f, PinDirectSound::PanTo3D(front_rear_fade));
+         BASS_ChannelSet3DPosition(m_BASSstream, &v, NULL, NULL);
+         BASS_Apply3D();
+         break;
+      }
+      case SNDCFG_SND3DFRONTISREAR:
+      {
+         const BASS_3DVECTOR v(PinDirectSound::PanTo3D(pan), 0.0f, -PinDirectSound::PanTo3D(front_rear_fade));
+         BASS_ChannelSet3DPosition(m_BASSstream, &v, NULL, NULL);
+         BASS_Apply3D();
+         break;
+      }
+      case SNDCFG_SND3D6CH:
+      {
+         const BASS_3DVECTOR v(PinDirectSound::PanTo3D(pan), 0.0f, -((PinDirectSound::PanTo3D(front_rear_fade) + 3.0f) / 2.0f));
+         BASS_ChannelSet3DPosition(m_BASSstream, &v, NULL, NULL);
+         BASS_Apply3D();
+         break;
+      }
+      case SNDCFG_SND3D2CH:
+      default:
+         BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_PAN, pan);
+         //!! When using DirectSound output on Windows, this attribute has no effect when speaker assignment is used, except on Windows Vista and newer with the BASS_CONFIG_VISTA_SPEAKERS config option enabled.
+         //m_pan = pan;
+         //if(pan != 0.f)
+         //   BASS_ChannelSetDSP(m_BASSstream, PanDSP, &m_pan, 0);
+         break;
+      }
+
       BASS_ChannelPlay(m_BASSstream, restart ? fTrue : fFalse);
    }
 }
@@ -181,7 +230,7 @@ void PinSound::TestPlay()
    else
       if (m_BASSstream)
       {
-         if (bass_STD_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_STD_idx);
+         SetDevice();
          BASS_ChannelPlay(m_BASSstream, 0); //!! reset all channel attributes to default
       }
 }
@@ -193,7 +242,7 @@ void PinSound::Stop()
    else
       if (m_BASSstream)
       {
-         if (bass_STD_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_STD_idx);
+         SetDevice();
          BASS_ChannelStop(m_BASSstream);
       }
 }
@@ -255,12 +304,14 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
       return;// hr;
    }
 
+   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+
    // Get the primary buffer 
    DSBUFFERDESC dsbd;
    ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
    dsbd.dwSize = sizeof(DSBUFFERDESC);
    dsbd.dwFlags = DSBCAPS_PRIMARYBUFFER;
-   if (!IsBackglass && (m_3DSoundMode != SNDCFG_SND3D2CH))
+   if (!IsBackglass && (SoundMode3D != SNDCFG_SND3D2CH))
       dsbd.dwFlags |= DSBCAPS_CTRL3D;
    dsbd.dwBufferBytes = 0;
    dsbd.lpwfxFormat = NULL;
@@ -276,7 +327,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    WAVEFORMATEX wfx;
    ZeroMemory(&wfx, sizeof(WAVEFORMATEX));
    wfx.wFormatTag = WAVE_FORMAT_PCM;
-   wfx.nChannels = (m_3DSoundMode != SNDCFG_SND3D2CH) ?  1 : 2;
+   wfx.nChannels = (SoundMode3D != SNDCFG_SND3D2CH) ?  1 : 2;
    wfx.nSamplesPerSec = 44100;
    wfx.wBitsPerSample = 16;
    wfx.nBlockAlign = wfx.wBitsPerSample / (WORD)8 * wfx.nChannels;
@@ -287,7 +338,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
       ShowError("Could not set sound format.");
       return;// hr;
    }
-   if (!IsBackglass && (m_3DSoundMode != SNDCFG_SND3D2CH))
+   if (!IsBackglass && (SoundMode3D != SNDCFG_SND3D2CH))
    {
 	   // Obtain a listener interface.
 	   hr = pDSBPrimary->QueryInterface(IID_IDirectSound3DListener, (LPVOID*)&m_pDSListener);
@@ -328,6 +379,8 @@ PinSound *AudioMusicPlayer::LoadFile(const TCHAR* const strFileName)
 		   return NULL;
 	   }
 
+	   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+
 	   // Set up the direct sound buffer, and only request the flags needed
 	   // since each requires some overhead and limits if the buffer can
 	   // be hardware accelerated
@@ -335,7 +388,7 @@ PinSound *AudioMusicPlayer::LoadFile(const TCHAR* const strFileName)
 	   ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
 	   dsbd.dwSize = sizeof(DSBUFFERDESC);
 	   dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLPAN;
-	   if (m_pds.m_3DSoundMode != SNDCFG_SND3D2CH)
+	   if (SoundMode3D != SNDCFG_SND3D2CH)
 		   dsbd.dwFlags |= DSBCAPS_CTRL3D;
 	   dsbd.dwBufferBytes = pWaveSoundRead->m_ckIn.cksize;
 	   dsbd.lpwfxFormat = pWaveSoundRead->m_pwfx;
@@ -350,7 +403,7 @@ PinSound *AudioMusicPlayer::LoadFile(const TCHAR* const strFileName)
 		   delete pps;
 		   return NULL;
 	   }
-	   if (m_pds.m_3DSoundMode != SNDCFG_SND3D2CH)
+	   if (SoundMode3D != SNDCFG_SND3D2CH)
 		   pps->Get3DBuffer();
 
 	   // Remember how big the buffer is
@@ -406,13 +459,15 @@ PinSound *AudioMusicPlayer::LoadFile(const TCHAR* const strFileName)
 	   fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f);
 	   fclose(f);
 
-	   if (bass_STD_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_STD_idx);
+	   const SoundConfigTypes SoundMode3D = (pps->m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+
+	   pps->SetDevice();
 	   pps->m_BASSstream = BASS_StreamCreateFile(
 		   TRUE,
 		   pps->m_pdata,
 		   0,
 		   pps->m_cdata,
-		   0 /*BASS_SAMPLE_3D | BASS_SAMPLE_LOOP*/ //!!
+		   (SoundMode3D != SNDCFG_SND3D2CH) ? (BASS_SAMPLE_3D | BASS_SAMPLE_MONO) : 0 /*| BASS_SAMPLE_LOOP*/ //!! mono really needed? doc claims so
 	   );
 
 	   if (pps->m_BASSstream == NULL)
@@ -486,7 +541,9 @@ void PinDirectSoundWavCopy::PlayInternal(const float volume, const float randomp
 			m_pDSBuffer->SetFrequency(freq + pitch);
 		}
 	}
-	switch (m_ppsOriginal->GetPinDirectSound()->m_3DSoundMode)
+
+	const SoundConfigTypes SoundMode3D = (SoundConfigTypes)LoadValueIntWithDefault("Player", "Sound3D", (int)SNDCFG_SND3D2CH);
+	switch (SoundMode3D)
 	{
 	case SNDCFG_SND3DALLREAR:
 		m_pDS3DBuffer->SetPosition(PinDirectSound::PanTo3D(pan), 0.0f, -PinDirectSound::PanTo3D(1.0f), DS3D_IMMEDIATE);
