@@ -1,12 +1,27 @@
 #include "StdAfx.h"
 
 extern bool bass_init;
+extern int bass_BG_idx;
+extern int bass_STD_idx;
+
+/*void CALLBACK PanDSP(HDSP handle, DWORD channel, void *buffer, DWORD length, void *user)
+{
+   const float pan = *((float*)user);
+   if (pan == 0.f) return; // no processing neeeded for centre panning
+   float * __restrict s = (float*)buffer;
+   for (DWORD i = 0; i < length/8; ++i) {
+      if (pan < 0.f)
+         s[i*2+1] *= 1.f + pan; // pan left = reduce right
+      else
+         s[i*2  ] *= 1.f - pan; // vice versa
+   }
+}*/
 
 PinSound::PinSound() : PinDirectSoundWavCopy(this)
 {
    if(!bass_init)
    {
-      AudioPlayer ap; //!! just to get BASS init'ed, remove again as soon as all is unified! // also need (optionally) 2 devices, one BG, one normal
+      AudioPlayer ap; //!! just to get BASS init'ed, remove again as soon as all is unified!
    }
 
    m_pDSBuffer = NULL;
@@ -37,7 +52,10 @@ void PinSound::UnInitialize()
    else
    {
       if (m_BASSstream)
+      {
+         if (bass_STD_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_STD_idx);
          BASS_StreamFree(m_BASSstream);
+      }
    }
 }
 
@@ -102,13 +120,89 @@ HRESULT PinSound::ReInitialize()
    return S_OK;
 }
 
+bool PinSound::Setup()
+{
+   if (bass_STD_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_STD_idx);
+   m_BASSstream = BASS_StreamCreateFile(
+      TRUE,
+      m_pdata,
+      0,
+      m_cdata,
+      0 /*BASS_SAMPLE_3D | BASS_SAMPLE_LOOP*/ //!!
+   );
+
+   if (m_BASSstream == NULL)
+   {
+      MessageBox(g_pvp->m_hwnd, "BASS music/sound library cannot create stream", "Error", MB_ICONERROR);
+      return false;
+   }
+
+   return true;
+}
+
+void PinSound::Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart)
+{
+   if (IsWav())
+      PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
+   else if (m_BASSstream)
+   {
+      if (bass_STD_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_STD_idx);
+
+      //!! add missing attributes and compare how all the parameters are different from direct sound!
+      BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_VOL, volume);
+      if (randompitch > 0.f)
+      {
+         float freq;
+         BASS_ChannelGetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, &freq);
+         freq += pitch;
+         const float rndh = rand_mt_01();
+         const float rndl = rand_mt_01();
+         BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, freq + freq * randompitch * rndh * rndh - freq * randompitch * rndl * rndl * 0.5f);
+      }
+      else if (pitch != 0)
+      {
+         float freq;
+         BASS_ChannelGetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, &freq);
+         BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, (float)(freq + pitch));
+      }
+      BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_PAN, pan);
+	  //!! When using DirectSound output on Windows, this attribute has no effect when speaker assignment is used, except on Windows Vista and newer with the BASS_CONFIG_VISTA_SPEAKERS config option enabled.
+	  //m_pan = pan;
+	  //if(pan != 0.f)
+	  //   BASS_ChannelSetDSP(m_BASSstream, PanDSP, &m_pan, 0);
+      BASS_ChannelPlay(m_BASSstream, restart ? fTrue : fFalse);
+   }
+}
+
+void PinSound::TestPlay()
+{
+   if(IsWav())
+      TestPlayInternal();
+   else
+      if (m_BASSstream)
+      {
+         if (bass_STD_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_STD_idx);
+         BASS_ChannelPlay(m_BASSstream, 0); //!! reset all channel attributes to default
+      }
+}
+
+void PinSound::Stop()
+{
+   if (IsWav())
+      StopInternal();
+   else
+      if (m_BASSstream)
+      {
+         if (bass_STD_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_STD_idx);
+         BASS_ChannelStop(m_BASSstream);
+      }
+}
+
 PinDirectSound::~PinDirectSound()
 {
    SAFE_RELEASE(m_pDSListener);
    SAFE_RELEASE(m_pDS);
 }
-
-
 
 BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list)
 {
@@ -312,6 +406,7 @@ PinSound *AudioMusicPlayer::LoadFile(const TCHAR* const strFileName)
 	   fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f);
 	   fclose(f);
 
+	   if (bass_STD_idx != -1 && bass_STD_idx != bass_BG_idx) BASS_SetDevice(bass_STD_idx);
 	   pps->m_BASSstream = BASS_StreamCreateFile(
 		   TRUE,
 		   pps->m_pdata,

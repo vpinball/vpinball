@@ -74,57 +74,20 @@ public:
    class PinDirectSound *GetPinDirectSound();
    void UnInitialize();
    HRESULT ReInitialize();
+   bool Setup();
    bool IsWav() const { return (_stricmp(strrchr(m_szPath, '.'), ".wav") == 0); }
 
-   void Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart)
-   {
-      if (IsWav())
-         PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
-      else if (m_BASSstream)
-      {
-         BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_VOL, volume);
-         if (randompitch > 0.f)
-         {
-            float freq;
-            BASS_ChannelGetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, &freq);
-            freq += pitch;
-            const float rndh = rand_mt_01();
-            const float rndl = rand_mt_01();
-            BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, freq + freq * randompitch * rndh * rndh - freq * randompitch * rndl * rndl * 0.5f);
-         }
-         else if (pitch != 0)
-         {
-            float freq;
-            BASS_ChannelGetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, &freq);
-            BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, (float)(freq + pitch));
-         }
-         BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_PAN, pan);
-         BASS_ChannelPlay(m_BASSstream, restart ? fTrue : fFalse);
-      }
-   }
-
-   void TestPlay()
-   {
-      if(IsWav())
-         TestPlayInternal();
-      else
-         if (m_BASSstream)
-            BASS_ChannelPlay(m_BASSstream, 0);
-   }
-
-   void Stop()
-   {
-      if (IsWav())
-         StopInternal();
-      else
-         if (m_BASSstream)
-            BASS_ChannelStop(m_BASSstream);
-   }
+   void Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart);
+   void TestPlay();
+   void Stop();
 
    union
    {
       class PinDirectSound *m_pPinDirectSound;
-      HSTREAM m_BASSstream;
+      //struct {
+         HSTREAM m_BASSstream;
+      // float m_pan;
+      //};
    };
 
    char m_szName[MAXTOKEN]; // only filename, no ext
