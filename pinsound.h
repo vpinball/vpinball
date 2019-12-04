@@ -75,8 +75,13 @@ public:
    void UnInitialize();
    HRESULT ReInitialize();
    void SetDevice(); //!! BASS only
+#ifdef ONLY_USE_BASS
+   bool IsWav() const { return false; }
+   bool IsWav2() const { return (_stricmp(strrchr(m_szPath, '.'), ".wav") == 0); }
+#else
    bool IsWav() const { return (_stricmp(strrchr(m_szPath, '.'), ".wav") == 0); }
-
+   bool IsWav2() const { return IsWav(); }
+#endif
    void Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart);
    void TestPlay();
    void Stop();
@@ -102,8 +107,13 @@ public:
    char *m_pdata; // wav: copy of the buffer/sample data so we can save it out, else: the contents of the original file
    int m_cdata;
 
-   // old wav code only:
+   // old wav code only, but also used to convert raw wavs back to BASS
    WAVEFORMATEX m_wfx;
+
+#ifdef ONLY_USE_BASS
+   char *m_pdata_org; // save wavs in original raw format
+   int m_cdata_org;
+#endif
 };
 
 

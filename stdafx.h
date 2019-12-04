@@ -15,6 +15,8 @@
 
 //#define DEBUG_NUDGE // debug new nudge code
 
+//#define ONLY_USE_BASS
+
 //#define DEBUG_NO_SOUND
 //#define DEBUG_REFCOUNT_TRIGGER
 

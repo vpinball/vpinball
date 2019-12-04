@@ -2916,14 +2916,22 @@ HRESULT PinTable::SaveSoundToStream(PinSound * const pps, IStream *pstm)
    if (FAILED(hr = pstm->Write(pps->m_szInternalName, len, &writ)))
       return hr;
 
-   if (pps->IsWav()) // only use old code if playing wav's
+   if (pps->IsWav2()) // only use old code if playing wav's
    if (FAILED(hr = pstm->Write(&pps->m_wfx, sizeof(pps->m_wfx), &writ)))
       return hr;
 
+#ifdef ONLY_USE_BASS
+   if (FAILED(hr = pstm->Write(pps->IsWav2() ? &pps->m_cdata_org : &pps->m_cdata, sizeof(int), &writ)))
+#else
    if (FAILED(hr = pstm->Write(&pps->m_cdata, sizeof(int), &writ)))
+#endif
       return hr;
 
+#ifdef ONLY_USE_BASS
+   if (FAILED(hr = pstm->Write(pps->IsWav2() ? pps->m_pdata_org : pps->m_pdata, pps->m_cdata, &writ)))
+#else
    if (FAILED(hr = pstm->Write(pps->m_pdata, pps->m_cdata, &writ)))
+#endif
       return hr;
 
    if (FAILED(hr = pstm->Write(&pps->m_outputTarget, sizeof(bool), &writ)))
@@ -2989,7 +2997,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 
    pps->m_szInternalName[len] = 0;
 
-   if (pps->IsWav()) // only use old code if playing wav's
+   if (pps->IsWav2()) // only use old code if playing wav's
    if (FAILED(hr = pstm->Read(&pps->m_wfx, sizeof(pps->m_wfx), &read)))
    {
        delete pps;
@@ -3002,16 +3010,75 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        return hr;
    }
 
-   pps->m_pdata = new char[pps->m_cdata];
+#ifdef ONLY_USE_BASS
+   // reconvert to make it look like an original wave file to BASS
+   DWORD waveFileSize;
+   char *waveFilePointer;
+   if (pps->IsWav2())
+   {
+	   struct WAVEHEADER
+	   {
+		   DWORD   dwRiff;    // "RIFF"
+		   DWORD   dwSize;    // Size
+		   DWORD   dwWave;    // "WAVE"
+		   DWORD   dwFmt;     // "fmt "
+		   DWORD   dwFmtSize; // Wave Format Size
+	   };
+	   //  Static RIFF header
+	   const BYTE WaveHeader[] =
+	   {
+		   'R','I','F','F',0x00,0x00,0x00,0x00,'W','A','V','E','f','m','t',' ',0x00,0x00,0x00,0x00
+	   };
+	   // Static wave DATA tag
+	   const BYTE WaveData[] = { 'd','a','t','a' };
+
+	   waveFileSize = sizeof(WAVEHEADER) + sizeof(WAVEFORMATEX) + pps->m_wfx.cbSize + sizeof(WaveData) + sizeof(DWORD) + pps->m_cdata;
+	   pps->m_pdata = new char[waveFileSize];
+	   waveFilePointer = pps->m_pdata;
+	   WAVEHEADER * const waveHeader = reinterpret_cast<WAVEHEADER *>(pps->m_pdata);
+
+	   // Wave header
+	   memcpy(waveFilePointer, WaveHeader, sizeof(WaveHeader));
+	   waveFilePointer += sizeof(WaveHeader);
+
+	   // Update sizes in wave header
+	   waveHeader->dwSize = waveFileSize - sizeof(DWORD) * 2;
+	   waveHeader->dwFmtSize = sizeof(WAVEFORMATEX) + pps->m_wfx.cbSize;
+
+	   // WAVEFORMATEX
+	   memcpy(waveFilePointer, &pps->m_wfx, sizeof(WAVEFORMATEX) + pps->m_wfx.cbSize);
+	   waveFilePointer += sizeof(WAVEFORMATEX) + pps->m_wfx.cbSize;
+
+	   // Data header
+	   memcpy(waveFilePointer, WaveData, sizeof(WaveData));
+	   waveFilePointer += sizeof(WaveData);
+	   *(reinterpret_cast<DWORD *>(waveFilePointer)) = pps->m_cdata;
+	   waveFilePointer += sizeof(DWORD);
+   }
+   else
+#endif
+	   pps->m_pdata = new char[pps->m_cdata];
 
    //LZWReader lzwreader(pstm, (int *)pps->m_pdata, pps->m_cdata, 1, pps->m_cdata); // TODO could compress wav data
    //lzwreader.Decoder();
 
+#ifdef ONLY_USE_BASS
+   if (FAILED(hr = pstm->Read(pps->IsWav2() ? waveFilePointer : pps->m_pdata, pps->m_cdata, &read)))
+#else
    if (FAILED(hr = pstm->Read(pps->m_pdata, pps->m_cdata, &read)))
+#endif
    {
       delete pps;
       return hr;
    }
+#ifdef ONLY_USE_BASS
+   if (pps->IsWav2())
+   {
+      pps->m_pdata_org = waveFilePointer;
+      pps->m_cdata_org = pps->m_cdata;
+      pps->m_cdata = waveFileSize;
+   }
+#endif
 
    if (LoadFileVersion >= NEW_SOUND_FORMAT_VERSION)
    {
