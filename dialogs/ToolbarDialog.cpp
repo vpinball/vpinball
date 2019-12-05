@@ -391,7 +391,7 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case ID_EDIT_PROPERTIES:
         {
-            g_pvp->ParseCommand(id, m_hwnd, 3); //3=toggle
+            g_pvp->ParseCommand(id, 3); //3=toggle
             break;
         }
         case ID_EDIT_SCRIPT:

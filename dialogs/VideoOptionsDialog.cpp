@@ -631,7 +631,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          ZeroMemory(&ofn, sizeof(OPENFILENAME));
          ofn.lStructSize = sizeof(OPENFILENAME);
          ofn.hInstance = g_hinst;
-         ofn.hwndOwner = g_pvp->m_hwnd;
+         ofn.hwndOwner = g_pvp->GetHwnd();
          // TEXT
          ofn.lpstrFilter = "Bitmap, JPEG, PNG, TGA, EXR, HDR Files (.bmp/.jpg/.png/.tga/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.exr;*.hdr\0";
          ofn.lpstrFile = szFileName;
@@ -654,7 +654,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          ZeroMemory(&ofn, sizeof(OPENFILENAME));
          ofn.lStructSize = sizeof(OPENFILENAME);
          ofn.hInstance = g_hinst;
-         ofn.hwndOwner = g_pvp->m_hwnd;
+         ofn.hwndOwner = g_pvp->GetHwnd();
          // TEXT
          ofn.lpstrFilter = "Bitmap, JPEG, PNG, TGA, EXR, HDR Files (.bmp/.jpg/.png/.tga/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.exr;*.hdr\0";
          ofn.lpstrFile = szFileName;

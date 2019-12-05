@@ -38,6 +38,23 @@ struct ProtectionData {
 
 class ScriptGlobalTable;
 
+class PinTableMDI:public CMDIChild
+{
+public:
+    void SetTable(PinTable *table);
+
+protected:
+    virtual void PreCreate(CREATESTRUCT &cs);
+    virtual void PreRegisterClass(WNDCLASS &wc);
+    virtual int OnCreate(CREATESTRUCT &cs);
+    virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
+    virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
+
+private:
+    PinTable *m_table;
+
+};
+
 class PinTable:
    public CWnd,
    public CComObjectRootEx<CComSingleThreadModel>,
@@ -839,7 +856,8 @@ public:
    void SetHeight(const float value);
 
 private:
-   HWND m_hwnd;
+   HWND m_hMDI;
+   PinTableMDI  m_mdiTable;
    std::unordered_map<const char *, Texture *, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
    std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name
 };
@@ -947,5 +965,7 @@ private:
 
    PinTable *m_pt;
 };
+
+
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)

@@ -387,7 +387,7 @@ int getPrimaryDisplay()
 
 ////////////////////////////////////////////////////////////////////
 
-#define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); MessageBox(g_pvp->m_hwnd, ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
+#define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); g_pvp->MessageBox(ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
 static bool NVAPIinit = false; //!! meh
 
 bool RenderDevice::m_INTZ_support = false;
@@ -832,7 +832,7 @@ static void CheckForD3DLeak(IDirect3DDevice9* d3d)
    HRESULT hr = d3d->Reset(&pp);
    if (FAILED(hr))
    {
-      MessageBox(g_pvp->m_hwnd, "WARNING! Direct3D resource leak detected!", "Visual Pinball", MB_ICONWARNING);
+       g_pvp->MessageBox("WARNING! Direct3D resource leak detected!", "Visual Pinball", MB_ICONWARNING);
    }
 }
 #endif
@@ -1832,10 +1832,10 @@ bool Shader::Load(const BYTE* shaderCodeName, UINT codeSize)
       if (pBufferErrors)
       {
          LPVOID pCompileErrors = pBufferErrors->GetBufferPointer();
-         MessageBox(g_pvp->m_hwnd, (const char*)pCompileErrors, "Compile Error", MB_OK | MB_ICONEXCLAMATION);
+         g_pvp->MessageBox((const char*)pCompileErrors, "Compile Error", MB_OK | MB_ICONEXCLAMATION);
       }
       else
-         MessageBox(g_pvp->m_hwnd, "Unknown Error", "Compile Error", MB_OK | MB_ICONEXCLAMATION);
+          g_pvp->MessageBox("Unknown Error", "Compile Error", MB_OK | MB_ICONEXCLAMATION);
 
       return false;
    }

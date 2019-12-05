@@ -94,7 +94,7 @@ public:
    void ToggleScriptEditor();
    void ToggleAllLayers();
    void ToggleBackglassView();
-   BOOL ParseCommand(size_t code, HWND hwnd, size_t notify);
+   BOOL ParseCommand(size_t code, size_t notify);
    void ReInitSound();
 
    CComObject<PinTable> *GetActiveTable();
@@ -140,12 +140,12 @@ public:
    void SetStatusBarElementInfo(const char * const info);
    void SetStatusBarUnitInfo(const char * const info, const bool isUnit);
 
+   bool OpenFileDialog(const char *initDir, char *filename, const char *fileFilter, const char *defaultExt, DWORD flags, int &fileOffset);
    ULONG m_cref;
 
    vector< CComObject<PinTable>* > m_vtable;
    CComObject<PinTable> *m_ptableActive;
 
-   HWND m_hwnd;
    HWND m_hwndSideBar;
    HWND m_hwndSideBarScroll;
    HWND m_hwndSideBarLayers;

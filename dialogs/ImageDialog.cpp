@@ -413,37 +413,23 @@ void ImageDialog::Import()
    char szFileName[MAXSTRING];
    char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
-
-   OPENFILENAME ofn;
-   ZeroMemory(&ofn, sizeof(OPENFILENAME));
-   ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = g_hinst;
-   ofn.hwndOwner = g_pvp->m_hwnd;
-
-   ofn.lpstrFilter = "Bitmap, JPEG, PNG, TGA, EXR, HDR Files (.bmp/.jpg/.png/.tga/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.exr;*.hdr\0";
-   ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = MAXSTRING;
-   ofn.lpstrDefExt = "png";
-   ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
+   int fileOffset = 0;
 
    HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
-   ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
-   const int ret = GetOpenFileName(&ofn);
-
-   if (ret)
+   if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, EXR, HDR Files (.bmp/.jpg/.png/.tga/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT, fileOffset))
    {
       strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
 
       int len = lstrlen(szFileName);
-      if (len < ofn.nFileOffset)
+      if (len < fileOffset)
       {
          // Multi-file select
          char szT[MAXSTRING];
          lstrcpy(szT, szFileName);
          lstrcat(szT, "\\");
          len++;
-         int filenamestart = ofn.nFileOffset;
+         int filenamestart = fileOffset;
          int filenamelen = lstrlen(&szFileName[filenamestart]);
          while (filenamelen > 0)
          {
@@ -455,7 +441,7 @@ void ImageDialog::Import()
       }
       else
       {
-         szInitialDir[ofn.nFileOffset] = 0;
+         szInitialDir[fileOffset] = 0;
          pt->ImportImage(hSoundList, szFileName);
       }
       hr = SaveValueString("RecentDir", "ImageDir", szInitialDir);
@@ -493,7 +479,7 @@ void ImageDialog::Export()
             ZeroMemory(&ofn, sizeof(OPENFILENAME));
             ofn.lStructSize = sizeof(OPENFILENAME);
             ofn.hInstance = g_hinst;
-            ofn.hwndOwner = g_pvp->m_hwnd;
+            ofn.hwndOwner = g_pvp->GetHwnd();
             int len = lstrlen(ppi->m_szPath);
             memset(g_filename, 0, MAX_PATH);
             memset(g_initDir, 0, MAX_PATH);
@@ -762,26 +748,12 @@ void ImageDialog::ReimportFrom()
       {
          char szFileName[MAXSTRING];
          szFileName[0] = '\0';
-
-         OPENFILENAME ofn;
-         ZeroMemory(&ofn, sizeof(OPENFILENAME));
-         ofn.lStructSize = sizeof(OPENFILENAME);
-         ofn.hInstance = g_hinst;
-         ofn.hwndOwner = g_pvp->m_hwnd;
-         // TEXT
-         ofn.lpstrFilter = "Bitmap, JPEG, PNG, TGA, EXR, HDR Files (.bmp/.jpg/.png/.tga/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.exr;*.hdr\0";
-         ofn.lpstrFile = szFileName;
-         ofn.nMaxFile = MAXSTRING;
-         ofn.lpstrDefExt = "png";
-         ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
-
+         int fileOffset = 0;
          char szInitialDir[MAXSTRING];
+
          HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
-         ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
-         const int ret = GetOpenFileName(&ofn);
-
-         if (ret)
+         if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, EXR, HDR Files (.bmp/.jpg/.png/.tga/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.exr;*.hdr\0","png",0,fileOffset))
          {
             LVITEM lvitem;
             lvitem.mask = LVIF_PARAM;
@@ -792,10 +764,10 @@ void ImageDialog::ReimportFrom()
             if (ppi != NULL)
             {
                strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
-               szInitialDir[ofn.nFileOffset] = 0;
+               szInitialDir[fileOffset] = 0;
                hr = SaveValueString("RecentDir", "ImageDir", szInitialDir);
 
-               pt->ReImportImage(ppi, ofn.lpstrFile);
+               pt->ReImportImage(ppi, szFileName);
                ListView_SetItemText(hSoundList, sel, 1, ppi->m_szPath);
                pt->SetNonUndoableDirty(eSaveDirty);
 

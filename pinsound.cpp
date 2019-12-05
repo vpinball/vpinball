@@ -87,7 +87,7 @@ HRESULT PinSound::ReInitialize()
 
 	   if (m_BASSstream == NULL)
 	   {
-		   MessageBox(g_pvp->m_hwnd, "BASS music/sound library cannot create stream", "Error", MB_ICONERROR);
+           g_pvp->MessageBox("BASS music/sound library cannot create stream", "Error", MB_ICONERROR);
 		   return E_FAIL;
 	   }
 
@@ -475,7 +475,7 @@ PinSound *AudioMusicPlayer::LoadFile(const TCHAR* const strFileName)
 		   delete pps;
 		   char bla[MAX_PATH];
 		   sprintf_s(bla, "BASS music/sound library cannot load %s", strFileName);
-		   MessageBox(g_pvp->m_hwnd, bla, "Error", MB_ICONERROR);
+           g_pvp->MessageBox(bla, "Error", MB_ICONERROR);
 		   return NULL;
 	   }
    }
