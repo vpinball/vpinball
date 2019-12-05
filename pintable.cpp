@@ -1806,6 +1806,24 @@ void PinTable::SetCaption(const char * const szCaption)
 }
 
 
+void PinTable::SetMouseCapture()
+{
+    ::SetCapture(m_hwnd);
+}
+
+int PinTable::ShowMessageBox(const char *text) const
+{
+    return ::MessageBox(m_hwnd, text, "Visual Pinball", MB_YESNO);
+}
+
+POINT PinTable::GetScreenPoint() const
+{
+    POINT pt;
+    GetCursorPos(&pt);
+    ::ScreenToClient(m_hwnd, &pt);
+    return pt;
+}
+
 void PinTable::InitPostLoad(VPinball *pvp)
 {
    m_pvp = pvp;

@@ -25,7 +25,7 @@ void ISelect::OnLButtonDown(int x, int y)
    m_ptLast.x = x;
    m_ptLast.y = y;
 
-   SetCapture(GetPTable()->m_hwnd);
+   GetPTable()->SetMouseCapture();
 
    SetObjectPos();
 }

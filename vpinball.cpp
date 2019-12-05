@@ -2755,10 +2755,8 @@ void VPinball::AddControlPoint()
         ISelect * const psel = ptCur->m_vmultisel.ElementAt(0);
         if (psel != NULL)
         {
-            POINT pt;
-            GetCursorPos(&pt);
-            ::ScreenToClient(ptCur->m_hwnd, &pt);
-
+            POINT pt = ptCur->GetScreenPoint();
+        
             switch (psel->GetItemType())
             {
                 case eItemRamp:
@@ -2803,9 +2801,7 @@ void VPinball::AddSmoothControlPoint()
         ISelect * const psel = ptCur->m_vmultisel.ElementAt(0);
         if (psel != NULL)
         {
-            POINT pt;
-            GetCursorPos(&pt);
-            ::ScreenToClient(ptCur->m_hwnd, &pt);
+            POINT pt = ptCur->GetScreenPoint();
             switch (psel->GetItemType())
             {
                 case eItemRamp:
@@ -2887,9 +2883,7 @@ void VPinball::CopyPasteElement(const CopyPasteModes mode)
     CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
     {
-        POINT ptCursor;
-        GetCursorPos(&ptCursor);
-        ::ScreenToClient(ptCur->m_hwnd, &ptCursor);
+        POINT ptCursor = ptCur->GetScreenPoint();
         switch (mode)
         {
             case COPY:
