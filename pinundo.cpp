@@ -120,7 +120,7 @@ void PinUndo::Undo()
    if (m_vur.size() == m_cleanpoint)
    {
       LocalString ls(IDS_UNDOPASTSAVE);
-      const int result = MessageBox(m_ptable->m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_YESNO);
+      const int result = m_ptable->ShowMessageBox(ls.m_szbuffer);
       if (result != IDYES)
       {
          return;

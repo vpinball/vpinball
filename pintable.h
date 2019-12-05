@@ -288,6 +288,9 @@ public:
 
    void CreateTableWindow();
    void SetCaption(const char * const szCaption);
+   void SetMouseCapture();
+   int  ShowMessageBox(const char *text) const;
+   POINT GetScreenPoint() const;
 
    HRESULT InitVBA();
    void CloseVBA();
@@ -544,7 +547,6 @@ public:
    char m_szObjFileName[MAXSTRING];
    char m_szTitle[MAX_LINE_LENGTH];
 
-   HWND m_hwnd;
    VPinball *m_pvp;
 
    // editor viewport
@@ -837,7 +839,8 @@ public:
    void SetHeight(const float value);
 
 private:
-   std::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
+   HWND m_hwnd;
+   std::unordered_map<const char *, Texture *, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
    std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name
 };
 
