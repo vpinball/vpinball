@@ -4986,7 +4986,7 @@ void Player::Render()
          else //m_closeType == all others
          {
             option = ID_QUIT;
-            SendMessage(g_pvp->m_hwnd, WM_COMMAND, ID_FILE_EXIT, NULL);
+            SendMessage(g_pvp->GetHwnd(), WM_COMMAND, ID_FILE_EXIT, NULL);
          }
 
          m_closeDown = false;
@@ -5008,7 +5008,7 @@ void Player::Render()
           else
              g_pplayer->m_hwndDebugger = CreateDialogParam( g_hinst, MAKEINTRESOURCE( IDD_DEBUGGER ), m_playfieldHwnd, DebuggerProc, NULL );
 
-          EndDialog( g_pvp->m_hwnd, ID_DEBUGWINDOW );
+          EndDialog( g_pvp->GetHwnd(), ID_DEBUGWINDOW );
       }
    }
    ///// Don't put anything here - the ID_QUIT check must be the last thing done
@@ -5824,7 +5824,7 @@ static void ShutDownPlayer()
    //!! modification to m_vedit of each table after playing them must be done here, otherwise VP will crash (WTF?!)
    playedTable->RestoreLayers();
 
-   SetForegroundWindow(g_pvp->m_hwnd);
+   g_pvp->SetForegroundWindow();
 }
 
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)

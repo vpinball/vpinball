@@ -63,11 +63,11 @@ AudioPlayer::AudioPlayer()
 
       for(unsigned int idx = 0; idx < 2; ++idx)
       {
-      if (!BASS_Init((idx == 0) ? bass_STD_idx : bass_BG_idx, 44100, (SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? BASS_DEVICE_3D : 0, g_pvp->m_hwnd, NULL)) // note that sample rate is usually ignored and set depending on the input/file automatically
+      if (!BASS_Init((idx == 0) ? bass_STD_idx : bass_BG_idx, 44100, (SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? BASS_DEVICE_3D : 0, g_pvp->GetHwnd(), NULL)) // note that sample rate is usually ignored and set depending on the input/file automatically
       {
          char bla[128];
          sprintf_s(bla, "BASS music/sound library initialization error %d", BASS_ErrorGetCode());
-         MessageBox(g_pvp->m_hwnd, bla, "Error", MB_ICONERROR);
+         g_pvp->MessageBox(bla, "Error", MB_ICONERROR);
       }
       if (/*SoundMode3D == SNDCFG_SND3D2CH &&*/ bass_STD_idx == bass_BG_idx) // skip 2nd device if it's the same and 3D is disabled //!!! for now try to just use one even if 3D! and then adapt channel settings if sample is a backglass sample
          break;
@@ -133,7 +133,7 @@ bool AudioPlayer::MusicInit(const char * const szFileName, const float volume)
    {
       char bla[MAX_PATH];
       sprintf_s(bla, "BASS music/sound library cannot load %s", szFileName);
-      MessageBox(g_pvp->m_hwnd, bla, "Error", MB_ICONERROR);
+      g_pvp->MessageBox(bla, "Error", MB_ICONERROR);
       return false;
    }
 

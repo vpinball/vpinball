@@ -8,7 +8,7 @@ extern bool g_keepUndoRecords;
 
 __forceinline void ShowError(const char * const sz)
 {
-   MessageBox(g_pvp->m_hwnd, sz, "Error", MB_OK | MB_ICONEXCLAMATION);
+   MessageBox(g_pvp->GetHwnd(), sz, "Error", MB_OK | MB_ICONEXCLAMATION);
 }
 
 inline void ExitApp()

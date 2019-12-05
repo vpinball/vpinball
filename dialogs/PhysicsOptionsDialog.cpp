@@ -176,7 +176,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
             if (tmp != physicsselection)
             {
-                int result = ::MessageBox(g_pvp->m_hwnd, "Save", "Save current physics set?", MB_YESNOCANCEL | MB_ICONQUESTION);
+                int result = g_pvp->MessageBox("Save", "Save current physics set?", MB_YESNOCANCEL | MB_ICONQUESTION);
                 if (result == IDYES)
                     SaveCurrentPhysicsSetting();
 
@@ -232,7 +232,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ZeroMemory(&ofn, sizeof(OPENFILENAME));
             ofn.lStructSize = sizeof(OPENFILENAME);
             ofn.hInstance = g_hinst;
-            ofn.hwndOwner = g_pvp->m_hwnd;
+            ofn.hwndOwner = g_pvp->GetHwnd();
             // TEXT
             ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
             ofn.lpstrFile = szFileName;
@@ -368,40 +368,17 @@ bool PhysicsOptionsDialog::LoadSetting()
     char szFileName[MAXSTRING];
     char szInitialDir[MAXSTRING];
     szFileName[0] = '\0';
-
-    OPENFILENAME ofn;
-    ZeroMemory(&ofn, sizeof(OPENFILENAME));
-    ofn.lStructSize = sizeof(OPENFILENAME);
-    ofn.hInstance = g_hinst;
-    ofn.hwndOwner = g_pvp->m_hwnd;
-    // TEXT
-    ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
-    ofn.lpstrFile = szFileName;
-    ofn.nMaxFile = MAXSTRING;
-    ofn.lpstrDefExt = "vpp";
-    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+    int fileOffset;
 
     const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
-    char szFoo[MAX_PATH];
-    if (hr == S_OK)
-    {
-        ofn.lpstrInitialDir = szInitialDir;
-    }
-    else
-    {
-        lstrcpy(szFoo, "c:\\");
-        ofn.lpstrInitialDir = szFoo;
-    }
-
-    const int ret = GetOpenFileName(&ofn);
-    if (ret == 0)
+    if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0, fileOffset))
         return false;
 
     xml_document<> xmlDoc;
     try
     {
         std::stringstream buffer;
-        std::ifstream myFile(ofn.lpstrFile);
+        std::ifstream myFile(szFileName);
         buffer << myFile.rdbuf();
         myFile.close();
 

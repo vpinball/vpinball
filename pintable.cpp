@@ -1371,6 +1371,8 @@ PinTable::PinTable()
    m_savingActive = false;
    m_renderSolid = LoadValueBoolWithDefault("Editor", "RenderSolid", true);
 
+   m_mdiTable.SetTable(this);
+   //m_hMDI = m_mdiTable.GetHwnd();
    ClearMultiSel();
 
    m_hbmOffScreen = NULL;
@@ -1569,10 +1571,10 @@ PinTable::~PinTable()
 
    m_psgt->Release();
 
-   if (::IsWindow(m_hwnd))
+   if (::IsWindow(m_hMDI))
    {
       //DestroyWindow(m_hwnd);
-      ::SendMessage(g_pvp->m_hwndWork, WM_MDIDESTROY, (size_t)m_hwnd, 0);
+      ::SendMessage(g_pvp->m_hwndWork, WM_MDIDESTROY, (size_t)m_hMDI, 0);
    }
 
    if (m_hbmOffScreen)
@@ -1801,26 +1803,26 @@ void PinTable::SetDefaultView()
 
 void PinTable::SetCaption(const char * const szCaption)
 {
-   ::SetWindowText(m_hwnd, szCaption);
+   ::SetWindowText(m_hMDI, szCaption);
    m_pcv->SetCaption(szCaption);
 }
 
 
 void PinTable::SetMouseCapture()
 {
-    ::SetCapture(m_hwnd);
+    ::SetCapture(m_hMDI);
 }
 
 int PinTable::ShowMessageBox(const char *text) const
 {
-    return ::MessageBox(m_hwnd, text, "Visual Pinball", MB_YESNO);
+    return ::MessageBox(m_hMDI, text, "Visual Pinball", MB_YESNO);
 }
 
 POINT PinTable::GetScreenPoint() const
 {
     POINT pt;
     GetCursorPos(&pt);
-    ::ScreenToClient(m_hwnd, &pt);
+    ::ScreenToClient(m_hMDI, &pt);
     return pt;
 }
 
@@ -1934,7 +1936,7 @@ void PinTable::GetUniqueNamePasting(int type, WCHAR *wzUniqueName)
 void PinTable::UIRenderPass2(Sur * const psur)
 {
    RECT rc;
-   ::GetClientRect(m_hwnd, &rc);
+   ::GetClientRect(m_hMDI, &rc);
    psur->SetFillColor(g_pvp->m_backgroundColor);
    psur->SetBorderColor(-1, false, 0);
 
@@ -2135,7 +2137,7 @@ void PinTable::Paint(HDC hdc)
    //HBITMAP hbmOffScreen;
 
    RECT rc;
-   ::GetClientRect(m_hwnd, &rc);
+   ::GetClientRect(m_hMDI, &rc);
 
    if (m_dirtyDraw)
    {
@@ -2170,10 +2172,10 @@ void PinTable::Paint(HDC hdc)
 
 ISelect *PinTable::HitTest(const int x, const int y)
 {
-   const HDC hdc = ::GetDC(m_hwnd);
+   const HDC hdc = ::GetDC(m_hMDI);
 
    RECT rc;
-   ::GetClientRect(m_hwnd, &rc);
+   ::GetClientRect(m_hMDI, &rc);
 
    HitSur * const phs = new HitSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
    HitSur * const phs2 = new HitSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
@@ -2208,7 +2210,7 @@ ISelect *PinTable::HitTest(const int x, const int y)
    ISelect * const pisel = phs->m_pselected;
    delete phs;
 
-   ::ReleaseDC(m_hwnd, hdc);
+   ::ReleaseDC(m_hMDI, hdc);
 
    return pisel;
 }
@@ -2219,7 +2221,7 @@ void PinTable::SetDirtyDraw()
        return;
 
    m_dirtyDraw = true;
-   ::InvalidateRect(m_hwnd, NULL, fFalse);
+   ::InvalidateRect(m_hMDI, NULL, fFalse);
 }
 
 // also creates Player instance
@@ -2240,7 +2242,7 @@ void PinTable::Play(const bool cameraMode)
 
    BackupLayers();
 
-   const HWND hwndProgressDialog = CreateDialog(g_hinst, MAKEINTRESOURCE(IDD_PROGRESS), g_pvp->m_hwnd, ProgressProc);
+   const HWND hwndProgressDialog = CreateDialog(g_hinst, MAKEINTRESOURCE(IDD_PROGRESS), g_pvp->GetHwnd(), ProgressProc);
    ::ShowWindow(hwndProgressDialog, SW_SHOW);
 
    const HWND hwndProgressBar = ::GetDlgItem(hwndProgressDialog, IDC_PROGRESS2);
@@ -2446,12 +2448,13 @@ void PinTable::CreateTableWindow()
 
    RegisterClassEx(&wcex);
 
-   m_hwnd = ::CreateWindowEx(WS_EX_MDICHILD /*| WS_EX_OVERLAPPEDWINDOW*/, "PinTable", m_szFileName, WS_HSCROLL | WS_VSCROLL | WS_MAXIMIZE | WS_VISIBLE | WS_CHILD | WS_OVERLAPPEDWINDOW/* | WS_MAXIMIZE*/,
+   m_hMDI = ::CreateWindowEx(WS_EX_MDICHILD /*| WS_EX_OVERLAPPEDWINDOW*/, "PinTable", m_szFileName, WS_HSCROLL | WS_VSCROLL | WS_MAXIMIZE | WS_VISIBLE | WS_CHILD | WS_OVERLAPPEDWINDOW/* | WS_MAXIMIZE*/,
       20, 20, 400, 400, m_pvp->m_hwndWork, NULL, g_hinst, 0);
 
    BeginAutoSaveCounter();
 
-   ::SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (size_t)this);
+   ::SetWindowLongPtr(m_hMDI, GWLP_USERDATA, (size_t)this);
+//    m_mdiTable.Create(m_pvp->GetHwnd());
 }
 
 
@@ -2486,13 +2489,13 @@ HRESULT PinTable::ApcProject_Save()
 void PinTable::BeginAutoSaveCounter()
 {
    if (g_pvp->m_autosaveTime > 0)
-      ::SetTimer(m_hwnd, TIMER_ID_AUTOSAVE, g_pvp->m_autosaveTime, NULL);
+      ::SetTimer(m_hMDI, TIMER_ID_AUTOSAVE, g_pvp->m_autosaveTime, NULL);
 }
 
 
 void PinTable::EndAutoSaveCounter()
 {
-   ::KillTimer(m_hwnd, TIMER_ID_AUTOSAVE);
+   ::KillTimer(m_hMDI, TIMER_ID_AUTOSAVE);
 }
 
 
@@ -2501,7 +2504,7 @@ void PinTable::AutoSave()
    if (m_sdsCurrentDirtyState <= eSaveAutosaved)
       return;
 
-   ::KillTimer(m_hwnd, TIMER_ID_AUTOSAVE);
+   ::KillTimer(m_hMDI, TIMER_ID_AUTOSAVE);
 
    {
       LocalString ls(IDS_AUTOSAVING);
@@ -2521,7 +2524,7 @@ void PinTable::AutoSave()
    AutoSavePackage * const pasp = new AutoSavePackage();
    pasp->pstg = pstgroot;
    pasp->tableindex = FindIndexOf(g_pvp->m_vtable, (CComObject<PinTable> *)this);
-   pasp->hwndtable = m_hwnd;
+   pasp->hwndtable = m_hMDI;
 
    if (hr == S_OK)
    {
@@ -2550,7 +2553,7 @@ HRESULT PinTable::Save(const bool saveAs)
       ZeroMemory(&ofn, sizeof(OPENFILENAME));
       ofn.lStructSize = sizeof(OPENFILENAME);
       ofn.hInstance = g_hinst;
-      ofn.hwndOwner = g_pvp->m_hwnd;
+      ofn.hwndOwner = g_pvp->GetHwnd();
       // TEXT
       ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
       ofn.lpstrFile = m_szFileName;
@@ -2594,7 +2597,7 @@ HRESULT PinTable::Save(const bool saveAs)
             STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgRoot)))
          {
             LocalString ls(IDS_SAVEERROR);
-            ::MessageBox(m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
+            ::MessageBox(m_hMDI, ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
             return hr;
          }
       }
@@ -2621,7 +2624,7 @@ HRESULT PinTable::Save(const bool saveAs)
          STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgRoot)))
       {
          LocalString ls(IDS_SAVEERROR);
-         ::MessageBox(m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
+         ::MessageBox(m_hMDI, ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
          return hr;
       }
    }
@@ -2894,7 +2897,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
          pstgData->Revert();
          pstgRoot->Revert();
          LocalString ls(IDS_SAVEERROR);
-         ::MessageBox(m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
+         ::MessageBox(m_hMDI, ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
       }
       pstgData->Release();
    }
@@ -3548,7 +3551,7 @@ HRESULT PinTable::LoadGameFromFilename(char *szFileName)
          // TEXT
          char msg[MAXSTRING+16];
          sprintf_s(msg, "Error loading %s", m_szFileName);
-         ::MessageBox(g_pvp->m_hwnd, msg, "Load Error", 0);
+         g_pvp->MessageBox(msg, "Load Error", 0);
          return hr;
       }
    }
@@ -4242,11 +4245,11 @@ bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
       result = mmioClose(hmmio, 0);
 
       if (wcch != pps->m_cdata) 
-          ::MessageBox(m_hwnd, "Sound file incomplete!", "Visual Pinball", MB_ICONERROR);
+          ::MessageBox(m_hMDI, "Sound file incomplete!", "Visual Pinball", MB_ICONERROR);
       else return true;
    }
    else 
-       ::MessageBox(m_hwnd, "Can not Open/Create Sound file!", "Visual Pinball", MB_ICONERROR);
+       ::MessageBox(m_hMDI, "Can not Open/Create Sound file!", "Visual Pinball", MB_ICONERROR);
 
    return false;
 }
@@ -4594,7 +4597,7 @@ void PinTable::SetMyScrollInfo()
    GetViewRect(&frect);
 
    RECT rc;
-   ::GetClientRect(m_hwnd, &rc);
+   ::GetClientRect(m_hMDI, &rc);
 
    const HitSur phs(NULL, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
@@ -4611,14 +4614,14 @@ void PinTable::SetMyScrollInfo()
    si.nPage = (int)(rgv[1].x - rgv[0].x);
    si.nPos = (int)(rgv[0].x);
 
-   ::SetScrollInfo(m_hwnd, SB_HORZ, &si, fTrue);
+   ::SetScrollInfo(m_hMDI, SB_HORZ, &si, fTrue);
 
    si.nMin = (int)min(frect.top, rgv[0].y);
    si.nMax = (int)max(frect.bottom, rgv[1].y);
    si.nPage = (int)(rgv[1].y - rgv[0].y);
    si.nPos = (int)(rgv[0].y);
 
-   ::SetScrollInfo(m_hwnd, SB_VERT, &si, fTrue);
+   ::SetScrollInfo(m_hMDI, SB_VERT, &si, fTrue);
 }
 
 void PinTable::FireKeyEvent(int dispid, int keycode)
@@ -4806,7 +4809,7 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
    POINT pt;
    pt.x = x;
    pt.y = y;
-   ::ClientToScreen(m_hwnd, &pt);
+   ::ClientToScreen(m_hMDI, &pt);
 
    HMENU hmenumain;
    HMENU hmenu;
@@ -4969,7 +4972,7 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
       CheckMenuItem(hmenu, ID_LOCK, MF_BYCOMMAND | (locked ? MF_CHECKED : MF_UNCHECKED));
    }
 
-   const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD, pt.x, pt.y, m_hwnd, NULL);
+   const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD, pt.x, pt.y, m_hMDI, NULL);
 
    if (icmd != 0)
       psel->DoCommand(icmd, x, y);
@@ -5057,9 +5060,9 @@ void PinTable::DoCommand(int icmd, int x, int y)
    case IDC_COPY: Copy(x, y); break;
    case IDC_PASTE: Paste(false, x, y); break;
    case IDC_PASTEAT: Paste(true, x, y); break;
-   case ID_WALLMENU_ROTATE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ROTATE), g_pvp->m_hwnd, RotateProc, (size_t)(ISelect *)this); break;
-   case ID_WALLMENU_SCALE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SCALE), g_pvp->m_hwnd, ScaleProc, (size_t)(ISelect *)this); break;
-   case ID_WALLMENU_TRANSLATE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TRANSLATE), g_pvp->m_hwnd, TranslateProc, (size_t)(ISelect *)this); break;
+   case ID_WALLMENU_ROTATE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ROTATE), g_pvp->GetHwnd(), RotateProc, (size_t)(ISelect *)this); break;
+   case ID_WALLMENU_SCALE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SCALE), g_pvp->GetHwnd(), ScaleProc, (size_t)(ISelect *)this); break;
+   case ID_WALLMENU_TRANSLATE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TRANSLATE), g_pvp->GetHwnd(), TranslateProc, (size_t)(ISelect *)this); break;
    case ID_ASSIGNTO_LAYER1: AssignMultiToLayer(0, x, y); break;
    case ID_ASSIGNTO_LAYER2: AssignMultiToLayer(1, x, y); break;
    case ID_ASSIGNTO_LAYER3: AssignMultiToLayer(2, x, y); break;
@@ -5171,315 +5174,7 @@ void PinTable::LockElements()
 
 LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    CComObject<PinTable> *pt;
-//    HWND hwnd = GetHwnd();
-    HWND hwnd = 0;
-    switch (uMsg)
-    {
-        case WM_CLOSE:
-        {
-            ::KillTimer(hwnd, TIMER_ID_AUTOSAVE);
-            ::SetTimer(hwnd, TIMER_ID_CLOSE_TABLE, 100, NULL);	//wait 250 milliseconds
-
-            return 0;	// destroy the WM_CLOSE message
-        }
-        case WM_TIMER:
-        {
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            switch (wParam)
-            {
-                case TIMER_ID_AUTOSAVE:
-                {
-                    pt->AutoSave();
-                    break;
-                }
-
-                case TIMER_ID_CLOSE_TABLE:
-                {
-                    ::KillTimer(hwnd, TIMER_ID_CLOSE_TABLE);
-                    pt->m_pvp->CloseTable(pt);
-                    //DestroyWindow(hwnd);
-                    return 0;
-                    break;
-                }
-            }
-        }
-        break;
-
-        case WM_SETCURSOR:
-        {
-            if (LOWORD(lParam) == HTCLIENT)
-            {
-                char *cursorid;
-                HINSTANCE hinst = g_hinst;
-
-                if (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY)
-                    cursorid = MAKEINTRESOURCE(IDC_MAGNIFY);
-                else if (g_pvp->m_ToolCur == ID_INSERT_TARGET)
-                    // special case for targets, which are particular walls
-                    cursorid = MAKEINTRESOURCE(IDC_TARGET);
-                else
-                {
-                    ItemTypeEnum type = EditableRegistry::TypeFromToolID(g_pvp->m_ToolCur);
-                    if (type != eItemInvalid)
-                        cursorid = MAKEINTRESOURCE(EditableRegistry::GetCursorID(type));
-                    else
-                    {
-                        hinst = NULL;
-                        cursorid = IDC_ARROW;
-                    }
-                }
-                const HCURSOR hcursor = LoadCursor(hinst, cursorid);
-                SetCursor(hcursor);
-                return TRUE;
-            }
-        }
-        break;
-
-        case WM_PAINT: 
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = ::BeginPaint(hwnd, &ps);
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            pt->Paint(hdc);
-            ::EndPaint(hwnd, &ps);
-            break;
-        }
-
-        case WM_MOUSEACTIVATE:
-        case WM_ACTIVATE:
-        if (LOWORD(wParam) != WA_INACTIVE)
-        {
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            pt->m_pvp->m_ptableActive = pt;
-
-            // re-evaluate the toolbar depending on table permissions
-            g_pvp->SetEnableToolbar();
-        }
-        break;
-
-        case WM_LBUTTONDOWN: 
-        {
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            const short x = (short)(lParam & 0xffff);
-            const short y = (short)((lParam >> 16) & 0xffff);
-            if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
-                pt->DoLeftButtonDown(x, y);
-            else
-                pt->UseTool(x, y, g_pvp->m_ToolCur);
-            break;
-        }
-
-        case WM_LBUTTONDBLCLK: 
-        {
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            const short x = (short)(lParam & 0xffff);
-            const short y = (short)((lParam >> 16) & 0xffff);
-            pt->OnLeftDoubleClick(x, y);
-            break;
-        }
-
-        case WM_LBUTTONUP:
-        {
-            const short x = (short)(lParam & 0xffff);
-            const short y = (short)((lParam >> 16) & 0xffff);
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            pt->OnLeftButtonUp(x, y);
-        }
-        break;
-
-        case WM_MOUSEMOVE:
-        {
-            const short x = (short)(lParam & 0xffff);
-            const short y = (short)((lParam >> 16) & 0xffff);
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            const bool middleMouseButtonPressed = ((GetKeyState(VK_MBUTTON) & 0x100) != 0);  //((GetKeyState(VK_MENU) & 0x80000000) != 0);
-            if (middleMouseButtonPressed)
-            {
-                // panning feature starts here...if the user holds the middle mouse button and moves the mouse 
-                // everything is moved in the direction of the mouse was moved
-                int dx = abs(pt->m_oldMousePosX - x);
-                int dy = abs(pt->m_oldMousePosY - y);
-                if (pt->m_oldMousePosX > x)  pt->m_offset.x += dx;
-                if (pt->m_oldMousePosX < x)  pt->m_offset.x -= dx;
-                if (pt->m_oldMousePosY > y)  pt->m_offset.y += dy;
-                if (pt->m_oldMousePosY < y)  pt->m_offset.y -= dy;
-
-                pt->SetDirtyDraw();
-                pt->SetMyScrollInfo();
-
-                pt->m_oldMousePosX = x;
-                pt->m_oldMousePosY = y;
-                break;
-            }
-            pt->DoMouseMove(x, y);
-            pt->m_oldMousePosX = x;
-            pt->m_oldMousePosY = y;
-        }
-        break;
-
-        case WM_RBUTTONDOWN:
-        {
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            const short x = (short)(lParam & 0xffff);
-            const short y = (short)((lParam >> 16) & 0xffff);
-
-            pt->OnRightButtonDown(x, y);
-            break;
-        }
-        case WM_CONTEXTMENU:
-        {
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            long x = (long)(lParam & 0xffff);
-            long y = (long)((lParam >> 16) & 0xffff);
-            POINT p;
-            if (GetCursorPos(&p) && ::ScreenToClient(hwnd, &p))
-            {
-                x = p.x;
-                y = p.y;
-            }
-            pt->OnRightButtonUp(x, y);
-            break;
-        }
-        case WM_KEYDOWN:
-        {
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            pt->OnKeyDown((int)wParam);
-            break;
-        }
-
-        case WM_HSCROLL:
-        {
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            SCROLLINFO si;
-            ZeroMemory(&si, sizeof(SCROLLINFO));
-            si.cbSize = sizeof(SCROLLINFO);
-            si.fMask = SIF_ALL;
-            ::GetScrollInfo(hwnd, SB_HORZ, &si);
-            switch (LOWORD(wParam))
-            {
-                case SB_LINELEFT:
-                pt->m_offset.x -= si.nPage / 10;
-                break;
-                case SB_LINERIGHT:
-                pt->m_offset.x += si.nPage / 10;
-                break;
-                case SB_PAGELEFT:
-                pt->m_offset.x -= si.nPage / 2;
-                break;
-                case SB_PAGERIGHT:
-                pt->m_offset.x += si.nPage / 2;
-                break;
-                case SB_THUMBTRACK:
-                {
-                    const int delta = (int)(pt->m_offset.x - (float)si.nPos);
-                    pt->m_offset.x = (float)((short)HIWORD(wParam) + delta);
-                    break;
-                }
-            }
-            pt->SetDirtyDraw();
-            pt->SetMyScrollInfo();
-            return 0;
-        }
-        break;
-
-        case WM_VSCROLL:
-        {
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            SCROLLINFO si;
-            ZeroMemory(&si, sizeof(SCROLLINFO));
-            si.cbSize = sizeof(SCROLLINFO);
-            si.fMask = SIF_ALL;
-            ::GetScrollInfo(hwnd, SB_VERT, &si);
-            switch (LOWORD(wParam))
-            {
-                case SB_LINEUP:
-                pt->m_offset.y -= si.nPage / 10;
-                break;
-                case SB_LINEDOWN:
-                pt->m_offset.y += si.nPage / 10;
-                break;
-                case SB_PAGEUP:
-                pt->m_offset.y -= si.nPage / 2;
-                break;
-                case SB_PAGEDOWN:
-                pt->m_offset.y += si.nPage / 2;
-                break;
-                case SB_THUMBTRACK:
-                {
-                    const int delta = (int)(pt->m_offset.y - (float)si.nPos);
-                    pt->m_offset.y = (float)((short)HIWORD(wParam) + delta);
-                    break;
-                }
-            }
-            pt->SetDirtyDraw();
-            pt->SetMyScrollInfo();
-            return 0;
-        }
-        break;
-
-        case WM_MOUSEWHEEL:
-        {
-            //zoom in/out by pressing CTRL+mouse wheel
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            const short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-            const int ksctrl = GetKeyState(VK_CONTROL);
-            if ((ksctrl & 0x80000000))
-            {
-                POINT curpt;
-                curpt.x = GET_X_LPARAM(lParam);
-                curpt.y = GET_Y_LPARAM(lParam);
-                ::ScreenToClient(hwnd, &curpt);
-                const short x = (short)curpt.x;
-                const short y = (short)curpt.y;
-                if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
-                {
-                    pt->DoLeftButtonDown(x, y, zDelta != -120);
-                }
-            }
-            else
-            {
-                pt->m_offset.y -= zDelta / pt->m_zoom;	// change to orientation to match windows default
-                pt->SetDirtyDraw();
-                pt->SetMyScrollInfo();
-            }
-            return 0;
-        }
-        break;
-
-        case WM_SIZE:
-        {
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            if (pt) // Window might have just been created
-            {
-                pt->SetMyScrollInfo();
-                pt->m_dirtyDraw = true;
-                // this window command is called whenever the MDI window changes over
-                // re-evaluate the toolbar depending on table permissions
-                g_pvp->SetEnableToolbar();
-            }
-            break;
-        }
-
-        case WM_COMMAND:
-        break;
-
-        case DONE_AUTOSAVE:
-        {
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            if (lParam == S_OK)
-                g_pvp->SetActionCur("");
-            else
-                g_pvp->SetActionCur("Autosave Failed");
-            pt->BeginAutoSaveCounter();
-            HANDLE hEvent = (HANDLE)wParam;
-            RemoveFromVectorSingle(pt->m_vAsyncHandles, hEvent);
-            CloseHandle(hEvent);
-        }
-        break;
-    }
-//    return WndProcDefault(uMsg, wParam, lParam);
-    return 0;
+    return WndProcDefault(uMsg, wParam, lParam);
 }
 
 void PinTable::FlipY(const Vertex2D& pvCenter)
@@ -5604,7 +5299,7 @@ void PinTable::ExportBlueprint()
       ZeroMemory(&ofn, sizeof(OPENFILENAME));
       ofn.lStructSize = sizeof(OPENFILENAME);
       ofn.hInstance = g_hinst;
-      ofn.hwndOwner = g_pvp->m_hwnd;
+      ofn.hwndOwner = g_pvp->GetHwnd();
       ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0";
       ofn.lpstrFile = m_szBlueprintFileName;
       ofn.nMaxFile = MAXSTRING;
@@ -5618,7 +5313,7 @@ void PinTable::ExportBlueprint()
          return;// S_FALSE;
    }
 
-   const int result = ::MessageBox(g_pvp->m_hwnd, "Do you want a solid blueprint?", "Export As Solid?", MB_YESNO);
+   const int result = g_pvp->MessageBox("Do you want a solid blueprint?", "Export As Solid?", MB_YESNO);
    const bool solid = (result == IDYES);
 
    float tableheight, tablewidth;
@@ -5718,10 +5413,10 @@ void PinTable::ExportBlueprint()
    BYTE * const psrc = FreeImage_GetBits(dib);
    memcpy(psrc, pbits, bmwidth*bmheight * 3);
    if (!FreeImage_Save(FreeImage_GetFIFFromFilename(m_szBlueprintFileName), dib, m_szBlueprintFileName, PNG_Z_BEST_COMPRESSION | BMP_SAVE_RLE))
-      ::MessageBox(g_pvp->m_hwnd, "Export failed!", "Blueprint Export", MB_OK | MB_ICONEXCLAMATION);
+       g_pvp->MessageBox("Export failed!", "Blueprint Export", MB_OK | MB_ICONEXCLAMATION);
    else
 #endif
-   ::MessageBox(g_pvp->m_hwnd, "Export finished!", "Blueprint Export", MB_OK);
+       g_pvp->MessageBox("Export finished!", "Blueprint Export", MB_OK);
 #if 1
    FreeImage_Unload(dib);
 #endif
@@ -5797,7 +5492,7 @@ void PinTable::ExportTableMesh()
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hInstance = g_hinst;
-   ofn.hwndOwner = g_pvp->m_hwnd;
+   ofn.hwndOwner = g_pvp->GetHwnd();
    // TEXT
    ofn.lpstrFilter = "Wavefront obj(*.obj)\0*.obj\0";
    ofn.lpstrFile = m_szObjFileName;
@@ -5825,7 +5520,7 @@ void PinTable::ExportTableMesh()
          ptr->ExportMesh(f);
    }
    WaveFrontObj_ExportEnd(f);
-   ::MessageBox(g_pvp->m_hwnd, "Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
+   g_pvp->MessageBox("Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
 }
 
 void PinTable::ImportBackdropPOV(const char *filename)
@@ -5833,23 +5528,10 @@ void PinTable::ImportBackdropPOV(const char *filename)
     char szFileName[MAXSTRING];
     bool oldFormatLoaded = false;
     szFileName[0] = '\0';
-
+    int fileOffset = 0;
 	if (filename == NULL)
 	{
-		OPENFILENAME ofn;
-		ZeroMemory(&ofn, sizeof(OPENFILENAME));
-		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hInstance = g_hinst;
-		ofn.hwndOwner = g_pvp->m_hwnd;
-		// TEXT
-		ofn.lpstrFilter = "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0";
-		ofn.lpstrFile = szFileName;
-		ofn.nMaxFile = MAXSTRING;
-		ofn.lpstrDefExt = "pov";
-		ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
-
-		const int ret = GetOpenFileName(&ofn);
-		if (ret == 0)
+        if(!g_pvp->OpenFileDialog("", szFileName, "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0", "pov", 0, fileOffset))
 			return;
 	}
 	else
@@ -5952,7 +5634,7 @@ void PinTable::ExportBackdropPOV(const char *filename)
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hInstance = g_hinst;
-		ofn.hwndOwner = g_pvp->m_hwnd;
+		ofn.hwndOwner = g_pvp->GetHwnd();
 		// TEXT
 		ofn.lpstrFilter = "POV file(*.pov)\0*.pov\0";
 		ofn.lpstrFile = m_szObjFileName;
@@ -6337,7 +6019,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
    if (error)
    {
       LocalString ls(IDS_NOPASTEINVIEW);
-      ::MessageBox(m_hwnd, ls.m_szbuffer, "Visual Pinball", 0);
+      ::MessageBox(m_hMDI, ls.m_szbuffer, "Visual Pinball", 0);
    }
 }
 
@@ -6550,7 +6232,7 @@ void PinTable::OnDelete()
    if (inCollection)
    {
       LocalString ls(IDS_DELETE_ELEMENTS);
-      const int ans = ::MessageBox(m_hwnd, ls.m_szbuffer/*"Selected elements are part of one or more collections.\nDo you really want to delete them?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
+      const int ans = ::MessageBox(m_hMDI, ls.m_szbuffer/*"Selected elements are part of one or more collections.\nDo you really want to delete them?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
       if (ans != IDYES)
          return;
    }
@@ -6641,13 +6323,13 @@ void PinTable::UseTool(int x, int y, int tool)
       EndUndo();
    }
 
-   g_pvp->ParseCommand(IDC_SELECT, g_pvp->m_hwnd, 0);
+   g_pvp->ParseCommand(IDC_SELECT, 0);
 }
 
 Vertex2D PinTable::TransformPoint(int x, int y) const
 {
    RECT rc;
-   ::GetClientRect(m_hwnd, &rc);
+   ::GetClientRect(m_hMDI, &rc);
 
    const HitSur phs(NULL, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
@@ -6667,7 +6349,7 @@ void PinTable::OnLButtonDown(int x, int y)
 
    m_dragging = true;
 
-   ::SetCapture(GetPTable()->m_hwnd);
+   ::SetCapture(GetPTable()->m_hMDI);
 
    SetDirtyDraw();
 }
@@ -6682,10 +6364,10 @@ void PinTable::OnLButtonUp(int x, int y)
       {
          vector<ISelect*> vsel;
 
-         const HDC hdc = ::GetDC(m_hwnd);
+         const HDC hdc = ::GetDC(m_hMDI);
 
          RECT rc;
-         ::GetClientRect(m_hwnd, &rc);
+         ::GetClientRect(m_hMDI, &rc);
 
          HitRectSur * const phrs = new HitRectSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, &m_rcDragRect, &vsel);
 
@@ -6727,7 +6409,7 @@ void PinTable::OnLButtonUp(int x, int y)
 
          delete phrs;
 
-         ::ReleaseDC(m_hwnd, hdc);
+         ::ReleaseDC(m_hMDI, hdc);
       }
    }
 
@@ -7334,7 +7016,7 @@ bool PinTable::ExportImage(Texture * const ppi, const char * const szfilename)
       }
 
       if (!FreeImage_Save(FreeImage_GetFIFFromFilename(szfilename), dib, szfilename, PNG_Z_BEST_COMPRESSION | JPEG_QUALITYGOOD | BMP_SAVE_RLE))
-         ::MessageBox(g_pvp->m_hwnd, "Export failed!", "BMP Export", MB_OK | MB_ICONEXCLAMATION);
+          g_pvp->MessageBox("Export failed!", "BMP Export", MB_OK | MB_ICONEXCLAMATION);
       //else
       //   ::MessageBox(g_pvp->m_hwnd, "Export finished!", "BMP Export", MB_OK);
       FreeImage_Unload(dib);
@@ -8509,8 +8191,7 @@ INT_PTR CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
    case WM_INITDIALOG:
    {
       RECT rcProgress;
-      RECT rcMain;
-      GetWindowRect(g_pvp->m_hwnd, &rcMain);
+      CRect rcMain = g_pvp->GetWindowRect();
       GetWindowRect(hwndDlg, &rcProgress);
 
       SetWindowPos(hwndDlg, NULL,
@@ -9821,41 +9502,23 @@ STDMETHODIMP PinTable::ImportPhysics()
    char szFileName[MAXSTRING];
    char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
-
-   OPENFILENAME ofn;
-   ZeroMemory(&ofn, sizeof(OPENFILENAME));
-   ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = g_hinst;
-   ofn.hwndOwner = g_pvp->m_hwnd;
-   // TEXT
-   ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
-   ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = MAXSTRING;
-   ofn.lpstrDefExt = "vpp";
-   ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+   int fileOffset = 0;
 
    const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
-   char szFoo[MAX_PATH];
-   if (hr == S_OK)
+   if (hr != S_OK)
    {
-      ofn.lpstrInitialDir = szInitialDir;
-   }
-   else
-   {
-      lstrcpy(szFoo, "c:\\");
-      ofn.lpstrInitialDir = szFoo;
+      lstrcpy(szInitialDir, "c:\\");
    }
 
-   const int ret = GetOpenFileName(&ofn);
-   if (ret == 0)
-      return S_OK;
+   if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0, fileOffset))
+       return S_OK;
 
    xml_document<> xmlDoc;
    float FlipperPhysicsMass, FlipperPhysicsStrength, FlipperPhysicsElasticity, FlipperPhysicsScatter, FlipperPhysicsTorqueDamping, FlipperPhysicsTorqueDampingAngle, FlipperPhysicsReturnStrength, FlipperPhysicsElasticityFalloff, FlipperPhysicsFriction, FlipperPhysicsCoilRampUp;
    try
    {
       std::stringstream buffer;
-      std::ifstream myFile(ofn.lpstrFile);
+      std::ifstream myFile(szFileName);
       buffer << myFile.rdbuf();
       myFile.close();
 
@@ -9974,7 +9637,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hInstance = g_hinst;
-   ofn.hwndOwner = g_pvp->m_hwnd;
+   ofn.hwndOwner = g_pvp->GetHwnd();
    // TEXT
    ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
    ofn.lpstrFile = szFileName;
@@ -10531,7 +10194,7 @@ void PinTable::OnMouseWheel(const short x, const short y, const short zDelta)
         POINT curpt;
         curpt.x = x;
         curpt.y = y;
-        ::ScreenToClient(m_hwnd, &curpt);
+        ::ScreenToClient(m_hMDI, &curpt);
         const short x = (short)curpt.x;
         const short y = (short)curpt.y;
         if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
@@ -10558,6 +10221,276 @@ void PinTable::OnSize()
 
 void PinTable::OnClose()
 {
-    ::KillTimer(m_hwnd, TIMER_ID_AUTOSAVE);
-    ::SetTimer(m_hwnd, TIMER_ID_CLOSE_TABLE, 100, NULL);	//wait 250 milliseconds
+    ::KillTimer(m_hMDI, TIMER_ID_AUTOSAVE);
+    ::SetTimer(m_hMDI, TIMER_ID_CLOSE_TABLE, 100, NULL);	//wait 250 milliseconds
+}
+
+BOOL PinTableMDI::OnCommand(WPARAM wparam, LPARAM lparam)
+{
+    return FALSE;
+}
+
+// menu locations
+enum
+{
+    FILEMENU = 0,
+    EDITMENU,
+    VIEWMENU,
+    INSERTMENU,
+    TABLEMENU,
+    LAYERMENU,
+    PREFMENU,
+    WINDOWMENU,
+    HELPMENU,
+    NUM_MENUS
+};
+
+void PinTableMDI::SetTable(PinTable *table)
+{
+    m_table = table;
+    SetView(*table);
+}
+
+void PinTableMDI::PreCreate(CREATESTRUCT &cs)
+{
+    cs.x = 20;
+    cs.y = 20;
+    cs.cx = 400;
+    cs.cy = 400;
+    cs.dwExStyle = WS_EX_MDICHILD;
+    cs.style = WS_HSCROLL | WS_VSCROLL | WS_MAXIMIZE | WS_VISIBLE | WS_CHILD | WS_OVERLAPPEDWINDOW;
+    cs.hwndParent = m_table->m_pvp->m_hwndWork;
+    cs.lpszClass = _T("PinTable");
+    cs.lpszName = _T(m_table->m_szFileName);
+}
+
+void PinTableMDI::PreRegisterClass(WNDCLASS &wc)
+{
+    wc.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;//CS_NOCLOSE | CS_OWNDC;
+    wc.hInstance = g_hinst;
+    wc.lpszClassName = "PinTable";
+    wc.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_TABLE));
+    wc.hCursor = NULL;
+    wc.hbrBackground = NULL;
+}
+
+int PinTableMDI::OnCreate(CREATESTRUCT &cs)
+{
+    SetWindowText(_T(m_table->m_szFileName));
+    SetMenu(::GetSubMenu( g_pvp->GetMenu().GetHandle(), WINDOWMENU));
+    m_table->BeginAutoSaveCounter();
+    return CMDIChild::OnCreate(cs);
+}
+
+LRESULT PinTableMDI::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    switch (msg)
+    {
+        case WM_CLOSE:
+        {
+            m_table->OnClose();
+            break;
+        }
+        case WM_TIMER:
+        {
+            switch (wparam)
+            {
+                case TIMER_ID_AUTOSAVE:
+                {
+                    m_table->AutoSave();
+                    break;
+                }
+
+                case TIMER_ID_CLOSE_TABLE:
+                {
+                    KillTimer(TIMER_ID_CLOSE_TABLE);
+                    m_table->m_pvp->CloseTable(m_table);
+                    //DestroyWindow(hwnd);
+                    return 0;
+                    break;
+                }
+            }
+            break;
+        }
+        case WM_SETCURSOR:
+        {
+            if (LOWORD(lparam) == HTCLIENT)
+            {
+                m_table->SetMouseCursor();
+                return TRUE;
+            }
+            break;
+        }
+        case WM_PAINT:
+        {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(ps);
+            m_table->Paint(hdc);
+            EndPaint(ps);
+            break;
+        }
+
+        case WM_MOUSEACTIVATE:
+        case WM_ACTIVATE:
+        {
+            if (LOWORD(wparam) != WA_INACTIVE)
+            {
+                m_table->m_pvp->m_ptableActive = (CComObject<PinTable> *)m_table;
+                // re-evaluate the toolbar depending on table permissions
+                g_pvp->SetEnableToolbar();
+            }
+            break;
+        }
+        case WM_LBUTTONDOWN:
+        {
+            const short x = (short)(lparam & 0xffff);
+            const short y = (short)((lparam >> 16) & 0xffff);
+            m_table->OnLeftButtonDown(x, y);
+            break;
+        }
+        case WM_LBUTTONDBLCLK:
+        {
+            const short x = (short)(lparam & 0xffff);
+            const short y = (short)((lparam >> 16) & 0xffff);
+            m_table->OnLeftDoubleClick(x, y);
+            break;
+        }
+        case WM_LBUTTONUP:
+        {
+            const short x = (short)(lparam & 0xffff);
+            const short y = (short)((lparam >> 16) & 0xffff);
+            m_table->OnLeftButtonUp(x, y);
+            break;
+        }
+        case WM_MOUSEMOVE:
+        {
+            const short x = (short)(lparam & 0xffff);
+            const short y = (short)((lparam >> 16) & 0xffff);
+            m_table->OnMouseMove(x, y);
+            break;
+        }
+        case WM_RBUTTONDOWN:
+        {
+            const short x = (short)(lparam & 0xffff);
+            const short y = (short)((lparam >> 16) & 0xffff);
+
+            m_table->OnRightButtonDown(x, y);
+            break;
+        }
+        case WM_CONTEXTMENU:
+        {
+            long x = (long)(lparam & 0xffff);
+            long y = (long)((lparam >> 16) & 0xffff);
+            POINT p;
+            if (GetCursorPos(&p) && ScreenToClient(p))
+            {
+                x = p.x;
+                y = p.y;
+            }
+            m_table->OnRightButtonUp(x, y);
+            break;
+        }
+        case WM_KEYDOWN:
+        {
+            m_table->OnKeyDown((int)wparam);
+            break;
+        }
+        case WM_HSCROLL:
+        {
+            SCROLLINFO si;
+            ZeroMemory(&si, sizeof(SCROLLINFO));
+            si.cbSize = sizeof(SCROLLINFO);
+            si.fMask = SIF_ALL;
+            GetScrollInfo(SB_HORZ, si);
+            switch (LOWORD(wparam))
+            {
+                case SB_LINELEFT:
+                    m_table->m_offset.x -= si.nPage / 10;
+                    break;
+                case SB_LINERIGHT:
+                    m_table->m_offset.x += si.nPage / 10;
+                    break;
+                case SB_PAGELEFT:
+                    m_table->m_offset.x -= si.nPage / 2;
+                    break;
+                case SB_PAGERIGHT:
+                    m_table->m_offset.x += si.nPage / 2;
+                    break;
+                case SB_THUMBTRACK:
+                {
+                    const int delta = (int)(m_table->m_offset.x - si.nPos);
+                    m_table->m_offset.x = (float)((short)HIWORD(wparam) + delta);
+                    break;
+                }
+            }
+            m_table->SetDirtyDraw();
+            m_table->SetMyScrollInfo();
+            return 0;
+        }
+        case WM_VSCROLL:
+        {
+            SCROLLINFO si;
+            ZeroMemory(&si, sizeof(SCROLLINFO));
+            si.cbSize = sizeof(SCROLLINFO);
+            si.fMask = SIF_ALL;
+            GetScrollInfo(SB_VERT, si);
+            switch (LOWORD(wparam))
+            {
+                case SB_LINEUP:
+                    m_table->m_offset.y -= si.nPage / 10;
+                    break;
+                case SB_LINEDOWN:
+                    m_table->m_offset.y += si.nPage / 10;
+                    break;
+                case SB_PAGEUP:
+                    m_table->m_offset.y -= si.nPage / 2;
+                    break;
+                case SB_PAGEDOWN:
+                    m_table->m_offset.y += si.nPage / 2;
+                    break;
+                case SB_THUMBTRACK:
+                {
+                    const int delta = (int)(m_table->m_offset.y - si.nPos);
+                    m_table->m_offset.y = (float)((short)HIWORD(wparam) + delta);
+                    break;
+                }
+            }
+            m_table->SetDirtyDraw();
+            m_table->SetMyScrollInfo();
+            return 0;
+        }
+        case WM_MOUSEWHEEL:
+        {
+            //zoom in/out by pressing CTRL+mouse wheel
+            const short zDelta = GET_WHEEL_DELTA_WPARAM(wparam);
+            m_table->OnMouseWheel(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam), zDelta);
+            return 0;
+        }
+        case WM_SIZE:
+        {
+            if (m_table) // Window might have just been created
+            {
+                m_table->OnSize();
+            }
+            break;
+        }
+        case DONE_AUTOSAVE:
+        {
+            if (lparam == S_OK)
+            {
+                g_pvp->SetActionCur("");
+            }
+            else
+            {
+                g_pvp->SetActionCur("Autosave Failed");
+            }
+            m_table->BeginAutoSaveCounter();
+            HANDLE hEvent = (HANDLE)wparam;
+            RemoveFromVectorSingle(m_table->m_vAsyncHandles, hEvent);
+            CloseHandle(hEvent);
+        }
+    }
+
+    // Do default processing for other messages
+    return WndProcDefault(msg, wparam, lparam);
 }

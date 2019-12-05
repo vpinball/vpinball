@@ -325,7 +325,6 @@ void VPinball::Init()
 //       (m_open_minimized ? WS_MINIMIZE : 0) | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
 //       x, y, width, height, NULL, NULL);				// get handle to and create main Window
 
-   m_hwnd = GetHwnd();
    // See if we have previous window size information
    {
       int left, top, right, bottom;
@@ -343,7 +342,7 @@ void VPinball::Init()
          WINDOWPLACEMENT winpl;
          winpl.length = sizeof(winpl);
 
-         ::GetWindowPlacement(m_hwnd, &winpl);
+         GetWindowPlacement(winpl);
 
          winpl.rcNormalPosition.left = left;
          winpl.rcNormalPosition.top = top;
@@ -355,13 +354,13 @@ void VPinball::Init()
          else if (hrmax == S_OK && maximized)
             winpl.showCmd |= SW_MAXIMIZE;
 
-         ::SetWindowPlacement(m_hwnd, &winpl);
+         SetWindowPlacement(winpl);
       }
    }
 
-   ::ShowWindow(m_hwnd, SW_SHOW);
+   ShowWindow(SW_SHOW);
 
-   ::SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (size_t)this);	// set this class (vpinball) as callback for MDI Child / has to be confirmed
+   SetWindowLongPtr(GWLP_USERDATA, (size_t)this);	// set this class (vpinball) as callback for MDI Child / has to be confirmed
    // can be a problem for 64 bit compatibility.
    // maybe use SetWindowLongPtr instead
 
@@ -373,19 +372,19 @@ void VPinball::Init()
 
    m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE,
       "",
-      m_hwnd,
+      GetHwnd(),
       1);											// Create Status Line at the bottom
 
    ::SendMessage(m_hwndStatusBar, SB_SETPARTS, 6, (size_t)foo);	// Initialize Status bar with 6 empty cells
 
    InitRegValues();									// get default values from registry
 
-   m_sb.Init(m_hwnd);								// initialize smartbrowser (Property bar on the right) - see propbrowser.cpp
+   m_sb.Init(GetHwnd());								// initialize smartbrowser (Property bar on the right) - see propbrowser.cpp
 
-   ::SendMessage(m_hwnd, WM_SIZE, 0, 0);			// Make our window relay itself out
+   SendMessage(WM_SIZE, 0, 0);			// Make our window relay itself out
 
    InitTools();
-   m_ps.InitPinDirectSound(m_hwnd);
+   m_ps.InitPinDirectSound(GetHwnd());
 
    m_backglassView = false;							// we are viewing Pinfield and not the backglass at first
 
@@ -395,7 +394,7 @@ void VPinball::Init()
 
    wintimer_init();									// calibrate the timer routines
    if (m_propertiesFloating)
-      ::SetForegroundWindow(m_hwnd);
+      SetForegroundWindow();
 
 #ifdef SLINTF
    // see slintf.cpp
@@ -465,7 +464,7 @@ void VPinball::InitTools()
    if (state)
    {
       // if so then re-open it
-      ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 1); //display
+      ParseCommand(ID_EDIT_PROPERTIES, 1); //display
    }
 
    m_ToolCur = IDC_SELECT;
@@ -550,11 +549,10 @@ void VPinball::RegisterClasses()
 ///</summary>
 void VPinball::CreateSideBar()
 {
-   RECT rc;
-   ::GetWindowRect(m_hwnd, &rc);
+   CRect rc = GetWindowRect();
 
    m_hwndSideBar = ::CreateWindowEx(/*WS_EX_WINDOWEDGE*/0, "VPStaticChild", "", WS_VISIBLE | WS_CHILD | WS_BORDER,
-      0, 0, TOOLBAR_WIDTH + SCROLL_WIDTH, rc.bottom - rc.top, m_hwnd, NULL, g_hinst, 0);
+      0, 0, TOOLBAR_WIDTH + SCROLL_WIDTH, rc.bottom - rc.top, GetHwnd(), NULL, g_hinst, 0);
    unsigned w,h;
    m_hwndToolbarMain = CreateToolbar((TBBUTTON *)g_tbbuttonMain, TBCOUNTMAIN, m_hwndSideBar, w,h);
 
@@ -671,15 +669,15 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent, u
 
 void VPinball::CreateMDIClient()
 {
-   RECT rc;
-   ::GetWindowRect(m_hwnd, &rc);
+   CRect rc = GetWindowRect();
 
    CLIENTCREATESTRUCT ccs;
-   ccs.hWindowMenu = ::GetSubMenu(::GetMenu(g_pvp->m_hwnd), WINDOWMENU); // Window menu is third from the left
+   
+   ccs.hWindowMenu = ::GetSubMenu(GetMenu().GetHandle(), WINDOWMENU); // Window menu is third from the left
    ccs.idFirstChild = 4000;//129;
 
    m_hwndWork = ::CreateWindowEx(0, "MDICLIENT", "", WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL,
-      TOOLBAR_WIDTH + SCROLL_WIDTH, 0, rc.right - rc.left - (TOOLBAR_WIDTH + SCROLL_WIDTH), rc.bottom - rc.top, m_hwnd, NULL, g_hinst, &ccs);
+      TOOLBAR_WIDTH + SCROLL_WIDTH, 0, rc.right - rc.left - (TOOLBAR_WIDTH + SCROLL_WIDTH), rc.bottom - rc.top, GetHwnd(), NULL, g_hinst, &ccs);
 }
 
 void VPinball::SetClipboard(vector<IStream*> * const pvstm)
@@ -749,6 +747,25 @@ void VPinball::SetStatusBarUnitInfo(const char * const info, const bool isUnit)
     SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf);
 }
 
+bool VPinball::OpenFileDialog(const char *initDir, char *filename, const char *fileFilter, const char *defaultExt, DWORD flags, int &fileOffset)
+{
+    OPENFILENAME ofn;
+    ZeroMemory(&ofn, sizeof(OPENFILENAME));
+    ofn.lStructSize = sizeof(OPENFILENAME);
+    ofn.hInstance = g_hinst;
+    ofn.hwndOwner = GetHwnd();
+    // TEXT
+    ofn.lpstrFilter = fileFilter;
+    ofn.lpstrInitialDir = initDir;
+    ofn.lpstrFile = filename;
+    ofn.nMaxFile = MAXSTRING;
+    ofn.lpstrDefExt = defaultExt;
+    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | flags;
+    const int ret = GetOpenFileName(&ofn);
+    fileOffset = ofn.nFileOffset;
+    return ret != 0;
+}
+
 void VPinball::SetPosCur(float x, float y)
 {
    char szT[256];
@@ -788,7 +805,7 @@ float VPinball::ConvertToUnit(const float value)
 
 void VPinball::SetPropSel(VectorProtected<ISelect> *pvsel)
 {
-   m_sb.CreateFromDispatch(m_hwnd, pvsel);
+   m_sb.CreateFromDispatch(GetHwnd(), pvsel);
 
    if(m_propertyDialog.IsWindow())
      m_propertyDialog.UpdateTabs(pvsel);
@@ -801,13 +818,13 @@ void VPinball::DeletePropSel()
 
 HMENU VPinball::GetMainMenu(int id)
 {
-   HMENU hmenu = ::GetMenu(m_hwnd);
+   HMENU hmenu = GetMenu().GetHandle();
    const int count = GetMenuItemCount(hmenu);
    return GetSubMenu(hmenu, id + ((count > NUM_MENUS) ? 1 : 0)); // MDI has added its stuff (table icon for first menu item)
 }
 
 
-BOOL VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
+BOOL VPinball::ParseCommand(size_t code, size_t notify)
 {
    // check if it's an Editable tool
    ItemTypeEnum type = EditableRegistry::TypeFromToolID((int)code);
@@ -899,7 +916,7 @@ BOOL VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       }
 
       ShowProperties(show);
-      SendMessage(m_hwnd, WM_SIZE, 0, 0);
+      SendMessage(WM_SIZE, 0, 0);
       return TRUE;
    }
    case ID_EDIT_BACKGLASSVIEW:
@@ -1070,22 +1087,22 @@ BOOL VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_FILE_EXIT:
    {
-       PostMessage(m_hwnd, WM_CLOSE, 0, 0);
+       PostMessage(WM_CLOSE, 0, 0);
        return TRUE;
    }
    case ID_EDIT_AUDIOOPTIONS:
    {
-       m_audioOptDialog.DoModal(m_hwnd);
+       m_audioOptDialog.DoModal(GetHwnd());
        return TRUE;
    }
    case ID_EDIT_PHYSICSOPTIONS:
    {
-       m_physicsOptDialog.DoModal(m_hwnd);
+       m_physicsOptDialog.DoModal(GetHwnd());
        return TRUE;
    }
    case ID_EDIT_EDITOROPTIONS:
    {
-      m_editorOptDialog.DoModal(m_hwnd);
+      m_editorOptDialog.DoModal(GetHwnd());
       // refresh editor options from the registry
       InitRegValues();
       // force a screen refresh (it an active table is loaded)
@@ -1096,14 +1113,14 @@ BOOL VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_EDIT_VIDEOOPTIONS:
    {
-       m_videoOptDialog.DoModal(m_hwnd);
+       m_videoOptDialog.DoModal(GetHwnd());
        return TRUE;
    }
    case ID_TABLE_TABLEINFO:
    {
        CComObject<PinTable> * const ptCur = GetActiveTable();
        if (ptCur)
-           m_tableInfoDialog.DoModal(m_hwnd);
+           m_tableInfoDialog.DoModal(GetHwnd());
        return TRUE;
    }
    case IDM_IMAGE_EDITOR:
@@ -1127,7 +1144,7 @@ BOOL VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
        {
            if (!m_soundMngDlg.IsWindow())
            {
-               m_soundMngDlg.Create(m_hwnd);
+               m_soundMngDlg.Create(GetHwnd());
                m_soundMngDlg.ShowWindow();
            }
            else
@@ -1152,7 +1169,7 @@ BOOL VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
        CComObject<PinTable> * const ptCur = GetActiveTable();
        if (ptCur)
-          /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_FONTDIALOG), m_hwnd, FontManagerProc, (size_t)ptCur);
+          /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_FONTDIALOG), GetHwnd(), FontManagerProc, (size_t)ptCur);
        return TRUE;
    }
    case ID_TABLE_DIMENSIONMANAGER:
@@ -1175,7 +1192,7 @@ BOOL VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_PREFERENCES_SECURITYOPTIONS:
    {
-      DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS), m_hwnd, SecurityOptionsProc, 0);
+      DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS), GetHwnd(), SecurityOptionsProc, 0);
 
       // refresh editor options from the registry
       InitRegValues();
@@ -1220,17 +1237,17 @@ BOOL VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_WINDOW_CASCADE:
    {
-      SendMessage(m_hwndWork, WM_MDICASCADE, 0, 0);
+      SendMessage(WM_MDICASCADE, 0, 0);
       return TRUE;
    }
    case ID_WINDOW_TILE:
    {
-      SendMessage(m_hwndWork, WM_MDITILE, 0, 0);
+      SendMessage(WM_MDITILE, 0, 0);
       return TRUE;
    }
    case ID_WINDOW_ARRANGEICONS:
    {
-      SendMessage(m_hwndWork, WM_MDIICONARRANGE, 0, 0);
+      SendMessage(WM_MDIICONARRANGE, 0, 0);
       return TRUE;
    }
    }
@@ -1245,7 +1262,7 @@ void VPinball::ReInitSound()
 		for (size_t j = 0; j < ptT->m_vsound.size(); j++)
 			ptT->m_vsound[j]->UnInitialize();
 	}
-	m_ps.ReInitPinDirectSound(m_hwnd);
+	m_ps.ReInitPinDirectSound(GetHwnd());
 	for (size_t i = 0; i < m_vtable.size(); i++)
 	{
 		PinTable * const ptT = m_vtable[i];
@@ -1323,7 +1340,7 @@ void VPinball::SetEnableToolbar()
          SendMessage(m_hwndToolbarLayers, TB_CHECKBUTTON, allLayers[i], MAKELONG(ptCur->m_activeLayers[i], 0));
 
    SetEnablePalette();
-   ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 2); //redisplay 
+   ParseCommand(ID_EDIT_PROPERTIES, 2); //redisplay 
 }
 
 void VPinball::DoPlay(const bool _cameraMode)
@@ -1338,36 +1355,11 @@ bool VPinball::LoadFile()
 {
    char szFileName[MAXSTRING];
    char szInitialDir[MAXSTRING];
+   int fileOffset = 0;
    szFileName[0] = '\0';
 
-   OPENFILENAME ofn;
-   ZeroMemory(&ofn, sizeof(OPENFILENAME));
-   ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = g_hinst;
-   ofn.hwndOwner = g_pvp->m_hwnd;
-   // TEXT
-   ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0";
-   ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = MAXSTRING;
-   ofn.lpstrDefExt = "vpx";
-   ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
-
    const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
-   char szFoo[MAX_PATH];
-   if (hr == S_OK)
-   {
-      ofn.lpstrInitialDir = szInitialDir;
-   }
-   else
-   {
-      lstrcpy(szFoo, m_szMyPath);
-      lstrcat(szFoo, "Tables");
-      ofn.lpstrInitialDir = szFoo;
-   }
-
-   const int ret = GetOpenFileName(&ofn);
-
-   if (ret == 0)
+   if (!OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0, fileOffset))
       return false;
 
    LoadFileName(szFileName);
@@ -1450,14 +1442,13 @@ void VPinball::LoadFileName(char *szFileName)
 CComObject<PinTable> *VPinball::GetActiveTable()
 {
    const HWND hwndT = (HWND)SendMessage(m_hwndWork, WM_MDIGETACTIVE, 0, 0);
-
    if (hwndT)
    {
-      CComObject<PinTable> * const pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwndT, GWLP_USERDATA);
-      return pt;
+       CComObject<PinTable> *const pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwndT, GWLP_USERDATA);
+       return pt;
    }
    else
-      return NULL;
+       return NULL;
 }
 
 bool VPinball::CanClose()
@@ -1485,7 +1476,7 @@ bool VPinball::CloseTable(PinTable * const ppt)
       lstrcat(szText, ppt->m_szTitle);
       lstrcat(szText, ls2.m_szbuffer);
       // TEXT
-      const int result = ::MessageBox(m_hwnd, szText, "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
+      const int result = MessageBox(szText, "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
       delete[] szText;
       if (result == IDCANCEL)
          return false;
@@ -1495,7 +1486,7 @@ bool VPinball::CloseTable(PinTable * const ppt)
          if (ppt->TableSave() != S_OK)
          {
             LocalString ls3(IDS_SAVEERROR);
-            ::MessageBox(m_hwnd, ls3.m_szbuffer, "Visual Pinball", MB_ICONERROR);
+            MessageBox(ls3.m_szbuffer, "Visual Pinball", MB_ICONERROR);
             return false;
          }
       }
@@ -1525,7 +1516,7 @@ void VPinball::SetEnableMenuItems()
    CComObject<PinTable> * const ptCur = GetActiveTable();
 
    // Set menu item to the correct state
-   HMENU hmenu = ::GetMenu(m_hwnd);
+   HMENU hmenu = GetMenu().GetHandle();
 
    CheckMenuItem(hmenu, ID_EDIT_PROPERTIES, MF_BYCOMMAND | (m_sb.GetVisible() ? MF_CHECKED : MF_UNCHECKED));
    CheckMenuItem(hmenu, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (m_backglassView ? MF_CHECKED : MF_UNCHECKED));
@@ -1705,7 +1696,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
       InsertMenuItem(hmenuFile, count, TRUE, &menuInfo);
 
       // update the menu bar
-      ::DrawMenuBar(m_hwnd);
+      DrawMenuBar();
    }
 }
 
@@ -1774,7 +1765,7 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
 
       if (!consumed)
       {
-         const bool translated = !!TranslateAccelerator(m_hwnd, g_haccel, pmsg);
+         const bool translated = !!TranslateAccelerator(GetHwnd(), g_haccel, pmsg);
 
          if (translated)
             consumed = true;
@@ -1913,14 +1904,14 @@ void VPinball::OnClose()
       WINDOWPLACEMENT winpl;
       winpl.length = sizeof(winpl);
 
-      if (::GetWindowPlacement(m_hwnd, &winpl))
+      if (GetWindowPlacement(winpl))
       {
          SaveValueInt("Editor", "WindowLeft", winpl.rcNormalPosition.left);
          SaveValueInt("Editor", "WindowTop", winpl.rcNormalPosition.top);
          SaveValueInt("Editor", "WindowRight", winpl.rcNormalPosition.right);
          SaveValueInt("Editor", "WindowBottom", winpl.rcNormalPosition.bottom);
 
-         SaveValueBool("Editor", "WindowMaximized", !!::IsZoomed(m_hwnd));
+         SaveValueBool("Editor", "WindowMaximized", !!IsZoomed());
       }
       CWnd::OnClose();
    }
@@ -1935,7 +1926,7 @@ void VPinball::ShowSubDialog(CDialog &dlg)
 {
     if (!dlg.IsWindow())
     {
-       dlg.Create(m_hwnd);
+       dlg.Create(GetHwnd());
        dlg.ShowWindow();
     }
     else
@@ -1976,6 +1967,7 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
     SetWindowText(szName);
     // call the base class function
     return CWnd::OnCreate(cs);
+    //return CMDIDockFrame::OnCreate(cs);
 }
 
 LRESULT VPinball::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam)
@@ -2012,7 +2004,7 @@ BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
 {
     UINT id = LOWORD(wparam);
 
-    return g_pvp->ParseCommand(LOWORD(wparam), (HWND)lparam, HIWORD(wparam));
+    return g_pvp->ParseCommand(LOWORD(wparam), HIWORD(wparam));
 }
 
 LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -2203,7 +2195,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
    break;
 
    case WM_COMMAND:
-      g_pvp->ParseCommand(wParam, (HWND)lParam, (size_t)hwnd);
+      g_pvp->ParseCommand(wParam, (size_t)hwnd);
       break;
 
    case WM_VSCROLL:
@@ -2277,7 +2269,7 @@ void VPinball::Quit()
       g_pplayer->m_closeType = 1;
    }
    else
-      PostMessage(m_hwnd, WM_CLOSE, 0, 0);
+      PostMessage(WM_CLOSE, 0, 0);
 }
 
 
@@ -2457,31 +2449,17 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          {
             char szFileName[MAXSTRING];
             char szInitialDir[MAXSTRING];
-
+            int  fileOffset = 0;
             szFileName[0] = '\0';
 
-            OPENFILENAME ofn;
-            ZeroMemory(&ofn, sizeof(OPENFILENAME));
-            ofn.lStructSize = sizeof(OPENFILENAME);
-            ofn.hInstance = g_hinst;
-            ofn.hwndOwner = g_pvp->m_hwnd;
-            // TEXT
-            ofn.lpstrFilter = "Font Files (*.ttf)\0*.ttf\0";
-            ofn.lpstrFile = szFileName;
-            ofn.nMaxFile = MAXSTRING;
-            ofn.lpstrDefExt = "ttf";
-            ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
             HRESULT hr = LoadValueString("RecentDir", "FontDir", szInitialDir, MAXSTRING);
-            ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
-
-            const int ret = GetOpenFileName(&ofn);
-            if (ret)
+            if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0, fileOffset))
             {
                strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
-               szInitialDir[ofn.nFileOffset] = 0;
+               szInitialDir[fileOffset] = 0;
                SaveValueString("RecentDir", "FontDir", szInitialDir);
-               pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ofn.lpstrFile);
+               pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName);
             }
          }
          break;
@@ -2639,7 +2617,7 @@ void VPinball::ShowProperties(bool enable)
     {
         CComObject<PinTable> * const ptCur = GetActiveTable();
         if (ptCur)
-            m_sb.CreateFromDispatch(m_hwnd, &ptCur->m_vmultisel);
+            m_sb.CreateFromDispatch(GetHwnd(), &ptCur->m_vmultisel);
     }
 }
 
@@ -2684,7 +2662,7 @@ void VPinball::ShowSearchSelect()
     {
         if (!ptCur->m_searchSelectDlg.IsWindow())
         {
-            ptCur->m_searchSelectDlg.Create(m_hwnd);
+            ptCur->m_searchSelectDlg.Create(GetHwnd());
 
             char windowName[256];
             strcpy_s(windowName, "Search/Select Element - ");
@@ -2707,7 +2685,7 @@ void VPinball::SetDefaultPhysics()
     if (ptCur)
     {
         LocalString ls(IDS_DEFAULTPHYSICS);
-        const int answ = ::MessageBox(m_hwnd, ls.m_szbuffer, "Continue?", MB_YESNO | MB_ICONWARNING);
+        const int answ = MessageBox(ls.m_szbuffer, "Continue?", MB_YESNO | MB_ICONWARNING);
         if (answ == IDYES)
         {
             ptCur->BeginUndo();

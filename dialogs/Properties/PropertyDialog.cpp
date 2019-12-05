@@ -329,7 +329,7 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
                 const CString className = GetFocus().GetClassName();
                 if (className != "Edit")
                 {
-                    g_pvp->ParseCommand(ID_DELETE, GetHwnd(), FALSE);
+                    g_pvp->ParseCommand(ID_DELETE, FALSE);
                     return TRUE;
                 }
             }

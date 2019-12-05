@@ -317,30 +317,16 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          char szFileName[MAXSTRING];
          char szInitialDir[MAXSTRING];
          szFileName[0] = '\0';
-
-         OPENFILENAME ofn;
-         ZeroMemory(&ofn, sizeof(OPENFILENAME));
-         ofn.lStructSize = sizeof(OPENFILENAME);
-         ofn.hInstance = g_hinst;
-         ofn.hwndOwner = g_pvp->m_hwnd;
-
-         ofn.lpstrFilter = "Material Files (.mat)\0*.mat\0";
-         ofn.lpstrFile = szFileName;
-         ofn.nMaxFile = MAXSTRING;
-         ofn.lpstrDefExt = "mat";
-         ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER;
-
+         szInitialDir[0] = '\0';
+         int fileOffset = 0;
          HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir, MAXSTRING);
-         ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
-         const int ret = GetOpenFileName(&ofn);
-
-         if (ret)
+         if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Material Files (.mat)\0*.mat\0", "mat", 0, fileOffset))
          {
             int materialCount = 0;
             int versionNumber = 0;
             FILE *f;
-            fopen_s(&f, ofn.lpstrFile, "rb");
+            fopen_s(&f, szFileName, "rb");
 
             fread(&versionNumber, 4, 1, f);
             if (versionNumber != 1)
@@ -401,7 +387,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ZeroMemory(&ofn, sizeof(OPENFILENAME));
             ofn.lStructSize = sizeof(OPENFILENAME);
             ofn.hInstance = g_hinst;
-            ofn.hwndOwner = g_pvp->m_hwnd;
+            ofn.hwndOwner = g_pvp->GetHwnd();
             ofn.lpstrFile = szFileName;
             //TEXT
             ofn.lpstrFilter = "Material Files (.mat)\0*.mat\0";

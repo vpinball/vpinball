@@ -79,7 +79,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
 
    }
    sname = std::to_string((long long)frameCounter)+" frames imported!";
-   MessageBox(g_pvp->m_hwnd, sname.c_str(), "Info", MB_OK | MB_ICONEXCLAMATION);
+   g_pvp->MessageBox(sname.c_str(), "Info", MB_OK | MB_ICONEXCLAMATION);
    return true;
 }
 
@@ -1891,35 +1891,13 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
 
             char szFileName[MAXSTRING];
             char szInitialDir[MAXSTRING];
+            int  fileOffset = 0;
             szFileName[0] = '\0';
 
-            OPENFILENAME ofn;
-            ZeroMemory(&ofn, sizeof(OPENFILENAME));
-            ofn.lStructSize = sizeof(OPENFILENAME);
-            ofn.hInstance = g_hinst;
-            ofn.hwndOwner = g_pvp->m_hwnd;
-            // TEXT
-            ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
-            ofn.lpstrFile = szFileName;
-            ofn.nMaxFile = MAXSTRING;
-            ofn.lpstrDefExt = "obj";
-            ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
-
             const HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
-            char szFoo[MAX_PATH];
-            if (hr == S_OK)
-            {
-               ofn.lpstrInitialDir = szInitialDir;
-            }
-            else
-            {
-               lstrcpy(szFoo, "c:\\");
-               ofn.lpstrInitialDir = szFoo;
-            }
 
-            const int ret = GetOpenFileName(&ofn);
             SetForegroundWindow(hwndDlg);
-            if (ret)
+            if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0, fileOffset))
             {
                SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName);
                SaveValueString("RecentDir", "ImportDir", szInitialDir);
@@ -1949,7 +1927,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
 
 bool Primitive::BrowseFor3DMeshFile()
 {
-   DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_MESH_IMPORT_DIALOG), g_pvp->m_hwnd, ObjImportProc, (size_t)this);
+   DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_MESH_IMPORT_DIALOG), g_pvp->GetHwnd(), ObjImportProc, (size_t)this);
 #if 1
    return false;
 #else
@@ -2131,7 +2109,7 @@ void Primitive::ExportMesh()
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hInstance = g_hinst;
-   ofn.hwndOwner = g_pvp->m_hwnd;
+   ofn.hwndOwner = g_pvp->GetHwnd();
    // TEXT
    ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
    ofn.lpstrFile = szFileName;

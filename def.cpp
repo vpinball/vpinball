@@ -171,7 +171,7 @@ HRESULT OpenURL(char *szURL)
    URLINVOKECOMMANDINFO ivci;
    ivci.dwcbSize = sizeof(URLINVOKECOMMANDINFO);
    ivci.dwFlags = IURL_INVOKECOMMAND_FL_ALLOW_UI;
-   ivci.hwndParent = g_pvp->m_hwnd;
+   ivci.hwndParent = g_pvp->GetHwnd();
    ivci.pcszVerb = "open";
    hres = pURL->InvokeCommand(&ivci);
    pURL->Release();

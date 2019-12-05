@@ -911,7 +911,7 @@ void SmartBrowser::LayoutExpandoWidth()
 
    m_maxdialogwidth = maxwidth + EXPANDO_X_OFFSET * 2 + 1;
 
-   SendMessage(g_pvp->m_hwnd, WM_SIZE, 0, 0);
+   g_pvp->SendMessage(WM_SIZE, 0, 0);
 }
 
 void SmartBrowser::RelayoutExpandos()

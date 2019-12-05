@@ -92,7 +92,7 @@ void CodeViewer::Init(IScriptableHost *psh)
    {
       char bla[128];
       sprintf_s(bla, "Cannot initialize Script Engine 0x%X", res);
-      MessageBox(g_pvp->m_hwnd, bla, "Error", MB_ICONERROR);
+      g_pvp->MessageBox(bla, "Error", MB_ICONERROR);
    }
 
    m_sdsDirty = eSaveClean;
@@ -811,14 +811,14 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
    if (g_pplayer)
       EnableWindow(g_pplayer->m_playfieldHwnd, FALSE);
-   EnableWindow(g_pvp->m_hwnd, FALSE);
+   g_pvp->EnableWindow(FALSE);
 
    /*const int result =*/ MessageBoxW(m_hwndMain,
       wszOutput,
       L"Script Error",
       MB_SETFOREGROUND);
 
-   EnableWindow(g_pvp->m_hwnd, TRUE);
+   g_pvp->EnableWindow(TRUE);
 
    if (pt != NULL)
       SetFocus(m_hwndScintilla);
@@ -856,7 +856,7 @@ void CodeViewer::Compile(const bool message)
       if (m_pScriptParse->ParseScriptText(wzText, 0, 0, 0, CONTEXTCOOKIE_NORMAL, 0,
          SCRIPTTEXT_ISVISIBLE, 0, &exception) == S_OK)
          if (message)
-             MessageBox(g_pvp->m_hwnd, "Compilation successful", "Compile", MB_OK);
+             g_pvp->MessageBox("Compilation successful", "Compile", MB_OK);
 
       m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
 
