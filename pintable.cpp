@@ -4753,10 +4753,10 @@ void PinTable::OnRightButtonDown(int x, int y)
    }
 }
 
-void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect *psel)
+void PinTable::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISelect *psel)
 {
     LocalString ls16(IDS_TO_COLLECTION);
-    AppendMenu(hmenu, MF_POPUP | MF_STRING, (size_t)colSubMenu, ls16.m_szbuffer);
+    mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)colSubMenu.GetHandle(), ls16.m_szbuffer);
 
     int maxItems = m_vcollection.Size() - 1;
     if (maxItems > 32) maxItems = 32;
@@ -4770,8 +4770,8 @@ void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect 
         char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
         WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, NULL, NULL);
 
-        AppendMenu(colSubMenu, MF_POPUP, 0x40000 + i, szT);
-        CheckMenuItem(colSubMenu, 0x40000 + i, MF_UNCHECKED);
+        colSubMenu.AppendMenu(MF_POPUP, 0x40000 + i, szT);
+        colSubMenu.CheckMenuItem(0x40000 + i, MF_UNCHECKED);
     }
     if (m_vmultisel.Size() == 1)
     {
@@ -4781,7 +4781,7 @@ void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect 
             {
                 if (psel == m_vcollection.ElementAt(i)->m_visel.ElementAt(t))
                 {
-                    CheckMenuItem(colSubMenu, 0x40000 + i, MF_CHECKED);
+                    colSubMenu.CheckMenuItem(0x40000 + i, MF_CHECKED);
                 }
             }
         }
@@ -4800,7 +4800,7 @@ void PinTable::FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect 
                         allIndices.push_back(i);
         }
         for (size_t i = 0; i < allIndices.size(); i++)
-            CheckMenuItem(colSubMenu, 0x40000 + allIndices[i], MF_CHECKED);
+            colSubMenu.CheckMenuItem(0x40000 + allIndices[i], MF_CHECKED);
     }
 }
 
@@ -4811,129 +4811,128 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
    pt.y = y;
    ::ClientToScreen(m_hMDI, &pt);
 
-   HMENU hmenumain;
-   HMENU hmenu;
+   CMenu mainMenu;
+   CMenu newMenu;
+
+   mainMenu.LoadMenu(menuid);
    if (menuid != -1)
-   {
-      hmenumain = LoadMenu(g_hinst, MAKEINTRESOURCE(menuid));
-      hmenu = GetSubMenu(hmenumain, 0);
-   }
+       newMenu = mainMenu.GetSubMenu(0);
    else
-   {
-      hmenu = CreatePopupMenu();
-   }
+       newMenu.CreatePopupMenu();
 
-   psel->EditMenu(hmenu);
+   psel->EditMenu(newMenu);
 
-   if (menuid != IDR_POINTMENU && menuid != IDR_TABLEMENU && menuid != IDR_POINTMENU_SMOOTH) //psel->GetIEditable() != NULL)
+   if (menuid != IDR_POINTMENU && menuid != IDR_TABLEMENU && menuid != IDR_POINTMENU_SMOOTH)
    {
-      if (GetMenuItemCount(hmenu) > 0)
-      {
-         AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
-      }
-      HMENU subMenu = CreatePopupMenu();
-      HMENU colSubMenu = CreatePopupMenu();
+       
+      if (newMenu.GetMenuItemCount() > 0)
+          newMenu.AppendMenu(MF_SEPARATOR, ~0u, "");
+      
+      CMenu assignLayerMenu;
+      CMenu colSubMenu;
+      assignLayerMenu.CreatePopupMenu();
+      colSubMenu.CreatePopupMenu();
 
       // TEXT
       LocalString ls17(IDS_COPY_ELEMENT);
-      AppendMenu(hmenu, MF_STRING, IDC_COPY, ls17.m_szbuffer);
+      newMenu.AppendMenu(MF_STRING, IDC_COPY, ls17.m_szbuffer);
       LocalString ls18(IDS_PASTE_ELEMENT);
-      AppendMenu(hmenu, MF_STRING, IDC_PASTE, ls18.m_szbuffer);
+      newMenu.AppendMenu(MF_STRING, IDC_PASTE, ls18.m_szbuffer);
       LocalString ls19(IDS_PASTE_AT_ELEMENT);
-      AppendMenu(hmenu, MF_STRING, IDC_PASTEAT, ls19.m_szbuffer);
+      newMenu.AppendMenu(MF_STRING, IDC_PASTEAT, ls19.m_szbuffer);
 
-      AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
+      newMenu.AppendMenu(MF_SEPARATOR, ~0u, "");
 
       LocalString ls14(IDS_DRAWING_ORDER_HIT);
-      AppendMenu(hmenu, MF_STRING, ID_EDIT_DRAWINGORDER_HIT, ls14.m_szbuffer);
+      newMenu.AppendMenu(MF_STRING, ID_EDIT_DRAWINGORDER_HIT, ls14.m_szbuffer);
       LocalString ls15(IDS_DRAWING_ORDER_SELECT);
-      AppendMenu(hmenu, MF_STRING, ID_EDIT_DRAWINGORDER_SELECT, ls15.m_szbuffer);
+      newMenu.AppendMenu(MF_STRING, ID_EDIT_DRAWINGORDER_SELECT, ls15.m_szbuffer);
 
       LocalString ls1(IDS_DRAWINFRONT);
       LocalString ls2(IDS_DRAWINBACK);
-      AppendMenu(hmenu, MF_STRING, ID_DRAWINFRONT, ls1.m_szbuffer);
-      AppendMenu(hmenu, MF_STRING, ID_DRAWINBACK, ls2.m_szbuffer);
+      newMenu.AppendMenu(MF_STRING, ID_DRAWINFRONT, ls1.m_szbuffer);
+      newMenu.AppendMenu(MF_STRING, ID_DRAWINBACK, ls2.m_szbuffer);
 
       LocalString ls3(IDS_SETASDEFAULT);
-      AppendMenu(hmenu, MF_STRING, ID_SETASDEFAULT, ls3.m_szbuffer);
+      newMenu.AppendMenu(MF_STRING, ID_SETASDEFAULT, ls3.m_szbuffer);
 
       LocalString ls4(IDS_ASSIGNTO);
-      AppendMenu(hmenu, MF_POPUP | MF_STRING, (size_t)subMenu, ls4.m_szbuffer);
+      newMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)assignLayerMenu.GetHandle(), ls4.m_szbuffer);
       LocalString ls6(IDS_LAYER1);
-      AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER1, ls6.m_szbuffer);
+      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER1, ls6.m_szbuffer);
       LocalString ls7(IDS_LAYER2);
-      AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER2, ls7.m_szbuffer);
+      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER2, ls7.m_szbuffer);
       LocalString ls8(IDS_LAYER3);
-      AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER3, ls8.m_szbuffer);
+      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER3, ls8.m_szbuffer);
       LocalString ls9(IDS_LAYER4);
-      AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER4, ls9.m_szbuffer);
+      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER4, ls9.m_szbuffer);
       LocalString ls10(IDS_LAYER5);
-      AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER5, ls10.m_szbuffer);
+      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER5, ls10.m_szbuffer);
       LocalString ls11(IDS_LAYER6);
-      AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER6, ls11.m_szbuffer);
+      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER6, ls11.m_szbuffer);
       LocalString ls12(IDS_LAYER7);
-      AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER7, ls12.m_szbuffer);
+      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER7, ls12.m_szbuffer);
       LocalString ls13(IDS_LAYER8);
-      AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER8, ls13.m_szbuffer);
+      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER8, ls13.m_szbuffer);
       LocalString ls20(IDS_LAYER9);
-      AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER9, ls20.m_szbuffer);
+      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER9, ls20.m_szbuffer);
       LocalString ls21(IDS_LAYER10);
-      AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER10, ls21.m_szbuffer);
+      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER10, ls21.m_szbuffer);
       LocalString ls16(IDS_LAYER11);
-      AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER11, ls16.m_szbuffer);
+      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER11, ls16.m_szbuffer);
 
       if (psel->m_layerIndex == 0)
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER1, MF_CHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER1, MF_CHECKED);
       else
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER1, MF_UNCHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER1, MF_UNCHECKED);
       if (psel->m_layerIndex == 1)
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER2, MF_CHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER2, MF_CHECKED);
       else
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER2, MF_UNCHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER2, MF_UNCHECKED);
       if (psel->m_layerIndex == 2)
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER3, MF_CHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER3, MF_CHECKED);
       else
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER3, MF_UNCHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER3, MF_UNCHECKED);
       if (psel->m_layerIndex == 3)
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER4, MF_CHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER4, MF_CHECKED);
       else
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER4, MF_UNCHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER4, MF_UNCHECKED);
       if (psel->m_layerIndex == 4)
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER5, MF_CHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER5, MF_CHECKED);
       else
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER5, MF_UNCHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER5, MF_UNCHECKED);
       if (psel->m_layerIndex == 5)
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER6, MF_CHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER6, MF_CHECKED);
       else
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER6, MF_UNCHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER6, MF_UNCHECKED);
       if (psel->m_layerIndex == 6)
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER7, MF_CHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER7, MF_CHECKED);
       else
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER7, MF_UNCHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER7, MF_UNCHECKED);
       if (psel->m_layerIndex == 7)
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER8, MF_CHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER8, MF_CHECKED);
       else
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER8, MF_UNCHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER8, MF_UNCHECKED);
       if (psel->m_layerIndex == 8)
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER9, MF_CHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER9, MF_CHECKED);
       else
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER9, MF_UNCHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER9, MF_UNCHECKED);
       if (psel->m_layerIndex == 9)
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER10, MF_CHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER10, MF_CHECKED);
       else
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER10, MF_UNCHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER10, MF_UNCHECKED);
       if (psel->m_layerIndex == 10)
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER11, MF_CHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER11, MF_CHECKED);
       else
-         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER11, MF_UNCHECKED);
+          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER11, MF_UNCHECKED);
 
-      FillCollectionContextMenu(hmenu, colSubMenu, psel);
+      FillCollectionContextMenu(newMenu, colSubMenu, psel);
 
       LocalString ls5(IDS_LOCK);
-      AppendMenu(hmenu, MF_STRING, ID_LOCK, ls5.m_szbuffer);
+      newMenu.AppendMenu(MF_STRING, ID_LOCK, ls5.m_szbuffer);
 
-      AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
-      AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
+      newMenu.AppendMenu(MF_SEPARATOR, ~0u, "");
+      newMenu.AppendMenu(MF_SEPARATOR, ~0u, "");
       // now list all elements that are stacked at the mouse pointer
       for (size_t i = 0; i < m_allHitElements.size(); i++)
       {
@@ -4957,7 +4956,7 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
                   // added for finding the element out of the list
                   // the selection is done in ISelect::DoCommand()
                   const unsigned long id = 0x80000000 + ((unsigned long)i << 16) + ID_SELECT_ELEMENT;
-                  AppendMenu(hmenu, MF_STRING, id, szTemp);
+                  newMenu.AppendMenu(MF_STRING, id, szTemp);
                }
             }
          }
@@ -4968,19 +4967,18 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
       {
          locked = FMutilSelLocked();
       }
-
-      CheckMenuItem(hmenu, ID_LOCK, MF_BYCOMMAND | (locked ? MF_CHECKED : MF_UNCHECKED));
+      newMenu.CheckMenuItem(ID_LOCK, MF_BYCOMMAND | (locked ? MF_CHECKED : MF_UNCHECKED));
    }
 
-   const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD, pt.x, pt.y, m_hMDI, NULL);
+   const int icmd = newMenu.TrackPopupMenuEx(TPM_RETURNCMD, pt.x, pt.y, m_hMDI, NULL);
 
    if (icmd != 0)
       psel->DoCommand(icmd, x, y);
 
-   DestroyMenu(hmenu);
+   newMenu.DestroyMenu();
 
    if (menuid != -1)
-      DestroyMenu(hmenumain);
+       mainMenu.DestroyMenu();
 }
 
 char *PinTable::GetElementName(IEditable *pedit) const

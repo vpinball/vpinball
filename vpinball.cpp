@@ -816,11 +816,10 @@ void VPinball::DeletePropSel()
    m_sb.RemoveSelection();
 }
 
-HMENU VPinball::GetMainMenu(int id)
+CMenu VPinball::GetMainMenu(int id)
 {
-   HMENU hmenu = GetMenu().GetHandle();
-   const int count = GetMenuItemCount(hmenu);
-   return GetSubMenu(hmenu, id + ((count > NUM_MENUS) ? 1 : 0)); // MDI has added its stuff (table icon for first menu item)
+   const int count = GetMenu().GetMenuItemCount();
+   return GetMenu().GetSubMenu(id + ((count > NUM_MENUS) ? 1 : 0)); // MDI has added its stuff (table icon for first menu item)
 }
 
 
@@ -1304,8 +1303,7 @@ void VPinball::SetEnablePalette()
       SendMessage(m_hwndToolbarPalette, TB_ENABLEBUTTON, id, MAKELONG(enable, 0));
 
       // Set menu item state
-      HMENU hmenuInsert = GetMainMenu(INSERTMENU);
-      EnableMenuItem(hmenuInsert, id, MF_BYCOMMAND | (enable ? MF_ENABLED : MF_GRAYED));
+      GetMainMenu(INSERTMENU).EnableMenuItem(id, MF_BYCOMMAND | (enable ? MF_ENABLED : MF_GRAYED));
    }
    m_toolbarDialog.EnableButtons();
 }
@@ -1516,91 +1514,91 @@ void VPinball::SetEnableMenuItems()
    CComObject<PinTable> * const ptCur = GetActiveTable();
 
    // Set menu item to the correct state
-   HMENU hmenu = GetMenu().GetHandle();
+   CMenu mainMenu = GetMenu();
 
-   CheckMenuItem(hmenu, ID_EDIT_PROPERTIES, MF_BYCOMMAND | (m_sb.GetVisible() ? MF_CHECKED : MF_UNCHECKED));
-   CheckMenuItem(hmenu, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (m_backglassView ? MF_CHECKED : MF_UNCHECKED));
+   mainMenu.CheckMenuItem(ID_EDIT_PROPERTIES, MF_BYCOMMAND | (m_sb.GetVisible() ? MF_CHECKED : MF_UNCHECKED));
+   mainMenu.CheckMenuItem(ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (m_backglassView ? MF_CHECKED : MF_UNCHECKED));
 
    // is there a valid table??
    if (ptCur)
    {
-      CheckMenuItem(hmenu, ID_EDIT_SCRIPT, MF_BYCOMMAND | ((ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized) ? MF_CHECKED : MF_UNCHECKED));
+       mainMenu.CheckMenuItem(ID_EDIT_SCRIPT, MF_BYCOMMAND | ((ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized) ? MF_CHECKED : MF_UNCHECKED));
 
-      EnableMenuItem(hmenu, IDM_CLOSE, MF_BYCOMMAND | MF_ENABLED);
-      EnableMenuItem(hmenu, ID_EDIT_UNDO, MF_BYCOMMAND | MF_ENABLED);
-      EnableMenuItem(hmenu, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | MF_ENABLED);
-      EnableMenuItem(hmenu, ID_TABLE_PLAY, MF_BYCOMMAND | MF_ENABLED);
-      EnableMenuItem(hmenu, ID_TABLE_CAMERAMODE, MF_BYCOMMAND | MF_ENABLED);
-      EnableMenuItem(hmenu, ID_TABLE_MAGNIFY, MF_BYCOMMAND | MF_ENABLED);
-      EnableMenuItem(hmenu, ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_ENABLED);
-      EnableMenuItem(hmenu, ID_EDIT_SEARCH, MF_BYCOMMAND | MF_ENABLED);
-      EnableMenuItem(hmenu, ID_EDIT_DRAWINGORDER_HIT, MF_BYCOMMAND | MF_ENABLED);
-      EnableMenuItem(hmenu, ID_EDIT_DRAWINGORDER_SELECT, MF_BYCOMMAND | MF_ENABLED);
+      mainMenu.EnableMenuItem(IDM_CLOSE, MF_BYCOMMAND | MF_ENABLED);
+      mainMenu.EnableMenuItem(ID_EDIT_UNDO, MF_BYCOMMAND | MF_ENABLED);
+      mainMenu.EnableMenuItem(ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | MF_ENABLED);
+      mainMenu.EnableMenuItem(ID_TABLE_PLAY, MF_BYCOMMAND | MF_ENABLED);
+      mainMenu.EnableMenuItem(ID_TABLE_CAMERAMODE, MF_BYCOMMAND | MF_ENABLED);
+      mainMenu.EnableMenuItem(ID_TABLE_MAGNIFY, MF_BYCOMMAND | MF_ENABLED);
+      mainMenu.EnableMenuItem(ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_ENABLED);
+      mainMenu.EnableMenuItem(ID_EDIT_SEARCH, MF_BYCOMMAND | MF_ENABLED);
+      mainMenu.EnableMenuItem(ID_EDIT_DRAWINGORDER_HIT, MF_BYCOMMAND | MF_ENABLED);
+      mainMenu.EnableMenuItem(ID_EDIT_DRAWINGORDER_SELECT, MF_BYCOMMAND | MF_ENABLED);
       // enable/disable save options
       UINT flags = MF_BYCOMMAND | MF_ENABLED;
-      EnableMenuItem(hmenu, IDM_SAVE, flags);
-      EnableMenuItem(hmenu, IDM_SAVEAS, flags);
-      EnableMenuItem(hmenu, ID_FILE_EXPORT_BLUEPRINT, flags);
-      EnableMenuItem(hmenu, ID_EXPORT_TABLEMESH, flags);
-      EnableMenuItem(hmenu, ID_EXPORT_BACKDROPPOV, flags);
-      EnableMenuItem(hmenu, ID_IMPORT_BACKDROPPOV, flags);
+      mainMenu.EnableMenuItem(IDM_SAVE, flags);
+      mainMenu.EnableMenuItem(IDM_SAVEAS, flags);
+      mainMenu.EnableMenuItem(ID_FILE_EXPORT_BLUEPRINT, flags);
+      mainMenu.EnableMenuItem(ID_EXPORT_TABLEMESH, flags);
+      mainMenu.EnableMenuItem(ID_EXPORT_BACKDROPPOV, flags);
+      mainMenu.EnableMenuItem(ID_IMPORT_BACKDROPPOV, flags);
 
       // enable/disable script option
-      EnableMenuItem(hmenu, ID_EDIT_SCRIPT, flags);
+      mainMenu.EnableMenuItem(ID_EDIT_SCRIPT, flags);
 
       // enable/disable managers options
-      EnableMenuItem(hmenu, ID_TABLE_SOUNDMANAGER, flags);
-      EnableMenuItem(hmenu, ID_TABLE_IMAGEMANAGER, flags);
-      EnableMenuItem(hmenu, ID_TABLE_FONTMANAGER, flags);
-      EnableMenuItem(hmenu, ID_TABLE_MATERIALMANAGER, flags);
-      EnableMenuItem(hmenu, ID_TABLE_COLLECTIONMANAGER, flags);
+      mainMenu.EnableMenuItem(ID_TABLE_SOUNDMANAGER, flags);
+      mainMenu.EnableMenuItem(ID_TABLE_IMAGEMANAGER, flags);
+      mainMenu.EnableMenuItem(ID_TABLE_FONTMANAGER, flags);
+      mainMenu.EnableMenuItem(ID_TABLE_MATERIALMANAGER, flags);
+      mainMenu.EnableMenuItem(ID_TABLE_COLLECTIONMANAGER, flags);
 
       // enable/disable editing options
-      EnableMenuItem(hmenu, IDC_COPY, flags);
-      EnableMenuItem(hmenu, IDC_PASTE, flags);
-      EnableMenuItem(hmenu, IDC_PASTEAT, flags);
-      EnableMenuItem(hmenu, ID_DELETE, flags);
+      mainMenu.EnableMenuItem(IDC_COPY, flags);
+      mainMenu.EnableMenuItem(IDC_PASTE, flags);
+      mainMenu.EnableMenuItem(IDC_PASTEAT, flags);
+      mainMenu.EnableMenuItem(ID_DELETE, flags);
 
-      CheckMenuItem(hmenu, ID_VIEW_SOLID, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_CHECKED : MF_UNCHECKED));
-      CheckMenuItem(hmenu, ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
+      mainMenu.CheckMenuItem(ID_VIEW_SOLID, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_CHECKED : MF_UNCHECKED));
+      mainMenu.CheckMenuItem(ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
 
-      CheckMenuItem(hmenu, ID_VIEW_GRID, MF_BYCOMMAND | (ptCur->m_grid ? MF_CHECKED : MF_UNCHECKED));
-      CheckMenuItem(hmenu, ID_VIEW_BACKDROP, MF_BYCOMMAND | (ptCur->m_backdrop ? MF_CHECKED : MF_UNCHECKED));
+      mainMenu.CheckMenuItem(ID_VIEW_GRID, MF_BYCOMMAND | (ptCur->m_grid ? MF_CHECKED : MF_UNCHECKED));
+      mainMenu.CheckMenuItem(ID_VIEW_BACKDROP, MF_BYCOMMAND | (ptCur->m_backdrop ? MF_CHECKED : MF_UNCHECKED));
 
       for (int i = 0; i < MAX_LAYERS; ++i)
-         CheckMenuItem(hmenu, allLayers[i], MF_BYCOMMAND | (ptCur->m_activeLayers[i] ? MF_CHECKED : MF_UNCHECKED));
+          mainMenu.CheckMenuItem(allLayers[i], MF_BYCOMMAND | (ptCur->m_activeLayers[i] ? MF_CHECKED : MF_UNCHECKED));
    }
    else
    {
       /* no valid table, disable a few items */
-      EnableMenuItem(hmenu, IDM_CLOSE, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, IDM_SAVE, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, IDM_SAVEAS, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_FILE_EXPORT_BLUEPRINT, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_EXPORT_TABLEMESH, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_EXPORT_BACKDROPPOV, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_IMPORT_BACKDROPPOV, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(IDM_CLOSE, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(IDM_SAVE, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(IDM_SAVEAS, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_FILE_EXPORT_BLUEPRINT, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_EXPORT_TABLEMESH, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_EXPORT_BACKDROPPOV, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_IMPORT_BACKDROPPOV, MF_BYCOMMAND | MF_GRAYED);
 
-      EnableMenuItem(hmenu, ID_EDIT_UNDO, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, IDC_COPY, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, IDC_PASTE, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, IDC_PASTEAT, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_DELETE, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_EDIT_SCRIPT, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_EDIT_UNDO, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(IDC_COPY, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(IDC_PASTE, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(IDC_PASTEAT, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_DELETE, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_EDIT_SCRIPT, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | MF_GRAYED);
 
-      EnableMenuItem(hmenu, ID_TABLE_PLAY, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_TABLE_CAMERAMODE, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_TABLE_SOUNDMANAGER, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_TABLE_IMAGEMANAGER, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_TABLE_FONTMANAGER, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_TABLE_MATERIALMANAGER, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_TABLE_COLLECTIONMANAGER, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_TABLE_MAGNIFY, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_EDIT_SEARCH, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_EDIT_DRAWINGORDER_HIT, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, ID_EDIT_DRAWINGORDER_SELECT, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_TABLE_PLAY, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_TABLE_CAMERAMODE, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_TABLE_SOUNDMANAGER, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_TABLE_IMAGEMANAGER, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_TABLE_FONTMANAGER, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_TABLE_MATERIALMANAGER, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_TABLE_COLLECTIONMANAGER, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_TABLE_MAGNIFY, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_EDIT_SEARCH, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_EDIT_DRAWINGORDER_HIT, MF_BYCOMMAND | MF_GRAYED);
+      mainMenu.EnableMenuItem(ID_EDIT_DRAWINGORDER_SELECT, MF_BYCOMMAND | MF_GRAYED);
    }
 }
 
@@ -1655,15 +1653,15 @@ void VPinball::UpdateRecentFileList(char *szfilename)
       MENUITEMINFO menuInfo;
 
       // update the file menu to contain the last n recent loaded files
-      HMENU hmenuFile = GetMainMenu(FILEMENU);
+      CMenu menuFile = GetMainMenu(FILEMENU);
 
       // delete all the recent file IDM's from this menu
       for (int i = RECENT_FIRST_MENU_IDM; i <= RECENT_LAST_MENU_IDM; i++)
-         DeleteMenu(hmenuFile, i, MF_BYCOMMAND);
+         menuFile.DeleteMenu(i, MF_BYCOMMAND);
 
       // get the number of entrys in the file menu
       // insert the items before the EXIT menu (assuming it is the last entry)
-      int count = GetMenuItemCount(hmenuFile) - 1;
+      int count = menuFile.GetMenuItemCount() - 1;
 
       // set up the menu info block
       ZeroMemory(&menuInfo, sizeof(menuInfo));
@@ -1686,14 +1684,14 @@ void VPinball::UpdateRecentFileList(char *szfilename)
          menuInfo.dwTypeData = recentMenuname;
          menuInfo.cch = lstrlen(recentMenuname);
 
-         InsertMenuItem(hmenuFile, count, TRUE, &menuInfo);
+         menuFile.InsertMenuItem(count, menuInfo, TRUE);
          count++;
       }
 
       // add a separator onto the end
       menuInfo.fType = MFT_SEPARATOR;
       menuInfo.wID = RECENT_LAST_MENU_IDM;
-      InsertMenuItem(hmenuFile, count, TRUE, &menuInfo);
+      menuFile.InsertMenuItem(count, menuInfo, TRUE);
 
       // update the menu bar
       DrawMenuBar();

@@ -78,7 +78,7 @@ public:
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
 
-   virtual void EditMenu(HMENU hmenu);
+   virtual void EditMenu(CMenu &hmenu);
    virtual void DoCommand(int icmd, int x, int y);
 
    // Multi-object manipulation

@@ -85,7 +85,7 @@ public:
 
    // Things to override
    virtual void MoveOffset(const float dx, const float dy);
-   virtual void EditMenu(HMENU hmenu);
+   virtual void EditMenu(CMenu &menu);
    virtual void DoCommand(int icmd, int x, int y);
    virtual void SetObjectPos();
 

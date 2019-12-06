@@ -87,7 +87,7 @@ private:
 
    void CloseAllDialogs();
 
-   HMENU GetMainMenu(int id);
+   CMenu GetMainMenu(int id);
 
 public:
    void SetLayerStatus(const int layerNumber);

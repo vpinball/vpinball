@@ -465,11 +465,11 @@ void DragPoint::PutCenter(const Vertex2D& pv)
    m_v.y = pv.y;
 }
 
-void DragPoint::EditMenu(HMENU hmenu)
+void DragPoint::EditMenu(CMenu &menu)
 {
-   CheckMenuItem(hmenu, ID_POINTMENU_SMOOTH, MF_BYCOMMAND | (m_smooth ? MF_CHECKED : MF_UNCHECKED));
+   menu.CheckMenuItem(ID_POINTMENU_SMOOTH, MF_BYCOMMAND | (m_smooth ? MF_CHECKED : MF_UNCHECKED));
    //EnableMenuItem(hmenu, ID_POINTMENU_SLINGSHOT, MF_BYCOMMAND | (m_fSmooth ? MF_GRAYED : MF_ENABLED));
-   CheckMenuItem(hmenu, ID_POINTMENU_SLINGSHOT, MF_BYCOMMAND | ((m_slingshot && !m_smooth) ? MF_CHECKED : MF_UNCHECKED));
+   menu.CheckMenuItem(ID_POINTMENU_SLINGSHOT, MF_BYCOMMAND | ((m_slingshot && !m_smooth) ? MF_CHECKED : MF_UNCHECKED));
 }
 
 void DragPoint::Delete()
