@@ -48,7 +48,7 @@ public:
 
 
 #define INITVBA(ItemType) \
-	virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName) \
+	virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName) \
 		{ \
 		WCHAR wzUniqueName[128]; \
 		if (fNew && !wzName) \
@@ -213,7 +213,7 @@ public:
    virtual void ClearForOverwrite();
    virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) = 0;
    virtual HRESULT InitPostLoad() = 0;
-   virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName) = 0;
+   virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName) = 0;
    virtual ISelect *GetISelect() = 0;
    virtual void SetDefaults(bool fromMouseClick) = 0;
    virtual IScriptable *GetScriptable() = 0;

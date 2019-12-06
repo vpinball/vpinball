@@ -317,9 +317,8 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          char szFileName[MAXSTRING];
          char szInitialDir[MAXSTRING];
          szFileName[0] = '\0';
-         szInitialDir[0] = '\0';
-         int fileOffset = 0;
-         HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir, MAXSTRING);
+         int fileOffset;
+         /*const HRESULT hr =*/ LoadValueString("RecentDir", "MaterialDir", szInitialDir, MAXSTRING);
 
          if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Material Files (.mat)\0*.mat\0", "mat", 0, fileOffset))
          {
@@ -396,7 +395,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
             const HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir, MAXSTRING);
 
-            if (hr == S_OK)ofn.lpstrInitialDir = szInitialDir;
+            if (hr == S_OK) ofn.lpstrInitialDir = szInitialDir;
             else ofn.lpstrInitialDir = NULL;
 
             ofn.lpstrTitle = "Export materials";

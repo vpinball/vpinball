@@ -413,7 +413,7 @@ void ImageDialog::Import()
    char szFileName[MAXSTRING];
    char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
-   int fileOffset = 0;
+   int fileOffset;
 
    HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
 
@@ -747,9 +747,9 @@ void ImageDialog::ReimportFrom()
       if (ans == IDYES)
       {
          char szFileName[MAXSTRING];
-         szFileName[0] = '\0';
-         int fileOffset = 0;
          char szInitialDir[MAXSTRING];
+         szFileName[0] = '\0';
+         int fileOffset;
 
          HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
 

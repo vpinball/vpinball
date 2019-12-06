@@ -80,7 +80,7 @@ void SearchSelectDialog::Update()
          lv.iItem = idx;
          lv.iSubItem = 0;
          lv.lParam = (LPARAM)piscript;
-         lv.pszText = m_curTable->GetElementName(piedit);
+         lv.pszText = (char*)m_curTable->GetElementName(piedit);
          ListView_InsertItem(m_hElementList, &lv);
          AddSearchItemToList(piedit, idx);
          idx++;

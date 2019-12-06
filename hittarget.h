@@ -159,7 +159,7 @@ public:
 
    //STDMETHOD(get_Name)(BSTR *pVal) {return E_FAIL;}
 
-   //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);
+   //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName);
    virtual void WriteRegDefaults();
    virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 

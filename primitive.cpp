@@ -1699,7 +1699,6 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       }
       else
       {
-
          //LZWReader lzwreader(pbr->m_pistream, (int *)tmp.data(), sizeof(WORD)*numIndices, 1, sizeof(WORD)*numIndices);
          //lzwreader.Decoder();
          mz_ulong uclen = (mz_ulong)(sizeof(WORD)*m_mesh.NumIndices());
@@ -1747,6 +1746,7 @@ void Primitive::WaitForMeshDecompression()
 HRESULT Primitive::InitPostLoad()
 {
    WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
+
 
    if (!m_d.m_use3DMesh)
       CalculateBuiltinOriginal();
@@ -1891,10 +1891,10 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
 
             char szFileName[MAXSTRING];
             char szInitialDir[MAXSTRING];
-            int  fileOffset = 0;
+            int  fileOffset;
             szFileName[0] = '\0';
 
-            const HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
+            /*const HRESULT hr =*/ LoadValueString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
 
             SetForegroundWindow(hwndDlg);
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0, fileOffset))
@@ -2089,7 +2089,7 @@ STDMETHODIMP Primitive::put_MeshFileName(BSTR newVal)
    return S_OK;
 }
 
-bool Primitive::LoadMesh()
+bool Primitive::LoadMeshDialog()
 {
    STARTUNDO
    const bool result = BrowseFor3DMeshFile();
@@ -2099,7 +2099,7 @@ bool Primitive::LoadMesh()
    return result;
 }
 
-void Primitive::ExportMesh()
+void Primitive::ExportMeshDialog()
 {
    char szFileName[MAXSTRING];
    char szInitialDir[MAXSTRING];

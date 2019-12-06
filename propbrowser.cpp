@@ -1161,13 +1161,13 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          else if (dispid == IDC_LOAD_MESH_BUTTON)
          {
             for (int i = 0; i < psb->m_pvsel->Size(); i++)
-               psb->m_pvsel->ElementAt(i)->LoadMesh();
+               psb->m_pvsel->ElementAt(i)->LoadMeshDialog();
             psb->RefreshProperties();
          }
          else if (dispid == IDC_EXPORT_MESH_BUTTON)
          {
             for (int i = 0; i < psb->m_pvsel->Size(); i++)
-               psb->m_pvsel->ElementAt(i)->ExportMesh();
+               psb->m_pvsel->ElementAt(i)->ExportMeshDialog();
             psb->RefreshProperties();
          }
          else if (dispid == IDC_IMPORT_PHYSICS_BUTTON)

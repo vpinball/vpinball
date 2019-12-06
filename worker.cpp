@@ -82,8 +82,8 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 
    IStorage *pstgDisk;
 
-   WCHAR *wzSaveName = L"AutoSave";
-   WCHAR *wzSaveExtension = L".vpx";
+   const WCHAR * const wzSaveName = L"AutoSave";
+   const WCHAR * const wzSaveExtension = L".vpx";
    WCHAR wzSuffix[32];
    _itow_s(pasp->tableindex, wzSuffix, sizeof(wzSuffix) / sizeof(WCHAR), 10);
    const int maxLen = MAX_PATH + 32 + lstrlenW(wzSaveName) + lstrlenW(wzSaveExtension) + 1;

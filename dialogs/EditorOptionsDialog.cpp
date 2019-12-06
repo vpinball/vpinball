@@ -14,14 +14,14 @@ void EditorOptionsDialog::OnClose()
     CDialog::OnClose();
 }
 
-void EditorOptionsDialog::AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
+void EditorOptionsDialog::AddToolTip(const char * const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
 {
     TOOLINFO toolInfo ={ 0 };
     toolInfo.cbSize = sizeof(toolInfo);
     toolInfo.hwnd = parentHwnd;
     toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
     toolInfo.uId = (UINT_PTR)controlHwnd;
-    toolInfo.lpszText = text;
+    toolInfo.lpszText = (char*)text;
     SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }
 
