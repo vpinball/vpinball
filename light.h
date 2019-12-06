@@ -101,7 +101,7 @@ public:
 
    void PrepareMoversCustom();
 
-   virtual void EditMenu(HMENU hmenu);
+   virtual void EditMenu(CMenu &menu);
    virtual void DoCommand(int icmd, int x, int y);
 
    virtual void FlipY(const Vertex2D& pvCenter);

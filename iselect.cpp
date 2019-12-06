@@ -81,7 +81,7 @@ void ISelect::MoveOffset(const float dx, const float dy)
    // Implement in child class to enable dragging
 }
 
-void ISelect::EditMenu(HMENU hmenu)
+void ISelect::EditMenu(CMenu &menu)
 {
 }
 

@@ -137,7 +137,7 @@ public:
    virtual Vertex2D GetCenter() const;
    virtual void PutCenter(const Vertex2D& pv);
 
-   virtual void EditMenu(HMENU hmenu);
+   virtual void EditMenu(CMenu &menu);
    virtual void DoCommand(int icmd, int x, int y);
    virtual void SetSelectFormat(Sur *psur);
    virtual void SetMultiSelectFormat(Sur *psur);

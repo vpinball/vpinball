@@ -409,7 +409,7 @@ public:
    void DoLeftButtonDown(int x, int y, bool zoomIn = true);
    void OnLeftButtonUp(int x, int y);
    void OnRightButtonDown(int x, int y);
-   void FillCollectionContextMenu(HMENU hmenu, HMENU colSubMenu, ISelect *psel);
+   void FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISelect *psel);
    void OnRightButtonUp(int x, int y);
    void DoMouseMove(int x, int y);
    void OnLeftDoubleClick(int x, int y);
