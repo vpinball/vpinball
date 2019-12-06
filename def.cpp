@@ -149,7 +149,7 @@ char *MakeChar(const WCHAR * const wz)
    return szT;
 }
 
-HRESULT OpenURL(char *szURL)
+HRESULT OpenURL(const char * const szURL)
 {
    IUniformResourceLocator* pURL;
 

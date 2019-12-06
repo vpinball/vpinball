@@ -132,8 +132,8 @@ public:
    HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash);
 
    virtual int GetSelectLevel() { return 1; }
-   virtual bool LoadMesh() { return false; }
-   virtual void ExportMesh() {}
+   virtual bool LoadMeshDialog() { return false; }
+   virtual void ExportMeshDialog() {}
    virtual void UpdatePropertyPanes() {}
    virtual void AddPoint(int x, int y, const bool smooth) {}
 

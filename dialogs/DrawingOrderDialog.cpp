@@ -57,14 +57,14 @@ BOOL DrawingOrderDialog::OnInitDialog()
       IEditable * const pedit = m_drawingOrderSelect ? selection[i]->GetIEditable() : pt->m_allHitElements[i]->GetIEditable();
       if (pedit)
       {
-         char * const szTemp = pt->GetElementName(pedit);
+         const char * const szTemp = pt->GetElementName(pedit);
          if (szTemp)
          {
             char textBuf[256];
 
             lv.iItem = (int)i;
             lv.iSubItem = 0;
-            lv.pszText = szTemp;
+            lv.pszText = (char*)szTemp;
             ListView_InsertItem(hOrderList, &lv);
             if (pedit->GetItemType() == eItemSurface)
             {

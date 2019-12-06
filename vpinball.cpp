@@ -549,7 +549,7 @@ void VPinball::RegisterClasses()
 ///</summary>
 void VPinball::CreateSideBar()
 {
-   CRect rc = GetWindowRect();
+   const CRect rc = GetWindowRect();
 
    m_hwndSideBar = ::CreateWindowEx(/*WS_EX_WINDOWEDGE*/0, "VPStaticChild", "", WS_VISIBLE | WS_CHILD | WS_BORDER,
       0, 0, TOOLBAR_WIDTH + SCROLL_WIDTH, rc.bottom - rc.top, GetHwnd(), NULL, g_hinst, 0);
@@ -669,10 +669,9 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent, u
 
 void VPinball::CreateMDIClient()
 {
-   CRect rc = GetWindowRect();
+   const CRect rc = GetWindowRect();
 
    CLIENTCREATESTRUCT ccs;
-   
    ccs.hWindowMenu = ::GetSubMenu(GetMenu().GetHandle(), WINDOWMENU); // Window menu is third from the left
    ccs.idFirstChild = 4000;//129;
 
@@ -697,7 +696,7 @@ void VPinball::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
    SetCursor(hcursor);
 }
 
-void VPinball::SetActionCur(char *szaction)
+void VPinball::SetActionCur(const char * const szaction)
 {
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 3 | 0, (size_t)szaction);
 }
@@ -1353,10 +1352,10 @@ bool VPinball::LoadFile()
 {
    char szFileName[MAXSTRING];
    char szInitialDir[MAXSTRING];
-   int fileOffset = 0;
+   int fileOffset;
    szFileName[0] = '\0';
 
-   const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
+   /*const HRESULT hr =*/ LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
    if (!OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0, fileOffset))
       return false;
 
@@ -1851,7 +1850,7 @@ STDMETHODIMP_(ULONG) VPinball::Release()
 
 void VPinball::PreCreate(CREATESTRUCT& cs)
 {
-          // do the base class stuff
+    // do the base class stuff
     CWnd::PreCreate(cs);
     const int screenwidth = GetSystemMetrics(SM_CXSCREEN);		// width of primary monitor
     const int screenheight = GetSystemMetrics(SM_CYSCREEN);		// height of primary monitor
@@ -1861,12 +1860,11 @@ void VPinball::PreCreate(CREATESTRUCT& cs)
     const int width = MAIN_WINDOW_WIDTH;
     const int height = MAIN_WINDOW_HEIGHT;
 
-
     cs.x = x;  // set initial window placement
-    cs.y = x;
+    cs.y = y;
     cs.cx = width;
     cs.cy = height;
-       // specify a title bar and border with a window-menu on the title bar
+    // specify a title bar and border with a window-menu on the title bar
     cs.style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
     cs.dwExStyle = WS_EX_CLIENTEDGE
         | WS_EX_CONTROLPARENT       // TAB key navigation
@@ -1971,8 +1969,8 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
 LRESULT VPinball::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam)
 {
     PAINTSTRUCT ps;
-    HDC hdc = BeginPaint(ps);
-    CRect rc = GetClientRect();
+    const HDC hdc = BeginPaint(ps);
+    const CRect rc = GetClientRect();
     SelectObject(hdc, GetStockObject(WHITE_BRUSH));
     PatBlt(hdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, PATCOPY);
     EndPaint(ps);
@@ -2000,8 +1998,6 @@ void VPinball::OnInitialUpdate()
 
 BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
 {
-    UINT id = LOWORD(wparam);
-
     return g_pvp->ParseCommand(LOWORD(wparam), HIWORD(wparam));
 }
 
@@ -2447,11 +2443,10 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          {
             char szFileName[MAXSTRING];
             char szInitialDir[MAXSTRING];
-            int  fileOffset = 0;
+            int  fileOffset;
             szFileName[0] = '\0';
 
-
-            HRESULT hr = LoadValueString("RecentDir", "FontDir", szInitialDir, MAXSTRING);
+            /*const HRESULT hr =*/ LoadValueString("RecentDir", "FontDir", szInitialDir, MAXSTRING);
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0, fileOffset))
             {
                strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);

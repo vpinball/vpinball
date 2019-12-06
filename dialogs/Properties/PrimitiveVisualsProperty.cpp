@@ -67,12 +67,12 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_LOAD_MESH_BUTTON:
                 PropertyDialog::StartUndo(prim);
-                prim->LoadMesh();
+                prim->LoadMeshDialog();
                 PropertyDialog::EndUndo(prim);
                 break;
             case IDC_EXPORT_MESH_BUTTON:
                 PropertyDialog::StartUndo(prim);
-                prim->ExportMesh();
+                prim->ExportMeshDialog();
                 PropertyDialog::EndUndo(prim);
                 break;
             case IDC_DEPTH_BIAS:

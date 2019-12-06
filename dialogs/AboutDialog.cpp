@@ -7,7 +7,7 @@
 
 AboutDialog::AboutDialog() : CDialog(IDD_ABOUT)
 {
-   memset(urlString, 0, MAX_PATH);
+   m_urlString[0] = '\0';
 }
 
 AboutDialog::~AboutDialog()
@@ -24,7 +24,7 @@ INT_PTR AboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
       case WM_INITDIALOG:
       {
-         HWND hwndDlg = GetHwnd();
+         const HWND hwndDlg = GetHwnd();
          char versionString[256];
          sprintf_s(versionString, "Version %i.%i.%i (Revision %i, %ubit)", VP_VERSION_MAJOR,VP_VERSION_MINOR,VP_VERSION_REV, SVN_REVISION,
 #ifdef _WIN64
@@ -80,14 +80,13 @@ BOOL AboutDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       case IDC_WEBSITE:
       case IDC_TRANSSITE:
       {
-         HRESULT hr;
          if (LOWORD(wParam) == IDC_WEBSITE)
-            hr = OpenURL("http://www.vpforums.org");
+            /*const HRESULT hr =*/ OpenURL("http://www.vpforums.org");
          else
          {
-            LPCTSTR szSite = GetDlgItem(IDC_TRANSWEBSITE).GetWindowText();
-            strncpy_s(urlString, szSite, MAX_PATH-1);
-            hr = OpenURL((char*)urlString);
+            const LPCTSTR szSite = GetDlgItem(IDC_TRANSWEBSITE).GetWindowText();
+            strncpy_s(m_urlString, szSite, MAX_PATH-1);
+            /*const HRESULT hr =*/ OpenURL(m_urlString);
          }
          return TRUE;
       }

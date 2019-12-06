@@ -248,11 +248,10 @@ void SoundDialog::Import()
     CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
     char szFileName[MAXSTRING];
     char szInitialDir[MAXSTRING];
-    int  fileOffset = 0;
-
+    int  fileOffset;
     szFileName[0] = '\0';
 
-    HRESULT hr = LoadValueString( "RecentDir", "SoundDir", szInitialDir, MAXSTRING);
+    /*const HRESULT hr =*/ LoadValueString( "RecentDir", "SoundDir", szInitialDir, MAXSTRING);
 
     if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT, fileOffset))
     {
@@ -340,12 +339,12 @@ void SoundDialog::ReImportFrom()
         const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2 );
         if (ans == IDYES)
         {
+            char szInitialDir[MAXSTRING];
             char szFileName[MAXSTRING];
             szFileName[0] = '\0';
-            int fileOffset = 0;
-            char szInitialDir[MAXSTRING];
+            int fileOffset;
 
-            const HRESULT hr = LoadValueString("RecentDir", "SoundDir", szInitialDir, MAXSTRING);
+            /*const HRESULT hr =*/ LoadValueString("RecentDir", "SoundDir", szInitialDir, MAXSTRING);
 
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", 0, fileOffset))
             {

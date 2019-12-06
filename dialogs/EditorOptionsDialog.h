@@ -21,7 +21,7 @@ protected:
     virtual void OnOK();
 
 private:
-    void AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
+    void AddToolTip(const char * const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
 
     CToolTip *m_toolTip;
     CColorDialog m_colorDialog;

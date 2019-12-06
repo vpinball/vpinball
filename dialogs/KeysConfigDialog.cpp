@@ -979,7 +979,7 @@ HWND KeysConfigDialog::GetItemHwnd(int nID)
     return GetDlgItem(nID).GetHwnd();
 }
 
-void KeysConfigDialog::SetValue(int nID, char *regKey, char *regValue)
+void KeysConfigDialog::SetValue(int nID, const char * const regKey, const char * const regValue)
 {
     size_t selected = ::SendMessage(GetDlgItem(nID).GetHwnd(), CB_GETCURSEL, 0, 0);
     if (selected == LB_ERR)
