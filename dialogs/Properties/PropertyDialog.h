@@ -251,7 +251,7 @@ public:
     ~CContainProperties()
     {
     }
-    PropertyDialog *GetProperties()
+    PropertyDialog *GetPropertyDialog()
     {
         return &m_propertyDialog;
     }
@@ -260,13 +260,18 @@ private:
     PropertyDialog m_propertyDialog;
 };
 
-class CDockPropertyDialog: public CDocker
+class CDockProperty: public CDocker
 {
 public:
-    CDockPropertyDialog();
+    CDockProperty();
 
-    virtual ~CDockPropertyDialog()
+    virtual ~CDockProperty()
     {
+    }
+
+    CContainProperties *GetContainProperties()
+    {
+        return &m_propContainer;
     }
 
 private:

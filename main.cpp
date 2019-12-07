@@ -457,7 +457,7 @@ public:
 
          g_pvp = new VPinball();
          g_pvp->AddRef();
-         g_pvp->Create();
+         g_pvp->Create(NULL);
          g_haccel = LoadAccelerators(g_hinst, MAKEINTRESOURCE(IDR_VPACCEL));
 
          if (file)

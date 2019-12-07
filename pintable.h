@@ -41,8 +41,11 @@ class ScriptGlobalTable;
 class PinTableMDI:public CMDIChild
 {
 public:
-    void SetTable(PinTable *table);
-
+    PinTableMDI(PinTable *table);
+    PinTable *GetTable()
+    {
+        return m_table;
+    }
 protected:
     virtual void PreCreate(CREATESTRUCT &cs);
     virtual void PreRegisterClass(WNDCLASS &wc);
@@ -394,16 +397,16 @@ public:
    virtual ItemTypeEnum GetItemType() const { return eItemTable; }
    virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    virtual HRESULT InitPostLoad();
-   virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName);
+   virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);
    virtual ISelect *GetISelect();
    virtual void SetDefaults(bool fromMouseClick);
    virtual IScriptable *GetScriptable() { return (IScriptable *)this; }
    virtual void SetDefaultPhysics(bool fromMouseClick);
 
    virtual PinTable *GetPTable() { return this; }
-   const char *GetElementName(IEditable *pedit) const;
+   char *GetElementName(IEditable *pedit) const;
 
-   IEditable *GetElementByName(const char * const name);
+   IEditable *GetElementByName(const char *name);
    void OnDelete();
 
    void DoLeftButtonDown(int x, int y, bool zoomIn = true);
@@ -435,8 +438,8 @@ public:
    HRESULT SaveToStorage(IStorage *pstg);
    HRESULT SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash);
    HRESULT SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
-   HRESULT WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, char *szValue, HCRYPTHASH hcrypthash);
-   HRESULT ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, char **pszValue, HCRYPTHASH hcrypthash);
+   HRESULT WriteInfoValue(IStorage* pstg, WCHAR *wzName, char *szValue, HCRYPTHASH hcrypthash);
+   HRESULT ReadInfoValue(IStorage* pstg, WCHAR *wzName, char **pszValue, HCRYPTHASH hcrypthash);
    HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupForPlay);
    HRESULT LoadGameFromFilename(char *szFileName);
    HRESULT LoadGameFromStorage(IStorage *pstgRoot);
@@ -855,9 +858,18 @@ public:
    float GetHeight() const;
    void SetHeight(const float value);
 
+   //HWND m_hMDI;
+   PinTableMDI  *m_mdiTable;
+   void SetMDITable(PinTableMDI *table)
+   {
+       m_mdiTable = table;
+   }
+   PinTableMDI *GetMDITable()
+   {
+       return m_mdiTable;
+   }
+
 private:
-   HWND m_hMDI;
-   PinTableMDI  m_mdiTable;
    std::unordered_map<const char *, Texture *, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
    std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name
 };
@@ -961,7 +973,7 @@ public:
    END_COM_MAP()
 
 private:
-   bool GetTextFileFromDirectory(const char * const szfilename, const char * const dirname, BSTR *pContents);
+   bool GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents);
 
    PinTable *m_pt;
 };
