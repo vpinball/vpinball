@@ -56,7 +56,7 @@ public:
     ~CContainToolbar()
     {
     }
-    ToolbarDialog *GetToolbar()
+    ToolbarDialog *GetToolbarDialog()
     {
         return &m_toolbar;
     }
@@ -73,7 +73,10 @@ public:
     virtual ~CDockToolbar()
     {
     }
-
+    CContainToolbar *GetContainToolbar()
+    {
+        return &m_toolbarContainer;
+    }
 private:
     CContainToolbar m_toolbarContainer;
 };

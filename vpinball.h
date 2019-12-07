@@ -35,7 +35,7 @@
 
 class PinTable;
 
-class VPinball : public CWnd
+class VPinball : public CMDIDockFrame
 {
 public:
     enum CopyPasteModes
@@ -87,9 +87,9 @@ private:
 
    void CloseAllDialogs();
 
-   CMenu GetMainMenu(int id);
 
 public:
+   CMenu GetMainMenu(int id);
    void SetLayerStatus(const int layerNumber);
    void ToggleScriptEditor();
    void ToggleAllLayers();
@@ -111,7 +111,7 @@ public:
    void SetPropSel(VectorProtected<ISelect> *pvsel);
 
    void DeletePropSel();
-   void SetActionCur(const char * const szaction);
+   void SetActionCur(char *szaction);
    void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
 
    STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
@@ -146,13 +146,13 @@ public:
    vector< CComObject<PinTable>* > m_vtable;
    CComObject<PinTable> *m_ptableActive;
 
-   HWND m_hwndSideBar;
-   HWND m_hwndSideBarScroll;
-   HWND m_hwndSideBarLayers;
-   HWND m_hwndWork;
-   HWND m_hwndToolbarMain;
-   HWND m_hwndToolbarPalette;
-   HWND m_hwndToolbarLayers;
+//    HWND m_hwndSideBar;
+//    HWND m_hwndSideBarScroll;
+//    HWND m_hwndSideBarLayers;
+//    HWND m_hwndWork;
+//    HWND m_hwndToolbarMain;
+//    HWND m_hwndToolbarPalette;
+//    HWND m_hwndToolbarLayers;
    HWND m_hwndStatusBar;
 
    int m_palettescroll;
@@ -227,8 +227,8 @@ private:
    DimensionDialog m_dimensionDialog;
    MaterialDialog m_materialDialog;
    AboutDialog m_aboutDialog;
-   ToolbarDialog m_toolbarDialog;
-   PropertyDialog m_propertyDialog;
+   ToolbarDialog *m_toolbarDialog;
+   PropertyDialog *m_propertyDialog;
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)

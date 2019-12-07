@@ -869,7 +869,7 @@ CContainProperties::CContainProperties()
     SetView(m_propertyDialog);
 }
 
-CDockPropertyDialog::CDockPropertyDialog()
+CDockProperty::CDockProperty()
 {
     SetView(m_propContainer);
     SetBarWidth(4);

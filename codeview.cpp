@@ -2504,7 +2504,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
    {
       CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
       pcv->SetVisible(false);
-      SendMessage(g_pvp->m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, 0L);
+      //SendMessage(g_pvp->m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, 0L);
       return 0;
    }
    break;
@@ -2514,13 +2514,13 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 	   {
 		   CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
 		   pcv->m_minimized = true;
-		   SendMessage(g_pvp->m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, 0L);
+		   //SendMessage(g_pvp->m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, 0L);
 	   }
 	   if (wParam == SC_RESTORE && g_pvp != NULL)
 	   {
 		   CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
 		   pcv->m_minimized = false;
-		   SendMessage(g_pvp->m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, 1L);
+		   //SendMessage(g_pvp->m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, 1L);
 	   }
    }
    break;
