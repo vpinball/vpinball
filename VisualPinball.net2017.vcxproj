@@ -1609,7 +1609,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\AOdither.bmp" />
     <Image Include="res\backglass.ico" />
     <Image Include="res\ball.bmp" />
-    <Image Include="res\bitmap5.bmp" />
     <Image Include="res\bumper.ico" />
     <Image Include="res\bumperbase.bmp" />
     <Image Include="res\bumperCap.bmp" />

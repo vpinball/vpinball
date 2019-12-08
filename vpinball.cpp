@@ -54,103 +54,6 @@ INT_PTR   iString;
 } TBBUTTON, *PTBBUTTON, *LPTBBUTTON;
 */
 
-#ifdef _WIN64
-static TBBUTTON const g_tbbuttonMain[] = {
-   // icon number,
-   {14, ID_TABLE_MAGNIFY, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_MAGNIFY, 0},
-   {0, IDC_SELECT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP | TBSTYLE_DROPDOWN, {0, 0, 0, 0, 0, 0}, IDS_TB_SELECT, 1},
-   {13, ID_EDIT_PROPERTIES, TBSTATE_ENABLED, TBSTYLE_CHECK, {0, 0, 0, 0, 0, 0}, IDS_TB_PROPERTIES, 2},
-   {18, ID_EDIT_SCRIPT, TBSTATE_ENABLED, TBSTYLE_CHECK, {0, 0, 0, 0, 0, 0}, IDS_TB_SCRIPT, 3},
-   {19, ID_EDIT_BACKGLASSVIEW, TBSTATE_ENABLED, TBSTYLE_CHECK, {0, 0, 0, 0, 0, 0}, IDS_TB_BACKGLASS, 4},
-   {2, ID_TABLE_PLAY, TBSTATE_ENABLED, TBSTYLE_BUTTON, {0, 0, 0, 0, 0, 0}, IDS_TB_PLAY, 5},
-};
-
-static TBBUTTON const g_tbbuttonPalette[] = {
-   // icon number,
-   {1, ID_INSERT_WALL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_WALL, 0},
-   {15, ID_INSERT_GATE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_GATE, 1},
-   {17, ID_INSERT_RAMP, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_RAMP, 2},
-   {3, ID_INSERT_FLIPPER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_FLIPPER, 3},
-   {5, ID_INSERT_PLUNGER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_PLUNGER, 4},
-   {7, ID_INSERT_BUMPER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_BUMPER, 5},
-   {16, ID_INSERT_SPINNER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_SPINNER, 6},
-   {4, ID_INSERT_TIMER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_TIMER, 7},
-   {8, ID_INSERT_TRIGGER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_TRIGGER, 8},
-   {9, ID_INSERT_LIGHT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_LIGHT, 9},
-   {10, ID_INSERT_KICKER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_KICKER, 10},
-   {11, ID_INSERT_TARGET, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_TARGET, 11},
-   {12, ID_INSERT_DECAL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_DECAL, 12},
-   {6, ID_INSERT_TEXTBOX, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_TEXTBOX, 13},
-   {20, ID_INSERT_DISPREEL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_DISPREEL, 14},
-   {21, ID_INSERT_LIGHTSEQ, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_LIGHTSEQ, 15},
-   {22, ID_INSERT_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_PRIMITIVE, 16},
-   {35, ID_INSERT_FLASHER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_FLASHER, 17},
-   {36, ID_INSERT_RUBBER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0, 0, 0, 0, 0}, IDS_TB_RUBBER, 18},
-};
-
-static TBBUTTON const g_tbbuttonLayers[MAX_LAYERS+1] = {
-   {23, ID_LAYER_LAYER1, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0, 0, 0, 0, 0}, 0, 0},
-   {24, ID_LAYER_LAYER2, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0, 0, 0, 0, 0}, 0, 1},
-   {25, ID_LAYER_LAYER3, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0, 0, 0, 0, 0}, 0, 2},
-   {26, ID_LAYER_LAYER4, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0, 0, 0, 0, 0},  0, 3},
-   {27, ID_LAYER_LAYER5, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0, 0, 0, 0, 0}, 0, 4},
-   {28, ID_LAYER_LAYER6, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0, 0, 0, 0, 0}, 0, 5},
-   {29, ID_LAYER_LAYER7, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0, 0, 0, 0, 0}, 0, 6},
-   {30, ID_LAYER_LAYER8, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0, 0, 0, 0, 0}, 0, 7},
-   {37, ID_LAYER_LAYER9, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0, 0, 0, 0, 0}, 0, 8},
-   {38, ID_LAYER_LAYER10, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0, 0, 0, 0, 0}, 0, 9},
-   {39, ID_LAYER_LAYER11, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0, 0, 0, 0, 0}, 0, 10},
-   {31, ID_LAYER_TOGGLEALL, TBSTATE_ENABLED, TBSTYLE_BUTTON, {0, 0, 0, 0, 0, 0}, 0, 11},
-};
-#else
-static TBBUTTON const g_tbbuttonMain[] = {
-   // icon number,
-   { 14, ID_TABLE_MAGNIFY, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_MAGNIFY, 0 },
-   { 0, IDC_SELECT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP | TBSTYLE_DROPDOWN, {0, 0}, IDS_TB_SELECT, 1 },
-   { 13, ID_EDIT_PROPERTIES, TBSTATE_ENABLED, TBSTYLE_CHECK, {0, 0}, IDS_TB_PROPERTIES, 2 },
-   { 18, ID_EDIT_SCRIPT, TBSTATE_ENABLED, TBSTYLE_CHECK, {0, 0}, IDS_TB_SCRIPT, 3 },
-   { 19, ID_EDIT_BACKGLASSVIEW, TBSTATE_ENABLED, TBSTYLE_CHECK, {0, 0}, IDS_TB_BACKGLASS, 4 },
-   { 2, ID_TABLE_PLAY, TBSTATE_ENABLED, TBSTYLE_BUTTON, {0, 0}, IDS_TB_PLAY, 5 },
-};
-
-static TBBUTTON const g_tbbuttonPalette[] = {
-   // icon number,
-   { 1, ID_INSERT_WALL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_WALL, 0 },
-   { 15, ID_INSERT_GATE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_GATE, 1 },
-   { 17, ID_INSERT_RAMP, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_RAMP, 2 },
-   { 3, ID_INSERT_FLIPPER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_FLIPPER, 3 },
-   { 5, ID_INSERT_PLUNGER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_PLUNGER, 4 },
-   { 7, ID_INSERT_BUMPER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_BUMPER, 5 },
-   { 16, ID_INSERT_SPINNER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_SPINNER, 6 },
-   { 4, ID_INSERT_TIMER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_TIMER, 7 },
-   { 8, ID_INSERT_TRIGGER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_TRIGGER, 8 },
-   { 9, ID_INSERT_LIGHT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_LIGHT, 9 },
-   { 10, ID_INSERT_KICKER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_KICKER, 10 },
-   { 11, ID_INSERT_TARGET, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_TARGET, 11 },
-   { 12, ID_INSERT_DECAL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_DECAL, 12 },
-   { 6, ID_INSERT_TEXTBOX, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_TEXTBOX, 13 },
-   { 20, ID_INSERT_DISPREEL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_DISPREEL, 14 },
-   { 21, ID_INSERT_LIGHTSEQ, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_LIGHTSEQ, 15 },
-   { 22, ID_INSERT_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_PRIMITIVE, 16 },
-   { 35, ID_INSERT_FLASHER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_FLASHER, 17 },
-   { 36, ID_INSERT_RUBBER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, {0, 0}, IDS_TB_RUBBER, 18 },
-};
-
-static TBBUTTON const g_tbbuttonLayers[MAX_LAYERS+1] = {
-   { 23, ID_LAYER_LAYER1, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0}, 0, 0 },
-   { 24, ID_LAYER_LAYER2, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0}, 0, 1 },
-   { 25, ID_LAYER_LAYER3, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0}, 0, 2 },
-   { 26, ID_LAYER_LAYER4, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0}, 0, 3 },
-   { 27, ID_LAYER_LAYER5, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0}, 0, 4 },
-   { 28, ID_LAYER_LAYER6, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0}, 0, 5 },
-   { 29, ID_LAYER_LAYER7, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0}, 0, 6 },
-   { 30, ID_LAYER_LAYER8, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0}, 0, 7 },
-   { 37, ID_LAYER_LAYER9, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0}, 0, 8 },
-   { 38, ID_LAYER_LAYER10, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0}, 0, 9 },
-   { 39, ID_LAYER_LAYER11, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, {0, 0}, 0, 10 },
-   { 31, ID_LAYER_TOGGLEALL, TBSTATE_ENABLED, TBSTYLE_BUTTON, {0, 0}, 0, 11 },
-};
-#endif
 
 static const int allLayers[MAX_LAYERS] =
 {
@@ -171,13 +74,6 @@ static char recentNumber[LAST_OPENED_TABLE_COUNT];
 static char recentMenuname[MAX_PATH];
 
 WCHAR *VPinball::m_customParameters[MAX_CUSTOM_PARAM_INDEX] = {};
-
-#define TBCOUNTMAIN (sizeof(g_tbbuttonMain) / sizeof(TBBUTTON))
-#define TBCOUNTPALETTE (sizeof(g_tbbuttonPalette) / sizeof(TBBUTTON))
-#define TBCOUNTLAYERS (sizeof(g_tbbuttonLayers) / sizeof(TBBUTTON))
-
-LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -365,41 +261,6 @@ void VPinball::Init()
       }
    }
 
-   ShowWindow(SW_SHOW);
-
-   SetWindowLongPtr(GWLP_USERDATA, (size_t)this);	// set this class (vpinball) as callback for MDI Child / has to be confirmed
-   // can be a problem for 64 bit compatibility.
-   // maybe use SetWindowLongPtr instead
-
-   //CreateSideBar();									// Create Sidebar
-
-   //CreateMDIClient();								// Create MDI Child
-
-   int foo[6] = { 120, 240, 400, 600, 800, 1400 };
-
-   m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE,
-      "",
-      GetHwnd(),
-      1);											// Create Status Line at the bottom
-
-   ::SendMessage(m_hwndStatusBar, SB_SETPARTS, 6, (size_t)foo);	// Initialize Status bar with 6 empty cells
-
-   InitRegValues();									// get default values from registry
-
-   m_sb.Init(GetHwnd());								// initialize smartbrowser (Property bar on the right) - see propbrowser.cpp
-
-   SendMessage(WM_SIZE, 0, 0);			// Make our window relay itself out
-
-   InitTools();
-   m_ps.InitPinDirectSound(GetHwnd());
-
-   m_backglassView = false;							// we are viewing Pinfield and not the backglass at first
-
-   UpdateRecentFileList(NULL);						// update the recent loaded file list
-
-   wintimer_init();									// calibrate the timer routines
-   if (m_propertiesFloating)
-      SetForegroundWindow();
 
 #ifdef SLINTF
    // see slintf.cpp
@@ -465,12 +326,12 @@ void VPinball::SetAutoSaveMinutes(const int minutes)
 void VPinball::InitTools()
 {
    // was the properties panel open last time we used VP?
-   const bool state = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
-   if (state)
-   {
-      // if so then re-open it
-      ParseCommand(ID_EDIT_PROPERTIES, 1); //display
-   }
+//    const bool state = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
+//    if (state)
+//    {
+//       // if so then re-open it
+//       ParseCommand(ID_EDIT_PROPERTIES, 1); //display
+//    }
 
    m_ToolCur = IDC_SELECT;
 }
@@ -523,133 +384,6 @@ void VPinball::InitRegValues()
    }
 
    g_pvp->m_convertToUnit = LoadValueIntWithDefault("Editor", "Units", 0);
-}
-
-///<summary>
-///Creates Sidebar (left)
-///<para>Creates handles to upper and lower(scrollable) left Sidebar </para>
-///<para>Creates Buttons in Sidebar (via VPinball::CreateToolbar(...))</para>
-///<para>Sets Scrollposition to 0</para>
-///</summary>
-void VPinball::CreateSideBar()
-{
- /*  CRect rc = GetWindowRect();
-
-   m_hwndSideBar = ::CreateWindowEx(/ *WS_EX_WINDOWEDGE* /0, "VPStaticChild", "", WS_VISIBLE | WS_CHILD | WS_BORDER,
-      0, 0, TOOLBAR_WIDTH + SCROLL_WIDTH, rc.bottom - rc.top, GetHwnd(), NULL, g_hinst, 0);
-   unsigned w,h;
-   m_hwndToolbarMain = CreateToolbar((TBBUTTON *)g_tbbuttonMain, TBCOUNTMAIN, m_hwndSideBar, w,h);
-
-   m_hwndSideBarLayers = ::CreateWindowEx(0, "VPStaticChild", "", WS_VISIBLE | WS_CHILD,
-      0, h * (TBCOUNTMAIN / 2)+10, TOOLBAR_WIDTH / *+ SCROLL_WIDTH* /, rc.bottom - rc.top, m_hwndSideBar, NULL, g_hinst, 0);
-   m_hwndToolbarLayers = CreateLayerToolbar(m_hwndSideBarLayers, w,h);
-
-   m_hwndSideBarScroll = ::CreateWindowEx(0, "VPStaticChild", "", WS_VISIBLE | WS_CHILD | WS_VSCROLL,
-      0, h * (TBCOUNTLAYERS / 3)+10, TOOLBAR_WIDTH + SCROLL_WIDTH, rc.bottom - rc.top, m_hwndSideBarLayers, NULL, g_hinst, 0);
-   m_hwndToolbarPalette = CreateToolbar((TBBUTTON *)g_tbbuttonPalette, TBCOUNTPALETTE, m_hwndSideBarScroll, w,h);
-*/
-
-   m_palettescroll = 0;
-}
-
-HWND VPinball::CreateLayerToolbar(HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight)
-{
-   HWND hwnd = CreateToolbarEx(hwndParent,
-      WS_CHILD | WS_VISIBLE | TBSTYLE_BUTTON | TBSTYLE_WRAPABLE,
-      1, TBCOUNTLAYERS, g_hinst, IDB_TOOLBAR, g_tbbuttonLayers, TBCOUNTLAYERS, 24, 24, 24, 24,
-      sizeof(TBBUTTON));
-
-   ::SendMessage(hwnd, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS);
-
-#ifdef IMSPANISH
-   SendMessage(m_hwnd, TB_SETBUTTONWIDTH, 0,
-      (LPARAM)(DWORD)MAKELONG(50,50));
-#elif defined(IMGERMAN)
-   SendMessage(m_hwnd, TB_SETBUTTONWIDTH, 0,
-      (LPARAM)(DWORD)MAKELONG(50,50));
-#else
-   SendMessage(hwnd, TB_SETBUTTONWIDTH, 0,
-      (LPARAM)(DWORD)MAKELONG(50, 50));
-#endif
-
-   for (unsigned int i = 0; i < TBCOUNTLAYERS; i++)
-   {
-      TBBUTTONINFO tbbi;
-      ZeroMemory(&tbbi, sizeof(TBBUTTONINFO));
-      tbbi.cbSize = sizeof(TBBUTTONINFO);
-      tbbi.dwMask = TBIF_SIZE | TBIF_COMMAND | TBIF_STATE | TBIF_STYLE;
-      SendMessage(hwnd, TB_GETBUTTONINFO, g_tbbuttonLayers[i].idCommand, (LPARAM)&tbbi);
-      if (tbbi.fsStyle & TBSTYLE_DROPDOWN)
-         tbbi.cx = 48;
-      SendMessage(hwnd, TB_SETBUTTONINFO, g_tbbuttonLayers[i].idCommand, (LPARAM)&tbbi);
-   }
-
-   SendMessage(hwnd, TB_AUTOSIZE, 0, 0);
-
-   const LRESULT wh = SendMessage(hwnd, TB_GETBUTTONSIZE, 0, 0);
-   buttonwidth = wh&0xFFFF;
-   buttonheight = (unsigned int)wh>>16;
-
-   return hwnd;
-}
-
-///<summary>
-///Creates Buttons in Toolbar-Windows (left Toolbar)
-///<param name="*p_tbbutton">Pointer to Buttons as TBBUTTON[]</param>
-///<param name="count">Number of Buttons to create</param>
-///<param name="hwndParent">Parentwindow (left Toolbar (top or bottom))</param>
-///<returns>Handle to Toolbar</returns>
-///</summary>
-HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight)
-{
-   HWND hwnd = CreateToolbarEx(hwndParent,
-      WS_CHILD | WS_VISIBLE | TBSTYLE_FLAT | TBSTYLE_WRAPABLE,
-      1, count, g_hinst, IDB_TOOLBAR, p_tbbutton, count, 24, 24, 24, 24,
-      sizeof(TBBUTTON));
-
-   SendMessage(hwnd, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS);
-
-#define MAXRESLEN 128
-
-   char szBuf[MAXRESLEN];
-
-   for (int i = 0; i < count; i++)
-   {
-      LoadString(g_hinst, p_tbbutton[i].dwData, szBuf, MAXRESLEN - 2);
-      szBuf[lstrlen(szBuf) + 1] = 0;  //Double-null terminate.
-      /*const int foo =*/ SendMessage(hwnd, TB_ADDSTRING, 0, (LPARAM)szBuf);
-   }
-
-#ifdef IMSPANISH
-   SendMessage(m_hwnd, TB_SETBUTTONWIDTH, 0,
-      (LPARAM)(DWORD)MAKELONG(50,50));
-#elif defined(IMGERMAN)
-   SendMessage(m_hwnd, TB_SETBUTTONWIDTH, 0,
-      (LPARAM)(DWORD)MAKELONG(50,50));
-#else
-   SendMessage(hwnd, TB_SETBUTTONWIDTH, 0,
-      (LPARAM)(DWORD)MAKELONG(50, 50));
-#endif
-
-   for (int i = 0; i < count; i++)
-   {
-      TBBUTTONINFO tbbi;
-      ZeroMemory(&tbbi, sizeof(TBBUTTONINFO));
-      tbbi.cbSize = sizeof(TBBUTTONINFO);
-      tbbi.dwMask = TBIF_SIZE | TBIF_COMMAND | TBIF_STATE | TBIF_STYLE;
-      /*int foo =*/ SendMessage(hwnd, TB_GETBUTTONINFO, p_tbbutton[i].idCommand, (LPARAM)&tbbi);
-      if (tbbi.fsStyle & TBSTYLE_DROPDOWN)
-         tbbi.cx = 48;
-      /*foo =*/ SendMessage(hwnd, TB_SETBUTTONINFO, p_tbbutton[i].idCommand, (LPARAM)&tbbi);
-   }
-
-   SendMessage(hwnd, TB_AUTOSIZE, 0, 0);
-
-   const LRESULT wh = SendMessage(hwnd, TB_GETBUTTONSIZE, 0, 0);
-   buttonwidth = wh&0xFFFF;
-   buttonheight = (unsigned int)wh>>16;
-
-   return hwnd;
 }
 
 void VPinball::CreateMDIClient()
@@ -752,6 +486,20 @@ bool VPinball::OpenFileDialog(const char *initDir, char *filename, const char *f
     return ret != 0;
 }
 
+void VPinball::CreateDocker()
+{
+    DWORD dwStyle = DS_CLIENTEDGE; // The style added to each docker
+    CDockToolbar* pDock1 = (CDockToolbar*)AddDockedChild(new CDockToolbar, DS_DOCKED_LEFT | dwStyle, 100);
+    CDockProperty* pDock2 = (CDockProperty *)AddDockedChild(new CDockProperty, DS_DOCKED_RIGHT | dwStyle, 230);
+
+    assert(pDock1->GetContainer());
+    assert(pDock2->GetContainer());
+    pDock1->GetContainer()->SetHideSingleTab(TRUE);
+    pDock2->GetContainer()->SetHideSingleTab(TRUE);
+    m_toolbarDialog = pDock1->GetContainToolbar()->GetToolbarDialog();
+    m_propertyDialog = pDock2->GetContainProperties()->GetPropertyDialog();
+}
+
 void VPinball::SetPosCur(float x, float y)
 {
    char szT[256];
@@ -791,7 +539,7 @@ float VPinball::ConvertToUnit(const float value)
 
 void VPinball::SetPropSel(VectorProtected<ISelect> *pvsel)
 {
-   m_sb.CreateFromDispatch(GetHwnd(), pvsel);
+//   m_sb.CreateFromDispatch(GetHwnd(), pvsel);
 
    if(m_propertyDialog && m_propertyDialog->IsWindow())
      m_propertyDialog->UpdateTabs(pvsel);
@@ -864,7 +612,7 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
    {
       bool show = false;
 
-      if (!g_pplayer) show = m_sb.GetVisible(); // Get the current display state
+      if (!g_pplayer) show = m_propertyDialog->IsWindowVisible();
 
       switch (notify)
       {
@@ -1907,23 +1655,33 @@ LRESULT VPinball::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam)
 
 void VPinball::OnInitialUpdate()
 {
-        // Add some Dockers to the MDI Frame
-    //CreateSideBar();									// Create Sidebar
+    ShowWindow(SW_SHOW);
+
+    int foo[6] = {120, 240, 400, 600, 800, 1400};
+
+    m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE,
+                                         "",
+                                         GetHwnd(),
+                                         1);											// Create Status Line at the bottom
+
+    ::SendMessage(m_hwndStatusBar, SB_SETPARTS, 6, (size_t)foo);	// Initialize Status bar with 6 empty cells
+
+    InitRegValues();									// get default values from registry
+
+    SendMessage(WM_SIZE, 0, 0);			// Make our window relay itself out
+
+    InitTools();
+    m_ps.InitPinDirectSound(GetHwnd());
+
+    m_backglassView = false;							// we are viewing Pinfield and not the backglass at first
+
+    UpdateRecentFileList(NULL);						// update the recent loaded file list
+
+    wintimer_init();									// calibrate the timer routines
+    SetForegroundWindow();
+
     CreateMDIClient();
-
-    DWORD dwStyle = DS_CLIENTEDGE; // The style added to each docker
-    CDockToolbar* pDock1 = (CDockToolbar*)AddDockedChild(new CDockToolbar, DS_DOCKED_LEFT | dwStyle, 100);
-    CDockProperty* pDock2 = (CDockProperty *)AddDockedChild(new CDockProperty, DS_DOCKED_RIGHT | dwStyle, 230);
-
-    assert(pDock1->GetContainer());
-    assert(pDock2->GetContainer());
-    pDock1->GetContainer()->SetHideSingleTab(TRUE);
-    pDock2->GetContainer()->SetHideSingleTab(TRUE);
-    m_toolbarDialog = pDock1->GetContainToolbar()->GetToolbarDialog();
-    m_propertyDialog = pDock2->GetContainProperties()->GetPropertyDialog();
-
-    // Add some  MDI children
-    //AddMDIChild(new CSimpleMDIChild);
+    CreateDocker();
 }
 
 BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
@@ -1944,108 +1702,6 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     return WndProcDefault(uMsg, wParam, lParam);
 }
-
-
-LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-   switch (uMsg)
-   {
-   case WM_NOTIFY:
-   {
-      const LPNMHDR pnmhdr = (LPNMHDR)lParam;
-      switch (pnmhdr->code)
-      {
-      case TBN_DROPDOWN:
-      {
-         CComObject<PinTable> * const pt = g_pvp->GetActiveTable();
-
-         if (pt)
-         {
-            const HMENU hmenu = CreatePopupMenu();
-
-            const HWND hwndList = CreateWindowEx(0, "ListBox", "", WS_CHILD | LBS_SORT, 0, 0, 10, 10, hwnd, NULL, g_hinst, 0);
-
-            int menucount = 0;
-            for (size_t i = 0; i < pt->m_vedit.size(); i++)
-            {
-               IEditable * const piedit = pt->m_vedit[i];
-               // check scriptable - decals don't have scripts and therefore don't have names
-               if (piedit->GetScriptable() && piedit->m_backglass == g_pvp->m_backglassView && piedit->m_isVisible)
-               {
-                  char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
-                  WideCharToMultiByte(CP_ACP, 0, piedit->GetScriptable()->m_wzName, -1, szT, 64, NULL, NULL);
-
-                  const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
-                  SendMessage(hwndList, LB_SETITEMDATA, index, i + 1);// menu can't have an item with id 0, so bump everything up one
-               }
-            }
-
-            for (int i = 0; i < pt->m_vcollection.Size(); i++)
-            {
-               char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
-
-               WideCharToMultiByte(CP_ACP, 0, pt->m_vcollection.ElementAt(i)->m_wzName, -1, szT, MAXNAMEBUFFER*2, NULL, NULL);
-               strncat_s(szT, " (COL)", (MAXNAMEBUFFER*2)-1);
-               const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
-               SendMessage(hwndList, LB_SETITEMDATA, index, i | 0x80000000);
-            }
-
-            const size_t listcount = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
-
-            // Take the items from our sorted list and put them into the menu
-            for (size_t i = 0; i < listcount; i++)
-            {
-               char szT[64];
-               int flags = MF_STRING;
-
-               if ((menucount % 30 == 0) && (menucount != 0))
-                  flags |= MF_MENUBARBREAK;
-
-               SendMessage(hwndList, LB_GETTEXT, i, (LPARAM)szT);
-               const size_t data = SendMessage(hwndList, LB_GETITEMDATA, i, 0);
-
-               AppendMenu(hmenu, flags, data, szT);
-               menucount++;
-            }
-
-            DestroyWindow(hwndList);
-
-            POINT mousept;
-            GetCursorPos(&mousept);
-
-            const int ksshift = GetKeyState(VK_SHIFT);
-            const bool add = ((ksshift & 0x80000000) != 0);
-
-            const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | 16384/*TPM_NOANIMATION*/, mousept.x, mousept.y, hwnd, NULL);
-
-            if (icmd != 0)
-            {
-               if (icmd & 0x80000000) // collection
-               {
-                  Collection * const pcol = pt->m_vcollection.ElementAt(icmd & 0x7fffffff);
-                  for (int i = 0; i < pcol->m_visel.Size(); i++)
-                     pt->AddMultiSel(pcol->m_visel.ElementAt(i), (i == 0) ? add : true, true, false);
-               }
-               else
-                  pt->AddMultiSel(pt->m_vedit[icmd - 1]->GetISelect(), add, true, false);
-            }
-            DestroyMenu(hmenu);
-         }
-      }
-      break;
-      }
-   }
-   break;
-
-   case WM_COMMAND:
-      g_pvp->ParseCommand(wParam, (size_t)hwnd);
-      break;
-
-   }
-
-   return DefWindowProc(hwnd, uMsg, wParam, lParam);
-}
-
 
 STDMETHODIMP VPinball::PlaySound(BSTR bstr)
 {
@@ -2418,13 +2074,13 @@ void VPinball::CloseAllDialogs()
 void VPinball::ShowProperties(bool enable)
 {
     SaveValueBool("Editor", "PropertiesVisible", enable);
-    m_sb.SetVisible(enable);
-    if (enable)
-    {
-        CComObject<PinTable> * const ptCur = GetActiveTable();
-        if (ptCur)
-            m_sb.CreateFromDispatch(GetHwnd(), &ptCur->m_vmultisel);
-    }
+//    m_sb.SetVisible(enable);
+//     if (enable)
+//     {
+//         CComObject<PinTable> * const ptCur = GetActiveTable();
+//         if (ptCur)
+//             m_sb.CreateFromDispatch(GetHwnd(), &ptCur->m_vmultisel);
+//     }
 }
 
 void VPinball::ToggleBackglassView()
