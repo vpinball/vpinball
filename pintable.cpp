@@ -2418,34 +2418,6 @@ void PinTable::StopPlaying()
    BeginAutoSaveCounter();
 }
 
-
-void PinTable::CreateTableWindow()
-{
-// 
-//    WNDCLASSEX wcex;
-//    ZeroMemory(&wcex, sizeof(WNDCLASSEX));
-//    wcex.cbSize = sizeof(WNDCLASSEX);
-//    wcex.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;//CS_NOCLOSE | CS_OWNDC;
-//    wcex.lpfnWndProc = TableWndProc;
-//    wcex.hInstance = g_hinst;
-//    wcex.lpszClassName = "PinTable";
-//    wcex.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_TABLE));
-//    wcex.hCursor = NULL;//LoadCursor(NULL, IDC_ARROW);
-//    wcex.hbrBackground = NULL;
-//    //wcex.lpszMenuName = MAKEINTRESOURCE(IDR_APPMENU);
-// 
-//    RegisterClassEx(&wcex);
-// 
-//    m_hMDI = ::CreateWindowEx(WS_EX_MDICHILD /*| WS_EX_OVERLAPPEDWINDOW*/, "PinTable", m_szFileName, WS_HSCROLL | WS_VSCROLL | WS_MAXIMIZE | WS_VISIBLE | WS_CHILD | WS_OVERLAPPEDWINDOW/* | WS_MAXIMIZE*/,
-//       20, 20, 400, 400, m_pvp->m_hwndWork, NULL, g_hinst, 0);
-// 
-//    BeginAutoSaveCounter();
-// 
-//    ::SetWindowLongPtr(m_hMDI, GWLP_USERDATA, (size_t)this);
-// //    m_mdiTable.Create(m_pvp->GetHwnd());
-}
-
-
 HRESULT PinTable::InitVBA()
 {
    return S_OK;
@@ -2483,7 +2455,7 @@ void PinTable::BeginAutoSaveCounter()
 
 void PinTable::EndAutoSaveCounter()
 {
-   m_mdiTable-KillTimer(TIMER_ID_AUTOSAVE);
+   m_mdiTable->KillTimer(TIMER_ID_AUTOSAVE);
 }
 
 
@@ -5168,6 +5140,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_ACTIVATE:
             if (LOWORD(wParam) != WA_INACTIVE)
             {
+                SetFocus();
                 m_pvp->m_ptableActive = (CComObject<PinTable> *)this;
                 // re-evaluate the toolbar depending on table permissions
                 g_pvp->SetEnableToolbar();
@@ -6774,7 +6747,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             break;
         }
 
-        case WM_HSCROLL:
+/*        case WM_HSCROLL:
         {
             pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
             SCROLLINFO si;
@@ -6843,7 +6816,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             return 0;
         }
         break;
-
+*/
         case WM_MOUSEWHEEL:
         {
             //zoom in/out by pressing CTRL+mouse wheel
@@ -10292,6 +10265,13 @@ void PinTable::InvokeBallBallCollisionCallback(Ball *b1, Ball *b2, float hitVelo
    }
 }
 
+void PinTable::OnInitialUpdate()
+{
+    BeginAutoSaveCounter();
+    SetWindowText(m_szFileName);
+    SetCaption(m_szTitle);
+}
+
 void PinTable::SetMouseCursor()
 {
     char *cursorid;
@@ -10431,7 +10411,7 @@ void PinTableMDI::PreCreate(CREATESTRUCT &cs)
     cs.cx = 400;
     cs.cy = 400;
     cs.dwExStyle = WS_EX_MDICHILD;
-    cs.style = WS_HSCROLL | WS_VSCROLL | WS_MAXIMIZE | WS_VISIBLE | WS_CHILD | WS_OVERLAPPEDWINDOW;
+    cs.style = /*WS_HSCROLL | WS_VSCROLL | */WS_MAXIMIZE | WS_VISIBLE | WS_CHILD | WS_OVERLAPPEDWINDOW;
     cs.hwndParent = g_pvp->GetHwnd();
     cs.lpszClass = _T("PinTable");
     cs.lpszName = _T(m_table->m_szFileName);
@@ -10449,11 +10429,7 @@ void PinTableMDI::PreRegisterClass(WNDCLASS &wc)
 
 int PinTableMDI::OnCreate(CREATESTRUCT &cs)
 {
-    SetWindowText(_T(m_table->m_szFileName));
     SetMenu(::GetSubMenu( g_pvp->GetMenu().GetHandle(), WINDOWMENU));
-    m_table->BeginAutoSaveCounter();
-    m_table->SetCaption(m_table->m_szTitle);
-
     return CMDIChild::OnCreate(cs);
 }
 

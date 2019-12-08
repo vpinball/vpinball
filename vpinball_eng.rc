@@ -3011,6 +3011,18 @@ IDB_BUMPER_RING         BITMAP                  "res\\bumperRing.bmp"
 
 IDB_BUMPER_SKIRT        BITMAP                  "res\\bumperSkirt.bmp"
 
+IDW_SDBOTTOM            BITMAP                  "res\\SDbottom.bmp"
+
+IDW_SDCENTER            BITMAP                  "res\\SDcenter.bmp"
+
+IDW_SDLEFT              BITMAP                  "res\\SDleft.bmp"
+
+IDW_SDMIDDLE            BITMAP                  "res\\SDmiddle.bmp"
+
+IDW_SDRIGHT             BITMAP                  "res\\SDright.bmp"
+
+IDW_SDTOP               BITMAP                  "res\\SDtop.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

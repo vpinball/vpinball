@@ -933,6 +933,13 @@
 #define IDD_PROPERTY_DIALOG             647
 #define IDD_PROPPOINT_VISUALSWHEIGHT    648
 #define IDD_PROPBACKGLASS_CAMERA        649
+#define IDW_SDBOTTOM                    651
+#define IDW_SDCENTER                    652
+#define IDW_SDLEFT                      653
+#define IDW_SDMIDDLE                    654
+#define IDW_SDRIGHT                     655
+#define IDB_BITMAP6                     656
+#define IDW_SDTOP                       656
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1267,7 +1274,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        650
+#define _APS_NEXT_RESOURCE_VALUE        657
 #define _APS_NEXT_COMMAND_VALUE         4022
 #define _APS_NEXT_CONTROL_VALUE         829
 #define _APS_NEXT_SYMED_VALUE           188

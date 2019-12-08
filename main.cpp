@@ -194,6 +194,7 @@ public:
    VPApp(HINSTANCE hInstance)
    {
        theInstance = GetInstanceHandle();
+       SetResourceHandle(theInstance);
    }
    
    virtual ~VPApp() 

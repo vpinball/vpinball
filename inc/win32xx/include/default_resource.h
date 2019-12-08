@@ -64,12 +64,14 @@
 #define IDW_TRACK4WAY                    84
 
 // Docking Bitmap Resources
+/*
 #define IDW_SDBOTTOM                     85
 #define IDW_SDCENTER                     86
 #define IDW_SDLEFT                       87
 #define IDW_SDMIDDLE                     88
 #define IDW_SDRIGHT                      89
 #define IDW_SDTOP                        90
+*/
 
 // Print Preview Resources
 #define IDW_PRINTPREVIEW                 91

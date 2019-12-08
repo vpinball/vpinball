@@ -1609,6 +1609,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\AOdither.bmp" />
     <Image Include="res\backglass.ico" />
     <Image Include="res\ball.bmp" />
+    <Image Include="res\bitmap5.bmp" />
     <Image Include="res\bumper.ico" />
     <Image Include="res\bumperbase.bmp" />
     <Image Include="res\bumperCap.bmp" />
@@ -1636,6 +1637,12 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\reel.ico" />
     <Image Include="res\rubber.ico" />
     <Image Include="res\script.ico" />
+    <Image Include="res\SDbottom.bmp" />
+    <Image Include="res\SDcenter.bmp" />
+    <Image Include="res\SDleft.bmp" />
+    <Image Include="res\SDmiddle.bmp" />
+    <Image Include="res\SDright.bmp" />
+    <Image Include="res\SDtop.bmp" />
     <Image Include="res\select.ico" />
     <Image Include="res\spinner.ico" />
     <Image Include="res\target.ico" />

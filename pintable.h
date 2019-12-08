@@ -306,7 +306,6 @@ public:
    virtual HRESULT GetTypeName(BSTR *pVal);
    virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
-   void CreateTableWindow();
    void SetCaption(const char * const szCaption);
    void SetMouseCapture();
    int  ShowMessageBox(const char *text) const;
@@ -822,7 +821,7 @@ public:
    int   m_jolt_trigger_time;
    int   m_tilt_trigger_time;
 #endif
-   
+   virtual void OnInitialUpdate();
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
    void SetMouseCursor();
    void OnLeftButtonDown(const short x, const short y);
