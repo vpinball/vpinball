@@ -229,8 +229,6 @@ VPinball::VPinball()
 
    GetMyPath();													//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
 
-   RegisterClasses();											//TODO - brief description of what happens in the function
-
 #ifdef _WIN64
    m_scintillaDll = LoadLibrary("SciLexerVP64.DLL");
 #else
@@ -525,25 +523,6 @@ void VPinball::InitRegValues()
    }
 
    g_pvp->m_convertToUnit = LoadValueIntWithDefault("Editor", "Units", 0);
-}
-
-///<summary>
-///Registers a window classes for subsequent use in calls to the CreateWindow or CreateWindowEx function. 
-///</summary>
-void VPinball::RegisterClasses()
-{
-   WNDCLASSEX wcex;
-   ZeroMemory(&wcex, sizeof(WNDCLASSEX));
-   wcex.cbSize = sizeof(WNDCLASSEX);
-   wcex.hInstance = g_hinst;
-
-   // Register dummy child class
-   wcex.lpszClassName = "VPStaticChild";
-   wcex.lpfnWndProc = VPSideBarWndProc;
-   wcex.lpszMenuName = NULL;
-   wcex.hIcon = NULL;
-   wcex.hbrBackground = HBRUSH(COLOR_BTNFACE + 1);
-   RegisterClassEx(&wcex);
 }
 
 ///<summary>
@@ -1235,17 +1214,17 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
    }
    case ID_WINDOW_CASCADE:
    {
-      SendMessage(WM_MDICASCADE, 0, 0);
+      MDICascade();
       return TRUE;
    }
    case ID_WINDOW_TILE:
    {
-      SendMessage(WM_MDITILE, 0, 0);
+      MDITile();
       return TRUE;
    }
    case ID_WINDOW_ARRANGEICONS:
    {
-      SendMessage(WM_MDIICONARRANGE, 0, 0);
+      MDIIconArrange();
       return TRUE;
    }
    }
@@ -1956,29 +1935,11 @@ BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
 
 LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    HWND hwnd = GetHwnd();
     switch (uMsg)
     {
-        case WM_SIZE:
-        if (g_pvp)
-        {
-            RECT rc;
-            ::GetClientRect(hwnd, &rc);
-
-            SendMessage(g_pvp->m_hwndStatusBar, WM_SIZE, wParam, lParam);
-
-            RECT rcStatus;
-            ::GetWindowRect(g_pvp->m_hwndStatusBar, &rcStatus);
-            const int statheight = rcStatus.bottom - rcStatus.top;
-
-            //g_pvp->SetWindowPos(NULL, sidebarwidth, 0, rc.right - rc.left - (sidebarwidth)-SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-            return 0;
-        }
-        break;
-
         case WM_INITMENUPOPUP:
-        g_pvp->SetEnableMenuItems();
-        break;
+            g_pvp->SetEnableMenuItems();
+            break;
 
     }
     return WndProcDefault(uMsg, wParam, lParam);
@@ -2080,38 +2041,6 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
       g_pvp->ParseCommand(wParam, (size_t)hwnd);
       break;
 
-   case WM_VSCROLL:
-   {
-      SCROLLINFO si;
-      ZeroMemory(&si, sizeof(SCROLLINFO));
-      si.cbSize = sizeof(SCROLLINFO);
-      si.fMask = SIF_ALL;
-      GetScrollInfo(hwnd, SB_VERT, &si);
-      switch (LOWORD(wParam))
-      {
-      case SB_LINEUP:
-         g_pvp->m_palettescroll -= si.nPage / 10;
-         break;
-      case SB_LINEDOWN:
-         g_pvp->m_palettescroll += si.nPage / 10;
-         break;
-      case SB_PAGEUP:
-         g_pvp->m_palettescroll -= si.nPage / 2;
-         break;
-      case SB_PAGEDOWN:
-         g_pvp->m_palettescroll += si.nPage / 2;
-         break;
-      case SB_THUMBTRACK:
-      {
-         const int delta = (int)(g_pvp->m_palettescroll - si.nPos);
-         g_pvp->m_palettescroll = ((short)HIWORD(wParam) + delta);
-      }
-      break;
-      }
-
-      SetScrollPos(hwnd, SB_VERT, g_pvp->m_palettescroll, TRUE);
-   }
-   break;
    }
 
    return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -2508,7 +2437,6 @@ void VPinball::ToggleBackglassView()
         PinTable * const ptT = m_vtable[i];
         ptT->SetDefaultView();
         ptT->SetDirtyDraw();
-        ptT->SetMyScrollInfo();
     }
 
     CComObject<PinTable> * const ptCur = GetActiveTable();

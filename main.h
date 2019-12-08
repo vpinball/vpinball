@@ -51,6 +51,7 @@ using std::vector;
 #include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
 //#include <wxx_archive.h>		// Add CArchive
 #include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
+#include <wxx_scrollview.h>
 //#include <wxx_controls.h>		// Add CAnimation, CComboBox, CComboBoxEx, CDateTime, CHeader, CHotKey, CIPAddress, CProgressBar, CSpinButton, CScrollBar, CSlider, CToolTip
 //#include <wxx_cstring.h>		// Add CString, CStringA, CStringW
 //#include <wxx_ddx.h>			// Add CDataExchange
