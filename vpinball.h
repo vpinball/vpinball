@@ -52,9 +52,6 @@ public:
    void Quit();
 
 private:
-   void CreateSideBar();
-   HWND CreateLayerToolbar(HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight);
-   HWND CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent, unsigned int &buttonwidth, unsigned int &buttonheight);
    void CreateMDIClient();
 
    void ShowProperties(bool enable);
@@ -140,6 +137,8 @@ public:
    void SetStatusBarUnitInfo(const char * const info, const bool isUnit);
 
    bool OpenFileDialog(const char *initDir, char *filename, const char *fileFilter, const char *defaultExt, DWORD flags, int &fileOffset);
+   void CreateDocker();
+
    ULONG m_cref;
 
    vector< CComObject<PinTable>* > m_vtable;

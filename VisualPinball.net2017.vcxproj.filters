@@ -405,13 +405,24 @@
     <Image Include="res\textbox.ico">
       <Filter>res</Filter>
     </Image>
-    <Image Include="res\bitmap5.bmp" />
-    <Image Include="res\SDbottom.bmp" />
-    <Image Include="res\SDcenter.bmp" />
-    <Image Include="res\SDleft.bmp" />
-    <Image Include="res\SDmiddle.bmp" />
-    <Image Include="res\SDright.bmp" />
-    <Image Include="res\SDtop.bmp" />
+    <Image Include="res\SDbottom.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\SDcenter.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\SDleft.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\SDmiddle.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\SDright.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\SDtop.bmp">
+      <Filter>res</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\vpinball.rgs">
