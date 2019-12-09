@@ -396,16 +396,16 @@ public:
    virtual ItemTypeEnum GetItemType() const { return eItemTable; }
    virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    virtual HRESULT InitPostLoad();
-   virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);
+   virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName);
    virtual ISelect *GetISelect();
    virtual void SetDefaults(bool fromMouseClick);
    virtual IScriptable *GetScriptable() { return (IScriptable *)this; }
    virtual void SetDefaultPhysics(bool fromMouseClick);
 
    virtual PinTable *GetPTable() { return this; }
-   char *GetElementName(IEditable *pedit) const;
+   const char *GetElementName(IEditable *pedit) const;
 
-   IEditable *GetElementByName(const char *name);
+   IEditable *GetElementByName(const char * const name);
    void OnDelete();
 
    void DoLeftButtonDown(int x, int y, bool zoomIn = true);
@@ -437,8 +437,8 @@ public:
    HRESULT SaveToStorage(IStorage *pstg);
    HRESULT SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash);
    HRESULT SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
-   HRESULT WriteInfoValue(IStorage* pstg, WCHAR *wzName, char *szValue, HCRYPTHASH hcrypthash);
-   HRESULT ReadInfoValue(IStorage* pstg, WCHAR *wzName, char **pszValue, HCRYPTHASH hcrypthash);
+   HRESULT WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, char *szValue, HCRYPTHASH hcrypthash);
+   HRESULT ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, char **pszValue, HCRYPTHASH hcrypthash);
    HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupForPlay);
    HRESULT LoadGameFromFilename(char *szFileName);
    HRESULT LoadGameFromStorage(IStorage *pstgRoot);
@@ -972,11 +972,9 @@ public:
    END_COM_MAP()
 
 private:
-   bool GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents);
+   bool GetTextFileFromDirectory(const char * const szfilename, const char * const dirname, BSTR *pContents);
 
    PinTable *m_pt;
 };
-
-
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)

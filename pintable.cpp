@@ -363,7 +363,7 @@ STDMETHODIMP ScriptGlobalTable::get_LockbarKey(long *pVal)
    return S_OK;
 }
 
-bool ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents)
+bool ScriptGlobalTable::GetTextFileFromDirectory(const char * const szfilename, const char * const dirname, BSTR *pContents)
 {
    char *szPath = new char[MAX_PATH + lstrlen(szfilename)];
    bool success = false;
@@ -1925,7 +1925,7 @@ void PinTable::GetUniqueNamePasting(int type, WCHAR *wzUniqueName)
 
 void PinTable::UIRenderPass2(Sur * const psur)
 {
-   CRect rc = GetClientRect();
+   const CRect rc = GetClientRect();
    psur->SetFillColor(g_pvp->m_backgroundColor);
    psur->SetBorderColor(-1, false, 0);
 
@@ -2125,7 +2125,7 @@ void PinTable::Paint(HDC hdc)
 {
    //HBITMAP hbmOffScreen;
 
-   CRect rc = GetClientRect();
+   const CRect rc = GetClientRect();
 
    if (m_dirtyDraw)
    {
@@ -2162,7 +2162,7 @@ ISelect *PinTable::HitTest(const int x, const int y)
 {
    const HDC hdc = GetDC();
 
-   CRect rc = GetClientRect();
+   const CRect rc = GetClientRect();
 
    HitSur * const phs = new HitSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
    HitSur * const phs2 = new HitSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
@@ -3112,7 +3112,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 }
 
 
-HRESULT PinTable::WriteInfoValue(IStorage* pstg, WCHAR *wzName, char *szValue, HCRYPTHASH hcrypthash)
+HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, char *szValue, HCRYPTHASH hcrypthash)
 {
    HRESULT hr;
    IStream *pstm;
@@ -3199,7 +3199,7 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 }
 
 
-HRESULT PinTable::ReadInfoValue(IStorage* pstg, WCHAR *wzName, char **pszValue, HCRYPTHASH hcrypthash)
+HRESULT PinTable::ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, char **pszValue, HCRYPTHASH hcrypthash)
 {
    HRESULT hr;
    IStream *pstm;
@@ -4556,7 +4556,7 @@ void PinTable::SetMyScrollInfo()
    FRect frect;
    GetViewRect(&frect);
 
-   CRect rc = GetClientRect();
+   const CRect rc = GetClientRect();
 
    const HitSur phs(NULL, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
@@ -4904,7 +4904,7 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
             IEditable * const pedit = m_allHitElements[i]->GetIEditable();
             if (pedit)
             {
-               char * const szTemp = GetElementName(pedit);
+               const char * const szTemp = GetElementName(pedit);
 
                if (szTemp)
                {
@@ -4940,7 +4940,7 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
        mainMenu.DestroyMenu();
 }
 
-char *PinTable::GetElementName(IEditable *pedit) const
+const char *PinTable::GetElementName(IEditable *pedit) const
 {
    WCHAR *elemName = NULL;
    if (pedit)
@@ -4961,7 +4961,7 @@ char *PinTable::GetElementName(IEditable *pedit) const
    return NULL;
 }
 
-IEditable *PinTable::GetElementByName(const char *name)
+IEditable *PinTable::GetElementByName(const char * const name)
 {
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
@@ -5676,14 +5676,14 @@ void PinTable::ImportBackdropPOV(const char *filename)
     char szFileName[MAXSTRING];
     bool oldFormatLoaded = false;
     szFileName[0] = '\0';
-    int fileOffset = 0;
-	if (filename == NULL)
-	{
+    if (filename == NULL)
+    {
+        int fileOffset;
         if(!g_pvp->OpenFileDialog("", szFileName, "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0", "pov", 0, fileOffset))
-			return;
-	}
-	else
-		strcpy_s(szFileName, filename);
+            return;
+    }
+    else
+        strcpy_s(szFileName, filename);
 
     xml_document<> xmlDoc;
 
@@ -6191,7 +6191,7 @@ HRESULT PinTable::InitPostLoad()
    return S_OK;
 }
 
-HRESULT PinTable::InitVBA(BOOL fNew, int id, WCHAR *wzName)
+HRESULT PinTable::InitVBA(BOOL fNew, int id, WCHAR * const wzName)
 {
    return S_OK;
 }
@@ -6476,7 +6476,7 @@ void PinTable::UseTool(int x, int y, int tool)
 
 Vertex2D PinTable::TransformPoint(int x, int y) const
 {
-   CRect rc = m_mdiTable->GetClientRect();
+   const CRect rc = m_mdiTable->GetClientRect();
 
    const HitSur phs(NULL, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
@@ -6513,7 +6513,7 @@ void PinTable::OnLButtonUp(int x, int y)
 
          const HDC hdc = m_mdiTable->GetDC();
 
-         CRect rc = m_mdiTable->GetClientRect();
+         const CRect rc = m_mdiTable->GetClientRect();
 
          HitRectSur * const phrs = new HitRectSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, &m_rcDragRect, &vsel);
 
@@ -8336,8 +8336,8 @@ INT_PTR CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
    {
    case WM_INITDIALOG:
    {
+      const CRect rcMain = g_pvp->GetWindowRect();
       RECT rcProgress;
-      CRect rcMain = g_pvp->GetWindowRect();
       GetWindowRect(hwndDlg, &rcProgress);
 
       SetWindowPos(hwndDlg, NULL,
@@ -9648,7 +9648,6 @@ STDMETHODIMP PinTable::ImportPhysics()
    char szFileName[MAXSTRING];
    char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
-   int fileOffset = 0;
 
    const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
    if (hr != S_OK)
@@ -9656,6 +9655,7 @@ STDMETHODIMP PinTable::ImportPhysics()
       lstrcpy(szInitialDir, "c:\\");
    }
 
+   int fileOffset;
    if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0, fileOffset))
        return S_OK;
 

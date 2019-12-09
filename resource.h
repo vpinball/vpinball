@@ -904,12 +904,9 @@
 #define IDC_RUBBER                      602
 #define IDD_PROPRUBBER_VISUALS          604
 #define IDD_MATERIALDIALOG              605
-#define IDB_BITMAP1                     608
-#define IDB_BITMAP2                     610
 #define IDB_BUMPERCAP                   610
 #define IDC_GLOSSY_IMGLERP_EDIT         611
 #define IDB_KICKER_HOLE_WOOD            612
-#define IDB_BITMAP3                     613
 #define IDB_KICKER_CUP                  613
 #define IDR_POINTMENU_SMOOTH            614
 #define IDB_AO_DITHER                   615
@@ -928,7 +925,6 @@
 #define IDD_TOOLBAR                     630
 #define IDB_KICKER_WILLIAMS             640
 #define IDB_KICKER_GOTTLIEB             645
-#define IDB_BITMAP4                     646
 #define IDB_KICKER_T1                   646
 #define IDD_PROPERTY_DIALOG             647
 #define IDD_PROPPOINT_VISUALSWHEIGHT    648
@@ -938,7 +934,6 @@
 #define IDW_SDLEFT                      653
 #define IDW_SDMIDDLE                    654
 #define IDW_SDRIGHT                     655
-#define IDB_BITMAP6                     656
 #define IDW_SDTOP                       656
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
