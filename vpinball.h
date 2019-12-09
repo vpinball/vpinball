@@ -107,7 +107,7 @@ public:
    void SetPropSel(VectorProtected<ISelect> *pvsel);
 
    void DeletePropSel();
-   void SetActionCur(char *szaction);
+   void SetActionCur(const char * const szaction);
    void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
 
    STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
