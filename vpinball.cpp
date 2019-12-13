@@ -379,7 +379,7 @@ void VPinball::InitRegValues()
    {
       char szRegName[MAX_PATH];
       sprintf_s(szRegName, "TableFileName%d", i);
-      m_szRecentTableList[i][0] = 0x00;
+      memset(m_szRecentTableList[i], 0, MAX_PATH);
       LoadValueString("RecentDir", szRegName, m_szRecentTableList[i], MAX_PATH);
    }
 
@@ -1323,7 +1323,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
       for (int i = RECENT_FIRST_MENU_IDM; i <= RECENT_LAST_MENU_IDM; i++)
          menuFile.DeleteMenu(i, MF_BYCOMMAND);
 
-      // get the number of entrys in the file menu
+      // get the number of entries in the file menu
       // insert the items before the EXIT menu (assuming it is the last entry)
       int count = menuFile.GetMenuItemCount() - 1;
 
@@ -1333,16 +1333,13 @@ void VPinball::UpdateRecentFileList(char *szfilename)
       menuInfo.fMask = MIIM_ID | MIIM_TYPE;
       menuInfo.fType = MFT_STRING;
 
+      memset(recentMenuname, 0, MAX_PATH);
       // add in the list of recently accessed files
       for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
       {
          // if this entry is empty then all the rest are empty
          if (m_szRecentTableList[i][0] == 0x00) break;
-         _itoa_s(i + 1, recentNumber, 10);
-         strcpy_s(recentMenuname, "&");
-         strcat_s(recentMenuname, recentNumber);
-         strcat_s(recentMenuname, " ");
-         strcat_s(recentMenuname, m_szRecentTableList[i]);
+         snprintf(recentMenuname, MAX_PATH - 1, "&%i %s", i+1, m_szRecentTableList[i]);
          // set the IDM of this menu item
          menuInfo.wID = RECENT_FIRST_MENU_IDM + i;
          menuInfo.dwTypeData = recentMenuname;
