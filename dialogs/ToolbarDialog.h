@@ -9,7 +9,7 @@ public:
     virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
 
     void EnableButtons();
-
+    void SetOptionsButton(const bool checked);
 protected:
     virtual BOOL OnInitDialog();
     virtual void OnDestroy();
