@@ -106,8 +106,10 @@ void AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
 VPinball::VPinball()
 {
    //	DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); //add FreeImage support BDS
-    m_toolbarDialog = NULL;
-    m_propertyDialog = NULL;
+   m_toolbarDialog = NULL;
+   m_propertyDialog = NULL;
+   m_dockToolbar = NULL;
+   m_dockProperties = NULL;
    m_cref = 0;				//inits Reference Count for IUnknown Interface. Every com Object must 
    //implement this and StdMethods QueryInterface, AddRef and Release
    m_open_minimized = 0;
@@ -326,12 +328,12 @@ void VPinball::SetAutoSaveMinutes(const int minutes)
 void VPinball::InitTools()
 {
    // was the properties panel open last time we used VP?
-//    const bool state = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
-//    if (state)
-//    {
-//       // if so then re-open it
-//       ParseCommand(ID_EDIT_PROPERTIES, 1); //display
-//    }
+    const bool state = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
+    if (state)
+   {
+      // if so then re-open it
+      ParseCommand(ID_EDIT_PROPERTIES, 1); //display
+   }
 
    m_ToolCur = IDC_SELECT;
 }
@@ -353,8 +355,6 @@ void VPinball::InitRegValues()
    m_gridSize = LoadValueIntWithDefault("Editor", "GridSize", 50);
 
    const bool autoSave = LoadValueBoolWithDefault("Editor", "AutoSaveOn", true);
-   m_propertiesFloating = LoadValueBoolWithDefault("Editor", "PropertiesFloating", true);
-
    if (autoSave)
    {
       m_autosaveTime = LoadValueIntWithDefault("Editor", "AutoSaveTime", AUTOSAVE_DEFAULT_TIME);
@@ -487,16 +487,21 @@ bool VPinball::OpenFileDialog(const char *initDir, char *filename, const char *f
 
 void VPinball::CreateDocker()
 {
+    const bool state = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
     const DWORD dwStyle = DS_CLIENTEDGE; // The style added to each docker
-    CDockToolbar* const pDock1 = (CDockToolbar*)AddDockedChild(new CDockToolbar, DS_DOCKED_LEFT | dwStyle, 100);
-    CDockProperty* const pDock2 = (CDockProperty *)AddDockedChild(new CDockProperty, DS_DOCKED_RIGHT | dwStyle, 230);
+    m_dockToolbar = (CDockToolbar*)AddDockedChild(new CDockToolbar, DS_DOCKED_LEFT | dwStyle, 100);
+    m_dockProperties = (CDockProperty *)AddDockedChild(new CDockProperty, DS_DOCKED_RIGHT | dwStyle, 230);
 
-    assert(pDock1->GetContainer());
-    assert(pDock2->GetContainer());
-    pDock1->GetContainer()->SetHideSingleTab(TRUE);
-    pDock2->GetContainer()->SetHideSingleTab(TRUE);
-    m_toolbarDialog = pDock1->GetContainToolbar()->GetToolbarDialog();
-    m_propertyDialog = pDock2->GetContainProperties()->GetPropertyDialog();
+
+    assert(m_dockToolbar->GetContainer());
+    assert(m_dockProperties->GetContainer());
+    m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
+    m_dockProperties->GetContainer()->SetHideSingleTab(TRUE);
+    m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
+    m_propertyDialog = m_dockProperties->GetContainProperties()->GetPropertyDialog();
+    if (!state)
+        m_dockProperties->Hide();
+    
 }
 
 void VPinball::SetPosCur(float x, float y)
@@ -610,40 +615,23 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
    case ID_EDIT_PROPERTIES:
    {
       bool show = false;
+      
+      if (m_propertyDialog == NULL)
+          return TRUE;
 
-      if (!g_pplayer) show = !!(m_propertyDialog->IsWindowVisible());
+      if (!g_pplayer) show = !!(m_dockProperties->IsWindowVisible());
 
       switch (notify)
       {
       case 0: show = !show; //!!?
          break;
-      case 1: show = true;  //set
+      case 1: 
+          show = true;  //set
          break;
       case 2:               //re-display 
          break;
       default: show = !show;//toggle
          break;
-      }
-
-      if (!g_pplayer)
-      {
-         // Set toolbar button to the correct state
-/*
-         TBBUTTONINFO tbinfo;
-         ZeroMemory(&tbinfo, sizeof(TBBUTTONINFO));
-         tbinfo.cbSize = sizeof(TBBUTTONINFO);
-         tbinfo.dwMask = TBIF_STATE;
-         SendMessage(m_hwndToolbarMain, TB_GETBUTTONINFO, ID_EDIT_PROPERTIES, (size_t)&tbinfo);
-
-         if (notify == 2) show = (tbinfo.fsState & TBSTATE_CHECKED) != 0;
-
-         if (show ^ ((tbinfo.fsState & TBSTATE_CHECKED) != 0))
-         {
-            tbinfo.fsState ^= TBSTATE_CHECKED;
-         }
-
-         SendMessage(m_hwndToolbarMain, TB_SETBUTTONINFO, ID_EDIT_PROPERTIES, (size_t)&tbinfo);
-*/
       }
 
       ShowProperties(show);
@@ -1175,6 +1163,9 @@ bool VPinball::CloseTable(PinTable * const ppt)
 
    RemoveFromVectorSingle(m_vtable, (CComObject<PinTable> *)ppt);
    ppt->m_pcv->CleanUpScriptEngine();
+
+   RemoveMDIChild(ppt->m_mdiTable->GetHwnd());
+
    ppt->Release();
 
    SetEnableToolbar();
@@ -1668,7 +1659,6 @@ void VPinball::OnInitialUpdate()
 
     SendMessage(WM_SIZE, 0, 0);			// Make our window relay itself out
 
-    InitTools();
     m_ps.InitPinDirectSound(GetHwnd());
 
     m_backglassView = false;							// we are viewing Pinfield and not the backglass at first
@@ -1680,6 +1670,8 @@ void VPinball::OnInitialUpdate()
 
     CreateMDIClient();
     CreateDocker();
+
+    InitTools();
 }
 
 BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
@@ -2069,13 +2061,19 @@ void VPinball::CloseAllDialogs()
 void VPinball::ShowProperties(bool enable)
 {
     SaveValueBool("Editor", "PropertiesVisible", enable);
-//    m_sb.SetVisible(enable);
-//     if (enable)
-//     {
-//         CComObject<PinTable> * const ptCur = GetActiveTable();
-//         if (ptCur)
-//             m_sb.CreateFromDispatch(GetHwnd(), &ptCur->m_vmultisel);
-//     }
+    if (m_dockProperties)
+    {
+        if(enable)
+        {
+            if (!m_dockProperties->IsWindowVisible())
+                Dock(m_dockProperties, DS_DOCKED_RIGHT);
+        }
+        else
+        {
+            m_dockProperties->Hide();
+        }
+        m_toolbarDialog->SetOptionsButton(enable);
+    }
 }
 
 void VPinball::ToggleBackglassView()

@@ -66,25 +66,6 @@ void SmartBrowser::Init(HWND hwndParent)
    wcex.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
    RegisterClassEx(&wcex);
 
-   if (g_pvp->m_propertiesFloating)
-   {
-      RECT rectParent;
-      GetWindowRect(hwndParent, &rectParent);
-      int x = rectParent.right - eSmartBrowserWidth - 20;
-      int y = 40;
-      int height = (rectParent.bottom - rectParent.top) - 100;
-
-      m_hwndFrame = CreateWindowEx(0, "Properties", "Properties",
-         WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX | WS_SIZEBOX | WS_CAPTION,
-         x, y, eSmartBrowserWidth, height, hwndParent, NULL, g_hinst, this);
-   }
-   else
-   {
-      m_hwndFrame = CreateWindowEx(0, "Properties", "Properties",
-         WS_CHILD | WS_BORDER,
-         10, 0, 150, 500, hwndParent, NULL, g_hinst, this);
-   }
-
    m_hfontHeader = CreateFont(-18, 0, 0, 0, FW_MEDIUM, FALSE, FALSE, FALSE,
       DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
       ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "MS Sans Serif");
@@ -292,18 +273,9 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, VectorProtected<ISelect> 
       char * const szCaption = ls.m_szbuffer;
       pexinfo->m_hasCaption = (pproppane->m_titlestringid != 0);
       HWND hwndExpand;
-      if (g_pvp->m_propertiesFloating)
-      {
-         hwndExpand = CreateWindowEx(WS_EX_TOOLWINDOW, "ExpandoControl", szCaption,
-            WS_CHILD /*| WS_VISIBLE *//*| WS_BORDER*/,
-            2, EXPANDO_Y_OFFSET, eSmartBrowserWidth - 5, 300, m_hwndFrame, NULL, g_hinst, pexinfo);
-      }
-      else
-      {
          hwndExpand = CreateWindowEx(WS_EX_TOOLWINDOW, "ExpandoControl", szCaption,
             WS_CHILD /*| WS_VISIBLE *//*| WS_BORDER*/,
             2, EXPANDO_Y_OFFSET, 150 - 5, 300, m_hwndFrame, NULL, g_hinst, pexinfo);
-      }
 
       m_vhwndExpand.push_back(hwndExpand);
 
@@ -1294,14 +1266,6 @@ LRESULT CALLBACK SBFrameProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    }
    break;
 
-   case WM_CLOSE:
-   {
-      if (g_pvp->m_propertiesFloating)
-      {
-         return TRUE;
-      }
-      break;
-   }
    case WM_PAINT:
    {
       PAINTSTRUCT ps;

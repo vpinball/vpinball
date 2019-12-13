@@ -169,8 +169,6 @@ public:
 
    bool m_backglassView; // Whether viewing the playfield or screen layout
 
-   bool m_propertiesFloating;
-
    bool m_alwaysDrawDragPoints;
    bool m_alwaysDrawLightCenters;
    int m_gridSize;
@@ -227,6 +225,8 @@ private:
    AboutDialog m_aboutDialog;
    ToolbarDialog *m_toolbarDialog;
    PropertyDialog *m_propertyDialog;
+   CDockToolbar *m_dockToolbar;
+   CDockProperty *m_dockProperties;
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)

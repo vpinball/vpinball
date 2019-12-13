@@ -5143,7 +5143,7 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 SetFocus();
                 m_pvp->m_ptableActive = (CComObject<PinTable> *)this;
                 // re-evaluate the toolbar depending on table permissions
-                g_pvp->SetEnableToolbar();
+                //g_pvp->SetEnableToolbar();
             }
             return FinalWindowProc(uMsg, wParam, lParam);
         case WM_PAINT:
@@ -5281,9 +5281,6 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             OnMouseWheel(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), zDelta);
             return FinalWindowProc(uMsg, wParam, lParam);
         }
-        case WM_CLOSE:
-            OnClose();
-            return FinalWindowProc(uMsg, wParam, lParam);
         case WM_TIMER:
         {
             switch (wParam)
@@ -10270,6 +10267,7 @@ void PinTable::OnInitialUpdate()
     BeginAutoSaveCounter();
     SetWindowText(m_szFileName);
     SetCaption(m_szTitle);
+
 }
 
 void PinTable::SetMouseCursor()
@@ -10430,6 +10428,8 @@ void PinTableMDI::PreRegisterClass(WNDCLASS &wc)
 int PinTableMDI::OnCreate(CREATESTRUCT &cs)
 {
     SetMenu(::GetSubMenu( g_pvp->GetMenu().GetHandle(), WINDOWMENU));
+    SetIconLarge(IDI_TABLE);
+    SetIconSmall(IDI_TABLE);
     return CMDIChild::OnCreate(cs);
 }
 

@@ -823,11 +823,12 @@ public:
 #endif
    virtual void OnInitialUpdate();
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+   virtual void OnClose();
+
    void SetMouseCursor();
    void OnLeftButtonDown(const short x, const short y);
    void OnMouseWheel(const short x, const short y, const short zDelta);
    void OnSize();
-   void OnClose();
    void Set3DOffset(const float value);
    void SetZPD(const float value);
    void SetMaxSeparation(const float value);

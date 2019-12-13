@@ -61,9 +61,6 @@ BOOL EditorOptionsDialog::OnInitDialog()
     const bool fautosave = LoadValueBoolWithDefault("Editor", "AutoSaveOn", true);
     SendDlgItemMessage(IDC_AUTOSAVE, BM_SETCHECK, fautosave ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool propFloating = LoadValueBoolWithDefault("Editor", "PropertiesFloating", true);
-    SendDlgItemMessage(IDC_PROP_FLOAT_CHECK, BM_SETCHECK, propFloating ? BST_CHECKED : BST_UNCHECKED, 0);
-
     const int fautosavetime = LoadValueIntWithDefault("Editor", "AutoSaveTime", AUTOSAVE_DEFAULT_TIME);
     SetDlgItemInt(IDC_AUTOSAVE_MINUTES, fautosavetime, FALSE);
 
@@ -200,7 +197,6 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           hwndControl = GetDlgItem(IDC_DRAW_LIGHTCENTERS).GetHwnd();
           SendMessage(hwndControl, BM_SETCHECK, BST_UNCHECKED, 0);
           SendDlgItemMessage(IDC_AUTOSAVE, BM_SETCHECK, BST_CHECKED, 0);
-          SendDlgItemMessage(IDC_PROP_FLOAT_CHECK, BM_SETCHECK, BST_CHECKED, 0);
           SetDlgItemInt(IDC_AUTOSAVE_MINUTES, AUTOSAVE_DEFAULT_TIME, FALSE);
           SetDlgItemInt(IDC_GRID_SIZE, 50, FALSE);
           SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_SETCHECK, BST_UNCHECKED, 0);
@@ -278,9 +274,6 @@ void EditorOptionsDialog::OnOK()
     // auto save
     const bool autosave = (SendDlgItemMessage(IDC_AUTOSAVE, BM_GETCHECK, 0, 0) == BST_CHECKED);
     SaveValueBool("Editor", "AutoSaveOn", autosave);
-
-    checked = (SendDlgItemMessage(IDC_PROP_FLOAT_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
-    SaveValueBool("Editor", "PropertiesFloating", checked);
 
     const int autosavetime = GetDlgItemInt(IDC_AUTOSAVE_MINUTES, nothing, FALSE);
     SaveValueInt("Editor", "AutoSaveTime", autosavetime);
