@@ -6337,7 +6337,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
       string info = string("Layer ") + std::to_string((long long)piSelect->m_layerIndex+1);
       if (piSelect->GetItemType() == eItemPrimitive)
       {
-         Primitive *prim = (Primitive*)piSelect;
+         const Primitive * const prim = (Primitive*)piSelect;
          if (prim->m_mesh.m_animationFrames.size() > 0)
             info = info + " (animated " + std::to_string((unsigned long long)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
       }
@@ -6349,6 +6349,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
 void PinTable::OnDelete()
 {
    vector<ISelect*> m_vseldelete;
+   m_vseldelete.reserve(m_vmultisel.Size());
 
    for (int i = 0; i < m_vmultisel.Size(); i++)
    {
@@ -6361,7 +6362,7 @@ void PinTable::OnDelete()
    bool inCollection = false;
    for (size_t t = 0; t < m_vseldelete.size() && !inCollection; t++)
    {
-      ISelect *ptr = m_vseldelete[t];
+      const ISelect * const ptr = m_vseldelete[t];
       for (int i = 0; i < m_vcollection.size() && !inCollection; i++)
       {
          for (int k = 0; k < m_vcollection.ElementAt(i)->m_visel.Size(); k++)

@@ -505,14 +505,14 @@ void ImageDialog::Export()
             {
                strcat_s(g_filename, ppi->m_szName);
                const string ext(ppi->m_szPath);
-               const size_t idx = ext.find_last_of(".");
+               const size_t idx = ext.find_last_of('.');
                strcat_s(g_filename, ext.c_str() + idx);
             }
             ofn.lpstrFile = g_filename;
             ofn.nMaxFile = MAX_PATH;
 
             const string ext2(g_filename);
-            const size_t idx2 = ext2.find_last_of(".");
+            const size_t idx2 = ext2.find_last_of('.');
             ofn.lpstrDefExt = ext2.c_str() + idx2 + 1;
             // check which default file extension should be selected
             ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0EXR (.exr)\0*.exr;\0HDR (.hdr)\0*.hdr\0";
@@ -586,7 +586,7 @@ void ImageDialog::Export()
                      {
                         strcat_s(g_filename, ppi->m_szName);
                         const string ext(ppi->m_szPath);
-                        const size_t idx = ext.find_last_of(".");
+                        const size_t idx = ext.find_last_of('.');
                         strcat_s(g_filename, ext.c_str() + idx);
                      }
                   }

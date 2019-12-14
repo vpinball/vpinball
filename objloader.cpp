@@ -565,7 +565,7 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    else
    {
       string fname(filename);
-      std::size_t pos = fname.find_last_of(".");
+      std::size_t pos = fname.find_last_of('.');
       string name = fname.substr(0, pos);
       char number[32] = { 0 };
       for (unsigned int i = 0; i < mesh.m_animationFrames.size(); i++)
