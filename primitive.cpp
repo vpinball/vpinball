@@ -33,7 +33,7 @@ void Mesh::Clear()
 bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool convertToLeftHanded)
 {
    string name(fname);
-   size_t idx = name.find_last_of("_");
+   size_t idx = name.find_last_of('_');
    if (idx == string::npos)
    {
       ShowError("Can't find sequence of obj files! The file name of the sequence must be <meshname>_x.obj where x is the frame number!");
@@ -1812,7 +1812,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             if (importMaterial)
             {
                string filename(szFileName);
-               size_t index = filename.find_last_of(".");
+               size_t index = filename.find_last_of('.');
                if (index != -1)
                {
                   char szMatName[MAXSTRING] = { 0 };
@@ -1902,7 +1902,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName);
                SaveValueString("RecentDir", "ImportDir", szInitialDir);
                string filename(szFileName);
-               size_t index = filename.find_last_of("\\");
+               size_t index = filename.find_last_of('\\');
                if (index != -1)
                {
                   index++;

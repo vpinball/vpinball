@@ -411,7 +411,7 @@ void SoundDialog::Export()
             {
                strcat_s(m_filename, pps->m_szName);
                string ext(pps->m_szPath);
-               size_t idx = ext.find_last_of(".");
+               size_t idx = ext.find_last_of('.');
                strcat_s(m_filename, ext.c_str() + idx);
 
             }
@@ -466,7 +466,7 @@ void SoundDialog::Export()
                        {
                           strcat_s(m_filename, pps->m_szName);
                           string ext(pps->m_szPath);
-                          size_t idx = ext.find_last_of(".");
+                          size_t idx = ext.find_last_of('.');
                           strcat_s(m_filename, ext.c_str() + idx);
                        }
                     }

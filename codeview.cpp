@@ -1909,7 +1909,7 @@ void RemoveComment(const HWND m_hwndScintilla)
       {
          GetRange(m_hwndScintilla, lineStart, lineEnd, buf);
          string line(buf);
-         size_t idx = line.find_first_of("'");
+         size_t idx = line.find_first_of('\'');
          if (idx == 0)
          {
             SendMessage(m_hwndScintilla, SCI_SETSEL, lineStart, lineStart + 1);
@@ -2133,7 +2133,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 void CodeViewer::ParseDelimtByColon(string &result, string &wholeline)
 {
 	result = wholeline;
-	const size_t idx = result.find(":"); 
+	const size_t idx = result.find(':'); 
 	if (idx == string::npos)
 	{
 		wholeline.clear();
@@ -2240,7 +2240,7 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, vec
 			if (idx == string::npos) continue;
 			if (idx != string::npos) // Found something something structrual
 			{
-				const size_t doubleQuoteIdx = line.find("\"");
+				const size_t doubleQuoteIdx = line.find('\"');
 				if ((doubleQuoteIdx != string::npos) && (doubleQuoteIdx < idx)) continue; // in a string literal
 				const string sSubName = ExtractWordOperand(line, (idx + SearchLength));
 				UD.m_description = line;
