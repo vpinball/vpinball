@@ -388,8 +388,6 @@ void VPinball::InitRegValues()
 
 void VPinball::CreateMDIClient()
 {
-   const CRect rc = GetWindowRect();
-
    CLIENTCREATESTRUCT ccs;
    ccs.hWindowMenu = ::GetSubMenu(GetMenu().GetHandle(), WINDOWMENU); // Window menu is third from the left
    ccs.idFirstChild = 4000;//129;
@@ -640,8 +638,6 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
    }
    case ID_EDIT_BACKGLASSVIEW:
    {
-      const bool show = !m_backglassView;
-
       ToggleBackglassView();
       return TRUE;
    }
