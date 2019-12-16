@@ -388,12 +388,7 @@ void VPinball::InitRegValues()
 
 void VPinball::CreateMDIClient()
 {
-   CLIENTCREATESTRUCT ccs;
-   ccs.hWindowMenu = ::GetSubMenu(GetMenu().GetHandle(), WINDOWMENU); // Window menu is third from the left
-   ccs.idFirstChild = 4000;//129;
 
-//    m_hwndWork = ::CreateWindowEx(0, "MDICLIENT", "", WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL,
-//       TOOLBAR_WIDTH + SCROLL_WIDTH, 0, rc.right - rc.left - (TOOLBAR_WIDTH + SCROLL_WIDTH), rc.bottom - rc.top, GetHwnd(), NULL, g_hinst, &ccs);
    SetMenu(GetMainMenu(WINDOWMENU));
 }
 
@@ -483,23 +478,37 @@ bool VPinball::OpenFileDialog(const char *initDir, char *filename, const char *f
     return ret != 0;
 }
 
-void VPinball::CreateDocker()
+CDockProperty *VPinball::GetPropertiesDocker()
 {
     const bool state = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
-    const DWORD dwStyle = DS_CLIENTEDGE; // The style added to each docker
-    m_dockToolbar = (CDockToolbar*)AddDockedChild(new CDockToolbar, DS_DOCKED_LEFT | dwStyle, 100);
-    m_dockProperties = (CDockProperty *)AddDockedChild(new CDockProperty, DS_DOCKED_RIGHT | dwStyle, 230);
-
-
-    assert(m_dockToolbar->GetContainer());
-    assert(m_dockProperties->GetContainer());
-    m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
-    m_dockProperties->GetContainer()->SetHideSingleTab(TRUE);
-    m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
-    m_propertyDialog = m_dockProperties->GetContainProperties()->GetPropertyDialog();
+    if(m_propertyDialog==NULL || !m_dockProperties->IsWindow())
+    {
+        m_dockProperties = (CDockProperty *)AddDockedChild(new CDockProperty, DS_DOCKED_RIGHT | DS_CLIENTEDGE, 280);
+        assert(m_dockProperties->GetContainer());
+        m_dockProperties->GetContainer()->SetHideSingleTab(TRUE);
+        m_propertyDialog = m_dockProperties->GetContainProperties()->GetPropertyDialog();
+    }
     if (!state)
         m_dockProperties->Hide();
-    
+    return m_dockProperties;
+}
+
+CDockToolbar *VPinball::GetToolbarDocker()
+{
+    if(m_dockToolbar==NULL || !m_dockToolbar->IsWindow() )
+    {
+        m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar, DS_DOCKED_LEFT | DS_CLIENTEDGE, 100);
+        assert(m_dockToolbar->GetContainer());
+        m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
+        m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
+    }
+    return m_dockToolbar;
+}
+
+void VPinball::CreateDocker()
+{
+    (void)GetPropertiesDocker();
+    (void)GetToolbarDocker();
 }
 
 void VPinball::SetPosCur(float x, float y)
@@ -617,7 +626,7 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
       if (m_propertyDialog == NULL)
           return TRUE;
 
-      if (!g_pplayer) show = !!(m_dockProperties->IsWindowVisible());
+      if (!g_pplayer) show = !!(GetPropertiesDocker()->IsWindowVisible());
 
       switch (notify)
       {

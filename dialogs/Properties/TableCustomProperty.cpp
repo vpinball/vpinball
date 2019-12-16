@@ -32,6 +32,9 @@ void TableCustomProperty::UpdateVisuals()
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
 
+    if (table == NULL)
+        return;
+
     PropertyDialog::UpdateComboBox(m_userList, m_SSAACombo, m_userList[table->m_useAA + 1].c_str());
     PropertyDialog::UpdateComboBox(m_postAAList, m_postProcAACombo, m_postAAList[table->m_useFXAA + 1].c_str());
     PropertyDialog::UpdateComboBox(m_userList, m_inGameAOCombo, m_userList[table->m_useAO + 1].c_str());
@@ -56,7 +59,9 @@ void TableCustomProperty::UpdateVisuals()
 void TableCustomProperty::UpdateProperties(const int dispid)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
-    
+
+    if (table == NULL)
+        return;
     switch (dispid)
     {
         case IDC_ENABLE_AA:

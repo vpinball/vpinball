@@ -126,6 +126,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
 
     ShowWindow(SW_HIDE);
 
+
     m_curTabIndex = m_tab.GetCurSel();
     for (int i = 0; i < PROPERTY_TABS; i++)
         if (m_tabs[i] != NULL)
@@ -134,7 +135,54 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
             m_tabs[i] = NULL;
         }
 
-    m_nameEdit.SetWindowText(psel->GetPTable()->GetElementName(psel->GetIEditable()));
+    for (int i = 0; i < pvsel->Size(); i++)
+    {
+        if (psel->GetItemType() != pvsel->ElementAt(i)->GetItemType())
+        {
+            m_multipleElementsStatic.ShowWindow(SW_SHOW);
+            m_nameEdit.ShowWindow(SW_HIDE);
+            m_tab.ShowWindow(SW_HIDE);
+            ShowWindow(SW_SHOW);
+            return;
+        }
+    }
+
+    if (m_multipleElementsStatic.IsWindowVisible())
+    {
+        m_multipleElementsStatic.ShowWindow(SW_HIDE);
+        m_nameEdit.ShowWindow(SW_SHOW);
+        m_tab.ShowWindow(SW_SHOW);
+    }
+
+    if (pvsel->Size() > 1)
+    {
+        char header[64] = {0};
+        char collection[64] = {0};
+        char name[64] = {0};
+        WCHAR *wzName = psel->GetPTable()->GetCollectionNameByElement(psel);
+        if (wzName != NULL)
+        {
+            WideCharToMultiByte(CP_ACP, 0, wzName, -1, collection, 64, NULL, NULL);
+        }
+        
+        CComBSTR bstr;
+        psel->GetTypeName(&bstr);
+        WideCharToMultiByte(CP_ACP, 0, bstr, -1, name, 64, NULL, NULL);
+        sprintf_s(header, "%s(%d)", name, pvsel->Size());
+
+        if (collection[0] != 0)
+            sprintf_s(header, "%s [%s](%d)", collection, name, pvsel->Size());
+        else
+            sprintf_s(header, "%s(%d)", name, pvsel->Size());
+
+        m_nameEdit.SetWindowText(header);
+        m_nameEdit.SetReadOnly();
+    }
+    else
+    {
+        m_nameEdit.SetWindowText(psel->GetPTable()->GetElementName(psel->GetIEditable()));
+        m_nameEdit.SetReadOnly(0);
+    }
 
     switch (psel->GetItemType())
     {
@@ -302,8 +350,11 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
 
 BOOL PropertyDialog::OnInitDialog()
 {
+    AttachItem(IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC, m_multipleElementsStatic);
     AttachItem(IDC_PROP_TAB, m_tab);
     AttachItem(IDC_NAME_EDIT, m_nameEdit);
+    m_multipleElementsStatic.ShowWindow(SW_HIDE);
+
 //    m_resizer.Initialize(*this, CRect(0, 0, 243, 308));
 //     m_resizer.AddChild(m_nameEdit, topleft, RD_STRETCH_WIDTH);
 //     m_resizer.AddChild(m_tab, topcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
@@ -318,6 +369,11 @@ INT_PTR PropertyDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
     return DialogProcDefault(msg, wparam, lparam);
 }
 
+
+void PropertyDialog::OnClose()
+{
+    CDialog::OnCancel();
+}
 
 BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
 {

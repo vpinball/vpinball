@@ -137,6 +137,8 @@ public:
    void SetStatusBarUnitInfo(const char * const info, const bool isUnit);
 
    bool OpenFileDialog(const char *initDir, char *filename, const char *fileFilter, const char *defaultExt, DWORD flags, int &fileOffset);
+   CDockProperty *GetPropertiesDocker();
+   CDockToolbar *GetToolbarDocker();
    void CreateDocker();
 
    ULONG m_cref;

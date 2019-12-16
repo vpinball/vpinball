@@ -868,6 +868,7 @@ public:
    {
        return m_mdiTable;
    }
+   WCHAR *GetCollectionNameByElement(ISelect *element);
 
 private:
    std::unordered_map<const char *, Texture *, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
