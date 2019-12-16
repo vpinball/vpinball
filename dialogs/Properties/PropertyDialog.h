@@ -152,6 +152,7 @@ class PropertyDialog : public CDialog
 {
 public:
     PropertyDialog();
+
     void UpdateTabs(VectorProtected<ISelect> *pvsel);
 
     static void UpdateTextureComboBox(const vector<Texture*>& contentList, CComboBox &combo, const char *selectName);
@@ -235,6 +236,7 @@ protected:
     virtual BOOL OnInitDialog();
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
     virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
+    virtual void OnClose();
 
 private:
     CTab m_tab;
@@ -242,6 +244,7 @@ private:
     int  m_curTabIndex;
     CEdit m_nameEdit;
     CResizer m_resizer;
+    CStatic m_multipleElementsStatic;
 };
 
 class CContainProperties: public CDockContainer

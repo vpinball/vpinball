@@ -5108,6 +5108,21 @@ bool PinTable::GetCollectionIndex(ISelect *element, int &collectionIndex, int &e
    return false;
 }
 
+WCHAR *PinTable::GetCollectionNameByElement(ISelect *element)
+{
+    for (int i = 0; i < m_vcollection.size(); i++)
+    {
+        for (int t = 0; t < m_vcollection.ElementAt(i)->m_visel.size(); t++)
+        {
+            if (element == m_vcollection.ElementAt(i)->m_visel.ElementAt(t))
+            {
+                return m_vcollection.ElementAt(i)->m_wzName;
+            }
+        }
+    }
+    return NULL;
+}
+
 void PinTable::LockElements()
 {
    BeginUndo();

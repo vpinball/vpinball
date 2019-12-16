@@ -1089,6 +1089,7 @@
 #define IDC_STATIC_LAYERS               826
 #define IDC_PROP_TAB                    827
 #define IDC_REFLECT_ENABLE_CHECK        828
+#define IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC 830
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1271,7 +1272,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        657
 #define _APS_NEXT_COMMAND_VALUE         4022
-#define _APS_NEXT_CONTROL_VALUE         829
+#define _APS_NEXT_CONTROL_VALUE         831
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

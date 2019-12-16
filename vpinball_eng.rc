@@ -2222,6 +2222,7 @@ BEGIN
     CONTROL         "",IDC_PROP_TAB,"SysTabControl32",WS_TABSTOP,7,30,171,340
     LTEXT           "Name",IDC_STATIC,9,13,19,8
     EDITTEXT        IDC_NAME_EDIT,7,11,171,14,ES_AUTOHSCROLL
+    LTEXT           "The current selection contains multiple object types. Select either a single object or a group of objects of the same type to edit properties.",IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC,8,12,143,35
 END
 
 IDD_PROPPOINT_VISUALSWHEIGHT DIALOGEX 0, 0, 125, 144
