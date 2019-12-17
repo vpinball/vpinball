@@ -1,6 +1,7 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "resource.h"
 #include "DimensionDialog.h"
+
 struct ManufacturerDimensions
 {
    char name[MAXNAMEBUFFER];
