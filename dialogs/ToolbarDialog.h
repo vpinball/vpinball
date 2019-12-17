@@ -10,6 +10,7 @@ public:
 
     void EnableButtons();
     void SetOptionsButton(const bool checked);
+
 protected:
     virtual BOOL OnInitDialog();
     virtual void OnDestroy();
@@ -56,6 +57,7 @@ public:
     ~CContainToolbar()
     {
     }
+
     ToolbarDialog *GetToolbarDialog()
     {
         return &m_toolbar;
@@ -69,14 +71,15 @@ class CDockToolbar: public CDocker
 {
 public:
     CDockToolbar();
-
     virtual ~CDockToolbar()
     {
     }
+
     CContainToolbar *GetContainToolbar()
     {
         return &m_toolbarContainer;
     }
+
 private:
     CContainToolbar m_toolbarContainer;
 };

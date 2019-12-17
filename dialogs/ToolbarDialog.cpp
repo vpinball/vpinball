@@ -331,11 +331,7 @@ void ToolbarDialog::EnableButtons()
 
 void ToolbarDialog::SetOptionsButton(const bool checked)
 {
-    if(checked)
-        m_optionsButton.SetCheck(BST_CHECKED);
-    else
-        m_optionsButton.SetCheck(BST_UNCHECKED);
-
+    m_optionsButton.SetCheck(checked ? BST_CHECKED : BST_UNCHECKED);
 }
 
 BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)

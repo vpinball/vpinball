@@ -1,7 +1,6 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "resource.h"
 #include "TableInfoDialog.h"
-
 
 TableInfoDialog::TableInfoDialog() : CDialog(IDD_TABLEINFO)
 {
