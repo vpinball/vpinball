@@ -1,8 +1,12 @@
 Option Explicit
-Const VPinMAMEDriverVer = 3.58
+Const VPinMAMEDriverVer = 3.59
 '=======================
 ' VPinMAME driver core.
 '=======================
+'
+' New in 3.59 (Update by DJRobX)
+' - Added constant for new 4-solenoid stepper motor mech type used by High Roller Casino, Starship Troopers, and Playboy
+'
 ' New in 3.58 (Update by mfuegemann)
 ' - Added s8_StillCrazy.vbs (System 8/Still Crazy)
 '
@@ -2073,6 +2077,7 @@ Const vpmMechOneSol    = &H00
 Const vpmMechOneDirSol = &H10
 Const vpmMechTwoDirSol = &H20
 Const vpmMechStepSol   = &H40
+Const vpmFourStepSol   = &H60
 Const vpmMechSlow      = &H00
 Const vpmMechFast      = &H80
 Const vpmMechStepSw    = &H00
