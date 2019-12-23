@@ -497,7 +497,7 @@ CDockToolbar *VPinball::GetToolbarDocker()
 {
     if(m_dockToolbar==NULL || !m_dockToolbar->IsWindow() )
     {
-        m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar, DS_DOCKED_LEFT | DS_CLIENTEDGE, 100);
+        m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar, DS_DOCKED_LEFT | DS_CLIENTEDGE, 110);
         assert(m_dockToolbar->GetContainer());
         m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
         m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
@@ -1100,7 +1100,7 @@ void VPinball::LoadFileName(char *szFileName)
 
       // make sure the load directory is the active directory
       SetCurrentDirectory(m_currentTablePath);
-
+      ppt->AddMultiSel(ppt, false, true, false);
       UpdateRecentFileList(szFileName);
    }
 }
@@ -2294,6 +2294,7 @@ void VPinball::OpenNewTable(size_t tableId)
     m_vtable.push_back(pt);
 
     AddMDIChild(mdiTable);
+    pt->AddMultiSel(pt, false, true, false);
     SetEnableToolbar();
 }
 
