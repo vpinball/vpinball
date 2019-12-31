@@ -1642,31 +1642,6 @@ STDMETHODIMP Surface::put_OverwritePhysics(VARIANT_BOOL newVal)
     return S_OK;
 }
 
-void Surface::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPWALL_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(pproppane);
-
-   m_propPhysics = new PropertyPane(IDD_PROPWALL_PHYSICS, IDS_STATE);
-   pvproppane.push_back(m_propPhysics);
-
-   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane.push_back(pproppane);
-}
-
-void Surface::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROPPOINT_VISUALSWTEX, IDS_VISUALS);
-   pvproppane.push_back(pproppane);
-}
-
 STDMETHODIMP Surface::get_CanDrop(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_droppable);
@@ -2040,35 +2015,6 @@ STDMETHODIMP Surface::PlaySlingshotHit()
             plinesling->m_doHitEvent = true;
     }
     return S_OK;
-}
-
-void Surface::UpdatePropertyPanes()
-{
-   if (m_propPhysics == NULL)
-      return;
-
-   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 3), m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 14), m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 111), m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 116), m_d.m_collidable);
-
-   if (!m_d.m_collidable)
-   {
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 4), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 15), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), FALSE);
-   }
-   else
-   {
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 4), m_d.m_hitEvent);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 15), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), m_d.m_overwritePhysics);
-   }
 }
 
 void Surface::SetDefaultPhysics(bool fromMouseClick)

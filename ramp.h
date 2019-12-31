@@ -79,8 +79,6 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
-
    virtual void RenderBlueprint(Sur *psur, const bool solid);
 
    virtual void ClearForOverwrite();
@@ -111,16 +109,11 @@ public:
    virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
    virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
    virtual ItemTypeEnum HitableGetItemType() const { return eItemRamp; }
-   virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
    virtual void AddPoint(int x, int y, const bool smooth);
 
    virtual void WriteRegDefaults();
-
-   // IHaveDragPoints
-   virtual void GetPointDialogPanes(vector<PropertyPane*> &pvproppane);
-   // end IHaveDragPoints
 
    RampData m_d;
 

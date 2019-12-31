@@ -1239,22 +1239,6 @@ STDMETHODIMP Bumper::put_Surface(BSTR newVal)
    return S_OK;
 }
 
-void Bumper::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane.push_back(pproppane);
-
-   m_propVisual = new PropertyPane(IDD_PROPBUMPER_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(m_propVisual);
-
-   pproppane = new PropertyPane(IDD_PROPBUMPER_PHYSICS, IDS_PHYSICS);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane.push_back(pproppane);
-}
 
 STDMETHODIMP Bumper::get_HasHitEvent(VARIANT_BOOL *pVal)
 {
@@ -1398,17 +1382,6 @@ STDMETHODIMP Bumper::PlayHit()
    if ( m_pbumperhitcircle )
       m_pbumperhitcircle->m_bumperanim_hitEvent = true;
    return S_OK;
-}
-
-void Bumper::UpdatePropertyPanes()
-{
-   if (m_propVisual == NULL)
-      return;
-
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_MATERIAL_COMBO), !m_d.m_capVisible ? FALSE : TRUE);
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_MATERIAL_COMBO2), !m_d.m_baseVisible ? FALSE : TRUE);
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_MATERIAL_COMBO3), !m_d.m_skirtVisible ? FALSE : TRUE);
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_ringVisible ? FALSE : TRUE);
 }
 
 void Bumper::SetDefaultPhysics(bool fromMouseClick)

@@ -1404,60 +1404,6 @@ STDMETHODIMP HitTarget::put_ReflectionEnabled(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-void HitTarget::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane.push_back(pproppane);
-
-   m_propVisual = new PropertyPane(IDD_PROPHITTARGET_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(m_propVisual);
-
-   m_propPhysics = new PropertyPane(IDD_PROPHITTARGET_PHYSICS, IDS_PHYSICS);
-   pvproppane.push_back(m_propPhysics);
-
-   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane.push_back(pproppane);
-}
-
-void HitTarget::UpdatePropertyPanes()
-{
-   if (m_propVisual == NULL || m_propPosition == NULL || m_propPhysics == NULL)
-      return;
-
-   if (!m_d.m_collidable)
-   {
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 34), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 33), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 110), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 112), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 481), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 111), TRUE);
-
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), FALSE);
-   }
-   else //if (m_d.m_collidable)
-   {
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 34), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 111), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 481), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 33), m_d.m_useHitEvent);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 110), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 112), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), m_d.m_overwritePhysics);
-   }
-
-   const BOOL w_id_lm = (m_d.m_targetType == HitTargetRectangle || m_d.m_targetType == HitTargetRound || m_d.m_targetType == HitFatTargetRectangle || m_d.m_targetType == HitFatTargetSquare || m_d.m_targetType == HitTargetSlim || m_d.m_targetType == HitFatTargetSlim) ? FALSE : TRUE;
-   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_TARGET_ISDROPPED_CHECK), w_id_lm);
-   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_TARGET_LEGACY_MODE_CHECK), w_id_lm);
-}
-
 void HitTarget::SetDefaultPhysics(bool fromMouseClick)
 {
    static const char strKeyName[] = "DefaultProps\\HitTarget";

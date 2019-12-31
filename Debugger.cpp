@@ -87,11 +87,6 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
          EndDialog(hwndDlg, FALSE);
          break;
       }
-      case GET_COLOR_TABLE:
-      {
-         *((unsigned long **)lParam) = ptable->m_rgcolorcustom;
-         return TRUE;
-      }
       case WM_ACTIVATE:
       {
          g_pplayer->m_debugWindowActive = (wParam != WA_INACTIVE);
@@ -103,30 +98,6 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
       {
          switch (HIWORD(wParam))
          {
-            case COLOR_CHANGED:
-            {
-               char strText[255] = { 0 };
-               const size_t color = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
-               const HWND hwndcolor1 = GetDlgItem(hwndDlg, IDC_COLOR);
-               const HWND hwndcolor2 = GetDlgItem(hwndDlg, IDC_COLOR2);
-               const HWND hwndcolor3 = GetDlgItem(hwndDlg, IDC_COLOR3);
-
-               const LRESULT idx_row = SendMessage(hCombo, CB_GETCURSEL, 0, 0);
-               SendMessage(hCombo, CB_GETLBTEXT, idx_row, (LPARAM)strText);
-               Material * const pMat = ptable->GetMaterial(strText);
-               if (pMat != &g_pvp->m_dummyMaterial)
-               {
-                  if (hwndcolor1 == (HWND)lParam)
-                     pMat->m_cBase = (COLORREF)color;
-                  else if (hwndcolor2 == (HWND)lParam)
-                     pMat->m_cGlossy = (COLORREF)color;
-                  else if (hwndcolor3 == (HWND)lParam)
-                     pMat->m_cClearcoat = (COLORREF)color;
-
-                  ptable->AddDbgMaterial(pMat);
-               }
-               break;
-            }
             case BN_CLICKED:
             {
                switch (LOWORD(wParam))
@@ -214,9 +185,6 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                         SetDlgItemText(hwndDlg, DBG_MATERIAL_OPACITY_EDGE_EDIT, value);
                         SendMessage(GetDlgItem(hwndDlg, IDC_DBG_METAL_MATERIAL_CHECK), BM_SETCHECK, pMat->m_bIsMetal ? BST_CHECKED : BST_UNCHECKED, 0);
                         SendMessage(GetDlgItem(hwndDlg, IDC_DBG_MATERIAL_OPACITY_ACTIVE_CHECK), BM_SETCHECK, pMat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
-                        SendMessage(GetDlgItem(hwndDlg, IDC_COLOR), CHANGE_COLOR, 0, pMat->m_cBase);
-                        SendMessage(GetDlgItem(hwndDlg, IDC_COLOR2), CHANGE_COLOR, 0, pMat->m_cGlossy);
-                        SendMessage(GetDlgItem(hwndDlg, IDC_COLOR3), CHANGE_COLOR, 0, pMat->m_cClearcoat);
                      }
                      break;
                   }
@@ -264,11 +232,6 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
          EndDialog(hwndDlg, FALSE);
          break;
       }
-      case GET_COLOR_TABLE:
-      {
-         *((unsigned long **)lParam) = ptable->m_rgcolorcustom;
-         return TRUE;
-      }
       case WM_ACTIVATE:
       {
          g_pplayer->m_debugWindowActive = (wParam != WA_INACTIVE);
@@ -280,27 +243,6 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
       {
          switch (HIWORD(wParam))
          {
-            case COLOR_CHANGED:
-            {
-               LRESULT idx_row;
-               char strText[255] = { 0 };
-               const size_t color = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
-               HWND hwndcolor1 = GetDlgItem(hwndDlg, IDC_COLOR);
-               HWND hwndcolor2 = GetDlgItem(hwndDlg, IDC_COLOR2);
-
-               idx_row = SendMessage(hCombo, CB_GETCURSEL, 0, 0);
-               SendMessage(hCombo, CB_GETLBTEXT, idx_row, (LPARAM)strText);
-               IEditable *pedit = ptable->GetElementByName(strText);
-               if (pedit != NULL)
-               {
-                  Light *plight = (Light*)pedit;
-                  if (hwndcolor1 == (HWND)lParam)
-                     plight->m_d.m_color = (COLORREF)color;
-                  else if (hwndcolor2 == (HWND)lParam)
-                     plight->m_d.m_color2 = (COLORREF)color;
-               }
-               break;
-            }
             case BN_CLICKED:
             {
                switch (LOWORD(wParam))
@@ -416,8 +358,6 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                         plight->get_FadeSpeedDown(&v);
                         f2sz(v, value);
                         SetDlgItemText(hwndDlg, IDC_DBG_LIGHT_FADE_DOWN_EDIT, value);
-                        SendMessage(GetDlgItem(hwndDlg, IDC_COLOR), CHANGE_COLOR, 0, plight->m_d.m_color);
-                        SendMessage(GetDlgItem(hwndDlg, IDC_COLOR2), CHANGE_COLOR, 0, plight->m_d.m_color2);
                         SetCheckButtonState(hwndDlg, plight);
                      };
                      break;

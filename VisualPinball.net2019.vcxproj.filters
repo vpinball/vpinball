@@ -50,7 +50,6 @@
     <ClCompile Include="plumb.cpp" />
     <ClCompile Include="plunger.cpp" />
     <ClCompile Include="primitive.cpp" />
-    <ClCompile Include="propbrowser.cpp" />
     <ClCompile Include="quadtree.cpp" />
     <ClCompile Include="ramp.cpp" />
     <ClCompile Include="regutil.cpp" />
@@ -775,9 +774,6 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="primitive.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="propbrowser.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="quadtree.h">

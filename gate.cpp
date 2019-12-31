@@ -1207,19 +1207,3 @@ STDMETHODIMP Gate::put_DrawStyle(GateType newVal)
         return S_OK;
 }
 
-void Gate::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPGATE_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPGATE_PHYSICS, IDS_PHYSICS);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane.push_back(pproppane);
-}

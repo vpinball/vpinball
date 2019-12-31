@@ -111,12 +111,6 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          GotoDlgCtrl(hListView);
          return FALSE;
       }
-      case GET_COLOR_TABLE:
-      {
-         if ( pt )
-            *((unsigned long **)lParam) = pt->m_rgcolorcustom;
-         return TRUE;
-      }
       case WM_NOTIFY:
       {
          LPNMHDR pnmhdr = (LPNMHDR)lParam;
@@ -371,8 +365,6 @@ BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ::SetFocus(hSoundList);
             ListView_EditLabel(hSoundList, sel);
             pt->SetNonUndoableDirty(eSaveDirty);
-            g_pvp->m_sb.PopulateDropdowns();
-            g_pvp->m_sb.RefreshProperties();
          }
          break;
       }
@@ -384,8 +376,6 @@ BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             UpdateImages();
             SetFocus();
          }
-         g_pvp->m_sb.PopulateDropdowns();
-         g_pvp->m_sb.RefreshProperties();
 
          SavePosition();
          CDialog::OnOK();
@@ -447,8 +437,6 @@ void ImageDialog::Import()
       hr = SaveValueString("RecentDir", "ImageDir", szInitialDir);
       pt->SetNonUndoableDirty(eSaveDirty);
       SetFocus();
-      g_pvp->m_sb.PopulateDropdowns();
-      g_pvp->m_sb.RefreshProperties();
    }
 }
 
@@ -640,8 +628,6 @@ void ImageDialog::DeleteImage()
                // The previous selection is now deleted, so look again from the top of the list
                lastsel = sel;
                sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
-               g_pvp->m_sb.PopulateDropdowns();
-               g_pvp->m_sb.RefreshProperties();
             }
          }
          if (lastsel != -1)

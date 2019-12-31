@@ -127,15 +127,6 @@ void Rubber::WriteRegDefaults()
    SaveValueBool(strKeyName, "ReflectionEnabled", m_d.m_reflectionEnabled);
 }
 
-void Rubber::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROPPOINT_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(pproppane);
-
-}
-
 void Rubber::DrawRubberMesh(Sur * const psur)
 {
    std::vector<Vertex2D> drawVertices;
@@ -969,23 +960,6 @@ STDMETHODIMP Rubber::put_Material(BSTR newVal)
    return S_OK;
 }
 
-void Rubber::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane.push_back(pproppane);
-
-   m_propVisual = new PropertyPane(IDD_PROPRUBBER_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(m_propVisual);
-
-   m_propPhysics = new PropertyPane(IDD_PROPRUBBER_PHYSICS, IDS_PHYSICS);
-   pvproppane.push_back(m_propPhysics);
-
-   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane.push_back(pproppane);
-}
-
 STDMETHODIMP Rubber::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
@@ -1588,31 +1562,6 @@ void Rubber::UpdateRubber(const bool updateVB, const float height)
    }
 }
 
-void Rubber::UpdatePropertyPanes()
-{
-   if (m_propVisual == NULL || m_propPosition == NULL || m_propPhysics == NULL)
-      return;
-
-   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 116), m_d.m_collidable);
-
-   if (!m_d.m_collidable)
-   {
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 110), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 120), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
-   }
-   else
-   {
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 110), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 120), m_d.m_overwritePhysics);
-   }
-}
 
 void Rubber::SetDefaultPhysics(bool fromMouseClick)
 {

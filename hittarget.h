@@ -161,7 +161,6 @@ public:
 
    //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName);
    virtual void WriteRegDefaults();
-   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
    virtual bool IsTransparent() const;
    virtual float GetDepth(const Vertex3Ds& viewDir) const;
@@ -169,7 +168,6 @@ public:
    virtual unsigned long long GetImageID() const { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
    virtual ItemTypeEnum HitableGetItemType() const { return eItemHitTarget; }
 
-   virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
 

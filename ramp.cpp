@@ -159,15 +159,6 @@ void Ramp::WriteRegDefaults()
    SaveValueFloat(strKeyName, "WireDistanceY", m_d.m_wireDistanceY);
 }
 
-void Ramp::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROPPOINT_VISUALSWHEIGHT, IDS_VISUALS);
-   pvproppane.push_back(pproppane);
-}
-
-
 void Ramp::UIRenderPass1(Sur * const psur)
 {
    //make 1 wire ramps look unique in editor - uses ramp color
@@ -1631,24 +1622,6 @@ STDMETHODIMP Ramp::put_Type(RampType newVal)
    return S_OK;
 }
 
-void Ramp::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPRAMP_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(pproppane);
-
-   m_propPhysics = new PropertyPane(IDD_PROPRAMP_PHYSICS, IDS_PHYSICS);
-   pvproppane.push_back(m_propPhysics);
-
-   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane.push_back(pproppane);
-}
-
-
 STDMETHODIMP Ramp::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
@@ -2557,38 +2530,6 @@ void Ramp::GenerateVertexBuffer()
 
    m_dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_meshIndices);
    delete[] tmpBuffer;
-}
-
-void Ramp::UpdatePropertyPanes()
-{
-   if (m_propPosition == NULL || m_propPhysics == NULL)
-      return;
-
-   EnableWindow(GetDlgItem(m_propPosition->m_dialogHwnd, 3), !(m_d.m_type != RampTypeFlat));
-   EnableWindow(GetDlgItem(m_propPosition->m_dialogHwnd, 4), !(m_d.m_type != RampTypeFlat));
-   EnableWindow(GetDlgItem(m_propPosition->m_dialogHwnd, 108), !(m_d.m_type != RampTypeFlat));
-   EnableWindow(GetDlgItem(m_propPosition->m_dialogHwnd, 109), !(m_d.m_type != RampTypeFlat));
-   EnableWindow(GetDlgItem(m_propPosition->m_dialogHwnd, IDC_WIRE_DIAMETER), (m_d.m_type != RampTypeFlat));
-   EnableWindow(GetDlgItem(m_propPosition->m_dialogHwnd, IDC_WIRE_DISTX), (m_d.m_type != RampTypeFlat));
-   EnableWindow(GetDlgItem(m_propPosition->m_dialogHwnd, IDC_WIRE_DISTY), (m_d.m_type != RampTypeFlat));
-   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 10), m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 11), m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), m_d.m_collidable);
-
-   if (!m_d.m_collidable)
-   {
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 110), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
-   }
-   else
-   {
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 110), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_overwritePhysics);
-   }
 }
 
 void Ramp::SetDefaultPhysics(bool fromMouseClick)

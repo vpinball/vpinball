@@ -452,21 +452,6 @@ HRESULT LightSeq::InitPostLoad()
    return S_OK;
 }
 
-void LightSeq::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPLIGHTSEQ_STATE, IDS_STATE);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane.push_back(pproppane);
-}
-
-
 STDMETHODIMP LightSeq::get_Collection(BSTR *pVal)
 {
    WCHAR wz[sizeof(m_d.m_wzCollection)];

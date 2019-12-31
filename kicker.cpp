@@ -1050,22 +1050,6 @@ STDMETHODIMP Kicker::put_Legacy(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-void Kicker::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPKICKER_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPKICKER_STATE, IDS_STATE);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane.push_back(pproppane);
-}
 
 STDMETHODIMP Kicker::get_DrawStyle(KickerType *pVal)
 {

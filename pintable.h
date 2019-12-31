@@ -304,7 +304,6 @@ public:
    void InitPostLoad(VPinball *pvp);
 
    virtual HRESULT GetTypeName(BSTR *pVal);
-   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
 
    void SetCaption(const char * const szCaption);
    void SetMouseCapture();

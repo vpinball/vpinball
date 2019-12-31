@@ -81,13 +81,10 @@ public:
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
    
-   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
-   
    // Multi-object manipulation
    virtual Vertex2D GetCenter() const;
    virtual void PutCenter(const Vertex2D& pv);
    
-   virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
    virtual void RenderBlueprint(Sur *psur, const bool solid);

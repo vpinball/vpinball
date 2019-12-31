@@ -784,29 +784,6 @@ STDMETHODIMP Flasher::put_Color(OLE_COLOR newVal)
    return S_OK;
 }
 
-void Flasher::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane.push_back(pproppane);
-
-   m_propVisual = new PropertyPane(IDD_PROPFLASHER_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(m_propVisual);
-
-   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane.push_back(pproppane);
-}
-
-void Flasher::GetPointDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROPPOINT_VISUALSWTEX, IDS_VISUALS);
-   pvproppane.push_back(pproppane);
-
-}
-
 STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)
 {
    WCHAR wz[512];
@@ -1288,17 +1265,4 @@ void Flasher::RenderDynamic()
    //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
    //pd3dDevice->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD); //!! not necessary anymore
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
-}
-
-void Flasher::UpdatePropertyPanes()
-{
-   if (m_propVisual == NULL)
-      return;
-
-   const BOOL w8 = (m_d.m_szImageA[0] == 0 && m_d.m_szImageB[0] == 0) ? FALSE : TRUE;
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, 8), w8);
-
-   const BOOL w_ec_fa = (m_d.m_szImageB[0] == 0 || m_d.m_szImageA[0] == 0) ? FALSE : TRUE;
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_EFFECT_COMBO), w_ec_fa);
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_FILTERAMOUNT_EDIT), w_ec_fa);
 }

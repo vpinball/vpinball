@@ -1584,23 +1584,6 @@ STDMETHODIMP Light::put_BulbHaloHeight(float newVal)
    return S_OK;
 }
 
-void Light::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane.push_back(pproppane);
-
-   m_propVisual = new PropertyPane(IDD_PROPLIGHT_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(m_propVisual);
-
-   pproppane = new PropertyPane(IDD_PROPLIGHT_STATE, IDS_STATE);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane.push_back(pproppane);
-}
-
 void Light::setLightState(const LightState newVal)
 {
    if (newVal != m_realState) // state changed???
@@ -1636,18 +1619,3 @@ STDMETHODIMP Light::put_Visible(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-void Light::UpdatePropertyPanes()
-{
-   if (m_propVisual == NULL)
-      return;
-
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_SHOW_BULB_MESH), m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_SCALE_BULB_MESH), m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_BULB_MODULATE_VS_ADD), m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_REFLECT_ON_BALLS), m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_TRANSMISSION_SCALE), m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_HALO_EDIT), m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_IMAGE_MODE), !m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, DISPID_Image), !m_d.m_BulbLight);
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STATIC_BULB_MESH), !m_d.m_BulbLight ? FALSE : m_d.m_showBulbMesh);
-}

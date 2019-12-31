@@ -157,7 +157,7 @@ public:
 
    int m_palettescroll;
 
-   SmartBrowser m_sb;
+   //SmartBrowser m_sb;
 
    vector<IStream*> m_vstmclipboard;
 

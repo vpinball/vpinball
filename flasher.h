@@ -75,8 +75,6 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
-   virtual void GetPointDialogPanes(vector<PropertyPane*> &pvproppane);
    virtual void ClearForOverwrite();
 
    virtual void RenderBlueprint(Sur *psur, const bool solid);
@@ -114,8 +112,6 @@ public:
    }
    virtual bool IsDMD() const { return m_d.m_isDMD; }
    virtual ItemTypeEnum HitableGetItemType() const { return eItemFlasher; }
-
-   virtual void UpdatePropertyPanes();
 
    virtual void WriteRegDefaults();
 

@@ -1257,39 +1257,6 @@ STDMETHODIMP Flipper::put_Material(BSTR newVal)
    return S_OK;
 }
 
-/*STDMETHODIMP Flipper::get_AngleEOS(float *pVal)
-{
-   *pVal = m_d.m_angleEOS;
-
-   return S_OK;
-}
-
-STDMETHODIMP Flipper::put_AngleEOS(float newVal)
-{
-   STARTUNDO
-   m_d.m_angleEOS = newVal;
-   STOPUNDO
-
-   return S_OK;
-}*/
-
-void Flipper::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPFLIPPER_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPFLIPPER_PHYSICS, IDS_PHYSICS);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane.push_back(pproppane);
-}
-
 STDMETHODIMP Flipper::get_Mass(float *pVal)
 {
     if (m_phitflipper)
