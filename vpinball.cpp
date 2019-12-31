@@ -558,7 +558,7 @@ void VPinball::SetPropSel(VectorProtected<ISelect> *pvsel)
 
 void VPinball::DeletePropSel()
 {
-   m_sb.RemoveSelection();
+//   m_sb.RemoveSelection();
 }
 
 CMenu VPinball::GetMainMenu(int id)
@@ -848,9 +848,6 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
        if (ptCur)
        {
            ShowSubDialog(m_imageMngDlg);
-
-           m_sb.PopulateDropdowns(); // May need to update list of images
-           m_sb.RefreshProperties();
        }
        return TRUE;
    }
@@ -877,9 +874,6 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
        if (ptCur)
        {
            ShowSubDialog(m_materialDialog);
-
-           m_sb.PopulateDropdowns(); // May need to update list of images
-           m_sb.RefreshProperties();
        }
        return TRUE;
    }
@@ -902,9 +896,6 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
        if (ptCur)
        {
            ShowSubDialog(m_collectionMngDlg);
-               
-           m_sb.PopulateDropdowns(); // May need to update list of collections
-           m_sb.RefreshProperties();
        }
        return TRUE;
    }
@@ -1164,9 +1155,6 @@ bool VPinball::CloseTable(PinTable * const ppt)
 
    ppt->FVerifySaveToClose();
 
-   if (m_sb.GetBaseISel() && (ppt == m_sb.GetBaseISel()->GetPTable()))
-      SetPropSel(NULL);
-
    RemoveFromVectorSingle(m_vtable, (CComObject<PinTable> *)ppt);
    ppt->m_pcv->CleanUpScriptEngine();
 
@@ -1186,7 +1174,7 @@ void VPinball::SetEnableMenuItems()
    // Set menu item to the correct state
    CMenu mainMenu = GetMenu();
 
-   mainMenu.CheckMenuItem(ID_EDIT_PROPERTIES, MF_BYCOMMAND | (m_sb.GetVisible() ? MF_CHECKED : MF_UNCHECKED));
+   mainMenu.CheckMenuItem(ID_EDIT_PROPERTIES, MF_BYCOMMAND | (m_propertyDialog->IsWindowVisible() ? MF_CHECKED : MF_UNCHECKED));
    mainMenu.CheckMenuItem(ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (m_backglassView ? MF_CHECKED : MF_UNCHECKED));
 
    // is there a valid table??
@@ -1396,12 +1384,6 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
       consumed = processKeyInputForDialogs(pmsg);
       if (consumed)
          return true;
-
-      for (size_t i = 0; i < m_sb.m_vhwndDialog.size(); i++)
-      {
-         if (::IsDialogMessage(m_sb.m_vhwndDialog[i], pmsg))
-            consumed = true;
-      }
 
       if (m_pcv && m_pcv->m_hwndMain)
       {
@@ -2149,7 +2131,6 @@ void VPinball::SetDefaultPhysics()
             for (int i = 0; i < ptCur->m_vmultisel.size(); i++)
                 ptCur->m_vmultisel.ElementAt(i)->SetDefaultPhysics(true);
             ptCur->EndUndo();
-            m_sb.RefreshProperties();
         }
     }
 }

@@ -1311,23 +1311,6 @@ STDMETHODIMP Trigger::put_Material(BSTR newVal)
    return S_OK;
 }
 
-void Trigger::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane.push_back(pproppane);
-
-   m_propVisual = new PropertyPane(IDD_PROPTRIGGER_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(m_propVisual);
-
-   pproppane = new PropertyPane(IDD_PROPTRIGGER_STATE, IDS_STATE);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane.push_back(pproppane);
-}
-
 STDMETHODIMP Trigger::get_TriggerShape(TriggerShape *pVal)
 {
    *pVal = m_d.m_shape;
@@ -1363,30 +1346,3 @@ STDMETHODIMP Trigger::put_ReflectionEnabled(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-void Trigger::UpdatePropertyPanes()
-{
-   if (m_propVisual == NULL)
-      return;
-
-   if (m_d.m_shape == TriggerStar || m_d.m_shape == TriggerButton)
-   {
-      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STAR_RADIUS_EDIT), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_ROTATION_EDIT), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_RINGSPEED_EDIT), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STAR_THICKNESS_EDIT), FALSE);
-   }
-   else if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD)
-   {
-      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STAR_RADIUS_EDIT), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STAR_THICKNESS_EDIT), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_ROTATION_EDIT), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_RINGSPEED_EDIT), TRUE);
-   }
-   else
-   {
-      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STAR_RADIUS_EDIT), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_STAR_THICKNESS_EDIT), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_ROTATION_EDIT), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, IDC_RINGSPEED_EDIT), FALSE);
-   }
-}

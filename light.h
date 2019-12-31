@@ -89,8 +89,6 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
-
    void RenderOutline(Sur * const psur);
    virtual void RenderBlueprint(Sur *psur, const bool solid);
 
@@ -122,7 +120,6 @@ public:
    virtual unsigned long long GetMaterialID() const { return m_surfaceMaterial ? m_surfaceMaterial->hash() : 64 - 2; } //!! 2 = some constant number
    virtual unsigned long long GetImageID() const { return (m_d.m_BulbLight ? 0 : (unsigned long long)(m_ptable->GetImage(m_d.m_szImage))); }
    virtual ItemTypeEnum HitableGetItemType() const { return eItemLight; }
-   virtual void UpdatePropertyPanes();
    virtual void AddPoint(int x, int y, const bool smooth);
 
    virtual void WriteRegDefaults();
@@ -149,7 +146,6 @@ private:
       LightCenter(Light *plight) : m_plight(plight) { }
       virtual HRESULT GetTypeName(BSTR *pVal) { return m_plight->GetTypeName(pVal); }
       virtual IDispatch *GetDispatch() { return m_plight->GetDispatch(); }
-      virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane) { m_plight->GetDialogPanes(pvproppane); }
 
       virtual void Delete() { m_plight->Delete(); }
       virtual void Uncreate() { m_plight->Uncreate(); }

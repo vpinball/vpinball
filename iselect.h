@@ -99,7 +99,6 @@ public:
    static void GetTypeNameForType(ItemTypeEnum type, WCHAR * buf);
 
    virtual IDispatch *GetDispatch() = 0;
-   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane) = 0;
    virtual ItemTypeEnum GetItemType() const = 0;
 
    virtual void Delete() = 0;
@@ -134,7 +133,6 @@ public:
    virtual int GetSelectLevel() { return 1; }
    virtual bool LoadMeshDialog() { return false; }
    virtual void ExportMeshDialog() {}
-   virtual void UpdatePropertyPanes() {}
    virtual void AddPoint(int x, int y, const bool smooth) {}
 
    POINT m_ptLast;

@@ -72,10 +72,6 @@ public:
       CONNECTION_POINT_ENTRY(DIID_IWallEvents)
    END_CONNECTION_POINT_MAP()
 
-   // IHaveDragPoints
-   virtual void GetPointDialogPanes(vector<PropertyPane*> &pvproppane);
-   // end IHaveDragPoints
-
    // IEditable
    virtual void WriteRegDefaults();
    virtual void RenderBlueprint(Sur *psur, const bool solid);
@@ -97,7 +93,6 @@ public:
 
    virtual void DoCommand(int icmd, int x, int y);
 
-   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
    // end ISelect
 
    virtual float GetDepth(const Vertex3Ds& viewDir) const { return viewDir.z * m_d.m_heighttop; }
@@ -121,7 +116,6 @@ public:
    }
    virtual ItemTypeEnum HitableGetItemType() const { return eItemSurface; }
    virtual bool IsTransparent() const;
-   virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
    virtual void AddPoint(int x, int y, const bool smooth);

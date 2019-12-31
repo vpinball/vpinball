@@ -117,7 +117,6 @@ using std::vector;
 #include "iselect.h"
 
 #include "ieditable.h"
-#include "propbrowser.h"
 #include "codeview.h"
 
 #include "media/lzwreader.h"

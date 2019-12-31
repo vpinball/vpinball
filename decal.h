@@ -83,8 +83,7 @@ public:
    HFONT GetFont();
 
    virtual void WriteRegDefaults();
-   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
-
+   
    virtual ItemTypeEnum HitableGetItemType() const { return eItemDecal; }
 
    DecalData m_d;

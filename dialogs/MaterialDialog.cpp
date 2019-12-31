@@ -294,8 +294,6 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
                sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
             }
-            g_pvp->m_sb.PopulateDropdowns(); // May need to update list of images
-            g_pvp->m_sb.RefreshProperties();
             pt->SetNonUndoableDirty(eSaveDirty);
          }
          break;
@@ -306,8 +304,6 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
          pt->AddMaterial(pmat);
          pt->AddListMaterial(m_hMaterialList, pmat);
-         g_pvp->m_sb.PopulateDropdowns(); // May need to update list of images
-         g_pvp->m_sb.RefreshProperties();
          pt->SetNonUndoableDirty(eSaveDirty);
 
          break;
@@ -355,8 +351,6 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             fclose(f);
             SaveValueString("RecentDir", "MaterialDir", szInitialDir);
             pt->SetNonUndoableDirty(eSaveDirty);
-            g_pvp->m_sb.PopulateDropdowns(); // May need to update list of images
-            g_pvp->m_sb.RefreshProperties();
          }
          break;
       }
@@ -488,8 +482,6 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                }
             }
             pt->SetNonUndoableDirty(eSaveDirty);
-            g_pvp->m_sb.PopulateDropdowns();
-            g_pvp->m_sb.RefreshProperties();
          }
          break;
       }
@@ -563,8 +555,6 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   strncpy_s(pmat->m_szName, textBuf, 31);
                   ListView_SetItemText(m_hMaterialList, pinfo->item.iItem, 0, pmat->m_szName);
                }
-               g_pvp->m_sb.PopulateDropdowns();
-               g_pvp->m_sb.RefreshProperties();
                pt->SetNonUndoableDirty(eSaveDirty);
                return TRUE;
             }

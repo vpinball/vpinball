@@ -61,8 +61,6 @@ public:
       CONNECTION_POINT_ENTRY(DIID_ITimerEvents)
    END_CONNECTION_POINT_MAP()
 
-   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
-
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
    // Multi-object manipulation

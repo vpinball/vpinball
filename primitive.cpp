@@ -1826,8 +1826,6 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                          pActiveTable->AddMaterial(mat);
 
                      strcpy_s(prim->m_d.m_szMaterial, mat->m_szName);
-                     g_pvp->m_sb.PopulateDropdowns(); // May need to update list of images
-                     g_pvp->m_sb.RefreshProperties();
                   }
                }
             }
@@ -3057,59 +3055,6 @@ STDMETHODIMP Primitive::ShowFrame(float frame)
    m_currentFrame = frame;
    m_doAnimation = false;
    return S_OK;
-}
-
-void Primitive::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane.push_back(pproppane);
-
-   m_propVisual = new PropertyPane(IDD_PROPPRIMITIVE_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(m_propVisual);
-
-   m_propPosition = new PropertyPane(IDD_PROPPRIMITIVE_POSITION, IDS_POSITION_TRANSLATION);
-   pvproppane.push_back(m_propPosition);
-
-   m_propPhysics = new PropertyPane(IDD_PROPPRIMITIVE_PHYSICS, IDS_PHYSICS);
-   pvproppane.push_back(m_propPhysics);
-}
-
-void Primitive::UpdatePropertyPanes()
-{
-   if (m_propVisual == NULL || m_propPosition == NULL || m_propPhysics == NULL)
-      return;
-
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, 106), !m_d.m_use3DMesh);
-   EnableWindow(GetDlgItem(m_propVisual->m_dialogHwnd, 101), !m_d.m_use3DMesh);
-
-   const bool tc = (m_d.m_toy || !m_d.m_collidable);
-   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS), !tc);
-   EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 34), !tc);
-
-   if (tc)
-   {
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 33), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 481), !m_d.m_toy);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 111), !m_d.m_toy);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 110), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 112), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), FALSE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
-   }
-   else //if (!m_d.m_toy && m_d.m_collidable)
-   {
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 33), m_d.m_hitEvent);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 481), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 111), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 110), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 112), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 114), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, 115), m_d.m_overwritePhysics);
-      EnableWindow(GetDlgItem(m_propPhysics->m_dialogHwnd, IDC_MATERIAL_COMBO4), !m_d.m_overwritePhysics);
-   }
 }
 
 void Primitive::SetDefaultPhysics(bool fromMouseClick)

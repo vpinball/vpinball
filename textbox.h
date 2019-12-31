@@ -62,8 +62,6 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Textbox, eItemTextbox, TEXTBOX, 2)
 
-   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
-
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
    // Multi-object manipulation

@@ -6029,7 +6029,6 @@ void PinTable::Undo()
    if (m_searchSelectDlg.IsWindow())
       m_searchSelectDlg.Update();
 
-   g_pvp->m_sb.RefreshProperties();
 }
 
 void PinTable::Uncreate(IEditable *pie)
@@ -6456,7 +6455,6 @@ void PinTable::OnKeyDown(int key)
                break;
             }
          }
-         g_pvp->m_sb.RefreshProperties();    // update position fields
       }
       EndUndo();
       SetDirtyDraw();
@@ -6596,35 +6594,6 @@ HRESULT PinTable::GetTypeName(BSTR *pVal)
    return S_OK;
 }
 
-void PinTable::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   if (!g_pvp->m_backglassView)
-   {
-      PropertyPane *pproppane;
-
-      pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-      pvproppane.push_back(pproppane);
-
-      pproppane = new PropertyPane(IDD_PROPTABLE_USER, IDS_TABLE_USER);
-      pvproppane.push_back(pproppane);
-
-      pproppane = new PropertyPane(IDD_PROPTABLE_VISUALS, IDS_PLAYFIELD);
-      pvproppane.push_back(pproppane);
-
-      pproppane = new PropertyPane(IDD_PROPTABLE_PHYSICS, IDS_PHYSICS);
-      pvproppane.push_back(pproppane);
-
-      pproppane = new PropertyPane(IDD_PROPTABLE_LIGHTSOURCES, IDS_LIGHTSOURCES);
-      pvproppane.push_back(pproppane);
-   }
-   else
-   {
-      PropertyPane *pproppane = new PropertyPane(IDD_PROPBACKGLASS_VISUALS, IDS_VISUALS2);
-      pvproppane.push_back(pproppane);
-      pproppane = new PropertyPane(IDD_PROPBACKGLASS_CAMERA, IDS_POSITION);
-      pvproppane.push_back(pproppane);
-   }
-}
 
 LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -9270,7 +9239,6 @@ STDMETHODIMP PinTable::get_BackglassMode(BackglassIndex *pVal)
 STDMETHODIMP PinTable::put_BackglassMode(BackglassIndex pVal)
 {
    m_currentBackglassMode = (int)(pVal-DESKTOP);
-   g_pvp->m_sb.RefreshProperties();
 
    return S_OK;
 }

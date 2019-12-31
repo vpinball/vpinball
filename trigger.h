@@ -71,8 +71,6 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   virtual void GetDialogPanes(vector<PropertyPane*> &pvproppane);
-
    virtual void RenderBlueprint(Sur *psur, const bool solid);
 
    virtual void MoveOffset(const float dx, const float dy);
@@ -94,7 +92,6 @@ public:
    virtual void PutCenter(const Vertex2D& pv) { PutPointCenter(pv); }
    virtual Vertex2D GetPointCenter() const;
    virtual void PutPointCenter(const Vertex2D& pv);
-   virtual void UpdatePropertyPanes();
    virtual void ExportMesh(FILE *f);
    virtual ItemTypeEnum HitableGetItemType() const { return eItemTrigger; }
 

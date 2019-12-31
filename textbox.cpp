@@ -701,20 +701,6 @@ STDMETHODIMP Textbox::put_IntensityScale(float newVal)
    return S_OK;
 }
 
-void Textbox::GetDialogPanes(vector<PropertyPane*> &pvproppane)
-{
-   PropertyPane *pproppane;
-
-   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPTEXTBOX_VISUALS, IDS_VISUALS);
-   pvproppane.push_back(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-   pvproppane.push_back(pproppane);
-}
-
 STDMETHODIMP Textbox::get_Alignment(TextAlignment *pVal)
 {
    *pVal = m_d.m_talign;
