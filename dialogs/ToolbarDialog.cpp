@@ -376,6 +376,7 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_SELECT:
         case ID_TABLE_MAGNIFY:
         {
+            g_pvp->m_ToolCur = (int)id;
             m_selectButton.SetCheck(BST_UNCHECKED);
             m_magnifyButton.SetCheck(BST_UNCHECKED);
             switch (HIWORD(wParam))

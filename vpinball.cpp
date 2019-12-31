@@ -698,6 +698,7 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
    case IDC_SELECT:
    case ID_TABLE_MAGNIFY:
    {
+      m_ToolCur = (int)code;
       if (notify == 1) // accelerator - mouse can be over table already
       {
          POINT pt;
