@@ -10312,6 +10312,7 @@ void PinTable::SetMouseCursor()
         }
     }
     const HCURSOR hcursor = LoadCursor(hinst, cursorid);
+    SetClassLong(GCL_HCURSOR, (LONG_PTR)hcursor);
     SetCursor(hcursor);
 }
 
