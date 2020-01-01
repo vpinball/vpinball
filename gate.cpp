@@ -695,11 +695,11 @@ STDMETHODIMP Gate::get_Length(float *pVal)
 
 STDMETHODIMP Gate::put_Length(float newVal)
 {
-   STARTUNDO
+   
 
    m_d.m_length = newVal;
 
-   STOPUNDO
+   
 
    UpdateUnitsInfo();
 
@@ -715,11 +715,11 @@ STDMETHODIMP Gate::get_Height(float *pVal)
 
 STDMETHODIMP Gate::put_Height(float newVal)
 {
-   STARTUNDO
+   
 
    m_d.m_height = newVal;
 
-   STOPUNDO
+   
 
    UpdateUnitsInfo();
 
@@ -735,11 +735,11 @@ STDMETHODIMP Gate::get_Rotation(float *pVal)
 
 STDMETHODIMP Gate::put_Rotation(float newVal)
 {
-   STARTUNDO
+   
 
    m_d.m_rotation = newVal;
 
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -753,11 +753,11 @@ STDMETHODIMP Gate::get_X(float *pVal)
 
 STDMETHODIMP Gate::put_X(float newVal)
 {
-   STARTUNDO
+   
 
       m_d.m_vCenter.x = newVal;
 
-   STOPUNDO
+   
 
       return S_OK;
 }
@@ -771,11 +771,11 @@ STDMETHODIMP Gate::get_Y(float *pVal)
 
 STDMETHODIMP Gate::put_Y(float newVal)
 {
-   STARTUNDO
+   
 
       m_d.m_vCenter.y = newVal;
 
-   STOPUNDO
+   
 
       return S_OK;
 }
@@ -791,11 +791,11 @@ STDMETHODIMP Gate::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Gate::put_Surface(BSTR newVal)
 {
-   STARTUNDO
+   
 
       WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXNAMEBUFFER, NULL, NULL);
 
-   STOPUNDO
+   
 
       return S_OK;
 }
@@ -812,11 +812,11 @@ STDMETHODIMP Gate::get_Material(BSTR *pVal)
 
 STDMETHODIMP Gate::put_Material(BSTR newVal)
 {
-   STARTUNDO
+   
 
       WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
 
-   STOPUNDO
+   
 
       return S_OK;
 }
@@ -871,9 +871,9 @@ STDMETHODIMP Gate::get_Elasticity(float *pVal)
 
 STDMETHODIMP Gate::put_Elasticity(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_elasticity = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -887,9 +887,9 @@ STDMETHODIMP Gate::get_ShowBracket(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Gate::put_ShowBracket(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_showBracket = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -921,9 +921,9 @@ STDMETHODIMP Gate::put_CloseAngle(float newVal)
    }
    else
    {
-      STARTUNDO
+      
          m_d.m_angleMin = newVal;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -956,9 +956,9 @@ STDMETHODIMP Gate::put_OpenAngle(float newVal)
    }
    else
    {
-      STARTUNDO
+      
          m_d.m_angleMax = newVal;
-      STOPUNDO
+      
    }
    return S_OK;
 }
@@ -986,10 +986,10 @@ STDMETHODIMP Gate::put_Collidable(VARIANT_BOOL newVal)
    }
    else
    {
-      STARTUNDO
+      
       m_d.m_collidable = VBTOb(newVal);
       if (newVal) m_d.m_angleMin = 0;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1063,11 +1063,11 @@ STDMETHODIMP Gate::put_Friction(float newVal)
    }
    else
    {
-      STARTUNDO
+      
 
       m_d.m_friction = newVal;
 
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1087,11 +1087,11 @@ STDMETHODIMP Gate::put_Damping(float newVal)
       m_phitgate->m_gateMover.m_damping = powf(tmp, (float)PHYS_FACTOR); //0.996f;
    else
    {
-      STARTUNDO
+      
 
       m_d.m_damping = tmp;
 
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1112,9 +1112,9 @@ STDMETHODIMP Gate::put_GravityFactor(float newVal)
       m_phitgate->m_gateMover.m_gravityfactor = tmp;
    else
    {
-      STARTUNDO
+      
       m_d.m_gravityfactor = tmp;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1133,9 +1133,9 @@ STDMETHODIMP Gate::put_Visible(VARIANT_BOOL newVal)
       m_phitgate->m_gateMover.m_visible = VBTOb(newVal);
    else
    {
-      STARTUNDO
+      
       m_d.m_visible = VBTOb(newVal);
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1154,9 +1154,9 @@ STDMETHODIMP Gate::put_TwoWay(VARIANT_BOOL newVal)
       m_phitgate->m_twoWay = VBTOb(newVal);
    else
    {
-      STARTUNDO
+      
       m_d.m_twoWay = VBTOb(newVal);
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1171,9 +1171,9 @@ STDMETHODIMP Gate::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Gate::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_reflectionEnabled = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1198,12 +1198,7 @@ STDMETHODIMP Gate::get_DrawStyle(GateType *pVal)
 
 STDMETHODIMP Gate::put_DrawStyle(GateType newVal)
 {
-    STARTUNDO
-
-        m_d.m_type = newVal;
-
-    STOPUNDO
-
-        return S_OK;
+    m_d.m_type = newVal;
+    return S_OK;
 }
 

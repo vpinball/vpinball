@@ -1077,9 +1077,9 @@ STDMETHODIMP Trigger::get_Radius(float *pVal)
 
 STDMETHODIMP Trigger::put_Radius(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_radius = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1094,9 +1094,9 @@ STDMETHODIMP Trigger::get_X(float *pVal)
 
 STDMETHODIMP Trigger::put_X(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_vCenter.x = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1110,9 +1110,9 @@ STDMETHODIMP Trigger::get_Y(float *pVal)
 
 STDMETHODIMP Trigger::put_Y(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_vCenter.y = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1129,9 +1129,9 @@ STDMETHODIMP Trigger::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Trigger::put_Surface(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1153,10 +1153,10 @@ STDMETHODIMP Trigger::put_Enabled(VARIANT_BOOL newVal)
    }
    else
    {
-      STARTUNDO
+      
       m_d.m_enabled = VBTOb(newVal);
       m_hitEnabled = m_d.m_enabled;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1171,9 +1171,9 @@ STDMETHODIMP Trigger::get_Visible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Trigger::put_Visible(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_visible = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1234,9 +1234,9 @@ STDMETHODIMP Trigger::get_HitHeight(float *pVal)
 
 STDMETHODIMP Trigger::put_HitHeight(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_hit_height = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1250,9 +1250,9 @@ STDMETHODIMP Trigger::get_Rotation(float *pVal)
 
 STDMETHODIMP Trigger::put_Rotation(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_rotation = newVal;
-   STOPUNDO
+   
 
    UpdateEditorView();
 
@@ -1268,9 +1268,9 @@ STDMETHODIMP Trigger::get_WireThickness(float *pVal)
 
 STDMETHODIMP Trigger::put_WireThickness(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_wireThickness = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1284,9 +1284,9 @@ STDMETHODIMP Trigger::get_AnimSpeed(float *pVal)
 
 STDMETHODIMP Trigger::put_AnimSpeed(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_animSpeed = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1304,9 +1304,9 @@ STDMETHODIMP Trigger::get_Material(BSTR *pVal)
 
 STDMETHODIMP Trigger::put_Material(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1321,9 +1321,9 @@ STDMETHODIMP Trigger::get_TriggerShape(TriggerShape *pVal)
 
 STDMETHODIMP Trigger::put_TriggerShape(TriggerShape newVal)
 {
-   STARTUNDO
+   
    m_d.m_shape = newVal;
-   STOPUNDO
+   
 
    UpdateEditorView();
 
@@ -1339,9 +1339,9 @@ STDMETHODIMP Trigger::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Trigger::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_reflectionEnabled = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }

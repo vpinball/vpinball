@@ -464,9 +464,9 @@ STDMETHODIMP LightSeq::get_Collection(BSTR *pVal)
 
 STDMETHODIMP LightSeq::put_Collection(BSTR newVal)
 {
-   STARTUNDO
+   
    memcpy(m_d.m_wzCollection, (void *)newVal, sizeof(m_d.m_wzCollection));
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -483,9 +483,9 @@ STDMETHODIMP LightSeq::put_CenterX(float newVal)
    if ((newVal < 0.f) || (newVal >= (float)EDITOR_BG_WIDTH))
       return E_FAIL;
 
-   STARTUNDO
+   
    SetX(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -502,9 +502,9 @@ STDMETHODIMP LightSeq::put_CenterY(float newVal)
    if ((newVal < 0.f) || (newVal >= (float)(2 * EDITOR_BG_WIDTH)))
       return E_FAIL;
 
-   STARTUNDO
+   
    SetY(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -518,9 +518,9 @@ STDMETHODIMP LightSeq::get_UpdateInterval(long *pVal)
 
 STDMETHODIMP LightSeq::put_UpdateInterval(long newVal)
 {
-   STARTUNDO
+   
    SetUpdateInterval(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }

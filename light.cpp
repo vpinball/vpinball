@@ -1079,9 +1079,9 @@ STDMETHODIMP Light::put_Falloff(float newVal)
    if (newVal < 0.f)
       return E_FAIL;
 
-   STARTUNDO
+   
    m_d.m_falloff = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1095,9 +1095,9 @@ STDMETHODIMP Light::get_FalloffPower(float *pVal)
 
 STDMETHODIMP Light::put_FalloffPower(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_falloff_power = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1114,12 +1114,12 @@ STDMETHODIMP Light::get_State(LightState *pVal)
 
 STDMETHODIMP Light::put_State(LightState newVal)
 {
-   STARTUNDO
+   
    // if the light is locked by the LS then just change the state and don't change the actual light
    if (!m_lockedByLS)
       setLightState(newVal);
    m_d.m_state = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1158,9 +1158,9 @@ STDMETHODIMP Light::get_Color(OLE_COLOR *pVal)
 
 STDMETHODIMP Light::put_Color(OLE_COLOR newVal)
 {
-   STARTUNDO
+   
    m_d.m_color = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1174,9 +1174,9 @@ STDMETHODIMP Light::get_ColorFull(OLE_COLOR *pVal)
 
 STDMETHODIMP Light::put_ColorFull(OLE_COLOR newVal)
 {
-   STARTUNDO
+   
    m_d.m_color2 = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1191,9 +1191,9 @@ STDMETHODIMP Light::get_X(float *pVal)
 
 STDMETHODIMP Light::put_X(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_vCenter.x = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1207,9 +1207,9 @@ STDMETHODIMP Light::get_Y(float *pVal)
 
 STDMETHODIMP Light::put_Y(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_vCenter.y = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1251,7 +1251,7 @@ STDMETHODIMP Light::get_BlinkPattern(BSTR *pVal)
 
 STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 {
-   STARTUNDO
+   
 
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_rgblinkpattern, MAXNAMEBUFFER, NULL, NULL);
 
@@ -1264,7 +1264,7 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
    if (g_pplayer)
       RestartBlinker(g_pplayer->m_time_msec);
 
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1278,11 +1278,11 @@ STDMETHODIMP Light::get_BlinkInterval(long *pVal)
 
 STDMETHODIMP Light::put_BlinkInterval(long newVal)
 {
-   STARTUNDO
+   
    m_blinkinterval = newVal;
    if (g_pplayer)
       m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1290,7 +1290,7 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
 
 STDMETHODIMP Light::Duration(long startState, long newVal, long endState)
 {
-    STARTUNDO
+    
 
     m_realState = (LightState)startState;
     m_duration = newVal;
@@ -1305,7 +1305,7 @@ STDMETHODIMP Light::Duration(long startState, long newVal, long endState)
         }
     }
 
-    STOPUNDO
+    
 
     return S_OK;
 }
@@ -1320,12 +1320,12 @@ STDMETHODIMP Light::get_Intensity(float *pVal)
 
 STDMETHODIMP Light::put_Intensity(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_intensity = max(0.f, newVal);
    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_realState != LightStateOff);
    if (isOn)
       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1339,9 +1339,9 @@ STDMETHODIMP Light::get_TransmissionScale(float *pVal)
 
 STDMETHODIMP Light::put_TransmissionScale(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_transmissionScale = max(0.f, newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1355,12 +1355,12 @@ STDMETHODIMP Light::get_IntensityScale(float *pVal)
 
 STDMETHODIMP Light::put_IntensityScale(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_intensity_scale = newVal;
    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_realState != LightStateOff);
    if (isOn)
       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1377,9 +1377,9 @@ STDMETHODIMP Light::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Light::put_Surface(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1397,9 +1397,9 @@ STDMETHODIMP Light::get_Image(BSTR *pVal)
 
 STDMETHODIMP Light::put_Image(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1413,9 +1413,9 @@ STDMETHODIMP Light::get_DepthBias(float *pVal)
 
 STDMETHODIMP Light::put_DepthBias(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_depthBias = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1429,9 +1429,9 @@ STDMETHODIMP Light::get_FadeSpeedUp(float *pVal)
 
 STDMETHODIMP Light::put_FadeSpeedUp(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_fadeSpeedUp = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1445,9 +1445,9 @@ STDMETHODIMP Light::get_FadeSpeedDown(float *pVal)
 
 STDMETHODIMP Light::put_FadeSpeedDown(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_fadeSpeedDown = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1461,9 +1461,9 @@ STDMETHODIMP Light::get_Bulb(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Light::put_Bulb(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_BulbLight = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1477,9 +1477,9 @@ STDMETHODIMP Light::get_ImageMode(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Light::put_ImageMode(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_imageMode = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1493,9 +1493,9 @@ STDMETHODIMP Light::get_ShowBulbMesh(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Light::put_ShowBulbMesh(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_showBulbMesh = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1509,9 +1509,9 @@ STDMETHODIMP Light::get_StaticBulbMesh(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Light::put_StaticBulbMesh(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_staticBulbMesh = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1525,9 +1525,9 @@ STDMETHODIMP Light::get_ShowReflectionOnBall(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Light::put_ShowReflectionOnBall(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_showReflectionOnBall = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1541,9 +1541,9 @@ STDMETHODIMP Light::get_ScaleBulbMesh(float *pVal)
 
 STDMETHODIMP Light::put_ScaleBulbMesh(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_meshRadius = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1557,9 +1557,9 @@ STDMETHODIMP Light::get_BulbModulateVsAdd(float *pVal)
 
 STDMETHODIMP Light::put_BulbModulateVsAdd(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_modulate_vs_add = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1575,10 +1575,10 @@ STDMETHODIMP Light::put_BulbHaloHeight(float newVal)
 {
    if(m_d.m_bulbHaloHeight != newVal)
    {
-      STARTUNDO
+      
       m_d.m_bulbHaloHeight = newVal;
       m_updateBulbLightHeight = true;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1612,9 +1612,9 @@ STDMETHODIMP Light::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
 
 STDMETHODIMP Light::put_Visible(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_visible = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }

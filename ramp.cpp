@@ -1503,10 +1503,10 @@ STDMETHODIMP Ramp::put_HeightBottom(float newVal)
 {
    if (m_d.m_heightbottom != newVal)
    {
-      STARTUNDO
+      
       m_d.m_heightbottom = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
 
       UpdateUnitsInfo();
    }
@@ -1526,10 +1526,10 @@ STDMETHODIMP Ramp::put_HeightTop(float newVal)
 {
    if (m_d.m_heighttop != newVal)
    {
-      STARTUNDO
+      
       m_d.m_heighttop = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
 
       UpdateUnitsInfo();
    }
@@ -1549,10 +1549,10 @@ STDMETHODIMP Ramp::put_WidthBottom(float newVal)
 {
    if (m_d.m_widthbottom != newVal)
    {
-      STARTUNDO
+      
       m_d.m_widthbottom = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
 
       UpdateUnitsInfo();
    }
@@ -1572,10 +1572,10 @@ STDMETHODIMP Ramp::put_WidthTop(float newVal)
 {
    if (m_d.m_widthtop != newVal)
    {
-      STARTUNDO
+      
       m_d.m_widthtop = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
 
       UpdateUnitsInfo();
    }
@@ -1595,9 +1595,9 @@ STDMETHODIMP Ramp::get_Material(BSTR *pVal)
 
 STDMETHODIMP Ramp::put_Material(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1613,10 +1613,10 @@ STDMETHODIMP Ramp::put_Type(RampType newVal)
 {
    if(m_d.m_type != newVal)
    {
-      STARTUNDO
+      
       m_d.m_type = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1647,10 +1647,10 @@ STDMETHODIMP Ramp::put_Image(BSTR newVal)
 
    if (strcmp(m_szImage, m_d.m_szImage) != 0)
    {
-      STARTUNDO
+      
       strcpy_s(m_d.m_szImage, MAXTOKEN, m_szImage);
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1667,10 +1667,10 @@ STDMETHODIMP Ramp::put_ImageAlignment(RampImageAlignment newVal)
 {
    if (m_d.m_imagealignment != newVal)
    {
-      STARTUNDO
+      
       m_d.m_imagealignment = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1687,10 +1687,10 @@ STDMETHODIMP Ramp::put_HasWallImage(VARIANT_BOOL newVal)
 {
    if (m_d.m_imageWalls != VBTOb(newVal))
    {
-      STARTUNDO
+      
       m_d.m_imageWalls = VBTOb(newVal);
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1709,10 +1709,10 @@ STDMETHODIMP Ramp::put_LeftWallHeight(float newVal)
 
    if (m_d.m_leftwallheight != nv)
    {
-      STARTUNDO
+      
       m_d.m_leftwallheight = nv;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1731,10 +1731,10 @@ STDMETHODIMP Ramp::put_RightWallHeight(float newVal)
 
    if (m_d.m_rightwallheight != nv)
    {
-      STARTUNDO
+      
       m_d.m_rightwallheight = nv;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1753,10 +1753,10 @@ STDMETHODIMP Ramp::put_VisibleLeftWallHeight(float newVal)
 
    if (m_d.m_leftwallheightvisible != nv)
    {
-      STARTUNDO
+      
       m_d.m_leftwallheightvisible = nv;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1775,10 +1775,10 @@ STDMETHODIMP Ramp::put_VisibleRightWallHeight(float newVal)
 
    if (m_d.m_rightwallheightvisible != nv)
    {
-      STARTUNDO
+      
       m_d.m_rightwallheightvisible = nv;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1793,9 +1793,9 @@ STDMETHODIMP Ramp::get_Elasticity(float *pVal)
 
 STDMETHODIMP Ramp::put_Elasticity(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_elasticity = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1811,9 +1811,9 @@ STDMETHODIMP Ramp::put_Friction(float newVal)
 {
    newVal = clamp(newVal, 0.f, 1.f);
 
-   STARTUNDO
+   
    m_d.m_friction = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1827,9 +1827,9 @@ STDMETHODIMP Ramp::get_Scatter(float *pVal)
 
 STDMETHODIMP Ramp::put_Scatter(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_scatter = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1846,9 +1846,9 @@ STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
    const bool val = VBTOb(newVal);
    if (!g_pplayer)
    {
-      STARTUNDO
+      
       m_d.m_collidable = val;
-      STOPUNDO
+      
    }
    else
    {
@@ -1869,9 +1869,9 @@ STDMETHODIMP Ramp::get_HasHitEvent(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Ramp::put_HasHitEvent(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_hitEvent = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1885,9 +1885,9 @@ STDMETHODIMP Ramp::get_Threshold(float *pVal)
 
 STDMETHODIMP Ramp::put_Threshold(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_threshold = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1902,9 +1902,9 @@ STDMETHODIMP Ramp::get_Visible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Ramp::put_Visible(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_visible = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1918,9 +1918,9 @@ STDMETHODIMP Ramp::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Ramp::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_reflectionEnabled = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1936,10 +1936,10 @@ STDMETHODIMP Ramp::put_DepthBias(float newVal)
 {
    if (m_d.m_depthBias != newVal)
    {
-      STARTUNDO
+      
       m_d.m_depthBias = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1956,9 +1956,9 @@ STDMETHODIMP Ramp::put_WireDiameter(float newVal)
 {
    if (m_d.m_wireDiameter != newVal)
    {
-      STARTUNDO
+      
       m_d.m_wireDiameter = newVal;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1975,9 +1975,9 @@ STDMETHODIMP Ramp::put_WireDistanceX(float newVal)
 {
    if (m_d.m_wireDistanceX != newVal)
    {
-      STARTUNDO
+      
       m_d.m_wireDistanceX = newVal;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1994,9 +1994,9 @@ STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
 {
    if (m_d.m_wireDistanceY != newVal)
    {
-      STARTUNDO
+      
       m_d.m_wireDistanceY = newVal;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -2014,9 +2014,9 @@ STDMETHODIMP Ramp::get_PhysicsMaterial(BSTR *pVal)
 
 STDMETHODIMP Ramp::put_PhysicsMaterial(BSTR newVal)
 {
-    STARTUNDO
+    
     WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, MAXNAMEBUFFER, NULL, NULL);
-    STOPUNDO
+    
 
     return S_OK;
 }
@@ -2030,9 +2030,9 @@ STDMETHODIMP Ramp::get_OverwritePhysics(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Ramp::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
-    STARTUNDO
+    
     m_d.m_overwritePhysics = VBTOb(newVal);
-    STOPUNDO
+    
 
     return S_OK;
 }

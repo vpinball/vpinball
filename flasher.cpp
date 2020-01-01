@@ -629,6 +629,18 @@ HRESULT Flasher::InitPostLoad()
    return S_OK;
 }
 
+void Flasher::SetAlpha(long value)
+{
+    m_d.m_alpha = value;
+    if (m_d.m_alpha < 0) m_d.m_alpha = 0;
+}
+
+void Flasher::SetFilterAmount(long value)
+{
+    m_d.m_filterAmount = value;
+    if (m_d.m_filterAmount < 0)m_d.m_filterAmount = 0;
+}
+
 STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)
 {
    static const IID* arr[] =
@@ -655,10 +667,8 @@ STDMETHODIMP Flasher::put_X(float newVal)
 {
    if (m_d.m_vCenter.x != newVal)
    {
-      STARTUNDO
       m_d.m_vCenter.x = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
    }
 
    return S_OK;
@@ -675,10 +685,8 @@ STDMETHODIMP Flasher::put_Y(float newVal)
 {
    if (m_d.m_vCenter.y != newVal)
    {
-      STARTUNDO
       m_d.m_vCenter.y = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
    }
 
    return S_OK;
@@ -695,10 +703,8 @@ STDMETHODIMP Flasher::put_RotX(float newVal)
 {
    if (m_d.m_rotX != newVal)
    {
-      STARTUNDO
       m_d.m_rotX = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
    }
 
    return S_OK;
@@ -715,10 +721,8 @@ STDMETHODIMP Flasher::put_RotY(float newVal)
 {
    if (m_d.m_rotY != newVal)
    {
-      STARTUNDO
       m_d.m_rotY = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
    }
 
    return S_OK;
@@ -735,10 +739,8 @@ STDMETHODIMP Flasher::put_RotZ(float newVal)
 {
    if (m_d.m_rotZ != newVal)
    {
-      STARTUNDO
       m_d.m_rotZ = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
    }
 
    return S_OK;
@@ -755,10 +757,8 @@ STDMETHODIMP Flasher::put_Height(float newVal)
 {
    if (m_d.m_height != newVal)
    {
-      STARTUNDO
       m_d.m_height = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
    }
 
    return S_OK;
@@ -775,10 +775,8 @@ STDMETHODIMP Flasher::put_Color(OLE_COLOR newVal)
 {
    if (m_d.m_color != newVal)
    {
-      STARTUNDO
       m_d.m_color = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
    }
 
    return S_OK;
@@ -800,11 +798,7 @@ STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXNAMEBUFFER, NULL, NULL);
 
    if (strcmp(m_szImage, m_d.m_szImageA) != 0)
-   {
-      STARTUNDO
       strcpy_s(m_d.m_szImageA, MAXTOKEN, m_szImage);
-      STOPUNDO
-   }
 
    return S_OK;
 }
@@ -825,11 +819,7 @@ STDMETHODIMP Flasher::put_ImageB(BSTR newVal)
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXNAMEBUFFER, NULL, NULL);
 
    if (strcmp(m_szImage, m_d.m_szImageB) != 0)
-   {
-      STARTUNDO
       strcpy_s(m_d.m_szImageB, MAXTOKEN, m_szImage);
-      STOPUNDO
-   }
 
    return S_OK;
 }
@@ -879,37 +869,27 @@ STDMETHODIMP Flasher::put_Filter(BSTR newVal)
 
    if (strcmp(m_szFilter, "Additive") == 0 && m_d.m_filter != Filter_Additive)
    {
-      STARTUNDO
       m_d.m_filter = Filter_Additive;
-      STOPUNDO
       m_dynamicVertexBufferRegenerate = true;
    }
    else if (strcmp(m_szFilter, "Multiply") == 0 && m_d.m_filter != Filter_Multiply)
    {
-      STARTUNDO
       m_d.m_filter = Filter_Multiply;
-      STOPUNDO
       m_dynamicVertexBufferRegenerate = true;
    }
    else if (strcmp(m_szFilter, "Overlay") == 0 && m_d.m_filter != Filter_Overlay)
    {
-      STARTUNDO
       m_d.m_filter = Filter_Overlay;
-      STOPUNDO
       m_dynamicVertexBufferRegenerate = true;
    }
    else if (strcmp(m_szFilter, "Screen") == 0 && m_d.m_filter != Filter_Screen)
    {
-      STARTUNDO
       m_d.m_filter = Filter_Screen;
-      STOPUNDO
       m_dynamicVertexBufferRegenerate = true;
    }
    else if (strcmp(m_szFilter, "None") == 0 && m_d.m_filter != Filter_None)
    {
-      STARTUNDO
       m_d.m_filter = Filter_None;
-      STOPUNDO
       m_dynamicVertexBufferRegenerate = true;
    }
 
@@ -924,14 +904,7 @@ STDMETHODIMP Flasher::get_Opacity(long *pVal)
 
 STDMETHODIMP Flasher::put_Opacity(long newVal)
 {
-   STARTUNDO
-
-   m_d.m_alpha = newVal;
-   //if (m_d.m_alpha>100 ) m_d.m_alpha=100;
-   if (m_d.m_alpha < 0) m_d.m_alpha = 0;
-
-   STOPUNDO
-
+   SetAlpha(newVal);
    return S_OK;
 }
 
@@ -943,10 +916,7 @@ STDMETHODIMP Flasher::get_IntensityScale(float *pVal)
 
 STDMETHODIMP Flasher::put_IntensityScale(float newVal)
 {
-   STARTUNDO
    m_d.m_intensity_scale = newVal;
-   STOPUNDO
-
    return S_OK;
 }
 
@@ -958,10 +928,7 @@ STDMETHODIMP Flasher::get_ModulateVsAdd(float *pVal)
 
 STDMETHODIMP Flasher::put_ModulateVsAdd(float newVal)
 {
-   STARTUNDO
    m_d.m_modulate_vs_add = newVal;
-   STOPUNDO
-
    return S_OK;
 }
 
@@ -973,12 +940,7 @@ STDMETHODIMP Flasher::get_Amount(long *pVal)
 
 STDMETHODIMP Flasher::put_Amount(long newVal)
 {
-   STARTUNDO
-   m_d.m_filterAmount = newVal;
-   //if (m_d.m_filterAmount>100 ) m_d.m_filterAmount=100;
-   if (m_d.m_filterAmount < 0) m_d.m_filterAmount = 0;
-   STOPUNDO
-
+   SetFilterAmount(newVal);
    return S_OK;
 }
 
@@ -991,13 +953,7 @@ STDMETHODIMP Flasher::get_Visible(VARIANT_BOOL *pVal) //temporary value of objec
 
 STDMETHODIMP Flasher::put_Visible(VARIANT_BOOL newVal)
 {
-   //if (!g_pplayer )
-   {
-      STARTUNDO
-      m_d.m_isVisible = VBTOb(newVal); // set visibility
-      STOPUNDO
-   }
-
+   m_d.m_isVisible = VBTOb(newVal); // set visibility
    return S_OK;
 }
 
@@ -1010,13 +966,7 @@ STDMETHODIMP Flasher::get_DisplayTexture(VARIANT_BOOL *pVal) //temporary value o
 
 STDMETHODIMP Flasher::put_DisplayTexture(VARIANT_BOOL newVal)
 {
-   if (!g_pplayer)
-   {
-      STARTUNDO
-      m_d.m_displayTexture = VBTOb(newVal); // set visibility
-      STOPUNDO
-   }
-
+   m_d.m_displayTexture = VBTOb(newVal); // set visibility
    return S_OK;
 }
 
@@ -1029,10 +979,7 @@ STDMETHODIMP Flasher::get_AddBlend(VARIANT_BOOL *pVal) //temporary value of obje
 
 STDMETHODIMP Flasher::put_AddBlend(VARIANT_BOOL newVal)
 {
-   STARTUNDO
    m_d.m_addBlend = VBTOb(newVal);
-   STOPUNDO
-
    return S_OK;
 }
 
@@ -1045,10 +992,7 @@ STDMETHODIMP Flasher::get_DMD(VARIANT_BOOL *pVal) //temporary value of object
 
 STDMETHODIMP Flasher::put_DMD(VARIANT_BOOL newVal)
 {
-   STARTUNDO
    m_d.m_isDMD = VBTOb(newVal);
-   STOPUNDO
-
    return S_OK;
 }
 
@@ -1063,10 +1007,8 @@ STDMETHODIMP Flasher::put_DepthBias(float newVal)
 {
    if (m_d.m_depthBias != newVal)
    {
-      STARTUNDO
       m_d.m_depthBias = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
    }
 
    return S_OK;
@@ -1083,10 +1025,8 @@ STDMETHODIMP Flasher::put_ImageAlignment(RampImageAlignment newVal)
 {
    if (m_d.m_imagealignment != newVal)
    {
-      STARTUNDO
       m_d.m_imagealignment = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
    }
 
    return S_OK;

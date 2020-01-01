@@ -576,9 +576,9 @@ STDMETHODIMP Spinner::get_Length(float *pVal)
 
 STDMETHODIMP Spinner::put_Length(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_length = newVal;
-   STOPUNDO
+   
 
    UpdateUnitsInfo();
 
@@ -594,9 +594,9 @@ STDMETHODIMP Spinner::get_Rotation(float *pVal)
 
 STDMETHODIMP Spinner::put_Rotation(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_rotation = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -611,9 +611,9 @@ STDMETHODIMP Spinner::get_Height(float *pVal)
 
 STDMETHODIMP Spinner::put_Height(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_height = newVal;
-   STOPUNDO
+   
 
    UpdateUnitsInfo();
 
@@ -634,9 +634,9 @@ STDMETHODIMP Spinner::put_Damping(float newVal)
       m_phitspinner->m_spinnerMover.m_damping = powf(tmp, (float)PHYS_FACTOR);
    else
    {
-      STARTUNDO
+      
       m_d.m_damping = tmp;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -654,9 +654,9 @@ STDMETHODIMP Spinner::get_Material(BSTR *pVal)
 
 STDMETHODIMP Spinner::put_Material(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -682,9 +682,9 @@ STDMETHODIMP Spinner::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   STARTUNDO
+   
    strcpy_s(m_d.m_szImage,szImage);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -698,9 +698,9 @@ STDMETHODIMP Spinner::get_X(float *pVal)
 
 STDMETHODIMP Spinner::put_X(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_vCenter.x = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -714,9 +714,9 @@ STDMETHODIMP Spinner::get_Y(float *pVal)
 
 STDMETHODIMP Spinner::put_Y(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_vCenter.y = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -733,9 +733,9 @@ STDMETHODIMP Spinner::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Spinner::put_Surface(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -749,9 +749,9 @@ STDMETHODIMP Spinner::get_ShowBracket(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Spinner::put_ShowBracket(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_showBracket = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -784,9 +784,9 @@ STDMETHODIMP Spinner::put_AngleMax(float newVal)
    }
    else
    {
-      STARTUNDO
+      
       m_d.m_angleMax = newVal;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -820,9 +820,9 @@ STDMETHODIMP Spinner::put_AngleMin(float newVal)
    }
    else
    {
-      STARTUNDO
+      
       m_d.m_angleMin = newVal;
-      STOPUNDO
+      
    }
    return S_OK;
 }
@@ -844,9 +844,9 @@ STDMETHODIMP Spinner::put_Elasticity(float newVal)
    }
    else
    {
-      STARTUNDO
+      
       m_d.m_elasticity = newVal;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -868,9 +868,9 @@ STDMETHODIMP Spinner::put_Visible(VARIANT_BOOL newVal)
    }
    else
    {
-      STARTUNDO
+      
       m_d.m_visible = VBTOb(newVal);
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -886,9 +886,9 @@ STDMETHODIMP Spinner::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Spinner::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_reflectionEnabled = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }

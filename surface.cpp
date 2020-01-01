@@ -1449,9 +1449,9 @@ STDMETHODIMP Surface::get_HasHitEvent(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_HasHitEvent(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_hitEvent = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1465,9 +1465,9 @@ STDMETHODIMP Surface::get_Threshold(float *pVal)
 
 STDMETHODIMP Surface::put_Threshold(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_threshold = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1493,9 +1493,9 @@ STDMETHODIMP Surface::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   STARTUNDO
+   
    strcpy_s(m_d.m_szImage,szImage);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1512,9 +1512,9 @@ STDMETHODIMP Surface::get_SideMaterial(BSTR *pVal)
 
 STDMETHODIMP Surface::put_SideMaterial(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSideMaterial, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1531,9 +1531,9 @@ STDMETHODIMP Surface::get_SlingshotMaterial(BSTR *pVal)
 
 STDMETHODIMP Surface::put_SlingshotMaterial(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSlingShotMaterial, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1561,9 +1561,9 @@ STDMETHODIMP Surface::get_HeightBottom(float *pVal)
 
 STDMETHODIMP Surface::put_HeightBottom(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_heightbottom = newVal;
-   STOPUNDO
+   
 
    UpdateUnitsInfo();
 
@@ -1579,9 +1579,9 @@ STDMETHODIMP Surface::get_HeightTop(float *pVal)
 
 STDMETHODIMP Surface::put_HeightTop(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_heighttop = newVal;
-   STOPUNDO
+   
 
    UpdateUnitsInfo();
 
@@ -1600,9 +1600,9 @@ STDMETHODIMP Surface::get_TopMaterial(BSTR *pVal)
 
 STDMETHODIMP Surface::put_TopMaterial(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szTopMaterial, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1619,9 +1619,9 @@ STDMETHODIMP Surface::get_PhysicsMaterial(BSTR *pVal)
 
 STDMETHODIMP Surface::put_PhysicsMaterial(BSTR newVal)
 {
-    STARTUNDO
+    
     WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, MAXNAMEBUFFER, NULL, NULL);
-    STOPUNDO
+    
 
     return S_OK;
 }
@@ -1635,9 +1635,9 @@ STDMETHODIMP Surface::get_OverwritePhysics(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
-    STARTUNDO
+    
     m_d.m_overwritePhysics = VBTOb(newVal);
-    STOPUNDO
+    
 
     return S_OK;
 }
@@ -1651,9 +1651,9 @@ STDMETHODIMP Surface::get_CanDrop(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_CanDrop(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_droppable = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1667,9 +1667,9 @@ STDMETHODIMP Surface::get_FlipbookAnimation(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_FlipbookAnimation(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_flipbook = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1683,9 +1683,9 @@ STDMETHODIMP Surface::get_IsBottomSolid(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_IsBottomSolid(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_isBottomSolid = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1729,9 +1729,9 @@ STDMETHODIMP Surface::get_DisplayTexture(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_DisplayTexture(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_displayTexture = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1747,9 +1747,9 @@ STDMETHODIMP Surface::get_SlingshotStrength(float *pVal)
 
 STDMETHODIMP Surface::put_SlingshotStrength(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_slingshotforce = newVal*10.0f;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1763,9 +1763,9 @@ STDMETHODIMP Surface::get_Elasticity(float *pVal)
 
 STDMETHODIMP Surface::put_Elasticity(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_elasticity = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1780,9 +1780,9 @@ STDMETHODIMP Surface::get_Friction(float *pVal)
 
 STDMETHODIMP Surface::put_Friction(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_friction = clamp(newVal, 0.f, 1.f);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1796,9 +1796,9 @@ STDMETHODIMP Surface::get_Scatter(float *pVal)
 
 STDMETHODIMP Surface::put_Scatter(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_scatter = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1812,9 +1812,9 @@ STDMETHODIMP Surface::get_Visible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_Visible(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_topBottomVisible = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1840,9 +1840,9 @@ STDMETHODIMP Surface::put_SideImage(BSTR newVal)
        return E_FAIL;
    }
 
-   STARTUNDO
+   
    strcpy_s(m_d.m_szSideImage,szSideImage);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1856,9 +1856,9 @@ STDMETHODIMP Surface::get_Disabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_Disabled(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_disabled = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1872,9 +1872,9 @@ STDMETHODIMP Surface::get_SideVisible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_SideVisible(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_sideVisible = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1892,9 +1892,9 @@ STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
 
    if (!g_pplayer)
    {
-       STARTUNDO
+       
        m_d.m_collidable = fNewVal;
-       STOPUNDO
+       
    }
    else
    {
@@ -1919,9 +1919,9 @@ STDMETHODIMP Surface::get_SlingshotThreshold(float *pVal)
 
 STDMETHODIMP Surface::put_SlingshotThreshold(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_slingshot_threshold = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1935,9 +1935,9 @@ STDMETHODIMP Surface::get_SlingshotAnimation(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_SlingshotAnimation(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_slingshotAnimation = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1951,9 +1951,9 @@ STDMETHODIMP Surface::get_DisableLighting(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_DisableLighting(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_disableLightingTop = VBTOb(newVal) ? 1.f : 0;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1967,9 +1967,9 @@ STDMETHODIMP Surface::get_BlendDisableLighting(float *pVal)
 
 STDMETHODIMP Surface::put_BlendDisableLighting(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_disableLightingTop = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1983,9 +1983,9 @@ STDMETHODIMP Surface::get_BlendDisableLightingFromBelow(float *pVal)
 
 STDMETHODIMP Surface::put_BlendDisableLightingFromBelow(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_disableLightingBelow = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1999,9 +1999,9 @@ STDMETHODIMP Surface::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_reflectionEnabled = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }

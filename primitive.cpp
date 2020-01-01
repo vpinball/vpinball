@@ -2033,9 +2033,9 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   STARTUNDO
+   
    strcpy_s(m_d.m_szImage,szImage);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2061,9 +2061,9 @@ STDMETHODIMP Primitive::put_NormalMap(BSTR newVal)
         return E_FAIL;
     }
 
-    STARTUNDO
+    
     strcpy_s(m_d.m_szNormalMap, szImage);
-    STOPUNDO
+    
 
     return S_OK;
 }
@@ -2080,9 +2080,9 @@ STDMETHODIMP Primitive::get_MeshFileName(BSTR *pVal)
 
 STDMETHODIMP Primitive::put_MeshFileName(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_meshFileName, 256, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2164,7 +2164,7 @@ STDMETHODIMP Primitive::put_Sides(int newVal)
 
    if (m_d.m_Sides != newVal)
    {
-      STARTUNDO
+      
 
       m_d.m_Sides = newVal;
       if (!m_d.m_use3DMesh)
@@ -2175,7 +2175,7 @@ STDMETHODIMP Primitive::put_Sides(int newVal)
          TransformVertices();
       }
 
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -2193,9 +2193,9 @@ STDMETHODIMP Primitive::get_Material(BSTR *pVal)
 
 STDMETHODIMP Primitive::put_Material(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2211,9 +2211,9 @@ STDMETHODIMP Primitive::put_SideColor(OLE_COLOR newVal)
 {
    if (m_d.m_SideColor != newVal)
    {
-      STARTUNDO
+      
       m_d.m_SideColor = newVal;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -2228,9 +2228,9 @@ STDMETHODIMP Primitive::get_Visible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Primitive::put_Visible(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_visible = VBTOF(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2246,10 +2246,10 @@ STDMETHODIMP Primitive::put_DrawTexturesInside(VARIANT_BOOL newVal)
 {
    if (m_d.m_drawTexturesInside != VBTOb(newVal))
    {
-      STARTUNDO
+      
       m_d.m_drawTexturesInside = VBTOb(newVal);
       m_vertexBufferRegenerate = true;
-      STOPUNDO
+      
    }
    return S_OK;
 }
@@ -2266,9 +2266,9 @@ STDMETHODIMP Primitive::put_X(float newVal)
 {
    if (m_d.m_vPosition.x != newVal)
    {
-      STARTUNDO
+      
       m_d.m_vPosition.x = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2287,9 +2287,9 @@ STDMETHODIMP Primitive::put_Y(float newVal)
 {
    if (m_d.m_vPosition.y != newVal)
    {
-      STARTUNDO
+      
       m_d.m_vPosition.y = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2308,9 +2308,9 @@ STDMETHODIMP Primitive::put_Z(float newVal)
 {
    if (m_d.m_vPosition.z != newVal)
    {
-      STARTUNDO
+      
       m_d.m_vPosition.z = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2329,9 +2329,9 @@ STDMETHODIMP Primitive::put_Size_X(float newVal)
 {
    if (m_d.m_vSize.x != newVal)
    {
-      STARTUNDO
+      
       m_d.m_vSize.x = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2350,9 +2350,9 @@ STDMETHODIMP Primitive::put_Size_Y(float newVal)
 {
    if (m_d.m_vSize.y != newVal)
    {
-      STARTUNDO
+      
       m_d.m_vSize.y = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2371,9 +2371,9 @@ STDMETHODIMP Primitive::put_Size_Z(float newVal)
 {
    if (m_d.m_vSize.z != newVal)
    {
-      STARTUNDO
+      
       m_d.m_vSize.z = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2401,9 +2401,9 @@ STDMETHODIMP Primitive::put_RotX(float newVal)
 {
    if (m_d.m_aRotAndTra[0] != newVal)
    {
-      STARTUNDO
+      
       m_d.m_aRotAndTra[0] = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2431,9 +2431,9 @@ STDMETHODIMP Primitive::put_RotY(float newVal)
 {
    if (m_d.m_aRotAndTra[1] != newVal)
    {
-      STARTUNDO
+      
       m_d.m_aRotAndTra[1] = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2461,9 +2461,9 @@ STDMETHODIMP Primitive::put_RotZ(float newVal)
 {
    if (m_d.m_aRotAndTra[2] != newVal)
    {
-      STARTUNDO
+      
       m_d.m_aRotAndTra[2] = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2491,9 +2491,9 @@ STDMETHODIMP Primitive::put_TransX(float newVal)
 {
    if (m_d.m_aRotAndTra[3] != newVal)
    {
-      STARTUNDO
+      
       m_d.m_aRotAndTra[3] = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2522,9 +2522,9 @@ STDMETHODIMP Primitive::put_TransY(float newVal)
 {
    if (m_d.m_aRotAndTra[4] != newVal)
    {
-      STARTUNDO
+      
       m_d.m_aRotAndTra[4] = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2552,9 +2552,9 @@ STDMETHODIMP Primitive::put_TransZ(float newVal)
 {
    if (m_d.m_aRotAndTra[5] != newVal)
    {
-      STARTUNDO
+      
       m_d.m_aRotAndTra[5] = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2582,9 +2582,9 @@ STDMETHODIMP Primitive::put_ObjRotX(float newVal)
 {
    if (m_d.m_aRotAndTra[6] != newVal)
    {
-      STARTUNDO
+      
       m_d.m_aRotAndTra[6] = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2612,9 +2612,9 @@ STDMETHODIMP Primitive::put_ObjRotY(float newVal)
 {
    if (m_d.m_aRotAndTra[7] != newVal)
    {
-      STARTUNDO
+      
       m_d.m_aRotAndTra[7] = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2642,9 +2642,9 @@ STDMETHODIMP Primitive::put_ObjRotZ(float newVal)
 {
    if (m_d.m_aRotAndTra[8] != newVal)
    {
-      STARTUNDO
+      
       m_d.m_aRotAndTra[8] = newVal;
-      STOPUNDO
+      
 
       UpdateEditorView();
    }
@@ -2660,9 +2660,9 @@ STDMETHODIMP Primitive::get_EdgeFactorUI(float *pVal)
 
 STDMETHODIMP Primitive::put_EdgeFactorUI(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_edgeFactorUI = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2675,9 +2675,9 @@ STDMETHODIMP Primitive::get_CollisionReductionFactor(float *pVal)
 
 STDMETHODIMP Primitive::put_CollisionReductionFactor(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_collision_reductionFactor = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2691,9 +2691,9 @@ STDMETHODIMP Primitive::get_EnableStaticRendering(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Primitive::put_EnableStaticRendering(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_staticRendering = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2707,9 +2707,9 @@ STDMETHODIMP Primitive::get_HasHitEvent(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Primitive::put_HasHitEvent(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_hitEvent = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2723,9 +2723,9 @@ STDMETHODIMP Primitive::get_Threshold(float *pVal)
 
 STDMETHODIMP Primitive::put_Threshold(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_threshold = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2739,9 +2739,9 @@ STDMETHODIMP Primitive::get_Elasticity(float *pVal)
 
 STDMETHODIMP Primitive::put_Elasticity(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_elasticity = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2755,9 +2755,9 @@ STDMETHODIMP Primitive::get_ElasticityFalloff(float *pVal)
 
 STDMETHODIMP Primitive::put_ElasticityFalloff(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_elasticityFalloff = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2771,9 +2771,9 @@ STDMETHODIMP Primitive::get_Friction(float *pVal)
 
 STDMETHODIMP Primitive::put_Friction(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_friction = clamp(newVal, 0.f, 1.f);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2787,9 +2787,9 @@ STDMETHODIMP Primitive::get_Scatter(float *pVal)
 
 STDMETHODIMP Primitive::put_Scatter(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_scatter = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2806,9 +2806,9 @@ STDMETHODIMP Primitive::put_Collidable(VARIANT_BOOL newVal)
    const bool val = VBTOb(newVal);
    if (!g_pplayer)
    {
-      STARTUNDO
+      
       m_d.m_collidable = val;
-      STOPUNDO
+      
    }
    else
    {
@@ -2829,9 +2829,9 @@ STDMETHODIMP Primitive::get_IsToy(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Primitive::put_IsToy(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_toy = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2844,9 +2844,9 @@ STDMETHODIMP Primitive::get_BackfacesEnabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Primitive::put_BackfacesEnabled(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_backfacesEnabled = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2859,9 +2859,9 @@ STDMETHODIMP Primitive::get_ObjectSpaceNormalMap(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Primitive::put_ObjectSpaceNormalMap(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_objectSpaceNormalMap = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2875,9 +2875,9 @@ STDMETHODIMP Primitive::get_DisableLighting(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Primitive::put_DisableLighting(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_disableLightingTop = VBTOb(newVal) ? 1.f : 0;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2891,9 +2891,9 @@ STDMETHODIMP Primitive::get_BlendDisableLighting(float *pVal)
 
 STDMETHODIMP Primitive::put_BlendDisableLighting(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_disableLightingTop = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2907,9 +2907,9 @@ STDMETHODIMP Primitive::get_BlendDisableLightingFromBelow(float *pVal)
 
 STDMETHODIMP Primitive::put_BlendDisableLightingFromBelow(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_disableLightingBelow = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2923,9 +2923,9 @@ STDMETHODIMP Primitive::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Primitive::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_reflectionEnabled = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -2942,9 +2942,9 @@ STDMETHODIMP Primitive::get_PhysicsMaterial(BSTR *pVal)
 
 STDMETHODIMP Primitive::put_PhysicsMaterial(BSTR newVal)
 {
-    STARTUNDO
+    
     WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, MAXNAMEBUFFER, NULL, NULL);
-    STOPUNDO
+    
 
     return S_OK;
 }
@@ -2958,9 +2958,9 @@ STDMETHODIMP Primitive::get_OverwritePhysics(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Primitive::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
-    STARTUNDO
+    
     m_d.m_overwritePhysics = VBTOb(newVal);
-    STOPUNDO
+    
 
     return S_OK;
 }
@@ -2980,9 +2980,9 @@ STDMETHODIMP Primitive::get_DisplayTexture(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Primitive::put_DisplayTexture(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_displayTexture = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -3077,9 +3077,9 @@ STDMETHODIMP Primitive::put_DepthBias(float newVal)
 {
    if (m_d.m_depthBias != newVal)
    {
-      STARTUNDO
+      
       m_d.m_depthBias = newVal;
-      STOPUNDO
+      
    }
 
    return S_OK;
