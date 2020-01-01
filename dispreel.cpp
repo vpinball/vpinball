@@ -613,9 +613,9 @@ STDMETHODIMP DispReel::get_BackColor(OLE_COLOR *pVal)
 
 STDMETHODIMP DispReel::put_BackColor(OLE_COLOR newVal)
 {
-   STARTUNDO
+   
    m_d.m_backcolor = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -629,9 +629,9 @@ STDMETHODIMP DispReel::get_Reels(float *pVal)
 
 STDMETHODIMP DispReel::put_Reels(float newVal)
 {
-   STARTUNDO
+   
    SetReels((int)newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -645,9 +645,9 @@ STDMETHODIMP DispReel::get_Width(float *pVal)
 
 STDMETHODIMP DispReel::put_Width(float newVal)
 {
-   STARTUNDO
+   
    SetWidth(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -661,9 +661,9 @@ STDMETHODIMP DispReel::get_Height(float *pVal)
 
 STDMETHODIMP DispReel::put_Height(float newVal)
 {
-   STARTUNDO
+   
    SetHeight(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -678,9 +678,9 @@ STDMETHODIMP DispReel::get_X(float *pVal)
 
 STDMETHODIMP DispReel::put_X(float newVal)
 {
-   STARTUNDO
+   
    SetX(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -694,9 +694,9 @@ STDMETHODIMP DispReel::get_Y(float *pVal)
 
 STDMETHODIMP DispReel::put_Y(float newVal)
 {
-   STARTUNDO
+   
    SetY(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -710,9 +710,9 @@ STDMETHODIMP DispReel::get_IsTransparent(VARIANT_BOOL *pVal)
 
 STDMETHODIMP DispReel::put_IsTransparent(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_transparent = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -737,9 +737,9 @@ STDMETHODIMP DispReel::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   STARTUNDO
+   
    strcpy_s(m_d.m_szImage,szImage);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -752,9 +752,9 @@ STDMETHODIMP DispReel::get_Spacing(float *pVal)
 
 STDMETHODIMP DispReel::put_Spacing(float newVal)
 {
-   STARTUNDO
+   
    SetSpacing(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -770,9 +770,9 @@ STDMETHODIMP DispReel::get_Sound(BSTR *pVal)
 
 STDMETHODIMP DispReel::put_Sound(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSound, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -786,9 +786,9 @@ STDMETHODIMP DispReel::get_Steps(float *pVal)
 
 STDMETHODIMP DispReel::put_Steps(float newVal)
 {
-   STARTUNDO
+   
    SetMotorSteps((int)newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -802,9 +802,9 @@ STDMETHODIMP DispReel::get_Range(float *pVal)
 
 STDMETHODIMP DispReel::put_Range(float newVal)
 {
-   STARTUNDO
+   
    SetRange((int)newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -818,11 +818,11 @@ STDMETHODIMP DispReel::get_UpdateInterval(long *pVal)
 
 STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
 {
-   STARTUNDO
+   
    SetUpdateInterval((int)newVal);
    if (g_pplayer)
       m_timeNextUpdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -836,9 +836,9 @@ STDMETHODIMP DispReel::get_UseImageGrid(VARIANT_BOOL *pVal)
 
 STDMETHODIMP DispReel::put_UseImageGrid(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_useImageGrid = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -852,9 +852,9 @@ STDMETHODIMP DispReel::get_Visible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP DispReel::put_Visible(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_visible = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -868,9 +868,9 @@ STDMETHODIMP DispReel::get_ImagesPerGridRow(long *pVal)
 
 STDMETHODIMP DispReel::put_ImagesPerGridRow(long newVal)
 {
-   STARTUNDO
+   
    SetImagesPerGridRow((int)newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }

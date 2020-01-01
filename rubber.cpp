@@ -888,10 +888,10 @@ STDMETHODIMP Rubber::put_Height(float newVal)
 {
    if (m_d.m_height != newVal)
    {
-      STARTUNDO
+      
       m_d.m_height = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
 
       UpdateUnitsInfo();
    }
@@ -910,9 +910,9 @@ STDMETHODIMP Rubber::put_HitHeight(float newVal)
 {
    if (m_d.m_hitHeight != newVal)
    {
-      STARTUNDO
+      
       m_d.m_hitHeight = newVal;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -930,10 +930,10 @@ STDMETHODIMP Rubber::put_Thickness(int newVal)
 {
    if (m_d.m_thickness != newVal)
    {
-      STARTUNDO
+      
       m_d.m_thickness = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
 
       UpdateUnitsInfo();
    }
@@ -953,9 +953,9 @@ STDMETHODIMP Rubber::get_Material(BSTR *pVal)
 
 STDMETHODIMP Rubber::put_Material(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -985,10 +985,10 @@ STDMETHODIMP Rubber::put_Image(BSTR newVal)
 
    if (strcmp(m_szImage, m_d.m_szImage) != 0)
    {
-      STARTUNDO
+      
       strcpy_s(m_d.m_szImage, MAXTOKEN, m_szImage);
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1003,9 +1003,9 @@ STDMETHODIMP Rubber::get_HasHitEvent(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Rubber::put_HasHitEvent(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_hitEvent = VBTOF(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1019,9 +1019,9 @@ STDMETHODIMP Rubber::get_Elasticity(float *pVal)
 
 STDMETHODIMP Rubber::put_Elasticity(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_elasticity = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1035,9 +1035,9 @@ STDMETHODIMP Rubber::get_ElasticityFalloff(float *pVal)
 
 STDMETHODIMP Rubber::put_ElasticityFalloff(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_elasticityFalloff = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1053,9 +1053,9 @@ STDMETHODIMP Rubber::put_Friction(float newVal)
 {
    newVal = clamp(newVal, 0.f, 1.f);
 
-   STARTUNDO
+   
    m_d.m_friction = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1069,9 +1069,9 @@ STDMETHODIMP Rubber::get_Scatter(float *pVal)
 
 STDMETHODIMP Rubber::put_Scatter(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_scatter = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1088,9 +1088,9 @@ STDMETHODIMP Rubber::put_Collidable(VARIANT_BOOL newVal)
    const bool val = VBTOb(newVal);
    if (!g_pplayer)
    {
-      STARTUNDO
+      
       m_d.m_collidable = val;
-      STOPUNDO
+      
    }
    else
    {
@@ -1111,11 +1111,11 @@ STDMETHODIMP Rubber::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
 
 STDMETHODIMP Rubber::put_Visible(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    if (g_pplayer && m_d.m_staticRendering)
       ShowError("Rubber is static! Visible property not supported!");
    m_d.m_visible = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1129,9 +1129,9 @@ STDMETHODIMP Rubber::get_EnableStaticRendering(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Rubber::put_EnableStaticRendering(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_staticRendering = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1145,9 +1145,9 @@ STDMETHODIMP Rubber::get_EnableShowInEditor(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Rubber::put_EnableShowInEditor(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_showInEditor = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1161,9 +1161,9 @@ STDMETHODIMP Rubber::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Rubber::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_reflectionEnabled = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1179,10 +1179,10 @@ STDMETHODIMP Rubber::put_RotX(float newVal)
 {
    if (m_d.m_rotX != newVal)
    {
-      STARTUNDO
+      
       m_d.m_rotX = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1199,10 +1199,10 @@ STDMETHODIMP Rubber::put_RotY(float newVal)
 {
    if (m_d.m_rotY != newVal)
    {
-      STARTUNDO
+      
       m_d.m_rotY = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1219,10 +1219,10 @@ STDMETHODIMP Rubber::put_RotZ(float newVal)
 {
    if (m_d.m_rotZ != newVal)
    {
-      STARTUNDO
+      
       m_d.m_rotZ = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1240,9 +1240,9 @@ STDMETHODIMP Rubber::get_PhysicsMaterial(BSTR *pVal)
 
 STDMETHODIMP Rubber::put_PhysicsMaterial(BSTR newVal)
 {
-    STARTUNDO
+    
     WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, MAXNAMEBUFFER, NULL, NULL);
-    STOPUNDO
+    
 
     return S_OK;
 }
@@ -1256,9 +1256,9 @@ STDMETHODIMP Rubber::get_OverwritePhysics(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Rubber::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
-    STARTUNDO
+    
     m_d.m_overwritePhysics = VBTOb(newVal);
-    STOPUNDO
+    
 
     return S_OK;
 }

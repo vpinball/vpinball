@@ -137,6 +137,8 @@ private:
 
 // IFlasher
 public:
+   void SetAlpha(long value);
+   void SetFilterAmount(long value);
    STDMETHOD(get_ImageA)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_ImageA)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_ImageB)(/*[out, retval]*/ BSTR *pVal);

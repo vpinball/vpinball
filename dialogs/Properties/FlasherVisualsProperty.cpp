@@ -102,12 +102,12 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_FILTERAMOUNT_EDIT:
                 PropertyDialog::StartUndo(flash);
-                flash->m_d.m_filterAmount = PropertyDialog::GetIntTextbox(m_filterAmountEdit);
+                flash->SetFilterAmount(PropertyDialog::GetIntTextbox(m_filterAmountEdit));
                 PropertyDialog::EndUndo(flash);
                 break;
             case IDC_ALPHA_EDIT:
                 PropertyDialog::StartUndo(flash);
-                flash->m_d.m_alpha = PropertyDialog::GetIntTextbox(m_opacyitAmountEdit);
+                flash->SetAlpha(PropertyDialog::GetIntTextbox(m_opacyitAmountEdit));
                 PropertyDialog::EndUndo(flash);
                 break;
             case IDC_MODULATE_VS_ADD:

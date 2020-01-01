@@ -1009,9 +1009,9 @@ STDMETHODIMP HitTarget::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   STARTUNDO
+   
    strcpy_s(m_d.m_szImage,szImage);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1039,9 +1039,9 @@ STDMETHODIMP HitTarget::get_Material(BSTR *pVal)
 
 STDMETHODIMP HitTarget::put_Material(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1056,9 +1056,9 @@ STDMETHODIMP HitTarget::get_Visible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP HitTarget::put_Visible(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_visible = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1075,9 +1075,9 @@ STDMETHODIMP HitTarget::put_X(float newVal)
 {
    if (m_d.m_vPosition.x != newVal)
    {
-      STARTUNDO
+      
       m_d.m_vPosition.x = newVal;
-      STOPUNDO
+      
 
       if (!g_pplayer)
          UpdateEditorView();
@@ -1097,9 +1097,9 @@ STDMETHODIMP HitTarget::put_Y(float newVal)
 {
    if (m_d.m_vPosition.y != newVal)
    {
-      STARTUNDO
+      
       m_d.m_vPosition.y = newVal;
-      STOPUNDO
+      
 
       if (!g_pplayer)
          UpdateEditorView();
@@ -1119,9 +1119,9 @@ STDMETHODIMP HitTarget::put_Z(float newVal)
 {
    if (m_d.m_vPosition.z != newVal)
    {
-      STARTUNDO
+      
       m_d.m_vPosition.z = newVal;
-      STOPUNDO
+      
 
       if (!g_pplayer)
          UpdateEditorView();
@@ -1141,9 +1141,9 @@ STDMETHODIMP HitTarget::put_ScaleX(float newVal)
 {
    if (m_d.m_vSize.x != newVal)
    {
-      STARTUNDO
+      
       m_d.m_vSize.x = newVal;
-      STOPUNDO
+      
 
       if (!g_pplayer)
          UpdateEditorView();
@@ -1163,9 +1163,9 @@ STDMETHODIMP HitTarget::put_ScaleY(float newVal)
 {
    if (m_d.m_vSize.y != newVal)
    {
-      STARTUNDO
+      
       m_d.m_vSize.y = newVal;
-      STOPUNDO
+      
 
       if (!g_pplayer)
          UpdateEditorView();
@@ -1185,9 +1185,9 @@ STDMETHODIMP HitTarget::put_ScaleZ(float newVal)
 {
    if (m_d.m_vSize.z != newVal)
    {
-      STARTUNDO
+      
       m_d.m_vSize.z = newVal;
-      STOPUNDO
+      
 
       if (!g_pplayer)
          UpdateEditorView();
@@ -1207,9 +1207,9 @@ STDMETHODIMP HitTarget::put_Orientation(float newVal)
 {
    if (m_d.m_rotZ != newVal)
    {
-      STARTUNDO
+      
       m_d.m_rotZ = newVal;
-      STOPUNDO
+      
 
       if (!g_pplayer)
          UpdateEditorView();
@@ -1227,9 +1227,9 @@ STDMETHODIMP HitTarget::get_HasHitEvent(VARIANT_BOOL *pVal)
 
 STDMETHODIMP HitTarget::put_HasHitEvent(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_useHitEvent = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1243,9 +1243,9 @@ STDMETHODIMP HitTarget::get_Threshold(float *pVal)
 
 STDMETHODIMP HitTarget::put_Threshold(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_threshold = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1259,9 +1259,9 @@ STDMETHODIMP HitTarget::get_Elasticity(float *pVal)
 
 STDMETHODIMP HitTarget::put_Elasticity(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_elasticity = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1275,9 +1275,9 @@ STDMETHODIMP HitTarget::get_ElasticityFalloff(float *pVal)
 
 STDMETHODIMP HitTarget::put_ElasticityFalloff(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_elasticityFalloff = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1291,9 +1291,9 @@ STDMETHODIMP HitTarget::get_Friction(float *pVal)
 
 STDMETHODIMP HitTarget::put_Friction(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_friction = clamp(newVal, 0.f, 1.f);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1307,9 +1307,9 @@ STDMETHODIMP HitTarget::get_Scatter(float *pVal)
 
 STDMETHODIMP HitTarget::put_Scatter(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_scatter = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1326,9 +1326,9 @@ STDMETHODIMP HitTarget::put_Collidable(VARIANT_BOOL newVal)
    const bool val = VBTOb(newVal);
    if (!g_pplayer)
    {
-      STARTUNDO
+      
       m_d.m_collidable = val;
-      STOPUNDO
+      
    }
    else
    {
@@ -1349,9 +1349,9 @@ STDMETHODIMP HitTarget::get_DisableLighting(VARIANT_BOOL *pVal)
 
 STDMETHODIMP HitTarget::put_DisableLighting(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_disableLightingTop = VBTOb(newVal) ? 1.f : 0;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1365,9 +1365,9 @@ STDMETHODIMP HitTarget::get_BlendDisableLighting(float *pVal)
 
 STDMETHODIMP HitTarget::put_BlendDisableLighting(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_disableLightingTop = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1381,9 +1381,9 @@ STDMETHODIMP HitTarget::get_BlendDisableLightingFromBelow(float *pVal)
 
 STDMETHODIMP HitTarget::put_BlendDisableLightingFromBelow(float newVal)
 {
-   STARTUNDO
+   
    m_d.m_disableLightingBelow = newVal;
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1397,9 +1397,9 @@ STDMETHODIMP HitTarget::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP HitTarget::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_reflectionEnabled = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1424,9 +1424,9 @@ STDMETHODIMP HitTarget::put_DepthBias(float newVal)
 {
    if (m_d.m_depthBias != newVal)
    {
-      STARTUNDO
+      
       m_d.m_depthBias = newVal;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1443,9 +1443,9 @@ STDMETHODIMP HitTarget::put_DropSpeed(float newVal)
 {
    if (m_d.m_dropSpeed != newVal)
    {
-      STARTUNDO
+      
       m_d.m_dropSpeed = newVal;
-      STOPUNDO
+      
    }
 
    return S_OK;
@@ -1460,7 +1460,7 @@ STDMETHODIMP HitTarget::get_IsDropped(VARIANT_BOOL *pVal)
 
 STDMETHODIMP HitTarget::put_IsDropped(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    
    const bool val = (newVal != 0);
    if (g_pplayer && m_d.m_isDropped != val)
@@ -1482,7 +1482,7 @@ STDMETHODIMP HitTarget::put_IsDropped(VARIANT_BOOL newVal)
    else
       m_d.m_isDropped = val;
 
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1496,9 +1496,9 @@ STDMETHODIMP HitTarget::get_LegacyMode(VARIANT_BOOL *pVal)
 
 STDMETHODIMP HitTarget::put_LegacyMode(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_legacy = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1513,9 +1513,9 @@ STDMETHODIMP HitTarget::get_DrawStyle(TargetType *pVal)
 
 STDMETHODIMP HitTarget::put_DrawStyle(TargetType newVal)
 {
-   STARTUNDO
+   
    m_d.m_targetType = newVal;
-   STOPUNDO
+   
     
    if(!g_pplayer)
       UpdateEditorView();
@@ -1535,9 +1535,9 @@ STDMETHODIMP HitTarget::get_PhysicsMaterial(BSTR *pVal)
 
 STDMETHODIMP HitTarget::put_PhysicsMaterial(BSTR newVal)
 {
-   STARTUNDO
+   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, MAXNAMEBUFFER, NULL, NULL);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1551,9 +1551,9 @@ STDMETHODIMP HitTarget::get_OverwritePhysics(VARIANT_BOOL *pVal)
 
 STDMETHODIMP HitTarget::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   
    m_d.m_overwritePhysics = VBTOb(newVal);
-   STOPUNDO
+   
 
    return S_OK;
 }
@@ -1589,9 +1589,9 @@ STDMETHODIMP HitTarget::get_RaiseDelay(long *pVal)
 
 STDMETHODIMP HitTarget::put_RaiseDelay(long newVal)
 {
-    STARTUNDO
+    
     m_d.m_raiseDelay = newVal;
-    STOPUNDO
+    
 
     return S_OK;
 }
