@@ -453,3 +453,14 @@ CDockToolbar::CDockToolbar()
     SetView(m_toolbarContainer);
     SetBarWidth(4);
 }
+
+void CDockToolbar::OnDestroy()
+{
+    CRect rect = GetWindowRect();
+    SaveValueInt("Editor", "ToolbarPosX", rect.left);
+    SaveValueInt("Editor", "ToolbarPosY", rect.top);
+    if (!IsDocked())
+        SaveValueBool("Editor", "ToolbarDocked", false);
+    else
+        SaveValueBool("Editor", "ToolbarDocked", true);
+}

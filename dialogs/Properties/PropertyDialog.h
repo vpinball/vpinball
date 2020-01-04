@@ -271,6 +271,7 @@ public:
     virtual ~CDockProperty()
     {
     }
+    virtual void OnDestroy();
 
     CContainProperties *GetContainProperties()
     {

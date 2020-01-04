@@ -933,3 +933,14 @@ CDockProperty::CDockProperty()
     SetView(m_propContainer);
     SetBarWidth(4);
 }
+
+void CDockProperty::OnDestroy()
+{
+    CRect rect = GetWindowRect();
+    SaveValueInt("Editor", "PropertiesPosX", rect.left);
+    SaveValueInt("Editor", "PropertiesPosY", rect.top);
+    if (!IsDocked())
+        SaveValueBool("Editor", "PropertiesDocked", false);
+    else
+        SaveValueBool("Editor", "PropertiesDocked", true);
+}
