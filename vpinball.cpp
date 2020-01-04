@@ -483,10 +483,16 @@ CDockProperty *VPinball::GetPropertiesDocker()
     const bool state = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
     if(m_propertyDialog==NULL || !m_dockProperties->IsWindow())
     {
+        const int x = LoadValueIntWithDefault("Editor", "PropertiesPosX", 100);
+        const int y = LoadValueIntWithDefault("Editor", "PropertiesPosY", 100);
+        const bool docked = LoadValueBoolWithDefault("Editor", "PropertiesDocked", true);
+
         m_dockProperties = (CDockProperty *)AddDockedChild(new CDockProperty, DS_DOCKED_RIGHT | DS_CLIENTEDGE, 280);
         assert(m_dockProperties->GetContainer());
         m_dockProperties->GetContainer()->SetHideSingleTab(TRUE);
         m_propertyDialog = m_dockProperties->GetContainProperties()->GetPropertyDialog();
+        if (!docked)
+            m_dockProperties->Undock(CPoint(x, y), true);
     }
     if (!state)
         m_dockProperties->Hide();
@@ -497,10 +503,15 @@ CDockToolbar *VPinball::GetToolbarDocker()
 {
     if(m_dockToolbar==NULL || !m_dockToolbar->IsWindow() )
     {
+        const int x = LoadValueIntWithDefault("Editor", "ToolbarPosX", 100);
+        const int y = LoadValueIntWithDefault("Editor", "ToolbarPosY", 100);
+        const bool docked = LoadValueBoolWithDefault("Editor", "ToolbarDocked", true);
         m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar, DS_DOCKED_LEFT | DS_CLIENTEDGE, 110);
         assert(m_dockToolbar->GetContainer());
         m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
         m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
+        if (!docked)
+            m_dockToolbar->Undock(CPoint(x, y), true);
     }
     return m_dockToolbar;
 }
