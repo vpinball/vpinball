@@ -2809,6 +2809,7 @@ BEGIN
         MENUITEM "Dra&wing Order (Hit)\tCtrl+Shift+D", ID_EDIT_DRAWINGORDER_HIT
         MENUITEM "Draw&ing Order (Select)\tCtrl+Shift+S", ID_EDIT_DRAWINGORDER_SELECT
         MENUITEM "Set Default Ph&ysics",        ID_EDIT_SETDEFAULTPHYSICS
+        MENUITEM "Show &Toolbar",               ID_EDIT_SHOWTOOLBAR
     END
     POPUP "&View"
     BEGIN

@@ -687,6 +687,11 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
       SetDefaultPhysics();
       break;
    }
+   case ID_EDIT_SHOWTOOLBAR:
+   {
+      (void)GetToolbarDocker();
+      break;
+   }
    case ID_LOCK:
    {
       CComObject<PinTable> * const ptCur = GetActiveTable();

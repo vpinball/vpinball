@@ -1156,6 +1156,8 @@
 #define ID_TABLEMENU_PASTE              4019
 #define ID_NEW_BLANKTABLE               4020
 #define ID_NEW_EXAMPLETABLE             4021
+#define ID_WINDOW_SHOWTOOLBAR           4022
+#define ID_EDIT_SHOWTOOLBAR             4023
 #define IDC_ENABLE_EMREEL_CHECK         13432
 #define IDC_ENABLE_DECAL_CHECK          13433
 #define IDC_BG_TEST_DESKTOP_CHECK       13434
@@ -1271,7 +1273,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        657
-#define _APS_NEXT_COMMAND_VALUE         4022
+#define _APS_NEXT_COMMAND_VALUE         4024
 #define _APS_NEXT_CONTROL_VALUE         831
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
