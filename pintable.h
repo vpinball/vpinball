@@ -55,7 +55,7 @@ protected:
 
 private:
     PinTable *m_table;
-
+    CMenu m_menu;
 };
 
 class PinTable:
