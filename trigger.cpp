@@ -1077,9 +1077,7 @@ STDMETHODIMP Trigger::get_Radius(float *pVal)
 
 STDMETHODIMP Trigger::put_Radius(float newVal)
 {
-   
    m_d.m_radius = newVal;
-   
 
    return S_OK;
 }
@@ -1094,9 +1092,7 @@ STDMETHODIMP Trigger::get_X(float *pVal)
 
 STDMETHODIMP Trigger::put_X(float newVal)
 {
-   
    m_d.m_vCenter.x = newVal;
-   
 
    return S_OK;
 }
@@ -1110,9 +1106,7 @@ STDMETHODIMP Trigger::get_Y(float *pVal)
 
 STDMETHODIMP Trigger::put_Y(float newVal)
 {
-   
    m_d.m_vCenter.y = newVal;
-   
 
    return S_OK;
 }
@@ -1120,7 +1114,6 @@ STDMETHODIMP Trigger::put_Y(float newVal)
 STDMETHODIMP Trigger::get_Surface(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -1129,9 +1122,7 @@ STDMETHODIMP Trigger::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Trigger::put_Surface(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -1153,10 +1144,8 @@ STDMETHODIMP Trigger::put_Enabled(VARIANT_BOOL newVal)
    }
    else
    {
-      
       m_d.m_enabled = VBTOb(newVal);
       m_hitEnabled = m_d.m_enabled;
-      
    }
 
    return S_OK;
@@ -1171,9 +1160,7 @@ STDMETHODIMP Trigger::get_Visible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Trigger::put_Visible(VARIANT_BOOL newVal)
 {
-   
    m_d.m_visible = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -1197,6 +1184,7 @@ STDMETHODIMP Trigger::BallCntOver(int *pVal)
    }
 
    *pVal = cnt;
+
    return S_OK;
 }
 
@@ -1234,9 +1222,7 @@ STDMETHODIMP Trigger::get_HitHeight(float *pVal)
 
 STDMETHODIMP Trigger::put_HitHeight(float newVal)
 {
-   
    m_d.m_hit_height = newVal;
-   
 
    return S_OK;
 }
@@ -1250,10 +1236,7 @@ STDMETHODIMP Trigger::get_Rotation(float *pVal)
 
 STDMETHODIMP Trigger::put_Rotation(float newVal)
 {
-   
    m_d.m_rotation = newVal;
-   
-
    UpdateEditorView();
 
    return S_OK;
@@ -1268,9 +1251,7 @@ STDMETHODIMP Trigger::get_WireThickness(float *pVal)
 
 STDMETHODIMP Trigger::put_WireThickness(float newVal)
 {
-   
    m_d.m_wireThickness = newVal;
-   
 
    return S_OK;
 }
@@ -1284,18 +1265,14 @@ STDMETHODIMP Trigger::get_AnimSpeed(float *pVal)
 
 STDMETHODIMP Trigger::put_AnimSpeed(float newVal)
 {
-   
    m_d.m_animSpeed = newVal;
-   
 
    return S_OK;
 }
 
-
 STDMETHODIMP Trigger::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -1304,9 +1281,7 @@ STDMETHODIMP Trigger::get_Material(BSTR *pVal)
 
 STDMETHODIMP Trigger::put_Material(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -1318,13 +1293,9 @@ STDMETHODIMP Trigger::get_TriggerShape(TriggerShape *pVal)
    return S_OK;
 }
 
-
 STDMETHODIMP Trigger::put_TriggerShape(TriggerShape newVal)
 {
-   
    m_d.m_shape = newVal;
-   
-
    UpdateEditorView();
 
    return S_OK;
@@ -1339,10 +1310,7 @@ STDMETHODIMP Trigger::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Trigger::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-   
    m_d.m_reflectionEnabled = VBTOb(newVal);
-   
 
    return S_OK;
 }
-
