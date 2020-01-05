@@ -34,6 +34,7 @@
 
 
 class PinTable;
+class PinTableMDI;
 
 class VPinball : public CMDIDockFrame
 {
@@ -85,6 +86,7 @@ private:
 
 
 public:
+   void AddMDITable(PinTableMDI* mdiTable);
    CMenu GetMainMenu(int id);
    void SetLayerStatus(const int layerNumber);
    void ToggleScriptEditor();

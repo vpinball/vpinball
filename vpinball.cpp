@@ -155,15 +155,27 @@ VPinball::VPinball()
 ///</summary>
 VPinball::~VPinball()
 {
-    if (m_toolbarDialog && m_toolbarDialog->IsWindow())
+    if (m_toolbarDialog)
     {
         m_toolbarDialog->Destroy();
         m_toolbarDialog = NULL;
     }
-    if (m_propertyDialog && m_propertyDialog->IsWindow())
+    if (m_dockToolbar)
+    {
+        m_dockToolbar->Destroy();
+        delete(m_dockToolbar);
+        m_dockToolbar = NULL;
+    }
+    if (m_propertyDialog)
     {
         m_propertyDialog->Destroy();
         m_propertyDialog = NULL;
+    }
+    if(m_dockProperties)
+    {
+        m_dockProperties->Destroy();
+        delete(m_dockProperties);
+        m_dockProperties = NULL;
     }
     //	DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); //remove FreeImage support BDS
    SetClipboard(NULL);
@@ -388,8 +400,12 @@ void VPinball::InitRegValues()
 
 void VPinball::CreateMDIClient()
 {
-
    SetMenu(GetMainMenu(WINDOWMENU));
+}
+
+void VPinball::AddMDITable(PinTableMDI* mdiTable) 
+{ 
+    AddMDIChild(mdiTable); 
 }
 
 void VPinball::SetClipboard(vector<IStream*> * const pvstm)
@@ -1064,11 +1080,10 @@ void VPinball::LoadFileName(char *szFileName)
    }
    else
    {
-       TitleFromFilename(szFileName, ppt->m_szTitle);
-       ppt->InitPostLoad(this);
+      TitleFromFilename(szFileName, ppt->m_szTitle);
+      ppt->InitPostLoad(this);
 
-      PinTableMDI *mdiTable = new PinTableMDI(ppt);
-      AddMDIChild(mdiTable);
+      AddMDITable(new PinTableMDI(ppt));
       // auto-import POV settings if exist...
 
       char szFileNameAuto[MAX_PATH];
@@ -2283,10 +2298,9 @@ void VPinball::OpenNewTable(size_t tableId)
     CComObject<PinTable>::CreateInstance(&pt);
     pt->AddRef();
     pt->InitBuiltinTable(this, tableId != ID_NEW_EXAMPLETABLE);
-    PinTableMDI *mdiTable = new PinTableMDI(pt);
     m_vtable.push_back(pt);
 
-    AddMDIChild(mdiTable);
+    AddMDITable(new PinTableMDI(pt));
     pt->AddMultiSel(pt, false, true, false);
     SetEnableToolbar();
 }

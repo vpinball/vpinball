@@ -10385,6 +10385,8 @@ PinTableMDI::PinTableMDI(PinTable *table) : m_table(table)
 {
     m_table->SetMDITable(this);
     SetView(*m_table);
+    m_menu = g_pvp->GetMenu();
+    SetHandles(m_menu, NULL);
 }
 
 void PinTableMDI::PreCreate(CREATESTRUCT &cs)
@@ -10412,7 +10414,7 @@ void PinTableMDI::PreRegisterClass(WNDCLASS &wc)
 
 int PinTableMDI::OnCreate(CREATESTRUCT &cs)
 {
-    SetMenu(::GetSubMenu( g_pvp->GetMenu().GetHandle(), WINDOWMENU));
+    SetWindowText(m_table->m_szTitle);
     SetIconLarge(IDI_TABLE);
     SetIconSmall(IDI_TABLE);
     return CMDIChild::OnCreate(cs);
