@@ -629,16 +629,14 @@ HRESULT Flasher::InitPostLoad()
    return S_OK;
 }
 
-void Flasher::SetAlpha(long value)
+void Flasher::SetAlpha(const long value)
 {
-    m_d.m_alpha = value;
-    if (m_d.m_alpha < 0) m_d.m_alpha = 0;
+    m_d.m_alpha = max(value,(long)0);
 }
 
-void Flasher::SetFilterAmount(long value)
+void Flasher::SetFilterAmount(const long value)
 {
-    m_d.m_filterAmount = value;
-    if (m_d.m_filterAmount < 0)m_d.m_filterAmount = 0;
+    m_d.m_filterAmount = max(value,(long)0);
 }
 
 STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)

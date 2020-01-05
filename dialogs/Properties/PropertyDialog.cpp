@@ -156,10 +156,10 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
 
     if (pvsel->Size() > 1)
     {
-        char header[64] = {0};
+        char header[64];
         char collection[64] = {0};
         char name[64] = {0};
-        WCHAR *wzName = psel->GetPTable()->GetCollectionNameByElement(psel);
+        const WCHAR * const wzName = psel->GetPTable()->GetCollectionNameByElement(psel);
         if (wzName != NULL)
         {
             WideCharToMultiByte(CP_ACP, 0, wzName, -1, collection, 64, NULL, NULL);
@@ -936,11 +936,8 @@ CDockProperty::CDockProperty()
 
 void CDockProperty::OnDestroy()
 {
-    CRect rect = GetWindowRect();
+    const CRect rect = GetWindowRect();
     SaveValueInt("Editor", "PropertiesPosX", rect.left);
     SaveValueInt("Editor", "PropertiesPosY", rect.top);
-    if (!IsDocked())
-        SaveValueBool("Editor", "PropertiesDocked", false);
-    else
-        SaveValueBool("Editor", "PropertiesDocked", true);
+    SaveValueBool("Editor", "PropertiesDocked", IsDocked());
 }
