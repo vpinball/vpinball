@@ -988,9 +988,7 @@ STDMETHODIMP Bumper::get_Radius(float *pVal)
 
 STDMETHODIMP Bumper::put_Radius(float newVal)
 {
-   
    m_d.m_radius = newVal;
-   
 
    return S_OK;
 }
@@ -1003,9 +1001,7 @@ STDMETHODIMP Bumper::get_Force(float *pVal)
 
 STDMETHODIMP Bumper::put_Force(float newVal)
 {
-   
    m_d.m_force = newVal;
-   
 
    return S_OK;
 }
@@ -1022,11 +1018,7 @@ STDMETHODIMP Bumper::put_Scatter(float newVal)
    /*if (m_pbumperhitcircle)
      m_pbumperhitcircle->m_scatter = ANGTORAD(m_d.m_scatter);
    else*/
-   {
-     
      m_d.m_scatter = newVal;
-     
-   }
 
    return S_OK;
 }
@@ -1040,9 +1032,7 @@ STDMETHODIMP Bumper::get_HeightScale(float *pVal)
 
 STDMETHODIMP Bumper::put_HeightScale(float newVal)
 {
-   
    m_d.m_heightScale = newVal;
-   
 
    return S_OK;
 }
@@ -1056,9 +1046,7 @@ STDMETHODIMP Bumper::get_RingSpeed(float *pVal)
 
 STDMETHODIMP Bumper::put_RingSpeed(float newVal)
 {
-   
    m_d.m_ringSpeed = newVal;
-   
 
    return S_OK;
 }
@@ -1072,9 +1060,7 @@ STDMETHODIMP Bumper::get_RingDropOffset(float *pVal)
 
 STDMETHODIMP Bumper::put_RingDropOffset(float newVal)
 {
-   
    m_d.m_ringDropOffset = newVal;
-   
 
    return S_OK;
 }
@@ -1088,9 +1074,7 @@ STDMETHODIMP Bumper::get_Orientation(float *pVal)
 
 STDMETHODIMP Bumper::put_Orientation(float newVal)
 {
-   
    m_d.m_orientation = newVal;
-   
 
    return S_OK;
 }
@@ -1104,9 +1088,7 @@ STDMETHODIMP Bumper::get_Threshold(float *pVal)
 
 STDMETHODIMP Bumper::put_Threshold(float newVal)
 {
-   
    m_d.m_threshold = newVal;
-   
 
    return S_OK;
 }
@@ -1123,9 +1105,7 @@ STDMETHODIMP Bumper::get_CapMaterial(BSTR *pVal)
 
 STDMETHODIMP Bumper::put_CapMaterial(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szCapMaterial, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -1142,9 +1122,7 @@ STDMETHODIMP Bumper::get_RingMaterial(BSTR *pVal)
 
 STDMETHODIMP Bumper::put_RingMaterial(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szRingMaterial, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -1161,9 +1139,7 @@ STDMETHODIMP Bumper::get_BaseMaterial(BSTR *pVal)
 
 STDMETHODIMP Bumper::put_BaseMaterial(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szBaseMaterial, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -1180,9 +1156,7 @@ STDMETHODIMP Bumper::get_SkirtMaterial(BSTR *pVal)
 
 STDMETHODIMP Bumper::put_SkirtMaterial(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSkirtMaterial, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -1197,9 +1171,7 @@ STDMETHODIMP Bumper::get_X(float *pVal)
 
 STDMETHODIMP Bumper::put_X(float newVal)
 {
-   
    m_d.m_vCenter.x = newVal;
-   
 
    return S_OK;
 }
@@ -1213,9 +1185,7 @@ STDMETHODIMP Bumper::get_Y(float *pVal)
 
 STDMETHODIMP Bumper::put_Y(float newVal)
 {
-   
    m_d.m_vCenter.y = newVal;
-   
 
    return S_OK;
 }
@@ -1232,9 +1202,7 @@ STDMETHODIMP Bumper::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Bumper::put_Surface(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -1249,9 +1217,7 @@ STDMETHODIMP Bumper::get_HasHitEvent(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Bumper::put_HasHitEvent(VARIANT_BOOL newVal)
 {
-   
    m_d.m_hitEvent = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -1265,11 +1231,9 @@ STDMETHODIMP Bumper::get_Collidable(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Bumper::put_Collidable(VARIANT_BOOL newVal)
 {
-   
    m_d.m_collidable = VBTOb(newVal);
    if (m_pbumperhitcircle)
       m_pbumperhitcircle->m_enabled = m_d.m_collidable;
-   
 
    return S_OK;
 }
@@ -1284,9 +1248,7 @@ STDMETHODIMP Bumper::get_CapVisible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Bumper::put_CapVisible(VARIANT_BOOL newVal)
 {
-   
    m_d.m_capVisible = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -1300,9 +1262,7 @@ STDMETHODIMP Bumper::get_BaseVisible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Bumper::put_BaseVisible(VARIANT_BOOL newVal)
 {
-   
    m_d.m_baseVisible = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -1316,9 +1276,7 @@ STDMETHODIMP Bumper::get_RingVisible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Bumper::put_RingVisible(VARIANT_BOOL newVal)
 {
-   
    m_d.m_ringVisible = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -1332,9 +1290,7 @@ STDMETHODIMP Bumper::get_SkirtVisible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Bumper::put_SkirtVisible(VARIANT_BOOL newVal)
 {
-   
    m_d.m_skirtVisible = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -1348,9 +1304,7 @@ STDMETHODIMP Bumper::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Bumper::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-   
    m_d.m_reflectionEnabled = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -1367,11 +1321,9 @@ STDMETHODIMP Bumper::put_EnableSkirtAnimation(VARIANT_BOOL newVal)
    const bool val = VBTOb(newVal);
    if(m_enableSkirtAnimation != val)
    {
-      
       if (!val)
          m_updateSkirt = true;
       m_enableSkirtAnimation = val;
-      
    }
 
    return S_OK;
@@ -1381,6 +1333,7 @@ STDMETHODIMP Bumper::PlayHit()
 {
    if ( m_pbumperhitcircle )
       m_pbumperhitcircle->m_bumperanim_hitEvent = true;
+
    return S_OK;
 }
 

@@ -1091,9 +1091,7 @@ STDMETHODIMP Plunger::get_PullSpeed(float *pVal)
 
 STDMETHODIMP Plunger::put_PullSpeed(float newVal)
 {
-   
    m_d.m_speedPull = newVal;
-   
 
    return S_OK;
 }
@@ -1107,9 +1105,7 @@ STDMETHODIMP Plunger::get_FireSpeed(float *pVal)
 
 STDMETHODIMP Plunger::put_FireSpeed(float newVal)
 {
-   
    m_d.m_speedFire = newVal;
-   
 
    return S_OK;
 }
@@ -1123,9 +1119,7 @@ STDMETHODIMP Plunger::get_Type(PlungerType *pVal)
 
 STDMETHODIMP Plunger::put_Type(PlungerType newVal)
 {
-   
    m_d.m_type = newVal;
-   
 
    return S_OK;
 }
@@ -1133,7 +1127,6 @@ STDMETHODIMP Plunger::put_Type(PlungerType newVal)
 STDMETHODIMP Plunger::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -1142,9 +1135,7 @@ STDMETHODIMP Plunger::get_Material(BSTR *pVal)
 
 STDMETHODIMP Plunger::put_Material(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -1152,7 +1143,6 @@ STDMETHODIMP Plunger::put_Material(BSTR newVal)
 STDMETHODIMP Plunger::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -1170,9 +1160,7 @@ STDMETHODIMP Plunger::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   
    strcpy_s(m_d.m_szImage,szImage);
-   
 
    return S_OK;
 }
@@ -1180,14 +1168,13 @@ STDMETHODIMP Plunger::put_Image(BSTR newVal)
 STDMETHODIMP Plunger::get_AnimFrames(int *pVal)
 {
    *pVal = m_d.m_animFrames;
+
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_AnimFrames(int newVal)
 {
-   
    m_d.m_animFrames = newVal;
-   
 
    return S_OK;
 }
@@ -1195,7 +1182,6 @@ STDMETHODIMP Plunger::put_AnimFrames(int newVal)
 STDMETHODIMP Plunger::get_TipShape(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szTipShape, -1, wz, MAXTIPSHAPE);
    *pVal = SysAllocString(wz);
 
@@ -1204,9 +1190,7 @@ STDMETHODIMP Plunger::get_TipShape(BSTR *pVal)
 
 STDMETHODIMP Plunger::put_TipShape(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szTipShape, MAXTOKEN, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -1220,9 +1204,7 @@ STDMETHODIMP Plunger::get_RodDiam(float *pVal)
 
 STDMETHODIMP Plunger::put_RodDiam(float newVal)
 {
-   
    m_d.m_rodDiam = newVal;
-   
 
    return S_OK;
 }
@@ -1236,9 +1218,7 @@ STDMETHODIMP Plunger::get_RingGap(float *pVal)
 
 STDMETHODIMP Plunger::put_RingGap(float newVal)
 {
-   
    m_d.m_ringGap = newVal;
-   
 
    return S_OK;
 }
@@ -1252,9 +1232,7 @@ STDMETHODIMP Plunger::get_RingDiam(float *pVal)
 
 STDMETHODIMP Plunger::put_RingDiam(float newVal)
 {
-   
    m_d.m_ringDiam = newVal;
-   
 
    return S_OK;
 }
@@ -1268,9 +1246,7 @@ STDMETHODIMP Plunger::get_RingWidth(float *pVal)
 
 STDMETHODIMP Plunger::put_RingWidth(float newVal)
 {
-   
    m_d.m_ringWidth = newVal;
-   
 
    return S_OK;
 }
@@ -1284,9 +1260,7 @@ STDMETHODIMP Plunger::get_SpringDiam(float *pVal)
 
 STDMETHODIMP Plunger::put_SpringDiam(float newVal)
 {
-   
    m_d.m_springDiam = newVal;
-   
 
    return S_OK;
 }
@@ -1300,9 +1274,7 @@ STDMETHODIMP Plunger::get_SpringGauge(float *pVal)
 
 STDMETHODIMP Plunger::put_SpringGauge(float newVal)
 {
-   
    m_d.m_springGauge = newVal;
-   
 
    return S_OK;
 }
@@ -1316,9 +1288,7 @@ STDMETHODIMP Plunger::get_SpringLoops(float *pVal)
 
 STDMETHODIMP Plunger::put_SpringLoops(float newVal)
 {
-   
    m_d.m_springLoops = newVal;
-   
 
    return S_OK;
 }
@@ -1332,9 +1302,7 @@ STDMETHODIMP Plunger::get_SpringEndLoops(float *pVal)
 
 STDMETHODIMP Plunger::put_SpringEndLoops(float newVal)
 {
-   
    m_d.m_springEndLoops = newVal;
-   
 
    return S_OK;
 }
@@ -1367,9 +1335,7 @@ STDMETHODIMP Plunger::get_X(float *pVal)
 
 STDMETHODIMP Plunger::put_X(float newVal)
 {
-   
    m_d.m_v.x = newVal;
-   
 
    return S_OK;
 }
@@ -1383,9 +1349,7 @@ STDMETHODIMP Plunger::get_Y(float *pVal)
 
 STDMETHODIMP Plunger::put_Y(float newVal)
 {
-   
    m_d.m_v.y = newVal;
-   
 
    return S_OK;
 }
@@ -1399,9 +1363,7 @@ STDMETHODIMP Plunger::get_Width(float *pVal)
 
 STDMETHODIMP Plunger::put_Width(float newVal)
 {
-   
    m_d.m_width = newVal;
-   
 
    return S_OK;
 }
@@ -1415,9 +1377,7 @@ STDMETHODIMP Plunger::get_ZAdjust(float *pVal)
 
 STDMETHODIMP Plunger::put_ZAdjust(float newVal)
 {
-   
    m_d.m_zAdjust = newVal;
-   
 
    return S_OK;
 }
@@ -1425,7 +1385,6 @@ STDMETHODIMP Plunger::put_ZAdjust(float newVal)
 STDMETHODIMP Plunger::get_Surface(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -1434,9 +1393,7 @@ STDMETHODIMP Plunger::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Plunger::put_Surface(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -1450,9 +1407,7 @@ STDMETHODIMP Plunger::get_MechStrength(float *pVal)
 
 STDMETHODIMP Plunger::put_MechStrength(float newVal)
 {
-   
    m_d.m_mechStrength = newVal;
-   
 
    return S_OK;
 }
@@ -1466,9 +1421,7 @@ STDMETHODIMP Plunger::get_MechPlunger(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Plunger::put_MechPlunger(VARIANT_BOOL newVal)
 {
-   
    m_d.m_mechPlunger = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -1482,9 +1435,7 @@ STDMETHODIMP Plunger::get_AutoPlunger(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Plunger::put_AutoPlunger(VARIANT_BOOL newVal)
 {
-   
    m_d.m_autoPlunger = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -1498,9 +1449,7 @@ STDMETHODIMP Plunger::get_Visible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Plunger::put_Visible(VARIANT_BOOL newVal)
 {
-   
    m_d.m_visible = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -1508,14 +1457,13 @@ STDMETHODIMP Plunger::put_Visible(VARIANT_BOOL newVal)
 STDMETHODIMP Plunger::get_ParkPosition(float *pVal)
 {
    *pVal = m_d.m_parkPosition;
+
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_ParkPosition(float newVal)
 {
-   
    m_d.m_parkPosition = newVal;
-   
 
    return S_OK;
 }
@@ -1529,12 +1477,8 @@ STDMETHODIMP Plunger::get_Stroke(float *pVal)
 
 STDMETHODIMP Plunger::put_Stroke(float newVal)
 {
-   
-
    if (newVal < 16.5f) newVal = 16.5f;
    m_d.m_stroke = newVal;
-
-   
 
    return S_OK;
 }
@@ -1548,9 +1492,7 @@ STDMETHODIMP Plunger::get_ScatterVelocity(float *pVal)
 
 STDMETHODIMP Plunger::put_ScatterVelocity(float newVal)
 {
-   
    m_d.m_scatterVelocity = newVal;
-   
 
    return S_OK;
 }
@@ -1564,9 +1506,7 @@ STDMETHODIMP Plunger::get_MomentumXfer(float *pVal)
 
 STDMETHODIMP Plunger::put_MomentumXfer(float newVal)
 {
-   
    m_d.m_momentumXfer = newVal;
-   
 
    return S_OK;
 }
@@ -1580,9 +1520,7 @@ STDMETHODIMP Plunger::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Plunger::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-   
    m_d.m_reflectionEnabled = VBTOb(newVal);
-   
 
    return S_OK;
 }

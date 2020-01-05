@@ -464,16 +464,14 @@ STDMETHODIMP LightSeq::get_Collection(BSTR *pVal)
 
 STDMETHODIMP LightSeq::put_Collection(BSTR newVal)
 {
-   
    memcpy(m_d.m_wzCollection, (void *)newVal, sizeof(m_d.m_wzCollection));
-   
 
    return S_OK;
 }
 
 STDMETHODIMP LightSeq::get_CenterX(float *pVal)
 {
-    *pVal = GetX();
+   *pVal = GetX();
 
    return S_OK;
 }
@@ -482,10 +480,8 @@ STDMETHODIMP LightSeq::put_CenterX(float newVal)
 {
    if ((newVal < 0.f) || (newVal >= (float)EDITOR_BG_WIDTH))
       return E_FAIL;
-
    
    SetX(newVal);
-   
 
    return S_OK;
 }
@@ -501,10 +497,8 @@ STDMETHODIMP LightSeq::put_CenterY(float newVal)
 {
    if ((newVal < 0.f) || (newVal >= (float)(2 * EDITOR_BG_WIDTH)))
       return E_FAIL;
-
    
    SetY(newVal);
-   
 
    return S_OK;
 }
@@ -518,9 +512,7 @@ STDMETHODIMP LightSeq::get_UpdateInterval(long *pVal)
 
 STDMETHODIMP LightSeq::put_UpdateInterval(long newVal)
 {
-   
    SetUpdateInterval(newVal);
-   
 
    return S_OK;
 }
@@ -531,17 +523,13 @@ STDMETHODIMP LightSeq::Play(SequencerState Animation, long TailLength, long Repe
 
    // sanity check the parameters
    if (TailLength < 0)
-   {
       TailLength = 0;
-   }
+
    if (Repeat <= 0)
-   {
       Repeat = 1;
-   }
+
    if (Pause < 0)
-   {
       Pause = 0;
-   }
 
    // 'all lights on' and 'all lights off' are directly processed and not put into the queue
    if (Animation == SeqAllOn)
@@ -616,6 +604,7 @@ STDMETHODIMP LightSeq::StopPlay()
          }
       }
    }
+
    return S_OK;
 }
 
@@ -1634,6 +1623,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
    {
       pTracer->delay -= 1;
    }
+
    return rc;
 }
 
@@ -1677,9 +1667,7 @@ bool LightSeq::VerifyAndSetGridElement(const int x, const int y, const LightStat
       return true;
    }
    else
-   {
       return false;
-   }
 }
 
 LightState LightSeq::GetElementState(const int index) const
@@ -1696,6 +1684,7 @@ LightState LightSeq::GetElementState(const int index) const
       Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
       rc = pLight->m_realState;
    }
+
    return rc;
 }
 
@@ -1704,7 +1693,7 @@ LightState LightSeq::GetElementState(const int index) const
 
 #if 0
 // turn on all lights starting in the centre and scrolling (screwing) clockwise out
-		case SeqTwirlOutRightOff:
+      case SeqTwirlOutRightOff:
          inverse				= true;
       case SeqTwirlOutRightOn:
          m_th1.type			= eSeqTwirl;

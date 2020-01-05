@@ -570,16 +570,13 @@ STDMETHODIMP Spinner::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Spinner::get_Length(float *pVal)
 {
    *pVal = m_d.m_length;
-   UpdateUnitsInfo();
+
    return S_OK;
 }
 
 STDMETHODIMP Spinner::put_Length(float newVal)
 {
-   
    m_d.m_length = newVal;
-   
-
    UpdateUnitsInfo();
 
    return S_OK;
@@ -594,9 +591,7 @@ STDMETHODIMP Spinner::get_Rotation(float *pVal)
 
 STDMETHODIMP Spinner::put_Rotation(float newVal)
 {
-   
    m_d.m_rotation = newVal;
-   
 
    return S_OK;
 }
@@ -604,17 +599,13 @@ STDMETHODIMP Spinner::put_Rotation(float newVal)
 STDMETHODIMP Spinner::get_Height(float *pVal)
 {
    *pVal = m_d.m_height;
-   UpdateUnitsInfo();
 
    return S_OK;
 }
 
 STDMETHODIMP Spinner::put_Height(float newVal)
 {
-   
    m_d.m_height = newVal;
-   
-
    UpdateUnitsInfo();
 
    return S_OK;
@@ -633,11 +624,7 @@ STDMETHODIMP Spinner::put_Damping(float newVal)
    if (g_pplayer)
       m_phitspinner->m_spinnerMover.m_damping = powf(tmp, (float)PHYS_FACTOR);
    else
-   {
-      
       m_d.m_damping = tmp;
-      
-   }
 
    return S_OK;
 }
@@ -645,7 +632,6 @@ STDMETHODIMP Spinner::put_Damping(float newVal)
 STDMETHODIMP Spinner::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -654,9 +640,7 @@ STDMETHODIMP Spinner::get_Material(BSTR *pVal)
 
 STDMETHODIMP Spinner::put_Material(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -664,7 +648,6 @@ STDMETHODIMP Spinner::put_Material(BSTR newVal)
 STDMETHODIMP Spinner::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -682,9 +665,7 @@ STDMETHODIMP Spinner::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   
    strcpy_s(m_d.m_szImage,szImage);
-   
 
    return S_OK;
 }
@@ -698,9 +679,7 @@ STDMETHODIMP Spinner::get_X(float *pVal)
 
 STDMETHODIMP Spinner::put_X(float newVal)
 {
-   
    m_d.m_vCenter.x = newVal;
-   
 
    return S_OK;
 }
@@ -714,9 +693,7 @@ STDMETHODIMP Spinner::get_Y(float *pVal)
 
 STDMETHODIMP Spinner::put_Y(float newVal)
 {
-   
    m_d.m_vCenter.y = newVal;
-   
 
    return S_OK;
 }
@@ -724,7 +701,6 @@ STDMETHODIMP Spinner::put_Y(float newVal)
 STDMETHODIMP Spinner::get_Surface(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -733,9 +709,7 @@ STDMETHODIMP Spinner::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Spinner::put_Surface(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -749,13 +723,10 @@ STDMETHODIMP Spinner::get_ShowBracket(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Spinner::put_ShowBracket(VARIANT_BOOL newVal)
 {
-   
    m_d.m_showBracket = VBTOb(newVal);
-   
 
    return S_OK;
 }
-
 
 STDMETHODIMP Spinner::get_AngleMax(float *pVal)
 {
@@ -783,15 +754,10 @@ STDMETHODIMP Spinner::put_AngleMax(float newVal)
       else return S_FAIL;
    }
    else
-   {
-      
       m_d.m_angleMax = newVal;
-      
-   }
 
    return S_OK;
 }
-
 
 STDMETHODIMP Spinner::get_AngleMin(float *pVal)
 {
@@ -819,14 +785,10 @@ STDMETHODIMP Spinner::put_AngleMin(float newVal)
       else return S_FAIL;
    }
    else
-   {
-      
       m_d.m_angleMin = newVal;
-      
-   }
+
    return S_OK;
 }
-
 
 STDMETHODIMP Spinner::get_Elasticity(float *pVal)
 {
@@ -839,15 +801,9 @@ STDMETHODIMP Spinner::get_Elasticity(float *pVal)
 STDMETHODIMP Spinner::put_Elasticity(float newVal)
 {
    if (g_pplayer)
-   {
       m_phitspinner->m_spinnerMover.m_elasticity = newVal;	//player active value
-   }
    else
-   {
-      
       m_d.m_elasticity = newVal;
-      
-   }
 
    return S_OK;
 }
@@ -859,19 +815,12 @@ STDMETHODIMP Spinner::get_Visible(VARIANT_BOOL *pVal)
    return S_OK;
 }
 
-
 STDMETHODIMP Spinner::put_Visible(VARIANT_BOOL newVal)
 {
    if (g_pplayer)
-   {
       m_phitspinner->m_spinnerMover.m_visible = VBTOb(newVal);// && m_d.m_visible;
-   }
    else
-   {
-      
       m_d.m_visible = VBTOb(newVal);
-      
-   }
 
    return S_OK;
 }
@@ -883,12 +832,9 @@ STDMETHODIMP Spinner::get_ReflectionEnabled(VARIANT_BOOL *pVal)
    return S_OK;
 }
 
-
 STDMETHODIMP Spinner::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-   
    m_d.m_reflectionEnabled = VBTOb(newVal);
-   
 
    return S_OK;
 }
