@@ -796,7 +796,7 @@ HFONT Decal::GetFont()
 
    lf.lfItalic = (BYTE)bl;
 
-   HFONT hFont = CreateFontIndirect(&lf);
+   const HFONT hFont = CreateFontIndirect(&lf);
 
    return hFont;
 }
@@ -810,9 +810,7 @@ STDMETHODIMP Decal::get_Rotation(float *pVal)
 
 STDMETHODIMP Decal::put_Rotation(float newVal)
 {
-   
    m_d.m_rotation = newVal;
-   
 
    return S_OK;
 }
@@ -838,9 +836,7 @@ STDMETHODIMP Decal::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   
    strcpy_s(m_d.m_szImage,szImage);
-   
 
    return S_OK;
 }
@@ -854,10 +850,8 @@ STDMETHODIMP Decal::get_Width(float *pVal)
 
 STDMETHODIMP Decal::put_Width(float newVal)
 {
-   
    m_d.m_width = newVal;
    EnsureSize();
-   
 
    return S_OK;
 }
@@ -871,11 +865,8 @@ STDMETHODIMP Decal::get_Height(float *pVal)
 
 STDMETHODIMP Decal::put_Height(float newVal)
 {
-   
    m_d.m_height = newVal;
    EnsureSize();
-
-   
 
    return S_OK;
 }
@@ -890,9 +881,7 @@ STDMETHODIMP Decal::get_X(float *pVal)
 
 STDMETHODIMP Decal::put_X(float newVal)
 {
-   
    m_d.m_vCenter.x = newVal;
-   
 
    return S_OK;
 }
@@ -906,9 +895,7 @@ STDMETHODIMP Decal::get_Y(float *pVal)
 
 STDMETHODIMP Decal::put_Y(float newVal)
 {
-   
    m_d.m_vCenter.y = newVal;
-   
 
    return S_OK;
 }
@@ -916,7 +903,6 @@ STDMETHODIMP Decal::put_Y(float newVal)
 STDMETHODIMP Decal::get_Surface(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -925,9 +911,7 @@ STDMETHODIMP Decal::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Decal::put_Surface(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -941,10 +925,8 @@ STDMETHODIMP Decal::get_Type(DecalType *pVal)
 
 STDMETHODIMP Decal::put_Type(DecalType newVal)
 {
-   
    m_d.m_decaltype = newVal;
    EnsureSize();
-   
 
    return S_OK;
 }
@@ -952,7 +934,6 @@ STDMETHODIMP Decal::put_Type(DecalType newVal)
 STDMETHODIMP Decal::get_Text(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, (char *)m_d.m_sztext, -1, wz, 512);
    *pVal = SysAllocString(wz);
 
@@ -961,12 +942,10 @@ STDMETHODIMP Decal::get_Text(BSTR *pVal)
 
 STDMETHODIMP Decal::put_Text(BSTR newVal)
 {
-   if (lstrlenW(newVal) < 512)
+   if (lstrlenW(newVal) < MAXSTRING/2)
    {
-      
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_sztext, 512, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_sztext, MAXSTRING/2, NULL, NULL);
       EnsureSize();
-      
    }
 
    return S_OK;
@@ -981,10 +960,8 @@ STDMETHODIMP Decal::get_SizingType(SizingType *pVal)
 
 STDMETHODIMP Decal::put_SizingType(SizingType newVal)
 {
-   
    m_d.m_sizingtype = newVal;
    EnsureSize();
-   
 
    return S_OK;
 }
@@ -998,9 +975,7 @@ STDMETHODIMP Decal::get_FontColor(OLE_COLOR *pVal)
 
 STDMETHODIMP Decal::put_FontColor(OLE_COLOR newVal)
 {
-   
    m_d.m_color = newVal;
-   
 
    return S_OK;
 }
@@ -1008,7 +983,6 @@ STDMETHODIMP Decal::put_FontColor(OLE_COLOR newVal)
 STDMETHODIMP Decal::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -1017,9 +991,7 @@ STDMETHODIMP Decal::get_Material(BSTR *pVal)
 
 STDMETHODIMP Decal::put_Material(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -1034,9 +1006,7 @@ STDMETHODIMP Decal::get_Font(IFontDisp **pVal)
 STDMETHODIMP Decal::putref_Font(IFontDisp *pFont)
 {
    //We know that our own property browser gives us the same pointer
-
    SetDirtyDraw();
-
    EnsureSize();
 
    return S_OK;
@@ -1051,10 +1021,8 @@ STDMETHODIMP Decal::get_HasVerticalText(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Decal::put_HasVerticalText(VARIANT_BOOL newVal)
 {
-   
    m_d.m_verticalText = VBTOb(newVal);
    EnsureSize();
-   
 
    return S_OK;
 }

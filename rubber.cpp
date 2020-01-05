@@ -888,10 +888,8 @@ STDMETHODIMP Rubber::put_Height(float newVal)
 {
    if (m_d.m_height != newVal)
    {
-      
       m_d.m_height = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      
 
       UpdateUnitsInfo();
    }
@@ -908,12 +906,7 @@ STDMETHODIMP Rubber::get_HitHeight(float *pVal)
 
 STDMETHODIMP Rubber::put_HitHeight(float newVal)
 {
-   if (m_d.m_hitHeight != newVal)
-   {
-      
-      m_d.m_hitHeight = newVal;
-      
-   }
+   m_d.m_hitHeight = newVal;
 
    return S_OK;
 }
@@ -930,10 +923,8 @@ STDMETHODIMP Rubber::put_Thickness(int newVal)
 {
    if (m_d.m_thickness != newVal)
    {
-      
       m_d.m_thickness = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      
 
       UpdateUnitsInfo();
    }
@@ -944,7 +935,6 @@ STDMETHODIMP Rubber::put_Thickness(int newVal)
 STDMETHODIMP Rubber::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -953,9 +943,7 @@ STDMETHODIMP Rubber::get_Material(BSTR *pVal)
 
 STDMETHODIMP Rubber::put_Material(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -963,7 +951,6 @@ STDMETHODIMP Rubber::put_Material(BSTR newVal)
 STDMETHODIMP Rubber::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -985,10 +972,8 @@ STDMETHODIMP Rubber::put_Image(BSTR newVal)
 
    if (strcmp(m_szImage, m_d.m_szImage) != 0)
    {
-      
       strcpy_s(m_d.m_szImage, MAXTOKEN, m_szImage);
       m_dynamicVertexBufferRegenerate = true;
-      
    }
 
    return S_OK;
@@ -1003,9 +988,7 @@ STDMETHODIMP Rubber::get_HasHitEvent(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Rubber::put_HasHitEvent(VARIANT_BOOL newVal)
 {
-   
    m_d.m_hitEvent = VBTOF(newVal);
-   
 
    return S_OK;
 }
@@ -1019,9 +1002,7 @@ STDMETHODIMP Rubber::get_Elasticity(float *pVal)
 
 STDMETHODIMP Rubber::put_Elasticity(float newVal)
 {
-   
    m_d.m_elasticity = newVal;
-   
 
    return S_OK;
 }
@@ -1035,9 +1016,7 @@ STDMETHODIMP Rubber::get_ElasticityFalloff(float *pVal)
 
 STDMETHODIMP Rubber::put_ElasticityFalloff(float newVal)
 {
-   
    m_d.m_elasticityFalloff = newVal;
-   
 
    return S_OK;
 }
@@ -1052,10 +1031,7 @@ STDMETHODIMP Rubber::get_Friction(float *pVal)
 STDMETHODIMP Rubber::put_Friction(float newVal)
 {
    newVal = clamp(newVal, 0.f, 1.f);
-
-   
    m_d.m_friction = newVal;
-   
 
    return S_OK;
 }
@@ -1069,9 +1045,7 @@ STDMETHODIMP Rubber::get_Scatter(float *pVal)
 
 STDMETHODIMP Rubber::put_Scatter(float newVal)
 {
-   
    m_d.m_scatter = newVal;
-   
 
    return S_OK;
 }
@@ -1087,11 +1061,7 @@ STDMETHODIMP Rubber::put_Collidable(VARIANT_BOOL newVal)
 {
    const bool val = VBTOb(newVal);
    if (!g_pplayer)
-   {
-      
       m_d.m_collidable = val;
-      
-   }
    else
    {
        if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_enabled != val)
@@ -1111,11 +1081,9 @@ STDMETHODIMP Rubber::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
 
 STDMETHODIMP Rubber::put_Visible(VARIANT_BOOL newVal)
 {
-   
    if (g_pplayer && m_d.m_staticRendering)
       ShowError("Rubber is static! Visible property not supported!");
    m_d.m_visible = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -1129,9 +1097,7 @@ STDMETHODIMP Rubber::get_EnableStaticRendering(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Rubber::put_EnableStaticRendering(VARIANT_BOOL newVal)
 {
-   
    m_d.m_staticRendering = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -1145,9 +1111,7 @@ STDMETHODIMP Rubber::get_EnableShowInEditor(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Rubber::put_EnableShowInEditor(VARIANT_BOOL newVal)
 {
-   
    m_d.m_showInEditor = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -1161,9 +1125,7 @@ STDMETHODIMP Rubber::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Rubber::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-   
    m_d.m_reflectionEnabled = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -1179,10 +1141,8 @@ STDMETHODIMP Rubber::put_RotX(float newVal)
 {
    if (m_d.m_rotX != newVal)
    {
-      
       m_d.m_rotX = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      
    }
 
    return S_OK;
@@ -1199,10 +1159,8 @@ STDMETHODIMP Rubber::put_RotY(float newVal)
 {
    if (m_d.m_rotY != newVal)
    {
-      
       m_d.m_rotY = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      
    }
 
    return S_OK;
@@ -1219,10 +1177,8 @@ STDMETHODIMP Rubber::put_RotZ(float newVal)
 {
    if (m_d.m_rotZ != newVal)
    {
-      
       m_d.m_rotZ = newVal;
       m_dynamicVertexBufferRegenerate = true;
-      
    }
 
    return S_OK;
@@ -1231,7 +1187,6 @@ STDMETHODIMP Rubber::put_RotZ(float newVal)
 STDMETHODIMP Rubber::get_PhysicsMaterial(BSTR *pVal)
 {
     WCHAR wz[512];
-
     MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, MAXNAMEBUFFER);
     *pVal = SysAllocString(wz);
 
@@ -1240,9 +1195,7 @@ STDMETHODIMP Rubber::get_PhysicsMaterial(BSTR *pVal)
 
 STDMETHODIMP Rubber::put_PhysicsMaterial(BSTR newVal)
 {
-    
     WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, MAXNAMEBUFFER, NULL, NULL);
-    
 
     return S_OK;
 }
@@ -1256,9 +1209,7 @@ STDMETHODIMP Rubber::get_OverwritePhysics(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Rubber::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
-    
     m_d.m_overwritePhysics = VBTOb(newVal);
-    
 
     return S_OK;
 }
@@ -1324,7 +1275,6 @@ void Rubber::ExportMesh(FILE *f)
    char name[MAX_PATH];
    if (m_d.m_visible)
    {
-
       WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
       GenerateMesh();
       UpdateRubber(false, m_d.m_height);
@@ -1343,17 +1293,11 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! h
 {
    int accuracy;
    if (m_ptable->GetDetailLevel() < 5)
-   {
       accuracy = 6;
-   }
    else if (m_ptable->GetDetailLevel() >= 5 && m_ptable->GetDetailLevel() < 8)
-   {
       accuracy = 8;
-   }
    else
-   {
       accuracy = (int)((float)m_ptable->GetDetailLevel()*1.3f); // see also below
-   }
 
    // as solid rubbers are rendered into the static buffer, always use maximum precision
    if (m_d.m_staticRendering)
