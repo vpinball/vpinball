@@ -146,6 +146,23 @@ private:
     COLORREF m_color;
 };
 
+class PropertyTab : public CTab
+{
+public:
+   PropertyTab() : m_activePage(0), m_activeTabText("")
+   {}
+
+   virtual LRESULT OnTCNSelChange(LPNMHDR pNMHDR)
+   {
+      m_activePage = GetCurSel();
+      m_activeTabText = GetTabText(m_activePage);
+      return CTab::OnTCNSelChange(pNMHDR);
+   }
+
+   int m_activePage;
+   CString m_activeTabText;
+};
+
 #define PROPERTY_TABS 5
 
 class PropertyDialog : public CDialog
@@ -239,7 +256,7 @@ protected:
     virtual void OnClose();
 
 private:
-    CTab m_tab;
+    PropertyTab m_tab;
     BasePropertyDialog *m_tabs[PROPERTY_TABS];
     int  m_curTabIndex;
     CEdit m_nameEdit;
