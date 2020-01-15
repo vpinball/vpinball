@@ -356,7 +356,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
 
    const int cvertex = (int)vvertex.size();
    pcvertex = cvertex;
-   Vertex2D * const rgvLocal = new Vertex2D[(m_d.m_type != RampTypeFlat) ? (cvertex + 1) * 2 : (cvertex * 2)];
+   Vertex2D * const rgvLocal = new Vertex2D[cvertex * 2];
 
    if (ppheight)
    {
@@ -1071,6 +1071,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
 
    if (m_rgheightInit)
        delete [] m_rgheightInit;
+
    int splinePoints;
    const Vertex2D * const rgvLocal = GetRampVertex(splinePoints, &m_rgheightInit, NULL, NULL, (m_d.m_type != RampType1Wire) ? NULL : &middlePoints, -1, false);
 
@@ -1975,6 +1976,7 @@ void Ramp::ExportMesh(FILE *f)
    if (m_d.m_visible)
    {
       WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+      WaveFrontObj_WriteObjectName(f, name);
       if (!isHabitrail())
       {
          Vertex3D_NoTex2 *rampMesh = NULL;
@@ -1984,7 +1986,6 @@ void Ramp::ExportMesh(FILE *f)
          unsigned int numVers = m_numVertices * 3;
          if (m_d.m_rightwallheightvisible == 0.0f && m_d.m_leftwallheightvisible == 0.0f)
             numVers = m_numVertices;
-         WaveFrontObj_WriteObjectName(f, name);
          WaveFrontObj_WriteVertexInfo(f, rampMesh, numVers);
          WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
          WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
@@ -2023,7 +2024,6 @@ void Ramp::ExportMesh(FILE *f)
          const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
          if (m_d.m_type == RampType1Wire)
          {
-            WaveFrontObj_WriteObjectName(f, name);
             WaveFrontObj_WriteVertexInfo(f, tmpBuf1, m_numVertices);
             WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
             WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
