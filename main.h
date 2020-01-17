@@ -63,7 +63,7 @@ using std::vector;
 //#include <wxx_frame.h>			// Add CFrame
 //#include <wxx_gdi.h>			// Add CDC, CGDIObject, CBitmap, CBrush, CFont, CPalatte, CPen, CRgn
 //#include <wxx_imagelist.h>		// Add CImageList
-//#include <wxx_listview.h>		// Add CListView
+#include <wxx_listview.h>		// Add CListView
 //#include <wxx_mdi.h>			// Add CMDIChild, CMDIFrame, CDockMDIFrame
 //#include <wxx_printdialogs.h>	// Add CPageSetupDialog, CPrintSetupDialog
 //#include <wxx_propertysheet.h>	// Add CPropertyPage, CPropertySheet

@@ -11,6 +11,7 @@ ISelect::ISelect()
 
    m_menuid = -1;
    m_layerIndex = 0;
+   m_layerName = "";
 }
 
 void ISelect::SetObjectPos()

@@ -423,6 +423,7 @@
 #define IDC_POINT_COPY_BUTTON           280
 #define IDC_APPLY_TO_TABLE              280
 #define IDC_FONT_DIALOG_BUTTON          280
+#define IDC_ADD_LAYER_BUTTON            280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
@@ -935,6 +936,7 @@
 #define IDW_SDMIDDLE                    654
 #define IDW_SDRIGHT                     655
 #define IDW_SDTOP                       656
+#define IDD_LAYERS                      657
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1013,6 +1015,7 @@
 #define IDC_POINT_PASTE_BUTTON          765
 #define IDC_SET_DEFAULTS_BUTTON         765
 #define IDC_COLOR_BUTTON1               765
+#define IDC_DELETE_LAYER_BUTTON         765
 #define IDC_DBG_BULB_MODULATE_VS_ADD    766
 #define IDC_COLOR_BUTTON2               766
 #define IDC_DBG_TRANSMISSION_SCALE      767
@@ -1022,6 +1025,7 @@
 #define IDC_EDIT1                       769
 #define IDC_NAME_EDIT                   769
 #define IDC_COLOR_BUTTON5               769
+#define IDC_LAYER_NAME_EDIT             769
 #define IDC_OK                          770
 #define IDC_STATIC_ALPHA                771
 #define IDC_STATIC_BASE_COLOR           772
@@ -1090,6 +1094,10 @@
 #define IDC_PROP_TAB                    827
 #define IDC_REFLECT_ENABLE_CHECK        828
 #define IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC 830
+#define IDC_ASSIGN_BUTTON               833
+#define IDC_LAYER_EDIT_BUTTON           834
+#define IDC_                            836
+#define IDC_LAYER_LISTCONTROL           836
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1272,9 +1280,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        657
+#define _APS_NEXT_RESOURCE_VALUE        659
 #define _APS_NEXT_COMMAND_VALUE         4024
-#define _APS_NEXT_CONTROL_VALUE         831
+#define _APS_NEXT_CONTROL_VALUE         837
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

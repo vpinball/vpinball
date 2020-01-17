@@ -21,6 +21,7 @@
 #include "AboutDialog.h"
 #include "DrawingOrderDialog.h"
 #include "ToolbarDialog.h"
+#include "LayersListDialog.h"
 #include "Properties/PropertyDialog.h"
 
 #define CURRENT_FILE_FORMAT_VERSION 1060
@@ -141,7 +142,12 @@ public:
    bool OpenFileDialog(const char *initDir, char *filename, const char *fileFilter, const char *defaultExt, DWORD flags, int &fileOffset);
    CDockProperty *GetPropertiesDocker();
    CDockToolbar *GetToolbarDocker();
+   CDockLayers *GetLayersDocker();
    void CreateDocker();
+   LayersListDialog *GetLayersListDialog()
+   {
+       return m_layersListDialog;
+   }
 
    ULONG m_cref;
 
@@ -231,6 +237,8 @@ private:
    PropertyDialog *m_propertyDialog;
    CDockToolbar *m_dockToolbar;
    CDockProperty *m_dockProperties;
+   LayersListDialog *m_layersListDialog;
+   CDockLayers *m_dockLayers;
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)

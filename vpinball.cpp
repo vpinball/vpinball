@@ -110,6 +110,8 @@ VPinball::VPinball()
    m_propertyDialog = NULL;
    m_dockToolbar = NULL;
    m_dockProperties = NULL;
+   m_layersListDialog = NULL;
+   m_dockLayers = NULL;
    m_cref = 0;				//inits Reference Count for IUnknown Interface. Every com Object must 
    //implement this and StdMethods QueryInterface, AddRef and Release
    m_open_minimized = 0;
@@ -176,6 +178,12 @@ VPinball::~VPinball()
         m_dockProperties->Destroy();
         delete(m_dockProperties);
         m_dockProperties = NULL;
+    }
+    if (m_dockLayers)
+    {
+        m_dockLayers->Destroy();
+        delete(m_dockLayers);
+        m_dockLayers = NULL;
     }
     //	DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); //remove FreeImage support BDS
    SetClipboard(NULL);
@@ -522,7 +530,7 @@ CDockToolbar *VPinball::GetToolbarDocker()
         const int x = LoadValueIntWithDefault("Editor", "ToolbarPosX", 100);
         const int y = LoadValueIntWithDefault("Editor", "ToolbarPosY", 100);
         const bool docked = LoadValueBoolWithDefault("Editor", "ToolbarDocked", true);
-        m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar, DS_DOCKED_LEFT | DS_CLIENTEDGE, 110);
+        m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar, DS_DOCKED_LEFT | DS_NO_DOCKCHILD_TOP | DS_NO_DOCKCHILD_BOTTOM | DS_CLIENTEDGE, 110);
         assert(m_dockToolbar->GetContainer());
         m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
         m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
@@ -532,10 +540,28 @@ CDockToolbar *VPinball::GetToolbarDocker()
     return m_dockToolbar;
 }
 
+CDockLayers *VPinball::GetLayersDocker()
+{
+    if (m_dockLayers == NULL || !m_dockLayers->IsWindow())
+    {
+        const int x = LoadValueIntWithDefault("Editor", "ToolbarPosX", 100);
+        const int y = LoadValueIntWithDefault("Editor", "ToolbarPosY", 100);
+        const bool docked = LoadValueBoolWithDefault("Editor", "ToolbarDocked", true);
+        m_dockLayers = (CDockLayers *)m_dockProperties->AddDockedChild(new CDockLayers, DS_DOCKED_BOTTOM | DS_CLIENTEDGE, 380);
+        assert(m_dockLayers->GetContainer());
+        m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
+        m_layersListDialog = m_dockLayers->GetContainLayers()->GetLayersDialog();
+//         if (!docked)
+//             m_dockToolbar->Undock(CPoint(x, y), true);
+    }
+    return m_dockLayers;
+}
+
 void VPinball::CreateDocker()
 {
     (void)GetPropertiesDocker();
     (void)GetToolbarDocker();
+    (void)GetLayersDocker();
 }
 
 void VPinball::SetPosCur(float x, float y)
