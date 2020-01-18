@@ -3852,14 +3852,14 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
              m_layer[i].push_back(piedit);
              if (psel->m_layerName == "")
              {
-                 const string name = string("Layer_") + std::to_string(i);
+                 const string name = string("Layer_") + std::to_string(i+1);
                  g_pvp->GetLayersListDialog()->AddLayer(name);
-                 m_newLayer.insert(std::pair<string, IEditable *>(name, piedit));
+                 m_newLayer.insert(std::pair<IEditable *, string>(piedit, name));
              }
              else
              {
                  g_pvp->GetLayersListDialog()->AddLayer(psel->m_layerName);
-                 m_newLayer.insert(std::pair<string, IEditable *>(psel->m_layerName, piedit));
+                 m_newLayer.insert(std::pair<IEditable *, string>(piedit, psel->m_layerName));
              }
          }
       }
@@ -6179,7 +6179,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
          m_layer[peditNew->GetISelect()->m_layerIndex].push_back(peditNew);
 
          ISelect *psel = peditNew->GetISelect();
-         m_newLayer.insert(std::pair<string, IEditable *>(psel->m_layerName, peditNew));
+         m_newLayer.insert(std::pair<IEditable *, string>(peditNew, psel->m_layerName));
          peditNew->InitPostLoad();
          peditNew->m_backglass = g_pvp->m_backglassView;
 

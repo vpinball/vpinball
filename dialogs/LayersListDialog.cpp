@@ -195,11 +195,14 @@ BOOL LayersListDialog::OnListItemChanged(LPARAM lparam)
         const string name = string(m_layerListView.GetItemText(sel, 0).c_str());
         const bool itemChecked = !!m_layerListView.GetCheckState(sel);
 
-        for (size_t i=0;i<pt->m_newLayer.count(name);i++)
+        for (size_t t = 0; t < pt->m_vedit.size(); t++)
         {
-            IEditable *const pedit = pt->m_newLayer.at(name);
-            if (pedit)
+            IEditable* pedit = pt->m_vedit[t];
+            string layerName = pt->m_newLayer.at(pedit);
+            if (layerName == name)
+            {
                 pedit->m_isVisible = itemChecked;
+            }
         }
         pt->SetDirtyDraw();
     }
