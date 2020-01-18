@@ -7,7 +7,7 @@ public:
     LayersListDialog();
     virtual ~LayersListDialog();
     virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
-    bool AddLayer(const string name);
+    bool AddLayer(const string &name);
     void DeleteLayer();
 
 
@@ -21,7 +21,7 @@ private:
     BOOL OnEditListItemLabel(LPARAM lparam);
     BOOL OnListItemChanged(LPARAM lparam);
 
-    int ListContains(string name);
+    int ListContains(const string &name);
 
     CResizer        m_resizer;
     CListView       m_layerListView;
@@ -31,9 +31,7 @@ private:
     CButton         m_layerEditButton;
     CEdit           m_layerNameEditBox;
     int             m_layerCount;
-};  
-
-
+};
 
 class CContainLayers: public CDockContainer
 {
@@ -71,4 +69,3 @@ private:
 };
 
 #endif
-
