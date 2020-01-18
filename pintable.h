@@ -674,7 +674,7 @@ public:
 
    vector< IEditable* > m_vedit;
    vector< IEditable* > m_layer[MAX_LAYERS];
-   std::map<string, IEditable *> m_newLayer;
+   std::map<IEditable *, string> m_newLayer;
    vector< ISelect* >   m_allHitElements;
 
 
