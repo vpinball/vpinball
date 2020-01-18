@@ -1051,5 +1051,5 @@ void CDockProperty::OnDestroy()
     const CRect rect = GetWindowRect();
     SaveValueInt("Editor", "PropertiesPosX", rect.left);
     SaveValueInt("Editor", "PropertiesPosY", rect.top);
-    SaveValueBool("Editor", "PropertiesDocked", IsDocked());
+    SaveValueBool("Editor", "PropertiesDocked", !!IsDocked());
 }

@@ -459,5 +459,5 @@ void CDockToolbar::OnDestroy()
     const CRect rect = GetWindowRect();
     SaveValueInt("Editor", "ToolbarPosX", rect.left);
     SaveValueInt("Editor", "ToolbarPosY", rect.top);
-    SaveValueBool("Editor", "ToolbarDocked", IsDocked());
+    SaveValueBool("Editor", "ToolbarDocked", !!IsDocked());
 }

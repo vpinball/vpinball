@@ -236,7 +236,7 @@ public:
         strncpy_s(strbuf, MAXNAMEBUFFER, str.c_str(), (str.GetLength()> MAXNAMEBUFFER) ? MAXNAMEBUFFER-1:str.GetLength());
     }
 
-    static int GetComboBoxIndex(CComboBox &combo, vector<string> contentList)
+    static int GetComboBoxIndex(CComboBox &combo, const vector<string>& contentList)
     {
         char buf[MAXTOKEN];
         combo.GetLBText(combo.GetCurSel(), buf);

@@ -20,7 +20,7 @@ LRESULT LayersListDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam
     return FinalWindowProc(msg, wparam, lparam);
 }
 
-bool LayersListDialog::AddLayer(const string name) 
+bool LayersListDialog::AddLayer(const string &name) 
 {
     LVITEM lvitem;
     int newIndex = -1;
@@ -47,7 +47,7 @@ bool LayersListDialog::AddLayer(const string name)
 
 void LayersListDialog::DeleteLayer()
 {
-    int selectedCount = m_layerListView.GetSelectedCount();
+    const int selectedCount = m_layerListView.GetSelectedCount();
 
     if (selectedCount == m_layerListView.GetItemCount())
     {
@@ -98,7 +98,8 @@ INT_PTR LayersListDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
     switch (msg)
     {
-        case WM_MOUSEACTIVATE:      return OnMouseActivate(msg, wparam, lparam);
+        case WM_MOUSEACTIVATE:
+            return OnMouseActivate(msg, wparam, lparam);
 
         case WM_NOTIFY:
         {
@@ -155,10 +156,9 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
-int LayersListDialog::ListContains(string name)
+int LayersListDialog::ListContains(const string &name)
 {
     LVFINDINFO findInfo;
-
     findInfo.flags = LVFI_STRING;
     findInfo.psz = name.c_str();
     findInfo.lParam = NULL;
@@ -193,11 +193,11 @@ BOOL LayersListDialog::OnListItemChanged(LPARAM lparam)
 
         const int sel = plistview->iItem;
         const string name = string(m_layerListView.GetItemText(sel, 0).c_str());
-        const bool itemChecked = m_layerListView.GetCheckState(sel);
+        const bool itemChecked = !!m_layerListView.GetCheckState(sel);
 
         for (size_t i=0;i<pt->m_newLayer.count(name);i++)
         {
-            IEditable *pedit = pt->m_newLayer.at(name);
+            IEditable *const pedit = pt->m_newLayer.at(name);
             if (pedit)
                 pedit->m_isVisible = itemChecked;
         }
