@@ -1208,6 +1208,7 @@ bool VPinball::CloseTable(PinTable * const ppt)
    if (ppt->m_searchSelectDlg.IsWindow())
       ppt->m_searchSelectDlg.Destroy();
 
+   m_layersListDialog->ClearList();
    CloseAllDialogs();
 
    ppt->FVerifySaveToClose();
@@ -1237,7 +1238,7 @@ void VPinball::SetEnableMenuItems()
    // is there a valid table??
    if (ptCur)
    {
-       mainMenu.CheckMenuItem(ID_EDIT_SCRIPT, MF_BYCOMMAND | ((ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized) ? MF_CHECKED : MF_UNCHECKED));
+      mainMenu.CheckMenuItem(ID_EDIT_SCRIPT, MF_BYCOMMAND | ((ptCur->m_pcv!=nullptr && ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized) ? MF_CHECKED : MF_UNCHECKED));
 
       mainMenu.EnableMenuItem(IDM_CLOSE, MF_BYCOMMAND | MF_ENABLED);
       mainMenu.EnableMenuItem(ID_EDIT_UNDO, MF_BYCOMMAND | MF_ENABLED);

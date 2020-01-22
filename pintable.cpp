@@ -1567,8 +1567,10 @@ PinTable::~PinTable()
    }
 
    m_pcv->Release();
+   m_pcv = nullptr;
 
    m_psgt->Release();
+   m_psgt = nullptr;
 
    if (m_hbmOffScreen)
       DeleteObject(m_hbmOffScreen);
@@ -3838,6 +3840,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
    g_pvp->SetActionCur("");
 
+   g_pvp->GetLayersListDialog()->ClearList();
    // copy all elements into their layers
    for (int i = 0; i < MAX_LAYERS; i++)
    {
@@ -3853,13 +3856,12 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
              if (psel->m_layerName == "")
              {
                  const string name = string("Layer_") + std::to_string(i+1);
+                 psel->m_layerName = name;
                  g_pvp->GetLayersListDialog()->AddLayer(name);
-                 m_newLayer.insert(std::pair<IEditable *, string>(piedit, name));
              }
              else
              {
                  g_pvp->GetLayersListDialog()->AddLayer(psel->m_layerName);
-                 m_newLayer.insert(std::pair<IEditable *, string>(piedit, psel->m_layerName));
              }
          }
       }
@@ -6178,8 +6180,6 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
          // copy the new element to the same layer as the source element
          m_layer[peditNew->GetISelect()->m_layerIndex].push_back(peditNew);
 
-         ISelect *psel = peditNew->GetISelect();
-         m_newLayer.insert(std::pair<IEditable *, string>(peditNew, psel->m_layerName));
          peditNew->InitPostLoad();
          peditNew->m_backglass = g_pvp->m_backglassView;
 
@@ -10374,6 +10374,7 @@ void PinTable::OnSize()
 
 void PinTable::OnClose()
 {
+    g_pvp->GetLayersListDialog()->ClearList();
     m_mdiTable->KillTimer(TIMER_ID_AUTOSAVE);
     m_mdiTable->SetTimer(TIMER_ID_CLOSE_TABLE, 100, NULL);	//wait 250 milliseconds
 }

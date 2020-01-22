@@ -2,7 +2,7 @@
 #include "LayersListDialog.h"
 #include <WindowsX.h>
 
-LayersListDialog::LayersListDialog() : CDialog(IDD_LAYERS), m_layerCount(0)
+LayersListDialog::LayersListDialog() : CDialog(IDD_LAYERS), m_layerCount(0), m_currentLayerName("")
 {
 }
 
@@ -60,6 +60,11 @@ void LayersListDialog::DeleteLayer()
         m_layerListView.DeleteItem(curItem);
     }
 
+}
+
+void LayersListDialog::ClearList()
+{
+    m_layerListView.DeleteAllItems();
 }
 
 BOOL LayersListDialog::OnInitDialog()
@@ -147,8 +152,16 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         {
             const int sel = ListView_GetNextItem(m_layerListView.GetHwnd(), -1, LVNI_SELECTED);
             if (sel != -1)
+            {
                 m_layerListView.SetFocus();
                 m_layerListView.EditLabel(sel);
+            }
+            return TRUE;
+        }
+        case IDC_ASSIGN_BUTTON:
+        {
+            OnAssignButton();
+            return TRUE;
         }
         default:
             break;
@@ -173,12 +186,21 @@ BOOL LayersListDialog::OnEditListItemLabel(LPARAM lparam)
     {
         return FALSE;
     }
+    CCO(PinTable)* const pt = g_pvp->GetActiveTable();
+    if (pt == nullptr)
+        return FALSE;
 
-    CString name = m_layerListView.GetItemText(pinfo->item.iItem, 0);
+    const string oldName = string(m_layerListView.GetItemText(pinfo->item.iItem, 0).c_str());
+    const string newName = string(pinfo->item.pszText);
     m_layerListView.SetItemText(pinfo->item.iItem, 0, pinfo->item.pszText);
 
-    //todo: process name change of a layer
+    for (size_t t = 0; t < pt->m_vedit.size(); t++)
+    {
+        ISelect* psel = pt->m_vedit[t]->GetISelect();
+        if (psel->m_layerName == oldName)
+            psel->m_layerName = newName;
 
+    }
     return TRUE;
 }
 
@@ -192,14 +214,13 @@ BOOL LayersListDialog::OnListItemChanged(LPARAM lparam)
             return FALSE;
 
         const int sel = plistview->iItem;
-        const string name = string(m_layerListView.GetItemText(sel, 0).c_str());
+        m_currentLayerName = string(m_layerListView.GetItemText(sel, 0).c_str());
         const bool itemChecked = !!m_layerListView.GetCheckState(sel);
 
         for (size_t t = 0; t < pt->m_vedit.size(); t++)
         {
             IEditable* pedit = pt->m_vedit[t];
-            string layerName = pt->m_newLayer.at(pedit);
-            if (layerName == name)
+            if (pedit->GetISelect()->m_layerName == m_currentLayerName)
             {
                 pedit->m_isVisible = itemChecked;
             }
@@ -207,6 +228,23 @@ BOOL LayersListDialog::OnListItemChanged(LPARAM lparam)
         pt->SetDirtyDraw();
     }
     return TRUE;
+}
+
+void LayersListDialog::OnAssignButton()
+{
+    if (m_currentLayerName == "")
+    {
+        ShowError("Please select a layer!");
+        return;
+    }
+    CCO(PinTable)* const pt = g_pvp->GetActiveTable();
+    if (pt == nullptr)
+        return;
+    for (size_t t=0;t<pt->m_vmultisel.size();t++)
+    {
+        ISelect* psel = pt->m_vmultisel.ElementAt(t);
+        psel->m_layerName = m_currentLayerName;
+    }
 }
 
 CContainLayers::CContainLayers()

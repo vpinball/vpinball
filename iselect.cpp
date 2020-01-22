@@ -356,14 +356,21 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(LOCK): pbr->GetBool(&m_locked); break;
-   case FID(LAYR):
-   {
-      int tmp;
-      pbr->GetInt(&tmp);
-      m_layerIndex = (char)tmp;
-      break;
-   }
+       case FID(LOCK): pbr->GetBool(&m_locked); break;
+       case FID(LAYR):
+       {
+          int tmp;
+          pbr->GetInt(&tmp);
+          m_layerIndex = (char)tmp;
+          break;
+       }
+       case FID(LANR):
+       {
+           char name[MAX_PATH];
+           pbr->GetString(name);
+           m_layerName = string(name);
+           break;
+       }
    }
    return true;
 }
@@ -374,6 +381,7 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 
    bw.WriteBool(FID(LOCK), m_locked);
    bw.WriteInt(FID(LAYR), m_layerIndex);
+   bw.WriteString(FID(LANR), (char*)m_layerName.c_str());
 
    return S_OK;
 }
