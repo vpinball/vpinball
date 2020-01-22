@@ -9,7 +9,7 @@ public:
     virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
     bool AddLayer(const string &name);
     void DeleteLayer();
-
+    void ClearList();
 
 protected:
     virtual BOOL OnInitDialog();
@@ -20,6 +20,7 @@ protected:
 private:
     BOOL OnEditListItemLabel(LPARAM lparam);
     BOOL OnListItemChanged(LPARAM lparam);
+    void OnAssignButton();
 
     int ListContains(const string &name);
 
@@ -31,6 +32,7 @@ private:
     CButton         m_layerEditButton;
     CEdit           m_layerNameEditBox;
     int             m_layerCount;
+    string          m_currentLayerName;
 };
 
 class CContainLayers: public CDockContainer
