@@ -42,16 +42,14 @@ class PinTableMDI:public CMDIChild
 {
 public:
     PinTableMDI(PinTable *table);
+    virtual ~PinTableMDI();
     PinTable *GetTable()
     {
         return m_table;
     }
 protected:
     virtual void PreCreate(CREATESTRUCT &cs);
-    virtual void PreRegisterClass(WNDCLASS &wc);
     virtual int OnCreate(CREATESTRUCT &cs);
-    virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
-    virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
 
 private:
     PinTable *m_table;

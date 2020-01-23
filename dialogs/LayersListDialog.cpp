@@ -67,6 +67,21 @@ void LayersListDialog::ClearList()
     m_layerListView.DeleteAllItems();
 }
 
+void LayersListDialog::UpdateLayerList()
+{
+    CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+    if (pt == nullptr)
+        return;
+
+    m_layerListView.DeleteAllItems();
+    for (size_t t = 0; t < pt->m_vedit.size(); t++)
+    {
+        ISelect *psel = pt->m_vedit[t]->GetISelect();
+        AddLayer(psel->m_layerName);
+    }
+
+}
+
 BOOL LayersListDialog::OnInitDialog()
 {
     AttachItem(IDC_LAYER_LISTCONTROL, m_layerListView);
@@ -240,7 +255,7 @@ void LayersListDialog::OnAssignButton()
     CCO(PinTable)* const pt = g_pvp->GetActiveTable();
     if (pt == nullptr)
         return;
-    for (size_t t=0;t<pt->m_vmultisel.size();t++)
+    for (int t=0;t<pt->m_vmultisel.size();t++)
     {
         ISelect* psel = pt->m_vmultisel.ElementAt(t);
         psel->m_layerName = m_currentLayerName;

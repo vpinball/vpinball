@@ -1370,7 +1370,6 @@ PinTable::PinTable()
    m_toggleAllLayers = false;
    m_savingActive = false;
    m_renderSolid = LoadValueBoolWithDefault("Editor", "RenderSolid", true);
-
    //m_hMDI = m_mdiTable.GetHwnd();
    ClearMultiSel();
 
@@ -5015,38 +5014,40 @@ void PinTable::DoCommand(int icmd, int x, int y)
 
    switch (icmd)
    {
-   case ID_DRAWINFRONT:
-   case ID_DRAWINBACK:
-      for (int i = 0; i < m_vmultisel.Size(); i++)
-      {
-         ISelect * const psel = m_vmultisel.ElementAt(i);
-         _ASSERTE(psel != this); // Would make an infinite loop
-         psel->DoCommand(icmd, x, y);
-      }
-      break;
+       case ID_DRAWINFRONT:
+       case ID_DRAWINBACK:
+       {
+           for (int i = 0; i < m_vmultisel.Size(); i++)
+           {
+               ISelect *const psel = m_vmultisel.ElementAt(i);
+               _ASSERTE(psel != this); // Would make an infinite loop
+               psel->DoCommand(icmd, x, y);
+           }
+           break;
+       }
 
-   case ID_EDIT_DRAWINGORDER_HIT: g_pvp->ShowDrawingOrderDialog(false); break;
-   case ID_EDIT_DRAWINGORDER_SELECT: g_pvp->ShowDrawingOrderDialog(true); break;
-   case ID_LOCK: LockElements(); break;
-   case ID_WALLMENU_FLIP: FlipY(GetCenter()); break;
-   case ID_WALLMENU_MIRROR: FlipX(GetCenter()); break;
-   case IDC_COPY: Copy(x, y); break;
-   case IDC_PASTE: Paste(false, x, y); break;
-   case IDC_PASTEAT: Paste(true, x, y); break;
-   case ID_WALLMENU_ROTATE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ROTATE), g_pvp->GetHwnd(), RotateProc, (size_t)(ISelect *)this); break;
-   case ID_WALLMENU_SCALE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SCALE), g_pvp->GetHwnd(), ScaleProc, (size_t)(ISelect *)this); break;
-   case ID_WALLMENU_TRANSLATE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TRANSLATE), g_pvp->GetHwnd(), TranslateProc, (size_t)(ISelect *)this); break;
-   case ID_ASSIGNTO_LAYER1: AssignMultiToLayer(0, x, y); break;
-   case ID_ASSIGNTO_LAYER2: AssignMultiToLayer(1, x, y); break;
-   case ID_ASSIGNTO_LAYER3: AssignMultiToLayer(2, x, y); break;
-   case ID_ASSIGNTO_LAYER4: AssignMultiToLayer(3, x, y); break;
-   case ID_ASSIGNTO_LAYER5: AssignMultiToLayer(4, x, y); break;
-   case ID_ASSIGNTO_LAYER6: AssignMultiToLayer(5, x, y); break;
-   case ID_ASSIGNTO_LAYER7: AssignMultiToLayer(6, x, y); break;
-   case ID_ASSIGNTO_LAYER8: AssignMultiToLayer(7, x, y); break;
-   case ID_ASSIGNTO_LAYER9: AssignMultiToLayer(8, x, y); break;
-   case ID_ASSIGNTO_LAYER10:AssignMultiToLayer(9, x, y); break;
-   case ID_ASSIGNTO_LAYER11:AssignMultiToLayer(10, x, y);break;
+       case ID_EDIT_DRAWINGORDER_HIT: g_pvp->ShowDrawingOrderDialog(false); break;
+       case ID_EDIT_DRAWINGORDER_SELECT: g_pvp->ShowDrawingOrderDialog(true); break;
+       case ID_LOCK: LockElements(); break;
+       case ID_WALLMENU_FLIP: FlipY(GetCenter()); break;
+       case ID_WALLMENU_MIRROR: FlipX(GetCenter()); break;
+       case IDC_COPY: Copy(x, y); break;
+       case IDC_PASTE: Paste(false, x, y); break;
+       case IDC_PASTEAT: Paste(true, x, y); break;
+       case ID_WALLMENU_ROTATE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ROTATE), g_pvp->GetHwnd(), RotateProc, (size_t)(ISelect *)this); break;
+       case ID_WALLMENU_SCALE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SCALE), g_pvp->GetHwnd(), ScaleProc, (size_t)(ISelect *)this); break;
+       case ID_WALLMENU_TRANSLATE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TRANSLATE), g_pvp->GetHwnd(), TranslateProc, (size_t)(ISelect *)this); break;
+       case ID_ASSIGNTO_LAYER1: AssignMultiToLayer(0, x, y); break;
+       case ID_ASSIGNTO_LAYER2: AssignMultiToLayer(1, x, y); break;
+       case ID_ASSIGNTO_LAYER3: AssignMultiToLayer(2, x, y); break;
+       case ID_ASSIGNTO_LAYER4: AssignMultiToLayer(3, x, y); break;
+       case ID_ASSIGNTO_LAYER5: AssignMultiToLayer(4, x, y); break;
+       case ID_ASSIGNTO_LAYER6: AssignMultiToLayer(5, x, y); break;
+       case ID_ASSIGNTO_LAYER7: AssignMultiToLayer(6, x, y); break;
+       case ID_ASSIGNTO_LAYER8: AssignMultiToLayer(7, x, y); break;
+       case ID_ASSIGNTO_LAYER9: AssignMultiToLayer(8, x, y); break;
+       case ID_ASSIGNTO_LAYER10:AssignMultiToLayer(9, x, y); break;
+       case ID_ASSIGNTO_LAYER11:AssignMultiToLayer(10, x, y);break;
    }
 }
 void PinTable::AssignMultiToLayer(int layerNumber, int x, int y)
@@ -5057,17 +5058,17 @@ void PinTable::AssignMultiToLayer(int layerNumber, int x, int y)
       _ASSERTE(psel != this); // Would make an infinite loop
       switch (layerNumber)
       {
-      case 0: psel->DoCommand(ID_ASSIGNTO_LAYER1, x, y); break;
-      case 1: psel->DoCommand(ID_ASSIGNTO_LAYER2, x, y); break;
-      case 2: psel->DoCommand(ID_ASSIGNTO_LAYER3, x, y); break;
-      case 3: psel->DoCommand(ID_ASSIGNTO_LAYER4, x, y); break;
-      case 4: psel->DoCommand(ID_ASSIGNTO_LAYER5, x, y); break;
-      case 5: psel->DoCommand(ID_ASSIGNTO_LAYER6, x, y); break;
-      case 6: psel->DoCommand(ID_ASSIGNTO_LAYER7, x, y); break;
-      case 7: psel->DoCommand(ID_ASSIGNTO_LAYER8, x, y); break;
-      case 8: psel->DoCommand(ID_ASSIGNTO_LAYER9, x, y); break;
-      case 9: psel->DoCommand(ID_ASSIGNTO_LAYER10, x, y);break;
-      case 10:psel->DoCommand(ID_ASSIGNTO_LAYER11, x, y);break;
+          case 0: psel->DoCommand(ID_ASSIGNTO_LAYER1, x, y); break;
+          case 1: psel->DoCommand(ID_ASSIGNTO_LAYER2, x, y); break;
+          case 2: psel->DoCommand(ID_ASSIGNTO_LAYER3, x, y); break;
+          case 3: psel->DoCommand(ID_ASSIGNTO_LAYER4, x, y); break;
+          case 4: psel->DoCommand(ID_ASSIGNTO_LAYER5, x, y); break;
+          case 5: psel->DoCommand(ID_ASSIGNTO_LAYER6, x, y); break;
+          case 6: psel->DoCommand(ID_ASSIGNTO_LAYER7, x, y); break;
+          case 7: psel->DoCommand(ID_ASSIGNTO_LAYER8, x, y); break;
+          case 8: psel->DoCommand(ID_ASSIGNTO_LAYER9, x, y); break;
+          case 9: psel->DoCommand(ID_ASSIGNTO_LAYER10, x, y); break;
+          case 10:psel->DoCommand(ID_ASSIGNTO_LAYER11, x, y); break;
       }
    }
 }
@@ -10268,7 +10269,7 @@ void PinTable::OnInitialUpdate()
     BeginAutoSaveCounter();
     SetWindowText(m_szFileName);
     SetCaption(m_szTitle);
-
+    g_pvp->SetEnableMenuItems();
 }
 
 void PinTable::SetMouseCursor()
@@ -10366,7 +10367,8 @@ void PinTable::OnMouseWheel(const short x, const short y, const short zDelta)
 void PinTable::OnSize()
 {
     SetMyScrollInfo();
-    m_dirtyDraw = true;
+    SetDirtyDraw();
+    //m_dirtyDraw = true; // set dirty flag to force redrawing the elements
     // this window command is called whenever the MDI window changes over
     // re-evaluate the toolbar depending on table permissions
     g_pvp->SetEnableToolbar();
@@ -10377,11 +10379,6 @@ void PinTable::OnClose()
     g_pvp->GetLayersListDialog()->ClearList();
     m_mdiTable->KillTimer(TIMER_ID_AUTOSAVE);
     m_mdiTable->SetTimer(TIMER_ID_CLOSE_TABLE, 100, NULL);	//wait 250 milliseconds
-}
-
-BOOL PinTableMDI::OnCommand(WPARAM wparam, LPARAM lparam)
-{
-    return FALSE;
 }
 
 // menu locations
@@ -10403,8 +10400,15 @@ PinTableMDI::PinTableMDI(PinTable *table) : m_table(table)
 {
     m_table->SetMDITable(this);
     SetView(*m_table);
+
+    //m_menu.LoadMenu(IDR_APPMENU);
     m_menu = g_pvp->GetMenu();
     SetHandles(m_menu, NULL);
+}
+
+PinTableMDI::~PinTableMDI()
+{
+    m_table = nullptr;
 }
 
 void PinTableMDI::PreCreate(CREATESTRUCT &cs)
@@ -10413,21 +10417,10 @@ void PinTableMDI::PreCreate(CREATESTRUCT &cs)
     cs.y = 20;
     cs.cx = 400;
     cs.cy = 400;
-    cs.dwExStyle = WS_EX_MDICHILD;
-    cs.style = /*WS_HSCROLL | WS_VSCROLL | */WS_MAXIMIZE | WS_VISIBLE | WS_CHILD | WS_OVERLAPPEDWINDOW;
+    cs.style = WS_MAXIMIZE;
     cs.hwndParent = g_pvp->GetHwnd();
     cs.lpszClass = _T("PinTable");
     cs.lpszName = _T(m_table->m_szFileName);
-}
-
-void PinTableMDI::PreRegisterClass(WNDCLASS &wc)
-{
-    wc.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;//CS_NOCLOSE | CS_OWNDC;
-    wc.hInstance = g_hinst;
-    wc.lpszClassName = "PinTable";
-    wc.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_TABLE));
-    wc.hCursor = NULL;
-    wc.hbrBackground = NULL;
 }
 
 int PinTableMDI::OnCreate(CREATESTRUCT &cs)
@@ -10438,8 +10431,3 @@ int PinTableMDI::OnCreate(CREATESTRUCT &cs)
     return CMDIChild::OnCreate(cs);
 }
 
-LRESULT PinTableMDI::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
-{
-    // Do default processing for other messages
-    return WndProcDefault(msg, wparam, lparam);
-}

@@ -10,6 +10,7 @@ public:
     bool AddLayer(const string &name);
     void DeleteLayer();
     void ClearList();
+    void UpdateLayerList();
 
 protected:
     virtual BOOL OnInitDialog();
