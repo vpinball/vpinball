@@ -141,10 +141,11 @@ public:
 
    int m_menuid; // context menu to use
 
-   unsigned char m_layerIndex; //leave it here for compatibility reasons. To load old tables to new layer handling
    string m_layerName;
 
    bool m_dragging;
    bool m_markedForUndo;
    bool m_locked; // Can not be dragged in the editor
+
+   unsigned char m_layerIndex; //!! deprecated, leave it here for compatibility reasons. To load old tables to new layer handling
 };
