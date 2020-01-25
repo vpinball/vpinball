@@ -506,7 +506,6 @@ public:
 
    void SwitchToLayer(int layerNumber);
    void AssignToLayer(IEditable *obj, int layerNumber);
-   void AssignMultiToLayer(int layerNumber, int x, int y);
    void MergeAllLayers();
    void RestoreLayers();
    void BackupLayers();

@@ -36,18 +36,6 @@ BOOL ToolbarDialog::OnInitDialog()
     AttachItem(ID_EDIT_SCRIPT, m_scriptButton);
     AttachItem(ID_EDIT_BACKGLASSVIEW, m_backglassButton);
     AttachItem(ID_TABLE_PLAY, m_playButton);
-    AttachItem(ID_LAYER_LAYER1, m_layerButtons[0]);
-    AttachItem(ID_LAYER_LAYER2, m_layerButtons[1]);
-    AttachItem(ID_LAYER_LAYER3, m_layerButtons[2]);
-    AttachItem(ID_LAYER_LAYER4, m_layerButtons[3]);
-    AttachItem(ID_LAYER_LAYER5, m_layerButtons[4]);
-    AttachItem(ID_LAYER_LAYER6, m_layerButtons[5]);
-    AttachItem(ID_LAYER_LAYER7, m_layerButtons[6]);
-    AttachItem(ID_LAYER_LAYER8, m_layerButtons[7]);
-    AttachItem(ID_LAYER_LAYER9, m_layerButtons[8]);
-    AttachItem(ID_LAYER_LAYER10, m_layerButtons[9]);
-    AttachItem(ID_LAYER_LAYER11, m_layerButtons[10]);
-    AttachItem(ID_LAYER_TOGGLEALL, m_layerButtons[11]);
     AttachItem(ID_INSERT_WALL, m_wallButton);
     AttachItem(ID_INSERT_GATE, m_gateButton);
     AttachItem(ID_INSERT_RAMP, m_rampButton);
@@ -172,10 +160,6 @@ BOOL ToolbarDialog::OnInitDialog()
     hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_RUBBER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_rubberButton.SetIcon((HICON)hIcon);
 
-    for (int i = 0; i < 11; i++)
-    {
-        m_layerButtons[i].SetCheck(BST_CHECKED);
-    }
 /*
     m_resizer.Initialize(*this, CRect(0, 0, 61, 422));
 
@@ -185,19 +169,6 @@ BOOL ToolbarDialog::OnInitDialog()
     m_resizer.AddChild(m_scriptButton, rightcenter, 0);
     m_resizer.AddChild(m_backglassButton, leftcenter, 0);
     m_resizer.AddChild(m_playButton, rightcenter, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC_LAYERS), topleft, RD_STRETCH_WIDTH|RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_layerButtons[0], leftcenter, 0);
-    m_resizer.AddChild(m_layerButtons[1], center, 0);
-    m_resizer.AddChild(m_layerButtons[2], rightcenter, 0);
-    m_resizer.AddChild(m_layerButtons[3], leftcenter, 0);
-    m_resizer.AddChild(m_layerButtons[4], center, 0);
-    m_resizer.AddChild(m_layerButtons[5], rightcenter, 0);
-    m_resizer.AddChild(m_layerButtons[6], leftcenter, 0);
-    m_resizer.AddChild(m_layerButtons[7], center, 0);
-    m_resizer.AddChild(m_layerButtons[8], rightcenter, 0);
-    m_resizer.AddChild(m_layerButtons[9], leftcenter, 0);
-    m_resizer.AddChild(m_layerButtons[10], center, 0);
-    m_resizer.AddChild(m_layerButtons[11], rightcenter, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC_ELEMENTS), bottomright, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
 
     m_resizer.AddChild(m_wallButton, leftcenter, 0);
@@ -413,26 +384,6 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case ID_TABLE_PLAY:
         {
             g_pvp->DoPlay(false);  //only normaly play mode via this dialog
-            break;
-        }
-        case ID_LAYER_LAYER1:
-        case ID_LAYER_LAYER2:
-        case ID_LAYER_LAYER3:
-        case ID_LAYER_LAYER4:
-        case ID_LAYER_LAYER5:
-        case ID_LAYER_LAYER6:
-        case ID_LAYER_LAYER7:
-        case ID_LAYER_LAYER8:
-        case ID_LAYER_LAYER9:
-        case ID_LAYER_LAYER10:
-        case ID_LAYER_LAYER11:
-        {
-            g_pvp->SetLayerStatus(id - ID_LAYER_LAYER1);
-            break;
-        }
-        case ID_LAYER_TOGGLEALL:
-        {
-            g_pvp->ToggleAllLayers();
             break;
         }
     }
