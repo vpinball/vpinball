@@ -972,31 +972,6 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
           delete keysConfigDlg;
           return TRUE;
        }
-       case ID_LAYER_LAYER1:
-       case ID_LAYER_LAYER2:
-       case ID_LAYER_LAYER3:
-       case ID_LAYER_LAYER4:
-       case ID_LAYER_LAYER5:
-       case ID_LAYER_LAYER6:
-       case ID_LAYER_LAYER7:
-       case ID_LAYER_LAYER8:
-       case ID_LAYER_LAYER9:
-       case ID_LAYER_LAYER10:
-       case ID_LAYER_LAYER11:
-       {
-           SetLayerStatus((int)(code - ID_LAYER_LAYER1));
-           return TRUE;
-       }
-       case ID_LAYER_MERGEALL:
-       {
-          MergeAllLayers();
-          return TRUE;
-       }
-       case ID_LAYER_TOGGLEALL:
-       {
-          ToggleAllLayers();
-          return TRUE;
-       }
        case ID_HELP_ABOUT:
        {
           ShowSubDialog(m_aboutDialog);
@@ -1733,14 +1708,13 @@ BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
 
 LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-//     switch (uMsg)
-//     {
-//         case WM_INITMENUPOPUP:
-//             g_pvp->SetEnableMenuItems();
-//             break;
-// 
-//     }
     return WndProcDefault(uMsg, wParam, lParam);
+}
+
+LRESULT VPinball::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    GetLayersListDialog()->UpdateLayerList();
+    return CMDIFrameT::OnMDIActivated(msg, wparam, lparam);
 }
 
 STDMETHODIMP VPinball::PlaySound(BSTR bstr)

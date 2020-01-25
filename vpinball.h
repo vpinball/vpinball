@@ -212,6 +212,7 @@ protected:
    virtual void OnInitialUpdate();
    virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+   virtual LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam);
 
 
 private:

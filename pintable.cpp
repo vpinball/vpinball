@@ -4830,76 +4830,6 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
       LocalString ls3(IDS_SETASDEFAULT);
       newMenu.AppendMenu(MF_STRING, ID_SETASDEFAULT, ls3.m_szbuffer);
 
-      LocalString ls4(IDS_ASSIGNTO);
-      newMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)assignLayerMenu.GetHandle(), ls4.m_szbuffer);
-      LocalString ls6(IDS_LAYER1);
-      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER1, ls6.m_szbuffer);
-      LocalString ls7(IDS_LAYER2);
-      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER2, ls7.m_szbuffer);
-      LocalString ls8(IDS_LAYER3);
-      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER3, ls8.m_szbuffer);
-      LocalString ls9(IDS_LAYER4);
-      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER4, ls9.m_szbuffer);
-      LocalString ls10(IDS_LAYER5);
-      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER5, ls10.m_szbuffer);
-      LocalString ls11(IDS_LAYER6);
-      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER6, ls11.m_szbuffer);
-      LocalString ls12(IDS_LAYER7);
-      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER7, ls12.m_szbuffer);
-      LocalString ls13(IDS_LAYER8);
-      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER8, ls13.m_szbuffer);
-      LocalString ls20(IDS_LAYER9);
-      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER9, ls20.m_szbuffer);
-      LocalString ls21(IDS_LAYER10);
-      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER10, ls21.m_szbuffer);
-      LocalString ls16(IDS_LAYER11);
-      assignLayerMenu.AppendMenu(MF_POPUP, ID_ASSIGNTO_LAYER11, ls16.m_szbuffer);
-
-      if (psel->m_layerIndex == 0)
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER1, MF_CHECKED);
-      else
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER1, MF_UNCHECKED);
-      if (psel->m_layerIndex == 1)
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER2, MF_CHECKED);
-      else
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER2, MF_UNCHECKED);
-      if (psel->m_layerIndex == 2)
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER3, MF_CHECKED);
-      else
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER3, MF_UNCHECKED);
-      if (psel->m_layerIndex == 3)
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER4, MF_CHECKED);
-      else
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER4, MF_UNCHECKED);
-      if (psel->m_layerIndex == 4)
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER5, MF_CHECKED);
-      else
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER5, MF_UNCHECKED);
-      if (psel->m_layerIndex == 5)
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER6, MF_CHECKED);
-      else
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER6, MF_UNCHECKED);
-      if (psel->m_layerIndex == 6)
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER7, MF_CHECKED);
-      else
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER7, MF_UNCHECKED);
-      if (psel->m_layerIndex == 7)
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER8, MF_CHECKED);
-      else
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER8, MF_UNCHECKED);
-      if (psel->m_layerIndex == 8)
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER9, MF_CHECKED);
-      else
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER9, MF_UNCHECKED);
-      if (psel->m_layerIndex == 9)
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER10, MF_CHECKED);
-      else
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER10, MF_UNCHECKED);
-      if (psel->m_layerIndex == 10)
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER11, MF_CHECKED);
-      else
-          assignLayerMenu.CheckMenuItem(ID_ASSIGNTO_LAYER11, MF_UNCHECKED);
-
       FillCollectionContextMenu(newMenu, colSubMenu, psel);
 
       LocalString ls5(IDS_LOCK);
@@ -5037,39 +4967,6 @@ void PinTable::DoCommand(int icmd, int x, int y)
        case ID_WALLMENU_ROTATE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ROTATE), g_pvp->GetHwnd(), RotateProc, (size_t)(ISelect *)this); break;
        case ID_WALLMENU_SCALE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SCALE), g_pvp->GetHwnd(), ScaleProc, (size_t)(ISelect *)this); break;
        case ID_WALLMENU_TRANSLATE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TRANSLATE), g_pvp->GetHwnd(), TranslateProc, (size_t)(ISelect *)this); break;
-       case ID_ASSIGNTO_LAYER1: AssignMultiToLayer(0, x, y); break;
-       case ID_ASSIGNTO_LAYER2: AssignMultiToLayer(1, x, y); break;
-       case ID_ASSIGNTO_LAYER3: AssignMultiToLayer(2, x, y); break;
-       case ID_ASSIGNTO_LAYER4: AssignMultiToLayer(3, x, y); break;
-       case ID_ASSIGNTO_LAYER5: AssignMultiToLayer(4, x, y); break;
-       case ID_ASSIGNTO_LAYER6: AssignMultiToLayer(5, x, y); break;
-       case ID_ASSIGNTO_LAYER7: AssignMultiToLayer(6, x, y); break;
-       case ID_ASSIGNTO_LAYER8: AssignMultiToLayer(7, x, y); break;
-       case ID_ASSIGNTO_LAYER9: AssignMultiToLayer(8, x, y); break;
-       case ID_ASSIGNTO_LAYER10:AssignMultiToLayer(9, x, y); break;
-       case ID_ASSIGNTO_LAYER11:AssignMultiToLayer(10, x, y);break;
-   }
-}
-void PinTable::AssignMultiToLayer(int layerNumber, int x, int y)
-{
-   for (int i = 0; i < m_vmultisel.Size(); i++)
-   {
-      ISelect * const psel = m_vmultisel.ElementAt(i);
-      _ASSERTE(psel != this); // Would make an infinite loop
-      switch (layerNumber)
-      {
-          case 0: psel->DoCommand(ID_ASSIGNTO_LAYER1, x, y); break;
-          case 1: psel->DoCommand(ID_ASSIGNTO_LAYER2, x, y); break;
-          case 2: psel->DoCommand(ID_ASSIGNTO_LAYER3, x, y); break;
-          case 3: psel->DoCommand(ID_ASSIGNTO_LAYER4, x, y); break;
-          case 4: psel->DoCommand(ID_ASSIGNTO_LAYER5, x, y); break;
-          case 5: psel->DoCommand(ID_ASSIGNTO_LAYER6, x, y); break;
-          case 6: psel->DoCommand(ID_ASSIGNTO_LAYER7, x, y); break;
-          case 7: psel->DoCommand(ID_ASSIGNTO_LAYER8, x, y); break;
-          case 8: psel->DoCommand(ID_ASSIGNTO_LAYER9, x, y); break;
-          case 9: psel->DoCommand(ID_ASSIGNTO_LAYER10, x, y); break;
-          case 10:psel->DoCommand(ID_ASSIGNTO_LAYER11, x, y); break;
-      }
    }
 }
 
@@ -10368,10 +10265,6 @@ void PinTable::OnSize()
 {
     SetMyScrollInfo();
     SetDirtyDraw();
-    //m_dirtyDraw = true; // set dirty flag to force redrawing the elements
-    // this window command is called whenever the MDI window changes over
-    // re-evaluate the toolbar depending on table permissions
-    g_pvp->SetEnableToolbar();
 }
 
 void PinTable::OnClose()
@@ -10380,21 +10273,6 @@ void PinTable::OnClose()
     m_mdiTable->KillTimer(TIMER_ID_AUTOSAVE);
     m_mdiTable->SetTimer(TIMER_ID_CLOSE_TABLE, 100, NULL);	//wait 250 milliseconds
 }
-
-// menu locations
-enum
-{
-    FILEMENU = 0,
-    EDITMENU,
-    VIEWMENU,
-    INSERTMENU,
-    TABLEMENU,
-    LAYERMENU,
-    PREFMENU,
-    WINDOWMENU,
-    HELPMENU,
-    NUM_MENUS
-};
 
 PinTableMDI::PinTableMDI(PinTable *table) : m_table(table)
 {
