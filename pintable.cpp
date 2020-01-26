@@ -1600,82 +1600,6 @@ void PinTable::FVerifySaveToClose()
    }
 }
 
-void PinTable::SwitchToLayer(int layerNumber)
-{
-   // scan through all layers if all elements are already stored to a layer
-   // if not new elements will be stored in layer1
-   for (size_t t = 0; t < m_vedit.size(); t++)
-   {
-      IEditable * const piedit = m_vedit[t];
-      bool alreadyIn = false;
-      for (int i = 0; i < MAX_LAYERS; i++)
-      {
-         if (FindIndexOf(m_layer[i], piedit) != -1)
-         {
-            alreadyIn = true;
-            break;
-         }
-      }
-
-      if (!alreadyIn)
-      {
-         piedit->GetISelect()->m_layerIndex = 0;
-         m_layer[0].push_back(piedit);
-      }
-   }
-   //toggle layer
-   m_activeLayers[layerNumber] ^= true;
-
-   // now set all elements to visible if their layer is active, otherwise hide them
-   for (int i = 0; i < MAX_LAYERS; i++)
-   {
-      for (size_t t = 0; t < m_layer[i].size(); t++)
-      {
-         IEditable * const piedit = m_layer[i][t];
-         piedit->m_isVisible = m_activeLayers[i];
-      }
-   }
-
-   SetDirtyDraw();
-}
-
-void PinTable::AssignToLayer(IEditable *obj, int layerNumber)
-{
-   if (!m_activeLayers[layerNumber])
-      obj->m_isVisible = false;
-   RemoveFromVectorSingle(m_layer[obj->GetISelect()->m_layerIndex], obj);
-   obj->GetISelect()->m_layerIndex = layerNumber;
-   m_layer[layerNumber].insert(m_layer[layerNumber].begin(), obj);
-
-   SetDirtyDraw();
-}
-
-void PinTable::MergeAllLayers()
-{
-   for (int t = 1; t < MAX_LAYERS; t++)
-   {
-      for (SSIZE_T i = m_layer[t].size() - 1; i >= 0; i--)
-      {
-         IEditable * const piedit = m_layer[t][i];
-         piedit->GetISelect()->m_layerIndex = 0;
-         m_layer[0].push_back(piedit);
-      }
-      m_layer[t].clear();
-   }
-
-   //
-
-   m_vedit.clear();
-   if (!m_layer[0].empty())
-   {
-      m_vedit.resize(m_layer[0].size());
-
-      for (size_t i = 0; i < m_layer[0].size(); ++i)
-         m_vedit[i] = m_layer[0][i];
-   }
-
-   SetDirtyDraw();
-}
 
 void PinTable::BackupLayers()
 {
@@ -2334,7 +2258,7 @@ void PinTable::Play(const bool cameraMode)
          }
          else
          {
-            ShowError("Problem occured during Player init");
+            ShowError("Problem occurred during Player init");
             ::SendMessage(g_pplayer->m_playfieldHwnd, WM_CLOSE, 0, 0);
          }
       }
@@ -2352,7 +2276,6 @@ void PinTable::Play(const bool cameraMode)
 
    DestroyWindow(hwndProgressDialog);
 
-   //EnableWindow(g_pvp->m_hwndWork, FALSE); // Go modal in our main app window
 }
 
 // called before Player instance gets deleted
@@ -6263,7 +6186,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
    piSelect = m_vmultisel.ElementAt(0);
    if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetScriptable())
    {
-      string info = string("Layer ") + std::to_string((long long)piSelect->m_layerIndex+1);
+      string info = string("Layer: ") + piSelect->m_layerName;
       if (piSelect->GetItemType() == eItemPrimitive)
       {
          const Primitive * const prim = (Primitive*)piSelect;

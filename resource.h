@@ -937,6 +937,8 @@
 #define IDW_SDRIGHT                     655
 #define IDW_SDTOP                       656
 #define IDD_LAYERS                      657
+#define IDC_CURSOR2                     661
+#define IDW_SPLITV                      661
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1088,6 +1090,7 @@
 #define IDC_GLOBAL_PFREFLECTION_CHECK   821
 #define IDC_BUMPER_SKIRT_ANIM           822
 #define IDC_CUSTOM_PARAMS               823
+#define IDW_SPLITH                      823
 #define IDC_OBJECT_SPACE_NORMALMAP      824
 #define IDC_STATIC_ELEMENTS             825
 #define IDC_STATIC_LAYERS               826
@@ -1279,7 +1282,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        658
+#define _APS_NEXT_RESOURCE_VALUE        662
 #define _APS_NEXT_COMMAND_VALUE         4024
 #define _APS_NEXT_CONTROL_VALUE         837
 #define _APS_NEXT_SYMED_VALUE           188

@@ -248,7 +248,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat />
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <OpenMPSupport>false</OpenMPSupport>
@@ -266,7 +266,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -1033,6 +1033,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\kicker.cur" />
     <None Include="res\spinner.cur" />
     <None Include="res\dispreel.cur" />
+    <None Include="res\SplitH.cur" />
+    <None Include="res\SplitV.cur" />
     <None Include="res\trigger.cur" />
     <None Include="res\timer.cur" />
     <None Include="res\target.cur" />

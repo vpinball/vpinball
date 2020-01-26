@@ -350,10 +350,11 @@ void VPinball::InitTools()
    // was the properties panel open last time we used VP?
     const bool state = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
     if (state)
-   {
-      // if so then re-open it
-      ParseCommand(ID_EDIT_PROPERTIES, 1); //display
-   }
+    {
+        // if so then re-open it
+        ParseCommand(ID_EDIT_PROPERTIES, 1); //display
+    }
+    m_toolbarDialog->SetOptionsButton(state);
 
    m_ToolCur = IDC_SELECT;
 }
@@ -542,17 +543,24 @@ CDockToolbar *VPinball::GetToolbarDocker()
 
 CDockLayers *VPinball::GetLayersDocker()
 {
+    const bool propertiesVisible = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
+
     if (m_dockLayers == NULL || !m_dockLayers->IsWindow())
     {
-        const int x = LoadValueIntWithDefault("Editor", "ToolbarPosX", 100);
-        const int y = LoadValueIntWithDefault("Editor", "ToolbarPosY", 100);
-        const bool docked = LoadValueBoolWithDefault("Editor", "ToolbarDocked", true);
-        m_dockLayers = (CDockLayers *)m_dockProperties->AddDockedChild(new CDockLayers, DS_DOCKED_BOTTOM | DS_CLIENTEDGE, 380);
+        const int x = LoadValueIntWithDefault("Editor", "LayersPosX", 100);
+        const int y = LoadValueIntWithDefault("Editor", "LayersPosY", 100);
+        const bool docked = LoadValueBoolWithDefault("Editor", "LayersDocked", true);
+        
+        if(propertiesVisible)
+            m_dockLayers = (CDockLayers *)m_dockProperties->AddDockedChild(new CDockLayers, DS_DOCKED_BOTTOM | DS_CLIENTEDGE, 380);
+        else
+            m_dockLayers = (CDockLayers*)AddDockedChild(new CDockLayers, DS_DOCKED_RIGHT | DS_CLIENTEDGE, 380);
+
         assert(m_dockLayers->GetContainer());
         m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
         m_layersListDialog = m_dockLayers->GetContainLayers()->GetLayersDialog();
-//         if (!docked)
-//             m_dockToolbar->Undock(CPoint(x, y), true);
+        if (!docked)
+            m_dockLayers->Undock(CPoint(x, y), true);
     }
     return m_dockLayers;
 }
@@ -1013,17 +1021,6 @@ void VPinball::ReInitSound()
 	}
 }
 
-void VPinball::SetLayerStatus(const int layerNumber)
-{
-   CComObject<PinTable> * const ptCur = GetActiveTable();
-   if (!ptCur || layerNumber >= MAX_LAYERS) return;
-
-   //SendMessage(m_hwndToolbarLayers, TB_CHECKBUTTON, allLayers[layerNumber], MAKELONG((!ptCur->m_activeLayers[layerNumber]), 0));
-
-   ptCur->SwitchToLayer(layerNumber);
-}
-
-
 void VPinball::SetEnablePalette()
 {
    if(m_toolbarDialog)
@@ -1034,7 +1031,7 @@ void VPinball::SetEnablePalette()
 void VPinball::SetEnableToolbar()
 {
    SetEnablePalette();
-   ParseCommand(ID_EDIT_PROPERTIES, 2); //redisplay 
+//   ParseCommand(ID_EDIT_PROPERTIES, 2); //redisplay 
 }
 
 void VPinball::DoPlay(const bool _cameraMode)
@@ -1125,6 +1122,7 @@ void VPinball::LoadFileName(char *szFileName)
       SetCurrentDirectory(m_currentTablePath);
       ppt->AddMultiSel(ppt, false, true, false);
       UpdateRecentFileList(szFileName);
+      
       ppt->SetDirty(eSaveClean);
    }
 }
@@ -1691,7 +1689,7 @@ void VPinball::OnInitialUpdate()
     CreateMDIClient();
     CreateDocker();
 
-    InitTools();
+    //InitTools();
     SetEnableMenuItems();
 }
 
@@ -2363,26 +2361,4 @@ void VPinball::CopyPasteElement(const CopyPasteModes mode)
                 break;
         }
     }
-}
-
-void VPinball::MergeAllLayers()
-{
-    CComObject<PinTable> * const ptCur = GetActiveTable();
-    if (!ptCur)
-        return;
-
-    ptCur->MergeAllLayers();
-    for (int i = 0; i < MAX_LAYERS; i++) ptCur->m_activeLayers[i] = false;
-    for (int i = 0; i < MAX_LAYERS; i++) SetLayerStatus(i);
-}
-
-void VPinball::ToggleAllLayers()
-{
-    CComObject<PinTable> * const ptCur = GetActiveTable();
-    if (!ptCur) 
-        return;
-
-    for (int i = 0; i < MAX_LAYERS; i++) ptCur->m_activeLayers[i] = !ptCur->m_toggleAllLayers;
-    for (int i = 0; i < MAX_LAYERS; i++) SetLayerStatus(i);
-    ptCur->m_toggleAllLayers ^= true;
 }

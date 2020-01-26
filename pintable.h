@@ -504,9 +504,6 @@ public:
    HRESULT StopSound(BSTR Sound);
    void StopAllSounds();
 
-   void SwitchToLayer(int layerNumber);
-   void AssignToLayer(IEditable *obj, int layerNumber);
-   void MergeAllLayers();
    void RestoreLayers();
    void BackupLayers();
    void DeleteFromLayer(IEditable *obj);

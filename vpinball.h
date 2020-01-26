@@ -69,7 +69,6 @@ private:
    void ProcessDeleteElement();
    void OpenRecentFile(const size_t menuId);
    void CopyPasteElement(const CopyPasteModes mode);
-   void MergeAllLayers();
    void InitTools();
    void InitRegValues();
    bool CanClose();
@@ -89,9 +88,7 @@ private:
 public:
    void AddMDITable(PinTableMDI* mdiTable);
    CMenu GetMainMenu(int id);
-   void SetLayerStatus(const int layerNumber);
    void ToggleScriptEditor();
-   void ToggleAllLayers();
    void ToggleBackglassView();
    BOOL ParseCommand(size_t code, size_t notify);
    void ReInitSound();

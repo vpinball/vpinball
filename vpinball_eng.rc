@@ -3182,6 +3182,10 @@ IDC_FLASHER             CURSOR                  "res\\flasher.cur"
 
 IDC_RUBBER              CURSOR                  "res\\rubber.cur"
 
+IDW_SPLITH              CURSOR                  "res\\SplitH.cur"
+
+IDW_SPLITV              CURSOR                  "res\\SplitV.cur"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

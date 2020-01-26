@@ -40,7 +40,7 @@ void SearchSelectDialog::Update()
    lvc.cx = 70;
    lvc.pszText = TEXT("Type");
    index = ListView_InsertColumn(m_hElementList, 1, &lvc);
-   lvc.cx = 50;
+   lvc.cx = 100;
    lvc.pszText = TEXT("Layer");
    index = ListView_InsertColumn(m_hElementList, 2, &lvc);
    lvc.cx = 200;
@@ -256,7 +256,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    secondImage[0] = 0;
    if (piscript)
    {
-      sprintf_s(layerBuf, "%i", piscript->GetISelect()->m_layerIndex + 1);
+       strcpy_s(layerBuf, piscript->GetISelect()->m_layerName.c_str());
    }
    ListView_SetItemText(m_hElementList, idx, 2, layerBuf);
    if (piedit->GetItemType() == eItemSurface)
