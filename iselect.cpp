@@ -137,8 +137,6 @@ void ISelect::DoCommand(int icmd, int x, int y)
       PinTable * const ptable = GetPTable();
       RemoveFromVectorSingle(ptable->m_vedit, piedit);
       ptable->m_vedit.push_back(piedit);
-      RemoveFromVectorSingle(ptable->m_layer[m_layerIndex], piedit);
-      ptable->m_layer[m_layerIndex].push_back(piedit);
       ptable->SetDirtyDraw();
       break;
    }
@@ -147,8 +145,6 @@ void ISelect::DoCommand(int icmd, int x, int y)
       PinTable * const ptable = GetPTable();
       RemoveFromVectorSingle(ptable->m_vedit, piedit);
       ptable->m_vedit.insert(ptable->m_vedit.begin(), piedit);
-      RemoveFromVectorSingle(ptable->m_layer[m_layerIndex], piedit);
-      ptable->m_layer[m_layerIndex].insert(ptable->m_layer[m_layerIndex].begin(), piedit);
       ptable->SetDirtyDraw();
       break;
    }
@@ -174,61 +170,6 @@ void ISelect::DoCommand(int icmd, int x, int y)
    case IDC_PASTEAT:
    {
       GetPTable()->Paste(true, x, y);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER1:
-   {
-      GetPTable()->AssignToLayer(piedit, 0);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER2:
-   {
-      GetPTable()->AssignToLayer(piedit, 1);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER3:
-   {
-      GetPTable()->AssignToLayer(piedit, 2);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER4:
-   {
-      GetPTable()->AssignToLayer(piedit, 3);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER5:
-   {
-      GetPTable()->AssignToLayer(piedit, 4);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER6:
-   {
-      GetPTable()->AssignToLayer(piedit, 5);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER7:
-   {
-      GetPTable()->AssignToLayer(piedit, 6);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER8:
-   {
-      GetPTable()->AssignToLayer(piedit, 7);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER9:
-   {
-      GetPTable()->AssignToLayer(piedit, 8);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER10:
-   {
-      GetPTable()->AssignToLayer(piedit, 9);
-      break;
-   }
-   case ID_ASSIGNTO_LAYER11:
-   {
-      GetPTable()->AssignToLayer(piedit, 10);
       break;
    }
    /*default:

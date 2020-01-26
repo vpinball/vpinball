@@ -59,13 +59,13 @@
 #define IDW_FILE_MRU_FILE16              81
 
 // Cursor Resources
-#define IDW_SPLITH                       82
-#define IDW_SPLITV                       83
+// #define IDW_SPLITH                       82  //self defined in own resource
+// #define IDW_SPLITV                       83
 #define IDW_TRACK4WAY                    84
 
 // Docking Bitmap Resources
 /*
-#define IDW_SDBOTTOM                     85
+#define IDW_SDBOTTOM                     85    //self defined in own resource
 #define IDW_SDCENTER                     86
 #define IDW_SDLEFT                       87
 #define IDW_SDMIDDLE                     88
