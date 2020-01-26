@@ -117,6 +117,16 @@ void LayersListDialog::UpdateLayerList()
 
 }
 
+string LayersListDialog::GetFirstLayerName() const
+{
+    return string(m_layerListView.GetItemText(0, 0).c_str());
+}
+
+string LayersListDialog::GetCurrentSelectedLayerName() const
+{
+    return m_currentLayerName;
+}
+
 BOOL LayersListDialog::OnInitDialog()
 {
     AttachItem(IDC_LAYER_LISTCONTROL, m_layerListView);
