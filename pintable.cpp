@@ -6313,6 +6313,7 @@ void PinTable::UseTool(int x, int y, int tool)
       pie->m_backglass = g_pvp->m_backglassView;
       m_vedit.push_back(pie);
       AddMultiSel(pie->GetISelect(), false, true, false);
+      pie->GetISelect()->m_layerName = g_pvp->GetLayersListDialog()->GetCurrentSelectedLayerName();
       if (m_searchSelectDlg.IsWindow())
          m_searchSelectDlg.Update();
       BeginUndo();

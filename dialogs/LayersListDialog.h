@@ -11,6 +11,8 @@ public:
     void DeleteLayer();
     void ClearList();
     void UpdateLayerList();
+    string GetFirstLayerName() const ;
+    string GetCurrentSelectedLayerName() const;
 
 protected:
     virtual BOOL OnInitDialog();
