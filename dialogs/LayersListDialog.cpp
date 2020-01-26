@@ -47,6 +47,8 @@ bool LayersListDialog::AddLayer(const string &name)
 
 void LayersListDialog::DeleteLayer()
 {
+    bool notEmptyMessage = true;
+    std::vector<int> indexList;
     const int selectedCount = m_layerListView.GetSelectedCount();
 
     if (selectedCount == m_layerListView.GetItemCount())
@@ -54,10 +56,43 @@ void LayersListDialog::DeleteLayer()
         ShowError("Can't delete all layers!");
         return;
     }
-    for (int i = 0, curItem=-1; i < selectedCount; i++)
+    CCO(PinTable)* const pt = g_pvp->GetActiveTable();
+    if (pt == nullptr)
+        return;
+
+    for (int i = 0, curItem = -1; i < selectedCount; i++)
+        indexList.push_back(m_layerListView.GetNextItem(curItem, LVNI_SELECTED));
+
+    int nextLayerIndex = indexList[0];
+    for (size_t i = 0; i < indexList.size(); i++)
     {
-        curItem = m_layerListView.GetNextItem(curItem, LVNI_SELECTED);
-        m_layerListView.DeleteItem(curItem);
+        nextLayerIndex = max(nextLayerIndex, indexList[i])+1;
+    }
+    if (nextLayerIndex >= m_layerListView.GetItemCount())
+        nextLayerIndex = 0;
+
+    string newLayerName = string(m_layerListView.GetItemText(nextLayerIndex, 0).c_str());
+
+    for (size_t i = 0; i < indexList.size(); i++)
+    {
+        string layerName = string(m_layerListView.GetItemText(indexList[i], 0).c_str());
+        for (size_t t = 0; t < pt->m_vedit.size(); t++)
+        {
+            ISelect* psel = pt->m_vedit[t]->GetISelect();
+            if (layerName == psel->m_layerName)
+            {
+                if (notEmptyMessage)
+                {
+                    string msg = "Layer '" + layerName + "' contains elements! Move elements to layer '" + newLayerName + "' and delete layer?";
+                    const int ans = g_pvp->MessageBox(msg.c_str(), "Warning", MB_YESNO | MB_DEFBUTTON2);
+                    if (ans == IDNO)
+                        return;
+                    notEmptyMessage = false;
+                }
+                psel->m_layerName = newLayerName;
+            }
+        }
+        m_layerListView.DeleteItem(indexList[i]);
     }
 
 }
