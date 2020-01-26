@@ -547,18 +547,9 @@ void Trigger::UpdateAnimation()
           m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
           for (int i = 0; i < m_numVertices; i++)
           {
-              if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD)
-              {
-                  buf[i].x = m_triggerVertices[i].x + m_triggerVertices[i].nx*m_d.m_wireThickness;
-                  buf[i].y = m_triggerVertices[i].y + m_triggerVertices[i].ny*m_d.m_wireThickness;
-                  buf[i].z = m_triggerVertices[i].z + m_triggerVertices[i].nz*m_d.m_wireThickness + m_animHeightOffset;
-              }
-              else
-              {
-                  buf[i].x = m_triggerVertices[i].x;
-                  buf[i].y = m_triggerVertices[i].y;
-                  buf[i].z = m_triggerVertices[i].z + m_animHeightOffset;
-              }
+              buf[i].x  = m_triggerVertices[i].x;
+              buf[i].y  = m_triggerVertices[i].y;
+              buf[i].z  = m_triggerVertices[i].z + m_animHeightOffset;
               buf[i].nx = m_triggerVertices[i].nx;
               buf[i].ny = m_triggerVertices[i].ny;
               buf[i].nz = m_triggerVertices[i].nz;
@@ -631,42 +622,34 @@ void Trigger::GenerateMesh()
       m_numVertices = triggerSimpleNumVertices;
       m_numIndices = triggerSimpleNumIndices;
       verts = triggerSimple;
-      if (m_triggerVertices)
-         delete[] m_triggerVertices;
-      m_triggerVertices = new Vertex3D_NoTex2[m_numVertices];
    }
    else if (m_d.m_shape == TriggerWireD)
    {
-       m_numVertices = triggerDWireNumVertices;
-       m_numIndices = triggerDWireNumIndices;
-       verts = triggerDWireMesh;
-       if (m_triggerVertices)
-           delete[] m_triggerVertices;
-       m_triggerVertices = new Vertex3D_NoTex2[m_numVertices];
+      m_numVertices = triggerDWireNumVertices;
+      m_numIndices = triggerDWireNumIndices;
+      verts = triggerDWireMesh;
    }
    else if (m_d.m_shape == TriggerButton)
    {
       m_numVertices = triggerButtonNumVertices;
       m_numIndices = triggerButtonNumIndices;
       verts = triggerButtonMesh;
-      if (m_triggerVertices)
-         delete[] m_triggerVertices;
-      m_triggerVertices = new Vertex3D_NoTex2[m_numVertices];
    }
    else if (m_d.m_shape == TriggerStar)
    {
       m_numVertices = triggerStarNumVertices;
       m_numIndices = triggerStarNumIndices;
       verts = triggerStar;
-      if (m_triggerVertices)
-         delete[] m_triggerVertices;
-      m_triggerVertices = new Vertex3D_NoTex2[m_numVertices];
    }
    else
    {
-       ShowError("Unknown Trigger type");
-       return;
+      ShowError("Unknown Trigger type");
+      return;
    }
+
+   if (m_triggerVertices)
+      delete[] m_triggerVertices;
+   m_triggerVertices = new Vertex3D_NoTex2[m_numVertices];
 
    Matrix3D fullMatrix;
    if (m_d.m_shape == TriggerWireB)
@@ -711,6 +694,13 @@ void Trigger::GenerateMesh()
       m_triggerVertices[i].nz = vert.z;
       m_triggerVertices[i].tu = verts[i].tu;
       m_triggerVertices[i].tv = verts[i].tv;
+
+      if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD)
+      {
+         m_triggerVertices[i].x += m_triggerVertices[i].nx*m_d.m_wireThickness;
+         m_triggerVertices[i].y += m_triggerVertices[i].ny*m_d.m_wireThickness;
+         m_triggerVertices[i].z += m_triggerVertices[i].nz*m_d.m_wireThickness;
+      }
    }
 }
 
@@ -770,21 +760,7 @@ void Trigger::RenderSetup()
    GenerateMesh();
    Vertex3D_NoTex2 *buf;
    m_vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD)
-   {
-      Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[m_numVertices];
-      for (int i = 0; i < m_numVertices; i++)
-      {
-         memcpy(&tmp[i], &m_triggerVertices[i], sizeof(Vertex3D_NoTex2));
-         tmp[i].x += tmp[i].nx * m_d.m_wireThickness;
-         tmp[i].y += tmp[i].ny * m_d.m_wireThickness;
-         tmp[i].z += tmp[i].nz * m_d.m_wireThickness;
-      }
-      memcpy(buf, tmp, sizeof(Vertex3D_NoTex2)*m_numVertices);
-      delete [] tmp;
-   }
-   else
-      memcpy(buf, m_triggerVertices, sizeof(Vertex3D_NoTex2)*m_numVertices);
+   memcpy(buf, m_triggerVertices, sizeof(Vertex3D_NoTex2)*m_numVertices);
    m_vertexBuffer->unlock();
 }
 
