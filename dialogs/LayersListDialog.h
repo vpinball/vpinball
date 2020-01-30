@@ -11,7 +11,9 @@ public:
     bool                    AddElement(const std::string name, IEditable *pedit);
     bool                    ContainsLayer(const std::string name) const;
     std::string             GetCurrentLayerName() const;
+    HTREEITEM               GetItemByElement(IEditable* pedit);
     int                     GetItemCount() const;
+    int                     GetLayerCount() const;
     std::vector<HTREEITEM>  GetSubItems(HTREEITEM hParent);
     bool                    IsItemChecked(HTREEITEM hItem) const;
     void                    SetAllItemStates(const bool checked);
@@ -19,6 +21,8 @@ public:
     void                    ExpandAll();
     void                    CollapsAll();
     void                    SetActiveLayer(const std::string name);
+    HTREEITEM               GetRootItem() { return hRootItem; }
+    HTREEITEM               GetCurrentLayerItem() { return hCurrentLayerItem; }
 
 protected:
     virtual void OnAttach();
