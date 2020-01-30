@@ -2,7 +2,7 @@
 #include "LayersListDialog.h"
 #include <WindowsX.h>
 
-LayersListDialog::LayersListDialog() : CDialog(IDD_LAYERS), m_layerCount(0), m_currentLayerName("")
+LayersListDialog::LayersListDialog() : CDialog(IDD_LAYERS), m_layerCount(0)
 {
 }
 
@@ -23,13 +23,6 @@ LRESULT LayersListDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam
 bool LayersListDialog::AddLayer(const string &name, IEditable *piedit) 
 {
     bool success = false;
-    LVITEM lvitem;
-    int newIndex = -1;
-    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
-    lvitem.iItem = 0;
-    lvitem.iSubItem = 0;
-    lvitem.lParam = NULL;
-    lvitem.pszText = (LPSTR)name.c_str();
 
     if (m_layerTreeView.GetItemCount() == 0)
     {
@@ -41,6 +34,8 @@ bool LayersListDialog::AddLayer(const string &name, IEditable *piedit)
         {
             success = m_layerTreeView.AddLayer(name);
         }
+        else
+            m_layerTreeView.SetActiveLayer(name);
     }
     if (piedit != nullptr)
         success = m_layerTreeView.AddElement(piedit->GetName(), piedit);
@@ -118,12 +113,12 @@ void LayersListDialog::UpdateLayerList()
         ISelect *psel = pt->m_vedit[t]->GetISelect();
         AddLayer(psel->m_layerName, pt->m_vedit[t]);        
     }
-
+    Expand();
 }
 
 string LayersListDialog::GetCurrentSelectedLayerName() const
 {
-    return m_currentLayerName;
+    return m_layerTreeView.GetCurrentLayerName();
 }
 
 BOOL LayersListDialog::OnInitDialog()
@@ -132,14 +127,12 @@ BOOL LayersListDialog::OnInitDialog()
     AttachItem(IDC_ADD_LAYER_BUTTON, m_addLayerButton);
     AttachItem(IDC_DELETE_LAYER_BUTTON, m_deleteLayerButton);
     AttachItem(IDC_ASSIGN_BUTTON, m_assignButton);
-    AttachItem(IDC_LAYER_EDIT_BUTTON, m_layerEditButton);
 
     m_resizer.Initialize(*this, CRect(0, 0, 61, 200));
     m_resizer.AddChild(m_layerTreeView, leftcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_addLayerButton, topcenter, 0);
     m_resizer.AddChild(m_deleteLayerButton, topcenter, 0);
     m_resizer.AddChild(m_assignButton, topleft, 0);
-    m_resizer.AddChild(m_layerEditButton, topleft, 0);
 
     m_resizer.RecalcLayout();
 
@@ -195,16 +188,6 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_DELETE_LAYER_BUTTON:
         {
             DeleteLayer();
-            return TRUE;
-        }
-        case IDC_LAYER_EDIT_BUTTON:
-        {
-//             const int sel = ListView_GetNextItem(m_layerListView.GetHwnd(), -1, LVNI_SELECTED);
-//             if (sel != -1)
-//             {
-//                 m_layerListView.SetFocus();
-//                 m_layerListView.EditLabel(sel);
-//             }
             return TRUE;
         }
         case IDC_ASSIGN_BUTTON:
@@ -275,7 +258,8 @@ BOOL LayersListDialog::OnListItemChanged(LPARAM lparam)
 
 void LayersListDialog::OnAssignButton()
 {
-    if (m_currentLayerName == "")
+    std::string layerName = m_layerTreeView.GetCurrentLayerName();
+    if (layerName == "")
     {
         ShowError("Please select a layer!");
         return;
@@ -286,8 +270,9 @@ void LayersListDialog::OnAssignButton()
     for (int t=0;t<pt->m_vmultisel.size();t++)
     {
         ISelect* psel = pt->m_vmultisel.ElementAt(t);
-        psel->m_layerName = m_currentLayerName;
+        psel->m_layerName = layerName;
     }
+    UpdateLayerList();
 }
 
 CContainLayers::CContainLayers()
@@ -355,6 +340,11 @@ bool LayerTreeView::ContainsLayer(const std::string name) const
         item = GetNextItem(item, TVGN_NEXT);
     }
     return false;
+}
+
+std::string LayerTreeView::GetCurrentLayerName() const
+{
+    return std::string(GetItemText(hCurrentLayerItem).c_str());
 }
 
 int LayerTreeView::GetItemCount() const
@@ -452,6 +442,23 @@ void LayerTreeView::CollapsAll()
     Expand(hRootItem, TVE_COLLAPSE);
 }
 
+void LayerTreeView::SetActiveLayer(const std::string name)
+{
+    HTREEITEM item = GetChild(hRootItem);
+    int count = 0;
+    while (item)
+    {
+        std::string layerName = std::string(GetItemText(item).c_str());
+        if (layerName == name)
+        {
+            hCurrentLayerItem = item;
+            return;
+        }
+        item = GetNextItem(item, TVGN_NEXT);
+    }
+
+}
+
 void LayerTreeView::OnAttach()
 {
     DWORD style = GetStyle();
@@ -489,6 +496,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
     {
         case TVN_SELCHANGED:    return OnTVNSelChanged((LPNMTREEVIEW)lparam);
         case NM_CLICK:          return OnNMClick(lpnmh);
+        case NM_DBLCLK:         return OnNMDBClick(lpnmh);
         case TVN_ENDLABELEDIT:
         {
             LPNMTVDISPINFO pinfo = (LPNMTVDISPINFO)lparam;
@@ -572,6 +580,55 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
     return 0;
 }
 
+LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
+{
+    DWORD dwpos = GetMessagePos();
+    TVHITTESTINFO ht = { 0 };
+    ht.pt.x = GET_X_LPARAM(dwpos);
+    ht.pt.y = GET_Y_LPARAM(dwpos);
+    ::MapWindowPoints(HWND_DESKTOP, lpnmh->hwndFrom, &ht.pt, 1);
+    HitTest(ht);
+
+    CCO(PinTable)* const pt = g_pvp->GetActiveTable();
+    if (pt == nullptr)
+        return TRUE;
+
+    pt->ClearMultiSel();
+
+    TVITEM tvItem;
+    ZeroMemory(&tvItem, sizeof(tvItem));
+    tvItem.mask = TVIF_PARAM | TVIF_CHILDREN;
+    tvItem.hItem = ht.hItem;
+    if (GetItem(tvItem))
+    {
+        if (tvItem.cChildren == 1) // layer checkbox was clicked
+        {
+            const bool checked = IsItemChecked(tvItem.hItem);
+            HTREEITEM subItem = GetChild(tvItem.hItem);
+            while (subItem)
+            {
+                tvItem.hItem = subItem;
+                if (GetItem(tvItem))
+                {
+                    IEditable* pedit = (IEditable*)tvItem.lParam;
+                    if (pedit != NULL)
+                        pt->AddMultiSel(pedit->GetISelect(), true, true, false);
+                }
+
+                subItem = GetNextItem(subItem, TVGN_NEXT);
+            }
+        }
+        else // element checkbox was clicked
+        {
+            IEditable* pedit = (IEditable*)tvItem.lParam;
+            if (pedit != NULL)
+                pt->AddMultiSel(pedit->GetISelect(), false, true, false);
+        }
+    }
+    pt->SetDirtyDraw();
+    return 0;
+}
+
 LRESULT LayerTreeView::OnTVNSelChanged(LPNMTREEVIEW pNMTV)
 {
     TVITEM tvItem;
@@ -585,16 +642,7 @@ LRESULT LayerTreeView::OnTVNSelChanged(LPNMTREEVIEW pNMTV)
             if (tvItem.cChildren == 1)
                 hCurrentLayerItem = tvItem.hItem;
             else
-            {
                 hCurrentElementItem = tvItem.hItem;
-                CCO(PinTable) *const pt = g_pvp->GetActiveTable();
-                if (pt)
-                {
-                    IEditable *pedit = (IEditable *)tvItem.lParam;
-                    if (pedit != NULL && pedit->m_isVisible)
-                       pt->AddMultiSel(pedit->GetISelect(), false, true, false);
-                }
-            }
         }
     }
     return 0;

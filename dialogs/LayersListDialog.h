@@ -10,7 +10,7 @@ public:
     bool                    AddLayer(const std::string name);
     bool                    AddElement(const std::string name, IEditable *pedit);
     bool                    ContainsLayer(const std::string name) const;
-
+    std::string             GetCurrentLayerName() const;
     int                     GetItemCount() const;
     std::vector<HTREEITEM>  GetSubItems(HTREEITEM hParent);
     bool                    IsItemChecked(HTREEITEM hItem) const;
@@ -18,6 +18,7 @@ public:
     void                    DeleteAll();
     void                    ExpandAll();
     void                    CollapsAll();
+    void                    SetActiveLayer(const std::string name);
 
 protected:
     virtual void OnAttach();
@@ -26,6 +27,7 @@ protected:
 
     virtual LRESULT OnNotifyReflect(WPARAM wparam, LPARAM lparam);
     virtual LRESULT OnNMClick(LPNMHDR lpnmh);
+    virtual LRESULT OnNMDBClick(LPNMHDR lpnmh);
     virtual LRESULT OnTVNSelChanged(LPNMTREEVIEW pNMTV);
 
 private:
@@ -70,10 +72,8 @@ private:
     CButton         m_assignButton;
     CButton         m_addLayerButton;      
     CButton         m_deleteLayerButton;
-    CButton         m_layerEditButton;
     CEdit           m_layerNameEditBox;
     int             m_layerCount;
-    string          m_currentLayerName;
 };
 
 class CContainLayers: public CDockContainer
