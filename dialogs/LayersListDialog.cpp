@@ -20,8 +20,9 @@ LRESULT LayersListDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam
     return FinalWindowProc(msg, wparam, lparam);
 }
 
-bool LayersListDialog::AddLayer(const string &name) 
+bool LayersListDialog::AddLayer(const string &name, IEditable *piedit) 
 {
+    bool success = false;
     LVITEM lvitem;
     int newIndex = -1;
     lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
@@ -30,23 +31,25 @@ bool LayersListDialog::AddLayer(const string &name)
     lvitem.lParam = NULL;
     lvitem.pszText = (LPSTR)name.c_str();
 
-    if (m_layerListView.GetItemCount() == 0)
-        newIndex = m_layerListView.InsertItem(lvitem);
+    if (m_layerTreeView.GetItemCount() == 0)
+    {
+        success = m_layerTreeView.AddLayer(name);
+    }
     else
     {
-        if(ListContains(name.c_str())==-1)
-            newIndex = m_layerListView.InsertItem(lvitem);
+        if (!m_layerTreeView.ContainsLayer(name))
+        {
+            success = m_layerTreeView.AddLayer(name);
+        }
     }
-    if (newIndex != -1)
-    {
-        m_layerListView.SetCheckState(newIndex, 1);
-        m_layerListView.SetItemState(newIndex, LVIS_SELECTED, LVIS_SELECTED);
-    }
-    return newIndex != -1;
+    if (piedit != nullptr)
+        success = m_layerTreeView.AddElement(piedit->GetName(), piedit);
+    return success;
 }
 
 void LayersListDialog::DeleteLayer()
 {
+/*
     bool notEmptyMessage = true;
     std::vector<int> indexList;
     const int selectedCount = m_layerListView.GetSelectedCount();
@@ -95,11 +98,12 @@ void LayersListDialog::DeleteLayer()
         m_layerListView.DeleteItem(indexList[i]);
     }
 
+*/
 }
 
 void LayersListDialog::ClearList()
 {
-    m_layerListView.DeleteAllItems();
+    m_layerTreeView.DeleteAll();
 }
 
 void LayersListDialog::UpdateLayerList()
@@ -108,18 +112,13 @@ void LayersListDialog::UpdateLayerList()
     if (pt == nullptr)
         return;
 
-    m_layerListView.DeleteAllItems();
+    ClearList();
     for (size_t t = 0; t < pt->m_vedit.size(); t++)
     {
         ISelect *psel = pt->m_vedit[t]->GetISelect();
-        AddLayer(psel->m_layerName);
+        AddLayer(psel->m_layerName, pt->m_vedit[t]);        
     }
 
-}
-
-string LayersListDialog::GetFirstLayerName() const
-{
-    return string(m_layerListView.GetItemText(0, 0).c_str());
 }
 
 string LayersListDialog::GetCurrentSelectedLayerName() const
@@ -129,30 +128,20 @@ string LayersListDialog::GetCurrentSelectedLayerName() const
 
 BOOL LayersListDialog::OnInitDialog()
 {
-    AttachItem(IDC_LAYER_LISTCONTROL, m_layerListView);
+    AttachItem(IDC_LAYER_TREEVIEW, m_layerTreeView);
     AttachItem(IDC_ADD_LAYER_BUTTON, m_addLayerButton);
     AttachItem(IDC_DELETE_LAYER_BUTTON, m_deleteLayerButton);
     AttachItem(IDC_ASSIGN_BUTTON, m_assignButton);
     AttachItem(IDC_LAYER_EDIT_BUTTON, m_layerEditButton);
 
     m_resizer.Initialize(*this, CRect(0, 0, 61, 200));
-    m_resizer.AddChild(m_layerListView, leftcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_layerTreeView, leftcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_addLayerButton, topcenter, 0);
     m_resizer.AddChild(m_deleteLayerButton, topcenter, 0);
     m_resizer.AddChild(m_assignButton, topleft, 0);
     m_resizer.AddChild(m_layerEditButton, topleft, 0);
 
     m_resizer.RecalcLayout();
-
-    m_layerListView.SetExtendedStyle(LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
-    LVCOLUMN lvc;
-    ZeroMemory(&lvc, sizeof(LVCOLUMN));
-    lvc.mask = LVCF_TEXT | LVCF_WIDTH;
-    lvc.pszText = _T("Name");
-    lvc.cx = 230;
-
-    m_layerListView.InsertColumn(0, lvc);
-    m_layerListView.SetColumnWidth(0, LVSCW_AUTOSIZE_USEHEADER);
 
     return TRUE;
 }
@@ -196,10 +185,10 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     {
         case IDC_ADD_LAYER_BUTTON:
         {
-            if (!AddLayer(string("New Layer 0")))
+            if (!AddLayer(string("New Layer 0"), nullptr))
             {
                 int i = 0;
-                while (!AddLayer(string("New Layer ") + std::to_string(i))) i++;
+                while (!AddLayer(string("New Layer ") + std::to_string(i), nullptr)) i++;
             }
             return TRUE;
         }
@@ -210,12 +199,12 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case IDC_LAYER_EDIT_BUTTON:
         {
-            const int sel = ListView_GetNextItem(m_layerListView.GetHwnd(), -1, LVNI_SELECTED);
-            if (sel != -1)
-            {
-                m_layerListView.SetFocus();
-                m_layerListView.EditLabel(sel);
-            }
+//             const int sel = ListView_GetNextItem(m_layerListView.GetHwnd(), -1, LVNI_SELECTED);
+//             if (sel != -1)
+//             {
+//                 m_layerListView.SetFocus();
+//                 m_layerListView.EditLabel(sel);
+//             }
             return TRUE;
         }
         case IDC_ASSIGN_BUTTON:
@@ -229,18 +218,9 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
-int LayersListDialog::ListContains(const string &name)
-{
-    LVFINDINFO findInfo;
-    findInfo.flags = LVFI_STRING;
-    findInfo.psz = name.c_str();
-    findInfo.lParam = NULL;
-    
-    return m_layerListView.FindItem(findInfo, -1);
-}
-
 BOOL LayersListDialog::OnEditListItemLabel(LPARAM lparam)
 {
+/*
     NMLVDISPINFO *const pinfo = (NMLVDISPINFO *)lparam;
     if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
     {
@@ -261,11 +241,13 @@ BOOL LayersListDialog::OnEditListItemLabel(LPARAM lparam)
             psel->m_layerName = newName;
 
     }
+*/
     return TRUE;
 }
 
 BOOL LayersListDialog::OnListItemChanged(LPARAM lparam)
 {
+/*
     NMLISTVIEW *const plistview = (LPNMLISTVIEW)lparam;
     if (plistview->uChanged & LVIF_STATE)
     {
@@ -287,6 +269,7 @@ BOOL LayersListDialog::OnListItemChanged(LPARAM lparam)
         }
         pt->SetDirtyDraw();
     }
+*/
     return TRUE;
 }
 
@@ -327,4 +310,292 @@ void CDockLayers::OnDestroy()
 //     SaveValueInt("Editor", "ToolbarPosX", rect.left);
 //     SaveValueInt("Editor", "ToolbarPosY", rect.top);
 //     SaveValueBool("Editor", "ToolbarDocked", IsDocked());
+}
+
+HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable *pedit, int image)
+{
+    TVITEM tvi;
+    ZeroMemory(&tvi, sizeof(TVITEM));
+    tvi.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+    tvi.iImage = image;
+    tvi.iSelectedImage = image;
+    tvi.pszText = const_cast<LPTSTR>(text);
+    tvi.lParam = (LPARAM)pedit;
+
+    TVINSERTSTRUCT tvis;
+    ZeroMemory(&tvis, sizeof(TVINSERTSTRUCT));
+    tvis.hParent = hParent;
+    tvis.item = tvi;
+
+    HTREEITEM item = InsertItem(tvis);
+    TreeView_SetCheckState(GetHwnd(), item, 1);
+    return item;
+}
+
+bool LayerTreeView::AddLayer(const std::string name)
+{
+    hCurrentLayerItem = AddItem(hRootItem, name.c_str(), NULL, 1);
+    return hCurrentLayerItem != NULL;
+}
+
+bool LayerTreeView::AddElement(const std::string name, IEditable *pedit)
+{
+    hCurrentElementItem = AddItem(hCurrentLayerItem, name.c_str(), pedit, 2);
+    return hCurrentElementItem != NULL;
+}
+
+bool LayerTreeView::ContainsLayer(const std::string name) const
+{
+    HTREEITEM item = GetChild(hRootItem);
+    while (item)
+    {
+        std::string itemName(GetItemText(item).c_str());
+        if (itemName == name)
+            return true;
+        item = GetNextItem(item, TVGN_NEXT);
+    }
+    return false;
+}
+
+int LayerTreeView::GetItemCount() const
+{
+    std::vector<HTREEITEM> children;
+    HTREEITEM item = GetChild(hRootItem);
+    int count = 0;
+    while (item)
+    {
+        children.push_back(item);
+        item = GetNextItem(item, TVGN_NEXT);
+    }
+    count = children.size();
+    for (HTREEITEM child : children)
+    {
+        HTREEITEM subItem = GetChild(child);
+        while (subItem)
+        {
+            count++;
+            subItem = GetNextItem(subItem, TVGN_NEXT);
+        }
+    }
+    return count;
+}
+
+std::vector<HTREEITEM> LayerTreeView::GetSubItems(HTREEITEM hParent)
+{
+    std::vector<HTREEITEM> allSubItems;
+    HTREEITEM item = GetChild(hParent);
+    while (item)
+    {
+        allSubItems.push_back(item);
+        item = GetNextItem(item, TVGN_NEXT);
+    }
+    return allSubItems;
+}
+
+bool LayerTreeView::IsItemChecked(HTREEITEM hItem) const
+{
+    TVITEM tvItem;
+    tvItem.mask = TVIF_HANDLE | TVIF_STATE;
+    tvItem.stateMask = TVIS_STATEIMAGEMASK;
+    tvItem.hItem = hItem;
+    GetItem(tvItem);
+    return ((tvItem.state >> 12) - 1) == 0;
+}
+
+void LayerTreeView::SetAllItemStates(const bool checked)
+{
+    TVITEM tvItem;
+    std::vector<HTREEITEM> children;
+
+    ZeroMemory(&tvItem, sizeof(tvItem));
+    tvItem.mask = TVIF_PARAM;
+
+    HTREEITEM item = GetChild(hRootItem);
+    while (item)
+    {
+        children.push_back(item);
+        TreeView_SetCheckState(GetHwnd(), item, checked);
+        item = GetNextItem(item, TVGN_NEXT);
+    }
+    for (HTREEITEM child : children)
+    {
+        HTREEITEM subItem = GetChild(child);
+        while (subItem)
+        {
+            tvItem.hItem = subItem;
+            if (GetItem(tvItem))
+            {
+                IEditable *pedit = (IEditable *)tvItem.lParam;
+                if(pedit!=NULL)
+                    pedit->m_isVisible = checked;
+            }
+
+            TreeView_SetCheckState(GetHwnd(), subItem, checked);
+            subItem = GetNextItem(subItem, TVGN_NEXT);
+        }
+    }
+}
+
+void LayerTreeView::DeleteAll()
+{
+    DeleteAllItems();
+    hRootItem = AddItem(NULL, _T("Layers"), NULL, 0);
+}
+
+void LayerTreeView::ExpandAll()
+{
+    Expand(hRootItem, TVE_EXPAND);
+}
+
+void LayerTreeView::CollapsAll()
+{
+    Expand(hRootItem, TVE_COLLAPSE);
+}
+
+void LayerTreeView::OnAttach()
+{
+    DWORD style = GetStyle();
+    style |= TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_CHECKBOXES ;
+    SetStyle(style);
+
+    DeleteAllItems();
+    hRootItem = AddItem(NULL, _T("Layers"), NULL, 0);
+    Expand(hRootItem, TVE_EXPAND);
+}
+
+void LayerTreeView::PreCreate(CREATESTRUCT &cs)
+{
+    cs.style = TVS_NOTOOLTIPS | WS_CHILD | TVS_EDITLABELS;
+    cs.lpszClass = WC_TREEVIEW;
+}
+
+LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    switch (msg)
+    {
+        case WM_MOUSEACTIVATE:
+            SetFocus();
+            break;
+    }
+
+    return WndProcDefault(msg, wparam, lparam);
+}
+
+LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
+{
+    LPNMHDR  lpnmh = (LPNMHDR)lparam;
+
+    switch (lpnmh->code)
+    {
+        case TVN_SELCHANGED:    return OnTVNSelChanged((LPNMTREEVIEW)lparam);
+        case NM_CLICK:          return OnNMClick(lpnmh);
+        case TVN_ENDLABELEDIT:
+        {
+            LPNMTVDISPINFO pinfo = (LPNMTVDISPINFO)lparam;
+            
+            if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
+            {
+                return FALSE;
+            }
+            CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+            if (pt == nullptr)
+                return FALSE;
+
+            const string oldName = string(GetItemText(pinfo->item.hItem).c_str());
+            const string newName = string(pinfo->item.pszText);
+
+            for (size_t t = 0; t < pt->m_vedit.size(); t++)
+            {
+                ISelect *psel = pt->m_vedit[t]->GetISelect();
+                if (psel->m_layerName == oldName)
+                    psel->m_layerName = newName;
+            }
+            return TRUE;
+        }
+    }
+
+    return 0;
+}
+
+LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
+{
+    DWORD dwpos = GetMessagePos();
+    TVHITTESTINFO ht = {0};
+    ht.pt.x = GET_X_LPARAM(dwpos);
+    ht.pt.y = GET_Y_LPARAM(dwpos);
+    ::MapWindowPoints(HWND_DESKTOP, lpnmh->hwndFrom, &ht.pt, 1);
+    HitTest(ht);
+
+    if (ht.flags & TVHT_ONITEMSTATEICON)
+    {
+        CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+
+        if (ht.hItem == hRootItem)
+            SetAllItemStates(IsItemChecked(hRootItem));
+        else
+        {
+            TVITEM tvItem;
+            ZeroMemory(&tvItem, sizeof(tvItem));
+            tvItem.mask = TVIF_PARAM | TVIF_CHILDREN;
+            tvItem.hItem = ht.hItem;
+            if (GetItem(tvItem))
+            {
+                if (tvItem.cChildren == 1) // layer checkbox was clicked
+                {
+                    const bool checked = IsItemChecked(tvItem.hItem);
+                    HTREEITEM subItem = GetChild(tvItem.hItem);
+                    while (subItem)
+                    {
+                        tvItem.hItem = subItem;
+                        if (GetItem(tvItem))
+                        {
+                            IEditable *pedit = (IEditable *)tvItem.lParam;
+                            if (pedit != NULL)
+                                pedit->m_isVisible = checked;
+                        }
+
+                        TreeView_SetCheckState(GetHwnd(), subItem, checked);
+                        subItem = GetNextItem(subItem, TVGN_NEXT);
+                    }
+                }
+                else // element checkbox was clicked
+                {
+                    IEditable *pedit = (IEditable *)tvItem.lParam;
+                    if (pedit != NULL)
+                        pedit->m_isVisible = IsItemChecked(tvItem.hItem);
+                }
+            }
+        }
+        if (pt != nullptr)
+            pt->SetDirtyDraw();
+    }
+    return 0;
+}
+
+LRESULT LayerTreeView::OnTVNSelChanged(LPNMTREEVIEW pNMTV)
+{
+    TVITEM tvItem;
+    ZeroMemory(&tvItem, sizeof(tvItem));
+    tvItem.mask = TVIF_CHILDREN | TVIF_HANDLE | TVIF_PARAM;
+    tvItem.hItem = pNMTV->itemNew.hItem;
+    if (GetItem(tvItem))
+    {
+        if(tvItem.hItem!=hRootItem)
+        {
+            if (tvItem.cChildren == 1)
+                hCurrentLayerItem = tvItem.hItem;
+            else
+            {
+                hCurrentElementItem = tvItem.hItem;
+                CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+                if (pt)
+                {
+                    IEditable *pedit = (IEditable *)tvItem.lParam;
+                    if (pedit != NULL && pedit->m_isVisible)
+                       pt->AddMultiSel(pedit->GetISelect(), false, true, false);
+                }
+            }
+        }
+    }
+    return 0;
 }

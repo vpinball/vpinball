@@ -79,7 +79,7 @@ using std::vector;
 //#include <wxx_taskdialog.h>	// Add CTaskDialog
 //#include <wxx_time.h>			// Add CTime
 //#include <wxx_toolbar.h>		// Add CToolBar
-//#include <wxx_treeview.h>		// Add CTreeView
+#include <wxx_treeview.h>		// Add CTreeView
 //#include <wxx_webbrowser.h>		// Add CAXWindow, CWebBrowser
 #include <wxx_wincore.h>
 

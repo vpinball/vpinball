@@ -228,6 +228,7 @@ public:
    void MarkForUndo();
    void MarkForDelete();
    void Undelete();
+   char *GetName();
 
    void Delete();
    void Uncreate();

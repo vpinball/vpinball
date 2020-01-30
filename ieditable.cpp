@@ -192,6 +192,25 @@ void IEditable::Undelete()
    }
 }
 
+char *IEditable::GetName()
+{
+    WCHAR *elemName = NULL;
+    if (GetItemType() == eItemDecal)
+        return "Decal";
+
+    IScriptable *const pscript = GetScriptable();
+    if (pscript)
+        elemName = pscript->m_wzName;
+
+    if (elemName)
+    {
+        static char elementName[256];
+        WideCharToMultiByte(CP_ACP, 0, elemName, -1, elementName, 256, NULL, NULL);
+        return elementName;
+    }
+    return NULL;
+}
+
 void IEditable::InitScript()
 {
    if (!GetScriptable())
