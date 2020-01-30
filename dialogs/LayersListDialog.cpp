@@ -44,12 +44,7 @@ bool LayersListDialog::AddLayer(const string &name, IEditable *piedit)
 
 void LayersListDialog::DeleteLayer()
 {
-/*
-    bool notEmptyMessage = true;
-    std::vector<int> indexList;
-    const int selectedCount = m_layerListView.GetSelectedCount();
-
-    if (selectedCount == m_layerListView.GetItemCount())
+    if (m_layerTreeView.GetLayerCount()==1)
     {
         ShowError("Can't delete all layers!");
         return;
@@ -58,42 +53,34 @@ void LayersListDialog::DeleteLayer()
     if (pt == nullptr)
         return;
 
-    for (int i = 0, curItem = -1; i < selectedCount; i++)
-        indexList.push_back(m_layerListView.GetNextItem(curItem, LVNI_SELECTED));
-
-    int nextLayerIndex = indexList[0];
-    for (size_t i = 0; i < indexList.size(); i++)
+    HTREEITEM layerToDelete = m_layerTreeView.GetCurrentLayerItem();
+    std::vector<HTREEITEM> allSubItems = m_layerTreeView.GetSubItems(layerToDelete);
+    HTREEITEM hFillLayer = m_layerTreeView.GetChild(m_layerTreeView.GetRootItem());
+    if (hFillLayer == m_layerTreeView.GetCurrentLayerItem())
     {
-        nextLayerIndex = max(nextLayerIndex, indexList[i])+1;
+        hFillLayer = m_layerTreeView.GetNextItem(hFillLayer, TVGN_NEXT);
     }
-    if (nextLayerIndex >= m_layerListView.GetItemCount())
-        nextLayerIndex = 0;
-
-    string newLayerName = string(m_layerListView.GetItemText(nextLayerIndex, 0).c_str());
-
-    for (size_t i = 0; i < indexList.size(); i++)
+    const std::string fillLayerName = std::string(m_layerTreeView.GetItemText(hFillLayer).c_str());
+    m_layerTreeView.SetActiveLayer(fillLayerName);
+    for (HTREEITEM item : allSubItems)
     {
-        string layerName = string(m_layerListView.GetItemText(indexList[i], 0).c_str());
-        for (size_t t = 0; t < pt->m_vedit.size(); t++)
+        TVITEM tvItem;
+        ZeroMemory(&tvItem, sizeof(tvItem));
+        tvItem.mask = TVIF_PARAM | TVIF_HANDLE;
+        tvItem.hItem = item;
+        if (m_layerTreeView.GetItem(tvItem))
         {
-            ISelect* psel = pt->m_vedit[t]->GetISelect();
-            if (layerName == psel->m_layerName)
+            IEditable* pedit = (IEditable*)tvItem.lParam;
+            if (pedit)
             {
-                if (notEmptyMessage)
-                {
-                    string msg = "Layer '" + layerName + "' contains elements! Move elements to layer '" + newLayerName + "' and delete layer?";
-                    const int ans = g_pvp->MessageBox(msg.c_str(), "Warning", MB_YESNO | MB_DEFBUTTON2);
-                    if (ans == IDNO)
-                        return;
-                    notEmptyMessage = false;
-                }
-                psel->m_layerName = newLayerName;
+                pedit->GetISelect()->m_layerName = fillLayerName;
+                m_layerTreeView.AddElement(pedit->GetName(), pedit);
             }
         }
-        m_layerListView.DeleteItem(indexList[i]);
     }
-
-*/
+    for (HTREEITEM item : allSubItems)
+        m_layerTreeView.DeleteItem(item);
+    m_layerTreeView.DeleteItem(layerToDelete);
 }
 
 void LayersListDialog::ClearList()
@@ -147,23 +134,6 @@ INT_PTR LayersListDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
     {
         case WM_MOUSEACTIVATE:
             return OnMouseActivate(msg, wparam, lparam);
-
-        case WM_NOTIFY:
-        {
-            const LPNMHDR pnmhdr = (LPNMHDR)lparam;
-            switch (pnmhdr->code)
-            {
-                case LVN_ENDLABELEDIT:
-                {
-                    return OnEditListItemLabel(lparam);
-                }
-                case LVN_ITEMCHANGED:
-                {
-                    return OnListItemChanged(lparam);
-                }
-            }
-        }
-
     }
 
     // Pass unhandled messages on to parent DialogProc
@@ -201,64 +171,9 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
-BOOL LayersListDialog::OnEditListItemLabel(LPARAM lparam)
-{
-/*
-    NMLVDISPINFO *const pinfo = (NMLVDISPINFO *)lparam;
-    if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
-    {
-        return FALSE;
-    }
-    CCO(PinTable)* const pt = g_pvp->GetActiveTable();
-    if (pt == nullptr)
-        return FALSE;
-
-    const string oldName = string(m_layerListView.GetItemText(pinfo->item.iItem, 0).c_str());
-    const string newName = string(pinfo->item.pszText);
-    m_layerListView.SetItemText(pinfo->item.iItem, 0, pinfo->item.pszText);
-
-    for (size_t t = 0; t < pt->m_vedit.size(); t++)
-    {
-        ISelect* psel = pt->m_vedit[t]->GetISelect();
-        if (psel->m_layerName == oldName)
-            psel->m_layerName = newName;
-
-    }
-*/
-    return TRUE;
-}
-
-BOOL LayersListDialog::OnListItemChanged(LPARAM lparam)
-{
-/*
-    NMLISTVIEW *const plistview = (LPNMLISTVIEW)lparam;
-    if (plistview->uChanged & LVIF_STATE)
-    {
-        CCO(PinTable) *const pt = g_pvp->GetActiveTable();
-        if (pt == nullptr)
-            return FALSE;
-
-        const int sel = plistview->iItem;
-        m_currentLayerName = string(m_layerListView.GetItemText(sel, 0).c_str());
-        const bool itemChecked = !!m_layerListView.GetCheckState(sel);
-
-        for (size_t t = 0; t < pt->m_vedit.size(); t++)
-        {
-            IEditable* pedit = pt->m_vedit[t];
-            if (pedit->GetISelect()->m_layerName == m_currentLayerName)
-            {
-                pedit->m_isVisible = itemChecked;
-            }
-        }
-        pt->SetDirtyDraw();
-    }
-*/
-    return TRUE;
-}
-
 void LayersListDialog::OnAssignButton()
 {
-    std::string layerName = m_layerTreeView.GetCurrentLayerName();
+    const std::string layerName = m_layerTreeView.GetCurrentLayerName();
     if (layerName == "")
     {
         ShowError("Please select a layer!");
@@ -267,12 +182,16 @@ void LayersListDialog::OnAssignButton()
     CCO(PinTable)* const pt = g_pvp->GetActiveTable();
     if (pt == nullptr)
         return;
+
     for (int t=0;t<pt->m_vmultisel.size();t++)
     {
         ISelect* psel = pt->m_vmultisel.ElementAt(t);
+        IEditable* pedit = psel->GetIEditable();
         psel->m_layerName = layerName;
+        HTREEITEM oldItem = m_layerTreeView.GetItemByElement(pedit);
+        m_layerTreeView.AddElement(pedit->GetName(), pedit);
+        m_layerTreeView.DeleteItem(oldItem);
     }
-    UpdateLayerList();
 }
 
 CContainLayers::CContainLayers()
@@ -347,6 +266,38 @@ std::string LayerTreeView::GetCurrentLayerName() const
     return std::string(GetItemText(hCurrentLayerItem).c_str());
 }
 
+HTREEITEM LayerTreeView::GetItemByElement(IEditable* pedit)
+{
+    std::vector<HTREEITEM> children;
+    HTREEITEM item = GetChild(hRootItem);
+    while (item)
+    {
+        children.push_back(item);
+        item = GetNextItem(item, TVGN_NEXT);
+    }
+    for (HTREEITEM child : children)
+    {
+        HTREEITEM subItem = GetChild(child);
+        while (subItem)
+        {
+            char text[MAX_PATH];
+            TVITEM tvItem;
+            ZeroMemory(&tvItem, sizeof(tvItem));
+            tvItem.mask = TVIF_PARAM | TVIF_TEXT;
+            tvItem.cchTextMax = MAX_PATH;
+            tvItem.pszText = text;
+            tvItem.hItem = subItem;
+            if (GetItem(tvItem))
+            {
+                if (pedit == (IEditable*)tvItem.lParam)
+                    return subItem;
+            }
+            subItem = GetNextItem(subItem, TVGN_NEXT);
+        }
+    }
+    return NULL;
+}
+
 int LayerTreeView::GetItemCount() const
 {
     std::vector<HTREEITEM> children;
@@ -366,6 +317,18 @@ int LayerTreeView::GetItemCount() const
             count++;
             subItem = GetNextItem(subItem, TVGN_NEXT);
         }
+    }
+    return count;
+}
+
+int LayerTreeView::GetLayerCount() const
+{
+    HTREEITEM item = GetChild(hRootItem);
+    int count = 0;
+    while (item)
+    {
+        count++;
+        item = GetNextItem(item, TVGN_NEXT);
     }
     return count;
 }
