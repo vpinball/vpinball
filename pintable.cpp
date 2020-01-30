@@ -1374,7 +1374,6 @@ PinTable::PinTable()
    ClearMultiSel();
 
    m_hbmOffScreen = NULL;
-
    m_undo.m_ptable = this;
    m_grid = true;
    m_backdrop = true;
@@ -3779,11 +3778,11 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
              {
                  const string name = string("Layer_") + std::to_string(i+1);
                  psel->m_layerName = name;
-                 g_pvp->GetLayersListDialog()->AddLayer(name);
+                 g_pvp->GetLayersListDialog()->AddLayer(name, piedit);
              }
              else
              {
-                 g_pvp->GetLayersListDialog()->AddLayer(psel->m_layerName);
+                 g_pvp->GetLayersListDialog()->AddLayer(psel->m_layerName, piedit);
              }
          }
       }

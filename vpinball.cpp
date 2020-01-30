@@ -127,6 +127,8 @@ VPinball::VPinball()
 
    m_workerthread = NULL;										//Workerthread - only for hanging scripts and autosave - will be created later
 
+   m_ToolCur = IDC_SELECT;
+
    GetMyPath();													//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
 
 #ifdef _WIN64
@@ -1122,7 +1124,7 @@ void VPinball::LoadFileName(char *szFileName)
       SetCurrentDirectory(m_currentTablePath);
       ppt->AddMultiSel(ppt, false, true, false);
       UpdateRecentFileList(szFileName);
-      
+      GetLayersListDialog()->Expand();
       ppt->SetDirty(eSaveClean);
    }
 }
@@ -2315,6 +2317,7 @@ void VPinball::OpenNewTable(size_t tableId)
 
     AddMDITable(new PinTableMDI(pt));
     pt->AddMultiSel(pt, false, true, false);
+    GetLayersListDialog()->Expand();
     SetEnableToolbar();
 }
 

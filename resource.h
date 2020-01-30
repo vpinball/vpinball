@@ -1100,6 +1100,8 @@
 #define IDC_ASSIGN_BUTTON               833
 #define IDC_LAYER_EDIT_BUTTON           834
 #define IDC_LAYER_LISTCONTROL           836
+#define IDC_TREE1                       837
+#define IDC_LAYER_TREEVIEW              837
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1284,7 +1286,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        662
 #define _APS_NEXT_COMMAND_VALUE         4024
-#define _APS_NEXT_CONTROL_VALUE         837
+#define _APS_NEXT_CONTROL_VALUE         838
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
