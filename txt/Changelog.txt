@@ -1,8 +1,31 @@
 VP 10.7.0 Changelog
 ------------------------
 
+FEATURES:
+
+- reworked UI
+
+- add MP3 and OGG support (via the BASS library) to the sound manager and the 'standard' sound commands
+  these new file types are now also saved directly into the VPX file, unlike the music commands (which still use the 'music' folder for legacy reasons)
+  Going forward, tables should only use the sound commands and not the music commands anymore
+
+- optimize table loading/pre-processing time
+
+- add support for unlimited layers
+
+FIXES:
+
+- fix some broken insert lights if playfield reflections are disabled
+
+- fix OBJ-exported names for all ramp types
+- fix missing wire thickness for triggers on OBJ export
+
+- update BASS library to 2.4.15
+
 - see core scripts (header of core.vbs) for the respective changelog (version 3.58)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
+
+- add Clang (via Visual Studio 2019) support, still has a linking prob with 32bit though
 
 - updated to latest FreeImage.dll (3.18.0) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)
