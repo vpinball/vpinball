@@ -6244,6 +6244,8 @@ void PinTable::OnDelete()
    if (m_searchSelectDlg.IsWindow())
       m_searchSelectDlg.Update();
 
+   if(g_pvp->GetLayersListDialog()->IsWindow())
+    g_pvp->GetLayersListDialog()->UpdateLayerList();
    SetDirtyDraw();
 }
 
@@ -6315,6 +6317,8 @@ void PinTable::UseTool(int x, int y, int tool)
       pie->GetISelect()->m_layerName = g_pvp->GetLayersListDialog()->GetCurrentSelectedLayerName();
       if (m_searchSelectDlg.IsWindow())
          m_searchSelectDlg.Update();
+      if (g_pvp->GetLayersListDialog()->IsWindow())
+          g_pvp->GetLayersListDialog()->UpdateLayerList();
       BeginUndo();
       m_undo.MarkForCreate(pie);
       EndUndo();
