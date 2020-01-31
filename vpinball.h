@@ -40,6 +40,12 @@ class PinTableMDI;
 class VPinball : public CMDIDockFrame
 {
 public:
+    enum TIMER_IDS
+    {
+        TIMER_ID_AUTOSAVE = 12345,
+        TIMER_ID_CLOSE_TABLE = 12346
+    };
+
     enum CopyPasteModes
     {
         COPY = 0,

@@ -23,9 +23,6 @@ INT_PTR CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-#define TIMER_ID_AUTOSAVE 12345
-#define TIMER_ID_CLOSE_TABLE 12346
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -2372,13 +2369,13 @@ HRESULT PinTable::ApcProject_Save()
 void PinTable::BeginAutoSaveCounter()
 {
    if (g_pvp->m_autosaveTime > 0)
-      m_mdiTable->SetTimer(TIMER_ID_AUTOSAVE, g_pvp->m_autosaveTime, NULL);
+      g_pvp->SetTimer(VPinball::TIMER_ID_AUTOSAVE, g_pvp->m_autosaveTime, NULL);
 }
 
 
 void PinTable::EndAutoSaveCounter()
 {
-   m_mdiTable->KillTimer(TIMER_ID_AUTOSAVE);
+   g_pvp->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
 }
 
 
@@ -2387,7 +2384,7 @@ void PinTable::AutoSave()
    if (m_sdsCurrentDirtyState <= eSaveAutosaved)
       return;
 
-   m_mdiTable->KillTimer(TIMER_ID_AUTOSAVE);
+   g_pvp->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
 
    {
       LocalString ls(IDS_AUTOSAVING);
@@ -2407,7 +2404,7 @@ void PinTable::AutoSave()
    AutoSavePackage * const pasp = new AutoSavePackage();
    pasp->pstg = pstgroot;
    pasp->tableindex = FindIndexOf(g_pvp->m_vtable, (CComObject<PinTable> *)this);
-   pasp->hwndtable = m_mdiTable->GetHwnd();
+   pasp->hwndtable = GetHwnd();
 
    if (hr == S_OK)
    {
@@ -5132,25 +5129,6 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             OnMouseWheel(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), zDelta);
             return FinalWindowProc(uMsg, wParam, lParam);
         }
-        case WM_TIMER:
-        {
-            switch (wParam)
-            {
-                case TIMER_ID_AUTOSAVE:
-                {
-                    AutoSave();
-                    break;
-                }
-
-                case TIMER_ID_CLOSE_TABLE:
-                {
-                    KillTimer(TIMER_ID_CLOSE_TABLE);
-                    m_pvp->CloseTable(this);
-                    break;
-                }
-            }
-            return FinalWindowProc(uMsg, wParam, lParam);
-        }
         case DONE_AUTOSAVE:
         {
             if (lParam == S_OK)
@@ -6449,29 +6427,6 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             pt->OnClose();
             return 0;	// destroy the WM_CLOSE message
         }
-        case WM_TIMER:
-        {
-            pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-            switch (wParam)
-            {
-                case TIMER_ID_AUTOSAVE:
-                {
-                    pt->AutoSave();
-                    break;
-                }
-
-                case TIMER_ID_CLOSE_TABLE:
-                {
-                    ::KillTimer(hwnd, TIMER_ID_CLOSE_TABLE);
-                    pt->m_pvp->CloseTable(pt);
-                    //DestroyWindow(hwnd);
-                    return 0;
-                    break;
-                }
-            }
-        }
-        break;
-
         case WM_SETCURSOR:
         {
             if (LOWORD(lParam) == HTCLIENT)
@@ -10197,8 +10152,8 @@ void PinTable::OnSize()
 void PinTable::OnClose()
 {
     g_pvp->GetLayersListDialog()->ClearList();
-    m_mdiTable->KillTimer(TIMER_ID_AUTOSAVE);
-    m_mdiTable->SetTimer(TIMER_ID_CLOSE_TABLE, 100, NULL);	//wait 250 milliseconds
+    g_pvp->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
+    g_pvp->SetTimer(VPinball::TIMER_ID_CLOSE_TABLE, 100, NULL);	//wait 250 milliseconds
 }
 
 PinTableMDI::PinTableMDI(PinTable *table) : m_table(table)
@@ -10213,7 +10168,6 @@ PinTableMDI::PinTableMDI(PinTable *table) : m_table(table)
 
 PinTableMDI::~PinTableMDI()
 {
-    m_table = nullptr;
 }
 
 void PinTableMDI::PreCreate(CREATESTRUCT &cs)
@@ -10234,5 +10188,10 @@ int PinTableMDI::OnCreate(CREATESTRUCT &cs)
     SetIconLarge(IDI_TABLE);
     SetIconSmall(IDI_TABLE);
     return CMDIChild::OnCreate(cs);
+}
+
+void PinTableMDI::OnClose()
+{
+    m_table->OnClose();
 }
 

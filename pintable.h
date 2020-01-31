@@ -50,6 +50,7 @@ public:
 protected:
     virtual void PreCreate(CREATESTRUCT &cs);
     virtual int OnCreate(CREATESTRUCT &cs);
+    virtual void OnClose();
 
 private:
     PinTable *m_table;

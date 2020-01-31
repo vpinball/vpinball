@@ -159,34 +159,6 @@ VPinball::VPinball()
 ///</summary>
 VPinball::~VPinball()
 {
-    if (m_toolbarDialog)
-    {
-        m_toolbarDialog->Destroy();
-        m_toolbarDialog = NULL;
-    }
-    if (m_dockToolbar)
-    {
-        m_dockToolbar->Destroy();
-        delete(m_dockToolbar);
-        m_dockToolbar = NULL;
-    }
-    if (m_propertyDialog)
-    {
-        m_propertyDialog->Destroy();
-        m_propertyDialog = NULL;
-    }
-    if(m_dockProperties)
-    {
-        m_dockProperties->Destroy();
-        delete(m_dockProperties);
-        m_dockProperties = NULL;
-    }
-    if (m_dockLayers)
-    {
-        m_dockLayers->Destroy();
-        delete(m_dockLayers);
-        m_dockLayers = NULL;
-    }
     //	DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); //remove FreeImage support BDS
    SetClipboard(NULL);
    FreeLibrary(m_scintillaDll);
@@ -1522,12 +1494,6 @@ STDMETHODIMP_(ULONG) VPinball::Release()
    assert(m_cref);
    m_cref--;
 
-   if (!m_cref)
-   {
-      delete this;
-      return 0;
-   }
-
    return m_cref;
 }
 
@@ -1708,6 +1674,32 @@ BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
 
 LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    switch (uMsg)
+    {
+        case WM_TIMER:
+        {
+            CComObject<PinTable>* const ptCur = GetActiveTable();
+            if (!ptCur)
+                break;
+
+            switch (wParam)
+            {
+                case TIMER_ID_AUTOSAVE:
+                {
+                    ptCur->AutoSave();
+                    break;
+                }
+
+                case TIMER_ID_CLOSE_TABLE:
+                {
+                    KillTimer(TIMER_ID_CLOSE_TABLE);
+                    CloseTable(ptCur);
+                    return 0;
+                }
+            }
+            return FinalWindowProc(uMsg, wParam, lParam);
+        }
+    }
     return WndProcDefault(uMsg, wParam, lParam);
 }
 
