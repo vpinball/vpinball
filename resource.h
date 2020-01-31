@@ -939,6 +939,7 @@
 #define IDD_LAYERS                      657
 #define IDC_CURSOR2                     661
 #define IDW_SPLITV                      661
+#define IDB_LAYER_ICONS16               662
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1149,6 +1150,8 @@
 #define IDC_PLAYFIELD_FALLOFF_EDIT      1709
 #define IDC_PLAYFIELD_SCATTER           1710
 #define IDC_PLAYFIELD_SCATTER_EDIT      1710
+#define IDB_LAYER_ICONS17               1710
+#define IDB_LAYER_ICONS32               1710
 #define IDC_TABLE_FILENAME              1711
 #define IDC_BALLPLAYFIELD_REFLECTION    1712
 #define IDC_BALLPLAYFIELD_REFLECTION2   1713
@@ -1284,7 +1287,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        662
+#define _APS_NEXT_RESOURCE_VALUE        663
 #define _APS_NEXT_COMMAND_VALUE         4024
 #define _APS_NEXT_CONTROL_VALUE         838
 #define _APS_NEXT_SYMED_VALUE           188
