@@ -38,6 +38,7 @@ private:
     HTREEITEM   hRootItem;
     HTREEITEM   hCurrentLayerItem;
     HTREEITEM   hCurrentElementItem;
+    CImageList  m_normalImages;
 };
 
 class LayersListDialog: public CDialog
@@ -77,7 +78,6 @@ private:
     CButton         m_addLayerButton;      
     CButton         m_deleteLayerButton;
     CEdit           m_layerNameEditBox;
-    int             m_layerCount;
 };
 
 class CContainLayers: public CDockContainer

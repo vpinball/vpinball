@@ -2,7 +2,7 @@
 #include "LayersListDialog.h"
 #include <WindowsX.h>
 
-LayersListDialog::LayersListDialog() : CDialog(IDD_LAYERS), m_layerCount(0)
+LayersListDialog::LayersListDialog() : CDialog(IDD_LAYERS)
 {
 }
 
@@ -424,6 +424,11 @@ void LayerTreeView::SetActiveLayer(const std::string name)
 
 void LayerTreeView::OnAttach()
 {
+    m_normalImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 1, 0);
+    CBitmap bm(IDB_LAYER_ICONS16);
+    m_normalImages.Add(bm, RGB(255, 255, 255));
+    SetImageList(m_normalImages, LVSIL_NORMAL);
+
     DWORD style = GetStyle();
     style |= TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_CHECKBOXES ;
     SetStyle(style);
