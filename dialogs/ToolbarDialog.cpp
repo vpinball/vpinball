@@ -411,4 +411,6 @@ void CDockToolbar::OnDestroy()
     SaveValueInt("Editor", "ToolbarPosX", rect.left);
     SaveValueInt("Editor", "ToolbarPosY", rect.top);
     SaveValueBool("Editor", "ToolbarDocked", !!IsDocked());
+    SaveValueInt("Editor", "ToolbarDockStyle", GetDockStyle());
+
 }

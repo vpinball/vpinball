@@ -9,7 +9,7 @@ WallVisualsProperty::WallVisualsProperty(VectorProtected<ISelect> *pvsel) : Base
 void WallVisualsProperty::UpdateVisuals()
 {
     //only show the first element on multi-select
-    Surface * const wall = (Surface*)m_pvsel->ElementAt(0);
+    Surface* const wall = (Surface*)m_pvsel->ElementAt(0);
     PropertyDialog::UpdateTextureComboBox(wall->GetPTable()->GetImageList(), m_sideImageCombo, wall->m_d.m_szSideImage);
     PropertyDialog::UpdateMaterialComboBox(wall->GetPTable()->GetMaterialList(), m_topMaterialCombo, wall->m_d.m_szTopMaterial);
     PropertyDialog::UpdateMaterialComboBox(wall->GetPTable()->GetMaterialList(), m_sideMaterialCombo, wall->m_d.m_szSideMaterial);
@@ -24,7 +24,7 @@ void WallVisualsProperty::UpdateVisuals()
     PropertyDialog::SetFloatTextbox(m_topHeightEdit, wall->m_d.m_heighttop);
     PropertyDialog::SetFloatTextbox(m_bottomHeightEdit, wall->m_d.m_heightbottom);
     UpdateBaseVisuals(wall, &wall->m_d);
- 
+}
 
 void WallVisualsProperty::UpdateProperties(const int dispid)
 {

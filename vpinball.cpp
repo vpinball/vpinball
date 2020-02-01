@@ -485,8 +485,10 @@ CDockProperty *VPinball::GetPropertiesDocker()
         const int x = LoadValueIntWithDefault("Editor", "PropertiesPosX", 100);
         const int y = LoadValueIntWithDefault("Editor", "PropertiesPosY", 100);
         const bool docked = LoadValueBoolWithDefault("Editor", "PropertiesDocked", true);
+        const int dockStyle = LoadValueIntWithDefault("Editor", "PropertiesDockStyle", DS_DOCKED_RIGHT | DS_CLIENTEDGE);
 
-        m_dockProperties = (CDockProperty *)AddDockedChild(new CDockProperty, DS_DOCKED_RIGHT | DS_CLIENTEDGE, 280);
+        m_dockProperties = (CDockProperty *)AddDockedChild(new CDockProperty, dockStyle, 280);
+        
         assert(m_dockProperties->GetContainer());
         m_dockProperties->GetContainer()->SetHideSingleTab(TRUE);
         m_propertyDialog = m_dockProperties->GetContainProperties()->GetPropertyDialog();
@@ -505,7 +507,8 @@ CDockToolbar *VPinball::GetToolbarDocker()
         const int x = LoadValueIntWithDefault("Editor", "ToolbarPosX", 100);
         const int y = LoadValueIntWithDefault("Editor", "ToolbarPosY", 100);
         const bool docked = LoadValueBoolWithDefault("Editor", "ToolbarDocked", true);
-        m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar, DS_DOCKED_LEFT | DS_NO_DOCKCHILD_TOP | DS_NO_DOCKCHILD_BOTTOM | DS_CLIENTEDGE, 110);
+        const int dockStyle = LoadValueIntWithDefault("Editor", "ToolbarDockStyle", DS_DOCKED_LEFT | DS_NO_DOCKCHILD_TOP | DS_NO_DOCKCHILD_BOTTOM | DS_CLIENTEDGE);
+        m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar, dockStyle, 110);
         assert(m_dockToolbar->GetContainer());
         m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
         m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
@@ -524,11 +527,15 @@ CDockLayers *VPinball::GetLayersDocker()
         const int x = LoadValueIntWithDefault("Editor", "LayersPosX", 100);
         const int y = LoadValueIntWithDefault("Editor", "LayersPosY", 100);
         const bool docked = LoadValueBoolWithDefault("Editor", "LayersDocked", true);
-        
-        if(propertiesVisible)
-            m_dockLayers = (CDockLayers *)m_dockProperties->AddDockedChild(new CDockLayers, DS_DOCKED_BOTTOM | DS_CLIENTEDGE, 380);
-        else
-            m_dockLayers = (CDockLayers*)AddDockedChild(new CDockLayers, DS_DOCKED_RIGHT | DS_CLIENTEDGE, 380);
+        const int dockStyle = LoadValueIntWithDefault("Editor", "LayersDockStyle", DS_DOCKED_BOTTOM | DS_CLIENTEDGE);
+        const int dockParent = LoadValueIntWithDefault("Editor", "LayersDockParent", 1);
+
+        if(propertiesVisible && dockParent==1)
+            m_dockLayers = (CDockLayers *)m_dockProperties->AddDockedChild(new CDockLayers, dockStyle, 380);
+        else if(dockParent==2)
+            m_dockLayers = (CDockLayers*)m_dockToolbar->AddDockedChild(new CDockLayers, dockStyle, 380);
+        else 
+            m_dockLayers = (CDockLayers*)AddDockedChild(new CDockLayers, dockStyle, 380);
 
         assert(m_dockLayers->GetContainer());
         m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
