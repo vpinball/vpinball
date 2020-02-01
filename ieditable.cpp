@@ -211,6 +211,29 @@ char *IEditable::GetName()
     return NULL;
 }
 
+void IEditable::SetName(const char* name)
+{
+    const int l = lstrlen(name);
+    if ((l > MAXNAMEBUFFER) || (l < 1))
+        return;
+
+    if (GetItemType() == eItemDecal)
+        return;
+    
+    PinTable* const pt = GetPTable();
+    if (pt == nullptr)
+        return;
+
+    WCHAR newName[MAXNAMEBUFFER];
+    MultiByteToWideChar(CP_ACP, 0, name, -1, newName, MAXNAMEBUFFER);
+    STARTUNDO
+        
+        lstrcpynW(GetScriptable()->m_wzName, newName, MAXNAMEBUFFER);
+        pt->m_pcv->ReplaceName(GetScriptable(), newName);
+    STOPUNDO
+
+}
+
 void IEditable::InitScript()
 {
    if (!GetScriptable())

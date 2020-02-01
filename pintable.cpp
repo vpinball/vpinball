@@ -6175,6 +6175,11 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
    }
 }
 
+void PinTable::RefreshProperties()
+{
+    g_pvp->SetPropSel(&m_vmultisel);
+}
+
 void PinTable::OnDelete()
 {
    vector<ISelect*> m_vseldelete;
