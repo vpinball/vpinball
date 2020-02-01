@@ -11,7 +11,7 @@ public:
     bool                    AddElement(const std::string name, IEditable *pedit);
     bool                    ContainsLayer(const std::string name) const;
     std::string             GetCurrentLayerName() const;
-    HTREEITEM               GetItemByElement(IEditable* pedit);
+    HTREEITEM               GetItemByElement(const IEditable* pedit);
     int                     GetItemCount() const;
     int                     GetLayerCount() const;
     std::vector<HTREEITEM>  GetSubItems(HTREEITEM hParent);
@@ -51,6 +51,7 @@ public:
     void DeleteLayer();
     void ClearList();
     void UpdateLayerList();
+    void UpdateElement(IEditable* pedit);
     string GetCurrentSelectedLayerName() const;
     void Expand()
     {
@@ -68,8 +69,6 @@ protected:
 
 
 private:
-    BOOL OnEditListItemLabel(LPARAM lparam);
-    BOOL OnListItemChanged(LPARAM lparam);
     void OnAssignButton();
 
     CResizer        m_resizer;

@@ -527,6 +527,22 @@ LRESULT PropertyDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam)
 
 BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
+    UNREFERENCED_PARAMETER(lParam);
+    const int dispID = LOWORD(wParam);
+
+    switch (HIWORD(wParam))
+    {
+        case EN_KILLFOCUS:
+        case CBN_KILLFOCUS:
+        case CBN_SELCHANGE:
+        case BN_CLICKED:
+        {
+            CString name = m_nameEdit.GetWindowText();
+            if (m_tabs[0] && m_tabs[0]->m_pvsel->ElementAt(0) != NULL)
+                m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->SetName(name.c_str());
+            return TRUE;
+        }
+    }
     return FALSE;
 }
 
