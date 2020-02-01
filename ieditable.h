@@ -229,7 +229,7 @@ public:
    void MarkForDelete();
    void Undelete();
    char *GetName();
-
+   void SetName(const char* name);
    void Delete();
    void Uncreate();
 

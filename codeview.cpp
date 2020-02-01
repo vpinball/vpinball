@@ -250,9 +250,12 @@ void CodeViewer::SelectItem(IScriptable * const piscript)
    WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
 
    const size_t index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
-   SendMessage(m_hwndItemList, CB_SETCURSEL, index, 0);
+   if(index!=-1)
+   {
+       SendMessage(m_hwndItemList, CB_SETCURSEL, index, 0);
 
-   ListEventsFromItem();
+       ListEventsFromItem();
+   }
 }
 
 HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, WCHAR * const wzNew)

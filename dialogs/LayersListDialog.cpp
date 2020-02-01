@@ -477,14 +477,29 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
             if (pt == nullptr)
                 return FALSE;
 
-            const string oldName = string(GetItemText(pinfo->item.hItem).c_str());
-            const string newName = string(pinfo->item.pszText);
+            TVITEM tvItem;
+            tvItem.mask = TVIF_CHILDREN | TVIF_PARAM;
+            tvItem.hItem = pinfo->item.hItem;
+            if (!GetItem(tvItem))
+                return FALSE;
 
-            for (size_t t = 0; t < pt->m_vedit.size(); t++)
+            if(tvItem.cChildren==1)
             {
-                ISelect *psel = pt->m_vedit[t]->GetISelect();
-                if (psel->m_layerName == oldName)
-                    psel->m_layerName = newName;
+                const string oldName = string(GetItemText(pinfo->item.hItem).c_str());
+                const string newName = string(pinfo->item.pszText);
+
+                for (size_t t = 0; t < pt->m_vedit.size(); t++)
+                {
+                    ISelect* psel = pt->m_vedit[t]->GetISelect();
+                    if (psel->m_layerName == oldName)
+                        psel->m_layerName = newName;
+                }
+            }
+            else
+            {
+                IEditable* pedit = (IEditable*)tvItem.lParam;
+                if (pedit)
+                    pedit->SetName(pinfo->item.pszText);
             }
             return TRUE;
         }
@@ -590,7 +605,10 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
         {
             IEditable* pedit = (IEditable*)tvItem.lParam;
             if (pedit != NULL)
+            {
                 pt->AddMultiSel(pedit->GetISelect(), false, true, false);
+                pt->RefreshProperties();
+            }
         }
     }
     pt->SetDirtyDraw();
