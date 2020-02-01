@@ -8,28 +8,24 @@ WallPhysicsProperty::WallPhysicsProperty(VectorProtected<ISelect> *pvsel) : Base
 
 void WallPhysicsProperty::UpdateVisuals()
 {
-    for (int i = 0; i < m_pvsel->Size(); i++)
-    {
-        Surface * const wall = (Surface*)m_pvsel->ElementAt(i);
-        PropertyDialog::SetFloatTextbox(m_slingshotForceEdit, wall->GetSlingshotStrength());
-        PropertyDialog::SetFloatTextbox(m_slingshotThresholdEdit, wall->m_d.m_slingshot_threshold);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 11), wall->m_d.m_droppable);
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 116), wall->m_d.m_isBottomSolid);
+    //only show the first element on multi-select
+    Surface * const wall = (Surface*)m_pvsel->ElementAt(0);
+    PropertyDialog::SetFloatTextbox(m_slingshotForceEdit, wall->GetSlingshotStrength());
+    PropertyDialog::SetFloatTextbox(m_slingshotThresholdEdit, wall->m_d.m_slingshot_threshold);
+    PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 11), wall->m_d.m_droppable);
+    PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 116), wall->m_d.m_isBottomSolid);
 
-        if (!wall->m_d.m_collidable)
-        {
-            ::EnableWindow(::GetDlgItem(GetHwnd(), 116), FALSE);
-            m_slingshotForceEdit.EnableWindow(FALSE);
-            m_slingshotThresholdEdit.EnableWindow(FALSE);
-        }
-        else
-        {
-            ::EnableWindow(::GetDlgItem(GetHwnd(), 116), TRUE);
-        }
-        UpdateBaseVisuals(wall, &wall->m_d);
-        //only show the first element on multi-select
-        break;
+    if (!wall->m_d.m_collidable)
+    {
+        ::EnableWindow(::GetDlgItem(GetHwnd(), 116), FALSE);
+        m_slingshotForceEdit.EnableWindow(FALSE);
+        m_slingshotThresholdEdit.EnableWindow(FALSE);
     }
+    else
+    {
+        ::EnableWindow(::GetDlgItem(GetHwnd(), 116), TRUE);
+    }
+    UpdateBaseVisuals(wall, &wall->m_d);
 }
 
 void WallPhysicsProperty::UpdateProperties(const int dispid)
