@@ -43,8 +43,8 @@ public:
     void UpdateBaseProperties(ISelect *psel, BaseProperty *property, const int dispid);
     void UpdateBaseVisuals(ISelect *psel, BaseProperty *property);
 
+    VectorProtected<ISelect>* m_pvsel;
 protected:
-    VectorProtected<ISelect> *m_pvsel;
     CEdit     *m_baseHitThresholdEdit;
     CEdit     *m_baseElasticityEdit;
     CEdit     *m_baseFrictionEdit;

@@ -103,6 +103,15 @@ void LayersListDialog::UpdateLayerList()
     Expand();
 }
 
+void LayersListDialog::UpdateElement(IEditable *pedit)
+{
+    HTREEITEM item = m_layerTreeView.GetItemByElement(pedit);
+    if (item == NULL)
+        return;
+
+    m_layerTreeView.SetItemText(item, pedit->GetName());
+}
+
 string LayersListDialog::GetCurrentSelectedLayerName() const
 {
     return m_layerTreeView.GetCurrentLayerName();
@@ -266,7 +275,7 @@ std::string LayerTreeView::GetCurrentLayerName() const
     return std::string(GetItemText(hCurrentLayerItem).c_str());
 }
 
-HTREEITEM LayerTreeView::GetItemByElement(IEditable* pedit)
+HTREEITEM LayerTreeView::GetItemByElement(const IEditable* pedit)
 {
     std::vector<HTREEITEM> children;
     HTREEITEM item = GetChild(hRootItem);

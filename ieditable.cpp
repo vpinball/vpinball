@@ -227,9 +227,10 @@ void IEditable::SetName(const char* name)
     WCHAR newName[MAXNAMEBUFFER];
     MultiByteToWideChar(CP_ACP, 0, name, -1, newName, MAXNAMEBUFFER);
     STARTUNDO
-        
         lstrcpynW(GetScriptable()->m_wzName, newName, MAXNAMEBUFFER);
         pt->m_pcv->ReplaceName(GetScriptable(), newName);
+        g_pvp->GetLayersListDialog()->UpdateElement(this);
+        g_pvp->SetPropSel(&GetPTable()->m_vmultisel);
     STOPUNDO
 
 }
