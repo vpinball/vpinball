@@ -219,10 +219,28 @@ CDockLayers::CDockLayers()
 
 void CDockLayers::OnDestroy()
 {
-//     const CRect rect = GetWindowRect();
-//     SaveValueInt("Editor", "ToolbarPosX", rect.left);
-//     SaveValueInt("Editor", "ToolbarPosY", rect.top);
-//     SaveValueBool("Editor", "ToolbarDocked", IsDocked());
+    const CRect rect = GetWindowRect();
+    int   dockParent = 0;
+    SaveValueInt("Editor", "LayersPosX", rect.left);
+    SaveValueInt("Editor", "LayersPosY", rect.top);
+    SaveValueBool("Editor", "LayersDocked", !!IsDocked());
+    SaveValueInt("Editor", "LayersDockStyle", GetDockStyle());
+    if (IsDocked())
+    {
+        if (GetDockParent() == g_pvp->GetPropertiesDocker())
+        {
+            dockParent = 1;
+        }
+        else if (GetDockParent() == g_pvp->GetToolbarDocker())
+        {
+            dockParent = 2;
+        }
+        else if (GetDockParent() == g_pvp)
+        {
+            dockParent = 3;
+        }
+    }
+    SaveValueInt("Editor", "LayersDockParent", dockParent);
 }
 
 HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable *pedit, int image)

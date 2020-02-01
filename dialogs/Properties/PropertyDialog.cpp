@@ -1068,4 +1068,5 @@ void CDockProperty::OnDestroy()
     SaveValueInt("Editor", "PropertiesPosX", rect.left);
     SaveValueInt("Editor", "PropertiesPosY", rect.top);
     SaveValueBool("Editor", "PropertiesDocked", !!IsDocked());
+    SaveValueBool("Editor", "PropertiesDockSytle", GetDockStyle());
 }
