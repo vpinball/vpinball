@@ -1105,6 +1105,7 @@ void VPinball::LoadFileName(char *szFileName)
       UpdateRecentFileList(szFileName);
       GetLayersListDialog()->Expand();
       ppt->SetDirty(eSaveClean);
+      SetEnableToolbar();
    }
 }
 
