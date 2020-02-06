@@ -41,6 +41,19 @@ private:
     CImageList  m_normalImages;
 };
 
+class LayersListDialog;
+class FilterEditBox : public CEdit
+{
+public:
+    FilterEditBox() : m_layerDialog(nullptr) {}
+    virtual ~FilterEditBox() {}
+    void SetDialog(LayersListDialog* dialog) { m_layerDialog = dialog; }
+protected:
+    virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
+private:
+    LayersListDialog *m_layerDialog;
+};
+
 class LayersListDialog: public CDialog
 {
 public:
@@ -50,16 +63,18 @@ public:
     bool AddLayer(const string &name, IEditable *piedit);
     void DeleteLayer();
     void ClearList();
-    void UpdateLayerList();
+    void UpdateLayerList(const std::string name="");
     void UpdateElement(IEditable* pedit);
     string GetCurrentSelectedLayerName() const;
     void Expand()
     {
         m_layerTreeView.ExpandAll();
+        m_colapsed = false;
     }
     void Collaps()
     {
         m_layerTreeView.CollapsAll();
+        m_colapsed = true;
     }
 
 protected:
@@ -76,7 +91,9 @@ private:
     CButton         m_assignButton;
     CButton         m_addLayerButton;      
     CButton         m_deleteLayerButton;
-    CEdit           m_layerNameEditBox;
+    CButton         m_expandColapseButton;
+    FilterEditBox   m_layerFilterEditBox;
+    bool            m_colapsed;
 };
 
 class CContainLayers: public CDockContainer
@@ -113,5 +130,6 @@ public:
 private:
     CContainLayers m_layersContainer;
 };
+
 
 #endif

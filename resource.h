@@ -940,6 +940,14 @@
 #define IDC_CURSOR2                     661
 #define IDW_SPLITV                      661
 #define IDB_LAYER_ICONS16               662
+#define IDI_ICON1                       663
+#define IDI_ASSIGN                      663
+#define IDI_ICON2                       664
+#define IDI_ADD                         664
+#define IDI_ICON3                       665
+#define IDI_REMOVE                      665
+#define IDI_ICON4                       666
+#define IDI_EXPANDCOLAPSE               666
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1029,6 +1037,7 @@
 #define IDC_NAME_EDIT                   769
 #define IDC_COLOR_BUTTON5               769
 #define IDC_LAYER_NAME_EDIT             769
+#define IDC_LAYER_FILTER_EDIT           769
 #define IDC_OK                          770
 #define IDC_STATIC_ALPHA                771
 #define IDC_STATIC_BASE_COLOR           772
@@ -1100,9 +1109,11 @@
 #define IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC 830
 #define IDC_ASSIGN_BUTTON               833
 #define IDC_LAYER_EDIT_BUTTON           834
+#define IDC_EXPAND_COLAPSE_BUTTON       834
 #define IDC_LAYER_LISTCONTROL           836
 #define IDC_TREE1                       837
 #define IDC_LAYER_TREEVIEW              837
+#define IDC_LAYER_FILTER_STATIC         838
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1287,9 +1298,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        663
+#define _APS_NEXT_RESOURCE_VALUE        667
 #define _APS_NEXT_COMMAND_VALUE         4024
-#define _APS_NEXT_CONTROL_VALUE         838
+#define _APS_NEXT_CONTROL_VALUE         840
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

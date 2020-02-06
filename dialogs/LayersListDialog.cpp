@@ -2,7 +2,7 @@
 #include "LayersListDialog.h"
 #include <WindowsX.h>
 
-LayersListDialog::LayersListDialog() : CDialog(IDD_LAYERS)
+LayersListDialog::LayersListDialog() : CDialog(IDD_LAYERS), m_colapsed(true)
 {
 }
 
@@ -88,17 +88,22 @@ void LayersListDialog::ClearList()
     m_layerTreeView.DeleteAll();
 }
 
-void LayersListDialog::UpdateLayerList()
+void LayersListDialog::UpdateLayerList(const std::string name)
 {
     CCO(PinTable) *const pt = g_pvp->GetActiveTable();
     if (pt == nullptr)
         return;
 
     ClearList();
+    const bool checkName = (name == "") ? false : true;
     for (size_t t = 0; t < pt->m_vedit.size(); t++)
     {
         ISelect *psel = pt->m_vedit[t]->GetISelect();
-        AddLayer(psel->m_layerName, pt->m_vedit[t]);        
+        if(!checkName)
+            AddLayer(psel->m_layerName, pt->m_vedit[t]);
+        else if(std::string(pt->m_vedit[t]->GetName()).find(name)!=std::string::npos)
+            AddLayer(psel->m_layerName, pt->m_vedit[t]);        
+        
     }
     Expand();
 }
@@ -119,17 +124,31 @@ string LayersListDialog::GetCurrentSelectedLayerName() const
 
 BOOL LayersListDialog::OnInitDialog()
 {
+    m_layerFilterEditBox.SetDialog(this);
     AttachItem(IDC_LAYER_TREEVIEW, m_layerTreeView);
     AttachItem(IDC_ADD_LAYER_BUTTON, m_addLayerButton);
     AttachItem(IDC_DELETE_LAYER_BUTTON, m_deleteLayerButton);
     AttachItem(IDC_ASSIGN_BUTTON, m_assignButton);
+    AttachItem(IDC_LAYER_FILTER_EDIT, m_layerFilterEditBox);
+    AttachItem(IDC_EXPAND_COLAPSE_BUTTON, m_expandColapseButton);
+
+    const int iconSize = 16;
+    HANDLE hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ASSIGN), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    m_assignButton.SetIcon((HICON)hIcon);
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ADD), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    m_addLayerButton.SetIcon((HICON)hIcon);
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_REMOVE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    m_deleteLayerButton.SetIcon((HICON)hIcon);
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_EXPANDCOLAPSE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    m_expandColapseButton.SetIcon((HICON)hIcon);
 
     m_resizer.Initialize(*this, CRect(0, 0, 61, 200));
     m_resizer.AddChild(m_layerTreeView, leftcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_addLayerButton, topcenter, 0);
-    m_resizer.AddChild(m_deleteLayerButton, topcenter, 0);
+    m_resizer.AddChild(m_addLayerButton, topright, 0);
+    m_resizer.AddChild(m_deleteLayerButton, topright, 0);
     m_resizer.AddChild(m_assignButton, topleft, 0);
-
+    m_resizer.AddChild(m_expandColapseButton, topleft, 0);
+    m_resizer.AddChild(m_layerFilterEditBox, topright, RD_STRETCH_WIDTH);
     m_resizer.RecalcLayout();
 
     return TRUE;
@@ -172,6 +191,14 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_ASSIGN_BUTTON:
         {
             OnAssignButton();
+            return TRUE;
+        }
+        case IDC_EXPAND_COLAPSE_BUTTON:
+        {
+            if (m_colapsed)
+                Expand();
+            else
+                Collaps();
             return TRUE;
         }
         default:
@@ -424,12 +451,36 @@ void LayerTreeView::DeleteAll()
 
 void LayerTreeView::ExpandAll()
 {
+    std::vector<HTREEITEM> children;
+    
     Expand(hRootItem, TVE_EXPAND);
+    HTREEITEM item = GetChild(hRootItem);
+    while (item)
+    {
+        children.push_back(item);
+        item = GetNextItem(item, TVGN_NEXT);
+    }
+    for (HTREEITEM child : children)
+    {
+        Expand(child, TVE_EXPAND);
+    }
 }
 
 void LayerTreeView::CollapsAll()
 {
+    std::vector<HTREEITEM> children;
+
     Expand(hRootItem, TVE_COLLAPSE);
+    HTREEITEM item = GetChild(hRootItem);
+    while (item)
+    {
+        children.push_back(item);
+        item = GetNextItem(item, TVGN_NEXT);
+    }
+    for (HTREEITEM child : children)
+    {
+        Expand(child, TVE_COLLAPSE);
+    }
 }
 
 void LayerTreeView::SetActiveLayer(const std::string name)
@@ -659,4 +710,19 @@ LRESULT LayerTreeView::OnTVNSelChanged(LPNMTREEVIEW pNMTV)
         }
     }
     return 0;
+}
+
+LRESULT FilterEditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+        switch (msg)
+        {
+            case WM_KEYUP:
+                if ((wparam == VK_RETURN) || (wparam == VK_TAB))
+                {
+                    if (m_layerDialog)
+                        m_layerDialog->UpdateLayerList(std::string(GetWindowText().c_str()));
+                    return FALSE;
+                }
+        }
+        return WndProcDefault(msg, wparam, lparam);
 }
