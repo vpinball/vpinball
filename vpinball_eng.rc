@@ -2267,10 +2267,13 @@ IDD_LAYERS DIALOGEX 0, 0, 177, 214
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_CHILD | WS_CLIPCHILDREN
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    PUSHBUTTON      "+",IDC_ADD_LAYER_BUTTON,143,0,14,14
-    PUSHBUTTON      "-",IDC_DELETE_LAYER_BUTTON,160,0,14,14
-    PUSHBUTTON      "A",IDC_ASSIGN_BUTTON,0,0,14,14
-    CONTROL         "",IDC_LAYER_TREEVIEW,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_EDITLABELS | WS_BORDER | WS_HSCROLL | WS_TABSTOP,0,20,177,193
+    PUSHBUTTON      "+",IDC_ADD_LAYER_BUTTON,143,0,16,15,BS_ICON
+    PUSHBUTTON      "-",IDC_DELETE_LAYER_BUTTON,160,0,16,15,BS_ICON
+    PUSHBUTTON      "A",IDC_ASSIGN_BUTTON,0,0,16,15,BS_ICON
+    CONTROL         "",IDC_LAYER_TREEVIEW,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_EDITLABELS | WS_BORDER | WS_HSCROLL | WS_TABSTOP,0,20,177,194
+    EDITTEXT        IDC_LAYER_FILTER_EDIT,63,0,78,14,ES_AUTOHSCROLL
+    LTEXT           "Filter",IDC_LAYER_FILTER_STATIC,45,3,16,8
+    PUSHBUTTON      "E",IDC_EXPAND_COLAPSE_BUTTON,21,0,16,15,BS_ICON
 END
 
 
@@ -3137,6 +3140,14 @@ IDI_TEXTBOX             ICON                    "res\\textbox.ico"
 IDI_REEL                ICON                    "res\\reel.ico"
 
 IDI_LIGHTSEQ            ICON                    "res\\lightseq.ico"
+
+IDI_ASSIGN              ICON                    "res\\assign.ico"
+
+IDI_ADD                 ICON                    "res\\add.ico"
+
+IDI_REMOVE              ICON                    "res\\remove.ico"
+
+IDI_EXPANDCOLAPSE       ICON                    "res\\expandcolapse.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
