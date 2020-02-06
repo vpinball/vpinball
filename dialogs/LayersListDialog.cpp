@@ -673,7 +673,7 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
                 {
                     IEditable* pedit = (IEditable*)tvItem.lParam;
                     if (pedit != NULL)
-                        pt->AddMultiSel(pedit->GetISelect(), true, true, false);
+                        pt->AddMultiSel(pedit->GetISelect(), true, false, false);
                 }
 
                 subItem = GetNextItem(subItem, TVGN_NEXT);
@@ -684,7 +684,7 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
             IEditable* pedit = (IEditable*)tvItem.lParam;
             if (pedit != NULL)
             {
-                pt->AddMultiSel(pedit->GetISelect(), false, true, false);
+                pt->AddMultiSel(pedit->GetISelect(), false, false, false);
                 pt->RefreshProperties();
             }
         }
