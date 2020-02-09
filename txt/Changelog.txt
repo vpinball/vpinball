@@ -4,14 +4,18 @@ VP 10.7.0 Changelog
 FEATURES:
 
 - reworked UI
+   o layer handling is now in a seperate window. Uncheck the checkbox to hide a complete layer or single elements
+   o support added to add unlimit amount of layers
+   o layers with no elements will be automaticaly deleted
+   o fast double-click a layer will select all elements of this layer and double-click one element will select it
+   o with a slow double-click on a layer or element let you rename it
+   o toolbar, properties and layers are now dockable windows without the need to restart VP
 
 - add MP3 and OGG support (via the BASS library) to the sound manager and the 'standard' sound commands
   these new file types are now also saved directly into the VPX file, unlike the music commands (which still use the 'music' folder for legacy reasons)
   Going forward, tables should only use the sound commands and not the music commands anymore
 
 - optimize table loading/pre-processing time
-
-- add support for unlimited layers
 
 FIXES:
 
