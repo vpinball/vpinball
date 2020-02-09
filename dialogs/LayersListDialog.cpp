@@ -2,13 +2,12 @@
 #include "LayersListDialog.h"
 #include <WindowsX.h>
 
-LayersListDialog::LayersListDialog() : CDialog(IDD_LAYERS), m_colapsed(true)
+LayersListDialog::LayersListDialog() : CDialog(IDD_LAYERS), m_collapsed(true)
 {
 }
 
 LayersListDialog::~LayersListDialog()
 {
-
 }
 
 LRESULT LayersListDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam)
@@ -49,6 +48,7 @@ void LayersListDialog::DeleteLayer()
         ShowError("Can't delete all layers!");
         return;
     }
+
     CCO(PinTable)* const pt = g_pvp->GetActiveTable();
     if (pt == nullptr)
         return;
@@ -60,7 +60,7 @@ void LayersListDialog::DeleteLayer()
     {
         hFillLayer = m_layerTreeView.GetNextItem(hFillLayer, TVGN_NEXT);
     }
-    const std::string fillLayerName = std::string(m_layerTreeView.GetItemText(hFillLayer).c_str());
+    const std::string fillLayerName(m_layerTreeView.GetItemText(hFillLayer));
     m_layerTreeView.SetActiveLayer(fillLayerName);
     for (HTREEITEM item : allSubItems)
     {
@@ -70,7 +70,7 @@ void LayersListDialog::DeleteLayer()
         tvItem.hItem = item;
         if (m_layerTreeView.GetItem(tvItem))
         {
-            IEditable* pedit = (IEditable*)tvItem.lParam;
+            IEditable* const pedit = (IEditable*)tvItem.lParam;
             if (pedit)
             {
                 pedit->GetISelect()->m_layerName = fillLayerName;
@@ -88,7 +88,7 @@ void LayersListDialog::ClearList()
     m_layerTreeView.DeleteAll();
 }
 
-void LayersListDialog::UpdateLayerList(const std::string name)
+void LayersListDialog::UpdateLayerList(const std::string& name)
 {
     CCO(PinTable) *const pt = g_pvp->GetActiveTable();
     if (pt == nullptr)
@@ -98,11 +98,11 @@ void LayersListDialog::UpdateLayerList(const std::string name)
     const bool checkName = (name == "") ? false : true;
     for (size_t t = 0; t < pt->m_vedit.size(); t++)
     {
-        ISelect *psel = pt->m_vedit[t]->GetISelect();
+        ISelect *const psel = pt->m_vedit[t]->GetISelect();
         if(!checkName)
             AddLayer(psel->m_layerName, pt->m_vedit[t]);
         else if(std::string(pt->m_vedit[t]->GetName()).find(name)!=std::string::npos)
-            AddLayer(psel->m_layerName, pt->m_vedit[t]);        
+            AddLayer(psel->m_layerName, pt->m_vedit[t]);
         
     }
     Expand();
@@ -130,7 +130,7 @@ BOOL LayersListDialog::OnInitDialog()
     AttachItem(IDC_DELETE_LAYER_BUTTON, m_deleteLayerButton);
     AttachItem(IDC_ASSIGN_BUTTON, m_assignButton);
     AttachItem(IDC_LAYER_FILTER_EDIT, m_layerFilterEditBox);
-    AttachItem(IDC_EXPAND_COLAPSE_BUTTON, m_expandColapseButton);
+    AttachItem(IDC_EXPAND_COLLAPSE_BUTTON, m_expandCollapseButton);
 
     const int iconSize = 16;
     HANDLE hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ASSIGN), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
@@ -139,15 +139,15 @@ BOOL LayersListDialog::OnInitDialog()
     m_addLayerButton.SetIcon((HICON)hIcon);
     hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_REMOVE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_deleteLayerButton.SetIcon((HICON)hIcon);
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_EXPANDCOLAPSE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
-    m_expandColapseButton.SetIcon((HICON)hIcon);
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_EXPANDCOLLAPSE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    m_expandCollapseButton.SetIcon((HICON)hIcon);
 
     m_resizer.Initialize(*this, CRect(0, 0, 61, 200));
     m_resizer.AddChild(m_layerTreeView, leftcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_addLayerButton, topright, 0);
     m_resizer.AddChild(m_deleteLayerButton, topright, 0);
     m_resizer.AddChild(m_assignButton, topleft, 0);
-    m_resizer.AddChild(m_expandColapseButton, topleft, 0);
+    m_resizer.AddChild(m_expandCollapseButton, topleft, 0);
     m_resizer.AddChild(m_layerFilterEditBox, topright, RD_STRETCH_WIDTH);
     m_resizer.RecalcLayout();
 
@@ -193,9 +193,9 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             OnAssignButton();
             return TRUE;
         }
-        case IDC_EXPAND_COLAPSE_BUTTON:
+        case IDC_EXPAND_COLLAPSE_BUTTON:
         {
-            if (m_colapsed)
+            if (m_collapsed)
                 Expand();
             else
                 Collaps();
@@ -221,8 +221,8 @@ void LayersListDialog::OnAssignButton()
 
     for (int t=0;t<pt->m_vmultisel.size();t++)
     {
-        ISelect* psel = pt->m_vmultisel.ElementAt(t);
-        IEditable* pedit = psel->GetIEditable();
+        ISelect* const psel = pt->m_vmultisel.ElementAt(t);
+        IEditable* const pedit = psel->GetIEditable();
         psel->m_layerName = layerName;
         HTREEITEM oldItem = m_layerTreeView.GetItemByElement(pedit);
         m_layerTreeView.AddElement(pedit->GetName(), pedit);
@@ -290,24 +290,24 @@ HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable *ped
     return item;
 }
 
-bool LayerTreeView::AddLayer(const std::string name)
+bool LayerTreeView::AddLayer(const string& name)
 {
     hCurrentLayerItem = AddItem(hRootItem, name.c_str(), NULL, 1);
     return hCurrentLayerItem != NULL;
 }
 
-bool LayerTreeView::AddElement(const std::string name, IEditable *pedit)
+bool LayerTreeView::AddElement(const string& name, IEditable *pedit)
 {
     hCurrentElementItem = AddItem(hCurrentLayerItem, name.c_str(), pedit, 2);
     return hCurrentElementItem != NULL;
 }
 
-bool LayerTreeView::ContainsLayer(const std::string name) const
+bool LayerTreeView::ContainsLayer(const string& name) const
 {
     HTREEITEM item = GetChild(hRootItem);
     while (item)
     {
-        std::string itemName(GetItemText(item).c_str());
+        const string itemName(GetItemText(item));
         if (itemName == name)
             return true;
         item = GetNextItem(item, TVGN_NEXT);
@@ -315,9 +315,9 @@ bool LayerTreeView::ContainsLayer(const std::string name) const
     return false;
 }
 
-std::string LayerTreeView::GetCurrentLayerName() const
+string LayerTreeView::GetCurrentLayerName() const
 {
-    return std::string(GetItemText(hCurrentLayerItem).c_str());
+    return string(GetItemText(hCurrentLayerItem));
 }
 
 HTREEITEM LayerTreeView::GetItemByElement(const IEditable* pedit)
@@ -483,13 +483,13 @@ void LayerTreeView::CollapsAll()
     }
 }
 
-void LayerTreeView::SetActiveLayer(const std::string name)
+void LayerTreeView::SetActiveLayer(const string& name)
 {
     HTREEITEM item = GetChild(hRootItem);
     int count = 0;
     while (item)
     {
-        std::string layerName = std::string(GetItemText(item).c_str());
+        const std::string layerName(GetItemText(item));
         if (layerName == name)
         {
             hCurrentLayerItem = item;
@@ -563,12 +563,12 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
 
             if(tvItem.cChildren==1)
             {
-                const string oldName = string(GetItemText(pinfo->item.hItem).c_str());
+                const string oldName = string(GetItemText(pinfo->item.hItem));
                 const string newName = string(pinfo->item.pszText);
 
                 for (size_t t = 0; t < pt->m_vedit.size(); t++)
                 {
-                    ISelect* psel = pt->m_vedit[t]->GetISelect();
+                    ISelect* const psel = pt->m_vedit[t]->GetISelect();
                     if (psel->m_layerName == oldName)
                         psel->m_layerName = newName;
                 }

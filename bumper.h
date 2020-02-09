@@ -84,12 +84,11 @@ public:
    // Multi-object manipulation
    virtual Vertex2D GetCenter() const;
    virtual void PutCenter(const Vertex2D& pv);
-   
+
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
    virtual void RenderBlueprint(Sur *psur, const bool solid);
-   
-   
+
    virtual unsigned long long GetMaterialID() const
    {
       if (!m_d.m_baseVisible && m_d.m_capVisible)

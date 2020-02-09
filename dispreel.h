@@ -28,7 +28,7 @@ public:
    COLORREF    m_backcolor;         // colour of the background
 
    TimerDataRoot m_tdr;             // timer information
-   bool        m_transparent;      // is the background transparent
+   bool        m_transparent;       // is the background transparent
    bool        m_useImageGrid;
 };
 

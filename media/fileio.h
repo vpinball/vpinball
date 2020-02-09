@@ -21,8 +21,8 @@ class BiffWriter
 public:
    BiffWriter(IStream *pistream, HCRYPTHASH hcrypthash);
    HRESULT WriteInt(int id, int value);
-   HRESULT WriteString(int id, char *szvalue);
-   HRESULT WriteWideString(int id, WCHAR *wzvalue);
+   HRESULT WriteString(int id, const char * const szvalue);
+   HRESULT WriteWideString(int id, const WCHAR * const wzvalue);
    HRESULT WriteBool(int id, BOOL value);
    HRESULT WriteFloat(int id, float value);
    HRESULT WriteStruct(int id, void *pvalue, int size);

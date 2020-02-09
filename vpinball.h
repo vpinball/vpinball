@@ -219,7 +219,7 @@ protected:
 
 
 private:
-    CMenu m_mainMenu;
+   CMenu m_mainMenu;
    char m_szRecentTableList[LAST_OPENED_TABLE_COUNT + 1][MAX_PATH];
 
    HANDLE m_workerthread;

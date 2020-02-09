@@ -187,7 +187,7 @@ HRESULT BiffWriter::WriteInt(int id, int value)
    return hr;
 }
 
-HRESULT BiffWriter::WriteString(int id, char *szvalue)
+HRESULT BiffWriter::WriteString(int id, const char * const szvalue)
 {
    ULONG writ = 0;
    HRESULT hr;
@@ -207,7 +207,7 @@ HRESULT BiffWriter::WriteString(int id, char *szvalue)
    return hr;
 }
 
-HRESULT BiffWriter::WriteWideString(int id, WCHAR *wzvalue)
+HRESULT BiffWriter::WriteWideString(int id, const WCHAR * const wzvalue)
 {
    ULONG writ = 0;
    HRESULT hr;

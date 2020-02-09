@@ -937,17 +937,17 @@
 #define IDW_SDRIGHT                     655
 #define IDW_SDTOP                       656
 #define IDD_LAYERS                      657
-#define IDC_CURSOR2                     661
-#define IDW_SPLITV                      661
-#define IDB_LAYER_ICONS16               662
-#define IDI_ICON1                       663
-#define IDI_ASSIGN                      663
-#define IDI_ICON2                       664
-#define IDI_ADD                         664
-#define IDI_ICON3                       665
-#define IDI_REMOVE                      665
-#define IDI_ICON4                       666
-#define IDI_EXPANDCOLAPSE               666
+#define IDC_CURSOR2                     658
+#define IDW_SPLITV                      658
+#define IDB_LAYER_ICONS16               659
+#define IDI_ICON1                       660
+#define IDI_ASSIGN                      660
+#define IDI_ICON2                       661
+#define IDI_ADD                         661
+#define IDI_ICON3                       662
+#define IDI_REMOVE                      662
+#define IDI_ICON4                       663
+#define IDI_EXPANDCOLAPSE               663
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1298,9 +1298,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        667
+#define _APS_NEXT_RESOURCE_VALUE        664
 #define _APS_NEXT_COMMAND_VALUE         4024
-#define _APS_NEXT_CONTROL_VALUE         840
+#define _APS_NEXT_CONTROL_VALUE         839
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
