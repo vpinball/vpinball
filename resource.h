@@ -947,7 +947,7 @@
 #define IDI_ICON3                       662
 #define IDI_REMOVE                      662
 #define IDI_ICON4                       663
-#define IDI_EXPANDCOLAPSE               663
+#define IDI_EXPANDCOLLAPSE              663
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1109,7 +1109,7 @@
 #define IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC 830
 #define IDC_ASSIGN_BUTTON               833
 #define IDC_LAYER_EDIT_BUTTON           834
-#define IDC_EXPAND_COLAPSE_BUTTON       834
+#define IDC_EXPAND_COLLAPSE_BUTTON      834
 #define IDC_LAYER_LISTCONTROL           836
 #define IDC_TREE1                       837
 #define IDC_LAYER_TREEVIEW              837
