@@ -508,7 +508,7 @@ public:
    void RestoreLayers();
    void BackupLayers();
    void DeleteFromLayer(IEditable *obj);
-   void UpdateCollection(int index);
+   void UpdateCollection(const int index);
    void MoveCollectionUp(CComObject<Collection> *pcol);
    void MoveCollectionDown(CComObject<Collection> *pcol);
 
@@ -551,7 +551,7 @@ public:
    Material* GetSurfaceMaterial(const char * const szName) const;
    Texture* GetSurfaceImage(const char * const szName) const;
 
-   bool GetCollectionIndex(ISelect *element, int &collectionIndex, int &elementIndex);
+   bool GetCollectionIndex(const ISelect * const element, int &collectionIndex, int &elementIndex);
 
    void LockElements();
 
@@ -853,8 +853,8 @@ public:
    void SetHeight(const float value);
 
    //HWND m_hMDI;
-   PinTableMDI  *m_mdiTable;
-   void SetMDITable(PinTableMDI *table)
+   PinTableMDI *m_mdiTable;
+   void SetMDITable(PinTableMDI * const table)
    {
        m_mdiTable = table;
    }
@@ -862,7 +862,7 @@ public:
    {
        return m_mdiTable;
    }
-   WCHAR *GetCollectionNameByElement(ISelect *element);
+   WCHAR *GetCollectionNameByElement(const ISelect * const element);
    void RefreshProperties();
 private:
    std::unordered_map<const char *, Texture *, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name

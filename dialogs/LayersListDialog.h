@@ -7,9 +7,9 @@ public:
     LayerTreeView(){ }
     ~LayerTreeView(){ }
     virtual HTREEITEM       AddItem(HTREEITEM hParent, LPCTSTR text, IEditable *pedit, int image);
-    bool                    AddLayer(const std::string name);
-    bool                    AddElement(const std::string name, IEditable *pedit);
-    bool                    ContainsLayer(const std::string name) const;
+    bool                    AddLayer(const string& name);
+    bool                    AddElement(const string& name, IEditable *pedit);
+    bool                    ContainsLayer(const string& name) const;
     std::string             GetCurrentLayerName() const;
     HTREEITEM               GetItemByElement(const IEditable* pedit);
     int                     GetItemCount() const;
@@ -20,7 +20,7 @@ public:
     void                    DeleteAll();
     void                    ExpandAll();
     void                    CollapsAll();
-    void                    SetActiveLayer(const std::string name);
+    void                    SetActiveLayer(const string& name);
     HTREEITEM               GetRootItem() { return hRootItem; }
     HTREEITEM               GetCurrentLayerItem() { return hCurrentLayerItem; }
 
@@ -60,28 +60,27 @@ public:
     LayersListDialog();
     virtual ~LayersListDialog();
     virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
-    bool AddLayer(const string &name, IEditable *piedit);
+    bool AddLayer(const string& name, IEditable *piedit);
     void DeleteLayer();
     void ClearList();
-    void UpdateLayerList(const std::string name="");
+    void UpdateLayerList(const std::string& name="");
     void UpdateElement(IEditable* pedit);
     string GetCurrentSelectedLayerName() const;
     void Expand()
     {
         m_layerTreeView.ExpandAll();
-        m_colapsed = false;
+        m_collapsed = false;
     }
     void Collaps()
     {
         m_layerTreeView.CollapsAll();
-        m_colapsed = true;
+        m_collapsed = true;
     }
 
 protected:
     virtual BOOL OnInitDialog();
     virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-
 
 private:
     void OnAssignButton();
@@ -91,9 +90,9 @@ private:
     CButton         m_assignButton;
     CButton         m_addLayerButton;      
     CButton         m_deleteLayerButton;
-    CButton         m_expandColapseButton;
+    CButton         m_expandCollapseButton;
     FilterEditBox   m_layerFilterEditBox;
-    bool            m_colapsed;
+    bool            m_collapsed;
 };
 
 class CContainLayers: public CDockContainer

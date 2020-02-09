@@ -159,7 +159,7 @@ VPinball::VPinball()
 ///</summary>
 VPinball::~VPinball()
 {
-    //	DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); //remove FreeImage support BDS
+   // DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); //remove FreeImage support BDS
    SetClipboard(NULL);
    FreeLibrary(m_scintillaDll);
 }
@@ -322,13 +322,13 @@ void VPinball::SetAutoSaveMinutes(const int minutes)
 void VPinball::InitTools()
 {
    // was the properties panel open last time we used VP?
-    const bool state = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
-    if (state)
-    {
-        // if so then re-open it
-        ParseCommand(ID_EDIT_PROPERTIES, 1); //display
-    }
-    m_toolbarDialog->SetOptionsButton(state);
+   const bool state = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
+   if (state)
+   {
+      // if so then re-open it
+      ParseCommand(ID_EDIT_PROPERTIES, 1); //display
+   }
+   m_toolbarDialog->SetOptionsButton(state);
 
    m_ToolCur = IDC_SELECT;
 }
@@ -497,6 +497,7 @@ CDockProperty *VPinball::GetPropertiesDocker()
     }
     if (!state)
         m_dockProperties->Hide();
+
     return m_dockProperties;
 }
 
@@ -548,9 +549,9 @@ CDockLayers *VPinball::GetLayersDocker()
 
 void VPinball::CreateDocker()
 {
-    (void)GetPropertiesDocker();
-    (void)GetToolbarDocker();
-    (void)GetLayersDocker();
+    GetPropertiesDocker();
+    GetToolbarDocker();
+    GetLayersDocker();
 }
 
 void VPinball::SetPosCur(float x, float y)
@@ -664,7 +665,7 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
        case ID_EDIT_PROPERTIES:
        {
           bool show = false;
-      
+
           if (m_propertyDialog == NULL)
               return TRUE;
 
@@ -672,14 +673,16 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
 
           switch (notify)
           {
-          case 0: show = !show; //!!?
+          case 0:
+             show = !show; //!!?
              break;
           case 1: 
-              show = true;  //set
+             show = true;  //set
              break;
-          case 2:               //re-display 
+          case 2:          //re-display 
              break;
-          default: show = !show;//toggle
+          default:
+             show = !show; //toggle
              break;
           }
 

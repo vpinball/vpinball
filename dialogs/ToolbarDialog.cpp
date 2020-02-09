@@ -396,7 +396,6 @@ CContainToolbar::CContainToolbar()
     SetTabText(_T("Toolbar"));
     SetTabIcon(IDI_VPINBALL);
     SetDockCaption(_T("Toolbar"));
-    
 }
 
 CDockToolbar::CDockToolbar()
@@ -412,5 +411,4 @@ void CDockToolbar::OnDestroy()
     SaveValueInt("Editor", "ToolbarPosY", rect.top);
     SaveValueBool("Editor", "ToolbarDocked", !!IsDocked());
     SaveValueInt("Editor", "ToolbarDockStyle", GetDockStyle());
-
 }

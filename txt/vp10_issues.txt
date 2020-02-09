@@ -6,8 +6,4 @@ Renderer known issues:
 *) 4xMSAA flickers, thus disabled
 *) textures aren't preloaded, can lead to stutter in some cases
 *) adaptive vsync always falls back to normal vsync on XP and is hacky implemented on newer windows versions
-*) BG elements abuse(!) the no-vertex-shader pipeline, which doesn't seem to work properly on intel GFX
-
-Not relevant anymore:
-
 *) lost devices aren't handled properly (real fullscreen issue only)

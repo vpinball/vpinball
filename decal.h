@@ -75,7 +75,6 @@ public:
    virtual void PutCenter(const Vertex2D& pv) { m_d.m_vCenter = pv; }
    virtual float GetDepth(const Vertex3Ds& viewDir) const;
    virtual bool IsTransparent() const { return !m_backglass; }
-
    virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
 
    STDMETHOD(get_Name)(BSTR *pVal) { return E_FAIL; }
@@ -83,7 +82,7 @@ public:
    HFONT GetFont();
 
    virtual void WriteRegDefaults();
-   
+
    virtual ItemTypeEnum HitableGetItemType() const { return eItemDecal; }
 
    DecalData m_d;
@@ -92,11 +91,8 @@ public:
 private:
    void EnsureSize();
    void GetTextSize(int * const px, int * const py);
-
    void PreRenderText();
-
    void RenderObject();
-
 
    PinTable *m_ptable;
 

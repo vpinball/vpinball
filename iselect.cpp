@@ -322,7 +322,7 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 
    bw.WriteBool(FID(LOCK), m_locked);
    bw.WriteInt(FID(LAYR), m_layerIndex);
-   bw.WriteString(FID(LANR), (char*)m_layerName.c_str());
+   bw.WriteString(FID(LANR), m_layerName.c_str());
 
    return S_OK;
 }

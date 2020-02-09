@@ -3767,7 +3767,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
       for (size_t t = 0; t < m_vedit.size(); t++)
       {
          IEditable * const piedit = m_vedit[t];
-         ISelect *psel = piedit->GetISelect();
+         ISelect * const psel = piedit->GetISelect();
          if (psel->m_layerIndex == i)
          {
              m_layer[i].push_back(piedit);
@@ -4889,7 +4889,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
    }
 }
 
-void PinTable::UpdateCollection(int index)
+void PinTable::UpdateCollection(const int index)
 {
    if (index < m_vcollection.Size() && index < 32)
    {
@@ -4924,7 +4924,7 @@ void PinTable::UpdateCollection(int index)
    }
 }
 
-bool PinTable::GetCollectionIndex(ISelect *element, int &collectionIndex, int &elementIndex)
+bool PinTable::GetCollectionIndex(const ISelect * const element, int &collectionIndex, int &elementIndex)
 {
    for (int i = 0; i < m_vcollection.size(); i++)
    {
@@ -4941,7 +4941,7 @@ bool PinTable::GetCollectionIndex(ISelect *element, int &collectionIndex, int &e
    return false;
 }
 
-WCHAR *PinTable::GetCollectionNameByElement(ISelect *element)
+WCHAR *PinTable::GetCollectionNameByElement(const ISelect * const element)
 {
     for (int i = 0; i < m_vcollection.size(); i++)
     {
@@ -5842,7 +5842,6 @@ void PinTable::Undo()
 
    if (m_searchSelectDlg.IsWindow())
       m_searchSelectDlg.Update();
-
 }
 
 void PinTable::Uncreate(IEditable *pie)

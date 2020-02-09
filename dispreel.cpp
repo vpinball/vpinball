@@ -165,7 +165,6 @@ void DispReel::UIRenderPass2(Sur * const psur)
    }
 }
 
-
 // Registers the timer with the game call which then makes a call back when the interval
 // has expired.
 //
@@ -454,7 +453,6 @@ void DispReel::SetObjectPos()
    g_pvp->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);
 }
 
-
 void DispReel::MoveOffset(const float dx, const float dy)
 {
    m_d.m_v1.x += dx;
@@ -464,12 +462,10 @@ void DispReel::MoveOffset(const float dx, const float dy)
    m_d.m_v2.y += dy;
 }
 
-
 Vertex2D DispReel::GetCenter() const
 {
    return m_d.m_v1;
 }
-
 
 void DispReel::PutCenter(const Vertex2D& pv)
 {
@@ -478,7 +474,6 @@ void DispReel::PutCenter(const Vertex2D& pv)
    m_d.m_v2.x = pv.x + getBoxWidth();
    m_d.m_v2.y = pv.y + getBoxHeight();
 }
-
 
 HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
 {
@@ -511,7 +506,6 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool back
    return S_OK;
 }
 
-
 HRESULT DispReel::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
@@ -523,7 +517,6 @@ HRESULT DispReel::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versio
    br.Load();
    return S_OK;
 }
-
 
 bool DispReel::LoadToken(const int id, BiffReader * const pbr)
 {
@@ -613,9 +606,7 @@ STDMETHODIMP DispReel::get_BackColor(OLE_COLOR *pVal)
 
 STDMETHODIMP DispReel::put_BackColor(OLE_COLOR newVal)
 {
-   
    m_d.m_backcolor = newVal;
-   
 
    return S_OK;
 }
@@ -629,9 +620,7 @@ STDMETHODIMP DispReel::get_Reels(float *pVal)
 
 STDMETHODIMP DispReel::put_Reels(float newVal)
 {
-   
    SetReels((int)newVal);
-   
 
    return S_OK;
 }
@@ -645,9 +634,7 @@ STDMETHODIMP DispReel::get_Width(float *pVal)
 
 STDMETHODIMP DispReel::put_Width(float newVal)
 {
-   
    SetWidth(newVal);
-   
 
    return S_OK;
 }
@@ -661,9 +648,7 @@ STDMETHODIMP DispReel::get_Height(float *pVal)
 
 STDMETHODIMP DispReel::put_Height(float newVal)
 {
-   
    SetHeight(newVal);
-   
 
    return S_OK;
 }
@@ -678,9 +663,7 @@ STDMETHODIMP DispReel::get_X(float *pVal)
 
 STDMETHODIMP DispReel::put_X(float newVal)
 {
-   
    SetX(newVal);
-   
 
    return S_OK;
 }
@@ -694,9 +677,7 @@ STDMETHODIMP DispReel::get_Y(float *pVal)
 
 STDMETHODIMP DispReel::put_Y(float newVal)
 {
-   
    SetY(newVal);
-   
 
    return S_OK;
 }
@@ -710,9 +691,7 @@ STDMETHODIMP DispReel::get_IsTransparent(VARIANT_BOOL *pVal)
 
 STDMETHODIMP DispReel::put_IsTransparent(VARIANT_BOOL newVal)
 {
-   
    m_d.m_transparent = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -736,10 +715,8 @@ STDMETHODIMP DispReel::put_Image(BSTR newVal)
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
    }
-
    
    strcpy_s(m_d.m_szImage,szImage);
-   
 
    return S_OK;
 }
@@ -752,9 +729,7 @@ STDMETHODIMP DispReel::get_Spacing(float *pVal)
 
 STDMETHODIMP DispReel::put_Spacing(float newVal)
 {
-   
    SetSpacing(newVal);
-   
 
    return S_OK;
 }
@@ -770,9 +745,7 @@ STDMETHODIMP DispReel::get_Sound(BSTR *pVal)
 
 STDMETHODIMP DispReel::put_Sound(BSTR newVal)
 {
-   
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSound, MAXNAMEBUFFER, NULL, NULL);
-   
 
    return S_OK;
 }
@@ -786,9 +759,7 @@ STDMETHODIMP DispReel::get_Steps(float *pVal)
 
 STDMETHODIMP DispReel::put_Steps(float newVal)
 {
-   
    SetMotorSteps((int)newVal);
-   
 
    return S_OK;
 }
@@ -802,9 +773,7 @@ STDMETHODIMP DispReel::get_Range(float *pVal)
 
 STDMETHODIMP DispReel::put_Range(float newVal)
 {
-   
    SetRange((int)newVal);
-   
 
    return S_OK;
 }
@@ -818,11 +787,9 @@ STDMETHODIMP DispReel::get_UpdateInterval(long *pVal)
 
 STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
 {
-   
    SetUpdateInterval((int)newVal);
    if (g_pplayer)
       m_timeNextUpdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
-   
 
    return S_OK;
 }
@@ -836,9 +803,7 @@ STDMETHODIMP DispReel::get_UseImageGrid(VARIANT_BOOL *pVal)
 
 STDMETHODIMP DispReel::put_UseImageGrid(VARIANT_BOOL newVal)
 {
-   
    m_d.m_useImageGrid = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -852,9 +817,7 @@ STDMETHODIMP DispReel::get_Visible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP DispReel::put_Visible(VARIANT_BOOL newVal)
 {
-   
    m_d.m_visible = VBTOb(newVal);
-   
 
    return S_OK;
 }
@@ -868,16 +831,11 @@ STDMETHODIMP DispReel::get_ImagesPerGridRow(long *pVal)
 
 STDMETHODIMP DispReel::put_ImagesPerGridRow(long newVal)
 {
-   
    SetImagesPerGridRow((int)newVal);
-   
 
    return S_OK;
 }
 
-
-// function Methods available for the scripters.
-//
 STDMETHODIMP DispReel::AddValue(long Value)
 {
    const bool bNegative = (Value < 0);
@@ -907,7 +865,6 @@ STDMETHODIMP DispReel::AddValue(long Value)
 
    return S_OK;
 }
-
 
 STDMETHODIMP DispReel::SetValue(long Value)
 {
@@ -945,7 +902,6 @@ STDMETHODIMP DispReel::SetValue(long Value)
    return S_OK;
 }
 
-
 STDMETHODIMP DispReel::ResetToZero()
 {
    int carry = 0;
@@ -969,7 +925,6 @@ STDMETHODIMP DispReel::ResetToZero()
    return S_OK;
 }
 
-
 STDMETHODIMP DispReel::SpinReel(long ReelNumber, long PulseCount)
 {
    if ((ReelNumber >= 1) && (ReelNumber <= m_d.m_reelcount))
@@ -983,8 +938,6 @@ STDMETHODIMP DispReel::SpinReel(long ReelNumber, long PulseCount)
 }
 
 
-// Private functions
-//
 float DispReel::getBoxWidth() const
 {
    const float width = (float)m_d.m_reelcount * m_d.m_width
@@ -992,7 +945,6 @@ float DispReel::getBoxWidth() const
       + m_d.m_reelspacing;	// spacing also includes edges
    return width;
 }
-
 
 float DispReel::getBoxHeight() const
 {
