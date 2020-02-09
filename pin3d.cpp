@@ -216,8 +216,8 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
                   //!! discard directions pointing below the playfield?? or give them another "average playfield" color??
 #define USE_ENVMAP_PRECALC_COSINE
 #ifndef USE_ENVMAP_PRECALC_COSINE
-         //!! as we do not use importance sampling on the environment, just not being smart -could- be better for high frequency environments
-                  Vertex3Ds l = sphere_sample((float)s*(float)(1.0 / num_samples), radical_inverse(s)); // QMC hammersley point set
+                  //!! as we do not use importance sampling on the environment, just not being smart -could- be better for high frequency environments
+                  Vertex3Ds l = sphere_sample((float)s*(float)(1.0/num_samples), radical_inverse(s)); // QMC hammersley point set
                   float NdotL = l.Dot(n);
                   if (NdotL < 0.0f) // flip if on backside of hemisphere
                   {
@@ -239,9 +239,9 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
                      unsigned int offs = ((int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres) * 3;
                      if (offs >= env_yres * env_xres * 3)
                         offs = 0;
-                     r = ((float*)envmap)[offs];
-                     g = ((float*)envmap)[offs + 1];
-                     b = ((float*)envmap)[offs + 2];
+                     r = ((float*)envmap)[offs  ];
+                     g = ((float*)envmap)[offs+1];
+                     b = ((float*)envmap)[offs+2];
                   }
                   else
                   {
@@ -278,9 +278,9 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
                if (isHDR)
                {
                   const unsigned int offs = (y*rad_env_xres + x) * 3;
-                  ((float*)rad_envmap)[offs] = sum[0];
-                  ((float*)rad_envmap)[offs + 1] = sum[1];
-                  ((float*)rad_envmap)[offs + 2] = sum[2];
+                  ((float*)rad_envmap)[offs  ] = sum[0];
+                  ((float*)rad_envmap)[offs+1] = sum[1];
+                  ((float*)rad_envmap)[offs+2] = sum[2];
                }
                else
                {
@@ -1346,7 +1346,7 @@ void PinProjection::TransformVertices(const Vertex3Ds * const rgv, const WORD * 
 
 BAM_Tracker::BAM_Tracker_Client BAM;
 
-void Mat4Mul(float *O, float *A, float *B)
+void Mat4Mul(float * const __restrict O, const float * const __restrict A, const float * const __restrict B)
 {
    O[0] = A[0] * B[0] + A[1] * B[4] + A[2] * B[8] + A[3] * B[12];
    O[1] = A[0] * B[1] + A[1] * B[5] + A[2] * B[9] + A[3] * B[13];
@@ -1369,30 +1369,30 @@ void Mat4Mul(float *O, float *A, float *B)
    O[15] = A[12] * B[3] + A[13] * B[7] + A[14] * B[11] + A[15] * B[15];
 }
 
-void Mat4Mul(float *OA, float *B)
+void Mat4Mul(float * const __restrict OA, const float * const __restrict B)
 {
    float A[16];
    memcpy_s(A, sizeof(A), OA, sizeof(A));
    Mat4Mul(OA, A, B);
 }
 
-void CreateProjectionAndViewMatrix(float *P, float *V)
+void CreateProjectionAndViewMatrix(float * const __restrict P, float * const __restrict V)
 {
    const float degToRad = 0.01745329251f;
 
    // VPX stuffs
-   auto &t = g_pplayer->m_ptable;
-   int resolutionWidth = g_pplayer->m_pin3d.m_viewPort.Width;
-   int resolutionHeight = g_pplayer->m_pin3d.m_viewPort.Height;
-   int rotation = static_cast<int>(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] / 90.0f);
-   bool stereo3D = g_pplayer->m_stereo3D;
-   float tableLength = t->m_bottom;
-   float tableWidth = t->m_right;
-   float tableGlass = t->m_glassheight;
-   float minSlope = (t->m_overridePhysics ? t->m_fOverrideMinSlope : t->m_angletiltMin);
-   float maxSlope = (t->m_overridePhysics ? t->m_fOverrideMaxSlope : t->m_angletiltMax);
-   float slope = minSlope + (maxSlope - minSlope) * t->m_globalDifficulty;
-   float angle = -slope * degToRad;
+   const PinTable* const t = g_pplayer->m_ptable;
+   const int resolutionWidth = g_pplayer->m_pin3d.m_viewPort.Width;
+   const int resolutionHeight = g_pplayer->m_pin3d.m_viewPort.Height;
+   const int rotation = static_cast<int>(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set] / 90.0f);
+   //const bool stereo3D = g_pplayer->m_stereo3D;
+   const float tableLength = t->m_bottom;
+   const float tableWidth = t->m_right;
+   const float tableGlass = t->m_glassheight;
+   const float minSlope = (t->m_overridePhysics ? t->m_fOverrideMinSlope : t->m_angletiltMin);
+   const float maxSlope = (t->m_overridePhysics ? t->m_fOverrideMaxSlope : t->m_angletiltMax);
+   const float slope = minSlope + (maxSlope - minSlope) * t->m_globalDifficulty;
+   const float angle = -slope * degToRad;
 
    // Data from config file (Settings):
    float DisplaySize;
@@ -1416,14 +1416,14 @@ void CreateProjectionAndViewMatrix(float *P, float *V)
    ViewerPositionY = (float)y;
    ViewerPositionZ = (float)z;
 
-   double w = DisplayNativeWidth, h = DisplayNativeHeight;
+   const double w = DisplayNativeWidth, h = DisplayNativeHeight;
    DisplaySize = (float)(sqrt(w*w + h * h) / 25.4); // [mm] -> [inchs]
 
                                                     // constant params for this project
    AboveScreen = 200.0; // 0.2m
    InsideScreen = 2000.0; // 2.0m
 
-                          // Data build projection matrix
+   // Data build projection matrix
    BuildProjectionMatrix(P,
       DisplaySize,
       DisplayNativeWidth, DisplayNativeHeight,
@@ -1436,7 +1436,7 @@ void CreateProjectionAndViewMatrix(float *P, float *V)
 
    // Build View matrix from parts: Translation, Scale, Rotation
    // .. but first View Matrix has camera position
-   float VT[16] = {
+   const float VT[16] = {
       1, 0, 0, 0,
       0, 1, 0, 0,
       0, 0, 1, 0,
@@ -1444,27 +1444,27 @@ void CreateProjectionAndViewMatrix(float *P, float *V)
    };
 
    // --- Scale, ... some math
-   float pixelsToMillimeters = (float)(25.4*DisplaySize / sqrt(DisplayNativeWidth*DisplayNativeWidth + DisplayNativeHeight * DisplayNativeHeight));
-   float pixelsToMillimetersX = pixelsToMillimeters * DisplayNativeWidth / resolutionWidth;
-   float pixelsToMillimetersY = pixelsToMillimeters * DisplayNativeHeight / resolutionHeight;
-   float ptm = rotation & 1 ? pixelsToMillimetersX : pixelsToMillimetersY;
-   float tableLengthInMillimeters = ptm * tableLength;
-   float displayLengthInMillimeters = ptm * (rotation & 1 ? pixelsToMillimeters * DisplayNativeWidth : pixelsToMillimeters * DisplayNativeHeight);
+   const float pixelsToMillimeters = (float)(25.4*DisplaySize / sqrt(DisplayNativeWidth*DisplayNativeWidth + DisplayNativeHeight * DisplayNativeHeight));
+   const float pixelsToMillimetersX = pixelsToMillimeters * DisplayNativeWidth / resolutionWidth;
+   const float pixelsToMillimetersY = pixelsToMillimeters * DisplayNativeHeight / resolutionHeight;
+   const float ptm = rotation & 1 ? pixelsToMillimetersX : pixelsToMillimetersY;
+   const float tableLengthInMillimeters = ptm * tableLength;
+   const float displayLengthInMillimeters = ptm * (rotation & 1 ? pixelsToMillimeters * DisplayNativeWidth : pixelsToMillimeters * DisplayNativeHeight);
 
    // --- Scale world to fit in screen
-   float scale = displayLengthInMillimeters / tableLengthInMillimeters; // calc here scale
-   float S[16] = {
+   const float scale = displayLengthInMillimeters / tableLengthInMillimeters; // calc here scale
+   const float S[16] = {
       scale, 0, 0, 0,
       0, scale, 0, 0,
       0, 0, scale, 0,
-      0, 0, 0, 1
+      0, 0, 0, 1.f
    };
    /// ===
 
    // --- Translation to desired world element (playfield center or glass center)
-   float _S = sinf(angle);
-   float _C = cosf(angle);
-   float T[16] = {
+   const float _S = sinf(angle);
+   const float _C = cosf(angle);
+   const float T[16] = {
       1, 0, 0, 0,
       0, -1, 0, 0,
       0, 0, 1, 0,
@@ -1475,7 +1475,7 @@ void CreateProjectionAndViewMatrix(float *P, float *V)
    /// ===
 
    // --- Rotate world to make playfield or glass parallel to screen
-   float R[16] = {
+   const float R[16] = {
       1, 0, 0, 0,
       0, _C, -_S, 0,
       0, _S, _C, 0,
@@ -1491,7 +1491,7 @@ void CreateProjectionAndViewMatrix(float *P, float *V)
 
 void Pin3D::UpdateBAMHeadTracking()
 {
-   // If BAM tracker is not runnign, we will not do anything.
+   // If BAM tracker is not running, we will not do anything.
    if (BAM.IsBAMTrackerPresent())
       CreateProjectionAndViewMatrix(&m_proj.m_matProj[0]._11, &m_proj.m_matView._11);
 }
