@@ -5,6 +5,7 @@ Const VPinMAMEDriverVer = 3.58
 '=======================
 '
 ' New in 3.58 (Update by mfuegemann, DJRobX)
+' - Added joctronic.vbs
 ' - Added s8_StillCrazy.vbs (System 8/Still Crazy)
 ' - Added constant (vpmFourStepSol) for new 4-solenoid stepper motor mech type used by High Roller Casino, Starship Troopers, and Playboy
 '
