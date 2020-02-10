@@ -88,6 +88,8 @@ typedef struct _tagSORTDATA
 SORTDATA SortData;
 int columnSortOrder[4] = { 0 };
 
+static bool firstRun = true;
+
 void AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
 {
     TOOLINFO toolInfo = { 0 };
@@ -1044,6 +1046,8 @@ bool VPinball::LoadFile()
 
 void VPinball::LoadFileName(char *szFileName)
 {
+    if (firstRun)
+        OnInitialUpdate();
    PathFromFilename(szFileName, m_currentTablePath);
    CloseAllDialogs();
 
@@ -1670,6 +1674,7 @@ void VPinball::OnInitialUpdate()
 
     //InitTools();
     SetEnableMenuItems();
+    firstRun = false;
 }
 
 BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
