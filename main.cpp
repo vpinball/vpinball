@@ -260,7 +260,8 @@ public:
             || lstrcmpi(szArglist[i], _T("-Help")) == 0 || lstrcmpi(szArglist[i], _T("/Help")) == 0
             || lstrcmpi(szArglist[i], _T("-?")) == 0 || lstrcmpi(szArglist[i], _T("/?")) == 0)
          {
-            ShowError("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n\n-Edit [filename]  load file into VP\n-Play [filename]  load and play file\n-Pov [filename]  load, export pov and close\n-ExtractVBS [filename]  load, export table script and close\n-c1 [customparam] .. -c9 [customparam]  custom user parameters that can be accessed in the script via GetCustomParam(X)");
+             ::MessageBox(NULL, "-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n\n-Edit [filename]  load file into VP\n-Play [filename]  load and play file\n-Pov [filename]  load, export pov and close\n-ExtractVBS [filename]  load, export table script and close\n-c1 [customparam] .. -c9 [customparam]  custom user parameters that can be accessed in the script via GetCustomParam(X)",
+                 "VPinball Usage", MB_OK);
             run = false;
             break;
          }
