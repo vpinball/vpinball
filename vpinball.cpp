@@ -1645,6 +1645,9 @@ LRESULT VPinball::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam)
 
 void VPinball::OnInitialUpdate()
 {
+    if (!firstRun)
+        return;
+    
     ShowWindow(SW_SHOW);
 
     const int foo[6] = {120, 240, 400, 600, 800, 1400};
