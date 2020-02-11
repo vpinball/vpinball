@@ -105,7 +105,7 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
             AddLayer(psel->m_layerName, pt->m_vedit[t]);
         
     }
-    ExpandAll();
+    ExpandLayers();
 }
 
 void LayersListDialog::UpdateElement(IEditable *pedit)
@@ -121,12 +121,21 @@ string LayersListDialog::GetCurrentSelectedLayerName() const
 {
     return m_layerTreeView.GetCurrentLayerName();
 }
+void LayersListDialog::AddToolTip(const char* const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
+{
+    TOOLINFO toolInfo = { 0 };
+    toolInfo.cbSize = sizeof(toolInfo);
+    toolInfo.hwnd = parentHwnd;
+    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+    toolInfo.uId = (UINT_PTR)controlHwnd;
+    toolInfo.lpszText = (char*)text;
+    SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+}
 
 BOOL LayersListDialog::OnInitDialog()
 {
+    const HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), NULL, g_hinst, NULL);
     m_layerFilterEditBox.SetDialog(this);
-    //LONG_PTR style = GetClassLongPtr(GCL_STYLE);
-    //SetClassLongPtr(GCL_STYLE, style & ~CS_NOCLOSE);
 
     AttachItem(IDC_LAYER_TREEVIEW, m_layerTreeView);
     AttachItem(IDC_ADD_LAYER_BUTTON, m_addLayerButton);
@@ -144,6 +153,12 @@ BOOL LayersListDialog::OnInitDialog()
     m_deleteLayerButton.SetIcon((HICON)hIcon);
     hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_EXPANDCOLLAPSE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_expandCollapseButton.SetIcon((HICON)hIcon);
+
+    AddToolTip("Assign selected elements to selected layer", GetHwnd(), toolTipHwnd, m_assignButton.GetHwnd());
+    AddToolTip("Collapse all", GetHwnd(), toolTipHwnd, m_expandCollapseButton.GetHwnd());
+    AddToolTip("Add a new layer", GetHwnd(), toolTipHwnd, m_addLayerButton.GetHwnd());
+    AddToolTip("Delete selected layer", GetHwnd(), toolTipHwnd, m_deleteLayerButton.GetHwnd());
+    AddToolTip("Filter tree. Only elements that matches the filter string will be shown!", GetHwnd(), toolTipHwnd, m_layerFilterEditBox.GetHwnd());
 
     m_resizer.Initialize(*this, CRect(0, 0, 61, 200));
     m_resizer.AddChild(m_layerTreeView, leftcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
@@ -198,10 +213,7 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case IDC_EXPAND_COLLAPSE_BUTTON:
         {
-            if (m_collapsed)
-                ExpandAll();
-            else
-                CollapseAll();
+            CollapseLayers();
             return TRUE;
         }
         default:
@@ -464,8 +476,8 @@ void LayerTreeView::ExpandAll()
     HTREEITEM item = GetChild(hRootItem);
     while (item)
     {
-        item = GetNextItem(item, TVGN_NEXT);
         Expand(item, TVE_EXPAND);
+        item = GetNextItem(item, TVGN_NEXT);
     }
 }
 
@@ -475,9 +487,8 @@ void LayerTreeView::CollapsAll()
     HTREEITEM item = GetChild(hRootItem);
     while (item)
     {
-        item = GetNextItem(item, TVGN_NEXT);
         Expand(item, TVE_COLLAPSE);
-
+        item = GetNextItem(item, TVGN_NEXT);
     }
 }
 
@@ -488,7 +499,8 @@ void LayerTreeView::ExpandLayers()
 
 void LayerTreeView::CollapseLayer()
 {
-    Expand(hRootItem, TVE_COLLAPSE);
+    CollapsAll();
+    ExpandLayers();
 }
 
 void LayerTreeView::SetActiveLayer(const string& name)
