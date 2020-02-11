@@ -1113,7 +1113,7 @@ void VPinball::LoadFileName(char *szFileName)
       SetCurrentDirectory(m_currentTablePath);
       ppt->AddMultiSel(ppt, false, true, false);
       UpdateRecentFileList(szFileName);
-      GetLayersListDialog()->CollapseAll();
+      GetLayersListDialog()->CollapseLayers();
       GetLayersListDialog()->ExpandLayers();
       ppt->SetDirty(eSaveClean);
       SetEnableToolbar();
@@ -2332,7 +2332,7 @@ void VPinball::OpenNewTable(size_t tableId)
 
     AddMDITable(new PinTableMDI(pt));
     pt->AddMultiSel(pt, false, true, false);
-    GetLayersListDialog()->CollapseAll();
+    GetLayersListDialog()->CollapseLayers();
     GetLayersListDialog()->ExpandLayers();
     SetEnableToolbar();
 }
