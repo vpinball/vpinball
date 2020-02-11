@@ -1593,7 +1593,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="shader\SSR.fxh" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\add.ico" />
     <Image Include="res\AOdither.bmp" />
+    <Image Include="res\assign.ico" />
     <Image Include="res\backglass.ico" />
     <Image Include="res\ball.bmp" />
     <Image Include="res\bumper.ico" />
@@ -1604,6 +1606,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\chevron.bmp" />
     <Image Include="res\decal.ico" />
     <Image Include="res\envmap.bmp" />
+    <Image Include="res\expandcolapse.ico" />
     <Image Include="res\flasher.ico" />
     <Image Include="res\flipper.ico" />
     <Image Include="res\gate.ico" />
@@ -1613,6 +1616,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\kickerHoleWood.bmp" />
     <Image Include="res\kickerT1.bmp" />
     <Image Include="res\kickerWilliams.bmp" />
+    <Image Include="res\layerIcons16.bmp" />
+    <Image Include="res\layerIcons32.bmp" />
     <Image Include="res\light.ico" />
     <Image Include="res\lightseq.ico" />
     <Image Include="res\magnify.ico" />
@@ -1621,6 +1626,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\primitive.ico" />
     <Image Include="res\ramp.ico" />
     <Image Include="res\reel.ico" />
+    <Image Include="res\remove.ico" />
     <Image Include="res\rubber.ico" />
     <Image Include="res\script.ico" />
     <Image Include="res\SDbottom.bmp" />
