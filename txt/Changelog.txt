@@ -10,6 +10,7 @@ FEATURES:
    o fast double-click a layer will select all elements of this layer and double-click one element will select it
    o with a slow double-click on a layer or element let you rename it
    o toolbar, properties and layers are now dockable windows without the need to restart VP
+   o Add context menu item to assign selected elements to the current selected layer.
 
 - add MP3 and OGG support (via the BASS library) to the sound manager and the 'standard' sound commands
   these new file types are now also saved directly into the VPX file, unlike the music commands (which still use the 'music' folder for legacy reasons)

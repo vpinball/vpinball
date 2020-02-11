@@ -105,7 +105,7 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
             AddLayer(psel->m_layerName, pt->m_vedit[t]);
         
     }
-    Expand();
+    ExpandAll();
 }
 
 void LayersListDialog::UpdateElement(IEditable *pedit)
@@ -125,6 +125,9 @@ string LayersListDialog::GetCurrentSelectedLayerName() const
 BOOL LayersListDialog::OnInitDialog()
 {
     m_layerFilterEditBox.SetDialog(this);
+    //LONG_PTR style = GetClassLongPtr(GCL_STYLE);
+    //SetClassLongPtr(GCL_STYLE, style & ~CS_NOCLOSE);
+
     AttachItem(IDC_LAYER_TREEVIEW, m_layerTreeView);
     AttachItem(IDC_ADD_LAYER_BUTTON, m_addLayerButton);
     AttachItem(IDC_DELETE_LAYER_BUTTON, m_deleteLayerButton);
@@ -196,9 +199,9 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_EXPAND_COLLAPSE_BUTTON:
         {
             if (m_collapsed)
-                Expand();
+                ExpandAll();
             else
-                Collaps();
+                CollapseAll();
             return TRUE;
         }
         default:
@@ -251,7 +254,8 @@ void CDockLayers::OnDestroy()
     SaveValueInt("Editor", "LayersPosX", rect.left);
     SaveValueInt("Editor", "LayersPosY", rect.top);
     SaveValueBool("Editor", "LayersDocked", !!IsDocked());
-    SaveValueInt("Editor", "LayersDockStyle", GetDockStyle());
+    if(IsDocked())
+        SaveValueInt("Editor", "LayersDockStyle", GetDockStyle());
     if (IsDocked())
     {
         if (GetDockParent() == g_pvp->GetPropertiesDocker())
@@ -268,6 +272,11 @@ void CDockLayers::OnDestroy()
         }
     }
     SaveValueInt("Editor", "LayersDockParent", dockParent);
+}
+
+void CDockLayers::OnClose()
+{
+    // nothing to do only to prevent closing the window
 }
 
 HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable *pedit, int image)
@@ -451,36 +460,35 @@ void LayerTreeView::DeleteAll()
 
 void LayerTreeView::ExpandAll()
 {
-    std::vector<HTREEITEM> children;
-    
     Expand(hRootItem, TVE_EXPAND);
     HTREEITEM item = GetChild(hRootItem);
     while (item)
     {
-        children.push_back(item);
         item = GetNextItem(item, TVGN_NEXT);
-    }
-    for (HTREEITEM child : children)
-    {
-        Expand(child, TVE_EXPAND);
+        Expand(item, TVE_EXPAND);
     }
 }
 
 void LayerTreeView::CollapsAll()
 {
-    std::vector<HTREEITEM> children;
-
     Expand(hRootItem, TVE_COLLAPSE);
     HTREEITEM item = GetChild(hRootItem);
     while (item)
     {
-        children.push_back(item);
         item = GetNextItem(item, TVGN_NEXT);
+        Expand(item, TVE_COLLAPSE);
+
     }
-    for (HTREEITEM child : children)
-    {
-        Expand(child, TVE_COLLAPSE);
-    }
+}
+
+void LayerTreeView::ExpandLayers()
+{
+    Expand(hRootItem, TVE_EXPAND);
+}
+
+void LayerTreeView::CollapseLayer()
+{
+    Expand(hRootItem, TVE_COLLAPSE);
 }
 
 void LayerTreeView::SetActiveLayer(const string& name)
@@ -533,6 +541,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
     return WndProcDefault(msg, wparam, lparam);
 }
+
 
 LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
 {

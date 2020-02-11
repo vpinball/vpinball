@@ -20,6 +20,8 @@ public:
     void                    DeleteAll();
     void                    ExpandAll();
     void                    CollapsAll();
+    void                    ExpandLayers();
+    void                    CollapseLayer();
     void                    SetActiveLayer(const string& name);
     HTREEITEM               GetRootItem() { return hRootItem; }
     HTREEITEM               GetCurrentLayerItem() { return hCurrentLayerItem; }
@@ -66,15 +68,24 @@ public:
     void UpdateLayerList(const std::string& name="");
     void UpdateElement(IEditable* pedit);
     string GetCurrentSelectedLayerName() const;
-    void Expand()
+    void OnAssignButton();
+    void ExpandAll()
     {
         m_layerTreeView.ExpandAll();
         m_collapsed = false;
     }
-    void Collaps()
+    void CollapseAll()
     {
         m_layerTreeView.CollapsAll();
         m_collapsed = true;
+    }
+    void ExpandLayers()
+    {
+        m_layerTreeView.ExpandLayers();
+    }
+    void CollapseLayers()
+    {
+        m_layerTreeView.CollapseLayer();
     }
 
 protected:
@@ -83,7 +94,6 @@ protected:
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 
 private:
-    void OnAssignButton();
 
     CResizer        m_resizer;
     LayerTreeView   m_layerTreeView;
@@ -120,6 +130,7 @@ public:
     {
     }
     virtual void OnDestroy();
+    virtual void OnClose();
 
     CContainLayers *GetContainLayers()
     {

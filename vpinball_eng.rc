@@ -2813,7 +2813,6 @@ BEGIN
         MENUITEM "Dra&wing Order (Hit)\tCtrl+Shift+D", ID_EDIT_DRAWINGORDER_HIT
         MENUITEM "Draw&ing Order (Select)\tCtrl+Shift+S", ID_EDIT_DRAWINGORDER_SELECT
         MENUITEM "Set Default Ph&ysics",        ID_EDIT_SETDEFAULTPHYSICS
-        MENUITEM "Show &Toolbar",               ID_EDIT_SHOWTOOLBAR
     END
     POPUP "&View"
     BEGIN
@@ -3521,10 +3520,6 @@ BEGIN
     IDS_TB_FLIPPER          "Flipper"
     IDS_TB_PLAY             "Play"
     IDS_FLIPPER_DESC        "Flipper Class"
-    IDS_LAYER1              "Layer&1"
-    IDS_ASSIGNTO            "&Assign to..."
-    IDS_LAYER2              "Layer&2"
-    IDS_LAYER3              "Layer&3"
 END
 
 STRINGTABLE
@@ -3570,11 +3565,8 @@ END
 STRINGTABLE
 BEGIN
     IDS_TIMER_DESC          "Timer Class"
-    IDS_LAYER4              "Layer&4"
-    IDS_LAYER5              "Layer&5"
     IDS_PLUNGER_DESC        "Plunger Class"
     IDS_TB_PLUNGER          "Plunger"
-    IDS_LAYER6              "Layer&6"
     IDS_TEXTBOX_DESC        "Textbox Class"
     IDS_TB_TEXTBOX          "TextBox"
     IDS_DISPREEL_DESC       "DispReel Class"
@@ -3582,14 +3574,12 @@ BEGIN
     IDS_TB_BUMPER           "Bumper"
     IDS_TB_DISPREEL         "EMReel"
     IDS_PIEVENTHANDLER_DESC "PIEventHandler Class"
-    IDS_LAYER7              "Layer&7"
     IDS_TRIGGER_DESC        "Trigger Class"
     IDS_TB_TRIGGER          "Trigger"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_LAYER8              "Layer&8"
     IDS_LIGHT_DESC          "Light Class"
     IDS_TB_LIGHT            "Light"
     IDS_DRAWING_ORDER_HIT   "&Drawing Order (Hit)"
@@ -3611,9 +3601,7 @@ STRINGTABLE
 BEGIN
     IDS_IMAGE_RAW_SIZE      "Raw Size"
     IDS_SIZE                "Size"
-    IDS_LAYER9              "Layer&9"
-    IDS_LAYER10             "L&ayer10"
-    IDS_LAYER11             "La&yer11"
+    IDS_ASSIGN_TO_LAYER     "&Assign to selected layer"
     IDS_DRAWING_ORDER_SELECT "D&rawing Order (Select)"
 END
 

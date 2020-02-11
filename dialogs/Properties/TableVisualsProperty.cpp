@@ -10,6 +10,9 @@ void TableVisualsProperty::UpdateVisuals()
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
 
+    if (table == nullptr)
+        return;
+
     PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_imageCombo, table->m_szImage);
     PropertyDialog::UpdateMaterialComboBox(table->GetMaterialList(), m_materialCombo, table->m_szPlayfieldMaterial);
     PropertyDialog::SetCheckboxState(m_hReflectElementsCheck, table->m_reflectElementsOnPlayfield);
@@ -24,6 +27,9 @@ void TableVisualsProperty::UpdateVisuals()
 void TableVisualsProperty::UpdateProperties(const int dispid)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
+    
+    if (table == nullptr)
+        return;
 
     switch (dispid)
     {

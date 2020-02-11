@@ -1068,5 +1068,11 @@ void CDockProperty::OnDestroy()
     SaveValueInt("Editor", "PropertiesPosX", rect.left);
     SaveValueInt("Editor", "PropertiesPosY", rect.top);
     SaveValueBool("Editor", "PropertiesDocked", !!IsDocked());
-    SaveValueBool("Editor", "PropertiesDockSytle", GetDockStyle());
+    if (IsDocked())
+        SaveValueInt("Editor", "PropertiesDockStyle", GetDockStyle());
+}
+
+void CDockProperty::OnClose()
+{
+    // nothing to do only to prevent closing the window
 }

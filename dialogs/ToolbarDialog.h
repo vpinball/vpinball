@@ -74,6 +74,7 @@ public:
     {
     }
     virtual void OnDestroy();
+    virtual void OnClose();
 
     CContainToolbar *GetContainToolbar()
     {

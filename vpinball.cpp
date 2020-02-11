@@ -487,7 +487,9 @@ CDockProperty *VPinball::GetPropertiesDocker()
         const int x = LoadValueIntWithDefault("Editor", "PropertiesPosX", 100);
         const int y = LoadValueIntWithDefault("Editor", "PropertiesPosY", 100);
         const bool docked = LoadValueBoolWithDefault("Editor", "PropertiesDocked", true);
-        const int dockStyle = LoadValueIntWithDefault("Editor", "PropertiesDockStyle", DS_DOCKED_RIGHT | DS_CLIENTEDGE);
+        int dockStyle = DS_DOCKED_RIGHT | DS_CLIENTEDGE | DS_NO_CLOSE;
+        if (docked)
+            dockStyle = LoadValueIntWithDefault("Editor", "PropertiesDockStyle", DS_DOCKED_RIGHT | DS_CLIENTEDGE | DS_NO_CLOSE);
 
         m_dockProperties = (CDockProperty *)AddDockedChild(new CDockProperty, dockStyle, 280);
         
@@ -510,7 +512,10 @@ CDockToolbar *VPinball::GetToolbarDocker()
         const int x = LoadValueIntWithDefault("Editor", "ToolbarPosX", 100);
         const int y = LoadValueIntWithDefault("Editor", "ToolbarPosY", 100);
         const bool docked = LoadValueBoolWithDefault("Editor", "ToolbarDocked", true);
-        const int dockStyle = LoadValueIntWithDefault("Editor", "ToolbarDockStyle", DS_DOCKED_LEFT | DS_NO_DOCKCHILD_TOP | DS_NO_DOCKCHILD_BOTTOM | DS_CLIENTEDGE);
+        int dockStyle = DS_DOCKED_LEFT | DS_NO_DOCKCHILD_TOP | DS_NO_DOCKCHILD_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE;
+        if(docked)
+            dockStyle = LoadValueIntWithDefault("Editor", "ToolbarDockStyle", DS_DOCKED_LEFT | DS_NO_DOCKCHILD_TOP | DS_NO_DOCKCHILD_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE);
+
         m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar, dockStyle, 110);
         assert(m_dockToolbar->GetContainer());
         m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
@@ -530,7 +535,10 @@ CDockLayers *VPinball::GetLayersDocker()
         const int x = LoadValueIntWithDefault("Editor", "LayersPosX", 100);
         const int y = LoadValueIntWithDefault("Editor", "LayersPosY", 100);
         const bool docked = LoadValueBoolWithDefault("Editor", "LayersDocked", true);
-        const int dockStyle = LoadValueIntWithDefault("Editor", "LayersDockStyle", DS_DOCKED_BOTTOM | DS_CLIENTEDGE);
+        int dockStyle = DS_DOCKED_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE;
+        if(docked)
+            dockStyle = LoadValueIntWithDefault("Editor", "LayersDockStyle", DS_DOCKED_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE);
+
         const int dockParent = LoadValueIntWithDefault("Editor", "LayersDockParent", 1);
 
         if(propertiesVisible && dockParent==1)
@@ -705,11 +713,6 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
        case ID_EDIT_SETDEFAULTPHYSICS:
        {
           SetDefaultPhysics();
-          break;
-       }
-       case ID_EDIT_SHOWTOOLBAR:
-       {
-          (void)GetToolbarDocker();
           break;
        }
        case ID_LOCK:
@@ -1110,7 +1113,8 @@ void VPinball::LoadFileName(char *szFileName)
       SetCurrentDirectory(m_currentTablePath);
       ppt->AddMultiSel(ppt, false, true, false);
       UpdateRecentFileList(szFileName);
-      GetLayersListDialog()->Expand();
+      GetLayersListDialog()->CollapseAll();
+      GetLayersListDialog()->ExpandLayers();
       ppt->SetDirty(eSaveClean);
       SetEnableToolbar();
    }
@@ -2328,7 +2332,8 @@ void VPinball::OpenNewTable(size_t tableId)
 
     AddMDITable(new PinTableMDI(pt));
     pt->AddMultiSel(pt, false, true, false);
-    GetLayersListDialog()->Expand();
+    GetLayersListDialog()->CollapseAll();
+    GetLayersListDialog()->ExpandLayers();
     SetEnableToolbar();
 }
 
