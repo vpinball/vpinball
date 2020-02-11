@@ -4749,6 +4749,9 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
       LocalString ls3(IDS_SETASDEFAULT);
       newMenu.AppendMenu(MF_STRING, ID_SETASDEFAULT, ls3.m_szbuffer);
 
+      LocalString lsLayer(IDS_ASSIGN_TO_LAYER);
+      newMenu.AppendMenu(MF_STRING, ID_ASSIGN_TO_LAYER, lsLayer.m_szbuffer);
+
       FillCollectionContextMenu(newMenu, colSubMenu, psel);
 
       LocalString ls5(IDS_LOCK);
@@ -4874,7 +4877,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
            }
            break;
        }
-
+       case ID_ASSIGN_TO_LAYER: g_pvp->GetLayersListDialog()->OnAssignButton(); break;
        case ID_EDIT_DRAWINGORDER_HIT: g_pvp->ShowDrawingOrderDialog(false); break;
        case ID_EDIT_DRAWINGORDER_SELECT: g_pvp->ShowDrawingOrderDialog(true); break;
        case ID_LOCK: LockElements(); break;
@@ -6159,18 +6162,21 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
    if (update)
       g_pvp->SetPropSel(&m_vmultisel);
 
-   piSelect = m_vmultisel.ElementAt(0);
-   if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetScriptable())
+   if(m_vmultisel.Size()>1)
    {
-      string info = string("Layer: ") + piSelect->m_layerName;
-      if (piSelect->GetItemType() == eItemPrimitive)
-      {
-         const Primitive * const prim = (Primitive*)piSelect;
-         if (prim->m_mesh.m_animationFrames.size() > 0)
-            info = info + " (animated " + std::to_string((unsigned long long)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
-      }
-      g_pvp->SetStatusBarElementInfo(info.c_str());
-      m_pcv->SelectItem(piSelect->GetIEditable()->GetScriptable());
+       piSelect = m_vmultisel.ElementAt(0);
+       if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetScriptable())
+       {
+           string info = string("Layer: ") + piSelect->m_layerName;
+           if (piSelect->GetItemType() == eItemPrimitive)
+           {
+               const Primitive *const prim = (Primitive *)piSelect;
+               if (prim->m_mesh.m_animationFrames.size() > 0)
+                   info = info + " (animated " + std::to_string((unsigned long long)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
+           }
+           g_pvp->SetStatusBarElementInfo(info.c_str());
+           m_pcv->SelectItem(piSelect->GetIEditable()->GetScriptable());
+       }
    }
 }
 

@@ -116,8 +116,8 @@
 #define IDS_FLIPPER_DESC                107
 #define IDC_KICKER_ORIENTATION_EDIT     107
 #define IDC_TABLE_SCALEZ                108
+#define ID_ASSIGN_TO_LAYER              108
 #define IDR_FLIPPER                     108
-#define IDS_LAYER1                      108
 #define IDC_SHOW_BRACKET_CHECK          108
 #define IDC_SELECT                      109
 #define DISPID_Table_GridSize           109
@@ -126,12 +126,10 @@
 #define IDC_ELASTICITY_EDIT             110
 #define ID_INSERT_WALL                  110
 #define IDC_LIGHT                       110
-#define IDS_LAYER2                      110
 #define IDC_ENABLE_MECH_PLUNGER_CHECK   110
 #define IDC_BASE_VISIBLE_CHECK          110
 #define IDC_Z_OFFSET_EDIT               110
 #define ID_INSERT_FLIPPER               111
-#define IDS_LAYER3                      111
 #define IDS                             111
 #define IDC_COLLIDABLE_CHECK            111
 #define IDC_MECH_STRENGTH_EDIT          111
@@ -140,11 +138,9 @@
 #define IDC_PARK_POSITION_EDIT          112
 #define IDC_ELASTICITY_FALLOFF_EDIT     112
 #define IDR_TIMER                       113
-#define IDS_LAYER4                      113
 #define IDC_STROKE_LENGTH_EDIT          113
 #define IDC_FRICTION_EDIT               114
 #define ID_INSERT_TIMER                 114
-#define IDS_LAYER5                      114
 #define IDC_SCATTER_VELOCITY_EDIT       114
 #define IDS_PLUNGER_DESC                115
 #define IDC_SCATTER_ANGLE_EDIT          115
@@ -153,7 +149,6 @@
 #define IDC_AUTO_PLUNGER_CHECK          116
 #define ID_INSERT_PLUNGER               117
 #define IDC_PLUNGER_TEXT                117
-#define IDS_LAYER6                      117
 #define IDS_TEXTBOX_DESC                118
 #define IDC_STARTGAME                   118
 #define IDC_MOMENTUM_XFER_EDIT          118
@@ -172,13 +167,11 @@
 #define IDS_TB_DISPREEL                 123
 #define IDS_PIEVENTHANDLER_DESC         124
 #define IDR_PI_EVENT_HANDLER            125
-#define IDS_LAYER7                      125
 #define IDS_TRIGGER_DESC                126
 #define IDR_TRIGGER                     127
 #define IDS_TB_TRIGGER                  127
 #define ID_INSERT_TRIGGER               128
 #define IDS_STRING128                   128
-#define IDS_LAYER8                      128
 #define IDS_LIGHT_DESC                  129
 #define IDR_LIGHT                       130
 #define IDS_TB_LIGHT                    130
@@ -286,9 +279,7 @@
 #define IDS_IMAGE_RAW_SIZE              192
 #define IDS_STRING193                   193
 #define IDS_SIZE                        193
-#define IDS_LAYER9                      194
-#define IDS_LAYER10                     195
-#define IDS_LAYER11                     196
+#define IDS_ASSIGN_TO_LAYER             197
 #define IDS_DRAWING_ORDER_SELECT        200
 #define IDR_APPMENU                     201
 #define IDC_SOUNDLIST                   201

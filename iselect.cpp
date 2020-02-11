@@ -132,6 +132,11 @@ void ISelect::DoCommand(int icmd, int x, int y)
    case ID_EDIT_DRAWINGORDER_SELECT:
       g_pvp->ShowDrawingOrderDialog(true);
       break;
+   case ID_ASSIGN_TO_LAYER:
+   {
+       g_pvp->GetLayersListDialog()->OnAssignButton();
+       break;
+   }
    case ID_DRAWINFRONT:
    {
       PinTable * const ptable = GetPTable();

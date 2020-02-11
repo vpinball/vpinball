@@ -410,5 +410,12 @@ void CDockToolbar::OnDestroy()
     SaveValueInt("Editor", "ToolbarPosX", rect.left);
     SaveValueInt("Editor", "ToolbarPosY", rect.top);
     SaveValueBool("Editor", "ToolbarDocked", !!IsDocked());
-    SaveValueInt("Editor", "ToolbarDockStyle", GetDockStyle());
+    if (IsDocked())
+        SaveValueInt("Editor", "ToolbarDockStyle", GetDockStyle());
+
+}
+
+void CDockToolbar::OnClose()
+{
+    // nothing to do only to prevent closing the window
 }
