@@ -38,6 +38,9 @@ bool LayersListDialog::AddLayer(const string &name, IEditable *piedit)
     }
     if (piedit != nullptr)
         success = m_layerTreeView.AddElement(piedit->GetName(), piedit);
+
+    if (success)
+        m_layerTreeView.InvalidateRect();
     return success;
 }
 
@@ -110,11 +113,28 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
 
 void LayersListDialog::UpdateElement(IEditable *pedit)
 {
+    if (pedit == nullptr)
+        return;
+
     HTREEITEM item = m_layerTreeView.GetItemByElement(pedit);
-    if (item == NULL)
+    if (item == nullptr)
         return;
 
     m_layerTreeView.SetItemText(item, pedit->GetName());
+}
+
+void LayersListDialog::DeleteElement(IEditable* pedit)
+{
+    if (pedit == nullptr)
+        return;
+
+    HTREEITEM parent = m_layerTreeView.GetLayerByElement(pedit);
+    HTREEITEM item = m_layerTreeView.GetItemByElement(pedit);
+    if (item == nullptr || parent == nullptr)
+        return;
+    m_layerTreeView.DeleteItem(item);
+    if (m_layerTreeView.GetSubItemsCount(parent) == 0)
+        m_layerTreeView.DeleteItem(parent);
 }
 
 string LayersListDialog::GetCurrentSelectedLayerName() const
@@ -341,6 +361,38 @@ string LayerTreeView::GetCurrentLayerName() const
     return string(GetItemText(hCurrentLayerItem));
 }
 
+HTREEITEM LayerTreeView::GetLayerByElement(const IEditable* pedit)
+{
+    std::vector<HTREEITEM> children;
+    HTREEITEM item = GetChild(hRootItem);
+    while (item)
+    {
+        children.push_back(item);
+        item = GetNextItem(item, TVGN_NEXT);
+    }
+    for (HTREEITEM child : children)
+    {
+        HTREEITEM subItem = GetChild(child);
+        while (subItem)
+        {
+            char text[MAX_PATH];
+            TVITEM tvItem;
+            ZeroMemory(&tvItem, sizeof(tvItem));
+            tvItem.mask = TVIF_PARAM | TVIF_TEXT;
+            tvItem.cchTextMax = MAX_PATH;
+            tvItem.pszText = text;
+            tvItem.hItem = subItem;
+            if (GetItem(tvItem))
+            {
+                if (pedit == (IEditable*)tvItem.lParam)
+                    return child;
+            }
+            subItem = GetNextItem(subItem, TVGN_NEXT);
+        }
+    }
+    return NULL;
+}
+
 HTREEITEM LayerTreeView::GetItemByElement(const IEditable* pedit)
 {
     std::vector<HTREEITEM> children;
@@ -418,6 +470,18 @@ std::vector<HTREEITEM> LayerTreeView::GetSubItems(HTREEITEM hParent)
         item = GetNextItem(item, TVGN_NEXT);
     }
     return allSubItems;
+}
+
+int LayerTreeView::GetSubItemsCount(HTREEITEM hParent) const
+{
+    int count = 0;
+    HTREEITEM item = GetChild(hParent);
+    while (item)
+    {
+        count++;
+        item = GetNextItem(item, TVGN_NEXT);
+    }
+    return count;
 }
 
 bool LayerTreeView::IsItemChecked(HTREEITEM hItem) const
@@ -746,4 +810,22 @@ LRESULT FilterEditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
                 }
         }
         return WndProcDefault(msg, wparam, lparam);
+}
+
+BOOL FilterEditBox::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+    UNREFERENCED_PARAMETER(lParam);
+    const int dispID = LOWORD(wParam);
+
+    switch (HIWORD(wParam))
+    {
+        case EN_KILLFOCUS:
+        case CBN_KILLFOCUS:
+        {
+            if (m_layerDialog)
+                m_layerDialog->UpdateLayerList(std::string(GetWindowText().c_str()));
+            return TRUE;
+        }
+    }
+    return FALSE;
 }

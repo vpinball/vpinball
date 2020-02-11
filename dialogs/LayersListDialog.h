@@ -11,10 +11,12 @@ public:
     bool                    AddElement(const string& name, IEditable *pedit);
     bool                    ContainsLayer(const string& name) const;
     std::string             GetCurrentLayerName() const;
+    HTREEITEM               GetLayerByElement(const IEditable* pedit);
     HTREEITEM               GetItemByElement(const IEditable* pedit);
     int                     GetItemCount() const;
     int                     GetLayerCount() const;
     std::vector<HTREEITEM>  GetSubItems(HTREEITEM hParent);
+    int                     GetSubItemsCount(HTREEITEM hParent) const;
     bool                    IsItemChecked(HTREEITEM hItem) const;
     void                    SetAllItemStates(const bool checked);
     void                    DeleteAll();
@@ -52,6 +54,7 @@ public:
     void SetDialog(LayersListDialog* dialog) { m_layerDialog = dialog; }
 protected:
     virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
+    virtual BOOL    OnCommand(WPARAM wParam, LPARAM lParam);
 private:
     LayersListDialog *m_layerDialog;
 };
@@ -67,6 +70,7 @@ public:
     void ClearList();
     void UpdateLayerList(const std::string& name="");
     void UpdateElement(IEditable* pedit);
+    void DeleteElement(IEditable* pedit);
     string GetCurrentSelectedLayerName() const;
     void AddToolTip(const char* const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
     void OnAssignButton();

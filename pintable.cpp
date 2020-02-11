@@ -6224,7 +6224,7 @@ void PinTable::OnDelete()
 
    for (size_t i = 0; i < m_vseldelete.size(); i++)
    {
-      DeleteFromLayer(m_vseldelete[i]->GetIEditable());
+      g_pvp->GetLayersListDialog()->DeleteElement(m_vseldelete[i]->GetIEditable());
       m_vseldelete[i]->Delete();
    }
    // update properties to show the properties of the table
@@ -6232,8 +6232,6 @@ void PinTable::OnDelete()
    if (m_searchSelectDlg.IsWindow())
       m_searchSelectDlg.Update();
 
-   if(g_pvp->GetLayersListDialog()->IsWindow())
-    g_pvp->GetLayersListDialog()->UpdateLayerList();
    SetDirtyDraw();
 }
 
@@ -6305,8 +6303,7 @@ void PinTable::UseTool(int x, int y, int tool)
       pie->GetISelect()->m_layerName = g_pvp->GetLayersListDialog()->GetCurrentSelectedLayerName();
       if (m_searchSelectDlg.IsWindow())
          m_searchSelectDlg.Update();
-      if (g_pvp->GetLayersListDialog()->IsWindow())
-          g_pvp->GetLayersListDialog()->UpdateLayerList();
+      g_pvp->GetLayersListDialog()->AddLayer(g_pvp->GetLayersListDialog()->GetCurrentSelectedLayerName(), pie);
       BeginUndo();
       m_undo.MarkForCreate(pie);
       EndUndo();
