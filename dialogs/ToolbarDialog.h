@@ -73,7 +73,6 @@ public:
     virtual ~CDockToolbar()
     {
     }
-    virtual void OnDestroy();
     virtual void OnClose();
 
     CContainToolbar *GetContainToolbar()

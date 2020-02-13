@@ -19,6 +19,7 @@
 #define MAIN_WINDOW_WIDTH		800
 #define MAIN_WINDOW_HEIGHT		550
 
+#define DOCKER_REGISTRY_KEY     "Visual Pinball\\VP10\\Editor"
 
 #define	RECENT_FIRST_MENU_IDM	5000	// ID of the first recent file list filename
 #define	RECENT_LAST_MENU_IDM	(RECENT_FIRST_MENU_IDM+LAST_OPENED_TABLE_COUNT)
@@ -479,89 +480,71 @@ bool VPinball::OpenFileDialog(const char *initDir, char *filename, const char *f
     return ret != 0;
 }
 
+CDockProperty *VPinball::GetDefaultPropertiesDocker()
+{
+    const int dockStyle = DS_DOCKED_RIGHT | DS_CLIENTEDGE | DS_NO_CLOSE;
+    m_dockProperties = (CDockProperty *)AddDockedChild(new CDockProperty, dockStyle, 280, IDD_PROPERTY_DIALOG);
+
+    assert(m_dockProperties->GetContainer());
+    m_dockProperties->GetContainer()->SetHideSingleTab(TRUE);
+    m_propertyDialog = m_dockProperties->GetContainProperties()->GetPropertyDialog();
+    return m_dockProperties;
+}
+
 CDockProperty *VPinball::GetPropertiesDocker()
 {
-    const bool state = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
     if(m_propertyDialog==NULL || !m_dockProperties->IsWindow())
-    {
-        const int x = LoadValueIntWithDefault("Editor", "PropertiesPosX", 100);
-        const int y = LoadValueIntWithDefault("Editor", "PropertiesPosY", 100);
-        const bool docked = LoadValueBoolWithDefault("Editor", "PropertiesDocked", true);
-        int dockStyle = DS_DOCKED_RIGHT | DS_CLIENTEDGE | DS_NO_CLOSE;
-        if (docked)
-            dockStyle = LoadValueIntWithDefault("Editor", "PropertiesDockStyle", DS_DOCKED_RIGHT | DS_CLIENTEDGE | DS_NO_CLOSE);
-
-        m_dockProperties = (CDockProperty *)AddDockedChild(new CDockProperty, dockStyle, 280);
-        
-        assert(m_dockProperties->GetContainer());
-        m_dockProperties->GetContainer()->SetHideSingleTab(TRUE);
-        m_propertyDialog = m_dockProperties->GetContainProperties()->GetPropertyDialog();
-        if (!docked)
-            m_dockProperties->Undock(CPoint(x, y), true);
-    }
-    if (!state)
-        m_dockProperties->Hide();
+        return GetDefaultPropertiesDocker();
 
     return m_dockProperties;
 }
 
+CDockToolbar *VPinball::GetDefaultToolbarDocker()
+{
+    const int dockStyle = DS_DOCKED_LEFT | DS_NO_DOCKCHILD_TOP | DS_NO_DOCKCHILD_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE;
+    m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar, dockStyle, 110, IDD_TOOLBAR);
+    assert(m_dockToolbar->GetContainer());
+    m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
+    m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
+
+    return m_dockToolbar;
+
+}
 CDockToolbar *VPinball::GetToolbarDocker()
 {
     if(m_dockToolbar==NULL || !m_dockToolbar->IsWindow() )
-    {
-        const int x = LoadValueIntWithDefault("Editor", "ToolbarPosX", 100);
-        const int y = LoadValueIntWithDefault("Editor", "ToolbarPosY", 100);
-        const bool docked = LoadValueBoolWithDefault("Editor", "ToolbarDocked", true);
-        int dockStyle = DS_DOCKED_LEFT | DS_NO_DOCKCHILD_TOP | DS_NO_DOCKCHILD_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE;
-        if(docked)
-            dockStyle = LoadValueIntWithDefault("Editor", "ToolbarDockStyle", DS_DOCKED_LEFT | DS_NO_DOCKCHILD_TOP | DS_NO_DOCKCHILD_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE);
-
-        m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar, dockStyle, 110);
-        assert(m_dockToolbar->GetContainer());
-        m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
-        m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
-        if (!docked)
-            m_dockToolbar->Undock(CPoint(x, y), true);
-    }
+        return GetDefaultToolbarDocker();
     return m_dockToolbar;
+}
+
+CDockLayers *VPinball::GetDefaultLayersDocker()
+{
+    const int dockStyle = DS_DOCKED_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE;
+    m_dockLayers = (CDockLayers *)AddDockedChild(new CDockLayers, dockStyle, 380, IDD_LAYERS);
+
+    assert(m_dockLayers->GetContainer());
+    m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
+    m_layersListDialog = m_dockLayers->GetContainLayers()->GetLayersDialog();
+    
+    return m_dockLayers;
 }
 
 CDockLayers *VPinball::GetLayersDocker()
 {
-    const bool propertiesVisible = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
-
     if (m_dockLayers == NULL || !m_dockLayers->IsWindow())
-    {
-        const int x = LoadValueIntWithDefault("Editor", "LayersPosX", 100);
-        const int y = LoadValueIntWithDefault("Editor", "LayersPosY", 100);
-        const bool docked = LoadValueBoolWithDefault("Editor", "LayersDocked", true);
-        int dockStyle = DS_DOCKED_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE;
-        if(docked)
-            dockStyle = LoadValueIntWithDefault("Editor", "LayersDockStyle", DS_DOCKED_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE);
-
-        const int dockParent = LoadValueIntWithDefault("Editor", "LayersDockParent", 1);
-
-        if(propertiesVisible && dockParent==1)
-            m_dockLayers = (CDockLayers *)m_dockProperties->AddDockedChild(new CDockLayers, dockStyle, 380);
-        else if(dockParent==2)
-            m_dockLayers = (CDockLayers*)m_dockToolbar->AddDockedChild(new CDockLayers, dockStyle, 380);
-        else 
-            m_dockLayers = (CDockLayers*)AddDockedChild(new CDockLayers, dockStyle, 380);
-
-        assert(m_dockLayers->GetContainer());
-        m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
-        m_layersListDialog = m_dockLayers->GetContainLayers()->GetLayersDialog();
-        if (!docked)
-            m_dockLayers->Undock(CPoint(x, y), true);
-    }
+        return GetDefaultLayersDocker();
     return m_dockLayers;
 }
 
+
 void VPinball::CreateDocker()
 {
-    GetPropertiesDocker();
-    GetToolbarDocker();
-    GetLayersDocker();
+    if (!LoadDockRegistrySettings(DOCKER_REGISTRY_KEY))
+    {
+        GetPropertiesDocker();
+        GetToolbarDocker();
+        GetLayersDocker();
+    }
 }
 
 void VPinball::SetPosCur(float x, float y)
@@ -1577,6 +1560,8 @@ void VPinball::OnClose()
 
          SaveValueBool("Editor", "WindowMaximized", !!IsZoomed());
       }
+      SaveDockRegistrySettings(DOCKER_REGISTRY_KEY);
+
       CWnd::OnClose();
    }
 }
@@ -1730,6 +1715,41 @@ LRESULT VPinball::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
 {
     GetLayersListDialog()->UpdateLayerList();
     return CMDIFrameT::OnMDIActivated(msg, wparam, lparam);
+}
+
+Win32xx::CDocker *VPinball::NewDockerFromID(int id)
+{
+    switch (id)
+    {
+        case IDD_PROPERTY_DIALOG:
+        {
+            if (m_dockProperties == nullptr)
+            {
+                m_dockProperties = new CDockProperty();
+                m_propertyDialog = m_dockProperties->GetContainProperties()->GetPropertyDialog();
+            }
+            return m_dockProperties;
+        }
+        case IDD_TOOLBAR:
+        {
+            if (m_dockToolbar == nullptr)
+            {
+                m_dockToolbar = new CDockToolbar();
+                m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
+            }
+            return m_dockToolbar;
+        }
+        case IDD_LAYERS:
+        {
+            if (m_dockLayers == nullptr)
+            {
+                m_dockLayers = new CDockLayers();
+                m_layersListDialog = m_dockLayers->GetContainLayers()->GetLayersDialog();
+            }
+            return m_dockLayers;
+        }
+    }
+    return nullptr;
 }
 
 STDMETHODIMP VPinball::PlaySound(BSTR bstr)

@@ -126,7 +126,6 @@ public:
     virtual ~CDockLayers()
     {
     }
-    virtual void OnDestroy();
     virtual void OnClose();
 
     CContainLayers *GetContainLayers()

@@ -404,17 +404,6 @@ CDockToolbar::CDockToolbar()
     SetBarWidth(4);
 }
 
-void CDockToolbar::OnDestroy()
-{
-    const CRect rect = GetWindowRect();
-    SaveValueInt("Editor", "ToolbarPosX", rect.left);
-    SaveValueInt("Editor", "ToolbarPosY", rect.top);
-    SaveValueBool("Editor", "ToolbarDocked", !!IsDocked());
-    if (IsDocked())
-        SaveValueInt("Editor", "ToolbarDockStyle", GetDockStyle());
-
-}
-
 void CDockToolbar::OnClose()
 {
     // nothing to do only to prevent closing the window

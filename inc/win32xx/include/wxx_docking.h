@@ -2743,7 +2743,8 @@ namespace Win32xx
             std::vector<DockInfo> dockList;
             CString keyName = _T("Software\\") + CString(pRegistryKeyName) + _T("\\Dock Windows");
             CRegKey key;
-            if (ERROR_SUCCESS == key.Open(HKEY_CURRENT_USER, keyName, KEY_READ))
+            LONG res = key.Open(HKEY_CURRENT_USER, keyName, KEY_READ);
+            if (ERROR_SUCCESS == res)
             {
                 DWORD bufferSize = sizeof(DockInfo);
                 DockInfo di;
