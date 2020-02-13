@@ -269,7 +269,7 @@ CContainLayers::CContainLayers()
 {
     SetView(m_layersDialog);
     SetTabText(_T("Layers"));
-    SetTabIcon(IDI_VPINBALL);
+    SetTabIcon(IDI_LAYERS);
     SetDockCaption(_T("Layers"));
 }
 
