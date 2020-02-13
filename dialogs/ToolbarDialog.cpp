@@ -36,6 +36,7 @@ BOOL ToolbarDialog::OnInitDialog()
     AttachItem(ID_EDIT_SCRIPT, m_scriptButton);
     AttachItem(ID_EDIT_BACKGLASSVIEW, m_backglassButton);
     AttachItem(ID_TABLE_PLAY, m_playButton);
+    AttachItem(ID_TABLE_PLAY_CAMERA, m_playCameraButton);
     AttachItem(ID_INSERT_WALL, m_wallButton);
     AttachItem(ID_INSERT_GATE, m_gateButton);
     AttachItem(ID_INSERT_RAMP, m_rampButton);
@@ -63,6 +64,7 @@ BOOL ToolbarDialog::OnInitDialog()
     m_tooltip.AddTool(m_scriptButton, _T("Toggle script editor"));
     m_tooltip.AddTool(m_backglassButton, _T("Toggle backglass view"));
     m_tooltip.AddTool(m_playButton, _T("Play table"));
+    m_tooltip.AddTool(m_playCameraButton, _T("Play table in camera mode"));
 
     m_tooltip.AddTool(m_wallButton, _T("Insert Wall"));
     m_tooltip.AddTool(m_gateButton, _T("Insert Gate"));
@@ -102,6 +104,9 @@ BOOL ToolbarDialog::OnInitDialog()
 
     hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PLAY), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_playButton.SetIcon((HICON)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_CAMERA), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    m_playCameraButton.SetIcon((HICON)hIcon);
 
     hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_WALL), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_wallButton.SetIcon((HICON)hIcon);
@@ -169,6 +174,7 @@ BOOL ToolbarDialog::OnInitDialog()
     m_resizer.AddChild(m_scriptButton, rightcenter, 0);
     m_resizer.AddChild(m_backglassButton, leftcenter, 0);
     m_resizer.AddChild(m_playButton, rightcenter, 0);
+    m_resizer.AddChild(m_playCameraButton, rightcenter, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC_ELEMENTS), bottomright, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
 
     m_resizer.AddChild(m_wallButton, leftcenter, 0);
@@ -224,6 +230,7 @@ void ToolbarDialog::EnableButtons()
         m_scriptButton.EnableWindow(FALSE);
         m_backglassButton.EnableWindow(FALSE);
         m_playButton.EnableWindow(FALSE);
+        m_playCameraButton.EnableWindow(FALSE);
 
         m_textboxButton.EnableWindow(FALSE);
         m_reelButton.EnableWindow(FALSE);
@@ -277,6 +284,7 @@ void ToolbarDialog::EnableButtons()
         m_scriptButton.EnableWindow(TRUE);
         m_backglassButton.EnableWindow(TRUE);
         m_playButton.EnableWindow(TRUE);
+        m_playCameraButton.EnableWindow(TRUE);
 
         m_textboxButton.EnableWindow(FALSE);
         m_reelButton.EnableWindow(FALSE);
@@ -383,7 +391,12 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case ID_TABLE_PLAY:
         {
-            g_pvp->DoPlay(false);  //only normaly play mode via this dialog
+            g_pvp->DoPlay(false); 
+            break;
+        }
+        case ID_TABLE_PLAY_CAMERA:
+        {
+            g_pvp->DoPlay(true);  
             break;
         }
     }
@@ -394,7 +407,7 @@ CContainToolbar::CContainToolbar()
 {
     SetView(m_toolbar); 
     SetTabText(_T("Toolbar"));
-    SetTabIcon(IDI_VPINBALL);
+    SetTabIcon(IDI_TOOLBAR);
     SetDockCaption(_T("Toolbar"));
 }
 

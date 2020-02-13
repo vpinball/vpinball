@@ -28,6 +28,7 @@ private:
     CButton m_scriptButton;
     CButton m_backglassButton;
     CButton m_playButton;
+    CButton m_playCameraButton;
     CButton m_wallButton;
     CButton m_gateButton;
     CButton m_rampButton;

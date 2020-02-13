@@ -939,6 +939,10 @@
 #define IDI_REMOVE                      662
 #define IDI_ICON4                       663
 #define IDI_EXPANDCOLLAPSE              663
+#define IDI_LAYERS                      664
+#define IDI_TOOLBAR                     665
+#define IDI_ICON5                       666
+#define IDI_CAMERA                      666
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1191,6 +1195,7 @@
 #define ID_WINDOW_ARRANGEICONS          32785
 #define ID_TABLE_PLAY                   32786
 #define IDC_COPY                        32787
+#define ID_TABLE_PLAY_CAMERA            32787
 #define IDC_PASTE                       32788
 #define ID_FILE_EXPORT_BLUEPRINT        32790
 #define ID_TABLE_SOUNDMANAGER           32792
@@ -1289,7 +1294,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        664
+#define _APS_NEXT_RESOURCE_VALUE        667
 #define _APS_NEXT_COMMAND_VALUE         4024
 #define _APS_NEXT_CONTROL_VALUE         839
 #define _APS_NEXT_SYMED_VALUE           188
