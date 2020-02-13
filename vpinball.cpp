@@ -501,7 +501,7 @@ CDockProperty *VPinball::GetPropertiesDocker()
 
 CDockToolbar *VPinball::GetDefaultToolbarDocker()
 {
-    const int dockStyle = DS_DOCKED_LEFT | DS_NO_DOCKCHILD_TOP | DS_NO_DOCKCHILD_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE;
+    const int dockStyle = DS_DOCKED_LEFT | DS_CLIENTEDGE | DS_NO_CLOSE;
     m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar, dockStyle, 110, IDD_TOOLBAR);
     assert(m_dockToolbar->GetContainer());
     m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
@@ -545,6 +545,10 @@ void VPinball::CreateDocker()
         GetToolbarDocker();
         GetLayersDocker();
     }
+    m_dockProperties->GetContainer()->SetHideSingleTab(TRUE);
+    m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
+    m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
+
 }
 
 void VPinball::SetPosCur(float x, float y)
