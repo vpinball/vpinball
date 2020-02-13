@@ -108,7 +108,10 @@ void LayersListDialog::UpdateLayerList(const std::string& name)
             AddLayer(psel->m_layerName, pt->m_vedit[t]);
         
     }
-    ExpandLayers();
+    if (name != "")
+        ExpandAll();
+    else
+        ExpandLayers();
 }
 
 void LayersListDialog::UpdateElement(IEditable * const pedit)
