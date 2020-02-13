@@ -1603,6 +1603,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\bumperCap.bmp" />
     <Image Include="res\bumperring.bmp" />
     <Image Include="res\bumperskirt.bmp" />
+    <Image Include="res\camera.ico" />
     <Image Include="res\chevron.bmp" />
     <Image Include="res\decal.ico" />
     <Image Include="res\envmap.bmp" />
@@ -1618,6 +1619,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\kickerWilliams.bmp" />
     <Image Include="res\layerIcons16.bmp" />
     <Image Include="res\layerIcons32.bmp" />
+    <Image Include="res\layers.ico" />
     <Image Include="res\light.ico" />
     <Image Include="res\lightseq.ico" />
     <Image Include="res\magnify.ico" />
@@ -1640,6 +1642,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\target.ico" />
     <Image Include="res\textbox.ico" />
     <Image Include="res\timer.ico" />
+    <Image Include="res\toolbar.ico" />
     <Image Include="res\trigger.ico" />
     <Image Include="res\vpinball.ico" />
     <Image Include="res\logo.bmp" />
