@@ -1062,16 +1062,6 @@ CDockProperty::CDockProperty()
     SetBarWidth(4);
 }
 
-void CDockProperty::OnDestroy()
-{
-    const CRect rect = GetWindowRect();
-    SaveValueInt("Editor", "PropertiesPosX", rect.left);
-    SaveValueInt("Editor", "PropertiesPosY", rect.top);
-    SaveValueBool("Editor", "PropertiesDocked", !!IsDocked());
-    if (IsDocked())
-        SaveValueInt("Editor", "PropertiesDockStyle", !!GetDockStyle());
-}
-
 void CDockProperty::OnClose()
 {
     // nothing to do only to prevent closing the window

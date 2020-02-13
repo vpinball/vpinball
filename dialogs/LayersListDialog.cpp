@@ -279,32 +279,6 @@ CDockLayers::CDockLayers()
     SetBarWidth(4);
 }
 
-void CDockLayers::OnDestroy()
-{
-    const CRect rect = GetWindowRect();
-    int   dockParent = 0;
-    SaveValueInt("Editor", "LayersPosX", rect.left);
-    SaveValueInt("Editor", "LayersPosY", rect.top);
-    SaveValueBool("Editor", "LayersDocked", !!IsDocked());
-    if(IsDocked())
-        SaveValueInt("Editor", "LayersDockStyle", GetDockStyle());
-    if (IsDocked())
-    {
-        if (GetDockParent() == g_pvp->GetPropertiesDocker())
-        {
-            dockParent = 1;
-        }
-        else if (GetDockParent() == g_pvp->GetToolbarDocker())
-        {
-            dockParent = 2;
-        }
-        else if (GetDockParent() == g_pvp)
-        {
-            dockParent = 3;
-        }
-    }
-    SaveValueInt("Editor", "LayersDockParent", dockParent);
-}
 
 void CDockLayers::OnClose()
 {

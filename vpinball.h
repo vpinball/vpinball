@@ -216,9 +216,15 @@ protected:
    virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
    virtual LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam);
+   virtual CDocker *NewDockerFromID(int id);
 
 
 private:
+
+   CDockProperty *GetDefaultPropertiesDocker();
+   CDockLayers *GetDefaultLayersDocker();
+   CDockToolbar *GetDefaultToolbarDocker();
+
    CMenu m_mainMenu;
    char m_szRecentTableList[LAST_OPENED_TABLE_COUNT + 1][MAX_PATH];
 
