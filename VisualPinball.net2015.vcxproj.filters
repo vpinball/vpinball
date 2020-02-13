@@ -443,6 +443,13 @@
     <Image Include="res\remove.ico">
       <Filter>res</Filter>
     </Image>
+    <Image Include="res\layers.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\toolbar.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\camera.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\vpinball.rgs">
