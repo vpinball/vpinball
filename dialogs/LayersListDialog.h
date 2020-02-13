@@ -74,6 +74,19 @@ public:
     string GetCurrentSelectedLayerName() const;
     void AddToolTip(const char* const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
     void OnAssignButton();
+
+    void ExpandAll()
+    {
+        m_layerTreeView.ExpandAll();
+        m_collapsed = false;
+    }
+
+    void CollapseAll()
+    {
+        m_layerTreeView.CollapsAll();
+        m_collapsed = true;
+    }
+
     void ExpandLayers()
     {
         m_layerTreeView.ExpandLayers();
