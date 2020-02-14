@@ -39,6 +39,9 @@ BOOL TableInfoDialog::OnInitDialog()
    SetDlgItemText(IDC_BLURB, pt->m_szBlurb);
    SetDlgItemText(IDC_DESCRIPTION, pt->m_szDescription);
    SetDlgItemText(IDC_RULES, pt->m_szRules);
+   char buffer[256];
+   sprintf_s(buffer, "%s Revision %u", pt->m_szDateSaved ? pt->m_szDateSaved : "N.A.", pt->m_numTimesSaved);
+   SetDlgItemText(IDC_DATE_SAVED, buffer);
 
    // Init list of images
 

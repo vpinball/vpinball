@@ -4240,6 +4240,11 @@ void Player::UpdateHUD()
 			strcat_s(szFoo, m_ptable->m_szVersion);
 			strcat_s(szFoo, ")");
 		}
+
+		char buffer[256];
+		sprintf_s(buffer, " (%s Revision %u)", m_ptable->m_szDateSaved ? m_ptable->m_szDateSaved : "N.A.", m_ptable->m_numTimesSaved);
+		strcat_s(szFoo, buffer);
+
 		if (strlen(szFoo) > 0)
 		{
 			DebugPrint(m_width / 2 - 320, line * 20 + 10, szFoo, (int)strlen(szFoo), true);
