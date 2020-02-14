@@ -1452,6 +1452,8 @@ PinTable::PinTable()
    m_szBlurb = NULL;
    m_szDescription = NULL;
    m_szRules = NULL;
+   m_szDateSaved = NULL;
+   m_numTimesSaved = 0;
 
    m_pbTempScreenshot = NULL;
 
@@ -1579,6 +1581,7 @@ PinTable::~PinTable()
    SAFE_VECTOR_DELETE(m_szBlurb);
    SAFE_VECTOR_DELETE(m_szDescription);
    SAFE_VECTOR_DELETE(m_szRules);
+   SAFE_VECTOR_DELETE(m_szDateSaved);
 }
 
 void PinTable::FVerifySaveToClose()
@@ -3034,7 +3037,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 
 HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, char *szValue, HCRYPTHASH hcrypthash)
 {
-   HRESULT hr;
+   HRESULT hr = S_OK;
    IStream *pstm;
 
    if (szValue && SUCCEEDED(hr = pstg->CreateStream(wzName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstm)))
@@ -3052,7 +3055,7 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, cha
       pstm = NULL;
    }
 
-   return S_OK;
+   return hr;
 }
 
 
@@ -3067,6 +3070,16 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
    WriteInfoValue(pstg, L"TableBlurb", m_szBlurb, hcrypthash);
    WriteInfoValue(pstg, L"TableDescription", m_szDescription, hcrypthash);
    WriteInfoValue(pstg, L"TableRules", m_szRules, hcrypthash);
+   time_t hour_machine;
+   time(&hour_machine);
+   tm local_hour;
+   localtime_s(&local_hour, &hour_machine);
+   char buffer[256];
+   asctime_s(buffer, &local_hour);
+   buffer[strlen(buffer)-1] = '\0'; // remove line break
+   WriteInfoValue(pstg, L"TableSaveDate", buffer, hcrypthash);
+   _itoa_s(++m_numTimesSaved, buffer, 10);
+   WriteInfoValue(pstg, L"TableSaveRev", buffer, hcrypthash);
 
    Texture * const pin = GetImage(m_szScreenShot);
    if (pin != NULL && pin->m_ppb != NULL)
@@ -3147,7 +3160,7 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, char
       pstm->Release();
    }
 
-   return S_OK;
+   return hr;
 }
 
 
@@ -3162,6 +3175,11 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    ReadInfoValue(pstg, L"TableBlurb", &m_szBlurb, hcrypthash);
    ReadInfoValue(pstg, L"TableDescription", &m_szDescription, hcrypthash);
    ReadInfoValue(pstg, L"TableRules", &m_szRules, hcrypthash);
+   ReadInfoValue(pstg, L"TableSaveDate", &m_szDateSaved, hcrypthash);
+   char *buffer = NULL;
+   ReadInfoValue(pstg, L"TableSaveRev", &buffer, hcrypthash);
+   m_numTimesSaved = buffer ? atoi(buffer) : 0;
+   SAFE_VECTOR_DELETE(buffer);
 
    // Check pointer.
    if (m_szVersion != NULL)

@@ -943,6 +943,7 @@
 #define IDI_TOOLBAR                     665
 #define IDI_ICON5                       666
 #define IDI_CAMERA                      666
+#define IDC_DATE_SAVED                  667
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1294,7 +1295,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        667
+#define _APS_NEXT_RESOURCE_VALUE        668
 #define _APS_NEXT_COMMAND_VALUE         4024
 #define _APS_NEXT_CONTROL_VALUE         839
 #define _APS_NEXT_SYMED_VALUE           188

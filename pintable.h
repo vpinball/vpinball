@@ -724,6 +724,8 @@ public:
    char *m_szDescription;
    char *m_szRules;
    char  m_szScreenShot[MAXTOKEN];
+   char *m_szDateSaved;
+   unsigned int m_numTimesSaved;
 
    PinBinary *m_pbTempScreenshot; // Holds contents of screenshot image until the image asks for it
 
