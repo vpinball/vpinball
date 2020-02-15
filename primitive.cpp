@@ -1108,7 +1108,7 @@ void Primitive::UpdateMeshInfo()
         return;
 
     char tbuf[128];
-    sprintf_s(tbuf, "vertices: %i | polygons: %i", m_mesh.NumVertices(), m_mesh.NumIndices());
+    sprintf_s(tbuf, "vertices: %i | polygons: %i", (int)m_mesh.NumVertices(), (int)m_mesh.NumIndices());
     g_pvp->SetStatusBarUnitInfo(tbuf, false);
 }
 
