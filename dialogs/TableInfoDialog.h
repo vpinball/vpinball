@@ -30,7 +30,6 @@ private:
    CEdit m_customNameEdit;
    CEdit m_customValueEdit;
    CListView m_customListView;
-
-
 };
+
 #endif // !H_TABLE_INFO_DIALOG
