@@ -1954,7 +1954,7 @@ bool CodeViewer::ParseOKLineLength(const size_t LineLen)
 		char szText[128];
 		sprintf_s(szText, "The current maximum script line length is %d", MAX_LINE_LENGTH);
 		char szCaption[128];
-		sprintf_s(szCaption, "Line too long on line %d", LineLen);
+		sprintf_s(szCaption, "Line too long on line %d", (int)LineLen);
 		MessageBox(m_hwndMain, szText,szCaption, MB_OK);
 		return false;
 	}

@@ -7099,7 +7099,7 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
    ListView_SetItemText(hwndListView, index, 2, sizeString);
    ListView_SetItemText(hwndListView, index, 3, usedStringNo);
 
-   _snprintf_s(sizeString, MAXTOKEN, "%i", ppi->m_pdsBuffer->m_data.size());
+   _snprintf_s(sizeString, MAXTOKEN, "%i", (int)ppi->m_pdsBuffer->m_data.size());
 
    ListView_SetItemText(hwndListView, index, 4, sizeString);
    if ((_stricmp(m_szImage, ppi->m_szName) == 0)
@@ -10146,7 +10146,7 @@ void PinTable::SetMouseCursor()
         }
     }
     const HCURSOR hcursor = LoadCursor(hinst, cursorid);
-    SetClassLong(GCL_HCURSOR, (LONG_PTR)hcursor);
+    SetClassLongPtr(GCLP_HCURSOR, (LONG_PTR)hcursor);
     SetCursor(hcursor);
 }
 
