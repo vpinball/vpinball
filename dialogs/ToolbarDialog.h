@@ -9,7 +9,6 @@ public:
     virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
 
     void EnableButtons();
-    void SetOptionsButton(const bool checked);
 
 protected:
     virtual BOOL OnInitDialog();
@@ -24,7 +23,6 @@ private:
 
     CButton m_magnifyButton;
     CButton m_selectButton;
-    CButton m_optionsButton;
     CButton m_scriptButton;
     CButton m_backglassButton;
     CButton m_playButton;

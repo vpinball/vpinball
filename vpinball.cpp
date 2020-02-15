@@ -331,8 +331,6 @@ void VPinball::InitTools()
       // if so then re-open it
       ParseCommand(ID_EDIT_PROPERTIES, 1); //display
    }
-   m_toolbarDialog->SetOptionsButton(state);
-
    m_ToolCur = IDC_SELECT;
 }
 
@@ -657,34 +655,6 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
        case ID_EDIT_SCRIPT:
        {
           ToggleScriptEditor();
-          return TRUE;
-       }
-       case ID_EDIT_PROPERTIES:
-       {
-          bool show = false;
-
-          if (m_propertyDialog == NULL)
-              return TRUE;
-
-          if (!g_pplayer) show = !!(GetPropertiesDocker()->IsWindowVisible());
-
-          switch (notify)
-          {
-          case 0:
-             show = !show; //!!?
-             break;
-          case 1: 
-             show = true;  //set
-             break;
-          case 2:          //re-display 
-             break;
-          default:
-             show = !show; //toggle
-             break;
-          }
-
-          ShowProperties(show);
-          SendMessage(WM_SIZE, 0, 0);
           return TRUE;
        }
        case ID_EDIT_BACKGLASSVIEW:
@@ -2121,24 +2091,6 @@ void VPinball::CloseAllDialogs()
       m_materialDialog.Destroy();
    if (m_aboutDialog.IsWindow())
       m_aboutDialog.Destroy();
-}
-
-void VPinball::ShowProperties(bool enable)
-{
-    SaveValueBool("Editor", "PropertiesVisible", enable);
-    if (m_dockProperties)
-    {
-        if(enable)
-        {
-            if (!m_dockProperties->IsWindowVisible())
-                Dock(m_dockProperties, DS_DOCKED_RIGHT);
-        }
-        else
-        {
-            m_dockProperties->Hide();
-        }
-        m_toolbarDialog->SetOptionsButton(enable);
-    }
 }
 
 void VPinball::ToggleBackglassView()

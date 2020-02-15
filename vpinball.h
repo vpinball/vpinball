@@ -62,7 +62,6 @@ public:
 private:
    void CreateMDIClient();
 
-   void ShowProperties(bool enable);
    void ShowSearchSelect();
    void SetDefaultPhysics();
    void SetViewSolidOutline(size_t viewId);
