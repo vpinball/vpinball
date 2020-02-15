@@ -412,7 +412,7 @@ int LayerTreeView::GetItemCount() const
         children.push_back(item);
         item = GetNextItem(item, TVGN_NEXT);
     }
-    count = children.size();
+    count = (int)children.size();
     for (HTREEITEM child : children)
     {
         HTREEITEM subItem = GetChild(child);

@@ -377,6 +377,7 @@ CVPrefrence::CVPrefrence()
    m_highlight = false;
    szRegName = nullptr;
    m_sciKeywordID = 0;
+   memset(&m_logFont, 0, sizeof(LOGFONT));
 }
 
 CVPrefrence* CVPrefrence::FillCVPreference(
