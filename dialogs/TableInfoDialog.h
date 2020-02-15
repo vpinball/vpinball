@@ -16,7 +16,21 @@ protected:
    virtual void OnCancel();
 
 private:
-   void VPGetDialogItemText(int nIDDlgItem, char **psztext);
+   void VPGetDialogItemText(CEdit &edit, char **psztext);
+   CEdit m_tableNameEdit;
+   CEdit m_authorEdit;
+   CEdit m_versionEdit;
+   CEdit m_releaseEdit;
+   CEdit m_emailEdit;
+   CEdit m_websiteEdit;
+   CEdit m_blurbEdit;
+   CEdit m_descriptionEdit;
+   CEdit m_rulesEdits;
+   CEdit m_dateSavedEdit;
+   CEdit m_customNameEdit;
+   CEdit m_customValueEdit;
+   CListView m_customListView;
+
 
 };
 #endif // !H_TABLE_INFO_DIALOG

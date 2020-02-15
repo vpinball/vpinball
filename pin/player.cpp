@@ -4225,24 +4225,24 @@ void Player::UpdateHUD()
 
 		int line = 0;
 
-		if (m_ptable->m_szTableName && strlen(m_ptable->m_szTableName) > 0)
-			strcat_s(szFoo, m_ptable->m_szTableName);
+		if ( !m_ptable->m_szTableName.empty() )
+			strcat_s(szFoo, m_ptable->m_szTableName.c_str());
 		else
 			strcat_s(szFoo, "Table");
-		if (m_ptable->m_szAuthor && strlen(m_ptable->m_szAuthor) > 0)
+		if (!m_ptable->m_szAuthor.empty())
 		{
 			strcat_s(szFoo, " by ");
-			strcat_s(szFoo, m_ptable->m_szAuthor);
+			strcat_s(szFoo, m_ptable->m_szAuthor.c_str());
 		}
-		if (m_ptable->m_szVersion && strlen(m_ptable->m_szVersion) > 0)
+		if (!m_ptable->m_szVersion.empty())
 		{
 			strcat_s(szFoo, " (");
-			strcat_s(szFoo, m_ptable->m_szVersion);
+			strcat_s(szFoo, m_ptable->m_szVersion.c_str());
 			strcat_s(szFoo, ")");
 		}
 
 		char buffer[256];
-		sprintf_s(buffer, " (%s Revision %u)", m_ptable->m_szDateSaved ? m_ptable->m_szDateSaved : "N.A.", m_ptable->m_numTimesSaved);
+		sprintf_s(buffer, " (%s Revision %u)", !m_ptable->m_szDateSaved.empty() ? m_ptable->m_szDateSaved.c_str() : "N.A.", m_ptable->m_numTimesSaved);
 		strcat_s(szFoo, buffer);
 
 		if (strlen(szFoo) > 0)
@@ -4255,7 +4255,7 @@ void Player::UpdateHUD()
 
 		for (unsigned int i2 = 0; i2 < 2; ++i2)
 		{
-			const char * const s = (i2 == 0) ? m_ptable->m_szBlurb : m_ptable->m_szDescription;
+			const char * const s = (i2 == 0) ? m_ptable->m_szBlurb.c_str() : m_ptable->m_szDescription.c_str();
 			int length = s ? (int)strlen(s) : 0;
 			const char *desc = s;
 			while (length > 0)

@@ -435,7 +435,7 @@ public:
    HRESULT SaveToStorage(IStorage *pstg);
    HRESULT SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash);
    HRESULT SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
-   HRESULT WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, char *szValue, HCRYPTHASH hcrypthash);
+   HRESULT WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, const char *szValue, HCRYPTHASH hcrypthash);
    HRESULT ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, char **pszValue, HCRYPTHASH hcrypthash);
    HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupForPlay);
    HRESULT LoadGameFromFilename(char *szFileName);
@@ -714,17 +714,17 @@ public:
    SaveDirtyState m_sdsCurrentDirtyState;
 
    // Table info
-   char *m_szTableName;
-   char *m_szAuthor;
-   char *m_szVersion;
-   char *m_szReleaseDate;
-   char *m_szAuthorEMail;
-   char *m_szWebSite;
-   char *m_szBlurb;
-   char *m_szDescription;
-   char *m_szRules;
-   char  m_szScreenShot[MAXTOKEN];
-   char *m_szDateSaved;
+   std::string m_szTableName;
+   std::string m_szAuthor;
+   std::string m_szVersion;
+   std::string m_szReleaseDate;
+   std::string m_szAuthorEMail;
+   std::string m_szWebSite;
+   std::string m_szBlurb;
+   std::string m_szDescription;
+   std::string m_szRules;
+   char m_szScreenShot[MAXTOKEN];
+   std::string m_szDateSaved;
    unsigned int m_numTimesSaved;
 
    PinBinary *m_pbTempScreenshot; // Holds contents of screenshot image until the image asks for it
