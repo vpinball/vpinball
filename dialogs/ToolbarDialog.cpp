@@ -32,7 +32,6 @@ BOOL ToolbarDialog::OnInitDialog()
 
     AttachItem(ID_TABLE_MAGNIFY, m_magnifyButton);
     AttachItem(IDC_SELECT, m_selectButton);
-    AttachItem(ID_EDIT_PROPERTIES, m_optionsButton);
     AttachItem(ID_EDIT_SCRIPT, m_scriptButton);
     AttachItem(ID_EDIT_BACKGLASSVIEW, m_backglassButton);
     AttachItem(ID_TABLE_PLAY, m_playButton);
@@ -60,7 +59,6 @@ BOOL ToolbarDialog::OnInitDialog()
     m_tooltip.Create(*this);
     m_tooltip.AddTool(m_magnifyButton, _T("Zoom in/out"));
     m_tooltip.AddTool(m_selectButton, _T("Select element"));
-    m_tooltip.AddTool(m_optionsButton, _T("Toggle properties"));
     m_tooltip.AddTool(m_scriptButton, _T("Toggle script editor"));
     m_tooltip.AddTool(m_backglassButton, _T("Toggle backglass view"));
     m_tooltip.AddTool(m_playButton, _T("Play table"));
@@ -92,9 +90,6 @@ BOOL ToolbarDialog::OnInitDialog()
 
     hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SELECT), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_selectButton.SetIcon((HICON)hIcon);
-
-    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_OPTIONS), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
-    m_optionsButton.SetIcon((HICON)hIcon);
 
     hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SCRIPT), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_scriptButton.SetIcon((HICON)hIcon);
@@ -170,7 +165,6 @@ BOOL ToolbarDialog::OnInitDialog()
 
     m_resizer.AddChild(m_magnifyButton, topleft, 0);
     m_resizer.AddChild(m_selectButton, topright, 0);
-    m_resizer.AddChild(m_optionsButton, leftcenter, 0);
     m_resizer.AddChild(m_scriptButton, rightcenter, 0);
     m_resizer.AddChild(m_backglassButton, leftcenter, 0);
     m_resizer.AddChild(m_playButton, rightcenter, 0);
@@ -226,7 +220,6 @@ void ToolbarDialog::EnableButtons()
     {
         m_magnifyButton.EnableWindow(FALSE);
         m_selectButton.EnableWindow(FALSE);
-        m_optionsButton.EnableWindow(FALSE);
         m_scriptButton.EnableWindow(FALSE);
         m_backglassButton.EnableWindow(FALSE);
         m_playButton.EnableWindow(FALSE);
@@ -280,7 +273,6 @@ void ToolbarDialog::EnableButtons()
     {
         m_magnifyButton.EnableWindow(TRUE);
         m_selectButton.EnableWindow(TRUE);
-        m_optionsButton.EnableWindow(TRUE);
         m_scriptButton.EnableWindow(TRUE);
         m_backglassButton.EnableWindow(TRUE);
         m_playButton.EnableWindow(TRUE);
@@ -306,11 +298,6 @@ void ToolbarDialog::EnableButtons()
         m_lightseqButton.EnableWindow(TRUE);
         m_targetButton.EnableWindow(TRUE);
     }
-}
-
-void ToolbarDialog::SetOptionsButton(const bool checked)
-{
-    m_optionsButton.SetCheck(checked ? BST_CHECKED : BST_UNCHECKED);
 }
 
 BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -372,11 +359,6 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 default:
                     break;
             }
-            break;
-        }
-        case ID_EDIT_PROPERTIES:
-        {
-            g_pvp->ParseCommand(id, 3); //3=toggle
             break;
         }
         case ID_EDIT_SCRIPT:
