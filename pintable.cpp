@@ -1443,16 +1443,6 @@ PinTable::PinTable()
 
    m_globalEmissionScale = 1.0f;
 
-   m_szTableName = NULL;
-   m_szAuthor = NULL;
-   m_szVersion = NULL;
-   m_szReleaseDate = NULL;
-   m_szAuthorEMail = NULL;
-   m_szWebSite = NULL;
-   m_szBlurb = NULL;
-   m_szDescription = NULL;
-   m_szRules = NULL;
-   m_szDateSaved = NULL;
    m_numTimesSaved = 0;
 
    m_pbTempScreenshot = NULL;
@@ -1572,16 +1562,6 @@ PinTable::~PinTable()
    if (m_hbmOffScreen)
       DeleteObject(m_hbmOffScreen);
 
-   SAFE_VECTOR_DELETE(m_szTableName);
-   SAFE_VECTOR_DELETE(m_szAuthor);
-   SAFE_VECTOR_DELETE(m_szVersion);
-   SAFE_VECTOR_DELETE(m_szReleaseDate);
-   SAFE_VECTOR_DELETE(m_szAuthorEMail);
-   SAFE_VECTOR_DELETE(m_szWebSite);
-   SAFE_VECTOR_DELETE(m_szBlurb);
-   SAFE_VECTOR_DELETE(m_szDescription);
-   SAFE_VECTOR_DELETE(m_szRules);
-   SAFE_VECTOR_DELETE(m_szDateSaved);
 }
 
 void PinTable::FVerifySaveToClose()
@@ -3035,7 +3015,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 }
 
 
-HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, char *szValue, HCRYPTHASH hcrypthash)
+HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, const char *szValue, HCRYPTHASH hcrypthash)
 {
    HRESULT hr = S_OK;
    IStream *pstm;
@@ -3061,15 +3041,15 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, cha
 
 HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
 {
-   WriteInfoValue(pstg, L"TableName", m_szTableName, hcrypthash);
-   WriteInfoValue(pstg, L"AuthorName", m_szAuthor, hcrypthash);
-   WriteInfoValue(pstg, L"TableVersion", m_szVersion, hcrypthash);
-   WriteInfoValue(pstg, L"ReleaseDate", m_szReleaseDate, hcrypthash);
-   WriteInfoValue(pstg, L"AuthorEmail", m_szAuthorEMail, hcrypthash);
-   WriteInfoValue(pstg, L"AuthorWebSite", m_szWebSite, hcrypthash);
-   WriteInfoValue(pstg, L"TableBlurb", m_szBlurb, hcrypthash);
-   WriteInfoValue(pstg, L"TableDescription", m_szDescription, hcrypthash);
-   WriteInfoValue(pstg, L"TableRules", m_szRules, hcrypthash);
+   WriteInfoValue(pstg, L"TableName", m_szTableName.c_str(), hcrypthash);
+   WriteInfoValue(pstg, L"AuthorName", m_szAuthor.c_str(), hcrypthash);
+   WriteInfoValue(pstg, L"TableVersion", m_szVersion.c_str(), hcrypthash);
+   WriteInfoValue(pstg, L"ReleaseDate", m_szReleaseDate.c_str(), hcrypthash);
+   WriteInfoValue(pstg, L"AuthorEmail", m_szAuthorEMail.c_str(), hcrypthash);
+   WriteInfoValue(pstg, L"AuthorWebSite", m_szWebSite.c_str(), hcrypthash);
+   WriteInfoValue(pstg, L"TableBlurb", m_szBlurb.c_str(), hcrypthash);
+   WriteInfoValue(pstg, L"TableDescription", m_szDescription.c_str(), hcrypthash);
+   WriteInfoValue(pstg, L"TableRules", m_szRules.c_str(), hcrypthash);
    time_t hour_machine;
    time(&hour_machine);
    tm local_hour;
@@ -3166,27 +3146,91 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, char
 
 HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
 {
-   ReadInfoValue(pstg, L"TableName", &m_szTableName, hcrypthash);
-   ReadInfoValue(pstg, L"AuthorName", &m_szAuthor, hcrypthash);
-   ReadInfoValue(pstg, L"TableVersion", &m_szVersion, hcrypthash);
-   ReadInfoValue(pstg, L"ReleaseDate", &m_szReleaseDate, hcrypthash);
-   ReadInfoValue(pstg, L"AuthorEmail", &m_szAuthorEMail, hcrypthash);
-   ReadInfoValue(pstg, L"AuthorWebSite", &m_szWebSite, hcrypthash);
-   ReadInfoValue(pstg, L"TableBlurb", &m_szBlurb, hcrypthash);
-   ReadInfoValue(pstg, L"TableDescription", &m_szDescription, hcrypthash);
-   ReadInfoValue(pstg, L"TableRules", &m_szRules, hcrypthash);
-   ReadInfoValue(pstg, L"TableSaveDate", &m_szDateSaved, hcrypthash);
+   char* txt = nullptr;
+
+   ReadInfoValue(pstg, L"TableName", &txt, hcrypthash);
+   if (txt != nullptr)
+   {
+       m_szTableName = std::string(txt);
+       delete(txt);
+   }
+
+   txt = nullptr;
+   ReadInfoValue(pstg, L"AuthorName", &txt, hcrypthash);
+   if (txt != nullptr)
+   {
+       m_szAuthor = std::string(txt);
+       delete(txt);
+   }
+
+   txt = nullptr;
+   ReadInfoValue(pstg, L"TableVersion", &txt, hcrypthash);
+   if (txt != nullptr)
+   {
+       m_szVersion = std::string(txt);
+       delete(txt);
+   }
+   txt = nullptr;
+   ReadInfoValue(pstg, L"ReleaseDate", &txt, hcrypthash);
+   if (txt != nullptr)
+   {
+       m_szReleaseDate = std::string(txt);
+       delete(txt);
+   }
+
+   txt = nullptr;
+   ReadInfoValue(pstg, L"AuthorEmail", &txt, hcrypthash);
+   if (txt != nullptr)
+   {
+       m_szAuthorEMail = std::string(txt);
+       delete(txt);
+   }
+
+   txt = nullptr;
+   ReadInfoValue(pstg, L"AuthorWebSite", &txt, hcrypthash);
+   if (txt != nullptr)
+   {
+       m_szWebSite = std::string(txt);
+       delete(txt);
+   }
+   txt = nullptr;
+   ReadInfoValue(pstg, L"TableBlurb", &txt, hcrypthash);
+   if (txt != nullptr)
+   {
+       m_szBlurb = std::string(txt);
+       delete(txt);
+   }
+
+   txt = nullptr;
+   ReadInfoValue(pstg, L"TableDescription", &txt, hcrypthash);
+   if (txt != nullptr)
+   {
+       m_szDescription = std::string(txt);
+       delete(txt);
+   }
+
+   txt = nullptr;
+   ReadInfoValue(pstg, L"TableRules", &txt, hcrypthash);
+   if (txt != nullptr)
+   {
+       m_szRules = std::string(txt);
+       delete(txt);
+   }
+
+   txt = nullptr;
+   ReadInfoValue(pstg, L"TableSaveDate", &txt, hcrypthash);
+   if (txt != nullptr)
+   {
+       m_szDateSaved = std::string(txt);
+       delete(txt);
+   }
    char *buffer = NULL;
    ReadInfoValue(pstg, L"TableSaveRev", &buffer, hcrypthash);
    m_numTimesSaved = buffer ? atoi(buffer) : 0;
    SAFE_VECTOR_DELETE(buffer);
 
-   // Check pointer.
-   if (m_szVersion != NULL)
-   {
-      // Write the version to the registry.  This will be read later by the front end.
-      SaveValueString("Version", m_szTableName, m_szVersion);
-   }
+    // Write the version to the registry.  This will be read later by the front end.
+    SaveValueString("Version", m_szTableName.c_str(), m_szVersion.c_str());
 
    HRESULT hr;
    IStream *pstm;
