@@ -5,6 +5,7 @@ Const VPinMAMEDriverVer = 3.58
 '=======================
 '
 ' New in 3.58 (Update by mfuegemann, DJRobX)
+' - Add PullbackandRetract to cvpmImpulseP
 ' - Added joctronic.vbs
 ' - Added s8_StillCrazy.vbs (System 8/Still Crazy)
 ' - Added constant (vpmFourStepSol) for new 4-solenoid stepper motor mech type used by High Roller Casino, Starship Troopers, and Playboy
@@ -2468,7 +2469,7 @@ Class cvpmImpulseP
 		End If
 	End Sub
 
- 
+
 	Public Property Let PlungeOn(aEnabled) : mEnabled = aEnabled : End Property
 	Public Property Get PlungeOn
 		If Solenoid > 0 Then PlungeOn = Controller.Solenoid(Solenoid) Else PlungeOn = mEnabled
@@ -2549,20 +2550,26 @@ Class cvpmImpulseP
 		Pull = 0 : IMPowerOut = 0 : IMPowerTrans = 0 : mCount = 0
 		If BallOn = 1 Then : PlaySound mExitSndBall : Else : PlaySound mExitSnd : End If
 	End Sub
-	
+
 	Public Sub Pullback     ' Pull Plunger
 		Pull = 0 : IMPowerOut = 0 : IMPowerTrans = 0 : mCount = 0 ' reinitialize to be sure
 		Pull = 1 : NeedUpdate = True
-    		PlaySound mEntrySnd
+		PlaySound mEntrySnd
 	End Sub
-	
+
+	Public Sub PullbackandRetract     ' Pull Plunger and retract
+		Pull = 0 : IMPowerOut = 0 : IMPowerTrans = 0 : mCount = 0 ' reinitialize to be sure
+		Pull = 1 : NeedUpdate = True
+		PlaySound mEntrySnd
+	End Sub
+
 	Public Sub Switch(aSw)
 		SwitchOn = True
 		SwitchNum = aSw
 	End Sub
-	
-    Public Sub InitEntrySnd(aNoBall) : mEntrySnd = aNoBall : End Sub
-    Public Sub InitExitSnd(aBall, aNoBall)  : mExitSndBall = aBall  : mExitSnd = aNoBall  : End Sub
+
+	Public Sub InitEntrySnd(aNoBall) : mEntrySnd = aNoBall : End Sub
+	Public Sub InitExitSnd(aBall, aNoBall)  : mExitSndBall = aBall  : mExitSnd = aNoBall  : End Sub
 End Class
 
 Set vpmTimer = New cvpmTimer

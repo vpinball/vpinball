@@ -7,6 +7,9 @@ public:
    {
       // clear the mech plunger reading history
       m_mech0 = m_mech1 = m_mech2 = 0.0f;
+      m_addRetractMotion = false;
+      m_retractMotion = false;
+      m_retractWaitLoop = 0;
    }
 
    virtual void UpdateDisplacements(const float dtime);
@@ -21,6 +24,8 @@ public:
    void PullBack(float speed);
    void Fire(float startPos);
    void Fire() { Fire((m_pos - m_frameEnd) / (m_frameStart - m_frameEnd)); }
+
+   void PullBackandRetract(float speed);
 
    // our associated plunger object
    Plunger* m_plunger;
@@ -228,6 +233,13 @@ public:
    // the plunger strikes the ball, to simulate the mechanical
    // randomness in a real plunger)
    float m_scatterVelocity;
+
+   // retract motion
+   float m_initialSpeed;
+   int   m_retractWaitLoop;
+
+   bool  m_addRetractMotion;
+   bool  m_retractMotion;
 };
 
 class HitPlunger : public HitObject
