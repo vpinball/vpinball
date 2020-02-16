@@ -3057,9 +3057,9 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
    char buffer[256];
    asctime_s(buffer, &local_hour);
    buffer[strlen(buffer)-1] = '\0'; // remove line break
-   WriteInfoValue(pstg, L"TableSaveDate", buffer, hcrypthash);
+   WriteInfoValue(pstg, L"TableSaveDate", buffer, NULL);
    _itoa_s(++m_numTimesSaved, buffer, 10);
-   WriteInfoValue(pstg, L"TableSaveRev", buffer, hcrypthash);
+   WriteInfoValue(pstg, L"TableSaveRev", buffer, NULL);
 
    Texture * const pin = GetImage(m_szScreenShot);
    if (pin != NULL && pin->m_ppb != NULL)
@@ -3218,14 +3218,14 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    }
 
    txt = nullptr;
-   ReadInfoValue(pstg, L"TableSaveDate", &txt, hcrypthash);
+   ReadInfoValue(pstg, L"TableSaveDate", &txt, NULL);
    if (txt != nullptr)
    {
        m_szDateSaved = std::string(txt);
        delete(txt);
    }
    char *buffer = NULL;
-   ReadInfoValue(pstg, L"TableSaveRev", &buffer, hcrypthash);
+   ReadInfoValue(pstg, L"TableSaveRev", &buffer, NULL);
    m_numTimesSaved = buffer ? atoi(buffer) : 0;
    SAFE_VECTOR_DELETE(buffer);
 
