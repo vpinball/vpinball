@@ -10,7 +10,8 @@ Also see https://docs.orbitalpin.com/welcome for some more detailed help
 Changelog:
 10.7:
 - add UpdateMaterialPhysics to the globals
-- add PullBackandRetract to the plunger element
+- add PullBackandRetract to the plunger element that can be used instead of PullBack in the KeyDown Sub.
+  The plunger will move forth and back between the maximum and minimum position, allowing for a retry, if the desired firing position has been missed.
 10.6:
 - add UpdateMaterial to the globals
 - fix potential problems for the light element for Bulb, ImageMode, ShowBulbMesh, StaticBulbMesh, ShowReflectionOnBall reads
@@ -598,7 +599,7 @@ Methods
 -------
 
 Pullback() - start retracting the plunger at the speed given by PullSpeed; continues automatically until Fire() is called
-PullBackandRetract()
+PullBackandRetract() - start retracting the plunger at the linear speed given by PullSpeed; wait for 1 second at the maximum position; move back towards the resting position; continues automatically until Fire() is called. Can be used instead of Pullback()
 Fire() - fire the plunger from the current position (for an auto-plunger, immediately pulls back all the way and fires with full strength)
 CreateBall(IBall **ball) - create a new ball located at the tip of the plunger
 Position() - returns a float (0 to 25) with the current position of the (mechanical or digital) plunger
