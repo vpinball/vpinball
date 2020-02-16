@@ -983,6 +983,15 @@ STDMETHODIMP Plunger::PullBack()
    return S_OK;
 }
 
+STDMETHODIMP Plunger::PullBackandRetract()
+{
+   // initiate a pull; the speed is set by our pull speed property
+   if (m_phitplunger)
+      m_phitplunger->m_plungerMover.PullBackandRetract(m_d.m_speedPull);
+
+   return S_OK;
+}
+
 STDMETHODIMP Plunger::MotionDevice(int *pVal)
 {
    *pVal = g_pplayer->m_pininput.uShockType;

@@ -10,6 +10,7 @@ Also see https://docs.orbitalpin.com/welcome for some more detailed help
 Changelog:
 10.7:
 - add UpdateMaterialPhysics to the globals
+- add PullBackandRetract to the plunger element
 10.6:
 - add UpdateMaterial to the globals
 - fix potential problems for the light element for Bulb, ImageMode, ShowBulbMesh, StaticBulbMesh, ShowReflectionOnBall reads
@@ -597,6 +598,7 @@ Methods
 -------
 
 Pullback() - start retracting the plunger at the speed given by PullSpeed; continues automatically until Fire() is called
+PullBackandRetract()
 Fire() - fire the plunger from the current position (for an auto-plunger, immediately pulls back all the way and fires with full strength)
 CreateBall(IBall **ball) - create a new ball located at the tip of the plunger
 Position() - returns a float (0 to 25) with the current position of the (mechanical or digital) plunger

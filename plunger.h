@@ -197,6 +197,8 @@ public:
    STDMETHOD(put_MechStrength)(/*[in]*/ float newVal);
    STDMETHOD(Fire)();
    STDMETHOD(PullBack)();
+   STDMETHOD(PullBackandRetract)();
+
    STDMETHOD(get_Type)(/*[out, retval]*/ PlungerType *pVal);
    STDMETHOD(put_Type)(/*[in]*/ PlungerType newVal);
    STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);

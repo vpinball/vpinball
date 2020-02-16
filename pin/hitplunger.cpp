@@ -190,6 +190,20 @@ void PlungerMoverObject::PullBack(float speed)
    // start the pull by applying the artificial "pull force"
    m_speed = 0.0f;
    m_pullForce = speed;
+   // deactivate the retract code
+   m_addRetractMotion = false;
+}
+
+
+void PlungerMoverObject::PullBackandRetract(float speed)
+{
+    // start the pull by applying the artificial "pull force"
+    m_speed = 0.0f;
+    m_pullForce = speed;
+    // activate the retract code
+    m_addRetractMotion = true;
+    m_retractMotion = false;
+    m_initialSpeed = speed;
 }
 
 void PlungerMoverObject::Fire(float startPos)
@@ -230,6 +244,8 @@ void PlungerMoverObject::Fire(float startPos)
 
    // enter Fire mode for long enough for the process to complete
    m_fireTimer = 200;
+
+   m_retractMotion = false;
 }
 
 void PlungerMoverObject::UpdateVelocities()
@@ -362,9 +378,58 @@ void PlungerMoverObject::UpdateVelocities()
       // pull force value.
       m_speed += m_pullForce / m_mass;
 
-      // if we're already at the maximum retracted position, stop
-      if (m_pos >= m_frameStart)
-         m_speed = 0.0f;
+      if (!m_addRetractMotion)
+      {
+          // this is the normal PullBack branch
+
+          // if we're already at the maximum retracted position, stop
+          if (m_pos > m_frameStart)
+          {
+              m_speed = 0.0f;
+              m_pos = m_frameStart;
+          }
+          // if we're already at the minimum retracted position, stop
+          if (m_pos < (m_frameEnd + (m_restPos * m_frameLen)))
+          {
+              m_speed = 0.0f;
+              m_pos = m_frameEnd + (m_restPos * m_frameLen);
+          }
+      }
+      else
+      {
+          // this is the PullBackandRetract branch
+
+          // after reaching the max. position the plunger should retract until it reaches the min. position and then start again
+          // if we're already at the maximum retracted position, reverse
+          if ((m_pos >= m_frameStart) && (m_pullForce > 0))
+          {
+              m_speed = 0.0f;
+              m_pos = m_frameStart;
+              m_retractWaitLoop++;
+              if (m_retractWaitLoop > 1000)
+              {
+                  m_pullForce = -m_initialSpeed;
+                  m_pos = m_frameStart;
+                  m_retractMotion = true;
+                  m_retractWaitLoop = 0;
+              }
+          }
+          // if we're already at the minimum retracted position, start again
+          if ((m_pos <= (m_frameEnd + (m_restPos * m_frameLen))) && (m_pullForce <= 0))
+          {
+              m_speed = 0.0f;
+              m_pullForce = m_initialSpeed;
+              m_pos = m_frameEnd + (m_restPos * m_frameLen);
+          }
+          // reset retract motion indicator only after the rest position has been left, to avoid ball interactions
+          // use a linear pullback motion
+          if ((m_pos > (1.0f + m_frameEnd + (m_restPos * m_frameLen))) && (m_pullForce > 0))
+          {
+              m_retractMotion = false;
+              m_speed = 2.0f * m_pullForce;
+          }
+      }
+
    }
    else if (dmech > ReleaseThreshold)
    {
@@ -638,8 +703,9 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
    // restore the original ball velocity (WARNING! CONST POINTER OVERRIDE!)
    pball->m_vel.y = oldvely;
 
-   // check for a hit
-   if (hit)
+   // check only if the plunger is not in a controlled retract motion
+   // and check for a hit
+   if (hit && !m_plungerMover.m_retractMotion)
    {
       // We hit the ball.  Set a travel limit to freeze the plunger at
       // its current position for the next displacement update.  This
