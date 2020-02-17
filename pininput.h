@@ -93,6 +93,7 @@ public:
    bool middleMouseButtonDown;
    BYTE oldMouseButtonState[3];
    bool m_linearPlunger;
+   bool m_plunger_retract; // enable 1s retract phase for button/key plunger
    bool m_enable_nudge_filter; // enable new nudge filtering code
 
 private:
@@ -133,12 +134,13 @@ private:
 
    int m_tail; // These are integer indices into keyq and should be in domain of 0..MAX_KEYQUEUE_SIZE-1
 
-   int m_plunger_axis, m_lr_axis, m_ud_axis, m_plunger_reverse, m_lr_axis_reverse, m_ud_axis_reverse, m_override_default_buttons, m_disable_esc;
+   int m_plunger_axis, m_lr_axis, m_ud_axis;
    int m_joylflipkey, m_joyrflipkey, m_joylmagnasave, m_joyrmagnasave, m_joyplungerkey, m_joystartgamekey, m_joyexitgamekey, m_joyaddcreditkey;
    int m_joyaddcreditkey2, m_joyframecount, m_joyvolumeup, m_joyvolumedown, m_joylefttilt, m_joycentertilt, m_joyrighttilt, m_joypmbuyin;
    int m_joypmcoin3, m_joypmcoin4, m_joypmcoindoor, m_joypmcancel, m_joypmdown, m_joypmup, m_joypmenter, m_joydebugballs, m_joydebugger, m_joylockbar, m_joymechtilt;
    int m_joycustom1, m_joycustom1key, m_joycustom2, m_joycustom2key, m_joycustom3, m_joycustom3key, m_joycustom4, m_joycustom4key;
    int m_deadz;
+   bool m_override_default_buttons, m_plunger_reverse, m_disable_esc, m_lr_axis_reverse, m_ud_axis_reverse;
    bool m_enableMouseInPlayer;
 
    bool m_cameraModeAltKey;

@@ -297,6 +297,9 @@ BOOL KeysConfigDialog::OnInitDialog()
     on = LoadValueBoolWithDefault("Player", "ReversePlungerAxis", false);
     ::SendMessage(GetDlgItem(IDC_ReversePlunger).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
+    on = LoadValueBoolWithDefault("Player", "PlungerRetract", true);
+    ::SendMessage(GetDlgItem(IDC_PLUNGERRETRACT).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+
     on = LoadValueBoolWithDefault("Player", "LRAxisFlip", false);
     ::SendMessage(GetDlgItem(IDC_LRAXISFLIP).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
@@ -891,6 +894,9 @@ void KeysConfigDialog::OnOK()
 
     selected = ::SendMessage(GetDlgItem(IDC_ReversePlunger).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Player", "ReversePlungerAxis", selected != 0);
+
+    selected = ::SendMessage(GetDlgItem(IDC_PLUNGERRETRACT).GetHwnd(), BM_GETCHECK, 0, 0);
+    SaveValueBool("Player", "PlungerRetract", selected != 0);
 
     selected = ::SendMessage(GetDlgItem(IDC_GLOBALACCEL).GetHwnd(), BM_GETCHECK, 0, 0);
     SaveValueBool("Player", "PBWEnabled", selected != 0);

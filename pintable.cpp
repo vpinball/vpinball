@@ -124,20 +124,15 @@ STDMETHODIMP ScriptGlobalTable::NudgeSetCalibration(int XMax, int YMax, int XGai
 	if (newvalue > 100) { newvalue = 100; }
 	SaveValueInt("Player", "PBWAccelMaxY", newvalue);
 
+	SaveValueBool("Player", "TiltSensCB", TiltSensitivity > 0);
 	if (TiltSensitivity > 0)
 	{
 		newvalue = TiltSensitivity;
 		SaveValueInt("Player", "TiltSensValue", newvalue);
 		SaveValueInt("Player", "TiltSensitivity", newvalue);
-		newvalue = 1;
-		SaveValueInt("Player", "TiltSensCB", newvalue);
 	}
 	else
-	{
-		newvalue = 0;
-		SaveValueInt("Player", "TiltSensCB", newvalue);
 		DeleteValue("Player", "TiltSensitivity");
-	}
 	
 	m_pt->ReadAccelerometerCalibration();
 
