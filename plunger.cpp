@@ -978,7 +978,12 @@ STDMETHODIMP Plunger::PullBack()
 {
    // initiate a pull; the speed is set by our pull speed property
    if (m_phitplunger)
-      m_phitplunger->m_plungerMover.PullBack(m_d.m_speedPull);
+   {
+     if(g_pplayer->m_pininput.m_plunger_retract)
+        m_phitplunger->m_plungerMover.PullBackandRetract(m_d.m_speedPull);
+      else
+        m_phitplunger->m_plungerMover.PullBack(m_d.m_speedPull);
+   }
 
    return S_OK;
 }

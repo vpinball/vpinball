@@ -20,6 +20,10 @@ FEATURES:
 
 - add table save date and revision to table info and also show in the pause info/menu
 
+- add new plunger option: Enable 1s retract
+  The plunger will move forth and back between the maximum and minimum position, allowing for a retry, if the desired firing position has been missed.
+  Useful for button/key plunging.
+
 FIXES:
 
 - fix some broken insert lights if playfield reflections are disabled
