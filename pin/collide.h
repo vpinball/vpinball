@@ -141,7 +141,7 @@ public:
    LineSeg(const Vertex2D& p1, const Vertex2D& p2, const float zlow, const float zhigh)
        : v1(p1), v2(p2)
    {
-      m_hitBBox.zlow = zlow;
+      m_hitBBox.zlow = zlow; //!! abuses the hit bbox to store zlow and zhigh
       m_hitBBox.zhigh = zhigh;
       CalcNormal();
    }
@@ -186,11 +186,7 @@ class HitLineZ : public HitObject
 {
 public:
    HitLineZ() {}
-   HitLineZ(const Vertex2D& xy, const float zlow, const float zhigh) : m_xy(xy)
-   {
-      m_hitBBox.zlow = zlow;
-      m_hitBBox.zhigh = zhigh;
-   }
+   HitLineZ(const Vertex2D& xy, const float zlow, const float zhigh) : m_xy(xy), m_zlow(zlow), m_zhigh(zhigh) {}
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eJoint; }
@@ -198,6 +194,8 @@ public:
    virtual void CalcHitBBox();
 
    Vertex2D m_xy;
+   float m_zlow;
+   float m_zhigh;
 };
 
 
