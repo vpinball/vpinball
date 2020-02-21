@@ -992,15 +992,15 @@ void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 				// it fast from the glass height, so it will appear over any object (or on a raised playfield)
 			
 				Ball * const pBall = g_pplayer->m_pactiveballBC;
-				if (pBall && !pBall->m_frozen)
+				if (pBall && !pBall->m_d.m_frozen)
 				{
-					pBall->m_pos.x = g_pplayer->m_pBCTarget->x;
-					pBall->m_pos.y = g_pplayer->m_pBCTarget->y;
-					pBall->m_pos.z = g_pplayer->m_ptable->m_glassheight;
+					pBall->m_d.m_pos.x = g_pplayer->m_pBCTarget->x;
+					pBall->m_d.m_pos.y = g_pplayer->m_pBCTarget->y;
+					pBall->m_d.m_pos.z = g_pplayer->m_ptable->m_glassheight;
 
-					pBall->m_vel.x = 0.0f;
-					pBall->m_vel.y = 0.0f;
-					pBall->m_vel.z = -1000.0f;
+					pBall->m_d.m_vel.x = 0.0f;
+					pBall->m_d.m_vel.y = 0.0f;
+					pBall->m_d.m_vel.z = -1000.0f;
 				}
 			}
 			m_lastclick_ballcontrol_usec = cur;
@@ -1042,10 +1042,10 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 			Ball * const pBall = g_pplayer->m_pactiveballBC;
 			if (pBall)
 			{
-				pBall->m_pos.x = vert.x;
-				pBall->m_pos.y = vert.y;
-				pBall->m_vel.x = vx;
-				pBall->m_vel.y = vy;
+				pBall->m_d.m_pos.x = vert.x;
+				pBall->m_d.m_pos.y = vert.y;
+				pBall->m_d.m_vel.x = vx;
+				pBall->m_d.m_vel.y = vy;
 			}
 		}
 		else
@@ -1056,15 +1056,15 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 				for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
 				{
 					Ball * const pBall = g_pplayer->m_vball[i];
-					const float dx = fabsf(vertex.x - pBall->m_pos.x);
-					const float dy = fabsf(vertex.y - pBall->m_pos.y);
-					if (dx < pBall->m_radius*2.f && dy < pBall->m_radius*2.f)
+					const float dx = fabsf(vertex.x - pBall->m_d.m_pos.x);
+					const float dy = fabsf(vertex.y - pBall->m_d.m_pos.y);
+					if (dx < pBall->m_d.m_radius*2.f && dy < pBall->m_d.m_radius*2.f)
 					{
 						ballGrabbed = true;
-						pBall->m_pos.x = vert.x;
-						pBall->m_pos.y = vert.y;
-						pBall->m_vel.x = vx;
-						pBall->m_vel.y = vy;
+						pBall->m_d.m_pos.x = vert.x;
+						pBall->m_d.m_pos.y = vert.y;
+						pBall->m_d.m_vel.x = vx;
+						pBall->m_d.m_vel.y = vy;
 						pBall->Init(1.f);
 						break;
 					}
@@ -1087,9 +1087,9 @@ void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
         for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
         {
             Ball * const pBall = g_pplayer->m_vball[i];
-            const float dx = fabsf(vertex.x - pBall->m_pos.x);
-            const float dy = fabsf(vertex.y - pBall->m_pos.y);
-            if (dx < pBall->m_radius*2.f && dy < pBall->m_radius*2.f)
+            const float dx = fabsf(vertex.x - pBall->m_d.m_pos.x);
+            const float dy = fabsf(vertex.y - pBall->m_d.m_pos.y);
+            if (dx < pBall->m_d.m_radius*2.f && dy < pBall->m_d.m_radius*2.f)
             {
                 g_pplayer->DestroyBall(pBall);
                 break;

@@ -46,7 +46,7 @@ public:
       m_psurface = NULL;
    }
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
+   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eLineSegSlingshot; }
    virtual void Collide(const CollisionEvent& coll);
 
@@ -67,7 +67,7 @@ public:
    Hit3DPoly(const float x, const float y, const float z, const float r, const int sections); // creates a circular hit poly
    virtual ~Hit3DPoly();
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
+   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return e3DPoly; }
    virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox();
@@ -88,7 +88,7 @@ public:
    HitTriangle(const Vertex3Ds rgv[3]);    // vertices in counterclockwise order
    virtual ~HitTriangle() {}
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
+   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eTriangle; }
    virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox();
@@ -109,7 +109,7 @@ public:
    {
    }
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
+   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return ePlane; }
    virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox() {}  //!! TODO: this is needed if we want to put it in the quadtree, but then again impossible as infinite area
@@ -144,7 +144,7 @@ class HitSpinner : public HitObject
 public:
    HitSpinner(Spinner * const pspinner, const float height);
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
+   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eSpinner; }
    virtual void Collide(const CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime) { }
@@ -183,7 +183,7 @@ class HitGate : public HitObject
 public:
    HitGate(Gate * const pgate, const float height);
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
+   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eGate; }
    virtual void Collide(const CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime) { }
@@ -202,7 +202,7 @@ private:
 class TriggerLineSeg : public LineSeg
 {
 public:
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
+   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eTrigger; }
    virtual void Collide(const CollisionEvent& coll);
 
@@ -217,7 +217,7 @@ public:
       m_ptrigger = NULL;
    }
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
+   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eTrigger; }
    virtual void Collide(const CollisionEvent& coll);
 
@@ -231,7 +231,7 @@ class HitLine3D : public HitLineZ
 public:
    HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2);
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
+   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return e3DLine; }
    virtual void Collide(const CollisionEvent& coll);
    virtual void CalcHitBBox() { } // already done in constructor

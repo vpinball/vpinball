@@ -161,7 +161,7 @@ public:
       m_pkicker = NULL;
    }
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
+   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eTrigger; }
    virtual void Collide(const CollisionEvent& coll)  { DoCollide(coll.m_ball, coll.m_hitnormal, coll.m_hitflag, false); }
 

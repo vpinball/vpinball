@@ -76,7 +76,7 @@ public:
       const float zlow, const float zhigh, Flipper* const pflipper);
    ~HitFlipper() { /*m_pflipper->m_phitflipper = NULL;*/ }
 
-   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
+   virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const;
    virtual int GetType() const { return eFlipper; }
    virtual void Collide(const CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);
@@ -85,8 +85,8 @@ public:
 
    void UpdatePhysicsFromFlipper();
 
-   float HitTestFlipperFace(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool face1) const;
-   float HitTestFlipperEnd(const Ball * const pball, const float dtime, CollisionEvent& coll) const;
+   float HitTestFlipperFace(const BallS& ball, const float dtime, CollisionEvent& coll, const bool face1) const;
+   float HitTestFlipperEnd(const BallS& ball, const float dtime, CollisionEvent& coll) const;
 
    float GetHitTime() const { return m_flipperMover.GetHitTime(); }
 

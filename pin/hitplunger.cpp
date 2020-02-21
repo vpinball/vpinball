@@ -573,10 +573,8 @@ void PlungerMoverObject::UpdateVelocities()
    }
 }
 
-float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll) const
+float HitPlunger::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
-   Ball * const pball = const_cast<Ball*>(pball_);   // HACK; needed below // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)
-
    float hittime = dtime; //start time
    bool hit = false;
 
@@ -593,7 +591,7 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
    // of the plunger.  These are just like hitting a wall.
    // Check all and find the nearest collision.
 
-   newtime = m_plungerMover.m_linesegBase.HitTest(pball, dtime, ce);
+   newtime = m_plungerMover.m_linesegBase.HitTest(ball, dtime, ce);
    if (newtime >= 0.f && newtime <= hittime)
    {
       hit = true;
@@ -605,7 +603,7 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
 
    for (int i = 0; i < 2; i++)
    {
-      newtime = m_plungerMover.m_linesegSide[i].HitTest(pball, hittime, ce);
+      newtime = m_plungerMover.m_linesegSide[i].HitTest(ball, hittime, ce);
       if (newtime >= 0.f && newtime <= hittime)
       {
          hit = true;
@@ -615,7 +613,7 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
          coll.m_hitvel.y = 0.f;
       }
 
-      newtime = m_plungerMover.m_jointBase[i].HitTest(pball, hittime, ce);
+      newtime = m_plungerMover.m_jointBase[i].HitTest(ball, hittime, ce);
       if (newtime >= 0.f && newtime <= hittime)
       {
          hit = true;
@@ -636,16 +634,9 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
    // calculation in an inertial frame where the tip is stationary.  To
    // do this, just adjust the ball speed to what it looks like in the
    // tip's rest frame.
-   //
-   // Note that we're about to cast the const Ball* to non-const and change
-   // the object's contents.  This is bad practice, but we do it intentionally,
-   // for speed.  Past versions made a local copy of the Ball instance, which 
-   // is technically the correct way to do this, but it takes longer and
-   // messes with the ball IDs.  Before changing the speed value in the
-   // (nominally) const Ball instance, save the old value so that we can
-   // restore it when we're done.
-   const float oldvely = pball->m_vel.y;   // save the old velocity value
-   pball->m_vel.y -= m_plungerMover.m_speed;     // WARNING! EVIL OVERRIDE OF CONST INSTANCE POINTER!!!
+
+   BallS ball_tmp = ball;
+   ball_tmp.m_vel.y -= m_plungerMover.m_speed;
 
    // Figure the impulse from hitting the moving end.
    // Calculate this as the product of the plunger speed and the
@@ -672,12 +663,12 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
    // multiply the legacy calculation by 1.0/1.0 == 1.0.  (Set an
    // arbitrary lower bound to prevent division by zero and/or crazy
    // physics.)
-   const float ballMass = (pball->m_mass > 0.05f ? pball->m_mass : 0.05f);
+   const float ballMass = (ball.m_mass > 0.05f ? ball.m_mass : 0.05f);
    const float xferRatio = m_pplunger->m_d.m_momentumXfer / ballMass;
    const float deltay = m_plungerMover.m_speed * xferRatio;
 
    // check the moving bits
-   newtime = m_plungerMover.m_linesegEnd.HitTest(pball, hittime, ce);
+   newtime = m_plungerMover.m_linesegEnd.HitTest(ball_tmp, hittime, ce);
    if (newtime >= 0.f && newtime <= hittime)
    {
       hit = true;
@@ -689,7 +680,7 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
 
    for (int i = 0; i < 2; i++)
    {
-      newtime = m_plungerMover.m_jointEnd[i].HitTest(pball, hittime, ce);
+      newtime = m_plungerMover.m_jointEnd[i].HitTest(ball_tmp, hittime, ce);
       if (newtime >= 0.f && newtime <= hittime)
       {
          hit = true;
@@ -699,9 +690,6 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
          coll.m_hitvel.y = deltay;
       }
    }
-
-   // restore the original ball velocity (WARNING! CONST POINTER OVERRIDE!)
-   pball->m_vel.y = oldvely;
 
    // check only if the plunger is not in a controlled retract motion
    // and check for a hit
@@ -759,7 +747,7 @@ void HitPlunger::Collide(const CollisionEvent& coll)
 {
    Ball * const pball = coll.m_ball;
 
-   float dot = (pball->m_vel.x - coll.m_hitvel.x)* coll.m_hitnormal.x + (pball->m_vel.y - coll.m_hitvel.y) * coll.m_hitnormal.y;
+   float dot = (pball->m_d.m_vel.x - coll.m_hitvel.x)* coll.m_hitnormal.x + (pball->m_d.m_vel.y - coll.m_hitvel.y) * coll.m_hitnormal.y;
 
    if (dot >= -C_LOWNORMVEL)             // nearly receding ... make sure of conditions
    {                                     // otherwise if clearly approaching .. process the collision
@@ -782,7 +770,7 @@ void HitPlunger::Collide(const CollisionEvent& coll)
       {
          hdist = C_DISP_LIMIT;
       }                                         // crossing ramps, delta noise
-      pball->m_pos += hdist * coll.m_hitnormal;    // push along norm, back to free area (use the norm, but is not correct)
+      pball->m_d.m_pos += hdist * coll.m_hitnormal;    // push along norm, back to free area (use the norm, but is not correct)
    }
 #endif
 
@@ -816,23 +804,23 @@ void HitPlunger::Collide(const CollisionEvent& coll)
       // isn't entirely unreasonable physically - you could look at it as
       // accounting for the spring tension and friction.
       const float reverseImpulseFudgeFactor = .22f;
-      m_plungerMover.m_reverseImpulse = pball->m_vel.y * impulse
-         * (pball->m_mass / m_plungerMover.m_mass)
+      m_plungerMover.m_reverseImpulse = pball->m_d.m_vel.y * impulse
+         * (pball->m_d.m_mass / m_plungerMover.m_mass)
          * reverseImpulseFudgeFactor;
    }
 
    // update the ball speed for the impulse
-   pball->m_vel += impulse * coll.m_hitnormal;
+   pball->m_d.m_vel += impulse * coll.m_hitnormal;
 
-   pball->m_vel *= 0.999f;           //friction all axiz     //!! TODO: fix this
+   pball->m_d.m_vel *= 0.999f;           //friction all axiz     //!! TODO: fix this
 
    const float scatter_vel = m_plungerMover.m_scatterVelocity * g_pplayer->m_ptable->m_globalDifficulty;// apply dificulty weighting
 
-   if (scatter_vel > 0.f && fabsf(pball->m_vel.y) > scatter_vel) //skip if low velocity 
+   if (scatter_vel > 0.f && fabsf(pball->m_d.m_vel.y) > scatter_vel) //skip if low velocity 
    {
       float scatter = rand_mt_m11();                                                          // -1.0f..1.0f
       scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_vel;     // shape quadratic distribution and scale
-      pball->m_vel.y += scatter;
+      pball->m_d.m_vel.y += scatter;
    }
 
 #ifdef C_DYNAMIC
