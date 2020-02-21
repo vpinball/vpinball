@@ -722,7 +722,7 @@ float HitTriangle::HitTest(const BallS& ball, const float dtime, CollisionEvent&
    const float bnd = m_normal.Dot(hitPos - m_rgv[0]);  // distance from plane to ball
 
    if (bnd < -ball.m_radius/**2.0f*/) //!! *2 necessary?
-      return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
+      return -1.0f;	// (ball normal distance) excessive penetration of object skin ... no collision HACK
 
    bool isContact = false;
    float hittime;
@@ -739,10 +739,10 @@ float HitTriangle::HitTest(const BallS& ball, const float dtime, CollisionEvent&
       else
          hittime = bnd / -bnv;
    }
-   else if (fabsf(bnv) > C_LOWNORMVEL)			// not velocity low?
-      hittime = bnd / -bnv;						// rate ok for safe divide 
+   else if (fabsf(bnv) > C_LOWNORMVEL)           // not velocity low?
+      hittime = bnd / -bnv;                      // rate ok for safe divide 
    else
-      return -1.0f;								// wait for touching
+      return -1.0f;                              // wait for touching
 
    if (infNaN(hittime) || hittime < 0 || hittime > dtime)
       return -1.0f;	// time is outside this frame ... no collision
@@ -817,12 +817,12 @@ void HitTriangle::Collide(const CollisionEvent& coll)
 
 void HitTriangle::CalcHitBBox()
 {
-   m_hitBBox.left = min(m_rgv[0].x, min(m_rgv[1].x, m_rgv[2].x));
-   m_hitBBox.right = max(m_rgv[0].x, max(m_rgv[1].x, m_rgv[2].x));
-   m_hitBBox.top = min(m_rgv[0].y, min(m_rgv[1].y, m_rgv[2].y));
+   m_hitBBox.left   = min(m_rgv[0].x, min(m_rgv[1].x, m_rgv[2].x));
+   m_hitBBox.right  = max(m_rgv[0].x, max(m_rgv[1].x, m_rgv[2].x));
+   m_hitBBox.top    = min(m_rgv[0].y, min(m_rgv[1].y, m_rgv[2].y));
    m_hitBBox.bottom = max(m_rgv[0].y, max(m_rgv[1].y, m_rgv[2].y));
-   m_hitBBox.zlow = min(m_rgv[0].z, min(m_rgv[1].z, m_rgv[2].z));
-   m_hitBBox.zhigh = max(m_rgv[0].z, max(m_rgv[1].z, m_rgv[2].z));
+   m_hitBBox.zlow   = min(m_rgv[0].z, min(m_rgv[1].z, m_rgv[2].z));
+   m_hitBBox.zhigh  = max(m_rgv[0].z, max(m_rgv[1].z, m_rgv[2].z));
 }
 
 
@@ -835,9 +835,9 @@ float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& co
 
    //slintf("HitPlane test - %f %f\n", pball->m_pos.z, pball->m_vel.z);
 
-   const float bnv = m_normal.Dot(ball.m_vel);       // speed in normal direction
+   const float bnv = m_normal.Dot(ball.m_vel); // speed in normal direction
 
-   if (bnv > C_CONTACTVEL)                 // return if clearly ball is receding from object
+   if (bnv > C_CONTACTVEL)                     // return if clearly ball is receding from object
       return -1.0f;
 
    const float bnd = m_normal.Dot(ball.m_pos) - ball.m_radius - m_d; // distance from plane to ball surface
@@ -881,7 +881,7 @@ float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& co
            return -1.0f;   // large distance, small velocity -> no hit
    }
 
-   hittime = bnd / -bnv;                   // rate ok for safe divide
+   hittime = bnd / -bnv;   // rate ok for safe divide
    if (hittime < 0.f)
        hittime = 0.0f;     // already penetrating? then collide immediately
 #endif
@@ -890,7 +890,7 @@ float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& co
       return -1.0f;       // time is outside this frame ... no collision
 
    coll.m_hitnormal = m_normal;
-   coll.m_hitdistance = bnd;                // actual contact distance
+   coll.m_hitdistance = bnd;               // actual contact distance
    //coll.m_hitRigid = true;               // collision type
 
 #ifdef NEW_PHYSICS
