@@ -94,7 +94,7 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
          if ((m_ObjType != eTrigger) ||                     // not a trigger
              (!ball.m_vpVolObjs) ||
              // is a trigger, so test:
-             (fabsf(bnd) >= ball.m_radius*0.5f) ||        // not too close ... nor too far away
+             (fabsf(bnd) >= ball.m_radius*0.5f) ||          // not too close ... nor too far away
              (inside != (FindIndexOf(*(ball.m_vpVolObjs), m_obj) < 0))) // ...ball outside and hit set or ball inside and no hit set
          {
               return -1.0f;
@@ -121,9 +121,9 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
    if (!rigid)                                               // non rigid body collision? return direction
       coll.m_hitflag = bUnHit;                               // UnHit signal is receding from outside target
 
-   const float hitz = ball.m_pos.z + ball.m_vel.z*hittime; // check too high or low relative to ball rolling point at hittime
+   const float hitz = ball.m_pos.z + ball.m_vel.z*hittime;   // check too high or low relative to ball rolling point at hittime
 
-   if (hitz + ball.m_radius*0.5f < m_hitBBox.zlow          // check limits of object's height and depth  
+   if (hitz + ball.m_radius*0.5f < m_hitBBox.zlow            // check limits of object's height and depth  
     || hitz - ball.m_radius*0.5f > m_hitBBox.zhigh)
    {
        return -1.0f;
@@ -388,7 +388,7 @@ float HitLineZ::HitTest(const BallS &ball, const float dtime, CollisionEvent& co
 
    const float hitz = ball.m_pos.z + hittime * ball.m_vel.z;   // ball z position at hit time
 
-   if (hitz < m_hitBBox.zlow || hitz > m_hitBBox.zhigh)    // check z coordinate
+   if (hitz < m_zlow || hitz > m_zhigh)    // check z coordinate
       return -1.0f;
 
    const float hitx = ball.m_pos.x + hittime * ball.m_vel.x;   // ball x position at hit time
@@ -414,8 +414,8 @@ void HitLineZ::CalcHitBBox()
    m_hitBBox.right = m_xy.x;
    m_hitBBox.top = m_xy.y;
    m_hitBBox.bottom = m_xy.y;
-
-   // zlow and zhigh set in ctor
+   m_hitBBox.zlow = m_zlow;
+   m_hitBBox.zhigh = m_zhigh;
 }
 
 void HitLineZ::Collide(const CollisionEvent& coll)

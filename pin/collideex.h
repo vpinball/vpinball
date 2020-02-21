@@ -238,7 +238,6 @@ public:
 
 private:
    Matrix3 m_matrix;
-   float m_zlow, m_zhigh;
 };
 
 //

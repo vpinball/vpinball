@@ -45,14 +45,14 @@ HitPlunger::HitPlunger(const float x, const float y, const float x2, const float
    m_plungerMover.m_linesegEnd.m_hitBBox.zlow    = zheight;
    m_plungerMover.m_linesegEnd.m_hitBBox.zhigh   = zheight + PLUNGERHEIGHT;
 
-   m_plungerMover.m_jointBase[0].m_hitBBox.zlow  = zheight;
-   m_plungerMover.m_jointBase[0].m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
-   m_plungerMover.m_jointBase[1].m_hitBBox.zlow  = zheight;
-   m_plungerMover.m_jointBase[1].m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
-   m_plungerMover.m_jointEnd[0].m_hitBBox.zlow   = zheight;
-   m_plungerMover.m_jointEnd[0].m_hitBBox.zhigh  = zheight + PLUNGERHEIGHT;
-   m_plungerMover.m_jointEnd[1].m_hitBBox.zlow   = zheight;
-   m_plungerMover.m_jointEnd[1].m_hitBBox.zhigh  = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_jointBase[0].m_zlow  = zheight;
+   m_plungerMover.m_jointBase[0].m_zhigh = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_jointBase[1].m_zlow  = zheight;
+   m_plungerMover.m_jointBase[1].m_zhigh = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_jointEnd[0].m_zlow   = zheight;
+   m_plungerMover.m_jointEnd[0].m_zhigh  = zheight + PLUNGERHEIGHT;
+   m_plungerMover.m_jointEnd[1].m_zlow   = zheight;
+   m_plungerMover.m_jointEnd[1].m_zhigh  = zheight + PLUNGERHEIGHT;
 
    m_plungerMover.SetObjects(m_plungerMover.m_pos);
 }

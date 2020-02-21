@@ -974,15 +974,8 @@ float HitLine3D::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
    // transform ball to cylinder coordinate system
    ball_tmp.m_pos = m_matrix * ball.m_pos;
    ball_tmp.m_vel = m_matrix * ball.m_vel;
-   // and update z bounds of LineZ with transformed coordinates
-   const Vertex2D oldz(m_hitBBox.zlow, m_hitBBox.zhigh);
-   (const_cast<HitLine3D*>(this))->m_hitBBox.zlow = m_zlow;   // HACK; needed below // evil cast to non-const, should actually change the stupid HitLineZ to have explicit z coordinates!
-   (const_cast<HitLine3D*>(this))->m_hitBBox.zhigh = m_zhigh; // dto.
 
    const float hittime = HitLineZ::HitTest(ball, dtime, coll);
-
-   (const_cast<HitLine3D*>(this))->m_hitBBox.zlow = oldz.x;   // HACK
-   (const_cast<HitLine3D*>(this))->m_hitBBox.zhigh = oldz.y;  // dto.
 
    if (hittime >= 0.f)       // transform hit normal back to world coordinate system
       coll.m_hitnormal = m_matrix.MulVectorT(coll.m_hitnormal);
