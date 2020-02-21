@@ -726,7 +726,7 @@ void Player::Shutdown()
          pball->m_pballex->Release();
       }
 
-      delete pball->m_vpVolObjs;
+      delete pball->m_d.m_vpVolObjs;
       delete pball;
    }
 
@@ -2180,13 +2180,13 @@ void Player::InitStatic(HWND hwndProgress)
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
 {
    Ball * const pball = new Ball();
-   pball->m_radius = radius;
-   pball->m_pos.x = x;
-   pball->m_pos.y = y;
-   pball->m_pos.z = z + pball->m_radius;
-   pball->m_vel.x = vx;
-   pball->m_vel.y = vy;
-   pball->m_vel.z = vz;
+   pball->m_d.m_radius = radius;
+   pball->m_d.m_pos.x = x;
+   pball->m_d.m_pos.y = y;
+   pball->m_d.m_pos.z = z + pball->m_d.m_radius;
+   pball->m_d.m_vel.x = vx;
+   pball->m_d.m_vel.y = vy;
+   pball->m_d.m_vel.z = vz;
    pball->m_bulb_intensity_scale = m_ptable->m_defaultBulbIntensityScaleOnBall;
 
    pball->Init(mass); // Call this after radius set to get proper inertial tensor set up
@@ -2196,7 +2196,7 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    pball->m_pfedebug = (IFireEvents *)pball->m_pballex;
 
    m_vball.push_back(pball);
-   m_vmover.push_back(&pball->m_ballMover); // balls are always added separately to this list!
+   m_vmover.push_back(&pball->m_mover); // balls are always added separately to this list!
 
    pball->CalcHitBBox(); // need to update here, as only done lazily
 
@@ -2241,7 +2241,7 @@ void Player::DestroyBall(Ball *pball)
    }
 
    RemoveFromVectorSingle(m_vball, pball);
-   RemoveFromVectorSingle<MoverObject*>(m_vmover, &pball->m_ballMover);
+   RemoveFromVectorSingle<MoverObject*>(m_vmover, &pball->m_mover);
    RemoveFromVectorSingle<HitObject*>(m_vho_dynamic, pball);
 
    m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
@@ -2980,7 +2980,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
       {
          Ball * const pball = m_vball[i];
 
-         if (!pball->m_frozen
+         if (!pball->m_d.m_frozen
 #ifdef C_DYNAMIC
              && pball->m_dynamic > 0
 #endif
@@ -3141,9 +3141,9 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
             pball->m_angularmomentum *= 0.05f; // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
             }*/
 
-            const Vertex3Ds diff_pos = pball->m_oldpos[p0] - pball->m_pos;
+            const Vertex3Ds diff_pos = pball->m_oldpos[p0] - pball->m_d.m_pos;
             const float mag = diff_pos.x*diff_pos.x + diff_pos.y*diff_pos.y;
-            const Vertex3Ds diff_pos2 = pball->m_oldpos[p1] - pball->m_pos;
+            const Vertex3Ds diff_pos2 = pball->m_oldpos[p1] - pball->m_d.m_pos;
             const float mag2 = diff_pos2.x*diff_pos2.x + diff_pos2.y*diff_pos2.y;
 
             const float threshold = (pball->m_angularmomentum.x*pball->m_angularmomentum.x + pball->m_angularmomentum.y*pball->m_angularmomentum.y) / max(mag, mag2);
@@ -3422,7 +3422,7 @@ void Player::UpdatePhysics()
       for (size_t i = 0; i < m_vball.size(); i++)
       {
          Ball * const pball = m_vball[i];
-         pball->m_oldpos[pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME)] = pball->m_pos;
+         pball->m_oldpos[pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME)] = pball->m_d.m_pos;
 
          pball->m_ringcounter_oldpos++;
          if (pball->m_ringcounter_oldpos == MAX_BALL_TRAIL_POS*(10000 / PHYSICS_STEPTIME))
@@ -4149,7 +4149,7 @@ void Player::UpdateHUD()
 			m_phys_iterations,
 			(U32)(m_phys_total_iterations / m_count),
 			m_phys_max_iterations,
-			g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_vel + (float)PHYS_FACTOR*g_pplayer->m_gravity).Length() : -1.f, g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_angularmomentum / g_pplayer->m_pactiveball->Inertia()).Length() : -1.f);
+			g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR*g_pplayer->m_gravity).Length() : -1.f, g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_angularmomentum / g_pplayer->m_pactiveball->Inertia()).Length() : -1.f);
 		DebugPrint(10, 200, szFoo, len);
 
 #ifdef DEBUGPHYSICS
@@ -4908,7 +4908,7 @@ void Player::Render()
    for (size_t i = 0; i < m_vballDelete.size(); i++)
    {
       Ball * const pball = m_vballDelete[i];
-      delete pball->m_vpVolObjs;
+      delete pball->m_d.m_vpVolObjs;
       delete pball;
    }
 
@@ -5071,7 +5071,7 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> &lig
          if (already_processed)
             continue;
 
-         const float dist = Vertex3Ds(lights[i]->m_d.m_vCenter.x - pball->m_pos.x, lights[i]->m_d.m_vCenter.y - pball->m_pos.y, lights[i]->m_d.m_meshRadius + lights[i]->m_surfaceHeight - pball->m_pos.z).LengthSquared(); //!! z pos
+         const float dist = Vertex3Ds(lights[i]->m_d.m_vCenter.x - pball->m_d.m_pos.x, lights[i]->m_d.m_vCenter.y - pball->m_d.m_pos.y, lights[i]->m_d.m_meshRadius + lights[i]->m_surfaceHeight - pball->m_d.m_pos.z).LengthSquared(); //!! z pos
          //const float contribution = map_bulblight_to_emission(lights[i]) / dist; // could also weight in light color if necessary //!! JF didn't like that, seems like only distance is a measure better suited for the human eye
          if (dist < min_dist)
          {
@@ -5097,9 +5097,9 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
    
    for (unsigned int i = 0, t = 0; i < basicBallLoNumVertices; i += 2, t++)
    {
-      rgvIn[t].x = basicBallLo[i].x*pball->m_radius + pball->m_pos.x;
-      rgvIn[t].y = basicBallLo[i].y*pball->m_radius + pball->m_pos.y;
-      rgvIn[t].z = basicBallLo[i].z*pball->m_radius + zHeight;
+      rgvIn[t].x = basicBallLo[i].x*pball->m_d.m_radius + pball->m_d.m_pos.x;
+      rgvIn[t].y = basicBallLo[i].y*pball->m_d.m_radius + pball->m_d.m_pos.y;
+      rgvIn[t].z = basicBallLo[i].z*pball->m_d.m_radius + zHeight;
    }
    
    m_pin3d.m_proj.TransformVertices(rgvIn, NULL, basicBallLoNumVertices / 2, rgvOut);
@@ -5187,16 +5187,16 @@ void Player::DrawBalls()
          drawReflection = true;
 
       // calculate/adapt height of ball
-      float zheight = (!pball->m_frozen) ? pball->m_pos.z : (pball->m_pos.z - pball->m_radius);
+      float zheight = (!pball->m_d.m_frozen) ? pball->m_d.m_pos.z : (pball->m_d.m_pos.z - pball->m_d.m_radius);
 
       if (m_ptable->m_reflectionEnabled)
          zheight -= m_ptable->m_tableheight*2.0f;
 
-      const float maxz = (pball->m_radius + m_ptable->m_tableheight) + 3.0f;
-      const float minz = (pball->m_radius + m_ptable->m_tableheight) - 0.1f;
+      const float maxz = (pball->m_d.m_radius + m_ptable->m_tableheight) + 3.0f;
+      const float minz = (pball->m_d.m_radius + m_ptable->m_tableheight) - 0.1f;
       if ((m_reflectionForBalls && pball->m_reflectionEnabled && !pball->m_forceReflection && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1 && !pball->m_forceReflection))
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
-         drawReflection = !((zheight > maxz) || pball->m_frozen || (pball->m_pos.z < minz));
+         drawReflection = !((zheight > maxz) || pball->m_d.m_frozen || (pball->m_d.m_pos.z < minz));
 
       if (!drawReflection && m_ptable->m_reflectionEnabled)
          continue;
@@ -5211,7 +5211,7 @@ void Player::DrawBalls()
 					 );
       m_ballShader->SetVector("invTableRes__playfield_height_reflection", &phr);
 
-      if ((zheight > maxz) || (pball->m_pos.z < minz))
+      if ((zheight > maxz) || (pball->m_d.m_pos.z < minz))
       {
          // scaling the ball height by the z scale value results in a flying ball over the playfield/ramp
          // by reducing it with 0.96f (a factor found by trial'n error) the ball is on the ramp again
@@ -5269,7 +5269,7 @@ void Player::DrawBalls()
       float Roughness = 0.8f;
       if (light_nearest[0] != NULL)
       {
-          const float dist = Vertex3Ds(light_nearest[0]->m_d.m_vCenter.x - pball->m_pos.x, light_nearest[0]->m_d.m_vCenter.y - pball->m_pos.y, light_nearest[0]->m_d.m_meshRadius + light_nearest[0]->m_surfaceHeight - pball->m_pos.z).Length(); //!! z pos
+          const float dist = Vertex3Ds(light_nearest[0]->m_d.m_vCenter.x - pball->m_d.m_pos.x, light_nearest[0]->m_d.m_vCenter.y - pball->m_d.m_pos.y, light_nearest[0]->m_d.m_meshRadius + light_nearest[0]->m_surfaceHeight - pball->m_d.m_pos.z).Length(); //!! z pos
           Roughness = min(max(dist*0.006f, 0.4f), Roughness);
       }
       const vec4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
@@ -5296,9 +5296,9 @@ void Player::DrawBalls()
       Matrix3D temp;
       memcpy(temp.m, m.m, 4 * 4 * sizeof(float));
       Matrix3D m3D_full;
-      m3D_full.SetScaling(pball->m_radius*sx, pball->m_radius*sy, pball->m_radius);
+      m3D_full.SetScaling(pball->m_d.m_radius*sx, pball->m_d.m_radius*sy, pball->m_d.m_radius);
       m3D_full.Multiply(temp, m3D_full);
-      temp.SetTranslation(pball->m_pos.x, pball->m_pos.y, zheight);
+      temp.SetTranslation(pball->m_d.m_pos.x, pball->m_d.m_pos.y, zheight);
       temp.Multiply(m3D_full, m3D_full);
       memcpy(m.m, m3D_full.m, 4 * 4 * sizeof(float));
       m_ballShader->SetMatrix("orientation", &m);
@@ -5364,7 +5364,7 @@ void Player::DrawBalls()
                vec.y = pball->m_oldpos[io].y - pball->m_oldpos[i3].y;
                vec.z = pball->m_oldpos[io].z - pball->m_oldpos[i3].z;
                const float bc = m_ptable->m_ballTrailStrength * powf(1.f - 1.f / max(vec.Length(), 1.0f), 64.0f); //!! 64=magic alpha falloff
-               const float r = min(pball->m_radius*0.9f, 2.0f*pball->m_radius / powf((float)(i2 + 2), 0.6f)); //!! consts are for magic radius falloff
+               const float r = min(pball->m_d.m_radius*0.9f, 2.0f*pball->m_d.m_radius / powf((float)(i2 + 2), 0.6f)); //!! consts are for magic radius falloff
 
                if (bc > 0.f && r > FLT_MIN)
                {
@@ -5451,7 +5451,7 @@ void Player::DrawBalls()
          // set transform
          Matrix3D matOrig, matNew, matRot;
          matOrig = m_pin3d.GetWorldTransform();
-         matNew.SetTranslation(pball->m_pos);
+         matNew.SetTranslation(pball->m_d.m_pos);
          matOrig.Multiply(matNew, matNew);
          matRot.SetIdentity();
          for (int j = 0; j < 3; ++j)
@@ -5529,9 +5529,9 @@ void Player::DoDebugObjectMenu(const int x, const int y)
    // the near clipping plane to the far clipping plane, and find what
    // it intersects with.
    Ball ballT;
-   ballT.m_pos = v3d;
-   ballT.m_vel = v3d2 - v3d;
-   ballT.m_radius = 0.f;
+   ballT.m_d.m_pos = v3d;
+   ballT.m_d.m_vel = v3d2 - v3d;
+   ballT.m_d.m_radius = 0.f;
    ballT.m_coll.m_hittime = 1.0f;
 
    ballT.CalcHitBBox(); // need to update here, as only done lazily

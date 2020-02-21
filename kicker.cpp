@@ -828,13 +828,13 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
       m_phitkickercircle->m_pball->m_coll.m_hitflag = false;
       m_phitkickercircle->m_pball->m_coll.m_isContact = false;
       m_phitkickercircle->m_pball->m_coll.m_hitmoment_bit = true;
-      m_phitkickercircle->m_pball->m_pos.x += x; // brian's suggestion
-      m_phitkickercircle->m_pball->m_pos.y += y;
-      m_phitkickercircle->m_pball->m_pos.z += z;
-      m_phitkickercircle->m_pball->m_vel.x = sinf(anglerad) * speed;
-      m_phitkickercircle->m_pball->m_vel.y = -cosf(anglerad) * speed;
-      m_phitkickercircle->m_pball->m_vel.z = speedz;
-      m_phitkickercircle->m_pball->m_frozen = false;
+      m_phitkickercircle->m_pball->m_d.m_pos.x += x; // brian's suggestion
+      m_phitkickercircle->m_pball->m_d.m_pos.y += y;
+      m_phitkickercircle->m_pball->m_d.m_pos.z += z;
+      m_phitkickercircle->m_pball->m_d.m_vel.x =  sinf(anglerad) * speed;
+      m_phitkickercircle->m_pball->m_d.m_vel.y = -cosf(anglerad) * speed;
+      m_phitkickercircle->m_pball->m_d.m_vel.z = speedz;
+      m_phitkickercircle->m_pball->m_d.m_frozen = false;
 #ifdef C_DYNAMIC
       m_phitkickercircle->m_pball->m_dynamic = C_DYNAMIC;
 #endif
@@ -1103,7 +1103,7 @@ STDMETHODIMP Kicker::BallCntOver(int *pVal)
       {
          Ball * const pball = g_pplayer->m_vball[i];
 
-         if (pball->m_vpVolObjs && FindIndexOf(*(pball->m_vpVolObjs), (IFireEvents*)this) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
+         if (pball->m_d.m_vpVolObjs && FindIndexOf(*(pball->m_d.m_vpVolObjs), (IFireEvents*)this) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
          {
             ++cnt;
             g_pplayer->m_pactiveball = pball; // set active ball for scriptor
@@ -1155,9 +1155,9 @@ STDMETHODIMP Kicker::get_LastCapturedBall(IBall **pVal)
     return S_OK;
 }
 
-float KickerHitCircle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
+float KickerHitCircle::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
-   return HitTestBasicRadius(pball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
+   return HitTestBasicRadius(ball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
 }
 
 void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& hitnormal) const
@@ -1167,7 +1167,7 @@ void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& 
     for (size_t t = 0; t < m_pkicker->m_hitMesh.size(); t++)
     {
         // find the right normal by calculating the distance from current ball position to vertex of the kicker mesh               
-        const float length_sqr = (pball->m_pos - m_pkicker->m_hitMesh[t]).LengthSquared();
+        const float length_sqr = (pball->m_d.m_pos - m_pkicker->m_hitMesh[t]).LengthSquared();
         if (length_sqr < minDist_sqr)
         {
             minDist_sqr = length_sqr;
@@ -1181,8 +1181,8 @@ void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& 
         // we have the nearest vertex now use the normal and damp it so it doesn't speed up the ball velocity too much
         const Vertex3Ds hitnorm(kickerHitMesh[idx].nx, kickerHitMesh[idx].ny, kickerHitMesh[idx].nz);
         Vertex3Ds surfVel, tangent, surfP;
-        const float dot = -pball->m_vel.Dot(hitnorm);
-        const float reactionImpulse = pball->m_mass * fabsf(dot);
+        const float dot = -pball->m_d.m_vel.Dot(hitnorm);
+        const float reactionImpulse = pball->m_d.m_mass * fabsf(dot);
         /*
         if (pball->m_pos.z > pball->m_radius + g_pplayer->m_ptable->m_tableheight)
         {
@@ -1196,13 +1196,13 @@ void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& 
         }
         else
         */
-        surfP = -pball->m_radius * hitnormal;    // surface contact point relative to center of mass
+        surfP = -pball->m_d.m_radius * hitnormal;    // surface contact point relative to center of mass
 
         surfVel = pball->SurfaceVelocity(surfP);         // velocity at impact point
 
         tangent = surfVel - surfVel.Dot(hitnormal) * hitnorm; // calc the tangential velocity
 
-        pball->m_vel += dot * hitnorm; // apply collision impulse (along normal, so no torque)
+        pball->m_d.m_vel += dot * hitnorm; // apply collision impulse (along normal, so no torque)
 #ifdef C_DYNAMIC
         pball->m_dynamic = C_DYNAMIC;
 #endif
@@ -1217,7 +1217,7 @@ void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& 
 
             // compute friction impulse
             const Vertex3Ds cross = CrossProduct(surfP, tangent);
-            const float kt = 1.0f/pball->m_mass + tangent.Dot(CrossProduct(cross / pball->Inertia(), surfP));
+            const float kt = 1.0f/pball->m_d.m_mass + tangent.Dot(CrossProduct(cross / pball->Inertia(), surfP));
 
             // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
             const float maxFric = friction * reactionImpulse;
@@ -1230,20 +1230,20 @@ void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& 
 
 void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, const bool hitbit, const bool newBall)
 {
-   if (m_pball) return;								 // a previous ball already in kicker
+   if (m_pball) return;                              // a previous ball already in kicker
 
-   const int i = FindIndexOf(*(pball->m_vpVolObjs), m_obj); // check if kicker in ball's volume set
+   const int i = FindIndexOf(*(pball->m_d.m_vpVolObjs), m_obj); // check if kicker in ball's volume set
 
    if (newBall || ((!hitbit) == (i < 0)))            // New or (Hit && !Vol || UnHit && Vol)
    {
       if (m_pkicker->m_d.m_legacyMode || newBall)
-         pball->m_pos += STATICTIME * pball->m_vel;  // move ball slightly forward
+         pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel;  // move ball slightly forward
 
       if (i < 0) // entering Kickers volume
       {
-         const float grabHeight = (m_hitBBox.zlow + pball->m_radius) * m_pkicker->m_d.m_hitAccuracy;
+         const float grabHeight = (m_hitBBox.zlow + pball->m_d.m_radius) * m_pkicker->m_d.m_hitAccuracy;
          // early out here if the ball is slow and we are near the kicker center
-         const bool hitEvent = (pball->m_pos.z < grabHeight || m_pkicker->m_d.m_legacyMode || newBall);
+         const bool hitEvent = (pball->m_d.m_pos.z < grabHeight || m_pkicker->m_d.m_legacyMode || newBall);
 
          if(!hitEvent)
          {
@@ -1255,18 +1255,18 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
             // if so we take the last "good" velocity to help the ball moving over the critical spot at the kicker bevel
             // this hack seems to work only if the kicker is on the playfield, a kicker attached to a wall has still problems
             // because the friction calculation for a wall is also different
-            if (pball->m_vel.Length() < 0.2f)
-                pball->m_vel = pball->m_oldVel;
+            if (pball->m_d.m_vel.LengthSquared() < (float)(0.2*0.2))
+                pball->m_d.m_vel = pball->m_oldVel;
 
-            pball->m_oldVel = pball->m_vel;
+            pball->m_oldVel = pball->m_d.m_vel;
          }
 
          if (hitEvent)
          {
-            pball->m_frozen = !m_pkicker->m_d.m_fallThrough;
-            if (pball->m_frozen)
+            pball->m_d.m_frozen = !m_pkicker->m_d.m_fallThrough;
+            if (pball->m_d.m_frozen)
             {
-               pball->m_vpVolObjs->push_back(m_obj);		// add kicker to ball's volume set
+               pball->m_d.m_vpVolObjs->push_back(m_obj);		// add kicker to ball's volume set
                m_pball = pball;
                m_lastCapturedBall = pball;
                if (pball == g_pplayer->m_pactiveballBC)
@@ -1278,24 +1278,24 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
             if (!newBall)
                m_pkicker->FireGroupEvent(DISPID_HitEvents_Hit);
 
-            if (pball->m_frozen || m_pkicker->m_d.m_fallThrough)	// script may have unfrozen the ball
+            if (pball->m_d.m_frozen || m_pkicker->m_d.m_fallThrough)	// script may have unfrozen the ball
             {
                // if ball falls through hole, we fake the collision algo by changing the ball height
                // in HitTestBasicRadius() the z-position of the ball is checked if it is >= to the hit cylinder
                // if we don't change the height of the ball we get a lot of hit events while the ball is falling!!
 
                // Only mess with variables if ball was not kicked during event
-               pball->m_vel.SetZero();
+               pball->m_d.m_vel.SetZero();
                pball->m_angularmomentum.SetZero();
-               pball->m_pos.x = center.x;
-               pball->m_pos.y = center.y;
+               pball->m_d.m_pos.x = center.x;
+               pball->m_d.m_pos.y = center.y;
 #ifdef C_DYNAMIC
                pball->m_dynamic = 0;
 #endif
                if (m_pkicker->m_d.m_fallThrough)
-                  pball->m_pos.z = m_hitBBox.zlow - pball->m_radius - 5.0f;
+                  pball->m_d.m_pos.z = m_hitBBox.zlow - pball->m_d.m_radius - 5.0f;
                else
-                  pball->m_pos.z = m_hitBBox.zlow + pball->m_radius/**pball->m_radius/radius*/;
+                  pball->m_d.m_pos.z = m_hitBBox.zlow + pball->m_d.m_radius/**pball->m_radius/radius*/;
             }
             else
                m_pball = NULL; // make sure
@@ -1303,7 +1303,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
       }
       else // exiting kickers volume
       {
-         pball->m_vpVolObjs->erase(pball->m_vpVolObjs->begin() + i); // remove kicker to ball's volume set
+         pball->m_d.m_vpVolObjs->erase(pball->m_d.m_vpVolObjs->begin() + i); // remove kicker to ball's volume set
          m_pkicker->FireGroupEvent(DISPID_HitEvents_Unhit);
       }
    }

@@ -474,9 +474,9 @@ void HitKDNode::HitTestBallSse(const Ball * const pball, CollisionEvent& coll) c
    const __m128 bzlow = _mm_set1_ps(pball->m_hitBBox.zlow);
    const __m128 bzhigh = _mm_set1_ps(pball->m_hitBBox.zhigh);*/
 
-   const __m128 posx = _mm_set1_ps(pball->m_pos.x);
-   const __m128 posy = _mm_set1_ps(pball->m_pos.y);
-   const __m128 posz = _mm_set1_ps(pball->m_pos.z);
+   const __m128 posx = _mm_set1_ps(pball->m_d.m_pos.x);
+   const __m128 posy = _mm_set1_ps(pball->m_d.m_pos.y);
+   const __m128 posz = _mm_set1_ps(pball->m_d.m_pos.z);
    const __m128 rsqr = _mm_set1_ps(pball->HitRadiusSqr());
 
    const bool traversal_order = (rand_mt_01() < 0.5f); // swaps test order in leafs randomly
@@ -617,12 +617,12 @@ void HitKDNode::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHi
       HitObject * const pho = m_hitoct->GetItemAt(i);
       if ((pball != pho) && // ball cannot hit itself
          /*fRectIntersect3D(pball->m_hitBBox, pho->m_hitBBox) &&*/ //!! do bbox test before to save alu-instructions? or not to save registers? -> currently not, as just sphere vs sphere
-         fRectIntersect3D(pball->m_pos, rcHitRadiusSqr, pho->m_hitBBox))
+         fRectIntersect3D(pball->m_d.m_pos, rcHitRadiusSqr, pho->m_hitBBox))
       {
 #ifdef DEBUGPHYSICS
          g_pplayer->c_deepTested++;
 #endif
-         const float newtime = pho->HitTest(pball, coll.m_hittime, coll);
+         const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, coll);
          if (newtime >= 0)
             pvhoHit.push_back(pho);
       }

@@ -4,25 +4,25 @@ void BumperHitCircle::Collide(const CollisionEvent& coll)
 {
    if (!m_enabled) return;
 
-   const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_vel); // needs to be computed before Collide3DWall()!
+   const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_d.m_vel); // needs to be computed before Collide3DWall()!
 
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter); // reflect ball from wall
 
    if (m_pbumper->m_d.m_hitEvent && (dot <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
    {
-      coll.m_ball->m_vel += coll.m_hitnormal * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
+      coll.m_ball->m_d.m_vel += coll.m_hitnormal * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
 
       m_bumperanim_hitEvent = true;
-      m_bumperanim_hitBallPosition = coll.m_ball->m_pos;
+      m_bumperanim_hitBallPosition = coll.m_ball->m_d.m_pos;
       m_pbumper->FireGroupEvent(DISPID_HitEvents_Hit);
    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-float LineSegSlingshot::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
+float LineSegSlingshot::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
-   return HitTestBasic(pball, dtime, coll, true, true, true);
+   return HitTestBasic(ball, dtime, coll, true, true, true);
 }
 
 void LineSegSlingshot::Collide(const CollisionEvent& coll)
@@ -30,7 +30,7 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
    Ball * const pball = coll.m_ball;
    const Vertex3Ds& hitnormal = coll.m_hitnormal;
 
-   const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_vel); // normal velocity to slingshot
+   const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_d.m_vel); // normal velocity to slingshot
 
    const bool threshold = (dot <= -m_psurface->m_d.m_slingshot_threshold);  // normal greater than threshold?
 
@@ -38,19 +38,19 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
    {
       const float len = (v2.x - v1.x)*hitnormal.y - (v2.y - v1.y)*hitnormal.x; // length of segment, Unit TAN points from V1 to V2
 
-      const Vertex2D vhitpoint(pball->m_pos.x - hitnormal.x * pball->m_radius, //project ball radius along norm
-         pball->m_pos.y - hitnormal.y * pball->m_radius);
+      const Vertex2D vhitpoint(pball->m_d.m_pos.x - hitnormal.x * pball->m_d.m_radius, //project ball radius along norm
+         pball->m_d.m_pos.y - hitnormal.y * pball->m_d.m_radius);
 
       // vhitpoint will now be the point where the ball hits the line
       // Calculate this distance from the center of the slingshot to get force
 
       const float btd = (vhitpoint.x - v1.x)*hitnormal.y - (vhitpoint.y - v1.y)*hitnormal.x; // distance to vhit from V1
       float force = (fabsf(len) > 1.0e-6f) ? ((btd + btd) / len - 1.0f) : -1.0f;	// -1..+1
-      force = 0.5f *(1.0f - force*force);	//!! maximum value 0.5 ...I think this should have been 1.0...oh well
+      force = 0.5f *(1.0f - force*force); //!! maximum value 0.5 ...I think this should have been 1.0...oh well
       // will match the previous physics
       force *= m_force;//-80;
 
-      pball->m_vel -= hitnormal * force;	// boost velocity, drive into slingshot (counter normal), allow CollideWall to handle the remainder
+      pball->m_d.m_vel -= hitnormal * force; // boost velocity, drive into slingshot (counter normal), allow CollideWall to handle the remainder
    }
 
    pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
@@ -58,8 +58,8 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
    if (m_obj && m_fe && !m_psurface->m_disabled && threshold)
    {
       // is this the same place as last event? if same then ignore it
-       const float dist_ls = (pball->m_Event_Pos - pball->m_pos).LengthSquared();
-       pball->m_Event_Pos = pball->m_pos; //remember last collide position
+       const float dist_ls = (pball->m_eventPos - pball->m_d.m_pos).LengthSquared();
+       pball->m_eventPos = pball->m_d.m_pos; //remember last collide position
 
        if (dist_ls > 0.25f) // must be a new place if only by a little
        {
@@ -132,13 +132,13 @@ HitGate::HitGate(Gate * const pgate, const float height)
     m_twoWay = false;
 }
 
-float HitGate::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
+float HitGate::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_enabled) return -1.0f;
 
    for (unsigned int i = 0; i < 2; ++i)
    {
-      const float hittime = m_lineseg[i].HitTestBasic(pball, dtime, coll, false, true, false); // any face, lateral, non-rigid
+      const float hittime = m_lineseg[i].HitTestBasic(ball, dtime, coll, false, true, false); // any face, lateral, non-rigid
       if (hittime >= 0.f)
       {
          // signal the Collide() function that the hit is on the front or back side
@@ -153,7 +153,7 @@ float HitGate::HitTest(const Ball * const pball, const float dtime, CollisionEve
 
 void HitGate::Collide(const CollisionEvent& coll)
 {
-   const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_vel);
+   const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_d.m_vel);
    const float h = m_pgate->m_d.m_height*0.5f;
 
    //linear speed = ball speed
@@ -308,13 +308,13 @@ HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
    m_spinnerMover.m_visible = pspinner->m_d.m_visible;
 }
 
-float HitSpinner::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
+float HitSpinner::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_enabled) return -1.0f;
 
    for (unsigned int i = 0; i < 2; ++i)
    {
-      const float hittime = m_lineseg[i].HitTestBasic(pball, dtime, coll, false, true, false); // any face, lateral, non-rigid
+      const float hittime = m_lineseg[i].HitTestBasic(ball, dtime, coll, false, true, false); // any face, lateral, non-rigid
       if (hittime >= 0.f)
       {
          // signal the Collide() function that the hit is on the front or back side
@@ -329,7 +329,7 @@ float HitSpinner::HitTest(const Ball * const pball, const float dtime, Collision
 
 void HitSpinner::Collide(const CollisionEvent& coll)
 {
-   const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_vel);
+   const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_d.m_vel);
 
    if (dot < 0.f) return; //hit from back doesn't count
 
@@ -476,17 +476,17 @@ Hit3DPoly::~Hit3DPoly()
    delete[] m_rgv;
 }
 
-float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
+float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_enabled) return -1.0f;
 
-   const float bnv = m_normal.Dot(pball->m_vel);  //speed in Normal-vector direction
+   const float bnv = m_normal.Dot(ball.m_vel);  //speed in Normal-vector direction
 
    if ((m_ObjType != eTrigger) && (bnv > C_LOWNORMVEL)) // return if clearly ball is receding from object
       return -1.0f;
 
    // Point on the ball that will hit the polygon, if it hits at all
-   Vertex3Ds hitPos = pball->m_pos - pball->m_radius * m_normal; // nearest point on ball ... projected radius along norm
+   Vertex3Ds hitPos = ball.m_pos - ball.m_radius * m_normal; // nearest point on ball ... projected radius along norm
 
    const float bnd = m_normal.Dot(hitPos - m_rgv[0]); // distance from plane to ball
 
@@ -500,7 +500,7 @@ float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionE
 #endif
    if (rigid) //rigid polygon
    {
-      if (bnd < -pball->m_radius/**2.0f*/) return -1.0f; // (ball normal distance) excessive penetration of object skin ... no collision HACK //!! *2 necessary?
+      if (bnd < -ball.m_radius/**2.0f*/) return -1.0f; // (ball normal distance) excessive penetration of object skin ... no collision HACK //!! *2 necessary?
 
       if (bnd <= (float)PHYS_TOUCH)
       {
@@ -533,10 +533,10 @@ float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionE
       if (bnv * bnd >= 0.f)                         // outside-receding || inside-approaching
       {
          if (//(m_ObjType != eTrigger) ||             // not a trigger? // always false due to rigid test
-            (!pball->m_vpVolObjs) ||                // temporary ball
+            (!ball.m_vpVolObjs) ||                // temporary ball
             // if trigger, then check:
-            (fabsf(bnd) >= pball->m_radius*0.5f) ||	// not too close ... nor too far away
-            (inside != (FindIndexOf(*(pball->m_vpVolObjs), m_obj) < 0))) // ...ball outside and hit set or ball inside and no hit set
+            (fabsf(bnd) >= ball.m_radius*0.5f) ||	// not too close ... nor too far away
+            (inside != (FindIndexOf(*(ball.m_vpVolObjs), m_obj) < 0))) // ...ball outside and hit set or ball inside and no hit set
             return -1.0f;
 
          hittime = 0;
@@ -548,7 +548,7 @@ float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionE
 
    if (infNaN(hittime) || hittime < 0.f || hittime > dtime) return -1.0f;	// time is outside this frame ... no collision
 
-   hitPos += hittime * pball->m_vel;     // advance hit point to contact
+   hitPos += hittime * ball.m_vel;     // advance hit point to contact
 
    // Do a point in poly test, using the xy plane, to see if the hit point is inside the polygon
    //this need to be changed to a point in polygon on 3D plane
@@ -624,7 +624,7 @@ void Hit3DPoly::Collide(const CollisionEvent& coll)
 
    if (m_ObjType != eTrigger)
    {
-      const float dot = -(hitnormal.Dot(pball->m_vel));
+      const float dot = -(hitnormal.Dot(pball->m_d.m_vel));
 
       pball->Collide3DWall(m_normal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
@@ -645,22 +645,22 @@ void Hit3DPoly::Collide(const CollisionEvent& coll)
    }
    else // trigger:
    {
-      if (!pball->m_vpVolObjs) return;
+      if (!pball->m_d.m_vpVolObjs) return;
 
-      const int i = FindIndexOf(*(pball->m_vpVolObjs), m_obj); // if -1 then not in objects volume set (i.e not already hit)
+      const int i = FindIndexOf(*(pball->m_d.m_vpVolObjs), m_obj); // if -1 then not in objects volume set (i.e not already hit)
 
       if ((!coll.m_hitflag) == (i < 0)) // Hit == NotAlreadyHit
       {
-         pball->m_pos += STATICTIME * pball->m_vel;      //move ball slightly forward
+         pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel;      //move ball slightly forward
 
          if (i < 0)
          {
-            pball->m_vpVolObjs->push_back(m_obj);
+            pball->m_d.m_vpVolObjs->push_back(m_obj);
             ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
          }
          else
          {
-            pball->m_vpVolObjs->erase(pball->m_vpVolObjs->begin() + i);
+            pball->m_d.m_vpVolObjs->erase(pball->m_d.m_vpVolObjs->begin() + i);
             ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Unhit);
          }
       }
@@ -707,21 +707,21 @@ HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
    m_scatter = 0.f;
 }
 
-float HitTriangle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
+float HitTriangle::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_enabled) return -1.0f;
 
-   const float bnv = m_normal.Dot(pball->m_vel);     // speed in Normal-vector direction
+   const float bnv = m_normal.Dot(ball.m_vel); // speed in Normal-vector direction
 
-   if (bnv > C_CONTACTVEL)						// return if clearly ball is receding from object
+   if (bnv > C_CONTACTVEL)                     // return if clearly ball is receding from object
       return -1.0f;
 
    // Point on the ball that will hit the polygon, if it hits at all
-   Vertex3Ds hitPos = pball->m_pos - pball->m_radius * m_normal; // nearest point on ball ... projected radius along norm
+   Vertex3Ds hitPos = ball.m_pos - ball.m_radius * m_normal; // nearest point on ball ... projected radius along norm
 
    const float bnd = m_normal.Dot(hitPos - m_rgv[0]);  // distance from plane to ball
 
-   if (bnd < -pball->m_radius/**2.0f*/) //!! *2 necessary?
+   if (bnd < -ball.m_radius/**2.0f*/) //!! *2 necessary?
       return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
 
    bool isContact = false;
@@ -747,7 +747,7 @@ float HitTriangle::HitTest(const Ball * const pball, const float dtime, Collisio
    if (infNaN(hittime) || hittime < 0 || hittime > dtime)
       return -1.0f;	// time is outside this frame ... no collision
 
-   hitPos += hittime * pball->m_vel;	// advance hit point to contact
+   hitPos += hittime * ball.m_vel; // advance hit point to contact
 
    // check if hitPos is within the triangle
 
@@ -795,7 +795,7 @@ void HitTriangle::Collide(const CollisionEvent& coll)
    Ball * const pball = coll.m_ball;
    const Vertex3Ds& hitnormal = coll.m_hitnormal;
 
-   const float dot = -(hitnormal.Dot(pball->m_vel));
+   const float dot = -(hitnormal.Dot(pball->m_d.m_vel));
 
    pball->Collide3DWall(m_normal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
@@ -829,20 +829,20 @@ void HitTriangle::CalcHitBBox()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-float HitPlane::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
+float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_enabled) return -1.0f;
 
    //slintf("HitPlane test - %f %f\n", pball->m_pos.z, pball->m_vel.z);
 
-   const float bnv = m_normal.Dot(pball->m_vel);       // speed in normal direction
+   const float bnv = m_normal.Dot(ball.m_vel);       // speed in normal direction
 
    if (bnv > C_CONTACTVEL)                 // return if clearly ball is receding from object
       return -1.0f;
 
-   const float bnd = m_normal.Dot(pball->m_pos) - pball->m_radius - m_d; // distance from plane to ball surface
+   const float bnd = m_normal.Dot(ball.m_pos) - ball.m_radius - m_d; // distance from plane to ball surface
 
-   if (bnd < pball->m_radius*-2.0f) //!! solely responsible for ball through playfield?? check other places, too (radius*2??)
+   if (bnd < ball.m_radius*-2.0f) //!! solely responsible for ball through playfield?? check other places, too (radius*2??)
       return -1.0f;   // excessive penetration of plane ... no collision HACK
 
    float hittime;
@@ -907,15 +907,15 @@ float HitPlane::HitTest(const Ball * const pball, const float dtime, CollisionEv
 void HitPlane::Collide(const CollisionEvent& coll)
 {
    //slintf("Playfield COLLISION - (%f %f %f) - (%f %f %f)\n",
-   //        coll.m_ball->m_pos.x, coll.m_ball->m_pos.y, coll.m_ball->m_pos.z,
-   //        coll.m_ball->m_vel.x, coll.m_ball->m_vel.y, coll.m_ball->m_vel.z);
+   //        coll.m_ball->m_d.m_pos.x, coll.m_ball->m_d.m_pos.y, coll.m_ball->m_d.m_pos.z,
+   //        coll.m_ball->m_d.m_vel.x, coll.m_ball->m_d.m_vel.y, coll.m_ball->m_d.m_vel.z);
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
 #ifdef C_EMBEDSHOT_PLANE
    // if ball has penetrated, push it out of the plane
-   const float bnd = m_normal.Dot(coll.m_ball->m_pos) - coll.m_ball->m_radius - m_d; // distance from plane to ball surface
+   const float bnd = m_normal.Dot(coll.m_ball->m_d.m_pos) - coll.m_ball->m_d.m_radius - m_d; // distance from plane to ball surface
    if (bnd < 0.f)
-      coll.m_ball->m_pos -= bnd * m_normal;
+      coll.m_ball->m_d.m_pos -= bnd * m_normal;
 #endif
 }
 
@@ -965,27 +965,22 @@ HitLine3D::HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2)
    m_hitBBox.zhigh = max(v1.z, v2.z);
 }
 
-float HitLine3D::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll) const
+float HitLine3D::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_enabled)
       return -1.0f;
 
-   Ball * const pball = const_cast<Ball*>(pball_);   // HACK; needed below // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)
-
+   BallS ball_tmp = ball;
    // transform ball to cylinder coordinate system
-   const Vertex3Ds old_pos = pball->m_pos;
-   const Vertex3Ds old_vel = pball->m_vel;
-   pball->m_pos = m_matrix * pball->m_pos;
-   pball->m_vel = m_matrix * pball->m_vel;
+   ball_tmp.m_pos = m_matrix * ball.m_pos;
+   ball_tmp.m_vel = m_matrix * ball.m_vel;
    // and update z bounds of LineZ with transformed coordinates
    const Vertex2D oldz(m_hitBBox.zlow, m_hitBBox.zhigh);
    (const_cast<HitLine3D*>(this))->m_hitBBox.zlow = m_zlow;   // HACK; needed below // evil cast to non-const, should actually change the stupid HitLineZ to have explicit z coordinates!
    (const_cast<HitLine3D*>(this))->m_hitBBox.zhigh = m_zhigh; // dto.
 
-   const float hittime = HitLineZ::HitTest(pball, dtime, coll);
+   const float hittime = HitLineZ::HitTest(ball, dtime, coll);
 
-   pball->m_pos = old_pos; // see above
-   pball->m_vel = old_vel;
    (const_cast<HitLine3D*>(this))->m_hitBBox.zlow = oldz.x;   // HACK
    (const_cast<HitLine3D*>(this))->m_hitBBox.zhigh = oldz.y;  // dto.
 
@@ -1000,7 +995,7 @@ void HitLine3D::Collide(const CollisionEvent& coll)
    Ball *const pball = coll.m_ball;
    const Vertex3Ds& hitnormal = coll.m_hitnormal;
 
-   const float dot = -(hitnormal.Dot(pball->m_vel));
+   const float dot = -(hitnormal.Dot(pball->m_d.m_vel));
    pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
    if (m_obj && m_fe && dot >= m_threshold)
@@ -1020,12 +1015,12 @@ void HitLine3D::Collide(const CollisionEvent& coll)
 }
 
 
-float TriggerLineSeg::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
+float TriggerLineSeg::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
    if (!m_ptrigger->m_hitEnabled) return -1.0f;
 
    // approach either face, not lateral-rolling point (assume center), not a rigid body contact
-   return HitTestBasic(pball, dtime, coll, false, false, false);
+   return HitTestBasic(ball, dtime, coll, false, false, false);
 }
 
 void TriggerLineSeg::Collide(const CollisionEvent& coll)
@@ -1033,23 +1028,23 @@ void TriggerLineSeg::Collide(const CollisionEvent& coll)
    Ball * const pball = coll.m_ball;
 
    if ((m_ObjType != eTrigger) ||
-      (!pball->m_vpVolObjs)) return;
+      (!pball->m_d.m_vpVolObjs)) return;
 
-   const int i = FindIndexOf(*(pball->m_vpVolObjs), m_obj); // if -1 then not in objects volume set (i.e not already hit)
+   const int i = FindIndexOf(*(pball->m_d.m_vpVolObjs), m_obj); // if -1 then not in objects volume set (i.e not already hit)
 
    if ((!coll.m_hitflag) == (i < 0))                 // Hit == NotAlreadyHit
    {
-      pball->m_pos += STATICTIME * pball->m_vel;     // move ball slightly forward
+      pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel;     // move ball slightly forward
 
       if (i < 0)
       {
-         pball->m_vpVolObjs->push_back(m_obj);
+         pball->m_d.m_vpVolObjs->push_back(m_obj);
          ((Trigger*)m_obj)->TriggerAnimationHit();
          ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
       }
       else
       {
-         pball->m_vpVolObjs->erase(pball->m_vpVolObjs->begin() + i);
+         pball->m_d.m_vpVolObjs->erase(pball->m_d.m_vpVolObjs->begin() + i);
          ((Trigger*)m_obj)->TriggerAnimationUnhit();
          ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Unhit);
       }
@@ -1057,9 +1052,9 @@ void TriggerLineSeg::Collide(const CollisionEvent& coll)
 }
 
 
-float TriggerHitCircle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll) const
+float TriggerHitCircle::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
-   return HitTestBasicRadius(pball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
+   return HitTestBasicRadius(ball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
 }
 
 void TriggerHitCircle::Collide(const CollisionEvent& coll)
@@ -1067,23 +1062,23 @@ void TriggerHitCircle::Collide(const CollisionEvent& coll)
    Ball * const pball = coll.m_ball;
 
    if ((m_ObjType < eTrigger) || // triggers and kickers
-      (!pball->m_vpVolObjs)) return;
+      (!pball->m_d.m_vpVolObjs)) return;
 
-   const int i = FindIndexOf(*(pball->m_vpVolObjs), m_obj); // if -1 then not in objects volume set (i.e not already hit)
+   const int i = FindIndexOf(*(pball->m_d.m_vpVolObjs), m_obj); // if -1 then not in objects volume set (i.e not already hit)
 
    if ((!coll.m_hitflag) == (i < 0))                 // Hit == NotAlreadyHit
    {
-      pball->m_pos += STATICTIME * pball->m_vel;     // move ball slightly forward
+      pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel;     // move ball slightly forward
 
       if (i < 0)
       {
-         pball->m_vpVolObjs->push_back(m_obj);
+         pball->m_d.m_vpVolObjs->push_back(m_obj);
          ((Trigger*)m_obj)->TriggerAnimationHit();
          ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
       }
       else
       {
-         pball->m_vpVolObjs->erase(pball->m_vpVolObjs->begin() + i);
+         pball->m_d.m_vpVolObjs->erase(pball->m_d.m_vpVolObjs->begin() + i);
          ((Trigger*)m_obj)->TriggerAnimationUnhit();
          ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Unhit);
       }

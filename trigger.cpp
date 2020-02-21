@@ -1151,7 +1151,7 @@ STDMETHODIMP Trigger::BallCntOver(int *pVal)
       {
          Ball * const pball = g_pplayer->m_vball[i];
 
-         if (pball->m_vpVolObjs && FindIndexOf(*(pball->m_vpVolObjs), (IFireEvents*)this) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
+         if (pball->m_d.m_vpVolObjs && FindIndexOf(*(pball->m_d.m_vpVolObjs), (IFireEvents*)this) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
          {
             g_pplayer->m_pactiveball = pball; // set active ball for scriptor
             ++cnt;
@@ -1175,10 +1175,10 @@ STDMETHODIMP Trigger::DestroyBall(int *pVal)
          Ball * const pball = g_pplayer->m_vball[i];
 
          int j;
-         if (pball->m_vpVolObjs && (j = FindIndexOf(*(pball->m_vpVolObjs), (IFireEvents*)this)) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
+         if (pball->m_d.m_vpVolObjs && (j = FindIndexOf(*(pball->m_d.m_vpVolObjs), (IFireEvents*)this)) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
          {
             ++cnt;
-            pball->m_vpVolObjs->erase(pball->m_vpVolObjs->begin() + j);
+            pball->m_d.m_vpVolObjs->erase(pball->m_d.m_vpVolObjs->begin() + j);
             g_pplayer->DestroyBall(pball); // inside trigger volume?
          }
       }
