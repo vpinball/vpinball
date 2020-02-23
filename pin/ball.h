@@ -57,26 +57,26 @@ public:
    void EnsureOMObject();
 
    // Per frame info
-   CCO(BallEx) *m_pballex; // Object model version of the ball
+   CCO(BallEx) *m_pballex;   // Object model version of the ball
 
-   CollisionEvent m_coll;  // collision information, may not be a actual hit if something else happens first
-
-#ifdef C_DYNAMIC
-   int m_dynamic;          // used to determine static ball conditions and velocity quenching
-   float m_drsq;           // square of distance moved
-#endif
+   CollisionEvent m_coll;    // collision information, may not be a actual hit if something else happens first
 
    BallMoverObject m_mover;
 
    BallS m_d;
 
-   Vertex3Ds m_oldVel;     // hack for kicker hole handling only
+   Vertex3Ds m_oldVel;       // hack for kicker hole handling only
 
-   Vertex3Ds m_eventPos;  // last hit event position (to filter hit 'equal' hit events)
+   Vertex3Ds m_lastEventPos; // last hit event position (to filter hit 'equal' hit events)
 
    Vertex3Ds m_angularmomentum;
 
-   unsigned int m_id; // unique ID for each ball
+#ifdef C_DYNAMIC
+   int m_dynamic;            // used to determine static ball conditions and velocity quenching
+   float m_drsq;             // square of distance moved
+#endif
+
+   unsigned int m_id;        // unique ID for each ball
 
    // rendering only:
    bool m_reflectionEnabled;

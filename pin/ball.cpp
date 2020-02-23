@@ -13,7 +13,7 @@ Ball::Ball()
    m_d.m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
    m_pinballEnv = NULL;
    m_pinballDecal = NULL;
-   m_eventPos.x = m_eventPos.y = m_eventPos.z = -1.0f;
+   m_lastEventPos.x = m_lastEventPos.y = m_lastEventPos.z = -10000.0f; // last pos is far far away
    m_d.m_frozen = false;
    m_color = RGB(255, 255, 255);
 #ifdef C_DYNAMIC
@@ -385,7 +385,7 @@ void Ball::HandleStaticContact(const CollisionEvent& coll, const float friction,
 
 #ifdef C_EMBEDVELLIMIT
       if (coll.m_hitdistance <= (float)PHYS_TOUCH)
-          m_vel += coll.m_hitnormal*max(min(C_EMBEDVELLIMIT,-coll.m_hitdistance),(float)PHYS_TOUCH);
+          m_d.m_vel += coll.m_hitnormal*max(min(C_EMBEDVELLIMIT,-coll.m_hitdistance),(float)PHYS_TOUCH);
 #endif
 
 #ifdef C_BALL_SPIN_HACK2 // hacky killing of ball spin

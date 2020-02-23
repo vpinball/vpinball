@@ -1,5 +1,10 @@
 #include "stdafx.h"
 
+#ifdef USE_EMBREE
+#include <mutex>
+static std::mutex mtx;
+#endif
+
 
 float c_hardScatter = 0.0f;
 
@@ -11,8 +16,8 @@ void HitObject::FireHitEvent(Ball * const pball)
    if (m_obj && m_fe && m_enabled)
    {
       // is this the same place as last event? if same then ignore it
-      const float dist_ls = (pball->m_eventPos - pball->m_d.m_pos).LengthSquared();
-      pball->m_eventPos = pball->m_d.m_pos;    // remember last collision position
+      const float dist_ls = (pball->m_lastEventPos - pball->m_d.m_pos).LengthSquared();
+      pball->m_lastEventPos = pball->m_d.m_pos;    // remember last collision position
 
       const float normalDist = (m_ObjType == eHitTarget) ? 0.0f   // hit targets when used with a captured ball have always a too small distance
                                                          : 0.25f; //!! magic distance
@@ -513,16 +518,15 @@ void HitPoint::Collide(const CollisionEvent& coll)
       FireHitEvent(coll.m_ball);
 }
 
-void DoHitTest(const Ball *const pball, HitObject *const pho, CollisionEvent& coll)
+void DoHitTest(const Ball *const pball, const HitObject *const pho, CollisionEvent& coll)
 {
-#ifdef DEBUGPHYSICS
-   g_pplayer->c_deepTested++;
-#endif
-   if (pho == NULL || pball == NULL)
+   if (pho == nullptr || pball == nullptr
+      || (pho->m_ObjType == eHitTarget && ((HitTarget*)pho->m_obj)->m_d.m_isDropped))
       return;
 
-   if (pho->m_ObjType == eHitTarget && (((HitTarget*)pho->m_obj)->m_d.m_isDropped == true))
-      return;
+#ifdef DEBUGPHYSICS
+   g_pplayer->c_deepTested++; //!! atomic needed if USE_EMBREE
+#endif
 
    CollisionEvent newColl;
    const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, !g_pplayer->m_recordContacts ? coll : newColl);
@@ -533,7 +537,7 @@ void DoHitTest(const Ball *const pball, HitObject *const pho, CollisionEvent& co
       if (validhit)
       {
          coll.m_ball = const_cast<Ball*>(pball); //!! meh, but will not be changed in here
-         coll.m_obj = pho;
+         coll.m_obj = const_cast<HitObject*>(pho); //!! meh, but will not be changed in here
          coll.m_hittime = newtime;
       }
    }
@@ -542,10 +546,15 @@ void DoHitTest(const Ball *const pball, HitObject *const pho, CollisionEvent& co
       if (newColl.m_isContact || validhit)
       {
          newColl.m_ball = const_cast<Ball*>(pball); //!! meh, but will not be changed in here
-         newColl.m_obj = pho;
+         newColl.m_obj = const_cast<HitObject*>(pho); //!! meh, but will not be changed in here
 
          if (newColl.m_isContact)
+         {
+#ifdef USE_EMBREE
+             const std::lock_guard<std::mutex> lg(mtx); // multiple threads may end up here and call push_back
+#endif
              g_pplayer->m_contacts.push_back(newColl);
+         }
          else //if (validhit)
          {
              coll = newColl;

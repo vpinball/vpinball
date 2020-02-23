@@ -58,10 +58,10 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
    if (m_obj && m_fe && !m_psurface->m_disabled && threshold)
    {
       // is this the same place as last event? if same then ignore it
-       const float dist_ls = (pball->m_eventPos - pball->m_d.m_pos).LengthSquared();
-       pball->m_eventPos = pball->m_d.m_pos; //remember last collide position
+       const float dist_ls = (pball->m_lastEventPos - pball->m_d.m_pos).LengthSquared();
+       pball->m_lastEventPos = pball->m_d.m_pos; //remember last collide position
 
-       if (dist_ls > 0.25f) // must be a new place if only by a little
+       if (dist_ls > 0.25f) //!! magic distance, must be a new place if only by a little
        {
            ((IFireEvents *)m_obj)->FireGroupEvent(DISPID_SurfaceEvents_Slingshot);
            m_slingshotanim.m_TimeReset = g_pplayer->m_time_msec + 100;
