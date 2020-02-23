@@ -26,6 +26,8 @@ FEATURES:
 
 FIXES:
 
+- fix slightly wrong flipper mesh (visible for very short flippers)
+
 - fix some broken insert lights if playfield reflections are disabled
 
 - fix OBJ-exported names for all ramp types
