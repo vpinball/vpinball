@@ -72,21 +72,25 @@
 #define C_LOWNORMVEL 0.0001f
 #define C_CONTACTVEL 0.099f
 
+//#define BALL_CONTACTS // not working anymore?!?
+
 //#define NEW_PHYSICS
 
 // low velocity stabilization ... if embedding occurs add some velocity
 #ifdef NEW_PHYSICS
- #define C_EMBEDVELLIMIT 5.f
+ #define C_EMBEDVELLIMIT 5.f // can be undefd
 #endif
 
 // old workarounds, not needed anymore?!
 #ifndef NEW_PHYSICS
  #define C_EMBEDSHOT_PLANE // push pos up if ball embedded in plane
- #define C_EMBEDDED 0.0f
+ #define C_EMBEDDED 0.0f // can be undefd
  #define C_EMBEDSHOT 0.05f
  // Contact displacement corrections, hard ridgid contacts i.e. steel on hard plastic or hard wood
- #define C_DISP_GAIN 0.9875f
- #define C_DISP_LIMIT 5.0f
+ #define C_DISP_GAIN 0.9875f // can be undefd
+ #ifdef C_DISP_GAIN
+  #define C_DISP_LIMIT 5.0f
+ #endif
  // Have special cases for balls that are determined static? (C_DYNAMIC is kind of a counter for detection) -> does not work stable enough anymore nowadays
  //#define C_DYNAMIC 2
  // choose only one of these two heuristics:
@@ -94,9 +98,9 @@
  //#define C_BALL_SPIN_HACK2 0.1 // dampens ball spin on collision contacts and at the same time very slow moving balls (smaller = less damp)
 #endif
 
-//trigger/kicker boundary crossing hysterisis
-#define STATICTIME 0.005f
-#define STATICCNTS 10
+//trigger/kicker boundary crossing hysterisis, also slow/static ball<->ball and to some extent general ball<->object interactions
+#define STATICTIME 0.005f // smallest time/intersection difference allowed in the simulation, if amount of all intersections found within that smaller timeframe is > STATICCNTS
+#define STATICCNTS 10     // 0=always clamp to the minimum STATICTIME difference, no exceptions, will/should lead to more penetration!
 
 //Flippers:
 #define C_INTERATIONS 20 // Precision level and cycles for interative calculations // acceptable contact time ... near zero time

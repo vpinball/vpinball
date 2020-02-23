@@ -2976,6 +2976,25 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
       m_recordContacts = true;
       m_contacts.clear();
 
+#ifdef USE_EMBREE
+      for (size_t i = 0; i < m_vball.size(); i++)
+         if (!m_vball[i]->m_d.m_frozen
+#ifdef C_DYNAMIC
+             && m_vball[i]->m_dynamic > 0
+#endif
+            ) // don't play with frozen balls
+         {
+            m_vball[i]->m_coll.m_hittime = hittime; // search upto current hittime
+            m_vball[i]->m_coll.m_obj = NULL;
+         }
+
+      if (!m_vball.empty())
+      {
+         m_hitoctree.HitTestBall(m_vball);         // find the hit objects hit times
+         m_hitoctree_dynamic.HitTestBall(m_vball); // dynamic objects !! should reuse the same embree scene created already in m_hitoctree.HitTestBall!
+      }
+#endif
+
       for (size_t i = 0; i < m_vball.size(); i++)
       {
          Ball * const pball = m_vball[i];
@@ -2986,28 +3005,30 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 #endif
             ) // don't play with frozen balls
          {
+#ifndef USE_EMBREE
             pball->m_coll.m_hittime = hittime;          // search upto current hittime
             pball->m_coll.m_obj = NULL;
-
+#endif
             // always check for playfield and top glass
             if (!m_meshAsPlayfield)
                DoHitTest(pball, &m_hitPlayfield, pball->m_coll);
 
             DoHitTest(pball, &m_hitTopGlass, pball->m_coll);
 
+#ifndef USE_EMBREE
             if (rand_mt_01() < 0.5f) // swap order of dynamic and static obj checks randomly
             {
-               m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll);  // dynamic objects
-               m_hitoctree.HitTestBall(pball, pball->m_coll);  // find the hit objects and hit times
+               m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll); // dynamic objects
+               m_hitoctree.HitTestBall(pball, pball->m_coll);         // find the static hit objects hit times
             }
             else
             {
-               m_hitoctree.HitTestBall(pball, pball->m_coll);  // find the hit objects and hit times
-               m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll);  // dynamic objects
+               m_hitoctree.HitTestBall(pball, pball->m_coll);         // find the static hit objects hit times
+               m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll); // dynamic objects
             }
-
+#endif
             const float htz = pball->m_coll.m_hittime; // this ball's hit time
-            if (htz < 0.f) pball->m_coll.m_obj = NULL; // no negative time allowed
+            if (htz < 0.f) pball->m_coll.m_obj = nullptr; // no negative time allowed
 
             if (pball->m_coll.m_obj)                   // hit object
             {
@@ -3018,6 +3039,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
                   ++c_embedcnts;
 #endif
                ///////////////////////////////////////////////////////////////////////////
+
                if (htz <= hittime)                     // smaller hit time??
                {
                   hittime = htz;                       // record actual event time

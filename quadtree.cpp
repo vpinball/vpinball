@@ -3,6 +3,7 @@
 
 HitQuadtree::~HitQuadtree()
 {
+#ifndef USE_EMBREE
    if (lefts != 0)
    {
       _aligned_free(lefts);
@@ -20,10 +21,67 @@ HitQuadtree::~HitQuadtree()
          delete m_children[i];
       }
    }
+#else
+   rtcReleaseScene(m_scene);
+   rtcReleaseDevice(m_embree_device);
+#endif
 }
+
+#ifdef USE_EMBREE
+#include <mutex>
+static std::mutex mtx;
+
+#define CHECK_EMBREE(dev) \
+    { const RTCError rc = rtcGetDeviceError(dev); \
+    switch (rc) { \
+        case RTC_ERROR_NONE: break; \
+        default: { char error[256]; sprintf_s(error, "%u %s %d",rc,__FILE__,__LINE__); ShowError(error); break; }; \
+    }}
+
+void EmbreeBoundsFunc(const struct RTCBoundsFunctionArguments* const args)
+{
+    const HitObject * const ho = (*((const std::vector<HitObject*> *)args->geometryUserPtr))[args->primID];
+
+    args->bounds_o->lower_x = ho->m_hitBBox.left;
+    args->bounds_o->lower_y = ho->m_hitBBox.top;
+    args->bounds_o->lower_z = ho->m_hitBBox.zlow;
+    args->bounds_o->upper_x = ho->m_hitBBox.right;
+    args->bounds_o->upper_y = ho->m_hitBBox.bottom;
+    args->bounds_o->upper_z = ho->m_hitBBox.zhigh;
+}
+#endif
 
 void HitQuadtree::Initialize()
 {
+#ifdef USE_EMBREE
+   if (m_scene)
+       rtcReleaseScene(m_scene);
+
+   m_scene = rtcNewScene(m_embree_device);
+   rtcSetSceneBuildQuality(m_scene, RTC_BUILD_QUALITY_HIGH);
+   rtcSetSceneFlags(m_scene, RTC_SCENE_FLAG_ROBUST);
+
+   const RTCGeometry geom = rtcNewGeometry(m_embree_device, RTC_GEOMETRY_TYPE_USER);
+   rtcSetGeometryUserPrimitiveCount(geom, (*m_pvho).size());
+
+   rtcSetGeometryUserData(geom, m_pvho);
+   rtcSetGeometryBoundsFunction(geom, &EmbreeBoundsFunc, m_pvho);
+   rtcSetGeometryIntersectFunction(geom, nullptr); // no ray tracing
+   rtcSetGeometryOccludedFunction(geom, nullptr); // no shadow ray tracing
+   rtcSetGeometryIntersectFilterFunction(geom, nullptr); // no trace filter
+
+   rtcCommitGeometry(geom);
+   // attach geometry to scene
+   const unsigned int l_geom = rtcAttachGeometry(m_scene, geom); // no need to rtcDeleteGeometry(l_geom), as we throw away complete scene later-on
+   rtcReleaseGeometry(geom);
+
+   rtcCommitScene(m_scene);
+
+   //RTCBounds b;
+   //rtcGetSceneBounds(m_scene, &b);
+
+   CHECK_EMBREE(m_embree_device);
+#else
    FRect3D bounds;
    bounds.Clear();
 
@@ -35,16 +93,40 @@ void HitQuadtree::Initialize()
 #endif
 
    CreateNextLevel(bounds, 0, 0);
+#endif
 }
 
 void HitQuadtree::Initialize(const FRect3D& bounds)
 {
+#ifdef USE_EMBREE
+   m_pvho = &m_vho;
+   Initialize();
+#else
+
 #ifdef DEBUGPHYSICS
    g_pplayer->c_quadObjects = (U32)m_vho.size();
 #endif
 
    CreateNextLevel(bounds, 0, 0);
+#endif
 }
+
+#ifdef USE_EMBREE
+void HitQuadtree::FillFromVector(vector<HitObject*>& vho)
+{
+   m_pvho = &vho;
+   for (size_t i = 0; i < vho.size(); ++i)
+      vho[i]->CalcHitBBox(); // need to update here, as only done lazily for some objects (i.e. balls!)
+
+   Initialize();
+}
+
+void HitQuadtree::Update()
+{
+   FillFromVector(*m_pvho);
+}
+
+#else
 
 void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int level, unsigned int level_empty)
 {
@@ -170,7 +252,7 @@ void HitQuadtree::InitSseArrays()
       }
    }
 }
-
+#endif
 
 
 /*  RLC
@@ -191,8 +273,9 @@ void HitQuadtree::InitSseArrays()
     slot is not in the random time generator algorithm, it is offset by STATICTIME so not to compete with the fast moving
     collisions
 
-    */
+*/
 
+#ifndef USE_EMBREE
 void HitQuadtree::HitTestBall(const Ball * const pball, CollisionEvent& coll) const
 {
 #if 1   /// with SSE optimizations //////////////////////////
@@ -366,9 +449,13 @@ void HitQuadtree::HitTestBallSse(const Ball * const pball, CollisionEvent& coll)
 
    } while (current);
 }
+#endif
 
 void HitQuadtree::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvhoHit, CollisionEvent& coll) const
 {
+#ifdef USE_EMBREE
+   ShowError("HitTestXRay not implemented yet");
+#else
    const float rcHitRadiusSqr = pball->HitRadiusSqr();
 
    for (size_t i = 0; i < m_vho.size(); i++)
@@ -408,4 +495,95 @@ void HitQuadtree::HitTestXRay(const Ball * const pball, vector<HitObject*> &pvho
          if (right) m_children[3]->HitTestXRay(pball, pvhoHit, coll);
       }
    }
+#endif
 }
+
+#ifdef USE_EMBREE
+void EmbreeBoundsFuncBalls(const struct RTCBoundsFunctionArguments* const args)
+{
+    const Ball* const ball = (*((const std::vector<Ball*>*)args->geometryUserPtr))[args->primID];
+
+    args->bounds_o->lower_x = ball->m_hitBBox.left;
+    args->bounds_o->lower_y = ball->m_hitBBox.top;
+    args->bounds_o->lower_z = ball->m_hitBBox.zlow;
+    args->bounds_o->upper_x = ball->m_hitBBox.right;
+    args->bounds_o->upper_y = ball->m_hitBBox.bottom;
+    args->bounds_o->upper_z = ball->m_hitBBox.zhigh;
+}
+
+struct VPCollisions
+{
+    const std::vector<HitObject*> *vho;
+    const std::vector<Ball*> *ball;
+};
+
+
+void EmbreeCollideBalls(void* const userPtr, RTCCollision* const collisions, const unsigned int num_collisions)
+{
+   const VPCollisions * const vpc = (VPCollisions*)userPtr;
+
+   for (unsigned int i = 0; i < num_collisions; ++i)
+   {
+      Ball* const ball = (*vpc->ball)[collisions[i].primID1];
+      const HitObject* const ho = (*vpc->vho)[collisions[i].primID0];
+   
+      if (!ball->m_d.m_frozen
+#ifdef C_DYNAMIC
+          && ball->m_dynamic > 0
+#endif
+         ) // don't play with frozen balls
+      if (ball != ho
+          //&& fRectIntersect3D(ball->m_hitBBox, ho->m_hitBBox)
+          && fRectIntersect3D(ball->m_d.m_pos, ball->HitRadiusSqr(), ho->m_hitBBox))
+      {
+         CollisionEvent coll_local;
+         coll_local.m_obj = nullptr;
+         mtx.lock();
+         coll_local.m_hittime = ball->m_coll.m_hittime;
+         mtx.unlock();
+         DoHitTest(ball, ho, coll_local);
+         mtx.lock();
+         if (coll_local.m_hittime < ball->m_coll.m_hittime)
+            ball->m_coll = coll_local;
+         mtx.unlock();
+      }
+   }
+}
+
+void HitQuadtree::HitTestBall(std::vector<Ball*> ball) const
+{
+   RTCScene scene = rtcNewScene(m_embree_device);
+   rtcSetSceneBuildQuality(scene, RTC_BUILD_QUALITY_HIGH);
+   rtcSetSceneFlags(scene, RTC_SCENE_FLAG_ROBUST);
+
+   const RTCGeometry geom = rtcNewGeometry(m_embree_device, RTC_GEOMETRY_TYPE_USER);
+   rtcSetGeometryUserPrimitiveCount(geom, ball.size());
+
+   rtcSetGeometryUserData(geom, &ball);
+   rtcSetGeometryBoundsFunction(geom, &EmbreeBoundsFuncBalls, &ball);
+   rtcSetGeometryIntersectFunction(geom, nullptr); // no ray tracing
+   rtcSetGeometryOccludedFunction(geom, nullptr); // no shadow ray tracing
+   rtcSetGeometryIntersectFilterFunction(geom, nullptr); // no trace filter
+
+   rtcCommitGeometry(geom);
+   // attach geometry to scene
+   const unsigned int l_geom = rtcAttachGeometry(scene, geom); // no need to rtcDeleteGeometry(l_geom), as we throw away complete scene later-on
+   rtcReleaseGeometry(geom);
+
+   rtcCommitScene(scene);
+
+   //RTCBounds b;
+   //rtcGetSceneBounds(scene, &b);
+
+   CHECK_EMBREE(m_embree_device);
+
+   VPCollisions vpc;
+   vpc.vho = m_pvho;
+   vpc.ball = &ball;
+   rtcCollide(m_scene, scene, &EmbreeCollideBalls, &vpc);
+
+   rtcReleaseScene(scene);
+
+   CHECK_EMBREE(m_embree_device);
+}
+#endif

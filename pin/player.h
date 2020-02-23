@@ -514,7 +514,11 @@ private:
    HitQuadtree m_debugoctree;
 
    vector<HitObject*> m_vho_dynamic;
+#ifdef USE_EMBREE
+   HitQuadtree m_hitoctree_dynamic; // should be generated from scratch each time something changes
+#else
    HitKD m_hitoctree_dynamic; // should be generated from scratch each time something changes
+#endif
 
    HitPlane m_hitPlayfield; // HitPlanes cannot be part of octree (infinite size)
    HitPlane m_hitTopGlass;
