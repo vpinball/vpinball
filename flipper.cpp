@@ -750,6 +750,37 @@ void Flipper::ExportMesh(FILE *f)
    delete [] flipper;
 }
 
+static void ApplyFix(Vertex3D_NoTex2& vert, const Vertex2D& center, const float midAngle, const float radius, const Vertex2D& newCenter, const float fixAngleScale)
+{
+   float vAngle = atan2f(vert.y - center.y, vert.x - center.x);
+   float nAngle = atan2f(vert.ny, vert.nx);
+   
+   // we want to have angles with same sign as midAngle, fix it:
+   if (midAngle < 0.0)
+   {
+   	  if (vAngle > 0.0f)
+         vAngle -= (float)(M_PI * 2.0);
+   	  if (nAngle > 0.0f)
+   	     nAngle -= (float)(M_PI * 2.0);
+   }
+   else
+   {
+   	  if (vAngle < 0.0f)
+         vAngle += (float)(M_PI * 2.0);
+   	  if (nAngle < 0.0f)
+   	     nAngle += (float)(M_PI * 2.0);
+   }
+   
+   nAngle -= (vAngle - midAngle) * fixAngleScale * sgn(midAngle);
+   vAngle -= (vAngle - midAngle) * fixAngleScale * sgn(midAngle);
+   const float nL = Vertex2D(vert.nx, vert.ny).Length();
+   
+   vert.x  = cosf(vAngle) * radius + newCenter.x;
+   vert.y  = sinf(vAngle) * radius + newCenter.y;
+   vert.nx = cosf(nAngle) * nL;
+   vert.ny = sinf(nAngle) * nL;
+}
+
 void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 {
    Matrix3D fullMatrix;
@@ -757,8 +788,12 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
    fullMatrix.RotateZMatrix(ANGTORAD(180.0f));
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
-   const float baseScale = 10.0f;
-   const float tipScale = 10.0f;
+
+   // calc angle needed to fix P0 location
+   const float sinAngle = clamp((m_d.m_BaseRadius - m_d.m_EndRadius) / m_d.m_FlipperRadius,-1.f,1.f);
+   const float fixAngle = asinf(sinAngle);
+   const float fixAngleScale = fixAngle * (float)(1./(M_PI * 0.5)); // scale (in relation to 90 deg.)
+            // fixAngleScale = 0.0; // note: if you force fixAngleScale = 0.0 then all will look as old/buggy version
    const float baseRadius = m_d.m_BaseRadius - m_d.m_rubberthickness;
    const float endRadius = m_d.m_EndRadius - m_d.m_rubberthickness;
    Vertex3D_NoTex2 *temp = new Vertex3D_NoTex2[flipperBaseVertices];
@@ -767,33 +802,19 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
    memcpy(temp, flipperBaseMesh, sizeof(Vertex3D_NoTex2)*flipperBaseVertices);
    for (int t = 0; t < 13; t++)
    {
-      for (int i = 0; i < flipperBaseVertices; i++)
+      for (unsigned int i = 0; i < flipperBaseVertices; i++)
       {
          if (temp[i].x == vertsBaseBottom[t].x && temp[i].y == vertsBaseBottom[t].y && temp[i].z == vertsBaseBottom[t].z)
-         {
-            temp[i].x *= baseRadius*baseScale;
-            temp[i].y *= baseRadius*baseScale;
-         }
+            ApplyFix(temp[i], Vertex2D(vertsBaseBottom[6].x, vertsBaseBottom[0].y), (float)(-M_PI * 0.5), baseRadius, Vertex2D(0.f, 0.f), fixAngleScale);
          if (temp[i].x == vertsTipBottom[t].x && temp[i].y == vertsTipBottom[t].y && temp[i].z == vertsTipBottom[t].z)
-         {
-            temp[i].x *= endRadius * tipScale;
-            temp[i].y *= endRadius * tipScale;
-            temp[i].y += m_d.m_FlipperRadius - endRadius*7.9f;
-         }
+            ApplyFix(temp[i], Vertex2D(vertsTipBottom[6].x, vertsTipBottom[0].y), (float)(M_PI * 0.5), endRadius, Vertex2D(0.f, m_d.m_FlipperRadius), fixAngleScale);
          if (temp[i].x == vertsBaseTop[t].x && temp[i].y == vertsBaseTop[t].y && temp[i].z == vertsBaseTop[t].z)
-         {
-            temp[i].x *= baseRadius*baseScale;
-            temp[i].y *= baseRadius*baseScale;
-         }
+            ApplyFix(temp[i], Vertex2D(vertsBaseBottom[6].x, vertsBaseBottom[0].y), (float)(-M_PI * 0.5), baseRadius, Vertex2D(0.f, 0.f), fixAngleScale);
          if (temp[i].x == vertsTipTop[t].x && temp[i].y == vertsTipTop[t].y && temp[i].z == vertsTipTop[t].z)
-         {
-            temp[i].x *= endRadius*tipScale;
-            temp[i].y *= endRadius * tipScale;
-            temp[i].y += m_d.m_FlipperRadius - endRadius * 7.9f;
-         }
+            ApplyFix(temp[i], Vertex2D(vertsTipBottom[6].x, vertsTipBottom[0].y), (float)(M_PI * 0.5), endRadius, Vertex2D(0.f, m_d.m_FlipperRadius), fixAngleScale);
       }
    }
-   for (int i = 0; i < flipperBaseVertices; i++)
+   for (unsigned int i = 0; i < flipperBaseVertices; i++)
    {
       Vertex3Ds vert = fullMatrix.MultiplyVector(Vertex3Ds(temp[i].x, temp[i].y, temp[i].z));
       buf[i].x = vert.x;
@@ -811,39 +832,23 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
    //rubber
    if (m_d.m_rubberthickness > 0.f)
    {
-      const float rubberBaseScale = 10.0f;
-      const float rubberTipScale = 10.0f;
       memcpy(temp, flipperBaseMesh, sizeof(Vertex3D_NoTex2)*flipperBaseVertices);
       for (int t = 0; t < 13; t++)
       {
-         for (int i = 0; i < flipperBaseVertices; i++)
+         for (unsigned int i = 0; i < flipperBaseVertices; i++)
          {
             if (temp[i].x == vertsBaseBottom[t].x && temp[i].y == vertsBaseBottom[t].y && temp[i].z == vertsBaseBottom[t].z)
-            {
-               temp[i].x *= m_d.m_BaseRadius*rubberBaseScale;
-               temp[i].y *= m_d.m_BaseRadius*rubberBaseScale;
-            }
+               ApplyFix(temp[i], Vertex2D(vertsBaseBottom[6].x, vertsBaseBottom[0].y), (float)(-M_PI * 0.5), baseRadius + m_d.m_rubberthickness, Vertex2D(0.f, 0.f), fixAngleScale);
             if (temp[i].x == vertsTipBottom[t].x && temp[i].y == vertsTipBottom[t].y && temp[i].z == vertsTipBottom[t].z)
-            {
-               temp[i].x *= m_d.m_EndRadius * rubberTipScale;
-               temp[i].y *= m_d.m_EndRadius * rubberTipScale;
-               temp[i].y += m_d.m_FlipperRadius - m_d.m_EndRadius*7.9f;
-            }
+               ApplyFix(temp[i], Vertex2D(vertsTipBottom[6].x, vertsTipBottom[0].y), (float)(M_PI * 0.5), endRadius + m_d.m_rubberthickness, Vertex2D(0.f, m_d.m_FlipperRadius), fixAngleScale);
             if (temp[i].x == vertsBaseTop[t].x && temp[i].y == vertsBaseTop[t].y && temp[i].z == vertsBaseTop[t].z)
-            {
-               temp[i].x *= m_d.m_BaseRadius*rubberBaseScale;
-               temp[i].y *= m_d.m_BaseRadius*rubberBaseScale;
-            }
+               ApplyFix(temp[i], Vertex2D(vertsBaseBottom[6].x, vertsBaseBottom[0].y), (float)(-M_PI * 0.5), baseRadius + m_d.m_rubberthickness, Vertex2D(0.f, 0.f), fixAngleScale);
             if (temp[i].x == vertsTipTop[t].x && temp[i].y == vertsTipTop[t].y && temp[i].z == vertsTipTop[t].z)
-            {
-               temp[i].x *= m_d.m_EndRadius*rubberTipScale;
-               temp[i].y *= m_d.m_EndRadius * rubberTipScale;
-               temp[i].y += m_d.m_FlipperRadius - m_d.m_EndRadius*7.9f;
-            }
+               ApplyFix(temp[i], Vertex2D(vertsTipBottom[6].x, vertsTipBottom[0].y), (float)(M_PI * 0.5), endRadius + m_d.m_rubberthickness, Vertex2D(0.f, m_d.m_FlipperRadius), fixAngleScale);
          }
       }
 
-      for (int i = 0; i < flipperBaseVertices; i++)
+      for (unsigned int i = 0; i < flipperBaseVertices; i++)
       {
          Vertex3Ds vert = fullMatrix.MultiplyVector(Vertex3Ds(temp[i].x, temp[i].y, temp[i].z));
          buf[i + flipperBaseVertices].x = vert.x;
