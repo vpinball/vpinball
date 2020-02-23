@@ -285,6 +285,10 @@ __forceinline bool sign(const float a)
    return (float_as_int(a) & 0x80000000) == 0x80000000;
 }
 
+__forceinline float sgn(const float a)
+{
+   return (a > 0.f) ? 1.f : ((a < 0.f) ? -1.f : 0.f);
+}
 //
 // TinyMT64 for random numbers (much better than rand())
 //
