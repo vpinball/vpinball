@@ -2271,47 +2271,14 @@ void PinTable::StopPlaying()
    m_textureMap.clear();
    m_materialMap.clear();
 
-   // EnableWindow(g_pvp->m_hwndWork, TRUE); // Disable modal state after game ends
-
-   // This was causing the application to crash 
-   // if the simulation was run without a save first.
-   // But I'm not sure how to fix it... - JEP
-
-   const float inclination = m_BG_inclination[m_BG_current_set];
-   const float fov = m_BG_FOV[m_BG_current_set];
-   const float layback = m_BG_layback[m_BG_current_set];
-   const float xlatex = m_BG_xlatex[m_BG_current_set];
-   const float xlatey = m_BG_xlatey[m_BG_current_set];
-   const float xlatez = m_BG_xlatez[m_BG_current_set];
-   const float xscale = m_BG_scalex[m_BG_current_set];
-   const float yscale = m_BG_scaley[m_BG_current_set];
-   const float zscale = m_BG_scalez[m_BG_current_set];
-   const float lightEmissionScale = m_lightEmissionScale;
-   const float lightRange = m_lightRange;
-   const float lightHeight = m_lightHeight;
-   const float envEmissionScale = m_envEmissionScale;
 
    RestoreBackup();
-
-   m_BG_inclination[m_BG_current_set] = inclination;
-   m_BG_FOV[m_BG_current_set] = fov;
-   m_BG_layback[m_BG_current_set] = layback;
-   m_BG_xlatex[m_BG_current_set] = xlatex;
-   m_BG_xlatey[m_BG_current_set] = xlatey;
-   m_BG_xlatez[m_BG_current_set] = xlatez;
-   m_BG_scalex[m_BG_current_set] = xscale;
-   m_BG_scaley[m_BG_current_set] = yscale;
-   m_BG_scalez[m_BG_current_set] = zscale;
-   m_lightRange = lightRange;
-   m_lightHeight = lightHeight;
-   m_lightEmissionScale = lightEmissionScale;
-   m_envEmissionScale = envEmissionScale;
-
    g_keepUndoRecords = true;
 
    g_pvp->ShowWindow(1);
    UpdateDbgMaterial();
    UpdateDbgLight();
+   SetDirtyDraw();
 
    BeginAutoSaveCounter();
 }
@@ -5934,7 +5901,36 @@ void PinTable::BackupForPlay()
 
 void PinTable::RestoreBackup()
 {
-   m_undo.Undo();
+    const float inclination = m_BG_inclination[m_BG_current_set];
+    const float fov = m_BG_FOV[m_BG_current_set];
+    const float layback = m_BG_layback[m_BG_current_set];
+    const float xlatex = m_BG_xlatex[m_BG_current_set];
+    const float xlatey = m_BG_xlatey[m_BG_current_set];
+    const float xlatez = m_BG_xlatez[m_BG_current_set];
+    const float xscale = m_BG_scalex[m_BG_current_set];
+    const float yscale = m_BG_scaley[m_BG_current_set];
+    const float zscale = m_BG_scalez[m_BG_current_set];
+    const float lightEmissionScale = m_lightEmissionScale;
+    const float lightRange = m_lightRange;
+    const float lightHeight = m_lightHeight;
+    const float envEmissionScale = m_envEmissionScale;
+    
+    m_undo.Undo();
+
+    m_BG_inclination[m_BG_current_set] = inclination;
+    m_BG_FOV[m_BG_current_set] = fov;
+    m_BG_layback[m_BG_current_set] = layback;
+    m_BG_xlatex[m_BG_current_set] = xlatex;
+    m_BG_xlatey[m_BG_current_set] = xlatey;
+    m_BG_xlatez[m_BG_current_set] = xlatez;
+    m_BG_scalex[m_BG_current_set] = xscale;
+    m_BG_scaley[m_BG_current_set] = yscale;
+    m_BG_scalez[m_BG_current_set] = zscale;
+    m_lightRange = lightRange;
+    m_lightHeight = lightHeight;
+    m_lightEmissionScale = lightEmissionScale;
+    m_envEmissionScale = envEmissionScale;
+
 }
 
 void PinTable::Copy(int x, int y)
