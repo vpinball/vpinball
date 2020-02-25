@@ -49,7 +49,7 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
    const float bnv = ballvx*normal.x + ballvy*normal.y;		// ball velocity normal to segment, positive if receding, zero=parallel
    bool bUnHit = (bnv > C_LOWNORMVEL);
 
-   if (direction && (bnv > C_LOWNORMVEL))					// direction true and clearly receding from normal face
+   if (direction && bUnHit)					// direction true and clearly receding from normal face
       return -1.0f;
 
    const float ballx = ball.m_pos.x;						// ball position
@@ -141,11 +141,9 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
    //coll.m_hitRigid = rigid;     // collision type
 
    // check for contact
-   if (fabsf(bnv) <= C_CONTACTVEL && fabsf(bnd) <= (float)PHYS_TOUCH)
-   {
-      coll.m_isContact = true;
+   coll.m_isContact = (fabsf(bnv) <= C_CONTACTVEL && fabsf(bnd) <= (float)PHYS_TOUCH);
+   if(coll.m_isContact)
       coll.m_hit_org_normalvelocity = bnv;
-   }
 
    return hittime;
 }
@@ -261,8 +259,8 @@ float HitCircle::HitTestBasicRadius(const BallS& ball, const float dtime, Collis
    }
    else
    {
-      if ((!rigid && bnd * bnv > 0.f) ||	// (outside and receding) or (inside and approaching)
-         (a < 1.0e-8f)) return -1.0f;	    // no hit ... ball not moving relative to object
+      if ((!rigid && bnd * bnv > 0.f) || // (outside and receding) or (inside and approaching)
+         (a < 1.0e-8f)) return -1.0f; // no hit ... ball not moving relative to object
 
       float time1, time2;
       if (!SolveQuadraticEq(a, 2.0f*b, bcddsq - targetRadius*targetRadius, time1, time2))
@@ -363,7 +361,7 @@ float HitLineZ::HitTest(const BallS &ball, const float dtime, CollisionEvent& co
 
    const float a = dv.LengthSquared();
 
-   float hittime = 0;
+   float hittime = 0.f;
    bool isContact = false;
 
    if (bnd < (float)PHYS_TOUCH)       // already in collision distance?
@@ -371,7 +369,7 @@ float HitLineZ::HitTest(const BallS &ball, const float dtime, CollisionEvent& co
       if (fabsf(bnv) <= C_CONTACTVEL)
       {
          isContact = true;
-         hittime = 0;
+         hittime = 0.f;
       }
       else
          hittime = /*std::max(0.0f,*/ -bnd / bnv /*)*/;   // estimate based on distance and speed along distance
@@ -547,6 +545,7 @@ void DoHitTest(const Ball *const pball, const HitObject *const pho, CollisionEve
       {
          newColl.m_ball = const_cast<Ball*>(pball); //!! meh, but will not be changed in here
          newColl.m_obj = const_cast<HitObject*>(pho); //!! meh, but will not be changed in here
+         newColl.m_hittime = newtime;
 
          if (newColl.m_isContact)
          {
@@ -556,10 +555,7 @@ void DoHitTest(const Ball *const pball, const HitObject *const pho, CollisionEve
              g_pplayer->m_contacts.push_back(newColl);
          }
          else //if (validhit)
-         {
              coll = newColl;
-             coll.m_hittime = newtime;
-         }
       }
    }
 }

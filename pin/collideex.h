@@ -239,21 +239,3 @@ public:
 private:
    Matrix3 m_matrix;
 };
-
-//
-
-class DispReelAnimObject : public AnimObject
-{
-public:
-   virtual void Animate();
-
-   DispReel *m_pDispReel;
-};
-
-class LightSeqAnimObject : public AnimObject
-{
-public:
-   virtual void Animate();
-
-   LightSeq *m_pLightSeq;
-};

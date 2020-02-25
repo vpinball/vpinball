@@ -131,7 +131,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const flo
 
    if (dot >= -C_LOWNORMVEL)							// nearly receding ... make sure of conditions
    {													// otherwise if clearly approaching .. process the collision
-      if (dot > C_LOWNORMVEL) return;					//is this velocity clearly receding (i.e must > a minimum)
+      if (dot > C_LOWNORMVEL) return;					// is this velocity clearly receding (i.e must > a minimum)
 #ifdef C_EMBEDDED
       if (m_coll.m_hitdistance < -C_EMBEDDED)
          dot = -C_EMBEDSHOT;							// has ball become embedded???, give it a kick
