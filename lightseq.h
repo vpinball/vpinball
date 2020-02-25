@@ -183,7 +183,14 @@ public:
 
    void     Animate();
 
-   LightSeqAnimObject m_lightseqanim;
+   class LightSeqAnimObject : public AnimObject
+   {
+   public:
+      virtual void Animate() { m_pLightSeq->Animate(); } // this function is called every frame to animate the object/light sequence
+
+      LightSeq *m_pLightSeq;
+   } m_lightseqanim;
+
    LightSeqData m_d;
 
 private:

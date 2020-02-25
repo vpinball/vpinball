@@ -82,9 +82,6 @@ void SlingshotAnimObject::Animate()
    }
 }
 
-void DispReelAnimObject::Animate() { m_pDispReel->Animate(); } // this function is called every frame to animate the object/reels animation
-void LightSeqAnimObject::Animate() { m_pLightSeq->Animate(); } // this function is called every frame to animate the object/light sequence
-
 HitGate::HitGate(Gate * const pgate, const float height)
 {
     m_pgate = pgate;
@@ -744,7 +741,7 @@ float HitTriangle::HitTest(const BallS& ball, const float dtime, CollisionEvent&
    else
       return -1.0f;                              // wait for touching
 
-   if (infNaN(hittime) || hittime < 0 || hittime > dtime)
+   if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
       return -1.0f;	// time is outside this frame ... no collision
 
    hitPos += hittime * ball.m_vel; // advance hit point to contact
@@ -769,20 +766,16 @@ float HitTriangle::HitTest(const BallS& ball, const float dtime, CollisionEvent&
    const float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
 
    // Check if point is in triangle
-   const bool pointInTri = (u >= 0.f) && (v >= 0.f) && (u + v <= 1.f);
-
-   if (pointInTri)
+   if ((u >= 0.f) && (v >= 0.f) && (u + v <= 1.f))
    {
       coll.m_hitnormal = m_normal;
 
       coll.m_hitdistance = bnd;				// 3dhit actual contact distance ... 
       //coll.m_hitRigid = true;				// collision type
 
-      if (isContact)
-      {
-         coll.m_isContact = true;
+      coll.m_isContact = isContact;
+      if(isContact)
          coll.m_hit_org_normalvelocity = bnv;
-      }
 
       return hittime;
    }
@@ -894,11 +887,9 @@ float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& co
    //coll.m_hitRigid = true;               // collision type
 
 #ifdef NEW_PHYSICS
-   if (isContact)
-   {
-      coll.m_isContact = true;
+   coll.m_isContact = isContact;
+   if(isContact)
       coll.m_hit_org_normalvelocity = bnv; // remember original normal velocity
-   }
 #endif
 
    return hittime;
@@ -975,7 +966,7 @@ float HitLine3D::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
    ball_tmp.m_pos = m_matrix * ball.m_pos;
    ball_tmp.m_vel = m_matrix * ball.m_vel;
 
-   const float hittime = HitLineZ::HitTest(ball, dtime, coll);
+   const float hittime = HitLineZ::HitTest(ball_tmp, dtime, coll);
 
    if (hittime >= 0.f)       // transform hit normal back to world coordinate system
       coll.m_hitnormal = m_matrix.MulVectorT(coll.m_hitnormal);

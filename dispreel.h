@@ -147,7 +147,13 @@ public:
 
    void    Animate();
 
-   DispReelAnimObject m_dispreelanim;
+   class DispReelAnimObject : public AnimObject
+   {
+   public:
+      virtual void Animate() { m_pDispReel->Animate(); } // this function is called every frame to animate the object/reels animation
+
+      DispReel *m_pDispReel;
+   } m_dispreelanim;
 
    DispReelData m_d;
 
