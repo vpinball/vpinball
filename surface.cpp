@@ -20,6 +20,7 @@ Surface::Surface()
    memset(m_d.m_szTopMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szSlingShotMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
+   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
    m_d.m_overwritePhysics = true;
 }
 

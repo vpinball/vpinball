@@ -85,6 +85,8 @@ Flipper::Flipper()
    m_indexBuffer = NULL;
    m_ptable = NULL;
    memset(m_d.m_szImage, 0, MAXTOKEN);
+   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
+   memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
 }
 
 Flipper::~Flipper()

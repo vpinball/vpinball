@@ -13,6 +13,7 @@ Decal::Decal()
    m_textImg = NULL;
    memset(m_d.m_szImage, 0, MAXTOKEN);
    memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
+   memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
    m_ptable = NULL;
    m_leading = 0.0f;

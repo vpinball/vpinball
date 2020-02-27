@@ -7,6 +7,7 @@ Plunger::Plunger()
    m_indexBuffer = NULL;
    memset(m_d.m_szImage, 0, MAXTOKEN);
    memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
+   memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
 }
 
@@ -336,7 +337,7 @@ void Plunger::RenderSetup()
 
    // figure which plunger descriptor we're using
    const PlungerDesc *desc;
-   PlungerDesc *customDesc = NULL;
+   PlungerDesc *customDesc = nullptr;
    switch (m_d.m_type)
    {
    case PlungerTypeModern:
@@ -536,8 +537,8 @@ void Plunger::RenderSetup()
 
    Vertex3D_NoTex2 *ptr = buf;
 
-   // Build the animation frames.  We have 'cframes' frames total.  The 0th frame
-   // shows the plunger in the maximum retracted position; the cframes-1'th frame
+   // Build the animation frames.  We have 'm_cframes' frames total.  The 0th frame
+   // shows the plunger in the maximum retracted position; the m_cframes-1'th frame
    // is the maximum forward position.
    for (int i = 0; i < m_cframes; i++, ptr += m_vtsPerFrame)
    {
