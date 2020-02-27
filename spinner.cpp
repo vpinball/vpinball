@@ -13,6 +13,7 @@ Spinner::Spinner()
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
    memset(m_d.m_szImage, 0, MAXTOKEN);
    memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
+   memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
 }
 
