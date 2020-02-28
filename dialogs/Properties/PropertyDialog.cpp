@@ -125,8 +125,6 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
         return;
 
     ShowWindow(SW_HIDE);
-
-
     m_curTabIndex = m_tab.GetCurSel();
     for (int i = 0; i < PROPERTY_TABS; i++)
         if (m_tabs[i] != NULL)
@@ -458,6 +456,9 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
     }
     ShowWindow();
     m_tab.SetCurFocus(activePage);
+    if (g_pvp->GetActiveTable())
+        g_pvp->GetActiveTable()->SetFocus();
+
 }
 
 BOOL PropertyDialog::OnInitDialog()
