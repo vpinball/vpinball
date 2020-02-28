@@ -590,8 +590,8 @@ void VPinball::SetPropSel(VectorProtected<ISelect> *pvsel)
 {
 //   m_sb.CreateFromDispatch(GetHwnd(), pvsel);
 
-   if(m_propertyDialog && m_propertyDialog->IsWindow())
-     m_propertyDialog->UpdateTabs(pvsel);
+    if (m_propertyDialog && m_propertyDialog->IsWindow())
+        m_propertyDialog->UpdateTabs(pvsel);
 }
 
 void VPinball::DeletePropSel()
