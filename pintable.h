@@ -505,8 +505,6 @@ public:
    HRESULT StopSound(BSTR Sound);
    void StopAllSounds();
 
-   void RestoreLayers();
-   void BackupLayers();
    void DeleteFromLayer(IEditable *obj);
    void UpdateCollection(const int index);
    void MoveCollectionUp(CComObject<Collection> *pcol);
@@ -766,8 +764,6 @@ public:
 
    bool  m_dirtyDraw; // Whether our background bitmap is up to date
 
-   bool  m_activeLayers[MAX_LAYERS];
-   bool  m_toggleAllLayers;
    volatile bool m_savingActive;
 
    bool  m_renderSolid;

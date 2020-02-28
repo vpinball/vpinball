@@ -1203,9 +1203,6 @@ void VPinball::SetEnableMenuItems()
 
       mainMenu.CheckMenuItem(ID_VIEW_GRID, MF_BYCOMMAND | (ptCur->m_grid ? MF_CHECKED : MF_UNCHECKED));
       mainMenu.CheckMenuItem(ID_VIEW_BACKDROP, MF_BYCOMMAND | (ptCur->m_backdrop ? MF_CHECKED : MF_UNCHECKED));
-
-      for (int i = 0; i < MAX_LAYERS; ++i)
-          mainMenu.CheckMenuItem(allLayers[i], MF_BYCOMMAND | (ptCur->m_activeLayers[i] ? MF_CHECKED : MF_UNCHECKED));
    }
    else
    {

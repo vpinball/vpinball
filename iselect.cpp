@@ -12,6 +12,7 @@ ISelect::ISelect()
    m_menuid = -1;
    m_layerIndex = 0;
    m_layerName = "";
+   m_isVisible = true;
 }
 
 void ISelect::SetObjectPos()
@@ -317,6 +318,11 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
            m_layerName = string(name);
            break;
        }
+       case FID(LVIS):
+       {
+           pbr->GetBool(&m_isVisible);
+           break;
+       }
    }
    return true;
 }
@@ -328,6 +334,7 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteBool(FID(LOCK), m_locked);
    bw.WriteInt(FID(LAYR), m_layerIndex);
    bw.WriteString(FID(LANR), m_layerName.c_str());
+   bw.WriteBool(FID(LVIS), m_isVisible);
 
    return S_OK;
 }
