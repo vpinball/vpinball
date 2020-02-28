@@ -5848,8 +5848,6 @@ static void ShutDownPlayer()
    g_pvp->SetEnableToolbar();
    mixer_shutdown();
    hid_shutdown();
-   //!! modification to m_vedit of each table after playing them must be done here, otherwise VP will crash (WTF?!)
-   playedTable->RestoreLayers();
 
    g_pvp->SetForegroundWindow();
 }

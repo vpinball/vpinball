@@ -1357,9 +1357,6 @@ STDMETHODIMP ScriptGlobalTable::get_VersionRevision(int *pVal)
 
 PinTable::PinTable()
 {
-   for (int i = 0; i < MAX_LAYERS; i++)
-      m_activeLayers[i] = true;
-   m_toggleAllLayers = false;
    m_savingActive = false;
    m_renderSolid = LoadValueBoolWithDefault("Editor", "RenderSolid", true);
    //m_hMDI = m_mdiTable.GetHwnd();
@@ -1571,50 +1568,6 @@ void PinTable::FVerifySaveToClose()
          CloseHandle(m_vAsyncHandles[i]);
 
       g_pvp->SetActionCur("");
-   }
-}
-
-
-void PinTable::BackupLayers()
-{
-   // scan through all layers if all elements are already stored to a layer
-   // if not new elements will be stored in layer1
-   for (size_t t = 0; t < m_vedit.size(); t++)
-   {
-      IEditable * const piedit = m_vedit[t];
-      bool alreadyIn = false;
-      for (int i = 0; i < MAX_LAYERS; i++)
-      {
-         if (FindIndexOf(m_layer[i], piedit) != -1)
-            alreadyIn = true;
-      }
-      if (!alreadyIn)
-      {
-         piedit->GetISelect()->m_layerIndex = 0;
-         m_layer[0].push_back(piedit);
-      }
-   }
-   // make all elements visible again
-   for (int t = 0; t < MAX_LAYERS; t++)
-   {
-      //for (SSIZE_T i = m_layer[t].size()-1; i >= 0; i--)
-      for (size_t i = 0; i < m_layer[t].size(); i++)
-      {
-         IEditable * const piedit = m_layer[t][i];
-         piedit->m_isVisible = true;
-      }
-   }
-}
-
-void PinTable::RestoreLayers()
-{
-   for (int i = 0; i < MAX_LAYERS; i++)
-   {
-      for (size_t t = 0; t < m_layer[i].size(); t++)
-      {
-         IEditable * const piedit = m_layer[i][t];
-         piedit->m_isVisible = m_activeLayers[i];
-      }
    }
 }
 
@@ -1866,7 +1819,7 @@ void PinTable::UIRenderPass2(Sur * const psur)
       IEditable * const ptr = m_vedit[i];
       if (ptr->m_backglass == g_pvp->m_backglassView)
       {
-         if (ptr->m_isVisible)
+         if (ptr->GetISelect()->m_isVisible)
             ptr->UIRenderPass1(psur);
       }
    }
@@ -1908,7 +1861,7 @@ void PinTable::UIRenderPass2(Sur * const psur)
       IEditable * const ptr = m_vedit[i];
       if (ptr->m_backglass == g_pvp->m_backglassView)
       {
-         if (ptr->m_isVisible)
+         if (ptr->GetISelect()->m_isVisible)
             ptr->UIRenderPass2(psur);
       }
    }
@@ -2126,8 +2079,6 @@ void PinTable::Play(const bool cameraMode)
    // make sure the load directory is the active directory
    SetCurrentDirectory(szLoadDir);
 
-   BackupLayers();
-
    const HWND hwndProgressDialog = CreateDialog(g_hinst, MAKEINTRESOURCE(IDD_PROGRESS), g_pvp->GetHwnd(), ProgressProc);
    ::ShowWindow(hwndProgressDialog, SW_SHOW);
 
@@ -2240,8 +2191,6 @@ void PinTable::Play(const bool cameraMode)
    else
    {
       RestoreBackup();
-      // restore layers
-      RestoreLayers();
       g_keepUndoRecords = true;
       m_pcv->EndSession();
       //delete g_pplayer;
@@ -2460,9 +2409,6 @@ HRESULT PinTable::Save(const bool saveAs)
       g_pvp->SetCursorCur(NULL, IDC_WAIT);
    }
 
-   // merge all elements for saving
-   BackupLayers();
-
    const HRESULT hr = SaveToStorage(pstgRoot);
 
    if (!FAILED(hr))
@@ -2478,8 +2424,6 @@ HRESULT PinTable::Save(const bool saveAs)
       SetNonUndoableDirty(eSaveClean);
    }
 
-   // restore layers
-   RestoreLayers();
    return S_OK;
 }
 
@@ -3808,7 +3752,6 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
          }
       }
    }
-
    return hr;
 }
 
@@ -4786,7 +4729,7 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
       // now list all elements that are stacked at the mouse pointer
       for (size_t i = 0; i < m_allHitElements.size(); i++)
       {
-         if (!m_allHitElements[i]->GetIEditable()->m_isVisible)
+         if (!m_allHitElements[i]->GetIEditable()->GetISelect()->m_isVisible)
             continue;
 
          ISelect * const ptr = m_allHitElements[i];
@@ -5389,7 +5332,7 @@ void PinTable::ExportBlueprint()
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const ptr = m_vedit[i];
-      if (ptr->m_isVisible && ptr->m_backglass == g_pvp->m_backglassView)
+      if (ptr->GetISelect()->m_isVisible && ptr->m_backglass == g_pvp->m_backglassView)
          ptr->RenderBlueprint(psur, solid);
    }
 
@@ -5517,7 +5460,7 @@ void PinTable::ExportTableMesh()
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const ptr = m_vedit[i];
-      if (ptr->m_isVisible && ptr->m_backglass == g_pvp->m_backglassView)
+      if (ptr->GetISelect()->m_isVisible && ptr->m_backglass == g_pvp->m_backglassView)
          ptr->ExportMesh(f);
    }
    WaveFrontObj_ExportEnd(f);

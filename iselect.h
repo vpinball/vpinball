@@ -146,6 +146,7 @@ public:
    bool m_dragging;
    bool m_markedForUndo;
    bool m_locked; // Can not be dragged in the editor
+   bool m_isVisible;
 
    unsigned char m_layerIndex; //!! deprecated, leave it here for compatibility reasons. To load old tables to new layer handling
 };

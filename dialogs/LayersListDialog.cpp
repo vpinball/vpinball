@@ -304,7 +304,6 @@ HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable * co
     tvis.item = tvi;
 
     HTREEITEM item = InsertItem(tvis);
-    TreeView_SetCheckState(GetHwnd(), item, 1);
     return item;
 }
 
@@ -317,6 +316,15 @@ bool LayerTreeView::AddLayer(const string& name)
 bool LayerTreeView::AddElement(const string& name, IEditable * const pedit)
 {
     hCurrentElementItem = AddItem(hCurrentLayerItem, name.c_str(), pedit, 2);
+    if (!pedit->GetISelect()->m_isVisible)
+    {
+        TreeView_SetCheckState(GetHwnd(), hCurrentElementItem, 0);
+    }
+    else
+    {
+        TreeView_SetCheckState(GetHwnd(), hCurrentElementItem, 1);
+        TreeView_SetCheckState(GetHwnd(), hCurrentLayerItem, 1);
+    }
     return hCurrentElementItem != NULL;
 }
 
@@ -496,7 +504,7 @@ void LayerTreeView::SetAllItemStates(const bool checked)
             {
                 IEditable * const pedit = (IEditable *)tvItem.lParam;
                 if(pedit!=NULL)
-                    pedit->m_isVisible = checked;
+                    pedit->GetISelect()->m_isVisible = checked;
             }
 
             TreeView_SetCheckState(GetHwnd(), subItem, checked);
@@ -682,7 +690,7 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
                         {
                             IEditable * const pedit = (IEditable *)tvItem.lParam;
                             if (pedit != NULL)
-                                pedit->m_isVisible = checked;
+                                pedit->GetISelect()->m_isVisible = checked;
                         }
 
                         TreeView_SetCheckState(GetHwnd(), subItem, checked);
@@ -693,7 +701,7 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
                 {
                     IEditable * const pedit = (IEditable *)tvItem.lParam;
                     if (pedit != NULL)
-                        pedit->m_isVisible = IsItemChecked(tvItem.hItem);
+                        pedit->GetISelect()->m_isVisible = IsItemChecked(tvItem.hItem);
                 }
             }
         }

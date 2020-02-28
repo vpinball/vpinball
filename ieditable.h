@@ -258,5 +258,4 @@ public:
    bool m_singleEvents;
 
    bool m_backglass; // if the light/decal (+dispreel/textbox is always true) is on the table (false) or a backglass view
-   bool m_isVisible;
 };
