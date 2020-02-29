@@ -701,12 +701,18 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
                 {
                     IEditable * const pedit = (IEditable *)tvItem.lParam;
                     if (pedit != NULL)
+                    {
                         pedit->GetISelect()->m_isVisible = IsItemChecked(tvItem.hItem);
+                    }
                 }
             }
         }
+
         if (pt != nullptr)
+        {
+            pt->SetDirty(eSaveDirty);
             pt->SetDirtyDraw();
+        }
     }
     return 0;
 }
@@ -759,6 +765,7 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
             }
         }
     }
+    pt->SetDirty(eSaveDirty);
     pt->SetDirtyDraw();
     return 0;
 }
