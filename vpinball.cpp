@@ -109,6 +109,7 @@ void AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
 VPinball::VPinball()
 {
    //	DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); //add FreeImage support BDS
+    unloadingTable = false;
    m_toolbarDialog = NULL;
    m_propertyDialog = NULL;
    m_dockToolbar = NULL;
@@ -1011,9 +1012,8 @@ void VPinball::LoadFileName(char *szFileName)
    PathFromFilename(szFileName, m_currentTablePath);
    CloseAllDialogs();
 
-   CComObject<PinTable> *ppt;
-   CComObject<PinTable>::CreateInstance(&ppt);
-   ppt->AddRef();
+   PinTableMDI *mdiTable = new PinTableMDI();
+   CComObject<PinTable> *ppt = mdiTable->GetTable();
    m_vtable.push_back(ppt);
    const HRESULT hr = ppt->LoadGameFromFilename(szFileName);
 
@@ -1033,7 +1033,7 @@ void VPinball::LoadFileName(char *szFileName)
       TitleFromFilename(szFileName, ppt->m_szTitle);
       ppt->InitPostLoad(this);
 
-      AddMDITable(new PinTableMDI(ppt));
+      AddMDITable(mdiTable);
       // auto-import POV settings if exist...
 
       char szFileNameAuto[MAX_PATH];
@@ -1082,9 +1082,12 @@ CComObject<PinTable> *VPinball::GetActiveTable()
     PinTableMDI *mdiTable = (PinTableMDI *)GetActiveMDIChild();
     if (mdiTable)
     {
-        return (CComObject<PinTable>*)mdiTable->GetTable();
+        if (!unloadingTable)
+            return (CComObject<PinTable>*)mdiTable->GetTable();
+        else
+            return nullptr;
     }
-    return NULL;
+    return nullptr;
 }
 
 bool VPinball::CanClose()
@@ -1103,48 +1106,11 @@ bool VPinball::CanClose()
 
 bool VPinball::CloseTable(PinTable * const ppt)
 {
-   if (ppt->FDirty())
-   {
-      LocalString ls1(IDS_SAVE_CHANGES1);
-      LocalString ls2(IDS_SAVE_CHANGES2);
-      char * const szText = new char[lstrlen(ls1.m_szbuffer) + lstrlen(ls2.m_szbuffer) + lstrlen(ppt->m_szTitle) + 1];
-      lstrcpy(szText, ls1.m_szbuffer/*"Do you want to save the changes you made to '"*/);
-      lstrcat(szText, ppt->m_szTitle);
-      lstrcat(szText, ls2.m_szbuffer);
-      // TEXT
-      const int result = MessageBox(szText, "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
-      delete[] szText;
-      if (result == IDCANCEL)
-         return false;
-
-      if (result == IDYES)
-      {
-         if (ppt->TableSave() != S_OK)
-         {
-            LocalString ls3(IDS_SAVEERROR);
-            MessageBox(ls3.m_szbuffer, "Visual Pinball", MB_ICONERROR);
-            return false;
-         }
-      }
-   }
-
-   if (ppt->m_searchSelectDlg.IsWindow())
-      ppt->m_searchSelectDlg.Destroy();
-
-   m_layersListDialog->ClearList();
-   CloseAllDialogs();
-
-   ppt->FVerifySaveToClose();
-
-   RemoveFromVectorSingle(m_vtable, (CComObject<PinTable> *)ppt);
-   ppt->m_pcv->CleanUpScriptEngine();
-
-   RemoveMDIChild(ppt->m_mdiTable->GetHwnd());
-
-   ppt->Release();
+   unloadingTable = true;
+   ppt->GetMDITable()->SendMessage(WM_SYSCOMMAND, SC_CLOSE, 0);
 
    SetEnableToolbar();
-
+   unloadingTable = false;
    return true;
 }
 
@@ -1566,6 +1532,7 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
 //     UseThemes(FALSE);             // Don't use themes
 //     UseToolBar(FALSE);            // Don't use a ToolBar
     m_mainMenu.LoadMenu(IDR_APPMENU);
+
     SetFrameMenu(m_mainMenu.GetHandle());
 
     LPTSTR lpCmdLine = GetCommandLine();						//this line necessary for _ATL_MIN_CRT
@@ -2297,14 +2264,13 @@ void VPinball::SaveTable(const bool saveAs)
 
 void VPinball::OpenNewTable(size_t tableId)
 {
-    CComObject<PinTable> *pt;
-    CComObject<PinTable>::CreateInstance(&pt);
-    pt->AddRef();
-    pt->InitBuiltinTable(this, tableId != ID_NEW_EXAMPLETABLE);
-    m_vtable.push_back(pt);
+    PinTableMDI *mdiTable = new PinTableMDI();
 
-    AddMDITable(new PinTableMDI(pt));
-    pt->AddMultiSel(pt, false, true, false);
+    mdiTable->GetTable()->InitBuiltinTable(this, tableId != ID_NEW_EXAMPLETABLE);
+    m_vtable.push_back(mdiTable->GetTable());
+
+    AddMDITable(mdiTable);
+    mdiTable->GetTable()->AddMultiSel(mdiTable->GetTable(), false, true, false);
     GetLayersListDialog()->CollapseLayers();
     GetLayersListDialog()->ExpandLayers();
     SetEnableToolbar();

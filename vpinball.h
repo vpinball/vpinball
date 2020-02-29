@@ -87,12 +87,10 @@ private:
 
    void ShowSubDialog(CDialog &dlg);
 
-   void CloseAllDialogs();
-
-
 public:
    void AddMDITable(PinTableMDI* mdiTable);
    CMenu GetMainMenu(int id);
+   void CloseAllDialogs();
    void ToggleScriptEditor();
    void ToggleBackglassView();
    BOOL ParseCommand(size_t code, size_t notify);
@@ -223,7 +221,7 @@ private:
    CDockProperty *GetDefaultPropertiesDocker();
    CDockLayers *GetDefaultLayersDocker();
    CDockToolbar *GetDefaultToolbarDocker();
-
+   bool  unloadingTable;
    CMenu m_mainMenu;
    char m_szRecentTableList[LAST_OPENED_TABLE_COUNT + 1][MAX_PATH];
 

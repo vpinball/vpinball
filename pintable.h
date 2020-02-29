@@ -41,19 +41,19 @@ class ScriptGlobalTable;
 class PinTableMDI:public CMDIChild
 {
 public:
-    PinTableMDI(PinTable *table);
+    PinTableMDI();
     virtual ~PinTableMDI();
-    PinTable *GetTable()
+    CComObject<PinTable> *GetTable()
     {
         return m_table;
     }
 protected:
     virtual void PreCreate(CREATESTRUCT &cs);
-    virtual int OnCreate(CREATESTRUCT &cs);
+    virtual int  OnCreate(CREATESTRUCT &cs);
     virtual void OnClose();
 
 private:
-    PinTable *m_table;
+    CComObject<PinTable> *m_table;
     CMenu m_menu;
 };
 
@@ -815,7 +815,6 @@ public:
 #endif
    virtual void OnInitialUpdate();
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-   virtual void OnClose();
 
    void SetMouseCursor();
    void OnLeftButtonDown(const short x, const short y);
