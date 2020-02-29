@@ -490,7 +490,7 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
 {
     for (int i = 0; i < PROPERTY_TABS; i++)
     {
-        if (m_tabs[i]!=NULL)
+        if (m_tabs[i]!=nullptr)
         {
             if (msg.message == WM_KEYDOWN && msg.wParam == VK_RETURN)
                 return TRUE;                    //disable enter key for any input otherwise the app would crash!?
