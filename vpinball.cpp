@@ -1299,24 +1299,25 @@ void VPinball::UpdateRecentFileList(char *szfilename)
 
 bool VPinball::processKeyInputForDialogs(MSG *pmsg)
 {
+    bool consumed = false;
     if (g_pvp->m_ptableActive)
     {
       if (g_pvp->m_materialDialog.IsWindow())
-            return !!g_pvp->m_materialDialog.IsDialogMessage(*pmsg);
-      if (g_pvp->m_imageMngDlg.IsWindow())
-            return !!g_pvp->m_imageMngDlg.IsDialogMessage(*pmsg);
-      if (g_pvp->m_soundMngDlg.IsWindow())
-            return !!g_pvp->m_soundMngDlg.IsDialogMessage(*pmsg);
-      if (g_pvp->m_collectionMngDlg.IsWindow())
-            return !!g_pvp->m_collectionMngDlg.IsDialogMessage(*pmsg);
-      if (g_pvp->m_dimensionDialog.IsWindow())
-            return !!g_pvp->m_dimensionDialog.IsDialogMessage(*pmsg);
-      if (g_pvp->m_toolbarDialog && g_pvp->m_toolbarDialog->IsWindow())
-          return !!g_pvp->m_toolbarDialog->IsDialogMessage(*pmsg);
-      if (g_pvp->m_propertyDialog && g_pvp->m_propertyDialog->IsWindow())
-          return !!g_pvp->m_propertyDialog->IsSubDialogMessage(*pmsg);
+            consumed = !!g_pvp->m_materialDialog.IsDialogMessage(*pmsg);
+      if (!consumed && g_pvp->m_imageMngDlg.IsWindow())
+            consumed = !!g_pvp->m_imageMngDlg.IsDialogMessage(*pmsg);
+      if (!consumed && g_pvp->m_soundMngDlg.IsWindow())
+            consumed = !!g_pvp->m_soundMngDlg.IsDialogMessage(*pmsg);
+      if (!consumed && g_pvp->m_collectionMngDlg.IsWindow())
+            consumed = !!g_pvp->m_collectionMngDlg.IsDialogMessage(*pmsg);
+      if (!consumed && g_pvp->m_dimensionDialog.IsWindow())
+            consumed = !!g_pvp->m_dimensionDialog.IsDialogMessage(*pmsg);
+       if (!consumed && g_pvp->m_toolbarDialog && g_pvp->m_toolbarDialog->IsWindow())
+           consumed = !!g_pvp->m_toolbarDialog->IsDialogMessage(*pmsg);
+      if (!consumed && g_pvp->m_propertyDialog && g_pvp->m_propertyDialog->IsWindow())
+          consumed = !!g_pvp->m_propertyDialog->IsSubDialogMessage(*pmsg);
     }
-    return false;
+    return consumed;
 }
 
 bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
