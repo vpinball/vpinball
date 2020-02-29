@@ -99,7 +99,7 @@
 #endif
 
 //trigger/kicker boundary crossing hysterisis, also slow/static ball<->ball and to some extent general ball<->object interactions
-#define STATICTIME 0.005f // smallest time/intersection difference allowed in the simulation, if amount of all intersections found within that smaller timeframe is > STATICCNTS
+#define STATICTIME 0.02f // smallest time/intersection difference allowed in the simulation, if amount of all intersections found within that smaller timeframe is > STATICCNTS
 #define STATICCNTS 10     // 0=always clamp to the minimum STATICTIME difference, no exceptions, will/should lead to more penetration!
 
 //Flippers:
