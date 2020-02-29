@@ -456,8 +456,6 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
     }
     ShowWindow();
     m_tab.SetCurFocus(activePage);
-    if (g_pvp->GetActiveTable())
-        g_pvp->GetActiveTable()->SetFocus();
 
 }
 
