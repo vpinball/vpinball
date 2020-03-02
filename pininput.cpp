@@ -270,34 +270,34 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
    {
       if (!WzSzStrCmp(dstr.wsz, "PinballWizard"))
       {
-         ppinput->uShockDevice = ppinput->e_JoyCnt;	// remember uShock
-         ppinput->uShockType = USHOCKTYPE_PBWIZARD;  //set type 1 = PinballWizard
+         ppinput->uShockDevice = ppinput->e_JoyCnt; // remember uShock
+         ppinput->uShockType = USHOCKTYPE_PBWIZARD; //set type 1 = PinballWizard
       }
       else if (!WzSzStrCmp(dstr.wsz, "UltraCade Pinball"))
       {
-         ppinput->uShockDevice = ppinput->e_JoyCnt;	// remember uShock
+         ppinput->uShockDevice = ppinput->e_JoyCnt;  // remember uShock
          ppinput->uShockType = USHOCKTYPE_ULTRACADE; //set type 2 = UltraCade Pinball
       }
       else if (!WzSzStrCmp(dstr.wsz, "Microsoft SideWinder Freestyle Pro (USB)"))
       {
-         ppinput->uShockDevice = ppinput->e_JoyCnt;	// remember uShock
-         ppinput->uShockType = USHOCKTYPE_SIDEWINDER;//set type 3 = Microsoft SideWinder Freestyle Pro
+         ppinput->uShockDevice = ppinput->e_JoyCnt;   // remember uShock
+         ppinput->uShockType = USHOCKTYPE_SIDEWINDER; //set type 3 = Microsoft SideWinder Freestyle Pro
       }
       else if (!WzSzStrCmp(dstr.wsz, "VirtuaPin Controller"))
       {
-         ppinput->uShockDevice = ppinput->e_JoyCnt;	// remember uShock
+         ppinput->uShockDevice = ppinput->e_JoyCnt;  // remember uShock
          ppinput->uShockType = USHOCKTYPE_VIRTUAPIN; //set type 4 = VirtuaPin Controller
       }
       else if (!WzSzStrCmp(dstr.wsz, "Pinscape Controller"))
       {
-         ppinput->uShockDevice = ppinput->e_JoyCnt;  // remember uShock
-         ppinput->uShockType = USHOCKTYPE_GENERIC;   //set type = Generic
-         ppinput->m_linearPlunger = 1;               // use linear plunger calibration
+         ppinput->uShockDevice = ppinput->e_JoyCnt; // remember uShock
+         ppinput->uShockType = USHOCKTYPE_GENERIC;  //set type = Generic
+         ppinput->m_linearPlunger = 1;              // use linear plunger calibration
       }
       else
       {
-         ppinput->uShockDevice = ppinput->e_JoyCnt;	// remember uShock
-         ppinput->uShockType = USHOCKTYPE_GENERIC;   //Generic Gamepad
+         ppinput->uShockDevice = ppinput->e_JoyCnt; // remember uShock
+         ppinput->uShockType = USHOCKTYPE_GENERIC;  //Generic Gamepad
       }
    }
    hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetDataFormat(&c_dfDIJoystick);
@@ -570,7 +570,8 @@ void PinInput::Init(const HWND hwnd)
       {
          hr = m_pMouse->SetDataFormat(&c_dfDIMouse2);
 
-         //hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+         hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+
          DIPROPDWORD dipdwm;
          dipdwm.diph.dwSize = sizeof(DIPROPDWORD);
          dipdwm.diph.dwHeaderSize = sizeof(DIPROPHEADER);
