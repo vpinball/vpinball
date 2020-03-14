@@ -456,7 +456,6 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
     }
     ShowWindow();
     m_tab.SetCurFocus(activePage);
-
 }
 
 BOOL PropertyDialog::OnInitDialog()
@@ -467,8 +466,8 @@ BOOL PropertyDialog::OnInitDialog()
     m_multipleElementsStatic.ShowWindow(SW_HIDE);
 
 //    m_resizer.Initialize(*this, CRect(0, 0, 243, 308));
-//     m_resizer.AddChild(m_nameEdit, topleft, RD_STRETCH_WIDTH);
-//     m_resizer.AddChild(m_tab, topcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
+//    m_resizer.AddChild(m_nameEdit, topleft, RD_STRETCH_WIDTH);
+//    m_resizer.AddChild(m_tab, topcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
     return TRUE;
 }
 
@@ -536,7 +535,7 @@ BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case CBN_SELCHANGE:
         case BN_CLICKED:
         {
-            CString name = m_nameEdit.GetWindowText();
+            const CString name = m_nameEdit.GetWindowText();
             if (m_tabs[0] && m_tabs[0]->m_pvsel->ElementAt(0) != NULL)
                 m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->SetName(name.c_str());
             return TRUE;
