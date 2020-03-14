@@ -108,8 +108,8 @@ void AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
 ///</summary>
 VPinball::VPinball()
 {
-   //	DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); //add FreeImage support BDS
-    unloadingTable = false;
+   // DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); //add FreeImage support BDS
+   m_unloadingTable = false;
    m_toolbarDialog = NULL;
    m_propertyDialog = NULL;
    m_dockToolbar = NULL;
@@ -547,7 +547,6 @@ void VPinball::CreateDocker()
     m_dockProperties->GetContainer()->SetHideSingleTab(TRUE);
     m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
     m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
-
 }
 
 void VPinball::SetPosCur(float x, float y)
@@ -602,7 +601,7 @@ void VPinball::DeletePropSel()
 
 CMenu VPinball::GetMainMenu(int id)
 {
-    const int count = m_mainMenu.GetMenuItemCount();
+   const int count = m_mainMenu.GetMenuItemCount();
    return m_mainMenu.GetSubMenu(id + ((count > NUM_MENUS) ? 1 : 0)); // MDI has added its stuff (table icon for first menu item)
 }
 
@@ -1007,8 +1006,8 @@ bool VPinball::LoadFile()
 
 void VPinball::LoadFileName(char *szFileName)
 {
-    if (firstRun)
-        OnInitialUpdate();
+   if (firstRun)
+      OnInitialUpdate();
    PathFromFilename(szFileName, m_currentTablePath);
    CloseAllDialogs();
 
@@ -1082,7 +1081,7 @@ CComObject<PinTable> *VPinball::GetActiveTable()
     PinTableMDI *mdiTable = (PinTableMDI *)GetActiveMDIChild();
     if (mdiTable)
     {
-        if (!unloadingTable)
+        if (!m_unloadingTable)
             return (CComObject<PinTable>*)mdiTable->GetTable();
         else
             return nullptr;
@@ -1106,11 +1105,11 @@ bool VPinball::CanClose()
 
 bool VPinball::CloseTable(PinTable * const ppt)
 {
-   unloadingTable = true;
+   m_unloadingTable = true;
    ppt->GetMDITable()->SendMessage(WM_SYSCOMMAND, SC_CLOSE, 0);
 
    SetEnableToolbar();
-   unloadingTable = false;
+   m_unloadingTable = false;
    return true;
 }
 
@@ -1250,7 +1249,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
 
    // update the file menu to contain the last n recent loaded files
    // must be at least 1 recent file in the list
-   if (m_szRecentTableList[0][0] != 0x00)
+   if (m_szRecentTableList[0][0] != 0)
    {
       MENUITEMINFO menuInfo;
 
@@ -1276,8 +1275,11 @@ void VPinball::UpdateRecentFileList(char *szfilename)
       for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
       {
          // if this entry is empty then all the rest are empty
-         if (m_szRecentTableList[i][0] == 0x00) break;
-         snprintf(recentMenuname, MAX_PATH - 1, "&%i %s", i+1, m_szRecentTableList[i]);
+         if (m_szRecentTableList[i][0] == 0) break;
+         // now search for filenames with & and replace with && so that these display correctly
+         const char * const ns = replace(m_szRecentTableList[i], "&", "&&");
+         snprintf(recentMenuname, MAX_PATH - 1, "&%i %s", i+1, ns);
+         delete[] ns;
          // set the IDM of this menu item
          menuInfo.wID = RECENT_FIRST_MENU_IDM + i;
          menuInfo.dwTypeData = recentMenuname;
@@ -1303,17 +1305,17 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
     if (g_pvp->m_ptableActive)
     {
       if (g_pvp->m_materialDialog.IsWindow())
-            consumed = !!g_pvp->m_materialDialog.IsDialogMessage(*pmsg);
+          consumed = !!g_pvp->m_materialDialog.IsDialogMessage(*pmsg);
       if (!consumed && g_pvp->m_imageMngDlg.IsWindow())
-            consumed = !!g_pvp->m_imageMngDlg.IsDialogMessage(*pmsg);
+          consumed = !!g_pvp->m_imageMngDlg.IsDialogMessage(*pmsg);
       if (!consumed && g_pvp->m_soundMngDlg.IsWindow())
-            consumed = !!g_pvp->m_soundMngDlg.IsDialogMessage(*pmsg);
+          consumed = !!g_pvp->m_soundMngDlg.IsDialogMessage(*pmsg);
       if (!consumed && g_pvp->m_collectionMngDlg.IsWindow())
-            consumed = !!g_pvp->m_collectionMngDlg.IsDialogMessage(*pmsg);
+          consumed = !!g_pvp->m_collectionMngDlg.IsDialogMessage(*pmsg);
       if (!consumed && g_pvp->m_dimensionDialog.IsWindow())
-            consumed = !!g_pvp->m_dimensionDialog.IsDialogMessage(*pmsg);
-       if (!consumed && g_pvp->m_toolbarDialog && g_pvp->m_toolbarDialog->IsWindow())
-           consumed = !!g_pvp->m_toolbarDialog->IsDialogMessage(*pmsg);
+          consumed = !!g_pvp->m_dimensionDialog.IsDialogMessage(*pmsg);
+      if (!consumed && g_pvp->m_toolbarDialog && g_pvp->m_toolbarDialog->IsWindow())
+          consumed = !!g_pvp->m_toolbarDialog->IsDialogMessage(*pmsg);
       if (!consumed && g_pvp->m_propertyDialog && g_pvp->m_propertyDialog->IsWindow())
           consumed = !!g_pvp->m_propertyDialog->IsSubDialogMessage(*pmsg);
     }
