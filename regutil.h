@@ -12,6 +12,7 @@ bool    LoadValueBoolWithDefault(const char *szKey, const char *szValue, const b
 
 
 HRESULT SaveValueString(const char *szKey, const char *szValue, const char *val);
+HRESULT SaveValueString(const char* szKey, const char* szValue, const string& val);
 HRESULT SaveValueFloat(const char *szKey, const char *szValue, const float val);
 HRESULT SaveValueInt(const char *szKey, const char *szValue, const int val);
 HRESULT SaveValueBool(const char *szKey, const char *szValue, const bool val);

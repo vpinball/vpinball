@@ -535,9 +535,8 @@ BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case CBN_SELCHANGE:
         case BN_CLICKED:
         {
-            const CString name = m_nameEdit.GetWindowText();
             if (m_tabs[0] && m_tabs[0]->m_pvsel->ElementAt(0) != NULL)
-                m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->SetName(name.c_str());
+                m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->SetName(m_nameEdit.GetWindowText().c_str());
             return TRUE;
         }
     }

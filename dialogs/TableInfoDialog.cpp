@@ -131,11 +131,9 @@ INT_PTR TableInfoDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void TableInfoDialog::VPGetDialogItemText(CEdit &edit, char **psztext)
 {
-    const int length = edit.GetWindowTextLength();
-   *psztext = new char[length + 1];
-
-   CString txt = edit.GetWindowText();
-   strcpy_s((char*)(*psztext), length+1, txt.c_str());
+   const int length = edit.GetWindowTextLength();
+   *psztext = new char[length+1];
+   strcpy_s(*psztext, length+1, edit.GetWindowText().c_str());
 }
 
 
@@ -177,17 +175,13 @@ BOOL TableInfoDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_GOWEBSITE:
       {
-         CString url = m_websiteEdit.GetWindowText();
-         OpenURL(url.c_str());
+         OpenURL(string(m_websiteEdit.GetWindowText()));
          break;
       }
       case IDC_SENDMAIL:
       {
-         CString email = m_emailEdit.GetWindowText();
-         CString tableName = m_tableNameEdit.GetWindowText();
-
-         CString url = CString("mailto:") + email + CString("?subject=") + tableName;
-         OpenURL(url.c_str());
+         const string url = string("mailto:") + string(m_emailEdit.GetWindowText()) + string("?subject=") + string(m_tableNameEdit.GetWindowText());
+         OpenURL(url);
          break;
       }
       default: 

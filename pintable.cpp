@@ -2921,19 +2921,19 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 }
 
 
-HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, const char *szValue, HCRYPTHASH hcrypthash)
+HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, const string& szValue, HCRYPTHASH hcrypthash)
 {
    HRESULT hr = S_OK;
    IStream *pstm;
 
-   if (szValue && SUCCEEDED(hr = pstg->CreateStream(wzName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstm)))
+   if (!szValue.empty() && SUCCEEDED(hr = pstg->CreateStream(wzName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstm)))
    {
       ULONG writ;
       BiffWriter bw(pstm, hcrypthash);
 
-      const int len = lstrlen(szValue);
+      const int len = szValue.length();
       WCHAR * const wzT = new WCHAR[len + 1];
-      MultiByteToWideChar(CP_ACP, 0, szValue, -1, wzT, len + 1);
+      MultiByteToWideChar(CP_ACP, 0, szValue.c_str(), -1, wzT, len + 1);
 
       bw.WriteBytes(wzT, len*(int)sizeof(WCHAR), &writ);
       delete[] wzT;
@@ -2947,15 +2947,15 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, con
 
 HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
 {
-   WriteInfoValue(pstg, L"TableName", m_szTableName.c_str(), hcrypthash);
-   WriteInfoValue(pstg, L"AuthorName", m_szAuthor.c_str(), hcrypthash);
-   WriteInfoValue(pstg, L"TableVersion", m_szVersion.c_str(), hcrypthash);
-   WriteInfoValue(pstg, L"ReleaseDate", m_szReleaseDate.c_str(), hcrypthash);
-   WriteInfoValue(pstg, L"AuthorEmail", m_szAuthorEMail.c_str(), hcrypthash);
-   WriteInfoValue(pstg, L"AuthorWebSite", m_szWebSite.c_str(), hcrypthash);
-   WriteInfoValue(pstg, L"TableBlurb", m_szBlurb.c_str(), hcrypthash);
-   WriteInfoValue(pstg, L"TableDescription", m_szDescription.c_str(), hcrypthash);
-   WriteInfoValue(pstg, L"TableRules", m_szRules.c_str(), hcrypthash);
+   WriteInfoValue(pstg, L"TableName", m_szTableName, hcrypthash);
+   WriteInfoValue(pstg, L"AuthorName", m_szAuthor, hcrypthash);
+   WriteInfoValue(pstg, L"TableVersion", m_szVersion, hcrypthash);
+   WriteInfoValue(pstg, L"ReleaseDate", m_szReleaseDate, hcrypthash);
+   WriteInfoValue(pstg, L"AuthorEmail", m_szAuthorEMail, hcrypthash);
+   WriteInfoValue(pstg, L"AuthorWebSite", m_szWebSite, hcrypthash);
+   WriteInfoValue(pstg, L"TableBlurb", m_szBlurb, hcrypthash);
+   WriteInfoValue(pstg, L"TableDescription", m_szDescription, hcrypthash);
+   WriteInfoValue(pstg, L"TableRules", m_szRules, hcrypthash);
    time_t hour_machine;
    time(&hour_machine);
    tm local_hour;
@@ -3135,8 +3135,8 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    m_numTimesSaved = buffer ? atoi(buffer) : 0;
    SAFE_VECTOR_DELETE(buffer);
 
-    // Write the version to the registry.  This will be read later by the front end.
-    SaveValueString("Version", m_szTableName.c_str(), m_szVersion.c_str());
+   // Write the version to the registry.  This will be read later by the front end.
+   SaveValueString("Version", m_szTableName.c_str(), m_szVersion);
 
    HRESULT hr;
    IStream *pstm;
@@ -5607,111 +5607,138 @@ void PinTable::ExportBackdropPOV(const char *filename)
         //root node
         xml_node<>*root = xmlDoc.allocate_node(node_element, "POV");
 
-        {
         xml_node<>*desktop = xmlDoc.allocate_node(node_element, "desktop");
         sprintf_s(strBuf, "%f", m_BG_inclination[BG_DESKTOP]);
-        xml_node<>*dtIncl = xmlDoc.allocate_node(node_element, "inclination", (new string(strBuf))->c_str());
+        const string dti(strBuf);
+        xml_node<>*dtIncl = xmlDoc.allocate_node(node_element, "inclination", dti.c_str());
         desktop->append_node(dtIncl);
         sprintf_s(strBuf, "%f", m_BG_FOV[BG_DESKTOP]);
-        xml_node<>*dtFov = xmlDoc.allocate_node(node_element, "fov", (new string(strBuf))->c_str());
+        const string dtf(strBuf);
+        xml_node<>*dtFov = xmlDoc.allocate_node(node_element, "fov", dtf.c_str());
         desktop->append_node(dtFov);
         sprintf_s(strBuf, "%f", m_BG_layback[BG_DESKTOP]);
-        xml_node<>*dtLayback = xmlDoc.allocate_node(node_element, "layback", (new string(strBuf))->c_str());
+        const string dtl(strBuf);
+        xml_node<>*dtLayback = xmlDoc.allocate_node(node_element, "layback", dtl.c_str());
         desktop->append_node(dtLayback);
         sprintf_s(strBuf, "%f", m_BG_rotation[BG_DESKTOP]);
-        xml_node<>*dtRotation = xmlDoc.allocate_node(node_element, "rotation", (new string(strBuf))->c_str());
+        const string dtr(strBuf);
+        xml_node<>*dtRotation = xmlDoc.allocate_node(node_element, "rotation", dtr.c_str());
         desktop->append_node(dtRotation);
         sprintf_s(strBuf, "%f", m_BG_scalex[BG_DESKTOP]);
-        xml_node<>*dtScalex = xmlDoc.allocate_node(node_element, "xscale", (new string(strBuf))->c_str());
+        const string dtsx(strBuf);
+        xml_node<>*dtScalex = xmlDoc.allocate_node(node_element, "xscale", dtsx.c_str());
         desktop->append_node(dtScalex);
         sprintf_s(strBuf, "%f", m_BG_scaley[BG_DESKTOP]);
-        xml_node<>*dtScaley = xmlDoc.allocate_node(node_element, "yscale", (new string(strBuf))->c_str());
+        const string dtsy(strBuf);
+        xml_node<>*dtScaley = xmlDoc.allocate_node(node_element, "yscale", dtsy.c_str());
         desktop->append_node(dtScaley);
         sprintf_s(strBuf, "%f", m_BG_scalez[BG_DESKTOP]);
-        xml_node<>*dtScalez = xmlDoc.allocate_node(node_element, "zscale", (new string(strBuf))->c_str());
+        const string dtsz(strBuf);
+        xml_node<>*dtScalez = xmlDoc.allocate_node(node_element, "zscale", dtsz.c_str());
         desktop->append_node(dtScalez);
         sprintf_s(strBuf, "%f", m_BG_xlatex[BG_DESKTOP]);
-        xml_node<>*dtOffsetx = xmlDoc.allocate_node(node_element, "xoffset", (new string(strBuf))->c_str());
+        const string dtox(strBuf);
+        xml_node<>*dtOffsetx = xmlDoc.allocate_node(node_element, "xoffset", dtox.c_str());
         desktop->append_node(dtOffsetx);
         sprintf_s(strBuf, "%f", m_BG_xlatey[BG_DESKTOP]);
-        xml_node<>*dtOffsety = xmlDoc.allocate_node(node_element, "yoffset", (new string(strBuf))->c_str());
+        const string dtoy(strBuf);
+        xml_node<>*dtOffsety = xmlDoc.allocate_node(node_element, "yoffset", dtoy.c_str());
         desktop->append_node(dtOffsety);
         sprintf_s(strBuf, "%f", m_BG_xlatez[BG_DESKTOP]);
-        xml_node<>*dtOffsetz = xmlDoc.allocate_node(node_element, "zoffset", (new string(strBuf))->c_str());
+        const string dtoz(strBuf);
+        xml_node<>*dtOffsetz = xmlDoc.allocate_node(node_element, "zoffset", dtoz.c_str());
         desktop->append_node(dtOffsetz);
 
         root->append_node(desktop);
-        }
-        {
+
         xml_node<>*fullscreen = xmlDoc.allocate_node(node_element, "fullscreen");
         sprintf_s(strBuf, "%f", m_BG_inclination[BG_FULLSCREEN]);
-        xml_node<>*fsIncl = xmlDoc.allocate_node(node_element, "inclination", (new string(strBuf))->c_str());
+        const string fsi(strBuf);
+        xml_node<>*fsIncl = xmlDoc.allocate_node(node_element, "inclination", fsi.c_str());
         fullscreen->append_node(fsIncl);
         sprintf_s(strBuf, "%f", m_BG_FOV[BG_FULLSCREEN]);
-        xml_node<>*fsFov = xmlDoc.allocate_node(node_element, "fov", (new string(strBuf))->c_str());
+        const string fsf(strBuf);
+        xml_node<>*fsFov = xmlDoc.allocate_node(node_element, "fov", fsf.c_str());
         fullscreen->append_node(fsFov);
         sprintf_s(strBuf, "%f", m_BG_layback[BG_FULLSCREEN]);
-        xml_node<>*fsLayback = xmlDoc.allocate_node(node_element, "layback", (new string(strBuf))->c_str());
+        const string fsl(strBuf);
+        xml_node<>*fsLayback = xmlDoc.allocate_node(node_element, "layback", fsl.c_str());
         fullscreen->append_node(fsLayback);
         sprintf_s(strBuf, "%f", m_BG_rotation[BG_FULLSCREEN]);
-        xml_node<>*fsRotation = xmlDoc.allocate_node(node_element, "rotation", (new string(strBuf))->c_str());
+        const string fsr(strBuf);
+        xml_node<>*fsRotation = xmlDoc.allocate_node(node_element, "rotation", fsr.c_str());
         fullscreen->append_node(fsRotation);
         sprintf_s(strBuf, "%f", m_BG_scalex[BG_FULLSCREEN]);
-        xml_node<>*fsScalex = xmlDoc.allocate_node(node_element, "xscale", (new string(strBuf))->c_str());
+        const string fssx(strBuf);
+        xml_node<>*fsScalex = xmlDoc.allocate_node(node_element, "xscale", fssx.c_str());
         fullscreen->append_node(fsScalex);
         sprintf_s(strBuf, "%f", m_BG_scaley[BG_FULLSCREEN]);
-        xml_node<>*fsScaley = xmlDoc.allocate_node(node_element, "yscale", (new string(strBuf))->c_str());
+        const string fssy(strBuf);
+        xml_node<>*fsScaley = xmlDoc.allocate_node(node_element, "yscale", fssy.c_str());
         fullscreen->append_node(fsScaley);
         sprintf_s(strBuf, "%f", m_BG_scalez[BG_FULLSCREEN]);
-        xml_node<>*fsScalez = xmlDoc.allocate_node(node_element, "zscale", (new string(strBuf))->c_str());
+        const string fssz(strBuf);
+        xml_node<>*fsScalez = xmlDoc.allocate_node(node_element, "zscale", fssz.c_str());
         fullscreen->append_node(fsScalez);
         sprintf_s(strBuf, "%f", m_BG_xlatex[BG_FULLSCREEN]);
-        xml_node<>*fsOffsetx = xmlDoc.allocate_node(node_element, "xoffset", (new string(strBuf))->c_str());
+        const string fsox(strBuf);
+        xml_node<>*fsOffsetx = xmlDoc.allocate_node(node_element, "xoffset", fsox.c_str());
         fullscreen->append_node(fsOffsetx);
         sprintf_s(strBuf, "%f", m_BG_xlatey[BG_FULLSCREEN]);
-        xml_node<>*fsOffsety = xmlDoc.allocate_node(node_element, "yoffset", (new string(strBuf))->c_str());
+        const string fsoy(strBuf);
+        xml_node<>*fsOffsety = xmlDoc.allocate_node(node_element, "yoffset", fsoy.c_str());
         fullscreen->append_node(fsOffsety);
         sprintf_s(strBuf, "%f", m_BG_xlatez[BG_FULLSCREEN]);
-        xml_node<>*fsOffsetz = xmlDoc.allocate_node(node_element, "zoffset", (new string(strBuf))->c_str());
+        const string fsoz(strBuf);
+        xml_node<>*fsOffsetz = xmlDoc.allocate_node(node_element, "zoffset", fsoz.c_str());
         fullscreen->append_node(fsOffsetz);
 
         root->append_node(fullscreen);
-        }
-        {
+
         xml_node<>*fullsinglescreen = xmlDoc.allocate_node(node_element, "fullsinglescreen");
         sprintf_s(strBuf, "%f", m_BG_inclination[BG_FSS]);
-        xml_node<>*fssIncl = xmlDoc.allocate_node(node_element, "inclination", (new string(strBuf))->c_str());
+        const string fssi(strBuf);
+        xml_node<>*fssIncl = xmlDoc.allocate_node(node_element, "inclination", fssi.c_str());
         fullsinglescreen->append_node(fssIncl);
         sprintf_s(strBuf, "%f", m_BG_FOV[BG_FSS]);
-        xml_node<>*fssFov = xmlDoc.allocate_node(node_element, "fov", (new string(strBuf))->c_str());
+        const string fssf(strBuf);
+        xml_node<>*fssFov = xmlDoc.allocate_node(node_element, "fov", fssf.c_str());
         fullsinglescreen->append_node(fssFov);
         sprintf_s(strBuf, "%f", m_BG_layback[BG_FSS]);
-        xml_node<>*fssLayback = xmlDoc.allocate_node(node_element, "layback", (new string(strBuf))->c_str());
+        const string fssl(strBuf);
+        xml_node<>*fssLayback = xmlDoc.allocate_node(node_element, "layback", fssl.c_str());
         fullsinglescreen->append_node(fssLayback);
         sprintf_s(strBuf, "%f", m_BG_rotation[BG_FSS]);
-        xml_node<>*fssRotation = xmlDoc.allocate_node(node_element, "rotation", (new string(strBuf))->c_str());
+        const string fssr(strBuf);
+        xml_node<>*fssRotation = xmlDoc.allocate_node(node_element, "rotation", fssr.c_str());
         fullsinglescreen->append_node(fssRotation);
         sprintf_s(strBuf, "%f", m_BG_scalex[BG_FSS]);
-        xml_node<>*fssScalex = xmlDoc.allocate_node(node_element, "xscale", (new string(strBuf))->c_str());
+        const string fsssx(strBuf);
+        xml_node<>*fssScalex = xmlDoc.allocate_node(node_element, "xscale", fsssx.c_str());
         fullsinglescreen->append_node(fssScalex);
         sprintf_s(strBuf, "%f", m_BG_scaley[BG_FSS]);
-        xml_node<>*fssScaley = xmlDoc.allocate_node(node_element, "yscale", (new string(strBuf))->c_str());
+        const string fsssy(strBuf);
+        xml_node<>*fssScaley = xmlDoc.allocate_node(node_element, "yscale", fsssy.c_str());
         fullsinglescreen->append_node(fssScaley);
         sprintf_s(strBuf, "%f", m_BG_scalez[BG_FSS]);
-        xml_node<>*fssScalez = xmlDoc.allocate_node(node_element, "zscale", (new string(strBuf))->c_str());
+        const string fsssz(strBuf);
+        xml_node<>*fssScalez = xmlDoc.allocate_node(node_element, "zscale", fsssz.c_str());
         fullsinglescreen->append_node(fssScalez);
         sprintf_s(strBuf, "%f", m_BG_xlatex[BG_FSS]);
-        xml_node<>*fssOffsetx = xmlDoc.allocate_node(node_element, "xoffset", (new string(strBuf))->c_str());
+        const string fssox(strBuf);
+        xml_node<>*fssOffsetx = xmlDoc.allocate_node(node_element, "xoffset", fssox.c_str());
         fullsinglescreen->append_node(fssOffsetx);
         sprintf_s(strBuf, "%f", m_BG_xlatey[BG_FSS]);
-        xml_node<>*fssOffsety = xmlDoc.allocate_node(node_element, "yoffset", (new string(strBuf))->c_str());
+        const string fssoy(strBuf);
+        xml_node<>*fssOffsety = xmlDoc.allocate_node(node_element, "yoffset", fssoy.c_str());
         fullsinglescreen->append_node(fssOffsety);
         sprintf_s(strBuf, "%f", m_BG_xlatez[BG_FSS]);
-        xml_node<>*fssOffsetz = xmlDoc.allocate_node(node_element, "zoffset", (new string(strBuf))->c_str());
+        const string fssoz(strBuf);
+        xml_node<>*fssOffsetz = xmlDoc.allocate_node(node_element, "zoffset", fssoz.c_str());
         fullsinglescreen->append_node(fssOffsetz);
 
         root->append_node(fullsinglescreen);
-        }
+
         xmlDoc.append_node(root);
         std::ofstream myfile(m_szObjFileName);
         myfile << xmlDoc;
