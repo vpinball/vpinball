@@ -177,3 +177,46 @@ HRESULT OpenURL(const string& szURL)
    pURL->Release();
    return (hres);
 }
+
+char * replace(char const * const original, char const * const pattern, char const * const replacement)
+{
+  const size_t replen = strlen(replacement);
+  const size_t patlen = strlen(pattern);
+  const size_t orilen = strlen(original);
+
+  size_t patcnt = 0;
+  const char * oriptr;
+  const char * patloc;
+
+  // find how many times the pattern occurs in the original string
+  for (oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen)
+  {
+    patcnt++;
+  }
+
+  {
+    // allocate memory for the new string
+    const size_t retlen = orilen + patcnt * (replen - patlen);
+    char * const returned = new char[retlen + 1];
+
+    if (returned != NULL)
+    {
+      // copy the original string, 
+      // replacing all the instances of the pattern
+      char * retptr = returned;
+      for (oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen)
+      {
+        const size_t skplen = patloc - oriptr;
+        // copy the section until the occurence of the pattern
+        strncpy(retptr, oriptr, skplen);
+        retptr += skplen;
+        // copy the replacement 
+        strncpy(retptr, replacement, replen);
+        retptr += replen;
+      }
+      // copy the rest of the string.
+      strcpy(retptr, oriptr);
+    }
+    return returned;
+  }
+}

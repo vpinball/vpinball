@@ -221,7 +221,7 @@ private:
    CDockProperty *GetDefaultPropertiesDocker();
    CDockLayers *GetDefaultLayersDocker();
    CDockToolbar *GetDefaultToolbarDocker();
-   bool  unloadingTable;
+   bool m_unloadingTable;
    CMenu m_mainMenu;
    char m_szRecentTableList[LAST_OPENED_TABLE_COUNT + 1][MAX_PATH];
 
