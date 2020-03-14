@@ -40,7 +40,9 @@ Function vpmKeyDown(ByVal keycode)
 		Select Case keycode
 			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False
 			Case LeftFlipperKey  .Switch(swLLFlip) = True : vpmKeyDown = False
+			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
+			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keyBangBack     vpmNudge.DoNudge   0, 6
 			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
