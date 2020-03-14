@@ -155,6 +155,11 @@ HRESULT SaveValueString(const char *szKey, const char *szValue, const char *val)
    return SaveValue(szKey, szValue, REG_SZ, val, lstrlen(val));
 }
 
+HRESULT SaveValueString(const char *szKey, const char *szValue, const string& val)
+{
+   return SaveValue(szKey, szValue, REG_SZ, val.c_str(), val.length());
+}
+
 HRESULT DeleteValue(const char *szKey, const char *szValue)
 {
    char szPath[MAXSTRING];

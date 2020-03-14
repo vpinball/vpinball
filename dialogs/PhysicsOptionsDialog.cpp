@@ -267,61 +267,80 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             xml_node<>*flipper = xmlDoc.allocate_node(node_element, "flipper");
             xml_node<>*table = xmlDoc.allocate_node(node_element, "table");
 
-            xml_node<>*flipSpeed = xmlDoc.allocate_node(node_element, "speed", (new string(GetItemText(DISPID_Flipper_Speed).c_str()))->c_str());
+            const string fs(GetItemText(DISPID_Flipper_Speed));
+            xml_node<>*flipSpeed = xmlDoc.allocate_node(node_element, "speed", fs.c_str());
             flipper->append_node(flipSpeed);
 
-            xml_node<>*flipPhysStrength = xmlDoc.allocate_node(node_element, "strength", (new string(GetItemText(19).c_str()))->c_str());
+            const string fps(GetItemText(19));
+            xml_node<>*flipPhysStrength = xmlDoc.allocate_node(node_element, "strength", fps.c_str());
             flipper->append_node(flipPhysStrength);
 
-            xml_node<>*flipElasticity = xmlDoc.allocate_node(node_element, "elasticity", (new string(GetItemText(21).c_str()))->c_str());
+            const string fe(GetItemText(21));
+            xml_node<>*flipElasticity = xmlDoc.allocate_node(node_element, "elasticity", fe.c_str());
             flipper->append_node(flipElasticity);
 
-            xml_node<>*flipScatter = xmlDoc.allocate_node(node_element, "scatter", (new string(GetItemText(112).c_str()))->c_str());
+            const string fsc(GetItemText(112));
+            xml_node<>*flipScatter = xmlDoc.allocate_node(node_element, "scatter", fsc.c_str());
             flipper->append_node(flipScatter);
 
-            xml_node<>*flipTorqueDamping = xmlDoc.allocate_node(node_element, "eosTorque", (new string(GetItemText(113).c_str()))->c_str());
+            const string ftd(GetItemText(113));
+            xml_node<>*flipTorqueDamping = xmlDoc.allocate_node(node_element, "eosTorque", ftd.c_str());
             flipper->append_node(flipTorqueDamping);
 
-            xml_node<>*flipTorqueDampingAngle = xmlDoc.allocate_node(node_element, "eosTorqueAngle", (new string(GetItemText(189).c_str()))->c_str());
+            const string ftda(GetItemText(189));
+            xml_node<>*flipTorqueDampingAngle = xmlDoc.allocate_node(node_element, "eosTorqueAngle", ftda.c_str());
             flipper->append_node(flipTorqueDampingAngle);
 
-            xml_node<>*flipReturnStrength = xmlDoc.allocate_node(node_element, "returnStrength", (new string(GetItemText(23).c_str()))->c_str());
+            const string frs(GetItemText(23));
+            xml_node<>*flipReturnStrength = xmlDoc.allocate_node(node_element, "returnStrength", frs.c_str());
             flipper->append_node(flipReturnStrength);
 
-            xml_node<>*flipElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", (new string(GetItemText(22).c_str()))->c_str());
+            const string fef(GetItemText(22));
+            xml_node<>*flipElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", fef.c_str());
             flipper->append_node(flipElasticityFalloff);
 
-            xml_node<>*flipfriction = xmlDoc.allocate_node(node_element, "friction", (new string(GetItemText(109).c_str()))->c_str());
+            const string ff(GetItemText(109));
+            xml_node<>*flipfriction = xmlDoc.allocate_node(node_element, "friction", ff.c_str());
             flipper->append_node(flipfriction);
 
-            xml_node<>*flipCoilRampUp = xmlDoc.allocate_node(node_element, "coilRampUp", (new string(GetItemText(110).c_str()))->c_str());
+            const string fcru(GetItemText(110));
+            xml_node<>*flipCoilRampUp = xmlDoc.allocate_node(node_element, "coilRampUp", fcru.c_str());
             flipper->append_node(flipCoilRampUp);
 
-            xml_node<>*tabGravityConst = xmlDoc.allocate_node(node_element, "gravityConstant", (new string(GetItemText(1100).c_str()))->c_str());
+            const string tgc(GetItemText(1100));
+            xml_node<>*tabGravityConst = xmlDoc.allocate_node(node_element, "gravityConstant", tgc.c_str());
             table->append_node(tabGravityConst);
 
-            xml_node<>*tabContactFriction = xmlDoc.allocate_node(node_element, "contactFriction", (new string(GetItemText(1101).c_str()))->c_str());
+            const string tcf(GetItemText(1101));
+            xml_node<>*tabContactFriction = xmlDoc.allocate_node(node_element, "contactFriction", tcf.c_str());
             table->append_node(tabContactFriction);
 
-            xml_node<>*tabElasticity = xmlDoc.allocate_node(node_element, "elasticity", (new string(GetItemText(1708).c_str()))->c_str());
+            const string te(GetItemText(1708));
+            xml_node<>*tabElasticity = xmlDoc.allocate_node(node_element, "elasticity", te.c_str());
             table->append_node(tabElasticity);
 
-            xml_node<>*tabElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", (new string(GetItemText(1709).c_str()))->c_str());
+            const string tef(GetItemText(1709));
+            xml_node<>*tabElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", tef.c_str());
             table->append_node(tabElasticityFalloff);
 
-            xml_node<>*tabScatterAngle = xmlDoc.allocate_node(node_element, "playfieldScatter", (new string(GetItemText(1710).c_str()))->c_str());
+            const string tsa(GetItemText(1710));
+            xml_node<>*tabScatterAngle = xmlDoc.allocate_node(node_element, "playfieldScatter", tsa.c_str());
             table->append_node(tabScatterAngle);
 
-            xml_node<>*tabContactScatterAngle = xmlDoc.allocate_node(node_element, "defaultElementScatter", (new string(GetItemText(1102).c_str()))->c_str());
+            const string tcsa(GetItemText(1102));
+            xml_node<>*tabContactScatterAngle = xmlDoc.allocate_node(node_element, "defaultElementScatter", tcsa.c_str());
             table->append_node(tabContactScatterAngle);
 
-            xml_node<>*tabMinSlope = xmlDoc.allocate_node(node_element, "playfieldminslope", (new string(GetItemText(1103).c_str()))->c_str());
+            const string tmns(GetItemText(1103));
+            xml_node<>*tabMinSlope = xmlDoc.allocate_node(node_element, "playfieldminslope", tmns.c_str());
             table->append_node(tabMinSlope);
 
-            xml_node<>*tabMaxSlope = xmlDoc.allocate_node(node_element, "playfieldmaxslope", (new string(GetItemText(1104).c_str()))->c_str());
+            const string tmxs(GetItemText(1104));
+            xml_node<>*tabMaxSlope = xmlDoc.allocate_node(node_element, "playfieldmaxslope", tmxs.c_str());
             table->append_node(tabMaxSlope);
 
-            xml_node<>*settingName = xmlDoc.allocate_node(node_element, "name", (new string(GetItemText(1110).c_str()))->c_str());
+            const string sn(GetItemText(1110));
+            xml_node<>*settingName = xmlDoc.allocate_node(node_element, "name", sn.c_str());
             root->append_node(settingName);
             root->append_node(table);
             root->append_node(flipper);
@@ -448,77 +467,77 @@ void PhysicsOptionsDialog::SaveCurrentPhysicsSetting()
 
     str = GetItemText(DISPID_Flipper_Speed);
     sprintf_s(tmp, 256, "FlipperPhysicsMass%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(19);
     sprintf_s(tmp, 256, "FlipperPhysicsStrength%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(21);
     sprintf_s(tmp, 256, "FlipperPhysicsElasticity%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str=GetItemText(112);
     sprintf_s(tmp, 256, "FlipperPhysicsScatter%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(113);
     sprintf_s(tmp, 256, "FlipperPhysicsEOSTorque%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(189);
     sprintf_s(tmp, 256, "FlipperPhysicsEOSTorqueAngle%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(23);
     sprintf_s(tmp, 256, "FlipperPhysicsReturnStrength%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(22);
     sprintf_s(tmp, 256, "FlipperPhysicsElasticityFalloff%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(109);
     sprintf_s(tmp, 256, "FlipperPhysicsFriction%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(110);
     sprintf_s(tmp, 256, "FlipperPhysicsCoilRampUp%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(1100);
     sprintf_s(tmp, 256, "TablePhysicsGravityConstant%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(1101);
     sprintf_s(tmp, 256, "TablePhysicsContactFriction%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(1708);
     sprintf_s(tmp, 256, "TablePhysicsElasticity%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(1709);
     sprintf_s(tmp, 256, "TablePhysicsElasticityFalloff%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(1710);
     sprintf_s(tmp, 256, "TablePhysicsScatterAngle%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(1102);
     sprintf_s(tmp, 256, "TablePhysicsContactScatterAngle%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(1103);
     sprintf_s(tmp, 256, "TablePhysicsMinSlope%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(1104);
     sprintf_s(tmp, 256, "TablePhysicsMaxSlope%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 
     str = GetItemText(1110);
     sprintf_s(tmp, 256, "PhysicsSetName%u", physicsselection);
-    SaveValueString("Player", tmp, str.c_str());
+    SaveValueString("Player", tmp, str);
 }

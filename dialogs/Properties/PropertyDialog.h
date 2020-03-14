@@ -203,16 +203,14 @@ public:
     
     static float GetFloatTextbox(CEdit &textbox)
     {
-        const CString textStr(textbox.GetWindowText());
-        const float fv = sz2f(textStr.c_str());
+        const float fv = sz2f(textbox.GetWindowText().c_str());
         return fv;
     }
 
     static int GetIntTextbox(CEdit &textbox)
     {
-        const CString textStr(textbox.GetWindowText());
         int value = 0;
-        sscanf_s(textStr.c_str(), "%i", &value);
+        sscanf_s(textbox.GetWindowText().c_str(), "%i", &value);
         return value;
     }
 

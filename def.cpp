@@ -149,7 +149,7 @@ char *MakeChar(const WCHAR * const wz)
    return szT;
 }
 
-HRESULT OpenURL(const char * const szURL)
+HRESULT OpenURL(const string& szURL)
 {
    IUniformResourceLocator* pURL;
 
@@ -159,7 +159,7 @@ HRESULT OpenURL(const char * const szURL)
       return hres;
    }
 
-   hres = pURL->SetURL(szURL, IURL_SETURL_FL_GUESS_PROTOCOL);
+   hres = pURL->SetURL(szURL.c_str(), IURL_SETURL_FL_GUESS_PROTOCOL);
 
    if (!SUCCEEDED(hres))
    {

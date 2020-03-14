@@ -746,19 +746,19 @@ void VideoOptionsDialog::OnOK()
 
    CString tmpStr;
    tmpStr = GetDlgItemTextA(IDC_CORRECTION_X);
-   SaveValueString("Player", "BallCorrectionX", tmpStr.c_str());
+   SaveValueString("Player", "BallCorrectionX", tmpStr);
 
    tmpStr = GetDlgItemTextA(IDC_CORRECTION_Y);
-   SaveValueString("Player", "BallCorrectionY", tmpStr.c_str());
+   SaveValueString("Player", "BallCorrectionY", tmpStr);
 
    tmpStr = GetDlgItemTextA(IDC_DN_LONGITUDE);
-   SaveValueString("Player", "Longitude", tmpStr.c_str());
+   SaveValueString("Player", "Longitude", tmpStr);
 
    tmpStr = GetDlgItemTextA(IDC_DN_LATITUDE);
-   SaveValueString("Player", "Latitude", tmpStr.c_str());
+   SaveValueString("Player", "Latitude", tmpStr);
 
    tmpStr = GetDlgItemTextA(IDC_NUDGE_STRENGTH);
-   SaveValueString("Player", "NudgeStrength", tmpStr.c_str());
+   SaveValueString("Player", "NudgeStrength", tmpStr);
 
    const HWND hwndFXAA = GetDlgItem(IDC_FXAACB).GetHwnd();
    size_t fxaa = SendMessage(hwndFXAA, CB_GETCURSEL, 0, 0);
@@ -812,13 +812,13 @@ void VideoOptionsDialog::OnOK()
    SaveValueInt("Player", "AlphaRampAccuracy", (int)alphaRampsAccuracy);
 
    tmpStr = GetDlgItemTextA(IDC_3D_STEREO_OFS);
-   SaveValueString("Player", "Stereo3DOffset", tmpStr.c_str());
+   SaveValueString("Player", "Stereo3DOffset", tmpStr);
 
    tmpStr = GetDlgItemTextA(IDC_3D_STEREO_MS);
-   SaveValueString("Player", "Stereo3DMaxSeparation", tmpStr.c_str());
+   SaveValueString("Player", "Stereo3DMaxSeparation", tmpStr);
 
    tmpStr = GetDlgItemTextA(IDC_3D_STEREO_ZPD);
-   SaveValueString("Player", "Stereo3DZPD", tmpStr.c_str());
+   SaveValueString("Player", "Stereo3DZPD", tmpStr);
 
    const bool disableDWM = (SendMessage(GetDlgItem(IDC_DISABLE_DWM).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
    SaveValueBool("Player", "DisableDWM", disableDWM);
@@ -849,9 +849,9 @@ void VideoOptionsDialog::OnOK()
    {
       SaveValueBool("Player", "OverwriteBallImage", true);
       tmpStr = GetDlgItemText(IDC_BALL_IMAGE_EDIT);
-      SaveValueString("Player", "BallImage", tmpStr.c_str());
+      SaveValueString("Player", "BallImage", tmpStr);
       tmpStr = GetDlgItemText(IDC_BALL_DECAL_EDIT);
-      SaveValueString("Player", "DecalImage", tmpStr.c_str());
+      SaveValueString("Player", "DecalImage", tmpStr);
    }
    else
       SaveValueBool("Player", "OverwriteBallImage", false);

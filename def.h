@@ -391,7 +391,7 @@ int WzSzStrCmp(const WCHAR *wz1, const char *sz2);
 void WideStrCat(const WCHAR *wzin, WCHAR *wzout);
 int WzSzStrnCmp(const WCHAR *wz1, const char *sz2, const int count);
 
-HRESULT OpenURL(const char * const szURL);
+HRESULT OpenURL(const string& szURL);
 
 WCHAR *MakeWide(const char * const sz);
 char *MakeChar(const WCHAR * const wz);
