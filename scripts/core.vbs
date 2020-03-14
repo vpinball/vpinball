@@ -8,6 +8,7 @@ Const VPinMAMEDriverVer = 3.58
 ' - Add PullbackandRetract to cvpmImpulseP
 ' - Added joctronic.vbs
 ' - Added s8_StillCrazy.vbs (System 8/Still Crazy)
+' - Slightly updated LTD3.vbs (3 coin chutes)
 ' - Added constant (vpmFourStepSol) for new 4-solenoid stepper motor mech type used by High Roller Casino, Starship Troopers, and Playboy
 '
 ' New in 3.57 (Update by nFozzy, DJRobX, chepas, Gaston)
