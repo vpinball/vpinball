@@ -122,11 +122,11 @@ inline ScoreType findVertexScore(const int numActiveTris,
 
 // The main reordering function
 template <typename T>
-T* reorderForsyth(const T* const indices,
+T* reorderForsyth(const vector<T>& indices,
                   const int nTriangles,
                   const int nVertices)
 {
-	if (indices == NULL || nTriangles == 0 || nVertices == 0)
+	if (indices.empty() || nTriangles == 0 || nVertices == 0)
 		return NULL;
 
 	// The tables need not be inited every time this function
@@ -134,9 +134,9 @@ T* reorderForsyth(const T* const indices,
 	// or just replace the score tables with precalculated values.
 	initForsyth();
 
-	VertexData* const cVertex = new VertexData[nVertices];
+	std::vector<VertexData> cVertex(nVertices);
 	for (int i = 0; i < nVertices; ++i)
-	    cVertex[i].numActiveTri = 0;
+		cVertex[i].numActiveTri = 0;
 
 	// First scan over the vertex data, count the total number of
 	// occurrances of each vertex
@@ -144,19 +144,20 @@ T* reorderForsyth(const T* const indices,
 		if (cVertex[indices[i]].numActiveTri == MAX_ADJACENCY) {
 			// Unsupported mesh,
 			// vertex shared by too many triangles
-			delete [] cVertex;
 			return NULL;
 		}
 		cVertex[indices[i]].numActiveTri++;
+		if (cVertex[indices[i]].numActiveTri == 3*nTriangles) {
+			// Degenerated mesh
+			return NULL;
+		}
 	}
 
-	bool* const triangleAdded = new bool[nTriangles];
-	ScoreType* const triangleScore = new ScoreType[nTriangles];
-	T* const outTriangles = new T[nTriangles];
+	std::vector<bool> triangleAdded(nTriangles,false);
+	std::vector<ScoreType> triangleScore(nTriangles,0);
+	std::vector<T> outTriangles(nTriangles);
 	T* const triangleIndices = new T[3*nTriangles];
-	memset(triangleAdded, 0, sizeof(bool)*nTriangles);
-	memset(triangleScore, 0, sizeof(ScoreType)*nTriangles);
-	memset(triangleIndices, 0, sizeof(T)*3*nTriangles);
+	memset(triangleIndices, 0, sizeof(T)*(3*nTriangles));
 
 	// Count the triangle array offset for each vertex,
 	// initialize the rest of the data.
@@ -225,10 +226,6 @@ T* reorderForsyth(const T* const indices,
 				assert(endpos < VERTEX_CACHE_SIZE+3);
 				if (!(endpos < VERTEX_CACHE_SIZE+3))
 				{
-					delete [] cVertex;
-					delete [] triangleAdded;
-					delete [] triangleScore;
-					delete [] outTriangles;
 					delete [] triangleIndices;
 					return NULL;
 				}
@@ -241,11 +238,7 @@ T* reorderForsyth(const T* const indices,
 						cVertex[cache[j]].cacheTag++;
 						if (cVertex[cache[j]].cacheTag >= VERTEX_CACHE_SIZE + 3)
 						{
-							delete[] cVertex;
-							delete[] triangleAdded;
-							delete[] triangleScore;
-							delete[] outTriangles;
-							delete[] triangleIndices;
+							delete [] triangleIndices;
 							return NULL;
 						}
 					}
@@ -315,11 +308,6 @@ T* reorderForsyth(const T* const indices,
 		}
 	}
 
-	// Clean up
-	delete [] cVertex;
-	delete [] triangleAdded;
-	delete [] triangleScore;
-
 	// Convert the triangle index array into a full triangle list
 	outPos = 0;
 	for (int i = 0; i < nTriangles; i++) {
@@ -327,7 +315,6 @@ T* reorderForsyth(const T* const indices,
 		for (int j = 0; j < 3; j++)
 			triangleIndices[outPos++] = indices[t + j];
 	}
-	delete [] outTriangles;
 
 	return triangleIndices;
 }
