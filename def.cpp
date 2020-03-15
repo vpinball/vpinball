@@ -178,21 +178,18 @@ HRESULT OpenURL(const string& szURL)
    return (hres);
 }
 
-char * replace(char const * const original, char const * const pattern, char const * const replacement)
+char* replace(const char* const original, const char* const pattern, const char* const replacement)
 {
   const size_t replen = strlen(replacement);
   const size_t patlen = strlen(pattern);
   const size_t orilen = strlen(original);
 
   size_t patcnt = 0;
-  const char * oriptr;
   const char * patloc;
 
   // find how many times the pattern occurs in the original string
-  for (oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen)
-  {
+  for (const char* oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen)
     patcnt++;
-  }
 
   {
     // allocate memory for the new string
@@ -204,6 +201,7 @@ char * replace(char const * const original, char const * const pattern, char con
       // copy the original string, 
       // replacing all the instances of the pattern
       char * retptr = returned;
+      const char* oriptr;
       for (oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen)
       {
         const size_t skplen = patloc - oriptr;

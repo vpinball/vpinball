@@ -396,4 +396,4 @@ HRESULT OpenURL(const string& szURL);
 WCHAR *MakeWide(const char * const sz);
 char *MakeChar(const WCHAR * const wz);
 
-char * replace(char const * const original, char const * const pattern, char const * const replacement); // returns new char* via new[]
+char* replace(const char* const original, const char* const pattern, const char* const replacement);
