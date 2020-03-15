@@ -1525,7 +1525,7 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
 
    if(version < 1011) // so that old tables do the reorderForsyth on each load, new tables only on mesh import, so a simple resave of a old table will also skip this step
    {
-      unsigned int* const tmp = reorderForsyth(m_mesh.m_indices.data(), (int)(m_mesh.NumIndices() / 3), (int)m_mesh.NumVertices());
+      unsigned int* const tmp = reorderForsyth(m_mesh.m_indices, (int)(m_mesh.NumIndices() / 3), (int)m_mesh.NumVertices());
       if (tmp != NULL)
       {
          memcpy(m_mesh.m_indices.data(), tmp, m_mesh.NumIndices() * sizeof(unsigned int));
@@ -1868,7 +1868,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                   }
                }
                prim->m_d.m_use3DMesh = true;
-               unsigned int* const tmp = reorderForsyth(prim->m_mesh.m_indices.data(), (int)(prim->m_mesh.NumIndices() / 3), (int)prim->m_mesh.NumVertices());
+               unsigned int* const tmp = reorderForsyth(prim->m_mesh.m_indices, (int)(prim->m_mesh.NumIndices() / 3), (int)prim->m_mesh.NumVertices());
                if (tmp != NULL)
                {
                   memcpy(prim->m_mesh.m_indices.data(), tmp, prim->m_mesh.NumIndices() * sizeof(unsigned int));

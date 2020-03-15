@@ -1156,7 +1156,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
    }
 
    // not necessary to reorder
-   /*WORD* tmp = reorderForsyth(m_meshIndices.data(), m_meshIndices.size() / 3, m_numVertices);
+   /*WORD* tmp = reorderForsyth(m_meshIndices, m_meshIndices.size() / 3, m_numVertices);
    if (tmp != NULL)
    {
    memcpy(m_meshIndices.data(), tmp, m_meshIndices.size()*sizeof(WORD));
@@ -2449,7 +2449,7 @@ void Ramp::GenerateVertexBuffer()
    m_dynamicVertexBuffer->unlock();
 
    // not necessary to reorder //!! also potentially unsafe, as walls can be disabled, so order is important!
-   /*WORD* const tmp = reorderForsyth(m_meshIndices.data(), m_meshIndices.size() / 3, m_numVertices * 3);
+   /*WORD* const tmp = reorderForsyth(m_meshIndices, m_meshIndices.size() / 3, m_numVertices * 3);
    if (tmp != NULL)
    {
    memcpy(m_meshIndices.data(), tmp, m_meshIndices.size()*sizeof(WORD));
