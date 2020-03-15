@@ -33,6 +33,8 @@ FIXES:
 - fix OBJ-exported names for all ramp types
 - fix missing wire thickness for triggers on OBJ export
 
+- fix crash on (at least) one pre-forsyth-mesh-reorder table
+
 - update BASS library to 2.4.15
 
 - see core scripts (header of core.vbs) for the respective changelog (version 3.58)
