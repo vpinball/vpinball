@@ -78,7 +78,7 @@ private:
    void InitRegValues();
    bool CanClose();
    void GetMyPath();
-   void UpdateRecentFileList(char *szfilename);
+   void UpdateRecentFileList(const char *szfilename);
 
    bool ApcHost_OnTranslateMessage(MSG* pmsg);
    bool processKeyInputForDialogs(MSG *pmsg);
@@ -98,7 +98,7 @@ public:
 
    CComObject<PinTable> *GetActiveTable();
    bool LoadFile();
-   void LoadFileName(char *szFileName);
+   void LoadFileName(const char *szFileName);
    void SetClipboard(vector<IStream*> * const pvstm);
 
    void DoPlay(const bool _cameraMode);
@@ -223,7 +223,8 @@ private:
    CDockToolbar *GetDefaultToolbarDocker();
    bool m_unloadingTable;
    CMenu m_mainMenu;
-   char m_szRecentTableList[LAST_OPENED_TABLE_COUNT + 1][MAX_PATH];
+   std::vector<std::string> m_recentTableList;
+   //char m_szRecentTableList[LAST_OPENED_TABLE_COUNT + 1][MAX_PATH];
 
    HANDLE m_workerthread;
    unsigned int m_workerthreadid;
