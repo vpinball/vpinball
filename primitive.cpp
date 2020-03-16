@@ -1525,6 +1525,8 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
 
    if(version < 1011) // so that old tables do the reorderForsyth on each load, new tables only on mesh import, so a simple resave of a old table will also skip this step
    {
+      WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
+
       unsigned int* const tmp = reorderForsyth(m_mesh.m_indices, (int)(m_mesh.NumIndices() / 3), (int)m_mesh.NumVertices());
       if (tmp != NULL)
       {
