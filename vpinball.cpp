@@ -71,9 +71,6 @@ static const int allLayers[MAX_LAYERS] =
    ID_LAYER_LAYER11
 };
 
-static char recentNumber[LAST_OPENED_TABLE_COUNT];
-static char recentMenuname[MAX_PATH];
-
 WCHAR *VPinball::m_customParameters[MAX_CUSTOM_PARAM_INDEX] = {};
 
 INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -87,11 +84,10 @@ typedef struct _tagSORTDATA
 }SORTDATA;
 
 SORTDATA SortData;
-int columnSortOrder[4] = { 0 };
 
 static bool firstRun = true;
 
-void AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
+static void AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
 {
     TOOLINFO toolInfo = { 0 };
     toolInfo.cbSize = sizeof(toolInfo);
@@ -508,8 +504,8 @@ CDockToolbar *VPinball::GetDefaultToolbarDocker()
     m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
 
     return m_dockToolbar;
-
 }
+
 CDockToolbar *VPinball::GetToolbarDocker()
 {
     if(m_dockToolbar==NULL || !m_dockToolbar->IsWindow() )
@@ -535,7 +531,6 @@ CDockLayers *VPinball::GetLayersDocker()
         return GetDefaultLayersDocker();
     return m_dockLayers;
 }
-
 
 void VPinball::CreateDocker()
 {
@@ -1103,7 +1098,6 @@ bool VPinball::CanClose()
    return true;
 }
 
-
 bool VPinball::CloseTable(PinTable * const ppt)
 {
    m_unloadingTable = true;
@@ -1263,6 +1257,7 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
       {
          // now search for filenames with & and replace with && so that these display correctly
          const char * const ns = replace(m_recentTableList[i].c_str(), "&", "&&");
+         char recentMenuname[MAX_PATH];
          snprintf(recentMenuname, MAX_PATH - 1, "&%i %s", i+1, ns);
          delete[] ns;
          // set the IDM of this menu item
@@ -1446,7 +1441,6 @@ void VPinball::PreCreate(CREATESTRUCT& cs)
 //      | WS_EX_CONTEXTHELP     // doesn't work if WS_MINIMIZEBOX
                     // or WS_MAXIMIZEBOX is specified
         ;
-
 }
 
 void VPinball::PreRegisterClass(WNDCLASS& wc)
@@ -1684,7 +1678,6 @@ STDMETHODIMP VPinball::PlaySound(BSTR bstr)
    return S_OK;
 }
 
-
 STDMETHODIMP VPinball::FireKnocker(int Count)
 {
    if (g_pplayer) g_pplayer->m_ptable->FireKnocker(Count);
@@ -1699,7 +1692,6 @@ STDMETHODIMP VPinball::QuitPlayer(int CloseType)
    return S_OK;
 }
 
-
 void VPinball::Quit()
 {
    if (g_pplayer) {
@@ -1709,7 +1701,6 @@ void VPinball::Quit()
    else
       PostMessage(WM_CLOSE, 0, 0);
 }
-
 
 int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
 {
@@ -1762,7 +1753,7 @@ int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
         return(value2-value1);
 }
 
-const int rgDlgIDFromSecurityLevel[] = { IDC_ACTIVEX0, IDC_ACTIVEX1, IDC_ACTIVEX2, IDC_ACTIVEX3, IDC_ACTIVEX4 };
+static const int rgDlgIDFromSecurityLevel[] = { IDC_ACTIVEX0, IDC_ACTIVEX1, IDC_ACTIVEX2, IDC_ACTIVEX3, IDC_ACTIVEX4 };
 
 INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -2299,6 +2290,7 @@ void VPinball::CopyPasteElement(const CopyPasteModes mode)
             case PASTE_AT:
             {
                 ptCur->Paste(true, ptCursor.x, ptCursor.y);
+                break;
             }
             default:
                 break;
