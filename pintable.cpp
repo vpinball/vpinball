@@ -3380,7 +3380,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
    return S_OK;
 }
 
-HRESULT PinTable::LoadGameFromFilename(char *szFileName)
+HRESULT PinTable::LoadGameFromFilename(const char *szFileName)
 {
    IStorage* pstgRoot;
 

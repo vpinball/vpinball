@@ -375,9 +375,10 @@ void VPinball::InitRegValues()
    for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
    {
       char szRegName[MAX_PATH];
+      char szTableName[MAX_PATH];
       sprintf_s(szRegName, "TableFileName%d", i);
-      memset(m_szRecentTableList[i], 0, MAX_PATH);
-      LoadValueString("RecentDir", szRegName, m_szRecentTableList[i], MAX_PATH);
+      LoadValueString("RecentDir", szRegName, szTableName, MAX_PATH);
+      m_recentTableList.push_back(std::string(szTableName));
    }
 
    g_pvp->m_convertToUnit = LoadValueIntWithDefault("Editor", "Units", 0);
@@ -1004,7 +1005,7 @@ bool VPinball::LoadFile()
    return true;
 }
 
-void VPinball::LoadFileName(char *szFileName)
+void VPinball::LoadFileName(const char *szFileName)
 {
    if (firstRun)
       OnInitialUpdate();
@@ -1203,53 +1204,39 @@ void VPinball::SetEnableMenuItems()
    }
 }
 
-void VPinball::UpdateRecentFileList(char *szfilename)
+void VPinball::UpdateRecentFileList(const char *szfilename)
 {
    // if the loaded file name is not null then add it to the top of the list
    if (szfilename != NULL)
    {
       // does this file name aready exist in the list?
       bool found = false;
-      int i;
-      for (i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
+      int i = 0;
+
+      std::vector<std::string> newList;
+      newList.push_back(std::string(szfilename));
+
+      for (std::string &tableName : m_recentTableList)
       {
-         if (strcmp(m_szRecentTableList[i], szfilename) == 0)
-         {
-            // yes it does
-            found = true;
-            break;
-         }
+          if(tableName != std::string(szfilename))
+              newList.push_back(tableName);
       }
 
-      // if the entry is already in the list then copy all the items above it down one position
-      const int index = found ? i - 1 :
-         // else copy the entire list down
-         (LAST_OPENED_TABLE_COUNT - 2);
+      m_recentTableList = newList;
 
-      // copy the entrys in the list down one position
-      for (i = index; i >= 0; i--)
+      for (std::string tableName : m_recentTableList)
       {
-         memcpy(m_szRecentTableList[i + 1], m_szRecentTableList[i], MAX_PATH);
-      }
-      // copy the current file into the first position
-      memcpy(m_szRecentTableList[0], szfilename, MAX_PATH);
+          char szRegName[MAX_PATH];
 
-      // write the list of the last n loaded tables to the registry
-      for (i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
-      {
-         char szRegName[MAX_PATH];
-
-         // if this entry is empty then all the rest are empty
-         if (m_szRecentTableList[i][0] == 0x00) break;
-         // write entry to the registry
-         sprintf_s(szRegName, "TableFileName%d", i);
-         SaveValueString("RecentDir", szRegName, m_szRecentTableList[i]);
+          // write entry to the registry
+          sprintf_s(szRegName, "TableFileName%d", i++);
+          SaveValueString("RecentDir", szRegName, tableName);
       }
    }
 
    // update the file menu to contain the last n recent loaded files
    // must be at least 1 recent file in the list
-   if (m_szRecentTableList[0][0] != 0)
+   if (!m_recentTableList.empty())
    {
       MENUITEMINFO menuInfo;
 
@@ -1264,26 +1251,23 @@ void VPinball::UpdateRecentFileList(char *szfilename)
       // insert the items before the EXIT menu (assuming it is the last entry)
       int count = menuFile.GetMenuItemCount() - 1;
 
+
       // set up the menu info block
       ZeroMemory(&menuInfo, sizeof(menuInfo));
-      menuInfo.cbSize = sizeof(menuInfo);
-      menuInfo.fMask = MIIM_ID | MIIM_TYPE;
+      menuInfo.cbSize = GetSizeofMenuItemInfo();
+      menuInfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE;
       menuInfo.fType = MFT_STRING;
 
-      memset(recentMenuname, 0, MAX_PATH);
       // add in the list of recently accessed files
-      for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
+      for (size_t i = 0; i < m_recentTableList.size(); i++)
       {
-         // if this entry is empty then all the rest are empty
-         if (m_szRecentTableList[i][0] == 0) break;
          // now search for filenames with & and replace with && so that these display correctly
-         const char * const ns = replace(m_szRecentTableList[i], "&", "&&");
-         snprintf(recentMenuname, MAX_PATH - 1, "&%i %s", i+1, ns);
-         delete[] ns;
+         //const char * const ns = replace(m_recentTableList[i], "&", "&&");
+         snprintf(recentMenuname, MAX_PATH - 1, "&%i %s", i+1, m_recentTableList[i].c_str());
+         //delete[] ns;
          // set the IDM of this menu item
          menuInfo.wID = RECENT_FIRST_MENU_IDM + i;
-         menuInfo.dwTypeData = recentMenuname;
-         menuInfo.cch = lstrlen(recentMenuname);
+         menuInfo.dwTypeData = const_cast<LPTSTR>(m_recentTableList[i].c_str());
 
          menuFile.InsertMenuItem(count, menuInfo, TRUE);
          count++;
@@ -2288,12 +2272,10 @@ void VPinball::ProcessDeleteElement()
 
 void VPinball::OpenRecentFile(const size_t menuId)
 {
-    char szFileName[MAX_PATH];
     // get the index into the recent list menu
     const size_t Index = menuId - RECENT_FIRST_MENU_IDM;
     // copy it into a temporary string so it can be correctly processed
-    memcpy(szFileName, m_szRecentTableList[Index], sizeof(szFileName));
-    LoadFileName(szFileName);
+    LoadFileName(m_recentTableList[Index].c_str());
 }
 
 void VPinball::CopyPasteElement(const CopyPasteModes mode)
