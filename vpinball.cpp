@@ -1262,12 +1262,12 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
       for (size_t i = 0; i < m_recentTableList.size(); i++)
       {
          // now search for filenames with & and replace with && so that these display correctly
-         //const char * const ns = replace(m_recentTableList[i], "&", "&&");
-         snprintf(recentMenuname, MAX_PATH - 1, "&%i %s", i+1, m_recentTableList[i].c_str());
-         //delete[] ns;
+         const char * const ns = replace(m_recentTableList[i].c_str(), "&", "&&");
+         snprintf(recentMenuname, MAX_PATH - 1, "&%i %s", i+1, ns);
+         delete[] ns;
          // set the IDM of this menu item
          menuInfo.wID = RECENT_FIRST_MENU_IDM + i;
-         menuInfo.dwTypeData = const_cast<LPTSTR>(m_recentTableList[i].c_str());
+         menuInfo.dwTypeData = recentMenuname;
 
          menuFile.InsertMenuItem(count, menuInfo, TRUE);
          count++;
