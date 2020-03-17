@@ -58,11 +58,11 @@ BOOL ToolbarDialog::OnInitDialog()
 
     m_tooltip.Create(*this);
     m_tooltip.AddTool(m_magnifyButton, _T("Zoom in/out"));
-    m_tooltip.AddTool(m_selectButton, _T("Select element"));
-    m_tooltip.AddTool(m_scriptButton, _T("Toggle script editor"));
-    m_tooltip.AddTool(m_backglassButton, _T("Toggle backglass view"));
-    m_tooltip.AddTool(m_playButton, _T("Play table"));
-    m_tooltip.AddTool(m_playCameraButton, _T("Play table in camera mode"));
+    m_tooltip.AddTool(m_selectButton, _T("Select Element"));
+    m_tooltip.AddTool(m_scriptButton, _T("Toggle Script Editor"));
+    m_tooltip.AddTool(m_backglassButton, _T("Toggle Backglass View"));
+    m_tooltip.AddTool(m_playButton, _T("Play Table"));
+    m_tooltip.AddTool(m_playCameraButton, _T("Interactive edit Table (Camera/Lights/Materials)"));
 
     m_tooltip.AddTool(m_wallButton, _T("Insert Wall"));
     m_tooltip.AddTool(m_gateButton, _T("Insert Gate"));
