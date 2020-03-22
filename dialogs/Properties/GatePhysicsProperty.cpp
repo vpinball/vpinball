@@ -33,19 +33,13 @@ void GatePhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 13:
-                PropertyDialog::StartUndo(gate);
-                gate->m_d.m_damping = PropertyDialog::GetFloatTextbox(m_dampingEdit);
-                PropertyDialog::EndUndo(gate);
+                CHECK_UPDATE_ITEM(gate->m_d.m_damping, PropertyDialog::GetFloatTextbox(m_dampingEdit), gate);
                 break;
             case 17:
-                PropertyDialog::StartUndo(gate);
-                gate->m_d.m_gravityfactor = PropertyDialog::GetFloatTextbox(m_gravityFactorEdit);
-                PropertyDialog::EndUndo(gate);
+                CHECK_UPDATE_ITEM(gate->m_d.m_gravityfactor, PropertyDialog::GetFloatTextbox(m_gravityFactorEdit), gate);
                 break;
             case IDC_TWO_WAY_CHECK:
-                PropertyDialog::StartUndo(gate);
-                gate->m_d.m_twoWay = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_TWO_WAY_CHECK));
-                PropertyDialog::EndUndo(gate);
+                CHECK_UPDATE_ITEM(gate->m_d.m_twoWay, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_TWO_WAY_CHECK)), gate);
                 break;
 
             default:

@@ -47,44 +47,28 @@ void FlipperPhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 19:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_strength = PropertyDialog::GetFloatTextbox(m_strengthEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_strength, PropertyDialog::GetFloatTextbox(m_strengthEdit), flipper);
                 break;
             case 23:
-                PropertyDialog::StartUndo(flipper);
-                flipper->SetReturn(PropertyDialog::GetFloatTextbox(m_returnStrengthEdit));
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_VALUE_SETTER(flipper->SetReturn, flipper->GetReturn, PropertyDialog::GetFloatTextbox, m_returnStrengthEdit, flipper);
                 break;
             case 27:
-                PropertyDialog::StartUndo(flipper);
-                flipper->SetRampUp(PropertyDialog::GetFloatTextbox(m_coilUpRampEdit));
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_VALUE_SETTER(flipper->SetRampUp, flipper->GetRampUp, PropertyDialog::GetFloatTextbox, m_coilUpRampEdit, flipper);
                 break;
             case 28:
-                PropertyDialog::StartUndo(flipper);
-                flipper->SetElastacityFalloff(PropertyDialog::GetFloatTextbox(m_elasticityFalloffEdit));
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_VALUE_SETTER(flipper->SetElastacityFalloff, flipper->GetElastacityFalloff, PropertyDialog::GetFloatTextbox, m_elasticityFalloffEdit, flipper);
                 break;
             case 113:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_torqueDamping = PropertyDialog::GetFloatTextbox(m_eosTorqueEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_torqueDamping, PropertyDialog::GetFloatTextbox(m_eosTorqueEdit), flipper);
                 break;
             case 189:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_torqueDampingAngle = PropertyDialog::GetFloatTextbox(m_eosTorqueAngleEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_torqueDampingAngle, PropertyDialog::GetFloatTextbox(m_eosTorqueAngleEdit), flipper);
                 break;
             case DISPID_Flipper_Speed:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_mass = PropertyDialog::GetFloatTextbox(m_massEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_mass, PropertyDialog::GetFloatTextbox(m_massEdit), flipper);
                 break;
             case 1044:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_OverridePhysics = (PhysicsSet)(PropertyDialog::GetComboBoxIndex(m_overwriteSettingsCombo, m_physicSetList));
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_OverridePhysics, (PhysicsSet)(PropertyDialog::GetComboBoxIndex(m_overwriteSettingsCombo, m_physicSetList)), flipper);
                 break;
             default:
                 UpdateBaseProperties(flipper, &flipper->m_d, dispid);
