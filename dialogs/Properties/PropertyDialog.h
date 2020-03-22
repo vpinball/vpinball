@@ -289,9 +289,9 @@ private:
     auto value = uiGetter(uiGetterParameter); \
     if (classGetter() != value) \
     { \
-        PropertyDialog::StartUndo(table); \
+        PropertyDialog::StartUndo(element); \
         classSetter(value); \
-        PropertyDialog::EndUndo(table); \
+        PropertyDialog::EndUndo(element); \
     } \
 }
 

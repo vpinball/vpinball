@@ -42,54 +42,34 @@ void DispreelVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_BACK_TRANSP_CHECK:
-                PropertyDialog::StartUndo(reel);
-                reel->m_d.m_transparent = PropertyDialog::GetCheckboxState(m_hBackgroundTransparentCheck);
-                PropertyDialog::EndUndo(reel);
+                CHECK_UPDATE_ITEM(reel->m_d.m_transparent, PropertyDialog::GetCheckboxState(m_hBackgroundTransparentCheck), reel);
                 break;
             case IDC_USE_IMAGE_GRID_CHECK:
-                PropertyDialog::StartUndo(reel);
-                reel->m_d.m_useImageGrid = PropertyDialog::GetCheckboxState(m_hUseImageGridCheck);
-                PropertyDialog::EndUndo(reel);
+                CHECK_UPDATE_ITEM(reel->m_d.m_useImageGrid, PropertyDialog::GetCheckboxState(m_hUseImageGridCheck), reel);
                 break;
             case IDC_SINGLE_DIGIT_RANGE_EDIT:
-                PropertyDialog::StartUndo(reel);
-                reel->SetRange(PropertyDialog::GetIntTextbox(m_singleDigitRangeEdit));
-                PropertyDialog::EndUndo(reel);
+                CHECK_UPDATE_VALUE_SETTER(reel->SetRange, reel->GetRange, PropertyDialog::GetIntTextbox, m_singleDigitRangeEdit, reel);
                 break;
             case IDC_IMAGES_PER_ROW_EDIT:
-                PropertyDialog::StartUndo(reel);
-                reel->SetImagesPerGridRow(PropertyDialog::GetIntTextbox(m_imagePerRowEdit));
-                PropertyDialog::EndUndo(reel);
+                CHECK_UPDATE_VALUE_SETTER(reel->SetImagesPerGridRow, reel->GetImagesPerGridRow, PropertyDialog::GetIntTextbox, m_imagePerRowEdit, reel);
                 break;
             case 9:
-                PropertyDialog::StartUndo(reel);
-                reel->SetX(PropertyDialog::GetFloatTextbox(m_posXEdit));
-                PropertyDialog::EndUndo(reel);
+                CHECK_UPDATE_VALUE_SETTER(reel->SetX, reel->GetX, PropertyDialog::GetFloatTextbox, m_posXEdit, reel);
                 break;
             case 10:
-                PropertyDialog::StartUndo(reel);
-                reel->SetY(PropertyDialog::GetFloatTextbox(m_posYEdit));
-                PropertyDialog::EndUndo(reel);
+                CHECK_UPDATE_VALUE_SETTER(reel->SetY, reel->GetY, PropertyDialog::GetFloatTextbox, m_posYEdit, reel);
                 break;
             case IDC_REELS_EDIT:
-                PropertyDialog::StartUndo(reel);
-                reel->SetReels(PropertyDialog::GetIntTextbox(m_reelsEdit));
-                PropertyDialog::EndUndo(reel);
+                CHECK_UPDATE_VALUE_SETTER(reel->SetReels, reel->GetReels, PropertyDialog::GetIntTextbox, m_reelsEdit, reel);
                 break;
             case IDC_REEL_WIDTH_EDIT:
-                PropertyDialog::StartUndo(reel);
-                reel->SetWidth(PropertyDialog::GetFloatTextbox(m_reelWidthEdit));
-                PropertyDialog::EndUndo(reel);
+                CHECK_UPDATE_VALUE_SETTER(reel->SetWidth, reel->GetWidth, PropertyDialog::GetFloatTextbox, m_reelWidthEdit, reel);
                 break;
             case IDC_REEL_HEIGHT_EDIT:
-                PropertyDialog::StartUndo(reel);
-                reel->SetHeight(PropertyDialog::GetFloatTextbox(m_reelHeightEdit));
-                PropertyDialog::EndUndo(reel);
+                CHECK_UPDATE_VALUE_SETTER(reel->SetHeight, reel->GetHeight, PropertyDialog::GetFloatTextbox, m_reelHeightEdit, reel);
                 break;
             case IDC_REEL_SPACING_EDIT:
-                PropertyDialog::StartUndo(reel);
-                reel->SetSpacing(PropertyDialog::GetFloatTextbox(m_reelSpacingEdit));
-                PropertyDialog::EndUndo(reel);
+                CHECK_UPDATE_VALUE_SETTER(reel->SetSpacing, reel->GetSpacing, PropertyDialog::GetFloatTextbox, m_reelSpacingEdit, reel);
                 break;
             case IDC_COLOR_BUTTON1:
             {

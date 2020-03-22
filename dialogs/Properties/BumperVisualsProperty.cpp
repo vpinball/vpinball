@@ -45,84 +45,52 @@ void BumperVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_MATERIAL_COMBO:
-                PropertyDialog::StartUndo(bumper);
-                PropertyDialog::GetComboBoxText(m_capMaterialCombo, bumper->m_d.m_szCapMaterial);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_COMBO_TEXT(bumper->m_d.m_szCapMaterial, m_capMaterialCombo, bumper);
                 break;
             case IDC_MATERIAL_COMBO2:
-                PropertyDialog::StartUndo(bumper);
-                PropertyDialog::GetComboBoxText(m_bumpBaseMaterialCombo, bumper->m_d.m_szBaseMaterial);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_COMBO_TEXT(bumper->m_d.m_szBaseMaterial, m_bumpBaseMaterialCombo, bumper);
                 break;
             case IDC_MATERIAL_COMBO3:
-                PropertyDialog::StartUndo(bumper);
-                PropertyDialog::GetComboBoxText(m_skirtMaterialCombo, bumper->m_d.m_szSkirtMaterial);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_COMBO_TEXT(bumper->m_d.m_szSkirtMaterial, m_skirtMaterialCombo, bumper);
                 break;
             case IDC_MATERIAL_COMBO4:
-                PropertyDialog::StartUndo(bumper);
-                PropertyDialog::GetComboBoxText(m_ringMaterialCombo, bumper->m_d.m_szRingMaterial);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_COMBO_TEXT(bumper->m_d.m_szRingMaterial, m_ringMaterialCombo, bumper);
                 break;
             case IDC_BUMPER_RADIUS_EDIT:
-                PropertyDialog::StartUndo(bumper);
-                bumper->m_d.m_radius = PropertyDialog::GetFloatTextbox(m_radiusEdit);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_ITEM(bumper->m_d.m_radius, PropertyDialog::GetFloatTextbox(m_radiusEdit), bumper);
                 break;
             case IDC_BUMPER_HEIGHT_SCALE_EDIT:
-                PropertyDialog::StartUndo(bumper);
-                bumper->m_d.m_heightScale = PropertyDialog::GetFloatTextbox(m_heightScaleEdit);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_ITEM(bumper->m_d.m_heightScale, PropertyDialog::GetFloatTextbox(m_heightScaleEdit), bumper);
                 break;
             case IDC_ORIENTATION_EDIT:
-                PropertyDialog::StartUndo(bumper);
-                bumper->m_d.m_orientation = PropertyDialog::GetFloatTextbox(m_orientationEdit);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_ITEM(bumper->m_d.m_orientation, PropertyDialog::GetFloatTextbox(m_orientationEdit), bumper);
                 break;
             case IDC_RINGSPEED_EDIT:
-                PropertyDialog::StartUndo(bumper);
-                bumper->m_d.m_ringSpeed = PropertyDialog::GetFloatTextbox(m_ringSpeedEdit);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_ITEM(bumper->m_d.m_ringSpeed, PropertyDialog::GetFloatTextbox(m_ringSpeedEdit), bumper);
                 break;
             case IDC_RINGDROPOFFSET_EDIT:
-                PropertyDialog::StartUndo(bumper);
-                bumper->m_d.m_ringDropOffset = PropertyDialog::GetFloatTextbox(m_ringSpeedOffsetEdit);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_ITEM(bumper->m_d.m_ringDropOffset, PropertyDialog::GetFloatTextbox(m_ringSpeedOffsetEdit), bumper);
                 break;
             case IDC_CAP_VISIBLE_CHECK:
-                PropertyDialog::StartUndo(bumper);
-                bumper->m_d.m_capVisible = PropertyDialog::GetCheckboxState(m_hCapVisibleCheck);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_ITEM(bumper->m_d.m_capVisible, PropertyDialog::GetCheckboxState(m_hCapVisibleCheck), bumper);
                 break;
             case IDC_BASE_VISIBLE_CHECK:
-                PropertyDialog::StartUndo(bumper);
-                bumper->m_d.m_baseVisible = PropertyDialog::GetCheckboxState(m_hBaseVisibleCheck);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_ITEM(bumper->m_d.m_baseVisible, PropertyDialog::GetCheckboxState(m_hBaseVisibleCheck), bumper);
                 break;
             case IDC_RING_VISIBLE:
-                PropertyDialog::StartUndo(bumper);
-                bumper->m_d.m_ringVisible = PropertyDialog::GetCheckboxState(m_hRingVisibleCheck);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_ITEM(bumper->m_d.m_ringVisible, PropertyDialog::GetCheckboxState(m_hRingVisibleCheck), bumper);
                 break;
             case IDC_SKIRT_VISIBLE:
-                PropertyDialog::StartUndo(bumper);
-                bumper->m_d.m_skirtVisible = PropertyDialog::GetCheckboxState(m_hSkirtVisibleCheck);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_ITEM(bumper->m_d.m_skirtVisible, PropertyDialog::GetCheckboxState(m_hSkirtVisibleCheck), bumper);
                 break;
             case 902:
-                PropertyDialog::StartUndo(bumper);
-                bumper->m_d.m_vCenter.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_ITEM(bumper->m_d.m_vCenter.x, PropertyDialog::GetFloatTextbox(m_posXEdit), bumper);
                 break;
             case 903:
-                PropertyDialog::StartUndo(bumper);
-                bumper->m_d.m_vCenter.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_ITEM(bumper->m_d.m_vCenter.y, PropertyDialog::GetFloatTextbox(m_posYEdit), bumper);
                 break;
             case IDC_SURFACE_COMBO:
-                PropertyDialog::StartUndo(bumper);
-                PropertyDialog::GetComboBoxText(m_surfaceCombo, bumper->m_d.m_szSurface);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_COMBO_TEXT(bumper->m_d.m_szSurface, m_surfaceCombo, bumper);
                 break;
 
             default:
