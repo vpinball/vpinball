@@ -46,31 +46,22 @@ void KickerVisualsProperty::UpdateProperties(const int dispid)
                 PropertyDialog::StartUndo(kicker);
                 kicker->m_d.m_kickertype = (KickerType)(PropertyDialog::GetComboBoxIndex(m_displayCombo, m_typeList));
                 PropertyDialog::EndUndo(kicker);
+                CHECK_UPDATE_ITEM(kicker->m_d.m_kickertype, (KickerType)(PropertyDialog::GetComboBoxIndex(m_displayCombo, m_typeList)), kicker);
                 break;
             case IDC_KICKER_RADIUS_EDIT:
-                PropertyDialog::StartUndo(kicker);
-                kicker->m_d.m_radius = PropertyDialog::GetFloatTextbox(m_radiusEdit);
-                PropertyDialog::EndUndo(kicker);
+                CHECK_UPDATE_ITEM(kicker->m_d.m_radius, PropertyDialog::GetFloatTextbox(m_radiusEdit), kicker);
                 break;
             case IDC_KICKER_ORIENTATION_EDIT:
-                PropertyDialog::StartUndo(kicker);
-                kicker->m_d.m_orientation = PropertyDialog::GetFloatTextbox(m_orientationEdit);
-                PropertyDialog::EndUndo(kicker);
+                CHECK_UPDATE_ITEM(kicker->m_d.m_orientation, PropertyDialog::GetFloatTextbox(m_orientationEdit), kicker);
                 break;
             case 902:
-                PropertyDialog::StartUndo(kicker);
-                kicker->m_d.m_vCenter.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
-                PropertyDialog::EndUndo(kicker);
+                CHECK_UPDATE_ITEM(kicker->m_d.m_vCenter.x, PropertyDialog::GetFloatTextbox(m_posXEdit), kicker);
                 break;
             case 903:
-                PropertyDialog::StartUndo(kicker);
-                kicker->m_d.m_vCenter.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
-                PropertyDialog::EndUndo(kicker);
+                CHECK_UPDATE_ITEM(kicker->m_d.m_vCenter.y, PropertyDialog::GetFloatTextbox(m_posYEdit), kicker);
                 break;
             case IDC_SURFACE_COMBO:
-                PropertyDialog::StartUndo(kicker);
-                PropertyDialog::GetComboBoxText(m_surfaceCombo, kicker->m_d.m_szSurface);
-                PropertyDialog::EndUndo(kicker);
+                CHECK_UPDATE_COMBO_TEXT(kicker->m_d.m_szSurface, m_surfaceCombo, kicker);
                 break;
             default:
                 UpdateBaseProperties(kicker, &kicker->m_d, dispid);

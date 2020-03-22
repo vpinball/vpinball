@@ -52,77 +52,51 @@ void HitTargetVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_HIT_TARGET_TYPE:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_targetType = (TargetType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList) + 1);
+                CHECK_UPDATE_ITEM(target->m_d.m_targetType, (TargetType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList) + 1), target);
                 target->UpdateEditorView();
-                PropertyDialog::EndUndo(target);
                 break;
             case IDC_TARGET_MOVE_SPEED_EDIT:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_dropSpeed = PropertyDialog::GetFloatTextbox(m_dropSpeedEdit);
-                PropertyDialog::EndUndo(target);
+                CHECK_UPDATE_ITEM(target->m_d.m_dropSpeed, PropertyDialog::GetFloatTextbox(m_dropSpeedEdit), target);
                 break;
             case IDC_TARGET_RAISE_DELAY_EDIT:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_raiseDelay = PropertyDialog::GetIntTextbox(m_raiseDelayEdit);
-                PropertyDialog::EndUndo(target);
+                CHECK_UPDATE_ITEM(target->m_d.m_raiseDelay, PropertyDialog::GetIntTextbox(m_raiseDelayEdit), target);
                 break;
             case IDC_DEPTH_BIAS:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_depthBias = PropertyDialog::GetFloatTextbox(m_depthBiasEdit);
-                PropertyDialog::EndUndo(target);
+                CHECK_UPDATE_ITEM(target->m_d.m_depthBias, PropertyDialog::GetFloatTextbox(m_depthBiasEdit), target);
                 break;
             case IDC_BLEND_DISABLE_LIGHTING:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_disableLightingTop = PropertyDialog::GetFloatTextbox(m_disableLightingEdit);
-                PropertyDialog::EndUndo(target);
+                CHECK_UPDATE_ITEM(target->m_d.m_disableLightingTop, PropertyDialog::GetFloatTextbox(m_disableLightingEdit), target);
                 break;
             case IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_disableLightingBelow = PropertyDialog::GetFloatTextbox(m_disableLightBelowEdit);
-                PropertyDialog::EndUndo(target);
+                CHECK_UPDATE_ITEM(target->m_d.m_disableLightingBelow, PropertyDialog::GetFloatTextbox(m_disableLightBelowEdit), target);
                 break;
             case DISPID_POSITION_X:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_vPosition.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
+                CHECK_UPDATE_ITEM(target->m_d.m_vPosition.x, PropertyDialog::GetFloatTextbox(m_posXEdit), target);
                 target->UpdateEditorView();
-                PropertyDialog::EndUndo(target);
                 break;
             case DISPID_POSITION_Y:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_vPosition.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
+                CHECK_UPDATE_ITEM(target->m_d.m_vPosition.y, PropertyDialog::GetFloatTextbox(m_posYEdit), target);
                 target->UpdateEditorView();
-                PropertyDialog::EndUndo(target);
                 break;
             case DISPID_POSITION_Z:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_vPosition.z = PropertyDialog::GetFloatTextbox(m_posZEdit);
+                CHECK_UPDATE_ITEM(target->m_d.m_vPosition.z, PropertyDialog::GetFloatTextbox(m_posZEdit), target);
                 target->UpdateEditorView();
-                PropertyDialog::EndUndo(target);
                 break;
             case DISPID_SIZE_X:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_vSize.x = PropertyDialog::GetFloatTextbox(m_scaleXEdit);
+                CHECK_UPDATE_ITEM(target->m_d.m_vSize.x, PropertyDialog::GetFloatTextbox(m_scaleXEdit), target);
                 target->UpdateEditorView();
-                PropertyDialog::EndUndo(target);
                 break;
             case DISPID_SIZE_Y:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_vSize.y = PropertyDialog::GetFloatTextbox(m_scaleYEdit);
+                CHECK_UPDATE_ITEM(target->m_d.m_vSize.y, PropertyDialog::GetFloatTextbox(m_scaleYEdit), target);
                 target->UpdateEditorView();
-                PropertyDialog::EndUndo(target);
                 break;
             case DISPID_SIZE_Z:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_vSize.z = PropertyDialog::GetFloatTextbox(m_scaleZEdit);
+                CHECK_UPDATE_ITEM(target->m_d.m_vSize.z, PropertyDialog::GetFloatTextbox(m_scaleZEdit), target);
                 target->UpdateEditorView();
-                PropertyDialog::EndUndo(target);
                 break;
             case DISPID_ROT_Z:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_rotZ = PropertyDialog::GetFloatTextbox(m_orientationEdit);
+                CHECK_UPDATE_ITEM(target->m_d.m_rotZ, PropertyDialog::GetFloatTextbox(m_orientationEdit), target);
                 target->UpdateEditorView();
-                PropertyDialog::EndUndo(target);
                 break;
             default:
                 UpdateBaseProperties(target, &target->m_d, dispid);
