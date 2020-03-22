@@ -29,59 +29,37 @@ void BackglassVisualsProperty::UpdateProperties(const int dispid)
     switch (dispid)
     {
         case IDC_BG_NIGHT_DAY:
-            PropertyDialog::StartUndo(table);
-            table->m_ImageBackdropNightDay = PropertyDialog::GetCheckboxState(m_hApplyNightDayCheck);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_ImageBackdropNightDay, PropertyDialog::GetCheckboxState(m_hApplyNightDayCheck), table);
             break;
         case DISPID_Image2:
-            PropertyDialog::StartUndo(table);
-            PropertyDialog::GetComboBoxText(m_dtImageCombo, table->m_BG_szImage[0]);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_COMBO_TEXT(table->m_BG_szImage[0], m_dtImageCombo, table);
             break;
         case DISPID_Image6:
-            PropertyDialog::StartUndo(table);
-            PropertyDialog::GetComboBoxText(m_fsImageCombo, table->m_BG_szImage[1]);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_COMBO_TEXT(table->m_BG_szImage[1], m_fsImageCombo, table);
             break;
         case DISPID_Image8:
-            PropertyDialog::StartUndo(table);
-            PropertyDialog::GetComboBoxText(m_fssImageCombo, table->m_BG_szImage[2]);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_COMBO_TEXT(table->m_BG_szImage[2], m_fssImageCombo, table);
             break;
         case 1509:
-            PropertyDialog::StartUndo(table);
-            PropertyDialog::GetComboBoxText(m_colorGradingCombo, table->m_szImageColorGrade);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_COMBO_TEXT(table->m_szImageColorGrade, m_colorGradingCombo, table);
             break;
         case IDC_ENABLE_EMREEL_CHECK:
-            PropertyDialog::StartUndo(table);
-            table->m_renderEMReels = PropertyDialog::GetCheckboxState(m_hEnableEMReelCheck);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_renderEMReels, PropertyDialog::GetCheckboxState(m_hEnableEMReelCheck), table);
             break;
         case IDC_ENABLE_DECAL_CHECK:
-            PropertyDialog::StartUndo(table);
-            table->m_renderDecals = PropertyDialog::GetCheckboxState(m_hEnableDecal);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_renderDecals, PropertyDialog::GetCheckboxState(m_hEnableDecal), table);
             break;
         case IDC_GLOBAL_3DSTEREO:
-            PropertyDialog::StartUndo(table);
-            table->m_overwriteGlobalStereo3D = PropertyDialog::GetCheckboxState(m_hOverwriteGlobalStereoSettingsCheck);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_overwriteGlobalStereo3D, PropertyDialog::GetCheckboxState(m_hOverwriteGlobalStereoSettingsCheck), table);
             break;
         case IDC_3D_STEREO_OFFSET_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->Set3DOffset(PropertyDialog::GetFloatTextbox(m_3dStereoOffsetEdit));
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_VALUE_SETTER(table->Set3DOffset, table->Get3DOffset, PropertyDialog::GetFloatTextbox, m_3dStereoOffsetEdit, table);
             break;
         case IDC_3D_STEREO_SEPARATION_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->SetMaxSeparation(PropertyDialog::GetFloatTextbox(m_3dStereoSeparationEdit));
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_VALUE_SETTER(table->SetMaxSeparation, table->GetMaxSeparation, PropertyDialog::GetFloatTextbox, m_3dStereoSeparationEdit, table);
             break;
         case IDC_3D_STEREO_ZPD_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->SetZPD(PropertyDialog::GetFloatTextbox(m_3dSteroZPDEdit));
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_VALUE_SETTER(table->SetZPD, table->GetZPD, PropertyDialog::GetFloatTextbox, m_3dSteroZPDEdit, table);
             break;
         case IDC_COLOR_BUTTON1:
         {
