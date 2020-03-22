@@ -115,10 +115,22 @@ public:
 
    virtual void WriteRegDefaults();
 
-   long GetAlpha(void) const;
-   void SetAlpha(const long value);
-   long GetFilterAmount(void) const;
-   void SetFilterAmount(const long value);
+   long GetAlpha(void) const
+   {
+      return m_d.m_alpha;
+   }
+   void SetAlpha(const long value)
+   {
+      m_d.m_alpha = max(value,(long)0);
+   }
+   long GetFilterAmount(void) const
+   {
+      return m_d.m_filterAmount;
+   }
+   void SetFilterAmount(const long value)
+   {
+      m_d.m_filterAmount = max(value,(long)0);
+   }
 
    FlasherData m_d;
 

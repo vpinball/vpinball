@@ -21,7 +21,7 @@ void BumperVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_heightScaleEdit, bumper->m_d.m_heightScale);
         PropertyDialog::SetFloatTextbox(m_orientationEdit, bumper->m_d.m_orientation);
         PropertyDialog::SetFloatTextbox(m_ringSpeedEdit, bumper->m_d.m_ringSpeed);
-        PropertyDialog::SetFloatTextbox(m_ringSpeedOffsetEdit, bumper->m_d.m_ringDropOffset);
+        PropertyDialog::SetFloatTextbox(m_ringDropOffsetEdit, bumper->m_d.m_ringDropOffset);
         PropertyDialog::SetCheckboxState(m_hCapVisibleCheck, bumper->m_d.m_capVisible);
         PropertyDialog::SetCheckboxState(m_hBaseVisibleCheck, bumper->m_d.m_baseVisible);
         PropertyDialog::SetCheckboxState(m_hRingVisibleCheck, bumper->m_d.m_ringVisible);
@@ -69,7 +69,7 @@ void BumperVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(bumper->m_d.m_ringSpeed, PropertyDialog::GetFloatTextbox(m_ringSpeedEdit), bumper);
                 break;
             case IDC_RINGDROPOFFSET_EDIT:
-                CHECK_UPDATE_ITEM(bumper->m_d.m_ringDropOffset, PropertyDialog::GetFloatTextbox(m_ringSpeedOffsetEdit), bumper);
+                CHECK_UPDATE_ITEM(bumper->m_d.m_ringDropOffset, PropertyDialog::GetFloatTextbox(m_ringDropOffsetEdit), bumper);
                 break;
             case IDC_CAP_VISIBLE_CHECK:
                 CHECK_UPDATE_ITEM(bumper->m_d.m_capVisible, PropertyDialog::GetCheckboxState(m_hCapVisibleCheck), bumper);
@@ -111,7 +111,7 @@ BOOL BumperVisualsProperty::OnInitDialog()
     AttachItem(IDC_BUMPER_HEIGHT_SCALE_EDIT, m_heightScaleEdit);
     AttachItem(IDC_ORIENTATION_EDIT, m_orientationEdit);
     AttachItem(IDC_RINGSPEED_EDIT, m_ringSpeedEdit);
-    AttachItem(IDC_RINGDROPOFFSET_EDIT, m_ringSpeedOffsetEdit);
+    AttachItem(IDC_RINGDROPOFFSET_EDIT, m_ringDropOffsetEdit);
     m_hCapVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_CAP_VISIBLE_CHECK);
     m_hBaseVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_BASE_VISIBLE_CHECK);
     m_hRingVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_RING_VISIBLE);
