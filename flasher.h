@@ -115,7 +115,9 @@ public:
 
    virtual void WriteRegDefaults();
 
+   long GetAlpha(void) const;
    void SetAlpha(const long value);
+   long GetFilterAmount(void) const;
    void SetFilterAmount(const long value);
 
    FlasherData m_d;

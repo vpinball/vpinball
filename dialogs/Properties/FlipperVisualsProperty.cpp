@@ -44,79 +44,49 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 1:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_BaseRadius = PropertyDialog::GetFloatTextbox(m_baseRadiusEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_BaseRadius, PropertyDialog::GetFloatTextbox(m_baseRadiusEdit), flipper);
                 break;
             case 2:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_EndRadius = PropertyDialog::GetFloatTextbox(m_endRadiusEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_EndRadius, PropertyDialog::GetFloatTextbox(m_endRadiusEdit), flipper);
                 break;
             case 3:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_FlipperRadiusMax = PropertyDialog::GetFloatTextbox(m_lengthEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_FlipperRadiusMax, PropertyDialog::GetFloatTextbox(m_lengthEdit), flipper);
                 break;
             case 4:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_StartAngle = PropertyDialog::GetFloatTextbox(m_startAngleEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_StartAngle, PropertyDialog::GetFloatTextbox(m_startAngleEdit), flipper);
                 break;
             case 7:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_EndAngle = PropertyDialog::GetFloatTextbox(m_endAngleEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_EndAngle, PropertyDialog::GetFloatTextbox(m_endAngleEdit), flipper);
                 break;
             case 13:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_Center.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_Center.x, PropertyDialog::GetFloatTextbox(m_posXEdit), flipper);
                 break;
             case 14:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_Center.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_Center.y, PropertyDialog::GetFloatTextbox(m_posYEdit), flipper);
                 break;
             case 18:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_rubberthickness = PropertyDialog::GetFloatTextbox(m_rubberThicknessEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_rubberthickness, PropertyDialog::GetFloatTextbox(m_rubberThicknessEdit), flipper);
                 break;
             case 24:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_rubberheight = PropertyDialog::GetFloatTextbox(m_rubberOffsetHeightEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_rubberheight, PropertyDialog::GetFloatTextbox(m_rubberOffsetHeightEdit), flipper);
                 break;
             case 25:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_rubberwidth = PropertyDialog::GetFloatTextbox(m_rubberWidthEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_rubberwidth, PropertyDialog::GetFloatTextbox(m_rubberWidthEdit), flipper);
                 break;
             case 107:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_height = PropertyDialog::GetFloatTextbox(m_heightEdit);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_height, PropertyDialog::GetFloatTextbox(m_heightEdit), flipper);
                 break;
             case 111:
-                PropertyDialog::StartUndo(flipper);
-                flipper->SetFlipperRadiusMin(PropertyDialog::GetFloatTextbox(m_maxDifficultLengthEdit));
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_VALUE_SETTER(flipper->SetFlipperRadiusMin, flipper->GetFlipperRadiusMin, PropertyDialog::GetFloatTextbox, m_maxDifficultLengthEdit, flipper);
                 break;
             case 1502:
-                PropertyDialog::StartUndo(flipper);
-                PropertyDialog::GetComboBoxText(m_surfaceCombo, flipper->m_d.m_szSurface);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_COMBO_TEXT(flipper->m_d.m_szSurface, m_surfaceCombo, flipper);
                 break;
             case IDC_FLIPPER_ENABLED:
-                PropertyDialog::StartUndo(flipper);
-                flipper->m_d.m_enabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_enabled, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), flipper);
                 break;
             case IDC_MATERIAL_COMBO2:
-                PropertyDialog::StartUndo(flipper);
-                PropertyDialog::GetComboBoxText(m_rubberMaterialCombo, flipper->m_d.m_szRubberMaterial);
-                PropertyDialog::EndUndo(flipper);
+                CHECK_UPDATE_COMBO_TEXT(flipper->m_d.m_szRubberMaterial, m_rubberMaterialCombo, flipper);
                 break;
 
             default:

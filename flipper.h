@@ -161,6 +161,11 @@ public:
           else
               m_d.m_return = clamp(value, 0.0f, 1.0f);
       }
+      float     GetReturn(void) const 
+      {
+          return m_d.m_return;
+      }
+
       float     GetFlipperRadiusMin() const { return m_d.m_FlipperRadiusMin; }
       void      SetFlipperRadiusMin(const float value)
       {

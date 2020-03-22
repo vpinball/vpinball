@@ -56,94 +56,58 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_VISIBLE_CHECK:
-                PropertyDialog::StartUndo(flash);
-                flash->m_d.m_isVisible = PropertyDialog::GetCheckboxState(m_hVisibleCheck);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_isVisible, PropertyDialog::GetCheckboxState(m_hVisibleCheck), flash);
                 break;
             case IDC_DISPLAY_IMAGE_CHECK:
-                PropertyDialog::StartUndo(flash);
-                flash->m_d.m_displayTexture = PropertyDialog::GetCheckboxState(m_hDisplayInEditorCheck);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_displayTexture, PropertyDialog::GetCheckboxState(m_hDisplayInEditorCheck), flash);
                 break;
             case IDC_ADDBLEND:
-                PropertyDialog::StartUndo(flash);
-                flash->m_d.m_addBlend = PropertyDialog::GetCheckboxState(m_hAdditiveBlendCheck);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_addBlend, PropertyDialog::GetCheckboxState(m_hAdditiveBlendCheck), flash);
                 break;
             case IDC_DMD:
-                PropertyDialog::StartUndo(flash);
-                flash->m_d.m_isDMD = PropertyDialog::GetCheckboxState(m_hUseDMDCheck);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_isDMD, PropertyDialog::GetCheckboxState(m_hUseDMDCheck), flash);
                 break;
             case DISPID_Image:
-                PropertyDialog::StartUndo(flash);
-                PropertyDialog::GetComboBoxText(m_imageACombo, flash->m_d.m_szImageA);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_COMBO_TEXT(flash->m_d.m_szImageA, m_imageACombo, flash);
                 break;
             case DISPID_Image2:
-                PropertyDialog::StartUndo(flash);
-                PropertyDialog::GetComboBoxText(m_imageBCombo, flash->m_d.m_szImageB);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_COMBO_TEXT(flash->m_d.m_szImageB, m_imageBCombo, flash);
                 break;
             case IDC_FLASHER_MODE_COMBO:
-                PropertyDialog::StartUndo(flash);
-                flash->m_d.m_imagealignment = (RampImageAlignment)(PropertyDialog::GetComboBoxIndex(m_modeCombo, m_imageAlignList)+1);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_imagealignment, (RampImageAlignment)(PropertyDialog::GetComboBoxIndex(m_modeCombo, m_imageAlignList) + 1), flash);
                 break;
             case IDC_EFFECT_COMBO:
-                PropertyDialog::StartUndo(flash);
-                flash->m_d.m_filter = (Filters)PropertyDialog::GetComboBoxIndex(m_filterCombo, m_filterList);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_filter, (Filters)PropertyDialog::GetComboBoxIndex(m_filterCombo, m_filterList), flash);
                 break;
             case IDC_DEPTH_BIAS:
-                PropertyDialog::StartUndo(flash);
-                flash->m_d.m_depthBias = PropertyDialog::GetFloatTextbox(m_depthBiasEdit);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_depthBias, PropertyDialog::GetFloatTextbox(m_depthBiasEdit), flash);
                 break;
             case IDC_FILTERAMOUNT_EDIT:
-                PropertyDialog::StartUndo(flash);
-                flash->SetFilterAmount(PropertyDialog::GetIntTextbox(m_filterAmountEdit));
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_VALUE_SETTER(flash->SetFilterAmount, flash->GetFilterAmount, PropertyDialog::GetIntTextbox, m_filterAmountEdit, flash);
                 break;
             case IDC_ALPHA_EDIT:
-                PropertyDialog::StartUndo(flash);
-                flash->SetAlpha(PropertyDialog::GetIntTextbox(m_opacyitAmountEdit));
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_VALUE_SETTER(flash->SetAlpha, flash->GetAlpha, PropertyDialog::GetIntTextbox, m_opacyitAmountEdit, flash);
                 break;
             case IDC_MODULATE_VS_ADD:
-                PropertyDialog::StartUndo(flash);
-                flash->m_d.m_modulate_vs_add = PropertyDialog::GetFloatTextbox(m_modulateEdit);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_modulate_vs_add, PropertyDialog::GetFloatTextbox(m_modulateEdit), flash);
                 break;
             case 5:
-                PropertyDialog::StartUndo(flash);
-                flash->m_d.m_vCenter.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_vCenter.x, PropertyDialog::GetFloatTextbox(m_posXEdit), flash);
                 break;
             case 6:
-                PropertyDialog::StartUndo(flash);
-                flash->m_d.m_vCenter.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_vCenter.y, PropertyDialog::GetFloatTextbox(m_posYEdit), flash);
                 break;
             case IDC_HEIGHT_EDIT:
-                PropertyDialog::StartUndo(flash);
-                flash->m_d.m_height = PropertyDialog::GetFloatTextbox(m_heightEdit);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_height, PropertyDialog::GetFloatTextbox(m_heightEdit), flash);
                 break;
             case 9:
-                PropertyDialog::StartUndo(flash);
-                flash->m_d.m_rotX = PropertyDialog::GetFloatTextbox(m_rotXEdit);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_rotX, PropertyDialog::GetFloatTextbox(m_rotXEdit), flash);
                 break;
             case 2:
-                PropertyDialog::StartUndo(flash);
-                flash->m_d.m_rotY = PropertyDialog::GetFloatTextbox(m_rotYEdit);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_rotY, PropertyDialog::GetFloatTextbox(m_rotYEdit), flash);
                 break;
             case 1:
-                PropertyDialog::StartUndo(flash);
-                flash->m_d.m_rotZ = PropertyDialog::GetFloatTextbox(m_rotZEdit);
-                PropertyDialog::EndUndo(flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_rotZ, PropertyDialog::GetFloatTextbox(m_rotZEdit), flash);
                 break;
             case IDC_COLOR_BUTTON1:
             {

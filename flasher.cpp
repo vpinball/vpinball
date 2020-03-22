@@ -629,9 +629,19 @@ HRESULT Flasher::InitPostLoad()
    return S_OK;
 }
 
+long Flasher::GetAlpha(void) const
+{
+    return m_d.m_alpha;
+}
+
 void Flasher::SetAlpha(const long value)
 {
     m_d.m_alpha = max(value,(long)0);
+}
+
+long Flasher::GetFilterAmount(void) const
+{
+    return m_d.m_filterAmount;
 }
 
 void Flasher::SetFilterAmount(const long value)
