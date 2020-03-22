@@ -61,19 +61,22 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_FONT_TYPE_COMBO:
-                PropertyDialog::StartUndo(decal);
-                decal->m_d.m_decaltype = (DecalType)PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList);
-                PropertyDialog::EndUndo(decal);
+                CHECK_UPDATE_ITEM(decal->m_d.m_decaltype, (DecalType)PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList), decal);
                 break;
             case IDC_DECAL_TEXT_EDIT:
-                PropertyDialog::StartUndo(decal);
-                strncpy_s(decal->m_d.m_sztext, MAXSTRING - 1, m_textEdit.GetWindowText().c_str(), m_textEdit.GetWindowText().GetLength());
-                PropertyDialog::EndUndo(decal);
+            {
+                char szName[MAXSTRING] = { 0 };
+                strncpy_s(szName, MAXSTRING - 1, m_textEdit.GetWindowText().c_str(), m_textEdit.GetWindowText().GetLength());
+                if (strcmp(decal->m_d.m_sztext, szName) != 0)
+                {
+                    PropertyDialog::StartUndo(decal);
+                    strncpy_s(decal->m_d.m_sztext, szName, MAXSTRING - 1);
+                    PropertyDialog::EndUndo(decal);
+                }
                 break;
+            }
             case IDC_DECAL_VERTICAL_TEXT_CHECK:
-                PropertyDialog::StartUndo(decal);
-                decal->m_d.m_verticalText = PropertyDialog::GetCheckboxState(m_hVerticalTextCheck);
-                PropertyDialog::EndUndo(decal);
+                CHECK_UPDATE_ITEM(decal->m_d.m_verticalText, PropertyDialog::GetCheckboxState(m_hVerticalTextCheck), decal);
                 break;
             case IDC_COLOR_BUTTON1:
             {
@@ -124,39 +127,25 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 break;
             }
             case DISPID_Decal_SizingType:
-                PropertyDialog::StartUndo(decal);
-                decal->m_d.m_sizingtype = (SizingType)PropertyDialog::GetComboBoxIndex(m_sizingCombo, m_sizingList);
-                PropertyDialog::EndUndo(decal);
+                CHECK_UPDATE_ITEM(decal->m_d.m_sizingtype, (SizingType)PropertyDialog::GetComboBoxIndex(m_sizingCombo, m_sizingList), decal);
                 break;
             case 5:
-                PropertyDialog::StartUndo(decal);
-                decal->m_d.m_vCenter.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
-                PropertyDialog::EndUndo(decal);
+                CHECK_UPDATE_ITEM(decal->m_d.m_vCenter.x, PropertyDialog::GetFloatTextbox(m_posXEdit), decal);
                 break;
             case 6:
-                PropertyDialog::StartUndo(decal);
-                decal->m_d.m_vCenter.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
-                PropertyDialog::EndUndo(decal);
+                CHECK_UPDATE_ITEM(decal->m_d.m_vCenter.y, PropertyDialog::GetFloatTextbox(m_posYEdit), decal);
                 break;
             case 3:
-                PropertyDialog::StartUndo(decal);
-                decal->m_d.m_width = PropertyDialog::GetFloatTextbox(m_widthEdit);
-                PropertyDialog::EndUndo(decal);
+                CHECK_UPDATE_ITEM(decal->m_d.m_width, PropertyDialog::GetFloatTextbox(m_widthEdit), decal);
                 break;
             case 4:
-                PropertyDialog::StartUndo(decal);
-                decal->m_d.m_height = PropertyDialog::GetFloatTextbox(m_heigthEdit);
-                PropertyDialog::EndUndo(decal);
+                CHECK_UPDATE_ITEM(decal->m_d.m_height, PropertyDialog::GetFloatTextbox(m_heigthEdit), decal);
                 break;
             case 1:
-                PropertyDialog::StartUndo(decal);
-                decal->m_d.m_rotation= PropertyDialog::GetFloatTextbox(m_rotationEdit);
-                PropertyDialog::EndUndo(decal);
+                CHECK_UPDATE_ITEM(decal->m_d.m_rotation, PropertyDialog::GetFloatTextbox(m_rotationEdit), decal);
                 break;
             case IDC_SURFACE_COMBO:
-                PropertyDialog::StartUndo(decal);
-                PropertyDialog::GetComboBoxText(m_surfaceCombo, decal->m_d.m_szSurface);
-                PropertyDialog::EndUndo(decal);
+                CHECK_UPDATE_COMBO_TEXT(decal->m_d.m_szSurface, m_surfaceCombo, decal);
                 break;
             default:
                 UpdateBaseProperties(decal, &decal->m_d, dispid);

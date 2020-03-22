@@ -32,19 +32,13 @@ void DispreelStateProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_MOTOR_STEPS_EDIT:
-                PropertyDialog::StartUndo(reel);
-                reel->SetMotorSteps(PropertyDialog::GetIntTextbox(m_motorStepsEdit));
-                PropertyDialog::EndUndo(reel);
+                CHECK_UPDATE_VALUE_SETTER(reel->SetMotorSteps, reel->GetMotorSteps, PropertyDialog::GetIntTextbox, m_motorStepsEdit, reel);
                 break;
             case IDC_UPDATE_INTERVAL_EDIT:
-                PropertyDialog::StartUndo(reel);
-                reel->SetUpdateInterval(PropertyDialog::GetIntTextbox(m_updateIntervalEdit));
-                PropertyDialog::EndUndo(reel);
+                CHECK_UPDATE_VALUE_SETTER(reel->SetUpdateInterval, reel->GetUpdateInterval, PropertyDialog::GetIntTextbox, m_updateIntervalEdit, reel);
                 break;
             case DISPID_Sound:
-                PropertyDialog::StartUndo(reel);
-                PropertyDialog::GetComboBoxText(m_soundCombo, reel->m_d.m_szSound);
-                PropertyDialog::EndUndo(reel);
+                CHECK_UPDATE_COMBO_TEXT(reel->m_d.m_szSound, m_soundCombo, reel);
                 break;
             default:
                 break;

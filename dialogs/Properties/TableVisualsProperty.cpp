@@ -43,7 +43,7 @@ void TableVisualsProperty::UpdateProperties(const int dispid)
             CHECK_UPDATE_ITEM(table->m_reflectElementsOnPlayfield, PropertyDialog::GetCheckboxState(m_hReflectElementsCheck), table);
             break;
         case IDC_REFLECTION_PLAYFIELD:
-            CHECK_UPDATE_VALUE_SETTER(table->SetPlayfieldReflectionStrength, table->GetPlayfieldReflectionStrength, PropertyDialog::GetIntTextbox, m_reflectionStrengthEdit);
+            CHECK_UPDATE_VALUE_SETTER(table->SetPlayfieldReflectionStrength, table->GetPlayfieldReflectionStrength, PropertyDialog::GetIntTextbox, m_reflectionStrengthEdit, table);
             break;
         case IDC_BALL_DECAL_MODE:
             CHECK_UPDATE_ITEM(table->m_BallDecalMode, PropertyDialog::GetCheckboxState(m_hLogoModeCheck), table);

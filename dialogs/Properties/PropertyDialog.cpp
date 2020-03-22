@@ -932,64 +932,40 @@ void BasePropertyDialog::UpdateBaseProperties(ISelect *psel, BaseProperty *prope
     switch (dispid)
     {
         case IDC_HIT_THRESHOLD_EDIT:
-            PropertyDialog::StartUndo(psel);
-            property->m_threshold = PropertyDialog::GetFloatTextbox(*m_baseHitThresholdEdit);
-            PropertyDialog::EndUndo(psel);
+            CHECK_UPDATE_ITEM(property->m_threshold, PropertyDialog::GetFloatTextbox(*m_baseHitThresholdEdit), psel);
             break;
         case IDC_HAS_HITEVENT_CHECK:
-            PropertyDialog::StartUndo(psel);
-            property->m_hitEvent = PropertyDialog::GetCheckboxState(m_hHitEventCheck);
-            PropertyDialog::EndUndo(psel);
+            CHECK_UPDATE_ITEM(property->m_hitEvent, PropertyDialog::GetCheckboxState(m_hHitEventCheck), psel);
             break;
         case IDC_ELASTICITY_EDIT:
-            PropertyDialog::StartUndo(psel);
-            property->m_elasticity = PropertyDialog::GetFloatTextbox(*m_baseElasticityEdit);
-            PropertyDialog::EndUndo(psel);
+            CHECK_UPDATE_ITEM(property->m_elasticity, PropertyDialog::GetFloatTextbox(*m_baseElasticityEdit), psel);
             break;
         case IDC_COLLIDABLE_CHECK:
-            PropertyDialog::StartUndo(psel);
-            property->m_collidable = PropertyDialog::GetCheckboxState(m_hCollidableCheck);
-            PropertyDialog::EndUndo(psel);
+            CHECK_UPDATE_ITEM(property->m_collidable, PropertyDialog::GetCheckboxState(m_hCollidableCheck), psel);
             break;
         case IDC_VISIBLE_CHECK:
-            PropertyDialog::StartUndo(psel);
-            property->m_visible = PropertyDialog::GetCheckboxState(m_hVisibleCheck);
-            PropertyDialog::EndUndo(psel);
+            CHECK_UPDATE_ITEM(property->m_visible, PropertyDialog::GetCheckboxState(m_hVisibleCheck), psel);
             break;
         case IDC_REFLECT_ENABLED_CHECK:
-            PropertyDialog::StartUndo(psel);
-            property->m_reflectionEnabled = PropertyDialog::GetCheckboxState(m_hReflectionEnabledCheck);
-            PropertyDialog::EndUndo(psel);
+            CHECK_UPDATE_ITEM(property->m_reflectionEnabled, PropertyDialog::GetCheckboxState(m_hReflectionEnabledCheck), psel);
             break;
         case IDC_FRICTION_EDIT:
-            PropertyDialog::StartUndo(psel);
-            property->m_friction = PropertyDialog::GetFloatTextbox(*m_baseFrictionEdit);
-            PropertyDialog::EndUndo(psel);
+            CHECK_UPDATE_ITEM(property->m_friction, PropertyDialog::GetFloatTextbox(*m_baseFrictionEdit), psel);
             break;
         case IDC_SCATTER_ANGLE_EDIT:
-            PropertyDialog::StartUndo(psel);
-            property->m_scatter = PropertyDialog::GetFloatTextbox(*m_baseScatterAngleEdit);
-            PropertyDialog::EndUndo(psel);
+            CHECK_UPDATE_ITEM(property->m_scatter, PropertyDialog::GetFloatTextbox(*m_baseScatterAngleEdit), psel);
             break;
         case DISPID_Image:
-            PropertyDialog::StartUndo(psel);
-            PropertyDialog::GetComboBoxText(*m_baseImageCombo, property->m_szImage);
-            PropertyDialog::EndUndo(psel);
+            CHECK_UPDATE_COMBO_TEXT(property->m_szImage, *m_baseImageCombo, psel);
             break;
         case IDC_MATERIAL_COMBO:
-            PropertyDialog::StartUndo(psel);
-            PropertyDialog::GetComboBoxText(*m_baseMaterialCombo, property->m_szMaterial);
-            PropertyDialog::EndUndo(psel);
+            CHECK_UPDATE_COMBO_TEXT(property->m_szMaterial, *m_baseMaterialCombo, psel);
             break;
         case IDC_MATERIAL_COMBO4:
-            PropertyDialog::StartUndo(psel);
-            PropertyDialog::GetComboBoxText(*m_basePhysicsMaterialCombo, property->m_szPhysicsMaterial);
-            PropertyDialog::EndUndo(psel);
+            CHECK_UPDATE_COMBO_TEXT(property->m_szPhysicsMaterial, *m_basePhysicsMaterialCombo, psel);
             break;
         case IDC_OVERWRITE_MATERIAL_SETTINGS:
-            PropertyDialog::StartUndo(psel);
-            property->m_overwritePhysics = PropertyDialog::GetCheckboxState(m_hOverwritePhysicsCheck);
-            PropertyDialog::EndUndo(psel);
+            CHECK_UPDATE_ITEM(property->m_overwritePhysics, PropertyDialog::GetCheckboxState(m_hOverwritePhysicsCheck), psel);
             break;
     }
 }

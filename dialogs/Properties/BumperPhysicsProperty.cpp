@@ -31,9 +31,7 @@ void BumperPhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_FORCE_EDIT:
-                PropertyDialog::StartUndo(bumper);
-                bumper->m_d.m_force = PropertyDialog::GetFloatTextbox(m_forceEdit);
-                PropertyDialog::EndUndo(bumper);
+                CHECK_UPDATE_ITEM(bumper->m_d.m_force, PropertyDialog::GetFloatTextbox(m_forceEdit), bumper);
                 break;
             default:
                 UpdateBaseProperties(bumper, &bumper->m_d, dispid);
