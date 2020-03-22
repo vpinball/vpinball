@@ -37,19 +37,13 @@ void HitTargetPhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_TARGET_ISDROPPED_CHECK:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_isDropped = PropertyDialog::GetCheckboxState(m_hIsDroppedCheck);
-                PropertyDialog::EndUndo(target);
+                CHECK_UPDATE_ITEM(target->m_d.m_isDropped, PropertyDialog::GetCheckboxState(m_hIsDroppedCheck), target);
                 break;
             case IDC_TARGET_LEGACY_MODE_CHECK:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_legacy = PropertyDialog::GetCheckboxState(m_hLegacyModeCheck);
-                PropertyDialog::EndUndo(target);
+                CHECK_UPDATE_ITEM(target->m_d.m_legacy, PropertyDialog::GetCheckboxState(m_hLegacyModeCheck), target);
                 break;
             case 112:
-                PropertyDialog::StartUndo(target);
-                target->m_d.m_elasticityFalloff = PropertyDialog::GetFloatTextbox(m_elasticityFalloffEdit);
-                PropertyDialog::EndUndo(target);
+                CHECK_UPDATE_ITEM(target->m_d.m_elasticityFalloff, PropertyDialog::GetFloatTextbox(m_elasticityFalloffEdit), target);
                 break;
             default:
                 UpdateBaseProperties(target, &target->m_d, dispid);

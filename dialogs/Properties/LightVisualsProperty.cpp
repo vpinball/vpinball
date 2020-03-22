@@ -51,94 +51,58 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 1:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_falloff = PropertyDialog::GetFloatTextbox(m_falloffEdit);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_falloff, PropertyDialog::GetFloatTextbox(m_falloffEdit), light);
                 break;
             case IDC_LIGHT_FALLOFF_POWER:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_falloff_power = PropertyDialog::GetFloatTextbox(m_falloffPowerEdit);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_falloff_power, PropertyDialog::GetFloatTextbox(m_falloffPowerEdit), light);
                 break;
             case 12:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_intensity = PropertyDialog::GetFloatTextbox(m_intensityEdit);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_intensity, PropertyDialog::GetFloatTextbox(m_intensityEdit), light);
                 break;
             case IDC_FADE_SPEED_UP:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_fadeSpeedUp = PropertyDialog::GetFloatTextbox(m_fadeSpeedUpEdit);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_fadeSpeedUp, PropertyDialog::GetFloatTextbox(m_fadeSpeedUpEdit), light);
                 break;
             case IDC_FADE_SPEED_DOWN:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_fadeSpeedDown = PropertyDialog::GetFloatTextbox(m_fadeSpeedDownEdit);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_fadeSpeedDown, PropertyDialog::GetFloatTextbox(m_fadeSpeedDownEdit), light);
                 break;
             case IDC_IMAGE_MODE:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_imageMode = PropertyDialog::GetCheckboxState(m_hPassThroughCheck);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_imageMode, PropertyDialog::GetCheckboxState(m_hPassThroughCheck), light);
                 break;
             case IDC_DEPTH_BIAS:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_depthBias = PropertyDialog::GetFloatTextbox(m_depthBiasEdit);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_depthBias, PropertyDialog::GetFloatTextbox(m_depthBiasEdit), light);
                 break;
             case IDC_LIGHT_TYPE_CHECKBOX:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_BulbLight = PropertyDialog::GetCheckboxState(m_hEnableCheck);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_BulbLight, PropertyDialog::GetCheckboxState(m_hEnableCheck), light);
                 break;
             case IDC_SHOW_BULB_MESH:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_showBulbMesh = PropertyDialog::GetCheckboxState(m_hShowMeshCheck);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_showBulbMesh, PropertyDialog::GetCheckboxState(m_hShowMeshCheck), light);
                 break;
             case IDC_STATIC_BULB_MESH:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_staticBulbMesh = PropertyDialog::GetCheckboxState(m_hStaticMeshCheck);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_staticBulbMesh, PropertyDialog::GetCheckboxState(m_hStaticMeshCheck), light);
                 break;
             case IDC_REFLECT_ON_BALLS:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_showReflectionOnBall = PropertyDialog::GetCheckboxState(m_hRelectOnBalls);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_showReflectionOnBall, PropertyDialog::GetCheckboxState(m_hRelectOnBalls), light);
                 break;
             case IDC_HALO_EDIT:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_bulbHaloHeight = PropertyDialog::GetFloatTextbox(m_haloHeightEdit);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_bulbHaloHeight, PropertyDialog::GetFloatTextbox(m_haloHeightEdit), light);
                 break;
             case IDC_SCALE_BULB_MESH:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_meshRadius = PropertyDialog::GetFloatTextbox(m_scaleMeshEdit);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_meshRadius, PropertyDialog::GetFloatTextbox(m_scaleMeshEdit), light);
                 break;
             case IDC_BULB_MODULATE_VS_ADD:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_modulate_vs_add = PropertyDialog::GetFloatTextbox(m_modulateEdit);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_modulate_vs_add, PropertyDialog::GetFloatTextbox(m_modulateEdit), light);
                 break;
             case IDC_TRANSMISSION_SCALE:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_transmissionScale = PropertyDialog::GetFloatTextbox(m_transmitEdit);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_transmissionScale, PropertyDialog::GetFloatTextbox(m_transmitEdit), light);
                 break;
             case 902:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_vCenter.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_vCenter.x, PropertyDialog::GetFloatTextbox(m_posXEdit), light);
                 break;
             case 903:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_vCenter.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_vCenter.y, PropertyDialog::GetFloatTextbox(m_posYEdit), light);
                 break;
             case IDC_SURFACE_COMBO:
-                PropertyDialog::StartUndo(light);
-                PropertyDialog::GetComboBoxText(m_surfaceCombo, light->m_d.m_szSurface);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_COMBO_TEXT(light->m_d.m_szSurface, m_surfaceCombo, light);
                 break;
             case IDC_COLOR_BUTTON1:
             {

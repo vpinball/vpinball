@@ -34,22 +34,21 @@ void LightStatesProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case DISPID_Light_State:
-                PropertyDialog::StartUndo(light);
-                light->m_d.m_state = (LightState)(PropertyDialog::GetComboBoxIndex(m_stateCombo, m_stateList));
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_d.m_state, (LightState)(PropertyDialog::GetComboBoxIndex(m_stateCombo, m_stateList)), light);
                 break;
             case IDC_BLINK_PATTERN_EDIT:
             {
-                PropertyDialog::StartUndo(light);
                 CString pattern = m_blinkPatternEdit.GetWindowText();
-                strncpy_s(light->m_rgblinkpattern, 32, pattern, pattern.GetLength());
-                PropertyDialog::EndUndo(light);
+                if (pattern != CString(light->m_rgblinkpattern))
+                {
+                    PropertyDialog::StartUndo(light);
+                    strncpy_s(light->m_rgblinkpattern, 32, pattern, pattern.GetLength());
+                    PropertyDialog::EndUndo(light);
+                }
                 break;
             }
             case DISPID_Light_BlinkInterval:
-                PropertyDialog::StartUndo(light);
-                light->m_blinkinterval = PropertyDialog::GetIntTextbox(m_blinkIntervalEdit);
-                PropertyDialog::EndUndo(light);
+                CHECK_UPDATE_ITEM(light->m_blinkinterval, PropertyDialog::GetIntTextbox(m_blinkIntervalEdit), light);
                 break;
             default:
                 break;

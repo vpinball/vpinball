@@ -39,19 +39,13 @@ void LightseqStatesProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 9:
-                PropertyDialog::StartUndo(lightseq);
-                lightseq->SetX(PropertyDialog::GetFloatTextbox(m_posXEdit));
-                PropertyDialog::EndUndo(lightseq);
+                CHECK_UPDATE_VALUE_SETTER(lightseq->SetX, lightseq->GetX, PropertyDialog::GetFloatTextbox, m_posXEdit, lightseq);
                 break;
             case 10:
-                PropertyDialog::StartUndo(lightseq);
-                lightseq->SetY(PropertyDialog::GetFloatTextbox(m_posYEdit));
-                PropertyDialog::EndUndo(lightseq);
+                CHECK_UPDATE_VALUE_SETTER(lightseq->SetY, lightseq->GetY, PropertyDialog::GetFloatTextbox, m_posYEdit, lightseq);
                 break;
             case IDC_LIGHTSEQ_UPDATE_INTERVAL_EDIT:
-                PropertyDialog::StartUndo(lightseq);
-                lightseq->SetUpdateInterval(PropertyDialog::GetIntTextbox(m_updateIntervalEdit));
-                PropertyDialog::EndUndo(lightseq);
+                CHECK_UPDATE_VALUE_SETTER(lightseq->SetUpdateInterval, lightseq->GetUpdateInterval, PropertyDialog::GetIntTextbox, m_updateIntervalEdit, lightseq);
                 break;
             case DISPID_Collection:
             {

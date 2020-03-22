@@ -35,29 +35,19 @@ void KickerPhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case DISPID_Enabled:
-                PropertyDialog::StartUndo(kicker);
-                kicker->m_d.m_enabled = PropertyDialog::GetCheckboxState(m_hEnableCheck);
-                PropertyDialog::EndUndo(kicker);
+                CHECK_UPDATE_ITEM(kicker->m_d.m_enabled, PropertyDialog::GetCheckboxState(m_hEnableCheck), kicker);
                 break;
             case IDC_FALL_THROUGH_HOLE:
-                PropertyDialog::StartUndo(kicker);
-                kicker->m_d.m_fallThrough = PropertyDialog::GetCheckboxState(m_hFallThroughCheck);
-                PropertyDialog::EndUndo(kicker);
+                CHECK_UPDATE_ITEM(kicker->m_d.m_fallThrough, PropertyDialog::GetCheckboxState(m_hFallThroughCheck), kicker);
                 break;
             case IDC_LEGACYMODE:
-                PropertyDialog::StartUndo(kicker);
-                kicker->m_d.m_legacyMode = PropertyDialog::GetCheckboxState(m_hLegacyCheck);
-                PropertyDialog::EndUndo(kicker);
+                CHECK_UPDATE_ITEM(kicker->m_d.m_legacyMode, PropertyDialog::GetCheckboxState(m_hLegacyCheck), kicker);
                 break;
             case IDC_KICKER_HIT_HEIGHT_EDIT:
-                PropertyDialog::StartUndo(kicker);
-                kicker->m_d.m_hit_height = PropertyDialog::GetFloatTextbox(m_hitHeightEdit);
-                PropertyDialog::EndUndo(kicker);
+                CHECK_UPDATE_ITEM(kicker->m_d.m_hit_height, PropertyDialog::GetFloatTextbox(m_hitHeightEdit), kicker);
                 break;
             case IDC_HIT_ACC_EDIT:
-                PropertyDialog::StartUndo(kicker);
-                kicker->m_d.m_hitAccuracy = PropertyDialog::GetFloatTextbox(m_hitAccuracyEdit);
-                PropertyDialog::EndUndo(kicker);
+                CHECK_UPDATE_ITEM(kicker->m_d.m_hitAccuracy, PropertyDialog::GetFloatTextbox(m_hitAccuracyEdit), kicker);
                 break;
             default:
                 UpdateBaseProperties(kicker, &kicker->m_d, dispid);
