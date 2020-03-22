@@ -65,79 +65,49 @@ void TableCustomProperty::UpdateProperties(const int dispid)
     switch (dispid)
     {
         case IDC_ENABLE_AA:
-            PropertyDialog::StartUndo(table);
-            table->m_useAA = (PropertyDialog::GetComboBoxIndex(m_SSAACombo, m_userList) - 1);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_useAA, (PropertyDialog::GetComboBoxIndex(m_SSAACombo, m_userList) - 1), table);
             break;
         case IDC_ENABLE_FXAA:
-            PropertyDialog::StartUndo(table);
-            table->m_useFXAA = (PropertyDialog::GetComboBoxIndex(m_postProcAACombo, m_postAAList) - 1);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_useFXAA, (PropertyDialog::GetComboBoxIndex(m_postProcAACombo, m_postAAList) - 1), table);
             break;
         case IDC_ENABLE_AO:
-            PropertyDialog::StartUndo(table);
-            table->m_useAO = (PropertyDialog::GetComboBoxIndex(m_inGameAOCombo, m_userList) - 1);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_useAO, (PropertyDialog::GetComboBoxIndex(m_inGameAOCombo, m_userList) - 1), table);
             break;
         case IDC_ENABLE_SSR:
-            PropertyDialog::StartUndo(table);
-            table->m_useSSR = (PropertyDialog::GetComboBoxIndex(m_ScreenReflectionCombo, m_userList) - 1);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_useSSR, (PropertyDialog::GetComboBoxIndex(m_ScreenReflectionCombo, m_userList) - 1), table);
             break;
         case IDC_GLOBAL_ALPHA_ACC:
-            PropertyDialog::StartUndo(table);
-            table->m_overwriteGlobalDetailLevel = PropertyDialog::GetCheckboxState(m_hOverwriteDetailsCheck);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_overwriteGlobalDetailLevel, PropertyDialog::GetCheckboxState(m_hOverwriteDetailsCheck), table);
             break;
         case IDC_BALL_REFLECTION:
-            PropertyDialog::StartUndo(table);
-            table->m_useReflectionForBalls = (PropertyDialog::GetComboBoxIndex(m_ballReflectionCombo, m_userList) - 1);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_useReflectionForBalls, (PropertyDialog::GetComboBoxIndex(m_ballReflectionCombo, m_userList) - 1), table);
             break;
         case IDC_BALL_TRAIL:
-            PropertyDialog::StartUndo(table);
-            table->m_useTrailForBalls = (PropertyDialog::GetComboBoxIndex(m_ballTrailCombo, m_userList) - 1);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_useTrailForBalls, (PropertyDialog::GetComboBoxIndex(m_ballTrailCombo, m_userList) - 1), table);
             break;
         case IDC_TRAIL_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->SetBallTrailStrength(PropertyDialog::GetIntTextbox(m_ballTrailStrengthEdit));
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_VALUE_SETTER(table->SetBallTrailStrength, table->GetBallTrailStrength, PropertyDialog::GetIntTextbox, m_ballTrailStrengthEdit, table);
             break;
         case IDC_GLOBAL_DAYNIGHT:
-            PropertyDialog::StartUndo(table);
-            table->m_overwriteGlobalDayNight = PropertyDialog::GetCheckboxState(m_hOverwriteNightDayCheck);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_overwriteGlobalDayNight, PropertyDialog::GetCheckboxState(m_hOverwriteNightDayCheck), table);
             break;
         case IDC_GAME_DIFFICULTY_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->SetGlobalDifficulty(PropertyDialog::GetFloatTextbox(m_gameplayDifficultEdit));
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_VALUE_SETTER(table->SetGlobalDifficulty, table->GetGlobalDifficulty, PropertyDialog::GetFloatTextbox, m_gameplayDifficultEdit, table);
             break;
         case IDC_OVERWRITE_PHYSICS_COMBO:
-            PropertyDialog::StartUndo(table);
-            table->m_overridePhysics = (PropertyDialog::GetComboBoxIndex(m_overwritePhysicsSetCombo, m_physicSetList));
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_overridePhysics, (PropertyDialog::GetComboBoxIndex(m_overwritePhysicsSetCombo, m_physicSetList)), table);
             break;
         case IDC_OVERRIDEPHYSICS_FLIPPERS:
-            PropertyDialog::StartUndo(table);
-            table->m_overridePhysicsFlipper = PropertyDialog::GetCheckboxState(m_hOverwriteFlipperCheck);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_overridePhysicsFlipper, PropertyDialog::GetCheckboxState(m_hOverwriteFlipperCheck), table);
             break;
         case IDC_TABLESOUNDVOLUME:
-            PropertyDialog::StartUndo(table);
-            table->SetTableSoundVolume(PropertyDialog::GetIntTextbox(m_soundEffectVolEdit));
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_VALUE_SETTER(table->SetTableSoundVolume, table->GetTableSoundVolume, PropertyDialog::GetIntTextbox, m_soundEffectVolEdit, table);
             break;
         case IDC_TABLEMUSICVOLUME:
-            PropertyDialog::StartUndo(table);
-            table->SetTableSoundVolume(PropertyDialog::GetIntTextbox(m_musicVolEdit));
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_VALUE_SETTER(table->SetTableMusicVolume, table->GetTableMusicVolume, PropertyDialog::GetIntTextbox, m_musicVolEdit, table);
             break;
         case IDC_TABLEAVSYNC:
-            PropertyDialog::StartUndo(table);
-            table->m_TableAdaptiveVSync = PropertyDialog::GetIntTextbox(m_fpsLimiterEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_TableAdaptiveVSync, PropertyDialog::GetIntTextbox(m_fpsLimiterEdit), table);
             break;
         default:
             break;
