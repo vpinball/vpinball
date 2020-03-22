@@ -34,67 +34,43 @@ void BackglassCameraProperty::UpdateProperties(const int dispid)
     switch (dispid)
     {
         case IDC_BG_FSS:
-            PropertyDialog::StartUndo(table);
-            table->SetShowFSS(PropertyDialog::GetCheckboxState(m_hFssModeCheck));
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_VALUE_SETTER(table->SetShowFSS, table->GetShowFSS, PropertyDialog::GetCheckboxState, m_hFssModeCheck, table);
             break;
         case IDC_BG_TEST_DESKTOP_CHECK:
-            table->SetShowDT(PropertyDialog::GetCheckboxState(m_hTestDesktopCheck));
+            CHECK_UPDATE_VALUE_SETTER(table->SetShowDT, table->GetShowDT, PropertyDialog::GetCheckboxState, m_hTestDesktopCheck, table);
             break;
         case IDC_BG_COMBOBOX:
-            PropertyDialog::StartUndo(table);
-            table->m_currentBackglassMode = PropertyDialog::GetComboBoxIndex(m_modeCombo, m_modeList);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_currentBackglassMode, PropertyDialog::GetComboBoxIndex(m_modeCombo, m_modeList), table);
             break;
         case IDC_INCLINATION_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_BG_inclination[table->m_currentBackglassMode] = PropertyDialog::GetFloatTextbox(m_inclinationEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_BG_inclination[table->m_currentBackglassMode], PropertyDialog::GetFloatTextbox(m_inclinationEdit), table);
             break;
         case IDC_FOV_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_BG_FOV[table->m_currentBackglassMode] = PropertyDialog::GetFloatTextbox(m_fovEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_BG_FOV[table->m_currentBackglassMode], PropertyDialog::GetFloatTextbox(m_fovEdit), table);
             break;
         case IDC_LAYBACK_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_BG_layback[table->m_currentBackglassMode] = PropertyDialog::GetFloatTextbox(m_laybackEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_BG_layback[table->m_currentBackglassMode], PropertyDialog::GetFloatTextbox(m_laybackEdit), table);
             break;
         case IDC_XY_ROTATION_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_BG_rotation[table->m_currentBackglassMode] = PropertyDialog::GetFloatTextbox(m_xyRotationEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_BG_rotation[table->m_currentBackglassMode], PropertyDialog::GetFloatTextbox(m_xyRotationEdit), table);
             break;
         case IDC_X_SCALE_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_BG_scalex[table->m_currentBackglassMode] = PropertyDialog::GetFloatTextbox(m_xScaleEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_BG_scalex[table->m_currentBackglassMode], PropertyDialog::GetFloatTextbox(m_xScaleEdit), table);
             break;
         case IDC_Y_SCALE_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_BG_scaley[table->m_currentBackglassMode] = PropertyDialog::GetFloatTextbox(m_yScaleEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_BG_scaley[table->m_currentBackglassMode], PropertyDialog::GetFloatTextbox(m_yScaleEdit), table);
             break;
         case IDC_TABLE_SCALEZ:
-            PropertyDialog::StartUndo(table);
-            table->m_BG_scalez[table->m_currentBackglassMode] = PropertyDialog::GetFloatTextbox(m_zScaleEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_BG_scalez[table->m_currentBackglassMode], PropertyDialog::GetFloatTextbox(m_zScaleEdit), table);
             break;
         case IDC_X_OFFSET_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_BG_xlatex[table->m_currentBackglassMode] = PropertyDialog::GetFloatTextbox(m_xOffsetEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_BG_xlatex[table->m_currentBackglassMode], PropertyDialog::GetFloatTextbox(m_xOffsetEdit), table);
             break;
         case IDC_Y_OFFSET_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_BG_xlatey[table->m_currentBackglassMode] = PropertyDialog::GetFloatTextbox(m_yOffsetEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_BG_xlatey[table->m_currentBackglassMode], PropertyDialog::GetFloatTextbox(m_yOffsetEdit), table);
             break;
         case IDC_Z_OFFSET_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_BG_xlatez[table->m_currentBackglassMode] = PropertyDialog::GetFloatTextbox(m_zOffsetEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_BG_xlatez[table->m_currentBackglassMode], PropertyDialog::GetFloatTextbox(m_zOffsetEdit), table);
             break;
         default:
             break;
