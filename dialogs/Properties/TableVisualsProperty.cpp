@@ -34,49 +34,31 @@ void TableVisualsProperty::UpdateProperties(const int dispid)
     switch (dispid)
     {
         case DISPID_Image:
-            PropertyDialog::StartUndo(table);
-            PropertyDialog::GetComboBoxText(m_imageCombo, table->m_szImage);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_COMBO_TEXT(table->m_szImage, m_imageCombo, table);
             break;
         case IDC_MATERIAL_COMBO:
-            PropertyDialog::StartUndo(table);
-            PropertyDialog::GetComboBoxText(m_materialCombo, table->m_szPlayfieldMaterial);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_COMBO_TEXT(table->m_szPlayfieldMaterial, m_materialCombo, table);
             break;
         case IDC_REFLECT_ELEMENTS_CHECK:
-            PropertyDialog::StartUndo(table);
-            table->m_reflectElementsOnPlayfield = PropertyDialog::GetCheckboxState(m_hReflectElementsCheck);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_reflectElementsOnPlayfield, PropertyDialog::GetCheckboxState(m_hReflectElementsCheck), table);
             break;
         case IDC_REFLECTION_PLAYFIELD:
-            PropertyDialog::StartUndo(table);
-            table->SetPlayfieldReflectionStrength(PropertyDialog::GetIntTextbox(m_reflectionStrengthEdit));
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_VALUE_SETTER(table->SetPlayfieldReflectionStrength, table->GetPlayfieldReflectionStrength, PropertyDialog::GetIntTextbox, m_reflectionStrengthEdit);
             break;
         case IDC_BALL_DECAL_MODE:
-            PropertyDialog::StartUndo(table);
-            table->m_BallDecalMode = PropertyDialog::GetCheckboxState(m_hLogoModeCheck);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_BallDecalMode, PropertyDialog::GetCheckboxState(m_hLogoModeCheck), table);
             break;
         case 1505:
-            PropertyDialog::StartUndo(table);
-            PropertyDialog::GetComboBoxText(m_ballImageCombo, table->m_szBallImage);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_COMBO_TEXT(table->m_szBallImage, m_ballImageCombo, table);
             break;
         case 1508:
-            PropertyDialog::StartUndo(table);
-            PropertyDialog::GetComboBoxText(m_ballDecalCombo, table->m_szBallImageDecal);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_COMBO_TEXT(table->m_szBallImageDecal, m_ballDecalCombo, table);
             break;
         case IDC_BALLPLAYFIELD_REFLECTION:
-            PropertyDialog::StartUndo(table);
-            table->m_ballPlayfieldReflectionStrength = PropertyDialog::GetFloatTextbox(m_ballReflectPlayfieldEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_ballPlayfieldReflectionStrength, PropertyDialog::GetFloatTextbox(m_ballReflectPlayfieldEdit), table);
             break;
         case IDC_BULBINTENSITYSCALE:
-            PropertyDialog::StartUndo(table);
-            table->m_defaultBulbIntensityScaleOnBall = PropertyDialog::GetFloatTextbox(m_ballDefaultBulbIntensScaleEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_defaultBulbIntensityScaleOnBall, PropertyDialog::GetFloatTextbox(m_ballDefaultBulbIntensScaleEdit), table);
             break;
         default:
             break;

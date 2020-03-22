@@ -54,44 +54,28 @@ void TableLightsProperty::UpdateProperties(const int dispid)
             break;
         }
         case IDC_LIGHTEMISSIONSCALE:
-            PropertyDialog::StartUndo(table);
-            table->m_lightEmissionScale = PropertyDialog::GetFloatTextbox(m_lightEmissionScaleEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_lightEmissionScale, PropertyDialog::GetFloatTextbox(m_lightEmissionScaleEdit), table);
             break;
         case IDC_LIGHTHEIGHT:
-            PropertyDialog::StartUndo(table);
-            table->m_lightHeight = PropertyDialog::GetFloatTextbox(m_lightHeightEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_lightHeight, PropertyDialog::GetFloatTextbox(m_lightHeightEdit), table);
             break;
         case IDC_LIGHTRANGE:
-            PropertyDialog::StartUndo(table);
-            table->m_lightRange = PropertyDialog::GetFloatTextbox(m_lightRangeEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_lightRange, PropertyDialog::GetFloatTextbox(m_lightRangeEdit), table);
             break;
         case DISPID_Image7:
-            PropertyDialog::StartUndo(table);
-            PropertyDialog::GetComboBoxText(m_envEmissionImageCombo, table->m_szEnvImage);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_COMBO_TEXT(table->m_szEnvImage, m_envEmissionImageCombo, table);
             break;
         case IDC_ENVEMISSIONSCALE:
-            PropertyDialog::StartUndo(table);
-            table->m_envEmissionScale = PropertyDialog::GetFloatTextbox(m_envEmissionScaleEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_envEmissionScale, PropertyDialog::GetFloatTextbox(m_envEmissionScaleEdit), table);
             break;
         case IDC_AOSCALE:
-            PropertyDialog::StartUndo(table);
-            table->m_AOScale = PropertyDialog::GetFloatTextbox(m_ambientOcclusionScaleEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_AOScale, PropertyDialog::GetFloatTextbox(m_ambientOcclusionScaleEdit), table);
             break;
         case IDC_BLOOM_STRENGTH:
-            PropertyDialog::StartUndo(table);
-            table->m_bloom_strength = PropertyDialog::GetFloatTextbox(m_bloomStrengthEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_bloom_strength, PropertyDialog::GetFloatTextbox(m_bloomStrengthEdit), table);
             break;
         case IDC_SSR_STRENGTH:
-            PropertyDialog::StartUndo(table);
-            table->m_SSRScale = PropertyDialog::GetFloatTextbox(m_screenSpaceReflEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_SSRScale, PropertyDialog::GetFloatTextbox(m_screenSpaceReflEdit), table);
             break;
         default:
             break;

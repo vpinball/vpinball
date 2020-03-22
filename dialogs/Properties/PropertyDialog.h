@@ -1,7 +1,6 @@
 #ifndef H_PROPERTY_DIALOG
 #define H_PROPERTY_DIALOG
 
-
 class BasePropertyDialog: public CDialog
 {
 public:
@@ -261,6 +260,40 @@ private:
     CResizer m_resizer;
     CStatic m_multipleElementsStatic;
 };
+
+#define CHECK_UPDATE_ITEM(classValue, uiValue, element)\
+{\
+    auto value = uiValue; \
+    if(classValue!=value) \
+    { \
+        PropertyDialog::StartUndo(element); \
+        classValue=value; \
+        PropertyDialog::EndUndo(element); \
+    }\
+}
+
+#define CHECK_UPDATE_COMBO_TEXT(classValue, uiCombo, element)\
+{\
+    char szName[MAXTOKEN]={0}; \
+    PropertyDialog::GetComboBoxText(uiCombo, szName); \
+    if (strcmp(szName, (char*)classValue) != 0) \
+    { \
+        PropertyDialog::StartUndo(element); \
+        strncpy_s(classValue, szName, MAXTOKEN); \
+        PropertyDialog::EndUndo(element); \
+    }\
+}
+
+#define CHECK_UPDATE_VALUE_SETTER(classSetter, classGetter, uiGetter, uiGetterParameter, element) \
+{ \
+    auto value = uiGetter(uiGetterParameter); \
+    if (classGetter() != value) \
+    { \
+        PropertyDialog::StartUndo(table); \
+        classSetter(value); \
+        PropertyDialog::EndUndo(table); \
+    } \
+}
 
 class CContainProperties: public CDockContainer
 {

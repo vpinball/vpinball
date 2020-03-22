@@ -33,84 +33,52 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
     switch (dispid)
     {
         case IDC_GRAVITY_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->SetGravity(PropertyDialog::GetFloatTextbox(m_gravityConstantEdit));
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_VALUE_SETTER(table->SetGravity, table->GetGravity, PropertyDialog::GetFloatTextbox, m_gravityConstantEdit, table);
             break;
         case IDC_PLAYFIELD_FRICTION_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_friction = PropertyDialog::GetFloatTextbox(m_playfieldFrictionEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_friction, PropertyDialog::GetFloatTextbox(m_playfieldFrictionEdit), table);
             break;
         case IDC_PLAYFIELD_ELASTICITY_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_elasticity = PropertyDialog::GetFloatTextbox(m_playfieldElasticityEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_elasticity, PropertyDialog::GetFloatTextbox(m_playfieldElasticityEdit), table);
             break;
         case IDC_PLAYFIELD_FALLOFF_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_elasticityFalloff = PropertyDialog::GetFloatTextbox(m_playfieldElasticityFalloffEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_elasticityFalloff, PropertyDialog::GetFloatTextbox(m_playfieldElasticityFalloffEdit), table);
             break;
         case IDC_PLAYFIELD_SCATTER_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_scatter = PropertyDialog::GetFloatTextbox(m_playfieldScatterEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_scatter, PropertyDialog::GetFloatTextbox(m_playfieldScatterEdit), table);
             break;
         case IDC_DEFAULT_SCATTER_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_scatter = PropertyDialog::GetFloatTextbox(m_defaultScatterEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_scatter, PropertyDialog::GetFloatTextbox(m_defaultScatterEdit), table);
             break;
         case IDC_NUDGE_TIME_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_nudgeTime = PropertyDialog::GetFloatTextbox(m_nudgeTimeEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_nudgeTime, PropertyDialog::GetFloatTextbox(m_nudgeTimeEdit), table);
             break;
         case IDC_PHYSICS_MAC_LOOPS_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_PhysicsMaxLoops = PropertyDialog::GetIntTextbox(m_physicsLoopEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_PhysicsMaxLoops, PropertyDialog::GetIntTextbox(m_physicsLoopEdit), table);
             break;
         case IDC_MECH_PLUNGER_ADJ_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_plungerNormalize = PropertyDialog::GetIntTextbox(m_mechPlungerAdjEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_plungerNormalize, PropertyDialog::GetIntTextbox(m_mechPlungerAdjEdit), table);
             break;
         case IDC_FILTER_MECH_PLUNGER_CHECK:
-            PropertyDialog::StartUndo(table);
-            table->m_plungerFilter = PropertyDialog::GetCheckboxState(m_hFilterMechanicalPlungerCheck);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_plungerFilter, PropertyDialog::GetCheckboxState(m_hFilterMechanicalPlungerCheck), table);
             break;
         case IDC_TABLE_WIDTH_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->SetTableWidth(PropertyDialog::GetFloatTextbox(m_tableWidthEdit));
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_VALUE_SETTER(table->SetTableWidth, table->GetTableWidth, PropertyDialog::GetFloatTextbox, m_tableWidthEdit, table);
             break;
         case IDC_TABLE_HEIGHT_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->SetHeight(PropertyDialog::GetFloatTextbox(m_tableHeightEdit));
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_VALUE_SETTER(table->SetHeight, table->GetHeight, PropertyDialog::GetFloatTextbox, m_tableHeightEdit, table);
             break;
         case IDC_TABLE_GLASS_HEIGHT_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_glassheight = PropertyDialog::GetFloatTextbox(m_topGlassHeightEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_glassheight, PropertyDialog::GetFloatTextbox(m_topGlassHeightEdit), table);
             break;
         case IDC_TABLE_FIELD_HEIGHT_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_tableheight = PropertyDialog::GetFloatTextbox(m_tableFieldHeightEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_tableheight, PropertyDialog::GetFloatTextbox(m_tableFieldHeightEdit), table);
             break;
         case IDC_MIN_DIFFICULTY_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_angletiltMin = PropertyDialog::GetFloatTextbox(m_minSlopeEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_angletiltMin, PropertyDialog::GetFloatTextbox(m_minSlopeEdit), table);
             break;
         case IDC_MAX_DIFFICULTY_EDIT:
-            PropertyDialog::StartUndo(table);
-            table->m_angletiltMax = PropertyDialog::GetFloatTextbox(m_maxSlopeEdit);
-            PropertyDialog::EndUndo(table);
+            CHECK_UPDATE_ITEM(table->m_angletiltMax, PropertyDialog::GetFloatTextbox(m_maxSlopeEdit), table);
             break;
         default:
         break;

@@ -59,34 +59,22 @@ void DragpointVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 1:
-                PropertyDialog::StartUndo(dpoint);
-                dpoint->m_v.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
-                PropertyDialog::EndUndo(dpoint);
+                CHECK_UPDATE_ITEM(dpoint->m_v.x, PropertyDialog::GetFloatTextbox(m_posXEdit), dpoint);
                 break;
             case 2:
-                PropertyDialog::StartUndo(dpoint);
-                dpoint->m_v.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
-                PropertyDialog::EndUndo(dpoint);
+                CHECK_UPDATE_ITEM(dpoint->m_v.y, PropertyDialog::GetFloatTextbox(m_posYEdit), dpoint);
                 break;
             case 4:
-                PropertyDialog::StartUndo(dpoint);
-                dpoint->m_autoTexture = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 4));
-                PropertyDialog::EndUndo(dpoint);
+                CHECK_UPDATE_ITEM(dpoint->m_autoTexture, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 4)), dpoint);
                 break;
             case 5:
-                PropertyDialog::StartUndo(dpoint);
-                dpoint->m_texturecoord = PropertyDialog::GetFloatTextbox(m_textureCoordEdit);
-                PropertyDialog::EndUndo(dpoint);
+                CHECK_UPDATE_ITEM(dpoint->m_texturecoord, PropertyDialog::GetFloatTextbox(m_textureCoordEdit), dpoint);
                 break;
             case 6:
-                PropertyDialog::StartUndo(dpoint);
-                dpoint->m_v.z = PropertyDialog::GetFloatTextbox(m_heightOffsetEdit);
-                PropertyDialog::EndUndo(dpoint);
+                CHECK_UPDATE_ITEM(dpoint->m_v.z, PropertyDialog::GetFloatTextbox(m_heightOffsetEdit), dpoint);
                 break;
             case IDC_CALC_HEIGHT_EDIT:
-                PropertyDialog::StartUndo(dpoint);
-                dpoint->m_calcHeight = PropertyDialog::GetFloatTextbox(m_realHeightEdit);
-                PropertyDialog::EndUndo(dpoint);
+                CHECK_UPDATE_ITEM(dpoint->m_calcHeight, PropertyDialog::GetFloatTextbox(m_realHeightEdit), dpoint);
                 break;
             default:
                 break;
