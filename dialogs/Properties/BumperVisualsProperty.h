@@ -24,7 +24,7 @@ private:
     CEdit     m_heightScaleEdit;
     CEdit     m_orientationEdit;
     CEdit     m_ringSpeedEdit;
-    CEdit     m_ringSpeedOffsetEdit;
+    CEdit     m_ringDropOffsetEdit;
     HWND      m_hCapVisibleCheck;
     HWND      m_hBaseVisibleCheck;
     HWND      m_hRingVisibleCheck;
