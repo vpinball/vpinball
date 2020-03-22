@@ -62,7 +62,7 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(gate->m_d.m_length, PropertyDialog::GetFloatTextbox(m_lengthEdit), gate);
                 break;
             case DISPID_Gate_Height1:
-                CHECK_UPDATE_ITEM(gate->m_d.m_height, PropertyDialog::GetFloatTextbox(m_lengthEdit), gate);
+                CHECK_UPDATE_ITEM(gate->m_d.m_height, PropertyDialog::GetFloatTextbox(m_heightEdit), gate);
                 break;
             case DISPID_Gate_Rotation:
                 CHECK_UPDATE_ITEM(gate->m_d.m_rotation, PropertyDialog::GetFloatTextbox(m_rotationEdit), gate);
