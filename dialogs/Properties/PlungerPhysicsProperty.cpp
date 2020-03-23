@@ -38,49 +38,31 @@ void PlungerPhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_PULL_SPEED_EDIT:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_speedPull = PropertyDialog::GetFloatTextbox(m_pullSpeedEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_speedPull, PropertyDialog::GetFloatTextbox(m_pullSpeedEdit), plunger);
                 break;
             case IDC_RELEASE_SPEED_EDIT:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_speedFire = PropertyDialog::GetFloatTextbox(m_releaseSpeedEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_speedFire, PropertyDialog::GetFloatTextbox(m_releaseSpeedEdit), plunger);
                 break;
             case IDC_STROKE_LENGTH_EDIT:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_stroke = PropertyDialog::GetFloatTextbox(m_strokeLengthEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_stroke, PropertyDialog::GetFloatTextbox(m_strokeLengthEdit), plunger);
                 break;
             case IDC_SCATTER_VELOCITY_EDIT:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_scatterVelocity = PropertyDialog::GetFloatTextbox(m_scatterVelocityEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_scatterVelocity, PropertyDialog::GetFloatTextbox(m_scatterVelocityEdit), plunger);
                 break;
             case IDC_MECH_STRENGTH_EDIT:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_mechStrength = PropertyDialog::GetFloatTextbox(m_mechStrengthEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_mechStrength, PropertyDialog::GetFloatTextbox(m_mechStrengthEdit), plunger);
                 break;
             case IDC_MOMENTUM_XFER_EDIT:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_momentumXfer = PropertyDialog::GetFloatTextbox(m_momentumXferEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_momentumXfer, PropertyDialog::GetFloatTextbox(m_momentumXferEdit), plunger);
                 break;
             case IDC_PARK_POSITION_EDIT:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_parkPosition = PropertyDialog::GetFloatTextbox(m_parkPositionEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_parkPosition, PropertyDialog::GetFloatTextbox(m_parkPositionEdit), plunger);
                 break;
             case IDC_AUTO_PLUNGER_CHECK:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_autoPlunger = PropertyDialog::GetCheckboxState(m_hAutoPlungerCheck);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_autoPlunger, PropertyDialog::GetCheckboxState(m_hAutoPlungerCheck), plunger);
                 break;
             case IDC_ENABLE_MECH_PLUNGER_CHECK:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_mechPlunger = PropertyDialog::GetCheckboxState(m_hEnableMechPlungerCheck);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_mechPlunger, PropertyDialog::GetCheckboxState(m_hEnableMechPlungerCheck), plunger);
                 break;
             default:
                 UpdateBaseProperties(plunger, &plunger->m_d, dispid);

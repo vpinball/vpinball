@@ -51,79 +51,49 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 1:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_heightbottom = PropertyDialog::GetFloatTextbox(m_bottomHeightEdit);
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_heightbottom, PropertyDialog::GetFloatTextbox(m_bottomHeightEdit), ramp);
                 break;
             case 2:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_heighttop = PropertyDialog::GetFloatTextbox(m_topHeightEdit);
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_heighttop, PropertyDialog::GetFloatTextbox(m_topHeightEdit), ramp);
                 break;
             case 3:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_widthbottom = PropertyDialog::GetFloatTextbox(m_bottomWdthEdit);
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_widthbottom, PropertyDialog::GetFloatTextbox(m_bottomWdthEdit), ramp);
                 break;
             case 4:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_widthtop = PropertyDialog::GetFloatTextbox(m_topWidthEdit);
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_widthtop, PropertyDialog::GetFloatTextbox(m_topWidthEdit), ramp);
                 break;
             case 6:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_type = (RampType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList));
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_type, (RampType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList)), ramp);
                 break;
             case 8:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_imagealignment = (RampImageAlignment)(PropertyDialog::GetComboBoxIndex(m_modeCombo, m_imageModeList) + 1);
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_imagealignment, (RampImageAlignment)(PropertyDialog::GetComboBoxIndex(m_modeCombo, m_imageModeList) + 1), ramp);
                 break;
             case 9:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_imageWalls = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_imageWalls, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), ramp);
                 break;
             case 108:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_leftwallheightvisible = PropertyDialog::GetFloatTextbox(m_leftWallEdit);
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_leftwallheightvisible, PropertyDialog::GetFloatTextbox(m_leftWallEdit), ramp);
                 break;
             case 109:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_rightwallheightvisible = PropertyDialog::GetFloatTextbox(m_rightWallEdit);
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_rightwallheightvisible, PropertyDialog::GetFloatTextbox(m_rightWallEdit), ramp);
                 break;
             case 112:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_visible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_visible, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), ramp);
                 break;
             case IDC_REFLECT_ENABLED_CHECK:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_reflectionEnabled = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_reflectionEnabled, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), ramp);
                 break;
             case IDC_DEPTH_BIAS:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_depthBias = PropertyDialog::GetFloatTextbox(m_depthBiasEdit);
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_depthBias, PropertyDialog::GetFloatTextbox(m_depthBiasEdit), ramp);
                 break;
             case IDC_WIRE_DIAMETER:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_wireDiameter = PropertyDialog::GetFloatTextbox(m_diameterEdit);
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_wireDiameter, PropertyDialog::GetFloatTextbox(m_diameterEdit), ramp);
                 break;
             case IDC_WIRE_DISTX:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_wireDistanceX = PropertyDialog::GetFloatTextbox(m_distanceXEdit);
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_wireDistanceX, PropertyDialog::GetFloatTextbox(m_distanceXEdit), ramp);
                 break;
             case IDC_WIRE_DISTY:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_wireDistanceY = PropertyDialog::GetFloatTextbox(m_distanceYEdit);
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_wireDistanceY, PropertyDialog::GetFloatTextbox(m_distanceYEdit), ramp);
                 break;
             default:
                 UpdateBaseProperties(ramp, &ramp->m_d, dispid);

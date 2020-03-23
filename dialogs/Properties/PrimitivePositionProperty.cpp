@@ -49,79 +49,49 @@ void PrimitivePositionProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case DISPID_POSITION_X:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_vPosition.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_vPosition.x, PropertyDialog::GetFloatTextbox(m_posXEdit), prim);
                 break;
             case DISPID_POSITION_Y:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_vPosition.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_vPosition.y, PropertyDialog::GetFloatTextbox(m_posYEdit), prim);
                 break;
             case DISPID_POSITION_Z:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_vPosition.z = PropertyDialog::GetFloatTextbox(m_posZEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_vPosition.z, PropertyDialog::GetFloatTextbox(m_posZEdit), prim);
                 break;
             case DISPID_SIZE_X:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_vSize.x = PropertyDialog::GetFloatTextbox(m_scaleXEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_vSize.x, PropertyDialog::GetFloatTextbox(m_scaleXEdit), prim);
                 break;
             case DISPID_SIZE_Y:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_vSize.y = PropertyDialog::GetFloatTextbox(m_scaleYEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_vSize.y, PropertyDialog::GetFloatTextbox(m_scaleYEdit), prim);
                 break;
             case DISPID_SIZE_Z:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_vSize.z = PropertyDialog::GetFloatTextbox(m_scaleZEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_vSize.z, PropertyDialog::GetFloatTextbox(m_scaleZEdit), prim);
                 break;
             case DISPID_ROTRA1:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_aRotAndTra[0] = PropertyDialog::GetFloatTextbox(m_rotXEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_aRotAndTra[0], PropertyDialog::GetFloatTextbox(m_rotXEdit), prim);
                 break;
             case DISPID_ROTRA2:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_aRotAndTra[1] = PropertyDialog::GetFloatTextbox(m_rotYEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_aRotAndTra[1], PropertyDialog::GetFloatTextbox(m_rotYEdit), prim);
                 break;
             case DISPID_ROTRA3:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_aRotAndTra[2] = PropertyDialog::GetFloatTextbox(m_rotZEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_aRotAndTra[2], PropertyDialog::GetFloatTextbox(m_rotZEdit), prim);
                 break;
             case DISPID_ROTRA4:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_aRotAndTra[3] = PropertyDialog::GetFloatTextbox(m_scaleXEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_aRotAndTra[3], PropertyDialog::GetFloatTextbox(m_transXEdit), prim);
                 break;
             case DISPID_ROTRA5:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_aRotAndTra[4] = PropertyDialog::GetFloatTextbox(m_transYEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_aRotAndTra[4], PropertyDialog::GetFloatTextbox(m_scaleYEdit), prim);
                 break;
             case DISPID_ROTRA6:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_aRotAndTra[5] = PropertyDialog::GetFloatTextbox(m_transZEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_aRotAndTra[5], PropertyDialog::GetFloatTextbox(m_scaleZEdit), prim);
                 break;
             case DISPID_ROTRA7:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_aRotAndTra[6] = PropertyDialog::GetFloatTextbox(m_objRotXEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_aRotAndTra[6], PropertyDialog::GetFloatTextbox(m_objRotXEdit), prim);
                 break;
             case DISPID_ROTRA8:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_aRotAndTra[7] = PropertyDialog::GetFloatTextbox(m_objRotYEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_aRotAndTra[7], PropertyDialog::GetFloatTextbox(m_objRotYEdit), prim);
                 break;
             case DISPID_ROTRA9:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_aRotAndTra[8] = PropertyDialog::GetFloatTextbox(m_objRotZEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_aRotAndTra[8], PropertyDialog::GetFloatTextbox(m_objRotZEdit), prim);
                 break;
             default:
                 break;

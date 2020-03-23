@@ -33,19 +33,13 @@ void PrimitivePhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_ELASTICITY_FALLOFF_EDIT:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_elasticityFalloff= PropertyDialog::GetFloatTextbox(m_elasticityFalloffEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_elasticityFalloff, PropertyDialog::GetFloatTextbox(m_elasticityFalloffEdit), prim);
                 break;
             case IDC_COLLISION_REDUCTION_FACTOR:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_collision_reductionFactor = PropertyDialog::GetFloatTextbox(m_recudePolyEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_collision_reductionFactor, PropertyDialog::GetFloatTextbox(m_recudePolyEdit), prim);
                 break;
             case IDC_PRIMITIVE_IS_TOY:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_toy = PropertyDialog::GetCheckboxState(m_hToyCheck);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_toy, PropertyDialog::GetCheckboxState(m_hToyCheck), prim);
                 break;
             default:
                 UpdateBaseProperties(prim, &prim->m_d, dispid);
