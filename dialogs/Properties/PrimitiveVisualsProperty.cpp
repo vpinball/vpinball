@@ -41,29 +41,19 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_DISPLAY_TEXTURE_CHECKBOX:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_displayTexture = PropertyDialog::GetCheckboxState(m_hDisplayImageCheck);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_displayTexture, PropertyDialog::GetCheckboxState(m_hDisplayImageCheck), prim);
                 break;
             case IDC_OBJECT_SPACE_NORMALMAP:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_objectSpaceNormalMap = PropertyDialog::GetCheckboxState(m_hObjectSpaceCheck);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_objectSpaceNormalMap, PropertyDialog::GetCheckboxState(m_hObjectSpaceCheck), prim);
                 break;
             case IDC_PRIMITIVE_ENABLE_BACKFACES:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_backfacesEnabled = PropertyDialog::GetCheckboxState(m_hRenderBackfacingCheck);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_backfacesEnabled, PropertyDialog::GetCheckboxState(m_hRenderBackfacingCheck), prim);
                 break;
             case IDC_STATIC_RENDERING_CHECK:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_staticRendering = PropertyDialog::GetCheckboxState(m_hStaticRenderingCheck);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_staticRendering, PropertyDialog::GetCheckboxState(m_hStaticRenderingCheck), prim);
                 break;
             case IDC_DRAW_TEXTURES_SIDES_CHECK:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_drawTexturesInside = PropertyDialog::GetCheckboxState(m_hDrawTexturesInsideCheck);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_drawTexturesInside, PropertyDialog::GetCheckboxState(m_hDrawTexturesInsideCheck), prim);
                 break;
             case IDC_LOAD_MESH_BUTTON:
                 PropertyDialog::StartUndo(prim);
@@ -76,34 +66,22 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 PropertyDialog::EndUndo(prim);
                 break;
             case IDC_DEPTH_BIAS:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_depthBias = PropertyDialog::GetFloatTextbox(m_depthBiasEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_depthBias, PropertyDialog::GetFloatTextbox(m_depthBiasEdit), prim);
                 break;
             case IDC_BLEND_DISABLE_LIGHTING:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_disableLightingTop = PropertyDialog::GetFloatTextbox(m_disableLightingEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_disableLightingTop, PropertyDialog::GetFloatTextbox(m_disableLightingEdit), prim);
                 break;
             case IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_disableLightingBelow = PropertyDialog::GetFloatTextbox(m_disableLightFromBelowEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_disableLightingBelow, PropertyDialog::GetFloatTextbox(m_disableLightFromBelowEdit), prim);
                 break;
             case IDC_PRIMITIVE_LEGACY_SIDES_EDIT:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_Sides = PropertyDialog::GetIntTextbox(m_legacySidesEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_Sides, PropertyDialog::GetFloatTextbox(m_legacySidesEdit), prim);
                 break;
             case IDC_EDGE_FACTOR_UI:
-                PropertyDialog::StartUndo(prim);
-                prim->m_d.m_edgeFactorUI = PropertyDialog::GetFloatTextbox(m_editorEdit);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_edgeFactorUI, PropertyDialog::GetFloatTextbox(m_editorEdit), prim);
                 break;
             case DISPID_Image2:
-                PropertyDialog::StartUndo(prim);
-                PropertyDialog::GetComboBoxText(m_normalMapCombo, prim->m_d.m_szNormalMap);
-                PropertyDialog::EndUndo(prim);
+                CHECK_UPDATE_COMBO_TEXT(prim->m_d.m_szNormalMap, m_normalMapCombo, prim);
                 break;
             default:
                 UpdateBaseProperties(prim, &prim->m_d, dispid);

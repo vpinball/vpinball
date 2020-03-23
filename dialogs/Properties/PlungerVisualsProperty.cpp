@@ -50,29 +50,19 @@ void PlungerVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_PLUNGER_TYPE_COMBO:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_type = (PlungerType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList) + 1);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_type, (PlungerType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList) + 1), plunger);
                 break;
             case DISPID_PluFrames:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_animFrames = PropertyDialog::GetIntTextbox(m_flatFramesEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_animFrames, PropertyDialog::GetIntTextbox(m_flatFramesEdit), plunger);
                 break;
             case DISPID_Width:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_width = PropertyDialog::GetFloatTextbox(m_widthEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_width, PropertyDialog::GetFloatTextbox(m_widthEdit), plunger);
                 break;
             case DISPID_ZAdjust:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_zAdjust = PropertyDialog::GetFloatTextbox(m_zAdjustmentEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_zAdjust, PropertyDialog::GetFloatTextbox(m_zAdjustmentEdit), plunger);
                 break;
             case DISPID_RodDiam:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_rodDiam = PropertyDialog::GetFloatTextbox(m_rodDiameterEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_rodDiam, PropertyDialog::GetFloatTextbox(m_rodDiameterEdit), plunger);
                 break;
             case DISPID_TipShape:
                 PropertyDialog::StartUndo(plunger);
@@ -80,54 +70,34 @@ void PlungerVisualsProperty::UpdateProperties(const int dispid)
                 PropertyDialog::EndUndo(plunger);
                 break;
             case DISPID_RingGap:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_ringGap = PropertyDialog::GetFloatTextbox(m_ringGapEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_ringGap, PropertyDialog::GetFloatTextbox(m_ringGapEdit), plunger);
                 break;
             case DISPID_RingDiam:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_ringDiam = PropertyDialog::GetFloatTextbox(m_ringDiamEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_ringDiam, PropertyDialog::GetFloatTextbox(m_ringDiamEdit), plunger);
                 break;
             case DISPID_RingThickness:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_ringWidth = PropertyDialog::GetFloatTextbox(m_ringWidthEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_ringWidth, PropertyDialog::GetFloatTextbox(m_ringWidthEdit), plunger);
                 break;
             case DISPID_SpringDiam:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_springDiam = PropertyDialog::GetFloatTextbox(m_springDiamEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_springDiam, PropertyDialog::GetFloatTextbox(m_springDiamEdit), plunger);
                 break;
             case DISPID_SpringGauge:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_springGauge = PropertyDialog::GetFloatTextbox(m_springGaugeEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_springGauge, PropertyDialog::GetFloatTextbox(m_springGaugeEdit), plunger);
                 break;
             case DISPID_SpringLoops:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_springLoops = PropertyDialog::GetFloatTextbox(m_springLoopsEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_springLoops, PropertyDialog::GetFloatTextbox(m_springLoopsEdit), plunger);
                 break;
             case DISPID_SpringEndLoops:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_springEndLoops = PropertyDialog::GetFloatTextbox(m_endLoopsEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_springEndLoops, PropertyDialog::GetFloatTextbox(m_endLoopsEdit), plunger);
                 break;
             case 902:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_v.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_v.x, PropertyDialog::GetFloatTextbox(m_posXEdit), plunger);
                 break;
             case 903:
-                PropertyDialog::StartUndo(plunger);
-                plunger->m_d.m_v.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_v.y, PropertyDialog::GetFloatTextbox(m_posYEdit), plunger);
                 break;
             case 1502:
-                PropertyDialog::StartUndo(plunger);
-                PropertyDialog::GetComboBoxText(m_surfaceCombo, plunger->m_d.m_szSurface);
-                PropertyDialog::EndUndo(plunger);
+                CHECK_UPDATE_COMBO_TEXT(plunger->m_d.m_szSurface, m_surfaceCombo, plunger);
                 break;
             default:
                 UpdateBaseProperties(plunger, &plunger->m_d, dispid);

@@ -43,14 +43,10 @@ void RampPhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 10:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_leftwallheight = PropertyDialog::GetFloatTextbox(m_leftWallEdit);
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_leftwallheight, PropertyDialog::GetFloatTextbox(m_leftWallEdit), ramp);
                 break;
             case 11:
-                PropertyDialog::StartUndo(ramp);
-                ramp->m_d.m_rightwallheight = PropertyDialog::GetFloatTextbox(m_rightWallEdit);
-                PropertyDialog::EndUndo(ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_rightwallheight, PropertyDialog::GetFloatTextbox(m_rightWallEdit), ramp);
                 break;
             default:
                 UpdateBaseProperties(ramp, &ramp->m_d, dispid);
