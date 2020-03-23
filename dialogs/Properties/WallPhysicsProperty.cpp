@@ -36,24 +36,19 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 11:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_droppable = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_droppable, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
                 break;
             case 14:
-                PropertyDialog::StartUndo(wall);
-                wall->SetSlingshotStrength(PropertyDialog::GetFloatTextbox(m_slingshotForceEdit));
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_VALUE_SETTER(wall->SetSlingshotStrength, wall->GetSlingshotStrength, PropertyDialog::GetFloatTextbox, m_slingshotForceEdit, wall);
                 break;
             case 427:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_slingshot_threshold = PropertyDialog::GetFloatTextbox(m_slingshotThresholdEdit);
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_slingshot_threshold, PropertyDialog::GetFloatTextbox(m_slingshotThresholdEdit), wall);
                 break;
             case 116:
                 PropertyDialog::StartUndo(wall);
                 wall->m_d.m_isBottomSolid = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
                 PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_isBottomSolid, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
                 break;
             default:
                 UpdateBaseProperties(wall, &wall->m_d, dispid);

@@ -38,39 +38,25 @@ void RubberVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_STATIC_RENDERING_CHECK:
-                PropertyDialog::StartUndo(rubber);
-                rubber->m_d.m_staticRendering = PropertyDialog::GetCheckboxState(m_hStaticRenderingCheck);
-                PropertyDialog::EndUndo(rubber);
+                CHECK_UPDATE_ITEM(rubber->m_d.m_staticRendering, PropertyDialog::GetCheckboxState(m_hStaticRenderingCheck), rubber);
                 break;
             case IDC_SHOW_IN_EDITOR_CHECK:
-                PropertyDialog::StartUndo(rubber);
-                rubber->m_d.m_showInEditor = PropertyDialog::GetCheckboxState(m_hShowInEditorCheck);
-                PropertyDialog::EndUndo(rubber);
+                CHECK_UPDATE_ITEM(rubber->m_d.m_showInEditor, PropertyDialog::GetCheckboxState(m_hShowInEditorCheck), rubber);
                 break;
             case IDC_RUBBER_HEIGHT_EDIT:
-                PropertyDialog::StartUndo(rubber);
-                rubber->m_d.m_height= PropertyDialog::GetFloatTextbox(m_heightEdit);
-                PropertyDialog::EndUndo(rubber);
+                CHECK_UPDATE_ITEM(rubber->m_d.m_height, PropertyDialog::GetFloatTextbox(m_heightEdit), rubber);
                 break;
             case IDC_RUBBER_THICKNESS_EDIT:
-                PropertyDialog::StartUndo(rubber);
-                rubber->m_d.m_thickness = PropertyDialog::GetIntTextbox(m_thicknessEdit);
-                PropertyDialog::EndUndo(rubber);
+                CHECK_UPDATE_ITEM(rubber->m_d.m_thickness, PropertyDialog::GetIntTextbox(m_thicknessEdit), rubber);
                 break;
             case IDC_RUBBER_ROTX_EDIT:
-                PropertyDialog::StartUndo(rubber);
-                rubber->m_d.m_rotX = PropertyDialog::GetFloatTextbox(m_rotXEdit);
-                PropertyDialog::EndUndo(rubber);
+                CHECK_UPDATE_ITEM(rubber->m_d.m_rotX, PropertyDialog::GetFloatTextbox(m_rotXEdit), rubber);
                 break;
             case IDC_RUBBER_ROTY_EDIT:
-                PropertyDialog::StartUndo(rubber);
-                rubber->m_d.m_rotY = PropertyDialog::GetFloatTextbox(m_rotYEdit);
-                PropertyDialog::EndUndo(rubber);
+                CHECK_UPDATE_ITEM(rubber->m_d.m_rotY, PropertyDialog::GetFloatTextbox(m_rotYEdit), rubber);
                 break;
             case IDC_RUBBER_ROTZ_EDIT:
-                PropertyDialog::StartUndo(rubber);
-                rubber->m_d.m_rotZ = PropertyDialog::GetFloatTextbox(m_rotZEdit);
-                PropertyDialog::EndUndo(rubber);
+                CHECK_UPDATE_ITEM(rubber->m_d.m_rotZ, PropertyDialog::GetFloatTextbox(m_rotZEdit), rubber);
                 break;
             default:
                 UpdateBaseProperties(rubber, &rubber->m_d, dispid);

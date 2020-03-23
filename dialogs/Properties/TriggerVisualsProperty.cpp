@@ -48,44 +48,28 @@ void TriggerVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 1503:
-                PropertyDialog::StartUndo(trigger);
-                trigger->m_d.m_shape = (TriggerShape)(PropertyDialog::GetComboBoxIndex(m_shapeCombo, m_shapeList));
-                PropertyDialog::EndUndo(trigger);
+                CHECK_UPDATE_ITEM(trigger->m_d.m_shape, (TriggerShape)(PropertyDialog::GetComboBoxIndex(m_shapeCombo, m_shapeList)), trigger);
                 break;
             case 902:
-                PropertyDialog::StartUndo(trigger);
-                trigger->m_d.m_vCenter.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
-                PropertyDialog::EndUndo(trigger);
+                CHECK_UPDATE_ITEM(trigger->m_d.m_vCenter.x, PropertyDialog::GetFloatTextbox(m_posXEdit), trigger);
                 break;
             case 903:
-                PropertyDialog::StartUndo(trigger);
-                trigger->m_d.m_vCenter.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
-                PropertyDialog::EndUndo(trigger);
+                CHECK_UPDATE_ITEM(trigger->m_d.m_vCenter.y, PropertyDialog::GetFloatTextbox(m_posYEdit), trigger);
                 break;
             case IDC_SURFACE_COMBO:
-                PropertyDialog::StartUndo(trigger);
-                PropertyDialog::GetComboBoxText(m_surfaceCombo, trigger->m_d.m_szSurface);
-                PropertyDialog::EndUndo(trigger);
+                CHECK_UPDATE_COMBO_TEXT(trigger->m_d.m_szSurface, m_surfaceCombo, trigger);
                 break;
             case IDC_STAR_THICKNESS_EDIT:
-                PropertyDialog::StartUndo(trigger);
-                trigger->m_d.m_wireThickness = PropertyDialog::GetFloatTextbox(m_wireThicknessEdit);
-                PropertyDialog::EndUndo(trigger);
+                CHECK_UPDATE_ITEM(trigger->m_d.m_wireThickness, PropertyDialog::GetFloatTextbox(m_wireThicknessEdit), trigger);
                 break;
             case IDC_STAR_RADIUS_EDIT:
-                PropertyDialog::StartUndo(trigger);
-                trigger->m_d.m_radius = PropertyDialog::GetFloatTextbox(m_starRadiusEdit);
-                PropertyDialog::EndUndo(trigger);
+                CHECK_UPDATE_ITEM(trigger->m_d.m_radius, PropertyDialog::GetFloatTextbox(m_starRadiusEdit), trigger);
                 break;
             case IDC_ROTATION_EDIT:
-                PropertyDialog::StartUndo(trigger);
-                trigger->m_d.m_rotation = PropertyDialog::GetFloatTextbox(m_rotationEdit);
-                PropertyDialog::EndUndo(trigger);
+                CHECK_UPDATE_ITEM(trigger->m_d.m_rotation, PropertyDialog::GetFloatTextbox(m_rotationEdit), trigger);
                 break;
             case IDC_RINGSPEED_EDIT:
-                PropertyDialog::StartUndo(trigger);
-                trigger->m_d.m_animSpeed = PropertyDialog::GetFloatTextbox(m_animationSpeedEdit);
-                PropertyDialog::EndUndo(trigger);
+                CHECK_UPDATE_ITEM(trigger->m_d.m_animSpeed, PropertyDialog::GetFloatTextbox(m_animationSpeedEdit), trigger);
                 break;
             default:
                 UpdateBaseProperties(trigger, &trigger->m_d, dispid);

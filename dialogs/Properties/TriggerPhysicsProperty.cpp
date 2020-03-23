@@ -30,14 +30,10 @@ void TriggerPhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 904:
-                PropertyDialog::StartUndo(trigger);
-                trigger->m_d.m_enabled= PropertyDialog::GetCheckboxState(m_hEnableCheck);
-                PropertyDialog::EndUndo(trigger);
+                CHECK_UPDATE_ITEM(trigger->m_d.m_enabled, PropertyDialog::GetCheckboxState(m_hEnableCheck), trigger);
                 break;
            case IDC_HIT_HEIGHT_EDIT:
-                PropertyDialog::StartUndo(trigger);
-                trigger->m_d.m_hit_height = PropertyDialog::GetFloatTextbox(m_hitHeightEdit);
-                PropertyDialog::EndUndo(trigger);
+                CHECK_UPDATE_ITEM(trigger->m_d.m_hit_height, PropertyDialog::GetFloatTextbox(m_hitHeightEdit), trigger);
                 break;
             default:
                 break;

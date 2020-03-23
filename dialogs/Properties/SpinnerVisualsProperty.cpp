@@ -42,49 +42,31 @@ void SpinnerVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_SHOW_BRACKET_CHECK:
-                PropertyDialog::StartUndo(spinner);
-                spinner->m_d.m_showBracket = PropertyDialog::GetCheckboxState(m_hShowBracketCheck);
-                PropertyDialog::EndUndo(spinner);
+                CHECK_UPDATE_ITEM(spinner->m_d.m_showBracket, PropertyDialog::GetCheckboxState(m_hShowBracketCheck), spinner);
                 break;
             case IDC_SURFACE_COMBO:
-                PropertyDialog::StartUndo(spinner);
-                PropertyDialog::GetComboBoxText(m_surfaceCombo, spinner->m_d.m_szSurface);
-                PropertyDialog::EndUndo(spinner);
+                CHECK_UPDATE_COMBO_TEXT(spinner->m_d.m_szSurface, m_surfaceCombo, spinner);
                 break;
             case 11:
-                PropertyDialog::StartUndo(spinner);
-                spinner->m_d.m_vCenter.x = PropertyDialog::GetFloatTextbox(m_posXEdit);
-                PropertyDialog::EndUndo(spinner);
+                CHECK_UPDATE_ITEM(spinner->m_d.m_vCenter.x, PropertyDialog::GetFloatTextbox(m_posXEdit), spinner);
                 break;
             case 12:
-                PropertyDialog::StartUndo(spinner);
-                spinner->m_d.m_vCenter.y = PropertyDialog::GetFloatTextbox(m_posYEdit);
-                PropertyDialog::EndUndo(spinner);
+                CHECK_UPDATE_ITEM(spinner->m_d.m_vCenter.y, PropertyDialog::GetFloatTextbox(m_posYEdit), spinner);
                 break;
             case DISPID_Spinner_Length:
-                PropertyDialog::StartUndo(spinner);
-                spinner->m_d.m_length = PropertyDialog::GetFloatTextbox(m_lengthEdit);
-                PropertyDialog::EndUndo(spinner);
+                CHECK_UPDATE_ITEM(spinner->m_d.m_length, PropertyDialog::GetFloatTextbox(m_lengthEdit), spinner);
                 break;
             case 5:
-                PropertyDialog::StartUndo(spinner);
-                spinner->m_d.m_height = PropertyDialog::GetFloatTextbox(m_heightEdit);
-                PropertyDialog::EndUndo(spinner);
+                CHECK_UPDATE_ITEM(spinner->m_d.m_height, PropertyDialog::GetFloatTextbox(m_heightEdit), spinner);
                 break;
             case 4:
-                PropertyDialog::StartUndo(spinner);
-                spinner->m_d.m_rotation = PropertyDialog::GetFloatTextbox(m_rotationEdit);
-                PropertyDialog::EndUndo(spinner);
+                CHECK_UPDATE_ITEM(spinner->m_d.m_rotation, PropertyDialog::GetFloatTextbox(m_rotationEdit), spinner);
                 break;
             case 13:
-                PropertyDialog::StartUndo(spinner);
-                spinner->m_d.m_angleMax = PropertyDialog::GetFloatTextbox(m_angleMaxEdit);
-                PropertyDialog::EndUndo(spinner);
+                CHECK_UPDATE_ITEM(spinner->m_d.m_angleMax, PropertyDialog::GetFloatTextbox(m_angleMaxEdit), spinner);
                 break;
             case 14:
-                PropertyDialog::StartUndo(spinner);
-                spinner->m_d.m_angleMin = PropertyDialog::GetFloatTextbox(m_angleMinEdit);
-                PropertyDialog::EndUndo(spinner);
+                CHECK_UPDATE_ITEM(spinner->m_d.m_angleMin, PropertyDialog::GetFloatTextbox(m_angleMinEdit), spinner);
                 break;
             default:
                 UpdateBaseProperties(spinner, &spinner->m_d, dispid);

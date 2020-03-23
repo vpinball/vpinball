@@ -53,25 +53,17 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_TEXTBOX_TRANSP_CHECK:
-                PropertyDialog::StartUndo(text);
-                text->m_d.m_transparent = PropertyDialog::GetCheckboxState(m_hTransparentCheck);
-                PropertyDialog::EndUndo(text);
+                CHECK_UPDATE_ITEM(text->m_d.m_transparent, PropertyDialog::GetCheckboxState(m_hTransparentCheck), text);
                 break;
             case IDC_TEXTBOX_ALIGN_COMBO:
-                PropertyDialog::StartUndo(text);
-                text->m_d.m_talign = (TextAlignment)PropertyDialog::GetComboBoxIndex(m_alignmentCombo, m_alignList);
-                PropertyDialog::EndUndo(text);
+                CHECK_UPDATE_ITEM(text->m_d.m_talign, (TextAlignment)PropertyDialog::GetComboBoxIndex(m_alignmentCombo, m_alignList), text);
                 break;
             case IDC_USE_SCRIPT_DMD_CHECK:
-                PropertyDialog::StartUndo(text);
-                text->m_d.m_isDMD = PropertyDialog::GetCheckboxState(m_hUseScriptDMDCheck);
-                PropertyDialog::EndUndo(text);
+                CHECK_UPDATE_ITEM(text->m_d.m_isDMD, PropertyDialog::GetCheckboxState(m_hUseScriptDMDCheck), text);
                 break;
             case IDC_TEXT_INTENSITY:
             {
-                PropertyDialog::StartUndo(text);
-                text->m_d.m_intensity_scale = PropertyDialog::GetFloatTextbox(m_textIntensityEdit);
-                PropertyDialog::EndUndo(text);
+                CHECK_UPDATE_ITEM(text->m_d.m_intensity_scale, PropertyDialog::GetFloatTextbox(m_textIntensityEdit), text);
                 break;
             }
             case IDC_TEXTBOX_TEXT_EDIT:
