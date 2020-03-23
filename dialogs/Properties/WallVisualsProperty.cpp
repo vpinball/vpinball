@@ -34,69 +34,43 @@ void WallVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 9:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_heighttop = PropertyDialog::GetFloatTextbox(m_topHeightEdit);
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_heighttop, PropertyDialog::GetFloatTextbox(m_topHeightEdit), wall);
                 break;
             case 8:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_heightbottom = PropertyDialog::GetFloatTextbox(m_bottomHeightEdit);
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_heightbottom, PropertyDialog::GetFloatTextbox(m_bottomHeightEdit), wall);
                 break;
             case DISPID_Image2:
-                PropertyDialog::StartUndo(wall);
-                PropertyDialog::GetComboBoxText(m_sideImageCombo, wall->m_d.m_szSideImage);
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_COMBO_TEXT(wall->m_d.m_szSideImage, m_sideImageCombo, wall);
                 break;
             case IDC_MATERIAL_COMBO:
-                PropertyDialog::StartUndo(wall);
-                PropertyDialog::GetComboBoxText(m_topMaterialCombo, wall->m_d.m_szTopMaterial);
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_COMBO_TEXT(wall->m_d.m_szTopMaterial, m_topMaterialCombo, wall);
                 break;
             case IDC_MATERIAL_COMBO2:
-                PropertyDialog::StartUndo(wall);
-                PropertyDialog::GetComboBoxText(m_sideMaterialCombo, wall->m_d.m_szSideMaterial);
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_COMBO_TEXT(wall->m_d.m_szSideMaterial, m_sideMaterialCombo, wall);
                 break;
             case IDC_MATERIAL_COMBO3:
-                PropertyDialog::StartUndo(wall);
-                PropertyDialog::GetComboBoxText(m_slingshotMaterialCombo, wall->m_d.m_szSlingShotMaterial);
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_COMBO_TEXT(wall->m_d.m_szSlingShotMaterial, m_slingshotMaterialCombo, wall);
                 break;
             case IDC_BLEND_DISABLE_LIGHTING:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_disableLightingTop = PropertyDialog::GetFloatTextbox(m_disableLightingEdit);
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_disableLightingTop, PropertyDialog::GetFloatTextbox(m_disableLightingEdit), wall);
                 break;
             case IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_disableLightingBelow = PropertyDialog::GetFloatTextbox(m_disableLightFromBelowEdit);
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_disableLightingBelow, PropertyDialog::GetFloatTextbox(m_disableLightFromBelowEdit), wall);
                 break;
             case 16:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_topBottomVisible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_topBottomVisible, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
                 break;
             case 13:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_displayTexture = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_displayTexture, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
                 break;
             case 109:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_sideVisible = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_sideVisible, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
                 break;
             case 112:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_slingshotAnimation = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_slingshotAnimation, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
                 break;
             case 113:
-                PropertyDialog::StartUndo(wall);
-                wall->m_d.m_flipbook = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
-                PropertyDialog::EndUndo(wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_flipbook, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
                 break;
             default:
                 UpdateBaseProperties(wall, &wall->m_d, dispid);

@@ -35,14 +35,10 @@ void RubberPhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 120:
-                PropertyDialog::StartUndo(rubber);
-                rubber->m_d.m_elasticityFalloff = PropertyDialog::GetFloatTextbox(m_elasticityFallOffEdit);
-                PropertyDialog::EndUndo(rubber);
+                CHECK_UPDATE_ITEM(rubber->m_d.m_elasticityFalloff, PropertyDialog::GetFloatTextbox(m_elasticityFallOffEdit), rubber);
                 break;
             case IDC_HIT_HEIGHT_EDIT:
-                PropertyDialog::StartUndo(rubber);
-                rubber->m_d.m_hitHeight = PropertyDialog::GetFloatTextbox(m_hitHeightEdit);
-                PropertyDialog::EndUndo(rubber);
+                CHECK_UPDATE_ITEM(rubber->m_d.m_hitHeight, PropertyDialog::GetFloatTextbox(m_hitHeightEdit), rubber);
                 break;
             default:
                 UpdateBaseProperties(rubber, &rubber->m_d, dispid);

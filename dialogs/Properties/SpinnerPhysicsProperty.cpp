@@ -32,9 +32,7 @@ void SpinnerPhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_DAMPING_EDIT:
-                PropertyDialog::StartUndo(spinner);
-                spinner->m_d.m_damping = PropertyDialog::GetFloatTextbox(m_dampingEdit);
-                PropertyDialog::EndUndo(spinner);
+                CHECK_UPDATE_ITEM(spinner->m_d.m_damping, PropertyDialog::GetFloatTextbox(m_dampingEdit), spinner);
                 break;
 
             default:
