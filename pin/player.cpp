@@ -4382,10 +4382,12 @@ void Player::PrepareVideoBuffersNormal()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("color_grade", pin != NULL);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("do_bloom", (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff));
 
+   //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
+   const float jitter = (float)((msec()&2047)/1000.0);
    const vec4 fb_inv_resolution_05((float)(0.5 / (double)m_width), (float)(0.5 / (double)m_height),
       //1.0f, 1.0f);
-      radical_inverse(m_overall_frames)*(float)(1. / 8.0),
-      sobol(m_overall_frames)*(float)(5. / 8.0)); // jitter for dither pattern
+      jitter, //radical_inverse(jittertime)*11.0f,
+      jitter);//sobol(jittertime)*13.0f); // jitter for dither pattern
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAA ? "fb_tonemap" : (m_BWrendering == 1 ? "fb_tonemap_no_filterRG" : (m_BWrendering == 2 ? "fb_tonemap_no_filterR" : "fb_tonemap_no_filterRGB")));
 
@@ -4534,10 +4536,12 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("color_grade", pin != NULL);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetBool("do_bloom", (m_ptable->m_bloom_strength > 0.0f && !m_bloomOff));
 
+   //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
+   const float jitter = (float)((msec()&2047)/1000.0);
    const vec4 fb_inv_resolution_05((float)(0.5 / (double)m_width), (float)(0.5 / (double)m_height),
       //1.0f, 1.0f);
-      radical_inverse(m_overall_frames)*(float)(1. / 8.0),
-      sobol(m_overall_frames)*(float)(5. / 8.0)); // jitter for dither pattern
+      jitter, //radical_inverse(jittertime)*11.0f,
+      jitter);//sobol(jittertime)*13.0f); // jitter for dither pattern
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
    m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(RenderAOOnly() ? "fb_AO" :
                                                 (useAA ? "fb_tonemap_AO" : "fb_tonemap_AO_no_filter"));

@@ -22,9 +22,11 @@ FEATURES:
 
 - add new plunger option: Enable 1s retract
   The plunger will move forth and back between the maximum and minimum position, allowing for a retry, if the desired firing position has been missed.
-  Useful for button/key plunging.
+  Useful for button/key plunging and is now the new default.
 
 FIXES:
+
+- replace dithering code with blue noise, fixes flickering patterns (especially in darker table areas)
 
 - tweak minimum physics cycle time, which mainly influences kickers
   also update default kicker physics (Hit height 0.35 and Hit accuracy 0.5)

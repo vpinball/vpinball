@@ -125,7 +125,7 @@ struct VS_OUTPUT_2D
     {(63/64.0-0.5)/255.0, (31/64.0-0.5)/255.0, (55/64.0-0.5)/255.0, (23/64.0-0.5)/255.0, (61/64.0-0.5)/255.0, (29/64.0-0.5)/255.0, (53/64.0-0.5)/255.0, (21/64.0-0.5)/255.0} };
 */
 
-float triangularPDF(const float r) // from -1..1, c=0 (with random no r=0..1)
+/*float triangularPDF(const float r) // from -1..1, c=0 (with random no r=0..1)
 {
    float p = 2.*r;
    const bool b = (p > 1.);
@@ -137,7 +137,7 @@ float triangularPDF(const float r) // from -1..1, c=0 (with random no r=0..1)
 float3 triangularPDF(const float3 r) // from -1..1, c=0 (with random no r=0..1)
 {
    return float3(triangularPDF(r.x), triangularPDF(r.y), triangularPDF(r.z));
-}
+}*/
 
 /*float DitherGradientNoise(const float2 tex0)
 {
@@ -154,6 +154,32 @@ float Dither64(const float2 tex0, const float time)
    return frac(dot(float3(tex0, time), k0 * (1.0/64.0)));
 }*/
 
+float3 blue_gauss_noise(const float2 c1, const float3 rgb)
+{
+   // https://www.shadertoy.com/view/XljyRR
+   //float2 c0 = float2(c1.x - 1., c1.y);
+   //float2 c2 = float2(c1.x + 1., c1.y);
+   const float3 cx = float3(c1.x - 1., c1.x, c1.x + 1.);
+   const float4 f0 = frac(float4(cx * 9.1031, c1.y * 8.1030));
+   const float4 f1 = frac(float4(cx * 7.0973, c1.y * 6.0970));
+   const float4 t0 = float4(f0.xw,f1.xw); //frac(c0.xyxy * float4(.1031,.1030,.0973,.0970));
+   const float4 t1 = float4(f0.yw,f1.yw); //frac(c1.xyxy * float4(.1031,.1030,.0973,.0970));
+   const float4 t2 = float4(f0.zw,f1.zw); //frac(c2.xyxy * float4(.1031,.1030,.0973,.0970));
+   const float4 p0 = t0 + dot(t0, t0.wzxy + 19.19);
+   const float4 p1 = t1 + dot(t1, t1.wzxy + 19.19);
+   const float4 p2 = t2 + dot(t2, t2.wzxy + 19.19);
+   const float4 n0 = frac(p0.zywx * (p0.xxyz + p0.yzzw));
+   const float4 n1 = frac(p1.zywx * (p1.xxyz + p1.yzzw));
+   const float4 n2 = frac(p2.zywx * (p2.xxyz + p2.yzzw));
+   const float4 r4 = 0.5*n1 - 0.125*(n0 + n2);
+   const float  r  = r4.x+r4.y+r4.z+r4.w - 0.5;
+
+   const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5 and 10/10/10bit??
+   return rgb + float3(r,-r,r) * (1.0/(quantSteps - 1.0));
+}
+
+#if 0
+// seems like everybody uses this, but the amount of flickering patterns generated is very noticeable
 float3 DitherVlachos(const float2 tex0, const float3 rgb)
 {
    // Vlachos 2016, "Advanced VR Rendering", but using a TPDF
@@ -164,13 +190,15 @@ float3 DitherVlachos(const float2 tex0, const float3 rgb)
 
    return rgb + triangularPDF(noise3)/*(noise3*2.0-1.0)*/ * (1.0/(quantSteps - 1.0));
 }
+#endif
 
 float3 FBDither(const float3 color, /*const int2 pos*/const float2 tex0)
 {
    //return color + bayer_dither_pattern[pos.x%8][pos.y%8];
 
 #ifndef BLUE_NOISE_DITHER
-   return DitherVlachos(tex0*(1.0/(2.0*w_h_height.xy)) + w_h_height.zw, color);
+   //return DitherVlachos(floor(tex0*(1.0/(2.0*w_h_height.xy))+0.5) + w_h_height.z/*w*/, color);       // note that w_h_height.w is the same nowadays
+   return blue_gauss_noise(floor(tex0*(1.0/(2.0*w_h_height.xy))+0.5) + 0.07*w_h_height.z/*w*/, color); // dto.
 #else // needs texSamplerAOdither
    const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5 and 10/10/10bit??
 
@@ -210,12 +238,12 @@ float3 FBDither(const float3 color, /*const int2 pos*/const float2 tex0)
 
 float2 FBDither(const float2 color, /*const int2 pos*/const float2 tex0)
 {
-	return color; // on RG-only rendering do not dither anything for performance
+   return color; // on RG-only rendering do not dither anything for performance
 }
 
 float FBDither(const float color, /*const int2 pos*/const float2 tex0)
 {
-	return color; // on R-only rendering do not dither anything for performance
+   return color; // on R-only rendering do not dither anything for performance
 }
 
 //
