@@ -321,13 +321,6 @@ void VPinball::SetAutoSaveMinutes(const int minutes)
 ///</summary>
 void VPinball::InitTools()
 {
-   // was the properties panel open last time we used VP?
-   const bool state = LoadValueBoolWithDefault("Editor", "PropertiesVisible", false);
-   if (state)
-   {
-      // if so then re-open it
-      ParseCommand(ID_EDIT_PROPERTIES, 1); //display
-   }
    m_ToolCur = IDC_SELECT;
 }
 
@@ -1115,7 +1108,6 @@ void VPinball::SetEnableMenuItems()
    // Set menu item to the correct state
    CMenu mainMenu = GetMenu();
 
-   mainMenu.CheckMenuItem(ID_EDIT_PROPERTIES, MF_BYCOMMAND | (m_propertyDialog->IsWindowVisible() ? MF_CHECKED : MF_UNCHECKED));
    mainMenu.CheckMenuItem(ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (m_backglassView ? MF_CHECKED : MF_UNCHECKED));
 
    // is there a valid table??
@@ -2115,6 +2107,9 @@ void VPinball::SetViewSolidOutline(size_t viewId)
     if (ptCur)
     {
         ptCur->m_renderSolid = (viewId == ID_VIEW_SOLID);
+        GetMenu().CheckMenuItem(ID_VIEW_SOLID, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_CHECKED : MF_UNCHECKED));
+        GetMenu().CheckMenuItem(ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
+        
         ptCur->SetDirtyDraw();
         SaveValueBool("Editor", "RenderSolid", ptCur->m_renderSolid);
     }
@@ -2124,14 +2119,20 @@ void VPinball::ShowGridView()
 {
     CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
+    {
         ptCur->put_DisplayGrid(!ptCur->m_grid);
+        GetMenu().CheckMenuItem(ID_VIEW_GRID, MF_BYCOMMAND | (ptCur->m_grid ? MF_CHECKED : MF_UNCHECKED));
+    }
 }
 
 void VPinball::ShowBackdropView()
 {
     CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
+    {
         ptCur->put_DisplayBackdrop(!ptCur->m_backdrop);
+        GetMenu().CheckMenuItem(ID_VIEW_BACKDROP, MF_BYCOMMAND | (ptCur->m_backdrop ? MF_CHECKED : MF_UNCHECKED));
+    }
 }
 
 void VPinball::AddControlPoint()
