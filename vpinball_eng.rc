@@ -2824,7 +2824,6 @@ BEGIN
         MENUITEM "&Grid",                       ID_VIEW_GRID, CHECKED
         MENUITEM "Playfield Image/Back&drop",   ID_VIEW_BACKDROP, CHECKED
         MENUITEM SEPARATOR
-        MENUITEM "&Options",                    ID_EDIT_PROPERTIES
         MENUITEM "&Script",                     ID_EDIT_SCRIPT
         MENUITEM "&Backglass/POV\t Ctrl+Space", ID_EDIT_BACKGLASSVIEW
     END
