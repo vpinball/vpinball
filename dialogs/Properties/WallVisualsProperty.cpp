@@ -92,7 +92,7 @@ BOOL WallVisualsProperty::OnInitDialog()
     AttachItem(9, m_topHeightEdit);
     AttachItem(8, m_bottomHeightEdit);
 
-    m_baseImageCombo = &m_topMaterialCombo;
+    m_baseImageCombo = &m_topImageCombo;
     m_baseMaterialCombo = &m_topMaterialCombo;
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
 
