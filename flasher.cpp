@@ -330,12 +330,16 @@ void Flasher::UpdateMesh()
 
 void Flasher::RenderSetup()
 {
-   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
-
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
    m_numVertices = (unsigned int)vvertex.size();
+   if (m_numVertices == 0)
+   {
+       // no polys to render leave vertex buffer undefined 
+       m_numPolys = 0;
+       return;
+   }
 
    std::vector<WORD> vtri;
    
@@ -353,6 +357,8 @@ void Flasher::RenderSetup()
       // no polys to render leave vertex buffer undefined 
       return;
    }
+
+   RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (m_dynamicIndexBuffer)
       m_dynamicIndexBuffer->release();

@@ -16,7 +16,7 @@ void PrimitivePhysicsProperty::UpdateVisuals()
 
         PropertyDialog::SetCheckboxState(m_hToyCheck, prim->m_d.m_toy);
         PropertyDialog::SetFloatTextbox(m_elasticityFalloffEdit, prim->m_d.m_elasticityFalloff);
-        PropertyDialog::SetFloatTextbox(m_recudePolyEdit, prim->m_d.m_collision_reductionFactor);
+        PropertyDialog::SetFloatTextbox(m_reducePolyEdit, prim->m_d.m_collision_reductionFactor);
         UpdateBaseVisuals(prim, &prim->m_d);
         //only show the first element on multi-select
         break;
@@ -36,7 +36,7 @@ void PrimitivePhysicsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(prim->m_d.m_elasticityFalloff, PropertyDialog::GetFloatTextbox(m_elasticityFalloffEdit), prim);
                 break;
             case IDC_COLLISION_REDUCTION_FACTOR:
-                CHECK_UPDATE_ITEM(prim->m_d.m_collision_reductionFactor, PropertyDialog::GetFloatTextbox(m_recudePolyEdit), prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_collision_reductionFactor, PropertyDialog::GetFloatTextbox(m_reducePolyEdit), prim);
                 break;
             case IDC_PRIMITIVE_IS_TOY:
                 CHECK_UPDATE_ITEM(prim->m_d.m_toy, PropertyDialog::GetCheckboxState(m_hToyCheck), prim);
@@ -66,7 +66,7 @@ BOOL PrimitivePhysicsProperty::OnInitDialog()
     m_hHitEventCheck = ::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK);
     m_hCollidableCheck = ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
     m_hOverwritePhysicsCheck = ::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS);
-    AttachItem(IDC_COLLISION_REDUCTION_FACTOR, m_recudePolyEdit);
+    AttachItem(IDC_COLLISION_REDUCTION_FACTOR, m_reducePolyEdit);
     UpdateVisuals();
     return TRUE;
 }

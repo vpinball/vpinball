@@ -30,7 +30,7 @@ private:
     CEdit       m_disableLightingEdit;
     CEdit       m_disableLightFromBelowEdit;
     CEdit       m_legacySidesEdit;
-    CEdit       m_editorEdit;
+    CEdit       m_edgeFactorUIEdit;
 };
 
 #endif // !H_PRIMITIVE_VISUALS_PROPERTY
