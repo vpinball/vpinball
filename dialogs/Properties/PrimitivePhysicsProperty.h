@@ -17,7 +17,7 @@ protected:
 
 private:
     HWND    m_hToyCheck;
-    CEdit   m_recudePolyEdit;
+    CEdit   m_reducePolyEdit;
     CEdit   m_elasticityFalloffEdit;
     CEdit   m_hitThresholdEdit;
     CEdit   m_elasticityEdit;

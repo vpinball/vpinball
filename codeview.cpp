@@ -3096,7 +3096,15 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME):
+   {
+      //!! workaround: due to a bug in earlier versions, it can happen that the string written was one char too long
+      WCHAR tmp[MAXNAMEBUFFER+1];
+      pbr->GetWideString(tmp);
+      memcpy(m_wzName, tmp, (MAXNAMEBUFFER-1)*sizeof(WCHAR));
+      m_wzName[MAXNAMEBUFFER-1] = 0;
+      break;
+   }
    case FID(EVNT): pbr->GetBool(&m_fireEvents); break;
    case FID(SSNG): pbr->GetBool(&m_stopSingleEvents); break;
    case FID(GREL): pbr->GetBool(&m_groupElements); break;

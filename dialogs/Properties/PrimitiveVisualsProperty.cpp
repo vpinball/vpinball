@@ -23,7 +23,7 @@ void PrimitiveVisualsProperty::UpdateVisuals()
         PropertyDialog::SetFloatTextbox(m_disableLightingEdit, prim->m_d.m_disableLightingTop);
         PropertyDialog::SetFloatTextbox(m_disableLightFromBelowEdit, prim->m_d.m_disableLightingBelow);
         PropertyDialog::SetIntTextbox(m_legacySidesEdit, prim->m_d.m_Sides);
-        PropertyDialog::SetFloatTextbox(m_editorEdit, prim->m_d.m_edgeFactorUI);
+        PropertyDialog::SetFloatTextbox(m_edgeFactorUIEdit, prim->m_d.m_edgeFactorUI);
         PropertyDialog::UpdateTextureComboBox(prim->GetPTable()->GetImageList(), m_normalMapCombo, prim->m_d.m_szNormalMap);
         UpdateBaseVisuals(prim, &prim->m_d);
         //only show the first element on multi-select
@@ -78,7 +78,7 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(prim->m_d.m_Sides, PropertyDialog::GetFloatTextbox(m_legacySidesEdit), prim);
                 break;
             case IDC_EDGE_FACTOR_UI:
-                CHECK_UPDATE_ITEM(prim->m_d.m_edgeFactorUI, PropertyDialog::GetFloatTextbox(m_editorEdit), prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_edgeFactorUI, PropertyDialog::GetFloatTextbox(m_edgeFactorUIEdit), prim);
                 break;
             case DISPID_Image2:
                 CHECK_UPDATE_COMBO_TEXT(prim->m_d.m_szNormalMap, m_normalMapCombo, prim);
@@ -111,7 +111,7 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     AttachItem(IDC_BLEND_DISABLE_LIGHTING, m_disableLightingEdit);
     AttachItem(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW, m_disableLightFromBelowEdit);
     AttachItem(IDC_PRIMITIVE_LEGACY_SIDES_EDIT, m_legacySidesEdit);
-    AttachItem(IDC_EDGE_FACTOR_UI, m_editorEdit);
+    AttachItem(IDC_EDGE_FACTOR_UI, m_edgeFactorUIEdit);
     UpdateVisuals();
     return TRUE;
 }
