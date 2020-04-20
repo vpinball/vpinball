@@ -1517,7 +1517,7 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
     if (m_open_minimized)
         wpl.showCmd = SW_MINIMIZE;
     else
-        wpl.showCmd = SW_MAXIMIZE;
+        wpl.showCmd = SW_SHOWNORMAL;
 
     SetWindowPlacement(wpl);
 
@@ -1617,6 +1617,11 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
             }
             return FinalWindowProc(uMsg, wParam, lParam);
+        }
+        case WM_SIZE:
+        {
+            ::SendMessage(m_hwndStatusBar, WM_SIZE, 0, 0);
+            break;
         }
     }
     return WndProcDefault(uMsg, wParam, lParam);
