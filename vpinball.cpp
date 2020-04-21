@@ -1511,8 +1511,6 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
     GetWindowPlacement(wpl);
     if (m_open_minimized)
         wpl.showCmd = SW_MINIMIZE;
-    else
-        wpl.showCmd = SW_SHOWNORMAL;
 
     SetWindowPlacement(wpl);
 
