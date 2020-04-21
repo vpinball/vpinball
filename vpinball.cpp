@@ -234,7 +234,7 @@ void VPinball::Init()
       if (hrleft == S_OK && hrtop == S_OK && hrright == S_OK && hrbottom == S_OK)
       {
          WINDOWPLACEMENT winpl;
-         winpl.length = sizeof(winpl);
+         winpl.length = sizeof(WINDOWPLACEMENT);
 
          GetWindowPlacement(winpl);
 
@@ -1499,12 +1499,16 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
     if (strstr(lpCmdLine, "minimized"))
         SetOpenMinimized();
 
+/*
     WINDOWPLACEMENT wpl;
     GetWindowPlacement(wpl);
     if (m_open_minimized)
         wpl.showCmd = SW_MINIMIZE;
+    else
+        wpl.showCmd = SW_SHOW;
 
     SetWindowPlacement(wpl);
+*/
 
     Init();
 
