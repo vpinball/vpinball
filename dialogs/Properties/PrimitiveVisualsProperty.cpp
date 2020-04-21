@@ -75,7 +75,7 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(prim->m_d.m_disableLightingBelow, PropertyDialog::GetFloatTextbox(m_disableLightFromBelowEdit), prim);
                 break;
             case IDC_PRIMITIVE_LEGACY_SIDES_EDIT:
-                CHECK_UPDATE_ITEM(prim->m_d.m_Sides, PropertyDialog::GetFloatTextbox(m_legacySidesEdit), prim);
+                CHECK_UPDATE_ITEM(prim->m_d.m_Sides, PropertyDialog::GetIntTextbox(m_legacySidesEdit), prim);
                 break;
             case IDC_EDGE_FACTOR_UI:
                 CHECK_UPDATE_ITEM(prim->m_d.m_edgeFactorUI, PropertyDialog::GetFloatTextbox(m_edgeFactorUIEdit), prim);

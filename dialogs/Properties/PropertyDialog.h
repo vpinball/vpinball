@@ -18,6 +18,7 @@ public:
         m_hOverwritePhysicsCheck = 0;
         m_hReflectionEnabledCheck = 0;
         m_hVisibleCheck = 0;
+        m_disableEvents = false;
     }
     virtual void UpdateProperties(const int dispid) = 0;
     virtual void UpdateVisuals() = 0;
@@ -26,8 +27,10 @@ public:
         UNREFERENCED_PARAMETER(lParam);
         const int dispID = LOWORD(wParam);
 
-        switch (HIWORD(wParam))
+        if(!m_disableEvents)
         {
+            switch (HIWORD(wParam))
+            {
             case EN_KILLFOCUS:
             case CBN_KILLFOCUS:
             case CBN_SELCHANGE:
@@ -36,6 +39,7 @@ public:
                 UpdateProperties(dispID);
                 return TRUE;
             }
+            }
         }
         return FALSE;
     }
@@ -43,6 +47,7 @@ public:
     void UpdateBaseVisuals(ISelect *psel, BaseProperty *property);
 
     VectorProtected<ISelect>* m_pvsel;
+    bool                      m_disableEvents;
 protected:
     CEdit     *m_baseHitThresholdEdit;
     CEdit     *m_baseElasticityEdit;
