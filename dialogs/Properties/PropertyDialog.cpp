@@ -129,6 +129,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
     for (int i = 0; i < PROPERTY_TABS; i++)
         if (m_tabs[i] != NULL)
         {
+            m_tabs[i]->m_disableEvents = true; // RemoveTabPage fires EN_KILLFOCUS that is not wanted here, so disable event processing while removing tabs
             m_tab.RemoveTabPage(m_tab.GetTabIndex(m_tabs[i]));
             m_tabs[i] = NULL;
         }
