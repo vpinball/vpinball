@@ -1290,42 +1290,34 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
 
 bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
 {
-   bool consumed;
+   bool consumed=false;
 
    if (!g_pplayer)
    {
-      consumed = processKeyInputForDialogs(pmsg);
-      if (consumed)
-         return true;
-
+      // check if message must be processed by the code editor
       if (m_pcv && m_pcv->m_hwndMain)
       {
-         //if (pmsg->hwnd == m_pcv->m_hwndMain)
-         {
-            bool translated = false;
+        bool translated = false;
 
-            if ((pmsg->hwnd == m_pcv->m_hwndMain) || ::IsChild(m_pcv->m_hwndMain, pmsg->hwnd))
-               translated = !!TranslateAccelerator(m_pcv->m_hwndMain, m_pcv->m_haccel, pmsg);
+        if ((pmsg->hwnd == m_pcv->m_hwndMain) || ::IsChild(m_pcv->m_hwndMain, pmsg->hwnd))
+            translated = !!TranslateAccelerator(m_pcv->m_hwndMain, m_pcv->m_haccel, pmsg); // process special keys
 
-            if (translated)
-               consumed = true;
-            else
-            {
-               if (::IsDialogMessage(m_pcv->m_hwndMain, pmsg))
-                  consumed = true;
-            }
-         }
-      }
-
-      if (m_pcv && m_pcv->m_hwndFind)
-      {
-         if (::IsDialogMessage(m_pcv->m_hwndFind, pmsg))
+        if (translated)
+            consumed = true;
+        else if (::IsDialogMessage(m_pcv->m_hwndMain, pmsg)) //check and process other code editor messages
             consumed = true;
       }
 
+      if (m_pcv && m_pcv->m_hwndFind && ::IsDialogMessage(m_pcv->m_hwndFind, pmsg))
+        consumed = true;
+
       if (!consumed)
       {
-         const bool translated = !!TranslateAccelerator(GetHwnd(), g_haccel, pmsg);
+          consumed = processKeyInputForDialogs(pmsg);
+          if (consumed)
+              return true;
+          
+          const bool translated = !!TranslateAccelerator(GetHwnd(), g_haccel, pmsg);
 
          if (translated)
             consumed = true;
