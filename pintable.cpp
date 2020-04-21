@@ -9258,59 +9258,174 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       char str[16];
       float val;
-      strcpy_s(str, physTab->first_node("gravityConstant")->value());
-      sscanf_s(str, "%f", &val);
-      put_Gravity(val);
 
-      strcpy_s(str, physTab->first_node("contactFriction")->value());
-      sscanf_s(str, "%f", &val);
-      put_Friction(val);
+      if(physTab->first_node("gravityConstant")!=nullptr)
+      {
+          strcpy_s(str, physTab->first_node("gravityConstant")->value());
+          sscanf_s(str, "%f", &val);
+          put_Gravity(val);
+      }
+      else
+          ShowError("gravityConstant is missing");
 
-      strcpy_s(str, physTab->first_node("elasticity")->value());
-      sscanf_s(str, "%f", &val);
-      put_Elasticity(val);
 
-      strcpy_s(str, physTab->first_node("elasticityFalloff")->value());
-      sscanf_s(str, "%f", &val);
-      put_ElasticityFalloff(val);
+      if (physTab->first_node("contactFriction") != nullptr)
+      {
+          strcpy_s(str, physTab->first_node("contactFriction")->value());
+          sscanf_s(str, "%f", &val);
+          put_Friction(val);
+      }
+      else
+          ShowError("contactFriction is missing");
 
-      strcpy_s(str, physTab->first_node("playfieldScatter")->value());
-      sscanf_s(str, "%f", &val);
-      put_Scatter(val);
+      if (physTab->first_node("elasticity") != nullptr)
+      {
+          strcpy_s(str, physTab->first_node("elasticity")->value());
+          sscanf_s(str, "%f", &val);
+          put_Elasticity(val);
+      }
+      else
+          ShowError("elasticity is missing");
 
-      strcpy_s(str, physTab->first_node("defaultElementScatter")->value());
-      sscanf_s(str, "%f", &val);
-      put_DefaultScatter(val);
+      if (physTab->first_node("elasticityFalloff") != nullptr)
+      {
+          strcpy_s(str, physTab->first_node("elasticityFalloff")->value());
+          sscanf_s(str, "%f", &val);
+          put_ElasticityFalloff(val);
+      }
+      else
+          ShowError("elasticityFalloff is missing");
 
-      strcpy_s(str, physFlip->first_node("speed")->value());
-      sscanf_s(str, "%f", &FlipperPhysicsMass);
-      
-      strcpy_s(str, physFlip->first_node("strength")->value());
-      sscanf_s(str, "%f", &FlipperPhysicsStrength);
+      if (physTab->first_node("playfieldScatter") != nullptr)
+      {
+          strcpy_s(str, physTab->first_node("playfieldScatter")->value());
+          sscanf_s(str, "%f", &val);
+          put_Scatter(val);
+      }
+      else
+          ShowError("playfieldScatter is missing");
 
-      strcpy_s(str, physFlip->first_node("elasticity")->value());
-      sscanf_s(str, "%f", &FlipperPhysicsElasticity);
+      if (physTab->first_node("defaultElementScatter") != nullptr)
+      {
+          strcpy_s(str, physTab->first_node("defaultElementScatter")->value());
+          sscanf_s(str, "%f", &val);
+          put_DefaultScatter(val);
+      }
+      else
+          ShowError("defaultElementScatter is missing");
 
-      strcpy_s(str, physFlip->first_node("scatter")->value());
-      sscanf_s(str, "%f", &FlipperPhysicsScatter);
+      if(physFlip->first_node("speed")!=nullptr)
+      {
+          strcpy_s(str, physFlip->first_node("speed")->value());
+          sscanf_s(str, "%f", &FlipperPhysicsMass);
+      }
+      else
+      {
+          ShowError("flipper speed is missing");
+          FlipperPhysicsMass = 0.0f;
+      }
 
-      strcpy_s(str, physFlip->first_node("eosTorque")->value());
-      sscanf_s(str, "%f", &FlipperPhysicsTorqueDamping);
+      if(physFlip->first_node("strength")!=nullptr)
+      {
+          strcpy_s(str, physFlip->first_node("strength")->value());
+          sscanf_s(str, "%f", &FlipperPhysicsStrength);
+      }
+      else
+      {
+          ShowError("flipper strength is missing");
+          FlipperPhysicsStrength = 0.0f;
+      }
 
-      strcpy_s(str, physFlip->first_node("eosTorqueAngle")->value());
-      sscanf_s(str, "%f", &FlipperPhysicsTorqueDampingAngle);
+      if(physFlip->first_node("elasticity")!=nullptr)
+      {
+          strcpy_s(str, physFlip->first_node("elasticity")->value());
+          sscanf_s(str, "%f", &FlipperPhysicsElasticity);
+      }
+      else
+      {
+          ShowError("flipper elasticity is missing");
+          FlipperPhysicsElasticity = 0.0f;
+      }
 
-      strcpy_s(str, physFlip->first_node("returnStrength")->value());
-      sscanf_s(str, "%f", &FlipperPhysicsReturnStrength);
+      if(physFlip->first_node("scatter")!=nullptr)
+      {
+          strcpy_s(str, physFlip->first_node("scatter")->value());
+          sscanf_s(str, "%f", &FlipperPhysicsScatter);
+      }
+      else
+      {
+          ShowError("flipper scatter is missing");
+          FlipperPhysicsScatter = 0.0f;
+      }
 
-      strcpy_s(str, physFlip->first_node("elasticityFalloff")->value());
-      sscanf_s(str, "%f", &FlipperPhysicsElasticityFalloff);
 
-      strcpy_s(str, physFlip->first_node("friction")->value());
-      sscanf_s(str, "%f", &FlipperPhysicsFriction);
+      if(physFlip->first_node("eosTorque")!=nullptr)
+      {
+          strcpy_s(str, physFlip->first_node("eosTorque")->value());
+          sscanf_s(str, "%f", &FlipperPhysicsTorqueDamping);
+      }
+      else
+      {
+          ShowError("flipper eosTorque is missing");
+          FlipperPhysicsTorqueDamping = 0.0f;
+      }
 
-      strcpy_s(str, physFlip->first_node("coilRampUp")->value());
-      sscanf_s(str, "%f", &FlipperPhysicsCoilRampUp);
+      if(physFlip->first_node("eosTorqueAngle")!=nullptr)
+      {
+          strcpy_s(str, physFlip->first_node("eosTorqueAngle")->value());
+          sscanf_s(str, "%f", &FlipperPhysicsTorqueDampingAngle);
+      }
+      else
+      {
+          ShowError("flipper eosTorqueAngle is missing");
+          FlipperPhysicsTorqueDampingAngle = 0.0f;
+      }
+
+
+      if(physFlip->first_node("returnStrength")!=nullptr)
+      {
+          strcpy_s(str, physFlip->first_node("returnStrength")->value());
+          sscanf_s(str, "%f", &FlipperPhysicsReturnStrength);
+      }
+      else
+      {
+          ShowError("flipper returnStrength is missing");
+          FlipperPhysicsReturnStrength = 0.0f;
+      }
+
+
+      if(physFlip->first_node("elasticityFalloff")!=nullptr)
+      {
+          strcpy_s(str, physFlip->first_node("elasticityFalloff")->value());
+          sscanf_s(str, "%f", &FlipperPhysicsElasticityFalloff);
+      }
+      else
+      {
+          ShowError("flipper elasticityFalloff is missing");
+          FlipperPhysicsElasticityFalloff = 0.0f;
+      }
+
+      if(physFlip->first_node("friction")!=nullptr)
+      {
+          strcpy_s(str, physFlip->first_node("friction")->value());
+          sscanf_s(str, "%f", &FlipperPhysicsFriction);
+      }
+      else
+      {
+          ShowError("flipper friction is missing");
+          FlipperPhysicsFriction = 0.0f;
+      }
+
+      if(physFlip->first_node("coilRampUp")!=nullptr)
+      {
+          strcpy_s(str, physFlip->first_node("coilRampUp")->value());
+          sscanf_s(str, "%f", &FlipperPhysicsCoilRampUp);
+      }
+      else
+      {
+          ShowError("flipper coilRampUp is missing");
+          FlipperPhysicsCoilRampUp = 0.0f;
+      }
    }
    catch (...)
    {
