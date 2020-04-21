@@ -219,11 +219,6 @@ void VPinball::SetOpenMinimized()
 ///</summary>
 void VPinball::Init()
 {
-
-//    m_hwnd = CreateEx(WS_EX_OVERLAPPEDWINDOW, "VPinball", szName,
-//       (m_open_minimized ? WS_MINIMIZE : 0) | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
-//       x, y, width, height, NULL, NULL);				// get handle to and create main Window
-
    // See if we have previous window size information
    {
       int left, top, right, bottom;
@@ -1525,11 +1520,11 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
 
     char szName[256];
     LoadString(g_hinst, IDS_PROJNAME, szName, 256);
-    // loading String "Visual Pinball" from Exe properties
+    
+    int result = CMDIDockFrame::OnCreate(cs);
+    
     SetWindowText(szName);
-    // call the base class function
-    //return CWnd::OnCreate(cs);
-    return CMDIDockFrame::OnCreate(cs);
+    return result;
 }
 
 LRESULT VPinball::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam)
