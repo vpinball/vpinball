@@ -187,13 +187,15 @@ void PlungerMoverObject::UpdateDisplacements(const float dtime)
 
 void PlungerMoverObject::PullBack(float speed)
 {
+   // check if we're acting as an auto plunger
+   const bool autoPlunger = m_plunger->m_d.m_autoPlunger;
+
    // start the pull by applying the artificial "pull force"
    m_speed = 0.0f;
    m_pullForce = speed;
-   // deactivate the retract code
-   m_addRetractMotion = false;
+   // (de)activate the retract code
+   m_addRetractMotion = !autoPlunger;
 }
-
 
 void PlungerMoverObject::PullBackandRetract(float speed)
 {
