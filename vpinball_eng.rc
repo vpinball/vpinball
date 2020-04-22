@@ -1788,7 +1788,7 @@ BEGIN
     COMBOBOX        1502,10,339,105,162,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "&X",IDC_STATIC,14,302,8,8
     LTEXT           "&Y",IDC_STATIC,14,318,8,8
-    LTEXT           "&Surface",IDC_STATIC,7,330,26,9
+    LTEXT           "&Surface",IDC_STATIC,10,330,26,9
 END
 
 IDD_PROPFLASHER_VISUALS DIALOGEX 0, 0, 125, 289
@@ -2204,14 +2204,14 @@ BEGIN
     PUSHBUTTON      "Camera",ID_TABLE_PLAY_CAMERA,6,55,24,24,BS_ICON
 END
 
-IDD_PROPERTY_DIALOG DIALOGEX 0, 0, 179, 377
+IDD_PROPERTY_DIALOG DIALOGEX 0, 0, 179, 414
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CLIPCHILDREN
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_PROP_TAB,"SysTabControl32",WS_TABSTOP,7,30,171,340
+    CONTROL         "",IDC_PROP_TAB,"SysTabControl32",WS_TABSTOP,7,24,171,383
     LTEXT           "Name",IDC_STATIC,9,13,19,8
-    EDITTEXT        IDC_NAME_EDIT,7,11,171,14,ES_AUTOHSCROLL
-    LTEXT           "The current selection contains multiple object types. Select either a single object or a group of objects of the same type to edit properties.",IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC,8,12,143,35
+    EDITTEXT        IDC_NAME_EDIT,7,6,171,14,ES_AUTOHSCROLL
+    LTEXT           "The current selection contains multiple object types. Select either a single object or a group of objects of the same type to edit properties.",IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC,8,6,143,35
 END
 
 IDD_PROPPOINT_VISUALSWHEIGHT DIALOGEX 0, 0, 125, 144
@@ -2637,8 +2637,7 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 178
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 370
+        BOTTOMMARGIN, 407
     END
 
     IDD_PROPPOINT_VISUALSWHEIGHT, DIALOG
