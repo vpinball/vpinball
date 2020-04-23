@@ -27,6 +27,8 @@ public:
     void                    SetActiveLayer(const string& name);
     HTREEITEM               GetRootItem() { return hRootItem; }
     HTREEITEM               GetCurrentLayerItem() { return hCurrentLayerItem; }
+    HTREEITEM               GetFirstLayer() { return GetChild(hRootItem); }
+    std::string             GetLayerName(HTREEITEM item) { return string(GetItemText(item)); }
 
 protected:
     virtual void OnAttach();
