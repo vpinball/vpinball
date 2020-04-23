@@ -112,10 +112,14 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
             }
             case IDC_COLOR_BUTTON1:
             {
+                CComObject<PinTable>* ptable = g_pvp->GetActiveTable();
+                if (ptable == nullptr)
+                    break;
                 CHOOSECOLOR cc = m_colorDialog.GetParameters();
                 cc.Flags = CC_FULLOPEN | CC_RGBINIT;
                 m_colorDialog.SetParameters(cc);
                 m_colorDialog.SetColor(text->m_d.m_backcolor);
+                m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
                 if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                 {
                     text->m_d.m_backcolor = m_colorDialog.GetColor();
@@ -125,10 +129,14 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
             }
             case IDC_COLOR_BUTTON2:
             {
+                CComObject<PinTable>* ptable = g_pvp->GetActiveTable();
+                if (ptable == nullptr)
+                    break;
                 CHOOSECOLOR cc = m_colorDialog.GetParameters();
                 cc.Flags = CC_FULLOPEN | CC_RGBINIT;
                 m_colorDialog.SetParameters(cc);
                 m_colorDialog.SetColor(text->m_d.m_fontcolor);
+                m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
                 if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                 {
                     text->m_d.m_fontcolor = m_colorDialog.GetColor();

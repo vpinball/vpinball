@@ -151,6 +151,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
            CHOOSECOLOR cc = m_colorDialog.GetParameters();
            cc.Flags = CC_FULLOPEN | CC_RGBINIT;
            m_colorDialog.SetParameters(cc);
+           m_colorDialog.SetCustomColors(pt->m_rgcolorcustom);
 
            if (ListView_GetSelectedCount(m_hMaterialList))	// if some items are selected???
            {
@@ -168,6 +169,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                {
                    pmat->m_cBase = m_colorDialog.GetColor();
+                   memcpy(pt->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(pt->m_rgcolorcustom));
                    m_colorButton1.SetColor(pmat->m_cBase);
                    while (sel != -1)
                    {
@@ -193,7 +195,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
            CHOOSECOLOR cc = m_colorDialog.GetParameters();
            cc.Flags = CC_FULLOPEN | CC_RGBINIT;
            m_colorDialog.SetParameters(cc);
-
+           m_colorDialog.SetCustomColors(pt->m_rgcolorcustom);
            if (ListView_GetSelectedCount(m_hMaterialList))	// if some items are selected???
            {
                int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
@@ -210,6 +212,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                {
                    pmat->m_cGlossy = m_colorDialog.GetColor();
+                   memcpy(pt->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(pt->m_rgcolorcustom));
                    m_colorButton2.SetColor(pmat->m_cGlossy);
                    while (sel != -1)
                    {
@@ -235,7 +238,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
            CHOOSECOLOR cc = m_colorDialog.GetParameters();
            cc.Flags = CC_FULLOPEN | CC_RGBINIT;
            m_colorDialog.SetParameters(cc);
-
+           m_colorDialog.SetCustomColors(pt->m_rgcolorcustom);
            if (ListView_GetSelectedCount(m_hMaterialList))	// if some items are selected???
            {
                int sel = ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
@@ -251,6 +254,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                m_colorDialog.SetColor(pmat->m_cClearcoat);
                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                {
+                   memcpy(pt->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(pt->m_rgcolorcustom));
                    pmat->m_cClearcoat = m_colorDialog.GetColor();
                    m_colorButton3.SetColor(pmat->m_cClearcoat);
                    while (sel != -1)
