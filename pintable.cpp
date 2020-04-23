@@ -6185,22 +6185,19 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
    if (update)
       g_pvp->SetPropSel(&m_vmultisel);
 
-   if(m_vmultisel.Size()>1)
-   {
-       piSelect = m_vmultisel.ElementAt(0);
-       if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetScriptable())
-       {
-           string info = string("Layer: ") + piSelect->m_layerName;
-           if (piSelect->GetItemType() == eItemPrimitive)
-           {
-               const Primitive *const prim = (Primitive *)piSelect;
-               if (prim->m_mesh.m_animationFrames.size() > 0)
-                   info = info + " (animated " + std::to_string((unsigned long long)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
-           }
-           g_pvp->SetStatusBarElementInfo(info.c_str());
-           m_pcv->SelectItem(piSelect->GetIEditable()->GetScriptable());
-       }
-   }
+    piSelect = m_vmultisel.ElementAt(0);
+    if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetScriptable())
+    {
+        string info = string("Layer: ") + piSelect->m_layerName;
+        if (piSelect->GetItemType() == eItemPrimitive)
+        {
+            const Primitive *const prim = (Primitive *)piSelect;
+            if (prim->m_mesh.m_animationFrames.size() > 0)
+                info = info + " (animated " + std::to_string((unsigned long long)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
+        }
+        g_pvp->SetStatusBarElementInfo(info.c_str());
+        m_pcv->SelectItem(piSelect->GetIEditable()->GetScriptable());
+    }
 }
 
 void PinTable::RefreshProperties()
