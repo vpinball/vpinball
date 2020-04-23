@@ -40,7 +40,7 @@ void FlasherVisualsProperty::UpdateVisuals()
         PropertyDialog::UpdateTextureComboBox(flash->GetPTable()->GetImageList(), m_imageBCombo, flash->m_d.m_szImageB);
         PropertyDialog::UpdateComboBox(m_imageAlignList, m_modeCombo, m_imageAlignList[(int)flash->m_d.m_imagealignment-1].c_str());
         PropertyDialog::UpdateComboBox(m_filterList, m_filterCombo, m_filterList[flash->m_d.m_filter].c_str());
-
+        m_colorButton.SetColor(flash->m_d.m_color);
         //only show the first element on multi-select
         break;
     }
