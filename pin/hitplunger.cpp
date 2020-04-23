@@ -432,7 +432,7 @@ void PlungerMoverObject::UpdateVelocities()
           if ((m_pos > (1.0f + m_frameEnd + (m_restPos * m_frameLen))) && (m_pullForce > 0))
           {
               m_retractMotion = false;
-              m_speed = 4.0f * m_pullForce;
+              m_speed = 3.0f * m_pullForce; // 3 = magic
           }
       }
 
