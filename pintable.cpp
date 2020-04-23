@@ -3617,7 +3617,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   piedit->InitVBA(fFalse, id, NULL);
                   pstmItem->Release();
                   pstmItem = NULL;
-                  if (FAILED(hr)) break;
+                  if (FAILED(hr)) 
+                      break;
 
                   m_vedit.push_back(piedit);
 
