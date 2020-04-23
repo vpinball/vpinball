@@ -193,19 +193,23 @@ void PlungerMoverObject::PullBack(float speed)
    // start the pull by applying the artificial "pull force"
    m_speed = 0.0f;
    m_pullForce = speed;
+
    // (de)activate the retract code
    m_addRetractMotion = !autoPlunger;
+   m_retractMotion = false;
+   m_initialSpeed = speed;
 }
 
 void PlungerMoverObject::PullBackandRetract(float speed)
 {
-    // start the pull by applying the artificial "pull force"
-    m_speed = 0.0f;
-    m_pullForce = speed;
-    // activate the retract code
-    m_addRetractMotion = true;
-    m_retractMotion = false;
-    m_initialSpeed = speed;
+   // start the pull by applying the artificial "pull force"
+   m_speed = 0.0f;
+   m_pullForce = speed;
+
+   // activate the retract code
+   m_addRetractMotion = true;
+   m_retractMotion = false;
+   m_initialSpeed = speed;
 }
 
 void PlungerMoverObject::Fire(float startPos)
@@ -428,7 +432,7 @@ void PlungerMoverObject::UpdateVelocities()
           if ((m_pos > (1.0f + m_frameEnd + (m_restPos * m_frameLen))) && (m_pullForce > 0))
           {
               m_retractMotion = false;
-              m_speed = 2.0f * m_pullForce;
+              m_speed = 4.0f * m_pullForce;
           }
       }
 
