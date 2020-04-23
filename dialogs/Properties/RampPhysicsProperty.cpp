@@ -71,6 +71,7 @@ BOOL RampPhysicsProperty::OnInitDialog()
     m_baseFrictionEdit = &m_frictionEdit;
     m_baseElasticityEdit = &m_elasticityEdit;
     m_baseScatterAngleEdit = &m_scatterAngleEdit;
+    m_hCollidableCheck = ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
     m_hOverwritePhysicsCheck = ::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS);
     m_hHitEventCheck = ::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK);
     UpdateVisuals();
