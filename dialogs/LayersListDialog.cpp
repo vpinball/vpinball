@@ -56,6 +56,10 @@ void LayersListDialog::DeleteLayer()
     if (pt == nullptr)
         return;
 
+    const int ans = MessageBox("Are you sure you want to delete the complete layer?", "Confirm delete", MB_YESNO | MB_DEFBUTTON2);
+    if (ans != IDYES)
+        return;
+
     HTREEITEM layerToDelete = m_layerTreeView.GetCurrentLayerItem();
     std::vector<HTREEITEM> allSubItems = m_layerTreeView.GetSubItems(layerToDelete);
     HTREEITEM hFillLayer = m_layerTreeView.GetChild(m_layerTreeView.GetRootItem());
@@ -138,6 +142,8 @@ void LayersListDialog::DeleteElement(IEditable * const pedit)
     m_layerTreeView.DeleteItem(item);
     if (m_layerTreeView.GetSubItemsCount(parent) == 0)
         m_layerTreeView.DeleteItem(parent);
+    if (m_layerTreeView.GetLayerCount() == 1)
+        m_layerTreeView.SetActiveLayer(m_layerTreeView.GetLayerName(m_layerTreeView.GetFirstLayer()));
 }
 
 string LayersListDialog::GetCurrentSelectedLayerName() const
