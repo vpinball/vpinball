@@ -4,9 +4,24 @@
 
 TablePhysicsProperty::TablePhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_PHYSICS, pvsel)
 {
+    m_gravityConstantEdit.SetDialog(this);
+    m_playfieldFrictionEdit.SetDialog(this);
+    m_playfieldElasticityEdit.SetDialog(this);
+    m_playfieldElasticityFalloffEdit.SetDialog(this);
+    m_playfieldScatterEdit.SetDialog(this);
+    m_defaultScatterEdit.SetDialog(this);
+    m_nudgeTimeEdit.SetDialog(this);
+    m_physicsLoopEdit.SetDialog(this);
+    m_mechPlungerAdjEdit.SetDialog(this);
+    m_tableWidthEdit.SetDialog(this);
+    m_tableHeightEdit.SetDialog(this);
+    m_topGlassHeightEdit.SetDialog(this);
+    m_tableFieldHeightEdit.SetDialog(this);
+    m_minSlopeEdit.SetDialog(this);
+    m_maxSlopeEdit.SetDialog(this);
 }
 
-void TablePhysicsProperty::UpdateVisuals()
+void TablePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
     PropertyDialog::SetFloatTextbox(m_gravityConstantEdit, table->GetGravity());
@@ -87,24 +102,25 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL TablePhysicsProperty::OnInitDialog()
 {
-    AttachItem(IDC_GRAVITY_EDIT, m_gravityConstantEdit);
-    AttachItem(IDC_PLAYFIELD_FRICTION_EDIT, m_playfieldFrictionEdit);
-    AttachItem(IDC_PLAYFIELD_ELASTICITY_EDIT, m_playfieldElasticityEdit);
-    AttachItem(IDC_PLAYFIELD_FALLOFF_EDIT, m_playfieldElasticityFalloffEdit);
-    AttachItem(IDC_PLAYFIELD_SCATTER_EDIT, m_playfieldScatterEdit);
-    AttachItem(IDC_DEFAULT_SCATTER_EDIT, m_defaultScatterEdit);
+    m_hFilterMechanicalPlungerCheck = ::GetDlgItem(GetHwnd(), IDC_FILTER_MECH_PLUNGER_CHECK);
     AttachItem(IDC_IMPORT_PHYSICS_BUTTON, m_importSetButton);
     AttachItem(IDC_EXPORT_PHYSICS_BUTTON, m_exportSetButton);
-    AttachItem(IDC_NUDGE_TIME_EDIT, m_nudgeTimeEdit);
-    AttachItem(IDC_PHYSICS_MAC_LOOPS_EDIT, m_physicsLoopEdit);
-    AttachItem(IDC_MECH_PLUNGER_ADJ_EDIT, m_mechPlungerAdjEdit);
-    m_hFilterMechanicalPlungerCheck = ::GetDlgItem(GetHwnd(), IDC_FILTER_MECH_PLUNGER_CHECK);
-    AttachItem(IDC_TABLE_WIDTH_EDIT, m_tableWidthEdit);
-    AttachItem(IDC_TABLE_HEIGHT_EDIT, m_tableHeightEdit);
-    AttachItem(IDC_TABLE_GLASS_HEIGHT_EDIT, m_topGlassHeightEdit);
-    AttachItem(IDC_TABLE_FIELD_HEIGHT_EDIT, m_tableFieldHeightEdit);
-    AttachItem(IDC_MIN_DIFFICULTY_EDIT, m_minSlopeEdit);
-    AttachItem(IDC_MAX_DIFFICULTY_EDIT, m_maxSlopeEdit);
+
+    m_gravityConstantEdit.AttachItem(IDC_GRAVITY_EDIT);
+    m_playfieldFrictionEdit.AttachItem(IDC_PLAYFIELD_FRICTION_EDIT);
+    m_playfieldElasticityEdit.AttachItem(IDC_PLAYFIELD_ELASTICITY_EDIT);
+    m_playfieldElasticityFalloffEdit.AttachItem(IDC_PLAYFIELD_FALLOFF_EDIT);
+    m_playfieldScatterEdit.AttachItem(IDC_PLAYFIELD_SCATTER_EDIT);
+    m_defaultScatterEdit.AttachItem(IDC_DEFAULT_SCATTER_EDIT);
+    m_nudgeTimeEdit.AttachItem(IDC_NUDGE_TIME_EDIT);
+    m_physicsLoopEdit.AttachItem(IDC_PHYSICS_MAC_LOOPS_EDIT);
+    m_mechPlungerAdjEdit.AttachItem(IDC_MECH_PLUNGER_ADJ_EDIT);
+    m_tableWidthEdit.AttachItem(IDC_TABLE_WIDTH_EDIT);
+    m_tableHeightEdit.AttachItem(IDC_TABLE_HEIGHT_EDIT);
+    m_topGlassHeightEdit.AttachItem(IDC_TABLE_GLASS_HEIGHT_EDIT);
+    m_tableFieldHeightEdit.AttachItem(IDC_TABLE_FIELD_HEIGHT_EDIT);
+    m_minSlopeEdit.AttachItem(IDC_MIN_DIFFICULTY_EDIT);
+    m_maxSlopeEdit.AttachItem(IDC_MAX_DIFFICULTY_EDIT);
 
     UpdateVisuals();
 

@@ -4,9 +4,10 @@
 
 TriggerPhysicsProperty::TriggerPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_STATE, pvsel)
 {
+    m_hitHeightEdit.SetDialog(this);
 }
 
-void TriggerPhysicsProperty::UpdateVisuals()
+void TriggerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -45,7 +46,7 @@ void TriggerPhysicsProperty::UpdateProperties(const int dispid)
 BOOL TriggerPhysicsProperty::OnInitDialog()
 {
     m_hEnableCheck = ::GetDlgItem(GetHwnd(), 904);
-    AttachItem(IDC_HIT_HEIGHT_EDIT, m_hitHeightEdit);
+    m_hitHeightEdit.AttachItem(IDC_HIT_HEIGHT_EDIT);
     UpdateVisuals();
     return TRUE;
 }

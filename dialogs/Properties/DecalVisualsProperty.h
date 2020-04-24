@@ -7,7 +7,7 @@ public:
     DecalVisualsProperty(VectorProtected<ISelect> *pvsel);
     virtual ~DecalVisualsProperty();
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -17,7 +17,6 @@ protected:
 private:
     CComboBox   m_materialCombo;
     CComboBox   m_typeCombo;
-    CEdit       m_textEdit;
     HWND        m_hVerticalTextCheck;
     ColorButton m_fontColorButton;
     CColorDialog m_colorDialog;
@@ -25,11 +24,12 @@ private:
     CFontDialog m_fontDialog;
     CComboBox   m_imageCombo;
     CComboBox   m_sizingCombo;
-    CEdit       m_posXEdit;
-    CEdit       m_posYEdit;
-    CEdit       m_widthEdit;
-    CEdit       m_heigthEdit;
-    CEdit       m_rotationEdit;
+    EditBox     m_textEdit;
+    EditBox     m_posXEdit;
+    EditBox     m_posYEdit;
+    EditBox     m_widthEdit;
+    EditBox     m_heigthEdit;
+    EditBox     m_rotationEdit;
     CComboBox   m_surfaceCombo;
     CFont       *m_font;
     vector<string> m_typeList;

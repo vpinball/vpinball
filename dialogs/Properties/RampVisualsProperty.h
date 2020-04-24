@@ -10,7 +10,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -21,17 +21,16 @@ private:
     CComboBox m_materialCombo;
     CComboBox m_imageCombo;
     CComboBox m_modeCombo;
-    CEdit     m_depthBiasEdit;
-
-    CEdit     m_topHeightEdit;
-    CEdit     m_bottomHeightEdit;
-    CEdit     m_topWidthEdit;
-    CEdit     m_bottomWdthEdit;
-    CEdit     m_leftWallEdit;
-    CEdit     m_rightWallEdit;
-    CEdit     m_diameterEdit;
-    CEdit     m_distanceXEdit;
-    CEdit     m_distanceYEdit;
+    EditBox   m_depthBiasEdit;
+    EditBox   m_topHeightEdit;
+    EditBox   m_bottomHeightEdit;
+    EditBox   m_topWidthEdit;
+    EditBox   m_bottomWdthEdit;
+    EditBox   m_leftWallEdit;
+    EditBox   m_rightWallEdit;
+    EditBox   m_diameterEdit;
+    EditBox   m_distanceXEdit;
+    EditBox   m_distanceYEdit;
     vector<string> m_typeList;
     vector<string> m_imageModeList;
 };

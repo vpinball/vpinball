@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -21,9 +21,9 @@ private:
     HWND            m_hEnableEMReelCheck;
     HWND            m_hEnableDecal;
     HWND            m_hOverwriteGlobalStereoSettingsCheck;
-    CEdit           m_3dStereoOffsetEdit;
-    CEdit           m_3dStereoSeparationEdit;
-    CEdit           m_3dSteroZPDEdit;
+    EditBox         m_3dStereoOffsetEdit;
+    EditBox         m_3dStereoSeparationEdit;
+    EditBox         m_3dSteroZPDEdit;
     CComboBox       m_dtImageCombo;
     CComboBox       m_fsImageCombo;
     CComboBox       m_fssImageCombo;

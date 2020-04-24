@@ -4,9 +4,12 @@
 
 LightseqStatesProperty::LightseqStatesProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHTSEQ_STATE, pvsel)
 {
+    m_posXEdit.SetDialog(this);
+    m_posYEdit.SetDialog(this);
+    m_updateIntervalEdit.SetDialog(this);
 }
 
-void LightseqStatesProperty::UpdateVisuals()
+void LightseqStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -66,10 +69,10 @@ void LightseqStatesProperty::UpdateProperties(const int dispid)
 
 BOOL LightseqStatesProperty::OnInitDialog()
 {
-    AttachItem(9, m_posXEdit);
-    AttachItem(10, m_posYEdit);
+    m_posXEdit.AttachItem(9);
+    m_posYEdit.AttachItem(10);
+    m_updateIntervalEdit.AttachItem(IDC_LIGHTSEQ_UPDATE_INTERVAL_EDIT);
     AttachItem(DISPID_Collection, m_collectionCombo);
-    AttachItem(IDC_LIGHTSEQ_UPDATE_INTERVAL_EDIT, m_updateIntervalEdit);
     UpdateVisuals();
     return TRUE;
 }

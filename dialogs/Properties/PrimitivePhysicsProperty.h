@@ -9,20 +9,20 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
     virtual BOOL OnInitDialog();
 
 private:
-    HWND    m_hToyCheck;
-    CEdit   m_reducePolyEdit;
-    CEdit   m_elasticityFalloffEdit;
-    CEdit   m_hitThresholdEdit;
-    CEdit   m_elasticityEdit;
-    CEdit   m_frictionEdit;
-    CEdit   m_scatterAngleEdit;
+    HWND      m_hToyCheck;
+    EditBox   m_reducePolyEdit;
+    EditBox   m_elasticityFalloffEdit;
+    EditBox   m_hitThresholdEdit;
+    EditBox   m_elasticityEdit;
+    EditBox   m_frictionEdit;
+    EditBox   m_scatterAngleEdit;
     CComboBox m_physicsMatrtialCombo;
 };
 

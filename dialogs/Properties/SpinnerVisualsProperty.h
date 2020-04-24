@@ -9,21 +9,21 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CEdit   m_posXEdit;
-    CEdit   m_posYEdit;
-    CEdit   m_lengthEdit;
-    CEdit   m_heightEdit;
-    CEdit   m_rotationEdit;
-    CEdit   m_angleMaxEdit;
-    CEdit   m_angleMinEdit;
-    CEdit   m_elasticityEdit;
+    EditBox   m_posXEdit;
+    EditBox   m_posYEdit;
+    EditBox   m_lengthEdit;
+    EditBox   m_heightEdit;
+    EditBox   m_rotationEdit;
+    EditBox   m_angleMaxEdit;
+    EditBox   m_angleMinEdit;
+    EditBox   m_elasticityEdit;
     CComboBox m_imageCombo;
     CComboBox m_materialCombo;
     CComboBox m_surfaceCombo;

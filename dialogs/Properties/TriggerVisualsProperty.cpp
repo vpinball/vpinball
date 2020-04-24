@@ -11,9 +11,16 @@ TriggerVisualsProperty::TriggerVisualsProperty(VectorProtected<ISelect> *pvsel) 
     m_shapeList.push_back("Button");
     m_shapeList.push_back("Wire C");
     m_shapeList.push_back("Wire D");
+
+    m_wireThicknessEdit.SetDialog(this);
+    m_starRadiusEdit.SetDialog(this);
+    m_rotationEdit.SetDialog(this);
+    m_animationSpeedEdit.SetDialog(this);
+    m_posXEdit.SetDialog(this);
+    m_posYEdit.SetDialog(this);
 }
 
-void TriggerVisualsProperty::UpdateVisuals()
+void TriggerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -87,12 +94,12 @@ BOOL TriggerVisualsProperty::OnInitDialog()
     AttachItem(1503, m_shapeCombo);
     m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
-    AttachItem(902, m_posXEdit);
-    AttachItem(903, m_posYEdit);
-    AttachItem(IDC_STAR_THICKNESS_EDIT, m_wireThicknessEdit);
-    AttachItem(IDC_STAR_RADIUS_EDIT, m_starRadiusEdit);
-    AttachItem(IDC_ROTATION_EDIT, m_rotationEdit);
-    AttachItem(IDC_RINGSPEED_EDIT, m_animationSpeedEdit);
+    m_posXEdit.AttachItem(902);
+    m_posYEdit.AttachItem(903);
+    m_wireThicknessEdit.AttachItem(IDC_STAR_THICKNESS_EDIT);
+    m_starRadiusEdit.AttachItem(IDC_STAR_RADIUS_EDIT);
+    m_rotationEdit.AttachItem(IDC_ROTATION_EDIT);
+    m_animationSpeedEdit.AttachItem(IDC_RINGSPEED_EDIT);
 
     UpdateVisuals();
     return TRUE;

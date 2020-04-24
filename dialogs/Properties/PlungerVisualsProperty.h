@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -19,20 +19,20 @@ private:
     CComboBox m_typeCombo;
     CComboBox m_imageCombo;
     CComboBox m_materialCombo;
-    CEdit     m_flatFramesEdit;
-    CEdit     m_widthEdit;
-    CEdit     m_zAdjustmentEdit;
-    CEdit     m_rodDiameterEdit;
-    CEdit     m_tipShapeEdit;
-    CEdit     m_ringGapEdit;
-    CEdit     m_ringDiamEdit;
-    CEdit     m_ringWidthEdit;
-    CEdit     m_springDiamEdit;
-    CEdit     m_springGaugeEdit;
-    CEdit     m_springLoopsEdit;
-    CEdit     m_endLoopsEdit;
-    CEdit     m_posXEdit;
-    CEdit     m_posYEdit;
+    EditBox   m_flatFramesEdit;
+    EditBox   m_widthEdit;
+    EditBox   m_zAdjustmentEdit;
+    EditBox   m_rodDiameterEdit;
+    EditBox   m_tipShapeEdit;
+    EditBox   m_ringGapEdit;
+    EditBox   m_ringDiamEdit;
+    EditBox   m_ringWidthEdit;
+    EditBox   m_springDiamEdit;
+    EditBox   m_springGaugeEdit;
+    EditBox   m_springLoopsEdit;
+    EditBox   m_endLoopsEdit;
+    EditBox   m_posXEdit;
+    EditBox   m_posYEdit;
     CComboBox m_surfaceCombo;
     vector<string> m_typeList;
 };

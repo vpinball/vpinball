@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -19,13 +19,13 @@ private:
     CComboBox m_typeCombo;
     CComboBox m_materialCombo;
     CComboBox m_surfaceCombo;
-    CEdit     m_xposEdit;
-    CEdit     m_yposEdit;
-    CEdit     m_lengthEdit;
-    CEdit     m_heightEdit;
-    CEdit     m_rotationEdit;
-    CEdit     m_openAngleEdit;
-    CEdit     m_closeAngleEdit;
+    EditBox   m_xposEdit;
+    EditBox   m_yposEdit;
+    EditBox   m_lengthEdit;
+    EditBox   m_heightEdit;
+    EditBox   m_rotationEdit;
+    EditBox   m_openAngleEdit;
+    EditBox   m_closeAngleEdit;
     vector<string> m_typeList;
 };
 

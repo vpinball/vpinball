@@ -4,17 +4,22 @@
 
 BumperPhysicsProperty::BumperPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_PHYSICS, pvsel)
 {
+    m_forceEdit.SetDialog(this);
+    m_hitThresholdEdit.SetDialog(this);
+    m_scatterAngleEdit.SetDialog(this);
 }
 
-void BumperPhysicsProperty::UpdateVisuals()
+void BumperPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemBumper))
             continue;
         Bumper *const bumper = (Bumper *)m_pvsel->ElementAt(i);
-        PropertyDialog::SetFloatTextbox(m_forceEdit, bumper->m_d.m_force);
-        m_forceEdit.EnableWindow(bumper->m_d.m_collidable);
+        if( dispid == IDC_FORCE_EDIT || dispid==-1)
+            PropertyDialog::SetFloatTextbox(m_forceEdit, bumper->m_d.m_force);
+        if (dispid == IDC_COLLIDABLE_CHECK || dispid == -1)
+            m_forceEdit.EnableWindow(bumper->m_d.m_collidable);
         UpdateBaseVisuals(bumper, &bumper->m_d);
         //only show the first element on multi-select
         break;
@@ -45,10 +50,10 @@ BOOL BumperPhysicsProperty::OnInitDialog()
 {
     m_hHitEventCheck = ::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK);
     m_hCollidableCheck = ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
-    AttachItem(IDC_HIT_THRESHOLD_EDIT, m_hitThresholdEdit);
+    m_hitThresholdEdit.AttachItem(IDC_HIT_THRESHOLD_EDIT);
     m_baseHitThresholdEdit = &m_hitThresholdEdit;
-    AttachItem(IDC_FORCE_EDIT, m_forceEdit);
-    AttachItem(IDC_SCATTER_ANGLE_EDIT, m_scatterAngleEdit);
+    m_forceEdit.AttachItem(IDC_FORCE_EDIT);
+    m_scatterAngleEdit.AttachItem(IDC_SCATTER_ANGLE_EDIT);
     m_baseScatterAngleEdit = &m_scatterAngleEdit;
 
     UpdateVisuals();

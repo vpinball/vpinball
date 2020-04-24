@@ -7,7 +7,7 @@ public:
     WallVisualsProperty(VectorProtected<ISelect> *pvsel);
     virtual ~WallVisualsProperty() {}
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -19,10 +19,10 @@ private:
     CComboBox m_topMaterialCombo;
     CComboBox m_sideMaterialCombo;
     CComboBox m_slingshotMaterialCombo;
-    CEdit     m_disableLightingEdit;
-    CEdit     m_disableLightFromBelowEdit;
-    CEdit     m_topHeightEdit;
-    CEdit     m_bottomHeightEdit;
+    EditBox   m_disableLightingEdit;
+    EditBox   m_disableLightFromBelowEdit;
+    EditBox   m_topHeightEdit;
+    EditBox   m_bottomHeightEdit;
 };
 
 #endif 

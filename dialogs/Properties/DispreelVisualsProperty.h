@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -21,15 +21,15 @@ private:
     HWND         m_hUseImageGridCheck;
     CColorDialog m_colorDialog;
     ColorButton  m_colorButton;
-    CEdit        m_singleDigitRangeEdit;
     CComboBox    m_imageCombo;
-    CEdit        m_imagePerRowEdit;
-    CEdit        m_posXEdit;
-    CEdit        m_posYEdit;
-    CEdit        m_reelsEdit;
-    CEdit        m_reelWidthEdit;
-    CEdit        m_reelHeightEdit;
-    CEdit        m_reelSpacingEdit;
+    EditBox      m_singleDigitRangeEdit;
+    EditBox      m_imagePerRowEdit;
+    EditBox      m_posXEdit;
+    EditBox      m_posYEdit;
+    EditBox      m_reelsEdit;
+    EditBox      m_reelWidthEdit;
+    EditBox      m_reelHeightEdit;
+    EditBox      m_reelSpacingEdit;
 };
 
 #endif // !H_DISPREEL_VISUALS_PROPERTY

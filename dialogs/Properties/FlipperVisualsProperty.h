@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -20,18 +20,18 @@ private:
     CComboBox m_materialCombo;
     CComboBox m_rubberMaterialCombo;
     CComboBox m_surfaceCombo;
-    CEdit     m_rubberThicknessEdit;
-    CEdit     m_rubberOffsetHeightEdit;
-    CEdit     m_rubberWidthEdit;
-    CEdit     m_posXEdit;
-    CEdit     m_posYEdit;
-    CEdit     m_baseRadiusEdit;
-    CEdit     m_endRadiusEdit;
-    CEdit     m_lengthEdit;
-    CEdit     m_startAngleEdit;
-    CEdit     m_endAngleEdit;
-    CEdit     m_heightEdit;
-    CEdit     m_maxDifficultLengthEdit;
+    EditBox   m_rubberThicknessEdit;
+    EditBox   m_rubberOffsetHeightEdit;
+    EditBox   m_rubberWidthEdit;
+    EditBox   m_posXEdit;
+    EditBox   m_posYEdit;
+    EditBox   m_baseRadiusEdit;
+    EditBox   m_endRadiusEdit;
+    EditBox   m_lengthEdit;
+    EditBox   m_startAngleEdit;
+    EditBox   m_endAngleEdit;
+    EditBox   m_heightEdit;
+    EditBox   m_maxDifficultLengthEdit;
 };
 
 #endif // !H_FLIPPER_VISUALS_PROPERTY

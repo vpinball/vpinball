@@ -7,7 +7,7 @@ public:
     TextboxVisualsProperty(VectorProtected<ISelect> *pvsel);
     virtual ~TextboxVisualsProperty();
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -23,12 +23,12 @@ private:
     ColorButton  m_backgroundColorButton;
     ColorButton  m_textColorButton;
     CColorDialog m_colorDialog;
-    CEdit        m_textIntensityEdit;
-    CEdit        m_posXEdit;
-    CEdit        m_posYEdit;
-    CEdit        m_widthEdit;
-    CEdit        m_heightEdit;
-    CEdit        m_textEdit;
+    EditBox      m_textIntensityEdit;
+    EditBox      m_posXEdit;
+    EditBox      m_posYEdit;
+    EditBox      m_widthEdit;
+    EditBox      m_heightEdit;
+    EditBox      m_textEdit;
     CFont       *m_font;
     vector<string> m_alignList;
 };

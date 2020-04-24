@@ -42,6 +42,24 @@
 #include "Properties/TableLightsProperty.h"
 #include <WindowsX.h>
 
+#pragma region PropertyDialog
+
+LRESULT EditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    switch (msg)
+    {
+        case WM_KEYUP:
+        {
+            if ((wparam == VK_RETURN) || (wparam == VK_TAB))
+            {
+                if (m_basePropertyDialog)
+                    m_basePropertyDialog->UpdateProperties(m_id);
+                return FALSE;
+            }
+        }
+    }
+    return WndProcDefault(msg, wparam, lparam);
+}
 
 PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_curTabIndex(0)
 {
@@ -544,8 +562,14 @@ BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
-TimerProperty::TimerProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTIMER, pvsel)
+#pragma endregion
+
+#pragma region TimeProperty
+
+TimerProperty::TimerProperty(VectorProtected<ISelect>* pvsel) : BasePropertyDialog(IDD_PROPTIMER, pvsel)
 {
+    m_timerIntervalEdit.SetDialog(this);
+    m_userValueEdit.SetDialog(this);
 }
 
 void TimerProperty::UpdateProperties(const int dispid)
@@ -732,7 +756,7 @@ void TimerProperty::UpdateProperties(const int dispid)
     }
 }
 
-void TimerProperty::UpdateVisuals()
+void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -901,8 +925,8 @@ void TimerProperty::UpdateVisuals()
 
 BOOL TimerProperty::OnInitDialog()
 {
-    AttachItem(901, m_timerIntervalEdit);
-    AttachItem(1504, m_userValueEdit);
+    m_timerIntervalEdit.AttachItem(901);
+    m_userValueEdit.AttachItem(1504);
     UpdateVisuals();
     return TRUE;
 }
@@ -914,7 +938,6 @@ BOOL TimerProperty::OnCommand(WPARAM wParam, LPARAM lParam)
 
     switch (HIWORD(wParam))
     {
-        case EN_KILLFOCUS:
         case CBN_KILLFOCUS:
         case BN_CLICKED:
         {
@@ -924,6 +947,10 @@ BOOL TimerProperty::OnCommand(WPARAM wParam, LPARAM lParam)
     }
     return FALSE;
 }
+
+#pragma endregion
+
+#pragma region BasePropertyDialog
 
 void BasePropertyDialog::UpdateBaseProperties(ISelect *psel, BaseProperty *property, const int dispid)
 {
@@ -971,34 +998,34 @@ void BasePropertyDialog::UpdateBaseProperties(ISelect *psel, BaseProperty *prope
     }
 }
 
-void BasePropertyDialog::UpdateBaseVisuals(ISelect *psel, BaseProperty *property)
+void BasePropertyDialog::UpdateBaseVisuals(ISelect *psel, BaseProperty *property, const int dispid)
 {
     if (!property)
         return;
 
-    if (m_baseHitThresholdEdit)
+    if (m_baseHitThresholdEdit && (dispid == IDC_HIT_THRESHOLD_EDIT || dispid == -1))
         PropertyDialog::SetFloatTextbox(*m_baseHitThresholdEdit, property->m_threshold);
-    if (m_baseElasticityEdit)
+    if (m_baseElasticityEdit && (dispid == IDC_ELASTICITY_EDIT || dispid == -1))
         PropertyDialog::SetFloatTextbox(*m_baseElasticityEdit, property->m_elasticity);
-    if (m_baseFrictionEdit)
+    if (m_baseFrictionEdit && (dispid == IDC_FRICTION_EDIT || dispid == -1))
         PropertyDialog::SetFloatTextbox(*m_baseFrictionEdit, property->m_friction);
-    if (m_baseScatterAngleEdit)
+    if (m_baseScatterAngleEdit && (dispid == IDC_SCATTER_ANGLE_EDIT || dispid == -1))
         PropertyDialog::SetFloatTextbox(*m_baseScatterAngleEdit, property->m_scatter);
-    if (m_hHitEventCheck)
+    if (m_hHitEventCheck && (dispid == IDC_HAS_HITEVENT_CHECK || dispid == -1))
         PropertyDialog::SetCheckboxState(m_hHitEventCheck, property->m_hitEvent);
-    if (m_hCollidableCheck)
+    if (m_hCollidableCheck && (dispid == IDC_COLLIDABLE_CHECK || dispid == -1))
         PropertyDialog::SetCheckboxState(m_hCollidableCheck, property->m_collidable);
-    if (m_hReflectionEnabledCheck)
+    if (m_hReflectionEnabledCheck && (dispid == IDC_REFLECT_ENABLED_CHECK || dispid == -1))
         PropertyDialog::SetCheckboxState(m_hReflectionEnabledCheck, property->m_reflectionEnabled);
-    if (m_hVisibleCheck)
+    if (m_hVisibleCheck && (dispid == IDC_VISIBLE_CHECK || dispid == -1))
         PropertyDialog::SetCheckboxState(m_hVisibleCheck, property->m_visible);
-    if(m_basePhysicsMaterialCombo)
+    if(m_basePhysicsMaterialCombo && (dispid == IDC_MATERIAL_COMBO4 || dispid == -1))
         PropertyDialog::UpdateMaterialComboBox(psel->GetPTable()->GetMaterialList(), *m_basePhysicsMaterialCombo, property->m_szPhysicsMaterial);
-    if(m_hOverwritePhysicsCheck)
+    if(m_hOverwritePhysicsCheck && (dispid == IDC_OVERWRITE_MATERIAL_SETTINGS || dispid == -1))
         PropertyDialog::SetCheckboxState(m_hOverwritePhysicsCheck, property->m_overwritePhysics);
-    if(m_baseMaterialCombo)
+    if(m_baseMaterialCombo && (dispid == IDC_MATERIAL_COMBO || dispid == -1))
         PropertyDialog::UpdateMaterialComboBox(psel->GetPTable()->GetMaterialList(), *m_baseMaterialCombo, property->m_szMaterial);
-    if (m_baseImageCombo)
+    if (m_baseImageCombo && (dispid == DISPID_Image || dispid == -1))
         PropertyDialog::UpdateTextureComboBox(psel->GetPTable()->GetImageList(), *m_baseImageCombo, property->m_szImage);
 
     if (m_hCollidableCheck)
@@ -1022,6 +1049,27 @@ void BasePropertyDialog::UpdateBaseVisuals(ISelect *psel, BaseProperty *property
     }
 }
 
+INT_PTR BasePropertyDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    switch (msg)
+    {
+        case WM_KEYDOWN:
+        {
+            if (wparam == VK_RETURN)
+            {
+                ShowError("Enter");
+            }
+            return TRUE;
+        }
+    }
+    // Pass unhandled messages on to parent DialogProc
+    return DialogProcDefault(msg, wparam, lparam);
+
+}
+#pragma endregion
+
+#pragma region Docking
+
 CContainProperties::CContainProperties()
 {
     SetTabText(_T("Properties"));
@@ -1040,3 +1088,6 @@ void CDockProperty::OnClose()
 {
     // nothing to do only to prevent closing the window
 }
+
+#pragma endregion
+

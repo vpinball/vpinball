@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -17,24 +17,24 @@ protected:
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 
 private:
-    CEdit   m_gravityConstantEdit;
-    CEdit   m_playfieldFrictionEdit;
-    CEdit   m_playfieldElasticityEdit;
-    CEdit   m_playfieldElasticityFalloffEdit;
-    CEdit   m_playfieldScatterEdit;
-    CEdit   m_defaultScatterEdit;
     CButton m_importSetButton;
     CButton m_exportSetButton;
-    CEdit   m_nudgeTimeEdit;
-    CEdit   m_physicsLoopEdit;
-    CEdit   m_mechPlungerAdjEdit;
     HWND    m_hFilterMechanicalPlungerCheck;
-    CEdit   m_tableWidthEdit;
-    CEdit   m_tableHeightEdit;
-    CEdit   m_topGlassHeightEdit;
-    CEdit   m_tableFieldHeightEdit;
-    CEdit   m_minSlopeEdit;
-    CEdit   m_maxSlopeEdit;
+    EditBox m_gravityConstantEdit;
+    EditBox m_playfieldFrictionEdit;
+    EditBox m_playfieldElasticityEdit;
+    EditBox m_playfieldElasticityFalloffEdit;
+    EditBox m_playfieldScatterEdit;
+    EditBox m_defaultScatterEdit;
+    EditBox m_nudgeTimeEdit;
+    EditBox m_physicsLoopEdit;
+    EditBox m_mechPlungerAdjEdit;
+    EditBox m_tableWidthEdit;
+    EditBox m_tableHeightEdit;
+    EditBox m_topGlassHeightEdit;
+    EditBox m_tableFieldHeightEdit;
+    EditBox m_minSlopeEdit;
+    EditBox m_maxSlopeEdit;
 };
 
 #endif // !H_TABLE_PHYSICS_PROPERTY

@@ -4,9 +4,11 @@
 
 SpinnerPhysicsProperty::SpinnerPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_PHYSICS, pvsel)
 {
+    m_dampingEdit.SetDialog(this);
+    m_elasticityEdit.SetDialog(this);
 }
 
-void SpinnerPhysicsProperty::UpdateVisuals()
+void SpinnerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -44,9 +46,9 @@ void SpinnerPhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL SpinnerPhysicsProperty::OnInitDialog()
 {
-    AttachItem(IDC_ELASTICITY_EDIT, m_elasticityEdit);
+    m_elasticityEdit.AttachItem(IDC_ELASTICITY_EDIT);
     m_baseElasticityEdit = &m_elasticityEdit;
-    AttachItem(IDC_DAMPING_EDIT, m_dampingEdit);
+    m_dampingEdit.AttachItem(IDC_DAMPING_EDIT);
     UpdateVisuals();
     return TRUE;
 }

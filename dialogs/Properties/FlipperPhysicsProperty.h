@@ -9,23 +9,23 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CEdit m_massEdit;
-    CEdit m_strengthEdit;
-    CEdit m_elasticityEdit;
-    CEdit m_elasticityFalloffEdit;
-    CEdit m_frictionEdit;
-    CEdit m_returnStrengthEdit;
-    CEdit m_coilUpRampEdit;
-    CEdit m_scatterAngleEdit;
-    CEdit m_eosTorqueEdit;
-    CEdit m_eosTorqueAngleEdit;
+    EditBox m_massEdit;
+    EditBox m_strengthEdit;
+    EditBox m_elasticityEdit;
+    EditBox m_elasticityFalloffEdit;
+    EditBox m_frictionEdit;
+    EditBox m_returnStrengthEdit;
+    EditBox m_coilUpRampEdit;
+    EditBox m_scatterAngleEdit;
+    EditBox m_eosTorqueEdit;
+    EditBox m_eosTorqueAngleEdit;
     CComboBox m_overwriteSettingsCombo;
     vector<string> m_physicSetList;
 };

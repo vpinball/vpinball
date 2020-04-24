@@ -4,9 +4,21 @@
 
 LightVisualsProperty::LightVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_VISUALS, pvsel)
 {
+    m_falloffEdit.SetDialog(this);
+    m_falloffPowerEdit.SetDialog(this);
+    m_intensityEdit.SetDialog(this);
+    m_fadeSpeedUpEdit.SetDialog(this);
+    m_fadeSpeedDownEdit.SetDialog(this);
+    m_depthBiasEdit.SetDialog(this);
+    m_haloHeightEdit.SetDialog(this);
+    m_scaleMeshEdit.SetDialog(this);
+    m_modulateEdit.SetDialog(this);
+    m_transmitEdit.SetDialog(this);
+    m_posXEdit.SetDialog(this);
+    m_posYEdit.SetDialog(this);
 }
 
-void LightVisualsProperty::UpdateVisuals()
+void LightVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -150,25 +162,25 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL LightVisualsProperty::OnInitDialog()
 {
-    AttachItem(1, m_falloffEdit);
-    AttachItem(IDC_LIGHT_FALLOFF_POWER, m_falloffPowerEdit);
-    AttachItem(12, m_intensityEdit);
-    AttachItem(IDC_FADE_SPEED_UP, m_fadeSpeedUpEdit);
-    AttachItem(IDC_FADE_SPEED_DOWN, m_fadeSpeedDownEdit);
+    m_falloffEdit.AttachItem(1);
+    m_falloffPowerEdit.AttachItem(IDC_LIGHT_FALLOFF_POWER);
+    m_intensityEdit.AttachItem(12);
+    m_fadeSpeedUpEdit.AttachItem(IDC_FADE_SPEED_UP);
+    m_fadeSpeedDownEdit.AttachItem(IDC_FADE_SPEED_DOWN);
     m_hPassThroughCheck = ::GetDlgItem(GetHwnd(), IDC_IMAGE_MODE);
     AttachItem(DISPID_Image, m_imageCombo);
     m_baseImageCombo = &m_imageCombo;
-    AttachItem(IDC_DEPTH_BIAS, m_depthBiasEdit);
+    m_depthBiasEdit.AttachItem(IDC_DEPTH_BIAS);
     m_hEnableCheck= ::GetDlgItem(GetHwnd(), IDC_LIGHT_TYPE_CHECKBOX);
     m_hShowMeshCheck = ::GetDlgItem(GetHwnd(), IDC_SHOW_BULB_MESH);
     m_hStaticMeshCheck = ::GetDlgItem(GetHwnd(), IDC_STATIC_BULB_MESH);
-    AttachItem(IDC_HALO_EDIT, m_haloHeightEdit);
-    AttachItem(IDC_SCALE_BULB_MESH, m_scaleMeshEdit);
-    AttachItem(IDC_BULB_MODULATE_VS_ADD, m_modulateEdit);
-    AttachItem(IDC_TRANSMISSION_SCALE, m_transmitEdit);
+    m_haloHeightEdit.AttachItem(IDC_HALO_EDIT);
+    m_scaleMeshEdit.AttachItem(IDC_SCALE_BULB_MESH);
+    m_modulateEdit.AttachItem(IDC_BULB_MODULATE_VS_ADD);
+    m_transmitEdit.AttachItem(IDC_TRANSMISSION_SCALE);
     m_hRelectOnBalls = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ON_BALLS);
-    AttachItem(902, m_posXEdit);
-    AttachItem(903, m_posYEdit);
+    m_posXEdit.AttachItem(902);
+    m_posYEdit.AttachItem(903);
     AttachItem(IDC_SURFACE_COMBO, m_surfaceCombo);
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
     AttachItem(IDC_COLOR_BUTTON2, m_colorButton2);

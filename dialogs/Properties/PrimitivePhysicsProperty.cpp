@@ -4,9 +4,15 @@
 
 PrimitivePhysicsProperty::PrimitivePhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_PHYSICS, pvsel)
 {
+    m_reducePolyEdit.SetDialog(this);
+    m_elasticityFalloffEdit.SetDialog(this);
+    m_hitThresholdEdit.SetDialog(this);
+    m_elasticityEdit.SetDialog(this);
+    m_frictionEdit.SetDialog(this);
+    m_scatterAngleEdit.SetDialog(this);
 }
 
-void PrimitivePhysicsProperty::UpdateVisuals()
+void PrimitivePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -51,22 +57,24 @@ void PrimitivePhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL PrimitivePhysicsProperty::OnInitDialog()
 {
-    AttachItem(IDC_HIT_THRESHOLD_EDIT, m_hitThresholdEdit);
+    m_hitThresholdEdit.AttachItem(IDC_HIT_THRESHOLD_EDIT);
     m_baseHitThresholdEdit = &m_hitThresholdEdit;
-    AttachItem(IDC_ELASTICITY_EDIT, m_elasticityEdit);
+    m_elasticityEdit.AttachItem(IDC_ELASTICITY_EDIT);
     m_baseElasticityEdit = &m_elasticityEdit;
-    AttachItem(IDC_FRICTION_EDIT, m_frictionEdit);
+    m_frictionEdit.AttachItem(IDC_FRICTION_EDIT);
     m_baseFrictionEdit = &m_frictionEdit;
-    AttachItem(IDC_ELASTICITY_FALLOFF_EDIT, m_elasticityFalloffEdit);
+
+    m_elasticityFalloffEdit.AttachItem(IDC_ELASTICITY_FALLOFF_EDIT);
     AttachItem(IDC_MATERIAL_COMBO4, m_physicsMatrtialCombo);
     m_basePhysicsMaterialCombo = &m_physicsMatrtialCombo;
-    AttachItem(IDC_SCATTER_ANGLE_EDIT, m_scatterAngleEdit);
+    m_scatterAngleEdit.AttachItem(IDC_SCATTER_ANGLE_EDIT);
     m_baseScatterAngleEdit = &m_scatterAngleEdit;
+
     m_hToyCheck= ::GetDlgItem(GetHwnd(), IDC_PRIMITIVE_IS_TOY);
     m_hHitEventCheck = ::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK);
     m_hCollidableCheck = ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
     m_hOverwritePhysicsCheck = ::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS);
-    AttachItem(IDC_COLLISION_REDUCTION_FACTOR, m_reducePolyEdit);
+    m_reducePolyEdit.AttachItem(IDC_COLLISION_REDUCTION_FACTOR);
     UpdateVisuals();
     return TRUE;
 }

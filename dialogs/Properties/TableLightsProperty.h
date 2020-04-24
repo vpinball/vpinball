@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -20,14 +20,14 @@ private:
     CColorDialog m_colorDialog;
     ColorButton m_colorButton1;
     ColorButton m_colorButton2;
-    CEdit       m_lightEmissionScaleEdit;
-    CEdit       m_lightHeightEdit;
-    CEdit       m_lightRangeEdit;
     CComboBox   m_envEmissionImageCombo;
-    CEdit       m_envEmissionScaleEdit;
-    CEdit       m_ambientOcclusionScaleEdit;
-    CEdit       m_bloomStrengthEdit;
-    CEdit       m_screenSpaceReflEdit;
+    EditBox     m_lightEmissionScaleEdit;
+    EditBox     m_lightHeightEdit;
+    EditBox     m_lightRangeEdit;
+    EditBox     m_envEmissionScaleEdit;
+    EditBox     m_ambientOcclusionScaleEdit;
+    EditBox     m_bloomStrengthEdit;
+    EditBox     m_screenSpaceReflEdit;
 };
 
 #endif

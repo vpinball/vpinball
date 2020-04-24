@@ -4,9 +4,24 @@
 
 PrimitivePositionProperty::PrimitivePositionProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_POSITION, pvsel)
 {
+    m_posXEdit.SetDialog(this);
+    m_posYEdit.SetDialog(this);
+    m_posZEdit.SetDialog(this);
+    m_scaleXEdit.SetDialog(this);
+    m_scaleYEdit.SetDialog(this);
+    m_scaleZEdit.SetDialog(this);
+    m_rotXEdit.SetDialog(this);
+    m_rotYEdit.SetDialog(this);
+    m_rotZEdit.SetDialog(this);
+    m_transXEdit.SetDialog(this);
+    m_transYEdit.SetDialog(this);
+    m_transZEdit.SetDialog(this);
+    m_objRotXEdit.SetDialog(this);
+    m_objRotYEdit.SetDialog(this);
+    m_objRotZEdit.SetDialog(this);
 }
 
-void PrimitivePositionProperty::UpdateVisuals()
+void PrimitivePositionProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -102,21 +117,21 @@ void PrimitivePositionProperty::UpdateProperties(const int dispid)
 
 BOOL PrimitivePositionProperty::OnInitDialog() 
 {
-    AttachItem(DISPID_POSITION_X, m_posXEdit);
-    AttachItem(DISPID_POSITION_Y, m_posYEdit);
-    AttachItem(DISPID_POSITION_Z, m_posZEdit);
-    AttachItem(DISPID_SIZE_X, m_scaleXEdit);
-    AttachItem(DISPID_SIZE_Y, m_scaleYEdit);
-    AttachItem(DISPID_SIZE_Z, m_scaleZEdit);
-    AttachItem(DISPID_ROTRA1, m_rotXEdit);
-    AttachItem(DISPID_ROTRA2, m_rotYEdit);
-    AttachItem(DISPID_ROTRA3, m_rotZEdit);
-    AttachItem(DISPID_ROTRA4, m_transXEdit);
-    AttachItem(DISPID_ROTRA5, m_transYEdit);
-    AttachItem(DISPID_ROTRA6, m_transZEdit);
-    AttachItem(DISPID_ROTRA7, m_objRotXEdit);
-    AttachItem(DISPID_ROTRA8, m_objRotYEdit);
-    AttachItem(DISPID_ROTRA9, m_objRotZEdit);
+    m_posXEdit.AttachItem(DISPID_POSITION_X);
+    m_posYEdit.AttachItem(DISPID_POSITION_Y);
+    m_posZEdit.AttachItem(DISPID_POSITION_Z);
+    m_scaleXEdit.AttachItem(DISPID_SIZE_X);
+    m_scaleYEdit.AttachItem(DISPID_SIZE_Y);
+    m_scaleZEdit.AttachItem(DISPID_SIZE_Z);
+    m_rotXEdit.AttachItem(DISPID_ROTRA1);
+    m_rotYEdit.AttachItem(DISPID_ROTRA2);
+    m_rotZEdit.AttachItem(DISPID_ROTRA3);
+    m_transXEdit.AttachItem(DISPID_ROTRA4);
+    m_transYEdit.AttachItem(DISPID_ROTRA5);
+    m_transZEdit.AttachItem(DISPID_ROTRA6);
+    m_objRotXEdit.AttachItem(DISPID_ROTRA7);
+    m_objRotYEdit.AttachItem(DISPID_ROTRA8);
+    m_objRotZEdit.AttachItem(DISPID_ROTRA9);
     UpdateVisuals();
     return TRUE;
 }

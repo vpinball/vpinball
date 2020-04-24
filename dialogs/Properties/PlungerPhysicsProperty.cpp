@@ -4,9 +4,16 @@
 
 PlungerPhysicsProperty::PlungerPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_PHYSICS, pvsel)
 {
+    m_pullSpeedEdit.SetDialog(this);
+    m_releaseSpeedEdit.SetDialog(this);
+    m_strokeLengthEdit.SetDialog(this);
+    m_scatterVelocityEdit.SetDialog(this);
+    m_mechStrengthEdit.SetDialog(this);
+    m_momentumXferEdit.SetDialog(this);
+    m_parkPositionEdit.SetDialog(this);
 }
 
-void PlungerPhysicsProperty::UpdateVisuals()
+void PlungerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -74,16 +81,16 @@ void PlungerPhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL PlungerPhysicsProperty::OnInitDialog()
 {
-    AttachItem(IDC_PULL_SPEED_EDIT, m_pullSpeedEdit);
-    AttachItem(IDC_RELEASE_SPEED_EDIT, m_releaseSpeedEdit);
-    AttachItem(IDC_STROKE_LENGTH_EDIT, m_strokeLengthEdit);
-    AttachItem(IDC_SCATTER_VELOCITY_EDIT, m_scatterVelocityEdit);
+    m_pullSpeedEdit.AttachItem(IDC_PULL_SPEED_EDIT);
+    m_releaseSpeedEdit.AttachItem(IDC_RELEASE_SPEED_EDIT);
+    m_strokeLengthEdit.AttachItem(IDC_STROKE_LENGTH_EDIT);
+    m_scatterVelocityEdit.AttachItem(IDC_SCATTER_VELOCITY_EDIT);
     m_hAutoPlungerCheck = ::GetDlgItem(GetHwnd(), IDC_AUTO_PLUNGER_CHECK);
     m_hEnableMechPlungerCheck = ::GetDlgItem(GetHwnd(), IDC_ENABLE_MECH_PLUNGER_CHECK);
     m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
-    AttachItem(IDC_MECH_STRENGTH_EDIT, m_mechStrengthEdit);
-    AttachItem(IDC_MOMENTUM_XFER_EDIT, m_momentumXferEdit);
-    AttachItem(IDC_PARK_POSITION_EDIT, m_parkPositionEdit);
+    m_mechStrengthEdit.AttachItem(IDC_MECH_STRENGTH_EDIT);
+    m_momentumXferEdit.AttachItem(IDC_MOMENTUM_XFER_EDIT);
+    m_parkPositionEdit.AttachItem(IDC_PARK_POSITION_EDIT);
     UpdateVisuals();
     return TRUE;
 }

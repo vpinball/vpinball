@@ -7,6 +7,13 @@ TextboxVisualsProperty::TextboxVisualsProperty(VectorProtected<ISelect> *pvsel) 
     m_alignList.push_back("Align Left");
     m_alignList.push_back("Align Center");
     m_alignList.push_back("Align Right");
+
+    m_textIntensityEdit.SetDialog(this);
+    m_posXEdit.SetDialog(this);
+    m_posYEdit.SetDialog(this);
+    m_widthEdit.SetDialog(this);
+    m_heightEdit.SetDialog(this);
+    m_textEdit.SetDialog(this);
 }
 
 TextboxVisualsProperty::~TextboxVisualsProperty()
@@ -15,7 +22,7 @@ TextboxVisualsProperty::~TextboxVisualsProperty()
         delete m_font;
 }
 
-void TextboxVisualsProperty::UpdateVisuals()
+void TextboxVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -193,13 +200,13 @@ BOOL TextboxVisualsProperty::OnInitDialog()
     AttachItem(IDC_COLOR_BUTTON2, m_textColorButton);
     AttachItem(IDC_FONT_DIALOG_BUTTON, m_fontDialogButton);
     AttachItem(IDC_TEXTBOX_ALIGN_COMBO, m_alignmentCombo);
-    AttachItem(60000, m_posXEdit);
-    AttachItem(60001, m_posYEdit);
-    AttachItem(60002, m_widthEdit);
-    AttachItem(60003, m_heightEdit);
-    AttachItem(IDC_TEXT_INTENSITY, m_textIntensityEdit);
+    m_posXEdit.AttachItem(60000);
+    m_posYEdit.AttachItem(60001);
+    m_widthEdit.AttachItem(60002);
+    m_heightEdit.AttachItem(60003);
+    m_textIntensityEdit.AttachItem(IDC_TEXT_INTENSITY);
     m_hUseScriptDMDCheck = ::GetDlgItem(GetHwnd(), IDC_USE_SCRIPT_DMD_CHECK);
-    AttachItem(IDC_TEXTBOX_TEXT_EDIT, m_textEdit);
+    m_textEdit.AttachItem(IDC_TEXTBOX_TEXT_EDIT);
     UpdateVisuals();
     return TRUE;
 }

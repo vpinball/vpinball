@@ -5,9 +5,14 @@
 
 DragpointVisualsProperty::DragpointVisualsProperty(int id, VectorProtected<ISelect> *pvsel) :BasePropertyDialog(id, pvsel), m_id(id)
 {
+    m_posXEdit.SetDialog(this);
+    m_posYEdit.SetDialog(this);
+    m_heightOffsetEdit.SetDialog(this);
+    m_realHeightEdit.SetDialog(this);
+    m_textureCoordEdit.SetDialog(this);
 }
 
-void DragpointVisualsProperty::UpdateVisuals()
+void DragpointVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     const DragPoint *prev = NULL;
 
@@ -20,28 +25,36 @@ void DragpointVisualsProperty::UpdateVisuals()
         PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 3), dpoint->m_smooth);
         if (prev!=NULL)
         {
-            if(prev->m_v.x!=dpoint->m_v.x)
+            if(prev->m_v.x!=dpoint->m_v.x && (dispid==1 || dispid==-1))
                 m_posXEdit.SetWindowText(NULL);
-            if (prev->m_v.y != dpoint->m_v.y)
+            if (prev->m_v.y != dpoint->m_v.y && (dispid == 2 || dispid == -1))
                 m_posYEdit.SetWindowText(NULL);
         }
         else
         {
-            PropertyDialog::SetFloatTextbox(m_posXEdit, dpoint->m_v.x);
-            PropertyDialog::SetFloatTextbox(m_posYEdit, dpoint->m_v.y);
+            if(dispid == 1 || dispid == -1)
+                PropertyDialog::SetFloatTextbox(m_posXEdit, dpoint->m_v.x);
+            if (dispid == 2 || dispid == -1)
+                PropertyDialog::SetFloatTextbox(m_posYEdit, dpoint->m_v.y);
         }
         if(m_id==IDD_PROPPOINT_VISUALSWHEIGHT)
         {
-            PropertyDialog::SetFloatTextbox(m_realHeightEdit, dpoint->m_calcHeight);
-            PropertyDialog::SetFloatTextbox(m_heightOffsetEdit, dpoint->m_v.z);
+            if (dispid == IDC_CALC_HEIGHT_EDIT || dispid == -1)
+                PropertyDialog::SetFloatTextbox(m_realHeightEdit, dpoint->m_calcHeight);
+            if (dispid == 6 || dispid == -1)
+                PropertyDialog::SetFloatTextbox(m_heightOffsetEdit, dpoint->m_v.z);
         }
         if (m_id == IDD_PROPPOINT_VISUALSWTEX)
         {
-            PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 4), dpoint->m_autoTexture);
-            if (prev != NULL && prev->m_texturecoord != dpoint->m_texturecoord)
-                m_textureCoordEdit.SetWindowText(NULL);
-            else
-                PropertyDialog::SetFloatTextbox(m_textureCoordEdit, dpoint->m_texturecoord);
+            if (dispid == 4 || dispid == -1)
+                PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 4), dpoint->m_autoTexture);
+            if (dispid == 5 || dispid == -1)
+            {
+                if (prev != NULL && prev->m_texturecoord != dpoint->m_texturecoord)
+                    m_textureCoordEdit.SetWindowText(NULL);
+                else
+                    PropertyDialog::SetFloatTextbox(m_textureCoordEdit, dpoint->m_texturecoord);
+            }
 
         }
         prev = dpoint;
@@ -80,20 +93,20 @@ void DragpointVisualsProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL DragpointVisualsProperty::OnInitDialog()
 {
     if(m_id == IDD_PROPPOINT_VISUALSWTEX)
-        AttachItem(5, m_textureCoordEdit);
-    AttachItem(1, m_posXEdit);
-    AttachItem(2, m_posYEdit);
+        m_textureCoordEdit.AttachItem(5);
+    m_posXEdit.AttachItem(1);
+    m_posYEdit.AttachItem(2);
 
     if(m_id==IDD_PROPPOINT_VISUALSWHEIGHT)
     {
-        AttachItem(6, m_heightOffsetEdit);
-        AttachItem(IDC_CALC_HEIGHT_EDIT, m_realHeightEdit);
+        m_heightOffsetEdit.AttachItem(6);
+        m_realHeightEdit.AttachItem(IDC_CALC_HEIGHT_EDIT);
     }
     AttachItem(IDC_POINT_COPY_BUTTON, m_copyButton);
     AttachItem(IDC_POINT_PASTE_BUTTON, m_pasteButton);

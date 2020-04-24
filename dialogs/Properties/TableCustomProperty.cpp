@@ -26,9 +26,15 @@ TableCustomProperty::TableCustomProperty(VectorProtected<ISelect> *pvsel) : Base
     m_physicSetList.push_back("Set6");
     m_physicSetList.push_back("Set7");
     m_physicSetList.push_back("Set8");
+
+    m_gameplayDifficultEdit.SetDialog(this);
+    m_fpsLimiterEdit.SetDialog(this);
+    m_ballTrailStrengthEdit.SetDialog(this);
+    m_soundEffectVolEdit.SetDialog(this);
+    m_musicVolEdit.SetDialog(this);
 }
 
-void TableCustomProperty::UpdateVisuals()
+void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
 
@@ -122,19 +128,19 @@ BOOL TableCustomProperty::OnInitDialog()
     AttachItem(IDC_ENABLE_FXAA, m_postProcAACombo);
     AttachItem(IDC_ENABLE_AO, m_inGameAOCombo);
     AttachItem(IDC_ENABLE_SSR, m_ScreenReflectionCombo);
-    AttachItem(IDC_TABLEAVSYNC, m_fpsLimiterEdit);
+    m_fpsLimiterEdit.AttachItem(IDC_TABLEAVSYNC);
     AttachItem(IDC_ALPHA_SLIDER, m_detailLevelSlider);
     m_hOverwriteDetailsCheck = ::GetDlgItem(GetHwnd(), IDC_GLOBAL_ALPHA_ACC);
     AttachItem(IDC_BALL_REFLECTION, m_ballReflectionCombo);
     AttachItem(IDC_BALL_TRAIL, m_ballTrailCombo);
-    AttachItem(IDC_TRAIL_EDIT, m_ballTrailStrengthEdit);
+    m_ballTrailStrengthEdit.AttachItem(IDC_TRAIL_EDIT);
     AttachItem(IDC_DAYNIGHT_SLIDER, m_nightDaySlider);
     m_hOverwriteNightDayCheck = ::GetDlgItem(GetHwnd(), IDC_GLOBAL_DAYNIGHT);
-    AttachItem(IDC_GAME_DIFFICULTY_EDIT, m_gameplayDifficultEdit);
+    m_gameplayDifficultEdit.AttachItem(IDC_GAME_DIFFICULTY_EDIT);
     AttachItem(IDC_OVERWRITE_PHYSICS_COMBO, m_overwritePhysicsSetCombo);
     m_hOverwriteFlipperCheck = ::GetDlgItem(GetHwnd(), IDC_OVERRIDEPHYSICS_FLIPPERS);
-    AttachItem(IDC_TABLESOUNDVOLUME, m_soundEffectVolEdit);
-    AttachItem(IDC_TABLEMUSICVOLUME, m_musicVolEdit);
+    m_soundEffectVolEdit.AttachItem(IDC_TABLESOUNDVOLUME);
+    m_musicVolEdit.AttachItem(IDC_TABLEMUSICVOLUME);
 
     m_detailLevelSlider.SetRangeMin(0);
     m_detailLevelSlider.SetRangeMax(10);

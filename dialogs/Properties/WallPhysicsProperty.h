@@ -9,19 +9,19 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CEdit     m_hitThresholdEdit;
-    CEdit     m_slingshotForceEdit;
-    CEdit     m_slingshotThresholdEdit;
-    CEdit     m_elasticityEdit;
-    CEdit     m_frictionEdit;
-    CEdit     m_scatterAngleEdit;
+    EditBox   m_hitThresholdEdit;
+    EditBox   m_slingshotForceEdit;
+    EditBox   m_slingshotThresholdEdit;
+    EditBox   m_elasticityEdit;
+    EditBox   m_frictionEdit;
+    EditBox   m_scatterAngleEdit;
     CComboBox m_physicsMaterialCombo;
 };
 

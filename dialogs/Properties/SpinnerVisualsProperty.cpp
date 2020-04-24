@@ -4,9 +4,17 @@
 
 SpinnerVisualsProperty::SpinnerVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_VISUALS, pvsel)
 {
+    m_posXEdit.SetDialog(this);
+    m_posYEdit.SetDialog(this);
+    m_lengthEdit.SetDialog(this);
+    m_heightEdit.SetDialog(this);
+    m_rotationEdit.SetDialog(this);
+    m_angleMaxEdit.SetDialog(this);
+    m_angleMinEdit.SetDialog(this);
+    m_elasticityEdit.SetDialog(this);
 }
 
-void SpinnerVisualsProperty::UpdateVisuals()
+void SpinnerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -85,13 +93,13 @@ BOOL SpinnerVisualsProperty::OnInitDialog()
     AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
     m_baseMaterialCombo = &m_materialCombo;
     AttachItem(IDC_SURFACE_COMBO, m_surfaceCombo);
-    AttachItem(11, m_posXEdit);
-    AttachItem(12, m_posYEdit);
-    AttachItem(DISPID_Spinner_Length, m_lengthEdit);
-    AttachItem(5, m_heightEdit);
-    AttachItem(4, m_rotationEdit);
-    AttachItem(13, m_angleMaxEdit);
-    AttachItem(14, m_angleMinEdit);
+    m_posXEdit.AttachItem(11);
+    m_posYEdit.AttachItem(12);
+    m_lengthEdit.AttachItem(DISPID_Spinner_Length);
+    m_heightEdit.AttachItem(5);
+    m_rotationEdit.AttachItem(4);
+    m_angleMaxEdit.AttachItem(13);
+    m_angleMinEdit.AttachItem(14);
     UpdateVisuals();
     return TRUE;
 }

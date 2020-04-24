@@ -4,19 +4,23 @@
 
 DispreelStateProperty::DispreelStateProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_STATE, pvsel)
 {
+    m_motorStepsEdit.SetDialog(this);
+    m_updateIntervalEdit.SetDialog(this);
 }
 
-void DispreelStateProperty::UpdateVisuals()
+void DispreelStateProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDispReel))
             continue;
         DispReel * const reel = (DispReel *)m_pvsel->ElementAt(i);
-
-        PropertyDialog::SetIntTextbox(m_motorStepsEdit, reel->GetMotorSteps());
-        PropertyDialog::SetIntTextbox(m_updateIntervalEdit, reel->GetUpdateInterval());
-        PropertyDialog::UpdateSoundComboBox(reel->GetPTable(), m_soundCombo, reel->m_d.m_szSound);
+        if (dispid == IDC_MOTOR_STEPS_EDIT || dispid == -1)
+            PropertyDialog::SetIntTextbox(m_motorStepsEdit, reel->GetMotorSteps());
+        if (dispid == IDC_UPDATE_INTERVAL_EDIT || dispid == -1)
+            PropertyDialog::SetIntTextbox(m_updateIntervalEdit, reel->GetUpdateInterval());
+        if (dispid == DISPID_Sound || dispid == -1)
+            PropertyDialog::UpdateSoundComboBox(reel->GetPTable(), m_soundCombo, reel->m_d.m_szSound);
         //only show the first element on multi-select
         break;
     }
@@ -44,13 +48,13 @@ void DispreelStateProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL DispreelStateProperty::OnInitDialog()
 {
-    AttachItem(IDC_MOTOR_STEPS_EDIT, m_motorStepsEdit);
-    AttachItem(IDC_UPDATE_INTERVAL_EDIT, m_updateIntervalEdit);
+    m_motorStepsEdit.AttachItem(IDC_MOTOR_STEPS_EDIT);
+    m_updateIntervalEdit.AttachItem(IDC_UPDATE_INTERVAL_EDIT);
     AttachItem(DISPID_Sound, m_soundCombo);
     UpdateVisuals();
     return TRUE;

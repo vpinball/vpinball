@@ -9,15 +9,15 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CEdit       m_blinkPatternEdit;
-    CEdit       m_blinkIntervalEdit;
+    EditBox     m_blinkPatternEdit;
+    EditBox     m_blinkIntervalEdit;
     CComboBox   m_stateCombo;
     vector<string> m_stateList;
 };

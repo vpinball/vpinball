@@ -10,6 +10,12 @@ DecalVisualsProperty::DecalVisualsProperty(VectorProtected<ISelect> *pvsel) : Ba
     m_sizingList.push_back("Auto Size");
     m_sizingList.push_back("Auto Width");
     m_sizingList.push_back("Manual Size");
+    m_textEdit.SetDialog(this);
+    m_posXEdit.SetDialog(this);
+    m_posYEdit.SetDialog(this);
+    m_widthEdit.SetDialog(this);
+    m_heigthEdit.SetDialog(this);
+    m_rotationEdit.SetDialog(this);
 }
 
 DecalVisualsProperty::~DecalVisualsProperty()
@@ -18,7 +24,7 @@ DecalVisualsProperty::~DecalVisualsProperty()
         delete m_font;
 }
 
-void DecalVisualsProperty::UpdateVisuals()
+void DecalVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -26,18 +32,29 @@ void DecalVisualsProperty::UpdateVisuals()
             continue;
         Decal * const decal = (Decal *)m_pvsel->ElementAt(i);
 
-        PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[decal->m_d.m_decaltype].c_str());
-        PropertyDialog::UpdateComboBox(m_sizingList, m_sizingCombo, m_sizingList[decal->m_d.m_sizingtype].c_str());
-        m_textEdit.SetWindowText(decal->m_d.m_sztext);
-        PropertyDialog::SetCheckboxState(m_hVerticalTextCheck, decal->m_d.m_verticalText);
-        m_fontColorButton.SetColor(decal->m_d.m_color);
+        if (dispid == IDC_FONT_TYPE_COMBO || dispid == -1)
+            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[decal->m_d.m_decaltype].c_str());
+        if (dispid == DISPID_Decal_SizingType || dispid == -1)
+            PropertyDialog::UpdateComboBox(m_sizingList, m_sizingCombo, m_sizingList[decal->m_d.m_sizingtype].c_str());
+        if (dispid == IDC_DECAL_TEXT_EDIT || dispid == -1)
+            m_textEdit.SetWindowText(decal->m_d.m_sztext);
+        if (dispid == IDC_DECAL_VERTICAL_TEXT_CHECK || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hVerticalTextCheck, decal->m_d.m_verticalText);
+        if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
+            m_fontColorButton.SetColor(decal->m_d.m_color);
 
-        PropertyDialog::SetFloatTextbox(m_posXEdit, decal->m_d.m_vCenter.x);
-        PropertyDialog::SetFloatTextbox(m_posYEdit, decal->m_d.m_vCenter.y);
-        PropertyDialog::SetFloatTextbox(m_widthEdit, decal->m_d.m_width);
-        PropertyDialog::SetFloatTextbox(m_heigthEdit, decal->m_d.m_height);
-        PropertyDialog::SetFloatTextbox(m_rotationEdit, decal->m_d.m_rotation);
-        PropertyDialog::UpdateSurfaceComboBox(decal->GetPTable(), m_surfaceCombo, decal->m_d.m_szSurface);
+        if (dispid == 5 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posXEdit, decal->m_d.m_vCenter.x);
+        if (dispid == 6 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posYEdit, decal->m_d.m_vCenter.y);
+        if (dispid == 3 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_widthEdit, decal->m_d.m_width);
+        if (dispid == 4 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_heigthEdit, decal->m_d.m_height);
+        if (dispid == 1 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_rotationEdit, decal->m_d.m_rotation);
+        if (dispid == IDC_SURFACE_COMBO || dispid == -1)
+            PropertyDialog::UpdateSurfaceComboBox(decal->GetPTable(), m_surfaceCombo, decal->m_d.m_szSurface);
 
         if (decal->m_pIFont)
         {
@@ -45,7 +62,7 @@ void DecalVisualsProperty::UpdateVisuals()
             m_font = new CFont(decal->GetFont());
         }
 
-        UpdateBaseVisuals(decal, &decal->m_d);
+        UpdateBaseVisuals(decal, &decal->m_d, dispid);
         //only show the first element on multi-select
         break;
     }
@@ -157,7 +174,7 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL DecalVisualsProperty::OnInitDialog()
@@ -165,7 +182,6 @@ BOOL DecalVisualsProperty::OnInitDialog()
     AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
     m_baseMaterialCombo = &m_materialCombo;
     AttachItem(IDC_FONT_TYPE_COMBO, m_typeCombo);
-    AttachItem(IDC_DECAL_TEXT_EDIT, m_textEdit);
     m_hVerticalTextCheck = ::GetDlgItem(GetHwnd(), IDC_DECAL_VERTICAL_TEXT_CHECK);
     AttachItem(IDC_COLOR_BUTTON1, m_fontColorButton);
     AttachItem(IDC_FONT_DIALOG_BUTTON, m_fontDialogButton);
@@ -173,11 +189,12 @@ BOOL DecalVisualsProperty::OnInitDialog()
     m_baseImageCombo = &m_imageCombo;
 
     AttachItem(DISPID_Decal_SizingType, m_sizingCombo);
-    AttachItem(5, m_posXEdit);
-    AttachItem(6, m_posYEdit);
-    AttachItem(3, m_widthEdit);
-    AttachItem(4, m_heigthEdit);
-    AttachItem(1, m_rotationEdit);
+    m_textEdit.AttachItem(IDC_DECAL_TEXT_EDIT);
+    m_posXEdit.AttachItem(5);
+    m_posYEdit.AttachItem(6);
+    m_widthEdit.AttachItem(3);
+    m_heigthEdit.AttachItem(4);
+    m_rotationEdit.AttachItem(1);
     AttachItem(IDC_SURFACE_COMBO, m_surfaceCombo);
     UpdateVisuals();
     return TRUE;

@@ -4,9 +4,12 @@
 
 TableVisualsProperty::TableVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_VISUALS, pvsel)
 {
+    m_reflectionStrengthEdit.SetDialog(this);
+    m_ballReflectPlayfieldEdit.SetDialog(this);
+    m_ballDefaultBulbIntensScaleEdit.SetDialog(this);
 }
 
-void TableVisualsProperty::UpdateVisuals()
+void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
 
@@ -71,12 +74,12 @@ BOOL TableVisualsProperty::OnInitDialog()
     AttachItem(DISPID_Image, m_imageCombo);
     AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
     m_hReflectElementsCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ELEMENTS_CHECK);
-    AttachItem(IDC_REFLECTION_PLAYFIELD, m_reflectionStrengthEdit);
+    m_reflectionStrengthEdit.AttachItem(IDC_REFLECTION_PLAYFIELD);
     AttachItem(1505, m_ballImageCombo);
     m_hLogoModeCheck = ::GetDlgItem(GetHwnd(), IDC_BALL_DECAL_MODE);
     AttachItem(1508, m_ballDecalCombo);
-    AttachItem(IDC_BALLPLAYFIELD_REFLECTION, m_ballReflectPlayfieldEdit);
-    AttachItem(IDC_BULBINTENSITYSCALE, m_ballDefaultBulbIntensScaleEdit);
+    m_ballReflectPlayfieldEdit.AttachItem(IDC_BALLPLAYFIELD_REFLECTION);
+    m_ballDefaultBulbIntensScaleEdit.AttachItem(IDC_BULBINTENSITYSCALE);
 
     UpdateVisuals();
     return TRUE;

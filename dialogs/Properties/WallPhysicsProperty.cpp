@@ -4,9 +4,15 @@
 
 WallPhysicsProperty::WallPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPWALL_PHYSICS, pvsel)
 {
+    m_hitThresholdEdit.SetDialog(this);
+    m_slingshotForceEdit.SetDialog(this);
+    m_slingshotThresholdEdit.SetDialog(this);
+    m_elasticityEdit.SetDialog(this);
+    m_frictionEdit.SetDialog(this);
+    m_scatterAngleEdit.SetDialog(this);
 }
 
-void WallPhysicsProperty::UpdateVisuals()
+void WallPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     //only show the first element on multi-select
     Surface * const wall = (Surface*)m_pvsel->ElementAt(0);
@@ -60,13 +66,13 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL WallPhysicsProperty::OnInitDialog()
 {
-    AttachItem(IDC_HIT_THRESHOLD_EDIT, m_hitThresholdEdit);
-    AttachItem(14, m_slingshotForceEdit);
-    AttachItem(427, m_slingshotThresholdEdit);
+    m_hitThresholdEdit.AttachItem(IDC_HIT_THRESHOLD_EDIT);
+    m_slingshotForceEdit.AttachItem(14);
+    m_slingshotThresholdEdit.AttachItem(427);
     AttachItem(IDC_MATERIAL_COMBO4, m_physicsMaterialCombo);
-    AttachItem(IDC_ELASTICITY_EDIT, m_elasticityEdit);
-    AttachItem(IDC_FRICTION_EDIT, m_frictionEdit);
-    AttachItem(IDC_SCATTER_ANGLE_EDIT, m_scatterAngleEdit);
+    m_elasticityEdit.AttachItem(IDC_ELASTICITY_EDIT);
+    m_frictionEdit.AttachItem(IDC_FRICTION_EDIT);
+    m_scatterAngleEdit.AttachItem(IDC_SCATTER_ANGLE_EDIT);
 
     m_baseHitThresholdEdit = &m_hitThresholdEdit;
     m_baseElasticityEdit = &m_elasticityEdit;

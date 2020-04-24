@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -21,19 +21,19 @@ private:
     CComboBox   m_postProcAACombo;
     CComboBox   m_inGameAOCombo;
     CComboBox   m_ScreenReflectionCombo;
-    CEdit       m_fpsLimiterEdit;
     CSlider     m_detailLevelSlider;
     HWND        m_hOverwriteDetailsCheck;
     CComboBox   m_ballReflectionCombo;
     CComboBox   m_ballTrailCombo;
-    CEdit       m_ballTrailStrengthEdit;
+    EditBox     m_gameplayDifficultEdit;
+    EditBox     m_fpsLimiterEdit;
+    EditBox     m_ballTrailStrengthEdit;
+    EditBox     m_soundEffectVolEdit;
+    EditBox     m_musicVolEdit;
     CSlider     m_nightDaySlider;
     HWND        m_hOverwriteNightDayCheck;
-    CEdit       m_gameplayDifficultEdit;
     CComboBox   m_overwritePhysicsSetCombo;
     HWND        m_hOverwriteFlipperCheck;
-    CEdit       m_soundEffectVolEdit;
-    CEdit       m_musicVolEdit;
 
     vector<string> m_postAAList;
     vector<string> m_userList;

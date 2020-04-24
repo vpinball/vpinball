@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -20,17 +20,17 @@ private:
     CComboBox m_bumpBaseMaterialCombo;
     CComboBox m_skirtMaterialCombo;
     CComboBox m_ringMaterialCombo;
-    CEdit     m_radiusEdit;
-    CEdit     m_heightScaleEdit;
-    CEdit     m_orientationEdit;
-    CEdit     m_ringSpeedEdit;
-    CEdit     m_ringDropOffsetEdit;
+    EditBox   m_radiusEdit;
+    EditBox   m_heightScaleEdit;
+    EditBox   m_orientationEdit;
+    EditBox   m_ringSpeedEdit;
+    EditBox   m_ringDropOffsetEdit;
     HWND      m_hCapVisibleCheck;
     HWND      m_hBaseVisibleCheck;
     HWND      m_hRingVisibleCheck;
     HWND      m_hSkirtVisibleCheck;
-    CEdit     m_posXEdit;
-    CEdit     m_posYEdit;
+    EditBox     m_posXEdit;
+    EditBox     m_posYEdit;
     CComboBox m_surfaceCombo;
 };
 
