@@ -389,7 +389,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\Properties\HitTargetVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\KickerPhysicsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\KickerVisualsProperty.cpp" />
-    <ClCompile Include="dialogs\Properties\LichtseqStatesProperty.cpp" />
+    <ClCompile Include="dialogs\Properties\LightseqStatesProperty.cpp" />
     <ClCompile Include="dialogs\Properties\LightStatesProperty.cpp" />
     <ClCompile Include="dialogs\Properties\LightVisualsProperty.cpp" />
     <ClCompile Include="dialogs\Properties\PlungerPhysicsProperty.cpp" />

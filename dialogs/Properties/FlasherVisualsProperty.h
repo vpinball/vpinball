@@ -22,7 +22,7 @@ private:
     HWND        m_hAdditiveBlendCheck;
     HWND        m_hUseDMDCheck;
     HWND        m_hDisplayInEditorCheck;
-    EditBox     m_opacyitAmountEdit;
+    EditBox     m_opacityAmountEdit;
     EditBox     m_filterAmountEdit;
     EditBox     m_intensityEdit;
     EditBox     m_fadeSpeedUpEdit;
