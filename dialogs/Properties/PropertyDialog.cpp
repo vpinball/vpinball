@@ -50,7 +50,7 @@ LRESULT EditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     {
         case WM_KEYUP:
         {
-            if ((wparam == VK_RETURN) || (wparam == VK_TAB))
+            if (wparam == VK_RETURN)
             {
                 if (m_basePropertyDialog)
                     m_basePropertyDialog->UpdateProperties(m_id);

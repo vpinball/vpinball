@@ -19,18 +19,30 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Primitive *const prim = (Primitive*)m_pvsel->ElementAt(i);
 
-        PropertyDialog::SetCheckboxState(m_hDisplayImageCheck, prim->m_d.m_displayTexture);
-        PropertyDialog::SetCheckboxState(m_hDrawTexturesInsideCheck, prim->m_d.m_drawTexturesInside);
-        PropertyDialog::SetCheckboxState(m_hObjectSpaceCheck, prim->m_d.m_objectSpaceNormalMap);
-        PropertyDialog::SetCheckboxState(m_hRenderBackfacingCheck, prim->m_d.m_backfacesEnabled);
-        PropertyDialog::SetCheckboxState(m_hStaticRenderingCheck, prim->m_d.m_staticRendering);
-        PropertyDialog::SetFloatTextbox(m_depthBiasEdit, prim->m_d.m_depthBias);
-        PropertyDialog::SetFloatTextbox(m_disableLightingEdit, prim->m_d.m_disableLightingTop);
-        PropertyDialog::SetFloatTextbox(m_disableLightFromBelowEdit, prim->m_d.m_disableLightingBelow);
-        PropertyDialog::SetIntTextbox(m_legacySidesEdit, prim->m_d.m_Sides);
-        PropertyDialog::SetFloatTextbox(m_edgeFactorUIEdit, prim->m_d.m_edgeFactorUI);
-        PropertyDialog::UpdateTextureComboBox(prim->GetPTable()->GetImageList(), m_normalMapCombo, prim->m_d.m_szNormalMap);
-        UpdateBaseVisuals(prim, &prim->m_d);
+        if (dispid == IDC_DISPLAY_TEXTURE_CHECKBOX || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hDisplayImageCheck, prim->m_d.m_displayTexture);
+        if (dispid == IDC_DRAW_TEXTURES_SIDES_CHECK || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hDrawTexturesInsideCheck, prim->m_d.m_drawTexturesInside);
+        if (dispid == IDC_OBJECT_SPACE_NORMALMAP || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hObjectSpaceCheck, prim->m_d.m_objectSpaceNormalMap);
+        if (dispid == IDC_PRIMITIVE_ENABLE_BACKFACES || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hRenderBackfacingCheck, prim->m_d.m_backfacesEnabled);
+        if (dispid == IDC_STATIC_RENDERING_CHECK || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hStaticRenderingCheck, prim->m_d.m_staticRendering);
+        if (dispid == IDC_DEPTH_BIAS || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_depthBiasEdit, prim->m_d.m_depthBias);
+        if (dispid == IDC_BLEND_DISABLE_LIGHTING || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_disableLightingEdit, prim->m_d.m_disableLightingTop);
+        if (dispid == IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_disableLightFromBelowEdit, prim->m_d.m_disableLightingBelow);
+        if (dispid == IDC_PRIMITIVE_LEGACY_SIDES_EDIT || dispid == -1)
+            PropertyDialog::SetIntTextbox(m_legacySidesEdit, prim->m_d.m_Sides);
+        if (dispid == IDC_EDGE_FACTOR_UI || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_edgeFactorUIEdit, prim->m_d.m_edgeFactorUI);
+        if (dispid == DISPID_Image2 || dispid == -1)
+            PropertyDialog::UpdateTextureComboBox(prim->GetPTable()->GetImageList(), m_normalMapCombo, prim->m_d.m_szNormalMap);
+
+        UpdateBaseVisuals(prim, &prim->m_d, dispid);
         //only show the first element on multi-select
         break;
     }
@@ -93,7 +105,7 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL PrimitiveVisualsProperty::OnInitDialog()

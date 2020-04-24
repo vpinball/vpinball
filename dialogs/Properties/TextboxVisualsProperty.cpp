@@ -29,21 +29,37 @@ void TextboxVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemTextbox))
             continue;
         Textbox* const text = (Textbox *)m_pvsel->ElementAt(i);
-        PropertyDialog::SetCheckboxState(m_hTransparentCheck, text->m_d.m_transparent);
-        PropertyDialog::SetCheckboxState(m_hUseScriptDMDCheck, text->m_d.m_isDMD);
-        m_backgroundColorButton.SetColor(text->m_d.m_backcolor);
-        m_textColorButton.SetColor(text->m_d.m_fontcolor);
-        PropertyDialog::SetFloatTextbox(m_posXEdit, text->m_d.m_v1.x);
-        PropertyDialog::SetFloatTextbox(m_posYEdit, text->m_d.m_v1.y);
-        PropertyDialog::SetFloatTextbox(m_widthEdit, text->m_d.m_v2.x-text->m_d.m_v1.x);
-        PropertyDialog::SetFloatTextbox(m_heightEdit, text->m_d.m_v2.y - text->m_d.m_v1.y);
-        PropertyDialog::UpdateComboBox(m_alignList, m_alignmentCombo, m_alignList[text->m_d.m_talign].c_str());
-        PropertyDialog::SetFloatTextbox(m_textIntensityEdit, text->m_d.m_intensity_scale);
-        m_textEdit.SetWindowText(text->m_d.sztext);
-        if (text->m_pIFont)
+
+        if (dispid == IDC_TEXTBOX_TRANSP_CHECK || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hTransparentCheck, text->m_d.m_transparent);
+        if (dispid == IDC_USE_SCRIPT_DMD_CHECK || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hUseScriptDMDCheck, text->m_d.m_isDMD);
+        if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
+            m_backgroundColorButton.SetColor(text->m_d.m_backcolor);
+        if (dispid == IDC_COLOR_BUTTON2 || dispid == -1)
+            m_textColorButton.SetColor(text->m_d.m_fontcolor);
+        if (dispid == 60000 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posXEdit, text->m_d.m_v1.x);
+        if (dispid == 60001 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posYEdit, text->m_d.m_v1.y);
+        if (dispid == 60002 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_widthEdit, text->m_d.m_v2.x - text->m_d.m_v1.x);
+        if (dispid == 60004 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_heightEdit, text->m_d.m_v2.y - text->m_d.m_v1.y);
+        if (dispid == IDC_TEXTBOX_ALIGN_COMBO || dispid == -1)
+            PropertyDialog::UpdateComboBox(m_alignList, m_alignmentCombo, m_alignList[text->m_d.m_talign].c_str());
+        if (dispid == IDC_TEXT_INTENSITY || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_textIntensityEdit, text->m_d.m_intensity_scale);
+        if (dispid == IDC_TEXTBOX_TEXT_EDIT || dispid == -1)
+            m_textEdit.SetWindowText(text->m_d.sztext);
+
+        if (dispid == IDC_FONT_DIALOG_BUTTON || dispid == -1)
         {
-            m_fontDialogButton.SetWindowText(text->GetFontName());
-            m_font = new CFont(text->GetFont());
+            if (text->m_pIFont)
+            {
+                m_fontDialogButton.SetWindowText(text->GetFontName());
+                m_font = new CFont(text->GetFont());
+            }
         }
         //only show the first element on multi-select
         break;
@@ -69,10 +85,8 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(text->m_d.m_isDMD, PropertyDialog::GetCheckboxState(m_hUseScriptDMDCheck), text);
                 break;
             case IDC_TEXT_INTENSITY:
-            {
                 CHECK_UPDATE_ITEM(text->m_d.m_intensity_scale, PropertyDialog::GetFloatTextbox(m_textIntensityEdit), text);
                 break;
-            }
             case IDC_TEXTBOX_TEXT_EDIT:
             {
                 PropertyDialog::StartUndo(text);
@@ -190,7 +204,7 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL TextboxVisualsProperty::OnInitDialog()

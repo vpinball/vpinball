@@ -20,20 +20,25 @@ void RampPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Ramp * const ramp = (Ramp *)m_pvsel->ElementAt(i);
 
-        PropertyDialog::SetFloatTextbox(m_leftWallEdit, ramp->m_d.m_leftwallheight);
-        PropertyDialog::SetFloatTextbox(m_rightWallEdit, ramp->m_d.m_rightwallheight);
+        if (dispid == 10 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_leftWallEdit, ramp->m_d.m_leftwallheight);
+        if (dispid == 11 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_rightWallEdit, ramp->m_d.m_rightwallheight);
 
-        if (!ramp->m_d.m_collidable)
+        if (dispid == IDC_COLLIDABLE_CHECK || dispid == -1)
         {
-            m_leftWallEdit.EnableWindow(FALSE);
-            m_rightWallEdit.EnableWindow(FALSE);
+            if (!ramp->m_d.m_collidable)
+            {
+                m_leftWallEdit.EnableWindow(FALSE);
+                m_rightWallEdit.EnableWindow(FALSE);
+            }
+            else
+            {
+                m_leftWallEdit.EnableWindow(TRUE);
+                m_rightWallEdit.EnableWindow(TRUE);
+            }
         }
-        else
-        {
-            m_leftWallEdit.EnableWindow(TRUE);
-            m_rightWallEdit.EnableWindow(TRUE);
-        }
-        UpdateBaseVisuals(ramp, &ramp->m_d);
+        UpdateBaseVisuals(ramp, &ramp->m_d, dispid);
         //only show the first element on multi-select
         break;
     }
@@ -59,7 +64,7 @@ void RampPhysicsProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL RampPhysicsProperty::OnInitDialog()

@@ -22,17 +22,26 @@ void SpinnerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Spinner *const spinner = (Spinner *)m_pvsel->ElementAt(i);
 
-        PropertyDialog::UpdateSurfaceComboBox(spinner->GetPTable(), m_surfaceCombo, spinner->m_d.m_szSurface);
-        PropertyDialog::SetCheckboxState(m_hShowBracketCheck, spinner->m_d.m_showBracket);
-        PropertyDialog::SetFloatTextbox(m_posXEdit, spinner->m_d.m_vCenter.x);
-        PropertyDialog::SetFloatTextbox(m_posYEdit, spinner->m_d.m_vCenter.y);
-        PropertyDialog::SetFloatTextbox(m_lengthEdit, spinner->m_d.m_length);
-        PropertyDialog::SetFloatTextbox(m_heightEdit, spinner->m_d.m_height);
-        PropertyDialog::SetFloatTextbox(m_rotationEdit, spinner->m_d.m_rotation);
-        PropertyDialog::SetFloatTextbox(m_angleMaxEdit, spinner->m_d.m_angleMax);
-        PropertyDialog::SetFloatTextbox(m_angleMinEdit, spinner->m_d.m_angleMin);
+        if (dispid == IDC_SURFACE_COMBO || dispid == -1)
+            PropertyDialog::UpdateSurfaceComboBox(spinner->GetPTable(), m_surfaceCombo, spinner->m_d.m_szSurface);
+        if (dispid == IDC_SHOW_BRACKET_CHECK || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hShowBracketCheck, spinner->m_d.m_showBracket);
+        if (dispid == 11 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posXEdit, spinner->m_d.m_vCenter.x);
+        if (dispid == 12 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posYEdit, spinner->m_d.m_vCenter.y);
+        if (dispid == DISPID_Spinner_Length || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_lengthEdit, spinner->m_d.m_length);
+        if (dispid == 5 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_heightEdit, spinner->m_d.m_height);
+        if (dispid == 4 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_rotationEdit, spinner->m_d.m_rotation);
+        if (dispid == 13 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_angleMaxEdit, spinner->m_d.m_angleMax);
+        if (dispid == 14 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_angleMinEdit, spinner->m_d.m_angleMin);
 
-        UpdateBaseVisuals(spinner, &spinner->m_d);
+        UpdateBaseVisuals(spinner, &spinner->m_d, dispid);
         spinner->UpdateUnitsInfo();
         //only show the first element on multi-select
         break;
@@ -81,6 +90,7 @@ void SpinnerVisualsProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
+    UpdateVisuals(dispid);
 }
 
 BOOL SpinnerVisualsProperty::OnInitDialog()

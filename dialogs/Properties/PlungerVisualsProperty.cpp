@@ -31,23 +31,38 @@ void PlungerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPlunger))
             continue;
         Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
-        PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)plunger->m_d.m_type - 1].c_str());
-        PropertyDialog::UpdateSurfaceComboBox(plunger->GetPTable(), m_surfaceCombo, plunger->m_d.m_szSurface);
-        PropertyDialog::SetIntTextbox(m_flatFramesEdit, plunger->m_d.m_animFrames);
-        PropertyDialog::SetFloatTextbox(m_widthEdit, plunger->m_d.m_width);
-        PropertyDialog::SetFloatTextbox(m_zAdjustmentEdit, plunger->m_d.m_zAdjust);
-        PropertyDialog::SetFloatTextbox(m_rodDiameterEdit, plunger->m_d.m_rodDiam);
-        m_tipShapeEdit.SetWindowText(plunger->m_d.m_szTipShape);
-        PropertyDialog::SetFloatTextbox(m_ringGapEdit, plunger->m_d.m_ringGap);
-        PropertyDialog::SetFloatTextbox(m_ringDiamEdit, plunger->m_d.m_ringDiam);
-        PropertyDialog::SetFloatTextbox(m_ringWidthEdit, plunger->m_d.m_ringWidth);
-        PropertyDialog::SetFloatTextbox(m_springDiamEdit, plunger->m_d.m_springDiam);
-        PropertyDialog::SetFloatTextbox(m_springGaugeEdit, plunger->m_d.m_springGauge);
-        PropertyDialog::SetFloatTextbox(m_springLoopsEdit, plunger->m_d.m_springLoops);
-        PropertyDialog::SetFloatTextbox(m_endLoopsEdit, plunger->m_d.m_springEndLoops);
-        PropertyDialog::SetFloatTextbox(m_posXEdit, plunger->m_d.m_v.x);
-        PropertyDialog::SetFloatTextbox(m_posYEdit, plunger->m_d.m_v.y);
-        PropertyDialog::SetFloatTextbox(m_endLoopsEdit, plunger->m_d.m_springEndLoops);
+        if (dispid == IDC_PLUNGER_TYPE_COMBO || dispid == -1)
+            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)plunger->m_d.m_type - 1].c_str());
+        if (dispid == 1502 || dispid == -1)
+            PropertyDialog::UpdateSurfaceComboBox(plunger->GetPTable(), m_surfaceCombo, plunger->m_d.m_szSurface);
+        if (dispid == DISPID_PluFrames || dispid == -1)
+            PropertyDialog::SetIntTextbox(m_flatFramesEdit, plunger->m_d.m_animFrames);
+        if (dispid == DISPID_Width || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_widthEdit, plunger->m_d.m_width);
+        if (dispid == DISPID_ZAdjust || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_zAdjustmentEdit, plunger->m_d.m_zAdjust);
+        if (dispid == DISPID_RodDiam || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_rodDiameterEdit, plunger->m_d.m_rodDiam);
+        if (dispid == DISPID_TipShape || dispid == -1)
+            m_tipShapeEdit.SetWindowText(plunger->m_d.m_szTipShape);
+        if (dispid == DISPID_RingGap || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_ringGapEdit, plunger->m_d.m_ringGap);
+        if (dispid == DISPID_RingDiam || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_ringDiamEdit, plunger->m_d.m_ringDiam);
+        if (dispid == DISPID_RingThickness || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_ringWidthEdit, plunger->m_d.m_ringWidth);
+        if (dispid == DISPID_SpringDiam || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_springDiamEdit, plunger->m_d.m_springDiam);
+        if (dispid == DISPID_SpringGauge || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_springGaugeEdit, plunger->m_d.m_springGauge);
+        if (dispid == DISPID_SpringLoops || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_springLoopsEdit, plunger->m_d.m_springLoops);
+        if (dispid == 902 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posXEdit, plunger->m_d.m_v.x);
+        if (dispid == 903 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posYEdit, plunger->m_d.m_v.y);
+        if (dispid == DISPID_SpringEndLoops || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_endLoopsEdit, plunger->m_d.m_springEndLoops);
         UpdateBaseVisuals(plunger, &plunger->m_d);
         //only show the first element on multi-select
         break;
@@ -119,7 +134,7 @@ void PlungerVisualsProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL PlungerVisualsProperty::OnInitDialog()

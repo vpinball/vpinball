@@ -19,12 +19,19 @@ void RubberPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Rubber *const rubber = (Rubber *)m_pvsel->ElementAt(i);
 
-        PropertyDialog::SetFloatTextbox(m_elasticityFallOffEdit, rubber->m_d.m_elasticityFalloff);
-        PropertyDialog::SetFloatTextbox(m_hitHeightEdit, rubber->m_d.m_hitHeight);
-        UpdateBaseVisuals(rubber, &rubber->m_d);
-        m_elasticityFallOffEdit.EnableWindow(rubber->m_d.m_collidable);
-        if(rubber->m_d.m_collidable)
-            m_elasticityFallOffEdit.EnableWindow(rubber->m_d.m_overwritePhysics);
+        if (dispid == 120 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_elasticityFallOffEdit, rubber->m_d.m_elasticityFalloff);
+        if (dispid == IDC_HIT_HEIGHT_EDIT || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_hitHeightEdit, rubber->m_d.m_hitHeight);
+
+        UpdateBaseVisuals(rubber, &rubber->m_d, dispid);
+
+        if (dispid == IDC_COLLIDABLE_CHECK || dispid == -1)
+        {
+            m_elasticityFallOffEdit.EnableWindow(rubber->m_d.m_collidable);
+            if (rubber->m_d.m_collidable)
+                m_elasticityFallOffEdit.EnableWindow(rubber->m_d.m_overwritePhysics);
+        }
         //only show the first element on multi-select
         break;
     }
@@ -50,7 +57,7 @@ void RubberPhysicsProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL RubberPhysicsProperty::OnInitDialog()

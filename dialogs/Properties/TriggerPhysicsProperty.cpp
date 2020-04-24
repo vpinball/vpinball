@@ -14,8 +14,11 @@ void TriggerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemTrigger))
             continue;
         Trigger *trigger = (Trigger *)m_pvsel->ElementAt(i);
-        PropertyDialog::SetFloatTextbox(m_hitHeightEdit, trigger->m_d.m_hit_height);
-        PropertyDialog::SetCheckboxState(m_hEnableCheck, trigger->m_d.m_enabled);
+
+        if (dispid == IDC_HIT_HEIGHT_EDIT || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_hitHeightEdit, trigger->m_d.m_hit_height);
+        if (dispid == 904 || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hEnableCheck, trigger->m_d.m_enabled);
         //only show the first element on multi-select
         break;
     }
@@ -40,7 +43,7 @@ void TriggerPhysicsProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL TriggerPhysicsProperty::OnInitDialog()
