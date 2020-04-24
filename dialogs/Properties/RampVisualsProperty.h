@@ -25,7 +25,7 @@ private:
     EditBox   m_topHeightEdit;
     EditBox   m_bottomHeightEdit;
     EditBox   m_topWidthEdit;
-    EditBox   m_bottomWdthEdit;
+    EditBox   m_bottomWidthEdit;
     EditBox   m_leftWallEdit;
     EditBox   m_rightWallEdit;
     EditBox   m_diameterEdit;

@@ -18,7 +18,7 @@ RampVisualsProperty::RampVisualsProperty(VectorProtected<ISelect> *pvsel) : Base
     m_topHeightEdit.SetDialog(this);
     m_bottomHeightEdit.SetDialog(this);
     m_topWidthEdit.SetDialog(this);
-    m_bottomWdthEdit.SetDialog(this);
+    m_bottomWidthEdit.SetDialog(this);
     m_leftWallEdit.SetDialog(this);
     m_rightWallEdit.SetDialog(this);
     m_diameterEdit.SetDialog(this);
@@ -46,7 +46,7 @@ void RampVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == 4 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_topWidthEdit, ramp->m_d.m_widthtop);
         if (dispid == 3 || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_bottomWdthEdit, ramp->m_d.m_widthbottom);
+            PropertyDialog::SetFloatTextbox(m_bottomWidthEdit, ramp->m_d.m_widthbottom);
         if (dispid == 108 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_leftWallEdit, ramp->m_d.m_leftwallheightvisible);
         if (dispid == 109 || dispid == -1)
@@ -82,7 +82,7 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(ramp->m_d.m_heighttop, PropertyDialog::GetFloatTextbox(m_topHeightEdit), ramp);
                 break;
             case 3:
-                CHECK_UPDATE_ITEM(ramp->m_d.m_widthbottom, PropertyDialog::GetFloatTextbox(m_bottomWdthEdit), ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_widthbottom, PropertyDialog::GetFloatTextbox(m_bottomWidthEdit), ramp);
                 break;
             case 4:
                 CHECK_UPDATE_ITEM(ramp->m_d.m_widthtop, PropertyDialog::GetFloatTextbox(m_topWidthEdit), ramp);
@@ -138,7 +138,7 @@ BOOL RampVisualsProperty::OnInitDialog()
     m_topHeightEdit.AttachItem(2);
     m_bottomHeightEdit.AttachItem(1);
     m_topWidthEdit.AttachItem(4);
-    m_bottomWdthEdit.AttachItem(3);
+    m_bottomWidthEdit.AttachItem(3);
     m_leftWallEdit.AttachItem(108);
     m_rightWallEdit.AttachItem(109);
     m_diameterEdit.AttachItem(IDC_WIRE_DIAMETER);
