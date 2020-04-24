@@ -16,8 +16,10 @@ void SpinnerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Spinner *const spinner = (Spinner *)m_pvsel->ElementAt(i);
 
-        PropertyDialog::SetFloatTextbox(m_dampingEdit, spinner->m_d.m_damping);
-        UpdateBaseVisuals(spinner, &spinner->m_d);
+        if (dispid == IDC_DAMPING_EDIT || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_dampingEdit, spinner->m_d.m_damping);
+
+        UpdateBaseVisuals(spinner, &spinner->m_d, dispid);
         //only show the first element on multi-select
         break;
     }
@@ -42,6 +44,7 @@ void SpinnerPhysicsProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
+    UpdateVisuals(dispid);
 }
 
 BOOL SpinnerPhysicsProperty::OnInitDialog()

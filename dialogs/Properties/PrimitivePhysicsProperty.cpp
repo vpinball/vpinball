@@ -20,10 +20,14 @@ void PrimitivePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Primitive *const prim = (Primitive *)m_pvsel->ElementAt(i);
 
-        PropertyDialog::SetCheckboxState(m_hToyCheck, prim->m_d.m_toy);
-        PropertyDialog::SetFloatTextbox(m_elasticityFalloffEdit, prim->m_d.m_elasticityFalloff);
-        PropertyDialog::SetFloatTextbox(m_reducePolyEdit, prim->m_d.m_collision_reductionFactor);
-        UpdateBaseVisuals(prim, &prim->m_d);
+        if (dispid == IDC_PRIMITIVE_IS_TOY || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hToyCheck, prim->m_d.m_toy);
+        if (dispid == IDC_ELASTICITY_FALLOFF_EDIT || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_elasticityFalloffEdit, prim->m_d.m_elasticityFalloff);
+        if (dispid == IDC_COLLISION_REDUCTION_FACTOR || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_reducePolyEdit, prim->m_d.m_collision_reductionFactor);
+
+        UpdateBaseVisuals(prim, &prim->m_d, dispid);
         //only show the first element on multi-select
         break;
     }
@@ -52,7 +56,7 @@ void PrimitivePhysicsProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL PrimitivePhysicsProperty::OnInitDialog()

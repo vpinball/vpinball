@@ -17,16 +17,26 @@ void TableLightsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
 
-    m_colorButton1.SetColor(table->m_lightAmbient);
-    m_colorButton2.SetColor(table->m_Light[0].emission);
-    PropertyDialog::SetFloatTextbox(m_lightEmissionScaleEdit, table->m_lightEmissionScale);
-    PropertyDialog::SetFloatTextbox(m_lightHeightEdit, table->m_lightHeight);
-    PropertyDialog::SetFloatTextbox(m_lightRangeEdit, table->m_lightRange);
-    PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_envEmissionImageCombo, table->m_szEnvImage);
-    PropertyDialog::SetFloatTextbox(m_envEmissionScaleEdit, table->m_envEmissionScale);
-    PropertyDialog::SetFloatTextbox(m_ambientOcclusionScaleEdit, table->m_AOScale);
-    PropertyDialog::SetFloatTextbox(m_bloomStrengthEdit, table->m_bloom_strength);
-    PropertyDialog::SetFloatTextbox(m_screenSpaceReflEdit, table->m_SSRScale);
+    if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
+        m_colorButton1.SetColor(table->m_lightAmbient);
+    if (dispid == IDC_COLOR_BUTTON2 || dispid == -1)
+        m_colorButton2.SetColor(table->m_Light[0].emission);
+    if (dispid == IDC_LIGHTEMISSIONSCALE || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_lightEmissionScaleEdit, table->m_lightEmissionScale);
+    if (dispid == IDC_LIGHTHEIGHT || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_lightHeightEdit, table->m_lightHeight);
+    if (dispid == IDC_LIGHTRANGE || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_lightRangeEdit, table->m_lightRange);
+    if (dispid == DISPID_Image7 || dispid == -1)
+        PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_envEmissionImageCombo, table->m_szEnvImage);
+    if (dispid == IDC_ENVEMISSIONSCALE || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_envEmissionScaleEdit, table->m_envEmissionScale);
+    if (dispid == IDC_AOSCALE || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_ambientOcclusionScaleEdit, table->m_AOScale);
+    if (dispid == IDC_BLOOM_STRENGTH || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_bloomStrengthEdit, table->m_bloom_strength);
+    if (dispid == IDC_SSR_STRENGTH || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_screenSpaceReflEdit, table->m_SSRScale);
 }
 
 void TableLightsProperty::UpdateProperties(const int dispid)
@@ -97,6 +107,7 @@ void TableLightsProperty::UpdateProperties(const int dispid)
         default:
             break;
     }
+    UpdateVisuals(dispid);
 }
 
 BOOL TableLightsProperty::OnInitDialog()

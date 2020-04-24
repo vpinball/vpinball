@@ -17,14 +17,20 @@ void LightseqStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         LightSeq *const lightseq = (LightSeq *)m_pvsel->ElementAt(i);
 
-        PropertyDialog::SetFloatTextbox(m_posXEdit, lightseq->GetX());
-        PropertyDialog::SetFloatTextbox(m_posYEdit, lightseq->GetY());
-        PropertyDialog::SetIntTextbox(m_updateIntervalEdit, lightseq->GetUpdateInterval());
+        if (dispid == 9 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posXEdit, lightseq->GetX());
+        if (dispid == 10 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posYEdit, lightseq->GetY());
+        if (dispid == IDC_LIGHTSEQ_UPDATE_INTERVAL_EDIT || dispid == -1)
+            PropertyDialog::SetIntTextbox(m_updateIntervalEdit, lightseq->GetUpdateInterval());
 
-        char szT[MAX_PATH];
-        WideCharToMultiByte(CP_ACP, 0, lightseq->m_d.m_wzCollection, -1, szT, MAX_PATH, NULL, NULL);
+        if (dispid == DISPID_Collection || dispid == -1)
+        {
+            char szT[MAX_PATH];
+            WideCharToMultiByte(CP_ACP, 0, lightseq->m_d.m_wzCollection, -1, szT, MAX_PATH, NULL, NULL);
 
-        PropertyDialog::UpdateCollectionComboBox(lightseq->GetPTable(), m_collectionCombo, szT);
+            PropertyDialog::UpdateCollectionComboBox(lightseq->GetPTable(), m_collectionCombo, szT);
+        }
 
         //only show the first element on multi-select
         break;
@@ -64,7 +70,7 @@ void LightseqStatesProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL LightseqStatesProperty::OnInitDialog()

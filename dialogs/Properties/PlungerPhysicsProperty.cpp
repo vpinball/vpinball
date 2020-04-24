@@ -20,16 +20,26 @@ void PlungerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPlunger))
             continue;
         Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
-        PropertyDialog::SetFloatTextbox(m_pullSpeedEdit, plunger->m_d.m_speedPull);
-        PropertyDialog::SetFloatTextbox(m_releaseSpeedEdit, plunger->m_d.m_speedFire);
-        PropertyDialog::SetFloatTextbox(m_strokeLengthEdit, plunger->m_d.m_stroke);
-        PropertyDialog::SetFloatTextbox(m_scatterVelocityEdit, plunger->m_d.m_scatterVelocity);
-        PropertyDialog::SetCheckboxState(m_hAutoPlungerCheck, plunger->m_d.m_autoPlunger);
-        PropertyDialog::SetCheckboxState(m_hEnableMechPlungerCheck, plunger->m_d.m_mechPlunger);
-        PropertyDialog::SetFloatTextbox(m_mechStrengthEdit, plunger->m_d.m_mechStrength);
-        PropertyDialog::SetFloatTextbox(m_momentumXferEdit, plunger->m_d.m_momentumXfer);
-        PropertyDialog::SetFloatTextbox(m_parkPositionEdit, plunger->m_d.m_parkPosition);
-        UpdateBaseVisuals(plunger, &plunger->m_d);
+        if (dispid == IDC_PULL_SPEED_EDIT || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_pullSpeedEdit, plunger->m_d.m_speedPull);
+        if (dispid == IDC_RELEASE_SPEED_EDIT || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_releaseSpeedEdit, plunger->m_d.m_speedFire);
+        if (dispid == IDC_STROKE_LENGTH_EDIT || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_strokeLengthEdit, plunger->m_d.m_stroke);
+        if (dispid == IDC_SCATTER_VELOCITY_EDIT || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_scatterVelocityEdit, plunger->m_d.m_scatterVelocity);
+        if (dispid == IDC_AUTO_PLUNGER_CHECK || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hAutoPlungerCheck, plunger->m_d.m_autoPlunger);
+        if (dispid == IDC_ENABLE_MECH_PLUNGER_CHECK || dispid == -1)
+            PropertyDialog::SetCheckboxState(m_hEnableMechPlungerCheck, plunger->m_d.m_mechPlunger);
+        if (dispid == IDC_MECH_STRENGTH_EDIT || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_mechStrengthEdit, plunger->m_d.m_mechStrength);
+        if (dispid == IDC_MOMENTUM_XFER_EDIT || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_momentumXferEdit, plunger->m_d.m_momentumXfer);
+        if (dispid == IDC_PARK_POSITION_EDIT || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_parkPositionEdit, plunger->m_d.m_parkPosition);
+
+        UpdateBaseVisuals(plunger, &plunger->m_d, dispid);
         //only show the first element on multi-select
         break;
     }
@@ -76,7 +86,7 @@ void PlungerPhysicsProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL PlungerPhysicsProperty::OnInitDialog()

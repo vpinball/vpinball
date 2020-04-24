@@ -41,23 +41,43 @@ void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
     if (table == NULL)
         return;
 
-    PropertyDialog::UpdateComboBox(m_userList, m_SSAACombo, m_userList[table->m_useAA + 1].c_str());
-    PropertyDialog::UpdateComboBox(m_postAAList, m_postProcAACombo, m_postAAList[table->m_useFXAA + 1].c_str());
-    PropertyDialog::UpdateComboBox(m_userList, m_inGameAOCombo, m_userList[table->m_useAO + 1].c_str());
-    PropertyDialog::UpdateComboBox(m_userList, m_ScreenReflectionCombo, m_userList[table->m_useSSR + 1].c_str());
+    if (dispid == IDC_ENABLE_AA || dispid == -1)
+        PropertyDialog::UpdateComboBox(m_userList, m_SSAACombo, m_userList[table->m_useAA + 1].c_str());
+    if (dispid == IDC_ENABLE_FXAA || dispid == -1)
+        PropertyDialog::UpdateComboBox(m_postAAList, m_postProcAACombo, m_postAAList[table->m_useFXAA + 1].c_str());
+    if (dispid == IDC_ENABLE_AO || dispid == -1)
+        PropertyDialog::UpdateComboBox(m_userList, m_inGameAOCombo, m_userList[table->m_useAO + 1].c_str());
+    if (dispid == IDC_ENABLE_SSR || dispid == -1)
+        PropertyDialog::UpdateComboBox(m_userList, m_ScreenReflectionCombo, m_userList[table->m_useSSR + 1].c_str());
+    
     m_detailLevelSlider.SetPos(table->GetDetailLevel(), 1);
-    PropertyDialog::SetCheckboxState(m_hOverwriteDetailsCheck, table->m_overwriteGlobalDetailLevel);
-    PropertyDialog::UpdateComboBox(m_userList, m_ballReflectionCombo, m_userList[(int)(table->m_useReflectionForBalls) + 1].c_str());
-    PropertyDialog::UpdateComboBox(m_userList, m_ballTrailCombo, m_userList[(int)(table->m_useTrailForBalls) + 1].c_str());
-    PropertyDialog::SetIntTextbox(m_ballTrailStrengthEdit, table->GetBallTrailStrength());
+
+    if (dispid == IDC_GLOBAL_ALPHA_ACC || dispid == -1)
+        PropertyDialog::SetCheckboxState(m_hOverwriteDetailsCheck, table->m_overwriteGlobalDetailLevel);
+    if (dispid == IDC_BALL_REFLECTION || dispid == -1)
+        PropertyDialog::UpdateComboBox(m_userList, m_ballReflectionCombo, m_userList[(int)(table->m_useReflectionForBalls) + 1].c_str());
+    if (dispid == IDC_BALL_TRAIL || dispid == -1)
+        PropertyDialog::UpdateComboBox(m_userList, m_ballTrailCombo, m_userList[(int)(table->m_useTrailForBalls) + 1].c_str());
+    if (dispid == IDC_TRAIL_EDIT || dispid == -1)
+        PropertyDialog::SetIntTextbox(m_ballTrailStrengthEdit, table->GetBallTrailStrength());
+
     m_nightDaySlider.SetPos(table->GetGlobalEmissionScale(), 1);
-    PropertyDialog::SetCheckboxState(m_hOverwriteNightDayCheck, table->m_overwriteGlobalDayNight);
-    PropertyDialog::UpdateComboBox(m_physicSetList, m_overwritePhysicsSetCombo, m_physicSetList[(int)table->m_overridePhysics].c_str());
-    PropertyDialog::SetFloatTextbox(m_gameplayDifficultEdit, table->GetGlobalDifficulty());
-    PropertyDialog::SetCheckboxState(m_hOverwriteFlipperCheck, table->m_overridePhysicsFlipper);
-    PropertyDialog::SetIntTextbox(m_soundEffectVolEdit, table->GetTableSoundVolume());
-    PropertyDialog::SetIntTextbox(m_musicVolEdit, table->GetTableMusicVolume());
-    PropertyDialog::SetIntTextbox(m_fpsLimiterEdit, table->m_TableAdaptiveVSync);
+
+    if (dispid == IDC_GLOBAL_DAYNIGHT || dispid == -1)
+        PropertyDialog::SetCheckboxState(m_hOverwriteNightDayCheck, table->m_overwriteGlobalDayNight);
+    if (dispid == IDC_OVERWRITE_PHYSICS_COMBO || dispid == -1)
+        PropertyDialog::UpdateComboBox(m_physicSetList, m_overwritePhysicsSetCombo, m_physicSetList[(int)table->m_overridePhysics].c_str());
+    if (dispid == IDC_GAME_DIFFICULTY_EDIT || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_gameplayDifficultEdit, table->GetGlobalDifficulty());
+    if (dispid == IDC_OVERRIDEPHYSICS_FLIPPERS || dispid == -1)
+        PropertyDialog::SetCheckboxState(m_hOverwriteFlipperCheck, table->m_overridePhysicsFlipper);
+    if (dispid == IDC_TABLESOUNDVOLUME || dispid == -1)
+        PropertyDialog::SetIntTextbox(m_soundEffectVolEdit, table->GetTableSoundVolume());
+    if (dispid == IDC_TABLEMUSICVOLUME || dispid == -1)
+        PropertyDialog::SetIntTextbox(m_musicVolEdit, table->GetTableMusicVolume());
+    if (dispid == IDC_TABLEAVSYNC || dispid == -1)
+        PropertyDialog::SetIntTextbox(m_fpsLimiterEdit, table->m_TableAdaptiveVSync);
+
     m_detailLevelSlider.EnableWindow(table->m_overwriteGlobalDetailLevel);
     m_nightDaySlider.EnableWindow(table->m_overwriteGlobalDayNight);
 }
@@ -119,7 +139,7 @@ void TableCustomProperty::UpdateProperties(const int dispid)
             break;
     }
 
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL TableCustomProperty::OnInitDialog()

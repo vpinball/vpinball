@@ -29,25 +29,41 @@ void PrimitivePositionProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Primitive *const prim = (Primitive*)m_pvsel->ElementAt(i);
 
-        PropertyDialog::SetFloatTextbox(m_posXEdit, prim->m_d.m_vPosition.x);
-        PropertyDialog::SetFloatTextbox(m_posYEdit, prim->m_d.m_vPosition.y);
-        PropertyDialog::SetFloatTextbox(m_posZEdit, prim->m_d.m_vPosition.z);
+        if (dispid == DISPID_POSITION_X || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posXEdit, prim->m_d.m_vPosition.x);
+        if (dispid == DISPID_POSITION_Y || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posYEdit, prim->m_d.m_vPosition.y);
+        if (dispid == DISPID_POSITION_Z || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posZEdit, prim->m_d.m_vPosition.z);
 
-        PropertyDialog::SetFloatTextbox(m_scaleXEdit, prim->m_d.m_vSize.x);
-        PropertyDialog::SetFloatTextbox(m_scaleYEdit, prim->m_d.m_vSize.y);
-        PropertyDialog::SetFloatTextbox(m_scaleZEdit, prim->m_d.m_vSize.z);
+        if (dispid == DISPID_SIZE_X || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_scaleXEdit, prim->m_d.m_vSize.x);
+        if (dispid == DISPID_SIZE_Y || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_scaleYEdit, prim->m_d.m_vSize.y);
+        if (dispid == DISPID_SIZE_Z || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_scaleZEdit, prim->m_d.m_vSize.z);
 
-        PropertyDialog::SetFloatTextbox(m_rotXEdit, prim->m_d.m_aRotAndTra[0]);
-        PropertyDialog::SetFloatTextbox(m_rotYEdit, prim->m_d.m_aRotAndTra[1]);
-        PropertyDialog::SetFloatTextbox(m_rotZEdit, prim->m_d.m_aRotAndTra[2]);
+        if (dispid == DISPID_ROTRA1 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_rotXEdit, prim->m_d.m_aRotAndTra[0]);
+        if (dispid == DISPID_ROTRA2 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_rotYEdit, prim->m_d.m_aRotAndTra[1]);
+        if (dispid == DISPID_ROTRA3 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_rotZEdit, prim->m_d.m_aRotAndTra[2]);
 
-        PropertyDialog::SetFloatTextbox(m_transXEdit, prim->m_d.m_aRotAndTra[3]);
-        PropertyDialog::SetFloatTextbox(m_transYEdit, prim->m_d.m_aRotAndTra[4]);
-        PropertyDialog::SetFloatTextbox(m_transZEdit, prim->m_d.m_aRotAndTra[5]);
+        if (dispid == DISPID_ROTRA4 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_transXEdit, prim->m_d.m_aRotAndTra[3]);
+        if (dispid == DISPID_ROTRA5 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_transYEdit, prim->m_d.m_aRotAndTra[4]);
+        if (dispid == DISPID_ROTRA6 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_transZEdit, prim->m_d.m_aRotAndTra[5]);
 
-        PropertyDialog::SetFloatTextbox(m_objRotXEdit, prim->m_d.m_aRotAndTra[6]);
-        PropertyDialog::SetFloatTextbox(m_objRotYEdit, prim->m_d.m_aRotAndTra[7]);
-        PropertyDialog::SetFloatTextbox(m_objRotZEdit, prim->m_d.m_aRotAndTra[8]);
+        if (dispid == DISPID_ROTRA7 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_objRotXEdit, prim->m_d.m_aRotAndTra[6]);
+        if (dispid == DISPID_ROTRA8 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_objRotYEdit, prim->m_d.m_aRotAndTra[7]);
+        if (dispid == DISPID_ROTRA9 || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_objRotZEdit, prim->m_d.m_aRotAndTra[8]);
+
         prim->UpdateEditorView();
         //only show the first element on multi-select
         break;
@@ -112,7 +128,7 @@ void PrimitivePositionProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL PrimitivePositionProperty::OnInitDialog() 
