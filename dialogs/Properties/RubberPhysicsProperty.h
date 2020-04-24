@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -17,11 +17,11 @@ protected:
 
 private:
     CComboBox   m_physicsMaterialCombo;
-    CEdit       m_elasticityEdit;
-    CEdit       m_elasticityFallOffEdit;
-    CEdit       m_frictionEdit;
-    CEdit       m_scatterAngleEdit;
-    CEdit       m_hitHeightEdit;
+    EditBox     m_elasticityEdit;
+    EditBox     m_elasticityFallOffEdit;
+    EditBox     m_frictionEdit;
+    EditBox     m_scatterAngleEdit;
+    EditBox     m_hitHeightEdit;
 };
 
 #endif // !H_RUBBER_PHYSICS_PROPERTY

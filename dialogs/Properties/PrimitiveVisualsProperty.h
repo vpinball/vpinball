@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -23,14 +23,14 @@ private:
     HWND        m_hObjectSpaceCheck;
     CComboBox   m_normalMapCombo;
     CComboBox   m_materialCombo;
-    CEdit       m_depthBiasEdit;
+    EditBox     m_depthBiasEdit;
     HWND        m_hStaticRenderingCheck;
     HWND        m_hRenderBackfacingCheck;
     HWND        m_hDrawTexturesInsideCheck;
-    CEdit       m_disableLightingEdit;
-    CEdit       m_disableLightFromBelowEdit;
-    CEdit       m_legacySidesEdit;
-    CEdit       m_edgeFactorUIEdit;
+    EditBox     m_disableLightingEdit;
+    EditBox     m_disableLightFromBelowEdit;
+    EditBox     m_legacySidesEdit;
+    EditBox     m_edgeFactorUIEdit;
 };
 
 #endif // !H_PRIMITIVE_VISUALS_PROPERTY

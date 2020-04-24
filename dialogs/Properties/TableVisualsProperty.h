@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -18,11 +18,11 @@ protected:
 private:
     CComboBox   m_imageCombo;
     CComboBox   m_materialCombo;
-    CEdit       m_reflectionStrengthEdit;
     CComboBox   m_ballImageCombo;
     CComboBox   m_ballDecalCombo;
-    CEdit       m_ballReflectPlayfieldEdit;
-    CEdit       m_ballDefaultBulbIntensScaleEdit;
+    EditBox     m_reflectionStrengthEdit;
+    EditBox     m_ballReflectPlayfieldEdit;
+    EditBox     m_ballDefaultBulbIntensScaleEdit;
     HWND        m_hLogoModeCheck;
     HWND        m_hReflectElementsCheck;
 };

@@ -4,9 +4,13 @@
 
 WallVisualsProperty::WallVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPWALL_VISUALS, pvsel)
 {
+    m_disableLightingEdit.SetDialog(this);
+    m_disableLightFromBelowEdit.SetDialog(this);
+    m_topHeightEdit.SetDialog(this);
+    m_bottomHeightEdit.SetDialog(this);
 }
 
-void WallVisualsProperty::UpdateVisuals()
+void WallVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     //only show the first element on multi-select
     Surface* const wall = (Surface*)m_pvsel->ElementAt(0);
@@ -87,10 +91,10 @@ BOOL WallVisualsProperty::OnInitDialog()
     AttachItem(IDC_MATERIAL_COMBO, m_topMaterialCombo);
     AttachItem(IDC_MATERIAL_COMBO2, m_sideMaterialCombo);
     AttachItem(IDC_MATERIAL_COMBO3, m_slingshotMaterialCombo);
-    AttachItem(IDC_BLEND_DISABLE_LIGHTING, m_disableLightingEdit);
-    AttachItem(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW, m_disableLightFromBelowEdit);
-    AttachItem(9, m_topHeightEdit);
-    AttachItem(8, m_bottomHeightEdit);
+    m_disableLightingEdit.AttachItem(IDC_BLEND_DISABLE_LIGHTING);
+    m_disableLightFromBelowEdit.AttachItem(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW);
+    m_topHeightEdit.AttachItem(9);
+    m_bottomHeightEdit.AttachItem(8);
 
     m_baseImageCombo = &m_topImageCombo;
     m_baseMaterialCombo = &m_topMaterialCombo;

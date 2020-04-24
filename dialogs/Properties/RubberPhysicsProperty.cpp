@@ -4,9 +4,14 @@
 
 RubberPhysicsProperty::RubberPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRUBBER_PHYSICS, pvsel)
 {
+    m_elasticityEdit.SetDialog(this);
+    m_elasticityFallOffEdit.SetDialog(this);
+    m_frictionEdit.SetDialog(this);
+    m_scatterAngleEdit.SetDialog(this);
+    m_hitHeightEdit.SetDialog(this);
 }
 
-void RubberPhysicsProperty::UpdateVisuals()
+void RubberPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -55,14 +60,17 @@ BOOL RubberPhysicsProperty::OnInitDialog()
     m_hOverwritePhysicsCheck = ::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS);
     m_hCollidableCheck = ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
     m_hHitEventCheck = ::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK);
-    AttachItem(IDC_ELASTICITY_EDIT, m_elasticityEdit);
+    m_elasticityEdit.AttachItem(IDC_ELASTICITY_EDIT);
     m_baseElasticityEdit = &m_elasticityEdit;
-    AttachItem(120, m_elasticityFallOffEdit);
-    AttachItem(IDC_FRICTION_EDIT, m_frictionEdit);
+
+    m_elasticityFallOffEdit.AttachItem(120);
+    m_frictionEdit.AttachItem(IDC_FRICTION_EDIT);
     m_baseFrictionEdit = &m_frictionEdit;
-    AttachItem(IDC_SCATTER_ANGLE_EDIT, m_scatterAngleEdit);
+
+    m_scatterAngleEdit.AttachItem(IDC_SCATTER_ANGLE_EDIT);
     m_baseScatterAngleEdit = &m_scatterAngleEdit;
-    AttachItem(IDC_HIT_HEIGHT_EDIT, m_hitHeightEdit);
+
+    m_hitHeightEdit.AttachItem(IDC_HIT_HEIGHT_EDIT);
     UpdateVisuals();
     return TRUE;
 }

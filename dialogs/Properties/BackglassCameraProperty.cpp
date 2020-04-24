@@ -8,24 +8,47 @@ BackglassCameraProperty::BackglassCameraProperty(VectorProtected<ISelect> *pvsel
     m_modeList.push_back("Desktop (DT)");
     m_modeList.push_back("Fullscreen (FS)");
     m_modeList.push_back("Full Single Screen (FSS)");
+    m_inclinationEdit.SetDialog(this);
+    m_fovEdit.SetDialog(this);
+    m_laybackEdit.SetDialog(this);
+    m_xyRotationEdit.SetDialog(this);
+    m_xScaleEdit.SetDialog(this);
+    m_yScaleEdit.SetDialog(this);
+    m_zScaleEdit.SetDialog(this);
+    m_xOffsetEdit.SetDialog(this);
+    m_yOffsetEdit.SetDialog(this);
+    m_zOffsetEdit.SetDialog(this);
 }
 
-void BackglassCameraProperty::UpdateVisuals()
+void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     CComObject<PinTable> *const table = g_pvp->GetActiveTable();
-    PropertyDialog::SetCheckboxState(m_hFssModeCheck, table->GetShowFSS());
-    PropertyDialog::SetCheckboxState(m_hTestDesktopCheck, table->GetShowDT());
-    PropertyDialog::UpdateComboBox(m_modeList, m_modeCombo, m_modeList[table->m_currentBackglassMode].c_str());
-    PropertyDialog::SetFloatTextbox(m_inclinationEdit, table->m_BG_inclination[table->m_currentBackglassMode]);
-    PropertyDialog::SetFloatTextbox(m_fovEdit, table->m_BG_FOV[table->m_currentBackglassMode]);
-    PropertyDialog::SetFloatTextbox(m_laybackEdit, table->m_BG_layback[table->m_currentBackglassMode]);
-    PropertyDialog::SetFloatTextbox(m_xyRotationEdit, table->m_BG_rotation[table->m_currentBackglassMode]);
-    PropertyDialog::SetFloatTextbox(m_xScaleEdit, table->m_BG_scalex[table->m_currentBackglassMode]);
-    PropertyDialog::SetFloatTextbox(m_yScaleEdit, table->m_BG_scaley[table->m_currentBackglassMode]);
-    PropertyDialog::SetFloatTextbox(m_zScaleEdit, table->m_BG_scalez[table->m_currentBackglassMode]);
-    PropertyDialog::SetFloatTextbox(m_xOffsetEdit, table->m_BG_xlatex[table->m_currentBackglassMode]);
-    PropertyDialog::SetFloatTextbox(m_yOffsetEdit, table->m_BG_xlatey[table->m_currentBackglassMode]);
-    PropertyDialog::SetFloatTextbox(m_zOffsetEdit, table->m_BG_xlatez[table->m_currentBackglassMode]);
+    if(dispid == IDC_BG_FSS || dispid==-1)
+        PropertyDialog::SetCheckboxState(m_hFssModeCheck, table->GetShowFSS());
+    if(dispid == IDC_BG_TEST_DESKTOP_CHECK || dispid==-1)
+        PropertyDialog::SetCheckboxState(m_hTestDesktopCheck, table->GetShowDT());
+    if(dispid == IDC_BG_COMBOBOX || dispid==-1)
+        PropertyDialog::UpdateComboBox(m_modeList, m_modeCombo, m_modeList[table->m_currentBackglassMode].c_str());
+    if(dispid == IDC_INCLINATION_EDIT || dispid==-1)
+        PropertyDialog::SetFloatTextbox(m_inclinationEdit, table->m_BG_inclination[table->m_currentBackglassMode]);
+    if(dispid == IDC_FOV_EDIT || dispid==-1)
+        PropertyDialog::SetFloatTextbox(m_fovEdit, table->m_BG_FOV[table->m_currentBackglassMode]);
+    if(dispid == IDC_LAYBACK_EDIT || dispid==-1)
+        PropertyDialog::SetFloatTextbox(m_laybackEdit, table->m_BG_layback[table->m_currentBackglassMode]);
+    if(dispid == IDC_XY_ROTATION_EDIT || dispid==-1)
+        PropertyDialog::SetFloatTextbox(m_xyRotationEdit, table->m_BG_rotation[table->m_currentBackglassMode]);
+    if(dispid == IDC_X_SCALE_EDIT || dispid==-1)
+        PropertyDialog::SetFloatTextbox(m_xScaleEdit, table->m_BG_scalex[table->m_currentBackglassMode]);
+    if (dispid == IDC_Y_SCALE_EDIT || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_yScaleEdit, table->m_BG_scaley[table->m_currentBackglassMode]);
+    if (dispid == IDC_TABLE_SCALEZ || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_zScaleEdit, table->m_BG_scalez[table->m_currentBackglassMode]);
+    if(dispid == IDC_X_OFFSET_EDIT || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_xOffsetEdit, table->m_BG_xlatex[table->m_currentBackglassMode]);
+    if (dispid == IDC_Y_OFFSET_EDIT || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_yOffsetEdit, table->m_BG_xlatey[table->m_currentBackglassMode]);
+    if (dispid == IDC_Z_OFFSET_EDIT || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_zOffsetEdit, table->m_BG_xlatez[table->m_currentBackglassMode]);
 }
 
 void BackglassCameraProperty::UpdateProperties(const int dispid)
@@ -75,7 +98,7 @@ void BackglassCameraProperty::UpdateProperties(const int dispid)
         default:
             break;
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL BackglassCameraProperty::OnInitDialog()
@@ -83,16 +106,16 @@ BOOL BackglassCameraProperty::OnInitDialog()
     m_hFssModeCheck = ::GetDlgItem(GetHwnd(), IDC_BG_FSS);
     m_hTestDesktopCheck = ::GetDlgItem(GetHwnd(), IDC_BG_TEST_DESKTOP_CHECK);
     AttachItem(IDC_BG_COMBOBOX, m_modeCombo);
-    AttachItem(IDC_INCLINATION_EDIT, m_inclinationEdit);
-    AttachItem(IDC_FOV_EDIT, m_fovEdit);
-    AttachItem(IDC_LAYBACK_EDIT, m_laybackEdit);
-    AttachItem(IDC_XY_ROTATION_EDIT, m_xyRotationEdit);
-    AttachItem(IDC_X_SCALE_EDIT, m_xScaleEdit);
-    AttachItem(IDC_Y_SCALE_EDIT, m_yScaleEdit);
-    AttachItem(IDC_TABLE_SCALEZ, m_zScaleEdit);
-    AttachItem(IDC_X_OFFSET_EDIT, m_xOffsetEdit);
-    AttachItem(IDC_Y_OFFSET_EDIT, m_yOffsetEdit);
-    AttachItem(IDC_Z_OFFSET_EDIT, m_zOffsetEdit);
+    m_inclinationEdit.AttachItem(IDC_INCLINATION_EDIT);
+    m_fovEdit.AttachItem(IDC_FOV_EDIT);
+    m_laybackEdit.AttachItem(IDC_LAYBACK_EDIT);
+    m_xyRotationEdit.AttachItem(IDC_XY_ROTATION_EDIT);
+    m_xScaleEdit.AttachItem(IDC_X_SCALE_EDIT);
+    m_yScaleEdit.AttachItem(IDC_Y_SCALE_EDIT);
+    m_zScaleEdit.AttachItem(IDC_TABLE_SCALEZ);
+    m_xOffsetEdit.AttachItem(IDC_X_OFFSET_EDIT);
+    m_yOffsetEdit.AttachItem(IDC_Y_OFFSET_EDIT);
+    m_zOffsetEdit.AttachItem(IDC_Z_OFFSET_EDIT);
 
     UpdateVisuals();
 

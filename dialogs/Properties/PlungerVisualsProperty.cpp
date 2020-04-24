@@ -7,9 +7,24 @@ PlungerVisualsProperty::PlungerVisualsProperty(VectorProtected<ISelect> *pvsel) 
     m_typeList.push_back("Modern");
     m_typeList.push_back("Flat");
     m_typeList.push_back("Custom");
+
+    m_flatFramesEdit.SetDialog(this);
+    m_widthEdit.SetDialog(this);
+    m_zAdjustmentEdit.SetDialog(this);
+    m_rodDiameterEdit.SetDialog(this);
+    m_tipShapeEdit.SetDialog(this);
+    m_ringGapEdit.SetDialog(this);
+    m_ringDiamEdit.SetDialog(this);
+    m_ringWidthEdit.SetDialog(this);
+    m_springDiamEdit.SetDialog(this);
+    m_springGaugeEdit.SetDialog(this);
+    m_springLoopsEdit.SetDialog(this);
+    m_endLoopsEdit.SetDialog(this);
+    m_posXEdit.SetDialog(this);
+    m_posYEdit.SetDialog(this);
 }
 
-void PlungerVisualsProperty::UpdateVisuals()
+void PlungerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -114,20 +129,20 @@ BOOL PlungerVisualsProperty::OnInitDialog()
     m_baseMaterialCombo = &m_materialCombo;
     AttachItem(DISPID_Image, m_imageCombo);
     m_baseImageCombo = &m_imageCombo;
-    AttachItem(DISPID_PluFrames, m_flatFramesEdit);
-    AttachItem(DISPID_Width, m_widthEdit);
-    AttachItem(DISPID_ZAdjust, m_zAdjustmentEdit);
-    AttachItem(DISPID_RodDiam, m_rodDiameterEdit);
-    AttachItem(DISPID_TipShape, m_tipShapeEdit);
-    AttachItem(DISPID_RingGap, m_ringGapEdit);
-    AttachItem(DISPID_RingDiam, m_ringDiamEdit);
-    AttachItem(DISPID_RingThickness, m_ringWidthEdit);
-    AttachItem(DISPID_SpringDiam, m_springDiamEdit);
-    AttachItem(DISPID_SpringGauge, m_springGaugeEdit);
-    AttachItem(DISPID_SpringLoops, m_springLoopsEdit);
-    AttachItem(DISPID_SpringEndLoops, m_endLoopsEdit);
-    AttachItem(902, m_posXEdit);
-    AttachItem(903, m_posYEdit);
+    m_flatFramesEdit.AttachItem(DISPID_PluFrames);
+    m_widthEdit.AttachItem(DISPID_Width),
+    m_zAdjustmentEdit.AttachItem(DISPID_ZAdjust);
+    m_rodDiameterEdit.AttachItem(DISPID_RodDiam);
+    m_tipShapeEdit.AttachItem(DISPID_TipShape);
+    m_ringGapEdit.AttachItem(DISPID_RingGap);
+    m_ringDiamEdit.AttachItem(DISPID_RingDiam);
+    m_ringWidthEdit.AttachItem(DISPID_RingThickness);
+    m_springDiamEdit.AttachItem(DISPID_SpringDiam);
+    m_springGaugeEdit.AttachItem(DISPID_SpringGauge);
+    m_springLoopsEdit.AttachItem(DISPID_SpringLoops);
+    m_endLoopsEdit.AttachItem(DISPID_SpringEndLoops);
+    m_posXEdit.AttachItem(902);
+    m_posYEdit.AttachItem(903);
     AttachItem(1502, m_surfaceCombo);
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
     UpdateVisuals();

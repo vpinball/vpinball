@@ -13,30 +13,56 @@ HitTargetVisualsProperty::HitTargetVisualsProperty(VectorProtected<ISelect> *pvs
     m_typeList.push_back("DropTarget Simple Flat");
     m_typeList.push_back("HitTarget Slim Fat");
     m_typeList.push_back("HitTarget Slim");
+
+    m_dropSpeedEdit.SetDialog(this);
+    m_raiseDelayEdit.SetDialog(this);
+    m_depthBiasEdit.SetDialog(this);
+    m_disableLightingEdit.SetDialog(this);
+    m_disableLightBelowEdit.SetDialog(this);
+    m_posXEdit.SetDialog(this);
+    m_posYEdit.SetDialog(this);
+    m_posZEdit.SetDialog(this);
+    m_scaleXEdit.SetDialog(this);
+    m_scaleYEdit.SetDialog(this);
+    m_scaleZEdit.SetDialog(this);
+    m_orientationEdit.SetDialog(this);
 }
 
-void HitTargetVisualsProperty::UpdateVisuals()
+void HitTargetVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
         if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemHitTarget))
             continue;
         HitTarget * const target = (HitTarget*)m_pvsel->ElementAt(i);
-        PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[target->m_d.m_targetType - 1].c_str());
-        PropertyDialog::SetFloatTextbox(m_dropSpeedEdit, target->m_d.m_dropSpeed);
-        PropertyDialog::SetIntTextbox(m_raiseDelayEdit, target->m_d.m_raiseDelay);
-        PropertyDialog::SetFloatTextbox(m_depthBiasEdit, target->m_d.m_depthBias);
-        PropertyDialog::SetFloatTextbox(m_disableLightingEdit, target->m_d.m_disableLightingTop);
-        PropertyDialog::SetFloatTextbox(m_disableLightBelowEdit, target->m_d.m_disableLightingBelow);
-        PropertyDialog::SetFloatTextbox(m_posXEdit, target->m_d.m_vPosition.x);
-        PropertyDialog::SetFloatTextbox(m_posYEdit, target->m_d.m_vPosition.y);
-        PropertyDialog::SetFloatTextbox(m_posZEdit, target->m_d.m_vPosition.z);
-        PropertyDialog::SetFloatTextbox(m_scaleXEdit, target->m_d.m_vSize.x);
-        PropertyDialog::SetFloatTextbox(m_scaleYEdit, target->m_d.m_vSize.y);
-        PropertyDialog::SetFloatTextbox(m_scaleZEdit, target->m_d.m_vSize.z);
-        PropertyDialog::SetFloatTextbox(m_orientationEdit, target->m_d.m_rotZ);
+        if (dispid == IDC_HIT_TARGET_TYPE || dispid == -1)
+            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[target->m_d.m_targetType - 1].c_str());
+        if (dispid == IDC_TARGET_MOVE_SPEED_EDIT || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_dropSpeedEdit, target->m_d.m_dropSpeed);
+        if (dispid == IDC_TARGET_RAISE_DELAY_EDIT || dispid == -1)
+            PropertyDialog::SetIntTextbox(m_raiseDelayEdit, target->m_d.m_raiseDelay);
+        if (dispid == IDC_DEPTH_BIAS || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_depthBiasEdit, target->m_d.m_depthBias);
+        if (dispid == IDC_BLEND_DISABLE_LIGHTING || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_disableLightingEdit, target->m_d.m_disableLightingTop);
+        if (dispid == IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_disableLightBelowEdit, target->m_d.m_disableLightingBelow);
+        if (dispid == DISPID_POSITION_X || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posXEdit, target->m_d.m_vPosition.x);
+        if (dispid == DISPID_POSITION_Y || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posYEdit, target->m_d.m_vPosition.y);
+        if (dispid == DISPID_POSITION_Z || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_posZEdit, target->m_d.m_vPosition.z);
+        if (dispid == DISPID_SIZE_X || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_scaleXEdit, target->m_d.m_vSize.x);
+        if (dispid == DISPID_SIZE_Y || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_scaleYEdit, target->m_d.m_vSize.y);
+        if (dispid == DISPID_SIZE_Z || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_scaleZEdit, target->m_d.m_vSize.z);
+        if (dispid == DISPID_ROT_Z || dispid == -1)
+            PropertyDialog::SetFloatTextbox(m_orientationEdit, target->m_d.m_rotZ);
         
-        UpdateBaseVisuals(target, &target->m_d);
+        UpdateBaseVisuals(target, &target->m_d, dispid);
         //only show the first element on multi-select
         break;
     }
@@ -103,7 +129,7 @@ void HitTargetVisualsProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
-    UpdateVisuals();
+    UpdateVisuals(dispid);
 }
 
 BOOL HitTargetVisualsProperty::OnInitDialog()
@@ -115,18 +141,18 @@ BOOL HitTargetVisualsProperty::OnInitDialog()
     m_hVisibleCheck= ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
     AttachItem(IDC_HIT_TARGET_TYPE, m_typeCombo);
-    AttachItem(IDC_TARGET_MOVE_SPEED_EDIT, m_dropSpeedEdit);
-    AttachItem(IDC_TARGET_RAISE_DELAY_EDIT, m_raiseDelayEdit);
-    AttachItem(IDC_DEPTH_BIAS, m_depthBiasEdit);
-    AttachItem(IDC_BLEND_DISABLE_LIGHTING, m_disableLightingEdit);
-    AttachItem(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW, m_disableLightBelowEdit);
-    AttachItem(DISPID_POSITION_X, m_posXEdit);
-    AttachItem(DISPID_POSITION_Y, m_posYEdit);
-    AttachItem(DISPID_POSITION_Z, m_posZEdit);
-    AttachItem(DISPID_SIZE_X, m_scaleXEdit);
-    AttachItem(DISPID_SIZE_Y, m_scaleYEdit);
-    AttachItem(DISPID_SIZE_Z, m_scaleZEdit);
-    AttachItem(DISPID_ROT_Z, m_orientationEdit);
+    m_dropSpeedEdit.AttachItem(IDC_TARGET_MOVE_SPEED_EDIT);
+    m_raiseDelayEdit.AttachItem(IDC_TARGET_RAISE_DELAY_EDIT);
+    m_depthBiasEdit.AttachItem(IDC_DEPTH_BIAS);
+    m_disableLightingEdit.AttachItem(IDC_BLEND_DISABLE_LIGHTING);
+    m_disableLightBelowEdit.AttachItem(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW);
+    m_posXEdit.AttachItem(DISPID_POSITION_X);
+    m_posYEdit.AttachItem(DISPID_POSITION_Y);
+    m_posZEdit.AttachItem(DISPID_POSITION_Z);
+    m_scaleXEdit.AttachItem(DISPID_SIZE_X);
+    m_scaleYEdit.AttachItem(DISPID_SIZE_Y);
+    m_scaleZEdit.AttachItem(DISPID_SIZE_Z);
+    m_orientationEdit.AttachItem(DISPID_ROT_Z);
     UpdateVisuals();
     return TRUE;
 }

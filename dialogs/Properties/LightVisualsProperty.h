@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -17,24 +17,24 @@ protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
-    CEdit       m_falloffEdit;
-    CEdit       m_falloffPowerEdit;
-    CEdit       m_intensityEdit;
-    CEdit       m_fadeSpeedUpEdit;
-    CEdit       m_fadeSpeedDownEdit;
-    CEdit       m_depthBiasEdit;
     CComboBox   m_imageCombo;
     HWND        m_hPassThroughCheck;
     HWND        m_hEnableCheck;
     HWND        m_hShowMeshCheck;
     HWND        m_hStaticMeshCheck;
-    CEdit       m_haloHeightEdit;
-    CEdit       m_scaleMeshEdit;
-    CEdit       m_modulateEdit;
-    CEdit       m_transmitEdit;
     HWND        m_hRelectOnBalls;
-    CEdit       m_posXEdit;
-    CEdit       m_posYEdit;
+    EditBox     m_falloffEdit;
+    EditBox     m_falloffPowerEdit;
+    EditBox     m_intensityEdit;
+    EditBox     m_fadeSpeedUpEdit;
+    EditBox     m_fadeSpeedDownEdit;
+    EditBox     m_depthBiasEdit;
+    EditBox     m_haloHeightEdit;
+    EditBox     m_scaleMeshEdit;
+    EditBox     m_modulateEdit;
+    EditBox     m_transmitEdit;
+    EditBox     m_posXEdit;
+    EditBox     m_posYEdit;
     CComboBox   m_surfaceCombo;
     CColorDialog m_colorDialog;
     ColorButton m_colorButton1;

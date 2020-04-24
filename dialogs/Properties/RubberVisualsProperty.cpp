@@ -4,9 +4,14 @@
 
 RubberVisualsProperty::RubberVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRUBBER_VISUALS, pvsel)
 {
+    m_heightEdit.SetDialog(this);
+    m_thicknessEdit.SetDialog(this);
+    m_rotXEdit.SetDialog(this);
+    m_rotYEdit.SetDialog(this);
+    m_rotZEdit.SetDialog(this);
 }
 
-void RubberVisualsProperty::UpdateVisuals()
+void RubberVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -75,11 +80,11 @@ BOOL RubberVisualsProperty::OnInitDialog()
     m_hStaticRenderingCheck = ::GetDlgItem(GetHwnd(), IDC_STATIC_RENDERING_CHECK);
     m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
-    AttachItem(IDC_RUBBER_HEIGHT_EDIT, m_heightEdit);
-    AttachItem(IDC_RUBBER_THICKNESS_EDIT, m_thicknessEdit);
-    AttachItem(IDC_RUBBER_ROTX_EDIT, m_rotXEdit);
-    AttachItem(IDC_RUBBER_ROTY_EDIT, m_rotYEdit);
-    AttachItem(IDC_RUBBER_ROTZ_EDIT, m_rotZEdit);
+    m_heightEdit.AttachItem(IDC_RUBBER_HEIGHT_EDIT);
+    m_thicknessEdit.AttachItem(IDC_RUBBER_THICKNESS_EDIT);
+    m_rotXEdit.AttachItem(IDC_RUBBER_ROTX_EDIT);
+    m_rotYEdit.AttachItem(IDC_RUBBER_ROTY_EDIT);
+    m_rotZEdit.AttachItem(IDC_RUBBER_ROTZ_EDIT);
     m_hShowInEditorCheck = ::GetDlgItem(GetHwnd(), IDC_SHOW_IN_EDITOR_CHECK);
     UpdateVisuals();
     return TRUE;

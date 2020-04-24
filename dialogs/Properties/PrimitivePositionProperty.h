@@ -9,28 +9,28 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CEdit   m_posXEdit;
-    CEdit   m_posYEdit;
-    CEdit   m_posZEdit;
-    CEdit   m_scaleXEdit;
-    CEdit   m_scaleYEdit;
-    CEdit   m_scaleZEdit;
-    CEdit   m_rotXEdit;
-    CEdit   m_rotYEdit;
-    CEdit   m_rotZEdit;
-    CEdit   m_transXEdit;
-    CEdit   m_transYEdit;
-    CEdit   m_transZEdit;
-    CEdit   m_objRotXEdit;
-    CEdit   m_objRotYEdit;
-    CEdit   m_objRotZEdit;
+    EditBox   m_posXEdit;
+    EditBox   m_posYEdit;
+    EditBox   m_posZEdit;
+    EditBox   m_scaleXEdit;
+    EditBox   m_scaleYEdit;
+    EditBox   m_scaleZEdit;
+    EditBox   m_rotXEdit;
+    EditBox   m_rotYEdit;
+    EditBox   m_rotZEdit;
+    EditBox   m_transXEdit;
+    EditBox   m_transYEdit;
+    EditBox   m_transZEdit;
+    EditBox   m_objRotXEdit;
+    EditBox   m_objRotYEdit;
+    EditBox   m_objRotZEdit;
 };
 
 #endif // !H_PRIMITIVE_POSITION_PROPERTY

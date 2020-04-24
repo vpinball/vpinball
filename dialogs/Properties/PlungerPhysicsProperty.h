@@ -9,22 +9,22 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CEdit m_pullSpeedEdit;
-    CEdit m_releaseSpeedEdit;
-    CEdit m_strokeLengthEdit;
-    CEdit m_scatterVelocityEdit;
-    HWND  m_hEnableMechPlungerCheck;
-    HWND  m_hAutoPlungerCheck;
-    CEdit m_mechStrengthEdit;
-    CEdit m_momentumXferEdit;
-    CEdit m_parkPositionEdit;
+    EditBox m_pullSpeedEdit;
+    EditBox m_releaseSpeedEdit;
+    EditBox m_strokeLengthEdit;
+    EditBox m_scatterVelocityEdit;
+    EditBox m_mechStrengthEdit;
+    EditBox m_momentumXferEdit;
+    EditBox m_parkPositionEdit;
+    HWND    m_hEnableMechPlungerCheck;
+    HWND    m_hAutoPlungerCheck;
 };
 
 #endif // !H_PLUNGER_PHYSICS_PROPERTY

@@ -9,7 +9,7 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
@@ -17,11 +17,11 @@ protected:
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 
 private:
-    CEdit m_posXEdit;
-    CEdit m_posYEdit;
-    CEdit m_heightOffsetEdit;
-    CEdit m_realHeightEdit;
-    CEdit m_textureCoordEdit;
+    EditBox m_posXEdit;
+    EditBox m_posYEdit;
+    EditBox m_heightOffsetEdit;
+    EditBox m_realHeightEdit;
+    EditBox m_textureCoordEdit;
     CButton m_copyButton;
     CButton m_pasteButton;
     int m_id;

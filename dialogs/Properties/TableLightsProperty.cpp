@@ -4,9 +4,16 @@
 
 TableLightsProperty::TableLightsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_LIGHTSOURCES, pvsel)
 {
+    m_lightEmissionScaleEdit.SetDialog(this);
+    m_lightHeightEdit.SetDialog(this);
+    m_lightRangeEdit.SetDialog(this);
+    m_envEmissionScaleEdit.SetDialog(this);
+    m_ambientOcclusionScaleEdit.SetDialog(this);
+    m_bloomStrengthEdit.SetDialog(this);
+    m_screenSpaceReflEdit.SetDialog(this);
 }
 
-void TableLightsProperty::UpdateVisuals()
+void TableLightsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
 
@@ -96,14 +103,14 @@ BOOL TableLightsProperty::OnInitDialog()
 {
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
     AttachItem(IDC_COLOR_BUTTON2, m_colorButton2);
-    AttachItem(IDC_LIGHTEMISSIONSCALE, m_lightEmissionScaleEdit);
-    AttachItem(IDC_LIGHTHEIGHT, m_lightHeightEdit);
-    AttachItem(IDC_LIGHTRANGE, m_lightRangeEdit);
+    m_lightEmissionScaleEdit.AttachItem(IDC_LIGHTEMISSIONSCALE);
+    m_lightHeightEdit.AttachItem(IDC_LIGHTHEIGHT);
+    m_lightRangeEdit.AttachItem(IDC_LIGHTRANGE);
     AttachItem(DISPID_Image7, m_envEmissionImageCombo);
-    AttachItem(IDC_ENVEMISSIONSCALE, m_envEmissionScaleEdit);
-    AttachItem(IDC_AOSCALE, m_ambientOcclusionScaleEdit);
-    AttachItem(IDC_BLOOM_STRENGTH, m_bloomStrengthEdit);
-    AttachItem(IDC_SSR_STRENGTH, m_screenSpaceReflEdit);
+    m_envEmissionScaleEdit.AttachItem(IDC_ENVEMISSIONSCALE);
+    m_ambientOcclusionScaleEdit.AttachItem(IDC_AOSCALE);
+    m_bloomStrengthEdit.AttachItem(IDC_BLOOM_STRENGTH);
+    m_screenSpaceReflEdit.AttachItem(IDC_SSR_STRENGTH);
 
     UpdateVisuals();
     return TRUE;

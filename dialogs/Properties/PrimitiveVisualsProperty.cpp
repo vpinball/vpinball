@@ -4,9 +4,14 @@
 
 PrimitiveVisualsProperty::PrimitiveVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_VISUALS, pvsel)
 {
+    m_disableLightingEdit.SetDialog(this);
+    m_disableLightFromBelowEdit.SetDialog(this);
+    m_legacySidesEdit.SetDialog(this);
+    m_edgeFactorUIEdit.SetDialog(this);
+    m_depthBiasEdit.SetDialog(this);
 }
 
-void PrimitiveVisualsProperty::UpdateVisuals()
+void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -107,11 +112,11 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     AttachItem(DISPID_Image2, m_normalMapCombo);
     AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
     m_baseMaterialCombo = &m_materialCombo;
-    AttachItem(IDC_DEPTH_BIAS, m_depthBiasEdit);
-    AttachItem(IDC_BLEND_DISABLE_LIGHTING, m_disableLightingEdit);
-    AttachItem(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW, m_disableLightFromBelowEdit);
-    AttachItem(IDC_PRIMITIVE_LEGACY_SIDES_EDIT, m_legacySidesEdit);
-    AttachItem(IDC_EDGE_FACTOR_UI, m_edgeFactorUIEdit);
+    m_depthBiasEdit.AttachItem(IDC_DEPTH_BIAS);
+    m_disableLightingEdit.AttachItem(IDC_BLEND_DISABLE_LIGHTING);
+    m_disableLightFromBelowEdit.AttachItem(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW);
+    m_legacySidesEdit.AttachItem(IDC_PRIMITIVE_LEGACY_SIDES_EDIT);
+    m_edgeFactorUIEdit.AttachItem(IDC_EDGE_FACTOR_UI);
     UpdateVisuals();
     return TRUE;
 }

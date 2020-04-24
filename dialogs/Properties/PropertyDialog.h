@@ -1,6 +1,9 @@
 #ifndef H_PROPERTY_DIALOG
 #define H_PROPERTY_DIALOG
 
+#pragma region BasePropertyDialog
+
+class EditBox;
 class BasePropertyDialog: public CDialog
 {
 public:
@@ -21,7 +24,7 @@ public:
         m_disableEvents = false;
     }
     virtual void UpdateProperties(const int dispid) = 0;
-    virtual void UpdateVisuals() = 0;
+    virtual void UpdateVisuals(const int dispid=-1) = 0;
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam)
     {
         UNREFERENCED_PARAMETER(lParam);
@@ -31,7 +34,6 @@ public:
         {
             switch (HIWORD(wParam))
             {
-            case EN_KILLFOCUS:
             case CBN_KILLFOCUS:
             case CBN_SELCHANGE:
             case BN_CLICKED:
@@ -44,15 +46,17 @@ public:
         return FALSE;
     }
     void UpdateBaseProperties(ISelect *psel, BaseProperty *property, const int dispid);
-    void UpdateBaseVisuals(ISelect *psel, BaseProperty *property);
+    void UpdateBaseVisuals(ISelect *psel, BaseProperty *property, const int dispid = -1);
 
     VectorProtected<ISelect>* m_pvsel;
     bool                      m_disableEvents;
 protected:
-    CEdit     *m_baseHitThresholdEdit;
-    CEdit     *m_baseElasticityEdit;
-    CEdit     *m_baseFrictionEdit;
-    CEdit     *m_baseScatterAngleEdit;
+    virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
+
+    EditBox   *m_baseHitThresholdEdit;
+    EditBox   *m_baseElasticityEdit;
+    EditBox   *m_baseFrictionEdit;
+    EditBox   *m_baseScatterAngleEdit;
     CComboBox *m_basePhysicsMaterialCombo;
     CComboBox *m_baseMaterialCombo;
     CComboBox *m_baseImageCombo;
@@ -63,19 +67,46 @@ protected:
     HWND      m_hVisibleCheck;
 };
 
+class EditBox : public CEdit
+{
+public:
+    EditBox() : m_basePropertyDialog(nullptr), m_id(-1) {}
+    virtual ~EditBox() {}
+    void    SetDialog(BasePropertyDialog* dialog) { m_basePropertyDialog = dialog; }
+    virtual void AttachItem(int id)
+    {
+        m_id = id;
+        m_basePropertyDialog->AttachItem(id, *this);
+    }
+protected:
+    virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
+    //virtual BOOL    OnCommand(WPARAM wParam, LPARAM lParam);
+
+private:
+    BasePropertyDialog* m_basePropertyDialog;
+    int m_id;
+};
+
+#pragma endregion
+
+#pragma region TimerProperty
+
 class TimerProperty: public BasePropertyDialog
 {
 public:
     TimerProperty(VectorProtected<ISelect> *pvsel);
     virtual void UpdateProperties(const int dispid);
-    virtual void UpdateVisuals();
+    virtual void UpdateVisuals(const int dispid=-1);
 protected:
     virtual BOOL OnInitDialog();
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 private:
-    CEdit   m_timerIntervalEdit;
-    CEdit   m_userValueEdit;
+    EditBox m_timerIntervalEdit;
+    EditBox m_userValueEdit;
 };
+#pragma endregion
+
+#pragma region ColorButton
 
 class ColorButton: public CButton
 {
@@ -149,6 +180,9 @@ public:
 private:
     COLORREF m_color;
 };
+#pragma endregion
+
+#pragma region PropertyDialog
 
 class PropertyTab : public CTab
 {
@@ -265,6 +299,9 @@ private:
     CResizer m_resizer;
     CStatic m_multipleElementsStatic;
 };
+#pragma endregion
+
+#pragma region UpdateMacros
 
 #define CHECK_UPDATE_ITEM(classValue, uiValue, element)\
 {\
@@ -299,6 +336,9 @@ private:
         PropertyDialog::EndUndo(element); \
     } \
 }
+#pragma endregion
+
+#pragma region Docking
 
 class CContainProperties: public CDockContainer
 {
@@ -334,5 +374,6 @@ public:
 private:
     CContainProperties m_propContainer;
 };
+#pragma endregion
 
 #endif

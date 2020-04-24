@@ -9,17 +9,17 @@ public:
     {
     }
 
-    void UpdateVisuals();
+    void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
 
 protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CEdit       m_posXEdit;
-    CEdit       m_posYEdit;
+    EditBox     m_posXEdit;
+    EditBox     m_posYEdit;
+    EditBox     m_updateIntervalEdit;
     CComboBox   m_collectionCombo;
-    CEdit       m_updateIntervalEdit;
 };
 
 #endif // !H_LIGHTSEQ_STATES_PROPERTY

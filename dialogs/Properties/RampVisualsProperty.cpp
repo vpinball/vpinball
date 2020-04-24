@@ -13,9 +13,20 @@ RampVisualsProperty::RampVisualsProperty(VectorProtected<ISelect> *pvsel) : Base
 
     m_imageModeList.push_back("World");
     m_imageModeList.push_back("Wrap");
+
+    m_depthBiasEdit.SetDialog(this);
+    m_topHeightEdit.SetDialog(this);
+    m_bottomHeightEdit.SetDialog(this);
+    m_topWidthEdit.SetDialog(this);
+    m_bottomWdthEdit.SetDialog(this);
+    m_leftWallEdit.SetDialog(this);
+    m_rightWallEdit.SetDialog(this);
+    m_diameterEdit.SetDialog(this);
+    m_distanceXEdit.SetDialog(this);
+    m_distanceYEdit.SetDialog(this);
 }
 
-void RampVisualsProperty::UpdateVisuals()
+void RampVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -109,16 +120,16 @@ BOOL RampVisualsProperty::OnInitDialog()
     AttachItem(DISPID_Image, m_imageCombo);
     AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
     AttachItem(8, m_modeCombo);
-    AttachItem(IDC_DEPTH_BIAS, m_depthBiasEdit);
-    AttachItem(2, m_topHeightEdit);
-    AttachItem(1, m_bottomHeightEdit);
-    AttachItem(4, m_topWidthEdit);
-    AttachItem(3, m_bottomWdthEdit);
-    AttachItem(108, m_leftWallEdit);
-    AttachItem(109, m_rightWallEdit);
-    AttachItem(IDC_WIRE_DIAMETER, m_diameterEdit);
-    AttachItem(IDC_WIRE_DISTX, m_distanceXEdit);
-    AttachItem(IDC_WIRE_DISTY, m_distanceYEdit);
+    m_depthBiasEdit.AttachItem(IDC_DEPTH_BIAS);
+    m_topHeightEdit.AttachItem(2);
+    m_bottomHeightEdit.AttachItem(1);
+    m_topWidthEdit.AttachItem(4);
+    m_bottomWdthEdit.AttachItem(3);
+    m_leftWallEdit.AttachItem(108);
+    m_rightWallEdit.AttachItem(109);
+    m_diameterEdit.AttachItem(IDC_WIRE_DIAMETER);
+    m_distanceXEdit.AttachItem(IDC_WIRE_DISTX);
+    m_distanceYEdit.AttachItem(IDC_WIRE_DISTY);
 
     m_baseImageCombo = &m_imageCombo;
     m_baseMaterialCombo = &m_materialCombo;

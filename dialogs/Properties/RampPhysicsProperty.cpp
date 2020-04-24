@@ -4,9 +4,15 @@
 
 RampPhysicsProperty::RampPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_PHYSICS, pvsel)
 {
+    m_hitThresholdEdit.SetDialog(this);
+    m_leftWallEdit.SetDialog(this);
+    m_rightWallEdit.SetDialog(this);
+    m_elasticityEdit.SetDialog(this);
+    m_frictionEdit.SetDialog(this);
+    m_scatterAngleEdit.SetDialog(this);
 }
 
-void RampPhysicsProperty::UpdateVisuals()
+void RampPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
@@ -58,13 +64,13 @@ void RampPhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL RampPhysicsProperty::OnInitDialog()
 {
-    AttachItem(IDC_HIT_THRESHOLD_EDIT, m_hitThresholdEdit);
-    AttachItem(10, m_leftWallEdit);
-    AttachItem(11, m_rightWallEdit);
+    m_hitThresholdEdit.AttachItem(IDC_HIT_THRESHOLD_EDIT);
+    m_leftWallEdit.AttachItem(10);
+    m_rightWallEdit.AttachItem(11);
     AttachItem(IDC_MATERIAL_COMBO4, m_physicsMaterialCombo);
-    AttachItem(IDC_ELASTICITY_EDIT, m_elasticityEdit);
-    AttachItem(IDC_FRICTION_EDIT, m_frictionEdit);
-    AttachItem(IDC_SCATTER_ANGLE_EDIT, m_scatterAngleEdit);
+    m_elasticityEdit.AttachItem(IDC_ELASTICITY_EDIT);
+    m_frictionEdit.AttachItem(IDC_FRICTION_EDIT);
+    m_scatterAngleEdit.AttachItem(IDC_SCATTER_ANGLE_EDIT);
 
     m_basePhysicsMaterialCombo = &m_physicsMaterialCombo;
     m_baseHitThresholdEdit = &m_hitThresholdEdit;
