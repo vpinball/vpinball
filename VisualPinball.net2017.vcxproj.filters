@@ -214,7 +214,7 @@
     <ClCompile Include="dialogs\Properties\DispreelVisualsProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
-    <ClCompile Include="dialogs\Properties\LichtseqStatesProperty.cpp">
+    <ClCompile Include="dialogs\Properties\LightseqStatesProperty.cpp">
       <Filter>dialogs\Properties</Filter>
     </ClCompile>
     <ClCompile Include="dialogs\Properties\PrimitiveVisualsProperty.cpp">

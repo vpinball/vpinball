@@ -13,7 +13,7 @@ FlasherVisualsProperty::FlasherVisualsProperty(VectorProtected<ISelect> *pvsel) 
     m_imageAlignList.push_back("World");
     m_imageAlignList.push_back("Wrap");
 
-    m_opacyitAmountEdit.SetDialog(this);
+    m_opacityAmountEdit.SetDialog(this);
     m_filterAmountEdit.SetDialog(this);
     m_intensityEdit.SetDialog(this);
     m_fadeSpeedUpEdit.SetDialog(this);
@@ -59,7 +59,7 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == IDC_FILTERAMOUNT_EDIT || dispid == -1)
             PropertyDialog::SetIntTextbox(m_filterAmountEdit, flash->m_d.m_filterAmount);
         if (dispid == IDC_ALPHA_EDIT || dispid == -1)
-            PropertyDialog::SetIntTextbox(m_opacyitAmountEdit, flash->m_d.m_alpha);
+            PropertyDialog::SetIntTextbox(m_opacityAmountEdit, flash->m_d.m_alpha);
         if (dispid == IDC_DEPTH_BIAS || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_depthBiasEdit, flash->m_d.m_depthBias);
         if (dispid == IDC_MODULATE_VS_ADD || dispid == -1)
@@ -119,7 +119,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_VALUE_SETTER(flash->SetFilterAmount, flash->GetFilterAmount, PropertyDialog::GetIntTextbox, m_filterAmountEdit, flash);
                 break;
             case IDC_ALPHA_EDIT:
-                CHECK_UPDATE_VALUE_SETTER(flash->SetAlpha, flash->GetAlpha, PropertyDialog::GetIntTextbox, m_opacyitAmountEdit, flash);
+                CHECK_UPDATE_VALUE_SETTER(flash->SetAlpha, flash->GetAlpha, PropertyDialog::GetIntTextbox, m_opacityAmountEdit, flash);
                 break;
             case IDC_MODULATE_VS_ADD:
                 CHECK_UPDATE_ITEM(flash->m_d.m_modulate_vs_add, PropertyDialog::GetFloatTextbox(m_modulateEdit), flash);
@@ -178,7 +178,7 @@ BOOL FlasherVisualsProperty::OnInitDialog()
     m_hAdditiveBlendCheck = ::GetDlgItem(GetHwnd(), IDC_ADDBLEND);
     m_hUseDMDCheck = ::GetDlgItem(GetHwnd(), IDC_DMD);
     m_filterAmountEdit.AttachItem(IDC_FILTERAMOUNT_EDIT);
-    m_opacyitAmountEdit.AttachItem(IDC_ALPHA_EDIT);
+    m_opacityAmountEdit.AttachItem(IDC_ALPHA_EDIT);
     m_depthBiasEdit.AttachItem(IDC_DEPTH_BIAS);
     m_modulateEdit.AttachItem(IDC_MODULATE_VS_ADD);
     m_posXEdit.AttachItem(5);
