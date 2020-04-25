@@ -24,6 +24,8 @@ FEATURES:
   The plunger will move forth and back between the maximum and minimum position, allowing for a retry, if the desired firing position has been missed.
   Useful for button/key plunging and is now the new default.
 
+- add Inder/Playmatic trigger mesh
+
 FIXES:
 
 - replace dithering code with blue noise, fixes flickering patterns (especially in darker table areas)
