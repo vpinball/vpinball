@@ -749,6 +749,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(41), helpstring("method GetBalls")] HRESULT GetBalls([out, retval] SAFEARRAY(VARIANT) *pVal);
                 [id(42), helpstring("method GetElements")] HRESULT GetElements([out, retval] SAFEARRAY(VARIANT) *pVal);
                 [id(43), helpstring("method GetElementByName")] HRESULT GetElementByName([in] BSTR name, [out, retval] IDispatch* *pVal);
+                [id(48), helpstring("method GetTable")] HRESULT GetTable([out, retval] IDispatch* *pVal);
 
                 [propput, id(44), helpstring("method DMDWidth")] HRESULT DMDWidth([in] int pVal);
                 [propput, id(45), helpstring("method DMDHeight")] HRESULT DMDHeight([in] int pVal);
