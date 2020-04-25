@@ -11,6 +11,7 @@ TriggerVisualsProperty::TriggerVisualsProperty(VectorProtected<ISelect> *pvsel) 
     m_shapeList.push_back("Button");
     m_shapeList.push_back("Wire C");
     m_shapeList.push_back("Wire D");
+    m_shapeList.push_back("Inder");
 
     m_wireThicknessEdit.SetDialog(this);
     m_starRadiusEdit.SetDialog(this);
