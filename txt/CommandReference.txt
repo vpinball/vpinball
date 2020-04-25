@@ -10,6 +10,7 @@ Also see https://docs.orbitalpin.com/welcome for some more detailed help
 Changelog:
 10.7:
 - add UpdateMaterialPhysics to the globals
+- add GetTable to the globals
 - add PullBackandRetract to the plunger element that can be used instead of PullBack in the KeyDown Sub.
   The plunger will move forth and back between the maximum and minimum position, allowing for a retry, if the desired firing position has been missed.
 10.6:
@@ -142,7 +143,7 @@ PlaySound(string, int loopcount, float volume, float pan, float randompitch, int
 StopSound(string)
 PlayMusic(string, float volume) - volume 0..1
 MusicVolume(float volume) - 0..1
-EndMusic()
+EndMusic
 FireKnocker(int Count)
 QuitPlayer(int CloseType)
 Version - returns VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REVISION
@@ -153,6 +154,7 @@ VersionRevision - VP version revision
 GetBalls(Ball) - returns all Balls on the table
 GetElements(Editable) - returns all Elements on the table
 GetElementByName(string) - returns a certain Element, based on the name
+GetTable - returns the currently played table element
 UpdateMaterial(string, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
                OLE_COLOR base, OLE_COLOR glossy, OLE_COLOR clearcoat, VARIANT_BOOL isMetal, VARIANT_BOOL opacityActive,
                float elasticity, float elasticityFalloff, float friction, float scatterAngle) - updates all parameters of a material (same input ranges as used in the material editor)

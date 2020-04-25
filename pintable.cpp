@@ -1322,6 +1322,20 @@ STDMETHODIMP ScriptGlobalTable::GetElementByName(BSTR name, IDispatch* *pVal)
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::GetTable(IDispatch* *pVal)
+{
+   if (!pVal || !g_pplayer)
+      return E_POINTER;
+
+   IEditable * const pie = m_pt;
+
+   IDispatch *id = pie->GetISelect()->GetDispatch();
+   id->AddRef();
+   *pVal = id;
+
+   return S_OK;
+}
+
 STDMETHODIMP ScriptGlobalTable::get_Version(int *pVal)
 {
 	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
@@ -6193,7 +6207,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
         {
             const Primitive *const prim = (Primitive *)piSelect;
             if (prim->m_mesh.m_animationFrames.size() > 0)
-                info = info + " (animated " + std::to_string((unsigned long long)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
+                info += " (animated " + std::to_string((unsigned long long)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
         }
         g_pvp->SetStatusBarElementInfo(info.c_str());
         m_pcv->SelectItem(piSelect->GetIEditable()->GetScriptable());
@@ -7977,7 +7991,6 @@ void PinTable::SetTableWidth(const float value)
 STDMETHODIMP PinTable::get_Width(float *pVal)
 {
    *pVal = GetTableWidth();
-   g_pvp->SetStatusBarUnitInfo("", true);
 
    return S_OK;
 }

@@ -940,6 +940,7 @@ public:
    STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
    STDMETHOD(GetElements)(/*[out, retval]*/ LPSAFEARRAY *pVal);
    STDMETHOD(GetElementByName)(/*[in]*/ BSTR name, /*[out, retval]*/ IDispatch* *pVal);
+   STDMETHOD(GetTable)(/*[out, retval]*/ IDispatch** pVal);
 
    STDMETHOD(get_Version)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ int *pVal);
