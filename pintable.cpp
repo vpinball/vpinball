@@ -1322,16 +1322,12 @@ STDMETHODIMP ScriptGlobalTable::GetElementByName(BSTR name, IDispatch* *pVal)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::GetTable(IDispatch* *pVal)
+STDMETHODIMP ScriptGlobalTable::get_ActiveTable(ITable **pVal)
 {
    if (!pVal || !g_pplayer)
       return E_POINTER;
 
-   IEditable * const pie = m_pt;
-
-   IDispatch *id = pie->GetISelect()->GetDispatch();
-   id->AddRef();
-   *pVal = id;
+   m_pt->QueryInterface(IID_ITable, (void**)pVal);
 
    return S_OK;
 }
