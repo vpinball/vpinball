@@ -21,7 +21,6 @@ public:
         m_hOverwritePhysicsCheck = 0;
         m_hReflectionEnabledCheck = 0;
         m_hVisibleCheck = 0;
-        m_disableEvents = false;
     }
     virtual void UpdateProperties(const int dispid) = 0;
     virtual void UpdateVisuals(const int dispid=-1) = 0;
@@ -34,6 +33,10 @@ public:
         {
             switch (HIWORD(wParam))
             {
+            case EN_KILLFOCUS:
+            {
+                const int v = 42;
+            }
             case CBN_KILLFOCUS:
             case CBN_SELCHANGE:
             case BN_CLICKED:
@@ -49,7 +52,7 @@ public:
     void UpdateBaseVisuals(ISelect *psel, BaseProperty *property, const int dispid = -1);
 
     VectorProtected<ISelect>* m_pvsel;
-    bool                      m_disableEvents;
+    static bool               m_disableEvents;
 protected:
     virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
 
@@ -80,7 +83,6 @@ public:
     }
 protected:
     virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
-    //virtual BOOL    OnCommand(WPARAM wParam, LPARAM lParam);
 
 private:
     BasePropertyDialog* m_basePropertyDialog;
@@ -208,6 +210,7 @@ class PropertyDialog : public CDialog
 public:
     PropertyDialog();
 
+    void CreateTabs(VectorProtected<ISelect>* pvsel);
     void UpdateTabs(VectorProtected<ISelect> *pvsel);
 
     static void UpdateTextureComboBox(const vector<Texture*>& contentList, CComboBox &combo, const char *selectName);
@@ -294,6 +297,8 @@ protected:
 private:
     PropertyTab m_tab;
     BasePropertyDialog *m_tabs[PROPERTY_TABS];
+    ItemTypeEnum m_previousType;
+
     int  m_curTabIndex;
     CEdit m_nameEdit;
     CResizer m_resizer;

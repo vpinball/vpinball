@@ -863,6 +863,7 @@ public:
    WCHAR *GetCollectionNameByElement(const ISelect * const element);
    void RefreshProperties();
 private:
+   bool m_moving;
    std::unordered_map<const char *, Texture *, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
    std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name
 };
