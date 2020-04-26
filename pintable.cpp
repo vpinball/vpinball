@@ -23,6 +23,8 @@ INT_PTR CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+#pragma region ScriptGlobalTable
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -1362,8 +1364,11 @@ STDMETHODIMP ScriptGlobalTable::get_VersionRevision(int *pVal)
 	return S_OK;
 }
 
+#pragma endregion
+
 ////////////////////////////////////////////////////////////////////////////////
 
+#pragma region PinTable
 
 PinTable::PinTable()
 {
@@ -1376,6 +1381,7 @@ PinTable::PinTable()
    m_undo.m_ptable = this;
    m_grid = true;
    m_backdrop = true;
+   m_moving = false;
 
    m_renderDecals = true;
    m_renderEMReels = true;
@@ -4573,6 +4579,7 @@ void PinTable::DoLeftButtonDown(int x, int y, bool zoomIn)
 
       AddMultiSel(pisel, add, true, false);
 
+      m_moving = true;
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
          ISelect *const pisel2 = m_vmultisel.ElementAt(i);
@@ -4584,8 +4591,6 @@ void PinTable::DoLeftButtonDown(int x, int y, bool zoomIn)
 
 void PinTable::OnLeftButtonUp(int x, int y)
 {
-   //m_pselcur->OnLButtonUp(x,y);
-
    if (!m_dragging) // Not doing band select
    {
       for (int i = 0; i < m_vmultisel.Size(); i++)
@@ -4593,6 +4598,11 @@ void PinTable::OnLeftButtonUp(int x, int y)
          ISelect *pisel = m_vmultisel.ElementAt(i);
          if (pisel)
             pisel->OnLButtonUp(x, y);
+      }
+      if (m_moving)
+      {
+          m_moving = false;
+          g_pvp->SetPropSel(&m_vmultisel);
       }
    }
    else
@@ -4984,7 +4994,6 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_ACTIVATE:
             if (LOWORD(wParam) != WA_INACTIVE)
             {
-                SetFocus();
                 m_pvp->m_ptableActive = (CComObject<PinTable> *)this;
                 // re-evaluate the toolbar depending on table permissions
                 //g_pvp->SetEnableToolbar();
@@ -5246,7 +5255,7 @@ void PinTable::DoMouseMove(int x, int y)
 
    if (!m_dragging) // Not doing band select
    {
-      for (int i = 0; i < m_vmultisel.Size(); i++)
+       for (int i = 0; i < m_vmultisel.Size(); i++)
          m_vmultisel.ElementAt(i)->OnMouseMove(x, y);
    }
    else
@@ -6442,7 +6451,6 @@ void PinTable::OnLButtonUp(int x, int y)
          m_mdiTable->ReleaseDC(hdc);
       }
    }
-
    SetDirtyDraw();
 }
 
@@ -10055,6 +10063,7 @@ void PinTable::OnMouseMove(const short x, const short y)
         m_oldMousePosY = y;
         return;
     }
+
     DoMouseMove(x, y);
     m_oldMousePosX = x;
     m_oldMousePosY = y;
@@ -10090,13 +10099,9 @@ void PinTable::OnSize()
     SetDirtyDraw();
 }
 
-/*
-void PinTable::OnClose()
-{
-    g_pvp->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
-    //g_pvp->SetTimer(VPinball::TIMER_ID_CLOSE_TABLE, 100, NULL);	
-}
-*/
+#pragma endregion
+
+#pragma region PinTableMDI
 
 PinTableMDI::PinTableMDI()
 {
@@ -10182,4 +10187,6 @@ void PinTableMDI::OnClose()
     m_table->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
     CMDIChild::OnClose();
 }
+
+#pragma endregion
 
