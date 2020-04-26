@@ -10128,6 +10128,35 @@ PinTableMDI::~PinTableMDI()
         m_table->Release();
 }
 
+bool PinTableMDI::CanClose() const
+{
+    if (m_table->FDirty())
+    {
+        LocalString ls1(IDS_SAVE_CHANGES1);
+        LocalString ls2(IDS_SAVE_CHANGES2);
+        char* const szText = new char[lstrlen(ls1.m_szbuffer) + lstrlen(ls2.m_szbuffer) + lstrlen(m_table->m_szTitle) + 1];
+        lstrcpy(szText, ls1.m_szbuffer/*"Do you want to save the changes you made to '"*/);
+        lstrcat(szText, m_table->m_szTitle);
+        lstrcat(szText, ls2.m_szbuffer);
+        // TEXT
+        const int result = MessageBox(szText, "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
+        delete[] szText;
+
+        if (result == IDCANCEL)
+            return false;
+
+        if (result == IDYES)
+        {
+            if (m_table->TableSave() != S_OK)
+            {
+                LocalString ls3(IDS_SAVEERROR);
+                MessageBox(ls3.m_szbuffer, "Visual Pinball", MB_ICONERROR);
+            }
+        }
+    }
+    return true;
+}
+
 void PinTableMDI::PreCreate(CREATESTRUCT &cs)
 {
     cs.x = 20;
@@ -10151,30 +10180,6 @@ int PinTableMDI::OnCreate(CREATESTRUCT &cs)
 void PinTableMDI::OnClose()
 {
     m_table->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
-    if (m_table->FDirty())
-    {
-        LocalString ls1(IDS_SAVE_CHANGES1);
-        LocalString ls2(IDS_SAVE_CHANGES2);
-        char* const szText = new char[lstrlen(ls1.m_szbuffer) + lstrlen(ls2.m_szbuffer) + lstrlen(m_table->m_szTitle) + 1];
-        lstrcpy(szText, ls1.m_szbuffer/*"Do you want to save the changes you made to '"*/);
-        lstrcat(szText, m_table->m_szTitle);
-        lstrcat(szText, ls2.m_szbuffer);
-        // TEXT
-        const int result = MessageBox(szText, "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
-        delete[] szText;
-
-        if (result == IDCANCEL)
-            return;
-
-        if (result == IDYES)
-        {
-            if (m_table->TableSave() != S_OK)
-            {
-                LocalString ls3(IDS_SAVEERROR);
-                MessageBox(ls3.m_szbuffer, "Visual Pinball", MB_ICONERROR);
-            }
-        }
-    }
     CMDIChild::OnClose();
 }
 

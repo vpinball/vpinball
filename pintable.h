@@ -47,6 +47,7 @@ public:
     {
         return m_table;
     }
+    bool CanClose() const;
 protected:
     virtual void PreCreate(CREATESTRUCT &cs);
     virtual int  OnCreate(CREATESTRUCT &cs);

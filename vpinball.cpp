@@ -1077,10 +1077,10 @@ bool VPinball::CanClose()
 {
    while (m_vtable.size())
    {
-      const bool canClose = CloseTable(m_vtable[0]);
+       if (!m_vtable[0]->GetMDITable()->CanClose())
+           return false;
 
-      if (!canClose)
-         return false;
+       CloseTable(m_vtable[0]);
    }
 
    return true;
