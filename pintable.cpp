@@ -4132,6 +4132,8 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    if (ppsNew == NULL)
       return;
 
+   //!! meh to all of this: manually copy old sound manager params to temp vars
+
    const int balance = pps->m_balance;
    const int fade = pps->m_fade;
    const int volume = pps->m_volume;
@@ -4141,7 +4143,21 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    char szInternalName[MAXTOKEN];
    lstrcpy(szInternalName, pps->m_szInternalName);
 
+   //!! meh to all of this: kill old raw sound data and DSound/BASS stuff, then copy new one over
+
+   pps->UnInitialize();
+   if(pps->m_pdata)
+       delete[] pps->m_pdata;
+
    *pps = *ppsNew;
+
+   //!! meh to all of this: set to 0, so this is not free'd in the dtor, as used in pps from now on
+
+   ppsNew->m_pdata = NULL;
+   ppsNew->m_pDS3DBuffer = NULL;
+   ppsNew->m_pDSBuffer = NULL;
+   ppsNew->m_BASSstream = 0;
+
    delete ppsNew;
 
    // recopy old settings over to new sound file
