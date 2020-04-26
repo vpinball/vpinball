@@ -5,6 +5,9 @@ Const VPinMAMEDriverVer = 3.58
 '=======================
 '
 ' New in 3.58 (Update by mfuegemann, DJRobX)
+' - Added directional (pan/fade) sound to DropTargets, Kickers, Trough, BallStacks, Locks, Diverters
+'   VPinball versions prior 10.7 will use a constant size of 950x2100 for positional reference
+'   If some objects are not properly initialized, or Walls are used as Drop Targets, the old center sound will be played
 ' - Add PullbackandRetract to cvpmImpulseP
 ' - Added joctronic.vbs
 ' - Added s8_StillCrazy.vbs (System 8/Still Crazy)
@@ -346,8 +349,11 @@ Const VPinMAMEDriverVer = 3.58
 '     in the trough. All balls should probably move at the same time but it is
 '     a bit tricky to implement without changing a lot of code.
 '   - Removed support for the wshltdlg.dll since funtionality is in VPM now
+'
 ' New in 3.10
 '   - Public release
+
+
 ' Put this at the top of the table file
 'LoadVPM "02000000", "xxx.VBS", 3.58 ' adapt 02000000 and 3.58 to the actually required minimum VPinMAME- and core scripts versions
 'Const cGameName    = "xxxx" ' PinMAME short game name
@@ -410,7 +416,9 @@ Const VPinMAMEDriverVer = 3.58
 '	bsTrough.InitNoTrough BallRelease, swOuthole, 90, 2
 '	'or
 '	bsTrough.InitSw swOuthole,swTrough1,swTrough2,0,0,0,0
+
 '---------------------------------------------------------------
+
 Dim Controller   ' VPinMAME Controller Object
 Dim vpmTimer     ' Timer Object
 Dim vpmNudge     ' Nudge handler Object
@@ -462,7 +470,7 @@ Dim vpmShowDips     ' Show DIPs function
 '   (Private) .Update        - called from slow timer
 '   (Private) .FastUpdate    - called from fast timer
 '   (Friend)  .AddResetObj   - Add object that needs to catch reset
-'
+
 ' cvpmTrough (Create as many as needed)
 '   (Public) .IsTrough         - Get or Set whether this trough is the default trough (first trough sets this by default)
 '   (Public) .Size             - Get or Set total number of balls trough can hold
@@ -483,7 +491,7 @@ Dim vpmShowDips     ' Show DIPs function
 '   (Public) .AddBall          - Add a ball to the trough from a kicker.  If kicker is the exit kicker, stacks ball at exit.
 '   (Public) .SolIn            - Solenoid handler for entry solenoid
 '   (Public) .SolOut           - Solenoid handler for exit solenoid
-'
+
 ' cvpmSaucer (Create as many as needed)
 '   (Public) .InitKicker       - Setup main kicker, switch, exit direction and force (including Z force)
 '   (Public) .InitExitVariance - Modify kick direction and force (+/-, min force = 1)
@@ -494,7 +502,7 @@ Dim vpmShowDips     ' Show DIPs function
 '   (Public) .HasBall          - True if the saucer is occupied.
 '   (Public) .solOut           - Fire the primary exit kicker.  Ejects ball if one is present.
 '   (Public) .solOutAlt        - Fire the secondary exit kicker.  Ejects ball with alternate forces if present.
-'
+
 ' cvpmBallStack (DEPRECATED, but create as many as needed)
 '   (Public) .InitSw        - init switches used in stack
 '   (Public) .InitSaucer    - init saucer
@@ -538,7 +546,7 @@ Dim vpmShowDips     ' Show DIPs function
 '   (Public)  .DoNudge dir,power  - Nudge table
 '   (Public)  .SolGameOn    - Game On solenoid handler
 '   (Private) .Update       - Handle tilting
-'
+
 ' cvpmDropTarget (create as many as needed)
 '   (Public)  .InitDrop     - initialise DropTarget bank
 '   (Public)  .CreateEvents - Create Hit events
@@ -553,7 +561,7 @@ Dim vpmShowDips     ' Show DIPs function
 '   (Public)  .SolDropUp    - Solenoid handler for Bank reset
 '   (Public)  .DropSol_On   - Reset target bank
 '   (Friend)  .SetAllDn     - check alldown & anyup switches
-'
+
 ' cvpmMagnet (create as many as needed)
 '   (Public)  .InitMagnet   - initialise magnet
 '   (Public)  .CreateEvents - Create Hit/Unhit events
@@ -603,7 +611,7 @@ Dim vpmShowDips     ' Show DIPs function
 '   (Public)  .Speed         - Current Speed
 '   (Private) .Update
 '   (Private) .Reset
-'
+
 ' cvpmCaptiveBall (create as many as needed)
 '   (Public)  .InitCaptive   - Initialise captive balls
 '   (Public)  .CreateEvents  - Create events for captive ball
@@ -616,7 +624,7 @@ Dim vpmShowDips     ' Show DIPs function
 '   (Public)  .BallHit       - Wall in front of ball hit
 '   (Public)  .BallReturn    - Captive ball has returned to kicker
 '   (Private) .Reset
-'
+
 ' cvpmVLock (create as many as needed)
 '   (Public)  .InitVLock     - Initialise the visible ball stack
 '   (Public)  .ExitDir       - Balls exit angle (like kickers)
@@ -629,7 +637,7 @@ Dim vpmShowDips     ' Show DIPs function
 '   (Public)  .TrigHit       - called from trigger hit event
 '   (Public)  .TrigUnhit     - called from trigger unhit event
 '   (Public)  .KickHit       - called from kicier hit event
-'
+
 ' cvpmDips (create as many as needed) => (Dip Switch And/Or Table Options Menu)
 '   (Public)  .AddForm       - create a form (AKA dialogue)
 '   (Public)  .AddChk        - add a chckbox
@@ -639,7 +647,7 @@ Dim vpmShowDips     ' Show DIPs function
 '   (Public)  .AddLabel      - add a label (text string)
 '   (Public)  .ViewDips      - Show form
 '   (Public)  .ViewDipsExtra -  - "" -  with non-dip settings
-'
+
 ' cvpmImpulseP (create as many as needed) => (Impulse Plunger Object using a Trigger to Plunge Manual/Auto)
 '   (Public)  .InitImpulseP - Initialise Impulse Plunger Object (Trigger, Plunger Power, Time to Full Plunge [0 = Auto])
 '   (Public)  .CreateEvents - Create Hit/Unhit events
@@ -652,7 +660,7 @@ Dim vpmShowDips     ' Show DIPs function
 '   (Public)  .Random       - Sets the multiplier level of random variance to add (0 = No Variance / Default) 
 '   (Public)  .InitEntrySnd - Plays Sound as Plunger is Pulled Back
 '   (Public)  .InitExitSnd  - Plays Sound as Plunger is Fired (WithBall,WithoutBall)
-'
+
 ' Generic solenoid handlers:
 ' --------------------------
 ' vpmSolFlipper flipObj1, flipObj2  		- "flips flippers". Set unused to Nothing
@@ -666,17 +674,17 @@ Dim vpmShowDips     ' Show DIPs function
 ' vpmSolGate obj, sound             		- Open/close gate
 ' vpmSolSound sound                 		- Play sound only
 ' vpmFlasher flashObj               		- Flashes flasher
-'
+
 ' Generating events:
 ' ------------------
 ' vpmCreateEvents
 ' cpmCreateLights
-'
+
 ' Variables declared (to be filled in):
 ' ---------------------------------------
 ' SolCallback()  - handler for each solenoid
 ' Lights()       - Lamps
-'
+
 ' Constants used (must be defined):
 ' ---------------------------------
 ' UseSolenoids   - Update solenoids
@@ -692,22 +700,23 @@ Dim vpmShowDips     ' Show DIPs function
 ' SSolenoidOff   - Solenoid deactivate sound
 ' SCoin          - Coin Sound
 ' ExtraKeyHelp   - Game specific keys in help window
-'
+
 ' Exported variables:
 ' -------------------
 ' vpmTimer      - Timer class for PulseSwitch etc
 ' vpmNudge      - Class for table nudge handling
 '-----------------------------------------------------
+
 Private Function PinMAMEInterval
-        If VPBuildVersion >= 10200 Then
-                PinMAMEInterval = -1 ' VP10.2 introduced special frame-sync'ed timers
-        Else
-            If VPBuildVersion >= 10000 Then
-                PinMAMEInterval = 3  ' as old VP9 timers pretended to run at 1000Hz but actually did only a max of 100Hz (e.g. corresponding nowadays to interval=10), we do something inbetween for VP10+ by default
-            Else
-                PinMAMEInterval = 1
-            End If
-        End If
+	If VPBuildVersion >= 10200 Then
+			PinMAMEInterval = -1 ' VP10.2 introduced special frame-sync'ed timers
+	Else
+		If VPBuildVersion >= 10000 Then
+			PinMAMEInterval = 3  ' as old VP9 timers pretended to run at 1000Hz but actually did only a max of 100Hz (e.g. corresponding nowadays to interval=10), we do something inbetween for VP10+ by default
+		Else
+			PinMAMEInterval = 1
+		End If
+	End If
 End Function
 
 Private Const conStackSw    = 8  ' Stack switches
@@ -723,19 +732,19 @@ Private Const conFlipRetSpeed    = 0.137 ' Flipper return speed
 
 Function CheckScript(file) 'Checks Tables and Scripts directories for specified vbs file, and if it exitst, will load it.
 	CheckScript = False
-  On Error Resume Next
+	On Error Resume Next
 	Dim TablesDirectory:TablesDirectory = Left(UserDirectory,InStrRev(UserDirectory,"\",InStrRev(UserDirectory,"\")-1))&"Tables\"
 	Dim ScriptsDirectory:ScriptsDirectory = Left(UserDirectory,InStrRev(UserDirectory,"\",InStrRev(UserDirectory,"\")-1))&"Scripts\"
 	Dim check:Set check = CreateObject("Scripting.FileSystemObject")
 	If check.FileExists(tablesdirectory & file) Or check.FileExists(scriptsdirectory & file) Or check.FileExists(file) Then CheckScript = True
-  On Error Goto 0
+	On Error Goto 0
 End Function
 
 Function LoadScript(file) 'Checks Tables and Scripts directories for specified vbs file, and if it exitst, will load it.
 	LoadScript = False
-  On Error Resume Next
+	On Error Resume Next
 	If CheckScript(file) Then ExecuteGlobal GetTextFile(file):LoadScript = True
-  On Error Goto 0
+	On Error Goto 0
 End Function
 
 ' Dictionary
@@ -744,10 +753,10 @@ End Function
 ' and scripts that use cvpmDictionary, this class is now a simple wrapper around Microsoft's
 ' more efficient implementation.
 Class cvpmDictionary
-    Private mDict
+	Private mDict
 	Private Sub Class_Initialize : Set mDict = CreateObject("Scripting.Dictionary") : End Sub
 
-    ' DEPRECATED: MS Dictionaries are not index-based.  Use "Exists" method instead.
+	' DEPRECATED: MS Dictionaries are not index-based.  Use "Exists" method instead.
 	Private Function FindKey(aKey)
 		Dim ii, key : FindKey = -1
 		If mDict.Count > 0 Then
@@ -924,7 +933,7 @@ Class cvpmTrough
     ' If you want to see what the trough is doing internally, add a TextBox to your table
     ' named "DebugBox" (recommend Courier New or FixedSys at a small font size) and set
     ' this variable to true via .isDebug = True.
-	Private mDebug
+    Private mDebug
 
     Private Sub Class_Initialize
         Dim ii
@@ -940,7 +949,7 @@ Class cvpmTrough
 
         Set mSounds = New cvpmDictionary
 
-		mDebug = False
+        mDebug = False
 
         If Not IsObject(vpmTrough) Then Set vpmTrough = Me
     End Sub
@@ -1075,8 +1084,8 @@ Class cvpmTrough
 
     Public Property Get BallsPending : BallsPending = mBallsInEntry : End Property
 
-    ' Auto-generate events for any entry kickers (eg. outhole, TZ Camera and Piano, etc.)
-    ' Accepts a single kicker, an Array, or a Collection.
+	' Auto-generate events for any entry kickers (eg. outhole, TZ Camera and Piano, etc.)
+	' Accepts a single kicker, an Array, or a Collection.
 	Public Sub CreateEvents(aName, aKicker)
 		Dim obj, tmp
 		If Not vpmCheckEvent(aName, Me) Then Exit Sub
@@ -1090,7 +1099,7 @@ Class cvpmTrough
 		Next
 	End Sub
 
-    ' VPM Update management
+	' VPM Update management
 
 	Private Property Let NeedUpdate(aEnabled) : vpmTimer.EnableUpdate Me, False, aEnabled : End Property
 
@@ -1106,7 +1115,7 @@ Class cvpmTrough
 	Public Sub Update
 		NeedUpdate = AdvanceBalls
 		UpdateTroughSwitches
-    End Sub
+	End Sub
 
     ' Switch and slot management
 
@@ -1118,7 +1127,7 @@ Class cvpmTrough
         End If
     End Sub
 
-    Private Sub UpdateTroughSwitches
+	Private Sub UpdateTroughSwitches
 		Dim ii, mSwcopy
 		For ii = 0 to UBound(mSw)
 			If mSw(ii) Then
@@ -1127,7 +1136,7 @@ Class cvpmTrough
 			End If
 		Next
 		If mDebug Then UpdateDebugBox
-    End Sub
+	End Sub
 
 	Private Sub UpdateDebugBox   ' Requires a textbox named DebugBox
 		Dim str, ii, mSwcopy
@@ -1176,16 +1185,16 @@ Class cvpmTrough
             If mSlot(ii) Then               ' Ball in this slot.
 				canMove = False
 
-                ' Can this ball move?  (Slot 0 = no)
-                If ii = 0 Then
-                    ' Slot 0 never moves (except when ejected)
-                    canMove = False
+				' Can this ball move?  (Slot 0 = no)
+				If ii = 0 Then
+					' Slot 0 never moves (except when ejected)
+					canMove = False
 				ElseIf ii = 1 Then
 					' Slot 1 automatically moves to Slot 0
 					canMove = True
 				ElseIf ii = 2 Then
-				    ' Slot 2 moves if the number of balls in slot 0 is less than the stack target.
-				    canMove = (mSlot(0) < mStackExitBalls)
+					' Slot 2 moves if the number of balls in slot 0 is less than the stack target.
+					canMove = (mSlot(0) < mStackExitBalls)
 				Else
 					' Only move if there is no ball in ii-1 or ii-2.
 					canMove = (mSlot(ii-2) = 0) AND (mSlot(ii-1) = 0)
@@ -1255,7 +1264,11 @@ Class cvpmTrough
             NeedUpdate = True
 	    End If
 
+	If isObject(aKicker) Then
+		PlaySound mSounds.Item("add"), 1, 1, CoreAudioPan(aKicker.x), 0, 0, False, False, CoreAudioFade(aKicker.y)
+	Else
 		PlaySound mSounds.Item("add")
+	End If
 	End Sub
 
     ' Use solCallback(solNo) on the trough entry kicker solenoid.
@@ -1271,10 +1284,10 @@ Class cvpmTrough
     End Sub
     Public Sub EntrySol_On : solIn(true) : End Sub
 
-    ' Use solCallback(solNo) on the trough exit kicker solenoid.
+	' Use solCallback(solNo) on the trough exit kicker solenoid.
 	Public Sub solOut(aEnabled)
-        Dim iiBall, kDir, kForce, kBaseDir, ballsEjected
-        ballsEjected = 0
+		Dim iiBall, kDir, kForce, kBaseDir, ballsEjected
+		ballsEjected = 0
 
 		If aEnabled Then
 			For iiBall = 0 to (mMaxBallsPerKick - 1)
@@ -1294,15 +1307,23 @@ Class cvpmTrough
 			Next
 
 			If ballsEjected > 0 Then
-				PlaySound mSounds.Item("exitBall")
+				If isObject(mExitKicker) Then
+					PlaySound mSounds.Item("exitBall"), 1, 1, CoreAudioPan(mExitKicker.x), 0, 0, False, False, CoreAudioFade(mExitKicker.y)
+				Else
+					PlaySound mSounds.Item("exitBall")
+				End If
 				UpdateTroughSwitches
 				NeedUpdate = True
 			Else
-				PlaySound mSounds.Item("exit")
+				If isObject(mExitKicker) Then
+					PlaySound mSounds.Item("exit"), 1, 1, CoreAudioPan(mExitKicker.x), 0, 0, False, False, CoreAudioFade(mExitKicker.y)
+				Else
+					PlaySound mSounds.Item("exit")
+				End If
 			End If
 		End If
- 	End Sub
- 	Public Sub ExitSol_On : solOut(true) : End Sub
+	End Sub
+	Public Sub ExitSol_On : solOut(true) : End Sub
 End Class
 
 '--------------------
@@ -1360,8 +1381,8 @@ Class cvpmSaucer
         mSounds.Item("exitBall") = exitSoundBall
     End Sub
 
-    ' Generate hit event for the kicker(s) associated with this saucer.
-    ' Accepts a single kicker, an Array, or a Collection.
+	' Generate hit event for the kicker(s) associated with this saucer.
+	' Accepts a single kicker, an Array, or a Collection.
 	Public Sub CreateEvents(aName, aKicker)
 		Dim obj, tmp
 		If Not vpmCheckEvent(aName, Me) Then Exit Sub
@@ -1375,9 +1396,9 @@ Class cvpmSaucer
 		Next
 	End Sub
 
-    ' Ball management
+	' Ball management
 
-    Public Sub AddBall(aKicker)
+	Public Sub AddBall(aKicker)
 		Dim mSwcopy
 		If isObject(aKicker) Then
 			If aKicker Is mKicker Then
@@ -1396,8 +1417,12 @@ Class cvpmSaucer
 			mSwcopy = mSw
 			Controller.Switch(mSwcopy) = True
 		End If
-		PlaySound mSounds.Item("add")
-    End Sub
+		If isObject(mKicker) Then
+			PlaySound mSounds.Item("add"), 1, 1, CoreAudioPan(mKicker.x), 0, 0, False, False, CoreAudioFade(mKicker.y)
+		Else
+			PlaySound mSounds.Item("add")
+		End If
+	End Sub
 
     Public Property Get HasBall
         HasBall = False
@@ -1439,9 +1464,17 @@ Class cvpmSaucer
                 mSwcopy = mSw
                 Controller.Switch(mSwcopy) = False
             End If
-            PlaySound mSounds.Item("exitBall")
+            If isObject(mKicker) Then
+                PlaySound mSounds.Item("exitBall"), 1, 1, CoreAudioPan(mKicker.x), 0, 0, False, False, CoreAudioFade(mKicker.y)
+            Else
+                PlaySound mSounds.Item("exitBall")
+            End If
         Else
-            PlaySound mSounds.Item("exit")
+            If isObject(mKicker) Then
+                PlaySound mSounds.Item("exit"), 1, 1, CoreAudioPan(mKicker.x), 0, 0, False, False, CoreAudioFade(mKicker.y)
+            Else
+                PlaySound mSounds.Item("exit")
+            End If
         End If
     End Sub
 End Class
@@ -1460,6 +1493,7 @@ Class cvpmBallStack
 	Private mInitKicker, mExitKicker, mExitDir, mExitForce
 	Private mExitDir2, mExitForce2
 	Private mEntrySnd, mEntrySndBall, mExitSnd, mExitSndBall, mAddSnd
+	Private mSoundKicker
 	Public KickZ, KickBalls, KickForceVar, KickAngleVar
 
 	Private Sub Class_Initialize
@@ -1467,20 +1501,20 @@ Class cvpmBallStack
 		mBallIn = 0 : mBalls = 0 : mExitKicker = 0 : mInitKicker = 0 : mBallsMoving = False
 		KickBalls = 1 : mSaucer = False : mExitDir = 0 : mExitForce = 0
 		mExitDir2 = 0 : mExitForce2 = 0 : KickZ = 0 : KickForceVar = 0 : KickAngleVar = 0
-		mAddSnd = 0 : mEntrySnd = 0 : mEntrySndBall = 0 : mExitSnd = 0 : mExitSndBall = 0
+		mAddSnd = 0 : mEntrySnd = 0 : mEntrySndBall = 0 : mExitSnd = 0 : mExitSndBall = 0 : mSoundKicker = 0
 		vpmTimer.AddResetObj Me
 	End Sub
 
 	Private Property Let NeedUpdate(aEnabled) : vpmTimer.EnableUpdate Me, False, aEnabled : End Property
 
 	Private Function SetSw(aNo, aStatus)
-                Dim mSwcopy
-                SetSw = False
-                If HasSw(aNo) Then
-                    mSwcopy = mSw(aNo)
-                    Controller.Switch(mSwcopy) = aStatus
-                    SetSw = True
-                End If
+		Dim mSwcopy
+		SetSw = False
+		If HasSw(aNo) Then
+			mSwcopy = mSw(aNo)
+			Controller.Switch(mSwcopy) = aStatus
+			SetSw = True
+		End If
 	End Function
 
 	Private Function HasSw(aNo)
@@ -1541,7 +1575,11 @@ Class cvpmBallStack
 		Else
 			mBalls = mBalls + 1 : mBallPos(mBalls) = conStackSw + 1 : NeedUpdate = True
 		End If
-		PlaySound mAddSnd
+		If isObject(mSoundKicker) Then
+			PlaySound mAddSnd, 1, 1, CoreAudioPan(mSoundKicker.x), 0, 0, False, False, CoreAudioFade(mSoundKicker.y)
+		Else
+			PlaySound mAddSnd
+		End If
 	End Sub
 
 	' A bug in the script engine forces the "End If" at the end
@@ -1564,7 +1602,20 @@ Class cvpmBallStack
 
 	Private Sub KickOut(aAltSol)
 		Dim ii,jj, kForce, kDir, kBaseDir
-		If mBalls Then PlaySound mExitSndBall Else PlaySound mExitSnd : Exit Sub
+		If mBalls Then
+			If isObject(mSoundKicker) Then
+				PlaySound mExitSndBall, 1, 1, CoreAudioPan(mSoundKicker.x), 0, 0, False, False, CoreAudioFade(mSoundKicker.y)
+			Else
+				PlaySound mExitSndBall
+			End If
+		Else
+			If isObject(mSoundKicker) Then
+				PlaySound mExitSnd, 1, 1, CoreAudioPan(mSoundKicker.x), 0, 0, False, False, CoreAudioFade(mSoundKicker.y)
+			Else
+				PlaySound mExitSnd
+			End If
+			Exit Sub
+		End If
 		If aAltSol Then kForce = mExitForce2 : kBaseDir = mExitDir2 Else kForce = mExitForce : kBaseDir = mExitDir
 		kForce = kForce + (Rnd - 0.5)*KickForceVar
 		If mSaucer Then
@@ -1619,6 +1670,7 @@ Class cvpmBallStack
 
 	Public Sub InitKick(aKicker, aDir, aForce)
 		Set mExitKicker = aKicker : mExitDir = aDir : mExitForce = aForce
+		Set mSoundKicker = aKicker
 	End Sub
 
 	Public Sub CreateEvents(aName, aKicker)
@@ -1846,7 +1898,16 @@ Class cvpmDropTarget
 
 	Public Sub Hit(aNo)
 		Dim ii, mSwcopy
-		vpmSolWall mDropObj(aNo-1), mDropSnd, True
+
+'		vpmSolWall mDropObj(aNo-1), mDropSnd, True
+
+		If TypeName(mDropObj(aNo-1)) = "HitTarget" Then
+			PlaySound mDropSnd, 1, 1, CoreAudioPan(mDropObj(aNo-1).x), 0, 0, False, False, CoreAudioFade(mDropObj(aNo-1).y)
+		Else
+			PlaySound mDropSnd
+		End If
+		vpmSolWall mDropObj(aNo-1), False, True
+
 		mSwcopy = mDropSw(aNo-1)
 		Controller.Switch(mSwcopy) = True
 		For Each ii In mDropSw
@@ -1861,7 +1922,12 @@ Class cvpmDropTarget
 	Public Sub SolUnhit(aNo, aEnabled)
 		Dim mSwcopy
 		Dim ii : If Not aEnabled Then Exit Sub
-		PlaySound mRaiseSnd : vpmSolWall mDropObj(aNo-1), False, False
+		If TypeName(mDropObj(aNo-1)) = "HitTarget" Then
+			PlaySound mRaiseSnd, 1, 1, CoreAudioPan(mDropObj(aNo-1).x), 0, 0, False, False, CoreAudioFade(mDropObj(aNo-1).y): vpmSolWall mDropObj(aNo-1), False, False
+		Else
+			PlaySound mRaiseSnd
+		End If
+
 		mSwcopy = mDropSw(aNo-1)
 		Controller.Switch(mSwcopy) = False
 		mAllDn = False : CheckAllDn False
@@ -1870,7 +1936,12 @@ Class cvpmDropTarget
 	Public Sub SolDropDown(aEnabled)
 		Dim mSwcopy
 		Dim ii : If Not aEnabled Then Exit Sub
-		PlaySound mDropSnd
+		If TypeName(mDropObj(0)) = "HitTarget" Then
+			PlaySound mDropSnd, 1, 1, CoreAudioPan(mDropObj(0).x), 0, 0, False, False, CoreAudioFade(mDropObj(0).y)
+		Else
+			PlaySound mDropSnd
+		End If
+
 		For Each ii In mDropObj : vpmSolWall ii, False, True : Next
 		For Each ii In mDropSw  : mSwcopy = ii : Controller.Switch(mSwcopy) = True : Next
 		mAllDn = True : CheckAllDn True
@@ -1879,7 +1950,12 @@ Class cvpmDropTarget
 	Public Sub SolDropUp(aEnabled)
 		Dim mSwcopy
 		Dim ii : If Not aEnabled Then Exit Sub
-		PlaySound mRaiseSnd
+		If TypeName(mDropObj(0)) = "HitTarget" Then
+			PlaySound mRaiseSnd, 1, 1, CoreAudioPan(mDropObj(0).x), 0, 0, False, False, CoreAudioFade(mDropObj(0).y)
+		Else
+			PlaySound mRaiseSnd
+		End If
+
 		For Each ii In mDropObj : vpmSolWall ii, False, False : Next
 		For Each ii In mDropSw  : mSwcopy = ii : Controller.Switch(mSwcopy) = False : Next
 		mAllDn = False : CheckAllDn False
@@ -2002,7 +2078,7 @@ Class cvpmTurntable
 	    AdjustTargets
 	End Sub
 
-    Private Sub AdjustTargets
+	Private Sub AdjustTargets
 	    If mMotorOn Then
 	        mTargetSpeed = MaxSpeed
 	        mCurrentAccel = SpinUp
@@ -2012,16 +2088,16 @@ Class cvpmTurntable
 	        mCurrentAccel = SpinDown
 	    End If
 
-        NeedUpdate = mBalls.Count Or SpinUp Or SpinDown
-    End Sub
+	    NeedUpdate = mBalls.Count Or SpinUp Or SpinDown
+	End Sub
 
-    Public Property Let MaxSpeed(newSpeed) : mMaxSpeed = newSpeed : AdjustTargets : End Property
-    Public Property Let SpinUp(newRate) : mSpinUp = newRate : AdjustTargets : End Property
-    Public Property Let SpinDown(newRate) : mSpinDown = newRate : AdjustTargets : End Property
+	Public Property Let MaxSpeed(newSpeed) : mMaxSpeed = newSpeed : AdjustTargets : End Property
+	Public Property Let SpinUp(newRate) : mSpinUp = newRate : AdjustTargets : End Property
+	Public Property Let SpinDown(newRate) : mSpinDown = newRate : AdjustTargets : End Property
 
-    Public Property Get MaxSpeed : MaxSpeed = mMaxSpeed : End Property
-    Public Property Get SpinUp : SpinUp = mSpinup : End Property
-    Public Property Get SpinDown : SpinDown = mSpinDown : End Property
+	Public Property Get MaxSpeed : MaxSpeed = mMaxSpeed : End Property
+	Public Property Get SpinUp : SpinUp = mSpinup : End Property
+	Public Property Get SpinDown : SpinDown = mSpinDown : End Property
 
 	Public Property Let MotorOn(aEnabled) : SolMotorState mSpinCW, aEnabled : End Property
 	Public Property Let SpinCW(aCW) : SolMotorState aCW, mMotorOn : End Property
@@ -2268,7 +2344,20 @@ Class cvpmVLock
 		Dim ii, mSwcopy
 		mGateOpen = aEnabled
 		If Not aEnabled Then Exit Sub
-		If mBalls > 0 Then PlaySound mBallSnd : Else PlaySound mNoBallSnd : Exit Sub
+		If mBalls > 0 Then
+			If isObject(mKick(0)) Then
+				PlaySound mBallSnd, 1, 1, CoreAudioPan(mKick(0).x), 0, 0, False, False, CoreAudioFade(mKick(0).y)
+			Else
+				PlaySound mBallSnd
+			End If
+		Else 
+			If isObject(mKick(0)) Then
+				PlaySound mNoBallSnd, 1, 1, CoreAudioPan(mKick(0).x), 0, 0, False, False, CoreAudioFade(mKick(0).y)
+			Else
+				PlaySound mNoBallSnd
+			End If
+			Exit Sub
+		End If
 		For ii = 0 To mBalls-1
 			mKick(ii).Enabled = False
 			If mSw(ii) Then
@@ -2609,29 +2698,29 @@ Function NullFunction(a) : End Function
 vpmtimer.addtimer 40, "vpmFlips.Init'" 'this might be a dumb idea but it would replace the requirement for vpminit me
 
 Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so delay
-    Public Name, Delay, TiltObjects, Sol, DebugOn
-    Public LagCompensation 'flag for solenoid jitter (may not be a problem anymore) set private
+	Public Name, Delay, TiltObjects, Sol, DebugOn
+	Public LagCompensation 'flag for solenoid jitter (may not be a problem anymore) set private
 
-    Public FlipperSolNumber(3)  'Flipper Solenoid Number. By default these are set to use the Core constants. 0=left 1=right 2=Uleft 3=URight
-    Public ButtonState(3)       'Key Flip State 'set private 
-    Public SolState(3)          'Rom Flip State	'set private
+	Public FlipperSolNumber(3)  'Flipper Solenoid Number. By default these are set to use the Core constants. 0=left 1=right 2=Uleft 3=URight
+	Public ButtonState(3)       'Key Flip State 'set private 
+	Public SolState(3)          'Rom Flip State	'set private
 
-    'Public SubL, SubUL, SubR, SubUR 'may restore these to reduce nested calls. For now the script is compressed a bit.
-    Public FlipperSub(3)    'Set to the flipper subs by .init
+	'Public SubL, SubUL, SubR, SubUR 'may restore these to reduce nested calls. For now the script is compressed a bit.
+	Public FlipperSub(3)    'Set to the flipper subs by .init
 
-    Public FlippersEnabled  'Flipper Circuit State (from the ROM)
-    Public OnOff            'FastFlips Enabled. Separate from FlippersEnabled, which is the flipper circuit state	'private 'todo rename
+	Public FlippersEnabled  'Flipper Circuit State (from the ROM)
+	Public OnOff            'FastFlips Enabled. Separate from FlippersEnabled, which is the flipper circuit state	'private 'todo rename
 
-    Public FlipAt(3)        'Flip Time in gametime	'private
-    Public RomControlDelay  'Delay after flipping that Rom Controlled Flips are accepted (default 100ms)
+	Public FlipAt(3)        'Flip Time in gametime	'private
+	Public RomControlDelay  'Delay after flipping that Rom Controlled Flips are accepted (default 100ms)
 
 
-    Private Sub Class_Initialize()
+	Private Sub Class_Initialize()
         dim idx :for idx = 0 to 3 :FlipperSub(idx) = "NullFunction" : OnOff=True: ButtonState(idx)=0:SolState(idx)=0: Next
         Delay=0: FlippersEnabled=0: DebugOn=0 : LagCompensation=0 : Sol=0 : TiltObjects=1
         RomControlDelay = 100	'RomControlDelay MS between switching to rom controlled flippers
         FlipperSolNumber(0)=sLLFlipper :FlipperSolNumber(1)=sLRFlipper :FlipperSolNumber(2)=sULFlipper : FlipperSolNumber(3)=sURFlipper
-    End Sub
+	End Sub
 
 	Sub Init()	'called by a timer, but previously was called by vpminit sub
 		On Error Resume Next 'If there's no usesolenoids variable present, exit
@@ -2719,13 +2808,13 @@ Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so del
 		end If
 	End Property
 
-    'call callbacks 	'legacy
-    Public Sub FlipL(aEnabled) : Flip(0)=aEnabled :End Sub : Public Sub FlipR(aEnabled) : Flip(1)=aEnabled :End Sub
-    Public Sub FlipUL(aEnabled): Flip(2)=aEnabled :End Sub : Public Sub FlipUR(aEnabled): Flip(3)=aEnabled :End Sub
+	'call callbacks 	'legacy
+	Public Sub FlipL(aEnabled) : Flip(0)=aEnabled :End Sub : Public Sub FlipR(aEnabled) : Flip(1)=aEnabled :End Sub
+	Public Sub FlipUL(aEnabled): Flip(2)=aEnabled :End Sub : Public Sub FlipUR(aEnabled): Flip(3)=aEnabled :End Sub
 
-    Public Property Let RomFlip(aIdx, ByVal aEnabled)
-        aEnabled = abs(aEnabled)
-        SolState(aIdx) = aEnabled
+	Public Property Let RomFlip(aIdx, ByVal aEnabled)
+		aEnabled = abs(aEnabled)
+		SolState(aIdx) = aEnabled
 
 		If Not OnOff OR GameTime >= FlipAt(aIdx) + RomControlDelay Then
 			Execute FlipperSub(aIDX) & " " & aEnabled
@@ -2843,7 +2932,7 @@ End Function
 If VPBuildVersion >= 10000 Then
 	Set vpmCreateBall = GetRef("vpmDefCreateBall3")
 ElseIf VPBuildVersion > 909 And vpmVPVer >= 90 Then
-        Set vpmCreateBall = GetRef("vpmDefCreateBall2")
+	Set vpmCreateBall = GetRef("vpmDefCreateBall2")
 Else
 	Set vpmCreateBall = GetRef("vpmDefCreateBall")
 End If
@@ -3052,7 +3141,7 @@ Sub vpmMapLights(aLights)
 			For Each ii In Lights(idx) : str = str & ii.Name & "," : Next
 			ExecuteGlobal str & obj.Name & ")"
 		ElseIf IsObject(Lights(idx)) Then
-            Lights(idx) = Array(Lights(idx),obj)
+			Lights(idx) = Array(Lights(idx),obj)
 		Else
 			Set Lights(idx) = obj
 		End If
@@ -3091,25 +3180,25 @@ Sub vpmSolFlipper(aFlip1, aFlip2, aEnabled)
 		PlaySound SFlipperOn : aFlip1.RotateToEnd : If Not aFlip2 Is Nothing Then aFlip2.RotateToEnd
 	Else
 		PlaySound SFlipperOff
-        If VPBuildVersion < 10000 Then
+		If VPBuildVersion < 10000 Then
 			oldStrength = aFlip1.Strength : aFlip1.Strength = conFlipRetStrength
-            oldSpeed = aFlip1.Speed : aFlip1.Speed = conFlipRetSpeed
-        End If
+			oldSpeed = aFlip1.Speed : aFlip1.Speed = conFlipRetSpeed
+		End If
 		aFlip1.RotateToStart
-        If VPBuildVersion < 10000 Then
-		    aFlip1.Strength = oldStrength
-            aFlip1.Speed = oldSpeed
-        End If
+		If VPBuildVersion < 10000 Then
+			aFlip1.Strength = oldStrength
+			aFlip1.Speed = oldSpeed
+		End If
 		If Not aFlip2 Is Nothing Then
-            If VPBuildVersion < 10000 Then
+			If VPBuildVersion < 10000 Then
 				oldStrength = aFlip2.Strength : aFlip2.Strength = conFlipRetStrength
-                oldSpeed = aFlip2.Speed : aFlip2.Speed = conFlipRetSpeed
-            End If
+				oldSpeed = aFlip2.Speed : aFlip2.Speed = conFlipRetSpeed
+			End If
 			aFlip2.RotateToStart
-            If VPBuildVersion < 10000 Then
-			    aFlip2.Strength = oldStrength
-                aFlip2.Speed = oldSpeed
-            End If
+			If VPBuildVersion < 10000 Then
+				aFlip2.Strength = oldStrength
+				aFlip2.Speed = oldSpeed
+			End If
 		End If
 	End If
 End Sub
@@ -3161,7 +3250,33 @@ End Sub
 ' ------ Diverters ------
 Sub vpmSolDiverter(aDiv, aSound, aEnabled)
 	If aEnabled Then aDiv.RotateToEnd : Else aDiv.RotateToStart
-	vpmPlaySound aEnabled, aSound
+
+'	vpmPlaySound aEnabled, aSound
+
+	If VarType(aSound) = vbString Then
+		If aEnabled Then
+			StopSound aSound
+			If isObject(aDiv) Then
+				PlaySound aSound, 1, 1, CoreAudioPan(aDiv.x), 0, 0, False, False, CoreAudioFade(aDiv.y)
+			Else
+				PlaySound aSound
+			End If
+		End If
+	ElseIf aSound Then
+		If aEnabled Then 
+			If isObject(aDiv) Then
+				PlaySound SSolenoidOn, 1, 1, CoreAudioPan(aDiv.x), 0, 0, False, False, CoreAudioFade(aDiv.y)
+			Else
+				PlaySound SSolenoidOn
+			End If
+		Else 
+			If isObject(aDiv) Then
+				PlaySound SSolenoidOff, 1, 1, CoreAudioPan(aDiv.x), 0, 0, False, False, CoreAudioFade(aDiv.y)
+			Else
+				PlaySound SSolenoidOff
+			End If
+		End If
+	End If
 End sub
 
 ' ------ Walls ------
@@ -3404,3 +3519,36 @@ LoadScript("ledcontrol.vbs"):Err.Clear	' Checks for existance of ledcontrol.vbs 
 
 LoadScript("GlobalPlugIn.vbs") 			' Checks for existance of GlobalPlugIn.vbs and loads it if found, useful for adding
 										' custom scripting that can be used for all tables instead of altering the core.vbs
+
+Dim soundtable, swidth, sheight
+swidth = 950
+sheight = 2100
+If Version >= 10700 then
+	Set soundtable = ActiveTable
+	swidth = soundtable.Width
+	sheight = soundtable.Height
+End If
+
+Private Function CoreAudioPan(xpar) 'calculates the audio pan of an table object using the actual table width or 950 for older versions
+	If xpar < 0 then
+		CoreAudioPan = -1.
+	Else
+		If xpar > swidth then
+			CoreAudioPan = 1.
+		Else
+			CoreAudioPan = (xpar*2./swidth)-1
+		End If
+	End If
+End Function
+
+Private Function CoreAudioFade(ypar) 'calculates the audio fade of an table object using the actual table length or 2100 for older versions
+	If ypar < 0 then
+		CoreAudioFade = -1.
+	Else
+		If ypar > sheight then
+			CoreAudioFade = 1.
+		Else
+			CoreAudioFade = (ypar*2./sheight)-1
+		End If
+	End If
+End Function
