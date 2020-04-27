@@ -42,6 +42,10 @@ void TableLightsProperty::UpdateVisuals(const int dispid/*=-1*/)
 void TableLightsProperty::UpdateProperties(const int dispid)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
+
+    if (table == nullptr)
+        return;
+
     switch (dispid)
     {
         case IDC_COLOR_BUTTON1:

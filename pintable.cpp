@@ -10118,24 +10118,27 @@ PinTableMDI::PinTableMDI()
 
 PinTableMDI::~PinTableMDI()
 {
-    if (m_table->m_searchSelectDlg.IsWindow())
-        m_table->m_searchSelectDlg.Destroy();
 
     g_pvp->GetLayersListDialog()->ClearList();
     g_pvp->CloseAllDialogs();
 
-    m_table->FVerifySaveToClose();
+    if (m_table != nullptr)
+    {
+        if (m_table->m_searchSelectDlg.IsWindow())
+            m_table->m_searchSelectDlg.Destroy();
 
-    RemoveFromVectorSingle(g_pvp->m_vtable, (CComObject<PinTable>*)m_table);
-    m_table->m_pcv->CleanUpScriptEngine();
+        m_table->FVerifySaveToClose();
 
-    if (m_table)
+        RemoveFromVectorSingle(g_pvp->m_vtable, (CComObject<PinTable>*)m_table);
+        m_table->m_pcv->CleanUpScriptEngine();
+
         m_table->Release();
+    }
 }
 
 bool PinTableMDI::CanClose() const
 {
-    if (m_table->FDirty())
+    if (m_table!=nullptr && m_table->FDirty())
     {
         LocalString ls1(IDS_SAVE_CHANGES1);
         LocalString ls2(IDS_SAVE_CHANGES2);
