@@ -38,7 +38,7 @@ void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
 
-    if (table == NULL)
+    if (table == nullptr)
         return;
 
     if (dispid == IDC_ENABLE_AA || dispid == -1)
@@ -88,6 +88,7 @@ void TableCustomProperty::UpdateProperties(const int dispid)
 
     if (table == NULL)
         return;
+    
     switch (dispid)
     {
         case IDC_ENABLE_AA:

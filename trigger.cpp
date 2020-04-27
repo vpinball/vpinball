@@ -81,7 +81,7 @@ void Trigger::UpdateEditorView()
          m_faceIndices = triggerButtonIndices;
          meshVertices = triggerButtonMesh;
       }
-      else if (m_d.m_shape == TriggerStar)
+      else /*if (m_d.m_shape == TriggerStar)*/
       {
          m_numVertices = triggerStarNumVertices;
          m_numIndices = triggerStarNumIndices;

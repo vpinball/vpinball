@@ -449,8 +449,6 @@ void Kicker::RenderSetup()
       delete[] buf;
    }
 
-   //
-
    const WORD * indices;
    switch (m_d.m_kickertype)
    {

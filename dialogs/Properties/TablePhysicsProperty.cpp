@@ -24,6 +24,10 @@ TablePhysicsProperty::TablePhysicsProperty(VectorProtected<ISelect> *pvsel) : Ba
 void TablePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
+    
+    if (table == nullptr)
+        return;
+
     if (dispid == IDC_GRAVITY_EDIT || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_gravityConstantEdit, table->GetGravity());
     if (dispid == IDC_PLAYFIELD_FRICTION_EDIT || dispid == -1)
@@ -61,6 +65,10 @@ void TablePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 void TablePhysicsProperty::UpdateProperties(const int dispid)
 {
     CComObject<PinTable> * const table = g_pvp->GetActiveTable();
+
+    if (table == nullptr)
+        return;
+
     switch (dispid)
     {
         case IDC_GRAVITY_EDIT:
