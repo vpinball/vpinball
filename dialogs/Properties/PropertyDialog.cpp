@@ -61,7 +61,7 @@ LRESULT EditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     return WndProcDefault(msg, wparam, lparam);
 }
 
-PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_curTabIndex(0)
+PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_curTabIndex(0), m_previousType((ItemTypeEnum)0), m_backglassView(false)
 {
     memset(m_tabs, 0, sizeof(m_tabs));
 }
@@ -73,6 +73,7 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>* pvsel)
         return;
 
     int activePage = m_tab.m_activePage;
+    m_backglassView = g_pvp->m_backglassView;
     switch (psel->GetItemType())
     {
     case eItemTable:
@@ -422,11 +423,12 @@ void PropertyDialog::UpdateComboBox(const vector<string>& contentList, CComboBox
 void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
 {
     ISelect * const psel = pvsel->ElementAt(0);
-    if (psel == NULL)
+
+    if (psel == nullptr)
         return;
 
     ShowWindow(SW_HIDE);
-    if (m_previousType != psel->GetItemType())
+    if (m_previousType != psel->GetItemType() || m_backglassView!=g_pvp->m_backglassView)
     {
         BasePropertyDialog::m_disableEvents = true;
         m_curTabIndex = m_tab.GetCurSel();
