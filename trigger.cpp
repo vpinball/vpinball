@@ -88,11 +88,6 @@ void Trigger::UpdateEditorView()
          m_faceIndices = triggerStarIndices;
          meshVertices = triggerStar;
       }
-      else
-      {
-         ShowError("Unknown Trigger type");
-         return;
-      }
 
       m_vertices.resize(m_numVertices);
       Matrix3D fullMatrix;

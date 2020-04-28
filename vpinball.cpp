@@ -1283,6 +1283,8 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
           consumed = !!g_pvp->m_toolbarDialog->IsDialogMessage(*pmsg);
       if (!consumed && g_pvp->m_propertyDialog && g_pvp->m_propertyDialog->IsWindow())
           consumed = !!g_pvp->m_propertyDialog->IsSubDialogMessage(*pmsg);
+      if (!consumed && g_pvp->m_layersListDialog && g_pvp->m_layersListDialog->IsWindow())
+          consumed = !!g_pvp->m_layersListDialog->IsDialogMessage(*pmsg);
     }
     return consumed;
 }
@@ -1312,10 +1314,8 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
 
       if (!consumed)
       {
+          // check/process events for other dialogs (material/sound/image manager, toolbar, properties
           consumed = processKeyInputForDialogs(pmsg);
-          if (consumed)
-              return true;
-          
           const bool translated = !!TranslateAccelerator(GetHwnd(), g_haccel, pmsg);
 
          if (translated)
