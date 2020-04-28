@@ -523,6 +523,7 @@ void LayerTreeView::DeleteAll()
 {
     DeleteAllItems();
     hRootItem = AddItem(NULL, _T("Layers"), NULL, 0);
+    TreeView_SetCheckState(GetHwnd(), hRootItem, 1);
 }
 
 void LayerTreeView::ExpandAll()
