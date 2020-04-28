@@ -1265,7 +1265,13 @@ Class cvpmTrough
 	    End If
 
 	If isObject(aKicker) Then
-		PlaySound mSounds.Item("add"), 1, 1, CoreAudioPan(aKicker.x), 0, 0, False, False, CoreAudioFade(aKicker.y)
+		If VP8sound then
+			PlaySound mSounds.Item("add")
+		ElseIf VP9sound then
+			PlaySound mSounds.Item("add"), 1, 1, CoreAudioPan(aKicker.x), 0
+		Else
+			PlaySound mSounds.Item("add"), 1, 1, CoreAudioPan(aKicker.x), 0, 0, False, False, CoreAudioFade(aKicker.y)
+		End If
 	Else
 		PlaySound mSounds.Item("add")
 	End If
@@ -1308,7 +1314,13 @@ Class cvpmTrough
 
 			If ballsEjected > 0 Then
 				If isObject(mExitKicker) Then
-					PlaySound mSounds.Item("exitBall"), 1, 1, CoreAudioPan(mExitKicker.x), 0, 0, False, False, CoreAudioFade(mExitKicker.y)
+					If VP8sound then
+						PlaySound mSounds.Item("exitBall")
+					ElseIf VP9sound then
+						PlaySound mSounds.Item("exitBall"), 1, 1, CoreAudioPan(mExitKicker.x), 0
+					Else
+						PlaySound mSounds.Item("exitBall"), 1, 1, CoreAudioPan(mExitKicker.x), 0, 0, False, False, CoreAudioFade(mExitKicker.y)
+					End If
 				Else
 					PlaySound mSounds.Item("exitBall")
 				End If
@@ -1316,7 +1328,13 @@ Class cvpmTrough
 				NeedUpdate = True
 			Else
 				If isObject(mExitKicker) Then
-					PlaySound mSounds.Item("exit"), 1, 1, CoreAudioPan(mExitKicker.x), 0, 0, False, False, CoreAudioFade(mExitKicker.y)
+					If VP8sound then
+						PlaySound mSounds.Item("exit")
+					ElseIf VP9sound then
+						PlaySound mSounds.Item("exit"), 1, 1, CoreAudioPan(mExitKicker.x), 0
+					Else
+						PlaySound mSounds.Item("exit"), 1, 1, CoreAudioPan(mExitKicker.x), 0, 0, False, False, CoreAudioFade(mExitKicker.y)
+					End If
 				Else
 					PlaySound mSounds.Item("exit")
 				End If
@@ -1418,7 +1436,13 @@ Class cvpmSaucer
 			Controller.Switch(mSwcopy) = True
 		End If
 		If isObject(mKicker) Then
-			PlaySound mSounds.Item("add"), 1, 1, CoreAudioPan(mKicker.x), 0, 0, False, False, CoreAudioFade(mKicker.y)
+			If VP8sound then
+				PlaySound mSounds.Item("add")
+			ElseIf VP9sound then
+				PlaySound mSounds.Item("add"), 1, 1, CoreAudioPan(mKicker.x), 0
+			Else
+				PlaySound mSounds.Item("add"), 1, 1, CoreAudioPan(mKicker.x), 0, 0, False, False, CoreAudioFade(mKicker.y)
+			End If
 		Else
 			PlaySound mSounds.Item("add")
 		End If
@@ -1465,13 +1489,25 @@ Class cvpmSaucer
                 Controller.Switch(mSwcopy) = False
             End If
             If isObject(mKicker) Then
-                PlaySound mSounds.Item("exitBall"), 1, 1, CoreAudioPan(mKicker.x), 0, 0, False, False, CoreAudioFade(mKicker.y)
+                If VP8sound then
+                    PlaySound mSounds.Item("exitBall")
+                ElseIf VP9sound then
+                    PlaySound mSounds.Item("exitBall"), 1, 1, CoreAudioPan(mKicker.x), 0
+                Else
+                    PlaySound mSounds.Item("exitBall"), 1, 1, CoreAudioPan(mKicker.x), 0, 0, False, False, CoreAudioFade(mKicker.y)
+                End If
             Else
                 PlaySound mSounds.Item("exitBall")
             End If
         Else
             If isObject(mKicker) Then
-                PlaySound mSounds.Item("exit"), 1, 1, CoreAudioPan(mKicker.x), 0, 0, False, False, CoreAudioFade(mKicker.y)
+                If VP8sound then
+                    PlaySound mSounds.Item("exit")
+                ElseIf VP9sound then
+                    PlaySound mSounds.Item("exit"), 1, 1, CoreAudioPan(mKicker.x), 0
+                Else
+                    PlaySound mSounds.Item("exit"), 1, 1, CoreAudioPan(mKicker.x), 0, 0, False, False, CoreAudioFade(mKicker.y)
+                End If
             Else
                 PlaySound mSounds.Item("exit")
             End If
@@ -1576,7 +1612,13 @@ Class cvpmBallStack
 			mBalls = mBalls + 1 : mBallPos(mBalls) = conStackSw + 1 : NeedUpdate = True
 		End If
 		If isObject(mSoundKicker) Then
-			PlaySound mAddSnd, 1, 1, CoreAudioPan(mSoundKicker.x), 0, 0, False, False, CoreAudioFade(mSoundKicker.y)
+			If VP8sound then
+				PlaySound mAddSnd
+			ElseIf VP9sound then
+				PlaySound mAddSnd, 1, 1, CoreAudioPan(mSoundKicker.x), 0
+			Else
+				PlaySound mAddSnd, 1, 1, CoreAudioPan(mSoundKicker.x), 0, 0, False, False, CoreAudioFade(mSoundKicker.y)
+			End If
 		Else
 			PlaySound mAddSnd
 		End If
@@ -1604,13 +1646,25 @@ Class cvpmBallStack
 		Dim ii,jj, kForce, kDir, kBaseDir
 		If mBalls Then
 			If isObject(mSoundKicker) Then
-				PlaySound mExitSndBall, 1, 1, CoreAudioPan(mSoundKicker.x), 0, 0, False, False, CoreAudioFade(mSoundKicker.y)
+				If VP8sound then
+					PlaySound mExitSndBall
+				ElseIf VP9sound then
+					PlaySound mExitSndBall, 1, 1, CoreAudioPan(mSoundKicker.x), 0
+				Else
+					PlaySound mExitSndBall, 1, 1, CoreAudioPan(mSoundKicker.x), 0, 0, False, False, CoreAudioFade(mSoundKicker.y)
+				End If
 			Else
 				PlaySound mExitSndBall
 			End If
 		Else
 			If isObject(mSoundKicker) Then
-				PlaySound mExitSnd, 1, 1, CoreAudioPan(mSoundKicker.x), 0, 0, False, False, CoreAudioFade(mSoundKicker.y)
+				If VP8sound then
+					PlaySound mExitSnd
+				ElseIf VP9sound then
+					PlaySound mExitSnd, 1, 1, CoreAudioPan(mSoundKicker.x), 0
+				Else
+					PlaySound mExitSnd, 1, 1, CoreAudioPan(mSoundKicker.x), 0, 0, False, False, CoreAudioFade(mSoundKicker.y)
+				End If
 			Else
 				PlaySound mExitSnd
 			End If
@@ -1902,7 +1956,13 @@ Class cvpmDropTarget
 '		vpmSolWall mDropObj(aNo-1), mDropSnd, True
 
 		If TypeName(mDropObj(aNo-1)) = "HitTarget" Then
-			PlaySound mDropSnd, 1, 1, CoreAudioPan(mDropObj(aNo-1).x), 0, 0, False, False, CoreAudioFade(mDropObj(aNo-1).y)
+			If VP8sound then
+				PlaySound mDropSnd
+			ElseIf VP9sound then
+				PlaySound mDropSnd, 1, 1, CoreAudioPan(mDropObj(aNo-1).x), 0
+			Else
+				PlaySound mDropSnd, 1, 1, CoreAudioPan(mDropObj(aNo-1).x), 0, 0, False, False, CoreAudioFade(mDropObj(aNo-1).y)
+			End If
 		Else
 			PlaySound mDropSnd
 		End If
@@ -1923,7 +1983,13 @@ Class cvpmDropTarget
 		Dim mSwcopy
 		Dim ii : If Not aEnabled Then Exit Sub
 		If TypeName(mDropObj(aNo-1)) = "HitTarget" Then
-			PlaySound mRaiseSnd, 1, 1, CoreAudioPan(mDropObj(aNo-1).x), 0, 0, False, False, CoreAudioFade(mDropObj(aNo-1).y): vpmSolWall mDropObj(aNo-1), False, False
+			If VP8sound then
+				PlaySound mRaiseSnd
+			ElseIf VP9sound then
+				PlaySound mRaiseSnd, 1, 1, CoreAudioPan(mDropObj(aNo-1).x), 0
+			Else
+				PlaySound mRaiseSnd, 1, 1, CoreAudioPan(mDropObj(aNo-1).x), 0, 0, False, False, CoreAudioFade(mDropObj(aNo-1).y): vpmSolWall mDropObj(aNo-1), False, False
+			End If
 		Else
 			PlaySound mRaiseSnd
 		End If
@@ -1937,7 +2003,13 @@ Class cvpmDropTarget
 		Dim mSwcopy
 		Dim ii : If Not aEnabled Then Exit Sub
 		If TypeName(mDropObj(0)) = "HitTarget" Then
-			PlaySound mDropSnd, 1, 1, CoreAudioPan(mDropObj(0).x), 0, 0, False, False, CoreAudioFade(mDropObj(0).y)
+			If VP8sound then
+				PlaySound mDropSnd
+			ElseIf VP9sound then
+				PlaySound mDropSnd, 1, 1, CoreAudioPan(mDropObj(0).x), 0
+			Else
+				PlaySound mDropSnd, 1, 1, CoreAudioPan(mDropObj(0).x), 0, 0, False, False, CoreAudioFade(mDropObj(0).y)
+			End If
 		Else
 			PlaySound mDropSnd
 		End If
@@ -1951,7 +2023,13 @@ Class cvpmDropTarget
 		Dim mSwcopy
 		Dim ii : If Not aEnabled Then Exit Sub
 		If TypeName(mDropObj(0)) = "HitTarget" Then
-			PlaySound mRaiseSnd, 1, 1, CoreAudioPan(mDropObj(0).x), 0, 0, False, False, CoreAudioFade(mDropObj(0).y)
+			If VP8sound then
+				PlaySound mRaiseSnd
+			ElseIf VP9sound then
+				PlaySound mRaiseSnd, 1, 1, CoreAudioPan(mDropObj(0).x), 0
+			Else
+				PlaySound mRaiseSnd, 1, 1, CoreAudioPan(mDropObj(0).x), 0, 0, False, False, CoreAudioFade(mDropObj(0).y)
+			End If
 		Else
 			PlaySound mRaiseSnd
 		End If
@@ -2346,13 +2424,25 @@ Class cvpmVLock
 		If Not aEnabled Then Exit Sub
 		If mBalls > 0 Then
 			If isObject(mKick(0)) Then
-				PlaySound mBallSnd, 1, 1, CoreAudioPan(mKick(0).x), 0, 0, False, False, CoreAudioFade(mKick(0).y)
+				If VP8sound then
+					PlaySound mBallSnd
+				ElseIf VP9sound then
+					PlaySound mBallSnd, 1, 1, CoreAudioPan(mKick(0).x), 0
+				Else
+					PlaySound mBallSnd, 1, 1, CoreAudioPan(mKick(0).x), 0, 0, False, False, CoreAudioFade(mKick(0).y)
+				End If
 			Else
 				PlaySound mBallSnd
 			End If
 		Else 
 			If isObject(mKick(0)) Then
-				PlaySound mNoBallSnd, 1, 1, CoreAudioPan(mKick(0).x), 0, 0, False, False, CoreAudioFade(mKick(0).y)
+				If VP8sound then
+					PlaySound mNoBallSnd
+				ElseIf VP9sound then
+					PlaySound mNoBallSnd, 1, 1, CoreAudioPan(mKick(0).x), 0
+				Else
+					PlaySound mNoBallSnd, 1, 1, CoreAudioPan(mKick(0).x), 0, 0, False, False, CoreAudioFade(mKick(0).y)
+				End If
 			Else
 				PlaySound mNoBallSnd
 			End If
@@ -3257,7 +3347,13 @@ Sub vpmSolDiverter(aDiv, aSound, aEnabled)
 		If aEnabled Then
 			StopSound aSound
 			If isObject(aDiv) Then
-				PlaySound aSound, 1, 1, CoreAudioPan(aDiv.x), 0, 0, False, False, CoreAudioFade(aDiv.y)
+				If VP8sound then
+					PlaySound aSound
+				ElseIf VP9sound then
+					PlaySound aSound, 1, 1, CoreAudioPan(aDiv.x), 0
+				Else
+					PlaySound aSound, 1, 1, CoreAudioPan(aDiv.x), 0, 0, False, False, CoreAudioFade(aDiv.y)
+				End If
 			Else
 				PlaySound aSound
 			End If
@@ -3265,13 +3361,25 @@ Sub vpmSolDiverter(aDiv, aSound, aEnabled)
 	ElseIf aSound Then
 		If aEnabled Then 
 			If isObject(aDiv) Then
-				PlaySound SSolenoidOn, 1, 1, CoreAudioPan(aDiv.x), 0, 0, False, False, CoreAudioFade(aDiv.y)
+				If VP8sound then
+					PlaySound SSolenoidOn
+				ElseIf VP9sound then
+					PlaySound SSolenoidOn, 1, 1, CoreAudioPan(aDiv.x), 0
+				Else
+					PlaySound SSolenoidOn, 1, 1, CoreAudioPan(aDiv.x), 0, 0, False, False, CoreAudioFade(aDiv.y)
+				End If
 			Else
 				PlaySound SSolenoidOn
 			End If
 		Else 
 			If isObject(aDiv) Then
-				PlaySound SSolenoidOff, 1, 1, CoreAudioPan(aDiv.x), 0, 0, False, False, CoreAudioFade(aDiv.y)
+				If VP8sound then
+					PlaySound SSolenoidOff
+				ElseIf VP9sound then
+					PlaySound SSolenoidOff, 1, 1, CoreAudioPan(aDiv.x), 0
+				Else
+					PlaySound SSolenoidOff, 1, 1, CoreAudioPan(aDiv.x), 0, 0, False, False, CoreAudioFade(aDiv.y)
+				End If
 			Else
 				PlaySound SSolenoidOff
 			End If
@@ -3520,14 +3628,32 @@ LoadScript("ledcontrol.vbs"):Err.Clear	' Checks for existance of ledcontrol.vbs 
 LoadScript("GlobalPlugIn.vbs") 			' Checks for existance of GlobalPlugIn.vbs and loads it if found, useful for adding
 										' custom scripting that can be used for all tables instead of altering the core.vbs
 
-Dim soundtable, swidth, sheight
+Dim soundtable, swidth, sheight, VP8sound, VP9sound
 swidth = 950
 sheight = 2100
-If Version >= 10700 then
-	Set soundtable = ActiveTable
-	swidth = soundtable.Width
-	sheight = soundtable.Height
+VP8sound = False
+VP9sound = False
+
+On Error Resume Next
+Err.Clear
+If Version > 0 then
+	If Version >= 10700 then
+		Set soundtable = ActiveTable
+		swidth = soundtable.Width
+		sheight = soundtable.Height
+	End If
+	If Version < 10400 then
+		VP9sound = True
+	End If
 End If
+
+If Err.Number <> 0 Then
+	VP8sound = True
+	swidth = 950
+	sheight = 2100
+	Err.Clear
+End If
+On Error Goto 0
 
 Private Function CoreAudioPan(xpar) 'calculates the audio pan of an table object using the actual table width or 950 for older versions
 	If xpar < 0 then
