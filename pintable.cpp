@@ -10040,6 +10040,7 @@ void PinTable::OnLeftButtonDown(const short x, const short y)
     {
         UseTool(x, y, g_pvp->m_ToolCur);
     }
+    SetFocus();
 }
 
 void PinTable::OnMouseMove(const short x, const short y)
