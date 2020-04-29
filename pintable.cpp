@@ -2191,7 +2191,7 @@ void PinTable::Play(const bool cameraMode)
 
          m_pcv->SetEnabled(false); // Can't edit script while playing
 
-         g_pvp->SetEnableToolbar();
+         g_pvp->ToggleToolbar();
 
          if (!m_pcv->m_scriptError && (hrInit == S_OK))
          {

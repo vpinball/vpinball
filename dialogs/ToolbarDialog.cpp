@@ -248,6 +248,13 @@ void ToolbarDialog::EnableButtons()
     }
     else if (g_pvp->m_backglassView)
     {
+        m_magnifyButton.EnableWindow(TRUE);
+        m_selectButton.EnableWindow(TRUE);
+        m_scriptButton.EnableWindow(TRUE);
+        m_backglassButton.EnableWindow(TRUE);
+        m_playButton.EnableWindow(TRUE);
+        m_playCameraButton.EnableWindow(TRUE);
+
         m_textboxButton.EnableWindow(TRUE);
         m_reelButton.EnableWindow(TRUE);
         m_decalButton.EnableWindow(TRUE);

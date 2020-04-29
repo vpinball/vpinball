@@ -83,8 +83,6 @@ private:
    bool ApcHost_OnTranslateMessage(MSG* pmsg);
    bool processKeyInputForDialogs(MSG *pmsg);
 
-   void SetEnablePalette();
-
    void ShowSubDialog(CDialog &dlg);
 
 public:
@@ -126,7 +124,7 @@ public:
 
    bool CloseTable(PinTable * const ppt);
 
-   void SetEnableToolbar();
+   void ToggleToolbar();
    void SetEnableMenuItems();
 
    void EnsureWorkerThread();
