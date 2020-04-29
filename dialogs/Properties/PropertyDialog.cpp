@@ -350,6 +350,19 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>* pvsel)
     m_previousType = psel->GetItemType();
 }
 
+void PropertyDialog::DeleteAllTabs()
+{
+    BasePropertyDialog::m_disableEvents = true;
+    for (int i = 0; i < PROPERTY_TABS; i++)
+        if (m_tabs[i] != NULL)
+        {
+            m_tab.RemoveTabPage(m_tab.GetTabIndex(m_tabs[i]));
+            m_tabs[i] = NULL;
+        }
+    m_previousType = (ItemTypeEnum)0;
+    m_backglassView = false;
+}
+
 void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, CComboBox &combo, const char *selectName)
 {
     combo.ResetContent();

@@ -5851,7 +5851,7 @@ static void ShutDownPlayer()
    delete g_pplayer; // needs to be deleted here, as code below relies on it being NULL
    g_pplayer = NULL;
 
-   g_pvp->SetEnableToolbar();
+   g_pvp->ToggleToolbar();
    mixer_shutdown();
    hid_shutdown();
 

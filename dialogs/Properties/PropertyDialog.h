@@ -211,6 +211,7 @@ public:
     PropertyDialog();
 
     void CreateTabs(VectorProtected<ISelect>* pvsel);
+    void DeleteAllTabs();
     void UpdateTabs(VectorProtected<ISelect> *pvsel);
 
     static void UpdateTextureComboBox(const vector<Texture*>& contentList, CComboBox &combo, const char *selectName);

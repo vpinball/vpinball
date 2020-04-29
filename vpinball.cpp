@@ -950,17 +950,11 @@ void VPinball::ReInitSound()
 	}
 }
 
-void VPinball::SetEnablePalette()
-{
-   if(m_toolbarDialog)
-    m_toolbarDialog->EnableButtons();
-}
 
-
-void VPinball::SetEnableToolbar()
+void VPinball::ToggleToolbar()
 {
-   SetEnablePalette();
-//   ParseCommand(ID_EDIT_PROPERTIES, 2); //redisplay 
+    if (m_toolbarDialog)
+        m_toolbarDialog->EnableButtons();
 }
 
 void VPinball::DoPlay(const bool _cameraMode)
@@ -1055,7 +1049,7 @@ void VPinball::LoadFileName(const char *szFileName)
       GetLayersListDialog()->CollapseLayers();
       GetLayersListDialog()->ExpandLayers();
       ppt->SetDirty(eSaveClean);
-      SetEnableToolbar();
+      ToggleToolbar();
    }
 }
 
@@ -1089,9 +1083,15 @@ bool VPinball::CloseTable(PinTable * const ppt)
 {
    m_unloadingTable = true;
    ppt->GetMDITable()->SendMessage(WM_SYSCOMMAND, SC_CLOSE, 0);
-
-   SetEnableToolbar();
    m_unloadingTable = false;
+
+   std::vector<MDIChildPtr> allChildren = GetAllMDIChildren();
+   if (allChildren.size() == 0)
+   {
+       ToggleToolbar();
+       if (m_propertyDialog && m_propertyDialog->IsWindow())
+           m_propertyDialog->DeleteAllTabs();
+   }
    return true;
 }
 
@@ -2037,7 +2037,7 @@ void VPinball::ToggleBackglassView()
        // Set selection to something in the new view (unless hiding table elements)
         ptCur->AddMultiSel((ISelect *)ptCur, false, true, false);
 
-    SetEnableToolbar();
+    ToggleToolbar();
 }
 
 void VPinball::ToggleScriptEditor()
@@ -2245,7 +2245,7 @@ void VPinball::OpenNewTable(size_t tableId)
     mdiTable->GetTable()->AddMultiSel(mdiTable->GetTable(), false, true, false);
     GetLayersListDialog()->CollapseLayers();
     GetLayersListDialog()->ExpandLayers();
-    SetEnableToolbar();
+    ToggleToolbar();
 }
 
 void VPinball::ProcessDeleteElement()
