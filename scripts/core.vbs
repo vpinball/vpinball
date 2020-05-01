@@ -3647,11 +3647,12 @@ If Version > 0 then
 	End If
 End If
 
-If Err.Number <> 0 Then
+If Err.Number <> 0 then
 	If VPBuildVersion >= 920 and VPBuildVersion <= 999 then 'no pan parameter in PlaySound until 9.2
 		VP9sound = True
 	Else
 		VP8sound = True
+	End If
 	swidth = 950
 	sheight = 2100
 	Err.Clear
