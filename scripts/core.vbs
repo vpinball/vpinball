@@ -3637,18 +3637,21 @@ VP9sound = False
 On Error Resume Next
 Err.Clear
 If Version > 0 then
-	If Version >= 10700 then
+	If Version >= 10700 then 'no ActiveTable call until 10.7
 		Set soundtable = ActiveTable
 		swidth = soundtable.Width
 		sheight = soundtable.Height
 	End If
-	If Version < 10400 then
+	If Version < 10400 then 'no front/rear fade until 10.4
 		VP9sound = True
 	End If
 End If
 
 If Err.Number <> 0 Then
-	VP8sound = True
+	If VPBuildVersion >= 920 and VPBuildVersion <= 999 then 'no pan parameter in PlaySound until 9.2
+		VP9sound = True
+	Else
+		VP8sound = True
 	swidth = 950
 	sheight = 2100
 	Err.Clear
