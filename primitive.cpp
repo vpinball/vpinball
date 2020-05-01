@@ -324,9 +324,6 @@ HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    InitVBA(fTrue, 0, NULL);
 
-   if (!m_d.m_use3DMesh)
-      CalculateBuiltinOriginal();
-
    UpdateEditorView();
 
    return S_OK;
@@ -915,6 +912,9 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
 
 void Primitive::CalculateBuiltinOriginal()
 {
+    if (m_d.m_use3DMesh)
+        return;
+
    // this recalculates the Original Vertices -> should be only called, when sides are altered.
    const float outerRadius = -0.5f / (cosf((float)M_PI / (float)m_d.m_Sides));
    const float addAngle = (float)(2.0*M_PI) / (float)m_d.m_Sides;
@@ -1117,6 +1117,7 @@ void Primitive::UpdateEditorView()
     if(g_pplayer)
         return;
 
+   CalculateBuiltinOriginal();
    RecalculateMatrices();
    TransformVertices();
 }
@@ -1749,10 +1750,6 @@ HRESULT Primitive::InitPostLoad()
 {
    WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
 
-
-   if (!m_d.m_use3DMesh)
-      CalculateBuiltinOriginal();
-
    UpdateEditorView();
 
    return S_OK;
@@ -2161,9 +2158,7 @@ STDMETHODIMP Primitive::put_Sides(int newVal)
       if (!m_d.m_use3DMesh)
       {
          m_vertexBufferRegenerate = true;
-         CalculateBuiltinOriginal();
-         RecalculateMatrices();
-         TransformVertices();
+         UpdateEditorView();
       }
    }
 
