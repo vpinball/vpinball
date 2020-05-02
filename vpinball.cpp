@@ -1316,10 +1316,13 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
       {
           // check/process events for other dialogs (material/sound/image manager, toolbar, properties
           consumed = processKeyInputForDialogs(pmsg);
-          const bool translated = !!TranslateAccelerator(GetHwnd(), g_haccel, pmsg);
+          if (!consumed)
+          {
+              const bool translated = !!TranslateAccelerator(GetHwnd(), g_haccel, pmsg);
 
-         if (translated)
-            consumed = true;
+              if (translated)
+                  consumed = true;
+          }
       }
 
       if (!consumed)
