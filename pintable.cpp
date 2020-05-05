@@ -1725,14 +1725,10 @@ void PinTable::InitPostLoad(VPinball *pvp)
 
    m_szBlueprintFileName[0] = 0;
 
-   //InitVBA();
    m_pcv->AddItem(this, false);
    m_pcv->AddItem(m_psgt, true);
    m_pcv->AddItem(m_pcv->m_pdm, false);
 
-   //CreateTableWindow();
-
-   //SetMyScrollInfo();
 }
 
 
@@ -2925,6 +2921,8 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 
 	   pps->m_outputTarget = bToBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE;	
    }
+   if (_stricmp(pps->m_szPath, "* Backglass Output *") == 0)
+       pps->m_outputTarget = SNDOUT_BACKGLASS;
 
    if (FAILED(hr = pps->ReInitialize()))
    {
