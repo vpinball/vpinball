@@ -1728,7 +1728,6 @@ void PinTable::InitPostLoad(VPinball *pvp)
    m_pcv->AddItem(this, false);
    m_pcv->AddItem(m_psgt, true);
    m_pcv->AddItem(m_pcv->m_pdm, false);
-
 }
 
 

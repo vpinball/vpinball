@@ -979,7 +979,7 @@ bool VPinball::LoadFile()
    return true;
 }
 
-void VPinball::LoadFileName(const char *szFileName)
+void VPinball::LoadFileName(const char *szFileName, const bool updateEditor)
 {
    if (firstRun)
       OnInitialUpdate();
@@ -1042,12 +1042,16 @@ void VPinball::LoadFileName(const char *szFileName)
 
       // make sure the load directory is the active directory
       SetCurrentDirectory(m_currentTablePath);
-      ppt->AddMultiSel(ppt, false, true, false);
       UpdateRecentFileList(szFileName);
-      GetLayersListDialog()->CollapseLayers();
-      GetLayersListDialog()->ExpandLayers();
+      ppt->AddMultiSel(ppt, false, true, false);
       ppt->SetDirty(eSaveClean);
-      ToggleToolbar();
+      if(updateEditor)
+      {
+          GetLayersListDialog()->CollapseLayers();
+          GetLayersListDialog()->ExpandLayers();
+          ToggleToolbar();
+          SetFocus();
+      }
    }
 }
 
@@ -2247,6 +2251,7 @@ void VPinball::OpenNewTable(size_t tableId)
     GetLayersListDialog()->CollapseLayers();
     GetLayersListDialog()->ExpandLayers();
     ToggleToolbar();
+    SetFocus();
 }
 
 void VPinball::ProcessDeleteElement()
