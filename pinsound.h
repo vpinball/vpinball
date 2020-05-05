@@ -79,9 +79,27 @@ public:
    void SetDevice(); //!! BASS only
 #ifdef ONLY_USE_BASS
    bool IsWav() const { return false; }
-   bool IsWav2() const { return (_stricmp(strrchr(m_szPath, '.'), ".wav") == 0); }
+   bool IsWav2() const 
+   { 
+       if (_stricmp(m_szPath, "* Backglass Output *") == 0)	// check for old backglass sound option -> wav only
+           return true;
+       const char* ptr = strrchr(m_szPath, '.');
+       if (ptr == NULL)
+           return true;
+
+       return (_stricmp(ptr, ".wav") == 0);
+   }
 #else
-   bool IsWav() const { return (_stricmp(strrchr(m_szPath, '.'), ".wav") == 0); }
+   bool IsWav() const
+   {
+	   if (_stricmp(m_szPath, "* Backglass Output *") == 0)	// check for old backglass sound option -> wav only
+		   return true;
+       const char* ptr = strrchr(m_szPath, '.');
+       if (ptr == NULL)
+           return true;
+
+       return (_stricmp(ptr, ".wav") == 0);
+   }
    bool IsWav2() const { return IsWav(); }
 #endif
    void Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart);
