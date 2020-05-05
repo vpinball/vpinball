@@ -466,7 +466,7 @@ public:
          {
             bool lf = true;
             if (szTableFileName[0] != '\0')
-               g_pvp->LoadFileName(szTableFileName);
+               g_pvp->LoadFileName(szTableFileName, play==false);
             else
                lf = g_pvp->LoadFile();
 
