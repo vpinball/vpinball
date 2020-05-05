@@ -142,7 +142,7 @@ HRESULT HitTarget::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    InitVBA(fTrue, 0, NULL);
 
-   UpdateEditorView();
+   UpdateStatusBarInfo();
 
    return S_OK;
 }
@@ -583,7 +583,7 @@ void HitTarget::UIRenderPass2(Sur * const psur)
 //    psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y - 10.0f, m_d.m_vPosition.x, m_d.m_vPosition.y + 10.0f);
 }
 
-void HitTarget::UpdateEditorView()
+void HitTarget::UpdateStatusBarInfo()
 {
    TransformVertices();
 }
@@ -855,7 +855,7 @@ void HitTarget::MoveOffset(const float dx, const float dy)
    m_d.m_vPosition.x += dx;
    m_d.m_vPosition.y += dy;
 
-   UpdateEditorView();
+   UpdateStatusBarInfo();
 }
 
 Vertex2D HitTarget::GetCenter() const
@@ -868,7 +868,7 @@ void HitTarget::PutCenter(const Vertex2D& pv)
    m_d.m_vPosition.x = pv.x;
    m_d.m_vPosition.y = pv.y;
 
-   UpdateEditorView();
+   UpdateStatusBarInfo();
 }
 
 //////////////////////////////
@@ -930,7 +930,7 @@ HRESULT HitTarget::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
 
    br.Load();
 
-   UpdateEditorView();
+   UpdateStatusBarInfo();
    return S_OK;
 }
 
@@ -979,7 +979,7 @@ bool HitTarget::LoadToken(const int id, BiffReader * const pbr)
 
 HRESULT HitTarget::InitPostLoad()
 {
-   UpdateEditorView();
+   UpdateStatusBarInfo();
 
    return S_OK;
 }
@@ -1069,9 +1069,6 @@ STDMETHODIMP HitTarget::put_X(float newVal)
    if (m_d.m_vPosition.x != newVal)
    {
       m_d.m_vPosition.x = newVal;
-
-      if (!g_pplayer)
-         UpdateEditorView();
    }
 
    return S_OK;
@@ -1089,9 +1086,6 @@ STDMETHODIMP HitTarget::put_Y(float newVal)
    if (m_d.m_vPosition.y != newVal)
    {
       m_d.m_vPosition.y = newVal;
-
-      if (!g_pplayer)
-         UpdateEditorView();
    }
 
    return S_OK;
@@ -1109,9 +1103,6 @@ STDMETHODIMP HitTarget::put_Z(float newVal)
    if (m_d.m_vPosition.z != newVal)
    {
       m_d.m_vPosition.z = newVal;
-
-      if (!g_pplayer)
-         UpdateEditorView();
    }
 
    return S_OK;
@@ -1129,9 +1120,6 @@ STDMETHODIMP HitTarget::put_ScaleX(float newVal)
    if (m_d.m_vSize.x != newVal)
    {
       m_d.m_vSize.x = newVal;
-
-      if (!g_pplayer)
-         UpdateEditorView();
    }
 
    return S_OK;
@@ -1149,9 +1137,6 @@ STDMETHODIMP HitTarget::put_ScaleY(float newVal)
    if (m_d.m_vSize.y != newVal)
    {
       m_d.m_vSize.y = newVal;
-
-      if (!g_pplayer)
-         UpdateEditorView();
    }
 
    return S_OK;
@@ -1169,9 +1154,6 @@ STDMETHODIMP HitTarget::put_ScaleZ(float newVal)
    if (m_d.m_vSize.z != newVal)
    {
       m_d.m_vSize.z = newVal;
-
-      if (!g_pplayer)
-         UpdateEditorView();
    }
 
    return S_OK;
@@ -1189,9 +1171,6 @@ STDMETHODIMP HitTarget::put_Orientation(float newVal)
    if (m_d.m_rotZ != newVal)
    {
       m_d.m_rotZ = newVal;
-
-      if (!g_pplayer)
-         UpdateEditorView();
    }
 
    return S_OK;
@@ -1454,9 +1433,6 @@ STDMETHODIMP HitTarget::get_DrawStyle(TargetType *pVal)
 STDMETHODIMP HitTarget::put_DrawStyle(TargetType newVal)
 {
    m_d.m_targetType = newVal;
-
-   if(!g_pplayer)
-      UpdateEditorView();
 
    return S_OK;
 }

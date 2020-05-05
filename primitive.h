@@ -271,14 +271,13 @@ public:
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
    virtual void RenderBlueprint(Sur *psur, const bool solid);
+   virtual void UpdateStatusBarInfo();
 
 
    void CreateRenderGroup(const Collection * const collection);
    void RecalculateMatrices();
    void TransformVertices();
    void RenderObject();
-   void UpdateMeshInfo();
-   void UpdateEditorView();
 
    static INT_PTR CALLBACK ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

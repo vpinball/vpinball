@@ -562,7 +562,8 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
             else
             {
                 const BOOL ret = m_tabs[i]->IsDialogMessage(msg);
-                if (ret)
+
+                if (ret==TRUE)
                     return TRUE;
             }
         }

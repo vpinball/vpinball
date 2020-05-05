@@ -174,7 +174,7 @@ public:
    void GenerateMesh(std::vector<Vertex3D_NoTex2> &buf);
    void TransformVertices();
    void SetMeshType(const TargetType type);
-   void UpdateEditorView();
+   void UpdateStatusBarInfo();
 
    HitTargetData    m_d;
 

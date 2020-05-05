@@ -124,6 +124,7 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(ramp, &ramp->m_d, dispid);
                 break;
         }
+        ramp->UpdateStatusBarInfo();
     }
     UpdateVisuals(dispid);
 }

@@ -50,7 +50,6 @@ void FlipperPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == 1044 || dispid == -1)
             PropertyDialog::UpdateComboBox(m_physicSetList, m_overwriteSettingsCombo, m_physicSetList[(int)flipper->m_d.m_OverridePhysics].c_str());
         UpdateBaseVisuals(flipper, &flipper->m_d, dispid);
-        flipper->UpdateUnitsInfo();
         //only show the first element on multi-select
         break;
     }

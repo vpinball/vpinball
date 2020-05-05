@@ -1431,7 +1431,7 @@ HRESULT Surface::InitPostLoad()
    return S_OK;
 }
 
-void Surface::UpdateUnitsInfo()
+void Surface::UpdateStatusBarInfo()
 {
    if(g_pplayer)
        return;
@@ -1550,7 +1550,6 @@ STDMETHODIMP Surface::get_HeightBottom(float *pVal)
 STDMETHODIMP Surface::put_HeightBottom(float newVal)
 {
    m_d.m_heightbottom = newVal;
-   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -1565,7 +1564,6 @@ STDMETHODIMP Surface::get_HeightTop(float *pVal)
 STDMETHODIMP Surface::put_HeightTop(float newVal)
 {
    m_d.m_heighttop = newVal;
-   UpdateUnitsInfo();
 
    return S_OK;
 }

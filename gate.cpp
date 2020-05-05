@@ -82,11 +82,8 @@ Gate::~Gate()
    }
 }
 
-void Gate::UpdateUnitsInfo()
+void Gate::UpdateStatusBarInfo()
 {
-   if(g_pplayer)
-        return;
-
    char tbuf[128];
    sprintf_s(tbuf, "Length: %.3f | Height: %.3f", g_pvp->ConvertToUnit(m_d.m_length), g_pvp->ConvertToUnit(m_d.m_height));
    g_pvp->SetStatusBarUnitInfo(tbuf, true);
@@ -688,31 +685,24 @@ STDMETHODIMP Gate::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Gate::get_Length(float *pVal)
 {
    *pVal = m_d.m_length;
-   UpdateUnitsInfo();
-
    return S_OK;
 }
 
 STDMETHODIMP Gate::put_Length(float newVal)
 {
    m_d.m_length = newVal;
-   UpdateUnitsInfo();
-
    return S_OK;
 }
 
 STDMETHODIMP Gate::get_Height(float *pVal)
 {
    *pVal = m_d.m_height;
-   UpdateUnitsInfo();
    return S_OK;
 }
 
 STDMETHODIMP Gate::put_Height(float newVal)
 {
    m_d.m_height = newVal;
-   UpdateUnitsInfo();
-
    return S_OK;
 }
 

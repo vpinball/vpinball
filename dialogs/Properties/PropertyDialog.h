@@ -34,10 +34,7 @@ public:
             switch (HIWORD(wParam))
             {
             case EN_KILLFOCUS:
-            {
-                const int v = 42;
-            }
-            case CBN_KILLFOCUS:
+            //case CBN_KILLFOCUS:
             case CBN_SELCHANGE:
             case BN_CLICKED:
             {

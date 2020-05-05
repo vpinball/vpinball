@@ -78,6 +78,7 @@ void KickerVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(kicker, &kicker->m_d, dispid);
                 break;
         }
+        kicker->UpdateStatusBarInfo();
     }
     UpdateVisuals(dispid);
 }

@@ -40,11 +40,8 @@ Ramp::~Ramp()
       delete[] m_rgheightInit;
 }
 
-void Ramp::UpdateUnitsInfo()
+void Ramp::UpdateStatusBarInfo()
 {
-   if(g_pplayer)
-       return;
-
    char tbuf[128];
    sprintf_s(tbuf, "TopH: %.03f | BottomH: %0.3f | TopW: %.03f | BottomW: %.03f | LeftW: %.03f | RightW: %.03f", g_pvp->ConvertToUnit(m_d.m_heighttop), g_pvp->ConvertToUnit(m_d.m_heightbottom), 
                                                                                   g_pvp->ConvertToUnit(m_d.m_widthtop), g_pvp->ConvertToUnit(m_d.m_widthbottom),
@@ -1495,7 +1492,6 @@ STDMETHODIMP Ramp::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Ramp::get_HeightBottom(float *pVal)
 {
    *pVal = m_d.m_heightbottom;
-   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -1507,7 +1503,6 @@ STDMETHODIMP Ramp::put_HeightBottom(float newVal)
       m_d.m_heightbottom = newVal;
       m_dynamicVertexBufferRegenerate = true;
 
-      UpdateUnitsInfo();
    }
 
    return S_OK;
@@ -1516,7 +1511,6 @@ STDMETHODIMP Ramp::put_HeightBottom(float newVal)
 STDMETHODIMP Ramp::get_HeightTop(float *pVal)
 {
    *pVal = m_d.m_heighttop;
-   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -1528,7 +1522,6 @@ STDMETHODIMP Ramp::put_HeightTop(float newVal)
       m_d.m_heighttop = newVal;
       m_dynamicVertexBufferRegenerate = true;
 
-      UpdateUnitsInfo();
    }
 
    return S_OK;
@@ -1537,7 +1530,6 @@ STDMETHODIMP Ramp::put_HeightTop(float newVal)
 STDMETHODIMP Ramp::get_WidthBottom(float *pVal)
 {
    *pVal = m_d.m_widthbottom;
-   UpdateUnitsInfo();
 
    return S_OK;
 }
@@ -1548,8 +1540,6 @@ STDMETHODIMP Ramp::put_WidthBottom(float newVal)
    {
       m_d.m_widthbottom = newVal;
       m_dynamicVertexBufferRegenerate = true;
-
-      UpdateUnitsInfo();
    }
 
    return S_OK;
@@ -1558,8 +1548,6 @@ STDMETHODIMP Ramp::put_WidthBottom(float newVal)
 STDMETHODIMP Ramp::get_WidthTop(float *pVal)
 {
    *pVal = m_d.m_widthtop;
-   UpdateUnitsInfo();
-
    return S_OK;
 }
 
@@ -1569,8 +1557,6 @@ STDMETHODIMP Ramp::put_WidthTop(float newVal)
    {
       m_d.m_widthtop = newVal;
       m_dynamicVertexBufferRegenerate = true;
-
-      UpdateUnitsInfo();
    }
 
    return S_OK;

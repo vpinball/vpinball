@@ -251,8 +251,6 @@ void VPinball::Init()
          SetWindowPlacement(winpl);
       }
    }
-
-
 #ifdef SLINTF
    // see slintf.cpp
    slintf_init();									// initialize debug console (can be popupped by the following command)

@@ -32,11 +32,8 @@ Rubber::~Rubber()
       m_dynamicIndexBuffer->release();
 }
 
-void Rubber::UpdateUnitsInfo()
+void Rubber::SetStatusBarUnitInfo()
 {
-   if(g_pplayer)
-       return;
-
    char tbuf[128];
    sprintf_s(tbuf, "Height: %.3f | Thickness: %.3f", g_pvp->ConvertToUnit(m_d.m_height), g_pvp->ConvertToUnit((float)m_d.m_thickness));
    g_pvp->SetStatusBarUnitInfo(tbuf, true);
@@ -880,7 +877,6 @@ STDMETHODIMP Rubber::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Rubber::get_Height(float *pVal)
 {
    *pVal = m_d.m_height;
-   UpdateUnitsInfo();
    return S_OK;
 }
 
@@ -890,8 +886,6 @@ STDMETHODIMP Rubber::put_Height(float newVal)
    {
       m_d.m_height = newVal;
       m_dynamicVertexBufferRegenerate = true;
-
-      UpdateUnitsInfo();
    }
 
    return S_OK;
@@ -914,8 +908,6 @@ STDMETHODIMP Rubber::put_HitHeight(float newVal)
 STDMETHODIMP Rubber::get_Thickness(int *pVal)
 {
    *pVal = m_d.m_thickness;
-   UpdateUnitsInfo();
-
    return S_OK;
 }
 
@@ -925,8 +917,6 @@ STDMETHODIMP Rubber::put_Thickness(int newVal)
    {
       m_d.m_thickness = newVal;
       m_dynamicVertexBufferRegenerate = true;
-
-      UpdateUnitsInfo();
    }
 
    return S_OK;

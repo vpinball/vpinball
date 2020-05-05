@@ -120,6 +120,7 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(flipper, &flipper->m_d, dispid);
                 break;
         }
+        flipper->UpdateStatusBarInfo();
     }
     UpdateVisuals(dispid);
 }

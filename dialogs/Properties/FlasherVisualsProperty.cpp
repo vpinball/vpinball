@@ -163,6 +163,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
             default:
                 break;
         }
+        flash->UpdateStatusBarInfo();
     }
     UpdateVisuals(dispid);
 }

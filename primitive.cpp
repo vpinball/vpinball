@@ -324,7 +324,7 @@ HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    InitVBA(fTrue, 0, NULL);
 
-   UpdateEditorView();
+   UpdateStatusBarInfo();
 
    return S_OK;
 }
@@ -1101,25 +1101,20 @@ void Primitive::CalculateBuiltinOriginal()
    //ComputeNormals(m_mesh.m_vertices, m_mesh.m_indices);
 }
 
-// placed in get_X so that this is shown when prim selected
-void Primitive::UpdateMeshInfo()
+void Primitive::UpdateStatusBarInfo()
 {
-    if(g_pplayer)
-        return;
-
-    char tbuf[128];
-    sprintf_s(tbuf, "vertices: %i | polygons: %i", (int)m_mesh.NumVertices(), (int)m_mesh.NumIndices());
-    g_pvp->SetStatusBarUnitInfo(tbuf, false);
-}
-
-void Primitive::UpdateEditorView()
-{
-    if(g_pplayer)
-        return;
-
    CalculateBuiltinOriginal();
    RecalculateMatrices();
    TransformVertices();
+   if (m_d.m_use3DMesh)
+   {
+       char tbuf[128];
+       sprintf_s(tbuf, "vertices: %i | polygons: %i", (int)m_mesh.NumVertices(), (int)m_mesh.NumIndices());
+       g_pvp->SetStatusBarUnitInfo(tbuf, false);
+   }
+   else
+       g_pvp->SetStatusBarUnitInfo("", false);
+
 }
 
 void Primitive::ExportMesh(FILE *f)
@@ -1350,8 +1345,6 @@ void Primitive::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vPosition.x += dx;
    m_d.m_vPosition.y += dy;
-
-   UpdateEditorView();
 }
 
 Vertex2D Primitive::GetCenter() const
@@ -1363,8 +1356,6 @@ void Primitive::PutCenter(const Vertex2D& pv)
 {
    m_d.m_vPosition.x = pv.x;
    m_d.m_vPosition.y = pv.y;
-
-   UpdateEditorView();
 }
 
 //////////////////////////////
@@ -1750,7 +1741,7 @@ HRESULT Primitive::InitPostLoad()
 {
    WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
 
-   UpdateEditorView();
+   UpdateStatusBarInfo();
 
    return S_OK;
 }
@@ -1873,7 +1864,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                   memcpy(prim->m_mesh.m_indices.data(), tmp, prim->m_mesh.NumIndices() * sizeof(unsigned int));
                   delete[] tmp;
                }
-               prim->UpdateEditorView();
+               prim->UpdateStatusBarInfo();
                prim = NULL;
                EndDialog(hwndDlg, TRUE);
             }
@@ -2001,7 +1992,7 @@ bool Primitive::BrowseFor3DMeshFile()
       m_d.m_vSize.y = 1.0f;
       m_d.m_vSize.z = 1.0f;
       m_d.m_use3DMesh = true;
-      UpdateEditorView();
+      UpdateStatusBarInfo();
       return true;
    }
    return false;
@@ -2158,7 +2149,6 @@ STDMETHODIMP Primitive::put_Sides(int newVal)
       if (!m_d.m_use3DMesh)
       {
          m_vertexBufferRegenerate = true;
-         UpdateEditorView();
       }
    }
 
@@ -2230,7 +2220,6 @@ STDMETHODIMP Primitive::put_DrawTexturesInside(VARIANT_BOOL newVal)
 STDMETHODIMP Primitive::get_X(float *pVal)
 {
    *pVal = m_d.m_vPosition.x;
-   UpdateMeshInfo();
 
    return S_OK;
 }
@@ -2240,7 +2229,6 @@ STDMETHODIMP Primitive::put_X(float newVal)
    if (m_d.m_vPosition.x != newVal)
    {
       m_d.m_vPosition.x = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;
@@ -2258,7 +2246,6 @@ STDMETHODIMP Primitive::put_Y(float newVal)
    if (m_d.m_vPosition.y != newVal)
    {
       m_d.m_vPosition.y = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;
@@ -2276,7 +2263,6 @@ STDMETHODIMP Primitive::put_Z(float newVal)
    if (m_d.m_vPosition.z != newVal)
    {
       m_d.m_vPosition.z = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;
@@ -2294,7 +2280,6 @@ STDMETHODIMP Primitive::put_Size_X(float newVal)
    if (m_d.m_vSize.x != newVal)
    {
       m_d.m_vSize.x = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;
@@ -2312,7 +2297,6 @@ STDMETHODIMP Primitive::put_Size_Y(float newVal)
    if (m_d.m_vSize.y != newVal)
    {
       m_d.m_vSize.y = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;
@@ -2330,7 +2314,6 @@ STDMETHODIMP Primitive::put_Size_Z(float newVal)
    if (m_d.m_vSize.z != newVal)
    {
       m_d.m_vSize.z = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;
@@ -2357,7 +2340,6 @@ STDMETHODIMP Primitive::put_RotX(float newVal)
    if (m_d.m_aRotAndTra[0] != newVal)
    {
       m_d.m_aRotAndTra[0] = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;
@@ -2384,7 +2366,6 @@ STDMETHODIMP Primitive::put_RotY(float newVal)
    if (m_d.m_aRotAndTra[1] != newVal)
    {
       m_d.m_aRotAndTra[1] = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;
@@ -2411,7 +2392,6 @@ STDMETHODIMP Primitive::put_RotZ(float newVal)
    if (m_d.m_aRotAndTra[2] != newVal)
    {
       m_d.m_aRotAndTra[2] = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;
@@ -2439,7 +2419,6 @@ STDMETHODIMP Primitive::put_TransX(float newVal)
    if (m_d.m_aRotAndTra[3] != newVal)
    {
       m_d.m_aRotAndTra[3] = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;
@@ -2467,7 +2446,6 @@ STDMETHODIMP Primitive::put_TransY(float newVal)
    if (m_d.m_aRotAndTra[4] != newVal)
    {
       m_d.m_aRotAndTra[4] = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;
@@ -2495,7 +2473,6 @@ STDMETHODIMP Primitive::put_TransZ(float newVal)
    if (m_d.m_aRotAndTra[5] != newVal)
    {
       m_d.m_aRotAndTra[5] = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;
@@ -2523,7 +2500,6 @@ STDMETHODIMP Primitive::put_ObjRotX(float newVal)
    if (m_d.m_aRotAndTra[6] != newVal)
    {
       m_d.m_aRotAndTra[6] = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;
@@ -2550,7 +2526,6 @@ STDMETHODIMP Primitive::put_ObjRotY(float newVal)
    if (m_d.m_aRotAndTra[7] != newVal)
    {
       m_d.m_aRotAndTra[7] = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;
@@ -2578,7 +2553,6 @@ STDMETHODIMP Primitive::put_ObjRotZ(float newVal)
    if (m_d.m_aRotAndTra[8] != newVal)
    {
       m_d.m_aRotAndTra[8] = newVal;
-      UpdateEditorView();
    }
 
    return S_OK;

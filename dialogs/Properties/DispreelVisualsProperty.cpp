@@ -112,6 +112,7 @@ void DispreelVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(reel, &reel->m_d, dispid);
                 break;
         }
+        reel->UpdateStatusBarInfo();
     }
     UpdateVisuals();
 }

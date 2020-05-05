@@ -49,11 +49,8 @@ Kicker::~Kicker()
    }
 }
 
-void Kicker::UpdateUnitsInfo()
+void Kicker::UpdateStatusBarInfo()
 {
-   if(g_pplayer)
-       return;
-
    char tbuf[128];
    sprintf_s(tbuf, "Radius: %.3f", g_pvp->ConvertToUnit(m_d.m_radius));
    g_pvp->SetStatusBarUnitInfo(tbuf, true);
@@ -1000,7 +997,6 @@ STDMETHODIMP Kicker::put_Orientation(float newVal)
 STDMETHODIMP Kicker::get_Radius(float *pVal)
 {
    *pVal = m_d.m_radius;
-   UpdateUnitsInfo();
    return S_OK;
 }
 
@@ -1011,8 +1007,6 @@ STDMETHODIMP Kicker::put_Radius(float newVal)
    m_d.m_radius = newVal;
 
    STOPUNDO
-   UpdateUnitsInfo();
-
    return S_OK;
 }
 

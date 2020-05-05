@@ -97,10 +97,6 @@ Flipper::~Flipper()
       m_indexBuffer->release();
 }
 
-void Flipper::UpdateUnitsInfo()
-{
-}
-
 HRESULT Flipper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
@@ -1067,16 +1063,12 @@ STDMETHODIMP Flipper::put_EndRadius(float newVal)
 STDMETHODIMP Flipper::get_Length(float *pVal)
 {
    *pVal = m_d.m_FlipperRadiusMax;
-   UpdateUnitsInfo();
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_Length(float newVal)
 {
    m_d.m_FlipperRadiusMax = newVal;
-   UpdateUnitsInfo();
-
    return S_OK;
 }
 
@@ -1300,16 +1292,12 @@ STDMETHODIMP Flipper::get_RubberThickness(float *pVal)
 STDMETHODIMP Flipper::get_RubberHeight(float *pVal)
 {
    *pVal = m_d.m_rubberheight;
-   UpdateUnitsInfo();
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::get_RubberWidth(float *pVal)
 {
    *pVal = m_d.m_rubberwidth;
-   UpdateUnitsInfo();
-
    return S_OK;
 }
 
@@ -1326,16 +1314,12 @@ STDMETHODIMP Flipper::put_RubberHeight(float newVal)
    else if (newVal > 1000.f) newVal = 50.f; //!! legacy, deprecated
    
    m_d.m_rubberheight = newVal;
-
-   UpdateUnitsInfo();
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_RubberWidth(float newVal)
 {
    m_d.m_rubberwidth = newVal;
- 
-   UpdateUnitsInfo();
    return S_OK;
 }
 
@@ -1488,16 +1472,12 @@ STDMETHODIMP Flipper::put_RampUp(float newVal)
 STDMETHODIMP Flipper::get_Height(float *pVal)
 {
    *pVal = m_d.m_height;
-   UpdateUnitsInfo();
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_Height(float newVal)
 {
    m_d.m_height = newVal;
-   UpdateUnitsInfo();
-
    return S_OK;
 }
 

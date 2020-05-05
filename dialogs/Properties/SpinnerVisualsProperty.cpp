@@ -42,7 +42,6 @@ void SpinnerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::SetFloatTextbox(m_angleMinEdit, spinner->m_d.m_angleMin);
 
         UpdateBaseVisuals(spinner, &spinner->m_d, dispid);
-        spinner->UpdateUnitsInfo();
         //only show the first element on multi-select
         break;
     }
@@ -89,6 +88,7 @@ void SpinnerVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(spinner, &spinner->m_d, dispid);
                 break;
         }
+        spinner->UpdateStatusBarInfo();
     }
     UpdateVisuals(dispid);
 }
