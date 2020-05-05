@@ -23,6 +23,9 @@ BackglassCameraProperty::BackglassCameraProperty(VectorProtected<ISelect> *pvsel
 void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     CComObject<PinTable> *const table = g_pvp->GetActiveTable();
+    if (table == nullptr)
+        return;
+
     if(dispid == IDC_BG_FSS || dispid==-1)
         PropertyDialog::SetCheckboxState(m_hFssModeCheck, table->GetShowFSS());
     if(dispid == IDC_BG_TEST_DESKTOP_CHECK || dispid==-1)
@@ -54,6 +57,9 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
 void BackglassCameraProperty::UpdateProperties(const int dispid)
 {
     CComObject<PinTable> *const table = g_pvp->GetActiveTable();
+    if (table == nullptr)
+        return;
+
     switch (dispid)
     {
         case IDC_BG_FSS:
