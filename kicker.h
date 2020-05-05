@@ -82,6 +82,7 @@ public:
 
    virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
    virtual ItemTypeEnum HitableGetItemType() const { return eItemKicker; }
+   virtual void UpdateStatusBarInfo();
 
    virtual void WriteRegDefaults();
 
@@ -91,7 +92,6 @@ public:
 
 private:
    void GenerateMesh(Vertex3D_NoTex2 *const buf);
-   void UpdateUnitsInfo();
 
    PinTable *m_ptable;
 

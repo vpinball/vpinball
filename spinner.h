@@ -82,7 +82,7 @@ public:
    virtual void ExportMesh(FILE *f);
 
    virtual void WriteRegDefaults();
-   void UpdateUnitsInfo();
+   virtual void UpdateStatusBarInfo();
 
    SpinnerData m_d;
 

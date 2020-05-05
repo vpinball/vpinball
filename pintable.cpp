@@ -6218,7 +6218,11 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
    }
 
    if (update)
-      g_pvp->SetPropSel(&m_vmultisel);
+   {
+       g_pvp->SetPropSel(&m_vmultisel);
+       m_vmultisel.ElementAt(0)->UpdateStatusBarInfo();
+
+   }
 
     piSelect = m_vmultisel.ElementAt(0);
     if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetScriptable())
@@ -6354,14 +6358,15 @@ void PinTable::UseTool(int x, int y, int tool)
    {
       pie->m_backglass = g_pvp->m_backglassView;
       m_vedit.push_back(pie);
-      AddMultiSel(pie->GetISelect(), false, true, false);
       pie->GetISelect()->m_layerName = g_pvp->GetLayersListDialog()->GetCurrentSelectedLayerName();
+
       if (m_searchSelectDlg.IsWindow())
          m_searchSelectDlg.Update();
       g_pvp->GetLayersListDialog()->AddLayer(g_pvp->GetLayersListDialog()->GetCurrentSelectedLayerName(), pie);
       BeginUndo();
       m_undo.MarkForCreate(pie);
       EndUndo();
+      AddMultiSel(pie->GetISelect(), false, true, false);
    }
 
    g_pvp->ParseCommand(IDC_SELECT, 0);

@@ -93,7 +93,6 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_PRIMITIVE_LEGACY_SIDES_EDIT:
                 CHECK_UPDATE_ITEM(prim->m_d.m_Sides, PropertyDialog::GetIntTextbox(m_legacySidesEdit), prim);
-                prim->UpdateEditorView();
                 break;
             case IDC_EDGE_FACTOR_UI:
                 CHECK_UPDATE_ITEM(prim->m_d.m_edgeFactorUI, PropertyDialog::GetFloatTextbox(m_edgeFactorUIEdit), prim);
@@ -105,6 +104,7 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(prim, &prim->m_d, dispid);
                 break;
         }
+        prim->UpdateStatusBarInfo();
     }
     UpdateVisuals(dispid);
 }

@@ -119,6 +119,7 @@ public:
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
    virtual void AddPoint(int x, int y, const bool smooth);
+   virtual void UpdateStatusBarInfo();
 
 
    float    GetSlingshotStrength() const { return m_d.m_slingshotforce * (float)(1.0/10.0); }
@@ -143,7 +144,6 @@ private:
 
    void FreeBuffers();
 
-   void UpdateUnitsInfo();
 
    PinTable *m_ptable;
 

@@ -338,3 +338,8 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 
    return S_OK;
 }
+
+void ISelect::UpdateStatusBarInfo()
+{
+    g_pvp->SetStatusBarUnitInfo("", false);
+}

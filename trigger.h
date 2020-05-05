@@ -94,6 +94,7 @@ public:
    virtual void PutPointCenter(const Vertex2D& pv);
    virtual void ExportMesh(FILE *f);
    virtual ItemTypeEnum HitableGetItemType() const { return eItemTrigger; }
+   virtual void UpdateStatusBarInfo();
 
    virtual unsigned long long GetMaterialID() const { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
 
@@ -103,7 +104,6 @@ public:
 
    void TriggerAnimationHit();
    void TriggerAnimationUnhit();
-   void UpdateEditorView();
 
    TriggerData m_d;
 

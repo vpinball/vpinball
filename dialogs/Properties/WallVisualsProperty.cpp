@@ -49,6 +49,8 @@ void WallVisualsProperty::UpdateProperties(const int dispid)
 {
     for (int i = 0; i < m_pvsel->Size(); i++)
     {
+        if ((m_pvsel->ElementAt(i) == NULL) || (m_pvsel->ElementAt(i)->GetItemType() != eItemSurface))
+            continue;
         Surface * const wall = (Surface*)m_pvsel->ElementAt(i);
         switch (dispid)
         {
@@ -95,6 +97,7 @@ void WallVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(wall, &wall->m_d, dispid);
                 break;
         }
+        wall->UpdateStatusBarInfo();
     }
     UpdateVisuals(dispid);
 }

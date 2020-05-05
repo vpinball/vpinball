@@ -126,7 +126,7 @@ void PrimitivePositionProperty::UpdateProperties(const int dispid)
             default:
                 break;
         }
-        prim->UpdateEditorView();
+        prim->UpdateStatusBarInfo();
     }
     UpdateVisuals(dispid);
 }

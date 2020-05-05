@@ -134,6 +134,7 @@ public:
    virtual bool LoadMeshDialog() { return false; }
    virtual void ExportMeshDialog() {}
    virtual void AddPoint(int x, int y, const bool smooth) {}
+   virtual void UpdateStatusBarInfo();
 
    POINT m_ptLast;
 

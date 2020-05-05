@@ -102,13 +102,13 @@ public:
    virtual void ExportMesh(FILE *f);
 
    virtual void WriteRegDefaults();
+   virtual void SetStatusBarUnitInfo();
 
    RubberData m_d;
 
 private:
    void AddHitEdge(vector<HitObject*> &pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j);
    void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
-   void UpdateUnitsInfo();
 
    PinTable *m_ptable;
 

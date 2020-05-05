@@ -51,7 +51,7 @@ void TriggerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::UpdateSurfaceComboBox(trigger->GetPTable(), m_surfaceCombo, trigger->m_d.m_szSurface);
 
         UpdateBaseVisuals(trigger, &trigger->m_d, dispid);
-        trigger->UpdateEditorView();
+        trigger->UpdateStatusBarInfo();
         //only show the first element on multi-select
         break;
     }
@@ -94,6 +94,7 @@ void TriggerVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(trigger, &trigger->m_d, dispid);
                 break;
         }
+        trigger->UpdateStatusBarInfo();
     }
     UpdateVisuals(dispid);
 }

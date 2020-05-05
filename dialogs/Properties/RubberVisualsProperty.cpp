@@ -75,6 +75,7 @@ void RubberVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(rubber, &rubber->m_d, dispid);
                 break;
         }
+        rubber->UpdateStatusBarInfo();
     }
     UpdateVisuals(dispid);
 }

@@ -79,7 +79,7 @@ void HitTargetVisualsProperty::UpdateProperties(const int dispid)
         {
             case IDC_HIT_TARGET_TYPE:
                 CHECK_UPDATE_ITEM(target->m_d.m_targetType, (TargetType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList) + 1), target);
-                target->UpdateEditorView();
+                target->UpdateStatusBarInfo();
                 break;
             case IDC_TARGET_MOVE_SPEED_EDIT:
                 CHECK_UPDATE_ITEM(target->m_d.m_dropSpeed, PropertyDialog::GetFloatTextbox(m_dropSpeedEdit), target);
@@ -98,36 +98,37 @@ void HitTargetVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case DISPID_POSITION_X:
                 CHECK_UPDATE_ITEM(target->m_d.m_vPosition.x, PropertyDialog::GetFloatTextbox(m_posXEdit), target);
-                target->UpdateEditorView();
+                target->UpdateStatusBarInfo();
                 break;
             case DISPID_POSITION_Y:
                 CHECK_UPDATE_ITEM(target->m_d.m_vPosition.y, PropertyDialog::GetFloatTextbox(m_posYEdit), target);
-                target->UpdateEditorView();
+                target->UpdateStatusBarInfo();
                 break;
             case DISPID_POSITION_Z:
                 CHECK_UPDATE_ITEM(target->m_d.m_vPosition.z, PropertyDialog::GetFloatTextbox(m_posZEdit), target);
-                target->UpdateEditorView();
+                target->UpdateStatusBarInfo();
                 break;
             case DISPID_SIZE_X:
                 CHECK_UPDATE_ITEM(target->m_d.m_vSize.x, PropertyDialog::GetFloatTextbox(m_scaleXEdit), target);
-                target->UpdateEditorView();
+                target->UpdateStatusBarInfo();
                 break;
             case DISPID_SIZE_Y:
                 CHECK_UPDATE_ITEM(target->m_d.m_vSize.y, PropertyDialog::GetFloatTextbox(m_scaleYEdit), target);
-                target->UpdateEditorView();
+                target->UpdateStatusBarInfo();
                 break;
             case DISPID_SIZE_Z:
                 CHECK_UPDATE_ITEM(target->m_d.m_vSize.z, PropertyDialog::GetFloatTextbox(m_scaleZEdit), target);
-                target->UpdateEditorView();
+                target->UpdateStatusBarInfo();
                 break;
             case DISPID_ROT_Z:
                 CHECK_UPDATE_ITEM(target->m_d.m_rotZ, PropertyDialog::GetFloatTextbox(m_orientationEdit), target);
-                target->UpdateEditorView();
+                target->UpdateStatusBarInfo();
                 break;
             default:
                 UpdateBaseProperties(target, &target->m_d, dispid);
                 break;
         }
+        target->UpdateStatusBarInfo();
     }
     UpdateVisuals(dispid);
 }

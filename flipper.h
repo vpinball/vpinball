@@ -172,8 +172,6 @@ public:
           m_d.m_FlipperRadiusMin = max(value,0.0f);
       }
 
-      void UpdateUnitsInfo();
-
       FlipperData m_d;
       PinTable *m_ptable;
 

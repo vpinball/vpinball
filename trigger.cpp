@@ -46,7 +46,7 @@ Trigger::~Trigger()
 }
 
 
-void Trigger::UpdateEditorView()
+void Trigger::UpdateStatusBarInfo()
 {
    if(g_pplayer)
        return;
@@ -116,7 +116,7 @@ void Trigger::InitShape(float x, float y)
 {
    float lengthX = 30.0f;
    float lengthY = 30.0f;
-   UpdateEditorView();
+   UpdateStatusBarInfo();
    for (size_t i = 0; i < m_vdpoint.size(); i++)
       m_vdpoint[i]->Release();
    m_vdpoint.clear();
@@ -807,7 +807,7 @@ void Trigger::MoveOffset(const float dx, const float dy)
       pdp->m_v.y += dy;
    }
 
-   UpdateEditorView();
+   UpdateStatusBarInfo();
 }
 
 Vertex2D Trigger::GetPointCenter() const
@@ -913,7 +913,7 @@ void Trigger::Rotate(const float ang, const Vertex2D& pvCenter, const bool useEl
       STARTUNDOSELECT
       m_d.m_rotation = ang;
       STOPUNDOSELECT
-      UpdateEditorView();
+      UpdateStatusBarInfo();
    }
 }
 
@@ -927,7 +927,7 @@ void Trigger::Scale(const float scalex, const float scaley, const Vertex2D& pvCe
       m_d.m_scaleX = scalex;
       m_d.m_scaleY = scaley;
       STOPUNDOSELECT
-      UpdateEditorView();
+      UpdateStatusBarInfo();
    }
 }
 
@@ -1008,7 +1008,7 @@ HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
    m_ptable = ptable;
 
    br.Load();
-   UpdateEditorView();
+   UpdateStatusBarInfo();
    return S_OK;
 }
 
@@ -1046,7 +1046,7 @@ bool Trigger::LoadToken(const int id, BiffReader * const pbr)
 
 HRESULT Trigger::InitPostLoad()
 {
-   UpdateEditorView();
+   UpdateStatusBarInfo();
    return S_OK;
 }
 
@@ -1234,7 +1234,7 @@ STDMETHODIMP Trigger::get_Rotation(float *pVal)
 STDMETHODIMP Trigger::put_Rotation(float newVal)
 {
    m_d.m_rotation = newVal;
-   UpdateEditorView();
+   UpdateStatusBarInfo();
 
    return S_OK;
 }
@@ -1293,7 +1293,7 @@ STDMETHODIMP Trigger::get_TriggerShape(TriggerShape *pVal)
 STDMETHODIMP Trigger::put_TriggerShape(TriggerShape newVal)
 {
    m_d.m_shape = newVal;
-   UpdateEditorView();
+   UpdateStatusBarInfo();
 
    return S_OK;
 }

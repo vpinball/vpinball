@@ -112,13 +112,13 @@ public:
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
    virtual void AddPoint(int x, int y, const bool smooth);
+   virtual void UpdateStatusBarInfo();
 
    virtual void WriteRegDefaults();
 
    RampData m_d;
 
 private:
-   void UpdateUnitsInfo();
 
    PinTable *m_ptable;
 
