@@ -104,7 +104,10 @@ void BackglassCameraProperty::UpdateProperties(const int dispid)
         default:
             break;
     }
-    UpdateVisuals(dispid);
+    if (dispid == IDC_BG_COMBOBOX)
+        UpdateVisuals(-1);
+    else
+        UpdateVisuals(dispid);
 }
 
 BOOL BackglassCameraProperty::OnInitDialog()
