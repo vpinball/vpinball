@@ -596,7 +596,7 @@ private:
 
    void CreateDebugFont();
    void SetDebugOutputPosition(const float x, const float y);
-   void DebugPrint(int x, int y, LPCSTR text, int stringLen, bool shadow = false);
+   void DebugPrint(int x, int y, LPCSTR text, bool center = false);
 
    void SetScreenOffset(const float x, const float y);     // set render offset in screen coordinates, e.g., for the nudge shake
 

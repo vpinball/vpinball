@@ -1203,8 +1203,15 @@ void Player::InitBallShader()
 
 void Player::CreateDebugFont()
 {
+    int fontSize = 20;
+
+    if (m_width > 1024 && m_width <= 1920)
+        fontSize = 24;
+    else if (m_width > 1920)
+        fontSize = 30; 
+    
     const HRESULT hr = D3DXCreateFont(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice(), //device
-                                24,                                    //font height
+                                fontSize,                              //font height
                                 0,                                     //font width
                                 FW_BOLD,                               //font weight
                                 1,                                     //mip levels
@@ -1238,22 +1245,29 @@ void Player::SetDebugOutputPosition(const float x, const float y)
     m_fontSprite->SetTransform(&mat);
 }
 
-void Player::DebugPrint(int x, int y, LPCSTR text, int stringLen, bool shadow)
+void Player::DebugPrint(int x, int y, LPCSTR text, bool center /*= false*/)
 {
    RECT fontRect;
 
    if(m_pFont)
    {
+       int xx = x;
+       int yy = y;
        m_fontSprite->Begin(D3DXSPRITE_ALPHABLEND | D3DXSPRITE_SORT_TEXTURE);
        SetRect(&fontRect, x, y, 0, 0);
        m_pFont->DrawText(m_fontSprite, text, -1, &fontRect, DT_CALCRECT, 0xFFFFFFFF);
+       if (center)
+       {
+           xx = x - (fontRect.right - fontRect.left) / 2;
+       }
+       SetRect(&fontRect, xx, y, 0, 0);
 
        //if(shadow)
             for(unsigned int i = 0; i < 4; ++i)
             {
                const int offset = 1;
                RECT shadowRect;
-               SetRect( &shadowRect, x + ((i == 0) ? -offset : (i == 1) ? offset : 0), y + ((i == 2) ? -offset : (i == 3) ? offset : 0), 0, 0 );
+               SetRect( &shadowRect, xx + ((i == 0) ? -offset : (i == 1) ? offset : 0), y + ((i == 2) ? -offset : (i == 3) ? offset : 0), 0, 0 );
                m_pFont->DrawText(m_fontSprite, text, -1, &shadowRect, DT_NOCLIP, 0xFF000000);
             }
 
@@ -4102,11 +4116,11 @@ void Player::UpdateHUD()
     if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
     {
         x = 0.0f;
-        y = 1080.0f - DBG_SPRITE_SIZE;
+        y = (float)(m_height - DBG_SPRITE_SIZE);
     }
     else if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 90.0f)
     {
-        x = 0.0f;
+        x = (float)(m_width - DBG_SPRITE_SIZE);
         y = 0.0f;
     }
     SetDebugOutputPosition(x, y);
@@ -4115,22 +4129,22 @@ void Player::UpdateHUD()
 	{
 		char szFoo[256];
 		const int len2 = sprintf_s(szFoo, "3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on");
-		DebugPrint(m_width / 2 - 320, 10, szFoo, len2, true);
+		DebugPrint(DBG_SPRITE_SIZE / 2, 10, szFoo, true);
 	}
 
 	if (!m_closeDown && m_supportsTouch && m_showTouchMessage && (usec() < m_StartTime_usec + 12e+6)) // show for max. 12 seconds
 	{
 		char szFoo[256];
 		int len2 = sprintf_s(szFoo, "You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger");
-		DebugPrint(m_width / 2 - 440, 40, szFoo, len2, true);
+		DebugPrint(DBG_SPRITE_SIZE / 2, 40, szFoo, true);
 		len2 = sprintf_s(szFoo, "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit");
-		DebugPrint(m_width / 2 - 440, 70, szFoo, len2, true);
+		DebugPrint(DBG_SPRITE_SIZE / 2, 70, szFoo, true);
 
 		//!! visualize with real buttons or at least the areas??
 	}
 
 	// draw all kinds of stats, incl. FPS counter
-	if (ShowFPS() && !m_cameraMode)
+	if (ShowFPS() && !m_cameraMode && !m_closeDown)
 	{
 		char szFoo[256];
 
@@ -4142,7 +4156,7 @@ void Player::UpdateHUD()
 		// Draw the framerate.
 		const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
 		const int len2 = sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %u%%", m_fps+0.01f, fpsAvg+0.01f, RenderStaticOnly() ? "only static" : "all", (m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, quantizeUnsignedPercent(m_globalEmissionScale));
-		DebugPrint(10, 10, szFoo, len2);
+		DebugPrint(0, 10, szFoo);
 
 		const U32 period = m_lastFrameDuration;
 		if (period > m_max || m_time_msec - m_lastMaxChangeTime > 1000)
@@ -4185,34 +4199,34 @@ void Player::UpdateHUD()
 
 		int len = sprintf_s(szFoo, "Overall: %.1f ms (%.1f (%.1f) avg %.1f max)",
 			float(1e-3*period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3*m_max), float(1e-3*m_max_total));
-		DebugPrint(10, 30, szFoo, len);
+		DebugPrint(0, 30, szFoo);
 		len = sprintf_s(szFoo, "%4.1f%% Physics: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
 			float((m_phys_period-m_script_period)*100.0 / period), float(1e-3*(m_phys_period-m_script_period)),
 			float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3*m_phys_max), float((double)m_phys_total*100.0 / (double)m_total), float(1e-3*m_phys_max_total));
-		DebugPrint(10, 50, szFoo, len);
+		DebugPrint(0, 50, szFoo);
 		len = sprintf_s(szFoo, "%4.1f%% Scripts: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
 			float(m_script_period*100.0 / period), float(1e-3*m_script_period),
 			float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3*m_script_max), float((double)m_script_total*100.0 / (double)m_total), float(1e-3*m_script_max_total));
-		DebugPrint(10, 70, szFoo, len);
+		DebugPrint(0, 70, szFoo);
 
 		// performance counters
 		len = sprintf_s(szFoo, "Draw calls: %u (%u Locks)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls());
-		DebugPrint(10, 95, szFoo, len);
+		DebugPrint(0, 95, szFoo);
 		len = sprintf_s(szFoo, "State changes: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges());
-		DebugPrint(10, 115, szFoo, len);
+		DebugPrint(0, 115, szFoo);
 		len = sprintf_s(szFoo, "Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads());
-		DebugPrint(10, 135, szFoo, len);
+		DebugPrint(0, 135, szFoo);
 		len = sprintf_s(szFoo, "Shader/Parameter changes: %u / %u (%u Material ID changes)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges(), material_flips);
-		DebugPrint(10, 155, szFoo, len);
+		DebugPrint(0, 155, szFoo);
 		len = sprintf_s(szFoo, "Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
-		DebugPrint(10, 175, szFoo, len);
+		DebugPrint(0, 175, szFoo);
 
 		len = sprintf_s(szFoo, "Physics: %u iterations per frame (%u avg %u max)    Ball Velocity / Ang.Vel.: %.1f %.1f",
 			m_phys_iterations,
 			(U32)(m_phys_total_iterations / m_count),
 			m_phys_max_iterations,
 			g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR*g_pplayer->m_gravity).Length() : -1.f, g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_angularmomentum / g_pplayer->m_pactiveball->Inertia()).Length() : -1.f);
-		DebugPrint(10, 200, szFoo, len);
+		DebugPrint(0, 200, szFoo);
 
 #ifdef DEBUGPHYSICS
 #ifdef C_DYNAMIC
@@ -4222,11 +4236,11 @@ void Player::UpdateHUD()
 		len = sprintf_s(szFoo, "Hits:%5u Collide:%5u Ctacs:%5u Embed:%5u TimeSearch:%5u",
 			c_hitcnts, c_collisioncnt, c_contactcnt, c_embedcnts, c_timesearch);
 #endif
-		DebugPrint(10, 220, szFoo, len);
+		DebugPrint(10, 220, szFoo);
 
 		len = sprintf_s(szFoo, "kDObjects: %5u kD:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u",
 			c_kDObjects, c_kDNextlevels, c_quadObjects, c_quadNextlevels, c_traversed, c_tested, c_deepTested);
-		DebugPrint(10, 240, szFoo, len);
+		DebugPrint(10, 240, szFoo);
 #endif
 
 		len = sprintf_s(szFoo, "Left Flipper keypress to rotate: %.1f ms (%d f) to eos: %.1f ms (%d f)",
@@ -4234,16 +4248,16 @@ void Player::UpdateHUD()
 			(int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame),
 			(INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.,
 			(int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame));
-		DebugPrint(10, 260, szFoo, len);
+		DebugPrint(0, 260, szFoo);
 	}
 
 	// Draw performance readout - at end of CPU frame, so hopefully the previous frame
 	//  (whose data we're getting) will have finished on the GPU by now.
-	if (ProfilingMode() != 0)
+	if (ProfilingMode() != 0 && !m_closeDown && !m_cameraMode)
 	{
 		char szFoo[256];
 		int len2 = sprintf_s(szFoo, "Detailed (approximate) GPU profiling:");
-		DebugPrint(10, 300, szFoo, len2);
+		DebugPrint(0, 300, szFoo);
 
 		m_pin3d.m_gpu_profiler.WaitForDataAndUpdate();
 
@@ -4254,30 +4268,45 @@ void Player::UpdateHUD()
 		if (ProfilingMode() == 1)
 		{
 			len2 = sprintf_s(szFoo, " Draw time: %.2f ms", float(1000.0 * dTDrawTotal));
-			DebugPrint(10, 320, szFoo, len2);
+			DebugPrint(0, 320, szFoo);
 			for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
 			{
 				len2 = sprintf_s(szFoo, "   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
-				DebugPrint(10, 320 + gts * 20, szFoo, len2);
+				DebugPrint(0, 320 + gts * 20, szFoo);
 			}
 			len2 = sprintf_s(szFoo, " Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
-			DebugPrint(10, 320 + GTS_EndFrame * 20, szFoo, len2);
+			DebugPrint(0, 320 + GTS_EndFrame * 20, szFoo);
 		}
 		else
 		{
 			for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
 			{
 				len2 = sprintf_s(szFoo, " %s: %.2f ms (%4.1f%%)", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts)/dTDrawTotal));
-				DebugPrint(10, 300 + gts * 20, szFoo, len2);
+				DebugPrint(0, 300 + gts * 20, szFoo);
 			}
 		}
 	}
 
+    if (m_closeDown)
+    {
+        x = (m_width-DBG_SPRITE_SIZE)/2.0f;
+        if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
+        {
+            x = 0.0f;
+            y = m_height/2.0f - DBG_SPRITE_SIZE/2;
+        }
+        else if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 90.0f)
+        {
+            x = (float)(m_width - DBG_SPRITE_SIZE);
+            y = m_height / 2.0f - DBG_SPRITE_SIZE / 2;
+        }
+        SetDebugOutputPosition(x, y);
+    }
 	if (m_fullScreen && m_closeDown && !IsWindows10_1803orAbove()) // cannot use dialog boxes in exclusive fullscreen on older windows versions, so necessary
 	{
 		char szFoo[256];
 		const int len2 = sprintf_s(szFoo, "Press 'Enter' to continue or Press 'Q' to exit");
-		DebugPrint(m_width/2-210, m_height/2-5, szFoo, len2);
+		DebugPrint(DBG_SPRITE_SIZE/2, m_height/2-5, szFoo, true);
 	}
 
 	if (m_closeDown) // print table name,author,version and blurb and description in pause mode
@@ -4309,9 +4338,9 @@ void Player::UpdateHUD()
 
 		if (strlen(szFoo) > 0)
 		{
-			DebugPrint(m_width / 2 - 320, line * 20 + 10, szFoo, (int)strlen(szFoo), true);
+			DebugPrint(DBG_SPRITE_SIZE / 2, line * 20 + 10, szFoo, true);
 			line += 2;
-			DebugPrint(m_width / 2 - 320, line * 20 + 10, "========================================", 40, true);
+			DebugPrint(DBG_SPRITE_SIZE / 2, line * 20 + 10, "========================================", true);
 			line += 2;
 		}
 
@@ -4331,7 +4360,7 @@ void Player::UpdateHUD()
 
 				szFoo[o] = 0;
 
-				DebugPrint(m_width / 2 - 320, line * 20 + 10, szFoo, o, true);
+				DebugPrint(DBG_SPRITE_SIZE / 2, line * 20 + 10, szFoo, true);
 
 				if (o < 100)
 					o++;
@@ -4344,7 +4373,7 @@ void Player::UpdateHUD()
 			if (i2 == 0 && s && strlen(s) > 0)
 			{
 				line++;
-				DebugPrint(m_width / 2 - 320, line * 20 + 10, "========================================", 40, true);
+				DebugPrint(DBG_SPRITE_SIZE / 2, line * 20 + 10, "========================================", true);
 				line+=2;
 			}
 		}
@@ -4727,22 +4756,22 @@ void Player::UpdateCameraModeDisplay()
    float x = 0.f, y = 0.f;
    if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
    {
-       x = 1920.0f - 256.0f;
-       y = 1080.0f - DBG_SPRITE_SIZE;
+       x = m_width - 256.0f;
+       y = (float)(m_height - DBG_SPRITE_SIZE-10);
    }
    else if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 90.0f)
    {
-       x = 0.0f;
+       x = -DBG_SPRITE_SIZE/1.3f;
        y = 0.0f;
    }
    SetDebugOutputPosition(x, y);
 
    len = sprintf_s(szFoo, "Camera / Light / Material Edit Mode");
-   DebugPrint(0, 10, szFoo, len);
+   DebugPrint(0, 10, szFoo);
    len = sprintf_s(szFoo, "Left / Right flipper key = decrease / increase value");
-   DebugPrint(0, 50, szFoo, len);
+   DebugPrint(0, 50, szFoo);
    len = sprintf_s(szFoo, "Left / Right magna save key = previous / next option");
-   DebugPrint(0, 70, szFoo, len);
+   DebugPrint(0, 70, szFoo);
 
    switch (m_backdropSettingActive)
    {
@@ -4821,14 +4850,14 @@ void Player::UpdateCameraModeDisplay()
       len = sprintf_s(szFoo, "unknown");
    }
    }
-   DebugPrint(0, 130, szFoo, len);
+   DebugPrint(0, 130, szFoo);
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
    len = sprintf_s(szFoo, "Camera at X: %f Y: %f Z: %f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43); // DT & FSS
-   DebugPrint(0, 110, szFoo, len);
+   DebugPrint(0, 110, szFoo);
    len = sprintf_s(szFoo, "Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
-   DebugPrint(0, 170, szFoo, len);
+   DebugPrint(0, 170, szFoo);
    len = sprintf_s(szFoo, "Use the Debugger / Interactive Editor to change Lights / Materials");
-   DebugPrint(0, 210, szFoo, len);
+   DebugPrint(0, 210, szFoo);
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
