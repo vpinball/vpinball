@@ -37,9 +37,9 @@ void SpinnerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == 4 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_rotationEdit, spinner->m_d.m_rotation);
         if (dispid == 13 || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_angleMaxEdit, spinner->m_d.m_angleMax);
+            PropertyDialog::SetFloatTextbox(m_angleMaxEdit, spinner->GetAngleMax());
         if (dispid == 14 || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_angleMinEdit, spinner->m_d.m_angleMin);
+            PropertyDialog::SetFloatTextbox(m_angleMinEdit, spinner->GetAngleMin());
 
         UpdateBaseVisuals(spinner, &spinner->m_d, dispid);
         //only show the first element on multi-select
@@ -79,10 +79,10 @@ void SpinnerVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(spinner->m_d.m_rotation, PropertyDialog::GetFloatTextbox(m_rotationEdit), spinner);
                 break;
             case 13:
-                CHECK_UPDATE_ITEM(spinner->m_d.m_angleMax, PropertyDialog::GetFloatTextbox(m_angleMaxEdit), spinner);
+                CHECK_UPDATE_VALUE_SETTER(spinner->SetAngleMax, spinner->GetAngleMax, PropertyDialog::GetFloatTextbox, m_angleMaxEdit, spinner);
                 break;
             case 14:
-                CHECK_UPDATE_ITEM(spinner->m_d.m_angleMin, PropertyDialog::GetFloatTextbox(m_angleMinEdit), spinner);
+                CHECK_UPDATE_VALUE_SETTER(spinner->SetAngleMin, spinner->GetAngleMin, PropertyDialog::GetFloatTextbox, m_angleMinEdit, spinner);
                 break;
             default:
                 UpdateBaseProperties(spinner, &spinner->m_d, dispid);

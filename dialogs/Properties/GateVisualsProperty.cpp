@@ -40,9 +40,9 @@ void GateVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == DISPID_Gate_Rotation || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_rotationEdit, gate->m_d.m_rotation);
         if (dispid == 2145 || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_openAngleEdit, gate->m_d.m_angleMax);
+            PropertyDialog::SetFloatTextbox(m_openAngleEdit, gate->GetOpenAngle());
         if (dispid == 2144 || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_closeAngleEdit, gate->m_d.m_angleMin);
+            PropertyDialog::SetFloatTextbox(m_closeAngleEdit, gate->GetCloseAngle());
         if (dispid == 15 || dispid == -1)
             PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 15), gate->m_d.m_showBracket);
         UpdateBaseVisuals(gate, &gate->m_d, dispid);
@@ -85,10 +85,10 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(gate->m_d.m_rotation, PropertyDialog::GetFloatTextbox(m_rotationEdit), gate);
                 break;
             case 2145:
-                CHECK_UPDATE_ITEM(gate->m_d.m_angleMax, PropertyDialog::GetFloatTextbox(m_openAngleEdit), gate);
+                CHECK_UPDATE_VALUE_SETTER(gate->SetOpenAngle, gate->GetOpenAngle, PropertyDialog::GetFloatTextbox, m_openAngleEdit, gate);
                 break;
             case 2144:
-                CHECK_UPDATE_ITEM(gate->m_d.m_angleMin, PropertyDialog::GetFloatTextbox(m_closeAngleEdit), gate);
+                CHECK_UPDATE_VALUE_SETTER(gate->SetCloseAngle, gate->GetCloseAngle, PropertyDialog::GetFloatTextbox, m_closeAngleEdit, gate);
                 break;
             default:
                 UpdateBaseProperties(gate, &gate->m_d, dispid);

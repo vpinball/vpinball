@@ -84,6 +84,11 @@ public:
    virtual void WriteRegDefaults();
    virtual void UpdateStatusBarInfo();
 
+   float GetAngleMax() const;
+   void  SetAngleMax(const float angle);
+   float GetAngleMin() const;
+   void  SetAngleMin(const float angle);
+
    SpinnerData m_d;
 
    HitSpinner *m_phitspinner;

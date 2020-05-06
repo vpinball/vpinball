@@ -91,6 +91,14 @@ public:
 
    virtual void WriteRegDefaults();
 
+   float GetOpenAngle() const;
+
+   void SetOpenAngle(const float angle);
+
+   float GetCloseAngle() const;
+
+   void SetCloseAngle(const float angle);
+
    GateData m_d;
 
 private:

@@ -48,6 +48,61 @@ void Spinner::UpdateStatusBarInfo()
    g_pvp->SetStatusBarUnitInfo(tbuf, true);
 }
 
+float Spinner::GetAngleMax() const
+{
+    return (g_pplayer) ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMax) :	//player active value
+                         m_d.m_angleMax;
+}
+
+void Spinner::SetAngleMax(const float angle)
+{
+    float newVal = angle;
+
+    if (g_pplayer)
+    {
+        if (m_d.m_angleMin != m_d.m_angleMax)	// allow only if in limited angle mode
+        {
+            if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
+            else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
+
+            newVal = ANGTORAD(newVal);
+
+            if (m_phitspinner->m_spinnerMover.m_angleMin < newVal)  // Min is smaller???
+                m_phitspinner->m_spinnerMover.m_angleMax = newVal;   //yes set new max
+            else m_phitspinner->m_spinnerMover.m_angleMin = newVal; //no set new minumum
+        }
+    }
+    else
+        m_d.m_angleMax = newVal;
+}
+
+float Spinner::GetAngleMin() const
+{
+    return (g_pplayer) ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMin) :	//player active value
+                        m_d.m_angleMin;
+}
+
+void Spinner::SetAngleMin(const float angle)
+{
+    float newVal = angle;
+    if (g_pplayer)
+    {
+        if (m_d.m_angleMin != m_d.m_angleMax)	// allow only if in limited angle mode
+        {
+            if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
+            else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
+
+            newVal = ANGTORAD(newVal);
+
+            if (m_phitspinner->m_spinnerMover.m_angleMax > newVal)  // max is bigger
+                m_phitspinner->m_spinnerMover.m_angleMin = newVal;   //then set new minumum
+            else m_phitspinner->m_spinnerMover.m_angleMax = newVal; //else set new max
+        }
+    }
+    else
+        m_d.m_angleMin = newVal;
+}
+
 HRESULT Spinner::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
@@ -724,31 +779,16 @@ STDMETHODIMP Spinner::put_ShowBracket(VARIANT_BOOL newVal)
 
 STDMETHODIMP Spinner::get_AngleMax(float *pVal)
 {
-   *pVal = (g_pplayer) ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMax) :	//player active value
-                         m_d.m_angleMax;
-
+   *pVal = GetAngleMax();
    return S_OK;
 }
 
 STDMETHODIMP Spinner::put_AngleMax(float newVal)
 {
-   if (g_pplayer)
-   {
-      if (m_d.m_angleMin != m_d.m_angleMax)	// allow only if in limited angle mode
-      {
-         if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
-         else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
+   if (g_pplayer && (m_d.m_angleMin == m_d.m_angleMax)) // allow only if in limited angle mode
+    return S_FAIL;
 
-         newVal = ANGTORAD(newVal);
-
-         if (m_phitspinner->m_spinnerMover.m_angleMin < newVal)  // Min is smaller???
-            m_phitspinner->m_spinnerMover.m_angleMax = newVal;   //yes set new max
-         else m_phitspinner->m_spinnerMover.m_angleMin = newVal; //no set new minumum
-      }
-      else return S_FAIL;
-   }
-   else
-      m_d.m_angleMax = newVal;
+   SetAngleMax(newVal);
 
    return S_OK;
 }
@@ -763,23 +803,9 @@ STDMETHODIMP Spinner::get_AngleMin(float *pVal)
 
 STDMETHODIMP Spinner::put_AngleMin(float newVal)
 {
-   if (g_pplayer)
-   {
-      if (m_d.m_angleMin != m_d.m_angleMax)	// allow only if in limited angle mode
-      {
-         if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
-         else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
-
-         newVal = ANGTORAD(newVal);
-
-         if (m_phitspinner->m_spinnerMover.m_angleMax > newVal)  // max is bigger
-            m_phitspinner->m_spinnerMover.m_angleMin = newVal;   //then set new minumum
-         else m_phitspinner->m_spinnerMover.m_angleMax = newVal; //else set new max
-      }
-      else return S_FAIL;
-   }
-   else
-      m_d.m_angleMin = newVal;
+   if (g_pplayer && (m_d.m_angleMin != m_d.m_angleMax))	// allow only if in limited angle mode
+       return S_FAIL;
+   SetAngleMin(newVal);
 
    return S_OK;
 }

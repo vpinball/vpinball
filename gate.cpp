@@ -150,6 +150,49 @@ void Gate::WriteRegDefaults()
    SaveValueInt("DefaultProps\\Gate", "GateType", m_d.m_type);
 }
 
+float Gate::GetOpenAngle() const
+{
+    return RADTOANG((g_pplayer) ? m_phitgate->m_gateMover.m_angleMax : m_d.m_angleMax);	//player active value
+}
+
+void Gate::SetOpenAngle(const float angle)
+{
+    float newVal = ANGTORAD(angle);
+    if (g_pplayer)
+    {
+        if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
+        else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
+
+        if (m_phitgate->m_gateMover.m_angleMin < newVal)	// min is smaller
+            m_phitgate->m_gateMover.m_angleMax = newVal;	//then set new maximum
+        else m_phitgate->m_gateMover.m_angleMin = newVal;  //else set new min
+    }
+    else
+        m_d.m_angleMax = newVal;
+}
+
+float Gate::GetCloseAngle() const
+{
+    return RADTOANG(g_pplayer ? m_phitgate->m_gateMover.m_angleMin : m_d.m_angleMin);
+}
+
+void Gate::SetCloseAngle(const float angle)
+{
+    float newVal = ANGTORAD(angle);
+
+    if (g_pplayer)
+    {
+        if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
+        else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
+
+        if (m_phitgate->m_gateMover.m_angleMax > newVal)	// max is bigger
+            m_phitgate->m_gateMover.m_angleMin = newVal;	//then set new minumum
+        else m_phitgate->m_gateMover.m_angleMax = newVal;//else set new max
+    }
+    else
+        m_d.m_angleMin = newVal;
+}
+
 void Gate::UIRenderPass1(Sur * const psur)
 {
 }
@@ -851,7 +894,7 @@ STDMETHODIMP Gate::put_ShowBracket(VARIANT_BOOL newVal)
 
 STDMETHODIMP Gate::get_CloseAngle(float *pVal)
 {
-   *pVal = RADTOANG(g_pplayer ? m_phitgate->m_gateMover.m_angleMin : m_d.m_angleMin);
+   *pVal = GetCloseAngle();
 
    return S_OK;
 }
@@ -863,27 +906,15 @@ STDMETHODIMP Gate::put_CloseAngle(float newVal)
       newVal = 0;
       ShowError("Gate is collidable! closing angles other than 0 aren't possible!");
    }
-   else newVal = ANGTORAD(newVal);
 
-   if (g_pplayer)
-   {
-      if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
-      else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
-
-      if (m_phitgate->m_gateMover.m_angleMax > newVal)	// max is bigger
-         m_phitgate->m_gateMover.m_angleMin = newVal;	//then set new minumum
-      else m_phitgate->m_gateMover.m_angleMax = newVal;//else set new max
-   }
-   else
-      m_d.m_angleMin = newVal;
-
+   SetCloseAngle(newVal);
    return S_OK;
 }
 
 
 STDMETHODIMP Gate::get_OpenAngle(float *pVal)
 {
-   *pVal = RADTOANG((g_pplayer) ? m_phitgate->m_gateMover.m_angleMax : m_d.m_angleMax);	//player active value
+   *pVal = GetOpenAngle();
 
    return S_OK;
 }
@@ -892,23 +923,10 @@ STDMETHODIMP Gate::put_OpenAngle(float newVal)
 {
    if (m_d.m_collidable)
    {
-      newVal = (float)(M_PI / 2.0);
-      ShowError("Gate is collidable! open angles other than 90 aren't possible!");
+       newVal = (float)(M_PI / 2.0);
+       ShowError("Gate is collidable! open angles other than 90 aren't possible!");
    }
-   else newVal = ANGTORAD(newVal);
-
-   if (g_pplayer)
-   {
-      if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
-      else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
-
-      if (m_phitgate->m_gateMover.m_angleMin < newVal)	// min is smaller
-         m_phitgate->m_gateMover.m_angleMax = newVal;	//then set new maximum
-      else m_phitgate->m_gateMover.m_angleMin = newVal;  //else set new min
-   }
-   else
-      m_d.m_angleMax = newVal;
-
+   SetOpenAngle(newVal);
    return S_OK;
 }
 
