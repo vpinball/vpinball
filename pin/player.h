@@ -8,6 +8,8 @@
 #define DEFAULT_PLAYER_FS_WIDTH 1920
 #define DEFAULT_PLAYER_FS_REFRESHRATE 60
 
+constexpr int DBG_SPRITE_SIZE = 1024;
+
 // NOTE that the following four definitions need to be in sync in their order!
 enum EnumAssignKeys
 {
@@ -593,6 +595,7 @@ private:
    void Shutdown();
 
    void CreateDebugFont();
+   void SetDebugOutputPosition(const float x, const float y);
    void DebugPrint(int x, int y, LPCSTR text, int stringLen, bool shadow = false);
 
    void SetScreenOffset(const float x, const float y);     // set render offset in screen coordinates, e.g., for the nudge shake
@@ -639,4 +642,7 @@ public:
 
 private:
    ID3DXFont *m_pFont;
+   LPD3DXSPRITE m_fontSprite;
+   RECT     m_fontRect;
+
 };
