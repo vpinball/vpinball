@@ -1204,7 +1204,7 @@ void Player::InitBallShader()
 void Player::CreateDebugFont()
 {
     const HRESULT hr = D3DXCreateFont(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice(), //device
-                                20,                                    //font height
+                                24,                                    //font height
                                 0,                                     //font width
                                 FW_BOLD,                               //font weight
                                 1,                                     //mip levels
@@ -1220,22 +1220,47 @@ void Player::CreateDebugFont()
         ShowError("unable to create debug font!");
         m_pFont = NULL;
     }
+    if (FAILED(D3DXCreateSprite(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice(), &m_fontSprite)))
+        ShowError("nope");
+
+    SetRect(&m_fontRect, 0, 0, DBG_SPRITE_SIZE, DBG_SPRITE_SIZE);
+}
+
+
+void Player::SetDebugOutputPosition(const float x, const float y)
+{
+    D3DXMATRIX mat;
+    D3DXVECTOR2 spritePos(x,y);
+    D3DXVECTOR2 spriteCenter(DBG_SPRITE_SIZE/2.0f, DBG_SPRITE_SIZE/2.0f);
+
+    const float angle = ANGTORAD(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set]);
+    D3DXMatrixTransformation2D(&mat, NULL, 0.0, NULL, &spriteCenter, angle, &spritePos);
+    m_fontSprite->SetTransform(&mat);
 }
 
 void Player::DebugPrint(int x, int y, LPCSTR text, int stringLen, bool shadow)
 {
    RECT fontRect;
+
    if(m_pFont)
    {
-      if(shadow)
+       m_fontSprite->Begin(D3DXSPRITE_ALPHABLEND | D3DXSPRITE_SORT_TEXTURE);
+       SetRect(&fontRect, x, y, 0, 0);
+       m_pFont->DrawText(m_fontSprite, text, -1, &fontRect, DT_CALCRECT, 0xFFFFFFFF);
+
+       //if(shadow)
             for(unsigned int i = 0; i < 4; ++i)
             {
-               SetRect( &fontRect, x + ((i == 0) ? -1 : (i == 1) ? 1 : 0), y + ((i == 2) ? -1 : (i == 3) ? 1 : 0), 0, 0 );
-               m_pFont->DrawText( NULL, text, -1, &fontRect, DT_NOCLIP, 0xFF000000 );
+               const int offset = 1;
+               RECT shadowRect;
+               SetRect( &shadowRect, x + ((i == 0) ? -offset : (i == 1) ? offset : 0), y + ((i == 2) ? -offset : (i == 3) ? offset : 0), 0, 0 );
+               m_pFont->DrawText(m_fontSprite, text, -1, &shadowRect, DT_NOCLIP, 0xFF000000);
             }
 
-      SetRect( &fontRect, x, y, 0, 0 );
-      m_pFont->DrawText( NULL, text, -1, &fontRect, DT_NOCLIP, 0xFFFFFFFF );
+
+      m_pFont->DrawText(m_fontSprite, text, -1, &fontRect, DT_NOCLIP, 0xFFFFFFFF);
+
+      m_fontSprite->End();
    }
 }
 
@@ -4073,7 +4098,20 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
 
 void Player::UpdateHUD()
 {
-	if (!m_closeDown && (m_stereo3D != 0) && !m_stereo3Denabled && (usec() < m_StartTime_usec + 4e+6)) // show for max. 4 seconds
+    float x = 0.f, y = 0.f;
+    if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
+    {
+        x = 0.0f;
+        y = 1080.0f - DBG_SPRITE_SIZE;
+    }
+    else if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 90.0f)
+    {
+        x = 0.0f;
+        y = 0.0f;
+    }
+    SetDebugOutputPosition(x, y);
+    
+    if (!m_closeDown && (m_stereo3D != 0) && !m_stereo3Denabled && (usec() < m_StartTime_usec + 4e+6)) // show for max. 4 seconds
 	{
 		char szFoo[256];
 		const int len2 = sprintf_s(szFoo, "3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on");
@@ -4404,6 +4442,9 @@ void Player::PrepareVideoBuffersNormal()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
+   if (m_cameraMode)
+       UpdateCameraModeDisplay();
+
    UpdateHUD();
 
    m_pin3d.m_pd3dPrimaryDevice->EndScene();
@@ -4561,6 +4602,9 @@ void Player::PrepareVideoBuffersAO()
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
+   if (m_cameraMode)
+       UpdateCameraModeDisplay();
+
    UpdateHUD();
 
    m_pin3d.m_pd3dPrimaryDevice->EndScene();
@@ -4680,12 +4724,25 @@ void Player::UpdateCameraModeDisplay()
    char szFoo[128];
    int len;
 
+   float x = 0.f, y = 0.f;
+   if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
+   {
+       x = 1920.0f - 256.0f;
+       y = 1080.0f - DBG_SPRITE_SIZE;
+   }
+   else if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 90.0f)
+   {
+       x = 0.0f;
+       y = 0.0f;
+   }
+   SetDebugOutputPosition(x, y);
+
    len = sprintf_s(szFoo, "Camera / Light / Material Edit Mode");
-   DebugPrint(10, 10, szFoo, len);
+   DebugPrint(0, 10, szFoo, len);
    len = sprintf_s(szFoo, "Left / Right flipper key = decrease / increase value");
-   DebugPrint(10, 50, szFoo, len);
+   DebugPrint(0, 50, szFoo, len);
    len = sprintf_s(szFoo, "Left / Right magna save key = previous / next option");
-   DebugPrint(10, 70, szFoo, len);
+   DebugPrint(0, 70, szFoo, len);
 
    switch (m_backdropSettingActive)
    {
@@ -4764,14 +4821,14 @@ void Player::UpdateCameraModeDisplay()
       len = sprintf_s(szFoo, "unknown");
    }
    }
-   DebugPrint(10, 130, szFoo, len);
+   DebugPrint(0, 130, szFoo, len);
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
    len = sprintf_s(szFoo, "Camera at X: %f Y: %f Z: %f", -m_pin3d.m_proj.m_matView._41, (m_ptable->m_BG_current_set == 0 || m_ptable->m_BG_current_set == 2) ? m_pin3d.m_proj.m_matView._42 : -m_pin3d.m_proj.m_matView._42, m_pin3d.m_proj.m_matView._43); // DT & FSS
-   DebugPrint(10, 110, szFoo, len);
+   DebugPrint(0, 110, szFoo, len);
    len = sprintf_s(szFoo, "Navigate around with the Arrow Keys and Left Alt Key (if enabled in the Key settings)");
-   DebugPrint(10, 170, szFoo, len);
+   DebugPrint(0, 170, szFoo, len);
    len = sprintf_s(szFoo, "Use the Debugger / Interactive Editor to change Lights / Materials");
-   DebugPrint(10, 210, szFoo, len);
+   DebugPrint(0, 210, szFoo, len);
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -4860,9 +4917,6 @@ void Player::Render()
       if (localvsync != 1) // do nothing for 1, as already enforced during device set
          if (m_fps > localvsync*ADAPT_VSYNC_FACTOR)
             vsync = true;
-
-   if (m_cameraMode)
-      UpdateCameraModeDisplay();
 
    const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)) && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f);
    if (useAO && !m_disableAO)
