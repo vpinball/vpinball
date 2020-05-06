@@ -793,6 +793,7 @@ void TimerProperty::UpdateProperties(const int dispid)
                 break;
         }
     }
+    UpdateVisuals(dispid);
 }
 
 void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -977,7 +978,9 @@ BOOL TimerProperty::OnCommand(WPARAM wParam, LPARAM lParam)
 
     switch (HIWORD(wParam))
     {
+        case EN_KILLFOCUS:
         case CBN_KILLFOCUS:
+        case CBN_SELCHANGE:
         case BN_CLICKED:
         {
             UpdateProperties(dispID);
