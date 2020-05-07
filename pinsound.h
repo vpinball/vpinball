@@ -81,23 +81,17 @@ public:
    bool IsWav() const { return false; }
    bool IsWav2() const 
    { 
-       if (_stricmp(m_szPath, "* Backglass Output *") == 0)	// check for old backglass sound option -> wav only
-           return true;
-       const char* ptr = strrchr(m_szPath, '.');
+       const char* const ptr = strrchr(m_szPath, '.'); // no file extension
        if (ptr == NULL)
            return true;
-
        return (_stricmp(ptr, ".wav") == 0);
    }
 #else
    bool IsWav() const
    {
-	   if (_stricmp(m_szPath, "* Backglass Output *") == 0)	// check for old backglass sound option -> wav only
-		   return true;
-       const char* ptr = strrchr(m_szPath, '.');
+       const char* const ptr = strrchr(m_szPath, '.'); // no file extension
        if (ptr == NULL)
            return true;
-
        return (_stricmp(ptr, ".wav") == 0);
    }
    bool IsWav2() const { return IsWav(); }

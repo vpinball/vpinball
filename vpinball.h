@@ -96,7 +96,7 @@ public:
 
    CComObject<PinTable> *GetActiveTable();
    bool LoadFile();
-   void LoadFileName(const char *szFileName, const bool updateEditor=true);
+   void LoadFileName(const char *szFileName, const bool updateEditor);
    void SetClipboard(vector<IStream*> * const pvstm);
 
    void DoPlay(const bool _cameraMode);

@@ -2781,7 +2781,6 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        delete pps;
        return hr;
    }
-
    pps->m_szPath[len] = 0;
 
    if (FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
@@ -2795,7 +2794,6 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        delete pps;
        return hr;
    }
-
    pps->m_szInternalName[len] = 0;
 
    if (pps->IsWav2()) // only use old code if playing wav's
@@ -2911,17 +2909,16 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    }
    else
    {
-	   bool bToBackglassOutput;
-	   if (FAILED(hr = pstm->Read(&bToBackglassOutput, sizeof(bool), &read)))
+	   bool toBackglassOutput = false; // false: for pre-VPX tables
+	   if (FAILED(hr = pstm->Read(&toBackglassOutput, sizeof(bool), &read)))
 	   {
 		   delete pps;
 		   return hr;
 	   }
 
-	   pps->m_outputTarget = bToBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE;	
+	   pps->m_outputTarget = (strstr(pps->m_szInternalName, "bgout_") != NULL) || (_stricmp(pps->m_szPath, "* Backglass Output *") == 0) // legacy behavior, where the BG selection was encoded into the strings directly
+	                      || toBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE;
    }
-   if (_stricmp(pps->m_szPath, "* Backglass Output *") == 0)
-       pps->m_outputTarget = SNDOUT_BACKGLASS;
 
    if (FAILED(hr = pps->ReInitialize()))
    {

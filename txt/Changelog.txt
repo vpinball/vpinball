@@ -26,6 +26,8 @@ FEATURES:
 
 - add Inder/Playmatic trigger mesh
 
+- make debug text/FPS output adapt to resolution and rotation
+
 FIXES:
 
 - replace dithering code with blue noise, fixes flickering patterns (especially in darker table areas)

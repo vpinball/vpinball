@@ -18,7 +18,6 @@ public:
    float m_damping;
    float m_angleMax;
    float m_angleMin;
-   //float m_friction;
    char m_szSurface[MAXTOKEN];
    bool m_showBracket;
 };

@@ -467,7 +467,7 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 
    //
 
-   const unsigned int reduced_vertices = max((unsigned int)powf((float)m_vertices.size(), clamp(1.f - m_d.m_collision_reductionFactor, 0.f, 1.f)*0.25f + 0.75f), 420u); //!! 420 = magic
+   const unsigned int reduced_vertices = max((unsigned int)pow((double)m_vertices.size(), clamp(1.f - m_d.m_collision_reductionFactor, 0.f, 1.f)*0.25f + 0.75f), 420u); //!! 420 = magic
 
    if (reduced_vertices < m_vertices.size())
    {
