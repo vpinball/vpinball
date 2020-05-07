@@ -69,8 +69,8 @@ BOOL PrimitivePhysicsProperty::OnInitDialog()
     m_baseFrictionEdit = &m_frictionEdit;
 
     m_elasticityFalloffEdit.AttachItem(IDC_ELASTICITY_FALLOFF_EDIT);
-    AttachItem(IDC_MATERIAL_COMBO4, m_physicsMatrtialCombo);
-    m_basePhysicsMaterialCombo = &m_physicsMatrtialCombo;
+    AttachItem(IDC_MATERIAL_COMBO4, m_physicsMaterialCombo);
+    m_basePhysicsMaterialCombo = &m_physicsMaterialCombo;
     m_scatterAngleEdit.AttachItem(IDC_SCATTER_ANGLE_EDIT);
     m_baseScatterAngleEdit = &m_scatterAngleEdit;
 

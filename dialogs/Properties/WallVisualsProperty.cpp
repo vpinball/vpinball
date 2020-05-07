@@ -120,4 +120,3 @@ BOOL WallVisualsProperty::OnInitDialog()
     UpdateVisuals();
     return TRUE;
 }
-
