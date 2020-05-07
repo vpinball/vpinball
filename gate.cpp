@@ -152,7 +152,7 @@ void Gate::WriteRegDefaults()
 
 float Gate::GetOpenAngle() const
 {
-    return RADTOANG((g_pplayer) ? m_phitgate->m_gateMover.m_angleMax : m_d.m_angleMax);	//player active value
+    return RADTOANG((g_pplayer) ? m_phitgate->m_gateMover.m_angleMax : m_d.m_angleMax);	// player active value
 }
 
 void Gate::SetOpenAngle(const float angle)
@@ -163,9 +163,9 @@ void Gate::SetOpenAngle(const float angle)
         if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
         else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
 
-        if (m_phitgate->m_gateMover.m_angleMin < newVal)	// min is smaller
-            m_phitgate->m_gateMover.m_angleMax = newVal;	//then set new maximum
-        else m_phitgate->m_gateMover.m_angleMin = newVal;  //else set new min
+        if (m_phitgate->m_gateMover.m_angleMin < newVal)  // min is smaller
+            m_phitgate->m_gateMover.m_angleMax = newVal;  // then set new maximum
+        else m_phitgate->m_gateMover.m_angleMin = newVal; // else set new min
     }
     else
         m_d.m_angleMax = newVal;
@@ -179,15 +179,14 @@ float Gate::GetCloseAngle() const
 void Gate::SetCloseAngle(const float angle)
 {
     float newVal = ANGTORAD(angle);
-
     if (g_pplayer)
     {
         if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
         else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
 
-        if (m_phitgate->m_gateMover.m_angleMax > newVal)	// max is bigger
-            m_phitgate->m_gateMover.m_angleMin = newVal;	//then set new minumum
-        else m_phitgate->m_gateMover.m_angleMax = newVal;//else set new max
+        if (m_phitgate->m_gateMover.m_angleMax > newVal)  // max is bigger
+            m_phitgate->m_gateMover.m_angleMin = newVal;  // then set new minumum
+        else m_phitgate->m_gateMover.m_angleMax = newVal; // else set new max
     }
     else
         m_d.m_angleMin = newVal;

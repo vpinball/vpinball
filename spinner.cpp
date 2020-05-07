@@ -50,7 +50,7 @@ void Spinner::UpdateStatusBarInfo()
 
 float Spinner::GetAngleMax() const
 {
-    return (g_pplayer) ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMax) :	//player active value
+    return (g_pplayer) ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMax) : // player active value
                          m_d.m_angleMax;
 }
 
@@ -68,8 +68,8 @@ void Spinner::SetAngleMax(const float angle)
             newVal = ANGTORAD(newVal);
 
             if (m_phitspinner->m_spinnerMover.m_angleMin < newVal)  // Min is smaller???
-                m_phitspinner->m_spinnerMover.m_angleMax = newVal;   //yes set new max
-            else m_phitspinner->m_spinnerMover.m_angleMin = newVal; //no set new minumum
+                m_phitspinner->m_spinnerMover.m_angleMax = newVal;  // yes set new max
+            else m_phitspinner->m_spinnerMover.m_angleMin = newVal; // no set new minumum
         }
     }
     else
@@ -78,7 +78,7 @@ void Spinner::SetAngleMax(const float angle)
 
 float Spinner::GetAngleMin() const
 {
-    return (g_pplayer) ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMin) :	//player active value
+    return (g_pplayer) ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMin) : // player active value
                         m_d.m_angleMin;
 }
 
@@ -95,8 +95,8 @@ void Spinner::SetAngleMin(const float angle)
             newVal = ANGTORAD(newVal);
 
             if (m_phitspinner->m_spinnerMover.m_angleMax > newVal)  // max is bigger
-                m_phitspinner->m_spinnerMover.m_angleMin = newVal;   //then set new minumum
-            else m_phitspinner->m_spinnerMover.m_angleMax = newVal; //else set new max
+                m_phitspinner->m_spinnerMover.m_angleMin = newVal;  // then set new minumum
+            else m_phitspinner->m_spinnerMover.m_angleMax = newVal; // else set new max
         }
     }
     else
@@ -786,7 +786,7 @@ STDMETHODIMP Spinner::get_AngleMax(float *pVal)
 STDMETHODIMP Spinner::put_AngleMax(float newVal)
 {
    if (g_pplayer && (m_d.m_angleMin == m_d.m_angleMax)) // allow only if in limited angle mode
-    return S_FAIL;
+      return S_FAIL;
 
    SetAngleMax(newVal);
 
@@ -804,7 +804,8 @@ STDMETHODIMP Spinner::get_AngleMin(float *pVal)
 STDMETHODIMP Spinner::put_AngleMin(float newVal)
 {
    if (g_pplayer && (m_d.m_angleMin != m_d.m_angleMax))	// allow only if in limited angle mode
-       return S_FAIL;
+      return S_FAIL;
+
    SetAngleMin(newVal);
 
    return S_OK;

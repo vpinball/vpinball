@@ -974,7 +974,7 @@ bool VPinball::LoadFile()
    if (!OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0, fileOffset))
       return false;
 
-   LoadFileName(szFileName);
+   LoadFileName(szFileName,true);
 
    return true;
 }
@@ -1519,7 +1519,7 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
     char szName[256];
     LoadString(g_hinst, IDS_PROJNAME, szName, 256);
     
-    int result = CMDIDockFrame::OnCreate(cs);
+    const int result = CMDIDockFrame::OnCreate(cs);
     
     SetWindowText(szName);
     return result;
@@ -1721,9 +1721,8 @@ int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
 {
     LVFINDINFO lvf;
     char buf1[MAX_PATH], buf2[MAX_PATH];
-    int value1, value2;
 
-    SORTDATA *lpsd = (SORTDATA *)lSortOption;
+    SORTDATA * const lpsd = (SORTDATA *)lSortOption;
 
     lvf.flags = LVFI_PARAM;
     lvf.lParam = lSortParam1;
@@ -1734,6 +1733,8 @@ int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
 
     ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, sizeof(buf1));
     ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
+
+    int value1, value2;
     sscanf_s(buf1, "%i", &value1);
     sscanf_s(buf2, "%i", &value2);
 
@@ -2107,7 +2108,7 @@ void VPinball::SetViewSolidOutline(size_t viewId)
         ptCur->m_renderSolid = (viewId == ID_VIEW_SOLID);
         GetMenu().CheckMenuItem(ID_VIEW_SOLID, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_CHECKED : MF_UNCHECKED));
         GetMenu().CheckMenuItem(ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
-        
+
         ptCur->SetDirtyDraw();
         SaveValueBool("Editor", "RenderSolid", ptCur->m_renderSolid);
     }
@@ -2266,7 +2267,7 @@ void VPinball::OpenRecentFile(const size_t menuId)
     // get the index into the recent list menu
     const size_t Index = menuId - RECENT_FIRST_MENU_IDM;
     // copy it into a temporary string so it can be correctly processed
-    LoadFileName(m_recentTableList[Index].c_str());
+    LoadFileName(m_recentTableList[Index].c_str(),true);
 }
 
 void VPinball::CopyPasteElement(const CopyPasteModes mode)

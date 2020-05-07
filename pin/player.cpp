@@ -1238,7 +1238,7 @@ void Player::SetDebugOutputPosition(const float x, const float y)
 {
     D3DXMATRIX mat;
     D3DXVECTOR2 spritePos(x,y);
-    D3DXVECTOR2 spriteCenter(DBG_SPRITE_SIZE/2.0f, DBG_SPRITE_SIZE/2.0f);
+    D3DXVECTOR2 spriteCenter(DBG_SPRITE_SIZE/2, DBG_SPRITE_SIZE/2);
 
     const float angle = ANGTORAD(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set]);
     D3DXMatrixTransformation2D(&mat, NULL, 0.0, NULL, &spriteCenter, angle, &spritePos);
@@ -4236,11 +4236,11 @@ void Player::UpdateHUD()
 		len = sprintf_s(szFoo, "Hits:%5u Collide:%5u Ctacs:%5u Embed:%5u TimeSearch:%5u",
 			c_hitcnts, c_collisioncnt, c_contactcnt, c_embedcnts, c_timesearch);
 #endif
-		DebugPrint(10, 220, szFoo);
+		DebugPrint(0, 220, szFoo);
 
 		len = sprintf_s(szFoo, "kDObjects: %5u kD:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u",
 			c_kDObjects, c_kDNextlevels, c_quadObjects, c_quadNextlevels, c_traversed, c_tested, c_deepTested);
-		DebugPrint(10, 240, szFoo);
+		DebugPrint(0, 240, szFoo);
 #endif
 
 		len = sprintf_s(szFoo, "Left Flipper keypress to rotate: %.1f ms (%d f) to eos: %.1f ms (%d f)",
@@ -4289,16 +4289,16 @@ void Player::UpdateHUD()
 
     if (m_closeDown)
     {
-        x = (m_width-DBG_SPRITE_SIZE)/2.0f;
+        x = (m_width-DBG_SPRITE_SIZE)*0.5f;
         if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 270.0f)
         {
             x = 0.0f;
-            y = m_height/2.0f - DBG_SPRITE_SIZE/2;
+            y = (m_height - DBG_SPRITE_SIZE)*0.5f;
         }
         else if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 90.0f)
         {
             x = (float)(m_width - DBG_SPRITE_SIZE);
-            y = m_height / 2.0f - DBG_SPRITE_SIZE / 2;
+            y = (m_height - DBG_SPRITE_SIZE)*0.5f;
         }
         SetDebugOutputPosition(x, y);
     }
@@ -4761,7 +4761,7 @@ void Player::UpdateCameraModeDisplay()
    }
    else if (m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] == 90.0f)
    {
-       x = -DBG_SPRITE_SIZE/1.3f;
+       x = (float)(-DBG_SPRITE_SIZE/1.3);
        y = 0.0f;
    }
    SetDebugOutputPosition(x, y);

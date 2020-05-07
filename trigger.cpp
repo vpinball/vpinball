@@ -50,43 +50,54 @@ void Trigger::UpdateStatusBarInfo()
 {
    if(g_pplayer)
        return;
+
    if (m_d.m_shape != TriggerNone)
    {
       const Vertex3D_NoTex2 *meshVertices;
-      if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
+      switch(m_d.m_shape)
+      {
+      case TriggerWireA:
+      case TriggerWireB:
+      case TriggerWireC:
       {
          m_numVertices = triggerSimpleNumVertices;
          m_numIndices = triggerSimpleNumIndices;
          m_faceIndices = triggerSimpleIndices;
          meshVertices = triggerSimple;
+         break;
       }
-      else if (m_d.m_shape == TriggerWireD)
+      case TriggerWireD:
       {
-          m_numVertices = triggerDWireNumVertices;
-          m_numIndices = triggerDWireNumIndices;
-          m_faceIndices = triggerDWireIndices;
-          meshVertices = triggerDWireMesh;
+         m_numVertices = triggerDWireNumVertices;
+         m_numIndices = triggerDWireNumIndices;
+         m_faceIndices = triggerDWireIndices;
+         meshVertices = triggerDWireMesh;
+         break;
       }
-      else if (m_d.m_shape == TriggerInder)
+      case TriggerInder:
       {
-          m_numVertices = triggerInderNumVertices;
-          m_numIndices = triggerInderNumIndices;
-          m_faceIndices = triggerInderIndices;
-          meshVertices = triggerInderMesh;
+         m_numVertices = triggerInderNumVertices;
+         m_numIndices = triggerInderNumIndices;
+         m_faceIndices = triggerInderIndices;
+         meshVertices = triggerInderMesh;
+         break;
       }
-      else if (m_d.m_shape == TriggerButton)
+      case TriggerButton:
       {
          m_numVertices = triggerButtonNumVertices;
          m_numIndices = triggerButtonNumIndices;
          m_faceIndices = triggerButtonIndices;
          meshVertices = triggerButtonMesh;
+         break;
       }
-      else /*if (m_d.m_shape == TriggerStar)*/
+      case TriggerStar:
       {
          m_numVertices = triggerStarNumVertices;
          m_numIndices = triggerStarNumIndices;
          m_faceIndices = triggerStarIndices;
          meshVertices = triggerStar;
+         break;
+      }
       }
 
       m_vertices.resize(m_numVertices);
@@ -493,11 +504,11 @@ void Trigger::UpdateAnimation()
    float animLimit = (m_d.m_shape == TriggerStar) ? m_d.m_radius * (float)(1.0/5.0) : 32.0f;
    if (m_d.m_shape == TriggerButton)
       animLimit = m_d.m_radius * (float)(1.0/10.0);
-   if (m_d.m_shape == TriggerWireC)
+   else if (m_d.m_shape == TriggerWireC)
       animLimit = 60.0f;
-   if (m_d.m_shape == TriggerWireD)
+   else if (m_d.m_shape == TriggerWireD)
        animLimit = 25.0f;
-   if (m_d.m_shape == TriggerInder)
+   else if (m_d.m_shape == TriggerInder)
        animLimit = 25.0f;
 
    const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
@@ -605,16 +616,40 @@ void Trigger::ExportMesh(FILE *f)
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
-      WaveFrontObj_WriteFaceInfoList(f, triggerSimpleIndices, m_numIndices);
-   else if (m_d.m_shape == TriggerWireD)
-      WaveFrontObj_WriteFaceInfoList(f, triggerDWireIndices, m_numIndices);
-   else if (m_d.m_shape == TriggerInder)
-      WaveFrontObj_WriteFaceInfoList(f, triggerInderIndices, m_numIndices);
-   else if (m_d.m_shape == TriggerButton)
-      WaveFrontObj_WriteFaceInfoList(f, triggerButtonIndices, m_numIndices);
-   else if (m_d.m_shape == TriggerStar)
-      WaveFrontObj_WriteFaceInfoList(f, triggerStarIndices, m_numIndices);
+
+   const WORD* indices;
+   switch(m_d.m_shape)
+   {
+   case TriggerWireA:
+   case TriggerWireB:
+   case TriggerWireC:
+   {
+      indices = triggerSimpleIndices;
+      break;
+   }
+   case TriggerWireD:
+   {
+      indices = triggerDWireIndices;
+      break;
+   }
+   case TriggerInder:
+   {
+      indices = triggerInderIndices;
+      break;
+   }
+   case TriggerButton:
+   {
+      indices = triggerButtonIndices;
+      break;
+   }
+   case TriggerStar:
+   {
+      indices = triggerStarIndices;
+      break;
+   }
+   }
+
+   WaveFrontObj_WriteFaceInfoList(f, indices, m_numIndices);
    WaveFrontObj_UpdateFaceOffset(m_numVertices);
 }
 
@@ -625,40 +660,50 @@ void Trigger::GenerateMesh()
    float zoffset = (m_d.m_shape == TriggerButton) ? 5.0f : 0.0f;
    if (m_d.m_shape == TriggerWireC) zoffset = -19.0f;
 
-   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
+   switch(m_d.m_shape)
+   {
+   case TriggerWireA:
+   case TriggerWireB:
+   case TriggerWireC:
    {
       m_numVertices = triggerSimpleNumVertices;
       m_numIndices = triggerSimpleNumIndices;
       verts = triggerSimple;
+      break;
    }
-   else if (m_d.m_shape == TriggerWireD)
+   case TriggerWireD:
    {
       m_numVertices = triggerDWireNumVertices;
       m_numIndices = triggerDWireNumIndices;
       verts = triggerDWireMesh;
+      break;
    }
-   else if (m_d.m_shape == TriggerInder)
+   case TriggerInder:
    {
       m_numVertices = triggerInderNumVertices;
       m_numIndices = triggerInderNumIndices;
       verts = triggerInderMesh;
+      break;
    }
-   else if (m_d.m_shape == TriggerButton)
+   case TriggerButton:
    {
       m_numVertices = triggerButtonNumVertices;
       m_numIndices = triggerButtonNumIndices;
       verts = triggerButtonMesh;
+      break;
    }
-   else if (m_d.m_shape == TriggerStar)
+   case TriggerStar:
    {
       m_numVertices = triggerStarNumVertices;
       m_numIndices = triggerStarNumIndices;
       verts = triggerStar;
+      break;
    }
-   else
+   default:
    {
       ShowError("Unknown Trigger type");
       return;
+   }
    }
 
    if (m_triggerVertices)
@@ -733,46 +778,53 @@ void Trigger::RenderSetup()
       return;
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
+   const WORD* indices;
+   switch(m_d.m_shape)
+   {
+   case TriggerWireA:
+   case TriggerWireB:
+   case TriggerWireC:
    {
       m_numVertices = triggerSimpleNumVertices;
       m_numIndices = triggerSimpleNumIndices;
+      indices = triggerSimpleIndices;
+      break;
    }
-   else if (m_d.m_shape == TriggerWireD)
+   case TriggerWireD:
    {
       m_numVertices = triggerDWireNumVertices;
       m_numIndices = triggerDWireNumIndices;
+      indices = triggerDWireIndices;
+      break;
    }
-   else if (m_d.m_shape == TriggerInder)
+   case TriggerInder:
    {
       m_numVertices = triggerInderNumVertices;
       m_numIndices = triggerInderNumIndices;
+      indices = triggerInderIndices;
+      break;
    }
-   else if (m_d.m_shape == TriggerButton)
+   case TriggerButton:
    {
       m_numVertices = triggerButtonNumVertices;
       m_numIndices = triggerButtonNumIndices;
+      indices = triggerButtonIndices;
+      break;
    }
-   else if (m_d.m_shape == TriggerStar)
+   case TriggerStar:
    {
       m_numVertices = triggerStarNumVertices;
       m_numIndices = triggerStarNumIndices;
+      indices = triggerStarIndices;
+      break;
+   }
    }
 
    RenderDevice * const pd3dDevice = g_pplayer->m_pin3d.m_pd3dPrimaryDevice;
 
    if (m_triggerIndexBuffer)
       m_triggerIndexBuffer->release();
-   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
-      m_triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerSimpleIndices);
-   else if (m_d.m_shape == TriggerWireD)
-      m_triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerDWireIndices);
-   else if (m_d.m_shape == TriggerInder)
-      m_triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerInderIndices);
-   else if (m_d.m_shape == TriggerStar)
-      m_triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerStarIndices);
-   else if (m_d.m_shape == TriggerButton)
-      m_triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerButtonIndices);
+   m_triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, indices);
    if (m_vertexBuffer)
       m_vertexBuffer->release();
    ppin3d->m_pd3dPrimaryDevice->CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_vertexBuffer);

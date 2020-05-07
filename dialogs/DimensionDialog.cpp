@@ -17,8 +17,8 @@ static const ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
    { "Bally (standard)", 20.25f, 42.0f },
    { "Bally (widebody)", 26.75f, 42.0f }, //!! OPA claims 40.5
    { "Capcom", 20.25f, 46.0f },
-   { "Data East/Sega (up to Hook)", 20.25f, 42.0f }, // cyberpez: A KLOV member measured his BTTF for me
-   { "Data East/Sega (standard)", 20.25f, 46.0f },
+   { "Data East (up to Hook)", 20.25f, 42.0f }, //!! cyberpez: A KLOV member measured his BTTF for me: "42.5 x 20.25. I expect the extra half inch to be an anomaly on my machine, or I’m measuring at the wrong spot." (speculation: at least Batman, Monday Night Football, King Kong and Phantom of the Opera, are this size too)
+   { "Data East/Sega (standard)", 20.25f, 46.0f }, // verified by Sliderpoint on RaB (speculation: at least TMNT and LW3 are this size, too)
    { "Data East/Sega (widebody)", 23.25f, 46.0f },
    { "Game Plan", 20.25f, 42.0f },
    { "Gottlieb EM (through 76)", 20.25f, 41.0f },
@@ -47,9 +47,10 @@ static const ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
    { "Guns N' Roses (1994)", 25.0f, 51.75f },
    { "Hercules (1979 Atari)", 36.0f, 72.0f },
    { "Mystery Castle (1993 Alvin G)", 20.25f, 46.0f },
+   // Playboy does not have standard size, so around 20.25f, 42.0f ???
    { "Safe Cracker (1996)", 16.5f, 41.5f }, //!! OPA: "propably" 18.35 x 41.5
-   { "Secret Service (1988)", 20.275f, 42.126f },
-   { "Star Trek 25th (1991)", 20.25f, 42.625f }, // with an error of +/- 1/4 of an inch // via cyberpez
+   { "Secret Service (1988)", 20.275f, 42.126f }, // measured by Baron Shadow
+   { "Star Trek 25th (1991)", 20.25f, 42.625f }, // via cyberpez, with an error of +/- 1/4 of an inch (bracket was in the way)
    { "Varkon (1982)", 24.0f, 21.0f },
    { "World Cup Soccer (1994)", 20.25f, 45.75f } //!! OPA: 20.2756 x 45.7874
 };
