@@ -606,7 +606,7 @@ void CodeViewer::Create()
 	///// Preferences
 	InitPreferences();
 
-   SendMessage(m_hwndScintilla, SCI_SETMODEVENTMASK, SC_MOD_INSERTTEXT, 0);
+   SendMessage(m_hwndScintilla, SCI_SETMODEVENTMASK, SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT, 0);
    SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 0, (LPARAM)vbsReservedWords);
    SendMessage(m_hwndScintilla, SCI_SETTABWIDTH, 4, 0);
 
@@ -775,13 +775,13 @@ STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
 STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 {
    DWORD dwCookie;
-   LONG nChar;
    ULONG nLine;
+   LONG nChar;
+   pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
    BSTR bstr = 0;
+   pscripterror->GetSourceLineText(&bstr);
    EXCEPINFO ei;
    ZeroMemory(&ei, sizeof(ei));
-   pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
-   pscripterror->GetSourceLineText(&bstr);
    pscripterror->GetExceptionInfo(&ei);
    nLine++;
    if (dwCookie == CONTEXTCOOKIE_DEBUG)
@@ -2534,7 +2534,6 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
       switch (code)
       {
-
       case SCEN_SETFOCUS:
       {
          CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
@@ -2554,7 +2553,6 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          }
       }
       break;
-
       case BN_CLICKED: // or menu
       {
          CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
@@ -2690,7 +2688,6 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
       switch (code)
       {
-
 			case SCN_SAVEPOINTREACHED:
 			{
 				if (pcv->m_sdsDirty > eSaveClean)
@@ -3034,7 +3031,6 @@ void CodeViewer::UpdateScinFromPrefs()
 	prefVPcore->ApplyPreferences(m_hwndScintilla, m_prefEverythingElse);
 	SendMessage(m_hwndScintilla, SCI_STYLESETBACK, SCE_B_KEYWORD5, RGB(200,200,200));
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 4 , (LPARAM)m_wordUnderCaret.lpstrText);
-
 }
 
 Collection::Collection()
