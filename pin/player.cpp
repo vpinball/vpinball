@@ -3008,7 +3008,8 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
       for (size_t i = 0; i < m_vFlippers.size(); ++i)
       {
          const float fliphit = m_vFlippers[i]->GetHitTime();
-         if (fliphit > 0.f && fliphit < hittime) //!! >= 0.f causes infinite loop
+         //if ((fliphit >= 0.f) && !sign(fliphit) && (fliphit <= hittime))
+         if ((fliphit > 0.f) && (fliphit <= hittime)) //!! >= 0.f causes infinite loop
             hittime = fliphit;
       }
 
@@ -3083,7 +3084,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
                {
                   hittime = htz;                       // record actual event time
 
-                  if (htz < STATICTIME)                // less than static time interval
+                  if (hittime < STATICTIME)            // less than static time interval
                   {
                      /*if (!pball->m_coll.m_hitRigid) hittime = STATICTIME; // non-rigid ... set Static time
                      else*/ if (--StaticCnts < 0)
@@ -3176,11 +3177,11 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
        */
       if (rand_mt_01() < 0.5f) // swap order of contact handling randomly
          for (size_t i = 0; i < m_contacts.size(); ++i)
-            if (m_contacts[i].m_hittime <= hittime) // does not happen often, and values then look sane, so do this check
+            //if (m_contacts[i].m_hittime <= hittime) // does not happen often, and values then look sane, so do this check //!! why does this break some collisions (MM NZ&TT Reloaded Skitso, also CCC (Saloon))? maybe due to ball colliding with multiple things and then some sideeffect?
                m_contacts[i].m_obj->Contact(m_contacts[i], hittime);
       else
          for (size_t i = m_contacts.size() - 1; i != -1; --i)
-            if (m_contacts[i].m_hittime <= hittime) // does not happen often, and values then look sane, so do this check
+            //if (m_contacts[i].m_hittime <= hittime) // does not happen often, and values then look sane, so do this check //!! why does this break some collisions (MM NZ&TT Reloaded Skitso, also CCC (Saloon))? maybe due to ball colliding with multiple things and then some sideeffect?
                m_contacts[i].m_obj->Contact(m_contacts[i], hittime);
 
       m_contacts.clear();
