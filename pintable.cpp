@@ -5273,7 +5273,7 @@ void PinTable::ExportBlueprint()
       ofn.lStructSize = sizeof(OPENFILENAME);
       ofn.hInstance = g_hinst;
       ofn.hwndOwner = g_pvp->GetHwnd();
-      ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0";
+      ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0";
       ofn.lpstrFile = m_szBlueprintFileName;
       ofn.nMaxFile = MAXSTRING;
       ofn.lpstrDefExt = "png";
