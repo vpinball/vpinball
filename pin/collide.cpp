@@ -519,7 +519,7 @@ void HitPoint::Collide(const CollisionEvent& coll)
 void DoHitTest(const Ball *const pball, const HitObject *const pho, CollisionEvent& coll)
 {
    if (pho == nullptr || pball == nullptr
-      || (pho->m_ObjType == eHitTarget && ((HitTarget*)pho->m_obj)->m_d.m_isDropped))
+      || (pho->m_ObjType == eHitTarget && ((HitTarget*)pho->m_obj)->m_d.m_isDropped)) //!! why is this done here and not in corresponding HitTest()?
       return;
 
 #ifdef DEBUGPHYSICS
@@ -527,35 +527,23 @@ void DoHitTest(const Ball *const pball, const HitObject *const pho, CollisionEve
 #endif
 
    CollisionEvent newColl;
-   const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, !g_pplayer->m_recordContacts ? coll : newColl);
+   const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, newColl);
    const bool validhit = ((newtime >= 0.f) && !sign(newtime) && (newtime <= coll.m_hittime));
 
-   if (!g_pplayer->m_recordContacts) // simply find first event
+   if (validhit)
    {
-      if (validhit)
-      {
-         coll.m_ball = const_cast<Ball*>(pball); //!! meh, but will not be changed in here
-         coll.m_obj = const_cast<HitObject*>(pho); //!! meh, but will not be changed in here
-         coll.m_hittime = newtime;
-      }
-   }
-   else // find first collision, but also remember all contacts
-   {
-      if (newColl.m_isContact || validhit)
-      {
-         newColl.m_ball = const_cast<Ball*>(pball); //!! meh, but will not be changed in here
-         newColl.m_obj = const_cast<HitObject*>(pho); //!! meh, but will not be changed in here
-         newColl.m_hittime = newtime;
+      newColl.m_ball = const_cast<Ball*>(pball); //!! meh, but will not be changed in here
+      newColl.m_obj = const_cast<HitObject*>(pho); //!! meh, but will not be changed in here
+      newColl.m_hittime = newtime;
 
-         if (newColl.m_isContact)
-         {
+      if (g_pplayer->m_recordContacts && newColl.m_isContact) // remember all contacts?
+      {
 #ifdef USE_EMBREE
-             const std::lock_guard<std::mutex> lg(mtx); // multiple threads may end up here and call push_back
+         const std::lock_guard<std::mutex> lg(mtx); // multiple threads may end up here and call push_back
 #endif
-             g_pplayer->m_contacts.push_back(newColl);
-         }
-         else //if (validhit)
-             coll = newColl;
+         g_pplayer->m_contacts.push_back(newColl);
       }
+      else // record first collision event
+         coll = newColl;
    }
 }
