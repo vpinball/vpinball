@@ -407,7 +407,7 @@ void ImageDialog::Import()
 
    HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
 
-   if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, EXR, HDR Files (.bmp/.jpg/.png/.tga/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT, fileOffset))
+   if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT, fileOffset))
    {
       strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
 
@@ -503,7 +503,7 @@ void ImageDialog::Export()
             const size_t idx2 = ext2.find_last_of('.');
             ofn.lpstrDefExt = ext2.c_str() + idx2 + 1;
             // check which default file extension should be selected
-            ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0EXR (.exr)\0*.exr;\0HDR (.hdr)\0*.hdr\0";
+            ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0EXR (.exr)\0*.exr;\0HDR (.hdr)\0*.hdr\0";
             if(!strcmp(ofn.lpstrDefExt,"png"))
                ofn.nFilterIndex = 1;
             else if (!strcmp(ofn.lpstrDefExt, "bmp"))
@@ -739,7 +739,7 @@ void ImageDialog::ReimportFrom()
 
          HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
 
-         if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, EXR, HDR Files (.bmp/.jpg/.png/.tga/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.exr;*.hdr\0","png",0,fileOffset))
+         if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0","png",0,fileOffset))
          {
             LVITEM lvitem;
             lvitem.mask = LVIF_PARAM;
