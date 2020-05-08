@@ -3407,8 +3407,8 @@ HRESULT PinTable::LoadGameFromFilename(const char *szFileName)
       if (FAILED(hr = StgOpenStorage(wszCodeFile, NULL, STGM_TRANSACTED | STGM_READ, NULL, 0, &pstgRoot)))
       {
          // TEXT
-         char msg[MAXSTRING+16];
-         sprintf_s(msg, "Error loading %s", m_szFileName);
+         char msg[MAXSTRING+32];
+         sprintf_s(msg, "Error 0x%X loading %s", hr, m_szFileName);
          g_pvp->MessageBox(msg, "Load Error", 0);
          return hr;
       }
