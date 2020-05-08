@@ -50,7 +50,7 @@ static const ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
    // Playboy does not have standard size, so around 20.25f, 42.0f ???
    { "Safe Cracker (1996)", 16.5f, 41.5f }, //!! OPA: "propably" 18.35 x 41.5
    { "Secret Service (1988)", 20.275f, 42.126f }, // measured by Baron Shadow
-   { "Star Trek 25th (1991)", 20.25f, 42.625f }, // via cyberpez, with an error of +/- 1/4 of an inch (bracket was in the way)
+   { "Star Trek 25th (1991)", 20.25f, 42.625f }, //!! via cyberpez, with an error of +/- 1/4 of an inch (bracket was in the way), so 42.375-42.875
    { "Varkon (1982)", 24.0f, 21.0f },
    { "World Cup Soccer (1994)", 20.25f, 45.75f } //!! OPA: 20.2756 x 45.7874
 };
