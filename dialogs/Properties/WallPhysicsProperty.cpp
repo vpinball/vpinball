@@ -36,6 +36,8 @@ void WallPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         else
         {
             ::EnableWindow(::GetDlgItem(GetHwnd(), 116), TRUE);
+            m_slingshotForceEdit.EnableWindow(TRUE);
+            m_slingshotThresholdEdit.EnableWindow(TRUE);
         }
     }
     UpdateBaseVisuals(wall, &wall->m_d, dispid);
