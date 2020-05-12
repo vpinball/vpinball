@@ -10004,30 +10004,35 @@ void PinTable::SetMouseCursor()
 {
     char *cursorid;
     HINSTANCE hinst = g_hinst;
+    static int oldTool = -1;
 
-    if (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY)
+    if(oldTool!=g_pvp->m_ToolCur)
     {
-        cursorid = MAKEINTRESOURCE(IDC_MAGNIFY);
-    }
-    else if (g_pvp->m_ToolCur == ID_INSERT_TARGET)
-    {
-        // special case for targets, which are particular walls
-        cursorid = MAKEINTRESOURCE(IDC_TARGET);
-    }
-    else
-    {
-        ItemTypeEnum type = EditableRegistry::TypeFromToolID(g_pvp->m_ToolCur);
-        if (type != eItemInvalid)
-            cursorid = MAKEINTRESOURCE(EditableRegistry::GetCursorID(type));
+        if (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY)
+        {
+            cursorid = MAKEINTRESOURCE(IDC_MAGNIFY);
+        }
+        else if (g_pvp->m_ToolCur == ID_INSERT_TARGET)
+        {
+            // special case for targets, which are particular walls
+            cursorid = MAKEINTRESOURCE(IDC_TARGET);
+        }
         else
         {
-            hinst = NULL;
-            cursorid = IDC_ARROW;
+            ItemTypeEnum type = EditableRegistry::TypeFromToolID(g_pvp->m_ToolCur);
+            if (type != eItemInvalid)
+                cursorid = MAKEINTRESOURCE(EditableRegistry::GetCursorID(type));
+            else
+            {
+                hinst = NULL;
+                cursorid = IDC_ARROW;
+            }
         }
+        const HCURSOR hcursor = LoadCursor(hinst, cursorid);
+        SetClassLongPtr(GCLP_HCURSOR, (LONG_PTR)hcursor);
+        SetCursor(hcursor);
+        oldTool = g_pvp->m_ToolCur;
     }
-    const HCURSOR hcursor = LoadCursor(hinst, cursorid);
-    SetClassLongPtr(GCLP_HCURSOR, (LONG_PTR)hcursor);
-    SetCursor(hcursor);
 }
 
 void PinTable::OnLeftButtonDown(const short x, const short y)
