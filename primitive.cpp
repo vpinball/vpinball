@@ -1345,6 +1345,7 @@ void Primitive::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vPosition.x += dx;
    m_d.m_vPosition.y += dy;
+   UpdateStatusBarInfo();
 }
 
 Vertex2D Primitive::GetCenter() const
