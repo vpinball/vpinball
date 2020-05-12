@@ -16,13 +16,13 @@ protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CComboBox m_materialCombo;
-    CComboBox m_displayCombo;
+    ComboBox  m_materialCombo;
+    ComboBox  m_displayCombo;
+    ComboBox  m_surfaceCombo;
     EditBox   m_radiusEdit;
     EditBox   m_orientationEdit;
     EditBox   m_posXEdit;
     EditBox   m_posYEdit;
-    CComboBox m_surfaceCombo;
     vector<string> m_typeList;
 };
 

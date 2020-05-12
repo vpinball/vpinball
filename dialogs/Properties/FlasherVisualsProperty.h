@@ -17,8 +17,10 @@ protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
-    CComboBox   m_imageACombo;
-    CComboBox   m_imageBCombo;
+    ComboBox    m_imageACombo;
+    ComboBox    m_imageBCombo;
+    ComboBox    m_modeCombo;
+    ComboBox    m_filterCombo;
     HWND        m_hAdditiveBlendCheck;
     HWND        m_hUseDMDCheck;
     HWND        m_hDisplayInEditorCheck;
@@ -35,8 +37,6 @@ private:
     EditBox     m_posYEdit;
     EditBox     m_depthBiasEdit;
     EditBox     m_modulateEdit;
-    CComboBox   m_modeCombo;
-    CComboBox   m_filterCombo;
     CColorDialog m_colorDialog;
     ColorButton m_colorButton;
     vector<string> m_filterList;

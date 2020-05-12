@@ -17,7 +17,7 @@ protected:
 private:
     HWND        m_hTransparentCheck;
     HWND        m_hUseScriptDMDCheck;
-    CComboBox   m_alignmentCombo;
+    ComboBox    m_alignmentCombo;
     CButton     m_fontDialogButton;
     CFontDialog m_fontDialog;
     ColorButton  m_backgroundColorButton;

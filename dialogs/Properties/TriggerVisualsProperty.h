@@ -16,9 +16,9 @@ protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CComboBox   m_shapeCombo;
-    CComboBox   m_materialCombo;
-    CComboBox   m_surfaceCombo;
+    ComboBox    m_shapeCombo;
+    ComboBox    m_materialCombo;
+    ComboBox    m_surfaceCombo;
     EditBox     m_wireThicknessEdit;
     EditBox     m_starRadiusEdit;
     EditBox     m_rotationEdit;

@@ -10,6 +10,7 @@ WallPhysicsProperty::WallPhysicsProperty(VectorProtected<ISelect> *pvsel) : Base
     m_elasticityEdit.SetDialog(this);
     m_frictionEdit.SetDialog(this);
     m_scatterAngleEdit.SetDialog(this);
+    m_physicsMaterialCombo.SetDialog(this);
 }
 
 void WallPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -80,7 +81,8 @@ BOOL WallPhysicsProperty::OnInitDialog()
     m_hitThresholdEdit.AttachItem(IDC_HIT_THRESHOLD_EDIT);
     m_slingshotForceEdit.AttachItem(14);
     m_slingshotThresholdEdit.AttachItem(427);
-    AttachItem(IDC_MATERIAL_COMBO4, m_physicsMaterialCombo);
+    m_physicsMaterialCombo.AttachItem(IDC_MATERIAL_COMBO4);
+
     m_elasticityEdit.AttachItem(IDC_ELASTICITY_EDIT);
     m_frictionEdit.AttachItem(IDC_FRICTION_EDIT);
     m_scatterAngleEdit.AttachItem(IDC_SCATTER_ANGLE_EDIT);

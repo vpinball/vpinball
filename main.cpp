@@ -187,6 +187,7 @@ private:
    bool play;
    bool extractPov;
    bool file;
+   bool loadFileResult;
    bool extractScript;
    TCHAR szTableFileName[MAXSTRING];
 
@@ -411,95 +412,99 @@ public:
             MessageBox(0, "Could not load type library.", "Error", MB_ICONSTOP);
       }
 
+      InitVPX();
       //SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
       return TRUE;
+   }
+
+   void InitVPX()
+   {
+#if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
+       const HRESULT hRes = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER,
+           REGCLS_MULTIPLEUSE | REGCLS_SUSPENDED);
+       _ASSERTE(SUCCEEDED(hRes));
+       hRes = CoResumeClassObjects();
+#else
+       const HRESULT hRes = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER,
+           REGCLS_MULTIPLEUSE);
+#endif
+       _ASSERTE(SUCCEEDED(hRes));
+
+       INITCOMMONCONTROLSEX iccex;
+       iccex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+       iccex.dwICC = ICC_COOL_CLASSES;
+       InitCommonControlsEx(&iccex);
+
+       {
+           EditableRegistry::RegisterEditable<Bumper>();
+           EditableRegistry::RegisterEditable<Decal>();
+           EditableRegistry::RegisterEditable<DispReel>();
+           EditableRegistry::RegisterEditable<Flasher>();
+           EditableRegistry::RegisterEditable<Flipper>();
+           EditableRegistry::RegisterEditable<Gate>();
+           EditableRegistry::RegisterEditable<Kicker>();
+           EditableRegistry::RegisterEditable<Light>();
+           EditableRegistry::RegisterEditable<LightSeq>();
+           EditableRegistry::RegisterEditable<Plunger>();
+           EditableRegistry::RegisterEditable<Primitive>();
+           EditableRegistry::RegisterEditable<Ramp>();
+           EditableRegistry::RegisterEditable<Rubber>();
+           EditableRegistry::RegisterEditable<Spinner>();
+           EditableRegistry::RegisterEditable<Surface>();
+           EditableRegistry::RegisterEditable<Textbox>();
+           EditableRegistry::RegisterEditable<Timer>();
+           EditableRegistry::RegisterEditable<Trigger>();
+           EditableRegistry::RegisterEditable<HitTarget>();
+       }
+
+       g_pvp = new VPinball();
+       g_pvp->AddRef();
+       g_pvp->Create(NULL);
+       g_haccel = LoadAccelerators(g_hinst, MAKEINTRESOURCE(IDR_VPACCEL));
+
+       if (file)
+       {
+           if (szTableFileName[0] != '\0')
+               g_pvp->LoadFileName(szTableFileName, !play);
+           else
+               loadFileResult = g_pvp->LoadFile();
+
+           if (extractScript && loadFileResult)
+           {
+               TCHAR szScriptFilename[MAX_PATH];
+               strcpy_s(szScriptFilename, szTableFileName);
+               TCHAR* pos = strrchr(szScriptFilename, '.');
+               if (pos)
+               {
+                   *pos = 0;
+                   strcat_s(szScriptFilename, ".vbs");
+                   g_pvp->m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
+               }
+               g_pvp->Quit();
+           }
+           if (extractPov && loadFileResult)
+           {
+               TCHAR szPOVFilename[MAX_PATH];
+               strcpy_s(szPOVFilename, szTableFileName);
+               TCHAR* pos = strrchr(szPOVFilename, '.');
+               if (pos)
+               {
+                   *pos = 0;
+                   strcat_s(szPOVFilename, ".pov");
+                   g_pvp->m_ptableActive->ExportBackdropPOV(szPOVFilename);
+               }
+               g_pvp->Quit();
+           }
+       }
+
    }
 
    virtual int Run()
    {
       if (run)
       {
-#if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
-         const HRESULT hRes = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER,
-            REGCLS_MULTIPLEUSE | REGCLS_SUSPENDED);
-         _ASSERTE(SUCCEEDED(hRes));
-         hRes = CoResumeClassObjects();
-#else
-         const HRESULT hRes = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER,
-            REGCLS_MULTIPLEUSE);
-#endif
-         _ASSERTE(SUCCEEDED(hRes));
-
-         INITCOMMONCONTROLSEX iccex;
-         iccex.dwSize = sizeof(INITCOMMONCONTROLSEX);
-         iccex.dwICC = ICC_COOL_CLASSES;
-         InitCommonControlsEx(&iccex);
-
-         {
-            EditableRegistry::RegisterEditable<Bumper>();
-            EditableRegistry::RegisterEditable<Decal>();
-            EditableRegistry::RegisterEditable<DispReel>();
-            EditableRegistry::RegisterEditable<Flasher>();
-            EditableRegistry::RegisterEditable<Flipper>();
-            EditableRegistry::RegisterEditable<Gate>();
-            EditableRegistry::RegisterEditable<Kicker>();
-            EditableRegistry::RegisterEditable<Light>();
-            EditableRegistry::RegisterEditable<LightSeq>();
-            EditableRegistry::RegisterEditable<Plunger>();
-            EditableRegistry::RegisterEditable<Primitive>();
-            EditableRegistry::RegisterEditable<Ramp>();
-            EditableRegistry::RegisterEditable<Rubber>();
-            EditableRegistry::RegisterEditable<Spinner>();
-            EditableRegistry::RegisterEditable<Surface>();
-            EditableRegistry::RegisterEditable<Textbox>();
-            EditableRegistry::RegisterEditable<Timer>();
-            EditableRegistry::RegisterEditable<Trigger>();
-            EditableRegistry::RegisterEditable<HitTarget>();
-         }
-
-         g_pvp = new VPinball();
-         g_pvp->AddRef();
-         g_pvp->Create(NULL);
-         g_haccel = LoadAccelerators(g_hinst, MAKEINTRESOURCE(IDR_VPACCEL));
-
-         if (file)
-         {
-            bool lf = true;
-            if (szTableFileName[0] != '\0')
-               g_pvp->LoadFileName(szTableFileName, !play);
-            else
-               lf = g_pvp->LoadFile();
-
-            if (extractScript && lf)
-            {
-               TCHAR szScriptFilename[MAX_PATH];
-               strcpy_s(szScriptFilename, szTableFileName);
-               TCHAR *pos = strrchr(szScriptFilename, '.');
-               if (pos)
-               {
-                  *pos = 0;
-                  strcat_s(szScriptFilename, ".vbs");
-                  g_pvp->m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
-               }
-               g_pvp->Quit();
-            }
-            if (extractPov && lf)
-            {
-               TCHAR szPOVFilename[MAX_PATH];
-               strcpy_s(szPOVFilename, szTableFileName);
-               TCHAR *pos = strrchr(szPOVFilename, '.');
-               if (pos)
-               {
-                  *pos = 0;
-                  strcat_s(szPOVFilename, ".pov");
-                  g_pvp->m_ptableActive->ExportBackdropPOV(szPOVFilename);
-               }
-               g_pvp->Quit();
-            }
-
-            if (play && lf)
+            if (play && loadFileResult)
                g_pvp->DoPlay(false);
-         }
 
          // VBA APC handles message loop (bastards)
          g_pvp->MainMsgLoop();

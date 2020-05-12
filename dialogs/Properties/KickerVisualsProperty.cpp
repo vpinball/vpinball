@@ -16,6 +16,10 @@ KickerVisualsProperty::KickerVisualsProperty(VectorProtected<ISelect> *pvsel) : 
     m_orientationEdit.SetDialog(this);
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);
+
+    m_materialCombo.SetDialog(this);
+    m_displayCombo.SetDialog(this);
+    m_surfaceCombo.SetDialog(this);
 }
 
 void KickerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -85,14 +89,14 @@ void KickerVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL KickerVisualsProperty::OnInitDialog()
 {
-    AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
+    m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_baseMaterialCombo = &m_materialCombo;
-    AttachItem(IDC_KICKER_DISPLAY_COMBO, m_displayCombo);
+    m_displayCombo.AttachItem(IDC_KICKER_DISPLAY_COMBO);
     m_radiusEdit.AttachItem(IDC_KICKER_RADIUS_EDIT);
     m_orientationEdit.AttachItem(IDC_KICKER_ORIENTATION_EDIT);
     m_posXEdit.AttachItem(902);
     m_posYEdit.AttachItem(903);
-    AttachItem(IDC_SURFACE_COMBO, m_surfaceCombo);
+    m_surfaceCombo.AttachItem(IDC_SURFACE_COMBO);
     UpdateVisuals();
     return TRUE;
 }

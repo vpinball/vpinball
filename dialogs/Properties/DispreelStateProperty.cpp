@@ -6,6 +6,7 @@ DispreelStateProperty::DispreelStateProperty(VectorProtected<ISelect> *pvsel) : 
 {
     m_motorStepsEdit.SetDialog(this);
     m_updateIntervalEdit.SetDialog(this);
+    m_soundCombo.SetDialog(this);
 }
 
 void DispreelStateProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -55,7 +56,7 @@ BOOL DispreelStateProperty::OnInitDialog()
 {
     m_motorStepsEdit.AttachItem(IDC_MOTOR_STEPS_EDIT);
     m_updateIntervalEdit.AttachItem(IDC_UPDATE_INTERVAL_EDIT);
-    AttachItem(DISPID_Sound, m_soundCombo);
+    m_soundCombo.AttachItem(DISPID_Sound);
     UpdateVisuals();
     return TRUE;
 }

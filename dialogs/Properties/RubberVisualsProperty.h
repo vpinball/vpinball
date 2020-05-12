@@ -16,8 +16,8 @@ protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CComboBox   m_imageCombo;
-    CComboBox   m_materialCombo;
+    ComboBox    m_imageCombo;
+    ComboBox    m_materialCombo;
     HWND        m_hStaticRenderingCheck;
     EditBox     m_heightEdit;
     EditBox     m_thicknessEdit;

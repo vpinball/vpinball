@@ -16,10 +16,11 @@ protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CComboBox m_capMaterialCombo;
-    CComboBox m_bumpBaseMaterialCombo;
-    CComboBox m_skirtMaterialCombo;
-    CComboBox m_ringMaterialCombo;
+    ComboBox  m_capMaterialCombo;
+    ComboBox  m_bumpBaseMaterialCombo;
+    ComboBox  m_skirtMaterialCombo;
+    ComboBox  m_ringMaterialCombo;
+    ComboBox  m_surfaceCombo;
     EditBox   m_radiusEdit;
     EditBox   m_heightScaleEdit;
     EditBox   m_orientationEdit;
@@ -31,7 +32,6 @@ private:
     HWND      m_hSkirtVisibleCheck;
     EditBox     m_posXEdit;
     EditBox     m_posYEdit;
-    CComboBox m_surfaceCombo;
 };
 
 #endif // !H_BUMPER_VISUALS_PROPERTY

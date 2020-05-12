@@ -11,6 +11,7 @@ TableLightsProperty::TableLightsProperty(VectorProtected<ISelect> *pvsel) : Base
     m_ambientOcclusionScaleEdit.SetDialog(this);
     m_bloomStrengthEdit.SetDialog(this);
     m_screenSpaceReflEdit.SetDialog(this);
+    m_envEmissionImageCombo.SetDialog(this);
 }
 
 void TableLightsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -121,7 +122,7 @@ BOOL TableLightsProperty::OnInitDialog()
     m_lightEmissionScaleEdit.AttachItem(IDC_LIGHTEMISSIONSCALE);
     m_lightHeightEdit.AttachItem(IDC_LIGHTHEIGHT);
     m_lightRangeEdit.AttachItem(IDC_LIGHTRANGE);
-    AttachItem(DISPID_Image7, m_envEmissionImageCombo);
+    m_envEmissionImageCombo.AttachItem(DISPID_Image7);
     m_envEmissionScaleEdit.AttachItem(IDC_ENVEMISSIONSCALE);
     m_ambientOcclusionScaleEdit.AttachItem(IDC_AOSCALE);
     m_bloomStrengthEdit.AttachItem(IDC_BLOOM_STRENGTH);

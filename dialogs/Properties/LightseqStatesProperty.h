@@ -19,7 +19,7 @@ private:
     EditBox     m_posXEdit;
     EditBox     m_posYEdit;
     EditBox     m_updateIntervalEdit;
-    CComboBox   m_collectionCombo;
+    ComboBox    m_collectionCombo;
 };
 
 #endif // !H_LIGHTSEQ_STATES_PROPERTY

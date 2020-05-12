@@ -16,10 +16,10 @@ protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CComboBox   m_imageCombo;
-    CComboBox   m_materialCombo;
-    CComboBox   m_ballImageCombo;
-    CComboBox   m_ballDecalCombo;
+    ComboBox    m_imageCombo;
+    ComboBox    m_materialCombo;
+    ComboBox    m_ballImageCombo;
+    ComboBox    m_ballDecalCombo;
     EditBox     m_reflectionStrengthEdit;
     EditBox     m_ballReflectPlayfieldEdit;
     EditBox     m_ballDefaultBulbIntensScaleEdit;

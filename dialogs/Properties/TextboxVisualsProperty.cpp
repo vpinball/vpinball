@@ -14,6 +14,7 @@ TextboxVisualsProperty::TextboxVisualsProperty(VectorProtected<ISelect> *pvsel) 
     m_widthEdit.SetDialog(this);
     m_heightEdit.SetDialog(this);
     m_textEdit.SetDialog(this);
+    m_alignmentCombo.SetDialog(this);
 }
 
 TextboxVisualsProperty::~TextboxVisualsProperty()
@@ -214,7 +215,7 @@ BOOL TextboxVisualsProperty::OnInitDialog()
     AttachItem(IDC_COLOR_BUTTON1, m_backgroundColorButton);
     AttachItem(IDC_COLOR_BUTTON2, m_textColorButton);
     AttachItem(IDC_FONT_DIALOG_BUTTON, m_fontDialogButton);
-    AttachItem(IDC_TEXTBOX_ALIGN_COMBO, m_alignmentCombo);
+    m_alignmentCombo.AttachItem(IDC_TEXTBOX_ALIGN_COMBO);
     m_posXEdit.AttachItem(60000);
     m_posYEdit.AttachItem(60001);
     m_widthEdit.AttachItem(60002);

@@ -11,6 +11,11 @@ BumperVisualsProperty::BumperVisualsProperty(VectorProtected<ISelect> *pvsel) : 
     m_ringDropOffsetEdit.SetDialog(this);
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);
+    m_capMaterialCombo.SetDialog(this);
+    m_bumpBaseMaterialCombo.SetDialog(this);
+    m_skirtMaterialCombo.SetDialog(this);
+    m_ringMaterialCombo.SetDialog(this);
+    m_surfaceCombo.SetDialog(this);
 }
 
 void BumperVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -127,10 +132,10 @@ void BumperVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL BumperVisualsProperty::OnInitDialog()
 {
-    AttachItem(IDC_MATERIAL_COMBO, m_capMaterialCombo);
-    AttachItem(IDC_MATERIAL_COMBO2, m_bumpBaseMaterialCombo);
-    AttachItem(IDC_MATERIAL_COMBO3, m_skirtMaterialCombo);
-    AttachItem(IDC_MATERIAL_COMBO4, m_ringMaterialCombo);
+    m_capMaterialCombo.AttachItem(IDC_MATERIAL_COMBO);
+    m_bumpBaseMaterialCombo.AttachItem(IDC_MATERIAL_COMBO2);
+    m_skirtMaterialCombo.AttachItem(IDC_MATERIAL_COMBO3);
+    m_ringMaterialCombo.AttachItem(IDC_MATERIAL_COMBO4);
     m_radiusEdit.AttachItem(IDC_BUMPER_RADIUS_EDIT);
     m_heightScaleEdit.AttachItem(IDC_BUMPER_HEIGHT_SCALE_EDIT);
     m_orientationEdit.AttachItem(IDC_ORIENTATION_EDIT);
@@ -143,7 +148,7 @@ BOOL BumperVisualsProperty::OnInitDialog()
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
     m_posXEdit.AttachItem(902);
     m_posYEdit.AttachItem(903);
-    AttachItem(1502, m_surfaceCombo);
+    m_surfaceCombo.AttachItem(1502);
     UpdateVisuals();
     return TRUE;
 }

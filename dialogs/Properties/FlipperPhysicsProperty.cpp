@@ -24,6 +24,7 @@ FlipperPhysicsProperty::FlipperPhysicsProperty(VectorProtected<ISelect> *pvsel) 
     m_scatterAngleEdit.SetDialog(this);
     m_eosTorqueEdit.SetDialog(this);
     m_eosTorqueAngleEdit.SetDialog(this);
+    m_overwriteSettingsCombo.SetDialog(this);
 }
 
 void FlipperPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -114,7 +115,7 @@ BOOL FlipperPhysicsProperty::OnInitDialog()
 
     m_eosTorqueEdit.AttachItem(113);
     m_eosTorqueAngleEdit.AttachItem(189);
-    AttachItem(1044, m_overwriteSettingsCombo);
+    m_overwriteSettingsCombo.AttachItem(1044);
     UpdateVisuals();
     return TRUE;
 }

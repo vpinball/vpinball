@@ -16,9 +16,9 @@ protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CComboBox m_typeCombo;
-    CComboBox m_materialCombo;
-    CComboBox m_surfaceCombo;
+    ComboBox  m_typeCombo;
+    ComboBox  m_materialCombo;
+    ComboBox  m_surfaceCombo;
     EditBox   m_xposEdit;
     EditBox   m_yposEdit;
     EditBox   m_lengthEdit;

@@ -19,6 +19,9 @@ TriggerVisualsProperty::TriggerVisualsProperty(VectorProtected<ISelect> *pvsel) 
     m_animationSpeedEdit.SetDialog(this);
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);
+    m_shapeCombo.SetDialog(this);
+    m_materialCombo.SetDialog(this);
+    m_surfaceCombo.SetDialog(this);
 }
 
 void TriggerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -101,10 +104,10 @@ void TriggerVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL TriggerVisualsProperty::OnInitDialog()
 {
-    AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
+    m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_baseMaterialCombo = &m_materialCombo;
-    AttachItem(IDC_SURFACE_COMBO, m_surfaceCombo);
-    AttachItem(1503, m_shapeCombo);
+    m_surfaceCombo.AttachItem(IDC_SURFACE_COMBO);
+    m_shapeCombo.AttachItem(1503);
     m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
     m_posXEdit.AttachItem(902);

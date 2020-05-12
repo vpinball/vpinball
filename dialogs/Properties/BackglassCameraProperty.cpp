@@ -18,6 +18,7 @@ BackglassCameraProperty::BackglassCameraProperty(VectorProtected<ISelect> *pvsel
     m_xOffsetEdit.SetDialog(this);
     m_yOffsetEdit.SetDialog(this);
     m_zOffsetEdit.SetDialog(this);
+    m_modeCombo.SetDialog(this);
 }
 
 void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -112,7 +113,7 @@ BOOL BackglassCameraProperty::OnInitDialog()
 {
     m_hFssModeCheck = ::GetDlgItem(GetHwnd(), IDC_BG_FSS);
     m_hTestDesktopCheck = ::GetDlgItem(GetHwnd(), IDC_BG_TEST_DESKTOP_CHECK);
-    AttachItem(IDC_BG_COMBOBOX, m_modeCombo);
+    m_modeCombo.AttachItem(IDC_BG_COMBOBOX);
     m_inclinationEdit.AttachItem(IDC_INCLINATION_EDIT);
     m_fovEdit.AttachItem(IDC_FOV_EDIT);
     m_laybackEdit.AttachItem(IDC_LAYBACK_EDIT);

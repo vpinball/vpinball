@@ -17,10 +17,10 @@ protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CComboBox m_typeCombo;
-    CComboBox m_materialCombo;
-    CComboBox m_imageCombo;
-    CComboBox m_modeCombo;
+    ComboBox  m_typeCombo;
+    ComboBox  m_materialCombo;
+    ComboBox  m_imageCombo;
+    ComboBox  m_modeCombo;
     EditBox   m_depthBiasEdit;
     EditBox   m_topHeightEdit;
     EditBox   m_bottomHeightEdit;

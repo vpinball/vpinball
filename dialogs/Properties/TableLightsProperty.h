@@ -20,7 +20,7 @@ private:
     CColorDialog m_colorDialog;
     ColorButton m_colorButton1;
     ColorButton m_colorButton2;
-    CComboBox   m_envEmissionImageCombo;
+    ComboBox    m_envEmissionImageCombo;
     EditBox     m_lightEmissionScaleEdit;
     EditBox     m_lightHeightEdit;
     EditBox     m_lightRangeEdit;

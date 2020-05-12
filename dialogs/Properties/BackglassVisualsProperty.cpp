@@ -7,6 +7,10 @@ BackglassVisualsProperty::BackglassVisualsProperty(VectorProtected<ISelect> *pvs
     m_3dStereoOffsetEdit.SetDialog(this);
     m_3dStereoSeparationEdit.SetDialog(this);
     m_3dSteroZPDEdit.SetDialog(this);
+    m_dtImageCombo.SetDialog(this);
+    m_fsImageCombo.SetDialog(this);
+    m_fssImageCombo.SetDialog(this);
+    m_colorGradingCombo.SetDialog(this);
 }
 
 void BackglassVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -103,10 +107,10 @@ void BackglassVisualsProperty::UpdateProperties(const int dispid)
 BOOL BackglassVisualsProperty::OnInitDialog()
 {
     m_hApplyNightDayCheck = ::GetDlgItem(GetHwnd(), IDC_BG_NIGHT_DAY);
-    AttachItem(DISPID_Image2, m_dtImageCombo);
-    AttachItem(DISPID_Image6, m_fsImageCombo);
-    AttachItem(DISPID_Image8, m_fssImageCombo);
-    AttachItem(1509, m_colorGradingCombo);
+    m_dtImageCombo.AttachItem(DISPID_Image2);
+    m_fsImageCombo.AttachItem(DISPID_Image6);
+    m_fssImageCombo.AttachItem(DISPID_Image8);
+    m_colorGradingCombo.AttachItem(1509);
     m_hEnableEMReelCheck = ::GetDlgItem(GetHwnd(), IDC_ENABLE_EMREEL_CHECK);
     m_hEnableDecal = ::GetDlgItem(GetHwnd(), IDC_ENABLE_DECAL_CHECK);
     m_hOverwriteGlobalStereoSettingsCheck = ::GetDlgItem(GetHwnd(), IDC_GLOBAL_3DSTEREO);

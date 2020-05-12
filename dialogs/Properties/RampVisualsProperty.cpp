@@ -24,6 +24,11 @@ RampVisualsProperty::RampVisualsProperty(VectorProtected<ISelect> *pvsel) : Base
     m_diameterEdit.SetDialog(this);
     m_distanceXEdit.SetDialog(this);
     m_distanceYEdit.SetDialog(this);
+
+    m_typeCombo.SetDialog(this);
+    m_materialCombo.SetDialog(this);
+    m_imageCombo.SetDialog(this);
+    m_modeCombo.SetDialog(this);
 }
 
 void RampVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -36,7 +41,7 @@ void RampVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == 6 || dispid == -1)
             PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)ramp->m_d.m_type].c_str());
         if (dispid == 8 || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_imageModeList, m_modeCombo, m_imageModeList[(int)ramp->m_d.m_imagealignment - 1].c_str());
+            PropertyDialog::UpdateComboBox(m_imageModeList, m_modeCombo, m_imageModeList[(int)ramp->m_d.m_imagealignment].c_str());
         if (dispid == IDC_DEPTH_BIAS || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_depthBiasEdit, ramp->m_d.m_depthBias);
         if (dispid == 2 || dispid == -1)
@@ -91,7 +96,7 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(ramp->m_d.m_type, (RampType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList)), ramp);
                 break;
             case 8:
-                CHECK_UPDATE_ITEM(ramp->m_d.m_imagealignment, (RampImageAlignment)(PropertyDialog::GetComboBoxIndex(m_modeCombo, m_imageModeList) + 1), ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_imagealignment, (RampImageAlignment)(PropertyDialog::GetComboBoxIndex(m_modeCombo, m_imageModeList)), ramp);
                 break;
             case 9:
                 CHECK_UPDATE_ITEM(ramp->m_d.m_imageWalls, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), ramp);
@@ -131,10 +136,10 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL RampVisualsProperty::OnInitDialog()
 {
-    AttachItem(6, m_typeCombo);
-    AttachItem(DISPID_Image, m_imageCombo);
-    AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
-    AttachItem(8, m_modeCombo);
+    m_typeCombo.AttachItem(6);
+    m_imageCombo.AttachItem(DISPID_Image);
+    m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
+    m_modeCombo.AttachItem(8);
     m_depthBiasEdit.AttachItem(IDC_DEPTH_BIAS);
     m_topHeightEdit.AttachItem(2);
     m_bottomHeightEdit.AttachItem(1);

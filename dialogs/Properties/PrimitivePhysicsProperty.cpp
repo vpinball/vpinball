@@ -10,6 +10,7 @@ PrimitivePhysicsProperty::PrimitivePhysicsProperty(VectorProtected<ISelect> *pvs
     m_elasticityEdit.SetDialog(this);
     m_frictionEdit.SetDialog(this);
     m_scatterAngleEdit.SetDialog(this);
+    m_physicsMaterialCombo.SetDialog(this);
 }
 
 void PrimitivePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -69,7 +70,7 @@ BOOL PrimitivePhysicsProperty::OnInitDialog()
     m_baseFrictionEdit = &m_frictionEdit;
 
     m_elasticityFalloffEdit.AttachItem(IDC_ELASTICITY_FALLOFF_EDIT);
-    AttachItem(IDC_MATERIAL_COMBO4, m_physicsMaterialCombo);
+    m_physicsMaterialCombo.AttachItem(IDC_MATERIAL_COMBO4);
     m_basePhysicsMaterialCombo = &m_physicsMaterialCombo;
     m_scatterAngleEdit.AttachItem(IDC_SCATTER_ANGLE_EDIT);
     m_baseScatterAngleEdit = &m_scatterAngleEdit;
