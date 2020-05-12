@@ -2236,6 +2236,8 @@ void PinTable::StopPlaying()
    g_keepUndoRecords = true;
 
    g_pvp->ShowWindow(1);
+   SetFocus();
+
    UpdateDbgMaterial();
    UpdateDbgLight();
    SetDirtyDraw();
@@ -4988,9 +4990,8 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_ACTIVATE:
             if (LOWORD(wParam) != WA_INACTIVE)
             {
-                m_pvp->m_ptableActive = (CComObject<PinTable> *)this;
-                // re-evaluate the toolbar depending on table permissions
-                //g_pvp->SetEnableToolbar();
+                if(m_pvp->m_ptableActive != (CComObject<PinTable>*)this)
+                    m_pvp->m_ptableActive = (CComObject<PinTable> *)this;
             }
             return FinalWindowProc(uMsg, wParam, lParam);
         case WM_PAINT:
