@@ -17,9 +17,9 @@ protected:
 
 private:
     vector<string> m_typeList;
-    CComboBox   m_imageCombo;
-    CComboBox   m_materialCombo;
-    CComboBox   m_typeCombo;
+    ComboBox    m_imageCombo;
+    ComboBox    m_materialCombo;
+    ComboBox    m_typeCombo;
     EditBox     m_dropSpeedEdit;
     EditBox     m_raiseDelayEdit;
     EditBox     m_depthBiasEdit;

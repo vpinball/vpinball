@@ -26,6 +26,10 @@ FlasherVisualsProperty::FlasherVisualsProperty(VectorProtected<ISelect> *pvsel) 
     m_posYEdit.SetDialog(this);
     m_depthBiasEdit.SetDialog(this);
     m_modulateEdit.SetDialog(this);
+    m_imageACombo.SetDialog(this);
+    m_imageBCombo.SetDialog(this);
+    m_modeCombo.SetDialog(this);
+    m_filterCombo.SetDialog(this);
 }
 
 void FlasherVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -171,11 +175,11 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
 BOOL FlasherVisualsProperty::OnInitDialog()
 {
     m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
-    AttachItem(DISPID_Image, m_imageACombo);
+    m_imageACombo.AttachItem(DISPID_Image);
     m_hDisplayInEditorCheck = ::GetDlgItem(GetHwnd(), IDC_DISPLAY_IMAGE_CHECK);
-    AttachItem(DISPID_Image2, m_imageBCombo);
-    AttachItem(IDC_FLASHER_MODE_COMBO, m_modeCombo);
-    AttachItem(IDC_EFFECT_COMBO, m_filterCombo);
+    m_imageBCombo.AttachItem(DISPID_Image2);
+    m_modeCombo.AttachItem(IDC_FLASHER_MODE_COMBO);
+    m_filterCombo.AttachItem(IDC_EFFECT_COMBO);
     m_hAdditiveBlendCheck = ::GetDlgItem(GetHwnd(), IDC_ADDBLEND);
     m_hUseDMDCheck = ::GetDlgItem(GetHwnd(), IDC_DMD);
     m_filterAmountEdit.AttachItem(IDC_FILTERAMOUNT_EDIT);

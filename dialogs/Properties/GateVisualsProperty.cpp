@@ -16,6 +16,10 @@ GateVisualsProperty::GateVisualsProperty(VectorProtected<ISelect> *pvsel) : Base
     m_rotationEdit.SetDialog(this);
     m_openAngleEdit.SetDialog(this);
     m_closeAngleEdit.SetDialog(this);
+
+    m_typeCombo.SetDialog(this);
+    m_materialCombo.SetDialog(this);
+    m_surfaceCombo.SetDialog(this);
 }
 
 void GateVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -101,11 +105,11 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL GateVisualsProperty::OnInitDialog()
 {
-    AttachItem(9, m_typeCombo);
-    AttachItem(IDC_SURFACE_COMBO, m_surfaceCombo);
+    m_typeCombo.AttachItem(9);
+    m_surfaceCombo.AttachItem(IDC_SURFACE_COMBO);
     m_xposEdit.AttachItem(5);
     m_yposEdit.AttachItem(6);
-    AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
+    m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_lengthEdit.AttachItem(DISPID_Gate_Length);
     m_heightEdit.AttachItem(DISPID_Gate_Height1);
     m_rotationEdit.AttachItem(DISPID_Gate_Rotation);

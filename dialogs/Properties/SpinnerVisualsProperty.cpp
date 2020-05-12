@@ -12,6 +12,9 @@ SpinnerVisualsProperty::SpinnerVisualsProperty(VectorProtected<ISelect> *pvsel) 
     m_angleMaxEdit.SetDialog(this);
     m_angleMinEdit.SetDialog(this);
     m_elasticityEdit.SetDialog(this);
+    m_imageCombo.SetDialog(this);
+    m_materialCombo.SetDialog(this);
+    m_surfaceCombo.SetDialog(this);
 }
 
 void SpinnerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -98,11 +101,11 @@ BOOL SpinnerVisualsProperty::OnInitDialog()
     m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
     m_hShowBracketCheck = ::GetDlgItem(GetHwnd(), IDC_SHOW_BRACKET_CHECK);
-    AttachItem(DISPID_Image, m_imageCombo);
+    m_imageCombo.AttachItem(DISPID_Image);
     m_baseImageCombo = &m_imageCombo;
-    AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
+    m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_baseMaterialCombo = &m_materialCombo;
-    AttachItem(IDC_SURFACE_COMBO, m_surfaceCombo);
+    m_surfaceCombo.AttachItem(IDC_SURFACE_COMBO);
     m_posXEdit.AttachItem(11);
     m_posYEdit.AttachItem(12);
     m_lengthEdit.AttachItem(DISPID_Spinner_Length);

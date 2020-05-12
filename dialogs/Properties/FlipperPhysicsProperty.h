@@ -26,7 +26,7 @@ private:
     EditBox m_scatterAngleEdit;
     EditBox m_eosTorqueEdit;
     EditBox m_eosTorqueAngleEdit;
-    CComboBox m_overwriteSettingsCombo;
+    ComboBox m_overwriteSettingsCombo;
     vector<string> m_physicSetList;
 };
 

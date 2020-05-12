@@ -23,7 +23,7 @@ private:
     EditBox   m_elasticityEdit;
     EditBox   m_frictionEdit;
     EditBox   m_scatterAngleEdit;
-    CComboBox m_physicsMaterialCombo;
+    ComboBox  m_physicsMaterialCombo;
 };
 
 #endif

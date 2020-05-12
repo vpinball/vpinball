@@ -16,7 +16,7 @@ protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CComboBox   m_physicsMaterialCombo;
+    ComboBox    m_physicsMaterialCombo;
     EditBox     m_elasticityEdit;
     EditBox     m_elasticityFallOffEdit;
     EditBox     m_frictionEdit;

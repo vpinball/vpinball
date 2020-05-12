@@ -18,7 +18,7 @@ protected:
 private:
     EditBox     m_blinkPatternEdit;
     EditBox     m_blinkIntervalEdit;
-    CComboBox   m_stateCombo;
+    ComboBox    m_stateCombo;
     vector<string> m_stateList;
 };
 

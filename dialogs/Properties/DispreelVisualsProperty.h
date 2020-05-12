@@ -21,7 +21,7 @@ private:
     HWND         m_hUseImageGridCheck;
     CColorDialog m_colorDialog;
     ColorButton  m_colorButton;
-    CComboBox    m_imageCombo;
+    ComboBox     m_imageCombo;
     EditBox      m_singleDigitRangeEdit;
     EditBox      m_imagePerRowEdit;
     EditBox      m_posXEdit;

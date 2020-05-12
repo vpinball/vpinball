@@ -16,6 +16,10 @@ FlipperVisualsProperty::FlipperVisualsProperty(VectorProtected<ISelect> *pvsel) 
     m_endAngleEdit.SetDialog(this);
     m_heightEdit.SetDialog(this);
     m_maxDifficultLengthEdit.SetDialog(this);
+    m_imageCombo.SetDialog(this);
+    m_materialCombo.SetDialog(this);
+    m_rubberMaterialCombo.SetDialog(this);
+    m_surfaceCombo.SetDialog(this);
 }
 
 void FlipperVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -127,9 +131,9 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL FlipperVisualsProperty::OnInitDialog()
 {
-    AttachItem(DISPID_Image, m_imageCombo);
-    AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
-    AttachItem(IDC_MATERIAL_COMBO2, m_rubberMaterialCombo);
+    m_imageCombo.AttachItem(DISPID_Image);
+    m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
+    m_rubberMaterialCombo.AttachItem(IDC_MATERIAL_COMBO2);
     m_rubberThicknessEdit.AttachItem(18);
     m_rubberOffsetHeightEdit.AttachItem(24);
     m_rubberWidthEdit.AttachItem(25);
@@ -142,7 +146,7 @@ BOOL FlipperVisualsProperty::OnInitDialog()
     m_endAngleEdit.AttachItem(7);
     m_heightEdit.AttachItem(107);
     m_maxDifficultLengthEdit.AttachItem(111);
-    AttachItem(1502, m_surfaceCombo);
+    m_surfaceCombo.AttachItem(1502);
 
     m_baseImageCombo = &m_imageCombo;
     m_baseMaterialCombo = &m_materialCombo;

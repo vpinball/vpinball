@@ -9,6 +9,8 @@ RubberVisualsProperty::RubberVisualsProperty(VectorProtected<ISelect> *pvsel) : 
     m_rotXEdit.SetDialog(this);
     m_rotYEdit.SetDialog(this);
     m_rotZEdit.SetDialog(this);
+    m_imageCombo.SetDialog(this);
+    m_materialCombo.SetDialog(this);
 }
 
 void RubberVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -82,9 +84,9 @@ void RubberVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL RubberVisualsProperty::OnInitDialog()
 {
-    AttachItem(DISPID_Image, m_imageCombo);
+    m_imageCombo.AttachItem(DISPID_Image);
     m_baseImageCombo = &m_imageCombo;
-    AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
+    m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_baseMaterialCombo = &m_materialCombo;
     m_hStaticRenderingCheck = ::GetDlgItem(GetHwnd(), IDC_STATIC_RENDERING_CHECK);
     m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);

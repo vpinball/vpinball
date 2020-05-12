@@ -16,9 +16,10 @@ protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CComboBox m_typeCombo;
-    CComboBox m_imageCombo;
-    CComboBox m_materialCombo;
+    ComboBox  m_typeCombo;
+    ComboBox  m_imageCombo;
+    ComboBox  m_materialCombo;
+    ComboBox  m_surfaceCombo;
     EditBox   m_flatFramesEdit;
     EditBox   m_widthEdit;
     EditBox   m_zAdjustmentEdit;
@@ -33,7 +34,6 @@ private:
     EditBox   m_endLoopsEdit;
     EditBox   m_posXEdit;
     EditBox   m_posYEdit;
-    CComboBox m_surfaceCombo;
     vector<string> m_typeList;
 };
 

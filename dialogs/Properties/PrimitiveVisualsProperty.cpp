@@ -9,6 +9,9 @@ PrimitiveVisualsProperty::PrimitiveVisualsProperty(VectorProtected<ISelect> *pvs
     m_legacySidesEdit.SetDialog(this);
     m_edgeFactorUIEdit.SetDialog(this);
     m_depthBiasEdit.SetDialog(this);
+    m_imageCombo.SetDialog(this);
+    m_normalMapCombo.SetDialog(this);
+    m_materialCombo.SetDialog(this);
 }
 
 void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -120,10 +123,10 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_hDrawTexturesInsideCheck = ::GetDlgItem(GetHwnd(), IDC_DRAW_TEXTURES_SIDES_CHECK);
     AttachItem(IDC_LOAD_MESH_BUTTON, m_importMeshButton);
     AttachItem(IDC_EXPORT_MESH_BUTTON, m_exportMeshButton);
-    AttachItem(DISPID_Image, m_imageCombo);
+    m_imageCombo.AttachItem(DISPID_Image);
     m_baseImageCombo = &m_imageCombo;
-    AttachItem(DISPID_Image2, m_normalMapCombo);
-    AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
+    m_normalMapCombo.AttachItem(DISPID_Image2);
+    m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_baseMaterialCombo = &m_materialCombo;
     m_depthBiasEdit.AttachItem(IDC_DEPTH_BIAS);
     m_disableLightingEdit.AttachItem(IDC_BLEND_DISABLE_LIGHTING);

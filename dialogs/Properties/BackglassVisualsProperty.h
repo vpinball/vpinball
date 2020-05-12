@@ -24,10 +24,10 @@ private:
     EditBox         m_3dStereoOffsetEdit;
     EditBox         m_3dStereoSeparationEdit;
     EditBox         m_3dSteroZPDEdit;
-    CComboBox       m_dtImageCombo;
-    CComboBox       m_fsImageCombo;
-    CComboBox       m_fssImageCombo;
-    CComboBox       m_colorGradingCombo;
+    ComboBox        m_dtImageCombo;
+    ComboBox        m_fsImageCombo;
+    ComboBox        m_fssImageCombo;
+    ComboBox        m_colorGradingCombo;
 
     CColorDialog m_colorDialog;
     ColorButton m_colorButton1;

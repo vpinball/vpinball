@@ -24,9 +24,9 @@ private:
     EditBox   m_angleMaxEdit;
     EditBox   m_angleMinEdit;
     EditBox   m_elasticityEdit;
-    CComboBox m_imageCombo;
-    CComboBox m_materialCombo;
-    CComboBox m_surfaceCombo;
+    ComboBox  m_imageCombo;
+    ComboBox  m_materialCombo;
+    ComboBox  m_surfaceCombo;
     HWND      m_hShowBracketCheck;
 };
 

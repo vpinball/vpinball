@@ -12,6 +12,7 @@ DispreelVisualsProperty::DispreelVisualsProperty(VectorProtected<ISelect> *pvsel
     m_reelWidthEdit.SetDialog(this);
     m_reelHeightEdit.SetDialog(this);
     m_reelSpacingEdit.SetDialog(this);
+    m_imageCombo.SetDialog(this);
 }
 
 void DispreelVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -123,7 +124,7 @@ BOOL DispreelVisualsProperty::OnInitDialog()
     m_hBackgroundTransparentCheck = ::GetDlgItem(GetHwnd(), IDC_BACK_TRANSP_CHECK);
     m_hUseImageGridCheck = ::GetDlgItem(GetHwnd(), IDC_USE_IMAGE_GRID_CHECK);
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton);
-    AttachItem(DISPID_Image, m_imageCombo);
+    m_imageCombo.AttachItem(DISPID_Image);
     m_baseImageCombo = &m_imageCombo;
     m_singleDigitRangeEdit.AttachItem(IDC_SINGLE_DIGIT_RANGE_EDIT);
     m_imagePerRowEdit.AttachItem(IDC_IMAGES_PER_ROW_EDIT);

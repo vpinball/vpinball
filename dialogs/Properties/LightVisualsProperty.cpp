@@ -16,6 +16,8 @@ LightVisualsProperty::LightVisualsProperty(VectorProtected<ISelect> *pvsel) : Ba
     m_transmitEdit.SetDialog(this);
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);
+    m_imageCombo.SetDialog(this);
+    m_surfaceCombo.SetDialog(this);
 }
 
 void LightVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -189,7 +191,7 @@ BOOL LightVisualsProperty::OnInitDialog()
     m_fadeSpeedUpEdit.AttachItem(IDC_FADE_SPEED_UP);
     m_fadeSpeedDownEdit.AttachItem(IDC_FADE_SPEED_DOWN);
     m_hPassThroughCheck = ::GetDlgItem(GetHwnd(), IDC_IMAGE_MODE);
-    AttachItem(DISPID_Image, m_imageCombo);
+    m_imageCombo.AttachItem(DISPID_Image);
     m_baseImageCombo = &m_imageCombo;
     m_depthBiasEdit.AttachItem(IDC_DEPTH_BIAS);
     m_hEnableCheck= ::GetDlgItem(GetHwnd(), IDC_LIGHT_TYPE_CHECKBOX);
@@ -202,7 +204,7 @@ BOOL LightVisualsProperty::OnInitDialog()
     m_hRelectOnBalls = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ON_BALLS);
     m_posXEdit.AttachItem(902);
     m_posYEdit.AttachItem(903);
-    AttachItem(IDC_SURFACE_COMBO, m_surfaceCombo);
+    m_surfaceCombo.AttachItem(IDC_SURFACE_COMBO);
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
     AttachItem(IDC_COLOR_BUTTON2, m_colorButton2);
     UpdateVisuals();

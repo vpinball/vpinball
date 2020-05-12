@@ -17,14 +17,15 @@ protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
-    CComboBox   m_SSAACombo;
-    CComboBox   m_postProcAACombo;
-    CComboBox   m_inGameAOCombo;
-    CComboBox   m_ScreenReflectionCombo;
+    ComboBox    m_SSAACombo;
+    ComboBox    m_postProcAACombo;
+    ComboBox    m_inGameAOCombo;
+    ComboBox    m_ScreenReflectionCombo;
+    ComboBox    m_ballReflectionCombo;
+    ComboBox    m_ballTrailCombo;
+    ComboBox    m_overwritePhysicsSetCombo;
     CSlider     m_detailLevelSlider;
     HWND        m_hOverwriteDetailsCheck;
-    CComboBox   m_ballReflectionCombo;
-    CComboBox   m_ballTrailCombo;
     EditBox     m_gameplayDifficultEdit;
     EditBox     m_fpsLimiterEdit;
     EditBox     m_ballTrailStrengthEdit;
@@ -32,7 +33,6 @@ private:
     EditBox     m_musicVolEdit;
     CSlider     m_nightDaySlider;
     HWND        m_hOverwriteNightDayCheck;
-    CComboBox   m_overwritePhysicsSetCombo;
     HWND        m_hOverwriteFlipperCheck;
 
     vector<string> m_postAAList;

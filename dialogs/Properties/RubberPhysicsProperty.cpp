@@ -9,6 +9,7 @@ RubberPhysicsProperty::RubberPhysicsProperty(VectorProtected<ISelect> *pvsel) : 
     m_frictionEdit.SetDialog(this);
     m_scatterAngleEdit.SetDialog(this);
     m_hitHeightEdit.SetDialog(this);
+    m_physicsMaterialCombo.SetDialog(this);
 }
 
 void RubberPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -62,7 +63,7 @@ void RubberPhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL RubberPhysicsProperty::OnInitDialog()
 {
-    AttachItem(IDC_MATERIAL_COMBO4, m_physicsMaterialCombo);
+    m_physicsMaterialCombo.AttachItem(IDC_MATERIAL_COMBO4);
     m_basePhysicsMaterialCombo = &m_physicsMaterialCombo;
     m_hOverwritePhysicsCheck = ::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS);
     m_hCollidableCheck = ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);

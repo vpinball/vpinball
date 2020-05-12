@@ -14,11 +14,11 @@ protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CComboBox m_topImageCombo;
-    CComboBox m_sideImageCombo;
-    CComboBox m_topMaterialCombo;
-    CComboBox m_sideMaterialCombo;
-    CComboBox m_slingshotMaterialCombo;
+    ComboBox  m_topImageCombo;
+    ComboBox  m_sideImageCombo;
+    ComboBox  m_topMaterialCombo;
+    ComboBox  m_sideMaterialCombo;
+    ComboBox  m_slingshotMaterialCombo;
     EditBox   m_disableLightingEdit;
     EditBox   m_disableLightFromBelowEdit;
     EditBox   m_topHeightEdit;

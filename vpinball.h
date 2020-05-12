@@ -55,8 +55,6 @@ public:
     
    VPinball();
    virtual ~VPinball();
-
-   void Init();
    void Quit();
 
 private:

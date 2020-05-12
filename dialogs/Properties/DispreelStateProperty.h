@@ -16,7 +16,7 @@ protected:
     virtual BOOL OnInitDialog();
 
 private:
-    CComboBox   m_soundCombo;
+    ComboBox    m_soundCombo;
     EditBox     m_motorStepsEdit;
     EditBox     m_updateIntervalEdit;
 };

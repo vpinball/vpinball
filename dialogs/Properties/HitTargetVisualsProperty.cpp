@@ -26,6 +26,10 @@ HitTargetVisualsProperty::HitTargetVisualsProperty(VectorProtected<ISelect> *pvs
     m_scaleYEdit.SetDialog(this);
     m_scaleZEdit.SetDialog(this);
     m_orientationEdit.SetDialog(this);
+
+    m_imageCombo.SetDialog(this);
+    m_materialCombo.SetDialog(this);
+    m_typeCombo.SetDialog(this);
 }
 
 void HitTargetVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -135,13 +139,13 @@ void HitTargetVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL HitTargetVisualsProperty::OnInitDialog()
 {
-    AttachItem(DISPID_Image, m_imageCombo);
+    m_imageCombo.AttachItem(DISPID_Image);
     m_baseImageCombo = &m_imageCombo;
-    AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
+    m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_baseMaterialCombo = &m_materialCombo;
     m_hVisibleCheck= ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
-    AttachItem(IDC_HIT_TARGET_TYPE, m_typeCombo);
+    m_typeCombo.AttachItem(IDC_HIT_TARGET_TYPE);
     m_dropSpeedEdit.AttachItem(IDC_TARGET_MOVE_SPEED_EDIT);
     m_raiseDelayEdit.AttachItem(IDC_TARGET_RAISE_DELAY_EDIT);
     m_depthBiasEdit.AttachItem(IDC_DEPTH_BIAS);

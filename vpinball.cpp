@@ -205,59 +205,6 @@ void VPinball::SetOpenMinimized()
    m_open_minimized = 1;
 }
 
-///<summary>
-///Main Init function
-///<para>sets some init-values to variables</para>
-///<para>registers scintilla Editor</para>
-///<para>creates and shows Main Window and all Toolbars</para>
-///<para>creates toolbars and statusbar</para>
-///<para>Sets this class as MDI Callback</para>
-///<para>creates APC VBA Host</para>
-///<para>initializes Direct Sound and Direct Draw</para>
-///<para>Calibrates Timer</para>
-///<para>Inits Debug-Window</para>
-///</summary>
-void VPinball::Init()
-{
-   // See if we have previous window size information
-   {
-      int left, top, right, bottom;
-      BOOL maximized;
-
-      const HRESULT hrleft = LoadValueInt("Editor", "WindowLeft", &left);
-      const HRESULT hrtop = LoadValueInt("Editor", "WindowTop", &top);
-      const HRESULT hrright = LoadValueInt("Editor", "WindowRight", &right);
-      const HRESULT hrbottom = LoadValueInt("Editor", "WindowBottom", &bottom);
-
-      const HRESULT hrmax = LoadValueInt("Editor", "WindowMaximized", &maximized);
-
-      if (hrleft == S_OK && hrtop == S_OK && hrright == S_OK && hrbottom == S_OK)
-      {
-         WINDOWPLACEMENT winpl;
-         winpl.length = sizeof(WINDOWPLACEMENT);
-
-         GetWindowPlacement(winpl);
-
-         winpl.rcNormalPosition.left = left;
-         winpl.rcNormalPosition.top = top;
-         winpl.rcNormalPosition.right = right;
-         winpl.rcNormalPosition.bottom = bottom;
-
-         if (m_open_minimized)
-            winpl.showCmd |= SW_MINIMIZE;
-         else if (hrmax == S_OK && maximized)
-            winpl.showCmd |= SW_MAXIMIZE;
-
-         SetWindowPlacement(winpl);
-      }
-   }
-#ifdef SLINTF
-   // see slintf.cpp
-   slintf_init();									// initialize debug console (can be popupped by the following command)
-   slintf_popup_console();
-   slintf("Debug output:\n");
-#endif
-}
 
 ///<summary>
 ///Ensure that worker thread exists
@@ -1297,6 +1244,8 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
 
    if (!g_pplayer)
    {
+      // check/process events for other dialogs (material/sound/image manager, toolbar, properties
+      consumed = processKeyInputForDialogs(pmsg);
       // check if message must be processed by the code editor
       if (m_pcv && m_pcv->m_hwndMain)
       {
@@ -1312,23 +1261,13 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
       }
 
       if (m_pcv && m_pcv->m_hwndFind && ::IsDialogMessage(m_pcv->m_hwndFind, pmsg))
-        consumed = true;
+         consumed = true;
 
       if (!consumed)
-      {
-          // check/process events for other dialogs (material/sound/image manager, toolbar, properties
-          consumed = processKeyInputForDialogs(pmsg);
-          if (!consumed)
-          {
-              const bool translated = !!TranslateAccelerator(GetHwnd(), g_haccel, pmsg);
-
-              if (translated)
-                  consumed = true;
-          }
-      }
+         consumed = !!TranslateAccelerator(GetHwnd(), g_haccel, pmsg);
 
       if (!consumed)
-         /*const bool translated = !!*/ TranslateMessage(pmsg);
+         TranslateMessage(pmsg);
    }
    else
    {
@@ -1503,18 +1442,6 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
     if (strstr(lpCmdLine, "minimized"))
         SetOpenMinimized();
 
-/*
-    WINDOWPLACEMENT wpl;
-    GetWindowPlacement(wpl);
-    if (m_open_minimized)
-        wpl.showCmd = SW_MINIMIZE;
-    else
-        wpl.showCmd = SW_SHOW;
-
-    SetWindowPlacement(wpl);
-*/
-
-    Init();
 
     char szName[256];
     LoadString(g_hinst, IDS_PROJNAME, szName, 256);
@@ -1541,7 +1468,6 @@ void VPinball::OnInitialUpdate()
     if (!firstRun)
         return;
     
-    ShowWindow(SW_SHOW);
 
     const int foo[6] = {120, 240, 400, 600, 800, 1400};
 
@@ -1563,12 +1489,51 @@ void VPinball::OnInitialUpdate()
     UpdateRecentFileList(NULL);						// update the recent loaded file list
 
     wintimer_init();									// calibrate the timer routines
-    SetForegroundWindow();
+
+    int left, top, right, bottom;
+    BOOL maximized;
+
+    const HRESULT hrleft = LoadValueInt("Editor", "WindowLeft", &left);
+    const HRESULT hrtop = LoadValueInt("Editor", "WindowTop", &top);
+    const HRESULT hrright = LoadValueInt("Editor", "WindowRight", &right);
+    const HRESULT hrbottom = LoadValueInt("Editor", "WindowBottom", &bottom);
+
+    const HRESULT hrmax = LoadValueInt("Editor", "WindowMaximized", &maximized);
+
+    if (hrleft == S_OK && hrtop == S_OK && hrright == S_OK && hrbottom == S_OK)
+    {
+        WINDOWPLACEMENT winpl;
+        ZeroMemory(&winpl, sizeof(WINDOWPLACEMENT));
+        winpl.length = sizeof(WINDOWPLACEMENT);
+
+        GetWindowPlacement(winpl);
+
+        winpl.rcNormalPosition.left = left;
+        winpl.rcNormalPosition.top = top;
+        winpl.rcNormalPosition.right = right;
+        winpl.rcNormalPosition.bottom = bottom;
+
+        if (m_open_minimized)
+            winpl.showCmd |= SW_MINIMIZE;
+        else if (hrmax == S_OK && maximized)
+            winpl.showCmd |= SW_MAXIMIZE;
+        else
+            winpl.showCmd |= SW_SHOWNORMAL;
+
+        SetWindowPlacement(winpl);
+    }
+#ifdef SLINTF
+    // see slintf.cpp
+    slintf_init();									// initialize debug console (can be popupped by the following command)
+    slintf_popup_console();
+    slintf("Debug output:\n");
+#endif
 
     CreateMDIClient();
     CreateDocker();
-
+    ShowWindow(SW_SHOW);
     //InitTools();
+//    SetForegroundWindow();
     SetEnableMenuItems();
     firstRun = false;
 }

@@ -4,6 +4,7 @@
 #pragma region BasePropertyDialog
 
 class EditBox;
+class ComboBox;
 class BasePropertyDialog: public CDialog
 {
 public:
@@ -57,9 +58,9 @@ protected:
     EditBox   *m_baseElasticityEdit;
     EditBox   *m_baseFrictionEdit;
     EditBox   *m_baseScatterAngleEdit;
-    CComboBox *m_basePhysicsMaterialCombo;
-    CComboBox *m_baseMaterialCombo;
-    CComboBox *m_baseImageCombo;
+    ComboBox  *m_basePhysicsMaterialCombo;
+    ComboBox  *m_baseMaterialCombo;
+    ComboBox  *m_baseImageCombo;
     HWND      m_hHitEventCheck;
     HWND      m_hCollidableCheck;
     HWND      m_hOverwritePhysicsCheck;
@@ -86,6 +87,24 @@ private:
     int m_id;
 };
 
+class ComboBox : public CComboBox
+{
+public:
+    ComboBox() : m_basePropertyDialog(nullptr), m_id(-1) {}
+    virtual ~ComboBox() {}
+    void    SetDialog(BasePropertyDialog* dialog) { m_basePropertyDialog = dialog; }
+    virtual void AttachItem(int id)
+    {
+        m_id = id;
+        m_basePropertyDialog->AttachItem(id, *this);
+    }
+protected:
+    virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
+
+private:
+    BasePropertyDialog* m_basePropertyDialog;
+    int m_id;
+};
 #pragma endregion
 
 #pragma region TimerProperty

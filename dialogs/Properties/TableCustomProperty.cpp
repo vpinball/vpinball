@@ -32,6 +32,14 @@ TableCustomProperty::TableCustomProperty(VectorProtected<ISelect> *pvsel) : Base
     m_ballTrailStrengthEdit.SetDialog(this);
     m_soundEffectVolEdit.SetDialog(this);
     m_musicVolEdit.SetDialog(this);
+
+    m_SSAACombo.SetDialog(this);
+    m_postProcAACombo.SetDialog(this);
+    m_inGameAOCombo.SetDialog(this);
+    m_ScreenReflectionCombo.SetDialog(this);
+    m_ballReflectionCombo.SetDialog(this);
+    m_ballTrailCombo.SetDialog(this);
+    m_overwritePhysicsSetCombo.SetDialog(this);
 }
 
 void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -145,20 +153,20 @@ void TableCustomProperty::UpdateProperties(const int dispid)
 
 BOOL TableCustomProperty::OnInitDialog()
 {
-    AttachItem(IDC_ENABLE_AA, m_SSAACombo);
-    AttachItem(IDC_ENABLE_FXAA, m_postProcAACombo);
-    AttachItem(IDC_ENABLE_AO, m_inGameAOCombo);
-    AttachItem(IDC_ENABLE_SSR, m_ScreenReflectionCombo);
+    m_SSAACombo.AttachItem(IDC_ENABLE_AA);
+    m_postProcAACombo.AttachItem(IDC_ENABLE_FXAA);
+    m_inGameAOCombo.AttachItem(IDC_ENABLE_AO);
+    m_ScreenReflectionCombo.AttachItem(IDC_ENABLE_SSR);
     m_fpsLimiterEdit.AttachItem(IDC_TABLEAVSYNC);
     AttachItem(IDC_ALPHA_SLIDER, m_detailLevelSlider);
     m_hOverwriteDetailsCheck = ::GetDlgItem(GetHwnd(), IDC_GLOBAL_ALPHA_ACC);
-    AttachItem(IDC_BALL_REFLECTION, m_ballReflectionCombo);
-    AttachItem(IDC_BALL_TRAIL, m_ballTrailCombo);
+    m_ballReflectionCombo.AttachItem(IDC_BALL_REFLECTION);
+    m_ballTrailCombo.AttachItem(IDC_BALL_TRAIL);
     m_ballTrailStrengthEdit.AttachItem(IDC_TRAIL_EDIT);
     AttachItem(IDC_DAYNIGHT_SLIDER, m_nightDaySlider);
     m_hOverwriteNightDayCheck = ::GetDlgItem(GetHwnd(), IDC_GLOBAL_DAYNIGHT);
     m_gameplayDifficultEdit.AttachItem(IDC_GAME_DIFFICULTY_EDIT);
-    AttachItem(IDC_OVERWRITE_PHYSICS_COMBO, m_overwritePhysicsSetCombo);
+    m_overwritePhysicsSetCombo.AttachItem(IDC_OVERWRITE_PHYSICS_COMBO);
     m_hOverwriteFlipperCheck = ::GetDlgItem(GetHwnd(), IDC_OVERRIDEPHYSICS_FLIPPERS);
     m_soundEffectVolEdit.AttachItem(IDC_TABLESOUNDVOLUME);
     m_musicVolEdit.AttachItem(IDC_TABLEMUSICVOLUME);

@@ -16,6 +16,11 @@ DecalVisualsProperty::DecalVisualsProperty(VectorProtected<ISelect> *pvsel) : Ba
     m_widthEdit.SetDialog(this);
     m_heigthEdit.SetDialog(this);
     m_rotationEdit.SetDialog(this);
+    m_materialCombo.SetDialog(this);
+    m_typeCombo.SetDialog(this);
+    m_imageCombo.SetDialog(this);
+    m_sizingCombo.SetDialog(this);
+    m_surfaceCombo.SetDialog(this);
 }
 
 DecalVisualsProperty::~DecalVisualsProperty()
@@ -180,23 +185,23 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL DecalVisualsProperty::OnInitDialog()
 {
-    AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
+    m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_baseMaterialCombo = &m_materialCombo;
-    AttachItem(IDC_FONT_TYPE_COMBO, m_typeCombo);
+    m_typeCombo.AttachItem(IDC_FONT_TYPE_COMBO);
     m_hVerticalTextCheck = ::GetDlgItem(GetHwnd(), IDC_DECAL_VERTICAL_TEXT_CHECK);
     AttachItem(IDC_COLOR_BUTTON1, m_fontColorButton);
     AttachItem(IDC_FONT_DIALOG_BUTTON, m_fontDialogButton);
-    AttachItem(DISPID_Image, m_imageCombo);
+    m_imageCombo.AttachItem(DISPID_Image);
     m_baseImageCombo = &m_imageCombo;
 
-    AttachItem(DISPID_Decal_SizingType, m_sizingCombo);
+    m_sizingCombo.AttachItem(DISPID_Decal_SizingType);
     m_textEdit.AttachItem(IDC_DECAL_TEXT_EDIT);
     m_posXEdit.AttachItem(5);
     m_posYEdit.AttachItem(6);
     m_widthEdit.AttachItem(3);
     m_heigthEdit.AttachItem(4);
     m_rotationEdit.AttachItem(1);
-    AttachItem(IDC_SURFACE_COMBO, m_surfaceCombo);
+    m_surfaceCombo.AttachItem(IDC_SURFACE_COMBO);
     UpdateVisuals();
     return TRUE;
 }

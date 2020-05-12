@@ -22,6 +22,11 @@ PlungerVisualsProperty::PlungerVisualsProperty(VectorProtected<ISelect> *pvsel) 
     m_endLoopsEdit.SetDialog(this);
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);
+
+    m_typeCombo.SetDialog(this);
+    m_imageCombo.SetDialog(this);
+    m_materialCombo.SetDialog(this);
+    m_surfaceCombo.SetDialog(this);
 }
 
 void PlungerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -32,7 +37,7 @@ void PlungerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
         if (dispid == IDC_PLUNGER_TYPE_COMBO || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)plunger->m_d.m_type - 1].c_str());
+            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)plunger->m_d.m_type].c_str());
         if (dispid == 1502 || dispid == -1)
             PropertyDialog::UpdateSurfaceComboBox(plunger->GetPTable(), m_surfaceCombo, plunger->m_d.m_szSurface);
         if (dispid == DISPID_PluFrames || dispid == -1)
@@ -80,7 +85,7 @@ void PlungerVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_PLUNGER_TYPE_COMBO:
-                CHECK_UPDATE_ITEM(plunger->m_d.m_type, (PlungerType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList) + 1), plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_type, (PlungerType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList)), plunger);
                 break;
             case DISPID_PluFrames:
                 CHECK_UPDATE_ITEM(plunger->m_d.m_animFrames, PropertyDialog::GetIntTextbox(m_flatFramesEdit), plunger);
@@ -139,10 +144,10 @@ void PlungerVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL PlungerVisualsProperty::OnInitDialog()
 {
-    AttachItem(IDC_PLUNGER_TYPE_COMBO, m_typeCombo);
-    AttachItem(IDC_MATERIAL_COMBO, m_materialCombo);
+    m_typeCombo.AttachItem(IDC_PLUNGER_TYPE_COMBO);
+    m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_baseMaterialCombo = &m_materialCombo;
-    AttachItem(DISPID_Image, m_imageCombo);
+    m_imageCombo.AttachItem(DISPID_Image);
     m_baseImageCombo = &m_imageCombo;
     m_flatFramesEdit.AttachItem(DISPID_PluFrames);
     m_widthEdit.AttachItem(DISPID_Width),
@@ -158,7 +163,7 @@ BOOL PlungerVisualsProperty::OnInitDialog()
     m_endLoopsEdit.AttachItem(DISPID_SpringEndLoops);
     m_posXEdit.AttachItem(902);
     m_posYEdit.AttachItem(903);
-    AttachItem(1502, m_surfaceCombo);
+    m_surfaceCombo.AttachItem(1502);
     m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
     UpdateVisuals();
     return TRUE;

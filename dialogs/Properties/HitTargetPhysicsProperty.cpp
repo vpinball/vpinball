@@ -9,6 +9,7 @@ HitTargetPhysicsProperty::HitTargetPhysicsProperty(VectorProtected<ISelect> *pvs
     m_elasticityFalloffEdit.SetDialog(this);
     m_frictionEdit.SetDialog(this);
     m_scatterAngleEdit.SetDialog(this);
+    m_physicsMaterialCombo.SetDialog(this);
 }
 
 void HitTargetPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -72,7 +73,7 @@ BOOL HitTargetPhysicsProperty::OnInitDialog()
     m_hLegacyModeCheck = ::GetDlgItem(GetHwnd(), IDC_TARGET_LEGACY_MODE_CHECK);
     m_hCollidableCheck = ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
     m_hIsDroppedCheck = ::GetDlgItem(GetHwnd(), IDC_TARGET_ISDROPPED_CHECK);
-    AttachItem(IDC_MATERIAL_COMBO4, m_physicsMaterialCombo);
+    m_physicsMaterialCombo.AttachItem(IDC_MATERIAL_COMBO4);
     m_basePhysicsMaterialCombo = &m_physicsMaterialCombo;
     m_elasticityEdit.AttachItem(IDC_ELASTICITY_EDIT);
     m_baseElasticityEdit = &m_elasticityEdit;

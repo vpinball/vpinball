@@ -18,11 +18,11 @@ protected:
 private:
     CButton     m_importMeshButton;
     CButton     m_exportMeshButton;
-    CComboBox   m_imageCombo;
+    ComboBox    m_imageCombo;
+    ComboBox    m_normalMapCombo;
+    ComboBox    m_materialCombo;
     HWND        m_hDisplayImageCheck;
     HWND        m_hObjectSpaceCheck;
-    CComboBox   m_normalMapCombo;
-    CComboBox   m_materialCombo;
     EditBox     m_depthBiasEdit;
     HWND        m_hStaticRenderingCheck;
     HWND        m_hRenderBackfacingCheck;

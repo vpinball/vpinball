@@ -10,6 +10,7 @@ RampPhysicsProperty::RampPhysicsProperty(VectorProtected<ISelect> *pvsel) : Base
     m_elasticityEdit.SetDialog(this);
     m_frictionEdit.SetDialog(this);
     m_scatterAngleEdit.SetDialog(this);
+    m_physicsMaterialCombo.SetDialog(this);
 }
 
 void RampPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)

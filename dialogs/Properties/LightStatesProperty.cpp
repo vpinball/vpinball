@@ -9,6 +9,7 @@ LightStatesProperty::LightStatesProperty(VectorProtected<ISelect> *pvsel) : Base
     m_stateList.push_back("Blinking");
     m_blinkPatternEdit.SetDialog(this);
     m_blinkIntervalEdit.SetDialog(this);
+    m_stateCombo.SetDialog(this);
 }
 
 void LightStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -64,7 +65,7 @@ void LightStatesProperty::UpdateProperties(const int dispid)
 
 BOOL LightStatesProperty::OnInitDialog()
 {
-    AttachItem(DISPID_Light_State, m_stateCombo);
+    m_stateCombo.AttachItem(DISPID_Light_State);
     m_blinkPatternEdit.AttachItem(IDC_BLINK_PATTERN_EDIT);
     m_blinkIntervalEdit.AttachItem(DISPID_Light_BlinkInterval);
     UpdateVisuals();

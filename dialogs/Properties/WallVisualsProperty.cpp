@@ -8,6 +8,11 @@ WallVisualsProperty::WallVisualsProperty(VectorProtected<ISelect> *pvsel) : Base
     m_disableLightFromBelowEdit.SetDialog(this);
     m_topHeightEdit.SetDialog(this);
     m_bottomHeightEdit.SetDialog(this);
+    m_topImageCombo.SetDialog(this);
+    m_sideImageCombo.SetDialog(this);
+    m_topMaterialCombo.SetDialog(this);
+    m_sideMaterialCombo.SetDialog(this);
+    m_slingshotMaterialCombo.SetDialog(this);
 }
 
 void WallVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -104,11 +109,11 @@ void WallVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL WallVisualsProperty::OnInitDialog()
 {
-    AttachItem(DISPID_Image, m_topImageCombo);
-    AttachItem(DISPID_Image2, m_sideImageCombo);
-    AttachItem(IDC_MATERIAL_COMBO, m_topMaterialCombo);
-    AttachItem(IDC_MATERIAL_COMBO2, m_sideMaterialCombo);
-    AttachItem(IDC_MATERIAL_COMBO3, m_slingshotMaterialCombo);
+    m_topImageCombo.AttachItem(DISPID_Image);
+    m_sideImageCombo.AttachItem(DISPID_Image2);
+    m_topMaterialCombo.AttachItem(IDC_MATERIAL_COMBO);
+    m_sideMaterialCombo.AttachItem(IDC_MATERIAL_COMBO2);
+    m_slingshotMaterialCombo.AttachItem(IDC_MATERIAL_COMBO3);
     m_disableLightingEdit.AttachItem(IDC_BLEND_DISABLE_LIGHTING);
     m_disableLightFromBelowEdit.AttachItem(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW);
     m_topHeightEdit.AttachItem(9);

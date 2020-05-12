@@ -61,6 +61,24 @@ LRESULT EditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     return WndProcDefault(msg, wparam, lparam);
 }
 
+LRESULT ComboBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    switch (msg)
+    {
+    case WM_KEYUP:
+    {
+        if (wparam == VK_RETURN)
+        {
+            if (m_basePropertyDialog)
+                m_basePropertyDialog->UpdateProperties(m_id);
+            ShowDropDown(FALSE);
+            return TRUE;
+        }
+    }
+    }
+    return WndProcDefault(msg, wparam, lparam);
+}
+
 PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_curTabIndex(0), m_previousType((ItemTypeEnum)0), m_backglassView(false)
 {
     memset(m_tabs, 0, sizeof(m_tabs));
@@ -365,19 +383,37 @@ void PropertyDialog::DeleteAllTabs()
 
 void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, CComboBox &combo, const char *selectName)
 {
-    combo.ResetContent();
-    combo.AddString(_T("<None>"));
-    for (size_t i = 0; i < contentList.size(); i++)
-        combo.AddString(contentList[i]->m_szName);
-    combo.SetCurSel(combo.FindStringExact(1,selectName));
+    bool texelFound = false;
+    for (auto texel : contentList)
+    {
+        if (strncmp(texel->m_szName, selectName, MAXTOKEN) == 0)
+            texelFound = true;
+    }
+    if (combo.FindStringExact(1, selectName) == CB_ERR || !texelFound)
+    {
+        combo.ResetContent();
+        combo.AddString(_T("<None>"));
+        for (size_t i = 0; i < contentList.size(); i++)
+            combo.AddString(contentList[i]->m_szName);
+    }
+    combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
 
 void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentList, CComboBox &combo, const char *selectName)
 {
-    combo.ResetContent();
-    combo.AddString(_T("<None>"));
-    for (size_t i = 0; i < contentList.size(); i++)
-        combo.AddString(contentList[i]->m_szName);
+    bool matFound = false;
+    for (auto mat : contentList)
+    {
+        if (strncmp(mat->m_szName, selectName, MAXNAMEBUFFER) == 0)
+            matFound = true;
+    }
+    if(combo.FindStringExact(1, selectName) == CB_ERR || !matFound)
+    {
+        combo.ResetContent();
+        combo.AddString(_T("<None>"));
+        for (size_t i = 0; i < contentList.size(); i++)
+            combo.AddString(contentList[i]->m_szName);
+    }
     combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
 
@@ -385,51 +421,69 @@ void PropertyDialog::UpdateSurfaceComboBox(const PinTable * const ptable, CCombo
 {
     vector<string> contentList;
 
-    for (size_t i = 0; i < ptable->m_vedit.size(); i++)
+    if(combo.FindStringExact(1, selectName) == CB_ERR)
     {
-        if (ptable->m_vedit[i]->GetItemType() == eItemSurface || (ptable->m_vedit[i]->GetItemType() == eItemRamp) ||
-            //!! **************** warning **********************
-            // added to render to surface of DMD style lights and emreels
-            // but no checks are being performed at moment:
-            (ptable->m_vedit[i]->GetItemType() == eItemFlasher))
+        for (size_t i = 0; i < ptable->m_vedit.size(); i++)
         {
-            contentList.push_back(ptable->GetElementName(ptable->m_vedit[i]));
+            if (ptable->m_vedit[i]->GetItemType() == eItemSurface || (ptable->m_vedit[i]->GetItemType() == eItemRamp) ||
+                //!! **************** warning **********************
+                // added to render to surface of DMD style lights and emreels
+                // but no checks are being performed at moment:
+                (ptable->m_vedit[i]->GetItemType() == eItemFlasher))
+            {
+                contentList.push_back(ptable->GetElementName(ptable->m_vedit[i]));
+            }
         }
+        combo.ResetContent();
+        combo.AddString(_T("<None>"));
+        for (size_t i = 0; i < contentList.size(); i++)
+            combo.AddString(contentList[i].c_str());
     }
-    combo.ResetContent();
-    combo.AddString(_T("<None>"));
-    for (size_t i = 0; i < contentList.size(); i++)
-        combo.AddString(contentList[i].c_str());
     combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
 
 void PropertyDialog::UpdateSoundComboBox(const PinTable *const ptable, CComboBox &combo, const char *selectName)
 {
-    combo.ResetContent();
-    combo.AddString(_T("<None>"));
-    for (size_t i=0;i<ptable->m_vsound.size();i++)
-        combo.AddString(ptable->m_vsound[i]->m_szName);
+    if(combo.FindStringExact(1, selectName)==CB_ERR)
+    {
+        combo.ResetContent();
+        combo.AddString(_T("<None>"));
+        for (size_t i = 0; i < ptable->m_vsound.size(); i++)
+            combo.AddString(ptable->m_vsound[i]->m_szName);
+    }
     combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
 
 void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, CComboBox &combo, const char *selectName)
 {
-    combo.ResetContent();
-    combo.AddString(_T("<None>"));
-    for (int i = 0; i < ptable->m_vcollection.Size(); i++)
+    if(combo.FindStringExact(1, selectName)==CB_ERR)
     {
-        char szT[MAX_PATH];
-        WideCharToMultiByte(CP_ACP, 0, ptable->m_vcollection[i].m_wzName, -1, szT, MAX_PATH, NULL, NULL);
-        combo.AddString(szT);
+        combo.ResetContent();
+        combo.AddString(_T("<None>"));
+        for (int i = 0; i < ptable->m_vcollection.Size(); i++)
+        {
+            char szT[MAX_PATH];
+            WideCharToMultiByte(CP_ACP, 0, ptable->m_vcollection[i].m_wzName, -1, szT, MAX_PATH, NULL, NULL);
+            combo.AddString(szT);
+        }
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
 
 void PropertyDialog::UpdateComboBox(const vector<string>& contentList, CComboBox &combo, const char *selectName)
 {
-    combo.ResetContent();
-    for (size_t i = 0; i < contentList.size(); i++)
-        combo.AddString(contentList[i].c_str());
+    bool strFound = false;
+    for (auto str : contentList)
+    {
+        if (str == std::string(selectName))
+            strFound = true;
+    }
+    if(combo.FindStringExact(1, selectName)==CB_ERR || !strFound)
+    {
+        combo.ResetContent();
+        for (size_t i = 0; i < contentList.size(); i++)
+            combo.AddString(contentList[i].c_str());
+    }
     combo.SetCurSel(combo.FindStringExact(0, selectName));
 }
 
