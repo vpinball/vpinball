@@ -10193,8 +10193,11 @@ int PinTableMDI::OnCreate(CREATESTRUCT &cs)
 
 void PinTableMDI::OnClose()
 {
-    m_table->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
-    CMDIChild::OnClose();
+    if(CanClose())
+    {
+        m_table->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
+        CMDIChild::OnClose();
+    }
 }
 
 #pragma endregion
