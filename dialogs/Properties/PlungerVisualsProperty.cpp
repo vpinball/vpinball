@@ -37,7 +37,7 @@ void PlungerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
         if (dispid == IDC_PLUNGER_TYPE_COMBO || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)plunger->m_d.m_type].c_str());
+            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)plunger->m_d.m_type-1].c_str());
         if (dispid == 1502 || dispid == -1)
             PropertyDialog::UpdateSurfaceComboBox(plunger->GetPTable(), m_surfaceCombo, plunger->m_d.m_szSurface);
         if (dispid == DISPID_PluFrames || dispid == -1)
@@ -85,7 +85,7 @@ void PlungerVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_PLUNGER_TYPE_COMBO:
-                CHECK_UPDATE_ITEM(plunger->m_d.m_type, (PlungerType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList)), plunger);
+                CHECK_UPDATE_ITEM(plunger->m_d.m_type, (PlungerType)(PropertyDialog::GetComboBoxIndex(m_typeCombo, m_typeList)+1), plunger);
                 break;
             case DISPID_PluFrames:
                 CHECK_UPDATE_ITEM(plunger->m_d.m_animFrames, PropertyDialog::GetIntTextbox(m_flatFramesEdit), plunger);

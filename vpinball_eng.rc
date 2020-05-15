@@ -2208,10 +2208,10 @@ IDD_PROPERTY_DIALOG DIALOGEX 0, 0, 179, 414
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CLIPCHILDREN
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_PROP_TAB,"SysTabControl32",WS_TABSTOP,7,24,171,383
-    LTEXT           "Name",IDC_STATIC,9,13,19,8
-    EDITTEXT        IDC_NAME_EDIT,7,6,171,14,ES_AUTOHSCROLL
-    LTEXT           "The current selection contains multiple object types. Select either a single object or a group of objects of the same type to edit properties.",IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC,8,6,143,35
+    CONTROL         "",IDC_PROP_TAB,"SysTabControl32",WS_TABSTOP,7,37,171,370
+    EDITTEXT        IDC_NAME_EDIT,8,17,169,14,ES_AUTOHSCROLL
+    LTEXT           "The current selection contains multiple object types. Select either a single object or a group of objects of the same type to edit properties.",IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC,35,1,143,35
+    CTEXT           "ElementType",IDC_STATIC_ELEMENT_TYPE,8,3,169,11,0,WS_EX_STATICEDGE
 END
 
 IDD_PROPPOINT_VISUALSWHEIGHT DIALOGEX 0, 0, 125, 144
@@ -2403,6 +2403,10 @@ BEGIN
     END
 
     IDD_TABLEINFO, DIALOG
+    BEGIN
+    END
+
+    IDD_PROP_NAME, DIALOG
     BEGIN
     END
 
