@@ -321,6 +321,7 @@ private:
     CEdit m_nameEdit;
     CResizer m_resizer;
     CStatic m_multipleElementsStatic;
+    CStatic m_elementTypeName;
 };
 #pragma endregion
 
