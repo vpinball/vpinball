@@ -190,6 +190,7 @@ private:
    bool loadFileResult;
    bool extractScript;
    TCHAR szTableFileName[MAXSTRING];
+   VPinball m_vpinball;
 
 public:
    VPApp(HINSTANCE hInstance)
@@ -457,9 +458,9 @@ public:
            EditableRegistry::RegisterEditable<HitTarget>();
        }
 
-       g_pvp = new VPinball();
-       g_pvp->AddRef();
-       g_pvp->Create(NULL);
+       g_pvp = &m_vpinball;
+       m_vpinball.AddRef();
+       m_vpinball.Create(NULL);
        g_haccel = LoadAccelerators(g_hinst, MAKEINTRESOURCE(IDR_VPACCEL));
 
        if (file)

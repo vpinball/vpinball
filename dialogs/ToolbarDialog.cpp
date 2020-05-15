@@ -338,11 +338,7 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             if (type != eItemInvalid)
             {
                 g_pvp->m_ToolCur = (int)id;
-
-                POINT pt;
-                GetCursorPos(&pt);
-                SetCursorPos(pt.x, pt.y);
-                return FALSE;
+                return TRUE;
             }
             break;
         }
