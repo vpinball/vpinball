@@ -419,7 +419,7 @@ void Textbox::PreRenderText()
 
 void Textbox::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);
+    m_vpinball->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);
 }
 
 void Textbox::MoveOffset(const float dx, const float dy)
@@ -638,7 +638,7 @@ STDMETHODIMP Textbox::put_Height(float newVal)
 STDMETHODIMP Textbox::get_X(float *pVal)
 {
    *pVal = m_d.m_v1.x;
-   g_pvp->SetStatusBarUnitInfo("", true);
+   m_vpinball->SetStatusBarUnitInfo("", true);
 
    return S_OK;
 }

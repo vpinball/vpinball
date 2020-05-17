@@ -158,7 +158,7 @@ void Flasher::UIRenderPass1(Sur * const psur)
    if (m_vdpoint.empty())
       InitShape();
 
-   psur->SetFillColor(m_ptable->RenderSolid() ? g_pvp->m_fillColor: -1);
+   psur->SetFillColor(m_ptable->RenderSolid() ? m_vpinball->m_fillColor: -1);
    psur->SetObject(this);
    // Don't want border color to be over-ridden when selected - that will be drawn later
    psur->SetBorderColor(-1, false, 0);
@@ -214,7 +214,7 @@ void Flasher::UIRenderPass2(Sur * const psur)
    }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   bool drawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_alwaysDrawDragPoints);
+   bool drawDragpoints = ((m_selectstate != eNotSelected) || m_vpinball->m_alwaysDrawDragPoints);
 
    if (!drawDragpoints)
    {
@@ -426,7 +426,7 @@ void Flasher::RenderStatic()
 
 void Flasher::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(0, 0);
+    m_vpinball->SetObjectPosCur(0, 0);
 }
 
 void Flasher::FlipY(const Vertex2D& pvCenter)
@@ -652,7 +652,7 @@ STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Flasher::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-   g_pvp->SetStatusBarUnitInfo("", true);
+   m_vpinball->SetStatusBarUnitInfo("", true);
 
    return S_OK;
 }

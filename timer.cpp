@@ -35,7 +35,7 @@ void Timer::WriteRegDefaults()
 
 void Timer::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
+    m_vpinball->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
 }
 
 void Timer::MoveOffset(const float dx, const float dy)

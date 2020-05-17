@@ -291,11 +291,11 @@ void VPinball::InitRegValues()
 
    m_securitylevel = LoadValueIntWithDefault("Player", "SecurityLevel", DEFAULT_SECURITY_LEVEL);
 
-   g_pvp->m_dummyMaterial.m_cBase = LoadValueIntWithDefault("Editor", "DefaultMaterialColor", 0xB469FF);
-   g_pvp->m_elemSelectColor = LoadValueIntWithDefault("Editor", "ElementSelectColor", 0x00FF0000);
-   g_pvp->m_elemSelectLockedColor = LoadValueIntWithDefault("Editor", "ElementSelectLockedColor", 0x00A7726D);
-   g_pvp->m_backgroundColor = LoadValueIntWithDefault("Editor", "BackgroundColor", 0x008D8D8D);
-   g_pvp->m_fillColor = LoadValueIntWithDefault("Editor", "FillColor", 0x00B1CFB3);
+   m_dummyMaterial.m_cBase = LoadValueIntWithDefault("Editor", "DefaultMaterialColor", 0xB469FF);
+   m_elemSelectColor = LoadValueIntWithDefault("Editor", "ElementSelectColor", 0x00FF0000);
+   m_elemSelectLockedColor = LoadValueIntWithDefault("Editor", "ElementSelectLockedColor", 0x00A7726D);
+   m_backgroundColor = LoadValueIntWithDefault("Editor", "BackgroundColor", 0x008D8D8D);
+   m_fillColor = LoadValueIntWithDefault("Editor", "FillColor", 0x00B1CFB3);
 
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
       m_securitylevel = eSecurityNoControls;
@@ -310,7 +310,7 @@ void VPinball::InitRegValues()
       m_recentTableList.push_back(std::string(szTableName));
    }
 
-   g_pvp->m_convertToUnit = LoadValueIntWithDefault("Editor", "Units", 0);
+   m_convertToUnit = LoadValueIntWithDefault("Editor", "Units", 0);
 }
 
 void VPinball::CreateMDIClient()
@@ -933,7 +933,7 @@ void VPinball::LoadFileName(const char *szFileName, const bool updateEditor)
    PathFromFilename(szFileName, m_currentTablePath);
    CloseAllDialogs();
 
-   PinTableMDI *mdiTable = new PinTableMDI();
+   PinTableMDI *mdiTable = new PinTableMDI(this);
    CComObject<PinTable> *ppt = mdiTable->GetTable();
    m_vtable.push_back(ppt);
    const HRESULT hr = ppt->LoadGameFromFilename(szFileName);
@@ -1216,24 +1216,24 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
 bool VPinball::processKeyInputForDialogs(MSG *pmsg)
 {
     bool consumed = false;
-    if (g_pvp->m_ptableActive)
+    if (m_ptableActive)
     {
-      if (g_pvp->m_materialDialog.IsWindow())
-          consumed = !!g_pvp->m_materialDialog.IsDialogMessage(*pmsg);
-      if (!consumed && g_pvp->m_imageMngDlg.IsWindow())
-          consumed = !!g_pvp->m_imageMngDlg.IsDialogMessage(*pmsg);
-      if (!consumed && g_pvp->m_soundMngDlg.IsWindow())
-          consumed = !!g_pvp->m_soundMngDlg.IsDialogMessage(*pmsg);
-      if (!consumed && g_pvp->m_collectionMngDlg.IsWindow())
-          consumed = !!g_pvp->m_collectionMngDlg.IsDialogMessage(*pmsg);
-      if (!consumed && g_pvp->m_dimensionDialog.IsWindow())
-          consumed = !!g_pvp->m_dimensionDialog.IsDialogMessage(*pmsg);
-      if (!consumed && g_pvp->m_toolbarDialog && g_pvp->m_toolbarDialog->IsWindow())
-          consumed = !!g_pvp->m_toolbarDialog->IsDialogMessage(*pmsg);
-      if (!consumed && g_pvp->m_propertyDialog && g_pvp->m_propertyDialog->IsWindow())
-          consumed = !!g_pvp->m_propertyDialog->IsSubDialogMessage(*pmsg);
-      if (!consumed && g_pvp->m_layersListDialog && g_pvp->m_layersListDialog->IsWindow())
-          consumed = !!g_pvp->m_layersListDialog->IsDialogMessage(*pmsg);
+      if (m_materialDialog.IsWindow())
+          consumed = !!m_materialDialog.IsDialogMessage(*pmsg);
+      if (!consumed && m_imageMngDlg.IsWindow())
+          consumed = !!m_imageMngDlg.IsDialogMessage(*pmsg);
+      if (!consumed && m_soundMngDlg.IsWindow())
+          consumed = !!m_soundMngDlg.IsDialogMessage(*pmsg);
+      if (!consumed && m_collectionMngDlg.IsWindow())
+          consumed = !!m_collectionMngDlg.IsDialogMessage(*pmsg);
+      if (!consumed && m_dimensionDialog.IsWindow())
+          consumed = !!m_dimensionDialog.IsDialogMessage(*pmsg);
+      if (!consumed && m_toolbarDialog && m_toolbarDialog->IsWindow())
+          consumed = !!m_toolbarDialog->IsDialogMessage(*pmsg);
+      if (!consumed && m_propertyDialog && m_propertyDialog->IsWindow())
+          consumed = !!m_propertyDialog->IsSubDialogMessage(*pmsg);
+      if (!consumed && m_layersListDialog && m_layersListDialog->IsWindow())
+          consumed = !!m_layersListDialog->IsDialogMessage(*pmsg);
     }
     return consumed;
 }
@@ -1326,6 +1326,7 @@ STDMETHODIMP VPinball::QueryInterface(REFIID iid, void **ppvObjOut)
    return E_NOINTERFACE;
 }
 
+
 STDMETHODIMP_(ULONG) VPinball::AddRef()
 {
    //!! ?? ASSERT(m_cref, "bad m_cref");
@@ -1385,7 +1386,7 @@ void VPinball::OnClose()
    if (g_pplayer)
       SendMessage(g_pplayer->m_playfieldHwnd, WM_CLOSE, 0, 0);
 
-   const bool canClose = g_pvp->CanClose();
+   const bool canClose = CanClose();
    if (canClose)
    {
       WINDOWPLACEMENT winpl;
@@ -1540,7 +1541,7 @@ void VPinball::OnInitialUpdate()
 
 BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
 {
-    if (!g_pvp->ParseCommand(LOWORD(wparam), HIWORD(wparam)))
+    if (!ParseCommand(LOWORD(wparam), HIWORD(wparam)))
     {
         if(GetActiveMDIChild())
             GetActiveMDIChild()->SendMessage(WM_COMMAND, wparam, lparam);
@@ -1553,6 +1554,19 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
+        case WM_KEYUP:
+        {
+            if (wParam == VK_ESCAPE)
+            {
+                if (m_ToolCur != IDC_SELECT)
+                    m_ToolCur=IDC_SELECT;
+                CComObject<PinTable>* const ptCur = GetActiveTable();
+                if (ptCur)
+                    ptCur->SetMouseCursor();
+
+            }
+            return FinalWindowProc(uMsg, wParam, lParam);
+        }
         case WM_TIMER:
         {
             CComObject<PinTable>* const ptCur = GetActiveTable();
@@ -2207,7 +2221,7 @@ void VPinball::SaveTable(const bool saveAs)
 
 void VPinball::OpenNewTable(size_t tableId)
 {
-    PinTableMDI *mdiTable = new PinTableMDI();
+    PinTableMDI *mdiTable = new PinTableMDI(this);
 
     mdiTable->GetTable()->InitBuiltinTable(this, tableId != ID_NEW_EXAMPLETABLE);
     m_vtable.push_back(mdiTable->GetTable());

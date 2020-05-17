@@ -52,8 +52,8 @@ Kicker::~Kicker()
 void Kicker::UpdateStatusBarInfo()
 {
    char tbuf[128];
-   sprintf_s(tbuf, "Radius: %.3f", g_pvp->ConvertToUnit(m_d.m_radius));
-   g_pvp->SetStatusBarUnitInfo(tbuf, true);
+   sprintf_s(tbuf, "Radius: %.3f", m_vpinball->ConvertToUnit(m_d.m_radius));
+   m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 
 HRESULT Kicker::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -590,7 +590,7 @@ void Kicker::RenderDynamic()
 
 void Kicker::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
+    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 }
 
 void Kicker::MoveOffset(const float dx, const float dy)

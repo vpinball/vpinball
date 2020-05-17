@@ -284,7 +284,7 @@ void Surface::UIRenderPass2(Sur * const psur)
    }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   bool drawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_alwaysDrawDragPoints);
+   bool drawDragpoints = ((m_selectstate != eNotSelected) || m_vpinball->m_alwaysDrawDragPoints);
 
    if (!drawDragpoints)
    {
@@ -1437,8 +1437,8 @@ void Surface::UpdateStatusBarInfo()
        return;
 
    char tbuf[128];
-   sprintf_s(tbuf, "TopHeight: %.03f | BottomHeight: %0.3f", g_pvp->ConvertToUnit(m_d.m_heighttop), g_pvp->ConvertToUnit(m_d.m_heightbottom));
-   g_pvp->SetStatusBarUnitInfo(tbuf, true);
+   sprintf_s(tbuf, "TopHeight: %.03f | BottomHeight: %0.3f", m_vpinball->ConvertToUnit(m_d.m_heighttop), m_vpinball->ConvertToUnit(m_d.m_heightbottom));
+   m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 
 STDMETHODIMP Surface::get_HasHitEvent(VARIANT_BOOL *pVal)

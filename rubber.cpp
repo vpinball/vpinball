@@ -35,8 +35,8 @@ Rubber::~Rubber()
 void Rubber::SetStatusBarUnitInfo()
 {
    char tbuf[128];
-   sprintf_s(tbuf, "Height: %.3f | Thickness: %.3f", g_pvp->ConvertToUnit(m_d.m_height), g_pvp->ConvertToUnit((float)m_d.m_thickness));
-   g_pvp->SetStatusBarUnitInfo(tbuf, true);
+   sprintf_s(tbuf, "Height: %.3f | Thickness: %.3f", m_vpinball->ConvertToUnit(m_d.m_height), m_vpinball->ConvertToUnit((float)m_d.m_thickness));
+   m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 
 HRESULT Rubber::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -210,7 +210,7 @@ void Rubber::UIRenderPass2(Sur * const psur)
    }
 
 
-   bool drawDragpoints = ((m_selectstate != eNotSelected) || (g_pvp->m_alwaysDrawDragPoints));
+   bool drawDragpoints = ((m_selectstate != eNotSelected) || (m_vpinball->m_alwaysDrawDragPoints));
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!drawDragpoints)
@@ -682,7 +682,7 @@ void Rubber::RenderStatic()
 
 void Rubber::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(0, 0);
+    m_vpinball->SetObjectPosCur(0, 0);
 }
 
 void Rubber::MoveOffset(const float dx, const float dy)

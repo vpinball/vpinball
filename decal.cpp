@@ -603,7 +603,7 @@ void Decal::RenderStatic()
 
 void Decal::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
+    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 }
 
 void Decal::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
@@ -875,7 +875,7 @@ STDMETHODIMP Decal::put_Height(float newVal)
 STDMETHODIMP Decal::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-   g_pvp->SetStatusBarUnitInfo("", true);
+   m_vpinball->SetStatusBarUnitInfo("", true);
 
    return S_OK;
 }

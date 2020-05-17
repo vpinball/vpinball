@@ -203,6 +203,8 @@ public:
    {
       _Module.Term();
       CoUninitialize();
+      g_pvp = NULL;
+
 #ifdef _CRTDBG_MAP_ALLOC
 #ifdef DEBUG_XXX  //disable this in perference to DevPartner
       _CrtSetDumpClient(MemLeakAlert);
@@ -210,7 +212,6 @@ public:
       _CrtDumpMemoryLeaks();
 #endif
    }
-
    virtual BOOL InitInstance() 
    { 
 #ifdef CRASH_HANDLER
@@ -459,8 +460,8 @@ public:
            EditableRegistry::RegisterEditable<HitTarget>();
        }
 
-       g_pvp = &m_vpinball;
        m_vpinball.AddRef();
+       g_pvp = &m_vpinball;
        m_vpinball.Create(NULL);
        g_haccel = LoadAccelerators(g_hinst, MAKEINTRESOURCE(IDR_VPACCEL));
 
@@ -512,8 +513,6 @@ public:
          m_vpinball.MainMsgLoop();
 
          m_vpinball.Release();
-
-         g_pvp = NULL;
 
          DestroyAcceleratorTable(g_haccel);
 

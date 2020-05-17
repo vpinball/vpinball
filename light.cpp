@@ -183,7 +183,7 @@ void Light::UIRenderPass1(Sur * const psur)
 
 void Light::UIRenderPass2(Sur * const psur)
 {
-   bool drawDragpoints = ((m_selectstate != eNotSelected) || (g_pvp->m_alwaysDrawDragPoints));
+   bool drawDragpoints = ((m_selectstate != eNotSelected) || (m_vpinball->m_alwaysDrawDragPoints));
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!drawDragpoints)
@@ -247,7 +247,7 @@ void Light::RenderOutline(Sur * const psur)
    }
    }
 
-   if (m_d.m_shape == ShapeCustom || g_pvp->m_alwaysDrawLightCenters)
+   if (m_d.m_shape == ShapeCustom || m_vpinball->m_alwaysDrawLightCenters)
    {
       psur->Line(m_d.m_vCenter.x - 10.0f, m_d.m_vCenter.y, m_d.m_vCenter.x + 10.0f, m_d.m_vCenter.y);
       psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10.0f, m_d.m_vCenter.x, m_d.m_vCenter.y + 10.0f);
@@ -823,7 +823,7 @@ void Light::RenderStatic()
 
 void Light::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
+    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 }
 
 void Light::MoveOffset(const float dx, const float dy)

@@ -41,6 +41,7 @@ class TimerDataRoot;
 
 struct PropertyPane;
 
+class VPinball;
 enum SelectState
 {
    eNotSelected,
@@ -150,4 +151,7 @@ public:
    bool m_isVisible;
 
    unsigned char m_layerIndex; //!! deprecated, leave it here for compatibility reasons. To load old tables to new layer handling
+
+protected:
+   VPinball *m_vpinball;
 };
