@@ -503,7 +503,7 @@ HRESULT Pin3D::InitPin3D(const bool fullScreen, const int width, const int heigh
    const unsigned int envTexHeight = min(envTex->m_pdsBuffer->height(),256) / 8;
    const unsigned int envTexWidth = envTexHeight*2;
    
-   m_envRadianceTexture = new BaseTexture(envTexWidth, envTexHeight, envTex->m_pdsBuffer->m_format);
+   m_envRadianceTexture = new BaseTexture(envTexWidth, envTexHeight, envTex->m_pdsBuffer->m_format, false);
 
    EnvmapPrecalc(envTex->m_pdsBuffer->data(), envTex->m_pdsBuffer->width(), envTex->m_pdsBuffer->height(),
                  m_envRadianceTexture->data(), envTexWidth, envTexHeight, envTex->IsHDR());
