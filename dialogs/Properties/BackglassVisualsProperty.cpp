@@ -82,7 +82,7 @@ void BackglassVisualsProperty::UpdateProperties(const int dispid)
             break;
         case IDC_COLOR_BUTTON1:
         {
-            CComObject<PinTable>* ptable = g_pvp->GetActiveTable();
+            CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
             if (ptable == nullptr)
                 break;
             CHOOSECOLOR cc = m_colorDialog.GetParameters();
