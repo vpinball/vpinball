@@ -6865,9 +6865,9 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
    ListView_SetItemText(hwndListView, index, 2, sizeString);
    ListView_SetItemText(hwndListView, index, 3, usedStringNo);
 
-   _snprintf_s(sizeString, MAXTOKEN, "%i", (int)ppi->m_pdsBuffer->m_data.size());
+   char * const sizeConv = StrFormatByteSize64(ppi->m_pdsBuffer->m_data.size(), sizeString, MAXTOKEN);
 
-   ListView_SetItemText(hwndListView, index, 4, sizeString);
+   ListView_SetItemText(hwndListView, index, 4, sizeConv);
    if ((_stricmp(m_szImage, ppi->m_szName) == 0)
        || (_stricmp(m_szBallImage, ppi->m_szName) == 0) 
        || (_stricmp(m_szBallImageDecal, ppi->m_szName) == 0)
