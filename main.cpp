@@ -177,7 +177,7 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 
 std::map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
 int disEnableTrueFullscreen = -1;
-
+bool table_played_via_command_line = false;
 
 class VPApp : public CWinApp
 {
@@ -252,7 +252,6 @@ public:
       {
          file = true;
          play = true;
-         extractPov = false;
       }
 
       int nArgs;
@@ -468,7 +467,10 @@ public:
        if (file)
        {
            if (szTableFileName[0] != '\0')
+           {
                m_vpinball.LoadFileName(szTableFileName, !play);
+               table_played_via_command_line = play;
+           }
            else
                loadFileResult = m_vpinball.LoadFile();
 
