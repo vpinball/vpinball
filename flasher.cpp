@@ -168,7 +168,7 @@ void Flasher::UIRenderPass1(Sur * const psur)
    Texture *ppi;
    if (m_ptable->RenderSolid() && m_d.m_displayTexture && (ppi = m_ptable->GetImage(m_d.m_szImageA)))
    {
-      ppi->EnsureHBitmap();
+      ppi->CreateGDIVersion();
       if (m_d.m_imagealignment == ImageModeWrap)
       {
          float _minx = FLT_MAX;

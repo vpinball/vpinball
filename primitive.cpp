@@ -789,7 +789,7 @@ void Primitive::UIRenderPass2(Sur * const psur)
       Texture * const ppi = m_ptable->GetImage(m_d.m_szImage);
       if (ppi)
       {
-         ppi->EnsureHBitmap();
+         ppi->CreateGDIVersion();
          if (ppi->m_hbmGDIVersion)
          {
             std::vector<RenderVertex> vvertex;

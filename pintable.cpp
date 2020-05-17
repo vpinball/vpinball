@@ -1804,7 +1804,7 @@ void PinTable::UIRenderPass2(Sur * const psur)
 
       if (ppi)
       {
-         ppi->EnsureHBitmap();
+         ppi->CreateGDIVersion();
          if (ppi->m_hbmGDIVersion)
          {
             const HDC hdcScreen = ::GetDC(NULL);

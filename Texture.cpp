@@ -445,14 +445,11 @@ void Texture::FreeStuff()
    }
 }
 
-void Texture::EnsureHBitmap()
-{
-   if (!m_hbmGDIVersion)
-      CreateGDIVersion();
-}
-
 void Texture::CreateGDIVersion()
 {
+   if (m_hbmGDIVersion)
+      return;
+
    HDC hdcScreen = GetDC(NULL);
    m_hbmGDIVersion = CreateCompatibleBitmap(hdcScreen, m_width, m_height);
    HDC hdcNew = CreateCompatibleDC(hdcScreen);
@@ -468,16 +465,22 @@ void Texture::CreateGDIVersion()
    bmi.bmiHeader.biCompression = BI_RGB;
    bmi.bmiHeader.biSizeImage = 0;
 
-   BYTE * const tmp = new BYTE[m_width*m_height * 4];
-   m_pdsBuffer->CopyTo_ConvertAlpha(tmp);
+   BYTE* tmp;
+   const bool needs_conversion = m_pdsBuffer->Needs_ConvertAlpha_Tonemap();
+   if (needs_conversion)
+   {
+      tmp = new BYTE[m_width*m_height * 4];
+      m_pdsBuffer->CopyTo_ConvertAlpha_Tonemap(tmp);
+   }
 
    SetStretchBltMode(hdcNew, COLORONCOLOR);
    StretchDIBits(hdcNew,
       0, 0, m_width, m_height,
       0, 0, m_width, m_height,
-      tmp, &bmi, DIB_RGB_COLORS, SRCCOPY);
+      needs_conversion ? tmp : m_pdsBuffer->data(), &bmi, DIB_RGB_COLORS, SRCCOPY);
 
-   delete[] tmp;
+   if (needs_conversion)
+      delete[] tmp;
 
    SelectObject(hdcNew, hbmOld);
    DeleteDC(hdcNew);
@@ -486,7 +489,7 @@ void Texture::CreateGDIVersion()
 
 void Texture::GetTextureDC(HDC *pdc)
 {
-   EnsureHBitmap();
+   CreateGDIVersion();
    *pdc = CreateCompatibleDC(NULL);
    m_oldHBM = (HBITMAP)SelectObject(*pdc, m_hbmGDIVersion);
 }
@@ -514,21 +517,6 @@ BaseTexture* Texture::CreateFromHBitmap(const HBITMAP hbm)
 {
    BaseTexture* const pdds = BaseTexture::CreateFromHBitmap(hbm);
    SetSizeFrom(pdds);
+
    return pdds;
-}
-
-void BaseTexture::SetOpaque()
-{
-   if ((m_format == BaseTexture::RGB_FP) || !m_has_alpha)
-      return;
-
-   // Assume our 32 bit color structure
-   BYTE *const __restrict pch = data();
-
-   for (int i = 0; i < height(); i++)
-   {
-      unsigned int offs = i*pitch() + 3;
-      for (int l = 0; l < width(); l++,offs+=4)
-         pch[offs] = 0xff;
-   }
 }
