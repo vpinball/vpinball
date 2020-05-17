@@ -240,6 +240,7 @@ public:
       play = false;
       extractPov = false;
       run = true;
+      loadFileResult = true;
       extractScript = false;
 
       memset(szTableFileName, 0, MAXSTRING);
@@ -466,9 +467,9 @@ public:
        if (file)
        {
            if (szTableFileName[0] != '\0')
-               g_pvp->LoadFileName(szTableFileName, !play);
+               m_vpinball.LoadFileName(szTableFileName, !play);
            else
-               loadFileResult = g_pvp->LoadFile();
+               loadFileResult = m_vpinball.LoadFile();
 
            if (extractScript && loadFileResult)
            {
@@ -479,9 +480,9 @@ public:
                {
                    *pos = 0;
                    strcat_s(szScriptFilename, ".vbs");
-                   g_pvp->m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
+                   m_vpinball.m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
                }
-               g_pvp->Quit();
+               m_vpinball.Quit();
            }
            if (extractPov && loadFileResult)
            {
@@ -492,9 +493,9 @@ public:
                {
                    *pos = 0;
                    strcat_s(szPOVFilename, ".pov");
-                   g_pvp->m_ptableActive->ExportBackdropPOV(szPOVFilename);
+                   m_vpinball.m_ptableActive->ExportBackdropPOV(szPOVFilename);
                }
-               g_pvp->Quit();
+               m_vpinball.Quit();
            }
        }
 
@@ -504,16 +505,14 @@ public:
    {
       if (run)
       {
-            if (play && loadFileResult)
-               g_pvp->DoPlay(false);
+         if (play && loadFileResult)
+           m_vpinball.DoPlay(false);
 
          // VBA APC handles message loop (bastards)
-         g_pvp->MainMsgLoop();
+         m_vpinball.MainMsgLoop();
 
-         g_pvp->Release();
+         m_vpinball.Release();
 
-         // delete g_pvp;
-         // Above causes frequent crashing!  COM objects should self destruct when they reach refcount 0?!
          g_pvp = NULL;
 
          DestroyAcceleratorTable(g_haccel);
