@@ -370,7 +370,7 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       if (m_pdsBuffer)
          FreeStuff();
 
-      m_pdsBuffer = new BaseTexture(m_width, m_height, BaseTexture::RGBA, false);
+      m_pdsBuffer = new BaseTexture(m_width, m_height, BaseTexture::RGBA, true);
       SetSizeFrom(m_pdsBuffer);
 
       // 32-bit picture
@@ -397,14 +397,20 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       }
    endAlphaCheck:
 
+      //!! if (allAlpha255)
+      // m_pdsBuffer->m_has_alpha = false;
+
       // all alpha values are 0: set them all to 0xff
       if (allAlphaZero)
+      {
+         m_pdsBuffer->m_has_alpha = false;
          for (int i = 0; i < m_height; i++)
          {
             unsigned int o = i*lpitch + 3;
             for (int l = 0; l < m_width; l++,o+=4)
                pch[o] = 0xff;
          }
+      }
 
       break;
    }
