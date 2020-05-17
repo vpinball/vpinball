@@ -392,21 +392,21 @@ void Textbox::PreRenderText()
 
    if (!m_texture)
       m_texture = new BaseTexture(width, height, BaseTexture::RGBA, m_d.m_transparent);
-   m_texture->CopyFrom_Raw(bits);
 
    // Set alpha for pixels that match transparent color (if transparent enabled), otherwise set to opaque
-   BYTE * __restrict pch = m_texture->data();
+   D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
+   D3DCOLOR* __restrict dest = (D3DCOLOR*)m_texture->data();
    for (int i = 0; i < m_texture->height(); i++)
    {
-      for (int l = 0; l < m_texture->width(); l++)
+      for (int l = 0; l < m_texture->width(); l++, dest++, bitsd++)
       {
-         if (m_d.m_transparent && (((*(D3DCOLOR *)pch) & 0xFFFFFF) == m_d.m_backcolor))
-            *(D3DCOLOR *)pch = 0x00000000; // set to black & alpha full transparent
+         const D3DCOLOR src = *bitsd;
+         if (m_d.m_transparent && ((src & 0xFFFFFFu) == m_d.m_backcolor))
+            *dest = 0x00000000; // set to black & alpha full transparent
          else
-            *(D3DCOLOR *)pch |= 0xFF000000;
-         pch += 4;
+            *dest = src | 0xFF000000u;
       }
-      pch += m_texture->pitch() - m_texture->width() * 4;
+      dest += m_texture->pitch()/4 - m_texture->width();
    }
 
    g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.SetDirty(m_texture);

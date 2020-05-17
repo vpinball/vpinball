@@ -37,14 +37,9 @@ public:
    int m_realWidth, m_realHeight;
    Format m_format;
 
-   void SetOpaque();
+   bool Needs_ConvertAlpha_Tonemap() const { return (m_format == RGB_FP) || ((m_format == RGBA) && m_has_alpha); }
 
-   void CopyFrom_Raw(const void* bits)  // copy bits which are already in the right format
-   {
-      memcpy(data(), bits, m_data.size());
-   }
-
-   void CopyTo_ConvertAlpha(BYTE* const __restrict bits) // premultiplies alpha (as Win32 AlphaBlend() wants it like that) OR converts rgb_fp format to 32bits
+   void CopyTo_ConvertAlpha_Tonemap(BYTE* const __restrict bits) const // premultiplies alpha (as Win32 AlphaBlend() wants it like that) OR converts rgb_fp format to 32bits
    {
      if(m_format == RGB_FP) // Tonemap for 8bpc-Display
      {
@@ -137,7 +132,6 @@ public:
 
    void FreeStuff();
 
-   void EnsureHBitmap();
    void CreateGDIVersion();
 
    BaseTexture *CreateFromHBitmap(const HBITMAP hbm);

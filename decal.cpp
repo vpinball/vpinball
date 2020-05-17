@@ -335,7 +335,7 @@ void Decal::PreRenderText()
    m_leading = (float)tm.tmInternalLeading * invascent /*m_d.m_height*/;
    m_descent = (float)tm.tmDescent * invascent;
 
-   m_textImg = new BaseTexture(rcOut.right, rcOut.bottom, BaseTexture::RGBA, true);
+   m_textImg = new BaseTexture(rcOut.right, rcOut.bottom, BaseTexture::RGBA, false);
 
    if (m_d.m_color == RGB(255, 255, 255))
       m_d.m_color = RGB(254, 255, 255); //m_pinimage.SetTransparentColor(RGB(0,0,0));
@@ -389,8 +389,15 @@ void Decal::PreRenderText()
    else
       DrawText(hdc, m_d.m_sztext, len, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
 
-   m_textImg->CopyFrom_Raw(bits);
-   m_textImg->SetOpaque();
+   // Copy and set to opaque
+   D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
+   D3DCOLOR* __restrict dest = (D3DCOLOR*)m_textImg->data();
+   for (int i = 0; i < m_textImg->height(); i++)
+   {
+      for (int l = 0; l < m_textImg->width(); l++, dest++, bitsd++)
+         *dest = *bitsd | 0xFF000000u;
+      dest += m_textImg->pitch()/4 - m_textImg->width();
+   }
 
    SelectObject(hdc, hFontOld);
    SelectObject(hdc, oldBmp);
