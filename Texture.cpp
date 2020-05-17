@@ -7,6 +7,8 @@
 #define STBI_ONLY_JPEG // only use the SSE2-JPG path from stbi, as all others are not faster than FreeImage
 #include "stb_image.h"
 
+extern bool table_played_via_command_line;
+
 BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 {
    // check if Textures exceed the maximum texture dimension
@@ -447,7 +449,8 @@ void Texture::FreeStuff()
 
 void Texture::CreateGDIVersion()
 {
-   if (m_hbmGDIVersion)
+   if (m_hbmGDIVersion
+       || table_played_via_command_line) // only do anything in here (and waste memory on it) if UI needed (i.e. if not just play via command line is triggered!)
       return;
 
    HDC hdcScreen = GetDC(NULL);
