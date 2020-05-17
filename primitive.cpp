@@ -1110,10 +1110,10 @@ void Primitive::UpdateStatusBarInfo()
    {
        char tbuf[128];
        sprintf_s(tbuf, "vertices: %i | polygons: %i", (int)m_mesh.NumVertices(), (int)m_mesh.NumIndices());
-       g_pvp->SetStatusBarUnitInfo(tbuf, false);
+       m_vpinball->SetStatusBarUnitInfo(tbuf, false);
    }
    else
-       g_pvp->SetStatusBarUnitInfo("", false);
+       m_vpinball->SetStatusBarUnitInfo("", false);
 
 }
 
@@ -1338,7 +1338,7 @@ void Primitive::RenderStatic()
 
 void Primitive::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_d.m_vPosition.x, m_d.m_vPosition.y);
+    m_vpinball->SetObjectPosCur(m_d.m_vPosition.x, m_d.m_vPosition.y);
 }
 
 void Primitive::MoveOffset(const float dx, const float dy)
@@ -1916,7 +1916,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
 
 bool Primitive::BrowseFor3DMeshFile()
 {
-   DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_MESH_IMPORT_DIALOG), g_pvp->GetHwnd(), ObjImportProc, (size_t)this);
+   DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_MESH_IMPORT_DIALOG), m_vpinball->GetHwnd(), ObjImportProc, (size_t)this);
 #if 1
    return false;
 #else
@@ -1928,7 +1928,7 @@ bool Primitive::BrowseFor3DMeshFile()
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hInstance = g_hinst;
-   ofn.hwndOwner = g_pvp->m_hwnd;
+   ofn.hwndOwner = m_vpinball->m_hwnd;
    // TEXT
    ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
    ofn.lpstrFile = szFileName;
@@ -1971,14 +1971,14 @@ bool Primitive::BrowseFor3DMeshFile()
    }
    bool flipTV = false;
    bool convertToLeftHanded = false;
-   int ans = MessageBox(g_pvp->m_hwnd, "Do you want to mirror the object?", "Convert coordinate system?", MB_YESNO | MB_DEFBUTTON2);
+   int ans = MessageBox(m_vpinball->m_hwnd, "Do you want to mirror the object?", "Convert coordinate system?", MB_YESNO | MB_DEFBUTTON2);
    if (ans == IDYES)
    {
       convertToLeftHanded = true;
    }
    else
    {
-      ans = MessageBox(g_pvp->m_hwnd, "Do you want to convert texture coordinates?", "Confirm", MB_YESNO | MB_DEFBUTTON2);
+      ans = MessageBox(m_vpinball->m_hwnd, "Do you want to convert texture coordinates?", "Confirm", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
          flipTV = true;
@@ -2090,7 +2090,7 @@ void Primitive::ExportMeshDialog()
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hInstance = g_hinst;
-   ofn.hwndOwner = g_pvp->GetHwnd();
+   ofn.hwndOwner = m_vpinball->GetHwnd();
    // TEXT
    ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
    ofn.lpstrFile = szFileName;

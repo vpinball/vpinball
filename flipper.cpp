@@ -353,7 +353,7 @@ void Flipper::UIRenderPass1(Sur * const psur)
 
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-   psur->SetFillColor(m_ptable->RenderSolid() ? g_pvp->m_fillColor : -1);
+   psur->SetFillColor(m_ptable->RenderSolid() ? m_vpinball->m_fillColor : -1);
    psur->SetBorderColor(-1, false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
 
@@ -389,7 +389,7 @@ void Flipper::UIRenderPass2(Sur * const psur)
    Vertex2D rgv[4];
    SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
-   psur->SetFillColor(m_ptable->RenderSolid() ? g_pvp->m_fillColor : -1);
+   psur->SetFillColor(m_ptable->RenderSolid() ? m_vpinball->m_fillColor : -1);
    psur->SetBorderColor(-1, false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
 
@@ -404,7 +404,7 @@ void Flipper::UIRenderPass2(Sur * const psur)
    //rubber
    SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad, &vendcenter, rgv, rubBaseRadius, rubEndRadius);
 
-   psur->SetFillColor(m_ptable->RenderSolid() ? g_pvp->m_fillColor : -1);
+   psur->SetFillColor(m_ptable->RenderSolid() ? m_vpinball->m_fillColor : -1);
    psur->SetBorderColor(-1, false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
 
@@ -522,7 +522,7 @@ void Flipper::UIRenderPass2(Sur * const psur)
 
 void Flipper::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_d.m_Center.x, m_d.m_Center.y);
+    m_vpinball->SetObjectPosCur(m_d.m_Center.x, m_d.m_Center.y);
 }
 
 void Flipper::MoveOffset(const float dx, const float dy)

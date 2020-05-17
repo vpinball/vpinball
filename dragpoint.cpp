@@ -85,19 +85,19 @@ void IHaveDragPoints::FlipPointX(const Vertex2D& pvCenter)
 void IHaveDragPoints::RotateDialog()
 {
    DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ROTATE),
-      g_pvp->GetHwnd(), RotateProc, (size_t)this->GetIEditable()->GetISelect());//(long)this);
+       g_pvp->GetHwnd(), RotateProc, (size_t)this->GetIEditable()->GetISelect());//(long)this);
 }
 
 void IHaveDragPoints::ScaleDialog()
 {
    DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SCALE),
-      g_pvp->GetHwnd(), ScaleProc, (size_t)this->GetIEditable()->GetISelect());
+       g_pvp->GetHwnd(), ScaleProc, (size_t)this->GetIEditable()->GetISelect());
 }
 
 void IHaveDragPoints::TranslateDialog()
 {
    DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TRANSLATE),
-      g_pvp->GetHwnd(), TranslateProc, (size_t)this->GetIEditable()->GetISelect());
+       g_pvp->GetHwnd(), TranslateProc, (size_t)this->GetIEditable()->GetISelect());
 }
 
 void IHaveDragPoints::RotatePoints(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
@@ -437,7 +437,7 @@ void DragPoint::OnLButtonUp(int x, int y)
 
 void DragPoint::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_v.x, m_v.y);
+    m_vpinball->SetObjectPosCur(m_v.x, m_v.y);
 }
 
 void DragPoint::MoveOffset(const float dx, const float dy)

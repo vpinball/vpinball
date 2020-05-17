@@ -85,8 +85,8 @@ Gate::~Gate()
 void Gate::UpdateStatusBarInfo()
 {
    char tbuf[128];
-   sprintf_s(tbuf, "Length: %.3f | Height: %.3f", g_pvp->ConvertToUnit(m_d.m_length), g_pvp->ConvertToUnit(m_d.m_height));
-   g_pvp->SetStatusBarUnitInfo(tbuf, true);
+   sprintf_s(tbuf, "Length: %.3f | Height: %.3f", m_vpinball->ConvertToUnit(m_d.m_length), m_vpinball->ConvertToUnit(m_d.m_height));
+   m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 
 HRESULT Gate::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -603,7 +603,7 @@ void Gate::RenderStatic()
 
 void Gate::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
+    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 }
 
 void Gate::MoveOffset(const float dx, const float dy)

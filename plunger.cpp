@@ -189,7 +189,7 @@ void Plunger::EndPlay()
 
 void Plunger::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
+    m_vpinball->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
 }
 
 void Plunger::MoveOffset(const float dx, const float dy)
@@ -1343,7 +1343,7 @@ STDMETHODIMP Plunger::CreateBall(IBall **pBallEx)
 STDMETHODIMP Plunger::get_X(float *pVal)
 {
    *pVal = m_d.m_v.x;
-   g_pvp->SetStatusBarUnitInfo("", true);
+   m_vpinball->SetStatusBarUnitInfo("", true);
 
    return S_OK;
 }

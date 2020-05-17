@@ -209,7 +209,7 @@ void Bumper::UIRenderPass2(Sur * const psur)
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius*1.5f);
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
 
-   if (g_pvp->m_alwaysDrawLightCenters)
+   if (m_vpinball->m_alwaysDrawLightCenters)
    {
       psur->Line(m_d.m_vCenter.x - 10.0f, m_d.m_vCenter.y, m_d.m_vCenter.x + 10.0f, m_d.m_vCenter.y);
       psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10.0f, m_d.m_vCenter.x, m_d.m_vCenter.y + 10.0f);
@@ -853,7 +853,7 @@ void Bumper::RenderStatic()
 
 void Bumper::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
+    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 }
 
 void Bumper::MoveOffset(const float dx, const float dy)
@@ -1164,7 +1164,7 @@ STDMETHODIMP Bumper::put_SkirtMaterial(BSTR newVal)
 STDMETHODIMP Bumper::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-   g_pvp->SetStatusBarUnitInfo("", true);
+   m_vpinball->SetStatusBarUnitInfo("", true);
 
    return S_OK;
 }

@@ -54,7 +54,7 @@ void LightSeq::WriteRegDefaults()
 
 void LightSeq::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
+    m_vpinball->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
 }
 
 void LightSeq::MoveOffset(const float dx, const float dy)

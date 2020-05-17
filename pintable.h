@@ -37,11 +37,10 @@ struct ProtectionData {
 };
 
 class ScriptGlobalTable;
-
 class PinTableMDI:public CMDIChild
 {
 public:
-    PinTableMDI();
+    PinTableMDI(VPinball *vpinball);
     virtual ~PinTableMDI();
     CComObject<PinTable> *GetTable()
     {
@@ -55,7 +54,8 @@ protected:
 
 private:
     CComObject<PinTable> *m_table;
-    CMenu m_menu;
+    VPinball             *m_vpinball;
+    CMenu                 m_menu;
 };
 
 class PinTable:
@@ -864,6 +864,7 @@ public:
    void RefreshProperties();
 private:
    bool m_moving;
+
    std::unordered_map<const char *, Texture *, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
    std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name
 };
@@ -956,7 +957,7 @@ public:
    STDMETHOD(UpdateMaterialPhysics)(BSTR pVal, float elasticity, float elasticityFalloff, float friction, float scatterAngle);
    STDMETHOD(MaterialColor)(BSTR pVal, OLE_COLOR newVal);
 
-   void Init(PinTable *pt);
+   void Init(VPinball *vpinball, PinTable *pt);
 
    virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
 
@@ -971,6 +972,7 @@ private:
    bool GetTextFileFromDirectory(const char * const szfilename, const char * const dirname, BSTR *pContents);
 
    PinTable *m_pt;
+   VPinball *m_vpinball;
 };
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)

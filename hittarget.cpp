@@ -847,7 +847,7 @@ void HitTarget::RenderStatic()
 
 void HitTarget::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_d.m_vPosition.x, m_d.m_vPosition.y);
+    m_vpinball->SetObjectPosCur(m_d.m_vPosition.x, m_d.m_vPosition.y);
 }
 
 void HitTarget::MoveOffset(const float dx, const float dy)
@@ -1059,7 +1059,7 @@ STDMETHODIMP HitTarget::put_Visible(VARIANT_BOOL newVal)
 STDMETHODIMP HitTarget::get_X(float *pVal)
 {
    *pVal = m_d.m_vPosition.x;
-   g_pvp->SetStatusBarUnitInfo("", true);
+   m_vpinball->SetStatusBarUnitInfo("", true);
 
    return S_OK;
 }

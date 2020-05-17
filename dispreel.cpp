@@ -452,7 +452,7 @@ void DispReel::Animate()
 
 void DispReel::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);
+    m_vpinball->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);
 }
 
 void DispReel::MoveOffset(const float dx, const float dy)
@@ -658,7 +658,7 @@ STDMETHODIMP DispReel::put_Height(float newVal)
 STDMETHODIMP DispReel::get_X(float *pVal)
 {
    *pVal = GetX();
-   g_pvp->SetStatusBarUnitInfo("", true);
+   m_vpinball->SetStatusBarUnitInfo("", true);
 
    return S_OK;
 }

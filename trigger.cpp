@@ -240,7 +240,7 @@ void Trigger::UIRenderPass2(Sur * const psur)
 
       psur->Polygon(vvertex);
 
-      bool drawDragpoints = (m_selectstate != eNotSelected) || (g_pvp->m_alwaysDrawDragPoints);
+      bool drawDragpoints = (m_selectstate != eNotSelected) || (m_vpinball->m_alwaysDrawDragPoints);
       // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
       if (!drawDragpoints)
       {
@@ -843,7 +843,7 @@ void Trigger::RenderStatic()
 
 void Trigger::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
+    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 }
 
 void Trigger::MoveOffset(const float dx, const float dy)
@@ -1134,7 +1134,7 @@ STDMETHODIMP Trigger::put_Radius(float newVal)
 STDMETHODIMP Trigger::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-   g_pvp->SetStatusBarUnitInfo("", true);
+   m_vpinball->SetStatusBarUnitInfo("", true);
 
    return S_OK;
 }

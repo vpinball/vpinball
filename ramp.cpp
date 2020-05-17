@@ -43,10 +43,10 @@ Ramp::~Ramp()
 void Ramp::UpdateStatusBarInfo()
 {
    char tbuf[128];
-   sprintf_s(tbuf, "TopH: %.03f | BottomH: %0.3f | TopW: %.03f | BottomW: %.03f | LeftW: %.03f | RightW: %.03f", g_pvp->ConvertToUnit(m_d.m_heighttop), g_pvp->ConvertToUnit(m_d.m_heightbottom), 
-                                                                                  g_pvp->ConvertToUnit(m_d.m_widthtop), g_pvp->ConvertToUnit(m_d.m_widthbottom),
-                                                                                  g_pvp->ConvertToUnit(m_d.m_leftwallheightvisible), g_pvp->ConvertToUnit(m_d.m_rightwallheightvisible));
-   g_pvp->SetStatusBarUnitInfo(tbuf, true);
+   sprintf_s(tbuf, "TopH: %.03f | BottomH: %0.3f | TopW: %.03f | BottomW: %.03f | LeftW: %.03f | RightW: %.03f", m_vpinball->ConvertToUnit(m_d.m_heighttop), m_vpinball->ConvertToUnit(m_d.m_heightbottom),
+       m_vpinball->ConvertToUnit(m_d.m_widthtop), g_pvp->ConvertToUnit(m_d.m_widthbottom),
+       m_vpinball->ConvertToUnit(m_d.m_leftwallheightvisible), m_vpinball->ConvertToUnit(m_d.m_rightwallheightvisible));
+   m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 
 
@@ -209,11 +209,11 @@ void Ramp::UIRenderPass2(Sur * const psur)
    delete[] pfCross;
    delete[] middlePoints;
 
-   bool drawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_alwaysDrawDragPoints);
+   bool drawDragpoints = ((m_selectstate != eNotSelected) || m_vpinball->m_alwaysDrawDragPoints);
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!drawDragpoints)
    {
-      // if any of the dragpoints of this object are selected then draw all the dragpoints
+      // if any of the drag points of this object are selected then draw all the dragpoints
       for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
          const CComObject<DragPoint> * const pdp = m_vdpoint[i];
@@ -1255,7 +1255,7 @@ void Ramp::RenderStatic()
 
 void Ramp::SetObjectPos()
 {
-   g_pvp->SetObjectPosCur(0, 0);
+    m_vpinball->SetObjectPosCur(0, 0);
 }
 
 void Ramp::MoveOffset(const float dx, const float dy)
