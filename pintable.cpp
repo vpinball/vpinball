@@ -1186,9 +1186,9 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
             delete g_pplayer->m_texdmd;
          }
 #ifdef DMD_UPSCALE
-         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmdx*3, g_pplayer->m_dmdy*3);
+         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmdx*3, g_pplayer->m_dmdy*3, BaseTexture::RGBA, false);
 #else
-         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmdx, g_pplayer->m_dmdy);
+         g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmdx, g_pplayer->m_dmdy, BaseTexture::RGBA, false);
 #endif
       }
 
@@ -1233,9 +1233,9 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! use 64bi
 				delete g_pplayer->m_texdmd;
 			}
 #ifdef DMD_UPSCALE
-			g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmdx*3, g_pplayer->m_dmdy*3);
+			g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmdx*3, g_pplayer->m_dmdy*3, BaseTexture::RGBA, false);
 #else
-			g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmdx, g_pplayer->m_dmdy);
+			g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmdx, g_pplayer->m_dmdy, BaseTexture::RGBA, false);
 #endif
 		}
 

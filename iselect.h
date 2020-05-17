@@ -31,17 +31,15 @@ enum ItemTypeEnum
    eItemInvalid = 0xffffffff // Force enum to be 32 bits
 };
 
+
 class Sur;
-
 class PinTable;
-
 class IEditable;
-
 class TimerDataRoot;
-
 struct PropertyPane;
-
 class VPinball;
+
+
 enum SelectState
 {
    eNotSelected,

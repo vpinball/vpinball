@@ -15,11 +15,11 @@ public:
    };
 
    BaseTexture()
-      : m_width(0), m_height(0), m_realWidth(0), m_realHeight(0), m_format(RGBA)
+      : m_width(0), m_height(0), m_realWidth(0), m_realHeight(0), m_format(RGBA), m_has_alpha(false)
    { }
 
-   BaseTexture(const int w, const int h, const Format format = RGBA)
-      : m_width(w), m_height(h), m_data((format == RGBA ? 4 : 3*4) * (w*h)), m_realWidth(w), m_realHeight(h), m_format(format)
+   BaseTexture(const int w, const int h, const Format format, const bool has_alpha)
+      : m_width(w), m_height(h), m_data((format == RGBA ? 4 : 3*4) * (w*h)), m_realWidth(w), m_realHeight(h), m_format(format), m_has_alpha(has_alpha)
    { }
 
    int width() const   { return m_width; }
@@ -30,6 +30,7 @@ public:
 private:
    int m_width;
    int m_height;
+   bool m_has_alpha;
 
 public:
    std::vector<BYTE> m_data;
@@ -65,6 +66,9 @@ public:
       }
 	  else
 	  {
+          if (!m_has_alpha)
+              memcpy(bits, m_data.data(), m_height * pitch());
+          else
 		  if (GetWinVersion() >= 2600) // For everything newer than Windows XP: use the alpha in the bitmap, thus RGB needs to be premultiplied with alpha, due to how AlphaBlend() works
 		  {
 			  unsigned int o = 0;
@@ -136,7 +140,6 @@ public:
    void EnsureHBitmap();
    void CreateGDIVersion();
 
-   void CreateTextureOffscreen(const int width, const int height);
    BaseTexture *CreateFromHBitmap(const HBITMAP hbm);
    void CreateFromResource(const int id);
 

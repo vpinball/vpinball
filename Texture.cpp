@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include "Texture.h"
+
 #include "freeimage.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_ONLY_JPEG // only use the SSE2-JPG path from stbi, as all others are not faster than FreeImage
+#include "stb_image.h"
 
 BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 {
@@ -60,6 +65,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 
    const FREE_IMAGE_TYPE img_type = FreeImage_GetImageType(dibResized);
    const bool rgbf = (img_type == FIT_FLOAT) || (img_type == FIT_DOUBLE) || (img_type == FIT_RGBF) || (img_type == FIT_RGBAF); //(FreeImage_GetBPP(dibResized) > 32);
+   const bool has_alpha = FreeImage_IsTransparent(dibResized);
    // already in correct format?
    if(((img_type == FIT_BITMAP) && (FreeImage_GetBPP(dibResized) == 32)) || (img_type == FIT_RGBF))
       dibConv = dibResized;
@@ -82,23 +88,24 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 
    try
    {
-      tex = new BaseTexture(FreeImage_GetWidth(dibConv), FreeImage_GetHeight(dibConv), rgbf ? RGB_FP : RGBA);
+      tex = new BaseTexture(FreeImage_GetWidth(dibConv), FreeImage_GetHeight(dibConv), rgbf ? RGB_FP : RGBA, rgbf ? false : has_alpha);
 
       success = true;
    }
    // failed to get mem?
    catch(...)
    {
-      delete tex;
+      if (tex)
+         delete tex;
 
       if (dibConv != dibResized) // did we allocate a copy from conversion?
-          FreeImage_Unload(dibConv);
+         FreeImage_Unload(dibConv);
       else if (dibResized != dib) // did we allocate a rescaled copy?
-          FreeImage_Unload(dibResized);
+         FreeImage_Unload(dibResized);
 
       maxTexDim /= 2;
       while ((maxTexDim > pictureHeight) && (maxTexDim > pictureWidth))
-          maxTexDim /= 2;
+         maxTexDim /= 2;
    }
    }
 
@@ -293,6 +300,43 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
    if (m_pdsBuffer)
       FreeStuff();
 
+   const int maxTexDim = LoadValueIntWithDefault("Player", "MaxTexDimension", 0); // default: Don't resize textures
+   if(maxTexDim <= 0) // only use fast JPG path via stbi if no texture resize must be triggered
+   {
+   int x, y, channels_in_file;
+   unsigned char * const stbi_data = stbi_load_from_memory(data, size, &x, &y, &channels_in_file, 4);
+   if (stbi_data) // will only enter this path for JPG files
+   {
+      BaseTexture* tex = NULL;
+      try
+      {
+         tex = new BaseTexture(x, y, BaseTexture::RGBA, channels_in_file == 4);
+      }
+      // failed to get mem?
+      catch(...)
+      {
+         if(tex)
+            delete tex;
+
+         goto freeimage_fallback;
+      }
+
+      assert(tex->pitch() == x*4);
+      memcpy(tex->data(),stbi_data,x*y*4);
+      stbi_image_free(stbi_data);
+
+      tex->m_realWidth = x;
+      tex->m_realHeight = y;
+
+      m_pdsBuffer = tex;
+      SetSizeFrom(m_pdsBuffer);
+
+      return true;
+   }
+   }
+
+freeimage_fallback:
+
    FIMEMORY * const hmem = FreeImage_OpenMemory(data, size);
    if (!hmem)
       return false;
@@ -324,7 +368,7 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       if (m_pdsBuffer)
          FreeStuff();
 
-      m_pdsBuffer = new BaseTexture(m_width, m_height);
+      m_pdsBuffer = new BaseTexture(m_width, m_height, BaseTexture::RGBA, false);
       SetSizeFrom(m_pdsBuffer);
 
       // 32-bit picture
@@ -473,18 +517,9 @@ BaseTexture* Texture::CreateFromHBitmap(const HBITMAP hbm)
    return pdds;
 }
 
-void Texture::CreateTextureOffscreen(const int width, const int height)
-{
-   if (m_pdsBuffer)
-      FreeStuff();
-
-   m_pdsBuffer = new BaseTexture(width, height);
-   SetSizeFrom(m_pdsBuffer);
-}
-
 void BaseTexture::SetOpaque()
 {
-   if (m_format == BaseTexture::RGB_FP)
+   if ((m_format == BaseTexture::RGB_FP) || !m_has_alpha)
       return;
 
    // Assume our 32 bit color structure
