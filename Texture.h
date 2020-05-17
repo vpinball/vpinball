@@ -30,12 +30,12 @@ public:
 private:
    int m_width;
    int m_height;
-   bool m_has_alpha;
 
 public:
    std::vector<BYTE> m_data;
    int m_realWidth, m_realHeight;
    Format m_format;
+   bool m_has_alpha;
 
    bool Needs_ConvertAlpha_Tonemap() const { return (m_format == RGB_FP) || ((m_format == RGBA) && m_has_alpha); }
 
