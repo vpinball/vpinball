@@ -19,6 +19,8 @@ FEATURES:
 - add WEBP to list of supported image formats
 
 - optimize table loading/pre-processing time
+- optimize loading of JPG images in the table
+- reduce temporary memory needed for images
 
 - add table save date and revision to table info and also show in the pause info/menu
 
