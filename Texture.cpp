@@ -12,7 +12,8 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
    const int pictureWidth = FreeImage_GetWidth(dib);
    const int pictureHeight = FreeImage_GetHeight(dib);
 
-   FIBITMAP* dib32;
+   FIBITMAP* dibResized = dib;
+   FIBITMAP* dibConv = dib;
    BaseTexture* tex = NULL;
 
    // do loading in a loop, in case memory runs out and we need to scale the texture down due to this
@@ -21,9 +22,10 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
    {
    // the mem is so low that the texture won't even be able to be rescaled -> return
    if (maxTexDim <= 0)
+   {
+      FreeImage_Unload(dib);
       return NULL;
-
-   FIBITMAP* dibResized = dib;
+   }
 
    if ((pictureHeight > maxTexDim) || (pictureWidth > maxTexDim))
    {
@@ -58,24 +60,29 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 
    const FREE_IMAGE_TYPE img_type = FreeImage_GetImageType(dibResized);
    const bool rgbf = (img_type == FIT_FLOAT) || (img_type == FIT_DOUBLE) || (img_type == FIT_RGBF) || (img_type == FIT_RGBAF); //(FreeImage_GetBPP(dibResized) > 32);
-   dib32 = rgbf ? FreeImage_ConvertToRGBF(dibResized) : FreeImage_ConvertTo32Bits(dibResized);
-
-   if (dibResized != dib) // did we allocate a rescaled copy?
-      FreeImage_Unload(dibResized);
-
-   // failed to get mem?
-   if (!dib32)
+   // already in correct format?
+   if(((img_type == FIT_BITMAP) && (FreeImage_GetBPP(dibResized) == 32)) || (img_type == FIT_RGBF))
+      dibConv = dibResized;
+   else
    {
-      maxTexDim /= 2;
-      while ((maxTexDim > pictureHeight) && (maxTexDim > pictureWidth))
-          maxTexDim /= 2;
+      dibConv = rgbf ? FreeImage_ConvertToRGBF(dibResized) : FreeImage_ConvertTo32Bits(dibResized);
+      if (dibResized != dib) // did we allocate a rescaled copy?
+         FreeImage_Unload(dibResized);
 
-      continue;
+      // failed to get mem?
+      if (!dibConv)
+      {
+         maxTexDim /= 2;
+         while ((maxTexDim > pictureHeight) && (maxTexDim > pictureWidth))
+            maxTexDim /= 2;
+
+         continue;
+      }
    }
 
    try
    {
-      tex = new BaseTexture(FreeImage_GetWidth(dib32), FreeImage_GetHeight(dib32), rgbf ? RGB_FP : RGBA);
+      tex = new BaseTexture(FreeImage_GetWidth(dibConv), FreeImage_GetHeight(dibConv), rgbf ? RGB_FP : RGBA);
 
       success = true;
    }
@@ -84,7 +91,10 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
    {
       delete tex;
 
-      FreeImage_Unload(dib32);
+      if (dibConv != dibResized) // did we allocate a copy from conversion?
+          FreeImage_Unload(dibConv);
+      else if (dibResized != dib) // did we allocate a rescaled copy?
+          FreeImage_Unload(dibResized);
 
       maxTexDim /= 2;
       while ((maxTexDim > pictureHeight) && (maxTexDim > pictureWidth))
@@ -95,14 +105,19 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
    tex->m_realWidth = pictureWidth;
    tex->m_realHeight = pictureHeight;
 
-   BYTE * const psrc = FreeImage_GetBits(dib32), *pdst = tex->data();
-   const int pitchdst = FreeImage_GetPitch(dib32), pitchsrc = tex->pitch();
+   BYTE * const psrc = FreeImage_GetBits(dibConv), *pdst = tex->data();
+   const int pitchdst = FreeImage_GetPitch(dibConv), pitchsrc = tex->pitch();
    const int height = tex->height();
 
+   // flip upside down //!! meh, could this be done somewhere else to avoid additional overhead?
    for (int y = 0; y < height; ++y)
       memcpy(pdst + (height - y - 1)*pitchdst, psrc + y*pitchsrc, pitchsrc);
 
-   FreeImage_Unload(dib32);
+   if (dibConv != dibResized) // did we allocate a copy from conversion?
+      FreeImage_Unload(dibConv);
+   else if (dibResized != dib) // did we allocate a rescaled copy?
+      FreeImage_Unload(dibResized);
+   FreeImage_Unload(dib);
 
    return tex;
 }
@@ -129,7 +144,6 @@ BaseTexture* BaseTexture::CreateFromFile(const char *szfile)
          return NULL;
       
       BaseTexture* const mySurface = BaseTexture::CreateFromFreeImage(dib);
-      FreeImage_Unload(dib);
 
       //if (bitsPerPixel == 24)
       //   mySurface->SetOpaque();
@@ -157,7 +171,6 @@ BaseTexture* BaseTexture::CreateFromData(const void *data, const size_t size)
          return NULL;
 
       BaseTexture* const mySurface = BaseTexture::CreateFromFreeImage(dib);
-      FreeImage_Unload(dib);
 
       //if (bitsPerPixel == 24)
       //   mySurface->SetOpaque();
@@ -198,7 +211,6 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbm)
    if (!dib)
       return NULL;
    BaseTexture* const pdds = BaseTexture::CreateFromFreeImage(dib);
-   FreeImage_Unload(dib);
    return pdds;
 }
 
@@ -292,8 +304,6 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
 
    m_pdsBuffer = BaseTexture::CreateFromFreeImage(dib);
    SetSizeFrom(m_pdsBuffer);
-
-   FreeImage_Unload(dib);
 
    return true;
 }

@@ -94,7 +94,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          LocalString ls4( IDS_USED_IN_TABLE );
          lvcol.pszText = ls4.m_szbuffer; // = "In use";
          lvcol.cx = 45;
-         ListView_InsertColumn( hListView, 3, &lvcol );
+         ListView_InsertColumn(hListView, 3, &lvcol);
 
          LocalString ls5(IDS_IMAGE_RAW_SIZE);
          lvcol.pszText = ls5.m_szbuffer; // = "Raw Size";
