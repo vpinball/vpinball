@@ -4,7 +4,9 @@
 #include "freeimage.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#define STBI_ONLY_JPEG // only use the SSE2-JPG path from stbi, as all others are not faster than FreeImage
+#define STBI_ONLY_JPEG // only use the SSE2-JPG path from stbi, as all others are not faster than FreeImage //!! can remove stbi again if at some point FreeImage incorporates libjpeg-turbo or something similar
+#define STBI_NO_STDIO
+#define STBI_NO_FAILURE_STRINGS
 #include "stb_image.h"
 
 extern bool table_played_via_command_line;
@@ -114,13 +116,15 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
    tex->m_realWidth = pictureWidth;
    tex->m_realHeight = pictureHeight;
 
-   BYTE * const psrc = FreeImage_GetBits(dibConv), *pdst = tex->data();
-   const int pitchdst = FreeImage_GetPitch(dibConv), pitchsrc = tex->pitch();
+   const BYTE* const __restrict psrc = FreeImage_GetBits(dibConv);
+   BYTE* const __restrict pdst = tex->data();
+   const int pitchdst = tex->pitch(), pitchsrc = FreeImage_GetPitch(dibConv);
    const int height = tex->height();
+   const int pitch = MIN(pitchsrc,pitchdst);
 
    // flip upside down //!! meh, could this be done somewhere else to avoid additional overhead?
    for (int y = 0; y < height; ++y)
-      memcpy(pdst + (height - y - 1)*pitchdst, psrc + y*pitchsrc, pitchsrc);
+      memcpy(pdst + (height - y - 1)*pitchdst, psrc + y*pitchsrc, pitch);
 
    if (dibConv != dibResized) // did we allocate a copy from conversion?
       FreeImage_Unload(dibConv);
@@ -306,13 +310,13 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
    if(maxTexDim <= 0) // only use fast JPG path via stbi if no texture resize must be triggered
    {
    int x, y, channels_in_file;
-   unsigned char * const stbi_data = stbi_load_from_memory(data, size, &x, &y, &channels_in_file, 4);
+   unsigned char * const __restrict stbi_data = stbi_load_from_memory(data, size, &x, &y, &channels_in_file, 4);
    if (stbi_data) // will only enter this path for JPG files
    {
       BaseTexture* tex = NULL;
       try
       {
-         tex = new BaseTexture(x, y, BaseTexture::RGBA, channels_in_file == 4);
+         tex = new BaseTexture(x, y, BaseTexture::RGBA, channels_in_file == 4); //!! stbi at the moment does not support alpha channel JPGs, so channels_in_file will be 3 or 1
       }
       // failed to get mem?
       catch(...)
@@ -323,8 +327,18 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
          goto freeimage_fallback;
       }
 
+      // copy, but exchange R,B channels //!! meh, could this be done somewhere else to avoid additional overhead?
+      DWORD* const __restrict pdst = (DWORD*)tex->data();
+      DWORD* const __restrict psrc = (DWORD*)stbi_data;
       assert(tex->pitch() == x*4);
-      memcpy(tex->data(),stbi_data,x*y*4);
+      unsigned int o = 0;
+      for (int yo = 0; yo < y; ++yo)
+          for (int xo = 0; xo < x; ++xo,++o)
+          {
+              const DWORD src = psrc[o];
+              pdst[o] = (src & 0xFF00FF00u) | _rotl(src & 0x00FF00FFu, 16);
+          }
+
       stbi_image_free(stbi_data);
 
       tex->m_realWidth = x;
