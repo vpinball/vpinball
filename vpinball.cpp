@@ -1596,7 +1596,11 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
         }
     }
-    return WndProcDefault(uMsg, wParam, lParam);
+    // player is sharing the same WndProc from vpinball so do not process the events here.
+    if (g_pplayer)
+        return 0;
+    else
+        return WndProcDefault(uMsg, wParam, lParam);
 }
 
 LRESULT VPinball::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)

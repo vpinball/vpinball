@@ -5930,6 +5930,7 @@ static void ShutDownPlayer()
    if (g_pplayer->m_detectScriptHang)
       g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
 
+
    playedTable->StopPlaying();
 
    delete g_pplayer; // needs to be deleted here, as code below relies on it being NULL
