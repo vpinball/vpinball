@@ -188,7 +188,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 	const float area = 0.06; //!!
 	const float falloff = 0.0002; //!!
 	const int samples = 8/*9*/; //4,8,9,13,21,25,32 korobov,fibonacci
-	const float radius = 0.001+frac(ushift.z+w_h_height.z*(float)(samples-1))*0.009; // sample radius //!! w_h_height.z reused, but should not be that bad
+	const float radius = 0.001+/*frac*/(ushift.z)*0.009; // sample radius
 	const float depth_threshold_normal = 0.005;
 	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples);
 	const float3 normal = normalize(get_nonunit_normal(depth0, u));
