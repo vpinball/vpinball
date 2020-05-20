@@ -650,11 +650,11 @@ public:
    bool m_overwriteBallImages;
    Texture *m_ballImage;
    Texture *m_decalImage;
+   DebuggerDialog m_debuggerDialog;
 
 private:
    ID3DXFont *m_pFont;
    LPD3DXSPRITE m_fontSprite;
    RECT     m_fontRect;
-   DebuggerDialog m_debuggerDialog;
 
 };
