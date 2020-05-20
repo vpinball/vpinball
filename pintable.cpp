@@ -471,7 +471,7 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
    }
    else
    {
-      *pVal = (size_t)g_pplayer->m_playfieldHwnd;
+      *pVal = (size_t)g_pplayer->GetHwnd();
    }
 
    return S_OK;
@@ -2091,11 +2091,11 @@ void PinTable::Play(const bool cameraMode)
    // make sure the load directory is the active directory
    SetCurrentDirectory(szLoadDir);
 
-   const HWND hwndProgressDialog = CreateDialog(g_hinst, MAKEINTRESOURCE(IDD_PROGRESS), m_vpinball->GetHwnd(), ProgressProc);
-   ::ShowWindow(hwndProgressDialog, SW_SHOW);
+   m_hwndProgressDialog = CreateDialog(g_hinst, MAKEINTRESOURCE(IDD_PROGRESS), m_vpinball->GetHwnd(), ProgressProc);
+   ::ShowWindow(m_hwndProgressDialog, SW_SHOW);
 
-   const HWND hwndProgressBar = ::GetDlgItem(hwndProgressDialog, IDC_PROGRESS2);
-   const HWND hwndStatusName = ::GetDlgItem(hwndProgressDialog, IDC_STATUSNAME);
+   const HWND hwndProgressBar = ::GetDlgItem(m_hwndProgressDialog, IDC_PROGRESS2);
+   const HWND hwndStatusName = ::GetDlgItem(m_hwndProgressDialog, IDC_STATUSNAME);
 
    ::SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
    ::SetWindowText(hwndStatusName, "Backing Up Table State...");
@@ -2172,32 +2172,19 @@ void PinTable::Play(const bool cameraMode)
 
       // create Player and init that one
 
-      HRESULT hrInit;
-      // create the player g_pplayer variable will be set in the ctor
-      new Player(cameraMode, this, hwndProgressBar, hwndStatusName, hrInit);
-
       if (!m_pcv->m_scriptError)
       {
+         g_pplayer = new Player(cameraMode, this, hwndProgressBar, hwndStatusName);
+         g_pplayer->Create();
+          
          const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
          const float maxSlope = (m_overridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
          const float slope = minSlope + (maxSlope - minSlope) * m_globalDifficulty;
          g_pplayer->SetGravity(slope, m_overridePhysics ? m_fOverrideGravityConstant : m_Gravity);
 
-         //
-
          m_pcv->SetEnabled(false); // Can't edit script while playing
 
          m_vpinball->ToggleToolbar();
-
-         if (!m_pcv->m_scriptError && (hrInit == S_OK))
-         {
-             m_vpinball->ShowWindow(SW_HIDE);
-         }
-         else
-         {
-            ShowError("Problem occurred during Player init");
-            ::SendMessage(g_pplayer->m_playfieldHwnd, WM_CLOSE, 0, 0);
-         }
       }
    }
    else
@@ -2205,10 +2192,7 @@ void PinTable::Play(const bool cameraMode)
       RestoreBackup();
       g_keepUndoRecords = true;
       m_pcv->EndSession();
-      //delete g_pplayer;
-      //g_pplayer = NULL;
    }
-   DestroyWindow(hwndProgressDialog);
 
 }
 
@@ -2235,14 +2219,18 @@ void PinTable::StopPlaying()
    RestoreBackup();
    g_keepUndoRecords = true;
 
-   m_vpinball->ShowWindow(1);
-   SetFocus();
-
    UpdateDbgMaterial();
    UpdateDbgLight();
-   SetDirtyDraw();
 
    BeginAutoSaveCounter();
+
+   delete g_pplayer; // needs to be deleted here, as code below relies on it being NULL
+   g_pplayer = nullptr;
+
+   g_pvp->ToggleToolbar();
+   mixer_shutdown();
+   hid_shutdown();
+
 }
 
 HRESULT PinTable::InitVBA()
@@ -9998,6 +9986,25 @@ void PinTable::OnInitialUpdate()
     SetWindowText(m_szFileName);
     SetCaption(m_szTitle);
     m_vpinball->SetEnableMenuItems();
+}
+
+BOOL PinTable::OnCommand(WPARAM wparam, LPARAM lparam)
+{
+    UNREFERENCED_PARAMETER(lparam);
+
+    switch (LOWORD(wparam))
+    {
+        case ID_TABLE_STOP_PLAY:
+        {
+            if (g_pplayer)
+            {
+                g_pplayer->StopPlayer();
+                StopPlaying();
+            }
+            return TRUE;
+        }
+    }
+    return FALSE;
 }
 
 void PinTable::SetMouseCursor()

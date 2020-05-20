@@ -54,7 +54,7 @@ LRESULT EditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
             {
                 if (m_basePropertyDialog)
                     m_basePropertyDialog->UpdateProperties(m_id);
-                return FALSE;
+                return 0;
             }
         }
     }
@@ -72,7 +72,7 @@ LRESULT ComboBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
             if (m_basePropertyDialog)
                 m_basePropertyDialog->UpdateProperties(m_id);
             ShowDropDown(FALSE);
-            return TRUE;
+            return 0;
         }
     }
     }

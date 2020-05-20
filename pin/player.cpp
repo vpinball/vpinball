@@ -428,13 +428,13 @@ extern int disEnableTrueFullscreen; // set via command line
 
 LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-static void ShutDownPlayer();
+static void StopPlayer();
 
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
-Player::Player(const bool cameraMode, PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName, HRESULT &hrInit) : m_cameraMode(cameraMode)
+Player::Player(const bool cameraMode, PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName) : m_cameraMode(cameraMode)
 {
    {
       int regs[4];
@@ -635,9 +635,9 @@ Player::Player(const bool cameraMode, PinTable * const ptable, const HWND hwndPr
    m_ballTrailVertexBuffer = NULL;
    m_pFont = NULL;
    m_meshAsPlayfield = false;
-
-   g_pplayer = this; // set global variable here otherwise it will crash
-   hrInit = Init(ptable, hwndProgress, hwndProgressName);
+   m_ptable = ptable;
+   m_hwndProgress = hwndProgress;
+   m_hwndProgressName = hwndProgressName;
 }
 
 Player::~Player()
@@ -660,11 +660,228 @@ Player::~Player()
        m_decalImage = NULL;
     }
     delete g_pplayer->m_pBCTarget;
-    g_pplayer->m_pBCTarget = NULL;
+    m_pBCTarget = nullptr;
+    g_pplayer = nullptr;
+}
+
+void Player::PreRegisterClass(WNDCLASS& wc)
+{
+    wc.style = 0;
+    wc.hInstance = g_hinst;
+    wc.lpszClassName = "VPPlayer";
+    wc.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_TABLE));
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.lpszMenuName = NULL;
+}
+
+void Player::PreCreate(CREATESTRUCT& cs)
+{
+    m_fullScreen = LoadValueBoolWithDefault("Player", "FullScreen", IsWindows10_1803orAbove());
+
+    // command line override
+    if (disEnableTrueFullscreen == 0)
+        m_fullScreen = false;
+    else if (disEnableTrueFullscreen == 1)
+        m_fullScreen = true;
+
+    m_width = LoadValueIntWithDefault("Player", "Width", m_fullScreen ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH);
+    m_height = LoadValueIntWithDefault("Player", "Height", m_width * 9 / 16);
+
+    int x = 0;
+    int y = 0;
+
+    int display = LoadValueIntWithDefault("Player", "Display", -1);
+    display = (display < getNumberOfDisplays()) ? display : -1;
+
+    if (m_fullScreen)
+    {
+        m_screenwidth = m_width;
+        m_screenheight = m_height;
+        m_refreshrate = LoadValueIntWithDefault("Player", "RefreshRate", 0);
+    }
+    else
+    {
+        getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight);
+        m_refreshrate = 0; // The default
+
+        // constrain window to screen
+        if (m_width > m_screenwidth)
+        {
+            m_width = m_screenwidth;
+            m_height = m_width * 9 / 16;
+        }
+
+        if (m_height > m_screenheight)
+        {
+            m_height = m_screenheight;
+            m_width = m_height * 16 / 9;
+        }
+
+        x += (m_screenwidth - m_width) / 2;
+        y += (m_screenheight - m_height) / 2;
+
+        // is this a non-fullscreen window? -> get previously saved window position
+        if ((m_height != m_screenheight) || (m_width != m_screenwidth))
+        {
+            const int xn = LoadValueIntWithDefault("Player", "WindowPosX", x); //!! does this handle multi-display correctly like this?
+            const int yn = LoadValueIntWithDefault("Player", "WindowPosY", y);
+
+            RECT r;
+            r.left = xn;
+            r.top = yn;
+            r.right = xn + m_width;
+            r.bottom = yn + m_height;
+            if (MonitorFromRect(&r, MONITOR_DEFAULTTONULL) != NULL) // window is visible somewhere, so use the coords from the registry
+            {
+                x = xn;
+                y = yn;
+            }
+        }
+    }
+
+    int windowflags;
+    int windowflagsex;
+
+    const int captionheight = GetSystemMetrics(SM_CYCAPTION);
+
+    if (false) // only do this nowadays if ESC menu is brought up //(!m_fullScreen && ((m_screenheight - m_height) >= (captionheight * 2))) // We have enough room for a frame?
+    {
+        // Add a pretty window border and standard control boxes.
+
+        windowflags = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN;
+        windowflagsex = WS_EX_OVERLAPPEDWINDOW;
+
+        //!! does not respect borders so far!!! -> change width/height accordingly ??
+        //!! like this the render window is scaled and thus implicitly blurred!
+        y -= captionheight;
+        m_height += captionheight;
+    }
+    else // No window border, title, or control boxes.
+    {
+        windowflags = WS_POPUP;
+        windowflagsex = 0;
+    }
+
+    CalcBallAspectRatio();
+
+    ZeroMemory(&cs, sizeof(cs));
+    cs.x = x; 
+    cs.y = y;
+    cs.cx = m_width;
+    cs.cy = m_height;
+    cs.style = windowflags;
+    cs.dwExStyle = windowflagsex;
+    cs.hInstance = g_hinst;
+    
+}
+
+void Player::OnInitialUpdate()
+{
+    // Check for Touch support
+    m_supportsTouch = ((GetSystemMetrics(SM_DIGITIZER) & NID_READY) != 0) && ((GetSystemMetrics(SM_DIGITIZER) & NID_MULTI_INPUT) != 0)
+        && (GetSystemMetrics(SM_MAXIMUMTOUCHES) != 0);
+
+#if 1 // we do not want to handle WM_TOUCH
+    if (!UnregisterTouchWindow)
+        UnregisterTouchWindow = (pUnregisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "UnregisterTouchWindow");
+    if (UnregisterTouchWindow)
+        UnregisterTouchWindow(GetHwnd());
+#else // would be useful if handling WM_TOUCH instead of WM_POINTERDOWN
+    // Disable palm detection
+    if (!RegisterTouchWindow)
+        RegisterTouchWindow = (pRegisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "RegisterTouchWindow");
+    if (RegisterTouchWindow)
+        RegisterTouchWindow(GetHwnd(), 0);
+
+    if (!IsTouchWindow)
+        IsTouchWindow = (pIsTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "IsTouchWindow");
+
+    // Disable Gesture Detection
+    if (!SetGestureConfig)
+        SetGestureConfig = (pSetGestureConfig)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetGestureConfig");
+    if (SetGestureConfig)
+    {
+        // http://msdn.microsoft.com/en-us/library/ms812373.aspx
+        const DWORD dwHwndTabletProperty =
+            TABLET_DISABLE_PRESSANDHOLD |      // disables press and hold (right-click) gesture  
+            TABLET_DISABLE_PENTAPFEEDBACK |    // disables UI feedback on pen up (waves)  
+            TABLET_DISABLE_PENBARRELFEEDBACK | // disables UI feedback on pen button down  
+            TABLET_DISABLE_FLICKS;             // disables pen flicks (back, forward, drag down, drag up)   
+        LPCTSTR tabletAtom = MICROSOFT_TABLETPENSERVICE_PROPERTY;
+
+        // Get the Tablet PC atom ID
+        const ATOM atomID = GlobalAddAtom(tabletAtom);
+        if (atomID)
+        {
+            // Try to disable press and hold gesture 
+            SetProp(m_playfieldHwnd, tabletAtom, (HANDLE)dwHwndTabletProperty);
+        }
+        // Gesture configuration
+        GESTURECONFIG gc[] = { 0, 0, GC_ALLGESTURES };
+        UINT uiGcs = 1;
+        const BOOL bResult = SetGestureConfig(m_playfieldHwnd, 0, uiGcs, gc, sizeof(GESTURECONFIG));
+    }
+#endif
+
+    // Disable visual feedback for touch, this saves one frame of latency on touchdisplays
+    if (!SetWindowFeedbackSetting)
+        SetWindowFeedbackSetting = (pSWFS)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowFeedbackSetting");
+    if (SetWindowFeedbackSetting)
+    {
+        const BOOL enabled = FALSE;
+
+        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_TOUCH_TAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(enabled), &enabled);
+                                 
+        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_PEN_TAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_PEN_DOUBLETAP, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
+        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_PEN_RIGHTTAP, 0, sizeof(enabled), &enabled);
+                                 
+        SetWindowFeedbackSetting(GetHwnd(), FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(enabled), &enabled);
+    }
+
+    mixer_init(GetHwnd());
+    hid_init();
+
+    if (!m_fullScreen) // see above
+        SetCursorPos(400, 999999);
+
+    Init();
+
+}
+
+void Player::OnClose()
+{
+    // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY if script is not closed first.   
+    // Shut down script first if in exclusive mode.  
+    //if (m_fullScreen)
+        StopPlayer();
+}
+
+void Player::OnDestroy()
+{
+    if (!m_fullScreen)
+        StopPlayer();
 }
 
 void Player::Shutdown()
 {
+
+#if(_WIN32_WINNT >= 0x0500)
+    if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
+    {
+        ::LockSetForegroundWindow(LSFW_UNLOCK);
+        ::ShowCursor(TRUE);
+    }
+#else
+#pragma message ( "Warning: Missing LockSetForegroundWindow()" )
+#endif
+
    // if limit framerate if requested by user (vsync Hz higher than refreshrate of gfxcard/monitor), restore timeEndPeriod
    const int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
    if (localvsync > m_refreshrate)
@@ -770,15 +987,11 @@ void Player::Shutdown()
 
    m_changed_vht.clear();
 
-#if(_WIN32_WINNT >= 0x0500)
-   if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
-   {
-       ::LockSetForegroundWindow(LSFW_UNLOCK);
-       ::ShowCursor(TRUE);
-   }
-#else
-   #pragma message ( "Warning: Missing LockSetForegroundWindow()" )
-#endif
+   g_pvp->ShowWindow(SW_SHOW);
+   g_pvp->SetFocus();
+   g_pvp->Invalidate();
+   m_ptable->SetForegroundWindow();
+   m_ptable->SetDirtyDraw();
 }
 
 void Player::InitFPS()
@@ -1278,19 +1491,17 @@ void Player::DebugPrint(int x, int y, LPCSTR text, bool center /*= false*/)
    }
 }
 
-HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName)
+HRESULT Player::Init()
 {
    TRACE_FUNCTION();
 
-   m_ptable = ptable;
-
    //m_hSongCompletionEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 
-   SendMessage(hwndProgress, PBM_SETPOS, 10, 0);
+   ::SendMessage(m_hwndProgress, PBM_SETPOS, 10, 0);
    // TEXT
-   SetWindowText(hwndProgressName, "Initializing Visuals...");
+   ::SetWindowText(m_hwndProgressName, "Initializing Visuals...");
 
-   InitGameplayWindow();
+   //InitGameplayWindow();
    InitKeys();
 
    m_PlayMusic = LoadValueBoolWithDefault("Player", "PlayMusic", true);
@@ -1352,9 +1563,9 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    }
 
    if (m_fullScreen)
-      SetWindowPos(m_playfieldHwnd, NULL, 0, 0, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+      SetWindowPos(NULL, 0, 0, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
 
-   m_pininput.Init(m_playfieldHwnd);
+   m_pininput.Init(GetHwnd());
 
    //
    const unsigned int lflip = get_vk(m_rgKeys[eLeftFlipperKey]);
@@ -1386,13 +1597,13 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
 
-   const float minSlope = (ptable->m_overridePhysics ? ptable->m_fOverrideMinSlope : ptable->m_angletiltMin);
-   const float maxSlope = (ptable->m_overridePhysics ? ptable->m_fOverrideMaxSlope : ptable->m_angletiltMax);
-   const float slope = minSlope + (maxSlope - minSlope) * ptable->m_globalDifficulty;
+   const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
+   const float maxSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMaxSlope : m_ptable->m_angletiltMax);
+   const float slope = minSlope + (maxSlope - minSlope) * m_ptable->m_globalDifficulty;
 
    m_gravity.x = 0.f;
-   m_gravity.y =  sinf(ANGTORAD(slope))*(ptable->m_overridePhysics ? ptable->m_fOverrideGravityConstant : ptable->m_Gravity);
-   m_gravity.z = -cosf(ANGTORAD(slope))*(ptable->m_overridePhysics ? ptable->m_fOverrideGravityConstant : ptable->m_Gravity);
+   m_gravity.y =  sinf(ANGTORAD(slope))*(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideGravityConstant : m_ptable->m_Gravity);
+   m_gravity.z = -cosf(ANGTORAD(slope))*(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideGravityConstant : m_ptable->m_Gravity);
 
    m_NudgeX = 0.f;
    m_NudgeY = 0.f;
@@ -1411,8 +1622,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    CreateDebugFont();
 
-   SendMessage(hwndProgress, PBM_SETPOS, 30, 0);
-   SetWindowText(hwndProgressName, "Initializing Physics...");
+   ::SendMessage(m_hwndProgress, PBM_SETPOS, 30, 0);
+   ::SetWindowText(m_hwndProgressName, "Initializing Physics...");
 
    // Initialize new nudging.
    m_tableVel.SetZero();
@@ -1492,8 +1703,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       }
    }
 
-   SendMessage(hwndProgress, PBM_SETPOS, 45, 0);
-   SetWindowText(hwndProgressName, "Initializing Octree...");
+   ::SendMessage(m_hwndProgress, PBM_SETPOS, 45, 0);
+   ::SetWindowText(m_hwndProgressName, "Initializing Octree...");
 
    AddCabinetBoundingHitShapes();
 
@@ -1525,8 +1736,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    //----------------------------------------------------------------------------------
 
-   SendMessage(hwndProgress, PBM_SETPOS, 60, 0);
-   SetWindowText(hwndProgressName, "Rendering Table...");
+   ::SendMessage(m_hwndProgress, PBM_SETPOS, 60, 0);
+   ::SetWindowText(m_hwndProgressName, "Rendering Table...");
 
    //g_viewDir = m_pin3d.m_viewVec;
    g_viewDir = Vertex3Ds(0, 0, -1.0f);
@@ -1552,7 +1763,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    // Pre-render all non-changing elements such as 
    // static walls, rails, backdrops, etc. and also static playfield reflections
-   InitStatic(hwndProgress);
+   InitStatic(m_hwndProgress);
 
    for (size_t i = 0; i < m_ptable->m_vedit.size(); ++i)
    {
@@ -1604,7 +1815,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    // Direct all renders to the back buffer.
    m_pin3d.SetPrimaryRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
 
-   SendMessage(hwndProgress, PBM_SETPOS, 90, 0);
+   SendMessage(m_hwndProgress, PBM_SETPOS, 90, 0);
 
 #ifdef DEBUG_BALL_SPIN
    {
@@ -1640,7 +1851,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
 
-   SetWindowText(hwndProgressName, "Starting Game Scripts...");
+   ::SetWindowText(m_hwndProgressName, "Starting Game Scripts...");
 
    m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
 
@@ -1678,14 +1889,27 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    fprintf(m_flog, "End Frame\n");
 #endif
 
-   SendMessage(hwndProgress, PBM_SETPOS, 100, 0);
+   ::SendMessage(m_hwndProgress, PBM_SETPOS, 100, 0);
+   ::SetWindowText(m_hwndProgressName, "Starting...");
 
-   SetWindowText(hwndProgressName, "Starting...");
+   m_ptable->CloseProgessDialog();
+
+   g_pvp->ShowWindow(SW_HIDE);
 
    // Show the window.
-   ShowWindow(m_playfieldHwnd, SW_SHOW);
-   SetForegroundWindow(m_playfieldHwnd);
-   SetFocus(m_playfieldHwnd);
+   ShowWindow(SW_SHOW);
+   SetForegroundWindow();
+   SetFocus();
+
+#if(_WIN32_WINNT >= 0x0500)
+   if (m_fullScreen) // blocks processes from taking focus away from our exclusive fullscreen app and disables mouse cursor
+   {
+       ::LockSetForegroundWindow(LSFW_LOCK);
+       ::ShowCursor(FALSE);
+   }
+#else
+#pragma message ( "Warning: Missing LockSetForegroundWindow()" )
+#endif
 
    // Call Init -- TODO: what's the relation to ptable->FireVoidEvent() above?
    for (size_t i = 0; i < m_vhitables.size(); ++i)
@@ -1702,15 +1926,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    m_limiter.Init(m_pin3d.m_pd3dPrimaryDevice, m_maxPrerenderedFrames);
 
    Render(); //!! why here already? potentially not all initialized yet??
-
-#if(_WIN32_WINNT >= 0x0500)
-   if (m_fullScreen) // Doubly insure processes can't take focus away from our exclusive fullscreen app, fixes problems noticed under PinUP Popper losing focus from B2S.
-   {
-      ::LockSetForegroundWindow(LSFW_LOCK);
-   }
-#else
-#pragma message ( "Warning: Missing LockSetForegroundWindow()" )
-#endif
 
    // Broadcast a message to notify front-ends that it is 
    // time to reveal the playfield. 
@@ -2293,196 +2508,6 @@ void Player::DestroyBall(Ball *pball)
       m_pactiveball = m_vball.front();
 }
 
-//initalizes the player window, and places it somewhere on the screen, does not manage content
-void Player::InitGameplayWindow()
-{
-   WNDCLASSEX wcex;
-   ZeroMemory(&wcex, sizeof(WNDCLASSEX));
-   wcex.cbSize = sizeof(WNDCLASSEX);
-   wcex.style = 0;
-   wcex.lpfnWndProc = (WNDPROC)PlayerWndProc;
-   wcex.hInstance = g_hinst;
-   wcex.lpszClassName = "VPPlayer";
-   wcex.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_TABLE));
-   wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-   wcex.lpszMenuName = NULL;
-   RegisterClassEx(&wcex);
-
-   //
-
-   m_fullScreen = LoadValueBoolWithDefault("Player", "FullScreen", IsWindows10_1803orAbove());
-
-   // command line override
-   if (disEnableTrueFullscreen == 0)
-      m_fullScreen = false;
-   else if (disEnableTrueFullscreen == 1)
-      m_fullScreen = true;
-
-   m_width = LoadValueIntWithDefault("Player", "Width", m_fullScreen ? DEFAULT_PLAYER_FS_WIDTH : DEFAULT_PLAYER_WIDTH);
-   m_height = LoadValueIntWithDefault("Player", "Height", m_width * 9 / 16);
-
-   int x = 0;
-   int y = 0;
-
-   int display = LoadValueIntWithDefault("Player", "Display", -1);
-   display = (display < getNumberOfDisplays()) ? display : -1;
-
-   if (m_fullScreen)
-   {
-      m_screenwidth = m_width;
-      m_screenheight = m_height;
-      m_refreshrate = LoadValueIntWithDefault("Player", "RefreshRate", 0);
-   }
-   else
-   {
-      getDisplaySetupByID(display, x, y, m_screenwidth, m_screenheight);
-      m_refreshrate = 0; // The default
-
-      // constrain window to screen
-      if (m_width > m_screenwidth)
-      {
-         m_width = m_screenwidth;
-         m_height = m_width * 9 / 16;
-      }
-
-      if (m_height > m_screenheight)
-      {
-         m_height = m_screenheight;
-         m_width = m_height * 16 / 9;
-      }
-
-      x += (m_screenwidth - m_width) / 2;
-      y += (m_screenheight - m_height) / 2;
-
-      // is this a non-fullscreen window? -> get previously saved window position
-      if ((m_height != m_screenheight) || (m_width != m_screenwidth))
-      {
-         const int xn = LoadValueIntWithDefault("Player", "WindowPosX", x); //!! does this handle multi-display correctly like this?
-         const int yn = LoadValueIntWithDefault("Player", "WindowPosY", y);
-
-         RECT r;
-         r.left = xn;
-         r.top = yn;
-         r.right = xn + m_width;
-         r.bottom = yn + m_height;
-         if (MonitorFromRect(&r, MONITOR_DEFAULTTONULL) != NULL) // window is visible somewhere, so use the coords from the registry
-         {
-            x = xn;
-            y = yn;
-         }
-      }
-   }
-
-   int windowflags;
-   int windowflagsex;
-
-   const int captionheight = GetSystemMetrics(SM_CYCAPTION);
-
-   if (false) // only do this nowadays if ESC menu is brought up //(!m_fullScreen && ((m_screenheight - m_height) >= (captionheight * 2))) // We have enough room for a frame?
-   {
-      // Add a pretty window border and standard control boxes.
-
-      windowflags = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN;
-      windowflagsex = WS_EX_OVERLAPPEDWINDOW;
-
-      //!! does not respect borders so far!!! -> change width/height accordingly ??
-      //!! like this the render window is scaled and thus implicitly blurred!
-      y -= captionheight;
-      m_height += captionheight;
-   }
-   else // No window border, title, or control boxes.
-   {
-      windowflags = WS_POPUP;
-      windowflagsex = 0;
-   }
-
-   CalcBallAspectRatio();
-   m_playfieldHwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
-
-#if(_WIN32_WINNT >= 0x0500)
-   if (m_fullScreen) // blocks processes from taking focus away from our exclusive fullscreen app and disables mouse cursor
-   {
-      ::LockSetForegroundWindow(LSFW_LOCK);
-      ::ShowCursor(FALSE);
-   }
-#else
-   #pragma message ( "Warning: Missing LockSetForegroundWindow()" )
-#endif
-
-   // Check for Touch support
-   m_supportsTouch = ((GetSystemMetrics(SM_DIGITIZER) & NID_READY) != 0) && ((GetSystemMetrics(SM_DIGITIZER) & NID_MULTI_INPUT) != 0)
-                   && (GetSystemMetrics(SM_MAXIMUMTOUCHES) != 0);
-
-#if 1 // we do not want to handle WM_TOUCH
-   if (!UnregisterTouchWindow)
-      UnregisterTouchWindow = (pUnregisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "UnregisterTouchWindow");
-   if (UnregisterTouchWindow)
-      UnregisterTouchWindow(m_playfieldHwnd);
-#else // would be useful if handling WM_TOUCH instead of WM_POINTERDOWN
-   // Disable palm detection
-   if (!RegisterTouchWindow)
-      RegisterTouchWindow = (pRegisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "RegisterTouchWindow");
-   if (RegisterTouchWindow)
-      RegisterTouchWindow(m_playfieldHwnd, 0);
-
-   if (!IsTouchWindow)
-       IsTouchWindow = (pIsTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "IsTouchWindow");
-
-   // Disable Gesture Detection
-   if (!SetGestureConfig)
-      SetGestureConfig = (pSetGestureConfig)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetGestureConfig");
-   if (SetGestureConfig)
-   {
-      // http://msdn.microsoft.com/en-us/library/ms812373.aspx
-      const DWORD dwHwndTabletProperty =
-         TABLET_DISABLE_PRESSANDHOLD |      // disables press and hold (right-click) gesture  
-         TABLET_DISABLE_PENTAPFEEDBACK |    // disables UI feedback on pen up (waves)  
-         TABLET_DISABLE_PENBARRELFEEDBACK | // disables UI feedback on pen button down  
-         TABLET_DISABLE_FLICKS;             // disables pen flicks (back, forward, drag down, drag up)   
-      LPCTSTR tabletAtom = MICROSOFT_TABLETPENSERVICE_PROPERTY;
-
-      // Get the Tablet PC atom ID
-      const ATOM atomID = GlobalAddAtom(tabletAtom);
-      if (atomID)
-      {
-         // Try to disable press and hold gesture 
-         SetProp(m_playfieldHwnd, tabletAtom, (HANDLE)dwHwndTabletProperty);
-      }
-      // Gesture configuration
-      GESTURECONFIG gc[] = { 0, 0, GC_ALLGESTURES };
-      UINT uiGcs = 1;
-      const BOOL bResult = SetGestureConfig(m_playfieldHwnd, 0, uiGcs, gc, sizeof(GESTURECONFIG));
-   }
-#endif
-
-   // Disable visual feedback for touch, this saves one frame of latency on touchdisplays
-   if (!SetWindowFeedbackSetting)
-      SetWindowFeedbackSetting = (pSWFS)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowFeedbackSetting");
-   if (SetWindowFeedbackSetting)
-   {
-      const BOOL enabled = FALSE;
-
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(enabled), &enabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_TAP, 0, sizeof(enabled), &enabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(enabled), &enabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(enabled), &enabled);
-
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(enabled), &enabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_TAP, 0, sizeof(enabled), &enabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_DOUBLETAP, 0, sizeof(enabled), &enabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_PEN_RIGHTTAP, 0, sizeof(enabled), &enabled);
-
-      SetWindowFeedbackSetting(m_playfieldHwnd, FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(enabled), &enabled);
-   }
-
-   mixer_init(m_playfieldHwnd);
-   hid_init();
-
-   if (!m_fullScreen) // see above
-      SetCursorPos(400, 999999);
-}
 
 void Player::CalcBallAspectRatio()
 {
@@ -4874,8 +4899,8 @@ void Player::Render()
       const HWND hVPMWnd = FindWindow("MAME", NULL);
       if (hVPMWnd != NULL)
       {
-         if (IsWindowVisible(hVPMWnd))
-            SetWindowPos(hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the vpinmame window is not on top, so enforce it
+         if (::IsWindowVisible(hVPMWnd))
+            ::SetWindowPos(hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the vpinmame window is not on top, so enforce it
       }
    }
 
@@ -5048,7 +5073,8 @@ void Player::Render()
    if (m_ptable->m_pcv->m_scriptError)
    {
       // Crash back to the editor
-      SendMessage(m_playfieldHwnd, WM_CLOSE, 0, 0);
+      //SendMessage(WM_CLOSE, 0, 0);
+      m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
    }
    else
    {
@@ -5061,7 +5087,7 @@ void Player::Render()
 		   if (!m_fullScreen && (m_showWindowedCaption || (!m_showWindowedCaption && ((m_screenheight - m_height) >= (captionheight * 2))))) // We have enough room for a frame? //!! *2 ??
 		   {
 			   RECT rect;
-			   GetWindowRect(m_playfieldHwnd, &rect);
+			   ::GetWindowRect(GetHwnd(), &rect);
 			   const int x = rect.left;
 			   const int y = rect.top;
 
@@ -5071,10 +5097,10 @@ void Player::Render()
 
 			   //!! does not respect borders so far!!! -> remove them or change width/height accordingly ?? otherwise ignore as eventually it will be restored anyway??
 			   //!! like this the render window is scaled and thus implicitly blurred though!
-			   SetWindowLong(m_playfieldHwnd, GWL_STYLE, windowflags);
-			   SetWindowLong(m_playfieldHwnd, GWL_EXSTYLE, windowflagsex);
-			   SetWindowPos(m_playfieldHwnd, NULL, x, m_showWindowedCaption ? (y + captionheight) : (y - captionheight), m_width, m_height + (m_showWindowedCaption ? 0 : captionheight), SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-			   ShowWindow(m_playfieldHwnd, SW_SHOW);
+			   SetWindowLong(GetHwnd(), GWL_STYLE, windowflags);
+			   SetWindowLong(GetHwnd(), GWL_EXSTYLE, windowflagsex);
+			   SetWindowPos(NULL, x, m_showWindowedCaption ? (y + captionheight) : (y - captionheight), m_width, m_height + (m_showWindowedCaption ? 0 : captionheight), SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+			   ShowWindow(SW_SHOW);
 
 			   // Save position of non-fullscreen player window to registry, and only if it was potentially moved around (i.e. when caption was already visible)
 			   if (m_showWindowedCaption)
@@ -5098,7 +5124,7 @@ void Player::Render()
          }
          else if (!VPinball::m_open_minimized && m_closeType == 0)
          {
-            option = DialogBox(g_hinst, MAKEINTRESOURCE(IDD_GAMEPAUSE), m_playfieldHwnd, PauseProc);
+            option = DialogBox(g_hinst, MAKEINTRESOURCE(IDD_GAMEPAUSE), GetHwnd(), PauseProc);
          }
          else //m_closeType == all others
          {
@@ -5112,18 +5138,20 @@ void Player::Render()
          UnpauseMusic();
 
          if (option == ID_QUIT)
-            SendMessage(m_playfieldHwnd, WM_CLOSE, 0, 0); // This line returns to the editor after exiting a table
+             //SendMessage(WM_CLOSE, 0, 0); // This line returns to the editor after exiting a table
+             m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
+
       }
       else if(m_showDebugger && !VPinball::m_open_minimized)
       {
           g_pplayer->m_debugMode = true;
           if(g_pplayer->m_hwndDebugger )
           {
-             if (!IsWindowVisible(m_hwndDebugger) && !IsWindowVisible(m_hwndLightDebugger) && !IsWindowVisible(m_hwndMaterialDebugger))
-               ShowWindow(g_pplayer->m_hwndDebugger, SW_SHOW);
+             if (!::IsWindowVisible(m_hwndDebugger) && !::IsWindowVisible(m_hwndLightDebugger) && !::IsWindowVisible(m_hwndMaterialDebugger))
+               ::ShowWindow(g_pplayer->m_hwndDebugger, SW_SHOW);
           }
           else
-             g_pplayer->m_hwndDebugger = CreateDialogParam( g_hinst, MAKEINTRESOURCE( IDD_DEBUGGER ), m_playfieldHwnd, DebuggerProc, NULL );
+             g_pplayer->m_hwndDebugger = CreateDialogParam( g_hinst, MAKEINTRESOURCE( IDD_DEBUGGER ), GetHwnd(), DebuggerProc, NULL );
 
           EndDialog( g_pvp->GetHwnd(), ID_DEBUGWINDOW );
       }
@@ -5733,10 +5761,9 @@ void Player::DoDebugObjectMenu(const int x, const int y)
    POINT pt;
    pt.x = x;
    pt.y = y;
-   ClientToScreen(m_playfieldHwnd, &pt);
+   ClientToScreen(pt);
 
-   const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | TPM_RIGHTBUTTON,
-      pt.x, pt.y, m_playfieldHwnd, NULL);
+   const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | TPM_RIGHTBUTTON, pt.x, pt.y, GetHwnd(), NULL);
 
    if (icmd != 0 && vsubmenu.size() > 0)
    {
@@ -5766,181 +5793,158 @@ void Player::DoDebugObjectMenu(const int x, const int y)
    UnpauseMusic();
 }
 
-LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   switch (uMsg)
-   {
-   case MM_MIXM_CONTROL_CHANGE:
-      mixer_get_volume();
-      break;
+    switch (uMsg)
+    {
+    case MM_MIXM_CONTROL_CHANGE:
+        mixer_get_volume();
+        return FinalWindowProc(uMsg, wParam, lParam);
 
-   case WM_DESTROY:
-      if (g_pplayer && !g_pplayer->m_fullScreen)
-         ShutDownPlayer();
-      break;
+    case WM_KEYDOWN:
+        m_drawCursor = false;
+        SetCursor(NULL);
+        return 0;
 
-   case WM_CLOSE:
-      // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY if script is not closed first.   
-      // Shut down script first if in exclusive mode.  
-      if (g_pplayer->m_fullScreen)
-         ShutDownPlayer();
-      break;
-
-   case WM_KEYDOWN:
-      g_pplayer->m_drawCursor = false;
-      SetCursor(NULL);
-      break;
-
-   case WM_MOUSEMOVE:
-      if (g_pplayer->m_lastcursorx != LOWORD(lParam) || g_pplayer->m_lastcursory != HIWORD(lParam))
-      {
-         g_pplayer->m_drawCursor = true;
-         g_pplayer->m_lastcursorx = LOWORD(lParam);
-         g_pplayer->m_lastcursory = HIWORD(lParam);
-      }
-      break;
+    case WM_MOUSEMOVE:
+        if (m_lastcursorx != LOWORD(lParam) || m_lastcursory != HIWORD(lParam))
+        {
+            m_drawCursor = true;
+            m_lastcursorx = LOWORD(lParam);
+            m_lastcursory = HIWORD(lParam);
+        }
+        return 0;
 
 #ifdef STEPPING
 #ifdef MOUSEPAUSE
-   case WM_LBUTTONDOWN:
-      if (g_pplayer->m_pause)
-      {
-         g_pplayer->m_step = true;
-      }
-      break;
+    case WM_LBUTTONDOWN:
+        if (m_pause)
+        {
+            m_step = true;
+        }
+        return 0;
 
-   case WM_RBUTTONDOWN:
-      if (!g_pplayer->m_pause)
-      {
-         g_pplayer->m_pause = true;
+    case WM_RBUTTONDOWN:
+        if (!m_pause)
+        {
+            m_pause = true;
 
-         g_pplayer->m_gameWindowActive = false;
-         g_pplayer->RecomputePauseState();
-         g_pplayer->RecomputePseudoPauseState();
-      }
-      else
-      {
-         g_pplayer->m_pause = false;
+            m_gameWindowActive = false;
+            RecomputePauseState();
+            RecomputePseudoPauseState();
+        }
+        else
+        {
+            m_pause = false;
 
-         g_pplayer->m_gameWindowActive = true;
-         SetCursor(NULL);
-         g_pplayer->m_noTimeCorrect = true;
-      }
-      break;
+            m_gameWindowActive = true;
+            SetCursor(NULL);
+            m_noTimeCorrect = true;
+        }
+        return 0;
 #endif
 #endif
-   case WM_RBUTTONUP:
-   {
-      if (g_pplayer->m_debugMode)
-      {
-         const int x = lParam & 0xffff;
-         const int y = (lParam >> 16) & 0xffff;
-         g_pplayer->DoDebugObjectMenu(x, y);
-      }
-      return 0;
-   }
-   break;
+    case WM_RBUTTONUP:
+    {
+        if (m_debugMode)
+        {
+            const int x = lParam & 0xffff;
+            const int y = (lParam >> 16) & 0xffff;
+            DoDebugObjectMenu(x, y);
+        }
+        return 0; 
+    }
+    
 
-   case WM_POINTERDOWN:
-   case WM_POINTERUP:
-   {
+    case WM_POINTERDOWN:
+    case WM_POINTERUP:
+    {
 #ifndef TEST_TOUCH_WITH_MOUSE
-      if (!GetPointerInfo)
-         GetPointerInfo = (pGPI)GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
-         "GetPointerInfo");
-      if (GetPointerInfo)
+        if (!GetPointerInfo)
+            GetPointerInfo = (pGPI)GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
+                "GetPointerInfo");
+        if (GetPointerInfo)
 #endif
-      {
-         POINTER_INFO pointerInfo;
+        {
+            POINTER_INFO pointerInfo;
 #ifdef TEST_TOUCH_WITH_MOUSE
-         GetCursorPos(&pointerInfo.ptPixelLocation);
+            GetCursorPos(&pointerInfo.ptPixelLocation);
 #else
-         if (GetPointerInfo(GET_POINTERID_WPARAM(wParam), &pointerInfo))
+            if (GetPointerInfo(GET_POINTERID_WPARAM(wParam), &pointerInfo))
 #endif
-         {
-            ScreenToClient(g_pplayer->m_playfieldHwnd, &pointerInfo.ptPixelLocation);
-            for (unsigned int i = 0; i < 8; ++i)
-               if ((g_pplayer->m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN)) && Intersect(touchregion[i], g_pplayer->m_width, g_pplayer->m_height, pointerInfo.ptPixelLocation, fmodf(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set], 360.0f) != 0.f))
-               {
-                  g_pplayer->m_touchregion_pressed[i] = (uMsg == WM_POINTERDOWN);
+            {
+                ScreenToClient(pointerInfo.ptPixelLocation);
+                for (unsigned int i = 0; i < 8; ++i)
+                    if ((m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN)) && Intersect(touchregion[i], m_width, m_height, pointerInfo.ptPixelLocation, fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.0f) != 0.f))
+                    {
+                        m_touchregion_pressed[i] = (uMsg == WM_POINTERDOWN);
 
-                  DIDEVICEOBJECTDATA didod;
-                  didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
-                  didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
-                  g_pplayer->m_pininput.PushQueue(&didod, APP_KEYBOARD/*, curr_time_msec*/);
-               }
-         }
-      }
-   }
-   break;
+                        DIDEVICEOBJECTDATA didod;
+                        didod.dwOfs = m_rgKeys[touchkeymap[i]];
+                        didod.dwData = m_touchregion_pressed[i] ? 0x80 : 0;
+                        m_pininput.PushQueue(&didod, APP_KEYBOARD/*, curr_time_msec*/);
+                    }
+            }
+        }
+        return 0; 
+    }
+    
 
-   case WM_ACTIVATE:
-	  if (wParam != WA_INACTIVE)
-		   SetCursor(NULL);
-	  if (g_pplayer)
-	  {
-		   if (wParam != WA_INACTIVE)
-		   {
-			   g_pplayer->m_gameWindowActive = true;
-			   g_pplayer->m_noTimeCorrect = true;
+    case WM_ACTIVATE:
+        if (wParam != WA_INACTIVE)
+            SetCursor(NULL);
+        {
+            if (wParam != WA_INACTIVE)
+            {
+                m_gameWindowActive = true;
+                m_noTimeCorrect = true;
 #ifdef STEPPING
-			   g_pplayer->m_pause = false;
+                m_pause = false;
 #endif
-		   }
-		   else
-		   {
-			   g_pplayer->m_gameWindowActive = false;
+            }
+            else
+            {
+                m_gameWindowActive = false;
 #ifdef STEPPING
-			   g_pplayer->m_pause = true;
+                m_pause = true;
 #endif
-		   }
-		   g_pplayer->RecomputePauseState();
-	  }
-      break;
+            }
+            RecomputePauseState();
+        }
+        return 0;
 
-   case WM_EXITMENULOOP:
-      g_pplayer->m_noTimeCorrect = true;
-      break;
+    case WM_EXITMENULOOP:
+        m_noTimeCorrect = true;
+        return 0;
 
-   case WM_SETCURSOR:
-      if (LOWORD(lParam) == HTCLIENT && !g_pplayer->m_drawCursor)
-      {
-         SetCursor(NULL);
-      }
-      else
-      {
-         SetCursor(LoadCursor(NULL, IDC_ARROW));
-      }
-      return TRUE;
-      break;
-   }
+    case WM_SETCURSOR:
+        if (LOWORD(lParam) == HTCLIENT && !m_drawCursor)
+        {
+            SetCursor(NULL);
+        }
+        else
+        {
+            SetCursor(LoadCursor(NULL, IDC_ARROW));
+        }
+        return 0;        
+    }
 
-   return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    return WndProcDefault(uMsg, wParam, lParam);
 }
 
-static void ShutDownPlayer()
+void Player::StopPlayer()
 {
-   if (g_pplayer->m_audio)
-      g_pplayer->m_audio->MusicPause();
-
-   PinTable * const playedTable = g_pplayer->m_ptable;
+   if (m_audio)
+      m_audio->MusicPause();
 
    // signal the script that the game is now exited to allow any cleanup
-   playedTable->FireVoidEvent(DISPID_GameEvents_Exit);
-   if (g_pplayer->m_detectScriptHang)
+   m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
+   if (m_detectScriptHang)
       g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
+   
+   ShowWindow(SW_HIDE);
 
 
-   playedTable->StopPlaying();
-
-   delete g_pplayer; // needs to be deleted here, as code below relies on it being NULL
-   g_pplayer = NULL;
-
-   g_pvp->ToggleToolbar();
-   mixer_shutdown();
-   hid_shutdown();
-
-   g_pvp->SetForegroundWindow();
 }
 
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -5985,7 +5989,7 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                      }
                      else
                      {
-                        g_pplayer->m_hwndDebugger = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_DEBUGGER), g_pplayer->m_playfieldHwnd, DebuggerProc, NULL);
+                        g_pplayer->m_hwndDebugger = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_DEBUGGER), g_pplayer->GetHwnd(), DebuggerProc, NULL);
                      }
                      EndDialog(hwndDlg, ID_DEBUGWINDOW);
                   break;

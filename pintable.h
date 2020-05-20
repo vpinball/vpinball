@@ -816,6 +816,7 @@ public:
 #endif
    virtual void OnInitialUpdate();
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+   virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
 
    void SetMouseCursor();
    void OnLeftButtonDown(const short x, const short y);
@@ -850,6 +851,8 @@ public:
    float GetHeight() const;
    void SetHeight(const float value);
 
+   void CloseProgessDialog() { DestroyWindow(m_hwndProgressDialog); }
+
    //HWND m_hMDI;
    PinTableMDI *m_mdiTable;
    void SetMDITable(PinTableMDI * const table)
@@ -863,7 +866,8 @@ public:
    WCHAR *GetCollectionNameByElement(const ISelect * const element);
    void RefreshProperties();
 private:
-   bool m_moving;
+    HWND m_hwndProgressDialog;
+    bool m_moving;
 
    std::unordered_map<const char *, Texture *, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
    std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name
