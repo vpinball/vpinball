@@ -245,11 +245,20 @@ struct TimerOnOff
    bool m_enabled;
 };
 
-class Player
+class Player : public CWnd
 {
 public:
-   Player(const bool cameraMode, PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName, HRESULT &hrInit);
+   Player(const bool cameraMode, PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName);
    virtual ~Player();
+
+   virtual void PreRegisterClass(WNDCLASS& wc);
+   virtual void PreCreate(CREATESTRUCT& cs);
+   virtual void OnInitialUpdate();
+   virtual void OnClose();
+   virtual void OnDestroy();
+   virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+   HWND m_hwndProgress;
+   HWND m_hwndProgressName;
 
 private:
    void RenderStaticMirror(const bool onlyBalls);
@@ -590,7 +599,7 @@ private:
    FrameQueueLimiter m_limiter;
 
    // only called from ctor
-   HRESULT Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName);
+   HRESULT Init();
    // only called from dtor
    void Shutdown();
 
@@ -610,6 +619,7 @@ private:
    unsigned int ProfilingMode();
 
 public:
+   void StopPlayer();
    void ToggleFPS();
    void InitFPS();
    bool ShowFPS();

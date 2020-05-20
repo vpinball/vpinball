@@ -313,11 +313,6 @@ void VPinball::InitRegValues()
    m_convertToUnit = LoadValueIntWithDefault("Editor", "Units", 0);
 }
 
-void VPinball::CreateMDIClient()
-{
-//   SetMenu(GetMainMenu(WINDOWMENU));
-}
-
 void VPinball::AddMDITable(PinTableMDI* mdiTable) 
 { 
     AddMDIChild(mdiTable); 
@@ -1384,7 +1379,7 @@ void VPinball::OnClose()
          Sleep(THREADS_PAUSE);
    }
    if (g_pplayer)
-      SendMessage(g_pplayer->m_playfieldHwnd, WM_CLOSE, 0, 0);
+       g_pplayer->SendMessage(WM_CLOSE, 0, 0);
 
    const bool canClose = CanClose();
    if (canClose)
@@ -1530,7 +1525,6 @@ void VPinball::OnInitialUpdate()
     slintf("Debug output:\n");
 #endif
 
-    CreateMDIClient();
     CreateDocker();
     ShowWindow(SW_SHOW);
     //InitTools();
@@ -1565,7 +1559,7 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     ptCur->SetMouseCursor();
 
             }
-            return FinalWindowProc(uMsg, wParam, lParam);
+            break;
         }
         case WM_TIMER:
         {
@@ -1588,7 +1582,7 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     return 0;
                 }
             }
-            return FinalWindowProc(uMsg, wParam, lParam);
+            break;
         }
         case WM_SIZE:
         {
@@ -1596,11 +1590,7 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
         }
     }
-    // player is sharing the same WndProc from vpinball so do not process the events here.
-    if (g_pplayer)
-        return 0;
-    else
-        return WndProcDefault(uMsg, wParam, lParam);
+    return WndProcDefault(uMsg, wParam, lParam);
 }
 
 LRESULT VPinball::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)

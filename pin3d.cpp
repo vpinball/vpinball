@@ -27,7 +27,7 @@ Pin3D::Pin3D()
 Pin3D::~Pin3D()
 {
    m_gpu_profiler.Shutdown();
-
+   
    m_pd3dPrimaryDevice->SetZBuffer(NULL);
    m_pd3dPrimaryDevice->FreeShader();
 
@@ -412,7 +412,7 @@ HRESULT Pin3D::InitPrimary(const bool fullScreen, const int colordepth, int &ref
    for (std::vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
       if (display == dispConf->display) adapter = dispConf->adapter;
 
-    m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->m_playfieldHwnd, m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, VSync, useAA, stereo3D, FXAA, ss_refl, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
+    m_pd3dPrimaryDevice = new RenderDevice(g_pplayer->GetHwnd(), m_viewPort.Width, m_viewPort.Height, fullScreen, colordepth, VSync, useAA, stereo3D, FXAA, ss_refl, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM, g_pplayer->m_BWrendering);
     try {
         m_pd3dPrimaryDevice->CreateDevice(refreshrate, adapter);
     }
