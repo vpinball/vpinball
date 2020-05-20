@@ -125,6 +125,7 @@ Const DOFPulse = 2
 Dim DOFeffects(9)
 Dim B2SOn
 Dim B2SOnALT
+Dim B2SOff
 
 Sub LoadEM
 	LoadController("EM")
@@ -207,6 +208,11 @@ Sub LoadController(TableType)
 	DOFeffects(8)=objShell.RegRead(directory & "DOFTargets")
 	DOFeffects(9)=objShell.RegRead(directory & "DOFDropTargets")
 	Set objShell = nothing
+
+	'deactivate B2S via table script
+	if B2SOff then
+		tempc = 1
+	end if	
 
 	If TableType = "PROC" or TableType = "VPMALT" Then
 		If TableType = "PROC" Then
