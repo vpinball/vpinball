@@ -338,6 +338,21 @@ __forceinline float radical_inverse(unsigned int v)
    return (float)v * 0.00000000023283064365386962890625f; // /2^32
 }
 
+template <unsigned int base>
+float radical_inverse(unsigned int a) {
+    const float invBase = (float)(1. / (double)base);
+    unsigned int reversedDigits = 0;
+    float invBaseN = 1.f;
+    while (a) {
+        const unsigned int next  = a / base;
+        const unsigned int digit = a - next * base;
+        reversedDigits = reversedDigits * base + digit;
+        invBaseN *= invBase;
+        a = next;
+    }
+    return (float)((double)reversedDigits * invBaseN);
+}
+
 __forceinline float sobol(unsigned int i, unsigned int scramble = 0)
 {
    for (unsigned int v = 1u << 31; (i != 0); i >>= 1, v ^= v >> 1) if (i & 1)
