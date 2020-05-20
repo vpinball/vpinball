@@ -3,6 +3,7 @@
 #include "kdtree.h"
 #include "quadtree.h"
 #include <unordered_set>
+#include "Debugger.h"
 
 #define DEFAULT_PLAYER_WIDTH 1024
 #define DEFAULT_PLAYER_FS_WIDTH 1920
@@ -654,5 +655,6 @@ private:
    ID3DXFont *m_pFont;
    LPD3DXSPRITE m_fontSprite;
    RECT     m_fontRect;
+   DebuggerDialog m_debuggerDialog;
 
 };

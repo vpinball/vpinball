@@ -5124,7 +5124,10 @@ void Player::Render()
          }
          else if (!VPinball::m_open_minimized && m_closeType == 0)
          {
-            option = DialogBox(g_hinst, MAKEINTRESOURCE(IDD_GAMEPAUSE), GetHwnd(), PauseProc);
+             ShowCursor(TRUE);
+             option = DialogBox(g_hinst, MAKEINTRESOURCE(IDD_GAMEPAUSE), GetHwnd(), PauseProc);
+             if(option!=ID_DEBUGWINDOW)
+                ShowCursor(FALSE);
          }
          else //m_closeType == all others
          {
@@ -5145,13 +5148,13 @@ void Player::Render()
       else if(m_showDebugger && !VPinball::m_open_minimized)
       {
           g_pplayer->m_debugMode = true;
-          if(g_pplayer->m_hwndDebugger )
+          if (!m_debuggerDialog.IsWindow())
           {
-             if (!::IsWindowVisible(m_hwndDebugger) && !::IsWindowVisible(m_hwndLightDebugger) && !::IsWindowVisible(m_hwndMaterialDebugger))
-               ::ShowWindow(g_pplayer->m_hwndDebugger, SW_SHOW);
+              m_debuggerDialog.Create(GetHwnd());
+              m_debuggerDialog.ShowWindow();
           }
           else
-             g_pplayer->m_hwndDebugger = CreateDialogParam( g_hinst, MAKEINTRESOURCE( IDD_DEBUGGER ), GetHwnd(), DebuggerProc, NULL );
+              m_debuggerDialog.SetForegroundWindow();
 
           EndDialog( g_pvp->GetHwnd(), ID_DEBUGWINDOW );
       }
