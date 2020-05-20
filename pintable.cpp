@@ -10202,7 +10202,7 @@ int PinTableMDI::OnCreate(CREATESTRUCT &cs)
 
 void PinTableMDI::OnClose()
 {
-    if(CanClose())
+    if(m_vpinball->IsClosing() || CanClose())
     {
         m_table->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
         CMDIChild::OnClose();

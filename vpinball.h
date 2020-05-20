@@ -142,7 +142,7 @@ public:
    {
        return m_layersListDialog;
    }
-
+   bool  IsClosing() { return m_closing; }
    ULONG m_cref;
 
    vector< CComObject<PinTable>* > m_vtable;
@@ -222,7 +222,7 @@ private:
 
    HANDLE m_workerthread;
    unsigned int m_workerthreadid;
-
+   bool    m_closing;
    HMODULE m_scintillaDll;
 
    ImageDialog m_imageMngDlg;

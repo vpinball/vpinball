@@ -105,6 +105,7 @@ static void AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND contr
 VPinball::VPinball()
 {
    // DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); //add FreeImage support BDS
+    m_closing = false;
    m_unloadingTable = false;
    m_toolbarDialog = NULL;
    m_propertyDialog = NULL;
@@ -1269,12 +1270,8 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
       consumed = false;
       if (g_pplayer->m_debugMode)
       {
-         if (::IsDialogMessage(g_pplayer->m_hwndDebugger, pmsg))
-            consumed = true;
-         else if (::IsDialogMessage(g_pplayer->m_hwndLightDebugger, pmsg))
-            consumed = true;
-         else if (::IsDialogMessage(g_pplayer->m_hwndMaterialDebugger, pmsg))
-            consumed = true;
+          if (g_pplayer->m_debuggerDialog.IsWindow())
+            consumed = !!g_pplayer->m_debuggerDialog.IsSubDialogMessage(*pmsg);
       }
    }
 
@@ -1373,6 +1370,8 @@ void VPinball::PreRegisterClass(WNDCLASS& wc)
 void VPinball::OnClose()
 {
    CComObject<PinTable> * const ptable = GetActiveTable();
+   m_closing = true;
+
    if (ptable)
    {
       while (ptable->m_savingActive)

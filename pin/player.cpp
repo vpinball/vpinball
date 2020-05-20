@@ -5985,15 +5985,17 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                case ID_DEBUGWINDOW:
                {
                      g_pplayer->m_debugMode = true;
-                     if (g_pplayer->m_hwndDebugger && !IsWindowVisible(g_pplayer->m_hwndDebugger))
+                     if (!g_pplayer->m_debuggerDialog.IsWindow())
                      {
-                        ShowWindow(g_pplayer->m_hwndDebugger, SW_SHOW);
-                        SetActiveWindow(g_pplayer->m_hwndDebugger);
+                         g_pplayer->m_debuggerDialog.Create();
+                         g_pplayer->m_debuggerDialog.ShowWindow();
                      }
                      else
                      {
-                        g_pplayer->m_hwndDebugger = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_DEBUGGER), g_pplayer->GetHwnd(), DebuggerProc, NULL);
+                         g_pplayer->m_debuggerDialog.ShowWindow(SW_SHOW);
+                         g_pplayer->m_debuggerDialog.SetForegroundWindow();
                      }
+
                      EndDialog(hwndDlg, ID_DEBUGWINDOW);
                   break;
                }
