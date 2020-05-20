@@ -5,7 +5,7 @@ Const VPinMAMEDriverVer = 3.58
 '=======================
 '
 ' New in 3.58 (Update by mfuegemann, DJRobX)
-' - Add possibility to selectively disable B2S by setting new variable "B2SOff=True"
+' - Add possibility to selectively disable B2S by setting new variable "B2SOff=True" (after ExecuteGlobal GetTextFile("controller.vbs"), but before LoadXXX)
 ' - Added directional (pan/fade) sound to DropTargets, Kickers, Trough, BallStacks, Locks, Diverters
 '   VPinball versions prior 10.7 will use a constant size of 950x2100 for positional reference
 '   If some objects are not properly initialized, or Walls are used as Drop Targets, the old center sound will be played

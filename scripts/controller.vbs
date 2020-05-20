@@ -103,6 +103,8 @@
 '
 '  DOF(DOFevent, State)
 '
+'To selectively disable B2S for certain tables, use variable "B2SOff=True" (after ExecuteGlobal GetTextFile("controller.vbs"), but before LoadXXX)
+'
 
 Const directory = "HKEY_CURRENT_USER\SOFTWARE\Visual Pinball\Controller\"
 Dim objShell
@@ -126,6 +128,7 @@ Dim DOFeffects(9)
 Dim B2SOn
 Dim B2SOnALT
 Dim B2SOff
+B2SOff = False
 
 Sub LoadEM
 	LoadController("EM")
