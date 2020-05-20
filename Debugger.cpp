@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 #include "resource.h"
 #include <windowsx.h>
+#include "Debugger.h"
+#include <string>
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
 #define RESIZE_FROM_EXPAND WM_USER+101
@@ -371,290 +373,233 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
    return FALSE;
 }
 
-INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+DebuggerDialog::DebuggerDialog() : CDialog(IDD_DEBUGGER)
 {
-   switch (uMsg)
-   {
-      case WM_INITDIALOG:
-      {
-         RECT rcDialog;
-         RECT rcMain;
-         GetWindowRect(GetParent(hwndDlg), &rcMain);
-         GetWindowRect(hwndDlg, &rcDialog);
+}
 
-         SetWindowPos(hwndDlg, NULL,
-            (rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2,
-            (rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2,
-            0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
+BOOL DebuggerDialog::OnInitDialog()
+{
+    AttachItem(IDC_PLAY, m_playButton);
+    AttachItem(IDC_PAUSE, m_pauseButton);
+    AttachItem(IDC_STEP, m_stepButton);
+    AttachItem(IDC_STEPAMOUNT, m_stepAmountEdit);
+    AttachItem(IDC_EXPAND, m_editorExpandButton);
+    AttachItem(IDC_DBGLIGHTSBUTTON, m_dbgLightsButton);
+    AttachItem(IDC_DBG_MATERIALS_BUTTON, m_dbgMaterialsButton);
+    m_hThrowBallsInPlayerCheck = ::GetDlgItem(GetHwnd(), IDC_BALL_THROWING);
+    m_hBallControlCheck = ::GetDlgItem(GetHwnd(), IDC_BALL_CONTROL);
+    AttachItem(IDC_THROW_BALL_SIZE_EDIT2, m_ballSizeEdit);
+    AttachItem(IDC_THROW_BALL_MASS_EDIT2, m_ballMassEdit);
 
-         AssignIconToButton(hwndDlg, IDC_PLAY, IDI_PLAY);
-         AssignIconToButton(hwndDlg, IDC_PAUSE, IDI_PAUSE);
-         AssignIconToButton(hwndDlg, IDC_STEP, IDI_STEP);
+    CRect rcDialog;
+    CRect rcMain;
+    rcMain = GetParent().GetWindowRect();
+    rcDialog = GetWindowRect();
 
-         SendMessage(hwndDlg, RECOMPUTEBUTTONCHECK, 0, 0);
+    SetWindowPos(NULL, (rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2,
+                       (rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2,
+                       0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
-         RECT rcEditSize;
-         HWND hwndEditSize = GetDlgItem(hwndDlg, IDC_EDITSIZE);
-         GetWindowRect(hwndEditSize, &rcEditSize);
+    HANDLE hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PLAY), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+    m_playButton.SetIcon((HICON)hIcon);
 
-         ScreenToClient(hwndDlg, (POINT *)&rcEditSize);
-         ScreenToClient(hwndDlg, &((POINT *)&rcEditSize)[1]);
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PAUSE), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+    m_pauseButton.SetIcon((HICON)hIcon);
+    hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_STEP), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+    m_stepButton.SetIcon((HICON)hIcon);
 
-         g_pplayer->m_hwndDebugOutput = CreateWindowEx(0, "Scintilla", "",
-               WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN | WS_BORDER,
-               rcEditSize.left, rcEditSize.top, rcEditSize.right - rcEditSize.left, rcEditSize.bottom - rcEditSize.top, hwndDlg, NULL, g_hinst, 0);
+    SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
 
-         SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETSIZE, 32, 10);
-         SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETFONT, 32, (LPARAM)"Courier");
+    RECT rcEditSize;
+    HWND hwndEditSize = GetDlgItem(IDC_EDITSIZE);
+    
+    ::GetWindowRect(hwndEditSize, &rcEditSize);
 
-         SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETMARGINWIDTHN, 1, 0);
+    ScreenToClient(rcEditSize);
+    ScreenToClient(((POINT*)&rcEditSize)[1]);
 
-         SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETTABWIDTH, 4, 0);
+    g_pplayer->m_hwndDebugOutput = CreateWindowEx(0, "Scintilla", "",
+                                                WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN | WS_BORDER,
+                                                rcEditSize.left, rcEditSize.top, rcEditSize.right - rcEditSize.left, rcEditSize.bottom - rcEditSize.top, GetHwnd(), NULL, g_hinst, 0);
 
-         SendDlgItemMessage(hwndDlg, IDC_BALL_THROWING, BM_SETCHECK, g_pplayer->m_throwBalls ? BST_CHECKED : BST_UNCHECKED, 0);
-         SendDlgItemMessage(hwndDlg, IDC_BALL_CONTROL, BM_SETCHECK, g_pplayer->m_ballControl ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETSIZE, 32, 10);
+    SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETFONT, 32, (LPARAM)"Courier");
 
-         SetDlgItemInt(hwndDlg, IDC_THROW_BALL_SIZE_EDIT2, g_pplayer->m_debugBallSize, FALSE);
-         char textBuf[256] = { 0 };
-         f2sz(g_pplayer->m_debugBallMass, textBuf);
-         SetDlgItemText(hwndDlg, IDC_THROW_BALL_MASS_EDIT2, textBuf);
+    SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETMARGINWIDTHN, 1, 0);
 
-         SendMessage(hwndDlg, RESIZE_FROM_EXPAND, 0, 0);
+    SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETTABWIDTH, 4, 0);
 
-         return TRUE;
-      }
+    SendMessage(m_hThrowBallsInPlayerCheck, BM_SETCHECK, g_pplayer->m_throwBalls ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendMessage(m_hBallControlCheck, BM_SETCHECK, g_pplayer->m_ballControl ? BST_CHECKED : BST_UNCHECKED, 0);
 
-      case WM_NOTIFY:
-      {
-         //int idCtrl = (int) wParam;
-         const NMHDR *const pnmh = (LPNMHDR)lParam;
-         //HWND hwndRE = pnmh->hwndFrom;
-         const int code = pnmh->code;
+//     SendDlgItemMessage(hwndDlg, IDC_BALL_THROWING, BM_SETCHECK, g_pplayer->m_throwBalls ? BST_CHECKED : BST_UNCHECKED, 0);
+//     SendDlgItemMessage(hwndDlg, IDC_BALL_CONTROL, BM_SETCHECK, g_pplayer->m_ballControl ? BST_CHECKED : BST_UNCHECKED, 0);
 
-         switch (code)
-         {
-            case SCN_CHARADDED:
+
+    m_ballSizeEdit.SetWindowText(CString(g_pplayer->m_debugBallSize).c_str());
+
+    char textBuf[256] = { 0 };
+    f2sz(g_pplayer->m_debugBallMass, textBuf);
+    m_ballMassEdit.SetWindowText(textBuf);
+
+    SendMessage(RESIZE_FROM_EXPAND, 0, 0);
+    return TRUE;
+}
+
+BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+    UNREFERENCED_PARAMETER(lParam);
+
+    switch (LOWORD(wParam))
+    {
+        case IDC_PLAY:
+        {
+    #ifdef STEPPING
+            g_pplayer->m_pauseTimeTarget = 0;
+    #endif
+            g_pplayer->m_userDebugPaused = false;
+            g_pplayer->RecomputePseudoPauseState();
+            SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
+            return TRUE;
+        }
+        case IDC_PAUSE:
+        {
+#ifdef STEPPING
+            g_pplayer->m_pauseTimeTarget = 0;
+#endif
+            g_pplayer->m_userDebugPaused = true;
+            g_pplayer->RecomputePseudoPauseState();
+            SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
+            return TRUE;
+        }
+        case IDC_STEP:
+        {
+#ifdef STEPPING
+            const int ms = GetDlgItemInt(IDC_STEPAMOUNT, FALSE);
+            g_pplayer->m_pauseTimeTarget = g_pplayer->m_time_msec + ms;
+#endif
+            g_pplayer->m_userDebugPaused = false;
+            g_pplayer->RecomputePseudoPauseState();
+            SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
+            return TRUE;
+        }
+        case IDC_EXPAND:
+        {
+            SendMessage(RESIZE_FROM_EXPAND, 0, 0);
+            return TRUE;
+        }
+        case IDC_BALL_THROWING:
+        {
+            size_t checked = SendMessage(m_hThrowBallsInPlayerCheck, BM_GETCHECK, 0, 0);
+            g_pplayer->m_throwBalls = !!checked;
+            return TRUE;
+        }
+        case IDC_BALL_CONTROL:
+        {
+            size_t checked = SendMessage(m_hBallControlCheck, BM_GETCHECK, 0, 0);
+            g_pplayer->m_ballControl = !!checked;
+            return TRUE;
+        }
+        case IDC_DBGLIGHTSBUTTON:
+        {
+            g_pplayer->m_hwndLightDebugger = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_DBGLIGHTDIALOG), GetHwnd(), LightDebuggerProc, NULL);
+            return TRUE;
+        }
+        case IDC_DBG_MATERIALS_BUTTON:
+        {
+            g_pplayer->m_hwndLightDebugger = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_DBGMATERIALDIALOG), GetHwnd(), MaterialDebuggerProc, NULL);
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+LRESULT DebuggerDialog::OnNotify(WPARAM wparam, LPARAM lparam)
+{
+    const NMHDR* const pnmh = (LPNMHDR)lparam;
+    //HWND hwndRE = pnmh->hwndFrom;
+    const int code = pnmh->code;
+
+    switch (code)
+    {
+        case SCN_CHARADDED:
+        {
+            const SCNotification* const pscnmh = (SCNotification*)lparam;
+            if (pscnmh->ch == '\n')
             {
-               const SCNotification * const pscnmh = (SCNotification *)lParam;
-               if (pscnmh->ch == '\n')
-               {
-                  SendMessage(pnmh->hwndFrom, SCI_DELETEBACK, 0, 0);
+                SendMessage(pnmh->hwndFrom, SCI_DELETEBACK, 0, 0);
 
-                  const size_t curpos = SendMessage(pnmh->hwndFrom, SCI_GETCURRENTPOS, 0, 0);
-                  const size_t line = SendMessage(pnmh->hwndFrom, SCI_LINEFROMPOSITION, curpos, 0);
-                  const size_t lineStart = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line, 0);
-                  const size_t lineEnd = SendMessage(pnmh->hwndFrom, SCI_GETLINEENDPOSITION, line, 0);
+                const size_t curpos = SendMessage(pnmh->hwndFrom, SCI_GETCURRENTPOS, 0, 0);
+                const size_t line = SendMessage(pnmh->hwndFrom, SCI_LINEFROMPOSITION, curpos, 0);
+                const size_t lineStart = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line, 0);
+                const size_t lineEnd = SendMessage(pnmh->hwndFrom, SCI_GETLINEENDPOSITION, line, 0);
 
-                  char * const szText = new char[lineEnd - lineStart + 1];
-                  TextRange tr;
-                  tr.chrg.cpMin = (Sci_PositionCR)lineStart;
-                  tr.chrg.cpMax = (Sci_PositionCR)lineEnd;
-                  tr.lpstrText = szText;
-                  SendMessage(pnmh->hwndFrom, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+                char* const szText = new char[lineEnd - lineStart + 1];
+                TextRange tr;
+                tr.chrg.cpMin = (Sci_PositionCR)lineStart;
+                tr.chrg.cpMax = (Sci_PositionCR)lineEnd;
+                tr.lpstrText = szText;
+                SendMessage(pnmh->hwndFrom, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 
-                  const size_t maxlines = SendMessage(pnmh->hwndFrom, SCI_GETLINECOUNT, 0, 0);
+                const size_t maxlines = SendMessage(pnmh->hwndFrom, SCI_GETLINECOUNT, 0, 0);
 
-                  if (maxlines == line + 1)
-                  {
-                     // need to add a new line to the end
-                     SendMessage(pnmh->hwndFrom, SCI_DOCUMENTEND, 0, 0);
-                     SendMessage(pnmh->hwndFrom, SCI_ADDTEXT, lstrlen("\n"), (LPARAM)"\n");
-                  }
-                  else
-                  {
-                     const size_t pos = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line + 1, 0);
-                     SendMessage(pnmh->hwndFrom, SCI_SETCURRENTPOS, pos, 0);
-                  }
+                if (maxlines == line + 1)
+                {
+                    // need to add a new line to the end
+                    SendMessage(pnmh->hwndFrom, SCI_DOCUMENTEND, 0, 0);
+                    SendMessage(pnmh->hwndFrom, SCI_ADDTEXT, lstrlen("\n"), (LPARAM)"\n");
+                }
+                else
+                {
+                    const size_t pos = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line + 1, 0);
+                    SendMessage(pnmh->hwndFrom, SCI_SETCURRENTPOS, pos, 0);
+                }
 
-                  g_pplayer->m_ptable->m_pcv->EvaluateScriptStatement(szText);
-                  delete[] szText;
-               }
-               break;
+                g_pplayer->m_ptable->m_pcv->EvaluateScriptStatement(szText);
+                delete[] szText;
             }
-         }//switch (code)
-         break;
-      }
-      case RECOMPUTEBUTTONCHECK:
-      {
-         int PlayDown = BST_UNCHECKED;
-         int PauseDown = BST_UNCHECKED;
-         int StepDown = BST_UNCHECKED;
-
-         if (g_pplayer->m_userDebugPaused)
-         {
-            PauseDown = BST_CHECKED;
-         }
-#ifdef STEPPING
-         else if (g_pplayer->m_pauseTimeTarget > 0)
-         {
-            StepDown = BST_CHECKED;
-         }
-#endif
-         else
-         {
-            PlayDown = BST_CHECKED;
-         }
-
-         const HWND hwndTBParent = GetDlgItem(hwndDlg, IDC_TOOLBARSIZE);
-         const HWND hwndToolbar = GetWindow(hwndTBParent, GW_CHILD);
-
-         SendDlgItemMessage(hwndDlg, IDC_PLAY, BM_SETCHECK, PlayDown, 0);
-         SendDlgItemMessage(hwndDlg, IDC_PAUSE, BM_SETCHECK, PauseDown, 0);
-         SendDlgItemMessage(hwndDlg, IDC_STEP, BM_SETCHECK, StepDown, 0);
-         SendMessage(hwndToolbar, TB_CHECKBUTTON, IDC_PLAY, PlayDown);
-         SendMessage(hwndToolbar, TB_CHECKBUTTON, IDC_PAUSE, PauseDown);
-         SendMessage(hwndToolbar, TB_CHECKBUTTON, IDC_STEP, StepDown);
-         break;
-      }
-
-      case WM_CLOSE:
-      {
-#ifdef STEPPING
-         g_pplayer->m_pauseTimeTarget = 0;
-#endif
-         g_pplayer->m_userDebugPaused = false;
-         g_pplayer->RecomputePseudoPauseState();
-         g_pplayer->m_debugBallSize = GetDlgItemInt(hwndDlg, IDC_THROW_BALL_SIZE_EDIT2, NULL, FALSE);
-         char textBuf[256] = { 0 };
-         float fv;
-         GetDlgItemText(hwndDlg, IDC_THROW_BALL_MASS_EDIT2, textBuf, 255);
-         fv = sz2f(textBuf);
-         g_pplayer->m_debugBallMass = fv;
-         g_pplayer->m_debugMode = false;
-         g_pplayer->m_showDebugger = false;
-         ShowWindow(hwndDlg, SW_HIDE);
-         break;
-      }
-
-      case WM_ACTIVATE:
-      {
-         g_pplayer->m_debugWindowActive = (wParam != WA_INACTIVE);
-         g_pplayer->RecomputePauseState();
-         g_pplayer->RecomputePseudoPauseState();
-         break;
-      }
-
-      case RESIZE_FROM_EXPAND:
-      {
-         const size_t state = SendDlgItemMessage(hwndDlg, IDC_EXPAND, BM_GETCHECK, 0, 0);
-         int mult;
-         if (state == BST_CHECKED)
-         {
-            mult = 1;
-            SetWindowText(GetDlgItem(hwndDlg, IDC_EXPAND), "< Editor");
-         }
-         else
-         {
-            mult = -1;
-            SetWindowText(GetDlgItem(hwndDlg, IDC_EXPAND), "> Editor");
-         }
-
-         RECT rcSizer1;
-         RECT rcSizer2;
-         GetWindowRect(GetDlgItem(hwndDlg, IDC_GUIDE1), &rcSizer1);
-         GetWindowRect(GetDlgItem(hwndDlg, IDC_GUIDE2), &rcSizer2);
-
-         const int diffx = rcSizer2.right - rcSizer1.right;
-         const int diffy = rcSizer2.bottom - rcSizer1.bottom;
-
-         RECT rcDialog;
-         GetWindowRect(hwndDlg, &rcDialog);
-
-         SetWindowPos(hwndDlg, NULL,
-            rcDialog.left,
-            rcDialog.top,
-            rcDialog.right - rcDialog.left + diffx*mult, rcDialog.bottom - rcDialog.top + diffy*mult, SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
-         break;
-      }
-
-      case WM_COMMAND:
-      {
-         switch (HIWORD(wParam))
-         {
-            case BN_CLICKED:
-            {
-               switch (LOWORD(wParam))
-               {
-                  case IDC_PLAY:
-                  {
-#ifdef STEPPING
-                     g_pplayer->m_pauseTimeTarget = 0;
-#endif
-                     g_pplayer->m_userDebugPaused = false;
-                     g_pplayer->RecomputePseudoPauseState();
-                     SendMessage(hwndDlg, RECOMPUTEBUTTONCHECK, 0, 0);
-                     break;
-                  }
-                  case IDC_PAUSE:
-                  {
-#ifdef STEPPING
-                     g_pplayer->m_pauseTimeTarget = 0;
-#endif
-                     g_pplayer->m_userDebugPaused = true;
-                     g_pplayer->RecomputePseudoPauseState();
-                     SendMessage(hwndDlg, RECOMPUTEBUTTONCHECK, 0, 0);
-                     break;
-                  }
-                  case IDC_STEP:
-                  {
-#ifdef STEPPING
-                     const int ms = GetDlgItemInt(hwndDlg, IDC_STEPAMOUNT, NULL, FALSE);
-                     g_pplayer->m_pauseTimeTarget = g_pplayer->m_time_msec + ms;
-#endif
-                     g_pplayer->m_userDebugPaused = false;
-                     g_pplayer->RecomputePseudoPauseState();
-                     SendMessage(hwndDlg, RECOMPUTEBUTTONCHECK, 0, 0);
-                     break;
-                  }
-                  case IDC_EXPAND:
-                  {
-                     SendMessage(hwndDlg, RESIZE_FROM_EXPAND, 0, 0);
-                     break;
-                  }
-                  case IDC_BALL_THROWING:
-                  {
-                     HWND hwndControl = GetDlgItem(hwndDlg, IDC_BALL_THROWING);
-                     size_t checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
-                     g_pplayer->m_throwBalls = !!checked;
-                     break;
-                  }
-                  case IDC_BALL_CONTROL:
-                  {
-                     HWND hwndControl = GetDlgItem(hwndDlg, IDC_BALL_CONTROL);
-                     size_t checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
-                     g_pplayer->m_ballControl = !!checked;
-                     break;
-                  }
-
-                  case IDC_DBGLIGHTSBUTTON:
-                  {
-                     g_pplayer->m_hwndLightDebugger = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_DBGLIGHTDIALOG), hwndDlg, LightDebuggerProc, NULL);
-                     break;
-                  }
-                  case IDC_DBG_MATERIALS_BUTTON:
-                  {
-                     g_pplayer->m_hwndLightDebugger = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_DBGMATERIALDIALOG), hwndDlg, MaterialDebuggerProc, NULL);
-                     break;
-                  }
-               }
             break;
-            }//case BN_CLICKED:
-         }//switch (HIWORD(wParam))
-      break;
-      }//case WM_COMMAND:
-      default:
-      {
-         switch (LOWORD(wParam))
-         {
-            case IDC_THROW_BALL_SIZE_EDIT2:
-            {
-               g_pplayer->m_debugBallSize = GetDlgItemInt(hwndDlg, IDC_THROW_BALL_SIZE_EDIT2, NULL, FALSE);
-               break;
-            }
-         }
-         break;
-      }
-   }
+        }
+    }
+    return CDialog::OnNotify(wparam, lparam);
+}
 
-   return FALSE;
+INT_PTR DebuggerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (uMsg)
+    {
+        case RECOMPUTEBUTTONCHECK:
+        {
+            int PlayDown = BST_UNCHECKED;
+            int PauseDown = BST_UNCHECKED;
+            int StepDown = BST_UNCHECKED;
+
+            if (g_pplayer->m_userDebugPaused)
+            {
+                PauseDown = BST_CHECKED;
+            }
+    #ifdef STEPPING
+            else if (g_pplayer->m_pauseTimeTarget > 0)
+            {
+                StepDown = BST_CHECKED;
+            }
+    #endif
+            else
+            {
+                PlayDown = BST_CHECKED;
+            }
+
+            const HWND hwndTBParent = GetDlgItem(IDC_TOOLBARSIZE);
+            const HWND hwndToolbar = GetWindow(GW_CHILD);
+
+            SendDlgItemMessage(IDC_PLAY, BM_SETCHECK, PlayDown, 0);
+            SendDlgItemMessage(IDC_PAUSE, BM_SETCHECK, PauseDown, 0);
+            SendDlgItemMessage(IDC_STEP, BM_SETCHECK, StepDown, 0);
+            SendMessage(TB_CHECKBUTTON, IDC_PLAY, PlayDown);
+            SendMessage(TB_CHECKBUTTON, IDC_PAUSE, PauseDown);
+            SendMessage(TB_CHECKBUTTON, IDC_STEP, StepDown);
+            return TRUE;
+        }
+    }
+    return DialogProcDefault(uMsg, wParam, lParam);
 }

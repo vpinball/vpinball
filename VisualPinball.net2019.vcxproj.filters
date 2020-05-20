@@ -1373,6 +1373,7 @@
     <ClInclude Include="dialogs\LayersListDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="Debugger.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">

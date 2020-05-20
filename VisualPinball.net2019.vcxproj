@@ -1142,6 +1142,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="codeview.h" />
     <ClInclude Include="codeviewedit.h" />
     <ClInclude Include="CrashHandler.h" />
+    <ClInclude Include="Debugger.h" />
     <ClInclude Include="decal.h" />
     <ClInclude Include="def.h" />
     <ClInclude Include="Dialogs\AboutDialog.h" />
