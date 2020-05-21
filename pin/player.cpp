@@ -855,32 +855,8 @@ void Player::OnInitialUpdate()
 
 }
 
-void Player::OnClose()
-{
-    // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY if script is not closed first.   
-    // Shut down script first if in exclusive mode.  
-    //if (m_fullScreen)
-        StopPlayer();
-}
-
-void Player::OnDestroy()
-{
-    if (!m_fullScreen)
-        StopPlayer();
-}
-
 void Player::Shutdown()
 {
-
-#if(_WIN32_WINNT >= 0x0500)
-    if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
-    {
-        ::LockSetForegroundWindow(LSFW_UNLOCK);
-        ::ShowCursor(TRUE);
-    }
-#else
-#pragma message ( "Warning: Missing LockSetForegroundWindow()" )
-#endif
 
    // if limit framerate if requested by user (vsync Hz higher than refreshrate of gfxcard/monitor), restore timeEndPeriod
    const int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
@@ -986,12 +962,6 @@ void Player::Shutdown()
    m_controlclsidsafe.clear();
 
    m_changed_vht.clear();
-
-   g_pvp->ShowWindow(SW_SHOW);
-   g_pvp->SetFocus();
-   g_pvp->Invalidate();
-   m_ptable->SetForegroundWindow();
-   m_ptable->SetDirtyDraw();
 }
 
 void Player::InitFPS()
@@ -5141,8 +5111,7 @@ void Player::Render()
          UnpauseMusic();
 
          if (option == ID_QUIT)
-             //SendMessage(WM_CLOSE, 0, 0); // This line returns to the editor after exiting a table
-             m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
+             SendMessage(WM_CLOSE, 0, 0); // This line returns to the editor after exiting a table
 
       }
       else if(m_showDebugger && !VPinball::m_open_minimized)
@@ -5804,6 +5773,22 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         mixer_get_volume();
         return FinalWindowProc(uMsg, wParam, lParam);
 
+    case WM_CLOSE:
+    {
+        // In Windows 10 1803, there may be a significant lag waiting for WM_DESTROY if script is not closed first.   
+        // Shut down script first if in exclusive mode.  
+        if (m_fullScreen)
+            StopPlayer();
+        return FinalWindowProc(uMsg, wParam, lParam);
+    }
+    case WM_DESTROY:
+    {
+        if (!m_fullScreen)
+            StopPlayer();
+        m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
+
+        return 0;
+    }
     case WM_KEYDOWN:
         m_drawCursor = false;
         SetCursor(NULL);
@@ -5944,9 +5929,16 @@ void Player::StopPlayer()
    m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
    if (m_detectScriptHang)
       g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
-   
-   ShowWindow(SW_HIDE);
 
+#if(_WIN32_WINNT >= 0x0500)
+   if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
+   {
+       ::LockSetForegroundWindow(LSFW_UNLOCK);
+       ::ShowCursor(TRUE);
+   }
+#else
+#pragma message ( "Warning: Missing LockSetForegroundWindow()" )
+#endif
 
 }
 
@@ -5987,13 +5979,13 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                      g_pplayer->m_debugMode = true;
                      if (!g_pplayer->m_debuggerDialog.IsWindow())
                      {
-                         g_pplayer->m_debuggerDialog.Create();
+                         g_pplayer->m_debuggerDialog.Create(g_pplayer->GetHwnd());
                          g_pplayer->m_debuggerDialog.ShowWindow();
                      }
                      else
                      {
                          g_pplayer->m_debuggerDialog.ShowWindow(SW_SHOW);
-                         g_pplayer->m_debuggerDialog.SetForegroundWindow();
+                         g_pplayer->m_debuggerDialog.SetActiveWindow();
                      }
 
                      EndDialog(hwndDlg, ID_DEBUGWINDOW);
