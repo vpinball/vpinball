@@ -100,9 +100,9 @@ BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     {
         case IDC_PLAY:
         {
-    #ifdef STEPPING
+#ifdef STEPPING
             g_pplayer->m_pauseTimeTarget = 0;
-    #endif
+#endif
             g_pplayer->m_userDebugPaused = false;
             g_pplayer->RecomputePseudoPauseState();
             SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
@@ -189,9 +189,8 @@ void DebuggerDialog::OnClose()
     g_pplayer->RecomputePseudoPauseState();
     g_pplayer->m_debugBallSize = GetDlgItemInt(IDC_THROW_BALL_SIZE_EDIT2, FALSE);
 
-    CString text = GetDlgItemText(IDC_THROW_BALL_MASS_EDIT2);
-    float fv;
-    fv = sz2f(text.c_str());
+    const CString text = GetDlgItemText(IDC_THROW_BALL_MASS_EDIT2);
+    const float fv = sz2f(text.c_str());
     g_pplayer->m_debugBallMass = fv;
 
     g_pplayer->m_debugMode = false;
@@ -263,12 +262,12 @@ INT_PTR DebuggerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 PauseDown = BST_CHECKED;
             }
-    #ifdef STEPPING
+#ifdef STEPPING
             else if (g_pplayer->m_pauseTimeTarget > 0)
             {
                 StepDown = BST_CHECKED;
             }
-    #endif
+#endif
             else
             {
                 PlayDown = BST_CHECKED;
@@ -357,13 +356,11 @@ BOOL DbgLightDialog::OnInitDialog()
 
 void DbgLightDialog::OnOK()
 {
-    Light* plight = GetLight();
+    Light* const plight = GetLight();
     if (plight != nullptr)
     {
-        float fv;
-
         CString txt = GetDlgItemText(IDC_DBG_LIGHT_FALLOFF);
-        fv = sz2f(txt.c_str());
+        float fv = sz2f(txt.c_str());
         plight->put_Falloff(fv);
 
         txt = GetDlgItemText(IDC_DBG_LIGHT_FALLOFF_POWER);
@@ -391,7 +388,7 @@ void DbgLightDialog::OnOK()
         plight->put_FadeSpeedDown(fv);
 
         g_pplayer->m_ptable->AddDbgLight(plight);
-    };
+    }
 }
 
 BOOL DbgLightDialog::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -402,7 +399,7 @@ BOOL DbgLightDialog::OnCommand(WPARAM wParam, LPARAM lParam)
     {
         case IDC_DBG_LIGHT_ON_CHECK:
         {
-            Light* plight = GetLight();
+            Light* const plight = GetLight();
             if (plight != nullptr)
             {
                 plight->put_State(LightStateOn);
@@ -413,7 +410,7 @@ BOOL DbgLightDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case IDC_DBG_LIGHT_OFF_CHECK:
         {
-            Light* plight = GetLight();
+            Light* const plight = GetLight();
             if (plight != NULL)
             {
                 plight->put_State(LightStateOff);
@@ -424,7 +421,7 @@ BOOL DbgLightDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case IDC_DBG_LIGHT_BLINKING_CHECK:
         {
-            Light* plight = GetLight();
+            Light* const plight = GetLight();
             if (plight != NULL)
             {
                 plight->put_State(LightStateBlinking);
@@ -437,7 +434,7 @@ BOOL DbgLightDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         {
             CHOOSECOLOR cc = m_colorDialog.GetParameters();
             cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-            Light* plight = GetLight();
+            Light* const plight = GetLight();
 
             m_colorDialog.SetParameters(cc);
             m_colorDialog.SetColor(plight->m_d.m_color);
@@ -473,7 +470,7 @@ BOOL DbgLightDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             {
                 case CBN_SELCHANGE:
                 {
-                    Light* plight = GetLight();
+                    Light* const plight = GetLight();
                     if (plight != NULL)
                     {
                         char value[256];
@@ -507,7 +504,7 @@ BOOL DbgLightDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                         SetDlgItemText(IDC_DBG_LIGHT_FADE_DOWN_EDIT, value);
 
                         SetCheckButtonState(plight);
-                    };
+                    }
                     return TRUE;
                 }
             }
@@ -540,11 +537,10 @@ INT_PTR DbgLightDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 Light* DbgLightDialog::GetLight()
 {
-    int idx_row;
     char strText[255] = { 0 };
-    idx_row = m_lightsCombo.GetCurSel();
+    const int idx_row = m_lightsCombo.GetCurSel();
     m_lightsCombo.GetLBText(idx_row, strText);
-    IEditable* pedit = g_pplayer->m_ptable->GetElementByName(strText);
+    IEditable* const pedit = g_pplayer->m_ptable->GetElementByName(strText);
     if (pedit != nullptr)
         return (Light*)pedit;
 
@@ -585,6 +581,7 @@ BOOL DbgMaterialDialog::OnInitDialog()
     AttachItem(IDC_COLOR_BUTTON3, m_colorButton3);
 
     vector<string> matNames;
+    matNames.reserve(g_pplayer->m_ptable->m_materials.size());
     for (size_t i = 0; i < g_pplayer->m_ptable->m_materials.size(); i++)
     {
         matNames.push_back(g_pplayer->m_ptable->m_materials[i]->m_szName);
@@ -600,9 +597,8 @@ BOOL DbgMaterialDialog::OnInitDialog()
 
 void DbgMaterialDialog::OnOK()
 {
-    int idx_row;
     char strText[255] = { 0 };
-    idx_row = m_materialsCombo.GetCurSel();
+    const int idx_row = m_materialsCombo.GetCurSel();
     m_materialsCombo.GetLBText(idx_row, strText);
 
     Material* const pMat = g_pplayer->m_ptable->GetMaterial(strText);

@@ -27,7 +27,7 @@ Pin3D::Pin3D()
 Pin3D::~Pin3D()
 {
    m_gpu_profiler.Shutdown();
-   
+
    m_pd3dPrimaryDevice->SetZBuffer(NULL);
    m_pd3dPrimaryDevice->FreeShader();
 

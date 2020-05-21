@@ -729,6 +729,42 @@ STDMETHODIMP ScriptGlobalTable::UpdateMaterial(BSTR pVal, float wrapLighting, fl
       return E_FAIL;
 }
 
+STDMETHODIMP ScriptGlobalTable::GetMaterial(BSTR pVal, float *wrapLighting, float *roughness, float *glossyImageLerp, float *thickness, float *edge, float *edgeAlpha, float *opacity,
+   OLE_COLOR *base, OLE_COLOR *glossy, OLE_COLOR *clearcoat, VARIANT_BOOL *isMetal, VARIANT_BOOL *opacityActive,
+   float *elasticity, float *elasticityFalloff, float *friction, float *scatterAngle)
+{
+   if (!g_pplayer)
+      return E_POINTER;
+
+   char Name[MAX_PATH];
+   WideCharToMultiByte(CP_ACP, 0, pVal, -1, Name, MAX_PATH, NULL, NULL);
+
+   const Material * const pMat = m_pt->GetMaterial(Name);
+   if (pMat != &m_vpinball->m_dummyMaterial)
+   {
+      *wrapLighting = pMat->m_fWrapLighting;
+      *roughness = pMat->m_fRoughness;
+      *glossyImageLerp = pMat->m_fGlossyImageLerp;
+      *thickness = pMat->m_fThickness;
+      *edge = pMat->m_fEdge;
+      *edgeAlpha = pMat->m_fEdgeAlpha;
+      *opacity = pMat->m_fOpacity;
+      *base = pMat->m_cBase;
+      *glossy = pMat->m_cGlossy;
+      *clearcoat = pMat->m_cClearcoat;
+      *isMetal = FTOVB(pMat->m_bIsMetal);
+      *opacityActive = FTOVB(pMat->m_bOpacityActive);
+      *elasticity = pMat->m_fElasticity;
+      *elasticityFalloff = pMat->m_fElasticityFalloff;
+      *friction = pMat->m_fFriction;
+      *scatterAngle = pMat->m_fScatterAngle;
+
+      return S_OK;
+   }
+   else
+      return E_FAIL;
+}
+
 STDMETHODIMP ScriptGlobalTable::UpdateMaterialPhysics(BSTR pVal, float elasticity, float elasticityFalloff, float friction, float scatterAngle)
 {
    if (!g_pplayer)
@@ -744,6 +780,28 @@ STDMETHODIMP ScriptGlobalTable::UpdateMaterialPhysics(BSTR pVal, float elasticit
       pMat->m_fElasticityFalloff = elasticityFalloff;
       pMat->m_fFriction = friction;
       pMat->m_fScatterAngle = scatterAngle;
+
+      return S_OK;
+   }
+   else
+      return E_FAIL;
+}
+
+STDMETHODIMP ScriptGlobalTable::GetMaterialPhysics(BSTR pVal, float *elasticity, float *elasticityFalloff, float *friction, float *scatterAngle)
+{
+   if (!g_pplayer)
+      return E_POINTER;
+
+   char Name[MAX_PATH];
+   WideCharToMultiByte(CP_ACP, 0, pVal, -1, Name, MAX_PATH, NULL, NULL);
+
+   const Material * const pMat = m_pt->GetMaterial(Name);
+   if (pMat != &m_vpinball->m_dummyMaterial)
+   {
+      *elasticity = pMat->m_fElasticity;
+      *elasticityFalloff = pMat->m_fElasticityFalloff;
+      *friction = pMat->m_fFriction;
+      *scatterAngle = pMat->m_fScatterAngle;
 
       return S_OK;
    }
@@ -796,6 +854,10 @@ STDMETHODIMP ScriptGlobalTable::put_DMDHeight(int pVal)
       g_pplayer->m_dmdy = pVal;
    return S_OK;
 }
+
+//
+//
+//
 
 static inline float eq_col1(const DWORD AD, const DWORD BD)
 {
@@ -1667,7 +1729,6 @@ void PinTable::SetCaption(const char * const szCaption)
    m_pcv->SetCaption(szCaption);
 }
 
-
 void PinTable::SetMouseCapture()
 {
     SetCapture();
@@ -1825,7 +1886,6 @@ void PinTable::UIRenderPass2(Sur * const psur)
       Render3DProjection(psur);
    }
 
-
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const ptr = m_vedit[i];
@@ -1958,14 +2018,14 @@ void PinTable::Render3DProjection(Sur * const psur)
    psur->SetBorderColor(-1, false, 0);
 
    Vertex3Ds rgvIn[8];
-   rgvIn[0].x = m_left;    rgvIn[0].y = m_top;    rgvIn[0].z = 50.0f;
-   rgvIn[1].x = m_left;    rgvIn[1].y = m_top;    rgvIn[1].z = m_glassheight;
-   rgvIn[2].x = m_right;   rgvIn[2].y = m_top;    rgvIn[2].z = m_glassheight;
-   rgvIn[3].x = m_right;   rgvIn[3].y = m_top;    rgvIn[3].z = 50.0f;
-   rgvIn[4].x = m_right;   rgvIn[4].y = m_bottom; rgvIn[4].z = 50.0f;
-   rgvIn[5].x = m_right;   rgvIn[5].y = m_bottom; rgvIn[5].z = 0.0f;
-   rgvIn[6].x = m_left;    rgvIn[6].y = m_bottom; rgvIn[6].z = 0.0f;
-   rgvIn[7].x = m_left;    rgvIn[7].y = m_bottom; rgvIn[7].z = 50.0f;
+   rgvIn[0].x = m_left;  rgvIn[0].y = m_top;    rgvIn[0].z = 50.0f;
+   rgvIn[1].x = m_left;  rgvIn[1].y = m_top;    rgvIn[1].z = m_glassheight;
+   rgvIn[2].x = m_right; rgvIn[2].y = m_top;    rgvIn[2].z = m_glassheight;
+   rgvIn[3].x = m_right; rgvIn[3].y = m_top;    rgvIn[3].z = 50.0f;
+   rgvIn[4].x = m_right; rgvIn[4].y = m_bottom; rgvIn[4].z = 50.0f;
+   rgvIn[5].x = m_right; rgvIn[5].y = m_bottom; rgvIn[5].z = 0.0f;
+   rgvIn[6].x = m_left;  rgvIn[6].y = m_bottom; rgvIn[6].z = 0.0f;
+   rgvIn[7].x = m_left;  rgvIn[7].y = m_bottom; rgvIn[7].z = 50.0f;
 
    Vertex2D rgvOut[8];
    pinproj.TransformVertices(rgvIn, NULL, 8, rgvOut);
@@ -2176,7 +2236,7 @@ void PinTable::Play(const bool cameraMode)
       {
          g_pplayer = new Player(cameraMode, this, hwndProgressBar, hwndStatusName);
          g_pplayer->Create();
-          
+
          const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
          const float maxSlope = (m_overridePhysics ? m_fOverrideMaxSlope : m_angletiltMax);
          const float slope = minSlope + (maxSlope - minSlope) * m_globalDifficulty;
@@ -5920,7 +5980,6 @@ void PinTable::RestoreBackup()
     m_lightHeight = lightHeight;
     m_lightEmissionScale = lightEmissionScale;
     m_envEmissionScale = envEmissionScale;
-
 }
 
 void PinTable::Copy(int x, int y)
@@ -6051,7 +6110,6 @@ HRESULT PinTable::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versio
    SetDefaults(false);
 
    int csubobj, csounds, ctextures, cfonts, ccollection;
-
    LoadData(pstm, csubobj, csounds, ctextures, cfonts, ccollection, version, hcrypthash, hcryptkey);
 
    return S_OK;
@@ -9377,7 +9435,6 @@ STDMETHODIMP PinTable::ImportPhysics()
           ShowError("flipper scatter is missing");
           FlipperPhysicsScatter = 0.0f;
       }
-
 
       if(physFlip->first_node("eosTorque")!=nullptr)
       {

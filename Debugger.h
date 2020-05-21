@@ -75,5 +75,3 @@ private:
     DbgLightDialog    m_lightDialog;
     DbgMaterialDialog m_materialDialog;
 };
-
-

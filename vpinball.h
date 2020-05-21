@@ -142,7 +142,8 @@ public:
    {
        return m_layersListDialog;
    }
-   bool  IsClosing() { return m_closing; }
+   bool IsClosing() const { return m_closing; }
+
    ULONG m_cref;
 
    vector< CComObject<PinTable>* > m_vtable;
