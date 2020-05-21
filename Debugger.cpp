@@ -65,9 +65,8 @@ BOOL DebuggerDialog::OnInitDialog()
     HWND hwndEditSize = GetDlgItem(IDC_EDITSIZE);
     
     ::GetWindowRect(hwndEditSize, &rcEditSize);
-
-    ScreenToClient(rcEditSize);
-    ScreenToClient(((POINT*)&rcEditSize)[1]);
+    ::ScreenToClient(GetHwnd(), (POINT*)&rcEditSize);
+    ::ScreenToClient(GetHwnd(), &((POINT*)&rcEditSize)[1]);
 
     g_pplayer->m_hwndDebugOutput = CreateWindowEx(0, "Scintilla", "",
                                                 WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN | WS_BORDER,
