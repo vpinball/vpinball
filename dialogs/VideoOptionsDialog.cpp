@@ -6,7 +6,7 @@
 #define GET_FULLSCREENMODES		WM_USER+101
 #define RESET_SIZELIST_CONTENT	WM_USER+102
 
-const int rgwindowsize[] = { 640, 720, 800, 912, 1024, 1152, 1280, 1600 };  // windowed resolutions for selection list
+static const int rgwindowsize[] = { 640, 720, 800, 912, 1024, 1152, 1280, 1440, 1600, 1920, 2048, 2560, 3440, 3840, 4096, 5120, 6400, 7680, 8192, 11520, 15360 };  // windowed resolutions for selection list
 
 VideoOptionsDialog::VideoOptionsDialog() : CDialog(IDD_VIDEO_OPTIONS)
 {
