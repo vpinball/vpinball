@@ -1244,6 +1244,9 @@
     <ClInclude Include="inc\gpuprofiler.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="inc\stb_image.h">
+      <Filter>inc</Filter>
+    </ClInclude>
     <ClInclude Include="dialogs\ToolbarDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
