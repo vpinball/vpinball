@@ -42,7 +42,6 @@ BOOL DebuggerDialog::OnInitDialog()
     AttachItem(IDC_THROW_BALL_SIZE_EDIT2, m_ballSizeEdit);
     AttachItem(IDC_THROW_BALL_MASS_EDIT2, m_ballMassEdit);
 
-/*
     CRect rcDialog;
     CRect rcMain;
     rcMain = GetParent().GetWindowRect();
@@ -50,8 +49,7 @@ BOOL DebuggerDialog::OnInitDialog()
 
     SetWindowPos(NULL, (rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2,
                        (rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2,
-                       0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/ * | SWP_NOMOVE* /);
-*/
+                       0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
     HANDLE hIcon = ::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_PLAY), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
     m_playButton.SetIcon((HICON)hIcon);
@@ -84,10 +82,6 @@ BOOL DebuggerDialog::OnInitDialog()
 
     SendMessage(m_hThrowBallsInPlayerCheck, BM_SETCHECK, g_pplayer->m_throwBalls ? BST_CHECKED : BST_UNCHECKED, 0);
     SendMessage(m_hBallControlCheck, BM_SETCHECK, g_pplayer->m_ballControl ? BST_CHECKED : BST_UNCHECKED, 0);
-
-//     SendDlgItemMessage(hwndDlg, IDC_BALL_THROWING, BM_SETCHECK, g_pplayer->m_throwBalls ? BST_CHECKED : BST_UNCHECKED, 0);
-//     SendDlgItemMessage(hwndDlg, IDC_BALL_CONTROL, BM_SETCHECK, g_pplayer->m_ballControl ? BST_CHECKED : BST_UNCHECKED, 0);
-
 
     m_ballSizeEdit.SetWindowText(CString(g_pplayer->m_debugBallSize).c_str());
 
@@ -164,7 +158,7 @@ BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             else
             {
                 m_lightDialog.ShowWindow();
-                m_lightDialog.SetForegroundWindow();
+                m_lightDialog.SetActiveWindow();
             }
             return TRUE;
         }
@@ -179,7 +173,7 @@ BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             else
             {
                 m_materialDialog.ShowWindow();
-                m_materialDialog.SetForegroundWindow();
+                m_materialDialog.SetActiveWindow();
             }
             return TRUE;
         }
@@ -290,6 +284,36 @@ INT_PTR DebuggerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             SendMessage(TB_CHECKBUTTON, IDC_PLAY, PlayDown);
             SendMessage(TB_CHECKBUTTON, IDC_PAUSE, PauseDown);
             SendMessage(TB_CHECKBUTTON, IDC_STEP, StepDown);
+            return TRUE;
+        }
+
+        case RESIZE_FROM_EXPAND:
+        {
+            const size_t state = SendDlgItemMessage(IDC_EXPAND, BM_GETCHECK, 0, 0);
+            int mult;
+            if (state == BST_CHECKED)
+            {
+                mult = 1;
+                m_editorExpandButton.SetWindowText("< Editor");
+            }
+            else
+            {
+                mult = -1;
+                m_editorExpandButton.SetWindowText("> Editor");
+            }
+
+            RECT rcSizer1;
+            RECT rcSizer2;
+            ::GetWindowRect(GetDlgItem(IDC_GUIDE1), &rcSizer1);
+            ::GetWindowRect(GetDlgItem(IDC_GUIDE2), &rcSizer2);
+
+            const int diffx = rcSizer2.right - rcSizer1.right;
+            const int diffy = rcSizer2.bottom - rcSizer1.bottom;
+
+            RECT rcDialog;
+            rcDialog = GetWindowRect();
+
+            SetWindowPos(NULL, rcDialog.left, rcDialog.top, rcDialog.right - rcDialog.left + diffx * mult, rcDialog.bottom - rcDialog.top + diffy * mult, SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
             return TRUE;
         }
     }

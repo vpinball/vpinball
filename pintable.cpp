@@ -2230,7 +2230,9 @@ void PinTable::StopPlaying()
    g_pvp->ToggleToolbar();
    mixer_shutdown();
    hid_shutdown();
-
+   g_pvp->ShowWindow(SW_SHOW);
+   SetFocus();
+   SetActiveWindow();
 }
 
 HRESULT PinTable::InitVBA()
@@ -9998,8 +10000,13 @@ BOOL PinTable::OnCommand(WPARAM wparam, LPARAM lparam)
         {
             if (g_pplayer)
             {
-                g_pplayer->StopPlayer();
                 StopPlaying();
+
+                g_pvp->ShowWindow(SW_SHOW);
+                g_pvp->SetForegroundWindow();
+                SetFocus();
+                SetDirtyDraw();
+
             }
             return TRUE;
         }

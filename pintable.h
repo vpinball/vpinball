@@ -6,7 +6,7 @@
 #define AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_
 
 #include <unordered_map>
-
+#include <atomic>
 #include "hash.h"
 #include "SearchSelectDialog.h"
 
@@ -765,7 +765,7 @@ public:
 
    bool  m_dirtyDraw; // Whether our background bitmap is up to date
 
-   volatile bool m_savingActive;
+   std::atomic<bool> m_savingActive;
 
    bool  m_renderSolid;
 

@@ -255,8 +255,6 @@ public:
    virtual void PreRegisterClass(WNDCLASS& wc);
    virtual void PreCreate(CREATESTRUCT& cs);
    virtual void OnInitialUpdate();
-   virtual void OnClose();
-   virtual void OnDestroy();
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
    HWND m_hwndProgress;
    HWND m_hwndProgressName;
