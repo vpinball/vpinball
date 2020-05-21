@@ -654,5 +654,4 @@ private:
    ID3DXFont *m_pFont;
    LPD3DXSPRITE m_fontSprite;
    RECT     m_fontRect;
-
 };

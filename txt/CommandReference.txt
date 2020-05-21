@@ -9,7 +9,8 @@ Also see https://docs.orbitalpin.com/welcome for some more detailed help
 
 Changelog:
 10.7:
-- add UpdateMaterialPhysics to the globals
+- add GetMaterial to the globals (counterpart to UpdateMaterial)
+- add UpdateMaterialPhysics and GetMaterialPhysics to the globals
 - add ActiveTable to the globals
 - document missing ActiveBall global call
 - add PullBackandRetract to the plunger element that can be used instead of PullBack in the KeyDown Sub.
@@ -161,7 +162,11 @@ GetElementByName(string) - returns a certain Element, based on the name
 UpdateMaterial(string, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
                OLE_COLOR base, OLE_COLOR glossy, OLE_COLOR clearcoat, VARIANT_BOOL isMetal, VARIANT_BOOL opacityActive,
                float elasticity, float elasticityFalloff, float friction, float scatterAngle) - updates all parameters of a material (same input ranges as used in the material editor)
+GetMaterial(string, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
+               OLE_COLOR base, OLE_COLOR glossy, OLE_COLOR clearcoat, VARIANT_BOOL isMetal, VARIANT_BOOL opacityActive,
+               float elasticity, float elasticityFalloff, float friction, float scatterAngle) - get all parameters of a material
 UpdateMaterialPhysics(string, float elasticity, float elasticityFalloff, float friction, float scatterAngle) - update only the physics parameters of a material (same input ranges as used in the material editor)
+GetMaterialPhysics(string, float elasticity, float elasticityFalloff, float friction, float scatterAngle) - get only the physics parameters of a material
 MaterialColor(string,OLE_COLOR) - change only the base color of a material
 
 LoadValue(string,string,VARIANT) - load a value for tablename,valuename,value

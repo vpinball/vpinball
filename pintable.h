@@ -814,6 +814,7 @@ public:
    int   m_jolt_trigger_time;
    int   m_tilt_trigger_time;
 #endif
+
    virtual void OnInitialUpdate();
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
    virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
@@ -853,8 +854,6 @@ public:
 
    void CloseProgessDialog() { DestroyWindow(m_hwndProgressDialog); }
 
-   //HWND m_hMDI;
-   PinTableMDI *m_mdiTable;
    void SetMDITable(PinTableMDI * const table)
    {
        m_mdiTable = table;
@@ -863,14 +862,18 @@ public:
    {
        return m_mdiTable;
    }
+
+   //HWND m_hMDI;
+   PinTableMDI *m_mdiTable;
    WCHAR *GetCollectionNameByElement(const ISelect * const element);
    void RefreshProperties();
-private:
-    HWND m_hwndProgressDialog;
-    bool m_moving;
 
-   std::unordered_map<const char *, Texture *, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
-   std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name
+private:
+   HWND m_hwndProgressDialog;
+   bool m_moving;
+
+   std::unordered_map<const char*, Texture *, StringHashFunctor, StringComparator> m_textureMap;  // hash table to speed up texture lookup by name
+   std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
 };
 
 class ScriptGlobalTable :
@@ -958,7 +961,11 @@ public:
    STDMETHOD(UpdateMaterial)(BSTR pVal, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
       OLE_COLOR base, OLE_COLOR glossy, OLE_COLOR clearcoat, VARIANT_BOOL isMetal, VARIANT_BOOL opacityActive,
       float elasticity, float elasticityFalloff, float friction, float scatterAngle);
+   STDMETHOD(GetMaterial)(BSTR pVal, float *wrapLighting, float *roughness, float *glossyImageLerp, float *thickness, float *edge, float *edgeAlpha, float *opacity,
+      OLE_COLOR *base, OLE_COLOR *glossy, OLE_COLOR *clearcoat, VARIANT_BOOL *isMetal, VARIANT_BOOL *opacityActive,
+      float *elasticity, float *elasticityFalloff, float *friction, float *scatterAngle);
    STDMETHOD(UpdateMaterialPhysics)(BSTR pVal, float elasticity, float elasticityFalloff, float friction, float scatterAngle);
+   STDMETHOD(GetMaterialPhysics)(BSTR pVal, float *elasticity, float *elasticityFalloff, float *friction, float *scatterAngle);
    STDMETHOD(MaterialColor)(BSTR pVal, OLE_COLOR newVal);
 
    void Init(VPinball *vpinball, PinTable *pt);
