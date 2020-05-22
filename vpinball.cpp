@@ -1557,7 +1557,7 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     ptCur->SetMouseCursor();
 
             }
-            break;
+            return FinalWindowProc(uMsg, wParam, lParam);
         }
         case WM_TIMER:
         {
@@ -1580,7 +1580,7 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     return 0;
                 }
             }
-            break;
+            return FinalWindowProc(uMsg, wParam, lParam);
         }
         case WM_SIZE:
         {
