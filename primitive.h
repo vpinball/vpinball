@@ -257,7 +257,6 @@ public:
 
    //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName);
    virtual void WriteRegDefaults();
-   //!! here starts the more general primitive stuff:
 
    virtual bool LoadMeshDialog();
    virtual void ExportMeshDialog();
@@ -272,7 +271,6 @@ public:
    virtual void ExportMesh(FILE *f);
    virtual void RenderBlueprint(Sur *psur, const bool solid);
    virtual void UpdateStatusBarInfo();
-
 
    void CreateRenderGroup(const Collection * const collection);
    void RecalculateMatrices();
@@ -303,7 +301,6 @@ private:
    int m_compressedVertices; // only used during loading
    int m_compressedAnimationVertices; // only used during loading
 #endif
-
 
    bool BrowseFor3DMeshFile();
    void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
