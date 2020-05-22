@@ -772,7 +772,6 @@ void Player::PreCreate(CREATESTRUCT& cs)
     cs.style = windowflags;
     cs.dwExStyle = windowflagsex;
     cs.hInstance = g_hinst;
-    
 }
 
 void Player::OnInitialUpdate()
@@ -803,10 +802,10 @@ void Player::OnInitialUpdate()
     {
         // http://msdn.microsoft.com/en-us/library/ms812373.aspx
         const DWORD dwHwndTabletProperty =
-            TABLET_DISABLE_PRESSANDHOLD |      // disables press and hold (right-click) gesture  
-            TABLET_DISABLE_PENTAPFEEDBACK |    // disables UI feedback on pen up (waves)  
-            TABLET_DISABLE_PENBARRELFEEDBACK | // disables UI feedback on pen button down  
-            TABLET_DISABLE_FLICKS;             // disables pen flicks (back, forward, drag down, drag up)   
+            TABLET_DISABLE_PRESSANDHOLD |      // disables press and hold (right-click) gesture
+            TABLET_DISABLE_PENTAPFEEDBACK |    // disables UI feedback on pen up (waves)
+            TABLET_DISABLE_PENBARRELFEEDBACK | // disables UI feedback on pen button down
+            TABLET_DISABLE_FLICKS;             // disables pen flicks (back, forward, drag down, drag up)
         LPCTSTR tabletAtom = MICROSOFT_TABLETPENSERVICE_PROPERTY;
 
         // Get the Tablet PC atom ID
@@ -852,7 +851,6 @@ void Player::OnInitialUpdate()
         SetCursorPos(400, 999999);
 
     Init();
-
 }
 
 void Player::Shutdown()
@@ -5914,7 +5912,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             SetCursor(LoadCursor(NULL, IDC_ARROW));
         }
-        return 0;        
+        return 0;
     }
 
     return WndProcDefault(uMsg, wParam, lParam);

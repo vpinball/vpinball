@@ -676,7 +676,7 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
       }
 
       // not necessary to reorder
-      /*WORD* tmp = reorderForsyth(sideIndices, sideIndices.size() / 3, numVertices * 4);
+      /*WORD* const tmp = reorderForsyth(sideIndices, numVertices * 4);
       if (tmp != NULL)
       {
       memcpy(sideIndices.data(), tmp, sideIndices.size()*sizeof(WORD));

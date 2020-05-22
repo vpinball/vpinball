@@ -1412,7 +1412,7 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! h
    m_middlePoint.z = (maxz + minz)*0.5f;
 
    // not necessary to reorder
-   /*WORD* tmp = reorderForsyth(m_ringIndices, m_ringIndices.size() / 3, m_numVertices);
+   /*WORD* const tmp = reorderForsyth(m_ringIndices, m_numVertices);
    if (tmp != NULL)
    {
    memcpy(m_ringIndices.data(), tmp, m_ringIndices.size()*sizeof(WORD));

@@ -105,7 +105,7 @@ static void AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND contr
 VPinball::VPinball()
 {
    // DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); //add FreeImage support BDS
-    m_closing = false;
+   m_closing = false;
    m_unloadingTable = false;
    m_toolbarDialog = NULL;
    m_propertyDialog = NULL;
@@ -1436,7 +1436,6 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
     LPTSTR lpCmdLine = GetCommandLine();						//this line necessary for _ATL_MIN_CRT
     if (strstr(lpCmdLine, "minimized"))
         SetOpenMinimized();
-
 
     char szName[256];
     LoadString(g_hinst, IDS_PROJNAME, szName, 256);

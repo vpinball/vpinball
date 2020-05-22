@@ -123,10 +123,9 @@ inline ScoreType findVertexScore(const int numActiveTris,
 // The main reordering function
 template <typename T>
 T* reorderForsyth(const vector<T>& indices,
-                  const int nTriangles,
                   const int nVertices)
 {
-	if (indices.empty() || nTriangles == 0 || nVertices == 0)
+	if (indices.empty() || nVertices == 0)
 		return NULL;
 
 	// The tables need not be inited every time this function
@@ -140,24 +139,26 @@ T* reorderForsyth(const vector<T>& indices,
 
 	// First scan over the vertex data, count the total number of
 	// occurrances of each vertex
-	for (int i = 0; i < 3*nTriangles; i++) {
+	for (size_t i = 0; i < indices.size(); i++) {
 		if (cVertex[indices[i]].numActiveTri == MAX_ADJACENCY) {
 			// Unsupported mesh,
 			// vertex shared by too many triangles
 			return NULL;
 		}
 		cVertex[indices[i]].numActiveTri++;
-		if (cVertex[indices[i]].numActiveTri == 3*nTriangles) {
+		if (cVertex[indices[i]].numActiveTri == indices.size()) {
 			// Degenerated mesh
 			return NULL;
 		}
 	}
 
+	const int nTriangles = (int)(indices.size()/3);
+
 	std::vector<bool> triangleAdded(nTriangles,false);
 	std::vector<ScoreType> triangleScore(nTriangles,0);
 	std::vector<T> outTriangles(nTriangles);
-	T* const triangleIndices = new T[3*nTriangles];
-	memset(triangleIndices, 0, sizeof(T)*(3*nTriangles));
+	T* const triangleIndices = new T[indices.size()];
+	memset(triangleIndices, 0, sizeof(T)*indices.size());
 
 	// Count the triangle array offset for each vertex,
 	// initialize the rest of the data.
