@@ -21,6 +21,7 @@ HitPlunger::HitPlunger(const float x, const float y, const float x2, const float
    m_plungerMover.m_reverseImpulse = 0.0f;
    m_plungerMover.m_fireTimer = 0;
    m_plungerMover.m_autoFireTimer = 0;
+   m_plungerMover.m_fireSpeed = 0;
 
    m_plungerMover.m_strokeEventsArmed = false;
    m_plungerMover.m_speed = 0.0f;
@@ -411,7 +412,7 @@ void PlungerMoverObject::UpdateVelocities()
               m_speed = 0.0f;
               m_pos = m_frameStart;
               m_retractWaitLoop++;
-              if (m_retractWaitLoop > 1000)
+              if (m_retractWaitLoop > 1000) // 1 sec, related to PHYSICS_STEPTIME
               {
                   m_pullForce = -m_initialSpeed;
                   m_pos = m_frameStart;

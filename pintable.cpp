@@ -2253,7 +2253,6 @@ void PinTable::Play(const bool cameraMode)
       g_keepUndoRecords = true;
       m_pcv->EndSession();
    }
-
 }
 
 // called before Player instance gets deleted
@@ -5964,7 +5963,7 @@ void PinTable::RestoreBackup()
     const float lightRange = m_lightRange;
     const float lightHeight = m_lightHeight;
     const float envEmissionScale = m_envEmissionScale;
-    
+
     m_undo.Undo();
 
     m_BG_inclination[m_BG_current_set] = inclination;
