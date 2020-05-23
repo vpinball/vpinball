@@ -5769,7 +5769,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case MM_MIXM_CONTROL_CHANGE:
         mixer_get_volume();
-        return FinalWindowProc(uMsg, wParam, lParam);
+        break;
 
     case WM_CLOSE:
     {
@@ -5777,20 +5777,19 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         // Shut down script first if in exclusive mode.  
         if (m_fullScreen)
             StopPlayer();
-        return FinalWindowProc(uMsg, wParam, lParam);
+        break;
     }
     case WM_DESTROY:
     {
         if (!m_fullScreen)
             StopPlayer();
         m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
-
-        return 0;
+        break;
     }
     case WM_KEYDOWN:
         m_drawCursor = false;
         SetCursor(NULL);
-        return 0;
+        break;
 
     case WM_MOUSEMOVE:
         if (m_lastcursorx != LOWORD(lParam) || m_lastcursory != HIWORD(lParam))
@@ -5799,7 +5798,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             m_lastcursorx = LOWORD(lParam);
             m_lastcursory = HIWORD(lParam);
         }
-        return 0;
+        break;
 
 #ifdef STEPPING
 #ifdef MOUSEPAUSE
@@ -5808,7 +5807,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             m_step = true;
         }
-        return 0;
+        break;
 
     case WM_RBUTTONDOWN:
         if (!m_pause)
@@ -5827,7 +5826,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             SetCursor(NULL);
             m_noTimeCorrect = true;
         }
-        return 0;
+        break;
 #endif
 #endif
     case WM_RBUTTONUP:
@@ -5838,7 +5837,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             const int y = (lParam >> 16) & 0xffff;
             DoDebugObjectMenu(x, y);
         }
-        return 0; 
+        break;
     }
     
 
@@ -5872,7 +5871,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     }
             }
         }
-        return 0; 
+        break;
     }
     
 
@@ -5897,11 +5896,11 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             RecomputePauseState();
         }
-        return 0;
+        break;
 
     case WM_EXITMENULOOP:
         m_noTimeCorrect = true;
-        return 0;
+        break;
 
     case WM_SETCURSOR:
         if (LOWORD(lParam) == HTCLIENT && !m_drawCursor)
@@ -5912,7 +5911,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             SetCursor(LoadCursor(NULL, IDC_ARROW));
         }
-        return 0;
+        return TRUE;
     }
 
     return WndProcDefault(uMsg, wParam, lParam);
