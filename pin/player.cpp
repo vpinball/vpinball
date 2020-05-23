@@ -569,9 +569,6 @@ Player::Player(const bool cameraMode, PinTable * const ptable, const HWND hwndPr
    m_swap_ball_collision_handling = false;
 
    m_debugMode = false;
-   m_hwndDebugger = NULL;
-   m_hwndLightDebugger = NULL;
-   m_hwndMaterialDebugger = NULL;
 
 #ifdef STEPPING
    m_pauseTimeTarget = 0;
@@ -1469,7 +1466,6 @@ HRESULT Player::Init()
    // TEXT
    ::SetWindowText(m_hwndProgressName, "Initializing Visuals...");
 
-   //InitGameplayWindow();
    InitKeys();
 
    m_PlayMusic = LoadValueBoolWithDefault("Player", "PlayMusic", true);
@@ -5025,7 +5021,8 @@ void Player::Render()
       m_pauseTimeTarget = 0;
       m_userDebugPaused = true;
       RecomputePseudoPauseState();
-      SendMessage(m_hwndDebugger, RECOMPUTEBUTTONCHECK, 0, 0);
+      if(m_debuggerDialog.IsWindow())
+        m_debuggerDialog.SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
    }
 #endif
 
@@ -5108,7 +5105,7 @@ void Player::Render()
          m_noTimeCorrect = true; // Skip the time we were in the dialog
          UnpauseMusic();
 
-         if (option == ID_QUIT)
+          if (option == ID_QUIT)
              SendMessage(WM_CLOSE, 0, 0); // This line returns to the editor after exiting a table
 
       }
@@ -5784,7 +5781,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (!m_fullScreen)
             StopPlayer();
         m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
-        break;
+        return 0;
     }
     case WM_KEYDOWN:
         m_drawCursor = false;
