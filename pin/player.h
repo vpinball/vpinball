@@ -327,8 +327,6 @@ public:
    void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop=false);
    void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture* const tex, const float intensity, const bool backdrop=false);
 
-   HWND m_playfieldHwnd;
-
    Shader      *m_ballShader;
    IndexBuffer *m_ballIndexBuffer;
    VertexBuffer *m_ballVertexBuffer;
@@ -383,9 +381,6 @@ public:
    EnumAssignKeys m_rgKeys[eCKeys]; //Player's key assignments
 
    HWND m_hwndDebugOutput;
-   HWND m_hwndDebugger;
-   HWND m_hwndLightDebugger;
-   HWND m_hwndMaterialDebugger;
 
    vector<CLSID*> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
 
