@@ -102,7 +102,7 @@ void VideoOptionsDialog::ResetVideoPreferences(const unsigned int profile) // 0 
    SendMessage(GetDlgItem(IDC_StretchYes).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_StretchMonitor).GetHwnd(), BM_SETCHECK, BST_UNCHECKED, 0);
    SendMessage(GetDlgItem(IDC_StretchNo).GetHwnd(), BM_SETCHECK, BST_CHECKED, 0);
-   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_SETCURSEL, 1, 0);
+   //SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_SETCURSEL, 1, 0);
    SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_SETCURSEL, 0, 0);
 }
 
@@ -124,10 +124,55 @@ void VideoOptionsDialog::FillVideoModesList(const std::vector<VideoMode>& modes,
    {
       char szT[128];
 
-      if (modes[i].depth) // i.e. is this windowed or not
-         sprintf_s(szT, "%d x %d (%dHz)", modes[i].width, modes[i].height, /*modes[i].depth,*/ modes[i].refreshrate);
+      double aspect = (double)modes[i].width / (double)modes[i].height;
+      const bool portrait = (aspect < 1.);
+      if (portrait)
+         aspect = 1./aspect;
+      double factor = aspect*3.0;
+      int fx,fy;
+      if (factor > 4.0)
+      {
+         factor = aspect*9.0;
+         if ((int)(factor+0.5) == 16)
+         {
+            //16:9
+            fx = 16;
+            fy = 9;
+         }
+         else if ((int)(factor+0.5) == 21)
+         {
+            //21:9
+            fx = 21;
+            fy = 9;
+         }
+         else
+         {
+            factor = aspect*10.0;
+            if ((int)(factor+0.5) == 16)
+            {
+               //16:10
+               fx = 16;
+               fy = 10;
+            }
+            else
+            {
+               //21:10
+               fx = 21;
+               fy = 10;
+            }
+         }
+      }
       else
-         sprintf_s(szT, "%d x %d", modes[i].width, modes[i].height);
+      {
+         //4:3
+         fx = 4;
+         fy = 3;
+      }
+
+      if (modes[i].depth) // i.e. is this windowed or not
+         sprintf_s(szT, "%d x %d (%dHz %d:%d)", modes[i].width, modes[i].height, /*modes[i].depth,*/ modes[i].refreshrate, portrait ? fy : fx, portrait ? fx : fy);
+      else
+         sprintf_s(szT, "%d x %d (%d:%d %s)", modes[i].width, modes[i].height /*,modes[i].depth*/, portrait ? fy : fx, portrait ? fx : fy, portrait ? "Portrait" : "Landscape");
 
       SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
       if (curSelMode) {
@@ -414,8 +459,8 @@ BOOL VideoOptionsDialog::OnInitDialog()
    }
 
    // set selected Monitors
-   // Monitors: 4:3, 16:9, 16:10, 21:10
-   const int selected = LoadValueIntWithDefault("Player", "BallStretchMonitor", 1); // assume 16:9 as standard
+   // Monitors: 4:3, 16:9, 16:10, 21:10, 21:9
+   /*const int selected = LoadValueIntWithDefault("Player", "BallStretchMonitor", 1); // assume 16:9 as standard
    SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"4:3");
    SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"16:9");
    SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"16:10");
@@ -424,7 +469,9 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"9:16 (R)");
    SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"10:16 (R)");
    SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"10:21 (R)");
-   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_SETCURSEL, selected, 0);
+   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"9:21 (R)");
+   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"21:9");
+   SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_SETCURSEL, selected, 0);*/
 
    return TRUE;
 }
@@ -437,7 +484,8 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
          size_t indexcur = -1;
          size_t indx = -1;
-         int widthcur = (int)wParam, heightcur = (int)lParam;
+         const int widthcur  = (int)wParam;
+         const int heightcur = (int)lParam;
 
          SendMessage(GetHwnd(), RESET_SIZELIST_CONTENT, 0, 0);
          HWND hwndList = GetDlgItem(IDC_SIZELIST).GetHwnd();
@@ -445,7 +493,6 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          //if (indx == LB_ERR)
          //  indx = 0;
 
-         const size_t csize = sizeof(rgwindowsize) / sizeof(int);
          int screenwidth;
          int screenheight;
          int x, y;
@@ -464,11 +511,12 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          // 16:10 aspect ratio resolutions: 1280*800, 1440*900, 1680*1050, 1920*1200 and 2560*1600
          // 16:9 aspect ratio resolutions:  1280*720, 1366*768, 1600*900, 1920*1080, 2560*1440 and 3840*2160
-         // 21:9 aspect ratio resolution:   3440*1440
+         // 21:9 aspect ratio resolutions:  3440*1440,2560*1080
+         // 21:10 aspect ratio resolution:  3840*1600
          // 4:3  aspect ratio resolutions:  1280*1024
-         const unsigned int num_portrait_modes = 15;
-         const int portrait_modes_width[num_portrait_modes] =  { 720, 720, 1024, 768, 800, 900, 900,1050,1050,1080,1200,1440,1440,1600,2160};
-         const int portrait_modes_height[num_portrait_modes] = {1024,1280, 1280,1366,1280,1440,1600,1600,1680,1920,1920,2560,3440,2560,3840};
+         const unsigned int num_portrait_modes = 17;
+         const int portrait_modes_width[num_portrait_modes] =  { 720, 720, 1024, 768, 800, 900, 900,1050,1050,1080,1200,1080,1440,1440,1600,1600,2160};
+         const int portrait_modes_height[num_portrait_modes] = {1024,1280, 1280,1366,1280,1440,1600,1600,1680,1920,1920,2560,2560,3440,2560,3840,3840};
 
          for (unsigned int i = 0; i < num_portrait_modes; ++i)
             if ((portrait_modes_width[i] <= screenwidth) && (portrait_modes_height[i] <= screenheight))
@@ -488,17 +536,28 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          // add landscape play modes
 
-         for (size_t i = 0; i < csize; ++i)  
+         for (size_t i = 0; i < sizeof(rgwindowsize)/sizeof(int) * 5; ++i)
          {
-            const int xsize = rgwindowsize[i];
-            if ((xsize <= screenwidth) && ((xsize * 3 / 4) <= screenheight))
+            const int xsize = rgwindowsize[i/5];
+            
+            int mulx, divy;
+            switch (i%5)
             {
-               if ((xsize == widthcur) && ((xsize * 3 / 4) == heightcur))
+               case 0: mulx = 3;  divy = 4;  break;
+               case 1: mulx = 9;  divy = 16; break;
+               case 2: mulx = 10; divy = 16; break;
+               case 3: mulx = 9;  divy = 21; break;
+               case 4: mulx = 10; divy = 21; break;
+            }
+
+            if ((xsize <= screenwidth) && ((xsize * mulx / divy) <= screenheight))
+            {
+               if ((xsize == widthcur) && ((xsize * mulx / divy) == heightcur))
                   indx = i + cnt;
 
                VideoMode mode;
                mode.width = xsize;
-               mode.height = xsize * 3 / 4;
+               mode.height = xsize * mulx / divy;
                mode.depth = 0;
                mode.refreshrate = 0;
 
@@ -524,7 +583,7 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          {
               sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
               SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
-              if (indx == -1)
+              if (indx == -1 || (mode.width == widthcur && mode.height == heightcur))
                 indexcur = SendMessage(hwndList, LB_GETCOUNT, 0, 0) - 1;
               else
                 indexcur = indx;
@@ -838,11 +897,11 @@ void VideoOptionsDialog::OnOK()
    SaveValueInt("Player", "BallStretchMode", ballStretchMode);
 
    // get selected Monitors
-   // Monitors: 4:3, 16:9, 16:10, 21:10
-   size_t selected = SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_GETCURSEL, 0, 0);
+   // Monitors: 4:3, 16:9, 16:10, 21:10, 21:9
+   /*size_t selected = SendMessage(GetDlgItem(IDC_MonitorCombo).GetHwnd(), CB_GETCURSEL, 0, 0);
    if (selected == LB_ERR)
       selected = 1; // assume a 16:9 Monitor as standard
-   SaveValueInt("Player", "BallStretchMonitor", (int)selected);
+   SaveValueInt("Player", "BallStretchMonitor", (int)selected);*/
 
    const bool overwriteEnabled = IsDlgButtonChecked(IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED;
    if (overwriteEnabled)

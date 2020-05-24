@@ -493,7 +493,7 @@
 #define IDD_PROPPLUNGER_PHYSICS         340
 #define IDC_SCREENSHOT                  340
 #define IDS_MAKEACTIVEBALL              340
-#define IDC_MonitorCombo                340
+//#define IDC_MonitorCombo                340
 #define IDC_FUNCTIONLIST                340
 #define IDC_LIGHT_TYPE_CHECKBOX         340
 #define IDC_MATERIAL_COMBO              340

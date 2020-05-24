@@ -2477,85 +2477,99 @@ void Player::CalcBallAspectRatio()
 {
    const int ballStretchMode = LoadValueIntWithDefault("Player", "BallStretchMode", 0);
 
-   // Monitors: 4:3, 16:9, 16:10, 21:10
+   // Monitors: 4:3, 16:9, 16:10, 21:10, 21:9
    //const int ballStretchMonitor = LoadValueIntWithDefault("Player", "BallStretchMonitor", 1); // assume 16:9
    const float ballAspecRatioOffsetX = LoadValueFloatWithDefault("Player", "BallCorrectionX", 0.f);
    const float ballAspecRatioOffsetY = LoadValueFloatWithDefault("Player", "BallCorrectionY", 0.f);
 
    const float scalebackX = (m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f) / m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] : 1.0f;
    const float scalebackY = (m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f) / m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] : 1.0f;
-   float xMonitor = 16.0f;
-   float yMonitor = 9.0f;
+   double xMonitor = 16.0;
+   double yMonitor = 9.0;
 
-   float aspect = (float)((double)m_screenwidth / (double)m_screenheight);
-   float factor = aspect*3.0f;
-   if (factor > 4.0f)
+   const double aspect = (double)m_screenwidth / (double)m_screenheight;
+   double factor = aspect*3.0;
+   if (factor > 4.0)
    {
-      factor = aspect*9.0f;
-      if (factor == 16.0f)
+      factor = aspect*9.0;
+      if ((int)(factor+0.5) == 16)
       {
          //16:9
-         xMonitor = (factor + ballAspecRatioOffsetX) / 4.0f;
-         yMonitor = (9.0f + ballAspecRatioOffsetY) / 3.0f;
+         xMonitor = (16.0 + ballAspecRatioOffsetX) / 4.0;
+         yMonitor = ( 9.0 + ballAspecRatioOffsetY) / 3.0;
+      }
+      else if ((int)(factor+0.5) == 21)
+      {
+         //21:9
+         xMonitor = (21.0 + ballAspecRatioOffsetX) / 4.0;
+         yMonitor = ( 9.0 + ballAspecRatioOffsetY) / 3.0;
       }
       else
       {
-         factor = aspect*10.f;
-         if (factor == 16.0f)
+         factor = aspect*10.0;
+         if ((int)(factor+0.5) == 16)
          {
             //16:10
-            xMonitor = (factor + ballAspecRatioOffsetX) / 4.0f;
-            yMonitor = (10.0f + ballAspecRatioOffsetY) / 3.0f;
+            xMonitor = (16.0 + ballAspecRatioOffsetX) / 4.0;
+            yMonitor = (10.0 + ballAspecRatioOffsetY) / 3.0;
          }
          else
          {
             //21:10
-            xMonitor = (21.0f + ballAspecRatioOffsetX) / 4.0f;
-            yMonitor = (10.0f + ballAspecRatioOffsetY) / 3.0f;
+            xMonitor = (factor + ballAspecRatioOffsetX) / 4.0;
+            yMonitor = (10.0   + ballAspecRatioOffsetY) / 3.0;
          }
       }
    }
    else
    {
       //4:3
-      xMonitor = (factor + ballAspecRatioOffsetX) / 4.0f;
-      yMonitor = (3.0f + ballAspecRatioOffsetY) / 3.0f;
+      xMonitor = (factor + ballAspecRatioOffsetX) / 4.0;
+      yMonitor = (3.0    + ballAspecRatioOffsetY) / 3.0;
    }
 
-   /*
+   /* legacy
    switch (ballStretchMonitor)
    {
        case 0:
-       xMonitor = (float)(4.0 / 4.0);
-       yMonitor = (float)(3.0 / 3.0);
+       xMonitor = (4.0 / 4.0);
+       yMonitor = (3.0 / 3.0);
        break;
        case 1:
-       xMonitor = (float)(16.0 / 4.0);
-       yMonitor = (float)(9.0 / 3.0);
+       xMonitor = (16.0 / 4.0);
+       yMonitor = (9.0 / 3.0);
        break;
        case 2:
-       xMonitor = (float)(16.0 / 4.0);
-       yMonitor = (float)(10.0 / 3.0);
+       xMonitor = (16.0 / 4.0);
+       yMonitor = (10.0 / 3.0);
        break;
        case 3:
-       xMonitor = (float)(21.0 / 4.0);
-       yMonitor = (float)(10.0 / 3.0);
+       xMonitor = (21.0 / 4.0);
+       yMonitor = (10.0 / 3.0);
        break;
        case 4:
-       xMonitor = (float)(3.0 / 4.0);
-       yMonitor = (float)(4.0 / 3.0);
+       xMonitor = (3.0 / 4.0);
+       yMonitor = (4.0 / 3.0);
        break;
        case 5:
-       xMonitor = (float)(9.0 / 4.0);
-       yMonitor = (float)(16.0 / 3.0);
+       xMonitor = (9.0 / 4.0);
+       yMonitor = (16.0 / 3.0);
        break;
        case 6:
-       xMonitor = (float)(10.0 / 4.0);
-       yMonitor = (float)(16.0 / 3.0);
+       xMonitor = (10.0 / 4.0);
+       yMonitor = (16.0 / 3.0);
        break;
        case 7:
-       xMonitor = (float)(10.0 / 4.0);
-       yMonitor = (float)(21.0 / 3.0);
+       xMonitor = (10.0 / 4.0);
+       yMonitor = (21.0 / 3.0);
+       break;
+       case 8:
+       xMonitor = (9.0 / 4.0);
+       yMonitor = (21.0 / 3.0);
+       break;
+       case 9:
+       xMonitor = (21.0 / 4.0);
+       yMonitor = (9.0 / 3.0);
        break;
        default:
        xMonitor = 16.0f;
@@ -2566,8 +2580,8 @@ void Player::CalcBallAspectRatio()
    yMonitor += 0.0f;
    */
 
-   const float scalebackMonitorX = ((xMonitor + yMonitor)*0.5f) / xMonitor;
-   const float scalebackMonitorY = (((xMonitor + yMonitor)*0.5f) / yMonitor);
+   const double scalebackMonitorX = (xMonitor + yMonitor)*0.5 / xMonitor;
+   const double scalebackMonitorY = (xMonitor + yMonitor)*0.5 / yMonitor;
 
    float temprotation = m_ptable->m_BG_rotation[m_ptable->m_BG_current_set];
    while (temprotation < 0.f)
@@ -2593,8 +2607,8 @@ void Player::CalcBallAspectRatio()
       if (m_fullScreen || (m_width == m_screenwidth && m_height == m_screenheight)) // detect windowed fullscreen
       {
          m_antiStretchBall = true;
-         m_BallStretchX *= scalebackMonitorX*c + scalebackMonitorY*s;
-         m_BallStretchY *= scalebackMonitorY*c + scalebackMonitorX*s;
+         m_BallStretchX *= (float)(scalebackMonitorX*c + scalebackMonitorY*s);
+         m_BallStretchY *= (float)(scalebackMonitorY*c + scalebackMonitorX*s);
       }
       break;
    }
@@ -5105,8 +5119,8 @@ void Player::Render()
          m_noTimeCorrect = true; // Skip the time we were in the dialog
          UnpauseMusic();
 
-          if (option == ID_QUIT)
-             SendMessage(WM_CLOSE, 0, 0); // This line returns to the editor after exiting a table
+         if (option == ID_QUIT)
+            SendMessage(WM_CLOSE, 0, 0); // This line returns to the editor after exiting a table
 
       }
       else if(m_showDebugger && !VPinball::m_open_minimized)

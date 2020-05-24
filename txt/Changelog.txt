@@ -53,6 +53,8 @@ FIXES:
 
 - fix hangs on loading/playing older tables due to invalid shapes
 
+- add many more different windowed mode resolutions
+
 - update BASS library to 2.4.15
 
 - see core scripts (header of core.vbs) for the respective changelog (version 3.58)
