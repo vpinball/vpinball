@@ -4,7 +4,7 @@
 class LayerTreeView: public CTreeView
 {
 public:
-    LayerTreeView(){ }
+    LayerTreeView() { m_dragging = false; }
     ~LayerTreeView(){ }
     virtual HTREEITEM       AddItem(HTREEITEM hParent, LPCTSTR text, IEditable * const pedit, int image);
     bool                    AddLayer(const string& name);
@@ -12,6 +12,7 @@ public:
     bool                    ContainsLayer(const string& name) const;
     std::string             GetCurrentLayerName() const;
     HTREEITEM               GetLayerByElement(const IEditable * const pedit);
+    HTREEITEM               GetLayerByItem(HTREEITEM hChildItem);
     HTREEITEM               GetItemByElement(const IEditable * const pedit);
     int                     GetItemCount() const;
     int                     GetLayerCount() const;
@@ -41,10 +42,19 @@ protected:
     virtual LRESULT OnTVNSelChanged(LPNMTREEVIEW pNMTV);
 
 private:
+    bool AddElementToLayer(const HTREEITEM hLayerItem, const string& name, IEditable* const pedit);
+
     HTREEITEM   hRootItem;
     HTREEITEM   hCurrentLayerItem;
     HTREEITEM   hCurrentElementItem;
     CImageList  m_normalImages;
+    bool        m_dragging;
+    struct  DragItem
+    {
+        HTREEITEM   m_hDragItem;
+        HTREEITEM   m_hDragLayer;
+    };
+    std::vector<std::shared_ptr<DragItem>> m_DragItems;
 };
 
 class LayersListDialog;

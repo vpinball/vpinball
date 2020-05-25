@@ -321,17 +321,7 @@ bool LayerTreeView::AddLayer(const string& name)
 
 bool LayerTreeView::AddElement(const string& name, IEditable * const pedit)
 {
-    hCurrentElementItem = AddItem(hCurrentLayerItem, name.c_str(), pedit, 2);
-    if (!pedit->GetISelect()->m_isVisible)
-    {
-        TreeView_SetCheckState(GetHwnd(), hCurrentElementItem, 0);
-    }
-    else
-    {
-        TreeView_SetCheckState(GetHwnd(), hCurrentElementItem, 1);
-        TreeView_SetCheckState(GetHwnd(), hCurrentLayerItem, 1);
-    }
-    return hCurrentElementItem != NULL;
+    return AddElementToLayer(hCurrentLayerItem, name, pedit);
 }
 
 bool LayerTreeView::ContainsLayer(const string& name) const
@@ -382,6 +372,31 @@ HTREEITEM LayerTreeView::GetLayerByElement(const IEditable* const pedit)
         }
     }
     return NULL;
+}
+
+HTREEITEM LayerTreeView::GetLayerByItem(HTREEITEM hChildItem)
+{
+    std::vector<HTREEITEM> children;
+    HTREEITEM item = GetChild(hRootItem);
+    while (item)
+    {
+        children.push_back(item);
+        if (hChildItem == item)
+            return item;
+        item = GetNextItem(item, TVGN_NEXT);
+    }
+    for (HTREEITEM child : children)
+    {
+        HTREEITEM subItem = GetChild(child);
+        while (subItem)
+        {
+            if (hChildItem == subItem)
+                return child;
+            subItem = GetNextItem(subItem, TVGN_NEXT);
+        }
+    }
+
+    return nullptr;
 }
 
 HTREEITEM LayerTreeView::GetItemByElement(const IEditable* const pedit)
@@ -598,14 +613,85 @@ void LayerTreeView::PreCreate(CREATESTRUCT &cs)
     cs.lpszClass = WC_TREEVIEW;
 }
 
+#define MAKEPOINTS(l)       (*((POINTS FAR *)&(l)))
+
 LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 {
+
     switch (msg)
     {
         case WM_MOUSEACTIVATE:
             SetFocus();
             break;
+        case WM_MOUSEMOVE:
+        {
+            if(m_dragging)
+            {
+                POINTS Pos = MAKEPOINTS(lparam);
+                ImageList_DragMove(Pos.x - 32, Pos.y - 25); // where to draw the drag from
+                ImageList_DragShowNolock(FALSE);
+                TVHITTESTINFO tvht;
+                HTREEITEM hitTarget;
+                tvht.pt.x = Pos.x - 20; // the highlight items should be as the same points as the drag
+                tvht.pt.y = Pos.y - 20; //
+                hitTarget = HitTest(tvht);
+                if (hitTarget) // if there is a hit
+                    SelectDropTarget(hitTarget);
+
+                ImageList_DragShowNolock(TRUE);
+            }
+            break;
+        }
+        case WM_LBUTTONUP:
+        {
+            if (m_dragging)
+            {
+                ImageList_DragLeave(GetHwnd());
+                ImageList_EndDrag();
+                HTREEITEM hSelectedDrop;
+                hSelectedDrop = GetDropHiLightItem();
+                SelectItem(hSelectedDrop);
+                SelectDropTarget(NULL);
+
+                for(auto dragItem : m_DragItems)
+                {
+                    TVITEM tvItem;
+                    ZeroMemory(&tvItem, sizeof(tvItem));
+                    tvItem.mask = TVIF_PARAM | TVIF_CHILDREN;
+                    tvItem.hItem = dragItem->m_hDragItem;
+                    if (GetItem(tvItem))
+                    {
+                        IEditable* const pedit = (IEditable*)tvItem.lParam;
+                        if (pedit != nullptr)
+                        {
+                            ISelect* const psel = pedit->GetISelect();
+                            HTREEITEM hLayerItem = GetLayerByItem(hSelectedDrop);
+                            psel->m_layerName = GetLayerName(hLayerItem);
+                            HTREEITEM oldItem = GetItemByElement(pedit);
+                            DeleteItem(oldItem);
+                            AddElementToLayer(hLayerItem, pedit->GetName(), pedit);
+                            std::vector<HTREEITEM> subItem = GetSubItems(dragItem->m_hDragLayer);
+                            if (subItem.size() == 0)
+                            {
+                                if (dragItem->m_hDragLayer == hCurrentLayerItem)
+                                    hCurrentLayerItem = hLayerItem;
+
+                                DeleteItem(dragItem->m_hDragLayer);
+                            }
+                        }
+                    }
+                }
+                m_DragItems.clear();
+                ReleaseCapture();
+                ShowCursor(TRUE);
+                m_dragging = false;
+            }
+            break;
+        }
+        
+
     }
+
 
     return WndProcDefault(msg, wparam, lparam);
 }
@@ -617,6 +703,24 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
 
     switch (lpnmh->code)
     {
+        case TVN_BEGINDRAG:
+        {
+            HIMAGELIST hImg;
+            LPNMTREEVIEW lpnmtv = (LPNMTREEVIEW)lparam;
+            hImg = TreeView_CreateDragImage(GetHwnd(), lpnmtv->itemNew.hItem);
+            ImageList_BeginDrag(hImg, 0, 0, 0);
+            ImageList_DragEnter(GetHwnd(), lpnmtv->ptDrag.x, lpnmtv->ptDrag.y);
+            
+            std::shared_ptr<DragItem> dragItem = std::make_shared<DragItem>();
+            dragItem->m_hDragItem = lpnmtv->itemNew.hItem;
+            dragItem->m_hDragLayer = GetLayerByItem(dragItem->m_hDragItem);
+            m_DragItems.push_back(dragItem);
+
+            ShowCursor(FALSE);
+            SetCapture();
+            m_dragging = true;
+            return TRUE;
+        }
         case TVN_SELCHANGED:    return OnTVNSelChanged((LPNMTREEVIEW)lparam);
         case NM_CLICK:          return OnNMClick(lpnmh);
         case NM_DBLCLK:         return OnNMDBClick(lpnmh);
@@ -794,6 +898,22 @@ LRESULT LayerTreeView::OnTVNSelChanged(LPNMTREEVIEW pNMTV)
         }
     }
     return 0;
+}
+
+bool LayerTreeView::AddElementToLayer(const HTREEITEM hLayerItem, const string& name, IEditable* const pedit)
+{
+    hCurrentElementItem = AddItem(hLayerItem, name.c_str(), pedit, 2);
+    if (!pedit->GetISelect()->m_isVisible)
+    {
+        TreeView_SetCheckState(GetHwnd(), hCurrentElementItem, 0);
+    }
+    else
+    {
+        TreeView_SetCheckState(GetHwnd(), hCurrentElementItem, 1);
+        TreeView_SetCheckState(GetHwnd(), hLayerItem, 1);
+    }
+    return hCurrentElementItem != NULL;
+
 }
 
 LRESULT FilterEditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
