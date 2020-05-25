@@ -504,6 +504,8 @@ BOOL DbgLightDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                         SetDlgItemText(IDC_DBG_LIGHT_FADE_DOWN_EDIT, value);
 
                         SetCheckButtonState(plight);
+                        m_colorButton.SetColor(plight->m_d.m_color);
+                        m_colorButton2.SetColor(plight->m_d.m_color2);
                     }
                     return TRUE;
                 }
@@ -530,7 +532,20 @@ INT_PTR DbgLightDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             g_pplayer->RecomputePseudoPauseState();
             break;
         }
-
+        case WM_DRAWITEM:
+        {
+            LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+            UINT nID = static_cast<UINT>(wParam);
+            if (nID == IDC_COLOR_BUTTON1)
+            {
+                m_colorButton.DrawItem(lpDrawItemStruct);
+            }
+            else if (nID == IDC_COLOR_BUTTON4)
+            {
+                m_colorButton2.DrawItem(lpDrawItemStruct);
+            }
+            return TRUE;
+        }
     }
     return DialogProcDefault(uMsg, wParam, lParam);
 }
@@ -679,8 +694,11 @@ BOOL DbgMaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                         SetDlgItemText(DBG_MATERIAL_OPACITY_EDGE_EDIT, value);
                         SendMessage(GetDlgItem(IDC_DBG_METAL_MATERIAL_CHECK), BM_SETCHECK, pMat->m_bIsMetal ? BST_CHECKED : BST_UNCHECKED, 0);
                         SendMessage(GetDlgItem(IDC_DBG_MATERIAL_OPACITY_ACTIVE_CHECK), BM_SETCHECK, pMat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
+                        m_colorButton1.SetColor(pMat->m_cBase);
+                        m_colorButton2.SetColor(pMat->m_cGlossy);
+                        m_colorButton3.SetColor(pMat->m_cClearcoat);
                     }
-                    break;
+                    return TRUE;
                 }
             }
             break;
@@ -783,6 +801,24 @@ INT_PTR DbgMaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             g_pplayer->RecomputePauseState();
             g_pplayer->RecomputePseudoPauseState();
             break;
+        }
+        case WM_DRAWITEM:
+        {
+            LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+            UINT nID = static_cast<UINT>(wParam);
+            if (nID == IDC_COLOR_BUTTON1)
+            {
+                m_colorButton1.DrawItem(lpDrawItemStruct);
+            }
+            else if (nID == IDC_COLOR_BUTTON2)
+            {
+                m_colorButton2.DrawItem(lpDrawItemStruct);
+            }
+            else if (nID == IDC_COLOR_BUTTON3)
+            {
+                m_colorButton3.DrawItem(lpDrawItemStruct);
+            }
+            return TRUE;
         }
     }
     return DialogProcDefault(uMsg, wParam, lParam);
