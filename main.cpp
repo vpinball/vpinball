@@ -377,9 +377,6 @@ public:
                   SetCurrentDirectory(szLoadDir);
                }
 
-            if (playfile || extractpov || extractscript)
-               VPinball::SetOpenMinimized();
-
             ++i; // two params processed
 
             if (extractpov || extractscript)
