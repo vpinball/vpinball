@@ -35,7 +35,7 @@ FEATURES:
 FIXES:
 
 - replace dithering code with blue noise, fixes flickering patterns (especially in darker table areas)
-- tweak AO (Ambient Occlusion) to be a bit less noisy
+- tweak AO (Ambient Occlusion) and SSR (Screen Space Reflections) to be a bit less noisy
 
 - tweak minimum physics cycle time, which mainly influences kickers
   also update default kicker physics (Hit height 0.35 and Hit accuracy 0.5)
