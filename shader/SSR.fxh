@@ -54,11 +54,11 @@ float4 ps_main_fb_ss_refl(in VS_OUTPUT_2D IN) : COLOR
 	[branch] if(fresnel < 0.01) //!! early out if contribution too low
 		return float4(color0, 1.0);
 
-	const int samples = 32;
+	const int samples = 32; //!! reduce to ~24? would save ~1-4% overall frame time, depending on table
 	const float ReflBlurWidth = 2.2; //!! magic, small enough to not collect too much, and large enough to have cool reflection effects
 
 	const float ushift = /*hash(IN.tex0) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
-	                     /*frac(*/tex2Dlod(texSamplerAOdither, float4(IN.tex0/(64.0*w_h_height.xy), 0.,0.)).x /*+ w_h_height.z)*/; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
+	                     /*frac(*/tex2Dlod(texSamplerAOdither, float4(IN.tex0/(64.0*w_h_height.xy), 0.,0.)).z /*+ w_h_height.z)*/; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
 	const float2 offsMul = normal_b.xy * (/*w_h_height.xy*/ float2(1.0/1920.0,1.0/1080.0) * ReflBlurWidth * (32./(float)samples)); //!! makes it more resolution independent?? test with 4xSSAA
 
 	// loop in screen space, simply collect all pixels in the normal direction (not even a depth check done!)
