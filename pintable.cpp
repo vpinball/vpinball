@@ -5636,6 +5636,68 @@ void PinTable::ImportBackdropPOV(const char *filename)
         sscanf_s(fullsinglescreen->first_node("yoffset")->value(), "%f", &m_BG_xlatey[BG_FSS]);
         sscanf_s(fullsinglescreen->first_node("zoffset")->value(), "%f", &m_BG_xlatez[BG_FSS]);
 
+        xml_node<>* custom = root->first_node("customsettings");
+        if (custom)
+        {
+            xml_node<char> *node = custom->first_node("SSAA");
+            if (node)
+                sscanf_s(node->value(), "%i", &m_useAA);
+            node = custom->first_node("postprocAA");
+            if (node) sscanf_s(node->value(), "%i", &m_useFXAA);
+            node = custom->first_node("ingameAO");
+            if (node) sscanf_s(node->value(), "%i", &m_useAO);
+            node = custom->first_node("ScSpReflect");
+            if (node) sscanf_s(node->value(), "%i", &m_useSSR);
+            node = custom->first_node("FPSLimiter");
+            if (node) sscanf_s(node->value(), "%i", &m_TableAdaptiveVSync);
+            node = custom->first_node("FPSLimiter");
+            if (node) sscanf_s(node->value(), "%i", &m_TableAdaptiveVSync);
+            node = custom->first_node("OverwriteDetailsLevel");
+            if (node) sscanf_s(node->value(), "%i", &m_overwriteGlobalDetailLevel);
+            node = custom->first_node("DetailsLevel");
+            if (node) sscanf_s(node->value(), "%i", &m_userDetailLevel);
+            node = custom->first_node("BallReflection");
+            if (node) sscanf_s(node->value(), "%i", &m_useReflectionForBalls);
+            node = custom->first_node("BallTrail");
+            if (node) sscanf_s(node->value(), "%i", &m_useTrailForBalls);
+            node = custom->first_node("BallTrailStrength");
+            if (node) sscanf_s(node->value(), "%f", &m_ballTrailStrength);
+            node = custom->first_node("OverwriteNightDay");
+            if (node) sscanf_s(node->value(), "%i", &m_overwriteGlobalDayNight);
+            node = custom->first_node("NightDayLevel");
+            if (node)
+            {
+                int value;
+                sscanf_s(node->value(), "%i", &value);
+                SetGlobalEmissionScale(value);
+            }
+            node = custom->first_node("GameplayDifficulty");
+            if (node)
+            {
+                float value;
+                sscanf_s(node->value(), "%f", &value);
+                SetGlobalDifficulty(value);
+            }
+            node = custom->first_node("PhysicsSet");
+            if (node) sscanf_s(node->value(), "%i", &m_overridePhysics);
+            node = custom->first_node("IncludeFlipperPhysics");
+            if (node) sscanf_s(node->value(), "%i", &m_overridePhysicsFlipper);
+            node = custom->first_node("SoundVolume");
+            if (node) 
+            {
+                int value;
+                sscanf_s(node->value(), "%i", &value);
+                SetTableSoundVolume(value);
+            }
+            node = custom->first_node("MusicVolume");
+            if (node)
+            {
+                int value;
+                sscanf_s(node->value(), "%i", &value);
+                SetTableMusicVolume(value);
+            }
+        }
+
         if (filename == NULL)
             SetNonUndoableDirty(eSaveDirty);
     }
@@ -5646,6 +5708,8 @@ void PinTable::ImportBackdropPOV(const char *filename)
     }
 
     xmlDoc.clear();
+    // update properties UI
+    m_vpinball->SetPropSel(&m_vmultisel); 
 }
 
 void PinTable::ExportBackdropPOV(const char *filename)
@@ -5817,6 +5881,63 @@ void PinTable::ExportBackdropPOV(const char *filename)
         fullsinglescreen->append_node(fssOffsetz);
 
         root->append_node(fullsinglescreen);
+
+        xml_node<>* custom = xmlDoc.allocate_node(node_element, "customsettings");
+        const std::string cuaa = std::to_string(m_useAA);
+        xml_node<>* userSSAA = xmlDoc.allocate_node(node_element, "SSAA", cuaa.c_str());
+        custom->append_node(userSSAA);
+        const std::string cufxaa = std::to_string(m_useFXAA);
+        xml_node<>* userFXAA = xmlDoc.allocate_node(node_element, "postprocAA", cufxaa.c_str());
+        custom->append_node(userFXAA);
+        const std::string cuao = std::to_string(m_useAO);
+        xml_node<>* userAO = xmlDoc.allocate_node(node_element, "ingameAO", cuao.c_str());
+        custom->append_node(userAO);
+        const std::string cussr = std::to_string(m_useSSR);
+        xml_node<>* userSSR = xmlDoc.allocate_node(node_element, "ScSpReflect", cussr.c_str());
+        custom->append_node(userSSR);
+        const std::string cfps = std::to_string(m_TableAdaptiveVSync);
+        xml_node<>* userFpsLimit = xmlDoc.allocate_node(node_element, "FPSLimiter", cfps.c_str());
+        custom->append_node(userFpsLimit);
+        const std::string codl = std::to_string(m_overwriteGlobalDetailLevel);
+        xml_node<>* userOverwriteDetail = xmlDoc.allocate_node(node_element, "OverwriteDetailsLevel", codl.c_str());
+        custom->append_node(userOverwriteDetail);
+        const std::string cudl = std::to_string(m_userDetailLevel);
+        xml_node<>* userDetail = xmlDoc.allocate_node(node_element, "DetailsLevel", codl.c_str());
+        custom->append_node(userDetail);
+        const std::string curb = std::to_string(m_useReflectionForBalls);
+        xml_node<>* userReflectBall = xmlDoc.allocate_node(node_element, "BallReflection", curb.c_str());
+        custom->append_node(userReflectBall);
+        const std::string cutb = std::to_string(m_useTrailForBalls);
+        xml_node<>* userTrailBalls = xmlDoc.allocate_node(node_element, "BallTrail", cutb.c_str());
+        custom->append_node(userTrailBalls);
+        sprintf_s(strBuf, "%f", m_ballTrailStrength);
+        const std::string cubs(strBuf);
+        xml_node<>* userTrailStrength = xmlDoc.allocate_node(node_element, "BallTrailStrength", cubs.c_str());
+        custom->append_node(userTrailStrength);
+        const std::string codn = std::to_string(m_overwriteGlobalDayNight);
+        xml_node<>* userOverwriteDayNight = xmlDoc.allocate_node(node_element, "OverwriteNightDay", codn.c_str());
+        custom->append_node(userOverwriteDayNight);
+        const std::string cndl = std::to_string(GetGlobalEmissionScale());
+        xml_node<>* userDayNight = xmlDoc.allocate_node(node_element, "NightDayLevel", cndl.c_str());
+        custom->append_node(userDayNight);
+        sprintf_s(strBuf, "%f", GetGlobalDifficulty());
+        const std::string cgd(strBuf);
+        xml_node<>* userDifficutly = xmlDoc.allocate_node(node_element, "GameplayDifficulty", cgd.c_str());
+        custom->append_node(userDifficutly);
+        const std::string cop = std::to_string(m_overridePhysics);
+        xml_node<>* userPhysics = xmlDoc.allocate_node(node_element, "PhysicsSet", cop.c_str());
+        custom->append_node(userPhysics);
+        const std::string copf = std::to_string(m_overridePhysicsFlipper);
+        xml_node<>* userFlipperPhysics = xmlDoc.allocate_node(node_element, "IncludeFlipperPhysics", copf.c_str());
+        custom->append_node(userFlipperPhysics);
+        const std::string cusv = std::to_string(GetTableSoundVolume());
+        xml_node<>* userSoundVol = xmlDoc.allocate_node(node_element, "SoundVolume", cusv.c_str()); 
+        custom->append_node(userSoundVol);
+        const std::string cumv = std::to_string(GetTableMusicVolume());
+        xml_node<>* userMusicVol = xmlDoc.allocate_node(node_element, "MusicVolume", cumv.c_str());
+        custom->append_node(userMusicVol);
+
+        root->append_node(custom);
 
         xmlDoc.append_node(root);
         std::ofstream myfile(m_szObjFileName);
