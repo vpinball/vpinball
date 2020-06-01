@@ -5125,7 +5125,7 @@ void Player::Render()
       }
       else if(m_showDebugger && !VPinball::m_open_minimized)
       {
-          g_pplayer->m_debugMode = true;
+          m_debugMode = true;
           if (!m_debuggerDialog.IsWindow())
           {
               m_debuggerDialog.Create(GetHwnd());

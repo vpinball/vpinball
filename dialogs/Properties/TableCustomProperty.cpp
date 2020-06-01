@@ -144,6 +144,17 @@ void TableCustomProperty::UpdateProperties(const int dispid)
         case IDC_TABLEAVSYNC:
             CHECK_UPDATE_ITEM(table->m_TableAdaptiveVSync, PropertyDialog::GetIntTextbox(m_fpsLimiterEdit), table);
             break;
+        case IDC_ALPHA_SLIDER:
+            CHECK_UPDATE_ITEM(table->m_userDetailLevel, m_detailLevelSlider.GetPos(), table);
+            break;
+        case IDC_DAYNIGHT_SLIDER:
+        {
+            const int emission = table->GetGlobalEmissionScale();
+            const int newValue = m_nightDaySlider.GetPos();
+            if (newValue != emission)
+                table->SetGlobalEmissionScale(newValue);
+            break;
+        }
         default:
             break;
     }
