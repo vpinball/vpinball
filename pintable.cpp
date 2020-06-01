@@ -2283,15 +2283,6 @@ void PinTable::StopPlaying()
 
    BeginAutoSaveCounter();
 
-   delete g_pplayer; // needs to be deleted here, as code below relies on it being NULL
-   g_pplayer = nullptr;
-
-   g_pvp->ToggleToolbar();
-   mixer_shutdown();
-   hid_shutdown();
-   g_pvp->ShowWindow(SW_SHOW);
-   SetFocus();
-   SetActiveWindow();
 }
 
 HRESULT PinTable::InitVBA()
@@ -5653,7 +5644,12 @@ void PinTable::ImportBackdropPOV(const char *filename)
             node = custom->first_node("FPSLimiter");
             if (node) sscanf_s(node->value(), "%i", &m_TableAdaptiveVSync);
             node = custom->first_node("OverwriteDetailsLevel");
-            if (node) sscanf_s(node->value(), "%i", &m_overwriteGlobalDetailLevel);
+            if (node)
+            {
+                int value;
+                sscanf_s(node->value(), "%i", &value);
+                m_overwriteGlobalDetailLevel = (value == 1);
+            }
             node = custom->first_node("DetailsLevel");
             if (node) sscanf_s(node->value(), "%i", &m_userDetailLevel);
             node = custom->first_node("BallReflection");
@@ -5663,7 +5659,12 @@ void PinTable::ImportBackdropPOV(const char *filename)
             node = custom->first_node("BallTrailStrength");
             if (node) sscanf_s(node->value(), "%f", &m_ballTrailStrength);
             node = custom->first_node("OverwriteNightDay");
-            if (node) sscanf_s(node->value(), "%i", &m_overwriteGlobalDayNight);
+            if (node)
+            {
+                int value;
+                sscanf_s(node->value(), "%i", &value);
+                m_overwriteGlobalDayNight = (value == 1);
+            }
             node = custom->first_node("NightDayLevel");
             if (node)
             {
@@ -5681,7 +5682,12 @@ void PinTable::ImportBackdropPOV(const char *filename)
             node = custom->first_node("PhysicsSet");
             if (node) sscanf_s(node->value(), "%i", &m_overridePhysics);
             node = custom->first_node("IncludeFlipperPhysics");
-            if (node) sscanf_s(node->value(), "%i", &m_overridePhysicsFlipper);
+            if (node)
+            {
+                int value;
+                sscanf_s(node->value(), "%i", &value);
+                m_overridePhysicsFlipper = (value == 1);
+            }
             node = custom->first_node("SoundVolume");
             if (node) 
             {
@@ -10177,14 +10183,25 @@ BOOL PinTable::OnCommand(WPARAM wparam, LPARAM lparam)
         {
             if (g_pplayer)
             {
+                g_pplayer->SendMessage(WM_CLOSE, 0, 0);
                 StopPlaying();
-
-                g_pvp->ShowWindow(SW_SHOW);
-                g_pvp->SetForegroundWindow();
-                SetFocus();
-                SetDirtyDraw();
-
             }
+            return TRUE;
+        }
+        case ID_TABLE_PLAYER_STOPPED:
+        {
+
+            delete g_pplayer;
+            g_pplayer = nullptr;
+
+            g_pvp->ToggleToolbar();
+            mixer_shutdown();
+            hid_shutdown();
+            g_pvp->ShowWindow(SW_SHOW);
+            g_pvp->SetForegroundWindow();
+            SetFocus();
+            SetActiveWindow();
+
             return TRUE;
         }
     }

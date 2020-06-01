@@ -1292,6 +1292,7 @@
 #define ID_ADD_CTRL_POINT               33003
 #define ID_ADD_SMOOTH_CTRL_POINT        33004
 #define ID_TABLE_STOP_PLAY              33005
+#define ID_TABLE_PLAYER_STOPPED         33006
 #define DZVALUE                         65535
 #define DZName                          65535
 

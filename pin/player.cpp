@@ -639,7 +639,6 @@ Player::Player(const bool cameraMode, PinTable * const ptable, const HWND hwndPr
 
 Player::~Player()
 {
-    Shutdown();
 
     if (m_pFont)
     {
@@ -5120,7 +5119,7 @@ void Player::Render()
          UnpauseMusic();
 
          if (option == ID_QUIT)
-            SendMessage(WM_CLOSE, 0, 0); // This line returns to the editor after exiting a table
+             m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
 
       }
       else if(m_showDebugger && !VPinball::m_open_minimized)
@@ -5788,13 +5787,16 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         // Shut down script first if in exclusive mode.  
         if (m_fullScreen)
             StopPlayer();
+
         break;
     }
     case WM_DESTROY:
     {
         if (!m_fullScreen)
             StopPlayer();
-        m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
+
+        Shutdown();
+        m_ptable->SendMessage(WM_COMMAND, ID_TABLE_PLAYER_STOPPED, 0);
         return 0;
     }
     case WM_KEYDOWN:
@@ -5947,7 +5949,6 @@ void Player::StopPlayer()
 #else
 #pragma message ( "Warning: Missing LockSetForegroundWindow()" )
 #endif
-
 }
 
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
