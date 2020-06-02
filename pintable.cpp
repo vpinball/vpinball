@@ -5631,16 +5631,13 @@ void PinTable::ImportBackdropPOV(const char *filename)
         if (custom)
         {
             xml_node<char> *node = custom->first_node("SSAA");
-            if (node)
-                sscanf_s(node->value(), "%i", &m_useAA);
+            if (node) sscanf_s(node->value(), "%i", &m_useAA);
             node = custom->first_node("postprocAA");
             if (node) sscanf_s(node->value(), "%i", &m_useFXAA);
             node = custom->first_node("ingameAO");
             if (node) sscanf_s(node->value(), "%i", &m_useAO);
             node = custom->first_node("ScSpReflect");
             if (node) sscanf_s(node->value(), "%i", &m_useSSR);
-            node = custom->first_node("FPSLimiter");
-            if (node) sscanf_s(node->value(), "%i", &m_TableAdaptiveVSync);
             node = custom->first_node("FPSLimiter");
             if (node) sscanf_s(node->value(), "%i", &m_TableAdaptiveVSync);
             node = custom->first_node("OverwriteDetailsLevel");
@@ -5908,7 +5905,7 @@ void PinTable::ExportBackdropPOV(const char *filename)
         xml_node<>* userOverwriteDetail = xmlDoc.allocate_node(node_element, "OverwriteDetailsLevel", codl.c_str());
         custom->append_node(userOverwriteDetail);
         const std::string cudl = std::to_string(m_userDetailLevel);
-        xml_node<>* userDetail = xmlDoc.allocate_node(node_element, "DetailsLevel", codl.c_str());
+        xml_node<>* userDetail = xmlDoc.allocate_node(node_element, "DetailsLevel", cudl.c_str());
         custom->append_node(userDetail);
         const std::string curb = std::to_string(m_useReflectionForBalls);
         xml_node<>* userReflectBall = xmlDoc.allocate_node(node_element, "BallReflection", curb.c_str());
