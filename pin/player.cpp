@@ -1858,8 +1858,10 @@ HRESULT Player::Init()
 
    m_ptable->CloseProgessDialog();
 
-   g_pvp->ShowWindow(SW_HIDE);
-
+   g_pvp->GetPropertiesDocker()->EnableWindow(FALSE);
+   g_pvp->GetLayersDocker()->EnableWindow(FALSE);
+   g_pvp->GetToolbarDocker()->EnableWindow(FALSE);
+   m_ptable->EnableWindow(FALSE);
    // Show the window.
    ShowWindow(SW_SHOW);
    SetForegroundWindow();
@@ -5940,6 +5942,11 @@ void Player::StopPlayer()
    m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
    if (m_detectScriptHang)
       g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
+
+   g_pvp->GetPropertiesDocker()->EnableWindow();
+   g_pvp->GetLayersDocker()->EnableWindow();
+   g_pvp->GetToolbarDocker()->EnableWindow();
+   m_ptable->EnableWindow();
 
 #if(_WIN32_WINNT >= 0x0500)
    if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
