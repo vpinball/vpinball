@@ -10198,7 +10198,7 @@ BOOL PinTable::OnCommand(WPARAM wparam, LPARAM lparam)
             g_pvp->SetForegroundWindow();
             SetFocus();
             SetActiveWindow();
-
+            SetDirtyDraw();
             return TRUE;
         }
     }

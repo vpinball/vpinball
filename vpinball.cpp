@@ -1238,7 +1238,7 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
 {
    bool consumed=false;
 
-   if (!g_pplayer)
+   if (g_pplayer==nullptr)
    {
       // check/process events for other dialogs (material/sound/image manager, toolbar, properties
       consumed = processKeyInputForDialogs(pmsg);
