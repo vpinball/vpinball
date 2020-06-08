@@ -178,6 +178,7 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 std::map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
 int disEnableTrueFullscreen = -1;
 bool table_played_via_command_line = false;
+int logicalNumberOfProcessors = -1;
 
 class VPApp : public CWinApp
 {
@@ -227,6 +228,10 @@ public:
 #else
       SetDisplayAutoRotationPreferences(ORIENTATION_PREFERENCE_LANDSCAPE);
 #endif
+
+      SYSTEM_INFO sysinfo;
+      GetSystemInfo(&sysinfo);
+      logicalNumberOfProcessors = sysinfo.dwNumberOfProcessors; //!! this ignores processor groups, so if at some point we need extreme multi threading, implement this in addition!
 
       g_hinst = theInstance;
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
@@ -498,7 +503,6 @@ public:
                m_vpinball.Quit();
            }
        }
-
    }
 
    virtual int Run()

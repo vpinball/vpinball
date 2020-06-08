@@ -12,6 +12,8 @@
 #include "freeimage.h"
 #include "inc\ThreadPool.h"
 
+extern int logicalNumberOfProcessors;
+
 using namespace rapidxml;
 
 #define HASHLENGTH 16
@@ -3627,7 +3629,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
             {
-               ThreadPool pool(8);
+               ThreadPool pool(logicalNumberOfProcessors);
 
                for (int i = 0; i < ctextures; i++)
                {
