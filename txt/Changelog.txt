@@ -12,7 +12,7 @@ FEATURES:
    o toolbar, properties and layers are now dockable windows without the need to restart VP
    o Add context menu item to assign selected elements to the current selected layer.
 
-- Exporting/importing a POV file the custom user settings per table are also exported/imported
+- when exporting/importing a POV file, the custom user settings per table are now also exported/imported
 
 - add MP3 and OGG support (via the BASS library) to the sound manager and the 'standard' sound commands
   these new file types are now also saved directly into the VPX file, unlike the music commands (which still use the 'music' folder for legacy reasons)
@@ -35,6 +35,8 @@ FEATURES:
 - make debug text/FPS output adapt to resolution and rotation
 
 FIXES:
+
+- fix hang on player exit on some setups
 
 - replace dithering code with blue noise, fixes flickering patterns (especially in darker table areas)
 - tweak AO (Ambient Occlusion) and SSR (Screen Space Reflections) to be a bit less noisy
