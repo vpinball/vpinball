@@ -964,11 +964,11 @@ RenderDevice::~RenderDevice()
    //!! if (m_pD3DDeviceEx == m_pD3DDevice) m_pD3DDevice = NULL; //!! needed for Caligula if m_adapter > 0 ?? weird!! BUT MESSES UP FULLSCREEN EXIT (=hangs)
    SAFE_RELEASE_NO_RCC(m_pD3DDeviceEx);
 #endif
-   SAFE_RELEASE(m_pD3DDevice);
+   FORCE_RELEASE(m_pD3DDevice);
 #ifdef USE_D3D9EX
    SAFE_RELEASE_NO_RCC(m_pD3DEx);
 #endif
-   SAFE_RELEASE(m_pD3D);
+   FORCE_RELEASE(m_pD3D);
 
    /*
     * D3D sets the FPU to single precision/round to nearest int mode when it's initialized,
