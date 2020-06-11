@@ -59,6 +59,8 @@ FIXES:
 
 - add many more different windowed mode resolutions
 
+- tweak flipper shadows (via script) implementation in the example/blank table
+
 - update BASS library to 2.4.15
 
 - see core scripts (header of core.vbs) for the respective changelog (version 3.58)
