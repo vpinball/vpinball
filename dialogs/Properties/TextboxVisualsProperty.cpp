@@ -45,7 +45,7 @@ void TextboxVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::SetFloatTextbox(m_posYEdit, text->m_d.m_v1.y);
         if (dispid == 60002 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_widthEdit, text->m_d.m_v2.x - text->m_d.m_v1.x);
-        if (dispid == 60004 || dispid == -1)
+        if (dispid == 60003 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_heightEdit, text->m_d.m_v2.y - text->m_d.m_v1.y);
         if (dispid == IDC_TEXTBOX_ALIGN_COMBO || dispid == -1)
             PropertyDialog::UpdateComboBox(m_alignList, m_alignmentCombo, m_alignList[text->m_d.m_talign].c_str());
@@ -124,7 +124,7 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                 PropertyDialog::EndUndo(text);
                 break;
             }
-            case 60004:
+            case 60003:
             {
                 PropertyDialog::StartUndo(text);
                 const float newValue = PropertyDialog::GetFloatTextbox(m_heightEdit);
