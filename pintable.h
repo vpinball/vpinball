@@ -58,6 +58,28 @@ private:
     CMenu                 m_menu;
 };
 
+class ProgressDialog : public CDialog
+{
+public:
+    ProgressDialog();
+    void SetProgress(int value)
+    {
+        m_progressBar.SetPos(value);
+    }
+
+    void SetName(std::string text)
+    {
+        m_progressName.SetWindowText(text.c_str());
+    }
+
+protected:
+    virtual BOOL OnInitDialog();
+
+private:
+    CProgressBar m_progressBar;
+    CStatic      m_progressName;
+};
+
 class PinTable:
    public CWnd,
    public CComObjectRootEx<CComSingleThreadModel>,
@@ -852,8 +874,6 @@ public:
    float GetHeight() const;
    void SetHeight(const float value);
 
-   void CloseProgessDialog() { DestroyWindow(m_hwndProgressDialog); }
-
    void SetMDITable(PinTableMDI * const table)
    {
        m_mdiTable = table;
@@ -863,14 +883,15 @@ public:
        return m_mdiTable;
    }
 
+   ProgressDialog m_progressDialog;
+
    //HWND m_hMDI;
    PinTableMDI *m_mdiTable;
    WCHAR *GetCollectionNameByElement(const ISelect * const element);
    void RefreshProperties();
 
 private:
-   HWND m_hwndProgressDialog;
-   bool m_moving;
+    bool m_moving;
 
    std::unordered_map<const char*, Texture *, StringHashFunctor, StringComparator> m_textureMap;  // hash table to speed up texture lookup by name
    std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name

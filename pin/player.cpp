@@ -425,16 +425,10 @@ extern int disEnableTrueFullscreen; // set via command line
 #define RECOMPUTEBUTTONCHECK WM_USER+100
 #define RESIZE_FROM_EXPAND WM_USER+101
 
-
-LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-static void StopPlayer();
-
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-extern INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
-Player::Player(const bool cameraMode, PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName) : m_cameraMode(cameraMode)
+Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(cameraMode)
 {
    {
       int regs[4];
@@ -633,8 +627,6 @@ Player::Player(const bool cameraMode, PinTable * const ptable, const HWND hwndPr
    m_pFont = NULL;
    m_meshAsPlayfield = false;
    m_ptable = ptable;
-   m_hwndProgress = hwndProgress;
-   m_hwndProgressName = hwndProgressName;
 }
 
 Player::~Player()
@@ -1462,9 +1454,8 @@ HRESULT Player::Init()
 
    //m_hSongCompletionEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 
-   ::SendMessage(m_hwndProgress, PBM_SETPOS, 10, 0);
-   // TEXT
-   ::SetWindowText(m_hwndProgressName, "Initializing Visuals...");
+   m_ptable->m_progressDialog.SetProgress(10);
+   m_ptable->m_progressDialog.SetName(std::string("Initializing Visuals..."));
 
    InitKeys();
 
@@ -1585,9 +1576,8 @@ HRESULT Player::Init()
    Ball::ballID = 0;
 
    CreateDebugFont();
-
-   ::SendMessage(m_hwndProgress, PBM_SETPOS, 30, 0);
-   ::SetWindowText(m_hwndProgressName, "Initializing Physics...");
+   m_ptable->m_progressDialog.SetProgress(30);
+   m_ptable->m_progressDialog.SetName(std::string("Initializing Physics..."));
 
    // Initialize new nudging.
    m_tableVel.SetZero();
@@ -1667,8 +1657,8 @@ HRESULT Player::Init()
       }
    }
 
-   ::SendMessage(m_hwndProgress, PBM_SETPOS, 45, 0);
-   ::SetWindowText(m_hwndProgressName, "Initializing Octree...");
+   m_ptable->m_progressDialog.SetProgress(45);
+   m_ptable->m_progressDialog.SetName(std::string("Initializing Octree..."));
 
    AddCabinetBoundingHitShapes();
 
@@ -1700,8 +1690,8 @@ HRESULT Player::Init()
 
    //----------------------------------------------------------------------------------
 
-   ::SendMessage(m_hwndProgress, PBM_SETPOS, 60, 0);
-   ::SetWindowText(m_hwndProgressName, "Rendering Table...");
+   m_ptable->m_progressDialog.SetProgress(60);
+   m_ptable->m_progressDialog.SetName(std::string("Rendering Table..."));
 
    //g_viewDir = m_pin3d.m_viewVec;
    g_viewDir = Vertex3Ds(0, 0, -1.0f);
@@ -1727,7 +1717,7 @@ HRESULT Player::Init()
 
    // Pre-render all non-changing elements such as 
    // static walls, rails, backdrops, etc. and also static playfield reflections
-   InitStatic(m_hwndProgress);
+   InitStatic();
 
    for (size_t i = 0; i < m_ptable->m_vedit.size(); ++i)
    {
@@ -1779,7 +1769,8 @@ HRESULT Player::Init()
    // Direct all renders to the back buffer.
    m_pin3d.SetPrimaryRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
 
-   SendMessage(m_hwndProgress, PBM_SETPOS, 90, 0);
+   m_ptable->m_progressDialog.SetProgress(90);
+
 
 #ifdef DEBUG_BALL_SPIN
    {
@@ -1815,7 +1806,7 @@ HRESULT Player::Init()
 
    m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
 
-   ::SetWindowText(m_hwndProgressName, "Starting Game Scripts...");
+   m_ptable->m_progressDialog.SetName(std::string("Starting Game Scripts..."));
 
    m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
 
@@ -1853,29 +1844,22 @@ HRESULT Player::Init()
    fprintf(m_flog, "End Frame\n");
 #endif
 
-   ::SendMessage(m_hwndProgress, PBM_SETPOS, 100, 0);
-   ::SetWindowText(m_hwndProgressName, "Starting...");
-
-   m_ptable->CloseProgessDialog();
+   m_ptable->m_progressDialog.SetProgress(100);
+   m_ptable->m_progressDialog.SetName(std::string("Starting..."));
 
    g_pvp->GetPropertiesDocker()->EnableWindow(FALSE);
    g_pvp->GetLayersDocker()->EnableWindow(FALSE);
    g_pvp->GetToolbarDocker()->EnableWindow(FALSE);
    m_ptable->EnableWindow(FALSE);
+
+   m_ptable->m_progressDialog.Destroy();
+
    // Show the window.
    ShowWindow(SW_SHOW);
    SetForegroundWindow();
    SetFocus();
 
-#if(_WIN32_WINNT >= 0x0500)
-   if (m_fullScreen) // blocks processes from taking focus away from our exclusive fullscreen app and disables mouse cursor
-   {
-       ::LockSetForegroundWindow(LSFW_LOCK);
-       ::ShowCursor(FALSE);
-   }
-#else
-#pragma message ( "Warning: Missing LockSetForegroundWindow()" )
-#endif
+   LockForgroundWindow();
 
    // Call Init -- TODO: what's the relation to ptable->FireVoidEvent() above?
    for (size_t i = 0; i < m_vhitables.size(); ++i)
@@ -2079,7 +2063,7 @@ void Player::RenderMirrorOverlay()
    m_pin3d.DisableAlphaBlend();
 }
 
-void Player::InitStatic(HWND hwndProgress)
+void Player::InitStatic()
 {
    TRACE_FUNCTION();
 
@@ -2185,8 +2169,8 @@ void Player::InitStatic(HWND hwndProgress)
             if (ph)
             {
                ph->RenderStatic();
-               if (hwndProgress && ((i % 16) == 0) && iter == 0)
-                  SendMessage(hwndProgress, PBM_SETPOS, 60 + ((15 * i) / m_ptable->m_vedit.size()), 0);
+               if (((i % 16) == 0) && iter == 0)
+                   m_ptable->m_progressDialog.SetProgress(60 + ((15 * i) / m_ptable->m_vedit.size()));
             }
          }
       }
@@ -2200,8 +2184,8 @@ void Player::InitStatic(HWND hwndProgress)
             if (ph)
             {
                ph->RenderStatic();
-               if (hwndProgress && ((i % 16) == 0) && iter == 0)
-                  SendMessage(hwndProgress, PBM_SETPOS, 75 + ((15 * i) / m_ptable->m_vedit.size()), 0);
+               if (((i % 16) == 0) && iter == 0)
+                  m_ptable->m_progressDialog.SetProgress(75 + ((15 * i) / m_ptable->m_vedit.size()));
             }
          }
       }
@@ -4866,6 +4850,28 @@ void Player::UpdateCameraModeDisplay()
    DebugPrint(0, 210, szFoo);
 }
 
+void Player::LockForgroundWindow(const bool enable /*= true*/)
+{
+#if(_WIN32_WINNT >= 0x0500)
+    if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
+    {
+        if (enable)
+        {
+            ::LockSetForegroundWindow(LSFW_LOCK);
+            ::ShowCursor(FALSE);
+        }
+        else
+        {
+            ::LockSetForegroundWindow(LSFW_UNLOCK);
+            ::ShowCursor(TRUE);
+        }
+    }
+#else
+#pragma message ( "Warning: Missing LockSetForegroundWindow()" )
+#endif
+
+}
+
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void Player::Render()
@@ -5948,15 +5954,7 @@ void Player::StopPlayer()
    g_pvp->GetToolbarDocker()->EnableWindow();
    m_ptable->EnableWindow();
 
-#if(_WIN32_WINNT >= 0x0500)
-   if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
-   {
-       ::LockSetForegroundWindow(LSFW_UNLOCK);
-       ::ShowCursor(TRUE);
-   }
-#else
-#pragma message ( "Warning: Missing LockSetForegroundWindow()" )
-#endif
+   LockForgroundWindow(false);
 }
 
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)

@@ -57,6 +57,8 @@ public:
    virtual ~VPinball();
    void Quit();
 
+   void ShowSubDialog(CDialog& dlg);
+
 private:
    void ShowSearchSelect();
    void SetDefaultPhysics();
@@ -79,7 +81,6 @@ private:
    bool ApcHost_OnTranslateMessage(MSG* pmsg);
    bool processKeyInputForDialogs(MSG *pmsg);
 
-   void ShowSubDialog(CDialog &dlg);
 
 public:
    void AddMDITable(PinTableMDI* mdiTable);

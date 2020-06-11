@@ -795,6 +795,12 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
    m_scriptError = true;
 
+   if (g_pplayer)
+   {
+       g_pplayer->LockForgroundWindow(false);
+       g_pplayer->EnableWindow(FALSE);
+   }
+
    CComObject<PinTable> * const pt = g_pvp->GetActiveTable();
    if (pt)
    {
@@ -811,9 +817,6 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
    SysFreeString(ei.bstrSource);
    SysFreeString(ei.bstrDescription);
    SysFreeString(ei.bstrHelpFile);
-
-   if (g_pplayer)
-       g_pplayer->EnableWindow(FALSE);
 
    g_pvp->EnableWindow(FALSE);
 
