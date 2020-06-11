@@ -2153,14 +2153,10 @@ void PinTable::Play(const bool cameraMode)
    // make sure the load directory is the active directory
    SetCurrentDirectory(szLoadDir);
 
-   m_hwndProgressDialog = CreateDialog(g_hinst, MAKEINTRESOURCE(IDD_PROGRESS), m_vpinball->GetHwnd(), ProgressProc);
-   ::ShowWindow(m_hwndProgressDialog, SW_SHOW);
+   g_pvp->ShowSubDialog(m_progressDialog);
 
-   const HWND hwndProgressBar = ::GetDlgItem(m_hwndProgressDialog, IDC_PROGRESS2);
-   const HWND hwndStatusName = ::GetDlgItem(m_hwndProgressDialog, IDC_STATUSNAME);
-
-   ::SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
-   ::SetWindowText(hwndStatusName, "Backing Up Table State...");
+   m_progressDialog.SetProgress(1);
+   m_progressDialog.SetName(std::string("Backing Up Table State..."));
 
    BackupForPlay();
 
@@ -2236,7 +2232,7 @@ void PinTable::Play(const bool cameraMode)
 
       if (!m_pcv->m_scriptError)
       {
-         g_pplayer = new Player(cameraMode, this, hwndProgressBar, hwndStatusName);
+         g_pplayer = new Player(cameraMode, this);
          g_pplayer->Create();
 
          const float minSlope = (m_overridePhysics ? m_fOverrideMinSlope : m_angletiltMin);
@@ -8117,28 +8113,6 @@ STDMETHODIMP PinTable::put_DisplayBackdrop(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-INT_PTR CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-   switch (uMsg)
-   {
-   case WM_INITDIALOG:
-   {
-      const CRect rcMain = g_pvp->GetWindowRect();
-      RECT rcProgress;
-      GetWindowRect(hwndDlg, &rcProgress);
-
-      SetWindowPos(hwndDlg, NULL,
-         (rcMain.right + rcMain.left) / 2 - (rcProgress.right - rcProgress.left) / 2,
-         (rcMain.bottom + rcMain.top) / 2 - (rcProgress.bottom - rcProgress.top) / 2,
-         0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
-      return TRUE;
-   }
-   break;
-   }
-
-   return FALSE;
-}
-
 STDMETHODIMP PinTable::get_GlassHeight(float *pVal)
 {
    *pVal = m_glassheight;
@@ -10411,3 +10385,14 @@ void PinTableMDI::OnClose()
 
 #pragma endregion
 
+ProgressDialog::ProgressDialog() : CDialog(IDD_PROGRESS)
+{
+}
+
+BOOL ProgressDialog::OnInitDialog()
+{
+    AttachItem(IDC_PROGRESS2, m_progressBar);
+    AttachItem(IDC_STATUSNAME, m_progressName);
+
+    return TRUE;
+}

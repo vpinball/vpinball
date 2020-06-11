@@ -249,25 +249,22 @@ struct TimerOnOff
 class Player : public CWnd
 {
 public:
-   Player(const bool cameraMode, PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName);
+   Player(const bool cameraMode, PinTable * const ptable);
    virtual ~Player();
 
    virtual void PreRegisterClass(WNDCLASS& wc);
    virtual void PreCreate(CREATESTRUCT& cs);
    virtual void OnInitialUpdate();
    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-   HWND m_hwndProgress;
-   HWND m_hwndProgressName;
 
 private:
    void RenderStaticMirror(const bool onlyBalls);
    void RenderDynamicMirror(const bool onlyBalls);
    void RenderMirrorOverlay();
    void InitBallShader();
-   void InitGameplayWindow();
    void InitKeys();
 
-   void InitStatic(HWND hwndProgress);
+   void InitStatic();
 
    void UpdatePhysics();
 
@@ -289,6 +286,7 @@ private:
    void PhysicsSimulateCycle(float dtime);
 
 public:
+   void LockForgroundWindow(const bool enable = true);
    void Render();
    void RenderDynamics();
 
