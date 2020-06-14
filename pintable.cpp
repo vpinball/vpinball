@@ -1501,7 +1501,7 @@ PinTable::PinTable()
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
    m_pcv->AddRef();
    m_pcv->Init((IScriptableHost*)this);
-   m_pcv->Create();
+   m_pcv->Create(NULL);
 
    CComObject<ScriptGlobalTable>::CreateInstance(&m_psgt);
    m_psgt->AddRef();
