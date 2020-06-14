@@ -1870,15 +1870,13 @@ void PinTable::UIRenderPass2(Sur * const psur)
          ppi->CreateGDIVersion();
          if (ppi->m_hbmGDIVersion)
          {
-            const HDC hdcScreen = ::GetDC(NULL);
-            const HDC hdcNew = CreateCompatibleDC(hdcScreen);
-            const HBITMAP hbmOld = (HBITMAP)SelectObject(hdcNew, ppi->m_hbmGDIVersion);
+            CDC dc;
+            const HDC hdcNew = dc.CreateCompatibleDC(nullptr);
+            const HBITMAP hbmOld = dc.SelectObject(ppi->m_hbmGDIVersion);
 
             psur->Image(frect.left, frect.top, frect.right, frect.bottom, hdcNew, ppi->m_width, ppi->m_height);
 
-            SelectObject(hdcNew, hbmOld);
-            DeleteDC(hdcNew);
-            ::ReleaseDC(NULL, hdcScreen);
+            dc.SelectObject(hbmOld);
          }
       }
    }
@@ -1888,14 +1886,10 @@ void PinTable::UIRenderPass2(Sur * const psur)
       Render3DProjection(psur);
    }
 
-   for (size_t i = 0; i < m_vedit.size(); i++)
+   for(auto &ptr : m_vedit)
    {
-      IEditable * const ptr = m_vedit[i];
-      if (ptr->m_backglass == m_vpinball->m_backglassView)
-      {
-         if (ptr->GetISelect()->m_isVisible)
-            ptr->UIRenderPass1(psur);
-      }
+      if (ptr->m_backglass == m_vpinball->m_backglassView && ptr->GetISelect()->m_isVisible)
+        ptr->UIRenderPass1(psur);
    }
 
    if (m_grid && m_vpinball->m_gridSize > 0)
@@ -1930,14 +1924,10 @@ void PinTable::UIRenderPass2(Sur * const psur)
       }
    }
 
-   for (size_t i = 0; i < m_vedit.size(); i++)
+   for(auto &ptr : m_vedit)
    {
-      IEditable * const ptr = m_vedit[i];
-      if (ptr->m_backglass == m_vpinball->m_backglassView)
-      {
-         if (ptr->GetISelect()->m_isVisible)
-            ptr->UIRenderPass2(psur);
-      }
+      if (ptr->m_backglass == m_vpinball->m_backglassView && ptr->GetISelect()->m_isVisible)
+        ptr->UIRenderPass2(psur);
    }
 
    if (m_vpinball->m_backglassView) // Outline of the view, for when the grid is off
@@ -1983,8 +1973,8 @@ void PinTable::Render3DProjection(Sur * const psur)
    const float FOV = (m_BG_FOV[m_BG_current_set] < 1.0f) ? 1.0f : m_BG_FOV[m_BG_current_set]; // Can't have a real zero FOV, but this will look almost the same
 
    std::vector<Vertex3Ds> vvertex3D;
-   for (size_t i = 0; i < m_vedit.size(); i++)
-      m_vedit[i]->GetBoundingVertices(vvertex3D);
+   for(auto &ptr : m_vedit)
+      ptr->GetBoundingVertices(vvertex3D);
 
    // dummy coordinate system for backdrop view
    PinProjection pinproj;
@@ -2049,8 +2039,6 @@ bool PinTable::GetEMReelsEnabled() const
 // draws the main design screen
 void PinTable::Paint(HDC hdc)
 {
-   //HBITMAP hbmOffScreen;
-
    const CRect rc = GetClientRect();
 
    if (m_dirtyDraw)
@@ -2062,13 +2050,14 @@ void PinTable::Paint(HDC hdc)
       m_hbmOffScreen = CreateCompatibleBitmap(hdc, rc.right - rc.left, rc.bottom - rc.top);
    }
 
-   const HDC hdc2 = CreateCompatibleDC(hdc);
+   CDC dc;
+   const HDC hdc2 = dc.CreateCompatibleDC(hdc);
 
-   const HBITMAP hbmOld = (HBITMAP)SelectObject(hdc2, m_hbmOffScreen);
+   const HBITMAP hbmOld = dc.SelectObject(m_hbmOffScreen);
 
    if (m_dirtyDraw)
    {
-      Sur * const psur = new PaintSur(hdc2, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, GetSelectedItem());
+      Sur * const psur = new PaintSur(dc.GetHDC(), m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, GetSelectedItem());
       UIRenderPass2(psur);
 
       delete psur;
@@ -2076,22 +2065,19 @@ void PinTable::Paint(HDC hdc)
 
    BitBlt(hdc, rc.left, rc.top, rc.right, rc.bottom, hdc2, 0, 0, SRCCOPY);
 
-   SelectObject(hdc2, hbmOld);
-
-   DeleteDC(hdc2);
+   dc.SelectObject(hbmOld);
 
    m_dirtyDraw = false;
-   //DeleteObject(hbmOffScreen);
 }
 
 ISelect *PinTable::HitTest(const int x, const int y)
 {
-   const HDC hdc = GetDC();
+   const CDC dc;
 
    const CRect rc = GetClientRect();
 
-   HitSur * const phs = new HitSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
-   HitSur * const phs2 = new HitSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
+   HitSur * const phs = new HitSur(dc.GetHDC(), m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
+   HitSur * const phs2 = new HitSur(dc.GetHDC(), m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
 
    m_allHitElements.clear();
 
@@ -2122,8 +2108,6 @@ ISelect *PinTable::HitTest(const int x, const int y)
 
    ISelect * const pisel = phs->m_pselected;
    delete phs;
-
-   ReleaseDC(hdc);
 
    return pisel;
 }
@@ -5381,30 +5365,24 @@ void PinTable::ExportBlueprint()
    WriteFile(hfile, &bmi, sizeof(BITMAPINFOHEADER), &foo, NULL);
 #endif
 
-   HDC hdcScreen = ::GetDC(NULL);
-   HDC hdc2 = CreateCompatibleDC(hdcScreen);
-
+   CDC dc(nullptr);
+   HDC hdc2 = dc.CreateCompatibleDC(nullptr);
    char *pbits;
-   HBITMAP hdib = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, (void **)&pbits, NULL, 0);
-
-   /*const HBITMAP hbmOld = (HBITMAP)*/SelectObject(hdc2, hdib);
+   dc.CreateDIBSection(dc.GetHDC(), &bmi, DIB_RGB_COLORS, (void **)&pbits, NULL, 0);
 
    PaintSur * const psur = new PaintSur(hdc2, (float)bmwidth / tablewidth, tablewidth*0.5f, tableheight*0.5f, bmwidth, bmheight, NULL);
 
-   SelectObject(hdc2, GetStockObject(WHITE_BRUSH));
-   PatBlt(hdc2, 0, 0, bmwidth, bmheight, PATCOPY);
+   dc.SelectObject(dc.GetStockObject(WHITE_BRUSH));
+   dc.PatBlt(0, 0, bmwidth, bmheight, PATCOPY);
 
    if (m_vpinball->m_backglassView)
       Render3DProjection(psur);
 
-   for (size_t i = 0; i < m_vedit.size(); i++)
+   for(auto &ptr : m_vedit)
    {
-      IEditable * const ptr = m_vedit[i];
       if (ptr->GetISelect()->m_isVisible && ptr->m_backglass == m_vpinball->m_backglassView)
          ptr->RenderBlueprint(psur, solid);
    }
-
-   //UIRenderPass2(psur);
 
    delete psur;
 
@@ -5432,11 +5410,6 @@ void PinTable::ExportBlueprint()
 #if 1
    FreeImage_Unload(dib);
 #endif
-
-   DeleteDC(hdc2);
-   ::ReleaseDC(NULL, hdcScreen);
-
-   DeleteObject(hdib);
 }
 
 void PinTable::ExportMesh(FILE *f)
@@ -6573,11 +6546,11 @@ void PinTable::OnLButtonUp(int x, int y)
       {
          vector<ISelect*> vsel;
 
-         const HDC hdc = m_mdiTable->GetDC();
+         const CDC &dc = m_mdiTable->GetDC();
 
          const CRect rc = m_mdiTable->GetClientRect();
 
-         HitRectSur * const phrs = new HitRectSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, &m_rcDragRect, &vsel);
+         HitRectSur * const phrs = new HitRectSur(dc.GetHDC(), m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, &m_rcDragRect, &vsel);
 
          // Just want one rendering pass (no UIRenderPass1) so we don't select things twice
          UIRenderPass2(phrs);
@@ -6589,15 +6562,15 @@ void PinTable::OnLButtonUp(int x, int y)
 
          int minlevel = INT_MAX;
 
-         for (size_t i = 0; i < vsel.size(); i++)
+         for(auto &ptr : vsel)
          {
-            minlevel = min(minlevel, vsel[i]->GetSelectLevel());
+            minlevel = min(minlevel, ptr->GetSelectLevel());
          }
 
          if (vsel.size() > 0)
          {
             size_t lastItemForUpdate = -1;
-            //first check which item is the last item to add to the multi selection
+            // first check which item is the last item to add to the multi selection
             for (size_t i = 0; i < vsel.size(); i++)
             {
                if (vsel[i]->GetSelectLevel() == minlevel)
@@ -6616,8 +6589,6 @@ void PinTable::OnLButtonUp(int x, int y)
          }
 
          delete phrs;
-
-         m_mdiTable->ReleaseDC(hdc);
       }
    }
    SetDirtyDraw();

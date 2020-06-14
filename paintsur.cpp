@@ -138,8 +138,9 @@ void PaintSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, c
    const int ix2 = SCALEXf(right);
    const int iy2 = SCALEYf(bottom);
 
-   const HDC hdcNew = CreateCompatibleDC(m_hdc);
-   const HBITMAP hbmOld = (HBITMAP)SelectObject(hdcNew, hbm);
+   CDC dc;
+   const HDC hdcNew = dc.CreateCompatibleDC(m_hdc);
+   const HBITMAP hbmOld = dc.SelectObject(hbm);
 
    std::vector<POINT> rgpt(rgv.size());
    for (size_t i = 0; i < rgv.size(); i++)
@@ -173,8 +174,7 @@ void PaintSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, c
       StretchBlt(m_hdc, ix, iy, ix2 - ix, iy2 - iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
    }
 
-   SelectObject(hdcNew, hbmOld);
-   DeleteDC(hdcNew);
+   dc.SelectObject(hbmOld);
 }
 
 void PaintSur::Polyline(const Vertex2D * const rgv, const int count)
