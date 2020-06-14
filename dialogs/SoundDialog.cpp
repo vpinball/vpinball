@@ -39,9 +39,8 @@ void SoundDialog::OnClose()
 
 long GetSystemDPI()
 {
-	const HDC dc = GetDC(nullptr);
-	const SIZE ret = { GetDeviceCaps(dc, LOGPIXELSX), GetDeviceCaps(dc, LOGPIXELSY) };
-	ReleaseDC(nullptr, dc);
+    CClientDC clientDC(NULL);
+	const SIZE ret = { clientDC.GetDeviceCaps(LOGPIXELSX), clientDC.GetDeviceCaps(LOGPIXELSY) };
 	return ret.cx;
 }
 

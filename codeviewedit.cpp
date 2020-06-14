@@ -481,9 +481,8 @@ void CVPrefrence::SetDefaultFont(const HWND hwndDlg)
 
 int CVPrefrence::GetHeightFromPointSize(const HWND hwndDlg)
 {
-	const HDC hdc = GetDC(hwndDlg);
-	const int Height = -MulDiv(this->m_pointSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-	ReleaseDC(hwndDlg, hdc);
+	CClientDC clientDC(hwndDlg);
+	const int Height = -MulDiv(this->m_pointSize, clientDC.GetDeviceCaps(LOGPIXELSY), 72);
 	return Height;
 }
 
