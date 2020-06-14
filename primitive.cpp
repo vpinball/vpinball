@@ -1358,6 +1358,7 @@ void Primitive::PutCenter(const Vertex2D& pv)
 {
    m_d.m_vPosition.x = pv.x;
    m_d.m_vPosition.y = pv.y;
+   UpdateStatusBarInfo();
 }
 
 //////////////////////////////

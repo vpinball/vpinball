@@ -10,7 +10,7 @@ ISelect::ISelect()
    m_locked = false;
 
    m_menuid = -1;
-   m_layerIndex = 0;
+   m_oldLayerIndex = 0;
    m_layerName = "";
    m_isVisible = true;
    m_vpinball = g_pvp;
@@ -309,7 +309,7 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
        {
           int tmp;
           pbr->GetInt(&tmp);
-          m_layerIndex = (char)tmp;
+          m_oldLayerIndex = (char)tmp;
           break;
        }
        case FID(LANR):
@@ -333,7 +333,7 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteBool(FID(LOCK), m_locked);
-   bw.WriteInt(FID(LAYR), m_layerIndex);
+   bw.WriteInt(FID(LAYR), m_oldLayerIndex);
    bw.WriteString(FID(LANR), m_layerName.c_str());
    bw.WriteBool(FID(LVIS), m_isVisible);
 
