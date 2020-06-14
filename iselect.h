@@ -148,7 +148,7 @@ public:
    bool m_locked; // Can not be dragged in the editor
    bool m_isVisible;
 
-   unsigned char m_layerIndex; //!! deprecated, leave it here for compatibility reasons. To load old tables to new layer handling
+   unsigned char m_oldLayerIndex; //!! deprecated, leave it here for compatibility reasons. To load old tables to new layer handling
 
 protected:
    VPinball *m_vpinball;

@@ -3770,7 +3770,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
       {
          IEditable * const piedit = m_vedit[t];
          ISelect * const psel = piedit->GetISelect();
-         if (psel->m_layerIndex == i)
+         if (psel->m_oldLayerIndex == i)
          {
              m_layer[i].push_back(piedit);
              if (psel->m_layerName == "")
@@ -6172,13 +6172,14 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
             peditNew->InitVBA(fTrue, 0, peditNew->GetScriptable()->m_wzName);
          }
 
-         m_vedit.push_back(peditNew);
-         // copy the new element to the same layer as the source element
-         m_layer[peditNew->GetISelect()->m_layerIndex].push_back(peditNew);
-
          peditNew->InitPostLoad();
          peditNew->m_backglass = m_vpinball->m_backglassView;
 
+         peditNew->GetISelect()->m_layerName = m_vpinball->GetLayersListDialog()->GetCurrentSelectedLayerName();
+         m_vpinball->GetLayersListDialog()->AddLayer(m_vpinball->GetLayersListDialog()->GetCurrentSelectedLayerName(), peditNew);
+
+         m_vedit.push_back(peditNew);
+         
          AddMultiSel(peditNew->GetISelect(), (i != m_vpinball->m_vstmclipboard.size() - 1), true, false);
          cpasted++;
       }
