@@ -1240,27 +1240,19 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
 
    if (g_pplayer==nullptr)
    {
-      // check/process events for other dialogs (material/sound/image manager, toolbar, properties
-      consumed = processKeyInputForDialogs(pmsg);
       // check if message must be processed by the code editor
-      if (m_pcv && m_pcv->m_hwndMain)
-      {
-        bool translated = false;
-
-        if ((pmsg->hwnd == m_pcv->m_hwndMain) || ::IsChild(m_pcv->m_hwndMain, pmsg->hwnd))
-            translated = !!TranslateAccelerator(m_pcv->m_hwndMain, m_pcv->m_haccel, pmsg); // process special keys
-
-        if (translated)
-            consumed = true;
-        else if (::IsDialogMessage(m_pcv->m_hwndMain, pmsg)) //check and process other code editor messages
-            consumed = true;
-      }
+      if (m_pcv) 
+         consumed = m_pcv->PreTranslateMessage(pmsg);
 
       if (m_pcv && m_pcv->m_hwndFind && ::IsDialogMessage(m_pcv->m_hwndFind, pmsg))
          consumed = true;
 
       if (!consumed)
          consumed = !!TranslateAccelerator(GetHwnd(), g_haccel, pmsg);
+
+      if(!consumed)
+         // check/process events for other dialogs (material/sound/image manager, toolbar, properties
+         consumed = processKeyInputForDialogs(pmsg);
 
       if (!consumed)
          TranslateMessage(pmsg);

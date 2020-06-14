@@ -85,6 +85,7 @@ public:
 
 
 class CodeViewer :
+    public CWnd,
 	public CComObjectRoot,
 	//public IDispatchImpl<IDragPoint, &IID_IDragPoint, &LIBID_VPinballLib>,
 	//public CComCoClass<CodeViewer,&CLSID_DragPoint>,
@@ -102,9 +103,6 @@ public:
    virtual ~CodeViewer();
 
    void Init(IScriptableHost *psh);
-
-   void Create();
-   void Destroy();
    void SetVisible(const bool visible);
 
    void SetEnabled(const bool enabled);
@@ -286,7 +284,22 @@ public:
    SaveDirtyState m_sdsDirty;
    bool m_ignoreDirty;
 
+   bool PreTranslateMessage(MSG *msg);
+
+protected:
+    virtual void PreCreate(CREATESTRUCT& cs);
+    virtual void PreRegisterClass(WNDCLASS& wc);
+    virtual int  OnCreate(CREATESTRUCT& cs);
+    virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
+    virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam);
+    virtual void Destroy();
+
 private:
+   CodeViewer* GetCodeViewerPtr();
+   BOOL ParseClickEvents(const int id);
+   BOOL ParseSelChangeEvent(const int id, SCNotification *pscn);
+
    bool ParseOKLineLength(const size_t LineLen);
    void ParseDelimtByColon(string &result, string &wholeline);
    void ParseFindConstruct(size_t &Pos, const string &UCLine, WordType &Type, int &ConstructSize);
