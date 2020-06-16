@@ -1620,7 +1620,7 @@ STDMETHODIMP Ramp::put_Image(BSTR newVal)
 
    if (strcmp(m_szImage, m_d.m_szImage) != 0)
    {
-      strcpy_s(m_d.m_szImage, MAXTOKEN, m_szImage);
+      strcpy_s(m_d.m_szImage, MAXTOKEN-1, m_szImage);
       m_dynamicVertexBufferRegenerate = true;
    }
 

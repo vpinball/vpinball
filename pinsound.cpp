@@ -8,46 +8,46 @@ void BASS_ErrorMapCode(const int code, char text[MAXSTRING])
 {
 	switch (code)
 	{
-	case BASS_OK: strcpy_s(text, MAXSTRING, "all is OK"); break;
-	case BASS_ERROR_MEM: strcpy_s(text, MAXSTRING, "memory error"); break;
-	case BASS_ERROR_FILEOPEN: strcpy_s(text, MAXSTRING, "can't open the file"); break;
-	case BASS_ERROR_DRIVER: strcpy_s(text, MAXSTRING, "can't find a free/valid driver"); break;
-	case BASS_ERROR_BUFLOST: strcpy_s(text, MAXSTRING, "the sample buffer was lost"); break;
-	case BASS_ERROR_HANDLE: strcpy_s(text, MAXSTRING, "invalid handle"); break;
-	case BASS_ERROR_FORMAT: strcpy_s(text, MAXSTRING, "unsupported sample format"); break;
-	case BASS_ERROR_POSITION: strcpy_s(text, MAXSTRING, "invalid position"); break;
-	case BASS_ERROR_INIT: strcpy_s(text, MAXSTRING, "BASS_Init has not been successfully called"); break;
-	case BASS_ERROR_START: strcpy_s(text, MAXSTRING, "BASS_Start has not been successfully called"); break;
-	case BASS_ERROR_SSL: strcpy_s(text, MAXSTRING, "SSL/HTTPS support isn't available"); break;
-	case BASS_ERROR_ALREADY: strcpy_s(text, MAXSTRING, "already initialized/paused/whatever"); break;
-	case BASS_ERROR_NOTAUDIO: strcpy_s(text, MAXSTRING, "file does not contain audio"); break;
-	case BASS_ERROR_NOCHAN: strcpy_s(text, MAXSTRING, "can't get a free channel"); break;
-	case BASS_ERROR_ILLTYPE: strcpy_s(text, MAXSTRING, "an illegal type was specified"); break;
-	case BASS_ERROR_ILLPARAM: strcpy_s(text, MAXSTRING, "an illegal parameter was specified"); break;
-	case BASS_ERROR_NO3D: strcpy_s(text, MAXSTRING, "no 3D support"); break;
-	case BASS_ERROR_NOEAX: strcpy_s(text, MAXSTRING, "no EAX support"); break;
-	case BASS_ERROR_DEVICE: strcpy_s(text, MAXSTRING, "illegal device number"); break;
-	case BASS_ERROR_NOPLAY: strcpy_s(text, MAXSTRING, "not playing"); break;
-	case BASS_ERROR_FREQ: strcpy_s(text, MAXSTRING, "illegal sample rate"); break;
-	case BASS_ERROR_NOTFILE: strcpy_s(text, MAXSTRING, "the stream is not a file stream"); break;
-	case BASS_ERROR_NOHW: strcpy_s(text, MAXSTRING, "no hardware voices available"); break;
-	case BASS_ERROR_EMPTY: strcpy_s(text, MAXSTRING, "the MOD music has no sequence data"); break;
-	case BASS_ERROR_NONET: strcpy_s(text, MAXSTRING, "no internet connection could be opened"); break;
-	case BASS_ERROR_CREATE: strcpy_s(text, MAXSTRING, "couldn't create the file"); break;
-	case BASS_ERROR_NOFX: strcpy_s(text, MAXSTRING, "effects are not available"); break;
-	case BASS_ERROR_NOTAVAIL: strcpy_s(text, MAXSTRING, "requested data/action is not available"); break;
-	case BASS_ERROR_DECODE: strcpy_s(text, MAXSTRING, "the channel is/isn't a 'decoding channel'"); break;
-	case BASS_ERROR_DX: strcpy_s(text, MAXSTRING, "a sufficient DirectX version is not installed"); break;
-	case BASS_ERROR_TIMEOUT: strcpy_s(text, MAXSTRING, "connection timedout"); break;
-	case BASS_ERROR_FILEFORM: strcpy_s(text, MAXSTRING, "unsupported file format"); break;
-	case BASS_ERROR_SPEAKER: strcpy_s(text, MAXSTRING, "unavailable speaker"); break;
-	case BASS_ERROR_VERSION: strcpy_s(text, MAXSTRING, "invalid BASS version (used by add-ons)"); break;
-	case BASS_ERROR_CODEC: strcpy_s(text, MAXSTRING, "codec is not available/supported"); break;
-	case BASS_ERROR_ENDED: strcpy_s(text, MAXSTRING, "the channel/file has ended"); break;
-	case BASS_ERROR_BUSY: strcpy_s(text, MAXSTRING, "the device is busy"); break;
-	case BASS_ERROR_UNSTREAMABLE: strcpy_s(text, MAXSTRING, "unstreamable file"); break;
-	case BASS_ERROR_UNKNOWN: strcpy_s(text, MAXSTRING, "unknown error"); break;
-	default: strcpy_s(text, MAXSTRING, "unmapped error"); break;
+	case BASS_OK: strcpy_s(text, MAXSTRING-1, "all is OK"); break;
+	case BASS_ERROR_MEM: strcpy_s(text, MAXSTRING-1, "memory error"); break;
+	case BASS_ERROR_FILEOPEN: strcpy_s(text, MAXSTRING-1, "can't open the file"); break;
+	case BASS_ERROR_DRIVER: strcpy_s(text, MAXSTRING-1, "can't find a free/valid driver"); break;
+	case BASS_ERROR_BUFLOST: strcpy_s(text, MAXSTRING-1, "the sample buffer was lost"); break;
+	case BASS_ERROR_HANDLE: strcpy_s(text, MAXSTRING-1, "invalid handle"); break;
+	case BASS_ERROR_FORMAT: strcpy_s(text, MAXSTRING-1, "unsupported sample format"); break;
+	case BASS_ERROR_POSITION: strcpy_s(text, MAXSTRING-1, "invalid position"); break;
+	case BASS_ERROR_INIT: strcpy_s(text, MAXSTRING-1, "BASS_Init has not been successfully called"); break;
+	case BASS_ERROR_START: strcpy_s(text, MAXSTRING-1, "BASS_Start has not been successfully called"); break;
+	case BASS_ERROR_SSL: strcpy_s(text, MAXSTRING-1, "SSL/HTTPS support isn't available"); break;
+	case BASS_ERROR_ALREADY: strcpy_s(text, MAXSTRING-1, "already initialized/paused/whatever"); break;
+	case BASS_ERROR_NOTAUDIO: strcpy_s(text, MAXSTRING-1, "file does not contain audio"); break;
+	case BASS_ERROR_NOCHAN: strcpy_s(text, MAXSTRING-1, "can't get a free channel"); break;
+	case BASS_ERROR_ILLTYPE: strcpy_s(text, MAXSTRING-1, "an illegal type was specified"); break;
+	case BASS_ERROR_ILLPARAM: strcpy_s(text, MAXSTRING-1, "an illegal parameter was specified"); break;
+	case BASS_ERROR_NO3D: strcpy_s(text, MAXSTRING-1, "no 3D support"); break;
+	case BASS_ERROR_NOEAX: strcpy_s(text, MAXSTRING-1, "no EAX support"); break;
+	case BASS_ERROR_DEVICE: strcpy_s(text, MAXSTRING-1, "illegal device number"); break;
+	case BASS_ERROR_NOPLAY: strcpy_s(text, MAXSTRING-1, "not playing"); break;
+	case BASS_ERROR_FREQ: strcpy_s(text, MAXSTRING-1, "illegal sample rate"); break;
+	case BASS_ERROR_NOTFILE: strcpy_s(text, MAXSTRING-1, "the stream is not a file stream"); break;
+	case BASS_ERROR_NOHW: strcpy_s(text, MAXSTRING-1, "no hardware voices available"); break;
+	case BASS_ERROR_EMPTY: strcpy_s(text, MAXSTRING-1, "the MOD music has no sequence data"); break;
+	case BASS_ERROR_NONET: strcpy_s(text, MAXSTRING-1, "no internet connection could be opened"); break;
+	case BASS_ERROR_CREATE: strcpy_s(text, MAXSTRING-1, "couldn't create the file"); break;
+	case BASS_ERROR_NOFX: strcpy_s(text, MAXSTRING-1, "effects are not available"); break;
+	case BASS_ERROR_NOTAVAIL: strcpy_s(text, MAXSTRING-1, "requested data/action is not available"); break;
+	case BASS_ERROR_DECODE: strcpy_s(text, MAXSTRING-1, "the channel is/isn't a 'decoding channel'"); break;
+	case BASS_ERROR_DX: strcpy_s(text, MAXSTRING-1, "a sufficient DirectX version is not installed"); break;
+	case BASS_ERROR_TIMEOUT: strcpy_s(text, MAXSTRING-1, "connection timedout"); break;
+	case BASS_ERROR_FILEFORM: strcpy_s(text, MAXSTRING-1, "unsupported file format"); break;
+	case BASS_ERROR_SPEAKER: strcpy_s(text, MAXSTRING-1, "unavailable speaker"); break;
+	case BASS_ERROR_VERSION: strcpy_s(text, MAXSTRING-1, "invalid BASS version (used by add-ons)"); break;
+	case BASS_ERROR_CODEC: strcpy_s(text, MAXSTRING-1, "codec is not available/supported"); break;
+	case BASS_ERROR_ENDED: strcpy_s(text, MAXSTRING-1, "the channel/file has ended"); break;
+	case BASS_ERROR_BUSY: strcpy_s(text, MAXSTRING-1, "the device is busy"); break;
+	case BASS_ERROR_UNSTREAMABLE: strcpy_s(text, MAXSTRING-1, "unstreamable file"); break;
+	case BASS_ERROR_UNKNOWN: strcpy_s(text, MAXSTRING-1, "unknown error"); break;
+	default: strcpy_s(text, MAXSTRING-1, "unmapped error"); break;
 	}
 }
 
@@ -412,9 +412,9 @@ PinSound *AudioMusicPlayer::LoadFile(const TCHAR* const strFileName)
 {
    PinSound * const pps = new PinSound();
 
-   strncpy_s(pps->m_szPath, strFileName, MAX_PATH);
+   strncpy_s(pps->m_szPath, strFileName, MAX_PATH-1);
    TitleFromFilename(strFileName, pps->m_szName);
-   strncpy_s(pps->m_szInternalName, pps->m_szName, MAXTOKEN);
+   strncpy_s(pps->m_szInternalName, pps->m_szName, MAXTOKEN-1);
    CharLowerBuff(pps->m_szInternalName, lstrlen(pps->m_szInternalName));
 
    if (pps->IsWav()) // only use old direct sound code and wav reader if playing wav's

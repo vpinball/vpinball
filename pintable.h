@@ -784,11 +784,11 @@ public:
 
    HWND  m_hMaterialManager;
    SearchSelectDialog m_searchSelectDlg;
-
-   bool  m_dirtyDraw; // Whether our background bitmap is up to date
+   ProgressDialog m_progressDialog;
 
    std::atomic<bool> m_savingActive;
 
+   bool  m_dirtyDraw; // Whether our background bitmap is up to date
    bool  m_renderSolid;
 
    bool  m_grid; // Display grid or not
@@ -878,20 +878,17 @@ public:
    {
        m_mdiTable = table;
    }
-   PinTableMDI *GetMDITable()
+   PinTableMDI *GetMDITable() const
    {
        return m_mdiTable;
    }
 
-   ProgressDialog m_progressDialog;
-
-   //HWND m_hMDI;
-   PinTableMDI *m_mdiTable;
-   WCHAR *GetCollectionNameByElement(const ISelect * const element);
+   WCHAR* GetCollectionNameByElement(const ISelect* const element);
    void RefreshProperties();
 
 private:
-    bool m_moving;
+   PinTableMDI *m_mdiTable;
+   bool m_moving;
 
    std::unordered_map<const char*, Texture *, StringHashFunctor, StringComparator> m_textureMap;  // hash table to speed up texture lookup by name
    std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name

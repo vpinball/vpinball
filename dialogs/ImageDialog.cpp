@@ -567,9 +567,9 @@ void ImageDialog::Export()
                   if (selectedItemsCount>1)
                   {
                      memset(g_filename, 0, MAX_PATH);
-                     strcpy_s(g_filename, MAX_PATH, pathName);
+                     strcpy_s(g_filename, MAX_PATH-1, pathName);
                      if (!renameOnExport)
-                        strcat_s(g_filename, MAX_PATH, &ppi->m_szPath[begin]);
+                        strcat_s(g_filename, MAX_PATH-1, &ppi->m_szPath[begin]);
                      else
                      {
                         strcat_s(g_filename, ppi->m_szName);

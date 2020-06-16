@@ -209,6 +209,7 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
                 lvitem.iItem = sel;
                 lvitem.iSubItem = 0;
                 ListView_GetItem( hSoundList, &lvitem );
+
                 PinSound * const pps = (PinSound *)lvitem.lParam;
                 pps->TestPlay();
                 ::EnableWindow(GetDlgItem(IDC_STOP).GetHwnd(), fTrue);
@@ -458,9 +459,9 @@ void SoundDialog::Export()
                     if (selectedItemsCount > 1)
                     {
                        memset(m_filename, 0, MAX_PATH);
-                       strcpy_s(m_filename, MAX_PATH, pathName);
+                       strcpy_s(m_filename, MAX_PATH-1, pathName);
                        if (!renameOnExport)
-                          strcat_s(m_filename, MAX_PATH, &pps->m_szPath[begin]);
+                          strcat_s(m_filename, MAX_PATH-1, &pps->m_szPath[begin]);
                        else
                        {
                           strcat_s(m_filename, pps->m_szName);
