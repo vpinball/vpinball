@@ -174,7 +174,7 @@ public:
 
    char m_szName[MAXTOKEN];
    char m_szInternalName[MAXTOKEN];
-   char m_szPath[MAX_PATH];
+   char m_szPath[MAXSTRING];
 
 private:
    HBITMAP m_oldHBM;        // this is to cache the result of SelectObject()
