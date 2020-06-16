@@ -552,7 +552,7 @@ INT_PTR DbgLightDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 Light* DbgLightDialog::GetLight()
 {
-    char strText[255] = { 0 };
+    char strText[MAXSTRING] = { 0 };
     const int idx_row = m_lightsCombo.GetCurSel();
     m_lightsCombo.GetLBText(idx_row, strText);
     IEditable* const pedit = g_pplayer->m_ptable->GetElementByName(strText);
@@ -612,7 +612,7 @@ BOOL DbgMaterialDialog::OnInitDialog()
 
 void DbgMaterialDialog::OnOK()
 {
-    char strText[255] = { 0 };
+    char strText[MAXSTRING] = { 0 };
     const int idx_row = m_materialsCombo.GetCurSel();
     m_materialsCombo.GetLBText(idx_row, strText);
 
@@ -669,9 +669,8 @@ BOOL DbgMaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             {
                 case CBN_SELCHANGE:
                 {
-                    int idx_row;
-                    char strText[255] = { 0 };
-                    idx_row = m_materialsCombo.GetCurSel();
+                    char strText[MAXSTRING] = { 0 };
+                    const int idx_row = m_materialsCombo.GetCurSel();
                     m_materialsCombo.GetLBText(idx_row, strText);
 
                     Material* const pMat = g_pplayer->m_ptable->GetMaterial(strText);
@@ -708,9 +707,8 @@ BOOL DbgMaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             CHOOSECOLOR cc = m_colorDialog.GetParameters();
             cc.Flags = CC_FULLOPEN | CC_RGBINIT;
 
-            int idx_row;
-            char strText[255] = { 0 };
-            idx_row = m_materialsCombo.GetCurSel();
+            char strText[MAXSTRING] = { 0 };
+            const int idx_row = m_materialsCombo.GetCurSel();
             m_materialsCombo.GetLBText(idx_row, strText);
 
             Material* const pMat = g_pplayer->m_ptable->GetMaterial(strText);
@@ -734,9 +732,8 @@ BOOL DbgMaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             CHOOSECOLOR cc = m_colorDialog.GetParameters();
             cc.Flags = CC_FULLOPEN | CC_RGBINIT;
 
-            int idx_row;
-            char strText[255] = { 0 };
-            idx_row = m_materialsCombo.GetCurSel();
+            char strText[MAXSTRING] = { 0 };
+            const int idx_row = m_materialsCombo.GetCurSel();
             m_materialsCombo.GetLBText(idx_row, strText);
 
             Material* const pMat = g_pplayer->m_ptable->GetMaterial(strText);
@@ -760,9 +757,8 @@ BOOL DbgMaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             CHOOSECOLOR cc = m_colorDialog.GetParameters();
             cc.Flags = CC_FULLOPEN | CC_RGBINIT;
 
-            int idx_row;
-            char strText[255] = { 0 };
-            idx_row = m_materialsCombo.GetCurSel();
+            char strText[MAXSTRING] = { 0 };
+            const int idx_row = m_materialsCombo.GetCurSel();
             m_materialsCombo.GetLBText(idx_row, strText);
 
             Material* const pMat = g_pplayer->m_ptable->GetMaterial(strText);

@@ -111,13 +111,13 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_VALUE_SETTER(flipper->SetFlipperRadiusMin, flipper->GetFlipperRadiusMin, PropertyDialog::GetFloatTextbox, m_maxDifficultLengthEdit, flipper);
                 break;
             case 1502:
-                CHECK_UPDATE_COMBO_TEXT(flipper->m_d.m_szSurface, m_surfaceCombo, flipper);
+                CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(flipper->m_d.m_szSurface, m_surfaceCombo, flipper);
                 break;
             case IDC_FLIPPER_ENABLED:
                 CHECK_UPDATE_ITEM(flipper->m_d.m_enabled, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), flipper);
                 break;
             case IDC_MATERIAL_COMBO2:
-                CHECK_UPDATE_COMBO_TEXT(flipper->m_d.m_szRubberMaterial, m_rubberMaterialCombo, flipper);
+                CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(flipper->m_d.m_szRubberMaterial, m_rubberMaterialCombo, flipper);
                 break;
 
             default:

@@ -48,7 +48,7 @@ void LightStatesProperty::UpdateProperties(const int dispid)
                 if (pattern != CString(light->m_rgblinkpattern))
                 {
                     PropertyDialog::StartUndo(light);
-                    strncpy_s(light->m_rgblinkpattern, 32, pattern, pattern.GetLength());
+                    strncpy_s(light->m_rgblinkpattern, pattern, pattern.GetLength());
                     PropertyDialog::EndUndo(light);
                 }
                 break;

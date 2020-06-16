@@ -101,7 +101,7 @@ void PlungerVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case DISPID_TipShape:
                 PropertyDialog::StartUndo(plunger);
-                strncpy_s(plunger->m_d.m_szTipShape, MAXTIPSHAPE-1, m_tipShapeEdit.GetWindowText().c_str(), m_tipShapeEdit.GetWindowText().GetLength());
+                strncpy_s(plunger->m_d.m_szTipShape, m_tipShapeEdit.GetWindowText().c_str(), m_tipShapeEdit.GetWindowText().GetLength());
                 PropertyDialog::EndUndo(plunger);
                 break;
             case DISPID_RingGap:
@@ -132,7 +132,7 @@ void PlungerVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(plunger->m_d.m_v.y, PropertyDialog::GetFloatTextbox(m_posYEdit), plunger);
                 break;
             case 1502:
-                CHECK_UPDATE_COMBO_TEXT(plunger->m_d.m_szSurface, m_surfaceCombo, plunger);
+                CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(plunger->m_d.m_szSurface, m_surfaceCombo, plunger);
                 break;
             default:
                 UpdateBaseProperties(plunger, &plunger->m_d, dispid);

@@ -51,16 +51,16 @@ void BackglassVisualsProperty::UpdateProperties(const int dispid)
             CHECK_UPDATE_ITEM(table->m_ImageBackdropNightDay, PropertyDialog::GetCheckboxState(m_hApplyNightDayCheck), table);
             break;
         case DISPID_Image2:
-            CHECK_UPDATE_COMBO_TEXT(table->m_BG_szImage[0], m_dtImageCombo, table);
+            CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(table->m_BG_szImage[0], m_dtImageCombo, table);
             break;
         case DISPID_Image6:
-            CHECK_UPDATE_COMBO_TEXT(table->m_BG_szImage[1], m_fsImageCombo, table);
+            CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(table->m_BG_szImage[1], m_fsImageCombo, table);
             break;
         case DISPID_Image8:
-            CHECK_UPDATE_COMBO_TEXT(table->m_BG_szImage[2], m_fssImageCombo, table);
+            CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(table->m_BG_szImage[2], m_fssImageCombo, table);
             break;
         case 1509:
-            CHECK_UPDATE_COMBO_TEXT(table->m_szImageColorGrade, m_colorGradingCombo, table);
+            CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(table->m_szImageColorGrade, m_colorGradingCombo, table);
             break;
         case IDC_ENABLE_EMREEL_CHECK:
             CHECK_UPDATE_ITEM(table->m_renderEMReels, PropertyDialog::GetCheckboxState(m_hEnableEMReelCheck), table);
