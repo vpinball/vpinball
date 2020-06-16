@@ -1859,7 +1859,7 @@ HRESULT Player::Init()
    SetForegroundWindow();
    SetFocus();
 
-   LockForgroundWindow();
+   LockForegroundWindow(true);
 
    // Call Init -- TODO: what's the relation to ptable->FireVoidEvent() above?
    for (size_t i = 0; i < m_vhitables.size(); ++i)
@@ -4850,7 +4850,7 @@ void Player::UpdateCameraModeDisplay()
    DebugPrint(0, 210, szFoo);
 }
 
-void Player::LockForgroundWindow(const bool enable /*= true*/)
+void Player::LockForegroundWindow(const bool enable)
 {
 #if(_WIN32_WINNT >= 0x0500)
     if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
@@ -5456,13 +5456,13 @@ void Player::DrawBalls()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
       if (m_cabinetMode && !pball->m_decalMode)
-          strcpy_s(m_ballShaderTechnique, MAX_PATH, "RenderBall_CabMode");
+          strcpy_s(m_ballShaderTechnique, MAX_PATH-1, "RenderBall_CabMode");
       else if (m_cabinetMode && pball->m_decalMode)
-          strcpy_s(m_ballShaderTechnique, MAX_PATH, "RenderBall_CabMode_DecalMode");
+          strcpy_s(m_ballShaderTechnique, MAX_PATH-1, "RenderBall_CabMode_DecalMode");
       else if (!m_cabinetMode && pball->m_decalMode)
-          strcpy_s(m_ballShaderTechnique, MAX_PATH, "RenderBall_DecalMode");
+          strcpy_s(m_ballShaderTechnique, MAX_PATH-1, "RenderBall_DecalMode");
       else //if (!m_fCabinetMode && !pball->m_decalMode)
-          strcpy_s(m_ballShaderTechnique, MAX_PATH, "RenderBall");
+          strcpy_s(m_ballShaderTechnique, MAX_PATH-1, "RenderBall");
 
       m_ballShader->SetTechnique(m_ballShaderTechnique);
 
@@ -5954,7 +5954,7 @@ void Player::StopPlayer()
    g_pvp->GetToolbarDocker()->EnableWindow();
    m_ptable->EnableWindow();
 
-   LockForgroundWindow(false);
+   LockForegroundWindow(false);
 }
 
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)

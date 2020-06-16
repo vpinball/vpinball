@@ -286,7 +286,7 @@ private:
    void PhysicsSimulateCycle(float dtime);
 
 public:
-   void LockForgroundWindow(const bool enable = true);
+   void LockForegroundWindow(const bool enable);
    void Render();
    void RenderDynamics();
 
