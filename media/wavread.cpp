@@ -60,8 +60,8 @@ HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfxInfo)
       if (mmioRead(hmmioIn, (CHAR*)&cbExtraBytes, sizeof(WORD)) != sizeof(WORD))
          return E_FAIL;
 
-      if (NULL == (*ppwfxInfo = (WAVEFORMATEX*)new CHAR[sizeof(WAVEFORMATEX) + cbExtraBytes]))
-         return E_FAIL;
+      /*if (NULL == (*/ *ppwfxInfo = (WAVEFORMATEX*)new CHAR[sizeof(WAVEFORMATEX) + cbExtraBytes]; //))
+         //return E_FAIL;
 
       // Copy the bytes from the pcm structure to the waveformatex structure
       memcpy(*ppwfxInfo, &pcmWaveFormat, sizeof(pcmWaveFormat));

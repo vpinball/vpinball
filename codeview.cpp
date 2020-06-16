@@ -3076,16 +3076,6 @@ STDMETHODIMP Collection::get_Name(BSTR *pVal)
    return S_OK;
 }
 
-IDispatch *Collection::GetDispatch()
-{
-   return (IDispatch *)this;
-}
-
-ISelect *Collection::GetISelect()
-{
-   return NULL;
-}
-
 HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay)
 {
    BiffWriter bw(pstm, hcrypthash);
@@ -3308,11 +3298,6 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
    delete[] szT;
 
    return S_OK;
-}
-
-IDispatch *DebuggerModule::GetDispatch()
-{
-   return (IDispatch *)this;
 }
 
 STDMETHODIMP DebuggerModule::get_Name(BSTR *pVal)

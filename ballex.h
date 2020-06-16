@@ -82,6 +82,7 @@ public:
 
    virtual void FireGroupEvent(const int dispid) {}
    virtual IDispatch *GetDispatch() { return ((IDispatch *) this); }
+   virtual const IDispatch *GetDispatch() const { return ((const IDispatch *) this); }
    virtual IDebugCommands *GetDebugCommands() { return (IDebugCommands *) this; }
 
    // IDebugCommands

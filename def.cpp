@@ -196,7 +196,7 @@ char* replace(const char* const original, const char* const pattern, const char*
     const size_t retlen = orilen + patcnt * (replen - patlen);
     char * const returned = new char[retlen + 1];
 
-    if (returned != NULL)
+    //if (returned != NULL)
     {
       // copy the original string, 
       // replacing all the instances of the pattern

@@ -93,11 +93,13 @@ public:
    virtual void SetLockedFormat(Sur *psur);
 
    virtual PinTable *GetPTable() = 0;
+   virtual const PinTable *GetPTable() const = 0;
 
    virtual HRESULT GetTypeName(BSTR *pVal);
    static void GetTypeNameForType(ItemTypeEnum type, WCHAR * buf);
 
    virtual IDispatch *GetDispatch() = 0;
+   virtual const IDispatch *GetDispatch() const = 0;
    virtual ItemTypeEnum GetItemType() const = 0;
 
    virtual void Delete() = 0;
@@ -125,11 +127,12 @@ public:
    virtual void SetDefaultPhysics(bool fromMouseClick) {}
 
    virtual IEditable *GetIEditable() = 0;
+   virtual const IEditable *GetIEditable() const = 0;
 
    virtual bool LoadToken(const int id, BiffReader * const pbr);
    HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash);
 
-   virtual int GetSelectLevel() { return 1; }
+   virtual int GetSelectLevel() const { return 1; }
    virtual bool LoadMeshDialog() { return false; }
    virtual void ExportMeshDialog() {}
    virtual void AddPoint(int x, int y, const bool smooth) {}

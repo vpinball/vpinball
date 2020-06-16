@@ -1,6 +1,8 @@
 #ifndef H_LAYERS_LIST_DIALOG
 #define  H_LAYERS_LIST_DIALOG
 
+#include <memory>
+
 class LayerTreeView: public CTreeView
 {
 public:

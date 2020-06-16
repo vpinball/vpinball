@@ -231,7 +231,7 @@ void SearchSelectDialog::OnCancel()
    CDialog::OnCancel();
 }
 
-bool SearchSelectDialog::IsValidString(const char *name)
+bool SearchSelectDialog::IsValidString(const char * const name)
 {
    if (name[0] == 0)
       return false;
@@ -265,9 +265,9 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       firstImage[0] = 0;
       secondImage[0] = 0;
       if (IsValidString(sur->m_d.m_szImage))
-         sprintf_s(firstImage, "%s", sur->m_d.m_szImage);
+         strcpy_s(firstImage, sur->m_d.m_szImage);
       if (IsValidString(sur->m_d.m_szSideImage))
-         sprintf_s(secondImage, "%s", sur->m_d.m_szSideImage);
+         strcpy_s(secondImage, sur->m_d.m_szSideImage);
       textBuf[0] = 0;
       if (firstImage[0] != 0)
          strncat_s(textBuf, firstImage, 511);
@@ -283,9 +283,9 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       secondImage[0] = 0;
       textBuf[0] = 0;
       if (IsValidString(sur->m_d.m_szTopMaterial))
-         sprintf_s(firstImage, "%s", sur->m_d.m_szTopMaterial);
+         strcpy_s(firstImage, sur->m_d.m_szTopMaterial);
       if (IsValidString(sur->m_d.m_szSideMaterial))
-         sprintf_s(secondImage, "%s", sur->m_d.m_szSideMaterial);
+         strcpy_s(secondImage, sur->m_d.m_szSideMaterial);
       textBuf[0] = 0;
       if (firstImage[0] != 0)
          strncat_s(textBuf, firstImage, 511);
@@ -301,12 +301,12 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    {
       Ramp *const ramp = (Ramp*)piedit;
       if (IsValidString(ramp->m_d.m_szImage))
-         sprintf_s(textBuf, "%s", ramp->m_d.m_szImage);
+         strcpy_s(textBuf, ramp->m_d.m_szImage);
 
       ListView_SetItemText(m_hElementList, idx, 1, "Ramp");
       ListView_SetItemText(m_hElementList, idx, 3, textBuf);
       if (IsValidString(ramp->m_d.m_szMaterial))
-         sprintf_s(textBuf, "%s", ramp->m_d.m_szMaterial);
+         strcpy_s(textBuf, ramp->m_d.m_szMaterial);
       ListView_SetItemText(m_hElementList, idx, 4, textBuf);
    }
    else if (piedit->GetItemType() == eItemFlasher)
@@ -315,9 +315,9 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       firstImage[0] = 0;
       secondImage[0] = 0;
       if (IsValidString(flasher->m_d.m_szImageA))
-         sprintf_s(firstImage, "%s", flasher->m_d.m_szImageA);
+         strcpy_s(firstImage, flasher->m_d.m_szImageA);
       if (IsValidString(flasher->m_d.m_szImageB))
-         sprintf_s(secondImage, "%s", flasher->m_d.m_szImageB);
+         strcpy_s(secondImage, flasher->m_d.m_szImageB);
 
       textBuf[0] = 0;
       if (firstImage[0] != 0)
@@ -335,24 +335,24 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    {
       Rubber *const rubber = (Rubber*)piedit;
       if (IsValidString(rubber->m_d.m_szImage))
-         sprintf_s(textBuf, "%s", rubber->m_d.m_szImage);
+         strcpy_s(textBuf, rubber->m_d.m_szImage);
 
       ListView_SetItemText(m_hElementList, idx, 1, "Rubber");
       ListView_SetItemText(m_hElementList, idx, 3, textBuf);
       if (IsValidString(rubber->m_d.m_szMaterial))
-         sprintf_s(textBuf, "%s", rubber->m_d.m_szMaterial);
+         strcpy_s(textBuf, rubber->m_d.m_szMaterial);
       ListView_SetItemText(m_hElementList, idx, 4, textBuf);
    }
    else if (piedit->GetItemType() == eItemSpinner)
    {
       Spinner *const spinner = (Spinner*)piedit;
       if (IsValidString(spinner->m_d.m_szImage))
-         sprintf_s(textBuf, "%s", spinner->m_d.m_szImage);
+         strcpy_s(textBuf, spinner->m_d.m_szImage);
 
       ListView_SetItemText(m_hElementList, idx, 1, "Spinner");
       ListView_SetItemText(m_hElementList, idx, 3, textBuf);
       if (IsValidString(spinner->m_d.m_szMaterial))
-         sprintf_s(textBuf, "%s", spinner->m_d.m_szMaterial);
+         strcpy_s(textBuf, spinner->m_d.m_szMaterial);
       ListView_SetItemText(m_hElementList, idx, 4, textBuf);
    }
    else if (piedit->GetItemType() == eItemKicker)
@@ -361,14 +361,14 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, "Kicker");
       ListView_SetItemText(m_hElementList, idx, 3, "");
       if (IsValidString(kicker->m_d.m_szMaterial))
-         sprintf_s(textBuf, "%s", kicker->m_d.m_szMaterial);
+         strcpy_s(textBuf, kicker->m_d.m_szMaterial);
       ListView_SetItemText(m_hElementList, idx, 4, textBuf);
    }
    else if (piedit->GetItemType() == eItemLight)
    {
       Light *const light = (Light*)piedit;
       if (IsValidString(light->m_d.m_szImage))
-         sprintf_s(textBuf, "%s", light->m_d.m_szImage);
+         strcpy_s(textBuf, light->m_d.m_szImage);
 
       ListView_SetItemText(m_hElementList, idx, 1, "Light");
       ListView_SetItemText(m_hElementList, idx, 3, textBuf);
@@ -383,13 +383,13 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       thirdImage[0] = 0;
       textBuf[0] = 0;
       if (IsValidString(bumper->m_d.m_szBaseMaterial))
-         sprintf_s(firstImage, "%s", bumper->m_d.m_szBaseMaterial);
+         strcpy_s(firstImage, bumper->m_d.m_szBaseMaterial);
       if (firstImage[0] != 0)
          strcat_s(textBuf, firstImage);
       if (IsValidString(bumper->m_d.m_szCapMaterial))
-         sprintf_s(secondImage, "%s", bumper->m_d.m_szCapMaterial);
+         strcpy_s(secondImage, bumper->m_d.m_szCapMaterial);
       if (IsValidString(bumper->m_d.m_szSkirtMaterial))
-         sprintf_s(thirdImage, "%s", bumper->m_d.m_szSkirtMaterial);
+         strcpy_s(thirdImage, bumper->m_d.m_szSkirtMaterial);
       if (secondImage[0] != 0)
       {
          if (firstImage[0] != 0)
@@ -417,7 +417,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, "Gate");
       ListView_SetItemText(m_hElementList, idx, 3, "");
       if (IsValidString(gate->m_d.m_szMaterial))
-         sprintf_s(textBuf, "%s", gate->m_d.m_szMaterial);
+         strcpy_s(textBuf, gate->m_d.m_szMaterial);
       ListView_SetItemText(m_hElementList, idx, 4, textBuf);
    }
    else if (piedit->GetItemType() == eItemTrigger)
@@ -426,7 +426,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, "Trigger");
       ListView_SetItemText(m_hElementList, idx, 3, "");
       if (IsValidString(trigger->m_d.m_szMaterial))
-         sprintf_s(textBuf, "%s", trigger->m_d.m_szMaterial);
+         strcpy_s(textBuf, trigger->m_d.m_szMaterial);
       ListView_SetItemText(m_hElementList, idx, 4, textBuf);
    }
    else if (piedit->GetItemType() == eItemTimer)
@@ -443,18 +443,18 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    {
       Plunger *const plunger = (Plunger*)piedit;
       if (IsValidString(plunger->m_d.m_szImage))
-         sprintf_s(textBuf, "%s", plunger->m_d.m_szImage);
+         strcpy_s(textBuf, plunger->m_d.m_szImage);
       ListView_SetItemText(m_hElementList, idx, 1, "Plunger");
       ListView_SetItemText(m_hElementList, idx, 3, textBuf);
       if (IsValidString(plunger->m_d.m_szMaterial))
-         sprintf_s(textBuf, "%s", plunger->m_d.m_szMaterial);
+         strcpy_s(textBuf, plunger->m_d.m_szMaterial);
       ListView_SetItemText(m_hElementList, idx, 4, textBuf);
    }
    else if (piedit->GetItemType() == eItemDispReel)
    {
       DispReel *const dispReel = (DispReel*)piedit;
       if (IsValidString(dispReel->m_d.m_szImage))
-         sprintf_s(textBuf, "%s", dispReel->m_d.m_szImage);
+         strcpy_s(textBuf, dispReel->m_d.m_szImage);
       ListView_SetItemText(m_hElementList, idx, 1, "EMReel");
       ListView_SetItemText(m_hElementList, idx, 3, textBuf);
    }
@@ -462,22 +462,22 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    {
       Primitive *const primitive = (Primitive*)piedit;
       if (IsValidString(primitive->m_d.m_szImage))
-         sprintf_s(textBuf, "%s", primitive->m_d.m_szImage);
+         strcpy_s(textBuf, primitive->m_d.m_szImage);
       ListView_SetItemText(m_hElementList, idx, 1, "Primitive");
       ListView_SetItemText(m_hElementList, idx, 3, textBuf);
       if (IsValidString(primitive->m_d.m_szMaterial))
-         sprintf_s(textBuf, "%s", primitive->m_d.m_szMaterial);
+         strcpy_s(textBuf, primitive->m_d.m_szMaterial);
       ListView_SetItemText(m_hElementList, idx, 4, textBuf);
    }
    else if (piedit->GetItemType() == eItemHitTarget)
    {
       HitTarget *const hitTraget = (HitTarget*)piedit;
       if (IsValidString(hitTraget->m_d.m_szImage))
-         sprintf_s(textBuf, "%s", hitTraget->m_d.m_szImage);
+         strcpy_s(textBuf, hitTraget->m_d.m_szImage);
       ListView_SetItemText(m_hElementList, idx, 1, "Target");
       ListView_SetItemText(m_hElementList, idx, 3, textBuf);
       if (IsValidString(hitTraget->m_d.m_szMaterial))
-         sprintf_s(textBuf, "%s", hitTraget->m_d.m_szMaterial);
+         strcpy_s(textBuf, hitTraget->m_d.m_szMaterial);
       ListView_SetItemText(m_hElementList, idx, 4, textBuf);
    }
 

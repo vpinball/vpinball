@@ -1377,7 +1377,7 @@ STDMETHODIMP ScriptGlobalTable::GetElementByName(BSTR name, IDispatch* *pVal)
 
       if (wcscmp(name, pie->GetScriptable()->m_wzName) == 0)
       {
-         IDispatch *id = pie->GetISelect()->GetDispatch();
+         IDispatch * const id = pie->GetISelect()->GetDispatch();
          id->AddRef();
          *pVal = id;
 
@@ -6217,11 +6217,6 @@ HRESULT PinTable::InitPostLoad()
 HRESULT PinTable::InitVBA(BOOL fNew, int id, WCHAR * const wzName)
 {
    return S_OK;
-}
-
-ISelect *PinTable::GetISelect()
-{
-   return (ISelect *)this;
 }
 
 void PinTable::SetDefaults(bool fromMouseClick)

@@ -154,10 +154,10 @@ using std::vector;
 
 #include "dragpoint.h"
 #include "timer.h"
-#include "surface.h"
 #include "flipper.h"
 #include "plunger.h"
 #include "textbox.h"
+#include "surface.h"
 #include "dispreel.h"
 #include "lightseq.h"
 #include "bumper.h"

@@ -69,7 +69,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 
    const FREE_IMAGE_TYPE img_type = FreeImage_GetImageType(dibResized);
    const bool rgbf = (img_type == FIT_FLOAT) || (img_type == FIT_DOUBLE) || (img_type == FIT_RGBF) || (img_type == FIT_RGBAF); //(FreeImage_GetBPP(dibResized) > 32);
-   const bool has_alpha = FreeImage_IsTransparent(dibResized);
+   const bool has_alpha = !!FreeImage_IsTransparent(dibResized);
    // already in correct format?
    if(((img_type == FIT_BITMAP) && (FreeImage_GetBPP(dibResized) == 32)) || (img_type == FIT_RGBF))
       dibConv = dibResized;

@@ -17,7 +17,9 @@ public:
    virtual ~IHaveDragPoints();
 
    virtual IEditable *GetIEditable() = 0;
+   virtual const IEditable *GetIEditable() const = 0;
    virtual PinTable *GetPTable() = 0;
+   virtual const PinTable *GetPTable() const = 0;
 
    virtual int GetMinimumPoints() const { return 3; }
 
@@ -140,10 +142,13 @@ public:
    virtual void SetSelectFormat(Sur *psur);
    virtual void SetMultiSelectFormat(Sur *psur);
    virtual PinTable *GetPTable() { return m_pihdp->GetIEditable()->GetPTable(); }
+   virtual const PinTable *GetPTable() const { return m_pihdp->GetIEditable()->GetPTable(); }
    virtual IEditable *GetIEditable() { return m_pihdp->GetIEditable(); }
-   virtual IDispatch *GetDispatch();
+   virtual const IEditable *GetIEditable() const { return m_pihdp->GetIEditable(); }
+   virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
+   virtual const IDispatch *GetDispatch() const { return (const IDispatch *)this; }
 
-   virtual int GetSelectLevel() { return 2; } // So dragpoints won't be band-selected with the main objects
+   virtual int GetSelectLevel() const { return 2; } // So dragpoints won't be band-selected with the main objects
 
    void Copy();
    void Paste();

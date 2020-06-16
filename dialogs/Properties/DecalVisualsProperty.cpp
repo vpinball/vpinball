@@ -134,7 +134,7 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
 
                     fd.cbSizeofstruct = sizeof(FONTDESC);
 
-                    int len = lstrlen(m_font->GetLogFont().lfFaceName) + 1;
+                    const int len = lstrlen(m_font->GetLogFont().lfFaceName) + 1;
                     fd.lpstrName = (LPOLESTR)malloc(len * sizeof(WCHAR));
                     memset(fd.lpstrName, 0, len * sizeof(WCHAR));
                     UNICODE_FROM_ANSI(fd.lpstrName, m_font->GetLogFont().lfFaceName, len);

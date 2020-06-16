@@ -146,15 +146,18 @@ private:
       LightCenter(Light *plight) : m_plight(plight) { }
       virtual HRESULT GetTypeName(BSTR *pVal) { return m_plight->GetTypeName(pVal); }
       virtual IDispatch *GetDispatch() { return m_plight->GetDispatch(); }
+      virtual const IDispatch *GetDispatch() const { return m_plight->GetDispatch(); }
 
       virtual void Delete() { m_plight->Delete(); }
       virtual void Uncreate() { m_plight->Uncreate(); }
 
-      virtual int GetSelectLevel() { return (m_plight->m_d.m_shape == ShapeCircle) ? 1 : 2; } // Don't select light bulb twice if we have drag points
+      virtual int GetSelectLevel() const { return (m_plight->m_d.m_shape == ShapeCircle) ? 1 : 2; } // Don't select light bulb twice if we have drag points
 
       virtual IEditable *GetIEditable() { return (IEditable *)m_plight; }
+      virtual const IEditable *GetIEditable() const { return (const IEditable *)m_plight; }
 
       virtual PinTable *GetPTable() { return m_plight->GetPTable(); }
+      virtual const PinTable *GetPTable() const { return m_plight->GetPTable(); }
 
       virtual bool LoadToken(const int id, BiffReader * const pbr) { return true; }
 
