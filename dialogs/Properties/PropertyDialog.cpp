@@ -250,7 +250,7 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>* pvsel)
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
         if (m_tab.m_activeTabText == CString("Visuals"))
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == CString("States"))
             activePage = 1;
         else if (m_tab.m_activeTabText == CString("Timer"))
             activePage = 2;
@@ -315,7 +315,7 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>* pvsel)
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
         if (m_tab.m_activeTabText == CString("Visuals"))
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == CString("States"))
             activePage = 1;
         else if (m_tab.m_activeTabText == CString("Timer"))
             activePage = 2;
@@ -326,7 +326,7 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>* pvsel)
         m_elementTypeName.SetWindowText("Light Sequence");
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new LightseqStatesProperty(pvsel), _T("States")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == CString("States"))
             activePage = 0;
         else if (m_tab.m_activeTabText == CString("Timer"))
             activePage = 1;
@@ -340,6 +340,8 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect>* pvsel)
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PrimitivePhysicsProperty(pvsel), _T("Physics")));
         if (m_tab.m_activeTabText == CString("Visuals"))
             activePage = 0;
+        else if (m_tab.m_activeTabText == CString("Position"))
+            activePage = 1;
         else if (m_tab.m_activeTabText == CString("Physics"))
             activePage = 2;
         break;
@@ -1200,4 +1202,3 @@ void CDockProperty::OnClose()
 }
 
 #pragma endregion
-
