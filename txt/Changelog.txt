@@ -36,6 +36,8 @@ FEATURES:
 
 FIXES:
 
+- fix crashes and not being able to select files with very long file names (e.g. images)
+
 - fix hang on player exit on some setups
 
 - replace dithering code with blue noise, fixes flickering patterns (especially in darker table areas)
