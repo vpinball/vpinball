@@ -289,7 +289,8 @@ public:
         char buf[MAXTOKEN];
         combo.GetLBText(combo.GetCurSel(), buf);
         const CString str(buf);
-        strncpy_s(strbuf, MAXNAMEBUFFER, str.c_str(), (str.GetLength()> MAXNAMEBUFFER) ? MAXNAMEBUFFER-1:str.GetLength());
+        const int len = str.GetLength();
+        strncpy_s(strbuf, MAXNAMEBUFFER, str.c_str(), (len > MAXNAMEBUFFER-1) ? MAXNAMEBUFFER-1:len);
     }
 
     static int GetComboBoxIndex(CComboBox &combo, const vector<string>& contentList)
@@ -345,7 +346,7 @@ private:
     if (strcmp(szName, (char*)classValue) != 0) \
     { \
         PropertyDialog::StartUndo(element); \
-        strncpy_s(classValue, szName, MAXTOKEN); \
+        strncpy_s(classValue, szName, MAXTOKEN-1); \
         PropertyDialog::EndUndo(element); \
     }\
 }
