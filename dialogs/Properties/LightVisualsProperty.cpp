@@ -137,7 +137,7 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(light->m_d.m_vCenter.y, PropertyDialog::GetFloatTextbox(m_posYEdit), light);
                 break;
             case IDC_SURFACE_COMBO:
-                CHECK_UPDATE_COMBO_TEXT(light->m_d.m_szSurface, m_surfaceCombo, light);
+                CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(light->m_d.m_szSurface, m_surfaceCombo, light);
                 break;
             case IDC_COLOR_BUTTON1:
             {

@@ -405,7 +405,7 @@ void PropertyDialog::DeleteAllTabs()
     m_backglassView = false;
 }
 
-void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, CComboBox &combo, const char *selectName)
+void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, CComboBox &combo, const char selectName[MAXTOKEN])
 {
     bool texelFound = false;
     for (auto texel : contentList)
@@ -1106,13 +1106,13 @@ void BasePropertyDialog::UpdateBaseProperties(ISelect *psel, BaseProperty *prope
             CHECK_UPDATE_ITEM(property->m_scatter, PropertyDialog::GetFloatTextbox(*m_baseScatterAngleEdit), psel);
             break;
         case DISPID_Image:
-            CHECK_UPDATE_COMBO_TEXT(property->m_szImage, *m_baseImageCombo, psel);
+            CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(property->m_szImage, *m_baseImageCombo, psel);
             break;
         case IDC_MATERIAL_COMBO:
-            CHECK_UPDATE_COMBO_TEXT(property->m_szMaterial, *m_baseMaterialCombo, psel);
+            CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(property->m_szMaterial, *m_baseMaterialCombo, psel);
             break;
         case IDC_MATERIAL_COMBO4:
-            CHECK_UPDATE_COMBO_TEXT(property->m_szPhysicsMaterial, *m_basePhysicsMaterialCombo, psel);
+            CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(property->m_szPhysicsMaterial, *m_basePhysicsMaterialCombo, psel);
             break;
         case IDC_OVERWRITE_MATERIAL_SETTINGS:
             CHECK_UPDATE_ITEM(property->m_overwritePhysics, PropertyDialog::GetCheckboxState(m_hOverwritePhysicsCheck), psel);

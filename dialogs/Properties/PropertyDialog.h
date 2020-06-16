@@ -230,7 +230,7 @@ public:
     void DeleteAllTabs();
     void UpdateTabs(VectorProtected<ISelect> *pvsel);
 
-    static void UpdateTextureComboBox(const vector<Texture*>& contentList, CComboBox &combo, const char *selectName);
+    static void UpdateTextureComboBox(const vector<Texture*>& contentList, CComboBox &combo, const char selectName[MAXTOKEN]);
     static void UpdateComboBox(const vector<string>& contentList, CComboBox &combo, const char *selectName);
     static void UpdateMaterialComboBox(const vector<Material *>& contentList, CComboBox &combo, const char *selectName);
     static void UpdateSurfaceComboBox(const PinTable * const ptable, CComboBox &combo, const char *selectName);
@@ -284,18 +284,16 @@ public:
         textbox.SetWindowText(CString(value).c_str());
     }
 
-    static void GetComboBoxText(CComboBox &combo, char *strbuf)
+    static void GetComboBoxText(CComboBox &combo, char * const strbuf, const int maxlength)
     {
-        char buf[MAXTOKEN];
+        char buf[MAXSTRING];
         combo.GetLBText(combo.GetCurSel(), buf);
-        const CString str(buf);
-        const int len = str.GetLength();
-        strncpy_s(strbuf, MAXNAMEBUFFER, str.c_str(), (len > MAXNAMEBUFFER-1) ? MAXNAMEBUFFER-1:len);
+        strncpy_s(strbuf, maxlength, buf, maxlength-1);
     }
 
     static int GetComboBoxIndex(CComboBox &combo, const vector<string>& contentList)
     {
-        char buf[MAXTOKEN];
+        char buf[MAXSTRING];
         combo.GetLBText(combo.GetCurSel(), buf);
         for (size_t i = 0; i < contentList.size(); i++)
             if (contentList[i].compare(buf)==0)
@@ -339,14 +337,26 @@ private:
     }\
 }
 
-#define CHECK_UPDATE_COMBO_TEXT(classValue, uiCombo, element)\
+#define CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(classValue, uiCombo, element)\
 {\
     char szName[MAXTOKEN]={0}; \
-    PropertyDialog::GetComboBoxText(uiCombo, szName); \
+    PropertyDialog::GetComboBoxText(uiCombo, szName, MAXTOKEN); \
     if (strcmp(szName, (char*)classValue) != 0) \
     { \
         PropertyDialog::StartUndo(element); \
         strncpy_s(classValue, szName, MAXTOKEN-1); \
+        PropertyDialog::EndUndo(element); \
+    }\
+}
+
+#define CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(classValue, uiCombo, element)\
+{\
+    char szName[MAXNAMEBUFFER]={0}; \
+    PropertyDialog::GetComboBoxText(uiCombo, szName, MAXNAMEBUFFER); \
+    if (strcmp(szName, (char*)classValue) != 0) \
+    { \
+        PropertyDialog::StartUndo(element); \
+        strncpy_s(classValue, szName, MAXNAMEBUFFER-1); \
         PropertyDialog::EndUndo(element); \
     }\
 }

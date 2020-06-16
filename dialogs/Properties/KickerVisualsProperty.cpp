@@ -76,7 +76,7 @@ void KickerVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(kicker->m_d.m_vCenter.y, PropertyDialog::GetFloatTextbox(m_posYEdit), kicker);
                 break;
             case IDC_SURFACE_COMBO:
-                CHECK_UPDATE_COMBO_TEXT(kicker->m_d.m_szSurface, m_surfaceCombo, kicker);
+                CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(kicker->m_d.m_szSurface, m_surfaceCombo, kicker);
                 break;
             default:
                 UpdateBaseProperties(kicker, &kicker->m_d, dispid);
