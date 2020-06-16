@@ -63,7 +63,7 @@ void LightseqStatesProperty::UpdateProperties(const int dispid)
                 char szText[MAX_PATH];
                 PropertyDialog::GetComboBoxText(m_collectionCombo, szText, MAX_PATH);
                 UNICODE_FROM_ANSI(lightseq->m_d.m_wzCollection, szText, lstrlen(szText));
-                lightseq->m_d.m_wzCollection[lstrlen(szText)] = 0;
+                lightseq->m_d.m_wzCollection[min(MAXNAMEBUFFER-1,lstrlen(szText))] = 0;
                 PropertyDialog::EndUndo(lightseq);
                 break;
             }

@@ -1134,21 +1134,18 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
    // if the loaded file name is not null then add it to the top of the list
    if (szfilename != NULL)
    {
-      // does this file name aready exist in the list?
-      bool found = false;
-      int i = 0;
-
       std::vector<std::string> newList;
       newList.push_back(std::string(szfilename));
 
       for (std::string &tableName : m_recentTableList)
       {
-          if(tableName != std::string(szfilename))
+          if(tableName != newList[0]) // does this file name aready exist in the list?
               newList.push_back(tableName);
       }
 
       m_recentTableList = newList;
 
+      int i = 0;
       for (std::string tableName : m_recentTableList)
       {
           char szRegName[MAX_PATH];
@@ -1163,8 +1160,6 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
    // must be at least 1 recent file in the list
    if (!m_recentTableList.empty())
    {
-      MENUITEMINFO menuInfo;
-
       // update the file menu to contain the last n recent loaded files
       CMenu menuFile = GetMainMenu(FILEMENU);
 
@@ -1176,13 +1171,6 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
       // insert the items before the EXIT menu (assuming it is the last entry)
       int count = menuFile.GetMenuItemCount() - 1;
 
-
-      // set up the menu info block
-      ZeroMemory(&menuInfo, sizeof(menuInfo));
-      menuInfo.cbSize = GetSizeofMenuItemInfo();
-      menuInfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE;
-      menuInfo.fType = MFT_STRING;
-
       // add in the list of recently accessed files
       for (size_t i = 0; i < m_recentTableList.size(); i++)
       {
@@ -1191,7 +1179,14 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
          char recentMenuname[MAX_PATH];
          snprintf(recentMenuname, MAX_PATH - 1, "&%i %s", i+1, ns);
          delete[] ns;
+
          // set the IDM of this menu item
+         // set up the menu info block
+         MENUITEMINFO menuInfo;
+         ZeroMemory(&menuInfo, sizeof(menuInfo));
+         menuInfo.cbSize = GetSizeofMenuItemInfo();
+         menuInfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE;
+         menuInfo.fType = MFT_STRING;
          menuInfo.wID = RECENT_FIRST_MENU_IDM + i;
          menuInfo.dwTypeData = recentMenuname;
 
@@ -1200,6 +1195,10 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
       }
 
       // add a separator onto the end
+      MENUITEMINFO menuInfo;
+      ZeroMemory(&menuInfo, sizeof(menuInfo));
+      menuInfo.cbSize = GetSizeofMenuItemInfo();
+      menuInfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE;
       menuInfo.fType = MFT_SEPARATOR;
       menuInfo.wID = RECENT_LAST_MENU_IDM;
       menuFile.InsertMenuItem(count, menuInfo, TRUE);

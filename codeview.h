@@ -27,7 +27,9 @@ public:
 
    STDMETHOD(get_Name)(BSTR *pVal) = 0;
    virtual IDispatch *GetDispatch() = 0;
+   virtual const IDispatch *GetDispatch() const = 0;
    virtual ISelect *GetISelect() = 0;
+   virtual const ISelect *GetISelect() const = 0;
 
    WCHAR m_wzName[MAXNAMEBUFFER];
 };
@@ -48,9 +50,11 @@ class DebuggerModule :
 
    void Init(CodeViewer * const pcv);
 
-   virtual IDispatch *GetDispatch();
+   virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
+   virtual const IDispatch *GetDispatch() const { return (const IDispatch *)this; }
 
    virtual ISelect *GetISelect() { return NULL; }
+   virtual const ISelect *GetISelect() const { return NULL; }
 
    STDMETHOD(get_Name)(BSTR *pVal);
 
@@ -379,8 +383,10 @@ public:
 
    // IScriptable
    STDMETHOD(get_Name)(BSTR *pVal);
-   virtual IDispatch *GetDispatch();
-   virtual ISelect *GetISelect();
+   virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
+   virtual const IDispatch *GetDispatch() const { return (const IDispatch *)this; }
+   virtual ISelect *GetISelect() { return NULL; }
+   virtual const ISelect *GetISelect() const { return NULL; }
 
    //ILoadable
    virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay);

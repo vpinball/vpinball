@@ -52,7 +52,7 @@ struct StringComparator
 // ignores Idx-int completely!
 struct Vertex3D_NoTex2IdxHashFunctor
 {
-   unsigned long operator()(std::pair<const Vertex3D_NoTex2*,const unsigned int> a) const
+   unsigned long operator()(const std::pair<const Vertex3D_NoTex2*,const unsigned int>& a) const
    {
       return FloatHash<sizeof(Vertex3D_NoTex2)/sizeof(float)>((const float*)a.first);
    }
@@ -61,7 +61,7 @@ struct Vertex3D_NoTex2IdxHashFunctor
 // ignores Idx-int completely!
 struct Vertex3D_NoTex2IdxComparator
 {
-   bool operator()(std::pair<const Vertex3D_NoTex2*,const unsigned int> a, std::pair<const Vertex3D_NoTex2*,const unsigned int> b) const
+   bool operator()(const std::pair<const Vertex3D_NoTex2*,const unsigned int>& a, const std::pair<const Vertex3D_NoTex2*,const unsigned int>& b) const
    {
       return memcmp(a.first, b.first, sizeof(Vertex3D_NoTex2)) == 0;
    }

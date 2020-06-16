@@ -4336,9 +4336,9 @@ void Player::UpdateHUD()
 
 		for (unsigned int i2 = 0; i2 < 2; ++i2)
 		{
-			const char * const s = (i2 == 0) ? m_ptable->m_szBlurb.c_str() : m_ptable->m_szDescription.c_str();
-			int length = s ? (int)strlen(s) : 0;
-			const char *desc = s;
+			const std::string& s = (i2 == 0) ? m_ptable->m_szBlurb : m_ptable->m_szDescription;
+			int length = s.length();
+			const char *desc = s.c_str();
 			while (length > 0)
 			{
 				unsigned int o = 0;
@@ -4360,7 +4360,7 @@ void Player::UpdateHUD()
 				line++;
 			}
 
-			if (i2 == 0 && s && strlen(s) > 0)
+			if (i2 == 0 && !s.empty())
 			{
 				line++;
 				DebugPrint(DBG_SPRITE_SIZE / 2, line * 20 + 10, "========================================", true);

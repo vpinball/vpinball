@@ -570,11 +570,6 @@ bool DragPoint::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-IDispatch *DragPoint::GetDispatch()
-{
-   return (IDispatch *)this;
-}
-
 void DragPoint::Copy()
 {
     m_copyPoint = m_v;

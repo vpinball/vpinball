@@ -13,6 +13,7 @@ class IFireEvents
 public:
    virtual void FireGroupEvent(const int dispid) = 0;
    virtual IDispatch *GetDispatch() = 0;
+   virtual const IDispatch *GetDispatch() const = 0;
    virtual IDebugCommands *GetDebugCommands() = 0;
 
    float   m_currentHitThreshold; // while playing and the ball hits the mesh the hit threshold is updated here
@@ -138,7 +139,8 @@ public:
 	INITVBA(ItemType) \
 	virtual void UIRenderPass1(Sur * const psur); \
 	virtual void UIRenderPass2(Sur * const psur); \
-	virtual PinTable *GetPTable() {return m_ptable;} \
+	virtual PinTable *GetPTable() { return m_ptable; } \
+	virtual const PinTable *GetPTable() const { return m_ptable; } \
 	virtual void GetHitShapes(vector<HitObject*> &pvho); \
 	virtual void GetHitShapesDebug(vector<HitObject*> &pvho); \
 	virtual void GetTimers(vector<HitTimer*> &pvht); \
@@ -151,9 +153,13 @@ public:
 	virtual HRESULT InitPostLoad(); \
 	virtual bool LoadToken(const int id, BiffReader * const pbr); \
 	virtual IDispatch *GetDispatch() {return static_cast<IDispatch *>(this);} \
+	virtual const IDispatch *GetDispatch() const {return static_cast<const IDispatch *>(this);} \
 	virtual IEditable *GetIEditable() {return static_cast<IEditable*>(this);} \
+	virtual const IEditable *GetIEditable() const {return static_cast<const IEditable*>(this);} \
 	virtual ISelect *GetISelect() {return static_cast<ISelect*>(this);} \
+	virtual const ISelect *GetISelect() const {return static_cast<const ISelect*>(this);} \
 	virtual Hitable *GetIHitable() {return static_cast<Hitable *>(this);} \
+	virtual const Hitable *GetIHitable() const {return static_cast<const Hitable *>(this);} \
 	virtual void RenderSetup(); \
 	virtual void RenderStatic(); \
 	virtual void RenderDynamic(); \
@@ -204,10 +210,12 @@ public:
    virtual ULONG STDMETHODCALLTYPE Release() = 0;
 
    virtual PinTable *GetPTable() = 0;
+   virtual const PinTable *GetPTable() const = 0;
 
    void SetDirtyDraw();
 
-   virtual Hitable *GetIHitable();
+   virtual Hitable *GetIHitable() { return NULL; }
+   virtual const Hitable *GetIHitable() const { return NULL; }
 
    virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupForPlay) = 0;
    virtual void ClearForOverwrite();
@@ -215,6 +223,7 @@ public:
    virtual HRESULT InitPostLoad() = 0;
    virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName) = 0;
    virtual ISelect *GetISelect() = 0;
+   virtual const ISelect *GetISelect() const = 0;
    virtual void SetDefaults(bool fromMouseClick) = 0;
    virtual IScriptable *GetScriptable() = 0;
    virtual IFireEvents *GetIFireEvents() = 0;

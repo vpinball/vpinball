@@ -62,12 +62,12 @@ class ProgressDialog : public CDialog
 {
 public:
     ProgressDialog();
-    void SetProgress(int value)
+    void SetProgress(const int value)
     {
         m_progressBar.SetPos(value);
     }
 
-    void SetName(std::string text)
+    void SetName(const std::string& text)
     {
         m_progressName.SetWindowText(text.c_str());
     }
@@ -418,12 +418,14 @@ public:
    virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    virtual HRESULT InitPostLoad();
    virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName);
-   virtual ISelect *GetISelect();
+   virtual ISelect *GetISelect() { return (ISelect *)this; }
+   virtual const ISelect *GetISelect() const { return (const ISelect *)this; }
    virtual void SetDefaults(bool fromMouseClick);
    virtual IScriptable *GetScriptable() { return (IScriptable *)this; }
    virtual void SetDefaultPhysics(bool fromMouseClick);
 
    virtual PinTable *GetPTable() { return this; }
+   virtual const PinTable *GetPTable() const { return this; }
    const char *GetElementName(IEditable *pedit) const;
 
    IEditable *GetElementByName(const char * const name);
@@ -468,12 +470,14 @@ public:
    HRESULT LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    void ReadAccelerometerCalibration();
    virtual IEditable *GetIEditable() { return (IEditable *)this; }
+   virtual const IEditable *GetIEditable() const { return (const IEditable *)this; }
    virtual void Delete() {} // Can't delete table itself
    virtual void Uncreate() {}
    virtual bool LoadToken(const int id, BiffReader * const pbr);
 
    virtual IDispatch *GetPrimary() { return this->GetDispatch(); }
    virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
+   virtual const IDispatch *GetDispatch() const { return (const IDispatch *)this; }
    virtual IFireEvents *GetIFireEvents() { return (IFireEvents *)this; }
    virtual IDebugCommands *GetDebugCommands() { return NULL; }
 
@@ -786,7 +790,7 @@ public:
    SearchSelectDialog m_searchSelectDlg;
    ProgressDialog m_progressDialog;
 
-   std::atomic<bool> m_savingActive;
+   volatile std::atomic<bool> m_savingActive;
 
    bool  m_dirtyDraw; // Whether our background bitmap is up to date
    bool  m_renderSolid;
@@ -989,8 +993,10 @@ public:
    void Init(VPinball *vpinball, PinTable *pt);
 
    virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
+   virtual const IDispatch *GetDispatch() const { return (const IDispatch *)this; }
 
    virtual ISelect *GetISelect() { return NULL; }
+   virtual const ISelect *GetISelect() const { return NULL; }
 
    BEGIN_COM_MAP(ScriptGlobalTable)
       COM_INTERFACE_ENTRY(ITableGlobal)

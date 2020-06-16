@@ -14,11 +14,6 @@ IEditable::~IEditable()
 {
 }
 
-Hitable *IEditable::GetIHitable()
-{
-   return NULL;
-}
-
 void IEditable::SetDirtyDraw()
 {
    GetPTable()->SetDirtyDraw();

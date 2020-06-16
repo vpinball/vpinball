@@ -254,13 +254,13 @@ void LightSeq::RenderSetup()
 
    // allocate the grid for this sequence
    m_pgridData = new short[m_lightSeqGridHeight*m_lightSeqGridWidth];
-   if (m_pgridData == NULL)
+   /*if (m_pgridData == NULL)
    {
       // make the entire collection (for the sequencer) invalid and bomb out
       m_pcollection = NULL;
       return;
    }
-   else
+   else*/
       ZeroMemory((void *)m_pgridData, (size_t)((m_lightSeqGridHeight*m_lightSeqGridWidth)*sizeof(short)));
 
    // get the number of elements (objects) in the collection (referenced by m_visel)
