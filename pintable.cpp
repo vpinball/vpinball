@@ -6827,7 +6827,7 @@ void PinTable::ReImportImage(Texture * const ppi, const char * const filename)
    ppi->SetSizeFrom(tex);
    ppi->m_pdsBuffer = tex;
 
-   strncpy_s(ppi->m_szPath, filename, MAX_PATH-1);
+   strncpy_s(ppi->m_szPath, filename, MAXSTRING-1);
 }
 
 
