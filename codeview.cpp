@@ -345,7 +345,7 @@ void CodeViewer::SetVisible(const bool visible)
 {
    if (!visible && !m_minimized)
    {
-      CRect rc = GetWindowRect();
+      const CRect rc = GetWindowRect();
       SaveValueInt("Editor", "CodeViewPosX", rc.left);
       SaveValueInt("Editor", "CodeViewPosY", rc.top);
       const int w = rc.right - rc.left;
@@ -790,7 +790,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
    if (g_pplayer)
    {
-       g_pplayer->LockForgroundWindow(false);
+       g_pplayer->LockForegroundWindow(false);
        g_pplayer->EnableWindow(FALSE);
    }
 

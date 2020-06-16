@@ -85,7 +85,7 @@ public:
 
 
 class CodeViewer :
-    public CWnd,
+	public CWnd,
 	public CComObjectRoot,
 	//public IDispatchImpl<IDragPoint, &IID_IDragPoint, &LIBID_VPinballLib>,
 	//public CComCoClass<CodeViewer,&CLSID_DragPoint>,

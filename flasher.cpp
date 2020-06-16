@@ -792,7 +792,7 @@ STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXNAMEBUFFER, NULL, NULL);
 
    if (strcmp(m_szImage, m_d.m_szImageA) != 0)
-      strcpy_s(m_d.m_szImageA, MAXTOKEN, m_szImage);
+      strcpy_s(m_d.m_szImageA, MAXTOKEN-1, m_szImage);
 
    return S_OK;
 }
@@ -813,7 +813,7 @@ STDMETHODIMP Flasher::put_ImageB(BSTR newVal)
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXNAMEBUFFER, NULL, NULL);
 
    if (strcmp(m_szImage, m_d.m_szImageB) != 0)
-      strcpy_s(m_d.m_szImageB, MAXTOKEN, m_szImage);
+      strcpy_s(m_d.m_szImageB, MAXTOKEN-1, m_szImage);
 
    return S_OK;
 }

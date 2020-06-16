@@ -88,11 +88,11 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
             case IDC_DECAL_TEXT_EDIT:
             {
                 char szName[MAXSTRING] = { 0 };
-                strncpy_s(szName, MAXSTRING - 1, m_textEdit.GetWindowText().c_str(), m_textEdit.GetWindowText().GetLength());
+                strncpy_s(szName, MAXSTRING-1, m_textEdit.GetWindowText().c_str(), m_textEdit.GetWindowText().GetLength());
                 if (strcmp(decal->m_d.m_sztext, szName) != 0)
                 {
                     PropertyDialog::StartUndo(decal);
-                    strncpy_s(decal->m_d.m_sztext, szName, MAXSTRING - 1);
+                    strncpy_s(decal->m_d.m_sztext, szName, MAXSTRING-1);
                     PropertyDialog::EndUndo(decal);
                 }
                 break;

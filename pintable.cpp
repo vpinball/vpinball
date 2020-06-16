@@ -1439,7 +1439,6 @@ PinTable::PinTable()
 {
    m_savingActive = false;
    m_renderSolid = LoadValueBoolWithDefault("Editor", "RenderSolid", true);
-   //m_hMDI = m_mdiTable.GetHwnd();
    ClearMultiSel();
 
    m_hbmOffScreen = NULL;
@@ -6965,11 +6964,11 @@ void PinTable::ImportImage(HWND hwndListView, const char * const filename)
    if (end == 0)
       end = len - 1;
 
-   strncpy_s(ppi->m_szName, &filename[begin], MAXTOKEN);
+   strncpy_s(ppi->m_szName, &filename[begin], MAXTOKEN-1);
 
    ppi->m_szName[end - begin] = 0;
 
-   strncpy_s(ppi->m_szInternalName, ppi->m_szName, MAXTOKEN);
+   strncpy_s(ppi->m_szInternalName, ppi->m_szName, MAXTOKEN-1);
 
    CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
 
