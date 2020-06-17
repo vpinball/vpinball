@@ -780,7 +780,7 @@ STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageA, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageA, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -789,7 +789,7 @@ STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)
 STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
 {
    char m_szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXTOKEN, NULL, NULL);
 
    if (strcmp(m_szImage, m_d.m_szImageA) != 0)
       strcpy_s(m_d.m_szImageA, MAXTOKEN-1, m_szImage);
@@ -801,7 +801,7 @@ STDMETHODIMP Flasher::get_ImageB(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageB, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageB, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -810,7 +810,7 @@ STDMETHODIMP Flasher::get_ImageB(BSTR *pVal)
 STDMETHODIMP Flasher::put_ImageB(BSTR newVal)
 {
    char m_szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXTOKEN, NULL, NULL);
 
    if (strcmp(m_szImage, m_d.m_szImageB) != 0)
       strcpy_s(m_d.m_szImageB, MAXTOKEN-1, m_szImage);

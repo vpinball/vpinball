@@ -2010,7 +2010,7 @@ STDMETHODIMP Primitive::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
    return S_OK;
 }
@@ -2018,7 +2018,7 @@ STDMETHODIMP Primitive::get_Image(BSTR *pVal)
 STDMETHODIMP Primitive::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -2034,7 +2034,7 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
 STDMETHODIMP Primitive::get_NormalMap(BSTR *pVal)
 {
     WCHAR wz[512];
-    MultiByteToWideChar(CP_ACP, 0, m_d.m_szNormalMap, -1, wz, MAXNAMEBUFFER);
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szNormalMap, -1, wz, MAXTOKEN);
     *pVal = SysAllocString(wz);
 
     return S_OK;
@@ -2043,7 +2043,7 @@ STDMETHODIMP Primitive::get_NormalMap(BSTR *pVal)
 STDMETHODIMP Primitive::put_NormalMap(BSTR newVal)
 {
     char szImage[MAXTOKEN];
-    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXNAMEBUFFER, NULL, NULL);
+    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
     const Texture * const tex = m_ptable->GetImage(szImage);
     if (tex && tex->IsHDR())
     {

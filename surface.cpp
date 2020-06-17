@@ -1472,7 +1472,7 @@ STDMETHODIMP Surface::put_Threshold(float newVal)
 STDMETHODIMP Surface::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1481,7 +1481,7 @@ STDMETHODIMP Surface::get_Image(BSTR *pVal)
 STDMETHODIMP Surface::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -1775,7 +1775,7 @@ STDMETHODIMP Surface::put_Visible(VARIANT_BOOL newVal)
 STDMETHODIMP Surface::get_SideImage(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSideImage, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSideImage, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1784,7 +1784,7 @@ STDMETHODIMP Surface::get_SideImage(BSTR *pVal)
 STDMETHODIMP Surface::put_SideImage(BSTR newVal)
 {
    char szSideImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szSideImage, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szSideImage, MAXTOKEN, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szSideImage);
    if (tex && tex->IsHDR())
    {
