@@ -1599,7 +1599,7 @@ STDMETHODIMP Ramp::put_Type(RampType newVal)
 STDMETHODIMP Ramp::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1608,9 +1608,7 @@ STDMETHODIMP Ramp::get_Image(BSTR *pVal)
 STDMETHODIMP Ramp::put_Image(BSTR newVal)
 {
    char m_szImage[MAXTOKEN];
-   memset(m_szImage, 0, MAXTOKEN);
-
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXNAMEBUFFER, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXTOKEN, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(m_szImage);
    if (tex && tex->IsHDR())
    {
