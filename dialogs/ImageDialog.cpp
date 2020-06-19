@@ -456,7 +456,7 @@ void ImageDialog::Export()
          lvitem.iItem = sel;
          lvitem.iSubItem = 0;
          ListView_GetItem(hSoundList, &lvitem);
-         Texture * const ppi = (Texture*)lvitem.lParam;
+         Texture * ppi = (Texture*)lvitem.lParam;
          if (ppi != NULL)
          {
             OPENFILENAME ofn;
