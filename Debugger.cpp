@@ -273,9 +273,6 @@ INT_PTR DebuggerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 PlayDown = BST_CHECKED;
             }
 
-            const HWND hwndTBParent = GetDlgItem(IDC_TOOLBARSIZE);
-            const HWND hwndToolbar = GetWindow(GW_CHILD);
-
             SendDlgItemMessage(IDC_PLAY, BM_SETCHECK, PlayDown, 0);
             SendDlgItemMessage(IDC_PAUSE, BM_SETCHECK, PauseDown, 0);
             SendDlgItemMessage(IDC_STEP, BM_SETCHECK, StepDown, 0);

@@ -190,7 +190,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_COL_UP_BUTTON:
         {
             const int idx = ListView_GetNextItem(hListHwnd, -1, LVNI_SELECTED);
-            if (idx != -1 && idx > 0)
+            if (idx > 0)
             {
                 ::SetFocus(hListHwnd);
                 LVITEM lvitem1;

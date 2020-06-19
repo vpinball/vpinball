@@ -477,8 +477,8 @@ void Plunger::RenderSetup()
    const int lathePoints = desc->n;
 
    // calculate the frame rendering details
-   int latheVts = 0, springVts = 0;
-   int latheIndices = 0, springIndices = 0;
+   int latheVts = 0;
+   int springIndices = 0;
    if (m_d.m_type == PlungerTypeFlat)
    {
       // For the flat plunger, we render every frame as a simple
@@ -495,7 +495,7 @@ void Plunger::RenderSetup()
       // spirals, where each sprial has 'springLoops' loops
       // times 'circlePoints' vertices.
       latheVts = lathePoints * circlePoints;
-      springVts = int((springLoops + springEndLoops) * (float)circlePoints) * 3;
+      const int springVts = int((springLoops + springEndLoops) * (float)circlePoints) * 3;
       m_vtsPerFrame = latheVts + springVts;
 
       // For the lathed section, we need two triangles == 6
@@ -503,7 +503,7 @@ void Plunger::RenderSetup()
       // the first.  (We connect pairs of lathe circles, so
       // the first one doesn't count: two circles -> one set
       // of triangles, three circles -> two sets, etc).
-      latheIndices = 6 * circlePoints * (lathePoints - 1);
+      const int latheIndices = 6 * circlePoints * (lathePoints - 1);
 
       // For the spring, we need 4 triangles == 12 indices
       // for every matching set of three vertices on the

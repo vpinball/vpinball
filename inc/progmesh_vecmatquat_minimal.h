@@ -22,8 +22,8 @@ public:
 	float x, y, z;
 	float3(float x, float y, float z) :x(x), y(y), z(z){}
 	float3() :x(0), y(0), z(0){}
-	float &operator[](int i){ return (&x)[i]; }
-	const float &operator[](int i)const { return (&x)[i]; }
+	//float &operator[](int i){ return (&x)[i]; }
+	//const float &operator[](int i)const { return (&x)[i]; }
 };
 
 __forceinline bool   operator==(const float3 &a, const float3 &b) { return a.x == b.x && a.y == b.y && a.z == b.z; }

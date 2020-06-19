@@ -496,10 +496,11 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, CCom
 
 void PropertyDialog::UpdateComboBox(const vector<string>& contentList, CComboBox &combo, const char *selectName)
 {
+    const std::string sn(selectName);
     bool strFound = false;
     for (auto str : contentList)
     {
-        if (str == std::string(selectName))
+        if (str == sn)
             strFound = true;
     }
     if(combo.FindStringExact(1, selectName)==CB_ERR || !strFound)

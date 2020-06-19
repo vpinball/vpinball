@@ -40,15 +40,15 @@ AudioPlayer::AudioPlayer()
           {
               if ((size_t)DSidx >= DSads.size() || DSads[DSidx]->guid != NULL) // primary device has guid NULL, so use BASS_idx = -1 in that case
               {
-                  BASS_DEVICEINFO info;
-                  for (int i = 1; BASS_GetDeviceInfo(i, &info); i++) // 0 = no sound/no device
-                      if (info.flags & BASS_DEVICE_ENABLED) // device must be enabled
-                      if (strcmp(info.name, DSads[DSidx]->description.c_str()) == 0)
+                  BASS_DEVICEINFO dinfo;
+                  for (int i = 1; BASS_GetDeviceInfo(i, &dinfo); i++) // 0 = no sound/no device
+                      if (dinfo.flags & BASS_DEVICE_ENABLED) // device must be enabled
+                      if (strcmp(dinfo.name, DSads[DSidx]->description.c_str()) == 0)
                       {
                           if(idx == 0)
-                              bass_STD_idx = (info.flags & BASS_DEVICE_DEFAULT) ? -1 : i;
+                              bass_STD_idx = (dinfo.flags & BASS_DEVICE_DEFAULT) ? -1 : i;
                           else
-                              bass_BG_idx  = (info.flags & BASS_DEVICE_DEFAULT) ? -1 : i;
+                              bass_BG_idx  = (dinfo.flags & BASS_DEVICE_DEFAULT) ? -1 : i;
                           break;
                       }
               }

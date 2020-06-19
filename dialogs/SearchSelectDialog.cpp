@@ -246,18 +246,20 @@ bool SearchSelectDialog::IsValidString(const char * const name)
 void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
 {
    char textBuf[518];
-   char firstImage[256];
-   char secondImage[256];
-   char layerBuf[16];
-   IScriptable * const piscript = piedit->GetScriptable();
-   memset(layerBuf, 0, 16);
    textBuf[0] = 0;
+   char firstImage[256];
    firstImage[0] = 0;
+   char secondImage[256];
    secondImage[0] = 0;
+   char layerBuf[16];
+   memset(layerBuf, 0, 16);
+
+   IScriptable * const piscript = piedit->GetScriptable();
    if (piscript)
    {
        strcpy_s(layerBuf, piscript->GetISelect()->m_layerName.c_str());
    }
+
    ListView_SetItemText(m_hElementList, idx, 2, layerBuf);
    if (piedit->GetItemType() == eItemSurface)
    {

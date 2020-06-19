@@ -87,7 +87,7 @@ int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, con
 	++iNewPos;
 	//Now at top of list
 	//find nearest definition above current line
-	int ClosestLineNum = 0;
+	//int ClosestLineNum = 0;
 	int ClosestPos = CurrentIdx;
 	int Delta = -(INT_MAX - 1);
 	while (true)
@@ -99,7 +99,7 @@ int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, con
 			if (lowerCase(ListIn->at(iNewPos).m_keyName).compare(strSearchData) == 0)
 			{
 				Delta = NewDelta;
-				ClosestLineNum = NewLineNum;
+				//ClosestLineNum = NewLineNum;
 				ClosestPos = iNewPos;
 			}
 		}
@@ -311,7 +311,6 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn, const stri
 		ListIn->push_back(strIn);
 		return true;
 	}
-	vector<string>::iterator i = ListIn->begin();
 	int result = -2;
 	const unsigned int ListSize = (unsigned int)ListIn->size();
 	UINT32 iCurPos = (ListSize >> 1);
@@ -337,7 +336,7 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn, const stri
 		else  { iNewPos = iCurPos + iJumpDelta; }
 		iJumpDelta >>= 1;
 	} 
-	i = ListIn->begin() + iCurPos;
+	vector<string>::iterator i = ListIn->begin() + iCurPos;
 
 	if (result == 0) return false; // Already in list.
 
