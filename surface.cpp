@@ -495,9 +495,9 @@ void Surface::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
 	for (int i = 0; i < 8; i++)
 	{
 		const Vertex3Ds pv(
-			i & 1 ? m_ptable->m_right : m_ptable->m_left,
-			i & 2 ? m_ptable->m_bottom : m_ptable->m_top,
-			i & 4 ? m_d.m_heighttop : m_d.m_heightbottom);
+			(i & 1) ? m_ptable->m_right : m_ptable->m_left,
+			(i & 2) ? m_ptable->m_bottom : m_ptable->m_top,
+			(i & 4) ? m_d.m_heighttop : m_d.m_heightbottom);
 
 		pvvertex3D.push_back(pv);
 	}

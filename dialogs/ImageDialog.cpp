@@ -46,8 +46,6 @@ BOOL ImageDialog::OnInitDialog()
 
 INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-
    m_resizer.HandleMessage(uMsg, wParam, lParam);
 
    switch (uMsg)
@@ -101,6 +99,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          lvcol.cx = 60;
          ListView_InsertColumn(hListView, 4, &lvcol);
 
+         CCO(PinTable) * const pt = g_pvp->GetActiveTable();
          if (pt)
             pt->ListImages(hListView);
 
@@ -156,6 +155,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   strncpy_s(ppi->m_szName, pinfo->item.pszText, MAXTOKEN-1);
                   strncpy_s(ppi->m_szInternalName, pinfo->item.pszText, MAXTOKEN-1);
                   CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
+                  CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                   if (pt)
                      pt->SetNonUndoableDirty(eSaveDirty);
                }
@@ -210,6 +210,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                if (ppi->m_alphaTestValue != v)
                {
                   ppi->m_alphaTestValue = v;
+                  CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                   pt->SetNonUndoableDirty(eSaveDirty);
                }
 
@@ -311,9 +312,8 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 void ImageDialog::UpdateImages()
 {
     HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-
     const int count = ListView_GetSelectedCount(hSoundList);
+
     if (count > 0)
     {
         int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
@@ -332,6 +332,7 @@ void ImageDialog::UpdateImages()
                 if (ppi->m_alphaTestValue != v)
                 {
                     ppi->m_alphaTestValue = v;
+                    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                     pt->SetNonUndoableDirty(eSaveDirty);
                 }
 
@@ -346,8 +347,7 @@ void ImageDialog::UpdateImages()
 BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
    UNREFERENCED_PARAMETER(lParam);
-   HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+   const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
    switch (LOWORD(wParam))
    {
@@ -364,6 +364,7 @@ BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          {
             ::SetFocus(hSoundList);
             ListView_EditLabel(hSoundList, sel);
+            CCO(PinTable) * const pt = g_pvp->GetActiveTable();
             pt->SetNonUndoableDirty(eSaveDirty);
          }
          break;
@@ -398,8 +399,6 @@ void ImageDialog::OnCancel()
 
 void ImageDialog::Import()
 {
-   const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
    char szFileName[MAXSTRING];
    char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
@@ -410,6 +409,8 @@ void ImageDialog::Import()
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT, fileOffset))
    {
       strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
+      CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+      const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
       int len = lstrlen(szFileName);
       if (len < fileOffset)
@@ -443,13 +444,8 @@ void ImageDialog::Import()
 void ImageDialog::Export()
 {
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-   char g_filename[MAX_PATH];
-   char g_initDir[MAX_PATH];
    const int selectedItemsCount = ListView_GetSelectedCount(hSoundList);
       
-   const size_t renameOnExport = SendMessage(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), BM_GETCHECK, 0, 0);
-
    if (selectedItemsCount)	// if some items are selected???
    {
       int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
@@ -460,7 +456,7 @@ void ImageDialog::Export()
          lvitem.iItem = sel;
          lvitem.iSubItem = 0;
          ListView_GetItem(hSoundList, &lvitem);
-         Texture * ppi = (Texture*)lvitem.lParam;
+         Texture * const ppi = (Texture*)lvitem.lParam;
          if (ppi != NULL)
          {
             OPENFILENAME ofn;
@@ -469,8 +465,12 @@ void ImageDialog::Export()
             ofn.hInstance = g_hinst;
             ofn.hwndOwner = g_pvp->GetHwnd();
             int len = lstrlen(ppi->m_szPath);
+            char g_filename[MAX_PATH];
             memset(g_filename, 0, MAX_PATH);
+            char g_initDir[MAX_PATH];
             memset(g_initDir, 0, MAX_PATH);
+
+            const size_t renameOnExport = SendMessage(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), BM_GETCHECK, 0, 0);
 
             if (!renameOnExport)
             {
@@ -579,6 +579,7 @@ void ImageDialog::Export()
                      }
                   }
 
+                  CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                   if (!pt->ExportImage(ppi, g_filename)) //!! this will always export the image in its original format, no matter what was actually selected by the user
                      ShowError("Could not export Image");
                   sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
@@ -599,15 +600,15 @@ void ImageDialog::Export()
 void ImageDialog::DeleteImage()
 {
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-
    const int count = ListView_GetSelectedCount(hSoundList);
+
    if (count > 0)
    {
       LocalString ls(IDS_REMOVEIMAGE);
       const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
+         CCO(PinTable) * const pt = g_pvp->GetActiveTable();
          int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
          int lastsel = -1;
          while (sel != -1)
@@ -642,9 +643,8 @@ void ImageDialog::DeleteImage()
 void ImageDialog::Reimport()
 {
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-
    const int count = ListView_GetSelectedCount(hSoundList);
+
    if (count > 0)
    {
       LocalString ls(IDS_REPLACEIMAGE);
@@ -668,6 +668,7 @@ void ImageDialog::Reimport()
                if (hFile != INVALID_HANDLE_VALUE)
                {
                   CloseHandle(hFile);
+                  CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                   pt->ReImportImage(ppi, ppi->m_szPath);
                   pt->SetNonUndoableDirty(eSaveDirty);
                }
@@ -687,8 +688,6 @@ void ImageDialog::Reimport()
 void ImageDialog::UpdateAll()
 {
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-
    const int count = ListView_GetSelectedCount(hSoundList);
    bool errorOccurred = false;
 
@@ -706,6 +705,7 @@ void ImageDialog::UpdateAll()
          if (hFile != INVALID_HANDLE_VALUE)
          {
             CloseHandle(hFile);
+            CCO(PinTable) * const pt = g_pvp->GetActiveTable();
             pt->ReImportImage(ppi, ppi->m_szPath);
             pt->SetNonUndoableDirty(eSaveDirty);
          }
@@ -723,9 +723,8 @@ void ImageDialog::UpdateAll()
 void ImageDialog::ReimportFrom()
 {
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+   const int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
 
-   int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
    if (sel != -1)
    {
       LocalString ls(IDS_REPLACEIMAGE);
@@ -753,6 +752,7 @@ void ImageDialog::ReimportFrom()
                szInitialDir[fileOffset] = 0;
                hr = SaveValueString("RecentDir", "ImageDir", szInitialDir);
 
+               CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                pt->ReImportImage(ppi, szFileName);
                ListView_SetItemText(hSoundList, sel, 1, ppi->m_szPath);
                pt->SetNonUndoableDirty(eSaveDirty);

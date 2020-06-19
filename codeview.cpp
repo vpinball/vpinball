@@ -1359,7 +1359,6 @@ void CodeViewer::FindCodeFromEvent()
    lstrcat(szItemName, "_"); // VB Specific event names
    lstrcat(szItemName, szEventName);
    size_t codelen = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-   size_t startChar = 0;
    size_t stopChar = codelen;
    SendMessage(m_hwndScintilla, SCI_TARGETWHOLEDOCUMENT, 0, 0);
 	SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, SCFIND_WHOLEWORD, 0);
@@ -1423,7 +1422,7 @@ void CodeViewer::FindCodeFromEvent()
       if (found)
          break;
 
-      startChar = posFind + 1;
+      const size_t startChar = posFind + 1;
       SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
       SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
    }
@@ -1904,9 +1903,9 @@ void RemoveComment(const HWND m_hwndScintilla)
    {
       const size_t lineStart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, i, 0);
       const size_t lineEnd = SendMessage(m_hwndScintilla, SCI_GETLINEENDPOSITION, i, 0);
-      char buf[MAX_LINE_LENGTH];
       if (lineEnd - lineStart < (MAX_LINE_LENGTH -1) )
       {
+         char buf[MAX_LINE_LENGTH];
          GetRange(m_hwndScintilla, lineStart, lineEnd, buf);
          string line(buf);
          size_t idx = line.find_first_of('\'');
@@ -3024,7 +3023,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 								Pref->m_pointSize = cf.iPointSize / 10;
 								pcv->UpdateScinFromPrefs();
 								return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
-								break;
+								//break;
 							}
 						}
 					}// for pref

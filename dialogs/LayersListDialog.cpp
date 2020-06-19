@@ -577,7 +577,6 @@ void LayerTreeView::CollapseLayer()
 void LayerTreeView::SetActiveLayer(const string& name)
 {
     HTREEITEM item = GetChild(hRootItem);
-    int count = 0;
     while (item)
     {
         const std::string layerName(GetItemText(item));
@@ -588,7 +587,6 @@ void LayerTreeView::SetActiveLayer(const string& name)
         }
         item = GetNextItem(item, TVGN_NEXT);
     }
-
 }
 
 void LayerTreeView::OnAttach()
@@ -851,7 +849,7 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
     {
         if (tvItem.cChildren == 1) // layer checkbox was clicked
         {
-            const bool checked = IsItemChecked(tvItem.hItem);
+            const bool checked = IsItemChecked(tvItem.hItem); //!! never used?!
             HTREEITEM subItem = GetChild(tvItem.hItem);
             while (subItem)
             {

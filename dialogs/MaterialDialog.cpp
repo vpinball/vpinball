@@ -164,7 +164,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                lvitem.iItem = sel;
                lvitem.iSubItem = 0;
                ListView_GetItem(m_hMaterialList, &lvitem);
-               Material * const pmat = (Material*)lvitem.lParam;
+               Material * pmat = (Material*)lvitem.lParam;
                m_colorDialog.SetColor(pmat->m_cBase);
                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                {
@@ -176,12 +176,11 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                        sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
                        if(sel!=-1)
                        {
-                           LVITEM lvitem;
                            lvitem.mask = LVIF_PARAM;
                            lvitem.iItem = sel;
                            lvitem.iSubItem = 0;
                            ListView_GetItem(m_hMaterialList, &lvitem);
-                           Material * const pmat = (Material*)lvitem.lParam;
+                           pmat = (Material*)lvitem.lParam;
                            pmat->m_cBase = m_colorDialog.GetColor();
                        }
                    }
@@ -207,7 +206,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                lvitem.iItem = sel;
                lvitem.iSubItem = 0;
                ListView_GetItem(m_hMaterialList, &lvitem);
-               Material * const pmat = (Material*)lvitem.lParam;
+               Material * pmat = (Material*)lvitem.lParam;
                m_colorDialog.SetColor(pmat->m_cGlossy);
                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                {
@@ -219,12 +218,11 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                        sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
                        if(sel!=-1)
                        {
-                           LVITEM lvitem;
                            lvitem.mask = LVIF_PARAM;
                            lvitem.iItem = sel;
                            lvitem.iSubItem = 0;
                            ListView_GetItem(m_hMaterialList, &lvitem);
-                           Material * const pmat = (Material*)lvitem.lParam;
+                           pmat = (Material*)lvitem.lParam;
                            pmat->m_cGlossy = m_colorDialog.GetColor();
                        }
                    }
@@ -250,7 +248,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                lvitem.iItem = sel;
                lvitem.iSubItem = 0;
                ListView_GetItem(m_hMaterialList, &lvitem);
-               Material * const pmat = (Material*)lvitem.lParam;
+               Material * pmat = (Material*)lvitem.lParam;
                m_colorDialog.SetColor(pmat->m_cClearcoat);
                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                {
@@ -262,12 +260,11 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                        sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
                        if(sel!=-1)
                        {
-                           LVITEM lvitem;
                            lvitem.mask = LVIF_PARAM;
                            lvitem.iItem = sel;
                            lvitem.iSubItem = 0;
                            ListView_GetItem(m_hMaterialList, &lvitem);
-                           Material * const pmat = (Material*)lvitem.lParam;
+                           pmat = (Material*)lvitem.lParam;
                            pmat->m_cClearcoat = m_colorDialog.GetColor();
                        }
                    }

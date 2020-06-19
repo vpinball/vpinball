@@ -308,9 +308,9 @@ void Rubber::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
    for (int i = 0; i < 8; i++)
    {
 	   const Vertex3Ds pv(
-		   i & 1 ? bbox_min.x : bbox_max.x,
-		   i & 2 ? bbox_min.y : bbox_max.y,
-		   i & 4 ? bbox_min.z : bbox_max.z);
+		   (i & 1) ? bbox_min.x : bbox_max.x,
+		   (i & 2) ? bbox_min.y : bbox_max.y,
+		   (i & 4) ? bbox_min.z : bbox_max.z);
 
 	   pvvertex3D.push_back(pv);
    }
@@ -1260,9 +1260,9 @@ void Rubber::RenderDynamic()
 
 void Rubber::ExportMesh(FILE *f)
 {
-   char name[MAX_PATH];
    if (m_d.m_visible)
    {
+      char name[MAX_PATH];
       WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
       GenerateMesh();
       UpdateRubber(false, m_d.m_height);

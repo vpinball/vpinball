@@ -87,12 +87,12 @@ HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
 
 static HANDLE hid_connect(U32 vendorID, U32 productID, U32 *versionNumber = NULL)
 {
-   HANDLE deviceHandle = INVALID_HANDLE_VALUE;
    DWORD index = 0;
    HIDD_ATTRIBUTES deviceAttributes;
 
    while (index < 10)
    {
+      HANDLE deviceHandle;
       if ((deviceHandle = connectToIthUSBHIDDevice(index)) == INVALID_HANDLE_VALUE)
       {
          index++;

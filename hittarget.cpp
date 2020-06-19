@@ -1066,10 +1066,7 @@ STDMETHODIMP HitTarget::get_X(float *pVal)
 
 STDMETHODIMP HitTarget::put_X(float newVal)
 {
-   if (m_d.m_vPosition.x != newVal)
-   {
-      m_d.m_vPosition.x = newVal;
-   }
+   m_d.m_vPosition.x = newVal;
 
    return S_OK;
 }
@@ -1083,10 +1080,7 @@ STDMETHODIMP HitTarget::get_Y(float *pVal)
 
 STDMETHODIMP HitTarget::put_Y(float newVal)
 {
-   if (m_d.m_vPosition.y != newVal)
-   {
-      m_d.m_vPosition.y = newVal;
-   }
+   m_d.m_vPosition.y = newVal;
 
    return S_OK;
 }
@@ -1100,10 +1094,7 @@ STDMETHODIMP HitTarget::get_Z(float *pVal)
 
 STDMETHODIMP HitTarget::put_Z(float newVal)
 {
-   if (m_d.m_vPosition.z != newVal)
-   {
-      m_d.m_vPosition.z = newVal;
-   }
+   m_d.m_vPosition.z = newVal;
 
    return S_OK;
 }
@@ -1117,10 +1108,7 @@ STDMETHODIMP HitTarget::get_ScaleX(float *pVal)
 
 STDMETHODIMP HitTarget::put_ScaleX(float newVal)
 {
-   if (m_d.m_vSize.x != newVal)
-   {
-      m_d.m_vSize.x = newVal;
-   }
+   m_d.m_vSize.x = newVal;
 
    return S_OK;
 }
@@ -1134,10 +1122,7 @@ STDMETHODIMP HitTarget::get_ScaleY(float *pVal)
 
 STDMETHODIMP HitTarget::put_ScaleY(float newVal)
 {
-   if (m_d.m_vSize.y != newVal)
-   {
-      m_d.m_vSize.y = newVal;
-   }
+   m_d.m_vSize.y = newVal;
 
    return S_OK;
 }
@@ -1151,10 +1136,7 @@ STDMETHODIMP HitTarget::get_ScaleZ(float *pVal)
 
 STDMETHODIMP HitTarget::put_ScaleZ(float newVal)
 {
-   if (m_d.m_vSize.z != newVal)
-   {
-      m_d.m_vSize.z = newVal;
-   }
+   m_d.m_vSize.z = newVal;
 
    return S_OK;
 }
@@ -1168,10 +1150,7 @@ STDMETHODIMP HitTarget::get_Orientation(float *pVal)
 
 STDMETHODIMP HitTarget::put_Orientation(float newVal)
 {
-   if (m_d.m_rotZ != newVal)
-   {
-      m_d.m_rotZ = newVal;
-   }
+   m_d.m_rotZ = newVal;
 
    return S_OK;
 }
@@ -1356,8 +1335,7 @@ STDMETHODIMP HitTarget::get_DepthBias(float *pVal)
 
 STDMETHODIMP HitTarget::put_DepthBias(float newVal)
 {
-   if (m_d.m_depthBias != newVal)
-      m_d.m_depthBias = newVal;
+   m_d.m_depthBias = newVal;
 
    return S_OK;
 }
@@ -1371,8 +1349,7 @@ STDMETHODIMP HitTarget::get_DropSpeed(float *pVal)
 
 STDMETHODIMP HitTarget::put_DropSpeed(float newVal)
 {
-   if (m_d.m_dropSpeed != newVal)
-      m_d.m_dropSpeed = newVal;
+   m_d.m_dropSpeed = newVal;
 
    return S_OK;
 }
