@@ -761,6 +761,7 @@ void Player::PreCreate(CREATESTRUCT& cs)
     cs.dwExStyle = windowflagsex;
     cs.hInstance = g_hinst;
     cs.lpszName = "Visual Pinball Player";
+    cs.lpszClass = "VPPlayer";
 }
 
 void Player::OnInitialUpdate()
