@@ -6,10 +6,10 @@
 #ifdef ENABLE_INI
  //!! TODO implement reading/writing to ini file instead of registry
 #else
-HRESULT LoadValue(const char *szKey, const char *szValue, DWORD *ptype, void *pvalue, DWORD size);
+HRESULT LoadValue(const std::string &szKey, const std::string &szValue, DWORD *ptype, void *pvalue, DWORD size);
 
 
-HRESULT LoadValueString(const char * const szKey, const char * const szValue, void *const szbuffer, const DWORD size)
+HRESULT LoadValueString(const std::string &szKey, const std::string &szValue, void * const szbuffer, const DWORD size)
 {
    if (size > 0) // clear string in case of reg value being set, but being null string which results in szbuffer being kept as-is
       ((char*)szbuffer)[0] = 0;
@@ -20,7 +20,7 @@ HRESULT LoadValueString(const char * const szKey, const char * const szValue, vo
    return (type != REG_SZ) ? E_FAIL : hr;
 }
 
-HRESULT LoadValueFloat(const char *szKey, const char *szValue, float *pfloat)
+HRESULT LoadValueFloat(const std::string &szKey, const std::string &szValue, float *pfloat)
 {
    DWORD type = REG_NONE;
    char szbuffer[16];
@@ -50,7 +50,7 @@ HRESULT LoadValueFloat(const char *szKey, const char *szValue, float *pfloat)
    return hr;
 }
 
-HRESULT LoadValueInt(const char *szKey, const char *szValue, int *pint)
+HRESULT LoadValueInt(const std::string &szKey, const std::string &szValue, int *pint)
 {
    DWORD type = REG_NONE;
    const HRESULT hr = LoadValue(szKey, szValue, &type, (void *)pint, 4);
@@ -61,14 +61,14 @@ HRESULT LoadValueInt(const char *szKey, const char *szValue, int *pint)
    return hr;
 }
 
-static HRESULT LoadValue(const char *szKey, const char *szValue, DWORD *ptype, void *pvalue, DWORD size)
+HRESULT LoadValue(const std::string &szKey, const std::string &szValue, DWORD *ptype, void *pvalue, DWORD size)
 {
    char szPath[MAXSTRING];
-   if (strcmp(szKey, "Controller") == 0)
+   if(szKey=="Controller")
       lstrcpy(szPath, VP_REGKEY_GENERAL);
    else
       lstrcpy(szPath, VP_REGKEY);
-   lstrcat(szPath, szKey);
+   lstrcat(szPath, szKey.c_str());
 
    HKEY hk;
    DWORD RetVal = RegOpenKeyEx(HKEY_CURRENT_USER, szPath, 0, KEY_ALL_ACCESS, &hk);
@@ -77,7 +77,7 @@ static HRESULT LoadValue(const char *szKey, const char *szValue, DWORD *ptype, v
    {
       DWORD type = REG_NONE;
 
-      RetVal = RegQueryValueEx(hk, szValue, NULL, &type, (BYTE *)pvalue, &size);
+      RetVal = RegQueryValueEx(hk, szValue.c_str(), NULL, &type, (BYTE *)pvalue, &size);
 
       *ptype = type;
 
@@ -88,7 +88,7 @@ static HRESULT LoadValue(const char *szKey, const char *szValue, DWORD *ptype, v
 }
 
 
-int LoadValueIntWithDefault(const char *szKey, const char *szValue, const int def)
+int LoadValueIntWithDefault(const std::string &szKey, const std::string &szValue, const int def)
 {
    int val;
    const HRESULT hr = LoadValueInt(szKey, szValue, &val);
@@ -102,20 +102,20 @@ float LoadValueFloatWithDefault(const char *szKey, const char *szValue, const fl
    return SUCCEEDED(hr) ? val : def;
 }
 
-bool LoadValueBoolWithDefault(const char *szKey, const char *szValue, const bool def)
+bool LoadValueBoolWithDefault(const std::string &szKey, const std::string &szValue, const bool def)
 {
    return !!LoadValueIntWithDefault(szKey, szValue, def);
 }
 
 
-static HRESULT SaveValue(const char *szKey, const char *szValue, DWORD type, const void *pvalue, const DWORD size)
+static HRESULT SaveValue(const std::string &szKey, const std::string &szValue, DWORD type, const void *pvalue, const DWORD size)
 {
    char szPath[MAXSTRING];
-   if (strcmp(szKey, "Controller") == 0)
+   if(szKey=="Controller")
       lstrcpy(szPath, VP_REGKEY_GENERAL);
    else
       lstrcpy(szPath, VP_REGKEY);
-   lstrcat(szPath, szKey);
+   lstrcat(szPath, szKey.c_str());
 
    HKEY hk;
    //RetVal = RegOpenKeyEx(HKEY_CURRENT_USER, szPath, 0, KEY_ALL_ACCESS, &hk);
@@ -124,7 +124,7 @@ static HRESULT SaveValue(const char *szKey, const char *szValue, DWORD type, con
 
    if (RetVal == ERROR_SUCCESS)
    {
-      RetVal = RegSetValueEx(hk, szValue, 0, type, (BYTE *)pvalue, size);
+      RetVal = RegSetValueEx(hk, szValue.c_str(), 0, type, (BYTE *)pvalue, size);
 
       RegCloseKey(hk);
    }
@@ -132,49 +132,49 @@ static HRESULT SaveValue(const char *szKey, const char *szValue, DWORD type, con
    return (RetVal == ERROR_SUCCESS) ? S_OK : E_FAIL;
 }
 
-HRESULT SaveValueBool(const char *szKey, const char *szValue, const bool val)
+HRESULT SaveValueBool(const std::string &szKey, const std::string &szValue, const bool val)
 {
    const DWORD dwval = val ? 1 : 0;
    return SaveValue(szKey, szValue, REG_DWORD, &dwval, sizeof(DWORD));
 }
 
-HRESULT SaveValueInt(const char *szKey, const char *szValue, const int val)
+HRESULT SaveValueInt(const std::string &szKey, const std::string &szValue, const int val)
 {
    return SaveValue(szKey, szValue, REG_DWORD, &val, sizeof(DWORD));
 }
 
-HRESULT SaveValueFloat(const char *szKey, const char *szValue, const float val)
+HRESULT SaveValueFloat(const std::string &szKey, const std::string &szValue, const float val)
 {
    char buf[16];
    sprintf_s(buf, 16, "%f", val);
    return SaveValue(szKey, szValue, REG_SZ, buf, lstrlen(buf));
 }
 
-HRESULT SaveValueString(const char *szKey, const char *szValue, const char *val)
+HRESULT SaveValueString(const std::string &szKey, const std::string &szValue, const char *val)
 {
    return SaveValue(szKey, szValue, REG_SZ, val, lstrlen(val));
 }
 
-HRESULT SaveValueString(const char *szKey, const char *szValue, const string& val)
+HRESULT SaveValueString(const std::string &szKey, const std::string &szValue, const string& val)
 {
    return SaveValue(szKey, szValue, REG_SZ, val.c_str(), val.length());
 }
 
-HRESULT DeleteValue(const char *szKey, const char *szValue)
+HRESULT DeleteValue(const std::string &szKey, const std::string &szValue)
 {
    char szPath[MAXSTRING];
-   if (strcmp(szKey, "Controller") == 0)
+   if(szKey=="Controller")
       lstrcpy(szPath, VP_REGKEY_GENERAL);
    else
       lstrcpy(szPath, VP_REGKEY);
-   lstrcat(szPath, szKey);
+   lstrcat(szPath, szKey.c_str());
 
    HKEY hk;
    DWORD RetVal = RegOpenKeyEx(HKEY_CURRENT_USER, szPath, 0, KEY_ALL_ACCESS, &hk);
 
    if (RetVal == ERROR_SUCCESS)
    {
-      RetVal = RegDeleteValue(hk, szValue);
+      RetVal = RegDeleteValue(hk, szValue.c_str());
       RegCloseKey(hk);
    }
    else {

@@ -1,20 +1,20 @@
 #pragma once
 
-HRESULT LoadValueString(const char * const szKey, const char * const szValue, void * const szbuffer, const DWORD size);
+HRESULT LoadValueString(const std::string &szKey, const std::string &szValue, void * const szbuffer, const DWORD size);
 
-HRESULT LoadValueFloat(const char *szKey, const char *szValue, float *pfloat);
+HRESULT LoadValueFloat(const std::string &szKey, const std::string &szValue, float *pfloat);
 float   LoadValueFloatWithDefault(const char *szKey, const char *szValue, const float def); 
 
-HRESULT LoadValueInt(const char *szKey, const char *szValue, int *pint);
-int     LoadValueIntWithDefault(const char *szKey, const char *szValue, const int def);
+HRESULT LoadValueInt(const std::string &szKey, const std::string &szValue, int *pint);
+int LoadValueIntWithDefault(const std::string &szKey, const std::string &szValue, const int def);
 
-bool    LoadValueBoolWithDefault(const char *szKey, const char *szValue, const bool def);
+bool LoadValueBoolWithDefault(const std::string &szKey, const std::string &szValue, const bool def);
 
 
-HRESULT SaveValueString(const char *szKey, const char *szValue, const char *val);
-HRESULT SaveValueString(const char* szKey, const char* szValue, const string& val);
-HRESULT SaveValueFloat(const char *szKey, const char *szValue, const float val);
-HRESULT SaveValueInt(const char *szKey, const char *szValue, const int val);
-HRESULT SaveValueBool(const char *szKey, const char *szValue, const bool val);
+HRESULT SaveValueString(const std::string &szKey, const std::string &szValue, const char *val);
+HRESULT SaveValueString(const std::string &szKey, const std::string &szValue, const string& val);
+HRESULT SaveValueFloat(const std::string &szKey, const std::string &szValue, const float val);
+HRESULT SaveValueInt(const std::string &szKey, const std::string &szValue, const int val);
+HRESULT SaveValueBool(const std::string &szKey, const std::string &szValue, const bool val);
 
-HRESULT DeleteValue(const char *szKey, const char *szValue);
+HRESULT DeleteValue(const std::string &szKey, const std::string &szValue);
