@@ -1332,7 +1332,7 @@ STDMETHODIMP Trigger::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
-   m_d.m_szMaterial = std::string(buf);
+   m_d.m_szMaterial = buf;
 
    return S_OK;
 }

@@ -1220,7 +1220,7 @@ STDMETHODIMP Flipper::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
-   m_d.m_szMaterial = std::string(buf);
+   m_d.m_szMaterial = buf;
 
    return S_OK;
 }
@@ -1281,7 +1281,8 @@ STDMETHODIMP Flipper::put_RubberMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
-   m_d.m_szRubberMaterial = std::string(buf);
+   m_d.m_szRubberMaterial = buf;
+
    return S_OK;
 }
 
@@ -1534,8 +1535,8 @@ STDMETHODIMP Flipper::put_Image(BSTR newVal)
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
    }
+   m_d.m_szImage = szImage;
 
-   m_d.m_szImage = std::string(szImage);
    return S_OK;
 }
 

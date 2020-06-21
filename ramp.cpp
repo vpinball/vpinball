@@ -105,7 +105,7 @@ void Ramp::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage="";
    else
-      m_d.m_szImage = std::string(buf);
+      m_d.m_szImage = buf;
 
    m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)LoadValueIntWithDefault(strKeyName, "ImageMode", ImageModeWorld) : ImageModeWorld;
    m_d.m_imageWalls = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ImageWalls", true) : true;
@@ -1578,7 +1578,7 @@ STDMETHODIMP Ramp::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
-   m_d.m_szMaterial = std::string(buf);
+   m_d.m_szMaterial = buf;
 
    return S_OK;
 }
@@ -1621,9 +1621,9 @@ STDMETHODIMP Ramp::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   if(std::string(szImage)!=m_d.m_szImage)
+   if(std::string(szImage) != m_d.m_szImage)
    {
-      m_d.m_szImage = std::string(szImage);
+      m_d.m_szImage = szImage;
       m_dynamicVertexBufferRegenerate = true;
    }
 
