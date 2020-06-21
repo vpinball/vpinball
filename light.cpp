@@ -18,7 +18,7 @@ Light::Light() : m_lightcenter(this)
    m_roundLight = false;
    m_propVisual = NULL;
    m_updateBulbLightHeight = false;
-   memset(m_d.m_szImage, 0, MAXTOKEN);
+   m_d.m_szImage = "";
    memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
@@ -92,9 +92,11 @@ void Light::SetDefaults(bool fromMouseClick)
    m_d.m_color = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "Color", RGB(255,255,0)) : RGB(255,255,0);
    m_d.m_color2 = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "ColorFull", RGB(255,255,255)) : RGB(255,255,255);
 
-   HRESULT hr = LoadValueString("DefaultProps\\Light", "OffImage", m_d.m_szImage, MAXTOKEN);
+   char buf[MAXTOKEN] = { 0 };
+   HRESULT hr = LoadValueString("DefaultProps\\Light", "OffImage", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage[0] = 0;
+      m_d.m_szImage="";
+   m_d.m_szImage = std::string(buf);
 
    hr = LoadValueString("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern, NUM_RGB_BLINK_PATTERN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -1356,7 +1358,7 @@ STDMETHODIMP Light::put_Surface(BSTR newVal)
 STDMETHODIMP Light::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXTOKEN);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1364,7 +1366,10 @@ STDMETHODIMP Light::get_Image(BSTR *pVal)
 
 STDMETHODIMP Light::put_Image(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, MAXTOKEN, NULL, NULL);
+   char szImage[MAXTOKEN];
+
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   m_d.m_szImage = std::string(szImage);
 
    return S_OK;
 }

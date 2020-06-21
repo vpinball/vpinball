@@ -54,7 +54,7 @@ INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 class BaseProperty // not everything in here is used in all of the derived classes, but it simplifies the UI code!
 {
 public:
-    char  m_szImage[MAXTOKEN];
+    std::string  m_szImage;
     char  m_szMaterial[MAXNAMEBUFFER];
     char  m_szPhysicsMaterial[MAXNAMEBUFFER];
     float m_elasticity;

@@ -231,7 +231,7 @@ public:
     void UpdateTabs(VectorProtected<ISelect> *pvsel);
     bool PreTranslateMessage(MSG* msg);
 
-    static void UpdateTextureComboBox(const vector<Texture*>& contentList, CComboBox &combo, const char selectName[MAXTOKEN]);
+    static void UpdateTextureComboBox(const vector<Texture*>& contentList, CComboBox &combo, const std::string &selectName);
     static void UpdateComboBox(const vector<string>& contentList, CComboBox &combo, const char *selectName);
     static void UpdateMaterialComboBox(const vector<Material *>& contentList, CComboBox &combo, const char *selectName);
     static void UpdateSurfaceComboBox(const PinTable * const ptable, CComboBox &combo, const char *selectName);
@@ -334,6 +334,18 @@ private:
     { \
         PropertyDialog::StartUndo(element); \
         classValue=value; \
+        PropertyDialog::EndUndo(element); \
+    }\
+}
+
+#define CHECK_UPDATE_COMBO_TEXT_STRING(classValue, uiCombo, element)\
+{\
+    char szName[MAXTOKEN]={0}; \
+    PropertyDialog::GetComboBoxText(uiCombo, szName, MAXTOKEN); \
+    if(szName!=classValue) \
+    { \
+        PropertyDialog::StartUndo(element); \
+        classValue = szName; \
         PropertyDialog::EndUndo(element); \
     }\
 }

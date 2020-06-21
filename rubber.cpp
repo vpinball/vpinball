@@ -14,7 +14,7 @@ Rubber::Rubber()
    m_propPhysics = NULL;
    m_propPosition = NULL;
    m_propVisual = NULL;
-   memset(m_d.m_szImage, 0, MAXTOKEN);
+   m_d.m_szImage = "";
    memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
    m_d.m_overwritePhysics = true;
@@ -78,9 +78,11 @@ void Rubber::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
 
-   const HRESULT hr = LoadValueString(strKeyName, "Image", m_d.m_szImage, MAXTOKEN);
+   char buf[MAXTOKEN] = { 0 };
+   const HRESULT hr = LoadValueString(strKeyName, "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage[0] = 0;
+      m_d.m_szImage="";
+   m_d.m_szImage = std::string(buf);
 
    m_d.m_hitEvent = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "HitEvent", false) : false;
 
@@ -941,7 +943,7 @@ STDMETHODIMP Rubber::put_Material(BSTR newVal)
 STDMETHODIMP Rubber::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXTOKEN);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -958,9 +960,9 @@ STDMETHODIMP Rubber::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   if (strcmp(m_szImage, m_d.m_szImage) != 0)
+   if(m_szImage!=m_d.m_szImage)
    {
-      strcpy_s(m_d.m_szImage, MAXTOKEN-1, m_szImage);
+      m_d.m_szImage = m_szImage;
       m_dynamicVertexBufferRegenerate = true;
    }
 

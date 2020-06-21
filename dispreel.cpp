@@ -2,7 +2,7 @@
 
 DispReel::DispReel()
 {
-   memset(m_d.m_szImage, 0, MAXTOKEN);
+   m_d.m_szImage = "";
    memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER); 
    memset(m_d.m_szSound, 0, MAXTOKEN);
@@ -42,10 +42,12 @@ void DispReel::SetDefaults(bool fromMouseClick)
 
    // set all the Data defaults
    HRESULT hr;
-
-   hr = LoadValueString("DefaultProps\\Ramp", "Image", m_d.m_szImage, MAXTOKEN);
+   char buf[MAXTOKEN] = { 0 };
+   hr = LoadValueString("DefaultProps\\Ramp", "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage[0] = 0;
+      m_d.m_szImage="";
+
+   m_d.m_szImage = std::string(buf);
 
    hr = LoadValueString("DefaultProps\\Ramp", "Sound", m_d.m_szSound, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -701,7 +703,7 @@ STDMETHODIMP DispReel::put_IsTransparent(VARIANT_BOOL newVal)
 STDMETHODIMP DispReel::get_Image(BSTR *pVal)
 {
    OLECHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXTOKEN);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -717,8 +719,7 @@ STDMETHODIMP DispReel::put_Image(BSTR newVal)
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
    }
-   
-   strcpy_s(m_d.m_szImage,szImage);
+   m_d.m_szImage = std::string(szImage);
 
    return S_OK;
 }

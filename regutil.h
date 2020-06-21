@@ -1,6 +1,6 @@
 #pragma once
 
-HRESULT LoadValueString(const std::string &szKey, const std::string &szValue, void * const szbuffer, const DWORD size);
+HRESULT LoadValueString(const std::string& szKey, const std::string& szValue, void* const szbuffer, const DWORD size);
 
 HRESULT LoadValueFloat(const std::string &szKey, const std::string &szValue, float *pfloat);
 float   LoadValueFloatWithDefault(const char *szKey, const char *szValue, const float def); 

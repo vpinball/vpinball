@@ -22,6 +22,8 @@ public:
    BiffWriter(IStream *pistream, HCRYPTHASH hcrypthash);
    HRESULT WriteInt(int id, int value);
    HRESULT WriteString(int id, const char * const szvalue);
+   HRESULT WriteString(int id, const std::string& szvalue);
+
    HRESULT WriteWideString(int id, const WCHAR * const wzvalue);
    HRESULT WriteBool(int id, BOOL value);
    HRESULT WriteFloat(int id, float value);
@@ -46,7 +48,8 @@ public:
    HRESULT GetIntNoHash(void *pvalue);
    HRESULT GetInt(void *pvalue);
    HRESULT GetString(char *szvalue);
-   HRESULT GetWideString(WCHAR *wzvalue);
+   HRESULT GetString(std::string& szvalue);
+   HRESULT GetWideString(WCHAR* wzvalue);
    HRESULT GetFloat(float *pvalue);
    HRESULT GetBool(BOOL *pfvalue);
    HRESULT GetBool(bool *pvalue);

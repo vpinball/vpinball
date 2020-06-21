@@ -9,7 +9,7 @@
 HRESULT LoadValue(const std::string &szKey, const std::string &szValue, DWORD *ptype, void *pvalue, DWORD size);
 
 
-HRESULT LoadValueString(const std::string &szKey, const std::string &szValue, void * const szbuffer, const DWORD size)
+HRESULT LoadValueString(const std::string& szKey, const std::string& szValue, void* const szbuffer, const DWORD size)
 {
    if (size > 0) // clear string in case of reg value being set, but being null string which results in szbuffer being kept as-is
       ((char*)szbuffer)[0] = 0;

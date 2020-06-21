@@ -14,7 +14,7 @@ Surface::Surface()
    m_VBuffer = 0;
    m_IBuffer = 0;
    m_propPhysics = NULL;
-   memset(m_d.m_szImage, 0, MAXTOKEN);
+   m_d.m_szImage = "";
    memset(m_d.m_szSideImage, 0, MAXTOKEN);
    memset(m_d.m_szSideMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szTopMaterial, 0, MAXNAMEBUFFER);
@@ -215,9 +215,11 @@ void Surface::SetDefaults(bool fromMouseClick)
    m_d.m_slingshot_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "SlingshotThreshold", 0.0f) : 0.0f;
    m_d.m_inner = true; //!! Deprecated, do not use anymore
 
-   hr = LoadValueString(strKeyName, "TopImage", m_d.m_szImage, MAXTOKEN);
+   char buf[MAXTOKEN] = { 0 };
+   hr = LoadValueString(strKeyName, "TopImage", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage[0] = 0;
+      m_d.m_szImage="";
+   m_d.m_szImage = std::string(buf);
 
    hr = LoadValueString(strKeyName, "SideImage", m_d.m_szSideImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -775,8 +777,8 @@ void Surface::ExportMesh(FILE *f)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       if (tex)
       {
-         WaveFrontObj_WriteMaterial(m_d.m_szImage, tex->m_szPath, mat);
-         WaveFrontObj_UseTexture(f, m_d.m_szImage);
+         WaveFrontObj_WriteMaterial(m_d.m_szImage.c_str(), tex->m_szPath, mat);
+         WaveFrontObj_UseTexture(f, m_d.m_szImage.c_str());
       }
       else
       {
@@ -1472,7 +1474,7 @@ STDMETHODIMP Surface::put_Threshold(float newVal)
 STDMETHODIMP Surface::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXTOKEN);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1488,8 +1490,7 @@ STDMETHODIMP Surface::put_Image(BSTR newVal)
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
    }
-
-   strcpy_s(m_d.m_szImage,szImage);
+   m_d.m_szImage = std::string(szImage);
 
    return S_OK;
 }

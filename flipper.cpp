@@ -84,7 +84,7 @@ Flipper::Flipper()
    m_vertexBuffer = NULL;
    m_indexBuffer = NULL;
    m_ptable = NULL;
-   memset(m_d.m_szImage, 0, MAXTOKEN);
+   m_d.m_szImage = "";
    memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
 }
@@ -1515,7 +1515,7 @@ STDMETHODIMP Flipper::put_FlipperRadiusMin(float newVal)
 STDMETHODIMP Flipper::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXTOKEN);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1532,8 +1532,7 @@ STDMETHODIMP Flipper::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   strcpy_s(m_d.m_szImage,szImage);
-
+   m_d.m_szImage = std::string(szImage);
    return S_OK;
 }
 
