@@ -17,7 +17,7 @@ Ramp::Ramp()
    m_d.m_wireDistanceY = 88.0f;
    m_propPosition = NULL;
    m_propPhysics = NULL;
-   memset(m_d.m_szImage, 0, MAXTOKEN);
+   m_d.m_szImage = "";
    memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
    m_d.m_hitEvent = false;
@@ -100,9 +100,11 @@ void Ramp::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
 
-   HRESULT hr = LoadValueString(strKeyName, "Image", m_d.m_szImage, MAXTOKEN);
+   char buf[MAXTOKEN] = { 0 };
+   HRESULT hr = LoadValueString(strKeyName, "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage[0] = 0;
+      m_d.m_szImage="";
+   m_d.m_szImage = std::string(buf);
 
    m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)LoadValueIntWithDefault(strKeyName, "ImageMode", ImageModeWorld) : ImageModeWorld;
    m_d.m_imageWalls = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "ImageWalls", true) : true;
@@ -1599,7 +1601,7 @@ STDMETHODIMP Ramp::put_Type(RampType newVal)
 STDMETHODIMP Ramp::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXTOKEN);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1616,9 +1618,9 @@ STDMETHODIMP Ramp::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   if (strcmp(m_szImage, m_d.m_szImage) != 0)
+   if(std::string(m_szImage)!=m_d.m_szImage)
    {
-      strcpy_s(m_d.m_szImage, MAXTOKEN-1, m_szImage);
+      m_d.m_szImage = std::string(m_szImage);
       m_dynamicVertexBufferRegenerate = true;
    }
 

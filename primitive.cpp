@@ -188,7 +188,7 @@ Primitive::Primitive()
    m_propPhysics = NULL;
    m_propPosition = NULL;
    m_propVisual = NULL;
-   memset(m_d.m_szImage, 0, MAXTOKEN);
+   m_d.m_szImage = "";
    memset(m_d.m_szNormalMap, 0, MAXTOKEN);
    memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
    memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
@@ -369,10 +369,11 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_aRotAndTra[7] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra7", 0.0f) : 0.0f;
    m_d.m_aRotAndTra[8] = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "RotAndTra8", 0.0f) : 0.0f;
 
-   HRESULT hr = LoadValueString(strKeyName, "Image", m_d.m_szImage, MAXTOKEN);
+   char buf[MAXTOKEN] = { 0 };
+   HRESULT hr = LoadValueString(strKeyName, "Image", buf, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
-      m_d.m_szImage[0] = 0;
-
+      m_d.m_szImage="";
+   m_d.m_szImage = std::string(buf);
    hr = LoadValueString(strKeyName, "NormalMap", m_d.m_szNormalMap, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
        m_d.m_szNormalMap[0] = 0;
@@ -2010,7 +2011,7 @@ STDMETHODIMP Primitive::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, MAXTOKEN);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
    return S_OK;
 }
@@ -2026,7 +2027,7 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   strcpy_s(m_d.m_szImage,szImage);
+   m_d.m_szImage = std::string(szImage);
 
    return S_OK;
 }

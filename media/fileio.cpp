@@ -207,6 +207,26 @@ HRESULT BiffWriter::WriteString(int id, const char * const szvalue)
    return hr;
 }
 
+HRESULT BiffWriter::WriteString(int id, const std::string &szvalue)
+{
+   ULONG writ = 0;
+   HRESULT hr;
+   int len = szvalue.size();
+
+   if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
+      return hr;
+
+   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+      return hr;
+
+   if (FAILED(hr = WriteBytes(&len, sizeof(int), &writ)))
+      return hr;
+
+   hr = WriteBytes(szvalue.c_str(), len, &writ);
+
+   return hr;
+}
+
 HRESULT BiffWriter::WriteWideString(int id, const WCHAR * const wzvalue)
 {
    ULONG writ = 0;
@@ -357,6 +377,23 @@ HRESULT BiffReader::GetString(char *szvalue)
    m_bytesinrecordremaining -= len + (int)sizeof(int);
 
    hr = ReadBytes(szvalue, len, &read);
+   szvalue[len] = 0;
+   return hr;
+}
+
+HRESULT BiffReader::GetString(std::string &szvalue)
+{
+   ULONG read = 0;
+   HRESULT hr;
+   int len;
+
+   szvalue = "";
+   if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
+      return hr;
+
+   m_bytesinrecordremaining -= len + (int)sizeof(int);
+   szvalue.resize(len);
+   hr = ReadBytes(&szvalue[0], len, &read);
    szvalue[len] = 0;
    return hr;
 }

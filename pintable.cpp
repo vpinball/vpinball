@@ -6766,16 +6766,16 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 }
 
 
-Texture* PinTable::GetImage(const char * const szName) const
+Texture* PinTable::GetImage(const std::string &szName) const
 {
-   if (szName == NULL || szName[0] == '\0')
+   if (szName[0] == '\0')
       return NULL;
 
    // during playback, we use the hashtable for lookup
    if (!m_textureMap.empty())
    {
       std::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator>::const_iterator
-         it = m_textureMap.find(szName);
+         it = m_textureMap.find(szName.c_str());
       if (it != m_textureMap.end())
          return it->second;
       else
@@ -6783,7 +6783,7 @@ Texture* PinTable::GetImage(const char * const szName) const
    }
 
    for (size_t i = 0; i < m_vimage.size(); i++)
-      if (!lstrcmpi(m_vimage[i]->m_szInternalName, szName))
+      if (!lstrcmpi(m_vimage[i]->m_szInternalName, szName.c_str()))
          return m_vimage[i];
 
    return NULL;
@@ -7027,84 +7027,84 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
                case eItemDispReel:
                {
                    DispReel * const pReel = (DispReel*)pEdit;
-                   if (_stricmp(pReel->m_d.m_szImage, ppi->m_szName) == 0)
+                   if(pReel->m_d.m_szImage == std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemPrimitive:
                {
                    Primitive * const pPrim = (Primitive*)pEdit;
-                   if ((_stricmp(pPrim->m_d.m_szImage, ppi->m_szName) == 0) || (_stricmp(pPrim->m_d.m_szNormalMap, ppi->m_szName) == 0))
+                   if ((pPrim->m_d.m_szImage == std::string(ppi->m_szName)) || (_stricmp(pPrim->m_d.m_szNormalMap, ppi->m_szName) == 0))
                        inUse = true;
                    break;
                }
                case eItemRamp:
                {
                    Ramp * const pRamp = (Ramp*)pEdit;
-                   if (_stricmp(pRamp->m_d.m_szImage, ppi->m_szName) == 0)
+                   if (pRamp->m_d.m_szImage==std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemSurface:
                {
                    Surface * const pSurf = (Surface*)pEdit;
-                   if ((_stricmp(pSurf->m_d.m_szImage, ppi->m_szName) == 0) || (_stricmp(pSurf->m_d.m_szSideImage, ppi->m_szName) == 0))
+                   if ((pSurf->m_d.m_szImage==std::string(ppi->m_szName)) || (_stricmp(pSurf->m_d.m_szSideImage, ppi->m_szName) == 0))
                        inUse = true;
                    break;
                }
                case eItemDecal:
                {
                    Decal * const pDecal = (Decal*)pEdit;
-                   if (_stricmp(pDecal->m_d.m_szImage, ppi->m_szName) == 0)
+                   if (pDecal->m_d.m_szImage== std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemFlasher:
                {
                    Flasher * const pFlash = (Flasher*)pEdit;
-                   if ((_stricmp(pFlash->m_d.m_szImageA, ppi->m_szName) == 0) || (_stricmp(pFlash->m_d.m_szImageB, ppi->m_szName) == 0))
+                   if ((pFlash->m_d.m_szImageA==std::string(ppi->m_szName)) || (_stricmp(pFlash->m_d.m_szImageB, ppi->m_szName) == 0))
                        inUse = true;
                    break;
                }
                case eItemFlipper:
                {
                    Flipper * const pFlip = (Flipper*)pEdit;
-                   if (_stricmp(pFlip->m_d.m_szImage, ppi->m_szName) == 0)
+                   if (pFlip->m_d.m_szImage==std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemHitTarget:
                {
                    HitTarget * const pHit = (HitTarget*)pEdit;
-                   if (_stricmp(pHit->m_d.m_szImage, ppi->m_szName) == 0)
+                   if (pHit->m_d.m_szImage==std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemLight:
                {
                    Light * const pLight = (Light*)pEdit;
-                   if (_stricmp(pLight->m_d.m_szImage, ppi->m_szName) == 0)
+                   if (pLight->m_d.m_szImage==std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemPlunger:
                {
                    Plunger * const pPlung = (Plunger*)pEdit;
-                   if (_stricmp(pPlung->m_d.m_szImage, ppi->m_szName) == 0)
+                   if (pPlung->m_d.m_szImage==std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemRubber:
                {
                    Rubber * const pRub = (Rubber*)pEdit;
-                   if (_stricmp(pRub->m_d.m_szImage, ppi->m_szName) == 0)
+                   if (pRub->m_d.m_szImage==std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemSpinner:
                {
                    Spinner * const pSpin = (Spinner*)pEdit;
-                   if (_stricmp(pSpin->m_d.m_szImage, ppi->m_szName) == 0)
+                   if (pSpin->m_d.m_szImage==std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }

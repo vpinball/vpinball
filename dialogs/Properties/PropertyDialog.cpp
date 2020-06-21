@@ -405,22 +405,22 @@ void PropertyDialog::DeleteAllTabs()
     m_backglassView = false;
 }
 
-void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, CComboBox &combo, const char selectName[MAXTOKEN])
+void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, CComboBox &combo, const std::string &selectName)
 {
     bool texelFound = false;
     for (auto texel : contentList)
     {
-        if (strncmp(texel->m_szName, selectName, MAXTOKEN) == 0)
+        if (strncmp(texel->m_szName, selectName.c_str(), MAXTOKEN) == 0)
             texelFound = true;
     }
-    if (combo.FindStringExact(1, selectName) == CB_ERR || !texelFound)
+    if (combo.FindStringExact(1, selectName.c_str()) == CB_ERR || !texelFound)
     {
         combo.ResetContent();
         combo.AddString(_T("<None>"));
         for (size_t i = 0; i < contentList.size(); i++)
             combo.AddString(contentList[i]->m_szName);
     }
-    combo.SetCurSel(combo.FindStringExact(1, selectName));
+    combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
 void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentList, CComboBox &combo, const char *selectName)
@@ -1129,7 +1129,7 @@ void BasePropertyDialog::UpdateBaseProperties(ISelect *psel, BaseProperty *prope
             CHECK_UPDATE_ITEM(property->m_scatter, PropertyDialog::GetFloatTextbox(*m_baseScatterAngleEdit), psel);
             break;
         case DISPID_Image:
-            CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(property->m_szImage, *m_baseImageCombo, psel);
+            CHECK_UPDATE_COMBO_TEXT_STRING(property->m_szImage, *m_baseImageCombo, psel);
             break;
         case IDC_MATERIAL_COMBO:
             CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(property->m_szMaterial, *m_baseMaterialCombo, psel);
