@@ -2210,7 +2210,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_PROP_TAB,"SysTabControl32",WS_TABSTOP,7,37,171,370
     EDITTEXT        IDC_NAME_EDIT,8,17,169,14,ES_AUTOHSCROLL
-    LTEXT           "The current selection contains multiple object types. Select either a single object or a group of objects of the same type to edit properties.",IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC,35,1,143,35
+    LTEXT           "The current selection contains multiple object types. Select either a single object or a group of objects of the same type to edit properties.",IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC,8,1,143,35
     CTEXT           "ElementType",IDC_STATIC_ELEMENT_TYPE,8,3,169,11,0,WS_EX_STATICEDGE
 END
 

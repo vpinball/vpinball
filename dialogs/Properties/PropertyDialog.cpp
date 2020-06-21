@@ -538,6 +538,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
             {
                 m_multipleElementsStatic.ShowWindow(SW_SHOW);
                 m_nameEdit.ShowWindow(SW_HIDE);
+                m_elementTypeName.ShowWindow(SW_HIDE);
                 m_tab.ShowWindow(SW_HIDE);
                 ShowWindow(SW_SHOW);
                 BasePropertyDialog::m_disableEvents = false;
@@ -552,6 +553,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
     {
         m_multipleElementsStatic.ShowWindow(SW_HIDE);
         m_nameEdit.ShowWindow(SW_SHOW);
+        m_elementTypeName.ShowWindow(SW_SHOW);
         m_tab.ShowWindow(SW_SHOW);
     }
 
@@ -622,6 +624,7 @@ BOOL PropertyDialog::OnInitDialog()
     m_resizer.Initialize(*this, CRect(0, 0, 243, 308));
     m_resizer.AddChild(m_elementTypeName, topcenter, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_nameEdit, topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_multipleElementsStatic, topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_tab, topcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
     return TRUE;
 }
