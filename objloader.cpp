@@ -92,7 +92,7 @@ bool WaveFrontObjLoadMaterial(const char *filename, Material * const mat)
       {
          char buf[MAXNAMEBUFFER];
          fscanf_s(f, "%s\n", buf, MAXNAMEBUFFER);
-         mat->m_szName = std::string(buf);
+         mat->m_szName = buf;
       }
       else if (strcmp(lineHeader, "Ns") == 0)
       {

@@ -3090,7 +3090,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    ReadInfoValue(pstg, L"TableName", &txt, hcrypthash);
    if (txt != nullptr)
    {
-       m_szTableName = std::string(txt);
+       m_szTableName = txt;
        delete(txt);
    }
 
@@ -3098,7 +3098,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    ReadInfoValue(pstg, L"AuthorName", &txt, hcrypthash);
    if (txt != nullptr)
    {
-       m_szAuthor = std::string(txt);
+       m_szAuthor = txt;
        delete(txt);
    }
 
@@ -3106,14 +3106,14 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    ReadInfoValue(pstg, L"TableVersion", &txt, hcrypthash);
    if (txt != nullptr)
    {
-       m_szVersion = std::string(txt);
+       m_szVersion = txt;
        delete(txt);
    }
    txt = nullptr;
    ReadInfoValue(pstg, L"ReleaseDate", &txt, hcrypthash);
    if (txt != nullptr)
    {
-       m_szReleaseDate = std::string(txt);
+       m_szReleaseDate = txt;
        delete(txt);
    }
 
@@ -3121,7 +3121,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    ReadInfoValue(pstg, L"AuthorEmail", &txt, hcrypthash);
    if (txt != nullptr)
    {
-       m_szAuthorEMail = std::string(txt);
+       m_szAuthorEMail = txt;
        delete(txt);
    }
 
@@ -3129,14 +3129,14 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    ReadInfoValue(pstg, L"AuthorWebSite", &txt, hcrypthash);
    if (txt != nullptr)
    {
-       m_szWebSite = std::string(txt);
+       m_szWebSite = txt;
        delete(txt);
    }
    txt = nullptr;
    ReadInfoValue(pstg, L"TableBlurb", &txt, hcrypthash);
    if (txt != nullptr)
    {
-       m_szBlurb = std::string(txt);
+       m_szBlurb = txt;
        delete(txt);
    }
 
@@ -3144,7 +3144,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    ReadInfoValue(pstg, L"TableDescription", &txt, hcrypthash);
    if (txt != nullptr)
    {
-       m_szDescription = std::string(txt);
+       m_szDescription = txt;
        delete(txt);
    }
 
@@ -3152,7 +3152,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    ReadInfoValue(pstg, L"TableRules", &txt, hcrypthash);
    if (txt != nullptr)
    {
-       m_szRules = std::string(txt);
+       m_szRules = txt;
        delete(txt);
    }
 
@@ -3160,7 +3160,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    ReadInfoValue(pstg, L"TableSaveDate", &txt, NULL);
    if (txt != nullptr)
    {
-       m_szDateSaved = std::string(txt);
+       m_szDateSaved = txt;
        delete(txt);
    }
    char *buffer = NULL;
@@ -6753,7 +6753,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    {
       if (szName[0] && m_pcv && g_pplayer && g_pplayer->m_hwndDebugOutput)
       {
-         const std::string logmsg = "Request to play \"" + std::string(szName) + "\", but sound not found.";
+         const std::string logmsg = std::string("Request to play \"") + szName + "\", but sound not found.";
          m_pcv->AddToDebugOutput(logmsg.c_str());
       }
       return S_OK;
@@ -7049,70 +7049,70 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
                case eItemRamp:
                {
                    Ramp * const pRamp = (Ramp*)pEdit;
-                   if (pRamp->m_d.m_szImage==std::string(ppi->m_szName))
+                   if (pRamp->m_d.m_szImage == std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemSurface:
                {
                    Surface * const pSurf = (Surface*)pEdit;
-                   if ((pSurf->m_d.m_szImage==std::string(ppi->m_szName)) || (_stricmp(pSurf->m_d.m_szSideImage, ppi->m_szName) == 0))
+                   if ((pSurf->m_d.m_szImage == std::string(ppi->m_szName)) || (_stricmp(pSurf->m_d.m_szSideImage, ppi->m_szName) == 0))
                        inUse = true;
                    break;
                }
                case eItemDecal:
                {
                    Decal * const pDecal = (Decal*)pEdit;
-                   if (pDecal->m_d.m_szImage== std::string(ppi->m_szName))
+                   if (pDecal->m_d.m_szImage == std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemFlasher:
                {
                    Flasher * const pFlash = (Flasher*)pEdit;
-                   if ((pFlash->m_d.m_szImageA==std::string(ppi->m_szName)) || (_stricmp(pFlash->m_d.m_szImageB, ppi->m_szName) == 0))
+                   if ((pFlash->m_d.m_szImageA == std::string(ppi->m_szName)) || (_stricmp(pFlash->m_d.m_szImageB, ppi->m_szName) == 0))
                        inUse = true;
                    break;
                }
                case eItemFlipper:
                {
                    Flipper * const pFlip = (Flipper*)pEdit;
-                   if (pFlip->m_d.m_szImage==std::string(ppi->m_szName))
+                   if (pFlip->m_d.m_szImage == std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemHitTarget:
                {
                    HitTarget * const pHit = (HitTarget*)pEdit;
-                   if (pHit->m_d.m_szImage==std::string(ppi->m_szName))
+                   if (pHit->m_d.m_szImage == std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemLight:
                {
                    Light * const pLight = (Light*)pEdit;
-                   if (pLight->m_d.m_szImage==std::string(ppi->m_szName))
+                   if (pLight->m_d.m_szImage == std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemPlunger:
                {
                    Plunger * const pPlung = (Plunger*)pEdit;
-                   if (pPlung->m_d.m_szImage==std::string(ppi->m_szName))
+                   if (pPlung->m_d.m_szImage == std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemRubber:
                {
                    Rubber * const pRub = (Rubber*)pEdit;
-                   if (pRub->m_d.m_szImage==std::string(ppi->m_szName))
+                   if (pRub->m_d.m_szImage == std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
                case eItemSpinner:
                {
                    Spinner * const pSpin = (Spinner*)pEdit;
-                   if (pSpin->m_d.m_szImage==std::string(ppi->m_szName))
+                   if (pSpin->m_d.m_szImage == std::string(ppi->m_szName))
                        inUse = true;
                    break;
                }
@@ -7184,7 +7184,7 @@ void PinTable::AddMaterial(Material * const pmat)
    if (pmat->m_szName.empty() || pmat->m_szName == "dummyMaterial")
       pmat->m_szName = "Material";
 
-   if (!IsMaterialNameUnique(pmat->m_szName) || pmat->m_szName==std::string("Material"))
+   if (!IsMaterialNameUnique(pmat->m_szName) || pmat->m_szName == std::string("Material"))
    {
       char textBuf[MAXNAMEBUFFER];
       do
@@ -7192,7 +7192,7 @@ void PinTable::AddMaterial(Material * const pmat)
          sprintf_s(textBuf, "%s%i", pmat->m_szName.c_str(), suffix);
          suffix++;
       } while (!IsMaterialNameUnique(textBuf));
-      pmat->m_szName = std::string(textBuf);
+      pmat->m_szName = textBuf;
    }
 
    m_materials.push_back(pmat);

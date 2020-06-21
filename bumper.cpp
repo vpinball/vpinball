@@ -1107,7 +1107,7 @@ STDMETHODIMP Bumper::put_CapMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
-   m_d.m_szCapMaterial = std::string(buf);
+   m_d.m_szCapMaterial = buf;
 
    return S_OK;
 }
@@ -1126,14 +1126,14 @@ STDMETHODIMP Bumper::put_RingMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
-   m_d.m_szRingMaterial = std::string(buf);
+   m_d.m_szRingMaterial = buf;
+
    return S_OK;
 }
 
 STDMETHODIMP Bumper::get_BaseMaterial(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szBaseMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -1144,14 +1144,14 @@ STDMETHODIMP Bumper::put_BaseMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
-   m_d.m_szBaseMaterial = std::string(buf);
+   m_d.m_szBaseMaterial = buf;
+
    return S_OK;
 }
 
 STDMETHODIMP Bumper::get_SkirtMaterial(BSTR *pVal)
 {
    WCHAR wz[512];
-
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSkirtMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -1162,7 +1162,8 @@ STDMETHODIMP Bumper::put_SkirtMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
-   m_d.m_szSkirtMaterial = std::string(buf);
+   m_d.m_szSkirtMaterial = buf;
+
    return S_OK;
 }
 

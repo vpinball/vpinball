@@ -374,7 +374,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage="";
    else
-      m_d.m_szImage = std::string(buf);
+      m_d.m_szImage = buf;
    hr = LoadValueString(strKeyName, "NormalMap", m_d.m_szNormalMap, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
        m_d.m_szNormalMap[0] = 0;
@@ -2027,7 +2027,7 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
    }
-   m_d.m_szImage = std::string(szImage);
+   m_d.m_szImage = szImage;
 
    return S_OK;
 }
@@ -2172,7 +2172,7 @@ STDMETHODIMP Primitive::put_Material(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
-   m_d.m_szMaterial = std::string(buf);
+   m_d.m_szMaterial = buf;
 
    return S_OK;
 }
@@ -2821,7 +2821,8 @@ STDMETHODIMP Primitive::put_PhysicsMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
-   m_d.m_szPhysicsMaterial = std::string(buf);
+   m_d.m_szPhysicsMaterial = buf;
+
    return S_OK;
 }
 

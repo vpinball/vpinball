@@ -47,7 +47,7 @@ void DispReel::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage="";
    else
-      m_d.m_szImage = std::string(buf);
+      m_d.m_szImage = buf;
 
    hr = LoadValueString("DefaultProps\\Ramp", "Sound", m_d.m_szSound, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -719,7 +719,7 @@ STDMETHODIMP DispReel::put_Image(BSTR newVal)
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
    }
-   m_d.m_szImage = std::string(szImage);
+   m_d.m_szImage = szImage;
 
    return S_OK;
 }

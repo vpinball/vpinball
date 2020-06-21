@@ -1066,7 +1066,7 @@ STDMETHODIMP Kicker::put_Material(BSTR newVal)
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
 
    STARTUNDO
-   m_d.m_szMaterial = std::string(buf);
+   m_d.m_szMaterial = buf;
    STOPUNDO
 
    return S_OK;
