@@ -320,7 +320,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
 
       textBuf = "";
       if (firstImage[0] != 0)
-         textBuf = firstImage;
+         textBuf.append(firstImage);
       if (secondImage[0] != 0)
       {
          if (firstImage[0] != 0)
@@ -469,13 +469,13 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    }
    else if (piedit->GetItemType() == eItemHitTarget)
    {
-      HitTarget *const hitTraget = (HitTarget*)piedit;
-      if (IsValidString(hitTraget->m_d.m_szImage))
-         textBuf = hitTraget->m_d.m_szImage;
+      HitTarget *const hitTarget = (HitTarget*)piedit;
+      if (IsValidString(hitTarget->m_d.m_szImage))
+         textBuf = hitTarget->m_d.m_szImage;
       ListView_SetItemText(m_hElementList, idx, 1, "Target");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
-      if (IsValidString(hitTraget->m_d.m_szMaterial))
-         textBuf = std::string(hitTraget->m_d.m_szMaterial);
+      if (IsValidString(hitTarget->m_d.m_szMaterial))
+         textBuf = std::string(hitTarget->m_d.m_szMaterial);
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
    }
 

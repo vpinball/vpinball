@@ -82,7 +82,8 @@ void Rubber::SetDefaults(bool fromMouseClick)
    const HRESULT hr = LoadValueString(strKeyName, "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage="";
-   m_d.m_szImage = std::string(buf);
+   else
+      m_d.m_szImage = std::string(buf);
 
    m_d.m_hitEvent = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "HitEvent", false) : false;
 
@@ -938,6 +939,7 @@ STDMETHODIMP Rubber::put_Material(BSTR newVal)
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
    m_d.m_szMaterial = std::string(buf);
+
    return S_OK;
 }
 
@@ -1186,9 +1188,10 @@ STDMETHODIMP Rubber::get_PhysicsMaterial(BSTR *pVal)
 
 STDMETHODIMP Rubber::put_PhysicsMaterial(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
+    char buf[MAXNAMEBUFFER];
     WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
     m_d.m_szPhysicsMaterial = std::string(buf);
+
     return S_OK;
 }
 

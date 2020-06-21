@@ -344,7 +344,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                fread(&scatterAngle, sizeof(float), 1, f);
 
                Material * const pmat = new Material(mat.fWrapLighting, mat.fRoughness, dequantizeUnsigned<8>(mat.fGlossyImageLerp), dequantizeUnsigned<8>(mat.fThickness), mat.fEdge, dequantizeUnsigned<7>(mat.bOpacityActive_fEdgeAlpha >> 1), mat.fOpacity, mat.cBase, mat.cGlossy, mat.cClearcoat, mat.bIsMetal, !!(mat.bOpacityActive_fEdgeAlpha & 1), elasticity, elasticityFalloff, friction, scatterAngle);
-               pmat->m_szName = mat.szName;
+               pmat->m_szName = std::string(mat.szName);
 
                pt->AddMaterial(pmat);
                pt->AddListMaterial(m_hMaterialList, pmat);
@@ -426,8 +426,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                   mat.fOpacity = pmat->m_fOpacity;
                   mat.bOpacityActive_fEdgeAlpha = pmat->m_bOpacityActive ? 1 : 0;
                   mat.bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(pmat->m_fEdgeAlpha, 0.f, 1.f)) << 1;
-
-                  pmat->m_szName = std::string(mat.szName);
+                  memcpy(mat.szName, pmat->m_szName.c_str(), MAXNAMEBUFFER);
 
                   fwrite(&mat, sizeof(SaveMaterial), 1, f);
                   fwrite(&pmat->m_fElasticity, sizeof(float), 1, f);
@@ -554,7 +553,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                      sprintf_s(textBuf, "%s%i", pinfo->item.pszText, suffix);
                      suffix++;
                   } while (!pt->IsMaterialNameUnique(textBuf));
-                  pmat->m_szName = std::string(pinfo->item.pszText);
+                  pmat->m_szName = std::string(textBuf);
                   ListView_SetItemText(m_hMaterialList, pinfo->item.iItem, 0, (LPSTR)pmat->m_szName.c_str());
                }
                pt->SetNonUndoableDirty(eSaveDirty);
