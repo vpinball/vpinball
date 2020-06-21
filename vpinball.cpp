@@ -1218,22 +1218,13 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
           consumed = !!m_collectionMngDlg.IsDialogMessage(*pmsg);
       if (!consumed && m_dimensionDialog.IsWindow())
           consumed = !!m_dimensionDialog.IsDialogMessage(*pmsg);
-/*
-      if (!consumed && m_toolbarDialog && m_toolbarDialog->IsWindow())
-          consumed = !!m_toolbarDialog->IsDialogMessage(*pmsg);
-*/
+  
       if (!consumed && m_toolbarDialog)
          consumed = m_toolbarDialog->PreTranslateMessage(pmsg);
       if (!consumed && m_propertyDialog)
          consumed = m_propertyDialog->PreTranslateMessage(pmsg);
       if (!consumed && m_layersListDialog)
          consumed = m_layersListDialog->PreTranslateMessage(pmsg);
-/*
-      if (!consumed && m_propertyDialog && m_propertyDialog->IsWindow())
-          consumed = !!m_propertyDialog->IsSubDialogMessage(*pmsg);
-      if (!consumed && m_layersListDialog && m_layersListDialog->IsWindow())
-          consumed = !!m_layersListDialog->IsDialogMessage(*pmsg);
-*/
     }
     return consumed;
 }
