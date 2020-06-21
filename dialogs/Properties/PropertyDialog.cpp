@@ -423,22 +423,22 @@ void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList,
     combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
-void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentList, CComboBox &combo, const char *selectName)
+void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentList, CComboBox &combo, const std::string &selectName)
 {
     bool matFound = false;
     for (auto mat : contentList)
     {
-        if (strncmp(mat->m_szName, selectName, MAXNAMEBUFFER) == 0)
+        if (mat->m_szName==selectName)
             matFound = true;
     }
-    if(combo.FindStringExact(1, selectName) == CB_ERR || !matFound)
+    if(combo.FindStringExact(1, selectName.c_str()) == CB_ERR || !matFound)
     {
         combo.ResetContent();
         combo.AddString(_T("<None>"));
         for (size_t i = 0; i < contentList.size(); i++)
-            combo.AddString(contentList[i]->m_szName);
+            combo.AddString(contentList[i]->m_szName.c_str());
     }
-    combo.SetCurSel(combo.FindStringExact(1, selectName));
+    combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
 void PropertyDialog::UpdateSurfaceComboBox(const PinTable * const ptable, CComboBox &combo, const char *selectName)
@@ -1132,10 +1132,10 @@ void BasePropertyDialog::UpdateBaseProperties(ISelect *psel, BaseProperty *prope
             CHECK_UPDATE_COMBO_TEXT_STRING(property->m_szImage, *m_baseImageCombo, psel);
             break;
         case IDC_MATERIAL_COMBO:
-            CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(property->m_szMaterial, *m_baseMaterialCombo, psel);
+            CHECK_UPDATE_COMBO_TEXT_STRING(property->m_szMaterial, *m_baseMaterialCombo, psel);
             break;
         case IDC_MATERIAL_COMBO4:
-            CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(property->m_szPhysicsMaterial, *m_basePhysicsMaterialCombo, psel);
+            CHECK_UPDATE_COMBO_TEXT_STRING(property->m_szPhysicsMaterial, *m_basePhysicsMaterialCombo, psel);
             break;
         case IDC_OVERWRITE_MATERIAL_SETTINGS:
             CHECK_UPDATE_ITEM(property->m_overwritePhysics, PropertyDialog::GetCheckboxState(m_hOverwritePhysicsCheck), psel);

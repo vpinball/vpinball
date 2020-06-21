@@ -6,8 +6,8 @@ Plunger::Plunger()
    m_vertexBuffer = NULL;
    m_indexBuffer = NULL;
    m_d.m_szImage = "";
-   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
-   memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
+   m_d.m_szMaterial = "";
+   m_d.m_szPhysicsMaterial = "";
    memset(m_d.m_szSurface, 0, MAXTOKEN);
 }
 
@@ -1144,7 +1144,7 @@ STDMETHODIMP Plunger::put_Type(PlungerType newVal)
 STDMETHODIMP Plunger::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1152,7 +1152,9 @@ STDMETHODIMP Plunger::get_Material(BSTR *pVal)
 
 STDMETHODIMP Plunger::put_Material(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   m_d.m_szMaterial = std::string(buf);
 
    return S_OK;
 }

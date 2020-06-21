@@ -19,8 +19,8 @@ Light::Light() : m_lightcenter(this)
    m_propVisual = NULL;
    m_updateBulbLightHeight = false;
    m_d.m_szImage = "";
-   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
-   memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
+   m_d.m_szMaterial = "";
+   m_d.m_szPhysicsMaterial = "";
    memset(m_d.m_szSurface, 0, MAXTOKEN);
 }
 

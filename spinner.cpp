@@ -12,8 +12,8 @@ Spinner::Spinner()
    m_plateIndexBuffer = 0;
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
    m_d.m_szImage = "";
-   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
-   memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
+   m_d.m_szMaterial = "";
+   m_d.m_szPhysicsMaterial = "";
    memset(m_d.m_szSurface, 0, MAXTOKEN);
 }
 
@@ -317,8 +317,8 @@ void Spinner::ExportMesh(FILE *f)
       WaveFrontObj_WriteVertexInfo(f, transformedVertices.data(), spinnerBracketNumVertices);
 
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+      WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
       WaveFrontObj_WriteFaceInfoList(f, spinnerBracketIndices, spinnerBracketNumFaces);
       WaveFrontObj_UpdateFaceOffset(spinnerBracketNumVertices);
 
@@ -683,7 +683,7 @@ STDMETHODIMP Spinner::put_Damping(float newVal)
 STDMETHODIMP Spinner::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -691,8 +691,9 @@ STDMETHODIMP Spinner::get_Material(BSTR *pVal)
 
 STDMETHODIMP Spinner::put_Material(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   m_d.m_szMaterial = std::string(buf);
    return S_OK;
 }
 

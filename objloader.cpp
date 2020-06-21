@@ -90,7 +90,9 @@ bool WaveFrontObjLoadMaterial(const char *filename, Material * const mat)
       }
       if (strcmp(lineHeader, "newmtl") == 0)
       {
-         fscanf_s(f, "%s\n", mat->m_szName, MAXNAMEBUFFER);
+         char buf[MAXNAMEBUFFER];
+         fscanf_s(f, "%s\n", buf, MAXNAMEBUFFER);
+         mat->m_szName = std::string(buf);
       }
       else if (strcmp(lineHeader, "Ns") == 0)
       {

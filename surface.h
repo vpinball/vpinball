@@ -10,9 +10,9 @@ public:
    TimerDataRoot m_tdr;
    float m_slingshot_threshold;	// speed at which ball needs to trigger slingshot 
    char m_szSideImage[MAXTOKEN];
-   char m_szTopMaterial[MAXNAMEBUFFER];
-   char m_szSideMaterial[MAXNAMEBUFFER];
-   char m_szSlingShotMaterial[MAXNAMEBUFFER];
+   std::string m_szTopMaterial;
+   std::string m_szSideMaterial;
+   std::string m_szSlingShotMaterial;
    float m_heightbottom;
    float m_heighttop;
    float m_slingshotforce;

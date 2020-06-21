@@ -19,10 +19,10 @@ public:
    float m_ringDropOffset;
    U32 m_time_msec;
    TimerDataRoot m_tdr;
-   char m_szCapMaterial[MAXNAMEBUFFER];
-   char m_szBaseMaterial[MAXNAMEBUFFER];
-   char m_szSkirtMaterial[MAXNAMEBUFFER];
-   char m_szRingMaterial[MAXNAMEBUFFER];
+   std::string m_szCapMaterial;
+   std::string m_szBaseMaterial;
+   std::string m_szSkirtMaterial;
+   std::string m_szRingMaterial;
    char m_szSurface[MAXTOKEN];
    bool m_capVisible;
    bool m_baseVisible;

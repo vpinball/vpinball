@@ -233,7 +233,7 @@ public:
 
     static void UpdateTextureComboBox(const vector<Texture*>& contentList, CComboBox &combo, const std::string &selectName);
     static void UpdateComboBox(const vector<string>& contentList, CComboBox &combo, const char *selectName);
-    static void UpdateMaterialComboBox(const vector<Material *>& contentList, CComboBox &combo, const char *selectName);
+    static void UpdateMaterialComboBox(const vector<Material *>& contentList, CComboBox &combo, const std::string &selectName);
     static void UpdateSurfaceComboBox(const PinTable * const ptable, CComboBox &combo, const char *selectName);
     static void UpdateSoundComboBox(const PinTable *const ptable, CComboBox &combo, const char *selectName);
     static void UpdateCollectionComboBox(const PinTable *const ptable, CComboBox &combo, const char *selectName);

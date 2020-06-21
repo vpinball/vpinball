@@ -16,7 +16,7 @@ Kicker::Kicker()
    m_indexBuffer = NULL;
    m_plateVertexBuffer = NULL;
    m_plateIndexBuffer = NULL;
-   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
+   m_d.m_szMaterial = "";
    memset(m_d.m_szSurface, 0, MAXTOKEN);
    m_ptable = NULL;
    m_numVertices = 0;
@@ -316,8 +316,8 @@ void Kicker::ExportMesh(FILE *f)
    WaveFrontObj_WriteObjectName(f, name);
    WaveFrontObj_WriteVertexInfo(f, vertices, num_vertices);
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
-   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+   WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
+   WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
    WaveFrontObj_WriteFaceInfoList(f, indices, num_indices);
    WaveFrontObj_UpdateFaceOffset(num_vertices);
    delete[] vertices;
@@ -1068,7 +1068,7 @@ STDMETHODIMP Kicker::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1077,9 +1077,9 @@ STDMETHODIMP Kicker::get_Material(BSTR *pVal)
 STDMETHODIMP Kicker::put_Material(BSTR newVal)
 {
    STARTUNDO
-
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-
+      char buf[MAXNAMEBUFFER];
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+      m_d.m_szMaterial = std::string(buf);
    STOPUNDO
 
       return S_OK;

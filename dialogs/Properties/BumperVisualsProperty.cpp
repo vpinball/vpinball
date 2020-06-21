@@ -73,16 +73,16 @@ void BumperVisualsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case IDC_MATERIAL_COMBO:
-                CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(bumper->m_d.m_szCapMaterial, m_capMaterialCombo, bumper);
+                CHECK_UPDATE_COMBO_TEXT_STRING(bumper->m_d.m_szCapMaterial, m_capMaterialCombo, bumper);
                 break;
             case IDC_MATERIAL_COMBO2:
-                CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(bumper->m_d.m_szBaseMaterial, m_bumpBaseMaterialCombo, bumper);
+               CHECK_UPDATE_COMBO_TEXT_STRING(bumper->m_d.m_szBaseMaterial, m_bumpBaseMaterialCombo, bumper);
                 break;
             case IDC_MATERIAL_COMBO3:
-                CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(bumper->m_d.m_szSkirtMaterial, m_skirtMaterialCombo, bumper);
+               CHECK_UPDATE_COMBO_TEXT_STRING(bumper->m_d.m_szSkirtMaterial, m_skirtMaterialCombo, bumper);
                 break;
             case IDC_MATERIAL_COMBO4:
-                CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(bumper->m_d.m_szRingMaterial, m_ringMaterialCombo, bumper);
+               CHECK_UPDATE_COMBO_TEXT_STRING(bumper->m_d.m_szRingMaterial, m_ringMaterialCombo, bumper);
                 break;
             case IDC_BUMPER_RADIUS_EDIT:
                 CHECK_UPDATE_ITEM(bumper->m_d.m_radius, PropertyDialog::GetFloatTextbox(m_radiusEdit), bumper);

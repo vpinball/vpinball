@@ -85,8 +85,8 @@ Flipper::Flipper()
    m_indexBuffer = NULL;
    m_ptable = NULL;
    m_d.m_szImage = "";
-   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
-   memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
+   m_d.m_szMaterial = "";
+   m_d.m_szPhysicsMaterial = "";
 }
 
 Flipper::~Flipper()
@@ -712,8 +712,8 @@ void Flipper::ExportMesh(FILE *f)
    WaveFrontObj_WriteObjectName(f, subObjName);
    WaveFrontObj_WriteVertexInfo(f, flipper, flipperBaseVertices);
    const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
-   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+   WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
+   WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
    WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumIndices);
    WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
    if (m_d.m_rubberthickness > 0.f)
@@ -739,8 +739,8 @@ void Flipper::ExportMesh(FILE *f)
       WaveFrontObj_WriteObjectName(f, subObjName);
       WaveFrontObj_WriteVertexInfo(f, &flipper[flipperBaseVertices], flipperBaseVertices);
       mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szRubberMaterial, NULL, mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szRubberMaterial);
+      WaveFrontObj_WriteMaterial(m_d.m_szRubberMaterial.c_str(), NULL, mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szRubberMaterial.c_str());
       WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumIndices);
       WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
    }
@@ -1210,7 +1210,7 @@ STDMETHODIMP Flipper::put_Surface(BSTR newVal)
 STDMETHODIMP Flipper::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1218,7 +1218,9 @@ STDMETHODIMP Flipper::get_Material(BSTR *pVal)
 
 STDMETHODIMP Flipper::put_Material(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   m_d.m_szMaterial = std::string(buf);
 
    return S_OK;
 }
@@ -1269,7 +1271,7 @@ STDMETHODIMP Flipper::put_OverridePhysics(PhysicsSet newVal)
 STDMETHODIMP Flipper::get_RubberMaterial(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szRubberMaterial, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szRubberMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1277,8 +1279,9 @@ STDMETHODIMP Flipper::get_RubberMaterial(BSTR *pVal)
 
 STDMETHODIMP Flipper::put_RubberMaterial(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szRubberMaterial, MAXNAMEBUFFER, NULL, NULL);
-
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   m_d.m_szRubberMaterial = std::string(buf);
    return S_OK;
 }
 
