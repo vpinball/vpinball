@@ -261,36 +261,30 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    {
       Surface *const sur = (Surface*)piedit;
       firstImage = "";
-      secondImage = "";
       if (IsValidString(sur->m_d.m_szImage))
          firstImage = sur->m_d.m_szImage;
+      secondImage = "";
       if (IsValidString(sur->m_d.m_szSideImage))
          secondImage = sur->m_d.m_szSideImage;
-      textBuf = "";
-      if (firstImage[0] != 0)
-         textBuf.append(firstImage);
-      if (secondImage[0] != 0)
+      textBuf = firstImage;
+      if (!secondImage.empty())
       {
-         if (firstImage[0] != 0)
+         if (!firstImage.empty())
             textBuf.append("--");
          textBuf.append(secondImage);
-
       }
       ListView_SetItemText(m_hElementList, idx, 1, "Wall");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
-      firstImage[0] = 0;
-      secondImage[0] = 0;
-      textBuf[0] = 0;
+      firstImage = "";
       if (IsValidString(sur->m_d.m_szTopMaterial))
-         firstImage = std::string(sur->m_d.m_szTopMaterial);
+         firstImage = sur->m_d.m_szTopMaterial;
+      secondImage = "";
       if (IsValidString(sur->m_d.m_szSideMaterial))
-         secondImage = std::string(sur->m_d.m_szSideMaterial);
-      textBuf = "";
-      if (firstImage[0] != 0)
-         textBuf.append(firstImage);
-      if (secondImage[0] != 0)
+         secondImage = sur->m_d.m_szSideMaterial;
+      textBuf = firstImage;
+      if (!secondImage.empty())
       {
-         if (firstImage[0] != 0)
+         if (!firstImage.empty())
             textBuf.append("--");
          textBuf.append(secondImage);
       }
@@ -305,25 +299,22 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, "Ramp");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
       if (IsValidString(ramp->m_d.m_szMaterial))
-         textBuf = std::string(ramp->m_d.m_szMaterial);
+         textBuf = ramp->m_d.m_szMaterial;
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
    }
    else if (piedit->GetItemType() == eItemFlasher)
    {
       Flasher *const flasher = (Flasher*)piedit;
       firstImage = "";
-      secondImage = "";
       if (IsValidString(flasher->m_d.m_szImageA))
-         firstImage = std::string(flasher->m_d.m_szImageA);
+         firstImage = flasher->m_d.m_szImageA;
+      secondImage = "";
       if (IsValidString(flasher->m_d.m_szImageB))
-         secondImage = std::string(flasher->m_d.m_szImageB);
-
-      textBuf = "";
-      if (firstImage[0] != 0)
-         textBuf.append(firstImage);
-      if (secondImage[0] != 0)
+         secondImage = flasher->m_d.m_szImageB;
+      textBuf = firstImage;
+      if (!secondImage.empty())
       {
-         if (firstImage[0] != 0)
+         if (!firstImage.empty())
             textBuf.append("--");
          textBuf.append(secondImage);
       }
@@ -339,7 +330,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, "Rubber");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
       if (IsValidString(rubber->m_d.m_szMaterial))
-         textBuf = std::string(rubber->m_d.m_szMaterial);
+         textBuf = rubber->m_d.m_szMaterial;
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
    }
    else if (piedit->GetItemType() == eItemSpinner)
@@ -351,7 +342,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, "Spinner");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
       if (IsValidString(spinner->m_d.m_szMaterial))
-         textBuf = std::string(spinner->m_d.m_szMaterial);
+         textBuf = spinner->m_d.m_szMaterial;
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
    }
    else if (piedit->GetItemType() == eItemKicker)
@@ -360,7 +351,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, "Kicker");
       ListView_SetItemText(m_hElementList, idx, 3, "");
       if (IsValidString(kicker->m_d.m_szMaterial))
-         textBuf = std::string(kicker->m_d.m_szMaterial);
+         textBuf = kicker->m_d.m_szMaterial;
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
    }
    else if (piedit->GetItemType() == eItemLight)
@@ -376,27 +367,25 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    else if (piedit->GetItemType() == eItemBumper)
    {
       Bumper *const bumper = (Bumper*)piedit;
-      std::string thirdImage="";
       firstImage = "";
-      secondImage = "";
-      textBuf = "";
       if (IsValidString(bumper->m_d.m_szBaseMaterial))
-         firstImage = std::string(bumper->m_d.m_szBaseMaterial);
-      if (firstImage[0] != 0)
-         textBuf.append(firstImage);
+         firstImage = bumper->m_d.m_szBaseMaterial;
+      textBuf = firstImage;
+      secondImage = "";
       if (IsValidString(bumper->m_d.m_szCapMaterial))
-         secondImage = std::string(bumper->m_d.m_szCapMaterial);
+         secondImage = bumper->m_d.m_szCapMaterial;
+      std::string thirdImage = "";
       if (IsValidString(bumper->m_d.m_szSkirtMaterial))
-         thirdImage = std::string(bumper->m_d.m_szSkirtMaterial);
-      if (secondImage[0] != 0)
+         thirdImage = bumper->m_d.m_szSkirtMaterial;
+      if (!secondImage.empty())
       {
-         if (firstImage[0] != 0)
+         if (!firstImage.empty())
             textBuf.append("--");
          textBuf.append(secondImage);
       }
-      if (thirdImage[0] != 0)
+      if (!thirdImage.empty())
       {
-         if (firstImage[0] != 0 || secondImage[0] != 0)
+         if (!firstImage.empty() || !secondImage.empty())
             textBuf.append("--");
          textBuf.append(thirdImage);
       }
@@ -415,7 +404,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, "Gate");
       ListView_SetItemText(m_hElementList, idx, 3, "");
       if (IsValidString(gate->m_d.m_szMaterial))
-         textBuf = std::string(gate->m_d.m_szMaterial);
+         textBuf = gate->m_d.m_szMaterial;
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
    }
    else if (piedit->GetItemType() == eItemTrigger)
@@ -424,7 +413,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, "Trigger");
       ListView_SetItemText(m_hElementList, idx, 3, "");
       if (IsValidString(trigger->m_d.m_szMaterial))
-         textBuf = std::string(trigger->m_d.m_szMaterial);
+         textBuf = trigger->m_d.m_szMaterial;
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
    }
    else if (piedit->GetItemType() == eItemTimer)
@@ -445,7 +434,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, "Plunger");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
       if (IsValidString(plunger->m_d.m_szMaterial))
-         textBuf = std::string(plunger->m_d.m_szMaterial);
+         textBuf = plunger->m_d.m_szMaterial;
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
    }
    else if (piedit->GetItemType() == eItemDispReel)
@@ -464,7 +453,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, "Primitive");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
       if (IsValidString(primitive->m_d.m_szMaterial))
-         textBuf = std::string(primitive->m_d.m_szMaterial);
+         textBuf = primitive->m_d.m_szMaterial;
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
    }
    else if (piedit->GetItemType() == eItemHitTarget)
@@ -475,7 +464,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, "Target");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
       if (IsValidString(hitTarget->m_d.m_szMaterial))
-         textBuf = std::string(hitTarget->m_d.m_szMaterial);
+         textBuf = hitTarget->m_d.m_szMaterial;
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
    }
 
