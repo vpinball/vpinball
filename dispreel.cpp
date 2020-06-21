@@ -46,8 +46,8 @@ void DispReel::SetDefaults(bool fromMouseClick)
    hr = LoadValueString("DefaultProps\\Ramp", "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage="";
-
-   m_d.m_szImage = std::string(buf);
+   else
+      m_d.m_szImage = std::string(buf);
 
    hr = LoadValueString("DefaultProps\\Ramp", "Sound", m_d.m_szSound, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)

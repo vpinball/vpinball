@@ -3373,8 +3373,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
          size_t len = m->m_szName.size();
          if (len >= MAXNAMEBUFFER)
             len = MAXNAMEBUFFER - 1;
-         memset(mats->szName, 0, MAXNAMEBUFFER);
-         strncpy_s(mats->szName, m->m_szName.c_str(), len);
+         memset(mats[i].szName, 0, MAXNAMEBUFFER);
+         strncpy_s(mats[i].szName, m->m_szName.c_str(), len);
       }
       bw.WriteStruct(FID(MATE), mats, (int)(sizeof(SaveMaterial)*m_materials.size()));
       SavePhysicsMaterial * const phymats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_materials.size());
@@ -4075,8 +4075,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          pmat->m_bIsMetal = mats[i].bIsMetal;
          pmat->m_bOpacityActive = !!(mats[i].bOpacityActive_fEdgeAlpha & 1);
          pmat->m_fEdgeAlpha = dequantizeUnsigned<7>(mats[i].bOpacityActive_fEdgeAlpha >> 1);
-
-         pmat->m_szName=mats[i].szName;
+         pmat->m_szName = mats[i].szName;
          m_materials.push_back(pmat);
       }
       free(mats);
@@ -6777,7 +6776,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 
 Texture* PinTable::GetImage(const std::string &szName) const
 {
-   if (szName[0] == '\0')
+   if (szName.empty())
       return NULL;
 
    // during playback, we use the hashtable for lookup
@@ -7149,7 +7148,7 @@ void PinTable::ListMaterials(HWND hwndListView)
 bool PinTable::IsMaterialNameUnique(const std::string &name) const
 {
    for (size_t i = 0; i < m_materials.size(); i++)
-      if(m_materials[i]->m_szName!=name)
+      if(m_materials[i]->m_szName==name)
          return false;
 
    return true;
@@ -7668,8 +7667,8 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         const char *szSrc = m_materials[ivar]->m_szName.c_str();
-         DWORD cwch = lstrlen(szSrc) + 1;
+         const char * const szSrc = m_materials[ivar]->m_szName.c_str();
+         const DWORD cwch = m_materials[ivar]->m_szName.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == NULL)
             ShowError("IDC_MATERIAL_COMBO alloc failed");
@@ -7892,7 +7891,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       else
       {
          const char * const szSrc = m_materials[dwCookie]->m_szName.c_str();
-         const DWORD cwch = lstrlen(szSrc) + 1;
+         const DWORD cwch = m_materials[dwCookie]->m_szName.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
          MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);

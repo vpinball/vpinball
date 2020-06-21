@@ -860,12 +860,10 @@ STDMETHODIMP Kicker::get_X(float *pVal)
 STDMETHODIMP Kicker::put_X(float newVal)
 {
    STARTUNDO
-
-      m_d.m_vCenter.x = newVal;
-
+   m_d.m_vCenter.x = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Kicker::get_Y(float *pVal)
@@ -878,9 +876,7 @@ STDMETHODIMP Kicker::get_Y(float *pVal)
 STDMETHODIMP Kicker::put_Y(float newVal)
 {
    STARTUNDO
-
    m_d.m_vCenter.y = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -915,12 +911,9 @@ STDMETHODIMP Kicker::get_Enabled(VARIANT_BOOL *pVal)
 STDMETHODIMP Kicker::put_Enabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
    m_d.m_enabled = VBTOb(newVal);
-
    if (m_phitkickercircle)
       m_phitkickercircle->m_enabled = m_d.m_enabled;
-
    STOPUNDO
 
    return S_OK;
@@ -968,9 +961,7 @@ STDMETHODIMP Kicker::get_HitHeight(float *pVal)
 STDMETHODIMP Kicker::put_HitHeight(float newVal)
 {
    STARTUNDO
-
    m_d.m_hit_height = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -986,9 +977,7 @@ STDMETHODIMP Kicker::get_Orientation(float *pVal)
 STDMETHODIMP Kicker::put_Orientation(float newVal)
 {
    STARTUNDO
-
    m_d.m_orientation = newVal;
-
    STOPUNDO
 
    return S_OK;
@@ -1003,10 +992,9 @@ STDMETHODIMP Kicker::get_Radius(float *pVal)
 STDMETHODIMP Kicker::put_Radius(float newVal)
 {
    STARTUNDO
-
    m_d.m_radius = newVal;
-
    STOPUNDO
+
    return S_OK;
 }
 
@@ -1053,12 +1041,10 @@ STDMETHODIMP Kicker::get_DrawStyle(KickerType *pVal)
 STDMETHODIMP Kicker::put_DrawStyle(KickerType newVal)
 {
    STARTUNDO
-
    m_d.m_kickertype = newVal;
    //legacy handling:
    if (m_d.m_kickertype > KickerCup2)
 	   m_d.m_kickertype = KickerInvisible;
-
    STOPUNDO
 
    return S_OK;
@@ -1076,13 +1062,14 @@ STDMETHODIMP Kicker::get_Material(BSTR *pVal)
 
 STDMETHODIMP Kicker::put_Material(BSTR newVal)
 {
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+
    STARTUNDO
-      char buf[MAXNAMEBUFFER];
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
-      m_d.m_szMaterial = std::string(buf);
+   m_d.m_szMaterial = std::string(buf);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Kicker::BallCntOver(int *pVal)

@@ -172,7 +172,8 @@ void HitTarget::SetDefaults(bool fromMouseClick)
    const HRESULT hr = LoadValueString(strKeyName, "Image", buf, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage="";
-   m_d.m_szImage = std::string(buf);
+   else
+      m_d.m_szImage = std::string(buf);
    m_d.m_targetType = fromMouseClick ? (TargetType)LoadValueIntWithDefault(strKeyName, "TargetType", DropTargetSimple) : DropTargetSimple;
    m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
@@ -1428,8 +1429,8 @@ STDMETHODIMP HitTarget::put_PhysicsMaterial(BSTR newVal)
 {
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
-
    m_d.m_szPhysicsMaterial = std::string(buf);
+
    return S_OK;
 }
 

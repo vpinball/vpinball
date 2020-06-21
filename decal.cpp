@@ -60,7 +60,8 @@ void Decal::SetDefaults(bool fromMouseClick)
    HRESULT hr = LoadValueString("DefaultProps\\Decal", "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage="";
-   m_d.m_szImage = std::string(buf);
+   else
+      m_d.m_szImage = std::string(buf);
 
    hr = LoadValueString("DefaultProps\\Decal", "Surface", m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -359,7 +360,7 @@ void Decal::PreRenderText()
    assert(hbm);
 
    CDC dc;
-   const HDC hdc = dc.CreateCompatibleDC(NULL);
+   /*const HDC hdc =*/ dc.CreateCompatibleDC(NULL);
    const HBITMAP oldBmp = dc.SelectObject(hbm);
 
    dc.SelectObject(dc.GetStockObject(WHITE_BRUSH));

@@ -52,7 +52,8 @@ void Plunger::SetDefaults(bool fromMouseClick)
    HRESULT hr = LoadValueString("DefaultProps\\Plunger", "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage="";
-   m_d.m_szImage = std::string(buf);
+   else
+      m_d.m_szImage = std::string(buf);
 
    m_d.m_animFrames = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Plunger", "AnimFrames", 1) : 1;
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "TimerEnabled", false) : false;

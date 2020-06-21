@@ -219,7 +219,8 @@ void Surface::SetDefaults(bool fromMouseClick)
    hr = LoadValueString(strKeyName, "TopImage", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage="";
-   m_d.m_szImage = std::string(buf);
+   else
+      m_d.m_szImage = std::string(buf);
 
    hr = LoadValueString(strKeyName, "SideImage", m_d.m_szSideImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -1509,6 +1510,7 @@ STDMETHODIMP Surface::put_SideMaterial(BSTR newVal)
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
    m_d.m_szSideMaterial = std::string(buf);
+
    return S_OK;
 }
 
@@ -1526,6 +1528,7 @@ STDMETHODIMP Surface::put_SlingshotMaterial(BSTR newVal)
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
    m_d.m_szSlingShotMaterial = std::string(buf);
+
    return S_OK;
 }
 
@@ -1585,6 +1588,7 @@ STDMETHODIMP Surface::put_TopMaterial(BSTR newVal)
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
    m_d.m_szTopMaterial = std::string(buf);
+
    return S_OK;
 }
 
@@ -1602,6 +1606,7 @@ STDMETHODIMP Surface::put_PhysicsMaterial(BSTR newVal)
     char buf[MAXNAMEBUFFER];
     WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
     m_d.m_szPhysicsMaterial = std::string(buf);
+
     return S_OK;
 }
 

@@ -373,7 +373,8 @@ void Primitive::SetDefaults(bool fromMouseClick)
    HRESULT hr = LoadValueString(strKeyName, "Image", buf, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage="";
-   m_d.m_szImage = std::string(buf);
+   else
+      m_d.m_szImage = std::string(buf);
    hr = LoadValueString(strKeyName, "NormalMap", m_d.m_szNormalMap, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
        m_d.m_szNormalMap[0] = 0;
@@ -2026,7 +2027,6 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
    }
-
    m_d.m_szImage = std::string(szImage);
 
    return S_OK;
@@ -2173,6 +2173,7 @@ STDMETHODIMP Primitive::put_Material(BSTR newVal)
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
    m_d.m_szMaterial = std::string(buf);
+
    return S_OK;
 }
 

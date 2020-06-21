@@ -117,7 +117,7 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(flipper->m_d.m_enabled, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), flipper);
                 break;
             case IDC_MATERIAL_COMBO2:
-               CHECK_UPDATE_COMBO_TEXT_STRING(flipper->m_d.m_szRubberMaterial, m_rubberMaterialCombo, flipper);
+                CHECK_UPDATE_COMBO_TEXT_STRING(flipper->m_d.m_szRubberMaterial, m_rubberMaterialCombo, flipper);
                 break;
 
             default:

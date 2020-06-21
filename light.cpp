@@ -96,7 +96,8 @@ void Light::SetDefaults(bool fromMouseClick)
    HRESULT hr = LoadValueString("DefaultProps\\Light", "OffImage", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage="";
-   m_d.m_szImage = std::string(buf);
+   else
+      m_d.m_szImage = std::string(buf);
 
    hr = LoadValueString("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern, NUM_RGB_BLINK_PATTERN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -1367,7 +1368,6 @@ STDMETHODIMP Light::get_Image(BSTR *pVal)
 STDMETHODIMP Light::put_Image(BSTR newVal)
 {
    char szImage[MAXTOKEN];
-
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
    m_d.m_szImage = std::string(szImage);
 

@@ -157,7 +157,8 @@ void Spinner::SetDefaults(bool fromMouseClick)
    HRESULT hr = LoadValueString("DefaultProps\\Spinner", "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage="";
-   m_d.m_szImage = std::string(buf);
+   else
+      m_d.m_szImage = std::string(buf);
 
    hr = LoadValueString("DefaultProps\\Spinner", "Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -694,6 +695,7 @@ STDMETHODIMP Spinner::put_Material(BSTR newVal)
    char buf[MAXNAMEBUFFER];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
    m_d.m_szMaterial = std::string(buf);
+
    return S_OK;
 }
 

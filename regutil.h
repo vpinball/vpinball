@@ -6,9 +6,9 @@ HRESULT LoadValueFloat(const std::string &szKey, const std::string &szValue, flo
 float   LoadValueFloatWithDefault(const char *szKey, const char *szValue, const float def); 
 
 HRESULT LoadValueInt(const std::string &szKey, const std::string &szValue, int *pint);
-int LoadValueIntWithDefault(const std::string &szKey, const std::string &szValue, const int def);
+int     LoadValueIntWithDefault(const std::string &szKey, const std::string &szValue, const int def);
 
-bool LoadValueBoolWithDefault(const std::string &szKey, const std::string &szValue, const bool def);
+bool    LoadValueBoolWithDefault(const std::string &szKey, const std::string &szValue, const bool def);
 
 
 HRESULT SaveValueString(const std::string &szKey, const std::string &szValue, const char *val);
