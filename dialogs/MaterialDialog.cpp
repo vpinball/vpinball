@@ -344,7 +344,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                fread(&scatterAngle, sizeof(float), 1, f);
 
                Material * const pmat = new Material(mat.fWrapLighting, mat.fRoughness, dequantizeUnsigned<8>(mat.fGlossyImageLerp), dequantizeUnsigned<8>(mat.fThickness), mat.fEdge, dequantizeUnsigned<7>(mat.bOpacityActive_fEdgeAlpha >> 1), mat.fOpacity, mat.cBase, mat.cGlossy, mat.cClearcoat, mat.bIsMetal, !!(mat.bOpacityActive_fEdgeAlpha & 1), elasticity, elasticityFalloff, friction, scatterAngle);
-               memcpy(pmat->m_szName, mat.szName, MAXNAMEBUFFER);
+               pmat->m_szName = mat.szName;
 
                pt->AddMaterial(pmat);
                pt->AddListMaterial(m_hMaterialList, pmat);
@@ -426,7 +426,8 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                   mat.fOpacity = pmat->m_fOpacity;
                   mat.bOpacityActive_fEdgeAlpha = pmat->m_bOpacityActive ? 1 : 0;
                   mat.bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(pmat->m_fEdgeAlpha, 0.f, 1.f)) << 1;
-                  memcpy(mat.szName, pmat->m_szName, MAXNAMEBUFFER);
+
+                  pmat->m_szName = std::string(mat.szName);
 
                   fwrite(&mat, sizeof(SaveMaterial), 1, f);
                   fwrite(&pmat->m_fElasticity, sizeof(float), 1, f);
@@ -541,7 +542,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                if (pt->IsMaterialNameUnique(pinfo->item.pszText))
                {
-                  strncpy_s(pmat->m_szName, pinfo->item.pszText, 31);
+                  pmat->m_szName = std::string(pinfo->item.pszText);
                   ListView_SetItemText(m_hMaterialList, pinfo->item.iItem, 0, pinfo->item.pszText);
                }
                else
@@ -553,8 +554,8 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                      sprintf_s(textBuf, "%s%i", pinfo->item.pszText, suffix);
                      suffix++;
                   } while (!pt->IsMaterialNameUnique(textBuf));
-                  strncpy_s(pmat->m_szName, textBuf, 31);
-                  ListView_SetItemText(m_hMaterialList, pinfo->item.iItem, 0, pmat->m_szName);
+                  pmat->m_szName = std::string(pinfo->item.pszText);
+                  ListView_SetItemText(m_hMaterialList, pinfo->item.iItem, 0, (LPSTR)pmat->m_szName.c_str());
                }
                pt->SetNonUndoableDirty(eSaveDirty);
                return TRUE;

@@ -2174,7 +2174,7 @@ void PinTable::Play(const bool cameraMode)
       m_materialMap.clear();
       for (size_t i = 0; i < m_materials.size(); i++)
       {
-         m_materialMap[m_materials[i]->m_szName] = m_materials[i];
+         m_materialMap[m_materials[i]->m_szName.c_str()] = m_materials[i];
       }
 
       // parse the (optional) override-physics-sets that can be set globally
@@ -3370,14 +3370,22 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
          mats[i].bIsMetal = m->m_bIsMetal;
          mats[i].bOpacityActive_fEdgeAlpha = m->m_bOpacityActive ? 1 : 0;
          mats[i].bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(m->m_fEdgeAlpha, 0.f, 1.f)) << 1;
-         strcpy_s(mats[i].szName, m->m_szName);
+         size_t len = m->m_szName.size();
+         if (len >= MAXNAMEBUFFER)
+            len = MAXNAMEBUFFER - 1;
+         memset(mats->szName, 0, MAXNAMEBUFFER);
+         strncpy_s(mats->szName, m->m_szName.c_str(), len);
       }
       bw.WriteStruct(FID(MATE), mats, (int)(sizeof(SaveMaterial)*m_materials.size()));
       SavePhysicsMaterial * const phymats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_materials.size());
       for (size_t i = 0; i < m_materials.size(); i++)
       {
           const Material* const m = m_materials[i];
-          strcpy_s(phymats[i].szName, m->m_szName);
+          size_t len = m->m_szName.size();
+          if (len >= MAXNAMEBUFFER)
+             len = MAXNAMEBUFFER - 1;
+          memset(phymats[i].szName, 0, MAXNAMEBUFFER);
+          strncpy_s(phymats[i].szName, m->m_szName.c_str(), len);
           phymats[i].fElasticity = m->m_fElasticity;
           phymats[i].fElasticityFallOff = m->m_fElasticityFalloff;
           phymats[i].fFriction = m->m_fFriction;
@@ -4067,7 +4075,8 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          pmat->m_bIsMetal = mats[i].bIsMetal;
          pmat->m_bOpacityActive = !!(mats[i].bOpacityActive_fEdgeAlpha & 1);
          pmat->m_fEdgeAlpha = dequantizeUnsigned<7>(mats[i].bOpacityActive_fEdgeAlpha >> 1);
-         strcpy_s(pmat->m_szName, mats[i].szName);
+
+         pmat->m_szName=mats[i].szName;
          m_materials.push_back(pmat);
       }
       free(mats);
@@ -7137,26 +7146,26 @@ void PinTable::ListMaterials(HWND hwndListView)
       AddListMaterial(hwndListView, m_materials[i]);
 }
 
-bool PinTable::IsMaterialNameUnique(const char * const name) const
+bool PinTable::IsMaterialNameUnique(const std::string &name) const
 {
    for (size_t i = 0; i < m_materials.size(); i++)
-      if (!lstrcmpi(m_materials[i]->m_szName, name))
+      if(m_materials[i]->m_szName!=name)
          return false;
 
    return true;
 }
 
 
-Material* PinTable::GetMaterial(const char * const szName) const
+Material* PinTable::GetMaterial(const std::string &szName) const
 {
-   if (szName == NULL || szName[0] == '\0')
+   if (szName.empty())
       return &m_vpinball->m_dummyMaterial;
 
    // during playback, we use the hashtable for lookup
    if (!m_materialMap.empty())
    {
       std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator>::const_iterator
-         it = m_materialMap.find(szName);
+         it = m_materialMap.find(szName.c_str());
       if (it != m_materialMap.end())
          return it->second;
       else
@@ -7164,7 +7173,7 @@ Material* PinTable::GetMaterial(const char * const szName) const
    }
 
    for (size_t i = 0; i < m_materials.size(); i++)
-      if (!lstrcmpi(m_materials[i]->m_szName, szName))
+      if(m_materials[i]->m_szName==szName)
          return m_materials[i];
 
    return &m_vpinball->m_dummyMaterial;
@@ -7173,18 +7182,18 @@ Material* PinTable::GetMaterial(const char * const szName) const
 void PinTable::AddMaterial(Material * const pmat)
 {
    int suffix = 1;
-   if (pmat->m_szName[0] == 0 || !strcmp(pmat->m_szName, "dummyMaterial"))
-      strcpy_s(pmat->m_szName, "Material");
+   if (pmat->m_szName.empty() || pmat->m_szName == "dummyMaterial")
+      pmat->m_szName = "Material";
 
-   if (!IsMaterialNameUnique(pmat->m_szName) || !strcmp(pmat->m_szName, "Material"))
+   if (!IsMaterialNameUnique(pmat->m_szName) || pmat->m_szName==std::string("Material"))
    {
       char textBuf[MAXNAMEBUFFER];
       do
       {
-         sprintf_s(textBuf, "%s%i", pmat->m_szName, suffix);
+         sprintf_s(textBuf, "%s%i", pmat->m_szName.c_str(), suffix);
          suffix++;
       } while (!IsMaterialNameUnique(textBuf));
-      lstrcpy(pmat->m_szName, textBuf);
+      pmat->m_szName = std::string(textBuf);
    }
 
    m_materials.push_back(pmat);
@@ -7197,7 +7206,7 @@ void PinTable::AddDbgMaterial(Material * const pmat)
 
    for (i = 0; i < m_dbgChangedMaterials.size(); i++)
    {
-      if (strcmp(pmat->m_szName, m_dbgChangedMaterials[i]->m_szName) == 0)
+      if (pmat->m_szName==m_dbgChangedMaterials[i]->m_szName)
       {
          alreadyIn = true;
          break;
@@ -7234,7 +7243,7 @@ void PinTable::AddDbgMaterial(Material * const pmat)
       newMat->m_fGlossyImageLerp = pmat->m_fGlossyImageLerp;
       newMat->m_fThickness = pmat->m_fThickness;
       newMat->m_fWrapLighting = pmat->m_fWrapLighting;
-      strcpy_s(newMat->m_szName, pmat->m_szName);
+      newMat->m_szName = pmat->m_szName;
       m_dbgChangedMaterials.push_back(newMat);
    }
 }
@@ -7247,7 +7256,7 @@ void PinTable::UpdateDbgMaterial()
       const Material * const pmat = m_dbgChangedMaterials[i];
       for (size_t t = 0; t < m_materials.size(); t++)
       {
-         if (strcmp(pmat->m_szName, m_materials[t]->m_szName) == 0)
+         if(pmat->m_szName==m_materials[t]->m_szName)
          {
             Material * const mat = m_materials[t];
             mat->m_bIsMetal = pmat->m_bIsMetal;
@@ -7281,12 +7290,12 @@ int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
-   lvitem.pszText = pmat->m_szName;
+   lvitem.pszText = (LPSTR)pmat->m_szName.c_str();
    lvitem.lParam = (size_t)pmat;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
    ListView_SetItemText(hwndListView, index, 1, usedStringNo);
-   if ((_stricmp(m_szPlayfieldMaterial, pmat->m_szName) == 0))
+   if(pmat->m_szName == std::string(m_szPlayfieldMaterial))
    {
       ListView_SetItemText(hwndListView, index, 1, usedStringYes);
    }
@@ -7304,85 +7313,85 @@ int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
          case eItemPrimitive:
          {
             Primitive * const pPrim = (Primitive*)pEdit;
-            if ((_stricmp(pPrim->m_d.m_szMaterial, pmat->m_szName) == 0) || (_stricmp(pPrim->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0))
+            if ((pPrim->m_d.m_szMaterial == pmat->m_szName) || (pPrim->m_d.m_szPhysicsMaterial==pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemRamp:
          {
             Ramp * const pRamp = (Ramp*)pEdit;
-            if ((_stricmp(pRamp->m_d.m_szMaterial, pmat->m_szName) == 0) || (_stricmp(pRamp->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0))
+            if ((pRamp->m_d.m_szMaterial==pmat->m_szName) || (pRamp->m_d.m_szPhysicsMaterial==pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemSurface:
          {
             Surface * const pSurf = (Surface*)pEdit;
-            if ((_stricmp(pSurf->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0) || (_stricmp(pSurf->m_d.m_szSideMaterial, pmat->m_szName) == 0) || (_stricmp(pSurf->m_d.m_szTopMaterial, pmat->m_szName) == 0))
+            if ((pSurf->m_d.m_szPhysicsMaterial==pmat->m_szName) || (pSurf->m_d.m_szSideMaterial==pmat->m_szName) || (pSurf->m_d.m_szTopMaterial==pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemDecal:
          {
             Decal * const pDecal = (Decal*)pEdit;
-            if ((_stricmp(pDecal->m_d.m_szMaterial, pmat->m_szName) == 0))
+            if ((pDecal->m_d.m_szMaterial==pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemFlipper:
          {
             Flipper * const pFlip = (Flipper*)pEdit;
-            if ((_stricmp(pFlip->m_d.m_szRubberMaterial, pmat->m_szName) == 0) || (_stricmp(pFlip->m_d.m_szMaterial, pmat->m_szName) == 0))
+            if ((pFlip->m_d.m_szRubberMaterial==pmat->m_szName) || (pFlip->m_d.m_szMaterial==pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemHitTarget:
          {
             HitTarget * const pHit = (HitTarget*)pEdit;
-            if ((_stricmp(pHit->m_d.m_szMaterial, pmat->m_szName) == 0) || (_stricmp(pHit->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0))
+            if ((pHit->m_d.m_szMaterial==pmat->m_szName) || (pHit->m_d.m_szPhysicsMaterial==pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemPlunger:
          {
             Plunger * const pPlung = (Plunger*)pEdit;
-            if (_stricmp(pPlung->m_d.m_szMaterial, pmat->m_szName) == 0)
+            if (pPlung->m_d.m_szMaterial==pmat->m_szName)
                inUse = true;
             break;
          }
          case eItemSpinner:
          {
             Spinner * const pSpin = (Spinner*)pEdit;
-            if (_stricmp(pSpin->m_d.m_szMaterial, pmat->m_szName) == 0)
+            if (pSpin->m_d.m_szMaterial==pmat->m_szName)
                inUse = true;
             break;
          }
          case eItemRubber:
          {
             Rubber * const pRub = (Rubber*)pEdit;
-            if ((_stricmp(pRub->m_d.m_szMaterial, pmat->m_szName) == 0) || (_stricmp(pRub->m_d.m_szPhysicsMaterial, pmat->m_szName) == 0))
+            if ((pRub->m_d.m_szMaterial==pmat->m_szName) || (pRub->m_d.m_szPhysicsMaterial==pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemBumper:
          {
             Bumper * const pBump = (Bumper*)pEdit;
-            if ((_stricmp(pBump->m_d.m_szCapMaterial, pmat->m_szName) == 0) || (_stricmp(pBump->m_d.m_szBaseMaterial, pmat->m_szName) == 0) ||
-                (_stricmp(pBump->m_d.m_szSkirtMaterial, pmat->m_szName) == 0) || (_stricmp(pBump->m_d.m_szRingMaterial, pmat->m_szName) == 0))
+            if ((pBump->m_d.m_szCapMaterial==pmat->m_szName) || (pBump->m_d.m_szBaseMaterial==pmat->m_szName) ||
+                (pBump->m_d.m_szSkirtMaterial==pmat->m_szName) || (pBump->m_d.m_szRingMaterial==pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemKicker:
          {
             Kicker * const pKick = (Kicker*)pEdit;
-            if (_stricmp(pKick->m_d.m_szMaterial, pmat->m_szName) == 0)
+            if (pKick->m_d.m_szMaterial==pmat->m_szName)
                inUse = true;
             break;
          }
          case eItemTrigger:
          {
             Trigger * const pTrig = (Trigger*)pEdit;
-            if (_stricmp(pTrig->m_d.m_szMaterial, pmat->m_szName) == 0)
+            if (pTrig->m_d.m_szMaterial==pmat->m_szName)
                inUse = true;
             break;
          }
@@ -7659,7 +7668,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         char *szSrc = m_materials[ivar]->m_szName;
+         const char *szSrc = m_materials[ivar]->m_szName.c_str();
          DWORD cwch = lstrlen(szSrc) + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == NULL)
@@ -7882,7 +7891,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const char * const szSrc = m_materials[dwCookie]->m_szName;
+         const char * const szSrc = m_materials[dwCookie]->m_szName.c_str();
          const DWORD cwch = lstrlen(szSrc) + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 

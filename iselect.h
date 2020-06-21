@@ -55,8 +55,8 @@ class BaseProperty // not everything in here is used in all of the derived class
 {
 public:
     std::string  m_szImage;
-    char  m_szMaterial[MAXNAMEBUFFER];
-    char  m_szPhysicsMaterial[MAXNAMEBUFFER];
+    std::string  m_szMaterial;
+    std::string  m_szPhysicsMaterial;
     float m_elasticity;
     float m_friction;
     float m_scatter;

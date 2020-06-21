@@ -3,8 +3,8 @@
 DispReel::DispReel()
 {
    m_d.m_szImage = "";
-   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
-   memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER); 
+   m_d.m_szMaterial = "";
+   m_d.m_szPhysicsMaterial = "";
    memset(m_d.m_szSound, 0, MAXTOKEN);
 
    m_dispreelanim.m_pDispReel = this;

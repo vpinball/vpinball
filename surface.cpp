@@ -16,11 +16,11 @@ Surface::Surface()
    m_propPhysics = NULL;
    m_d.m_szImage = "";
    memset(m_d.m_szSideImage, 0, MAXTOKEN);
-   memset(m_d.m_szSideMaterial, 0, MAXNAMEBUFFER);
-   memset(m_d.m_szTopMaterial, 0, MAXNAMEBUFFER);
-   memset(m_d.m_szSlingShotMaterial, 0, MAXNAMEBUFFER);
-   memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
-   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
+   m_d.m_szSideMaterial = "";
+   m_d.m_szTopMaterial = "";
+   m_d.m_szSlingShotMaterial = "";
+   m_d.m_szPhysicsMaterial = "";
+   m_d.m_szMaterial = "";
    m_d.m_overwritePhysics = true;
 }
 
@@ -798,8 +798,8 @@ void Surface::ExportMesh(FILE *f)
       delete[] tmp;
 
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szTopMaterial, NULL, mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szTopMaterial);
+      WaveFrontObj_WriteMaterial(m_d.m_szTopMaterial.c_str(), NULL, mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szTopMaterial.c_str());
       WORD * const idx = new WORD[topBottomIndices.size() + sideIndices.size()];
       memcpy(idx, sideIndices.data(), sideIndices.size()*sizeof(WORD));
       for (size_t i = 0; i < topBottomIndices.size(); i++)
@@ -813,8 +813,8 @@ void Surface::ExportMesh(FILE *f)
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, sideBuf.data(), m_numVertices * 4);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szSideMaterial, NULL, mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szSideMaterial);
+      WaveFrontObj_WriteMaterial(m_d.m_szSideMaterial.c_str(), NULL, mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szSideMaterial.c_str());
       WaveFrontObj_WriteFaceInfo(f, sideIndices);
       WaveFrontObj_UpdateFaceOffset(m_numVertices * 4);
    }
@@ -1498,7 +1498,7 @@ STDMETHODIMP Surface::put_Image(BSTR newVal)
 STDMETHODIMP Surface::get_SideMaterial(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSideMaterial, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSideMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1506,15 +1506,16 @@ STDMETHODIMP Surface::get_SideMaterial(BSTR *pVal)
 
 STDMETHODIMP Surface::put_SideMaterial(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSideMaterial, MAXNAMEBUFFER, NULL, NULL);
-
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   m_d.m_szSideMaterial = std::string(buf);
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_SlingshotMaterial(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSlingShotMaterial, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSlingShotMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1522,8 +1523,9 @@ STDMETHODIMP Surface::get_SlingshotMaterial(BSTR *pVal)
 
 STDMETHODIMP Surface::put_SlingshotMaterial(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSlingShotMaterial, MAXNAMEBUFFER, NULL, NULL);
-
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   m_d.m_szSlingShotMaterial = std::string(buf);
    return S_OK;
 }
 
@@ -1572,7 +1574,7 @@ STDMETHODIMP Surface::put_HeightTop(float newVal)
 STDMETHODIMP Surface::get_TopMaterial(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szTopMaterial, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szTopMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1580,15 +1582,16 @@ STDMETHODIMP Surface::get_TopMaterial(BSTR *pVal)
 
 STDMETHODIMP Surface::put_TopMaterial(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szTopMaterial, MAXNAMEBUFFER, NULL, NULL);
-
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   m_d.m_szTopMaterial = std::string(buf);
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_PhysicsMaterial(BSTR *pVal)
 {
     WCHAR wz[512];
-    MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, MAXNAMEBUFFER);
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
     *pVal = SysAllocString(wz);
 
     return S_OK;
@@ -1596,8 +1599,9 @@ STDMETHODIMP Surface::get_PhysicsMaterial(BSTR *pVal)
 
 STDMETHODIMP Surface::put_PhysicsMaterial(BSTR newVal)
 {
-    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, MAXNAMEBUFFER, NULL, NULL);
-
+    char buf[MAXNAMEBUFFER];
+    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+    m_d.m_szPhysicsMaterial = std::string(buf);
     return S_OK;
 }
 

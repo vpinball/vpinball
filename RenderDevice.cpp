@@ -1779,8 +1779,6 @@ Shader::Shader(RenderDevice *renderDevice)
    currentLightImageMode = ~0u;
    currentLightBackglassMode = ~0u;
    currentTechnique[0] = 0;
-
-   memset(&currentMaterial, 0xCC, sizeof(Material));
 }
 
 Shader::~Shader()

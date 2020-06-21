@@ -18,8 +18,8 @@ Ramp::Ramp()
    m_propPosition = NULL;
    m_propPhysics = NULL;
    m_d.m_szImage = "";
-   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
-   memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
+   m_d.m_szMaterial = "";
+   m_d.m_szPhysicsMaterial = "";
    m_d.m_hitEvent = false;
    m_d.m_overwritePhysics = true;
    m_rgheightInit = NULL;
@@ -1567,7 +1567,7 @@ STDMETHODIMP Ramp::put_WidthTop(float newVal)
 STDMETHODIMP Ramp::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1575,8 +1575,9 @@ STDMETHODIMP Ramp::get_Material(BSTR *pVal)
 
 STDMETHODIMP Ramp::put_Material(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   m_d.m_szMaterial = std::string(buf);
    return S_OK;
 }
 
@@ -1928,7 +1929,7 @@ STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
 STDMETHODIMP Ramp::get_PhysicsMaterial(BSTR *pVal)
 {
     WCHAR wz[512];
-    MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, MAXNAMEBUFFER);
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
     *pVal = SysAllocString(wz);
 
     return S_OK;
@@ -1936,7 +1937,9 @@ STDMETHODIMP Ramp::get_PhysicsMaterial(BSTR *pVal)
 
 STDMETHODIMP Ramp::put_PhysicsMaterial(BSTR newVal)
 {
-    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, MAXNAMEBUFFER, NULL, NULL);
+   char buf[MAXNAMEBUFFER];
+    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+    m_d.m_szPhysicsMaterial = std::string(buf);
 
     return S_OK;
 }
@@ -1973,8 +1976,8 @@ void Ramp::ExportMesh(FILE *f)
          if (m_d.m_rightwallheightvisible == 0.0f && m_d.m_leftwallheightvisible == 0.0f)
             numVers = m_numVertices;
          WaveFrontObj_WriteVertexInfo(f, rampMesh, numVers);
-         WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
-         WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+         WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
+         WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
 
          if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f)
          {
@@ -2011,8 +2014,8 @@ void Ramp::ExportMesh(FILE *f)
          if (m_d.m_type == RampType1Wire)
          {
             WaveFrontObj_WriteVertexInfo(f, tmpBuf1, m_numVertices);
-            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
-            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+            WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
+            WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
             WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
             WaveFrontObj_UpdateFaceOffset(m_numVertices);
          }
@@ -2026,8 +2029,8 @@ void Ramp::ExportMesh(FILE *f)
             WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 2);
             delete[] tmp;
             WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
-            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
-            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+            WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
+            WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
             WORD * const idx = new WORD[m_meshIndices.size()];
             for (size_t i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
@@ -2049,8 +2052,8 @@ void Ramp::ExportMesh(FILE *f)
                tmp[i].z += 3.0f;
             WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 4);
             delete[] tmp;
-            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
-            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+            WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
+            WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
             WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
             WORD * const idx = new WORD[m_meshIndices.size()];
             for (size_t i = 0; i < m_meshIndices.size(); i++)
@@ -2078,8 +2081,8 @@ void Ramp::ExportMesh(FILE *f)
                tmp[i].z += 3.0f;
             WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 3);
             delete[] tmp;
-            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
-            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+            WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
+            WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
             WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
             WORD * const idx = new WORD[m_meshIndices.size()];
             for (size_t i = 0; i < m_meshIndices.size(); i++)
@@ -2104,8 +2107,8 @@ void Ramp::ExportMesh(FILE *f)
                tmp[i].z += 3.0f;
             WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 3);
             delete[] tmp;
-            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
-            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+            WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
+            WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
             WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
             WORD * const idx = new WORD[m_meshIndices.size()];
             for (size_t i = 0; i < m_meshIndices.size(); i++)

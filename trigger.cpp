@@ -23,7 +23,7 @@ Trigger::Trigger()
    m_triggerVertices = NULL;
    m_menuid = IDR_SURFACEMENU;
    m_propVisual = NULL;
-   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
+   m_d.m_szMaterial = "";
 }
 
 Trigger::~Trigger()
@@ -614,8 +614,8 @@ void Trigger::ExportMesh(FILE *f)
    WaveFrontObj_WriteObjectName(f, name);
    WaveFrontObj_WriteVertexInfo(f, m_triggerVertices, m_numVertices);
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
-   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+   WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
+   WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
 
    const WORD* indices;
    switch(m_d.m_shape)
@@ -1322,7 +1322,7 @@ STDMETHODIMP Trigger::put_AnimSpeed(float newVal)
 STDMETHODIMP Trigger::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1330,7 +1330,9 @@ STDMETHODIMP Trigger::get_Material(BSTR *pVal)
 
 STDMETHODIMP Trigger::put_Material(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   m_d.m_szMaterial = std::string(buf);
 
    return S_OK;
 }

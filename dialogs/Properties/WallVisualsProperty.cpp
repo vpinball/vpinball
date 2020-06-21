@@ -69,13 +69,13 @@ void WallVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(wall->m_d.m_szSideImage, m_sideImageCombo, wall);
                 break;
             case IDC_MATERIAL_COMBO:
-                CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(wall->m_d.m_szTopMaterial, m_topMaterialCombo, wall);
+               CHECK_UPDATE_COMBO_TEXT_STRING(wall->m_d.m_szTopMaterial, m_topMaterialCombo, wall);
                 break;
             case IDC_MATERIAL_COMBO2:
-                CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(wall->m_d.m_szSideMaterial, m_sideMaterialCombo, wall);
+               CHECK_UPDATE_COMBO_TEXT_STRING(wall->m_d.m_szSideMaterial, m_sideMaterialCombo, wall);
                 break;
             case IDC_MATERIAL_COMBO3:
-                CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(wall->m_d.m_szSlingShotMaterial, m_slingshotMaterialCombo, wall);
+               CHECK_UPDATE_COMBO_TEXT_STRING(wall->m_d.m_szSlingShotMaterial, m_slingshotMaterialCombo, wall);
                 break;
             case IDC_BLEND_DISABLE_LIGHTING:
                 CHECK_UPDATE_ITEM(wall->m_d.m_disableLightingTop, PropertyDialog::GetFloatTextbox(m_disableLightingEdit), wall);

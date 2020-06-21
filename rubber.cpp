@@ -15,8 +15,8 @@ Rubber::Rubber()
    m_propPosition = NULL;
    m_propVisual = NULL;
    m_d.m_szImage = "";
-   memset(m_d.m_szMaterial, 0, MAXNAMEBUFFER);
-   memset(m_d.m_szPhysicsMaterial, 0, MAXNAMEBUFFER);
+   m_d.m_szMaterial = "";
+   m_d.m_szPhysicsMaterial = "";
    m_d.m_overwritePhysics = true;
    m_ptable = NULL;
    m_d.m_tdr.m_TimerEnabled = false;
@@ -927,7 +927,7 @@ STDMETHODIMP Rubber::put_Thickness(int newVal)
 STDMETHODIMP Rubber::get_Material(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, MAXNAMEBUFFER);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -935,8 +935,9 @@ STDMETHODIMP Rubber::get_Material(BSTR *pVal)
 
 STDMETHODIMP Rubber::put_Material(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, MAXNAMEBUFFER, NULL, NULL);
-
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   m_d.m_szMaterial = std::string(buf);
    return S_OK;
 }
 
@@ -1177,7 +1178,7 @@ STDMETHODIMP Rubber::put_RotZ(float newVal)
 STDMETHODIMP Rubber::get_PhysicsMaterial(BSTR *pVal)
 {
     WCHAR wz[512];
-    MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, MAXNAMEBUFFER);
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
     *pVal = SysAllocString(wz);
 
     return S_OK;
@@ -1185,8 +1186,9 @@ STDMETHODIMP Rubber::get_PhysicsMaterial(BSTR *pVal)
 
 STDMETHODIMP Rubber::put_PhysicsMaterial(BSTR newVal)
 {
-    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, MAXNAMEBUFFER, NULL, NULL);
-
+   char buf[MAXNAMEBUFFER];
+    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+    m_d.m_szPhysicsMaterial = std::string(buf);
     return S_OK;
 }
 
@@ -1272,8 +1274,8 @@ void Rubber::ExportMesh(FILE *f)
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, m_vertices.data(), m_numVertices);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+      WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
       WaveFrontObj_WriteFaceInfo(f, m_ringIndices);
       WaveFrontObj_UpdateFaceOffset(m_numVertices);
    }

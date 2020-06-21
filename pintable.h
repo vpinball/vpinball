@@ -571,8 +571,8 @@ public:
    void AddDbgMaterial(Material * const pmat);
    void UpdateDbgMaterial();
 
-   bool IsMaterialNameUnique(const char * const name) const;
-   Material* GetMaterial(const char * const szName) const;
+   bool IsMaterialNameUnique(const std::string &name) const;
+   Material* GetMaterial(const std::string &szName) const;
    Material* GetSurfaceMaterial(const char * const szName) const;
    Texture* GetSurfaceImage(const char * const szName) const;
 

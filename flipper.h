@@ -27,7 +27,7 @@ public:
    COLORREF m_color;
 
    COLORREF m_rubbercolor;
-   char m_szRubberMaterial[MAXNAMEBUFFER];
+   std::string  m_szRubberMaterial;
    float m_rubberthickness;
    float m_rubberheight;
    float m_rubberwidth;
