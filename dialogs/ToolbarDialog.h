@@ -9,6 +9,7 @@ public:
     virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
 
     void EnableButtons();
+    bool PreTranslateMessage(MSG* msg);
 
 protected:
     virtual BOOL OnInitDialog();
