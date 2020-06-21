@@ -32,6 +32,7 @@ public:
     HTREEITEM               GetCurrentLayerItem() { return hCurrentLayerItem; }
     HTREEITEM               GetFirstLayer() { return GetChild(hRootItem); }
     std::string             GetLayerName(HTREEITEM item) { return string(GetItemText(item)); }
+    bool                    PreTranslateMessage(MSG* msg);
 
 protected:
     virtual void OnAttach();
@@ -66,9 +67,11 @@ public:
     FilterEditBox() : m_layerDialog(nullptr) {}
     virtual ~FilterEditBox() {}
     void SetDialog(LayersListDialog* dialog) { m_layerDialog = dialog; }
+
 protected:
     virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
     virtual BOOL    OnCommand(WPARAM wParam, LPARAM lParam);
+
 private:
     LayersListDialog *m_layerDialog;
 };
@@ -88,6 +91,7 @@ public:
     string GetCurrentSelectedLayerName() const;
     void AddToolTip(const char* const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
     void OnAssignButton();
+    bool PreTranslateMessage(MSG* msg);
 
     void ExpandAll()
     {

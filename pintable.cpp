@@ -6241,7 +6241,6 @@ void PinTable::ClearMultiSel(ISelect* newSel)
    //remove the clone of the multi selection in the smart browser class
    //to sync the clone and the actual multi-selection 
    //it will be updated again on AddMultiSel() call
-   m_vpinball->DeletePropSel();
    m_vmultisel.RemoveAllElements();
 
    if (newSel == NULL)

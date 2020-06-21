@@ -594,6 +594,23 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> *pvsel)
     ShowWindow();
 }
 
+bool PropertyDialog::PreTranslateMessage(MSG* msg)
+{
+   if (!IsWindow())
+      return false;
+
+   // only pre-translate mouse and keyboard input events
+   if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) || (msg->message >= WM_MOUSEFIRST && msg->message <= WM_MOUSELAST)))
+   {
+      const int keyPressed = LOWORD(msg->wParam);
+      // only pass F1-F12 to the main VPinball class to open subdialogs from everywhere
+      if(keyPressed>=VK_F1 && keyPressed<=VK_F12 && TranslateAccelerator(g_pvp->GetHwnd(), g_haccel, msg))
+         return true;
+   }
+
+   return !!IsSubDialogMessage(*msg);
+}
+
 BOOL PropertyDialog::OnInitDialog()
 {
     AttachItem(IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC, m_multipleElementsStatic);
@@ -622,6 +639,8 @@ void PropertyDialog::OnClose()
 {
     CDialog::OnCancel();
 }
+
+
 
 BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
 {

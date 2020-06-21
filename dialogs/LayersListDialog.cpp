@@ -274,6 +274,26 @@ void LayersListDialog::OnAssignButton()
     }
 }
 
+bool LayersListDialog::PreTranslateMessage(MSG* msg)
+{
+   if (!IsWindow())
+      return false;
+
+   // only pre-translate mouse and keyboard input events
+   if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) || (msg->message >= WM_MOUSEFIRST && msg->message <= WM_MOUSELAST)))
+   {
+      const int keyPressed = LOWORD(msg->wParam);
+      // only pass F1-F12 to the main VPinball class to open subdialogs from everywhere
+      if (keyPressed >= VK_F1 && keyPressed <= VK_F12 && TranslateAccelerator(g_pvp->GetHwnd(), g_haccel, msg))
+         return true;
+   }
+
+   if (m_layerTreeView.PreTranslateMessage(msg))
+      return true;
+
+   return !!IsDialogMessage(*msg);
+}
+
 CContainLayers::CContainLayers()
 {
     SetView(m_layersDialog);
@@ -587,6 +607,19 @@ void LayerTreeView::SetActiveLayer(const string& name)
         }
         item = GetNextItem(item, TVGN_NEXT);
     }
+}
+
+bool LayerTreeView::PreTranslateMessage(MSG* msg)
+{
+   if (!IsWindow())
+      return false;
+
+   // only pre-translate mouse and keyboard input events
+   if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) || (msg->message >= WM_MOUSEFIRST && msg->message <= WM_MOUSELAST))
+      && TranslateAccelerator(GetHwnd(), g_haccel, msg))
+      return true;
+
+   return !!IsDialogMessage(*msg);
 }
 
 void LayerTreeView::OnAttach()

@@ -513,14 +513,9 @@ float VPinball::ConvertToUnit(const float value)
 
 void VPinball::SetPropSel(VectorProtected<ISelect> *pvsel)
 {
-//   m_sb.CreateFromDispatch(GetHwnd(), pvsel);
     if (m_propertyDialog && m_propertyDialog->IsWindow())
         m_propertyDialog->UpdateTabs(pvsel);
-}
-
-void VPinball::DeletePropSel()
-{
-//   m_sb.RemoveSelection();
+    GetActiveTable()->SetFocus();
 }
 
 CMenu VPinball::GetMainMenu(int id)
@@ -1223,12 +1218,22 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
           consumed = !!m_collectionMngDlg.IsDialogMessage(*pmsg);
       if (!consumed && m_dimensionDialog.IsWindow())
           consumed = !!m_dimensionDialog.IsDialogMessage(*pmsg);
+/*
       if (!consumed && m_toolbarDialog && m_toolbarDialog->IsWindow())
           consumed = !!m_toolbarDialog->IsDialogMessage(*pmsg);
+*/
+      if (!consumed && m_toolbarDialog)
+         consumed = m_toolbarDialog->PreTranslateMessage(pmsg);
+      if (!consumed && m_propertyDialog)
+         consumed = m_propertyDialog->PreTranslateMessage(pmsg);
+      if (!consumed && m_layersListDialog)
+         consumed = m_layersListDialog->PreTranslateMessage(pmsg);
+/*
       if (!consumed && m_propertyDialog && m_propertyDialog->IsWindow())
           consumed = !!m_propertyDialog->IsSubDialogMessage(*pmsg);
       if (!consumed && m_layersListDialog && m_layersListDialog->IsWindow())
           consumed = !!m_layersListDialog->IsDialogMessage(*pmsg);
+*/
     }
     return consumed;
 }
@@ -1247,11 +1252,11 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
          consumed = true;
 
       if (!consumed)
-         consumed = !!TranslateAccelerator(GetHwnd(), g_haccel, pmsg);
-
-      if(!consumed)
          // check/process events for other dialogs (material/sound/image manager, toolbar, properties
          consumed = processKeyInputForDialogs(pmsg);
+
+      if (!consumed)
+         consumed = !!TranslateAccelerator(GetHwnd(), g_haccel, pmsg);
 
       if (!consumed)
          TranslateMessage(pmsg);

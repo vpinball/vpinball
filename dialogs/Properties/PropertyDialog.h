@@ -229,6 +229,7 @@ public:
     void CreateTabs(VectorProtected<ISelect>* pvsel);
     void DeleteAllTabs();
     void UpdateTabs(VectorProtected<ISelect> *pvsel);
+    bool PreTranslateMessage(MSG* msg);
 
     static void UpdateTextureComboBox(const vector<Texture*>& contentList, CComboBox &combo, const char selectName[MAXTOKEN]);
     static void UpdateComboBox(const vector<string>& contentList, CComboBox &combo, const char *selectName);

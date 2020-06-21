@@ -104,7 +104,6 @@ public:
    float ConvertToUnit(const float value);
    void SetPropSel(VectorProtected<ISelect> *pvsel);
 
-   void DeletePropSel();
    void SetActionCur(const char * const szaction);
    void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
 
