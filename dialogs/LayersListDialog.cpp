@@ -614,6 +614,9 @@ bool LayerTreeView::PreTranslateMessage(MSG* msg)
    if (!IsWindow())
       return false;
 
+   if (msg->hwnd != GetHwnd())
+      return false;
+
    // only pre-translate mouse and keyboard input events
    if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) || (msg->message >= WM_MOUSEFIRST && msg->message <= WM_MOUSELAST))
       && TranslateAccelerator(GetHwnd(), g_haccel, msg))
