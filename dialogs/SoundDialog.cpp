@@ -71,12 +71,12 @@ BOOL SoundDialog::OnInitDialog()
 	LocalString ls( IDS_NAME );
     lvcol.pszText = ls.m_szbuffer;// = "Name";
     lvcol.cx = DPIValue(150);
-    ListView_InsertColumn( hSoundList, 0, &lvcol );
+    ListView_InsertColumn(hSoundList, 0, &lvcol);
 
     LocalString ls2( IDS_IMPORTPATH );
     lvcol.pszText = ls2.m_szbuffer; // = "Import Path";
     lvcol.cx = DPIValue(200);
-    ListView_InsertColumn( hSoundList, 1, &lvcol );
+    ListView_InsertColumn(hSoundList, 1, &lvcol);
 
 	lvcol.pszText = "Output";
 	lvcol.cx = DPIValue(80);
@@ -246,7 +246,7 @@ void SoundDialog::OnCancel()
 void SoundDialog::Import()
 {
     CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
-    char szFileName[MAXSTRING];
+    char szFileName[MAXMULTISTRING];
     char szInitialDir[MAXSTRING];
     int  fileOffset;
     szFileName[0] = '\0';
@@ -340,7 +340,7 @@ void SoundDialog::ReImportFrom()
         if (ans == IDYES)
         {
             char szInitialDir[MAXSTRING];
-            char szFileName[MAXSTRING];
+            char szFileName[MAXMULTISTRING];
             szFileName[0] = '\0';
             int fileOffset;
 
@@ -392,8 +392,8 @@ void SoundDialog::Export()
 
             int begin;		//select only file name from pathfilename
             int len = lstrlen( pps->m_szPath );
-            memset( m_filename, 0, MAX_PATH );
-            memset( m_initDir, 0, MAX_PATH );
+            memset( m_filename, 0, MAXSTRING);
+            memset( m_initDir, 0, MAXSTRING);
 
             if (!renameOnExport)
             {
@@ -416,9 +416,9 @@ void SoundDialog::Export()
 
             }
             ofn.lpstrFile = m_filename;
-            ofn.nMaxFile = MAX_PATH;
+            ofn.nMaxFile = MAXSTRING;
             ofn.lpstrDefExt = "mp3";
-            const HRESULT hr = LoadValueString( "RecentDir", "SoundDir", m_initDir, MAX_PATH );
+            const HRESULT hr = LoadValueString( "RecentDir", "SoundDir", m_initDir, MAXSTRING);
 
             if (hr == S_OK)ofn.lpstrInitialDir = m_initDir;
             else ofn.lpstrInitialDir = NULL;
@@ -439,10 +439,10 @@ void SoundDialog::Export()
                     }
                 }
 
-                if (begin >= MAX_PATH)
-                    begin=MAX_PATH - 1;
+                if (begin >= MAXSTRING)
+                    begin = MAXSTRING-1;
 
-                char pathName[MAX_PATH] = { 0 };
+                char pathName[MAXSTRING] = { 0 };
                 memcpy( pathName, ofn.lpstrFile, begin );
                 pathName[begin] = 0;
                 while(sel != -1)
@@ -458,10 +458,10 @@ void SoundDialog::Export()
                     }
                     if (selectedItemsCount > 1)
                     {
-                       memset(m_filename, 0, MAX_PATH);
-                       strcpy_s(m_filename, MAX_PATH-1, pathName);
+                       memset(m_filename, 0, MAXSTRING);
+                       strcpy_s(m_filename, MAXSTRING-1, pathName);
                        if (!renameOnExport)
-                          strcat_s(m_filename, MAX_PATH-1, &pps->m_szPath[begin]);
+                          strcat_s(m_filename, MAXSTRING-1, &pps->m_szPath[begin]);
                        else
                        {
                           strcat_s(m_filename, pps->m_szName);

@@ -384,7 +384,7 @@ void PhysicsOptionsDialog::OnDestroy()
 
 bool PhysicsOptionsDialog::LoadSetting()
 {
-    char szFileName[MAXSTRING];
+    char szFileName[MAXMULTISTRING];
     char szInitialDir[MAXSTRING];
     szFileName[0] = '\0';
     int fileOffset;

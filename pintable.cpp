@@ -5517,7 +5517,7 @@ void PinTable::ExportTableMesh()
 
 void PinTable::ImportBackdropPOV(const char *filename)
 {
-    char szFileName[MAXSTRING];
+    char szFileName[MAXMULTISTRING];
     bool oldFormatLoaded = false;
     szFileName[0] = '\0';
     if (filename == NULL)
@@ -9377,7 +9377,7 @@ STDMETHODIMP PinTable::put_OverridePhysicsFlippers(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::ImportPhysics()
 {
-   char szFileName[MAXSTRING];
+   char szFileName[MAXMULTISTRING];
    char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
 

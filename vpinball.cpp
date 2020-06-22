@@ -386,7 +386,7 @@ void VPinball::SetStatusBarUnitInfo(const char * const info, const bool isUnit)
     SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf);
 }
 
-bool VPinball::OpenFileDialog(const char *initDir, char *filename, const char *fileFilter, const char *defaultExt, DWORD flags, int &fileOffset)
+bool VPinball::OpenFileDialog(const char *initDir, char filename[MAXMULTISTRING], const char *fileFilter, const char *defaultExt, DWORD flags, int &fileOffset)
 {
     OPENFILENAME ofn;
     ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -397,7 +397,7 @@ bool VPinball::OpenFileDialog(const char *initDir, char *filename, const char *f
     ofn.lpstrFilter = fileFilter;
     ofn.lpstrInitialDir = initDir;
     ofn.lpstrFile = filename;
-    ofn.nMaxFile = MAXSTRING;
+    ofn.nMaxFile = MAXMULTISTRING;
     ofn.lpstrDefExt = defaultExt;
     ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | flags;
     const int ret = GetOpenFileName(&ofn);
@@ -903,7 +903,7 @@ void VPinball::DoPlay(const bool _cameraMode)
 
 bool VPinball::LoadFile()
 {
-   char szFileName[MAXSTRING];
+   char szFileName[MAXMULTISTRING];
    char szInitialDir[MAXSTRING];
    int fileOffset;
    szFileName[0] = '\0';
@@ -1825,7 +1825,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
          case IDC_IMPORT:
          {
-            char szFileName[MAXSTRING];
+            char szFileName[MAXMULTISTRING];
             char szInitialDir[MAXSTRING];
             int  fileOffset;
             szFileName[0] = '\0';
