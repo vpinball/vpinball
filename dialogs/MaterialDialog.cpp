@@ -311,7 +311,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_IMPORT:
       {
-         char szFileName[MAXSTRING];
+         char szFileName[MAXMULTISTRING];
          char szInitialDir[MAXSTRING];
          szFileName[0] = '\0';
          int fileOffset;

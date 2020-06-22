@@ -1882,7 +1882,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             if (prim == NULL)
                break;
 
-            char szFileName[MAXSTRING];
+            char szFileName[MAXMULTISTRING];
             char szInitialDir[MAXSTRING];
             int  fileOffset;
             szFileName[0] = '\0';

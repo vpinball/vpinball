@@ -399,7 +399,7 @@ void ImageDialog::OnCancel()
 
 void ImageDialog::Import()
 {
-   char szFileName[MAXSTRING];
+   char szFileName[MAXMULTISTRING];
    char szInitialDir[MAXSTRING];
    szFileName[0] = '\0';
    int fileOffset;
@@ -465,10 +465,10 @@ void ImageDialog::Export()
             ofn.hInstance = g_hinst;
             ofn.hwndOwner = g_pvp->GetHwnd();
             int len = lstrlen(ppi->m_szPath);
-            char g_filename[MAX_PATH];
-            memset(g_filename, 0, MAX_PATH);
-            char g_initDir[MAX_PATH];
-            memset(g_initDir, 0, MAX_PATH);
+            char g_filename[MAXSTRING];
+            memset(g_filename, 0, MAXSTRING);
+            char g_initDir[MAXSTRING];
+            memset(g_initDir, 0, MAXSTRING);
 
             const size_t renameOnExport = SendMessage(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), BM_GETCHECK, 0, 0);
 
@@ -497,7 +497,7 @@ void ImageDialog::Export()
                strcat_s(g_filename, ext.c_str() + idx);
             }
             ofn.lpstrFile = g_filename;
-            ofn.nMaxFile = MAX_PATH;
+            ofn.nMaxFile = MAXSTRING;
 
             const string ext2(g_filename);
             const size_t idx2 = ext2.find_last_of('.');
@@ -527,7 +527,7 @@ void ImageDialog::Export()
             else if (!strcmp(ofn.lpstrDefExt, "hdr"))
                ofn.nFilterIndex = 11;
 
-            const HRESULT hr = LoadValueString("RecentDir", "ImageDir", g_initDir, MAX_PATH);
+            const HRESULT hr = LoadValueString("RecentDir", "ImageDir", g_initDir, MAXSTRING);
 
             ofn.lpstrInitialDir = (hr == S_OK) ? g_initDir : NULL;
             //ofn.lpstrTitle = "SAVE AS";
@@ -547,7 +547,7 @@ void ImageDialog::Export()
                      break;
                   }
                }
-               char pathName[MAX_PATH] = { 0 };
+               char pathName[MAXSTRING] = { 0 };
                if (begin > 0)
                {
                   memcpy(pathName, ofn.lpstrFile, begin);
@@ -566,10 +566,10 @@ void ImageDialog::Export()
                   }
                   if (selectedItemsCount>1)
                   {
-                     memset(g_filename, 0, MAX_PATH);
-                     strcpy_s(g_filename, MAX_PATH-1, pathName);
+                     memset(g_filename, 0, MAXSTRING);
+                     strcpy_s(g_filename, MAXSTRING-1, pathName);
                      if (!renameOnExport)
-                        strcat_s(g_filename, MAX_PATH-1, &ppi->m_szPath[begin]);
+                        strcat_s(g_filename, MAXSTRING-1, &ppi->m_szPath[begin]);
                      else
                      {
                         strcat_s(g_filename, ppi->m_szName);
@@ -731,7 +731,7 @@ void ImageDialog::ReimportFrom()
       const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this image with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
-         char szFileName[MAXSTRING];
+         char szFileName[MAXMULTISTRING];
          char szInitialDir[MAXSTRING];
          szFileName[0] = '\0';
          int fileOffset;
