@@ -26,6 +26,8 @@ struct SavePhysicsMaterial
     float fScatterAngle;
 };
 
+#define MATERIAL_VERSION 1 // for im/export
+
 class Material
 {
 public:

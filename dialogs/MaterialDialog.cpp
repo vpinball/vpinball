@@ -402,8 +402,8 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             {
                FILE *f;
                fopen_s(&f, ofn.lpstrFile, "wb");
-               const int MATERIAL_VERSION = 1;
-               fwrite(&MATERIAL_VERSION, 4, 1, f);
+               const int mv = MATERIAL_VERSION;
+               fwrite(&mv, 4, 1, f);
                fwrite(&selCount, 4, 1, f);
                while (sel != -1)
                {
@@ -426,7 +426,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                   mat.fOpacity = pmat->m_fOpacity;
                   mat.bOpacityActive_fEdgeAlpha = pmat->m_bOpacityActive ? 1 : 0;
                   mat.bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(pmat->m_fEdgeAlpha, 0.f, 1.f)) << 1;
-                  memcpy(mat.szName, pmat->m_szName.c_str(), MAXNAMEBUFFER);
+                  strcpy_s(mat.szName, MAXNAMEBUFFER-1, pmat->m_szName.c_str());
 
                   fwrite(&mat, sizeof(SaveMaterial), 1, f);
                   fwrite(&pmat->m_fElasticity, sizeof(float), 1, f);
@@ -659,11 +659,11 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   size_t checked = SendDlgItemMessage(IDC_DIFFUSE_CHECK, BM_GETCHECK, 0, 0);
                   if (pmat->m_bIsMetal != (checked == 1))
                      pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_bIsMetal = checked == 1;
+                  pmat->m_bIsMetal = (checked == 1);
                   checked = SendDlgItemMessage(IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
                   if (pmat->m_bOpacityActive != (checked == 1))
                      pt->SetNonUndoableDirty(eSaveDirty);
-                  pmat->m_bOpacityActive = checked == 1;
+                  pmat->m_bOpacityActive = (checked == 1);
                   fv = saturate(getItemText(IDC_EDGEALPHA_EDIT));
                   if (pmat->m_fEdgeAlpha != fv)
                      pt->SetNonUndoableDirty(eSaveDirty);
@@ -801,12 +801,12 @@ void MaterialDialog::OnOK()
          size_t checked = SendDlgItemMessage(IDC_DIFFUSE_CHECK, BM_GETCHECK, 0, 0);
          if (pmat->m_bIsMetal != (checked == 1))
             pt->SetNonUndoableDirty(eSaveDirty);
-         pmat->m_bIsMetal = checked == 1;
+         pmat->m_bIsMetal = (checked == 1);
 
          checked = SendDlgItemMessage(IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
          if (pmat->m_bOpacityActive != (checked == 1))
             pt->SetNonUndoableDirty(eSaveDirty);
-         pmat->m_bOpacityActive = checked == 1;
+         pmat->m_bOpacityActive = (checked == 1);
 
          fv = getItemText(IDC_EDGEALPHA_EDIT);
          if (pmat->m_fEdgeAlpha != fv)
