@@ -954,18 +954,18 @@ STDMETHODIMP Rubber::get_Image(BSTR *pVal)
 
 STDMETHODIMP Rubber::put_Image(BSTR newVal)
 {
-   char m_szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXTOKEN, NULL, NULL);
-   const Texture * const tex = m_ptable->GetImage(m_szImage);
+   char szImage[MAXTOKEN];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
    }
 
-   if(m_szImage!=m_d.m_szImage)
+   if(szImage!=m_d.m_szImage)
    {
-      m_d.m_szImage = m_szImage;
+      m_d.m_szImage = szImage;
       m_dynamicVertexBufferRegenerate = true;
    }
 
