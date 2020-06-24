@@ -609,8 +609,7 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                               sprintf_s(szT, "%d x %d", mode.width, mode.height);
                       }
                       else {
-                          memset(&szTx,'\x0', sizeof(szTx));
-                          strcpy_s(szT, szTx);
+                          strncpy_s(szT, szTx, sizeof(szT)-1);
                       }
 
                       SendMessage(hwndList, LB_INSERTSTRING, cnt - 1, (LPARAM)szT);
