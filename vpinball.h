@@ -133,7 +133,7 @@ public:
    void SetStatusBarElementInfo(const char * const info);
    void SetStatusBarUnitInfo(const char * const info, const bool isUnit);
 
-   bool OpenFileDialog(const char *initDir, char filename[MAXMULTISTRING], const char *fileFilter, const char *defaultExt, DWORD flags, int &fileOffset);
+   bool OpenFileDialog(const char* initDir, std::vector<std::string>& filename, const char *fileFilter, const char *defaultExt, DWORD flags);
    CDockProperty *GetPropertiesDocker();
    CDockToolbar *GetToolbarDocker();
    CDockLayers *GetLayersDocker();

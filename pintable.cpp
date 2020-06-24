@@ -1949,9 +1949,9 @@ void PinTable::UIRenderPass2(Sur * const psur)
    //    SetTextColor( psur->m_hdc,RGB(180,180,180));
    //    char text[64];
    //    char number[8];
-   //    strncpy_s( text,"Layer_",sizeof(text)-1);
+   //    strcpy_s( text,"Layer_");
    //    _itoa_s(activeLayer+1, number, 10 );
-   //    strncat_s( text, number, sizeof(text)-strnlen_s(text, sizeof(text))-1);
+   //    strcat_s( text, number);
    //    RECT textRect;
    //    SetRect( &textRect, rc.right-60,rc.top, rc.right, rc.top+30 );
    //    DrawText( psur->m_hdc, text, -1, &textRect, DT_LEFT);
@@ -5509,24 +5509,23 @@ void PinTable::ExportTableMesh()
 
 void PinTable::ImportBackdropPOV(const char *filename)
 {
-    char szFileName[MAXMULTISTRING];
+    std::vector<std::string> szFilename;
     bool oldFormatLoaded = false;
-    szFileName[0] = '\0';
     if (filename == NULL)
     {
-        int fileOffset;
-        if(!m_vpinball->OpenFileDialog("", szFileName, "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0", "pov", 0, fileOffset))
-            return;
+       int fileOffset;
+       if (!m_vpinball->OpenFileDialog("", szFilename, "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0", "pov", 0))
+          return;
     }
     else
-        strncpy_s(szFileName, filename, sizeof(szFileName)-1);
+       szFilename.push_back(std::string(filename));
 
     xml_document<> xmlDoc;
 
     try
     {
         std::stringstream buffer;
-        std::ifstream myFile(szFileName);
+        std::ifstream myFile(szFilename[0]);
         buffer << myFile.rdbuf();
         myFile.close();
 
@@ -9369,9 +9368,8 @@ STDMETHODIMP PinTable::put_OverridePhysicsFlippers(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::ImportPhysics()
 {
-   char szFileName[MAXMULTISTRING];
+   std::vector<std::string> szFileName;
    char szInitialDir[MAXSTRING];
-   szFileName[0] = '\0';
 
    const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
    if (hr != S_OK)
@@ -9380,7 +9378,7 @@ STDMETHODIMP PinTable::ImportPhysics()
    }
 
    int fileOffset;
-   if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0, fileOffset))
+   if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
        return S_OK;
 
    xml_document<> xmlDoc;
@@ -9388,7 +9386,7 @@ STDMETHODIMP PinTable::ImportPhysics()
    try
    {
       std::stringstream buffer;
-      std::ifstream myFile(szFileName);
+      std::ifstream myFile(szFileName[0]);
       buffer << myFile.rdbuf();
       myFile.close();
 
