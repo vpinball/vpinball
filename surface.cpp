@@ -1793,8 +1793,8 @@ STDMETHODIMP Surface::get_SideImage(BSTR *pVal)
 
 STDMETHODIMP Surface::put_SideImage(BSTR newVal)
 {
-   char szSideImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szSideImage, MAXTOKEN, NULL, NULL);
+   char szSideImage[sizeof(m_d.m_szSideImage)];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szSideImage, sizeof(m_d.m_szSideImage), NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szSideImage);
    if (tex && tex->IsHDR())
    {
@@ -1802,7 +1802,7 @@ STDMETHODIMP Surface::put_SideImage(BSTR newVal)
        return E_FAIL;
    }
 
-   strcpy_s(m_d.m_szSideImage,szSideImage);
+   strncpy_s(m_d.m_szSideImage,szSideImage,sizeof(m_d.m_szSideImage)-1);
 
    return S_OK;
 }

@@ -248,13 +248,14 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    std::string firstImage="";
    std::string secondImage = "";
    char layerBuf[16];
-   memset(layerBuf, 0, 16);
 
    IScriptable * const piscript = piedit->GetScriptable();
    if (piscript)
    {
-       strcpy_s(layerBuf, piscript->GetISelect()->m_layerName.c_str());
+       strncpy_s(layerBuf, piscript->GetISelect()->m_layerName.c_str(), sizeof(layerBuf)-1);
    }
+   else
+       memset(layerBuf, 0, sizeof(layerBuf));
 
    ListView_SetItemText(m_hElementList, idx, 2, layerBuf);
    if (piedit->GetItemType() == eItemSurface)

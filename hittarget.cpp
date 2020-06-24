@@ -502,7 +502,7 @@ void HitTarget::ExportMesh(FILE *f)
 
    m_transformedVertices.resize(m_numVertices);
 
-   strcpy_s(subObjName, name);
+   strncpy_s(subObjName, name, sizeof(subObjName)-1);
    WaveFrontObj_WriteObjectName(f, subObjName);
 
    GenerateMesh(m_transformedVertices);

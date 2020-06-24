@@ -285,7 +285,7 @@ public:
         textbox.SetWindowText(CString(value).c_str());
     }
 
-    static void GetComboBoxText(CComboBox &combo, char * const strbuf, const int maxlength)
+    static void GetComboBoxText(CComboBox &combo, char * const strbuf, const size_t maxlength)
     {
         char buf[MAXSTRING];
         combo.GetLBText(combo.GetCurSel(), buf);
@@ -340,8 +340,8 @@ private:
 
 #define CHECK_UPDATE_COMBO_TEXT_STRING(classValue, uiCombo, element)\
 {\
-    char szName[MAXTOKEN]={0}; \
-    PropertyDialog::GetComboBoxText(uiCombo, szName, MAXTOKEN); \
+    char szName[MAXSTRING]={0}; \
+    PropertyDialog::GetComboBoxText(uiCombo, szName, sizeof(szName)); \
     if(szName!=classValue) \
     { \
         PropertyDialog::StartUndo(element); \
@@ -350,26 +350,14 @@ private:
     }\
 }
 
-#define CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(classValue, uiCombo, element)\
+#define CHECK_UPDATE_COMBO_TEXT(classValue, uiCombo, element)\
 {\
-    char szName[MAXTOKEN]={0}; \
-    PropertyDialog::GetComboBoxText(uiCombo, szName, MAXTOKEN); \
-    if (strcmp(szName, (char*)classValue) != 0) \
+    char szName[sizeof(classValue)]={0}; \
+    PropertyDialog::GetComboBoxText(uiCombo, szName, sizeof(classValue)); \
+    if (strcmp(szName, classValue) != 0) \
     { \
         PropertyDialog::StartUndo(element); \
-        strncpy_s(classValue, szName, MAXTOKEN-1); \
-        PropertyDialog::EndUndo(element); \
-    }\
-}
-
-#define CHECK_UPDATE_COMBO_TEXT_MAXNAMEBUFFER(classValue, uiCombo, element)\
-{\
-    char szName[MAXNAMEBUFFER]={0}; \
-    PropertyDialog::GetComboBoxText(uiCombo, szName, MAXNAMEBUFFER); \
-    if (strcmp(szName, (char*)classValue) != 0) \
-    { \
-        PropertyDialog::StartUndo(element); \
-        strncpy_s(classValue, szName, MAXNAMEBUFFER-1); \
+        strncpy_s(classValue, szName, sizeof(classValue)-1); \
         PropertyDialog::EndUndo(element); \
     }\
 }

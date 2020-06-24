@@ -336,7 +336,7 @@ int getDisplayList(std::vector<DisplayConfig>& displays)
       std::map<std::string, DisplayConfig>::iterator display = displayMap.find(adapter.DeviceName);
       if (display != displayMap.end()) {
          display->second.adapter = i;
-         strncpy_s(display->second.GPU_Name, adapter.Description, MAX_DEVICE_IDENTIFIER_STRING-1);
+         strncpy_s(display->second.GPU_Name, adapter.Description, sizeof(display->second.GPU_Name)-1);
       }
    }
    SAFE_RELEASE(pD3D);
@@ -643,7 +643,7 @@ void RenderDevice::CreateDevice(int &refreshrate, UINT adapterIndex)
    else
 #endif
    {
-      HRESULT hr = m_pD3D->CreateDevice(
+      hr = m_pD3D->CreateDevice(
          m_adapter,
          devtype,
          m_windowHwnd,
@@ -1762,7 +1762,8 @@ void RenderDevice::GetViewport(ViewPort* p1)
 //
 //
 
-Shader::Shader(RenderDevice *renderDevice)
+Shader::Shader(RenderDevice *renderDevice) : currentMaterial(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX,
+                                                             0xCCCCCCCC, 0xCCCCCCCC, 0xCCCCCCCC, false, false, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX)
 {
    m_renderDevice = renderDevice;
    m_shader = 0;

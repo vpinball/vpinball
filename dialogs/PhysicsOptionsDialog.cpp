@@ -406,16 +406,16 @@ bool PhysicsOptionsDialog::LoadSetting()
         xml_node<> *table = root->first_node("table");
         xml_node<> *flipper = root->first_node("flipper");
 
-        strncpy_s(loadValues.gravityConstant, table->first_node("gravityConstant")->value(), 15);
-        strncpy_s(loadValues.contactFriction, table->first_node("contactFriction")->value(), 15);
-        strncpy_s(loadValues.tableElasticity, table->first_node("elasticity")->value(), 15);
-        strncpy_s(loadValues.tableElasticityFalloff, table->first_node("elasticityFalloff")->value(), 15);
-        strncpy_s(loadValues.playfieldScatter, table->first_node("playfieldScatter")->value(), 15);
-        strncpy_s(loadValues.defaultElementScatter, table->first_node("defaultElementScatter")->value(), 15);
+        strncpy_s(loadValues.gravityConstant, table->first_node("gravityConstant")->value(), sizeof(loadValues.gravityConstant)-1);
+        strncpy_s(loadValues.contactFriction, table->first_node("contactFriction")->value(), sizeof(loadValues.contactFriction)-1);
+        strncpy_s(loadValues.tableElasticity, table->first_node("elasticity")->value(), sizeof(loadValues.tableElasticity)-1);
+        strncpy_s(loadValues.tableElasticityFalloff, table->first_node("elasticityFalloff")->value(), sizeof(loadValues.tableElasticityFalloff)-1);
+        strncpy_s(loadValues.playfieldScatter, table->first_node("playfieldScatter")->value(), sizeof(loadValues.playfieldScatter)-1);
+        strncpy_s(loadValues.defaultElementScatter, table->first_node("defaultElementScatter")->value(), sizeof(loadValues.defaultElementScatter)-1);
         try
         {
-            strncpy_s(loadValues.minSlope, table->first_node("playfieldminslope")->value(), 15);
-            strncpy_s(loadValues.maxSlope, table->first_node("playfieldmaxslope")->value(), 15);
+            strncpy_s(loadValues.minSlope, table->first_node("playfieldminslope")->value(), sizeof(loadValues.minSlope)-1);
+            strncpy_s(loadValues.maxSlope, table->first_node("playfieldmaxslope")->value(), sizeof(loadValues.maxSlope)-1);
         } 
         catch(...)
         {
@@ -423,18 +423,18 @@ bool PhysicsOptionsDialog::LoadSetting()
             sprintf_s(loadValues.maxSlope, "%f", DEFAULT_TABLE_MAX_SLOPE);
         }
 
-        strncpy_s(loadValues.speed, flipper->first_node("speed")->value(), 15);
-        strncpy_s(loadValues.strength, flipper->first_node("strength")->value(), 15);
-        strncpy_s(loadValues.elasticity, flipper->first_node("elasticity")->value(), 15);
-        strncpy_s(loadValues.scatter, flipper->first_node("scatter")->value(), 15);
-        strncpy_s(loadValues.eosTorque, flipper->first_node("eosTorque")->value(), 15);
-        strncpy_s(loadValues.eosTorqueAngle, flipper->first_node("eosTorqueAngle")->value(), 15);
-        strncpy_s(loadValues.returnStrength, flipper->first_node("returnStrength")->value(), 15);
-        strncpy_s(loadValues.elasticityFalloff, flipper->first_node("elasticityFalloff")->value(), 15);
-        strncpy_s(loadValues.friction, flipper->first_node("friction")->value(), 15);
-        strncpy_s(loadValues.coilRampup, flipper->first_node("coilRampUp")->value(), 15);
+        strncpy_s(loadValues.speed, flipper->first_node("speed")->value(), sizeof(loadValues.speed)-1);
+        strncpy_s(loadValues.strength, flipper->first_node("strength")->value(), sizeof(loadValues.strength)-1);
+        strncpy_s(loadValues.elasticity, flipper->first_node("elasticity")->value(), sizeof(loadValues.elasticity)-1);
+        strncpy_s(loadValues.scatter, flipper->first_node("scatter")->value(), sizeof(loadValues.scatter)-1);
+        strncpy_s(loadValues.eosTorque, flipper->first_node("eosTorque")->value(), sizeof(loadValues.eosTorque)-1);
+        strncpy_s(loadValues.eosTorqueAngle, flipper->first_node("eosTorqueAngle")->value(), sizeof(loadValues.eosTorqueAngle)-1);
+        strncpy_s(loadValues.returnStrength, flipper->first_node("returnStrength")->value(), sizeof(loadValues.returnStrength)-1);
+        strncpy_s(loadValues.elasticityFalloff, flipper->first_node("elasticityFalloff")->value(), sizeof(loadValues.elasticityFalloff)-1);
+        strncpy_s(loadValues.friction, flipper->first_node("friction")->value(), sizeof(loadValues.friction)-1);
+        strncpy_s(loadValues.coilRampup, flipper->first_node("coilRampUp")->value(), sizeof(loadValues.coilRampup)-1);
 
-        strncpy_s(loadValues.name, root->first_node("name")->value(), MAXNAMEBUFFER-1);
+        strncpy_s(loadValues.name, root->first_node("name")->value(), sizeof(loadValues.name)-1);
     }
     catch(...)
     {

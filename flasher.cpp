@@ -788,11 +788,11 @@ STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)
 
 STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
 {
-   char m_szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXTOKEN, NULL, NULL);
+   char szImage[sizeof(m_d.m_szImageA)];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, sizeof(m_d.m_szImageA), NULL, NULL);
 
    if (strcmp(m_szImage, m_d.m_szImageA) != 0)
-      strcpy_s(m_d.m_szImageA, MAXTOKEN-1, m_szImage);
+      strncpy_s(m_d.m_szImageA, szImage, sizeof(m_d.m_szImageA)-1);
 
    return S_OK;
 }
@@ -809,11 +809,11 @@ STDMETHODIMP Flasher::get_ImageB(BSTR *pVal)
 
 STDMETHODIMP Flasher::put_ImageB(BSTR newVal)
 {
-   char m_szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, MAXTOKEN, NULL, NULL);
+   char szImage[sizeof(m_d.m_szImageB)];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, sizeof(m_d.m_szImageB), NULL, NULL);
 
    if (strcmp(m_szImage, m_d.m_szImageB) != 0)
-      strcpy_s(m_d.m_szImageB, MAXTOKEN-1, m_szImage);
+      strncpy_s(m_d.m_szImageB, szImage, sizeof(m_d.m_szImageB)-1);
 
    return S_OK;
 }

@@ -66,7 +66,7 @@ void WallVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(wall->m_d.m_heightbottom, PropertyDialog::GetFloatTextbox(m_bottomHeightEdit), wall);
                 break;
             case DISPID_Image2:
-                CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(wall->m_d.m_szSideImage, m_sideImageCombo, wall);
+                CHECK_UPDATE_COMBO_TEXT(wall->m_d.m_szSideImage, m_sideImageCombo, wall);
                 break;
             case IDC_MATERIAL_COMBO:
                 CHECK_UPDATE_COMBO_TEXT_STRING(wall->m_d.m_szTopMaterial, m_topMaterialCombo, wall);

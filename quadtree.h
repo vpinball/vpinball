@@ -86,7 +86,7 @@ public:
          indent[i] = (i == indentLevel) ? 0 : ' ';
       char msg[256];
       sprintf_s(msg, "[%f %f], items=%u", m_vcenter.x, m_vcenter.y, m_vho.size());
-      strcat_s(indent, msg);
+      strncat_s(indent, msg, sizeof(indent)-strnlen_s(indent, sizeof(indent))-1);
       OutputDebugString(indent);
       if (!m_leaf)
       {

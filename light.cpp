@@ -101,7 +101,7 @@ void Light::SetDefaults(bool fromMouseClick)
 
    hr = LoadValueString("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern, NUM_RGB_BLINK_PATTERN);
    if ((hr != S_OK) || !fromMouseClick)
-      strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
+      strncpy_s(m_rgblinkpattern, "10", sizeof(m_rgblinkpattern)-1);
 
    m_blinkinterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "BlinkInterval", 125) : 125;
    m_d.m_intensity = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Light", "Intensity", 1.0f) : 1.0f;
@@ -903,7 +903,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    m_d.m_color = RGB(255, 255, 0);
    m_d.m_color2 = RGB(255, 255, 255);
 
-   strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
+   strncpy_s(m_rgblinkpattern, "10", sizeof(m_rgblinkpattern)-1);
    m_blinkinterval = 125;
    //m_d.m_borderwidth = 0;
    //m_d.m_bordercolor = RGB(0,0,0);

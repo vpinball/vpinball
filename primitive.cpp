@@ -1812,7 +1812,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                {
                   char szMatName[MAXSTRING] = { 0 };
                   memcpy(szMatName, szFileName, index);
-                  strcat_s(szMatName, ".mtl");
+                  strncat_s(szMatName, ".mtl", sizeof(szMatName)-strnlen_s(szMatName, sizeof(szMatName))-1);
                   Material * const mat = new Material();
                   if (WaveFrontObjLoadMaterial(szMatName, mat))
                   {
@@ -1900,7 +1900,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                {
                   index++;
                   string name = filename.substr(index, filename.length() - index);
-                  strcpy_s(prim->m_d.m_meshFileName, name.c_str());
+                  strncpy_s(prim->m_d.m_meshFileName, name.c_str(), sizeof(prim->m_d.m_meshFileName)-1);
                }
                EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
             }
@@ -1959,7 +1959,7 @@ bool Primitive::BrowseFor3DMeshFile()
    {
       index++;
       string name = filename.substr(index, filename.length() - index);
-      strcpy_s(m_d.m_meshFileName, name.c_str());
+      strncpy_s(m_d.m_meshFileName, name.c_str(), sizeof(m_d.m_meshFileName)-1);
    }
    if (ret == 0)
    {
@@ -2043,8 +2043,8 @@ STDMETHODIMP Primitive::get_NormalMap(BSTR *pVal)
 
 STDMETHODIMP Primitive::put_NormalMap(BSTR newVal)
 {
-    char szImage[MAXTOKEN];
-    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+    char szImage[sizeof(m_d.m_szNormalMap)];
+    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, sizeof(m_d.m_szNormalMap), NULL, NULL);
     const Texture * const tex = m_ptable->GetImage(szImage);
     if (tex && tex->IsHDR())
     {
@@ -2052,7 +2052,7 @@ STDMETHODIMP Primitive::put_NormalMap(BSTR newVal)
         return E_FAIL;
     }
 
-    strcpy_s(m_d.m_szNormalMap, szImage);
+    strncpy_s(m_d.m_szNormalMap, szImage, sizeof(m_d.m_szNormalMap)-1);
 
     return S_OK;
 }

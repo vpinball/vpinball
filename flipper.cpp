@@ -707,8 +707,8 @@ void Flipper::ExportMesh(FILE *f)
    }
    }
 
-   strcpy_s(subObjName, name);
-   strcat_s(subObjName, "Base");
+   strncpy_s(subObjName, name, sizeof(subObjName)-1);
+   strncat_s(subObjName, "Base", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
    WaveFrontObj_WriteObjectName(f, subObjName);
    WaveFrontObj_WriteVertexInfo(f, flipper, flipperBaseVertices);
    const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -734,8 +734,8 @@ void Flipper::ExportMesh(FILE *f)
          buf[i].nz = vert.z;
       }
 
-      strcpy_s(subObjName, name);
-      strcat_s(subObjName, "Rubber");
+      strncpy_s(subObjName, name, sizeof(subObjName)-1);
+      strncat_s(subObjName, "Rubber", sizeof(subObjName) - strnlen_s(subObjName, sizeof(subObjName)) - 1);
       WaveFrontObj_WriteObjectName(f, subObjName);
       WaveFrontObj_WriteVertexInfo(f, &flipper[flipperBaseVertices], flipperBaseVertices);
       mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);

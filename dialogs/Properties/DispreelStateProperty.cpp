@@ -43,7 +43,7 @@ void DispreelStateProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_VALUE_SETTER(reel->SetUpdateInterval, reel->GetUpdateInterval, PropertyDialog::GetIntTextbox, m_updateIntervalEdit, reel);
                 break;
             case DISPID_Sound:
-                CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(reel->m_d.m_szSound, m_soundCombo, reel);
+                CHECK_UPDATE_COMBO_TEXT(reel->m_d.m_szSound, m_soundCombo, reel);
                 break;
             default:
                 break;
