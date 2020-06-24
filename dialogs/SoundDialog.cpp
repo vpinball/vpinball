@@ -254,17 +254,16 @@ void SoundDialog::Import()
        return;
 
     /*const HRESULT hr =*/ LoadValueString( "RecentDir", "SoundDir", szInitialDir, MAXSTRING);
+      if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
+      {
+         //        strcpy_s( szInitialDir, sizeof( szInitialDir ), szFileName );
 
-    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
-    {
-//        strcpy_s( szInitialDir, sizeof( szInitialDir ), szFileName );
+         for (std::string file : szFileName)
+            pt->ImportSound(hSoundList, file.c_str());
 
-       for (std::string file : szFileName)
-          pt->ImportSound(hSoundList, file.c_str());
-
-        SaveValueString( "RecentDir", "SoundDir", szFileName[0]);
-        pt->SetNonUndoableDirty( eSaveDirty );
-    }
+         SaveValueString("RecentDir", "SoundDir", szFileName[0]);
+         pt->SetNonUndoableDirty(eSaveDirty);
+      }
     SetFocus();
 }
 
