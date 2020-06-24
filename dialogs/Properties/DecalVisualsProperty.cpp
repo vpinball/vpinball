@@ -87,12 +87,12 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_DECAL_TEXT_EDIT:
             {
-                char szName[MAXSTRING] = { 0 };
-                strncpy_s(szName, m_textEdit.GetWindowText().c_str(), m_textEdit.GetWindowText().GetLength());
+                char szName[MAXSTRING];
+                strncpy_s(szName, m_textEdit.GetWindowText().c_str(), sizeof(szName)-1);
                 if (strcmp(decal->m_d.m_sztext, szName) != 0)
                 {
                     PropertyDialog::StartUndo(decal);
-                    strncpy_s(decal->m_d.m_sztext, szName, MAXSTRING-1);
+                    strncpy_s(decal->m_d.m_sztext, szName, sizeof(decal->m_d.m_sztext)-1);
                     PropertyDialog::EndUndo(decal);
                 }
                 break;
@@ -172,7 +172,7 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(decal->m_d.m_rotation, PropertyDialog::GetFloatTextbox(m_rotationEdit), decal);
                 break;
             case IDC_SURFACE_COMBO:
-                CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(decal->m_d.m_szSurface, m_surfaceCombo, decal);
+                CHECK_UPDATE_COMBO_TEXT(decal->m_d.m_szSurface, m_surfaceCombo, decal);
                 break;
             default:
                 UpdateBaseProperties(decal, &decal->m_d, dispid);

@@ -133,7 +133,7 @@ void TableInfoDialog::VPGetDialogItemText(CEdit &edit, char **psztext)
 {
    const int length = edit.GetWindowTextLength();
    *psztext = new char[length+1];
-   strcpy_s(*psztext, length+1, edit.GetWindowText().c_str());
+   strncpy_s(*psztext, length+1, edit.GetWindowText().c_str(), length);
 }
 
 

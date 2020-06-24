@@ -355,24 +355,24 @@ void VPinball::SetStatusBarUnitInfo(const char * const info, const bool isUnit)
 
     if (info[0] != '\0')
     {
-       strcpy_s(textBuf, info);
+       strncpy_s(textBuf, info, sizeof(textBuf)-1);
        if(isUnit)
        {
            switch(m_convertToUnit)
            {
                case 0:
                {
-                   strcat_s(textBuf, " (inch)");
+                   strncat_s(textBuf, " (inch)", sizeof(textBuf)-strnlen_s(textBuf, sizeof(textBuf))-1);
                    break;
                }
                case 1:
                {
-                   strcat_s(textBuf, " (mm)");
+                   strncat_s(textBuf, " (mm)", sizeof(textBuf)-strnlen_s(textBuf, sizeof(textBuf))-1);
                    break;
                }
                case 2:
                {
-                   strcat_s(textBuf, " (VPUnits)");
+                   strncat_s(textBuf, " (VPUnits)", sizeof(textBuf)-strnlen_s(textBuf, sizeof(textBuf))-1);
                    break;
                }
                default:
@@ -949,17 +949,17 @@ void VPinball::LoadFileName(const char *szFileName, const bool updateEditor)
       // auto-import POV settings if exist...
 
       char szFileNameAuto[MAX_PATH];
-      strcpy_s(szFileNameAuto, m_currentTablePath);
-      strcat_s(szFileNameAuto, ppt->m_szTitle);
-      strcat_s(szFileNameAuto, ".pov");
+      strncpy_s(szFileNameAuto, m_currentTablePath, sizeof(szFileNameAuto)-1);
+      strncat_s(szFileNameAuto, ppt->m_szTitle, sizeof(szFileNameAuto)-strnlen_s(szFileNameAuto, sizeof(szFileNameAuto))-1);
+      strncat_s(szFileNameAuto, ".pov", sizeof(szFileNameAuto)-strnlen_s(szFileNameAuto, sizeof(szFileNameAuto))-1);
       if (Exists(szFileNameAuto)) // We check if there is a table pov settings first
       {
           ppt->ImportBackdropPOV(szFileNameAuto);
       }
       else // Otherwise, we seek for autopov settings
       {
-          strcpy_s(szFileNameAuto, m_currentTablePath);
-          strcat_s(szFileNameAuto, "autopov.pov");
+          strncpy_s(szFileNameAuto, m_currentTablePath, sizeof(szFileNameAuto)-1);
+          strncat_s(szFileNameAuto, "autopov.pov", sizeof(szFileNameAuto)-strnlen_s(szFileNameAuto, sizeof(szFileNameAuto))-1);
           if (Exists(szFileNameAuto))
           {
               ppt->ImportBackdropPOV(szFileNameAuto);
@@ -967,9 +967,9 @@ void VPinball::LoadFileName(const char *szFileName, const bool updateEditor)
       }
 
       // auto-import VBS table script, if exist...
-      strcpy_s(szFileNameAuto, m_currentTablePath);
-      strcat_s(szFileNameAuto, ppt->m_szTitle);
-      strcat_s(szFileNameAuto, ".vbs");
+      strncpy_s(szFileNameAuto, m_currentTablePath, sizeof(szFileNameAuto)-1);
+      strncat_s(szFileNameAuto, ppt->m_szTitle, sizeof(szFileNameAuto)-strnlen_s(szFileNameAuto, sizeof(szFileNameAuto))-1);
+      strncat_s(szFileNameAuto, ".vbs", sizeof(szFileNameAuto)-strnlen_s(szFileNameAuto, sizeof(szFileNameAuto))-1);
       if (Exists(szFileNameAuto)) // We check if there is a table pov settings first
       {
           ppt->m_pcv->LoadFromFile(szFileNameAuto);
@@ -1833,7 +1833,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             /*const HRESULT hr =*/ LoadValueString("RecentDir", "FontDir", szInitialDir, MAXSTRING);
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0, fileOffset))
             {
-               strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
+               strncpy_s(szInitialDir, szFileName, sizeof(szInitialDir)-1);
                szInitialDir[fileOffset] = 0;
                SaveValueString("RecentDir", "FontDir", szInitialDir);
                pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName);
@@ -2027,8 +2027,8 @@ void VPinball::ShowSearchSelect()
             ptCur->m_searchSelectDlg.Create(GetHwnd());
 
             char windowName[256];
-            strcpy_s(windowName, "Search/Select Element - ");
-            strncat_s(windowName, ptCur->m_szFileName, 255);
+            strncpy_s(windowName, "Search/Select Element - ", sizeof(windowName)-1);
+            strncat_s(windowName, ptCur->m_szFileName, sizeof(windowName)-strnlen_s(windowName, sizeof(windowName))-1);
             ptCur->m_searchSelectDlg.SetWindowText(windowName);
 
             ptCur->m_searchSelectDlg.ShowWindow();

@@ -141,8 +141,8 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                     lvitem.iSubItem = 0;
                     ListView_GetItem( hSoundList, &lvitem );
                     PinSound * const pps = (PinSound *)lvitem.lParam;
-                    strncpy_s( pps->m_szName, pinfo->item.pszText, MAXTOKEN-1 );
-                    strncpy_s( pps->m_szInternalName, pinfo->item.pszText, MAXTOKEN-1 );
+                    strncpy_s( pps->m_szName, pinfo->item.pszText, sizeof(pps->m_szName)-1 );
+                    strncpy_s( pps->m_szInternalName, pinfo->item.pszText, sizeof(pps->m_szInternalName)-1 );
                     CharLowerBuff( pps->m_szInternalName, lstrlen( pps->m_szInternalName ) );
                     if (pt)
                         pt->SetNonUndoableDirty( eSaveDirty );
@@ -255,7 +255,7 @@ void SoundDialog::Import()
 
     if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT, fileOffset))
     {
-        strcpy_s( szInitialDir, sizeof( szInitialDir ), szFileName );
+        strncpy_s( szInitialDir, szFileName, sizeof(szInitialDir)-1 );
 
         int len = lstrlen( szFileName );
         if (len < fileOffset)
@@ -409,10 +409,10 @@ void SoundDialog::Export()
             }
             else
             {
-               strcat_s(m_filename, pps->m_szName);
+               strncat_s(m_filename, pps->m_szName, sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
                string ext(pps->m_szPath);
                size_t idx = ext.find_last_of('.');
-               strcat_s(m_filename, ext.c_str() + idx);
+               strncat_s(m_filename, ext.c_str() + idx, sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
 
             }
             ofn.lpstrFile = m_filename;
@@ -458,16 +458,15 @@ void SoundDialog::Export()
                     }
                     if (selectedItemsCount > 1)
                     {
-                       memset(m_filename, 0, MAXSTRING);
-                       strcpy_s(m_filename, MAXSTRING-1, pathName);
+                       strncpy_s(m_filename, pathName, sizeof(m_filename)-1);
                        if (!renameOnExport)
-                          strcat_s(m_filename, MAXSTRING-1, &pps->m_szPath[begin]);
+                          strncat_s(m_filename, &pps->m_szPath[begin], sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
                        else
                        {
-                          strcat_s(m_filename, pps->m_szName);
-                          string ext(pps->m_szPath);
+                          strncat_s(m_filename, pps->m_szName, sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
+                          const string ext(pps->m_szPath);
                           size_t idx = ext.find_last_of('.');
-                          strcat_s(m_filename, ext.c_str() + idx);
+                          strncat_s(m_filename, ext.c_str() + idx, sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
                        }
                     }
 

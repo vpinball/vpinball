@@ -92,7 +92,7 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
             {
                 PropertyDialog::StartUndo(text);
                 const CString pattern = m_textEdit.GetWindowText();
-                strncpy_s(text->m_d.sztext, pattern.c_str(), pattern.GetLength());
+                strncpy_s(text->m_d.sztext, pattern.c_str(), sizeof(text->m_d.sztext)-1);
                 PropertyDialog::EndUndo(text);
                 break;
             }

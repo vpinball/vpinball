@@ -85,7 +85,7 @@ BOOL AboutDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          else
          {
             const LPCTSTR szSite = GetDlgItem(IDC_TRANSWEBSITE).GetWindowText();
-            strncpy_s(m_urlString, szSite, MAX_PATH-1);
+            strncpy_s(m_urlString, szSite, sizeof(m_urlString)-1);
             /*const HRESULT hr =*/ OpenURL(m_urlString);
          }
          return TRUE;

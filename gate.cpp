@@ -489,8 +489,8 @@ void Gate::ExportMesh(FILE *f)
    if (m_d.m_showBracket)
    {
       buf = new Vertex3D_NoTex2[gateBracketNumVertices];
-      strcpy_s(subName, name);
-      strcat_s(subName, "Bracket");
+      strncpy_s(subName, name, sizeof(subName)-1);
+      strncat_s(subName, "Bracket", sizeof(subName)-strnlen_s(subName, sizeof(subName))-1);
       WaveFrontObj_WriteObjectName(f, subName);
       GenerateBracketMesh(buf);
       WaveFrontObj_WriteVertexInfo(f, buf, gateBracketNumVertices);
@@ -505,8 +505,8 @@ void Gate::ExportMesh(FILE *f)
    SetGateType(m_d.m_type);
 
    buf = new Vertex3D_NoTex2[m_numVertices];
-   strcpy_s(subName, name);
-   strcat_s(subName, "Wire");
+   strncpy_s(subName, name, sizeof(subName)-1);
+   strncat_s(subName, "Wire", sizeof(subName)-strnlen_s(subName, sizeof(subName))-1);
    WaveFrontObj_WriteObjectName(f, subName);
    GenerateWireMesh(buf);
    WaveFrontObj_WriteVertexInfo(f, buf, m_numVertices);

@@ -42,11 +42,11 @@ bool PinBinary::ReadFromFile(const char * const szfilename)
 
    /*foo =*/ CloseHandle(hFile);
 
-   strncpy_s(m_szPath, szfilename, MAX_PATH-1);
+   strncpy_s(m_szPath, szfilename, sizeof(m_szPath)-1);
 
    TitleFromFilename(szfilename, m_szName);
 
-   strncpy_s(m_szInternalName, m_szName, MAXTOKEN-1);
+   strncpy_s(m_szInternalName, m_szName, sizeof(m_szInternalName)-1);
 
    CharLowerBuff(m_szInternalName, lstrlen(m_szInternalName));
    return true;
@@ -170,7 +170,7 @@ void PinFont::Register()
    lstrcat(szPath, tempFontNumber_s);
    lstrcat(szPath, ".ttf");
 
-   strcpy_s(m_szTempFile, sizeof(m_szTempFile), szPath);
+   strncpy_s(m_szTempFile, szPath, sizeof(m_szTempFile)-1);
 
    WriteToFile(m_szTempFile);
 

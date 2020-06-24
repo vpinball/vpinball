@@ -104,7 +104,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             pt->ListImages(hListView);
 
          char textBuf[16];
-         strcpy_s(textBuf, "128");
+         strncpy_s(textBuf, "128", sizeof(textBuf)-1);
          SetDlgItemText(IDC_ALPHA_MASK_EDIT, textBuf);
          ListView_SetItemState(hListView, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
          GotoDlgCtrl(hListView);
@@ -152,8 +152,8 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                Texture * const ppi = (Texture *)lvitem.lParam;
                if (ppi != NULL)
                {
-                  strncpy_s(ppi->m_szName, pinfo->item.pszText, MAXTOKEN-1);
-                  strncpy_s(ppi->m_szInternalName, pinfo->item.pszText, MAXTOKEN-1);
+                  strncpy_s(ppi->m_szName, pinfo->item.pszText, sizeof(ppi->m_szName)-1);
+                  strncpy_s(ppi->m_szInternalName, pinfo->item.pszText, sizeof(ppi->m_szInternalName)-1);
                   CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
                   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                   if (pt)
@@ -408,7 +408,7 @@ void ImageDialog::Import()
 
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT, fileOffset))
    {
-      strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
+      strncpy_s(szInitialDir, szFileName, sizeof(szInitialDir)-1);
       CCO(PinTable) * const pt = g_pvp->GetActiveTable();
       const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
@@ -491,10 +491,10 @@ void ImageDialog::Export()
             }
             else
             {
-               strcat_s(g_filename, ppi->m_szName);
+               strncat_s(g_filename, ppi->m_szName, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
                const string ext(ppi->m_szPath);
                const size_t idx = ext.find_last_of('.');
-               strcat_s(g_filename, ext.c_str() + idx);
+               strncat_s(g_filename, ext.c_str() + idx, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
             }
             ofn.lpstrFile = g_filename;
             ofn.nMaxFile = MAXSTRING;
@@ -566,16 +566,15 @@ void ImageDialog::Export()
                   }
                   if (selectedItemsCount>1)
                   {
-                     memset(g_filename, 0, MAXSTRING);
-                     strcpy_s(g_filename, MAXSTRING-1, pathName);
+                     strncpy_s(g_filename, pathName, sizeof(g_filename)-1);
                      if (!renameOnExport)
-                        strcat_s(g_filename, MAXSTRING-1, &ppi->m_szPath[begin]);
+                        strncat_s(g_filename, &ppi->m_szPath[begin], sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
                      else
                      {
-                        strcat_s(g_filename, ppi->m_szName);
+                        strncat_s(g_filename, ppi->m_szName, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
                         const string ext(ppi->m_szPath);
                         const size_t idx = ext.find_last_of('.');
-                        strcat_s(g_filename, ext.c_str() + idx);
+                        strncat_s(g_filename, ext.c_str() + idx, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
                      }
                   }
 
@@ -748,7 +747,7 @@ void ImageDialog::ReimportFrom()
             Texture * const ppi = (Texture*)lvitem.lParam;
             if (ppi != NULL)
             {
-               strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
+               strncpy_s(szInitialDir, szFileName, sizeof(szInitialDir)-1);
                szInitialDir[fileOffset] = 0;
                hr = SaveValueString("RecentDir", "ImageDir", szInitialDir);
 

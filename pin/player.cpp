@@ -2890,7 +2890,7 @@ void NudgeFilter::sample(float &a, const U64 now)
    {
       // sign change/zero crossing - note the time
       m_tzc = now;
-      IF_DEBUG_NUDGE(strcat_s(notes, "zc ");)
+      IF_DEBUG_NUDGE(strncat_s(notes, "zc ", sizeof(notes)-strnlen_s(notes, sizeof(notes))-1);)
    }
    else if (fabsf(a) <= .01f)
    {
@@ -2924,7 +2924,7 @@ void NudgeFilter::sample(float &a, const U64 now)
    if (fabsf(m_sum) < .02f)
    {
       // bring the residual acceleration exactly to rest
-      IF_DEBUG_NUDGE(strcat_s(notes, "zero ");)
+      IF_DEBUG_NUDGE(strncat_s(notes, "zero ", sizeof(notes)-strnlen_s(notes, sizeof(notes))-1);)
          a -= m_sum;
       m_sum = 0.f;
 
@@ -2936,7 +2936,7 @@ void NudgeFilter::sample(float &a, const U64 now)
    {
       // bring the running total toward neutral
       const float corr = expf(0.33f*logf(fabsf(m_sum*(float)(1.0 / .02)))) * (m_sum < 0.0f ? -.02f : .02f);
-      IF_DEBUG_NUDGE(strcat_s(notes, "damp ");)
+      IF_DEBUG_NUDGE(strncat_s(notes, "damp ", sizeof(notes)-strnlen_s(notes, sizeof(notes))-1);)
          a -= corr;
       m_sum -= corr;
 
@@ -4308,24 +4308,24 @@ void Player::UpdateHUD()
 		int line = 0;
 
 		if ( !m_ptable->m_szTableName.empty() )
-			strcat_s(szFoo, m_ptable->m_szTableName.c_str());
+			strncat_s(szFoo, m_ptable->m_szTableName.c_str(), sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
 		else
-			strcat_s(szFoo, "Table");
+			strncat_s(szFoo, "Table", sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
 		if (!m_ptable->m_szAuthor.empty())
 		{
-			strcat_s(szFoo, " by ");
-			strcat_s(szFoo, m_ptable->m_szAuthor.c_str());
+			strncat_s(szFoo, " by ", sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
+			strncat_s(szFoo, m_ptable->m_szAuthor.c_str(), sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
 		}
 		if (!m_ptable->m_szVersion.empty())
 		{
-			strcat_s(szFoo, " (");
-			strcat_s(szFoo, m_ptable->m_szVersion.c_str());
-			strcat_s(szFoo, ")");
+			strncat_s(szFoo, " (", sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
+			strncat_s(szFoo, m_ptable->m_szVersion.c_str(), sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
+			strncat_s(szFoo, ")", sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
 		}
 
 		char buffer[256];
 		sprintf_s(buffer, " (%s Revision %u)", !m_ptable->m_szDateSaved.empty() ? m_ptable->m_szDateSaved.c_str() : "N.A.", m_ptable->m_numTimesSaved);
-		strcat_s(szFoo, buffer);
+		strncat_s(szFoo, buffer, sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
 
 		if (strlen(szFoo) > 0)
 		{
@@ -5458,13 +5458,13 @@ void Player::DrawBalls()
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
       if (m_cabinetMode && !pball->m_decalMode)
-          strcpy_s(m_ballShaderTechnique, MAX_PATH-1, "RenderBall_CabMode");
+          strncpy_s(m_ballShaderTechnique, "RenderBall_CabMode", sizeof(m_ballShaderTechnique)-1);
       else if (m_cabinetMode && pball->m_decalMode)
-          strcpy_s(m_ballShaderTechnique, MAX_PATH-1, "RenderBall_CabMode_DecalMode");
+          strncpy_s(m_ballShaderTechnique, "RenderBall_CabMode_DecalMode", sizeof(m_ballShaderTechnique)-1);
       else if (!m_cabinetMode && pball->m_decalMode)
-          strcpy_s(m_ballShaderTechnique, MAX_PATH-1, "RenderBall_DecalMode");
+          strncpy_s(m_ballShaderTechnique, "RenderBall_DecalMode", sizeof(m_ballShaderTechnique)-1);
       else //if (!m_fCabinetMode && !pball->m_decalMode)
-          strcpy_s(m_ballShaderTechnique, MAX_PATH-1, "RenderBall");
+          strncpy_s(m_ballShaderTechnique, "RenderBall", sizeof(m_ballShaderTechnique)-1);
 
       m_ballShader->SetTechnique(m_ballShaderTechnique);
 

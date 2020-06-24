@@ -1771,7 +1771,7 @@ void PinTable::InitPostLoad(VPinball *pvp)
         m_BG_xlatez[i] = m_BG_xlatez[BG_DESKTOP];
 
         if (m_BG_szImage[i][0] == 0 && i == BG_FSS) // copy image over for FSS mode
-            strcpy_s(m_BG_szImage[i], m_BG_szImage[BG_DESKTOP]);
+            strncpy_s(m_BG_szImage[i], m_BG_szImage[BG_DESKTOP], sizeof(m_BG_szImage[i])-1);
       }
 
    m_currentBackglassMode = m_BG_current_set;
@@ -1949,9 +1949,9 @@ void PinTable::UIRenderPass2(Sur * const psur)
    //    SetTextColor( psur->m_hdc,RGB(180,180,180));
    //    char text[64];
    //    char number[8];
-   //    strcpy_s( text,"Layer_");
+   //    strncpy_s( text,"Layer_",sizeof(text)-1);
    //    _itoa_s(activeLayer+1, number, 10 );
-   //    strcat_s( text, number);
+   //    strncat_s( text, number, sizeof(text)-strnlen_s(text, sizeof(text))-1);
    //    RECT textRect;
    //    SetRect( &textRect, rc.right-60,rc.top, rc.right, rc.top+30 );
    //    DrawText( psur->m_hdc, text, -1, &textRect, DT_LEFT);
@@ -2389,7 +2389,7 @@ HRESULT PinTable::Save(const bool saveAs)
       if (ret == 0)
          return S_FALSE;
 
-      strcpy_s(szInitialDir, sizeof(szInitialDir), m_szFileName);
+      strncpy_s(szInitialDir, m_szFileName, sizeof(szInitialDir)-1);
       szInitialDir[ofn.nFileOffset] = 0;
       hr = SaveValueString("RecentDir", "LoadDir", szInitialDir);
 
@@ -2561,9 +2561,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
             for (size_t i = 0; i < m_vedit.size(); i++)
             {
                char szSuffix[32], szStmName[64];
-               strcpy_s(szStmName, sizeof(szStmName), "GameItem");
+               strncpy_s(szStmName, "GameItem", sizeof(szStmName)-1);
                _itoa_s((int)i, szSuffix, sizeof(szSuffix), 10);
-               strcat_s(szStmName, sizeof(szStmName), szSuffix);
+               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -2586,9 +2586,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
             for (size_t i = 0; i < m_vsound.size(); i++)
             {
                char szSuffix[32], szStmName[64];
-               strcpy_s(szStmName, sizeof(szStmName), "Sound");
+               strncpy_s(szStmName, "Sound", sizeof(szStmName)-1);
                _itoa_s((int)i, szSuffix, sizeof(szSuffix), 10);
-               strcat_s(szStmName, sizeof(szStmName), szSuffix);
+               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -2606,9 +2606,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
             for (size_t i = 0; i < m_vimage.size(); i++)
             {
                char szSuffix[32], szStmName[64];
-               strcpy_s(szStmName, sizeof(szStmName), "Image");
+               strncpy_s(szStmName, "Image", sizeof(szStmName)-1);
                _itoa_s((int)i, szSuffix, sizeof(szSuffix), 10);
-               strcat_s(szStmName, sizeof(szStmName), szSuffix);
+               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -2626,9 +2626,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
             for (size_t i = 0; i < m_vfont.size(); i++)
             {
                char szSuffix[32], szStmName[64];
-               strcpy_s(szStmName, sizeof(szStmName), "Font");
+               strncpy_s(szStmName, "Font", sizeof(szStmName)-1);
                _itoa_s((int)i, szSuffix, sizeof(szSuffix), 10);
-               strcat_s(szStmName, sizeof(szStmName), szSuffix);
+               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -2646,9 +2646,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
             for (int i = 0; i < m_vcollection.Size(); i++)
             {
                char szSuffix[32], szStmName[64];
-               strcpy_s(szStmName, sizeof(szStmName), "Collection");
+               strncpy_s(szStmName, "Collection", sizeof(szStmName)-1);
                _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
-               strcat_s(szStmName, sizeof(szStmName), szSuffix);
+               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -3370,22 +3370,14 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
          mats[i].bIsMetal = m->m_bIsMetal;
          mats[i].bOpacityActive_fEdgeAlpha = m->m_bOpacityActive ? 1 : 0;
          mats[i].bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(m->m_fEdgeAlpha, 0.f, 1.f)) << 1;
-         size_t len = m->m_szName.size();
-         if (len >= MAXNAMEBUFFER)
-            len = MAXNAMEBUFFER - 1;
-         memset(mats[i].szName, 0, MAXNAMEBUFFER);
-         strncpy_s(mats[i].szName, m->m_szName.c_str(), len);
+         strncpy_s(mats[i].szName, m->m_szName.c_str(), sizeof(mats[i].szName)-1);
       }
       bw.WriteStruct(FID(MATE), mats, (int)(sizeof(SaveMaterial)*m_materials.size()));
       SavePhysicsMaterial * const phymats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_materials.size());
       for (size_t i = 0; i < m_materials.size(); i++)
       {
           const Material* const m = m_materials[i];
-          size_t len = m->m_szName.size();
-          if (len >= MAXNAMEBUFFER)
-             len = MAXNAMEBUFFER - 1;
-          memset(phymats[i].szName, 0, MAXNAMEBUFFER);
-          strncpy_s(phymats[i].szName, m->m_szName.c_str(), len);
+          strncpy_s(phymats[i].szName, m->m_szName.c_str(), sizeof(phymats[i].szName)-1);
           phymats[i].fElasticity = m->m_fElasticity;
           phymats[i].fElasticityFallOff = m->m_fElasticityFalloff;
           phymats[i].fFriction = m->m_fFriction;
@@ -3431,7 +3423,7 @@ HRESULT PinTable::LoadGameFromFilename(const char *szFileName)
       return S_FALSE;
    }
 
-   strcpy_s(m_szFileName, sizeof(m_szFileName), szFileName);
+   strncpy_s(m_szFileName, szFileName, sizeof(m_szFileName)-1);
    {
       MAKE_WIDEPTR_FROMANSI(wszCodeFile, szFileName);
       HRESULT hr;
@@ -3565,9 +3557,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             for (int i = 0; i < csubobj; i++)
             {
                char szSuffix[32], szStmName[64];
-               strcpy_s(szStmName, sizeof(szStmName), "GameItem");
+               strncpy_s(szStmName, "GameItem", sizeof(szStmName)-1);
                _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
-               strcat_s(szStmName, sizeof(szStmName), szSuffix);
+               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -3599,9 +3591,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             for (int i = 0; i < csounds; i++)
             {
                char szSuffix[32], szStmName[64];
-               strcpy_s(szStmName, sizeof(szStmName), "Sound");
+               strncpy_s(szStmName, "Sound", sizeof(szStmName)-1);
                _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
-               strcat_s(szStmName, sizeof(szStmName), szSuffix);
+               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -3623,9 +3615,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   pool.enqueue([i, loadfileversion, pstgData, this] {
                      HRESULT hr;
                      char szSuffix[32], szStmName[64];
-                     strcpy_s(szStmName, sizeof(szStmName), "Image");
+                     strncpy_s(szStmName, "Image", sizeof(szStmName)-1);
                      _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
-                     strcat_s(szStmName, sizeof(szStmName), szSuffix);
+                     strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
 
                      MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -3647,9 +3639,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             for (int i = 0; i < cfonts; i++)
             {
                char szSuffix[32], szStmName[64];
-               strcpy_s(szStmName, sizeof(szStmName), "Font");
+               strncpy_s(szStmName, "Font", sizeof(szStmName)-1);
                _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
-               strcat_s(szStmName, sizeof(szStmName), szSuffix);
+               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -3670,9 +3662,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             for (int i = 0; i < ccollection; i++)
             {
                char szSuffix[32], szStmName[64];
-               strcpy_s(szStmName, sizeof(szStmName), "Collection");
+               strncpy_s(szStmName, "Collection", sizeof(szStmName)-1);
                _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
-               strcat_s(szStmName, sizeof(szStmName), szSuffix);
+               strncat_s(szStmName, szSuffix, sizeof(szStmName)-strnlen_s(szStmName, sizeof(szStmName))-1);
 
                MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -5527,7 +5519,7 @@ void PinTable::ImportBackdropPOV(const char *filename)
             return;
     }
     else
-        strcpy_s(szFileName, filename);
+        strncpy_s(szFileName, filename, sizeof(szFileName)-1);
 
     xml_document<> xmlDoc;
 
@@ -5717,7 +5709,7 @@ void PinTable::ExportBackdropPOV(const char *filename)
 			return;// S_FALSE;
 	}
 	else
-		strcpy_s(m_szObjFileName, filename);
+		strncpy_s(m_szObjFileName, filename, sizeof(m_szObjFileName)-1);
 
     char strBuf[MAX_PATH];
     xml_document<> xmlDoc;
@@ -6829,7 +6821,7 @@ void PinTable::ReImportImage(Texture * const ppi, const char * const filename)
    ppi->SetSizeFrom(tex);
    ppi->m_pdsBuffer = tex;
 
-   strncpy_s(ppi->m_szPath, filename, MAXSTRING-1);
+   strncpy_s(ppi->m_szPath, filename, sizeof(ppi->m_szPath)-1);
 }
 
 
@@ -6966,11 +6958,11 @@ void PinTable::ImportImage(HWND hwndListView, const char * const filename)
    if (end == 0)
       end = len - 1;
 
-   strncpy_s(ppi->m_szName, &filename[begin], MAXTOKEN-1);
+   strncpy_s(ppi->m_szName, &filename[begin], sizeof(ppi->m_szName)-1);
 
    ppi->m_szName[end - begin] = 0;
 
-   strncpy_s(ppi->m_szInternalName, ppi->m_szName, MAXTOKEN-1);
+   strncpy_s(ppi->m_szInternalName, ppi->m_szName, sizeof(ppi->m_szInternalName)-1);
 
    CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
 
@@ -7455,7 +7447,7 @@ void PinTable::AddDbgLight(Light * const plight)
         plight->get_FalloffPower(&data->falloffPower);
         plight->get_Intensity(&data->intensity);
         plight->get_TransmissionScale(&data->transmissionScale);
-        strcpy_s(data->name, lightName);
+        strncpy_s(data->name, lightName, sizeof(data->name)-1);
         m_dbgChangedLights.push_back(data);
     }
 }
@@ -7574,8 +7566,8 @@ STDMETHODIMP PinTable::get_Image(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_Image(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   char szImage[sizeof(m_szImage)];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, sizeof(m_szImage), NULL, NULL);
    const Texture * const tex = GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -7584,7 +7576,7 @@ STDMETHODIMP PinTable::put_Image(BSTR newVal)
    }
 
    STARTUNDO
-   strcpy_s(m_szImage,szImage);
+   strncpy_s(m_szImage,szImage,sizeof(m_szImage)-1);
    STOPUNDO
 
    return S_OK;
@@ -8771,8 +8763,8 @@ STDMETHODIMP PinTable::get_ColorGradeImage(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_ColorGradeImage(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   char szImage[sizeof(m_szImageColorGrade)];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, sizeof(m_szImageColorGrade), NULL, NULL);
    const Texture * const tex = GetImage(szImage);
    if (tex && (tex->m_width != 256 || tex->m_height != 16))
    {
@@ -8781,7 +8773,7 @@ STDMETHODIMP PinTable::put_ColorGradeImage(BSTR newVal)
    }
 
    STARTUNDO
-   strcpy_s(m_szImageColorGrade,szImage);
+   strncpy_s(m_szImageColorGrade,szImage,sizeof(m_szImageColorGrade)-1);
    STOPUNDO
 
    return S_OK;
@@ -9236,8 +9228,8 @@ STDMETHODIMP PinTable::get_EnvironmentImage(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_EnvironmentImage(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, NULL, NULL);
+   char szImage[sizeof(m_szEnvImage)];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, sizeof(m_szEnvImage), NULL, NULL);
    const Texture * const tex = GetImage(szImage);
    if (tex && (tex->m_width != tex->m_height*2))
    {
@@ -9246,7 +9238,7 @@ STDMETHODIMP PinTable::put_EnvironmentImage(BSTR newVal)
    }
 
    STARTUNDO
-   strcpy_s(m_szEnvImage,szImage);
+   strncpy_s(m_szEnvImage,szImage,sizeof(m_szEnvImage)-1);
    STOPUNDO
 
    return S_OK;
@@ -9411,7 +9403,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if(physTab->first_node("gravityConstant")!=nullptr)
       {
-          strcpy_s(str, physTab->first_node("gravityConstant")->value());
+          strncpy_s(str, physTab->first_node("gravityConstant")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
           put_Gravity(val);
       }
@@ -9421,7 +9413,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if (physTab->first_node("contactFriction") != nullptr)
       {
-          strcpy_s(str, physTab->first_node("contactFriction")->value());
+          strncpy_s(str, physTab->first_node("contactFriction")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
           put_Friction(val);
       }
@@ -9430,7 +9422,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if (physTab->first_node("elasticity") != nullptr)
       {
-          strcpy_s(str, physTab->first_node("elasticity")->value());
+          strncpy_s(str, physTab->first_node("elasticity")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
           put_Elasticity(val);
       }
@@ -9439,7 +9431,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if (physTab->first_node("elasticityFalloff") != nullptr)
       {
-          strcpy_s(str, physTab->first_node("elasticityFalloff")->value());
+          strncpy_s(str, physTab->first_node("elasticityFalloff")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
           put_ElasticityFalloff(val);
       }
@@ -9448,7 +9440,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if (physTab->first_node("playfieldScatter") != nullptr)
       {
-          strcpy_s(str, physTab->first_node("playfieldScatter")->value());
+          strncpy_s(str, physTab->first_node("playfieldScatter")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
           put_Scatter(val);
       }
@@ -9457,7 +9449,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if (physTab->first_node("defaultElementScatter") != nullptr)
       {
-          strcpy_s(str, physTab->first_node("defaultElementScatter")->value());
+          strncpy_s(str, physTab->first_node("defaultElementScatter")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &val);
           put_DefaultScatter(val);
       }
@@ -9466,7 +9458,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if(physFlip->first_node("speed")!=nullptr)
       {
-          strcpy_s(str, physFlip->first_node("speed")->value());
+          strncpy_s(str, physFlip->first_node("speed")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsMass);
       }
       else
@@ -9477,7 +9469,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if(physFlip->first_node("strength")!=nullptr)
       {
-          strcpy_s(str, physFlip->first_node("strength")->value());
+          strncpy_s(str, physFlip->first_node("strength")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsStrength);
       }
       else
@@ -9488,7 +9480,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if(physFlip->first_node("elasticity")!=nullptr)
       {
-          strcpy_s(str, physFlip->first_node("elasticity")->value());
+          strncpy_s(str, physFlip->first_node("elasticity")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsElasticity);
       }
       else
@@ -9499,7 +9491,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if(physFlip->first_node("scatter")!=nullptr)
       {
-          strcpy_s(str, physFlip->first_node("scatter")->value());
+          strncpy_s(str, physFlip->first_node("scatter")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsScatter);
       }
       else
@@ -9510,7 +9502,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if(physFlip->first_node("eosTorque")!=nullptr)
       {
-          strcpy_s(str, physFlip->first_node("eosTorque")->value());
+          strncpy_s(str, physFlip->first_node("eosTorque")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsTorqueDamping);
       }
       else
@@ -9521,7 +9513,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if(physFlip->first_node("eosTorqueAngle")!=nullptr)
       {
-          strcpy_s(str, physFlip->first_node("eosTorqueAngle")->value());
+          strncpy_s(str, physFlip->first_node("eosTorqueAngle")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsTorqueDampingAngle);
       }
       else
@@ -9533,7 +9525,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if(physFlip->first_node("returnStrength")!=nullptr)
       {
-          strcpy_s(str, physFlip->first_node("returnStrength")->value());
+          strncpy_s(str, physFlip->first_node("returnStrength")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsReturnStrength);
       }
       else
@@ -9545,7 +9537,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if(physFlip->first_node("elasticityFalloff")!=nullptr)
       {
-          strcpy_s(str, physFlip->first_node("elasticityFalloff")->value());
+          strncpy_s(str, physFlip->first_node("elasticityFalloff")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsElasticityFalloff);
       }
       else
@@ -9556,7 +9548,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if(physFlip->first_node("friction")!=nullptr)
       {
-          strcpy_s(str, physFlip->first_node("friction")->value());
+          strncpy_s(str, physFlip->first_node("friction")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsFriction);
       }
       else
@@ -9567,7 +9559,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
       if(physFlip->first_node("coilRampUp")!=nullptr)
       {
-          strcpy_s(str, physFlip->first_node("coilRampUp")->value());
+          strncpy_s(str, physFlip->first_node("coilRampUp")->value(), sizeof(str)-1);
           sscanf_s(str, "%f", &FlipperPhysicsCoilRampUp);
       }
       else
@@ -10018,8 +10010,8 @@ STDMETHODIMP PinTable::get_BallFrontDecal(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_BallFrontDecal(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, MAXNAMEBUFFER, NULL, NULL);
+   char szImage[sizeof(m_szBallImageDecal)];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, sizeof(m_szBallImageDecal), NULL, NULL);
    const Texture * const tex = GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -10028,7 +10020,7 @@ STDMETHODIMP PinTable::put_BallFrontDecal(BSTR newVal)
    }
 
    STARTUNDO
-   strcpy_s(m_szBallImageDecal,szImage);
+   strncpy_s(m_szBallImageDecal,szImage,sizeof(m_szBallImageDecal)-1);
    STOPUNDO
 
    return S_OK;

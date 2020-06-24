@@ -361,19 +361,19 @@ public:
 
             // Remove " "
             if (filename[0] == '"') {
-               strcpy_s(szTableFileName, filename + 1);
+               strncpy_s(szTableFileName, filename + 1, sizeof(szTableFileName)-1);
                szTableFileName[lstrlen(szTableFileName) - 1] = '\0';
             }
             else
-               strcpy_s(szTableFileName, filename);
+               strncpy_s(szTableFileName, filename, sizeof(szTableFileName)-1);
 
             // Add current path
             char szLoadDir[MAX_PATH];
             if (szTableFileName[1] != ':') {
                GetCurrentDirectory(MAX_PATH, szLoadDir);
-               strcat_s(szLoadDir, "\\");
-               strcat_s(szLoadDir, szTableFileName);
-               strcpy_s(szTableFileName, szLoadDir);
+               strncat_s(szLoadDir, "\\", sizeof(szLoadDir)-strnlen_s(szLoadDir, sizeof(szLoadDir))-1);
+               strncat_s(szLoadDir, szTableFileName, sizeof(szLoadDir)-strnlen_s(szLoadDir, sizeof(szLoadDir))-1);
+               strncpy_s(szTableFileName, szLoadDir, sizeof(szTableFileName)-1);
             }
             else
                // Or set from table path
@@ -479,12 +479,12 @@ public:
            if (extractScript && loadFileResult)
            {
                TCHAR szScriptFilename[MAX_PATH];
-               strcpy_s(szScriptFilename, szTableFileName);
+               strncpy_s(szScriptFilename, szTableFileName, sizeof(szScriptFilename)-1);
                TCHAR* pos = strrchr(szScriptFilename, '.');
                if (pos)
                {
                    *pos = 0;
-                   strcat_s(szScriptFilename, ".vbs");
+                   strncat_s(szScriptFilename, ".vbs", sizeof(szScriptFilename)-strnlen_s(szScriptFilename, sizeof(szScriptFilename))-1);
                    m_vpinball.m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
                }
                m_vpinball.Quit();
@@ -492,12 +492,12 @@ public:
            if (extractPov && loadFileResult)
            {
                TCHAR szPOVFilename[MAX_PATH];
-               strcpy_s(szPOVFilename, szTableFileName);
+               strncpy_s(szPOVFilename, szTableFileName, sizeof(szPOVFilename)-1);
                TCHAR* pos = strrchr(szPOVFilename, '.');
                if (pos)
                {
                    *pos = 0;
-                   strcat_s(szPOVFilename, ".pov");
+                   strncat_s(szPOVFilename, ".pov", sizeof(szPOVFilename)-strnlen_s(szPOVFilename, sizeof(szPOVFilename))-1);
                    m_vpinball.m_ptableActive->ExportBackdropPOV(szPOVFilename);
                }
                m_vpinball.Quit();

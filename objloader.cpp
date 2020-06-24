@@ -384,12 +384,12 @@ FILE* WaveFrontObj_ExportStart(const char *filename)
          break;
       }
    }
-   strcpy_s(matName, filename);
+   strncpy_s(matName, filename, sizeof(matName)-1);
    if (i < len)
    {      
       memcpy(matName, filename, i);
       matName[i] = 0;
-      strcat_s(matName, "mtl");
+      strncat_s(matName, "mtl", sizeof(matName)-strnlen_s(matName, sizeof(matName))-1);
    }
 
    for (i = len; i >= 0; i--)
@@ -424,7 +424,7 @@ void WaveFrontObj_ExportEnd(FILE *f)
 void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename, const Material * const mat)
 {
    char texelNameCopy[MAX_PATH];
-   strcpy_s(texelNameCopy, texelName);
+   strncpy_s(texelNameCopy, texelName, sizeof(texelNameCopy)-1);
    RemoveSpaces(texelNameCopy);
    fprintf_s(matFile, "newmtl %s\n", texelNameCopy);
    fprintf_s(matFile, "Ns 7.843137\n");
@@ -438,7 +438,7 @@ void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename
    fprintf_s(matFile, "illum 5\n");
    if (texelFilename != NULL)
    {
-      strcpy_s(texelNameCopy, texelFilename);
+      strncpy_s(texelNameCopy, texelFilename, sizeof(texelNameCopy)-1);
       RemoveSpaces(texelNameCopy);
 
       fprintf_s(matFile, "map_kd %s\n", texelNameCopy);

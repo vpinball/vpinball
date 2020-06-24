@@ -397,10 +397,10 @@ void CodeViewer::SetEnabled(const bool enabled)
 void CodeViewer::SetCaption(const char * const szCaption)
 {
    char szT[MAXSTRING];
-   strcpy_s(szT, sizeof(szT), szCaption);
+   strncpy_s(szT, szCaption, sizeof(szT)-1);
    LocalString ls(IDS_SCRIPT);
-   strcat_s(szT, sizeof(szT), " ");
-   strcat_s(szT, sizeof(szT), ls.m_szbuffer);
+   strncat_s(szT, " ", sizeof(szT)-strnlen_s(szT, sizeof(szT))-1);
+   strncat_s(szT, ls.m_szbuffer, sizeof(szT)-strnlen_s(szT, sizeof(szT))-1);
    SetWindowText(szT);
 }
 
@@ -1736,7 +1736,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 		char szDwellWord[256] = {};
 		char szLCDwellWord[256] = {};
 		GetRange(m_hwndScintilla, wordstart, wordfinish, szDwellWord);
-		strcpy_s(szLCDwellWord, szDwellWord);
+		strncpy_s(szLCDwellWord, szDwellWord, sizeof(szLCDwellWord)-1);
 		szLower(szLCDwellWord);
 		string DwellWord = szLCDwellWord;
 		RemovePadding(DwellWord);
@@ -2416,15 +2416,15 @@ void CodeViewer::ParseVPCore()
    if (fopen_s(&fCore, sPath.c_str(), "r") != 0)
 	if (!fCore)
 	{
-	  char szLoadDir[MAX_PATH] = { 0 };
-	  strcpy_s(szLoadDir, g_pvp->m_currentTablePath);
-	  strcat_s(szLoadDir, "\\core.vbs");
+	  char szLoadDir[MAX_PATH];
+	  strncpy_s(szLoadDir, g_pvp->m_currentTablePath, sizeof(szLoadDir)-1);
+	  strncat_s(szLoadDir, "\\core.vbs", sizeof(szLoadDir)-strnlen_s(szLoadDir, sizeof(szLoadDir))-1);
 	  if (fopen_s(&fCore, szLoadDir, "r") != 0)
 		  if (!fCore)
 		  {
 			  szLoadDir[0] = '\0';
 			  /*const HRESULT hr =*/ LoadValueString("RecentDir", "LoadDir", szLoadDir, MAX_PATH);
-			  strcat_s(szLoadDir, "\\core.vbs");
+			  strncat_s(szLoadDir, "\\core.vbs", sizeof(szLoadDir)-strnlen_s(szLoadDir, sizeof(szLoadDir))-1);
 			  if (fopen_s(&fCore, szLoadDir, "r") != 0)
 				  if (!fCore)
 				  {

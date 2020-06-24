@@ -64,7 +64,7 @@ void SpinnerVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(spinner->m_d.m_showBracket, PropertyDialog::GetCheckboxState(m_hShowBracketCheck), spinner);
                 break;
             case IDC_SURFACE_COMBO:
-                CHECK_UPDATE_COMBO_TEXT_MAXTOKEN(spinner->m_d.m_szSurface, m_surfaceCombo, spinner);
+                CHECK_UPDATE_COMBO_TEXT(spinner->m_d.m_szSurface, m_surfaceCombo, spinner);
                 break;
             case 11:
                 CHECK_UPDATE_ITEM(spinner->m_d.m_vCenter.x, PropertyDialog::GetFloatTextbox(m_posXEdit), spinner);

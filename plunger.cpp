@@ -69,8 +69,8 @@ void Plunger::SetDefaults(bool fromMouseClick)
 
    hr = LoadValueString("DefaultProps\\Plunger", "CustomTipShape", m_d.m_szTipShape, MAXTIPSHAPE);
    if ((hr != S_OK) || !fromMouseClick)
-      strcpy_s(m_d.m_szTipShape, MAXTIPSHAPE,
-      "0 .34; 2 .6; 3 .64; 5 .7; 7 .84; 8 .88; 9 .9; 11 .92; 14 .92; 39 .84");
+      strncpy_s(m_d.m_szTipShape,
+      "0 .34; 2 .6; 3 .64; 5 .7; 7 .84; 8 .88; 9 .9; 11 .92; 14 .92; 39 .84", sizeof(m_d.m_szTipShape)-1);
 
    m_d.m_rodDiam = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "CustomRodDiam", 0.60f) : 0.60f;
    m_d.m_ringGap = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Plunger", "CustomRingGap", 2.0f) : 2.0f;

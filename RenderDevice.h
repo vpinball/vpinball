@@ -544,7 +544,7 @@ public:
    {
       if (strcmp(currentTechnique, technique) /*|| (m_renderDevice->m_curShader != this)*/)
       {
-         strcpy_s(currentTechnique, technique);
+         strncpy_s(currentTechnique, technique, sizeof(currentTechnique)-1);
          //m_renderDevice->m_curShader = this;
          CHECKD3D(m_shader->SetTechnique(technique));
          m_renderDevice->m_curTechniqueChanges++;

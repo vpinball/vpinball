@@ -591,8 +591,8 @@ void Bumper::ExportMesh(FILE *f)
    if (m_d.m_baseVisible)
    {
       Vertex3D_NoTex2 *base = new Vertex3D_NoTex2[bumperBaseNumVertices];
-      strcpy_s(subObjName, name);
-      strcat_s(subObjName, "Base");
+      strncpy_s(subObjName, name, sizeof(subObjName)-1);
+      strncat_s(subObjName, "Base", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
       WaveFrontObj_WriteObjectName(f, subObjName);
 
       GenerateBaseMesh(base);
@@ -607,8 +607,8 @@ void Bumper::ExportMesh(FILE *f)
    if (m_d.m_ringVisible)
    {
       Vertex3D_NoTex2 * const ring = new Vertex3D_NoTex2[bumperRingNumVertices];
-      strcpy_s(subObjName, name);
-      strcat_s(subObjName, "Ring");
+      strncpy_s(subObjName, name, sizeof(subObjName)-1);
+      strncat_s(subObjName, "Ring", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
       WaveFrontObj_WriteObjectName(f, subObjName);
 
       GenerateRingMesh(ring);
@@ -620,8 +620,8 @@ void Bumper::ExportMesh(FILE *f)
    if (m_d.m_skirtVisible)
    {
       Vertex3D_NoTex2 * const socket = new Vertex3D_NoTex2[bumperSocketNumVertices];
-      strcpy_s(subObjName, name);
-      strcat_s(subObjName, "Skirt");
+      strncpy_s(subObjName, name, sizeof(subObjName)-1);
+      strncat_s(subObjName, "Skirt", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
       WaveFrontObj_WriteObjectName(f, subObjName);
 
       GenerateSocketMesh(socket);
@@ -636,8 +636,8 @@ void Bumper::ExportMesh(FILE *f)
    if (m_d.m_capVisible)
    {
       Vertex3D_NoTex2 * const cap = new Vertex3D_NoTex2[bumperCapNumVertices];
-      strcpy_s(subObjName, name);
-      strcat_s(subObjName, "Cap");
+      strncpy_s(subObjName, name, sizeof(subObjName)-1);
+      strncat_s(subObjName, "Cap", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
       WaveFrontObj_WriteObjectName(f, subObjName);
 
       GenerateCapMesh(cap);
