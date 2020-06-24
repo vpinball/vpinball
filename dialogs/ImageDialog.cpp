@@ -399,43 +399,19 @@ void ImageDialog::OnCancel()
 
 void ImageDialog::Import()
 {
-   char szFileName[MAXMULTISTRING];
+   std::vector<std::string> szFileName;
    char szInitialDir[MAXSTRING];
-   szFileName[0] = '\0';
-   int fileOffset;
 
    HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
 
-   if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT, fileOffset))
+   if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
-      strncpy_s(szInitialDir, szFileName, sizeof(szInitialDir)-1);
       CCO(PinTable) * const pt = g_pvp->GetActiveTable();
       const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
-      int len = lstrlen(szFileName);
-      if (len < fileOffset)
-      {
-         // Multi-file select
-         char szT[MAXSTRING];
-         lstrcpy(szT, szFileName);
-         lstrcat(szT, "\\");
-         len++;
-         int filenamestart = fileOffset;
-         int filenamelen = lstrlen(&szFileName[filenamestart]);
-         while (filenamelen > 0)
-         {
-            lstrcpy(&szT[len], &szFileName[filenamestart]);
-            pt->ImportImage(hSoundList, szT);
-            filenamestart += filenamelen + 1;
-            filenamelen = lstrlen(&szFileName[filenamestart]);
-         }
-      }
-      else
-      {
-         szInitialDir[fileOffset] = 0;
-         pt->ImportImage(hSoundList, szFileName);
-      }
-      hr = SaveValueString("RecentDir", "ImageDir", szInitialDir);
+      for (std::string file : szFileName)
+         pt->ImportImage(hSoundList, file.c_str());
+      hr = SaveValueString("RecentDir", "ImageDir", szFileName[0]);
       pt->SetNonUndoableDirty(eSaveDirty);
       SetFocus();
    }
@@ -730,14 +706,12 @@ void ImageDialog::ReimportFrom()
       const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this image with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
-         char szFileName[MAXMULTISTRING];
+         std::vector<std::string> szFileName;
          char szInitialDir[MAXSTRING];
-         szFileName[0] = '\0';
-         int fileOffset;
 
          HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
 
-         if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0","png",0,fileOffset))
+         if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0","png",0))
          {
             LVITEM lvitem;
             lvitem.mask = LVIF_PARAM;
@@ -747,12 +721,10 @@ void ImageDialog::ReimportFrom()
             Texture * const ppi = (Texture*)lvitem.lParam;
             if (ppi != NULL)
             {
-               strncpy_s(szInitialDir, szFileName, sizeof(szInitialDir)-1);
-               szInitialDir[fileOffset] = 0;
-               hr = SaveValueString("RecentDir", "ImageDir", szInitialDir);
+               hr = SaveValueString("RecentDir", "ImageDir", szFileName[0]);
 
                CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-               pt->ReImportImage(ppi, szFileName);
+               pt->ReImportImage(ppi, szFileName[0].c_str());
                ListView_SetItemText(hSoundList, sel, 1, ppi->m_szPath);
                pt->SetNonUndoableDirty(eSaveDirty);
 

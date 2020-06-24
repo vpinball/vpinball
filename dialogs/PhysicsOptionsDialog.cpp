@@ -384,19 +384,17 @@ void PhysicsOptionsDialog::OnDestroy()
 
 bool PhysicsOptionsDialog::LoadSetting()
 {
-    char szFileName[MAXMULTISTRING];
+    std::vector<std::string> szFileName;
     char szInitialDir[MAXSTRING];
-    szFileName[0] = '\0';
-    int fileOffset;
     /*const HRESULT hr =*/ LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
-    if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0, fileOffset))
+    if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
         return false;
 
     xml_document<> xmlDoc;
     try
     {
         std::stringstream buffer;
-        std::ifstream myFile(szFileName);
+        std::ifstream myFile(szFileName[0]);
         buffer << myFile.rdbuf();
         myFile.close();
 

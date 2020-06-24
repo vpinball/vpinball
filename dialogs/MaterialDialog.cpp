@@ -311,18 +311,16 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_IMPORT:
       {
-         char szFileName[MAXMULTISTRING];
+         std::vector<std::string> szFilename;
          char szInitialDir[MAXSTRING];
-         szFileName[0] = '\0';
-         int fileOffset;
          /*const HRESULT hr =*/ LoadValueString("RecentDir", "MaterialDir", szInitialDir, MAXSTRING);
 
-         if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Material Files (.mat)\0*.mat\0", "mat", 0, fileOffset))
+         if (g_pvp->OpenFileDialog(szInitialDir, szFilename, "Material Files (.mat)\0*.mat\0", "mat", 0))
          {
             int materialCount = 0;
             int versionNumber = 0;
             FILE *f;
-            fopen_s(&f, szFileName, "rb");
+            fopen_s(&f, szFilename[0].c_str(), "rb");
 
             fread(&versionNumber, 4, 1, f);
             if (versionNumber != 1)
@@ -350,7 +348,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                pt->AddListMaterial(m_hMaterialList, pmat);
             }
             fclose(f);
-            SaveValueString("RecentDir", "MaterialDir", szInitialDir);
+            SaveValueString("RecentDir", "MaterialDir", szFilename[0]);
             pt->SetNonUndoableDirty(eSaveDirty);
          }
          break;

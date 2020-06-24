@@ -386,23 +386,19 @@ void VPinball::SetStatusBarUnitInfo(const char * const info, const bool isUnit)
     SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf);
 }
 
-bool VPinball::OpenFileDialog(const char *initDir, char filename[MAXMULTISTRING], const char *fileFilter, const char *defaultExt, DWORD flags, int &fileOffset)
+bool VPinball::OpenFileDialog(const char *initDir, std::vector<std::string> &filename, const char *fileFilter, const char *defaultExt, DWORD flags)
 {
-    OPENFILENAME ofn;
-    ZeroMemory(&ofn, sizeof(OPENFILENAME));
-    ofn.lStructSize = sizeof(OPENFILENAME);
-    ofn.hInstance = g_hinst;
-    ofn.hwndOwner = GetHwnd();
-    // TEXT
-    ofn.lpstrFilter = fileFilter;
-    ofn.lpstrInitialDir = initDir;
-    ofn.lpstrFile = filename;
-    ofn.nMaxFile = MAXMULTISTRING;
-    ofn.lpstrDefExt = defaultExt;
-    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | flags;
-    const int ret = GetOpenFileName(&ofn);
-    fileOffset = ofn.nFileOffset;
-    return ret != 0;
+   CFileDialog fileDlg(TRUE, defaultExt, initDir, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | flags, fileFilter);
+   if (fileDlg.DoModal(*this))
+   {
+      filename.clear();
+      int pos = 0;
+      while (pos != -1)
+         filename.push_back(std::string(fileDlg.GetNextPathName(pos)));
+      
+      return true;
+   }
+   return false;
 }
 
 CDockProperty *VPinball::GetDefaultPropertiesDocker()
@@ -788,13 +784,7 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
            CComObject<PinTable> * const ptCur = GetActiveTable();
            if (ptCur)
            {
-               if (!m_soundMngDlg.IsWindow())
-               {
-                   m_soundMngDlg.Create(GetHwnd());
-                   m_soundMngDlg.ShowWindow();
-               }
-               else
-                   m_soundMngDlg.SetForegroundWindow();
+              ShowSubDialog(m_soundMngDlg);
            }
            return TRUE;
        }
@@ -903,16 +893,14 @@ void VPinball::DoPlay(const bool _cameraMode)
 
 bool VPinball::LoadFile()
 {
-   char szFileName[MAXMULTISTRING];
+   std::vector<std::string> szFilename;
    char szInitialDir[MAXSTRING];
-   int fileOffset;
-   szFileName[0] = '\0';
 
    /*const HRESULT hr =*/ LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
-   if (!OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0, fileOffset))
+   if (!OpenFileDialog(szInitialDir, szFilename, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0))
       return false;
 
-   LoadFileName(szFileName,true);
+   LoadFileName(szFilename[0].c_str(),true);
 
    return true;
 }
@@ -1825,18 +1813,14 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
          case IDC_IMPORT:
          {
-            char szFileName[MAXMULTISTRING];
+            std::vector<std::string> szFilename;
             char szInitialDir[MAXSTRING];
-            int  fileOffset;
-            szFileName[0] = '\0';
 
             /*const HRESULT hr =*/ LoadValueString("RecentDir", "FontDir", szInitialDir, MAXSTRING);
-            if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0, fileOffset))
+            if (g_pvp->OpenFileDialog(szInitialDir, szFilename, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
             {
-               strncpy_s(szInitialDir, szFileName, sizeof(szInitialDir)-1);
-               szInitialDir[fileOffset] = 0;
-               SaveValueString("RecentDir", "FontDir", szInitialDir);
-               pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName);
+               SaveValueString("RecentDir", "FontDir", szFilename[0]);
+               pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), (char*)szFilename[0].c_str());
             }
          }
          break;

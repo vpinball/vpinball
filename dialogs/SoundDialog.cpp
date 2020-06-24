@@ -245,45 +245,25 @@ void SoundDialog::OnCancel()
 
 void SoundDialog::Import()
 {
-    CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
-    char szFileName[MAXMULTISTRING];
-    char szInitialDir[MAXSTRING];
-    int  fileOffset;
-    szFileName[0] = '\0';
+   std::vector<std::string> szFileName;
+   char szInitialDir[MAXSTRING];
+   
+   CCO(PinTable)* const pt = g_pvp->GetActiveTable();
+
+    if (pt == nullptr)
+       return;
 
     /*const HRESULT hr =*/ LoadValueString( "RecentDir", "SoundDir", szInitialDir, MAXSTRING);
 
-    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT, fileOffset))
+    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
     {
-        strncpy_s( szInitialDir, szFileName, sizeof(szInitialDir)-1 );
+//        strcpy_s( szInitialDir, sizeof( szInitialDir ), szFileName );
 
-        int len = lstrlen( szFileName );
-        if (len < fileOffset)
-        {
-            // Multi-file select
-            char szT[MAXSTRING];
-            lstrcpy( szT, szFileName );
-            lstrcat( szT, "\\" );
-            len++;
-            int filenamestart = fileOffset;
-            int filenamelen = lstrlen( &szFileName[filenamestart] );
-            while(filenamelen > 0)
-            {
-                lstrcpy( &szT[len], &szFileName[filenamestart] );
-                pt->ImportSound( hSoundList, szT );
-                filenamestart += filenamelen + 1;
-                filenamelen = lstrlen( &szFileName[filenamestart] );
-            }
-        }
-        else
-        {
-            szInitialDir[fileOffset] = 0;
-            if (pt)
-               pt->ImportSound( hSoundList, szFileName );
-        }
-        SaveValueString( "RecentDir", "SoundDir", szInitialDir);
-        if (pt)
-            pt->SetNonUndoableDirty( eSaveDirty );
+       for (std::string file : szFileName)
+          pt->ImportSound(hSoundList, file.c_str());
+
+        SaveValueString( "RecentDir", "SoundDir", szFileName[0]);
+        pt->SetNonUndoableDirty( eSaveDirty );
     }
     SetFocus();
 }
@@ -340,13 +320,11 @@ void SoundDialog::ReImportFrom()
         if (ans == IDYES)
         {
             char szInitialDir[MAXSTRING];
-            char szFileName[MAXMULTISTRING];
-            szFileName[0] = '\0';
-            int fileOffset;
+            std::vector<std::string> szFileName;
 
             /*const HRESULT hr =*/ LoadValueString("RecentDir", "SoundDir", szInitialDir, MAXSTRING);
 
-            if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", 0, fileOffset))
+            if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", 0))
             {
                 LVITEM lvitem;
                 lvitem.mask = LVIF_PARAM;
@@ -355,8 +333,8 @@ void SoundDialog::ReImportFrom()
                 ListView_GetItem( hSoundList, &lvitem );
                 PinSound * const pps = (PinSound *)lvitem.lParam;
 
-                pt->ReImportSound( hSoundList, pps, szFileName );
-                ListView_SetItemText( hSoundList, sel, 1, szFileName );
+                pt->ReImportSound( hSoundList, pps, szFileName[0].c_str() );
+                ListView_SetItemText( hSoundList, sel, 1, (LPSTR)szFileName[0].c_str() );
                 pt->SetNonUndoableDirty( eSaveDirty );
             }
         }
