@@ -388,8 +388,8 @@ void VPinball::SetStatusBarUnitInfo(const char * const info, const bool isUnit)
 
 bool VPinball::OpenFileDialog(const char *initDir, std::vector<std::string> &filename, const char *fileFilter, const char *defaultExt, DWORD flags)
 {
-   CFileDialog fileDlg(TRUE, defaultExt, initDir, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | flags, fileFilter);
-   if (fileDlg.DoModal(*this))
+   CFileDialog fileDlg(TRUE, defaultExt, initDir, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_FILEMUSTEXIST | flags, fileFilter);
+   if (fileDlg.DoModal(*this)==IDOK)
    {
       filename.clear();
       int pos = 0;
