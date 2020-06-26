@@ -388,7 +388,7 @@ void VPinball::SetStatusBarUnitInfo(const char * const info, const bool isUnit)
 
 bool VPinball::OpenFileDialog(const char *initDir, std::vector<std::string> &filename, const char *fileFilter, const char *defaultExt, DWORD flags)
 {
-   CFileDialog fileDlg(TRUE, defaultExt, initDir, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_FILEMUSTEXIST | flags, fileFilter);
+   CFileDialog fileDlg(TRUE, defaultExt, initDir, filename[0].c_str(), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | flags, fileFilter);
    if (fileDlg.DoModal(*this)==IDOK)
    {
       filename.clear();
@@ -895,7 +895,9 @@ bool VPinball::LoadFile()
 {
    std::vector<std::string> szFilename;
    char szInitialDir[MAXSTRING];
+   char szBuf[MAXSTRING] = { 0 };
 
+   szFilename.push_back(std::string(szBuf));
    /*const HRESULT hr =*/ LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
    if (!OpenFileDialog(szInitialDir, szFilename, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0))
       return false;
@@ -1136,6 +1138,8 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
           // write entry to the registry
           sprintf_s(szRegName, "TableFileName%d", i++);
           SaveValueString("RecentDir", szRegName, tableName);
+          if(i==8)
+             break;
       }
    }
 
@@ -1815,6 +1819,8 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          {
             std::vector<std::string> szFilename;
             char szInitialDir[MAXSTRING];
+            char szBuf[MAXSTRING] = { 0 };
+            szFilename.push_back(std::string(szBuf));
 
             /*const HRESULT hr =*/ LoadValueString("RecentDir", "FontDir", szInitialDir, MAXSTRING);
             if (g_pvp->OpenFileDialog(szInitialDir, szFilename, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))

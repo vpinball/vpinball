@@ -386,6 +386,9 @@ bool PhysicsOptionsDialog::LoadSetting()
 {
     std::vector<std::string> szFileName;
     char szInitialDir[MAXSTRING];
+    char szBuf[MAXSTRING] = { 0 };
+    szFileName.push_back(std::string(szBuf));
+
     /*const HRESULT hr =*/ LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
     if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
         return false;

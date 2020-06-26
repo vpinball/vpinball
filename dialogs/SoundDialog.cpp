@@ -247,12 +247,13 @@ void SoundDialog::Import()
 {
    std::vector<std::string> szFileName;
    char szInitialDir[MAXSTRING];
-   
+   char szBuf[MAXSTRING * 32] = { 0 };
+
    CCO(PinTable)* const pt = g_pvp->GetActiveTable();
 
     if (pt == nullptr)
        return;
-
+    szFileName.push_back(std::string(szBuf));
     /*const HRESULT hr =*/ LoadValueString( "RecentDir", "SoundDir", szInitialDir, MAXSTRING);
       if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
       {
@@ -320,6 +321,8 @@ void SoundDialog::ReImportFrom()
         {
             char szInitialDir[MAXSTRING];
             std::vector<std::string> szFileName;
+            char szBuf[MAXSTRING] = { 0 };
+            szFileName.push_back(std::string(szBuf));
 
             /*const HRESULT hr =*/ LoadValueString("RecentDir", "SoundDir", szInitialDir, MAXSTRING);
 

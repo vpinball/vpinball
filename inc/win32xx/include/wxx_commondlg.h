@@ -142,6 +142,7 @@ namespace Win32xx
         // Constructor/destructor
         CFileDialog (BOOL isOpenFileDialog = TRUE,
                 LPCTSTR pDefExt = NULL,
+                LPCTSTR pInitFileDir = NULL,
                 LPCTSTR pFileName = NULL,
                 DWORD   flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
                 LPCTSTR pFilter   = NULL );
@@ -488,6 +489,7 @@ namespace Win32xx
     // struct in the Windows API documentation.
     inline CFileDialog::CFileDialog(BOOL isOpenFileDialog  /* = TRUE */,
         LPCTSTR pDefExt /* = NULL */,
+        LPCTSTR pInitFileDir /* = NULL */,
         LPCTSTR pFileName /* = NULL */,
         DWORD   flags /* = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT */,
         LPCTSTR pFilter /* = NULL */)
@@ -501,6 +503,7 @@ namespace Win32xx
         // fill in the OPENFILENAME struct
         m_ofn.lpstrFile     = const_cast<LPTSTR>(pFileName);
         m_ofn.lpstrFilter   = pFilter;
+        m_ofn.lpstrInitialDir = const_cast<LPTSTR>(pInitFileDir);
         m_ofn.lpstrDefExt   = pDefExt;
         m_ofn.Flags         = flags;
 
