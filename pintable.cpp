@@ -5513,7 +5513,8 @@ void PinTable::ImportBackdropPOV(const char *filename)
     bool oldFormatLoaded = false;
     if (filename == NULL)
     {
-       int fileOffset;
+       char szBuf[MAXSTRING] = { 0 };
+       szFilename.push_back(std::string(szBuf));
        if (!m_vpinball->OpenFileDialog("", szFilename, "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0", "pov", 0))
           return;
     }
@@ -9377,7 +9378,9 @@ STDMETHODIMP PinTable::ImportPhysics()
       lstrcpy(szInitialDir, "c:\\");
    }
 
-   int fileOffset;
+   char szBuf[MAXSTRING] = { 0 };
+   szFileName.push_back(std::string(szBuf));
+
    if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
        return S_OK;
 

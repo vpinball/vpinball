@@ -313,6 +313,9 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       {
          std::vector<std::string> szFilename;
          char szInitialDir[MAXSTRING];
+         char szBuf[MAXSTRING] = { 0 };
+         szFilename.push_back(std::string(szBuf));
+
          /*const HRESULT hr =*/ LoadValueString("RecentDir", "MaterialDir", szInitialDir, MAXSTRING);
 
          if (g_pvp->OpenFileDialog(szInitialDir, szFilename, "Material Files (.mat)\0*.mat\0", "mat", 0))

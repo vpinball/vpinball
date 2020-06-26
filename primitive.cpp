@@ -1884,9 +1884,9 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
 
             std::vector<std::string> szFileName;
             char szInitialDir[MAXSTRING];
-
+            char szBuf[MAXSTRING] = { 0 };
             /*const HRESULT hr =*/ LoadValueString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
-
+            szFileName.push_back(std::string(szBuf));
             SetForegroundWindow(hwndDlg);
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
             {

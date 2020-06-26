@@ -401,8 +401,11 @@ void ImageDialog::Import()
 {
    std::vector<std::string> szFileName;
    char szInitialDir[MAXSTRING];
+   char szBuf[MAXSTRING * 32] = { 0 };
 
    HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
+   
+   szFileName.push_back(std::string(szBuf));
 
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
@@ -708,6 +711,8 @@ void ImageDialog::ReimportFrom()
       {
          std::vector<std::string> szFileName;
          char szInitialDir[MAXSTRING];
+         char szBuf[MAXSTRING] = { 0 };
+         szFileName.push_back(std::string(szBuf));
 
          HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
 
