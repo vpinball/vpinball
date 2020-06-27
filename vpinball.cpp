@@ -1825,7 +1825,13 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             /*const HRESULT hr =*/ LoadValueString("RecentDir", "FontDir", szInitialDir, MAXSTRING);
             if (g_pvp->OpenFileDialog(szInitialDir, szFilename, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
             {
-               SaveValueString("RecentDir", "FontDir", szFilename[0]);
+               size_t index = szFilename[0].find_last_of('\\');
+               if (index != std::string::npos)
+               {
+                  std::string newInitDir(szFilename[0].substr(0, index));
+                  SaveValueString("RecentDir", "FontDir", newInitDir);
+               }
+
                pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), (char*)szFilename[0].c_str());
             }
          }

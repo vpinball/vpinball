@@ -726,7 +726,12 @@ void ImageDialog::ReimportFrom()
             Texture * const ppi = (Texture*)lvitem.lParam;
             if (ppi != NULL)
             {
-               hr = SaveValueString("RecentDir", "ImageDir", szFileName[0]);
+               size_t index = szFileName[0].find_last_of('\\');
+               if (index != std::string::npos)
+               {
+                  std::string newInitDir(szFileName[0].substr(0, index));
+                  SaveValueString("RecentDir", "ImageDir", newInitDir);
+               }
 
                CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                pt->ReImportImage(ppi, szFileName[0].c_str());
