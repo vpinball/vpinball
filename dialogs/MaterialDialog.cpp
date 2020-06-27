@@ -351,7 +351,12 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                pt->AddListMaterial(m_hMaterialList, pmat);
             }
             fclose(f);
-            SaveValueString("RecentDir", "MaterialDir", szFilename[0]);
+            size_t index = szFilename[0].find_last_of('\\');
+            if (index != std::string::npos)
+            {
+               std::string newInitDir(szFilename[0].substr(0, index));
+               SaveValueString("RecentDir", "MaterialDir", newInitDir);
+            }
             pt->SetNonUndoableDirty(eSaveDirty);
          }
          break;

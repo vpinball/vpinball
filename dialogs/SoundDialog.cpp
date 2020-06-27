@@ -337,6 +337,14 @@ void SoundDialog::ReImportFrom()
 
                 pt->ReImportSound( hSoundList, pps, szFileName[0].c_str() );
                 ListView_SetItemText( hSoundList, sel, 1, (LPSTR)szFileName[0].c_str() );
+
+                size_t index = szFileName[0].find_last_of('\\');
+                if (index != std::string::npos)
+                {
+                   std::string newInitDir(szFileName[0].substr(0, index));
+                   SaveValueString("RecentDir", "SoundDir", newInitDir);
+                }
+
                 pt->SetNonUndoableDirty( eSaveDirty );
             }
         }

@@ -1891,13 +1891,13 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
             {
                SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName[0].c_str());
-               SaveValueString("RecentDir", "ImportDir", szInitialDir);
-               string filename = szFileName[0];
-               size_t index = filename.find_last_of('\\');
-               if (index != -1)
+               size_t index = szFileName[0].find_last_of('\\');
+               if (index != std::string::npos)
                {
+                  std::string newInitDir(szFileName[0].substr(0, index));
+                  SaveValueString("RecentDir", "ImportDir", newInitDir);
                   index++;
-                  string name = filename.substr(index, filename.length() - index);
+                  string name = szFileName[0].substr(index, szFileName[0].length() - index);
                   strncpy_s(prim->m_d.m_meshFileName, name.c_str(), sizeof(prim->m_d.m_meshFileName)-1);
                }
                EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
