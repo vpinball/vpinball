@@ -1,3 +1,8 @@
+VP 10.6.1 Changelog
+------------------------
+
+- fix hang on player exit on some setups
+
 VP 10.6.0 Changelog
 ------------------------
 
