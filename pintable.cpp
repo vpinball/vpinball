@@ -2379,12 +2379,11 @@ HRESULT PinTable::Save(const bool saveAs)
       else
       {
          lstrcpy(szFoo, m_vpinball->m_szMyPath);
-         lstrcat(szFoo, "Tables");
+         lstrcat(szFoo, "Tables\\");
          ofn.lpstrInitialDir = szFoo;
       }
 
-      int ret = GetSaveFileName(&ofn);
-
+      const int ret = GetSaveFileName(&ofn);
       // user cancelled
       if (ret == 0)
          return S_FALSE;
@@ -2995,7 +2994,7 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
    localtime_s(&local_hour, &hour_machine);
    char buffer[256];
    asctime_s(buffer, &local_hour);
-   buffer[strlen(buffer)-1] = '\0'; // remove line break
+   buffer[strnlen_s(buffer,sizeof(buffer))-1] = '\0'; // remove line break
    WriteInfoValue(pstg, L"TableSaveDate", buffer, NULL);
    _itoa_s(++m_numTimesSaved, buffer, 10);
    WriteInfoValue(pstg, L"TableSaveRev", buffer, NULL);
@@ -4261,7 +4260,7 @@ void PinTable::RemoveSound(PinSound * const pps)
    delete pps;
 }
 
-void PinTable::ImportFont(HWND hwndListView, char *filename)
+void PinTable::ImportFont(HWND hwndListView, const char *filename)
 {
    PinFont * const ppb = new PinFont();
 
@@ -5509,24 +5508,36 @@ void PinTable::ExportTableMesh()
 
 void PinTable::ImportBackdropPOV(const char *filename)
 {
-    std::vector<std::string> szFilename;
+    std::vector<std::string> szFileName;
     bool oldFormatLoaded = false;
+
     if (filename == NULL)
     {
-       char szBuf[MAXSTRING] = { 0 };
-       szFilename.push_back(std::string(szBuf));
-       if (!m_vpinball->OpenFileDialog("", szFilename, "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0", "pov", 0))
+       char szInitialDir[MAXSTRING];
+
+       HRESULT hr = LoadValueString("RecentDir", "POVDir", szInitialDir, MAXSTRING);
+       if (hr != S_OK)
+          lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+   
+       if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "POV file (*.pov)\0*.pov\0Old POV file(*.xml)\0*.xml\0", "pov", 0))
           return;
+
+       const size_t index = szFileName[0].find_last_of('\\');
+       if (index != std::string::npos)
+       {
+           const std::string newInitDir(szFileName[0].substr(0, index));
+           hr = SaveValueString("RecentDir", "POVDir", newInitDir);
+       }
     }
     else
-       szFilename.push_back(std::string(filename));
+       szFileName.push_back(std::string(filename));
 
     xml_document<> xmlDoc;
 
     try
     {
         std::stringstream buffer;
-        std::ifstream myFile(szFilename[0]);
+        std::ifstream myFile(szFileName[0]);
         buffer << myFile.rdbuf();
         myFile.close();
 
@@ -9372,17 +9383,19 @@ STDMETHODIMP PinTable::ImportPhysics()
    std::vector<std::string> szFileName;
    char szInitialDir[MAXSTRING];
 
-   const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
+   HRESULT hr = LoadValueString("RecentDir", "PhysicsDir", szInitialDir, MAXSTRING);
    if (hr != S_OK)
-   {
-      lstrcpy(szInitialDir, "c:\\");
-   }
-
-   char szBuf[MAXSTRING] = { 0 };
-   szFileName.push_back(std::string(szBuf));
+      lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
 
    if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
        return S_OK;
+
+   const size_t index = szFileName[0].find_last_of('\\');
+   if (index != std::string::npos)
+   {
+       const std::string newInitDir(szFileName[0].substr(0, index));
+       hr = SaveValueString("RecentDir", "PhysicsDir", newInitDir);
+   }
 
    xml_document<> xmlDoc;
    float FlipperPhysicsMass, FlipperPhysicsStrength, FlipperPhysicsElasticity, FlipperPhysicsScatter, FlipperPhysicsTorqueDamping, FlipperPhysicsTorqueDampingAngle, FlipperPhysicsReturnStrength, FlipperPhysicsElasticityFalloff, FlipperPhysicsFriction, FlipperPhysicsCoilRampUp;
@@ -9631,21 +9644,23 @@ STDMETHODIMP PinTable::ExportPhysics()
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
    char szInitialDir[MAXSTRING];
-   const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
-   char szFoo[MAX_PATH];
-   if (hr == S_OK)
-   {
-      ofn.lpstrInitialDir = szInitialDir;
-   }
-   else
-   {
-      lstrcpy(szFoo, "c:\\");
-      ofn.lpstrInitialDir = szFoo;
-   }
+   const HRESULT hr = LoadValueString("RecentDir", "PhysicsDir", szInitialDir, MAXSTRING);
+   if (hr != S_OK)
+       lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+
+   ofn.lpstrInitialDir = szInitialDir;
 
    const int ret = GetSaveFileName(&ofn);
    if (ret == 0)
       return S_OK;
+
+   const string szFilename(ofn.lpstrFile);
+   const size_t index = szFilename.find_last_of('\\');
+   if (index != std::string::npos)
+   {
+       const std::string newInitDir(szFilename.substr(0, index));
+       SaveValueString("RecentDir", "PhysicsDir", newInitDir);
+   }
 
    xml_document<> xmlDoc;
    xml_node<>*dcl = xmlDoc.allocate_node(node_declaration);

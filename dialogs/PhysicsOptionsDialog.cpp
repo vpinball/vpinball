@@ -240,21 +240,23 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ofn.lpstrDefExt = "vpp";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-            const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
-            char szFoo[MAX_PATH];
-            if (hr == S_OK)
-            {
-                ofn.lpstrInitialDir = szInitialDir;
-            }
-            else
-            {
-                lstrcpy(szFoo, "c:\\");
-                ofn.lpstrInitialDir = szFoo;
-            }
+            const HRESULT hr = LoadValueString("RecentDir", "PhysicsDir", szInitialDir, MAXSTRING);
+            if (hr != S_OK)
+               lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+
+            ofn.lpstrInitialDir = szInitialDir;
 
             const int ret = GetSaveFileName(&ofn);
             if (ret == 0)
                 break;
+
+            const string szFilename(ofn.lpstrFile);
+            const size_t index = szFilename.find_last_of('\\');
+            if (index != std::string::npos)
+            {
+                const std::string newInitDir(szFilename.substr(0, index));
+                SaveValueString("RecentDir", "PhysicsDir", newInitDir);
+            }
 
             xml_document<> xmlDoc;
             xml_node<>*dcl = xmlDoc.allocate_node(node_declaration);
@@ -349,7 +351,9 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             std::ofstream myfile(ofn.lpstrFile);
             myfile << xmlDoc;
             myfile.close();
+
             SetFocus();
+
             break;
         }
 
@@ -386,12 +390,20 @@ bool PhysicsOptionsDialog::LoadSetting()
 {
     std::vector<std::string> szFileName;
     char szInitialDir[MAXSTRING];
-    char szBuf[MAXSTRING] = { 0 };
-    szFileName.push_back(std::string(szBuf));
 
-    /*const HRESULT hr =*/ LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
+    HRESULT hr = LoadValueString("RecentDir", "PhysicsDir", szInitialDir, MAXSTRING);
+    if (hr != S_OK)
+        lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+
     if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
         return false;
+
+    const size_t index = szFileName[0].find_last_of('\\');
+    if (index != std::string::npos)
+    {
+        const std::string newInitDir(szFileName[0].substr(0, index));
+        hr = SaveValueString("RecentDir", "PhysicsDir", newInitDir);
+    }
 
     xml_document<> xmlDoc;
     try
@@ -444,6 +456,7 @@ bool PhysicsOptionsDialog::LoadSetting()
         return false;
     }
     xmlDoc.clear();
+
     return true;
 }
 

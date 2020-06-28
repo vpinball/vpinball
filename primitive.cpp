@@ -1806,9 +1806,9 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             bool importAnimation = IsDlgButtonChecked(hwndDlg, IDC_IMPORT_ANIM_SEQUENCE) == BST_CHECKED;
             if (importMaterial)
             {
-               string filename(szFileName);
-               size_t index = filename.find_last_of('.');
-               if (index != -1)
+               const string filename(szFileName);
+               const size_t index = filename.find_last_of('.');
+               if (index != std::string::npos)
                {
                   char szMatName[MAXSTRING] = { 0 };
                   memcpy(szMatName, szFileName, index);
@@ -1882,24 +1882,29 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             if (prim == NULL)
                break;
 
+            SetForegroundWindow(hwndDlg);
+
             std::vector<std::string> szFileName;
             char szInitialDir[MAXSTRING];
-            char szBuf[MAXSTRING] = { 0 };
-            /*const HRESULT hr =*/ LoadValueString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
-            szFileName.push_back(std::string(szBuf));
-            SetForegroundWindow(hwndDlg);
+
+            HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
+            if (hr != S_OK)
+               lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
             {
                SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName[0].c_str());
+
                size_t index = szFileName[0].find_last_of('\\');
                if (index != std::string::npos)
                {
-                  std::string newInitDir(szFileName[0].substr(0, index));
-                  SaveValueString("RecentDir", "ImportDir", newInitDir);
+                  const std::string newInitDir(szFileName[0].substr(0, index));
+                  hr = SaveValueString("RecentDir", "ImportDir", newInitDir);
                   index++;
-                  string name = szFileName[0].substr(index, szFileName[0].length() - index);
+                  const string name = szFileName[0].substr(index, szFileName[0].length() - index);
                   strncpy_s(prim->m_d.m_meshFileName, name.c_str(), sizeof(prim->m_d.m_meshFileName)-1);
                }
+
                EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
             }
             break;
@@ -1939,31 +1944,26 @@ bool Primitive::BrowseFor3DMeshFile()
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
    const HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
-   char szFoo[MAX_PATH];
-   if (hr == S_OK)
-   {
-      ofn.lpstrInitialDir = szInitialDir;
-   }
-   else
-   {
-      lstrcpy(szFoo, "c:\\");
-      ofn.lpstrInitialDir = szFoo;
-   }
+   if (hr != S_OK)
+       lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+
+   ofn.lpstrInitialDir = szInitialDir;
 
    const int ret = GetOpenFileName(&ofn);
+   if (ret == 0)
+       return false;
+
    string filename(ofn.lpstrFile);
    size_t index = filename.find_last_of("\\");
-   if (index != -1)
+   if (index != std::string::npos)
    {
+      const std::string newInitDir(szFilename.substr(0, index));
+      SaveValueString("RecentDir", "ImportDir", newInitDir);
       index++;
       string name = filename.substr(index, filename.length() - index);
       strncpy_s(m_d.m_meshFileName, name.c_str(), sizeof(m_d.m_meshFileName)-1);
    }
-   if (ret == 0)
-   {
-      return false;
-   }
-   SaveValueString("RecentDir", "ImportDir", szInitialDir);
+
    m_mesh.Clear();
    m_d.m_use3DMesh = false;
    if (vertexBuffer)
@@ -2083,10 +2083,6 @@ bool Primitive::LoadMeshDialog()
 
 void Primitive::ExportMeshDialog()
 {
-   char szFileName[MAXSTRING];
-   char szInitialDir[MAXSTRING];
-   szFileName[0] = '\0';
-
    OPENFILENAME ofn;
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
@@ -2094,26 +2090,29 @@ void Primitive::ExportMeshDialog()
    ofn.hwndOwner = m_vpinball->GetHwnd();
    // TEXT
    ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
-   ofn.lpstrFile = szFileName;
+   ofn.lpstrFile = NULL;
    ofn.nMaxFile = MAXSTRING;
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
-   char szFoo[MAX_PATH];
-   if (hr == S_OK)
-   {
-      ofn.lpstrInitialDir = szInitialDir;
-   }
-   else
-   {
-      lstrcpy(szFoo, "c:\\");
-      ofn.lpstrInitialDir = szFoo;
-   }
+   char szInitialDir[MAXSTRING];
+   HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
+   if (hr != S_OK)
+       lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+
+   ofn.lpstrInitialDir = szInitialDir;
 
    const int ret = GetSaveFileName(&ofn);
    if (ret == 0)
       return;
+
+   const string szFileName(ofn.lpstrFile);
+   const size_t index = szFileName.find_last_of('\\');
+   if (index != std::string::npos)
+   {
+       const std::string newInitDir(szFileName.substr(0, index));
+       hr = SaveValueString("RecentDir", "ImportDir", newInitDir);
+   }
 
    char name[MAX_PATH];
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);

@@ -401,20 +401,26 @@ void ImageDialog::Import()
 {
    std::vector<std::string> szFileName;
    char szInitialDir[MAXSTRING];
-   char szBuf[MAXSTRING * 32] = { 0 };
 
    HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
-   
-   szFileName.push_back(std::string(szBuf));
+   if (hr != S_OK)
+      lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
 
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
       CCO(PinTable) * const pt = g_pvp->GetActiveTable();
       const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
-      for (std::string file : szFileName)
+      for (const std::string &file : szFileName)
          pt->ImportImage(hSoundList, file.c_str());
-      hr = SaveValueString("RecentDir", "ImageDir", szFileName[0]);
+
+      const size_t index = szFileName[0].find_last_of('\\');
+      if (index != std::string::npos)
+      {
+          const std::string newInitDir(szFileName[0].substr(0, index));
+          hr = SaveValueString("RecentDir", "ImageDir", newInitDir);
+      }
+
       pt->SetNonUndoableDirty(eSaveDirty);
       SetFocus();
    }
@@ -507,6 +513,8 @@ void ImageDialog::Export()
                ofn.nFilterIndex = 11;
 
             const HRESULT hr = LoadValueString("RecentDir", "ImageDir", g_initDir, MAXSTRING);
+            if (hr != S_OK)
+               lstrcpy(g_initDir, "c:\\Visual Pinball\\Tables\\");
 
             ofn.lpstrInitialDir = (hr == S_OK) ? g_initDir : NULL;
             //ofn.lpstrTitle = "SAVE AS";
@@ -526,12 +534,15 @@ void ImageDialog::Export()
                      break;
                   }
                }
-               char pathName[MAXSTRING] = { 0 };
+
+               if (begin >= MAXSTRING)
+                   begin = MAXSTRING - 1;
+
+               char pathName[MAXSTRING];
                if (begin > 0)
-               {
                   memcpy(pathName, ofn.lpstrFile, begin);
-                  pathName[begin] = 0;
-               }
+               pathName[begin] = 0;
+
                while (sel != -1 && ppi != NULL)
                {
                   len = lstrlen(ppi->m_szPath);
@@ -566,7 +577,9 @@ void ImageDialog::Export()
                   ListView_GetItem(hSoundList, &lvitem);
                   ppi = (Texture*)lvitem.lParam;
                }
+
                SaveValueString("RecentDir", "ImageDir", pathName);
+
             } // finished all selected items
          }
       }
@@ -711,10 +724,10 @@ void ImageDialog::ReimportFrom()
       {
          std::vector<std::string> szFileName;
          char szInitialDir[MAXSTRING];
-         char szBuf[MAXSTRING] = { 0 };
-         szFileName.push_back(std::string(szBuf));
 
          HRESULT hr = LoadValueString("RecentDir", "ImageDir", szInitialDir, MAXSTRING);
+         if (hr != S_OK)
+            lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
 
          if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0","png",0))
          {
@@ -726,10 +739,10 @@ void ImageDialog::ReimportFrom()
             Texture * const ppi = (Texture*)lvitem.lParam;
             if (ppi != NULL)
             {
-               size_t index = szFileName[0].find_last_of('\\');
+               const size_t index = szFileName[0].find_last_of('\\');
                if (index != std::string::npos)
                {
-                  std::string newInitDir(szFileName[0].substr(0, index));
+                  const std::string newInitDir(szFileName[0].substr(0, index));
                   SaveValueString("RecentDir", "ImageDir", newInitDir);
                }
 

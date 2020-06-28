@@ -383,7 +383,7 @@ public:
    void ListCustomInfo(HWND hwndListView);
    int AddListItem(HWND hwndListView, char *szName, char *szValue1, LPARAM lparam);
 
-   void ImportFont(HWND hwndListView, char *filename);
+   void ImportFont(HWND hwndListView, const char *filename);
    void ListFonts(HWND hwndListView);
    int AddListBinary(HWND hwndListView, PinBinary *ppb);
    void RemoveFont(PinFont * const ppf);

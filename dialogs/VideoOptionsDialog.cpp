@@ -493,10 +493,9 @@ INT_PTR VideoOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          //if (indx == LB_ERR)
          //  indx = 0;
 
-         int screenwidth;
-         int screenheight;
-         int x, y;
          const int display = (int)SendMessage(GetDlgItem(IDC_DISPLAY_ID).GetHwnd(), CB_GETCURSEL, 0, 0);
+         int screenwidth, screenheight;
+         int x, y;
          getDisplaySetupByID(display, x, y, screenwidth, screenheight);
 
          //if (indx != -1)
