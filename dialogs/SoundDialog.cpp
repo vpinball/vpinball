@@ -245,27 +245,34 @@ void SoundDialog::OnCancel()
 
 void SoundDialog::Import()
 {
-   std::vector<std::string> szFileName;
-   char szInitialDir[MAXSTRING];
-   char szBuf[MAXSTRING * 32] = { 0 };
-
    CCO(PinTable)* const pt = g_pvp->GetActiveTable();
 
-    if (pt == nullptr)
-       return;
-    szFileName.push_back(std::string(szBuf));
-    /*const HRESULT hr =*/ LoadValueString( "RecentDir", "SoundDir", szInitialDir, MAXSTRING);
-      if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
+   if (pt == nullptr)
+      return;
+
+   std::vector<std::string> szFileName;
+   char szInitialDir[MAXSTRING];
+
+   HRESULT hr = LoadValueString( "RecentDir", "SoundDir", szInitialDir, MAXSTRING);
+   if (hr != S_OK)
+      lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
+
+   if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
+   {
+      const size_t index = szFileName[0].find_last_of('\\');
+      if (index != std::string::npos)
       {
-         //        strcpy_s( szInitialDir, sizeof( szInitialDir ), szFileName );
-
-         for (std::string file : szFileName)
-            pt->ImportSound(hSoundList, file.c_str());
-
-         SaveValueString("RecentDir", "SoundDir", szFileName[0]);
-         pt->SetNonUndoableDirty(eSaveDirty);
+         const std::string newInitDir(szFileName[0].substr(0, index));
+         hr = SaveValueString("RecentDir", "SoundDir", newInitDir);
       }
-    SetFocus();
+
+      for (const std::string &file : szFileName)
+         pt->ImportSound(hSoundList, file.c_str());
+
+      pt->SetNonUndoableDirty(eSaveDirty);
+   }
+
+   SetFocus();
 }
 
 void SoundDialog::ReImport()
@@ -321,10 +328,10 @@ void SoundDialog::ReImportFrom()
         {
             char szInitialDir[MAXSTRING];
             std::vector<std::string> szFileName;
-            char szBuf[MAXSTRING] = { 0 };
-            szFileName.push_back(std::string(szBuf));
 
-            /*const HRESULT hr =*/ LoadValueString("RecentDir", "SoundDir", szInitialDir, MAXSTRING);
+            HRESULT hr = LoadValueString("RecentDir", "SoundDir", szInitialDir, MAXSTRING);
+            if (hr != S_OK)
+                lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
 
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", 0))
             {
@@ -338,11 +345,11 @@ void SoundDialog::ReImportFrom()
                 pt->ReImportSound( hSoundList, pps, szFileName[0].c_str() );
                 ListView_SetItemText( hSoundList, sel, 1, (LPSTR)szFileName[0].c_str() );
 
-                size_t index = szFileName[0].find_last_of('\\');
+                const size_t index = szFileName[0].find_last_of('\\');
                 if (index != std::string::npos)
                 {
-                   std::string newInitDir(szFileName[0].substr(0, index));
-                   SaveValueString("RecentDir", "SoundDir", newInitDir);
+                   const std::string newInitDir(szFileName[0].substr(0, index));
+                   hr = SaveValueString("RecentDir", "SoundDir", newInitDir);
                 }
 
                 pt->SetNonUndoableDirty( eSaveDirty );
@@ -381,7 +388,6 @@ void SoundDialog::Export()
             int begin;		//select only file name from pathfilename
             int len = lstrlen( pps->m_szPath );
             memset( m_filename, 0, MAXSTRING);
-            memset( m_initDir, 0, MAXSTRING);
 
             if (!renameOnExport)
             {
@@ -407,14 +413,13 @@ void SoundDialog::Export()
             ofn.nMaxFile = MAXSTRING;
             ofn.lpstrDefExt = "mp3";
             const HRESULT hr = LoadValueString( "RecentDir", "SoundDir", m_initDir, MAXSTRING);
+            if (hr != S_OK)
+               lstrcpy(m_initDir, "c:\\Visual Pinball\\Tables\\");
 
-            if (hr == S_OK)ofn.lpstrInitialDir = m_initDir;
-            else ofn.lpstrInitialDir = NULL;
-
-            ofn.lpstrTitle = "SAVE AS";
+            ofn.lpstrInitialDir = m_initDir;
+            //ofn.lpstrTitle = "SAVE AS";
             ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
-            m_initDir[ofn.nFileOffset] = 0;
             if (GetSaveFileName( &ofn ))	//Get filename from user
             {
                 len = lstrlen( ofn.lpstrFile );
@@ -430,9 +435,11 @@ void SoundDialog::Export()
                 if (begin >= MAXSTRING)
                     begin = MAXSTRING-1;
 
-                char pathName[MAXSTRING] = { 0 };
-                memcpy( pathName, ofn.lpstrFile, begin );
+                char pathName[MAXSTRING];
+                if(begin > 0)
+                    memcpy( pathName, ofn.lpstrFile, begin );
                 pathName[begin] = 0;
+
                 while(sel != -1)
                 {
                     len = lstrlen( pps->m_szPath );
@@ -464,8 +471,8 @@ void SoundDialog::Export()
                     lvitem.iSubItem = 0;
                     ListView_GetItem( hSoundList, &lvitem );
                     pps = (PinSound *)lvitem.lParam;
-
                 }
+
                 SaveValueString( "RecentDir", "SoundDir", pathName);
             }
         }

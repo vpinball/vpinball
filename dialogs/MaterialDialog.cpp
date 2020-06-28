@@ -313,10 +313,10 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       {
          std::vector<std::string> szFilename;
          char szInitialDir[MAXSTRING];
-         char szBuf[MAXSTRING] = { 0 };
-         szFilename.push_back(std::string(szBuf));
 
-         /*const HRESULT hr =*/ LoadValueString("RecentDir", "MaterialDir", szInitialDir, MAXSTRING);
+         const HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir, MAXSTRING);
+         if (hr != S_OK)
+            lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
 
          if (g_pvp->OpenFileDialog(szInitialDir, szFilename, "Material Files (.mat)\0*.mat\0", "mat", 0))
          {
@@ -351,12 +351,14 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                pt->AddListMaterial(m_hMaterialList, pmat);
             }
             fclose(f);
-            size_t index = szFilename[0].find_last_of('\\');
+
+            const size_t index = szFilename[0].find_last_of('\\');
             if (index != std::string::npos)
             {
-               std::string newInitDir(szFilename[0].substr(0, index));
+               const std::string newInitDir(szFilename[0].substr(0, index));
                SaveValueString("RecentDir", "MaterialDir", newInitDir);
             }
+
             pt->SetNonUndoableDirty(eSaveDirty);
          }
          break;
@@ -395,14 +397,12 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ofn.lpstrDefExt = "mat";
 
             const HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir, MAXSTRING);
+            if (hr != S_OK)
+               lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
 
-            if (hr == S_OK) ofn.lpstrInitialDir = szInitialDir;
-            else ofn.lpstrInitialDir = NULL;
-
+            ofn.lpstrInitialDir = szInitialDir;
             ofn.lpstrTitle = "Export materials";
             ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
-
-            szInitialDir[ofn.nFileOffset] = 0;
 
             if (GetSaveFileName(&ofn))	//Get filename from user
             {
@@ -443,8 +443,15 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                   sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
                }
                fclose(f);
+
+               const string szFilename(ofn.lpstrFile);
+               const size_t index = szFilename.find_last_of('\\');
+               if (index != std::string::npos)
+               {
+                   const std::string newInitDir(szFilename.substr(0, index));
+                   SaveValueString("RecentDir", "MaterialDir", newInitDir);
+               }
             }
-            SaveValueString("RecentDir", "MaterialDir", szInitialDir);
          }
          break;
       }
@@ -498,8 +505,8 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    m_resizer.HandleMessage(uMsg, wParam, lParam);
-    
+   m_resizer.HandleMessage(uMsg, wParam, lParam);
+
    switch (uMsg)
    {
       case WM_NOTIFY:

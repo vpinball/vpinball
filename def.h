@@ -122,7 +122,6 @@ typedef _int64          S64;
 
 #define MAXNAMEBUFFER 32
 #define MAXSTRING 1024 // usually used for paths,filenames,etc
-#define MAXMULTISTRING (32*1024) // used for open file with multiselect
 #define MAXTOKEN (32*4)
 
 #define CCO(x) CComObject<x>

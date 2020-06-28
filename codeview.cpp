@@ -1649,7 +1649,7 @@ void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 	{
 		m_wordUnderCaret.lpstrText = CaretTextBuff;
 		GetWordUnderCaret();
-		const size_t intWordLen = strlen(m_wordUnderCaret.lpstrText);
+		const size_t intWordLen = strnlen_s(m_wordUnderCaret.lpstrText, sizeof(CaretTextBuff));
 		if ((int)intWordLen > m_displayAutoCompleteLength && intWordLen < MAX_FIND_LENGTH)
 		{
 			const char * McStr = m_autoCompString.c_str();
@@ -2350,7 +2350,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		char c_str1[256];
 		memset(c_str1,0,256);
 		SendMessage(m_hwndItemList, CB_GETLBTEXT, CBCount, (LPARAM)c_str1);
-		if (strlen(c_str1)>1)
+		if (strnlen_s(c_str1, sizeof(c_str1)) > 1)
 		{
 			UserData ud;
 			ud.m_keyName = string(c_str1);
@@ -2410,30 +2410,29 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 
 void CodeViewer::ParseVPCore()
 {
-   //Open file
-   const string sPath = string(g_pvp->m_szMyPath) + "scripts\\core.vbs";
-   FILE* fCore;
-   if (fopen_s(&fCore, sPath.c_str(), "r") != 0)
-	if (!fCore)
-	{
+    //Open file
+    const string sPath = string(g_pvp->m_szMyPath) + "Scripts\\core.vbs";
+    FILE* fCore;
+    if ((fopen_s(&fCore, sPath.c_str(), "r") != 0) && !fCore)
+    {
 	  char szLoadDir[MAX_PATH];
 	  strncpy_s(szLoadDir, g_pvp->m_currentTablePath, sizeof(szLoadDir)-1);
-	  strncat_s(szLoadDir, "\\core.vbs", sizeof(szLoadDir)-strnlen_s(szLoadDir, sizeof(szLoadDir))-1);
-	  if (fopen_s(&fCore, szLoadDir, "r") != 0)
-		  if (!fCore)
+	  strncat_s(szLoadDir, "core.vbs", sizeof(szLoadDir)-strnlen_s(szLoadDir, sizeof(szLoadDir))-1); //!! \\core.vbs ? check!
+	  if ((fopen_s(&fCore, szLoadDir, "r") != 0) && !fCore)
+	  {
+		  const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szLoadDir, MAX_PATH);
+		  if (hr != S_OK)
+			  lstrcpy(szLoadDir, "c:\\Visual Pinball\\Tables\\");
+
+		  strncat_s(szLoadDir, "core.vbs", sizeof(szLoadDir)-strnlen_s(szLoadDir, sizeof(szLoadDir))-1); //!! \\core.vbs ? check!
+		  if ((fopen_s(&fCore, szLoadDir, "r") != 0) && !fCore)
 		  {
-			  szLoadDir[0] = '\0';
-			  /*const HRESULT hr =*/ LoadValueString("RecentDir", "LoadDir", szLoadDir, MAX_PATH);
-			  strncat_s(szLoadDir, "\\core.vbs", sizeof(szLoadDir)-strnlen_s(szLoadDir, sizeof(szLoadDir))-1);
-			  if (fopen_s(&fCore, szLoadDir, "r") != 0)
-				  if (!fCore)
-				  {
-					  MessageBox("Couldn't find core.vbs for code completion parsing!", "Script Parser Warning", MB_OK);
-					  return;
-				  }
+			  MessageBox("Couldn't find core.vbs for code completion parsing!", "Script Parser Warning", MB_OK);
+			  return;
 		  }
+	  }
 	}
-	char text[MAX_LINE_LENGTH] = {};
+
 	//initalise Parent child
 ///////////////////////
 	ParentLevel = 0; //root
@@ -2442,6 +2441,7 @@ void CodeViewer::ParseVPCore()
 	int linecount = 0;
 	while (!feof(fCore))
 	{
+		char text[MAX_LINE_LENGTH];
 		memset(text, 0, MAX_LINE_LENGTH);
 		fgets(text, MAX_LINE_LENGTH, fCore);
 		if (text[0] != '\0')
