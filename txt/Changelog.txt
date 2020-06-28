@@ -36,6 +36,10 @@ FEATURES:
 
 FIXES:
 
+- fix issues when fallback search of core.vbs is triggered
+
+- properly save recently opened directory for all kinds of dialogs
+
 - fix crashes and not being able to select files with very long file names (e.g. images)
 
 - fix hang on player exit on some setups
@@ -72,6 +76,11 @@ FIXES:
 
 - updated to latest FreeImage.dll (3.18.0) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)
+
+VP 10.6.1 Changelog
+------------------------
+
+- fix hang on player exit on some setups
 
 VP 10.6.0 Changelog
 ------------------------
