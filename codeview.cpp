@@ -2410,27 +2410,34 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 
 void CodeViewer::ParseVPCore()
 {
-    //Open file
-    const string sPath = string(g_pvp->m_szMyPath) + "Scripts\\core.vbs";
-    FILE* fCore;
-    if ((fopen_s(&fCore, sPath.c_str(), "r") != 0) && !fCore)
-    {
-	  char szLoadDir[MAX_PATH];
-	  strncpy_s(szLoadDir, g_pvp->m_currentTablePath, sizeof(szLoadDir)-1);
-	  strncat_s(szLoadDir, "core.vbs", sizeof(szLoadDir)-strnlen_s(szLoadDir, sizeof(szLoadDir))-1); //!! \\core.vbs ? check!
-	  if ((fopen_s(&fCore, szLoadDir, "r") != 0) && !fCore)
-	  {
-		  const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szLoadDir, MAX_PATH);
-		  if (hr != S_OK)
-			  lstrcpy(szLoadDir, "c:\\Visual Pinball\\Tables\\");
+	const string mp(g_pvp->m_szMyPath);
 
-		  strncat_s(szLoadDir, "core.vbs", sizeof(szLoadDir)-strnlen_s(szLoadDir, sizeof(szLoadDir))-1); //!! \\core.vbs ? check!
-		  if ((fopen_s(&fCore, szLoadDir, "r") != 0) && !fCore)
-		  {
-			  MessageBox("Couldn't find core.vbs for code completion parsing!", "Script Parser Warning", MB_OK);
-			  return;
-		  }
-	  }
+	vector<string> searchPaths;
+	searchPaths.push_back(mp + "Scripts\\core.vbs"); // executable path
+
+	const size_t index = mp.substr(0, mp.length()-1).find_last_of('\\');
+	if (index != std::string::npos)
+		searchPaths.push_back(mp.substr(0, index+1) + "Scripts\\core.vbs"); // executable minus one dir (i.e. minus Release or Debug)
+
+	searchPaths.push_back(string(g_pvp->m_currentTablePath) + "core.vbs"); // table path
+
+	searchPaths.push_back("c:\\Visual Pinball\\Scripts\\core.vbs"); // default script path
+
+	char szLoadDir[MAX_PATH];
+	const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szLoadDir, MAX_PATH); // last known load dir path
+	if (hr != S_OK)
+		lstrcpy(szLoadDir, "c:\\Visual Pinball\\Tables\\"); // default table path
+	searchPaths.push_back(string(szLoadDir) + "core.vbs");
+
+	FILE* fCore = NULL;
+	for(size_t i = 0; i < searchPaths.size(); ++i)
+		if ((fopen_s(&fCore, searchPaths[i].c_str(), "r") == 0) && fCore)
+			break;
+
+	if(!fCore)
+	{
+		MessageBox("Couldn't find core.vbs for code completion parsing!", "Script Parser Warning", MB_OK);
+		return;
 	}
 
 	//initalise Parent child
