@@ -632,6 +632,11 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
 Player::~Player()
 {
 
+    if (m_fontSprite)
+    {
+        m_fontSprite->Release();
+        m_fontSprite = NULL;
+    }
     if (m_pFont)
     {
         m_pFont->Release();
