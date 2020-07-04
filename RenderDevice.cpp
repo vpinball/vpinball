@@ -964,11 +964,19 @@ RenderDevice::~RenderDevice()
    //!! if (m_pD3DDeviceEx == m_pD3DDevice) m_pD3DDevice = NULL; //!! needed for Caligula if m_adapter > 0 ?? weird!! BUT MESSES UP FULLSCREEN EXIT (=hangs)
    SAFE_RELEASE_NO_RCC(m_pD3DDeviceEx);
 #endif
-   FORCE_RELEASE(m_pD3DDevice);
+#ifdef DEBUG_REFCOUNT_TRIGGER
+   SAFE_RELEASE(m_pD3DDevice);
+#else
+   FORCE_RELEASE(m_pD3DDevice); //!! why is this necessary for some setups? is the refcount still off for some settings?
+#endif
 #ifdef USE_D3D9EX
    SAFE_RELEASE_NO_RCC(m_pD3DEx);
 #endif
-   FORCE_RELEASE(m_pD3D);
+#ifdef DEBUG_REFCOUNT_TRIGGER
+   SAFE_RELEASE(m_pD3D);
+#else
+   FORCE_RELEASE(m_pD3D); //!! why is this necessary for some setups? is the refcount still off for some settings?
+#endif
 
    /*
     * D3D sets the FPU to single precision/round to nearest int mode when it's initialized,

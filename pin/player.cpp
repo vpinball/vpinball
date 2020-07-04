@@ -652,9 +652,11 @@ Player::~Player()
        delete m_decalImage;
        m_decalImage = NULL;
     }
-    delete g_pplayer->m_pBCTarget;
-    m_pBCTarget = nullptr;
-    g_pplayer = nullptr;
+    if (m_pBCTarget)
+    {
+       delete m_pBCTarget;
+       m_pBCTarget = nullptr;
+    }
 }
 
 void Player::PreRegisterClass(WNDCLASS& wc)
@@ -2148,10 +2150,10 @@ void Player::InitStatic()
    if (!m_cameraMode)
    {
       const bool drawBallReflection = ((m_reflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
-      if (!(m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/) && drawBallReflection)
+      if (!(m_ptable->m_reflectElementsOnPlayfield /*&& m_pf_refl*/) && drawBallReflection)
          RenderStaticMirror(true);
       else
-         if (m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/)
+         if (m_ptable->m_reflectElementsOnPlayfield /*&& m_pf_refl*/)
             RenderStaticMirror(false);
 
       // exclude playfield depth as dynamic mirror objects have to be added later-on
@@ -2159,7 +2161,7 @@ void Player::InitStatic()
       m_pin3d.RenderPlayfieldGraphics(false);
       m_pin3d.m_pd3dPrimaryDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
 
-      if (m_ptable->m_reflectElementsOnPlayfield /*&& g_pplayer->m_pf_refl*/)
+      if (m_ptable->m_reflectElementsOnPlayfield /*&& m_pf_refl*/)
          RenderMirrorOverlay();
 
       // to compensate for this when rendering the static objects, enable clipplane
@@ -3517,7 +3519,7 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
          DMDVerts[i * 5 + 1] = 1.0f - (DMDVerts[i * 5 + 1] * DMDheight + DMDposy)*2.0f;
       }
 
-      //const float width = g_pplayer->m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
+      //const float width = m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
       m_pin3d.m_pd3dPrimaryDevice->DMDShader->SetTechnique("basic_DMD"); //!! DMD_UPSCALE ?? -> should just work
 
       const vec4 c = convertColor(DMDcolor, intensity);
@@ -3701,9 +3703,9 @@ void Player::RenderDynamics()
    {
 	   const bool drawBallReflection = ((m_reflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
 
-	   if (!(m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl) && drawBallReflection)
+	   if (!(m_ptable->m_reflectElementsOnPlayfield && m_pf_refl) && drawBallReflection)
 		   reflection_path = 1;
-	   else if (m_ptable->m_reflectElementsOnPlayfield && g_pplayer->m_pf_refl)
+	   else if (m_ptable->m_reflectElementsOnPlayfield && m_pf_refl)
 		   reflection_path = 2;
    }
 
@@ -4221,7 +4223,7 @@ void Player::UpdateHUD()
 			m_phys_iterations,
 			(U32)(m_phys_total_iterations / m_count),
 			m_phys_max_iterations,
-			g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR*g_pplayer->m_gravity).Length() : -1.f, g_pplayer->m_pactiveball ? (g_pplayer->m_pactiveball->m_angularmomentum / g_pplayer->m_pactiveball->Inertia()).Length() : -1.f);
+			m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR*m_gravity).Length() : -1.f, m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f);
 		DebugPrint(0, 200, szFoo);
 
 #ifdef DEBUGPHYSICS

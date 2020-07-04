@@ -10144,7 +10144,6 @@ BOOL PinTable::OnCommand(WPARAM wparam, LPARAM lparam)
         }
         case ID_TABLE_PLAYER_STOPPED:
         {
-
             delete g_pplayer;
             g_pplayer = nullptr;
 
