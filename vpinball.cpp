@@ -216,7 +216,7 @@ void VPinball::EnsureWorkerThread()
    if (!m_workerthread)
    {
       g_hWorkerStarted = CreateEvent(NULL, TRUE, FALSE, NULL);
-      m_workerthread = (HANDLE)_beginthreadex(NULL, 0, VPWorkerThreadStart, 0, 0, &m_workerthreadid); //!! _beginthreadex is safer
+      m_workerthread = (HANDLE)_beginthreadex(NULL, 0, VPWorkerThreadStart, 0, 0, &m_workerthreadid);
       if (WaitForSingleObject(g_hWorkerStarted, 5000) == WAIT_TIMEOUT)
       {
       }
@@ -389,7 +389,7 @@ void VPinball::SetStatusBarUnitInfo(const char * const info, const bool isUnit)
     SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf);
 }
 
-bool VPinball::OpenFileDialog(const char *initDir, std::vector<std::string> &filename, const char *fileFilter, const char *defaultExt, DWORD flags)
+bool VPinball::OpenFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags)
 {
    CFileDialog fileDlg(TRUE, defaultExt, initDir, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
    if (fileDlg.DoModal(*this)==IDOK)
@@ -397,7 +397,7 @@ bool VPinball::OpenFileDialog(const char *initDir, std::vector<std::string> &fil
       int pos = 0;
       while (pos != -1)
          filename.push_back(std::string(fileDlg.GetNextPathName(pos)));
-      
+
       return true;
    }
    else

@@ -392,9 +392,12 @@ HRESULT BiffReader::GetString(std::string &szvalue)
       return hr;
 
    m_bytesinrecordremaining -= len + (int)sizeof(int);
-   szvalue.resize(len);
-   hr = ReadBytes(&szvalue[0], len, &read);
-   szvalue[len] = 0;
+
+   char * tmp = new char[len+1];
+   hr = ReadBytes(tmp, len, &read);
+   tmp[len] = 0;
+   szvalue = string(tmp);
+   delete[] tmp;
    return hr;
 }
 
