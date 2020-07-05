@@ -15,7 +15,7 @@ Surface::Surface()
    m_IBuffer = 0;
    m_propPhysics = NULL;
    m_d.m_szImage = "";
-   memset(m_d.m_szSideImage, 0, MAXTOKEN);
+   m_d.m_szSideImage = "";
    m_d.m_szSideMaterial = "";
    m_d.m_szTopMaterial = "";
    m_d.m_szSlingShotMaterial = "";
@@ -173,11 +173,11 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
    HRESULT hr = LoadValueString(strKeyName, "TopImage", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage[0] = 0;
+      m_d.m_szImage = "";
 
    hr = LoadValueString(strKeyName, "SideImage", m_d.m_szSideImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szSideImage[0] = 0;
+      m_d.m_szSideImage = "";
 
    m_d.m_droppable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Droppable", false) : false;
    m_d.m_flipbook = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Flipbook", false) : false;
@@ -218,13 +218,15 @@ void Surface::SetDefaults(bool fromMouseClick)
    char buf[MAXTOKEN] = { 0 };
    hr = LoadValueString(strKeyName, "TopImage", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage="";
+      m_d.m_szImage = "";
    else
       m_d.m_szImage = buf;
 
-   hr = LoadValueString(strKeyName, "SideImage", m_d.m_szSideImage, MAXTOKEN);
+   hr = LoadValueString(strKeyName, "SideImage", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szSideImage[0] = 0;
+      m_d.m_szSideImage = "";
+   else
+      m_d.m_szSideImage = buf;
 
    m_d.m_droppable = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Droppable", false) : false;
    m_d.m_flipbook = fromMouseClick ? LoadValueBoolWithDefault(strKeyName, "Flipbook", false) : false;
@@ -1785,7 +1787,7 @@ STDMETHODIMP Surface::put_Visible(VARIANT_BOOL newVal)
 STDMETHODIMP Surface::get_SideImage(BSTR *pVal)
 {
    WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSideImage, -1, wz, MAXTOKEN);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSideImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1793,16 +1795,15 @@ STDMETHODIMP Surface::get_SideImage(BSTR *pVal)
 
 STDMETHODIMP Surface::put_SideImage(BSTR newVal)
 {
-   char szSideImage[sizeof(m_d.m_szSideImage)];
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szSideImage, sizeof(m_d.m_szSideImage), NULL, NULL);
+   char szSideImage[MAXTOKEN];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szSideImage, MAXTOKEN, NULL, NULL);
    const Texture * const tex = m_ptable->GetImage(szSideImage);
    if (tex && tex->IsHDR())
    {
        ShowError("Cannot use a HDR image (.exr/.hdr) here");
        return E_FAIL;
    }
-
-   strncpy_s(m_d.m_szSideImage,szSideImage,sizeof(m_d.m_szSideImage)-1);
+   m_d.m_szSideImage = szSideImage;
 
    return S_OK;
 }

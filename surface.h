@@ -9,7 +9,7 @@ public:
    Vertex2D m_Center;
    TimerDataRoot m_tdr;
    float m_slingshot_threshold;	// speed at which ball needs to trigger slingshot 
-   char m_szSideImage[MAXTOKEN];
+   std::string m_szSideImage;
    std::string m_szTopMaterial;
    std::string m_szSideMaterial;
    std::string m_szSlingShotMaterial;
