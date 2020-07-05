@@ -2242,7 +2242,8 @@ void PinTable::StopPlaying()
    // Unhook script connections
    //m_pcv->m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
 
-   m_pcv->SetEnabled(true);
+   if(m_pcv)
+      m_pcv->SetEnabled(true);
 
    // Stop all sounds
    // In case we were playing any of the main buffers
@@ -2251,10 +2252,10 @@ void PinTable::StopPlaying()
    // The usual case - copied sounds
    m_vpinball->m_ps.StopAndClearCopiedWavs();
 
-   m_pcv->EndSession();
+   if(m_pcv)
+      m_pcv->EndSession();
    m_textureMap.clear();
    m_materialMap.clear();
-
 
    RestoreBackup();
    g_keepUndoRecords = true;
@@ -2263,7 +2264,6 @@ void PinTable::StopPlaying()
    UpdateDbgLight();
 
    BeginAutoSaveCounter();
-
 }
 
 HRESULT PinTable::InitVBA()
@@ -2274,7 +2274,6 @@ HRESULT PinTable::InitVBA()
 void PinTable::CloseVBA()
 {
 }
-
 
 HRESULT PinTable::TableSave()
 {
@@ -7059,7 +7058,7 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
                case eItemSurface:
                {
                    Surface * const pSurf = (Surface*)pEdit;
-                   if ((pSurf->m_d.m_szImage == std::string(ppi->m_szName)) || (_stricmp(pSurf->m_d.m_szSideImage, ppi->m_szName) == 0))
+                   if ((pSurf->m_d.m_szImage == std::string(ppi->m_szName)) || (pSurf->m_d.m_szSideImage == std::string(ppi->m_szName)))
                        inUse = true;
                    break;
                }
