@@ -369,9 +369,7 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             {
                 case BN_CLICKED:
                 {
-                    if (SendDlgItemMessage(id, BM_GETCHECK, 0, 0))
-                        g_pvp->m_ToolCur = id;
-                    else
+                    if (SendDlgItemMessage(id, BM_GETCHECK, 0, 0)==BST_UNCHECKED)
                         SendDlgItemMessage(id, BM_SETCHECK, BST_CHECKED, 0);
 
                     return TRUE;

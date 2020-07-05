@@ -885,7 +885,6 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
     {
         if (tvItem.cChildren == 1) // layer checkbox was clicked
         {
-            const bool checked = IsItemChecked(tvItem.hItem); //!! never used?!
             HTREEITEM subItem = GetChild(tvItem.hItem);
             while (subItem)
             {
