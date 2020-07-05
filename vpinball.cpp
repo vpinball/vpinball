@@ -22,7 +22,6 @@
 #define DOCKER_REGISTRY_KEY     "Visual Pinball\\VP10\\Editor"
 
 #define	RECENT_FIRST_MENU_IDM	5000	// ID of the first recent file list filename
-#define	RECENT_LAST_MENU_IDM	(RECENT_FIRST_MENU_IDM+LAST_OPENED_TABLE_COUNT)
 
 #define AUTOSAVE_DEFAULT_TIME 10
 
@@ -1132,8 +1131,10 @@ void VPinball::SetEnableMenuItems()
 
 void VPinball::UpdateRecentFileList(const char *szfilename)
 {
+   const size_t old_count = m_recentTableList.size();
+
    // if the loaded file name is not null then add it to the top of the list
-   if (szfilename != NULL)
+   if (szfilename != NULL && szfilename[0] != 0)
    {
       std::vector<std::string> newList;
       newList.push_back(std::string(szfilename));
@@ -1144,11 +1145,13 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
               newList.push_back(tableName);
       }
 
-      m_recentTableList = newList;
+      m_recentTableList.clear();
 
       int i = 0;
-      for (const std::string &tableName : m_recentTableList)
+      for (const std::string &tableName : newList)
       {
+          m_recentTableList.push_back(tableName);
+
           char szRegName[MAX_PATH];
 
           // write entry to the registry
@@ -1167,8 +1170,8 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
       // update the file menu to contain the last n recent loaded files
       CMenu menuFile = GetMainMenu(FILEMENU);
 
-      // delete all the recent file IDM's from this menu
-      for (int i = RECENT_FIRST_MENU_IDM; i <= RECENT_LAST_MENU_IDM; i++)
+      // delete all the recent file IDM's and the separator from this menu
+      for (size_t i = RECENT_FIRST_MENU_IDM; i <= RECENT_FIRST_MENU_IDM+old_count; i++)
          menuFile.DeleteMenu(i, MF_BYCOMMAND);
 
       // get the number of entries in the file menu
@@ -1204,7 +1207,7 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
       menuInfo.cbSize = GetSizeofMenuItemInfo();
       menuInfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE;
       menuInfo.fType = MFT_SEPARATOR;
-      menuInfo.wID = RECENT_LAST_MENU_IDM;
+      menuInfo.wID = RECENT_FIRST_MENU_IDM + (UINT)m_recentTableList.size();
       menuFile.InsertMenuItem(count, menuInfo, TRUE);
 
       // update the menu bar
