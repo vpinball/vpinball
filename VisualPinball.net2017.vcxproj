@@ -604,6 +604,11 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="hittarget.cpp" />
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_dx9.cpp" />
+    <ClCompile Include="imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="inc\gpuprofiler.cpp" />
     <ClCompile Include="inc\miniz.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -1738,6 +1743,11 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="hittarget.h" />
     <ClInclude Include="idebug.h" />
     <ClInclude Include="ieditable.h" />
+    <ClInclude Include="imgui\imconfig.h" />
+    <ClInclude Include="imgui\imgui.h" />
+    <ClInclude Include="imgui\imgui_impl_dx9.h" />
+    <ClInclude Include="imgui\imgui_impl_win32.h" />
+    <ClInclude Include="imgui\imgui_internal.h" />
     <ClInclude Include="inc\bass.h" />
     <ClInclude Include="inc\forsyth.h" />
     <ClInclude Include="inc\freeimage.h" />

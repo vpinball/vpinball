@@ -277,6 +277,8 @@ private:
    void SSRefl();
    void StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, const bool NFAA, const bool FXAA1, const bool FXAA2, const bool FXAA3, const bool depth_available);
 
+   void UpdateHUD_IMGUI();
+   void RenderHUD_IMGUI();
    void UpdateHUD();
 
    void PrepareVideoBuffersNormal();
