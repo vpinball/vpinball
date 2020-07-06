@@ -1,8 +1,13 @@
 #include "stdafx.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_dx9.h"
+#include "imgui/imgui_impl_win32.h"
 #include <algorithm>
 #include <time.h>
 #include "../meshes/ballMesh.h"
 #include "BallShader.h"
+
+//#define USE_IMGUI
 
 // touch defines, delete as soon as we can get rid of old compilers and use new ones that have these natively
 //#define TEST_TOUCH_WITH_MOUSE
@@ -852,6 +857,11 @@ void Player::OnInitialUpdate()
 
 void Player::Shutdown()
 {
+#ifdef USE_IMGUI
+   ImGui_ImplDX9_Shutdown();
+   ImGui_ImplWin32_Shutdown();
+   ImGui::DestroyContext();
+#endif
 
    // if limit framerate if requested by user (vsync Hz higher than refreshrate of gfxcard/monitor), restore timeEndPeriod
    const int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_VSync : m_ptable->m_TableAdaptiveVSync;
@@ -1559,6 +1569,14 @@ HRESULT Player::Init()
        m_toogle_DTFS = false;
 
    m_pin3d.InitLayout(m_ptable->m_BG_enable_FSS);
+#ifdef USE_IMGUI
+   IMGUI_CHECKVERSION();
+   ImGui::CreateContext();
+   ImGuiIO& io = ImGui::GetIO(); (void)io;
+   io.IniFilename = nullptr;  //don't use an ini file for configuration
+   ImGui_ImplWin32_Init(GetHwnd());
+   ImGui_ImplDX9_Init(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
+#endif
 
    const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
    const float maxSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMaxSlope : m_ptable->m_angletiltMax);
@@ -4108,6 +4126,139 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
    }
 }
 
+// call UpddateHUD_IMGUI outside of m_pin3d.m_pd3dPrimaryDevice->BeginScene()/EndSecene()
+void Player::UpdateHUD_IMGUI()
+{
+   static bool profiling = false;
+   if (!ShowFPS() || m_cameraMode || m_closeDown)
+      return;
+
+   ImGui_ImplDX9_NewFrame();
+   ImGui_ImplWin32_NewFrame();
+   ImGui::NewFrame();
+   ImGui::SetNextWindowSize(ImVec2(600, 350), ImGuiCond_FirstUseEver);
+   ImGui::SetNextWindowPos(ImVec2(10, 10));
+   ImGui::Begin("Statistics");
+   if (ImGui::Button("Toggle Profiling"))
+      profiling = !profiling;
+
+   const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
+   ImGui::Text("FPS: % .1f (% .1f avg)  Display % s Objects(% uk / % uk Triangles)", m_fps + 0.01f, fpsAvg + 0.01f, RenderStaticOnly() ? "only static" : "all", (m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dPrimaryDevice->m_stats_drawn_triangles + 999) / 1000);
+   ImGui::Text("DayNight %u%%", quantizeUnsignedPercent(m_globalEmissionScale));
+
+   const U32 period = m_lastFrameDuration;
+   if (period > m_max || m_time_msec - m_lastMaxChangeTime > 1000)
+      m_max = period;
+   if (period > m_max_total && period < 100000)
+      m_max_total = period;
+
+   if (m_phys_period - m_script_period > m_phys_max || m_time_msec - m_lastMaxChangeTime > 1000)
+      m_phys_max = m_phys_period - m_script_period;
+   if (m_phys_period - m_script_period > m_phys_max_total)
+      m_phys_max_total = m_phys_period - m_script_period;
+
+   if (m_phys_iterations > m_phys_max_iterations || m_time_msec - m_lastMaxChangeTime > 1000)
+      m_phys_max_iterations = m_phys_iterations;
+
+   if (m_script_period > m_script_max || m_time_msec - m_lastMaxChangeTime > 1000)
+      m_script_max = m_script_period;
+   if (m_script_period > m_script_max_total)
+      m_script_max_total = m_script_period;
+
+   if (m_time_msec - m_lastMaxChangeTime > 1000)
+      m_lastMaxChangeTime = m_time_msec;
+
+   if (m_count == 0)
+   {
+      m_total = period;
+      m_phys_total = m_phys_period - m_script_period;
+      m_phys_total_iterations = m_phys_iterations;
+      m_script_total = m_script_period;
+      m_count = 1;
+   }
+   else
+   {
+      m_total += period;
+      m_phys_total += m_phys_period - m_script_period;
+      m_phys_total_iterations += m_phys_iterations;
+      m_script_total += m_script_period;
+      m_count++;
+   }
+   ImGui::Text("Overall: %.1f ms (%.1f (%.1f) avg %.1f max)", float(1e-3 * period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3 * m_max), float(1e-3 * m_max_total));
+   ImGui::Text("%4.1f%% Physics: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
+               float((m_phys_period - m_script_period) * 100.0 / period), float(1e-3 * (m_phys_period - m_script_period)),
+               float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3 * m_phys_max), float((double)m_phys_total * 100.0 / (double)m_total), float(1e-3 * m_phys_max_total));
+
+   ImGui::Text("%4.1f%% Scripts: %.1f ms (%.1f (%.1f %4.1f%%) avg %.1f max)",
+               float(m_script_period * 100.0 / period), float(1e-3 * m_script_period),
+               float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3 * m_script_max), float((double)m_script_total * 100.0 / (double)m_total), float(1e-3 * m_script_max_total));
+
+   // performance counters
+   ImGui::Text("Draw calls: %u (%u Locks)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumLockCalls());
+   ImGui::Text("State changes: %u", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumStateChanges());
+   ImGui::Text("Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTextureUploads());
+   ImGui::Text("Shader/Parameter changes: %u / %u (%u Material ID changes)", m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges(), m_pin3d.m_pd3dPrimaryDevice->Perf_GetNumParameterChanges(), material_flips);
+   ImGui::Text("Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
+
+   ImGui::Text("Physics: %u iterations per frame (%u avg %u max)    Ball Velocity / Ang.Vel.: %.1f %.1f",
+      m_phys_iterations,
+      (U32)(m_phys_total_iterations / m_count),
+      m_phys_max_iterations,
+      m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_gravity).Length() : -1.f, m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f);
+
+   ImGui::Text("Left Flipper keypress to rotate: %.1f ms (%d f) to eos: %.1f ms (%d f)",
+      (INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.,
+      (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame),
+      (INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.,
+      (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame));
+   ImGui::End();
+
+   if (profiling)
+   {
+      ImGui::Begin("Detailed (approximate) GPU profiling:");
+
+      m_pin3d.m_gpu_profiler.WaitForDataAndUpdate();
+
+      double dTDrawTotal = 0.0;
+      for (GTS gts = GTS_BeginFrame; gts < GTS_EndFrame; gts = GTS(gts + 1))
+         dTDrawTotal += m_pin3d.m_gpu_profiler.DtAvg(gts);
+
+      ImGui::Text(" Draw time: %.2f ms", float(1000.0 * dTDrawTotal));
+      for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
+         ImGui::Text("   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
+      ImGui::Text(" Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
+
+/*      if (ProfilingMode() == 1)
+      {
+         for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
+         {
+            len2 = sprintf_s(szFoo, "   %s: %.2f ms (%4.1f%%)", GTS_name[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
+            DebugPrint(0, 320 + gts * 20, szFoo);
+         }
+         len2 = sprintf_s(szFoo, " Frame time: %.2f ms", float(1000.0 * (dTDrawTotal + m_pin3d.m_gpu_profiler.DtAvg(GTS_EndFrame))));
+         DebugPrint(0, 320 + GTS_EndFrame * 20, szFoo);
+      }
+      else
+      {
+         for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
+         {
+            len2 = sprintf_s(szFoo, " %s: %.2f ms (%4.1f%%)", GTS_name_item[gts], float(1000.0 * m_pin3d.m_gpu_profiler.DtAvg(gts)), float(100. * m_pin3d.m_gpu_profiler.DtAvg(gts) / dTDrawTotal));
+            DebugPrint(0, 300 + gts * 20, szFoo);
+         }
+      }
+      */
+      ImGui::End();
+   }
+   ImGui::EndFrame();
+}
+
+void Player::RenderHUD_IMGUI()
+{
+   if (!ShowFPS() || m_cameraMode || m_closeDown)
+      return;
+   ImGui::Render();
+   ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+}
 void Player::UpdateHUD()
 {
     float x = 0.f, y = 0.f;
@@ -4472,8 +4623,11 @@ void Player::PrepareVideoBuffersNormal()
    if (m_cameraMode)
        UpdateCameraModeDisplay();
 
+#ifdef USE_IMGUI
+   RenderHUD_IMGUI();
+#else
    UpdateHUD();
-
+#endif
    m_pin3d.m_pd3dPrimaryDevice->EndScene();
 }
 
@@ -4631,9 +4785,11 @@ void Player::PrepareVideoBuffersAO()
 
    if (m_cameraMode)
        UpdateCameraModeDisplay();
-
+#ifdef USE_IMGUI
+   RenderHUD_IMGUI();
+#else
    UpdateHUD();
-
+#endif
    m_pin3d.m_pd3dPrimaryDevice->EndScene();
 }
 
@@ -4968,6 +5124,9 @@ void Player::Render()
             vsync = true;
 
    const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)) && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f);
+#ifdef USE_IMGUI
+   UpdateHUD_IMGUI();
+#endif
    if (useAO && !m_disableAO)
       PrepareVideoBuffersAO();
    else
@@ -5793,7 +5952,13 @@ void Player::DoDebugObjectMenu(const int x, const int y)
 
 LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    switch (uMsg)
+
+#ifdef USE_IMGUI
+   if (ImGui_ImplWin32_WndProcHandler(GetHwnd(), uMsg, wParam, lParam))
+      return true;
+#endif
+
+   switch (uMsg)
     {
     case MM_MIXM_CONTROL_CHANGE:
         mixer_get_volume();
