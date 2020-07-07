@@ -55,15 +55,6 @@ Index: imgui_impl_win32.cpp
  #include "imgui.h"
  #include "imgui_impl_win32.h"
  #ifndef WIN32_LEAN_AND_MEAN
-@@ -405,7 +406,7 @@
-             return;
-         }
-     }
--    SetProcessDPIAware();
-+    //SetProcessDPIAware();
- }
- 
- #ifdef _MSC_VER
 Index: imgui_impl_win32.h
 ===================================================================
 --- imgui_impl_win32.h	(revision 4201)
