@@ -1,13 +1,68 @@
 #include "stdafx.h"
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_dx9.h"
-#include "imgui/imgui_impl_win32.h"
+//#define USE_IMGUI
+#ifdef USE_IMGUI
+ #include "imgui/imgui.h"
+ #include "imgui/imgui_impl_dx9.h"
+ #include "imgui/imgui_impl_win32.h"
+ #include "imgui/implot/implot.h"
+
+
+// utility structure for realtime plot //!! cleanup
+typedef float t_float;
+typedef ImVec2 t_float2;
+struct ScrollingData {
+    int MaxSize;
+    int Offset;
+    ImVector<t_float2> Data;
+    ScrollingData() {
+        MaxSize = 500;
+        Offset  = 0;
+        Data.reserve(MaxSize);
+    }
+    void AddPoint(t_float x, t_float y) {
+        if (Data.size() < MaxSize)
+            Data.push_back(t_float2(x,y));
+        else {
+            Data[Offset] = t_float2(x,y);
+            Offset =  (Offset + 1) % MaxSize;
+        }
+    }
+    void Erase() {
+        if (Data.size() > 0) {
+            Data.shrink(0);
+            Offset  = 0;
+        }
+    }
+    t_float2 GetLast() {
+        if (Data.size() == 0)
+            return t_float2(0.f, 0.f);
+        if (Data.size() < MaxSize || Offset == 0)
+            return Data.back();
+        else
+            return Data[Offset - 1];
+    }
+};
+
+// utility structure for realtime plot
+struct RollingData {
+    t_float Span;
+    ImVector<t_float2> Data;
+    RollingData() {
+        Span = 10.0f;
+        Data.reserve(500);
+    }
+    void AddPoint(t_float x, t_float y) {
+        t_float xmod = fmodf(x, Span);
+        if (!Data.empty() && xmod < Data.back().x)
+            Data.shrink(0);
+        Data.push_back(t_float2(xmod, y));
+    }
+};
+#endif
 #include <algorithm>
 #include <time.h>
 #include "../meshes/ballMesh.h"
 #include "BallShader.h"
-
-//#define USE_IMGUI
 
 // touch defines, delete as soon as we can get rid of old compilers and use new ones that have these natively
 //#define TEST_TOUCH_WITH_MOUSE
@@ -1572,7 +1627,7 @@ HRESULT Player::Init()
 #ifdef USE_IMGUI
    IMGUI_CHECKVERSION();
    ImGui::CreateContext();
-   ImGuiIO& io = ImGui::GetIO(); (void)io;
+   ImGuiIO& io = ImGui::GetIO();
    io.IniFilename = nullptr;  //don't use an ini file for configuration
    ImGui_ImplWin32_Init(GetHwnd());
    ImGui_ImplDX9_Init(m_pin3d.m_pd3dPrimaryDevice->GetCoreDevice());
@@ -4126,6 +4181,7 @@ void Player::StereoFXAA(const bool stereo, const bool SMAA, const bool DLAA, con
    }
 }
 
+#ifdef USE_IMGUI
 // call UpddateHUD_IMGUI outside of m_pin3d.m_pd3dPrimaryDevice->BeginScene()/EndSecene()
 void Player::UpdateHUD_IMGUI()
 {
@@ -4249,6 +4305,64 @@ void Player::UpdateHUD_IMGUI()
       */
       ImGui::End();
    }
+
+   ImGui::SetNextWindowSize(ImVec2(530, 550), ImGuiCond_FirstUseEver);
+   ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiCond_FirstUseEver);
+   ImGui::Begin("Plots");
+       //!! This example assumes 60 FPS. Higher FPS requires larger buffer size.
+       static ScrollingData sdata1, sdata2, sdata3, sdata4, sdata5, sdata6;
+       //static RollingData   rdata1, rdata2;
+       static double t = 0.f;
+       t += ImGui::GetIO().DeltaTime;
+
+       sdata6.AddPoint((float)t, float(1e-3 * m_script_period) * 1.f);
+       sdata5.AddPoint((float)t, sdata5.GetLast().y*0.95f + sdata6.GetLast().y*0.05f);
+
+       sdata4.AddPoint((float)t, float(1e-3 * (m_phys_period - m_script_period)) * 5.f);
+       sdata3.AddPoint((float)t, sdata3.GetLast().y*0.95f + sdata4.GetLast().y*0.05f);
+
+       sdata2.AddPoint((float)t, m_fps * 0.003f);
+       //rdata2.AddPoint((float)t, m_fps * 0.003f);
+       sdata1.AddPoint((float)t, sdata1.GetLast().y*0.95f + sdata2.GetLast().y*0.05f);
+       //rdata1.AddPoint((float)t, sdata1.GetLast().y*0.95f + sdata2.GetLast().y*0.05f);
+
+       static float history = 2.5f;
+       ImGui::SliderFloat("History", &history, 1, 10, "%.1f s");
+       //rdata1.Span = history;
+       //rdata2.Span = history;
+       ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
+       const int rt_axis = ImPlotAxisFlags_Default & ~ImPlotAxisFlags_TickLabels;
+       if (ImPlot::BeginPlot("##ScrollingFPS", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_Default, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
+           ImPlot::PlotLine("FPS", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), sdata2.Offset, 2 * sizeof(t_float));
+           ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
+           ImPlot::PlotLine("Smoothed FPS", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), sdata1.Offset, 2 * sizeof(t_float));
+           ImPlot::PopStyleColor();
+           ImPlot::EndPlot();
+       }
+       /*ImPlot::SetNextPlotLimitsX(0, history, ImGuiCond_Always);
+       if (ImPlot::BeginPlot("##RollingFPS", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_Default, rt_axis, rt_axis)) {
+           ImPlot::PlotLine("Average FPS", &rdata1.Data[0].x, &rdata1.Data[0].y, rdata1.Data.size(), 0, 2 * sizeof(t_float));
+           ImPlot::PlotLine("FPS", &rdata2.Data[0].x, &rdata2.Data[0].y, rdata2.Data.size(), 0, 2 * sizeof(t_float));
+           ImPlot::EndPlot();
+       }*/
+       ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
+       if (ImPlot::BeginPlot("##ScrollingPhysics", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_Default, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
+           ImPlot::PlotLine("ms Physics", &sdata4.Data[0].x, &sdata4.Data[0].y, sdata4.Data.size(), sdata4.Offset, 2 * sizeof(t_float));
+           ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
+           ImPlot::PlotLine("Smoothed ms Physics", &sdata3.Data[0].x, &sdata3.Data[0].y, sdata3.Data.size(), sdata3.Offset, 2 * sizeof(t_float));
+           ImPlot::PopStyleColor();
+           ImPlot::EndPlot();
+       }
+       ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
+       if (ImPlot::BeginPlot("##ScrollingScript", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_Default, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
+           ImPlot::PlotLine("ms Script", &sdata6.Data[0].x, &sdata6.Data[0].y, sdata6.Data.size(), sdata6.Offset, 2 * sizeof(t_float));
+           ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
+           ImPlot::PlotLine("Smoothed ms Script", &sdata5.Data[0].x, &sdata5.Data[0].y, sdata5.Data.size(), sdata5.Offset, 2 * sizeof(t_float));
+           ImPlot::PopStyleColor();
+           ImPlot::EndPlot();
+       }
+   ImGui::End();
+
    ImGui::EndFrame();
 }
 
@@ -4256,9 +4370,13 @@ void Player::RenderHUD_IMGUI()
 {
    if (!ShowFPS() || m_cameraMode || m_closeDown)
       return;
+
    ImGui::Render();
    ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 }
+
+#else
+
 void Player::UpdateHUD()
 {
     float x = 0.f, y = 0.f;
@@ -4528,6 +4646,7 @@ void Player::UpdateHUD()
 		}
 	}
 }
+#endif
 
 void Player::PrepareVideoBuffersNormal()
 {
@@ -4628,6 +4747,7 @@ void Player::PrepareVideoBuffersNormal()
 #else
    UpdateHUD();
 #endif
+
    m_pin3d.m_pd3dPrimaryDevice->EndScene();
 }
 
@@ -4785,11 +4905,13 @@ void Player::PrepareVideoBuffersAO()
 
    if (m_cameraMode)
        UpdateCameraModeDisplay();
+
 #ifdef USE_IMGUI
    RenderHUD_IMGUI();
 #else
    UpdateHUD();
 #endif
+
    m_pin3d.m_pd3dPrimaryDevice->EndScene();
 }
 
@@ -5124,9 +5246,11 @@ void Player::Render()
             vsync = true;
 
    const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)) && m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f);
+
 #ifdef USE_IMGUI
    UpdateHUD_IMGUI();
 #endif
+
    if (useAO && !m_disableAO)
       PrepareVideoBuffersAO();
    else
@@ -5952,13 +6076,12 @@ void Player::DoDebugObjectMenu(const int x, const int y)
 
 LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-
 #ifdef USE_IMGUI
-   if (ImGui_ImplWin32_WndProcHandler(GetHwnd(), uMsg, wParam, lParam))
+    if (ImGui_ImplWin32_WndProcHandler(GetHwnd(), uMsg, wParam, lParam))
       return true;
 #endif
 
-   switch (uMsg)
+    switch (uMsg)
     {
     case MM_MIXM_CONTROL_CHANGE:
         mixer_get_volume();
