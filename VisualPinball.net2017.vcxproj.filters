@@ -271,6 +271,9 @@
     <ClCompile Include="imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="imgui\implot\implot.cpp">
+      <Filter>imgui\implot</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -648,6 +651,9 @@
     </Filter>
     <Filter Include="imgui">
       <UniqueIdentifier>{fdf6f786-07d9-49c5-b502-3a7de872daca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui\implot">
+      <UniqueIdentifier>{fc16eece-2096-4e44-bad4-380f77d82bef}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1407,6 +1413,9 @@
     </ClInclude>
     <ClInclude Include="imgui\imgui_internal.h">
       <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\implot\implot.h">
+      <Filter>imgui\implot</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
