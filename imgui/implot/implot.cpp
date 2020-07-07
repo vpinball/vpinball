@@ -55,12 +55,14 @@ You can read releases logs https://github.com/epezent/implot/releases for more d
 
 */
 
+#include "stdafx.h"
+
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
 
 #include "implot.h"
-#include "imgui_internal.h"
+#include "..\imgui_internal.h"
 #ifdef _MSC_VER
 #define sprintf sprintf_s
 #endif

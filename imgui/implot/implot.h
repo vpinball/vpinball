@@ -23,7 +23,7 @@
 // ImPlot v0.3 WIP
 
 #pragma once
-#include "imgui.h"
+#include "..\imgui.h"
 
 //-----------------------------------------------------------------------------
 // Basic types and flags

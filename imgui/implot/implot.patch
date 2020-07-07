@@ -1,0 +1,33 @@
+Index: implot.cpp
+===================================================================
+--- implot.cpp	(revision 4204)
++++ implot.cpp	(working copy)
+@@ -55,12 +55,14 @@
+ 
+ */
+ 
++#include "stdafx.h"
++
+ #ifndef IMGUI_DEFINE_MATH_OPERATORS
+ #define IMGUI_DEFINE_MATH_OPERATORS
+ #endif
+ 
+ #include "implot.h"
+-#include "imgui_internal.h"
++#include "..\imgui_internal.h"
+ #ifdef _MSC_VER
+ #define sprintf sprintf_s
+ #endif
+Index: implot.h
+===================================================================
+--- implot.h	(revision 4204)
++++ implot.h	(working copy)
+@@ -23,7 +23,7 @@
+ // ImPlot v0.3 WIP
+ 
+ #pragma once
+-#include "imgui.h"
++#include "..\imgui.h"
+ 
+ //-----------------------------------------------------------------------------
+ // Basic types and flags
