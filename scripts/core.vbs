@@ -21,16 +21,7 @@ Const VPinMAMEDriverVer = 3.58
 'Set GICallback2	= GetRef("UpdateGI")  ' New GI Callback supports Newer VPM Dimming GI and returns values numeric 0-8)
 'Set MotorCallback	= GetRef("UpdateMotors")
 '
-'Sub LoadVPM(VPMver, VBSfile, VBSver)
-'	On Error Resume Next
-'		If ScriptEngineMajorVersion < 5 Then MsgBox "VB Script Engine 5.0 or higher required"
-'		ExecuteGlobal GetTextFile(VBSfile)
-'		If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the Scripts folder of Visual Pinball. " & vbNewLine & Err.Description : Err.Clear
-'		Set Controller = CreateObject("VPinMAME.Controller")
-'		If Err Then MsgBox "Can't Load VPinMAME." & vbNewLine & Err.Description
-'		If VPMver>"" Then If Controller.Version < VPMver Or Err Then MsgBox "VPinMAME ver " & VPMver & " required." : Err.Clear
-'		If VPinMAMEDriverVer < VBSver Or Err Then MsgBox VBSFile & " ver " & VBSver & " or higher required."
-'End Sub
+'!SEE controller.vbs FOR HOW TO ADD PinMAME AND/OR B2S SUPPORT NOWADAYS INSTEAD OF USING LoadVPM DIRECTLY!
 '
 'Sub Table_KeyDown(ByVal keycode)
 '	If vpmKeyDown(keycode) Then Exit Sub
@@ -69,7 +60,7 @@ Const VPinMAMEDriverVer = 3.58
 
 '---------------------------------------------------------------
 
-Dim Controller	 ' VPinMAME Controller Object
+Dim Controller	 ' VPinMAME/B2S/etc Controller Object
 Dim vpmTimer	 ' Timer Object
 Dim vpmNudge	 ' Nudge handler Object
 Dim Lights(200)	 ' Put all lamps in an array for easier handling
@@ -165,7 +156,7 @@ Dim vpmShowDips  ' Show DIPs function
 '	(Public) .KickForceVar	- Initial ExitKicker Force value varies by this much (+/-, minimum force = 1)
 '	(Public) .KickAngleVar	- ExitKicker Angle value varies by this much (+/-)
 '	(Public) .BallColour	- Set ball colour
-'	(Public) .TempBallImage	 - Set ball image for next ball only
+'	(Public) .TempBallImage	- Set ball image for next ball only
 '	(Public) .TempBallColour - Set ball colour for next ball only
 '	(Public) .BallImage		- Set ball image
 '	(Public) .InitAddSnd	- Sounds when ball enters stack
@@ -190,7 +181,7 @@ Dim vpmShowDips  ' Show DIPs function
 
 ' cvpmNudge (Object = vpmNudge)
 '	Hopefully we can add a real pendulum simulator in the future
-'	(Public)  .TiltSwitch	- set tilt switch
+'	(Public)  .TiltSwitch	- Set tilt switch
 '	(Public)  .Senitivity	- Set tiltsensitivity (0-10)
 '	(Public)  .TiltObj		- Set objects affected by tilt
 '	(Public)  .DoNudge dir,power  - Nudge table
@@ -319,7 +310,7 @@ Dim vpmShowDips  ' Show DIPs function
 ' vpmSolWall wallObj, sound					- Raise/Drop wall with/without sound
 ' vpmSolToggleWall wall1, wall2, sound		- Toggle between two walls
 ' vpmSolToggleObj obj1,obj2,sound			- Toggle any objects
-' vpmSolAutoPlunger plungerObj, var, enabled	- Autoplunger/kickback
+' vpmSolAutoPlunger plungerObj, var, enabled - Autoplunger/kickback
 ' vpmSolAutoPlungeS plungerObj, sound, var, enabled - Autoplunger/kickback With Specified Sound To Play
 ' vpmSolGate obj, sound						- Open/close gate
 ' vpmSolSound sound							- Play sound only
