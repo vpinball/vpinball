@@ -3,24 +3,24 @@
 ' This code may be freely distributed, but is not to be included with any profit-making
 ' software or product without the express permission from the scripting author, Steely.
 '======================================================================================
-'    /            /              /              /              /              /       '
-'   / 	        <<<-->>>        /              /              /              /        '
-'  /         <<< ------- >@>   /              /              /              /         '
-' /        <</    Ball --- >@@/              /              /              /          '
-'/        </       - to --- >@@             /              /              /           '
-'        </         - Ball - >@@           /              /              /            '
-'        </        Collision >@@>         /              /              /             '
-'        </        - for ---- @@@        /              /              /              '
-'        <</     Visual ----- @@@       /              /              /              /'
-'       /<<<   Pinball ----- >@@>      /              /              /              / '
-'      /  <<< -------------- @@@> A   /              /              /              /  '
-'     /    <<<< ---------- >@@@> PinballKen         /              /              /   '
-'    /       <<<<< ----- >@@@> & Steely            /              /              /    '
-'   /           <<<<->>@@> Production             /              /  Ver 1.0 beta/     '
-'  /               /              /              /              /              /      '
+'	 /			  /				 /				/			   /			  /		  '
+'	/			<<<-->>>		/			   /			  /				 /		  '
+'  /		 <<< ------- >@>   /			  /				 /				/		  '
+' /		   <</	  Ball --- >@@/				 /				/			   /		  '
+'/		  </	   - to --- >@@				/			   /			  /			  '
+'		 </			- Ball - >@@		   /			  /				 /			  '
+'		 </		   Collision >@@>		  /				 /				/			  '
+'		 </		   - for ---- @@@		 /				/			   /			  '
+'		 <</	 Visual ----- @@@		/			   /			  /				 /'
+'		/<<<   Pinball ----- >@@>	   /			  /				 /				/ '
+'	   /  <<< -------------- @@@> A	  /				 /				/			   /  '
+'	  /	   <<<< ---------- >@@@> PinballKen			/			   /			  /	  '
+'	 /		 <<<<< ----- >@@@> & Steely			   /			  /				 /	  '
+'	/			<<<<->>@@> Production			  /				 /	Ver 1.0 beta/	  '
+'  /			   /			  /				 /				/			   /	  '
 '======================================================================================
 ' Many thanks go to Randy Davis and to all the multitudes of people who have
-' contributed to VP over the years, keeping it alive!!!  Enjoy, Steely & PK
+' contributed to VP over the years, keeping it alive!!! Enjoy, Steely & PK
 '======================================================================================
 '
 ' This code will currently only work with vp9 tables. It uses a kicker's
@@ -41,7 +41,7 @@
 '
 'Dim tnopb, nosf
 '
-'tnopb = 4 	' <<<<< SET to the "Total Number Of Possible Balls" in play at any one time
+'tnopb = 4	' <<<<< SET to the "Total Number Of Possible Balls" in play at any one time
 'nosf = 10	' <<<<< SET to the "Number Of Sound Files" used / B2B collision volume levels
 '
 'ExecuteGlobal GetTextFile("B2Bcollision.vbs")
@@ -87,7 +87,7 @@
 'Sub TriggerK2_UnHit() NewBallid : End Sub
 'Sub TriggerK3_UnHit() NewBallid : End Sub
 '
-' Note: In VP9, if a kicker is disabled, its UnHit event will not work!  You must create a trigger (at ' the kicker) and a "Sub trigger_UnHit" event to call the "NewBallid" command when a new ball is kicked.
+' Note: In VP9, if a kicker is disabled, its UnHit event will not work! You must create a trigger (at ' the kicker) and a "Sub trigger_UnHit" event to call the "NewBallid" command when a new ball is kicked.
 '
 '______________________________________________________________________________________
 '
@@ -142,7 +142,7 @@ Option Explicit
 ReDim cball(tnopb), ballStatus(tnopb)
 Dim iball, cnt, coff, errMessage
 
-XYdata.interval = 1 		' Timer interval starts at 1 for the highest ball data sample rate
+XYdata.interval = 1			' Timer interval starts at 1 for the highest ball data sample rate
 coff = False				' Collision off set to false
 
 For cnt = 0 to ubound(ballStatus)	' Initialize/clear all ball stats, 1 = active, 0 = non-existant
@@ -153,7 +153,7 @@ Next
 ' <<<<<<<<<<<<<< Ball Identification >>>>>>>>>>>>>>
 '======================================================
 ' Call this sub from every kicker(or plunger) that creates a ball.
-Sub NewBallID 						' Assign new ball object and give it ID for tracking
+Sub NewBallID						' Assign new ball object and give it ID for tracking
 	For cnt = 1 to ubound(ballStatus)	' Loop through all possible ball IDs
 	If ballStatus(cnt) = 0 Then		' If ball ID is available...
 	Set cball(cnt) = ActiveBall		' Set ball object with the first available ID
@@ -167,7 +167,7 @@ Sub NewBallID 						' Assign new ball object and give it ID for tracking
 	Exit For					' New ball ID assigned, exit loop
 	End If
 	Next
-'	Debugger 					' For demo only, display stats
+'	Debugger					' For demo only, display stats
 End Sub
 
 ' Call this sub from every kicker that destroys a ball, before the ball is destroyed.
@@ -177,7 +177,7 @@ Sub ClearBallid
 	cball(iball).UserValue = 0			' Clear the ball ID
 	If Err Then Msgbox Err.description & vbCrLf & iball
 		ballStatus(iBall) = 0			' Clear the ball status
-	ballStatus(0) = ballStatus(0)-1 	' Subtract 1 ball from the # of balls in play
+	ballStatus(0) = ballStatus(0)-1		' Subtract 1 ball from the # of balls in play
 	On Error Goto 0
 End Sub
 
@@ -224,7 +224,7 @@ Sub XYdata_Timer()
 		If B1 >= B2 then B1 = 1:B2 = B2+1				' If ball1 >= reset ball1 and increment ball2
 	Loop
 
-	If ballStatus(0) <= 1 Then XYdata.enabled = False 			' Turn off timer if one ball or less
+	If ballStatus(0) <= 1 Then XYdata.enabled = False	' Turn off timer if one ball or less
 
 	If XYdata.interval >= 40 Then coff = True : XYdata.enabled = False	' Auto-shut off
 	If Timer > xyTime * 3 Then coff = True : XYdata.enabled = False		' Auto-shut off

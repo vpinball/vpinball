@@ -3,24 +3,24 @@
 ' This code may be freely distributed, but is not to be included with any profit-making
 ' software or product without the express permission from the scripting author, Steely.
 '======================================================================================
-'    /            /              /              /              /              /       '
-'   / 	        <<<-->>>        /              /              /              /        '
-'  /         <<< ------- >@>   /              /              /              /         '
-' /        <</    Ball --- >@@/              /              /              /          '
-'/        </       - to --- >@@             /              /              /           '
-'        </         - Ball - >@@           /              /              /            '
-'        </        Collision >@@>         /              /              /             '
-'        </        - for ---- @@@        /              /              /              '
-'        <</     Visual ----- @@@       /              /              /              /'
-'       /<<<   Pinball ----- >@@>      /              /              /              / '
-'      /  <<< -------------- @@@> A   /              /              /              /  '
-'     /    <<<< ---------- >@@@> PinballKen         /              /              /   '
-'    /       <<<<< ----- >@@@> & Steely            /              /              /    '
-'   /           <<<<->>@@> Production             /              /  Ver 1.1     /     '
-'  /               /              /              /              /              /      '
+'	 /			  /				 /				/			   /			  /		  '
+'	/			<<<-->>>		/			   /			  /				 /		  '
+'  /		 <<< ------- >@>   /			  /				 /				/		  '
+' /		   <</	  Ball --- >@@/				 /				/			   /		  '
+'/		  </	   - to --- >@@				/			   /			  /			  '
+'		 </			- Ball - >@@		   /			  /				 /			  '
+'		 </		   Collision >@@>		  /				 /				/			  '
+'		 </		   - for ---- @@@		 /				/			   /			  '
+'		 <</	 Visual ----- @@@		/			   /			  /				 /'
+'		/<<<   Pinball ----- >@@>	   /			  /				 /				/ '
+'	   /  <<< -------------- @@@> A	  /				 /				/			   /  '
+'	  /	   <<<< ---------- >@@@> PinballKen			/			   /			  /	  '
+'	 /		 <<<<< ----- >@@@> & Steely			   /			  /				 /	  '
+'	/			<<<<->>@@> Production			  /				 /	Ver 1.1		/	  '
+'  /			   /			  /				 /				/			   /	  '
 '======================================================================================
 ' Many thanks go to Randy Davis and to all the multitudes of people who have
-' contributed to VP over the years, keeping it alive!!!  Enjoy, Steely & PK
+' contributed to VP over the years, keeping it alive!!! Enjoy, Steely & PK
 '
 ' v1.1 Updated with code changes/additions by JimmyFingers and Koadic (file modified by Koadic)
 '======================================================================================
@@ -40,9 +40,9 @@
 ' This "B2B.vbs" file must be placed in the same folder as the table.
 '
 '	Dim tnopb, nosf, B2BOn
-'	tnopb = 4 	' <<<<< SET to the "Total Number Of Possible Balls" in play at any one time
+'	tnopb = 4	' <<<<< SET to the "Total Number Of Possible Balls" in play at any one time
 '	nosf = 10	' <<<<< SET to the "Number Of Sound Files" used / B2B collision volume levels
-'	B2BOn = 2   ' <<<<< 0=Off, 1=On, 2=AutoDetect
+'	B2BOn = 2	' <<<<< 0=Off, 1=On, 2=AutoDetect
 '
 '	ExecuteGlobal GetTextFile("B2B.vbs")
 '
@@ -97,7 +97,7 @@
 ' 1) PlaySound("collide" & cForce)
 '	This line selects and plays the proper wav file, combining "collide" with the
 '	collision force for a variable sound level or volume. So the files are named...
-'       "collide0", "collide1"... thru "collide9".
+'		"collide0", "collide1"... thru "collide9".
 '
 ' 2) cForce = Cint((abs(TotalVel(cb1,id3)*Cos(cAngle-bAngle1))+abs(TotalVel(cb2,id3)*Cos(cAngle-bAngle2))))
 '	There are more lines for the cForce calculations, but this main equation works by
@@ -123,7 +123,7 @@ Option Explicit
 
 ReDim CurrentBall(tnopb), ballStatus(tnopb)
 Dim iball, cnt, errMessage
-XYdata.interval = 10 			' Timer interval starts at 1 for the highest ball data sample rate
+XYdata.interval = 10			' Timer interval starts at 1 for the highest ball data sample rate
 
 For cnt = 0 to ubound(ballStatus)	' Initialize/clear all ball stats, 1 = active, 0 = non-existant
 	ballStatus(cnt) = 0
@@ -267,7 +267,7 @@ Sub XYdata_Timer()
 		If ballStatus(B1) = 1 and ballStatus(B2) = 1 Then		' If both balls are active...
 			bDistance = int((TotalVel(B1,id3)+TotalVel(B2,id3))^(1.04 * (CurrentBall(B1).radius + CurrentBall(B2).radius)/50))
 			If ((baX(B1,id3) - baX(B2,id3))^2 + (baY(B1,id3) - baY(B2,id3))^2) < (2800 * ((CurrentBall(B1).radius + CurrentBall(B2).radius)/50)^2) + bDistance Then
-				If ABS(baZ(B1,id3) - baZ(B2,id3)) < (CurrentBall(B1).radius + CurrentBall(B2).radius) Then collide B1,B2 : Exit Sub  'added z axis collision detection here
+				If ABS(baZ(B1,id3) - baZ(B2,id3)) < (CurrentBall(B1).radius + CurrentBall(B2).radius) Then collide B1,B2 : Exit Sub 'added z axis collision detection here
 			End If
 		End If
 		B1 = B1+1							' Increment ball1
@@ -275,7 +275,7 @@ Sub XYdata_Timer()
 		If B1 >= B2 then B1 = 1:B2 = B2+1				' If ball1 >= reset ball1 and increment ball2
 	Loop
 
-	If ballStatus(0) <= 1 Then XYdata.enabled = False 			' Turn off timer if one ball or less
+	If ballStatus(0) <= 1 Then XYdata.enabled = False	' Turn off timer if one ball or less
 
 	If XYdata.interval >= 40 Then B2BOn = False : XYdata.enabled = False	' Auto-shut off
 	If Timer > xyTime * 3 Then B2BOn = False : XYdata.enabled = False		' Auto-shut off
@@ -301,10 +301,10 @@ Sub Collide(cb1,cb2)
 	If Timer < cTime Then Exit Sub
 	cTime = Timer+.1				' Limits collisions to .1 seconds apart
 ' GetAngle(x-value, y-value, the angle name) calculates any x/y-coords or x/y-velocities and returns named angle in radians
- 	GetAngle baX(cb1,id3)-baX(cb2,id3), baY(cb1,id3)-baY(cb2,id3),cAngle	' Collision angle via x/y-coordinates
+	GetAngle baX(cb1,id3)-baX(cb2,id3), baY(cb1,id3)-baY(cb2,id3),cAngle	' Collision angle via x/y-coordinates
 	id3 = id3 - 1 : If id3 = 0 Then id3 = 4		' Step back one xyData sampling for a good velocity reading
- 	GetAngle bVx(cb1,id3), bVy(cb1,id3), bAngle1	' ball 1 travel direction, via velocity
- 	GetAngle bVx(cb2,id3), bVy(cb2,id3), bAngle2	' ball 2 travel direction, via velocity
+	GetAngle bVx(cb1,id3), bVy(cb1,id3), bAngle1	' ball 1 travel direction, via velocity
+	GetAngle bVx(cb2,id3), bVy(cb2,id3), bAngle2	' ball 2 travel direction, via velocity
 ' The main cForce formula, calculating the strength of a collision
 	cForce = Cint((abs(TotalVel(cb1,id3)*Cos(cAngle-bAngle1))+abs(TotalVel(cb2,id3)*Cos(cAngle-bAngle2))))
 		If cForce < 4 Then Exit Sub			' Another collision limiter
