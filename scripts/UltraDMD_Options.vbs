@@ -447,8 +447,8 @@ with HTABox("lightgrey", 500, 450, 700, 250,TableOptName)
 		End If
 		UDMDoptions = optOpenAtStart*2^0 + optDMDColorChange*2^1 + optUseFullColor*2^2
 		'msgbox "Enabled on Start: " & optOpenAtStart & VbCrLf &_
-		'     "Use Full color: " & optUseFullColor & VbCrLf &_
-		'     "Change DMD color: " & optDMDColorChange
+		'	  "Use Full color: " & optUseFullColor & VbCrLf &_
+		'	  "Change DMD color: " & optDMDColorChange
 		SaveValue TableOptName, "DMD Options", UDMDoptions
 		WshShell.Terminate
 	End If
@@ -462,10 +462,10 @@ Dim IE, HTA, nRnd, sCmd, objShell,objExec
 
   randomize : nRnd = Int(1000000 * rnd)
   sCmd = "mshta.exe ""javascript:{new " _
-       & "ActiveXObject(""InternetExplorer.Application"")" _
-       & ".PutProperty('" & nRnd & "',window);" _
-       & "window.resizeTo(" & w & "," & h & ");" _
-       & "window.moveTo(" & x & "," & y & ")}"""
+	   & "ActiveXObject(""InternetExplorer.Application"")" _
+	   & ".PutProperty('" & nRnd & "',window);" _
+	   & "window.resizeTo(" & w & "," & h & ");" _
+	   & "window.moveTo(" & x & "," & y & ")}"""
 
 Set objShell = CreateObject("WScript.Shell")
 Set objExec = objShell.Exec (sCmd)
@@ -473,19 +473,19 @@ Set objExec = objShell.Exec (sCmd)
   do until objShell.AppActivate("javascript:{new "): On Error Resume Next:loop
 
   For Each IE In CreateObject("Shell.Application").windows
-    If IsObject(IE.GetProperty(nRnd)) Then
-      set HTABox = IE.GetProperty(nRnd)
-      IE.Quit
-      HTABox.document.title = "HTABox"
+	If IsObject(IE.GetProperty(nRnd)) Then
+	  set HTABox = IE.GetProperty(nRnd)
+	  IE.Quit
+	  HTABox.document.title = "HTABox"
 
-      HTABox.document.write _
-             "<HTA:Application contextMenu=no border=thin minimizebutton=no maximizebutton=no >" _
-             & "<body scroll='no' style='background-color:" _
-             & sBgColor & ";font:normal 10pt Arial;" _
-             & "border-Style:outset;border-Width:3px'>" _
-             & "<center><span id=msg>&nbsp;</span></center></body>"
-      Exit Function
-    End If
+	  HTABox.document.write _
+			 "<HTA:Application contextMenu=no border=thin minimizebutton=no maximizebutton=no >" _
+			 & "<body scroll='no' style='background-color:" _
+			 & sBgColor & ";font:normal 10pt Arial;" _
+			 & "border-Style:outset;border-Width:3px'>" _
+			 & "<center><span id=msg>&nbsp;</span></center></body>"
+	  Exit Function
+	End If
   Next
 
 ' In case of error
