@@ -45,7 +45,7 @@
 'End Sub
 '
 '
-'Lastly, on table exit, add 
+'Lastly, on table exit, add
 '
 'ExitUltraDMD
 '
@@ -87,17 +87,17 @@ UltraDMD_Animation_ScrollOffUp = 8,UltraDMD_Animation_ScrollOffDown = 9,UltraDMD
 
 'Function to initialize dmd options and load UltraDMD
 Function InitUltraDMD(ProjectFolderName,TableOptName)
-	UDMDoptions = LoadValue(TableOptName,"DMD Options")				    'load saved dmd options
-	If UDMDoptions = "" Then										                'if no existing options
-		UDMDoptions = 1*2^0 + 0*2^1 + 1*2^2				          		'set dmd options to default options
-		GetDMDOptions(TableOptName)												        'get DMD Options
+	UDMDoptions = LoadValue(TableOptName,"DMD Options")					'load saved dmd options
+	If UDMDoptions = "" Then											'if no existing options
+		UDMDoptions = 1*2^0 + 0*2^1 + 1*2^2								'set dmd options to default options
+		GetDMDOptions(TableOptName)										'get DMD Options
 		TableShowOptions = createInput("ULTRADMD Options",TableOptName)	'show the options menu
 	Else
 		GetDMDOptions(TableOptName)
-		If optOpenAtStart=1 Then				    				              'if Enable Next Start was selected
-			UDMDoptions = UDMDoptions - 1							              'clear setting to avoid future executions
-			GetDMDOptions(TableOptName)											        'get DMD Options			    
-			TableShowOptions = createInput("ULTRADMD Options",TableOptName)		  'show the options menu
+		If optOpenAtStart=1 Then											'if Enable Next Start was selected
+			UDMDoptions = UDMDoptions - 1									'clear setting to avoid future executions
+			GetDMDOptions(TableOptName)										'get DMD Options
+			TableShowOptions = createInput("ULTRADMD Options",TableOptName)	'show the options menu
 		End If
 	End If
 	LoadUltraDMD ProjectFolderName,TableOptName
@@ -107,28 +107,28 @@ End Function
 Function LoadUltraDMD(ProjectFolderName,TableOptName)
 	Set UltraDMD = CreateObject("UltraDMD.DMDObject")
 	' A Major version change indicates the version is no longer backward compatible
-    If Not UltraDMD.GetMajorVersion = 1 Then
-        MsgBox "Incompatible Version of UltraDMD found."
-        QuitPlayer:Exit Function
-    End If
+	If Not UltraDMD.GetMajorVersion = 1 Then
+		MsgBox "Incompatible Version of UltraDMD found."
+		QuitPlayer:Exit Function
+	End If
 	'Check if UMD v1.4 is running
-    If UltraDMD.GetMinorVersion<4 AND optUseFullColor=1 Then
-        MsgBox "Full Color not supported. Please upgrade to UltraDMD v1.4" & VbCrLf & "Exiting so changes will take effect..."
-        Dim WshShell:Set WshShell = CreateObject("WScript.Shell")
-        WshShell.RegWrite "HKCU\Software\UltraDMD\fullcolor","False","REG_SZ"
+	If UltraDMD.GetMinorVersion<4 AND optUseFullColor=1 Then
+		MsgBox "Full Color not supported. Please upgrade to UltraDMD v1.4" & VbCrLf & "Exiting so changes will take effect..."
+		Dim WshShell:Set WshShell = CreateObject("WScript.Shell")
+		WshShell.RegWrite "HKCU\Software\UltraDMD\fullcolor","False","REG_SZ"
 		SaveValue TableOptName, "DMD Options", 1
-        QuitPlayer:Exit Function
-    End If
+		QuitPlayer:Exit Function
+	End If
 	UltraDMD.Init
-    'Sets the project folder and video stretch mode
+	'Sets the project folder and video stretch mode
 	Dim fso,curDir
 	Set fso = CreateObject("Scripting.FileSystemObject")
 	curDir = fso.GetAbsolutePathName(".")
-    UltraDMD.SetProjectFolder curDir & "\"& ProjectFolderName &".UltraDMD"
+	UltraDMD.SetProjectFolder curDir & "\"& ProjectFolderName &".UltraDMD"
 	If NOT fso.FolderExists(curDir & "\"& ProjectFolderName &".UltraDMD") Then
-		MsgBox ProjectFolderName & ".UltraDMD" & " not found." & VbCrLf & "Please copy it in the same folder as this table" & VbCrLf & "DMD animations can't be shown!!" 
+		MsgBox ProjectFolderName & ".UltraDMD" & " not found." & VbCrLf & "Please copy it in the same folder as this table" & VbCrLf & "DMD animations can't be shown!!"
 	End If
-    UltraDMD.SetVideoStretchMode UltraDMD_VideoMode_Middle
+	UltraDMD.SetVideoStretchMode UltraDMD_VideoMode_Middle
 End Function
 
  'Function to reset the DMD color settings and close UltraDMD on table exit
@@ -157,7 +157,7 @@ Function GetDMDOptions(TableOptName)
 		'Resetting to defaults
 		WshShell.RegWrite "HKCU\Software\UltraDMD\fullcolor","False","REG_SZ"
 		WshShell.RegWrite "HKCU\Software\UltraDMD\color","OrangeRed","REG_SZ"
-		WshShell.RegWrite "HKCU\Software\UltraDMD\hideVDMD","False","REG_SZ"       
+		WshShell.RegWrite "HKCU\Software\UltraDMD\hideVDMD","False","REG_SZ"
 	End If
 	Dim tmp:tmp=UDMDoptions
 	optUseFullColor=Int(tmp/2^2)
@@ -193,7 +193,7 @@ End Function
 
 'Function to create a window in HTML
 Function createInput(title,TableOptName)
-Dim sHTMLCode,  status
+Dim sHTMLCode, status
 	'Set the HTML code for the window
 	sHTMLCode = _
 	"<html>" &_
@@ -386,12 +386,12 @@ Dim sHTMLCode,  status
 
 	'Create the window we need
 with HTABox("lightgrey", 500, 450, 700, 250,TableOptName)
-		 'Set window title 
-  .document.title = title
-    	'Fill the objects we need
-  .document.write sHTMLCode
-'  .msg.innerHTML = sHTMLCode
-  	.enabledonstart.Checked=optOpenAtStart
+	'Set window title
+	.document.title = title
+	'Fill the objects we need
+	.document.write sHTMLCode
+'	.msg.innerHTML = sHTMLCode
+	.enabledonstart.Checked=optOpenAtStart
 		.colorDMD.Checked=optUseFullColor
 		.colorDMDSet.Checked=optDMDColorChange
 		If .colorDMDSet.Checked Then .dmdtxtcol.disabled=false Else .dmdtxtcol.disabled=true End If
@@ -400,27 +400,27 @@ with HTABox("lightgrey", 500, 450, 700, 250,TableOptName)
 		.DMDHPos.Value=optUDMDHeight
 		.DMDXPos.Value=optDMDPosX
 		.DMDYPos.Value=optDMDPosY
-  	'Put focus on the OK button
+	'Put focus on the OK button
 		.btnSubmit.focus
 		'set the status to 0 (then we will check it in a loop)
 		.status=0
-		
-		'Check the status of the window
-    Do
-        On Error Resume Next
-        status = .status
-         'If the window is closed with the [X] button, there will be an error of access to it
-        If Err.number <> 0 Then 
-            On Error Goto 0
-            'In this case we leave the cycle
-            Exit Do
-        Else
-            if status = 1 Then Exit Do
-        End if
-    Loop
 
-		'If the status is "1", then we write the filled values
-	If status = 1 Then 
+		'Check the status of the window
+	Do
+		On Error Resume Next
+		status = .status
+		'If the window is closed with the [X] button, there will be an error of access to it
+		If Err.number <> 0 Then
+			On Error Goto 0
+			'In this case we leave the cycle
+			Exit Do
+		Else
+			if status = 1 Then Exit Do
+		End if
+	Loop
+
+	'If the status is "1", then we write the filled values
+	If status = 1 Then
 		Dim WshShell
 		Set WshShell = CreateObject("WScript.Shell")
 		If .enabledonstart.Checked Then optOpenAtStart=1 Else optOpenAtStart=0
@@ -457,36 +457,36 @@ with HTABox("lightgrey", 500, 450, 700, 250,TableOptName)
 End Function
 
 'Function to create an HTA application
-Function HTABox(sBgColor, w, h, x, y, TableOptName) 
+Function HTABox(sBgColor, w, h, x, y, TableOptName)
 Dim IE, HTA, nRnd, sCmd, objShell,objExec
- 
-  randomize : nRnd = Int(1000000 * rnd) 
-  sCmd = "mshta.exe ""javascript:{new " _ 
-       & "ActiveXObject(""InternetExplorer.Application"")" _ 
-       & ".PutProperty('" & nRnd & "',window);" _ 
-       & "window.resizeTo(" & w & "," & h & ");" _ 
-       & "window.moveTo(" & x & "," & y & ")}""" 
+
+  randomize : nRnd = Int(1000000 * rnd)
+  sCmd = "mshta.exe ""javascript:{new " _
+       & "ActiveXObject(""InternetExplorer.Application"")" _
+       & ".PutProperty('" & nRnd & "',window);" _
+       & "window.resizeTo(" & w & "," & h & ");" _
+       & "window.moveTo(" & x & "," & y & ")}"""
 
 Set objShell = CreateObject("WScript.Shell")
 Set objExec = objShell.Exec (sCmd)
 
-    do until objShell.AppActivate("javascript:{new "): On Error Resume Next:loop
+  do until objShell.AppActivate("javascript:{new "): On Error Resume Next:loop
 
-  For Each IE In CreateObject("Shell.Application").windows 
-    If IsObject(IE.GetProperty(nRnd)) Then 
-      set HTABox = IE.GetProperty(nRnd) 
-      IE.Quit 
+  For Each IE In CreateObject("Shell.Application").windows
+    If IsObject(IE.GetProperty(nRnd)) Then
+      set HTABox = IE.GetProperty(nRnd)
+      IE.Quit
       HTABox.document.title = "HTABox"
 
       HTABox.document.write _
-             "<HTA:Application contextMenu=no border=thin minimizebutton=no maximizebutton=no >" _ 
-             & "<body scroll='no' style='background-color:" _ 
-             & sBgColor & ";font:normal 10pt Arial;" _ 
-             & "border-Style:outset;border-Width:3px'>" _  
-             & "<center><span id=msg>&nbsp;</span></center></body>" 
-      Exit Function 
-    End If 
-  Next 
+             "<HTA:Application contextMenu=no border=thin minimizebutton=no maximizebutton=no >" _
+             & "<body scroll='no' style='background-color:" _
+             & sBgColor & ";font:normal 10pt Arial;" _
+             & "border-Style:outset;border-Width:3px'>" _
+             & "<center><span id=msg>&nbsp;</span></center></body>"
+      Exit Function
+    End If
+  Next
 
 ' In case of error
 objExec.Terminate

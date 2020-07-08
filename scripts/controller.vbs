@@ -179,7 +179,7 @@ Sub LoadController(TableType)
 	Dim count
 	Dim ISDOF
 	Dim Answer
-	
+
 	B2SOn = False
 	B2SOnALT = False
 	tempC = 0
@@ -215,7 +215,7 @@ Sub LoadController(TableType)
 	'deactivate B2S via table script
 	if B2SOff then
 		tempc = 1
-	end if	
+	end if
 
 	If TableType = "PROC" or TableType = "VPMALT" Then
 		If TableType = "PROC" Then
@@ -223,7 +223,7 @@ Sub LoadController(TableType)
 			If Err Then MsgBox "Can't load PROC"
 		Else
 			LoadVPinMAME
-		End If		
+		End If
 		If tempC = 0 Then
 			On Error Resume Next
 			If Controller is Nothing Then
@@ -247,7 +247,7 @@ Sub LoadController(TableType)
 			Set Controller = CreateObject("B2S.Server")
 			If Controller is Nothing Then
 				Err.Clear
-				If TableType = "VPM" Then 
+				If TableType = "VPM" Then
 					LoadVPinMAME
 				End If
 			Else
@@ -259,7 +259,7 @@ Sub LoadController(TableType)
 				B2SOn = True
 			End If
 		Else
-			If TableType = "VPM" Then 
+			If TableType = "VPM" Then
 				LoadVPinMAME
 			End If
 		End If
@@ -270,7 +270,7 @@ End sub
 
 'Additional DOF sound vs toy/effect helpers:
 
-'Mostly used for SS tables, returns the sound to be played or no sound, 
+'Mostly used for SS tables, returns the sound to be played or no sound,
 'depending on the toy category that is set to play the sound or not.
 'The trigger of the DOF Effect is set at the DOF method level
 'because for SS tables we usually don't need to script the DOF calls.

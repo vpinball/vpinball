@@ -22,7 +22,7 @@ End Sub
 '-------------------------
 ' WPC Data
 '-------------------------
-' Flipper Solenoid	
+' Flipper Solenoid
 Const GameOnSolenoid = 31
 '-----WPC flipper solenoid notes-----
 '***These games will work perfectly:***
@@ -82,9 +82,9 @@ Private Sub wpcShowDips
 		.AddFrame 0,190, 80, "Misc", 0, Array("W20",&H04,"W19",&H08)
 		.AddFrame 0, 0, 80, "Country", &Hf0,_
 			Array("USA", &H00, "USA", &Hf0, "European", &Hd0,_
-			      "Export", &Ha0, "Export Alt", &H80, "France", &Hb0,_
-			      "France 1", &H10, "France 2", &H30, "France 3", &H90,_
-			      "Germany", &H20, "Spain",     &He0, "UK", &Hc0)
+				  "Export", &Ha0, "Export Alt", &H80, "France", &Hb0,_
+				  "France 1", &H10, "France 2", &H30, "France 3", &H90,_
+				  "Germany", &H20, "Spain",     &He0, "UK", &Hc0)
 	End With
 	End If
 	vpmDips.ViewDips

@@ -171,7 +171,7 @@ Const VPinMAMEDriverVer = 3.58
 '		 and cause table not to work due to improper Table_Init scripting.
 '	- Added 2 functions: CheckScript(file) and LoadScript(file) that can return True/False as well as the latter loading the script if true.
 '	   These check for existance in either the Tables and Scripts directory and can return a boolean value as well as the LoadScript autoloading
-'		the file, as opposed to my previous methods only checking the local folder containing the table being run. 
+'		the file, as opposed to my previous methods only checking the local folder containing the table being run.
 '	   CheckScript(file) checks for existance, and if found returns a True value
 '	   LoadScript(file) checks for existance, and if found, loads specified file (via ExecuteGlobal GetTextFile(file)) and returns a True value
 '		Examples:
@@ -198,7 +198,7 @@ Const VPinMAMEDriverVer = 3.58
 ' - (Core Changes)
 '	- Added ability to define default ballsize (in VP Units) inside table script.
 '		Defaults to 50 vp units if undefined. Example...
-'			Const BallSize = 47 '(place before LoadVPM, or otherwise calling core.vbs)	
+'			Const BallSize = 47 '(place before LoadVPM, or otherwise calling core.vbs)
 ' New in 3.36 (update courtesy of Koadic)
 ' - (Core Changes)
 '   - Added VPMVol routine for allowing setting of Global VPM Volume (normally adjustable from '~' key, but otherwise unsaveable without this)
@@ -243,7 +243,7 @@ Const VPinMAMEDriverVer = 3.58
 '      of arguments over the settings
 '    - New Optional Flipper Code Added (vpmSolFlip2) that let's you specify both up and down-swing speeds in the script
 '      plus the ability to turn flipper sounds on or off for that call
-'      Format: vpmSolFlip2 (Flip1obj, Flip2obj, UpSpeed, DownSpeed, SoundOn, Enable) 
+'      Format: vpmSolFlip2 (Flip1obj, Flip2obj, UpSpeed, DownSpeed, SoundOn, Enable)
 '
 ' New in 3.24 (Update by PD)
 ' - (Core Changes)
@@ -264,7 +264,7 @@ Const VPinMAMEDriverVer = 3.58
 '
 ' New in 3.22 (Update by PD)
 ' - (Core Changes)
-'   - Outhole switch handling updated so it resets correctly with an F3 reset.  
+'   - Outhole switch handling updated so it resets correctly with an F3 reset.
 '     This affects mostly Gottlieb System3 games (Thanks Racerxme for pointing this out)
 '   - Flipper handling modified to have a low return strength setting so any balls under such flippers
 '     won't get hit hard.  This allows the higher 'flipper fix' return speed without the associated hard hit issue.
@@ -275,7 +275,7 @@ Const VPinMAMEDriverVer = 3.58
 ' New in 3.21 (Update by PD)
 ' -(Core Changes)
 '   - Attemped bug fix in the Impulse Plunger object that could cause weak plunges sometimes on full pulls
-'   
+'
 ' -(System.vbs Additions)
 '   -Zac1.vbs has the program enable switch added to it (Thanks TomB)
 '   -GamePlan.vbs has the accounting reset switch added to it (Thanks Incochnito)
@@ -295,7 +295,7 @@ Const VPinMAMEDriverVer = 3.58
 '
 ' New in 3.18 (Update by PD)
 ' -(System.vbs Additions)
-'   - Added Atari1.vbs and Atari2.vbs files (Thanks to Inkochnito).  
+'   - Added Atari1.vbs and Atari2.vbs files (Thanks to Inkochnito).
 '     -The old Atari.vbs file is now obsolete, but included for backwards compatability with any existing tables
 '      that may have used it. New Tables should use the appropriate Atari1.vbs or Atari2.vbs files.
 '
@@ -314,7 +314,7 @@ Const VPinMAMEDriverVer = 3.58
 '
 ' New in 3.15 (Update by PD)
 ' -(Core Additions)
-'   - Added a new higher resolution Impulse Plunger Object 
+'   - Added a new higher resolution Impulse Plunger Object
 '      (It uses a trigger to plunge the ball.  It can be a variable Manual Plunger or function as an Automatic Plunger)
 '      (It also features random variance options and optional pull / plunge sounds)
 '
@@ -323,7 +323,7 @@ Const VPinMAMEDriverVer = 3.58
 '   - Added Master CPU Enter switch to S7.vbs for Dip Switch control in Williams System7
 '
 ' -(Other Additions)
-'   - Added PDLightSystem.vbs (V5.3) file to archive 
+'   - Added PDLightSystem.vbs (V5.3) file to archive
 '     (open it with a text editor to see how to use it; it's called separately like the core file)
 '
 ' New in 3.14 (Update by PD)
@@ -430,7 +430,7 @@ Private gNextMechNo : gNextMechNo = 0 ' keep track of created mech handlers (wou
 
 ' Callbacks
 Dim SolCallback(68) ' Solenoids (parsed at Runtime)
-Dim SolModCallback(68) ' Solenoid modulated callbacks (parsed at Runtime) 
+Dim SolModCallback(68) ' Solenoid modulated callbacks (parsed at Runtime)
 Dim SolPrevState(68) ' When modulating solenoids are in use, needed to keep positive value levels from changing boolean state
 Dim LampCallback    ' Called after lamps are updated
 Dim PDLedCallback   ' Called after leds are updated
@@ -655,10 +655,10 @@ Dim vpmShowDips     ' Show DIPs function
 '   (Public)  .Strength     - Change plunger strength
 '   (Public)  .Time         - Change plunger time (in seconds) to full plunger strength (0 = Auto Plunger)
 '   (Public)  .Pullback     - Pull the plunger back
-'   (Public)  .Fire	    - Fires / Releases the Plunger (Manual or Auto depending on Timing Value given)
+'   (Public)  .Fire         - Fires / Releases the Plunger (Manual or Auto depending on Timing Value given)
 '   (Public)  .AutoFire	    - Fires / Releases the Plunger at Maximum Strength +/- Random variation (i.e. Instant Auto)
-'   (Public)  .Switch	    - Switch Number to activate when ball is sitting on plunger trigger (if any)
-'   (Public)  .Random       - Sets the multiplier level of random variance to add (0 = No Variance / Default) 
+'   (Public)  .Switch       - Switch Number to activate when ball is sitting on plunger trigger (if any)
+'   (Public)  .Random       - Sets the multiplier level of random variance to add (0 = No Variance / Default)
 '   (Public)  .InitEntrySnd - Plays Sound as Plunger is Pulled Back
 '   (Public)  .InitExitSnd  - Plays Sound as Plunger is Fired (WithBall,WithoutBall)
 
@@ -750,20 +750,20 @@ End Function
 
 ' Dictionary
 ' At one point, Microsoft had made Scripting.Dictionary "unsafe for scripting", but it's
-' been a long time since that was true.  So now, to maintain compatibility with all tables
+' been a long time since that was true. So now, to maintain compatibility with all tables
 ' and scripts that use cvpmDictionary, this class is now a simple wrapper around Microsoft's
 ' more efficient implementation.
 Class cvpmDictionary
 	Private mDict
 	Private Sub Class_Initialize : Set mDict = CreateObject("Scripting.Dictionary") : End Sub
 
-	' DEPRECATED: MS Dictionaries are not index-based.  Use "Exists" method instead.
+	' DEPRECATED: MS Dictionaries are not index-based. Use "Exists" method instead.
 	Private Function FindKey(aKey)
 		Dim ii, key : FindKey = -1
 		If mDict.Count > 0 Then
-		    ii = 0
-		    For Each key In mDict.Keys
-		        If key = aKey Then FindKey = ii : Exit Function
+			ii = 0
+			For Each key In mDict.Keys
+				If key = aKey Then FindKey = ii : Exit Function
 			Next
 		End If
 	End Function
@@ -884,7 +884,7 @@ Class cvpmTimer
 		Loop
 	End Sub
 
-	Public Sub AddResetObj(aObj)  : mResets.Add aObj, 0 : End Sub
+	Public Sub AddResetObj(aObj) : mResets.Add aObj, 0 : End Sub
 
 	Public Sub PulseSw(aSwNo) : PulseSwitch aSwNo, 0, 0 : End Sub
 
@@ -904,7 +904,7 @@ Class cvpmTimer
 		mTimers = mTimers + 1
 		mQue(mTimers) = Array(mNow + aDelay \ conTimerPulse, 0, 0, aCallback)
 	End Sub
-	
+
 	Public Sub AddTimer2(aDelay, aCallback, aID)
 		If mTimers = conMaxTimers Then Exit Sub
 		mTimers = mTimers + 1
@@ -916,13 +916,13 @@ End Class
 '     Trough
 '--------------------
 Class cvpmTrough
-    ' Takes over for older cvpmBallStack in "trough mode".  Theory of operation:
-    ' A trough can hold up to N balls, and has N*2 "slots".  A ball effectively takes
+    ' Takes over for older cvpmBallStack in "trough mode". Theory of operation:
+    ' A trough can hold up to N balls, and has N*2 "slots". A ball effectively takes
     ' up two slots, so no two adjacent slots (0 and 1) can be occupied at the same time.
     ' Switches are assigned to even slots only, which means that as balls move through
     ' the trough, each switch is allowed to flip between open and closed.
     ' Slot 0 is the exit, and can have additional balls "stacked" on it, simulating balls
-    ' falling onto the exit kicker instead of coming in from the entrance.  Extra balls
+    ' falling onto the exit kicker instead of coming in from the entrance. Extra balls
     ' can be queued up at the entrance, and will enter the trough only if there's room
     ' for them.
 
@@ -940,8 +940,8 @@ Class cvpmTrough
         Dim ii
 
         ReDim mSw(conMaxBalls), mSlot(conMaxBalls * 2)
-        For ii = 0 to UBound(mSlot) : mSlot(ii) = 0 : Next   ' All slots empty to start
-        For ii = 0 to UBound(mSw)   : mSw(ii) = 0   : Next   ' All switches unassigned to start.
+        For ii = 0 to UBound(mSlot) : mSlot(ii) = 0 : Next ' All slots empty to start
+        For ii = 0 to UBound(mSw)   : mSw(ii) = 0   : Next ' All switches unassigned to start.
         mEntrySw = 0
 
         Set mExitKicker = Nothing
@@ -1011,18 +1011,18 @@ Class cvpmTrough
         mSw(slotNo) = swNo
     End Sub
 
-    ' MaxBallsPerKick: Kick up to N balls total per exit kick.  Balls are only kicked from Slot 0.
+    ' MaxBallsPerKick: Kick up to N balls total per exit kick. Balls are only kicked from Slot 0.
     ' StackExitBalls: Automatically stack up to N balls in Slot 0 regardless of where they came from.
 
     ' Example: Subway where exit kicker is on the same level as the trough and a ball can
-    ' come in from the exit: StackExitBalls = 1, MaxBallsPerKick = 2.  If Slot 0 has 1
-    ' ball and Slot 1 is occupied, only one ball will be kicked.  If Slot 0 has 2 or more
+    ' come in from the exit: StackExitBalls = 1, MaxBallsPerKick = 2. If Slot 0 has 1
+    ' ball and Slot 1 is occupied, only one ball will be kicked. If Slot 0 has 2 or more
     ' balls, it'll kick out 2 balls.
 
     ' Example: Twilight Zone Slot Kicker: Kicker is below trough, so if a ball is in the
     ' exit chute, another ball can fall into the chute as well whether it came in from the
-    ' exit (Slot Machine) or any other entrance (Piano, Camera).  In both cases, the kicker
-    ' will eject 2 balls at once.  Set StackExitBalls = 2, maxBallsPerKick = 2 to simulate.
+    ' exit (Slot Machine) or any other entrance (Piano, Camera). In both cases, the kicker
+    ' will eject 2 balls at once. Set StackExitBalls = 2, maxBallsPerKick = 2 to simulate.
 
     Public Property Let MaxBallsPerKick(n) : mMaxBallsPerKick = vpMax(1, n) : End Property
     Public Property Let StackExitBalls(n) : mStackExitBalls = vpMax(1, n) : End Property
@@ -1062,7 +1062,7 @@ Class cvpmTrough
         For ii = 0 to UBound(mSlot) : mSlot(ii) = 0 : Next
 
         ' Now put a ball in each even-numbered slot up to the number requested.
-        ' First, stack exit slot.  (Note, we may get a negative number. vpMin/vpMax prevent that.)
+        ' First, stack exit slot. (Note, we may get a negative number. vpMin/vpMax prevent that.)
         mSlot(0) = vpMax(0, vpMin(mStackExitBalls, numBalls))
         ballsAdded = mSlot(0)
 
@@ -1139,7 +1139,7 @@ Class cvpmTrough
 		If mDebug Then UpdateDebugBox
 	End Sub
 
-	Private Sub UpdateDebugBox   ' Requires a textbox named DebugBox
+	Private Sub UpdateDebugBox ' Requires a textbox named DebugBox
 		Dim str, ii, mSwcopy
 		str = "Entry: " & mBallsInEntry & " (sw" & mEntrySw & " = "
 		If mEntrySw > 0 Then
@@ -1183,7 +1183,7 @@ Class cvpmTrough
 
         ' Move balls through slots, one slot at a time.
         For ii = 0 to maxSlot
-            If mSlot(ii) Then               ' Ball in this slot.
+            If mSlot(ii) Then ' Ball in this slot.
 				canMove = False
 
 				' Can this ball move?  (Slot 0 = no)
@@ -1204,7 +1204,7 @@ Class cvpmTrough
                 If canMove Then
                     mSlot(ii) = mSlot(ii) - 1
                     mSlot(ii-1) = mSlot(ii-1) + 1
-                    AdvanceBalls = True       ' Mark balls as having moved.
+                    AdvanceBalls = True ' Mark balls as having moved.
                 End If
             End If
         Next
@@ -1225,8 +1225,8 @@ Class cvpmTrough
 
         ' Only add a ball if there's room for it at the entrance.
         ' If the trough is full (or the entrance is occupied), the ball will remain
-        ' in the entry queue.  In a kicker-gated trough, the entry switch will remain
-        ' pressed down, usually resulting in the machine retrying the load.  In a fall-in
+        ' in the entry queue. In a kicker-gated trough, the entry switch will remain
+        ' pressed down, usually resulting in the machine retrying the load. In a fall-in
         ' trough, the ball will just remain queued until the entrance opens up.
         If mSlot(maxSlot) = 0 AND mSlot(maxSlot-1) = 0 Then
             mSlot(maxSlot) = 1
@@ -1245,7 +1245,7 @@ Class cvpmTrough
         If IsObject(aKicker) Then
             aKicker.DestroyBall
             If aKicker Is mExitKicker Then
-                ' Ball fell in from exit.  Stack it up on Slot 0.
+                ' Ball fell in from exit. Stack it up on Slot 0.
                 mSlot(0) = mSlot(0) + 1
                 NeedUpdate = True
                 UpdateTroughSwitches
@@ -1254,11 +1254,11 @@ Class cvpmTrough
         End If
 
         If Not addDone Then
-            ' Ball came in from entrance.  Queue it up for entry.
+            ' Ball came in from entrance. Queue it up for entry.
             mBallsInEntry = mBallsInEntry + 1
 		If mEntrySw > 0 Then
 			mSwcopy = mEntrySw
-			' Trough has an entry kicker.  Ball will not enter trough
+			' Trough has an entry kicker. Ball will not enter trough
 			' until the entry solenoid is fired.
 			Controller.Switch(mSwcopy) = True
 	    	End If
@@ -1299,7 +1299,7 @@ Class cvpmTrough
 		If aEnabled Then
 			For iiBall = 0 to (mMaxBallsPerKick - 1)
 				kDir = (mExitDir + (Rnd - 0.5) * mDirVar)
-				kForce = vpMax(1, mExitForce + (Rnd - 0.5) * mForceVar * (0.8 * iiBall))   ' Dampen force a bit on subsequent balls.
+				kForce = vpMax(1, mExitForce + (Rnd - 0.5) * mForceVar * (0.8 * iiBall)) ' Dampen force a bit on subsequent balls.
 
 				If mSlot(0) > 0 Then
 					' Remove ball from this slot.
@@ -1520,7 +1520,7 @@ End Class
 '     BallStack (DEPRECATED/LEGACY)
 '     Known issues:
 '     - Adding more balls than conMaxBalls will crash the script.
-'     - If there are more balls in trough than are ever used in a game (eg. Bride of Pinbot),
+'     - If there are more balls in trough than are ever used in a game (e.g. Bride of Pinbot),
 '       one or more trough switches will be permanently stuck down and may result in a ROM test report.
 '     - Trough does not handle stacking balls at exit.
 '     - Saucer mode is essentially a hack on top of the trough logic.
@@ -1837,7 +1837,7 @@ class cvpmNudge
 		If aEnabled Then
 			ii = 0
 			For Each obj In mSlingBump
-				If TypeName(obj) = "Bumper" Then obj.Threshold = mForce(ii) 
+				If TypeName(obj) = "Bumper" Then obj.Threshold = mForce(ii)
 				If vpmVPVer >= 90 and TypeName(obj) = "Wall" Then obj.SlingshotThreshold = mForce(ii)
 				ii = ii + 1
 			Next
@@ -1921,14 +1921,14 @@ Class cvpmDropTarget
 		For Each obj1 In mDropObj
 			If vpmIsArray(obj1) Then
 				For Each obj2 In obj1
-					if TypeName(obj2) = "HitTarget" Then 	'if object in array is a Target, use .Dropped
+					if TypeName(obj2) = "HitTarget" Then 'if object in array is a Target, use .Dropped
 						vpmBuildEvent obj2, "Dropped", aName & ".Hit " & ii	'Droptarget_Dropped : DTbank.Hit 1 : End Sub
 					else
 						If obj2.HasHitEvent Then vpmBuildEvent obj2, "Hit", aName & ".Hit " & ii
 					End If
 				Next
 			Else
-				if TypeName(obj1) = "HitTarget" Then 	'if object in array is a Target, use .Dropped
+				if TypeName(obj1) = "HitTarget" Then 'if object in array is a Target, use .Dropped
 					vpmBuildEvent obj1, "Dropped", aName & ".Hit " & ii
 				else
 					vpmBuildEvent obj1, "Hit", aName & ".Hit " & ii
@@ -2435,7 +2435,7 @@ Class cvpmVLock
 			Else
 				PlaySound mBallSnd
 			End If
-		Else 
+		Else
 			If isObject(mKick(0)) Then
 				If VP8sound then
 					PlaySound mNoBallSnd
@@ -2635,7 +2635,7 @@ Class cvpmImpulseP
 		Strength = aStrength
 		Res = 500
 		Time = aTime
-		If aTime = 0 Then 
+		If aTime = 0 Then
 			Auto = True
 		Else
 			cFactor = (Res / Time) / 100
@@ -2710,7 +2710,7 @@ Class cvpmImpulseP
 		RandomOut = aInput
 	End Sub
 
-	Public Sub Fire	          ' Resets System and Transfer Power Value
+	Public Sub Fire	' Resets System and Transfer Power Value
 		If Auto = True Then
 		IMPowerOut = -Strength + ((Rnd) * RandomOut)
 		Else
@@ -2723,7 +2723,7 @@ Class cvpmImpulseP
 		If BallOn = 1 Then : PlaySound mExitSndBall : Else : PlaySound mExitSnd : End If
 	End Sub
 
-	Public Sub AutoFire	  ' Auto-Fire Specific Call (so you don't have to change timing)
+	Public Sub AutoFire	' Auto-Fire Specific Call (so you don't have to change timing)
 		IMPowerOut = -Strength + ((Rnd) * RandomOut)
 		PlungeOn = True
 		Update
@@ -2732,13 +2732,13 @@ Class cvpmImpulseP
 		If BallOn = 1 Then : PlaySound mExitSndBall : Else : PlaySound mExitSnd : End If
 	End Sub
 
-	Public Sub Pullback     ' Pull Plunger
+	Public Sub Pullback ' Pull Plunger
 		Pull = 0 : IMPowerOut = 0 : IMPowerTrans = 0 : mCount = 0 ' reinitialize to be sure
 		Pull = 1 : NeedUpdate = True
 		PlaySound mEntrySnd
 	End Sub
 
-	Public Sub PullbackandRetract     ' Pull Plunger and retract
+	Public Sub PullbackandRetract ' Pull Plunger and retract
 		Pull = 0 : IMPowerOut = 0 : IMPowerTrans = 0 : mCount = 0 ' reinitialize to be sure
 		Pull = 1 : NeedUpdate = True
 		PlaySound mEntrySnd
@@ -2793,7 +2793,7 @@ Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so del
 	Public LagCompensation 'flag for solenoid jitter (may not be a problem anymore) set private
 
 	Public FlipperSolNumber(3)  'Flipper Solenoid Number. By default these are set to use the Core constants. 0=left 1=right 2=Uleft 3=URight
-	Public ButtonState(3)       'Key Flip State 'set private 
+	Public ButtonState(3)       'Key Flip State 'set private
 	Public SolState(3)          'Rom Flip State	'set private
 
 	'Public SubL, SubUL, SubR, SubUR 'may restore these to reduce nested calls. For now the script is compressed a bit.
@@ -2852,31 +2852,31 @@ Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so del
 				Callback(idx) = SolCallback(abs(FlipperSolNumber(idx)))
 			end If
 		Next
-		
-		'dim str 
+
+		'dim str
 		'for idx = 0 to 3 : str = str & "Callback" & idx & ":" & Callback(idx) &vbnewline : Next
 		'str = "init successful" &vbnewline& _
 		'	"Sol=" & Solenoid & " " & sol &vbnewline& str
 		'msgbox str
-	''''vpmFlips.DebugTestInit = True	'removed debug stuff for the moment
+	'vpmFlips.DebugTestInit = True	'removed debug stuff for the moment
 	End Sub
 
 	'Index based callbacks...
 	Public Property Let Callback(aIdx, aInput)
 		if Not IsEmpty(aInput) then
-			FlipperSub(aIDX) = aInput	'hold old flipper subs
+			FlipperSub(aIDX) = aInput 'hold old flipper subs
 			SolCallback(FlipperSolNumber(aIdx)) = name & ".RomFlip(" & aIdx & ")="
 		end if
 	End Property
 	Public Property Get Callback(aIdx) : CallBack = FlipperSub(aIDX) : End Property
 
-	Public Property Let Enabled(ByVal aEnabled)  'improving choreography
+	Public Property Let Enabled(ByVal aEnabled) 'improving choreography
 		aEnabled = cBool(aEnabled)
 		if aEnabled <> OnOff then 'disregard redundant updates
 			OnOff = aEnabled
 			dim idx
-			If aEnabled then                    'Switch to ROM solenoid states or button states immediately
-				for idx = 0 to 3 
+			If aEnabled then 'Switch to ROM solenoid states or button states immediately
+				for idx = 0 to 3
 					if SolState(idx) <> ButtonState(idx) And FlippersEnabled Then Execute FlipperSub(idx) &" "& ButtonState(idx) end If
 				Next
 			Else
@@ -2890,7 +2890,7 @@ Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so del
 	Public Property Get Solenoid : Solenoid = sol : End Property
 
 	Public Property Let Flip(aIdx, ByVal aEnabled) 'Key Flip: Indexed base flip... may keep may not
-		aEnabled = abs(aEnabled)	'True / False is not region safe with execute. Convert to 1 or 0 instead.
+		aEnabled = abs(aEnabled) 'True / False is not region safe with execute. Convert to 1 or 0 instead.
 		ButtonState(aIDX) = aEnabled 'track flipper button states: the game-on sol flips immediately if the button is held down
 		'debug.print "Key Flip " & aIdx &" @ " & gametime  & " FF ON: " & OnOff & " Circuit On? " & FlippersEnabled
 		If OnOff and FlippersEnabled or DebugOn then
@@ -2899,7 +2899,7 @@ Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so del
 		end If
 	End Property
 
-	'call callbacks 	'legacy
+	'call callbacks 'legacy
 	Public Sub FlipL(aEnabled) : Flip(0)=aEnabled :End Sub : Public Sub FlipR(aEnabled) : Flip(1)=aEnabled :End Sub
 	Public Sub FlipUL(aEnabled): Flip(2)=aEnabled :End Sub : Public Sub FlipUR(aEnabled): Flip(3)=aEnabled :End Sub
 
@@ -2915,7 +2915,7 @@ Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so del
 		end if
     End property
 
-    Public Sub TiltSol(ByVal aEnabled)    'Handle solenoid / Delay (if delayinit)
+    Public Sub TiltSol(ByVal aEnabled) 'Handle solenoid / Delay (if delayinit)
         aEnabled = cBool(aEnabled)
         If delay > 0 and not aEnabled then  'handle delay
             vpmtimer.addtimer Delay, Name & ".FireDelay" & "'"
@@ -3015,7 +3015,7 @@ Private Function vpmDefCreateBall3(aKicker)
 	If Not IsEmpty(vpmBallImage) Then
 		aKicker.CreateSizedBallWithMass(BSize,BMass).Image = vpmBallImage
 	Else
-		aKicker.CreateSizedBallWithMass BSize,BMass ' for whatever reason it doesn't work if using ()
+		aKicker.CreateSizedBallWithMass BSize,BMass 'for whatever reason it doesn't work if using ()
 	End If
 	Set vpmDefCreateBall3 = aKicker
 End Function
@@ -3305,7 +3305,7 @@ Sub vpmSolFlip2(aFlip1, aFlip2, aFlipSpeedUp, aFlipSpeedDn, aSnd, aEnabled) ' DE
 		Else
 			aFlip1.RotateToEnd
 		End If
-		If Not aFlip2 Is Nothing Then 
+		If Not aFlip2 Is Nothing Then
 			If Not aFlipSpeedUp = 0 Then
 				aFlip2.Speed = aFlipSpeedUp
 				aFlip2.RotateToEnd
@@ -3319,17 +3319,17 @@ Sub vpmSolFlip2(aFlip1, aFlip2, aFlipSpeedUp, aFlipSpeedDn, aSnd, aEnabled) ' DE
 		aFlip1.Strength = conFlipRetStrength
 		oldSpeed = aFlip1.Speed
 		If Not aFlipSpeedDn = 0 Then
-			aFlip1.Speed = aFlipSpeedDn 
-		Else 
+			aFlip1.Speed = aFlipSpeedDn
+		Else
 			aFlip1.Speed = conFlipRetSpeed
 		End If
 		aFlip1.RotateToStart : aFlip1.Strength = oldStrength : aFlip1.Speed = oldSpeed
 		If Not aFlip2 Is Nothing Then
 			oldStrength = aFlip2.Strength
-			oldSpeed = aFlip2.Speed 
+			oldSpeed = aFlip2.Speed
 			If Not aFlipSpeedDn = 0 Then
-				aFlip2.Speed = aFlipSpeedDn 
-			Else 
+				aFlip2.Speed = aFlipSpeedDn
+			Else
 				aFlip2.Speed = conFlipRetSpeed
 			End If
 			aFlip2.Strength = conFlipRetStrength
@@ -3360,7 +3360,7 @@ Sub vpmSolDiverter(aDiv, aSound, aEnabled)
 			End If
 		End If
 	ElseIf aSound Then
-		If aEnabled Then 
+		If aEnabled Then
 			If isObject(aDiv) Then
 				If VP8sound then
 					PlaySound SSolenoidOn
@@ -3372,7 +3372,7 @@ Sub vpmSolDiverter(aDiv, aSound, aEnabled)
 			Else
 				PlaySound SSolenoidOn
 			End If
-		Else 
+		Else
 			If isObject(aDiv) Then
 				If VP8sound then
 					PlaySound SSolenoidOff
@@ -3576,7 +3576,7 @@ Private Sub vpmShowHelp
 	MsgBox szKeyMsg,vbOkOnly,"Keyboard Settings..."
 End Sub
 
-Private Sub NullSub(no,enabled) 
+Private Sub NullSub(no,enabled)
 'Place Holder Sub
 End Sub
 
