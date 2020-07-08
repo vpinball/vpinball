@@ -69,7 +69,7 @@ FIXES:
 
 - update BASS library to 2.4.15
 
-- see core scripts (header of core.vbs) for the respective changelog (version 3.58)
+- see scripts/Changelog.txt for the respective core script changes (version 3.58)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
 
 - add Clang (via Visual Studio 2019) support, still has a linking prob with 32bit though
