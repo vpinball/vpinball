@@ -12,20 +12,19 @@ Const BulbOFF = "0" 'Luz Apagada
 Const BulbBLINK = "2" 'Luz intermitente
 
 '---------------------------------------------
-
 ' Algunas Variables
 
 Dim fpTilted
  fpTilted = Tilted 'Falta
 
-Dim nvCredits 
+Dim nvCredits
  Credits = nvCredits 'Creditos
 
 Dim nvTotalGamesPlayed 'Total de partidas Jugadas
- TotalGamesPlayed = nvTotalGamesPlayed 
+ TotalGamesPlayed = nvTotalGamesPlayed
 
-Dim nvScore 
+Dim nvScore
  Score = nvScore 'Marcador
 
-Dim nvJackpot 
+Dim nvJackpot
  Jackpot = nvJackpot 'Jackpot

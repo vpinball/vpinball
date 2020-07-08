@@ -18,19 +18,19 @@ End Sub
 ' LTD System 3 Data
 '-------------------------
 ' Cabinet switches
-Const swSelfTest       = -1
-Const swTilt           = 1
-Const swCoin2          = -7
-Const swStartButton    = 30
+Const swSelfTest    = -1
+Const swTilt        = 1
+Const swCoin2       = -7
+Const swStartButton = 30
 
-Const swLRFlip         = 82
-Const swLLFlip         = 84
+Const swLRFlip      = 82
+Const swLLFlip      = 84
 
 ' Help Window
 vpmSystemHelp = "LTD System 3 keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyEnter)  & vbTab & "Enter (Coin Door)" & vbNewLine &_
-  vpmKeyName(keySelfTest)    & vbTab & "Self Test"
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyEnter) & vbTab & "Enter (Coin Door)" & vbNewLine &_
+  vpmKeyName(keySelfTest) & vbTab & "Self Test"
 
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)

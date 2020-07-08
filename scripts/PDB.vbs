@@ -57,7 +57,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case LeftFlipperKey
 				.Switch(swLLFlip) = True : vpmKeyDown = False : vpmFlips.FlipL True
 			Case RightFlipperKey
-				.Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True				
+				.Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin

@@ -20,24 +20,24 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 25
 ' Cabinet switches
-Const swCoin1          = 30
-Const swCoin2          = 31
-Const swCoin3          = 32
-Const swTilt           = 33
-Const swStartButton    = 34
-Const swSelfTest       = 36
-Const swCPUDiag        = 37
+Const swCoin1        = 30
+Const swCoin2        = 31
+Const swCoin3        = 32
+Const swTilt         = 33
+Const swStartButton  = 34
+Const swSelfTest     = 36
+Const swCPUDiag      = 37
 
-Const swLRFlip         = 131
-Const swLLFlip         = 133
+Const swLRFlip       = 131
+Const swLLFlip       = 133
 
 ' Help Window
 vpmSystemHelp = "Spinball MPUx00 keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"   & vbNewLine &_
-  vpmKeyName(keySelfTest)    & vbTab & "Self Test"        & vbNewLine &_
-  vpmKeyName(keyCPUDiag)     & vbTab & "Cpu Diagnostic"   & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
+  vpmKeyName(keySelfTest)    & vbTab & "Self Test"      & vbNewLine &_
+  vpmKeyName(keyCPUDiag)     & vbTab & "Cpu Diagnostic" & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
 'Dip Switch / Options Menu

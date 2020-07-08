@@ -1,10 +1,9 @@
 'Last Updated in VBS v3.36
 '
 'Note: This VBS file is now obsolete as of VBS V3.18.  It is included in the VBS pack only for
-'      backwards compatability with any existing tables that might be using it.  
+'      backwards compatability with any existing tables that might be using it.
 '      You should now use either Atari1.vbs (for Generation 1 Atari Tables)
 '      or Atari2.vbs for Generation 2 Atari tables.
-'  
 
 Option Explicit
 LoadCore

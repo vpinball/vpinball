@@ -19,17 +19,17 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 19
 ' Cabinet switches
-Const swSelfTest       = -7
-Const swCPUDiag        = -4
-Const swSoundDiag      = -3
-Const swTilt           =  2
-Const swBallRollTilt   =  2
-Const swSlamTilt       =  9
-Const swCoin1          = 16
-Const swStartButton    =  3
+Const swSelfTest     = -7
+Const swCPUDiag      = -4
+Const swSoundDiag    = -3
+Const swTilt         =  2
+Const swBallRollTilt =  2
+Const swSlamTilt     =  9
+Const swCoin1        = 16
+Const swStartButton  =  3
 
-Const swLRFlip         = 82
-Const swLLFlip         = 84
+Const swLRFlip       = 82
+Const swLLFlip       = 84
 
 ' Help Window
 vpmSystemHelp = "Hankin keys:" & vbNewLine &_

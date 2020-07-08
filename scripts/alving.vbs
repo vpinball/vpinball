@@ -17,7 +17,7 @@ End Sub
 '-------------------------
 ' Alvin G Data
 '-------------------------
-' Flipper Solenoid	
+' Flipper Solenoid
 Const GameOnSolenoid = 27 'not 100% on this!
 ' Cabinet Switches
 Const swCoin1       =  1
@@ -79,7 +79,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyCancel       .Switch(swDiagnostic)  = True
 			Case keyDown         .Switch(swExitDiag)    = True
 			Case keyUp           .Switch(swVolUp)       = True
-			Case keyEnter        .Switch(swVolDn)       = True									
+			Case keyEnter        .Switch(swVolDn)       = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
 			Case keyBangBack     vpmNudge.DoNudge   0,6
 			Case LeftTiltKey     vpmNudge.DoNudge  75,2
@@ -105,7 +105,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyCancel       .Switch(swDiagnostic)  = False
 			Case keyDown         .Switch(swExitDiag)    = False
 			Case keyUp           .Switch(swVolUp)       = False
-			Case keyEnter        .Switch(swVolDn)       = False									
+			Case keyEnter        .Switch(swVolDn)       = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = False
 			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False

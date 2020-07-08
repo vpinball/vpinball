@@ -33,10 +33,10 @@ Const swLLFlip        = 84'ok
 
 ' Help Window
 vpmSystemHelp="MAC Keys:"&vbNewLine&_
-  vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
-  vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
-  vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3" & vbNewLine &_
-  vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
+  vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
 ' Dip Switch / Options Menu
 Private Sub MACDips

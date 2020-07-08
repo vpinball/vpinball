@@ -1,9 +1,7 @@
 'Last Updated in VBS v3.36
 ' - 3.19 fixes the swLRFlip and swLLFlip switch numbers so the standard SolFlipper function can be used
 '
-'First Added in VBS v3.18
-'
-'This is for Atari Generation 1 games with Rotary switch 
+'This is for Atari Generation 1 games with Rotary switch
 
 Option Explicit
 LoadCore

@@ -18,26 +18,26 @@ End Sub
 ' Mr. Game Data
 '-------------------------
 ' Flipper Solenoid
-Const GameOnSolenoid = 25
+Const GameOnSolenoid  = 25
 ' Cabinet switches
-Const swAdvanceTest    =  0
-Const swReturnTest     =  1
-Const swCreditService  =  3
-Const swCoin1          =  4
-Const swCoin2          =  5
-Const swCoin3          =  6
-Const swStartButton    =  9
+Const swAdvanceTest   =  0
+Const swReturnTest    =  1
+Const swCreditService =  3
+Const swCoin1         =  4
+Const swCoin2         =  5
+Const swCoin3         =  6
+Const swStartButton   =  9
 
-Const swLRFlip         = 81
-Const swLLFlip         = 83
+Const swLRFlip        = 81
+Const swLLFlip        = 83
 
 ' Help Window
 vpmSystemHelp = "Mr. Game keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin4) & vbTab & "Service Credit"   & vbNewLine &_
-  vpmKeyName(keySelfTest)    & vbTab & "Advance Test"     & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
+  vpmKeyName(keyInsertCoin4) & vbTab & "Service Credit" & vbNewLine &_
+  vpmKeyName(keySelfTest)    & vbTab & "Advance Test"   & vbNewLine &_
   vpmKeyName(keyAdvance)     & vbTab & "Return Test"
 
 'Option Menu (No Dips)

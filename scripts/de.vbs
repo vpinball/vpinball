@@ -20,26 +20,26 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 23
 ' Cabinet switches
-Const swBlack          = -7
-Const swGreen          = -6
-Const swTilt           =  1
-Const swBallRollTilt   =  2
-Const swStartButton    =  3
-Const swCoin1          =  4
-Const swCoin2          =  5
-Const swCoin3          =  6
-Const swSlamTilt       =  7
+Const swBlack        = -7
+Const swGreen        = -6
+Const swTilt         =  1
+Const swBallRollTilt =  2
+Const swStartButton  =  3
+Const swCoin1        =  4
+Const swCoin2        =  5
+Const swCoin3        =  6
+Const swSlamTilt     =  7
 
-Const swLRFlip         = 82
-Const swLLFlip         = 84
+Const swLRFlip       = 82
+Const swLLFlip       = 84
 
 ' Help Window
 vpmSystemHelp = "Data East keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3"   & vbNewLine &_
-  vpmKeyName(keyBlack)        & vbTab & "Black button"     & vbNewLine &_
-  vpmKeyName(keyGreen)        & vbTab & "Green button"     & vbNewLine &_
+  vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3" & vbNewLine &_
+  vpmKeyName(keyBlack)        & vbTab & "Black button"   & vbNewLine &_
+  vpmKeyName(keyGreen)        & vbTab & "Green button"   & vbNewLine &_
   vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
 
 ' Option Menu / Dip Menu

@@ -21,16 +21,16 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 1
 ' Cabinet switches
-Const swStartButton	    = 7 'ok
-Const swCoin1     	    = 1 'ok
-Const swCoin2	        = 2 'ok
-Const swCoin3	        = 3 'ok
-Const swTilt	        = 4 'ok
-Const swBallRollTilt    = 4 'ok
-'Const swSlamTilt       = -4 'ok
+Const swStartButton	 = 7 'ok
+Const swCoin1     	 = 1 'ok
+Const swCoin2	     = 2 'ok
+Const swCoin3	     = 3 'ok
+Const swTilt	     = 4 'ok
+Const swBallRollTilt = 4 'ok
+'Const swSlamTilt    = -4 'ok
 
-Const swLRFlip	        = 102'ok
-Const swLLFlip    	    = 104'ok
+Const swLRFlip	     = 102'ok
+Const swLLFlip    	 = 104'ok
 
 ' Help Window
 vpmSystemHelp="Iron Balls Keys:"&vbNewLine&_

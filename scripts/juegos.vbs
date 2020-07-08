@@ -19,23 +19,23 @@ End Sub
 '-------------------------
 ' Peyper / Sonic Data
 '-------------------------
-' Flipper Solenoid	
+' Flipper Solenoid
 Const GameOnSolenoid = 7
 ' Cabinet switches
-Const swStartButton    = 29
-Const swCoin1          = 26
-Const swCoin2          = 27
-Const swCoin3          = 28
-Const swTilt           = 31
-Const swSlamDoorHit    = 30
-Const swLRFlip         = 81
-Const swLLFlip         = 83
+Const swStartButton  = 29
+Const swCoin1        = 26
+Const swCoin2        = 27
+Const swCoin3        = 28
+Const swTilt         = 31
+Const swSlamDoorHit  = 30
+Const swLRFlip       = 81
+Const swLLFlip       = 83
 
 ' Help Window
 vpmSystemHelp = "Atari keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"   & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
 ' Dip Switch / Options Menu
@@ -46,9 +46,9 @@ Private Sub juegosShowDips
 			.AddForm 200,300,"Juegos Populares switches"
 			.AddFrame 0,0,80,"DIP switches",0,_
 			  Array("Dip 0",&H00000800,"Dip 1",&H00000400,"Dip 2",&H00000200,"Dip 3",&H00000100,_
-			        "Dip 4",32768,     "Dip 5",&H00004000,"Dip 6",&H00002000,"Dip 7",&H00001000,_
-				"Dip 8",&H00000008,"Dip 9",&H00000004,"Dip10",&H00000002,"Dip11",&H00000001,_
-			        "Dip12",&H00000080,"Dip13",&H00000040,"Dip14",&H00000020,"Dip15",&H00000010)
+					"Dip 4",32768,     "Dip 5",&H00004000,"Dip 6",&H00002000,"Dip 7",&H00001000,_
+					"Dip 8",&H00000008,"Dip 9",&H00000004,"Dip10",&H00000002,"Dip11",&H00000001,_
+					"Dip12",&H00000080,"Dip13",&H00000040,"Dip14",&H00000020,"Dip15",&H00000010)
 		End With
 	End If
 	vpmDips.ViewDips

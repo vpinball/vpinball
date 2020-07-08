@@ -19,20 +19,20 @@ End Sub
 ' Zaccaria Data
 '-------------------------
 ' Cabinet switches
-Const swCoinDoor       = -6
-Const swCoin1          =  1
-Const swCoin2          =  2
-Const swStartButton    =  3
-Const swTilt           =  4
+Const swCoinDoor    = -6
+Const swCoin1       =  1
+Const swCoin2       =  2
+Const swStartButton =  3
+Const swTilt        =  4
 
-Const swLRFlip         = 82
-Const swLLFlip         = 84
+Const swLRFlip      = 82
+Const swLLFlip      = 84
 
 ' Help Window
 vpmSystemHelp = "Zaccaria keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keySelfTest)    & vbTab & "Open Coin Door"   & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keySelfTest)    & vbTab & "Open Coin Door" & vbNewLine &_
   vpmKeyName(keyAdvance)     & vbTab & "Advance Test"
 
 Private Sub zacShowDips

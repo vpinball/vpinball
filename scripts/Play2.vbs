@@ -22,21 +22,21 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 8	'jittery
 ' Cabinet switches
-Const swSelfTest            = 6  'enters software-setup
-Const swTilt                = 7  'playfield tilt switch
-'Const swSlamTilt           =    'clears all credits and resets machine
-Const swCoin3               = 3  'defaults to 1 coin per credit
-Const swCoin2               = 2  'defaults to 2 coins per credit
-Const swCoin1               = 1  'defaults to 1 coin for 3 credits
-Const swStartButton         = 4  'starts game
-Const swLRFlip              = 102
-Const swLLFlip              = 104
+Const swSelfTest     = 6  'enters software-setup
+Const swTilt         = 7  'playfield tilt switch
+'Const swSlamTilt    =    'clears all credits and resets machine
+Const swCoin3        = 3  'defaults to 1 coin per credit
+Const swCoin2        = 2  'defaults to 2 coins per credit
+Const swCoin1        = 1  'defaults to 1 coin for 3 credits
+Const swStartButton  = 4  'starts game
+Const swLRFlip       = 102
+Const swLLFlip       = 104
 
 ' Help Window
   vpmSystemHelp = "Playmatic System 2 keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"   & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
   vpmKeyName(keySelfTest)    & vbTab & "Adjustments"
 
 ' Keyboard handlers

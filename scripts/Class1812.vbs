@@ -37,7 +37,7 @@ Const swSlamTilt    = -6
 
 ' Help window
 vpmSystemHelp = "Class Of 1812 keys:" & vbNewLine &_
-  vpmKeyName(StartGameKey)  & vbTab & "Start Gane" & vbNewLine &_ 
+  vpmKeyName(StartGameKey)  & vbTab & "Start Gane" & vbNewLine &_
   vpmKeyName(keyInsertCoin1)  & vbTab & "Left Coin Chute" & vbNewLine &_
   vpmKeyName(keyInsertCoin2)  & vbTab & "Right Coin Chute" & vbNewLine &_
   vpmKeyName(keyInsertCoin3)  & vbTab & "Center Coin Chute" & vbNewLine &_

@@ -20,23 +20,23 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 17
 ' Cabinet switches
-Const swSelfTest       =  1
-Const swTilt           =  3
-Const swSlamTilt       =  4
-Const swCoin3          = -7
-Const swCoin2          = -6
-Const swCoin1          = -5
-Const swStartButton    =  2
+Const swSelfTest     =  1
+Const swTilt         =  3
+Const swSlamTilt     =  4
+Const swCoin3        = -7
+Const swCoin2        = -6
+Const swCoin1        = -5
+Const swStartButton  =  2
 
-Const swLRFlip         = 102
-Const swLLFlip         = 104
+Const swLRFlip       = 102
+Const swLLFlip       = 104
 
 ' Help Window
 vpmSystemHelp = "Jac Van Ham keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"   & vbNewLine &_
-  vpmKeyName(keySelfTest)    & vbTab & "Self Test"        & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
+  vpmKeyName(keySelfTest)    & vbTab & "Self Test"      & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
 'Dip Switch / Options Menu

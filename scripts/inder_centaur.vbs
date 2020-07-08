@@ -20,16 +20,16 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 9
 ' Cabinet switches
-Const swCoin1          = 50
-Const swCoin2          = 51
-Const swCoin3          = 52
-Const swTilt           = 56
-Const swStartButton    = 53
-'Const swSelfTest       = 57
-'Const swCPUDiag        = 56
-'Const swSoundDiag      = 55
-Const swLRFlip         = 151
-Const swLLFlip         = 153
+Const swCoin1        = 50
+Const swCoin2        = 51
+Const swCoin3        = 52
+Const swTilt         = 56
+Const swStartButton  = 53
+'Const swSelfTest     = 57
+'Const swCPUDiag      = 56
+'Const swSoundDiag    = 55
+Const swLRFlip       = 151
+Const swLLFlip       = 153
 
 ' Help Window
 vpmSystemHelp = "Inder MPUx00 keys:" & vbNewLine &_
