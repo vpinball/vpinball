@@ -20,29 +20,29 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 17
 ' Cabinet switches
-Const swSelfTest       = 59 'enters diagnostics
-Const swTilt           = 5  'playfield tilt switch
-Const swSlamTilt       = 62 'clears all credits and resets machine
-Const swCoin3          = 56 'defaults to 1 coin per credit
-Const swCoin2          = 57 'defaults to 2 coins per credit
-Const swCoin1          = 58 'defaults to 1 coin for 3 credits
-Const swStartButton    = 7  'starts game
-Const swReplay1        = 63 'Sets Replay Level 1 - hold down for 2 or 3 seconds to increment
-Const swReplay2        = 64 'Sets Replay Level 2 - hold down for 2 or 3 seconds to increment
-Const swReplay3        = 65 'Sets Replay Level 3 - hold down for 2 or 3 seconds to increment
+Const swSelfTest     = 59 'enters diagnostics
+Const swTilt         = 5  'playfield tilt switch
+Const swSlamTilt     = 62 'clears all credits and resets machine
+Const swCoin3        = 56 'defaults to 1 coin per credit
+Const swCoin2        = 57 'defaults to 2 coins per credit
+Const swCoin1        = 58 'defaults to 1 coin for 3 credits
+Const swStartButton  = 7  'starts game
+Const swReplay1      = 63 'Sets Replay Level 1 - hold down for 2 or 3 seconds to increment
+Const swReplay2      = 64 'Sets Replay Level 2 - hold down for 2 or 3 seconds to increment
+Const swReplay3      = 65 'Sets Replay Level 3 - hold down for 2 or 3 seconds to increment
 
-Const swLRFlip         = 102
-Const swLLFlip         = 104
+Const swLRFlip       = 102
+Const swLLFlip       = 104
 
 ' Help Window
 vpmSystemHelp = "Playmatic System 1 keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"   & vbNewLine &_
-  vpmKeyName(keySelfTest)    & vbTab & "Self Test"        & vbNewLine &_
-  vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"        & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
+  vpmKeyName(keySelfTest)    & vbTab & "Self Test"      & vbNewLine &_
+  vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"      & vbNewLine &_
   vpmKeyName(keyDown) & vbTab & "Replay Level 1"        & vbNewLine &_
-  vpmKeyName(keyUp) & vbTab & "Replay Level 2"        & vbNewLine &_
+  vpmKeyName(keyUp) & vbTab & "Replay Level 2"          & vbNewLine &_
   vpmKeyName(keyEnter) & vbTab & "Replay Level 3"
 
 'Dip Switch / Options Menu

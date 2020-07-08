@@ -2,7 +2,7 @@
 '
 'First Added in VBS v3.18
 '
-'This is for Atari Generation 2 games 
+'This is for Atari Generation 2 games
 
 Option Explicit
 LoadCore

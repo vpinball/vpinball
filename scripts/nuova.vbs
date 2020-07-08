@@ -19,25 +19,25 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 19
 ' Cabinet switches
-Const swCoin1          = 9
-Const swCoin2          = 10
-Const swCoin3          = 11
-Const swTilt           = 7
-Const swStartButton    = 6
-Const swSlamTilt       = 16
-Const swSelfTest       = 0 '55
-Const swCPUDiag        = 0 '56
-Const swSoundDiag      = 0 '57
-Const swLRFlip         = 82
-Const swLLFlip         = 84
+Const swCoin1        = 9
+Const swCoin2        = 10
+Const swCoin3        = 11
+Const swTilt         = 7
+Const swStartButton  = 6
+Const swSlamTilt     = 16
+Const swSelfTest     = 0 '55
+Const swCPUDiag      = 0 '56
+Const swSoundDiag    = 0 '57
+Const swLRFlip       = 82
+Const swLLFlip       = 84
 
 ' Help Window
 vpmSystemHelp = "Nuova keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"   & vbNewLine &_
-  vpmKeyName(keySelfTest)    & vbTab & "Self Test"        & vbNewLine &_
-  vpmKeyName(keyCPUDiag)     & vbTab & "Cpu Diagnostic"   & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
+  vpmKeyName(keySelfTest)    & vbTab & "Self Test"      & vbNewLine &_
+  vpmKeyName(keyCPUDiag)     & vbTab & "Cpu Diagnostic" & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
 'Dip Switch / Options Menu

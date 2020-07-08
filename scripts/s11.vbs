@@ -20,21 +20,21 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 23
 ' Cabinet switches
-Const swAdvance        = -7
-Const swUpDown         = -6
-Const swCPUDiag        = -5
-Const swSoundDiag      = -4
-Const swTilt           =  1
-Const swBallRollTilt   =  2
-Const swStartButton    =  3
-Const swCoin3          =  4
-Const swCoin2          =  5
-Const swCoin1          =  6
-Const swSlamTilt       =  7
-Const swHiScoreReset   =  8
+Const swAdvance      = -7
+Const swUpDown       = -6
+Const swCPUDiag      = -5
+Const swSoundDiag    = -4
+Const swTilt         =  1
+Const swBallRollTilt =  2
+Const swStartButton  =  3
+Const swCoin3        =  4
+Const swCoin2        =  5
+Const swCoin1        =  6
+Const swSlamTilt     =  7
+Const swHiScoreReset =  8
 
-Const swLRFlip         = 82
-Const swLLFlip         = 84
+Const swLRFlip       = 82
+Const swLLFlip       = 84
 
 ' Help Window
 vpmSystemHelp = "Williams System 9/11 keys:" & vbNewLine &_

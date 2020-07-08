@@ -21,20 +21,20 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 17
 ' Cabinet switches
-Const swStartButton    = 37 'ok
-Const swCoin1          = 38 'ok
-Const swCoin2          = 39 'ok
-Const swCoin3          = 38 'avoid missing Coin Switch mappings 
-Const swTilt           = 36 'ok 
-'Const swSlamDoorHit    = 
-Const swLRFlip         = 82 'ok 34
-Const swLLFlip         = 84 'ok 35
+Const swStartButton  = 37 'ok
+Const swCoin1        = 38 'ok
+Const swCoin2        = 39 'ok
+Const swCoin3        = 38 'avoid missing Coin Switch mappings
+Const swTilt         = 36 'ok
+'Const swSlamDoorHit  =
+Const swLRFlip       = 82 'ok 34
+Const swLLFlip       = 84 'ok 35
 
 ' Help Window
 vpmSystemHelp = "Atari keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"   & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
 ' Dip Switch / Options Menu

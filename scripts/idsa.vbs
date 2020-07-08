@@ -20,13 +20,13 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 10
 ' Cabinet switches
-'Const swTilt		=10       'ok V1
+'Const swTilt		=10     'ok V1
 'Const swBallRollTilt	=10 'ok V1
-Const swStartButton	=7   'ok
+Const swStartButton	=7      'ok
 'Const swSlamTilt	=10     'ok V1
-Const swCoin1		=4        'ok
-Const swCoin2		=5        'ok
-Const swCoin3		=6        'ok
+Const swCoin1		=4      'ok
+Const swCoin2		=5      'ok
+Const swCoin3		=6      'ok
 
 Const swLRFlip		=82     'ok
 Const swLLFlip		=84     'ok

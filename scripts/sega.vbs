@@ -22,27 +22,27 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 15
 ' Cabinet switches
-Const swBlack          =  0 'DED 8
-Const swGreen          = -1 'DED 7
-Const swRed            = -2 'DED 6
-Const swStartButton    = 54
-Const swTilt           = 56
-Const swSlamTilt       = 55
-Const swCoin3          =  4
-Const swCoin1          =  5
-Const swCoin2          =  6
+Const swBlack        =  0 'DED 8
+Const swGreen        = -1 'DED 7
+Const swRed          = -2 'DED 6
+Const swStartButton  = 54
+Const swTilt         = 56
+Const swSlamTilt     = 55
+Const swCoin3        =  4
+Const swCoin1        =  5
+Const swCoin2        =  6
 
-Const swLRFlip         = 82
-Const swLLFlip         = 84
+Const swLRFlip       = 82
+Const swLLFlip       = 84
 
 ' Help Window
 vpmSystemHelp = "Sega/Stern Whitestar keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3"   & vbNewLine &_
-  vpmKeyName(keyBlack)        & vbTab & "Black"            & vbNewLine &_
-  vpmKeyName(keyGreen)        & vbTab & "Green"            & vbNewLine &_
-  vpmKeyName(keyRed)          & vbTab & "Red"              & vbNewLine &_
+  vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3" & vbNewLine &_
+  vpmKeyName(keyBlack)        & vbTab & "Black"          & vbNewLine &_
+  vpmKeyName(keyGreen)        & vbTab & "Green"          & vbNewLine &_
+  vpmKeyName(keyRed)          & vbTab & "Red"            & vbNewLine &_
   vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
 
 'Dip Switch / Options Menu

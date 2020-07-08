@@ -18,20 +18,20 @@ End Sub
 ' LTD System 4 Data
 '-------------------------
 ' Cabinet switches
-Const swSelfTest       = 9
-Const swTilt           = 18
-Const swCoin3          = 13
-Const swCoin2          = 14
-Const swStartButton    = 17
-Const swEnter          = 10
+Const swSelfTest    = 9
+Const swTilt        = 18
+Const swCoin3       = 13
+Const swCoin2       = 14
+Const swStartButton = 17
+Const swEnter       = 10
 
-Const swLRFlip         = 82
-Const swLLFlip         = 84
+Const swLRFlip      = 82
+Const swLLFlip      = 84
 
 ' Help Window
 vpmSystemHelp = "LTD System 4 keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #2"   & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #2" & vbNewLine &_
   vpmKeyName(keyEnter)  & vbTab & "Enter (Coin Door)" & vbNewLine &_
   vpmKeyName(keySelfTest)    & vbTab & "Self Test"
 

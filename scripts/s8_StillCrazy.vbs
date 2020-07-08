@@ -18,17 +18,17 @@ End Sub
 ' Williams S8 Data for Still Crazy
 '-------------------------
 ' Cabinet switches
-Const swAdvance      = -7
-Const swUpDown       = -6
-Const swCPUDiag      = -5
-Const swSoundDiag    = -4
-Const swTilt         =  1
-Const swCoin1        =  2
-Const swCoin2        =  2
-Const swCoin3        =  2
-Const swStartButton  =  3
-Const swLRFlip       = 82
-Const swLLFlip       = 84
+Const swAdvance     = -7
+Const swUpDown      = -6
+Const swCPUDiag     = -5
+Const swSoundDiag   = -4
+Const swTilt        =  1
+Const swCoin1       =  2
+Const swCoin2       =  2
+Const swCoin3       =  2
+Const swStartButton =  3
+Const swLRFlip      = 82
+Const swLLFlip      = 84
 
 ' Help Window
 vpmSystemHelp = "Williams System 7 keys:" & vbNewLine &_

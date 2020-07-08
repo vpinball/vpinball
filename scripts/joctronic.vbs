@@ -20,23 +20,23 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 17
 ' Cabinet switches
-Const swSelfTest       = 1
-Const swTilt           = 86
-Const swSlamTilt       = 86
-Const swCoin3          = 85
-Const swCoin2          = 82
-Const swCoin1          = 81
-Const swStartButton    = 84
+Const swSelfTest     = 1
+Const swTilt         = 86
+Const swSlamTilt     = 86
+Const swCoin3        = 85
+Const swCoin2        = 82
+Const swCoin1        = 81
+Const swStartButton  = 84
 
-Const swLRFlip         = 87
-Const swLLFlip         = 88
+Const swLRFlip       = 87
+Const swLLFlip       = 88
 
 ' Help Window
 vpmSystemHelp = "Joctronic keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"   & vbNewLine &_
-  vpmKeyName(keySelfTest)    & vbTab & "Self Test"        & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
+  vpmKeyName(keySelfTest)    & vbTab & "Self Test"      & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
 
 'Dip Switch / Options Menu

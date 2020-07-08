@@ -22,20 +22,20 @@ End Sub
 ' Flipper Solenoid
 'Const GameOnSolenoid = ???
 ' Cabinet switches
-Const swStartButton    = 33
-Const swCoin1          = 34
-Const swCoin2          = 34
-Const swCoin3          = 34
-Const swTilt           = 35
-Const swDiag           = 36
-Const swLRFlip         = 81 '32
-Const swLLFlip         = 83 '31
+Const swStartButton = 33
+Const swCoin1       = 34
+Const swCoin2       = 34
+Const swCoin3       = 34
+Const swTilt        = 35
+Const swDiag        = 36
+Const swLRFlip      = 81 '32
+Const swLLFlip      = 83 '31
 
 ' Help Window
 vpmSystemHelp = "Sleic keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"   & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
   vpmKeyName(keyCPUDiag) & vbTab & "Diagnostics"
 
 ' Dip Switch / Options Menu

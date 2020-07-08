@@ -18,22 +18,22 @@ End Sub
 ' Zaccaria Data
 '-------------------------
 ' Cabinet switches
-Const swProgEnable     = -2
-Const swDiagnostics    =  0
-Const swSlamTilt       =  2
-Const swCoin1          =  4
-Const swCoin2          =  5
-Const swCoin3          =  6
-Const swStartButton    =  3
+Const swProgEnable  = -2
+Const swDiagnostics =  0
+Const swSlamTilt    =  2
+Const swCoin1       =  4
+Const swCoin2       =  5
+Const swCoin3       =  6
+Const swStartButton =  3
 
-Const swLRFlip         = 81
-Const swLLFlip         = 83
+Const swLRFlip      = 81
+Const swLLFlip      = 83
 
 ' Help Window
 vpmSystemHelp = "Zaccaria keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
-  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"   & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
   vpmKeyName(keySelfTest)    & vbTab & "Diagnostics"
 
 ' Option Menu / Dip Menu

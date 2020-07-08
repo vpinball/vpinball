@@ -21,18 +21,18 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 16
 ' Cabinet switches
-Const swSelfTest       = 26
-Const swCPUDiag        = -6
-Const swSoundDiag      = -7
-Const swTilt           =  8
-Const swSlamTilt       =  3
-Const swCoin3          =  6
-Const swCoin2          =  5
-Const swCoin1          =  7
-Const swStartButton    =  2
-Const swHiScoreReset   =  1 'accounting reset
-Const swLRFlip         = 82
-Const swLLFlip         = 84
+Const swSelfTest     = 26
+Const swCPUDiag      = -6
+Const swSoundDiag    = -7
+Const swTilt         =  8
+Const swSlamTilt     =  3
+Const swCoin3        =  6
+Const swCoin2        =  5
+Const swCoin1        =  7
+Const swStartButton  =  2
+Const swHiScoreReset =  1 'accounting reset
+Const swLRFlip       = 82
+Const swLLFlip       = 84
 
 ' Help Window
 vpmSystemHelp = "GamePlan keys:" & vbNewLine &_

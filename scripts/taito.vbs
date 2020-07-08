@@ -46,16 +46,16 @@ Const swLLFlip         = 119
 
 ' Help Window
 vpmSystemHelp = "Taito keys:"& vbNewLine &_
-  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"    & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"    & vbNewLine &_
-  vpmKeyName(keyHiScoreReset)& vbTab & "Statistics"	     & vbNewLine &_
-  vpmKeyName(keySelfTest)    & vbTab & "Service Menu"      & vbNewLine &_
-  vpmKeyName(keyDown)        & vbTab & "Adjustments"       & vbNewLine &_
-  vpmKeyName(KeyUp)	         & vbTab & "Diagnostics"       & vbNewLine &_
-  vpmKeyName(keyEnter)	     & vbTab & "Enter"             & vbNewLine &_
-  vpmKeyName(keyConfigurations) & vbTab & "Configurations"    & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyHiScoreReset)& vbTab & "Statistics"	    & vbNewLine &_
+  vpmKeyName(keySelfTest)    & vbTab & "Service Menu"   & vbNewLine &_
+  vpmKeyName(keyDown)        & vbTab & "Adjustments"    & vbNewLine &_
+  vpmKeyName(KeyUp)	         & vbTab & "Diagnostics"    & vbNewLine &_
+  vpmKeyName(keyEnter)	     & vbTab & "Enter"          & vbNewLine &_
+  vpmKeyName(keyConfigurations) & vbTab & "Configurations" & vbNewLine &_
   vpmKeyName(keySoundDiag)   & vbTab & "Sound Diagnostics" & vbNewLine &_
-  vpmKeyName(keyCoinDoor)    & vbTab & "Coin Door"	     & vbNewLine &_
+  vpmKeyName(keyCoinDoor)    & vbTab & "Coin Door"	    & vbNewLine &_
   vpmKeyName(keymasterenter) & vbTab & "Coin Box Door"
 
 Private Sub TaitoShowDips
