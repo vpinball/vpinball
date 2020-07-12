@@ -17,25 +17,34 @@ Basic usage:
 Put this at the top of the table file:
 ======================================================================================================== SNIP
 
-LoadVPM "02000000", "xxx.VBS", 3.58 ' adapt 02000000 and 3.58 to the actually required minimum VPinMAME- and core scripts versions
-Const cGameName    = "xxxx" ' PinMAME short game name
-Const UseSolenoids = True
+Option Explicit  ' Optional, recommended
+Randomize        ' Optional, recommended
+
+' Though shall not declare a custom LoadVPM anymore, BUT use this instead:
+On Error Resume Next
+ExecuteGlobal GetTextFile("Controller.vbs")
+If Err Then MsgBox "Unable to open Controller.vbs. Ensure that it is in the Scripts folder of Visual Pinball."
+On Error Goto 0
+
+Dim UseVPMDMD  ' Or UseVPMColoredDMD if a colorization of the game exists
+UseVPMDMD = 1  ' Optional, only use this if the VPX table will directly render the DMD via textbox or flasher, otherwise set to 0
+
+LoadVPM "02000000", "xxx.VBS", 3.58 ' adapt 02000000 and 3.58 to the actually required minimum VPinMAME- and core scripts versions, replace xxx with the machine generations vbs name
+
+Const cGameName    = "xxxx"         ' PinMAME short game name
+Const UseSolenoids = 2              ' 2 enables Fast Flips, if this does not work for the machine in question, use True instead
 Const UseLamps     = True
 'Standard sound
-Const SSolenoidOn  = "SolOn"       'Solenoid activates
-Const SSolenoidOff = "SolOff"      'Solenoid deactivates
-Const SFlipperOn   = "FlipperUp"   'Flipper activated
-Const SFlipperOff  = "FlipperDown" 'Flipper deactivated
-Const SCoin        = "Quarter"     'Coin inserted
+Const SSolenoidOn  = "SolOn"        ' Solenoid activates
+Const SSolenoidOff = "SolOff"       ' Solenoid deactivates
+Const SFlipperOn   = "FlipperUp"    ' Flipper activated
+Const SFlipperOff  = "FlipperDown"  ' Flipper deactivated
+Const SCoin        = "Quarter"      ' Coin inserted
 'Callbacks
 Set LampCallback   = GetRef("UpdateMultipleLamps")
 Set GICallback     = GetRef("UpdateGI")  ' Original GI Callback (returns boolean on and off values only)
 Set GICallback2    = GetRef("UpdateGI")  ' New GI Callback supports Newer VPM Dimming GI and returns values numeric 0-8)
 Set MotorCallback  = GetRef("UpdateMotors")
-
-========================================================================================================
-SEE controller.vbs FOR HOW TO ADD PinMAME AND/OR B2S SUPPORT NOWADAYS INSTEAD OF USING LoadVPM DIRECTLY!
-========================================================================================================
 
 Sub Table_KeyDown(ByVal keycode)
    If vpmKeyDown(keycode) Then Exit Sub
