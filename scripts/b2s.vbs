@@ -17,16 +17,15 @@
 
 Option Explicit
 
-Dim B2SVersion
-Dim B2SDataRange
+Const B2SVersion = 3
+Const B2SDataRange = 49
 Dim B2SData(75)
 Dim B2STemp, b2si,b2sStepReady,b2sSP,b2sEP,b2sV,b2sDIR,b2sSS
-Dim objRegistry, Key
+Dim objRegistry
 Set objRegistry = CreateObject("Wscript.shell")
-B2SDataRange = 49
-B2SVersion = 3
 
-For b2sregclean=0 to 49
+Dim b2sregclean
+For b2sregclean=0 to B2SDataRange
 	WriteLed b2sregclean,0
 Next
 
@@ -115,9 +114,9 @@ End Sub
 
 '----------- Send LED states to the Backglass --------------
 Sub B2SUpdateLed ()
-On Error Resume Next
-Dim ChgLED, ii, jj, chg, stat
-ChgLED = Controller.ChangedLEDs(&H0000003f, &Hffffffff)
+	On Error Resume Next
+	Dim ChgLED, ii, jj, chg, stat
+	ChgLED = Controller.ChangedLEDs(&H0000003f, &Hffffffff)
 	If Not IsEmpty(ChgLED) Then
 		For ii = 0 To UBound(ChgLED)
 			chg = chgLED(ii, 1):stat = chgLED(ii, 2)
@@ -129,16 +128,19 @@ End Sub
 
 '------ Read and Write to the B2S registry data ---------
 Function WriteReg(ByVal Value)
+	Dim Key
 	Key = objRegistry.RegWrite("HKCU\B2S\B2SDATA",Value,"REG_SZ")
 	WriteReg = Key
 End Function
 
 Function ReadReg()
+	Dim Key
 	Key = objRegistry.RegRead("HKCU\B2S\B2SDATA")
 	ReadReg = Key
 End Function
 
 Function WriteLed(ByVal LedNo,ByVal Value)
+	Dim Key
 	Key = objRegistry.RegWrite("HKCU\B2S\B2SLED"+cstr(LedNo),Value,"REG_DWORD")
 	WriteLED = Key
 End Function
