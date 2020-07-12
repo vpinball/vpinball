@@ -3,7 +3,10 @@
 ====================================================================
 
 Basic documentation on how to use the VPM core scripts shipped with VPX.
-Please also check core.vbs' actual functions for more help in its comments and the respective machine .vbs files functions, too.
+
+Please also check core.vbs' actual functions for more help in their comments and the respective machine .vbs files functions, too.
+In addition there is the pretty aged "vbsdoc_outdated.html", too, which may still be useful in some cases though!
+
 And CommandReference.txt for help with VPX scripting commands to connect both worlds, etc.
 
 
