@@ -1954,7 +1954,7 @@ Class cvpmCaptiveBall
 	Public Sub InitCaptive(aTrig, aWall, aKickers, aBallDir)
 		Set mTrig = aTrig : Set mWall = aWall
 		mKickNo = vpmSetArray(mKickers, aKickers)
-		mBallDir = aBallDir : mBallCos = Cos(aBallDir * 3.1415927/180) : mBallSin = Sin(aBallDir * 3.1415927/180)
+		mBallDir = aBallDir : mBallCos = Cos(aBallDir * (3.14159265358979/180)) : mBallSin = Sin(aBallDir * (3.14159265358979/180))
 	End Sub
 
 	Public Sub Start
@@ -3250,7 +3250,7 @@ End Sub
 Sub VPMVol
 	Dim VolPM,VolPMNew
 	VolPM = Controller.Games(controller.GameName).Settings.Value("volume")
-	VolPMNew = InputBox ("Enter desired VPinMame Volume Level (-32 to 0)","VPinMame Volume",VolPM)
+	VolPMNew = InputBox ("Enter desired VPinMAME Volume Level (-32 to 0)","VPinMAME Volume",VolPM)
 	If VolPMNew = "" Then Exit Sub
 	If VolPMNew <=0 and VolPMNew >= -32 Then
 		Controller.Games(controller.GameName).Settings.Value("volume")= round(VolPMNew)
