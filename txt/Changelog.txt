@@ -69,8 +69,9 @@ FIXES:
 
 - update BASS library to 2.4.15
 
-- see scripts/Changelog.txt for the respective core script changes (version 3.58)
+- see Changelog_Scripts.txt for the respective core script changes (version 3.58)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
+- see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
 - add Clang (via Visual Studio 2019) support, still has a linking prob with 32bit though
 
