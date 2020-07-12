@@ -109,8 +109,6 @@
 Option Explicit
 
 Const directory = "HKEY_CURRENT_USER\SOFTWARE\Visual Pinball\Controller\"
-Dim objShell
-Dim PopupMessage
 Dim B2SController
 Dim Controller
 Const DOFContactors = 1
@@ -186,9 +184,11 @@ Sub LoadController(TableType)
 	B2SOnALT = False
 	tempC = 0
 	on error resume next
+	Dim objShell
 	Set objShell = CreateObject("WScript.Shell")
 	objShell.RegRead(directory & "ForceDisableB2S")
 	If Err.number <> 0 Then
+		Dim PopupMessage
 		PopupMessage = "This latest version of Controller.vbs stores its settings in the registry. To adjust the values, you must use VP 10.2 (or newer) and setup your configuration in the DOF section of the -Keys, Nudge and DOF- dialog of Visual Pinball."
 		objShell.RegWrite directory & "ForceDisableB2S",0, "REG_DWORD"
 		objShell.RegWrite directory & "DOFContactors",2, "REG_DWORD"

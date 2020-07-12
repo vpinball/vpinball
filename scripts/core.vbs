@@ -11,7 +11,7 @@ Const VPinMAMEDriverVer = 3.58
 Dim Controller	 ' VPinMAME/B2S/etc Controller Object
 Dim vpmTimer	 ' Timer Object
 Dim vpmNudge	 ' Nudge handler Object
-Dim Lights(200)	 ' Put all lamps in an array for easier handling
+Dim Lights(260)	 ' Put all lamps in an array for easier handling
 ' If more than one lamp is connected, fill this with an array of each light
 Dim vpmMultiLights() : ReDim vpmMultiLights(0)
 Private gNextMechNo : gNextMechNo = 0 ' keep track of created mech handlers (would be nice with static members)
@@ -42,13 +42,14 @@ Set GICallback2 = GetRef("NullSub")
 Dim ExtraKeyHelp ' Help string for game specific keys
 Dim vpmShowDips  ' Show DIPs function
 
+Private vpmVPVer : vpmVPVer = vpmCheckVPVer()
 
 Private Function PinMAMEInterval
-	If VPBuildVersion >= 10200 Then
+	If vpmVPVer >= 10200 Then
 			PinMAMEInterval = -1 ' VP10.2 introduced special frame-sync'ed timers
 	Else
-		If VPBuildVersion >= 10000 Then
-			PinMAMEInterval = 3 ' as old VP9 timers pretended to run at 1000Hz but actually did only a max of 100Hz (e.g. corresponding nowadays to interval=10), we do something inbetween for VP10+ by default
+		If vpmVPVer >= 10000 Then
+			PinMAMEInterval = 3  ' as old VP9 timers pretended to run at 1000Hz but actually did only a max of 100Hz (e.g. corresponding nowadays to interval=10), we do something inbetween for VP10+ by default
 		Else
 			PinMAMEInterval = 1
 		End If
@@ -1136,7 +1137,7 @@ class cvpmNudge
 		ReDim mForce(vpmSetArray(mSlingBump, aSlingBump))
 		For ii = 0 To UBound(mForce)
 			If TypeName(mSlingBump(ii)) = "Bumper" Then mForce(ii) = mSlingBump(ii).Threshold
-			If vpmVPVer >= 90 and TypeName(mSlingBump(ii)) = "Wall" Then mForce(ii) = mSlingBump(ii).SlingshotThreshold
+			If vpmVPVer >= 9000 and TypeName(mSlingBump(ii)) = "Wall" Then mForce(ii) = mSlingBump(ii).SlingshotThreshold
 		Next
 	End Property
 
@@ -1173,13 +1174,13 @@ class cvpmNudge
 			ii = 0
 			For Each obj In mSlingBump
 				If TypeName(obj) = "Bumper" Then obj.Threshold = mForce(ii)
-				If vpmVPVer >= 90 and TypeName(obj) = "Wall" Then obj.SlingshotThreshold = mForce(ii)
+				If vpmVPVer >= 9000 and TypeName(obj) = "Wall" Then obj.SlingshotThreshold = mForce(ii)
 				ii = ii + 1
 			Next
 		Else
 			For Each obj In mSlingBump
 				If TypeName(obj) = "Bumper" Then obj.Threshold = 100
-				If vpmVPVer >= 90 and TypeName(obj) = "Wall" Then obj.SlingshotThreshold = 100
+				If vpmVPVer >= 9000 and TypeName(obj) = "Wall" Then obj.SlingshotThreshold = 100
 			Next
 		End If
 	End Sub
@@ -2282,27 +2283,30 @@ Class cvpmFlips2   'test fastflips switches to rom control after 100ms or so del
 
 End Class
 
-
 '---------------------------
 ' Check VP version running
 '---------------------------
 Private Function vpmCheckVPVer
 	On Error Resume Next
 	' a bug in VBS?: Err object is not cleared on Exit Function
-	If VPBuildVersion < 0 Or Err Then vpmCheckVPVer = 50 : Err.Clear : Exit Function
+	If VPBuildVersion < 0 Or Err Then vpmCheckVPVer = 5000 : Err.Clear : Exit Function
 	If VPBuildVersion > 2806 and VPBuildVersion < 9999 Then
-		vpmCheckVPVer = 63
+		vpmCheckVPVer = 6300
 	ElseIf VPBuildVersion > 2721 and VPBuildVersion < 9999 Then
-		vpmCheckVPVer = 61
+		vpmCheckVPVer = 6100
+	ElseIf VPBuildVersion >= 920 and VPBuildVersion <= 999 Then
+		vpmCheckVPVer = 9200
+	ElseIf VPBuildVersion > 909 and VPBuildVersion <= 999 Then
+		vpmCheckVPVer = 9100
 	ElseIf VPBuildVersion >= 900 and VPBuildVersion <= 999 Then
-		vpmCheckVPVer = 90
+		vpmCheckVPVer = 9000
 	ElseIf VPBuildVersion >= 10000 Then
-		vpmCheckVPVer = 100
+		vpmCheckVPVer = VPBuildVersion
 	Else
-		vpmCheckVPVer = 60
+		vpmCheckVPVer = 6000
 	End If
 End Function
-Private vpmVPVer : vpmVPVer = vpmCheckVPVer()
+
 '--------------------
 ' Initialise timers
 '--------------------
@@ -2314,7 +2318,7 @@ Sub PinMAMETimer_Init : Me.Interval = PinMAMEInterval : Me.Enabled = True : End 
 '---------------------------------------------
 Public Sub vpmInit(aTable)
 	Set vpmTable = aTable
-	If vpmVPVer >= 60 Then
+	If vpmVPVer >= 6000 Then
 	  On Error Resume Next
 		If Not IsObject(GetRef(aTable.name & "_Paused")) Or Err Then Err.Clear : vpmBuildEvent aTable, "Paused", "Controller.Pause = True"
 		If Not IsObject(GetRef(aTable.name & "_UnPaused")) Or Err Then Err.Clear : vpmBuildEvent aTable, "UnPaused", "Controller.Pause = False"
@@ -2355,9 +2359,9 @@ Private Function vpmDefCreateBall3(aKicker)
 	Set vpmDefCreateBall3 = aKicker
 End Function
 
-If VPBuildVersion >= 10000 Then
+If vpmVPVer >= 10000 Then
 	Set vpmCreateBall = GetRef("vpmDefCreateBall3")
-ElseIf VPBuildVersion > 909 And vpmVPVer >= 90 Then
+ElseIf vpmVPVer >= 9100 Then
 	Set vpmCreateBall = GetRef("vpmDefCreateBall2")
 Else
 	Set vpmCreateBall = GetRef("vpmDefCreateBall")
@@ -2578,7 +2582,7 @@ Function vpmMoveBall(aBall, aFromKick, aToKick)
 	With aToKick.CreateBall
 		If TypeName(aBall) = "IBall" Then
 			.Color = aBall.Color   : .Image = aBall.Image
-			If vpmVPVer >= 60 Then
+			If vpmVPVer >= 6000 Then
 				.FrontDecal = aBall.FrontDecal : .BackDecal = aBall.BackDecal
 '				.UserValue = aBall.UserValue
 			End If
@@ -2606,22 +2610,22 @@ Sub vpmSolFlipper(aFlip1, aFlip2, aEnabled)
 		PlaySound SFlipperOn : aFlip1.RotateToEnd : If Not aFlip2 Is Nothing Then aFlip2.RotateToEnd
 	Else
 		PlaySound SFlipperOff
-		If VPBuildVersion < 10000 Then
+		If vpmVPVer < 10000 Then
 			oldStrength = aFlip1.Strength : aFlip1.Strength = conFlipRetStrength
 			oldSpeed = aFlip1.Speed : aFlip1.Speed = conFlipRetSpeed
 		End If
 		aFlip1.RotateToStart
-		If VPBuildVersion < 10000 Then
+		If vpmVPVer < 10000 Then
 			aFlip1.Strength = oldStrength
 			aFlip1.Speed = oldSpeed
 		End If
 		If Not aFlip2 Is Nothing Then
-			If VPBuildVersion < 10000 Then
+			If vpmVPVer < 10000 Then
 				oldStrength = aFlip2.Strength : aFlip2.Strength = conFlipRetStrength
 				oldSpeed = aFlip2.Speed : aFlip2.Speed = conFlipRetSpeed
 			End If
 			aFlip2.RotateToStart
-			If VPBuildVersion < 10000 Then
+			If vpmVPVer < 10000 Then
 				aFlip2.Strength = oldStrength
 				aFlip2.Speed = oldSpeed
 			End If
@@ -2964,7 +2968,7 @@ LoadScript("ledcontrol.vbs"):Err.Clear	' Checks for existance of ledcontrol.vbs 
 LoadScript("GlobalPlugIn.vbs")			' Checks for existance of GlobalPlugIn.vbs and loads it if found, useful for adding
 										' custom scripting that can be used for all tables instead of altering the core.vbs
 
-Dim soundtable, swidth, sheight, VP8sound, VP9sound
+Dim swidth, sheight, VP8sound, VP9sound
 swidth = 950
 sheight = 2100
 VP8sound = False
@@ -2974,6 +2978,7 @@ On Error Resume Next
 Err.Clear
 If Version > 0 then
 	If Version >= 10700 then 'no ActiveTable call until 10.7
+		Dim soundtable
 		Set soundtable = ActiveTable
 		swidth = soundtable.Width
 		sheight = soundtable.Height
