@@ -1,6 +1,6 @@
 '----------------------
 ' Alternative Nudge v2
-'     by Blur
+'	  by Blur
 '----------------------
 
 ' For use with core.vbs version 3.41 or greater
@@ -15,17 +15,17 @@
 Option Explicit
 
 ' cvpmNudge2 (Object = vpmNudge)
-'   Hopefully we can add a real pendulum simulator in the future
-'   (Public)  .TiltSwitch    - set tilt switch
-'   (Public)  .Sensitivity   - Set tiltsensitivity (0-10)
-'   (Public)  .NudgeSound	 - set nudge sound, has to be in table
-'   (Public)  .TiltSound	 - set tilt sound, has to be in table
-'   (Public)  .NudgeMusic	 - mp3 file with nudge sound in music dir
-'   (Public)  .TiltMusic	 - mp3 file with tilt sound in music dir
-'   (Public)  .TiltObj       - Set objects affected by tilt
-'   (Public)  .DoNudge dir,power - Nudge table
-'   (Public)  .SolGameOn     - Game On solenoid handler
-'   (Private) .Update        - Handle tilting
+'	Hopefully we can add a real pendulum simulator in the future
+'	(Public)  .TiltSwitch	 - set tilt switch
+'	(Public)  .Sensitivity	 - Set tiltsensitivity (0-10)
+'	(Public)  .NudgeSound	 - set nudge sound, has to be in table
+'	(Public)  .TiltSound	 - set tilt sound, has to be in table
+'	(Public)  .NudgeMusic	 - mp3 file with nudge sound in music dir
+'	(Public)  .TiltMusic	 - mp3 file with tilt sound in music dir
+'	(Public)  .TiltObj		 - Set objects affected by tilt
+'	(Public)  .DoNudge dir,power - Nudge table
+'	(Public)  .SolGameOn	 - Game On solenoid handler
+'	(Private) .Update		 - Handle tilting
 
 class cvpmNudge2
 	Private mCount, mSensitivity, pSensitivity, mNudgeTimer, mSlingBump, mForce
@@ -35,7 +35,7 @@ class cvpmNudge2
 
 	Private Sub Class_Initialize
 		' set defaults for all tables here or change them from your table script
-		NudgeInterval = 1000 	' time in ms after which nudge count goes down
+		NudgeInterval = 1000	' time in ms after which nudge count goes down
 		TiempoFiltro = 1000 '200' nudge filtering time in ms
 		ReturnTime = 200		' time after which return force bumps in
 		pSensitivity = 5		' preferred sensitivity overrides table settings
@@ -57,7 +57,7 @@ class cvpmNudge2
 		Next
 	End Property
 
-	Public Property Let Sensitivity(aSens) 
+	Public Property Let Sensitivity(aSens)
 		If pSensitivity = 0 Then mSensitivity = (10-aSens)+1 Else mSensitivity = pSensitivity
 	End property
 
@@ -106,7 +106,7 @@ class cvpmNudge2
 		If aEnabled Then
 			ii = 0
 			For Each obj In mSlingBump
-				If TypeName(obj) = "Bumper" Then obj.Threshold = mForce(ii) 
+				If TypeName(obj) = "Bumper" Then obj.Threshold = mForce(ii)
 				If vpmVPVer >= 90 and TypeName(obj) = "Wall" Then obj.SlingshotThreshold = mForce(ii)
 				ii = ii + 1
 			Next
