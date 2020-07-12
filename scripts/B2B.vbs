@@ -122,9 +122,9 @@
 Option Explicit
 
 ReDim CurrentBall(tnopb), ballStatus(tnopb)
-Dim iball, cnt, errMessage
 XYdata.interval = 10			' Timer interval starts at 1 for the highest ball data sample rate
 
+Dim cnt
 For cnt = 0 to ubound(ballStatus)	' Initialize/clear all ball stats, 1 = active, 0 = non-existant
 	ballStatus(cnt) = 0
 Next
@@ -220,6 +220,7 @@ End Sub
 'Call this sub from every kicker that destroys a ball, before the ball is destroyed.
 
 Sub ClearBallid
+	Dim iball
 	On Error Resume Next				' Error handling for debugging purposes
 	iball = ActiveBall.uservalue		' Get the ball ID to be cleared
 	If Err Then Msgbox Err.description & vbCrLf & iball
@@ -233,10 +234,12 @@ End Sub
 ' <<<<<<<<<<<<<<<<< XYdata_Timer >>>>>>>>>>>>>>>>>
 '=====================================================
 ' Ball data collection and B2B Collision detection.
-ReDim baX(tnopb,4), baY(tnopb,4), bVx(tnopb,4), bVy(tnopb,4), TotalVel(tnopb,4)
-Dim cForce, bDistance, nosf, xyTime, cFactor, id, id2, id3, B1, B2
+
+Dim cFactor
 
 Sub XYdata_Timer()
+	Dim bDistance, xyTime, id, id2, id3, B1, B2
+	ReDim baX(tnopb,4), baY(tnopb,4), bVx(tnopb,4), bVy(tnopb,4), TotalVel(tnopb,4)
 	' xyTime... Timers will not loop or start over 'til it's code is finished executing. To maximize
 	' performance, at the end of this timer, if the timer's interval is shorter than the individual
 	' computer can handle this timer's interval will increment by 1 millisecond.
@@ -286,9 +289,10 @@ End Sub
 ' <<<<<<<<<<< Collide(ball id1, ball id2) >>>>>>>>>>>
 '=========================================================
 'Calculate the collision force and play sound accordingly.
-Dim cTime, cb1,cb2, avgBallx, cAngle, bAngle1, bAngle2
+Dim cTime
 
 Sub Collide(cb1,cb2)
+	Dim avgBallx, cAngle, bAngle1, bAngle2, cForce
 ' The Collision Factor(cFactor) uses the maximum total ball velocity and automates the cForce calculation, maximizing the
 ' use of all sound files/volume levels. So all the available B2B sound levels are automatically used by adjusting to a
 ' player's style and the table's characteristics.
@@ -307,8 +311,8 @@ Sub Collide(cb1,cb2)
 	GetAngle bVx(cb2,id3), bVy(cb2,id3), bAngle2	' ball 2 travel direction, via velocity
 ' The main cForce formula, calculating the strength of a collision
 	cForce = Cint((abs(TotalVel(cb1,id3)*Cos(cAngle-bAngle1))+abs(TotalVel(cb2,id3)*Cos(cAngle-bAngle2))))
-		If cForce < 4 Then Exit Sub			' Another collision limiter
-	cForce = Cint((cForce)/(cFactor/nosf))	' Divides up cForce for the proper sound selection.
+	If cForce < 4 Then Exit Sub				' Another collision limiter
+	cForce = Cint(cForce/(cFactor/nosf))	' Divides up cForce for the proper sound selection.
 	If cForce > nosf-1 Then cForce = nosf-1	' First sound file 0(zero) minus one from number of sound files
 	PlaySound("collide" & cForce)			' Combines "collide" with the calculated sound level and play sound
 End Sub
@@ -317,10 +321,10 @@ End Sub
 ' <<<<<<<< GetAngle(X, Y, Anglename) >>>>>>>>
 '=================================================
 ' A repeated function which takes any set of coordinates or velocities and calculates an angle in radians.
-Dim Xin,Yin,rAngle,Radit,wAngle
-Const Pi = 3.14159265358979
 
 Sub GetAngle(Xin, Yin, wAngle)
+	Dim rAngle,Radit
+	Const Pi = 3.14159265358979
 	If Sgn(Xin) = 0 Then
 		If Sgn(Yin) = 1 Then rAngle = 3 * Pi/2 Else rAngle = Pi/2
 		If Sgn(Yin) = 0 Then rAngle = 0
