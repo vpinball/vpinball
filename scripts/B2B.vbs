@@ -135,7 +135,7 @@ CheckB2B
 ' B2B AutoDisable for XP x64 Added by Koadic
 '****************************************
 
- Sub CheckB2B			' Added by Koadic for XP x64 handling
+Sub CheckB2B			' Added by Koadic for XP x64 handling
   Dim osver, cpuver, check
   On Error Resume Next
 	For x = 0 to 1 : If B2BOn = x Then Exit Sub : End If : Next 'If B2BOn is set manually, then end routine
@@ -145,7 +145,7 @@ CheckB2B
 	If osver < 6 and cpuver = "AMD64" Then B2BOn = 0 Else B2BOn = 1 'If OS is XP and 64bit, then disable B2B
 	If Err Then B2BOn = 1 'If there is an error in detecting either OS or x32/x64, then default to On
   On Error Goto 0
- End Sub
+End Sub
 
  '======================================================
 ' <<<<<<<<<<<<<< Ball Identification >>>>>>>>>>>>>>
@@ -154,9 +154,9 @@ CheckB2B
 ' Destruk's alternative vpmCreateBall for use with B2B Enabled tables
 ' Core.vbs calls vpmCreateBall when a ball is created from a ball stack
 '******************************
- If IsEmpty(Eval("vpmCreateBall"))=false Then Set vpmCreateBall = GetRef("B2BvpmCreateBall")	' Override the core.vbs and redefine vpmCreateBall
+If IsEmpty(Eval("vpmCreateBall"))=false Then Set vpmCreateBall = GetRef("B2BvpmCreateBall")	' Override the core.vbs and redefine vpmCreateBall
 
- Function B2BvpmCreateBall(aKicker)
+Function B2BvpmCreateBall(aKicker)
 	Dim bsize2:If IsEmpty(Eval("ballsize"))=true Then bsize2 = 25 Else bsize2 = ballsize/2
 	For cnt = 1 to ubound(ballStatus)				' Loop through all possible ball IDs
 		If ballStatus(cnt) = 0 Then					' If ball ID is available...
@@ -176,12 +176,12 @@ CheckB2B
 			Exit For								' New ball ID assigned, exit loop
 		End If
 	Next
- End Function
+End Function
 
 ' Use CreateBallID(kickername) to manually create a ball with a BallID
 ' Can also be used on nonVPM tables (EM or Custom)
 
- Sub CreateBallID(aKicker)
+Sub CreateBallID(aKicker)
 	Dim bsize2:If IsEmpty(Eval("ballsize"))=true Then bsize2 = 25 Else bsize2 = ballsize/2
 	For cnt = 1 to ubound(ballStatus)				' Loop through all possible ball IDs
 		If ballStatus(cnt) = 0 Then					' If ball ID is available...
@@ -196,12 +196,12 @@ CheckB2B
 			Exit For								' New ball ID assigned, exit loop
 		End If
 	Next
- End Sub
+End Sub
 
 ' Use CreateBallID2(kickername, ballsize) to manually create a custom sized ball with a BallID
 ' Can also be used on nonVPM tables (EM or Custom)
 
- Sub CreateBallID2(aKicker, bsize2)					' Use to manually create a ball with a BallID with a custom size
+Sub CreateBallID2(aKicker, bsize2)					' Use to manually create a ball with a BallID with a custom size
 	For cnt = 1 to ubound(ballStatus)				' Loop through all possible ball IDs
 		If ballStatus(cnt) = 0 Then					' If ball ID is available...
 			Set CurrentBall(cnt) = aKicker.Createsizedball(bsize2/2)		' Set ball object with the first available ID
@@ -215,18 +215,18 @@ CheckB2B
 			Exit For								' New ball ID assigned, exit loop
 		End If
 	Next
- End Sub
+End Sub
 
 'Call this sub from every kicker that destroys a ball, before the ball is destroyed.
 
- Sub ClearBallid
-	On Error Resume Next							' Error handling for debugging purposes
-	iball = ActiveBall.uservalue					' Get the ball ID to be cleared
+Sub ClearBallid
+	On Error Resume Next				' Error handling for debugging purposes
+	iball = ActiveBall.uservalue		' Get the ball ID to be cleared
 	If Err Then Msgbox Err.description & vbCrLf & iball
-	ballStatus(iBall) = 0							' Clear the ball status
-	ballStatus(0) = ballStatus(0)-1					' Subtract 1 ball from the # of balls in play
+		ballStatus(iBall) = 0			' Clear the ball status
+	ballStatus(0) = ballStatus(0)-1		' Subtract 1 ball from the # of balls in play
 	On Error Goto 0
- End Sub
+End Sub
 
 
 '=====================================================
@@ -302,14 +302,14 @@ Sub Collide(cb1,cb2)
 	cTime = Timer+.1				' Limits collisions to .1 seconds apart
 ' GetAngle(x-value, y-value, the angle name) calculates any x/y-coords or x/y-velocities and returns named angle in radians
 	GetAngle baX(cb1,id3)-baX(cb2,id3), baY(cb1,id3)-baY(cb2,id3),cAngle	' Collision angle via x/y-coordinates
-	id3 = id3 - 1 : If id3 = 0 Then id3 = 4		' Step back one xyData sampling for a good velocity reading
+	id3 = id3 - 1 : If id3 = 0 Then id3 = 4	' Step back one xyData sampling for a good velocity reading
 	GetAngle bVx(cb1,id3), bVy(cb1,id3), bAngle1	' ball 1 travel direction, via velocity
 	GetAngle bVx(cb2,id3), bVy(cb2,id3), bAngle2	' ball 2 travel direction, via velocity
 ' The main cForce formula, calculating the strength of a collision
 	cForce = Cint((abs(TotalVel(cb1,id3)*Cos(cAngle-bAngle1))+abs(TotalVel(cb2,id3)*Cos(cAngle-bAngle2))))
 		If cForce < 4 Then Exit Sub			' Another collision limiter
-	cForce = Cint((cForce)/(cFactor/nosf))		' Divides up cForce for the proper sound selection.
-	If cForce > nosf-1 Then cForce = nosf-1		' First sound file 0(zero) minus one from number of sound files
+	cForce = Cint((cForce)/(cFactor/nosf))	' Divides up cForce for the proper sound selection.
+	If cForce > nosf-1 Then cForce = nosf-1	' First sound file 0(zero) minus one from number of sound files
 	PlaySound("collide" & cForce)			' Combines "collide" with the calculated sound level and play sound
 End Sub
 
@@ -317,8 +317,8 @@ End Sub
 ' <<<<<<<< GetAngle(X, Y, Anglename) >>>>>>>>
 '=================================================
 ' A repeated function which takes any set of coordinates or velocities and calculates an angle in radians.
-Dim Xin,Yin,rAngle,Radit,wAngle,Pi
-Pi = Round(4*Atn(1),6)					'3.1415926535897932384626433832795
+Dim Xin,Yin,rAngle,Radit,wAngle
+Const Pi = 3.14159265358979
 
 Sub GetAngle(Xin, Yin, wAngle)
 	If Sgn(Xin) = 0 Then

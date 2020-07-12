@@ -1,4 +1,5 @@
-
+'THIS IS THE OLD VERSION, USE B2B.vbs INSTEAD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+'
 '======================================================================================
 ' This code may be freely distributed, but is not to be included with any profit-making
 ' software or product without the express permission from the scripting author, Steely.
@@ -266,8 +267,8 @@ End Sub
 ' <<<<<<<< GetAngle(X, Y, Anglename) >>>>>>>>
 '=================================================
 ' A repeated function which takes any set of coordinates or velocities and calculates an angle in radians.
-Dim Xin,Yin,rAngle,Radit,wAngle,Pi
-Pi = Round(4*Atn(1),6)			'3.1415926535897932384626433832795
+Dim Xin,Yin,rAngle,Radit,wAngle
+Const Pi = 3.14159265358979
 
 Sub GetAngle(Xin, Yin, wAngle)
 	If Sgn(Xin) = 0 Then
