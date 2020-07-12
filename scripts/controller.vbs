@@ -41,18 +41,18 @@
 'so search for something like this in the table script and -comment out or delete-:
 '
 '  Sub LoadVPM(VPMver, VBSfile, VBSver)
-'	 On Error Resume Next
-'	 If ScriptEngineMajorVersion <5 Then MsgBox "VB Script Engine 5.0 or higher required"
-'	 ExecuteGlobal GetTextFile(VBSfile)
-'	 If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the Scripts folder of Visual Pinball. " & vbNewLine & Err.Description
+'    On Error Resume Next
+'    If ScriptEngineMajorVersion <5 Then MsgBox "VB Script Engine 5.0 or higher required"
+'    ExecuteGlobal GetTextFile(VBSfile)
+'    If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the Scripts folder of Visual Pinball. " & vbNewLine & Err.Description
 '
-'	 Set Controller = CreateObject("B2S.Server")
-'	 'Set Controller = CreateObject("VPinMAME.Controller")
+'    Set Controller = CreateObject("B2S.Server")
+'    'Set Controller = CreateObject("VPinMAME.Controller")
 '
-'	 If Err Then MsgBox "Can't Load VPinMAME." & vbNewLine & Err.Description
-'	 If VPMver> "" Then If Controller.Version <VPMver Or Err Then MsgBox "VPinMAME ver " & VPMver & " required."
-'	 If VPinMAMEDriverVer <VBSver Or Err Then MsgBox VBSFile & " ver " & VBSver & " or higher required."
-'	 On Error Goto 0
+'    If Err Then MsgBox "Can't Load VPinMAME." & vbNewLine & Err.Description
+'    If VPMver> "" Then If Controller.Version <VPMver Or Err Then MsgBox "VPinMAME ver " & VPMver & " required."
+'    If VPinMAMEDriverVer <VBSver Or Err Then MsgBox VBSFile & " ver " & VBSver & " or higher required."
+'    On Error Goto 0
 '  End Sub
 '
 'For SS tables with bad/outdated support by B2S Server (unsupported solenoids, lamps) one can call:
@@ -74,9 +74,9 @@
 'Or "If ... End If" for multiple script lines that feature the B2S.Server Controller properties, for example:
 '
 '  If B2SOn Then
-'	 Controller.B2SSetTilt 0
-'	 Controller.B2SSetCredits Credits
-'	 Controller.B2SSetGameOver 1
+'    Controller.B2SSetTilt 0
+'    Controller.B2SSetCredits Credits
+'    Controller.B2SSetGameOver 1
 '  End If
 '
 'That's all :)
@@ -105,6 +105,8 @@
 '
 'To selectively disable B2S for certain tables, use variable "B2SOff=True" (after ExecuteGlobal GetTextFile("controller.vbs"), but before LoadXXX)
 '
+
+Option Explicit
 
 Const directory = "HKEY_CURRENT_USER\SOFTWARE\Visual Pinball\Controller\"
 Dim objShell

@@ -1,5 +1,7 @@
 Option Explicit
+
 Const VPinMAMEDriverVer = 3.58
+
 '======================
 ' VPinMAME driver core
 '======================
@@ -3000,7 +3002,7 @@ Private Function CoreAudioPan(xpar) 'calculates the audio pan of an table object
 		If xpar > swidth then
 			CoreAudioPan = 1.
 		Else
-			CoreAudioPan = (xpar*2./swidth)-1
+			CoreAudioPan = (xpar*2./swidth)-1.
 		End If
 	End If
 End Function
@@ -3012,7 +3014,7 @@ Private Function CoreAudioFade(ypar) 'calculates the audio fade of an table obje
 		If ypar > sheight then
 			CoreAudioFade = 1.
 		Else
-			CoreAudioFade = (ypar*2./sheight)-1
+			CoreAudioFade = (ypar*2./sheight)-1.
 		End If
 	End If
 End Function

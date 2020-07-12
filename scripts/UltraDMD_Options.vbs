@@ -76,6 +76,7 @@
 
 
 
+Option Explicit
 
 Dim UltraDMD,TableShowOptions,UDMDOptions,DMDOldColor,DMDOldFullColor
 Dim optOpenAtStart,optUseFullColor,optDMDColorChange,optDMDColorType,optUDMDWidth,optUDMDHeight,optDMDPosX,optDMDPosY
