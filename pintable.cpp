@@ -1769,6 +1769,17 @@ for (size_t i = 0; i < m_vimage.size(); i++) \
 if (!found) \
     pEditImage = "";}
 
+#define CLEAN_IMAGE_STR(pEditImage) \
+{bool found = false; \
+for (size_t i = 0; i < m_vimage.size(); i++) \
+    if (_stricmp(m_vimage[i]->m_szName, pEditImage) == 0) \
+    { \
+        found = true; \
+        break; \
+    } \
+if (!found) \
+    pEditImage[0] = 0;}
+
 void PinTable::InitPostLoad(VPinball *pvp)
 {
    m_pvp = pvp;
@@ -1828,7 +1839,7 @@ void PinTable::InitPostLoad(VPinball *pvp)
             CLEAN_MATERIAL(((Primitive*)pEdit)->m_d.m_szMaterial);
             CLEAN_MATERIAL(((Primitive*)pEdit)->m_d.m_szPhysicsMaterial);
             CLEAN_IMAGE(((Primitive*)pEdit)->m_d.m_szImage);
-            //!! TODO! CLEAN_IMAGE(((Primitive*)pEdit)->m_d.m_szNormalMap);
+            CLEAN_IMAGE_STR(((Primitive*)pEdit)->m_d.m_szNormalMap);
             break;
         }
         case eItemRamp:
@@ -1921,8 +1932,8 @@ void PinTable::InitPostLoad(VPinball *pvp)
         }
         case eItemFlasher:
         {
-            //!! TODO! CLEAN_IMAGE(((Flasher*)pEdit)->m_d.m_szImageA);
-            //!! TODO! CLEAN_IMAGE(((Flasher*)pEdit)->m_d.m_szImageB);
+            CLEAN_IMAGE_STR(((Flasher*)pEdit)->m_d.m_szImageA);
+            CLEAN_IMAGE_STR(((Flasher*)pEdit)->m_d.m_szImageB);
             break;
         }
         case eItemLight:
@@ -2606,9 +2617,6 @@ HRESULT PinTable::Save(const bool saveAs)
 
 HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 {
-   IStorage *pstgData, *pstgInfo;
-   IStream *pstmGame, *pstmItem;
-
    m_savingActive = true;
    RECT rc;
    ::SendMessage(m_vpinball->m_hwndStatusBar, SB_GETRECT, 2, (size_t)&rc);
@@ -2622,17 +2630,12 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
    ::SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
 
    //////////////// Begin Encryption
-   HCRYPTPROV hcp;
-   HCRYPTHASH hch;
-   HCRYPTKEY  hkey;
-   HCRYPTHASH hchkey;
+   HCRYPTPROV hcp = NULL;
+   HCRYPTHASH hch = NULL;
+   HCRYPTKEY  hkey = NULL;
+   HCRYPTHASH hchkey = NULL;
 
    int foo;
-
-   hcp = NULL;
-   hch = NULL;
-   hkey = NULL;
-   hchkey = NULL;
 
    foo = CryptAcquireContext(&hcp, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET/* | CRYPT_SILENT*/);
 
@@ -2664,17 +2667,20 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
    ////////////// End Encryption
 
-   int ctotalitems = (int)(m_vedit.size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.Size());
+   const int ctotalitems = (int)(m_vedit.size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.Size());
    int csaveditems = 0;
 
    ::SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
 
    //first save our own data
+   IStorage* pstgData;
    HRESULT hr;
    if (SUCCEEDED(hr = pstgRoot->CreateStorage(L"GameStg", STGM_DIRECT/*STGM_TRANSACTED*/ | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstgData)))
    {
+      IStream *pstmGame;
       if (SUCCEEDED(hr = pstgData->CreateStream(L"GameData", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmGame)))
       {
+         IStream *pstmItem;
          if (SUCCEEDED(hr = pstgData->CreateStream(L"Version", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
          {
             int version = CURRENT_FILE_FORMAT_VERSION;
@@ -2685,6 +2691,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
             pstmItem = NULL;
          }
 
+         IStorage *pstgInfo;
          if (SUCCEEDED(hr = pstgRoot->CreateStorage(L"TableInfo", STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstgInfo)))
          {
             SaveInfo(pstgInfo, hch);
@@ -2815,6 +2822,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
       hashlen = 256;
       foo = CryptGetHashParam(hch, HP_HASHVAL, hashval, &hashlen, 0);
 
+      IStream* pstmItem;
       if (SUCCEEDED(hr = pstgData->CreateStream(L"MAC", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
       {
          ULONG writ;
@@ -2852,6 +2860,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
    DestroyWindow(hwndProgressBar);
    m_savingActive = false;
+
    return hr;
 }
 
@@ -3513,13 +3522,16 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
          mats[i].bIsMetal = m->m_bIsMetal;
          mats[i].bOpacityActive_fEdgeAlpha = m->m_bOpacityActive ? 1 : 0;
          mats[i].bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(m->m_fEdgeAlpha, 0.f, 1.f)) << 1;
+         memset(mats[i].szName,0,sizeof(mats[i].szName)); // to avoid garbage after 0
          strncpy_s(mats[i].szName, m->m_szName.c_str(), sizeof(mats[i].szName)-1);
       }
       bw.WriteStruct(FID(MATE), mats, (int)(sizeof(SaveMaterial)*m_materials.size()));
+
       SavePhysicsMaterial * const phymats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_materials.size());
       for (size_t i = 0; i < m_materials.size(); i++)
       {
           const Material* const m = m_materials[i];
+          memset(phymats[i].szName,0,sizeof(phymats[i].szName)); // to avoid garbage after 0
           strncpy_s(phymats[i].szName, m->m_szName.c_str(), sizeof(phymats[i].szName)-1);
           phymats[i].fElasticity = m->m_fElasticity;
           phymats[i].fElasticityFallOff = m->m_fElasticityFalloff;
@@ -3527,6 +3539,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
           phymats[i].fScatterAngle = m->m_fScatterAngle;
       }
       bw.WriteStruct(FID(PHMA), phymats, (int)(sizeof(SavePhysicsMaterial)*m_materials.size()));
+
       free(mats);
       free(phymats);
    }
@@ -4229,6 +4242,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
            {
                assert(!"SaveMaterial not found");
                pmat = new Material();
+               pmat->m_szName = mats[i].szName;
                found = false;
            }
            pmat->m_fElasticity = mats[i].fElasticity;
