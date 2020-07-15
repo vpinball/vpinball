@@ -2879,13 +2879,16 @@ HRESULT PinTable::SaveSoundToStream(PinSound * const pps, IStream *pstm)
    if (FAILED(hr = pstm->Write(pps->m_szPath, len, &writ)))
       return hr;
 
-   len = lstrlen(pps->m_szInternalName);
-
+   // deprecated: writes name again, but in lower case
+   len = lstrlen(pps->m_szName);
    if (FAILED(hr = pstm->Write(&len, sizeof(int), &writ)))
       return hr;
-
-   if (FAILED(hr = pstm->Write(pps->m_szInternalName, len, &writ)))
+   char tmp[sizeof(pps->m_szName)];
+   strncpy_s(tmp, pps->m_szName, sizeof(tmp)-1);
+   CharLowerBuff(tmp, len);
+   if (FAILED(hr = pstm->Write(tmp, len, &writ)))
       return hr;
+   //
 
    if (pps->IsWav2()) // only use old code if playing wav's
    if (FAILED(hr = pstm->Write(&pps->m_wfx, sizeof(pps->m_wfx), &writ)))
@@ -2959,12 +2962,14 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        return hr;
    }
 
-   if (FAILED(hr = pstm->Read(pps->m_szInternalName, len, &read)))
+   // deprecated lower case name
+   char tmp[sizeof(pps->m_szName)];
+   if (FAILED(hr = pstm->Read(tmp, len, &read)))
    {
        delete pps;
        return hr;
    }
-   pps->m_szInternalName[len] = 0;
+   //
 
    if (pps->IsWav2()) // only use old code if playing wav's
    if (FAILED(hr = pstm->Read(&pps->m_wfx, sizeof(pps->m_wfx), &read)))
@@ -3086,7 +3091,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 		   return hr;
 	   }
 
-	   pps->m_outputTarget = (strstr(pps->m_szInternalName, "bgout_") != NULL) || (_stricmp(pps->m_szPath, "* Backglass Output *") == 0) // legacy behavior, where the BG selection was encoded into the strings directly
+	   pps->m_outputTarget = (StrStrI(pps->m_szName, "bgout_") != NULL) || (_stricmp(pps->m_szPath, "* Backglass Output *") == 0) // legacy behavior, where the BG selection was encoded into the strings directly
 	                      || toBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE;
    }
 
@@ -4313,10 +4318,8 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    const int fade = pps->m_fade;
    const int volume = pps->m_volume;
    const SoundOutTypes outputTarget = pps->m_outputTarget;
-   char szName[MAXTOKEN];
+   char szName[sizeof(pps->m_szName)];
    lstrcpy(szName, pps->m_szName);
-   char szInternalName[MAXTOKEN];
-   lstrcpy(szInternalName, pps->m_szInternalName);
 
    //!! meh to all of this: kill old raw sound data and DSound/BASS stuff, then copy new one over
 
@@ -4341,7 +4344,6 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    pps->m_volume = volume;
    pps->m_outputTarget = outputTarget;
    lstrcpy(pps->m_szName, szName);
-   lstrcpy(pps->m_szInternalName, szInternalName);
 
    //if (play) //!! only do this when playing .wavs? or limit to a certain amount of time?
    //   pps->TestPlay();
@@ -6867,11 +6869,10 @@ STDMETHODIMP PinTable::put_Offset(float newVal)
 HRESULT PinTable::StopSound(BSTR Sound)
 {
    MAKE_ANSIPTR_FROMWIDE(szName, Sound);
-   CharLowerBuff(szName, lstrlen(szName));
 
    // In case we were playing any of the main buffers
    for (size_t i = 0; i < m_vsound.size(); i++)
-      if (!lstrcmp(m_vsound[i]->m_szInternalName, szName))
+      if (!lstrcmpi(m_vsound[i]->m_szName, szName))
       {
          m_vsound[i]->Stop();
          break;
@@ -6895,14 +6896,13 @@ void PinTable::StopAllSounds()
 STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float pan, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade)
 {
    MAKE_ANSIPTR_FROMWIDE(szName, bstr);
-   CharLowerBuff(szName, lstrlen(szName));
 
-   if (!lstrcmp("knock", szName) || !lstrcmp("knocker", szName))
+   if (!lstrcmpi("knock", szName) || !lstrcmpi("knocker", szName))
       hid_knock();
 
    size_t i;
    for (i = 0; i < m_vsound.size(); i++)
-      if (!lstrcmp(m_vsound[i]->m_szInternalName, szName))
+      if (!lstrcmpi(m_vsound[i]->m_szName, szName))
          break;
 
    if (i == m_vsound.size()) // did not find it

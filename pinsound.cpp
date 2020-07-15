@@ -414,8 +414,6 @@ PinSound *AudioMusicPlayer::LoadFile(const TCHAR* const strFileName)
 
    strncpy_s(pps->m_szPath, strFileName, sizeof(pps->m_szPath)-1);
    TitleFromFilename(strFileName, pps->m_szName);
-   strncpy_s(pps->m_szInternalName, pps->m_szName, sizeof(pps->m_szInternalName)-1);
-   CharLowerBuff(pps->m_szInternalName, lstrlen(pps->m_szInternalName));
 
    if (pps->IsWav()) // only use old direct sound code and wav reader if playing wav's
    {
