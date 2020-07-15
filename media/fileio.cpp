@@ -370,9 +370,11 @@ HRESULT BiffReader::GetString(char *szvalue)
    HRESULT hr;
    int len;
 
-   *szvalue = 0;
    if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
+   {
+      *szvalue = 0;
       return hr;
+   }
 
    m_bytesinrecordremaining -= len + (int)sizeof(int);
 
@@ -387,9 +389,11 @@ HRESULT BiffReader::GetString(std::string &szvalue)
    HRESULT hr;
    int len;
 
-   szvalue = "";
    if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
+   {
+      szvalue = "";
       return hr;
+   }
 
    m_bytesinrecordremaining -= len + (int)sizeof(int);
 
@@ -490,6 +494,8 @@ HRESULT BiffReader::Load()
 
       if (m_version > 30)
       {
+         assert(m_bytesinrecordremaining >= 0);
+
          if (m_bytesinrecordremaining > 0)
          {
             BYTE * const szT = new BYTE[m_bytesinrecordremaining];

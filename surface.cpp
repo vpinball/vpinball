@@ -14,13 +14,6 @@ Surface::Surface()
    m_VBuffer = 0;
    m_IBuffer = 0;
    m_propPhysics = NULL;
-   m_d.m_szImage = "";
-   m_d.m_szSideImage = "";
-   m_d.m_szSideMaterial = "";
-   m_d.m_szTopMaterial = "";
-   m_d.m_szSlingShotMaterial = "";
-   m_d.m_szPhysicsMaterial = "";
-   m_d.m_szMaterial = "";
    m_d.m_overwritePhysics = true;
 }
 

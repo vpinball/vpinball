@@ -20,6 +20,7 @@ class BiffWriter
 {
 public:
    BiffWriter(IStream *pistream, HCRYPTHASH hcrypthash);
+
    HRESULT WriteInt(int id, int value);
    HRESULT WriteString(int id, const char * const szvalue);
    HRESULT WriteString(int id, const std::string& szvalue);

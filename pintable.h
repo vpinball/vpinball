@@ -698,14 +698,14 @@ public:
 
 
    vector< Texture* > m_vimage;
-   vector<Texture *> GetImageList() const
+   const vector<Texture *>& GetImageList() const
    {
        return m_vimage;
    }
 
    int m_numMaterials;
    vector< Material* > m_materials;
-   vector<Material *> GetMaterialList() const
+   const vector<Material *>& GetMaterialList() const
    {
        return m_materials;
    }

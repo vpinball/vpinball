@@ -15,7 +15,6 @@ Gate::Gate()
    m_wireIndexBuffer = NULL;
    m_wireVertexBuffer = NULL;
    m_vertexbuffer_angle = FLT_MAX;
-   m_d.m_szMaterial = "";
    memset(m_d.m_szSurface, 0, MAXTOKEN);
    m_d.m_type = GateWireW;
    m_vertices = 0;

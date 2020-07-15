@@ -244,9 +244,9 @@ bool SearchSelectDialog::IsValidString(const std::string &name)
 
 void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
 {
-   std::string textBuf="";
-   std::string firstImage="";
-   std::string secondImage = "";
+   std::string textBuf;
+   std::string firstImage;
+   std::string secondImage;
    char layerBuf[16];
 
    IScriptable * const piscript = piedit->GetScriptable();
@@ -264,10 +264,10 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       firstImage = "";
       if (IsValidString(sur->m_d.m_szImage))
          firstImage = sur->m_d.m_szImage;
+      textBuf = firstImage;
       secondImage = "";
       if (IsValidString(sur->m_d.m_szSideImage))
          secondImage = sur->m_d.m_szSideImage;
-      textBuf = firstImage;
       if (!secondImage.empty())
       {
          if (!firstImage.empty())
@@ -279,15 +279,24 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       firstImage = "";
       if (IsValidString(sur->m_d.m_szTopMaterial))
          firstImage = sur->m_d.m_szTopMaterial;
+      textBuf = firstImage;
       secondImage = "";
       if (IsValidString(sur->m_d.m_szSideMaterial))
          secondImage = sur->m_d.m_szSideMaterial;
-      textBuf = firstImage;
+      std::string thirdImage;
+      if (IsValidString(sur->m_d.m_szSlingShotMaterial))
+          thirdImage = sur->m_d.m_szSlingShotMaterial;
       if (!secondImage.empty())
       {
          if (!firstImage.empty())
             textBuf.append("--");
          textBuf.append(secondImage);
+      }
+      if (!thirdImage.empty())
+      {
+         if (!firstImage.empty() || !secondImage.empty())
+            textBuf.append("--");
+         textBuf.append(thirdImage);
       }
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
    }
@@ -375,9 +384,12 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       secondImage = "";
       if (IsValidString(bumper->m_d.m_szCapMaterial))
          secondImage = bumper->m_d.m_szCapMaterial;
-      std::string thirdImage = "";
+      std::string thirdImage;
       if (IsValidString(bumper->m_d.m_szSkirtMaterial))
          thirdImage = bumper->m_d.m_szSkirtMaterial;
+      std::string fourthImage;
+      if (IsValidString(bumper->m_d.m_szRingMaterial))
+          fourthImage = bumper->m_d.m_szRingMaterial;
       if (!secondImage.empty())
       {
          if (!firstImage.empty())
@@ -389,6 +401,12 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
          if (!firstImage.empty() || !secondImage.empty())
             textBuf.append("--");
          textBuf.append(thirdImage);
+      }
+      if (!fourthImage.empty())
+      {
+         if (!firstImage.empty() || !secondImage.empty() || !thirdImage.empty())
+            textBuf.append("--");
+         textBuf.append(fourthImage);
       }
       ListView_SetItemText(m_hElementList, idx, 1, "Bumper");
       ListView_SetItemText(m_hElementList, idx, 3, "");
