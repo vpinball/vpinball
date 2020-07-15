@@ -1747,6 +1747,28 @@ POINT PinTable::GetScreenPoint() const
     return pt;
 }
 
+#define CLEAN_MATERIAL(pEditMaterial) \
+{bool found = false; \
+for (size_t i = 0; i < m_materials.size(); i++) \
+    if (_stricmp(m_materials[i]->m_szName.c_str(), pEditMaterial.c_str()) == 0) \
+    { \
+        found = true; \
+        break; \
+    } \
+if (!found) \
+    pEditMaterial = "";}
+
+#define CLEAN_IMAGE(pEditImage) \
+{bool found = false; \
+for (size_t i = 0; i < m_vimage.size(); i++) \
+    if (_stricmp(m_vimage[i]->m_szName, pEditImage.c_str()) == 0) \
+    { \
+        found = true; \
+        break; \
+    } \
+if (!found) \
+    pEditImage = "";}
+
 void PinTable::InitPostLoad(VPinball *pvp)
 {
    m_pvp = pvp;
@@ -1791,6 +1813,129 @@ void PinTable::InitPostLoad(VPinball *pvp)
    m_pcv->AddItem(this, false);
    m_pcv->AddItem(m_psgt, true);
    m_pcv->AddItem(m_pcv->m_pdm, false);
+
+   // cleanup old bugs, i.e. currently buggy/non-existing material and image names
+   for (size_t i = 0; i < m_vedit.size(); i++)
+   {
+        IEditable* const pEdit = m_vedit[i];
+        if (pEdit == NULL)
+            continue;
+
+        switch (pEdit->GetItemType())
+        {
+        case eItemPrimitive:
+        {
+            CLEAN_MATERIAL(((Primitive*)pEdit)->m_d.m_szMaterial);
+            CLEAN_MATERIAL(((Primitive*)pEdit)->m_d.m_szPhysicsMaterial);
+            CLEAN_IMAGE(((Primitive*)pEdit)->m_d.m_szImage);
+            //!! TODO! CLEAN_IMAGE(((Primitive*)pEdit)->m_d.m_szNormalMap);
+            break;
+        }
+        case eItemRamp:
+        {
+            CLEAN_MATERIAL(((Ramp*)pEdit)->m_d.m_szMaterial);
+            CLEAN_MATERIAL(((Ramp*)pEdit)->m_d.m_szPhysicsMaterial);
+            CLEAN_IMAGE(((Ramp*)pEdit)->m_d.m_szImage);
+            break;
+        }
+        case eItemSurface:
+        {
+            //CLEAN_MATERIAL(((Surface*)pEdit)->m_d.m_szMaterial);
+            CLEAN_MATERIAL(((Surface*)pEdit)->m_d.m_szPhysicsMaterial);
+            CLEAN_MATERIAL(((Surface*)pEdit)->m_d.m_szSideMaterial);
+            CLEAN_MATERIAL(((Surface*)pEdit)->m_d.m_szTopMaterial);
+            CLEAN_MATERIAL(((Surface*)pEdit)->m_d.m_szSlingShotMaterial);
+            CLEAN_IMAGE(((Surface*)pEdit)->m_d.m_szImage);
+            CLEAN_IMAGE(((Surface*)pEdit)->m_d.m_szSideImage);
+            break;
+        }
+        case eItemDecal:
+        {
+            CLEAN_MATERIAL(((Decal*)pEdit)->m_d.m_szMaterial);
+            //CLEAN_MATERIAL(((Decal*)pEdit)->m_d.m_szPhysicsMaterial);
+            CLEAN_IMAGE(((Decal*)pEdit)->m_d.m_szImage);
+            break;
+        }
+        case eItemFlipper:
+        {
+            CLEAN_MATERIAL(((Flipper*)pEdit)->m_d.m_szMaterial);
+            //CLEAN_MATERIAL(((Flipper*)pEdit)->m_d.m_szPhysicsMaterial);
+            CLEAN_MATERIAL(((Flipper*)pEdit)->m_d.m_szRubberMaterial);
+            CLEAN_IMAGE(((Flipper*)pEdit)->m_d.m_szImage);
+            break;
+        }
+        case eItemHitTarget:
+        {
+            CLEAN_MATERIAL(((HitTarget*)pEdit)->m_d.m_szMaterial);
+            CLEAN_MATERIAL(((HitTarget*)pEdit)->m_d.m_szPhysicsMaterial);
+            CLEAN_IMAGE(((HitTarget*)pEdit)->m_d.m_szImage);
+            break;
+        }
+        case eItemPlunger:
+        {
+            CLEAN_MATERIAL(((Plunger*)pEdit)->m_d.m_szMaterial);
+            //CLEAN_MATERIAL(((Plunger*)pEdit)->m_d.m_szPhysicsMaterial);
+            CLEAN_IMAGE(((Plunger*)pEdit)->m_d.m_szImage);
+            break;
+        }
+        case eItemSpinner:
+        {
+            CLEAN_MATERIAL(((Spinner*)pEdit)->m_d.m_szMaterial);
+            //CLEAN_MATERIAL(((Spinner*)pEdit)->m_d.m_szPhysicsMaterial);
+            CLEAN_IMAGE(((Spinner*)pEdit)->m_d.m_szImage);
+            break;
+        }
+        case eItemRubber:
+        {
+            CLEAN_MATERIAL(((Rubber*)pEdit)->m_d.m_szMaterial);
+            CLEAN_MATERIAL(((Rubber*)pEdit)->m_d.m_szPhysicsMaterial);
+            CLEAN_IMAGE(((Rubber*)pEdit)->m_d.m_szImage);
+            break;
+        }
+        case eItemBumper:
+        {
+            //CLEAN_MATERIAL(((Bumper*)pEdit)->m_d.m_szMaterial);
+            //CLEAN_MATERIAL(((Bumper*)pEdit)->m_d.m_szPhysicsMaterial);
+            CLEAN_MATERIAL(((Bumper*)pEdit)->m_d.m_szCapMaterial);
+            CLEAN_MATERIAL(((Bumper*)pEdit)->m_d.m_szBaseMaterial);
+            CLEAN_MATERIAL(((Bumper*)pEdit)->m_d.m_szSkirtMaterial);
+            CLEAN_MATERIAL(((Bumper*)pEdit)->m_d.m_szRingMaterial);
+            break;
+        }
+        case eItemKicker:
+        {
+            CLEAN_MATERIAL(((Kicker*)pEdit)->m_d.m_szMaterial);
+            //CLEAN_MATERIAL(((Kicker*)pEdit)->m_d.m_szPhysicsMaterial);
+            break;
+        }
+        case eItemTrigger:
+        {
+            CLEAN_MATERIAL(((Trigger*)pEdit)->m_d.m_szMaterial);
+            //CLEAN_MATERIAL(((Trigger*)pEdit)->m_d.m_szPhysicsMaterial);
+            break;
+        }
+        case eItemDispReel:
+        {
+            CLEAN_IMAGE(((DispReel*)pEdit)->m_d.m_szImage);
+            break;
+        }
+        case eItemFlasher:
+        {
+            //!! TODO! CLEAN_IMAGE(((Flasher*)pEdit)->m_d.m_szImageA);
+            //!! TODO! CLEAN_IMAGE(((Flasher*)pEdit)->m_d.m_szImageB);
+            break;
+        }
+        case eItemLight:
+        {
+            CLEAN_IMAGE(((Light*)pEdit)->m_d.m_szImage);
+            break;
+        }
+        default:
+        {
+            break;
+        }
+        }
+   }
 }
 
 
@@ -2165,7 +2310,7 @@ void PinTable::Play(const bool cameraMode)
 
    if (!m_pcv->m_scriptError)
    {
-      // set up the texture hashtable for fast access
+      // set up the texture & material hashtables for faster access
       m_textureMap.clear();
       for (size_t i = 0; i < m_vimage.size(); i++)
       {
@@ -7036,85 +7181,85 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
            {
                case eItemDispReel:
                {
-                   DispReel * const pReel = (DispReel*)pEdit;
-                   if(pReel->m_d.m_szImage == std::string(ppi->m_szName))
+                   const DispReel * const pReel = (DispReel*)pEdit;
+                   if(_stricmp(pReel->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
                        inUse = true;
                    break;
                }
                case eItemPrimitive:
                {
-                   Primitive * const pPrim = (Primitive*)pEdit;
-                   if ((pPrim->m_d.m_szImage == std::string(ppi->m_szName)) || (_stricmp(pPrim->m_d.m_szNormalMap, ppi->m_szName) == 0))
+                   const Primitive * const pPrim = (Primitive*)pEdit;
+                   if ((_stricmp(pPrim->m_d.m_szImage.c_str(), ppi->m_szName) == 0) || (_stricmp(pPrim->m_d.m_szNormalMap, ppi->m_szName) == 0))
                        inUse = true;
                    break;
                }
                case eItemRamp:
                {
-                   Ramp * const pRamp = (Ramp*)pEdit;
-                   if (pRamp->m_d.m_szImage == std::string(ppi->m_szName))
+                   const Ramp * const pRamp = (Ramp*)pEdit;
+                   if (_stricmp(pRamp->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
                        inUse = true;
                    break;
                }
                case eItemSurface:
                {
-                   Surface * const pSurf = (Surface*)pEdit;
-                   if ((pSurf->m_d.m_szImage == std::string(ppi->m_szName)) || (pSurf->m_d.m_szSideImage == std::string(ppi->m_szName)))
+                   const Surface * const pSurf = (Surface*)pEdit;
+                   if ((_stricmp(pSurf->m_d.m_szImage.c_str(), ppi->m_szName) == 0) || (_stricmp(pSurf->m_d.m_szSideImage.c_str(), ppi->m_szName) == 0))
                        inUse = true;
                    break;
                }
                case eItemDecal:
                {
-                   Decal * const pDecal = (Decal*)pEdit;
-                   if (pDecal->m_d.m_szImage == std::string(ppi->m_szName))
+                   const Decal * const pDecal = (Decal*)pEdit;
+                   if (_stricmp(pDecal->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
                        inUse = true;
                    break;
                }
                case eItemFlasher:
                {
-                   Flasher * const pFlash = (Flasher*)pEdit;
-                   if ((pFlash->m_d.m_szImageA == std::string(ppi->m_szName)) || (_stricmp(pFlash->m_d.m_szImageB, ppi->m_szName) == 0))
+                   const Flasher * const pFlash = (Flasher*)pEdit;
+                   if ((_stricmp(pFlash->m_d.m_szImageA, ppi->m_szName) == 0) || (_stricmp(pFlash->m_d.m_szImageB, ppi->m_szName) == 0))
                        inUse = true;
                    break;
                }
                case eItemFlipper:
                {
-                   Flipper * const pFlip = (Flipper*)pEdit;
-                   if (pFlip->m_d.m_szImage == std::string(ppi->m_szName))
+                   const Flipper * const pFlip = (Flipper*)pEdit;
+                   if (_stricmp(pFlip->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
                        inUse = true;
                    break;
                }
                case eItemHitTarget:
                {
-                   HitTarget * const pHit = (HitTarget*)pEdit;
-                   if (pHit->m_d.m_szImage == std::string(ppi->m_szName))
+                   const HitTarget * const pHit = (HitTarget*)pEdit;
+                   if (_stricmp(pHit->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
                        inUse = true;
                    break;
                }
                case eItemLight:
                {
-                   Light * const pLight = (Light*)pEdit;
-                   if (pLight->m_d.m_szImage == std::string(ppi->m_szName))
+                   const Light * const pLight = (Light*)pEdit;
+                   if (_stricmp(pLight->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
                        inUse = true;
                    break;
                }
                case eItemPlunger:
                {
-                   Plunger * const pPlung = (Plunger*)pEdit;
-                   if (pPlung->m_d.m_szImage == std::string(ppi->m_szName))
+                   const Plunger * const pPlung = (Plunger*)pEdit;
+                   if (_stricmp(pPlung->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
                        inUse = true;
                    break;
                }
                case eItemRubber:
                {
-                   Rubber * const pRub = (Rubber*)pEdit;
-                   if (pRub->m_d.m_szImage == std::string(ppi->m_szName))
+                   const Rubber * const pRub = (Rubber*)pEdit;
+                   if (_stricmp(pRub->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
                        inUse = true;
                    break;
                }
                case eItemSpinner:
                {
-                   Spinner * const pSpin = (Spinner*)pEdit;
-                   if (pSpin->m_d.m_szImage == std::string(ppi->m_szName))
+                   const Spinner * const pSpin = (Spinner*)pEdit;
+                   if (_stricmp(pSpin->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
                        inUse = true;
                    break;
                }
@@ -7313,86 +7458,86 @@ int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
          {
          case eItemPrimitive:
          {
-            Primitive * const pPrim = (Primitive*)pEdit;
-            if ((pPrim->m_d.m_szMaterial == pmat->m_szName) || (pPrim->m_d.m_szPhysicsMaterial==pmat->m_szName))
+            const Primitive * const pPrim = (Primitive*)pEdit;
+            if ((_stricmp(pPrim->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pPrim->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemRamp:
          {
-            Ramp * const pRamp = (Ramp*)pEdit;
-            if ((pRamp->m_d.m_szMaterial==pmat->m_szName) || (pRamp->m_d.m_szPhysicsMaterial==pmat->m_szName))
+            const Ramp * const pRamp = (Ramp*)pEdit;
+            if ((_stricmp(pRamp->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pRamp->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemSurface:
          {
-            Surface * const pSurf = (Surface*)pEdit;
-            if ((pSurf->m_d.m_szPhysicsMaterial==pmat->m_szName) || (pSurf->m_d.m_szSideMaterial==pmat->m_szName) || (pSurf->m_d.m_szTopMaterial==pmat->m_szName))
+            const Surface * const pSurf = (Surface*)pEdit;
+            if ((_stricmp(pSurf->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pSurf->m_d.m_szSideMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pSurf->m_d.m_szTopMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pSurf->m_d.m_szSlingShotMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemDecal:
          {
-            Decal * const pDecal = (Decal*)pEdit;
-            if ((pDecal->m_d.m_szMaterial==pmat->m_szName))
+            const Decal * const pDecal = (Decal*)pEdit;
+            if ((_stricmp(pDecal->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemFlipper:
          {
-            Flipper * const pFlip = (Flipper*)pEdit;
-            if ((pFlip->m_d.m_szRubberMaterial==pmat->m_szName) || (pFlip->m_d.m_szMaterial==pmat->m_szName))
+            const Flipper * const pFlip = (Flipper*)pEdit;
+            if ((_stricmp(pFlip->m_d.m_szRubberMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pFlip->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemHitTarget:
          {
-            HitTarget * const pHit = (HitTarget*)pEdit;
-            if ((pHit->m_d.m_szMaterial==pmat->m_szName) || (pHit->m_d.m_szPhysicsMaterial==pmat->m_szName))
+            const HitTarget * const pHit = (HitTarget*)pEdit;
+            if ((_stricmp(pHit->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pHit->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemPlunger:
          {
-            Plunger * const pPlung = (Plunger*)pEdit;
-            if (pPlung->m_d.m_szMaterial==pmat->m_szName)
+            const Plunger * const pPlung = (Plunger*)pEdit;
+            if (_stricmp(pPlung->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
                inUse = true;
             break;
          }
          case eItemSpinner:
          {
-            Spinner * const pSpin = (Spinner*)pEdit;
-            if (pSpin->m_d.m_szMaterial==pmat->m_szName)
+            const Spinner * const pSpin = (Spinner*)pEdit;
+            if (_stricmp(pSpin->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
                inUse = true;
             break;
          }
          case eItemRubber:
          {
-            Rubber * const pRub = (Rubber*)pEdit;
-            if ((pRub->m_d.m_szMaterial==pmat->m_szName) || (pRub->m_d.m_szPhysicsMaterial==pmat->m_szName))
+            const Rubber * const pRub = (Rubber*)pEdit;
+            if ((_stricmp(pRub->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pRub->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemBumper:
          {
-            Bumper * const pBump = (Bumper*)pEdit;
-            if ((pBump->m_d.m_szCapMaterial==pmat->m_szName) || (pBump->m_d.m_szBaseMaterial==pmat->m_szName) ||
-                (pBump->m_d.m_szSkirtMaterial==pmat->m_szName) || (pBump->m_d.m_szRingMaterial==pmat->m_szName))
+            const Bumper * const pBump = (Bumper*)pEdit;
+            if ((_stricmp(pBump->m_d.m_szCapMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pBump->m_d.m_szBaseMaterial.c_str(), pmat->m_szName.c_str()) == 0) ||
+                (_stricmp(pBump->m_d.m_szSkirtMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (_stricmp(pBump->m_d.m_szRingMaterial.c_str(), pmat->m_szName.c_str()) == 0))
                inUse = true;
             break;
          }
          case eItemKicker:
          {
-            Kicker * const pKick = (Kicker*)pEdit;
-            if (pKick->m_d.m_szMaterial==pmat->m_szName)
+            const Kicker * const pKick = (Kicker*)pEdit;
+            if (_stricmp(pKick->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
                inUse = true;
             break;
          }
          case eItemTrigger:
          {
-            Trigger * const pTrig = (Trigger*)pEdit;
-            if (pTrig->m_d.m_szMaterial==pmat->m_szName)
+            const Trigger * const pTrig = (Trigger*)pEdit;
+            if (_stricmp(pTrig->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
                inUse = true;
             break;
          }

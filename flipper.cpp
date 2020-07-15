@@ -84,9 +84,6 @@ Flipper::Flipper()
    m_vertexBuffer = NULL;
    m_indexBuffer = NULL;
    m_ptable = NULL;
-   m_d.m_szImage = "";
-   m_d.m_szMaterial = "";
-   m_d.m_szPhysicsMaterial = "";
 }
 
 Flipper::~Flipper()

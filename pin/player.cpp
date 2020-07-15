@@ -1417,7 +1417,7 @@ void Player::InitBallShader()
    const vec4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
    m_ballShader->SetVector("Roughness_WrapL_Edge_Thickness", &rwem);
 
-   Texture * const playfield = m_ptable->GetImage((char *)m_ptable->m_szImage);
+   Texture * const playfield = m_ptable->GetImage(m_ptable->m_szImage);
    if (playfield)
       m_ballShader->SetTexture("Texture1", playfield, false);
 
@@ -4603,7 +4603,7 @@ void Player::UpdateHUD()
 		sprintf_s(buffer, " (%s Revision %u)", !m_ptable->m_szDateSaved.empty() ? m_ptable->m_szDateSaved.c_str() : "N.A.", m_ptable->m_numTimesSaved);
 		strncat_s(szFoo, buffer, sizeof(szFoo)-strnlen_s(szFoo, sizeof(szFoo))-1);
 
-		if (strlen(szFoo) > 0)
+		if (strnlen_s(szFoo,sizeof(szFoo)) > 0)
 		{
 			DebugPrint(DBG_SPRITE_SIZE / 2, line * 20 + 10, szFoo, true);
 			line += 2;
@@ -5420,7 +5420,6 @@ void Player::Render()
 
          if (option == ID_QUIT)
              m_ptable->SendMessage(WM_COMMAND, ID_TABLE_STOP_PLAY, 0);
-
       }
       else if(m_showDebugger && !VPinball::m_open_minimized)
       {

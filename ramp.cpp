@@ -17,9 +17,6 @@ Ramp::Ramp()
    m_d.m_wireDistanceY = 88.0f;
    m_propPosition = NULL;
    m_propPhysics = NULL;
-   m_d.m_szImage = "";
-   m_d.m_szMaterial = "";
-   m_d.m_szPhysicsMaterial = "";
    m_d.m_hitEvent = false;
    m_d.m_overwritePhysics = true;
    m_rgheightInit = NULL;
@@ -103,7 +100,7 @@ void Ramp::SetDefaults(bool fromMouseClick)
    char buf[MAXTOKEN] = { 0 };
    HRESULT hr = LoadValueString(strKeyName, "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage="";
+      m_d.m_szImage = "";
    else
       m_d.m_szImage = buf;
 
@@ -1621,7 +1618,7 @@ STDMETHODIMP Ramp::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   if(std::string(szImage) != m_d.m_szImage)
+   if(_stricmp(szImage, m_d.m_szImage.c_str()) != 0)
    {
       m_d.m_szImage = szImage;
       m_dynamicVertexBufferRegenerate = true;

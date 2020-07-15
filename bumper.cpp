@@ -18,10 +18,6 @@ Bumper::Bumper()
    m_socketVertexBuffer = NULL;
    m_ringAnimate = false;
    m_propVisual = NULL;
-   m_d.m_szBaseMaterial = "";
-   m_d.m_szCapMaterial = "";
-   m_d.m_szSkirtMaterial = "";
-   m_d.m_szRingMaterial = "";
    memset(m_d.m_szSurface, 0, MAXTOKEN);
    m_d.m_ringDropOffset = 0.0f;
    m_ringDown = false;

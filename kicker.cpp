@@ -16,7 +16,6 @@ Kicker::Kicker()
    m_indexBuffer = NULL;
    m_plateVertexBuffer = NULL;
    m_plateIndexBuffer = NULL;
-   m_d.m_szMaterial = "";
    memset(m_d.m_szSurface, 0, MAXTOKEN);
    m_ptable = NULL;
    m_numVertices = 0;

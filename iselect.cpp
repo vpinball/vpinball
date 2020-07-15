@@ -11,7 +11,6 @@ ISelect::ISelect()
 
    m_menuid = -1;
    m_oldLayerIndex = 0;
-   m_layerName = "";
    m_isVisible = true;
    m_vpinball = g_pvp;
 }

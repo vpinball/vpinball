@@ -5,9 +5,6 @@ Plunger::Plunger()
    m_phitplunger = NULL;
    m_vertexBuffer = NULL;
    m_indexBuffer = NULL;
-   m_d.m_szImage = "";
-   m_d.m_szMaterial = "";
-   m_d.m_szPhysicsMaterial = "";
    memset(m_d.m_szSurface, 0, MAXTOKEN);
 }
 
@@ -51,7 +48,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
    char buf[MAXTOKEN] = { 0 };
    HRESULT hr = LoadValueString("DefaultProps\\Plunger", "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage="";
+      m_d.m_szImage = "";
    else
       m_d.m_szImage = buf;
 
@@ -246,7 +243,7 @@ void Plunger::RenderDynamic()
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, RenderDevice::RS_TRUE);
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, RenderDevice::CULL_CCW);
 
-   Texture *pin = m_ptable->GetImage(m_d.m_szImage);
+   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (pin)
    {
       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");

@@ -1992,7 +1992,7 @@ static int ParentLevel = 0;
 //false is a fail/syntax error
 bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const string &UCline, const string &line, const int Lineno)
 {
-	string CurrentParentKey = "";
+	string CurrentParentKey;
 	const size_t endIdx = SureFind(UCline,"END"); 
 	const size_t exitIdx = SureFind(UCline,"EXIT"); 
 	RemoveNonVBSChars(ud.m_keyName);
@@ -2365,7 +2365,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	{
 		FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName);
 	}
-	string strVPcoreWords = "";
+	string strVPcoreWords;
 	for (vector<UserData>::iterator i = m_VPcoreDict->begin(); i != m_VPcoreDict->end(); ++i)
 	{
 		if (FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName))
@@ -2374,7 +2374,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 			strVPcoreWords.append(" ");
 		}
 	}
-	string strCompOut = "";
+	string strCompOut;
 	for (vector<UserData>::iterator i = m_componentsDict->begin(); i != m_componentsDict->end(); ++i)
 	{
 		if (FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName))
@@ -2383,7 +2383,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 			strCompOut.append(" ");
 		}
 	}
-	string sSubFunOut = "";
+	string sSubFunOut;
 	for (vector<UserData>::iterator i = m_pageConstructsDict->begin(); i != m_pageConstructsDict->end(); ++i)
 	{
 		if (FindOrInsertStringIntoAutolist(m_autoCompList,i->m_keyName))

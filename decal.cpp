@@ -11,9 +11,6 @@ Decal::Decal()
    m_pIFont = NULL;
    vertexBuffer = NULL;
    m_textImg = NULL;
-   m_d.m_szImage = "";
-   m_d.m_szMaterial = "";
-   m_d.m_szPhysicsMaterial = "";
    memset(m_d.m_szSurface, 0, MAXTOKEN);
    m_ptable = NULL;
    m_leading = 0.0f;
@@ -59,7 +56,7 @@ void Decal::SetDefaults(bool fromMouseClick)
    char buf[MAXTOKEN] = { 0 };
    HRESULT hr = LoadValueString("DefaultProps\\Decal", "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage="";
+      m_d.m_szImage = "";
    else
       m_d.m_szImage = buf;
 

@@ -188,10 +188,7 @@ Primitive::Primitive()
    m_propPhysics = NULL;
    m_propPosition = NULL;
    m_propVisual = NULL;
-   m_d.m_szImage = "";
    memset(m_d.m_szNormalMap, 0, MAXTOKEN);
-   m_d.m_szMaterial = "";
-   m_d.m_szPhysicsMaterial = "";
    m_d.m_overwritePhysics = true;
    m_d.m_useAsPlayfield = false;
 }
@@ -372,9 +369,10 @@ void Primitive::SetDefaults(bool fromMouseClick)
    char buf[MAXTOKEN] = { 0 };
    HRESULT hr = LoadValueString(strKeyName, "Image", buf, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
-      m_d.m_szImage="";
+      m_d.m_szImage = "";
    else
       m_d.m_szImage = buf;
+
    hr = LoadValueString(strKeyName, "NormalMap", m_d.m_szNormalMap, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
        m_d.m_szNormalMap[0] = 0;
@@ -1820,7 +1818,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                      if (pActiveTable)
                          pActiveTable->AddMaterial(mat);
 
-                     prim->m_d.m_szMaterial=mat->m_szName;
+                     prim->m_d.m_szMaterial = mat->m_szName;
                   }
                }
             }

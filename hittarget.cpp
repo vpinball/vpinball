@@ -29,9 +29,6 @@ HitTarget::HitTarget()
    m_propPhysics = NULL;
    m_propPosition = NULL;
    m_propVisual = NULL;
-   m_d.m_szImage = "";
-   m_d.m_szMaterial = "";
-   m_d.m_szPhysicsMaterial = "";
    m_d.m_overwritePhysics = true;
    m_vertices = NULL;
    m_indices = NULL;
@@ -168,12 +165,14 @@ void HitTarget::SetDefaults(bool fromMouseClick)
 
    // Rotation and Transposition
    m_d.m_rotZ = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "Orientation", 0.0f) : 0.0f;
+
    char buf[MAXTOKEN] = { 0 };
    const HRESULT hr = LoadValueString(strKeyName, "Image", buf, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
-      m_d.m_szImage="";
+      m_d.m_szImage = "";
    else
       m_d.m_szImage = buf;
+
    m_d.m_targetType = fromMouseClick ? (TargetType)LoadValueIntWithDefault(strKeyName, "TargetType", DropTargetSimple) : DropTargetSimple;
    m_d.m_threshold = fromMouseClick ? LoadValueFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)

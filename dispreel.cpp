@@ -2,9 +2,6 @@
 
 DispReel::DispReel()
 {
-   m_d.m_szImage = "";
-   m_d.m_szMaterial = "";
-   m_d.m_szPhysicsMaterial = "";
    memset(m_d.m_szSound, 0, MAXTOKEN);
 
    m_dispreelanim.m_pDispReel = this;
@@ -45,7 +42,7 @@ void DispReel::SetDefaults(bool fromMouseClick)
    char buf[MAXTOKEN] = { 0 };
    hr = LoadValueString("DefaultProps\\Ramp", "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage="";
+      m_d.m_szImage = "";
    else
       m_d.m_szImage = buf;
 

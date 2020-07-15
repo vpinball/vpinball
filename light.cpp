@@ -11,16 +11,12 @@ Light::Light() : m_lightcenter(this)
    m_bulbLightVBuffer = NULL;
    m_bulbSocketIndexBuffer = NULL;
    m_bulbSocketVBuffer = NULL;
-   m_d.m_szImage[0] = 0;
    m_d.m_depthBias = 0.0f;
    m_d.m_shape = ShapeCustom;
    m_d.m_visible = true;
    m_roundLight = false;
    m_propVisual = NULL;
    m_updateBulbLightHeight = false;
-   m_d.m_szImage = "";
-   m_d.m_szMaterial = "";
-   m_d.m_szPhysicsMaterial = "";
    memset(m_d.m_szSurface, 0, MAXTOKEN);
 }
 
@@ -95,7 +91,7 @@ void Light::SetDefaults(bool fromMouseClick)
    char buf[MAXTOKEN] = { 0 };
    HRESULT hr = LoadValueString("DefaultProps\\Light", "OffImage", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage="";
+      m_d.m_szImage = "";
    else
       m_d.m_szImage = buf;
 

@@ -11,9 +11,6 @@ Spinner::Spinner()
    m_plateVertexBuffer = 0;
    m_plateIndexBuffer = 0;
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
-   m_d.m_szImage = "";
-   m_d.m_szMaterial = "";
-   m_d.m_szPhysicsMaterial = "";
    memset(m_d.m_szSurface, 0, MAXTOKEN);
 }
 
@@ -156,7 +153,7 @@ void Spinner::SetDefaults(bool fromMouseClick)
    char buf[MAXTOKEN] = { 0 };
    HRESULT hr = LoadValueString("DefaultProps\\Spinner", "Image", buf, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage="";
+      m_d.m_szImage = "";
    else
       m_d.m_szImage = buf;
 
