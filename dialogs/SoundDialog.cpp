@@ -142,8 +142,6 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                     ListView_GetItem( hSoundList, &lvitem );
                     PinSound * const pps = (PinSound *)lvitem.lParam;
                     strncpy_s( pps->m_szName, pinfo->item.pszText, sizeof(pps->m_szName)-1 );
-                    strncpy_s( pps->m_szInternalName, pinfo->item.pszText, sizeof(pps->m_szInternalName)-1 );
-                    CharLowerBuff( pps->m_szInternalName, lstrlen( pps->m_szInternalName ) );
                     if (pt)
                         pt->SetNonUndoableDirty( eSaveDirty );
                     return TRUE;

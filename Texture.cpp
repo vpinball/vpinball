@@ -262,8 +262,10 @@ HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
 
    bw.WriteString(FID(NAME), m_szName);
 #if CURRENT_FILE_FORMAT_VERSION == 1060 // deprecated lower case name
-   string tmp(m_szName);
-   CharLowerBuff(tmp.c_str(), tmp.length());
+   char tmp[sizeof(m_szName)];
+   strncpy_s(tmp, m_szName, sizeof(tmp)-1);
+   const size_t len = strnlen_s(tmp, sizeof(tmp));
+   CharLowerBuff(tmp, len);
    bw.WriteString(FID(INME), tmp);
 #endif
    bw.WriteString(FID(PATH), m_szPath);

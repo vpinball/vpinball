@@ -110,7 +110,6 @@ public:
    };
 
    char m_szName[MAXTOKEN]; // only filename, no ext
-   char m_szInternalName[MAXTOKEN]; // only lower case filename, no ext
    char m_szPath[MAX_PATH]; // full filename, incl. path
 
    SoundOutTypes m_outputTarget;
@@ -192,7 +191,7 @@ public:
 		for (size_t i = 0; i < m_copiedwav.size(); i++)
 		{
 			PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
-			if (!lstrcmp(ppsc->m_ppsOriginal->m_szInternalName, szName))
+			if (!lstrcmpi(ppsc->m_ppsOriginal->m_szName, szName))
 			{
 				ppsc->m_pDSBuffer->Stop();
 				break;
