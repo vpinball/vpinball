@@ -3,6 +3,8 @@
 // only used for loading and saving
 struct SaveMaterial
 {
+   SaveMaterial() { memset(szName,0,sizeof(szName)); }
+
    char szName[MAXNAMEBUFFER];
    COLORREF cBase; // can be overridden by texture on object itself
    COLORREF cGlossy; // specular of glossy layer
@@ -19,6 +21,8 @@ struct SaveMaterial
 
 struct SavePhysicsMaterial
 {
+    SavePhysicsMaterial() { memset(szName,0,sizeof(szName)); }
+
     char szName[MAXNAMEBUFFER];
     float fElasticity;
     float fElasticityFallOff;
