@@ -261,7 +261,11 @@ HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
    BiffWriter bw(pstream, NULL);
 
    bw.WriteString(FID(NAME), m_szName);
-   bw.WriteString(FID(INME), m_szInternalName);
+#if CURRENT_FILE_FORMAT_VERSION == 1060 // deprecated lower case name
+   string tmp(m_szName);
+   CharLowerBuff(tmp.c_str(), tmp.length());
+   bw.WriteString(FID(INME), tmp);
+#endif
    bw.WriteString(FID(PATH), m_szPath);
 
    bw.WriteInt(FID(WDTH), m_width);
@@ -374,7 +378,6 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(NAME): pbr->GetString(m_szName); break;
-   case FID(INME): pbr->GetString(m_szInternalName); break;
    case FID(PATH): pbr->GetString(m_szPath); break;
    case FID(WDTH): pbr->GetInt(&m_width); break;
    case FID(HGHT): pbr->GetInt(&m_height); break;
@@ -436,7 +439,7 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       // m_ppb->m_pdata() is the buffer
       // m_ppb->m_cdata() is the filesize
       return LoadFromMemory((BYTE*)m_ppb->m_pdata, m_ppb->m_cdata);
-      break;
+      //break;
    }
    case FID(LINK):
    {
@@ -445,7 +448,7 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
       PinTable * const pt = (PinTable *)pbr->m_pdata;
       m_ppb = pt->GetImageLinkBinary(linkid);
       return LoadFromMemory((BYTE*)m_ppb->m_pdata, m_ppb->m_cdata);
-      break;
+      //break;
    }
    }
    return true;

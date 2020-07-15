@@ -173,7 +173,6 @@ public:
    PinBinary *m_ppb;  // if this image should be saved as a binary stream, otherwise just LZW compressed from the live bitmap
 
    char m_szName[MAXTOKEN];
-   char m_szInternalName[MAXTOKEN];
    char m_szPath[MAXSTRING];
 
 private:

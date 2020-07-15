@@ -1748,37 +1748,22 @@ POINT PinTable::GetScreenPoint() const
 }
 
 #define CLEAN_MATERIAL(pEditMaterial) \
-{bool found = false; \
-for (size_t i = 0; i < m_materials.size(); i++) \
-    if (_stricmp(m_materials[i]->m_szName.c_str(), pEditMaterial.c_str()) == 0) \
-    { \
-        found = true; \
-        break; \
-    } \
-if (!found) \
-    pEditMaterial = "";}
+{std::unordered_map<const char*, Material*, StringHashFunctor, StringComparator>::const_iterator \
+   it = m_materialMap.find(pEditMaterial.c_str()); \
+if (it == m_materialMap.end()) \
+   pEditMaterial = "";}
 
 #define CLEAN_IMAGE(pEditImage) \
-{bool found = false; \
-for (size_t i = 0; i < m_vimage.size(); i++) \
-    if (_stricmp(m_vimage[i]->m_szName, pEditImage.c_str()) == 0) \
-    { \
-        found = true; \
-        break; \
-    } \
-if (!found) \
-    pEditImage = "";}
+{std::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator>::const_iterator \
+   it = m_textureMap.find(pEditImage.c_str()); \
+if (it == m_textureMap.end()) \
+   pEditImage = "";}
 
 #define CLEAN_IMAGE_STR(pEditImage) \
-{bool found = false; \
-for (size_t i = 0; i < m_vimage.size(); i++) \
-    if (_stricmp(m_vimage[i]->m_szName, pEditImage) == 0) \
-    { \
-        found = true; \
-        break; \
-    } \
-if (!found) \
-    pEditImage[0] = 0;}
+{std::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator>::const_iterator \
+   it = m_textureMap.find(pEditImage); \
+if (it == m_textureMap.end()) \
+   pEditImage[0] = 0;}
 
 void PinTable::InitPostLoad(VPinball *pvp)
 {
@@ -1825,7 +1810,18 @@ void PinTable::InitPostLoad(VPinball *pvp)
    m_pcv->AddItem(m_psgt, true);
    m_pcv->AddItem(m_pcv->m_pdm, false);
 
+   //
    // cleanup old bugs, i.e. currently buggy/non-existing material and image names
+   //
+
+   // set up the texture & material hashtables for faster access
+   m_textureMap.clear();
+   for (size_t i = 0; i < m_vimage.size(); i++)
+       m_textureMap[m_vimage[i]->m_szName] = m_vimage[i];
+   m_materialMap.clear();
+   for (size_t i = 0; i < m_materials.size(); i++)
+       m_materialMap[m_materials[i]->m_szName.c_str()] = m_materials[i];
+
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
         IEditable* const pEdit = m_vedit[i];
@@ -1947,6 +1943,9 @@ void PinTable::InitPostLoad(VPinball *pvp)
         }
         }
    }
+
+   m_textureMap.clear();
+   m_materialMap.clear();
 }
 
 
@@ -2324,14 +2323,10 @@ void PinTable::Play(const bool cameraMode)
       // set up the texture & material hashtables for faster access
       m_textureMap.clear();
       for (size_t i = 0; i < m_vimage.size(); i++)
-      {
-         m_textureMap[m_vimage[i]->m_szInternalName] = m_vimage[i];
-      }
+         m_textureMap[m_vimage[i]->m_szName] = m_vimage[i];
       m_materialMap.clear();
       for (size_t i = 0; i < m_materials.size(); i++)
-      {
          m_materialMap[m_materials[i]->m_szName.c_str()] = m_materials[i];
-      }
 
       // parse the (optional) override-physics-sets that can be set globally
       float fOverrideContactScatterAngle;
@@ -6952,7 +6947,7 @@ Texture* PinTable::GetImage(const std::string &szName) const
    }
 
    for (size_t i = 0; i < m_vimage.size(); i++)
-      if (!lstrcmpi(m_vimage[i]->m_szInternalName, szName.c_str()))
+      if (!lstrcmpi(m_vimage[i]->m_szName, szName.c_str()))
          return m_vimage[i];
 
    return NULL;
@@ -7128,12 +7123,7 @@ void PinTable::ImportImage(HWND hwndListView, const char * const filename)
       end = len - 1;
 
    strncpy_s(ppi->m_szName, &filename[begin], sizeof(ppi->m_szName)-1);
-
    ppi->m_szName[end - begin] = 0;
-
-   strncpy_s(ppi->m_szInternalName, ppi->m_szName, sizeof(ppi->m_szInternalName)-1);
-
-   CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
 
    m_vimage.push_back(ppi);
 
@@ -7658,7 +7648,7 @@ void PinTable::UpdateDbgLight()
 
 bool PinTable::GetImageLink(Texture * const ppi) const
 {
-   return (!lstrcmpi(ppi->m_szInternalName, m_szScreenShot));
+   return (!lstrcmpi(ppi->m_szName, m_szScreenShot));
 }
 
 PinBinary *PinTable::GetImageLinkBinary(const int id)
