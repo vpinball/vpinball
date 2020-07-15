@@ -46,10 +46,6 @@ bool PinBinary::ReadFromFile(const char * const szFileName)
 
    TitleFromFilename(szFileName, m_szName);
 
-   strncpy_s(m_szInternalName, m_szName, sizeof(m_szInternalName)-1);
-
-   CharLowerBuff(m_szInternalName, lstrlen(m_szInternalName));
-
    return true;
 }
 
@@ -81,15 +77,9 @@ HRESULT PinBinary::SaveToStream(IStream *pstream)
    BiffWriter bw(pstream, NULL);
 
    bw.WriteString(FID(NAME), m_szName);
-
-   bw.WriteString(FID(INME), m_szInternalName);
-
    bw.WriteString(FID(PATH), m_szPath);
-
    bw.WriteInt(FID(SIZE), m_cdata);
-
    bw.WriteStruct(FID(DATA), m_pdata, m_cdata);
-
    bw.WriteTag(FID(ENDB));
 
    return S_OK;
@@ -109,7 +99,6 @@ bool PinBinary::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(NAME): pbr->GetString(m_szName); break;
-   case FID(INME): pbr->GetString(m_szInternalName); break;
    case FID(PATH): pbr->GetString(m_szPath); break;
    case FID(SIZE):
    {

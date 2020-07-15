@@ -20,7 +20,6 @@ public:
    virtual bool LoadToken(const int id, BiffReader * const pbr);
 
    char m_szName[MAXTOKEN];
-   char m_szInternalName[MAXTOKEN];
    char m_szPath[MAX_PATH];
 
    char *m_pdata; // Copy of the buffer data so we can save it out
