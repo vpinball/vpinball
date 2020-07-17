@@ -1521,8 +1521,9 @@ PinTable::PinTable()
 
    m_tblMirrorEnabled = false;
 
-   memset(m_szImage, 0, MAXTOKEN);
-   memset(m_szEnvImage, 0, MAXTOKEN);
+   memset(m_szImage, 0, sizeof(m_szImage));
+   memset(m_szEnvImage, 0, sizeof(m_szEnvImage));
+
    m_hMaterialManager = NULL;
 
    m_numMaterials = 0;
@@ -3522,8 +3523,9 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
          mats[i].bIsMetal = m->m_bIsMetal;
          mats[i].bOpacityActive_fEdgeAlpha = m->m_bOpacityActive ? 1 : 0;
          mats[i].bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(m->m_fEdgeAlpha, 0.f, 1.f)) << 1;
-         memset(mats[i].szName,0,sizeof(mats[i].szName)); // to avoid garbage after 0
          strncpy_s(mats[i].szName, m->m_szName.c_str(), sizeof(mats[i].szName)-1);
+         for (size_t c = strnlen_s(mats[i].szName, sizeof(mats[i].szName)); c < sizeof(mats[i].szName); ++c) // to avoid garbage after 0
+             mats[i].szName[c] = 0;
       }
       bw.WriteStruct(FID(MATE), mats, (int)(sizeof(SaveMaterial)*m_materials.size()));
 
@@ -3531,8 +3533,9 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
       for (size_t i = 0; i < m_materials.size(); i++)
       {
           const Material* const m = m_materials[i];
-          memset(phymats[i].szName,0,sizeof(phymats[i].szName)); // to avoid garbage after 0
           strncpy_s(phymats[i].szName, m->m_szName.c_str(), sizeof(phymats[i].szName)-1);
+          for (size_t c = strnlen_s(phymats[i].szName, sizeof(phymats[i].szName)); c < sizeof(phymats[i].szName); ++c) // to avoid garbage after 0
+              phymats[i].szName[c] = 0;
           phymats[i].fElasticity = m->m_fElasticity;
           phymats[i].fElasticityFallOff = m->m_fElasticityFalloff;
           phymats[i].fFriction = m->m_fFriction;
@@ -5626,7 +5629,7 @@ void PinTable::ExportMesh(FILE *f)
 void PinTable::ExportTableMesh()
 {
    OPENFILENAME ofn;
-   memset(m_szObjFileName, 0, MAXSTRING);
+   memset(m_szObjFileName, 0, sizeof(m_szObjFileName));
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hInstance = g_hinst;
@@ -5856,7 +5859,7 @@ void PinTable::ExportBackdropPOV(const char *filename)
 	if (filename == NULL)
 	{
 		OPENFILENAME ofn;
-		memset(m_szObjFileName, 0, MAXSTRING);
+		memset(m_szObjFileName, 0, sizeof(m_szObjFileName));
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hInstance = g_hinst;

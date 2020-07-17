@@ -11,7 +11,7 @@ Decal::Decal()
    m_pIFont = NULL;
    vertexBuffer = NULL;
    m_textImg = NULL;
-   memset(m_d.m_szSurface, 0, MAXTOKEN);
+   memset(m_d.m_szSurface, 0, sizeof(m_d.m_szSurface));
    m_ptable = NULL;
    m_leading = 0.0f;
    m_descent = 0.0f;

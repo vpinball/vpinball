@@ -2,13 +2,9 @@
 
 DispReel::DispReel()
 {
-   memset(m_d.m_szSound, 0, MAXTOKEN);
+   memset(m_d.m_szSound, 0, sizeof(m_d.m_szSound));
 
    m_dispreelanim.m_pDispReel = this;
-}
-
-DispReel::~DispReel()
-{
 }
 
 // This function is called when ever a new instance of this object is created

@@ -237,7 +237,7 @@ Texture::Texture()
    m_hbmGDIVersion = NULL;
    m_ppb = NULL;
    m_alphaTestValue = 1.0f;
-   memset(m_szName, 0, MAXTOKEN);
+   memset(m_szName, 0, sizeof(m_szName));
 }
 
 Texture::Texture(BaseTexture * const base)
@@ -248,7 +248,7 @@ Texture::Texture(BaseTexture * const base)
    m_hbmGDIVersion = NULL;
    m_ppb = NULL;
    m_alphaTestValue = 1.0f;
-   memset(m_szName, 0, MAXTOKEN);
+   memset(m_szName, 0, sizeof(m_szName));
 }
 
 Texture::~Texture()

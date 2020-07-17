@@ -188,7 +188,7 @@ Primitive::Primitive()
    m_propPhysics = NULL;
    m_propPosition = NULL;
    m_propVisual = NULL;
-   memset(m_d.m_szNormalMap, 0, MAXTOKEN);
+   memset(m_d.m_szNormalMap, 0, sizeof(m_d.m_szNormalMap));
    m_d.m_overwritePhysics = true;
    m_d.m_useAsPlayfield = false;
 }

@@ -18,7 +18,7 @@ Bumper::Bumper()
    m_socketVertexBuffer = NULL;
    m_ringAnimate = false;
    m_propVisual = NULL;
-   memset(m_d.m_szSurface, 0, MAXTOKEN);
+   memset(m_d.m_szSurface, 0, sizeof(m_d.m_szSurface));
    m_d.m_ringDropOffset = 0.0f;
    m_ringDown = false;
    m_updateSkirt = false;

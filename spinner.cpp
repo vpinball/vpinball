@@ -11,7 +11,7 @@ Spinner::Spinner()
    m_plateVertexBuffer = 0;
    m_plateIndexBuffer = 0;
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
-   memset(m_d.m_szSurface, 0, MAXTOKEN);
+   memset(m_d.m_szSurface, 0, sizeof(m_d.m_szSurface));
 }
 
 Spinner::~Spinner()

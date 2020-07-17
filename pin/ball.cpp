@@ -32,8 +32,8 @@ Ball::Ball()
    m_visible = true;
    m_decalMode = g_pplayer ? g_pplayer->m_ptable->m_BallDecalMode : false;
 
-   memset(m_szImage, 0, MAXTOKEN);
-   memset(m_szImageDecal, 0, MAXTOKEN);
+   memset(m_szImage, 0, sizeof(m_szImage));
+   memset(m_szImageDecal, 0, sizeof(m_szImageDecal));
 
    m_ringcounter_oldpos = 0;
    for (int i = 0; i < MAX_BALL_TRAIL_POS; ++i)
@@ -177,7 +177,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const flo
       const Vertex3Ds cross = CrossProduct(surfP, tangent);
       const float kt = 1.0f/m_d.m_mass + tangent.Dot(CrossProduct(cross / Inertia(), surfP));
 
-      // friction impulse can't be greather than coefficient of friction times collision impulse (Coulomb friction cone)
+      // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
       const float maxFric = friction * reactionImpulse;
       const float jt = clamp(-vt / kt, -maxFric, maxFric);
 

@@ -10,8 +10,8 @@ Flasher::Flasher()
    m_dynamicVertexBufferRegenerate = true;
    m_vertices = 0;
    m_propVisual = NULL;
-   memset(m_d.m_szImageA, 0, MAXTOKEN);
-   memset(m_d.m_szImageB, 0, MAXTOKEN);
+   memset(m_d.m_szImageA, 0, sizeof(m_d.m_szImageA));
+   memset(m_d.m_szImageB, 0, sizeof(m_d.m_szImageB));
    m_ptable = NULL;
    m_numVertices = 0;
    m_numPolys = 0;

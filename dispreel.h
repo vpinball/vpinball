@@ -50,7 +50,7 @@ class DispReel :
 {
 public:
    DispReel();
-   virtual ~DispReel();
+   virtual ~DispReel() {}
    BEGIN_COM_MAP(DispReel)
       COM_INTERFACE_ENTRY(IDispatch)
       COM_INTERFACE_ENTRY(IDispReel)
