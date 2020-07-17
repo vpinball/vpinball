@@ -552,20 +552,17 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 	char WordChar = vbsReservedWords[0];
 	while (WordChar != 0) //Just make sure with chars, we reached EOL
 	{
-		char szWord[256];
-		memset(szWord, 0, 256);
-		int wordlen = 0;
+		string szWord;
 		intWordFinish++; //skip space
 		WordChar = vbsReservedWords[intWordFinish];
 		while (WordChar != 0 && WordChar != ' ')
 		{
-			szWord[wordlen] = WordChar;
+			szWord.push_back(WordChar);
 			intWordFinish++;
-			wordlen++;
 			WordChar = vbsReservedWords[intWordFinish];
 		}
 		UserData VBWord;
-		VBWord.m_keyName = string(szWord);
+		VBWord.m_keyName = szWord;
 		VBWord.m_uniqueKey = VBWord.m_keyName;
 		FindOrInsertUD(m_VBwordsDict, VBWord);
 	}
@@ -2316,7 +2313,6 @@ void CodeViewer::RemoveNonVBSChars(string &line)
 
 void CodeViewer::ParseForFunction() // Subs & Collections WIP 
 {
-	char text[MAX_LINE_LENGTH];
 	const int scriptLines = (int)SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
 	SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
 	ParentLevel = 0; //root
@@ -2326,13 +2322,11 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		// Read line
 		const size_t lineLength = SendMessage(m_hwndScintilla, SCI_LINELENGTH, linecount, 0);
 		if (!ParseOKLineLength(lineLength)) continue;
-		memset(text, 0, MAX_LINE_LENGTH);
+		char text[MAX_LINE_LENGTH];
+		memset(text, 0, sizeof(text));
 		SendMessage(m_hwndScintilla, SCI_GETLINE, linecount, (LPARAM)text);
 		if (text[0] != '\0')
-		{
-			string wholeline(text);
-			ReadLineToParseBrain(wholeline, linecount, m_pageConstructsDict);
-		}
+			ReadLineToParseBrain(string(text), linecount, m_pageConstructsDict);
 	}
 	//Propergate subs&funcs in menu in order
 	for (vector<UserData>::iterator i = m_pageConstructsDict->begin(); i != m_pageConstructsDict->end(); ++i) 
@@ -2348,7 +2342,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	while ((SSIZE_T)CBCount >= 0)
 	{
 		char c_str1[256];
-		memset(c_str1,0,256);
+		memset(c_str1,0,sizeof(c_str1));
 		SendMessage(m_hwndItemList, CB_GETLBTEXT, CBCount, (LPARAM)c_str1);
 		if (strnlen_s(c_str1, sizeof(c_str1)) > 1)
 		{
@@ -2449,15 +2443,15 @@ void CodeViewer::ParseVPCore()
 	while (!feof(fCore))
 	{
 		char text[MAX_LINE_LENGTH];
-		memset(text, 0, MAX_LINE_LENGTH);
+		memset(text, 0, sizeof(text));
 		fgets(text, MAX_LINE_LENGTH, fCore);
 		if (text[0] != '\0')
 		{
-		    string wholeline(text);
-		    ++linecount;
-		    const size_t lineLength = wholeline.length();
-		    if (!ParseOKLineLength(lineLength)) continue;
-		    ReadLineToParseBrain(wholeline, linecount, m_VPcoreDict);
+			string wholeline(text);
+			++linecount;
+			const size_t lineLength = wholeline.length();
+			if (!ParseOKLineLength(lineLength)) continue;
+			ReadLineToParseBrain(wholeline, linecount, m_VPcoreDict);
 		}
 	}
 	fclose(fCore);
@@ -2808,7 +2802,7 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
       case SCN_DOUBLECLICK:
       {
          pcv->m_wordUnderCaret.lpstrText = CaretTextBuff;
-         memset(CaretTextBuff, 0, MAX_FIND_LENGTH);
+         memset(CaretTextBuff, 0, sizeof(CaretTextBuff));
          pcv->GetWordUnderCaret();
          szLower(pcv->m_wordUnderCaret.lpstrText);
          // set back ground colour of all words on display

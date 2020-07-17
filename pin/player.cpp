@@ -577,7 +577,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
    if (m_overwriteBallImages)
    {
        char imageName[MAX_PATH];
-       //memset(imageName, 0, MAX_PATH);
+       //memset(imageName, 0, sizeof(imageName));
        HRESULT hr = LoadValueString("Player", "BallImage", imageName, MAX_PATH);
        if (hr == S_OK)
        {
@@ -587,7 +587,7 @@ Player::Player(const bool cameraMode, PinTable * const ptable) : m_cameraMode(ca
                m_ballImage = new Texture(tex);
        }
        // clear the string buffer, otherwise it will hold the ball image filename if decal image is a null string in the registry
-       //memset(imageName, 0, MAX_PATH);
+       //memset(imageName, 0, sizeof(ImageName));
        hr = LoadValueString("Player", "DecalImage", imageName, MAX_PATH);
        if (hr == S_OK)
        {

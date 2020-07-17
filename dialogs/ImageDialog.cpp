@@ -449,9 +449,9 @@ void ImageDialog::Export()
             ofn.hwndOwner = g_pvp->GetHwnd();
             int len = lstrlen(ppi->m_szPath);
             char g_filename[MAXSTRING];
-            memset(g_filename, 0, MAXSTRING);
+            memset(g_filename, 0, sizeof(g_filename));
             char g_initDir[MAXSTRING];
-            memset(g_initDir, 0, MAXSTRING);
+            memset(g_initDir, 0, sizeof(g_initDir));
 
             const size_t renameOnExport = SendMessage(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), BM_GETCHECK, 0, 0);
 

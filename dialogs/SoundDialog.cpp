@@ -385,7 +385,7 @@ void SoundDialog::Export()
 
             int begin;		//select only file name from pathfilename
             int len = lstrlen( pps->m_szPath );
-            memset( m_filename, 0, MAXSTRING);
+            memset(m_filename, 0, sizeof(m_filename));
 
             if (!renameOnExport)
             {

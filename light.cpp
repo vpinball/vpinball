@@ -17,7 +17,7 @@ Light::Light() : m_lightcenter(this)
    m_roundLight = false;
    m_propVisual = NULL;
    m_updateBulbLightHeight = false;
-   memset(m_d.m_szSurface, 0, MAXTOKEN);
+   memset(m_d.m_szSurface, 0, sizeof(m_d.m_szSurface));
 }
 
 Light::~Light()

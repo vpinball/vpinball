@@ -5,7 +5,7 @@ Plunger::Plunger()
    m_phitplunger = NULL;
    m_vertexBuffer = NULL;
    m_indexBuffer = NULL;
-   memset(m_d.m_szSurface, 0, MAXTOKEN);
+   memset(m_d.m_szSurface, 0, sizeof(m_d.m_szSurface));
 }
 
 Plunger::~Plunger()
