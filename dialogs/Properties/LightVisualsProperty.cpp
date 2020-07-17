@@ -144,16 +144,26 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                 CComObject<PinTable> * const ptable = g_pvp->GetActiveTable();
                 if(ptable==nullptr)
                     break;
-                CHOOSECOLOR cc = m_colorDialog.GetParameters();
-                cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-                m_colorDialog.SetParameters(cc);
-                m_colorDialog.SetColor(light->m_d.m_color);
-                m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
-                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+                if(i==0)
                 {
-                    light->m_d.m_color = m_colorDialog.GetColor();
-                    m_colorButton1.SetColor(light->m_d.m_color);
-                    memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
+                   CHOOSECOLOR cc = m_colorDialog.GetParameters();
+                   cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+                   m_colorDialog.SetParameters(cc);
+                   m_colorDialog.SetColor(light->m_d.m_color);
+                   m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
+                   if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+                   {
+                      light->m_d.m_color = m_colorDialog.GetColor();
+                      m_colorButton1.SetColor(light->m_d.m_color);
+                      memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
+                   }
+                }
+                else
+                {
+                   Light* const firstLight = (Light*)m_pvsel->ElementAt(0);
+                   light->m_d.m_color = firstLight->m_d.m_color;
+                   m_colorButton1.SetColor(light->m_d.m_color);
+                   ptable->SetDirtyDraw();
                 }
                 break;
             }
@@ -162,16 +172,25 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                 CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
                 if (ptable == nullptr)
                     break;
-                CHOOSECOLOR cc = m_colorDialog.GetParameters();
-                cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-                m_colorDialog.SetParameters(cc);
-                m_colorDialog.SetColor(light->m_d.m_color2);
-                m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
-                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+                if(i==0)
                 {
-                    light->m_d.m_color2 = m_colorDialog.GetColor();
-                    m_colorButton2.SetColor(light->m_d.m_color2);
-                    memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
+                   CHOOSECOLOR cc = m_colorDialog.GetParameters();
+                   cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+                   m_colorDialog.SetParameters(cc);
+                   m_colorDialog.SetColor(light->m_d.m_color2);
+                   m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
+                   if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+                   {
+                      light->m_d.m_color2 = m_colorDialog.GetColor();
+                      m_colorButton2.SetColor(light->m_d.m_color2);
+                      memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
+                   }
+                }
+                else
+                {
+                   Light* const firstLight = (Light*)m_pvsel->ElementAt(0);
+                   light->m_d.m_color2 = firstLight->m_d.m_color2;
+                   m_colorButton2.SetColor(light->m_d.m_color2);
                 }
                 break;
             }
