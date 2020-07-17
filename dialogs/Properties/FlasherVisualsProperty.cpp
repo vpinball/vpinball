@@ -73,7 +73,7 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == DISPID_Image2 || dispid == -1)
             PropertyDialog::UpdateTextureComboBox(flash->GetPTable()->GetImageList(), m_imageBCombo, flash->m_d.m_szImageB);
         if (dispid == IDC_FLASHER_MODE_COMBO || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_imageAlignList, m_modeCombo, m_imageAlignList[(int)flash->m_d.m_imagealignment - 1].c_str());
+            PropertyDialog::UpdateComboBox(m_imageAlignList, m_modeCombo, m_imageAlignList[(int)flash->m_d.m_imagealignment].c_str());
         if (dispid == IDC_EFFECT_COMBO || dispid == -1)
             PropertyDialog::UpdateComboBox(m_filterList, m_filterCombo, m_filterList[flash->m_d.m_filter].c_str());
         if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
@@ -111,7 +111,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_COMBO_TEXT(flash->m_d.m_szImageB, m_imageBCombo, flash);
                 break;
             case IDC_FLASHER_MODE_COMBO:
-                CHECK_UPDATE_ITEM(flash->m_d.m_imagealignment, (RampImageAlignment)(PropertyDialog::GetComboBoxIndex(m_modeCombo, m_imageAlignList) + 1), flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_imagealignment, (RampImageAlignment)(PropertyDialog::GetComboBoxIndex(m_modeCombo, m_imageAlignList)), flash);
                 break;
             case IDC_EFFECT_COMBO:
                 CHECK_UPDATE_ITEM(flash->m_d.m_filter, (Filters)PropertyDialog::GetComboBoxIndex(m_filterCombo, m_filterList), flash);

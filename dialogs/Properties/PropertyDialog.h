@@ -297,7 +297,7 @@ public:
         char buf[MAXSTRING];
         combo.GetLBText(combo.GetCurSel(), buf);
         for (size_t i = 0; i < contentList.size(); i++)
-            if (contentList[i].compare(buf)==0)
+            if (contentList[i] == std::string(buf))
                 return (int)i;
         return -1;
     }
