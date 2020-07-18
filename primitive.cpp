@@ -1120,9 +1120,9 @@ void Primitive::UpdateStatusBarInfo()
 
 void Primitive::ExportMesh(FILE *f)
 {
-   char name[MAX_PATH];
    if (m_d.m_visible)
    {
+      char name[MAX_PATH];
       WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
       Vertex3D_NoTex2 *const buf = new Vertex3D_NoTex2[m_mesh.NumVertices()];
       RecalculateMatrices();
@@ -2006,8 +2006,7 @@ bool Primitive::BrowseFor3DMeshFile()
 
 STDMETHODIMP Primitive::get_Image(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
    return S_OK;
@@ -2030,7 +2029,7 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
 
 STDMETHODIMP Primitive::get_NormalMap(BSTR *pVal)
 {
-    WCHAR wz[512];
+    WCHAR wz[MAXTOKEN];
     MultiByteToWideChar(CP_ACP, 0, m_d.m_szNormalMap, -1, wz, MAXTOKEN);
     *pVal = SysAllocString(wz);
 
@@ -2055,8 +2054,8 @@ STDMETHODIMP Primitive::put_NormalMap(BSTR newVal)
 
 STDMETHODIMP Primitive::get_MeshFileName(BSTR *pVal)
 {
-   WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_meshFileName, -1, wz, 256);
+   WCHAR wz[MAXSTRING];
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_meshFileName, -1, wz, MAXSTRING);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -2064,7 +2063,7 @@ STDMETHODIMP Primitive::get_MeshFileName(BSTR *pVal)
 
 STDMETHODIMP Primitive::put_MeshFileName(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_meshFileName, 256, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_meshFileName, MAXSTRING, NULL, NULL);
 
    return S_OK;
 }
@@ -2156,7 +2155,7 @@ STDMETHODIMP Primitive::put_Sides(int newVal)
 
 STDMETHODIMP Primitive::get_Material(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -2805,7 +2804,7 @@ STDMETHODIMP Primitive::put_ReflectionEnabled(VARIANT_BOOL newVal)
 
 STDMETHODIMP Primitive::get_PhysicsMaterial(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
