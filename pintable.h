@@ -327,7 +327,7 @@ public:
 
    virtual HRESULT GetTypeName(BSTR *pVal);
 
-   void SetCaption(const char * const szCaption);
+   void SetCaption(const string& szCaption);
    void SetMouseCapture();
    int  ShowMessageBox(const char *text) const;
    POINT GetScreenPoint() const;
@@ -350,7 +350,7 @@ public:
 
    void ExportBlueprint();
    void ExportTableMesh();
-   void ImportBackdropPOV(const char *filename);
+   void ImportBackdropPOV(const string& filename);
    void ExportBackdropPOV(const char *filename);
 
    //void FireVoidEvent(int dispid);
@@ -583,7 +583,7 @@ public:
    char m_szFileName[MAXSTRING];
    char m_szBlueprintFileName[MAXSTRING];
    char m_szObjFileName[MAXSTRING];
-   char m_szTitle[MAX_LINE_LENGTH];
+   string m_szTitle;
 
    VPinball *m_pvp;
 

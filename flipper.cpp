@@ -674,6 +674,7 @@ void Flipper::ExportMesh(FILE *f)
 {
    char name[MAX_PATH];
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+
    Matrix3D matTrafo, matTemp;
    matTrafo.SetIdentity();
    matTemp.SetIdentity();
@@ -703,10 +704,8 @@ void Flipper::ExportMesh(FILE *f)
    }
    }
 
-   char subObjName[MAX_PATH];
-   strncpy_s(subObjName, name, sizeof(subObjName)-1);
-   strncat_s(subObjName, "Base", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
-   WaveFrontObj_WriteObjectName(f, subObjName);
+   string subObjName = name + string("Base");
+   WaveFrontObj_WriteObjectName(f, subObjName.c_str());
    WaveFrontObj_WriteVertexInfo(f, flipper, flipperBaseVertices);
    const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
@@ -731,9 +730,8 @@ void Flipper::ExportMesh(FILE *f)
          buf[i].nz = vert.z;
       }
 
-      strncpy_s(subObjName, name, sizeof(subObjName)-1);
-      strncat_s(subObjName, "Rubber", sizeof(subObjName) - strnlen_s(subObjName, sizeof(subObjName)) - 1);
-      WaveFrontObj_WriteObjectName(f, subObjName);
+      subObjName = name + string("Rubber");
+      WaveFrontObj_WriteObjectName(f, subObjName.c_str());
       WaveFrontObj_WriteVertexInfo(f, &flipper[flipperBaseVertices], flipperBaseVertices);
       mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szRubberMaterial.c_str(), NULL, mat);

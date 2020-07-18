@@ -233,14 +233,11 @@ void SearchSelectDialog::OnCancel()
 
 bool SearchSelectDialog::IsValidString(const std::string &name)
 {
-   if (name[0] == 0)
-      return false;
-   if (name.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ._-") != std::string::npos)
+   if (name.empty() || name.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ._-") != std::string::npos)
       return false;
 
    return true;
 }
-
 
 void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
 {

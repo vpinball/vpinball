@@ -6,25 +6,26 @@
  #include "imgui/imgui_impl_win32.h"
  #include "imgui/implot/implot.h"
 
-
 // utility structure for realtime plot //!! cleanup
-typedef float t_float;
-typedef ImVec2 t_float2;
-struct ScrollingData {
+class ScrollingData {
+private:
     int MaxSize;
+public:
     int Offset;
-    ImVector<t_float2> Data;
+    ImVector<ImVec2> Data;
     ScrollingData() {
         MaxSize = 500;
         Offset  = 0;
         Data.reserve(MaxSize);
     }
-    void AddPoint(t_float x, t_float y) {
+    void AddPoint(const float x, const float y) {
         if (Data.size() < MaxSize)
-            Data.push_back(t_float2(x,y));
+            Data.push_back(ImVec2(x,y));
         else {
-            Data[Offset] = t_float2(x,y);
-            Offset =  (Offset + 1) % MaxSize;
+            Data[Offset] = ImVec2(x,y);
+            Offset++;
+            if (Offset == MaxSize)
+                Offset = 0;
         }
     }
     void Erase() {
@@ -33,10 +34,10 @@ struct ScrollingData {
             Offset  = 0;
         }
     }
-    t_float2 GetLast() {
+    ImVec2 GetLast() {
         if (Data.size() == 0)
-            return t_float2(0.f, 0.f);
-        if (Data.size() < MaxSize || Offset == 0)
+            return ImVec2(0.f, 0.f);
+        else if (Data.size() < MaxSize || Offset == 0)
             return Data.back();
         else
             return Data[Offset - 1];
@@ -44,21 +45,22 @@ struct ScrollingData {
 };
 
 // utility structure for realtime plot
-struct RollingData {
-    t_float Span;
-    ImVector<t_float2> Data;
+/*class RollingData {
+    float Span;
+    ImVector<ImVec2> Data;
     RollingData() {
         Span = 10.0f;
         Data.reserve(500);
     }
-    void AddPoint(t_float x, t_float y) {
-        t_float xmod = fmodf(x, Span);
+    void AddPoint(const float x, const float y) {
+        const float xmod = fmodf(x, Span);
         if (!Data.empty() && xmod < Data.back().x)
             Data.shrink(0);
-        Data.push_back(t_float2(xmod, y));
+        Data.push_back(ImVec2(xmod, y));
     }
-};
+};*/
 #endif
+
 #include <algorithm>
 #include <time.h>
 #include "../meshes/ballMesh.h"
@@ -4333,31 +4335,31 @@ void Player::UpdateHUD_IMGUI()
        ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
        const int rt_axis = ImPlotAxisFlags_Default & ~ImPlotAxisFlags_TickLabels;
        if (ImPlot::BeginPlot("##ScrollingFPS", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_Default, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
-           ImPlot::PlotLine("FPS", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), sdata2.Offset, 2 * sizeof(t_float));
+           ImPlot::PlotLine("FPS", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), sdata2.Offset, 2 * sizeof(float));
            ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
-           ImPlot::PlotLine("Smoothed FPS", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), sdata1.Offset, 2 * sizeof(t_float));
+           ImPlot::PlotLine("Smoothed FPS", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), sdata1.Offset, 2 * sizeof(float));
            ImPlot::PopStyleColor();
            ImPlot::EndPlot();
        }
        /*ImPlot::SetNextPlotLimitsX(0, history, ImGuiCond_Always);
        if (ImPlot::BeginPlot("##RollingFPS", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_Default, rt_axis, rt_axis)) {
-           ImPlot::PlotLine("Average FPS", &rdata1.Data[0].x, &rdata1.Data[0].y, rdata1.Data.size(), 0, 2 * sizeof(t_float));
-           ImPlot::PlotLine("FPS", &rdata2.Data[0].x, &rdata2.Data[0].y, rdata2.Data.size(), 0, 2 * sizeof(t_float));
+           ImPlot::PlotLine("Average FPS", &rdata1.Data[0].x, &rdata1.Data[0].y, rdata1.Data.size(), 0, 2 * sizeof(float));
+           ImPlot::PlotLine("FPS", &rdata2.Data[0].x, &rdata2.Data[0].y, rdata2.Data.size(), 0, 2 * sizeof(float));
            ImPlot::EndPlot();
        }*/
        ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
        if (ImPlot::BeginPlot("##ScrollingPhysics", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_Default, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
-           ImPlot::PlotLine("ms Physics", &sdata4.Data[0].x, &sdata4.Data[0].y, sdata4.Data.size(), sdata4.Offset, 2 * sizeof(t_float));
+           ImPlot::PlotLine("ms Physics", &sdata4.Data[0].x, &sdata4.Data[0].y, sdata4.Data.size(), sdata4.Offset, 2 * sizeof(float));
            ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
-           ImPlot::PlotLine("Smoothed ms Physics", &sdata3.Data[0].x, &sdata3.Data[0].y, sdata3.Data.size(), sdata3.Offset, 2 * sizeof(t_float));
+           ImPlot::PlotLine("Smoothed ms Physics", &sdata3.Data[0].x, &sdata3.Data[0].y, sdata3.Data.size(), sdata3.Offset, 2 * sizeof(float));
            ImPlot::PopStyleColor();
            ImPlot::EndPlot();
        }
        ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
        if (ImPlot::BeginPlot("##ScrollingScript", NULL, NULL, ImVec2(-1, 150), ImPlotFlags_Default, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
-           ImPlot::PlotLine("ms Script", &sdata6.Data[0].x, &sdata6.Data[0].y, sdata6.Data.size(), sdata6.Offset, 2 * sizeof(t_float));
+           ImPlot::PlotLine("ms Script", &sdata6.Data[0].x, &sdata6.Data[0].y, sdata6.Data.size(), sdata6.Offset, 2 * sizeof(float));
            ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
-           ImPlot::PlotLine("Smoothed ms Script", &sdata5.Data[0].x, &sdata5.Data[0].y, sdata5.Data.size(), sdata5.Offset, 2 * sizeof(t_float));
+           ImPlot::PlotLine("Smoothed ms Script", &sdata5.Data[0].x, &sdata5.Data[0].y, sdata5.Data.size(), sdata5.Offset, 2 * sizeof(float));
            ImPlot::PopStyleColor();
            ImPlot::EndPlot();
        }
@@ -6027,7 +6029,7 @@ void Player::DoDebugObjectMenu(const int x, const int y)
             pdc->GetDebugCommands(vids, vcommandid);
             for (size_t l = 0; l < vids.size(); l++)
             {
-               LocalString ls(vids[l]);
+               const LocalString ls(vids[l]);
                AppendMenu(submenu, MF_STRING, ((i + 1) << 16) | vcommandid[l] | 0x8000, ls.m_szbuffer);
             }
          }

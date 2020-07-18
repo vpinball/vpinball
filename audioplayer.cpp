@@ -65,12 +65,11 @@ AudioPlayer::AudioPlayer()
       {
       if (!BASS_Init((idx == 0) ? bass_STD_idx : bass_BG_idx, 44100, (SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? BASS_DEVICE_3D : 0, g_pvp->GetHwnd(), NULL)) // note that sample rate is usually ignored and set depending on the input/file automatically
       {
-         char bla[MAXSTRING];
-         char bla2[MAXSTRING];
          const int code = BASS_ErrorGetCode();
+         string bla2;
          BASS_ErrorMapCode(code, bla2);
-         sprintf_s(bla, "BASS music/sound library initialization error %d: %s", code, bla2);
-         g_pvp->MessageBox(bla, "Error", MB_ICONERROR);
+         const string bla = "BASS music/sound library initialization error " + std::to_string(code) + ": " + bla2;
+         g_pvp->MessageBox(bla.c_str(), "Error", MB_ICONERROR);
       }
       if (/*SoundMode3D == SNDCFG_SND3D2CH &&*/ bass_STD_idx == bass_BG_idx) // skip 2nd device if it's the same and 3D is disabled //!!! for now try to just use one even if 3D! and then adapt channel settings if sample is a backglass sample
          break;
@@ -134,12 +133,11 @@ bool AudioPlayer::MusicInit(const char * const szFileName, const float volume)
    m_stream = BASS_StreamCreateFile(FALSE, szFileName, 0, 0, /*BASS_SAMPLE_LOOP*/0); //!! ?
    if (m_stream == NULL)
    {
-      char bla[MAXSTRING];
-      char bla2[MAXSTRING];
       const int code = BASS_ErrorGetCode();
+      string bla2;
       BASS_ErrorMapCode(code, bla2);
-      sprintf_s(bla, "BASS music/sound library cannot load %s (error %d: %s)", szFileName, code, bla2);
-      g_pvp->MessageBox(bla, "Error", MB_ICONERROR);
+      const string bla = string("BASS music/sound library cannot load \"") + szFileName + "\" (error " + std::to_string(code) + ": " + bla2 + ")";
+      g_pvp->MessageBox(bla.c_str(), "Error", MB_ICONERROR);
       return false;
    }
 

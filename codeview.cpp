@@ -394,14 +394,11 @@ void CodeViewer::SetEnabled(const bool enabled)
    ::EnableWindow(m_hwndEventList, enabled);
 }
 
-void CodeViewer::SetCaption(const char * const szCaption)
+void CodeViewer::SetCaption(const string& szCaption)
 {
-   char szT[MAXSTRING];
-   strncpy_s(szT, szCaption, sizeof(szT)-1);
-   LocalString ls(IDS_SCRIPT);
-   strncat_s(szT, " ", sizeof(szT)-strnlen_s(szT, sizeof(szT))-1);
-   strncat_s(szT, ls.m_szbuffer, sizeof(szT)-strnlen_s(szT, sizeof(szT))-1);
-   SetWindowText(szT);
+   const LocalString ls(IDS_SCRIPT);
+   const string szT = szCaption + ' ' + ls.m_szbuffer;
+   SetWindowText(szT.c_str());
 }
 
 void CodeViewer::UpdatePrefsfromReg()
@@ -1012,20 +1009,17 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
          SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)"");
       else
       {
-         LocalString ls(IDS_FINDLOOPED);
+         const LocalString ls(IDS_FINDLOOPED);
          SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)ls.m_szbuffer);
       }
    }
    else
    {
-      char szT[MAX_PATH];
-      LocalString ls(IDS_FINDFAILED);
-      LocalString ls2(IDS_FINDFAILED2);
-      lstrcpy(szT, ls.m_szbuffer);
-      lstrcat(szT, pfr->lpstrFindWhat);
-      lstrcat(szT, ls2.m_szbuffer);
+      const LocalString ls(IDS_FINDFAILED);
+      const LocalString ls2(IDS_FINDFAILED2);
+      const string szT = string(ls.m_szbuffer) + pfr->lpstrFindWhat + ls2.m_szbuffer;
       MessageBeep(MB_ICONEXCLAMATION);
-      SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT);
+      SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT.c_str());
    }
 }
 
@@ -1050,20 +1044,17 @@ next:
    {
       if (cszReplaced == 0)
       {
-         char szT[MAX_PATH];
-         LocalString ls(IDS_FINDFAILED);
-         LocalString ls2(IDS_FINDFAILED2);
-         lstrcpy(szT, ls.m_szbuffer);
-         lstrcat(szT, ft.lpstrText);
-         lstrcat(szT, ls2.m_szbuffer);
+         const LocalString ls(IDS_FINDFAILED);
+         const LocalString ls2(IDS_FINDFAILED2);
+         const string szT = string(ls.m_szbuffer) + ft.lpstrText + ls2.m_szbuffer;
          MessageBeep(MB_ICONEXCLAMATION);
-         SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT);
+         SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT.c_str());
       }
       else
       {
+         const LocalString ls(IDS_REPLACEALL);
+         const LocalString ls2(IDS_REPLACEALL2);
          char szT[MAX_PATH];
-         LocalString ls(IDS_REPLACEALL);
-         LocalString ls2(IDS_REPLACEALL2);
          wsprintfA(szT, "%s %ld %s", ls.m_szbuffer, cszReplaced, ls2.m_szbuffer);
          MessageBeep(MB_ICONEXCLAMATION);
          SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT);
@@ -1169,10 +1160,10 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
    m_sdsDirty = eSaveClean;
 }
 
-void CodeViewer::LoadFromFile(const char *filename)
+void CodeViewer::LoadFromFile(const string& filename)
 {
    FILE * fScript;
-   if (fopen_s(&fScript, filename, "rb") == 0)
+   if (fopen_s(&fScript, filename.c_str(), "rb") == 0)
       if (fScript)
       {
 		fseek(fScript, 0L, SEEK_END);
@@ -1607,23 +1598,15 @@ bool CodeViewer::FUserManuallyOkaysControl(CONFIRMSAFETY *pcs)
       return false;
 
    const int len = lstrlenW(wzT) + 1; // include null termination
-
    char * const szName = new char[len];
-
    WideCharToMultiByte(CP_ACP, 0, wzT, len, szName, len, NULL, NULL);
 
-   LocalString ls1(IDS_UNSECURECONTROL1);
-   LocalString ls2(IDS_UNSECURECONTROL2);
-
-   char * const szT = new char[lstrlen(ls1.m_szbuffer) + lstrlen(szName) + lstrlen(ls2.m_szbuffer) + 1];
-   lstrcpy(szT, ls1.m_szbuffer);
-   lstrcat(szT, szName);
-   lstrcat(szT, ls2.m_szbuffer);
-
-   const int ans = MessageBox(szT, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
-
+   const LocalString ls1(IDS_UNSECURECONTROL1);
+   const LocalString ls2(IDS_UNSECURECONTROL2);
+   const string szT = string(ls1.m_szbuffer) + szName + ls2.m_szbuffer;
    delete[] szName;
-   delete[] szT;
+
+   const int ans = MessageBox(szT.c_str(), "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
 
    return (ans == IDYES);
 }
@@ -3281,7 +3264,7 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
 
    if (FAILED(hr))
    {
-      LocalString ls(IDS_DEBUGNOCONVERT);
+      const LocalString ls(IDS_DEBUGNOCONVERT);
       m_pcv->AddToDebugOutput(ls.m_szbuffer);
       return S_OK;
    }

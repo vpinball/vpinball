@@ -34,15 +34,15 @@ BOOL CollectionManagerDialog::OnInitDialog()
 
     LVCOLUMN lvcol;
     lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
-    LocalString ls(IDS_NAME);
-    lvcol.pszText = ls.m_szbuffer;// = "Name";
+    const LocalString ls(IDS_NAME);
+    lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";
     lvcol.cx = 280;
     ListView_InsertColumn(hListHwnd, 0, &lvcol);
 
     lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
     lvcol.fmt = LVCFMT_CENTER;
-    LocalString ls2(IDS_SIZE);
-    lvcol.pszText = ls2.m_szbuffer;// = "Size";
+    const LocalString ls2(IDS_SIZE);
+    lvcol.pszText = (LPSTR)ls2.m_szbuffer; // = "Size";
     lvcol.cx = 50;
     ListView_InsertColumn(hListHwnd, 1, &lvcol);
 

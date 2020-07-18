@@ -79,13 +79,13 @@ BOOL TableInfoDialog::OnInitDialog()
    {
       LVCOLUMN lvcol;
       lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
-      LocalString ls3(IDS_NAME);
-      lvcol.pszText = ls3.m_szbuffer;// = "Name";
+      const LocalString ls3(IDS_NAME);
+      lvcol.pszText = (LPSTR)ls3.m_szbuffer; // = "Name";
       lvcol.cx = 90;
       m_customListView.InsertColumn(0,lvcol);
 
-      LocalString ls2(IDS_VALUE);
-      lvcol.pszText = ls2.m_szbuffer; // = "Value";
+      const LocalString ls2(IDS_VALUE);
+      lvcol.pszText = (LPSTR)ls2.m_szbuffer; // = "Value";
       lvcol.cx = 100;
       m_customListView.InsertColumn(1, lvcol);
 
