@@ -21,7 +21,7 @@ void DispreelStateProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == IDC_UPDATE_INTERVAL_EDIT || dispid == -1)
             PropertyDialog::SetIntTextbox(m_updateIntervalEdit, reel->GetUpdateInterval());
         if (dispid == DISPID_Sound || dispid == -1)
-            PropertyDialog::UpdateSoundComboBox(reel->GetPTable(), m_soundCombo, reel->m_d.m_szSound);
+            PropertyDialog::UpdateSoundComboBox(reel->GetPTable(), m_soundCombo, reel->m_d.m_szSound.c_str());
         //only show the first element on multi-select
         break;
     }
@@ -43,7 +43,7 @@ void DispreelStateProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_VALUE_SETTER(reel->SetUpdateInterval, reel->GetUpdateInterval, PropertyDialog::GetIntTextbox, m_updateIntervalEdit, reel);
                 break;
             case DISPID_Sound:
-                CHECK_UPDATE_COMBO_TEXT(reel->m_d.m_szSound, m_soundCombo, reel);
+                CHECK_UPDATE_COMBO_TEXT_STRING(reel->m_d.m_szSound, m_soundCombo, reel);
                 break;
             default:
                 break;
