@@ -1171,7 +1171,7 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
       CMenu menuFile = GetMainMenu(FILEMENU);
 
       // delete all the recent file IDM's and the separator from this menu
-      for (size_t i = RECENT_FIRST_MENU_IDM; i <= RECENT_FIRST_MENU_IDM+old_count; i++)
+      for (UINT i = RECENT_FIRST_MENU_IDM; i <= RECENT_FIRST_MENU_IDM+(UINT)old_count; i++)
          menuFile.DeleteMenu(i, MF_BYCOMMAND);
 
       // get the number of entries in the file menu
@@ -1194,7 +1194,7 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
          menuInfo.cbSize = GetSizeofMenuItemInfo();
          menuInfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE;
          menuInfo.fType = MFT_STRING;
-         menuInfo.wID = RECENT_FIRST_MENU_IDM + i;
+         menuInfo.wID = RECENT_FIRST_MENU_IDM + (UINT)i;
          menuInfo.dwTypeData = recentMenuname;
 
          menuFile.InsertMenuItem(count, menuInfo, TRUE);

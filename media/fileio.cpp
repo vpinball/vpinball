@@ -72,7 +72,7 @@ void TitleFromFilename(const char * const szfilename, char *sztitle)
 
 void TitleFromFilename(const string& szfilename, string& sztitle)
 {
-   const int len = szfilename.length();
+   const int len = (int)szfilename.length();
 
    int begin;
    for (begin = len; begin >= 0; begin--)
@@ -222,11 +222,11 @@ HRESULT BiffWriter::WriteInt(int id, int value)
    return hr;
 }
 
-HRESULT BiffWriter::WriteString(int id, const char * const szvalue)
+HRESULT BiffWriter::WriteString(const int id, const char * const szvalue)
 {
    ULONG writ = 0;
    HRESULT hr;
-   int len = lstrlen(szvalue);
+   const int len = lstrlen(szvalue);
 
    if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
       return hr;
@@ -242,11 +242,11 @@ HRESULT BiffWriter::WriteString(int id, const char * const szvalue)
    return hr;
 }
 
-HRESULT BiffWriter::WriteString(int id, const std::string &szvalue)
+HRESULT BiffWriter::WriteString(const int id, const std::string &szvalue)
 {
    ULONG writ = 0;
    HRESULT hr;
-   int len = szvalue.size();
+   const int len = (int)szvalue.size();
 
    if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
       return hr;
@@ -262,11 +262,11 @@ HRESULT BiffWriter::WriteString(int id, const std::string &szvalue)
    return hr;
 }
 
-HRESULT BiffWriter::WriteWideString(int id, const WCHAR * const wzvalue)
+HRESULT BiffWriter::WriteWideString(const int id, const WCHAR * const wzvalue)
 {
    ULONG writ = 0;
    HRESULT hr;
-   int len = lstrlenW(wzvalue) * (int)sizeof(WCHAR);
+   const int len = lstrlenW(wzvalue) * (int)sizeof(WCHAR);
 
    if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
       return hr;

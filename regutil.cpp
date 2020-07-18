@@ -157,7 +157,7 @@ HRESULT SaveValueString(const std::string &szKey, const std::string &szValue, co
 
 HRESULT SaveValueString(const std::string &szKey, const std::string &szValue, const string& val)
 {
-   return SaveValue(szKey, szValue, REG_SZ, val.c_str(), val.length());
+   return SaveValue(szKey, szValue, REG_SZ, val.c_str(), (DWORD)val.length());
 }
 
 HRESULT DeleteValue(const std::string &szKey, const std::string &szValue)

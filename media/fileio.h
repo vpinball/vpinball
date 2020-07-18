@@ -23,10 +23,10 @@ public:
    BiffWriter(IStream *pistream, HCRYPTHASH hcrypthash);
 
    HRESULT WriteInt(int id, int value);
-   HRESULT WriteString(int id, const char * const szvalue);
-   HRESULT WriteString(int id, const std::string& szvalue);
+   HRESULT WriteString(const int id, const char * const szvalue);
+   HRESULT WriteString(const int id, const std::string& szvalue);
 
-   HRESULT WriteWideString(int id, const WCHAR * const wzvalue);
+   HRESULT WriteWideString(const int id, const WCHAR * const wzvalue);
    HRESULT WriteBool(int id, BOOL value);
    HRESULT WriteFloat(int id, float value);
    HRESULT WriteStruct(int id, void *pvalue, int size);
