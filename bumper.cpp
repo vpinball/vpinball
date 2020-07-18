@@ -585,12 +585,10 @@ void Bumper::ExportMesh(FILE *f)
 
    if (m_d.m_baseVisible)
    {
-      Vertex3D_NoTex2 *base = new Vertex3D_NoTex2[bumperBaseNumVertices];
-      char subObjName[MAX_PATH];
-      strncpy_s(subObjName, name, sizeof(subObjName)-1);
-      strncat_s(subObjName, "Base", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
-      WaveFrontObj_WriteObjectName(f, subObjName);
+      const string subObjName = name + string("Base");
+      WaveFrontObj_WriteObjectName(f, subObjName.c_str());
 
+      Vertex3D_NoTex2* base = new Vertex3D_NoTex2[bumperBaseNumVertices];
       GenerateBaseMesh(base);
       WaveFrontObj_WriteVertexInfo(f, base, bumperBaseNumVertices);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
@@ -602,12 +600,10 @@ void Bumper::ExportMesh(FILE *f)
    }
    if (m_d.m_ringVisible)
    {
-      Vertex3D_NoTex2 * const ring = new Vertex3D_NoTex2[bumperRingNumVertices];
-      char subObjName[MAX_PATH];
-      strncpy_s(subObjName, name, sizeof(subObjName)-1);
-      strncat_s(subObjName, "Ring", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
-      WaveFrontObj_WriteObjectName(f, subObjName);
+      const string subObjName = name + string("Ring");
+      WaveFrontObj_WriteObjectName(f, subObjName.c_str());
 
+      Vertex3D_NoTex2* const ring = new Vertex3D_NoTex2[bumperRingNumVertices];
       GenerateRingMesh(ring);
       WaveFrontObj_WriteVertexInfo(f, ring, bumperRingNumVertices);
       WaveFrontObj_WriteFaceInfoList(f, bumperRingIndices, bumperRingNumIndices);
@@ -616,12 +612,10 @@ void Bumper::ExportMesh(FILE *f)
    }
    if (m_d.m_skirtVisible)
    {
-      Vertex3D_NoTex2 * const socket = new Vertex3D_NoTex2[bumperSocketNumVertices];
-      char subObjName[MAX_PATH];
-      strncpy_s(subObjName, name, sizeof(subObjName)-1);
-      strncat_s(subObjName, "Skirt", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
-      WaveFrontObj_WriteObjectName(f, subObjName);
+      const string subObjName = name + string("Skirt");
+      WaveFrontObj_WriteObjectName(f, subObjName.c_str());
 
+      Vertex3D_NoTex2* const socket = new Vertex3D_NoTex2[bumperSocketNumVertices];
       GenerateSocketMesh(socket);
       WaveFrontObj_WriteVertexInfo(f, socket, bumperSocketNumVertices);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
@@ -633,12 +627,10 @@ void Bumper::ExportMesh(FILE *f)
    }
    if (m_d.m_capVisible)
    {
-      Vertex3D_NoTex2 * const cap = new Vertex3D_NoTex2[bumperCapNumVertices];
-      char subObjName[MAX_PATH];
-      strncpy_s(subObjName, name, sizeof(subObjName)-1);
-      strncat_s(subObjName, "Cap", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
-      WaveFrontObj_WriteObjectName(f, subObjName);
+      const string subObjName = name + string("Cap");
+      WaveFrontObj_WriteObjectName(f, subObjName.c_str());
 
+      Vertex3D_NoTex2* const cap = new Vertex3D_NoTex2[bumperCapNumVertices];
       GenerateCapMesh(cap);
       WaveFrontObj_WriteVertexInfo(f, cap, bumperCapNumVertices);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
