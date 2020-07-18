@@ -4458,12 +4458,12 @@ int PinTable::AddListBinary(HWND hwndListView, PinBinary *ppb)
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
-   lvitem.pszText = ppb->m_szName;
+   lvitem.pszText = (LPSTR)ppb->m_szName.c_str();
    lvitem.lParam = (size_t)ppb;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
-   ListView_SetItemText(hwndListView, index, 1, ppb->m_szPath);
+   ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppb->m_szPath.c_str());
 
    return index;
 }
