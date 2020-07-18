@@ -14,17 +14,16 @@ PinBinary::~PinBinary()
    }
 }
 
-bool PinBinary::ReadFromFile(const char * const szFileName)
+bool PinBinary::ReadFromFile(const string& szFileName)
 {
-   HANDLE hFile = CreateFile(szFileName,
+   HANDLE hFile = CreateFile(szFileName.c_str(),
       GENERIC_READ, FILE_SHARE_READ,
       NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      char text[MAX_PATH];
-      sprintf_s(text, "The file \"%s\" could not be opened.", szFileName);
-      ShowError(text);
+      const string text = "The file \"" + szFileName + "\" could not be opened.";
+      ShowError(text.c_str());
       return false;
    }
 
@@ -42,24 +41,22 @@ bool PinBinary::ReadFromFile(const char * const szFileName)
 
    /*foo =*/ CloseHandle(hFile);
 
-   strncpy_s(m_szPath, szFileName, sizeof(m_szPath)-1);
-
+   m_szPath = szFileName;
    TitleFromFilename(szFileName, m_szName);
 
    return true;
 }
 
-bool PinBinary::WriteToFile(const char * const szfilename)
+bool PinBinary::WriteToFile(const string& szfilename)
 {
-   HANDLE hFile = CreateFile(szfilename,
+   HANDLE hFile = CreateFile(szfilename.c_str(),
       GENERIC_WRITE, FILE_SHARE_READ,
       NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      char bla[MAXSTRING];
-      sprintf_s(bla, "The temporary file %s could not be written.", szfilename);
-      ShowError(bla);
+      const string bla = "The temporary file \"" + szfilename + "\" could not be written.";
+      ShowError(bla.c_str());
       return false;
    }
 
@@ -160,16 +157,15 @@ void PinFont::Register()
    lstrcat(szPath, tempFontNumber_s);
    lstrcat(szPath, ".ttf");
 
-   strncpy_s(m_szTempFile, szPath, sizeof(m_szTempFile)-1);
-
+   m_szTempFile = szPath;
    WriteToFile(m_szTempFile);
 
-   /*const int fonts =*/ AddFontResource(m_szTempFile);
+   /*const int fonts =*/ AddFontResource(m_szTempFile.c_str());
 }
 
 void PinFont::UnRegister()
 {
-   /*const BOOL foo =*/ RemoveFontResource(m_szTempFile);
+   /*const BOOL foo =*/ RemoveFontResource(m_szTempFile.c_str());
 
-   DeleteFile(m_szTempFile);
+   DeleteFile(m_szTempFile.c_str());
 }

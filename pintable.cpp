@@ -205,7 +205,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
       char szT[512];
       char szPath[MAX_PATH + 512];
 
-      WideCharToMultiByte(CP_ACP, 0, m_vpinball->m_wzMyPath, -1, szPath, MAX_PATH, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, m_vpinball->m_wzMyPath, -1, szPath, MAX_PATH + 512, NULL, NULL);
       WideCharToMultiByte(CP_ACP, 0, str, -1, szT, 512, NULL, NULL);
 
       char szextension[MAX_PATH];
@@ -4513,7 +4513,6 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
 int PinTable::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
 {
    char szT[MAX_PATH];
-
    WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
 
    LVITEM lvitem;
@@ -5688,7 +5687,7 @@ void PinTable::ImportBackdropPOV(const char *filename)
        }
     }
     else
-       szFileName.push_back(std::string(filename));
+       szFileName.push_back(filename);
 
     xml_document<> xmlDoc;
 
@@ -7718,8 +7717,7 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, int version)
 
 STDMETHODIMP PinTable::get_Image(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_szImage, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -8330,8 +8328,7 @@ STDMETHODIMP PinTable::put_Height(float newVal)
 
 STDMETHODIMP PinTable::get_PlayfieldMaterial(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_szPlayfieldMaterial, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -8858,8 +8855,7 @@ STDMETHODIMP PinTable::put_ShowFSS(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_BackdropImage_DT(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_BG_szImage[0], -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -8877,8 +8873,7 @@ STDMETHODIMP PinTable::put_BackdropImage_DT(BSTR newVal) //!! HDR??
 
 STDMETHODIMP PinTable::get_BackdropImage_FS(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_BG_szImage[1], -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -8896,8 +8891,7 @@ STDMETHODIMP PinTable::put_BackdropImage_FS(BSTR newVal) //!! HDR??
 
 STDMETHODIMP PinTable::get_BackdropImage_FSS(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_BG_szImage[2], -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -8915,8 +8909,7 @@ STDMETHODIMP PinTable::put_BackdropImage_FSS(BSTR newVal) //!! HDR??
 
 STDMETHODIMP PinTable::get_ColorGradeImage(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_szImageColorGrade, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -9361,8 +9354,7 @@ STDMETHODIMP PinTable::put_SlopeMin(float newVal)
 
 STDMETHODIMP PinTable::get_BallImage(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_szBallImage, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -9380,8 +9372,7 @@ STDMETHODIMP PinTable::put_BallImage(BSTR newVal)
 
 STDMETHODIMP PinTable::get_EnvironmentImage(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_szEnvImage, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -10167,8 +10158,7 @@ STDMETHODIMP PinTable::put_TiltTriggerTime(int newVal)
 
 STDMETHODIMP PinTable::get_BallFrontDecal(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_szBallImageDecal, -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 

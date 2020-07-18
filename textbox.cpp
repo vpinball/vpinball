@@ -104,8 +104,6 @@ void Textbox::SetDefaults(bool fromMouseClick)
 
 void Textbox::WriteRegDefaults()
 {
-   char strTmp[128];
-
    SaveValueInt("DefaultProps\\TextBox", "BackColor", m_d.m_backcolor);
    SaveValueInt("DefaultProps\\TextBox", "FontColor", m_d.m_fontcolor);
    SaveValueBool("DefaultProps\\TextBox", "TimerEnabled", m_d.m_tdr.m_TimerEnabled);
@@ -126,8 +124,10 @@ void Textbox::WriteRegDefaults()
    const float fTmp = (float)(fd.cySize.int64 / 10000.0);
    SaveValueFloat("DefaultProps\\TextBox", "FontSize", fTmp);
    size_t charCnt = wcslen(fd.lpstrName) + 1;
+   char * const strTmp = new char[2 * charCnt];
    WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, (int)charCnt, strTmp, (int)(2 * charCnt), NULL, NULL);
    SaveValueString("DefaultProps\\TextBox", "FontName", strTmp);
+   delete[] strTmp;
    int weight = fd.sWeight;
    int charset = fd.sCharset;
    SaveValueInt("DefaultProps\\TextBox", "FontWeight", weight);
@@ -139,7 +139,6 @@ void Textbox::WriteRegDefaults()
    SaveValueString("DefaultProps\\TextBox", "Text", m_d.sztext);
 }
 
-static char fontName[MAXTOKEN];
 char * Textbox::GetFontName()
 {
     if (m_pIFont)
@@ -147,6 +146,7 @@ char * Textbox::GetFontName()
         CComBSTR bstr;
         /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
 
+        static char fontName[LF_FACESIZE];
         WideCharToMultiByte(CP_ACP, 0, bstr, -1, fontName, LF_FACESIZE, NULL, NULL);
         return fontName;
     }
@@ -469,8 +469,8 @@ STDMETHODIMP Textbox::put_FontColor(OLE_COLOR newVal)
 
 STDMETHODIMP Textbox::get_Text(BSTR *pVal)
 {
-   WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, (char *)m_d.sztext, -1, wz, 512);
+   WCHAR wz[MAXSTRING];
+   MultiByteToWideChar(CP_ACP, 0, m_d.sztext, -1, wz, MAXSTRING);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -478,12 +478,9 @@ STDMETHODIMP Textbox::get_Text(BSTR *pVal)
 
 STDMETHODIMP Textbox::put_Text(BSTR newVal)
 {
-   if (lstrlenW(newVal) < 512)
-   {
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.sztext, 512, NULL, NULL);
-      if (g_pplayer)
-         PreRenderText();
-   }
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.sztext, MAXSTRING, NULL, NULL);
+   if (g_pplayer)
+      PreRenderText();
 
    return S_OK;
 }
