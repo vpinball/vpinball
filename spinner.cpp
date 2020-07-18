@@ -157,7 +157,7 @@ void Spinner::SetDefaults(bool fromMouseClick)
    else
       m_d.m_szImage = buf;
 
-   hr = LoadValueString("DefaultProps\\Spinner", "Surface", &m_d.m_szSurface, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\Spinner", "Surface", m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 }
@@ -275,7 +275,6 @@ void Spinner::EndPlay()
 void Spinner::ExportMesh(FILE *f)
 {
    char name[MAX_PATH];
-   char subObjName[MAX_PATH];
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
    std::vector<Vertex3D_NoTex2> transformedVertices;
    vector<HitObject*> dummyHitObj;
@@ -287,6 +286,7 @@ void Spinner::ExportMesh(FILE *f)
 
    if (m_d.m_showBracket)
    {
+      char subObjName[MAX_PATH];
       strncpy_s(subObjName, name, sizeof(subObjName)-1);
       strncat_s(subObjName, "Bracket", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
       WaveFrontObj_WriteObjectName(f, subObjName);
@@ -327,6 +327,7 @@ void Spinner::ExportMesh(FILE *f)
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
    UpdatePlate(transformedVertices.data());
 
+   char subObjName[MAX_PATH];
    strncpy_s(subObjName, name, sizeof(subObjName)-1);
    strncat_s(subObjName, "Plate", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
    WaveFrontObj_WriteObjectName(f, subObjName);
@@ -680,7 +681,7 @@ STDMETHODIMP Spinner::put_Damping(float newVal)
 
 STDMETHODIMP Spinner::get_Material(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -698,7 +699,7 @@ STDMETHODIMP Spinner::put_Material(BSTR newVal)
 
 STDMETHODIMP Spinner::get_Image(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -750,7 +751,7 @@ STDMETHODIMP Spinner::put_Y(float newVal)
 
 STDMETHODIMP Spinner::get_Surface(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 

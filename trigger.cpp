@@ -191,7 +191,7 @@ void Trigger::SetDefaults(bool fromMouseClick)
    m_d.m_hit_height = fromMouseClick ? LoadValueFloatWithDefault("DefaultProps\\Trigger", "HitHeight", 50.f) : 50.f;
    m_d.m_shape = fromMouseClick ? (TriggerShape)LoadValueIntWithDefault("DefaultProps\\Trigger", "Shape", TriggerWireA) : TriggerWireA;
 
-   HRESULT hr = LoadValueString("DefaultProps\\Trigger", "Surface", &m_d.m_szSurface, MAXTOKEN);
+   HRESULT hr = LoadValueString("DefaultProps\\Trigger", "Surface", m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
@@ -603,11 +603,10 @@ void Trigger::RenderDynamic()
 
 void Trigger::ExportMesh(FILE *f)
 {
-   char name[MAX_PATH];
-
    if (!m_d.m_visible || m_d.m_shape == TriggerNone)
       return;
 
+   char name[MAX_PATH];
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
    GenerateMesh();
    WaveFrontObj_WriteObjectName(f, name);
@@ -1161,7 +1160,7 @@ STDMETHODIMP Trigger::put_Y(float newVal)
 
 STDMETHODIMP Trigger::get_Surface(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -1320,7 +1319,7 @@ STDMETHODIMP Trigger::put_AnimSpeed(float newVal)
 
 STDMETHODIMP Trigger::get_Material(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 

@@ -128,7 +128,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
    m_d.m_color = fromMouseClick ? LoadValueIntWithDefault(regKey, "Color", RGB(255,255,255)) : RGB(255,255,255);
    m_d.m_rubbercolor = fromMouseClick ? LoadValueIntWithDefault(regKey, "RubberColor", RGB(128,50,50)) : RGB(128,50,50);
 
-   const HRESULT hr = LoadValueString(regKey, "Surface", &m_d.m_szSurface, MAXTOKEN);
+   const HRESULT hr = LoadValueString(regKey, "Surface", m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
@@ -673,7 +673,6 @@ void Flipper::RenderDynamic()
 void Flipper::ExportMesh(FILE *f)
 {
    char name[MAX_PATH];
-   char subObjName[MAX_PATH];
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
    Matrix3D matTrafo, matTemp;
    matTrafo.SetIdentity();
@@ -704,6 +703,7 @@ void Flipper::ExportMesh(FILE *f)
    }
    }
 
+   char subObjName[MAX_PATH];
    strncpy_s(subObjName, name, sizeof(subObjName)-1);
    strncat_s(subObjName, "Base", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
    WaveFrontObj_WriteObjectName(f, subObjName);
@@ -1190,7 +1190,7 @@ STDMETHODIMP Flipper::put_Y(float newVal)
 
 STDMETHODIMP Flipper::get_Surface(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -1206,7 +1206,7 @@ STDMETHODIMP Flipper::put_Surface(BSTR newVal)
 
 STDMETHODIMP Flipper::get_Material(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -1267,7 +1267,7 @@ STDMETHODIMP Flipper::put_OverridePhysics(PhysicsSet newVal)
 
 STDMETHODIMP Flipper::get_RubberMaterial(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szRubberMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -1515,7 +1515,7 @@ STDMETHODIMP Flipper::put_FlipperRadiusMin(float newVal)
 
 STDMETHODIMP Flipper::get_Image(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 

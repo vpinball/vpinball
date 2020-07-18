@@ -56,7 +56,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Plunger", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Plunger", "TimerInterval", 100) : 100;
 
-   hr = LoadValueString("DefaultProps\\Plunger", "Surface", &m_d.m_szSurface, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\Plunger", "Surface", m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
@@ -1141,7 +1141,7 @@ STDMETHODIMP Plunger::put_Type(PlungerType newVal)
 
 STDMETHODIMP Plunger::get_Material(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -1159,7 +1159,7 @@ STDMETHODIMP Plunger::put_Material(BSTR newVal)
 
 STDMETHODIMP Plunger::get_Image(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -1197,7 +1197,7 @@ STDMETHODIMP Plunger::put_AnimFrames(int newVal)
 
 STDMETHODIMP Plunger::get_TipShape(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXTIPSHAPE];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szTipShape, -1, wz, MAXTIPSHAPE);
    *pVal = SysAllocString(wz);
 
@@ -1206,7 +1206,7 @@ STDMETHODIMP Plunger::get_TipShape(BSTR *pVal)
 
 STDMETHODIMP Plunger::put_TipShape(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szTipShape, MAXTOKEN, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szTipShape, MAXTIPSHAPE, NULL, NULL);
 
    return S_OK;
 }
@@ -1400,7 +1400,7 @@ STDMETHODIMP Plunger::put_ZAdjust(float newVal)
 
 STDMETHODIMP Plunger::get_Surface(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 

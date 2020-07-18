@@ -1469,7 +1469,7 @@ STDMETHODIMP Surface::put_Threshold(float newVal)
 
 STDMETHODIMP Surface::get_Image(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -1493,7 +1493,7 @@ STDMETHODIMP Surface::put_Image(BSTR newVal)
 
 STDMETHODIMP Surface::get_SideMaterial(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSideMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -1511,7 +1511,7 @@ STDMETHODIMP Surface::put_SideMaterial(BSTR newVal)
 
 STDMETHODIMP Surface::get_SlingshotMaterial(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSlingShotMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -1571,7 +1571,7 @@ STDMETHODIMP Surface::put_HeightTop(float newVal)
 
 STDMETHODIMP Surface::get_TopMaterial(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szTopMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -1589,34 +1589,34 @@ STDMETHODIMP Surface::put_TopMaterial(BSTR newVal)
 
 STDMETHODIMP Surface::get_PhysicsMaterial(BSTR *pVal)
 {
-    WCHAR wz[512];
-    MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
-    *pVal = SysAllocString(wz);
+   WCHAR wz[MAXNAMEBUFFER];
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
+   *pVal = SysAllocString(wz);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::put_PhysicsMaterial(BSTR newVal)
 {
-    char buf[MAXNAMEBUFFER];
-    WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
-    m_d.m_szPhysicsMaterial = buf;
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, NULL, NULL);
+   m_d.m_szPhysicsMaterial = buf;
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_OverwritePhysics(VARIANT_BOOL *pVal)
 {
-    *pVal = FTOVB(m_d.m_overwritePhysics);
+   *pVal = FTOVB(m_d.m_overwritePhysics);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
-    m_d.m_overwritePhysics = VBTOb(newVal);
+   m_d.m_overwritePhysics = VBTOb(newVal);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_CanDrop(VARIANT_BOOL *pVal)
@@ -1779,7 +1779,7 @@ STDMETHODIMP Surface::put_Visible(VARIANT_BOOL newVal)
 
 STDMETHODIMP Surface::get_SideImage(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSideImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
