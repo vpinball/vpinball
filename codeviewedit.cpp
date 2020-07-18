@@ -371,10 +371,8 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn, const stri
 ////////////////Preferences
 CVPrefrence::CVPrefrence()
 {
-   szControlName = nullptr;
    m_rgb = 0;
    m_highlight = false;
-   szRegName = nullptr;
    m_sciKeywordID = 0;
    memset(&m_logFont, 0, sizeof(LOGFONT));
 }
@@ -409,62 +407,31 @@ void CVPrefrence::ReadCheckBox(const HWND hwndDlg)
 
 void CVPrefrence::GetPrefsFromReg()
 {
-	char RegEntry[33];
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	m_highlight = LoadValueBoolWithDefault("CVEdit", RegEntry, m_highlight);
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	strncat_s(RegEntry, "_color", sizeof(RegEntry)-strnlen_s(RegEntry, sizeof(RegEntry))-1);
-	m_rgb = LoadValueIntWithDefault("CVEdit", RegEntry, m_rgb);
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	strncat_s(RegEntry, "_FontPointSize", sizeof(RegEntry)-strnlen_s(RegEntry, sizeof(RegEntry))-1);
-	m_pointSize = LoadValueIntWithDefault("CVEdit", RegEntry, m_pointSize);
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	strncat_s(RegEntry, "_Font", sizeof(RegEntry)-strnlen_s(RegEntry, sizeof(RegEntry))-1);
+	m_highlight = LoadValueBoolWithDefault("CVEdit", szRegName, m_highlight);
+	m_rgb = LoadValueIntWithDefault("CVEdit", szRegName+"_color", m_rgb);
+	m_pointSize = LoadValueIntWithDefault("CVEdit", szRegName+"_FontPointSize", m_pointSize);
 
 	char bakupFaceName[LF_FACESIZE]; // to save the default font name, in case the corresponding registry entry is empty
 	strncpy_s(bakupFaceName, m_logFont.lfFaceName, sizeof(bakupFaceName)-1);
-	if (LoadValueString("CVEdit", RegEntry, m_logFont.lfFaceName, LF_FACESIZE) != S_OK)
+	if (LoadValueString("CVEdit", szRegName+"_Font", m_logFont.lfFaceName, LF_FACESIZE) != S_OK)
 		strncpy_s(m_logFont.lfFaceName, bakupFaceName, sizeof(m_logFont.lfFaceName)-1);
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	strncat_s(RegEntry, "_FontWeight", sizeof(RegEntry)-strnlen_s(RegEntry, sizeof(RegEntry))-1);
-	m_logFont.lfWeight = LoadValueIntWithDefault("CVEdit", RegEntry, m_logFont.lfWeight);
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	strncat_s(RegEntry, "_FontItalic", sizeof(RegEntry)-strnlen_s(RegEntry, sizeof(RegEntry))-1);
-	m_logFont.lfItalic = LoadValueIntWithDefault("CVEdit", RegEntry, m_logFont.lfItalic);
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	strncat_s(RegEntry, "_FontUnderline", sizeof(RegEntry)-strnlen_s(RegEntry, sizeof(RegEntry))-1);
-	m_logFont.lfUnderline = LoadValueIntWithDefault("CVEdit", RegEntry, m_logFont.lfUnderline);
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	strncat_s(RegEntry, "_FontStrike", sizeof(RegEntry)-strnlen_s(RegEntry, sizeof(RegEntry))-1);
-	m_logFont.lfStrikeOut = LoadValueIntWithDefault("CVEdit", RegEntry, m_logFont.lfStrikeOut);
+
+	m_logFont.lfWeight = LoadValueIntWithDefault("CVEdit", szRegName+"_FontWeight", m_logFont.lfWeight);
+	m_logFont.lfItalic = LoadValueIntWithDefault("CVEdit", szRegName+"_FontItalic", m_logFont.lfItalic);
+	m_logFont.lfUnderline = LoadValueIntWithDefault("CVEdit", szRegName+"_FontUnderline", m_logFont.lfUnderline);
+	m_logFont.lfStrikeOut = LoadValueIntWithDefault("CVEdit", szRegName+"_FontStrike", m_logFont.lfStrikeOut);
 }
 
 void CVPrefrence::SetPrefsToReg()
 {
-	char RegEntry[33];
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	SaveValueBool("CVEdit", RegEntry, m_highlight);
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	strncat_s(RegEntry, "_color", sizeof(RegEntry)-strnlen_s(RegEntry, sizeof(RegEntry))-1);
-	SaveValueInt("CVEdit", RegEntry, m_rgb);
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	strncat_s(RegEntry, "_FontPointSize", sizeof(RegEntry)-strnlen_s(RegEntry, sizeof(RegEntry))-1);
-	SaveValueInt("CVEdit", RegEntry, m_pointSize);
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	strncat_s(RegEntry, "_Font", sizeof(RegEntry)-strnlen_s(RegEntry, sizeof(RegEntry))-1);
-	SaveValueString("CVEdit", RegEntry, m_logFont.lfFaceName);
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	strncat_s(RegEntry, "_FontWeight", sizeof(RegEntry)-strnlen_s(RegEntry, sizeof(RegEntry))-1);
-	SaveValueInt("CVEdit", RegEntry, m_logFont.lfWeight);
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	strncat_s(RegEntry, "_FontItalic", sizeof(RegEntry)-strnlen_s(RegEntry, sizeof(RegEntry))-1);
-	SaveValueInt("CVEdit", RegEntry, m_logFont.lfItalic);
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	strncat_s(RegEntry, "_FontUnderline", sizeof(RegEntry)-strnlen_s(RegEntry, sizeof(RegEntry))-1);
-	SaveValueInt("CVEdit", RegEntry, m_logFont.lfUnderline);
-	strncpy_s(RegEntry, szRegName, sizeof(RegEntry)-1);
-	strncat_s(RegEntry, "_FontStrike", sizeof(RegEntry)-strnlen_s(RegEntry, sizeof(RegEntry))-1);
-	SaveValueInt("CVEdit", RegEntry, m_logFont.lfStrikeOut);
+	SaveValueBool("CVEdit", szRegName, m_highlight);
+	SaveValueInt("CVEdit", szRegName+"_color", m_rgb);
+	SaveValueInt("CVEdit", szRegName+"_FontPointSize", m_pointSize);
+	SaveValueString("CVEdit", szRegName+"_Font", m_logFont.lfFaceName);
+	SaveValueInt("CVEdit", szRegName+"_FontWeight", m_logFont.lfWeight);
+	SaveValueInt("CVEdit", szRegName+"_FontItalic", m_logFont.lfItalic);
+	SaveValueInt("CVEdit", szRegName+"_FontUnderline", m_logFont.lfUnderline);
+	SaveValueInt("CVEdit", szRegName+"_FontStrike", m_logFont.lfStrikeOut);
 }
 
 void CVPrefrence::SetDefaultFont(const HWND hwndDlg)
