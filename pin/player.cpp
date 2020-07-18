@@ -1709,7 +1709,7 @@ HRESULT Player::Init()
             CHAR wzDst[256];
             sprintf_s(wzDst, "Initializing Object-Physics %s...", bstr2);
             delete [] bstr2;
-            SetWindowText(hwndProgressName, wzDst);
+            m_ptable->m_progressDialog.SetName(std::string(bstr2));
          }
 #endif
          const size_t currentsize = m_vho.size();
@@ -2251,7 +2251,7 @@ void Player::InitStatic()
             {
                ph->RenderStatic();
                if (((i % 16) == 0) && iter == 0)
-                   m_ptable->m_progressDialog.SetProgress(60 + ((15 * i) / m_ptable->m_vedit.size()));
+                   m_ptable->m_progressDialog.SetProgress(60 + ((15 * (int)i) / (int)m_ptable->m_vedit.size()));
             }
          }
       }
@@ -2266,7 +2266,7 @@ void Player::InitStatic()
             {
                ph->RenderStatic();
                if (((i % 16) == 0) && iter == 0)
-                  m_ptable->m_progressDialog.SetProgress(75 + ((15 * i) / m_ptable->m_vedit.size()));
+                  m_ptable->m_progressDialog.SetProgress(75 + ((15 * (int)i) / (int)m_ptable->m_vedit.size()));
             }
          }
       }
@@ -4614,7 +4614,7 @@ void Player::UpdateHUD()
 		for (unsigned int i2 = 0; i2 < 2; ++i2)
 		{
 			const std::string& s = (i2 == 0) ? m_ptable->m_szBlurb : m_ptable->m_szDescription;
-			int length = s.length();
+			int length = (int)s.length();
 			const char *desc = s.c_str();
 			while (length > 0)
 			{

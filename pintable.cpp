@@ -3117,7 +3117,7 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, con
       ULONG writ;
       BiffWriter bw(pstm, hcrypthash);
 
-      const int len = szValue.length();
+      const int len = (int)szValue.length();
       WCHAR * const wzT = new WCHAR[len + 1];
       MultiByteToWideChar(CP_ACP, 0, szValue.c_str(), -1, wzT, len + 1);
 
@@ -7820,7 +7820,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
          const char * const szSrc = m_materials[ivar]->m_szName.c_str();
-         const DWORD cwch = m_materials[ivar]->m_szName.length() + 1;
+         const DWORD cwch = (DWORD)m_materials[ivar]->m_szName.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == NULL)
             ShowError("IDC_MATERIAL_COMBO alloc failed");
@@ -8043,7 +8043,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       else
       {
          const char * const szSrc = m_materials[dwCookie]->m_szName.c_str();
-         const DWORD cwch = m_materials[dwCookie]->m_szName.length() + 1;
+         const DWORD cwch = (DWORD)m_materials[dwCookie]->m_szName.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
          MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);
