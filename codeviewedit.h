@@ -47,8 +47,8 @@ public:
    int IDC_Font_code;
 
 private:
-   const char* szControlName; // unused
-   const char *szRegName;
+   string szControlName; //!! unused
+   string szRegName;
    bool m_highlight;
 
 public:
