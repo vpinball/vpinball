@@ -494,13 +494,13 @@ void HitTarget::TransformVertices()
 void HitTarget::ExportMesh(FILE *f)
 {
    char name[MAX_PATH];
-   char subObjName[MAX_PATH];
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
 
    SetMeshType(m_d.m_targetType);
 
    m_transformedVertices.resize(m_numVertices);
 
+   char subObjName[MAX_PATH];
    strncpy_s(subObjName, name, sizeof(subObjName)-1);
    WaveFrontObj_WriteObjectName(f, subObjName);
 
@@ -990,8 +990,7 @@ HRESULT HitTarget::InitPostLoad()
 
 STDMETHODIMP HitTarget::get_Image(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -1026,7 +1025,7 @@ float HitTarget::GetDepth(const Vertex3Ds& viewDir) const
 
 STDMETHODIMP HitTarget::get_Material(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -1417,7 +1416,7 @@ STDMETHODIMP HitTarget::put_DrawStyle(TargetType newVal)
 
 STDMETHODIMP HitTarget::get_PhysicsMaterial(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 

@@ -924,7 +924,7 @@ STDMETHODIMP Rubber::put_Thickness(int newVal)
 
 STDMETHODIMP Rubber::get_Material(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
@@ -942,7 +942,7 @@ STDMETHODIMP Rubber::put_Material(BSTR newVal)
 
 STDMETHODIMP Rubber::get_Image(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -1176,7 +1176,7 @@ STDMETHODIMP Rubber::put_RotZ(float newVal)
 
 STDMETHODIMP Rubber::get_PhysicsMaterial(BSTR *pVal)
 {
-    WCHAR wz[512];
+    WCHAR wz[MAXNAMEBUFFER];
     MultiByteToWideChar(CP_ACP, 0, m_d.m_szPhysicsMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
     *pVal = SysAllocString(wz);
 

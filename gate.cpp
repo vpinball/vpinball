@@ -116,7 +116,7 @@ void Gate::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_TimerEnabled = fromMouseClick ? LoadValueBoolWithDefault("DefaultProps\\Gate", "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Gate", "TimerInterval", 100) : 100;
 
-   const HRESULT hr = LoadValueString("DefaultProps\\Gate", "Surface", &m_d.m_szSurface, MAXTOKEN);
+   const HRESULT hr = LoadValueString("DefaultProps\\Gate", "Surface", m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
@@ -479,7 +479,6 @@ void Gate::RenderDynamic()
 void Gate::ExportMesh(FILE *f)
 {
    char name[MAX_PATH];
-   char subName[MAX_PATH];
    Vertex3D_NoTex2 *buf;
 
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
@@ -488,6 +487,7 @@ void Gate::ExportMesh(FILE *f)
    if (m_d.m_showBracket)
    {
       buf = new Vertex3D_NoTex2[gateBracketNumVertices];
+      char subName[MAX_PATH];
       strncpy_s(subName, name, sizeof(subName)-1);
       strncat_s(subName, "Bracket", sizeof(subName)-strnlen_s(subName, sizeof(subName))-1);
       WaveFrontObj_WriteObjectName(f, subName);
@@ -504,6 +504,7 @@ void Gate::ExportMesh(FILE *f)
    SetGateType(m_d.m_type);
 
    buf = new Vertex3D_NoTex2[m_numVertices];
+   char subName[MAX_PATH];
    strncpy_s(subName, name, sizeof(subName)-1);
    strncat_s(subName, "Wire", sizeof(subName)-strnlen_s(subName, sizeof(subName))-1);
    WaveFrontObj_WriteObjectName(f, subName);
@@ -791,7 +792,7 @@ STDMETHODIMP Gate::put_Y(float newVal)
 
 STDMETHODIMP Gate::get_Surface(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -807,7 +808,7 @@ STDMETHODIMP Gate::put_Surface(BSTR newVal)
 
 STDMETHODIMP Gate::get_Material(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 

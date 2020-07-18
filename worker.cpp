@@ -76,11 +76,9 @@ unsigned int WINAPI VPWorkerThreadStart(void *param)
 
 void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 {
-   AutoSavePackage *pasp = (AutoSavePackage *)lParam;
+   AutoSavePackage * const pasp = (AutoSavePackage *)lParam;
 
-   FastIStorage *pstgroot = pasp->pstg;
-
-   IStorage *pstgDisk;
+   FastIStorage * const pstgroot = pasp->pstg;
 
    const WCHAR * const wzSaveName = L"AutoSave";
    const WCHAR * const wzSaveExtension = L".vpx";
@@ -101,6 +99,7 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
    stg.reserved = 0;
    stg.ulSectorSize = 4096;
 
+   IStorage* pstgDisk;
    HRESULT hr;
    if (SUCCEEDED(hr = StgCreateStorageEx(wzT, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
       STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgDisk)))

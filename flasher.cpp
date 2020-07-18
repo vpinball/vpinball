@@ -778,8 +778,7 @@ STDMETHODIMP Flasher::put_Color(OLE_COLOR newVal)
 
 STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageA, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -799,8 +798,7 @@ STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
 
 STDMETHODIMP Flasher::get_ImageB(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageB, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -820,7 +818,7 @@ STDMETHODIMP Flasher::put_ImageB(BSTR newVal)
 
 STDMETHODIMP Flasher::get_Filter(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXNAMEBUFFER];
 
    switch (m_d.m_filter)
    {
@@ -845,6 +843,7 @@ STDMETHODIMP Flasher::get_Filter(BSTR *pVal)
       break;
    }
    default:
+      assert(!"Invalid Flasher Filter");
    case Filter_None:
    {
       MultiByteToWideChar(CP_ACP, 0, "None", -1, wz, MAXNAMEBUFFER);

@@ -237,8 +237,7 @@ STDMETHODIMP BallEx::put_Color(OLE_COLOR newVal)
 
 STDMETHODIMP BallEx::get_Image(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImage, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -270,8 +269,7 @@ HRESULT BallEx::put_UserValue(VARIANT *newVal)
 
 STDMETHODIMP BallEx::get_FrontDecal(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImageDecal, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 

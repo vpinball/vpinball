@@ -107,7 +107,7 @@ void Light::SetDefaults(bool fromMouseClick)
 
    //m_d.m_bordercolor = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Light", "BorderColor", RGB(0,0,0)) : RGB(0,0,0);
 
-   hr = LoadValueString("DefaultProps\\Light", "Surface", &m_d.m_szSurface, MAXTOKEN);
+   hr = LoadValueString("DefaultProps\\Light", "Surface", m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
@@ -662,8 +662,8 @@ void Light::PrepareMoversCustom()
    if (vtri.size() == 0)
    {
       char name[MAX_PATH];
-      char textBuffer[MAX_PATH];
       WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+      char textBuffer[MAX_PATH];
       _snprintf_s(textBuffer, MAX_PATH-1, "%s has an invalid shape! It can not be rendered!", name);
       ShowError(textBuffer);
       return;
@@ -1228,7 +1228,7 @@ void Light::InitShape()
 
 STDMETHODIMP Light::get_BlinkPattern(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[NUM_RGB_BLINK_PATTERN];
    MultiByteToWideChar(CP_ACP, 0, m_rgblinkpattern, -1, wz, NUM_RGB_BLINK_PATTERN);
    *pVal = SysAllocString(wz);
 
@@ -1337,7 +1337,7 @@ STDMETHODIMP Light::put_IntensityScale(float newVal)
 
 STDMETHODIMP Light::get_Surface(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -1354,7 +1354,7 @@ STDMETHODIMP Light::put_Surface(BSTR newVal)
 
 STDMETHODIMP Light::get_Image(BSTR *pVal)
 {
-   WCHAR wz[512];
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 

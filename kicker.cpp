@@ -79,7 +79,7 @@ void Kicker::SetDefaults(bool fromMouseClick)
 
    SetDefaultPhysics(fromMouseClick);
 
-   const HRESULT hr = LoadValueString("DefaultProps\\Kicker", "Surface", &m_d.m_szSurface, MAXTOKEN);
+   const HRESULT hr = LoadValueString("DefaultProps\\Kicker", "Surface", m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
@@ -883,8 +883,7 @@ STDMETHODIMP Kicker::put_Y(float newVal)
 
 STDMETHODIMP Kicker::get_Surface(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXTOKEN];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, MAXTOKEN);
    *pVal = SysAllocString(wz);
 
@@ -1051,8 +1050,7 @@ STDMETHODIMP Kicker::put_DrawStyle(KickerType newVal)
 
 STDMETHODIMP Kicker::get_Material(BSTR *pVal)
 {
-   WCHAR wz[512];
-
+   WCHAR wz[MAXNAMEBUFFER];
    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
    *pVal = SysAllocString(wz);
 
