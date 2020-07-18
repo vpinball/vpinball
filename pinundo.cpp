@@ -119,12 +119,10 @@ void PinUndo::Undo()
 
    if (m_vur.size() == m_cleanpoint)
    {
-      LocalString ls(IDS_UNDOPASTSAVE);
+      const LocalString ls(IDS_UNDOPASTSAVE);
       const int result = m_ptable->ShowMessageBox(ls.m_szbuffer);
       if (result != IDYES)
-      {
          return;
-      }
    }
 
    UndoRecord * const pur = m_vur[m_vur.size() - 1];

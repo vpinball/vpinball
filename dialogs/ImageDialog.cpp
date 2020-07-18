@@ -74,28 +74,28 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          ListView_SetExtendedListViewStyle(hListView, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
          lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
-         LocalString ls(IDS_NAME);
-         lvcol.pszText = ls.m_szbuffer;// = "Name";
+         const LocalString ls(IDS_NAME);
+         lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";
          lvcol.cx = 100;
          ListView_InsertColumn(hListView, 0, &lvcol);
 
-         LocalString ls2(IDS_IMPORTPATH);
-         lvcol.pszText = ls2.m_szbuffer; // = "Import Path";
+         const LocalString ls2(IDS_IMPORTPATH);
+         lvcol.pszText = (LPSTR)ls2.m_szbuffer; // = "Import Path";
          lvcol.cx = 200;
          ListView_InsertColumn(hListView, 1, &lvcol);
 
-         LocalString ls3(IDS_IMAGESIZE);
-         lvcol.pszText = ls3.m_szbuffer; // = "Image Size";
+         const LocalString ls3(IDS_IMAGESIZE);
+         lvcol.pszText = (LPSTR)ls3.m_szbuffer; // = "Image Size";
          lvcol.cx = 100;
          ListView_InsertColumn(hListView, 2, &lvcol);
 
-         LocalString ls4( IDS_USED_IN_TABLE );
-         lvcol.pszText = ls4.m_szbuffer; // = "In use";
+         const LocalString ls4(IDS_USED_IN_TABLE);
+         lvcol.pszText = (LPSTR)ls4.m_szbuffer; // = "In use";
          lvcol.cx = 45;
          ListView_InsertColumn(hListView, 3, &lvcol);
 
-         LocalString ls5(IDS_IMAGE_RAW_SIZE);
-         lvcol.pszText = ls5.m_szbuffer; // = "Raw Size";
+         const LocalString ls5(IDS_IMAGE_RAW_SIZE);
+         lvcol.pszText = (LPSTR)ls5.m_szbuffer; // = "Raw Size";
          lvcol.cx = 60;
          ListView_InsertColumn(hListView, 4, &lvcol);
 
@@ -285,7 +285,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             RECT rcText = rcClient;
 
             //ExtTextOut(pdis->hDC, 0, 20, 0, NULL, "Image\nPreview", 13, NULL);
-            LocalString ls(IDS_IMAGE_PREVIEW);
+            const LocalString ls(IDS_IMAGE_PREVIEW);
             const int len = lstrlen(ls.m_szbuffer);
             DrawText(pdis->hDC, ls.m_szbuffer/*"Image\n\nPreview"*/, len, &rcText, DT_CALCRECT);
 
@@ -592,7 +592,7 @@ void ImageDialog::DeleteImage()
 
    if (count > 0)
    {
-      LocalString ls(IDS_REMOVEIMAGE);
+      const LocalString ls(IDS_REMOVEIMAGE);
       const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
@@ -635,7 +635,7 @@ void ImageDialog::Reimport()
 
    if (count > 0)
    {
-      LocalString ls(IDS_REPLACEIMAGE);
+      const LocalString ls(IDS_REPLACEIMAGE);
       const int ans = MessageBox(ls.m_szbuffer/*"Are you sure you want to replace this image?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
@@ -715,7 +715,7 @@ void ImageDialog::ReimportFrom()
 
    if (sel != -1)
    {
-      LocalString ls(IDS_REPLACEIMAGE);
+      const LocalString ls(IDS_REPLACEIMAGE);
       const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this image with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {

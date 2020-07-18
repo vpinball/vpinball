@@ -7,7 +7,6 @@
 
 AboutDialog::AboutDialog() : CDialog(IDD_ABOUT)
 {
-   m_urlString[0] = '\0';
 }
 
 AboutDialog::~AboutDialog()
@@ -85,7 +84,7 @@ BOOL AboutDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          else
          {
             const LPCTSTR szSite = GetDlgItem(IDC_TRANSWEBSITE).GetWindowText();
-            strncpy_s(m_urlString, szSite, sizeof(m_urlString)-1);
+            m_urlString = szSite;
             /*const HRESULT hr =*/ OpenURL(m_urlString);
          }
          return TRUE;

@@ -286,10 +286,8 @@ void Spinner::ExportMesh(FILE *f)
 
    if (m_d.m_showBracket)
    {
-      char subObjName[MAX_PATH];
-      strncpy_s(subObjName, name, sizeof(subObjName)-1);
-      strncat_s(subObjName, "Bracket", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
-      WaveFrontObj_WriteObjectName(f, subObjName);
+      const string subObjName = name + string("Bracket");
+      WaveFrontObj_WriteObjectName(f, subObjName.c_str());
 
       m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
@@ -327,10 +325,8 @@ void Spinner::ExportMesh(FILE *f)
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
    UpdatePlate(transformedVertices.data());
 
-   char subObjName[MAX_PATH];
-   strncpy_s(subObjName, name, sizeof(subObjName)-1);
-   strncat_s(subObjName, "Plate", sizeof(subObjName)-strnlen_s(subObjName, sizeof(subObjName))-1);
-   WaveFrontObj_WriteObjectName(f, subObjName);
+   const string subObjName = name + string("Plate");
+   WaveFrontObj_WriteObjectName(f, subObjName.c_str());
 
    WaveFrontObj_WriteVertexInfo(f, transformedVertices.data(), spinnerPlateNumVertices);
    WaveFrontObj_WriteFaceInfoList(f, spinnerPlateIndices, spinnerPlateNumFaces);

@@ -221,8 +221,8 @@ public:
    void SaveToStream(IStream *pistream, HCRYPTHASH const hcrypthash);
    void SaveToFile(const char *filename);
    void LoadFromStream(IStream *pistream, HCRYPTHASH const hcrypthash, const HCRYPTKEY hcryptkey); // incl. table protection
-   void LoadFromFile(const char *filename);
-   void SetCaption(const char * const szCaption);
+   void LoadFromFile(const string& filename);
+   void SetCaption(const string& szCaption);
 
    bool ShowTooltip(SCNotification *Scn);
    void ShowAutoComplete(SCNotification *pSCN);

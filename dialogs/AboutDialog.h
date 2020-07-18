@@ -14,7 +14,7 @@ protected:
    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
    virtual void OnOK();
 
-   char m_urlString[MAX_PATH];
+   string m_urlString;
 };
 
 #endif

@@ -122,14 +122,14 @@ BOOL MaterialDialog::OnInitDialog()
    ListView_SetExtendedListViewStyle(m_hMaterialList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
    LVCOLUMN lvcol;
    lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
-   LocalString ls(IDS_NAME);
-   lvcol.pszText = ls.m_szbuffer;// = "Name";
+   const LocalString ls(IDS_NAME);
+   lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";
    lvcol.cx = 230;
    ListView_InsertColumn(m_hMaterialList, 0, &lvcol);
 
    lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
-   LocalString ls2(IDS_USED_IN_TABLE);
-   lvcol.pszText = ls2.m_szbuffer;// = "Used in Table";
+   const LocalString ls2(IDS_USED_IN_TABLE);
+   lvcol.pszText = (LPSTR)ls2.m_szbuffer; // = "Used in Table";
    lvcol.cx = 50;
    ListView_InsertColumn(m_hMaterialList, 1, &lvcol);
    pt->ListMaterials(m_hMaterialList);
@@ -460,7 +460,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          const int count = ListView_GetSelectedCount(m_hMaterialList);
          if (count > 0)
          {
-            LocalString ls(IDS_REMOVEMATERIAL);
+            const LocalString ls(IDS_REMOVEMATERIAL);
             const int ans = MessageBox(ls.m_szbuffer/*"Are you sure you want to remove this material?"*/, "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2);
             if (ans == IDYES)
             {

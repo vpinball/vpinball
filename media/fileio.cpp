@@ -1,9 +1,9 @@
 #include "stdafx.h"
 
-bool Exists(const char* const filePath)
+bool Exists(const string& filePath)
 {
 	//This will get the file attributes bitlist of the file
-	const DWORD fileAtt = GetFileAttributesA(filePath);
+	const DWORD fileAtt = GetFileAttributesA(filePath.c_str());
 
 	//If an error occurred it will equal to INVALID_FILE_ATTRIBUTES
 	if (fileAtt == INVALID_FILE_ATTRIBUTES)
@@ -33,41 +33,6 @@ void ExtensionFromFilename(const char * const szfilename, char * const szextensi
    }
 
    lstrcpy(szextension, &szfilename[begin]);
-}
-
-void TitleFromFilename(const char * const szfilename, char *sztitle)
-{
-   const int len = lstrlen(szfilename);
-
-   int begin;
-   for (begin = len; begin >= 0; begin--)
-   {
-      if (szfilename[begin] == '\\')
-      {
-         begin++;
-         break;
-      }
-   }
-
-   int end;
-   for (end = len; end >= 0; end--)
-   {
-      if (szfilename[end] == '.')
-      {
-         break;
-      }
-   }
-
-   if (end == 0)
-   {
-      end = len - 1;
-   }
-
-   const char *szT = &szfilename[begin];
-   int count = end - begin;
-
-   while (count--) { *sztitle++ = *szT++; }
-   *sztitle = '\0';
 }
 
 void TitleFromFilename(const string& szfilename, string& sztitle)

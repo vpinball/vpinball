@@ -362,25 +362,18 @@ STDMETHODIMP ScriptGlobalTable::get_LockbarKey(long *pVal)
 
 bool ScriptGlobalTable::GetTextFileFromDirectory(const char * const szfilename, const char * const dirname, BSTR *pContents)
 {
-   char *szPath = new char[MAX_PATH + lstrlen(szfilename)];
+   string szPath;
    bool success = false;
 
    if (dirname != NULL)
-   {
-      lstrcpy(szPath, m_vpinball->m_szMyPath);
-      lstrcat(szPath, dirname);
-   }
-   else
-   {
-      // Current directory
-      szPath[0] = '\0';
-   }
-   lstrcat(szPath, szfilename);
+      szPath = string(m_vpinball->m_szMyPath) + dirname;
+   // else Current directory
+   szPath += szfilename;
 
    int len;
    BYTE *szContents;
 
-   if (RawReadFromFile(szPath, &len, (char **)&szContents))
+   if (RawReadFromFile(szPath.c_str(), &len, (char **)&szContents))
    {
       BYTE *szDataStart = szContents;
       int encoding = CP_ACP;
@@ -414,8 +407,6 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const char * const szfilename, 
 
       success = true;
    }
-
-   delete[] szPath;
 
    return success;
 }
@@ -1700,12 +1691,8 @@ void PinTable::InitBuiltinTable(VPinball * const pvp, const bool useBlankTable)
 
    //LoadGameFromFilename("d:\\gdk\\data\\tables\\newsave\\basetable6.vpt");
 
-   char szSuffix[32];
-
-   LocalString ls(IDS_TABLE);
-   lstrcpy(m_szTitle, ls.m_szbuffer/*"Table"*/);
-   _itoa_s(m_vpinball->m_NextTableID, szSuffix, sizeof(szSuffix), 10);
-   lstrcat(m_szTitle, szSuffix);
+   const LocalString ls(IDS_TABLE);
+   m_szTitle = ls.m_szbuffer/*"Table"*/ + std::to_string(m_vpinball->m_NextTableID);
    m_vpinball->m_NextTableID++;
    m_szFileName[0] = '\0';
 
@@ -1725,9 +1712,9 @@ void PinTable::SetDefaultView()
    m_zoom = 0.5f;
 }
 
-void PinTable::SetCaption(const char * const szCaption)
+void PinTable::SetCaption(const string& szCaption)
 {
-   m_mdiTable->SetWindowText(szCaption);
+   m_mdiTable->SetWindowText(szCaption.c_str());
    m_pcv->SetCaption(szCaption);
 }
 
@@ -2466,7 +2453,7 @@ void PinTable::AutoSave()
    m_vpinball->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
 
    {
-      LocalString ls(IDS_AUTOSAVING);
+      const LocalString ls(IDS_AUTOSAVING);
       m_vpinball->SetActionCur(ls.m_szbuffer);
       m_vpinball->SetCursorCur(NULL, IDC_WAIT);
    }
@@ -2521,7 +2508,7 @@ HRESULT PinTable::Save(const bool saveAs)
       ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
       char szInitialDir[MAXSTRING];
-      char szFoo[MAXSTRING];
+      string szFoo;
       HRESULT hr = LoadValueString("RecentDir", "LoadDir", szInitialDir, MAXSTRING);
       if (hr == S_OK)
       {
@@ -2529,9 +2516,8 @@ HRESULT PinTable::Save(const bool saveAs)
       }
       else
       {
-         lstrcpy(szFoo, m_vpinball->m_szMyPath);
-         lstrcat(szFoo, "Tables\\");
-         ofn.lpstrInitialDir = szFoo;
+         szFoo = m_vpinball->m_szMyPath + string("Tables\\");
+         ofn.lpstrInitialDir = szFoo.c_str();
       }
 
       const int ret = GetSaveFileName(&ofn);
@@ -2554,7 +2540,7 @@ HRESULT PinTable::Save(const bool saveAs)
          if (FAILED(hr = StgCreateStorageEx(wszCodeFile, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
             STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgRoot)))
          {
-            LocalString ls(IDS_SAVEERROR);
+            const LocalString ls(IDS_SAVEERROR);
             m_mdiTable->MessageBox(ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
             return hr;
          }
@@ -2581,14 +2567,14 @@ HRESULT PinTable::Save(const bool saveAs)
       if (FAILED(hr = StgCreateStorageEx(wszCodeFile, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
          STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgRoot)))
       {
-         LocalString ls(IDS_SAVEERROR);
+         const LocalString ls(IDS_SAVEERROR);
          m_mdiTable->MessageBox(ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
          return hr;
       }
    }
 
    {
-      LocalString ls(IDS_SAVING);
+      const LocalString ls(IDS_SAVING);
       m_vpinball->SetActionCur(ls.m_szbuffer);
       m_vpinball->SetCursorCur(NULL, IDC_WAIT);
    }
@@ -2846,7 +2832,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
       {
          pstgData->Revert();
          pstgRoot->Revert();
-         LocalString ls(IDS_SAVEERROR);
+         const LocalString ls(IDS_SAVEERROR);
          m_mdiTable->MessageBox(ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
       }
       pstgData->Release();
@@ -3612,7 +3598,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
    ::SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
 
-   LocalString ls(IDS_LOADING);
+   const LocalString ls(IDS_LOADING);
    m_vpinball->SetActionCur(ls.m_szbuffer);
    m_vpinball->SetCursorCur(NULL, IDC_WAIT);
 
@@ -4824,7 +4810,7 @@ void PinTable::OnRightButtonDown(int x, int y)
 
 void PinTable::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISelect *psel)
 {
-    LocalString ls16(IDS_TO_COLLECTION);
+    const LocalString ls16(IDS_TO_COLLECTION);
     mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)colSubMenu.GetHandle(), ls16.m_szbuffer);
 
     int maxItems = m_vcollection.Size() - 1;
@@ -4903,34 +4889,34 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
       colSubMenu.CreatePopupMenu();
 
       // TEXT
-      LocalString ls17(IDS_COPY_ELEMENT);
+      const LocalString ls17(IDS_COPY_ELEMENT);
       newMenu.AppendMenu(MF_STRING, IDC_COPY, ls17.m_szbuffer);
-      LocalString ls18(IDS_PASTE_ELEMENT);
+      const LocalString ls18(IDS_PASTE_ELEMENT);
       newMenu.AppendMenu(MF_STRING, IDC_PASTE, ls18.m_szbuffer);
-      LocalString ls19(IDS_PASTE_AT_ELEMENT);
+      const LocalString ls19(IDS_PASTE_AT_ELEMENT);
       newMenu.AppendMenu(MF_STRING, IDC_PASTEAT, ls19.m_szbuffer);
 
       newMenu.AppendMenu(MF_SEPARATOR, ~0u, "");
 
-      LocalString ls14(IDS_DRAWING_ORDER_HIT);
+      const LocalString ls14(IDS_DRAWING_ORDER_HIT);
       newMenu.AppendMenu(MF_STRING, ID_EDIT_DRAWINGORDER_HIT, ls14.m_szbuffer);
-      LocalString ls15(IDS_DRAWING_ORDER_SELECT);
+      const LocalString ls15(IDS_DRAWING_ORDER_SELECT);
       newMenu.AppendMenu(MF_STRING, ID_EDIT_DRAWINGORDER_SELECT, ls15.m_szbuffer);
 
-      LocalString ls1(IDS_DRAWINFRONT);
-      LocalString ls2(IDS_DRAWINBACK);
+      const LocalString ls1(IDS_DRAWINFRONT);
+      const LocalString ls2(IDS_DRAWINBACK);
       newMenu.AppendMenu(MF_STRING, ID_DRAWINFRONT, ls1.m_szbuffer);
       newMenu.AppendMenu(MF_STRING, ID_DRAWINBACK, ls2.m_szbuffer);
 
-      LocalString ls3(IDS_SETASDEFAULT);
+      const LocalString ls3(IDS_SETASDEFAULT);
       newMenu.AppendMenu(MF_STRING, ID_SETASDEFAULT, ls3.m_szbuffer);
 
-      LocalString lsLayer(IDS_ASSIGN_TO_LAYER);
+      const LocalString lsLayer(IDS_ASSIGN_TO_LAYER);
       newMenu.AppendMenu(MF_STRING, ID_ASSIGN_TO_LAYER, lsLayer.m_szbuffer);
 
       FillCollectionContextMenu(newMenu, colSubMenu, psel);
 
-      LocalString ls5(IDS_LOCK);
+      const LocalString ls5(IDS_LOCK);
       newMenu.AppendMenu(MF_STRING, ID_LOCK, ls5.m_szbuffer);
 
       newMenu.AppendMenu(MF_SEPARATOR, ~0u, "");
@@ -5663,12 +5649,12 @@ void PinTable::ExportTableMesh()
    m_vpinball->MessageBox("Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
 }
 
-void PinTable::ImportBackdropPOV(const char *filename)
+void PinTable::ImportBackdropPOV(const string& filename)
 {
     std::vector<std::string> szFileName;
     bool oldFormatLoaded = false;
 
-    if (filename == NULL)
+    if (filename.empty())
     {
        char szInitialDir[MAXSTRING];
 
@@ -5839,7 +5825,7 @@ void PinTable::ImportBackdropPOV(const char *filename)
             }
         }
 
-        if (filename == NULL)
+        if (filename.empty())
             SetNonUndoableDirty(eSaveDirty);
     }
     catch (...)
@@ -6142,13 +6128,7 @@ void PinTable::CheckDirty()
    if (sdsNewDirtyState != m_sdsCurrentDirtyState)
    {
       if (sdsNewDirtyState > eSaveClean)
-      {
-         char szWindowName[MAX_LINE_LENGTH + 1];
-         lstrcpy(szWindowName, m_szTitle);
-         lstrcat(szWindowName, "*");
-
-         SetCaption(szWindowName);
-      }
+         SetCaption(m_szTitle + '*');
       else
          SetCaption(m_szTitle);
    }
@@ -6358,7 +6338,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
 
    if (error)
    {
-      LocalString ls(IDS_NOPASTEINVIEW);
+      const LocalString ls(IDS_NOPASTEINVIEW);
       m_mdiTable->MessageBox(ls.m_szbuffer, "Visual Pinball", 0);
    }
 }
@@ -6574,7 +6554,7 @@ void PinTable::OnDelete()
    }
    if (inCollection)
    {
-      LocalString ls(IDS_DELETE_ELEMENTS);
+      const LocalString ls(IDS_DELETE_ELEMENTS);
       const int ans = m_mdiTable->MessageBox(ls.m_szbuffer/*"Selected elements are part of one or more collections.\nDo you really want to delete them?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
       if (ans != IDYES)
          return;
@@ -6779,7 +6759,7 @@ HRESULT PinTable::GetTypeName(BSTR *pVal)
 
 STDMETHODIMP PinTable::get_FileName(BSTR *pVal)
 {
-   WCHAR *wz = MakeWide(m_szTitle);
+   WCHAR *wz = MakeWide(m_szTitle.c_str());
    *pVal = SysAllocString(wz);
    delete[] wz;
 
@@ -7779,7 +7759,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       WCHAR *wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
       // TEXT
-      LocalString ls(IDS_NONE);
+      const LocalString ls(IDS_NONE);
       MultiByteToWideChar(CP_ACP, 0, ls.m_szbuffer, -1, wzDst, 7);
       rgstr[0] = wzDst;
       rgdw[0] = ~0u;
@@ -7812,7 +7792,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       WCHAR *wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
       // TEXT
-      LocalString ls(IDS_NONE);
+      const LocalString ls(IDS_NONE);
       MultiByteToWideChar(CP_ACP, 0, ls.m_szbuffer, -1, wzDst, 7);
       rgstr[0] = wzDst;
       rgdw[0] = ~0u;
@@ -9900,7 +9880,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    xml_node<>*tabContactScatterAngle = xmlDoc.allocate_node(node_element, "playfieldScatter", tcontactScatter);
    physTab->append_node(tabContactScatterAngle);
 
-   xml_node<>*settingName = xmlDoc.allocate_node(node_element, "name", m_szTitle);
+   xml_node<>*settingName = xmlDoc.allocate_node(node_element, "name", m_szTitle.c_str());
    root->append_node(settingName);
    root->append_node(physTab);
    root->append_node(physFlip);
@@ -10428,7 +10408,6 @@ PinTableMDI::PinTableMDI(VPinball *vpinball)
 
 PinTableMDI::~PinTableMDI()
 {
-
     m_vpinball->GetLayersListDialog()->ClearList();
     m_vpinball->CloseAllDialogs();
 
@@ -10450,15 +10429,10 @@ bool PinTableMDI::CanClose() const
 {
     if (m_table!=nullptr && m_table->FDirty())
     {
-        LocalString ls1(IDS_SAVE_CHANGES1);
-        LocalString ls2(IDS_SAVE_CHANGES2);
-        char* const szText = new char[lstrlen(ls1.m_szbuffer) + lstrlen(ls2.m_szbuffer) + lstrlen(m_table->m_szTitle) + 1];
-        lstrcpy(szText, ls1.m_szbuffer/*"Do you want to save the changes you made to '"*/);
-        lstrcat(szText, m_table->m_szTitle);
-        lstrcat(szText, ls2.m_szbuffer);
-        // TEXT
-        const int result = MessageBox(szText, "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
-        delete[] szText;
+        const LocalString ls1(IDS_SAVE_CHANGES1);
+        const LocalString ls2(IDS_SAVE_CHANGES2);
+        const string szText = ls1.m_szbuffer/*"Do you want to save the changes you made to '"*/ + m_table->m_szTitle + ls2.m_szbuffer;
+        const int result = MessageBox(szText.c_str(), "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
 
         if (result == IDCANCEL)
             return false;
@@ -10467,7 +10441,7 @@ bool PinTableMDI::CanClose() const
         {
             if (m_table->TableSave() != S_OK)
             {
-                LocalString ls3(IDS_SAVEERROR);
+                const LocalString ls3(IDS_SAVEERROR);
                 MessageBox(ls3.m_szbuffer, "Visual Pinball", MB_ICONERROR);
             }
         }
@@ -10489,7 +10463,7 @@ void PinTableMDI::PreCreate(CREATESTRUCT &cs)
 
 int PinTableMDI::OnCreate(CREATESTRUCT &cs)
 {
-    SetWindowText(m_table->m_szTitle);
+    SetWindowText(m_table->m_szTitle.c_str());
     SetIconLarge(IDI_TABLE);
     SetIconSmall(IDI_TABLE);
     return CMDIChild::OnCreate(cs);

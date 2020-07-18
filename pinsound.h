@@ -5,7 +5,7 @@
 #if !defined(AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_)
 #define AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_
 
-void BASS_ErrorMapCode(const int code, char text[MAXSTRING]);
+void BASS_ErrorMapCode(const int code, string& text);
 
 struct DSAudioDevice
 {

@@ -938,7 +938,7 @@ void VPinball::LoadFileName(const char *szFileName, const bool updateEditor)
    {
       if (hr == E_ACCESSDENIED)
       {
-         LocalString ls(IDS_CORRUPTFILE);
+         const LocalString ls(IDS_CORRUPTFILE);
          ShowError(ls.m_szbuffer);
       }
 
@@ -953,32 +953,20 @@ void VPinball::LoadFileName(const char *szFileName, const bool updateEditor)
       AddMDITable(mdiTable);
       // auto-import POV settings if exist...
 
-      char szFileNameAuto[MAX_PATH];
-      strncpy_s(szFileNameAuto, m_currentTablePath, sizeof(szFileNameAuto)-1);
-      strncat_s(szFileNameAuto, ppt->m_szTitle, sizeof(szFileNameAuto)-strnlen_s(szFileNameAuto, sizeof(szFileNameAuto))-1);
-      strncat_s(szFileNameAuto, ".pov", sizeof(szFileNameAuto)-strnlen_s(szFileNameAuto, sizeof(szFileNameAuto))-1);
+      string szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".pov";
       if (Exists(szFileNameAuto)) // We check if there is a table pov settings first
-      {
           ppt->ImportBackdropPOV(szFileNameAuto);
-      }
       else // Otherwise, we seek for autopov settings
       {
-          strncpy_s(szFileNameAuto, m_currentTablePath, sizeof(szFileNameAuto)-1);
-          strncat_s(szFileNameAuto, "autopov.pov", sizeof(szFileNameAuto)-strnlen_s(szFileNameAuto, sizeof(szFileNameAuto))-1);
+          szFileNameAuto = m_currentTablePath + string("autopov.pov");
           if (Exists(szFileNameAuto))
-          {
               ppt->ImportBackdropPOV(szFileNameAuto);
-          }
       }
 
       // auto-import VBS table script, if exist...
-      strncpy_s(szFileNameAuto, m_currentTablePath, sizeof(szFileNameAuto)-1);
-      strncat_s(szFileNameAuto, ppt->m_szTitle, sizeof(szFileNameAuto)-strnlen_s(szFileNameAuto, sizeof(szFileNameAuto))-1);
-      strncat_s(szFileNameAuto, ".vbs", sizeof(szFileNameAuto)-strnlen_s(szFileNameAuto, sizeof(szFileNameAuto))-1);
+      szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".vbs";
       if (Exists(szFileNameAuto)) // We check if there is a table pov settings first
-      {
           ppt->m_pcv->LoadFromFile(szFileNameAuto);
-      }
 
       // get the load path from the filename
       SaveValueString("RecentDir", "LoadDir", m_currentTablePath);
@@ -1799,13 +1787,13 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
       LVCOLUMN lvcol;
       lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
-      LocalString ls(IDS_NAME);
-      lvcol.pszText = ls.m_szbuffer;// = "Name";
+      const LocalString ls(IDS_NAME);
+      lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";
       lvcol.cx = 100;
       ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_SOUNDLIST), 0, &lvcol);
 
-      LocalString ls2(IDS_IMPORTPATH);
-      lvcol.pszText = ls2.m_szbuffer; // = "Import Path";
+      const LocalString ls2(IDS_IMPORTPATH);
+      lvcol.pszText = (LPSTR)ls2.m_szbuffer; // = "Import Path";
       lvcol.cx = 200;
       ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_SOUNDLIST), 1, &lvcol);
 
@@ -2063,7 +2051,7 @@ void VPinball::SetDefaultPhysics()
     CComObject<PinTable> * const ptCur = GetActiveTable();
     if (ptCur)
     {
-        LocalString ls(IDS_DEFAULTPHYSICS);
+        const LocalString ls(IDS_DEFAULTPHYSICS);
         const int answ = MessageBox(ls.m_szbuffer, "Continue?", MB_YESNO | MB_ICONWARNING);
         if (answ == IDYES)
         {

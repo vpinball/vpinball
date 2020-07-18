@@ -66,40 +66,41 @@ BOOL SoundDialog::OnInitDialog()
     m_columnSortOrder = 1;
 
     ListView_SetExtendedListViewStyle( hSoundList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES );
-	memset(&lvcol, 0, sizeof(LVCOLUMN));
-	lvcol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT; 
-	LocalString ls( IDS_NAME );
-    lvcol.pszText = ls.m_szbuffer;// = "Name";
+    memset(&lvcol, 0, sizeof(LVCOLUMN));
+    lvcol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT; 
+    const LocalString ls( IDS_NAME );
+    lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";
     lvcol.cx = DPIValue(150);
     ListView_InsertColumn(hSoundList, 0, &lvcol);
 
-    LocalString ls2( IDS_IMPORTPATH );
-    lvcol.pszText = ls2.m_szbuffer; // = "Import Path";
+    const LocalString ls2( IDS_IMPORTPATH );
+    lvcol.pszText = (LPSTR)ls2.m_szbuffer; // = "Import Path";
     lvcol.cx = DPIValue(200);
     ListView_InsertColumn(hSoundList, 1, &lvcol);
 
-	lvcol.pszText = "Output";
-	lvcol.cx = DPIValue(80);
-	ListView_InsertColumn(hSoundList, 2, &lvcol);
+    lvcol.pszText = "Output"; //!! use LocalString
+    lvcol.cx = DPIValue(80);
+    ListView_InsertColumn(hSoundList, 2, &lvcol);
 
-	lvcol.pszText = "Pan";
-	lvcol.cx = DPIValue(50);
-	ListView_InsertColumn(hSoundList, 3, &lvcol);
+    lvcol.pszText = "Pan"; //!! use LocalString
+    lvcol.cx = DPIValue(50);
+    ListView_InsertColumn(hSoundList, 3, &lvcol);
 
-	lvcol.pszText = "Fade";
-	lvcol.cx = DPIValue(50);
-	ListView_InsertColumn(hSoundList, 4, &lvcol);
+    lvcol.pszText = "Fade"; //!! use LocalString
+    lvcol.cx = DPIValue(50);
+    ListView_InsertColumn(hSoundList, 4, &lvcol);
 
-	lvcol.pszText = "Vol";
-	lvcol.cx = DPIValue(50);
-	ListView_InsertColumn(hSoundList, 5, &lvcol);
+    lvcol.pszText = "Vol"; //!! use LocalString
+    lvcol.cx = DPIValue(50);
+    ListView_InsertColumn(hSoundList, 5, &lvcol);
 
-	if (pt)
-		pt->ListSounds(hSoundList);
+    if (pt)
+        pt->ListSounds(hSoundList);
 
-   ListView_SetItemState(hSoundList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-   GotoDlgCtrl(hSoundList);
-   return FALSE;
+    ListView_SetItemState(hSoundList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+    GotoDlgCtrl(hSoundList);
+
+    return FALSE;
 }
 
 INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
@@ -279,7 +280,7 @@ void SoundDialog::ReImport()
     const int count = ListView_GetSelectedCount( hSoundList );
     if (count > 0)
     {
-        LocalString ls( IDS_REPLACESOUND );
+        const LocalString ls( IDS_REPLACESOUND );
         const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2 );
         if (ans == IDYES)
         {
@@ -320,7 +321,7 @@ void SoundDialog::ReImportFrom()
     const int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
     if (sel != -1)
     {
-        LocalString ls( IDS_REPLACESOUND );
+        const LocalString ls( IDS_REPLACESOUND );
         const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2 );
         if (ans == IDYES)
         {
@@ -383,7 +384,7 @@ void SoundDialog::Export()
             //TEXT
             ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0";
 
-            int begin;		//select only file name from pathfilename
+            int begin; //select only file name from pathfilename
             int len = lstrlen( pps->m_szPath );
             memset(m_filename, 0, sizeof(m_filename));
 
@@ -563,7 +564,7 @@ void SoundDialog::DeleteSound()
     const int count = ListView_GetSelectedCount( hSoundList );
     if (count > 0)
     {
-        LocalString ls( IDS_REMOVESOUND );
+        const LocalString ls( IDS_REMOVESOUND );
         const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2 );
         if (ans == IDYES)
         {
