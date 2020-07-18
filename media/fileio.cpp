@@ -70,6 +70,41 @@ void TitleFromFilename(const char * const szfilename, char *sztitle)
    *sztitle = '\0';
 }
 
+void TitleFromFilename(const string& szfilename, string& sztitle)
+{
+   const int len = szfilename.length();
+
+   int begin;
+   for (begin = len; begin >= 0; begin--)
+   {
+      if (szfilename[begin] == '\\')
+      {
+         begin++;
+         break;
+      }
+   }
+
+   int end;
+   for (end = len; end >= 0; end--)
+   {
+      if (szfilename[end] == '.')
+      {
+         break;
+      }
+   }
+
+   if (end == 0)
+   {
+      end = len - 1;
+   }
+
+   const char *szT = szfilename.c_str() + begin;
+   int count = end - begin;
+
+   sztitle.clear();
+   while (count--) { sztitle.push_back(*szT++); }
+}
+
 void PathFromFilename(const char * const szfilename, char *szpath)
 {
    const int len = lstrlen(szfilename);

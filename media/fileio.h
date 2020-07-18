@@ -3,6 +3,7 @@
 
 bool Exists(const char* const filePath);
 void TitleFromFilename(const char * const szfilename, char *sztitle);
+void TitleFromFilename(const string& szfilename, string& sztitle);
 void ExtensionFromFilename(const char * const szfilename, char * const szextension);
 bool RawReadFromFile(const char * const szfilename, int *psize, char **pszout);
 void PathFromFilename(const char * const szfilename, char *szpath);
