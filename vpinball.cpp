@@ -1172,7 +1172,7 @@ void VPinball::UpdateRecentFileList(const char *szfilename)
          // now search for filenames with & and replace with && so that these display correctly
          const char * const ns = replace(m_recentTableList[i].c_str(), "&", "&&");
          char recentMenuname[MAX_PATH];
-         snprintf(recentMenuname, MAX_PATH-1, "&%i %s", i+1, ns);
+         snprintf(recentMenuname, MAX_PATH-1, "&%i %s", (int)i+1, ns);
          delete[] ns;
 
          // set the IDM of this menu item
