@@ -479,18 +479,14 @@ void Gate::RenderDynamic()
 void Gate::ExportMesh(FILE *f)
 {
    char name[MAX_PATH];
-   Vertex3D_NoTex2 *buf;
-
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    if (m_d.m_showBracket)
    {
-      buf = new Vertex3D_NoTex2[gateBracketNumVertices];
-      char subName[MAX_PATH];
-      strncpy_s(subName, name, sizeof(subName)-1);
-      strncat_s(subName, "Bracket", sizeof(subName)-strnlen_s(subName, sizeof(subName))-1);
-      WaveFrontObj_WriteObjectName(f, subName);
+      const string subName = name + string("Bracket");
+      WaveFrontObj_WriteObjectName(f, subName.c_str());
+      Vertex3D_NoTex2* const buf = new Vertex3D_NoTex2[gateBracketNumVertices];
       GenerateBracketMesh(buf);
       WaveFrontObj_WriteVertexInfo(f, buf, gateBracketNumVertices);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -503,11 +499,9 @@ void Gate::ExportMesh(FILE *f)
 
    SetGateType(m_d.m_type);
 
-   buf = new Vertex3D_NoTex2[m_numVertices];
-   char subName[MAX_PATH];
-   strncpy_s(subName, name, sizeof(subName)-1);
-   strncat_s(subName, "Wire", sizeof(subName)-strnlen_s(subName, sizeof(subName))-1);
-   WaveFrontObj_WriteObjectName(f, subName);
+   const string subName = name + string("Wire");
+   WaveFrontObj_WriteObjectName(f, subName.c_str());
+   Vertex3D_NoTex2* const buf = new Vertex3D_NoTex2[m_numVertices];
    GenerateWireMesh(buf);
    WaveFrontObj_WriteVertexInfo(f, buf, m_numVertices);
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
