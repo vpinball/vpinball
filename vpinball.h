@@ -76,7 +76,7 @@ private:
    void InitRegValues();
    bool CanClose();
    void GetMyPath();
-   void UpdateRecentFileList(const char *szfilename);
+   void UpdateRecentFileList(const string& szfilename);
 
    bool ApcHost_OnTranslateMessage(MSG* pmsg);
    bool processKeyInputForDialogs(MSG *pmsg);
@@ -93,7 +93,7 @@ public:
 
    CComObject<PinTable> *GetActiveTable();
    bool LoadFile();
-   void LoadFileName(const char *szFileName, const bool updateEditor);
+   void LoadFileName(const string& szFileName, const bool updateEditor);
    void SetClipboard(vector<IStream*> * const pvstm);
 
    void DoPlay(const bool _cameraMode);

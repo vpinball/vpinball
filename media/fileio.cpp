@@ -28,9 +28,7 @@ void ExtensionFromFilename(const char * const szfilename, char * const szextensi
    }
 
    if (begin <= 0)
-   {
       szextension[0] = '\0';
-   }
 
    lstrcpy(szextension, &szfilename[begin]);
 }
@@ -53,15 +51,11 @@ void TitleFromFilename(const string& szfilename, string& sztitle)
    for (end = len; end >= 0; end--)
    {
       if (szfilename[end] == '.')
-      {
          break;
-      }
    }
 
    if (end == 0)
-   {
       end = len - 1;
-   }
 
    const char *szT = szfilename.c_str() + begin;
    int count = end - begin;
@@ -70,26 +64,22 @@ void TitleFromFilename(const string& szfilename, string& sztitle)
    while (count--) { sztitle.push_back(*szT++); }
 }
 
-void PathFromFilename(const char * const szfilename, char *szpath)
+void PathFromFilename(const string& szfilename, char *szpath)
 {
-   const int len = lstrlen(szfilename);
+   const int len = szfilename.length();
    // find the last '\' in the filename
    int end;
    for (end = len; end >= 0; end--)
    {
       if (szfilename[end] == '\\' || szfilename[end] == '/')
-      {
          break;
-      }
    }
 
    if (end == 0)
-   {
       end = len - 1;
-   }
 
    // copy from the start of the string to the end (or last '\')
-   const char * szT = szfilename;
+   const char * szT = szfilename.c_str();
    int count = end + 1;
 
    while (count--) { *szpath++ = *szT++; }
@@ -104,15 +94,11 @@ void TitleAndPathFromFilename(const char * const szfilename, char *szpath)
    for (end = len; end >= 0; end--)
    {
       if (szfilename[end] == '.')
-      {
          break;
-      }
    }
 
    if (end == 0)
-   {
       end = len;
-   }
 
    // copy from the start of the string to the end (or last '\')
    const char *szT = szfilename;
@@ -149,13 +135,13 @@ bool RawReadFromFile(const char * const szfilename, int *psize, char **pszout)
    return true;
 }
 
-BiffWriter::BiffWriter(IStream *pistream, HCRYPTHASH hcrypthash)
+BiffWriter::BiffWriter(IStream *pistream, const HCRYPTHASH hcrypthash)
 {
    m_pistream = pistream;
    m_hcrypthash = hcrypthash;
 }
 
-HRESULT BiffWriter::WriteBytes(const void *pv, unsigned long count, unsigned long *foo)
+HRESULT BiffWriter::WriteBytes(const void *pv, const unsigned long count, unsigned long *foo)
 {
    if (m_hcrypthash)
       CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
@@ -163,7 +149,7 @@ HRESULT BiffWriter::WriteBytes(const void *pv, unsigned long count, unsigned lon
    return m_pistream->Write(pv, count, foo);
 }
 
-HRESULT BiffWriter::WriteRecordSize(int size)
+HRESULT BiffWriter::WriteRecordSize(const int size)
 {
    ULONG writ = 0;
    HRESULT hr = m_pistream->Write(&size, sizeof(size), &writ);
@@ -171,7 +157,7 @@ HRESULT BiffWriter::WriteRecordSize(int size)
    return hr;
 }
 
-HRESULT BiffWriter::WriteInt(int id, int value)
+HRESULT BiffWriter::WriteInt(const int id, const int value)
 {
    ULONG writ = 0;
    HRESULT hr;
@@ -247,7 +233,7 @@ HRESULT BiffWriter::WriteWideString(const int id, const WCHAR * const wzvalue)
    return hr;
 }
 
-HRESULT BiffWriter::WriteBool(int id, BOOL value)
+HRESULT BiffWriter::WriteBool(const int id, const BOOL value)
 {
    ULONG writ = 0;
    HRESULT hr;
@@ -263,7 +249,7 @@ HRESULT BiffWriter::WriteBool(int id, BOOL value)
    return hr;
 }
 
-HRESULT BiffWriter::WriteFloat(int id, float value)
+HRESULT BiffWriter::WriteFloat(const int id, const float value)
 {
    ULONG writ = 0;
    HRESULT hr;
@@ -279,7 +265,7 @@ HRESULT BiffWriter::WriteFloat(int id, float value)
    return hr;
 }
 
-HRESULT BiffWriter::WriteStruct(int id, void *pvalue, int size)
+HRESULT BiffWriter::WriteStruct(const int id, const void *pvalue, const int size)
 {
    ULONG writ = 0;
    HRESULT hr;
@@ -295,22 +281,18 @@ HRESULT BiffWriter::WriteStruct(int id, void *pvalue, int size)
    return hr;
 }
 
-HRESULT BiffWriter::WriteVector3(int id, Vertex3Ds* vec)
+HRESULT BiffWriter::WriteVector3(const int id, const Vertex3Ds* vec)
 {
    return WriteStruct(id, &vec->x, 3 * sizeof(float));
 }
 
-HRESULT BiffWriter::WriteVector3Padded(int id, Vertex3Ds* vec)
+HRESULT BiffWriter::WriteVector3Padded(const int id, const Vertex3Ds* vec)
 {
-   float data[4];
-   data[0] = vec->x;
-   data[1] = vec->y;
-   data[2] = vec->z;
-   data[3] = 0.0f;
+   const float data[4] = { vec->x,vec->y,vec->z,0.0f };
    return WriteStruct(id, data, 4 * sizeof(float));
 }
 
-HRESULT BiffWriter::WriteTag(int id)
+HRESULT BiffWriter::WriteTag(const int id)
 {
    ULONG writ = 0;
    HRESULT hr;
@@ -323,7 +305,7 @@ HRESULT BiffWriter::WriteTag(int id)
    return hr;
 }
 
-BiffReader::BiffReader(IStream *pistream, ILoadable *piloadable, void *ppassdata, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+BiffReader::BiffReader(IStream *pistream, ILoadable *piloadable, void *ppassdata, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
 {
    m_pistream = pistream;
    m_piloadable = piloadable;
@@ -336,14 +318,12 @@ BiffReader::BiffReader(IStream *pistream, ILoadable *piloadable, void *ppassdata
    m_hcryptkey = hcryptkey;
 }
 
-HRESULT BiffReader::ReadBytes(void *pv, unsigned long count, unsigned long *foo)
+HRESULT BiffReader::ReadBytes(void *pv, const unsigned long count, unsigned long *foo)
 {
    HRESULT hr = m_pistream->Read(pv, count, foo);
 
    if (m_hcrypthash)
-   {
       CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
-   }
 
    return hr;
 }
@@ -400,7 +380,7 @@ HRESULT BiffReader::GetString(std::string &szvalue)
    char * tmp = new char[len+1];
    hr = ReadBytes(tmp, len, &read);
    tmp[len] = 0;
-   szvalue = string(tmp);
+   szvalue = tmp;
    delete[] tmp;
    return hr;
 }
@@ -446,7 +426,7 @@ HRESULT BiffReader::GetBool(bool *pvalue)
    return hr;
 }
 
-HRESULT BiffReader::GetStruct(void *pvalue, int size)
+HRESULT BiffReader::GetStruct(void *pvalue, const int size)
 {
    m_bytesinrecordremaining -= size;
 
@@ -690,7 +670,7 @@ FastIStream::~FastIStream()
    SAFE_VECTOR_DELETE(m_wzName);
 }
 
-void FastIStream::SetSize(unsigned int i)
+void FastIStream::SetSize(const unsigned int i)
 {
    if (i > m_cMax)
    {
@@ -734,7 +714,7 @@ unsigned long __stdcall FastIStream::Release()
    return S_OK;
 }
 
-long __stdcall FastIStream::Read(void *pv, unsigned long count, unsigned long *foo)
+long __stdcall FastIStream::Read(void *pv, const unsigned long count, unsigned long *foo)
 {
    memcpy(pv, m_rg + m_cSeek, count);
    m_cSeek += count;
@@ -747,7 +727,7 @@ long __stdcall FastIStream::Read(void *pv, unsigned long count, unsigned long *f
    return S_OK;
 }
 
-long __stdcall FastIStream::Write(const void *pv, unsigned long count, unsigned long *foo)
+long __stdcall FastIStream::Write(const void *pv, const unsigned long count, unsigned long *foo)
 {
    if ((m_cSeek + count) > m_cMax)
    {
@@ -767,7 +747,7 @@ long __stdcall FastIStream::Write(const void *pv, unsigned long count, unsigned 
    return S_OK;
 }
 
-long __stdcall FastIStream::Seek(union _LARGE_INTEGER li, unsigned long origin, union _ULARGE_INTEGER *puiOut)
+long __stdcall FastIStream::Seek(union _LARGE_INTEGER li, const unsigned long origin, union _ULARGE_INTEGER *puiOut)
 {
    switch (origin)
    {

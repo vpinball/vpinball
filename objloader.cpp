@@ -585,7 +585,7 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
              vertsTmp[t].nz = vi.nz;
          }
          sprintf_s(number, "%05u", i);
-         fname = name + "_" + string(number) + ".obj";
+         fname = name + '_' + number + ".obj";
          f = WaveFrontObj_ExportStart(fname.c_str());
          if (!f)
                return;

@@ -532,7 +532,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 
 	char szValidChars[256] = {};
 	::SendMessage(m_hwndScintilla, SCI_GETWORDCHARS, 0, (LPARAM)szValidChars);
-	m_validChars = string(szValidChars);
+	m_validChars = szValidChars;
 	m_VBvalidChars = string("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
 	m_stopErrorDisplay = false;
 	// Create new list of user functions & Collections- filled in ParseForFunction(), first called in LoadFromStrem()
@@ -1646,13 +1646,13 @@ void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 		if ((m_currentConstruct.chrg.cpMax - m_currentConstruct.chrg.cpMin) > MAX_FIND_LENGTH) return;
 		SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&m_currentConstruct);
 		//Check Core dict first
-		m_currentConstruct.lpstrText = (char *)ConstructTextBuff;
-		GetMembers(m_VPcoreDict, string(m_currentConstruct.lpstrText));
+		m_currentConstruct.lpstrText = ConstructTextBuff;
+		GetMembers(m_VPcoreDict, m_currentConstruct.lpstrText);
 		//Check Table Script
 		if (m_currentMembers->size() == 0)
 		{
-			m_currentConstruct.lpstrText = (char *)ConstructTextBuff;
-			GetMembers(m_pageConstructsDict, string(m_currentConstruct.lpstrText));
+			m_currentConstruct.lpstrText = ConstructTextBuff;
+			GetMembers(m_pageConstructsDict, m_currentConstruct.lpstrText);
 		}
 		//if no contruct (no children) exit
 		if (m_currentMembers->size() == 0) return;
@@ -2309,7 +2309,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		memset(text, 0, sizeof(text));
 		SendMessage(m_hwndScintilla, SCI_GETLINE, linecount, (LPARAM)text);
 		if (text[0] != '\0')
-			ReadLineToParseBrain(string(text), linecount, m_pageConstructsDict);
+			ReadLineToParseBrain(text, linecount, m_pageConstructsDict);
 	}
 	//Propergate subs&funcs in menu in order
 	for (vector<UserData>::iterator i = m_pageConstructsDict->begin(); i != m_pageConstructsDict->end(); ++i) 
@@ -2330,7 +2330,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		if (strnlen_s(c_str1, sizeof(c_str1)) > 1)
 		{
 			UserData ud;
-			ud.m_keyName = string(c_str1);
+			ud.m_keyName = c_str1;
 			ud.m_uniqueKey = ud.m_keyName;
 			FindOrInsertUD(m_componentsDict,ud);
 		}
@@ -2396,7 +2396,7 @@ void CodeViewer::ParseVPCore()
 	if (index != std::string::npos)
 		searchPaths.push_back(mp.substr(0, index+1) + "Scripts\\core.vbs"); // executable minus one dir (i.e. minus Release or Debug)
 
-	searchPaths.push_back(string(g_pvp->m_currentTablePath) + "core.vbs"); // table path
+	searchPaths.push_back(g_pvp->m_currentTablePath + string("core.vbs")); // table path
 
 	searchPaths.push_back("c:\\Visual Pinball\\Scripts\\core.vbs"); // default script path
 
@@ -2404,7 +2404,7 @@ void CodeViewer::ParseVPCore()
 	const HRESULT hr = LoadValueString("RecentDir", "LoadDir", szLoadDir, MAX_PATH); // last known load dir path
 	if (hr != S_OK)
 		lstrcpy(szLoadDir, "c:\\Visual Pinball\\Tables\\"); // default table path
-	searchPaths.push_back(string(szLoadDir) + "core.vbs");
+	searchPaths.push_back(szLoadDir + string("core.vbs"));
 
 	FILE* fCore = NULL;
 	for(size_t i = 0; i < searchPaths.size(); ++i)

@@ -957,7 +957,7 @@ LRESULT FilterEditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
                 if ((wparam == VK_RETURN) || (wparam == VK_TAB))
                 {
                     if (m_layerDialog)
-                        m_layerDialog->UpdateLayerList(std::string(GetWindowText()));
+                        m_layerDialog->UpdateLayerList(string(GetWindowText()));
                     return FALSE;
                 }
         }
@@ -975,7 +975,7 @@ BOOL FilterEditBox::OnCommand(WPARAM wParam, LPARAM lParam)
         case CBN_KILLFOCUS:
         {
             if (m_layerDialog)
-                m_layerDialog->UpdateLayerList(std::string(GetWindowText()));
+                m_layerDialog->UpdateLayerList(string(GetWindowText()));
             return TRUE;
         }
     }

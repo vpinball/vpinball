@@ -42,7 +42,7 @@ void DecalVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == DISPID_Decal_SizingType || dispid == -1)
             PropertyDialog::UpdateComboBox(m_sizingList, m_sizingCombo, m_sizingList[decal->m_d.m_sizingtype].c_str());
         if (dispid == IDC_DECAL_TEXT_EDIT || dispid == -1)
-            m_textEdit.SetWindowText(decal->m_d.m_sztext);
+            m_textEdit.SetWindowText(decal->m_d.m_sztext.c_str());
         if (dispid == IDC_DECAL_VERTICAL_TEXT_CHECK || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hVerticalTextCheck, decal->m_d.m_verticalText);
         if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
@@ -87,12 +87,11 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_DECAL_TEXT_EDIT:
             {
-                char szName[MAXSTRING];
-                strncpy_s(szName, m_textEdit.GetWindowText().c_str(), sizeof(szName)-1);
-                if (strcmp(decal->m_d.m_sztext, szName) != 0)
+                const string szName = m_textEdit.GetWindowText().c_str();
+                if (decal->m_d.m_sztext != szName)
                 {
                     PropertyDialog::StartUndo(decal);
-                    strncpy_s(decal->m_d.m_sztext, szName, sizeof(decal->m_d.m_sztext)-1);
+                    decal->m_d.m_sztext = szName;
                     PropertyDialog::EndUndo(decal);
                 }
                 break;
