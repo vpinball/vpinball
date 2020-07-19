@@ -304,11 +304,9 @@ void VPinball::InitRegValues()
    // get the list of the last n loaded tables
    for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
    {
-      char szRegName[MAX_PATH];
-      char szTableName[MAX_PATH];
-      sprintf_s(szRegName, "TableFileName%d", i);
-      if(LoadValueString("RecentDir", szRegName, szTableName, MAX_PATH) == S_OK)
-         m_recentTableList.push_back(std::string(szTableName));
+      char szTableName[MAXSTRING];
+      if(LoadValueString("RecentDir", "TableFileName"+std::to_string(i), szTableName, MAXSTRING) == S_OK)
+         m_recentTableList.push_back(szTableName);
       else
          break;
    }
@@ -916,12 +914,12 @@ bool VPinball::LoadFile()
        hr = SaveValueString("RecentDir", "LoadDir", newInitDir);
    }
 
-   LoadFileName(szFileName[0].c_str(),true);
+   LoadFileName(szFileName[0],true);
 
    return true;
 }
 
-void VPinball::LoadFileName(const char *szFileName, const bool updateEditor)
+void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
 {
    if (firstRun)
       OnInitialUpdate();
@@ -1117,15 +1115,15 @@ void VPinball::SetEnableMenuItems()
    }
 }
 
-void VPinball::UpdateRecentFileList(const char *szfilename)
+void VPinball::UpdateRecentFileList(const string& szfilename)
 {
    const size_t old_count = m_recentTableList.size();
 
-   // if the loaded file name is not null then add it to the top of the list
-   if (szfilename != NULL && szfilename[0] != 0)
+   // if the loaded file name is a valid one then add it to the top of the list
+   if (!szfilename.empty())
    {
       std::vector<std::string> newList;
-      newList.push_back(std::string(szfilename));
+      newList.push_back(szfilename);
 
       for (const std::string &tableName : m_recentTableList)
       {
@@ -1448,28 +1446,27 @@ void VPinball::OnInitialUpdate()
 {
     if (!firstRun)
         return;
-    
 
     const int foo[6] = {120, 240, 400, 600, 800, 1400};
 
     m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE,
                                          "",
                                          GetHwnd(),
-                                         1);											// Create Status Line at the bottom
+                                         1);						// Create Status Line at the bottom
 
     ::SendMessage(m_hwndStatusBar, SB_SETPARTS, 6, (size_t)foo);	// Initialize Status bar with 6 empty cells
 
-    InitRegValues();									// get default values from registry
+    InitRegValues();					// get default values from registry
 
     SendMessage(WM_SIZE, 0, 0);			// Make our window relay itself out
 
     m_ps.InitPinDirectSound(GetHwnd());
 
-    m_backglassView = false;							// we are viewing Pinfield and not the backglass at first
+    m_backglassView = false;			// we are viewing Pinfield and not the backglass at first
 
-    UpdateRecentFileList(NULL);						// update the recent loaded file list
+    UpdateRecentFileList(string());		// update the recent loaded file list
 
-    wintimer_init();									// calibrate the timer routines
+    wintimer_init();					// calibrate the timer routines
 
     int left, top, right, bottom;
     BOOL maximized;
@@ -2031,10 +2028,8 @@ void VPinball::ShowSearchSelect()
         {
             ptCur->m_searchSelectDlg.Create(GetHwnd());
 
-            char windowName[256];
-            strncpy_s(windowName, "Search/Select Element - ", sizeof(windowName)-1);
-            strncat_s(windowName, ptCur->m_szFileName, sizeof(windowName)-strnlen_s(windowName, sizeof(windowName))-1);
-            ptCur->m_searchSelectDlg.SetWindowText(windowName);
+            const string windowName = "Search/Select Element - " + ptCur->m_szFileName;
+            ptCur->m_searchSelectDlg.SetWindowText(windowName.c_str());
 
             ptCur->m_searchSelectDlg.ShowWindow();
         }
@@ -2230,7 +2225,7 @@ void VPinball::OpenRecentFile(const size_t menuId)
     // get the index into the recent list menu
     const size_t Index = menuId - RECENT_FIRST_MENU_IDM;
     // copy it into a temporary string so it can be correctly processed
-    LoadFileName(m_recentTableList[Index].c_str(),true);
+    LoadFileName(m_recentTableList[Index],true);
 }
 
 void VPinball::CopyPasteElement(const CopyPasteModes mode)

@@ -51,7 +51,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
    {
       do
       {
-         allFiles.push_back(string(data.cFileName));
+         allFiles.push_back(data.cFileName);
          frameCounter++;
       } while (FindNextFile(h, &data));
    }

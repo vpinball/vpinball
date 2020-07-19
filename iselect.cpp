@@ -313,9 +313,7 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
        }
        case FID(LANR):
        {
-           char name[MAX_PATH];
-           pbr->GetString(name);
-           m_layerName = string(name);
+           pbr->GetString(m_layerName);
            break;
        }
        case FID(LVIS):

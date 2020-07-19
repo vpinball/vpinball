@@ -1694,11 +1694,11 @@ void PinTable::InitBuiltinTable(VPinball * const pvp, const bool useBlankTable)
    const LocalString ls(IDS_TABLE);
    m_szTitle = ls.m_szbuffer/*"Table"*/ + std::to_string(m_vpinball->m_NextTableID);
    m_vpinball->m_NextTableID++;
-   m_szFileName[0] = '\0';
+   m_szFileName.clear();
 
    LoadGameFromStorage(pis);
 
-   //MAKE_WIDEPTR_FROMANSI(wszFileName, m_szFileName);
+   //MAKE_WIDEPTR_FROMANSI(wszFileName, m_szFileName.c_str());
    //ApcProject->APC_PUT(DisplayName)(wszFileName);
 
    InitPostLoad(pvp);
@@ -1791,8 +1791,6 @@ void PinTable::InitPostLoad(VPinball *pvp)
    m_top = 0.f;
 
    SetDefaultView();
-
-   m_szBlueprintFileName[0] = 0;
 
    m_pcv->AddItem(this, false);
    m_pcv->AddItem(m_psgt, true);
@@ -2416,21 +2414,18 @@ void PinTable::CloseVBA()
 
 HRESULT PinTable::TableSave()
 {
-   return Save(!m_szFileName[0]);
+   return Save(m_szFileName.empty());
 }
-
 
 HRESULT PinTable::SaveAs()
 {
    return Save(true);
 }
 
-
 HRESULT PinTable::ApcProject_Save()
 {
-   return Save(!m_szFileName[0]);
+   return Save(m_szFileName.empty());
 }
-
 
 void PinTable::BeginAutoSaveCounter()
 {
@@ -2438,12 +2433,10 @@ void PinTable::BeginAutoSaveCounter()
        m_vpinball->SetTimer(VPinball::TIMER_ID_AUTOSAVE, m_vpinball->m_autosaveTime, NULL);
 }
 
-
 void PinTable::EndAutoSaveCounter()
 {
-    m_vpinball->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
+   m_vpinball->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
 }
-
 
 void PinTable::AutoSave()
 {
@@ -2492,6 +2485,7 @@ HRESULT PinTable::Save(const bool saveAs)
    IStorage* pstgRoot;
 
    // Get file name if needed
+   char fileName[MAXSTRING];
    if (saveAs)
    {
       //need to get a file name
@@ -2502,8 +2496,8 @@ HRESULT PinTable::Save(const bool saveAs)
       ofn.hwndOwner = m_vpinball->GetHwnd();
       // TEXT
       ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
-      ofn.lpstrFile = m_szFileName;
-      ofn.nMaxFile = MAXSTRING;
+      ofn.lpstrFile = fileName;
+      ofn.nMaxFile = sizeof(fileName);
       ofn.lpstrDefExt = "vpx";
       ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
@@ -2525,12 +2519,13 @@ HRESULT PinTable::Save(const bool saveAs)
       if (ret == 0)
          return S_FALSE;
 
-      strncpy_s(szInitialDir, m_szFileName, sizeof(szInitialDir)-1);
+      m_szFileName = fileName;
+      strncpy_s(szInitialDir, m_szFileName.c_str(), sizeof(szInitialDir)-1);
       szInitialDir[ofn.nFileOffset] = 0;
       hr = SaveValueString("RecentDir", "LoadDir", szInitialDir);
 
       {
-         MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName);
+         MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str());
 
          STGOPTIONS stg;
          stg.usVersion = 1;
@@ -2551,12 +2546,10 @@ HRESULT PinTable::Save(const bool saveAs)
    }
    else
    {
-      char *ptr = strstr(m_szFileName, ".vpt");
+      char * const ptr = StrStrI(m_szFileName.c_str(), ".vpt");
       if (ptr != NULL)
-      {
          strcpy_s(ptr, 5, ".vpx");
-      }
-      MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName);
+      MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str());
 
       STGOPTIONS stg;
       stg.usVersion = 1;
@@ -3558,28 +3551,25 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
    return S_OK;
 }
 
-HRESULT PinTable::LoadGameFromFilename(const char *szFileName)
+HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
 {
-   IStorage* pstgRoot;
-
-   if (szFileName == NULL)
+   if (szFileName.empty())
    {
       ShowError("Empty File Name String!");
       return S_FALSE;
    }
 
-   strncpy_s(m_szFileName, szFileName, sizeof(m_szFileName)-1);
+   m_szFileName = szFileName;
+
+   MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str());
+   HRESULT hr;
+   IStorage* pstgRoot;
+   if (FAILED(hr = StgOpenStorage(wszCodeFile, NULL, STGM_TRANSACTED | STGM_READ, NULL, 0, &pstgRoot)))
    {
-      MAKE_WIDEPTR_FROMANSI(wszCodeFile, szFileName);
-      HRESULT hr;
-      if (FAILED(hr = StgOpenStorage(wszCodeFile, NULL, STGM_TRANSACTED | STGM_READ, NULL, 0, &pstgRoot)))
-      {
-         // TEXT
-         char msg[MAXSTRING+32];
-         sprintf_s(msg, "Error 0x%X loading %s", hr, m_szFileName);
-         m_vpinball->MessageBox(msg, "Load Error", 0);
-         return hr;
-      }
+      char msg[MAXSTRING+32];
+      sprintf_s(msg, "Error 0x%X loading \"%s\"", hr, m_szFileName.c_str());
+      m_vpinball->MessageBox(msg, "Load Error", 0);
+      return hr;
    }
 
    return LoadGameFromStorage(pstgRoot);
@@ -5428,6 +5418,7 @@ void PinTable::OnLeftDoubleClick(int x, int y)
 
 void PinTable::ExportBlueprint()
 {
+   char szBlueprintFileName[MAXSTRING];
    //bool saveAs = true;
    //if (saveAs)
    {
@@ -5438,8 +5429,8 @@ void PinTable::ExportBlueprint()
       ofn.hInstance = g_hinst;
       ofn.hwndOwner = m_vpinball->GetHwnd();
       ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0";
-      ofn.lpstrFile = m_szBlueprintFileName;
-      ofn.nMaxFile = MAXSTRING;
+      ofn.lpstrFile = szBlueprintFileName;
+      ofn.nMaxFile = sizeof(szBlueprintFileName);
       ofn.lpstrDefExt = "png";
       ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
@@ -5480,7 +5471,7 @@ void PinTable::ExportBlueprint()
    int totallinebytes = bmwidth * 3;
    totallinebytes = (((totallinebytes - 1) / 4) + 1) * 4; // make multiple of four
 #if 0
-   HANDLE hfile = CreateFile(m_szBlueprintFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL,
+   HANDLE hfile = CreateFile(szBlueprintFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL,
       CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
    const int bmlinebuffer = totallinebytes - (bmwidth * 3);
 
@@ -5543,7 +5534,7 @@ void PinTable::ExportBlueprint()
    FIBITMAP * dib = FreeImage_Allocate(bmwidth, bmheight, 24);
    BYTE * const psrc = FreeImage_GetBits(dib);
    memcpy(psrc, pbits, bmwidth*bmheight * 3);
-   if (!FreeImage_Save(FreeImage_GetFIFFromFilename(m_szBlueprintFileName), dib, m_szBlueprintFileName, PNG_Z_BEST_COMPRESSION | BMP_SAVE_RLE))
+   if (!FreeImage_Save(FreeImage_GetFIFFromFilename(szBlueprintFileName), dib, szBlueprintFileName, PNG_Z_BEST_COMPRESSION | BMP_SAVE_RLE))
        m_vpinball->MessageBox("Export failed!", "Blueprint Export", MB_OK | MB_ICONEXCLAMATION);
    else
 #endif
@@ -5613,16 +5604,17 @@ void PinTable::ExportMesh(FILE *f)
 
 void PinTable::ExportTableMesh()
 {
+   char szObjFileName[MAXSTRING];
    OPENFILENAME ofn;
-   memset(m_szObjFileName, 0, sizeof(m_szObjFileName));
+   memset(szObjFileName, 0, sizeof(szObjFileName));
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hInstance = g_hinst;
    ofn.hwndOwner = m_vpinball->GetHwnd();
    // TEXT
    ofn.lpstrFilter = "Wavefront obj(*.obj)\0*.obj\0";
-   ofn.lpstrFile = m_szObjFileName;
-   ofn.nMaxFile = MAXSTRING;
+   ofn.lpstrFile = szObjFileName;
+   ofn.nMaxFile = sizeof(szObjFileName);
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
@@ -5632,7 +5624,7 @@ void PinTable::ExportTableMesh()
    if (ret == 0)
       return;// S_FALSE;
 
-   FILE *f = WaveFrontObj_ExportStart(m_szObjFileName);
+   FILE *f = WaveFrontObj_ExportStart(szObjFileName);
    if (f == NULL)
    {
       ShowError("Unable to create obj file!");
@@ -5841,18 +5833,19 @@ void PinTable::ImportBackdropPOV(const string& filename)
 
 void PinTable::ExportBackdropPOV(const char *filename)
 {
+	char szObjFileName[MAXSTRING];
 	if (filename == NULL)
 	{
 		OPENFILENAME ofn;
-		memset(m_szObjFileName, 0, sizeof(m_szObjFileName));
+		memset(szObjFileName, 0, sizeof(szObjFileName));
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hInstance = g_hinst;
 		ofn.hwndOwner = m_vpinball->GetHwnd();
 		// TEXT
 		ofn.lpstrFilter = "POV file(*.pov)\0*.pov\0";
-		ofn.lpstrFile = m_szObjFileName;
-		ofn.nMaxFile = MAXSTRING;
+		ofn.lpstrFile = szObjFileName;
+		ofn.nMaxFile = sizeof(szObjFileName);
 		ofn.lpstrDefExt = "pov";
 		ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
@@ -5863,7 +5856,7 @@ void PinTable::ExportBackdropPOV(const char *filename)
 			return;// S_FALSE;
 	}
 	else
-		strncpy_s(m_szObjFileName, filename, sizeof(m_szObjFileName)-1);
+		strncpy_s(szObjFileName, filename, sizeof(szObjFileName)-1);
 
     char strBuf[MAX_PATH];
     xml_document<> xmlDoc;
@@ -6067,7 +6060,7 @@ void PinTable::ExportBackdropPOV(const char *filename)
         root->append_node(custom);
 
         xmlDoc.append_node(root);
-        std::ofstream myfile(m_szObjFileName);
+        std::ofstream myfile(szObjFileName);
         myfile << xmlDoc;
         myfile.close();
     }
@@ -7317,7 +7310,7 @@ void PinTable::AddMaterial(Material * const pmat)
    if (pmat->m_szName.empty() || pmat->m_szName == "dummyMaterial")
       pmat->m_szName = "Material";
 
-   if (!IsMaterialNameUnique(pmat->m_szName) || pmat->m_szName == std::string("Material"))
+   if (!IsMaterialNameUnique(pmat->m_szName) || pmat->m_szName == "Material")
    {
       char textBuf[MAXNAMEBUFFER];
       do
@@ -7427,7 +7420,7 @@ int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
    ListView_SetItemText(hwndListView, index, 1, usedStringNo);
-   if(pmat->m_szName == std::string(m_szPlayfieldMaterial))
+   if(pmat->m_szName == m_szPlayfieldMaterial)
    {
       ListView_SetItemText(hwndListView, index, 1, usedStringYes);
    }
@@ -10243,7 +10236,7 @@ void PinTable::InvokeBallBallCollisionCallback(Ball *b1, Ball *b2, float hitVelo
 void PinTable::OnInitialUpdate()
 {
     BeginAutoSaveCounter();
-    SetWindowText(m_szFileName);
+    SetWindowText(m_szFileName.c_str());
     SetCaption(m_szTitle);
     m_vpinball->SetEnableMenuItems();
 }
@@ -10458,7 +10451,7 @@ void PinTableMDI::PreCreate(CREATESTRUCT &cs)
     cs.style = WS_MAXIMIZE;
     cs.hwndParent = m_vpinball->GetHwnd();
     cs.lpszClass = _T("PinTable");
-    cs.lpszName = _T(m_table->m_szFileName);
+    cs.lpszName = _T(m_table->m_szFileName.c_str());
 }
 
 int PinTableMDI::OnCreate(CREATESTRUCT &cs)

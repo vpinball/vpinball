@@ -48,7 +48,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
       m_d.m_talign = TextAlignRight;
       m_d.m_transparent = false;
       m_d.m_isDMD = false;
-      lstrcpy(m_d.sztext, "0");
+      m_d.m_sztext.clear();
 
       fd.cySize.int64 = (LONGLONG)(14.25f * 10000.0f);
       fd.lpstrName = L"Arial";
@@ -72,14 +72,14 @@ void Textbox::SetDefaults(bool fromMouseClick)
       const float fontSize = LoadValueFloatWithDefault("DefaultProps\\TextBox", "FontSize", 14.25f);
       fd.cySize.int64 = (LONGLONG)(fontSize * 10000.0f);
 
-      char tmp[256];
+      char tmp[MAXSTRING];
       HRESULT hr;
-      hr = LoadValueString("DefaultProps\\TextBox", "FontName", tmp, 256);
+      hr = LoadValueString("DefaultProps\\TextBox", "FontName", tmp, MAXSTRING);
       if (hr != S_OK)
          fd.lpstrName = L"Arial";
       else
       {
-         int len = lstrlen(tmp) + 1;
+         const int len = lstrlen(tmp) + 1;
          fd.lpstrName = (LPOLESTR)malloc(len*sizeof(WCHAR));
          memset(fd.lpstrName, 0, len*sizeof(WCHAR));
          UNICODE_FROM_ANSI(fd.lpstrName, tmp, len);
@@ -92,9 +92,11 @@ void Textbox::SetDefaults(bool fromMouseClick)
       fd.fUnderline = LoadValueIntWithDefault("DefaultProps\\TextBox", "FontUnderline", 0);
       fd.fStrikethrough = LoadValueIntWithDefault("DefaultProps\\TextBox", "FontStrikeThrough", 0);
 
-      hr = LoadValueString("DefaultProps\\TextBox", "Text", m_d.sztext, MAXSTRING);
+      hr = LoadValueString("DefaultProps\\TextBox", "Text", tmp, MAXSTRING);
       if (hr != S_OK)
-         lstrcpy(m_d.sztext, "0");
+         m_d.m_sztext = "";
+      else
+         m_d.m_sztext = tmp;
    }
 
    OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
@@ -136,7 +138,7 @@ void Textbox::WriteRegDefaults()
    SaveValueInt("DefaultProps\\TextBox", "FontUnderline", fd.fUnderline);
    SaveValueInt("DefaultProps\\TextBox", "FontStrikeThrough", fd.fStrikethrough);
 
-   SaveValueString("DefaultProps\\TextBox", "Text", m_d.sztext);
+   SaveValueString("DefaultProps\\TextBox", "Text", m_d.m_sztext);
 }
 
 char * Textbox::GetFontName()
@@ -255,7 +257,7 @@ void Textbox::RenderDynamic()
 {
    TRACE_FUNCTION();
 
-   const bool dmd = (m_d.m_isDMD || strstr(m_d.sztext, "DMD") != NULL); //!! second part is VP10.0 legacy
+   const bool dmd = (m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != NULL); //!! second part is VP10.0 legacy
 
    if (!m_d.m_visible || (dmd && !g_pplayer->m_texdmd))
       return;
@@ -386,7 +388,7 @@ void Textbox::PreRenderText()
    rcOut.right = width - border * 2;
    rcOut.bottom = height - border * 2;
 
-   DrawText(hdc, m_d.sztext, lstrlen(m_d.sztext), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+   DrawText(hdc, m_d.m_sztext.c_str(), m_d.m_sztext.length(), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
 
    GdiFlush();     // make sure everything is drawn
 
@@ -470,7 +472,7 @@ STDMETHODIMP Textbox::put_FontColor(OLE_COLOR newVal)
 STDMETHODIMP Textbox::get_Text(BSTR *pVal)
 {
    WCHAR wz[MAXSTRING];
-   MultiByteToWideChar(CP_ACP, 0, m_d.sztext, -1, wz, MAXSTRING);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_sztext.c_str(), -1, wz, MAXSTRING);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -478,7 +480,9 @@ STDMETHODIMP Textbox::get_Text(BSTR *pVal)
 
 STDMETHODIMP Textbox::put_Text(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.sztext, MAXSTRING, NULL, NULL);
+   char buf[MAXSTRING];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXSTRING, NULL, NULL);
+   m_d.m_sztext = buf;
    if (g_pplayer)
       PreRenderText();
 
@@ -494,7 +498,7 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
    bw.WriteInt(FID(CLRB), m_d.m_backcolor);
    bw.WriteInt(FID(CLRF), m_d.m_fontcolor);
    bw.WriteFloat(FID(INSC), m_d.m_intensity_scale);
-   bw.WriteString(FID(TEXT), m_d.sztext);
+   bw.WriteString(FID(TEXT), m_d.m_sztext);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
@@ -539,7 +543,7 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
    case FID(INSC): pbr->GetFloat(&m_d.m_intensity_scale); break;
    case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
-   case FID(TEXT): pbr->GetString(m_d.sztext); break;
+   case FID(TEXT): pbr->GetString(m_d.m_sztext); break;
    case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
    case FID(ALGN): pbr->GetInt(&m_d.m_talign); break;
    case FID(TRNS): pbr->GetBool(&m_d.m_transparent); break;

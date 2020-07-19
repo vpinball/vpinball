@@ -463,7 +463,7 @@ public:
    HRESULT WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, const string& szValue, HCRYPTHASH hcrypthash);
    HRESULT ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, char **pszValue, HCRYPTHASH hcrypthash);
    HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool backupForPlay);
-   HRESULT LoadGameFromFilename(const char *szFileName);
+   HRESULT LoadGameFromFilename(const string& szFileName);
    HRESULT LoadGameFromStorage(IStorage *pstgRoot);
    HRESULT LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
@@ -580,9 +580,7 @@ public:
 
    void LockElements();
 
-   char m_szFileName[MAXSTRING];
-   char m_szBlueprintFileName[MAXSTRING];
-   char m_szObjFileName[MAXSTRING];
+   string m_szFileName;
    string m_szTitle;
 
    VPinball *m_pvp;

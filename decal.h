@@ -13,7 +13,7 @@ public:
    float m_rotation;
    char m_szSurface[MAXTOKEN];
    DecalType m_decaltype;
-   char m_sztext[MAXSTRING];
+   string m_sztext;
    SizingType m_sizingtype;
    COLORREF m_color;
    bool m_verticalText;
