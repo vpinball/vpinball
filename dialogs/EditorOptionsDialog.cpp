@@ -86,10 +86,9 @@ BOOL EditorOptionsDialog::OnInitDialog()
     SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, startVPfileDialog ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const float throwBallMass = LoadValueFloatWithDefault("Editor", "ThrowBallMass", 1.0f);
-    char textBuf[256] = { 0 };
+    string textBuf;
     f2sz(throwBallMass, textBuf);
-    const CString textStr(textBuf);
-    SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, textStr);
+    SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, textBuf.c_str());
 
     const int units = LoadValueIntWithDefault("Editor", "Units", 0);
     SendMessage(GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd(), CB_ADDSTRING, 0, (LPARAM)"VPUnits");
@@ -290,10 +289,7 @@ void EditorOptionsDialog::OnOK()
     const int ballSize = GetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, nothing, FALSE);
     SaveValueInt("Editor", "ThrowBallSize", ballSize);
 
-    CString textStr;
-    float fv;
-    textStr = GetDlgItemText(IDC_THROW_BALLS_MASS_EDIT);
-    fv = sz2f(textStr.c_str());
+    const float fv = sz2f(GetDlgItemText(IDC_THROW_BALLS_MASS_EDIT).c_str());
     SaveValueFloat("Editor", "ThrowBallMass", fv);
 
     checked = (SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);

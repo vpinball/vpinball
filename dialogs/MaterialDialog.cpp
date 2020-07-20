@@ -40,17 +40,15 @@ void MaterialDialog::EnableAllMaterialDialogItems(const BOOL e)
 
 float MaterialDialog::getItemText(int id)
 {
-   const CString textStr(GetDlgItemText(id));
-   const float fv = sz2f(textStr.c_str());
+   const float fv = sz2f(GetDlgItemText(id).c_str());
    return fv;
 }
 
 void MaterialDialog::setItemText(int id, float value)
 {
-   char textBuf[256] = { 0 };
+   string textBuf;
    f2sz(value, textBuf);
-   const CString textStr(textBuf);
-   SetDlgItemText(id, textStr);
+   SetDlgItemText(id, textBuf.c_str());
 }
 
 MaterialDialog::MaterialDialog() : CDialog(IDD_MATERIALDIALOG)

@@ -115,7 +115,6 @@ VPinball::VPinball()
    m_cref = 0;				//inits Reference Count for IUnknown Interface. Every com Object must 
    //implement this and StdMethods QueryInterface, AddRef and Release
    m_open_minimized = 0;
-   memset(m_currentTablePath, 0, sizeof(m_currentTablePath));
 
    m_mouseCursorPosition.x = 0.0f;
    m_mouseCursorPosition.y = 0.0f;
@@ -731,7 +730,7 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
        {
           CComObject<PinTable> * const ptCur = GetActiveTable();
           if (ptCur)
-             ptCur->ExportBackdropPOV(NULL);
+             ptCur->ExportBackdropPOV(string());
           return TRUE;
        }
        case ID_FILE_EXIT:
@@ -970,7 +969,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
       SaveValueString("RecentDir", "LoadDir", m_currentTablePath);
 
       // make sure the load directory is the active directory
-      SetCurrentDirectory(m_currentTablePath);
+      SetCurrentDirectory(m_currentTablePath.c_str());
       UpdateRecentFileList(szFileName);
       ppt->AddMultiSel(ppt, false, true, false);
       ppt->SetDirty(eSaveClean);

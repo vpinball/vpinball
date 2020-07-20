@@ -1804,15 +1804,11 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             bool importAnimation = IsDlgButtonChecked(hwndDlg, IDC_IMPORT_ANIM_SEQUENCE) == BST_CHECKED;
             if (importMaterial)
             {
-               const string filename(szFileName);
-               const size_t index = filename.find_last_of('.');
-               if (index != std::string::npos)
+               string szMatName = szFileName;
+               if (ReplaceExtensionFromFilename(szMatName, "mtl"))
                {
-                  char szMatName[MAXSTRING] = { 0 };
-                  memcpy(szMatName, szFileName, index);
-                  strncat_s(szMatName, ".mtl", sizeof(szMatName)-strnlen_s(szMatName, sizeof(szMatName))-1);
                   Material * const mat = new Material();
-                  if (WaveFrontObjLoadMaterial(szMatName, mat))
+                  if (WaveFrontObj_LoadMaterial(szMatName, mat))
                   {
                      CComObject<PinTable> * const pActiveTable = g_pvp->GetActiveTable();
                      if (pActiveTable)
@@ -1821,6 +1817,8 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                      prim->m_d.m_szMaterial = mat->m_szName;
                   }
                }
+               else
+                  ShowError("Could not load material file.");
             }
             if (prim->m_mesh.LoadWavefrontObj(szFileName, flipTV, convertToLeftHanded))
             {
@@ -1952,7 +1950,7 @@ bool Primitive::BrowseFor3DMeshFile()
        return false;
 
    string filename(ofn.lpstrFile);
-   size_t index = filename.find_last_of("\\");
+   size_t index = filename.find_last_of('\\');
    if (index != std::string::npos)
    {
       const std::string newInitDir(szFilename.substr(0, index));

@@ -351,7 +351,7 @@ public:
    void ExportBlueprint();
    void ExportTableMesh();
    void ImportBackdropPOV(const string& filename);
-   void ExportBackdropPOV(const char *filename);
+   void ExportBackdropPOV(const string& filename);
 
    //void FireVoidEvent(int dispid);
    void FireKeyEvent(int dispid, int keycode);
@@ -370,8 +370,8 @@ public:
    HRESULT SaveSoundToStream(PinSound * const pps, IStream *pstm);
    HRESULT LoadSoundFromStream(IStream *pstm, const int LoadFileVersion);
    bool ExportImage(Texture * const ppi, const char * const filename);
-   void ImportImage(HWND hwndListView, const char * const filename);
-   void ReImportImage(Texture * const ppi, const char * const filename);
+   void ImportImage(HWND hwndListView, const string& filename);
+   void ReImportImage(Texture * const ppi, const string& filename);
    void ListImages(HWND hwndListView);
    int AddListImage(HWND hwndListView, Texture * const ppi);
    void RemoveImage(Texture * const ppi);
@@ -512,7 +512,7 @@ public:
 
    bool IsNameUnique(const WCHAR * const wzName) const;
    void GetUniqueName(ItemTypeEnum type, WCHAR * const wzUniqueName) const;
-   void GetUniqueName(WCHAR * const prefix, WCHAR * const wzUniqueName) const;
+   void GetUniqueName(const WCHAR * const prefix, WCHAR * const wzUniqueName) const;
    void GetUniqueNamePasting(int type, WCHAR *wzUniqueName);
 
    float GetSurfaceHeight(const char * const szName, float x, float y) const;

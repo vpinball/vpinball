@@ -1091,20 +1091,19 @@ void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
    delete[] szText;
 }
 
-void CodeViewer::SaveToFile(const char *filename)
+void CodeViewer::SaveToFile(const string& filename)
 {
    FILE * fScript;
-   if (fopen_s(&fScript, filename, "wb") == 0)
-      if (fScript)
-      {
-		const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-		const size_t bufferSize = cchar + MAXNAMEBUFFER;
-		char * const szText = new char[bufferSize + 1];
-		SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
-		fwrite(szText, 1, cchar, fScript);
-		fclose(fScript);
-		delete[] szText;
-      }
+   if ((fopen_s(&fScript, filename.c_str(), "wb") == 0) && fScript)
+   {
+      const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+      const size_t bufferSize = cchar + MAXNAMEBUFFER;
+      char * const szText = new char[bufferSize + 1];
+      SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
+      fwrite(szText, 1, cchar, fScript);
+      fclose(fScript);
+      delete[] szText;
+   }
 }
 
 void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
@@ -1163,9 +1162,8 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
 void CodeViewer::LoadFromFile(const string& filename)
 {
    FILE * fScript;
-   if (fopen_s(&fScript, filename.c_str(), "rb") == 0)
-      if (fScript)
-      {
+   if ((fopen_s(&fScript, filename.c_str(), "rb") == 0) && fScript)
+   {
 		fseek(fScript, 0L, SEEK_END);
 		size_t cchar = ftell(fScript);
 		fseek(fScript, 0L, SEEK_SET);
@@ -1191,7 +1189,7 @@ void CodeViewer::LoadFromFile(const string& filename)
 		m_ignoreDirty = false;
 		m_sdsDirty = eSaveClean;
 		fclose(fScript);
-      }
+   }
 }
 
 
@@ -2396,7 +2394,7 @@ void CodeViewer::ParseVPCore()
 	if (index != std::string::npos)
 		searchPaths.push_back(mp.substr(0, index+1) + "Scripts\\core.vbs"); // executable minus one dir (i.e. minus Release or Debug)
 
-	searchPaths.push_back(g_pvp->m_currentTablePath + string("core.vbs")); // table path
+	searchPaths.push_back(g_pvp->m_currentTablePath + "core.vbs"); // table path
 
 	searchPaths.push_back("c:\\Visual Pinball\\Scripts\\core.vbs"); // default script path
 

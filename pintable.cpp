@@ -204,12 +204,11 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
 
       char szT[512];
       char szPath[MAX_PATH + 512];
-
       WideCharToMultiByte(CP_ACP, 0, m_vpinball->m_wzMyPath, -1, szPath, MAX_PATH + 512, NULL, NULL);
       WideCharToMultiByte(CP_ACP, 0, str, -1, szT, 512, NULL, NULL);
 
-      char szextension[MAX_PATH];
-      ExtensionFromFilename(szT, szextension);
+      //string szextension;
+      //ExtensionFromFilename(szT, szextension);
 
       //ppi->m_ppb;// = new PinBinary();
 
@@ -1948,7 +1947,7 @@ void PinTable::GetUniqueName(ItemTypeEnum type, WCHAR * const wzUniqueName) cons
    GetUniqueName(wzRoot, wzUniqueName);
 }
 
-void PinTable::GetUniqueName(WCHAR *const wzRoot, WCHAR * const wzUniqueName) const
+void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR * const wzUniqueName) const
 {
    int suffix = 1;
    bool found = false;
@@ -2272,10 +2271,10 @@ void PinTable::Play(const bool cameraMode)
    EndAutoSaveCounter();
 
    // get the load path from the table filename
-   char szLoadDir[MAX_PATH];
+   string szLoadDir;
    PathFromFilename(m_szFileName, szLoadDir);
    // make sure the load directory is the active directory
-   SetCurrentDirectory(szLoadDir);
+   SetCurrentDirectory(szLoadDir.c_str());
 
    g_pvp->ShowSubDialog(m_progressDialog);
 
@@ -4446,14 +4445,13 @@ int PinTable::AddListBinary(HWND hwndListView, PinBinary *ppb)
 
 void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
 {
-   WCHAR wzT[128];
-
    CComObject<Collection> *pcol;
    CComObject<Collection>::CreateInstance(&pcol);
    pcol->AddRef();
 
-   LocalStringW prefix(IDS_COLLECTION);
-   GetUniqueName(prefix.str, wzT);
+   const LocalStringW prefix(IDS_COLLECTION);
+   WCHAR wzT[128];
+   GetUniqueName(prefix.m_szbuffer, wzT);
 
    WideStrNCopy(wzT, pcol->m_wzName, MAXNAMEBUFFER);
 
@@ -5831,19 +5829,20 @@ void PinTable::ImportBackdropPOV(const string& filename)
     m_vpinball->SetPropSel(&m_vmultisel); 
 }
 
-void PinTable::ExportBackdropPOV(const char *filename)
+void PinTable::ExportBackdropPOV(const string& filename)
 {
-	char szObjFileName[MAXSTRING];
-	if (filename == NULL)
+	string objFileName;
+	if (filename.empty())
 	{
 		OPENFILENAME ofn;
-		memset(szObjFileName, 0, sizeof(szObjFileName));
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hInstance = g_hinst;
 		ofn.hwndOwner = m_vpinball->GetHwnd();
 		// TEXT
 		ofn.lpstrFilter = "POV file(*.pov)\0*.pov\0";
+		char szObjFileName[MAXSTRING];
+		memset(szObjFileName, 0, sizeof(szObjFileName));
 		ofn.lpstrFile = szObjFileName;
 		ofn.nMaxFile = sizeof(szObjFileName);
 		ofn.lpstrDefExt = "pov";
@@ -5854,9 +5853,11 @@ void PinTable::ExportBackdropPOV(const char *filename)
 		// user canceled
 		if (ret == 0)
 			return;// S_FALSE;
+
+		objFileName = szObjFileName;
 	}
 	else
-		strncpy_s(szObjFileName, filename, sizeof(szObjFileName)-1);
+		objFileName = filename;
 
     char strBuf[MAX_PATH];
     xml_document<> xmlDoc;
@@ -6060,7 +6061,7 @@ void PinTable::ExportBackdropPOV(const char *filename)
         root->append_node(custom);
 
         xmlDoc.append_node(root);
-        std::ofstream myfile(szObjFileName);
+        std::ofstream myfile(objFileName);
         myfile << xmlDoc;
         myfile.close();
     }
@@ -6744,15 +6745,15 @@ HRESULT PinTable::GetTypeName(BSTR *pVal)
 {
    const int stringid = (!m_vpinball->m_backglassView) ? IDS_TABLE : IDS_TB_BACKGLASS;
 
-   LocalStringW ls(stringid);
-   *pVal = SysAllocString(ls.str);
+   const LocalStringW ls(stringid);
+   *pVal = SysAllocString(ls.m_szbuffer);
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::get_FileName(BSTR *pVal)
 {
-   WCHAR *wz = MakeWide(m_szTitle.c_str());
+   const WCHAR * const wz = MakeWide(m_szTitle);
    *pVal = SysAllocString(wz);
    delete[] wz;
 
@@ -6928,12 +6929,12 @@ Texture* PinTable::GetImage(const std::string &szName) const
    return NULL;
 }
 
-void PinTable::ReImportImage(Texture * const ppi, const char * const filename)
+void PinTable::ReImportImage(Texture * const ppi, const string& filename)
 {
-   char szextension[MAX_PATH];
+   string szextension;
    ExtensionFromFilename(filename, szextension);
 
-   const bool binary = !!lstrcmpi(szextension, "bmp");
+   const bool binary = !!lstrcmpi(szextension.c_str(), "bmp");
 
    PinBinary *ppb = 0;
    if (binary)
@@ -6960,7 +6961,7 @@ void PinTable::ReImportImage(Texture * const ppi, const char * const filename)
    ppi->SetSizeFrom(tex);
    ppi->m_pdsBuffer = tex;
 
-   strncpy_s(ppi->m_szPath, filename, sizeof(ppi->m_szPath)-1);
+   strncpy_s(ppi->m_szPath, filename.c_str(), sizeof(ppi->m_szPath)-1);
 }
 
 
@@ -7059,12 +7060,9 @@ bool PinTable::ExportImage(Texture * const ppi, const char * const szfilename)
    return false;
 }
 
-
-
-
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++>>
 
-void PinTable::ImportImage(HWND hwndListView, const char * const filename)
+void PinTable::ImportImage(HWND hwndListView, const string& filename)
 {
    Texture * const ppi = new Texture();
 
@@ -7079,7 +7077,7 @@ void PinTable::ImportImage(HWND hwndListView, const char * const filename)
    // The first time we import a file, parse the name of the texture from the filename
 
    int begin, end;
-   const int len = lstrlen(filename);
+   const int len = filename.length();
 
    for (begin = len; begin >= 0; begin--)
    {
@@ -7097,7 +7095,7 @@ void PinTable::ImportImage(HWND hwndListView, const char * const filename)
    if (end == 0)
       end = len - 1;
 
-   strncpy_s(ppi->m_szName, &filename[begin], sizeof(ppi->m_szName)-1);
+   strncpy_s(ppi->m_szName, filename.c_str()+begin, sizeof(ppi->m_szName)-1);
    ppi->m_szName[end - begin] = 0;
 
    m_vimage.push_back(ppi);

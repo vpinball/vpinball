@@ -467,10 +467,9 @@ CString PhysicsOptionsDialog::GetItemText(int id)
 
 void PhysicsOptionsDialog::SetItemText(int id, float value)
 {
-    char textBuf[256] = { 0 };
+    string textBuf;
     f2sz(value, textBuf);
-    const CString textStr(textBuf);
-    SetDlgItemText(id, textStr);
+    SetDlgItemText(id, textBuf.c_str());
 }
 
 

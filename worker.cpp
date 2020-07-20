@@ -14,7 +14,7 @@ VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime
       EXCEPINFO eiInterrupt;
       ZeroMemory(&eiInterrupt, sizeof(eiInterrupt));
       const LocalString ls(IDS_HANG);
-      WCHAR *wzError = MakeWide(ls.m_szbuffer);
+      const WCHAR * const wzError = MakeWide(ls.m_szbuffer);
       eiInterrupt.bstrDescription = SysAllocString(wzError);
       //eiInterrupt.scode = E_NOTIMPL;
       eiInterrupt.wCode = 2345;

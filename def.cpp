@@ -4,35 +4,42 @@
 unsigned long long tinymt64state[2] = { 'T', 'M' };
 
 
-float sz2f(const char * const sz)
+float sz2f(const string& sz)
 {
-   WCHAR wzT[256];
-   MultiByteToWideChar(CP_ACP, 0, sz, -1, wzT, 256);
+   const int len = sz.length()+1;
+   WCHAR * const wzT = new WCHAR[len];
+   MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, wzT, len);
 
    CComVariant var = wzT;
 
+   float result;
    if (SUCCEEDED(VariantChangeType(&var, &var, 0, VT_R4)))
    {
-      const float result = V_R4(&var);
+      result = V_R4(&var);
       VariantClear(&var);
-      return result;
    }
+   else
+      result = 0.0f; //!! use inf or NaN instead?
+
+   delete[] wzT;
+
    return 0.0f;
 }
 
-void f2sz(const float f, char * const sz)
+void f2sz(const float f, string& sz)
 {
    CComVariant var = f;
 
    if (SUCCEEDED(VariantChangeType(&var, &var, 0, VT_BSTR)))
    {
-      WCHAR * const wzT = V_BSTR(&var);
-
-      WideCharToMultiByte(CP_ACP, 0, wzT, -1, sz, 256, NULL, NULL);
+      const WCHAR * const wzT = V_BSTR(&var);
+      char tmp[256];
+      WideCharToMultiByte(CP_ACP, 0, wzT, -1, tmp, 256, NULL, NULL);
+      sz = tmp;
       VariantClear(&var);
    }
    else
-      sprintf_s(sz, 255, "0.0");
+      sz = "0.0"; //!! must this be somehow localized, i.e. . vs ,
 }
 
 void WideStrCopy(const WCHAR *wzin, WCHAR *wzout)
@@ -118,7 +125,7 @@ int WzSzStrnCmp(const WCHAR *wz1, const char *sz2, const int count)
 LocalString::LocalString(const int resid)
 {
    if (resid > 0)
-      /*const int cchar =*/ LoadString(g_hinst, resid, m_szbuffer, 256);
+      /*const int cchar =*/ LoadString(g_hinst, resid, m_szbuffer, sizeof(m_szbuffer));
    else
       m_szbuffer[0] = 0;
 }
@@ -126,16 +133,16 @@ LocalString::LocalString(const int resid)
 LocalStringW::LocalStringW(const int resid)
 {
    if (resid > 0)
-      LoadStringW(g_hinst, resid, str, 256);
+      LoadStringW(g_hinst, resid, m_szbuffer, sizeof(m_szbuffer)/sizeof(WCHAR));
    else
-      str[0] = 0;
+      m_szbuffer[0] = 0;
 }
 
-WCHAR *MakeWide(const char * const sz)
+WCHAR *MakeWide(const string& sz)
 {
-   const int len = lstrlen(sz);
-   WCHAR * const wzT = new WCHAR[len + 1];
-   MultiByteToWideChar(CP_ACP, 0, sz, -1, wzT, len + 1);
+   const int len = sz.length()+1;
+   WCHAR * const wzT = new WCHAR[len];
+   MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, wzT, len);
 
    return wzT;
 }

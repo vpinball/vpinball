@@ -135,24 +135,24 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
    return tex;
 }
 
-BaseTexture* BaseTexture::CreateFromFile(const char *szfile)
+BaseTexture* BaseTexture::CreateFromFile(const string& szfile)
 {
-   if (szfile == NULL || szfile[0] == '\0')
+   if (szfile.empty())
       return NULL;
 
    FREE_IMAGE_FORMAT fif;
 
    // check the file signature and deduce its format
-   fif = FreeImage_GetFileType(szfile, 0);
+   fif = FreeImage_GetFileType(szfile.c_str(), 0);
    if (fif == FIF_UNKNOWN) {
       // try to guess the file format from the file extension
-      fif = FreeImage_GetFIFFromFilename(szfile);
+      fif = FreeImage_GetFIFFromFilename(szfile.c_str());
    }
 
    // check that the plugin has reading capabilities ...
    if ((fif != FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fif)) {
       // ok, let's load the file
-      FIBITMAP * const dib = FreeImage_Load(fif, szfile, 0);
+      FIBITMAP * const dib = FreeImage_Load(fif, szfile.c_str(), 0);
       if (!dib)
          return NULL;
       

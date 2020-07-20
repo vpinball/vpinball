@@ -71,12 +71,10 @@ static void NormalizeNormals()
 }
 #endif
 
-bool WaveFrontObjLoadMaterial(const char *filename, Material * const mat)
+bool WaveFrontObj_LoadMaterial(const string& filename, Material * const mat)
 {
    FILE *f;
-
-   fopen_s(&f, filename, "r");
-   if (!f)
+   if ((fopen_s(&f, filename.c_str(), "r") != 0) || !f)
       return false;
 
    while (1)
@@ -154,8 +152,7 @@ bool WaveFrontObjLoadMaterial(const char *filename, Material * const mat)
 bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool convertToLeftHanded)
 {
    FILE *f;
-   fopen_s(&f, filename, "r");
-   if (!f)
+   if ((fopen_s(&f, filename, "r") != 0) || !f)
       return false;
 
    tmpVerts.clear();
@@ -401,13 +398,11 @@ FILE* WaveFrontObj_ExportStart(const char *filename)
       }
    }
    memcpy(nameOnly, matName + i, len - i);
-   fopen_s(&matFile, matName, "wt");
-   if (!matFile)
+   if ((fopen_s(&matFile, matName, "wt") != 0) || !matFile)
       return 0;
    fprintf_s(matFile, "# Visual Pinball table mat file\n");
 
-   fopen_s(&f, filename, "wt");
-   if (!f)
+   if ((fopen_s(&f, filename, "wt") != 0) || !f)
       return 0;
    faceIndexOffset = 0;
    fprintf_s(f, "# Visual Pinball table OBJ file\n");

@@ -13,9 +13,9 @@ bool Exists(const string& filePath)
 	return ((fileAtt & FILE_ATTRIBUTE_DIRECTORY) == 0);
 }
 
-void ExtensionFromFilename(const char * const szfilename, char * const szextension)
+void ExtensionFromFilename(const string& szfilename, string& szextension)
 {
-   const int len = lstrlen(szfilename);
+   const int len = szfilename.length();
 
    int begin;
    for (begin = len; begin >= 0; begin--)
@@ -28,9 +28,9 @@ void ExtensionFromFilename(const char * const szfilename, char * const szextensi
    }
 
    if (begin <= 0)
-      szextension[0] = '\0';
-
-   lstrcpy(szextension, &szfilename[begin]);
+      szextension.clear();
+   else
+      szextension = szfilename.c_str()+begin;
 }
 
 void TitleFromFilename(const string& szfilename, string& sztitle)
@@ -64,7 +64,7 @@ void TitleFromFilename(const string& szfilename, string& sztitle)
    while (count--) { sztitle.push_back(*szT++); }
 }
 
-void PathFromFilename(const string& szfilename, char *szpath)
+void PathFromFilename(const string& szfilename, string& szpath)
 {
    const int len = szfilename.length();
    // find the last '\' in the filename
@@ -82,8 +82,8 @@ void PathFromFilename(const string& szfilename, char *szpath)
    const char * szT = szfilename.c_str();
    int count = end + 1;
 
-   while (count--) { *szpath++ = *szT++; }
-   *szpath = '\0';
+   szpath.clear();
+   while (count--) { szpath.push_back(*szT++); }
 }
 
 void TitleAndPathFromFilename(const char * const szfilename, char *szpath)
@@ -106,6 +106,19 @@ void TitleAndPathFromFilename(const char * const szfilename, char *szpath)
 
    while (count-- > 0) { *szpath++ = *szT++; }
    *szpath = '\0';
+}
+
+bool ReplaceExtensionFromFilename(string& szfilename, const string& newextension)
+{
+   const size_t i = szfilename.find_last_of('.');
+
+   if (i != string::npos)
+   {
+       szfilename.replace(i + 1, newextension.length(), newextension);
+       return true;
+   }
+   else
+       return false;
 }
 
 bool RawReadFromFile(const char * const szfilename, int *psize, char **pszout)
@@ -523,7 +536,7 @@ unsigned long __stdcall FastIStorage::Release()
 
    if (m_cref == 0)
    {
-      delete this;
+      delete this; // legal, but meh
    }
 
    return S_OK;

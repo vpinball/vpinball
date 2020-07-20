@@ -203,7 +203,7 @@ class LocalStringW
 public:
    LocalStringW(const int resid);
 
-   WCHAR str[256];
+   WCHAR m_szbuffer[256];
 };
 
 #define M_PI 3.1415926535897932384626433832795
@@ -397,8 +397,8 @@ __forceinline float millimetersToVPUnits(const float value)
    return value * (float)(1.0/0.540425);
 }
 
-float sz2f(const char * const sz);
-void f2sz(const float f, char * const sz);
+float sz2f(const string& sz);
+void f2sz(const float f, string& sz);
 
 void WideStrCopy(const WCHAR *wzin, WCHAR *wzout);
 void WideStrNCopy(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen);
@@ -409,7 +409,7 @@ int WzSzStrnCmp(const WCHAR *wz1, const char *sz2, const int count);
 
 HRESULT OpenURL(const string& szURL);
 
-WCHAR *MakeWide(const char * const sz);
+WCHAR *MakeWide(const string& sz);
 char *MakeChar(const WCHAR * const wz);
 
 char* replace(const char* const original, const char* const pattern, const char* const replacement);

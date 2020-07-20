@@ -502,7 +502,11 @@ PinSound *AudioMusicPlayer::LoadFile(const TCHAR* const strFileName)
    else
    {
 	   FILE *f;
-	   fopen_s(&f, strFileName, "rb");
+	   if (fopen_s(&f, strFileName.c_str(), "rb") != 0 || !f)
+	   {
+		   ShowError("Could not open sound file.");
+		   return NULL;
+	   }
 	   fseek(f, 0, SEEK_END);
 	   pps->m_cdata = (int)ftell(f);
 	   fseek(f, 0, SEEK_SET);

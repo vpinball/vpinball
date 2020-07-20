@@ -132,9 +132,8 @@ void PinFont::Register()
 
    ReleaseDC(NULL, hdcScreen);
 
-   char szPath[MAX_PATH];
-
-   GetModuleFileName(NULL, szPath, MAX_PATH);
+   char szPath[MAXSTRING];
+   GetModuleFileName(NULL, szPath, MAXSTRING);
 
    char *szEnd = szPath + lstrlen(szPath);
 
@@ -151,13 +150,7 @@ void PinFont::Register()
    static int tempFontNumber = -1;
    tempFontNumber++;
 
-   lstrcat(szPath, "VPTemp");
-   char tempFontNumber_s[4];
-   _itoa_s(tempFontNumber, tempFontNumber_s, 10);
-   lstrcat(szPath, tempFontNumber_s);
-   lstrcat(szPath, ".ttf");
-
-   m_szTempFile = szPath;
+   m_szTempFile = szPath + string("VPTemp") + std::to_string(tempFontNumber) + ".ttf";
    WriteToFile(m_szTempFile);
 
    /*const int fonts =*/ AddFontResource(m_szTempFile.c_str());

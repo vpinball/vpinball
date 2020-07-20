@@ -112,7 +112,7 @@ public:
    }
 
    static BaseTexture *CreateFromHBitmap(const HBITMAP hbm);
-   static BaseTexture *CreateFromFile(const char *filename);
+   static BaseTexture *CreateFromFile(const string& filename);
    static BaseTexture *CreateFromFreeImage(FIBITMAP* dib); // also free's/delete's the dib inside!
    static BaseTexture *CreateFromData(const void *data, const size_t size);
 };
