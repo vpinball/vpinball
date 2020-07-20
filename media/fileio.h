@@ -121,9 +121,9 @@ public:
    long __stdcall QueryInterface(const struct _GUID &, void **);
    unsigned long __stdcall AddRef();
    unsigned long __stdcall Release();
-   long __stdcall Read(void *pv, const unsigned long count, unsigned long *foo);
-   long __stdcall Write(const void *pv, const unsigned long count, unsigned long *foo);
-   long __stdcall Seek(union _LARGE_INTEGER, const unsigned long, union _ULARGE_INTEGER *);
+   long __stdcall Read(void *pv, unsigned long count, unsigned long *foo);
+   long __stdcall Write(const void *pv, unsigned long count, unsigned long *foo);
+   long __stdcall Seek(union _LARGE_INTEGER, unsigned long, union _ULARGE_INTEGER *);
    long __stdcall SetSize(union _ULARGE_INTEGER);
    long __stdcall CopyTo(struct IStream *, union _ULARGE_INTEGER, union _ULARGE_INTEGER *, union _ULARGE_INTEGER *);
    long __stdcall Commit(unsigned long);
