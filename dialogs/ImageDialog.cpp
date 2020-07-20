@@ -203,8 +203,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             Texture * const ppi = (Texture *)lvitem.lParam;
             if (ppi != NULL)
             {
-               const CString textStr = GetDlgItemText(IDC_ALPHA_MASK_EDIT);
-               const float v = sz2f(textStr.c_str());
+               const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).c_str());
                if (ppi->m_alphaTestValue != v)
                {
                   ppi->m_alphaTestValue = v;
@@ -325,8 +324,7 @@ void ImageDialog::UpdateImages()
             Texture * const ppi = (Texture *)lvitem.lParam;
             if (ppi != NULL)
             {
-                const CString textStr = GetDlgItemText(IDC_ALPHA_MASK_EDIT);
-                const float v = sz2f(textStr.c_str());
+                const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).c_str());
                 if (ppi->m_alphaTestValue != v)
                 {
                     ppi->m_alphaTestValue = v;
@@ -410,7 +408,7 @@ void ImageDialog::Import()
       const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
       for (const std::string &file : szFileName)
-         pt->ImportImage(hSoundList, file.c_str());
+         pt->ImportImage(hSoundList, file);
 
       const size_t index = szFileName[0].find_last_of('\\');
       if (index != std::string::npos)
@@ -450,8 +448,6 @@ void ImageDialog::Export()
             int len = lstrlen(ppi->m_szPath);
             char g_filename[MAXSTRING];
             memset(g_filename, 0, sizeof(g_filename));
-            char g_initDir[MAXSTRING];
-            memset(g_initDir, 0, sizeof(g_initDir));
 
             const size_t renameOnExport = SendMessage(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), BM_GETCHECK, 0, 0);
 
@@ -487,29 +483,33 @@ void ImageDialog::Export()
             ofn.lpstrDefExt = ext2.c_str() + idx2 + 1;
             // check which default file extension should be selected
             ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0EXR (.exr)\0*.exr;\0HDR (.hdr)\0*.hdr\0";
-            if(!strcmp(ofn.lpstrDefExt,"png"))
+            if(!_stricmp(ofn.lpstrDefExt,"png"))
                ofn.nFilterIndex = 1;
-            else if (!strcmp(ofn.lpstrDefExt, "bmp"))
+            else if (!_stricmp(ofn.lpstrDefExt, "bmp"))
                ofn.nFilterIndex = 2;
-            else if (!strcmp(ofn.lpstrDefExt, "jpg") || !strcmp(ofn.lpstrDefExt, "jpeg"))
+            else if (!_stricmp(ofn.lpstrDefExt, "jpg") || !_stricmp(ofn.lpstrDefExt, "jpeg"))
                ofn.nFilterIndex = 3;
-            else if (!strcmp(ofn.lpstrDefExt, "iff"))
+            else if (!_stricmp(ofn.lpstrDefExt, "iff"))
                ofn.nFilterIndex = 4;
-            else if (!strcmp(ofn.lpstrDefExt, "pcx"))
+            else if (!_stricmp(ofn.lpstrDefExt, "pcx"))
                ofn.nFilterIndex = 5;
-            else if (!strcmp(ofn.lpstrDefExt, "pict"))
+            else if (!_stricmp(ofn.lpstrDefExt, "pict"))
                ofn.nFilterIndex = 6;
-            else if (!strcmp(ofn.lpstrDefExt, "psd"))
+            else if (!_stricmp(ofn.lpstrDefExt, "psd"))
                ofn.nFilterIndex = 7;
-            else if (!strcmp(ofn.lpstrDefExt, "tga"))
+            else if (!_stricmp(ofn.lpstrDefExt, "tga"))
                ofn.nFilterIndex = 8;
-            else if (!strcmp(ofn.lpstrDefExt, "tif") || !strcmp(ofn.lpstrDefExt, "tiff"))
+            else if (!_stricmp(ofn.lpstrDefExt, "tif") || !_stricmp(ofn.lpstrDefExt, "tiff"))
                ofn.nFilterIndex = 9;
-            else if (!strcmp(ofn.lpstrDefExt, "exr"))
+            else if (!_stricmp(ofn.lpstrDefExt, "webp"))
                ofn.nFilterIndex = 10;
-            else if (!strcmp(ofn.lpstrDefExt, "hdr"))
+            else if (!_stricmp(ofn.lpstrDefExt, "exr"))
                ofn.nFilterIndex = 11;
+            else if (!_stricmp(ofn.lpstrDefExt, "hdr"))
+               ofn.nFilterIndex = 12;
 
+            char g_initDir[MAXSTRING];
+            memset(g_initDir, 0, sizeof(g_initDir));
             const HRESULT hr = LoadValueString("RecentDir", "ImageDir", g_initDir, MAXSTRING);
             if (hr != S_OK)
                lstrcpy(g_initDir, "c:\\Visual Pinball\\Tables\\");
@@ -744,7 +744,7 @@ void ImageDialog::ReimportFrom()
                }
 
                CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-               pt->ReImportImage(ppi, szFileName[0].c_str());
+               pt->ReImportImage(ppi, szFileName[0]);
                ListView_SetItemText(hSoundList, sel, 1, ppi->m_szPath);
                pt->SetNonUndoableDirty(eSaveDirty);
 

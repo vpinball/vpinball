@@ -1400,7 +1400,6 @@
     <ClInclude Include="dialogs\LayersListDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="Debugger.h" />
     <ClInclude Include="imgui\imgui_impl_win32.h">
       <Filter>imgui</Filter>
     </ClInclude>
@@ -1418,6 +1417,9 @@
     </ClInclude>
     <ClInclude Include="imgui\implot\implot.h">
       <Filter>imgui\implot</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger.h">
+      <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -183,7 +183,7 @@ public:
 
    char m_szMyPath[MAX_PATH];
    WCHAR m_wzMyPath[MAX_PATH];
-   char m_currentTablePath[MAX_PATH];
+   string m_currentTablePath;
 
    int m_autosaveTime;
    static bool m_open_minimized;

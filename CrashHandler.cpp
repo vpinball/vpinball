@@ -291,8 +291,7 @@ namespace
       const bool miniDumpOK = WriteMiniDump(exceptionPtrs, s_miniDumpFileName);
 
       FILE* f;
-      fopen_s(&f,s_reportFileName, "wt");
-	  if (f)
+      if ((fopen_s(&f, s_reportFileName, "wt") == 0) && f)
 	  {
 		  WriteHeader(f);
 		  WriteExceptionInfo(f, exceptionPtrs);

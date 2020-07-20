@@ -190,7 +190,7 @@ private:
    bool file;
    bool loadFileResult;
    bool extractScript;
-   TCHAR szTableFileName[MAXSTRING];
+   string szTableFileName;
    VPinball m_vpinball;
 
 public:
@@ -229,6 +229,7 @@ public:
       SetDisplayAutoRotationPreferences(ORIENTATION_PREFERENCE_LANDSCAPE);
 #endif
 
+      //!! max(2u, std::thread::hardware_concurrency()) ??
       SYSTEM_INFO sysinfo;
       GetSystemInfo(&sysinfo);
       logicalNumberOfProcessors = sysinfo.dwNumberOfProcessors; //!! this ignores processor groups, so if at some point we need extreme multi threading, implement this in addition!
@@ -249,7 +250,7 @@ public:
       loadFileResult = true;
       extractScript = false;
 
-      memset(szTableFileName, 0, sizeof(szTableFileName));
+      szTableFileName.clear();
 
       // Start VP with file dialog open and then also playing that one?
       const bool stos = LoadValueBoolWithDefault("Editor", "SelectTableOnStart", true);
@@ -353,33 +354,27 @@ public:
             extractScript = extractscript;
 
             // Remove leading - or /
-            char* filename;
             if ((szArglist[i + 1][0] == '-') || (szArglist[i + 1][0] == '/'))
-               filename = szArglist[i + 1] + 1;
+               szTableFileName = szArglist[i + 1] + 1;
             else
-               filename = szArglist[i + 1];
+               szTableFileName = szArglist[i + 1];
 
             // Remove " "
-            if (filename[0] == '"') {
-               strncpy_s(szTableFileName, filename + 1, sizeof(szTableFileName)-1);
-               szTableFileName[lstrlen(szTableFileName) - 1] = '\0';
-            }
-            else
-               strncpy_s(szTableFileName, filename, sizeof(szTableFileName)-1);
+            if (szTableFileName[0] == '"')
+               szTableFileName = szTableFileName.substr(1, szTableFileName.size()-1);
 
             // Add current path
-            char szLoadDir[MAX_PATH];
             if (szTableFileName[1] != ':') {
-               GetCurrentDirectory(MAX_PATH, szLoadDir);
-               strncat_s(szLoadDir, "\\", sizeof(szLoadDir)-strnlen_s(szLoadDir, sizeof(szLoadDir))-1);
-               strncat_s(szLoadDir, szTableFileName, sizeof(szLoadDir)-strnlen_s(szLoadDir, sizeof(szLoadDir))-1);
-               strncpy_s(szTableFileName, szLoadDir, sizeof(szTableFileName)-1);
+               char szLoadDir[MAXSTRING];
+               GetCurrentDirectory(MAXSTRING, szLoadDir);
+               szTableFileName = string(szLoadDir) + '\\' + szTableFileName;
             }
             else
                // Or set from table path
                if (playfile) {
-                  PathFromFilename(szTableFileName, szLoadDir);
-                  SetCurrentDirectory(szLoadDir);
+                  string dir;
+                  PathFromFilename(szTableFileName, dir);
+                  SetCurrentDirectory(dir.c_str());
                }
 
             ++i; // two params processed
@@ -468,7 +463,7 @@ public:
 
        if (file)
        {
-           if (szTableFileName[0] != '\0')
+           if (!szTableFileName.empty())
            {
                m_vpinball.LoadFileName(szTableFileName, !play);
                table_played_via_command_line = play;
@@ -478,28 +473,16 @@ public:
 
            if (extractScript && loadFileResult)
            {
-               TCHAR szScriptFilename[MAX_PATH];
-               strncpy_s(szScriptFilename, szTableFileName, sizeof(szScriptFilename)-1);
-               TCHAR* pos = strrchr(szScriptFilename, '.');
-               if (pos)
-               {
-                   *pos = 0;
-                   strncat_s(szScriptFilename, ".vbs", sizeof(szScriptFilename)-strnlen_s(szScriptFilename, sizeof(szScriptFilename))-1);
+               string szScriptFilename = szTableFileName;
+               if(ReplaceExtensionFromFilename(szScriptFilename, "vbs"))
                    m_vpinball.m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
-               }
                m_vpinball.Quit();
            }
            if (extractPov && loadFileResult)
            {
-               TCHAR szPOVFilename[MAX_PATH];
-               strncpy_s(szPOVFilename, szTableFileName, sizeof(szPOVFilename)-1);
-               TCHAR* pos = strrchr(szPOVFilename, '.');
-               if (pos)
-               {
-                   *pos = 0;
-                   strncat_s(szPOVFilename, ".pov", sizeof(szPOVFilename)-strnlen_s(szPOVFilename, sizeof(szPOVFilename))-1);
+               string szPOVFilename = szTableFileName;
+               if (ReplaceExtensionFromFilename(szPOVFilename, "pov"))
                    m_vpinball.m_ptableActive->ExportBackdropPOV(szPOVFilename);
-               }
                m_vpinball.Quit();
            }
        }

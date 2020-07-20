@@ -82,11 +82,11 @@ BOOL DebuggerDialog::OnInitDialog()
     SendMessage(m_hThrowBallsInPlayerCheck, BM_SETCHECK, g_pplayer->m_throwBalls ? BST_CHECKED : BST_UNCHECKED, 0);
     SendMessage(m_hBallControlCheck, BM_SETCHECK, g_pplayer->m_ballControl ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    m_ballSizeEdit.SetWindowText(CString(g_pplayer->m_debugBallSize).c_str());
+    m_ballSizeEdit.SetWindowText(std::to_string(g_pplayer->m_debugBallSize).c_str());
 
-    char textBuf[256] = { 0 };
+    string textBuf;
     f2sz(g_pplayer->m_debugBallMass, textBuf);
-    m_ballMassEdit.SetWindowText(textBuf);
+    m_ballMassEdit.SetWindowText(textBuf.c_str());
 
     SendMessage(RESIZE_FROM_EXPAND, 0, 0);
     return TRUE;
@@ -189,8 +189,7 @@ void DebuggerDialog::OnClose()
     g_pplayer->RecomputePseudoPauseState();
     g_pplayer->m_debugBallSize = GetDlgItemInt(IDC_THROW_BALL_SIZE_EDIT2, FALSE);
 
-    const CString text = GetDlgItemText(IDC_THROW_BALL_MASS_EDIT2);
-    const float fv = sz2f(text.c_str());
+    const float fv = sz2f(GetDlgItemText(IDC_THROW_BALL_MASS_EDIT2).c_str());
     g_pplayer->m_debugBallMass = fv;
 
     g_pplayer->m_debugMode = false;
@@ -356,32 +355,25 @@ void DbgLightDialog::OnOK()
     Light* const plight = GetLight();
     if (plight != nullptr)
     {
-        CString txt = GetDlgItemText(IDC_DBG_LIGHT_FALLOFF);
-        float fv = sz2f(txt.c_str());
+        float fv = sz2f(GetDlgItemText(IDC_DBG_LIGHT_FALLOFF).c_str());
         plight->put_Falloff(fv);
 
-        txt = GetDlgItemText(IDC_DBG_LIGHT_FALLOFF_POWER);
-        fv = sz2f(txt.c_str());
+        fv = sz2f(GetDlgItemText(IDC_DBG_LIGHT_FALLOFF_POWER).c_str());
         plight->put_FalloffPower(fv);
 
-        txt = GetDlgItemText(IDC_DBG_LIGHT_INTENSITY);
-        fv = sz2f(txt.c_str());
+        fv = sz2f(GetDlgItemText(IDC_DBG_LIGHT_INTENSITY).c_str());
         plight->put_Intensity(fv);
 
-        txt = GetDlgItemText(IDC_DBG_BULB_MODULATE_VS_ADD);
-        fv = sz2f(txt.c_str());
+        fv = sz2f(GetDlgItemText(IDC_DBG_BULB_MODULATE_VS_ADD).c_str());
         plight->m_d.m_modulate_vs_add = fv;
 
-        txt = GetDlgItemText(IDC_DBG_TRANSMISSION_SCALE);
-        fv = sz2f(txt.c_str());
+        fv = sz2f(GetDlgItemText(IDC_DBG_TRANSMISSION_SCALE).c_str());
         plight->m_d.m_transmissionScale = fv;
 
-        txt = GetDlgItemText(IDC_DBG_LIGHT_FADE_UP_EDIT);
-        fv = sz2f(txt.c_str());
+        fv = sz2f(GetDlgItemText(IDC_DBG_LIGHT_FADE_UP_EDIT).c_str());
         plight->put_FadeSpeedUp(fv);
 
-        txt = GetDlgItemText(IDC_DBG_LIGHT_FADE_DOWN_EDIT);
-        fv = sz2f(txt.c_str());
+        fv = sz2f(GetDlgItemText(IDC_DBG_LIGHT_FADE_DOWN_EDIT).c_str());
         plight->put_FadeSpeedDown(fv);
 
         g_pplayer->m_ptable->AddDbgLight(plight);
@@ -470,35 +462,35 @@ BOOL DbgLightDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                     Light* const plight = GetLight();
                     if (plight != NULL)
                     {
-                        char value[256];
+                        string value;
                         float v;
                         plight->get_Falloff(&v);
                         f2sz(v, value);
-                        SetDlgItemText(IDC_DBG_LIGHT_FALLOFF, value);
+                        SetDlgItemText(IDC_DBG_LIGHT_FALLOFF, value.c_str());
 
                         plight->get_FalloffPower(&v);
                         f2sz(v, value);
-                        SetDlgItemText(IDC_DBG_LIGHT_FALLOFF_POWER, value);
+                        SetDlgItemText(IDC_DBG_LIGHT_FALLOFF_POWER, value.c_str());
 
                         plight->get_Intensity(&v);
                         f2sz(v, value);
-                        SetDlgItemText(IDC_DBG_LIGHT_INTENSITY, value);
+                        SetDlgItemText(IDC_DBG_LIGHT_INTENSITY, value.c_str());
 
                         v = plight->m_d.m_modulate_vs_add;
                         f2sz(v, value);
-                        SetDlgItemText(IDC_DBG_BULB_MODULATE_VS_ADD, value);
+                        SetDlgItemText(IDC_DBG_BULB_MODULATE_VS_ADD, value.c_str());
 
                         v = plight->m_d.m_transmissionScale;
                         f2sz(v, value);
-                        SetDlgItemText(IDC_DBG_TRANSMISSION_SCALE, value);
+                        SetDlgItemText(IDC_DBG_TRANSMISSION_SCALE, value.c_str());
 
                         plight->get_FadeSpeedUp(&v);
                         f2sz(v, value);
-                        SetDlgItemText(IDC_DBG_LIGHT_FADE_UP_EDIT, value);
+                        SetDlgItemText(IDC_DBG_LIGHT_FADE_UP_EDIT, value.c_str());
 
                         plight->get_FadeSpeedDown(&v);
                         f2sz(v, value);
-                        SetDlgItemText(IDC_DBG_LIGHT_FADE_DOWN_EDIT, value);
+                        SetDlgItemText(IDC_DBG_LIGHT_FADE_DOWN_EDIT, value.c_str());
 
                         SetCheckButtonState(plight);
                         m_colorButton.SetColor(plight->m_d.m_color);
@@ -616,28 +608,13 @@ void DbgMaterialDialog::OnOK()
     Material* const pMat = g_pplayer->m_ptable->GetMaterial(strText);
     if (pMat != &g_pvp->m_dummyMaterial)
     {
-        CString txt;
-
-        txt = GetDlgItemText(IDC_DBG_MATERIAL_BASE_WRAP_EDIT);
-        pMat->m_fWrapLighting = saturate(sz2f(txt.c_str()));
-
-        txt = GetDlgItemText(IDC_DBG_MATERIAL_SHININESS_EDIT);
-        pMat->m_fRoughness = saturate(sz2f(txt.c_str()));
-
-        txt = GetDlgItemText(IDC_DBG_MATERIAL_GLOSSY_IMGLERP_EDIT);
-        pMat->m_fGlossyImageLerp = saturate(sz2f(txt.c_str()));
-
-        txt = GetDlgItemText(IDC_DBG_MATERIAL_THICKNESS_EDIT);
-        pMat->m_fThickness = saturate(sz2f(txt.c_str()));
-
-        txt = GetDlgItemText(IDC_DBG_MATERIAL_EDGE_EDIT);
-        pMat->m_fEdge = saturate(sz2f(txt.c_str()));
-
-        txt = GetDlgItemText(IDC_DBG_MATERIAL_OPACITY_AMOUNT_EDIT);
-        pMat->m_fOpacity = saturate(sz2f(txt.c_str()));
-
-        txt = GetDlgItemText(DBG_MATERIAL_OPACITY_EDGE_EDIT);
-        pMat->m_fEdgeAlpha = saturate(sz2f(txt.c_str()));
+        pMat->m_fWrapLighting    = saturate(sz2f(GetDlgItemText(IDC_DBG_MATERIAL_BASE_WRAP_EDIT).c_str()));
+        pMat->m_fRoughness       = saturate(sz2f(GetDlgItemText(IDC_DBG_MATERIAL_SHININESS_EDIT).c_str()));
+        pMat->m_fGlossyImageLerp = saturate(sz2f(GetDlgItemText(IDC_DBG_MATERIAL_GLOSSY_IMGLERP_EDIT).c_str()));
+        pMat->m_fThickness       = saturate(sz2f(GetDlgItemText(IDC_DBG_MATERIAL_THICKNESS_EDIT).c_str()));
+        pMat->m_fEdge            = saturate(sz2f(GetDlgItemText(IDC_DBG_MATERIAL_EDGE_EDIT).c_str()));
+        pMat->m_fOpacity         = saturate(sz2f(GetDlgItemText(IDC_DBG_MATERIAL_OPACITY_AMOUNT_EDIT).c_str()));
+        pMat->m_fEdgeAlpha       = saturate(sz2f(GetDlgItemText(DBG_MATERIAL_OPACITY_EDGE_EDIT).c_str()));
 
         size_t checked = SendDlgItemMessage(IDC_DBG_METAL_MATERIAL_CHECK, BM_GETCHECK, 0, 0);
         pMat->m_bIsMetal = (checked == 1);
@@ -673,21 +650,21 @@ BOOL DbgMaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                     Material* const pMat = g_pplayer->m_ptable->GetMaterial(strText);
                     if (pMat != &g_pvp->m_dummyMaterial)
                     {
-                        char value[256];
+                        string value;
                         f2sz(pMat->m_fWrapLighting, value);
-                        SetDlgItemText(IDC_DBG_MATERIAL_BASE_WRAP_EDIT, value);
+                        SetDlgItemText(IDC_DBG_MATERIAL_BASE_WRAP_EDIT, value.c_str());
                         f2sz(pMat->m_fRoughness, value);
-                        SetDlgItemText(IDC_DBG_MATERIAL_SHININESS_EDIT, value);
+                        SetDlgItemText(IDC_DBG_MATERIAL_SHININESS_EDIT, value.c_str());
                         f2sz(pMat->m_fGlossyImageLerp, value);
-                        SetDlgItemText(IDC_DBG_MATERIAL_GLOSSY_IMGLERP_EDIT, value);
+                        SetDlgItemText(IDC_DBG_MATERIAL_GLOSSY_IMGLERP_EDIT, value.c_str());
                         f2sz(pMat->m_fThickness, value);
-                        SetDlgItemText(IDC_DBG_MATERIAL_THICKNESS_EDIT, value);
+                        SetDlgItemText(IDC_DBG_MATERIAL_THICKNESS_EDIT, value.c_str());
                         f2sz(pMat->m_fEdge, value);
-                        SetDlgItemText(IDC_DBG_MATERIAL_EDGE_EDIT, value);
+                        SetDlgItemText(IDC_DBG_MATERIAL_EDGE_EDIT, value.c_str());
                         f2sz(pMat->m_fOpacity, value);
-                        SetDlgItemText(IDC_DBG_MATERIAL_OPACITY_AMOUNT_EDIT, value);
+                        SetDlgItemText(IDC_DBG_MATERIAL_OPACITY_AMOUNT_EDIT, value.c_str());
                         f2sz(pMat->m_fEdgeAlpha, value);
-                        SetDlgItemText(DBG_MATERIAL_OPACITY_EDGE_EDIT, value);
+                        SetDlgItemText(DBG_MATERIAL_OPACITY_EDGE_EDIT, value.c_str());
                         SendMessage(GetDlgItem(IDC_DBG_METAL_MATERIAL_CHECK), BM_SETCHECK, pMat->m_bIsMetal ? BST_CHECKED : BST_UNCHECKED, 0);
                         SendMessage(GetDlgItem(IDC_DBG_MATERIAL_OPACITY_ACTIVE_CHECK), BM_SETCHECK, pMat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
                         m_colorButton1.SetColor(pMat->m_cBase);

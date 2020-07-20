@@ -112,8 +112,7 @@ void slintf_close_console()
 int file_exists(const char *filename)
 {
    FILE *file;
-
-   if (fopen_s(&file, filename, "r")) return 0;
+   if (fopen_s(&file, filename, "r") != 0 || !file) return 0;
    else
    {
       fclose(file);

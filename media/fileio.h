@@ -3,10 +3,11 @@
 
 bool Exists(const string& filePath);
 void TitleFromFilename(const string& szfilename, string& sztitle);
-void ExtensionFromFilename(const char * const szfilename, char * const szextension);
+void ExtensionFromFilename(const string& szfilename, string& szextension);
 bool RawReadFromFile(const char * const szfilename, int *psize, char **pszout);
-void PathFromFilename(const string& szfilename, char *szpath);
+void PathFromFilename(const string& szfilename, string& szpath);
 void TitleAndPathFromFilename(const char * const szfilename, char *szpath);
+bool ReplaceExtensionFromFilename(string& szfilename, const string& newextension);
 
 class BiffReader;
 

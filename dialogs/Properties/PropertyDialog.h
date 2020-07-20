@@ -275,9 +275,9 @@ public:
 
     static void SetFloatTextbox(CEdit &textbox, const float value)
     {
-        char strValue[256];
+        string strValue;
         f2sz(value, strValue);
-        textbox.SetWindowText(strValue);
+        textbox.SetWindowText(strValue.c_str());
     }
 
     static void SetIntTextbox(CEdit &textbox, const int value)
