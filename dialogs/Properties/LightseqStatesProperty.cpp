@@ -28,7 +28,7 @@ void LightseqStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == DISPID_Collection || dispid == -1)
         {
             char szT[MAX_PATH];
-            WideCharToMultiByte(CP_ACP, 0, lightseq->m_d.m_wzCollection, -1, szT, MAX_PATH, NULL, NULL);
+            WideCharToMultiByte(CP_ACP, 0, lightseq->m_d.m_wzCollection.c_str(), -1, szT, sizeof(szT), NULL, NULL);
 
             PropertyDialog::UpdateCollectionComboBox(lightseq->GetPTable(), m_collectionCombo, szT);
         }
@@ -60,10 +60,11 @@ void LightseqStatesProperty::UpdateProperties(const int dispid)
             case DISPID_Collection:
             {
                 PropertyDialog::StartUndo(lightseq);
-                char szText[MAX_PATH];
+                char szText[MAXSTRING];
                 PropertyDialog::GetComboBoxText(m_collectionCombo, szText, sizeof(szText));
-                UNICODE_FROM_ANSI(lightseq->m_d.m_wzCollection, szText, lstrlen(szText));
-                lightseq->m_d.m_wzCollection[min(MAXNAMEBUFFER-1,lstrlen(szText))] = 0;
+                WCHAR wzText[MAXSTRING];
+                MultiByteToWideChar(CP_ACP, 0, szText, -1, wzText, MAXSTRING);
+                lightseq->m_d.m_wzCollection = wzText;
                 PropertyDialog::EndUndo(lightseq);
                 break;
             }

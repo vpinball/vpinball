@@ -393,7 +393,7 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const char * const szfilename, 
       }
       else
       {
-         WCHAR *wzContents = new WCHAR[len + 1];
+         WCHAR * const wzContents = new WCHAR[len + 1];
 
          MultiByteToWideChar(encoding, 0, (char *)szDataStart, len, wzContents, len + 1);
          wzContents[len] = L'\0';
@@ -3166,10 +3166,9 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
-      char * const szName = m_vCustomInfoTag[i];
-      int len = lstrlen(szName);
+      const int len = lstrlen(m_vCustomInfoTag[i]);
       WCHAR * const wzName = new WCHAR[len + 1];
-      MultiByteToWideChar(CP_ACP, 0, szName, -1, wzName, len + 1);
+      MultiByteToWideChar(CP_ACP, 0, m_vCustomInfoTag[i], -1, wzName, len + 1);
 
       WriteInfoValue(pstg, wzName, m_vCustomInfoContent[i], hcrypthash);
 
@@ -3336,10 +3335,9 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
-      char * const szName = m_vCustomInfoTag[i];
-      const int len = lstrlen(szName);
+      const int len = lstrlen(m_vCustomInfoTag[i]);
       WCHAR * const wzName = new WCHAR[len + 1];
-      MultiByteToWideChar(CP_ACP, 0, szName, -1, wzName, len + 1);
+      MultiByteToWideChar(CP_ACP, 0, m_vCustomInfoTag[i], -1, wzName, len + 1);
 
 	  char *szValue;
 	  ReadInfoValue(pstg, wzName, &szValue, hcrypthash);
@@ -3535,7 +3533,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool back
       bw.WriteInt(FID(SFNT), (int)m_vfont.size());
       bw.WriteInt(FID(SCOL), m_vcollection.Size());
 
-      bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+      bw.WriteWideString(FID(NAME), m_wzName);
 
       bw.WriteStruct(FID(CCUS), m_rgcolorcustom, sizeof(COLORREF) * 16);
 
@@ -4098,7 +4096,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(SIMG): pbr->GetInt(&((int *)pbr->m_pdata)[3]); break;
    case FID(SFNT): pbr->GetInt(&((int *)pbr->m_pdata)[4]); break;
    case FID(SCOL): pbr->GetInt(&((int *)pbr->m_pdata)[5]); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(BIMG): pbr->GetString(m_BG_szImage[0]); break;
    case FID(BIMF): pbr->GetString(m_BG_szImage[1]); break;
    case FID(BIMS): pbr->GetString(m_BG_szImage[2]); break;
@@ -4486,8 +4484,8 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
 
 int PinTable::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
 {
-   char szT[MAX_PATH];
-   WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
+   char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
+   WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
 
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
@@ -5544,8 +5542,8 @@ void PinTable::ExportBlueprint()
 
 void PinTable::ExportMesh(FILE *f)
 {
-   char name[MAX_PATH];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
 
    Vertex3D_NoTex2 rgv[7];
    rgv[0].x = m_left;     rgv[0].y = m_top;      rgv[0].z = m_tableheight;
@@ -6507,7 +6505,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
             if (prim->m_mesh.m_animationFrames.size() > 0)
                 info += " (animated " + std::to_string((unsigned long long)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
         }
-        m_vpinball->SetStatusBarElementInfo(info.c_str());
+        m_vpinball->SetStatusBarElementInfo(info);
         m_pcv->SelectItem(piSelect->GetIEditable()->GetScriptable());
     }
 }
@@ -6844,7 +6842,8 @@ STDMETHODIMP PinTable::put_Offset(float newVal)
 
 HRESULT PinTable::StopSound(BSTR Sound)
 {
-   MAKE_ANSIPTR_FROMWIDE(szName, Sound);
+   char szName[MAXSTRING];
+   WideCharToMultiByte(CP_ACP, 0, Sound, -1, szName, MAXSTRING, NULL, NULL);
 
    // In case we were playing any of the main buffers
    for (size_t i = 0; i < m_vsound.size(); i++)
@@ -6871,7 +6870,8 @@ void PinTable::StopAllSounds()
 
 STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float pan, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade)
 {
-   MAKE_ANSIPTR_FROMWIDE(szName, bstr);
+   char szName[MAXSTRING];
+   WideCharToMultiByte(CP_ACP, 0, bstr, -1, szName, MAXSTRING, NULL, NULL);
 
    if (!lstrcmpi("knock", szName) || !lstrcmpi("knocker", szName))
       hid_knock();
@@ -7757,13 +7757,12 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         char *szSrc = m_vimage[ivar]->m_szName;
-         DWORD cwch = lstrlen(szSrc) + 1;
+         DWORD cwch = lstrlen(m_vimage[ivar]->m_szName) + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == NULL)
             ShowError("DISPID_Image alloc failed");
 
-         MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);
+         MultiByteToWideChar(CP_ACP, 0, m_vimage[ivar]->m_szName, -1, wzDst, cwch);
 
          //MsoWzCopy(szSrc,szDst);
          rgstr[ivar + 1] = wzDst;
@@ -7790,13 +7789,12 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         const char * const szSrc = m_materials[ivar]->m_szName.c_str();
          const DWORD cwch = (DWORD)m_materials[ivar]->m_szName.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == NULL)
             ShowError("IDC_MATERIAL_COMBO alloc failed");
 
-         MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);
+         MultiByteToWideChar(CP_ACP, 0, m_materials[ivar]->m_szName.c_str(), -1, wzDst, cwch);
 
          //MsoWzCopy(szSrc,szDst);
          rgstr[ivar + 1] = wzDst;
@@ -7820,15 +7818,12 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         char * const szSrc = m_vsound[ivar]->m_szName;
-         const DWORD cwch = lstrlen(szSrc) + 1;
+         const DWORD cwch = lstrlen(m_vsound[ivar]->m_szName) + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == NULL)
-         {
             ShowError("DISPID_Sound alloc failed");
-         }
 
-         MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);
+         MultiByteToWideChar(CP_ACP, 0, m_vsound[ivar]->m_szName, -1, wzDst, cwch);
 
          //MsoWzCopy(szSrc,szDst);
          rgstr[ivar + 1] = wzDst;
@@ -7993,11 +7988,10 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const char * const szSrc = m_vimage[dwCookie]->m_szName;
-         const DWORD cwch = lstrlen(szSrc) + 1;
+         const DWORD cwch = lstrlen(m_vimage[dwCookie]->m_szName) + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
-         MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);
+         MultiByteToWideChar(CP_ACP, 0, m_vimage[dwCookie]->m_szName, -1, wzDst, cwch);
       }
    }
    break;
@@ -8013,11 +8007,10 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const char * const szSrc = m_materials[dwCookie]->m_szName.c_str();
          const DWORD cwch = (DWORD)m_materials[dwCookie]->m_szName.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
-         MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);
+         MultiByteToWideChar(CP_ACP, 0, m_materials[dwCookie]->m_szName.c_str(), -1, wzDst, cwch);
       }
       break;
    }
@@ -8026,15 +8019,17 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       if (dwCookie == -1)
       {
          wzDst = (WCHAR *)CoTaskMemAlloc(1 * sizeof(WCHAR));
+         if (wzDst == NULL)
+             ShowError("DISPID_Sound alloc failed");
          wzDst[0] = L'\0';
       }
       else
       {
-         const char * const szSrc = m_vsound[dwCookie]->m_szName;
-         const DWORD cwch = lstrlen(szSrc) + 1;
+         const DWORD cwch = lstrlen(m_vsound[dwCookie]->m_szName) + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
-
-         MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);
+         if (wzDst == NULL)
+             ShowError("DISPID_Sound alloc failed");
+         MultiByteToWideChar(CP_ACP, 0, m_vsound[dwCookie]->m_szName, -1, wzDst, cwch);
       }
    }
    break;

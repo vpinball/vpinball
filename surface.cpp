@@ -763,8 +763,8 @@ void Surface::ExportMesh(FILE *f)
    m_d.m_heightbottom = oldBottomHeight;
    m_d.m_heighttop = oldTopHeight;
 
-   char name[MAX_PATH];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
    if (topBuf.size() > 0 && m_d.m_topBottomVisible && !m_d.m_sideVisible)
    {
       WaveFrontObj_WriteObjectName(f, name);
@@ -1251,7 +1251,7 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
    bw.WriteFloat(FID(HTBT), m_d.m_heightbottom);
    bw.WriteFloat(FID(HTTP), m_d.m_heighttop);
    //bw.WriteBool(FID(INNR), m_d.m_inner); //!! Deprecated
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
    bw.WriteBool(FID(DSPT), m_d.m_displayTexture);
    bw.WriteFloat(FID(SLGF), m_d.m_slingshotforce);
    bw.WriteFloat(FID(SLTH), m_d.m_slingshot_threshold);
@@ -1394,7 +1394,7 @@ bool Surface::LoadToken(const int id, BiffReader * const pbr)
    case FID(HTBT): pbr->GetFloat(&m_d.m_heightbottom); break;
    case FID(HTTP): pbr->GetFloat(&m_d.m_heighttop); break;
    case FID(INNR): pbr->GetBool(&m_d.m_inner); break; //!! Deprecated, do not use anymore
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(DSPT): pbr->GetBool(&m_d.m_displayTexture); break;
    case FID(SLGF): pbr->GetFloat(&m_d.m_slingshotforce); break;
    case FID(SLTH): pbr->GetFloat(&m_d.m_slingshot_threshold); break;
@@ -1431,9 +1431,6 @@ HRESULT Surface::InitPostLoad()
 
 void Surface::UpdateStatusBarInfo()
 {
-   if(g_pplayer)
-       return;
-
    char tbuf[128];
    sprintf_s(tbuf, "TopHeight: %.03f | BottomHeight: %0.3f", m_vpinball->ConvertToUnit(m_d.m_heighttop), m_vpinball->ConvertToUnit(m_d.m_heightbottom));
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);

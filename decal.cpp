@@ -94,7 +94,7 @@ void Decal::SetDefaults(bool fromMouseClick)
          const int len = lstrlen(tmp) + 1;
          fd.lpstrName = (LPOLESTR)malloc(len*sizeof(WCHAR));
          memset(fd.lpstrName, 0, len*sizeof(WCHAR));
-         UNICODE_FROM_ANSI(fd.lpstrName, tmp, len);
+         MultiByteToWideChar(CP_ACP, 0, tmp, -1, fd.lpstrName, len);
       }
 
       fd.sWeight = fromMouseClick ? LoadValueIntWithDefault("DefaultProps\\Decal", "FontWeight", FW_NORMAL) : FW_NORMAL;
@@ -625,7 +625,7 @@ HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupF
    bw.WriteFloat(FID(ROTA), m_d.m_rotation);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
    bw.WriteString(FID(TEXT), m_d.m_sztext);
    bw.WriteInt(FID(TYPE), m_d.m_decaltype);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
@@ -671,7 +671,7 @@ bool Decal::LoadToken(const int id, BiffReader * const pbr)
    case FID(ROTA): pbr->GetFloat(&m_d.m_rotation); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(TEXT): pbr->GetString(m_d.m_sztext); break;
    case FID(TYPE): pbr->GetInt(&m_d.m_decaltype); break;
    case FID(COLR): pbr->GetInt(&m_d.m_color); break;

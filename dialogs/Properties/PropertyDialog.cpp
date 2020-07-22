@@ -486,8 +486,8 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, CCom
         combo.AddString(_T("<None>"));
         for (int i = 0; i < ptable->m_vcollection.Size(); i++)
         {
-            char szT[MAX_PATH];
-            WideCharToMultiByte(CP_ACP, 0, ptable->m_vcollection[i].m_wzName, -1, szT, MAX_PATH, NULL, NULL);
+            char szT[sizeof(ptable->m_vcollection[i].m_wzName)/sizeof(ptable->m_vcollection[i].m_wzName[0])];
+            WideCharToMultiByte(CP_ACP, 0, ptable->m_vcollection[i].m_wzName, -1, szT, sizeof(szT), NULL, NULL);
             combo.AddString(szT);
         }
     }

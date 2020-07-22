@@ -56,7 +56,7 @@ public:
    Vertex3Ds m_vSize;
    float m_aRotAndTra[9];
    char m_szNormalMap[MAXTOKEN];
-   char m_meshFileName[MAXSTRING];
+   string m_meshFileName;
 
    COLORREF m_SideColor;
    TimerDataRoot m_tdr;

@@ -172,7 +172,6 @@ Primitive::Primitive()
    m_vertexBufferRegenerate = true;
    m_indexBuffer = 0;
    m_d.m_use3DMesh = false;
-   m_d.m_meshFileName[0] = 0;
    m_d.m_staticRendering = false;
    m_d.m_edgeFactorUI = 0.25f;
    m_d.m_collision_reductionFactor = 0.f;
@@ -334,7 +333,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_useAsPlayfield = false;
    m_d.m_use3DMesh = false;
 
-   m_d.m_meshFileName[0] = 0;
+   m_d.m_meshFileName.clear();
    // sides
    m_d.m_Sides = fromMouseClick ? LoadValueIntWithDefault(strKeyName, "Sides", 4) : 4;
    if (m_d.m_Sides > Max_Primitive_Sides)
@@ -449,8 +448,8 @@ void Primitive::GetTimers(vector<HitTimer*> &pvht)
 
 void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 {
-   char name[MAX_PATH];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
    if (strcmp(name, "playfield_mesh") == 0)
    {
       m_d.m_visible = false;
@@ -1109,8 +1108,7 @@ void Primitive::UpdateStatusBarInfo()
    TransformVertices();
    if (m_d.m_use3DMesh)
    {
-       char tbuf[128];
-       sprintf_s(tbuf, "vertices: %i | polygons: %i", (int)m_mesh.NumVertices(), (int)m_mesh.NumIndices());
+       const string tbuf = "Vertices: " + std::to_string(m_mesh.NumVertices()) + " | Polygons: " + std::to_string(m_mesh.NumIndices());
        m_vpinball->SetStatusBarUnitInfo(tbuf, false);
    }
    else
@@ -1122,8 +1120,8 @@ void Primitive::ExportMesh(FILE *f)
 {
    if (m_d.m_visible)
    {
-      char name[MAX_PATH];
-      WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+      char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+      WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
       Vertex3D_NoTex2 *const buf = new Vertex3D_NoTex2[m_mesh.NumVertices()];
       RecalculateMatrices();
       for (size_t i = 0; i < m_mesh.NumVertices(); i++)
@@ -1389,7 +1387,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool bac
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteString(FID(NRMA), m_d.m_szNormalMap);
    bw.WriteInt(FID(SIDS), m_d.m_Sides);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteInt(FID(SCOL), m_d.m_SideColor);
    bw.WriteBool(FID(TVIS), m_d.m_visible);
@@ -1552,7 +1550,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(NRMA): pbr->GetString(m_d.m_szNormalMap); break;
    case FID(SIDS): pbr->GetInt(&m_d.m_Sides); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
    case FID(SCOL): pbr->GetInt(&m_d.m_SideColor); break;
    case FID(TVIS): pbr->GetBool(&m_d.m_visible); break;
@@ -1582,7 +1580,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(U3DM): pbr->GetBool(&m_d.m_use3DMesh); break;
    case FID(EBFC): pbr->GetBool(&m_d.m_backfacesEnabled); break;
    case FID(DIPT): pbr->GetBool(&m_d.m_displayTexture); break;
-   case FID(M3DN): pbr->GetWideString((WCHAR *)m_d.m_meshFileName); break;
+   case FID(M3DN): pbr->GetString(m_d.m_meshFileName); break;
    case FID(M3VN):
    {
       pbr->GetInt(&m_numVertices);
@@ -1897,8 +1895,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                   const std::string newInitDir(szFileName[0].substr(0, index));
                   hr = SaveValueString("RecentDir", "ImportDir", newInitDir);
                   index++;
-                  const string name = szFileName[0].substr(index, szFileName[0].length() - index);
-                  strncpy_s(prim->m_d.m_meshFileName, name.c_str(), sizeof(prim->m_d.m_meshFileName)-1);
+                  prim->m_d.m_meshFileName = szFileName[0].substr(index, szFileName[0].length() - index);
                }
 
                EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
@@ -1956,8 +1953,7 @@ bool Primitive::BrowseFor3DMeshFile()
       const std::string newInitDir(szFilename.substr(0, index));
       SaveValueString("RecentDir", "ImportDir", newInitDir);
       index++;
-      string name = filename.substr(index, filename.length() - index);
-      strncpy_s(m_d.m_meshFileName, name.c_str(), sizeof(m_d.m_meshFileName)-1);
+      m_d.m_meshFileName = filename.substr(index, filename.length() - index);
    }
 
    m_mesh.Clear();
@@ -2053,7 +2049,7 @@ STDMETHODIMP Primitive::put_NormalMap(BSTR newVal)
 STDMETHODIMP Primitive::get_MeshFileName(BSTR *pVal)
 {
    WCHAR wz[MAXSTRING];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_meshFileName, -1, wz, MAXSTRING);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_meshFileName.c_str(), -1, wz, MAXSTRING);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -2061,7 +2057,9 @@ STDMETHODIMP Primitive::get_MeshFileName(BSTR *pVal)
 
 STDMETHODIMP Primitive::put_MeshFileName(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_meshFileName, MAXSTRING, NULL, NULL);
+   char buf[MAXSTRING];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, buf, MAXSTRING, NULL, NULL);
+   m_d.m_meshFileName = buf;
 
    return S_OK;
 }
@@ -2109,8 +2107,8 @@ void Primitive::ExportMeshDialog()
        hr = SaveValueString("RecentDir", "ImportDir", newInitDir);
    }
 
-   char name[MAX_PATH];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
    m_mesh.SaveWavefrontObj(ofn.lpstrFile, m_d.m_use3DMesh ? name : "Primitive");
 }
 

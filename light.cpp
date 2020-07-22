@@ -661,8 +661,8 @@ void Light::PrepareMoversCustom()
 
    if (vtri.size() == 0)
    {
-      char name[MAX_PATH];
-      WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+      char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+      WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
       char textBuffer[MAX_PATH];
       _snprintf_s(textBuffer, MAX_PATH-1, "%s has an invalid shape! It can not be rendered!", name);
       ShowError(textBuffer);
@@ -858,7 +858,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupF
    bw.WriteFloat(FID(BWTH), m_d.m_intensity);
    bw.WriteFloat(FID(TRMS), m_d.m_transmissionScale);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
    bw.WriteBool(FID(BGLS), m_backglass);
    bw.WriteFloat(FID(LIDB), m_d.m_depthBias);
    bw.WriteFloat(FID(FASP), m_d.m_fadeSpeedUp);
@@ -941,7 +941,7 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    case FID(BWTH): pbr->GetFloat(&m_d.m_intensity); break;
    case FID(TRMS): pbr->GetFloat(&m_d.m_transmissionScale); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(BGLS): pbr->GetBool(&m_backglass); break;
    case FID(LIDB): pbr->GetFloat(&m_d.m_depthBias); break;
    case FID(FASP): pbr->GetFloat(&m_d.m_fadeSpeedUp); break;

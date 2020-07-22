@@ -484,7 +484,7 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool back
    bw.WriteBool(FID(TRNS), m_d.m_transparent);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteString(FID(SOUN), m_d.m_szSound);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
    bw.WriteFloat(FID(WDTH), m_d.m_width);
    bw.WriteFloat(FID(HIGH), m_d.m_height);
    bw.WriteFloat(FID(RCNT), (float)m_d.m_reelcount);
@@ -527,7 +527,7 @@ bool DispReel::LoadToken(const int id, BiffReader * const pbr)
    case FID(CLRB): pbr->GetInt(&m_d.m_backcolor); break;
    case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(TRNS): pbr->GetBool(&m_d.m_transparent); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(RCNT):

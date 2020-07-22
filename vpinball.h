@@ -104,7 +104,7 @@ public:
    float ConvertToUnit(const float value);
    void SetPropSel(VectorProtected<ISelect> *pvsel);
 
-   void SetActionCur(const char * const szaction);
+   void SetActionCur(const string& szaction);
    void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
 
    STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
@@ -130,8 +130,8 @@ public:
    static void SetOpenMinimized();
    void ShowDrawingOrderDialog(bool select);
 
-   void SetStatusBarElementInfo(const char * const info);
-   void SetStatusBarUnitInfo(const char * const info, const bool isUnit);
+   void SetStatusBarElementInfo(const string& info);
+   void SetStatusBarUnitInfo(const string& info, const bool isUnit);
 
    bool OpenFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags);
    CDockProperty *GetPropertiesDocker();

@@ -57,7 +57,7 @@ void TitleFromFilename(const string& szfilename, string& sztitle)
    if (end == 0)
       end = len - 1;
 
-   const char *szT = szfilename.c_str() + begin;
+   const char *szT = szfilename.c_str()+begin;
    int count = end - begin;
 
    sztitle.clear();
@@ -221,7 +221,7 @@ HRESULT BiffWriter::WriteString(const int id, const std::string &szvalue)
    if (FAILED(hr = WriteBytes(&len, sizeof(int), &writ)))
       return hr;
 
-   hr = WriteBytes(szvalue.c_str(), len, &writ);
+   hr = WriteBytes(szvalue.data(), len, &writ);
 
    return hr;
 }
@@ -242,6 +242,26 @@ HRESULT BiffWriter::WriteWideString(const int id, const WCHAR * const wzvalue)
       return hr;
 
    hr = WriteBytes(wzvalue, len, &writ);
+
+   return hr;
+}
+
+HRESULT BiffWriter::WriteWideString(const int id, const std::basic_string<WCHAR>& wzvalue)
+{
+   ULONG writ = 0;
+   HRESULT hr;
+   const int len = wzvalue.length() * (int)sizeof(WCHAR);
+
+   if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
+      return hr;
+
+   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+      return hr;
+
+   if (FAILED(hr = WriteBytes(&len, sizeof(int), &writ)))
+      return hr;
+
+   hr = WriteBytes(wzvalue.data(), len, &writ);
 
    return hr;
 }
@@ -365,7 +385,7 @@ HRESULT BiffReader::GetString(char *szvalue)
 
    if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
    {
-      *szvalue = 0;
+      szvalue[0] = 0;
       return hr;
    }
 
@@ -405,13 +425,39 @@ HRESULT BiffReader::GetWideString(WCHAR *wzvalue)
    int len;
 
    if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
+   {
+      wzvalue[0] = 0;
       return hr;
+   }
 
    m_bytesinrecordremaining -= len + (int)sizeof(int);
 
    hr = ReadBytes(wzvalue, len, &read);
-   wzvalue[len / sizeof(WCHAR)] = 0;
+   wzvalue[len/sizeof(WCHAR)] = 0;
    return hr;
+}
+
+HRESULT BiffReader::GetWideString(std::basic_string<WCHAR>& wzvalue)
+{
+   ULONG read = 0;
+   HRESULT hr;
+   int len;
+
+   if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
+   {
+      wzvalue.clear();
+      return hr;
+   }
+
+   m_bytesinrecordremaining -= len + (int)sizeof(int);
+
+   WCHAR * tmp = new WCHAR[len/sizeof(WCHAR)+1];
+   hr = ReadBytes(tmp, len, &read);
+   tmp[len/sizeof(WCHAR)] = 0;
+   wzvalue = tmp;
+   delete[] tmp;
+   return hr;
+
 }
 
 HRESULT BiffReader::GetFloat(float *pvalue)

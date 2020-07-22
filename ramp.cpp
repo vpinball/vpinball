@@ -1286,7 +1286,7 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupFo
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteInt(FID(TYPE), m_d.m_type);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
    bw.WriteBool(FID(IMGW), m_d.m_imageWalls);
@@ -1349,7 +1349,7 @@ bool Ramp::LoadToken(const int id, BiffReader * const pbr)
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(ALGN): pbr->GetInt(&m_d.m_imagealignment); break;
    case FID(IMGW): pbr->GetBool(&m_d.m_imageWalls); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(WLHL): pbr->GetFloat(&m_d.m_leftwallheight); break;
    case FID(WLHR): pbr->GetFloat(&m_d.m_rightwallheight); break;
    case FID(WVHL): pbr->GetFloat(&m_d.m_leftwallheightvisible); break;
@@ -1962,8 +1962,8 @@ void Ramp::ExportMesh(FILE *f)
 {
    if (m_d.m_visible)
    {
-      char name[MAX_PATH];
-      WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+      char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+      WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
       WaveFrontObj_WriteObjectName(f, name);
       if (!isHabitrail())
       {

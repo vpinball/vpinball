@@ -543,7 +543,7 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
    bw.WriteInt(FID(COLR), m_d.m_color);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
    bw.WriteString(FID(IMAG), m_d.m_szImageA);
    bw.WriteString(FID(IMAB), m_d.m_szImageB);
    bw.WriteInt(FID(FALP), m_d.m_alpha);
@@ -611,7 +611,7 @@ bool Flasher::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
    case FID(MOVA): pbr->GetFloat(&m_d.m_modulate_vs_add); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(FVIS): pbr->GetBool(&m_d.m_isVisible); break;
    case FID(ADDB): pbr->GetBool(&m_d.m_addBlend); break;
    case FID(IDMD): pbr->GetBool(&m_d.m_isDMD); break;

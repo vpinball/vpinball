@@ -15,7 +15,7 @@ class LightSeqData
 public:
    Vertex2D      m_v;
    Vertex2D      m_vCenter;
-   WCHAR         m_wzCollection[MAXNAMEBUFFER];	// collection to use
+   std::basic_string<WCHAR> m_wzCollection;
    long          m_updateinterval;
    TimerDataRoot m_tdr;
 };

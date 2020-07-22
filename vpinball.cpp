@@ -335,54 +335,53 @@ void VPinball::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
    SetCursor(hcursor);
 }
 
-void VPinball::SetActionCur(const char * const szaction)
+void VPinball::SetActionCur(const string& szaction)
 {
-   SendMessage(m_hwndStatusBar, SB_SETTEXT, 3 | 0, (size_t)szaction);
+   SendMessage(m_hwndStatusBar, SB_SETTEXT, 3 | 0, (size_t)szaction.c_str());
 }
 
-void VPinball::SetStatusBarElementInfo(const char * const info)
+void VPinball::SetStatusBarElementInfo(const string& info)
 {
-   SendMessage(m_hwndStatusBar, SB_SETTEXT, 4 | 0, (size_t)info);
+   SendMessage(m_hwndStatusBar, SB_SETTEXT, 4 | 0, (size_t)info.c_str());
 }
 
-void VPinball::SetStatusBarUnitInfo(const char * const info, const bool isUnit)
+void VPinball::SetStatusBarUnitInfo(const string& info, const bool isUnit)
 {
     if (g_pplayer)
         return;
 
-    char textBuf[256];
+    string textBuf;
 
-    if (info[0] != '\0')
+    if (!info.empty())
     {
-       strncpy_s(textBuf, info, sizeof(textBuf)-1);
+       textBuf = info;
        if(isUnit)
        {
            switch(m_convertToUnit)
            {
                case 0:
                {
-                   strncat_s(textBuf, " (inch)", sizeof(textBuf)-strnlen_s(textBuf, sizeof(textBuf))-1);
+                   textBuf += " (inch)";
                    break;
                }
                case 1:
                {
-                   strncat_s(textBuf, " (mm)", sizeof(textBuf)-strnlen_s(textBuf, sizeof(textBuf))-1);
+                   textBuf += " (mm)";
                    break;
                }
                case 2:
                {
-                   strncat_s(textBuf, " (VPUnits)", sizeof(textBuf)-strnlen_s(textBuf, sizeof(textBuf))-1);
+                   textBuf += " (VPUnits)";
                    break;
                }
                default:
+                   assert(!"wrong unit");
                break;
            }
        }
     }
-    else
-       textBuf[0] = '\0';
 
-    SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf);
+    SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf.c_str());
 }
 
 bool VPinball::OpenFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags)

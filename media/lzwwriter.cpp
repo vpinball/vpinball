@@ -208,11 +208,8 @@ HRESULT LZWWriter::ClearBlock()
 
 void LZWWriter::ClearHash(int hsize)
 {
-   for (int i = 0; i < HSIZE; ++i)
-   {
-      m_htab[i] = -1;
-      m_codetab[i] = 0;
-   }
+   memset(m_htab, 0xFF, sizeof(m_htab)); // -1
+   memset(m_codetab, 0, sizeof(m_codetab));
 }
 
 HRESULT LZWWriter::CharOut(char c)

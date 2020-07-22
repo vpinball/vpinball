@@ -82,7 +82,8 @@ void Textbox::SetDefaults(bool fromMouseClick)
          const int len = lstrlen(tmp) + 1;
          fd.lpstrName = (LPOLESTR)malloc(len*sizeof(WCHAR));
          memset(fd.lpstrName, 0, len*sizeof(WCHAR));
-         UNICODE_FROM_ANSI(fd.lpstrName, tmp, len);
+         MultiByteToWideChar(CP_ACP, 0, tmp, -1, fd.lpstrName, len);
+
          free_lpstrName = true;
       }
 
@@ -501,7 +502,7 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
    bw.WriteString(FID(TEXT), m_d.m_sztext);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
    bw.WriteInt(FID(ALGN), m_d.m_talign);
    bw.WriteBool(FID(TRNS), m_d.m_transparent);
    bw.WriteBool(FID(IDMD), m_d.m_isDMD);
@@ -544,7 +545,7 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
    case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
    case FID(TEXT): pbr->GetString(m_d.m_sztext); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(ALGN): pbr->GetInt(&m_d.m_talign); break;
    case FID(TRNS): pbr->GetBool(&m_d.m_transparent); break;
    case FID(IDMD): pbr->GetBool(&m_d.m_isDMD); break;

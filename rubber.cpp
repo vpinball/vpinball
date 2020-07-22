@@ -29,7 +29,7 @@ Rubber::~Rubber()
       m_dynamicIndexBuffer->release();
 }
 
-void Rubber::SetStatusBarUnitInfo()
+void Rubber::UpdateStatusBarInfo()
 {
    char tbuf[128];
    sprintf_s(tbuf, "Height: %.3f | Thickness: %.3f", m_vpinball->ConvertToUnit(m_d.m_height), m_vpinball->ConvertToUnit((float)m_d.m_thickness));
@@ -712,7 +712,7 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backup
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
    bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
@@ -766,7 +766,7 @@ bool Rubber::LoadToken(const int id, BiffReader * const pbr)
    case FID(TMON): pbr->GetBool(&m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
    case FID(ELFO): pbr->GetFloat(&m_d.m_elasticityFalloff); break;
    case FID(RFCT): pbr->GetFloat(&m_d.m_friction); break;
@@ -1266,8 +1266,8 @@ void Rubber::ExportMesh(FILE *f)
 {
    if (m_d.m_visible)
    {
-      char name[MAX_PATH];
-      WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+      char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+      WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
       GenerateMesh();
       UpdateRubber(false, m_d.m_height);
 

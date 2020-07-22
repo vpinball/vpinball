@@ -27,6 +27,7 @@ public:
    HRESULT WriteString(const int id, const std::string& szvalue);
 
    HRESULT WriteWideString(const int id, const WCHAR * const wzvalue);
+   HRESULT WriteWideString(const int id, const std::basic_string<WCHAR>& wzvalue);
    HRESULT WriteBool(const int id, const BOOL value);
    HRESULT WriteFloat(const int id, const float value);
    HRESULT WriteStruct(const int id, const void *pvalue, const int size);
@@ -52,6 +53,7 @@ public:
    HRESULT GetString(char *szvalue);
    HRESULT GetString(std::string& szvalue);
    HRESULT GetWideString(WCHAR* wzvalue);
+   HRESULT GetWideString(std::basic_string<WCHAR>& wzvalue);
    HRESULT GetFloat(float *pvalue);
    HRESULT GetBool(BOOL *pfvalue);
    HRESULT GetBool(bool *pvalue);

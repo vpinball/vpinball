@@ -896,7 +896,7 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
    bw.WriteBool(FID(VSBL), m_d.m_visible);
    bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
 
    bw.WriteString(FID(TIPS), m_d.m_szTipShape);
    bw.WriteFloat(FID(RODD), m_d.m_rodDiam);
@@ -948,7 +948,7 @@ bool Plunger::LoadToken(const int id, BiffReader * const pbr)
    case FID(MECH): pbr->GetBool(&m_d.m_mechPlunger); break;
    case FID(APLG): pbr->GetBool(&m_d.m_autoPlunger); break;
    case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(TYPE): pbr->GetInt(&m_d.m_type); break;
    case FID(ANFR): pbr->GetInt(&m_d.m_animFrames); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;

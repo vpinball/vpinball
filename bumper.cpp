@@ -577,8 +577,8 @@ void Bumper::RenderDynamic()
 
 void Bumper::ExportMesh(FILE *f)
 {
-   char name[MAX_PATH];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
 
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
@@ -883,7 +883,7 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backup
    bw.WriteString(FID(SKMA), m_d.m_szSkirtMaterial);
    bw.WriteString(FID(RIMA), m_d.m_szRingMaterial);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
 
    bw.WriteBool(FID(CAVI), m_d.m_capVisible);
    bw.WriteBool(FID(BSVS), m_d.m_baseVisible);
@@ -934,7 +934,7 @@ bool Bumper::LoadToken(const int id, BiffReader * const pbr)
    case FID(ORIN): pbr->GetFloat(&m_d.m_orientation); break;
    case FID(RDLI): pbr->GetFloat(&m_d.m_ringDropOffset); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(BVIS):
    {
       // backwards compatibility when loading old VP9 tables
