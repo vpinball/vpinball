@@ -464,7 +464,7 @@ void ImageDialog::Export()
                }
                if (begin > 0)
                {
-                  memcpy(g_filename, &ppi->m_szPath[begin], len - begin);
+                  memcpy(g_filename, ppi->m_szPath+begin, len - begin);
                   g_filename[len - begin] = 0;
                }
             }

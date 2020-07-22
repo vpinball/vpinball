@@ -478,8 +478,8 @@ void Gate::RenderDynamic()
 
 void Gate::ExportMesh(FILE *f)
 {
-   char name[MAX_PATH];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    if (m_d.m_showBracket)
@@ -637,7 +637,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backupFo
    bw.WriteFloat(FID(AFRC), m_d.m_damping);
    bw.WriteFloat(FID(GGFC), m_d.m_gravityfactor);
    bw.WriteBool(FID(GVSB), m_d.m_visible);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
    bw.WriteBool(FID(TWWA), m_d.m_twoWay);
    bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
    bw.WriteInt(FID(GATY), m_d.m_type);
@@ -686,7 +686,7 @@ bool Gate::LoadToken(const int id, BiffReader * const pbr)
    case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
    case FID(TMIN): pbr->GetInt(&m_d.m_tdr.m_TimerInterval); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(ELAS): pbr->GetFloat(&m_d.m_elasticity); break;
    case FID(GAMA): pbr->GetFloat(&m_d.m_angleMax); break;
    case FID(GAMI): pbr->GetFloat(&m_d.m_angleMin); break;

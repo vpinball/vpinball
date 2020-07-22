@@ -672,8 +672,8 @@ void Flipper::RenderDynamic()
 
 void Flipper::ExportMesh(FILE *f)
 {
-   char name[MAX_PATH];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
 
    Matrix3D matTrafo, matTemp;
    matTrafo.SetIdentity();
@@ -900,7 +900,7 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
    bw.WriteString(FID(RUMA), m_d.m_szRubberMaterial);
    bw.WriteInt(FID(RTHK), (int)m_d.m_rubberthickness); //!! deprecated, remove
    bw.WriteFloat(FID(RTHF), m_d.m_rubberthickness);
@@ -969,7 +969,7 @@ bool Flipper::LoadToken(const int id, BiffReader * const pbr)
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
    case FID(RUMA): pbr->GetString(m_d.m_szRubberMaterial); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(RTHK): //!! deprecated, remove
    {
       int rt;

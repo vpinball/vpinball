@@ -274,8 +274,8 @@ void Spinner::EndPlay()
 
 void Spinner::ExportMesh(FILE *f)
 {
-   char name[MAX_PATH];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
    std::vector<Vertex3D_NoTex2> transformedVertices;
    vector<HitObject*> dummyHitObj;
 
@@ -550,7 +550,7 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteString(FID(IMGF), m_d.m_szImage);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
 
    ISelect::SaveData(pstm, hcrypthash);
 
@@ -591,7 +591,7 @@ bool Spinner::LoadToken(const int id, BiffReader * const pbr)
    case FID(SVIS): pbr->GetBool(&m_d.m_visible); break;
    case FID(IMGF): pbr->GetString(m_d.m_szImage); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;

@@ -102,7 +102,7 @@ public:
    virtual void ExportMesh(FILE *f);
 
    virtual void WriteRegDefaults();
-   virtual void SetStatusBarUnitInfo();
+   virtual void UpdateStatusBarInfo();
 
    RubberData m_d;
 

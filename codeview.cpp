@@ -52,9 +52,11 @@ int CodeViewDispatch::SortAgainst(const CodeViewDispatch * const pcvd/*void *pvo
 
 int CodeViewDispatch::SortAgainstValue(const void * const pv) const
 {
-   MAKE_ANSIPTR_FROMWIDE(szName1, (WCHAR *)pv);
+   char szName1[MAXSTRING];
+   WideCharToMultiByte(CP_ACP, 0, (WCHAR*)pv, -1, szName1, MAXSTRING, NULL, NULL);
    CharLowerBuff(szName1, lstrlen(szName1));
-   MAKE_ANSIPTR_FROMWIDE(szName2, m_wzName);
+   char szName2[MAXSTRING];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, szName2, MAXSTRING, NULL, NULL);
    CharLowerBuff(szName2, lstrlen(szName2));
    return lstrcmp(szName1, szName2); //WideStrCmp((WCHAR *)pv, m_wzName);
 }
@@ -427,8 +429,7 @@ void CodeViewer::UpdateRegWithPrefs()
 
 void CodeViewer::InitPreferences()
 {
-	for (int i = 0; i < 16; ++i)
-		m_prefCols[i] = 0;
+	memset(m_prefCols, 0, sizeof(m_prefCols));
 
 	m_bgColor = RGB(255,255,255);
 	m_lPrefsList  = new vector<CVPrefrence*>();
@@ -830,8 +831,7 @@ void CodeViewer::Compile(const bool message)
       WCHAR * const wzText = new WCHAR[cchar + 1];
 
       SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
-      MultiByteToWideChar(CP_ACP, 0, szText, -1, wzText, (int)cchar);
-      wzText[cchar] = L'\0';
+      MultiByteToWideChar(CP_ACP, 0, szText, -1, wzText, (int)cchar+1);
 
       EXCEPINFO exception;
       ZeroMemory(&exception, sizeof(exception));
@@ -875,7 +875,6 @@ void CodeViewer::EvaluateScriptStatement(const char * const szScript)
    WCHAR * const wzScript = new WCHAR[scriptlen + 1];
 
    MultiByteToWideChar(CP_ACP, 0, szScript, -1, wzScript, scriptlen + 1);
-   wzScript[scriptlen] = L'\0';
 
    m_pScriptParse->ParseScriptText(wzScript, L"Debug", 0, 0, CONTEXTCOOKIE_DEBUG, 0, 0, NULL, &exception);
 
@@ -1361,7 +1360,7 @@ void CodeViewer::FindCodeFromEvent()
       WCHAR wzText[MAX_LINE_LENGTH];
 
       const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETLINE, line, (size_t)szLine);
-      MultiByteToWideChar(CP_ACP, 0, szLine, -1, wzText, (int)cchar);
+      MultiByteToWideChar(CP_ACP, 0, szLine, -1, wzText, MAX_LINE_LENGTH);
       m_pScriptDebug->GetScriptTextAttributes(wzText, (ULONG)cchar, NULL, 0, wzFormat);
 
       const size_t inamechar = posFind - beginchar - 1;
@@ -3061,7 +3060,7 @@ HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool ba
 {
    BiffWriter bw(pstm, hcrypthash);
 
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
 
    for (int i = 0; i < m_visel.Size(); ++i)
    {
@@ -3109,7 +3108,7 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
       PinTable * const ppt = (PinTable *)pbr->m_pdata;
 
       WCHAR wzT[MAXNAMEBUFFER];
-      pbr->GetWideString((WCHAR *)wzT);
+      pbr->GetWideString(wzT);
 
       for (size_t i = 0; i < ppt->m_vedit.size(); ++i)
       {

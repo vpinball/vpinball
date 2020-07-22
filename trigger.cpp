@@ -606,8 +606,8 @@ void Trigger::ExportMesh(FILE *f)
    if (!m_d.m_visible || m_d.m_shape == TriggerNone)
       return;
 
-   char name[MAX_PATH];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
    GenerateMesh();
    WaveFrontObj_WriteObjectName(f, name);
    WaveFrontObj_WriteVertexInfo(f, m_triggerVertices, m_numVertices);
@@ -1010,7 +1010,7 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backu
    bw.WriteBool(FID(EBLD), m_d.m_enabled);
    bw.WriteBool(FID(VSBL), m_d.m_visible);
    bw.WriteFloat(FID(THOT), m_d.m_hit_height);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
    bw.WriteInt(FID(SHAP), m_d.m_shape);
    bw.WriteFloat(FID(ANSP), m_d.m_animSpeed);
    bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
@@ -1083,7 +1083,7 @@ bool Trigger::LoadToken(const int id, BiffReader * const pbr)
    case FID(REEN): pbr->GetBool(&m_d.m_reflectionEnabled); break;
    case FID(SHAP): pbr->GetInt(&m_d.m_shape); break;
    case FID(ANSP): pbr->GetFloat(&m_d.m_animSpeed); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    default:
    {
       LoadPointToken(id, pbr, pbr->m_version);

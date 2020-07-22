@@ -64,8 +64,8 @@ private:
 // Similarily for MAKE_ANSIPTR_FROMWIDE().  Note that the first param does
 // not have to be declared, and no clean up must be done.
 //---------------------------------------------------------------------------
-#define UNICODE_FROM_ANSI(pwszUnicode, pszAnsi, cb) \
-    MultiByteToWideChar(CP_ACP, 0, pszAnsi, -1, pwszUnicode, cb);
+//#define UNICODE_FROM_ANSI(pwszUnicode, pszAnsi, cb) \
+//    MultiByteToWideChar(CP_ACP, 0, pszAnsi, -1, pwszUnicode, cb);
 
 #if _MSC_VER != 1900 // otherwise internal compiler error
 #define MAKE_WIDEPTR_FROMANSI(ptrname, pszAnsi) \

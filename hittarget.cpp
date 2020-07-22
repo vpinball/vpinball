@@ -493,8 +493,8 @@ void HitTarget::TransformVertices()
 
 void HitTarget::ExportMesh(FILE *f)
 {
-   char name[MAX_PATH];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
 
    SetMeshType(m_d.m_targetType);
 
@@ -887,7 +887,7 @@ HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool bac
    bw.WriteFloat(FID(ROTZ), m_d.m_rotZ);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteInt(FID(TRTY), m_d.m_targetType);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteBool(FID(TVIS), m_d.m_visible);
    bw.WriteBool(FID(LEMO), m_d.m_legacy);
@@ -942,7 +942,7 @@ bool HitTarget::LoadToken(const int id, BiffReader * const pbr)
    case FID(ROTZ): pbr->GetFloat(&m_d.m_rotZ); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(TRTY): pbr->GetInt(&m_d.m_targetType); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
    case FID(TVIS): pbr->GetBool(&m_d.m_visible); break;
    case FID(LEMO): pbr->GetBool(&m_d.m_legacy); break;

@@ -331,7 +331,6 @@ public:
              VPinball::m_customParameters[customIdx - 1] = new WCHAR[len + 1];
 
              MultiByteToWideChar(CP_ACP, 0, szArglist[i + 1], (int)len, VPinball::m_customParameters[customIdx - 1], (int)len + 1);
-             VPinball::m_customParameters[customIdx - 1][len] = L'\0';
 
              ++i; // two params processed
 

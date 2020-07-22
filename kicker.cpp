@@ -254,8 +254,8 @@ void Kicker::ExportMesh(FILE *f)
    if (m_d.m_kickertype == KickerInvisible)
        return;
 
-   char name[MAX_PATH];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    int num_vertices;
@@ -620,7 +620,7 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool backup
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteBool(FID(EBLD), m_d.m_enabled);
-   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteWideString(FID(NAME), m_wzName);
    bw.WriteInt(FID(TYPE), m_d.m_kickertype);
    bw.WriteFloat(FID(KSCT), m_d.m_scatter);
    bw.WriteFloat(FID(KHAC), m_d.m_hitAccuracy);
@@ -672,7 +672,7 @@ bool Kicker::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString((WCHAR *)m_wzName); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(FATH): pbr->GetBool(&m_d.m_fallThrough); break;
    case FID(LEMO): pbr->GetBool(&m_d.m_legacyMode); break;
    default: ISelect::LoadToken(id, pbr); break;

@@ -57,8 +57,8 @@ void SearchSelectDialog::Update()
    for (int i = 0; i < m_curTable->m_vcollection.Size(); i++)
    {
       CComObject<Collection> *const pcol = m_curTable->m_vcollection.ElementAt(i);
-      char szT[64];
-      WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, 64, NULL, NULL);
+      char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
+      WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
       LVITEM lv;
       lv.mask = LVIF_TEXT | LVIF_PARAM;
       lv.iItem = idx;
