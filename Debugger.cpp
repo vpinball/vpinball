@@ -70,7 +70,7 @@ BOOL DebuggerDialog::OnInitDialog()
 
     g_pplayer->m_hwndDebugOutput = CreateWindowEx(0, "Scintilla", "",
                                                 WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN | WS_BORDER,
-                                                rcEditSize.left, rcEditSize.top, rcEditSize.right - rcEditSize.left, rcEditSize.bottom - rcEditSize.top, GetHwnd(), NULL, g_hinst, 0);
+                                                rcEditSize.left, rcEditSize.top, rcEditSize.right - rcEditSize.left, rcEditSize.bottom - rcEditSize.top, GetHwnd(), NULL, g_pvp->theInstance, 0);
 
     SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETSIZE, 32, 10);
     SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETFONT, 32, (LPARAM)"Courier");

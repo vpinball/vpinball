@@ -1175,7 +1175,7 @@ STDMETHODIMP Light::put_ColorFull(OLE_COLOR newVal)
 STDMETHODIMP Light::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-   g_pvp->SetStatusBarUnitInfo("", true);
+   m_vpinball->SetStatusBarUnitInfo("", true);
 
    return S_OK;
 }

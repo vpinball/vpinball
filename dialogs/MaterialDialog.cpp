@@ -386,7 +386,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             OPENFILENAME ofn;
             ZeroMemory(&ofn, sizeof(OPENFILENAME));
             ofn.lStructSize = sizeof(OPENFILENAME);
-            ofn.hInstance = g_hinst;
+            ofn.hInstance = g_pvp->theInstance;
             ofn.hwndOwner = g_pvp->GetHwnd();
             ofn.lpstrFile = szFileName;
             //TEXT

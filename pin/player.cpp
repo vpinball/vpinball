@@ -724,9 +724,9 @@ Player::~Player()
 void Player::PreRegisterClass(WNDCLASS& wc)
 {
     wc.style = 0;
-    wc.hInstance = g_hinst;
+    wc.hInstance = g_pvp->theInstance;
     wc.lpszClassName = "VPPlayer";
-    wc.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_TABLE));
+    wc.hIcon = LoadIcon(g_pvp->theInstance, MAKEINTRESOURCE(IDI_TABLE));
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.lpszMenuName = NULL;
 }
@@ -828,7 +828,7 @@ void Player::PreCreate(CREATESTRUCT& cs)
     cs.cy = m_height;
     cs.style = windowflags;
     cs.dwExStyle = windowflagsex;
-    cs.hInstance = g_hinst;
+    cs.hInstance = g_pvp->theInstance;
     cs.lpszName = "Visual Pinball Player";
     cs.lpszClass = "VPPlayer";
 }
@@ -5405,7 +5405,7 @@ void Player::Render()
          else if (!VPinball::m_open_minimized && m_closeType == 0)
          {
              ShowCursor(TRUE);
-             option = DialogBox(g_hinst, MAKEINTRESOURCE(IDD_GAMEPAUSE), GetHwnd(), PauseProc);
+             option = DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_GAMEPAUSE), GetHwnd(), PauseProc);
              if(option!=ID_DEBUGWINDOW)
                 ShowCursor(FALSE);
          }

@@ -1632,7 +1632,7 @@ void PinTable::FVerifySaveToClose()
    if (m_vAsyncHandles.size() > 0)
    {
       /*const DWORD wait =*/ WaitForMultipleObjects((DWORD)m_vAsyncHandles.size(), m_vAsyncHandles.data(), TRUE, INFINITE);
-      //MessageBox(m_vpinball->m_hwnd, "Async work items not done", NULL, 0);
+      //m_vpinball->MessageBox("Async work items not done", NULL, 0);
 
       // Close the remaining handles here, since the window messages will never be processed
       for (size_t i = 0; i < m_vAsyncHandles.size(); i++)
@@ -1933,17 +1933,15 @@ void PinTable::InitPostLoad(VPinball *pvp)
    m_materialMap.clear();
 }
 
-
 bool PinTable::IsNameUnique(const WCHAR * const wzName) const
 {
    return m_pcv->m_vcvd.GetSortedIndex(wzName) == -1;
 }
 
-
 void PinTable::GetUniqueName(ItemTypeEnum type, WCHAR * const wzUniqueName) const
 {
    WCHAR wzRoot[256];
-   ISelect::GetTypeNameForType(type, wzRoot);
+   GetTypeNameForType(type, wzRoot);
    GetUniqueName(wzRoot, wzUniqueName);
 }
 
@@ -2276,7 +2274,7 @@ void PinTable::Play(const bool cameraMode)
    // make sure the load directory is the active directory
    SetCurrentDirectory(szLoadDir.c_str());
 
-   g_pvp->ShowSubDialog(m_progressDialog);
+   m_vpinball->ShowSubDialog(m_progressDialog);
 
    m_progressDialog.SetProgress(1);
    m_progressDialog.SetName(std::string("Backing Up Table State..."));
@@ -2491,7 +2489,7 @@ HRESULT PinTable::Save(const bool saveAs)
       OPENFILENAME ofn;
       ZeroMemory(&ofn, sizeof(OPENFILENAME));
       ofn.lStructSize = sizeof(OPENFILENAME);
-      ofn.hInstance = g_hinst;
+      ofn.hInstance = m_vpinball->theInstance;
       ofn.hwndOwner = m_vpinball->GetHwnd();
       // TEXT
       ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
@@ -2599,7 +2597,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
       WS_CHILD | WS_VISIBLE, rc.left,
       rc.top,
       rc.right - rc.left, rc.bottom - rc.top,
-      m_vpinball->m_hwndStatusBar, (HMENU)0, g_hinst, NULL);
+      m_vpinball->m_hwndStatusBar, (HMENU)0, m_vpinball->theInstance, NULL);
 
    ::SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
 
@@ -3581,7 +3579,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
       WS_CHILD | WS_VISIBLE, rc.left,
       rc.top,
       rc.right - rc.left, rc.bottom - rc.top,
-      m_vpinball->m_hwndStatusBar, (HMENU)0, g_hinst, NULL);
+      m_vpinball->m_hwndStatusBar, (HMENU)0, m_vpinball->theInstance, NULL);
 
    ::SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
 
@@ -5034,9 +5032,9 @@ void PinTable::DoCommand(int icmd, int x, int y)
        case IDC_COPY: Copy(x, y); break;
        case IDC_PASTE: Paste(false, x, y); break;
        case IDC_PASTEAT: Paste(true, x, y); break;
-       case ID_WALLMENU_ROTATE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ROTATE), m_vpinball->GetHwnd(), RotateProc, (size_t)(ISelect *)this); break;
-       case ID_WALLMENU_SCALE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SCALE), m_vpinball->GetHwnd(), ScaleProc, (size_t)(ISelect *)this); break;
-       case ID_WALLMENU_TRANSLATE: DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TRANSLATE), m_vpinball->GetHwnd(), TranslateProc, (size_t)(ISelect *)this); break;
+       case ID_WALLMENU_ROTATE: DialogBoxParam(m_vpinball->theInstance, MAKEINTRESOURCE(IDD_ROTATE), m_vpinball->GetHwnd(), RotateProc, (size_t)(ISelect *)this); break;
+       case ID_WALLMENU_SCALE: DialogBoxParam(m_vpinball->theInstance, MAKEINTRESOURCE(IDD_SCALE), m_vpinball->GetHwnd(), ScaleProc, (size_t)(ISelect *)this); break;
+       case ID_WALLMENU_TRANSLATE: DialogBoxParam(m_vpinball->theInstance, MAKEINTRESOURCE(IDD_TRANSLATE), m_vpinball->GetHwnd(), TranslateProc, (size_t)(ISelect *)this); break;
    }
 }
 
@@ -5422,7 +5420,7 @@ void PinTable::ExportBlueprint()
       OPENFILENAME ofn;
       ZeroMemory(&ofn, sizeof(OPENFILENAME));
       ofn.lStructSize = sizeof(OPENFILENAME);
-      ofn.hInstance = g_hinst;
+      ofn.hInstance = m_vpinball->theInstance;
       ofn.hwndOwner = m_vpinball->GetHwnd();
       ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0";
       ofn.lpstrFile = szBlueprintFileName;
@@ -5605,7 +5603,7 @@ void PinTable::ExportTableMesh()
    memset(szObjFileName, 0, sizeof(szObjFileName));
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = g_hinst;
+   ofn.hInstance = m_vpinball->theInstance;
    ofn.hwndOwner = m_vpinball->GetHwnd();
    // TEXT
    ofn.lpstrFilter = "Wavefront obj(*.obj)\0*.obj\0";
@@ -5835,7 +5833,7 @@ void PinTable::ExportBackdropPOV(const string& filename)
 		OPENFILENAME ofn;
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hInstance = g_hinst;
+		ofn.hInstance = m_vpinball->theInstance;
 		ofn.hwndOwner = m_vpinball->GetHwnd();
 		// TEXT
 		ofn.lpstrFilter = "POV file(*.pov)\0*.pov\0";
@@ -7052,7 +7050,7 @@ bool PinTable::ExportImage(Texture * const ppi, const char * const szfilename)
       if (!FreeImage_Save(FreeImage_GetFIFFromFilename(szfilename), dib, szfilename, PNG_Z_BEST_COMPRESSION | JPEG_QUALITYGOOD | BMP_SAVE_RLE))
           m_vpinball->MessageBox("Export failed!", "BMP Export", MB_OK | MB_ICONEXCLAMATION);
       //else
-      //   ::MessageBox(m_vpinball->m_hwnd, "Export finished!", "BMP Export", MB_OK);
+      //   m_vpinball->MessageBox("Export finished!", "BMP Export", MB_OK);
       FreeImage_Unload(dib);
 #endif
       return true;
@@ -9742,7 +9740,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    OPENFILENAME ofn;
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = g_hinst;
+   ofn.hInstance = m_vpinball->theInstance;
    ofn.hwndOwner = m_vpinball->GetHwnd();
    // TEXT
    ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
@@ -10162,7 +10160,7 @@ STDMETHODIMP PinTable::QuitPlayer(int CloseType)
    if (g_pplayer)
    {
       g_pplayer->m_closeType = CloseType;
-      ExitApp();
+      m_vpinball->Quit();
    }
 
    return S_OK;
@@ -10254,11 +10252,11 @@ BOOL PinTable::OnCommand(WPARAM wparam, LPARAM lparam)
             delete g_pplayer;
             g_pplayer = nullptr;
 
-            g_pvp->ToggleToolbar();
+            m_vpinball->ToggleToolbar();
             mixer_shutdown();
             hid_shutdown();
-            g_pvp->ShowWindow(SW_SHOW);
-            g_pvp->SetForegroundWindow();
+            m_vpinball->ShowWindow(SW_SHOW);
+            m_vpinball->SetForegroundWindow();
             SetFocus();
             SetActiveWindow();
             SetDirtyDraw();
@@ -10271,7 +10269,7 @@ BOOL PinTable::OnCommand(WPARAM wparam, LPARAM lparam)
 void PinTable::SetMouseCursor()
 {
     char *cursorid;
-    HINSTANCE hinst = g_hinst;
+    HINSTANCE hinst = m_vpinball->theInstance;
     static int oldTool = -1;
 
     if(oldTool!=m_vpinball->m_ToolCur)

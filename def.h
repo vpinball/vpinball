@@ -134,7 +134,7 @@ inline void ref_count_trigger(const ULONG r, const char *file, const int line) /
 #ifdef DEBUG_REFCOUNT_TRIGGER
    char msg[128];
    sprintf_s(msg, 128, "Ref Count: %u at %s:%d", r, file, line);
-   MessageBox(NULL, msg, "Error", MB_OK | MB_ICONEXCLAMATION);
+   /*g_pvp->*/MessageBox(NULL, msg, "Error", MB_OK | MB_ICONEXCLAMATION);
 #endif
 }
 #define SAFE_RELEASE(p)			{ if(p) { const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc, __FILE__, __LINE__); (p)=NULL; } }

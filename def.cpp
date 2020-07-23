@@ -125,7 +125,7 @@ int WzSzStrnCmp(const WCHAR *wz1, const char *sz2, const int count)
 LocalString::LocalString(const int resid)
 {
    if (resid > 0)
-      /*const int cchar =*/ LoadString(g_hinst, resid, m_szbuffer, sizeof(m_szbuffer));
+      /*const int cchar =*/ LoadString(g_pvp->theInstance, resid, m_szbuffer, sizeof(m_szbuffer));
    else
       m_szbuffer[0] = 0;
 }
@@ -133,7 +133,7 @@ LocalString::LocalString(const int resid)
 LocalStringW::LocalStringW(const int resid)
 {
    if (resid > 0)
-      LoadStringW(g_hinst, resid, m_szbuffer, sizeof(m_szbuffer)/sizeof(WCHAR));
+      LoadStringW(g_pvp->theInstance, resid, m_szbuffer, sizeof(m_szbuffer)/sizeof(WCHAR));
    else
       m_szbuffer[0] = 0;
 }

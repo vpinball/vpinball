@@ -245,7 +245,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 
 void Surface::UIRenderPass1(Sur * const psur)
 {
-   psur->SetFillColor(m_ptable->RenderSolid() ? g_pvp->m_fillColor : -1);
+   psur->SetFillColor(m_ptable->RenderSolid() ? m_vpinball->m_fillColor : -1);
    psur->SetObject(this);
    // Don't want border color to be over-ridden when selected - that will be drawn later
    psur->SetBorderColor(-1, false, 0);

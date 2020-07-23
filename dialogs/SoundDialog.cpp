@@ -379,7 +379,7 @@ void SoundDialog::Export()
 
             ZeroMemory( &ofn, sizeof( OPENFILENAME ) );
             ofn.lStructSize = sizeof( OPENFILENAME );
-            ofn.hInstance = g_hinst;
+            ofn.hInstance = g_pvp->theInstance;
             ofn.hwndOwner = g_pvp->GetHwnd();
             //TEXT
             ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0";

@@ -101,7 +101,7 @@ public:
    void SetPosCur(float x, float y);
    void SetObjectPosCur(float x, float y);
    void ClearObjectPosCur();
-   float ConvertToUnit(const float value);
+   float ConvertToUnit(const float value) const;
    void SetPropSel(VectorProtected<ISelect> *pvsel);
 
    void SetActionCur(const string& szaction);
@@ -131,7 +131,44 @@ public:
    void ShowDrawingOrderDialog(bool select);
 
    void SetStatusBarElementInfo(const string& info);
-   void SetStatusBarUnitInfo(const string& info, const bool isUnit);
+   void SetStatusBarUnitInfo(const string& info, const bool isUnit) // inlined, in the hope that string conversions will be skipped in case of early out in here
+   {
+    if (g_pplayer)
+        return;
+
+    string textBuf;
+
+    if (!info.empty())
+    {
+       textBuf = info;
+       if(isUnit)
+       {
+           switch(m_convertToUnit)
+           {
+               case 0:
+               {
+                   textBuf += " (inch)";
+                   break;
+               }
+               case 1:
+               {
+                   textBuf += " (mm)";
+                   break;
+               }
+               case 2:
+               {
+                   textBuf += " (VPUnits)";
+                   break;
+               }
+               default:
+                   assert(!"wrong unit");
+               break;
+           }
+       }
+    }
+
+    SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf.c_str());
+   }
 
    bool OpenFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags);
    CDockProperty *GetPropertiesDocker();
@@ -145,6 +182,8 @@ public:
    bool IsClosing() const { return m_closing; }
 
    ULONG m_cref;
+
+   HINSTANCE theInstance;
 
    vector< CComObject<PinTable>* > m_vtable;
    CComObject<PinTable> *m_ptableActive;

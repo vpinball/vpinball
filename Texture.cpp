@@ -530,7 +530,7 @@ void Texture::ReleaseTextureDC(HDC dc)
 
 void Texture::CreateFromResource(const int id)
 {
-   const HBITMAP hbm = (HBITMAP)LoadImage(g_hinst, MAKEINTRESOURCE(id), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+   const HBITMAP hbm = (HBITMAP)LoadImage(g_pvp->theInstance, MAKEINTRESOURCE(id), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
 
    if (m_pdsBuffer)
       FreeStuff();

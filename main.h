@@ -128,6 +128,8 @@ using std::vector;
 #include "pinsound.h"
 #include "pinbinary.h"
 
+#include "extern.h"
+
 #include "vpinball.h"
 #include "pintable.h"
 
@@ -183,7 +185,10 @@ using std::vector;
 #include "slintf.h"
 #include "trace.h"
 
-#include "extern.h"
+__forceinline void ShowError(const char * const sz)
+{
+   g_pvp->MessageBox(sz, "Error", MB_OK | MB_ICONEXCLAMATION);
+}
 
 #include "editablereg.h"
 

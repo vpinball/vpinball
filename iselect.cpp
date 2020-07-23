@@ -282,9 +282,9 @@ HRESULT ISelect::GetTypeName(BSTR *pVal)
    return S_OK;
 }
 
-void ISelect::GetTypeNameForType(ItemTypeEnum type, WCHAR * buf)
+void ISelect::GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) const
 {
-   int strID;
+   UINT strID;
 
    switch (type)
    {
@@ -296,7 +296,7 @@ void ISelect::GetTypeNameForType(ItemTypeEnum type, WCHAR * buf)
       strID = EditableRegistry::GetTypeNameStringID(type); break;
    }
 
-   /*const int len =*/ LoadStringW(g_hinst, strID, buf, 256);
+   /*const int len =*/ LoadStringW(m_vpinball->theInstance, strID, buf, 256);
 }
 
 bool ISelect::LoadToken(const int id, BiffReader * const pbr)

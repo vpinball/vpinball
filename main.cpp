@@ -183,7 +183,6 @@ int logicalNumberOfProcessors = -1;
 class VPApp : public CWinApp
 {
 private:
-   HINSTANCE theInstance;
    bool run;
    bool play;
    bool extractPov;
@@ -196,8 +195,8 @@ private:
 public:
    VPApp(HINSTANCE hInstance)
    {
-       theInstance = GetInstanceHandle();
-       SetResourceHandle(theInstance);
+       m_vpinball.theInstance = GetInstanceHandle();
+       SetResourceHandle(m_vpinball.theInstance);
    }
    
    virtual ~VPApp() 
@@ -234,14 +233,13 @@ public:
       GetSystemInfo(&sysinfo);
       logicalNumberOfProcessors = sysinfo.dwNumberOfProcessors; //!! this ignores processor groups, so if at some point we need extreme multi threading, implement this in addition!
 
-      g_hinst = theInstance;
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
       const HRESULT hRes = CoInitializeEx(NULL, COINIT_MULTITHREADED);
 #else
       const HRESULT hRes = CoInitialize(NULL);
 #endif
       _ASSERTE(SUCCEEDED(hRes));
-      _Module.Init(ObjectMap, theInstance, &LIBID_VPinballLib);
+      _Module.Init(ObjectMap, m_vpinball.theInstance, &LIBID_VPinballLib);
 
       file = false;
       play = false;
@@ -269,7 +267,7 @@ public:
             || lstrcmpi(szArglist[i], _T("-Help")) == 0 || lstrcmpi(szArglist[i], _T("/Help")) == 0
             || lstrcmpi(szArglist[i], _T("-?")) == 0 || lstrcmpi(szArglist[i], _T("/?")) == 0)
          {
-             ::MessageBox(NULL, "-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n\n-Edit [filename]  load file into VP\n-Play [filename]  load and play file\n-Pov [filename]  load, export pov and close\n-ExtractVBS [filename]  load, export table script and close\n-c1 [customparam] .. -c9 [customparam]  custom user parameters that can be accessed in the script via GetCustomParam(X)",
+            m_vpinball.MessageBox("-UnregServer  Unregister VP functions\n-RegServer  Register VP functions\n\n-DisableTrueFullscreen  Force-disable True Fullscreen setting\n\n-EnableTrueFullscreen  Force-enable True Fullscreen setting\n\n-Edit [filename]  load file into VP\n-Play [filename]  load and play file\n-Pov [filename]  load, export pov and close\n-ExtractVBS [filename]  load, export table script and close\n-c1 [customparam] .. -c9 [customparam]  custom user parameters that can be accessed in the script via GetCustomParam(X)",
                  "VPinball Usage", MB_OK);
             run = false;
             break;
@@ -389,7 +387,7 @@ public:
 
       // load and register VP type library for COM integration
       char szFileName[MAXSTRING];
-      if (GetModuleFileName(theInstance, szFileName, MAXSTRING))
+      if (GetModuleFileName(m_vpinball.theInstance, szFileName, MAXSTRING))
       {
          ITypeLib *ptl = NULL;
          MAKE_WIDEPTR_FROMANSI(wszFileName, szFileName);
@@ -402,12 +400,12 @@ public:
                // if failed, register only for current user
                hr = RegisterTypeLibForUser(ptl, wszFileName, NULL);
                if (!SUCCEEDED(hr))
-                  MessageBox(0, "Could not register type library. Try running Visual Pinball as administrator.", "Error", MB_ICONWARNING);
+                  m_vpinball.MessageBox("Could not register type library. Try running Visual Pinball as administrator.", "Error", MB_ICONWARNING);
             }
             ptl->Release();
          }
          else
-            MessageBox(0, "Could not load type library.", "Error", MB_ICONSTOP);
+            m_vpinball.MessageBox("Could not load type library.", "Error", MB_ICONSTOP);
       }
 
       InitVPX();
@@ -458,7 +456,7 @@ public:
        m_vpinball.AddRef();
        g_pvp = &m_vpinball;
        m_vpinball.Create(NULL);
-       g_haccel = LoadAccelerators(g_hinst, MAKEINTRESOURCE(IDR_VPACCEL));
+       g_haccel = LoadAccelerators(m_vpinball.theInstance, MAKEINTRESOURCE(IDR_VPACCEL));
 
        if (file)
        {

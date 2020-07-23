@@ -79,7 +79,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
       }
 
    }
-   sname = std::to_string((long long)frameCounter)+" frames imported!";
+   sname = std::to_string(frameCounter)+" frames imported!";
    g_pvp->MessageBox(sname.c_str(), "Info", MB_OK | MB_ICONEXCLAMATION);
    return true;
 }
@@ -1916,7 +1916,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
 
 bool Primitive::BrowseFor3DMeshFile()
 {
-   DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_MESH_IMPORT_DIALOG), m_vpinball->GetHwnd(), ObjImportProc, (size_t)this);
+   DialogBoxParam(m_vpinball->theInstance, MAKEINTRESOURCE(IDD_MESH_IMPORT_DIALOG), m_vpinball->GetHwnd(), ObjImportProc, (size_t)this);
 #if 1
    return false;
 #else
@@ -1927,7 +1927,7 @@ bool Primitive::BrowseFor3DMeshFile()
    OPENFILENAME ofn;
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = g_hinst;
+   ofn.hInstance = m_vpinball->theInstance;
    ofn.hwndOwner = m_vpinball->m_hwnd;
    // TEXT
    ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
@@ -1965,14 +1965,14 @@ bool Primitive::BrowseFor3DMeshFile()
    }
    bool flipTV = false;
    bool convertToLeftHanded = false;
-   int ans = MessageBox(m_vpinball->m_hwnd, "Do you want to mirror the object?", "Convert coordinate system?", MB_YESNO | MB_DEFBUTTON2);
+   int ans = m_vpinball->MessageBox("Do you want to mirror the object?", "Convert coordinate system?", MB_YESNO | MB_DEFBUTTON2);
    if (ans == IDYES)
    {
       convertToLeftHanded = true;
    }
    else
    {
-      ans = MessageBox(m_vpinball->m_hwnd, "Do you want to convert texture coordinates?", "Confirm", MB_YESNO | MB_DEFBUTTON2);
+      ans = m_vpinball->MessageBox("Do you want to convert texture coordinates?", "Confirm", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
          flipTV = true;
@@ -2079,7 +2079,7 @@ void Primitive::ExportMeshDialog()
    OPENFILENAME ofn;
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = g_hinst;
+   ofn.hInstance = m_vpinball->theInstance;
    ofn.hwndOwner = m_vpinball->GetHwnd();
    // TEXT
    ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
