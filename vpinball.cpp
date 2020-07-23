@@ -345,45 +345,6 @@ void VPinball::SetStatusBarElementInfo(const string& info)
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 4 | 0, (size_t)info.c_str());
 }
 
-void VPinball::SetStatusBarUnitInfo(const string& info, const bool isUnit)
-{
-    if (g_pplayer)
-        return;
-
-    string textBuf;
-
-    if (!info.empty())
-    {
-       textBuf = info;
-       if(isUnit)
-       {
-           switch(m_convertToUnit)
-           {
-               case 0:
-               {
-                   textBuf += " (inch)";
-                   break;
-               }
-               case 1:
-               {
-                   textBuf += " (mm)";
-                   break;
-               }
-               case 2:
-               {
-                   textBuf += " (VPUnits)";
-                   break;
-               }
-               default:
-                   assert(!"wrong unit");
-               break;
-           }
-       }
-    }
-
-    SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf.c_str());
-}
-
 bool VPinball::OpenFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags)
 {
    CFileDialog fileDlg(TRUE, defaultExt, initDir, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
@@ -493,7 +454,7 @@ void VPinball::ClearObjectPosCur()
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)"");
 }
 
-float VPinball::ConvertToUnit(const float value)
+float VPinball::ConvertToUnit(const float value) const
 {
    switch (m_convertToUnit)
    {
@@ -598,13 +559,13 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
        }
        case ID_EDIT_DRAWINGORDER_HIT:
        {
-          //DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
+          //DialogBoxParam(theInstance, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
           ShowDrawingOrderDialog(false);
           return TRUE;
        }
        case ID_EDIT_DRAWINGORDER_SELECT:
        {
-          //DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
+          //DialogBoxParam(theInstance, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
           ShowDrawingOrderDialog(true);
           return TRUE;
        }
@@ -804,7 +765,7 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
        {
            CComObject<PinTable> * const ptCur = GetActiveTable();
            if (ptCur)
-              /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_FONTDIALOG), GetHwnd(), FontManagerProc, (size_t)ptCur);
+              /*const DWORD foo =*/ DialogBoxParam(theInstance, MAKEINTRESOURCE(IDD_FONTDIALOG), GetHwnd(), FontManagerProc, (size_t)ptCur);
            return TRUE;
        }
        case ID_TABLE_DIMENSIONMANAGER:
@@ -824,7 +785,7 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
        }
        case ID_PREFERENCES_SECURITYOPTIONS:
        {
-          DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS), GetHwnd(), SecurityOptionsProc, 0);
+          DialogBoxParam(theInstance, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS), GetHwnd(), SecurityOptionsProc, 0);
 
           // refresh editor options from the registry
           InitRegValues();
@@ -1343,7 +1304,7 @@ void VPinball::PreCreate(CREATESTRUCT& cs)
 
 void VPinball::PreRegisterClass(WNDCLASS& wc)
 {
-    wc.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_VPINBALL));
+    wc.hIcon = LoadIcon(theInstance, MAKEINTRESOURCE(IDI_VPINBALL));
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.style = CS_DBLCLKS;//CS_NOCLOSE | CS_OWNDC;
     wc.lpszClassName = _T("VPinball");
@@ -1421,7 +1382,7 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
         SetOpenMinimized();
 
     char szName[256];
-    LoadString(g_hinst, IDS_PROJNAME, szName, 256);
+    LoadString(theInstance, IDS_PROJNAME, szName, 256);
     
     const int result = CMDIDockFrame::OnCreate(cs);
     
@@ -1913,7 +1874,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          OPENFILENAME ofn;
          ZeroMemory(&ofn, sizeof(OPENFILENAME));
          ofn.lStructSize = sizeof(OPENFILENAME);
-         ofn.hInstance = g_hinst;
+         ofn.hInstance = g_pvp->theInstance;
          ofn.hwndOwner = g_pvp->m_hwnd;
          ofn.lpstrFilter = "Font Files (*.ttf)\0*.ttf\0";
          ofn.lpstrFile = szFileName;

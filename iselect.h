@@ -96,7 +96,7 @@ public:
    virtual const PinTable *GetPTable() const = 0;
 
    virtual HRESULT GetTypeName(BSTR *pVal);
-   static void GetTypeNameForType(ItemTypeEnum type, WCHAR * buf);
+   void GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) const;
 
    virtual IDispatch *GetDispatch() = 0;
    virtual const IDispatch *GetDispatch() const = 0;

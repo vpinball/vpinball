@@ -443,7 +443,7 @@ void ImageDialog::Export()
             OPENFILENAME ofn;
             ZeroMemory(&ofn, sizeof(OPENFILENAME));
             ofn.lStructSize = sizeof(OPENFILENAME);
-            ofn.hInstance = g_hinst;
+            ofn.hInstance = g_pvp->theInstance;
             ofn.hwndOwner = g_pvp->GetHwnd();
             int len = lstrlen(ppi->m_szPath);
             char g_filename[MAXSTRING];

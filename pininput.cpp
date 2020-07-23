@@ -540,9 +540,9 @@ void PinInput::Init(const HWND hwnd)
 
    HRESULT hr;
 #ifdef USE_DINPUT8
-   hr = DirectInput8Create(g_hinst, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&m_pDI, NULL);
+   hr = DirectInput8Create(g_pvp->theInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&m_pDI, NULL);
 #else
-   hr = DirectInputCreate(g_hinst, DIRECTINPUT_VERSION, &m_pDI, NULL);
+   hr = DirectInputCreate(g_pvp->theInstance, DIRECTINPUT_VERSION, &m_pDI, NULL);
 #endif
 
 #ifdef USE_DINPUT_FOR_KEYBOARD
@@ -835,11 +835,7 @@ void PinInput::button_exit(const U32 msecs, const U32 curr_time_msec)
    if (m_exit_stamp &&                         // Initialized.
       (curr_time_msec - m_exit_stamp > msecs)) // Held exit button for number of mseconds.
    {
-      if (uShockType == USHOCKTYPE_ULTRACADE)
-         ExitApp(); //remove pesky exit button
-      else
-         //exit(0); //Close out to desktop
-         g_pvp->Quit();
+      g_pvp->Quit();
    }
 }
 

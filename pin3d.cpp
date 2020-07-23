@@ -393,7 +393,7 @@ void EnvmapPrecalc(const void* /*const*/ __restrict envmap, const DWORD env_xres
 			   sum[2] = gammaApprox(sum[2]);
 			   if (
 				   ((DWORD*)rad_envmap)[y*rad_env_xres + x] != ((int)(sum[0] * 255.0f)) | (((int)(sum[1] * 255.0f)) << 8) | (((int)(sum[2] * 255.0f)) << 16))
-				   ::MessageBox(NULL, "Not OK", "Not OK", MB_OK);
+				   g_pvp->MessageBox("Not OK", "Not OK", MB_OK);
 		   }
 	   }
 
