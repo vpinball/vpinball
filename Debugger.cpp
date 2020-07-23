@@ -218,7 +218,7 @@ LRESULT DebuggerDialog::OnNotify(WPARAM wparam, LPARAM lparam)
                 const size_t lineEnd = SendMessage(pnmh->hwndFrom, SCI_GETLINEENDPOSITION, line, 0);
 
                 char* const szText = new char[lineEnd - lineStart + 1];
-                TextRange tr;
+                Sci_TextRange tr;
                 tr.chrg.cpMin = (Sci_PositionCR)lineStart;
                 tr.chrg.cpMax = (Sci_PositionCR)lineEnd;
                 tr.lpstrText = szText;
