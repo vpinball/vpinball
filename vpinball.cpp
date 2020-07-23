@@ -137,6 +137,7 @@ VPinball::VPinball()
 #endif
    if (m_scintillaDll == NULL)
    {
+      assert(!"Could not load SciLexerVP");
    #ifdef _WIN64
        m_scintillaDll = LoadLibrary("SciLexer64.DLL");
    #else
@@ -144,10 +145,10 @@ VPinball::VPinball()
    #endif
        if (m_scintillaDll == NULL)
        #ifdef _WIN64
-           ShowError("Unable to load SciLexer64.DLL");
-   #else
-           ShowError("Unable to load SciLexer.DLL");
-   #endif
+           ShowError("Unable to load SciLexerVP64.DLL or SciLexer64.DLL");
+       #else
+           ShowError("Unable to load SciLexerVP.DLL or SciLexer.DLL");
+       #endif
    }
 }
 

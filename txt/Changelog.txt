@@ -68,6 +68,7 @@ FIXES:
 - tweak flipper shadows (via script) implementation in the example/blank table
 
 - update BASS library to 2.4.15
+- script editor updated to use latest scintilla library 4.4.4
 
 - see Changelog_Scripts.txt for the respective core script changes (version 3.58)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
