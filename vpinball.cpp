@@ -365,6 +365,25 @@ bool VPinball::OpenFileDialog(const char* const initDir, std::vector<std::string
    }
 }
 
+bool VPinball::SaveFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags)
+{
+   CFileDialog fileDlg(FALSE, defaultExt, initDir, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
+   if (fileDlg.DoModal(*this) == IDOK)
+   {
+      int pos = 0;
+      while (pos != -1)
+         filename.push_back(std::string(fileDlg.GetNextPathName(pos)));
+
+      return true;
+   }
+   else
+   {
+      filename.push_back("");
+
+      return false;
+   }
+}
+
 CDockProperty *VPinball::GetDefaultPropertiesDocker()
 {
     const int dockStyle = DS_DOCKED_RIGHT | DS_CLIENTEDGE | DS_NO_CLOSE;

@@ -2076,40 +2076,27 @@ bool Primitive::LoadMeshDialog()
 
 void Primitive::ExportMeshDialog()
 {
-   OPENFILENAME ofn;
-   ZeroMemory(&ofn, sizeof(OPENFILENAME));
-   ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = m_vpinball->theInstance;
-   ofn.hwndOwner = m_vpinball->GetHwnd();
-   // TEXT
-   ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
-   ofn.lpstrFile = NULL;
-   ofn.nMaxFile = MAXSTRING;
-   ofn.lpstrDefExt = "obj";
-   ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
-
    char szInitialDir[MAXSTRING];
    HRESULT hr = LoadValueString("RecentDir", "ImportDir", szInitialDir, MAXSTRING);
    if (hr != S_OK)
        lstrcpy(szInitialDir, "c:\\Visual Pinball\\Tables\\");
 
-   ofn.lpstrInitialDir = szInitialDir;
-
-   const int ret = GetSaveFileName(&ofn);
-   if (ret == 0)
-      return;
-
-   const string szFileName(ofn.lpstrFile);
-   const size_t index = szFileName.find_last_of('\\');
-   if (index != std::string::npos)
+   std::vector<std::string> szFileName;
+   
+   if (m_vpinball->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
    {
-       const std::string newInitDir(szFileName.substr(0, index));
-       hr = SaveValueString("RecentDir", "ImportDir", newInitDir);
+      const size_t index = szFileName[0].find_last_of('\\');
+      if (index != std::string::npos)
+      {
+         const std::string newInitDir(szFileName[0].substr(0, index));
+         hr = SaveValueString("RecentDir", "ImportDir", newInitDir);
+      }
+
+      char name[sizeof(m_wzName) / sizeof(m_wzName[0])];
+      WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
+      m_mesh.SaveWavefrontObj(szFileName[0].c_str(), m_d.m_use3DMesh ? name : "Primitive");
    }
 
-   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
-   m_mesh.SaveWavefrontObj(ofn.lpstrFile, m_d.m_use3DMesh ? name : "Primitive");
 }
 
 bool Primitive::IsTransparent() const
