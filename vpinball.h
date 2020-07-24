@@ -171,7 +171,9 @@ public:
    }
 
    bool OpenFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags);
-   CDockProperty *GetPropertiesDocker();
+   bool SaveFileDialog(const char* const initDir, std::vector<std::string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags);
+
+   CDockProperty* GetPropertiesDocker();
    CDockToolbar *GetToolbarDocker();
    CDockLayers *GetLayersDocker();
    void CreateDocker();
