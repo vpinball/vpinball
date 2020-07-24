@@ -23,7 +23,7 @@ float sz2f(const string& sz)
 
    delete[] wzT;
 
-   return 0.0f;
+   return result;
 }
 
 void f2sz(const float f, string& sz)
