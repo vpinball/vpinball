@@ -703,7 +703,7 @@ BOOL VPinball::ParseCommand(size_t code, size_t notify)
        {
           CComObject<PinTable> * const ptCur = GetActiveTable();
           if (ptCur)
-             ptCur->ImportBackdropPOV(NULL);
+             ptCur->ImportBackdropPOV(string());
           return TRUE;
        }
        case ID_EXPORT_BACKDROPPOV:
