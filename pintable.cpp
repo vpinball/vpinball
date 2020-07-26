@@ -2482,7 +2482,6 @@ HRESULT PinTable::Save(const bool saveAs)
    IStorage* pstgRoot;
 
    // Get file name if needed
-   char fileName[MAXSTRING];
    if (saveAs)
    {
       //need to get a file name
@@ -2493,6 +2492,8 @@ HRESULT PinTable::Save(const bool saveAs)
       ofn.hwndOwner = m_vpinball->GetHwnd();
       // TEXT
       ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
+      char fileName[MAXSTRING];
+      fileName[0] = '\0';
       ofn.lpstrFile = fileName;
       ofn.nMaxFile = sizeof(fileName);
       ofn.lpstrDefExt = "vpx";
@@ -5412,10 +5413,9 @@ void PinTable::OnLeftDoubleClick(int x, int y)
 
 void PinTable::ExportBlueprint()
 {
-   char szBlueprintFileName[MAXSTRING];
    //bool saveAs = true;
    //if (saveAs)
-   {
+   //{
       //need to get a file name
       OPENFILENAME ofn;
       ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -5423,6 +5423,8 @@ void PinTable::ExportBlueprint()
       ofn.hInstance = m_vpinball->theInstance;
       ofn.hwndOwner = m_vpinball->GetHwnd();
       ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0";
+      char szBlueprintFileName[MAXSTRING];
+      szBlueprintFileName[0] = '\0';
       ofn.lpstrFile = szBlueprintFileName;
       ofn.nMaxFile = sizeof(szBlueprintFileName);
       ofn.lpstrDefExt = "png";
@@ -5433,7 +5435,7 @@ void PinTable::ExportBlueprint()
       // user cancelled
       if (ret == 0)
          return;// S_FALSE;
-   }
+   //}
 
    const int result = m_vpinball->MessageBox("Do you want a solid blueprint?", "Export As Solid?", MB_YESNO);
    const bool solid = (result == IDYES);
@@ -5599,8 +5601,8 @@ void PinTable::ExportMesh(FILE *f)
 void PinTable::ExportTableMesh()
 {
    char szObjFileName[MAXSTRING];
+   szObjFileName[0] = '\0';
    OPENFILENAME ofn;
-   memset(szObjFileName, 0, sizeof(szObjFileName));
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hInstance = m_vpinball->theInstance;
@@ -5838,7 +5840,7 @@ void PinTable::ExportBackdropPOV(const string& filename)
 		// TEXT
 		ofn.lpstrFilter = "POV file(*.pov)\0*.pov\0";
 		char szObjFileName[MAXSTRING];
-		memset(szObjFileName, 0, sizeof(szObjFileName));
+		szObjFileName[0] = '\0';
 		ofn.lpstrFile = szObjFileName;
 		ofn.nMaxFile = sizeof(szObjFileName);
 		ofn.lpstrDefExt = "pov";
@@ -9745,7 +9747,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    // TEXT
    ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
    ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = MAXSTRING;
+   ofn.nMaxFile = sizeof(szFileName);
    ofn.lpstrDefExt = "vpp";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 

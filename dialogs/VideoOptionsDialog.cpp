@@ -692,7 +692,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          // TEXT
          ofn.lpstrFilter = "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0";
          ofn.lpstrFile = szFileName;
-         ofn.nMaxFile = MAXSTRING;
+         ofn.nMaxFile = sizeof(szFileName);
          ofn.lpstrDefExt = "png";
          ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
          const int ret = GetOpenFileName(&ofn);
@@ -715,7 +715,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          // TEXT
          ofn.lpstrFilter = "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0";
          ofn.lpstrFile = szFileName;
-         ofn.nMaxFile = MAXSTRING;
+         ofn.nMaxFile = sizeof(szFileName);
          ofn.lpstrDefExt = "png";
          ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
          const int ret = GetOpenFileName(&ofn);
@@ -725,7 +725,6 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
          break;
       }
-
       case IDC_DISPLAY_ID:
       {
          const size_t checked = SendDlgItemMessage(IDC_FULLSCREEN, BM_GETCHECK, 0, 0);

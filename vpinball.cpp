@@ -1898,7 +1898,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          ofn.hwndOwner = g_pvp->m_hwnd;
          ofn.lpstrFilter = "Font Files (*.ttf)\0*.ttf\0";
          ofn.lpstrFile = szFileName;
-         ofn.nMaxFile = MAXSTRING;
+         ofn.nMaxFile = sizeof(szFileName);
          ofn.lpstrDefExt = "ttf";
          ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
@@ -2167,10 +2167,10 @@ void VPinball::SaveTable(const bool saveAs)
     if (ptCur)
     {
         HRESULT hr;
-        if(!saveAs)
-            hr = ptCur->TableSave();
-        else
+        if(saveAs)
             hr = ptCur->SaveAs();
+        else
+            hr = ptCur->TableSave();
 
         if (hr == S_OK)
             UpdateRecentFileList(ptCur->m_szFileName);

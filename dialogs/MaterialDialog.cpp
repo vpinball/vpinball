@@ -391,7 +391,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ofn.lpstrFile = szFileName;
             //TEXT
             ofn.lpstrFilter = "Material Files (.mat)\0*.mat\0";
-            ofn.nMaxFile = MAXSTRING;
+            ofn.nMaxFile = sizeof(szFileName);
             ofn.lpstrDefExt = "mat";
 
             const HRESULT hr = LoadValueString("RecentDir", "MaterialDir", szInitialDir, MAXSTRING);

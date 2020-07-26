@@ -1932,7 +1932,7 @@ bool Primitive::BrowseFor3DMeshFile()
    // TEXT
    ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
    ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = MAXSTRING;
+   ofn.nMaxFile = sizeof(szFileName);
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
