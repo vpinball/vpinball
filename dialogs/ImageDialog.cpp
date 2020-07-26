@@ -447,7 +447,7 @@ void ImageDialog::Export()
             ofn.hwndOwner = g_pvp->GetHwnd();
             int len = lstrlen(ppi->m_szPath);
             char g_filename[MAXSTRING];
-            memset(g_filename, 0, sizeof(g_filename));
+            g_filename[0] = '\0';
 
             const size_t renameOnExport = SendMessage(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), BM_GETCHECK, 0, 0);
 
@@ -476,7 +476,7 @@ void ImageDialog::Export()
                strncat_s(g_filename, ext.c_str() + idx, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
             }
             ofn.lpstrFile = g_filename;
-            ofn.nMaxFile = MAXSTRING;
+            ofn.nMaxFile = sizeof(g_filename);
 
             const string ext2(g_filename);
             const size_t idx2 = ext2.find_last_of('.');
