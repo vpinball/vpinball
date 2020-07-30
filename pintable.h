@@ -381,9 +381,9 @@ public:
    PinBinary *GetImageLinkBinary(const int id);
 
    void ListCustomInfo(HWND hwndListView);
-   int AddListItem(HWND hwndListView, char *szName, char *szValue1, LPARAM lparam);
+   int AddListItem(HWND hwndListView, const char *szName, const char *szValue1, LPARAM lparam);
 
-   void ImportFont(HWND hwndListView, const char *filename);
+   void ImportFont(HWND hwndListView, const string& filename);
    void ListFonts(HWND hwndListView);
    int AddListBinary(HWND hwndListView, PinBinary *ppb);
    void RemoveFont(PinFont * const ppf);
@@ -392,7 +392,7 @@ public:
    void ListCollections(HWND hwndListView);
    int AddListCollection(HWND hwndListView, CComObject<Collection> *pcol);
    void RemoveCollection(CComObject<Collection> *pcol);
-   void SetCollectionName(Collection *pcol, char *szName, HWND hwndList, int index);
+   void SetCollectionName(Collection *pcol, const char *szName, HWND hwndList, int index);
 
    void DoContextMenu(int x, int y, const int menuid, ISelect *psel);
    virtual void DoCommand(int icmd, int x, int y);
@@ -737,23 +737,23 @@ public:
    SaveDirtyState m_sdsCurrentDirtyState;
 
    // Table info
-   std::string m_szTableName;
-   std::string m_szAuthor;
-   std::string m_szVersion;
-   std::string m_szReleaseDate;
-   std::string m_szAuthorEMail;
-   std::string m_szWebSite;
-   std::string m_szBlurb;
-   std::string m_szDescription;
-   std::string m_szRules;
-   char m_szScreenShot[MAXTOKEN];
-   std::string m_szDateSaved;
+   string m_szTableName;
+   string m_szAuthor;
+   string m_szVersion;
+   string m_szReleaseDate;
+   string m_szAuthorEMail;
+   string m_szWebSite;
+   string m_szBlurb;
+   string m_szDescription;
+   string m_szRules;
+   string m_szScreenShot;
+   string m_szDateSaved;
    unsigned int m_numTimesSaved;
 
    PinBinary *m_pbTempScreenshot; // Holds contents of screenshot image until the image asks for it
 
-   vector<char*> m_vCustomInfoTag;
-   vector<char*> m_vCustomInfoContent;
+   vector<string> m_vCustomInfoTag;
+   vector<string> m_vCustomInfoContent;
 
    vector<HANDLE> m_vAsyncHandles;
 

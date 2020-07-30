@@ -612,8 +612,8 @@ void Trigger::ExportMesh(FILE *f)
    WaveFrontObj_WriteObjectName(f, name);
    WaveFrontObj_WriteVertexInfo(f, m_triggerVertices, m_numVertices);
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
-   WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
+   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
+   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
 
    const WORD* indices;
    switch(m_d.m_shape)

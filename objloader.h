@@ -12,6 +12,6 @@ void WaveFrontObj_GetVertices(std::vector<Vertex3D_NoTex2>& vertices);
 void WaveFrontObj_GetIndices(std::vector<unsigned int>& idx);
 bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool convertToLeftHanded);
 void WaveFrontObj_WriteFaceInfoList(FILE *f, const WORD *faces, const unsigned int numIndices);
-void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename, const Material * const mat);
-void WaveFrontObj_UseTexture(FILE *f, const char *texelName);
+void WaveFrontObj_WriteMaterial(const string& texelName, const string& texelFilename, const Material * const mat);
+void WaveFrontObj_UseTexture(FILE *f, const string& texelName);
 bool WaveFrontObj_LoadMaterial(const string& filename, Material * const mat);

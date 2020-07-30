@@ -93,7 +93,7 @@ void CodeViewer::Init(IScriptableHost *psh)
    {
       char bla[128];
       sprintf_s(bla, "Cannot initialize Script Engine 0x%X", res);
-      MessageBox(bla, "Error", MB_ICONERROR);
+      ShowError(bla);
    }
 
    m_sdsDirty = eSaveClean;
@@ -209,8 +209,8 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
    m_vcvd.AddSortedString(pcvd);
 
    // Add item to dropdown
-   char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
-   WideCharToMultiByte(CP_ACP, 0, pcvd->m_wzName, -1, szT, MAXNAMEBUFFER*2, NULL, NULL);
+   char szT[sizeof(pcvd->m_wzName)/sizeof(pcvd->m_wzName[0]) * 2]; // Names can only be 32 characters (plus terminator)
+   WideCharToMultiByte(CP_ACP, 0, pcvd->m_wzName, -1, szT, sizeof(szT), NULL, NULL);
    const size_t index = SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
    SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
    //AndyS - WIP insert new item into autocomplete list??
@@ -542,8 +542,8 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 	m_pageConstructsDict = new vector<UserData>();
 	m_VPcoreDict = new vector<UserData>();
 	m_currentMembers = new vector<UserData>();
-	m_wordUnderCaret.lpstrText = (char *)CaretTextBuff;
-	m_currentConstruct.lpstrText = (char *)ConstructTextBuff;
+	m_wordUnderCaret.lpstrText = CaretTextBuff;
+	m_currentConstruct.lpstrText = ConstructTextBuff;
 	// parse vb reserved words for auto complete.
 	m_VBwordsDict = new vector<UserData>;
 	int intWordFinish = -1; //skip space
@@ -1355,11 +1355,11 @@ void CodeViewer::FindCodeFromEvent()
       const size_t beginchar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
       bool goodMatch = true;
 
-      char szLine[MAX_LINE_LENGTH];
+      char szLine[MAX_LINE_LENGTH] = {};
       SOURCE_TEXT_ATTR wzFormat[MAX_LINE_LENGTH];
       WCHAR wzText[MAX_LINE_LENGTH];
 
-      const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETLINE, line, (size_t)szLine);
+      const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETLINE, line, (LPARAM)szLine);
       MultiByteToWideChar(CP_ACP, 0, szLine, -1, wzText, MAX_LINE_LENGTH);
       m_pScriptDebug->GetScriptTextAttributes(wzText, (ULONG)cchar, NULL, 0, wzFormat);
 
@@ -1621,7 +1621,7 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryService(
 void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 {
 	if (!pSCN) return;
-	char KeyPressed = pSCN->ch;
+	const char KeyPressed = pSCN->ch;
 	if (KeyPressed != '.')
 	{
 		m_wordUnderCaret.lpstrText = CaretTextBuff;
@@ -2018,7 +2018,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 		{
 			ud.m_uniqueKey = lowerCase(ud.m_keyName) + "\0";
 			ud.m_uniqueParent = "";
-			size_t iCurParent = FindOrInsertUD(ListIn, ud);
+			const size_t iCurParent = FindOrInsertUD(ListIn, ud);
 			//if (iCurParent == -1)
 			//{
 			//	ShowError("Parent == -1");
@@ -2052,7 +2052,6 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud, const
 				RemainingLine = RemainingLine.substr(CommPos+1, string::npos);
 				CommPos = RemainingLine.find_first_of(',');
 			}
-
 		}
 		else 
 		{
@@ -2302,8 +2301,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		// Read line
 		const size_t lineLength = SendMessage(m_hwndScintilla, SCI_LINELENGTH, linecount, 0);
 		if (!ParseOKLineLength(lineLength)) continue;
-		char text[MAX_LINE_LENGTH];
-		memset(text, 0, sizeof(text));
+		char text[MAX_LINE_LENGTH] = {};
 		SendMessage(m_hwndScintilla, SCI_GETLINE, linecount, (LPARAM)text);
 		if (text[0] != '\0')
 			ReadLineToParseBrain(text, linecount, m_pageConstructsDict);

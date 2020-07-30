@@ -1817,7 +1817,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                   SaveValueString("RecentDir", "FontDir", newInitDir);
                }
 
-               pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName[0].c_str());
+               pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName[0]);
             }
          }
          break;

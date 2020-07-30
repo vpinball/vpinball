@@ -416,10 +416,10 @@ void WaveFrontObj_ExportEnd(FILE *f)
    fclose(matFile);
 }
 
-void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename, const Material * const mat)
+void WaveFrontObj_WriteMaterial(const string& texelName, const string& texelFilename, const Material * const mat)
 {
    char texelNameCopy[MAX_PATH];
-   strncpy_s(texelNameCopy, texelName, sizeof(texelNameCopy)-1);
+   strncpy_s(texelNameCopy, texelName.c_str(), sizeof(texelNameCopy)-1);
    RemoveSpaces(texelNameCopy);
    fprintf_s(matFile, "newmtl %s\n", texelNameCopy);
    fprintf_s(matFile, "Ns 7.843137\n");
@@ -431,9 +431,9 @@ void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename
    fprintf_s(matFile, "Ni 1.500000\n");
    fprintf_s(matFile, "d %f\n", mat->m_fOpacity);
    fprintf_s(matFile, "illum 5\n");
-   if (texelFilename != NULL)
+   if (!texelFilename.empty())
    {
-      strncpy_s(texelNameCopy, texelFilename, sizeof(texelNameCopy)-1);
+      strncpy_s(texelNameCopy, texelFilename.c_str(), sizeof(texelNameCopy)-1);
       RemoveSpaces(texelNameCopy);
 
       fprintf_s(matFile, "map_kd %s\n", texelNameCopy);
@@ -441,9 +441,9 @@ void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename
    }
 }
 
-void WaveFrontObj_UseTexture(FILE *f, const char *texelName)
+void WaveFrontObj_UseTexture(FILE *f, const string& texelName)
 {
-   fprintf_s(f, "usemtl %s\n", texelName);
+   fprintf_s(f, "usemtl %s\n", texelName.c_str());
 }
 
 void WaveFrontObj_UpdateFaceOffset(unsigned int numVertices)

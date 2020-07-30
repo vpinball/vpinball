@@ -475,7 +475,7 @@ void CollectionDialog::OnOK()
 
     pcol->m_visel.RemoveAllElements();
 
-    HWND hwndIn = GetDlgItem(IDC_INLIST).GetHwnd();
+    const HWND hwndIn = GetDlgItem(IDC_INLIST).GetHwnd();
 
     const size_t count = ::SendMessage(hwndIn, LB_GETCOUNT, 0, 0);
 
@@ -491,19 +491,16 @@ void CollectionDialog::OnOK()
         }
     }
 
-    const size_t fireEvents = ::SendMessage(GetDlgItem(IDC_FIRE).GetHwnd(), BM_GETCHECK, 0, 0);
+    const size_t fireEvents = GetDlgItem(IDC_FIRE).SendMessage(BM_GETCHECK, 0, 0);
     pcol->m_fireEvents = !!fireEvents;
 
-    const size_t stopSingleEvents = ::SendMessage(GetDlgItem(IDC_SUPPRESS).GetHwnd(), BM_GETCHECK, 0, 0);
+    const size_t stopSingleEvents = GetDlgItem(IDC_SUPPRESS).SendMessage(BM_GETCHECK, 0, 0);
     pcol->m_stopSingleEvents = !!stopSingleEvents;
 
-    const size_t groupElements = ::SendMessage(GetDlgItem(IDC_GROUP_CHECK).GetHwnd(), BM_GETCHECK, 0, 0);
+    const size_t groupElements = GetDlgItem(IDC_GROUP_CHECK).SendMessage(BM_GETCHECK, 0, 0);
     pcol->m_groupElements = !!groupElements;
 
-    char szT[MAXSTRING];
-    ::GetWindowText(GetDlgItem(IDC_NAME).GetHwnd(), szT, MAXSTRING);
-
-    pCurCollection.ppt->SetCollectionName(pcol, szT, NULL, 0);
+    pCurCollection.ppt->SetCollectionName(pcol, GetDlgItem(IDC_NAME).GetWindowText().c_str(), NULL, 0);
 
     CDialog::OnOK();
 }

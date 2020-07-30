@@ -70,7 +70,7 @@ BOOL TableInfoDialog::OnInitDialog()
          ::SendMessage(hwndList, CB_ADDSTRING, 0, (LPARAM)pin->m_szName);
    }
 
-   ::SendMessage(hwndList, CB_SELECTSTRING, ~0u, (LPARAM)pt->m_szScreenShot);
+   ::SendMessage(hwndList, CB_SELECTSTRING, ~0u, (LPARAM)pt->m_szScreenShot.c_str());
 
    //ListView_SetExtendedListViewStyle(GetDlgItem(IDC_CUSTOMLIST).GetHwnd(), LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
    m_customListView.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
@@ -204,23 +204,15 @@ void TableInfoDialog::OnOK()
    pt->m_szDescription = m_descriptionEdit.GetWindowText();
    pt->m_szRules = m_rulesEdits.GetWindowTextA();
 
-   const HWND hwndList = GetDlgItem(IDC_SCREENSHOT).GetHwnd();
-
-   ::GetWindowText(hwndList, pt->m_szScreenShot, MAXTOKEN);
+   const CString sshot = GetDlgItem(IDC_SCREENSHOT).GetWindowText();
 
    const LocalString ls(IDS_NONE);
-   if (!lstrcmp(pt->m_szScreenShot, ls.m_szbuffer))
-   {
-      // <None> is selected
-      pt->m_szScreenShot[0] = '\0';
-   }
+   if (!lstrcmp(sshot.c_str(), ls.m_szbuffer))
+      pt->m_szScreenShot.clear();
+   else
+      pt->m_szScreenShot = sshot.c_str();
 
    // Clear old custom values, read back new ones
-   for (size_t i = 0; i < pt->m_vCustomInfoTag.size(); i++)
-   {
-      delete pt->m_vCustomInfoTag[i];
-      delete pt->m_vCustomInfoContent[i];
-   }
    pt->m_vCustomInfoTag.clear();
    pt->m_vCustomInfoContent.clear();
 
@@ -228,15 +220,10 @@ void TableInfoDialog::OnOK()
    for (int i = 0; i < customcount; i++)
    {
       const CString name = m_customListView.GetItemText(i, 0, MAXSTRING);
-
-      char * const szName = new char[name.GetLength() + 1];
-      lstrcpy(szName, name.c_str());
-      pt->m_vCustomInfoTag.push_back(szName);
+      pt->m_vCustomInfoTag.push_back(name.c_str());
 
       const CString value = m_customListView.GetItemText(i, 1, MAXSTRING);
-      char * const szValue = new char[value.GetLength() + 1];
-      lstrcpy(szValue, value.c_str());
-      pt->m_vCustomInfoContent.push_back(szValue);
+      pt->m_vCustomInfoContent.push_back(value.c_str());
    }
 
    pt->SetNonUndoableDirty(eSaveDirty);

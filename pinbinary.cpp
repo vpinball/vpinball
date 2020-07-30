@@ -23,7 +23,7 @@ bool PinBinary::ReadFromFile(const string& szFileName)
    if (hFile == INVALID_HANDLE_VALUE)
    {
       const string text = "The file \"" + szFileName + "\" could not be opened.";
-      ShowError(text.c_str());
+      ShowError(text);
       return false;
    }
 
@@ -56,7 +56,7 @@ bool PinBinary::WriteToFile(const string& szfilename)
    if (hFile == INVALID_HANDLE_VALUE)
    {
       const string bla = "The temporary file \"" + szfilename + "\" could not be written.";
-      ShowError(bla.c_str());
+      ShowError(bla);
       return false;
    }
 

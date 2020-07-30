@@ -773,12 +773,12 @@ void Surface::ExportMesh(FILE *f)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       if (tex)
       {
-         WaveFrontObj_WriteMaterial(m_d.m_szImage.c_str(), tex->m_szPath, mat);
-         WaveFrontObj_UseTexture(f, m_d.m_szImage.c_str());
+         WaveFrontObj_WriteMaterial(m_d.m_szImage, tex->m_szPath, mat);
+         WaveFrontObj_UseTexture(f, m_d.m_szImage);
       }
       else
       {
-         WaveFrontObj_WriteMaterial("none", NULL, mat);
+         WaveFrontObj_WriteMaterial("none", string(), mat);
          WaveFrontObj_UseTexture(f, "none");
       }
       WaveFrontObj_WriteFaceInfo(f, topBottomIndices);
@@ -794,8 +794,8 @@ void Surface::ExportMesh(FILE *f)
       delete[] tmp;
 
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szTopMaterial.c_str(), NULL, mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szTopMaterial.c_str());
+      WaveFrontObj_WriteMaterial(m_d.m_szTopMaterial, string(), mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szTopMaterial);
       WORD * const idx = new WORD[topBottomIndices.size() + sideIndices.size()];
       memcpy(idx, sideIndices.data(), sideIndices.size()*sizeof(WORD));
       for (size_t i = 0; i < topBottomIndices.size(); i++)
@@ -809,8 +809,8 @@ void Surface::ExportMesh(FILE *f)
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, sideBuf.data(), m_numVertices * 4);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szSideMaterial.c_str(), NULL, mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szSideMaterial.c_str());
+      WaveFrontObj_WriteMaterial(m_d.m_szSideMaterial, string(), mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szSideMaterial);
       WaveFrontObj_WriteFaceInfo(f, sideIndices);
       WaveFrontObj_UpdateFaceOffset(m_numVertices * 4);
    }

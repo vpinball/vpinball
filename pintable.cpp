@@ -1610,12 +1610,6 @@ PinTable::~PinTable()
    for (int i = 0; i < m_vcollection.Size(); i++)
       m_vcollection.ElementAt(i)->Release();
 
-   for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
-   {
-      delete m_vCustomInfoTag[i];
-      delete m_vCustomInfoContent[i];
-   }
-
    m_pcv->Release();
    m_pcv = nullptr;
 
@@ -3157,17 +3151,15 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
    BiffWriter bw(pstmTags, hcrypthash);
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
-   {
       bw.WriteString(FID(CUST), m_vCustomInfoTag[i]);
-   }
 
    bw.WriteTag(FID(ENDB));
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
-      const int len = lstrlen(m_vCustomInfoTag[i]);
+      const int len = m_vCustomInfoTag[i].length();
       WCHAR * const wzName = new WCHAR[len + 1];
-      MultiByteToWideChar(CP_ACP, 0, m_vCustomInfoTag[i], -1, wzName, len + 1);
+      MultiByteToWideChar(CP_ACP, 0, m_vCustomInfoTag[i].c_str(), -1, wzName, len + 1);
 
       WriteInfoValue(pstg, wzName, m_vCustomInfoContent[i], hcrypthash);
 
@@ -3334,14 +3326,15 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
-      const int len = lstrlen(m_vCustomInfoTag[i]);
+      const int len = m_vCustomInfoTag[i].length();
       WCHAR * const wzName = new WCHAR[len + 1];
-      MultiByteToWideChar(CP_ACP, 0, m_vCustomInfoTag[i], -1, wzName, len + 1);
+      MultiByteToWideChar(CP_ACP, 0, m_vCustomInfoTag[i].c_str(), -1, wzName, len + 1);
 
 	  char *szValue;
 	  ReadInfoValue(pstg, wzName, &szValue, hcrypthash);
       m_vCustomInfoContent.push_back(szValue);
 
+      delete[] szValue;
       delete[] wzName;
    }
 
@@ -3929,7 +3922,7 @@ void PinTable::SetLoadDefaults()
    m_ImageBackdropNightDay = false;
    m_szEnvImage[0] = 0;
 
-   m_szScreenShot[0] = 0;
+   m_szScreenShot.clear();
 
    m_colorbackdrop = RGB(0x62, 0x6E, 0x8E);
 
@@ -4159,9 +4152,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
       char szT[MAXSTRING];  //maximum length of tagnames right now
       pbr->GetString(szT);
-      char * const szName = new char[lstrlen(szT) + 1];
-      lstrcpy(szName, szT);
-      m_vCustomInfoTag.push_back(szName);
+      m_vCustomInfoTag.push_back(szT);
       break;
    }
    case FID(SVOL): pbr->GetFloat(&m_TableSoundVolume); break;
@@ -4390,7 +4381,7 @@ void PinTable::RemoveSound(PinSound * const pps)
    delete pps;
 }
 
-void PinTable::ImportFont(HWND hwndListView, const char *filename)
+void PinTable::ImportFont(HWND hwndListView, const string& filename)
 {
    PinFont * const ppb = new PinFont();
 
@@ -4590,16 +4581,14 @@ void PinTable::MoveCollectionDown(CComObject<Collection> *pcol)
       m_vcollection.InsertElementAt(pcol, idx + 1);
 }
 
-void PinTable::SetCollectionName(Collection *pcol, char *szName, HWND hwndList, int index)
+void PinTable::SetCollectionName(Collection *pcol, const char *szName, HWND hwndList, int index)
 {
    WCHAR wzT[MAXSTRING];
    MultiByteToWideChar(CP_ACP, 0, szName, -1, wzT, MAXSTRING);
    if (m_pcv->ReplaceName((IScriptable *)pcol, wzT) == S_OK)
    {
       if (hwndList)
-      {
-         ListView_SetItemText(hwndList, index, 0, szName);
-      }
+         ListView_SetItemText(hwndList, index, 0, (char*)szName);
       WideStrNCopy(wzT, pcol->m_wzName, MAXNAMEBUFFER);
    }
 }
@@ -5591,7 +5580,7 @@ void PinTable::ExportMesh(FILE *f)
    WaveFrontObj_WriteObjectName(f, name);
    WaveFrontObj_WriteVertexInfo(f, buffer, 4);
    const Material * const mat = GetMaterial(m_szPlayfieldMaterial);
-   WaveFrontObj_WriteMaterial(m_szPlayfieldMaterial, NULL, mat);
+   WaveFrontObj_WriteMaterial(m_szPlayfieldMaterial, string(), mat);
    WaveFrontObj_UseTexture(f, m_szPlayfieldMaterial);
    WaveFrontObj_WriteFaceInfoList(f, playfieldPolyIndices, 6);
    WaveFrontObj_UpdateFaceOffset(4);
@@ -7621,7 +7610,7 @@ void PinTable::UpdateDbgLight()
 
 bool PinTable::GetImageLink(Texture * const ppi) const
 {
-   return (!lstrcmpi(ppi->m_szName, m_szScreenShot));
+   return (!lstrcmpi(ppi->m_szName, m_szScreenShot.c_str()));
 }
 
 PinBinary *PinTable::GetImageLinkBinary(const int id)
@@ -7642,21 +7631,21 @@ PinBinary *PinTable::GetImageLinkBinary(const int id)
 void PinTable::ListCustomInfo(HWND hwndListView)
 {
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
-      AddListItem(hwndListView, m_vCustomInfoTag[i], m_vCustomInfoContent[i], NULL);
+      AddListItem(hwndListView, m_vCustomInfoTag[i].c_str(), m_vCustomInfoContent[i].c_str(), NULL);
 }
 
-int PinTable::AddListItem(HWND hwndListView, char *szName, char *szValue1, LPARAM lparam)
+int PinTable::AddListItem(HWND hwndListView, const char *szName, const char *szValue1, LPARAM lparam)
 {
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
-   lvitem.pszText = szName;
+   lvitem.pszText = (char*)szName;
    lvitem.lParam = lparam;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
-   ListView_SetItemText(hwndListView, index, 1, szValue1);
+   ListView_SetItemText(hwndListView, index, 1, (char*)szValue1);
 
    return index;
 }
