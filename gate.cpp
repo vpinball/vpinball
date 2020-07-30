@@ -485,7 +485,7 @@ void Gate::ExportMesh(FILE *f)
    if (m_d.m_showBracket)
    {
       const string subName = name + string("Bracket");
-      WaveFrontObj_WriteObjectName(f, subName.c_str());
+      WaveFrontObj_WriteObjectName(f, subName);
       Vertex3D_NoTex2* const buf = new Vertex3D_NoTex2[gateBracketNumVertices];
       GenerateBracketMesh(buf);
       WaveFrontObj_WriteVertexInfo(f, buf, gateBracketNumVertices);
@@ -500,7 +500,7 @@ void Gate::ExportMesh(FILE *f)
    SetGateType(m_d.m_type);
 
    const string subName = name + string("Wire");
-   WaveFrontObj_WriteObjectName(f, subName.c_str());
+   WaveFrontObj_WriteObjectName(f, subName);
    Vertex3D_NoTex2* const buf = new Vertex3D_NoTex2[m_numVertices];
    GenerateWireMesh(buf);
    WaveFrontObj_WriteVertexInfo(f, buf, m_numVertices);

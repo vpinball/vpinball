@@ -10,10 +10,10 @@
 #include "inc\ThreadPool.h"
 
 // defined in objloader.cpp
-extern bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool convertToLeftHanded);
+extern bool WaveFrontObj_Load(const string& filename, const bool flipTv, const bool convertToLeftHanded);
 extern void WaveFrontObj_GetVertices(std::vector<Vertex3D_NoTex2>& verts);
 extern void WaveFrontObj_GetIndices(std::vector<unsigned int>& list);
-extern void WaveFrontObj_Save(const char *filename, const char *description, const Mesh& mesh);
+extern void WaveFrontObj_Save(const string& filename, const string& description, const Mesh& mesh);
 //
 
 ThreadPool *g_pPrimitiveDecompressThreadPool = NULL;
@@ -59,7 +59,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
    for (size_t i = 0; i < allFiles.size(); i++)
    {
       sname = allFiles[i];
-      if (WaveFrontObj_Load(sname.c_str(), flipTV, convertToLeftHanded))
+      if (WaveFrontObj_Load(sname, flipTV, convertToLeftHanded))
       {
          std::vector<Vertex3D_NoTex2> verts;
          WaveFrontObj_GetVertices(verts);
@@ -84,7 +84,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
    return true;
 }
 
-bool Mesh::LoadWavefrontObj(const char *fname, const bool flipTV, const bool convertToLeftHanded)
+bool Mesh::LoadWavefrontObj(const string& fname, const bool flipTV, const bool convertToLeftHanded)
 {
    Clear();
 
@@ -115,12 +115,9 @@ bool Mesh::LoadWavefrontObj(const char *fname, const bool flipTV, const bool con
       return false;
 }
 
-void Mesh::SaveWavefrontObj(const char *fname, const char *description)
+void Mesh::SaveWavefrontObj(const string& fname, const string& description)
 {
-   if (description == NULL)
-      description = fname;
-
-   WaveFrontObj_Save(fname, description, *this);
+   WaveFrontObj_Save(fname, description.empty() ? fname : description, *this);
 }
 
 void Mesh::UploadToVB(VertexBuffer * vb, const float frame) 
@@ -2094,7 +2091,7 @@ void Primitive::ExportMeshDialog()
 
       char name[sizeof(m_wzName) / sizeof(m_wzName[0])];
       WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, sizeof(name), NULL, NULL);
-      m_mesh.SaveWavefrontObj(szFileName[0].c_str(), m_d.m_use3DMesh ? name : "Primitive");
+      m_mesh.SaveWavefrontObj(szFileName[0], m_d.m_use3DMesh ? name : "Primitive");
    }
 
 }

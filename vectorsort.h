@@ -77,7 +77,7 @@ public:
          }
          else
          {
-            strcmp = vector<T>::data()[currentnode]->SortAgainstValue(pvoid);
+            strcmp = vector<T>::data()[currentnode]->SortAgainstValue((WCHAR*)pvoid);
 
             if (strcmp == 0)
             {

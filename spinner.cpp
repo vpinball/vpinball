@@ -287,7 +287,7 @@ void Spinner::ExportMesh(FILE *f)
    if (m_d.m_showBracket)
    {
       const string subObjName = name + string("Bracket");
-      WaveFrontObj_WriteObjectName(f, subObjName.c_str());
+      WaveFrontObj_WriteObjectName(f, subObjName);
 
       m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
@@ -326,7 +326,7 @@ void Spinner::ExportMesh(FILE *f)
    UpdatePlate(transformedVertices.data());
 
    const string subObjName = name + string("Plate");
-   WaveFrontObj_WriteObjectName(f, subObjName.c_str());
+   WaveFrontObj_WriteObjectName(f, subObjName);
 
    WaveFrontObj_WriteVertexInfo(f, transformedVertices.data(), spinnerPlateNumVertices);
    WaveFrontObj_WriteFaceInfoList(f, spinnerPlateIndices, spinnerPlateNumFaces);

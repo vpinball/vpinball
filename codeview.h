@@ -83,7 +83,7 @@ public:
 
    // for VectorSortString
    int SortAgainst(const CodeViewDispatch * const pcvd/*void *pvoid*/) const;
-   int SortAgainstValue(const void * const pv) const;
+   int SortAgainstValue(const WCHAR* const pv) const;
 };
 
 
