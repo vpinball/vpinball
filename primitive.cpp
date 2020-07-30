@@ -74,7 +74,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
       else
       {
          name = "Unable to load file " + sname;
-         ShowError(name.c_str());
+         ShowError(name);
          return false;
       }
 
@@ -1144,8 +1144,8 @@ void Primitive::ExportMesh(FILE *f)
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, buf, (unsigned int)m_mesh.NumVertices());
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
+      WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
       WaveFrontObj_WriteFaceInfoLong(f, m_mesh.m_indices);
       WaveFrontObj_UpdateFaceOffset((unsigned int)m_mesh.NumVertices());
       delete[] buf;

@@ -315,8 +315,8 @@ void Kicker::ExportMesh(FILE *f)
    WaveFrontObj_WriteObjectName(f, name);
    WaveFrontObj_WriteVertexInfo(f, vertices, num_vertices);
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
-   WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
+   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
+   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
    WaveFrontObj_WriteFaceInfoList(f, indices, num_indices);
    WaveFrontObj_UpdateFaceOffset(num_vertices);
    delete[] vertices;

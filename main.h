@@ -187,7 +187,12 @@ using std::vector;
 
 __forceinline void ShowError(const char * const sz)
 {
-   g_pvp->MessageBox(sz, "Error", MB_OK | MB_ICONEXCLAMATION);
+   g_pvp->MessageBox(sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+}
+
+__forceinline void ShowError(const string& sz)
+{
+   g_pvp->MessageBox(sz.c_str(), "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
 }
 
 #include "editablereg.h"

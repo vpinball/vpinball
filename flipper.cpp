@@ -708,8 +708,8 @@ void Flipper::ExportMesh(FILE *f)
    WaveFrontObj_WriteObjectName(f, subObjName.c_str());
    WaveFrontObj_WriteVertexInfo(f, flipper, flipperBaseVertices);
    const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   WaveFrontObj_WriteMaterial(m_d.m_szMaterial.c_str(), NULL, mat);
-   WaveFrontObj_UseTexture(f, m_d.m_szMaterial.c_str());
+   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, string(), mat);
+   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
    WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumIndices);
    WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
    if (m_d.m_rubberthickness > 0.f)
@@ -734,8 +734,8 @@ void Flipper::ExportMesh(FILE *f)
       WaveFrontObj_WriteObjectName(f, subObjName.c_str());
       WaveFrontObj_WriteVertexInfo(f, &flipper[flipperBaseVertices], flipperBaseVertices);
       mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
-      WaveFrontObj_WriteMaterial(m_d.m_szRubberMaterial.c_str(), NULL, mat);
-      WaveFrontObj_UseTexture(f, m_d.m_szRubberMaterial.c_str());
+      WaveFrontObj_WriteMaterial(m_d.m_szRubberMaterial, string(), mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szRubberMaterial);
       WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumIndices);
       WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
    }

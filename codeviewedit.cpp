@@ -378,8 +378,8 @@ CVPrefrence::CVPrefrence()
 }
 
 CVPrefrence* CVPrefrence::FillCVPreference(
-		const char* szCtrlNameIn, const COLORREF crTextColor,
-		const bool bDisplay, const char* szRegistryName,
+		const string& szCtrlNameIn, const COLORREF crTextColor,
+		const bool bDisplay, const string& szRegistryName,
 		const int szScintillaKeyword, const int IDC_ChkBox,
 		const int IDC_ColorBut, const int IDC_Font)
 {
