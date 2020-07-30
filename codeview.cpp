@@ -45,15 +45,15 @@ CodeViewDispatch::~CodeViewDispatch()
 {
 }
 
-int CodeViewDispatch::SortAgainst(const CodeViewDispatch * const pcvd/*void *pvoid*/) const
+int CodeViewDispatch::SortAgainst(const CodeViewDispatch * const pcvd) const
 {
    return SortAgainstValue(pcvd->m_wzName);
 }
 
-int CodeViewDispatch::SortAgainstValue(const void * const pv) const
+int CodeViewDispatch::SortAgainstValue(const WCHAR* const pv) const
 {
    char szName1[MAXSTRING];
-   WideCharToMultiByte(CP_ACP, 0, (WCHAR*)pv, -1, szName1, MAXSTRING, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, pv, -1, szName1, MAXSTRING, NULL, NULL);
    CharLowerBuff(szName1, lstrlen(szName1));
    char szName2[MAXSTRING];
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, szName2, MAXSTRING, NULL, NULL);
@@ -2271,7 +2271,7 @@ void CodeViewer::RemoveByVal(string &line)
 void CodeViewer::RemoveNonVBSChars(string &line)
 {
 	const size_t LL = line.length();
-	size_t Pos = (line.find_first_of(m_VBvalidChars));
+	size_t Pos = line.find_first_of(m_VBvalidChars);
 	if (Pos == string::npos)
 	{
 		line.clear();
@@ -2283,7 +2283,7 @@ void CodeViewer::RemoveNonVBSChars(string &line)
 		line = line.substr(Pos, (LL-Pos));
 	}
 
-	Pos =  (line.find_last_of(m_VBvalidChars));
+	Pos = line.find_last_of(m_VBvalidChars);
 	if (Pos != string::npos)
 	{
 		line = line.erase(Pos+1);

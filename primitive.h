@@ -28,8 +28,8 @@ public:
 
    Mesh() { middlePoint.x = 0.0f; middlePoint.y = 0.0f; middlePoint.z = 0.0f; }
    void Clear();
-   bool LoadWavefrontObj(const char *fname, const bool flipTV, const bool convertToLeftHanded);
-   void SaveWavefrontObj(const char *fname, const char *description = NULL);
+   bool LoadWavefrontObj(const string& fname, const bool flipTV, const bool convertToLeftHanded);
+   void SaveWavefrontObj(const string& fname, const string& description);
    bool LoadAnimation(const char *fname, const bool flipTV, const bool convertToLeftHanded);
 
    size_t NumVertices() const    { return m_vertices.size(); }

@@ -149,10 +149,10 @@ bool WaveFrontObj_LoadMaterial(const string& filename, Material * const mat)
    return true;
 }
 
-bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool convertToLeftHanded)
+bool WaveFrontObj_Load(const string& filename, const bool flipTv, const bool convertToLeftHanded)
 {
    FILE *f;
-   if ((fopen_s(&f, filename, "r") != 0) || !f)
+   if ((fopen_s(&f, filename.c_str(), "r") != 0) || !f)
       return false;
 
    tmpVerts.clear();
@@ -362,12 +362,12 @@ void WaveFrontObj_GetIndices(std::vector<unsigned int>& idx) // clears temporary
    indices.clear();
 }
 
-FILE* WaveFrontObj_ExportStart(const char *filename)
+FILE* WaveFrontObj_ExportStart(const string& filename)
 {
    FILE *f;
    char matName[MAX_PATH];
    char nameOnly[MAX_PATH] = { 0 };
-   int len = lstrlen(filename); 
+   int len = filename.length(); 
    int i;
 
    if (len > MAX_PATH)
@@ -381,10 +381,10 @@ FILE* WaveFrontObj_ExportStart(const char *filename)
          break;
       }
    }
-   strncpy_s(matName, filename, sizeof(matName)-1);
+   strncpy_s(matName, filename.c_str(), sizeof(matName)-1);
    if (i < len)
    {      
-      memcpy(matName, filename, i);
+      memcpy(matName, filename.c_str(), i);
       matName[i] = 0;
       strncat_s(matName, "mtl", sizeof(matName)-strnlen_s(matName, sizeof(matName))-1);
    }
@@ -402,7 +402,7 @@ FILE* WaveFrontObj_ExportStart(const char *filename)
       return 0;
    fprintf_s(matFile, "# Visual Pinball table mat file\n");
 
-   if ((fopen_s(&f, filename, "wt") != 0) || !f)
+   if ((fopen_s(&f, filename.c_str(), "wt") != 0) || !f)
       return 0;
    faceIndexOffset = 0;
    fprintf_s(f, "# Visual Pinball table OBJ file\n");
@@ -451,9 +451,9 @@ void WaveFrontObj_UpdateFaceOffset(unsigned int numVertices)
    faceIndexOffset += numVertices;
 }
 
-void WaveFrontObj_WriteObjectName(FILE *f, const char *objname)
+void WaveFrontObj_WriteObjectName(FILE *f, const string& objname)
 {
-   fprintf_s(f, "o %s\n", objname);
+   fprintf_s(f, "o %s\n", objname.c_str());
 }
 
 void WaveFrontObj_WriteVertexInfo(FILE *f, const Vertex3D_NoTex2 *in_verts, unsigned int numVerts)
@@ -514,11 +514,11 @@ void WaveFrontObj_WriteFaceInfoLong(FILE *f, const std::vector<unsigned int> &in
 }
 
 // exporting a mesh to a Wavefront .OBJ file. The mesh is converted into right-handed coordinate system (VP uses left-handed)
-void WaveFrontObj_Save(const char *filename, const char *description, const Mesh& mesh)
+void WaveFrontObj_Save(const string& filename, const string& description, const Mesh& mesh)
 {
    FILE *f;
    /*
-   f = fopen(filename, "wt");
+   f = fopen(filename.c_str(), "wt");
    fprintf_s(f,"const unsigned int hitTargetT2Vertices=%i;\n",mesh.NumVertices());
    fprintf_s(f,"const unsigned int hitTargetT2NumFaces=%i;\n", mesh.NumIndices());
    fprintf_s(f,"Vertex3D_NoTex2 hitTargetT2Mesh[%i]=\n{\n",mesh.NumVertices());
@@ -561,9 +561,9 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    }
    else
    {
-      string fname(filename);
-      std::size_t pos = fname.find_last_of('.');
-      string name = fname.substr(0, pos);
+      const std::size_t pos = filename.find_last_of('.');
+      assert(pos != string::npos);
+      const string name = filename.substr(0, pos);
       char number[32] = { 0 };
       for (unsigned int i = 0; i < mesh.m_animationFrames.size(); i++)
       {
@@ -580,8 +580,8 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
              vertsTmp[t].nz = vi.nz;
          }
          sprintf_s(number, "%05u", i);
-         fname = name + '_' + number + ".obj";
-         f = WaveFrontObj_ExportStart(fname.c_str());
+         const string fname = name + '_' + number + ".obj";
+         f = WaveFrontObj_ExportStart(fname);
          if (!f)
                return;
          fprintf_s(f, "# Visual Pinball OBJ file\n");
