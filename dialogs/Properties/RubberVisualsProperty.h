@@ -4,7 +4,7 @@
 class RubberVisualsProperty: public BasePropertyDialog
 {
 public:
-    RubberVisualsProperty(VectorProtected<ISelect> *pvsel);
+    RubberVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~RubberVisualsProperty()
     {
     }

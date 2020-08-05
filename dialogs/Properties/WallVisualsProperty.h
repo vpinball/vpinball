@@ -4,7 +4,7 @@
 class WallVisualsProperty: public BasePropertyDialog
 {
 public:
-    WallVisualsProperty(VectorProtected<ISelect> *pvsel);
+    WallVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~WallVisualsProperty() {}
 
     void UpdateVisuals(const int dispid=-1);

@@ -2,7 +2,7 @@
 #include "Properties/PrimitivePositionProperty.h"
 #include <WindowsX.h>
 
-PrimitivePositionProperty::PrimitivePositionProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_POSITION, pvsel)
+PrimitivePositionProperty::PrimitivePositionProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_POSITION, pvsel)
 {
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);

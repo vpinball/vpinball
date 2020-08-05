@@ -4,7 +4,7 @@
 class PrimitivePhysicsProperty: public BasePropertyDialog
 {
 public:
-    PrimitivePhysicsProperty(VectorProtected<ISelect> *pvsel);
+    PrimitivePhysicsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~PrimitivePhysicsProperty()
     {
     }

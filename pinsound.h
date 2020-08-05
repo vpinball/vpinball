@@ -80,19 +80,19 @@ public:
 #ifdef ONLY_USE_BASS
    bool IsWav() const { return false; }
    bool IsWav2() const 
-   { 
-       const char* const ptr = strrchr(m_szPath, '.'); // no file extension
-       if (ptr == NULL)
-           return true;
-       return (_stricmp(ptr, ".wav") == 0);
+   {
+      const size_t pos = m_szPath.find_last_of('.');
+      if(pos == string::npos)
+         return true;
+      return (_stricmp(m_szPath.substr(pos+1).c_str(), "wav") == 0);
    }
 #else
    bool IsWav() const
    {
-       const char* const ptr = strrchr(m_szPath, '.'); // no file extension
-       if (ptr == NULL)
-           return true;
-       return (_stricmp(ptr, ".wav") == 0);
+      const size_t pos = m_szPath.find_last_of('.');
+      if(pos == string::npos)
+         return true;
+      return (_stricmp(m_szPath.substr(pos+1).c_str(), "wav") == 0);
    }
    bool IsWav2() const { return IsWav(); }
 #endif
@@ -109,8 +109,8 @@ public:
       //};
    };
 
-   char m_szName[MAXTOKEN]; // only filename, no ext
-   char m_szPath[MAX_PATH]; // full filename, incl. path
+   string m_szName; // only filename, no ext
+   string m_szPath; // full filename, incl. path
 
    SoundOutTypes m_outputTarget;
    int m_balance;
@@ -191,7 +191,7 @@ public:
 		for (size_t i = 0; i < m_copiedwav.size(); i++)
 		{
 			PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
-			if (!lstrcmpi(ppsc->m_ppsOriginal->m_szName, szName))
+			if (!lstrcmpi(ppsc->m_ppsOriginal->m_szName.c_str(), szName))
 			{
 				ppsc->m_pDSBuffer->Stop();
 				break;
@@ -280,7 +280,7 @@ public:
 		}
 	}
 
-	PinSound *LoadFile(const TCHAR* const strFileName);
+	PinSound *LoadFile(const string& strFileName);
 
 private:
 	PinDirectSound m_pds;

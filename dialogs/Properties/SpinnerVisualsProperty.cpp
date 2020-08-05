@@ -2,7 +2,7 @@
 #include "Properties/SpinnerVisualsProperty.h"
 #include <WindowsX.h>
 
-SpinnerVisualsProperty::SpinnerVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_VISUALS, pvsel)
+SpinnerVisualsProperty::SpinnerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_VISUALS, pvsel)
 {
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);

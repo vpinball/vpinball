@@ -28,7 +28,7 @@ public:
    CWaveSoundRead();
    ~CWaveSoundRead();
 
-   HRESULT Open(const CHAR* const strFilename);
+   HRESULT Open(const string& strFilename);
    HRESULT Reset();
    HRESULT Read(UINT nSizeToRead, BYTE* pbData, UINT* pnSizeRead);
    HRESULT Close();

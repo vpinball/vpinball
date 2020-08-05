@@ -4,7 +4,7 @@
 class PrimitiveVisualsProperty: public BasePropertyDialog
 {
 public:
-    PrimitiveVisualsProperty(VectorProtected<ISelect> *pvsel);
+    PrimitiveVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~PrimitiveVisualsProperty()
     {
     }

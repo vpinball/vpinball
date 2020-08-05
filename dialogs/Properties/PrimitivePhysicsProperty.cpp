@@ -2,7 +2,7 @@
 #include "Properties/PrimitivePhysicsProperty.h"
 #include <WindowsX.h>
 
-PrimitivePhysicsProperty::PrimitivePhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_PHYSICS, pvsel)
+PrimitivePhysicsProperty::PrimitivePhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_PHYSICS, pvsel)
 {
     m_reducePolyEdit.SetDialog(this);
     m_elasticityFalloffEdit.SetDialog(this);

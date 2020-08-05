@@ -4,7 +4,7 @@
 class LightVisualsProperty: public BasePropertyDialog
 {
 public:
-    LightVisualsProperty(VectorProtected<ISelect> *pvsel);
+    LightVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~LightVisualsProperty()
     {
     }

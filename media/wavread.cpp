@@ -94,13 +94,13 @@ static HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfx
 //       so the data can be easily read with WaveReadFile. Returns 0 if
 //       successful, the error code if not.
 //-----------------------------------------------------------------------------
-static HRESULT WaveOpenFile(const CHAR* const strFileName, HMMIO* phmmioIn, WAVEFORMATEX** ppwfxInfo,
+static HRESULT WaveOpenFile(const string& strFileName, HMMIO* phmmioIn, WAVEFORMATEX** ppwfxInfo,
    MMCKINFO* pckInRIFF)
 {
    HRESULT hr;
    HMMIO   hmmioIn = NULL;
 
-   if (NULL == (hmmioIn = mmioOpen((LPSTR)strFileName, NULL, MMIO_ALLOCBUF | MMIO_READ)))
+   if (NULL == (hmmioIn = mmioOpen((LPSTR)strFileName.c_str(), NULL, MMIO_ALLOCBUF | MMIO_READ)))
       return E_FAIL;
 
    if (FAILED(hr = ReadMMIO(hmmioIn, pckInRIFF, ppwfxInfo)))
@@ -210,7 +210,7 @@ CWaveSoundRead::~CWaveSoundRead()
 // Name: Open()
 // Desc: Opens a wave file for reading
 //-----------------------------------------------------------------------------
-HRESULT CWaveSoundRead::Open(const CHAR* const strFilename)
+HRESULT CWaveSoundRead::Open(const string& strFilename)
 {
    SAFE_DELETE(m_pwfx);
 

@@ -4,7 +4,7 @@
 class TablePhysicsProperty: public BasePropertyDialog
 {
 public:
-    TablePhysicsProperty(VectorProtected<ISelect> *pvsel);
+    TablePhysicsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~TablePhysicsProperty()
     {
     }

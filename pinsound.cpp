@@ -137,7 +137,7 @@ HRESULT PinSound::ReInitialize()
 		   const int code = BASS_ErrorGetCode();
 		   string bla2;
 		   BASS_ErrorMapCode(code, bla2);
-		   const string bla = "BASS music/sound library cannot create stream \"" + string(m_szPath) + "\" (error " + std::to_string(code) + ": " + bla2 + ")";
+		   const string bla = "BASS music/sound library cannot create stream \"" + m_szPath + "\" (error " + std::to_string(code) + ": " + bla2 + ")";
 		   g_pvp->MessageBox(bla.c_str(), "Error", MB_ICONERROR);
 		   return E_FAIL;
 	   }
@@ -407,14 +407,12 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
    //return S_OK;
 }
 
-PinSound *AudioMusicPlayer::LoadFile(const TCHAR* const strFileName)
+PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 {
    PinSound * const pps = new PinSound();
 
-   strncpy_s(pps->m_szPath, strFileName, sizeof(pps->m_szPath)-1);
-   string tmp;
-   TitleFromFilename(strFileName, tmp);
-   strncpy_s(pps->m_szName, tmp.c_str(), sizeof(pps->m_szName)-1);
+   pps->m_szPath = strFileName;
+   TitleFromFilename(strFileName, pps->m_szName);
 
    if (pps->IsWav()) // only use old direct sound code and wav reader if playing wav's
    {
@@ -502,7 +500,7 @@ PinSound *AudioMusicPlayer::LoadFile(const TCHAR* const strFileName)
    else
    {
 	   FILE *f;
-	   if (fopen_s(&f, strFileName, "rb") != 0 || !f)
+	   if (fopen_s(&f, strFileName.c_str(), "rb") != 0 || !f)
 	   {
 		   ShowError("Could not open sound file.");
 		   return NULL;
@@ -532,7 +530,7 @@ PinSound *AudioMusicPlayer::LoadFile(const TCHAR* const strFileName)
 		   const int code = BASS_ErrorGetCode();
 		   string bla2;
 		   BASS_ErrorMapCode(code, bla2);
-		   const string bla = "BASS music/sound library cannot load \"" + string(strFileName) + "\" (error " + std::to_string(code) + ": " + bla2 + ")";
+		   const string bla = "BASS music/sound library cannot load \"" + strFileName + "\" (error " + std::to_string(code) + ": " + bla2 + ")";
 		   g_pvp->MessageBox(bla.c_str(), "Error", MB_ICONERROR);
 		   return NULL;
 	   }

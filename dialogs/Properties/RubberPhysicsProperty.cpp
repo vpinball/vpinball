@@ -2,7 +2,7 @@
 #include "Properties/RubberPhysicsProperty.h"
 #include <WindowsX.h>
 
-RubberPhysicsProperty::RubberPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRUBBER_PHYSICS, pvsel)
+RubberPhysicsProperty::RubberPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRUBBER_PHYSICS, pvsel)
 {
     m_elasticityEdit.SetDialog(this);
     m_elasticityFallOffEdit.SetDialog(this);

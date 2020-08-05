@@ -2,7 +2,7 @@
 #include "Properties/BackglassVisualsProperty.h"
 #include <WindowsX.h>
 
-BackglassVisualsProperty::BackglassVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBACKGLASS_VISUALS, pvsel)
+BackglassVisualsProperty::BackglassVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBACKGLASS_VISUALS, pvsel)
 {
     m_3dStereoOffsetEdit.SetDialog(this);
     m_3dStereoSeparationEdit.SetDialog(this);

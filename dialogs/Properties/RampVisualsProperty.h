@@ -5,7 +5,7 @@ class RampVisualsProperty: public BasePropertyDialog
 {
 
 public:
-    RampVisualsProperty(VectorProtected<ISelect> *pvsel);
+    RampVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~RampVisualsProperty()
     {
     }

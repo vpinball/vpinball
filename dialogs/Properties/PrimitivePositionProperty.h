@@ -4,7 +4,7 @@
 class PrimitivePositionProperty : public BasePropertyDialog
 {
 public:
-    PrimitivePositionProperty(VectorProtected<ISelect> *pvsel);
+    PrimitivePositionProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~PrimitivePositionProperty()
     {
     }

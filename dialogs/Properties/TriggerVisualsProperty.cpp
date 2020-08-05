@@ -2,7 +2,7 @@
 #include "Properties/TriggerVisualsProperty.h"
 #include <WindowsX.h>
 
-TriggerVisualsProperty::TriggerVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_VISUALS, pvsel)
+TriggerVisualsProperty::TriggerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_VISUALS, pvsel)
 {
     m_shapeList.push_back("None");
     m_shapeList.push_back("Wire A");
@@ -33,7 +33,7 @@ void TriggerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         Trigger * const trigger = (Trigger *)m_pvsel->ElementAt(i);
 
         if (dispid == 1503 || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_shapeList, m_shapeCombo, m_shapeList[(int)trigger->m_d.m_shape].c_str());
+            PropertyDialog::UpdateComboBox(m_shapeList, m_shapeCombo, m_shapeList[(int)trigger->m_d.m_shape]);
         if (dispid == 902 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_posXEdit, trigger->m_d.m_vCenter.x);
         if (dispid == 903 || dispid == -1)

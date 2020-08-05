@@ -2,7 +2,7 @@
 #include "Properties/PrimitiveVisualsProperty.h"
 #include <WindowsX.h>
 
-PrimitiveVisualsProperty::PrimitiveVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_VISUALS, pvsel)
+PrimitiveVisualsProperty::PrimitiveVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_VISUALS, pvsel)
 {
     m_disableLightingEdit.SetDialog(this);
     m_disableLightFromBelowEdit.SetDialog(this);

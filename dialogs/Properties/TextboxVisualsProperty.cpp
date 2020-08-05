@@ -2,7 +2,7 @@
 #include "Properties/TextboxVisualsProperty.h"
 #include <WindowsX.h>
 
-TextboxVisualsProperty::TextboxVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTEXTBOX_VISUALS, pvsel)
+TextboxVisualsProperty::TextboxVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTEXTBOX_VISUALS, pvsel)
 {
     m_alignList.push_back("Align Left");
     m_alignList.push_back("Align Center");
@@ -48,7 +48,7 @@ void TextboxVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == 60003 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_heightEdit, text->m_d.m_v2.y - text->m_d.m_v1.y);
         if (dispid == IDC_TEXTBOX_ALIGN_COMBO || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_alignList, m_alignmentCombo, m_alignList[text->m_d.m_talign].c_str());
+            PropertyDialog::UpdateComboBox(m_alignList, m_alignmentCombo, m_alignList[text->m_d.m_talign]);
         if (dispid == IDC_TEXT_INTENSITY || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_textIntensityEdit, text->m_d.m_intensity_scale);
         if (dispid == IDC_TEXTBOX_TEXT_EDIT || dispid == -1)

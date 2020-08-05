@@ -2,7 +2,7 @@
 #include "Properties/TriggerPhysicsProperty.h"
 #include <WindowsX.h>
 
-TriggerPhysicsProperty::TriggerPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_STATE, pvsel)
+TriggerPhysicsProperty::TriggerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_STATE, pvsel)
 {
     m_hitHeightEdit.SetDialog(this);
 }

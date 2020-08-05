@@ -4,7 +4,7 @@
 class HitTargetVisualsProperty: public BasePropertyDialog
 {
 public:
-    HitTargetVisualsProperty(VectorProtected<ISelect> *pvsel);
+    HitTargetVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~HitTargetVisualsProperty()
     {
     }

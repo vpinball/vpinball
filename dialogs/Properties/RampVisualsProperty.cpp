@@ -2,7 +2,7 @@
 #include "Properties/RampVisualsProperty.h"
 #include <WindowsX.h>
 
-RampVisualsProperty::RampVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_VISUALS, pvsel)
+RampVisualsProperty::RampVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_VISUALS, pvsel)
 {
     m_typeList.push_back("Flat");
     m_typeList.push_back("4-Wire");
@@ -39,9 +39,9 @@ void RampVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Ramp * const ramp = (Ramp *)m_pvsel->ElementAt(i);
         if (dispid == 6 || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)ramp->m_d.m_type].c_str());
+            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)ramp->m_d.m_type]);
         if (dispid == 8 || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_imageModeList, m_modeCombo, m_imageModeList[(int)ramp->m_d.m_imagealignment].c_str());
+            PropertyDialog::UpdateComboBox(m_imageModeList, m_modeCombo, m_imageModeList[(int)ramp->m_d.m_imagealignment]);
         if (dispid == IDC_DEPTH_BIAS || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_depthBiasEdit, ramp->m_d.m_depthBias);
         if (dispid == 2 || dispid == -1)

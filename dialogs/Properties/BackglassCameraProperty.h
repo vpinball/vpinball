@@ -4,7 +4,7 @@
 class BackglassCameraProperty : public BasePropertyDialog
 {
 public:
-    BackglassCameraProperty(VectorProtected<ISelect> *pvsel);
+    BackglassCameraProperty(const VectorProtected<ISelect>* pvsel);
     virtual ~BackglassCameraProperty()
     {
     }

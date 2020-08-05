@@ -2,7 +2,7 @@
 #include "Properties/SpinnerPhysicsProperty.h"
 #include <WindowsX.h>
 
-SpinnerPhysicsProperty::SpinnerPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_PHYSICS, pvsel)
+SpinnerPhysicsProperty::SpinnerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_PHYSICS, pvsel)
 {
     m_dampingEdit.SetDialog(this);
     m_elasticityEdit.SetDialog(this);

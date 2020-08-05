@@ -2,7 +2,7 @@
 #include "Properties/TableVisualsProperty.h"
 #include <WindowsX.h>
 
-TableVisualsProperty::TableVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_VISUALS, pvsel)
+TableVisualsProperty::TableVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_VISUALS, pvsel)
 {
     m_reflectionStrengthEdit.SetDialog(this);
     m_ballReflectPlayfieldEdit.SetDialog(this);

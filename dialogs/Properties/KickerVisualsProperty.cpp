@@ -2,7 +2,7 @@
 #include "Properties/KickerVisualsProperty.h"
 #include <WindowsX.h>
 
-KickerVisualsProperty::KickerVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_VISUALS, pvsel)
+KickerVisualsProperty::KickerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_VISUALS, pvsel)
 {
     m_typeList.push_back("Invisible");
     m_typeList.push_back("Hole");
@@ -31,7 +31,7 @@ void KickerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         Kicker * const kicker = (Kicker *)m_pvsel->ElementAt(i);
 
         if (dispid == IDC_KICKER_DISPLAY_COMBO || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_typeList, m_displayCombo, m_typeList[kicker->m_d.m_kickertype].c_str());
+            PropertyDialog::UpdateComboBox(m_typeList, m_displayCombo, m_typeList[kicker->m_d.m_kickertype]);
         if (dispid == IDC_KICKER_RADIUS_EDIT || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_radiusEdit, kicker->m_d.m_radius);
         if (dispid == IDC_KICKER_ORIENTATION_EDIT || dispid == -1)

@@ -102,7 +102,7 @@ public:
    void SetObjectPosCur(float x, float y);
    void ClearObjectPosCur();
    float ConvertToUnit(const float value) const;
-   void SetPropSel(VectorProtected<ISelect> *pvsel);
+   void SetPropSel(VectorProtected<ISelect> &pvsel);
 
    void SetActionCur(const string& szaction);
    void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);

@@ -2834,32 +2834,33 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 HRESULT PinTable::SaveSoundToStream(PinSound * const pps, IStream *pstm)
 {
    ULONG writ = 0;
-   int len = lstrlen(pps->m_szName);
+   int len = pps->m_szName.length();
 
    HRESULT hr;
    if (FAILED(hr = pstm->Write(&len, sizeof(int), &writ)))
       return hr;
 
-   if (FAILED(hr = pstm->Write(pps->m_szName, len, &writ)))
+   if (FAILED(hr = pstm->Write(pps->m_szName.c_str(), len, &writ)))
       return hr;
 
-   len = lstrlen(pps->m_szPath);
+   len = pps->m_szPath.length();
 
    if (FAILED(hr = pstm->Write(&len, sizeof(int), &writ)))
       return hr;
 
-   if (FAILED(hr = pstm->Write(pps->m_szPath, len, &writ)))
+   if (FAILED(hr = pstm->Write(pps->m_szPath.c_str(), len, &writ)))
       return hr;
 
    // deprecated: writes name again, but in lower case
-   len = lstrlen(pps->m_szName);
+   len = pps->m_szName.length();
    if (FAILED(hr = pstm->Write(&len, sizeof(int), &writ)))
       return hr;
-   char tmp[sizeof(pps->m_szName)];
-   strncpy_s(tmp, pps->m_szName, sizeof(tmp)-1);
+   char * tmp = new char[len+1];
+   strncpy_s(tmp, len, pps->m_szName.c_str(), len);
    CharLowerBuff(tmp, len);
    if (FAILED(hr = pstm->Write(tmp, len, &writ)))
       return hr;
+   delete [] tmp;
    //
 
    if (pps->IsWav2()) // only use old code if playing wav's
@@ -2908,12 +2909,15 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
       return hr;
 
    PinSound * const pps = new PinSound();
-   if (FAILED(hr = pstm->Read(pps->m_szName, len, &read)))
+   char* tmp = new char[len+1];
+   if (FAILED(hr = pstm->Read(tmp, len, &read)))
    {
        delete pps;
        return hr;
    }
-   pps->m_szName[len] = 0;
+   tmp[len] = 0;
+   pps->m_szName = tmp;
+   delete[] tmp;
 
    if (FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
    {
@@ -2921,12 +2925,15 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        return hr;
    }
 
-   if (FAILED(hr = pstm->Read(pps->m_szPath, len, &read)))
+   tmp = new char[len+1];
+   if (FAILED(hr = pstm->Read(tmp, len, &read)))
    {
        delete pps;
        return hr;
    }
-   pps->m_szPath[len] = 0;
+   tmp[len] = 0;
+   pps->m_szPath = tmp;
+   delete[] tmp;
 
    if (FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
    {
@@ -2935,12 +2942,13 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    }
 
    // deprecated lower case name
-   char tmp[sizeof(pps->m_szName)];
+   tmp = new char[len+1];
    if (FAILED(hr = pstm->Read(tmp, len, &read)))
    {
        delete pps;
        return hr;
    }
+   delete[] tmp;
    //
 
    if (pps->IsWav2()) // only use old code if playing wav's
@@ -3063,7 +3071,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 		   return hr;
 	   }
 
-	   pps->m_outputTarget = (StrStrI(pps->m_szName, "bgout_") != NULL) || (_stricmp(pps->m_szPath, "* Backglass Output *") == 0) // legacy behavior, where the BG selection was encoded into the strings directly
+	   pps->m_outputTarget = (StrStrI(pps->m_szName.c_str(), "bgout_") != NULL) || (_stricmp(pps->m_szPath.c_str(), "* Backglass Output *") == 0) // legacy behavior, where the BG selection was encoded into the strings directly
 	                      || toBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE;
    }
 
@@ -3207,7 +3215,6 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, char
 HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
 {
    char* txt = nullptr;
-
    ReadInfoValue(pstg, L"TableName", &txt, hcrypthash);
    if (txt != nullptr)
    {
@@ -3230,6 +3237,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
        m_szVersion = txt;
        delete(txt);
    }
+
    txt = nullptr;
    ReadInfoValue(pstg, L"ReleaseDate", &txt, hcrypthash);
    if (txt != nullptr)
@@ -3253,6 +3261,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
        m_szWebSite = txt;
        delete(txt);
    }
+
    txt = nullptr;
    ReadInfoValue(pstg, L"TableBlurb", &txt, hcrypthash);
    if (txt != nullptr)
@@ -3284,6 +3293,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
        m_szDateSaved = txt;
        delete(txt);
    }
+
    char *buffer = NULL;
    ReadInfoValue(pstg, L"TableSaveRev", &buffer, NULL);
    m_numTimesSaved = buffer ? atoi(buffer) : 0;
@@ -3299,7 +3309,6 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    {
       STATSTG ss;
       pstm->Stat(&ss, STATFLAG_NONAME);
-      //char *pdata = new char[ss.cbSize.LowPart];
       m_pbTempScreenshot = new PinBinary();
 
       m_pbTempScreenshot->m_cdata = ss.cbSize.LowPart;
@@ -3310,8 +3319,6 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
       ULONG read;
       BiffReader br(pstm, NULL, NULL, 0, hcrypthash, NULL);
       br.ReadBytes(m_pbTempScreenshot->m_pdata, m_pbTempScreenshot->m_cdata, &read);
-
-      //delete pdata;
 
       pstm->Release();
    }
@@ -4271,7 +4278,7 @@ bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
    return false;
 }
 
-void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, const char * const filename)
+void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, const string& filename)
 {
    PinSound * const ppsNew = m_vpinball->m_ps.LoadFile(filename);
 
@@ -4284,8 +4291,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    const int fade = pps->m_fade;
    const int volume = pps->m_volume;
    const SoundOutTypes outputTarget = pps->m_outputTarget;
-   char szName[sizeof(pps->m_szName)];
-   lstrcpy(szName, pps->m_szName);
+   const string szName = pps->m_szName;
 
    //!! meh to all of this: kill old raw sound data and DSound/BASS stuff, then copy new one over
 
@@ -4309,7 +4315,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    pps->m_fade = fade;
    pps->m_volume = volume;
    pps->m_outputTarget = outputTarget;
-   lstrcpy(pps->m_szName, szName);
+   pps->m_szName = szName;
 
    //if (play) //!! only do this when playing .wavs? or limit to a certain amount of time?
    //   pps->TestPlay();
@@ -4347,12 +4353,12 @@ int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
-   lvitem.pszText = pps->m_szName;
+   lvitem.pszText = (LPSTR)pps->m_szName.c_str();
    lvitem.lParam = (size_t)pps;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
-   ListView_SetItemText(hwndListView, index, 1, pps->m_szPath);
+   ListView_SetItemText(hwndListView, index, 1, (LPSTR)pps->m_szPath.c_str());
 
    switch (pps->m_outputTarget)
    {
@@ -4735,7 +4741,7 @@ void PinTable::OnLeftButtonUp(int x, int y)
       if (m_moving)
       {
           m_moving = false;
-          m_vpinball->SetPropSel(&m_vmultisel);
+          m_vpinball->SetPropSel(m_vmultisel);
       }
    }
    else
@@ -5035,7 +5041,7 @@ void PinTable::UpdateCollection(const int index)
       if (m_vmultisel.Size() > 0)
       {
          bool removeOnly = false;
-         /* if the selection is part of the selected collection remove only remove these elements*/
+         /* if the selection is part of the selected collection remove only these elements*/
          for (int t = 0; t < m_vmultisel.Size(); t++)
          {
             ISelect * const ptr = m_vmultisel.ElementAt(t);
@@ -5053,7 +5059,7 @@ void PinTable::UpdateCollection(const int index)
          if (removeOnly)
             return;
 
-         /*selected elements are not part of the the selected collection and can be added*/
+         /*selected elements are not part of the selected collection and can be added*/
          for (int t = 0; t < m_vmultisel.Size(); t++)
          {
             ISelect * const ptr = m_vmultisel.ElementAt(t);
@@ -5813,7 +5819,7 @@ void PinTable::ImportBackdropPOV(const string& filename)
 
     xmlDoc.clear();
     // update properties UI
-    m_vpinball->SetPropSel(&m_vmultisel); 
+    m_vpinball->SetPropSel(m_vmultisel); 
 }
 
 void PinTable::ExportBackdropPOV(const string& filename)
@@ -6479,9 +6485,8 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
 
    if (update)
    {
-       m_vpinball->SetPropSel(&m_vmultisel);
+       m_vpinball->SetPropSel(m_vmultisel);
        m_vmultisel.ElementAt(0)->UpdateStatusBarInfo();
-
    }
 
     piSelect = m_vmultisel.ElementAt(0);
@@ -6501,7 +6506,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
 
 void PinTable::RefreshProperties()
 {
-    m_vpinball->SetPropSel(&m_vmultisel);
+    m_vpinball->SetPropSel(m_vmultisel);
 }
 
 void PinTable::OnDelete()
@@ -6547,7 +6552,7 @@ void PinTable::OnDelete()
       m_vseldelete[i]->Delete();
    }
    // update properties to show the properties of the table
-   m_vpinball->SetPropSel(&m_vmultisel);
+   m_vpinball->SetPropSel(m_vmultisel);
    if (m_searchSelectDlg.IsWindow())
       m_searchSelectDlg.Update();
 
@@ -6836,7 +6841,7 @@ HRESULT PinTable::StopSound(BSTR Sound)
 
    // In case we were playing any of the main buffers
    for (size_t i = 0; i < m_vsound.size(); i++)
-      if (!lstrcmpi(m_vsound[i]->m_szName, szName))
+      if (!lstrcmpi(m_vsound[i]->m_szName.c_str(), szName))
       {
          m_vsound[i]->Stop();
          break;
@@ -6867,7 +6872,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 
    size_t i;
    for (i = 0; i < m_vsound.size(); i++)
-      if (!lstrcmpi(m_vsound[i]->m_szName, szName))
+      if (!lstrcmpi(m_vsound[i]->m_szName.c_str(), szName))
          break;
 
    if (i == m_vsound.size()) // did not find it
@@ -7807,12 +7812,12 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         const DWORD cwch = lstrlen(m_vsound[ivar]->m_szName) + 1;
+         const DWORD cwch = m_vsound[ivar]->m_szName.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == NULL)
             ShowError("DISPID_Sound alloc failed");
 
-         MultiByteToWideChar(CP_ACP, 0, m_vsound[ivar]->m_szName, -1, wzDst, cwch);
+         MultiByteToWideChar(CP_ACP, 0, m_vsound[ivar]->m_szName.c_str(), -1, wzDst, cwch);
 
          //MsoWzCopy(szSrc,szDst);
          rgstr[ivar + 1] = wzDst;
@@ -8014,11 +8019,11 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const DWORD cwch = lstrlen(m_vsound[dwCookie]->m_szName) + 1;
+         const DWORD cwch = (DWORD)m_vsound[dwCookie]->m_szName.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == NULL)
              ShowError("DISPID_Sound alloc failed");
-         MultiByteToWideChar(CP_ACP, 0, m_vsound[dwCookie]->m_szName, -1, wzDst, cwch);
+         MultiByteToWideChar(CP_ACP, 0, m_vsound[dwCookie]->m_szName.c_str(), -1, wzDst, cwch);
       }
    }
    break;

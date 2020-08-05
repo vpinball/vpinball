@@ -4,7 +4,7 @@
 class GatePhysicsProperty: public BasePropertyDialog
 {
 public:
-    GatePhysicsProperty(VectorProtected<ISelect> *pvsel);
+    GatePhysicsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~GatePhysicsProperty()
     {
     }

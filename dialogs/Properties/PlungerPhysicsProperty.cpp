@@ -2,7 +2,7 @@
 #include "Properties/PlungerPhysicsProperty.h"
 #include <WindowsX.h>
 
-PlungerPhysicsProperty::PlungerPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_PHYSICS, pvsel)
+PlungerPhysicsProperty::PlungerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_PHYSICS, pvsel)
 {
     m_pullSpeedEdit.SetDialog(this);
     m_releaseSpeedEdit.SetDialog(this);

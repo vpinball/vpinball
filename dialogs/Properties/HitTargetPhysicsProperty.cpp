@@ -2,7 +2,7 @@
 #include "Properties/HitTargetPhysicsProperty.h"
 #include <WindowsX.h>
 
-HitTargetPhysicsProperty::HitTargetPhysicsProperty(VectorProtected<ISelect> *pvsel): BasePropertyDialog(IDD_PROPHITTARGET_PHYSICS, pvsel)
+HitTargetPhysicsProperty::HitTargetPhysicsProperty(const VectorProtected<ISelect> *pvsel): BasePropertyDialog(IDD_PROPHITTARGET_PHYSICS, pvsel)
 {
     m_hitThresholdEdit.SetDialog(this);
     m_elasticityEdit.SetDialog(this);

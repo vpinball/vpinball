@@ -4,7 +4,7 @@
 class SpinnerPhysicsProperty: public BasePropertyDialog
 {
 public:
-    SpinnerPhysicsProperty(VectorProtected<ISelect> *pvsel);
+    SpinnerPhysicsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~SpinnerPhysicsProperty()
     {
     }

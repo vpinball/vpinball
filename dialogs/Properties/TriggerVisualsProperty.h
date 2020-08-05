@@ -4,7 +4,7 @@
 class TriggerVisualsProperty: public BasePropertyDialog
 {
 public:
-    TriggerVisualsProperty(VectorProtected<ISelect> *pvsel);
+    TriggerVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~TriggerVisualsProperty()
     {
     }

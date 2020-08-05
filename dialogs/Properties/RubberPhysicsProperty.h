@@ -4,7 +4,7 @@
 class RubberPhysicsProperty: public BasePropertyDialog
 {
 public:
-    RubberPhysicsProperty(VectorProtected<ISelect> *pvsel);
+    RubberPhysicsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~RubberPhysicsProperty()
     {
     }

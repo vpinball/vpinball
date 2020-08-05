@@ -2,7 +2,7 @@
 #include "Properties/FlasherVisualsProperty.h"
 #include <WindowsX.h>
 
-FlasherVisualsProperty::FlasherVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLASHER_VISUALS, pvsel)
+FlasherVisualsProperty::FlasherVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLASHER_VISUALS, pvsel)
 {
     m_filterList.push_back("None");
     m_filterList.push_back("Additive");
@@ -73,9 +73,9 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == DISPID_Image2 || dispid == -1)
             PropertyDialog::UpdateTextureComboBox(flash->GetPTable()->GetImageList(), m_imageBCombo, flash->m_d.m_szImageB);
         if (dispid == IDC_FLASHER_MODE_COMBO || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_imageAlignList, m_modeCombo, m_imageAlignList[(int)flash->m_d.m_imagealignment].c_str());
+            PropertyDialog::UpdateComboBox(m_imageAlignList, m_modeCombo, m_imageAlignList[(int)flash->m_d.m_imagealignment]);
         if (dispid == IDC_EFFECT_COMBO || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_filterList, m_filterCombo, m_filterList[flash->m_d.m_filter].c_str());
+            PropertyDialog::UpdateComboBox(m_filterList, m_filterCombo, m_filterList[flash->m_d.m_filter]);
         if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
             m_colorButton.SetColor(flash->m_d.m_color);
         //only show the first element on multi-select

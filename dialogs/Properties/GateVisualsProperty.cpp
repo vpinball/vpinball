@@ -2,7 +2,7 @@
 #include "Properties/GateVisualsProperty.h"
 #include <WindowsX.h>
 
-GateVisualsProperty::GateVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPGATE_VISUALS, pvsel)
+GateVisualsProperty::GateVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPGATE_VISUALS, pvsel)
 {
     m_typeList.push_back("Wire W");
     m_typeList.push_back("Wire Rectangle");
@@ -30,7 +30,7 @@ void GateVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Gate * const gate = (Gate *)m_pvsel->ElementAt(i);
         if (dispid == 9 || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)gate->m_d.m_type - 1].c_str());
+            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)gate->m_d.m_type - 1]);
         if (dispid == IDC_SURFACE_COMBO || dispid == -1)
             PropertyDialog::UpdateSurfaceComboBox(gate->GetPTable(), m_surfaceCombo, gate->m_d.m_szSurface);
         if (dispid == 5 || dispid == -1)

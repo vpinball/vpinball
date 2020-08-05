@@ -4,7 +4,7 @@
 class GateVisualsProperty: public BasePropertyDialog
 {
 public:
-    GateVisualsProperty(VectorProtected<ISelect> *pvsel);
+    GateVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~GateVisualsProperty()
     {
     }

@@ -2,7 +2,7 @@
 #include "Properties/FlipperPhysicsProperty.h"
 #include <WindowsX.h>
 
-FlipperPhysicsProperty::FlipperPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_PHYSICS, pvsel)
+FlipperPhysicsProperty::FlipperPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_PHYSICS, pvsel)
 {
     m_physicSetList.push_back("Disable");
     m_physicSetList.push_back("Set1");
@@ -49,7 +49,7 @@ void FlipperPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == 189 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_eosTorqueAngleEdit, flipper->m_d.m_torqueDampingAngle);
         if (dispid == 1044 || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_physicSetList, m_overwriteSettingsCombo, m_physicSetList[(int)flipper->m_d.m_OverridePhysics].c_str());
+            PropertyDialog::UpdateComboBox(m_physicSetList, m_overwriteSettingsCombo, m_physicSetList[flipper->m_d.m_OverridePhysics]);
         UpdateBaseVisuals(flipper, &flipper->m_d, dispid);
         //only show the first element on multi-select
         break;

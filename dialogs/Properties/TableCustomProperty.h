@@ -4,7 +4,7 @@
 class TableCustomProperty: public BasePropertyDialog
 {
 public:
-    TableCustomProperty(VectorProtected<ISelect> *pvsel);
+    TableCustomProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~TableCustomProperty()
     {
     }
