@@ -4,7 +4,6 @@
 class TableInfoDialog : public CDialog
 {
 public:
-
    TableInfoDialog();
 
 protected:
@@ -16,7 +15,8 @@ protected:
    virtual void OnCancel();
 
 private:
-   void VPGetDialogItemText(CEdit &edit, char **psztext);
+   void VPGetDialogItemText(CEdit &edit, string &psztext);
+
    CEdit m_tableNameEdit;
    CEdit m_authorEdit;
    CEdit m_versionEdit;
