@@ -2856,7 +2856,7 @@ HRESULT PinTable::SaveSoundToStream(PinSound * const pps, IStream *pstm)
    if (FAILED(hr = pstm->Write(&len, sizeof(int), &writ)))
       return hr;
    char * tmp = new char[len+1];
-   strncpy_s(tmp, len, pps->m_szName.c_str(), len);
+   strncpy_s(tmp, len+1, pps->m_szName.c_str(), len);
    CharLowerBuff(tmp, len);
    if (FAILED(hr = pstm->Write(tmp, len, &writ)))
       return hr;
