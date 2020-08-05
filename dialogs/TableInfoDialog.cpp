@@ -129,11 +129,9 @@ INT_PTR TableInfoDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    return DialogProcDefault(uMsg, wParam, lParam);
 }
 
-void TableInfoDialog::VPGetDialogItemText(CEdit &edit, char **psztext)
+void TableInfoDialog::VPGetDialogItemText(CEdit &edit, string &psztext)
 {
-   const int length = edit.GetWindowTextLength();
-   *psztext = new char[length+1];
-   strncpy_s(*psztext, length+1, edit.GetWindowText().c_str(), length);
+   psztext = edit.GetWindowText();
 }
 
 
@@ -146,25 +144,22 @@ BOOL TableInfoDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       case IDC_ADD:
       {
          CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-         char *szCustomName;
-         VPGetDialogItemText(m_customNameEdit, &szCustomName);
-         if (szCustomName[0] != '\0')
+         string szCustomName;
+         VPGetDialogItemText(m_customNameEdit, szCustomName);
+         if (!szCustomName.empty())
          {
             LVFINDINFO lvfi;
             lvfi.flags = LVFI_STRING;
-            lvfi.psz = szCustomName;
-
+            lvfi.psz = szCustomName.c_str();
             const int found = m_customListView.FindItem(lvfi, -1);
 
             if (found != -1)
                m_customListView.DeleteItem(found);
 
-            char *szCustomValue;
-            VPGetDialogItemText(m_customValueEdit, &szCustomValue);
+            string szCustomValue;
+            VPGetDialogItemText(m_customValueEdit, szCustomValue);
             pt->AddListItem(m_customListView.GetHwnd(), szCustomName, szCustomValue, NULL);
-            delete[] szCustomValue;
          }
-         delete[] szCustomName;
          break;
       }
       case IDC_DELETE:

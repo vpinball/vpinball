@@ -361,7 +361,7 @@ public:
    // called before Player instance gets deleted
    void StopPlaying();
 
-   void ImportSound(const HWND hwndListView, const char * const filename);
+   void ImportSound(const HWND hwndListView, const string& filename);
    void ReImportSound(const HWND hwndListView, PinSound * const pps, const string& filename);
    bool ExportSound(PinSound * const pps, const char * const filename);
    void ListSounds(HWND hwndListView);
@@ -381,7 +381,7 @@ public:
    PinBinary *GetImageLinkBinary(const int id);
 
    void ListCustomInfo(HWND hwndListView);
-   int AddListItem(HWND hwndListView, const char *szName, const char *szValue1, LPARAM lparam);
+   int AddListItem(HWND hwndListView, const string& szName, const string& szValue1, LPARAM lparam);
 
    void ImportFont(HWND hwndListView, const string& filename);
    void ListFonts(HWND hwndListView);

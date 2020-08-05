@@ -266,7 +266,7 @@ void SoundDialog::Import()
       }
 
       for (const std::string &file : szFileName)
-         pt->ImportSound(hSoundList, file.c_str());
+         pt->ImportSound(hSoundList, file);
 
       pt->SetNonUndoableDirty(eSaveDirty);
    }

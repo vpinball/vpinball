@@ -4232,7 +4232,6 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-
 bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
 {
    MMIOINFO mmio;
@@ -4322,7 +4321,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
 }
 
 
-void PinTable::ImportSound(const HWND hwndListView, const char * const szfilename)
+void PinTable::ImportSound(const HWND hwndListView, const string& szfilename)
 {
    PinSound * const pps = m_vpinball->m_ps.LoadFile(szfilename);
 
@@ -7636,21 +7635,21 @@ PinBinary *PinTable::GetImageLinkBinary(const int id)
 void PinTable::ListCustomInfo(HWND hwndListView)
 {
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
-      AddListItem(hwndListView, m_vCustomInfoTag[i].c_str(), m_vCustomInfoContent[i].c_str(), NULL);
+      AddListItem(hwndListView, m_vCustomInfoTag[i], m_vCustomInfoContent[i], NULL);
 }
 
-int PinTable::AddListItem(HWND hwndListView, const char *szName, const char *szValue1, LPARAM lparam)
+int PinTable::AddListItem(HWND hwndListView, const string& szName, const string& szValue1, LPARAM lparam)
 {
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
-   lvitem.pszText = (char*)szName;
+   lvitem.pszText = (char*)szName.c_str();
    lvitem.lParam = lparam;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
-   ListView_SetItemText(hwndListView, index, 1, (char*)szValue1);
+   ListView_SetItemText(hwndListView, index, 1, (char*)szValue1.c_str());
 
    return index;
 }
