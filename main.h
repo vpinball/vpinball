@@ -185,14 +185,20 @@ using std::vector;
 #include "slintf.h"
 #include "trace.h"
 
-__forceinline void ShowError(const char * const sz)
+inline void ShowError(const char * const sz)
 {
-   g_pvp->MessageBox(sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+   if(g_pvp)
+      g_pvp->MessageBox(sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+   else
+      MessageBox(NULL, sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
 }
 
-__forceinline void ShowError(const string& sz)
+inline void ShowError(const string& sz)
 {
-   g_pvp->MessageBox(sz.c_str(), "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+   if(g_pvp)
+      g_pvp->MessageBox(sz.c_str(), "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+   else
+      MessageBox(NULL, sz.c_str(), "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
 }
 
 #include "editablereg.h"
