@@ -490,7 +490,7 @@ float VPinball::ConvertToUnit(const float value) const
    return 0;
 }
 
-void VPinball::SetPropSel(VectorProtected<ISelect> *pvsel)
+void VPinball::SetPropSel(VectorProtected<ISelect> &pvsel)
 {
     if (m_propertyDialog && m_propertyDialog->IsWindow())
         m_propertyDialog->UpdateTabs(pvsel);

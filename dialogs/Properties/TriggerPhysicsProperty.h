@@ -4,7 +4,7 @@
 class TriggerPhysicsProperty: public BasePropertyDialog
 {
 public:
-    TriggerPhysicsProperty(VectorProtected<ISelect> *pvsel);
+    TriggerPhysicsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~TriggerPhysicsProperty()
     {
     }

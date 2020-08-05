@@ -8,7 +8,7 @@ class ComboBox;
 class BasePropertyDialog: public CDialog
 {
 public:
-    BasePropertyDialog(int id, VectorProtected<ISelect> *pvsel) : CDialog(id), m_pvsel(pvsel)
+    BasePropertyDialog(const int id, const VectorProtected<ISelect> *pvsel) : CDialog(id), m_pvsel(pvsel)
     {
         m_baseHitThresholdEdit = NULL;
         m_baseElasticityEdit = NULL;
@@ -49,7 +49,7 @@ public:
     void UpdateBaseProperties(ISelect *psel, BaseProperty *property, const int dispid);
     void UpdateBaseVisuals(ISelect *psel, BaseProperty *property, const int dispid = -1);
 
-    VectorProtected<ISelect>* m_pvsel;
+    const VectorProtected<ISelect>* m_pvsel;
     static bool               m_disableEvents;
 protected:
     virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
@@ -112,7 +112,7 @@ private:
 class TimerProperty: public BasePropertyDialog
 {
 public:
-    TimerProperty(VectorProtected<ISelect> *pvsel);
+    TimerProperty(const VectorProtected<ISelect> *pvsel);
     virtual void UpdateProperties(const int dispid);
     virtual void UpdateVisuals(const int dispid=-1);
 protected:
@@ -226,43 +226,44 @@ class PropertyDialog : public CDialog
 public:
     PropertyDialog();
 
-    void CreateTabs(VectorProtected<ISelect>* pvsel);
+    void CreateTabs(VectorProtected<ISelect> &pvsel);
     void DeleteAllTabs();
-    void UpdateTabs(VectorProtected<ISelect> *pvsel);
+    void UpdateTabs(VectorProtected<ISelect> &pvsel);
     bool PreTranslateMessage(MSG* msg);
 
-    static void UpdateTextureComboBox(const vector<Texture*>& contentList, CComboBox &combo, const std::string &selectName);
-    static void UpdateComboBox(const vector<string>& contentList, CComboBox &combo, const char *selectName);
-    static void UpdateMaterialComboBox(const vector<Material *>& contentList, CComboBox &combo, const std::string &selectName);
-    static void UpdateSurfaceComboBox(const PinTable * const ptable, CComboBox &combo, const char *selectName);
-    static void UpdateSoundComboBox(const PinTable *const ptable, CComboBox &combo, const char *selectName);
+    static void UpdateTextureComboBox(const vector<Texture*>& contentList, CComboBox &combo, const string &selectName);
+    static void UpdateComboBox(const vector<string>& contentList, CComboBox &combo, const string &selectName);
+    static void UpdateMaterialComboBox(const vector<Material *>& contentList, CComboBox &combo, const string &selectName);
+    static void UpdateSurfaceComboBox(const PinTable *const ptable, CComboBox &combo, const char *selectName);
+    static void UpdateSoundComboBox(const PinTable *const ptable, CComboBox &combo, const string &selectName);
     static void UpdateCollectionComboBox(const PinTable *const ptable, CComboBox &combo, const char *selectName);
 
-    static void StartUndo(ISelect *psel)
+    static void StartUndo(ISelect *const psel)
     {
         psel->GetIEditable()->BeginUndo();
         psel->GetIEditable()->MarkForUndo();
     }
 
-    static void EndUndo(ISelect *psel)
+    static void EndUndo(ISelect *const psel)
     {
         psel->GetIEditable()->EndUndo();
         psel->GetIEditable()->SetDirtyDraw();
     }
 
-    static bool GetCheckboxState(HWND checkBoxHwnd)
+    static bool GetCheckboxState(const HWND checkBoxHwnd)
     {
         const size_t selected = ::SendMessage(checkBoxHwnd, BM_GETCHECK, 0, 0);
         return selected != 0;
     }
-    static void SetCheckboxState(HWND checkBoxHwnd, bool checked)
+
+    static void SetCheckboxState(const HWND checkBoxHwnd, const bool checked)
     {
         ::SendMessage(checkBoxHwnd, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
     }
     
     static float GetFloatTextbox(CEdit &textbox)
     {
-        const float fv = sz2f(textbox.GetWindowText().c_str());
+        const float fv = sz2f(string(textbox.GetWindowText()));
         return fv;
     }
 
@@ -282,7 +283,7 @@ public:
 
     static void SetIntTextbox(CEdit &textbox, const int value)
     {
-        textbox.SetWindowText(CString(value).c_str());
+        textbox.SetWindowText(std::to_string(value).c_str());
     }
 
     static void GetComboBoxText(CComboBox &combo, char * const strbuf, const size_t maxlength)
@@ -313,16 +314,16 @@ protected:
     virtual void OnClose();
 
 private:
-    PropertyTab m_tab;
+    PropertyTab  m_tab;
     BasePropertyDialog *m_tabs[PROPERTY_TABS];
     ItemTypeEnum m_previousType;
     bool         m_backglassView;
 
-    int  m_curTabIndex;
-    CEdit m_nameEdit;
+    int      m_curTabIndex;
+    CEdit    m_nameEdit;
     CResizer m_resizer;
-    CStatic m_multipleElementsStatic;
-    CStatic m_elementTypeName;
+    CStatic  m_multipleElementsStatic;
+    CStatic  m_elementTypeName;
 };
 #pragma endregion
 

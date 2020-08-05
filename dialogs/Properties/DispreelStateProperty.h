@@ -4,7 +4,7 @@
 class DispreelStateProperty: public BasePropertyDialog
 {
 public:
-    DispreelStateProperty(VectorProtected<ISelect> *pvsel);
+    DispreelStateProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~DispreelStateProperty()
     {
     }

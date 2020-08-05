@@ -4,7 +4,7 @@
 class BackglassVisualsProperty : public BasePropertyDialog
 {
 public:
-    BackglassVisualsProperty(VectorProtected<ISelect> *pvsel);
+    BackglassVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~BackglassVisualsProperty()
     {
     }

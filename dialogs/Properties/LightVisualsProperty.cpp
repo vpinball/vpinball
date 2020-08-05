@@ -2,7 +2,7 @@
 #include "Properties/LightVisualsProperty.h"
 #include <WindowsX.h>
 
-LightVisualsProperty::LightVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_VISUALS, pvsel)
+LightVisualsProperty::LightVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_VISUALS, pvsel)
 {
     m_falloffEdit.SetDialog(this);
     m_falloffPowerEdit.SetDialog(this);

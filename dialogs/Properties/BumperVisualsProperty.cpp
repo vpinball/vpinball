@@ -2,7 +2,7 @@
 #include "Properties/BumperVisualsProperty.h"
 #include <WindowsX.h>
 
-BumperVisualsProperty::BumperVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_VISUALS, pvsel)
+BumperVisualsProperty::BumperVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_VISUALS, pvsel)
 {
     m_radiusEdit.SetDialog(this);
     m_heightScaleEdit.SetDialog(this);

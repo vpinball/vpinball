@@ -4,7 +4,7 @@
 class RampPhysicsProperty: public BasePropertyDialog
 {
 public:
-    RampPhysicsProperty(VectorProtected<ISelect> *pvsel);
+    RampPhysicsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~RampPhysicsProperty()
     {
     }

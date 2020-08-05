@@ -2,7 +2,7 @@
 #include "Properties/PlungerVisualsProperty.h"
 #include <WindowsX.h>
 
-PlungerVisualsProperty::PlungerVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_VISUALS, pvsel)
+PlungerVisualsProperty::PlungerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_VISUALS, pvsel)
 {
     m_typeList.push_back("Modern");
     m_typeList.push_back("Flat");
@@ -37,7 +37,7 @@ void PlungerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
         if (dispid == IDC_PLUNGER_TYPE_COMBO || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)plunger->m_d.m_type-1].c_str());
+            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)plunger->m_d.m_type-1]);
         if (dispid == 1502 || dispid == -1)
             PropertyDialog::UpdateSurfaceComboBox(plunger->GetPTable(), m_surfaceCombo, plunger->m_d.m_szSurface);
         if (dispid == DISPID_PluFrames || dispid == -1)

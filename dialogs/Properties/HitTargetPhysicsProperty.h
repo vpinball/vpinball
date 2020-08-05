@@ -4,7 +4,7 @@
 class HitTargetPhysicsProperty: public BasePropertyDialog
 {
 public:
-    HitTargetPhysicsProperty(VectorProtected<ISelect> *pvsel);
+    HitTargetPhysicsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~HitTargetPhysicsProperty()
     {
     }

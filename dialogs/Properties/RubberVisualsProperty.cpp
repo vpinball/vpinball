@@ -2,7 +2,7 @@
 #include "Properties/RubberVisualsProperty.h"
 #include <WindowsX.h>
 
-RubberVisualsProperty::RubberVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRUBBER_VISUALS, pvsel)
+RubberVisualsProperty::RubberVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRUBBER_VISUALS, pvsel)
 {
     m_heightEdit.SetDialog(this);
     m_thicknessEdit.SetDialog(this);

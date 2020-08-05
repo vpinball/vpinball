@@ -2,7 +2,7 @@
 #include "Properties/TablePhysicsProperty.h"
 #include <WindowsX.h>
 
-TablePhysicsProperty::TablePhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_PHYSICS, pvsel)
+TablePhysicsProperty::TablePhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_PHYSICS, pvsel)
 {
     m_gravityConstantEdit.SetDialog(this);
     m_playfieldFrictionEdit.SetDialog(this);

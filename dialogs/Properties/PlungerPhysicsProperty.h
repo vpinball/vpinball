@@ -4,7 +4,7 @@
 class PlungerPhysicsProperty: public BasePropertyDialog
 {
 public:
-    PlungerPhysicsProperty(VectorProtected<ISelect> *pvsel);
+    PlungerPhysicsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~PlungerPhysicsProperty()
     {
     }

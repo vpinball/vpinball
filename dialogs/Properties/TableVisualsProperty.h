@@ -4,7 +4,7 @@
 class TableVisualsProperty: public BasePropertyDialog
 {
 public:
-    TableVisualsProperty(VectorProtected<ISelect> *pvsel);
+    TableVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~TableVisualsProperty()
     {
     }

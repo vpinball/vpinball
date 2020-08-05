@@ -4,7 +4,7 @@
 class PlungerVisualsProperty: public BasePropertyDialog
 {
 public:
-    PlungerVisualsProperty(VectorProtected<ISelect> *pvsel);
+    PlungerVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~PlungerVisualsProperty()
     {
     }

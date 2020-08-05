@@ -4,7 +4,7 @@
 class FlipperVisualsProperty: public BasePropertyDialog
 {
 public:
-    FlipperVisualsProperty(VectorProtected<ISelect> *pvsel);
+    FlipperVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~FlipperVisualsProperty()
     {
     }

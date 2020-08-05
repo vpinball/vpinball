@@ -2,7 +2,7 @@
 #include "Properties/HitTargetVisualsProperty.h"
 #include <WindowsX.h>
 
-HitTargetVisualsProperty::HitTargetVisualsProperty(VectorProtected<ISelect> *pvsel):BasePropertyDialog(IDD_PROPHITTARGET_VISUALS, pvsel)
+HitTargetVisualsProperty::HitTargetVisualsProperty(const VectorProtected<ISelect> *pvsel):BasePropertyDialog(IDD_PROPHITTARGET_VISUALS, pvsel)
 {
     m_typeList.push_back("DropTarget Beveled");
     m_typeList.push_back("DropTarget Simple");
@@ -40,7 +40,7 @@ void HitTargetVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         HitTarget * const target = (HitTarget*)m_pvsel->ElementAt(i);
         if (dispid == IDC_HIT_TARGET_TYPE || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[target->m_d.m_targetType - 1].c_str());
+            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[target->m_d.m_targetType - 1]);
         if (dispid == IDC_TARGET_MOVE_SPEED_EDIT || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_dropSpeedEdit, target->m_d.m_dropSpeed);
         if (dispid == IDC_TARGET_RAISE_DELAY_EDIT || dispid == -1)

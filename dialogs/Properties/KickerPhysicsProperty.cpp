@@ -2,7 +2,7 @@
 #include "Properties/KickerPhysicsProperty.h"
 #include <WindowsX.h>
 
-KickerPhysicsProperty::KickerPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_STATE, pvsel)
+KickerPhysicsProperty::KickerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_STATE, pvsel)
 {
     m_scatterAngleEdit.SetDialog(this);
     m_hitAccuracyEdit.SetDialog(this);

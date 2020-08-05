@@ -4,7 +4,7 @@
 class KickerPhysicsProperty: public BasePropertyDialog
 {
 public:
-    KickerPhysicsProperty(VectorProtected<ISelect> *pvsel);
+    KickerPhysicsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~KickerPhysicsProperty()
     {
     }

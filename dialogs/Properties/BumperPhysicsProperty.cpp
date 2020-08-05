@@ -2,7 +2,7 @@
 #include "Properties/BumperPhysicsProperty.h"
 #include <WindowsX.h>
 
-BumperPhysicsProperty::BumperPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_PHYSICS, pvsel)
+BumperPhysicsProperty::BumperPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_PHYSICS, pvsel)
 {
     m_forceEdit.SetDialog(this);
     m_hitThresholdEdit.SetDialog(this);

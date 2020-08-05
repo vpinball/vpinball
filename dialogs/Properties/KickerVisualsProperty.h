@@ -4,7 +4,7 @@
 class KickerVisualsProperty: public BasePropertyDialog
 {
 public:
-    KickerVisualsProperty(VectorProtected<ISelect> *pvsel);
+    KickerVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~KickerVisualsProperty()
     {
     }

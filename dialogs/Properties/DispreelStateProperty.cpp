@@ -2,7 +2,7 @@
 #include "Properties/DispreelStateProperty.h"
 #include <WindowsX.h>
 
-DispreelStateProperty::DispreelStateProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_STATE, pvsel)
+DispreelStateProperty::DispreelStateProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_STATE, pvsel)
 {
     m_motorStepsEdit.SetDialog(this);
     m_updateIntervalEdit.SetDialog(this);
@@ -21,7 +21,7 @@ void DispreelStateProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == IDC_UPDATE_INTERVAL_EDIT || dispid == -1)
             PropertyDialog::SetIntTextbox(m_updateIntervalEdit, reel->GetUpdateInterval());
         if (dispid == DISPID_Sound || dispid == -1)
-            PropertyDialog::UpdateSoundComboBox(reel->GetPTable(), m_soundCombo, reel->m_d.m_szSound.c_str());
+            PropertyDialog::UpdateSoundComboBox(reel->GetPTable(), m_soundCombo, reel->m_d.m_szSound);
         //only show the first element on multi-select
         break;
     }

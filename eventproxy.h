@@ -5,16 +5,16 @@ class Ball;
 class EventProxyBase
 {
 public:
-   virtual HRESULT FireDispID(DISPID dispid, DISPPARAMS *pdispparams) = 0;
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) = 0;
 
-   void FireVoidEvent(int dispid)
+   void FireVoidEvent(const int dispid)
    {
       DISPPARAMS dispparams = { NULL, NULL, 0, 0 };
 
       FireDispID(dispid, &dispparams);
    }
 
-   void FireVoidEventParm(int dispid, float parm)
+   void FireVoidEventParm(const int dispid, const float parm)
    {
       CComVariant rgvar[1] = { CComVariant(parm) };
       DISPPARAMS dispparams = { rgvar, NULL, 1, 0 };
@@ -22,7 +22,7 @@ public:
       FireDispID(dispid, &dispparams);
    }
 
-   void FireVoidEventParm(int dispid, int parm)
+   void FireVoidEventParm(const int dispid, const int parm)
    {
       CComVariant rgvar[1] = { CComVariant(parm) };
       DISPPARAMS dispparams = { rgvar, NULL, 1, 0 };
@@ -30,22 +30,21 @@ public:
       FireDispID(dispid, &dispparams);
    }
 
-   /*	void FireVoidEventParm(int dispid, unsigned int parm)
-      {
-      CComVariant rgvar[1] = {  CComVariant(parm)};
-      DISPPARAMS dispparams  = {rgvar,NULL,1,0};
+   /*void FireVoidEventParm(const int dispid, const unsigned int parm)
+   {
+      CComVariant rgvar[1] = { CComVariant(parm) };
+      DISPPARAMS dispparams  = { rgvar, NULL, 1, 0 };
 
       FireDispID(dispid, &dispparams);
-      }
-      */
+   }*/
 
-   void FireVoidEventParm(int dispid, char* parm)
+   /*void FireVoidEventParm(const int dispid, const char* parm)
    {
       CComVariant rgvar[1] = { CComVariant(parm) };
       DISPPARAMS dispparams = { rgvar, NULL, 1, 0 };
 
       FireDispID(dispid, &dispparams);
-   }
+   }*/
 };
 
 template <class T, const IID* psrcid>
@@ -56,7 +55,7 @@ public:
 
    virtual ~EventProxy() {}
 
-   void FireVoidGroupEvent(int dispid)
+   void FireVoidGroupEvent(const int dispid)
    {
       T* const pT = (T*)this;
       for (size_t i = 0; i < pT->m_vEventCollection.size(); ++i)
@@ -66,7 +65,6 @@ public:
          if (pcollection!=NULL)
          {
             CComVariant rgvar[1] = { CComVariant((long)pT->m_viEventCollection[i]) };
-
             DISPPARAMS dispparams = { rgvar, NULL, 1, 0 };
 
             pcollection->FireDispID(dispid, &dispparams);
@@ -77,7 +75,7 @@ public:
          FireVoidEvent(dispid);
    }
 
-   virtual HRESULT FireDispID(DISPID dispid, DISPPARAMS *pdispparams)
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
    {
       T* const pT = (T*)this;
       pT->Lock();

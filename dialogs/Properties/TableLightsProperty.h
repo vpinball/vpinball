@@ -4,7 +4,7 @@
 class TableLightsProperty: public BasePropertyDialog
 {
 public:
-    TableLightsProperty(VectorProtected<ISelect> *pvsel);
+    TableLightsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~TableLightsProperty()
     {
     }

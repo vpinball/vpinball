@@ -3,7 +3,7 @@
 #include <WindowsX.h>
 
 
-BackglassCameraProperty::BackglassCameraProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBACKGLASS_CAMERA, pvsel)
+BackglassCameraProperty::BackglassCameraProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBACKGLASS_CAMERA, pvsel)
 {
     m_modeList.push_back("Desktop (DT)");
     m_modeList.push_back("Fullscreen (FS)");
@@ -32,7 +32,7 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
     if(dispid == IDC_BG_TEST_DESKTOP_CHECK || dispid==-1)
         PropertyDialog::SetCheckboxState(m_hTestDesktopCheck, table->GetShowDT());
     if(dispid == IDC_BG_COMBOBOX || dispid==-1)
-        PropertyDialog::UpdateComboBox(m_modeList, m_modeCombo, m_modeList[table->m_currentBackglassMode].c_str());
+        PropertyDialog::UpdateComboBox(m_modeList, m_modeCombo, m_modeList[table->m_currentBackglassMode]);
     if(dispid == IDC_INCLINATION_EDIT || dispid==-1)
         PropertyDialog::SetFloatTextbox(m_inclinationEdit, table->m_BG_inclination[table->m_currentBackglassMode]);
     if(dispid == IDC_FOV_EDIT || dispid==-1)

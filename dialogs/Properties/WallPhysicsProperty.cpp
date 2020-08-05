@@ -2,7 +2,7 @@
 #include "Properties/WallPhysicsProperty.h"
 #include <WindowsX.h>
 
-WallPhysicsProperty::WallPhysicsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPWALL_PHYSICS, pvsel)
+WallPhysicsProperty::WallPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPWALL_PHYSICS, pvsel)
 {
     m_hitThresholdEdit.SetDialog(this);
     m_slingshotForceEdit.SetDialog(this);

@@ -2,7 +2,7 @@
 #include "Properties/LightStatesProperty.h"
 #include <WindowsX.h>
 
-LightStatesProperty::LightStatesProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_STATE, pvsel)
+LightStatesProperty::LightStatesProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_STATE, pvsel)
 {
     m_stateList.push_back("Off");
     m_stateList.push_back("On");
@@ -20,7 +20,7 @@ void LightStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Light * const light = (Light *)m_pvsel->ElementAt(i);
         if (dispid == DISPID_Light_State || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_stateList, m_stateCombo, m_stateList[(int)light->m_d.m_state].c_str());
+            PropertyDialog::UpdateComboBox(m_stateList, m_stateCombo, m_stateList[(int)light->m_d.m_state]);
         if (dispid == IDC_BLINK_PATTERN_EDIT || dispid == -1)
             m_blinkPatternEdit.SetWindowText(light->m_rgblinkpattern);
         if (dispid == DISPID_Light_BlinkInterval || dispid == -1)

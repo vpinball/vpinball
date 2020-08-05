@@ -142,7 +142,7 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                     lvitem.iSubItem = 0;
                     ListView_GetItem( hSoundList, &lvitem );
                     PinSound * const pps = (PinSound *)lvitem.lParam;
-                    strncpy_s( pps->m_szName, pinfo->item.pszText, sizeof(pps->m_szName)-1 );
+                    pps->m_szName = pinfo->item.pszText;
                     if (pt)
                         pt->SetNonUndoableDirty( eSaveDirty );
                     return TRUE;
@@ -294,7 +294,7 @@ void SoundDialog::ReImport()
                 ListView_GetItem( hSoundList, &lvitem );
                 PinSound * const pps = (PinSound *)lvitem.lParam;
 
-                const HANDLE hFile = CreateFile( pps->m_szPath, GENERIC_READ, FILE_SHARE_READ,
+                const HANDLE hFile = CreateFile( pps->m_szPath.c_str(), GENERIC_READ, FILE_SHARE_READ,
                                                  NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 
                 if (hFile != INVALID_HANDLE_VALUE)
@@ -305,7 +305,7 @@ void SoundDialog::ReImport()
                     pt->SetNonUndoableDirty( eSaveDirty );
                 }
                 else
-                    MessageBox( pps->m_szPath, "FILE NOT FOUND!", MB_OK );
+                    MessageBox( pps->m_szPath.c_str(), "FILE NOT FOUND!", MB_OK );
 
                 sel = ListView_GetNextItem( hSoundList, sel, LVNI_SELECTED );
             }
@@ -341,7 +341,7 @@ void SoundDialog::ReImportFrom()
                 ListView_GetItem( hSoundList, &lvitem );
                 PinSound * const pps = (PinSound *)lvitem.lParam;
 
-                pt->ReImportSound( hSoundList, pps, szFileName[0].c_str() );
+                pt->ReImportSound( hSoundList, pps, szFileName[0] );
                 ListView_SetItemText( hSoundList, sel, 1, (LPSTR)szFileName[0].c_str() );
 
                 const size_t index = szFileName[0].find_last_of('\\');
@@ -385,7 +385,7 @@ void SoundDialog::Export()
             ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0";
 
             int begin; //select only file name from pathfilename
-            int len = lstrlen( pps->m_szPath );
+            int len = pps->m_szPath.length();
             memset(m_filename, 0, sizeof(m_filename));
 
             if (!renameOnExport)
@@ -398,18 +398,16 @@ void SoundDialog::Export()
                      break;
                   }
                }
-               memcpy(m_filename, &pps->m_szPath[begin], len - begin);
+               memcpy(m_filename, pps->m_szPath.c_str() + begin, len - begin);
             }
             else
             {
-               strncat_s(m_filename, pps->m_szName, sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
-               string ext(pps->m_szPath);
-               size_t idx = ext.find_last_of('.');
-               strncat_s(m_filename, ext.c_str() + idx, sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
-
+               strncat_s(m_filename, pps->m_szName.c_str(), sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
+               const size_t idx = pps->m_szPath.find_last_of('.');
+               strncat_s(m_filename, pps->m_szPath.c_str() + idx, sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
             }
             ofn.lpstrFile = m_filename;
-            ofn.nMaxFile = MAXSTRING;
+            ofn.nMaxFile = sizeof(m_filename);
             ofn.lpstrDefExt = "mp3";
             const HRESULT hr = LoadValueString( "RecentDir", "SoundDir", m_initDir, MAXSTRING);
             if (hr != S_OK)
@@ -441,7 +439,7 @@ void SoundDialog::Export()
 
                 while(sel != -1)
                 {
-                    len = lstrlen( pps->m_szPath );
+                    len = pps->m_szPath.length();
                     for (begin = len; begin >= 0; begin--)
                     {
                         if (pps->m_szPath[begin] == '\\')
@@ -454,13 +452,12 @@ void SoundDialog::Export()
                     {
                        strncpy_s(m_filename, pathName, sizeof(m_filename)-1);
                        if (!renameOnExport)
-                          strncat_s(m_filename, &pps->m_szPath[begin], sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
+                          strncat_s(m_filename, pps->m_szPath.c_str()+begin, sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
                        else
                        {
-                          strncat_s(m_filename, pps->m_szName, sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
-                          const string ext(pps->m_szPath);
-                          size_t idx = ext.find_last_of('.');
-                          strncat_s(m_filename, ext.c_str() + idx, sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
+                          strncat_s(m_filename, pps->m_szName.c_str(), sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
+                          const size_t idx = pps->m_szPath.find_last_of('.');
+                          strncat_s(m_filename, pps->m_szPath.c_str() + idx, sizeof(m_filename)-strnlen_s(m_filename, sizeof(m_filename))-1);
                        }
                     }
 

@@ -238,7 +238,7 @@ public:
    void MarkForDelete();
    void Undelete();
    char *GetName();
-   void SetName(const char* name);
+   void SetName(const std::string& name);
    void Delete();
    void Uncreate();
 

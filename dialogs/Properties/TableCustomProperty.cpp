@@ -2,7 +2,7 @@
 #include "Properties/TableCustomProperty.h"
 #include <WindowsX.h>
 
-TableCustomProperty::TableCustomProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_USER, pvsel)
+TableCustomProperty::TableCustomProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_USER, pvsel)
 {
     m_postAAList.push_back("Default");  // -1
     m_postAAList.push_back("Disabled");  // 0
@@ -50,22 +50,22 @@ void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
         return;
 
     if (dispid == IDC_ENABLE_AA || dispid == -1)
-        PropertyDialog::UpdateComboBox(m_userList, m_SSAACombo, m_userList[table->m_useAA + 1].c_str());
+        PropertyDialog::UpdateComboBox(m_userList, m_SSAACombo, m_userList[table->m_useAA + 1]);
     if (dispid == IDC_ENABLE_FXAA || dispid == -1)
-        PropertyDialog::UpdateComboBox(m_postAAList, m_postProcAACombo, m_postAAList[table->m_useFXAA + 1].c_str());
+        PropertyDialog::UpdateComboBox(m_postAAList, m_postProcAACombo, m_postAAList[table->m_useFXAA + 1]);
     if (dispid == IDC_ENABLE_AO || dispid == -1)
-        PropertyDialog::UpdateComboBox(m_userList, m_inGameAOCombo, m_userList[table->m_useAO + 1].c_str());
+        PropertyDialog::UpdateComboBox(m_userList, m_inGameAOCombo, m_userList[table->m_useAO + 1]);
     if (dispid == IDC_ENABLE_SSR || dispid == -1)
-        PropertyDialog::UpdateComboBox(m_userList, m_ScreenReflectionCombo, m_userList[table->m_useSSR + 1].c_str());
+        PropertyDialog::UpdateComboBox(m_userList, m_ScreenReflectionCombo, m_userList[table->m_useSSR + 1]);
     
     m_detailLevelSlider.SetPos(table->GetDetailLevel(), 1);
 
     if (dispid == IDC_GLOBAL_ALPHA_ACC || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hOverwriteDetailsCheck, table->m_overwriteGlobalDetailLevel);
     if (dispid == IDC_BALL_REFLECTION || dispid == -1)
-        PropertyDialog::UpdateComboBox(m_userList, m_ballReflectionCombo, m_userList[(int)(table->m_useReflectionForBalls) + 1].c_str());
+        PropertyDialog::UpdateComboBox(m_userList, m_ballReflectionCombo, m_userList[(int)(table->m_useReflectionForBalls) + 1]);
     if (dispid == IDC_BALL_TRAIL || dispid == -1)
-        PropertyDialog::UpdateComboBox(m_userList, m_ballTrailCombo, m_userList[(int)(table->m_useTrailForBalls) + 1].c_str());
+        PropertyDialog::UpdateComboBox(m_userList, m_ballTrailCombo, m_userList[(int)(table->m_useTrailForBalls) + 1]);
     if (dispid == IDC_TRAIL_EDIT || dispid == -1)
         PropertyDialog::SetIntTextbox(m_ballTrailStrengthEdit, table->GetBallTrailStrength());
 
@@ -74,7 +74,7 @@ void TableCustomProperty::UpdateVisuals(const int dispid/*=-1*/)
     if (dispid == IDC_GLOBAL_DAYNIGHT || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hOverwriteNightDayCheck, table->m_overwriteGlobalDayNight);
     if (dispid == IDC_OVERWRITE_PHYSICS_COMBO || dispid == -1)
-        PropertyDialog::UpdateComboBox(m_physicSetList, m_overwritePhysicsSetCombo, m_physicSetList[(int)table->m_overridePhysics].c_str());
+        PropertyDialog::UpdateComboBox(m_physicSetList, m_overwritePhysicsSetCombo, m_physicSetList[(int)table->m_overridePhysics]);
     if (dispid == IDC_GAME_DIFFICULTY_EDIT || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_gameplayDifficultEdit, table->GetGlobalDifficulty());
     if (dispid == IDC_OVERRIDEPHYSICS_FLIPPERS || dispid == -1)

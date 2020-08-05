@@ -4,7 +4,7 @@
 class BumperPhysicsProperty: public BasePropertyDialog
 {
 public:
-    BumperPhysicsProperty(VectorProtected<ISelect> *pvsel);
+    BumperPhysicsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~BumperPhysicsProperty()
     {
     }

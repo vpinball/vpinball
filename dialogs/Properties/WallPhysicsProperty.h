@@ -4,7 +4,7 @@
 class WallPhysicsProperty: public BasePropertyDialog
 {
 public:
-    WallPhysicsProperty(VectorProtected<ISelect> *pvsel);
+    WallPhysicsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~WallPhysicsProperty()
     {
     }

@@ -2,7 +2,7 @@
 #include "Properties/TableLightsProperty.h"
 #include <WindowsX.h>
 
-TableLightsProperty::TableLightsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_LIGHTSOURCES, pvsel)
+TableLightsProperty::TableLightsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_LIGHTSOURCES, pvsel)
 {
     m_lightEmissionScaleEdit.SetDialog(this);
     m_lightHeightEdit.SetDialog(this);

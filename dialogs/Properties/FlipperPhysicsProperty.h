@@ -4,7 +4,7 @@
 class FlipperPhysicsProperty: public BasePropertyDialog
 {
 public:
-    FlipperPhysicsProperty(VectorProtected<ISelect> *pvsel);
+    FlipperPhysicsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~FlipperPhysicsProperty()
     {
     }

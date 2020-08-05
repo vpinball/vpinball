@@ -4,7 +4,7 @@
 class LightseqStatesProperty: public BasePropertyDialog
 {
 public:
-    LightseqStatesProperty(VectorProtected<ISelect> *pvsel);
+    LightseqStatesProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~LightseqStatesProperty()
     {
     }

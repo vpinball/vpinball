@@ -2,7 +2,7 @@
 #include "Properties/DispreelVisualsProperty.h"
 #include <WindowsX.h>
 
-DispreelVisualsProperty::DispreelVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_VISUALS, pvsel)
+DispreelVisualsProperty::DispreelVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_VISUALS, pvsel)
 {
     m_singleDigitRangeEdit.SetDialog(this);
     m_imagePerRowEdit.SetDialog(this);

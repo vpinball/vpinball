@@ -2,7 +2,7 @@
 #include "Properties/DecalVisualsProperty.h"
 #include <WindowsX.h>
 
-DecalVisualsProperty::DecalVisualsProperty(VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDECAL_VISUALS, pvsel), m_font(NULL)
+DecalVisualsProperty::DecalVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDECAL_VISUALS, pvsel), m_font(NULL)
 {
     m_typeList.push_back("Text");
     m_typeList.push_back("Image");
@@ -38,9 +38,9 @@ void DecalVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         Decal * const decal = (Decal *)m_pvsel->ElementAt(i);
 
         if (dispid == IDC_FONT_TYPE_COMBO || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[decal->m_d.m_decaltype].c_str());
+            PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[decal->m_d.m_decaltype]);
         if (dispid == DISPID_Decal_SizingType || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_sizingList, m_sizingCombo, m_sizingList[decal->m_d.m_sizingtype].c_str());
+            PropertyDialog::UpdateComboBox(m_sizingList, m_sizingCombo, m_sizingList[decal->m_d.m_sizingtype]);
         if (dispid == IDC_DECAL_TEXT_EDIT || dispid == -1)
             m_textEdit.SetWindowText(decal->m_d.m_sztext.c_str());
         if (dispid == IDC_DECAL_VERTICAL_TEXT_CHECK || dispid == -1)
@@ -87,7 +87,7 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_DECAL_TEXT_EDIT:
             {
-                const string szName = m_textEdit.GetWindowText().c_str();
+                const string szName(m_textEdit.GetWindowText());
                 if (decal->m_d.m_sztext != szName)
                 {
                     PropertyDialog::StartUndo(decal);

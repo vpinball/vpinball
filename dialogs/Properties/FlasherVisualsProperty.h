@@ -4,7 +4,7 @@
 class FlasherVisualsProperty: public BasePropertyDialog
 {
 public:
-    FlasherVisualsProperty(VectorProtected<ISelect> *pvsel);
+    FlasherVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~FlasherVisualsProperty()
     {
     }

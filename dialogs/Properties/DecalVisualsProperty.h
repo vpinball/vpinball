@@ -4,7 +4,7 @@
 class DecalVisualsProperty: public BasePropertyDialog
 {
 public:
-    DecalVisualsProperty(VectorProtected<ISelect> *pvsel);
+    DecalVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~DecalVisualsProperty();
 
     void UpdateVisuals(const int dispid=-1);
