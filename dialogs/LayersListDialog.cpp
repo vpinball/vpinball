@@ -150,6 +150,7 @@ string LayersListDialog::GetCurrentSelectedLayerName() const
 {
     return m_layerTreeView.GetCurrentLayerName();
 }
+
 void LayersListDialog::AddToolTip(const char* const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
 {
     TOOLINFO toolInfo = { 0 };
@@ -217,6 +218,10 @@ INT_PTR LayersListDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
 BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
+    CCO(PinTable)* const pt = g_pvp->GetActiveTable();
+    if (pt == nullptr)
+        return FALSE;
+
     UNREFERENCED_PARAMETER(lParam);
     const int id = LOWORD(wParam);
     switch (id)
@@ -226,7 +231,15 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             if (!AddLayer(string("New Layer 0"), nullptr))
             {
                 int i = 0;
-                while (!AddLayer(string("New Layer ") + std::to_string(i), nullptr)) i++;
+                while (!AddLayer(string("New Layer ") + std::to_string(i), nullptr))
+                {
+                    if (i > 10000) // something went wrong, so exit here and warn
+                    {
+                        ShowError("Cannot add to Layer");
+                        return TRUE;
+                    }
+                    i++;
+                }
             }
             return TRUE;
         }
@@ -259,8 +272,9 @@ void LayersListDialog::OnAssignButton()
         ShowError("Please select a layer!");
         return;
     }
+
     CCO(PinTable)* const pt = g_pvp->GetActiveTable();
-    if (pt == nullptr)
+    if (pt == nullptr || pt->MultiSelIsEmpty())
         return;
 
     for (int t=0;t<pt->m_vmultisel.size();t++)
@@ -284,7 +298,7 @@ bool LayersListDialog::PreTranslateMessage(MSG* msg)
    {
       const int keyPressed = LOWORD(msg->wParam);
       // only pass F1-F12 to the main VPinball class to open subdialogs from everywhere
-      if (keyPressed >= VK_F1 && keyPressed <= VK_F12 && TranslateAccelerator(g_pvp->GetHwnd(), g_haccel, msg))
+      if (((keyPressed >= VK_F1 && keyPressed <= VK_F12) || (keyPressed == VK_ESCAPE)) && TranslateAccelerator(g_pvp->GetHwnd(), g_haccel, msg)) //!! VK_ESCAPE is a workaround, otherwise there is a hickup when changing a layername and pressing this
          return true;
    }
 
@@ -307,7 +321,6 @@ CDockLayers::CDockLayers()
     SetView(m_layersContainer);
     SetBarWidth(4);
 }
-
 
 void CDockLayers::OnClose()
 {
@@ -651,7 +664,6 @@ void LayerTreeView::PreCreate(CREATESTRUCT &cs)
 
 LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 {
-
     switch (msg)
     {
         case WM_MOUSEACTIVATE:
@@ -661,14 +673,13 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
         {
             if(m_dragging)
             {
-                POINTS Pos = MAKEPOINTS(lparam);
+                const POINTS Pos = MAKEPOINTS(lparam);
                 ImageList_DragMove(Pos.x - 32, Pos.y - 25); // where to draw the drag from
                 ImageList_DragShowNolock(FALSE);
                 TVHITTESTINFO tvht;
-                HTREEITEM hitTarget;
                 tvht.pt.x = Pos.x - 20; // the highlight items should be as the same points as the drag
                 tvht.pt.y = Pos.y - 20; //
-                hitTarget = HitTest(tvht);
+                HTREEITEM hitTarget = HitTest(tvht);
                 if (hitTarget) // if there is a hit
                     SelectDropTarget(hitTarget);
 
@@ -722,18 +733,18 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
             }
             break;
         }
-        
-
     }
-
 
     return WndProcDefault(msg, wparam, lparam);
 }
 
-
 LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
 {
-    LPNMHDR  lpnmh = (LPNMHDR)lparam;
+    CCO(PinTable)* const pt = g_pvp->GetActiveTable();
+    if (pt == nullptr)
+        return FALSE;
+
+    const LPNMHDR lpnmh = (LPNMHDR)lparam;
 
     switch (lpnmh->code)
     {
@@ -766,9 +777,6 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
             {
                 return FALSE;
             }
-            CCO(PinTable) *const pt = g_pvp->GetActiveTable();
-            if (pt == nullptr)
-                return FALSE;
 
             TVITEM tvItem;
             tvItem.mask = TVIF_CHILDREN | TVIF_PARAM;
@@ -798,7 +806,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
         }
     }
 
-    return 0;
+    return FALSE;
 }
 
 LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
@@ -946,7 +954,6 @@ bool LayerTreeView::AddElementToLayer(const HTREEITEM hLayerItem, const string& 
         TreeView_SetCheckState(GetHwnd(), hLayerItem, 1);
     }
     return hCurrentElementItem != NULL;
-
 }
 
 LRESULT FilterEditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
