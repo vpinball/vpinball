@@ -1786,7 +1786,7 @@ void PinTable::InitPostLoad(VPinball *pvp)
    // set up the texture & material hashtables for faster access
    m_textureMap.clear();
    for (size_t i = 0; i < m_vimage.size(); i++)
-       m_textureMap[m_vimage[i]->m_szName] = m_vimage[i];
+       m_textureMap[m_vimage[i]->m_szName.c_str()] = m_vimage[i];
    m_materialMap.clear();
    for (size_t i = 0; i < m_materials.size(); i++)
        m_materialMap[m_materials[i]->m_szName.c_str()] = m_materials[i];
@@ -2290,7 +2290,7 @@ void PinTable::Play(const bool cameraMode)
       // set up the texture & material hashtables for faster access
       m_textureMap.clear();
       for (size_t i = 0; i < m_vimage.size(); i++)
-         m_textureMap[m_vimage[i]->m_szName] = m_vimage[i];
+         m_textureMap[m_vimage[i]->m_szName.c_str()] = m_vimage[i];
       m_materialMap.clear();
       for (size_t i = 0; i < m_materials.size(); i++)
          m_materialMap[m_materials[i]->m_szName.c_str()] = m_materials[i];
@@ -6906,7 +6906,7 @@ Texture* PinTable::GetImage(const std::string &szName) const
    }
 
    for (size_t i = 0; i < m_vimage.size(); i++)
-      if (!lstrcmpi(m_vimage[i]->m_szName, szName.c_str()))
+      if (!lstrcmpi(m_vimage[i]->m_szName.c_str(), szName.c_str()))
          return m_vimage[i];
 
    return NULL;
@@ -6944,7 +6944,7 @@ void PinTable::ReImportImage(Texture * const ppi, const string& filename)
    ppi->SetSizeFrom(tex);
    ppi->m_pdsBuffer = tex;
 
-   strncpy_s(ppi->m_szPath, filename.c_str(), sizeof(ppi->m_szPath)-1);
+   ppi->m_szPath = filename;
 }
 
 
@@ -7078,8 +7078,7 @@ void PinTable::ImportImage(HWND hwndListView, const string& filename)
    if (end == 0)
       end = len - 1;
 
-   strncpy_s(ppi->m_szName, filename.c_str()+begin, sizeof(ppi->m_szName)-1);
-   ppi->m_szName[end - begin] = 0;
+   ppi->m_szName = filename.substr(begin, end - begin);
 
    m_vimage.push_back(ppi);
 
@@ -7104,27 +7103,27 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
-   lvitem.pszText = ppi->m_szName;
+   lvitem.pszText = (LPSTR)ppi->m_szName.c_str();
    lvitem.lParam = (size_t)ppi;
 
    _snprintf_s(sizeString, MAXTOKEN-1, "%ix%i", ppi->m_realWidth, ppi->m_realHeight);
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
-   ListView_SetItemText(hwndListView, index, 1, ppi->m_szPath);
+   ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppi->m_szPath.c_str());
    ListView_SetItemText(hwndListView, index, 2, sizeString);
    ListView_SetItemText(hwndListView, index, 3, usedStringNo);
 
    char * const sizeConv = StrFormatByteSize64(ppi->m_pdsBuffer->m_data.size(), sizeString, MAXTOKEN);
 
    ListView_SetItemText(hwndListView, index, 4, sizeConv);
-   if ((_stricmp(m_szImage, ppi->m_szName) == 0)
-       || (_stricmp(m_szBallImage, ppi->m_szName) == 0) 
-       || (_stricmp(m_szBallImageDecal, ppi->m_szName) == 0)
-       || (_stricmp(m_szEnvImage, ppi->m_szName) == 0)
-       || (_stricmp(m_BG_szImage[BG_DESKTOP], ppi->m_szName) == 0)
-       || (_stricmp(m_BG_szImage[BG_FSS], ppi->m_szName) == 0)
-       || (_stricmp(m_BG_szImage[BG_FULLSCREEN], ppi->m_szName) == 0)
-       || (_stricmp(m_szImageColorGrade, ppi->m_szName) == 0))
+   if ((_stricmp(m_szImage, ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_szBallImage, ppi->m_szName.c_str()) == 0) 
+    || (_stricmp(m_szBallImageDecal, ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_szEnvImage, ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_BG_szImage[BG_DESKTOP], ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_BG_szImage[BG_FSS], ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_BG_szImage[BG_FULLSCREEN], ppi->m_szName.c_str()) == 0)
+    || (_stricmp(m_szImageColorGrade, ppi->m_szName.c_str()) == 0))
    {
        ListView_SetItemText(hwndListView, index, 3, usedStringYes);
    }
@@ -7142,84 +7141,84 @@ int PinTable::AddListImage(HWND hwndListView, Texture * const ppi)
                case eItemDispReel:
                {
                    const DispReel * const pReel = (DispReel*)pEdit;
-                   if(_stricmp(pReel->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
+                   if(_stricmp(pReel->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemPrimitive:
                {
                    const Primitive * const pPrim = (Primitive*)pEdit;
-                   if ((_stricmp(pPrim->m_d.m_szImage.c_str(), ppi->m_szName) == 0) || (_stricmp(pPrim->m_d.m_szNormalMap, ppi->m_szName) == 0))
+                   if ((_stricmp(pPrim->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0) || (_stricmp(pPrim->m_d.m_szNormalMap, ppi->m_szName.c_str()) == 0))
                        inUse = true;
                    break;
                }
                case eItemRamp:
                {
                    const Ramp * const pRamp = (Ramp*)pEdit;
-                   if (_stricmp(pRamp->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
+                   if (_stricmp(pRamp->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemSurface:
                {
                    const Surface * const pSurf = (Surface*)pEdit;
-                   if ((_stricmp(pSurf->m_d.m_szImage.c_str(), ppi->m_szName) == 0) || (_stricmp(pSurf->m_d.m_szSideImage.c_str(), ppi->m_szName) == 0))
+                   if ((_stricmp(pSurf->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0) || (_stricmp(pSurf->m_d.m_szSideImage.c_str(), ppi->m_szName.c_str()) == 0))
                        inUse = true;
                    break;
                }
                case eItemDecal:
                {
                    const Decal * const pDecal = (Decal*)pEdit;
-                   if (_stricmp(pDecal->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
+                   if (_stricmp(pDecal->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemFlasher:
                {
                    const Flasher * const pFlash = (Flasher*)pEdit;
-                   if ((_stricmp(pFlash->m_d.m_szImageA, ppi->m_szName) == 0) || (_stricmp(pFlash->m_d.m_szImageB, ppi->m_szName) == 0))
+                   if ((_stricmp(pFlash->m_d.m_szImageA, ppi->m_szName.c_str()) == 0) || (_stricmp(pFlash->m_d.m_szImageB, ppi->m_szName.c_str()) == 0))
                        inUse = true;
                    break;
                }
                case eItemFlipper:
                {
                    const Flipper * const pFlip = (Flipper*)pEdit;
-                   if (_stricmp(pFlip->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
+                   if (_stricmp(pFlip->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemHitTarget:
                {
                    const HitTarget * const pHit = (HitTarget*)pEdit;
-                   if (_stricmp(pHit->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
+                   if (_stricmp(pHit->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemLight:
                {
                    const Light * const pLight = (Light*)pEdit;
-                   if (_stricmp(pLight->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
+                   if (_stricmp(pLight->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemPlunger:
                {
                    const Plunger * const pPlung = (Plunger*)pEdit;
-                   if (_stricmp(pPlung->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
+                   if (_stricmp(pPlung->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemRubber:
                {
                    const Rubber * const pRub = (Rubber*)pEdit;
-                   if (_stricmp(pRub->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
+                   if (_stricmp(pRub->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
                case eItemSpinner:
                {
                    const Spinner * const pSpin = (Spinner*)pEdit;
-                   if (_stricmp(pSpin->m_d.m_szImage.c_str(), ppi->m_szName) == 0)
+                   if (_stricmp(pSpin->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
                        inUse = true;
                    break;
                }
@@ -7604,7 +7603,7 @@ void PinTable::UpdateDbgLight()
 
 bool PinTable::GetImageLink(Texture * const ppi) const
 {
-   return (!lstrcmpi(ppi->m_szName, m_szScreenShot.c_str()));
+   return (!lstrcmpi(ppi->m_szName.c_str(), m_szScreenShot.c_str()));
 }
 
 PinBinary *PinTable::GetImageLinkBinary(const int id)
@@ -7740,12 +7739,12 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         DWORD cwch = lstrlen(m_vimage[ivar]->m_szName) + 1;
+         DWORD cwch = m_vimage[ivar]->m_szName.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == NULL)
             ShowError("DISPID_Image alloc failed");
 
-         MultiByteToWideChar(CP_ACP, 0, m_vimage[ivar]->m_szName, -1, wzDst, cwch);
+         MultiByteToWideChar(CP_ACP, 0, m_vimage[ivar]->m_szName.c_str(), -1, wzDst, cwch);
 
          //MsoWzCopy(szSrc,szDst);
          rgstr[ivar + 1] = wzDst;
@@ -7971,10 +7970,10 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const DWORD cwch = lstrlen(m_vimage[dwCookie]->m_szName) + 1;
+         const DWORD cwch = m_vimage[dwCookie]->m_szName.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
-         MultiByteToWideChar(CP_ACP, 0, m_vimage[dwCookie]->m_szName, -1, wzDst, cwch);
+         MultiByteToWideChar(CP_ACP, 0, m_vimage[dwCookie]->m_szName.c_str(), -1, wzDst, cwch);
       }
    }
    break;

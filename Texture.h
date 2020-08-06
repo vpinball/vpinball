@@ -172,8 +172,8 @@ public:
    HBITMAP m_hbmGDIVersion; // HBitmap at screen depth and converted/visualized alpha so GDI draws it fast
    PinBinary *m_ppb;  // if this image should be saved as a binary stream, otherwise just LZW compressed from the live bitmap
 
-   char m_szName[MAXTOKEN];
-   char m_szPath[MAXSTRING];
+   string m_szName;
+   string m_szPath;
 
 private:
    HBITMAP m_oldHBM;        // this is to cache the result of SelectObject()

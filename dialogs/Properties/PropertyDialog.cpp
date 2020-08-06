@@ -410,7 +410,7 @@ void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList,
     bool texelFound = false;
     for (auto texel : contentList)
     {
-        if (strncmp(texel->m_szName, selectName.c_str(), MAXTOKEN) == 0)
+        if (strncmp(texel->m_szName.c_str(), selectName.c_str(), MAXTOKEN) == 0) //!! _stricmp?
             texelFound = true;
     }
     if (combo.FindStringExact(1, selectName.c_str()) == CB_ERR || !texelFound)
@@ -418,7 +418,7 @@ void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList,
         combo.ResetContent();
         combo.AddString(_T("<None>"));
         for (size_t i = 0; i < contentList.size(); i++)
-            combo.AddString(contentList[i]->m_szName);
+            combo.AddString(contentList[i]->m_szName.c_str());
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }

@@ -385,12 +385,12 @@ void SoundDialog::Export()
             ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0";
 
             int begin; //select only file name from pathfilename
-            int len = pps->m_szPath.length();
+            const int len0 = pps->m_szPath.length();
             memset(m_filename, 0, sizeof(m_filename));
 
             if (!renameOnExport)
             {
-               for (begin = len; begin >= 0; begin--)
+               for (begin = len0; begin >= 0; begin--)
                {
                   if (pps->m_szPath[begin] == '\\')
                   {
@@ -398,7 +398,7 @@ void SoundDialog::Export()
                      break;
                   }
                }
-               memcpy(m_filename, pps->m_szPath.c_str() + begin, len - begin);
+               memcpy(m_filename, pps->m_szPath.c_str() + begin, len0 - begin);
             }
             else
             {
@@ -419,8 +419,8 @@ void SoundDialog::Export()
 
             if (GetSaveFileName( &ofn ))	//Get filename from user
             {
-                len = lstrlen( ofn.lpstrFile );
-                for (begin = len; begin >= 0; begin--)
+                const int len1 = lstrlen( ofn.lpstrFile );
+                for (begin = len1; begin >= 0; begin--)
                 {
                     if (ofn.lpstrFile[begin] == '\\')
                     {
@@ -437,10 +437,10 @@ void SoundDialog::Export()
                     memcpy( pathName, ofn.lpstrFile, begin );
                 pathName[begin] = 0;
 
+                const int len2 = pps->m_szPath.length();
                 while(sel != -1)
                 {
-                    len = pps->m_szPath.length();
-                    for (begin = len; begin >= 0; begin--)
+                    for (begin = len2; begin >= 0; begin--)
                     {
                         if (pps->m_szPath[begin] == '\\')
                         {

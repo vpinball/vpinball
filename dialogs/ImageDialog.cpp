@@ -152,7 +152,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                Texture * const ppi = (Texture *)lvitem.lParam;
                if (ppi != NULL)
                {
-                  strncpy_s(ppi->m_szName, pinfo->item.pszText, sizeof(ppi->m_szName)-1);
+                  ppi->m_szName = pinfo->item.pszText;
                   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                   if (pt)
                      pt->SetNonUndoableDirty(eSaveDirty);
@@ -445,7 +445,7 @@ void ImageDialog::Export()
             ofn.lStructSize = sizeof(OPENFILENAME);
             ofn.hInstance = g_pvp->theInstance;
             ofn.hwndOwner = g_pvp->GetHwnd();
-            int len = lstrlen(ppi->m_szPath);
+            const int len0 = ppi->m_szPath.length();
             char g_filename[MAXSTRING];
             g_filename[0] = '\0';
 
@@ -454,7 +454,7 @@ void ImageDialog::Export()
             if (!renameOnExport)
             {
                int begin; //select only file name from pathfilename
-               for (begin = len; begin >= 0; begin--)
+               for (begin = len0; begin >= 0; begin--)
                {
                   if (ppi->m_szPath[begin] == '\\')
                   {
@@ -464,16 +464,15 @@ void ImageDialog::Export()
                }
                if (begin > 0)
                {
-                  memcpy(g_filename, ppi->m_szPath+begin, len - begin);
-                  g_filename[len - begin] = 0;
+                  memcpy(g_filename, ppi->m_szPath.c_str()+begin, len0 - begin);
+                  g_filename[len0 - begin] = 0;
                }
             }
             else
             {
-               strncat_s(g_filename, ppi->m_szName, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
-               const string ext(ppi->m_szPath);
-               const size_t idx = ext.find_last_of('.');
-               strncat_s(g_filename, ext.c_str() + idx, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+               strncat_s(g_filename, ppi->m_szName.c_str(), sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+               const size_t idx = ppi->m_szPath.find_last_of('.');
+               strncat_s(g_filename, ppi->m_szPath.c_str() + idx, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
             }
             ofn.lpstrFile = g_filename;
             ofn.nMaxFile = sizeof(g_filename);
@@ -522,9 +521,9 @@ void ImageDialog::Export()
 
             if (GetSaveFileName(&ofn))	//Get filename from user
             {
-               len = lstrlen(ofn.lpstrFile);
+               const int len1 = lstrlen(ofn.lpstrFile);
                int begin; //select only file name from pathfilename
-               for (begin = len; begin >= 0; begin--)
+               for (begin = len1; begin >= 0; begin--)
                {
                   if (ofn.lpstrFile[begin] == '\\')
                   {
@@ -541,10 +540,10 @@ void ImageDialog::Export()
                   memcpy(pathName, ofn.lpstrFile, begin);
                pathName[begin] = 0;
 
+               const int len2 = ppi->m_szPath.length();
                while (sel != -1 && ppi != NULL)
                {
-                  len = lstrlen(ppi->m_szPath);
-                  for (begin = len; begin >= 0; begin--)
+                  for (begin = len2; begin >= 0; begin--)
                   {
                      if (ppi->m_szPath[begin] == '\\')
                      {
@@ -556,13 +555,12 @@ void ImageDialog::Export()
                   {
                      strncpy_s(g_filename, pathName, sizeof(g_filename)-1);
                      if (!renameOnExport)
-                        strncat_s(g_filename, &ppi->m_szPath[begin], sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+                        strncat_s(g_filename, ppi->m_szPath.c_str()+begin, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
                      else
                      {
-                        strncat_s(g_filename, ppi->m_szName, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
-                        const string ext(ppi->m_szPath);
-                        const size_t idx = ext.find_last_of('.');
-                        strncat_s(g_filename, ext.c_str() + idx, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+                        strncat_s(g_filename, ppi->m_szName.c_str(), sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+                        const size_t idx = ppi->m_szPath.find_last_of('.');
+                        strncat_s(g_filename, ppi->m_szPath.c_str() + idx, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
                      }
                   }
 
@@ -650,7 +648,7 @@ void ImageDialog::Reimport()
             Texture * const ppi = (Texture*)lvitem.lParam;
             if (ppi != NULL)
             {
-               const HANDLE hFile = CreateFile(ppi->m_szPath, GENERIC_READ, FILE_SHARE_READ,
+               const HANDLE hFile = CreateFile(ppi->m_szPath.c_str(), GENERIC_READ, FILE_SHARE_READ,
                                                NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
                if (hFile != INVALID_HANDLE_VALUE)
@@ -661,7 +659,7 @@ void ImageDialog::Reimport()
                   pt->SetNonUndoableDirty(eSaveDirty);
                }
                else
-                  MessageBox( ppi->m_szPath, "FILE NOT FOUND!", MB_OK);
+                  MessageBox(ppi->m_szPath.c_str(), "FILE NOT FOUND!", MB_OK);
 
                sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
             }
@@ -689,7 +687,7 @@ void ImageDialog::UpdateAll()
       Texture * const ppi = (Texture*)lvitem.lParam;
       if (ppi != NULL)
       {
-         HANDLE hFile = CreateFile(ppi->m_szPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+         HANDLE hFile = CreateFile(ppi->m_szPath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
          if (hFile != INVALID_HANDLE_VALUE)
          {
             CloseHandle(hFile);
@@ -745,7 +743,7 @@ void ImageDialog::ReimportFrom()
 
                CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                pt->ReImportImage(ppi, szFileName[0]);
-               ListView_SetItemText(hSoundList, sel, 1, ppi->m_szPath);
+               ListView_SetItemText(hSoundList, sel, 1, (LPSTR)ppi->m_szPath.c_str());
                pt->SetNonUndoableDirty(eSaveDirty);
 
                // Display new image
