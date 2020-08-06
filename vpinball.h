@@ -222,8 +222,8 @@ public:
 
    int m_securitylevel;
 
-   char m_szMyPath[MAX_PATH];
-   WCHAR m_wzMyPath[MAX_PATH];
+   string m_szMyPath;
+   std::wstring m_wzMyPath;
    string m_currentTablePath;
 
    int m_autosaveTime;

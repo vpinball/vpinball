@@ -9,6 +9,8 @@ In addition there is the pretty aged "vbsdoc_outdated.html", too, which may stil
 
 And CommandReference.txt for help with VPX scripting commands to connect both worlds, etc.
 
+Also use e.g. https://web.archive.org/web/20090419182113/ssuet.edu.pk/taimoor/books/1-57521-124-6/index.htm for a (detailed) intro to VBScripting
+
 
 ============
 Basic usage:

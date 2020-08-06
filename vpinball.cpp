@@ -166,14 +166,13 @@ VPinball::~VPinball()
 
 ///<summary>
 ///Store path of exe (without the exe's filename) in Class Variable
-///<para>Stores path as char[MAX_PATH] in m_szMyPath (8 bit ansi)</para>
-///<para>Stores path as WCHAR[MAX_PATH] in m_wzMyPath (16 bit Unicode)</para>
+///<para>Stores path as string in m_szMyPath (8 bit ansi)</para>
+///<para>Stores path as wstring in m_wzMyPath (16 bit Unicode)</para>
 ///</summary>
 void VPinball::GetMyPath()
 {
-   char szPath[MAX_PATH];
-
-   GetModuleFileName(NULL, szPath, MAX_PATH);
+   char szPath[MAXSTRING];
+   GetModuleFileName(NULL, szPath, MAXSTRING);
 
    char *szEnd = szPath + lstrlen(szPath);
 
@@ -189,8 +188,10 @@ void VPinball::GetMyPath()
    *(szEnd + 1) = '\0'; // Get rid of exe name
 
    // store 2x
-   lstrcpy(m_szMyPath, szPath);
-   MultiByteToWideChar(CP_ACP, 0, szPath, -1, m_wzMyPath, MAX_PATH);
+   m_szMyPath = szPath;
+   WCHAR wzPath[MAXSTRING];
+   MultiByteToWideChar(CP_ACP, 0, szPath, -1, wzPath, MAXSTRING);
+   m_wzMyPath = wzPath;
 }
 
 // Class Variables

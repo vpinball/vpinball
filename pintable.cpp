@@ -204,7 +204,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
 
       char szT[512];
       char szPath[MAX_PATH + 512];
-      WideCharToMultiByte(CP_ACP, 0, m_vpinball->m_wzMyPath, -1, szPath, MAX_PATH + 512, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, m_vpinball->m_wzMyPath.c_str(), -1, szPath, MAX_PATH + 512, NULL, NULL);
       WideCharToMultiByte(CP_ACP, 0, str, -1, szT, 512, NULL, NULL);
 
       //string szextension;
@@ -365,7 +365,7 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const char * const szfilename, 
    bool success = false;
 
    if (dirname != NULL)
-      szPath = string(m_vpinball->m_szMyPath) + dirname;
+      szPath = m_vpinball->m_szMyPath + dirname;
    // else Current directory
    szPath += szfilename;
 
@@ -442,10 +442,8 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
 {
-   WCHAR wzPath[MAX_PATH];
-   WideStrNCopy(m_vpinball->m_wzMyPath, wzPath, MAX_PATH);
-   WideStrCat(L"User\\", wzPath);
-   *pVal = SysAllocString(wzPath);
+   const std::wstring wzPath = m_vpinball->m_wzMyPath + L"User\\";
+   *pVal = SysAllocString(wzPath.c_str());
 
    return S_OK;
 }
@@ -487,22 +485,18 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 
    HRESULT hr;
 
-   WCHAR wzPath[MAX_PATH];
-   WideStrNCopy(m_vpinball->m_wzMyPath, wzPath, MAX_PATH);
-   WideStrCat(L"User\\VPReg.stg", wzPath);
+   const std::wstring wzPath = m_vpinball->m_wzMyPath + L"User\\VPReg.stg";
 
-   if (FAILED(hr = StgOpenStorage(wzPath, NULL, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgRoot)))
+   if (FAILED(hr = StgOpenStorage(wzPath.c_str(), NULL, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgRoot)))
    {
       // Registry file does not exist - create it
-      if (FAILED(hr = StgCreateDocfile(wzPath, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, &pstgRoot)))
+      if (FAILED(hr = StgCreateDocfile(wzPath.c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, &pstgRoot)))
       {
-         WCHAR wzMkPath[MAX_PATH];
-         WideStrCopy(m_vpinball->m_wzMyPath, wzMkPath);
-         WideStrCat(L"User", wzMkPath);
-         if (_wmkdir(wzMkPath) != 0)
+         const std::wstring wzMkPath = m_vpinball->m_wzMyPath + L"User";
+         if (_wmkdir(wzMkPath.c_str()) != 0)
             return hr;
 
-         if (FAILED(hr = StgCreateDocfile(wzPath, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, &pstgRoot)))
+         if (FAILED(hr = StgCreateDocfile(wzPath.c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, &pstgRoot)))
             return hr;
       }
    }
@@ -545,21 +539,17 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIANT *Value)
 {
    IStorage* pstgRoot;
-   IStorage* pstgTable;
-   IStream* pstmValue;
-
    HRESULT hr;
 
-   WCHAR wzPath[MAX_PATH];
-   WideStrNCopy(m_vpinball->m_wzMyPath, wzPath, MAX_PATH);
-   WideStrCat(L"User\\VPReg.stg", wzPath);
+   const std::wstring wzPath = m_vpinball->m_wzMyPath + L"User\\VPReg.stg";
 
-   if (FAILED(hr = StgOpenStorage(wzPath, NULL, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgRoot)))
+   if (FAILED(hr = StgOpenStorage(wzPath.c_str(), NULL, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgRoot)))
    {
       SetVarBstr(Value, SysAllocString(L""));
       return S_OK;
    }
 
+   IStorage* pstgTable;
    if (FAILED(hr = pstgRoot->OpenStorage(TableName, NULL, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgTable)))
    {
       SetVarBstr(Value, SysAllocString(L""));
@@ -567,6 +557,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
       return S_OK;
    }
 
+   IStream* pstmValue;
    if (FAILED(hr = pstgTable->OpenStream(ValueName, 0, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmValue)))
    {
       SetVarBstr(Value, SysAllocString(L""));
@@ -576,7 +567,6 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
    }
 
    STATSTG statstg;
-
    pstmValue->Stat(&statstg, STATFLAG_NONAME);
 
    const int size = statstg.cbSize.LowPart / sizeof(WCHAR);
@@ -1932,7 +1922,7 @@ bool PinTable::IsNameUnique(const WCHAR * const wzName) const
    return m_pcv->m_vcvd.GetSortedIndex(wzName) == -1;
 }
 
-void PinTable::GetUniqueName(ItemTypeEnum type, WCHAR * const wzUniqueName) const
+void PinTable::GetUniqueName(const ItemTypeEnum type, WCHAR * const wzUniqueName) const
 {
    WCHAR wzRoot[256];
    GetTypeNameForType(type, wzRoot);
@@ -1948,7 +1938,7 @@ void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR * const wzUniqueNa
 
    while (!found)
    {
-      WideStrNCopy(wzRoot, wzName, 128);
+      WideStrNCopy(wzRoot, wzName, sizeof(wzName)/sizeof(wzName[0]));
       _itow_s(suffix, wzSuffix, sizeof(wzSuffix) / sizeof(WCHAR), 10);
       if(suffix < 10)
          WideStrCat(L"0", wzName);
@@ -1965,7 +1955,7 @@ void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR * const wzUniqueNa
    WideStrCopy(wzName, wzUniqueName);
 }
 
-void PinTable::GetUniqueNamePasting(int type, WCHAR *wzUniqueName)
+void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName)
 {
    //if the original name is not yet used, use that one (so there's nothing we have to do) 
    //otherwise add/increase the suffix untill we find a name that's not used yet
@@ -2502,7 +2492,7 @@ HRESULT PinTable::Save(const bool saveAs)
       }
       else
       {
-         szFoo = m_vpinball->m_szMyPath + string("Tables\\");
+         szFoo = m_vpinball->m_szMyPath + "Tables\\";
          ofn.lpstrInitialDir = szFoo.c_str();
       }
 

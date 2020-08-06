@@ -511,9 +511,9 @@ public:
    void GetViewRect(FRect *pfrect) const;
 
    bool IsNameUnique(const WCHAR * const wzName) const;
-   void GetUniqueName(ItemTypeEnum type, WCHAR * const wzUniqueName) const;
+   void GetUniqueName(const ItemTypeEnum type, WCHAR * const wzUniqueName) const;
    void GetUniqueName(const WCHAR * const prefix, WCHAR * const wzUniqueName) const;
-   void GetUniqueNamePasting(int type, WCHAR *wzUniqueName);
+   void GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName);
 
    float GetSurfaceHeight(const char * const szName, float x, float y) const;
 
