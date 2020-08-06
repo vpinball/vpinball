@@ -741,19 +741,19 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,45,141,10
     CONTROL         "'View Script' never hides window",IDC_ALWAYSVIEWSCRIPT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,58,116,10
-    CONTROL         "Start VP with File dialog open to directly play a table",IDC_START_VP_FILE_DIALOG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,71,174,10
+    CONTROL         "Start VP with File dialog open (to directly play a table)",IDC_START_VP_FILE_DIALOG,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,71,208,10
     LTEXT           "Grid size",IDC_STATIC,6,87,29,8
     EDITTEXT        IDC_GRID_SIZE,37,85,27,12,ES_AUTOHSCROLL
-    LTEXT           "Default Material color",IDC_STATIC,6,104,68,8
-    LTEXT           "Element Select color",IDC_STATIC,6,123,66,8
-    LTEXT           "Element Select color \n(locked)",IDC_STATIC,6,141,71,16
+    LTEXT           "Default Material color",IDC_STATIC,6,103,68,8
+    LTEXT           "Element Select color",IDC_STATIC,6,121,66,8
+    LTEXT           "Element Select color \n(locked)",IDC_STATIC,6,138,71,16
     LTEXT           "Element Fill color",IDC_STATIC,6,162,54,8
-    LTEXT           "Table background",IDC_STATIC,6,181,60,8
+    LTEXT           "Table background",IDC_STATIC,6,182,60,8
     PUSHBUTTON      "Default colors",IDC_DEFAULT_COLORS_BUTTON,167,178,50,14
-    GROUPBOX        "Ball debugging",IDC_STATIC,10,195,219,43
+    GROUPBOX        "Ball debugging",IDC_STATIC,3,196,223,42
     CONTROL         "Throw always on",IDC_THROW_BALLS_ALWAYS_ON_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,208,71,10
-    LTEXT           "New ball size",IDC_STATIC,90,209,45,8
+    LTEXT           "New Ball  Size",IDC_STATIC,90,209,45,8
     EDITTEXT        IDC_THROW_BALLS_SIZE_EDIT,138,207,27,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_THROW_BALLS_MASS_EDIT,190,207,27,12,ES_AUTOHSCROLL
     LTEXT           "Mass",IDC_STATIC,169,209,18,8
