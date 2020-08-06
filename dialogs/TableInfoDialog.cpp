@@ -67,7 +67,7 @@ BOOL TableInfoDialog::OnInitDialog()
    {
       Texture * const pin = pt->m_vimage[i];
       if (pin->m_ppb)
-         ::SendMessage(hwndList, CB_ADDSTRING, 0, (LPARAM)pin->m_szName);
+         ::SendMessage(hwndList, CB_ADDSTRING, 0, (LPARAM)pin->m_szName.c_str());
    }
 
    ::SendMessage(hwndList, CB_SELECTSTRING, ~0u, (LPARAM)pt->m_szScreenShot.c_str());

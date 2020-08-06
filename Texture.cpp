@@ -237,7 +237,6 @@ Texture::Texture()
    m_hbmGDIVersion = NULL;
    m_ppb = NULL;
    m_alphaTestValue = 1.0f;
-   memset(m_szName, 0, sizeof(m_szName));
 }
 
 Texture::Texture(BaseTexture * const base)
@@ -248,7 +247,6 @@ Texture::Texture(BaseTexture * const base)
    m_hbmGDIVersion = NULL;
    m_ppb = NULL;
    m_alphaTestValue = 1.0f;
-   memset(m_szName, 0, sizeof(m_szName));
 }
 
 Texture::~Texture()
@@ -262,8 +260,8 @@ HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
 
    bw.WriteString(FID(NAME), m_szName);
 #if CURRENT_FILE_FORMAT_VERSION == 1060 // deprecated lower case name
-   char tmp[sizeof(m_szName)];
-   strncpy_s(tmp, m_szName, sizeof(tmp)-1);
+   char tmp[MAXSTRING];
+   strncpy_s(tmp, m_szName.c_str(), sizeof(tmp)-1);
    const DWORD len = (DWORD)strnlen_s(tmp, sizeof(tmp));
    CharLowerBuff(tmp, len);
    bw.WriteString(FID(INME), tmp);
