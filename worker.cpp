@@ -80,17 +80,7 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 
    FastIStorage * const pstgroot = pasp->pstg;
 
-   const WCHAR * const wzSaveName = L"AutoSave";
-   const WCHAR * const wzSaveExtension = L".vpx";
-   WCHAR wzSuffix[32];
-   _itow_s(pasp->tableindex, wzSuffix, sizeof(wzSuffix) / sizeof(WCHAR), 10);
-   const int maxLen = MAX_PATH + 32 + lstrlenW(wzSaveName) + lstrlenW(wzSaveExtension) + 1;
-   WCHAR * const wzT = new WCHAR[maxLen];
-
-   WideStrNCopy(g_pvp->m_wzMyPath, wzT, maxLen);
-   WideStrCat(wzSaveName, wzT);
-   WideStrCat(wzSuffix, wzT);
-   WideStrCat(wzSaveExtension, wzT);
+   const std::wstring wzT = g_pvp->m_wzMyPath + L"AutoSave" + std::to_wstring(pasp->tableindex) + L".vpx";
 
    //MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName);
 
@@ -101,7 +91,7 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 
    IStorage* pstgDisk;
    HRESULT hr;
-   if (SUCCEEDED(hr = StgCreateStorageEx(wzT, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
+   if (SUCCEEDED(hr = StgCreateStorageEx(wzT.c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
       STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgDisk)))
    {
       pstgroot->CopyTo(0, NULL, NULL, pstgDisk);
@@ -115,6 +105,5 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 
    PostMessage(pasp->hwndtable, DONE_AUTOSAVE, (WPARAM)hEvent, hr);
 
-   delete[] wzT;
    delete pasp;
 }

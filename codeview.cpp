@@ -2382,14 +2382,12 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 
 void CodeViewer::ParseVPCore()
 {
-	const string mp(g_pvp->m_szMyPath);
-
 	vector<string> searchPaths;
-	searchPaths.push_back(mp + "Scripts\\core.vbs"); // executable path
+	searchPaths.push_back(g_pvp->m_szMyPath + "Scripts\\core.vbs"); // executable path
 
-	const size_t index = mp.substr(0, mp.length()-1).find_last_of('\\');
+	const size_t index = g_pvp->m_szMyPath.substr(0, g_pvp->m_szMyPath.length()-1).find_last_of('\\');
 	if (index != std::string::npos)
-		searchPaths.push_back(mp.substr(0, index+1) + "Scripts\\core.vbs"); // executable minus one dir (i.e. minus Release or Debug)
+		searchPaths.push_back(g_pvp->m_szMyPath.substr(0, index+1) + "Scripts\\core.vbs"); // executable minus one dir (i.e. minus Release or Debug)
 
 	searchPaths.push_back(g_pvp->m_currentTablePath + "core.vbs"); // table path
 

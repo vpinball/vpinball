@@ -35,9 +35,9 @@ INT_PTR AboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          GetDlgItem(IDC_ABOUT_VERSION).SetWindowText(versionString);
 
          {
-            std::ifstream file(g_pvp->m_szMyPath + string("Changelog.txt"));
+            std::ifstream file(g_pvp->m_szMyPath + "Changelog.txt");
             if (!file.is_open())
-               file = std::ifstream(g_pvp->m_szMyPath + string("Doc\\Changelog.txt"));
+               file = std::ifstream(g_pvp->m_szMyPath + "Doc\\Changelog.txt");
             std::string line;
             std::string text;
             while (std::getline(file, line))
