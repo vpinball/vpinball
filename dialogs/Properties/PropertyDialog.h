@@ -343,7 +343,6 @@ private:
         PropertyDialog::EndUndo(element); \
     }\
 }
-
 #define CHECK_UPDATE_COMBO_TEXT_STRING(classValue, uiCombo, element)\
 {\
     char szName[MAXSTRING]={0}; \
@@ -378,6 +377,18 @@ private:
         PropertyDialog::EndUndo(element); \
     } \
 }
+
+#define CHECK_UPDATE_COMBO_VALUE_SETTER(classSetter, classGetter, uiComboValue, element) \
+{\
+   auto value =  uiComboValue; \
+   if(classGetter() != value) \
+   { \
+      PropertyDialog::StartUndo(element); \
+      classSetter(value); \
+      PropertyDialog::EndUndo(element); \
+   } \
+}
+
 #pragma endregion
 
 #pragma region Docking

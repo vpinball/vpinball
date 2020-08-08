@@ -1101,21 +1101,13 @@ STDMETHODIMP Light::put_FalloffPower(float newVal)
 
 STDMETHODIMP Light::get_State(LightState *pVal)
 {
-    if (g_pplayer && !m_lockedByLS)
-        *pVal = m_realState; 
-    else
-        *pVal = m_d.m_state; //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
-
+   *pVal = getLightState();
    return S_OK;
 }
 
 STDMETHODIMP Light::put_State(LightState newVal)
 {
-   // if the light is locked by the LS then just change the state and don't change the actual light
-   if (!m_lockedByLS)
-      setLightState(newVal);
-   m_d.m_state = newVal;
-
+   setLightState(newVal);
    return S_OK;
 }
 
@@ -1530,21 +1522,35 @@ STDMETHODIMP Light::put_BulbHaloHeight(float newVal)
 
 void Light::setLightState(const LightState newVal)
 {
-   if (newVal != m_realState) // state changed???
+   // if the light is locked by the LS then just change the state and don't change the actual light
+   if (!m_lockedByLS)
    {
-      m_realState = newVal;
-
-      if (g_pplayer)
+      if (newVal != m_realState) // state changed???
       {
-         if (m_realState == LightStateBlinking)
+         m_realState = newVal;
+
+         if (g_pplayer)
          {
-            m_timenextblink = g_pplayer->m_time_msec; // Start pattern right away // + m_d.m_blinkinterval;
-            m_iblinkframe = 0; // reset pattern
+            if (m_realState == LightStateBlinking)
+            {
+               m_timenextblink = g_pplayer->m_time_msec; // Start pattern right away // + m_d.m_blinkinterval;
+               m_iblinkframe = 0; // reset pattern
+            }
+            if (m_duration > 0)
+               m_duration = 0; // disable duration if a state was set this way
          }
-         if (m_duration > 0)
-             m_duration = 0; // disable duration if a state was set this way
       }
    }
+   else
+      m_d.m_state = newVal;
+}
+
+LightState Light::getLightState() const
+{
+   if (g_pplayer && !m_lockedByLS)
+      return m_realState;
+   else
+      return m_d.m_state; //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
 }
 
 STDMETHODIMP Light::get_Visible(VARIANT_BOOL *pVal) //temporary value of object

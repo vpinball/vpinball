@@ -40,7 +40,7 @@ void LightStatesProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case DISPID_Light_State:
-                CHECK_UPDATE_ITEM(light->m_d.m_state, (LightState)(PropertyDialog::GetComboBoxIndex(m_stateCombo, m_stateList)), light);
+                CHECK_UPDATE_COMBO_VALUE_SETTER(light->setLightState, light->getLightState, (LightState)(PropertyDialog::GetComboBoxIndex(m_stateCombo, m_stateList)), light);
                 break;
             case IDC_BLINK_PATTERN_EDIT:
             {
