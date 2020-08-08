@@ -34,8 +34,12 @@ public:
         {
             switch (HIWORD(wParam))
             {
-            case EN_KILLFOCUS:
             //case CBN_KILLFOCUS:
+            case EN_KILLFOCUS:
+            {
+               if(m_pvsel->Size()>1)
+                  break;   //early out here for multi-selected elements, otherwise the value of the last element in the list is assigned to all other elements as well
+            }
             case CBN_SELCHANGE:
             case BN_CLICKED:
             {
