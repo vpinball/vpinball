@@ -128,6 +128,7 @@ public:
 
    void InitShape();
    void setLightState(const LightState newVal);
+   LightState getLightState() const;
    void RenderBulbMesh();
 
    LightData m_d;
