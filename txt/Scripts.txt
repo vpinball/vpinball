@@ -7,7 +7,9 @@ Basic documentation on how to use the VPM core scripts shipped with VPX.
 Please also check core.vbs' actual functions for more help in their comments and the respective machine .vbs files functions, too.
 In addition there is the pretty aged "vbsdoc_outdated.html", too, which may still be useful in some cases though!
 
-And CommandReference.txt for help with VPX scripting commands to connect both worlds, etc.
+There is also https://docs.orbitalpin.com/welcome for some more detailed help
+
+And CommandReference.txt for some overview of (the majority of) the VPX scripting commands to connect both worlds, etc.
 
 Also use e.g. https://web.archive.org/web/20090419182113/ssuet.edu.pk/taimoor/books/1-57521-124-6/index.htm for a (detailed) intro to VBScripting
 
