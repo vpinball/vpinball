@@ -20,7 +20,7 @@ void LightStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Light * const light = (Light *)m_pvsel->ElementAt(i);
         if (dispid == DISPID_Light_State || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_stateList, m_stateCombo, m_stateList[(int)light->m_d.m_state]);
+            PropertyDialog::UpdateComboBox(m_stateList, m_stateCombo, m_stateList[(int)light->getLightState()]);
         if (dispid == IDC_BLINK_PATTERN_EDIT || dispid == -1)
             m_blinkPatternEdit.SetWindowText(light->m_rgblinkpattern);
         if (dispid == DISPID_Light_BlinkInterval || dispid == -1)
