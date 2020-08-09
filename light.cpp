@@ -1547,7 +1547,7 @@ void Light::setLightState(const LightState newVal)
 
 LightState Light::getLightState() const
 {
-   if (g_pplayer && !m_lockedByLS)
+   if (!m_lockedByLS)
       return m_realState;
    else
       return m_d.m_state; //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
