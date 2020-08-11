@@ -1342,10 +1342,13 @@ void VPinball::OnClose()
       while (ptable->m_savingActive)
          Sleep(THREADS_PAUSE);
    }
+   bool canClose = true;
+
    if (g_pplayer)
        g_pplayer->SendMessage(WM_CLOSE, 0, 0);
+   else
+      canClose = CanClose();
 
-   const bool canClose = CanClose();
    if (canClose)
    {
       WINDOWPLACEMENT winpl;
