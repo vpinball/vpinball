@@ -13,6 +13,7 @@ FEATURES:
    o Add context menu item to assign selected elements to the current selected layer.
 
 - when exporting/importing a POV file, the custom user settings per table are now also exported/imported
+- when importing a primitive mesh, there is now a new option that prevents internal reordering/optimization of the data
 
 - add MP3 and OGG support (via the BASS library) to the sound manager and the 'standard' sound commands
   these new file types are now also saved directly into the VPX file, unlike the music commands (which still use the 'music' folder for legacy reasons)

@@ -1759,6 +1759,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
       CheckDlgButton(hwndDlg, IDC_REL_POSITION_RADIO, BST_CHECKED);
       CheckDlgButton(hwndDlg, IDC_ABS_POSITION_RADIO, BST_UNCHECKED);
       CheckDlgButton(hwndDlg, IDC_CENTER_MESH, BST_UNCHECKED);
+      CheckDlgButton(hwndDlg, IDC_IMPORT_NO_FORSYTH, BST_UNCHECKED);
       EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
       return TRUE;
    }
@@ -1792,11 +1793,12 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                prim->m_vertexBuffer = 0;
             }
             bool flipTV = false;
-            bool convertToLeftHanded = IsDlgButtonChecked(hwndDlg, IDC_CONVERT_COORD_CHECK) == BST_CHECKED;
-            bool importAbsolutePosition = IsDlgButtonChecked(hwndDlg, IDC_ABS_POSITION_RADIO) == BST_CHECKED;
-            bool centerMesh = IsDlgButtonChecked(hwndDlg, IDC_CENTER_MESH) == BST_CHECKED;
-            bool importMaterial = IsDlgButtonChecked(hwndDlg, IDC_IMPORT_MATERIAL) == BST_CHECKED;
-            bool importAnimation = IsDlgButtonChecked(hwndDlg, IDC_IMPORT_ANIM_SEQUENCE) == BST_CHECKED;
+            const bool convertToLeftHanded = IsDlgButtonChecked(hwndDlg, IDC_CONVERT_COORD_CHECK) == BST_CHECKED;
+            const bool importAbsolutePosition = IsDlgButtonChecked(hwndDlg, IDC_ABS_POSITION_RADIO) == BST_CHECKED;
+            const bool centerMesh = IsDlgButtonChecked(hwndDlg, IDC_CENTER_MESH) == BST_CHECKED;
+            const bool importMaterial = IsDlgButtonChecked(hwndDlg, IDC_IMPORT_MATERIAL) == BST_CHECKED;
+            const bool importAnimation = IsDlgButtonChecked(hwndDlg, IDC_IMPORT_ANIM_SEQUENCE) == BST_CHECKED;
+            const bool doForsyth = IsDlgButtonChecked(hwndDlg, IDC_IMPORT_NO_FORSYTH) == BST_UNCHECKED;
             if (importMaterial)
             {
                string szMatName = szFileName;
@@ -1854,11 +1856,14 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                   }
                }
                prim->m_d.m_use3DMesh = true;
-               unsigned int* const tmp = reorderForsyth(prim->m_mesh.m_indices, (int)prim->m_mesh.NumVertices());
-               if (tmp != NULL)
+               if (doForsyth)
                {
-                  memcpy(prim->m_mesh.m_indices.data(), tmp, prim->m_mesh.NumIndices() * sizeof(unsigned int));
-                  delete[] tmp;
+                   unsigned int* const tmp = reorderForsyth(prim->m_mesh.m_indices, (int)prim->m_mesh.NumVertices());
+                   if (tmp != NULL)
+                   {
+                       memcpy(prim->m_mesh.m_indices.data(), tmp, prim->m_mesh.NumIndices() * sizeof(unsigned int));
+                       delete[] tmp;
+                   }
                }
                prim->UpdateStatusBarInfo();
                prim = NULL;
