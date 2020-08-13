@@ -893,6 +893,7 @@
 #define IDC_ENABLE_SSR                  590
 #define IDC_BLOOM_OFF                   591
 #define IDC_PLUNGERRETRACT              592
+#define IDC_IMPORT_NO_FORSYTH           593
 #define IDD_PROPRUBBER_PHYSICS          602
 #define IDC_RUBBER                      602
 #define IDD_PROPRUBBER_VISUALS          604
