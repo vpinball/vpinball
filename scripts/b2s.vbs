@@ -20,7 +20,8 @@ Option Explicit
 Const B2SVersion = 3
 Const B2SDataRange = 49
 Dim B2SData(75)
-Dim B2STemp, b2si,b2sStepReady,b2sSP,b2sEP,b2sV,b2sDIR,b2sSS
+'Dim b2sStepReady
+Dim B2STemp, b2sSP,b2sEP,b2sV,b2sDIR,b2sSS
 Dim objRegistry
 Set objRegistry = CreateObject("Wscript.shell")
 
@@ -31,7 +32,7 @@ Next
 
 '----- Launch a backglass.exe -----------------------------------
 Sub LaunchBackGlass(ByVal exename, ByVal flag)
-	If Flag=True Then
+	If flag=True Then
 		exename=exename+".exe"
 		objRegistry.Run(exename)
 	End If
@@ -42,6 +43,7 @@ Sub ResetB2SData(ByVal StartPos,ByVal EndPos,ByVal Value)
 	B2STemp=""
 	If StartPos<0 Then StartPos=0
 	If EndPos>B2SDataRange then EndPos=B2SDataRange
+	Dim b2si
 	For b2si=StartPos to EndPos
 		B2SData(b2si)=Chr(Value+1)
 	Next
@@ -55,6 +57,7 @@ End Sub
 Sub SetB2SData(ByVal Pos,ByVal Value)
 	B2SData(Pos)=Chr(Value+1)
 	B2STemp=""
+	Dim b2si
 	For b2si=0 To B2SDataRange
 		B2STemp=B2STemp+B2SData(b2si)
 	Next
@@ -63,7 +66,7 @@ End Sub
 
 '------ Step B2S values up or down to a specified value ----------------
 Sub StepB2SData (ByVal startpos,ByVal endpos,ByVal value,ByVal direction,ByVal steptime,ByVal stepsound)
-	b2sStepReady=0
+	'b2sStepReady=0
 	b2sSP=startpos
 	b2sEP=endpos
 	b2sV=value+1
@@ -76,6 +79,7 @@ End Sub
 Sub B2Stimer_Timer()
 	Dim b2sNoChange
 	b2sNoChange=1
+	Dim b2si
 	For b2si=b2sSP to b2sEP
 		Select Case b2sDIR
 		Case 0 'Step down to value
@@ -100,7 +104,7 @@ Sub B2Stimer_Timer()
 		End Select
 	Next
 	If b2sNoChange=1 Then
-		b2sStepReady=1
+		'b2sStepReady=1
 		B2Stimer.Enabled=False
 	Else
 		PlaySound b2sSS

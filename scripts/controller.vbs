@@ -172,13 +172,7 @@ End Sub
 'The user can put a value of 1 for ForceDisableB2S, which will force to load VPinMAME or no controller for EM tables.
 'Also defines the array of toy categories that will either play the sound or trigger the DOF effect.
 Sub LoadController(TableType, VPMver, VBSfile, VBSver)
-	Dim FileObj
-	Dim DOFConfig
-	Dim TextStr2
 	Dim tempC
-	Dim count
-	Dim ISDOF
-	Dim Answer
 
 	B2SOn = False
 	B2SOnALT = False
@@ -265,8 +259,6 @@ Sub LoadController(TableType, VPMver, VBSfile, VBSver)
 				LoadVPinMAME VPMver, VBSfile, VBSver
 			End If
 		End If
-		Set DOFConfig=Nothing
-		Set FileObj=Nothing
 	End If
 End sub
 
