@@ -45,6 +45,8 @@ FIXES:
 
 - fix hang on player exit on some setups
 
+- do not mark table as dirty if just starting to play it (i.e. due to backup phase)
+
 - replace dithering code with blue noise, fixes flickering patterns (especially in darker table areas)
 - tweak AO (Ambient Occlusion) and SSR (Screen Space Reflections) to be a bit less noisy
 
