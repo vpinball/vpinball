@@ -6156,21 +6156,26 @@ void PinTable::Undelete(IEditable *pie)
 
 void PinTable::BackupForPlay()
 {
+   m_undo.MarkBeginPlay();
+
    m_undo.BeginUndo();
 
    m_undo.MarkForUndo((IEditable *)this);
    for (size_t i = 0; i < m_vedit.size(); i++)
-   {
       m_undo.MarkForUndo(m_vedit[i], true);
-   }
+
    m_undo.EndUndo();
 }
 
 void PinTable::RestoreBackup()
 {
+    m_undo.MarkEndPlay();
+
+    // if we were using the cam/light tweaking mode, then do not undo these changes!
     const float inclination = m_BG_inclination[m_BG_current_set];
     const float fov = m_BG_FOV[m_BG_current_set];
     const float layback = m_BG_layback[m_BG_current_set];
+    const float rotation = m_BG_rotation[m_BG_current_set];
     const float xlatex = m_BG_xlatex[m_BG_current_set];
     const float xlatey = m_BG_xlatey[m_BG_current_set];
     const float xlatez = m_BG_xlatez[m_BG_current_set];
@@ -6187,6 +6192,7 @@ void PinTable::RestoreBackup()
     m_BG_inclination[m_BG_current_set] = inclination;
     m_BG_FOV[m_BG_current_set] = fov;
     m_BG_layback[m_BG_current_set] = layback;
+    m_BG_rotation[m_BG_current_set] = rotation;
     m_BG_xlatex[m_BG_current_set] = xlatex;
     m_BG_xlatey[m_BG_current_set] = xlatey;
     m_BG_xlatez[m_BG_current_set] = xlatez;

@@ -5,6 +5,7 @@ PinUndo::PinUndo()
    m_cUndoLayer = 0;
    m_sdsDirty = eSaveClean;
    m_cleanpoint = 0;
+   m_startToPlay = false;
 }
 
 PinUndo::~PinUndo()
@@ -180,7 +181,7 @@ void PinUndo::Undo()
 void PinUndo::EndUndo()
 {
    if(g_pplayer)
-       return;
+      return;
 
    _ASSERTE(m_cUndoLayer > 0);
    if (m_cUndoLayer > 0)
@@ -191,7 +192,8 @@ void PinUndo::EndUndo()
    if (m_cUndoLayer == 0 && (m_sdsDirty < eSaveDirty))
    {
       m_sdsDirty = eSaveDirty;
-      m_ptable->SetDirty(eSaveDirty);
+      if(!m_startToPlay) // undo history only due to backup? -> do not flag table as dirty
+         m_ptable->SetDirty(eSaveDirty);
    }
 }
 
