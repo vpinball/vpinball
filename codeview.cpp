@@ -106,7 +106,7 @@ void CodeViewer::Init(IScriptableHost *psh)
 
 CodeViewer::~CodeViewer()
 {
-   if (g_pvp->m_pcv == this)
+   if (g_pvp && g_pvp->m_pcv == this)
       g_pvp->m_pcv = NULL;
 
    Destroy();
