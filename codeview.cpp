@@ -522,7 +522,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
       WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN,
       0, 30+2 +40, 0, 0, m_hwndMain, NULL, g_pvp->theInstance, 0);
 
-	//if still using old dll load VB lexer insted
+	//if still using old dll load VB lexer instead
 	//use SCI_SETLEXERLANGUAGE as SCI_GETLEXER doesn't return the correct value with SCI_SETLEXER
 	::SendMessage(m_hwndScintilla, SCI_SETLEXERLANGUAGE, 0, (LPARAM)"vpscript");
 	LRESULT lexVersion = SendMessage(m_hwndScintilla, SCI_GETLEXER, 0, 0);
@@ -1150,6 +1150,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
       if (szText[i] < 9 || (szText[i] > 10 && szText[i] < 13) || (szText[i] > 13 && szText[i] < MAXNAMEBUFFER))
          szText[i] = ' ';
    }
+   SendMessage(m_hwndScintilla, SCI_SETCODEPAGE, 0, 0); // Set to single byte/ANSI codepage (Latin-1 ?!)
    SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
    SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
    delete[] szText;
