@@ -1140,14 +1140,13 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
       cchar = cryptlen;
    }
 
-   // ensure that the script is null terminated (as an encrypted script can leave junk at
-   // the end of the buffer)
+   // ensure that the script is null terminated
    szText[cchar] = L'\0';
 
    // check for bogus control characters
    for (int i = 0; i < cchar; ++i)
    {
-      if (szText[i] < 9 || (szText[i] > 10 && szText[i] < 13) || (szText[i] > 13 && szText[i] < MAXNAMEBUFFER))
+      if (szText[i] < 9 || (szText[i] > 10 && szText[i] < 13) || (szText[i] > 13 && szText[i] < 32))
          szText[i] = ' ';
    }
    SendMessage(m_hwndScintilla, SCI_SETCODEPAGE, 0, 0); // Set to single byte/ANSI codepage (Latin-1 ?!)
