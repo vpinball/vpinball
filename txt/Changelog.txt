@@ -70,8 +70,9 @@ FIXES:
 
 - tweak flipper shadows (via script) implementation in the example/blank table
 
-- update BASS library to 2.4.15
-- script editor updated to use latest scintilla library 4.4.4
+- update BASS library to latest 2.4.15
+- update FreeImage library to latest 3.18.0 (custom build)
+- script editor updated to use latest scintilla library 4.4.4 (custom build)
 
 - see Changelog_Scripts.txt for the respective core script changes (version 3.58)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
@@ -79,7 +80,6 @@ FIXES:
 
 - add Clang (via Visual Studio 2019) support, still has a linking prob with 32bit though
 
-- updated to latest FreeImage.dll (3.18.0) (currently disabled)
 - DirectX 8 port for input handling (currently disabled)
 
 VP 10.6.1 Changelog
