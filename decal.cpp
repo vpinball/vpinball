@@ -237,7 +237,7 @@ void Decal::GetTimers(vector<HitTimer*> &pvht)
 
 void Decal::GetTextSize(int * const px, int * const py)
 {
-   const int len = m_d.m_sztext.length();
+   const int len = (int)m_d.m_sztext.length();
    const HFONT hFont = GetFont();
    const int alignment = DT_LEFT;
 
@@ -288,7 +288,7 @@ void Decal::PreRenderText()
       return;
 
    RECT rcOut = { 0 };
-   const int len = m_d.m_sztext.length();
+   const int len = (int)m_d.m_sztext.length();
    const HFONT hFont = GetFont();
    int alignment = DT_LEFT;
 

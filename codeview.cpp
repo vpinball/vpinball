@@ -1687,7 +1687,7 @@ void CodeViewer::GetMembers(vector<UserData>* ListIn, const string &strIn)
 bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 {
 	//get word under pointer
-	const int dwellpos = pSCN->position;
+	const Sci_Position dwellpos = pSCN->position;
 	LRESULT wordstart = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, dwellpos, TRUE);
 	LRESULT wordfinish = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, dwellpos, TRUE);
 	char Mess[MAX_LINE_LENGTH*4] = {}; int MessLen = 0;
@@ -1778,7 +1778,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	return false;
 }
 
-void CodeViewer::MarginClick(const int position, const int modifiers)
+void CodeViewer::MarginClick(const Sci_Position position, const int modifiers)
 {
    const size_t lineClick = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, position, 0);
    if ((modifiers & SCMOD_SHIFT) && (modifiers & SCMOD_CTRL))

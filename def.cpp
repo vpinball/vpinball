@@ -6,7 +6,7 @@ unsigned long long tinymt64state[2] = { 'T', 'M' };
 
 float sz2f(const string& sz)
 {
-   const int len = sz.length()+1;
+   const int len = (int)sz.length()+1;
    WCHAR * const wzT = new WCHAR[len];
    MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, wzT, len);
 
@@ -140,7 +140,7 @@ LocalStringW::LocalStringW(const int resid)
 
 WCHAR *MakeWide(const string& sz)
 {
-   const int len = sz.length()+1;
+   const int len = (int)sz.length()+1;
    WCHAR * const wzT = new WCHAR[len];
    MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, wzT, len);
 

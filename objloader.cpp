@@ -88,8 +88,8 @@ bool WaveFrontObj_LoadMaterial(const string& filename, Material * const mat)
       }
       if (strcmp(lineHeader, "newmtl") == 0)
       {
-         char buf[MAXNAMEBUFFER];
-         fscanf_s(f, "%s\n", buf, MAXNAMEBUFFER);
+         char buf[MAXSTRING];
+         fscanf_s(f, "%s\n", buf, MAXSTRING);
          mat->m_szName = buf;
       }
       else if (strcmp(lineHeader, "Ns") == 0)
@@ -364,15 +364,8 @@ void WaveFrontObj_GetIndices(std::vector<unsigned int>& idx) // clears temporary
 
 FILE* WaveFrontObj_ExportStart(const string& filename)
 {
-   FILE *f;
-   char matName[MAX_PATH];
-   char nameOnly[MAX_PATH] = { 0 };
-   int len = filename.length(); 
+   const int len = min((int)filename.length(), MAX_PATH-1);
    int i;
-
-   if (len > MAX_PATH)
-       len = MAX_PATH - 1;
-
    for (i = len; i >= 0; i--)
    {
       if (filename[i] == '.')
@@ -381,6 +374,7 @@ FILE* WaveFrontObj_ExportStart(const string& filename)
          break;
       }
    }
+   char matName[MAX_PATH];
    strncpy_s(matName, filename.c_str(), sizeof(matName)-1);
    if (i < len)
    {      
@@ -397,11 +391,13 @@ FILE* WaveFrontObj_ExportStart(const string& filename)
          break;
       }
    }
+   char nameOnly[MAX_PATH] = { 0 };
    memcpy(nameOnly, matName + i, len - i);
    if ((fopen_s(&matFile, matName, "wt") != 0) || !matFile)
       return 0;
    fprintf_s(matFile, "# Visual Pinball table mat file\n");
 
+   FILE *f;
    if ((fopen_s(&f, filename.c_str(), "wt") != 0) || !f)
       return 0;
    faceIndexOffset = 0;

@@ -389,7 +389,7 @@ void Textbox::PreRenderText()
    rcOut.right = width - border * 2;
    rcOut.bottom = height - border * 2;
 
-   DrawText(hdc, m_d.m_sztext.c_str(), m_d.m_sztext.length(), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+   DrawText(hdc, m_d.m_sztext.c_str(), (int)m_d.m_sztext.length(), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
 
    GdiFlush();     // make sure everything is drawn
 

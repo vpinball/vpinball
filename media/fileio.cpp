@@ -15,7 +15,7 @@ bool Exists(const string& filePath)
 
 void ExtensionFromFilename(const string& szfilename, string& szextension)
 {
-   const int len = szfilename.length();
+   const int len = (int)szfilename.length();
 
    int begin;
    for (begin = len; begin >= 0; begin--)
@@ -66,7 +66,7 @@ void TitleFromFilename(const string& szfilename, string& sztitle)
 
 void PathFromFilename(const string& szfilename, string& szpath)
 {
-   const int len = szfilename.length();
+   const int len = (int)szfilename.length();
    // find the last '\' in the filename
    int end;
    for (end = len; end >= 0; end--)
@@ -250,7 +250,7 @@ HRESULT BiffWriter::WriteWideString(const int id, const std::basic_string<WCHAR>
 {
    ULONG writ = 0;
    HRESULT hr;
-   const int len = wzvalue.length() * (int)sizeof(WCHAR);
+   const int len = (int)wzvalue.length() * (int)sizeof(WCHAR);
 
    if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
       return hr;
