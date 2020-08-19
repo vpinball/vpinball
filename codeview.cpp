@@ -1076,8 +1076,8 @@ next:
 
 void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
 {
-   size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-   const size_t bufferSize = cchar + MAXNAMEBUFFER;
+   const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+   const size_t bufferSize = cchar + MAXNAMEBUFFER; //!! ??
    char * const szText = new char[bufferSize + 1];
    SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
 
@@ -1096,8 +1096,7 @@ void CodeViewer::SaveToFile(const string& filename)
    if ((fopen_s(&fScript, filename.c_str(), "wb") == 0) && fScript)
    {
       const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-      const size_t bufferSize = cchar + MAXNAMEBUFFER;
-      char * const szText = new char[bufferSize + 1];
+      char * const szText = new char[cchar + 1];
       SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
       fwrite(szText, 1, cchar, fScript);
       fclose(fScript);
@@ -1113,7 +1112,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
    int cchar;
    pistream->Read(&cchar, sizeof(int), &read);
 
-   BYTE * const szText = new BYTE[cchar + 1];
+   char * szText = new char[cchar + 1];
 
    pistream->Read(szText, cchar*(int)sizeof(char), &read);
 
@@ -1168,7 +1167,7 @@ void CodeViewer::LoadFromFile(const string& filename)
 		fseek(fScript, 0L, SEEK_SET);
 		m_ignoreDirty = true;
 
-		BYTE * const szText = new BYTE[cchar + 1];
+		char * szText = new char[cchar + 1];
 
 		cchar = fread(szText, 1, cchar, fScript);
 
@@ -1182,7 +1181,6 @@ void CodeViewer::LoadFromFile(const string& filename)
 		}
 		SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
 		SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
-
 		delete[] szText;
 
 		m_ignoreDirty = false;
@@ -1423,7 +1421,7 @@ void CodeViewer::FindCodeFromEvent()
       tr.lpstrText = szEnd;
 
       // Make sure there is at least a one space gap between the last function and this new one
-      SendMessage(m_hwndScintilla, SCI_GETTEXT, 0, (size_t)&tr);
+      SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (size_t)&tr);
 
       if (szEnd[0] != '\n')
       {
@@ -2802,7 +2800,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
    {
    case WM_INITDIALOG:
    {
-      HWND hwndParent = GetParent(hwndDlg);
+      const HWND hwndParent = GetParent(hwndDlg);
       RECT rcDlg;
       RECT rcMain;
       GetWindowRect(hwndParent, &rcMain);
@@ -2811,7 +2809,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
          (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
-      CodeViewer* pcv = g_pvp->m_pcv;
+      CodeViewer* const pcv = g_pvp->m_pcv;
 		if (pcv->m_lPrefsList)
 		{
 			for (size_t i = 0; i < pcv->m_lPrefsList->size(); i++)
