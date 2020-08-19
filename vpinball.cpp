@@ -907,7 +907,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
    PathFromFilename(szFileName, m_currentTablePath);
    CloseAllDialogs();
 
-   PinTableMDI *mdiTable = new PinTableMDI(this);
+   PinTableMDI * const mdiTable = new PinTableMDI(this);
    CComObject<PinTable> *ppt = mdiTable->GetTable();
    m_vtable.push_back(ppt);
    const HRESULT hr = ppt->LoadGameFromFilename(szFileName);
@@ -920,8 +920,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
          ShowError(ls.m_szbuffer);
       }
 
-      RemoveFromVectorSingle(m_vtable, ppt);
-      ppt->Release();
+      delete mdiTable;
    }
    else
    {
