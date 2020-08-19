@@ -385,7 +385,7 @@ void SoundDialog::Export()
             ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0";
 
             int begin; //select only file name from pathfilename
-            const int len0 = pps->m_szPath.length();
+            const int len0 = (int)pps->m_szPath.length();
             memset(m_filename, 0, sizeof(m_filename));
 
             if (!renameOnExport)
@@ -437,7 +437,7 @@ void SoundDialog::Export()
                     memcpy( pathName, ofn.lpstrFile, begin );
                 pathName[begin] = 0;
 
-                const int len2 = pps->m_szPath.length();
+                const int len2 = (int)pps->m_szPath.length();
                 while(sel != -1)
                 {
                     for (begin = len2; begin >= 0; begin--)

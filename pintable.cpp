@@ -2824,7 +2824,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 HRESULT PinTable::SaveSoundToStream(PinSound * const pps, IStream *pstm)
 {
    ULONG writ = 0;
-   int len = pps->m_szName.length();
+   int len = (int)pps->m_szName.length();
 
    HRESULT hr;
    if (FAILED(hr = pstm->Write(&len, sizeof(int), &writ)))
@@ -2833,7 +2833,7 @@ HRESULT PinTable::SaveSoundToStream(PinSound * const pps, IStream *pstm)
    if (FAILED(hr = pstm->Write(pps->m_szName.c_str(), len, &writ)))
       return hr;
 
-   len = pps->m_szPath.length();
+   len = (int)pps->m_szPath.length();
 
    if (FAILED(hr = pstm->Write(&len, sizeof(int), &writ)))
       return hr;
@@ -2842,7 +2842,7 @@ HRESULT PinTable::SaveSoundToStream(PinSound * const pps, IStream *pstm)
       return hr;
 
    // deprecated: writes name again, but in lower case
-   len = pps->m_szName.length();
+   len = (int)pps->m_szName.length();
    if (FAILED(hr = pstm->Write(&len, sizeof(int), &writ)))
       return hr;
    char * tmp = new char[len+1];
@@ -3155,7 +3155,7 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
-      const int len = m_vCustomInfoTag[i].length();
+      const int len = (int)m_vCustomInfoTag[i].length();
       WCHAR * const wzName = new WCHAR[len + 1];
       MultiByteToWideChar(CP_ACP, 0, m_vCustomInfoTag[i].c_str(), -1, wzName, len + 1);
 
@@ -3323,7 +3323,7 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
-      const int len = m_vCustomInfoTag[i].length();
+      const int len = (int)m_vCustomInfoTag[i].length();
       WCHAR * const wzName = new WCHAR[len + 1];
       MultiByteToWideChar(CP_ACP, 0, m_vCustomInfoTag[i].c_str(), -1, wzName, len + 1);
 
@@ -7066,7 +7066,7 @@ void PinTable::ImportImage(HWND hwndListView, const string& filename)
    // The first time we import a file, parse the name of the texture from the filename
 
    int begin, end;
-   const int len = filename.length();
+   const int len = (int)filename.length();
 
    for (begin = len; begin >= 0; begin--)
    {
@@ -7745,7 +7745,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         DWORD cwch = m_vimage[ivar]->m_szName.length() + 1;
+         const DWORD cwch = (DWORD)m_vimage[ivar]->m_szName.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == NULL)
             ShowError("DISPID_Image alloc failed");
@@ -7806,7 +7806,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         const DWORD cwch = m_vsound[ivar]->m_szName.length() + 1;
+         const DWORD cwch = (DWORD)m_vsound[ivar]->m_szName.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == NULL)
             ShowError("DISPID_Sound alloc failed");
@@ -7976,7 +7976,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const DWORD cwch = m_vimage[dwCookie]->m_szName.length() + 1;
+         const DWORD cwch = (DWORD)m_vimage[dwCookie]->m_szName.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
          MultiByteToWideChar(CP_ACP, 0, m_vimage[dwCookie]->m_szName.c_str(), -1, wzDst, cwch);

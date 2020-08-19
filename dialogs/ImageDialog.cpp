@@ -445,7 +445,7 @@ void ImageDialog::Export()
             ofn.lStructSize = sizeof(OPENFILENAME);
             ofn.hInstance = g_pvp->theInstance;
             ofn.hwndOwner = g_pvp->GetHwnd();
-            const int len0 = ppi->m_szPath.length();
+            const int len0 = (int)ppi->m_szPath.length();
             char g_filename[MAXSTRING];
             g_filename[0] = '\0';
 
@@ -540,7 +540,7 @@ void ImageDialog::Export()
                   memcpy(pathName, ofn.lpstrFile, begin);
                pathName[begin] = 0;
 
-               const int len2 = ppi->m_szPath.length();
+               const int len2 = (int)ppi->m_szPath.length();
                while (sel != -1 && ppi != NULL)
                {
                   for (begin = len2; begin >= 0; begin--)

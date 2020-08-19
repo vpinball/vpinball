@@ -238,7 +238,7 @@ public:
 
    void UpdateScinFromPrefs();
 
-   void MarginClick(const int position, const int modifiers);
+   void MarginClick(const Sci_Position position, const int modifiers);
 
    void EvaluateScriptStatement(const char * const szScript);
    void AddToDebugOutput(const char * const szText);
