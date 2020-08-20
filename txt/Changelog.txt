@@ -10,7 +10,7 @@ FEATURES:
    o fast double-click a layer will select all elements of this layer and double-click one element will select it
    o with a slow double-click on a layer or element let you rename it
    o toolbar, properties and layers are now dockable windows without the need to restart VP
-   o Add context menu item to assign selected elements to the current selected layer.
+   o add context menu item to assign selected elements to the current selected layer.
 
 - when exporting/importing a POV file, the custom user settings per table are now also exported/imported
 - when importing a primitive mesh, there is now a new option that prevents internal reordering/optimization of the data
@@ -25,7 +25,7 @@ FEATURES:
 - optimize loading of JPG images in the table
 - reduce temporary memory needed for images
 
-- add table save date and revision to table info and also show in the pause info/menu
+- add table save date and revision to table info and also show this in the pause info/menu
 
 - add new plunger option: Enable 1s retract
   The plunger will move forth and back between the maximum and minimum position, allowing for a retry, if the desired firing position has been missed.
@@ -34,6 +34,8 @@ FEATURES:
 - add Inder/Playmatic trigger mesh
 
 - make debug text/FPS output adapt to resolution and rotation
+
+- the script editor now works in UTF-8 mode and also saves it like that (note though that VBS itself may not digest all of UTF-8!)
 
 FIXES:
 
