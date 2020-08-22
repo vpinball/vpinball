@@ -66,7 +66,7 @@ HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    InitShape();
 
    m_lockedByLS = false;
-   m_realState = m_d.m_state;
+   m_inPlayState = m_d.m_state;
    m_d.m_visible = true;
 
    return InitVBA(fTrue, 0, NULL);
@@ -437,15 +437,15 @@ void Light::RenderDynamic()
 
    if ((m_duration > 0) && (m_timerDurationEndTime < m_d.m_time_msec))
    {
-       m_realState = (LightState)m_finalState;
+       m_inPlayState = (LightState)m_finalState;
        m_duration = 0;
-       if (m_realState == LightStateBlinking)
+       if (m_inPlayState == LightStateBlinking)
            RestartBlinker(g_pplayer->m_time_msec);
    }
-   if (m_realState == LightStateBlinking)
+   if (m_inPlayState == LightStateBlinking)
       UpdateBlinker(g_pplayer->m_time_msec);
 
-   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_realState != LightStateOff);
+   const bool isOn = (m_inPlayState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != LightStateOff);
 
    if (isOn)
    {
@@ -752,12 +752,12 @@ void Light::RenderSetup()
 
    m_surfaceHeight = m_initSurfaceHeight;
 
-   if (m_realState == LightStateBlinking)
+   if (m_inPlayState == LightStateBlinking)
       RestartBlinker(g_pplayer->m_time_msec);
-   else if (m_duration > 0 && m_realState == LightStateOn)
+   else if (m_duration > 0 && m_inPlayState == LightStateOn)
       m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
 
-   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_realState != LightStateOff);
+   const bool isOn = (m_inPlayState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != LightStateOff);
    if (isOn)
       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
    else
@@ -909,7 +909,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    m_ptable = ptable;
 
    m_lockedByLS = false;
-   m_realState = m_d.m_state;
+   m_inPlayState = m_d.m_state;
 
    br.Load();
    return S_OK;
@@ -926,7 +926,7 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    case FID(STAT):
    {
       pbr->GetInt(&m_d.m_state);
-      m_realState = m_d.m_state;
+      m_inPlayState = m_d.m_state;
       break;
    }
    case FID(COLR): pbr->GetInt(&m_d.m_color); break;
@@ -1101,13 +1101,19 @@ STDMETHODIMP Light::put_FalloffPower(float newVal)
 
 STDMETHODIMP Light::get_State(LightState *pVal)
 {
-   *pVal = getLightState();
+   if (g_pplayer && !m_lockedByLS)
+      *pVal = m_inPlayState;
+   else
+      *pVal = getLightState(); //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
    return S_OK;
 }
 
 STDMETHODIMP Light::put_State(LightState newVal)
 {
-   setLightState(newVal);
+   if (!m_lockedByLS)
+      setInPlayState(newVal);
+
+   m_d.m_state = newVal;
    return S_OK;
 }
 
@@ -1262,13 +1268,13 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
 
 STDMETHODIMP Light::Duration(long startState, long newVal, long endState)
 {
-    m_realState = (LightState)startState;
+    m_inPlayState = (LightState)startState;
     m_duration = newVal;
     m_finalState = endState;
     if (g_pplayer)
     {
         m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
-        if (m_realState == LightStateBlinking)
+        if (m_inPlayState == LightStateBlinking)
         {
             m_iblinkframe = 0;
             m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
@@ -1289,7 +1295,7 @@ STDMETHODIMP Light::get_Intensity(float *pVal)
 STDMETHODIMP Light::put_Intensity(float newVal)
 {
    m_d.m_intensity = max(0.f, newVal);
-   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_realState != LightStateOff);
+   const bool isOn = (m_inPlayState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != LightStateOff);
    if (isOn)
       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
 
@@ -1320,7 +1326,7 @@ STDMETHODIMP Light::get_IntensityScale(float *pVal)
 STDMETHODIMP Light::put_IntensityScale(float newVal)
 {
    m_d.m_intensity_scale = newVal;
-   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_realState != LightStateOff);
+   const bool isOn = (m_inPlayState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != LightStateOff);
    if (isOn)
       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
 
@@ -1520,37 +1526,37 @@ STDMETHODIMP Light::put_BulbHaloHeight(float newVal)
    return S_OK;
 }
 
-void Light::setLightState(const LightState newVal)
+void Light::setInPlayState(const LightState newVal)
 {
-   // if the light is locked by the LS then just change the state and don't change the actual light
-   if (!m_lockedByLS)
+   if (newVal != m_inPlayState) // state changed???
    {
-      if (newVal != m_realState) // state changed???
-      {
-         m_realState = newVal;
+      m_inPlayState = newVal;
 
-         if (g_pplayer)
+      if (g_pplayer)
+      {
+         if (m_inPlayState == LightStateBlinking)
          {
-            if (m_realState == LightStateBlinking)
-            {
-               m_timenextblink = g_pplayer->m_time_msec; // Start pattern right away // + m_d.m_blinkinterval;
-               m_iblinkframe = 0; // reset pattern
-            }
-            if (m_duration > 0)
-               m_duration = 0; // disable duration if a state was set this way
+            m_timenextblink = g_pplayer->m_time_msec; // Start pattern right away // + m_d.m_blinkinterval;
+            m_iblinkframe = 0; // reset pattern
          }
+         if (m_duration > 0)
+            m_duration = 0; // disable duration if a state was set this way
       }
    }
-   else
-      m_d.m_state = newVal;
+}
+
+void Light::setLightState(const LightState newVal)
+{
+   if (!m_lockedByLS)
+      setInPlayState(newVal);
+
+   m_d.m_state = newVal;
+
 }
 
 LightState Light::getLightState() const
 {
-   if (!m_lockedByLS)
-      return m_realState;
-   else
-      return m_d.m_state; //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
+   return m_d.m_state;
 }
 
 STDMETHODIMP Light::get_Visible(VARIANT_BOOL *pVal) //temporary value of object

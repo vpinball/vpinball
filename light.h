@@ -127,13 +127,14 @@ public:
    void FreeBuffers();
 
    void InitShape();
+   void setInPlayState(const LightState newVal);
    void setLightState(const LightState newVal);
    LightState getLightState() const;
    void RenderBulbMesh();
 
    LightData m_d;
 
-   LightState m_realState;
+   LightState m_inPlayState;
    float m_surfaceHeight;
    bool  m_lockedByLS;
    char m_rgblinkpattern[NUM_RGB_BLINK_PATTERN];
