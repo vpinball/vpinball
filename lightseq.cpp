@@ -1651,7 +1651,7 @@ void LightSeq::SetElementToState(const int index, const LightState State)
    {
       Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
       pLight->m_lockedByLS = true;
-      pLight->setLightState(State);
+      pLight->setInPlayState(State);
    }
 }
 
@@ -1686,7 +1686,7 @@ LightState LightSeq::GetElementState(const int index) const
    if (type == eItemLight)
    {
       Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
-      rc = pLight->m_realState;
+      rc = pLight->m_inPlayState;
    }
 
    return rc;
