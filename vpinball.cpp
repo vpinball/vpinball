@@ -928,22 +928,28 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
       ppt->InitPostLoad(this);
 
       AddMDITable(mdiTable);
-      // auto-import POV settings if exist...
 
+      // auto-import POV settings, if it exists...
       string szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".pov";
-      if (Exists(szFileNameAuto)) // We check if there is a table pov settings first
+      if (Exists(szFileNameAuto)) // We check if there is a matching table pov settings first
           ppt->ImportBackdropPOV(szFileNameAuto);
       else // Otherwise, we seek for autopov settings
       {
-          szFileNameAuto = m_currentTablePath + string("autopov.pov");
+          szFileNameAuto = m_currentTablePath + "autopov.pov";
           if (Exists(szFileNameAuto))
               ppt->ImportBackdropPOV(szFileNameAuto);
       }
 
-      // auto-import VBS table script, if exist...
+      // auto-import VBS table script, if it exists...
       szFileNameAuto = m_currentTablePath + ppt->m_szTitle + ".vbs";
-      if (Exists(szFileNameAuto)) // We check if there is a table pov settings first
+      if (Exists(szFileNameAuto)) // We check if there is a matching table vbs first
           ppt->m_pcv->LoadFromFile(szFileNameAuto);
+      else // Otherwise we seek in the Scripts folder
+      {
+          szFileNameAuto = g_pvp->m_szMyPath + "Scripts\\" + ppt->m_szTitle + ".vbs";
+          if (Exists(szFileNameAuto))
+              ppt->m_pcv->LoadFromFile(szFileNameAuto);
+      }
 
       // get the load path from the filename
       SaveValueString("RecentDir", "LoadDir", m_currentTablePath);
