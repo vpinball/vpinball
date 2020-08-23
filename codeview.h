@@ -243,6 +243,8 @@ public:
    void EvaluateScriptStatement(const char * const szScript);
    void AddToDebugOutput(const char * const szText);
 
+   bool PreTranslateMessage(MSG* msg);
+
    IScriptableHost *m_psh;
 
    IActiveScript* m_pScript;
@@ -255,6 +257,10 @@ public:
    vector<CVPrefrence*> *m_lPrefsList;
 
    int m_displayAutoCompleteLength;
+
+   SaveDirtyState m_sdsDirty;
+   bool m_ignoreDirty;
+
    bool m_scriptError; // Whether a script error has occured - used for polling from the game
 
    bool m_visible;
@@ -263,6 +269,7 @@ public:
    bool m_displayAutoComplete;
    bool m_toolTipActive;
    bool m_stopErrorDisplay;
+
    bool m_dwellHelp;
    bool m_dwellDisplay;
    int m_dwellDisplayTime;
@@ -285,10 +292,8 @@ public:
 
    FINDREPLACE m_findreplaceold; // the last thing found/replaced
 
-   SaveDirtyState m_sdsDirty;
-   bool m_ignoreDirty;
-
-   bool PreTranslateMessage(MSG *msg);
+   string external_script_name;  // loaded from external .vbs?
+   vector<char> original_table_script; // if yes, then this one stores the original table script
 
 protected:
     virtual void PreCreate(CREATESTRUCT& cs);
