@@ -70,6 +70,8 @@ FIXES:
 
 - add many more different windowed mode resolutions
 
+- also search for table-script replacements (i.e. external .vbs with the same/table name) in the "Scripts" folder to match the core script behavior
+
 - tweak flipper shadows (via script) implementation in the example/blank table
 
 - update BASS library to latest 2.4.15
