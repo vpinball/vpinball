@@ -479,8 +479,14 @@ void CodeViewer::SetEnabled(const bool enabled)
 
 void CodeViewer::SetCaption(const string& szCaption)
 {
-   const LocalString ls(IDS_SCRIPT);
-   const string szT = szCaption + ' ' + ls.m_szbuffer;
+   string szT;
+   if (!external_script_name.empty())
+      szT = "MODIFYING EXTERNAL SCRIPT: " + external_script_name;
+   else
+   {
+      const LocalString ls(IDS_SCRIPT);
+      szT = szCaption + ' ' + ls.m_szbuffer;
+   }
    SetWindowText(szT.c_str());
 }
 
@@ -1157,10 +1163,31 @@ next:
 
 void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
 {
-   const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-   const size_t bufferSize = cchar + MAXNAMEBUFFER; //!! ??
-   char * const szText = new char[bufferSize + 1];
+   size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+   char * szText = new char[cchar + MAXNAMEBUFFER + 1]; //!! MAXNAMEBUFFER ??
    SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
+
+   // if there was an external vbs loaded, save the script to that file
+   // and ask if to save the original script also to the table
+   bool save_external_script_to_table = true;
+   if (!external_script_name.empty())
+   {
+      FILE* fScript;
+      if ((fopen_s(&fScript, external_script_name.c_str(), "wb") == 0) && fScript)
+      {
+         fwrite(szText, 1, cchar, fScript);
+         fclose(fScript);
+      }
+
+      save_external_script_to_table = (MessageBox("Save externally loaded .vbs script also to .vpx table?", "Visual Pinball", MB_YESNO | MB_DEFBUTTON2) == IDYES);
+
+      if (!save_external_script_to_table)
+      {
+         delete[] szText;
+         szText = (char*)g_pvp->m_pcv->original_table_script.data();
+         cchar = g_pvp->m_pcv->original_table_script.size();
+      }
+   }
 
    ULONG writ = 0;
    pistream->Write(&cchar, (ULONG)sizeof(int), &writ);
@@ -1168,7 +1195,8 @@ void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
 
    CryptHashData(hcrypthash, (BYTE *)szText, (DWORD)cchar, 0);
 
-   delete[] szText;
+   if (save_external_script_to_table)
+      delete[] szText;
 }
 
 void CodeViewer::SaveToFile(const string& filename)
@@ -1223,6 +1251,10 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
    // ensure that the script is null terminated
    szText[cchar] = L'\0';
 
+   // save original script, in case an external vbs is loaded
+   original_table_script.resize(cchar);
+   memcpy(original_table_script.data(), szText, cchar);
+
    // check if script is either plain ASCII or UTF-8, or if it contains invalid stuff
    uint32_t state = UTF8_ACCEPT;
    if (validate_utf8(&state, szText, cchar) == UTF8_REJECT) {
@@ -1245,6 +1277,8 @@ void CodeViewer::LoadFromFile(const string& filename)
    FILE * fScript;
    if ((fopen_s(&fScript, filename.c_str(), "rb") == 0) && fScript)
    {
+		external_script_name = filename;
+
 		fseek(fScript, 0L, SEEK_END);
 		size_t cchar = ftell(fScript);
 		fseek(fScript, 0L, SEEK_SET);
@@ -1253,6 +1287,7 @@ void CodeViewer::LoadFromFile(const string& filename)
 		char * szText = new char[cchar + 1];
 
 		cchar = fread(szText, 1, cchar, fScript);
+		fclose(fScript);
 
 		szText[cchar] = L'\0';
 
@@ -1270,7 +1305,6 @@ void CodeViewer::LoadFromFile(const string& filename)
 
 		m_ignoreDirty = false;
 		m_sdsDirty = eSaveClean;
-		fclose(fScript);
    }
 }
 
