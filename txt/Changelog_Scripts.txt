@@ -10,6 +10,7 @@ New in 3.58 (Update by mfuegemann, DJRobX, toxie)
 - Added constant (vpmFourStepSol) for new 4-solenoid stepper motor mech type used by High Roller Casino, Starship Troopers, and Playboy
 - Cleanup scripts and separate the major documentation part into Scripts.txt
 - Fix an old bug in controller.vbs that did uninitialized validity/version checks
+- Fixed FPVPX.vbs (unsure how this was supposed to work before at all)
 
 New in 3.57 (Update by nFozzy, DJRobX, chepas, Gaston)
 - Beta 1 NF fastflips 2
