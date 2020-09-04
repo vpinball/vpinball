@@ -3,30 +3,25 @@
 '*************************************************************************************
 Option Explicit
 
-Const FPVPXv = 1.01
+Const FPVPXv = 1.02
 
 '*****************
 ' PARA LAS LUCES
 '*****************
 
 Const BulbOn = "1"  'Luz encendida
-Const BulbOFF = "0" 'Luz Apagada
-Const BulbBLINK = "2" 'Luz intermitente
+Const BulbOff = "0" 'Luz Apagada
+Const BulbBlink = "2" 'Luz intermitente
 
 '---------------------------------------------
 ' Algunas Variables
 
-Dim fpTilted
- fpTilted = Tilted 'Falta
+Dim fpTilted:If IsEmpty(Eval("Tilted"))=true Then fpTilted=false Else fpTilted=Tilted 'Falta
 
-Dim nvCredits
- Credits = nvCredits 'Creditos
+Dim nvCredits:If IsEmpty(Eval("Credits"))=true Then nvCredits=0 Else nvCredits=Credits 'Creditos
 
-Dim nvTotalGamesPlayed 'Total de partidas Jugadas
- TotalGamesPlayed = nvTotalGamesPlayed
+Dim nvTotalGamesPlayed:If IsEmpty(Eval("TotalGamesPlayed"))=true Then nvTotalGamesPlayed=0 Else nvTotalGamesPlayed=TotalGamesPlayed 'Total de partidas Jugadas
 
-Dim nvScore
- Score = nvScore 'Marcador
+Dim nvScore:If IsEmpty(Eval("Score"))=true Then nvScore=Array(0,0,0,0) Else nvScore=Score 'Marcador
 
-Dim nvJackpot
- Jackpot = nvJackpot 'Jackpot
+Dim nvJackpot:If IsEmpty(Eval("Jackpot"))=true Then nvJackpot=0 Else nvJackpot=Jackpot 'Jackpot
